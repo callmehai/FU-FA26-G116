@@ -5,48 +5,92 @@ Hệ thống **phòng họp không giấy ứng dụng AI**, có tích hợp **g
 Đồ án tốt nghiệp — **SEP490-G116**. Nghiệp vụ tham chiếu từ hệ thống AI-eCabinet (SmartMeet);
 TrustCabinet là bản hiện thực độc lập trên nền .NET, có điều chỉnh phạm vi cho phù hợp đồ án.
 
-> **Trạng thái: v0.1.0 — mới khởi tạo.** Hiện chỉ có trang giới thiệu tĩnh và một endpoint
-> `/api/health`. Chưa có cơ sở dữ liệu, chưa có nghiệp vụ.
+> **Trạng thái: v0.1.0 — mới dựng khung.** Đã có khung giao diện (đăng nhập, danh sách và chi
+> tiết cuộc họp, quản trị) chạy trên dữ liệu mẫu, cùng một endpoint `/api/health`. Chưa có cơ sở
+> dữ liệu, xác thực đang giả lập phía trình duyệt, chưa có nghiệp vụ thật.
 
 ## Chạy thử
 
-Cần .NET SDK 10 (bản pin trong [global.json](global.json)). Nếu chưa có, tải tại
-<https://dotnet.microsoft.com/download/dotnet/10.0>.
+Cần **.NET SDK 10** (bản pin trong [global.json](global.json), tải tại
+<https://dotnet.microsoft.com/download/dotnet/10.0>) và **Node.js** (tải tại <https://nodejs.org>).
+
+Lần đầu:
 
 ```bash
 dotnet restore
-dotnet run --project src/TrustCabinet.Web
+cd frontend && npm install
 ```
 
-Mở <http://localhost:5225>. Kiểm tra API: <http://localhost:5225/api/health>.
+Khi dev, chạy **hai tiến trình** ở hai terminal:
+
+```bash
+# Terminal 1 — backend, cổng 5225
+dotnet run --project backend/TrustCabinet.Web
+
+# Terminal 2 — frontend, cổng 5173, có hot reload
+cd frontend && npm run dev
+```
+
+Mở <http://localhost:5173>. Vite proxy `/api` và `/hubs` sang backend nên trình duyệt chỉ thấy
+một origin — không cần cấu hình CORS.
+
+Ở màn đăng nhập, **bấm thẳng nút "Đăng nhập" là vào**, không cần điền gì: chưa có cơ sở dữ liệu
+nên xác thực đang được giả lập. Ô "Vai trò" dùng để thử phân quyền — đổi vai trò sẽ thấy menu và
+nút bấm thay đổi theo.
+
+Muốn chạy bằng một tiến trình duy nhất (giống lúc triển khai): build frontend rồi chạy backend,
+lúc đó vào <http://localhost:5225>.
+
+```bash
+cd frontend && npm run build   # xuất vào backend/TrustCabinet.Web/wwwroot/
+dotnet run --project backend/TrustCabinet.Web
+```
 
 ## Cấu trúc
 
 ```
 TrustCabinet.sln
 global.json                      # pin phiên bản .NET SDK cho cả nhóm
-src/
-  TrustCabinet.Web/              # ASP.NET Core — API + phục vụ trang tĩnh
+CLAUDE.md                        # hướng dẫn cho Claude Code
+backend/
+  TrustCabinet.Web/              # ASP.NET Core 10 — API + phục vụ bản build của frontend
     Program.cs                   # cấu hình pipeline, khai báo endpoint
     appsettings.json
-    wwwroot/                     # giao diện
-      index.html
-      css/site.css
-      js/site.js
+    wwwroot/                     # sinh tự động từ `npm run build` — không commit
+frontend/                        # React 19 + Vite + TypeScript, chia theo feature
+  vite.config.ts                 # proxy sang backend khi dev, outDir về wwwroot khi build
+  src/
+    main.tsx                     # điểm vào
+    app/App.tsx                  # bảng route
+    lib/routes.ts                # bản đồ đường dẫn tập trung
+    features/                    # auth · meetings · access · calendar
+    components/                  # khung ứng dụng & UI dùng chung
+    api/                         # lớp gọi HTTP dùng chung
+    types/                       # kiểu dữ liệu khớp response của backend
+    styles/global.css            # design token + toàn bộ style
+docs/                            # tài liệu đồ án — xem docs/README.md
 ```
 
-Khi nghiệp vụ lớn dần, dự kiến tách thêm `src/TrustCabinet.Domain`,
-`src/TrustCabinet.Application`, `src/TrustCabinet.Infrastructure` và `tests/`.
+Giao diện dựng theo khung của hệ thống tham chiếu AI-eCabinet: hai không gian làm việc
+(`/mgmt`, `/calendar`) dùng chung một khung. Lý do và ranh giới tham chiếu: xem
+[ADR-0002](docs/05-decisions/0002-khung-giao-dien-theo-ai-ecabinet.md).
+
+Vì sao tách `backend/` và `frontend/`: xem
+[ADR-0001](docs/05-decisions/0001-tach-frontend-backend.md).
+
+Khi nghiệp vụ lớn dần, dự kiến tách thêm `backend/TrustCabinet.Domain`,
+`backend/TrustCabinet.Application`, `backend/TrustCabinet.Infrastructure` và `tests/`.
 
 ## Công nghệ
 
 | Thành phần | Lựa chọn | Ghi chú |
 |---|---|---|
 | Backend | ASP.NET Core 10 (Minimal API) | đã có |
+| Frontend | React 19 + Vite + TypeScript | đã có |
+| Định tuyến FE | React Router | đã có |
 | Realtime | SignalR | tín hiệu gọi, biểu quyết, thông báo — chưa làm |
 | Thoại/video | WebRTC | chưa làm |
 | Cơ sở dữ liệu | SQL Server + EF Core | chưa làm |
-| Giao diện | HTML/CSS/JS thuần | có thể đổi sang SPA sau |
 
 ## Phạm vi chức năng dự kiến
 
@@ -100,3 +144,8 @@ nhóm này trước tiên:
 - Tích hợp hệ thống eOffice bên ngoài
 
 Danh sách này chưa chốt — thống nhất lại với giảng viên hướng dẫn trước khi khoá phạm vi.
+
+## Tài liệu
+
+Toàn bộ tài liệu đồ án nằm trong [docs/](docs/) — phạm vi, thiết kế, hợp đồng API, biên bản họp
+nhóm và các quyết định kỹ thuật (ADR).

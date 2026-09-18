@@ -480,3 +480,10 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# ---- TrustCabinet ----
+# Bản build của frontend do `npm run build` sinh ra, backend chỉ phục vụ lại.
+backend/TrustCabinet.Web/wwwroot/
+frontend/dist/
+frontend/*.tsbuildinfo
+frontend/node_modules/.vite/
