@@ -8,10 +8,15 @@ TrustCabinet — an AI-assisted paperless meeting system with built-in voice/vid
 Capstone project **SEP490-G116**. The business domain is modelled on AI-eCabinet (SmartMeet), but
 this is an independent .NET implementation with a scope trimmed to fit a capstone.
 
-**Status: v0.1.0 — skeleton plus the first database slice.** There is a frontend/backend
-skeleton, one `/api/health` endpoint, and an EF Core model covering users, org units, meetings,
-status history and participants. There is still no authentication and no business endpoint. Do not
-assume domain code exists somewhere — check or ask first.
+**Status: v0.1.0 — skeleton plus the full data model.** There is a frontend/backend skeleton,
+one `/api/health` endpoint, and a 27-table EF Core model covering every story in the Jira backlog:
+access, meetings, agenda, documents, voting, recordings, transcripts, minutes, notifications,
+audit and calls. There is still **no authentication and no business endpoint** — the tables exist,
+nothing reads or writes them yet. Do not assume domain code exists somewhere — check or ask first.
+
+The model is documented in [docs/02-design/02-erd.md](docs/02-design/02-erd.md), which also lists
+what deliberately has no table (task tracking, voiceprints, multi-tenancy). Read it before adding
+an entity.
 
 **Before working on any feature, read [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md)
 and follow the team's Sprint, BA → BE → FE → Tester workflow.** It defines how a Use Case moves

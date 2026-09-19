@@ -28,12 +28,23 @@ public class DatabaseModelTests
         using var db = NewContext();
 
         var tables = db.Model.GetEntityTypes()
-            .Select(e => e.GetTableName())
-            .ToHashSet();
+            .Select(e => e.GetTableName()!)
+            .OrderBy(t => t, StringComparer.Ordinal)
+            .ToArray();
 
+        // Spelled out rather than counted: adding an entity should be a visible edit here, and
+        // this is also what catches one that was written but never registered.
         Assert.Equal(
-            ["meeting_participants", "meeting_status_history", "meetings", "org_units", "role_capabilities", "users"],
-            tables.OrderBy(t => t, StringComparer.Ordinal).ToArray());
+            [
+                "agenda_items", "audit_log", "call_participants", "call_sessions",
+                "document_comments", "document_versions", "documents", "email_messages",
+                "meeting_minutes", "meeting_notes", "meeting_participants",
+                "meeting_status_history", "meeting_summaries", "meetings", "minutes_signatures",
+                "notifications", "org_units", "recordings", "role_capabilities",
+                "speaking_requests", "transcript_segments", "transcripts", "users",
+                "vote_choices", "vote_receipts", "voting_options", "voting_sessions",
+            ],
+            tables);
     }
 
     [Theory]
@@ -127,5 +138,104 @@ public class DatabaseModelTests
 
             Assert.Equal(DeleteBehavior.Cascade, foreignKey.DeleteBehavior);
         }
+    }
+
+    [Fact]
+    public void An_anonymous_vote_cannot_be_traced_to_its_voter()
+    {
+        using var db = NewContext();
+
+        var voter = db.Model.FindEntityType(typeof(VoteChoice))!.FindProperty(nameof(VoteChoice.VoterId))!;
+
+        // The column has to be nullable for a secret ballot to be possible at all: in an anonymous
+        // session the application leaves it null, so no row links a person to what they chose.
+        // Making it required would force every ballot to name its voter and quietly turn every
+        // "secret" vote into an open one.
+        Assert.True(voter.IsNullable);
+    }
+
+    [Fact]
+    public void One_person_gets_one_vote_per_session()
+    {
+        using var db = NewContext();
+
+        var indexes = db.Model.FindEntityType(typeof(VoteReceipt))!.GetIndexes();
+
+        // Enforced by the database, because two simultaneous requests can both pass an
+        // application-level "has this person voted?" check.
+        Assert.Contains(indexes, i => i.IsUnique
+            && i.Properties.Select(p => p.Name).OrderBy(n => n)
+                .SequenceEqual(new[] { nameof(VoteReceipt.VotingSessionId), nameof(VoteReceipt.VoterId) }.OrderBy(n => n)));
+    }
+
+    [Fact]
+    public void No_voiceprint_is_stored_anywhere()
+    {
+        using var db = NewContext();
+
+        var suspicious = db.Model.GetEntityTypes()
+            .SelectMany(e => e.GetProperties().Select(p => $"{e.ClrType.Name}.{p.Name}"))
+            .Where(name => name.Contains("Voiceprint", StringComparison.OrdinalIgnoreCase)
+                || name.Contains("VoiceEmbedding", StringComparison.OrdinalIgnoreCase)
+                || name.Contains("Biometric", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        // Speaker separation within one recording is in scope; recognising the same voice across
+        // meetings is not. A voiceprint is biometric data under Decree 13/2023/NĐ-CP, with its own
+        // consent and erasure duties, and the project cut it deliberately. This test is here so
+        // the cut survives someone adding "just one column".
+        Assert.Empty(suspicious);
+    }
+
+    [Fact]
+    public void A_recording_records_its_consent_and_retention()
+    {
+        using var db = NewContext();
+
+        var recording = db.Model.FindEntityType(typeof(Recording))!;
+
+        // Decree 13/2023/NĐ-CP: consent before capture, a stated purpose, and erasure. The schema
+        // has to be able to show each of those, not just the audio file.
+        foreach (var column in new[]
+                 {
+                     nameof(Recording.ConsentObtainedAt),
+                     nameof(Recording.ConsentPurpose),
+                     nameof(Recording.RetainUntil),
+                     nameof(Recording.DeletedAt),
+                 })
+        {
+            Assert.NotNull(recording.FindProperty(column));
+        }
+    }
+
+    [Fact]
+    public void Issued_minutes_are_corrected_by_a_new_revision()
+    {
+        using var db = NewContext();
+
+        var minutes = db.Model.FindEntityType(typeof(MeetingMinutes))!;
+
+        // One row per revision, so the text that was actually issued stays readable after a
+        // correction instead of being overwritten by it.
+        Assert.Contains(minutes.GetIndexes(), i => i.IsUnique
+            && i.Properties.Select(p => p.Name).OrderBy(n => n)
+                .SequenceEqual(new[] { nameof(MeetingMinutes.MeetingId), nameof(MeetingMinutes.RevisionNumber) }.OrderBy(n => n)));
+
+        Assert.Equal(DeleteBehavior.Restrict, minutes
+            .GetForeignKeys()
+            .Single(fk => fk.DependentToPrincipal?.Name == nameof(MeetingMinutes.Supersedes))
+            .DeleteBehavior);
+    }
+
+    [Fact]
+    public void Audit_details_are_queryable_json()
+    {
+        using var db = NewContext();
+
+        var details = db.Model.FindEntityType(typeof(AuditLogEntry))!.FindProperty(nameof(AuditLogEntry.Details))!;
+
+        // jsonb rather than text, so a question the columns do not answer can still be asked of
+        // the payload without rewriting history.
+        Assert.Equal("jsonb", details.GetColumnType());
     }
 }

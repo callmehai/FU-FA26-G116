@@ -15,6 +15,27 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
     public DbSet<Meeting> Meetings => Set<Meeting>();
     public DbSet<MeetingParticipant> MeetingParticipants => Set<MeetingParticipant>();
     public DbSet<MeetingStatusHistory> MeetingStatusHistory => Set<MeetingStatusHistory>();
+    public DbSet<AgendaItem> AgendaItems => Set<AgendaItem>();
+    public DbSet<Document> Documents => Set<Document>();
+    public DbSet<DocumentVersion> DocumentVersions => Set<DocumentVersion>();
+    public DbSet<DocumentComment> DocumentComments => Set<DocumentComment>();
+    public DbSet<SpeakingRequest> SpeakingRequests => Set<SpeakingRequest>();
+    public DbSet<MeetingNote> MeetingNotes => Set<MeetingNote>();
+    public DbSet<VotingSession> VotingSessions => Set<VotingSession>();
+    public DbSet<VotingOption> VotingOptions => Set<VotingOption>();
+    public DbSet<VoteReceipt> VoteReceipts => Set<VoteReceipt>();
+    public DbSet<VoteChoice> VoteChoices => Set<VoteChoice>();
+    public DbSet<Recording> Recordings => Set<Recording>();
+    public DbSet<Transcript> Transcripts => Set<Transcript>();
+    public DbSet<TranscriptSegment> TranscriptSegments => Set<TranscriptSegment>();
+    public DbSet<MeetingMinutes> MeetingMinutes => Set<MeetingMinutes>();
+    public DbSet<MinutesSignature> MinutesSignatures => Set<MinutesSignature>();
+    public DbSet<MeetingSummary> MeetingSummaries => Set<MeetingSummary>();
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<EmailMessage> EmailMessages => Set<EmailMessage>();
+    public DbSet<AuditLogEntry> AuditLog => Set<AuditLogEntry>();
+    public DbSet<CallSession> CallSessions => Set<CallSession>();
+    public DbSet<CallParticipant> CallParticipants => Set<CallParticipant>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

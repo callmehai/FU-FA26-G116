@@ -1,15 +1,38 @@
 # Mô hình dữ liệu (ERD)
 
-Lát cắt đầu tiên của cơ sở dữ liệu, đúng phạm vi `SCRUM-45`: **người dùng, đơn vị, cuộc họp, lịch
-sử trạng thái, thành phần tham dự**. Nghị sự, tài liệu, biểu quyết, ghi âm và biên bản sẽ vào các
-lát cắt sau — đừng thêm bảng cho chúng trước khi Use Case tương ứng được BA chốt.
+Toàn bộ mô hình dữ liệu của TrustCabinet, suy ra từ tiêu chí nghiệm thu của các story trong Jira.
+**27 bảng.** Đây là tài liệu nguồn để vẽ Class Diagram (`SCRUM-55`) và ERD nộp (`SCRUM-56`), và để
+BE biết mình đang làm việc với cái gì.
 
-Hiện thực: EF Core 10 code-first, PostgreSQL qua Npgsql ([ADR-0003](../05-decisions/0003-chon-postgresql-thay-cho-sql-server.md)). Entity nằm ở
+Hiện thực: EF Core 10 code-first, PostgreSQL qua Npgsql
+([ADR-0003](../05-decisions/0003-chon-postgresql-thay-cho-sql-server.md)). Entity ở
 [backend/TrustCabinet.Domain/Entities/](../../backend/TrustCabinet.Domain/Entities/), cấu hình bảng
 ở [backend/TrustCabinet.Infrastructure/Configurations/](../../backend/TrustCabinet.Infrastructure/Configurations/).
 Cách chạy: [03-co-so-du-lieu.md](03-co-so-du-lieu.md).
 
-## Sơ đồ
+> **Mô hình này đi trước tài liệu BA, có chủ đích.** Nó được suy ra từ tiêu chí nghiệm thu đã viết
+> trong Jira, chứ không phải từ Use Case Specification đã duyệt. Khi BA viết UC spec và vẽ Class
+> Diagram, phải đối chiếu lại: chỗ nào lệch thì sửa **một trong hai**, có chủ ý, chứ đừng để hai
+> tài liệu cùng tồn tại mà nói khác nhau.
+
+## Bảng nào phục vụ story nào
+
+| Nhóm | Bảng | Story |
+|---|---|---|
+| Truy cập | `users`, `org_units`, `role_capabilities` | `SCRUM-11`, `SCRUM-12`, `SCRUM-13` |
+| Cuộc họp | `meetings`, `meeting_status_history`, `meeting_participants` | `SCRUM-17`, `SCRUM-18`, `SCRUM-19`, `SCRUM-20`, `SCRUM-26` |
+| Tài liệu | `documents`, `document_versions`, `document_comments` | `SCRUM-21`, `SCRUM-22`, `SCRUM-23` |
+| Nghị sự | `agenda_items` | `SCRUM-25` |
+| Trong phiên | `speaking_requests`, `meeting_notes` | `SCRUM-27`, `SCRUM-30` |
+| Biểu quyết | `voting_sessions`, `voting_options`, `vote_receipts`, `vote_choices` | `SCRUM-24`, `SCRUM-28` |
+| Bản ghi | `recordings`, `transcripts`, `transcript_segments` | `SCRUM-29`, `SCRUM-31`, `SCRUM-35`, `SCRUM-44` |
+| Biên bản | `meeting_minutes`, `minutes_signatures`, `meeting_summaries` | `SCRUM-32`, `SCRUM-33`, `SCRUM-36`, `SCRUM-37` |
+| Nền tảng | `notifications`, `email_messages`, `audit_log` | `SCRUM-14`, `SCRUM-15`, `SCRUM-16` |
+| Gọi | `call_sessions`, `call_participants` | `SCRUM-39`, `SCRUM-40`, `SCRUM-41`, `SCRUM-44` |
+
+`SCRUM-38` (báo cáo, thống kê) không sinh bảng mới — nó đọc lại những bảng trên.
+
+## 1. Truy cập và cuộc họp
 
 ```mermaid
 erDiagram
@@ -23,115 +46,358 @@ erDiagram
     Meeting ||--o{ MeetingStatusHistory : "lịch sử trạng thái"
 
     OrgUnit {
-        guid Id PK
+        uuid Id PK
         string Name
         string Code UK
-        guid ParentId FK "null nếu là đơn vị gốc"
+        uuid ParentId FK "null nếu là đơn vị gốc"
         bool IsActive
     }
-
     User {
-        guid Id PK
+        uuid Id PK
         string FullName
-        string Email UK
+        citext Email UK
         string PasswordHash
         string Role "Chair|Secretary|Member|Admin"
-        guid OrgUnitId FK
+        uuid OrgUnitId FK
         bool IsActive
     }
-
     RoleCapability {
-        string Role PK "Chair|Secretary|Member|Admin"
-        string Capability PK "MeetingCreator|MeetingApprover|MinutesEditor|AdminUsers"
+        string Role PK
+        string Capability PK
     }
-
     Meeting {
-        guid Id PK
+        uuid Id PK
         string Title
-        string Description
         string Status "9 trạng thái vòng đời"
         string Sensitivity "Normal|Internal|Confidential|Secret"
         string Mode "InPerson|Online|Hybrid"
         string Location
-        datetimeoffset StartsAt
-        datetimeoffset EndsAt
-        guid CreatedById FK
-        guid OrgUnitId FK
+        timestamptz StartsAt
+        timestamptz EndsAt
+        uuid CreatedById FK
+        uuid OrgUnitId FK
     }
-
     MeetingParticipant {
-        guid Id PK
-        guid MeetingId FK
-        guid UserId FK
+        uuid Id PK
+        uuid MeetingId FK
+        uuid UserId FK
         string Role "Chair|Secretary|Member|Guest"
         string Response "Pending|Accepted|Declined|Delegated"
-        guid DelegatedToUserId FK "chỉ khi Response = Delegated"
-        datetimeoffset RespondedAt
+        string Attendance "Unknown|Present|Absent|Excused|Delegated"
+        uuid DelegatedToUserId FK
+        timestamptz RespondedAt
     }
-
     MeetingStatusHistory {
-        guid Id PK
-        guid MeetingId FK
+        uuid Id PK
+        uuid MeetingId FK
         string FromStatus "null ở bản ghi tạo mới"
         string ToStatus
-        guid ActorId FK
+        uuid ActorId FK
         string Reason "bắt buộc khi từ chối"
-        datetimeoffset OccurredAt
+        timestamptz OccurredAt
     }
 ```
 
-`RoleCapability` không nối khoá ngoại tới `User`: nó là bảng tra cứu giữa vai trò và quyền, không
-phải quan hệ giữa hai thực thể.
+`Response` và `Attendance` là **hai câu hỏi khác nhau**: một là người ta trả lời thư mời thế nào,
+hai là thực tế có mặt hay không. Nhận lời rồi không đến là chuyện bình thường, và số liệu quorum
+tính trên `Attendance`.
 
-Tên trong sơ đồ là tên entity C#. Trong database chúng thành snake_case: `org_units`, `users`,
-`role_capabilities`, `meetings`, `meeting_participants`, `meeting_status_history`.
+## 2. Nghị sự và tài liệu
+
+```mermaid
+erDiagram
+    Meeting ||--o{ AgendaItem : "chương trình nghị sự"
+    Meeting ||--o{ Document : "tài liệu"
+    AgendaItem ||--o{ Document : "gắn vào mục"
+    Document ||--o{ DocumentVersion : "phiên bản"
+    Document ||--o{ DocumentComment : "góp ý"
+    DocumentComment ||--o{ DocumentComment : "trả lời"
+
+    AgendaItem {
+        uuid Id PK
+        uuid MeetingId FK
+        int Position
+        string Title
+        int PlannedDurationMinutes
+        uuid PresenterId FK "null nếu người trình bày là khách"
+        string PresenterName
+        string Status "Pending|InProgress|Done|Postponed"
+        timestamptz ActualStartedAt
+        timestamptz ActualEndedAt
+    }
+    Document {
+        uuid Id PK
+        uuid MeetingId FK
+        uuid AgendaItemId FK "null nếu gắn cả cuộc họp"
+        string Title
+        string Category "Material|Draft|Administrative|Other"
+        uuid CurrentVersionId FK
+        uuid UploadedById FK
+    }
+    DocumentVersion {
+        uuid Id PK
+        uuid DocumentId FK
+        int VersionNumber UK
+        string FileName
+        string StoragePath
+        string ContentType "xác định theo nội dung thật"
+        bigint ByteSize
+        string ContentSha256
+        uuid UploadedById FK
+    }
+    DocumentComment {
+        uuid Id PK
+        uuid DocumentId FK
+        uuid DocumentVersionId FK "phiên bản lúc góp ý"
+        int PageNumber
+        uuid ParentCommentId FK "null nếu là góp ý gốc"
+        uuid AuthorId FK
+        string Body
+        bool IsResolved
+    }
+```
+
+File không bao giờ bị ghi đè: tải bản mới là thêm một `DocumentVersion`. Góp ý trỏ vào **phiên bản
+lúc viết**, vì câu nó nhắc tới có thể không còn ở bản sau.
+
+## 3. Trong phiên họp
+
+```mermaid
+erDiagram
+    Meeting ||--o{ SpeakingRequest : "đăng ký phát biểu"
+    Meeting ||--o{ MeetingNote : "ghi chú thư ký"
+    Meeting ||--o{ VotingSession : "phiên biểu quyết"
+    AgendaItem ||--o{ VotingSession : "biểu quyết cho mục"
+    VotingSession ||--o{ VotingOption : "phương án"
+    VotingSession ||--o{ VoteReceipt : "ai đã bỏ phiếu"
+    VotingSession ||--o{ VoteChoice : "phiếu đã bỏ"
+    VotingOption ||--o{ VoteChoice : "được chọn"
+
+    SpeakingRequest {
+        uuid Id PK
+        uuid MeetingId FK
+        uuid AgendaItemId FK
+        uuid UserId FK
+        timestamptz RequestedAt
+        int QueuePosition "chủ toạ đổi được"
+        string Status "Queued|Invited|Speaking|Finished|Cancelled"
+        timestamptz StartedAt
+        timestamptz EndedAt
+    }
+    MeetingNote {
+        uuid Id PK
+        uuid MeetingId FK
+        uuid AgendaItemId FK
+        uuid AuthorId FK
+        string Body
+    }
+    VotingSession {
+        uuid Id PK
+        uuid MeetingId FK
+        uuid AgendaItemId FK
+        string Title
+        string Kind "Live|Asynchronous"
+        bool IsAnonymous
+        string Status "Draft|Open|Closed"
+        timestamptz ClosesAt
+        int EligibleCount "chốt lúc mở phiên"
+        string Conclusion
+    }
+    VotingOption {
+        uuid Id PK
+        uuid VotingSessionId FK
+        int Position UK
+        string Label
+    }
+    VoteReceipt {
+        uuid Id PK
+        uuid VotingSessionId FK
+        uuid VoterId FK
+        timestamptz CastAt
+    }
+    VoteChoice {
+        uuid Id PK
+        uuid VotingSessionId FK
+        uuid VotingOptionId FK
+        uuid VoterId FK "NULL khi phiên ẩn danh"
+        timestamptz CastAt
+    }
+```
+
+### Biểu quyết ẩn danh — đọc kỹ chỗ này
+
+Tách **`VoteReceipt`** (ai đã bỏ phiếu) khỏi **`VoteChoice`** (phiếu chọn gì) là cách làm cho phiếu
+kín thực sự kín:
+
+- `VoteReceipt` có unique index `(VotingSessionId, VoterId)` → một người một phiếu, do database ép,
+  không phải do một câu `if` mà hai request đồng thời có thể cùng vượt qua.
+- `VoteChoice.VoterId` **để NULL khi phiên ẩn danh** → không dòng nào trong database nối người với
+  lựa chọn. Ẩn tên trên giao diện là không đủ: liên kết vẫn nằm đó cho bất cứ ai đọc được DB.
+
+**Hệ quả phải biết:** phiên ẩn danh thì **không đổi phiếu được**, vì không có gì xác định phải thay
+dòng nào. `SCRUM-28` yêu cầu đổi phiếu tới khi đóng phiên — hiện chỉ làm được với phiên công khai.
+Muốn có cả hai thì cần cơ chế token cấp cho từng người bỏ phiếu, và đó là một quyết định thiết kế
+riêng, không phải thứ chắp thêm. **Việc này cần BA chốt trước khi `SCRUM-28` bắt đầu.**
+
+## 4. Sau họp — bản ghi và biên bản
+
+```mermaid
+erDiagram
+    Meeting ||--o{ Recording : "bản ghi"
+    Recording ||--o| Transcript : "gỡ băng"
+    Transcript ||--o{ TranscriptSegment : "đoạn"
+    Meeting ||--o{ MeetingMinutes : "biên bản"
+    MeetingMinutes ||--o{ MinutesSignature : "chữ ký"
+    MeetingMinutes ||--o| MeetingMinutes : "đính chính bản cũ"
+    Meeting ||--o| MeetingSummary : "tóm tắt AI"
+
+    Recording {
+        uuid Id PK
+        uuid MeetingId FK
+        string Source "BrowserCapture|Upload|CallRoom"
+        string Status "Pending|Available|Failed|Deleted"
+        string StoragePath
+        bigint DurationMs
+        timestamptz ConsentObtainedAt "bắt buộc trước khi ghi"
+        string ConsentPurpose
+        timestamptz RetainUntil
+        timestamptz DeletedAt
+    }
+    Transcript {
+        uuid Id PK
+        uuid RecordingId FK UK
+        string Status "Pending|Processing|Completed|Failed"
+        string Provider "ghi rõ nếu là dịch vụ ngoài"
+        string Language
+        int ProgressPercent
+        string ErrorMessage
+    }
+    TranscriptSegment {
+        uuid Id PK
+        uuid TranscriptId FK
+        int Position UK
+        bigint StartMs
+        bigint EndMs
+        string Text
+        string SpeakerLabel "Người nói 1, 2, 3…"
+        uuid SpeakerUserId FK "thư ký gán tay"
+        uuid EditedById FK
+    }
+    MeetingMinutes {
+        uuid Id PK
+        uuid MeetingId FK
+        int RevisionNumber UK
+        uuid SupersedesId FK
+        string Content
+        string Status "Draft|WaitingApproval|Rejected|Issued|Superseded"
+        uuid CreatedById FK
+        uuid ApprovedById FK
+        string RejectionReason
+        timestamptz IssuedAt "đặt rồi là khoá"
+    }
+    MinutesSignature {
+        uuid Id PK
+        uuid MinutesId FK
+        uuid SignerId FK
+        timestamptz SignedAt
+        string ContentSha256
+        string Signature
+        string PublicKey
+    }
+    MeetingSummary {
+        uuid Id PK
+        uuid MeetingId FK UK
+        string Content
+        string Model
+        timestamptz GeneratedAt
+        uuid ReviewedById FK "null = chưa ai soát"
+    }
+```
+
+## 5. Gọi trong ứng dụng
+
+```mermaid
+erDiagram
+    Meeting ||--o{ CallSession : "phòng gọi"
+    CallSession ||--o{ CallParticipant : "người trong phòng"
+    CallSession ||--o| Recording : "bản ghi cuộc gọi"
+
+    CallSession {
+        uuid Id PK
+        string Kind "Direct|MeetingRoom"
+        uuid MeetingId FK "null nếu gọi 1-1"
+        string Status "Ringing|Active|Ended|Missed"
+        uuid StartedById FK
+        timestamptz StartedAt
+        timestamptz EndedAt
+        uuid RecordingId FK
+    }
+    CallParticipant {
+        uuid Id PK
+        uuid CallSessionId FK
+        uuid UserId FK
+        timestamptz JoinedAt
+        timestamptz LeftAt
+        bool Declined
+    }
+```
+
+Chỉ lưu **sự kiện cuộc gọi**, không lưu media. Âm thanh và hình đi thẳng giữa các trình duyệt qua
+WebRTC; backend chỉ làm tín hiệu. Rớt mạng vào lại sinh một dòng `CallParticipant` mới, nhờ đó cộng
+đúng thời gian thực sự kết nối.
 
 ## Những quyết định cần biết
 
 | Quyết định | Lý do |
 |---|---|
-| Khoá chính `uuid`, sinh bằng `Guid.CreateVersion7()` | Không đoán được từ bên ngoài (link tài liệu mật sau này cần điều đó), nhưng vẫn tăng dần theo thời gian nên chèn tuần tự không làm phân mảnh index như GUID v4 |
-| Tên bảng và cột **snake_case** | PostgreSQL hạ chữ thường identifier không đóng ngoặc kép; giữ PascalCase thì mọi câu SQL viết tay phải gõ `"Meetings"` |
-| `users.email` kiểu **`citext`** | PostgreSQL so sánh chuỗi phân biệt hoa thường. Không đổi kiểu thì unique index vẫn cho `Anh@x.vn` và `anh@x.vn` thành hai tài khoản |
-| Enum lưu dạng **chuỗi**, không phải số | Đọc thẳng trong SSMS là hiểu; thêm trạng thái mới về sau không đánh số lại các dòng đã ghi |
-| `Meeting.Status` và `Sensitivity` **không có giá trị mặc định** ở DB | Tầng ứng dụng phải nói rõ. Mặc định ngầm về giá trị dễ dãi nhất là cách một cuộc họp mật bị lộ |
-| `User.IsActive` / `OrgUnit.IsActive` thay cho xoá cứng | Người đã nghỉ vẫn là chủ toạ của cuộc họp quý trước; xoá họ là mất quy kết trách nhiệm |
-| Khoá ngoại trỏ tới `User` đều `Restrict` | Không cho phép xoá người dùng kéo theo bằng chứng kiểm toán |
-| `Meeting` → participant/history là `Cascade` | Xoá một cuộc họp nháp thì dữ liệu con đi theo, không để lại rác |
-| `MeetingStatusHistory` chỉ ghi thêm | Đây là bằng chứng, không phải log kỹ thuật. Ứng dụng không bao giờ `UPDATE`/`DELETE` bảng này |
-| Không có cột `Salt` riêng | Hàm băm hiện đại nhúng thuật toán, tham số và salt vào chính chuỗi hash |
-| Vai trò hệ thống ≠ vai trò trong cuộc họp | `User.Role` là vị trí trong tổ chức; `MeetingParticipant.Role` là vai trong một phiên họp cụ thể. Một `Member` vẫn có thể chủ toạ một cuộc họp |
+| Khoá chính `uuid`, sinh bằng `Guid.CreateVersion7()` | Không đoán được từ bên ngoài, nhưng tăng dần theo thời gian nên chèn tuần tự không làm phân mảnh index |
+| Tên bảng và cột **snake_case** | PostgreSQL hạ chữ thường identifier không đóng ngoặc kép |
+| `users.email` kiểu **`citext`** | Không đổi kiểu thì unique index vẫn cho `Anh@x.vn` và `anh@x.vn` thành hai tài khoản |
+| Enum lưu dạng **chuỗi** | Đọc thẳng trong DB là hiểu; thêm trạng thái mới không đánh số lại dòng cũ |
+| `Status`, `Sensitivity` **không có default** ở DB | Tầng ứng dụng phải nói rõ. Mặc định ngầm về giá trị dễ dãi nhất là cách một cuộc họp mật bị lộ |
+| Mọi khoá ngoại trỏ tới `users` đều `Restrict` | Người dùng vô hiệu hoá chứ không xoá; bằng chứng kiểm toán phải giữ được quy kết trách nhiệm |
+| `Meeting` → dữ liệu con là `Cascade` | Xoá một cuộc họp nháp thì dữ liệu con đi theo, không để lại rác |
+| `agenda_items.Position` **không** unique | Kéo thả đổi thứ tự ghi nhiều dòng một lúc; unique index sẽ chặn trạng thái trung gian |
+| `meeting_notes` unique có `AreNullsDistinct(false)` | PostgreSQL mặc định coi hai NULL là khác nhau, nên ghi chú cấp cuộc họp sẽ lọt nếu không khai báo |
+| `audit_log.Details` kiểu `jsonb` | Hỏi được câu mà các cột không trả lời, không phải sửa schema |
+| `MeetingStatusHistory` và `audit_log` chỉ ghi thêm | Đây là bằng chứng, không phải log kỹ thuật |
 
-Bảng `RoleCapability` được seed **trong migration** (dữ liệu tham chiếu, không phải dữ liệu người
-dùng nhập), nên mọi database vừa migrate xong đều thống nhất với code. Bảng tạm
-`ROLE_CAPABILITIES` trong [frontend/src/types/user.ts](../../frontend/src/types/user.ts) sẽ bị xoá
-ở `SCRUM-46` — nguồn sự thật là bảng này.
+## Ranh giới đã chốt — đừng thêm bảng cho những thứ này
+
+| Không có bảng cho | Vì sao |
+|---|---|
+| Nhiệm vụ / action item | Ngoài phạm vi. TrustCabinet dừng ở biên bản đã chốt — xem mục "Không làm" trong [README](../../README.md). Không có `tasks`, `assignments`, không có cột hạn hoàn thành ở đâu cả |
+| Voiceprint / đặc trưng giọng | Dữ liệu sinh trắc học theo Nghị định 13/2023/NĐ-CP. Chỉ tách người nói **trong một bản ghi** (`SpeakerLabel`), rồi người gán tên tay. Có test tự động chặn việc thêm cột kiểu này |
+| Khoá mã hoá, sổ huỷ khoá | Không làm mã hoá phong bì |
+| Tenant, vùng lưu trú dữ liệu | Một tổ chức, không multi-tenant |
+| Hàng đợi job | ASR chạy nền bằng cơ chế đơn giản, không dựng job spine |
+
+Về bản ghi âm: `recordings` có `ConsentObtainedAt`, `ConsentPurpose`, `RetainUntil`, `DeletedAt` —
+bốn cột đó tồn tại để hệ thống **chứng minh được** đã xin đồng ý trước khi ghi, đã nêu mục đích, và
+đã xoá khi tới hạn hoặc khi có yêu cầu. Nghĩa vụ theo Nghị định 13/2023/NĐ-CP, không phải thứ trang
+trí. Ứng dụng phải từ chối ghi âm khi `ConsentObtainedAt` còn null, chứ không ghi trước rồi hỏi sau.
 
 ## Tham chiếu AI-eCabinet: lấy gì, bỏ gì
 
-Hệ thống gốc có 34 bảng trên PostgreSQL. Phần lớn là hạ tầng nằm ngoài phạm vi đồ án.
+Hệ thống gốc có 34 bảng trên PostgreSQL. Phần lớn phần chênh lệch là hạ tầng ngoài phạm vi đồ án.
 
-**Giữ lại ý tưởng:**
+**Lấy ý tưởng:** tách lịch sử trạng thái thành bảng riêng chỉ ghi thêm; `sensitivity` là trục độc
+lập với `status`; tách `documents`/`document_versions`; tách phiếu bầu khỏi người bầu để làm phiếu
+kín; vai trò trong cuộc họp tách khỏi vai trò hệ thống.
 
-- Tách `meeting_lifecycle_events` thành bảng riêng, chỉ ghi thêm → `MeetingStatusHistory`
-- `sensitivity` là trục độc lập với `status`
-- `documents` + `document_versions` (lát cắt sau, `SCRUM-21`)
-- Vai trò trong cuộc họp tách khỏi vai trò hệ thống
-
-**Bỏ hẳn, và vì sao:**
+**Bỏ hẳn:**
 
 | Của hệ thống gốc | Vì sao không làm |
 |---|---|
-| `tenants` + Row-Level Security trên mọi bảng | TrustCabinet phục vụ một tổ chức. Multi-tenant là cả một lớp kiến trúc, không phải một cột |
-| Kiểu `text[]`, `jsonb` cho lựa chọn biểu quyết | Lát cắt sau mới bàn; PostgreSQL có sẵn nên vẫn dùng được khi tới `SCRUM-28` |
-| `residency_zone`, `key_domain`, `key_id` trên mọi bảng | Đi kèm yêu cầu lưu trú dữ liệu và mã hoá theo vùng — ngoài phạm vi |
-| `persons` + `sessions` + `iss`/`sub` (Zitadel) | Đăng nhập nội bộ bằng email/mật khẩu (`SCRUM-11`), không tích hợp IdP ngoài |
-| `relation_tuples`, `authz_epochs` (ReBAC kiểu OpenFGA) | Dùng RBAC phẳng: vai trò → quyền. Đủ cho 4 vai trò |
-| `encryption_keys`, `key_shred_ledger` | Không làm mã hoá phong bì và xoá bằng huỷ khoá |
-| `job_outbox`, `job_stage`, `pipeline_job`, `job_idempotency` | Không dựng job spine; ASR chạy đồng bộ hoặc hàng đợi đơn giản |
-| `audit_log` với chuỗi hash | `SCRUM-16` chỉ cần nhật ký chỉ-ghi-thêm, không cần chuỗi hash chống sửa |
-| `meeting_external_participants` | Lát cắt sau nếu `SCRUM-20` cần khách mời ngoài hệ thống |
+| `tenants` + Row-Level Security trên mọi bảng | TrustCabinet phục vụ một tổ chức |
+| `residency_zone`, `key_domain`, `key_id` | Kéo theo yêu cầu lưu trú dữ liệu và mã hoá theo vùng |
+| `persons` + `sessions` + Zitadel | Đăng nhập nội bộ bằng email/mật khẩu (`SCRUM-11`) |
+| `relation_tuples`, `authz_epochs` (ReBAC) | RBAC phẳng đủ cho 4 vai trò |
+| `encryption_keys`, `key_shred_ledger` | Không làm mã hoá phong bì |
+| `job_outbox`, `job_stage`, `pipeline_job` | Không dựng job spine |
+| `audit_log` chuỗi hash | `SCRUM-16` chỉ cần chỉ-ghi-thêm |
+| `meeting_external_participants` | Khách mời ngoài hệ thống chưa nằm trong `SCRUM-20` |
 
-**Thêm so với hệ thống gốc:** `Meeting.Mode` (`InPerson`/`Online`/`Hybrid`) — hệ thống gốc không có
-cột này vì không tự làm phần gọi. TrustCabinet có gọi thoại/video trong ứng dụng nên hình thức họp
-là dữ liệu nghiệp vụ.
+**Thêm so với hệ thống gốc:** `Meeting.Mode` và toàn bộ nhóm `call_sessions` / `call_participants`
+— hệ thống gốc không tự làm phần gọi, TrustCabinet có gọi thoại/video trong ứng dụng nên đó là
+điểm khác biệt chính của đồ án.
