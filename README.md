@@ -5,10 +5,10 @@ Hệ thống **phòng họp không giấy ứng dụng AI**, có tích hợp **g
 Đồ án tốt nghiệp — **SEP490-G116**. Nghiệp vụ tham chiếu từ hệ thống AI-eCabinet (SmartMeet);
 TrustCabinet là bản hiện thực độc lập trên nền .NET, có điều chỉnh phạm vi cho phù hợp đồ án.
 
-> **Trạng thái: v0.1.0 — mới dựng khung.** Đã có khung giao diện (đăng nhập, danh sách và chi
-> tiết cuộc họp, quản trị) chạy trên dữ liệu mẫu, một endpoint `/api/health`, và cơ sở dữ liệu lát
-> cắt đầu (người dùng, đơn vị, cuộc họp, lịch sử trạng thái, thành phần tham dự). Xác thực vẫn
-> đang giả lập phía trình duyệt, chưa có endpoint nghiệp vụ nào.
+> **Trạng thái: v0.1.0 — khung giao diện và mô hình dữ liệu đầy đủ.** Đã có khung giao diện chạy
+> trên dữ liệu mẫu, endpoint `/api/health`, và cơ sở dữ liệu 27 bảng phủ toàn bộ backlog. Xác thực
+> vẫn giả lập phía trình duyệt, và **chưa có endpoint nghiệp vụ nào** — bảng đã có, chưa có code
+> đọc ghi.
 
 ## Chạy thử
 
@@ -131,7 +131,7 @@ Khi lớp nghiệp vụ lớn dần, dự kiến tách thêm `backend/TrustCabin
 | Định tuyến FE | React Router | đã có |
 | Realtime | SignalR | tín hiệu gọi, biểu quyết, thông báo — chưa làm |
 | Thoại/video | WebRTC | chưa làm |
-| Cơ sở dữ liệu | PostgreSQL 17 + EF Core 10 (Npgsql), code-first | lát cắt đầu — xem [02-erd.md](docs/02-design/02-erd.md) và [ADR-0003](docs/05-decisions/0003-chon-postgresql-thay-cho-sql-server.md) |
+| Cơ sở dữ liệu | PostgreSQL 17 + EF Core 10 (Npgsql), code-first | 27 bảng — xem [02-erd.md](docs/02-design/02-erd.md) và [ADR-0003](docs/05-decisions/0003-chon-postgresql-thay-cho-sql-server.md) |
 
 ## Phạm vi chức năng dự kiến
 

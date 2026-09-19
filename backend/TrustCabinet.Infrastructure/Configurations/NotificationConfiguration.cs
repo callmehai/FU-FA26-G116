@@ -1,0 +1,28 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TrustCabinet.Domain.Entities;
+
+namespace TrustCabinet.Infrastructure.Configurations;
+
+public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
+{
+    public void Configure(EntityTypeBuilder<Notification> builder)
+    {
+        builder.Property(n => n.Title).HasMaxLength(300).IsRequired();
+        builder.Property(n => n.Body).HasMaxLength(2000);
+        builder.Property(n => n.Type).HasConversion<string>().HasMaxLength(64).IsRequired();
+
+        // The bell reads "my unread, newest first" on every page load, so it gets its own index.
+        builder.HasIndex(n => new { n.UserId, n.ReadAt, n.CreatedAt });
+
+        builder.HasOne(n => n.User)
+            .WithMany()
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(n => n.Meeting)
+            .WithMany()
+            .HasForeignKey(n => n.MeetingId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}

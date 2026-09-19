@@ -24,4 +24,20 @@ public class MeetingParticipant : Entity
     public User? DelegatedToUser { get; set; }
 
     public DateTimeOffset? RespondedAt { get; set; }
+
+    /// <summary>
+    /// Whether they actually turned up (SCRUM-26) — a different question from
+    /// <see cref="Response"/>, which is only what they said beforehand. Someone can accept and not
+    /// come, and the quorum count depends on this one.
+    ///
+    /// It lives on this row rather than in its own table because it is one fact about one person
+    /// at one meeting, and a separate table would just duplicate the same pair of keys.
+    /// </summary>
+    public AttendanceStatus Attendance { get; set; } = AttendanceStatus.Unknown;
+
+    /// <summary>Who marked the attendance — the person themselves, or the secretary on their behalf.</summary>
+    public Guid? AttendanceRecordedById { get; set; }
+    public User? AttendanceRecordedBy { get; set; }
+
+    public DateTimeOffset? AttendanceRecordedAt { get; set; }
 }

@@ -10,6 +10,7 @@ public class MeetingParticipantConfiguration : IEntityTypeConfiguration<MeetingP
     {
         builder.Property(p => p.Role).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(p => p.Response).HasConversion<string>().HasMaxLength(32).IsRequired();
+        builder.Property(p => p.Attendance).HasConversion<string>().HasMaxLength(32).IsRequired();
 
         // One row per person per meeting: inviting the same person twice is a bug, not a feature.
         builder.HasIndex(p => new { p.MeetingId, p.UserId }).IsUnique();
@@ -27,6 +28,11 @@ public class MeetingParticipantConfiguration : IEntityTypeConfiguration<MeetingP
         builder.HasOne(p => p.DelegatedToUser)
             .WithMany()
             .HasForeignKey(p => p.DelegatedToUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(p => p.AttendanceRecordedBy)
+            .WithMany()
+            .HasForeignKey(p => p.AttendanceRecordedById)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
