@@ -118,8 +118,10 @@ When a change affects design or scope, update `docs/` in the **same commit** as 
 
 ## Watch out
 
-- Some features are deliberately out of scope (voiceprint identification, real HSM signing,
-  air-gapped deployment, eOffice integration) — see the README. Do not implement them unprompted.
+- Some features are deliberately out of scope (task/action-item tracking, voiceprint
+  identification, real HSM signing, air-gapped deployment, eOffice integration) — see the README.
+  Do not implement them unprompted. TrustCabinet stops at the approved minutes: it never tracks
+  assignees, due dates or completion state.
 - Meeting recordings and voice identification are personal data under Vietnam's Decree
   13/2023/NĐ-CP. When touching this area, state the consent and deletion obligations explicitly
   rather than silently persisting the data.

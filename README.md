@@ -112,9 +112,8 @@ Mức ưu tiên: **(M)** bắt buộc · **(S)** nên có · **(C)** có thể c
 ### Sau họp
 - (M) Chuyển giọng nói thành văn bản (ASR tiếng Việt)
 - (M) Sinh biên bản, phê duyệt, lưu bản chốt
-- (M) Theo dõi nhiệm vụ được giao
 - (S) Tách người nói, gán danh tính giọng
-- (S) Tóm tắt & trích nhiệm vụ bằng AI
+- (S) Tóm tắt nội dung cuộc họp bằng AI
 - (C) Ký số biên bản (PKI)
 - (C) Báo cáo, thống kê
 
@@ -130,6 +129,15 @@ Mức ưu tiên: **(M)** bắt buộc · **(S)** nên có · **(C)** có thể c
 - (M) Quản lý người dùng & đơn vị
 - (M) Thông báo trong ứng dụng & email
 - (S) Nhật ký kiểm toán các hành động quan trọng
+
+### Không làm
+
+Đã chốt là ngoài phạm vi, không đưa lại vào backlog:
+
+- Quản lý nhiệm vụ / action item — giao việc, hạn chót, trạng thái hoàn thành, nhắc việc.
+  TrustCabinet dừng ở biên bản đã chốt; việc theo dõi thực thi thuộc về hệ thống điều hành
+  công việc khác. Biên bản vẫn ghi phần "phân công" như văn bản, nhưng hệ thống không theo dõi
+  trạng thái của nó.
 
 ## Nhóm chức năng cân nhắc thu hẹp
 
