@@ -13,3 +13,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 |---|---|---|
 | [0001](0001-tach-frontend-backend.md) | Tách frontend và backend thành hai thư mục | Đã chấp nhận |
 | [0002](0002-khung-giao-dien-theo-ai-ecabinet.md) | Dựng khung giao diện bám theo AI-eCabinet | Đã chấp nhận |
+| [0003](0003-chon-postgresql-thay-cho-sql-server.md) | Chọn PostgreSQL thay cho SQL Server | Đã chấp nhận |
