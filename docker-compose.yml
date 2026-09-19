@@ -1,0 +1,30 @@
+# SQL Server cho môi trường dev. Chỉ dùng ở máy cá nhân — không phải cấu hình triển khai thật.
+#
+#   cp .env.example .env     # rồi tự đặt mật khẩu trong .env (.env đã bị gitignore)
+#   docker compose up -d
+#
+# Hướng dẫn đầy đủ: docs/02-design/03-co-so-du-lieu.md
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    # Ảnh SQL Server chỉ có bản linux/amd64. Trên máy Apple Silicon, Docker Desktop chạy qua
+    # emulation — chậm hơn nhưng hoạt động.
+    platform: linux/amd64
+    container_name: trustcabinet-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Chua dat MSSQL_SA_PASSWORD - xem .env.example}
+      MSSQL_PID: Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - trustcabinet-mssql:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  trustcabinet-mssql:

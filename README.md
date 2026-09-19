@@ -6,8 +6,9 @@ Hệ thống **phòng họp không giấy ứng dụng AI**, có tích hợp **g
 TrustCabinet là bản hiện thực độc lập trên nền .NET, có điều chỉnh phạm vi cho phù hợp đồ án.
 
 > **Trạng thái: v0.1.0 — mới dựng khung.** Đã có khung giao diện (đăng nhập, danh sách và chi
-> tiết cuộc họp, quản trị) chạy trên dữ liệu mẫu, cùng một endpoint `/api/health`. Chưa có cơ sở
-> dữ liệu, xác thực đang giả lập phía trình duyệt, chưa có nghiệp vụ thật.
+> tiết cuộc họp, quản trị) chạy trên dữ liệu mẫu, một endpoint `/api/health`, và cơ sở dữ liệu lát
+> cắt đầu (người dùng, đơn vị, cuộc họp, lịch sử trạng thái, thành phần tham dự). Xác thực vẫn
+> đang giả lập phía trình duyệt, chưa có endpoint nghiệp vụ nào.
 
 ## Chạy thử
 
@@ -18,8 +19,13 @@ Lần đầu:
 
 ```bash
 dotnet restore
+dotnet tool restore
 cd frontend && npm install
 ```
+
+Backend cần một SQL Server và một chuỗi kết nối trước khi chạy được — repo có sẵn
+`docker-compose.yml`, các bước ở
+[docs/02-design/03-co-so-du-lieu.md](docs/02-design/03-co-so-du-lieu.md).
 
 Khi dev, chạy **hai tiến trình** ở hai terminal:
 
@@ -77,13 +83,18 @@ Jira (project `SCRUM`) là nguồn sự thật cho yêu cầu, user story và k�
 ```
 TrustCabinet.sln
 global.json                      # pin phiên bản .NET SDK cho cả nhóm
+dotnet-tools.json                # pin dotnet-ef cho cả nhóm
 .editorconfig                    # quy ước format chung, mọi IDE đều đọc
 .github/workflows/ci.yml         # CI: build + test backend, lint + build frontend
+docker-compose.yml               # SQL Server cho môi trường dev
+.env.example                     # mẫu biến môi trường — chép thành .env, .env không commit
 CLAUDE.md                        # hướng dẫn cho Claude Code
 backend/
+  TrustCabinet.Domain/           # entity và enum — không phụ thuộc EF Core
+  TrustCabinet.Infrastructure/   # DbContext, cấu hình bảng, migration, seed
   TrustCabinet.Web/              # ASP.NET Core 10 — API + phục vụ bản build của frontend
     Program.cs                   # cấu hình pipeline, khai báo endpoint
-    appsettings.json
+    appsettings.json             # chuỗi kết nối để trống — đặt bằng user-secrets
     wwwroot/                     # sinh tự động từ `npm run build` — không commit
 frontend/                        # React 19 + Vite + TypeScript, chia theo feature
   vite.config.ts                 # proxy sang backend khi dev, outDir về wwwroot khi build
@@ -109,8 +120,7 @@ Giao diện dựng theo khung của hệ thống tham chiếu AI-eCabinet: hai k
 Vì sao tách `backend/` và `frontend/`: xem
 [ADR-0001](docs/05-decisions/0001-tach-frontend-backend.md).
 
-Khi nghiệp vụ lớn dần, dự kiến tách thêm `backend/TrustCabinet.Domain`,
-`backend/TrustCabinet.Application` và `backend/TrustCabinet.Infrastructure`.
+Khi lớp nghiệp vụ lớn dần, dự kiến tách thêm `backend/TrustCabinet.Application`.
 
 ## Công nghệ
 
@@ -121,7 +131,7 @@ Khi nghiệp vụ lớn dần, dự kiến tách thêm `backend/TrustCabinet.Dom
 | Định tuyến FE | React Router | đã có |
 | Realtime | SignalR | tín hiệu gọi, biểu quyết, thông báo — chưa làm |
 | Thoại/video | WebRTC | chưa làm |
-| Cơ sở dữ liệu | SQL Server + EF Core | chưa làm |
+| Cơ sở dữ liệu | SQL Server + EF Core 10, code-first | lát cắt đầu — xem [02-erd.md](docs/02-design/02-erd.md) |
 
 ## Phạm vi chức năng dự kiến
 
