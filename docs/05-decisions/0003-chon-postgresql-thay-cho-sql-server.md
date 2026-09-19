@@ -59,8 +59,8 @@ Kèm theo ba lựa chọn cụ thể để tránh bẫy khi chuyển từ SQL Se
   chuỗi phân biệt hoa thường, `LIKE` phải đổi thành `ILIKE` — đã ghi trong
   [03-co-so-du-lieu.md](../02-design/03-co-so-du-lieu.md).
 - `SCRUM-45` và bảng Công nghệ trong README phải sửa lại.
-- Nếu sau này giảng viên hướng dẫn yêu cầu stack Microsoft thì phải quay lại. Chuyển đổi ở thời
-  điểm này gần như không tốn gì vì mới có 6 bảng và không có dòng SQL thô nào; càng để lâu càng
-  đắt.
+- Rủi ro "bị yêu cầu dùng stack Microsoft" đã được loại: nhóm xác nhận ngày 2026-09-19 rằng đồ án
+  không bị ràng buộc công nghệ. Nếu điều đó thay đổi thì phải quay lại, và chi phí chuyển đổi tăng
+  theo số bảng — ở thời điểm quyết định mới có 6 bảng và không có dòng SQL thô nào.
 
 Quyết định này chỉ nói về cơ sở dữ liệu. Backend vẫn là ASP.NET Core 10 và EF Core, không đổi.
