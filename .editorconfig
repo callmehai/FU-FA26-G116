@@ -1,0 +1,36 @@
+# Quy ước format dùng chung cho cả repo. Rider, Visual Studio và VS Code đều đọc file này,
+# nên không ai phải chỉnh tay và PR không bị ngập diff thụt lề.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 100
+
+[*.{cs,csx}]
+indent_size = 4
+
+# Ngôn ngữ C#: chốt vài thứ hay gây diff rác giữa các IDE.
+csharp_new_line_before_open_brace = all
+csharp_prefer_braces = true:suggestion
+csharp_style_namespace_declarations = file_scoped:suggestion
+csharp_using_directive_placement = outside_namespace:suggestion
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+[*.{csproj,props,targets,config,xml}]
+indent_size = 2
+
+[*.{md,markdown}]
+# Markdown dùng hai dấu cách cuối dòng để xuống dòng — đừng cắt.
+trim_trailing_whitespace = false
+
+[*.{yml,yaml}]
+indent_size = 2
+
+[Makefile]
+indent_style = tab

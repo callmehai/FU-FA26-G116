@@ -6,6 +6,11 @@ biên bản họp nhóm và các quyết định kỹ thuật.
 Viết bằng Markdown, để cùng repo với code để mỗi thay đổi lớn đi kèm commit tương ứng —
 tránh cảnh tài liệu trên Drive lệch hẳn với hệ thống thật.
 
+## Quy trình làm việc
+
+[DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) — Sprint 1 tuần, đường ống
+BA → BE → FE → Tester, Definition of Done. Đọc trước khi bắt tay vào việc đầu tiên.
+
 ## Cấu trúc
 
 | Thư mục | Chứa gì |
@@ -31,8 +36,11 @@ tránh cảnh tài liệu trên Drive lệch hẳn với hệ thống thật.
 - **Ngôn ngữ:** tài liệu trong `docs/` viết tiếng Việt; giữ nguyên thuật ngữ kỹ thuật tiếng Anh
   (*endpoint*, *migration*, *hub*…) thay vì dịch nửa vời. Riêng phần trong code — comment,
   docstring, tên PR — viết tiếng Anh, xem bảng quy ước trong [CLAUDE.md](../CLAUDE.md).
+  Ngoại lệ duy nhất: [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) viết tiếng Anh, vì các
+  AI coding agent đọc file đó như hướng dẫn vận hành.
 
 ## Bắt đầu từ đâu
 
-Người mới vào nhóm đọc theo thứ tự: [00-overview/](00-overview/) →
-[01-requirements/](01-requirements/) → [02-design/](02-design/) → [CLAUDE.md](../CLAUDE.md).
+Người mới vào nhóm đọc theo thứ tự: [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) →
+[00-overview/](00-overview/) → [01-requirements/](01-requirements/) → [02-design/](02-design/) →
+[CLAUDE.md](../CLAUDE.md).
