@@ -1,0 +1,33 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TrustCabinet.Domain.Entities;
+
+namespace TrustCabinet.Infrastructure.Configurations;
+
+public class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
+{
+    public void Configure(EntityTypeBuilder<Meeting> builder)
+    {
+        builder.Property(m => m.Title).HasMaxLength(300).IsRequired();
+        builder.Property(m => m.Description).HasMaxLength(4000);
+        builder.Property(m => m.Location).HasMaxLength(300);
+
+        builder.Property(m => m.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
+        builder.Property(m => m.Sensitivity).HasConversion<string>().HasMaxLength(32).IsRequired();
+        builder.Property(m => m.Mode).HasConversion<string>().HasMaxLength(32).IsRequired();
+
+        // The meetings list filters by status and sorts by start time (SCRUM-18).
+        builder.HasIndex(m => new { m.Status, m.StartsAt });
+        builder.HasIndex(m => m.StartsAt);
+
+        builder.HasOne(m => m.CreatedBy)
+            .WithMany()
+            .HasForeignKey(m => m.CreatedById)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(m => m.OrgUnit)
+            .WithMany()
+            .HasForeignKey(m => m.OrgUnitId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+}

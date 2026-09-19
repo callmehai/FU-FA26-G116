@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace TrustCabinet.Web.Tests;
 
@@ -9,11 +8,11 @@ namespace TrustCabinet.Web.Tests;
 /// the app boots in memory, routing resolves, and CI can run tests at all. Delete or replace it
 /// once real endpoints land — do not let it become the only test in the project.
 /// </summary>
-public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
+public class HealthEndpointTests : IClassFixture<TrustCabinetApiFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly TrustCabinetApiFactory _factory;
 
-    public HealthEndpointTests(WebApplicationFactory<Program> factory) => _factory = factory;
+    public HealthEndpointTests(TrustCabinetApiFactory factory) => _factory = factory;
 
     [Fact]
     public async Task Health_returns_ok_with_service_identity()

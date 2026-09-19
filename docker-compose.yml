@@ -1,0 +1,28 @@
+# PostgreSQL cho môi trường dev. Chỉ dùng ở máy cá nhân — không phải cấu hình triển khai thật.
+#
+#   cp .env.example .env     # rồi tự đặt mật khẩu trong .env (.env đã bị gitignore)
+#   docker compose up -d
+#
+# Hướng dẫn đầy đủ: docs/02-design/03-co-so-du-lieu.md
+services:
+  postgres:
+    # alpine cho ảnh nhỏ, và có sẵn bản arm64 nên chạy native trên máy Apple Silicon.
+    image: postgres:17-alpine
+    container_name: trustcabinet-postgres
+    environment:
+      POSTGRES_DB: trustcabinet
+      POSTGRES_USER: trustcabinet
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Chua dat POSTGRES_PASSWORD - xem .env.example}
+    ports:
+      - "5432:5432"
+    volumes:
+      - trustcabinet-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trustcabinet -d trustcabinet"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  trustcabinet-pgdata:
