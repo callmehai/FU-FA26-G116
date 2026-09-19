@@ -12,6 +12,11 @@ this is an independent .NET implementation with a scope trimmed to fit a capston
 endpoint. No database, no authentication, no business logic yet. Do not assume domain code exists
 somewhere — check or ask first.
 
+**Before working on any feature, read [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md)
+and follow the team's Sprint, BA → BE → FE → Tester workflow.** It defines how a Use Case moves
+from Jira to Done, what each role hands over, and what Done means. Jira (project `SCRUM`) is the
+source of truth for requirements.
+
 ## Language rules
 
 | Where | Language |
@@ -22,6 +27,7 @@ somewhere — check or ask first.
 | Commit messages | Vietnamese (matches the existing history) |
 | UI text, user-facing strings | Vietnamese — it is a Vietnamese product |
 | `docs/`, `README.md` | Vietnamese |
+| `docs/DEVELOPMENT_WORKFLOW.md` | **English** — exception: AI coding agents read it as instructions |
 
 Keep English technical terms as-is inside Vietnamese text (*endpoint*, *migration*, *hub*,
 *proxy*) rather than half-translating them.
@@ -67,10 +73,16 @@ Checks:
 dotnet build TrustCabinet.sln     # build the backend
 cd frontend && npm run build      # tsc -b + vite build, emits into the backend wwwroot
 cd frontend && npm run lint       # oxlint
+dotnet test TrustCabinet.sln      # xunit, tests/TrustCabinet.Web.Tests
 ```
 
-There are no automated tests yet. If you add a test project, put it under `tests/` and register it
-in the `.sln`.
+CI runs all four on every pull request — see [.github/workflows/ci.yml](.github/workflows/ci.yml).
+Keep it green; fix the branch rather than disabling a step.
+
+Tests live under `tests/`, one project per backend project, registered in the `.sln`. Today there
+is only `TrustCabinet.Web.Tests` with a `/api/health` smoke test — it exists to prove the app boots
+in memory and CI can run tests at all. Replace it as real endpoints land; do not leave it as the
+only test.
 
 ## Conventions
 
@@ -126,6 +138,10 @@ When a change affects design or scope, update `docs/` in the **same commit** as 
   13/2023/NĐ-CP. When touching this area, state the consent and deletion obligations explicitly
   rather than silently persisting the data.
 - `backend/TrustCabinet.Web/wwwroot/` is build output. Edits there are lost on the next build.
+- **Never commit a connection string, API key or credential.** `appsettings.json` is committed, so
+  secrets do not go there. Use `dotnet user-secrets set "ConnectionStrings:Default" "..."` locally
+  (the repo is public) and environment variables in deployment. This matters from the moment the
+  SQL Server work starts.
 - Authentication and RBAC are **mocked in the browser** (`features/auth/AuthProvider.tsx`,
   `types/user.ts`), and the meetings list reads `features/meetings/sampleData.ts`. All of it is
   deliberate scaffolding — delete it as the real endpoints land, and never treat it as working

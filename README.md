@@ -46,11 +46,39 @@ cd frontend && npm run build   # xuất vào backend/TrustCabinet.Web/wwwroot/
 dotnet run --project backend/TrustCabinet.Web
 ```
 
+## Kiểm tra trước khi mở PR
+
+```bash
+dotnet build TrustCabinet.sln     # build backend
+dotnet test TrustCabinet.sln      # test backend
+cd frontend && npm run lint       # oxlint
+cd frontend && npm run build      # tsc -b + vite build
+```
+
+CI chạy đúng bốn lệnh này trên mọi pull request
+([.github/workflows/ci.yml](.github/workflows/ci.yml)).
+
+> **Không commit chuỗi kết nối, API key hay mật khẩu.** `appsettings.json` được commit và repo
+> đang để public, nên secret không nằm ở đó. Khi làm phần SQL Server, dùng
+> `dotnet user-secrets set "ConnectionStrings:Default" "..."` ở máy mình, và biến môi trường khi
+> triển khai.
+
+## Quy trình làm việc
+
+Nhóm chạy theo Sprint 1 tuần, xử lý từng Use Case theo đường ống BA → BE → FE → Tester, không
+làm xong hết tài liệu rồi mới code. Chi tiết — ai bàn giao gì cho ai, Definition of Done, quy ước
+branch/PR — nằm trong [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md). Đọc trước khi
+bắt tay vào việc đầu tiên.
+
+Jira (project `SCRUM`) là nguồn sự thật cho yêu cầu, user story và kế hoạch Sprint.
+
 ## Cấu trúc
 
 ```
 TrustCabinet.sln
 global.json                      # pin phiên bản .NET SDK cho cả nhóm
+.editorconfig                    # quy ước format chung, mọi IDE đều đọc
+.github/workflows/ci.yml         # CI: build + test backend, lint + build frontend
 CLAUDE.md                        # hướng dẫn cho Claude Code
 backend/
   TrustCabinet.Web/              # ASP.NET Core 10 — API + phục vụ bản build của frontend
@@ -68,7 +96,10 @@ frontend/                        # React 19 + Vite + TypeScript, chia theo featu
     api/                         # lớp gọi HTTP dùng chung
     types/                       # kiểu dữ liệu khớp response của backend
     styles/global.css            # design token + toàn bộ style
+tests/
+  TrustCabinet.Web.Tests/        # xunit — hiện mới có smoke test cho /api/health
 docs/                            # tài liệu đồ án — xem docs/README.md
+  DEVELOPMENT_WORKFLOW.md        # quy trình làm việc của nhóm — đọc trước khi bắt tay
 ```
 
 Giao diện dựng theo khung của hệ thống tham chiếu AI-eCabinet: hai không gian làm việc
@@ -79,7 +110,7 @@ Vì sao tách `backend/` và `frontend/`: xem
 [ADR-0001](docs/05-decisions/0001-tach-frontend-backend.md).
 
 Khi nghiệp vụ lớn dần, dự kiến tách thêm `backend/TrustCabinet.Domain`,
-`backend/TrustCabinet.Application`, `backend/TrustCabinet.Infrastructure` và `tests/`.
+`backend/TrustCabinet.Application` và `backend/TrustCabinet.Infrastructure`.
 
 ## Công nghệ
 

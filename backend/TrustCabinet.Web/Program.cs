@@ -23,3 +23,7 @@ app.MapGet("/api/health", () => Results.Ok(new
 app.MapFallbackToFile("index.html");
 
 app.Run();
+
+// Program is implicitly internal when the file uses top-level statements. WebApplicationFactory
+// in the test project needs a public entry-point type to spin the app up in memory.
+public partial class Program;

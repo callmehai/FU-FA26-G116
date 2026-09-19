@@ -1,0 +1,49 @@
+# Chạy trên mọi pull request và mọi lần push lên main. Mục đích là bắt được lỗi build/lint
+# trước khi merge, vì cả nhóm cùng push vào một repo.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend — build & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # global-json-file đảm bảo CI dùng đúng bản SDK đã pin trong global.json.
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - run: dotnet restore TrustCabinet.sln
+
+      - run: dotnet build TrustCabinet.sln --no-restore --configuration Release
+
+      - run: dotnet test TrustCabinet.sln --no-build --configuration Release --verbosity normal
+
+  frontend:
+    name: Frontend — lint & build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # npm ci cài đúng theo package-lock.json, không tự nâng version như npm install.
+      - run: npm ci
+
+      - run: npm run lint
+
+      # `npm run build` chạy tsc -b trước, nên bước này bắt luôn lỗi kiểu TypeScript.
+      - run: npm run build
