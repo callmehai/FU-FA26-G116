@@ -5,7 +5,7 @@ written for both human developers and AI coding agents, and it is the answer to 
 team work?".
 
 This file is in English by deliberate exception to the language rules in
-[CLAUDE.md](../CLAUDE.md), because AI coding agents read it as their operating instructions.
+[AGENTS.md](../AGENTS.md), because AI coding agents read it as their operating instructions.
 Everything else in `docs/` stays Vietnamese.
 
 ---
@@ -127,7 +127,7 @@ When a Use Case arrives from BA:
 - If the requirement or the BA documentation is unclear, ask. Do not guess silently.
 
 Every endpoint re-authorizes server-side and list endpoints filter rows server-side. The UI is
-never the security boundary — see [CLAUDE.md](../CLAUDE.md).
+never the security boundary — see [AGENTS.md](../AGENTS.md).
 
 ### 4.3 Frontend (FE)
 
@@ -197,7 +197,7 @@ Branch and PR conventions:
 
 - Branch off `main`, one branch per Use Case or task.
 - Commit messages in Vietnamese, PR title and description in English, PR review comments in
-  Vietnamese. Full table in [CLAUDE.md](../CLAUDE.md).
+  Vietnamese. Full table in [AGENTS.md](../AGENTS.md).
 - Open a PR and wait for a review before merging. Do not merge your own PR unreviewed.
 - When a change affects design or scope, update `docs/` **in the same commit** as the code.
 
@@ -246,7 +246,7 @@ AI-generated draft minutes → decisions and voting results.
 1. Read this file.
 2. Read the relevant Jira/task context, if available.
 3. Inspect the existing code structure.
-4. Understand the current architecture and conventions ([CLAUDE.md](../CLAUDE.md)).
+4. Understand the current architecture and conventions ([AGENTS.md](../AGENTS.md)).
 5. Do not redesign unrelated parts of the system.
 
 ### When implementing a Use Case

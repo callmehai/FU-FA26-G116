@@ -40,9 +40,9 @@ public class DatabaseModelTests
                 "document_comments", "document_versions", "documents", "email_messages",
                 "meeting_minutes", "meeting_notes", "meeting_participants",
                 "meeting_status_history", "meeting_summaries", "meetings", "minutes_signatures",
-                "notifications", "org_units", "recordings", "role_capabilities",
-                "speaking_requests", "transcript_segments", "transcripts", "users",
-                "vote_choices", "vote_receipts", "voting_options", "voting_sessions",
+                "notifications", "recordings", "role_capabilities", "speaking_requests",
+                "transcript_segments", "transcripts", "users", "vote_choices",
+                "vote_receipts", "voting_options", "voting_sessions",
             ],
             tables);
     }
@@ -166,6 +166,23 @@ public class DatabaseModelTests
         Assert.Contains(indexes, i => i.IsUnique
             && i.Properties.Select(p => p.Name).OrderBy(n => n)
                 .SequenceEqual(new[] { nameof(VoteReceipt.VotingSessionId), nameof(VoteReceipt.VoterId) }.OrderBy(n => n)));
+    }
+
+    [Fact]
+    public void Nobody_belongs_to_an_organisational_unit()
+    {
+        using var db = NewContext();
+
+        var suspicious = db.Model.GetEntityTypes()
+            .SelectMany(e => e.GetProperties().Select(p => $"{e.ClrType.Name}.{p.Name}"))
+            .Where(name => name.Contains("OrgUnit", StringComparison.OrdinalIgnoreCase)
+                || name.Contains("Department", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        // TrustCabinet serves one organisation with no internal hierarchy: there is no unit to
+        // belong to, to own a meeting, or to invite wholesale. The cut is deliberate (ADR-0004),
+        // and this is here so it survives someone adding "just one column" back.
+        Assert.Empty(suspicious);
     }
 
     [Fact]

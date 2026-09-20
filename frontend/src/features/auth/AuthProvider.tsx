@@ -40,7 +40,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       role,
       capabilities: ROLE_CAPABILITIES[role],
-      unit: 'Chưa gán đơn vị',
     }
 
     setUser(next)

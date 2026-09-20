@@ -33,6 +33,7 @@ nhóm nếu cần.
 | Phân quyền | RBAC đơn giản trong ứng dụng | OpenFGA quá nặng cho một kỳ đồ án |
 | Gọi thoại/video | WebRTC + SignalR, tích hợp sẵn | **Điểm khác biệt chính** — bản gốc không có |
 | AI | Gọi dịch vụ ASR bên ngoài | Không tự vận hành mô hình |
+| Xác thực | Email + mật khẩu, hoặc đăng nhập Google | Không dựng IdP riêng như Zitadel cho một kỳ đồ án |
 | Ký số | Mô phỏng | Không có HSM/USB token thật |
 | Triển khai | Một máy chủ | Không làm bản air-gapped |
 

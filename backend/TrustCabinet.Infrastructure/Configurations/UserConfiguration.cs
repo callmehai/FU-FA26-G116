@@ -17,10 +17,5 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasIndex(u => u.Email).IsUnique();
 
         builder.Property(u => u.Role).HasConversion<string>().HasMaxLength(32).IsRequired();
-
-        builder.HasOne(u => u.OrgUnit)
-            .WithMany(o => o.Users)
-            .HasForeignKey(u => u.OrgUnitId)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }

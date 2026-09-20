@@ -574,10 +574,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("mode");
 
-                    b.Property<Guid?>("OrgUnitId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("org_unit_id");
-
                     b.Property<string>("Sensitivity")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -609,9 +605,6 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("CreatedById")
                         .HasDatabaseName("ix_meetings_created_by_id");
-
-                    b.HasIndex("OrgUnitId")
-                        .HasDatabaseName("ix_meetings_org_unit_id");
 
                     b.HasIndex("StartsAt")
                         .HasDatabaseName("ix_meetings_starts_at");
@@ -1060,54 +1053,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.ToTable("notifications", (string)null);
                 });
 
-            modelBuilder.Entity("TrustCabinet.Domain.Entities.OrgUnit", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("code");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("name");
-
-                    b.Property<Guid?>("ParentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("parent_id");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id")
-                        .HasName("pk_org_units");
-
-                    b.HasIndex("Code")
-                        .IsUnique()
-                        .HasDatabaseName("ix_org_units_code");
-
-                    b.HasIndex("ParentId")
-                        .HasDatabaseName("ix_org_units_parent_id");
-
-                    b.ToTable("org_units", (string)null);
-                });
-
             modelBuilder.Entity("TrustCabinet.Domain.Entities.Recording", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1470,10 +1415,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
-                    b.Property<Guid?>("OrgUnitId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("org_unit_id");
-
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(512)
@@ -1496,9 +1437,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasIndex("Email")
                         .IsUnique()
                         .HasDatabaseName("ix_users_email");
-
-                    b.HasIndex("OrgUnitId")
-                        .HasDatabaseName("ix_users_org_unit_id");
 
                     b.ToTable("users", (string)null);
                 });
@@ -1915,15 +1853,7 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_meetings_users_created_by_id");
 
-                    b.HasOne("TrustCabinet.Domain.Entities.OrgUnit", "OrgUnit")
-                        .WithMany()
-                        .HasForeignKey("OrgUnitId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_meetings_org_units_org_unit_id");
-
                     b.Navigation("CreatedBy");
-
-                    b.Navigation("OrgUnit");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.MeetingMinutes", b =>
@@ -2111,17 +2041,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TrustCabinet.Domain.Entities.OrgUnit", b =>
-                {
-                    b.HasOne("TrustCabinet.Domain.Entities.OrgUnit", "Parent")
-                        .WithMany("Children")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_org_units_org_units_parent_id");
-
-                    b.Navigation("Parent");
-                });
-
             modelBuilder.Entity("TrustCabinet.Domain.Entities.Recording", b =>
                 {
                     b.HasOne("TrustCabinet.Domain.Entities.User", "CreatedBy")
@@ -2210,17 +2129,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("SpeakerUser");
 
                     b.Navigation("Transcript");
-                });
-
-            modelBuilder.Entity("TrustCabinet.Domain.Entities.User", b =>
-                {
-                    b.HasOne("TrustCabinet.Domain.Entities.OrgUnit", "OrgUnit")
-                        .WithMany("Users")
-                        .HasForeignKey("OrgUnitId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_users_org_units_org_unit_id");
-
-                    b.Navigation("OrgUnit");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.VoteChoice", b =>
@@ -2364,13 +2272,6 @@ namespace TrustCabinet.Infrastructure.Migrations
             modelBuilder.Entity("TrustCabinet.Domain.Entities.MeetingMinutes", b =>
                 {
                     b.Navigation("Signatures");
-                });
-
-            modelBuilder.Entity("TrustCabinet.Domain.Entities.OrgUnit", b =>
-                {
-                    b.Navigation("Children");
-
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.Recording", b =>

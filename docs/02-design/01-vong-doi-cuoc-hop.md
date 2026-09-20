@@ -42,7 +42,7 @@ Draft ──gửi duyệt──> WaitingApproval ──duyệt──> Approved �
 | Mã | Nhãn | Ghi chú |
 |---|---|---|
 | `Normal` | Thường | Mặc định |
-| `Internal` | Nội bộ | Trong đơn vị |
+| `Internal` | Nội bộ | Trong nội bộ tổ chức |
 | `Confidential` | Hạn chế | Chỉ thành phần tham dự |
 | `Secret` | Mật | Hiển thị cảnh báo trên màn chi tiết; cân nhắc chặn tải về |
 

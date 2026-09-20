@@ -35,7 +35,7 @@ BA → BE → FE → Tester, Definition of Done. Đọc trước khi bắt tay v
 - **Sơ đồ:** commit cả file nguồn lẫn ảnh xuất ra, để người sau còn sửa được.
 - **Ngôn ngữ:** tài liệu trong `docs/` viết tiếng Việt; giữ nguyên thuật ngữ kỹ thuật tiếng Anh
   (*endpoint*, *migration*, *hub*…) thay vì dịch nửa vời. Riêng phần trong code — comment,
-  docstring, tên PR — viết tiếng Anh, xem bảng quy ước trong [CLAUDE.md](../CLAUDE.md).
+  docstring, tên PR — viết tiếng Anh, xem bảng quy ước trong [AGENTS.md](../AGENTS.md).
   Ngoại lệ duy nhất: [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) viết tiếng Anh, vì các
   AI coding agent đọc file đó như hướng dẫn vận hành.
 
@@ -43,4 +43,4 @@ BA → BE → FE → Tester, Definition of Done. Đọc trước khi bắt tay v
 
 Người mới vào nhóm đọc theo thứ tự: [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) →
 [00-overview/](00-overview/) → [01-requirements/](01-requirements/) → [02-design/](02-design/) →
-[CLAUDE.md](../CLAUDE.md).
+[AGENTS.md](../AGENTS.md).

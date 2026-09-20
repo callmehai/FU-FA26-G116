@@ -1,7 +1,7 @@
 # Mô hình dữ liệu (ERD)
 
 Toàn bộ mô hình dữ liệu của TrustCabinet, suy ra từ tiêu chí nghiệm thu của các story trong Jira.
-**27 bảng.** Đây là tài liệu nguồn để vẽ Class Diagram (`SCRUM-55`) và ERD nộp (`SCRUM-56`), và để
+**26 bảng.** Đây là tài liệu nguồn để vẽ Class Diagram (`SCRUM-55`) và ERD nộp (`SCRUM-56`), và để
 BE biết mình đang làm việc với cái gì.
 
 Hiện thực: EF Core 10 code-first, PostgreSQL qua Npgsql
@@ -19,7 +19,7 @@ Cách chạy: [03-co-so-du-lieu.md](03-co-so-du-lieu.md).
 
 | Nhóm | Bảng | Story |
 |---|---|---|
-| Truy cập | `users`, `org_units`, `role_capabilities` | `SCRUM-11`, `SCRUM-12`, `SCRUM-13` |
+| Truy cập | `users`, `role_capabilities` | `SCRUM-11`, `SCRUM-12`, `SCRUM-13` |
 | Cuộc họp | `meetings`, `meeting_status_history`, `meeting_participants` | `SCRUM-17`, `SCRUM-18`, `SCRUM-19`, `SCRUM-20`, `SCRUM-26` |
 | Tài liệu | `documents`, `document_versions`, `document_comments` | `SCRUM-21`, `SCRUM-22`, `SCRUM-23` |
 | Nghị sự | `agenda_items` | `SCRUM-25` |
@@ -36,29 +36,18 @@ Cách chạy: [03-co-so-du-lieu.md](03-co-so-du-lieu.md).
 
 ```mermaid
 erDiagram
-    OrgUnit ||--o{ OrgUnit : "đơn vị cha"
-    OrgUnit ||--o{ User : "thuộc về"
-    OrgUnit ||--o{ Meeting : "đơn vị chủ trì"
     User ||--o{ Meeting : "người tạo"
     User ||--o{ MeetingParticipant : "được mời"
     User ||--o{ MeetingStatusHistory : "người thực hiện"
     Meeting ||--o{ MeetingParticipant : "thành phần tham dự"
     Meeting ||--o{ MeetingStatusHistory : "lịch sử trạng thái"
 
-    OrgUnit {
-        uuid Id PK
-        string Name
-        string Code UK
-        uuid ParentId FK "null nếu là đơn vị gốc"
-        bool IsActive
-    }
     User {
         uuid Id PK
         string FullName
         citext Email UK
         string PasswordHash
         string Role "Chair|Secretary|Member|Admin"
-        uuid OrgUnitId FK
         bool IsActive
     }
     RoleCapability {
@@ -75,7 +64,6 @@ erDiagram
         timestamptz StartsAt
         timestamptz EndsAt
         uuid CreatedById FK
-        uuid OrgUnitId FK
     }
     MeetingParticipant {
         uuid Id PK
@@ -159,6 +147,14 @@ erDiagram
 
 File không bao giờ bị ghi đè: tải bản mới là thêm một `DocumentVersion`. Góp ý trỏ vào **phiên bản
 lúc viết**, vì câu nó nhắc tới có thể không còn ở bản sau.
+
+> **`Document.MeetingId` không phải bất biến — sẽ bỏ.**
+> [ADR-0006](../05-decisions/0006-kho-tai-lieu-ca-nhan-va-quyen-doc.md) chốt tách tài liệu thành
+> **kho cá nhân** (chủ sở hữu là người tải lên) cộng với bảng nối `MeetingDocument` để gắn vào
+> cuộc họp. Khi đó `AgendaItemId` chuyển từ `Document` sang dòng gắn kết, `DocumentComment` cũng
+> trỏ vào dòng gắn kết thay vì vào `Document`, và mỗi lần gắn **ghim đúng một `DocumentVersion`**.
+> Sơ đồ trên là hiện trạng, không phải đích đến — đừng xây thêm gì dựa trên giả định tài liệu luôn
+> thuộc về một cuộc họp.
 
 ## 3. Trong phiên họp
 
@@ -369,7 +365,8 @@ WebRTC; backend chỉ làm tín hiệu. Rớt mạng vào lại sinh một dòng
 | Nhiệm vụ / action item | Ngoài phạm vi. TrustCabinet dừng ở biên bản đã chốt — xem mục "Không làm" trong [README](../../README.md). Không có `tasks`, `assignments`, không có cột hạn hoàn thành ở đâu cả |
 | Voiceprint / đặc trưng giọng | Dữ liệu sinh trắc học theo Nghị định 13/2023/NĐ-CP. Chỉ tách người nói **trong một bản ghi** (`SpeakerLabel`), rồi người gán tên tay. Có test tự động chặn việc thêm cột kiểu này |
 | Khoá mã hoá, sổ huỷ khoá | Không làm mã hoá phong bì |
-| Tenant, vùng lưu trú dữ liệu | Một tổ chức, không multi-tenant |
+| Tổ chức (`organizations`, `tenants`) | Hệ thống phục vụ **đúng một tổ chức**. Không có bảng tổ chức, không multi-tenant, không vùng lưu trú dữ liệu — xem [ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md) |
+| Đơn vị / phòng ban (`org_units`) | Cũng theo ADR-0004: không có phân cấp cha–con, không gán người dùng vào đơn vị, không có "đơn vị chủ trì" cuộc họp. Mời họp là mời **từng người**. Có test tự động chặn việc thêm lại cột kiểu này |
 | Hàng đợi job | ASR chạy nền bằng cơ chế đơn giản, không dựng job spine |
 
 Về bản ghi âm: `recordings` có `ConsentObtainedAt`, `ConsentPurpose`, `RetainUntil`, `DeletedAt` —
@@ -391,12 +388,12 @@ kín; vai trò trong cuộc họp tách khỏi vai trò hệ thống.
 |---|---|
 | `tenants` + Row-Level Security trên mọi bảng | TrustCabinet phục vụ một tổ chức |
 | `residency_zone`, `key_domain`, `key_id` | Kéo theo yêu cầu lưu trú dữ liệu và mã hoá theo vùng |
-| `persons` + `sessions` + Zitadel | Đăng nhập nội bộ bằng email/mật khẩu (`SCRUM-11`) |
+| `persons` + `sessions` + Zitadel | Không dựng IdP riêng: đăng nhập bằng email/mật khẩu hoặc Google (`SCRUM-11`) |
 | `relation_tuples`, `authz_epochs` (ReBAC) | RBAC phẳng đủ cho 4 vai trò |
 | `encryption_keys`, `key_shred_ledger` | Không làm mã hoá phong bì |
 | `job_outbox`, `job_stage`, `pipeline_job` | Không dựng job spine |
 | `audit_log` chuỗi hash | `SCRUM-16` chỉ cần chỉ-ghi-thêm |
-| `meeting_external_participants` | Khách mời ngoài hệ thống chưa nằm trong `SCRUM-20` |
+| `meeting_external_participants` | ~~Chưa nằm trong `SCRUM-20`~~ — **đã lật lại**: khách ngoài vào nghe bằng link mời, xem [ADR-0005](../05-decisions/0005-khach-ngoai-tham-du-bang-link-moi.md). Bảng chưa có, sẽ thêm khi làm story |
 
 **Thêm so với hệ thống gốc:** `Meeting.Mode` và toàn bộ nhóm `call_sessions` / `call_participants`
 — hệ thống gốc không tự làm phần gọi, TrustCabinet có gọi thoại/video trong ứng dụng nên đó là

@@ -6,7 +6,7 @@ Hệ thống **phòng họp không giấy ứng dụng AI**, có tích hợp **g
 TrustCabinet là bản hiện thực độc lập trên nền .NET, có điều chỉnh phạm vi cho phù hợp đồ án.
 
 > **Trạng thái: v0.1.0 — khung giao diện và mô hình dữ liệu đầy đủ.** Đã có khung giao diện chạy
-> trên dữ liệu mẫu, endpoint `/api/health`, và cơ sở dữ liệu 27 bảng phủ toàn bộ backlog. Xác thực
+> trên dữ liệu mẫu, endpoint `/api/health`, và cơ sở dữ liệu 26 bảng phủ toàn bộ backlog. Xác thực
 > vẫn giả lập phía trình duyệt, và **chưa có endpoint nghiệp vụ nào** — bảng đã có, chưa có code
 > đọc ghi.
 
@@ -88,7 +88,7 @@ dotnet-tools.json                # pin dotnet-ef cho cả nhóm
 .github/workflows/ci.yml         # CI: build + test backend, lint + build frontend
 docker-compose.yml               # PostgreSQL cho môi trường dev
 .env.example                     # mẫu biến môi trường — chép thành .env, .env không commit
-CLAUDE.md                        # hướng dẫn cho Claude Code
+AGENTS.md                        # hướng dẫn cho AI coding agent (CLAUDE.md trỏ về đây)
 backend/
   TrustCabinet.Domain/           # entity và enum — không phụ thuộc EF Core
   TrustCabinet.Infrastructure/   # DbContext, cấu hình bảng, migration, seed
@@ -131,7 +131,7 @@ Khi lớp nghiệp vụ lớn dần, dự kiến tách thêm `backend/TrustCabin
 | Định tuyến FE | React Router | đã có |
 | Realtime | SignalR | tín hiệu gọi, biểu quyết, thông báo — chưa làm |
 | Thoại/video | WebRTC | chưa làm |
-| Cơ sở dữ liệu | PostgreSQL 17 + EF Core 10 (Npgsql), code-first | 27 bảng — xem [02-erd.md](docs/02-design/02-erd.md) và [ADR-0003](docs/05-decisions/0003-chon-postgresql-thay-cho-sql-server.md) |
+| Cơ sở dữ liệu | PostgreSQL 17 + EF Core 10 (Npgsql), code-first | 26 bảng — xem [02-erd.md](docs/02-design/02-erd.md) và [ADR-0003](docs/05-decisions/0003-chon-postgresql-thay-cho-sql-server.md) |
 
 ## Phạm vi chức năng dự kiến
 
@@ -167,7 +167,7 @@ Mức ưu tiên: **(M)** bắt buộc · **(S)** nên có · **(C)** có thể c
 
 ### Nền tảng dùng chung
 - (M) Đăng nhập, phân quyền theo vai trò (RBAC)
-- (M) Quản lý người dùng & đơn vị
+- (M) Quản lý người dùng
 - (M) Thông báo trong ứng dụng & email
 - (S) Nhật ký kiểm toán các hành động quan trọng
 
@@ -179,6 +179,9 @@ Mức ưu tiên: **(M)** bắt buộc · **(S)** nên có · **(C)** có thể c
   TrustCabinet dừng ở biên bản đã chốt; việc theo dõi thực thi thuộc về hệ thống điều hành
   công việc khác. Biên bản vẫn ghi phần "phân công" như văn bản, nhưng hệ thống không theo dõi
   trạng thái của nó.
+- Đơn vị trực thuộc và cây phân cấp cha–con — hệ thống phục vụ **đúng một tổ chức**, không có bảng
+  tổ chức, không multi-tenant, không gán người dùng vào phòng ban. Mời họp là mời từng người. Lý do
+  đầy đủ trong [ADR-0004](docs/05-decisions/0004-mot-to-chuc-khong-co-don-vi.md).
 
 ## Nhóm chức năng cân nhắc thu hẹp
 

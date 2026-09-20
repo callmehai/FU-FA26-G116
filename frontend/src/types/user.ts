@@ -37,6 +37,4 @@ export interface User {
   email: string
   role: Role
   capabilities: Capability[]
-  /** Organisational unit the user belongs to. */
-  unit: string
 }
