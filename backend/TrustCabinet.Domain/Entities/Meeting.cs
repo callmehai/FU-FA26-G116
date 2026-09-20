@@ -38,10 +38,6 @@ public class Meeting : Entity
     public Guid CreatedById { get; set; }
     public User CreatedBy { get; set; } = null!;
 
-    /// <summary>The unit that owns the meeting. Used for filtering and for unit-wide invitations.</summary>
-    public Guid? OrgUnitId { get; set; }
-    public OrgUnit? OrgUnit { get; set; }
-
     public ICollection<MeetingParticipant> Participants { get; set; } = [];
     public ICollection<MeetingStatusHistory> StatusHistory { get; set; } = [];
     public ICollection<AgendaItem> AgendaItems { get; set; } = [];

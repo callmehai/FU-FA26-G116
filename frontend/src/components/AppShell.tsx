@@ -65,9 +65,7 @@ export function AppShell({ sidebar, wide = false }: { sidebar: ReactNode; wide?:
             </summary>
             <div className="account-menu">
               <p className="account-name">{user.fullName}</p>
-              <p className="account-meta">
-                {ROLE_LABEL[user.role]} · {user.unit}
-              </p>
+              <p className="account-meta">{ROLE_LABEL[user.role]}</p>
               <p className="account-meta">{user.email}</p>
               <button type="button" onClick={signOut}>
                 Đăng xuất

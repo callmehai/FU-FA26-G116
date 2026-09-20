@@ -5,7 +5,7 @@
 export function CalendarSidebar() {
   return (
     <div className="sidebar-note">
-      <p>Bộ lọc lịch sẽ nằm ở đây: chọn tháng, lọc theo đơn vị và theo vai trò tham dự.</p>
+      <p>Bộ lọc lịch sẽ nằm ở đây: chọn tháng, lọc theo trạng thái và theo vai trò tham dự.</p>
     </div>
   )
 }

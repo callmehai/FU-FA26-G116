@@ -23,9 +23,6 @@ public class User : Entity
 
     public SystemRole Role { get; set; } = SystemRole.Member;
 
-    public Guid? OrgUnitId { get; set; }
-    public OrgUnit? OrgUnit { get; set; }
-
     /// <summary>
     /// Deactivated, never deleted (SCRUM-13). Someone who left the organisation still appears as
     /// the chair of last quarter's meeting, and their approval still has to be attributable.

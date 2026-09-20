@@ -9,7 +9,6 @@ namespace TrustCabinet.Infrastructure;
 /// </summary>
 public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> options) : DbContext(options)
 {
-    public DbSet<OrgUnit> OrgUnits => Set<OrgUnit>();
     public DbSet<User> Users => Set<User>();
     public DbSet<RoleCapability> RoleCapabilities => Set<RoleCapability>();
     public DbSet<Meeting> Meetings => Set<Meeting>();

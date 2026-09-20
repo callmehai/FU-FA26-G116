@@ -24,10 +24,6 @@ public static class DevelopmentDataSeeder
             return;
         }
 
-        var board = new OrgUnit { Name = "Ban Giám đốc", Code = "BGD" };
-        var planning = new OrgUnit { Name = "Phòng Kế hoạch - Đầu tư", Code = "P.KHDT", Parent = board };
-        var admin = new OrgUnit { Name = "Phòng Hành chính - Tổng hợp", Code = "P.HCTH", Parent = board };
-
         // PasswordHash is a placeholder, not a hash of anything: local sign-in does not exist yet.
         // SCRUM-11 introduces the hasher and must replace these values — until then no seeded
         // account can be logged into, which is the safe failure for a public repository.
@@ -39,7 +35,6 @@ public static class DevelopmentDataSeeder
             Email = "chutoa@trustcabinet.local",
             PasswordHash = noLoginYet,
             Role = SystemRole.Chair,
-            OrgUnit = board,
         };
         var secretary = new User
         {
@@ -47,7 +42,6 @@ public static class DevelopmentDataSeeder
             Email = "thuky@trustcabinet.local",
             PasswordHash = noLoginYet,
             Role = SystemRole.Secretary,
-            OrgUnit = admin,
         };
         var member = new User
         {
@@ -55,7 +49,6 @@ public static class DevelopmentDataSeeder
             Email = "thanhvien@trustcabinet.local",
             PasswordHash = noLoginYet,
             Role = SystemRole.Member,
-            OrgUnit = planning,
         };
         var administrator = new User
         {
@@ -63,28 +56,27 @@ public static class DevelopmentDataSeeder
             Email = "quantri@trustcabinet.local",
             PasswordHash = noLoginYet,
             Role = SystemRole.Admin,
-            OrgUnit = admin,
         };
 
-        db.AddRange(board, planning, admin, chair, secretary, member, administrator);
+        db.AddRange(chair, secretary, member, administrator);
 
         var meetings = new[]
         {
             NewMeeting("Giao ban tuần 38", MeetingStatus.Published, Sensitivity.Internal,
                 MeetingMode.Hybrid, "Phòng họp A — Tầng 4",
-                "2026-09-21T02:00:00Z", "2026-09-21T03:30:00Z", secretary, board),
+                "2026-09-21T02:00:00Z", "2026-09-21T03:30:00Z", secretary),
             NewMeeting("Phiên họp Hội đồng quản trị quý III", MeetingStatus.WaitingApproval, Sensitivity.Secret,
                 MeetingMode.InPerson, "Phòng họp Hội đồng",
-                "2026-09-24T07:00:00Z", "2026-09-24T10:00:00Z", secretary, board),
+                "2026-09-24T07:00:00Z", "2026-09-24T10:00:00Z", secretary),
             NewMeeting("Rà soát kế hoạch chuyển đổi số", MeetingStatus.InProgress, Sensitivity.Confidential,
                 MeetingMode.Online, "Trực tuyến",
-                "2026-09-18T01:30:00Z", "2026-09-18T03:00:00Z", secretary, planning),
+                "2026-09-18T01:30:00Z", "2026-09-18T03:00:00Z", secretary),
             NewMeeting("Lấy ý kiến dự thảo quy chế chi tiêu nội bộ", MeetingStatus.Draft, Sensitivity.Normal,
                 MeetingMode.Online, "Trực tuyến",
-                "2026-09-29T02:00:00Z", "2026-09-29T03:00:00Z", secretary, admin),
+                "2026-09-29T02:00:00Z", "2026-09-29T03:00:00Z", secretary),
             NewMeeting("Tổng kết công tác quý II", MeetingStatus.MinutesIssued, Sensitivity.Internal,
                 MeetingMode.InPerson, "Hội trường lớn",
-                "2026-09-08T07:00:00Z", "2026-09-08T09:30:00Z", secretary, board),
+                "2026-09-08T07:00:00Z", "2026-09-08T09:30:00Z", secretary),
         };
 
         db.AddRange(meetings);
@@ -108,7 +100,7 @@ public static class DevelopmentDataSeeder
 
     private static Meeting NewMeeting(
         string title, MeetingStatus status, Sensitivity sensitivity, MeetingMode mode,
-        string location, string startsAt, string endsAt, User createdBy, OrgUnit unit) => new()
+        string location, string startsAt, string endsAt, User createdBy) => new()
         {
             Title = title,
             Status = status,
@@ -118,7 +110,6 @@ public static class DevelopmentDataSeeder
             StartsAt = At(startsAt),
             EndsAt = At(endsAt),
             CreatedBy = createdBy,
-            OrgUnit = unit,
         };
 
     private static MeetingStatusHistory NewHistory(

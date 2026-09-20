@@ -62,7 +62,7 @@ update` như một bước có người duyệt.
 Seed chỉ chạy khi bảng `users` rỗng, nên khởi động lại không nhân bản hay đè lên dữ liệu bạn đang
 làm dở. Muốn làm lại từ đầu: `docker compose down -v && docker compose up -d` rồi chạy lại app.
 
-Gồm 3 đơn vị, 4 người dùng (mỗi vai trò một người) và 5 cuộc họp giống hệt dữ liệu cứng mà giao
+Gồm 4 người dùng (mỗi vai trò một người) và 5 cuộc họp giống hệt dữ liệu cứng mà giao
 diện đang dùng, để màn hình nhìn không khác gì trước khi có backend.
 
 > **Chưa đăng nhập được bằng các tài khoản này.** `password_hash` của chúng là chuỗi đánh dấu
