@@ -7,6 +7,9 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`01-xac-thuc.md`](01-xac-thuc.md) — đăng nhập và đăng xuất (UC-01, UC-02, UC-03 / SCRUM-11):
   `/api/auth/login`, `/google`, `/refresh`, `/logout`, `/me`; access token và refresh token; mã
   thông báo của từng use case (lưu ý UC-01 và UC-02 đánh số khác nhau)
+- [`01-xac-thuc-note-cho-fe.md`](01-xac-thuc-note-cho-fe.md) — note cho FE khi làm SCRUM-46: những
+  chỗ dễ làm sai mà lỗi lại trông như bug backend (chữ hoa/thường của `role`, hai kiểu 401, refresh
+  token dùng một lần, thứ tự gọi khi đăng xuất)
 
 Dự kiến có thêm:
 
