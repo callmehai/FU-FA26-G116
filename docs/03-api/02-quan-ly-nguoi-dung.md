@@ -26,23 +26,34 @@ Bản vẽ từng use case:
 | `:User Service` | [`backend/TrustCabinet.Infrastructure/Users/UserService.cs`](../../backend/TrustCabinet.Infrastructure/Users/UserService.cs) |
 | `:User Repository` | [`backend/TrustCabinet.Infrastructure/Users/UserAccountRepository.cs`](../../backend/TrustCabinet.Infrastructure/Users/UserAccountRepository.cs) |
 | `:Audit Service` | [`backend/TrustCabinet.Infrastructure/Audit/AuditService.cs`](../../backend/TrustCabinet.Infrastructure/Audit/AuditService.cs) |
-| `:Session Service` | `IRefreshTokenStore.RevokeAllForUserAsync` — xem [Vô hiệu hoá phải kết thúc phiên](#vô-hiệu-hoá-phải-kết-thúc-phiên) |
+| `:Session Service` | `IRefreshTokenStore.RevokeAllForUserAsync` — bản vẽ chỉ có ở UC-07, code dùng cả ở UC-06 (xem mục 4 bên dưới). Chi tiết: [Vô hiệu hoá phải kết thúc phiên](#vô-hiệu-hoá-phải-kết-thúc-phiên) |
 | `Database` | bảng `users` và `audit_log` |
 
-### Ba chỗ code khác bản vẽ
+### Năm chỗ code khác bản vẽ
 
-Bản vẽ là thiết kế nghiệp vụ, không phải đặc tả kỹ thuật đầy đủ. Ba chỗ sau code làm khác, đều có
-lý do và đều đã được ghi lại:
+Bản vẽ là thiết kế nghiệp vụ, không phải đặc tả kỹ thuật đầy đủ. Năm chỗ sau code làm khác, đều có
+lý do. Liệt kê đủ ở đây là cố ý: người đối chiếu code với bản vẽ mà gặp một chỗ lệch không được
+khai báo thì không có cách nào phân biệt "cố tình làm tốt hơn" với "làm sót".
 
 1. **`:User Repository` không kiểm "Username"** (UC-05 vẽ "Check Username and Email availability").
-   Hệ thống **không có username** — đăng nhập bằng email hoặc Google, theo
-   [ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md). Chỉ kiểm email.
-2. **UC-06 có thêm nhánh trùng email** mà bản vẽ không có. Unique index không quan tâm bản vẽ viết
-   gì: thiếu nhánh này thì sửa ai đó sang email đã tồn tại sẽ ra `500` thay vì `MSG08`.
-3. **UC-06 và UC-07 có thêm luật "không được xoá sổ quản trị viên cuối cùng"**, xem
-   [phần riêng bên dưới](#luật-không-được-xoá-sổ-quản-trị-viên-cuối-cùng). Bản vẽ UC-07 có sẵn
-   nhánh *"Status change is not allowed"* nhưng không nói khi nào — đây là một trong các điều kiện
-   lấp vào nhánh đó.
+   Bảng `users` **không có cột username** (xem `Domain/Entities/User.cs`, `Email` chính là định
+   danh đăng nhập); theo [ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md) đăng nhập
+   bằng email hoặc Google. Chỉ kiểm email.
+2. **UC-05 kiểm email *sau* khi validate, không phải trước.** Bản vẽ đặt bước "Check … availability"
+   **ngoài và trên** khối `alt`, tức là luôn hỏi repository rồi mới rẽ nhánh. Code validate trước,
+   có field sai thì trả `MSG09` luôn và **chưa** gọi `EmailExistsAsync`. Hệ quả quan sát được: form
+   vừa sai field vừa trùng email nhận `MSG09` chứ không phải `MSG08`. Cố ý — tiết kiệm một round
+   trip vào database cho request chắc chắn hỏng, và vẫn trả đủ mọi field sai trong một lần.
+3. **UC-06 có thêm nhánh trùng email** mà bản vẽ không có (`alt` của UC-06 chỉ có hai operand).
+   Unique index không quan tâm bản vẽ viết gì: thiếu nhánh này thì sửa ai đó sang email đã tồn tại
+   sẽ ra `500` thay vì `MSG08`.
+4. **UC-06 dùng `:Session Service` mà bản vẽ UC-06 không vẽ lifeline đó** — chỉ UC-07 có. Đổi vai
+   trò phải huỷ refresh token vì capability nằm trong access token; không huỷ thì người đó giữ
+   nguyên quyền cũ tới khi token hết hạn.
+5. **UC-06 và UC-07 có thêm luật "không được xoá sổ quản trị viên cuối cùng"**, xem
+   [phần riêng bên dưới](#luật-không-được-xoá-sổ-quản-trị-viên-cuối-cùng). Với **UC-07** thì nó lấp
+   vào nhánh *"Status change is not allowed"* bản vẽ đã có sẵn nhưng không nói khi nào. Với
+   **UC-06** thì đây là nhánh hoàn toàn mới: bản vẽ UC-06 không có operand "not allowed" nào.
 
 **Không có thay đổi database.** Cả hai bảng đã có sẵn từ migration `ExpandDomainModel`; story này
 chỉ đọc và ghi vào chúng.
@@ -241,7 +252,7 @@ FE khớp theo `code`, không khớp theo `message` — đổi chữ trong `mess
 | `code` | HTTP | Khi nào |
 |---|---|---|
 | `MSG07` | `201` | Tạo tài khoản thành công |
-| `MSG08` | `409` | Email đã có tài khoản khác dùng |
+| `MSG08` | `409` | Email đã có tài khoản khác dùng (`message`: `Email đã được sử dụng.`) |
 | `MSG09` | `400` | Thông tin không hợp lệ — kèm `errors` |
 | `MSG10` | `200` | Cập nhật tài khoản thành công |
 | `MSG11` | `200` | Đổi trạng thái thành công (cả hai chiều) |

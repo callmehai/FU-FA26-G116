@@ -54,13 +54,16 @@ phải `400` trống từ model binder.
 
 ## 3. Ba kiểu lỗi, ba cách hiển thị khác nhau
 
-| HTTP | `code` | Khi nào | FE nên làm gì |
+Cột `message` dưới đây là **chuỗi backend trả về nguyên văn**, không phải mô tả — nhưng đừng khớp
+theo nó, xem cuối mục này.
+
+| HTTP | `code` | `message` backend trả | FE nên làm gì |
 |---|---|---|---|
-| `400` | `MSG09` | Thông tin không hợp lệ | Đọc `errors`, tô đỏ **từng field** |
-| `409` | `MSG08` | Email đã có người dùng | Báo ở field email |
-| `409` | `MSG12` | Không được đổi trạng thái | Toast / dialog, xem mục 4 |
-| `404` | *(không có body)* | Không tìm thấy tài khoản | Refresh lại danh sách |
-| `403` | *(không có body)* | Không còn quyền, xem mục 5 | Đá về trang đăng nhập |
+| `400` | `MSG09` | `Thông tin tài khoản không hợp lệ.` | Đọc `errors`, tô đỏ **từng field** |
+| `409` | `MSG08` | `Email đã được sử dụng.` | Báo ở field email |
+| `409` | `MSG12` | `Không thể đổi trạng thái tài khoản này.` | Toast / dialog, xem mục 4 |
+| `404` | *(không có body)* | — | Refresh lại danh sách |
+| `403` | *(không có body)* | — | Xem mục 5 |
 
 `errors` là object `field → câu tiếng Việt`, chỉ có ở `400`:
 
@@ -111,14 +114,32 @@ Mọi endpoint `/api/users` đọc lại quyền của **người đang gọi** 
 ngay, **không chờ** access token hết hạn.
 
 Đây là chủ ý (chi tiết ở mục "Người gọi được kiểm lại mỗi request" trong
-[02-quan-ly-nguoi-dung.md](02-quan-ly-nguoi-dung.md)). FE nên:
+[02-quan-ly-nguoi-dung.md](02-quan-ly-nguoi-dung.md)).
 
-- `403` trên `/api/users/*` → xoá phiên local, đá về trang đăng nhập kèm thông báo "Quyền truy cập
-  đã thay đổi. Vui lòng đăng nhập lại."
-- **Đừng** retry, **đừng** gọi `/api/auth/refresh` để cứu — refresh token cũng đã bị huỷ rồi.
+Hiểu `403` là **"tài khoản này không còn được vào đây"**, không phải "phiên đã chết". Ba nguyên
+nhân, và chúng khác nhau ở chỗ phiên còn sống hay không:
+
+| Nguyên nhân | Refresh token | Đăng nhập lại có vào được `/api/users` không? |
+|---|---|---|
+| Bị vô hiệu hoá | đã bị huỷ | Không — đăng nhập cũng bị chặn |
+| Bị đổi vai trò | đã bị huỷ | Tuỳ vai trò mới |
+| `role_capabilities` bị cấu hình lại, `AdminUsers` chuyển sang role khác | **vẫn còn** | **Không** — đăng nhập vẫn được nhưng `/api/users` vẫn `403` |
+
+Dòng thứ ba là chỗ dễ làm FE rơi vào vòng lặp khó chịu: đá về trang đăng nhập → đăng nhập thành
+công → vào lại màn hình → `403` → lại đá ra. Nên:
+
+- `403` trên `/api/users/*` → **đá về trang chủ / màn hình họ còn quyền**, kèm thông báo
+  "Quyền truy cập đã thay đổi." Chỉ xoá phiên và bắt đăng nhập lại khi `/api/auth/me` cũng hỏng.
+- **Đừng** retry. **Đừng** gọi `/api/auth/refresh` để cứu — refresh không cấp thêm quyền, và ở hai
+  nguyên nhân đầu thì refresh token cũng đã bị huỷ rồi.
+- Sau khi đăng nhập lại, lọc menu bằng `can()` trên `capabilities` mới — nếu không còn `AdminUsers`
+  thì đừng hiện mục quản lý người dùng nữa.
 
 Phân biệt với `401`: `401` là token hỏng/hết hạn (xử lý bằng refresh như SCRUM-11), `403` là tài
-khoản không còn được phép (phải đăng nhập lại).
+khoản không còn được phép.
+
+**`403` và `404` đều không có body** — `res.json()` sẽ throw. Cùng cái bẫy đã ghi ở mục 2 của
+[01-xac-thuc-note-cho-fe.md](01-xac-thuc-note-cho-fe.md): chỉ parse body khi thật sự có.
 
 ---
 
