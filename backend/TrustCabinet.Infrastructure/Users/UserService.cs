@@ -189,9 +189,10 @@ public sealed partial class UserService(
             new { Before = before, After = new { user.Email, user.FullName, Role = user.Role.ToString() } },
             ct);
 
-        // A role change alters what the account may do, and capabilities travel inside the access
-        // token — so until it expires the person keeps the rights they had. Dropping their refresh
-        // tokens ends the session instead of waiting for it to lapse.
+        // The <c>:Token Service</c> step again, which the UC-06 diagram does not draw. A role
+        // change alters what the account may do, and capabilities travel inside the access token —
+        // so until it expires the person keeps the rights they had. Dropping their refresh tokens
+        // ends the session instead of waiting for it to lapse.
         if (before.Role != user.Role.ToString())
         {
             await refreshTokens.RevokeAllForUserAsync(user.Id, ct);
@@ -252,11 +253,13 @@ public sealed partial class UserService(
 
         await users.SaveChangesAsync(ct);
 
-        // The <c>:Session Service</c> step of UC-07, on the deactivate branch only. A row marked
+        // The <c>:Token Service</c> step of UC-07, on the deactivate branch only. A row marked
         // inactive while its tokens still work is not deactivated in any sense that matters: the
         // access token stays valid until it expires, and dropping the refresh tokens is what stops
         // it being renewed. AuthenticationService.RefreshAsync re-reads IsActive, so the next
-        // refresh would refuse anyway — this makes it immediate rather than eventual.
+        // refresh would refuse anyway — this closes the session at the refresh boundary instead of
+        // waiting for it to lapse. The access token itself is still valid until it expires, which
+        // is why /api/users revalidates the caller on every request.
         if (!isActive)
         {
             await refreshTokens.RevokeAllForUserAsync(user.Id, ct);

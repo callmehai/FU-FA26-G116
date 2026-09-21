@@ -489,7 +489,7 @@ public class UserServiceTests
 
         Assert.True(result.Succeeded);
         Assert.False(result.Account!.IsActive);
-        // The <c>:Session Service</c> step: a row marked inactive whose tokens still work is not
+        // The <c>:Token Service</c> step: a row marked inactive whose tokens still work is not
         // deactivated in any sense that matters.
         Assert.Empty(_refreshTokens.ActiveTokens);
         Assert.Equal(AuditActions.UserDeactivated, Assert.Single(_audit.Records).Action);

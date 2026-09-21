@@ -7,7 +7,7 @@ kích hoạt lại tài khoản người dùng.
 endpoint báo "đã gửi mail" trong khi không có mail nào được gửi. Xem phần [Còn nợ](#còn-nợ).
 
 Sequence diagram chia bốn participant: `User Management Page` → `:User Controller` →
-`:User Service` → `:User Repository` → `Database`, cộng thêm `:Audit Service` và `:Session
+`:User Service` → `:User Repository` → `Database`, cộng thêm `:Audit Service` và `:Token
 Service`. Code đi theo đúng các lớp đó:
 
 Bản vẽ từng use case:
@@ -26,7 +26,7 @@ Bản vẽ từng use case:
 | `:User Service` | [`backend/TrustCabinet.Infrastructure/Users/UserService.cs`](../../backend/TrustCabinet.Infrastructure/Users/UserService.cs) |
 | `:User Repository` | [`backend/TrustCabinet.Infrastructure/Users/UserAccountRepository.cs`](../../backend/TrustCabinet.Infrastructure/Users/UserAccountRepository.cs) |
 | `:Audit Service` | [`backend/TrustCabinet.Infrastructure/Audit/AuditService.cs`](../../backend/TrustCabinet.Infrastructure/Audit/AuditService.cs) |
-| `:Session Service` | `IRefreshTokenStore.RevokeAllForUserAsync` — bản vẽ chỉ có ở UC-07, code dùng cả ở UC-06 (xem mục 4 bên dưới). Chi tiết: [Vô hiệu hoá phải kết thúc phiên](#vô-hiệu-hoá-phải-kết-thúc-phiên) |
+| `:Token Service` | `IRefreshTokenStore.RevokeAllForUserAsync` — bản vẽ chỉ có ở UC-07, code dùng cả ở UC-06 (xem mục 4 bên dưới). Chi tiết: [Vô hiệu hoá phải kết thúc phiên](#vô-hiệu-hoá-phải-kết-thúc-phiên). Bản vẽ trước đây đặt tên là `:Session Service`; đổi thành `:Token Service` vì hệ thống dùng JWT chứ không có session phía server — xem [07-classdiagram/README.md](../07-classdiagram/README.md#phụ-lục--có-dùng-jwt-không-mà-sao-lại-có-session-server) |
 | `Database` | bảng `users` và `audit_log` |
 
 ### Năm chỗ code khác bản vẽ
@@ -47,7 +47,7 @@ khai báo thì không có cách nào phân biệt "cố tình làm tốt hơn" v
 3. **UC-06 có thêm nhánh trùng email** mà bản vẽ không có (`alt` của UC-06 chỉ có hai operand).
    Unique index không quan tâm bản vẽ viết gì: thiếu nhánh này thì sửa ai đó sang email đã tồn tại
    sẽ ra `500` thay vì `MSG08`.
-4. **UC-06 dùng `:Session Service` mà bản vẽ UC-06 không vẽ lifeline đó** — chỉ UC-07 có. Đổi vai
+4. **UC-06 dùng `:Token Service` mà bản vẽ UC-06 không vẽ lifeline đó** — chỉ UC-07 có. Đổi vai
    trò phải huỷ refresh token vì capability nằm trong access token; không huỷ thì người đó giữ
    nguyên quyền cũ tới khi token hết hạn.
 5. **UC-06 và UC-07 có thêm luật "không được xoá sổ quản trị viên cuối cùng"**, xem
@@ -187,7 +187,7 @@ chỉ khác nhau ở giá trị ghi xuống và ở chỗ có huỷ phiên hay k
 
 ### Vô hiệu hoá phải kết thúc phiên
 
-Đây là bước `:Session Service` trong diagram. Chỉ set `is_active = false` là **chưa vô hiệu hoá**
+Đây là bước `:Token Service` trong diagram. Chỉ set `is_active = false` là **chưa vô hiệu hoá**
 theo bất kỳ nghĩa nào có ý nghĩa: access token đã cấp vẫn còn hiệu lực tới khi hết hạn. Huỷ toàn bộ
 refresh token là thứ chặn việc gia hạn.
 
