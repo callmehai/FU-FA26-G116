@@ -11,6 +11,21 @@ jobs:
   backend:
     name: Backend — build & test
     runs-on: ubuntu-latest
+
+    # RedisRefreshTokenStoreTests chạy thật trên Redis chứ không dùng fake, nên CI phải có một
+    # instance. Không cần Postgres: các test còn lại dựng model EF hoặc app trong bộ nhớ, không mở
+    # connection nào.
+    services:
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - uses: actions/checkout@v4
 

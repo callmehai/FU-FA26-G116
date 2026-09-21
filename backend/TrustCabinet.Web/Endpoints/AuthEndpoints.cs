@@ -1,0 +1,141 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
+using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Infrastructure.Authentication;
+
+namespace TrustCabinet.Web.Endpoints;
+
+/// <summary>
+/// UC-01's <c>:Auth Controller</c> — translates HTTP into a call on the authentication service,
+/// and the service's outcome into a status code and a message code.
+///
+/// It holds no authentication logic of its own: which of the four branches applies is the
+/// service's decision, and this file only decides how each one looks on the wire.
+/// </summary>
+public static class AuthEndpoints
+{
+    /// <summary>
+    /// Message codes from the UC-01 specification. The response carries the code and a Vietnamese
+    /// message: the code is what the frontend and the test suite match on, so rewording the text
+    /// never breaks either.
+    /// </summary>
+    private const string Msg01InvalidCredentials = "MSG01";
+    private const string Msg03AccountUnavailable = "MSG03";
+    private const string Msg04NoSystemAccess = "MSG04";
+
+    public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
+    {
+        var auth = app.MapGroup("/api/auth").WithTags("Authentication");
+
+        auth.MapPost("/login", SignInAsync).AllowAnonymous();
+        auth.MapPost("/refresh", RefreshAsync).AllowAnonymous();
+        auth.MapPost("/logout", SignOutAsync).AllowAnonymous();
+        auth.MapGet("/me", Me).RequireAuthorization();
+
+        return app;
+    }
+
+    private static async Task<IResult> SignInAsync(
+        [FromBody] SignInRequest request,
+        IAuthenticationService authentication,
+        CancellationToken ct)
+    {
+        // Blank input is the same answer as wrong input: an empty password must not be
+        // distinguishable from an incorrect one.
+        var result = await authentication.SignInAsync(request.Email ?? "", request.Password ?? "", ct);
+
+        return result.Succeeded ? Results.Ok(SignInResponse.From(result)) : Rejected(result.Outcome);
+    }
+
+    private static async Task<IResult> RefreshAsync(
+        [FromBody] RefreshRequest request,
+        IAuthenticationService authentication,
+        CancellationToken ct)
+    {
+        var result = await authentication.RefreshAsync(request.RefreshToken ?? "", ct);
+
+        return result.Succeeded ? Results.Ok(SignInResponse.From(result)) : Rejected(result.Outcome);
+    }
+
+    private static async Task<IResult> SignOutAsync(
+        [FromBody] RefreshRequest request,
+        IAuthenticationService authentication,
+        CancellationToken ct)
+    {
+        await authentication.SignOutAsync(request.RefreshToken ?? "", ct);
+
+        // 204 whether or not the token was still valid: signing out is idempotent, and reporting
+        // "that token was already gone" would only confirm token states to a caller.
+        return Results.NoContent();
+    }
+
+    /// <summary>
+    /// Who the bearer token says you are. Read straight from the validated token rather than the
+    /// database — the claims were put there at sign-in, and this endpoint's job is to let a
+    /// reloaded browser restore its session without a round trip to the users table.
+    /// </summary>
+    private static IResult Me(ClaimsPrincipal principal) => Results.Ok(new CurrentUserResponse(
+        Id: principal.FindFirstValue("sub") ?? "",
+        Email: principal.FindFirstValue("email") ?? "",
+        FullName: principal.FindFirstValue(ClaimTypes.Name) ?? "",
+        Role: principal.FindFirstValue(ClaimTypes.Role) ?? "",
+        Capabilities: [.. principal.FindAll(JwtTokenIssuer.CapabilityClaim).Select(c => c.Value)]));
+
+    /// <summary>
+    /// The three failing branches of UC-01. All 401: the distinction between them is in the
+    /// message code, and none of them reveals whether the email exists.
+    /// </summary>
+    private static IResult Rejected(SignInOutcome outcome)
+    {
+        var (code, message) = outcome switch
+        {
+            SignInOutcome.AccountDeactivated =>
+                (Msg03AccountUnavailable, "Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên."),
+            SignInOutcome.NoSystemAccess =>
+                (Msg04NoSystemAccess, "Tài khoản chưa được cấp quyền truy cập hệ thống."),
+            // Covers InvalidCredentials and, defensively, an outcome added later without a case
+            // here: the safe default for an unknown authentication outcome is to refuse.
+            _ => (Msg01InvalidCredentials, "Email hoặc mật khẩu không đúng."),
+        };
+
+        return Results.Json(new AuthErrorResponse(code, message), statusCode: StatusCodes.Status401Unauthorized);
+    }
+}
+
+/// <summary>Sign-in payload. Both fields are nullable so a malformed body is a 401, not a 400.</summary>
+public sealed record SignInRequest(string? Email, string? Password);
+
+public sealed record RefreshRequest(string? RefreshToken);
+
+public sealed record AuthErrorResponse(string Code, string Message);
+
+/// <summary>
+/// What a successful sign-in returns. The refresh token is in the body rather than a cookie for
+/// now — the frontend is not part of this story.
+/// ponytail: body, not an HttpOnly cookie. Move it to a cookie when the frontend lands (SCRUM-46),
+/// since a token in JavaScript's reach is readable by any XSS on the page.
+/// </summary>
+public sealed record SignInResponse(
+    string AccessToken,
+    string RefreshToken,
+    DateTimeOffset AccessTokenExpiresAt,
+    CurrentUserResponse User)
+{
+    public static SignInResponse From(Domain.Authentication.SignInResult result) => new(
+        result.AccessToken!,
+        result.RefreshToken!,
+        result.AccessTokenExpiresAt!.Value,
+        new CurrentUserResponse(
+            result.User!.Id.ToString(),
+            result.User.Email,
+            result.User.FullName,
+            result.User.Role.ToString(),
+            [.. (result.Capabilities ?? []).Select(c => c.ToString())]));
+}
+
+public sealed record CurrentUserResponse(
+    string Id,
+    string Email,
+    string FullName,
+    string Role,
+    string[] Capabilities);

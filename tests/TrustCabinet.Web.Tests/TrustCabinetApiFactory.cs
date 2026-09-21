@@ -19,5 +19,11 @@ public class TrustCabinetApiFactory : WebApplicationFactory<Program>
         builder.UseSetting(
             "ConnectionStrings:TrustCabinet",
             "Host=localhost;Port=5432;Database=trustcabinet_tests;Username=none;Password=not-used");
+
+        // Same idea for Redis and the signing key: registering the services needs both present and
+        // well-formed, and nothing here opens a connection or verifies a real token. The endpoint
+        // tests substitute their own in-memory store, so no test depends on a Redis being up.
+        builder.UseSetting("ConnectionStrings:Redis", "localhost:6379");
+        builder.UseSetting("Authentication:SigningKey", "khoa-ky-chi-dung-trong-test-du-32-ky-tu");
     }
 }
