@@ -17,9 +17,10 @@ public class AuthenticationServiceTests
     private readonly FakeUserRepository _users = new();
     private readonly FakeRefreshTokenStore _refreshTokens = new();
     private readonly FakeTokenIssuer _tokenIssuer = new();
+    private readonly FakeGoogleTokenVerifier _google = new();
 
     private AuthenticationService NewService() => new(
-        _users, new FakePasswordHasher(), _tokenIssuer, _refreshTokens,
+        _users, new FakePasswordHasher(), _tokenIssuer, _refreshTokens, _google,
         NullLogger<AuthenticationService>.Instance);
 
     private static User NewUser(
@@ -188,7 +189,7 @@ public class AuthenticationServiceTests
         _users.WithUser(user);
 
         var service = new AuthenticationService(
-            _users, new PasswordHasher(), _tokenIssuer, _refreshTokens,
+            _users, new PasswordHasher(), _tokenIssuer, _refreshTokens, _google,
             NullLogger<AuthenticationService>.Instance);
 
         var result = await service.SignInAsync(user.Email, "SET-BY-SCRUM-11");

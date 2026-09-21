@@ -14,6 +14,16 @@ public interface IAuthenticationService
     Task<SignInResult> SignInAsync(string email, string password, CancellationToken ct = default);
 
     /// <summary>
+    /// UC-02: verifies a Google ID token, finds the internal account linked to that Google
+    /// identity, and issues the same token pair as a password sign-in.
+    ///
+    /// Never creates an account. A Google identity nobody has linked is refused
+    /// (<see cref="GoogleSignInOutcome.NotLinked"/>) — accounts are provisioned by an
+    /// administrator, and self-registration would let anyone with a Google account in.
+    /// </summary>
+    Task<GoogleSignInResult> SignInWithGoogleAsync(string idToken, CancellationToken ct = default);
+
+    /// <summary>
     /// Exchanges a valid refresh token for a new pair, re-reading the account each time so a
     /// deactivation or a role change takes effect at the next refresh instead of lingering for as
     /// long as someone keeps refreshing.

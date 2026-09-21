@@ -1,7 +1,8 @@
-# 03 · Xác thực — đăng nhập bằng email và mật khẩu
+# 03 · Xác thực — đăng nhập và đăng xuất
 
-Hiện thực của **UC-01 (SCRUM-11)**, phần đăng nhập bằng mật khẩu. Phần *Continue with Google* chưa
-làm, để lại cho lượt sau của cùng story.
+Hiện thực **UC-01, UC-02 và UC-03 (SCRUM-11)**: đăng nhập bằng email + mật khẩu, đăng nhập bằng
+Google, và đăng xuất. Chỉ hai phương thức đăng nhập này, không dựng IdP riêng — xem
+[ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md).
 
 Sequence diagram gốc chia bốn participant: `Login Page` → `:Auth Controller` →
 `:Authentication Service` → `:User Repository` → `Database`. Code đi theo đúng bốn lớp đó:
@@ -11,16 +12,37 @@ Sequence diagram gốc chia bốn participant: `Login Page` → `:Auth Controlle
 | `:Auth Controller` | [`backend/TrustCabinet.Web/Endpoints/AuthEndpoints.cs`](../../backend/TrustCabinet.Web/Endpoints/AuthEndpoints.cs) |
 | `:Authentication Service` | [`backend/TrustCabinet.Infrastructure/Authentication/AuthenticationService.cs`](../../backend/TrustCabinet.Infrastructure/Authentication/AuthenticationService.cs) |
 | `:User Repository` | [`backend/TrustCabinet.Infrastructure/Authentication/UserRepository.cs`](../../backend/TrustCabinet.Infrastructure/Authentication/UserRepository.cs) |
+| `:Google` (UC-02) | [`backend/TrustCabinet.Infrastructure/Authentication/GoogleTokenVerifier.cs`](../../backend/TrustCabinet.Infrastructure/Authentication/GoogleTokenVerifier.cs) |
 | `Database` | bảng `users` và `role_capabilities` |
+
+### Thay đổi database
+
+Migration `AddGoogleSignIn` (bắt buộc cho UC-02, vì `password_hash` trước đó là `NOT NULL` nên tài
+khoản chỉ đăng nhập bằng Google không lưu được):
+
+- `users.password_hash` → **nullable**
+- thêm `users.google_subject_id`, unique có filter `IS NOT NULL`
+- check constraint `ck_users_has_a_way_to_sign_in`: `password_hash IS NOT NULL OR google_subject_id
+  IS NOT NULL`
+
+Check constraint đặt ở database chứ không chỉ trong application: migration, seed và console của DBA
+đều ghi vào bảng này, nên một dòng không có cách nào đăng nhập là dòng không nên tồn tại. Unique có
+filter để nhiều tài khoản chỉ dùng mật khẩu (`google_subject_id` null) vẫn hợp lệ, nhưng một Google
+identity không thể liên kết vào hai tài khoản.
 
 ## Endpoint
 
 | Method | Path | Quyền | Việc |
 |---|---|---|---|
-| POST | `/api/auth/login` | không cần | Đăng nhập, cấp AT + RT |
+| POST | `/api/auth/login` | không cần | Đăng nhập bằng mật khẩu, cấp AT + RT |
+| POST | `/api/auth/google` | không cần | Đăng nhập bằng Google, cấp AT + RT |
 | POST | `/api/auth/refresh` | không cần (RT là thứ chứng minh) | Đổi RT cũ lấy cặp mới |
 | POST | `/api/auth/logout` | không cần | Huỷ RT ở phía server |
 | GET | `/api/auth/me` | Bearer AT | Thông tin người đang đăng nhập |
+
+## UC-01 · Đăng nhập bằng email và mật khẩu
+
+Sequence diagram: [SignIn.png](../06-sequencediagram/SignIn.png).
 
 ### `POST /api/auth/login`
 
@@ -66,6 +88,118 @@ Vài điểm cố ý, đừng "sửa" lại:
 - **`Member` không có capability nào nhưng vẫn đăng nhập được.** `MSG04` chỉ bắn khi role *khác*
   `Member` mà `role_capabilities` rỗng. Thành viên thường dự họp, đọc tài liệu và biểu quyết —
   không việc nào cần capability (xem `ReferenceData.RoleCapabilities`).
+
+## UC-02 · Đăng nhập bằng Google
+
+Sequence diagram: [SignInWithGoogle.png](../06-sequencediagram/SignInWithGoogle.png).
+
+Chia việc giữa FE và BE đúng như diagram: `LoginPage` mở Google và tự xử lý nhánh ngoài (Google
+lỗi hoặc người dùng huỷ), **xong rồi** mới gọi `AuthController`. Nghĩa là nhánh ngoài không bao giờ
+đến backend — không có ID token nào để gửi lên, nên MSG01 của nhánh đó do FE tự hiển thị.
+
+### `POST /api/auth/google`
+
+```json
+{ "idToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6..." }
+```
+
+`200 OK` trả về **đúng shape** của `/api/auth/login` — client không cần biết phiên được tạo bằng
+cách nào, chỉ cần biết đã có phiên.
+
+> **Chú ý mã thông báo:** UC-02 đánh số khác UC-01 cho cùng tình huống. Tài khoản bị vô hiệu hoá là
+> `MSG03` ở UC-01 nhưng `MSG04` ở đây; "không có quyền truy cập" là `MSG04` ở UC-01 và `MSG05` ở
+> đây. Đây là lý do code có **hai** enum outcome riêng (`SignInOutcome` và `GoogleSignInOutcome`)
+> chứ không dùng chung — gộp lại là một trong hai use case bị lấy mã của cái kia. Đừng "dọn" cho
+> giống nhau.
+
+| `code` | Khi nào | `message` |
+|---|---|---|
+| `MSG01` | ID token không verify được: thiếu, sai định dạng, hết hạn, sai audience, sai chữ ký, hoặc email chưa verified | `Đăng nhập bằng Google không thành công.` |
+| `MSG03` | Google xác thực OK nhưng **chưa có tài khoản nội bộ nào liên kết** với Google identity đó | `Tài khoản Google này chưa được cấp quyền truy cập hệ thống.` |
+| `MSG04` | Tài khoản đã liên kết nhưng bị vô hiệu hoá | `Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.` |
+| `MSG05` | Role không còn capability nào | `Tài khoản chưa được cấp quyền truy cập hệ thống.` |
+
+### Liên kết theo `sub`, không theo email
+
+Tài khoản nội bộ liên kết với Google qua cột `users.google_subject_id` — chính là claim `sub` của
+ID token.
+
+**Không** match theo email, dù token cũng mang email. `sub` được Google bảo đảm ổn định và duy nhất
+suốt đời tài khoản, còn địa chỉ email thì đổi được, và trên domain workspace còn có thể bị cấp lại
+cho người khác. Match theo email nghĩa là người được cấp lại địa chỉ đó sẽ vào được tài khoản của
+người cũ.
+
+### Không tự tạo tài khoản
+
+Google identity chưa ai liên kết thì trả `MSG03`, **không** tạo tài khoản mới. Cấp tài khoản là
+việc của quản trị viên; cho tự đăng ký ở đây nghĩa là bất kỳ ai có Gmail đều vào được hệ thống.
+
+Liên kết một tài khoản (hiện làm bằng SQL, màn hình quản trị là SCRUM-60):
+
+```sql
+update users set google_subject_id = '<sub từ ID token>'
+where email = 'thuky@trustcabinet.local';
+```
+
+Lấy `sub` bằng cách decode ID token (jwt.io hoặc log của FE). Tài khoản seed **chưa** liên kết sẵn:
+một `sub` bịa thì Google không bao giờ cấp, nên seed một giá trị giả chỉ tạo ra dòng dữ liệu gây
+hiểu nhầm.
+
+### Verify ID token
+
+Dùng `GoogleJsonWebSignature.ValidateAsync` của `Google.Apis.Auth`, không tự viết. Verify đúng
+nghĩa là phải tải certificate đang hiệu lực của Google, theo kịp việc họ rotate khoá, rồi kiểm tra
+chữ ký, issuer, audience và thời hạn. Thư viện làm hết và cache certificate; bản tự viết là chỗ dự
+án kết thúc với việc chấp nhận token không có chữ ký vì chỉ decode phần payload.
+
+Hai điểm bắt buộc:
+
+- **`Audience` phải set.** Thiếu nó thì token chỉ cần là *một* token Google hợp lệ bất kỳ: token
+  cấp cho ứng dụng khác cũng qua, và ai chạy ứng dụng đó đều đăng nhập được vào đây với tư cách
+  user của họ.
+- **`EmailVerified` phải true.** Email chưa verify chỉ chứng minh có người gõ vào, không phải hệ
+  thống đã xác nhận.
+
+### Bật/tắt
+
+Mặc định **tắt**, nên app vẫn khởi động được trên máy chưa cấu hình Google — `/api/auth/google` trả
+`404` và đăng nhập bằng mật khẩu không bị ảnh hưởng.
+
+`404` chứ không phải `403` hay `501`: tính năng không được cung cấp thì nên trông như một URL không
+tồn tại, cùng lý lẽ với `RequireCapability` render 404 thay vì 403.
+
+```json
+"Authentication": {
+  "Google": {
+    "Enabled": true,
+    "ClientId": "<client id>.apps.googleusercontent.com"
+  }
+}
+```
+
+`ClientId` **không phải secret** — trình duyệt gửi nó cho Google công khai, nên để trong
+`appsettings.json` được. Client *secret* thì luồng này không dùng đến: trình duyệt lấy ID token,
+backend chỉ verify.
+
+Bật `Enabled` mà thiếu `ClientId` thì app từ chối khởi động kèm hướng dẫn, chứ không chạy với
+audience rỗng.
+
+## UC-03 · Đăng xuất
+
+Sequence diagram: [SignOut.png](../06-sequencediagram/SignOut.png).
+
+UC-03 chỉ có `User` và `Authenticated Page` — **không có participant backend nào**. Việc của nó là
+xoá JWT ở trình duyệt, hiện hộp xác nhận trước khi xoá, và MSG01 khi không xoá được. Toàn bộ là
+việc của FE, làm cùng SCRUM-46.
+
+Backend không có việc mới. `POST /api/auth/logout` đã có sẵn và bổ sung cho UC-03 phần diagram
+không vẽ nhưng tiêu chí nghiệm thu SCRUM-11 yêu cầu: **huỷ phiên ở phía server**, để một client
+giữ lại RT vẫn không dùng lại được. FE nên gọi nó *trước* khi xoá token cục bộ; nếu bỏ qua, RT vẫn
+sống tới 7 ngày dù trình duyệt đã sạch.
+
+Logout chỉ huỷ RT của phiên đó — đăng xuất trên laptop không đăng xuất trên điện thoại. Huỷ mọi
+thiết bị thì đã có `RevokeAllForUserAsync`, hiện chỉ dùng khi tài khoản bị vô hiệu hoá; chưa expose
+thành endpoint vì chưa story nào yêu cầu.
 
 ### `POST /api/auth/refresh`
 
@@ -200,9 +334,11 @@ nó chỉ tồn tại trong một database toàn cuộc họp bịa.
 
 ## Còn nợ
 
-- **Continue with Google** — phần còn lại của SCRUM-11. Cần migration mới: `password_hash` thành
-  nullable, thêm `google_subject_id` unique nullable, và ràng buộc phải có ít nhất một trong hai.
-  Story mô tả rõ trong Jira; migration chưa viết vì lượt này chưa cần.
+- **Toàn bộ phần FE** của cả ba use case: nút *Continue with Google*, hộp xác nhận đăng xuất, và
+  xoá cơ chế giả lập trong `features/auth/AuthProvider.tsx` cùng ô chọn vai trò ở màn đăng nhập
+  (SCRUM-46).
+- **Màn hình liên kết tài khoản Google.** Hiện phải `update users set google_subject_id = ...` bằng
+  SQL. Thuộc màn quản trị người dùng (SCRUM-60).
 - **RT đang trả trong response body**, chưa phải cookie `HttpOnly`. Frontend không thuộc phạm vi
   lượt này; khi làm FE (SCRUM-46) thì chuyển sang cookie, vì token nằm trong tầm với của
   JavaScript là token mà bất kỳ lỗi XSS nào trên trang cũng đọc được.

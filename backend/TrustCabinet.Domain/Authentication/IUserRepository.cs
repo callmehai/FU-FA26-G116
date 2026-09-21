@@ -26,6 +26,15 @@ public interface IUserRepository
     Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
+    /// The account linked to this Google subject, or null when none is. UC-02's
+    /// "Find internal account by Google account".
+    ///
+    /// Matched on the subject, never on the email the token also carries — see
+    /// <see cref="User.GoogleSubjectId"/> for why that distinction is a security boundary.
+    /// </summary>
+    Task<User?> FindByGoogleSubjectIdAsync(string googleSubjectId, CancellationToken ct = default);
+
+    /// <summary>
     /// What this role may do, read from <c>role_capabilities</c> rather than hard-coded, so the
     /// administrator screen in SCRUM-60 can change it without a deployment.
     /// Empty is a legitimate answer — a plain Member has no capability by design.

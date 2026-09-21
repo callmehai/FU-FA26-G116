@@ -1411,12 +1411,16 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("full_name");
 
+                    b.Property<string>("GoogleSubjectId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("google_subject_id");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
                         .HasColumnName("password_hash");
@@ -1438,7 +1442,15 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_users_email");
 
-                    b.ToTable("users", (string)null);
+                    b.HasIndex("GoogleSubjectId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_google_subject_id")
+                        .HasFilter("google_subject_id IS NOT NULL");
+
+                    b.ToTable("users", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_users_has_a_way_to_sign_in", "password_hash IS NOT NULL OR google_subject_id IS NOT NULL");
+                        });
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.VoteChoice", b =>

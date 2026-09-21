@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Infrastructure.Authentication;
 
@@ -23,11 +24,23 @@ public static class AuthEndpoints
     private const string Msg03AccountUnavailable = "MSG03";
     private const string Msg04NoSystemAccess = "MSG04";
 
+    /// <summary>
+    /// UC-02 numbers its messages differently from UC-01 for the same situations, so its codes are
+    /// separate constants rather than reused ones: a deactivated account is MSG03 in UC-01 and
+    /// MSG04 here, and "no system access" is MSG04 there and MSG05 here. Do not "tidy" these into
+    /// one set — the two use-case specifications are what the tester checks against.
+    /// </summary>
+    private const string Google01SignInUnsuccessful = "MSG01";
+    private const string Google03NotAuthorized = "MSG03";
+    private const string Google04AccountUnavailable = "MSG04";
+    private const string Google05NoSystemAccess = "MSG05";
+
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
         var auth = app.MapGroup("/api/auth").WithTags("Authentication");
 
         auth.MapPost("/login", SignInAsync).AllowAnonymous();
+        auth.MapPost("/google", SignInWithGoogleAsync).AllowAnonymous();
         auth.MapPost("/refresh", RefreshAsync).AllowAnonymous();
         auth.MapPost("/logout", SignOutAsync).AllowAnonymous();
         auth.MapGet("/me", Me).RequireAuthorization();
@@ -45,6 +58,48 @@ public static class AuthEndpoints
         var result = await authentication.SignInAsync(request.Email ?? "", request.Password ?? "", ct);
 
         return result.Succeeded ? Results.Ok(SignInResponse.From(result)) : Rejected(result.Outcome);
+    }
+
+    /// <summary>
+    /// UC-02's inner alt block. The outer one — Google sign-in failing or being cancelled — never
+    /// reaches here: the browser gets no ID token to send, so the login page shows that message
+    /// on its own.
+    /// </summary>
+    private static async Task<IResult> SignInWithGoogleAsync(
+        [FromBody] GoogleSignInRequest request,
+        IAuthenticationService authentication,
+        IOptions<GoogleAuthenticationOptions> googleOptions,
+        CancellationToken ct)
+    {
+        // Not configured means the feature does not exist, so it answers like any unknown URL
+        // rather than announcing a disabled endpoint. Same reasoning as RequireCapability
+        // rendering a 404 instead of a 403.
+        if (!googleOptions.Value.Enabled)
+        {
+            return Results.NotFound();
+        }
+
+        var result = await authentication.SignInWithGoogleAsync(request.IdToken ?? "", ct);
+
+        if (result.Succeeded)
+        {
+            return Results.Ok(SignInResponse.FromGoogle(result));
+        }
+
+        var (code, message) = result.Outcome switch
+        {
+            GoogleSignInOutcome.NotLinked =>
+                (Google03NotAuthorized, "Tài khoản Google này chưa được cấp quyền truy cập hệ thống."),
+            GoogleSignInOutcome.AccountDeactivated =>
+                (Google04AccountUnavailable, "Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên."),
+            GoogleSignInOutcome.NoSystemAccess =>
+                (Google05NoSystemAccess, "Tài khoản chưa được cấp quyền truy cập hệ thống."),
+            // InvalidGoogleToken, and defensively any outcome added later without a case here.
+            _ => (Google01SignInUnsuccessful, "Đăng nhập bằng Google không thành công."),
+        };
+
+        return Results.Json(
+            new AuthErrorResponse(code, message), statusCode: StatusCodes.Status401Unauthorized);
     }
 
     private static async Task<IResult> RefreshAsync(
@@ -105,6 +160,12 @@ public static class AuthEndpoints
 /// <summary>Sign-in payload. Both fields are nullable so a malformed body is a 401, not a 400.</summary>
 public sealed record SignInRequest(string? Email, string? Password);
 
+/// <summary>
+/// The Google ID token the browser obtained from Google Identity Services. Nullable so a malformed
+/// body answers MSG01 like any other unusable token, rather than a 400 that distinguishes itself.
+/// </summary>
+public sealed record GoogleSignInRequest(string? IdToken);
+
 public sealed record RefreshRequest(string? RefreshToken);
 
 public sealed record AuthErrorResponse(string Code, string Message);
@@ -122,6 +183,21 @@ public sealed record SignInResponse(
     CurrentUserResponse User)
 {
     public static SignInResponse From(Domain.Authentication.SignInResult result) => new(
+        result.AccessToken!,
+        result.RefreshToken!,
+        result.AccessTokenExpiresAt!.Value,
+        new CurrentUserResponse(
+            result.User!.Id.ToString(),
+            result.User.Email,
+            result.User.FullName,
+            result.User.Role.ToString(),
+            [.. (result.Capabilities ?? []).Select(c => c.ToString())]));
+
+    /// <summary>
+    /// Identical shape for a Google sign-in: the client should not need to care which way the
+    /// session was established, only that it now has one.
+    /// </summary>
+    public static SignInResponse FromGoogle(GoogleSignInResult result) => new(
         result.AccessToken!,
         result.RefreshToken!,
         result.AccessTokenExpiresAt!.Value,

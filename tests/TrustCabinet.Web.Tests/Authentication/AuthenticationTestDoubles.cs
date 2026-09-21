@@ -44,6 +44,12 @@ internal sealed class FakeUserRepository : IUserRepository
     public Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default)
         => Task.FromResult(_users.FirstOrDefault(u => u.Id == id));
 
+    public Task<User?> FindByGoogleSubjectIdAsync(string googleSubjectId, CancellationToken ct = default)
+        // Case-sensitive and exact, unlike the email: Google's subject is an opaque identifier,
+        // not something a person types.
+        => Task.FromResult(_users.FirstOrDefault(
+            u => u.GoogleSubjectId is not null && u.GoogleSubjectId == googleSubjectId));
+
     public Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(
         SystemRole role, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyCollection<Capability>>(
@@ -60,6 +66,25 @@ internal sealed class FakePasswordHasher : IPasswordHasher
 
     public bool Verify(string passwordHash, string providedPassword)
         => passwordHash == Hash(providedPassword);
+}
+
+/// <summary>
+/// Stand-in for Google's token verification. Accepts only tokens registered with
+/// <see cref="WithValidToken"/>, so a test can exercise the "token did not verify" branch without
+/// a network call or a genuinely signed token.
+/// </summary>
+internal sealed class FakeGoogleTokenVerifier : IGoogleTokenVerifier
+{
+    private readonly Dictionary<string, GoogleIdentity> _valid = [];
+
+    public FakeGoogleTokenVerifier WithValidToken(string idToken, string subject, string email)
+    {
+        _valid[idToken] = new GoogleIdentity(subject, email);
+        return this;
+    }
+
+    public Task<GoogleIdentity?> VerifyAsync(string idToken, CancellationToken ct = default)
+        => Task.FromResult(_valid.GetValueOrDefault(idToken));
 }
 
 /// <summary>Issues predictable tokens so a test can assert on an exact value.</summary>

@@ -19,6 +19,9 @@ public sealed class UserRepository(TrustCabinetDbContext db) : IUserRepository
     public Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default)
         => db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
 
+    public Task<User?> FindByGoogleSubjectIdAsync(string googleSubjectId, CancellationToken ct = default)
+        => db.Users.FirstOrDefaultAsync(u => u.GoogleSubjectId == googleSubjectId, ct);
+
     public async Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(
         SystemRole role, CancellationToken ct = default)
         => await db.RoleCapabilities

@@ -52,6 +52,19 @@ public static class AuthenticationServiceCollectionExtensions
             return ConnectionMultiplexer.Connect(options);
         });
 
+        // Google sign-in is optional, so its options are validated only when switched on — an
+        // application that does not offer it must still start without a ClientId.
+        services
+            .AddOptions<GoogleAuthenticationOptions>()
+            .Bind(configuration.GetSection(GoogleAuthenticationOptions.SectionName))
+            .Validate(
+                google => !google.Enabled || !string.IsNullOrWhiteSpace(google.ClientId),
+                "Authentication:Google:ClientId is required when Authentication:Google:Enabled "
+                + "is true. See docs/03-api/01-xac-thuc.md.")
+            .ValidateOnStart();
+
+        services.AddSingleton<IGoogleTokenVerifier, GoogleTokenVerifier>();
+
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<ITokenIssuer, JwtTokenIssuer>();
         services.AddSingleton<IRefreshTokenStore, RedisRefreshTokenStore>();

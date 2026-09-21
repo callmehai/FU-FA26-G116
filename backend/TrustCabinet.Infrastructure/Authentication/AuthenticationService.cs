@@ -18,6 +18,7 @@ public sealed class AuthenticationService(
     IPasswordHasher passwordHasher,
     ITokenIssuer tokenIssuer,
     IRefreshTokenStore refreshTokens,
+    IGoogleTokenVerifier googleTokenVerifier,
     ILogger<AuthenticationService> logger) : IAuthenticationService
 {
     /// <summary>
@@ -72,6 +73,63 @@ public sealed class AuthenticationService(
         // Branch 4 — success.
         logger.LogInformation("Sign-in succeeded for account {UserId}.", user.Id);
         return await IssueAsync(user, capabilities, ct);
+    }
+
+    public async Task<GoogleSignInResult> SignInWithGoogleAsync(
+        string idToken, CancellationToken ct = default)
+    {
+        // Branch 1 — MSG01 in UC-02's numbering. Everything the verifier rejects lands here:
+        // absent, malformed, expired, wrong audience, bad signature, unverified email.
+        var identity = await googleTokenVerifier.VerifyAsync(idToken, ct);
+
+        if (identity is null)
+        {
+            return GoogleSignInResult.Failure(GoogleSignInOutcome.InvalidGoogleToken);
+        }
+
+        var user = await users.FindByGoogleSubjectIdAsync(identity.Subject, ct);
+
+        // Branch 2 — MSG03. Google proved who they are; that is not the same as being one of ours.
+        // No account is created here: provisioning is an administrator's job, and self-registration
+        // would let anybody holding a Google account in.
+        if (user is null)
+        {
+            logger.LogInformation(
+                "Google sign-in rejected: no internal account is linked to that Google identity.");
+            return GoogleSignInResult.Failure(GoogleSignInOutcome.NotLinked);
+        }
+
+        // Branch 3 — MSG04 (MSG03's situation in UC-01; the two use cases number these
+        // differently, which is why the outcomes are two separate enums).
+        if (!user.IsActive)
+        {
+            logger.LogInformation("Google sign-in rejected: account {UserId} is deactivated.", user.Id);
+            return GoogleSignInResult.Failure(GoogleSignInOutcome.AccountDeactivated);
+        }
+
+        var capabilities = await users.GetCapabilitiesAsync(user.Role, ct);
+
+        // Branch 4 — MSG05. Same rule as password sign-in, including Member being exempt.
+        if (capabilities.Count == 0 && user.Role != SystemRole.Member)
+        {
+            logger.LogWarning(
+                "Google sign-in rejected: role {Role} grants no capability, so account {UserId} "
+                + "has no way in.", user.Role, user.Id);
+            return GoogleSignInResult.Failure(GoogleSignInOutcome.NoSystemAccess);
+        }
+
+        // Branch 5 — success. The same token pair as a password sign-in: how someone proved who
+        // they are does not change what their session is.
+        logger.LogInformation("Google sign-in succeeded for account {UserId}.", user.Id);
+        var issued = await IssueAsync(user, capabilities, ct);
+
+        return new GoogleSignInResult(
+            GoogleSignInOutcome.Success,
+            issued.User,
+            issued.Capabilities,
+            issued.AccessToken,
+            issued.RefreshToken,
+            issued.AccessTokenExpiresAt);
     }
 
     public async Task<SignInResult> RefreshAsync(string refreshToken, CancellationToken ct = default)

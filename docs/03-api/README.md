@@ -4,9 +4,9 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 
 Đã có:
 
-- [`01-xac-thuc.md`](01-xac-thuc.md) — đăng nhập bằng email + mật khẩu (UC-01 / SCRUM-11):
-  `/api/auth/login`, `/refresh`, `/logout`, `/me`; access token và refresh token; mã `MSG01`,
-  `MSG03`, `MSG04`
+- [`01-xac-thuc.md`](01-xac-thuc.md) — đăng nhập và đăng xuất (UC-01, UC-02, UC-03 / SCRUM-11):
+  `/api/auth/login`, `/google`, `/refresh`, `/logout`, `/me`; access token và refresh token; mã
+  thông báo của từng use case (lưu ý UC-01 và UC-02 đánh số khác nhau)
 
 Dự kiến có thêm:
 
