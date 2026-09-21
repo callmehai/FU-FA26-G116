@@ -45,10 +45,20 @@ internal sealed class FakeUserRepository : IUserRepository
         => Task.FromResult(_users.FirstOrDefault(u => u.Id == id));
 
     public Task<User?> FindByGoogleSubjectIdAsync(string googleSubjectId, CancellationToken ct = default)
+    {
+        // Mirrors UserRepository exactly, including the blank-subject guard. An earlier version of
+        // this fake guarded against a null subject while production did not, so the tests passed
+        // while a token with no subject claim signed the caller in as an arbitrary unlinked
+        // account. A fake that is safer than the real thing hides the bug it should expose.
+        if (string.IsNullOrWhiteSpace(googleSubjectId))
+        {
+            return Task.FromResult<User?>(null);
+        }
+
         // Case-sensitive and exact, unlike the email: Google's subject is an opaque identifier,
         // not something a person types.
-        => Task.FromResult(_users.FirstOrDefault(
-            u => u.GoogleSubjectId is not null && u.GoogleSubjectId == googleSubjectId));
+        return Task.FromResult(_users.FirstOrDefault(u => u.GoogleSubjectId == googleSubjectId));
+    }
 
     public Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(
         SystemRole role, CancellationToken ct = default)
@@ -62,10 +72,20 @@ internal sealed class FakeUserRepository : IUserRepository
 /// </summary>
 internal sealed class FakePasswordHasher : IPasswordHasher
 {
+    /// <summary>
+    /// How many times verification was attempted. This is what makes the timing defence testable:
+    /// the property is "an unknown email still costs one verification", and counting the calls
+    /// pins it exactly, where measuring elapsed time would be flaky on a loaded machine.
+    /// </summary>
+    public int VerifyCount { get; private set; }
+
     public string Hash(string password) => $"hashed:{password}";
 
     public bool Verify(string passwordHash, string providedPassword)
-        => passwordHash == Hash(providedPassword);
+    {
+        VerifyCount++;
+        return passwordHash == Hash(providedPassword);
+    }
 }
 
 /// <summary>

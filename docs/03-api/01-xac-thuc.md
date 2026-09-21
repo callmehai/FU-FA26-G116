@@ -30,6 +30,12 @@ Check constraint đặt ở database chứ không chỉ trong application: migra
 filter để nhiều tài khoản chỉ dùng mật khẩu (`google_subject_id` null) vẫn hợp lệ, nhưng một Google
 identity không thể liên kết vào hai tài khoản.
 
+**`Down` cố tình từ chối chạy** khi còn tài khoản chỉ đăng nhập bằng Google. Rollback sẽ xoá cột
+`google_subject_id` và đặt `password_hash = ''` (giá trị này thoả `NOT NULL`, nên rollback *thành
+công* trong khi phá credential): kết quả là tài khoản không ai đăng nhập được nữa và liên kết Google
+đã mất, không cứu lại được. Nên nó `RAISE EXCEPTION` kèm số tài khoản bị ảnh hưởng, buộc người
+rollback tự quyết định trước — cấp mật khẩu cho họ, hoặc xoá hẳn dòng đó.
+
 ## Endpoint
 
 | Method | Path | Quyền | Việc |
@@ -152,13 +158,35 @@ nghĩa là phải tải certificate đang hiệu lực của Google, theo kịp 
 chữ ký, issuer, audience và thời hạn. Thư viện làm hết và cache certificate; bản tự viết là chỗ dự
 án kết thúc với việc chấp nhận token không có chữ ký vì chỉ decode phần payload.
 
-Hai điểm bắt buộc:
+Bốn điểm bắt buộc:
 
 - **`Audience` phải set.** Thiếu nó thì token chỉ cần là *một* token Google hợp lệ bất kỳ: token
   cấp cho ứng dụng khác cũng qua, và ai chạy ứng dụng đó đều đăng nhập được vào đây với tư cách
   user của họ.
 - **`EmailVerified` phải true.** Email chưa verify chỉ chứng minh có người gõ vào, không phải hệ
   thống đã xác nhận.
+- **`Subject` phải có.** `ValidationSettings` không có tuỳ chọn đòi `sub`, và `Payload.Subject` là
+  `string` nullable, nên token thiếu claim đó vẫn đi qua verify. Phải chặn ngay tại đây: xuống dưới,
+  `WHERE google_subject_id = NULL` bị EF dịch thành `IS NULL` — **khớp** mọi tài khoản chưa liên
+  kết Google, tức là cấp token cho dòng đầu tiên PostgreSQL trả về. `UserRepository` chặn lần hai.
+- **Mọi lỗi token phải về một kết quả.** Chỉ catch `InvalidJwtException` là chưa đủ:
+  `FormatException` (segment không phải base64url, ví dụ `"a.b.c"`) lọt ra thành HTTP 500 kèm stack
+  trace cho caller chưa xác thực, và làm token sai định dạng phân biệt được với token không hợp lệ.
+
+`HttpRequestException` khi không tải được certificate của Google thì **cố tình không** catch: đó là
+sự cố phía ta, không phải token xấu, trả "đăng nhập thất bại" sẽ đẩy người dùng đi kiểm tra lại mật
+khẩu vốn không có vấn đề gì. Hiện thành 500; đổi sang 503 là việc nên làm, đã ghi ở phần còn nợ.
+
+### Phần chưa test được bằng unit test
+
+`GoogleJsonWebSignature.ValidationSettings` chỉ cho set `Audience`, `HostedDomain`, `Clock`,
+`ForceGoogleCertRefresh` và hai clock tolerance — **không có cách thay signing key**. Nghĩa là
+không thể tạo token trong unit test mà đi qua được bước kiểm chữ ký, nên **kiểm tra `Audience` và
+`Issuer` không có test nào phủ** — muốn phủ phải có integration test với token Google thật.
+
+Vì vậy hai luật ở tầng payload (`EmailVerified`, `Subject`) được tách ra
+`GoogleTokenVerifier.IdentityFrom` — `internal`, có `InternalsVisibleTo` cho project test — để
+chúng được test trực tiếp thay vì nằm trong phần không test được.
 
 ### Bật/tắt
 
@@ -343,7 +371,19 @@ nó chỉ tồn tại trong một database toàn cuộc họp bịa.
   lượt này; khi làm FE (SCRUM-46) thì chuyển sang cookie, vì token nằm trong tầm với của
   JavaScript là token mà bất kỳ lỗi XSS nào trên trang cũng đọc được.
 - **Chưa giới hạn số lần thử sai.** Chưa có rate limit cho `/api/auth/login`, nên chưa chặn dò mật
-  khẩu. Nên làm trước khi hệ thống ra khỏi môi trường nội bộ.
+  khẩu. Nên làm trước khi hệ thống ra khỏi môi trường nội bộ — và phần chống dò email ở trên mất
+  phần lớn giá trị nếu thiếu nó.
+- **Chưa phát hiện refresh token bị dùng lại.** Rotation hoạt động đúng (token cũ chết), nhưng một
+  lần replay chỉ bị *bỏ qua* chứ không bị coi là bằng chứng token đã bị đánh cắp. Kẻ trộm refresh
+  trước thì giữ được phiên, còn người dùng thật bị đẩy ra — ngược với điều mong muốn. Cách chuẩn
+  (OAuth 2.1): giữ hash của token đã dùng trong `rt-used:{hash}` một khoảng bằng tuổi RT, gặp lại
+  thì `RevokeAllForUserAsync`.
+- **Timing oracle với hash sai định dạng.** `PasswordHasher.Verify` bắt `FormatException` rồi trả
+  `false` ngay, không tốn công băm: hash thật ~34 ms, hash sai định dạng ~0,002 ms. Tài khoản có
+  `password_hash` hỏng vì thế phân biệt được cả với tài khoản thường lẫn email không tồn tại. Sửa
+  bằng cách băm với `DummyHash` trước khi trả `false`.
+- **`Verify` chưa trả 503 khi không gọi được Google** (xem trên).
+- **`Audience`/`Issuer` của Google chưa có test** (xem trên) — cần integration test với token thật.
 - **Chưa ghi audit log.** Bảng `audit_log` đã có; đăng nhập thành công/thất bại là thứ đáng ghi.
 - **Chưa rehash khi tham số băm đổi.** `PasswordHasher` coi `SuccessRehashNeeded` là thành công
   nhưng không băm lại — xem comment `ponytail:` trong file đó.

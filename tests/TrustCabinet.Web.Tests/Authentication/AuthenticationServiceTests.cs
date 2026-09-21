@@ -18,9 +18,10 @@ public class AuthenticationServiceTests
     private readonly FakeRefreshTokenStore _refreshTokens = new();
     private readonly FakeTokenIssuer _tokenIssuer = new();
     private readonly FakeGoogleTokenVerifier _google = new();
+    private readonly FakePasswordHasher _passwordHasher = new();
 
     private AuthenticationService NewService() => new(
-        _users, new FakePasswordHasher(), _tokenIssuer, _refreshTokens, _google,
+        _users, _passwordHasher, _tokenIssuer, _refreshTokens, _google,
         NullLogger<AuthenticationService>.Instance);
 
     private static User NewUser(
@@ -148,6 +149,39 @@ public class AuthenticationServiceTests
         Assert.Equal(unknownEmail.Outcome, wrongPassword.Outcome);
         Assert.Null(unknownEmail.User);
         Assert.Null(wrongPassword.User);
+    }
+
+    [Fact]
+    public async Task An_unknown_email_still_costs_one_password_verification()
+    {
+        // The observable part of the anti-enumeration defence, and the part the assertions above
+        // do NOT cover: both branches return InvalidCredentials by construction, so that test
+        // keeps passing even with the defence deleted. What actually hides the difference is that
+        // the unknown-email path pays for a hash too, against DummyHash.
+        //
+        // Counted rather than timed: the property is "verification happened", and a wall-clock
+        // assertion would be flaky on a busy machine while proving no more.
+        await NewService().SignInAsync("nobody@trustcabinet.local", Password);
+
+        Assert.Equal(1, _passwordHasher.VerifyCount);
+    }
+
+    [Fact]
+    public async Task A_known_email_and_an_unknown_one_cost_the_same()
+    {
+        _users.WithUser(NewUser());
+        var service = NewService();
+
+        await service.SignInAsync("thuky@trustcabinet.local", "SaiMatKhau@2026");
+        var afterKnownEmail = _passwordHasher.VerifyCount;
+
+        await service.SignInAsync("nobody@trustcabinet.local", "SaiMatKhau@2026");
+        var afterUnknownEmail = _passwordHasher.VerifyCount - afterKnownEmail;
+
+        // Hashing is deliberately slow, so skipping it when no user is found would make "no such
+        // account" measurably faster to answer than "wrong password" — enough of a difference to
+        // enumerate which emails are registered.
+        Assert.Equal(afterKnownEmail, afterUnknownEmail);
     }
 
     [Theory]

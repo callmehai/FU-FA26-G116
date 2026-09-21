@@ -21,9 +21,12 @@ public sealed class GoogleAuthenticationOptions
     public string ClientId { get; set; } = string.Empty;
 
     /// <summary>
-    /// Whether Google sign-in is offered. Off by default so the application still starts on a
-    /// machine with no Google credentials configured — /api/auth/google then answers 404, and
-    /// password sign-in is unaffected.
+    /// Whether Google sign-in is offered. When false, /api/auth/google answers 404 and password
+    /// sign-in is unaffected, so the application still starts on a machine that has no Google
+    /// credentials configured.
+    ///
+    /// This property defaults to false, but appsettings.json turns it on, so that is the effective
+    /// default — an environment that does not want it has to switch it off explicitly.
     /// </summary>
     public bool Enabled { get; set; }
 }

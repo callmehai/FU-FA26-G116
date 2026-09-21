@@ -43,6 +43,31 @@ namespace TrustCabinet.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            // Rolling back destroys the only way a Google-only account can sign in: the column
+            // holding its identity is dropped, and the AlterColumn below would give it
+            // password_hash = '' — a value that satisfies NOT NULL, so the rollback would succeed
+            // while leaving an account nobody can ever sign into and no link left to recover.
+            //
+            // So it refuses instead. Whoever is rolling back has to decide what happens to those
+            // accounts (give them a password, or delete them) before the schema can go back.
+            migrationBuilder.Sql("""
+                DO $$
+                DECLARE google_only_count integer;
+                BEGIN
+                    SELECT count(*) INTO google_only_count
+                    FROM users
+                    WHERE password_hash IS NULL AND google_subject_id IS NOT NULL;
+
+                    IF google_only_count > 0 THEN
+                        RAISE EXCEPTION
+                            'Cannot roll back AddGoogleSignIn: % account(s) sign in with Google '
+                            'and have no password, so this rollback would destroy their only '
+                            'credential. Give them a password_hash or remove the rows first.',
+                            google_only_count;
+                    END IF;
+                END $$;
+                """);
+
             migrationBuilder.DropIndex(
                 name: "ix_users_google_subject_id",
                 table: "users");

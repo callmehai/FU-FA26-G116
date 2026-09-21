@@ -27,6 +27,11 @@ public interface IGoogleTokenVerifier
 /// <param name="Subject">
 /// Google's `sub` claim — stable and unique per Google account for its lifetime. This is what an
 /// internal account is linked by; see <see cref="Entities.User.GoogleSubjectId"/>.
+///
+/// Never null or blank: an implementation that cannot establish a subject returns null for the
+/// whole identity rather than constructing one with an empty subject. The distinction matters
+/// because a blank subject compared against a nullable column becomes `IS NULL` in SQL, which
+/// matches every account that has no Google link.
 /// </param>
 /// <param name="Email">
 /// The account's email address, for logging and for an administrator linking an account by hand.

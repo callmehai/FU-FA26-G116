@@ -20,7 +20,14 @@ public sealed class UserRepository(TrustCabinetDbContext db) : IUserRepository
         => db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
 
     public Task<User?> FindByGoogleSubjectIdAsync(string googleSubjectId, CancellationToken ct = default)
-        => db.Users.FirstOrDefaultAsync(u => u.GoogleSubjectId == googleSubjectId, ct);
+        // A blank subject matches nothing, and never reaches the query. EF would translate
+        // `== null` into `IS NULL`, which every password-only account satisfies — so a token with
+        // no subject claim would sign the caller in as whichever unlinked row PostgreSQL happened
+        // to return first. GoogleTokenVerifier already refuses such a token; this is the second
+        // lock, because this method is not private to that one caller.
+        => string.IsNullOrWhiteSpace(googleSubjectId)
+            ? Task.FromResult<User?>(null)
+            : db.Users.FirstOrDefaultAsync(u => u.GoogleSubjectId == googleSubjectId, ct);
 
     public async Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(
         SystemRole role, CancellationToken ct = default)

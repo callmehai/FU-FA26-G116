@@ -37,22 +37,61 @@ public sealed class GoogleTokenVerifier(
                 Audience = [_options.ClientId],
             });
 
-            // Google sets this when the address is verified. An unverified one proves only that
-            // somebody typed it, so it must not be shown as though the system had confirmed it.
-            if (!payload.EmailVerified)
+            var identity = IdentityFrom(payload);
+
+            if (identity is null)
             {
-                logger.LogWarning("Google sign-in rejected: the token's email address is not verified.");
-                return null;
+                logger.LogWarning(
+                    "Google sign-in rejected: the token verified but carries no usable subject or "
+                    + "an unverified email address.");
             }
 
-            return new GoogleIdentity(payload.Subject, payload.Email);
+            return identity;
         }
-        catch (InvalidJwtException e)
+        // Every way a token can be unusable collapses to one answer. Catching only
+        // InvalidJwtException left FormatException — thrown when a segment is not valid
+        // base64url, e.g. "a.b.c" — to escape as a 500 with a stack trace, to an anonymous
+        // caller, and made a malformed token distinguishable from an invalid one.
+        catch (Exception e) when (e is InvalidJwtException or FormatException)
         {
-            // The expected failure: expired, malformed, wrong audience, bad signature. Logged
-            // without the token itself, which is a credential while it is still valid.
+            // Logged without the token itself, which is a credential while it is still valid.
             logger.LogInformation("Google sign-in rejected: ID token did not verify ({Reason}).", e.Message);
             return null;
         }
+        // Deliberately NOT caught: HttpRequestException from fetching Google's signing
+        // certificates. That is an outage on our side, not a bad token, and answering "your
+        // sign-in failed" would send the user off to re-check a password that was never the
+        // problem. It surfaces as a 500 for now; a 503 would be better and is worth a ticket.
+    }
+
+    /// <summary>
+    /// The checks that apply to a payload whose signature, issuer, audience and expiry Google's
+    /// library has already accepted. Returns null when the payload cannot identify anybody.
+    ///
+    /// Internal and static so it can be tested directly. The signature check around it cannot be:
+    /// <c>ValidationSettings</c> exposes only Audience, HostedDomain, Clock, ForceGoogleCertRefresh
+    /// and the two clock tolerances — there is no way to substitute a signing key, so producing a
+    /// token that reaches this point in a unit test would require Google's private key. Keeping
+    /// these two rules out here means they are covered even though the wrapper is not.
+    /// </summary>
+    internal static GoogleIdentity? IdentityFrom(GoogleJsonWebSignature.Payload payload)
+    {
+        // Google sets this when the address is verified. An unverified one proves only that
+        // somebody typed it, so it must not be treated as confirmed.
+        if (!payload.EmailVerified)
+        {
+            return null;
+        }
+
+        // ValidationSettings has no option to require `sub`, and Payload.Subject is a plain
+        // nullable string, so a token without one arrives here as null. It must be refused at this
+        // boundary: downstream, `WHERE google_subject_id = NULL` becomes `IS NULL` in SQL and
+        // would match an account that has no Google link at all.
+        if (string.IsNullOrWhiteSpace(payload.Subject))
+        {
+            return null;
+        }
+
+        return new GoogleIdentity(payload.Subject, payload.Email);
     }
 }
