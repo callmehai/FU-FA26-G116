@@ -1,5 +1,6 @@
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
 
 namespace TrustCabinet.Web.Tests.Users;
@@ -12,6 +13,12 @@ namespace TrustCabinet.Web.Tests.Users;
 internal sealed class FakeUserAccountRepository : IUserAccountRepository
 {
     private readonly List<User> _users = [];
+
+    /// <summary>
+    /// What each account looked like when it was seeded — the fake's stand-in for the row the
+    /// real repository would reload from.
+    /// </summary>
+    private readonly Dictionary<Guid, (string FullName, string Email, SystemRole Role)> _snapshots = [];
 
     /// <summary>How many times the service asked for changes to be persisted.</summary>
     public int SaveCount { get; private set; }
@@ -27,6 +34,7 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository
     public FakeUserAccountRepository WithUser(User user)
     {
         _users.Add(user);
+        _snapshots[user.Id] = (user.FullName, user.Email, user.Role);
         return this;
     }
 
@@ -46,9 +54,44 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository
             string.Equals(u.Email, email, StringComparison.OrdinalIgnoreCase)
             && (exceptId is null || u.Id != exceptId)));
 
+    /// <summary>
+    /// Which capabilities each role carries. Defaults to the seeded reference data, so a test
+    /// that does not care gets the real answer rather than an empty one — an empty map would
+    /// make the last-administrator rule believe nobody administers anything.
+    /// </summary>
+    private readonly Dictionary<SystemRole, Capability[]> _capabilities = new()
+    {
+        [SystemRole.Chair] = [Capability.MeetingCreator, Capability.MeetingApprover],
+        [SystemRole.Secretary] = [Capability.MeetingCreator, Capability.MinutesEditor],
+        [SystemRole.Member] = [],
+        [SystemRole.Admin] = [Capability.AdminUsers],
+    };
+
+    public FakeUserAccountRepository WithCapabilities(SystemRole role, params Capability[] caps)
+    {
+        _capabilities[role] = caps;
+        return this;
+    }
+
+    public Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(
+        SystemRole role, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyCollection<Capability>>(
+            _capabilities.TryGetValue(role, out var caps) ? caps : []);
+
+    public Task<int> CountActiveWithCapabilityAsync(
+        Capability capability, Guid exceptId, CancellationToken ct = default)
+        // Mirrors the real query: active accounts, excluding this one, whose role carries the
+        // capability — resolved through the map above rather than by comparing role names.
+        => Task.FromResult(_users.Count(u =>
+            u.IsActive
+            && u.Id != exceptId
+            && _capabilities.TryGetValue(u.Role, out var caps)
+            && caps.Contains(capability)));
+
     public Task AddAsync(User user, CancellationToken ct = default)
     {
         _users.Add(user);
+        _snapshots[user.Id] = (user.FullName, user.Email, user.Role);
         return Task.CompletedTask;
     }
 
@@ -60,6 +103,29 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository
         {
             NextSaveThrows = null;
             throw exception;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Entities whose in-memory changes were discarded, so a test can prove a rejected save does
+    /// not leave the refused values tracked.
+    ///
+    /// The real repository reloads from the database; there is nothing to reload from here, so
+    /// this records the call and restores the snapshot taken when the entity was handed out.
+    /// </summary>
+    public List<Guid> Discarded { get; } = [];
+
+    public Task DiscardChangesAsync(User user, CancellationToken ct = default)
+    {
+        Discarded.Add(user.Id);
+
+        if (_snapshots.TryGetValue(user.Id, out var original))
+        {
+            user.FullName = original.FullName;
+            user.Email = original.Email;
+            user.Role = original.Role;
         }
 
         return Task.CompletedTask;

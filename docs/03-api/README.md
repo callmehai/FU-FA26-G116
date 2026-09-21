@@ -17,9 +17,9 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 
 Dự kiến có thêm:
 
-- `04-quy-uoc.md` — quy ước chung: đặt tên đường dẫn, phân trang, định dạng lỗi, mã trạng thái
-- `03-rest.md` — từng endpoint: method, path, request/response, quyền yêu cầu
-- `04-signalr-hubs.md` — hub, phương thức client/server, payload sự kiện realtime
+- `03-quy-uoc.md` — quy ước chung: đặt tên đường dẫn, phân trang, định dạng lỗi, mã trạng thái
+- `04-rest.md` — từng endpoint: method, path, request/response, quyền yêu cầu
+- `05-signalr-hubs.md` — hub, phương thức client/server, payload sự kiện realtime
 
 Khi backend bật OpenAPI, tài liệu sinh tự động đóng vai trò tham chiếu chi tiết; các file ở đây
 tập trung vào ý định thiết kế và phần OpenAPI không diễn tả được (luồng, quyền, tình huống lỗi).

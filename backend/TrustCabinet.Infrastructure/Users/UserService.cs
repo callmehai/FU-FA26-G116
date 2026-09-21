@@ -141,14 +141,21 @@ public sealed partial class UserService(
             return UserResult.Failure(UserOutcome.DuplicateEmail);
         }
 
-        // Removing your own ability to administer is the same lockout as deactivating yourself,
-        // so it is refused for the same reason (see ChangeStatusAsync). Checked before anything
-        // is assigned, so a refused update leaves the tracked entity untouched.
-        if (id == actorId && user.Role == SystemRole.Admin && request.Role != SystemRole.Admin)
+        // Refuse a role change that would leave nobody able to administer. Checked before
+        // anything is assigned, so a refused update leaves the tracked entity untouched.
+        //
+        // Not "is this me?": comparing id == actorId only stops someone demoting themselves, and
+        // two administrators can still demote each other into a system with no administrator at
+        // all. What has to hold is the invariant — at least one active account keeps AdminUsers.
+        //
+        // Only when the role actually moves: editing a name or an email takes no capability away,
+        // so the sole administrator must still be able to correct their own profile.
+        if (request.Role != user.Role
+            && await WouldRemoveTheLastAdministratorAsync(user, request.Role, ct))
         {
-            logger.LogInformation(
-                "Update rejected: administrator {ActorId} tried to drop their own Admin role.",
-                actorId);
+            logger.LogWarning(
+                "Update rejected: changing the role of {UserId} would leave no active "
+                + "administrator.", user.Id);
             return UserResult.Failure(UserOutcome.StatusChangeNotAllowed);
         }
 
@@ -166,9 +173,10 @@ public sealed partial class UserService(
         }
         catch (Exception ex) when (IsDuplicateEmail(ex))
         {
-            // The entity keeps the rejected values in memory. Harmless as things stand — the
-            // DbContext is per-request and this request is over — but anything that saved again
-            // on the same context would write them. Nothing does; keep it that way.
+            // The entity is still tracked and still holds the values the database refused. The
+            // audit write below runs on the same DbContext, so its SaveChanges would flush them —
+            // discarding here closes that rather than trusting nobody ever saves again.
+            await users.DiscardChangesAsync(user, ct);
             logger.LogInformation("Update rejected: email already taken (unique index).");
             return UserResult.Failure(UserOutcome.DuplicateEmail);
         }
@@ -224,6 +232,19 @@ public sealed partial class UserService(
             return UserResult.Failure(UserOutcome.StatusChangeNotAllowed);
         }
 
+        // Deactivating the last administrator. The self-check above is not enough on its own:
+        // two administrators can deactivate each other in turn and leave nobody able to
+        // administer — the access token of the one deactivated first still carries AdminUsers
+        // until it expires, so their second request is authorized. The invariant is what has to
+        // be enforced, not "am I aiming at myself?".
+        if (!isActive && await WouldRemoveTheLastAdministratorAsync(user, user.Role, ct))
+        {
+            logger.LogWarning(
+                "Status change rejected: deactivating {UserId} would leave no active "
+                + "administrator.", user.Id);
+            return UserResult.Failure(UserOutcome.StatusChangeNotAllowed);
+        }
+
         // Branch 2 — allowed. Deactivated, never deleted: the person still chairs last quarter's
         // meeting and their approvals stay attributable (SCRUM-13, ERD).
         user.IsActive = isActive;
@@ -254,6 +275,44 @@ public sealed partial class UserService(
             user.Id, isActive ? "reactivated" : "deactivated", actorId);
 
         return UserResult.Success(UserAccount.From(user));
+    }
+
+    /// <summary>
+    /// Whether this change would leave the organisation with no active account able to
+    /// administer users.
+    ///
+    /// <paramref name="newRole"/> is the role the account would end up with — pass the unchanged
+    /// role when deactivating, since there the account loses its capability by becoming inactive
+    /// rather than by changing role.
+    ///
+    /// Answers false when the account does not currently administer anything: taking away a
+    /// capability nobody has cannot remove the last holder of it.
+    /// </summary>
+    private async Task<bool> WouldRemoveTheLastAdministratorAsync(
+        User user, SystemRole newRole, CancellationToken ct)
+    {
+        var current = await users.GetCapabilitiesAsync(user.Role, ct);
+
+        if (!current.Contains(Capability.AdminUsers))
+        {
+            return false;
+        }
+
+        // A role change that keeps the capability takes nothing away. Callers pass the unchanged
+        // role when deactivating, where the capability is lost by the account going inactive
+        // rather than by the role moving.
+        if (newRole != user.Role)
+        {
+            var next = await users.GetCapabilitiesAsync(newRole, ct);
+
+            if (next.Contains(Capability.AdminUsers))
+            {
+                return false;
+            }
+        }
+
+        // Excluding this account, is anybody else still able to administer?
+        return await users.CountActiveWithCapabilityAsync(Capability.AdminUsers, user.Id, ct) == 0;
     }
 
     /// <summary>
@@ -300,7 +359,13 @@ public sealed partial class UserService(
     /// can actually receive mail is answered by sending to it, not by a regular expression — the
     /// strict ones reject valid addresses and still accept unreachable ones.
     /// </summary>
-    [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")]
+    /// <remarks>
+    /// Anchored with <c>\z</c>, not <c>$</c>: in .NET <c>$</c> also matches just before a trailing
+    /// newline, so "user@x.vn\n" would pass. The callers trim first, but this method has to be
+    /// safe for the next one that does not — citext treats the two as different addresses, which
+    /// would allow two accounts that look identical on screen.
+    /// </remarks>
+    [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+\z")]
     private static partial Regex EmailPattern();
 
     /// <summary>

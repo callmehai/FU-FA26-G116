@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Users;
 
@@ -43,6 +44,26 @@ public class UserAccountRepositoryTests
         // The column is citext, so PostgreSQL already compares case-insensitively and can use the
         // unique index. A LOWER() on either side would silently turn this into a sequential scan.
         Assert.DoesNotContain("lower(", sql, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Counting_capability_holders_translates_to_a_join_not_a_role_name()
+    {
+        using var db = NewContext();
+        var exceptId = Guid.CreateVersion7();
+
+        var sql = db.Users
+            .Where(u => u.IsActive
+                && u.Id != exceptId
+                && db.RoleCapabilities.Any(rc =>
+                    rc.Role == u.Role && rc.Capability == Capability.AdminUsers))
+            .ToQueryString();
+
+        // The correlated subquery has to reach role_capabilities: counting on the Admin role name
+        // would silently stop working once AdminUsers is granted to another role, which is the
+        // reconfiguration role_capabilities exists to allow.
+        Assert.Contains("role_capabilities", sql);
+        Assert.Contains("is_active", sql);
     }
 
     [Theory]

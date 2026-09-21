@@ -10,6 +10,12 @@ Sequence diagram chia bốn participant: `User Management Page` → `:User Contr
 `:User Service` → `:User Repository` → `Database`, cộng thêm `:Audit Service` và `:Session
 Service`. Code đi theo đúng các lớp đó:
 
+> **Bản vẽ UC-04 … UC-07 chưa được commit vào repo.** `docs/06-sequencediagram/` hiện chỉ có
+> `SignIn.png`, `SignInWithGoogle.png` và `SignOut.png` của SCRUM-11. Phần code dưới đây làm theo
+> bản BA gửi trong story, nhưng người đọc **chưa đối chiếu được** từ trong repo — khác với
+> [01-xac-thuc.md](01-xac-thuc.md) vốn có link tới ảnh. BA export xong thì thêm vào
+> `docs/06-sequencediagram/` và link vào bảng bên dưới.
+
 | Participant trong diagram | Code |
 |---|---|
 | `:User Controller` | [`backend/TrustCabinet.Web/Endpoints/UserEndpoints.cs`](../../backend/TrustCabinet.Web/Endpoints/UserEndpoints.cs) |
@@ -143,6 +149,12 @@ thì **không** đăng xuất họ — sửa lỗi chính tả không nên đá 
 Một endpoint cho cả hai nhánh, không tách `/deactivate` và `/reactivate`: hai nhánh trong diagram
 chỉ khác nhau ở giá trị ghi xuống và ở chỗ có huỷ phiên hay không, còn message thì chung một mã.
 
+> **`isActive` bắt buộc phải có trong body.** Thiếu field, hoặc gửi sai tên (`is_active`,
+> `active`), đều trả `400` kèm `errors.isActive` — **không** mặc định thành `false`. Nếu để kiểu
+> `bool` không nullable thì body `{}` sẽ bind thành `false`, tức là vô hiệu hoá người ta, huỷ phiên,
+> ghi `user.deactivated` vào audit log vĩnh viễn, rồi trả `200 MSG11 "thành công"`. Một field mà
+> giá trị mặc định của nó có tính phá huỷ thì phải bắt khai báo tường minh.
+
 ### Vô hiệu hoá phải kết thúc phiên
 
 Đây là bước `:Session Service` trong diagram. Chỉ set `is_active = false` là **chưa vô hiệu hoá**
@@ -150,19 +162,58 @@ theo bất kỳ nghĩa nào có ý nghĩa: access token đã cấp vẫn còn hi
 refresh token là thứ chặn việc gia hạn.
 
 `AuthenticationService.RefreshAsync` cũng đọc lại `is_active` mỗi lần refresh, nên dù không huỷ thì
-lần refresh sau cũng bị từ chối — bước này làm nó **tức thì** thay vì *rồi sẽ*.
+lần refresh sau cũng bị từ chối.
+
+**Nhưng huỷ refresh token *không* làm access token đang cầm mất hiệu lực.** Nó là JWT tự chứa, hợp
+lệ tới khi hết hạn (mặc định 15 phút). Đó là lý do nhóm `/api/users` có thêm một endpoint filter
+đọc lại `is_active` và capability của **người gọi** từ database ở mỗi request — xem
+[Người gọi được kiểm lại mỗi request](#người-gọi-được-kiểm-lại-mỗi-request).
 
 Kích hoạt lại thì không đụng tới phiên nào cả: không có phiên nào để dọn.
+
+### Người gọi được kiểm lại mỗi request
+
+Policy `AdminUsers` chỉ đọc claim trong token — mà token là ảnh chụp của người gọi tại thời điểm
+cấp. Nếu chỉ dựa vào nó, một quản trị viên vừa bị vô hiệu hoá vẫn giữ nguyên toàn quyền trên mọi
+tài khoản cho tới khi token hết hạn: đủ để vô hiệu hoá ngược lại người vừa khoá mình, hoặc tự tạo
+một tài khoản `Admin` mới rồi đăng nhập lại bằng nó.
+
+Nên filter của nhóm đọc lại từ database ở mỗi request: người gọi còn `is_active` không, và role của
+họ còn `AdminUsers` trong `role_capabilities` không. Không còn thì **403** — token thật và chưa hết
+hạn, nhưng tài khoản đằng sau nó không còn được phép.
+
+Kiểm theo capability chứ không theo tên role, giống hệt policy, chỉ khác nguồn đọc là database thay
+vì token.
 
 ### Khi nào bị từ chối
 
 | Tình huống | Vì sao |
 |---|---|
 | Tài khoản **đã ở đúng trạng thái đó** | Hai quản trị viên cùng thao tác trên một danh sách, hoặc form bị submit hai lần. Từ chối chứ không coi là thành công, để audit log không ghi hai lần cho một lần vô hiệu hoá — bằng chứng phải nói đúng việc đã xảy ra. |
-| Quản trị viên nhắm vào **chính tài khoản mình** | Một tổ chức duy nhất, có thể không còn quản trị viên thứ hai để gỡ. Tự khoá mình ra ngoài không nên là việc làm được bằng một cú nhấp nhầm — cứu lại phải vào console database. |
+| Quản trị viên nhắm vào **chính tài khoản mình** | Tự khoá mình ra ngoài không nên là việc làm được bằng một cú nhấp nhầm. |
+| Thao tác sẽ **không còn quản trị viên nào** | Xem dưới. |
 
-Cùng lý lẽ, `PUT /api/users/{id}` **từ chối** việc một quản trị viên tự hạ vai trò `Admin` của
-chính mình. Sửa tên của chính mình thì vẫn được: chỉ vai trò bị khoá, không phải cả hồ sơ.
+### Luật "không được xoá sổ quản trị viên cuối cùng"
+
+Chỉ chặn "tự nhắm vào mình" là **chưa đủ**, và đây là một lỗ hổng thật đã được phát hiện khi review:
+
+1. A và B là hai quản trị viên duy nhất, cả hai đang đăng nhập.
+2. B vô hiệu hoá A → thành công. Refresh token của A bị huỷ.
+3. **Access token của A vẫn còn hiệu lực** và vẫn mang `cap=AdminUsers`.
+4. A vô hiệu hoá B → cũng thành công. Giờ **không còn quản trị viên nào hoạt động**, phải vào
+   console database mới cứu được.
+
+Luật đúng không phải "có phải tôi không?" mà là một **bất biến**: luôn còn ít nhất một tài khoản
+đang hoạt động giữ `AdminUsers`. `UserService` đếm số người còn lại trước khi cho vô hiệu hoá hoặc
+đổi vai trò, và từ chối nếu con số đó về 0.
+
+Đếm bằng cách join `role_capabilities`, **không** so `role == Admin`: bảng đó mới là thứ quyết định
+ai được làm gì và có thể trỏ sang role khác mà không cần deploy — so tên role thì guard sẽ im lặng
+ngừng hoạt động đúng lúc cấu hình thay đổi.
+
+Vì vậy chuyển vai trò sang một role **cũng có** `AdminUsers` thì được phép: không có capability nào
+bị mất. Sửa tên hay email của quản trị viên duy nhất cũng được phép — chỉ đổi vai trò và vô hiệu
+hoá mới bị kiểm.
 
 ## Mã thông báo
 
@@ -249,6 +300,14 @@ vào bằng chứng. Đã đánh dấu `ponytail:` trong code.
 - **UC-08 — đặt lại mật khẩu.** Cần `:Email Service` mà hạ tầng gửi mail chưa có. Bảng
   `email_messages` đã sẵn sàng làm hàng đợi (SCRUM-15), và token đặt lại mật khẩu có thể dùng
   chung Redis với refresh token. Làm khi SCRUM-15 xong.
+- **Ghi audit và ghi nghiệp vụ nằm ở hai transaction.** `AuditService` tự `SaveChanges` sau khi
+  nghiệp vụ đã commit, nên nếu dòng audit ghi hỏng thì thay đổi nghiệp vụ **đã xảy ra rồi** và
+  không rollback lại được: kết quả là 500 kèm một thay đổi không có bằng chứng. Trường hợp duy nhất
+  gây ra được điều này là `actor_id` không trỏ tới `users.id` nào (cột có FK `Restrict`) — hiện đã
+  chặn được vì filter từ chối request không có claim `sub` hợp lệ. Muốn đóng hẳn thì cho hai lần
+  ghi vào chung một transaction; chưa làm vì đánh đổi hiện tại vẫn nghiêng về phía giữ bằng chứng.
+  Lưu ý: `AuditServiceTests` dùng EF in-memory provider nên **không** kiểm FK — test ở đó không bắt
+  được lỗi này.
 - **Liên kết tài khoản với Google từ màn hình quản trị.** Hiện vẫn làm bằng SQL — xem
   [01-xac-thuc.md](01-xac-thuc.md).
 - **Màn hình FE** (`frontend/src/features/access/UsersPage.tsx`) vẫn là placeholder. Story này chỉ

@@ -361,6 +361,28 @@ public class UserServiceTests
     }
 
     [Fact]
+    public async Task Update_discards_the_rejected_values_when_the_save_is_refused()
+    {
+        // The unique index rejects the row, but the entity is still tracked and still holds what
+        // was assigned to it. The audit write runs on the same DbContext, so its SaveChanges
+        // would flush those values — a refused update that lands anyway, one call later.
+        var user = GivenUser("Tên Cũ", "cu@trustcabinet.local", SystemRole.Member);
+        _users.NextSaveThrows = DuplicateEmailException();
+
+        var result = await NewService().UpdateAsync(
+            user.Id, new UserEdit("Tên Mới", "moi@trustcabinet.local", SystemRole.Secretary),
+            _actorId);
+
+        Assert.Equal(UserOutcome.DuplicateEmail, result.Outcome);
+        Assert.Contains(user.Id, _users.Discarded);
+        // Back to what the database holds, not what the caller asked for.
+        Assert.Equal("Tên Cũ", user.FullName);
+        Assert.Equal("cu@trustcabinet.local", user.Email);
+        Assert.Equal(SystemRole.Member, user.Role);
+        Assert.Empty(_audit.Records);
+    }
+
+    [Fact]
     public async Task Update_ends_the_sessions_when_the_role_changes()
     {
         // Capabilities travel inside the access token, so without this the person keeps the rights
@@ -414,8 +436,10 @@ public class UserServiceTests
     }
 
     [Fact]
-    public async Task Update_lets_one_administrator_demote_another()
+    public async Task Update_lets_one_administrator_demote_another_while_one_remains()
     {
+        // Two administrators, so demoting one still leaves somebody able to administer.
+        GivenUser("Quản Trị Một", "quantri1@trustcabinet.local", SystemRole.Admin);
         var other = GivenUser("Quản Trị Hai", "quantri2@trustcabinet.local", SystemRole.Admin);
 
         var result = await NewService().UpdateAsync(
@@ -423,6 +447,34 @@ public class UserServiceTests
 
         Assert.True(result.Succeeded);
         Assert.Equal(SystemRole.Member, other.Role);
+    }
+
+    [Fact]
+    public async Task Update_refuses_to_demote_the_last_administrator()
+    {
+        // Nobody would be left able to administer, and recovering needs a database console.
+        // Not the same rule as "you cannot demote yourself": this fires whoever is asking.
+        var only = GivenUser("Quản Trị Duy Nhất", "quantri@trustcabinet.local", SystemRole.Admin);
+
+        var result = await NewService().UpdateAsync(
+            only.Id, new UserEdit(only.FullName, only.Email, SystemRole.Member), _actorId);
+
+        Assert.Equal(UserOutcome.StatusChangeNotAllowed, result.Outcome);
+        Assert.Equal(SystemRole.Admin, only.Role);
+    }
+
+    [Fact]
+    public async Task Update_lets_the_last_administrator_keep_administering_under_another_role()
+    {
+        // The rule is about the capability, not the role name: moving to a role that also carries
+        // AdminUsers takes nothing away, and must not be refused.
+        var only = GivenUser("Quản Trị Duy Nhất", "quantri@trustcabinet.local", SystemRole.Admin);
+        _users.WithCapabilities(SystemRole.Chair, Capability.AdminUsers);
+
+        var result = await NewService().UpdateAsync(
+            only.Id, new UserEdit(only.FullName, only.Email, SystemRole.Chair), _actorId);
+
+        Assert.True(result.Succeeded);
     }
 
     // ------------------------------------------- UC-07 · Deactivate / reactivate user account
@@ -497,6 +549,51 @@ public class UserServiceTests
         // Still usable: recovering from this would otherwise need a database console.
         Assert.True(admin.IsActive);
         Assert.Empty(_audit.Records);
+    }
+
+    [Fact]
+    public async Task Two_administrators_cannot_deactivate_each_other_into_a_locked_out_system()
+    {
+        // The lockout this rule exists for, and the one the self-check alone does not stop.
+        // B deactivates A; A's access token still carries AdminUsers until it expires, so A's
+        // next request is authorized and would have deactivated B — leaving nobody able to sign
+        // in and administer, recoverable only from a database console.
+        var a = GivenUser("Quản Trị A", "a@trustcabinet.local", SystemRole.Admin);
+        var b = GivenUser("Quản Trị B", "b@trustcabinet.local", SystemRole.Admin);
+        var service = NewService();
+
+        var first = await service.ChangeStatusAsync(a.Id, isActive: false, b.Id);
+        var second = await service.ChangeStatusAsync(b.Id, isActive: false, a.Id);
+
+        Assert.True(first.Succeeded);
+        // The second one is refused: A is now inactive, so B is the last one left.
+        Assert.Equal(UserOutcome.StatusChangeNotAllowed, second.Outcome);
+        Assert.True(b.IsActive);
+        Assert.Equal(1, _users.Users.Count(u => u.Role == SystemRole.Admin && u.IsActive));
+    }
+
+    [Fact]
+    public async Task Deactivating_the_last_administrator_is_refused()
+    {
+        var only = GivenUser("Quản Trị Duy Nhất", "quantri@trustcabinet.local", SystemRole.Admin);
+
+        var result = await NewService().ChangeStatusAsync(only.Id, isActive: false, _actorId);
+
+        Assert.Equal(UserOutcome.StatusChangeNotAllowed, result.Outcome);
+        Assert.True(only.IsActive);
+        Assert.Empty(_audit.Records);
+    }
+
+    [Fact]
+    public async Task Deactivating_a_non_administrator_is_allowed_even_when_one_admin_exists()
+    {
+        // The rule guards the capability, not every account: an ordinary member carries no
+        // AdminUsers, so deactivating them can never remove the last administrator.
+        var member = GivenUser(role: SystemRole.Member);
+
+        var result = await NewService().ChangeStatusAsync(member.Id, isActive: false, _actorId);
+
+        Assert.True(result.Succeeded);
     }
 
     [Fact]

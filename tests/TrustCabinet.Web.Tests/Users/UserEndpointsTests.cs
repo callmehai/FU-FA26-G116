@@ -439,6 +439,64 @@ public class UserEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task A_deactivated_administrator_is_refused_even_with_a_valid_token()
+    {
+        // The window the endpoint filter closes. The token is genuine, unexpired and carries
+        // AdminUsers — revoking refresh tokens does not touch it. Without a server-side re-read
+        // this caller keeps full power over every account until the token expires, long enough
+        // to deactivate whoever deactivated them or to mint a fresh admin account.
+        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", SystemRole.Admin);
+        var client = _factory.ClientFor(admin, Capability.AdminUsers);
+        var target = GivenUser();
+
+        admin.IsActive = false;
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/users/{target.Id}/status", new { isActive = false });
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.True(target.IsActive);
+        Assert.Empty(_factory.Audit.Records);
+    }
+
+    [Fact]
+    public async Task An_administrator_whose_role_lost_the_capability_is_refused()
+    {
+        // Same idea for a demotion rather than a deactivation: the token still says AdminUsers,
+        // the database no longer agrees, and the database wins.
+        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", SystemRole.Admin);
+        var client = _factory.ClientFor(admin, Capability.AdminUsers);
+
+        admin.Role = SystemRole.Member;
+
+        var response = await client.GetAsync("/api/users");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Theory]
+    // An empty body, and a client sending snake_case or a misspelled field.
+    [InlineData("{}")]
+    [InlineData("{\"is_active\":true}")]
+    [InlineData("{\"active\":true}")]
+    public async Task Status_change_refuses_a_body_that_does_not_state_the_status(string body)
+    {
+        // A non-nullable bool would bind every one of these to false — deactivating the account,
+        // revoking their sessions, writing user.deactivated to the permanent audit log, and
+        // answering 200 MSG11 "thành công".
+        var target = GivenUser(isActive: true);
+        var client = AdminClient();
+
+        var response = await client.PutAsync(
+            $"/api/users/{target.Id}/status",
+            new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.True(target.IsActive);
+        Assert.Empty(_factory.Audit.Records);
+    }
+
+    [Fact]
     public async Task Status_change_answers_404_for_an_unknown_account()
     {
         var client = AdminClient();

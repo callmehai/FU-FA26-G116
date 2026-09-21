@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
 
 namespace TrustCabinet.Infrastructure.Users;
@@ -29,8 +30,32 @@ public sealed class UserAccountRepository(TrustCabinetDbContext db) : IUserAccou
         // Authentication.UserRepository.FindByEmailAsync does not either.
         => db.Users.AnyAsync(u => u.Email == email && (exceptId == null || u.Id != exceptId), ct);
 
+    public async Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(
+        SystemRole role, CancellationToken ct = default)
+        => await db.RoleCapabilities
+            .Where(rc => rc.Role == role)
+            .Select(rc => rc.Capability)
+            .ToArrayAsync(ct);
+
+    public Task<int> CountActiveWithCapabilityAsync(
+        Capability capability, Guid exceptId, CancellationToken ct = default)
+        // Joined against role_capabilities rather than filtering on Role == Admin: that table is
+        // what decides who may administer, and it can be re-pointed to another role without a
+        // deployment. Counting the role name would leave this guard silently wrong afterwards.
+        => db.Users
+            .Where(u => u.IsActive
+                && u.Id != exceptId
+                && db.RoleCapabilities.Any(rc => rc.Role == u.Role && rc.Capability == capability))
+            .CountAsync(ct);
+
     public async Task AddAsync(User user, CancellationToken ct = default)
         => await db.Users.AddAsync(user, ct);
 
     public Task SaveChangesAsync(CancellationToken ct = default) => db.SaveChangesAsync(ct);
+
+    public Task DiscardChangesAsync(User user, CancellationToken ct = default)
+        // Reload rather than Detach: the caller still holds the reference and reads from it after
+        // a failure, so it has to carry the database's values rather than become a detached
+        // entity whose state is whatever was last assigned to it.
+        => db.Entry(user).ReloadAsync(ct);
 }

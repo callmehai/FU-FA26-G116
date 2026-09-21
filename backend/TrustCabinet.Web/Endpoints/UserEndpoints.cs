@@ -32,7 +32,13 @@ public static class UserEndpoints
         // accidentally leave it open: a new MapGet here inherits the policy.
         var users = app.MapGroup("/api/users")
             .WithTags("Users")
-            .RequireAuthorization(AdminUsersPolicy);
+            .RequireAuthorization(AdminUsersPolicy)
+            // The policy above only reads the token's claims, and a token stays valid until it
+            // expires — so deactivating someone or taking away their capability would not stop
+            // them until then (up to Authentication:AccessTokenMinutes). These endpoints
+            // administer accounts, so that window is exactly where the damage would be done:
+            // re-read the caller from the database on every request instead.
+            .AddEndpointFilter(RevalidateCallerAsync);
 
         users.MapGet("/", ListAsync);
         users.MapGet("/{id:guid}", GetAsync);
@@ -44,6 +50,50 @@ public static class UserEndpoints
         users.MapPut("/{id:guid}/status", ChangeStatusAsync);
 
         return app;
+    }
+
+    /// <summary>
+    /// Re-reads the caller's own account before any user-management request runs, and refuses
+    /// unless they are still active and still hold <see cref="Capability.AdminUsers"/>.
+    ///
+    /// The bearer token is a snapshot of who the caller was when it was issued. Revoking their
+    /// refresh tokens does not touch the access token they already hold, so without this an
+    /// administrator who has just been deactivated keeps full power over every account until
+    /// their token expires — long enough to deactivate whoever deactivated them, or to mint
+    /// themselves a fresh administrator account.
+    ///
+    /// 403 rather than 401: the token is genuine and unexpired, it is the account behind it that
+    /// may no longer do this.
+    /// </summary>
+    private static async ValueTask<object?> RevalidateCallerAsync(
+        EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    {
+        var callerId = CurrentUserId(context.HttpContext.User);
+
+        // No usable "sub" claim. Refused rather than defaulted: an actor id of Guid.Empty would
+        // match no account, silently disabling the rules that compare the caller against the
+        // account being changed, and would be written into the audit log as the actor.
+        if (callerId is null)
+        {
+            return Results.Forbid();
+        }
+
+        var users = context.HttpContext.RequestServices.GetRequiredService<IUserAccountRepository>();
+        var caller = await users.FindByIdAsync(callerId.Value, context.HttpContext.RequestAborted);
+
+        if (caller is null || !caller.IsActive)
+        {
+            return Results.Forbid();
+        }
+
+        var capabilities = await users.GetCapabilitiesAsync(
+            caller.Role, context.HttpContext.RequestAborted);
+
+        // Checked against the capability, not the role name — the same rule the policy follows,
+        // except read from the database rather than from the token.
+        return capabilities.Contains(Capability.AdminUsers)
+            ? await next(context)
+            : Results.Forbid();
     }
 
     /// <summary>
@@ -75,7 +125,7 @@ public static class UserEndpoints
     {
         var result = await users.CreateAsync(
             new NewUser(request.FullName, request.Email, request.Password, ParseRole(request.Role)),
-            CurrentUserId(principal),
+            RevalidatedUserId(principal),
             ct);
 
         if (!result.Succeeded)
@@ -103,7 +153,7 @@ public static class UserEndpoints
         var result = await users.UpdateAsync(
             id,
             new UserEdit(request.FullName, request.Email, ParseRole(request.Role)),
-            CurrentUserId(principal),
+            RevalidatedUserId(principal),
             ct);
 
         return result.Succeeded
@@ -126,8 +176,22 @@ public static class UserEndpoints
         IUserService users,
         CancellationToken ct)
     {
+        // An absent or misspelled field is a validation error, never a silent deactivation.
+        if (request.IsActive is not { } isActive)
+        {
+            return Results.Json(
+                new UserErrorResponse(
+                    "MSG09",
+                    "Thông tin tài khoản không hợp lệ.",
+                    new Dictionary<string, string>
+                    {
+                        ["isActive"] = "Thiếu trạng thái cần đặt cho tài khoản.",
+                    }),
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
         var result = await users.ChangeStatusAsync(
-            id, request.IsActive, CurrentUserId(principal), ct);
+            id, isActive, RevalidatedUserId(principal), ct);
 
         return result.Succeeded
             ? Results.Ok(new UserMutationResponse(
@@ -166,11 +230,29 @@ public static class UserEndpoints
     };
 
     /// <summary>
-    /// Who is making the request, from the validated token. Never from the body: an actor id a
-    /// caller can choose is not evidence of anything, and it is what the audit log records.
+    /// Who is making the request, from the validated token, or null when the token carries no
+    /// usable "sub". Never from the body: an actor id a caller can choose is not evidence of
+    /// anything, and it is what the audit log records.
+    ///
+    /// Nullable rather than falling back to <see cref="Guid.Empty"/>: an empty actor matches no
+    /// account, so it would quietly switch off every rule that compares the caller against the
+    /// account being changed. <see cref="RevalidateCallerAsync"/> refuses the request instead,
+    /// which is why the handlers below can use the value without re-checking.
     /// </summary>
-    private static Guid CurrentUserId(ClaimsPrincipal principal)
-        => Guid.TryParse(principal.FindFirstValue("sub"), out var id) ? id : Guid.Empty;
+    private static Guid? CurrentUserId(ClaimsPrincipal principal)
+        => Guid.TryParse(principal.FindFirstValue("sub"), out var id) ? id : null;
+
+    /// <summary>
+    /// The caller's id for a handler that only runs behind <see cref="RevalidateCallerAsync"/>,
+    /// which has already refused the request if there was no usable one. Throws rather than
+    /// substituting a placeholder, so removing that filter fails loudly instead of quietly
+    /// writing an actor nobody can trace.
+    /// </summary>
+    private static Guid RevalidatedUserId(ClaimsPrincipal principal)
+        => CurrentUserId(principal)
+            ?? throw new InvalidOperationException(
+                "No caller id on a revalidated request — RevalidateCallerAsync should have "
+                + "refused it. Did the endpoint filter get removed from the group?");
 
     /// <summary>
     /// The role as a string, so an unknown value is a validation error rather than a 400 from the
@@ -192,8 +274,16 @@ public sealed record CreateUserRequest(
 /// <summary>UC-06's form. No password — changing one is UC-08.</summary>
 public sealed record UpdateUserRequest(string? FullName, string? Email, string? Role);
 
-/// <summary>UC-07's action. True reactivates, false deactivates.</summary>
-public sealed record ChangeUserStatusRequest(bool IsActive);
+/// <summary>
+/// UC-07's action. True reactivates, false deactivates.
+///
+/// Nullable, like the other two request records: a non-nullable bool binds a missing or
+/// misspelled field to <c>false</c>, so <c>{}</c> — or <c>{"is_active": true}</c> from a client
+/// using snake_case — would read as "deactivate", revoke the person's sessions, write
+/// <c>user.deactivated</c> to the permanent audit log, and answer MSG11 "thành công". A field
+/// whose default is destructive has to be stated explicitly.
+/// </summary>
+public sealed record ChangeUserStatusRequest(bool? IsActive);
 
 /// <summary>
 /// One account on the wire. Built from <see cref="UserAccount"/>, never from the entity — the
