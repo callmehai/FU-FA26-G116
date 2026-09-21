@@ -1,14 +1,23 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using TrustCabinet.Domain.Audit;
+using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Authentication;
+using TrustCabinet.Infrastructure.Users;
+using TrustCabinet.Web;
 using TrustCabinet.Web.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddTrustCabinetDatabase(builder.Configuration);
 builder.Services.AddTrustCabinetAuthentication(builder.Configuration);
+builder.Services.AddTrustCabinetUserManagement();
+
+// The audit log records where a request came from, and only the web layer can see that.
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICallerContext, HttpCallerContext>();
 
 var authenticationOptions = builder.Configuration
     .GetSection(AuthenticationOptions.SectionName)
@@ -52,7 +61,14 @@ builder.Services
         options.MapInboundClaims = false;
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+    // User management is gated on the capability, not on the role name: a capability moved to
+    // another role in role_capabilities then takes effect without touching this code
+    // (AccessEnums — "never checked by comparing against the role name in business code").
+    options.AddPolicy(
+        UserEndpoints.AdminUsersPolicy,
+        policy => policy.RequireClaim(
+            JwtTokenIssuer.CapabilityClaim, Capability.AdminUsers.ToString())));
 
 var app = builder.Build();
 
@@ -82,6 +98,9 @@ app.UseAuthorization();
 
 // POST /api/auth/login, /refresh, /logout and GET /api/auth/me — UC-01.
 app.MapAuthEndpoints();
+
+// /api/users — UC-04 … UC-07 (SCRUM-13). Every route requires the AdminUsers capability.
+app.MapUserEndpoints();
 
 // Health endpoint — the frontend calls this to confirm the backend is alive.
 app.MapGet("/api/health", () => Results.Ok(new
