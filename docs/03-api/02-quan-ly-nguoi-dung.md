@@ -10,11 +10,15 @@ Sequence diagram chia bốn participant: `User Management Page` → `:User Contr
 `:User Service` → `:User Repository` → `Database`, cộng thêm `:Audit Service` và `:Session
 Service`. Code đi theo đúng các lớp đó:
 
-> **Bản vẽ UC-04 … UC-07 chưa được commit vào repo.** `docs/06-sequencediagram/` hiện chỉ có
-> `SignIn.png`, `SignInWithGoogle.png` và `SignOut.png` của SCRUM-11. Phần code dưới đây làm theo
-> bản BA gửi trong story, nhưng người đọc **chưa đối chiếu được** từ trong repo — khác với
-> [01-xac-thuc.md](01-xac-thuc.md) vốn có link tới ảnh. BA export xong thì thêm vào
-> `docs/06-sequencediagram/` và link vào bảng bên dưới.
+Bản vẽ từng use case:
+
+| Use case | Sequence diagram |
+|---|---|
+| UC-04 — Xem danh sách tài khoản | [ViewUserAccount.png](../06-sequencediagram/ViewUserAccount.png) |
+| UC-05 — Tạo tài khoản | [CreateUserAccount.png](../06-sequencediagram/CreateUserAccount.png) |
+| UC-06 — Sửa tài khoản | [UpdateUserAccount.png](../06-sequencediagram/UpdateUserAccount.png) |
+| UC-07 — Vô hiệu hoá / kích hoạt lại | [DeactivateReactivateUserAccount.png](../06-sequencediagram/DeactivateReactivateUserAccount.png) |
+| UC-08 — Đặt lại mật khẩu | [ResetUserPassword.png](../06-sequencediagram/ResetUserPassword.png) — **chưa hiện thực**, xem [Còn nợ](#còn-nợ) |
 
 | Participant trong diagram | Code |
 |---|---|
@@ -24,6 +28,21 @@ Service`. Code đi theo đúng các lớp đó:
 | `:Audit Service` | [`backend/TrustCabinet.Infrastructure/Audit/AuditService.cs`](../../backend/TrustCabinet.Infrastructure/Audit/AuditService.cs) |
 | `:Session Service` | `IRefreshTokenStore.RevokeAllForUserAsync` — xem [Vô hiệu hoá phải kết thúc phiên](#vô-hiệu-hoá-phải-kết-thúc-phiên) |
 | `Database` | bảng `users` và `audit_log` |
+
+### Ba chỗ code khác bản vẽ
+
+Bản vẽ là thiết kế nghiệp vụ, không phải đặc tả kỹ thuật đầy đủ. Ba chỗ sau code làm khác, đều có
+lý do và đều đã được ghi lại:
+
+1. **`:User Repository` không kiểm "Username"** (UC-05 vẽ "Check Username and Email availability").
+   Hệ thống **không có username** — đăng nhập bằng email hoặc Google, theo
+   [ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md). Chỉ kiểm email.
+2. **UC-06 có thêm nhánh trùng email** mà bản vẽ không có. Unique index không quan tâm bản vẽ viết
+   gì: thiếu nhánh này thì sửa ai đó sang email đã tồn tại sẽ ra `500` thay vì `MSG08`.
+3. **UC-06 và UC-07 có thêm luật "không được xoá sổ quản trị viên cuối cùng"**, xem
+   [phần riêng bên dưới](#luật-không-được-xoá-sổ-quản-trị-viên-cuối-cùng). Bản vẽ UC-07 có sẵn
+   nhánh *"Status change is not allowed"* nhưng không nói khi nào — đây là một trong các điều kiện
+   lấp vào nhánh đó.
 
 **Không có thay đổi database.** Cả hai bảng đã có sẵn từ migration `ExpandDomainModel`; story này
 chỉ đọc và ghi vào chúng.
@@ -297,9 +316,11 @@ vào bằng chứng. Đã đánh dấu `ponytail:` trong code.
 
 ## Còn nợ
 
-- **UC-08 — đặt lại mật khẩu.** Cần `:Email Service` mà hạ tầng gửi mail chưa có. Bảng
-  `email_messages` đã sẵn sàng làm hàng đợi (SCRUM-15), và token đặt lại mật khẩu có thể dùng
-  chung Redis với refresh token. Làm khi SCRUM-15 xong.
+- **UC-08 — đặt lại mật khẩu** ([ResetUserPassword.png](../06-sequencediagram/ResetUserPassword.png)).
+  Bản vẽ đã có, code thì chưa: cần `:Email Service` mà hạ tầng gửi mail chưa có, và `MSG15 - Unable
+  to send reset email` trong bản vẽ chỉ có nghĩa khi thật sự có chỗ gửi mail. Bảng `email_messages`
+  đã sẵn sàng làm hàng đợi (SCRUM-15), `:Authentication Service` trong bản vẽ đã tồn tại, và token
+  đặt lại mật khẩu có thể dùng chung Redis với refresh token. Làm khi SCRUM-15 xong.
 - **Ghi audit và ghi nghiệp vụ nằm ở hai transaction.** `AuditService` tự `SaveChanges` sau khi
   nghiệp vụ đã commit, nên nếu dòng audit ghi hỏng thì thay đổi nghiệp vụ **đã xảy ra rồi** và
   không rollback lại được: kết quả là 500 kèm một thay đổi không có bằng chứng. Trường hợp duy nhất

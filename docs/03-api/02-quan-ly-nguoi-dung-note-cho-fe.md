@@ -7,8 +7,9 @@ tập trung vào **những chỗ dễ làm sai mà lỗi lại trông như bug c
 Hợp đồng API đầy đủ: [02-quan-ly-nguoi-dung.md](02-quan-ly-nguoi-dung.md). File này không nhắc
 lại, chỉ nói phần FE.
 
-**UC-08 (đặt lại mật khẩu) chưa có endpoint.** Đừng làm nút "Đặt lại mật khẩu" rồi để đó — chưa có
-gì để gọi. Chờ SCRUM-15 (hạ tầng email).
+**UC-08 (đặt lại mật khẩu) chưa có endpoint**, dù bản vẽ
+[ResetUserPassword.png](../06-sequencediagram/ResetUserPassword.png) đã có. Đừng làm nút "Đặt lại
+mật khẩu" rồi để đó — chưa có gì để gọi. Chờ SCRUM-15 (hạ tầng email).
 
 ---
 
