@@ -63,14 +63,12 @@ builder.Services
         options.MapInboundClaims = false;
     });
 
-builder.Services.AddAuthorization(options =>
-    // User management is gated on the capability, not on the role name: a capability moved to
-    // another role in role_capabilities then takes effect without touching this code
-    // (AccessEnums — "never checked by comparing against the role name in business code").
-    options.AddPolicy(
-        UserEndpoints.AdminUsersPolicy,
-        policy => policy.RequireClaim(
-            JwtTokenIssuer.CapabilityClaim, Capability.AdminUsers.ToString())));
+// One authorization policy per capability, so any endpoint group can ask for the one it needs with
+// RequireCapability(...) — SCRUM-12's "every business endpoint checks permission". Each is gated on
+// the capability, not on the role name: a capability moved to another role in role_capabilities
+// then takes effect without touching this code (AccessEnums — "never checked by comparing against
+// the role name in business code").
+builder.Services.AddCapabilityPolicies();
 
 var app = builder.Build();
 

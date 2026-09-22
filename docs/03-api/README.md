@@ -25,12 +25,16 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   làm màn hình phân quyền: `capabilities` là trạng thái cuối chứ không phải delta, mã quyền
   PascalCase khác bảng cứng đang có trong `user.ts`, vì sao đừng tự đoán luật chống tự khoá ở FE,
   và vì sao route phải trả `404` trong khi API trả `403`
+- [`04-phan-quyen-phia-server.md`](04-phan-quyen-phia-server.md) — phân quyền phía server
+  (SCRUM-12): luật chung mà **mọi** endpoint nghiệp vụ phải theo. Cổng quyền hai lớp (policy trên
+  claim + đọc lại từ database) và vì sao một lớp là không đủ; khi nào trả `401`/`403`/`404`; vì sao
+  endpoint danh sách phải lọc ở server; các bước thêm một endpoint mới
 
 Dự kiến có thêm:
 
-- `04-quy-uoc.md` — quy ước chung: đặt tên đường dẫn, phân trang, định dạng lỗi, mã trạng thái
-- `05-rest.md` — từng endpoint: method, path, request/response, quyền yêu cầu
-- `06-signalr-hubs.md` — hub, phương thức client/server, payload sự kiện realtime
+- `05-quy-uoc.md` — quy ước chung: đặt tên đường dẫn, phân trang, định dạng lỗi, mã trạng thái
+- `06-rest.md` — từng endpoint: method, path, request/response, quyền yêu cầu
+- `07-signalr-hubs.md` — hub, phương thức client/server, payload sự kiện realtime
 
 Khi backend bật OpenAPI, tài liệu sinh tự động đóng vai trò tham chiếu chi tiết; các file ở đây
 tập trung vào ý định thiết kế và phần OpenAPI không diễn tả được (luồng, quyền, tình huống lỗi).
