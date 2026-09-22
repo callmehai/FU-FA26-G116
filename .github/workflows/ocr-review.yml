@@ -136,6 +136,11 @@ jobs:
           # thay vì đẻ thêm một cái mỗi lần push.
           sticky_summary: 'true'
 
+          # Một file một lúc. Mặc định OCR bắn song song nhiều nhóm file, và ở
+          # Tier 1 của Anthropic thì trần input-token-mỗi-phút thấp hơn một lượt
+          # review file lớn (~33K token/file), nên chạy song song là 429 ngay.
+          review_concurrency: '1'
+
           # In tiến trình và lỗi thẳng ra log của workflow. Mặc định là false, khi
           # đó stderr bị nuốt vào một file artifact và job hỏng chỉ hiện đúng câu
           # "xem artifact" — phải tải về mới biết lỗi gì. Bật lên cho dễ soi; log
