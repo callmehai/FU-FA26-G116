@@ -93,6 +93,14 @@ dotnet test TrustCabinet.sln      # xunit, tests/TrustCabinet.Web.Tests
 CI runs all four on every pull request — see [.github/workflows/ci.yml](.github/workflows/ci.yml).
 Keep it green; fix the branch rather than disabling a step.
 
+**CI builds the backend with `-warnaserror`**, so a compiler or analyzer warning fails the pull
+request. The flag is only in the workflow, not in the `.csproj` files: a local `dotnet build` still
+just warns, so half-written code stays runnable while you work. Run `dotnet build TrustCabinet.sln
+-warnaserror` before pushing to get the answer CI will give. A warning that is genuinely intended
+is declared by code in the project that emits it —
+`<WarningsNotAsErrors>xUnit1012</WarningsNotAsErrors>`, with a comment saying why — rather than by
+removing the flag.
+
 Tests live under `tests/`, one project per backend project, registered in the `.sln`. Today there
 is only `TrustCabinet.Web.Tests` with a `/api/health` smoke test — it exists to prove the app boots
 in memory and CI can run tests at all. Replace it as real endpoints land; do not leave it as the
