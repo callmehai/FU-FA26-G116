@@ -21,8 +21,17 @@ export const ROLE_LABEL: Record<Role, string> = {
 /**
  * Which capabilities each role carries.
  *
- * TEMPORARY: the real mapping belongs in the backend, which will return a user's capabilities at
- * sign-in. This table exists so screens can be built and demoed before that endpoint lands.
+ * TODO(SCRUM-46): delete this table and read `capabilities` from `GET /api/auth/me`.
+ *
+ * It is scaffolding for the mocked `AuthProvider`, and it is **already wrong**: the backend is the
+ * single source of truth (`role_capabilities`, editable at runtime via SCRUM-60), it returns
+ * capability codes in PascalCase — `AdminUsers`, not `admin_users` — and an administrator can move
+ * a capability to another role without this file noticing.
+ *
+ * Do not add a new capability here. Nothing is gated on it: every endpoint re-checks the
+ * capability server-side, so this table only decides what gets rendered.
+ *
+ * See docs/03-api/04-phan-quyen-phia-server.md.
  */
 export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
   chair: ['meeting_creator', 'meeting_approver'],

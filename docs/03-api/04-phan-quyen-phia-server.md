@@ -63,6 +63,11 @@ qua được cổng thì được xem tất cả. Khi endpoint danh sách đầu
 Trả về tập quyền để giao diện biết render cái gì — chi tiết ở
 [`01-xac-thuc.md`](01-xac-thuc.md). Đây là **nguồn duy nhất** của tập quyền phía FE.
 
+Endpoint này cũng đọc lại từ database như cổng quyền, chứ không đọc claim trong token. Nó là chỗ
+giao diện dựa vào để render, nên nếu nó trả lời theo ảnh chụp trong token thì người vừa bị vô hiệu
+hoá sẽ thấy nguyên màn hình quản trị — mọi nút đều `403`, nhưng đó là màn hình không nên vẽ ra ngay
+từ đầu. Tài khoản không còn hoặc đã bị vô hiệu hoá thì trả `401`, không phải `403`.
+
 ```jsonc
 {
   "id": "0199...",

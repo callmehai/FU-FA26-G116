@@ -99,16 +99,32 @@ public class CapabilityGateTests : IDisposable
         => GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", SystemRole.Admin);
 
     /// <summary>
-    /// Every route behind the AdminUsers gate. Kept as one list so a criterion is checked against
-    /// all of them at once — a gate applied to three groups out of four is the bug this catches.
+    /// Every route behind the AdminUsers gate. Kept as one list so each criterion is checked
+    /// against all of them at once — a gate applied to three groups out of four, or a route mapped
+    /// outside its gated group, is the bug this catches.
+    ///
+    /// The id-routes are listed even though they inherit the gate from their group: that
+    /// inheritance is the thing worth pinning down, because it is what makes a route someone adds
+    /// later gated by default. A placeholder id is enough — the gate refuses before the handler
+    /// ever looks one up.
     /// </summary>
     public static TheoryData<string, string> GatedRoutes() => new()
     {
         { "GET", "/api/users" },
         { "POST", "/api/users" },
+        { "GET", $"/api/users/{PlaceholderId}" },
+        { "PUT", $"/api/users/{PlaceholderId}" },
+        { "PUT", $"/api/users/{PlaceholderId}/status" },
         { "GET", "/api/roles/capabilities" },
         { "PUT", "/api/roles/capabilities" },
     };
+
+    /// <summary>
+    /// A well-formed id that matches the <c>{id:guid}</c> route constraint, so the request reaches
+    /// the gate rather than failing to route. It never needs to exist: every assertion here is
+    /// about being refused before the handler runs.
+    /// </summary>
+    private const string PlaceholderId = "0199aaaa-0000-7000-8000-000000000000";
 
     // ------------------------------------------------- "Chưa đăng nhập" → 401
 
@@ -198,14 +214,21 @@ public class CapabilityGateTests : IDisposable
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    // ------------------ "Không được đọc một tài nguyên cụ thể" → 404, not 403
+    // ------------------------------- An unknown id answers 404, with an empty body
 
     [Fact]
-    public async Task An_unreadable_resource_answers_404_without_confirming_it_exists()
+    public async Task An_unknown_id_answers_404_with_nothing_in_the_body()
     {
-        // A record the caller may not see must not be distinguishable from one that is not there:
-        // a 403 on a specific id is itself the information, because it confirms that id exists
-        // (AGENTS.md — "giấu sự tồn tại của một dòng dữ liệu").
+        // NOT the "unreadable resource" criterion, despite looking like it. The caller here holds
+        // AdminUsers and may read every row, so this only covers UserOutcome.NotFound — a row that
+        // is not there. It is the body shape that matters for later: empty, so when a per-resource
+        // rule does exist, "you may not read this" can answer identically to "it is not there".
+        //
+        // The criterion itself — "không được đọc một tài nguyên cụ thể" → 404 — has nothing to
+        // bind to yet: /api/users is all-or-nothing behind one capability, so there is no caller
+        // who may read some rows and not others. The rule is written down in
+        // docs/03-api/04-phan-quyen-phia-server.md and waits for meetings and documents (SCRUM-22).
+        // Do not record it as tested on the strength of this test.
         var target = GivenUser();
         var client = _factory.ClientFor(GivenAdmin(), Capability.AdminUsers);
 
@@ -215,11 +238,9 @@ public class CapabilityGateTests : IDisposable
         Assert.Equal(HttpStatusCode.OK, existing.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, unknown.StatusCode);
 
-        // Byte-for-byte identical, so the response cannot be used as an existence oracle.
-        Assert.Equal(
-            await unknown.Content.ReadAsStringAsync(),
-            await (await client.GetAsync($"/api/users/{Guid.CreateVersion7()}"))
-                .Content.ReadAsStringAsync());
+        // Empty rather than merely equal to another 404: asserting two empty bodies match each
+        // other proves nothing, so this pins the property that makes them indistinguishable.
+        Assert.Empty(await unknown.Content.ReadAsStringAsync());
     }
 
     // ------------------------ "GET /api/auth/me trả về tập quyền" for the UI
@@ -246,6 +267,68 @@ public class CapabilityGateTests : IDisposable
         // The frontend's stale table gave the Secretary no admin rights either; this is now the
         // only place that answer comes from.
         Assert.DoesNotContain("AdminUsers", capabilities);
+    }
+
+    [Fact]
+    public async Task Me_answers_from_the_database_not_from_the_token()
+    {
+        // The token says Secretary with two capabilities; the database has since made them a
+        // Member with none. A /me that read its claims would report the token's version — which is
+        // the whole failure this endpoint is supposed not to have, because it is what the
+        // interface renders from.
+        var user = GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", SystemRole.Secretary);
+        var client = _factory.ClientFor(
+            user, Capability.MeetingCreator, Capability.MinutesEditor);
+
+        user.Role = SystemRole.Member;
+
+        var body = JsonDocument.Parse(
+            await (await client.GetAsync("/api/auth/me")).Content.ReadAsStringAsync()).RootElement;
+
+        Assert.Equal("Member", body.GetProperty("role").GetString());
+        Assert.Empty(body.GetProperty("capabilities").EnumerateArray());
+    }
+
+    [Fact]
+    public async Task Me_is_refused_once_the_account_is_deactivated()
+    {
+        // 401, not a 200 describing an active administrator: deactivating someone revokes their
+        // refresh tokens but cannot reach the access token already in their hands.
+        var admin = GivenAdmin();
+        var client = _factory.ClientFor(admin, Capability.AdminUsers);
+
+        admin.IsActive = false;
+
+        var response = await client.GetAsync("/api/auth/me");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Me_is_refused_for_a_token_carrying_no_usable_subject()
+    {
+        // A correctly signed token with capability claims but no "sub". The gate refuses it
+        // everywhere else; /me must not be the one place it is answered with blanks and a
+        // capability list.
+        var issuer = _factory.Services.GetRequiredService<ITokenIssuer>();
+        var orphan = new User
+        {
+            FullName = "Không Có Chủ",
+            Email = "khongcochu@trustcabinet.local",
+            PasswordHash = "hashed:x",
+            Role = SystemRole.Admin,
+            IsActive = true,
+        };
+
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", issuer.CreateAccessToken(orphan, [Capability.AdminUsers]));
+
+        // The account is never added to the repository, so "sub" resolves to nobody — the same
+        // answer path as a token whose account has gone.
+        var response = await client.GetAsync("/api/auth/me");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]

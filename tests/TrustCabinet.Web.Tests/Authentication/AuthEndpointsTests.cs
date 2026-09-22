@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Users;
+using TrustCabinet.Web.Tests.Users;
 
 namespace TrustCabinet.Web.Tests.Authentication;
 
@@ -36,6 +38,14 @@ public class AuthEndpointsTests : IDisposable
     {
         internal FakeUserRepository Users { get; } = new();
 
+        /// <summary>
+        /// GET /api/auth/me reads the caller back from here rather than from the token's claims
+        /// (SCRUM-12), so it needs the account repository too. Seeded with the same
+        /// <see cref="User"/> instance as <see cref="Users"/>, so the two cannot disagree about
+        /// who is signed in.
+        /// </summary>
+        internal FakeUserAccountRepository Accounts { get; } = new();
+
         internal FakeRefreshTokenStore RefreshTokens { get; } = new();
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -48,6 +58,9 @@ public class AuthEndpointsTests : IDisposable
                 // rest of the pipeline is what these tests are about.
                 services.RemoveAll<IUserRepository>();
                 services.AddSingleton<IUserRepository>(Users);
+
+                services.RemoveAll<IUserAccountRepository>();
+                services.AddSingleton<IUserAccountRepository>(Accounts);
 
                 services.RemoveAll<IRefreshTokenStore>();
                 services.AddSingleton<IRefreshTokenStore>(RefreshTokens);
@@ -64,15 +77,23 @@ public class AuthEndpointsTests : IDisposable
         bool isActive = true,
         Capability[]? capabilities = null)
     {
+        var user = new User
+        {
+            FullName = "Nguyễn Thư Ký",
+            Email = Email,
+            PasswordHash = new FakePasswordHasher().Hash(Password),
+            Role = role,
+            IsActive = isActive,
+        };
+
         _factory.Users
-            .WithUser(new User
-            {
-                FullName = "Nguyễn Thư Ký",
-                Email = Email,
-                PasswordHash = new FakePasswordHasher().Hash(Password),
-                Role = role,
-                IsActive = isActive,
-            })
+            .WithUser(user)
+            .WithCapabilities(role, capabilities ?? [Capability.MeetingCreator]);
+
+        // The same instance in both fakes: sign-in resolves the caller through one, /api/auth/me
+        // reads them back through the other.
+        _factory.Accounts
+            .WithUser(user)
             .WithCapabilities(role, capabilities ?? [Capability.MeetingCreator]);
 
         return _factory.CreateClient();
