@@ -1,0 +1,136 @@
+# Review tự động mỗi pull request bằng OpenCodeReview (alibaba/open-code-review).
+#
+# Chạy song song với ci.yml, không thay thế nó: ci.yml là cổng chặn (build, test,
+# lint phải xanh mới merge được), còn workflow này chỉ để lại nhận xét. Review của
+# AI không bao giờ là điều kiện merge — người vẫn là người duyệt.
+#
+# ===== Cần cấu hình trước khi workflow này chạy được =====
+#
+# Settings → Secrets and variables → Actions
+#
+#   Secret    OCR_LLM_URL            endpoint của LLM
+#   Secret    OCR_LLM_AUTH_TOKEN     API key
+#   Variable  OCR_LLM_MODEL          tên model
+#   Variable  OCR_LLM_USE_ANTHROPIC  'true' cho Anthropic, 'false' cho loại tương thích OpenAI
+#
+# Thiếu bốn thứ đó thì job đỏ ở mọi PR. Thêm xong hãy merge workflow này.
+#
+# ===== Hai chỗ cố tình làm khác workflow mẫu của upstream =====
+#
+# 1. `pull_request`, KHÔNG phải `pull_request_target`.
+#    Mẫu của upstream dùng pull_request_target để PR từ fork cũng có secret. Repo
+#    này public, nên làm vậy nghĩa là bất kỳ ai fork rồi mở PR đều kích hoạt được
+#    một lượt gọi LLM tính tiền vào key của nhóm. Mọi PR của nhóm đều từ nhánh
+#    trong chính repo này nên pull_request là đủ; PR từ fork sẽ không được review,
+#    và đó là chủ đích.
+#
+# 2. Ghim action theo commit SHA, không phải @main.
+#    Action này đọc được secret và có quyền ghi comment lên PR. Trỏ vào một nhánh
+#    đang chạy nghĩa là code chạy trong CI của nhóm đổi bất cứ lúc nào mà không ai
+#    duyệt. SHA dưới đây là tag v1.12.8; nâng cấp là một commit có chủ ý.
+name: OpenCodeReview
+
+# Một PR chỉ chạy một lượt review. Push thêm commit thì huỷ lượt cũ, tránh hai
+# lượt cùng bình luận vào một PR. Comment không phải lệnh gọi review thì rơi vào
+# nhóm noop riêng để không huỷ nhầm lượt đang chạy.
+concurrency:
+  group: >-
+    ${{
+      (
+        github.event_name == 'pull_request'
+        || (
+          github.event_name == 'issue_comment'
+          && github.event.issue.pull_request
+          && github.event.comment.user.type != 'Bot'
+          && (
+            github.event.comment.author_association == 'MEMBER'
+            || github.event.comment.author_association == 'OWNER'
+            || github.event.comment.author_association == 'COLLABORATOR'
+          )
+          && (
+            startsWith(github.event.comment.body, '/open-code-review')
+            || startsWith(github.event.comment.body, '@open-code-review')
+          )
+        )
+      )
+      && format('ocr-{0}', github.event.pull_request.number || github.event.issue.number)
+      || format('noop-{0}', github.run_id)
+    }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  # Gõ `/open-code-review` vào PR để chạy lại mà không cần push commit rỗng.
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Chỉ chạy lại theo comment của thành viên repo — người ngoài không tiêu được
+    # quota LLM của nhóm. Comment của bot bị loại như một lớp chặn dự phòng.
+    if: |
+      github.event_name == 'pull_request'
+      || (
+        github.event_name == 'issue_comment'
+        && github.event.issue.pull_request
+        && github.event.comment.user.type != 'Bot'
+        && (
+          github.event.comment.author_association == 'MEMBER'
+          || github.event.comment.author_association == 'OWNER'
+          || github.event.comment.author_association == 'COLLABORATOR'
+        )
+        && (
+          startsWith(github.event.comment.body, '/open-code-review')
+          || startsWith(github.event.comment.body, '@open-code-review')
+        )
+      )
+    steps:
+      # issue_comment không mang sẵn base/head của PR, phải hỏi API.
+      - name: Lấy ngữ cảnh PR
+        id: pr-context
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pullRequest } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            core.setOutput('base_ref', pullRequest.base.ref);
+            core.setOutput('head_sha', pullRequest.head.sha);
+
+      - name: Chạy OpenCodeReview
+        uses: alibaba/open-code-review@5c7b38381d1fdd36de6cf622a2a1f768243c4704 # v1.12.8
+        with:
+          llm_url: ${{ secrets.OCR_LLM_URL }}
+          llm_auth_token: ${{ secrets.OCR_LLM_AUTH_TOKEN }}
+          llm_model: ${{ vars.OCR_LLM_MODEL }}
+          llm_use_anthropic: ${{ vars.OCR_LLM_USE_ANTHROPIC }}
+
+          # Rỗng với sự kiện pull_request; action tự lấy từ payload.
+          base_ref: ${{ steps.pr-context.outputs.base_ref }}
+          head_sha: ${{ steps.pr-context.outputs.head_sha }}
+
+          # Quy ước ngôn ngữ trong AGENTS.md: nhận xét review viết tiếng Việt.
+          language: Vietnamese
+
+          # Push thêm commit thì chỉ thêm nhận xét ở chỗ chưa có, không lặp lại
+          # cái đã bình luận. Lịch sử không bao giờ bị xoá.
+          incremental: 'true'
+
+          # Một comment tổng hợp duy nhất, cập nhật tại chỗ qua từng lượt chạy,
+          # thay vì đẻ thêm một cái mỗi lần push.
+          sticky_summary: 'true'
+
+          # Trần token cho mỗi lượt review. Các PR gần đây 52–112 file, không đặt
+          # trần thì một PR to có thể ngốn hết quota trong một lượt. Vượt trần thì
+          # action vẫn đăng phần đã tìm được và thoát 0, không làm đỏ PR.
+          max_tokens_budget: '2000000'
