@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
@@ -22,6 +23,7 @@ public sealed partial class UserService(
     IPasswordHasher passwordHasher,
     IAuditService audit,
     IRefreshTokenStore refreshTokens,
+    IAdministratorInvariantGuard administratorInvariant,
     ILogger<UserService> logger) : IUserService
 {
     /// <summary>
@@ -113,8 +115,17 @@ public sealed partial class UserService(
         return UserResult.Success(UserAccount.From(user));
     }
 
-    public async Task<UserResult> UpdateAsync(
+    public Task<UserResult> UpdateAsync(
         Guid id, UserEdit request, Guid actorId, CancellationToken ct = default)
+        // Under the shared lock: a role change can take the last AdminUsers away, and that rule is
+        // decided by users and role_capabilities together. Checking it outside the lock would let
+        // this and a matrix edit each see an administrator the other is in the middle of removing.
+        // See IAdministratorInvariantGuard.
+        => GuardedWriteAsync(
+            token => UpdateWithinTransactionAsync(id, request, actorId, token), ct);
+
+    private async Task<Written> UpdateWithinTransactionAsync(
+        Guid id, UserEdit request, Guid actorId, CancellationToken ct)
     {
         var user = await users.FindByIdAsync(id, ct);
 
@@ -189,22 +200,38 @@ public sealed partial class UserService(
             new { Before = before, After = new { user.Email, user.FullName, Role = user.Role.ToString() } },
             ct);
 
+        logger.LogInformation("Account {UserId} updated by {ActorId}.", user.Id, actorId);
+
         // The <c>:Token Service</c> step again, which the UC-06 diagram does not draw. A role
         // change alters what the account may do, and capabilities travel inside the access token —
         // so until it expires the person keeps the rights they had. Dropping their refresh tokens
         // ends the session instead of waiting for it to lapse.
-        if (before.Role != user.Role.ToString())
-        {
-            await refreshTokens.RevokeAllForUserAsync(user.Id, ct);
-        }
+        //
+        // Handed back rather than done here: Redis is a different system, and reaching it while
+        // holding the invariant lock would block every other administrative write for the length
+        // of a network round trip — and make a Redis outage roll back a legitimate edit. See
+        // GuardedWriteAsync.
+        //
+        // An email change is revoked too, not only a role change: the access token carries the
+        // email claim, so /api/auth/me would keep answering with the old address until it expired.
+        var changed = before.Role != user.Role.ToString()
+            || !string.Equals(before.Email, user.Email, StringComparison.Ordinal);
 
-        logger.LogInformation("Account {UserId} updated by {ActorId}.", user.Id, actorId);
-
-        return UserResult.Success(UserAccount.From(user));
+        return new Written(
+            UserResult.Success(UserAccount.From(user)),
+            changed ? user.Id : null);
     }
 
-    public async Task<UserResult> ChangeStatusAsync(
+    public Task<UserResult> ChangeStatusAsync(
         Guid id, bool isActive, Guid actorId, CancellationToken ct = default)
+        // Under the shared lock, for the same reason as UpdateAsync: deactivating the last active
+        // administrator is the other half of the invariant, and the matrix screen can remove the
+        // capability from underneath this check. See IAdministratorInvariantGuard.
+        => GuardedWriteAsync(
+            token => ChangeStatusWithinTransactionAsync(id, isActive, actorId, token), ct);
+
+    private async Task<Written> ChangeStatusWithinTransactionAsync(
+        Guid id, bool isActive, Guid actorId, CancellationToken ct)
     {
         var user = await users.FindByIdAsync(id, ct);
 
@@ -253,18 +280,6 @@ public sealed partial class UserService(
 
         await users.SaveChangesAsync(ct);
 
-        // The <c>:Token Service</c> step of UC-07, on the deactivate branch only. A row marked
-        // inactive while its tokens still work is not deactivated in any sense that matters: the
-        // access token stays valid until it expires, and dropping the refresh tokens is what stops
-        // it being renewed. AuthenticationService.RefreshAsync re-reads IsActive, so the next
-        // refresh would refuse anyway — this closes the session at the refresh boundary instead of
-        // waiting for it to lapse. The access token itself is still valid until it expires, which
-        // is why /api/users revalidates the caller on every request.
-        if (!isActive)
-        {
-            await refreshTokens.RevokeAllForUserAsync(user.Id, ct);
-        }
-
         await audit.RecordAsync(
             isActive ? AuditActions.UserReactivated : AuditActions.UserDeactivated,
             AuditActions.UserObjectType,
@@ -277,7 +292,74 @@ public sealed partial class UserService(
             "Account {UserId} {Change} by {ActorId}.",
             user.Id, isActive ? "reactivated" : "deactivated", actorId);
 
-        return UserResult.Success(UserAccount.From(user));
+        // The <c>:Token Service</c> step of UC-07, on the deactivate branch only. A row marked
+        // inactive while its tokens still work is not deactivated in any sense that matters: the
+        // access token stays valid until it expires, and dropping the refresh tokens is what stops
+        // it being renewed. AuthenticationService.RefreshAsync re-reads IsActive, so the next
+        // refresh would refuse anyway — this closes the session at the refresh boundary instead of
+        // waiting for it to lapse. The access token itself is still valid until it expires, which
+        // is why /api/users revalidates the caller on every request.
+        //
+        // After the commit, not inside it — see GuardedWriteAsync.
+        return new Written(
+            UserResult.Success(UserAccount.From(user)),
+            isActive ? null : user.Id);
+    }
+
+    /// <summary>
+    /// What a guarded write produced: the answer for the caller, and whose session the change
+    /// invalidated — <c>null</c> when nothing needs revoking, including on every refused branch.
+    /// </summary>
+    private readonly record struct Written(UserResult Result, Guid? RevokeSessionsOf)
+    {
+        /// <summary>
+        /// Lets a refusal be returned as-is. Every early return is a branch that wrote nothing,
+        /// so there is never a session to end on one, and spelling that out at each of them would
+        /// be a dozen chances to pass the wrong thing.
+        /// </summary>
+        public static implicit operator Written(UserResult result) => new(result, null);
+    }
+
+    /// <summary>
+    /// Runs a write under the shared administrator-invariant lock, then ends the affected sessions
+    /// once the transaction has committed.
+    ///
+    /// Revoking afterwards rather than inside is deliberate. Redis is a separate system: reaching
+    /// it while holding the lock would keep every other administrative write waiting for a network
+    /// round trip, and an outage there would roll back an edit the database had already accepted.
+    ///
+    /// The cost of this order is a window, not a hole: between the commit and the revoke the
+    /// person still holds a usable refresh token. That window is bounded by the access token's own
+    /// 15 minutes — the same exposure already accepted elsewhere, and the reason
+    /// <c>/api/users</c> re-reads the caller's account on every request instead of trusting the
+    /// token's claims.
+    /// </summary>
+    private async Task<UserResult> GuardedWriteAsync(
+        Func<CancellationToken, Task<Written>> write, CancellationToken ct)
+    {
+        var written = await administratorInvariant.WriteAsync(write, ct);
+
+        if (written.RevokeSessionsOf is { } userId)
+        {
+            try
+            {
+                await refreshTokens.RevokeAllForUserAsync(userId, ct);
+            }
+            catch (Exception exception)
+            {
+                // Logged, not rethrown. The write is committed and correct; failing the request now
+                // would tell the administrator their change did not happen, and they would repeat
+                // it. What is actually lost is the early end of one session, which expires by
+                // itself within the access token's lifetime.
+                logger.LogError(
+                    exception,
+                    "Account {UserId} was changed, but ending its sessions failed. The session "
+                    + "lapses on its own when the access token expires.",
+                    userId);
+            }
+        }
+
+        return written.Result;
     }
 
     /// <summary>
@@ -294,6 +376,19 @@ public sealed partial class UserService(
     private async Task<bool> WouldRemoveTheLastAdministratorAsync(
         User user, SystemRole newRole, CancellationToken ct)
     {
+        // An inactive account administers nothing — it cannot sign in, and the count below only
+        // ever counts active accounts. So no change to it can remove the last administrator.
+        //
+        // Without this the rule was a dead end rather than a safeguard: the count excludes this
+        // account and counts only active ones, so the sole holder of AdminUsers, once deactivated,
+        // could never be moved to another role — the answer was "that would leave no active
+        // administrator", when in truth there was already none and this change would not alter
+        // that. Reactivating them is still guarded, because that goes through ChangeStatusAsync.
+        if (!user.IsActive)
+        {
+            return false;
+        }
+
         var current = await users.GetCapabilitiesAsync(user.Role, ct);
 
         if (!current.Contains(Capability.AdminUsers))

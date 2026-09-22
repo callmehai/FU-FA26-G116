@@ -92,6 +92,12 @@ thì nó tự kế thừa, không có chuyện quên.
 
 Người đã đăng nhập nhưng không có `AdminUsers` nhận `403`, người chưa đăng nhập nhận `401`.
 
+**`403` ở đây là có chủ ý, không phải quên quy ước `404`.** Quy ước `404` (AGENTS.md, SCRUM-22)
+dùng để giấu **sự tồn tại của một dòng dữ liệu** — trả `403` cho một tài liệu cụ thể chính là xác
+nhận tài liệu đó có thật. `/api/users` thì ngược lại: đường dẫn nằm trong chính tài liệu API này,
+giấu đi không được gì, mà `404` lại khiến FE không phân biệt nổi "sai quyền" với "gọi sai URL".
+Bảng đối chiếu đầy đủ ở mục *403 hay 404?* trong `AGENTS.md`.
+
 ## UC-04 · `GET /api/users`
 
 `200 OK` — mảng, sắp xếp theo họ tên rồi email:

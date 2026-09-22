@@ -1,6 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Users;
+using TrustCabinet.Infrastructure.Access;
 using TrustCabinet.Infrastructure.Audit;
 
 namespace TrustCabinet.Infrastructure.Users;
@@ -18,6 +21,12 @@ public static class UserServiceCollectionExtensions
         services.AddScoped<IUserAccountRepository, UserAccountRepository>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuditService, AuditService>();
+
+        // The lock that keeps user writes and role-matrix writes from each removing the last
+        // administrator at the same time. Registered here and in AddTrustCabinetRolePermissions,
+        // both with TryAdd, because either feature can be registered without the other and both
+        // need it — see IAdministratorInvariantGuard.
+        services.TryAddScoped<IAdministratorInvariantGuard, AdministratorInvariantGuard>();
 
         return services;
     }
