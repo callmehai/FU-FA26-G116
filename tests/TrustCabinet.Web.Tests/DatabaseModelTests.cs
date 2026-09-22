@@ -130,9 +130,14 @@ public class DatabaseModelTests
     }
 
     [Fact]
-    public void Role_capabilities_match_the_agreed_mapping()
+    public void Role_capabilities_match_the_agreed_default_mapping()
     {
-        // Spelled out rather than derived, so changing who may approve a meeting has to be a
+        // These are the values a **fresh** database starts with, not the running system's answer.
+        // Since SCRUM-60 an administrator edits the matrix at runtime, so this test pins the
+        // default that ReferenceDataSeeder applies to an empty table — read role_capabilities for
+        // what a given deployment actually enforces.
+        //
+        // Still spelled out rather than derived, so changing who may approve a meeting has to be a
         // deliberate edit in two places instead of a silent one.
         var expected = new[]
         {
@@ -151,6 +156,37 @@ public class DatabaseModelTests
 
         // A plain Member attends, reads and votes — none of which needs a capability.
         Assert.DoesNotContain(actual, rc => rc.Role == SystemRole.Member);
+    }
+
+    [Fact]
+    public void Default_matrix_grants_admin_users_to_someone()
+    {
+        // A default matrix where nobody administers would produce a database no one can sign in
+        // to configure — the state RolePermissionService refuses to be edited into, so it must
+        // not be shipped as the starting point either.
+        Assert.Contains(
+            ReferenceData.RoleCapabilities, rc => rc.Capability == Capability.AdminUsers);
+    }
+
+    [Fact]
+    public void Role_capabilities_are_not_seeded_through_the_migration()
+    {
+        using var db = NewContext();
+
+        // HasData would put the matrix inside the migration, and EF diffs seed data against the
+        // previous migration rather than against the database — so the next migration would emit
+        // UPDATE/DELETE over exactly the rows an administrator changed on the running system,
+        // silently restoring the defaults on deploy (ADR-0007, SCRUM-60).
+        //
+        // The rows now come from ReferenceDataSeeder, which only fills an empty table.
+        //
+        // Read from the design-time model: seed data is what migrations are scaffolded against,
+        // and the runtime model deliberately drops it.
+        var seeded = db.GetService<IDesignTimeModel>().Model
+            .FindEntityType(typeof(RoleCapability))!
+            .GetSeedData();
+
+        Assert.Empty(seeded);
     }
 
     [Fact]

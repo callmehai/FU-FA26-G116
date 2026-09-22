@@ -1,10 +1,14 @@
 # 07 · Class diagram — các điểm cần sửa cho khớp code
 
-Đối chiếu hai bản vẽ trong thư mục này với code backend đã merge (SCRUM-11 xác thực, SCRUM-13
-quản lý người dùng), tại thời điểm **21/09/2026**.
+Đối chiếu các bản vẽ trong thư mục này với code backend (SCRUM-11 xác thực, SCRUM-13 quản lý người
+dùng, SCRUM-60 ma trận phân quyền).
 
-- [`feature-01-auth-class-diagram.drawio.png`](feature-01-auth-class-diagram.drawio.png)
+- [`feature-01-auth-class-diagram.drawio.png`](feature-01-auth-class-diagram.drawio.png) — đối
+  chiếu tại **21/09/2026**
 - [`feature-02-user-management-class-diagram.drawio.png`](feature-02-user-management-class-diagram.drawio.png)
+  — đối chiếu tại **21/09/2026**
+- [`feature-03-role-permission-management-class-diagram.drawio.png`](feature-03-role-permission-management-class-diagram.drawio.png)
+  — đối chiếu tại **22/09/2026**, xem [PHẦN F](#phần-f--bản-vẽ-03-ma-trận-phân-quyền-scrum-60)
 
 **Kết luận: kiến trúc đúng, chi tiết lệch.** Phân tầng boundary → control → service → repository →
 entity khớp đúng với code. Nhưng tên field, tên method và một số quan hệ thì khác, và có **ba chỗ
@@ -406,22 +410,128 @@ muốn rõ hơn thì đổi tên bản vẽ 02 thành `UserAccountRepository`, n
 
 ---
 
+# PHẦN F — Bản vẽ 03: ma trận phân quyền (SCRUM-60)
+
+Đối chiếu tại **22/09/2026**, sau khi code UC-09 và UC-10.
+
+**Kết luận: phân tầng đúng hoàn toàn.** `Controller` → `Service` → `Repository` → `Database`, cộng
+`AuditService`, khớp 1-1 với code. Tên method cũng khớp gần hết. Chỉ lệch ở **mô hình dữ liệu**:
+bản vẽ mô tả `Role` và `Permission` là hai bảng, code thì cả hai là enum.
+
+Chi tiết đầy đủ ở [`docs/03-api/03-ma-tran-phan-quyen.md`](../03-api/03-ma-tran-phan-quyen.md),
+mục "Những chỗ code khác bản vẽ". Tóm tắt phần cần sửa trên bản vẽ:
+
+## F1. 🔴 `Permission` không phải entity — mâu thuẫn với tiêu chí nghiệm thu
+
+| Bản vẽ 03 đang ghi | Code thật |
+|---|---|
+| `<<entity>> Permission` với `permissionId: UUID`, `code`, `name`, `description`, `functionalGroup` | `enum Capability` (4 giá trị) + value object `PermissionDescriptor` đọc từ enum |
+
+**Vì sao phải sửa:** tiêu chí nghiệm thu của chính `SCRUM-60` ghi *"Không tạo được quyền mới:
+`Capability` là enum trong code. Admin sửa mapping, không thêm capability. Màn hình không được có
+nút Tạo quyền mới."* Bản vẽ đang vẽ một bảng `permissions` — tức đúng cái thứ tiêu chí nghiệm thu
+cấm.
+
+Không phải chuyện ngại làm bảng: một quyền chỉ có ý nghĩa vì **có code kiểm nó**. Dòng quyền do
+quản trị viên tự thêm sẽ không gác cửa cái gì cả — trông như bảo mật mà không phải bảo mật.
+
+**Cần sửa:** đổi `<<entity>> Permission` → `<<value object>> Permission`, **bỏ `permissionId`**,
+ghi chú "đọc từ enum `Capability`, không có bảng".
+
+## F2. 🔴 `Role` không phải entity, không có bảng `roles`
+
+| Bản vẽ 03 đang ghi | Code thật |
+|---|---|
+| `<<entity>> Role` với `roleId: UUID`, `roleName`, `description`, `isBuiltIn` | `enum SystemRole` — `Chair`, `Secretary`, `Member`, `Admin` |
+
+Theo [ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md): không có bảng `roles`, không
+thêm vai trò mới mà không deploy. `role_capabilities` lưu **tên enum** ở cả hai cột.
+
+`isBuiltIn` vẫn giữ trên API (luôn `true`) vì màn hình cần lý do để hiện tên vai trò dạng chữ cố
+định thay vì ô sửa được — nhưng nó là thuộc tính của response, không phải cột trong bảng.
+
+**Cần sửa:** đổi `<<entity>> Role` → `<<enum>> SystemRole`, bỏ `roleId` và `description`.
+
+> Kèm theo: quan hệ `Role 0..* --grants--> Permission 0..*` trên bản vẽ nên ghi rõ là bảng
+> `role_capabilities` — đó là bảng **duy nhất** thật sự tồn tại trong cụm này.
+
+## F3. 🟡 `resetRolePermissionsToDefault()` — chưa làm, cần đánh dấu
+
+Bản vẽ có method này ở cả 4 tầng (`Controller`, `Service`, `Repository`, và
+`confirmResetToDefault()` ở `Page`). Nhưng ticket **không có tiêu chí nghiệm thu nào** cho nó, và
+**không có sequence diagram** (chỉ có UC-09 và UC-10).
+
+Đã thống nhất không làm trong sprint này.
+
+**Cần sửa — chọn một**, giống cách đã xử lý UC-08 ở bản vẽ 02:
+
+- Bỏ hẳn 4 method đó khỏi bản vẽ, hoặc
+- Thêm ghi chú `<<chưa implement>>` lên từng cái.
+
+## F4. ⚪ `getPermissionCatalog()` gộp chung vào một endpoint
+
+Bản vẽ tách `getRolePermissionMatrix()` và `getPermissionCatalog()` thành hai method ở
+`Controller`. Code trả cả hai trong **một** response của `GET /api/roles/capabilities`.
+
+Màn hình luôn cần cả hai cùng lúc để vẽ lưới. Tách thành hai request chỉ thêm một round trip và
+một khoảng thời gian hai nửa dữ liệu lệch nhau.
+
+Ở tầng `Service` thì code **vẫn có hai đường đọc riêng**, nên về phân tầng bản vẽ không sai. Sửa
+hay không tuỳ BA; nếu giữ thì nên ghi chú rằng hai method này đi chung một endpoint.
+
+## F5. ⚪ Thiếu `:Token Service` — cùng vấn đề với A3 của bản vẽ 02
+
+Bản vẽ 03 không có mũi tên nào sang thành phần quản lý token, nhưng code **có gọi**: đổi ma trận
+xong thì huỷ refresh token của mọi tài khoản đang giữ vai trò đó.
+
+Lý do giống hệt A3: capability nằm **bên trong access token**, nên không huỷ thì người giữ vai trò
+đó vẫn dùng bộ quyền cũ tới khi token hết hạn (tối đa 15 phút). Huỷ ở **cả hai chiều** — thêm
+quyền cũng phải huỷ, vì token cũ không chứa quyền mới.
+
+**Cần bổ sung:** mũi tên `RolePermissionService` ---revokes tokens---> `TokenService` (cùng một
+`TokenService` đã đề nghị thêm ở A3, vẽ một lần dùng chung cả ba bản vẽ).
+
+Sequence diagram UC-10 cũng thiếu participant này — nên bổ sung luôn cho khớp.
+
+## F6. ⚪ Thiếu luật chống tự khoá trên bản vẽ
+
+`RolePermissionService` trên bản vẽ có `validatePermissionConfiguration(permissionIds): bool`, đúng
+về vai trò. Nhưng luật quan trọng nhất nó thực thi thì không thể hiện ra:
+
+**không được gỡ `AdminUsers` khỏi vai trò cuối cùng còn giữ nó** — vì `AdminUsers` chính là quyền
+mở màn hình này, nên một ma trận không ai giữ nó thì chỉ sửa lại được bằng cách vào thẳng database.
+
+Giống B3 ở bản vẽ 02, đây là **quy tắc nghiệp vụ**, đáng hiện lên bản vẽ:
+
+```
+- wouldRemoveTheLastAdminCapability(role, newCapabilities): bool
+```
+
+**Lưu ý cho BA khi mô tả:** kiểm trên **toàn ma trận**, không phải "Admin luôn phải giữ
+AdminUsers". Chuyển `AdminUsers` sang `Secretary` rồi gỡ khỏi `Admin` là **hợp lệ** — đó chính là
+lý do bảng này tồn tại. Để nó không ở đâu cả mới là không hợp lệ.
+
+---
+
 # Tóm tắt checklist
 
-**🔴 Phải sửa (3):**
+**🔴 Phải sửa (5):**
 
 - [ ] A1 — `findByGoogleEmail` → `findByGoogleSubjectId` (bản vẽ 01)
 - [ ] A2 — `signInWithGoogle(googleEmail)` → `signInWithGoogle(idToken)` + thêm `GoogleTokenVerifier` (bản vẽ 01)
 - [ ] A3 — thêm `TokenService.revokeAllForUser()` (bản vẽ 02) **+ đổi tên `:Session Service` → `:Token Service` ở sequence diagram UC-07**
+- [ ] F1 — `<<entity>> Permission` → `<<value object>>`, bỏ `permissionId` (bản vẽ 03) — **mâu thuẫn tiêu chí nghiệm thu**
+- [ ] F2 — `<<entity>> Role` → `<<enum>> SystemRole`, bỏ `roleId` (bản vẽ 03)
 
-**🟡 Nên sửa (4):**
+**🟡 Nên sửa (5):**
 
 - [ ] B1 — thêm `PasswordHasher`, `TokenIssuer`, `TokenService`, `GoogleTokenVerifier` + 2 method `refresh` / `signOut` (bản vẽ 01)
 - [ ] B2 — thêm 3 method cho `UserRepository` (bản vẽ 02)
 - [ ] B3 — thêm `wouldRemoveTheLastAdministrator()` (bản vẽ 02)
 - [ ] B4 — thêm `CallerContext` (bản vẽ 02)
+- [ ] F3 — `resetRolePermissionsToDefault()`: bỏ hẳn hoặc đánh dấu `<<chưa implement>>` (bản vẽ 03)
 
-**⚪ Sửa nếu có thời gian (7):**
+**⚪ Sửa nếu có thời gian (10):**
 
 - [ ] C1 — bỏ `username` ở 6 chỗ
 - [ ] C2 — `AccountStatus` → `isActive: bool` ở 5 chỗ
@@ -430,6 +540,9 @@ muốn rõ hơn thì đổi tên bản vẽ 02 thành `UserAccountRepository`, n
 - [ ] C5 — gộp 4 method của `AuditService` thành 1, thêm `actorId`
 - [ ] C6 — `update()` → `saveChanges()`
 - [ ] C7 — `existsByEmail` thêm tham số `exceptId`
+- [ ] F4 — ghi chú `getPermissionCatalog()` đi chung endpoint với `getRolePermissionMatrix()` (bản vẽ 03)
+- [ ] F5 — thêm `TokenService` (bản vẽ 03) **+ bổ sung participant đó vào sequence diagram UC-10**
+- [ ] F6 — thêm `wouldRemoveTheLastAdminCapability()` (bản vẽ 03)
 
 **Cần quyết (1):**
 

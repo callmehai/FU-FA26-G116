@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
+using TrustCabinet.Infrastructure.Access;
 using TrustCabinet.Infrastructure.Authentication;
 using TrustCabinet.Infrastructure.Users;
 using TrustCabinet.Web;
@@ -14,6 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddTrustCabinetDatabase(builder.Configuration);
 builder.Services.AddTrustCabinetAuthentication(builder.Configuration);
 builder.Services.AddTrustCabinetUserManagement();
+builder.Services.AddTrustCabinetRolePermissions();
 
 // The audit log records where a request came from, and only the web layer can see that.
 builder.Services.AddHttpContextAccessor();
@@ -83,6 +85,22 @@ if (app.Environment.IsDevelopment()
 {
     await app.Services.MigrateAndSeedDevelopmentAsync();
 }
+else if (app.Configuration.GetValue<bool>("Database:SeedReferenceDataOnStartup"))
+{
+    // A safety net for the role ↔ capability matrix (ADR-0007). The model no longer declares it
+    // via HasData, because SCRUM-60 lets an administrator edit it and HasData would overwrite
+    // their changes on the next deploy. InitialCreate still inserts the same five rows and is
+    // immutable, so a database migrated from scratch already has them and this does nothing —
+    // it matters for one restored or provisioned without that migration's data, where an empty
+    // role_capabilities would mean nobody holds AdminUsers and nobody could sign in to repair it.
+    //
+    // Opt-in rather than on by default, like the migrate step above: this opens a connection at
+    // startup, and an application that does so unasked cannot be booted without a live database —
+    // which is exactly what the in-memory endpoint tests do.
+    //
+    // It only inserts into a completely empty table, so it never touches an administrator's edits.
+    await app.Services.SeedReferenceDataAsync();
+}
 
 // wwwroot holds the frontend build output (`npm run build` writes here) and is not committed.
 // During development the frontend runs on Vite at http://localhost:5173 and proxies /api here,
@@ -101,6 +119,9 @@ app.MapAuthEndpoints();
 
 // /api/users — UC-04 … UC-07 (SCRUM-13). Every route requires the AdminUsers capability.
 app.MapUserEndpoints();
+
+// /api/roles/capabilities — UC-09 and UC-10 (SCRUM-60). Same gate as /api/users.
+app.MapRolePermissionEndpoints();
 
 // Health endpoint — the frontend calls this to confirm the backend is alive.
 app.MapGet("/api/health", () => Results.Ok(new

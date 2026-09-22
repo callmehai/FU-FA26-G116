@@ -32,13 +32,12 @@ public static class UserEndpoints
         // accidentally leave it open: a new MapGet here inherits the policy.
         var users = app.MapGroup("/api/users")
             .WithTags("Users")
-            .RequireAuthorization(AdminUsersPolicy)
-            // The policy above only reads the token's claims, and a token stays valid until it
-            // expires — so deactivating someone or taking away their capability would not stop
-            // them until then (up to Authentication:AccessTokenMinutes). These endpoints
-            // administer accounts, so that window is exactly where the damage would be done:
-            // re-read the caller from the database on every request instead.
-            .AddEndpointFilter(RevalidateCallerAsync);
+            // The policy only reads the token's claims, and a token stays valid until it expires —
+            // so deactivating someone or taking away their capability would not stop them until
+            // then (up to Authentication:AccessTokenMinutes). These endpoints administer accounts,
+            // so that window is exactly where the damage would be done. RequireAdminUsers applies
+            // the policy together with a re-read of the caller from the database on every request.
+            .RequireAdminUsers();
 
         users.MapGet("/", ListAsync);
         users.MapGet("/{id:guid}", GetAsync);
@@ -53,55 +52,14 @@ public static class UserEndpoints
     }
 
     /// <summary>
-    /// Re-reads the caller's own account before any user-management request runs, and refuses
-    /// unless they are still active and still hold <see cref="Capability.AdminUsers"/>.
-    ///
-    /// The bearer token is a snapshot of who the caller was when it was issued. Revoking their
-    /// refresh tokens does not touch the access token they already hold, so without this an
-    /// administrator who has just been deactivated keeps full power over every account until
-    /// their token expires — long enough to deactivate whoever deactivated them, or to mint
-    /// themselves a fresh administrator account.
-    ///
-    /// 403 rather than 401: the token is genuine and unexpired, it is the account behind it that
-    /// may no longer do this.
-    /// </summary>
-    private static async ValueTask<object?> RevalidateCallerAsync(
-        EndpointFilterInvocationContext context, EndpointFilterDelegate next)
-    {
-        var callerId = CurrentUserId(context.HttpContext.User);
-
-        // No usable "sub" claim. Refused rather than defaulted: an actor id of Guid.Empty would
-        // match no account, silently disabling the rules that compare the caller against the
-        // account being changed, and would be written into the audit log as the actor.
-        if (callerId is null)
-        {
-            return Results.Forbid();
-        }
-
-        var users = context.HttpContext.RequestServices.GetRequiredService<IUserAccountRepository>();
-        var caller = await users.FindByIdAsync(callerId.Value, context.HttpContext.RequestAborted);
-
-        if (caller is null || !caller.IsActive)
-        {
-            return Results.Forbid();
-        }
-
-        var capabilities = await users.GetCapabilitiesAsync(
-            caller.Role, context.HttpContext.RequestAborted);
-
-        // Checked against the capability, not the role name — the same rule the policy follows,
-        // except read from the database rather than from the token.
-        return capabilities.Contains(Capability.AdminUsers)
-            ? await next(context)
-            : Results.Forbid();
-    }
-
-    /// <summary>
     /// The authorization policy name. Defined in Program.cs against
     /// <see cref="JwtTokenIssuer.CapabilityClaim"/>, so the check is on the capability the token
     /// carries rather than on a role name.
+    ///
+    /// Kept as an alias of <see cref="AdminCallerRevalidation.AdminUsersPolicy"/>, which is where
+    /// it now lives alongside the re-read that backs it up.
     /// </summary>
-    public const string AdminUsersPolicy = "AdminUsers";
+    public const string AdminUsersPolicy = AdminCallerRevalidation.AdminUsersPolicy;
 
     /// <summary>UC-04 — the whole list, sorted, as the service returns it.</summary>
     private static async Task<IResult> ListAsync(IUserService users, CancellationToken ct)
@@ -230,29 +188,12 @@ public static class UserEndpoints
     };
 
     /// <summary>
-    /// Who is making the request, from the validated token, or null when the token carries no
-    /// usable "sub". Never from the body: an actor id a caller can choose is not evidence of
-    /// anything, and it is what the audit log records.
-    ///
-    /// Nullable rather than falling back to <see cref="Guid.Empty"/>: an empty actor matches no
-    /// account, so it would quietly switch off every rule that compares the caller against the
-    /// account being changed. <see cref="RevalidateCallerAsync"/> refuses the request instead,
-    /// which is why the handlers below can use the value without re-checking.
-    /// </summary>
-    private static Guid? CurrentUserId(ClaimsPrincipal principal)
-        => Guid.TryParse(principal.FindFirstValue("sub"), out var id) ? id : null;
-
-    /// <summary>
-    /// The caller's id for a handler that only runs behind <see cref="RevalidateCallerAsync"/>,
-    /// which has already refused the request if there was no usable one. Throws rather than
-    /// substituting a placeholder, so removing that filter fails loudly instead of quietly
-    /// writing an actor nobody can trace.
+    /// The caller's id, from <see cref="AdminCallerRevalidation"/> — which has already refused the
+    /// request if the token carried no usable "sub". Never from the body: an actor id a caller can
+    /// choose is not evidence of anything, and it is what the audit log records.
     /// </summary>
     private static Guid RevalidatedUserId(ClaimsPrincipal principal)
-        => CurrentUserId(principal)
-            ?? throw new InvalidOperationException(
-                "No caller id on a revalidated request — RevalidateCallerAsync should have "
-                + "refused it. Did the endpoint filter get removed from the group?");
+        => AdminCallerRevalidation.RevalidatedUserId(principal);
 
     /// <summary>
     /// The role as a string, so an unknown value is a validation error rather than a 400 from the

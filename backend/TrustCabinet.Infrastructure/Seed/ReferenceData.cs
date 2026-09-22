@@ -4,16 +4,19 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Infrastructure.Seed;
 
 /// <summary>
-/// Data that is part of the system's definition rather than something a user enters. It ships
-/// inside the migration, so every database — a teammate's laptop, CI, the demo server — starts
-/// with the same answer to "what may a secretary do?".
+/// Data that is part of the system's definition rather than something a user enters. Applied by
+/// <see cref="ReferenceDataSeeder"/> when a database has none, so every database — a teammate's
+/// laptop, CI, the demo server — starts with the same answer to "what may a secretary do?".
 /// </summary>
 public static class ReferenceData
 {
     /// <summary>
-    /// Which capabilities each role carries. Mirrors ROLE_CAPABILITIES in
-    /// frontend/src/types/user.ts, which is temporary scaffolding — this table is the real one,
-    /// and the frontend copy goes away with SCRUM-46.
+    /// The capabilities each role carries **on a fresh database**. Since SCRUM-60 an
+    /// administrator can change the matrix at runtime, so this array is the starting point, not
+    /// the running system's answer — read <c>role_capabilities</c> for that.
+    ///
+    /// Mirrors ROLE_CAPABILITIES in frontend/src/types/user.ts, which is temporary scaffolding —
+    /// this table is the real one, and the frontend copy goes away with SCRUM-46.
     ///
     /// Member is deliberately absent: a plain member attends, reads and votes, and none of those
     /// need a capability. Do not invent one to fill the gap.

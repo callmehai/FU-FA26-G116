@@ -161,8 +161,19 @@ internal sealed class FakeRefreshTokenStore : IRefreshTokenStore
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Every account whose sessions were dropped, in order.
+    ///
+    /// Recorded separately because removing tokens leaves no trace for an account that held none:
+    /// a test asserting "this person was signed out" would pass without the call ever being made.
+    /// Used by the role permission tests, where the accounts have no tokens to begin with.
+    /// </summary>
+    public List<Guid> RevokedUsers { get; } = [];
+
     public Task RevokeAllForUserAsync(Guid userId, CancellationToken ct = default)
     {
+        RevokedUsers.Add(userId);
+
         foreach (var token in _tokens.Where(t => t.Value.UserId == userId).Select(t => t.Key).ToArray())
         {
             _tokens.Remove(token);

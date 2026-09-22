@@ -17,12 +17,16 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`02-quan-ly-nguoi-dung-note-cho-fe.md`](02-quan-ly-nguoi-dung-note-cho-fe.md) — note cho FE khi
   làm màn hình quản lý người dùng: `isActive` bắt buộc gửi đúng tên field, ba nguyên nhân khác nhau
   của cùng mã `MSG12`, và vì sao `403` giữa phiên là chuyện bình thường chứ không phải bug
+- [`03-ma-tran-phan-quyen.md`](03-ma-tran-phan-quyen.md) — ma trận vai trò ↔ quyền (UC-09, UC-10 /
+  SCRUM-60): `GET`/`PUT /api/roles/capabilities`; mã `MSG16`–`MSG18`; luật chống tự khoá hệ thống,
+  vì sao đổi ma trận phải kết thúc phiên, và năm chỗ code khác class diagram cần BA sửa. Kèm cảnh
+  báo về bước seed sau khi bỏ `HasData` ([ADR-0007](../05-decisions/0007-ma-tran-phan-quyen-sua-duoc-luc-chay.md))
 
 Dự kiến có thêm:
 
-- `03-quy-uoc.md` — quy ước chung: đặt tên đường dẫn, phân trang, định dạng lỗi, mã trạng thái
-- `04-rest.md` — từng endpoint: method, path, request/response, quyền yêu cầu
-- `05-signalr-hubs.md` — hub, phương thức client/server, payload sự kiện realtime
+- `04-quy-uoc.md` — quy ước chung: đặt tên đường dẫn, phân trang, định dạng lỗi, mã trạng thái
+- `05-rest.md` — từng endpoint: method, path, request/response, quyền yêu cầu
+- `06-signalr-hubs.md` — hub, phương thức client/server, payload sự kiện realtime
 
 Khi backend bật OpenAPI, tài liệu sinh tự động đóng vai trò tham chiếu chi tiết; các file ở đây
 tập trung vào ý định thiết kế và phần OpenAPI không diễn tả được (luồng, quyền, tình huống lỗi).
