@@ -157,13 +157,44 @@ public class AuthenticationServiceTests
         // The observable part of the anti-enumeration defence, and the part the assertions above
         // do NOT cover: both branches return InvalidCredentials by construction, so that test
         // keeps passing even with the defence deleted. What actually hides the difference is that
-        // the unknown-email path pays for a hash too, against DummyHash.
+        // the unknown-email path pays for a hash too, against the dummy hash.
         //
         // Counted rather than timed: the property is "verification happened", and a wall-clock
         // assertion would be flaky on a busy machine while proving no more.
         await NewService().SignInAsync("nobody@trustcabinet.local", Password);
 
         Assert.Equal(1, _passwordHasher.VerifyCount);
+    }
+
+    [Fact]
+    public async Task The_dummy_hash_comes_from_the_injected_hasher()
+    {
+        // Counting verifications is not enough on its own: the dummy hash also has to be something
+        // this hasher can actually verify against. It used to be built from `new PasswordHasher()`
+        // regardless of what was injected, so under a test double the two disagreed — the fake was
+        // handed a hash of a shape it never produces, and the unknown-email branch was checking a
+        // pairing that does not occur in production.
+        //
+        // Hashing through the injected hasher is what this pins: one Hash call, on the path where
+        // no user was found, before the verify.
+        await NewService().SignInAsync("nobody@trustcabinet.local", Password);
+
+        Assert.Equal(1, _passwordHasher.HashCount);
+        Assert.All(_passwordHasher.VerifiedHashes, hash => Assert.StartsWith("hashed:", hash));
+    }
+
+    [Fact]
+    public async Task The_dummy_hash_never_matches_a_password()
+    {
+        // It is a hash of a fresh random value, so nothing a caller can send can match it. If it
+        // ever did, an unknown email would sign in.
+        var service = NewService();
+
+        var first = await service.SignInAsync("nobody@trustcabinet.local", Password);
+        var second = await service.SignInAsync("nobody@trustcabinet.local", "");
+
+        Assert.Equal(SignInOutcome.InvalidCredentials, first.Outcome);
+        Assert.Equal(SignInOutcome.InvalidCredentials, second.Outcome);
     }
 
     [Fact]

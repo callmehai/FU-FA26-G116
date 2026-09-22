@@ -26,8 +26,18 @@ public sealed class AuthenticationService(
     /// make "no such account" measurably faster to answer than "wrong password" — the timing alone
     /// would reveal which emails are registered. Hashing against this instead keeps both paths
     /// equally slow. It is a real hash of a random value, so nothing can match it.
+    ///
+    /// Produced by the injected hasher, not by <c>new PasswordHasher()</c>: it has to be a hash the
+    /// same implementation's <c>Verify</c> will actually chew on. Building it from a hard-coded
+    /// implementation would make the unknown-email path cheap — and differently shaped — the moment
+    /// a test substitutes a hasher, which is exactly the path the timing test is there to check.
+    ///
+    /// Lazy because the hasher arrives by constructor injection, and per-instance because the
+    /// service is registered scoped; one hash per request is a rounding error next to the verify
+    /// it exists to pay for.
     /// </summary>
-    private static readonly string DummyHash = new PasswordHasher().Hash(Guid.NewGuid().ToString());
+    private readonly Lazy<string> _dummyHash =
+        new(() => passwordHasher.Hash(Guid.NewGuid().ToString()));
 
     public async Task<SignInResult> SignInAsync(string email, string password, CancellationToken ct = default)
     {
@@ -42,7 +52,7 @@ public sealed class AuthenticationService(
 
         // Branch 1 — MSG01. One outcome for "no such email" and for "wrong password": the caller
         // must not be able to tell the two apart (SCRUM-11 acceptance criteria).
-        if (!passwordHasher.Verify(user?.PasswordHash ?? DummyHash, password) || user is null)
+        if (!passwordHasher.Verify(user?.PasswordHash ?? _dummyHash.Value, password) || user is null)
         {
             logger.LogInformation("Sign-in rejected: invalid credentials.");
             return SignInResult.Failure(SignInOutcome.InvalidCredentials);

@@ -158,6 +158,41 @@ public class JwtTokenIssuerTests
     }
 
     [Fact]
+    public void A_fresh_token_carries_no_notBefore()
+    {
+        // The token used to be issued with notBefore: now. Validation runs at ClockSkew = Zero —
+        // deliberately, so an expired token dies at its expiry instead of five minutes later — and
+        // that same zero tolerance applies to "nbf": a validator whose clock sat a second behind
+        // the issuer's would reject a token that had only just been minted.
+        //
+        // "exp" still bounds the token, so dropping "nbf" widens nothing.
+        var token = Parse(NewIssuer().CreateAccessToken(Secretary, []));
+
+        Assert.DoesNotContain(token.Claims, c => c.Type == "nbf");
+    }
+
+    [Fact]
+    public void A_token_validates_against_a_validator_whose_clock_is_behind()
+    {
+        // The failure the missing "nbf" prevents, played out: one machine issues, another whose
+        // clock lags validates. With notBefore: now and ClockSkew = Zero this threw
+        // SecurityTokenNotYetValidException on a token issued moments earlier.
+        var raw = NewIssuer().CreateAccessToken(Secretary, [Capability.AdminUsers]);
+
+        var laggingClock = Parameters(SigningKey);
+        laggingClock.LifetimeValidator = (notBefore, expires, _, _) =>
+        {
+            var theirNow = DateTime.UtcNow.AddSeconds(-30);
+            return (notBefore is null || notBefore <= theirNow)
+                && (expires is null || expires > theirNow);
+        };
+
+        var principal = NewHandler().ValidateToken(raw, laggingClock, out _);
+
+        Assert.Equal(Secretary.Id.ToString(), principal.FindFirst("sub")!.Value);
+    }
+
+    [Fact]
     public void Refresh_tokens_are_unique_and_opaque()
     {
         var issuer = NewIssuer();
