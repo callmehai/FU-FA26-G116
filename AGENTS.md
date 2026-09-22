@@ -140,6 +140,17 @@ endpoints must filter rows server-side — a record the caller may not see shoul
 browser. A capability-gated route renders the same 404 as an unknown URL, so a restricted screen
 does not reveal that it exists; keep it that way rather than switching to 403.
 
+**403 or 404?** The UI rule above is about *routes*; the API answers by what would leak:
+
+| Trường hợp | Mã | Lý do |
+|---|---|---|
+| Chưa đăng nhập | `401` | — |
+| Đã đăng nhập, thiếu capability, endpoint cố định (`/api/users`, `/api/roles/capabilities`) | `403` | Đường dẫn nằm trong tài liệu API công khai, giấu đi không được gì; `404` chỉ khiến FE không phân biệt nổi "sai quyền" với "gọi sai URL" |
+| Không được đọc **một tài nguyên cụ thể** (tài liệu, cuộc họp) | `404` | Ở đây `403` tự nó là thông tin: nó xác nhận tài nguyên đó có tồn tại — xem SCRUM-22 |
+| Route UI thiếu quyền | `404` | Màn hình bị hạn chế không tự lộ ra là nó có tồn tại |
+
+Tóm lại: giấu **sự tồn tại của một dòng dữ liệu**, không giấu **sự tồn tại của một endpoint**.
+
 **CSS**: use the variables declared on `:root` in `global.css` (`--lacquer`, `--ink`, `--surface`,
 `--muted-ink`, `--chip-*`, …). The palette already covers light and dark via
 `prefers-color-scheme`; a hardcoded colour will break dark mode.

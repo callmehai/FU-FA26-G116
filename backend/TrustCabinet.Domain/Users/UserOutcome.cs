@@ -1,0 +1,37 @@
+namespace TrustCabinet.Domain.Users;
+
+/// <summary>
+/// Why a user-management operation ended the way it did — the alt branches of UC-05, UC-06 and
+/// UC-07, and nothing else. The endpoint maps each to a message code and a status code; the
+/// service only decides which one happened.
+///
+/// One enum for the three use cases because they share their branches: all three can fail
+/// validation, and all three answer "that account does not exist" the same way. UC-01 and UC-02
+/// each got their own enum only because their specifications number the same situations
+/// differently; here they do not.
+/// </summary>
+public enum UserOutcome
+{
+    /// <summary>A field is missing, malformed or too long. Carries the offending fields.</summary>
+    InvalidInformation,
+
+    /// <summary>UC-05's second branch — the email is already taken. MSG08.</summary>
+    DuplicateEmail,
+
+    /// <summary>
+    /// No account with that id. Not in any diagram's alt block: the diagrams assume the
+    /// administrator picked a row off a list that was just rendered. It happens anyway, when two
+    /// administrators work at once or a stale tab posts an id that has since gone.
+    /// </summary>
+    NotFound,
+
+    /// <summary>
+    /// UC-07's "Status change is not allowed". The account is already in the requested state, or
+    /// the administrator is aiming at their own account — see
+    /// <c>IUserService.ChangeStatusAsync</c>.
+    /// </summary>
+    StatusChangeNotAllowed,
+
+    /// <summary>The operation went through.</summary>
+    Success,
+}

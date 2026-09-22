@@ -177,8 +177,19 @@ internal sealed class FakeRefreshTokenStore : IRefreshTokenStore
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Runs at the start of <see cref="RevokeAllForUserAsync"/>, before anything is removed.
+    ///
+    /// Two things need it: asserting *where* a revoke happens (it must be outside the invariant
+    /// lock, not inside), and making the store fail on demand, since a real Redis being down must
+    /// not undo a database write that already committed.
+    /// </summary>
+    public Action? OnRevokeAll { get; set; }
+
     public Task RevokeAllForUserAsync(Guid userId, CancellationToken ct = default)
     {
+        OnRevokeAll?.Invoke();
+
         foreach (var token in _tokens.Where(t => t.Value.UserId == userId).Select(t => t.Key).ToArray())
         {
             _tokens.Remove(token);
