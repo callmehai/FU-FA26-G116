@@ -136,8 +136,7 @@ mang vai trò `Secretary`**.
 
 ## Hai quản trị viên sửa cùng lúc
 
-Luật trên vắt qua nhiều dòng, nên đọc–kiểm–ghi phải nằm trong **một transaction** có khoá bảng
-(`LOCK TABLE role_capabilities IN EXCLUSIVE MODE`, isolation `Serializable`).
+Luật trên vắt qua nhiều dòng, nên đọc–kiểm–ghi phải nằm trong **một transaction** có khoá.
 
 Không có khoá thì hai request đồng thời đều đọc được ma trận cũ, đều thấy "vai trò kia vẫn giữ
 `AdminUsers`", đều qua validate, rồi đều ghi — kết quả là không ai giữ nữa:
@@ -148,12 +147,27 @@ Không có khoá thì hai request đồng thời đều đọc được ma trậ
 | Kiểm | OK, vì Secretary còn giữ | OK, vì Admin còn giữ |
 | Ghi | Gỡ khỏi Admin | Gỡ khỏi Secretary |
 
-Khoá ở mức `EXCLUSIVE` chứ không phải `ACCESS EXCLUSIVE`: request `GET` (UC-09) vẫn đọc bình
-thường, chỉ request ghi thứ hai phải xếp hàng đợi.
+**Khoá dùng chung với `/api/users`, không phải khoá riêng bảng `role_capabilities`.** Bất biến này
+do **hai bảng** quyết định: `role_capabilities` nói vai trò nào mang `AdminUsers`, `users` nói ai
+đang hoạt động và mang vai trò gì. Vô hiệu hoá quản trị viên cuối cùng qua
+`PUT /api/users/{id}/status` gỡ mất một người giữ quyền mà **không đụng gì tới**
+`role_capabilities` — khoá riêng bảng này sẽ không bao giờ chặn được đường đó.
 
-Đã có test với PostgreSQL thật (`RolePermissionRepositoryTests`) chạy hai update đồng thời và
-khẳng định **chỉ một cái thành công**. Đã kiểm ngược lại bằng cách bỏ dòng khoá đi: test fail 3/3
-lần, tức nó bắt được lỗi thật chứ không phải assert cho có.
+Nên cả hai phía cùng xếp hàng sau một advisory lock:
+
+```sql
+SELECT pg_advisory_xact_lock(hashtext('admin-users-invariant'))
+```
+
+gọi ở `RolePermissionService.UpdateAsync`, `UserService.UpdateAsync` và
+`UserService.ChangeStatusAsync`. Request `GET` (UC-09) không lấy khoá nên vẫn đọc bình thường; chỉ
+request ghi thứ hai phải đợi. Chi tiết và lý do chọn isolation `Read Committed` ở
+[ADR-0007](../05-decisions/0007-ma-tran-phan-quyen-sua-duoc-luc-chay.md).
+
+Đã có test với PostgreSQL thật chạy hai update đồng thời và khẳng định **chỉ một cái thành công**
+(`RolePermissionRepositoryTests`), cộng với `AdministratorInvariantGuardTests` cho chính cái khoá.
+Đã kiểm ngược lại bằng cách bỏ dòng khoá đi: test fail, tức nó bắt được lỗi thật chứ không phải
+assert cho có.
 
 ---
 
@@ -171,6 +185,11 @@ Code làm **cả hai**:
    - Huỷ ở **cả hai chiều** — thêm quyền cũng huỷ, không riêng gỡ quyền. Người vừa được cấp thêm
      quyền đang cầm token **không** chứa quyền đó, nên quyền mới cũng chưa dùng được.
    - Tài khoản đã bị vô hiệu hoá thì bỏ qua: họ không có phiên nào dùng được để mà kết thúc.
+   - **Chạy sau khi transaction commit, không nằm trong đó.** Mỗi tài khoản là một round trip sang
+     Redis; làm bên trong thì khoá bị giữ suốt cả vòng lặp, và Redis chết sẽ rollback luôn thay đổi
+     đã hợp lệ. Thu hồi lỗi thì ghi log rồi đi tiếp — cấu hình đã lưu đúng, báo lỗi chỉ khiến quản
+     trị viên làm lại việc đã xong. Cái mất là phiên kết thúc muộn hơn, tối đa đúng bằng vòng đời
+     access token, tức cửa sổ mà mục kế tiếp đã bịt.
 2. **Các endpoint quản trị đọc lại quyền từ database ở từng request**, nên đường nguy hiểm nhất
    đóng ngay lập tức — xem mục kế tiếp.
 

@@ -118,15 +118,4 @@ internal sealed class FakeRolePermissionRepository : IRolePermissionRepository
         // zero here, because that is precisely the lock-out this rule exists to catch.
         => Task.FromResult(rolesWithCapability.Sum(
             role => _usersByRole.TryGetValue(role, out var ids) ? ids.Count : 0));
-
-    /// <summary>
-    /// Runs the update directly. There is no transaction to simulate in memory; what the real
-    /// implementation adds is a lock, and a single-threaded fake cannot contend for one.
-    ///
-    /// The concurrency this guards against is therefore covered by
-    /// <c>RolePermissionRepositoryTests</c> against a real PostgreSQL, not here.
-    /// </summary>
-    public Task<T> InTransactionAsync<T>(
-        Func<CancellationToken, Task<T>> update, CancellationToken ct = default)
-        => update(ct);
 }

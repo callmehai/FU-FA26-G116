@@ -23,10 +23,12 @@ public class RolePermissionServiceTests
     private readonly FakeRolePermissionRepository _roles = new();
     private readonly FakeAuditService _audit = new();
     private readonly FakeRefreshTokenStore _refreshTokens = new();
+    private readonly FakeAdministratorInvariantGuard _invariant = new();
     private readonly Guid _actorId = Guid.CreateVersion7();
 
     private RolePermissionService NewService() => new(
-        _roles, _audit, _refreshTokens, NullLogger<RolePermissionService>.Instance);
+        _roles, _audit, _refreshTokens, _invariant,
+        NullLogger<RolePermissionService>.Instance);
 
     // ------------------------------------------------------ UC-09 · View role & permission matrix
 
@@ -149,6 +151,78 @@ public class RolePermissionServiceTests
         // Not only on a removal: someone whose role just gained a capability holds a token that
         // does not carry it, so their new rights would not work until it lapsed either.
         Assert.Contains(member, _refreshTokens.RevokedUsers);
+    }
+
+    [Fact]
+    public async Task Sessions_are_ended_after_the_transaction_commits_not_inside_it()
+    {
+        // Revoking runs one Redis round trip per affected account, in sequence. Inside the
+        // invariant lock that would block every other administrative write for the whole run, and
+        // a Redis outage would roll back a configuration change the database had accepted.
+        _roles.WithActiveUser(SystemRole.Member, Guid.CreateVersion7());
+        _roles.WithActiveUser(SystemRole.Member, Guid.CreateVersion7());
+
+        _refreshTokens.OnRevokeAll = () =>
+            Assert.False(_invariant.IsInsideWrite, "Sessions were revoked while the lock was held.");
+
+        var result = await NewService().UpdateAsync(
+            SystemRole.Member, [Capability.MeetingCreator], _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(2, _refreshTokens.RevokedUsers.Count);
+    }
+
+    [Fact]
+    public async Task The_matrix_change_survives_the_session_store_being_down()
+    {
+        // The configuration is saved and correct. Telling the administrator it failed would have
+        // them repeat a change that did happen; what is actually lost is the early end of some
+        // sessions, which lapse by themselves when their access tokens expire.
+        _roles.WithActiveUser(SystemRole.Member, Guid.CreateVersion7());
+        _refreshTokens.OnRevokeAll = () => throw new InvalidOperationException("Redis khong phan hoi");
+
+        var result = await NewService().UpdateAsync(
+            SystemRole.Member, [Capability.MeetingCreator], _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Single(_audit.Records);
+    }
+
+    [Fact]
+    public async Task One_unreachable_session_does_not_stop_the_others_being_ended()
+    {
+        // The loop goes on after a failure: one account whose revoke threw must not leave everyone
+        // else on the role still holding a usable refresh token.
+        _roles.WithActiveUser(SystemRole.Member, Guid.CreateVersion7());
+        _roles.WithActiveUser(SystemRole.Member, Guid.CreateVersion7());
+        _roles.WithActiveUser(SystemRole.Member, Guid.CreateVersion7());
+
+        var attempts = 0;
+        _refreshTokens.OnRevokeAll = () =>
+        {
+            if (++attempts == 1)
+            {
+                throw new InvalidOperationException("Redis tu choi mot lan");
+            }
+        };
+
+        var result = await NewService().UpdateAsync(
+            SystemRole.Member, [Capability.MeetingCreator], _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(3, attempts);
+    }
+
+    [Fact]
+    public async Task The_update_runs_under_the_shared_invariant_lock()
+    {
+        // The lock-out hole the review found: this service and UserService both decide "is anyone
+        // still able to administer?", and they used to take different locks — so a matrix edit and
+        // a deactivation could each remove the last administrator at the same time, neither
+        // seeing the other. They now queue behind one name.
+        await NewService().UpdateAsync(SystemRole.Member, [Capability.MeetingCreator], _actorId);
+
+        Assert.Equal(1, _invariant.WriteCount);
     }
 
     [Fact]

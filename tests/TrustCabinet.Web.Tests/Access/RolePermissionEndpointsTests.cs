@@ -44,6 +44,8 @@ public class RolePermissionEndpointsTests : IDisposable
 
         internal FakeRefreshTokenStore RefreshTokens { get; } = new();
 
+        internal FakeAdministratorInvariantGuard Invariant { get; } = new();
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             base.ConfigureWebHost(builder);
@@ -52,6 +54,12 @@ public class RolePermissionEndpointsTests : IDisposable
             {
                 services.RemoveAll<IRolePermissionRepository>();
                 services.AddSingleton<IRolePermissionRepository>(Roles);
+
+                // The real one opens a transaction and takes an advisory lock, which needs the
+                // PostgreSQL these tests exist to avoid. The lock itself is tested against a real
+                // database in AdministratorInvariantGuardTests.
+                services.RemoveAll<IAdministratorInvariantGuard>();
+                services.AddSingleton<IAdministratorInvariantGuard>(Invariant);
 
                 services.RemoveAll<IUserAccountRepository>();
                 services.AddSingleton<IUserAccountRepository>(Accounts);

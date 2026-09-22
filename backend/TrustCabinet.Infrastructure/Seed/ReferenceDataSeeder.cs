@@ -19,6 +19,16 @@ namespace TrustCabinet.Infrastructure.Seed;
 /// migration's data, a squashed migration set, or a deployment that provisions the schema some
 /// other way. An empty <c>role_capabilities</c> means nobody holds AdminUsers and nobody can sign
 /// in to fix it, so the cheap guard is worth keeping.
+///
+/// <para>
+/// <b>It is not switched on everywhere.</b> Development runs it through
+/// <c>MigrateAndSeedDevelopmentAsync</c>. Every other environment reaches it only through
+/// <c>SeedReferenceDataAsync</c>, behind <c>Database:SeedReferenceDataOnStartup</c>, which
+/// <c>appsettings.json</c> sets to <c>false</c> — so a deployment that wants this net has to ask
+/// for it. Opt-in on purpose: it opens a database connection during startup, and an application
+/// that does that unasked cannot boot without a live database, which is what the in-memory
+/// endpoint tests rely on. The trade is recorded in ADR-0007.
+/// </para>
 /// </summary>
 public static class ReferenceDataSeeder
 {

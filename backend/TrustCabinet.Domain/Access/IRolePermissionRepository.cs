@@ -19,24 +19,6 @@ public interface IRolePermissionRepository
         CancellationToken ct = default);
 
     /// <summary>
-    /// Runs <paramref name="update"/> with the matrix held still: nothing else may change
-    /// <c>role_capabilities</c> until it returns and the transaction commits.
-    ///
-    /// UC-10 has to read the matrix, decide against it, and write — and the decision is about an
-    /// invariant that spans rows ("somebody can still administer"). Without this, two
-    /// administrators each removing <c>AdminUsers</c> from a different role both read a matrix in
-    /// which the other role still holds it, both pass validation, and both write: the capability
-    /// ends up nowhere, which is the one outcome the rule exists to prevent. Per-row writes do not
-    /// help, because the rows are not independent.
-    ///
-    /// The lock is taken on the whole table, not a row: the invariant is a property of the table,
-    /// and it is five rows edited by hand a few times a year, so there is nothing to gain by
-    /// being cleverer.
-    /// </summary>
-    Task<T> InTransactionAsync<T>(
-        Func<CancellationToken, Task<T>> update, CancellationToken ct = default);
-
-    /// <summary>
     /// Replaces the capabilities of one role with exactly <paramref name="capabilities"/> —
     /// UC-10's "Update role permission configuration".
     ///
@@ -77,9 +59,12 @@ public interface IRolePermissionRepository
     ///
     /// Counts **accounts**, not roles. A role that holds the capability but has no active member
     /// leaves nobody able to administer, so checking "some role still holds it" is not the
-    /// invariant — <c>UserService.WouldRemoveTheLastAdministratorAsync</c> already guards the same
-    /// rule from the user-management side, and the two must agree or the system can be locked out
-    /// through whichever one is weaker.
+    /// invariant — <c>UserService.WouldRemoveTheLastAdministratorAsync</c> guards the same rule
+    /// from the user-management side and counts accounts too.
+    ///
+    /// The two answering alike is necessary but was not sufficient: they also have to be unable to
+    /// run at the same time, or each removes the last administrator while the other's is still
+    /// standing. That is what <c>IAdministratorInvariantGuard</c> is for.
     /// </summary>
     Task<int> CountActiveUsersInRolesAsync(
         IReadOnlyCollection<SystemRole> rolesWithCapability, CancellationToken ct = default);

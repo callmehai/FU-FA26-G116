@@ -19,24 +19,74 @@ public sealed class RolePermissionService(
     IRolePermissionRepository roles,
     IAuditService audit,
     IRefreshTokenStore refreshTokens,
+    IAdministratorInvariantGuard administratorInvariant,
     ILogger<RolePermissionService> logger) : IRolePermissionService
 {
     public async Task<RolePermissionMatrix> GetMatrixAsync(CancellationToken ct = default)
         => Build(await roles.GetMatrixAsync(ct));
 
-    public Task<RolePermissionResult> UpdateAsync(
+    public async Task<RolePermissionResult> UpdateAsync(
         SystemRole role,
         IReadOnlyCollection<Capability> capabilities,
         Guid actorId,
         CancellationToken ct = default)
+    {
         // Read, validate and write under one lock. The rule below spans rows — "somebody can
         // still administer" is a property of the whole matrix — so validating against a snapshot
         // another request may already be replacing is how two legal-looking updates combine into
-        // a system nobody can administer. See IRolePermissionRepository.InTransactionAsync.
-        => roles.InTransactionAsync(
+        // a system nobody can administer.
+        //
+        // The shared guard, not a lock on role_capabilities alone. The rule also depends on
+        // `users`: deactivating the last administrator removes a holder of AdminUsers without
+        // touching this table at all, so a lock taken here would never have stopped it. Both
+        // sides queue behind one name instead — see IAdministratorInvariantGuard.
+        var written = await administratorInvariant.WriteAsync(
             token => UpdateWithinTransactionAsync(role, capabilities, actorId, token), ct);
 
-    private async Task<RolePermissionResult> UpdateWithinTransactionAsync(
+        // After the commit, never inside it. Revoking runs one Redis round trip per affected
+        // account, in sequence; doing that under the lock would block every other administrative
+        // write for the whole run, and a Redis outage would roll back a configuration change the
+        // database had already accepted.
+        //
+        // The cost is a window, not a hole: until it runs, those accounts still hold a usable
+        // refresh token. It is bounded by the access token's 15 minutes, the same exposure
+        // accepted elsewhere for the same reason.
+        foreach (var userId in written.RevokeSessionsOf)
+        {
+            try
+            {
+                await refreshTokens.RevokeAllForUserAsync(userId, ct);
+            }
+            catch (Exception exception)
+            {
+                // Logged, not rethrown, and the loop goes on: the matrix is already saved, and
+                // telling the administrator it failed would have them repeat a change that did
+                // happen. One account's session lapsing on its own is the smaller loss.
+                logger.LogError(
+                    exception,
+                    "Permissions for {Role} changed, but ending the sessions of {UserId} failed. "
+                    + "The session lapses on its own when the access token expires.",
+                    role, userId);
+            }
+        }
+
+        return written.Result;
+    }
+
+    /// <summary>
+    /// What a guarded update produced: the answer for the caller, and whose sessions the change
+    /// invalidated — empty on every branch that wrote nothing.
+    /// </summary>
+    private readonly record struct Written(
+        RolePermissionResult Result, IReadOnlyCollection<Guid> RevokeSessionsOf)
+    {
+        /// <summary>
+        /// Lets a refusal be returned as-is: a branch that wrote nothing has no session to end.
+        /// </summary>
+        public static implicit operator Written(RolePermissionResult result) => new(result, []);
+    }
+
+    private async Task<Written> UpdateWithinTransactionAsync(
         SystemRole role,
         IReadOnlyCollection<Capability> capabilities,
         Guid actorId,
@@ -117,15 +167,13 @@ public sealed class RolePermissionService(
         // Both directions, not only on a capability removed: someone whose role just gained a
         // capability is holding a token that does not carry it, so their new rights would not
         // work either until the token lapsed.
+        //
+        // Collected here, revoked by the caller once the transaction has committed — see
+        // UpdateAsync for why Redis must not be reached while the lock is held.
         var affected = await roles.FindActiveUserIdsInRoleAsync(role, ct);
 
-        foreach (var userId in affected)
-        {
-            await refreshTokens.RevokeAllForUserAsync(userId, ct);
-        }
-
         logger.LogInformation(
-            "Permissions for {Role} changed by {ActorId}; {Count} session(s) ended.",
+            "Permissions for {Role} changed by {ActorId}; {Count} session(s) to end.",
             role, actorId, affected.Count);
 
         // Rebuilt from the requested values rather than re-queried: the save succeeded, so this is
@@ -135,7 +183,7 @@ public sealed class RolePermissionService(
             [role] = requested,
         };
 
-        return RolePermissionResult.Success(Build(updated));
+        return new Written(RolePermissionResult.Success(Build(updated)), affected);
     }
 
     /// <summary>
@@ -184,7 +232,8 @@ public sealed class RolePermissionService(
         // satisfy a role-only check while leaving no person able to administer — two ordinary
         // requests, no race needed. UserService.WouldRemoveTheLastAdministratorAsync guards the
         // same invariant from the user-management side and counts accounts too; the two have to
-        // agree, or the system is lockable through whichever one is weaker.
+        // agree, and — since agreeing is not enough if they can run at the same time — they take
+        // the same lock, IAdministratorInvariantGuard.
         //
         // Not checked on the frontend alone: the acceptance criteria say "Kiểm ở server, không
         // phải ẩn nút".

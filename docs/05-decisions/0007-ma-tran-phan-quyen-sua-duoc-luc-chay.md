@@ -103,20 +103,66 @@ bảng. Nên đọc–kiểm–ghi mà không khoá thì hai request đồng th�
 trò kia vẫn giữ quyền", đều qua validate, rồi đều ghi — kết quả là không ai giữ nữa. Đúng cái trạng
 thái luật đó sinh ra để chặn.
 
-**Quyết định:** `UpdateAsync` chạy trong một transaction `Serializable` và lấy
-`LOCK TABLE role_capabilities IN EXCLUSIVE MODE` ngay đầu.
-
-- Khoá cả bảng chứ không khoá dòng, vì bất biến là tính chất của **cả bảng**. Bảng có 5 dòng và một
-  năm sửa vài lần, nên không có gì để tối ưu thêm.
-- `EXCLUSIVE` chứ không `ACCESS EXCLUSIVE`: mọi request `GET` (UC-09) vẫn đọc bình thường, chỉ
-  request ghi thứ hai phải xếp hàng.
-
-Cách khác đã cân nhắc: để `Serializable` tự bắt xung đột rồi retry khi PostgreSQL báo serialization
-failure. Loại vì phải viết thêm vòng retry và phân loại lỗi, trong khi khoá tường minh cho một bảng
-5 dòng thì ngắn hơn và dễ đọc hơn.
+**Quyết định (bản đầu, đã thay — xem mục dưới):** `UpdateAsync` chạy trong một transaction
+`Serializable` và lấy `LOCK TABLE role_capabilities IN EXCLUSIVE MODE` ngay đầu.
 
 Có test với PostgreSQL thật chạy hai update đồng thời (`RolePermissionRepositoryTests`). Đã kiểm
 ngược: bỏ dòng khoá đi thì test fail 3/3 lần.
+
+### Sửa sau review PR #10: khoá bảng không phủ hết bất biến
+
+Review chỉ ra khoá trên chỉ đóng **một nửa**. Bất biến *"còn ít nhất một tài khoản đang hoạt động
+giữ `AdminUsers`"* do **hai bảng** cùng quyết định: `role_capabilities` nói vai trò nào mang quyền,
+`users` nói ai đang hoạt động và mang vai trò gì. `UserService` (SCRUM-13) canh đúng bất biến đó từ
+phía kia, nhưng nó **không bao giờ chạm** `role_capabilities` nên **không bao giờ lấy** khoá này:
+
+```
+Ma trận: Admin→{AdminUsers}, Secretary→{AdminUsers}
+Alice = Admin (active), Bob = Secretary (active)
+
+A: PUT /api/users/{alice}/status  (vô hiệu hoá)  → còn Bob giữ quyền     → cho phép
+B: PUT /api/roles/secretary/...   (gỡ AdminUsers) → còn Alice đang active → cho phép
+
+Cả hai commit → không tài khoản nào quản trị được nữa
+```
+
+Mỗi request tách riêng đều hợp lệ; chỉ khi đi cùng nhau mới sai. Khoá `role_capabilities` không
+chặn được A, còn khoá `users` không chặn được B.
+
+**Quyết định mới:** bất biến trải trên hai bảng nên **không thuộc bảng nào**. Thay bằng một
+**advisory lock dùng chung** — `IAdministratorInvariantGuard`, gọi
+`pg_advisory_xact_lock(hashtext('admin-users-invariant'))` — và **cả hai phía** đều đi qua nó:
+`RolePermissionService.UpdateAsync`, `UserService.UpdateAsync` và `UserService.ChangeStatusAsync`.
+
+- `pg_advisory_xact_lock` (bản `_xact_`) chứ không phải `pg_advisory_lock`: khoá tự nhả khi
+  transaction kết thúc dù kết thúc kiểu gì. Bản session-scoped sẽ sống sót qua rollback rồi rò rỉ
+  theo connection trong pool.
+- Isolation hạ từ `Serializable` xuống **`Read Committed`**, và đây là điểm phản trực giác:
+  snapshot của một transaction được chụp ở câu lệnh **đầu tiên**, tức là *trước* khi giành được
+  khoá. Nên dưới `Serializable`, request phải xếp hàng sẽ cầm một snapshot có từ trước lúc request
+  thắng commit, rồi ghi đè lên thứ nó không nhìn thấy → PostgreSQL huỷ nó bằng lỗi `40001` thay vì
+  cho đọc lại. Một lần sửa thứ hai hoàn toàn bình thường lại thành lỗi serialization mà caller chỉ
+  có thể retry. Dưới `Read Committed`, mọi câu lệnh sau khi lấy khoá đọc đúng kết quả đã commit của
+  request thắng — đúng thứ validate cần. Chính advisory lock mới là thứ bảo đảm loại trừ lẫn nhau,
+  không phải isolation level.
+- `IRolePermissionRepository.InTransactionAsync` bị **xoá**: để lại hai cơ chế khoá song song cho
+  cùng một bất biến chính là cái bẫy mà review vừa chỉ ra.
+
+Test: `AdministratorInvariantGuardTests` chạy với PostgreSQL thật, chứng minh request thứ hai phải
+đợi request thứ nhất commit, khoá được nhả khi write ném lỗi, và lời gọi lồng nhau chạy chung
+transaction bên ngoài. Đã kiểm ngược: bỏ dòng lấy khoá đi thì test serialisation fail.
+
+### Kèm theo: thu hồi session nằm ngoài transaction
+
+Cũng từ review PR #10. Vòng thu hồi refresh token chạy **bên trong** transaction, tức là giữ khoá
+suốt N round trip sang Redis, tuần tự — vai trò đông người thì chặn mọi thao tác phân quyền khác
+trong cả khoảng đó, và **Redis chết thì rollback luôn thay đổi hợp lệ**.
+
+**Quyết định:** commit trước, thu hồi session sau; thất bại thì log rồi đi tiếp, không ném lỗi.
+Thay đổi đã lưu và đúng — báo lỗi cho quản trị viên chỉ khiến họ làm lại một việc đã xong. Cái mất
+là session kết thúc muộn hơn, tối đa đúng bằng vòng đời access token (15 phút) — cùng cửa sổ đã
+chấp nhận ở chỗ khác, và cũng là lý do `/api/users` đọc lại tài khoản người gọi ở mỗi request.
+`UserService` áp dụng y hệt.
 
 ## Các phương án đã cân nhắc
 

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Domain.Access;
 
 namespace TrustCabinet.Infrastructure.Access;
@@ -17,6 +18,11 @@ public static class RolePermissionServiceCollectionExtensions
     {
         services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
         services.AddScoped<IRolePermissionService, RolePermissionService>();
+
+        // The same lock AddTrustCabinetUserManagement registers, and it has to be the same
+        // registration: this service and UserService guard one invariant between them. TryAdd on
+        // both sides so either feature can be registered first, or alone.
+        services.TryAddScoped<IAdministratorInvariantGuard, AdministratorInvariantGuard>();
 
         return services;
     }

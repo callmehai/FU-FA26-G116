@@ -70,26 +70,4 @@ public sealed class RolePermissionRepository(TrustCabinetDbContext db) : IRolePe
 
         return db.Users.CountAsync(u => u.IsActive && roles.Contains(u.Role), ct);
     }
-
-    public async Task<T> InTransactionAsync<T>(
-        Func<CancellationToken, Task<T>> update, CancellationToken ct = default)
-    {
-        // Serializable so the read the validation depends on cannot change under it. PostgreSQL
-        // would then abort one of two conflicting transactions with a serialization failure
-        // rather than let both commit — but the explicit lock below means the second caller waits
-        // instead, so that retry path is never reached for this table.
-        await using var transaction = await db.Database.BeginTransactionAsync(
-            System.Data.IsolationLevel.Serializable, ct);
-
-        // Held until commit. EXCLUSIVE rather than ACCESS EXCLUSIVE: concurrent readers of the
-        // matrix (every UC-09 request) keep working, while any second writer waits here.
-        await db.Database.ExecuteSqlRawAsync(
-            "LOCK TABLE role_capabilities IN EXCLUSIVE MODE", ct);
-
-        var result = await update(ct);
-
-        await transaction.CommitAsync(ct);
-
-        return result;
-    }
 }
