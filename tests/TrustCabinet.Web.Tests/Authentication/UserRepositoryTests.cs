@@ -95,10 +95,12 @@ public class UserRepositoryTests : IAsyncLifetime
     //   "sub-123" → WHERE google_subject_id = @subject
     //   ""        → WHERE google_subject_id = @subject
     //   null      → WHERE google_subject_id IS NULL      ← matches every unlinked account
-    // Passed as null! because the interface takes a non-nullable string: the point is precisely
-    // that a null arrives anyway, from a Google payload whose `sub` nobody had validated.
-    [InlineData(null!)]
-    public async Task A_blank_google_subject_matches_nothing(string subject)
+    // A null is a case this has to cover, not an abuse of the signature: it is what a Google
+    // payload with no `sub` produces. The repository's parameter is declared string? for that
+    // reason, so this needs no null-forgiving operator — and xUnit1012 stays quiet, which matters
+    // now that CI builds with -warnaserror.
+    [InlineData(null)]
+    public async Task A_blank_google_subject_matches_nothing(string? subject)
     {
         // Four accounts that sign in with a password and have no Google link — exactly the shape
         // of the seeded database.

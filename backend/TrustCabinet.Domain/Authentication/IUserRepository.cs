@@ -31,8 +31,17 @@ public interface IUserRepository
     ///
     /// Matched on the subject, never on the email the token also carries — see
     /// <see cref="User.GoogleSubjectId"/> for why that distinction is a security boundary.
+    ///
+    /// <para>
+    /// Takes a nullable string because a null is exactly what this has to survive. It reads the
+    /// <c>sub</c> claim of a token that some caller may not have validated, and a missing claim
+    /// arrives here as null — which EF would translate into <c>IS NULL</c>, matching every
+    /// password-only account rather than none. Declaring the parameter non-nullable would not stop
+    /// that value arriving; it would only stop the compiler discussing it. Implementations answer
+    /// null for anything blank.
+    /// </para>
     /// </summary>
-    Task<User?> FindByGoogleSubjectIdAsync(string googleSubjectId, CancellationToken ct = default);
+    Task<User?> FindByGoogleSubjectIdAsync(string? googleSubjectId, CancellationToken ct = default);
 
     /// <summary>
     /// What this role may do, read from <c>role_capabilities</c> rather than hard-coded, so the
