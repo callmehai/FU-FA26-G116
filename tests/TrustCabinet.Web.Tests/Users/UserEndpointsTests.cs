@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
@@ -42,6 +43,8 @@ public class UserEndpointsTests : IDisposable
 
         internal FakeRefreshTokenStore RefreshTokens { get; } = new();
 
+        internal FakeAdministratorInvariantGuard Invariant { get; } = new();
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             base.ConfigureWebHost(builder);
@@ -50,6 +53,12 @@ public class UserEndpointsTests : IDisposable
             {
                 services.RemoveAll<IUserAccountRepository>();
                 services.AddSingleton<IUserAccountRepository>(Accounts);
+
+                // The real one opens a transaction and takes an advisory lock, which needs the
+                // PostgreSQL these tests exist to avoid. What it guards is tested against a real
+                // database in AdministratorInvariantGuardTests; here it only has to run the write.
+                services.RemoveAll<IAdministratorInvariantGuard>();
+                services.AddSingleton<IAdministratorInvariantGuard>(Invariant);
 
                 services.RemoveAll<IAuditService>();
                 services.AddSingleton<IAuditService>(Audit);

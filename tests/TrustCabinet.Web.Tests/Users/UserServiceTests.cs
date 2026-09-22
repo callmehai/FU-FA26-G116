@@ -22,6 +22,7 @@ public class UserServiceTests
     private readonly FakeUserAccountRepository _users = new();
     private readonly FakeAuditService _audit = new();
     private readonly FakeRefreshTokenStore _refreshTokens = new();
+    private readonly FakeAdministratorInvariantGuard _invariant = new();
     private readonly Guid _actorId = Guid.CreateVersion7();
 
     private UserService NewService() => new(
@@ -29,6 +30,7 @@ public class UserServiceTests
         new FakePasswordHasher(),
         _audit,
         _refreshTokens,
+        _invariant,
         NullLogger<UserService>.Instance);
 
     private User GivenUser(
@@ -124,7 +126,8 @@ public class UserServiceTests
         // password would make the assertion meaningless.
         var hasher = new TrustCabinet.Infrastructure.Authentication.PasswordHasher();
         var service = new UserService(
-            _users, hasher, _audit, _refreshTokens, NullLogger<UserService>.Instance);
+            _users, hasher, _audit, _refreshTokens, _invariant,
+            NullLogger<UserService>.Instance);
 
         await service.CreateAsync(
             new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, SystemRole.Chair),
@@ -475,6 +478,111 @@ public class UserServiceTests
             only.Id, new UserEdit(only.FullName, only.Email, SystemRole.Chair), _actorId);
 
         Assert.True(result.Succeeded);
+    }
+
+    [Fact]
+    public async Task An_inactive_account_can_still_be_moved_to_another_role()
+    {
+        // An inactive account administers nothing: it cannot sign in, and the "is anyone left?"
+        // count only counts active accounts. So no change to it can remove the last administrator.
+        //
+        // The rule used to answer "that would leave no active administrator" here — true, but
+        // already true before the change, and the change did not cause it. The sole administrator,
+        // once deactivated, was stuck in the Admin role permanently: a dead end rather than a
+        // safeguard.
+        var retired = GivenUser(
+            "Quản Trị Đã Nghỉ", "danghi@trustcabinet.local", SystemRole.Admin, isActive: false);
+
+        var result = await NewService().UpdateAsync(
+            retired.Id, new UserEdit(retired.FullName, retired.Email, SystemRole.Member), _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(SystemRole.Member, retired.Role);
+    }
+
+    [Fact]
+    public async Task Changing_an_email_ends_the_sessions_too()
+    {
+        // The access token carries an email claim, so /api/auth/me would keep answering with the
+        // old address for as long as the token lived. Only a role change used to revoke.
+        var user = GivenUser("Lê Thành Viên", "cu@trustcabinet.local");
+        await _refreshTokens.StoreAsync("rt-cua-ho", user.Id, TimeSpan.FromDays(7));
+
+        var result = await NewService().UpdateAsync(
+            user.Id, new UserEdit(user.FullName, "moi@trustcabinet.local", user.Role), _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Empty(_refreshTokens.ActiveTokens);
+    }
+
+    [Fact]
+    public async Task Renaming_somebody_leaves_their_session_alone()
+    {
+        // The other half of the rule: a display name is not in the token and changes nothing about
+        // what the account may do, so signing them out would be gratuitous.
+        var user = GivenUser("Lê Thành Viên", "thanhvien@trustcabinet.local");
+        await _refreshTokens.StoreAsync("rt-cua-ho", user.Id, TimeSpan.FromDays(7));
+
+        var result = await NewService().UpdateAsync(
+            user.Id, new UserEdit("Lê Thành Viên B", user.Email, user.Role), _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Contains("rt-cua-ho", _refreshTokens.ActiveTokens);
+    }
+
+    [Fact]
+    public async Task Both_writes_that_touch_the_invariant_run_under_the_shared_lock()
+    {
+        // The lock-out hole the review found: UserService and RolePermissionService both decide
+        // "is anyone still able to administer?", and before this they took different locks — so
+        // deactivating the last administrator and removing AdminUsers from the last role holding
+        // it could commit at the same time, each seeing the other's administrator still there.
+        //
+        // What the real lock does is proved in AdministratorInvariantGuardTests, against a real
+        // PostgreSQL. What this pins is that these two paths go through it at all.
+        var target = GivenUser("Lê Thành Viên", "thanhvien@trustcabinet.local");
+        var service = NewService();
+
+        await service.UpdateAsync(
+            target.Id, new UserEdit(target.FullName, target.Email, SystemRole.Chair), _actorId);
+        await service.ChangeStatusAsync(target.Id, false, _actorId);
+
+        Assert.Equal(2, _invariant.WriteCount);
+    }
+
+    [Fact]
+    public async Task Sessions_are_ended_after_the_transaction_commits_not_inside_it()
+    {
+        // Redis is a separate system. Revoking while the invariant lock is held would block every
+        // other administrative write for a network round trip, and an outage there would roll back
+        // an edit the database had already accepted.
+        var user = GivenUser("Lê Thành Viên", "thanhvien@trustcabinet.local");
+        await _refreshTokens.StoreAsync("rt-cua-ho", user.Id, TimeSpan.FromDays(7));
+
+        _refreshTokens.OnRevokeAll = () =>
+            Assert.False(_invariant.IsInsideWrite, "Sessions were revoked while the lock was held.");
+
+        var result = await NewService().UpdateAsync(
+            user.Id, new UserEdit(user.FullName, user.Email, SystemRole.Chair), _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Empty(_refreshTokens.ActiveTokens);
+    }
+
+    [Fact]
+    public async Task A_change_survives_the_session_store_being_down()
+    {
+        // The write is committed and correct. Failing the request now would tell the administrator
+        // their change did not happen and they would repeat it; what is actually lost is the early
+        // end of one session, which expires by itself within the access token's lifetime.
+        var user = GivenUser("Lê Thành Viên", "thanhvien@trustcabinet.local");
+        _refreshTokens.OnRevokeAll = () => throw new InvalidOperationException("Redis khong phan hoi");
+
+        var result = await NewService().UpdateAsync(
+            user.Id, new UserEdit(user.FullName, user.Email, SystemRole.Chair), _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(SystemRole.Chair, user.Role);
     }
 
     // ------------------------------------------- UC-07 · Deactivate / reactivate user account

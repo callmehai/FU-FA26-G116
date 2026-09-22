@@ -21,8 +21,12 @@ public static class DevelopmentDataSeeder
     public const string DemoPassword = "TrustCabinet@2026";
 
     /// <summary>
-    /// Fills an empty database with demo rows. Idempotent: it does nothing when users already
-    /// exist, so restarting the app never duplicates or overwrites what you were working on.
+    /// Fills an empty database with demo rows, and on a database that already has users does one
+    /// narrow repair: see <see cref="RepairPlaceholderPasswordsAsync"/>.
+    ///
+    /// Idempotent either way. It never duplicates rows, and the only rows it ever writes to on a
+    /// populated database are demo accounts still holding the pre-SCRUM-11 placeholder hash — so
+    /// data you were working on, including a password set by hand, is left alone.
     /// </summary>
     public static async Task SeedAsync(TrustCabinetDbContext db, CancellationToken ct = default)
     {

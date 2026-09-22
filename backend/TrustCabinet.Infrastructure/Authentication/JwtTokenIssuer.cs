@@ -48,11 +48,15 @@ public sealed class JwtTokenIssuer(IOptions<AuthenticationOptions> options) : IT
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey)),
             SecurityAlgorithms.HmacSha256);
 
+        // No notBefore. Validation runs with ClockSkew = Zero so that an expired token stops working
+        // at its expiry rather than five minutes later, and that same zero tolerance applies to
+        // "nbf" — an "nbf" of exactly now would make a token the server just issued invalid on any
+        // machine whose clock is a second behind this one. Nothing is lost: "exp" already bounds the
+        // token, and it is issued to be used immediately, so there is no window to keep it out of.
         var token = new JwtSecurityToken(
             issuer: _options.Issuer,
             audience: _options.Audience,
             claims: claims,
-            notBefore: now.UtcDateTime,
             expires: now.Add(AccessTokenLifetime).UtcDateTime,
             signingCredentials: credentials);
 

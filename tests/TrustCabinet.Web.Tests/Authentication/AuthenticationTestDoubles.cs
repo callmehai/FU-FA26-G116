@@ -79,12 +79,28 @@ internal sealed class FakePasswordHasher : IPasswordHasher
     /// </summary>
     public int VerifyCount { get; private set; }
 
-    public string Hash(string password) => $"hashed:{password}";
+    /// <summary>
+    /// How many times a hash was produced through this instance. The service's dummy hash has to
+    /// come from the hasher it was given, so that hash and verify are the same implementation;
+    /// this is what shows it did.
+    /// </summary>
+    public int HashCount { get; private set; }
+
+    /// <summary>Every stored hash <see cref="Verify"/> was asked about, in order.</summary>
+    public List<string> VerifiedHashes { get; } = [];
+
+    public string Hash(string password)
+    {
+        HashCount++;
+        return $"hashed:{password}";
+    }
 
     public bool Verify(string passwordHash, string providedPassword)
     {
         VerifyCount++;
-        return passwordHash == Hash(providedPassword);
+        VerifiedHashes.Add(passwordHash);
+        // Hash() would inflate HashCount with verifications, so the shape is spelled out here.
+        return passwordHash == $"hashed:{providedPassword}";
     }
 }
 
@@ -170,9 +186,21 @@ internal sealed class FakeRefreshTokenStore : IRefreshTokenStore
     /// </summary>
     public List<Guid> RevokedUsers { get; } = [];
 
+    /// <summary>
+    /// Runs at the start of <see cref="RevokeAllForUserAsync"/>, before anything is removed.
+    ///
+    /// Two things need it: asserting *where* a revoke happens (it must be outside the invariant
+    /// lock, not inside), and making the store fail on demand, since a real Redis being down must
+    /// not undo a database write that already committed.
+    /// </summary>
+    public Action? OnRevokeAll { get; set; }
+
     public Task RevokeAllForUserAsync(Guid userId, CancellationToken ct = default)
     {
+        // Before the hook, so an account is still recorded as revoked when the hook throws — a
+        // test about surviving an outage needs to see that the attempt was made.
         RevokedUsers.Add(userId);
+        OnRevokeAll?.Invoke();
 
         foreach (var token in _tokens.Where(t => t.Value.UserId == userId).Select(t => t.Key).ToArray())
         {

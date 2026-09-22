@@ -1,3 +1,4 @@
+using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -157,4 +158,47 @@ internal sealed class FakeAuditService : IAuditService
 internal sealed class FakeCallerContext(string ipAddress = "203.0.113.7") : ICallerContext
 {
     public string IpAddress { get; } = ipAddress;
+}
+
+/// <summary>
+/// Runs the guarded write straight through, and counts how often it was asked to.
+///
+/// There is no lock to take without a database, so what a unit test can check here is that the
+/// write went through the guard at all — the real serialisation is exercised in
+/// <c>AdministratorInvariantGuardTests</c>, against a real PostgreSQL.
+/// </summary>
+internal sealed class FakeAdministratorInvariantGuard : IAdministratorInvariantGuard
+{
+    /// <summary>How many writes ran under the guard.</summary>
+    public int WriteCount { get; private set; }
+
+    /// <summary>
+    /// Whether the guard was entered before the write began. Records the nesting rather than only
+    /// the count, so a test can tell "ran inside the guard" from "ran, and the guard was also
+    /// called at some point".
+    /// </summary>
+    public bool WasInsideGuard { get; private set; }
+
+    private bool _inside;
+
+    public async Task<T> WriteAsync<T>(
+        Func<CancellationToken, Task<T>> write, CancellationToken ct = default)
+    {
+        WriteCount++;
+        _inside = true;
+
+        try
+        {
+            WasInsideGuard = true;
+            return await write(ct);
+        }
+        finally
+        {
+            _inside = false;
+        }
+    }
+
+    /// <summary>True while a guarded write is running — what a collaborator checks to prove it
+    /// was called inside the lock rather than after it.</summary>
+    public bool IsInsideWrite => _inside;
 }
