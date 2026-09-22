@@ -266,6 +266,76 @@ public class DatabaseModelTests
     }
 
     [Fact]
+    public void Every_enum_column_default_is_a_name_the_enum_knows()
+    {
+        using var db = NewContext();
+
+        // Enums are stored as strings (AGENTS.md), so a column default is only usable if it spells
+        // a member of that enum. Anything else is a value the application can write but cannot
+        // read back: the conversion runs Enum.Parse on the way out, so a bad default surfaces as a
+        // 500 at some later read rather than an error at the insert that produced it.
+        //
+        // This is how SCRUM-61 happened. `attendance` was added NOT NULL to a table that already
+        // had rows, and EF supplied `DEFAULT ''` on its own — nobody wrote that default, which is
+        // exactly why a test has to look for it rather than a reviewer.
+        var offenders = new List<string>();
+
+        foreach (var entity in db.Model.GetEntityTypes())
+        {
+            foreach (var property in entity.GetProperties())
+            {
+                var enumType = Nullable.GetUnderlyingType(property.ClrType) ?? property.ClrType;
+
+                if (!enumType.IsEnum || property.GetDefaultValue() is not { } declared)
+                {
+                    continue;
+                }
+
+                // The default is read in whatever shape it was declared: a string once the value
+                // converter has been applied, or the enum member itself when set through
+                // HasDefaultValue(). Both have to name something the enum defines.
+                var valid = declared switch
+                {
+                    string text => Enum.GetNames(enumType).Contains(text, StringComparer.Ordinal),
+                    _ => declared.GetType() == enumType && Enum.IsDefined(enumType, declared),
+                };
+
+                if (!valid)
+                {
+                    offenders.Add(
+                        $"{entity.ClrType.Name}.{property.Name} ({enumType.Name}) "
+                        + $"defaults to '{declared}'");
+                }
+            }
+        }
+
+        Assert.Empty(offenders);
+    }
+
+    [Fact]
+    public void Attendance_defaults_to_Unknown_rather_than_an_empty_string()
+    {
+        using var db = NewContext();
+
+        var attendance = db.Model
+            .FindEntityType(typeof(MeetingParticipant))!
+            .GetProperty(nameof(MeetingParticipant.Attendance));
+
+        // The specific column SCRUM-61 was raised for. The sweep above would catch a regression
+        // here too, but this one names the column, so a failure says what broke without anyone
+        // having to reconstruct the story.
+        //
+        // The default matters even on a clean database: it is what a hand-written INSERT that
+        // omits the column lands on, and `''` there would be unreadable.
+        //
+        // Compared as the enum member, which is how HasDefaultValue() stored it — the value
+        // converter turns it into 'Unknown' on the way to SQL. Asserting against the string would
+        // fail here while the schema was perfectly correct.
+        Assert.Equal(AttendanceStatus.Unknown, attendance.GetDefaultValue());
+    }
+
+
+    [Fact]
     public void No_voiceprint_is_stored_anywhere()
     {
         using var db = NewContext();

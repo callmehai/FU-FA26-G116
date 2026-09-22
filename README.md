@@ -66,7 +66,7 @@ CI chạy đúng bốn lệnh này trên mọi pull request
 
 > **Không commit chuỗi kết nối, API key hay mật khẩu.** `appsettings.json` được commit và repo
 > đang để public, nên secret không nằm ở đó. Dùng
-> `dotnet user-secrets set "ConnectionStrings:Default" "..."` ở máy mình, và biến môi trường khi
+> `dotnet user-secrets set "ConnectionStrings:TrustCabinet" "..."` ở máy mình, và biến môi trường khi
 > triển khai.
 
 ## Quy trình làm việc

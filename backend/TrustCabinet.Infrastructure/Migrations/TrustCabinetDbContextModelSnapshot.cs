@@ -759,8 +759,10 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.Property<string>("Attendance")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
+                        .HasDefaultValue("Unknown")
                         .HasColumnName("attendance");
 
                     b.Property<DateTimeOffset?>("AttendanceRecordedAt")
