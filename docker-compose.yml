@@ -24,5 +24,19 @@ services:
       retries: 10
       start_period: 10s
 
+  # Refresh token cho đăng nhập (SCRUM-11). Không cần volume: mất dữ liệu ở đây chỉ có nghĩa là
+  # mọi người phải đăng nhập lại, còn token hết hạn thì Redis tự xoá bằng TTL.
+  redis:
+    image: redis:8-alpine
+    container_name: trustcabinet-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
 volumes:
   trustcabinet-pgdata:

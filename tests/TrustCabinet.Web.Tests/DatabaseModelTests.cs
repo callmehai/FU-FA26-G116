@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
@@ -83,6 +86,47 @@ public class DatabaseModelTests
 
         Assert.Contains(indexes, i =>
             i.IsUnique && i.Properties.Count == 1 && i.Properties[0].Name == nameof(User.Email));
+    }
+
+    [Fact]
+    public void An_account_may_sign_in_with_a_password_or_with_google()
+    {
+        using var db = NewContext();
+
+        var user = db.Model.FindEntityType(typeof(User))!;
+
+        // Both nullable: a Google-only account has no password, and a password-only account has no
+        // Google link. Making either required would make one of the two sign-in methods
+        // unstorable — which is exactly the bug SCRUM-11's migration had to fix.
+        Assert.True(user.FindProperty(nameof(User.PasswordHash))!.IsNullable);
+        Assert.True(user.FindProperty(nameof(User.GoogleSubjectId))!.IsNullable);
+
+        // But not both null, or the row is an account nobody could ever sign into. Enforced by the
+        // database because migrations, seeds and a DBA's console all write here too.
+        //
+        // Read from the design-time model: the runtime one is trimmed of anything queries do not
+        // need, and check constraints — which only ever matter when generating a migration — are
+        // among what it drops.
+        var designTimeUser = db.GetService<IDesignTimeModel>().Model.FindEntityType(typeof(User))!;
+
+        Assert.Contains(
+            designTimeUser.GetCheckConstraints(),
+            c => c.Sql.Contains("password_hash IS NOT NULL")
+                && c.Sql.Contains("google_subject_id IS NOT NULL"));
+    }
+
+    [Fact]
+    public void One_google_identity_belongs_to_at_most_one_account()
+    {
+        using var db = NewContext();
+
+        var indexes = db.Model.FindEntityType(typeof(User))!.GetIndexes();
+
+        // Without this, one Google identity could be linked to two internal accounts and which one
+        // signed in would come down to row order.
+        Assert.Contains(indexes, i => i.IsUnique
+            && i.Properties.Count == 1
+            && i.Properties[0].Name == nameof(User.GoogleSubjectId));
     }
 
     [Fact]

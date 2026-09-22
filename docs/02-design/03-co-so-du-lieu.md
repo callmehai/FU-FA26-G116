@@ -65,10 +65,19 @@ làm dở. Muốn làm lại từ đầu: `docker compose down -v && docker comp
 Gồm 4 người dùng (mỗi vai trò một người) và 5 cuộc họp giống hệt dữ liệu cứng mà giao
 diện đang dùng, để màn hình nhìn không khác gì trước khi có backend.
 
-> **Chưa đăng nhập được bằng các tài khoản này.** `password_hash` của chúng là chuỗi đánh dấu
-> `SET-BY-SCRUM-11`, không phải hash của mật khẩu nào cả. Đăng nhập nội bộ là việc của `SCRUM-11`;
-> người làm story đó thay giá trị này bằng hash thật. Để repo public mà seed sẵn mật khẩu biết
-> trước là mời người ta vào.
+Cả 4 tài khoản dùng chung một mật khẩu: **`TrustCabinet@2026`** (hằng số `DemoPassword` trong
+`DevelopmentDataSeeder`). Mật khẩu được băm lúc seed chứ không dán sẵn hash vào source — một hash
+trong repo public thì vẫn là credential, và nó sẽ âm thầm hết khớp nếu tham số của hasher đổi.
+
+> **Mật khẩu biết trước này chỉ tồn tại trong Development.** `DevelopmentDataSeeder` không bao giờ
+> chạy ngoài Development (xem `MigrateAndSeedDevelopmentAsync`), nên không có triển khai thật nào
+> mang tài khoản mật khẩu công khai. Bản ghi trước đây của tài liệu này — *"để repo public mà seed
+> sẵn mật khẩu biết trước là mời người ta vào"* — nói về việc seed mật khẩu cho **mọi** môi trường;
+> ranh giới Development mới là thứ làm cho việc này an toàn, chứ không phải việc giấu mật khẩu đi.
+
+Cơ sở dữ liệu Development dựng từ trước `SCRUM-11` có `password_hash` là chuỗi đánh dấu
+`SET-BY-SCRUM-11`. Seeder tự thay giá trị đó bằng hash thật khi khởi động, nên không cần dựng lại
+DB; nó chỉ đụng đúng những dòng mang chuỗi đó, không đè mật khẩu ai đặt tay.
 
 ## Quy ước đặt tên
 

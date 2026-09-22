@@ -6,7 +6,12 @@
 
   <ItemGroup>
     <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.76.0" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.12" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+    <PackageReference Include="StackExchange.Redis" Version="3.3.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.23.0" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -14,5 +19,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- GoogleTokenVerifier.IdentityFrom is internal: the rules it holds (email must be verified,
+         subject must be present) need testing, but nothing outside this assembly should call it.
+         Google's library allows no signing key to be substituted, so the wrapper around it cannot
+         be unit-tested and these rules would otherwise be covered by nothing. -->
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>TrustCabinet.Web.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 
 </Project>

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Infrastructure.Authentication;
 
 namespace TrustCabinet.Infrastructure.Seed;
 
@@ -14,47 +15,61 @@ namespace TrustCabinet.Infrastructure.Seed;
 public static class DevelopmentDataSeeder
 {
     /// <summary>
-    /// Fills an empty database with demo rows. Idempotent: it does nothing when users already
-    /// exist, so restarting the app never duplicates or overwrites what you were working on.
+    /// The password every demo account shares locally. Publishing it is fine precisely because it
+    /// only ever exists in a Development database full of made-up meetings.
+    /// </summary>
+    public const string DemoPassword = "TrustCabinet@2026";
+
+    /// <summary>
+    /// Fills an empty database with demo rows, and on a database that already has users does one
+    /// narrow repair: see <see cref="RepairPlaceholderPasswordsAsync"/>.
+    ///
+    /// Idempotent either way. It never duplicates rows, and the only rows it ever writes to on a
+    /// populated database are demo accounts still holding the pre-SCRUM-11 placeholder hash — so
+    /// data you were working on, including a password set by hand, is left alone.
     /// </summary>
     public static async Task SeedAsync(TrustCabinetDbContext db, CancellationToken ct = default)
     {
+        // Demo accounts all share one well-known password, hashed here at seed time rather than
+        // pasted in as a literal — a hash in the source would still be a credential in a public
+        // repository, and it would silently stop matching if the hasher's parameters changed.
+        //
+        // Development only: this seeder never runs outside it (see MigrateAndSeedDevelopmentAsync),
+        // and nothing in a real deployment has a known password.
+        var demoPasswordHash = new PasswordHasher().Hash(DemoPassword);
+
         if (await db.Users.AnyAsync(ct))
         {
+            await RepairPlaceholderPasswordsAsync(db, demoPasswordHash, ct);
             return;
         }
-
-        // PasswordHash is a placeholder, not a hash of anything: local sign-in does not exist yet.
-        // SCRUM-11 introduces the hasher and must replace these values — until then no seeded
-        // account can be logged into, which is the safe failure for a public repository.
-        const string noLoginYet = "SET-BY-SCRUM-11";
 
         var chair = new User
         {
             FullName = "Trần Chủ Toạ",
             Email = "chutoa@trustcabinet.local",
-            PasswordHash = noLoginYet,
+            PasswordHash = demoPasswordHash,
             Role = SystemRole.Chair,
         };
         var secretary = new User
         {
             FullName = "Nguyễn Thư Ký",
             Email = "thuky@trustcabinet.local",
-            PasswordHash = noLoginYet,
+            PasswordHash = demoPasswordHash,
             Role = SystemRole.Secretary,
         };
         var member = new User
         {
             FullName = "Lê Thành Viên",
             Email = "thanhvien@trustcabinet.local",
-            PasswordHash = noLoginYet,
+            PasswordHash = demoPasswordHash,
             Role = SystemRole.Member,
         };
         var administrator = new User
         {
             FullName = "Phạm Quản Trị",
             Email = "quantri@trustcabinet.local",
-            PasswordHash = noLoginYet,
+            PasswordHash = demoPasswordHash,
             Role = SystemRole.Admin,
         };
 
@@ -94,6 +109,44 @@ public static class DevelopmentDataSeeder
             NewHistory(published, MeetingStatus.Draft, MeetingStatus.WaitingApproval, secretary, "2026-09-16T08:40:00Z"),
             NewHistory(published, MeetingStatus.WaitingApproval, MeetingStatus.Approved, chair, "2026-09-16T09:15:00Z"),
             NewHistory(published, MeetingStatus.Approved, MeetingStatus.Published, secretary, "2026-09-16T09:20:00Z"));
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    /// <summary>
+    /// The placeholder that stood in for a password hash before SCRUM-11 introduced the hasher.
+    /// </summary>
+    private const string PlaceholderPasswordHash = "SET-BY-SCRUM-11";
+
+    /// <summary>
+    /// Gives a usable password to demo accounts seeded before SCRUM-11 existed.
+    ///
+    /// Without this, anyone whose development database predates this story keeps four accounts
+    /// whose password_hash is the literal "SET-BY-SCRUM-11" — the correct demo password is
+    /// rejected, indistinguishably from a wrong one, and sign-in looks broken. The main seeder
+    /// cannot help: it stops as soon as any user exists.
+    ///
+    /// Narrow on purpose. It only ever touches rows holding exactly that placeholder, so a
+    /// password someone set by hand is never overwritten, and it is a no-op on a fresh database.
+    /// Development only, like everything else here.
+    /// </summary>
+    private static async Task RepairPlaceholderPasswordsAsync(
+        TrustCabinetDbContext db, string demoPasswordHash, CancellationToken ct)
+    {
+        var stale = await db.Users
+            .Where(u => u.PasswordHash == PlaceholderPasswordHash)
+            .ToArrayAsync(ct);
+
+        if (stale.Length == 0)
+        {
+            return;
+        }
+
+        foreach (var user in stale)
+        {
+            user.PasswordHash = demoPasswordHash;
+            user.UpdatedAt = DateTimeOffset.UtcNow;
+        }
 
         await db.SaveChangesAsync(ct);
     }

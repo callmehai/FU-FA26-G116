@@ -2,11 +2,20 @@
 
 FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy song song không phải chờ nhau.
 
-Dự kiến có:
+Đã có:
 
-- `01-quy-uoc.md` — quy ước chung: đặt tên đường dẫn, phân trang, định dạng lỗi, mã trạng thái
-- `02-rest.md` — từng endpoint: method, path, request/response, quyền yêu cầu
-- `03-signalr-hubs.md` — hub, phương thức client/server, payload sự kiện realtime
+- [`01-xac-thuc.md`](01-xac-thuc.md) — đăng nhập và đăng xuất (UC-01, UC-02, UC-03 / SCRUM-11):
+  `/api/auth/login`, `/google`, `/refresh`, `/logout`, `/me`; access token và refresh token; mã
+  thông báo của từng use case (lưu ý UC-01 và UC-02 đánh số khác nhau)
+- [`01-xac-thuc-note-cho-fe.md`](01-xac-thuc-note-cho-fe.md) — note cho FE khi làm SCRUM-46: những
+  chỗ dễ làm sai mà lỗi lại trông như bug backend (chữ hoa/thường của `role`, hai kiểu 401, refresh
+  token dùng một lần, thứ tự gọi khi đăng xuất)
+
+Dự kiến có thêm:
+
+- `02-quy-uoc.md` — quy ước chung: đặt tên đường dẫn, phân trang, định dạng lỗi, mã trạng thái
+- `03-rest.md` — từng endpoint: method, path, request/response, quyền yêu cầu
+- `04-signalr-hubs.md` — hub, phương thức client/server, payload sự kiện realtime
 
 Khi backend bật OpenAPI, tài liệu sinh tự động đóng vai trò tham chiếu chi tiết; các file ở đây
 tập trung vào ý định thiết kế và phần OpenAPI không diễn tả được (luồng, quyền, tình huống lỗi).

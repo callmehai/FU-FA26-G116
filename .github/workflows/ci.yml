@@ -11,6 +11,36 @@ jobs:
   backend:
     name: Backend — build & test
     runs-on: ubuntu-latest
+
+    # RedisRefreshTokenStoreTests và UserRepositoryTests chạy thật trên Redis và PostgreSQL chứ
+    # không dùng fake, nên CI phải có cả hai. Đây là chỗ bắt được lỗi mà fake không thấy: fake
+    # từng có guard mà code thật thiếu, nên test xanh trong khi production sai.
+    services:
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: trustcabinet
+          POSTGRES_USER: trustcabinet
+          # Chỉ là mật khẩu của container dùng một lần trong CI, không phải secret.
+          POSTGRES_PASSWORD: "123"
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U trustcabinet -d trustcabinet"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - uses: actions/checkout@v4
 
