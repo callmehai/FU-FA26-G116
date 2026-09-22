@@ -19,7 +19,7 @@ public sealed class UserRepository(TrustCabinetDbContext db) : IUserRepository
     public Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default)
         => db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
 
-    public Task<User?> FindByGoogleSubjectIdAsync(string googleSubjectId, CancellationToken ct = default)
+    public Task<User?> FindByGoogleSubjectIdAsync(string? googleSubjectId, CancellationToken ct = default)
         // A blank subject matches nothing, and never reaches the query. EF would translate
         // `== null` into `IS NULL`, which every password-only account satisfies — so a token with
         // no subject claim would sign the caller in as whichever unlinked row PostgreSQL happened

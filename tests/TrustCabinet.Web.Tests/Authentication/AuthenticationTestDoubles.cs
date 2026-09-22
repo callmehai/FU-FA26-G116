@@ -44,7 +44,7 @@ internal sealed class FakeUserRepository : IUserRepository
     public Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default)
         => Task.FromResult(_users.FirstOrDefault(u => u.Id == id));
 
-    public Task<User?> FindByGoogleSubjectIdAsync(string googleSubjectId, CancellationToken ct = default)
+    public Task<User?> FindByGoogleSubjectIdAsync(string? googleSubjectId, CancellationToken ct = default)
     {
         // Mirrors UserRepository exactly, including the blank-subject guard. An earlier version of
         // this fake guarded against a null subject while production did not, so the tests passed
