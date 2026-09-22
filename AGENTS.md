@@ -189,7 +189,7 @@ When a change affects design or scope, update `docs/` in the **same commit** as 
   rather than silently persisting the data.
 - `backend/TrustCabinet.Web/wwwroot/` is build output. Edits there are lost on the next build.
 - **Never commit a connection string, API key or credential.** `appsettings.json` is committed, so
-  secrets do not go there. Use `dotnet user-secrets set "ConnectionStrings:Default" "..."` locally
+  secrets do not go there. Use `dotnet user-secrets set "ConnectionStrings:TrustCabinet" "..."` locally
   (the repo is public) and environment variables in deployment.
 - Authentication and RBAC are **mocked in the browser** (`features/auth/AuthProvider.tsx`,
   `types/user.ts`), and the meetings list reads `features/meetings/sampleData.ts`. All of it is

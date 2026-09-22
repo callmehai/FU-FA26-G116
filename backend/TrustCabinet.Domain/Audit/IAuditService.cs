@@ -39,4 +39,17 @@ public static class AuditActions
 
     /// <summary>What <c>AuditLogEntry.ObjectType</c> carries for all of the above.</summary>
     public const string UserObjectType = "User";
+
+    /// <summary>
+    /// UC-10 — an administrator changed what a role may do (SCRUM-60). <c>AuditLogEntry</c> names
+    /// "changing a person's rights" as something that has to be recorded, and this changes it for
+    /// everyone holding the role at once.
+    /// </summary>
+    public const string RolePermissionsUpdated = "role.permissions.updated";
+
+    /// <summary>
+    /// What <c>AuditLogEntry.ObjectType</c> carries for the above. The row's <c>ObjectId</c> is
+    /// null: a role is an enum value, not a Guid, so the role name travels in the details.
+    /// </summary>
+    public const string RoleObjectType = "Role";
 }

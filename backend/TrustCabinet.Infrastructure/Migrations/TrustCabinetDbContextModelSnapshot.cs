@@ -759,8 +759,10 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.Property<string>("Attendance")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
+                        .HasDefaultValue("Unknown")
                         .HasColumnName("attendance");
 
                     b.Property<DateTimeOffset?>("AttendanceRecordedAt")
@@ -1163,33 +1165,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasName("pk_role_capabilities");
 
                     b.ToTable("role_capabilities", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Role = "Chair",
-                            Capability = "MeetingCreator"
-                        },
-                        new
-                        {
-                            Role = "Chair",
-                            Capability = "MeetingApprover"
-                        },
-                        new
-                        {
-                            Role = "Secretary",
-                            Capability = "MeetingCreator"
-                        },
-                        new
-                        {
-                            Role = "Secretary",
-                            Capability = "MinutesEditor"
-                        },
-                        new
-                        {
-                            Role = "Admin",
-                            Capability = "AdminUsers"
-                        });
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.SpeakingRequest", b =>

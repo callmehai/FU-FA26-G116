@@ -57,6 +57,40 @@ không cần nhớ lệnh nào sau khi `git pull` về một migration mới. Mu
 Ngoài Development thì **không bao giờ** tự migrate — triển khai thật chạy `dotnet ef database
 update` như một bước có người duyệt.
 
+## Dữ liệu tham chiếu — bắt buộc phải seed
+
+Khác với dữ liệu mẫu ở mục dưới (chỉ có ở Development), **ma trận `role_capabilities` là dữ liệu
+tham chiếu mà mọi môi trường đều phải có**. Bảng này quyết định vai trò nào làm được gì.
+
+Từ `SCRUM-60`, model **không còn khai báo các dòng này bằng `HasData`** nữa. Quản trị viên sửa
+được ma trận lúc chạy, mà `HasData` thì khiến migration sau sinh `UPDATE`/`DELETE` đè lên đúng
+những sửa đổi đó — lý do đầy đủ ở
+[ADR-0007](../05-decisions/0007-ma-tran-phan-quyen-sua-duoc-luc-chay.md).
+
+**Database migrate từ đầu vẫn có sẵn ma trận**, vì migration `InitialCreate` có lệnh `InsertData`
+chèn đúng 5 dòng đó, và migration đã lên `main` thì không sửa được nữa. Nên luồng thông thường
+không phải làm gì thêm.
+
+[`ReferenceDataSeeder`](../../backend/TrustCabinet.Infrastructure/Seed/ReferenceDataSeeder.cs) là
+**lưới an toàn** cho trường hợp bảng rỗng: restore một bản dump không kèm dữ liệu của migration đó,
+hoặc dựng schema bằng cách khác. Bảng rỗng nghĩa là không vai trò nào có `AdminUsers` → **không ai
+đăng nhập vào sửa được**, chỉ còn cách `INSERT` thẳng vào database.
+
+| Môi trường | Cách seed |
+|---|---|
+| Development | Tự động, cùng lúc với migrate và dữ liệu mẫu. Không phải làm gì thêm. |
+| Ngoài Development | Bật `Database:SeedReferenceDataOnStartup` nếu muốn có lưới an toàn lúc khởi động. |
+
+Seeder chỉ chèn khi bảng **rỗng hoàn toàn**, nên nó không bao giờ đè lên chỉnh sửa của quản trị
+viên — kể cả khi chạy ở mỗi lần khởi động. Bù từng dòng thiếu thì không phân biệt được với một
+dòng quản trị viên đã cố ý gỡ, nên seeder không làm việc đó.
+
+Kiểm tra nhanh xem đã seed chưa:
+
+```sql
+SELECT role, capability FROM role_capabilities ORDER BY role;
+```
+
 ## Dữ liệu mẫu
 
 Seed chỉ chạy khi bảng `users` rỗng, nên khởi động lại không nhân bản hay đè lên dữ liệu bạn đang

@@ -3,6 +3,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Authentication;
+using TrustCabinet.Infrastructure.Seed;
 
 namespace TrustCabinet.Web.Tests.Authentication;
 
@@ -212,7 +213,10 @@ public class UserRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task Capabilities_come_from_the_role_capabilities_table()
     {
-        // EnsureCreated applies the HasData rows, so the seeded mapping is present.
+        // Seeded explicitly: the matrix no longer ships in the migration, so EnsureCreated leaves
+        // the table empty (ADR-0007, SCRUM-60). This is the same path a real database takes.
+        await ReferenceDataSeeder.SeedAsync(_db);
+
         var capabilities = await new UserRepository(_db).GetCapabilitiesAsync(SystemRole.Secretary);
 
         Assert.Contains(Capability.MeetingCreator, capabilities);

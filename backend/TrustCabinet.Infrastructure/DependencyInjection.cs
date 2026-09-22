@@ -51,6 +51,32 @@ public static class DependencyInjection
         var db = scope.ServiceProvider.GetRequiredService<TrustCabinetDbContext>();
 
         await db.Database.MigrateAsync();
+        await ReferenceDataSeeder.SeedAsync(db);
         await DevelopmentDataSeeder.SeedAsync(db);
+    }
+
+    /// <summary>
+    /// Puts the reference data in place if the database has none — the role ↔ capability matrix
+    /// (ADR-0007).
+    ///
+    /// Usable in any environment, unlike <see cref="MigrateAndSeedDevelopmentAsync"/>. A database
+    /// migrated from scratch already has the rows, because <c>InitialCreate</c> inserts them and
+    /// is immutable; this covers the case where it does not — a restore without that migration's
+    /// data, or a schema provisioned some other way — since an empty <c>role_capabilities</c>
+    /// means no role holds AdminUsers and nobody can sign in to repair it.
+    ///
+    /// Safe to run on every boot and from several instances at once: it inserts only into a
+    /// completely empty table, and the composite primary key rejects a duplicate insert if two
+    /// instances race, which surfaces as a failed start rather than a doubled matrix.
+    ///
+    /// It does not migrate. A deployment still applies migrations deliberately; this only fills a
+    /// table that a migration no longer fills by itself.
+    /// </summary>
+    public static async Task SeedReferenceDataAsync(this IServiceProvider services)
+    {
+        await using var scope = services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<TrustCabinetDbContext>();
+
+        await ReferenceDataSeeder.SeedAsync(db);
     }
 }

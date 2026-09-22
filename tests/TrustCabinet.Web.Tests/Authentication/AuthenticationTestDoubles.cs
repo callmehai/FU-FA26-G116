@@ -178,6 +178,15 @@ internal sealed class FakeRefreshTokenStore : IRefreshTokenStore
     }
 
     /// <summary>
+    /// Every account whose sessions were dropped, in order.
+    ///
+    /// Recorded separately because removing tokens leaves no trace for an account that held none:
+    /// a test asserting "this person was signed out" would pass without the call ever being made.
+    /// Used by the role permission tests, where the accounts have no tokens to begin with.
+    /// </summary>
+    public List<Guid> RevokedUsers { get; } = [];
+
+    /// <summary>
     /// Runs at the start of <see cref="RevokeAllForUserAsync"/>, before anything is removed.
     ///
     /// Two things need it: asserting *where* a revoke happens (it must be outside the invariant
@@ -188,6 +197,9 @@ internal sealed class FakeRefreshTokenStore : IRefreshTokenStore
 
     public Task RevokeAllForUserAsync(Guid userId, CancellationToken ct = default)
     {
+        // Before the hook, so an account is still recorded as revoked when the hook throws — a
+        // test about surviving an outage needs to see that the attempt was made.
+        RevokedUsers.Add(userId);
         OnRevokeAll?.Invoke();
 
         foreach (var token in _tokens.Where(t => t.Value.UserId == userId).Select(t => t.Key).ToArray())

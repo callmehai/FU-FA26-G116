@@ -130,9 +130,14 @@ public class DatabaseModelTests
     }
 
     [Fact]
-    public void Role_capabilities_match_the_agreed_mapping()
+    public void Role_capabilities_match_the_agreed_default_mapping()
     {
-        // Spelled out rather than derived, so changing who may approve a meeting has to be a
+        // These are the values a **fresh** database starts with, not the running system's answer.
+        // Since SCRUM-60 an administrator edits the matrix at runtime, so this test pins the
+        // default that ReferenceDataSeeder applies to an empty table — read role_capabilities for
+        // what a given deployment actually enforces.
+        //
+        // Still spelled out rather than derived, so changing who may approve a meeting has to be a
         // deliberate edit in two places instead of a silent one.
         var expected = new[]
         {
@@ -151,6 +156,37 @@ public class DatabaseModelTests
 
         // A plain Member attends, reads and votes — none of which needs a capability.
         Assert.DoesNotContain(actual, rc => rc.Role == SystemRole.Member);
+    }
+
+    [Fact]
+    public void Default_matrix_grants_admin_users_to_someone()
+    {
+        // A default matrix where nobody administers would produce a database no one can sign in
+        // to configure — the state RolePermissionService refuses to be edited into, so it must
+        // not be shipped as the starting point either.
+        Assert.Contains(
+            ReferenceData.RoleCapabilities, rc => rc.Capability == Capability.AdminUsers);
+    }
+
+    [Fact]
+    public void Role_capabilities_are_not_seeded_through_the_migration()
+    {
+        using var db = NewContext();
+
+        // HasData would put the matrix inside the migration, and EF diffs seed data against the
+        // previous migration rather than against the database — so the next migration would emit
+        // UPDATE/DELETE over exactly the rows an administrator changed on the running system,
+        // silently restoring the defaults on deploy (ADR-0007, SCRUM-60).
+        //
+        // The rows now come from ReferenceDataSeeder, which only fills an empty table.
+        //
+        // Read from the design-time model: seed data is what migrations are scaffolded against,
+        // and the runtime model deliberately drops it.
+        var seeded = db.GetService<IDesignTimeModel>().Model
+            .FindEntityType(typeof(RoleCapability))!
+            .GetSeedData();
+
+        Assert.Empty(seeded);
     }
 
     [Fact]
@@ -228,6 +264,76 @@ public class DatabaseModelTests
         // and this is here so it survives someone adding "just one column" back.
         Assert.Empty(suspicious);
     }
+
+    [Fact]
+    public void Every_enum_column_default_is_a_name_the_enum_knows()
+    {
+        using var db = NewContext();
+
+        // Enums are stored as strings (AGENTS.md), so a column default is only usable if it spells
+        // a member of that enum. Anything else is a value the application can write but cannot
+        // read back: the conversion runs Enum.Parse on the way out, so a bad default surfaces as a
+        // 500 at some later read rather than an error at the insert that produced it.
+        //
+        // This is how SCRUM-61 happened. `attendance` was added NOT NULL to a table that already
+        // had rows, and EF supplied `DEFAULT ''` on its own — nobody wrote that default, which is
+        // exactly why a test has to look for it rather than a reviewer.
+        var offenders = new List<string>();
+
+        foreach (var entity in db.Model.GetEntityTypes())
+        {
+            foreach (var property in entity.GetProperties())
+            {
+                var enumType = Nullable.GetUnderlyingType(property.ClrType) ?? property.ClrType;
+
+                if (!enumType.IsEnum || property.GetDefaultValue() is not { } declared)
+                {
+                    continue;
+                }
+
+                // The default is read in whatever shape it was declared: a string once the value
+                // converter has been applied, or the enum member itself when set through
+                // HasDefaultValue(). Both have to name something the enum defines.
+                var valid = declared switch
+                {
+                    string text => Enum.GetNames(enumType).Contains(text, StringComparer.Ordinal),
+                    _ => declared.GetType() == enumType && Enum.IsDefined(enumType, declared),
+                };
+
+                if (!valid)
+                {
+                    offenders.Add(
+                        $"{entity.ClrType.Name}.{property.Name} ({enumType.Name}) "
+                        + $"defaults to '{declared}'");
+                }
+            }
+        }
+
+        Assert.Empty(offenders);
+    }
+
+    [Fact]
+    public void Attendance_defaults_to_Unknown_rather_than_an_empty_string()
+    {
+        using var db = NewContext();
+
+        var attendance = db.Model
+            .FindEntityType(typeof(MeetingParticipant))!
+            .GetProperty(nameof(MeetingParticipant.Attendance));
+
+        // The specific column SCRUM-61 was raised for. The sweep above would catch a regression
+        // here too, but this one names the column, so a failure says what broke without anyone
+        // having to reconstruct the story.
+        //
+        // The default matters even on a clean database: it is what a hand-written INSERT that
+        // omits the column lands on, and `''` there would be unreadable.
+        //
+        // Compared as the enum member, which is how HasDefaultValue() stored it — the value
+        // converter turns it into 'Unknown' on the way to SQL. Asserting against the string would
+        // fail here while the schema was perfectly correct.
+        Assert.Equal(AttendanceStatus.Unknown, attendance.GetDefaultValue());
+    }
+
 
     [Fact]
     public void No_voiceprint_is_stored_anywhere()

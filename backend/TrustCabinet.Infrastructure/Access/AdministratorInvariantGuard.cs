@@ -29,12 +29,24 @@ public sealed class AdministratorInvariantGuard(TrustCabinetDbContext db)
             return await write(ct);
         }
 
-        // Serializable for the same reason RolePermissionRepository.InTransactionAsync uses it:
-        // the reads the decision rests on must not change underneath. The advisory lock below is
-        // what actually serialises the two sides, so the second caller waits rather than losing a
-        // serialization failure and having to retry.
+        // Read Committed, not Serializable, and the difference matters here.
+        //
+        // What makes the decision safe is the advisory lock below: only one of these runs at a
+        // time, so the second one reads a matrix the first has already finished changing. The
+        // isolation level is not what provides that.
+        //
+        // Serializable would actively make it worse. A transaction's snapshot is taken at its
+        // first statement — before the lock is granted — so the caller that waits ends up holding
+        // a snapshot from before the winner committed. Its own writes then collide with what it
+        // could not see, and PostgreSQL aborts it with 40001 rather than letting it re-read. The
+        // effect is that a perfectly ordinary second edit fails with a serialization error that
+        // the caller can only answer by retrying, where here it should simply see the new state
+        // and be validated against it.
+        //
+        // Under Read Committed each statement after the lock sees the committed result of the
+        // winner, which is exactly what the validation needs to judge.
         await using var transaction = await db.Database.BeginTransactionAsync(
-            System.Data.IsolationLevel.Serializable, ct);
+            System.Data.IsolationLevel.ReadCommitted, ct);
 
         // pg_advisory_xact_lock, not pg_advisory_lock: the _xact_ form is released when the
         // transaction ends, however it ends. The session-scoped form would survive a rollback and
