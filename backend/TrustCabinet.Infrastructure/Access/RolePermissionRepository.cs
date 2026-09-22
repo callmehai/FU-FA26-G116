@@ -52,4 +52,44 @@ public sealed class RolePermissionRepository(TrustCabinetDbContext db) : IRolePe
             .Where(u => u.Role == role && u.IsActive)
             .Select(u => u.Id)
             .ToArrayAsync(ct);
+
+    public Task<int> CountActiveUsersInRolesAsync(
+        IReadOnlyCollection<SystemRole> rolesWithCapability, CancellationToken ct = default)
+    {
+        // No roles would hold it, so no account could: skip the round trip and answer the
+        // question the caller is really asking.
+        if (rolesWithCapability.Count == 0)
+        {
+            return Task.FromResult(0);
+        }
+
+        // Matches UserAccountRepository.CountActiveWithCapabilityAsync — active accounts whose
+        // role carries the capability — except the roles come from the caller, because the set
+        // being tested is the one that does not exist in the table yet.
+        var roles = rolesWithCapability.ToArray();
+
+        return db.Users.CountAsync(u => u.IsActive && roles.Contains(u.Role), ct);
+    }
+
+    public async Task<T> InTransactionAsync<T>(
+        Func<CancellationToken, Task<T>> update, CancellationToken ct = default)
+    {
+        // Serializable so the read the validation depends on cannot change under it. PostgreSQL
+        // would then abort one of two conflicting transactions with a serialization failure
+        // rather than let both commit — but the explicit lock below means the second caller waits
+        // instead, so that retry path is never reached for this table.
+        await using var transaction = await db.Database.BeginTransactionAsync(
+            System.Data.IsolationLevel.Serializable, ct);
+
+        // Held until commit. EXCLUSIVE rather than ACCESS EXCLUSIVE: concurrent readers of the
+        // matrix (every UC-09 request) keep working, while any second writer waits here.
+        await db.Database.ExecuteSqlRawAsync(
+            "LOCK TABLE role_capabilities IN EXCLUSIVE MODE", ct);
+
+        var result = await update(ct);
+
+        await transaction.CommitAsync(ct);
+
+        return result;
+    }
 }

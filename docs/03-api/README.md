@@ -21,6 +21,10 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   SCRUM-60): `GET`/`PUT /api/roles/capabilities`; mã `MSG16`–`MSG18`; luật chống tự khoá hệ thống,
   vì sao đổi ma trận phải kết thúc phiên, và năm chỗ code khác class diagram cần BA sửa. Kèm cảnh
   báo về bước seed sau khi bỏ `HasData` ([ADR-0007](../05-decisions/0007-ma-tran-phan-quyen-sua-duoc-luc-chay.md))
+- [`03-ma-tran-phan-quyen-note-cho-fe.md`](03-ma-tran-phan-quyen-note-cho-fe.md) — note cho FE khi
+  làm màn hình phân quyền: `capabilities` là trạng thái cuối chứ không phải delta, mã quyền
+  PascalCase khác bảng cứng đang có trong `user.ts`, vì sao đừng tự đoán luật chống tự khoá ở FE,
+  và vì sao route phải trả `404` trong khi API trả `403`
 
 Dự kiến có thêm:
 

@@ -93,6 +93,31 @@ có việc để làm khi bảng rỗng, tức khi database được dựng bằ
 - Một test mới (`Role_capabilities_are_not_seeded_through_the_migration`) canh để không ai vô tình
   thêm `HasData` trở lại.
 
+## Kèm theo: sửa ma trận phải nằm trong một transaction có khoá bảng
+
+Phát hiện khi review PR, không phải lúc thiết kế — ghi lại vì nó là hệ quả trực tiếp của việc cho
+sửa ma trận lúc chạy.
+
+Luật *"phải còn ít nhất một tài khoản đang hoạt động giữ `AdminUsers`"* **vắt qua nhiều dòng** của
+bảng. Nên đọc–kiểm–ghi mà không khoá thì hai request đồng thời đều đọc ma trận cũ, đều thấy "vai
+trò kia vẫn giữ quyền", đều qua validate, rồi đều ghi — kết quả là không ai giữ nữa. Đúng cái trạng
+thái luật đó sinh ra để chặn.
+
+**Quyết định:** `UpdateAsync` chạy trong một transaction `Serializable` và lấy
+`LOCK TABLE role_capabilities IN EXCLUSIVE MODE` ngay đầu.
+
+- Khoá cả bảng chứ không khoá dòng, vì bất biến là tính chất của **cả bảng**. Bảng có 5 dòng và một
+  năm sửa vài lần, nên không có gì để tối ưu thêm.
+- `EXCLUSIVE` chứ không `ACCESS EXCLUSIVE`: mọi request `GET` (UC-09) vẫn đọc bình thường, chỉ
+  request ghi thứ hai phải xếp hàng.
+
+Cách khác đã cân nhắc: để `Serializable` tự bắt xung đột rồi retry khi PostgreSQL báo serialization
+failure. Loại vì phải viết thêm vòng retry và phân loại lỗi, trong khi khoá tường minh cho một bảng
+5 dòng thì ngắn hơn và dễ đọc hơn.
+
+Có test với PostgreSQL thật chạy hai update đồng thời (`RolePermissionRepositoryTests`). Đã kiểm
+ngược: bỏ dòng khoá đi thì test fail 3/3 lần.
+
 ## Các phương án đã cân nhắc
 
 **Giữ `HasData`, không cho sửa qua UI (tức huỷ `SCRUM-60`).** Đơn giản nhất, và trung thực hơn

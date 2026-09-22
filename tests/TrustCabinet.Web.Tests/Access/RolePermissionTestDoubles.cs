@@ -21,7 +21,23 @@ internal sealed class FakeRolePermissionRepository : IRolePermissionRepository
             .GroupBy(rc => rc.Role)
             .ToDictionary(group => group.Key, group => group.Select(rc => rc.Capability).ToList());
 
-    private readonly Dictionary<SystemRole, List<Guid>> _usersByRole = [];
+    /// <summary>
+    /// Who holds each role. Starts with one active administrator, because that is the state every
+    /// real system is in — a database with no administrator at all cannot be reached through the
+    /// application. A test that cares about the lock-out rule overrides this with
+    /// <see cref="WithNoUsers"/>.
+    /// </summary>
+    private readonly Dictionary<SystemRole, List<Guid>> _usersByRole = new()
+    {
+        [SystemRole.Admin] = [Guid.CreateVersion7()],
+    };
+
+    /// <summary>Empties the organisation, for the tests about nobody being left to administer.</summary>
+    public FakeRolePermissionRepository WithNoUsers()
+    {
+        _usersByRole.Clear();
+        return this;
+    }
 
     /// <summary>How many times the service asked for changes to be persisted.</summary>
     public int SaveCount { get; private set; }
@@ -94,4 +110,23 @@ internal sealed class FakeRolePermissionRepository : IRolePermissionRepository
         SystemRole role, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyCollection<Guid>>(
             _usersByRole.TryGetValue(role, out var ids) ? [.. ids] : []);
+
+    public Task<int> CountActiveUsersInRolesAsync(
+        IReadOnlyCollection<SystemRole> rolesWithCapability, CancellationToken ct = default)
+        // Only accounts added through WithActiveUser count, mirroring the real query's
+        // `IsActive` filter — a test that grants a capability to a role nobody holds must see
+        // zero here, because that is precisely the lock-out this rule exists to catch.
+        => Task.FromResult(rolesWithCapability.Sum(
+            role => _usersByRole.TryGetValue(role, out var ids) ? ids.Count : 0));
+
+    /// <summary>
+    /// Runs the update directly. There is no transaction to simulate in memory; what the real
+    /// implementation adds is a lock, and a single-threaded fake cannot contend for one.
+    ///
+    /// The concurrency this guards against is therefore covered by
+    /// <c>RolePermissionRepositoryTests</c> against a real PostgreSQL, not here.
+    /// </summary>
+    public Task<T> InTransactionAsync<T>(
+        Func<CancellationToken, Task<T>> update, CancellationToken ct = default)
+        => update(ct);
 }

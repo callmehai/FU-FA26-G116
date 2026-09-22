@@ -151,6 +151,10 @@ public class RolePermissionEndpointsTests : IDisposable
     [Fact]
     public async Task Get_returns_the_matrix_and_the_catalogue()
     {
+        // Deliberately not the seeded defaults: asserting the defaults back would pass even if
+        // the endpoint returned a constant instead of reading the repository.
+        _factory.Roles.WithCapabilities(SystemRole.Member, Capability.MinutesEditor);
+
         var response = await AdminClient().GetAsync("/api/roles/capabilities");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -165,13 +169,13 @@ public class RolePermissionEndpointsTests : IDisposable
             Enum.GetValues<Capability>().Length,
             json.GetProperty("capabilities").GetArrayLength());
 
-        var admin = json.GetProperty("roles")
+        var member = json.GetProperty("roles")
             .EnumerateArray()
-            .Single(r => r.GetProperty("role").GetString() == "Admin");
+            .Single(r => r.GetProperty("role").GetString() == "Member");
 
         Assert.Equal(
-            "AdminUsers",
-            admin.GetProperty("capabilities").EnumerateArray().Single().GetString());
+            "MinutesEditor",
+            member.GetProperty("capabilities").EnumerateArray().Single().GetString());
     }
 
     [Fact]
@@ -234,8 +238,9 @@ public class RolePermissionEndpointsTests : IDisposable
         var json = await JsonOf(response);
         Assert.Equal("MSG17", json.GetProperty("code").GetString());
 
-        // The reason is per field, so the screen can mark the offending control.
-        Assert.True(json.GetProperty("errors").TryGetProperty("capabilities", out _));
+        // Under its own key, so the screen can tell "this would lock everyone out" apart from
+        // "you sent an unknown capability" and show the right message for each.
+        Assert.True(json.GetProperty("errors").TryGetProperty("adminUsers", out _));
     }
 
     [Fact]
@@ -257,7 +262,30 @@ public class RolePermissionEndpointsTests : IDisposable
             new { role = "Member", capabilities = new[] { "DeleteEverything" } });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal("MSG17", (await JsonOf(response)).GetProperty("code").GetString());
+
+        var json = await JsonOf(response);
+        Assert.Equal("MSG17", json.GetProperty("code").GetString());
+
+        // Names the offending code. "Danh sách quyền không hợp lệ" leaves an administrator with
+        // four checkboxes and no idea which one the backend refused.
+        var message = json.GetProperty("errors").GetProperty("capabilities").GetString();
+        Assert.Contains("DeleteEverything", message!, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Put_names_every_unknown_capability_not_just_the_first()
+    {
+        var response = await AdminClient().PutAsJsonAsync(
+            "/api/roles/capabilities",
+            new { role = "Member", capabilities = new[] { "Nonsense", "AlsoWrong" } });
+
+        var message = (await JsonOf(response))
+            .GetProperty("errors").GetProperty("capabilities").GetString();
+
+        // Both, because they all parse to the same out-of-range value once cast — which is why
+        // the endpoint reports them before parsing rather than the service afterwards.
+        Assert.Contains("Nonsense", message!, StringComparison.Ordinal);
+        Assert.Contains("AlsoWrong", message!, StringComparison.Ordinal);
     }
 
     [Fact]

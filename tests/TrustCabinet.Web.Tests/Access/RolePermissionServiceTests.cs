@@ -178,7 +178,10 @@ public class RolePermissionServiceTests
             _actorId);
 
         Assert.True(result.Succeeded);
-        // Stored once: the composite primary key would reject the second row.
+
+        // Stored once, because the service de-duplicates before writing. That it *must* is
+        // enforced by the composite primary key in PostgreSQL, which this fake does not have —
+        // RolePermissionRepositoryTests covers the real table.
         Assert.Equal([Capability.MeetingCreator], _roles.CapabilitiesOf(SystemRole.Member));
     }
 
@@ -188,11 +191,15 @@ public class RolePermissionServiceTests
     public async Task Update_refuses_to_remove_admin_users_from_the_last_role_holding_it()
     {
         // The lock-out rule, and the reason this screen is dangerous: AdminUsers gates this very
-        // endpoint, so a matrix where nobody holds it cannot be repaired through the application.
+        // endpoint, so a system where nobody holds it cannot be repaired through the application.
         var result = await NewService().UpdateAsync(SystemRole.Admin, [], _actorId);
 
         Assert.Equal(RolePermissionOutcome.InvalidConfiguration, result.Outcome);
-        Assert.Contains("capabilities", result.Errors!.Keys);
+
+        // Its own key, not the generic "capabilities" one: "you would lock everyone out" is the
+        // message an administrator most needs to read correctly, and the screen cannot mark it
+        // apart from "you sent an unknown capability" if both arrive under the same name.
+        Assert.Contains("adminUsers", result.Errors!.Keys);
 
         // And nothing was written.
         Assert.Equal(0, _roles.SaveCount);
@@ -201,16 +208,64 @@ public class RolePermissionServiceTests
     }
 
     [Fact]
-    public async Task Update_allows_moving_admin_users_to_another_role()
+    public async Task Update_allows_moving_admin_users_to_a_role_that_has_active_users()
     {
         // The point of the table is that the capability can be re-pointed without a deployment.
-        // Moving it to Secretary is legitimate; leaving it nowhere is not.
+        // Legitimate — as long as somebody actually holds the destination role.
         _roles.WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor, Capability.AdminUsers);
+        _roles.WithActiveUser(SystemRole.Secretary, Guid.CreateVersion7());
 
         var result = await NewService().UpdateAsync(SystemRole.Admin, [], _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Empty(_roles.CapabilitiesOf(SystemRole.Admin));
+    }
+
+    [Fact]
+    public async Task Update_refuses_to_move_admin_users_to_a_role_nobody_holds()
+    {
+        // The two-request lock-out. Granting AdminUsers to an empty role and then stripping it
+        // from Admin leaves the capability assigned to a role no living account has — so no
+        // person can administer, and the screen that could undo it is the one being closed.
+        //
+        // A check of "does some role still hold it?" says yes here, which is why the rule counts
+        // active accounts instead.
+        _roles.WithCapabilities(SystemRole.Member, Capability.AdminUsers);
+
+        var result = await NewService().UpdateAsync(SystemRole.Admin, [], _actorId);
+
+        Assert.Equal(RolePermissionOutcome.InvalidConfiguration, result.Outcome);
+        Assert.Contains("adminUsers", result.Errors!.Keys);
+        Assert.Equal(0, _roles.SaveCount);
+    }
+
+    [Fact]
+    public async Task Update_refuses_when_the_only_administrator_account_is_inactive()
+    {
+        // Deactivating the last administrator is already refused by UserService, but an account
+        // can also be inactive for reasons that predate this matrix. Either way an inactive
+        // account cannot sign in, so it is not somebody who can still administer.
+        _roles.WithNoUsers();
+
+        var result = await NewService().UpdateAsync(
+            SystemRole.Secretary, [Capability.MinutesEditor], _actorId);
+
+        Assert.Equal(RolePermissionOutcome.InvalidConfiguration, result.Outcome);
+        Assert.Contains("adminUsers", result.Errors!.Keys);
+    }
+
+    [Fact]
+    public async Task Granting_admin_users_to_a_role_with_users_is_allowed()
+    {
+        // The safe direction of the same rule: adding a second administering role is fine, and
+        // must not be mistaken for the lock-out case by a rule that only counts.
+        _roles.WithActiveUser(SystemRole.Secretary, Guid.CreateVersion7());
+
+        var result = await NewService().UpdateAsync(
+            SystemRole.Secretary, [Capability.AdminUsers], _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Contains(Capability.AdminUsers, _roles.CapabilitiesOf(SystemRole.Secretary));
     }
 
     [Fact]

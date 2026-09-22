@@ -67,6 +67,21 @@ public static class RolePermissionEndpoints
             });
         }
 
+        // Unknown names are reported here rather than inside the service: once parsed they are
+        // all the same out-of-range value, so the service could only say "something was wrong"
+        // while the administrator needs to know which code to correct.
+        var unknown = request.Capabilities
+            .Where(c => !Enum.TryParse<Capability>(c, ignoreCase: true, out _))
+            .ToArray();
+
+        if (unknown.Length > 0)
+        {
+            return Invalid(new Dictionary<string, string>
+            {
+                ["capabilities"] = $"Quyền không hợp lệ: {string.Join(", ", unknown)}.",
+            });
+        }
+
         var result = await roles.UpdateAsync(
             ParseRole(request.Role),
             [.. request.Capabilities.Select(ParseCapability)],

@@ -71,6 +71,11 @@ sạch quyền của vai trò.
 Chọn PUT một dòng thay vì PUT cả ma trận: màn hình bật/tắt từng ô, và PUT cả ma trận sẽ khiến hai
 quản trị viên sửa hai dòng khác nhau cùng lúc ghi đè lẫn nhau.
 
+> Lưu ý: PUT từng dòng chỉ tránh được việc **ghi đè dòng của nhau**. Nó **không** tự bảo vệ luật
+> chống tự khoá bên dưới, vì luật đó vắt qua nhiều dòng — hai request hợp lệ độc lập vẫn cộng lại
+> thành một ma trận không ai quản trị được. Chỗ đó do transaction + khoá bảng lo, xem
+> [mục tương tranh](#hai-quản-trị-viên-sửa-cùng-lúc).
+
 Thành công trả `200` kèm ma trận mới, nên màn hình không cần gọi `GET` lần hai:
 
 ```json
@@ -85,28 +90,70 @@ Thành công trả `200` kèm ma trận mới, nên màn hình không cần gọ
 | `MSG17` | `400` | Cấu hình không hợp lệ — kèm `errors` theo từng field |
 | `MSG18` | `500` | Database từ chối ghi. Không phải lỗi của người dùng: nên thử lại |
 
-`MSG17` có ba nguyên nhân, phân biệt bằng key trong `errors`:
+`MSG17` có ba nguyên nhân, phân biệt bằng key trong `errors` — **mỗi nguyên nhân một key riêng**,
+để màn hình hiển thị đúng thông báo cho từng trường hợp:
 
-| Key | Nguyên nhân |
-|---|---|
-| `role` | Tên vai trò không có trong enum |
-| `capabilities` | Có mã quyền không tồn tại, **hoặc** thiếu hẳn field `capabilities`, **hoặc** vi phạm luật chống tự khoá bên dưới |
+| Key | Nguyên nhân | Message mẫu |
+|---|---|---|
+| `role` | Tên vai trò không có trong enum | `Vai trò không hợp lệ.` |
+| `capabilities` | Có mã quyền không tồn tại, hoặc thiếu hẳn field `capabilities` | `Quyền không hợp lệ: DeleteEverything.` — **có nêu tên mã sai**, kể cả khi sai nhiều mã |
+| `adminUsers` | Vi phạm luật chống tự khoá bên dưới | `Không thể lưu cấu hình này: sau khi lưu sẽ không còn tài khoản đang hoạt động nào giữ quyền quản trị người dùng…` |
+
+`adminUsers` tách riêng khỏi `capabilities` là có chủ đích: "bạn gõ sai tên quyền" và "thao tác này
+sẽ khoá tất cả mọi người ra ngoài" là hai chuyện rất khác nhau, mà cái thứ hai là thông báo quản
+trị viên cần đọc đúng nhất.
 
 ---
 
-## Luật: không được gỡ `AdminUsers` khỏi vai trò cuối cùng còn giữ nó
+## Luật: phải còn ít nhất một **tài khoản đang hoạt động** giữ `AdminUsers`
 
-`AdminUsers` chính là quyền mở màn hình này. Một ma trận mà **không vai trò nào** giữ nó thì không
-sửa lại được bằng ứng dụng — chỉ còn cách vào thẳng database.
+`AdminUsers` chính là quyền mở màn hình này. Nếu sau khi lưu mà không còn ai vào được, thì không
+sửa lại được bằng ứng dụng — chỉ còn cách `INSERT` thẳng vào database.
 
-Nên backend từ chối request nào dẫn tới trạng thái đó, với `MSG17`.
+Nên backend từ chối request nào dẫn tới trạng thái đó, với `MSG17`, key lỗi `adminUsers`.
 
-**Kiểm trên toàn ma trận, không phải "Admin luôn phải giữ AdminUsers".** Lý do bảng
-`role_capabilities` tồn tại là để chuyển quyền sang vai trò khác được. Chuyển `AdminUsers` sang
-`Secretary` rồi gỡ khỏi `Admin` là hợp lệ; để nó không ở đâu cả mới là không hợp lệ.
+**Đếm theo tài khoản đang hoạt động, không phải theo vai trò.** Đây là điểm dễ làm sai nhất và đã
+từng sai ở bản đầu: kiểm "còn vai trò nào giữ `AdminUsers` không" **không đủ**. Hai request hợp lệ
+là khoá được hệ thống:
+
+1. `PUT {"role":"Member","capabilities":["AdminUsers"]}` — hợp lệ, `Member` giữ `AdminUsers`
+2. `PUT {"role":"Admin","capabilities":[]}` — kiểm theo vai trò sẽ **cho qua**, vì `Member` đang giữ
+
+Nếu không tài khoản nào mang vai trò `Member` thì xong: quyền nằm ở một vai trò không ai có, không
+ai quản trị được nữa. Nên luật đếm **số tài khoản đang hoạt động** sẽ giữ `AdminUsers` sau khi
+lưu, và từ chối khi con số đó bằng 0.
+
+Luật này khớp với luật bên `UserService` (không được vô hiệu hoá / hạ vai trò quản trị viên cuối
+cùng) — cả hai cùng đếm theo tài khoản. Hai luật **phải** thống nhất, vì hệ thống sẽ bị khoá qua
+cái nào lỏng hơn.
+
+**Vẫn chuyển quyền sang vai trò khác được.** Lý do bảng `role_capabilities` tồn tại là vậy. Chuyển
+`AdminUsers` sang `Secretary` rồi gỡ khỏi `Admin` là hợp lệ — **miễn là có tài khoản đang hoạt động
+mang vai trò `Secretary`**.
 
 **Kiểm ở server.** Tiêu chí nghiệm thu ghi rõ *"Kiểm ở server, không phải ẩn nút"* — FE cứ ẩn/khoá
 ô checkbox cho dễ dùng, nhưng đó là tiện lợi, không phải bảo vệ.
+
+## Hai quản trị viên sửa cùng lúc
+
+Luật trên vắt qua nhiều dòng, nên đọc–kiểm–ghi phải nằm trong **một transaction** có khoá bảng
+(`LOCK TABLE role_capabilities IN EXCLUSIVE MODE`, isolation `Serializable`).
+
+Không có khoá thì hai request đồng thời đều đọc được ma trận cũ, đều thấy "vai trò kia vẫn giữ
+`AdminUsers`", đều qua validate, rồi đều ghi — kết quả là không ai giữ nữa:
+
+| | Request A | Request B |
+|---|---|---|
+| Đọc | Admin và Secretary đều giữ `AdminUsers` | Admin và Secretary đều giữ `AdminUsers` |
+| Kiểm | OK, vì Secretary còn giữ | OK, vì Admin còn giữ |
+| Ghi | Gỡ khỏi Admin | Gỡ khỏi Secretary |
+
+Khoá ở mức `EXCLUSIVE` chứ không phải `ACCESS EXCLUSIVE`: request `GET` (UC-09) vẫn đọc bình
+thường, chỉ request ghi thứ hai phải xếp hàng đợi.
+
+Đã có test với PostgreSQL thật (`RolePermissionRepositoryTests`) chạy hai update đồng thời và
+khẳng định **chỉ một cái thành công**. Đã kiểm ngược lại bằng cách bỏ dòng khoá đi: test fail 3/3
+lần, tức nó bắt được lỗi thật chứ không phải assert cho có.
 
 ---
 
@@ -140,6 +187,21 @@ nhưng token của B vẫn còn hiệu lực tới 15 phút — đủ để B g�
 Trả `403` chứ không phải `401`: token thật và chưa hết hạn, chỉ là tài khoản đằng sau nó không còn
 được làm việc này nữa. **FE gặp `403` giữa phiên là chuyện bình thường**, không phải bug — xử lý
 như [note của SCRUM-13](02-quan-ly-nguoi-dung-note-cho-fe.md).
+
+### `403` ở API, `404` ở route — hai chỗ khác nhau
+
+Tiêu chí nghiệm thu ghi *"route thiếu quyền trả 404"*. Chỗ đó nói về **route phía FE**, không phải
+endpoint API:
+
+| Tầng | Trả gì | Vì sao |
+|---|---|---|
+| Route FE (`/mgmt/roles`) | **404**, giống hệt URL không tồn tại | Màn hình bị hạn chế thì không được lộ ra là nó tồn tại — quy ước của `AGENTS.md`, dùng `RequireCapability` |
+| Endpoint API (`/api/roles/capabilities`) | **403** | Giống `/api/users` và `docs/03-api/01-xac-thuc.md`. FE cần phân biệt "hết quyền giữa chừng" với "gọi sai URL" để xử lý đúng |
+
+⚠️ **Phần `404` chưa được hiện thực và chưa có test**, vì màn hình FE chưa làm (xem
+[Còn nợ](#còn-nợ)). Người làm FE phải bọc route bằng `RequireCapability` như các màn hình quản trị
+khác; đừng nhìn các test đang assert `403` mà kết luận tiêu chí này đã xong — chúng kiểm tầng API,
+không phải tầng route.
 
 ---
 
@@ -278,9 +340,24 @@ service vẫn có hai đường đọc riêng.
 
 ## Còn nợ
 
-- **Màn hình FE chưa làm.** Ticket đang ở trạng thái `Backend`; phần
-  [`types/rolePermission.ts`](../../frontend/src/types/rolePermission.ts) và
-  [`api/rolePermissions.ts`](../../frontend/src/api/rolePermissions.ts) đã sẵn sàng cho FE dùng.
+**Chưa đóng được `SCRUM-60`.** Phần backend đã xong, nhưng 2 trong 8 tiêu chí nghiệm thu thuộc về
+FE và chưa làm:
+
+| Tiêu chí nghiệm thu | Trạng thái |
+|---|---|
+| Màn hình ma trận 4×4, bật/tắt từng ô | ❌ **chưa làm** — chưa có page component, chưa có route |
+| Route thiếu quyền trả `404` | ❌ **chưa làm** — chưa có route nào để gác |
+| Chỉ người có `admin_users` vào được | ✅ ở tầng API |
+| Chặn tự khoá, kiểm ở server | ✅ |
+| Ghi audit log kèm trước/sau | ✅ |
+| Có hiệu lực ngay với phiên đang đăng nhập | ✅ |
+| Không tạo được quyền mới | ✅ |
+| Quyết `HasData` + viết ADR | ✅ [ADR-0007](../05-decisions/0007-ma-tran-phan-quyen-sua-duoc-luc-chay.md) |
+
+[`types/rolePermission.ts`](../../frontend/src/types/rolePermission.ts) và
+[`api/rolePermissions.ts`](../../frontend/src/api/rolePermissions.ts) đã sẵn sàng cho FE dùng —
+xem thêm [note cho FE](03-ma-tran-phan-quyen-note-cho-fe.md). Hiện hai file đó **chưa có ai
+import**, đúng như dự kiến: chúng là hợp đồng để FE bắt đầu, không phải code chết.
 - **`ROLE_CAPABILITIES` trong [`frontend/src/types/user.ts`](../../frontend/src/types/user.ts) vẫn
   là bản sao cứng** của ma trận, dùng chữ thường gạch dưới (`admin_users`) khác với backend
   (`AdminUsers`). Đó là scaffolding sẽ bị xoá ở `SCRUM-46`. Từ giờ nó **có thể sai**, vì quản trị

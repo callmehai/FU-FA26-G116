@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Authentication;
@@ -23,17 +24,29 @@ public sealed class RolePermissionService(
     public async Task<RolePermissionMatrix> GetMatrixAsync(CancellationToken ct = default)
         => Build(await roles.GetMatrixAsync(ct));
 
-    public async Task<RolePermissionResult> UpdateAsync(
+    public Task<RolePermissionResult> UpdateAsync(
         SystemRole role,
         IReadOnlyCollection<Capability> capabilities,
         Guid actorId,
         CancellationToken ct = default)
+        // Read, validate and write under one lock. The rule below spans rows — "somebody can
+        // still administer" is a property of the whole matrix — so validating against a snapshot
+        // another request may already be replacing is how two legal-looking updates combine into
+        // a system nobody can administer. See IRolePermissionRepository.InTransactionAsync.
+        => roles.InTransactionAsync(
+            token => UpdateWithinTransactionAsync(role, capabilities, actorId, token), ct);
+
+    private async Task<RolePermissionResult> UpdateWithinTransactionAsync(
+        SystemRole role,
+        IReadOnlyCollection<Capability> capabilities,
+        Guid actorId,
+        CancellationToken ct)
     {
         var matrix = await roles.GetMatrixAsync(ct);
 
         // The diagram's "Validate permission configuration". Every reason is collected before
         // answering, so the screen shows all of them at once rather than one per attempt.
-        var errors = Validate(role, capabilities, matrix);
+        var errors = await ValidateAsync(role, capabilities, matrix, ct);
 
         if (errors.Count > 0)
         {
@@ -66,11 +79,15 @@ public sealed class RolePermissionService(
         {
             await roles.SaveChangesAsync(ct);
         }
-        catch (DbUpdateException exception)
+        catch (Exception exception) when (exception is DbUpdateException or NpgsqlException)
         {
             // MSG18 — the diagram's "Permission configuration cannot be saved". Caught rather
-            // than left to surface as a 500, because the diagram gives this its own branch and
-            // because "retry" is the right advice for it, unlike for a validation failure.
+            // than left to surface as a bare 500, because the diagram gives this its own branch
+            // and because "retry" is the right advice for it, unlike for a validation failure.
+            //
+            // NpgsqlException as well as DbUpdateException: EF wraps a constraint violation, but
+            // a dropped connection or a lock timeout comes straight from the driver, and those
+            // are exactly the transient failures the branch is meant to describe.
             logger.LogError(
                 exception, "Saving the permission configuration for {Role} failed.", role);
             return RolePermissionResult.Failure(RolePermissionOutcome.SaveFailed);
@@ -125,10 +142,11 @@ public sealed class RolePermissionService(
     /// The rules UC-10 enforces. Returns field name → Vietnamese message, empty when the
     /// configuration is acceptable.
     /// </summary>
-    private static Dictionary<string, string> Validate(
+    private async Task<Dictionary<string, string>> ValidateAsync(
         SystemRole role,
         IReadOnlyCollection<Capability> capabilities,
-        IReadOnlyDictionary<SystemRole, IReadOnlyCollection<Capability>> matrix)
+        IReadOnlyDictionary<SystemRole, IReadOnlyCollection<Capability>> matrix,
+        CancellationToken ct)
     {
         var errors = new Dictionary<string, string>();
 
@@ -154,22 +172,37 @@ public sealed class RolePermissionService(
         }
 
         // The lock-out rule, and the reason this screen is dangerous at all: AdminUsers is what
-        // gates this very endpoint, so a matrix where no role carries it cannot be repaired
-        // through the application — only through a database console.
+        // gates this very endpoint, so a system where nobody holds it cannot be repaired through
+        // the application — only through a database console.
         //
         // Checked across the whole matrix rather than as "Admin must keep AdminUsers", because
         // the point of this table is that the capability can be re-pointed to another role. Moving
-        // it to Secretary is legitimate; leaving it nowhere is not.
+        // it to Secretary is legitimate; leaving it unreachable is not.
+        //
+        // Counted in **active accounts**, not roles. "Some role still holds it" is not the
+        // invariant: granting AdminUsers to a role nobody has, then removing it from Admin, would
+        // satisfy a role-only check while leaving no person able to administer — two ordinary
+        // requests, no race needed. UserService.WouldRemoveTheLastAdministratorAsync guards the
+        // same invariant from the user-management side and counts accounts too; the two have to
+        // agree, or the system is lockable through whichever one is weaker.
         //
         // Not checked on the frontend alone: the acceptance criteria say "Kiểm ở server, không
         // phải ẩn nút".
-        if (!capabilities.Contains(Capability.AdminUsers)
-            && !matrix.Any(entry =>
-                entry.Key != role && entry.Value.Contains(Capability.AdminUsers)))
+        var rolesAfterwards = matrix
+            .Where(entry => entry.Key != role && entry.Value.Contains(Capability.AdminUsers))
+            .Select(entry => entry.Key)
+            .ToList();
+
+        if (capabilities.Contains(Capability.AdminUsers))
         {
-            errors["capabilities"] =
-                "Không thể gỡ quyền quản trị người dùng khỏi vai trò cuối cùng còn giữ quyền này — "
-                + "hệ thống sẽ không còn ai vào được màn hình phân quyền.";
+            rolesAfterwards.Add(role);
+        }
+
+        if (await roles.CountActiveUsersInRolesAsync(rolesAfterwards, ct) == 0)
+        {
+            errors["adminUsers"] =
+                "Không thể lưu cấu hình này: sau khi lưu sẽ không còn tài khoản đang hoạt động nào "
+                + "giữ quyền quản trị người dùng, nên không ai vào được màn hình phân quyền nữa.";
         }
 
         return errors;
