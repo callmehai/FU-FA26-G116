@@ -136,6 +136,12 @@ jobs:
           # thay vì đẻ thêm một cái mỗi lần push.
           sticky_summary: 'true'
 
+          # In tiến trình và lỗi thẳng ra log của workflow. Mặc định là false, khi
+          # đó stderr bị nuốt vào một file artifact và job hỏng chỉ hiện đúng câu
+          # "xem artifact" — phải tải về mới biết lỗi gì. Bật lên cho dễ soi; log
+          # có ồn hơn, thấy phiền thì tắt lại sau khi chạy ổn định.
+          stream_progress: 'true'
+
           # Trần token cho mỗi lượt review. Các PR gần đây 52–112 file, không đặt
           # trần thì một PR to có thể ngốn hết quota trong một lượt. Vượt trần thì
           # action vẫn đăng phần đã tìm được và thoát 0, không làm đỏ PR.
