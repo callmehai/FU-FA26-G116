@@ -24,10 +24,13 @@
 #    trong chính repo này nên pull_request là đủ; PR từ fork sẽ không được review,
 #    và đó là chủ đích.
 #
-# 2. Ghim action theo commit SHA, không phải @main.
+# 2. Ghim CẢ HAI toạ độ: commit SHA của action, và phiên bản CLI.
 #    Action này đọc được secret và có quyền ghi comment lên PR. Trỏ vào một nhánh
 #    đang chạy nghĩa là code chạy trong CI của nhóm đổi bất cứ lúc nào mà không ai
-#    duyệt. SHA dưới đây là tag v1.12.8; nâng cấp là một commit có chủ ý.
+#    duyệt. Nhưng ghim SHA thôi thì CHƯA đủ: action chỉ là bộ điều phối, nó cài
+#    CLI từ npm lúc chạy và mặc định là `latest`. Nên phải ghim thêm ocr_version,
+#    không thì một bản CLI mới vẫn đổi kết quả review mà không ai đụng vào repo.
+#    Nâng cấp = sửa hai dòng, có chủ ý.
 name: OpenCodeReview
 
 # Một PR chỉ chạy một lượt review. Push thêm commit thì huỷ lượt cũ, tránh hai
@@ -110,6 +113,9 @@ jobs:
       - name: Chạy OpenCodeReview
         uses: alibaba/open-code-review@5c7b38381d1fdd36de6cf622a2a1f768243c4704 # v1.12.8
         with:
+          # Phiên bản CLI, ghim cùng với SHA ở trên — xem ghi chú đầu file.
+          ocr_version: '1.12.8'
+
           llm_url: ${{ secrets.OCR_LLM_URL }}
           llm_auth_token: ${{ secrets.OCR_LLM_AUTH_TOKEN }}
           llm_model: ${{ vars.OCR_LLM_MODEL }}
