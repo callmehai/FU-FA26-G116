@@ -51,7 +51,12 @@ jobs:
 
       - run: dotnet restore TrustCabinet.sln
 
-      - run: dotnet build TrustCabinet.sln --no-restore --configuration Release
+      # -warnaserror: warning của compiler và analyzer làm đỏ CI, không trôi qua thành
+      # annotation không ai đọc. Chỉ đặt ở đây chứ không đặt trong csproj — build dưới máy vẫn
+      # cho phép warning để còn chạy thử code viết dở; cổng chặn nằm ở lúc xin vào main.
+      # Warning cố ý thì khai báo <WarningsNotAsErrors>MãLỗi</WarningsNotAsErrors> trong csproj
+      # kèm lý do, chứ đừng gỡ cờ này.
+      - run: dotnet build TrustCabinet.sln --no-restore --configuration Release -warnaserror
 
       - run: dotnet test TrustCabinet.sln --no-build --configuration Release --verbosity normal
 
