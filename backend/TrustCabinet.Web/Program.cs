@@ -132,8 +132,14 @@ app.MapGet("/api/health", () => Results.Ok(new
 
 // The SPA uses client-side routing: any path that matches neither an API endpoint nor a static
 // file falls back to index.html so React Router can handle it (e.g. loading /meetings directly).
-// The fallback has the lowest priority, so it never swallows /api/* routes.
-app.MapFallbackToFile("index.html");
+//
+// A bare catch-all would also answer a mistyped /api/* call — including one that fails a route
+// constraint, like /api/users/notaguid — with 200 and the SPA's HTML (SCRUM-62). So the prefixes
+// the Vite proxy forwards are excluded here, and an unmatched API or hub path gets routing's
+// plain 404. Excluding beats mapping an /api/{**path} → 404 endpoint: that one would stay a
+// candidate for real routes and win whenever the matcher discards them, e.g. a POST without a
+// Content-Type to an endpoint that reads a JSON body would get 404 instead of 401.
+app.MapFallbackToFile("{*path:nonfile:regex(^(?!(api|hubs)(/|$)))}", "index.html");
 
 app.Run();
 

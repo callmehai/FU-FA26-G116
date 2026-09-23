@@ -48,6 +48,11 @@ Hệ quả cho endpoint theo id: `404` của "không có quyền đọc" và `40
 **giống hệt nhau từng byte**. Khác nhau một chữ trong body là đủ để dùng response làm công cụ dò
 xem id nào có thật.
 
+Gọi **sai URL** dưới `/api/*` hoặc `/hubs/*` — kể cả id không đúng định dạng như
+`/api/users/notaguid`, vì nó không khớp ràng buộc `{id:guid}` — trả `404` không body. Fallback
+`index.html` của SPA chỉ áp cho đường dẫn nằm ngoài hai tiền tố đó (SCRUM-62); trước đây nó trả `200`
+kèm HTML, khiến FE vỡ ở `response.json()` thay vì nhận `404`.
+
 ## Endpoint trả danh sách phải lọc ở server
 
 Bản ghi mà người gọi không được xem thì **không bao giờ rời khỏi backend**. Không trả về rồi để FE
