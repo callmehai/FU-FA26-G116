@@ -34,7 +34,8 @@ public interface IGoogleTokenVerifier
 /// matches every account that has no Google link.
 /// </param>
 /// <param name="Email">
-/// The account's email address, for logging and for an administrator linking an account by hand.
-/// Never used to decide who may sign in: an email can change or be reassigned, the subject cannot.
+/// The account's email address, always one Google has verified. Used once per account: to link an
+/// administrator-created account at its first Google sign-in (ADR-0009). After that the subject
+/// alone decides, because an email can change or be reassigned and the subject cannot.
 /// </param>
 public sealed record GoogleIdentity(string Subject, string Email);

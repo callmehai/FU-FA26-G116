@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Web.Tests.Users;
 
 namespace TrustCabinet.Web.Tests.Authentication;
 
@@ -33,6 +35,8 @@ public class GoogleAuthEndpointTests : IDisposable
 
         internal FakeGoogleTokenVerifier Google { get; } = new();
 
+        internal FakeAuditService Audit { get; } = new();
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             base.ConfigureWebHost(builder);
@@ -54,6 +58,10 @@ public class GoogleAuthEndpointTests : IDisposable
                 // signed token; what these tests cover is what happens after verification.
                 services.RemoveAll<IGoogleTokenVerifier>();
                 services.AddSingleton<IGoogleTokenVerifier>(Google);
+
+                // The real one writes to PostgreSQL, which these tests do not have.
+                services.RemoveAll<IAuditService>();
+                services.AddSingleton<IAuditService>(Audit);
             });
         }
     }
@@ -132,6 +140,21 @@ public class GoogleAuthEndpointTests : IDisposable
     }
 
     [Fact]
+    public async Task An_account_an_administrator_created_with_that_gmail_signs_in_without_manual_linking()
+    {
+        // The SCRUM-11 bug: an account made through POST /api/users has no google_subject_id, and
+        // nothing but SQL could set one, so this answered MSG03 for everybody.
+        _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
+        _factory.Users.WithUser(NewGoogleUser(googleSubjectId: null))
+            .WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor);
+
+        var response = await PostGoogle();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(AuditActions.UserGoogleLinked, Assert.Single(_factory.Audit.Records).Action);
+    }
+
+    [Fact]
     public async Task A_deactivated_account_answers_MSG04()
     {
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
@@ -144,6 +167,21 @@ public class GoogleAuthEndpointTests : IDisposable
         // password flow would break the acceptance criteria for this use case.
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         Assert.Equal("MSG04", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
+    }
+
+    [Fact]
+    public async Task An_account_deactivated_before_its_first_google_sign_in_answers_MSG04()
+    {
+        _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
+        _factory.Users.WithUser(NewGoogleUser(googleSubjectId: null, isActive: false))
+            .WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor);
+
+        var response = await PostGoogle();
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<AuthErrorBody>();
+        Assert.Equal("MSG04", body!.Code);
+        Assert.Equal("Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.", body.Message);
     }
 
     [Fact]

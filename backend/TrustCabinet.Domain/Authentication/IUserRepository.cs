@@ -44,6 +44,18 @@ public interface IUserRepository
     Task<User?> FindByGoogleSubjectIdAsync(string? googleSubjectId, CancellationToken ct = default);
 
     /// <summary>
+    /// First Google sign-in of an account an administrator created with this email: stores the
+    /// subject on it and returns it, or null when no account qualifies (ADR-0009).
+    ///
+    /// Only an active account with no Google link yet qualifies. An already-linked account is
+    /// never re-linked — after the first sign-in the subject decides, so an address that is later
+    /// changed or reassigned cannot move the account to a different Google identity.
+    /// The caller must only pass an email Google has verified.
+    /// </summary>
+    Task<User?> LinkGoogleSubjectByEmailAsync(
+        string email, string googleSubjectId, CancellationToken ct = default);
+
+    /// <summary>
     /// What this role may do, read from <c>role_capabilities</c> rather than hard-coded, so the
     /// administrator screen in SCRUM-60 can change it without a deployment.
     /// Empty is a legitimate answer — a plain Member has no capability by design.

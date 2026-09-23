@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -19,6 +20,7 @@ public sealed class AuthenticationService(
     ITokenIssuer tokenIssuer,
     IRefreshTokenStore refreshTokens,
     IGoogleTokenVerifier googleTokenVerifier,
+    IAuditService audit,
     ILogger<AuthenticationService> logger) : IAuthenticationService
 {
     /// <summary>
@@ -98,6 +100,36 @@ public sealed class AuthenticationService(
         }
 
         var user = await users.FindByGoogleSubjectIdAsync(identity.Subject, ct);
+
+        // Not linked yet: the first Google sign-in of an account an administrator created with
+        // this (Google-verified) email links it (ADR-0009). Otherwise nothing ever writes the
+        // subject, and every Google sign-in answers MSG03.
+        if (user is null)
+        {
+            user = await users.LinkGoogleSubjectByEmailAsync(identity.Email, identity.Subject, ct);
+
+            if (user is not null)
+            {
+                logger.LogInformation("Google identity linked to account {UserId}.", user.Id);
+                // No details: the email is already on the user row, and the subject is a
+                // credential-adjacent identifier the audit log has no use for.
+                await audit.RecordAsync(
+                    AuditActions.UserGoogleLinked, AuditActions.UserObjectType, user.Id, user.Id, ct: ct);
+            }
+            // Created for this Gmail but deactivated before its first Google sign-in: not linked,
+            // but answered MSG04 like a linked deactivated account, since "not authorised" would
+            // send them asking for access they already have. Telling the verified owner of the
+            // address that an account under it is deactivated leaks nothing. An account already
+            // linked to a *different* subject stays MSG03 — this caller is not its owner.
+            else if (await users.FindByEmailAsync(identity.Email, ct)
+                     is { IsActive: false, GoogleSubjectId: null } deactivated)
+            {
+                logger.LogInformation(
+                    "Google sign-in rejected: account {UserId} is deactivated and was never linked.",
+                    deactivated.Id);
+                return GoogleSignInResult.Failure(GoogleSignInOutcome.AccountDeactivated);
+            }
+        }
 
         // Branch 2 — MSG03. Google proved who they are; that is not the same as being one of ours.
         // No account is created here: provisioning is an administrator's job, and self-registration

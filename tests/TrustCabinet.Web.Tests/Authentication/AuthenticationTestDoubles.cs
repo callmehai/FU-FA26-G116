@@ -60,6 +60,28 @@ internal sealed class FakeUserRepository : IUserRepository
         return Task.FromResult(_users.FirstOrDefault(u => u.GoogleSubjectId == googleSubjectId));
     }
 
+    public Task<User?> LinkGoogleSubjectByEmailAsync(
+        string email, string googleSubjectId, CancellationToken ct = default)
+    {
+        // Same conditions as UserRepository's UPDATE ... WHERE.
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(googleSubjectId))
+        {
+            return Task.FromResult<User?>(null);
+        }
+
+        var user = _users.FirstOrDefault(u =>
+            string.Equals(u.Email, email, StringComparison.OrdinalIgnoreCase)
+            && u.GoogleSubjectId is null
+            && u.IsActive);
+
+        if (user is not null)
+        {
+            user.GoogleSubjectId = googleSubjectId;
+        }
+
+        return Task.FromResult(user);
+    }
+
     public Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(
         SystemRole role, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyCollection<Capability>>(
