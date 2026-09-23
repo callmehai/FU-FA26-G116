@@ -337,6 +337,10 @@ tên vai trò dạng chữ cố định thay vì ô sửa được.
 **→ Đề nghị BA:** tương tự mục 1 — ghi rõ `Role` là enum, hoặc thêm ghi chú
 `<<enum, không phải bảng>>`.
 
+> **Rút lại đề nghị này — BA đừng sửa bản vẽ.** [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)
+> (đề xuất, `SCRUM-63`) chuyển vai trò thành bảng `roles` khoá `Guid` — tức là code sẽ khớp với bản
+> vẽ `Role` là entity, chứ không phải ngược lại. ADR-0004 dẫn ở trên không nói gì về vai trò.
+
 ### 4. UC-10 có thêm nhánh "không đổi gì"
 
 Bản vẽ UC-10 chỉ có hai nhánh: hợp lệ và không hợp lệ. Code có thêm một đường: request trùng khớp
