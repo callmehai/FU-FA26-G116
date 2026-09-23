@@ -452,6 +452,11 @@ thêm vai trò mới mà không deploy. `role_capabilities` lưu **tên enum** �
 
 **Cần sửa:** đổi `<<entity>> Role` → `<<enum>> SystemRole`, bỏ `roleId` và `description`.
 
+> **Rút lại — BA đừng sửa phần `Role` trên bản vẽ.** ADR-0004 dẫn ở trên không nói gì về vai trò.
+> [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md) (đề xuất, `SCRUM-63`) chuyển vai trò thành
+> bảng `roles` với `id`, `name`, `description`, `isBuiltIn` — tức là **code sẽ theo bản vẽ**. Phần
+> `Permission` ở F1 thì vẫn đúng: `Capability` vẫn là enum.
+
 > Kèm theo: quan hệ `Role 0..* --grants--> Permission 0..*` trên bản vẽ nên ghi rõ là bảng
 > `role_capabilities` — đó là bảng **duy nhất** thật sự tồn tại trong cụm này.
 

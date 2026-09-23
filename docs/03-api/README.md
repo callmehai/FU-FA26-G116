@@ -25,6 +25,10 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   làm màn hình phân quyền: `capabilities` là trạng thái cuối chứ không phải delta, mã quyền
   PascalCase khác bảng cứng đang có trong `user.ts`, vì sao đừng tự đoán luật chống tự khoá ở FE,
   và vì sao route phải trả `404` trong khi API trả `403`
+- [`04-quan-ly-vai-tro.md`](04-quan-ly-vai-tro.md) — **chưa làm, bản thiết kế cho `SCRUM-63`**:
+  tạo, đổi tên, xoá vai trò; chuyển `SystemRole` từ enum sang bảng `roles`
+  ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)). Hướng dẫn từng bước cho BE: migration
+  phải sửa tay, danh sách file cần đổi, hợp đồng mới, test cần có
 
 Dự kiến có thêm:
 

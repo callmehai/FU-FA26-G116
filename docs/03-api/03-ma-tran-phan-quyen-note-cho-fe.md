@@ -191,6 +191,12 @@ thu ghi rõ *"Màn hình không được có nút Tạo quyền mới"*.
 Cũng không có "Tạo vai trò mới": `SystemRole` cũng là enum (ADR-0004). `isBuiltIn` trong response
 luôn `true` — dùng nó để hiện tên vai trò dạng chữ cố định, không phải ô sửa được.
 
+> **Sắp đổi — `SCRUM-63`.** ADR-0004 thật ra không nói gì về vai trò; chưa từng có quyết định nào
+> chốt "vai trò cố định". [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md) (đề xuất) chuyển
+> vai trò thành bảng `roles` và cho tạo / đổi tên / xoá; `role` trong response đổi thành `id` +
+> `name`. Thiết kế: [04-quan-ly-vai-tro.md](04-quan-ly-vai-tro.md). Đoạn trên đúng cho tới khi
+> `SCRUM-63` xong. `Capability` thì vẫn là enum — phần về quyền ở trên không đổi.
+
 Cũng **chưa có** chức năng "Khôi phục mặc định" (`resetRolePermissionsToDefault` trên class diagram
 là phần chưa làm, xem PHẦN F của [07-classdiagram/README.md](../07-classdiagram/README.md)). Đừng
 làm nút đó rồi để treo.
