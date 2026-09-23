@@ -10,6 +10,7 @@ namespace TrustCabinet.Infrastructure;
 public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> options) : DbContext(options)
 {
     public DbSet<User> Users => Set<User>();
+    public DbSet<Role> Roles => Set<Role>();
     public DbSet<RoleCapability> RoleCapabilities => Set<RoleCapability>();
     public DbSet<Meeting> Meetings => Set<Meeting>();
     public DbSet<MeetingParticipant> MeetingParticipants => Set<MeetingParticipant>();
@@ -38,7 +39,7 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Used for User.Email. PostgreSQL compares text case-sensitively, so without citext
+        // Used for User.Email and Role.Name. PostgreSQL compares text case-sensitively, so without citext
         // "Anh@x.vn" and "anh@x.vn" would be two different accounts that both satisfy the unique
         // index — a textbook way to let one person register twice and confuse sign-in.
         modelBuilder.HasPostgresExtension("citext");

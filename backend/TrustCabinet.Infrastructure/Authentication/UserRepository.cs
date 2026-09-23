@@ -11,13 +11,16 @@ namespace TrustCabinet.Infrastructure.Authentication;
 /// </summary>
 public sealed class UserRepository(TrustCabinetDbContext db) : IUserRepository
 {
+    /// <summary>Every account this repository returns carries its role, for the role's name.</summary>
+    private IQueryable<User> Users => db.Users.Include(u => u.Role);
+
     public Task<User?> FindByEmailAsync(string email, CancellationToken ct = default)
         // No ToLower() on either side: the column is citext, so PostgreSQL compares
         // case-insensitively and can still use the unique index. Lowercasing here would defeat it.
-        => db.Users.FirstOrDefaultAsync(u => u.Email == email, ct);
+        => Users.FirstOrDefaultAsync(u => u.Email == email, ct);
 
     public Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default)
-        => db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
+        => Users.FirstOrDefaultAsync(u => u.Id == id, ct);
 
     public Task<User?> FindByGoogleSubjectIdAsync(string? googleSubjectId, CancellationToken ct = default)
         // A blank subject matches nothing, and never reaches the query. EF would translate
@@ -27,7 +30,7 @@ public sealed class UserRepository(TrustCabinetDbContext db) : IUserRepository
         // lock, because this method is not private to that one caller.
         => string.IsNullOrWhiteSpace(googleSubjectId)
             ? Task.FromResult<User?>(null)
-            : db.Users.FirstOrDefaultAsync(u => u.GoogleSubjectId == googleSubjectId, ct);
+            : Users.FirstOrDefaultAsync(u => u.GoogleSubjectId == googleSubjectId, ct);
 
     public async Task<User?> LinkGoogleSubjectByEmailAsync(
         string email, string googleSubjectId, CancellationToken ct = default)
@@ -49,13 +52,13 @@ public sealed class UserRepository(TrustCabinetDbContext db) : IUserRepository
         // already tracks would come back with the old, null subject.
         return linked == 0
             ? null
-            : await db.Users.AsNoTracking().FirstAsync(u => u.GoogleSubjectId == googleSubjectId, ct);
+            : await Users.AsNoTracking().FirstAsync(u => u.GoogleSubjectId == googleSubjectId, ct);
     }
 
     public async Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(
-        SystemRole role, CancellationToken ct = default)
+        Guid roleId, CancellationToken ct = default)
         => await db.RoleCapabilities
-            .Where(rc => rc.Role == role)
+            .Where(rc => rc.RoleId == roleId)
             .Select(rc => rc.Capability)
             .ToArrayAsync(ct);
 }

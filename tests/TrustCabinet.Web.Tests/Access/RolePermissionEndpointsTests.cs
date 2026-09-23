@@ -84,14 +84,14 @@ public class RolePermissionEndpointsTests : IDisposable
         }
     }
 
-    private User GivenUser(SystemRole role = SystemRole.Member, bool isActive = true)
+    private User GivenUser(Guid? role = null, bool isActive = true)
     {
         var user = new User
         {
             FullName = "Phạm Quản Trị",
             Email = $"{Guid.CreateVersion7():N}@trustcabinet.local",
             PasswordHash = "hash",
-            Role = role,
+            RoleId = role ?? BuiltInRoles.Member,
             IsActive = isActive,
         };
 
@@ -101,7 +101,7 @@ public class RolePermissionEndpointsTests : IDisposable
 
     /// <summary>The signed-in administrator these tests act as.</summary>
     private HttpClient AdminClient()
-        => _factory.ClientFor(GivenUser(SystemRole.Admin), Capability.AdminUsers);
+        => _factory.ClientFor(GivenUser(BuiltInRoles.Admin), Capability.AdminUsers);
 
     private static async Task<JsonElement> JsonOf(HttpResponseMessage response)
         => JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
@@ -119,7 +119,7 @@ public class RolePermissionEndpointsTests : IDisposable
     [Fact]
     public async Task A_caller_without_admin_users_is_refused()
     {
-        var client = _factory.ClientFor(GivenUser(SystemRole.Secretary), Capability.MinutesEditor);
+        var client = _factory.ClientFor(GivenUser(BuiltInRoles.Secretary), Capability.MinutesEditor);
 
         var response = await client.GetAsync("/api/roles/capabilities");
 
@@ -133,8 +133,8 @@ public class RolePermissionEndpointsTests : IDisposable
         // opens — an administrator can now take the capability away from a role, and the people
         // holding it must stop being administrators at their next request rather than when their
         // token expires.
-        var caller = GivenUser(SystemRole.Secretary);
-        _factory.Accounts.WithCapabilities(SystemRole.Secretary);
+        var caller = GivenUser(BuiltInRoles.Secretary);
+        _factory.Accounts.WithCapabilities(BuiltInRoles.Secretary);
 
         var client = _factory.ClientFor(caller, Capability.AdminUsers);
 
@@ -146,7 +146,7 @@ public class RolePermissionEndpointsTests : IDisposable
     [Fact]
     public async Task A_deactivated_administrator_is_refused_even_with_a_valid_token()
     {
-        var caller = GivenUser(SystemRole.Admin, isActive: false);
+        var caller = GivenUser(BuiltInRoles.Admin, isActive: false);
         var client = _factory.ClientFor(caller, Capability.AdminUsers);
 
         var response = await client.GetAsync("/api/roles/capabilities");
@@ -161,7 +161,7 @@ public class RolePermissionEndpointsTests : IDisposable
     {
         // Deliberately not the seeded defaults: asserting the defaults back would pass even if
         // the endpoint returned a constant instead of reading the repository.
-        _factory.Roles.WithCapabilities(SystemRole.Member, Capability.MinutesEditor);
+        _factory.Roles.WithCapabilities(BuiltInRoles.Member, Capability.MinutesEditor);
 
         var response = await AdminClient().GetAsync("/api/roles/capabilities");
 
@@ -171,7 +171,7 @@ public class RolePermissionEndpointsTests : IDisposable
 
         // Four roles by four capabilities — the grid the screen draws.
         Assert.Equal(
-            Enum.GetValues<SystemRole>().Length,
+            BuiltInRoles.All.Count,
             json.GetProperty("roles").GetArrayLength());
         Assert.Equal(
             Enum.GetValues<Capability>().Length,
@@ -179,11 +179,17 @@ public class RolePermissionEndpointsTests : IDisposable
 
         var member = json.GetProperty("roles")
             .EnumerateArray()
-            .Single(r => r.GetProperty("role").GetString() == "Member");
+            .Single(r => r.GetProperty("id").GetString() == BuiltInRoles.Member.ToString());
 
         Assert.Equal(
             "MinutesEditor",
             member.GetProperty("capabilities").EnumerateArray().Single().GetString());
+
+        // Roles are rows (ADR-0008): each carries its id, name and whether it is built in, so the
+        // screen needs no table of its own.
+        Assert.Equal("Thành viên", member.GetProperty("name").GetString());
+        Assert.True(member.GetProperty("isBuiltIn").GetBoolean());
+        Assert.True(member.TryGetProperty("description", out _));
     }
 
     [Fact]
@@ -207,7 +213,7 @@ public class RolePermissionEndpointsTests : IDisposable
     {
         var response = await AdminClient().PutAsJsonAsync(
             "/api/roles/capabilities",
-            new { role = "Member", capabilities = new[] { "MeetingCreator" } });
+            new { roleId = BuiltInRoles.Member, capabilities = new[] { "MeetingCreator" } });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -216,7 +222,7 @@ public class RolePermissionEndpointsTests : IDisposable
 
         var member = json.GetProperty("matrix").GetProperty("roles")
             .EnumerateArray()
-            .Single(r => r.GetProperty("role").GetString() == "Member");
+            .Single(r => r.GetProperty("id").GetString() == BuiltInRoles.Member.ToString());
 
         Assert.Equal(
             "MeetingCreator",
@@ -224,12 +230,12 @@ public class RolePermissionEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Put_accepts_a_role_name_in_any_casing()
+    public async Task Put_accepts_a_capability_name_in_any_casing()
     {
-        // JSON casing conventions differ between the two ends; the role is not a secret handshake.
+        // JSON casing conventions differ between the two ends; a code is not a secret handshake.
         var response = await AdminClient().PutAsJsonAsync(
             "/api/roles/capabilities",
-            new { role = "member", capabilities = new[] { "meetingCreator" } });
+            new { roleId = BuiltInRoles.Member, capabilities = new[] { "meetingCreator" } });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -239,7 +245,7 @@ public class RolePermissionEndpointsTests : IDisposable
     {
         var response = await AdminClient().PutAsJsonAsync(
             "/api/roles/capabilities",
-            new { role = "Admin", capabilities = Array.Empty<string>() });
+            new { roleId = BuiltInRoles.Admin, capabilities = Array.Empty<string>() });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
@@ -251,15 +257,21 @@ public class RolePermissionEndpointsTests : IDisposable
         Assert.True(json.GetProperty("errors").TryGetProperty("adminUsers", out _));
     }
 
-    [Fact]
-    public async Task Put_answers_MSG17_for_a_role_the_enum_does_not_know()
+    [Theory]
+    [InlineData("01990000-0000-7000-8000-000000000000")] // a well-formed id no role has
+    [InlineData("Admin")]                                 // the old contract's enum name
+    [InlineData("")]
+    public async Task Put_answers_MSG17_with_the_roleId_key_for_a_role_that_does_not_exist(string roleId)
     {
         var response = await AdminClient().PutAsJsonAsync(
             "/api/roles/capabilities",
-            new { role = "SuperAdmin", capabilities = new[] { "AdminUsers" } });
+            new { roleId, capabilities = new[] { "AdminUsers" } });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal("MSG17", (await JsonOf(response)).GetProperty("code").GetString());
+
+        var json = await JsonOf(response);
+        Assert.Equal("MSG17", json.GetProperty("code").GetString());
+        Assert.True(json.GetProperty("errors").TryGetProperty("roleId", out _));
     }
 
     [Fact]
@@ -267,7 +279,7 @@ public class RolePermissionEndpointsTests : IDisposable
     {
         var response = await AdminClient().PutAsJsonAsync(
             "/api/roles/capabilities",
-            new { role = "Member", capabilities = new[] { "DeleteEverything" } });
+            new { roleId = BuiltInRoles.Member, capabilities = new[] { "DeleteEverything" } });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
@@ -285,7 +297,7 @@ public class RolePermissionEndpointsTests : IDisposable
     {
         var response = await AdminClient().PutAsJsonAsync(
             "/api/roles/capabilities",
-            new { role = "Member", capabilities = new[] { "Nonsense", "AlsoWrong" } });
+            new { roleId = BuiltInRoles.Member, capabilities = new[] { "Nonsense", "AlsoWrong" } });
 
         var message = (await JsonOf(response))
             .GetProperty("errors").GetProperty("capabilities").GetString();
@@ -302,13 +314,13 @@ public class RolePermissionEndpointsTests : IDisposable
         // "{}" must not strip the role of everything and answer "thành công" — the destructive
         // reading of an absent field, the same trap ChangeUserStatusRequest.IsActive documents.
         var response = await AdminClient().PutAsJsonAsync(
-            "/api/roles/capabilities", new { role = "Secretary" });
+            "/api/roles/capabilities", new { roleId = BuiltInRoles.Secretary });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal("MSG17", (await JsonOf(response)).GetProperty("code").GetString());
 
         // And nothing was taken away.
-        Assert.NotEmpty(_factory.Roles.CapabilitiesOf(SystemRole.Secretary));
+        Assert.NotEmpty(_factory.Roles.CapabilitiesOf(BuiltInRoles.Secretary));
     }
 
     [Fact]
@@ -317,10 +329,10 @@ public class RolePermissionEndpointsTests : IDisposable
         // Distinct from the missing list above: stated explicitly, it is a legitimate request.
         var response = await AdminClient().PutAsJsonAsync(
             "/api/roles/capabilities",
-            new { role = "Secretary", capabilities = Array.Empty<string>() });
+            new { roleId = BuiltInRoles.Secretary, capabilities = Array.Empty<string>() });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Empty(_factory.Roles.CapabilitiesOf(SystemRole.Secretary));
+        Assert.Empty(_factory.Roles.CapabilitiesOf(BuiltInRoles.Secretary));
     }
 
     [Fact]
@@ -328,7 +340,7 @@ public class RolePermissionEndpointsTests : IDisposable
     {
         var response = await AdminClient().PutAsJsonAsync(
             "/api/roles/capabilities",
-            new { role = "Admin", capabilities = Array.Empty<string>() });
+            new { roleId = BuiltInRoles.Admin, capabilities = Array.Empty<string>() });
 
         var message = (await JsonOf(response)).GetProperty("message").GetString();
 

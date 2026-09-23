@@ -19,9 +19,17 @@ public interface IUserAccountRepository
     /// rather than in memory, so PostgreSQL's collation decides the order of Vietnamese names
     /// instead of the ordinal comparison .NET would default to.
     /// </summary>
+    /// <remarks>Returned with <see cref="User.Role"/> loaded, as is <see cref="FindByIdAsync"/>:
+    /// every screen that shows an account shows its role's name.</remarks>
     Task<IReadOnlyCollection<User>> ListAsync(CancellationToken ct = default);
 
     Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>
+    /// The role with this id, or null — UC-05 and UC-06 check the chosen role exists, now that a
+    /// role is a row an administrator can delete rather than an enum value (ADR-0008).
+    /// </summary>
+    Task<Role?> FindRoleAsync(Guid roleId, CancellationToken ct = default);
 
     /// <summary>
     /// Whether any account other than <paramref name="exceptId"/> already uses this email —
@@ -39,7 +47,7 @@ public interface IUserAccountRepository
     /// "does this role still administer?" without reaching into the sign-in path.
     /// </summary>
     Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(
-        SystemRole role, CancellationToken ct = default);
+        Guid roleId, CancellationToken ct = default);
 
     /// <summary>
     /// How many active accounts hold <paramref name="capability"/>, not counting
@@ -48,8 +56,8 @@ public interface IUserAccountRepository
     ///
     /// Counted through <c>role_capabilities</c> rather than by comparing against the Admin role
     /// name, because that table is what actually decides who may do what and it is meant to be
-    /// re-pointed without a deployment (see <c>AccessEnums</c>: capabilities are
-    /// "never checked by comparing against the role name in business code").
+    /// re-pointed without a deployment — business code never compares roles, it asks for
+    /// capabilities.
     /// </summary>
     Task<int> CountActiveWithCapabilityAsync(
         Capability capability, Guid exceptId, CancellationToken ct = default);

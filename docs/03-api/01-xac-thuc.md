@@ -67,20 +67,29 @@ Sequence diagram: [SignIn.png](../06-sequencediagram/SignIn.png).
     "id": "01999f2e-…",
     "email": "thuky@trustcabinet.local",
     "fullName": "Nguyễn Thư Ký",
-    "role": "Secretary",
+    "roleId": "01a0ce78-7203-7c7f-8326-7a0baebf4c22",
+    "roleName": "Thư ký",
     "capabilities": ["MeetingCreator", "MinutesEditor"]
   }
 }
 ```
 
-Ba nhánh lỗi đều trả `401` kèm mã thông báo của UC-01. FE khớp theo `code`, không khớp theo
+Vai trò trả về bằng `roleId` + `roleName` (tên hiện tại trong bảng `roles`), không còn chuỗi enum
+`"role": "Secretary"` — đổi từ `SCRUM-63`, xem [04-quan-ly-vai-tro.md](04-quan-ly-vai-tro.md). Shape
+này dùng chung cho `/login`, `/google`, `/refresh` và `/me`.
+
+Các nhánh lỗi đều trả `401` kèm mã thông báo của UC-01. FE khớp theo `code`, không khớp theo
 `message` — đổi chữ trong `message` không được làm FE vỡ.
 
 | `code` | Khi nào | `message` |
 |---|---|---|
 | `MSG01` | Email không tồn tại, **hoặc** sai mật khẩu, **hoặc** bỏ trống | `Email hoặc mật khẩu không đúng.` |
 | `MSG03` | Tài khoản đã bị vô hiệu hoá (`users.is_active = false`) | `Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.` |
-| `MSG04` | Role không còn capability nào trong `role_capabilities` | `Tài khoản chưa được cấp quyền truy cập hệ thống.` |
+
+> **`MSG04` ("chưa được cấp quyền truy cập hệ thống") đã bỏ từ `SCRUM-63`.** Nó từ chối vai trò
+> không có capability nào trừ `Member`; khi vai trò thành dữ liệu (ADR-0008), vai trò tự tạo không
+> có quyền nào là cấu hình hợp lệ, hoạt động y như `Member`. Giờ mọi vai trò không có quyền đều đăng
+> nhập được, token đơn giản không mang capability nào. **Chờ BA sửa đặc tả UC-01.**
 
 Vài điểm cố ý, đừng "sửa" lại:
 
@@ -91,9 +100,9 @@ Vài điểm cố ý, đừng "sửa" lại:
 - **Email không tồn tại vẫn phải băm một lần.** Băm mật khẩu chậm có chủ đích, nên bỏ qua bước này
   khi không tìm thấy user sẽ làm nhánh "không có tài khoản" trả lời nhanh hơn nhánh "sai mật
   khẩu" — chênh lệch thời gian đó đủ để dò ra email nào đã đăng ký. Xem `DummyHash`.
-- **`Member` không có capability nào nhưng vẫn đăng nhập được.** `MSG04` chỉ bắn khi role *khác*
-  `Member` mà `role_capabilities` rỗng. Thành viên thường dự họp, đọc tài liệu và biểu quyết —
-  không việc nào cần capability (xem `ReferenceData.RoleCapabilities`).
+- **Vai trò không có capability nào vẫn đăng nhập được** — `Member`, hay một vai trò tự tạo chưa
+  gán quyền. Dự họp, đọc tài liệu và biểu quyết không việc nào cần capability (xem
+  `ReferenceData.RoleCapabilities`).
 
 ## UC-02 · Đăng nhập bằng Google
 
@@ -113,8 +122,8 @@ lỗi hoặc người dùng huỷ), **xong rồi** mới gọi `AuthController`.
 cách nào, chỉ cần biết đã có phiên.
 
 > **Chú ý mã thông báo:** UC-02 đánh số khác UC-01 cho cùng tình huống. Tài khoản bị vô hiệu hoá là
-> `MSG03` ở UC-01 nhưng `MSG04` ở đây; "không có quyền truy cập" là `MSG04` ở UC-01 và `MSG05` ở
-> đây. Đây là lý do code có **hai** enum outcome riêng (`SignInOutcome` và `GoogleSignInOutcome`)
+> `MSG03` ở UC-01 nhưng `MSG04` ở đây. ("Không có quyền truy cập" — `MSG04` ở UC-01, `MSG05` ở đây —
+> đã bỏ ở cả hai từ `SCRUM-63`.) Đây là lý do code có **hai** enum outcome riêng (`SignInOutcome` và `GoogleSignInOutcome`)
 > chứ không dùng chung — gộp lại là một trong hai use case bị lấy mã của cái kia. Đừng "dọn" cho
 > giống nhau.
 
@@ -123,7 +132,6 @@ cách nào, chỉ cần biết đã có phiên.
 | `MSG01` | ID token không verify được: thiếu, sai định dạng, hết hạn, sai audience, sai chữ ký, hoặc email chưa verified | `Đăng nhập bằng Google không thành công.` |
 | `MSG03` | Google xác thực OK nhưng **chưa có tài khoản nội bộ nào liên kết** với Google identity đó, và cũng không có tài khoản nào tự liên kết được (xem dưới) | `Tài khoản Google này chưa được cấp quyền truy cập hệ thống.` |
 | `MSG04` | Tài khoản bị vô hiệu hoá: đã liên kết, **hoặc** chưa liên kết nhưng email trùng email Google đã xác minh | `Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.` |
-| `MSG05` | Role không còn capability nào | `Tài khoản chưa được cấp quyền truy cập hệ thống.` |
 
 ### Liên kết theo `sub`, không theo email
 

@@ -56,7 +56,7 @@ public class UserAccountRepositoryTests
             .Where(u => u.IsActive
                 && u.Id != exceptId
                 && db.RoleCapabilities.Any(rc =>
-                    rc.Role == u.Role && rc.Capability == Capability.AdminUsers))
+                    rc.RoleId == u.RoleId && rc.Capability == Capability.AdminUsers))
             .ToQueryString();
 
         // The correlated subquery has to reach role_capabilities: counting on the Admin role name

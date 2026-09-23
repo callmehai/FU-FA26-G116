@@ -1,5 +1,4 @@
 using TrustCabinet.Domain.Entities;
-using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Domain.Users;
 
@@ -21,17 +20,25 @@ public sealed record UserAccount(
     Guid Id,
     string FullName,
     string Email,
-    SystemRole Role,
+    Guid RoleId,
+    string RoleName,
     bool IsActive,
     bool HasPassword,
     bool HasGoogleLink,
     DateTimeOffset CreatedAt)
 {
+    /// <summary>
+    /// Needs <see cref="User.Role"/> loaded. Throws rather than answering with a blank name: a blank
+    /// would hide a repository that forgot to include the role until someone read the screen.
+    /// </summary>
     public static UserAccount From(User user) => new(
         user.Id,
         user.FullName,
         user.Email,
-        user.Role,
+        user.RoleId,
+        user.Role?.Name
+            ?? throw new InvalidOperationException(
+                $"User {user.Id} was loaded without its role; include User.Role in the query."),
         user.IsActive,
         !string.IsNullOrEmpty(user.PasswordHash),
         !string.IsNullOrEmpty(user.GoogleSubjectId),

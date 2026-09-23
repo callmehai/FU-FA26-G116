@@ -1,6 +1,8 @@
+using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Infrastructure.Seed;
 
 namespace TrustCabinet.Web.Tests.Authentication;
 
@@ -15,18 +17,34 @@ namespace TrustCabinet.Web.Tests.Authentication;
 internal sealed class FakeUserRepository : IUserRepository
 {
     private readonly List<User> _users = [];
-    private readonly Dictionary<SystemRole, Capability[]> _capabilities = [];
+    private readonly Dictionary<Guid, Capability[]> _capabilities = [];
+
+    /// <summary>The four built-in roles, plus any a test adds with <see cref="WithRole"/>.</summary>
+    private readonly Dictionary<Guid, Role> _roles = ReferenceData.Roles().ToDictionary(r => r.Id);
 
     /// <summary>How many times the service went looking for a user. Used to prove a short-circuit.</summary>
     public int LookupCount { get; private set; }
 
+    /// <summary>
+    /// Stores the account with its role attached, as the real repository's
+    /// <c>Include(u => u.Role)</c> returns it.
+    /// </summary>
     public FakeUserRepository WithUser(User user)
     {
+        user.Role = _roles.GetValueOrDefault(user.RoleId);
         _users.Add(user);
         return this;
     }
 
-    public FakeUserRepository WithCapabilities(SystemRole role, params Capability[] capabilities)
+    /// <summary>A role an administrator created. Add it before the users who hold it.</summary>
+    public FakeUserRepository WithRole(Role role, params Capability[] capabilities)
+    {
+        _roles[role.Id] = role;
+        _capabilities[role.Id] = capabilities;
+        return this;
+    }
+
+    public FakeUserRepository WithCapabilities(Guid role, params Capability[] capabilities)
     {
         _capabilities[role] = capabilities;
         return this;
@@ -83,7 +101,7 @@ internal sealed class FakeUserRepository : IUserRepository
     }
 
     public Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(
-        SystemRole role, CancellationToken ct = default)
+        Guid role, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyCollection<Capability>>(
             _capabilities.TryGetValue(role, out var caps) ? caps : []);
 }

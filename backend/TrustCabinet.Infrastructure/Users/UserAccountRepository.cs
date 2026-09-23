@@ -18,10 +18,17 @@ public sealed class UserAccountRepository(TrustCabinetDbContext db) : IUserAccou
         // No AsNoTracking: this is a read, but the DbContext is per-request and nothing writes
         // during a list, so tracking costs nothing worth the risk of someone later mutating one of
         // these entities and finding the change silently dropped.
-        => await db.Users.OrderBy(u => u.FullName).ThenBy(u => u.Email).ToArrayAsync(ct);
+        => await db.Users
+            .Include(u => u.Role)
+            .OrderBy(u => u.FullName)
+            .ThenBy(u => u.Email)
+            .ToArrayAsync(ct);
 
     public Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default)
-        => db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
+        => db.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id, ct);
+
+    public Task<Role?> FindRoleAsync(Guid roleId, CancellationToken ct = default)
+        => db.Roles.FirstOrDefaultAsync(r => r.Id == roleId, ct);
 
     public Task<bool> EmailExistsAsync(
         string email, Guid? exceptId = null, CancellationToken ct = default)
@@ -31,9 +38,9 @@ public sealed class UserAccountRepository(TrustCabinetDbContext db) : IUserAccou
         => db.Users.AnyAsync(u => u.Email == email && (exceptId == null || u.Id != exceptId), ct);
 
     public async Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(
-        SystemRole role, CancellationToken ct = default)
+        Guid roleId, CancellationToken ct = default)
         => await db.RoleCapabilities
-            .Where(rc => rc.Role == role)
+            .Where(rc => rc.RoleId == roleId)
             .Select(rc => rc.Capability)
             .ToArrayAsync(ct);
 
@@ -45,7 +52,7 @@ public sealed class UserAccountRepository(TrustCabinetDbContext db) : IUserAccou
         => db.Users
             .Where(u => u.IsActive
                 && u.Id != exceptId
-                && db.RoleCapabilities.Any(rc => rc.Role == u.Role && rc.Capability == capability))
+                && db.RoleCapabilities.Any(rc => rc.RoleId == u.RoleId && rc.Capability == capability))
             .CountAsync(ct);
 
     public async Task AddAsync(User user, CancellationToken ct = default)

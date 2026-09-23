@@ -79,7 +79,7 @@ public class CapabilityGateTests : IDisposable
     private User GivenUser(
         string fullName = "Lê Thành Viên",
         string email = "thanhvien@trustcabinet.local",
-        SystemRole role = SystemRole.Member,
+        Guid? role = null,
         bool isActive = true)
     {
         var user = new User
@@ -87,7 +87,7 @@ public class CapabilityGateTests : IDisposable
             FullName = fullName,
             Email = email,
             PasswordHash = new FakePasswordHasher().Hash("MatKhauDaiVaAnToan@2026"),
-            Role = role,
+            RoleId = role ?? BuiltInRoles.Member,
             IsActive = isActive,
         };
 
@@ -96,7 +96,7 @@ public class CapabilityGateTests : IDisposable
     }
 
     private User GivenAdmin()
-        => GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", SystemRole.Admin);
+        => GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", BuiltInRoles.Admin);
 
     /// <summary>
     /// Every route behind the AdminUsers gate. Kept as one list so each criterion is checked
@@ -147,7 +147,7 @@ public class CapabilityGateTests : IDisposable
     {
         // Signed in, with a genuine token — it simply does not carry AdminUsers.
         var client = _factory.ClientFor(
-            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", SystemRole.Secretary),
+            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary),
             Capability.MeetingCreator);
 
         var response = await client.SendAsync(new HttpRequestMessage(new HttpMethod(method), path));
@@ -171,7 +171,7 @@ public class CapabilityGateTests : IDisposable
         var admin = GivenAdmin();
         var client = _factory.ClientFor(admin, Capability.AdminUsers);
 
-        _factory.Accounts.WithCapabilities(SystemRole.Admin, Capability.MeetingCreator);
+        _factory.Accounts.WithCapabilities(BuiltInRoles.Admin, Capability.MeetingCreator);
 
         var response = await client.GetAsync("/api/users");
 
@@ -204,7 +204,7 @@ public class CapabilityGateTests : IDisposable
                 FullName = "Người Đã Xoá",
                 Email = "daxoa@trustcabinet.local",
                 PasswordHash = "hashed:x",
-                Role = SystemRole.Admin,
+                RoleId = BuiltInRoles.Admin,
                 IsActive = true,
             },
             Capability.AdminUsers);
@@ -249,7 +249,7 @@ public class CapabilityGateTests : IDisposable
     public async Task Me_returns_the_capability_set_the_interface_renders_from()
     {
         var secretary = GivenUser(
-            "Nguyễn Thư Ký", "thuky@trustcabinet.local", SystemRole.Secretary);
+            "Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary);
         var client = _factory.ClientFor(
             secretary, Capability.MeetingCreator, Capability.MinutesEditor);
 
@@ -262,7 +262,8 @@ public class CapabilityGateTests : IDisposable
             .EnumerateArray().Select(c => c.GetString() ?? "").ToArray();
 
         Assert.Equal(secretary.Email, body.GetProperty("email").GetString());
-        Assert.Equal("Secretary", body.GetProperty("role").GetString());
+        Assert.Equal(BuiltInRoles.Secretary.ToString(), body.GetProperty("roleId").GetString());
+        Assert.Equal("Thư ký", body.GetProperty("roleName").GetString());
         Assert.Equal(["MeetingCreator", "MinutesEditor"], capabilities);
         // The frontend's stale table gave the Secretary no admin rights either; this is now the
         // only place that answer comes from.
@@ -276,16 +277,17 @@ public class CapabilityGateTests : IDisposable
         // Member with none. A /me that read its claims would report the token's version — which is
         // the whole failure this endpoint is supposed not to have, because it is what the
         // interface renders from.
-        var user = GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", SystemRole.Secretary);
+        var user = GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary);
         var client = _factory.ClientFor(
             user, Capability.MeetingCreator, Capability.MinutesEditor);
 
-        user.Role = SystemRole.Member;
+        user.RoleId = BuiltInRoles.Member;
 
         var body = JsonDocument.Parse(
             await (await client.GetAsync("/api/auth/me")).Content.ReadAsStringAsync()).RootElement;
 
-        Assert.Equal("Member", body.GetProperty("role").GetString());
+        Assert.Equal(BuiltInRoles.Member.ToString(), body.GetProperty("roleId").GetString());
+        Assert.Equal("Thành viên", body.GetProperty("roleName").GetString());
         Assert.Empty(body.GetProperty("capabilities").EnumerateArray());
     }
 
@@ -316,7 +318,7 @@ public class CapabilityGateTests : IDisposable
             FullName = "Không Có Chủ",
             Email = "khongcochu@trustcabinet.local",
             PasswordHash = "hashed:x",
-            Role = SystemRole.Admin,
+            RoleId = BuiltInRoles.Admin,
             IsActive = true,
         };
 

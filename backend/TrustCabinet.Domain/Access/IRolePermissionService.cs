@@ -13,20 +13,22 @@ public interface IRolePermissionService
 {
     /// <summary>
     /// UC-09 — the matrix, plus the catalogue of capabilities that exist. No paging and no
-    /// filtering: it is four roles by four capabilities, and it is meant to be read as a grid.
+    /// filtering: it is a handful of roles by four capabilities, and it is meant to be read as a
+    /// grid.
     /// </summary>
     Task<RolePermissionMatrix> GetMatrixAsync(CancellationToken ct = default);
 
     /// <summary>
-    /// UC-10 — sets exactly which capabilities <paramref name="role"/> carries.
+    /// UC-10 — sets exactly which capabilities <paramref name="roleId"/> carries.
     /// <paramref name="actorId"/> is the administrator doing it, recorded in the audit entry.
     ///
-    /// Refuses (<see cref="RolePermissionOutcome.InvalidConfiguration"/>) anything that would
-    /// leave no role holding <see cref="Capability.AdminUsers"/> — the system would then have
+    /// Refuses (<see cref="RolePermissionOutcome.InvalidConfiguration"/>) a role that does not
+    /// exist, and anything that would leave no active account holding
+    /// <see cref="Capability.AdminUsers"/> — the system would then have
     /// nobody able to reach this screen, and no way back except a database console.
     /// </summary>
     Task<RolePermissionResult> UpdateAsync(
-        SystemRole role,
+        Guid roleId,
         IReadOnlyCollection<Capability> capabilities,
         Guid actorId,
         CancellationToken ct = default);

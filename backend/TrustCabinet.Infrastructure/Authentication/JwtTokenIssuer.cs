@@ -37,7 +37,9 @@ public sealed class JwtTokenIssuer(IOptions<AuthenticationOptions> options) : IT
             new(JwtRegisteredClaimNames.Jti, Guid.CreateVersion7().ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(ClaimTypes.Name, user.FullName),
-            new(ClaimTypes.Role, user.Role.ToString()),
+            // The role's id, not its name: a name can be renamed while the token is alive, an id
+            // cannot. Nothing authorizes on this claim — capabilities below are what is checked.
+            new(ClaimTypes.Role, user.RoleId.ToString()),
         };
 
         // One claim per capability rather than a comma-joined string, so [Authorize] policies can

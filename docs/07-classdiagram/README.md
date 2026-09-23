@@ -7,8 +7,8 @@ dùng, SCRUM-60 ma trận phân quyền).
   chiếu tại **21/09/2026**
 - [`feature-02-user-management-class-diagram.drawio.png`](feature-02-user-management-class-diagram.drawio.png)
   — đối chiếu tại **21/09/2026**
-- [`feature-03-role-permission-management-class-diagram.drawio.png`](feature-03-role-permission-management-class-diagram.drawio.png)
-  — đối chiếu tại **22/09/2026**, xem [PHẦN F](#phần-f--bản-vẽ-03-ma-trận-phân-quyền-scrum-60)
+- [`feature-03-role-management-class-diagram.png`](feature-03-role-management-class-diagram.png)
+  — đối chiếu tại **22/09/2026**, phần `Role` đối chiếu lại **23/09/2026** (`SCRUM-63`), xem [PHẦN F](#phần-f--bản-vẽ-03-ma-trận-phân-quyền-scrum-60)
 
 **Kết luận: kiến trúc đúng, chi tiết lệch.** Phân tầng boundary → control → service → repository →
 entity khớp đúng với code. Nhưng tên field, tên method và một số quan hệ thì khác, và có **ba chỗ
@@ -192,7 +192,7 @@ chính nó, và cách duy nhất để cứu là can thiệp thẳng vào databa
 **Cần thêm vào `UserService` trên bản vẽ 02:**
 
 ```
-- wouldRemoveTheLastAdministrator(user: User, newRole: SystemRole): bool
+- wouldRemoveTheLastAdministrator(user: User, newRoleId: UUID): bool
 ```
 
 (để `-` vì là private, nhưng nên hiện ra để người đọc biết quy tắc này tồn tại)
@@ -271,7 +271,7 @@ hai giá trị là phức tạp hoá không cần thiết.
 | `jobTitle: string` | — | ❌ **bỏ** — không có trong ERD |
 | `phone: string` | — | ❌ **bỏ** — không có trong ERD |
 | `status: AccountStatus` | `IsActive: bool` | ❌ **sửa** (C2) |
-| — | `Role: SystemRole` | ➕ **thiếu** — xem bên dưới |
+| — | `RoleId: Guid` (+ navigation `Role`) | ➕ **thiếu** — xem bên dưới |
 | — | `PasswordHash: string?` | ➕ **thiếu** |
 | — | `GoogleSubjectId: string?` | ➕ **thiếu** |
 | — | `CreatedAt: DateTimeOffset` | ➕ **thiếu** |
@@ -438,7 +438,7 @@ quản trị viên tự thêm sẽ không gác cửa cái gì cả — trông nh
 **Cần sửa:** đổi `<<entity>> Permission` → `<<value object>> Permission`, **bỏ `permissionId`**,
 ghi chú "đọc từ enum `Capability`, không có bảng".
 
-## F2. 🔴 `Role` không phải entity, không có bảng `roles`
+## F2. ✅ ~~`Role` không phải entity, không có bảng `roles`~~ — đã giải quyết bằng `SCRUM-63`
 
 | Bản vẽ 03 đang ghi | Code thật |
 |---|---|
@@ -452,9 +452,11 @@ thêm vai trò mới mà không deploy. `role_capabilities` lưu **tên enum** �
 
 **Cần sửa:** đổi `<<entity>> Role` → `<<enum>> SystemRole`, bỏ `roleId` và `description`.
 
-> **Rút lại — BA đừng sửa phần `Role` trên bản vẽ.** ADR-0004 dẫn ở trên không nói gì về vai trò.
-> [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md) (đề xuất, `SCRUM-63`) chuyển vai trò thành
-> bảng `roles` với `id`, `name`, `description`, `isBuiltIn` — tức là **code sẽ theo bản vẽ**. Phần
+> **Đã giải quyết — BA đừng sửa phần `Role` trên bản vẽ.** ADR-0004 dẫn ở trên không nói gì về vai
+> trò. [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md) (đã chấp nhận, `SCRUM-63`) chuyển vai
+> trò thành bảng `roles` với `id`, `name`, `description`, `isBuiltIn` — **code giờ đã khớp bản vẽ**
+> ([feature-03-role-management-class-diagram.png](feature-03-role-management-class-diagram.png):
+> `RoleController`, `RoleService`, `RoleRepository`). Bảng phía trên chỉ còn là lịch sử. Phần
 > `Permission` ở F1 thì vẫn đúng: `Capability` vẫn là enum.
 
 > Kèm theo: quan hệ `Role 0..* --grants--> Permission 0..*` trên bản vẽ nên ghi rõ là bảng
@@ -520,13 +522,13 @@ lý do bảng này tồn tại. Để nó không ở đâu cả mới là không
 
 # Tóm tắt checklist
 
-**🔴 Phải sửa (5):**
+**🔴 Phải sửa (4 — F2 đã rút lại):**
 
 - [ ] A1 — `findByGoogleEmail` → `findByGoogleSubjectId` (bản vẽ 01)
 - [ ] A2 — `signInWithGoogle(googleEmail)` → `signInWithGoogle(idToken)` + thêm `GoogleTokenVerifier` (bản vẽ 01)
 - [ ] A3 — thêm `TokenService.revokeAllForUser()` (bản vẽ 02) **+ đổi tên `:Session Service` → `:Token Service` ở sequence diagram UC-07**
 - [ ] F1 — `<<entity>> Permission` → `<<value object>>`, bỏ `permissionId` (bản vẽ 03) — **mâu thuẫn tiêu chí nghiệm thu**
-- [ ] F2 — `<<entity>> Role` → `<<enum>> SystemRole`, bỏ `roleId` (bản vẽ 03)
+- [x] ~~F2 — `<<entity>> Role` → `<<enum>> SystemRole`~~ — rút lại: code đã theo bản vẽ (`SCRUM-63`, ADR-0008)
 
 **🟡 Nên sửa (5):**
 

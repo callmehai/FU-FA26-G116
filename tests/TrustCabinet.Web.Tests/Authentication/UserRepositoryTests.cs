@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
@@ -50,6 +51,12 @@ public class UserRepositoryTests : IAsyncLifetime
                 "These tests need the development PostgreSQL. Start it with "
                 + "`docker compose up -d postgres`.", e);
         }
+
+        // Every account references a role (ADR-0008), and EnsureCreated leaves `roles` empty —
+        // the RolesAsData migration is what fills it on a real database.
+        _db.Roles.AddRange(ReferenceData.Roles());
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
     }
 
     public async Task DisposeAsync()
@@ -67,7 +74,7 @@ public class UserRepositoryTests : IAsyncLifetime
             Email = email,
             PasswordHash = passwordHash,
             GoogleSubjectId = googleSubjectId,
-            Role = SystemRole.Secretary,
+            RoleId = BuiltInRoles.Secretary,
         };
 
         _db.Users.Add(user);
@@ -200,7 +207,7 @@ public class UserRepositoryTests : IAsyncLifetime
             Email = "nothing@x.local",
             PasswordHash = null,
             GoogleSubjectId = null,
-            Role = SystemRole.Member,
+            RoleId = BuiltInRoles.Member,
         });
 
         // ck_users_has_a_way_to_sign_in. Enforced by the database, so a seed or a hand-written
@@ -222,7 +229,7 @@ public class UserRepositoryTests : IAsyncLifetime
             Email = "second@x.local",
             PasswordHash = "hash",
             GoogleSubjectId = "sub-trung",
-            Role = SystemRole.Member,
+            RoleId = BuiltInRoles.Member,
         });
 
         // The filtered unique index. Without it, which account a Google sign-in landed on would
@@ -244,13 +251,32 @@ public class UserRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task An_account_is_returned_with_its_role()
+    {
+        // A successful sign-in answers with the role's name, so every lookup includes it.
+        _db.Users.Add(new User
+        {
+            FullName = "Nguyễn Thư Ký",
+            Email = "thuky@trustcabinet.local",
+            PasswordHash = "hash",
+            RoleId = BuiltInRoles.Secretary,
+        });
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+
+        var found = await new UserRepository(_db).FindByEmailAsync("thuky@trustcabinet.local");
+
+        Assert.Equal("Thư ký", found!.Role!.Name);
+    }
+
+    [Fact]
     public async Task Capabilities_come_from_the_role_capabilities_table()
     {
         // Seeded explicitly: the matrix no longer ships in the migration, so EnsureCreated leaves
         // the table empty (ADR-0007, SCRUM-60). This is the same path a real database takes.
         await ReferenceDataSeeder.SeedAsync(_db);
 
-        var capabilities = await new UserRepository(_db).GetCapabilitiesAsync(SystemRole.Secretary);
+        var capabilities = await new UserRepository(_db).GetCapabilitiesAsync(BuiltInRoles.Secretary);
 
         Assert.Contains(Capability.MeetingCreator, capabilities);
         Assert.Contains(Capability.MinutesEditor, capabilities);
@@ -259,7 +285,7 @@ public class UserRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task A_member_has_no_capability()
     {
-        var capabilities = await new UserRepository(_db).GetCapabilitiesAsync(SystemRole.Member);
+        var capabilities = await new UserRepository(_db).GetCapabilitiesAsync(BuiltInRoles.Member);
 
         // Empty is a legitimate answer, not a missing row — a plain Member attends, reads and
         // votes, none of which needs a capability.

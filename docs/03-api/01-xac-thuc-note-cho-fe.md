@@ -6,6 +6,11 @@ bug của backend**.
 
 Hợp đồng API đầy đủ: [01-xac-thuc.md](01-xac-thuc.md). File này không nhắc lại, chỉ nói phần FE.
 
+> **Đổi từ `SCRUM-63`** ([04-quan-ly-vai-tro.md](04-quan-ly-vai-tro.md)): object `user` không còn
+> `"role": "Secretary"` mà trả **`roleId`** (Guid) + **`roleName`** (tên hiển thị, ví dụ `"Thư ký"`).
+> Bỏ bảng `ROLE_LABEL` ở FE, hiển thị `roleName`. `MSG04` (`/login`) và `MSG05` (`/google`) — "không
+> có quyền truy cập hệ thống" — **không còn được trả về**. Phần về `role` ở mục 1 dưới đây là lịch sử.
+
 ---
 
 ## 1. Cái sẽ làm bạn mất buổi chiều nếu không đọc: chữ hoa chữ thường
@@ -60,7 +65,7 @@ lúc nào; `code` là hợp đồng.
 | Sai thông tin / token Google không verify được | `MSG01` | `MSG01` |
 | Tài khoản Google chưa được liên kết | — | `MSG03` |
 | Tài khoản bị vô hiệu hoá | `MSG03` | **`MSG04`** |
-| Không có quyền truy cập hệ thống | `MSG04` | **`MSG05`** |
+| ~~Không có quyền truy cập hệ thống~~ | ~~`MSG04`~~ — bỏ từ `SCRUM-63` | ~~`MSG05`~~ — bỏ từ `SCRUM-63` |
 
 Nghĩa là **không dùng chung một hàm map `code` → câu thông báo cho cả hai luồng.** `MSG03` ở
 `/login` nghĩa là "tài khoản bị vô hiệu hoá", còn `MSG03` ở `/google` nghĩa là "chưa liên kết
@@ -200,7 +205,8 @@ Trong lúc đó, khuyến nghị:
 response login:
 
 ```json
-{ "id":"...", "email":"...", "fullName":"...", "role":"Secretary",
+{ "id":"...", "email":"...", "fullName":"...",
+  "roleId":"01a0ce78-7203-7c7f-8326-7a0baebf4c22", "roleName":"Thư ký",
   "capabilities":["MeetingCreator","MinutesEditor"] }
 ```
 
@@ -243,12 +249,12 @@ Toàn bộ phần giả lập trong [`frontend/src/features/auth/`](../../fronte
 
 Mật khẩu chung (chỉ môi trường Development): `TrustCabinet@2026`
 
-| Email | `role` trả về | `capabilities` trả về |
+| Email | `roleName` trả về | `capabilities` trả về |
 |---|---|---|
-| `chutoa@trustcabinet.local` | `Chair` | `["MeetingCreator","MeetingApprover"]` |
-| `thuky@trustcabinet.local` | `Secretary` | `["MeetingCreator","MinutesEditor"]` |
-| `thanhvien@trustcabinet.local` | `Member` | `[]` |
-| `quantri@trustcabinet.local` | `Admin` | `["AdminUsers"]` |
+| `chutoa@trustcabinet.local` | `Chủ toạ` | `["MeetingCreator","MeetingApprover"]` |
+| `thuky@trustcabinet.local` | `Thư ký` | `["MeetingCreator","MinutesEditor"]` |
+| `thanhvien@trustcabinet.local` | `Thành viên` | `[]` |
+| `quantri@trustcabinet.local` | `Quản trị viên` | `["AdminUsers"]` |
 
 **`Member` có `capabilities` rỗng nhưng vẫn đăng nhập được bình thường** — đó là chủ ý (thành viên
 dự họp, đọc tài liệu, biểu quyết, không cần capability nào). Đừng coi mảng rỗng là lỗi hoặc là

@@ -10,7 +10,7 @@ Capstone project **SEP490-G116**. The business domain is modelled on AI-eCabinet
 this is an independent .NET implementation with a scope trimmed to fit a capstone.
 
 **Status: v0.1.0 — skeleton plus the full data model.** There is a frontend/backend skeleton,
-one `/api/health` endpoint, and a 26-table EF Core model covering every story in the Jira backlog:
+one `/api/health` endpoint, and a 27-table EF Core model covering every story in the Jira backlog:
 access, meetings, agenda, documents, voting, recordings, transcripts, minutes, notifications,
 audit and calls. There is still **no authentication and no business endpoint** — the tables exist,
 nothing reads or writes them yet. Do not assume domain code exists somewhere — check or ask first.

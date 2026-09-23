@@ -83,7 +83,9 @@ public static class RolePermissionEndpoints
         }
 
         var result = await roles.UpdateAsync(
-            ParseRole(request.Role),
+            // Unreadable or missing → Guid.Empty, which no role has, so it lands on the service's
+            // "Vai trò không hợp lệ" rather than a 400 from the model binder.
+            Guid.TryParse(request.RoleId, out var roleId) ? roleId : Guid.Empty,
             [.. request.Capabilities.Select(ParseCapability)],
             AdminCallerRevalidation.RevalidatedUserId(principal),
             ct);
@@ -116,18 +118,9 @@ public static class RolePermissionEndpoints
             statusCode: StatusCodes.Status400BadRequest);
 
     /// <summary>
-    /// The role as a string, so an unknown value is a validation message rather than a 400 from
-    /// the model binder — the diagram wants "Show validation error", not a failed request body.
-    /// Case-insensitive because JSON casing conventions differ between the two ends.
+    /// An unknown name becomes a value no capability has, which the service rejects — the
+    /// endpoint has already reported unknown names above, so this is the second lock.
     /// </summary>
-    private static SystemRole ParseRole(string? role)
-        => Enum.TryParse<SystemRole>(role, ignoreCase: true, out var parsed)
-            ? parsed
-            // Cast to an undefined value on purpose: RolePermissionService.Validate rejects
-            // anything Enum.IsDefined does not know, so this lands on "Vai trò không hợp lệ".
-            : (SystemRole)(-1);
-
-    /// <summary>Same treatment as <see cref="ParseRole"/>, for the same reason.</summary>
     private static Capability ParseCapability(string? capability)
         => Enum.TryParse<Capability>(capability, ignoreCase: true, out var parsed)
             ? parsed
@@ -135,12 +128,13 @@ public static class RolePermissionEndpoints
 }
 
 /// <summary>
-/// UC-10's submission: one role, and exactly the capabilities it should end up with.
+/// UC-10's submission: one role, by id, and exactly the capabilities it should end up with.
 ///
-/// <paramref name="Capabilities"/> is nullable so a missing list is a validation message rather
-/// than a silent revocation of everything the role had.
+/// <paramref name="RoleId"/> is a string so an unreadable id is a validation message rather than
+/// a 400 from the model binder. <paramref name="Capabilities"/> is nullable so a missing list is a
+/// validation message rather than a silent revocation of everything the role had.
 /// </summary>
-public sealed record UpdateRolePermissionsRequest(string? Role, IReadOnlyCollection<string>? Capabilities);
+public sealed record UpdateRolePermissionsRequest(string? RoleId, IReadOnlyCollection<string>? Capabilities);
 
 /// <summary>
 /// The matrix on the wire — UC-09's answer, and what a successful UC-10 returns so the screen does
@@ -168,12 +162,18 @@ public sealed record PermissionResponse(
 
 /// <summary>One row of the grid.</summary>
 public sealed record RolePermissionsResponse(
-    string Role, IReadOnlyCollection<string> Capabilities, bool IsBuiltIn)
+    string Id,
+    string Name,
+    string? Description,
+    bool IsBuiltIn,
+    IReadOnlyCollection<string> Capabilities)
 {
     public static RolePermissionsResponse From(RolePermissions role) => new(
-        role.Role.ToString(),
-        [.. role.Capabilities.Select(c => c.ToString())],
-        role.IsBuiltIn);
+        role.Id.ToString(),
+        role.Name,
+        role.Description,
+        role.IsBuiltIn,
+        [.. role.Capabilities.Select(c => c.ToString())]);
 }
 
 /// <summary>What a successful UC-10 returns: the message code, and the matrix as it now stands.</summary>

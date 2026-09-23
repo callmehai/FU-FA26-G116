@@ -7,8 +7,14 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Infrastructure.Authentication;
 
 /// <summary>
-/// UC-01's <c>:Authentication Service</c>. Decides which of the four branches a sign-in attempt
-/// takes, and issues the token pair for the one that succeeds.
+/// UC-01's <c>:Authentication Service</c>. Decides which branch a sign-in attempt takes, and
+/// issues the token pair for the one that succeeds.
+///
+/// There is no "no system access" branch (UC-01's MSG04, UC-02's MSG05) any more. It refused a
+/// role with no capabilities unless that role was Member; since roles became data (ADR-0008) a role
+/// without capabilities is a legitimate configuration that works exactly like Member, and deciding
+/// otherwise would mean comparing role ids in business code. Pending BA confirmation — see
+/// docs/03-api/04-quan-ly-vai-tro.md.
 ///
 /// The order of the checks is part of the design: credentials first, then whether the account is
 /// usable. Checking "is this account active?" before the password would let anyone learn which
@@ -68,21 +74,10 @@ public sealed class AuthenticationService(
             return SignInResult.Failure(SignInOutcome.AccountDeactivated);
         }
 
-        var capabilities = await users.GetCapabilitiesAsync(user.Role, ct);
+        // Empty is fine: attending, reading and voting need no capability.
+        var capabilities = await users.GetCapabilitiesAsync(user.RoleId, ct);
 
-        // Branch 3 — MSG04. A role that grants nothing and is not Member means someone has
-        // emptied role_capabilities for it, so there is nothing to sign in to. Member is excluded
-        // because it carries no capability by design and still signs in — attending, reading and
-        // voting need none (see ReferenceData.RoleCapabilities).
-        if (capabilities.Count == 0 && user.Role != SystemRole.Member)
-        {
-            logger.LogWarning(
-                "Sign-in rejected: role {Role} grants no capability, so account {UserId} has no way in.",
-                user.Role, user.Id);
-            return SignInResult.Failure(SignInOutcome.NoSystemAccess);
-        }
-
-        // Branch 4 — success.
+        // Branch 3 — success.
         logger.LogInformation("Sign-in succeeded for account {UserId}.", user.Id);
         return await IssueAsync(user, capabilities, ct);
     }
@@ -149,18 +144,9 @@ public sealed class AuthenticationService(
             return GoogleSignInResult.Failure(GoogleSignInOutcome.AccountDeactivated);
         }
 
-        var capabilities = await users.GetCapabilitiesAsync(user.Role, ct);
+        var capabilities = await users.GetCapabilitiesAsync(user.RoleId, ct);
 
-        // Branch 4 — MSG05. Same rule as password sign-in, including Member being exempt.
-        if (capabilities.Count == 0 && user.Role != SystemRole.Member)
-        {
-            logger.LogWarning(
-                "Google sign-in rejected: role {Role} grants no capability, so account {UserId} "
-                + "has no way in.", user.Role, user.Id);
-            return GoogleSignInResult.Failure(GoogleSignInOutcome.NoSystemAccess);
-        }
-
-        // Branch 5 — success. The same token pair as a password sign-in: how someone proved who
+        // Branch 4 — success. The same token pair as a password sign-in: how someone proved who
         // they are does not change what their session is.
         logger.LogInformation("Google sign-in succeeded for account {UserId}.", user.Id);
         var issued = await IssueAsync(user, capabilities, ct);
@@ -207,13 +193,8 @@ public sealed class AuthenticationService(
             return SignInResult.Failure(SignInOutcome.AccountDeactivated);
         }
 
-        var capabilities = await users.GetCapabilitiesAsync(user.Role, ct);
-
-        if (capabilities.Count == 0 && user.Role != SystemRole.Member)
-        {
-            await refreshTokens.RevokeAllForUserAsync(user.Id, ct);
-            return SignInResult.Failure(SignInOutcome.NoSystemAccess);
-        }
+        // Re-read, so a capability change reaches the next access token.
+        var capabilities = await users.GetCapabilitiesAsync(user.RoleId, ct);
 
         return await IssueAsync(user, capabilities, ct);
     }

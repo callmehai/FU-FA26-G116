@@ -14,6 +14,9 @@ namespace TrustCabinet.Domain.Authentication;
 public interface IUserRepository
 {
     /// <summary>
+    /// Every method that returns a <see cref="User"/> returns it with <see cref="User.Role"/>
+    /// loaded: a successful sign-in answers with the role's name.
+    ///
     /// The account with this email, or null. The email column is <c>citext</c>, so matching is
     /// case-insensitive in the database and the caller does not normalise case.
     /// </summary>
@@ -58,7 +61,8 @@ public interface IUserRepository
     /// <summary>
     /// What this role may do, read from <c>role_capabilities</c> rather than hard-coded, so the
     /// administrator screen in SCRUM-60 can change it without a deployment.
-    /// Empty is a legitimate answer — a plain Member has no capability by design.
+    /// Empty is a legitimate answer — a plain Member, or a role an administrator created without
+    /// capabilities, attends, reads and votes, none of which needs one.
     /// </summary>
-    Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(SystemRole role, CancellationToken ct = default);
+    Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(Guid roleId, CancellationToken ct = default);
 }

@@ -7,7 +7,8 @@ namespace TrustCabinet.Infrastructure.Access;
 public static class RolePermissionServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers the role ↔ capability matrix (SCRUM-60, UC-09 and UC-10).
+    /// Registers the role ↔ capability matrix (SCRUM-60, UC-09 and UC-10) and role management
+    /// (SCRUM-63, UC-11 … UC-13).
     ///
     /// Scoped: both depend on the request's DbContext. <c>IAuditService</c> comes from
     /// <c>AddTrustCabinetUserManagement</c> — registered once there rather than twice, since a
@@ -18,6 +19,8 @@ public static class RolePermissionServiceCollectionExtensions
     {
         services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
         services.AddScoped<IRolePermissionService, RolePermissionService>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IRoleService, RoleService>();
 
         // The same lock AddTrustCabinetUserManagement registers, and it has to be the same
         // registration: this service and UserService guard one invariant between them. TryAdd on

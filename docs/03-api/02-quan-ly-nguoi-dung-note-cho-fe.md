@@ -39,16 +39,17 @@ gửi sai.
 
 ---
 
-## 2. Vẫn là chữ hoa chữ thường, y như SCRUM-11
+## 2. Vai trò là `roleId` + `roleName` (đổi từ `SCRUM-63`)
 
-`role` trả về **PascalCase**: `"Admin"`, `"Chair"`, `"Secretary"`, `"Member"`.
+Trước `SCRUM-63` vai trò là chuỗi enum PascalCase (`"role": "Admin"`). Giờ vai trò là dòng của bảng
+`roles` ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)), nên:
 
-Xem lại mục 1 của [01-xac-thuc-note-cho-fe.md](01-xac-thuc-note-cho-fe.md) — cùng một cái bẫy,
-cùng một cách xử lý. Nếu đã chọn cách nào ở SCRUM-46 thì giữ nguyên cách đó ở đây.
-
-Khi **gửi lên** thì backend nhận không phân biệt hoa thường (`"chair"` cũng được), nhưng vẫn nên
-gửi đúng PascalCase cho nhất quán. Role không nằm trong enum → `400` kèm `errors.role`, **không**
-phải `400` trống từ model binder.
+- **Response** trả `roleId` (Guid) và `roleName` (tên hiển thị, ví dụ `"Thành viên"`). Hiển thị
+  `roleName`, bỏ bảng `ROLE_LABEL` ở FE — vai trò quản trị viên tự tạo không có trong bảng đó.
+- **Request** (`POST`, `PUT /api/users/{id}`) gửi `roleId`. Danh sách để chọn lấy từ
+  `GET /api/roles` ([04-quan-ly-vai-tro.md](04-quan-ly-vai-tro.md)), không hardcode bốn vai trò.
+- `roleId` thiếu, không phải Guid, hoặc không tồn tại → `400` `MSG09` kèm `errors.roleId`
+  (`Vai trò không tồn tại.`), **không** phải `400` trống từ model binder.
 
 ---
 
@@ -79,7 +80,7 @@ theo nó, xem cuối mục này.
 }
 ```
 
-Tên key trong `errors` khớp đúng tên field trong request (`fullName`, `email`, `password`, `role`,
+Tên key trong `errors` khớp đúng tên field trong request (`fullName`, `email`, `password`, `roleId`,
 `isActive`), nên map thẳng vào form được.
 
 Backend trả **tất cả field sai cùng lúc** — đừng chỉ hiện cái đầu tiên.
@@ -153,7 +154,8 @@ khoản không còn được phép.
     "id": "01999f2e-…",
     "fullName": "Lê Thành Viên",
     "email": "thanhvien@trustcabinet.local",
-    "role": "Member",
+    "roleId": "01a0ce78-7204-7558-b181-e908a08e83a3",
+    "roleName": "Thành viên",
     "isActive": true,
     "hasPassword": true,
     "hasGoogleLink": false,

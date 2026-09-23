@@ -2,6 +2,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
 using TrustCabinet.Infrastructure.Authentication;
 
@@ -11,7 +13,7 @@ namespace TrustCabinet.Web.Endpoints;
 /// UC-01's <c>:Auth Controller</c> — translates HTTP into a call on the authentication service,
 /// and the service's outcome into a status code and a message code.
 ///
-/// It holds no authentication logic of its own: which of the four branches applies is the
+/// It holds no authentication logic of its own: which branch applies is the
 /// service's decision, and this file only decides how each one looks on the wire.
 /// </summary>
 public static class AuthEndpoints
@@ -20,21 +22,21 @@ public static class AuthEndpoints
     /// Message codes from the UC-01 specification. The response carries the code and a Vietnamese
     /// message: the code is what the frontend and the test suite match on, so rewording the text
     /// never breaks either.
+    ///
+    /// UC-01's MSG04 ("no system access") is gone with SCRUM-63 — see <c>SignInOutcome</c>.
     /// </summary>
     private const string Msg01InvalidCredentials = "MSG01";
     private const string Msg03AccountUnavailable = "MSG03";
-    private const string Msg04NoSystemAccess = "MSG04";
 
     /// <summary>
     /// UC-02 numbers its messages differently from UC-01 for the same situations, so its codes are
     /// separate constants rather than reused ones: a deactivated account is MSG03 in UC-01 and
-    /// MSG04 here, and "no system access" is MSG04 there and MSG05 here. Do not "tidy" these into
-    /// one set — the two use-case specifications are what the tester checks against.
+    /// MSG04 here. Do not "tidy" these into one set — the two use-case specifications are what the
+    /// tester checks against. MSG05 went with UC-01's MSG04.
     /// </summary>
     private const string Google01SignInUnsuccessful = "MSG01";
     private const string Google03NotAuthorized = "MSG03";
     private const string Google04AccountUnavailable = "MSG04";
-    private const string Google05NoSystemAccess = "MSG05";
 
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
@@ -93,8 +95,6 @@ public static class AuthEndpoints
                 (Google03NotAuthorized, "Tài khoản Google này chưa được cấp quyền truy cập hệ thống."),
             GoogleSignInOutcome.AccountDeactivated =>
                 (Google04AccountUnavailable, "Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên."),
-            GoogleSignInOutcome.NoSystemAccess =>
-                (Google05NoSystemAccess, "Tài khoản chưa được cấp quyền truy cập hệ thống."),
             // InvalidGoogleToken, and defensively any outcome added later without a case here.
             _ => (Google01SignInUnsuccessful, "Đăng nhập bằng Google không thành công."),
         };
@@ -160,17 +160,12 @@ public static class AuthEndpoints
             return Results.Unauthorized();
         }
 
-        return Results.Ok(new CurrentUserResponse(
-            Id: caller.Id.ToString(),
-            Email: caller.Email,
-            FullName: caller.FullName,
-            Role: caller.Role.ToString(),
-            Capabilities: [.. (await users.GetCapabilitiesAsync(caller.Role, ct))
-                .Select(c => c.ToString())]));
+        return Results.Ok(CurrentUserResponse.From(
+            caller, await users.GetCapabilitiesAsync(caller.RoleId, ct)));
     }
 
     /// <summary>
-    /// The three failing branches of UC-01. All 401: the distinction between them is in the
+    /// The failing branches of UC-01. All 401: the distinction between them is in the
     /// message code, and none of them reveals whether the email exists.
     /// </summary>
     private static IResult Rejected(SignInOutcome outcome)
@@ -179,8 +174,6 @@ public static class AuthEndpoints
         {
             SignInOutcome.AccountDeactivated =>
                 (Msg03AccountUnavailable, "Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên."),
-            SignInOutcome.NoSystemAccess =>
-                (Msg04NoSystemAccess, "Tài khoản chưa được cấp quyền truy cập hệ thống."),
             // Covers InvalidCredentials and, defensively, an outcome added later without a case
             // here: the safe default for an unknown authentication outcome is to refuse.
             _ => (Msg01InvalidCredentials, "Email hoặc mật khẩu không đúng."),
@@ -219,12 +212,7 @@ public sealed record SignInResponse(
         result.AccessToken!,
         result.RefreshToken!,
         result.AccessTokenExpiresAt!.Value,
-        new CurrentUserResponse(
-            result.User!.Id.ToString(),
-            result.User.Email,
-            result.User.FullName,
-            result.User.Role.ToString(),
-            [.. (result.Capabilities ?? []).Select(c => c.ToString())]));
+        CurrentUserResponse.From(result.User!, result.Capabilities ?? []));
 
     /// <summary>
     /// Identical shape for a Google sign-in: the client should not need to care which way the
@@ -234,17 +222,29 @@ public sealed record SignInResponse(
         result.AccessToken!,
         result.RefreshToken!,
         result.AccessTokenExpiresAt!.Value,
-        new CurrentUserResponse(
-            result.User!.Id.ToString(),
-            result.User.Email,
-            result.User.FullName,
-            result.User.Role.ToString(),
-            [.. (result.Capabilities ?? []).Select(c => c.ToString())]));
+        CurrentUserResponse.From(result.User!, result.Capabilities ?? []));
 }
 
+/// <summary>
+/// Who is signed in. The role travels as its id and its current name (ADR-0008): the id is what
+/// other endpoints speak, the name is what the screen shows.
+/// </summary>
 public sealed record CurrentUserResponse(
     string Id,
     string Email,
     string FullName,
-    string Role,
-    string[] Capabilities);
+    string RoleId,
+    string RoleName,
+    string[] Capabilities)
+{
+    /// <summary>Needs <see cref="User.Role"/> loaded — every repository behind these endpoints includes it.</summary>
+    public static CurrentUserResponse From(User user, IReadOnlyCollection<Capability> capabilities) => new(
+        user.Id.ToString(),
+        user.Email,
+        user.FullName,
+        user.RoleId.ToString(),
+        user.Role?.Name
+            ?? throw new InvalidOperationException(
+                $"User {user.Id} was loaded without its role; include User.Role in the query."),
+        [.. capabilities.Select(c => c.ToString())]);
+}

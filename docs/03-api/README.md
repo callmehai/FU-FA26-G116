@@ -29,10 +29,11 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   (SCRUM-12): luật chung mà **mọi** endpoint nghiệp vụ phải theo. Cổng quyền hai lớp (policy trên
   claim + đọc lại từ database) và vì sao một lớp là không đủ; khi nào trả `401`/`403`/`404`; vì sao
   endpoint danh sách phải lọc ở server; các bước thêm một endpoint mới
-- [`04-quan-ly-vai-tro.md`](04-quan-ly-vai-tro.md) — **chưa làm, bản thiết kế cho `SCRUM-63`**:
-  tạo, đổi tên, xoá vai trò; chuyển `SystemRole` từ enum sang bảng `roles`
-  ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)). Hướng dẫn từng bước cho BE: migration
-  phải sửa tay, danh sách file cần đổi, hợp đồng mới, test cần có
+- [`04-quan-ly-vai-tro.md`](04-quan-ly-vai-tro.md) — quản lý vai trò (`SCRUM-63`, BE đã xong):
+  `GET/POST/PUT/DELETE /api/roles` — tạo, đổi tên, xoá vai trò; vai trò là bảng `roles` khoá `Guid`
+  thay cho enum `SystemRole` ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)). Migration
+  sửa tay giữ dữ liệu cũ, hợp đồng mới `roleId` + `roleName` ở `/api/users`, `/api/auth/*`,
+  `/api/roles/capabilities`, mã `MSG19`–`MSG25`, và phần FE cần làm
 
 Dự kiến có thêm:
 

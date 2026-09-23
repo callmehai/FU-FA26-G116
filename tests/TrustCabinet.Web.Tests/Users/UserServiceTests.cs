@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging.Abstractions;
+using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -36,7 +37,7 @@ public class UserServiceTests
     private User GivenUser(
         string fullName = "Lê Thành Viên",
         string email = "thanhvien@trustcabinet.local",
-        SystemRole role = SystemRole.Member,
+        Guid? role = null,
         bool isActive = true)
     {
         var user = new User
@@ -44,7 +45,7 @@ public class UserServiceTests
             FullName = fullName,
             Email = email,
             PasswordHash = new FakePasswordHasher().Hash(ValidPassword),
-            Role = role,
+            RoleId = role ?? BuiltInRoles.Member,
             IsActive = isActive,
         };
 
@@ -57,9 +58,9 @@ public class UserServiceTests
     [Fact]
     public async Task List_returns_every_account_sorted_by_name()
     {
-        GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", SystemRole.Admin);
+        GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", BuiltInRoles.Admin);
         GivenUser("Lê Thành Viên", "thanhvien@trustcabinet.local");
-        GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", SystemRole.Secretary);
+        GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary);
 
         var accounts = await NewService().ListAsync();
 
@@ -101,12 +102,13 @@ public class UserServiceTests
     public async Task Create_stores_an_active_account_and_records_the_audit_entry()
     {
         var result = await NewService().CreateAsync(
-            new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, SystemRole.Chair),
+            new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, BuiltInRoles.Chair),
             _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Equal("chutoa@trustcabinet.local", result.Account!.Email);
-        Assert.Equal(SystemRole.Chair, result.Account.Role);
+        Assert.Equal(BuiltInRoles.Chair, result.Account.RoleId);
+        Assert.Equal("Chủ toạ", result.Account.RoleName);
         // "Create active user account" in the diagram — an administrator filling this form wants
         // a working account.
         Assert.True(result.Account.IsActive);
@@ -130,7 +132,7 @@ public class UserServiceTests
             NullLogger<UserService>.Instance);
 
         await service.CreateAsync(
-            new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, SystemRole.Chair),
+            new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, BuiltInRoles.Chair),
             _actorId);
 
         var stored = Assert.Single(_users.Users).PasswordHash;
@@ -144,7 +146,7 @@ public class UserServiceTests
     public async Task Create_never_puts_the_password_in_the_audit_details()
     {
         await NewService().CreateAsync(
-            new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, SystemRole.Chair),
+            new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, BuiltInRoles.Chair),
             _actorId);
 
         // The audit log is read by more people than the users table and is never deleted, so a
@@ -166,7 +168,7 @@ public class UserServiceTests
     public async Task Create_rejects_invalid_information(string fullName, string email, string field)
     {
         var result = await NewService().CreateAsync(
-            new NewUser(fullName, email, ValidPassword, SystemRole.Member), _actorId);
+            new NewUser(fullName, email, ValidPassword, BuiltInRoles.Member), _actorId);
 
         Assert.Equal(UserOutcome.InvalidInformation, result.Outcome);
         // The field is named, because the diagram's "Display invalid fields" needs to know which.
@@ -178,7 +180,7 @@ public class UserServiceTests
     public async Task Create_rejects_a_password_shorter_than_the_minimum()
     {
         var result = await NewService().CreateAsync(
-            new NewUser("Tên hợp lệ", "hople@trustcabinet.local", "ngan", SystemRole.Member),
+            new NewUser("Tên hợp lệ", "hople@trustcabinet.local", "ngan", BuiltInRoles.Member),
             _actorId);
 
         Assert.Equal(UserOutcome.InvalidInformation, result.Outcome);
@@ -186,16 +188,32 @@ public class UserServiceTests
     }
 
     [Fact]
-    public async Task Create_rejects_a_role_outside_the_enum()
+    public async Task Create_rejects_a_role_that_does_not_exist()
     {
-        // A caller posting a number the enum has no name for. Without the check it would be stored
-        // and read back as a role nothing matches.
+        // A role is a row an administrator can delete (ADR-0008): a form opened before the delete
+        // posts an id that is gone. MSG09 on the field, rather than the foreign key's 500.
         var result = await NewService().CreateAsync(
-            new NewUser("Tên hợp lệ", "hople@trustcabinet.local", ValidPassword, (SystemRole)99),
+            new NewUser("Tên hợp lệ", "hople@trustcabinet.local", ValidPassword, Guid.CreateVersion7()),
             _actorId);
 
         Assert.Equal(UserOutcome.InvalidInformation, result.Outcome);
-        Assert.Contains("role", result.Errors!.Keys);
+        Assert.Equal("Vai trò không tồn tại.", result.Errors!["roleId"]);
+        Assert.Empty(_users.Users);
+    }
+
+    [Fact]
+    public async Task Create_accepts_a_role_an_administrator_created()
+    {
+        var deputy = new Role { Name = "Thư ký phó" };
+        _users.WithRole(deputy, Capability.MinutesEditor);
+
+        var result = await NewService().CreateAsync(
+            new NewUser("Phó Thư Ký", "phothuky@trustcabinet.local", ValidPassword, deputy.Id),
+            _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(deputy.Id, result.Account!.RoleId);
+        Assert.Equal("Thư ký phó", result.Account.RoleName);
     }
 
     [Fact]
@@ -203,7 +221,7 @@ public class UserServiceTests
     {
         // One round trip per mistake would be a miserable form.
         var result = await NewService().CreateAsync(
-            new NewUser("", "khong-phai-email", "ngan", SystemRole.Member), _actorId);
+            new NewUser("", "khong-phai-email", "ngan", BuiltInRoles.Member), _actorId);
 
         Assert.Equal(
             ["email", "fullName", "password"],
@@ -216,7 +234,7 @@ public class UserServiceTests
         GivenUser(email: "trungnhau@trustcabinet.local");
 
         var result = await NewService().CreateAsync(
-            new NewUser("Tên khác", "trungnhau@trustcabinet.local", ValidPassword, SystemRole.Member),
+            new NewUser("Tên khác", "trungnhau@trustcabinet.local", ValidPassword, BuiltInRoles.Member),
             _actorId);
 
         // MSG08 at the endpoint.
@@ -232,7 +250,7 @@ public class UserServiceTests
         GivenUser(email: "trungnhau@trustcabinet.local");
 
         var result = await NewService().CreateAsync(
-            new NewUser("Tên khác", "TrungNhau@TrustCabinet.local", ValidPassword, SystemRole.Member),
+            new NewUser("Tên khác", "TrungNhau@TrustCabinet.local", ValidPassword, BuiltInRoles.Member),
             _actorId);
 
         Assert.Equal(UserOutcome.DuplicateEmail, result.Outcome);
@@ -243,7 +261,7 @@ public class UserServiceTests
     {
         var result = await NewService().CreateAsync(
             new NewUser("  Trần Chủ Toạ  ", "  chutoa@trustcabinet.local  ", ValidPassword,
-                SystemRole.Chair),
+                BuiltInRoles.Chair),
             _actorId);
 
         Assert.True(result.Succeeded);
@@ -260,7 +278,7 @@ public class UserServiceTests
         _users.NextSaveThrows = DuplicateEmailException();
 
         var result = await NewService().CreateAsync(
-            new NewUser("Tên hợp lệ", "hople@trustcabinet.local", ValidPassword, SystemRole.Member),
+            new NewUser("Tên hợp lệ", "hople@trustcabinet.local", ValidPassword, BuiltInRoles.Member),
             _actorId);
 
         Assert.Equal(UserOutcome.DuplicateEmail, result.Outcome);
@@ -272,13 +290,13 @@ public class UserServiceTests
     [Fact]
     public async Task Get_returns_the_current_information_for_the_edit_form()
     {
-        var user = GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", SystemRole.Secretary);
+        var user = GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary);
 
         var result = await NewService().GetAsync(user.Id);
 
         Assert.True(result.Succeeded);
         Assert.Equal("Nguyễn Thư Ký", result.Account!.FullName);
-        Assert.Equal(SystemRole.Secretary, result.Account.Role);
+        Assert.Equal(BuiltInRoles.Secretary, result.Account.RoleId);
     }
 
     [Fact]
@@ -293,16 +311,16 @@ public class UserServiceTests
     [Fact]
     public async Task Update_changes_the_account_and_records_what_it_was_before()
     {
-        var user = GivenUser("Tên Cũ", "cu@trustcabinet.local", SystemRole.Member);
+        var user = GivenUser("Tên Cũ", "cu@trustcabinet.local", BuiltInRoles.Member);
 
         var result = await NewService().UpdateAsync(
-            user.Id, new UserEdit("Tên Mới", "moi@trustcabinet.local", SystemRole.Secretary),
+            user.Id, new UserEdit("Tên Mới", "moi@trustcabinet.local", BuiltInRoles.Secretary),
             _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Equal("Tên Mới", result.Account!.FullName);
         Assert.Equal("moi@trustcabinet.local", result.Account.Email);
-        Assert.Equal(SystemRole.Secretary, result.Account.Role);
+        Assert.Equal(BuiltInRoles.Secretary, result.Account.RoleId);
 
         var recorded = Assert.Single(_audit.Records);
         Assert.Equal(AuditActions.UserUpdated, recorded.Action);
@@ -320,7 +338,7 @@ public class UserServiceTests
         var user = GivenUser(email: "giunguyen@trustcabinet.local");
 
         var result = await NewService().UpdateAsync(
-            user.Id, new UserEdit("Tên Mới", "giunguyen@trustcabinet.local", user.Role), _actorId);
+            user.Id, new UserEdit("Tên Mới", "giunguyen@trustcabinet.local", user.RoleId), _actorId);
 
         Assert.True(result.Succeeded);
     }
@@ -332,7 +350,7 @@ public class UserServiceTests
         GivenUser("Người Hai", "nguoi-hai@trustcabinet.local");
 
         var result = await NewService().UpdateAsync(
-            user.Id, new UserEdit(user.FullName, "nguoi-hai@trustcabinet.local", user.Role),
+            user.Id, new UserEdit(user.FullName, "nguoi-hai@trustcabinet.local", user.RoleId),
             _actorId);
 
         Assert.Equal(UserOutcome.DuplicateEmail, result.Outcome);
@@ -344,7 +362,7 @@ public class UserServiceTests
         var user = GivenUser("Tên Cũ", "cu@trustcabinet.local");
 
         var result = await NewService().UpdateAsync(
-            user.Id, new UserEdit("", "khong-phai-email", SystemRole.Member), _actorId);
+            user.Id, new UserEdit("", "khong-phai-email", BuiltInRoles.Member), _actorId);
 
         Assert.Equal(UserOutcome.InvalidInformation, result.Outcome);
         Assert.Equal("Tên Cũ", user.FullName);
@@ -357,7 +375,7 @@ public class UserServiceTests
     {
         var result = await NewService().UpdateAsync(
             Guid.CreateVersion7(), new UserEdit("Tên hợp lệ", "hople@trustcabinet.local",
-                SystemRole.Member),
+                BuiltInRoles.Member),
             _actorId);
 
         Assert.Equal(UserOutcome.NotFound, result.Outcome);
@@ -369,11 +387,11 @@ public class UserServiceTests
         // The unique index rejects the row, but the entity is still tracked and still holds what
         // was assigned to it. The audit write runs on the same DbContext, so its SaveChanges
         // would flush those values — a refused update that lands anyway, one call later.
-        var user = GivenUser("Tên Cũ", "cu@trustcabinet.local", SystemRole.Member);
+        var user = GivenUser("Tên Cũ", "cu@trustcabinet.local", BuiltInRoles.Member);
         _users.NextSaveThrows = DuplicateEmailException();
 
         var result = await NewService().UpdateAsync(
-            user.Id, new UserEdit("Tên Mới", "moi@trustcabinet.local", SystemRole.Secretary),
+            user.Id, new UserEdit("Tên Mới", "moi@trustcabinet.local", BuiltInRoles.Secretary),
             _actorId);
 
         Assert.Equal(UserOutcome.DuplicateEmail, result.Outcome);
@@ -381,7 +399,7 @@ public class UserServiceTests
         // Back to what the database holds, not what the caller asked for.
         Assert.Equal("Tên Cũ", user.FullName);
         Assert.Equal("cu@trustcabinet.local", user.Email);
-        Assert.Equal(SystemRole.Member, user.Role);
+        Assert.Equal(BuiltInRoles.Member, user.RoleId);
         Assert.Empty(_audit.Records);
     }
 
@@ -390,11 +408,11 @@ public class UserServiceTests
     {
         // Capabilities travel inside the access token, so without this the person keeps the rights
         // they had until it expires.
-        var user = GivenUser(role: SystemRole.Member);
+        var user = GivenUser(role: BuiltInRoles.Member);
         await _refreshTokens.StoreAsync("rt-cua-ho", user.Id, TimeSpan.FromDays(7));
 
         await NewService().UpdateAsync(
-            user.Id, new UserEdit(user.FullName, user.Email, SystemRole.Secretary), _actorId);
+            user.Id, new UserEdit(user.FullName, user.Email, BuiltInRoles.Secretary), _actorId);
 
         Assert.Empty(_refreshTokens.ActiveTokens);
     }
@@ -403,11 +421,11 @@ public class UserServiceTests
     public async Task Update_keeps_the_sessions_when_the_role_is_unchanged()
     {
         // Correcting a typo in someone's name should not sign them out.
-        var user = GivenUser(role: SystemRole.Secretary);
+        var user = GivenUser(role: BuiltInRoles.Secretary);
         await _refreshTokens.StoreAsync("rt-cua-ho", user.Id, TimeSpan.FromDays(7));
 
         await NewService().UpdateAsync(
-            user.Id, new UserEdit("Tên Đã Sửa", user.Email, SystemRole.Secretary), _actorId);
+            user.Id, new UserEdit("Tên Đã Sửa", user.Email, BuiltInRoles.Secretary), _actorId);
 
         Assert.Single(_refreshTokens.ActiveTokens);
     }
@@ -417,23 +435,23 @@ public class UserServiceTests
     {
         // The same lockout as deactivating yourself: with one organisation there may be no second
         // administrator to undo it.
-        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", SystemRole.Admin);
+        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", BuiltInRoles.Admin);
 
         var result = await NewService().UpdateAsync(
-            admin.Id, new UserEdit(admin.FullName, admin.Email, SystemRole.Member), admin.Id);
+            admin.Id, new UserEdit(admin.FullName, admin.Email, BuiltInRoles.Member), admin.Id);
 
         Assert.Equal(UserOutcome.StatusChangeNotAllowed, result.Outcome);
-        Assert.Equal(SystemRole.Admin, admin.Role);
+        Assert.Equal(BuiltInRoles.Admin, admin.RoleId);
     }
 
     [Fact]
     public async Task Update_lets_an_administrator_edit_their_own_name()
     {
         // Only the role is protected — an administrator is not locked out of their own profile.
-        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", SystemRole.Admin);
+        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", BuiltInRoles.Admin);
 
         var result = await NewService().UpdateAsync(
-            admin.Id, new UserEdit("Phạm Quản Trị (mới)", admin.Email, SystemRole.Admin), admin.Id);
+            admin.Id, new UserEdit("Phạm Quản Trị (mới)", admin.Email, BuiltInRoles.Admin), admin.Id);
 
         Assert.True(result.Succeeded);
     }
@@ -442,14 +460,14 @@ public class UserServiceTests
     public async Task Update_lets_one_administrator_demote_another_while_one_remains()
     {
         // Two administrators, so demoting one still leaves somebody able to administer.
-        GivenUser("Quản Trị Một", "quantri1@trustcabinet.local", SystemRole.Admin);
-        var other = GivenUser("Quản Trị Hai", "quantri2@trustcabinet.local", SystemRole.Admin);
+        GivenUser("Quản Trị Một", "quantri1@trustcabinet.local", BuiltInRoles.Admin);
+        var other = GivenUser("Quản Trị Hai", "quantri2@trustcabinet.local", BuiltInRoles.Admin);
 
         var result = await NewService().UpdateAsync(
-            other.Id, new UserEdit(other.FullName, other.Email, SystemRole.Member), _actorId);
+            other.Id, new UserEdit(other.FullName, other.Email, BuiltInRoles.Member), _actorId);
 
         Assert.True(result.Succeeded);
-        Assert.Equal(SystemRole.Member, other.Role);
+        Assert.Equal(BuiltInRoles.Member, other.RoleId);
     }
 
     [Fact]
@@ -457,13 +475,13 @@ public class UserServiceTests
     {
         // Nobody would be left able to administer, and recovering needs a database console.
         // Not the same rule as "you cannot demote yourself": this fires whoever is asking.
-        var only = GivenUser("Quản Trị Duy Nhất", "quantri@trustcabinet.local", SystemRole.Admin);
+        var only = GivenUser("Quản Trị Duy Nhất", "quantri@trustcabinet.local", BuiltInRoles.Admin);
 
         var result = await NewService().UpdateAsync(
-            only.Id, new UserEdit(only.FullName, only.Email, SystemRole.Member), _actorId);
+            only.Id, new UserEdit(only.FullName, only.Email, BuiltInRoles.Member), _actorId);
 
         Assert.Equal(UserOutcome.StatusChangeNotAllowed, result.Outcome);
-        Assert.Equal(SystemRole.Admin, only.Role);
+        Assert.Equal(BuiltInRoles.Admin, only.RoleId);
     }
 
     [Fact]
@@ -471,11 +489,11 @@ public class UserServiceTests
     {
         // The rule is about the capability, not the role name: moving to a role that also carries
         // AdminUsers takes nothing away, and must not be refused.
-        var only = GivenUser("Quản Trị Duy Nhất", "quantri@trustcabinet.local", SystemRole.Admin);
-        _users.WithCapabilities(SystemRole.Chair, Capability.AdminUsers);
+        var only = GivenUser("Quản Trị Duy Nhất", "quantri@trustcabinet.local", BuiltInRoles.Admin);
+        _users.WithCapabilities(BuiltInRoles.Chair, Capability.AdminUsers);
 
         var result = await NewService().UpdateAsync(
-            only.Id, new UserEdit(only.FullName, only.Email, SystemRole.Chair), _actorId);
+            only.Id, new UserEdit(only.FullName, only.Email, BuiltInRoles.Chair), _actorId);
 
         Assert.True(result.Succeeded);
     }
@@ -491,13 +509,13 @@ public class UserServiceTests
         // once deactivated, was stuck in the Admin role permanently: a dead end rather than a
         // safeguard.
         var retired = GivenUser(
-            "Quản Trị Đã Nghỉ", "danghi@trustcabinet.local", SystemRole.Admin, isActive: false);
+            "Quản Trị Đã Nghỉ", "danghi@trustcabinet.local", BuiltInRoles.Admin, isActive: false);
 
         var result = await NewService().UpdateAsync(
-            retired.Id, new UserEdit(retired.FullName, retired.Email, SystemRole.Member), _actorId);
+            retired.Id, new UserEdit(retired.FullName, retired.Email, BuiltInRoles.Member), _actorId);
 
         Assert.True(result.Succeeded);
-        Assert.Equal(SystemRole.Member, retired.Role);
+        Assert.Equal(BuiltInRoles.Member, retired.RoleId);
     }
 
     [Fact]
@@ -509,7 +527,7 @@ public class UserServiceTests
         await _refreshTokens.StoreAsync("rt-cua-ho", user.Id, TimeSpan.FromDays(7));
 
         var result = await NewService().UpdateAsync(
-            user.Id, new UserEdit(user.FullName, "moi@trustcabinet.local", user.Role), _actorId);
+            user.Id, new UserEdit(user.FullName, "moi@trustcabinet.local", user.RoleId), _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Empty(_refreshTokens.ActiveTokens);
@@ -524,7 +542,7 @@ public class UserServiceTests
         await _refreshTokens.StoreAsync("rt-cua-ho", user.Id, TimeSpan.FromDays(7));
 
         var result = await NewService().UpdateAsync(
-            user.Id, new UserEdit("Lê Thành Viên B", user.Email, user.Role), _actorId);
+            user.Id, new UserEdit("Lê Thành Viên B", user.Email, user.RoleId), _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Contains("rt-cua-ho", _refreshTokens.ActiveTokens);
@@ -544,7 +562,7 @@ public class UserServiceTests
         var service = NewService();
 
         await service.UpdateAsync(
-            target.Id, new UserEdit(target.FullName, target.Email, SystemRole.Chair), _actorId);
+            target.Id, new UserEdit(target.FullName, target.Email, BuiltInRoles.Chair), _actorId);
         await service.ChangeStatusAsync(target.Id, false, _actorId);
 
         Assert.Equal(2, _invariant.WriteCount);
@@ -563,7 +581,7 @@ public class UserServiceTests
             Assert.False(_invariant.IsInsideWrite, "Sessions were revoked while the lock was held.");
 
         var result = await NewService().UpdateAsync(
-            user.Id, new UserEdit(user.FullName, user.Email, SystemRole.Chair), _actorId);
+            user.Id, new UserEdit(user.FullName, user.Email, BuiltInRoles.Chair), _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Empty(_refreshTokens.ActiveTokens);
@@ -579,10 +597,10 @@ public class UserServiceTests
         _refreshTokens.OnRevokeAll = () => throw new InvalidOperationException("Redis khong phan hoi");
 
         var result = await NewService().UpdateAsync(
-            user.Id, new UserEdit(user.FullName, user.Email, SystemRole.Chair), _actorId);
+            user.Id, new UserEdit(user.FullName, user.Email, BuiltInRoles.Chair), _actorId);
 
         Assert.True(result.Succeeded);
-        Assert.Equal(SystemRole.Chair, user.Role);
+        Assert.Equal(BuiltInRoles.Chair, user.RoleId);
     }
 
     // ------------------------------------------- UC-07 · Deactivate / reactivate user account
@@ -649,7 +667,7 @@ public class UserServiceTests
     [Fact]
     public async Task Status_change_is_refused_when_an_administrator_aims_at_their_own_account()
     {
-        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", SystemRole.Admin);
+        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", BuiltInRoles.Admin);
 
         var result = await NewService().ChangeStatusAsync(admin.Id, isActive: false, admin.Id);
 
@@ -666,8 +684,8 @@ public class UserServiceTests
         // B deactivates A; A's access token still carries AdminUsers until it expires, so A's
         // next request is authorized and would have deactivated B — leaving nobody able to sign
         // in and administer, recoverable only from a database console.
-        var a = GivenUser("Quản Trị A", "a@trustcabinet.local", SystemRole.Admin);
-        var b = GivenUser("Quản Trị B", "b@trustcabinet.local", SystemRole.Admin);
+        var a = GivenUser("Quản Trị A", "a@trustcabinet.local", BuiltInRoles.Admin);
+        var b = GivenUser("Quản Trị B", "b@trustcabinet.local", BuiltInRoles.Admin);
         var service = NewService();
 
         var first = await service.ChangeStatusAsync(a.Id, isActive: false, b.Id);
@@ -677,13 +695,13 @@ public class UserServiceTests
         // The second one is refused: A is now inactive, so B is the last one left.
         Assert.Equal(UserOutcome.StatusChangeNotAllowed, second.Outcome);
         Assert.True(b.IsActive);
-        Assert.Equal(1, _users.Users.Count(u => u.Role == SystemRole.Admin && u.IsActive));
+        Assert.Equal(1, _users.Users.Count(u => u.RoleId == BuiltInRoles.Admin && u.IsActive));
     }
 
     [Fact]
     public async Task Deactivating_the_last_administrator_is_refused()
     {
-        var only = GivenUser("Quản Trị Duy Nhất", "quantri@trustcabinet.local", SystemRole.Admin);
+        var only = GivenUser("Quản Trị Duy Nhất", "quantri@trustcabinet.local", BuiltInRoles.Admin);
 
         var result = await NewService().ChangeStatusAsync(only.Id, isActive: false, _actorId);
 
@@ -693,11 +711,83 @@ public class UserServiceTests
     }
 
     [Fact]
+    public async Task A_custom_role_holding_admin_users_counts_toward_the_last_administrator_rule()
+    {
+        // SCRUM-63's regression case: the invariant counts accounts whose role carries AdminUsers,
+        // whichever role that is. Somebody active in a role an administrator created, with
+        // AdminUsers granted, is an administrator — so the built-in Admin may be deactivated.
+        var board = new Role { Name = "Ban quản trị" };
+        _users.WithRole(board, Capability.AdminUsers);
+
+        var oldAdmin = GivenUser("Quản Trị Cũ", "quantricu@trustcabinet.local", BuiltInRoles.Admin);
+        var newAdmin = GivenUser("Quản Trị Mới", "quantrimoi@trustcabinet.local", board.Id);
+
+        var result = await NewService().ChangeStatusAsync(oldAdmin.Id, isActive: false, _actorId);
+
+        Assert.True(result.Succeeded);
+
+        // And now the member of the custom role is the last one standing.
+        var last = await NewService().ChangeStatusAsync(newAdmin.Id, isActive: false, _actorId);
+
+        Assert.Equal(UserOutcome.StatusChangeNotAllowed, last.Outcome);
+        Assert.True(newAdmin.IsActive);
+    }
+
+    [Fact]
+    public async Task Moving_the_last_administrator_into_a_custom_role_without_admin_users_is_refused()
+    {
+        var plain = new Role { Name = "Thư ký phó" };
+        _users.WithRole(plain, Capability.MinutesEditor);
+        var only = GivenUser("Quản Trị Duy Nhất", "quantri@trustcabinet.local", BuiltInRoles.Admin);
+
+        var result = await NewService().UpdateAsync(
+            only.Id, new UserEdit(only.FullName, only.Email, plain.Id), _actorId);
+
+        Assert.Equal(UserOutcome.StatusChangeNotAllowed, result.Outcome);
+        Assert.Equal(BuiltInRoles.Admin, only.RoleId);
+    }
+
+    [Fact]
+    public async Task Update_answers_with_the_new_role_name_and_records_it()
+    {
+        var user = GivenUser(role: BuiltInRoles.Member);
+
+        var result = await NewService().UpdateAsync(
+            user.Id, new UserEdit(user.FullName, user.Email, BuiltInRoles.Secretary), _actorId);
+
+        Assert.Equal("Thư ký", result.Account!.RoleName);
+
+        // The audit keeps both the id and the name: a role can be renamed or deleted later.
+        var details = System.Text.Json.JsonSerializer.Serialize(Assert.Single(_audit.Records).Details);
+        using var parsed = System.Text.Json.JsonDocument.Parse(details);
+        Assert.Equal(
+            "Thành viên", parsed.RootElement.GetProperty("Before").GetProperty("Role").GetString());
+        Assert.Equal(
+            "Thư ký", parsed.RootElement.GetProperty("After").GetProperty("Role").GetString());
+        Assert.Equal(
+            BuiltInRoles.Secretary,
+            parsed.RootElement.GetProperty("After").GetProperty("RoleId").GetGuid());
+    }
+
+    [Fact]
+    public async Task Update_answers_MSG09_for_a_role_that_has_been_deleted()
+    {
+        var user = GivenUser();
+
+        var result = await NewService().UpdateAsync(
+            user.Id, new UserEdit(user.FullName, user.Email, Guid.CreateVersion7()), _actorId);
+
+        Assert.Equal(UserOutcome.InvalidInformation, result.Outcome);
+        Assert.Contains("roleId", result.Errors!.Keys);
+        Assert.Equal(BuiltInRoles.Member, user.RoleId);
+    }
+
+    [Fact]
     public async Task Deactivating_a_non_administrator_is_allowed_even_when_one_admin_exists()
     {
         // The rule guards the capability, not every account: an ordinary member carries no
         // AdminUsers, so deactivating them can never remove the last administrator.
-        var member = GivenUser(role: SystemRole.Member);
+        var member = GivenUser(role: BuiltInRoles.Member);
 
         var result = await NewService().ChangeStatusAsync(member.Id, isActive: false, _actorId);
 

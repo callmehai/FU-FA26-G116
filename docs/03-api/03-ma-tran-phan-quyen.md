@@ -15,7 +15,8 @@ Sequence diagram chia bốn participant: `Role & Permission Management Page` →
 | `:Audit Service` | [`backend/TrustCabinet.Infrastructure/Audit/AuditService.cs`](../../backend/TrustCabinet.Infrastructure/Audit/AuditService.cs) |
 | `Database` | bảng `role_capabilities` và `audit_log` |
 
-Class diagram: [`feature-03-role-permission-management-class-diagram.drawio.png`](../07-classdiagram/feature-03-role-permission-management-class-diagram.drawio.png).
+Class diagram: [`feature-03-role-management-class-diagram.png`](../07-classdiagram/feature-03-role-management-class-diagram.png).
+Tạo / đổi tên / xoá vai trò (`SCRUM-63`): [04-quan-ly-vai-tro.md](04-quan-ly-vai-tro.md).
 
 ---
 
@@ -45,8 +46,20 @@ Trả về cả **cột** (danh mục quyền) và **dòng** (quyền của từ
     }
   ],
   "roles": [
-    { "role": "Admin", "capabilities": ["AdminUsers"], "isBuiltIn": true },
-    { "role": "Member", "capabilities": [], "isBuiltIn": true }
+    {
+      "id": "01a0ce78-7204-7558-b181-e908a08e83a3",
+      "name": "Thành viên",
+      "description": "Dự họp, đọc tài liệu và biểu quyết.",
+      "isBuiltIn": true,
+      "capabilities": []
+    },
+    {
+      "id": "01a0ce78-7205-7486-b976-d52d428d5451",
+      "name": "Quản trị viên",
+      "description": "Quản lý tài khoản người dùng và phân quyền.",
+      "isBuiltIn": true,
+      "capabilities": ["AdminUsers"]
+    }
   ]
 }
 ```
@@ -54,14 +67,17 @@ Trả về cả **cột** (danh mục quyền) và **dòng** (quyền của từ
 Hai điểm FE cần lưu ý:
 
 - **Mọi vai trò đều xuất hiện**, kể cả vai trò không có quyền nào (`Member`). Dòng rỗng khác với
-  dòng thiếu.
+  dòng thiếu. Thứ tự cố định: bốn vai trò mặc định (`Chair`, `Secretary`, `Member`, `Admin`) rồi vai
+  trò tự tạo theo thời gian tạo — cùng thứ tự với `GET /api/roles`.
+- **Vai trò định danh bằng `id` (Guid)** từ `SCRUM-63` ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)).
+  Tên hiển thị lấy từ `name`, không còn bảng nhãn ở FE.
 - **Nhãn cột lấy từ backend**, không hardcode ở FE. Thêm một quyền vào enum mà FE giữ bảng nhãn
   riêng thì cột đó ra màn hình trống trơn.
 
 ### `PUT /api/roles/capabilities`
 
 ```json
-{ "role": "Secretary", "capabilities": ["MeetingCreator", "MinutesEditor"] }
+{ "roleId": "01a0ce78-7203-7c7f-8326-7a0baebf4c22", "capabilities": ["MeetingCreator", "MinutesEditor"] }
 ```
 
 **`capabilities` là trạng thái cuối cùng của vai trò, không phải phần thay đổi.** Gửi đủ mọi quyền
@@ -95,7 +111,7 @@ Thành công trả `200` kèm ma trận mới, nên màn hình không cần gọ
 
 | Key | Nguyên nhân | Message mẫu |
 |---|---|---|
-| `role` | Tên vai trò không có trong enum | `Vai trò không hợp lệ.` |
+| `roleId` | Không có vai trò nào mang id này (thiếu, không phải Guid, hoặc đã bị xoá) | `Vai trò không hợp lệ.` |
 | `capabilities` | Có mã quyền không tồn tại, hoặc thiếu hẳn field `capabilities` | `Quyền không hợp lệ: DeleteEverything.` — **có nêu tên mã sai**, kể cả khi sai nhiều mã |
 | `adminUsers` | Vi phạm luật chống tự khoá bên dưới | `Không thể lưu cấu hình này: sau khi lưu sẽ không còn tài khoản đang hoạt động nào giữ quyền quản trị người dùng…` |
 
@@ -116,8 +132,8 @@ Nên backend từ chối request nào dẫn tới trạng thái đó, với `MSG
 từng sai ở bản đầu: kiểm "còn vai trò nào giữ `AdminUsers` không" **không đủ**. Hai request hợp lệ
 là khoá được hệ thống:
 
-1. `PUT {"role":"Member","capabilities":["AdminUsers"]}` — hợp lệ, `Member` giữ `AdminUsers`
-2. `PUT {"role":"Admin","capabilities":[]}` — kiểm theo vai trò sẽ **cho qua**, vì `Member` đang giữ
+1. `PUT {"roleId":"<Member>","capabilities":["AdminUsers"]}` — hợp lệ, `Member` giữ `AdminUsers`
+2. `PUT {"roleId":"<Admin>","capabilities":[]}` — kiểm theo vai trò sẽ **cho qua**, vì `Member` đang giữ
 
 Nếu không tài khoản nào mang vai trò `Member` thì xong: quyền nằm ở một vai trò không ai có, không
 ai quản trị được nữa. Nên luật đếm **số tài khoản đang hoạt động** sẽ giữ `AdminUsers` sau khi
@@ -232,9 +248,9 @@ Mỗi lần đổi thành công ghi một dòng vào `audit_log`:
 |---|---|
 | `action` | `role.permissions.updated` |
 | `object_type` | `Role` |
-| `object_id` | `null` — vai trò là giá trị enum, không phải `Guid`; tên vai trò nằm trong `details` |
+| `object_id` | Id vai trò (từ `SCRUM-63`; trước đó là `null` vì vai trò còn là enum) |
 | `actor_id` | Quản trị viên thực hiện, lấy từ token đã xác thực |
-| `details` | `{ "Role": "...", "Before": [...], "After": [...] }` |
+| `details` | `{ "Name": "...", "Before": [...], "After": [...] }` — `Name` là tên vai trò **lúc đó**, vì tên đổi được |
 
 Có đủ **giá trị trước và sau**, theo đúng tiêu chí nghiệm thu.
 
@@ -327,19 +343,10 @@ bản vẽ 02.
 
 Bản vẽ vẽ `Role` là `<<entity>>` với `roleId: UUID`, `roleName`, `description`, `isBuiltIn`.
 
-Code dùng enum `SystemRole` bốn giá trị (`Chair`, `Secretary`, `Member`, `Admin`) theo
-[ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md) — không có bảng `roles`, không thêm
-được vai trò mới mà không deploy.
-
-`isBuiltIn` vẫn có trên API (luôn `true`) vì bản vẽ yêu cầu và vì màn hình cần lý do để hiển thị
-tên vai trò dạng chữ cố định thay vì ô sửa được.
-
-**→ Đề nghị BA:** tương tự mục 1 — ghi rõ `Role` là enum, hoặc thêm ghi chú
-`<<enum, không phải bảng>>`.
-
-> **Rút lại đề nghị này — BA đừng sửa bản vẽ.** [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)
-> (đề xuất, `SCRUM-63`) chuyển vai trò thành bảng `roles` khoá `Guid` — tức là code sẽ khớp với bản
-> vẽ `Role` là entity, chứ không phải ngược lại. ADR-0004 dẫn ở trên không nói gì về vai trò.
+> **Đã giải quyết — code giờ khớp bản vẽ.** Trước `SCRUM-63` code dùng enum `SystemRole`; từ
+> [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md) vai trò là bảng `roles` khoá `Guid` với
+> `name`, `description`, `isBuiltIn` — đúng `<<entity>> Role` của bản vẽ. BA không cần sửa gì ở
+> mục này.
 
 ### 4. UC-10 có thêm nhánh "không đổi gì"
 

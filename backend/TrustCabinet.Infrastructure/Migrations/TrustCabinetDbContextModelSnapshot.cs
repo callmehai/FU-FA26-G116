@@ -1149,19 +1149,58 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.ToTable("recordings", (string)null);
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.Role", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsBuiltIn")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_built_in");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("citext")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_roles");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_roles_name");
+
+                    b.ToTable("roles", (string)null);
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.RoleCapability", b =>
                 {
-                    b.Property<string>("Role")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("role");
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("role_id");
 
                     b.Property<string>("Capability")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")
                         .HasColumnName("capability");
 
-                    b.HasKey("Role", "Capability")
+                    b.HasKey("RoleId", "Capability")
                         .HasName("pk_role_capabilities");
 
                     b.ToTable("role_capabilities", (string)null);
@@ -1400,11 +1439,9 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(512)")
                         .HasColumnName("password_hash");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("role");
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("role_id");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1421,6 +1458,9 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_users_google_subject_id")
                         .HasFilter("google_subject_id IS NOT NULL");
+
+                    b.HasIndex("RoleId")
+                        .HasDatabaseName("ix_users_role_id");
 
                     b.ToTable("users", null, t =>
                         {
@@ -2049,6 +2089,16 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("Meeting");
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.RoleCapability", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_role_capabilities_roles_role_id");
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.SpeakingRequest", b =>
                 {
                     b.HasOne("TrustCabinet.Domain.Entities.AgendaItem", "AgendaItem")
@@ -2116,6 +2166,18 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("SpeakerUser");
 
                     b.Navigation("Transcript");
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.User", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_users_roles_role_id");
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.VoteChoice", b =>

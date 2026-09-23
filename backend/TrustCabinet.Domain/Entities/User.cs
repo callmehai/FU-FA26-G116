@@ -1,5 +1,5 @@
+using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities.Common;
-using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Domain.Entities;
 
@@ -37,7 +37,20 @@ public class User : Entity
     /// </summary>
     public string? GoogleSubjectId { get; set; }
 
-    public SystemRole Role { get; set; } = SystemRole.Member;
+    /// <summary>
+    /// The account's role — a row of <c>roles</c> since ADR-0008. What it allows is read from
+    /// <c>role_capabilities</c>, never decided by comparing this id in business code.
+    ///
+    /// The foreign key is <c>ON DELETE RESTRICT</c>: a role somebody still holds cannot be deleted,
+    /// whatever the service checked beforehand.
+    /// </summary>
+    public Guid RoleId { get; set; } = BuiltInRoles.Member;
+
+    /// <summary>
+    /// The role row, for its name. Loaded only where a repository includes it — null otherwise,
+    /// which is why it is nullable while <see cref="RoleId"/> is not.
+    /// </summary>
+    public Role? Role { get; set; }
 
     /// <summary>
     /// Deactivated, never deleted (SCRUM-13). Someone who left the organisation still appears as

@@ -53,9 +53,21 @@ public static class AuditActions
     /// </summary>
     public const string RolePermissionsUpdated = "role.permissions.updated";
 
+    /// <summary>UC-11 — an administrator created a role (SCRUM-63).</summary>
+    public const string RoleCreated = "role.created";
+
+    /// <summary>UC-12 — an administrator renamed a role or changed its description.</summary>
+    public const string RoleUpdated = "role.updated";
+
     /// <summary>
-    /// What <c>AuditLogEntry.ObjectType</c> carries for the above. The row's <c>ObjectId</c> is
-    /// null: a role is an enum value, not a Guid, so the role name travels in the details.
+    /// UC-13 — an administrator deleted a role. Its name and capabilities travel in the details,
+    /// because the cascade has removed both from the database by the time anyone reads this row.
+    /// </summary>
+    public const string RoleDeleted = "role.deleted";
+
+    /// <summary>
+    /// What <c>AuditLogEntry.ObjectType</c> carries for every role action above. The row's
+    /// <c>ObjectId</c> is the role's id — roles are rows since ADR-0008.
     /// </summary>
     public const string RoleObjectType = "Role";
 }

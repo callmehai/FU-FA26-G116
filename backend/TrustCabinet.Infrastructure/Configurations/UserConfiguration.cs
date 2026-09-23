@@ -34,6 +34,13 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             "ck_users_has_a_way_to_sign_in",
             "password_hash IS NOT NULL OR google_subject_id IS NOT NULL"));
 
-        builder.Property(u => u.Role).HasConversion<string>().HasMaxLength(32).IsRequired();
+        // RESTRICT: the last line of "only a role nobody holds can be deleted". The service checks
+        // first, but an account assigned to the role between that check and the delete would
+        // otherwise be left pointing at nothing — the database refuses instead (23503), and the
+        // service answers MSG25.
+        builder.HasOne(u => u.Role)
+            .WithMany()
+            .HasForeignKey(u => u.RoleId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

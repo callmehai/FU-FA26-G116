@@ -90,7 +90,7 @@ public class UserEndpointsTests : IDisposable
     private User GivenUser(
         string fullName = "Lê Thành Viên",
         string email = "thanhvien@trustcabinet.local",
-        SystemRole role = SystemRole.Member,
+        Guid? role = null,
         bool isActive = true)
     {
         var user = new User
@@ -98,7 +98,7 @@ public class UserEndpointsTests : IDisposable
             FullName = fullName,
             Email = email,
             PasswordHash = new FakePasswordHasher().Hash(ValidPassword),
-            Role = role,
+            RoleId = role ?? BuiltInRoles.Member,
             IsActive = isActive,
         };
 
@@ -109,7 +109,7 @@ public class UserEndpointsTests : IDisposable
     /// <summary>The signed-in administrator these tests act as.</summary>
     private HttpClient AdminClient()
         => _factory.ClientFor(
-            GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", SystemRole.Admin),
+            GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", BuiltInRoles.Admin),
             Capability.AdminUsers);
 
     private static async Task<JsonElement> JsonOf(HttpResponseMessage response)
@@ -133,7 +133,7 @@ public class UserEndpointsTests : IDisposable
         // The acceptance criterion: only admin_users reaches these endpoints. A Secretary is
         // signed in and carries a real token — it just does not carry this capability.
         var client = _factory.ClientFor(
-            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", SystemRole.Secretary),
+            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary),
             Capability.MeetingCreator);
 
         var response = await client.SendAsync(new HttpRequestMessage(new HttpMethod(method), path));
@@ -148,7 +148,7 @@ public class UserEndpointsTests : IDisposable
     {
         var target = GivenUser();
         var client = _factory.ClientFor(
-            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", SystemRole.Secretary),
+            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary),
             Capability.MeetingCreator);
 
         var response = await client.SendAsync(new HttpRequestMessage(
@@ -165,7 +165,7 @@ public class UserEndpointsTests : IDisposable
     [Fact]
     public async Task List_returns_the_accounts_sorted_and_without_secrets()
     {
-        GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", SystemRole.Secretary);
+        GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary);
         var client = AdminClient();
 
         var response = await client.GetAsync("/api/users");
@@ -177,8 +177,11 @@ public class UserEndpointsTests : IDisposable
 
         Assert.Equal(2, accounts.GetArrayLength());
         Assert.Equal("Nguyễn Thư Ký", accounts[0].GetProperty("fullName").GetString());
-        // The role reads back as the enum name, which is what the frontend note warns about.
-        Assert.Equal("Secretary", accounts[0].GetProperty("role").GetString());
+        // The role reads back as its id and its current name (ADR-0008) — no enum string for the
+        // frontend to translate.
+        Assert.Equal(BuiltInRoles.Secretary.ToString(), accounts[0].GetProperty("roleId").GetString());
+        Assert.Equal("Thư ký", accounts[0].GetProperty("roleName").GetString());
+        Assert.False(accounts[0].TryGetProperty("role", out _));
         Assert.True(accounts[0].GetProperty("isActive").GetBoolean());
 
         // Nothing credential-shaped on the wire, whatever a later refactor adds to the response.
@@ -213,7 +216,7 @@ public class UserEndpointsTests : IDisposable
             fullName = "Trần Chủ Toạ",
             email = "chutoa@trustcabinet.local",
             password = ValidPassword,
-            role = "Chair",
+            roleId = BuiltInRoles.Chair,
         });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -234,7 +237,7 @@ public class UserEndpointsTests : IDisposable
     {
         // The actor comes from the token, never from the body — an actor id a caller can choose is
         // not evidence of anything.
-        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", SystemRole.Admin);
+        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", BuiltInRoles.Admin);
         var client = _factory.ClientFor(admin, Capability.AdminUsers);
 
         await client.PostAsJsonAsync("/api/users", new
@@ -242,7 +245,7 @@ public class UserEndpointsTests : IDisposable
             fullName = "Trần Chủ Toạ",
             email = "chutoa@trustcabinet.local",
             password = ValidPassword,
-            role = "Chair",
+            roleId = BuiltInRoles.Chair,
         });
 
         Assert.Equal(admin.Id, Assert.Single(_factory.Audit.Records).ActorId);
@@ -259,7 +262,7 @@ public class UserEndpointsTests : IDisposable
             fullName = "Tên khác",
             email = "trungnhau@trustcabinet.local",
             password = ValidPassword,
-            role = "Member",
+            roleId = BuiltInRoles.Member,
         });
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -276,7 +279,7 @@ public class UserEndpointsTests : IDisposable
             fullName = "",
             email = "khong-phai-email",
             password = "ngan",
-            role = "Member",
+            roleId = BuiltInRoles.Member,
         });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -288,8 +291,11 @@ public class UserEndpointsTests : IDisposable
             errors.EnumerateObject().Select(p => p.Name).OrderBy(n => n));
     }
 
-    [Fact]
-    public async Task Create_answers_400_for_a_role_the_enum_does_not_know()
+    [Theory]
+    [InlineData("01990000-0000-7000-8000-000000000000")] // a well-formed id no role has
+    [InlineData("Chair")]                                 // the old contract's enum name
+    [InlineData(null)]
+    public async Task Create_answers_MSG09_on_roleId_for_a_role_that_does_not_exist(string? roleId)
     {
         var client = AdminClient();
 
@@ -298,19 +304,22 @@ public class UserEndpointsTests : IDisposable
             fullName = "Tên hợp lệ",
             email = "hople@trustcabinet.local",
             password = ValidPassword,
-            role = "SuperAdmin",
+            roleId,
         });
 
-        // A validation message, not a model-binding 400 with no field named.
+        // A validation message on the field, not a model-binding 400 with no field named.
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.True((await JsonOf(response)).GetProperty("errors").TryGetProperty("role", out _));
+
+        var json = await JsonOf(response);
+        Assert.Equal("MSG09", json.GetProperty("code").GetString());
+        Assert.Equal(
+            "Vai trò không tồn tại.",
+            json.GetProperty("errors").GetProperty("roleId").GetString());
     }
 
     [Fact]
-    public async Task Create_accepts_a_role_in_any_casing()
+    public async Task Create_answers_with_the_role_id_and_name()
     {
-        // JSON casing conventions differ between the two ends; "chair" must not be a validation
-        // error.
         var client = AdminClient();
 
         var response = await client.PostAsJsonAsync("/api/users", new
@@ -318,13 +327,14 @@ public class UserEndpointsTests : IDisposable
             fullName = "Trần Chủ Toạ",
             email = "chutoa@trustcabinet.local",
             password = ValidPassword,
-            role = "chair",
+            roleId = BuiltInRoles.Chair,
         });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        Assert.Equal(
-            "Chair",
-            (await JsonOf(response)).GetProperty("user").GetProperty("role").GetString());
+
+        var user = (await JsonOf(response)).GetProperty("user");
+        Assert.Equal(BuiltInRoles.Chair.ToString(), user.GetProperty("roleId").GetString());
+        Assert.Equal("Chủ toạ", user.GetProperty("roleName").GetString());
     }
 
     // --------------------------------------------------------- UC-06 · PUT /api/users/{id}
@@ -339,7 +349,7 @@ public class UserEndpointsTests : IDisposable
         {
             fullName = "Tên Mới",
             email = "moi@trustcabinet.local",
-            role = "Secretary",
+            roleId = BuiltInRoles.Secretary,
         });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -359,7 +369,7 @@ public class UserEndpointsTests : IDisposable
         {
             fullName = "Tên hợp lệ",
             email = "hople@trustcabinet.local",
-            role = "Member",
+            roleId = BuiltInRoles.Member,
         });
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -377,7 +387,7 @@ public class UserEndpointsTests : IDisposable
         {
             fullName = target.FullName,
             email = target.Email,
-            role = "Member",
+            roleId = BuiltInRoles.Member,
             isActive = false,
         });
 
@@ -437,7 +447,7 @@ public class UserEndpointsTests : IDisposable
     [Fact]
     public async Task An_administrator_cannot_deactivate_themselves_over_http()
     {
-        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", SystemRole.Admin);
+        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", BuiltInRoles.Admin);
         var client = _factory.ClientFor(admin, Capability.AdminUsers);
 
         var response = await client.PutAsJsonAsync(
@@ -454,7 +464,7 @@ public class UserEndpointsTests : IDisposable
         // AdminUsers — revoking refresh tokens does not touch it. Without a server-side re-read
         // this caller keeps full power over every account until the token expires, long enough
         // to deactivate whoever deactivated them or to mint a fresh admin account.
-        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", SystemRole.Admin);
+        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", BuiltInRoles.Admin);
         var client = _factory.ClientFor(admin, Capability.AdminUsers);
         var target = GivenUser();
 
@@ -473,10 +483,10 @@ public class UserEndpointsTests : IDisposable
     {
         // Same idea for a demotion rather than a deactivation: the token still says AdminUsers,
         // the database no longer agrees, and the database wins.
-        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", SystemRole.Admin);
+        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", BuiltInRoles.Admin);
         var client = _factory.ClientFor(admin, Capability.AdminUsers);
 
-        admin.Role = SystemRole.Member;
+        admin.RoleId = BuiltInRoles.Member;
 
         var response = await client.GetAsync("/api/users");
 

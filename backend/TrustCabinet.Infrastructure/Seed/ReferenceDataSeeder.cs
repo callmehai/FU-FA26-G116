@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Domain.Access;
 
 namespace TrustCabinet.Infrastructure.Seed;
 
@@ -33,15 +34,33 @@ namespace TrustCabinet.Infrastructure.Seed;
 public static class ReferenceDataSeeder
 {
     /// <summary>
-    /// Inserts the default matrix only when <c>role_capabilities</c> is completely empty.
+    /// Inserts whichever built-in role is missing, then the default matrix — but the matrix only
+    /// when <c>role_capabilities</c> is completely empty. Roles first: the matrix references them.
     ///
-    /// All-or-nothing on purpose. Filling in individually missing rows would be indistinguishable
-    /// from an administrator deliberately revoking them, so every restart would silently undo
-    /// their work — the exact failure this seeder was written to avoid. An empty table only
-    /// happens on a database that has never been seeded.
+    /// Roles are filled in one by one, by id, and an existing row is never updated. A built-in role
+    /// cannot be deleted through the application, so a missing one is a gap rather than a decision
+    /// anybody made, while its name and description are left as the database has them.
+    ///
+    /// The matrix is all-or-nothing on purpose. Filling in individually missing rows would be
+    /// indistinguishable from an administrator deliberately revoking them, so every restart would
+    /// silently undo their work — the exact failure this seeder was written to avoid. An empty
+    /// table only happens on a database that has never been seeded.
     /// </summary>
     public static async Task SeedAsync(TrustCabinetDbContext db, CancellationToken ct = default)
     {
+        var present = await db.Roles
+            .Where(r => BuiltInRoles.All.Contains(r.Id))
+            .Select(r => r.Id)
+            .ToArrayAsync(ct);
+
+        var missing = ReferenceData.Roles().Where(r => !present.Contains(r.Id)).ToArray();
+
+        if (missing.Length > 0)
+        {
+            db.Roles.AddRange(missing);
+            await db.SaveChangesAsync(ct);
+        }
+
         if (await db.RoleCapabilities.AnyAsync(ct))
         {
             return;
