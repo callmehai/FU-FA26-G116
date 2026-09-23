@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
 using TrustCabinet.Infrastructure.Authentication;
 
@@ -82,7 +81,7 @@ public static class UserEndpoints
         CancellationToken ct)
     {
         var result = await users.CreateAsync(
-            new NewUser(request.FullName, request.Email, request.Password, ParseRole(request.Role)),
+            new NewUser(request.FullName, request.Email, request.Password, ParseRoleId(request.RoleId)),
             RevalidatedUserId(principal),
             ct);
 
@@ -110,7 +109,7 @@ public static class UserEndpoints
     {
         var result = await users.UpdateAsync(
             id,
-            new UserEdit(request.FullName, request.Email, ParseRole(request.Role)),
+            new UserEdit(request.FullName, request.Email, ParseRoleId(request.RoleId)),
             RevalidatedUserId(principal),
             ct);
 
@@ -196,24 +195,21 @@ public static class UserEndpoints
         => AdminCallerRevalidation.RevalidatedUserId(principal);
 
     /// <summary>
-    /// The role as a string, so an unknown value is a validation error rather than a 400 from the
-    /// model binder — the diagram wants "Display invalid fields", not a failed request body.
-    /// Case-insensitive because JSON casing conventions differ between the two ends.
+    /// The role id as a string, so an unreadable value is a validation error rather than a 400 from
+    /// the model binder — the diagram wants "Display invalid fields", not a failed request body.
+    /// Missing or unreadable becomes <see cref="Guid.Empty"/>, which no role has, so it lands on
+    /// the service's "Vai trò không tồn tại".
     /// </summary>
-    private static SystemRole ParseRole(string? role)
-        => Enum.TryParse<SystemRole>(role, ignoreCase: true, out var parsed)
-            ? parsed
-            // Cast to an undefined value on purpose: UserService.Validate rejects anything
-            // Enum.IsDefined does not know, so this lands on "Vai trò không hợp lệ".
-            : (SystemRole)(-1);
+    private static Guid ParseRoleId(string? roleId)
+        => Guid.TryParse(roleId, out var parsed) ? parsed : Guid.Empty;
 }
 
 /// <summary>UC-05's form. Nullable so a missing field is a field-level message, not a 400.</summary>
 public sealed record CreateUserRequest(
-    string? FullName, string? Email, string? Password, string? Role);
+    string? FullName, string? Email, string? Password, string? RoleId);
 
 /// <summary>UC-06's form. No password — changing one is UC-08.</summary>
-public sealed record UpdateUserRequest(string? FullName, string? Email, string? Role);
+public sealed record UpdateUserRequest(string? FullName, string? Email, string? RoleId);
 
 /// <summary>
 /// UC-07's action. True reactivates, false deactivates.
@@ -234,7 +230,8 @@ public sealed record UserResponse(
     string Id,
     string FullName,
     string Email,
-    string Role,
+    string RoleId,
+    string RoleName,
     bool IsActive,
     bool HasPassword,
     bool HasGoogleLink,
@@ -244,7 +241,8 @@ public sealed record UserResponse(
         account.Id.ToString(),
         account.FullName,
         account.Email,
-        account.Role.ToString(),
+        account.RoleId.ToString(),
+        account.RoleName,
         account.IsActive,
         account.HasPassword,
         account.HasGoogleLink,

@@ -54,14 +54,15 @@ public sealed partial class UserService(
 
         // Branch 1 — invalid information. Every field is checked before answering, so the form
         // shows all of its errors at once instead of one per round trip.
-        var errors = Validate(fullName, email, request.Role);
+        var errors = Validate(fullName, email);
+        var role = await FindRoleAsync(request.RoleId, errors, ct);
 
         if (password.Length < MinimumPasswordLength)
         {
             errors["password"] = $"Mật khẩu phải có ít nhất {MinimumPasswordLength} ký tự.";
         }
 
-        if (errors.Count > 0)
+        if (role is null || errors.Count > 0)
         {
             return UserResult.Invalid(errors);
         }
@@ -81,7 +82,8 @@ public sealed partial class UserService(
             FullName = fullName,
             Email = email,
             PasswordHash = passwordHasher.Hash(password),
-            Role = request.Role,
+            RoleId = role.Id,
+            Role = role,
             IsActive = true,
         };
 
@@ -99,6 +101,14 @@ public sealed partial class UserService(
             logger.LogInformation("Create rejected: email already taken (unique index).");
             return UserResult.Failure(UserOutcome.DuplicateEmail);
         }
+        catch (Exception ex) when (IsForeignKeyViolation(ex))
+        {
+            // The role was deleted between FindRoleAsync above and this insert — creating an
+            // account does not take the guard. role_id is the only foreign key this insert sets, so
+            // the answer is the one FindRoleAsync gives for a role that is gone.
+            logger.LogInformation("Create rejected: the chosen role was deleted meanwhile.");
+            return UserResult.Invalid(new Dictionary<string, string> { ["roleId"] = RoleNotFound });
+        }
 
         await audit.RecordAsync(
             AuditActions.UserCreated,
@@ -107,7 +117,7 @@ public sealed partial class UserService(
             actorId,
             // The password is not in here, hashed or otherwise. The audit log is read by more
             // people than the users table and is never deleted.
-            new { user.Email, user.FullName, Role = user.Role.ToString() },
+            new { user.Email, user.FullName, user.RoleId, Role = role.Name },
             ct);
 
         logger.LogInformation("Account {UserId} created by {ActorId}.", user.Id, actorId);
@@ -137,9 +147,10 @@ public sealed partial class UserService(
         var fullName = request.FullName?.Trim() ?? "";
         var email = request.Email?.Trim() ?? "";
 
-        var errors = Validate(fullName, email, request.Role);
+        var errors = Validate(fullName, email);
+        var role = await FindRoleAsync(request.RoleId, errors, ct);
 
-        if (errors.Count > 0)
+        if (role is null || errors.Count > 0)
         {
             return UserResult.Invalid(errors);
         }
@@ -161,8 +172,8 @@ public sealed partial class UserService(
         //
         // Only when the role actually moves: editing a name or an email takes no capability away,
         // so the sole administrator must still be able to correct their own profile.
-        if (request.Role != user.Role
-            && await WouldRemoveTheLastAdministratorAsync(user, request.Role, ct))
+        if (role.Id != user.RoleId
+            && await WouldRemoveTheLastAdministratorAsync(user, role.Id, ct))
         {
             logger.LogWarning(
                 "Update rejected: changing the role of {UserId} would leave no active "
@@ -171,11 +182,14 @@ public sealed partial class UserService(
         }
 
         // Kept for the audit entry: "what did it use to be" is most of the value of the record.
-        var before = new { user.Email, user.FullName, Role = user.Role.ToString() };
+        // The role's name as well as its id: the evidence should read the way the administrator
+        // saw it, and a role can be renamed or deleted later.
+        var before = new { user.Email, user.FullName, user.RoleId, Role = user.Role?.Name };
 
         user.FullName = fullName;
         user.Email = email;
-        user.Role = request.Role;
+        user.RoleId = role.Id;
+        user.Role = role;
         user.UpdatedAt = DateTimeOffset.UtcNow;
 
         try
@@ -197,7 +211,7 @@ public sealed partial class UserService(
             AuditActions.UserObjectType,
             user.Id,
             actorId,
-            new { Before = before, After = new { user.Email, user.FullName, Role = user.Role.ToString() } },
+            new { Before = before, After = new { user.Email, user.FullName, user.RoleId, Role = role.Name } },
             ct);
 
         logger.LogInformation("Account {UserId} updated by {ActorId}.", user.Id, actorId);
@@ -214,7 +228,7 @@ public sealed partial class UserService(
         //
         // An email change is revoked too, not only a role change: the access token carries the
         // email claim, so /api/auth/me would keep answering with the old address until it expired.
-        var changed = before.Role != user.Role.ToString()
+        var changed = before.RoleId != user.RoleId
             || !string.Equals(before.Email, user.Email, StringComparison.Ordinal);
 
         return new Written(
@@ -265,7 +279,7 @@ public sealed partial class UserService(
         // administer — the access token of the one deactivated first still carries AdminUsers
         // until it expires, so their second request is authorized. The invariant is what has to
         // be enforced, not "am I aiming at myself?".
-        if (!isActive && await WouldRemoveTheLastAdministratorAsync(user, user.Role, ct))
+        if (!isActive && await WouldRemoveTheLastAdministratorAsync(user, user.RoleId, ct))
         {
             logger.LogWarning(
                 "Status change rejected: deactivating {UserId} would leave no active "
@@ -366,7 +380,7 @@ public sealed partial class UserService(
     /// Whether this change would leave the organisation with no active account able to
     /// administer users.
     ///
-    /// <paramref name="newRole"/> is the role the account would end up with — pass the unchanged
+    /// <paramref name="newRoleId"/> is the role the account would end up with — pass the unchanged
     /// role when deactivating, since there the account loses its capability by becoming inactive
     /// rather than by changing role.
     ///
@@ -374,7 +388,7 @@ public sealed partial class UserService(
     /// capability nobody has cannot remove the last holder of it.
     /// </summary>
     private async Task<bool> WouldRemoveTheLastAdministratorAsync(
-        User user, SystemRole newRole, CancellationToken ct)
+        User user, Guid newRoleId, CancellationToken ct)
     {
         // An inactive account administers nothing — it cannot sign in, and the count below only
         // ever counts active accounts. So no change to it can remove the last administrator.
@@ -389,7 +403,7 @@ public sealed partial class UserService(
             return false;
         }
 
-        var current = await users.GetCapabilitiesAsync(user.Role, ct);
+        var current = await users.GetCapabilitiesAsync(user.RoleId, ct);
 
         if (!current.Contains(Capability.AdminUsers))
         {
@@ -399,9 +413,9 @@ public sealed partial class UserService(
         // A role change that keeps the capability takes nothing away. Callers pass the unchanged
         // role when deactivating, where the capability is lost by the account going inactive
         // rather than by the role moving.
-        if (newRole != user.Role)
+        if (newRoleId != user.RoleId)
         {
-            var next = await users.GetCapabilitiesAsync(newRole, ct);
+            var next = await users.GetCapabilitiesAsync(newRoleId, ct);
 
             if (next.Contains(Capability.AdminUsers))
             {
@@ -417,7 +431,7 @@ public sealed partial class UserService(
     /// The fields UC-05 and UC-06 share. Returns field name → Vietnamese message, empty when
     /// everything is acceptable.
     /// </summary>
-    private static Dictionary<string, string> Validate(string fullName, string email, SystemRole role)
+    private static Dictionary<string, string> Validate(string fullName, string email)
     {
         var errors = new Dictionary<string, string>();
 
@@ -441,15 +455,25 @@ public sealed partial class UserService(
             errors["email"] = "Email không hợp lệ.";
         }
 
-        // A value outside the enum arrives as a cast integer when a caller posts a number the
-        // enum has no name for. Without this it would be stored and read back as a role nothing
-        // matches, which is a silent way to end up with an account that can do nothing.
-        if (!Enum.IsDefined(role))
+        return errors;
+    }
+
+    /// <summary>
+    /// The chosen role, or null with the reason added to <paramref name="errors"/>. A role is a row
+    /// an administrator can delete (ADR-0008), so a form opened before the delete can post an id
+    /// that is gone — MSG09 on the field, rather than the foreign key's 500.
+    /// </summary>
+    private async Task<Role?> FindRoleAsync(
+        Guid roleId, Dictionary<string, string> errors, CancellationToken ct)
+    {
+        var role = await users.FindRoleAsync(roleId, ct);
+
+        if (role is null)
         {
-            errors["role"] = "Vai trò không hợp lệ.";
+            errors["roleId"] = RoleNotFound;
         }
 
-        return errors;
+        return role;
     }
 
     /// <summary>
@@ -479,4 +503,10 @@ public sealed partial class UserService(
     /// </summary>
     private static bool IsDuplicateEmail(Exception exception)
         => exception is DbUpdateException { InnerException: PostgresException { SqlState: "23505" } };
+
+    /// <summary>SQLSTATE 23503 — matched on the code for the reason <see cref="IsDuplicateEmail"/> gives.</summary>
+    private static bool IsForeignKeyViolation(Exception exception)
+        => exception is DbUpdateException { InnerException: PostgresException { SqlState: "23503" } };
+
+    private const string RoleNotFound = "Vai trò không tồn tại.";
 }

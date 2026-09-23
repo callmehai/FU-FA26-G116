@@ -6,6 +6,10 @@ phân quyền, tập trung vào **những chỗ dễ làm sai mà lỗi lại tr
 Hợp đồng API đầy đủ: [03-ma-tran-phan-quyen.md](03-ma-tran-phan-quyen.md). File này không nhắc
 lại, chỉ nói phần FE.
 
+> **Đổi hợp đồng từ `SCRUM-63`:** vai trò định danh bằng **`roleId` (Guid)**, không còn chuỗi
+> `"Secretary"`. Mỗi dòng `roles[]` là `{ id, name, description, isBuiltIn, capabilities }`; body
+> `PUT` gửi `roleId`. Các ví dụ dưới đã cập nhật. Chi tiết: [04-quan-ly-vai-tro.md](04-quan-ly-vai-tro.md).
+
 Hai file đã dựng sẵn cho bạn, chưa ai import:
 
 - [`frontend/src/types/rolePermission.ts`](../../frontend/src/types/rolePermission.ts)
@@ -21,7 +25,7 @@ Màn hình hiện tại ở [`frontend/src/features/access/RolesPage.tsx`](../..
 `PUT /api/roles/capabilities` nhận:
 
 ```json
-{ "role": "Secretary", "capabilities": ["MeetingCreator", "MinutesEditor"] }
+{ "roleId": "01a0ce78-7203-7c7f-8326-7a0baebf4c22", "capabilities": ["MeetingCreator", "MinutesEditor"] }
 ```
 
 **Gửi đủ mọi quyền vai trò đó cần có SAU khi sửa**, kể cả những quyền nó đã có sẵn từ trước.
@@ -42,9 +46,9 @@ Nhưng **thiếu hẳn field** thì bị từ chối `400`:
 
 | Body gửi lên | Kết quả |
 |---|---|
-| `{"role":"Member","capabilities":[]}` | ✅ gỡ sạch quyền của Member |
-| `{"role":"Member"}` | ❌ `400` — thiếu `capabilities` |
-| `{"role":"Member","capability":[]}` | ❌ `400` — sai tên field |
+| `{"roleId":"<Member>","capabilities":[]}` | ✅ gỡ sạch quyền của Member |
+| `{"roleId":"<Member>"}` | ❌ `400` — thiếu `capabilities` |
+| `{"roleId":"<Member>","capability":[]}` | ❌ `400` — sai tên field |
 
 Cố ý như vậy: nếu field thiếu mà đọc thành mảng rỗng thì một request `{}` sẽ âm thầm gỡ sạch quyền
 của cả vai trò. Cùng một cái bẫy với `isActive` ở
@@ -87,7 +91,8 @@ nhưng cứ gửi PascalCase cho nhất quán.
 {
   "capabilities": [ { "code": "AdminUsers", "name": "Quản trị người dùng",
                       "description": "…", "functionalGroup": "Quản trị" } ],
-  "roles":        [ { "role": "Admin", "capabilities": ["AdminUsers"], "isBuiltIn": true } ]
+  "roles":        [ { "id": "01a0ce78-7205-…", "name": "Quản trị viên", "description": "…",
+                      "isBuiltIn": true, "capabilities": ["AdminUsers"] } ]
 }
 ```
 
@@ -188,14 +193,10 @@ quản trị khác, để người không có quyền thấy **404 giống hệt
 `Capability` là enum trong code — quản trị viên sửa **mapping**, không thêm quyền. Tiêu chí nghiệm
 thu ghi rõ *"Màn hình không được có nút Tạo quyền mới"*.
 
-Cũng không có "Tạo vai trò mới": `SystemRole` cũng là enum (ADR-0004). `isBuiltIn` trong response
-luôn `true` — dùng nó để hiện tên vai trò dạng chữ cố định, không phải ô sửa được.
-
-> **Sắp đổi — `SCRUM-63`.** ADR-0004 thật ra không nói gì về vai trò; chưa từng có quyết định nào
-> chốt "vai trò cố định". [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md) (đề xuất) chuyển
-> vai trò thành bảng `roles` và cho tạo / đổi tên / xoá; `role` trong response đổi thành `id` +
-> `name`. Thiết kế: [04-quan-ly-vai-tro.md](04-quan-ly-vai-tro.md). Đoạn trên đúng cho tới khi
-> `SCRUM-63` xong. `Capability` thì vẫn là enum — phần về quyền ở trên không đổi.
+**Vai trò thì tạo được** từ `SCRUM-63` ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)):
+`POST/PUT/DELETE /api/roles`, xem [04-quan-ly-vai-tro.md](04-quan-ly-vai-tro.md). `isBuiltIn = true`
+là một trong bốn vai trò mặc định — không đổi tên, không xoá được, nhưng **vẫn sửa quyền được** ở
+màn hình này. Vai trò tự tạo có `isBuiltIn = false`.
 
 Cũng **chưa có** chức năng "Khôi phục mặc định" (`resetRolePermissionsToDefault` trên class diagram
 là phần chưa làm, xem PHẦN F của [07-classdiagram/README.md](../07-classdiagram/README.md)). Đừng

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -73,7 +74,7 @@ public class AuthEndpointsTests : IDisposable
     }
 
     private HttpClient NewClient(
-        SystemRole role = SystemRole.Secretary,
+        Guid? role = null,
         bool isActive = true,
         Capability[]? capabilities = null)
     {
@@ -82,19 +83,19 @@ public class AuthEndpointsTests : IDisposable
             FullName = "Nguyễn Thư Ký",
             Email = Email,
             PasswordHash = new FakePasswordHasher().Hash(Password),
-            Role = role,
+            RoleId = role ?? BuiltInRoles.Secretary,
             IsActive = isActive,
         };
 
         _factory.Users
             .WithUser(user)
-            .WithCapabilities(role, capabilities ?? [Capability.MeetingCreator]);
+            .WithCapabilities(user.RoleId, capabilities ?? [Capability.MeetingCreator]);
 
         // The same instance in both fakes: sign-in resolves the caller through one, /api/auth/me
         // reads them back through the other.
         _factory.Accounts
             .WithUser(user)
-            .WithCapabilities(role, capabilities ?? [Capability.MeetingCreator]);
+            .WithCapabilities(user.RoleId, capabilities ?? [Capability.MeetingCreator]);
 
         return _factory.CreateClient();
     }
@@ -116,7 +117,9 @@ public class AuthEndpointsTests : IDisposable
         Assert.False(string.IsNullOrWhiteSpace(body.AccessToken));
         Assert.False(string.IsNullOrWhiteSpace(body.RefreshToken));
         Assert.Equal(Email, body.User.Email);
-        Assert.Equal("Secretary", body.User.Role);
+        // The role by id and by its current name (ADR-0008), never the old enum string.
+        Assert.Equal(BuiltInRoles.Secretary.ToString(), body.User.RoleId);
+        Assert.Equal("Thư ký", body.User.RoleName);
         Assert.Equal(["MeetingCreator"], body.User.Capabilities);
     }
 
@@ -160,14 +163,16 @@ public class AuthEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Login_answers_MSG04_when_the_role_grants_nothing()
+    public async Task Login_succeeds_when_the_role_grants_nothing()
     {
-        var client = NewClient(role: SystemRole.Chair, capabilities: []);
+        // MSG04 is gone (SCRUM-63): a role with no capabilities works like Member — attending,
+        // reading and voting need none — so its holders sign in rather than being locked out.
+        var client = NewClient(role: BuiltInRoles.Chair, capabilities: []);
 
         var response = await PostLogin(client, Email, Password);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        Assert.Equal("MSG04", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Empty((await response.Content.ReadFromJsonAsync<SignInBody>())!.User.Capabilities);
     }
 
     [Fact]
@@ -195,6 +200,8 @@ public class AuthEndpointsTests : IDisposable
 
         var me = await response.Content.ReadFromJsonAsync<CurrentUserBody>();
         Assert.Equal(Email, me!.Email);
+        Assert.Equal(BuiltInRoles.Secretary.ToString(), me.RoleId);
+        Assert.Equal("Thư ký", me.RoleName);
         Assert.Equal(["MeetingCreator"], me.Capabilities);
     }
 
@@ -283,7 +290,7 @@ public class AuthEndpointsTests : IDisposable
         string AccessToken, string RefreshToken, DateTimeOffset AccessTokenExpiresAt, CurrentUserBody User);
 
     private sealed record CurrentUserBody(
-        string Id, string Email, string FullName, string Role, string[] Capabilities);
+        string Id, string Email, string FullName, string RoleId, string RoleName, string[] Capabilities);
 
     private sealed record AuthErrorBody(string Code, string Message);
 }

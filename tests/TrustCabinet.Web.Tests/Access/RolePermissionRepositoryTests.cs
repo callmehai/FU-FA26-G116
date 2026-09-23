@@ -62,14 +62,14 @@ public class RolePermissionRepositoryTests : IAsyncLifetime
         await _db.DisposeAsync();
     }
 
-    private async Task<User> AddActiveUserAsync(SystemRole role)
+    private async Task<User> AddActiveUserAsync(Guid role)
     {
         var user = new User
         {
             FullName = "Người Dùng",
             Email = $"{Guid.CreateVersion7():N}@trustcabinet.local",
             PasswordHash = "hash",
-            Role = role,
+            RoleId = role,
             IsActive = true,
         };
 
@@ -93,11 +93,11 @@ public class RolePermissionRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task The_counting_query_only_counts_active_accounts()
     {
-        var admin = await AddActiveUserAsync(SystemRole.Admin);
+        var admin = await AddActiveUserAsync(BuiltInRoles.Admin);
 
         var repository = new RolePermissionRepository(_db);
 
-        Assert.Equal(1, await repository.CountActiveUsersInRolesAsync([SystemRole.Admin]));
+        Assert.Equal(1, await repository.CountActiveUsersInRolesAsync([BuiltInRoles.Admin]));
 
         // Deactivated: still a row in `users`, but not somebody who can sign in and administer.
         var tracked = await _db.Users.FirstAsync(u => u.Id == admin.Id);
@@ -105,7 +105,7 @@ public class RolePermissionRepositoryTests : IAsyncLifetime
         await _db.SaveChangesAsync();
         _db.ChangeTracker.Clear();
 
-        Assert.Equal(0, await repository.CountActiveUsersInRolesAsync([SystemRole.Admin]));
+        Assert.Equal(0, await repository.CountActiveUsersInRolesAsync([BuiltInRoles.Admin]));
 
         // And an empty set of roles is answered without a query at all.
         Assert.Equal(0, await repository.CountActiveUsersInRolesAsync([]));
@@ -114,16 +114,16 @@ public class RolePermissionRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task Replacing_capabilities_writes_only_the_difference()
     {
-        await AddActiveUserAsync(SystemRole.Admin);
+        await AddActiveUserAsync(BuiltInRoles.Admin);
 
         var result = await ServiceOver(_db).UpdateAsync(
-            SystemRole.Secretary, [Capability.MinutesEditor], Guid.CreateVersion7());
+            BuiltInRoles.Secretary, [Capability.MinutesEditor], Guid.CreateVersion7());
 
         Assert.True(result.Succeeded);
         _db.ChangeTracker.Clear();
 
         var secretary = await _db.RoleCapabilities
-            .Where(rc => rc.Role == SystemRole.Secretary)
+            .Where(rc => rc.RoleId == BuiltInRoles.Secretary)
             .Select(rc => rc.Capability)
             .ToArrayAsync();
 
@@ -137,11 +137,11 @@ public class RolePermissionRepositoryTests : IAsyncLifetime
     {
         // The race the table lock exists to stop. Both roles administer and both have a user, so
         // either request alone is legal; together they would leave nobody able to administer.
-        await AddActiveUserAsync(SystemRole.Admin);
-        await AddActiveUserAsync(SystemRole.Secretary);
+        await AddActiveUserAsync(BuiltInRoles.Admin);
+        await AddActiveUserAsync(BuiltInRoles.Secretary);
 
         _db.RoleCapabilities.Add(
-            new RoleCapability { Role = SystemRole.Secretary, Capability = Capability.AdminUsers });
+            new RoleCapability { RoleId = BuiltInRoles.Secretary, Capability = Capability.AdminUsers });
         await _db.SaveChangesAsync();
         _db.ChangeTracker.Clear();
 
@@ -152,9 +152,9 @@ public class RolePermissionRepositoryTests : IAsyncLifetime
         var actor = Guid.CreateVersion7();
 
         var results = await Task.WhenAll(
-            ServiceOver(first).UpdateAsync(SystemRole.Admin, [], actor),
+            ServiceOver(first).UpdateAsync(BuiltInRoles.Admin, [], actor),
             ServiceOver(second).UpdateAsync(
-                SystemRole.Secretary, [Capability.MinutesEditor], actor));
+                BuiltInRoles.Secretary, [Capability.MinutesEditor], actor));
 
         // Exactly one may win. Without the lock both would read a matrix in which the other role
         // still holds AdminUsers, both would pass validation, and both would commit.

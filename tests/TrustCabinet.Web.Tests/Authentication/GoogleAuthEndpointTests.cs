@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
@@ -68,14 +69,14 @@ public class GoogleAuthEndpointTests : IDisposable
 
     private static User NewGoogleUser(
         string? googleSubjectId = GoogleSubject,
-        SystemRole role = SystemRole.Secretary,
+        Guid? role = null,
         bool isActive = true) => new()
         {
             FullName = "Nguyễn Thư Ký",
             Email = Email,
             PasswordHash = null,
             GoogleSubjectId = googleSubjectId,
-            Role = role,
+            RoleId = role ?? BuiltInRoles.Secretary,
             IsActive = isActive,
         };
 
@@ -86,7 +87,7 @@ public class GoogleAuthEndpointTests : IDisposable
     public async Task A_linked_active_account_gets_a_token_pair()
     {
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
-        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor);
+        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
 
         var response = await PostGoogle();
 
@@ -96,6 +97,8 @@ public class GoogleAuthEndpointTests : IDisposable
         Assert.False(string.IsNullOrWhiteSpace(body!.AccessToken));
         Assert.False(string.IsNullOrWhiteSpace(body.RefreshToken));
         Assert.Equal(Email, body.User.Email);
+        Assert.Equal(BuiltInRoles.Secretary.ToString(), body.User.RoleId);
+        Assert.Equal("Thư ký", body.User.RoleName);
         Assert.Equal(["MinutesEditor"], body.User.Capabilities);
     }
 
@@ -103,7 +106,7 @@ public class GoogleAuthEndpointTests : IDisposable
     public async Task The_response_shape_matches_password_sign_in()
     {
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
-        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor);
+        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
 
         var raw = await (await PostGoogle()).Content.ReadAsStringAsync();
 
@@ -120,7 +123,7 @@ public class GoogleAuthEndpointTests : IDisposable
     public async Task An_unverifiable_token_answers_MSG01(string idToken)
     {
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
-        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor);
+        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
 
         var response = await PostGoogle(idToken);
 
@@ -146,7 +149,7 @@ public class GoogleAuthEndpointTests : IDisposable
         // nothing but SQL could set one, so this answered MSG03 for everybody.
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
         _factory.Users.WithUser(NewGoogleUser(googleSubjectId: null))
-            .WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor);
+            .WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
 
         var response = await PostGoogle();
 
@@ -159,7 +162,7 @@ public class GoogleAuthEndpointTests : IDisposable
     {
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
         _factory.Users.WithUser(NewGoogleUser(isActive: false))
-            .WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor);
+            .WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
 
         var response = await PostGoogle();
 
@@ -174,7 +177,7 @@ public class GoogleAuthEndpointTests : IDisposable
     {
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
         _factory.Users.WithUser(NewGoogleUser(googleSubjectId: null, isActive: false))
-            .WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor);
+            .WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
 
         var response = await PostGoogle();
 
@@ -185,15 +188,16 @@ public class GoogleAuthEndpointTests : IDisposable
     }
 
     [Fact]
-    public async Task A_role_granting_nothing_answers_MSG05()
+    public async Task A_role_granting_nothing_still_signs_in()
     {
+        // MSG05 went with UC-01's MSG04 (SCRUM-63): a role with nothing granted works like Member.
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
         _factory.Users.WithUser(NewGoogleUser());
 
         var response = await PostGoogle();
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        Assert.Equal("MSG05", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Empty((await response.Content.ReadFromJsonAsync<SignInBody>())!.User.Capabilities);
     }
 
     [Fact]
@@ -211,7 +215,7 @@ public class GoogleAuthEndpointTests : IDisposable
     {
         _factory.GoogleEnabled = false;
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
-        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor);
+        _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
 
         var response = await PostGoogle();
 
@@ -225,7 +229,7 @@ public class GoogleAuthEndpointTests : IDisposable
         string AccessToken, string RefreshToken, DateTimeOffset AccessTokenExpiresAt, CurrentUserBody User);
 
     private sealed record CurrentUserBody(
-        string Id, string Email, string FullName, string Role, string[] Capabilities);
+        string Id, string Email, string FullName, string RoleId, string RoleName, string[] Capabilities);
 
     private sealed record AuthErrorBody(string Code, string Message);
 }

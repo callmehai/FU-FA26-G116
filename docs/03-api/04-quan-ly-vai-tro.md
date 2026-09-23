@@ -1,438 +1,349 @@
 # 04 · Quản lý vai trò
 
-> **Trạng thái: chưa làm — bản thiết kế cho `SCRUM-63`.** Người làm BE: Hoàng Đức Lộc. Khi code
-> xong, sửa file này thành tài liệu của cái **đã làm** (như `03-ma-tran-phan-quyen.md`), xoá các chữ
-> "đề xuất", và chuyển [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md) sang *Đã chấp nhận*.
+> **Trạng thái: đã làm phần BE — `SCRUM-63`.** Người làm BE: Hoàng Đức Lộc. Phần FE (mục 8) chờ
+> ticket sang cột **Frontend**. Quyết định nền: [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md).
+> Sequence diagram: [CreateRole](../06-sequencediagram/CreateRole.png),
+> [UpdateRole](../06-sequencediagram/UpdateRole.png), [DeleteRole](../06-sequencediagram/DeleteRole.png).
 
-Cho quản trị viên **tạo vai trò mới, đổi tên, xoá** vai trò tự tạo. Hiện tại vai trò là enum
-`SystemRole` bốn giá trị và không có bảng `roles` — muốn thêm vai trò phải sửa code rồi deploy.
-Vì sao đổi, và vì sao `Capability` vẫn là enum: đọc [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)
-trước.
-
-Tóm tắt một dòng: **vai trò thành bảng `roles` khoá `Guid`; mọi chỗ đang dùng `SystemRole` chuyển
-sang `roleId`; bốn vai trò cũ thành bốn dòng mặc định có id cố định.**
+Quản trị viên **tạo vai trò mới, đổi tên, xoá** vai trò tự tạo, không phải chờ deploy. Vai trò là
+bảng `roles` khoá `Guid`; mọi chỗ trước đây dùng enum `SystemRole` giờ dùng `roleId`; bốn vai trò cũ
+là bốn dòng **mặc định** có id cố định. `Capability` **vẫn là enum** — lý do ở ADR-0008.
 
 ---
 
 ## 1. Phạm vi
 
-**Làm:**
+**Có:**
 
-- Bảng `roles`, migration chuyển dữ liệu cũ sang
+- Bảng `roles`, migration `RolesAsData` chuyển dữ liệu cũ sang (không mất dòng nào)
 - `GET /api/roles`, `POST /api/roles`, `PUT /api/roles/{id}`, `DELETE /api/roles/{id}`
 - Đổi hợp đồng các endpoint đang trả/nhận vai trò: `/api/users`, `/api/auth/*`,
-  `/api/roles/capabilities`
-- Nhật ký kiểm toán cho tạo / sửa / xoá vai trò
+  `/api/roles/capabilities` (mục 4.5)
+- Nhật ký kiểm toán `role.created`, `role.updated`, `role.deleted`
 
-**Không làm:**
+**Không có:**
 
-- Tạo quyền mới — `Capability` vẫn là enum, lý do ở `03-ma-tran-phan-quyen.md` mục *Không tạo được
-  quyền mới*
-- Đổi tên hoặc xoá **vai trò mặc định** (`Chủ toạ`, `Thư ký`, `Thành viên`, `Quản trị viên`)
+- Tạo quyền mới — `Capability` vẫn là enum (xem `03-ma-tran-phan-quyen.md`, mục *Không tạo được
+  quyền mới*)
+- Đổi tên, đổi mô tả hoặc xoá **vai trò mặc định** (`Chủ toạ`, `Thư ký`, `Thành viên`,
+  `Quản trị viên`). Quyền của chúng vẫn sửa được như `SCRUM-60`
 - "Chuyển hết người sang vai trò khác rồi xoá" trong một bước. Quản trị viên đổi vai trò từng người
   ở màn hình người dùng, xong mới xoá được
-- Giới hạn số vai trò tối đa. Vai trò là **dòng** của ma trận, không phải cột, nên thêm vai trò
-  không làm vỡ bố cục màn hình
-
-## 2. Thứ tự làm
-
-Nên làm theo thứ tự này. Mỗi bước build và test xanh rồi mới sang bước sau:
-
-1. **Đợi `SCRUM-12` (PR #14) merge**, rồi rebase. PR đó đụng `AuthEndpointsTests` và thêm
-   `CapabilityGateTests` dùng `SystemRole` — làm trước thì phải sửa hai lần.
-2. Entity `Role`, `BuiltInRoles`, configuration, migration (mục 3–4). Chạy migration trên một DB
-   **có dữ liệu** (DB dev đã seed), kiểm tra không mất vai trò của ai.
-3. Thay `SystemRole` bằng `roleId` trong domain, repository, service (mục 5). Sửa test cũ cho xanh.
-4. Endpoint `/api/roles` mới (mục 6) và test.
-5. Cập nhật tài liệu (mục 11), chuyển ticket sang cột **Frontend**.
+- Giới hạn số vai trò tối đa. Vai trò là **dòng** của ma trận, không phải cột
 
 ---
 
-## 3. Mô hình dữ liệu
+## 2. Mô hình dữ liệu
 
-### Bảng `roles` (mới)
+### Bảng `roles`
 
 | Cột | Kiểu | Ràng buộc | Ghi chú |
 |---|---|---|---|
 | `id` | `uuid` | PK | `Guid.CreateVersion7()` cho vai trò tự tạo; id **cố định** cho vai trò mặc định |
-| `name` | `citext`, tối đa 64 | `NOT NULL`, **unique** | `citext` như `users.email`: unique index tự không phân biệt hoa/thường |
+| `name` | `citext` | `NOT NULL`, **unique** (`ix_roles_name`) | `citext` như `users.email`: unique index tự không phân biệt hoa/thường. Tối đa 64 ký tự **chỉ kiểm ở service** — `citext` bỏ qua độ dài khai báo |
 | `description` | `varchar(256)` | `NULL` | |
 | `is_built_in` | `boolean` | `NOT NULL` | |
-| `created_at` | `timestamptz` | `NOT NULL` | |
-| `updated_at` | `timestamptz` | `NOT NULL` | |
+| `created_at`, `updated_at` | `timestamptz` | `NOT NULL` | |
 
-### Bảng `users` và `role_capabilities` (đổi)
+### `users` và `role_capabilities`
 
 | Bảng | Trước | Sau |
 |---|---|---|
-| `users` | `role varchar(32)` (tên enum) | `role_id uuid NOT NULL` → FK `roles.id` **`ON DELETE RESTRICT`**, có index |
-| `role_capabilities` | PK `(role, capability)`, `role` là tên enum | PK `(role_id, capability)`, `role_id` → FK `roles.id` **`ON DELETE CASCADE`** |
+| `users` | `role varchar(32)` (tên enum) | `role_id uuid NOT NULL` → FK `roles.id` **`ON DELETE RESTRICT`**, index `ix_users_role_id` |
+| `role_capabilities` | PK `(role, capability)` | PK `(role_id, capability)`, `role_id` → FK `roles.id` **`ON DELETE CASCADE`** |
 
-- **`RESTRICT` ở `users`** là chốt chặn cuối của luật "chỉ xoá vai trò không còn ai giữ": dù service
-  kiểm thiếu, hay có request gán người vào vai trò chen giữa lúc kiểm và lúc xoá, database vẫn từ
-  chối (lỗi `23503`). Bắt lỗi đó và trả `MSG25`, không để nó thành `500`.
-- **`CASCADE` ở `role_capabilities`**: xoá vai trò thì quyền của nó đi theo. Đó là dữ liệu của chính
-  vai trò, không phải của ai khác.
-- `capability` vẫn lưu dạng chuỗi tên enum như cũ.
+- **`RESTRICT` ở `users`** là chốt chặn cuối của luật "chỉ xoá vai trò không còn ai giữ": có người
+  được gán vào vai trò chen giữa lúc kiểm và lúc xoá thì database từ chối (`23503`), service bắt lỗi
+  đó và trả `MSG25`, không thành `500`.
+- **`CASCADE` ở `role_capabilities`**: xoá vai trò thì quyền của nó đi theo.
 
-### Vai trò mặc định: `BuiltInRoles`
+### Vai trò mặc định — `BuiltInRoles`
 
-Tạo `backend/TrustCabinet.Domain/Access/BuiltInRoles.cs` giữ **bốn id cố định**:
+[`backend/TrustCabinet.Domain/Access/BuiltInRoles.cs`](../../backend/TrustCabinet.Domain/Access/BuiltInRoles.cs)
+giữ bốn id cố định, sinh một lần rồi dán cứng:
 
-```csharp
-public static class BuiltInRoles
-{
-    public static readonly Guid Chair     = new("…");
-    public static readonly Guid Secretary = new("…");
-    public static readonly Guid Member    = new("…");
-    public static readonly Guid Admin     = new("…");
-}
-```
+| Vai trò | `id` | `name` |
+|---|---|---|
+| Chair | `01a0ce78-7202-7945-be13-d2022cf25203` | Chủ toạ |
+| Secretary | `01a0ce78-7203-7c7f-8326-7a0baebf4c22` | Thư ký |
+| Member | `01a0ce78-7204-7558-b181-e908a08e83a3` | Thành viên |
+| Admin | `01a0ce78-7205-7486-b976-d52d428d5451` | Quản trị viên |
 
-- Sinh bốn Guid **một lần** (`Guid.CreateVersion7()` trong một file script, hoặc `uuidgen`) rồi
-  **dán cứng**. Không tính lúc chạy: migration, seeder, test và mọi database đều phải thấy đúng
-  cùng bốn id.
-- Đây là chỗ **duy nhất** code được nhắc tới một vai trò cụ thể. Code nghiệp vụ vẫn không bao giờ so
-  sánh vai trò — nó hỏi quyền (`Capability`), như comment cũ của `SystemRole` quy định.
-- Tên hiển thị của vai trò mặc định (`Chủ toạ`, `Thư ký`, `Thành viên`, `Quản trị viên`) nằm trong
-  cột `name`, do migration chèn. FE thôi giữ bảng `ROLE_LABEL`.
+Đây là chỗ **duy nhất** code nhắc tới một vai trò cụ thể (seed và thứ tự hiển thị). Code nghiệp vụ
+không bao giờ so sánh vai trò — nó hỏi quyền.
 
 ---
 
-## 4. Migration — phải sửa tay
+## 3. Migration `RolesAsData` — đã sửa tay
 
-⚠️ **Đừng chạy nguyên migration EF sinh ra.** EF thấy `User.Role` biến mất và `User.RoleId` xuất
-hiện, nó sinh `DropColumn("role")` và `AddColumn("role_id")` — chạy như vậy là **mất vai trò của
-mọi tài khoản**. Tương tự với `role_capabilities`: mất cả ma trận, và vì bảng rỗng nghĩa là không ai
-giữ `AdminUsers` nên không ai đăng nhập vào sửa được (xem ADR-0007).
+EF sinh ra `DropColumn("role")` + `AddColumn("role_id")` mặc định `0000…` — chạy nguyên như vậy là
+mất vai trò của mọi tài khoản và cả ma trận. File
+[`20260923134138_RolesAsData.cs`](../../backend/TrustCabinet.Infrastructure/Migrations/20260923134138_RolesAsData.cs)
+đã được sắp lại:
 
-Sinh migration bình thường rồi **sắp lại** `Up()` theo thứ tự sau:
+1. Tạo `roles` + unique index trên `name`
+2. `INSERT` bốn vai trò mặc định (không `HasData`). Id viết **literal** trong migration, bằng đúng
+   `BuiltInRoles` nhưng không tham chiếu tới nó: migration đã chạy là bất biến, không được đổi theo
+   code. `RolesAsDataMigrationTests` kiểm hai bên vẫn khớp
+3. Với `users` rồi `role_capabilities`: thêm `role_id` **nullable** → `UPDATE … CASE role` → nếu còn
+   dòng `NULL` (giá trị `role` lạ) thì `RAISE EXCEPTION` và **dừng**, không đoán → `NOT NULL`
+4. Index + FK `RESTRICT` cho `users`; đổi PK + FK `CASCADE` cho `role_capabilities`; bỏ cột `role`
 
-```text
-1. CreateTable roles
-2. Sql: INSERT INTO roles (id, name, description, is_built_in, created_at, updated_at)
-        VALUES ('<Chair>', 'Chủ toạ', …, true, now(), now()), … (đủ 4 dòng)
-3. AddColumn users.role_id (uuid, NULLABLE — tạm thời)
-4. Sql: UPDATE users SET role_id = CASE role
-            WHEN 'Chair' THEN '<Chair>'::uuid
-            WHEN 'Secretary' THEN '<Secretary>'::uuid
-            WHEN 'Member' THEN '<Member>'::uuid
-            WHEN 'Admin' THEN '<Admin>'::uuid
-        END
-5. AlterColumn users.role_id → NOT NULL      (fail ở đây = còn giá trị role lạ → dừng, đừng đoán)
-6. DropColumn users.role; CreateIndex + AddForeignKey (RESTRICT)
-7. Làm y hệt 3–6 cho role_capabilities: thêm role_id, UPDATE … CASE, NOT NULL,
-   DropPrimaryKey cũ, DropColumn role, AddPrimaryKey (role_id, capability), AddForeignKey (CASCADE)
-```
+`Down()` đưa bốn vai trò mặc định về chuỗi enum; **từ chối** (`RAISE EXCEPTION`) nếu còn vai trò tự
+tạo, thay vì âm thầm đổi người giữ nó thành `Member`.
 
-- Chèn vai trò mặc định bằng `migrationBuilder.Sql(...)`, **không** dùng `HasData`. Lý do giống
-  ADR-0007, và vì bước 4 cần các dòng đó có sẵn ngay trong cùng migration.
-- Id trong SQL lấy từ `BuiltInRoles` (nối chuỗi trong C#), đừng gõ lại lần thứ hai.
-- `Down()`: đưa được bốn vai trò mặc định về chuỗi enum. Vai trò tự tạo **không** có chuỗi enum
-  tương ứng — cho `Down()` ném lỗi rõ ràng nếu còn vai trò tự tạo, đừng âm thầm đổi họ thành
-  `Member`.
-- Migration đã lên `main` là **bất biến** (`AGENTS.md`). Sai thì sửa bằng migration mới.
+Đã kiểm trên DB dev có dữ liệu (7 tài khoản, ma trận 5 dòng): đủ người đúng vai trò, đủ 5 dòng ma
+trận; `Down()` rồi `Up()` lại vẫn giữ nguyên. `RolesAsDataMigrationTests` kiểm lại việc này trên
+PostgreSQL thật mỗi lần chạy test.
 
-**Kiểm tra trước khi mở PR:** chạy migration trên DB dev đã có seed (bốn tài khoản mẫu + ma trận mặc
-định), rồi:
-
-```sql
-select u.email, r.name from users u join roles r on r.id = u.role_id;       -- đủ người, đúng vai trò
-select r.name, rc.capability from role_capabilities rc join roles r on r.id = rc.role_id;  -- đủ 5 dòng
-```
-
-`ReferenceDataSeeder` (lưới an toàn của ADR-0007) cũng phải biết bảng `roles`: nếu thiếu vai trò mặc
-định nào thì chèn theo id, **không bao giờ cập nhật** dòng đã có. Chèn vai trò trước, ma trận sau —
-ngược lại thì FK từ chối.
+`ReferenceDataSeeder` chèn vai trò mặc định **còn thiếu** theo id (không bao giờ cập nhật dòng đã
+có), rồi mới đến ma trận (chỉ khi bảng rỗng).
 
 ---
 
-## 5. Những chỗ code phải sửa
+## 4. Endpoint
 
-Lấy từ `grep -rn SystemRole backend tests`. Cột cuối là việc cần làm.
-
-**Domain**
-
-| File | Việc |
-|---|---|
-| `Enums/AccessEnums.cs` | Xoá `SystemRole`. Giữ nguyên `Capability` |
-| `Enums/MeetingEnums.cs` | `MeetingRole` có `<see cref="SystemRole"/>` trong comment → trỏ sang `Role` |
-| `Entities/Role.cs` | **Mới** — `Id`, `Name`, `Description`, `IsBuiltIn`, `CreatedAt`, `UpdatedAt` |
-| `Access/BuiltInRoles.cs` | **Mới** — mục 3 |
-| `Entities/User.cs` | `SystemRole Role` → `Guid RoleId` + navigation `Role`. Mặc định `BuiltInRoles.Member` |
-| `Entities/RoleCapability.cs` | `SystemRole Role` → `Guid RoleId` |
-| `Access/IRolePermissionRepository.cs`, `IRolePermissionService.cs`, `RolePermissionMatrix.cs` | Khoá vai trò đổi từ `SystemRole` sang `Guid` |
-| `Authentication/IUserRepository.cs`, `SignInOutcome.cs` | `SystemRole` → `Guid roleId`; kết quả đăng nhập mang thêm tên vai trò |
-| `Users/IUserAccountRepository.cs`, `IUserService.cs`, `UserAccount.cs` | Như trên |
-| `Access/IRoleService.cs`, `IRoleRepository.cs` | **Mới** — tạo / sửa / xoá / liệt kê |
-| `Audit/IAuditService.cs` | Thêm `role.created`, `role.updated`, `role.deleted` (mục 8) |
-
-**Infrastructure**
-
-| File | Việc |
-|---|---|
-| `Configurations/RoleConfiguration.cs` | **Mới** — `citext` + unique cho `name` |
-| `Configurations/UserConfiguration.cs` | Bỏ `HasConversion<string>()` của `Role`; FK `RoleId` `Restrict` |
-| `Configurations/RoleCapabilityConfiguration.cs` | PK `(RoleId, Capability)`; FK `Cascade` |
-| `TrustCabinetDbContext` | `DbSet<Role> Roles` |
-| `Access/RolePermissionService.cs` | `Enum.IsDefined(role)` → kiểm id có trong `roles`. `Build()` đang duyệt `Enum.GetValues<SystemRole>()` → duyệt bảng `roles` (mục 6.1 về thứ tự). Audit `object_id` giờ là `role.Id`, không còn `null` |
-| `Access/RolePermissionRepository.cs` | Truy vấn theo `role_id` |
-| `Access/RoleService.cs`, `RoleRepository.cs` | **Mới** — mục 6 và 7 |
-| `Authentication/AuthenticationService.cs` | Ba chỗ `user.Role != SystemRole.Member` (nhánh `MSG04`) — xem mục 9 |
-| `Authentication/JwtTokenIssuer.cs` | Claim `ClaimTypes.Role` mang **id** vai trò thay vì tên. Không code nào đọc claim này, nhưng tên thì đổi được còn id thì không |
-| `Authentication/UserRepository.cs`, `Users/UserAccountRepository.cs` | Theo `RoleId`; `Include(u => u.Role)` hoặc join để trả tên vai trò |
-| `Users/UserService.cs` | Kiểm `roleId` có tồn tại (thay cho `Enum.IsDefined`). Luật "không tự hạ vai trò quản trị cuối cùng" (`MSG12`) giữ nguyên, vì nó hỏi **quyền** chứ không hỏi tên vai trò |
-| `Seed/ReferenceData.cs` | Ma trận mặc định dùng `BuiltInRoles.*` |
-| `Seed/DevelopmentDataSeeder.cs` | Bốn tài khoản mẫu dùng `BuiltInRoles.*` |
-| `Seed/ReferenceDataSeeder.cs` | Chèn vai trò mặc định còn thiếu (mục 4) |
-
-**Web**
-
-| File | Việc |
-|---|---|
-| `Endpoints/RoleEndpoints.cs` | **Mới** — `MapRoleEndpoints()`, đăng ký trong `Program.cs` |
-| `Endpoints/RolePermissionEndpoints.cs` | `ParseRole(string)` → đọc `roleId` (Guid) |
-| `Endpoints/UserEndpoints.cs` | Như trên; response trả `roleId` + `roleName` |
-| Endpoint `/api/auth/*` | Object `user` trả `roleId` + `roleName` |
-
-**Tests** — mọi file trong `tests/TrustCabinet.Web.Tests` đang dùng `SystemRole.X` đổi sang
-`BuiltInRoles.X`. Nhiều nhất là `UserServiceTests` (57 chỗ) và `RolePermissionServiceTests` (45
-chỗ); phần lớn là thay thế cơ học.
-
----
-
-## 6. Endpoint
-
-Tất cả **yêu cầu `AdminUsers`** và đọc lại tài khoản người gọi từ database ở từng request, giống
-`/api/users` và `/api/roles/capabilities`. Thiếu quyền trả `403`; id không tồn tại trả `404` không
-body (bảng *403 hay 404* trong `AGENTS.md`).
+Tất cả **yêu cầu `AdminUsers`**, đọc lại tài khoản người gọi từ database ở từng request (như
+`/api/users`). Thiếu token `401`, thiếu quyền `403`, id không tồn tại `404` **không body**. Id không
+phải Guid (`/api/roles/Chair`) không khớp route → `404`.
 
 | Method | Path | Việc |
 |---|---|---|
 | `GET` | `/api/roles` | Liệt kê vai trò |
-| `POST` | `/api/roles` | Tạo vai trò |
-| `PUT` | `/api/roles/{id}` | Đổi tên / mô tả |
-| `DELETE` | `/api/roles/{id}` | Xoá |
+| `POST` | `/api/roles` | Tạo vai trò (UC-11) |
+| `PUT` | `/api/roles/{id}` | Đổi tên / mô tả (UC-12) |
+| `DELETE` | `/api/roles/{id}` | Xoá (UC-13) |
 
-### 6.1 `GET /api/roles`
+### 4.1 `GET /api/roles`
 
 ```json
 [
-  {
-    "id": "0192…",
-    "name": "Chủ toạ",
-    "description": "Chủ trì và phê duyệt cuộc họp.",
-    "isBuiltIn": true,
-    "userCount": 3
-  },
-  {
-    "id": "0199…",
-    "name": "Thư ký phó",
-    "description": null,
-    "isBuiltIn": false,
-    "userCount": 0
-  }
+  { "id": "01a0ce78-7202-…", "name": "Chủ toạ", "description": "Chủ trì và phê duyệt cuộc họp.", "isBuiltIn": true, "userCount": 1 },
+  { "id": "0199…", "name": "Thư ký phó", "description": null, "isBuiltIn": false, "userCount": 0 }
 ]
 ```
 
-- **Thứ tự cố định:** bốn vai trò mặc định trước theo thứ tự `Chair`, `Secretary`, `Member`,
-  `Admin` (như màn hình đang hiện), rồi vai trò tự tạo theo `created_at`. Dùng **cùng thứ tự này** cho
-  `roles` trong `GET /api/roles/capabilities`, để hai màn hình không xếp khác nhau.
+- **Thứ tự cố định:** bốn vai trò mặc định trước (`Chair`, `Secretary`, `Member`, `Admin`), rồi vai
+  trò tự tạo theo `created_at`. `roles` trong `GET /api/roles/capabilities` dùng **cùng thứ tự**.
 - `userCount` đếm **mọi** tài khoản mang vai trò, kể cả đã vô hiệu hoá — đúng con số chặn việc xoá.
-  FE dùng nó để ẩn nút xoá và để hiện "3 người".
-- Không kèm quyền: quyền đã có ở `GET /api/roles/capabilities`.
+- Không kèm quyền: quyền ở `GET /api/roles/capabilities`.
 
-### 6.2 `POST /api/roles`
+### 4.2 `POST /api/roles`
 
 ```json
 { "name": "Thư ký phó", "description": "Hỗ trợ thư ký soạn biên bản.", "capabilities": ["MinutesEditor"] }
 ```
 
-- `name`: bắt buộc. **Trim** hai đầu và gộp khoảng trắng liên tiếp trước khi kiểm. Rỗng sau khi
-  trim → `MSG20`. Dài hơn 64 → `MSG20`.
-- `description`: tuỳ chọn, tối đa 256. Chuỗi rỗng lưu thành `null`.
-- `capabilities`: tuỳ chọn, mặc định `[]`. **Rỗng là hợp lệ** — vai trò không có quyền nào hoạt động
-  giống `Member` (dự họp, đọc tài liệu, biểu quyết). Mã quyền lạ → `MSG20`, nêu tên mã sai giống
-  `MSG17`.
-- Trùng tên (không phân biệt hoa/thường, kể cả trùng tên vai trò mặc định) → `MSG21`. Kiểm trước để
-  trả lời đẹp, **và** bắt lỗi unique violation (`23505`) của database cho trường hợp hai request
-  cùng lúc — database mới là thứ bảo đảm.
-- Ghi `roles` và `role_capabilities` trong **một transaction**, đi qua `IAdministratorInvariantGuard`
-  (mục 7).
+- `name`: bắt buộc; **trim**, gộp khoảng trắng liên tiếp và chuẩn hoá Unicode **NFC** trước khi
+  kiểm (gõ Unikey kiểu "Unicode tổ hợp" không tạo được vai trò thứ hai trông y hệt); rỗng hoặc dài
+  hơn 64 → `MSG20`.
+- Body rỗng hoặc `null` → `MSG20` như form bỏ trống, không phải `400` mặc định của framework.
+- `description`: tuỳ chọn, tối đa 256; rỗng/toàn khoảng trắng lưu thành `null`.
+- `capabilities`: tuỳ chọn, mặc định `[]` — **rỗng là hợp lệ** (vai trò hoạt động giống `Member`).
+  Mã so theo **tên** enum, không phân biệt hoa/thường, trùng lặp bị gộp. Mã lạ — kể cả số như `"1"` —
+  → `MSG20`, nêu đúng tên mã sai.
+- Mọi lỗi của form trả về **cùng lúc** trong `errors` (`name`, `description`, `capabilities`).
+- Trùng tên (không phân biệt hoa/thường, kể cả trùng tên vai trò mặc định) → `MSG21`. Service kiểm
+  trước, **và** bắt `23505` của unique index cho trường hợp hai request cùng lúc.
+- Ghi `roles` + `role_capabilities` trong **một transaction**, qua `IAdministratorInvariantGuard`.
 
-Thành công: `201`, header `Location: /api/roles/{id}`:
-
-```json
-{ "code": "MSG19", "message": "Tạo vai trò thành công.", "role": { "id": "…", "name": "…", "description": "…", "isBuiltIn": false, "userCount": 0 } }
-```
-
-### 6.3 `PUT /api/roles/{id}`
+Thành công: `201`, `Location: /api/roles/{id}`:
 
 ```json
-{ "name": "Thư ký phó", "description": "…" }
+{ "code": "MSG19", "message": "Tạo vai trò thành công.", "role": { "id": "…", "name": "Thư ký phó", "description": "…", "isBuiltIn": false, "userCount": 0 } }
 ```
 
-- Chỉ đổi `name` và `description`. **Không** nhận `capabilities` — quyền vẫn sửa qua
-  `PUT /api/roles/capabilities` để chỉ có một đường sửa ma trận, một chỗ canh luật chống tự khoá.
-- Vai trò mặc định → `MSG24`.
-- Validate `name`/`description` như mục 6.2. Đổi thành tên của chính nó (khác hoa/thường) là hợp lệ.
-- Thành công: `200` + `MSG22` + `role`. Gửi đúng giá trị đang có: vẫn `MSG22` nhưng **không** ghi
-  audit — cùng quy ước "không đổi gì thì không ghi gì" của `SCRUM-60`.
+### 4.3 `PUT /api/roles/{id}`
 
-### 6.4 `DELETE /api/roles/{id}`
+```json
+{ "name": "Phó thư ký", "description": null }
+```
 
-- Vai trò mặc định → `MSG24`.
-- Còn tài khoản mang vai trò (kể cả đã vô hiệu hoá) → `409` `MSG25`, body kèm `userCount`:
+Thứ tự kiểm theo sequence diagram UC-12:
 
-  ```json
-  { "code": "MSG25", "message": "Vai trò này vẫn còn 3 tài khoản mang. Hãy chuyển họ sang vai trò khác trước khi xoá.", "userCount": 3 }
-  ```
+1. Không tồn tại → `404`
+2. Vai trò mặc định → `MSG24` (trước cả validate: không có gì để sửa trong form)
+3. Validate như 4.2 → `MSG20`
+4. Không đổi gì (so **chính xác**, sau khi chuẩn hoá) → `MSG22` nhưng **không** ghi DB, **không**
+   audit — quy ước "không đổi gì thì không ghi gì" của `SCRUM-60`
+5. Trùng tên vai trò **khác** → `MSG21`. Đổi hoa/thường tên của chính nó là hợp lệ
+6. Lưu → `MSG22` + `role`. Vai trò bị quản trị viên khác xoá chen giữa lúc đọc và lúc lưu → `404`
+   (nhánh "Role not found", FE tải lại danh sách), không phải `MSG18`
 
-- Không tồn tại → `404` không body.
-- Thành công: `200` + `MSG23`. `role_capabilities` của vai trò bị xoá theo (`CASCADE`).
+**Không** nhận `capabilities` (có gửi cũng bị bỏ qua) — quyền chỉ sửa qua
+`PUT /api/roles/capabilities`, để luật chống tự khoá canh ở một chỗ. Không đi qua guard: đổi tên
+không chạm quyền, không chạm người.
 
-### 6.5 Đổi ở endpoint đang có
+### 4.4 `DELETE /api/roles/{id}`
 
-Đây là **thay đổi phá hợp đồng** — FE sửa cùng lúc (mục 10).
+Thứ tự theo UC-13, chạy trong guard:
+
+1. Không tồn tại → `404`
+2. Vai trò mặc định → `MSG24`
+3. Còn tài khoản mang (kể cả đã vô hiệu hoá) → `409` `MSG25` kèm `userCount`:
+
+   ```json
+   { "code": "MSG25", "message": "Vai trò này vẫn còn 3 tài khoản mang. Hãy chuyển họ sang vai trò khác trước khi xoá.", "userCount": 3 }
+   ```
+
+4. Xoá; FK `RESTRICT` từ chối vì có người vừa được gán chen vào → vẫn `MSG25` với số đếm mới
+5. Thành công: `200` `{ "code": "MSG23", "message": "Xoá vai trò thành công." }`.
+   `role_capabilities` của vai trò bị xoá theo (`CASCADE`)
+
+### 4.5 Endpoint đã có đổi hợp đồng
+
+**Thay đổi phá hợp đồng** — FE phải sửa (mục 8).
 
 | Endpoint | Trước | Sau |
 |---|---|---|
-| `GET /api/users`, `GET /api/users/{id}`, response của tạo/sửa | `"role": "Chair"` | `"roleId": "…", "roleName": "Chủ toạ"` |
-| `POST /api/users`, `PUT /api/users/{id}` | body `"role": "Chair"` | body `"roleId": "…"`; id không tồn tại → `MSG09`, key `roleId`, `Vai trò không tồn tại.` |
+| `GET /api/users`, `GET /api/users/{id}`, response tạo/sửa/đổi trạng thái | `"role": "Chair"` | `"roleId": "…", "roleName": "Chủ toạ"` |
+| `POST /api/users`, `PUT /api/users/{id}` | body `"role": "Chair"` | body `"roleId": "…"`; thiếu / không đọc được / không tồn tại → `MSG09`, key `roleId`, `Vai trò không tồn tại.` |
 | `/api/auth/login`, `/google`, `/refresh`, `/me` — object `user` | `"role": "Chair"` | `"roleId": "…", "roleName": "Chủ toạ"` |
-| `GET /api/roles/capabilities` — mỗi dòng `roles[]` | `{ "role": "Admin", "capabilities": [...], "isBuiltIn": true }` | `{ "id": "…", "name": "Quản trị viên", "description": …, "isBuiltIn": true, "capabilities": [...] }` |
+| `GET /api/roles/capabilities` — mỗi dòng `roles[]` | `{ "role": "Admin", "capabilities": [...], "isBuiltIn": true }` | `{ "id": "…", "name": "Quản trị viên", "description": "…", "isBuiltIn": true, "capabilities": [...] }` |
 | `PUT /api/roles/capabilities` | body `"role": "Admin"` | body `"roleId": "…"`; id lạ → `MSG17`, key `roleId` |
+| Claim `role` trong access token | tên enum | **bỏ** — không code nào đọc claim này; quyền nằm ở claim `capability` |
 
-### 6.6 Mã thông báo (đề xuất — BA chốt số)
-
-Mã cuối đang dùng là `MSG18` (`SCRUM-60`). Đề xuất nối tiếp:
+### 4.6 Mã thông báo
 
 | Mã | HTTP | Khi nào | Message |
 |---|---|---|---|
 | `MSG19` | `201` | Tạo thành công | `Tạo vai trò thành công.` |
-| `MSG20` | `400` | Dữ liệu không hợp lệ — kèm `errors` theo field (`name`, `description`, `capabilities`) | `Thông tin vai trò không hợp lệ.` |
+| `MSG20` | `400` | Dữ liệu không hợp lệ — kèm `errors` theo field | `Thông tin vai trò không hợp lệ.` |
 | `MSG21` | `409` | Trùng tên | `Đã có vai trò dùng tên này. Hãy đặt một tên khác.` |
-| `MSG22` | `200` | Sửa thành công | `Cập nhật vai trò thành công.` |
+| `MSG22` | `200` | Sửa thành công (kể cả không đổi gì) | `Cập nhật vai trò thành công.` |
 | `MSG23` | `200` | Xoá thành công | `Xoá vai trò thành công.` |
 | `MSG24` | `409` | Sửa tên hoặc xoá vai trò mặc định | `Đây là vai trò mặc định của hệ thống, không đổi tên hoặc xoá được. Bạn vẫn sửa được quyền của nó.` |
-| `MSG25` | `409` | Xoá vai trò còn người mang | `Vai trò này vẫn còn {n} tài khoản mang. Hãy chuyển họ sang vai trò khác trước khi xoá.` |
+| `MSG25` | `409` | Xoá vai trò còn người mang — kèm `userCount` | `Vai trò này vẫn còn {n} tài khoản mang. Hãy chuyển họ sang vai trò khác trước khi xoá.` |
+| `MSG18` | `500` | Database từ chối vì lý do khác (mất kết nối, timeout) — nhánh "Unable to …" của diagram | `Không thể tạo / cập nhật / xoá vai trò. Vui lòng thử lại.` |
 
-Lỗi database khi ghi (mất kết nối, timeout): `500`, xử lý như `MSG18`. BA chốt có dùng chung mã
-`MSG18` không.
+Diagram không đặt mã cho nhánh "Unable to create/update/delete role"; tạm dùng chung `MSG18` (cùng
+nghĩa "lưu không được, thử lại" của UC-10) — **chờ BA chốt**, mục 10.
 
 ---
 
-## 7. Luật chống tự khoá và tương tranh
+## 5. Luật chống tự khoá và tương tranh
 
-Bất biến của ADR-0007 — **còn ít nhất một tài khoản đang hoạt động giữ `AdminUsers`** — không đổi.
-Nhìn lại từng thao tác mới:
+Bất biến ADR-0007 — **còn ít nhất một tài khoản đang hoạt động giữ `AdminUsers`** — không đổi, và
+vẫn đếm theo **tài khoản** chứ không theo tên vai trò: một người trong vai trò tự tạo có
+`AdminUsers` là quản trị viên thật, nên Admin cũ vô hiệu hoá được (có test).
 
-| Thao tác | Ảnh hưởng tới bất biến | Làm gì |
+| Thao tác | Guard? | Lý do |
 |---|---|---|
-| Tạo vai trò (kèm quyền) | Chỉ **thêm** quyền, và vai trò mới chưa ai giữ | Không vi phạm được, nhưng vẫn **đi qua `IAdministratorInvariantGuard`** |
-| Đổi tên / mô tả | Không chạm quyền, không chạm người | Không cần guard |
-| Xoá vai trò | Vai trò không còn ai giữ → không ai mất quyền | Đi qua guard; FK `RESTRICT` chặn trường hợp có người được gán vào chen giữa |
+| Tạo vai trò (kèm quyền) | **Có** | Ghi `role_capabilities` — mọi chỗ ghi bảng này đều qua guard |
+| Đổi tên / mô tả | Không | Không chạm quyền, không chạm người |
+| Xoá vai trò | **Có** | Xoá `role_capabilities` (cascade); FK `RESTRICT` chặn người gán chen vào |
 
-Quy tắc cho gọn và khỏi phải suy luận lại lần sau: **mọi thao tác ghi `role_capabilities` đều đi qua
-`IAdministratorInvariantGuard`**. Guard rẻ (một `pg_advisory_xact_lock`), còn "chỗ này chắc không
-cần" chính là kiểu suy luận ADR-0007 đã phải sửa sau review.
+Với **tạo** và **xoá**, ghi DB và audit cùng nằm trong transaction của guard. **Đổi tên** không qua
+guard nên audit là một lần lưu riêng sau khi đổi tên đã lưu — đúng quy ước của `AuditService` (audit
+lỗi thì thao tác đã xảy ra vẫn giữ, người dùng nhận `500`). Một câu lệnh bị database từ chối
+(`23505`, `23503`) không làm hỏng transaction: EF bọc `SaveChanges` trong savepoint và rollback về
+đó.
 
-Giữ nguyên thứ tự của `SCRUM-60`: validate và ghi **trong** transaction, ghi audit, commit, rồi mới
-làm việc gì chạm Redis.
+Tạo tài khoản (`POST /api/users`) cũng không qua guard: vai trò bị xoá chen giữa lúc kiểm và lúc lưu
+thì FK từ chối (`23503`) và API trả `MSG09` `errors.roleId` như vai trò đã không tồn tại từ đầu.
 
-## 8. Nhật ký kiểm toán
+## 6. Nhật ký kiểm toán
 
 | `action` | `object_type` | `object_id` | `details` |
 |---|---|---|---|
-| `role.created` | `Role` | id vai trò mới | `{ "Name": "…", "Description": "…", "Capabilities": [...] }` |
+| `role.created` | `Role` | id vai trò mới | `{ "Name", "Description", "Capabilities": [...] }` |
 | `role.updated` | `Role` | id vai trò | `{ "Before": { "Name", "Description" }, "After": { "Name", "Description" } }` |
-| `role.deleted` | `Role` | id vai trò | `{ "Name": "…", "Capabilities": [...] }` — ghi lại **trước** khi `CASCADE` xoá mất |
-| `role.permissions.updated` (đã có) | `Role` | **đổi:** id vai trò, không còn `null` | Thêm `Name` bên cạnh `Before`/`After` |
+| `role.deleted` | `Role` | id vai trò | `{ "Name", "Capabilities": [...] }` — đọc **trước** khi cascade xoá mất |
+| `role.permissions.updated` | `Role` | **đổi:** id vai trò (trước là `null`) | `{ "Name", "Before": [...], "After": [...] }` |
+| `user.created` / `user.updated` | `User` | — | vai trò ghi cả `RoleId` và `Role` (tên lúc đó) |
 
-`actor_id` lấy từ token đã xác thực, như mọi audit khác.
+## 7. Đăng nhập và phiên
 
-## 9. Đăng nhập và phiên
+- **Tạo / đổi tên / xoá không kết thúc phiên của ai.** `/api/auth/me` trả tên mới ở lần FE đọc lại.
+- Sửa quyền của vai trò vẫn kết thúc phiên người giữ nó, như `SCRUM-60`.
+- **Đã bỏ nhánh `MSG04` của UC-01 (và `MSG05` của UC-02)** theo đề xuất: mọi vai trò không có quyền
+  nào đều đăng nhập được như `Member`. Refresh cũng không còn cắt phiên vì "hết quyền" — token mới
+  đơn giản không mang quyền nào. **Chờ BA sửa UC-01/UC-02** (mục 10). Nếu BA muốn giữ, cần định
+  nghĩa mới không dựa vào tên vai trò (ví dụ cờ `can_sign_in` trên `roles`) — phạm vi thêm.
 
-- **Tạo / đổi tên / xoá không kết thúc phiên của ai.** Tạo: chưa ai giữ. Xoá: không còn ai giữ. Đổi
-  tên: không đổi quyền; `/api/auth/me` trả tên mới ở lần FE đọc lại tiếp theo.
-- Sửa quyền của vai trò vẫn kết thúc phiên của người giữ nó, như `SCRUM-60`.
-- **Nhánh `MSG04` của UC-01 phải quyết lại.** `AuthenticationService` đang từ chối đăng nhập khi
-  *"vai trò không có quyền nào và không phải `Member`"*. Với vai trò tự tạo, không có quyền nào là
-  cấu hình hợp lệ (giống `Member`), nên luật đó sẽ khoá ngoài những người không làm gì sai.
-  **Đề xuất:** bỏ nhánh này — mọi vai trò không có quyền đều đăng nhập được như `Member`. Cần BA sửa
-  UC-01 (bỏ `MSG04`) và `01-xac-thuc.md`. Nếu BA muốn giữ, phải có định nghĩa mới không dựa vào
-  tên vai trò — ví dụ một cờ `can_sign_in` trên `roles` — và đó là phạm vi thêm, hỏi trước khi làm.
+## 8. Phần FE (chưa làm — chờ cột Frontend)
 
-## 10. Phần FE (làm sau khi ticket sang cột Frontend)
-
-Ghi ở đây để BE biết FE cần gì; FE tự lo phần code.
+> **⚠️ Merge PR BE này trước PR FE thì FE trên `main` hỏng.** PR chỉ sửa BE (theo phân công), hợp
+> đồng ở mục 4.5 đổi, còn `frontend/` vẫn đọc/gửi `role`. CI không bắt được vì không có test hợp đồng
+> FE–BE. Những gì hỏng, đã kiểm trên code FE hiện tại:
+>
+> | Chỗ | Triệu chứng |
+> |---|---|
+> | `components/AppShell.tsx` (header) | Không hiện vai trò — `user.role` giờ `undefined` |
+> | `features/access/UsersPage.tsx` | Badge vai trò trống; lọc theo vai trò luôn ra danh sách rỗng |
+> | `features/access/UserFormDialog.tsx` | **Không tạo / sửa được người dùng**: gửi `role`, BE trả `MSG09` với `errors.roleId`, form chỉ hiện `fieldErrors.role` nên bấm Lưu không thấy gì xảy ra |
+> | `features/access/RolesPage.tsx` + `api/rolePermissions.ts` | Ma trận hiện **mọi ô trống** (so `r.role`); lưu nhận `MSG17` `roleId` |
+>
+> Nên merge PR FE cùng lúc (hoặc ngay sau) PR này. Danh sách việc cần làm:
 
 - `types/user.ts`: bỏ union `Role` và bảng `ROLE_LABEL`/`ROLES`; `CurrentUser` và `UserAccount` mang
   `roleId` + `roleName`.
-- `api/roles.ts` mới: `listRoles`, `createRole`, `updateRole`, `deleteRole`.
+- `api/roles.ts` mới: `listRoles`, `createRole`, `updateRole`, `deleteRole`; `updateRolePermissions`
+  gửi `roleId`.
 - Màn hình **Vai trò**: nút *Tạo vai trò* mở dialog (tên, mô tả, chọn quyền); mỗi dòng vai trò tự tạo
-  có nút sửa và xoá; vai trò mặc định có badge *Mặc định* và không có hai nút đó; hiện số người giữ.
+  có nút sửa và xoá; vai trò mặc định có badge *Mặc định* và không có hai nút đó; hiện `userCount`.
   `MSG25` hiện ngay trong dialog xác nhận xoá, kèm số người.
-- Màn hình **Người dùng & Quyền**: bộ lọc vai trò và ô chọn vai trò trong dialog lấy từ
-  `GET /api/roles` thay vì danh sách cứng.
+- Màn hình **Người dùng & Quyền**: bộ lọc vai trò và ô chọn vai trò lấy từ `GET /api/roles`.
+- Đăng nhập: bỏ xử lý `MSG04` (UC-01) / `MSG05` (UC-02).
 
-## 11. Tài liệu phải cập nhật cùng PR
+## 9. Test
 
-- File này: viết lại thành tài liệu của cái đã làm; `03-api/README.md` sửa mô tả tương ứng
-- [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md) → *Đã chấp nhận*, cập nhật bảng ở
-  `05-decisions/README.md`
-- [02-design/02-erd.md](../02-design/02-erd.md): thêm `Role`, đổi `User.Role` và
-  `RoleCapability.Role` thành `RoleId`; dòng "RBAC phẳng đủ cho 4 vai trò" ở bảng *Bỏ hẳn*
-- [03-ma-tran-phan-quyen.md](03-ma-tran-phan-quyen.md) và note cho FE: hợp đồng mới (mục 6.5), bỏ câu
-  "không thêm được vai trò mới", audit `object_id`
-- [02-quan-ly-nguoi-dung.md](02-quan-ly-nguoi-dung.md), [01-xac-thuc.md](01-xac-thuc.md): `roleId` +
-  `roleName`; `MSG04` theo quyết định của BA
-- [07-classdiagram/README.md](../07-classdiagram/README.md) mục F2: bản vẽ `Role` là entity giờ
-  **đúng** — gỡ đề nghị đổi sang enum
-- `AGENTS.md`: câu nhắc "4 vai trò" nếu còn
+| File | Loại | Nội dung |
+|---|---|---|
+| `RoleServiceTests` | Unit, test double | Mọi nhánh alt của 3 sequence diagram + chuẩn hoá tên, mã quyền dạng số, race `23505`/`23503` |
+| `RoleEndpointsTests` | HTTP in-memory | `401`/`403` cho cả 4 endpoint, mã MSG, shape JSON, `404` không body |
+| `RoleRepositoryTests` | PostgreSQL thật | `citext` với tiếng Việt, unique index → `MSG21`, FK `RESTRICT` → `MSG25`, cascade, `userCount` gồm tài khoản vô hiệu hoá |
+| `RolesAsDataMigrationTests` | PostgreSQL thật | Migration giữ đủ người + ma trận (kể cả dòng admin đã sửa), dừng khi gặp giá trị lạ, `Down()` đảo ngược và từ chối khi còn vai trò tự tạo |
+| `DatabaseModelTests` | Model | `roles` có trong model, `citext` + unique, `RESTRICT`/`CASCADE`, không `HasData` |
+| `ReferenceDataSeederTests` | PostgreSQL thật | Chèn vai trò mặc định còn thiếu, không sửa dòng đã có |
+| `UserServiceTests` | Unit | Vai trò tự tạo có `AdminUsers` được tính vào bất biến; `roleId` không tồn tại → `MSG09` |
 
-## 12. Test cần có
+## 10. Câu hỏi mở cho BA
 
-Theo lối các test đang có: service test với test double, endpoint test in-memory, repository test
-với PostgreSQL thật.
+1. Chốt số UC (hiện dùng UC-11/12/13 theo sequence diagram) và mã `MSG19`–`MSG25`.
+2. **Bỏ `MSG04` của UC-01 / `MSG05` của UC-02** — xem ghi chú dưới. **Code đã bỏ**; cần BA quyết giữ
+   hay bỏ và sửa đặc tả UC-01/UC-02 theo.
+3. Nhánh "Unable to create/update/delete role" dùng chung `MSG18` hay có mã riêng.
+4. Vai trò mặc định có cần đổi **mô tả** được không? Hiện khoá cả tên lẫn mô tả.
+5. `MSG24` và `MSG25` trả `409` — tester có kỳ vọng mã HTTP khác không?
+6. ADR-0008 đang ghi *Đã chấp nhận* ngay trong PR triển khai nó — nhóm xác nhận khi duyệt PR.
 
-**Migration (PostgreSQL thật)** — quan trọng nhất, vì hỏng ở đây là mất dữ liệu:
+### Ghi chú cho BA: vì sao bỏ `MSG04` / `MSG05`
 
-- DB có đủ bốn vai trò cũ + ma trận mặc định → sau migration mỗi tài khoản có `role_id` đúng, ma trận
-  đủ 5 dòng
-- Bốn dòng trong `roles` có đúng id của `BuiltInRoles`
-- Một test trong `DatabaseModelTests` canh để không ai thêm lại `HasData` cho `roles`
+**Luật cũ** (UC-01 bước kiểm quyền, UC-02 tương tự): tài khoản mà vai trò **không có quyền nào** thì
+bị từ chối đăng nhập — `MSG04` / `MSG05` "chưa được cấp quyền truy cập hệ thống" — **trừ** vai trò
+`Member`, vốn không có quyền nào mà vẫn phải vào được để dự họp.
 
-**`RoleService`**
+**Vì sao không giữ được nguyên văn:** chữ "trừ `Member`" là so sánh tên vai trò trong code. Khi vai
+trò thành dữ liệu (ADR-0008) thì:
 
-- Tạo: thành công; tên trùng khác hoa/thường → `MSG21`; trùng tên vai trò mặc định → `MSG21`; rỗng /
-  toàn khoảng trắng / 65 ký tự → `MSG20`; mã quyền lạ → `MSG20` có nêu tên mã; không có quyền nào →
-  thành công
-- Sửa: thành công; vai trò mặc định → `MSG24`; trùng tên vai trò khác → `MSG21`; đổi hoa/thường
-  chính tên mình → thành công; không đổi gì → không ghi audit
-- Xoá: thành công và `role_capabilities` đi theo; vai trò mặc định → `MSG24`; còn một tài khoản
-  **đã vô hiệu hoá** → `MSG25`; không tồn tại → `404`
-- Xoá chen với gán người (PostgreSQL thật): FK `RESTRICT` → `MSG25`, không phải `500`
+- Vai trò tự tạo **không có quyền nào** là cấu hình hợp lệ và có chủ đích (ví dụ "Khách mời" — chỉ dự
+  họp, giống `Member`). Giữ luật cũ thì người mang vai trò đó **không đăng nhập được**.
+- Muốn miễn trừ nó thì phải so id vai trò trong code nghiệp vụ — đúng điều ADR-0008 tránh.
 
-**Endpoint**: mỗi endpoint — không token `401`, thiếu `AdminUsers` `403`, id lạ `404`.
+**Hành vi hiện tại (đã code):**
 
-**Hồi quy**: `AdministratorInvariantGuardTests`, `RolePermissionServiceTests`, `UserServiceTests`
-vẫn xanh sau khi đổi sang `roleId`; thêm một ca gán người vào vai trò tự tạo có `AdminUsers` rồi vô
-hiệu hoá quản trị viên cũ — bất biến vẫn tính đúng.
+- Mọi tài khoản **đang hoạt động** đều đăng nhập được, kể cả vai trò không có quyền nào — vào được như
+  `Member`: xem cuộc họp mình được mời, không mở được màn hình quản trị.
+- `/refresh` không còn cắt phiên với lý do "hết quyền"; token mới chỉ đơn giản không mang quyền nào.
+- Chặn một người đăng nhập vẫn làm được bằng **vô hiệu hoá tài khoản** (UC-07, `MSG03` / `MSG04`).
+- Hệ quả BA cần biết: nếu quản trị viên gỡ hết quyền của `Chủ toạ` / `Thư ký` / `Quản trị viên`,
+  người mang các vai trò đó **vẫn đăng nhập được** (trước đây bị chặn) — chỉ mất chức năng.
 
-## 13. Câu hỏi mở cho BA
+**BA cần chọn một:**
 
-1. Đánh số UC cho tạo / sửa / xoá vai trò, và chốt mã `MSG19`–`MSG25` (mục 6.6).
-2. Bỏ `MSG04` của UC-01 hay giữ với định nghĩa mới (mục 9).
-3. Vai trò mặc định có cần đổi **mô tả** được không? Thiết kế trên khoá cả tên lẫn mô tả cho gọn.
+| Phương án | Việc phải làm |
+|---|---|
+| **A. Chấp nhận bỏ** (đề xuất) | Sửa đặc tả UC-01/UC-02: xoá bước kiểm quyền và `MSG04`/`MSG05` loại này; FE bỏ xử lý hai mã đó |
+| B. Giữ luật "không có quyền thì không vào" | Cần định nghĩa không dựa vào tên: ví dụ cờ `can_sign_in` trên `roles` do quản trị viên bật/tắt. Thêm cột, migration, UI — ticket riêng |
 
-## 14. Xong là khi
+## 11. Xong là khi
 
-- [ ] Migration chạy trên DB có dữ liệu mà không mất vai trò của ai; có test PostgreSQL thật
-- [ ] Bốn endpoint mới, và các endpoint đổi hợp đồng ở mục 6.5
-- [ ] Không còn `SystemRole` trong `backend/` và `tests/` (`grep -rn SystemRole` rỗng)
-- [ ] Audit cho `role.created` / `role.updated` / `role.deleted`
-- [ ] `dotnet build TrustCabinet.sln -warnaserror` và `dotnet test` xanh
-- [ ] Tài liệu ở mục 11 đã cập nhật trong **cùng** PR
-- [ ] BA đã trả lời mục 13, hoặc câu trả lời đang chờ được ghi rõ trong PR
+- [x] Migration chạy trên DB có dữ liệu mà không mất vai trò của ai; có test PostgreSQL thật
+- [x] Bốn endpoint mới, và các endpoint đổi hợp đồng ở mục 4.5
+- [x] Không còn `SystemRole` trong `backend/` và `tests/`
+- [x] Audit cho `role.created` / `role.updated` / `role.deleted`
+- [x] `dotnet build TrustCabinet.sln -warnaserror` và `dotnet test` xanh
+- [x] Tài liệu liên quan đã cập nhật
+- [ ] BA đã trả lời mục 10 (đang chờ — ghi rõ trong PR)
 - [ ] Ticket `SCRUM-63` chuyển sang cột **Frontend**

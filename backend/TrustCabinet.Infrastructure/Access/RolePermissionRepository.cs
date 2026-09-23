@@ -11,24 +11,31 @@ namespace TrustCabinet.Infrastructure.Access;
 /// </summary>
 public sealed class RolePermissionRepository(TrustCabinetDbContext db) : IRolePermissionRepository
 {
-    public async Task<IReadOnlyDictionary<SystemRole, IReadOnlyCollection<Capability>>> GetMatrixAsync(
+    public async Task<IReadOnlyDictionary<Guid, IReadOnlyCollection<Capability>>> GetMatrixAsync(
         CancellationToken ct = default)
     {
         var rows = await db.RoleCapabilities.ToArrayAsync(ct);
 
         return rows
-            .GroupBy(rc => rc.Role)
+            .GroupBy(rc => rc.RoleId)
             .ToDictionary(
                 group => group.Key,
                 group => (IReadOnlyCollection<Capability>)[.. group.Select(rc => rc.Capability)]);
     }
 
+    public async Task<IReadOnlyCollection<Role>> ListRolesAsync(CancellationToken ct = default)
+        // Ordered in memory: the built-in order is a list in code, not a column, and there are a
+        // handful of roles.
+        => [.. (await db.Roles.AsNoTracking().ToArrayAsync(ct))
+            .OrderBy(r => BuiltInRoles.SortKey(r.Id))
+            .ThenBy(r => r.CreatedAt)];
+
     public async Task ReplaceCapabilitiesAsync(
-        SystemRole role,
+        Guid roleId,
         IReadOnlyCollection<Capability> capabilities,
         CancellationToken ct = default)
     {
-        var existing = await db.RoleCapabilities.Where(rc => rc.Role == role).ToArrayAsync(ct);
+        var existing = await db.RoleCapabilities.Where(rc => rc.RoleId == roleId).ToArrayAsync(ct);
 
         // Only the difference is touched. Deleting the row and re-inserting it would produce
         // churn EF has to order carefully against the composite primary key, and it would make
@@ -38,23 +45,23 @@ public sealed class RolePermissionRepository(TrustCabinetDbContext db) : IRolePe
 
         var added = capabilities
             .Where(capability => !existing.Any(rc => rc.Capability == capability))
-            .Select(capability => new RoleCapability { Role = role, Capability = capability });
+            .Select(capability => new RoleCapability { RoleId = roleId, Capability = capability });
         db.RoleCapabilities.AddRange(added);
     }
 
     public Task SaveChangesAsync(CancellationToken ct = default) => db.SaveChangesAsync(ct);
 
     public async Task<IReadOnlyCollection<Guid>> FindActiveUserIdsInRoleAsync(
-        SystemRole role, CancellationToken ct = default)
+        Guid roleId, CancellationToken ct = default)
         // Inactive accounts are skipped: they hold no usable session to end, since a refresh
         // already refuses them and they cannot sign in to get a new token.
         => await db.Users
-            .Where(u => u.Role == role && u.IsActive)
+            .Where(u => u.RoleId == roleId && u.IsActive)
             .Select(u => u.Id)
             .ToArrayAsync(ct);
 
     public Task<int> CountActiveUsersInRolesAsync(
-        IReadOnlyCollection<SystemRole> rolesWithCapability, CancellationToken ct = default)
+        IReadOnlyCollection<Guid> rolesWithCapability, CancellationToken ct = default)
     {
         // No roles would hold it, so no account could: skip the round trip and answer the
         // question the caller is really asking.
@@ -68,6 +75,6 @@ public sealed class RolePermissionRepository(TrustCabinetDbContext db) : IRolePe
         // being tested is the one that does not exist in the table yet.
         var roles = rolesWithCapability.ToArray();
 
-        return db.Users.CountAsync(u => u.IsActive && roles.Contains(u.Role), ct);
+        return db.Users.CountAsync(u => u.IsActive && roles.Contains(u.RoleId), ct);
     }
 }

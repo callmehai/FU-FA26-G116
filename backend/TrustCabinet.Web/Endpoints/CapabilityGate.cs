@@ -42,9 +42,9 @@ public static class CapabilityGate
     /// <see cref="RequireCapability"/> throw at startup for a policy that does not exist, and an
     /// endpoint that cannot be gated is an endpoint that ships ungated.
     ///
-    /// The check is on the capability claim, never on the role name — a capability moved to
-    /// another role in <c>role_capabilities</c> then takes effect without a code change
-    /// (<c>AccessEnums</c>: "never checked by comparing against the role name in business code").
+    /// The check is on the capability claim, never on the role — a capability moved to another
+    /// role in <c>role_capabilities</c> then takes effect without a code change, and a role an
+    /// administrator creates needs no code at all (ADR-0008).
     /// </summary>
     public static IServiceCollection AddCapabilityPolicies(this IServiceCollection services)
     {
@@ -106,7 +106,7 @@ public static class CapabilityGate
             return false;
         }
 
-        return (await users.GetCapabilitiesAsync(caller.Role, ct)).Contains(capability);
+        return (await users.GetCapabilitiesAsync(caller.RoleId, ct)).Contains(capability);
     }
 
     /// <summary>

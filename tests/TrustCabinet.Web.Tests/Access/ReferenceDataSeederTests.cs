@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Seed;
@@ -68,6 +69,38 @@ public class ReferenceDataSeederTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task The_built_in_roles_are_inserted_before_the_matrix_that_references_them()
+    {
+        // EnsureCreated leaves `roles` empty too; the matrix could not be inserted without them.
+        await ReferenceDataSeeder.SeedAsync(_db);
+
+        Assert.Equal(
+            BuiltInRoles.All.Order(),
+            (await _db.Roles.Select(r => r.Id).ToArrayAsync()).Order());
+    }
+
+    [Fact]
+    public async Task A_missing_built_in_role_is_put_back_but_an_existing_one_is_never_changed()
+    {
+        await ReferenceDataSeeder.SeedAsync(_db);
+        _db.ChangeTracker.Clear();
+
+        // A description edited in the database, and one built-in role gone (with its grants).
+        await _db.Roles
+            .Where(r => r.Id == BuiltInRoles.Chair)
+            .ExecuteUpdateAsync(s => s.SetProperty(r => r.Description, "Mô tả do DBA sửa."));
+        await _db.Roles.Where(r => r.Id == BuiltInRoles.Member).ExecuteDeleteAsync();
+
+        await ReferenceDataSeeder.SeedAsync(_db);
+        _db.ChangeTracker.Clear();
+
+        Assert.True(await _db.Roles.AnyAsync(r => r.Id == BuiltInRoles.Member));
+        Assert.Equal(
+            "Mô tả do DBA sửa.",
+            (await _db.Roles.SingleAsync(r => r.Id == BuiltInRoles.Chair)).Description);
+    }
+
+    [Fact]
     public async Task Seeding_twice_does_not_duplicate_anything()
     {
         await ReferenceDataSeeder.SeedAsync(_db);
@@ -78,6 +111,7 @@ public class ReferenceDataSeederTests : IAsyncLifetime
         Assert.Equal(
             ReferenceData.RoleCapabilities.Length,
             await _db.RoleCapabilities.CountAsync());
+        Assert.Equal(BuiltInRoles.All.Count, await _db.Roles.CountAsync());
     }
 
     [Fact]
@@ -89,7 +123,7 @@ public class ReferenceDataSeederTests : IAsyncLifetime
         _db.ChangeTracker.Clear();
 
         await _db.RoleCapabilities
-            .Where(rc => rc.Role == SystemRole.Secretary && rc.Capability == Capability.MinutesEditor)
+            .Where(rc => rc.RoleId == BuiltInRoles.Secretary && rc.Capability == Capability.MinutesEditor)
             .ExecuteDeleteAsync();
 
         // Re-running the seeder must not put it back. Filling in individually missing rows would
@@ -98,7 +132,7 @@ public class ReferenceDataSeederTests : IAsyncLifetime
         await ReferenceDataSeeder.SeedAsync(_db);
 
         var secretary = await _db.RoleCapabilities
-            .Where(rc => rc.Role == SystemRole.Secretary)
+            .Where(rc => rc.RoleId == BuiltInRoles.Secretary)
             .Select(rc => rc.Capability)
             .ToArrayAsync();
 

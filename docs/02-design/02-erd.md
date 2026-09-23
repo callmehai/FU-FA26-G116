@@ -1,7 +1,7 @@
 # Mô hình dữ liệu (ERD)
 
 Toàn bộ mô hình dữ liệu của TrustCabinet, suy ra từ tiêu chí nghiệm thu của các story trong Jira.
-**26 bảng.** Đây là tài liệu nguồn để vẽ Class Diagram (`SCRUM-55`) và ERD nộp (`SCRUM-56`), và để
+**27 bảng.** Đây là tài liệu nguồn để vẽ Class Diagram (`SCRUM-55`) và ERD nộp (`SCRUM-56`), và để
 BE biết mình đang làm việc với cái gì.
 
 Hiện thực: EF Core 10 code-first, PostgreSQL qua Npgsql
@@ -19,7 +19,7 @@ Cách chạy: [03-co-so-du-lieu.md](03-co-so-du-lieu.md).
 
 | Nhóm | Bảng | Story |
 |---|---|---|
-| Truy cập | `users`, `role_capabilities` | `SCRUM-11`, `SCRUM-12`, `SCRUM-13` |
+| Truy cập | `users`, `roles`, `role_capabilities` | `SCRUM-11`, `SCRUM-12`, `SCRUM-13`, `SCRUM-60`, `SCRUM-63` |
 | Cuộc họp | `meetings`, `meeting_status_history`, `meeting_participants` | `SCRUM-17`, `SCRUM-18`, `SCRUM-19`, `SCRUM-20`, `SCRUM-26` |
 | Tài liệu | `documents`, `document_versions`, `document_comments` | `SCRUM-21`, `SCRUM-22`, `SCRUM-23` |
 | Nghị sự | `agenda_items` | `SCRUM-25` |
@@ -36,6 +36,8 @@ Cách chạy: [03-co-so-du-lieu.md](03-co-so-du-lieu.md).
 
 ```mermaid
 erDiagram
+    Role ||--o{ User : "vai trò (RESTRICT)"
+    Role ||--o{ RoleCapability : "quyền (CASCADE)"
     User ||--o{ Meeting : "người tạo"
     User ||--o{ MeetingParticipant : "được mời"
     User ||--o{ MeetingStatusHistory : "người thực hiện"
@@ -47,11 +49,17 @@ erDiagram
         string FullName
         citext Email UK
         string PasswordHash
-        string Role "Chair|Secretary|Member|Admin"
+        uuid RoleId FK
         bool IsActive
     }
+    Role {
+        uuid Id PK
+        citext Name UK "tối đa 64"
+        string Description
+        bool IsBuiltIn "4 vai trò mặc định, id cố định"
+    }
     RoleCapability {
-        string Role PK
+        uuid RoleId PK
         string Capability PK
     }
     Meeting {
@@ -391,7 +399,7 @@ kín; vai trò trong cuộc họp tách khỏi vai trò hệ thống.
 | `tenants` + Row-Level Security trên mọi bảng | TrustCabinet phục vụ một tổ chức |
 | `residency_zone`, `key_domain`, `key_id` | Kéo theo yêu cầu lưu trú dữ liệu và mã hoá theo vùng |
 | `persons` + `sessions` + Zitadel | Không dựng IdP riêng: đăng nhập bằng email/mật khẩu hoặc Google (`SCRUM-11`) |
-| `relation_tuples`, `authz_epochs` (ReBAC) | RBAC phẳng đủ cho 4 vai trò |
+| `relation_tuples`, `authz_epochs` (ReBAC) | RBAC phẳng đủ: vai trò là bảng `roles` quản trị viên tự thêm được ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)), quyền vẫn là enum |
 | `encryption_keys`, `key_shred_ledger` | Không làm mã hoá phong bì |
 | `job_outbox`, `job_stage`, `pipeline_job` | Không dựng job spine |
 | `audit_log` chuỗi hash | `SCRUM-16` chỉ cần chỉ-ghi-thêm |

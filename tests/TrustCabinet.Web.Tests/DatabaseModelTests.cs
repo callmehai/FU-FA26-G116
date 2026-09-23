@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection;
+using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
@@ -43,7 +44,7 @@ public class DatabaseModelTests
                 "document_comments", "document_versions", "documents", "email_messages",
                 "meeting_minutes", "meeting_notes", "meeting_participants",
                 "meeting_status_history", "meeting_summaries", "meetings", "minutes_signatures",
-                "notifications", "recordings", "role_capabilities", "speaking_requests",
+                "notifications", "recordings", "role_capabilities", "roles", "speaking_requests",
                 "transcript_segments", "transcripts", "users", "vote_choices",
                 "vote_receipts", "voting_options", "voting_sessions",
             ],
@@ -53,7 +54,7 @@ public class DatabaseModelTests
     [Theory]
     [InlineData(typeof(Meeting), nameof(Meeting.Status))]
     [InlineData(typeof(Meeting), nameof(Meeting.Sensitivity))]
-    [InlineData(typeof(User), nameof(User.Role))]
+    [InlineData(typeof(RoleCapability), nameof(RoleCapability.Capability))]
     public void Enums_are_stored_as_text(Type entity, string property)
     {
         using var db = NewContext();
@@ -130,6 +131,72 @@ public class DatabaseModelTests
     }
 
     [Fact]
+    public void Role_names_are_unique_regardless_of_case()
+    {
+        using var db = NewContext();
+
+        var role = db.Model.FindEntityType(typeof(Role))!;
+
+        // citext + a unique index: the database itself refuses "thư ký" beside "Thư ký", which is
+        // what stops two administrators creating the same role at once (SCRUM-63).
+        Assert.Equal("citext", role.FindProperty(nameof(Role.Name))!.GetColumnType());
+        Assert.Contains(role.GetIndexes(), i =>
+            i.IsUnique && i.Properties.Count == 1 && i.Properties[0].Name == nameof(Role.Name));
+    }
+
+    [Fact]
+    public void A_role_somebody_holds_cannot_be_deleted_but_its_capabilities_go_with_it()
+    {
+        using var db = NewContext();
+
+        // RESTRICT from users: the last line behind MSG25 — an account assigned between the
+        // service's check and the delete makes the database refuse, rather than leaving that
+        // account pointing at nothing.
+        var holder = db.Model.FindEntityType(typeof(User))!
+            .GetForeignKeys()
+            .Single(fk => fk.PrincipalEntityType.ClrType == typeof(Role));
+
+        Assert.Equal(DeleteBehavior.Restrict, holder.DeleteBehavior);
+        Assert.Equal(nameof(User.RoleId), holder.Properties.Single().Name);
+
+        // CASCADE from role_capabilities: those rows are the role's own data.
+        var grants = db.Model.FindEntityType(typeof(RoleCapability))!
+            .GetForeignKeys()
+            .Single(fk => fk.PrincipalEntityType.ClrType == typeof(Role));
+
+        Assert.Equal(DeleteBehavior.Cascade, grants.DeleteBehavior);
+    }
+
+    [Fact]
+    public void Roles_are_not_seeded_through_the_model()
+    {
+        using var db = NewContext();
+
+        // The built-in roles are inserted by the RolesAsData migration and topped up by
+        // ReferenceDataSeeder. HasData would make every later migration re-assert them — the
+        // problem ADR-0007 describes for role_capabilities.
+        var seeded = db.GetService<IDesignTimeModel>().Model
+            .FindEntityType(typeof(Role))!
+            .GetSeedData();
+
+        Assert.Empty(seeded);
+    }
+
+    [Fact]
+    public void Built_in_roles_have_the_fixed_ids_in_display_order()
+    {
+        // The ids are pasted in once and shared by the migration, the seeder and every database.
+        var roles = ReferenceData.Roles();
+
+        Assert.Equal(BuiltInRoles.All, roles.Select(r => r.Id));
+        Assert.Equal(
+            ["Chủ toạ", "Thư ký", "Thành viên", "Quản trị viên"],
+            roles.Select(r => r.Name));
+        Assert.All(roles, r => Assert.True(r.IsBuiltIn));
+        Assert.Equal(BuiltInRoles.All.Count, BuiltInRoles.All.Distinct().Count());
+    }
+
+    [Fact]
     public void Role_capabilities_match_the_agreed_default_mapping()
     {
         // These are the values a **fresh** database starts with, not the running system's answer.
@@ -141,21 +208,21 @@ public class DatabaseModelTests
         // deliberate edit in two places instead of a silent one.
         var expected = new[]
         {
-            (SystemRole.Chair, Capability.MeetingCreator),
-            (SystemRole.Chair, Capability.MeetingApprover),
-            (SystemRole.Secretary, Capability.MeetingCreator),
-            (SystemRole.Secretary, Capability.MinutesEditor),
-            (SystemRole.Admin, Capability.AdminUsers),
+            (BuiltInRoles.Chair, Capability.MeetingCreator),
+            (BuiltInRoles.Chair, Capability.MeetingApprover),
+            (BuiltInRoles.Secretary, Capability.MeetingCreator),
+            (BuiltInRoles.Secretary, Capability.MinutesEditor),
+            (BuiltInRoles.Admin, Capability.AdminUsers),
         };
 
         var actual = ReferenceData.RoleCapabilities
-            .Select(rc => (rc.Role, rc.Capability))
+            .Select(rc => (rc.RoleId, rc.Capability))
             .ToArray();
 
         Assert.Equal(expected, actual);
 
         // A plain Member attends, reads and votes — none of which needs a capability.
-        Assert.DoesNotContain(actual, rc => rc.Role == SystemRole.Member);
+        Assert.DoesNotContain(actual, rc => rc.RoleId == BuiltInRoles.Member);
     }
 
     [Fact]

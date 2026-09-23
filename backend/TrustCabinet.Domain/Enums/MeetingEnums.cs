@@ -41,7 +41,7 @@ public enum MeetingMode
 }
 
 /// <summary>
-/// A participant's role in one specific meeting. Deliberately separate from <see cref="SystemRole"/>:
+/// A participant's role in one specific meeting. Deliberately separate from <see cref="Entities.Role"/>:
 /// a user who is a plain Member in the system can still chair a single meeting.
 /// </summary>
 public enum MeetingRole

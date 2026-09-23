@@ -1,6 +1,6 @@
 # ADR-0008: Vai trò là dữ liệu, không phải enum
 
-- **Trạng thái:** Đề xuất
+- **Trạng thái:** Đã chấp nhận (triển khai trong `SCRUM-63`, migration `RolesAsData`)
 - **Ngày:** 2026-09-23
 - **Người quyết định:** nhóm SEP490-G116 — người làm: Hoàng Đức Lộc (`SCRUM-63`)
 - **Liên quan:** `SCRUM-63` (quản lý vai trò), `SCRUM-60` (ma trận vai trò – quyền),
@@ -57,7 +57,8 @@ Cách làm chi tiết: [docs/03-api/04-quan-ly-vai-tro.md](../03-api/04-quan-ly-
 - **Migration phải sửa tay.** EF sinh ra `DropColumn("role")` + `AddColumn("role_id")` — chạy nguyên
   như vậy là mất vai trò của mọi tài khoản. Phải chèn bước điền dữ liệu vào giữa.
 - **`MSG04` của UC-01 mất nghĩa.** Nó bắn khi "vai trò không phải `Member` mà không có quyền nào";
-  với vai trò tự tạo, không có quyền nào là hợp lệ (giống `Member`). Đề nghị bỏ nhánh này — BA chốt.
+  với vai trò tự tạo, không có quyền nào là hợp lệ (giống `Member`). Code đã bỏ nhánh này (và
+  `MSG05` của UC-02) — BA cần sửa đặc tả UC-01/UC-02 cho khớp.
 - **Class diagram không cần đổi `Role` thành enum nữa.** Mục F2 trong
   [07-classdiagram/README.md](../07-classdiagram/README.md) đề nghị BA làm việc đó; quyết định này
   làm đề nghị ấy hết hiệu lực.

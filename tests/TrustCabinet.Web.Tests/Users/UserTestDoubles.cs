@@ -3,6 +3,7 @@ using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
+using TrustCabinet.Infrastructure.Seed;
 
 namespace TrustCabinet.Web.Tests.Users;
 
@@ -19,7 +20,13 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository
     /// What each account looked like when it was seeded — the fake's stand-in for the row the
     /// real repository would reload from.
     /// </summary>
-    private readonly Dictionary<Guid, (string FullName, string Email, SystemRole Role)> _snapshots = [];
+    private readonly Dictionary<Guid, (string FullName, string Email, Guid RoleId)> _snapshots = [];
+
+    /// <summary>
+    /// The roles that exist — the four built-in ones unless a test adds more with
+    /// <see cref="WithRole"/>.
+    /// </summary>
+    private readonly Dictionary<Guid, Role> _roles = ReferenceData.Roles().ToDictionary(r => r.Id);
 
     /// <summary>How many times the service asked for changes to be persisted.</summary>
     public int SaveCount { get; private set; }
@@ -35,17 +42,45 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository
     public FakeUserAccountRepository WithUser(User user)
     {
         _users.Add(user);
-        _snapshots[user.Id] = (user.FullName, user.Email, user.Role);
+        _snapshots[user.Id] = (user.FullName, user.Email, user.RoleId);
+        return WithRoleLoaded(user);
+    }
+
+    /// <summary>Adds a role an administrator created, with what it carries.</summary>
+    public FakeUserAccountRepository WithRole(Role role, params Capability[] caps)
+    {
+        _roles[role.Id] = role;
+        _capabilities[role.Id] = caps;
+        return this;
+    }
+
+    /// <summary>
+    /// Mirrors the real repository's <c>Include(u => u.Role)</c>: every account handed out carries
+    /// its role, looked up by id — null when the role no longer exists.
+    /// </summary>
+    private FakeUserAccountRepository WithRoleLoaded(User user)
+    {
+        user.Role = _roles.GetValueOrDefault(user.RoleId);
         return this;
     }
 
     public Task<IReadOnlyCollection<User>> ListAsync(CancellationToken ct = default)
         // Sorted like the real query, so a test asserting on order is testing the same contract.
         => Task.FromResult<IReadOnlyCollection<User>>(
-            [.. _users.OrderBy(u => u.FullName).ThenBy(u => u.Email)]);
+            [.. _users.OrderBy(u => u.FullName).ThenBy(u => u.Email).Select(Loaded)]);
 
     public Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default)
-        => Task.FromResult(_users.FirstOrDefault(u => u.Id == id));
+        => Task.FromResult(_users.FirstOrDefault(u => u.Id == id) is { } user ? Loaded(user) : null);
+
+    /// <summary>The account with its role (re)attached, as the real query's Include returns it.</summary>
+    private User Loaded(User user)
+    {
+        WithRoleLoaded(user);
+        return user;
+    }
+
+    public Task<Role?> FindRoleAsync(Guid roleId, CancellationToken ct = default)
+        => Task.FromResult(_roles.GetValueOrDefault(roleId));
 
     public Task<bool> EmailExistsAsync(
         string email, Guid? exceptId = null, CancellationToken ct = default)
@@ -60,22 +95,22 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository
     /// that does not care gets the real answer rather than an empty one — an empty map would
     /// make the last-administrator rule believe nobody administers anything.
     /// </summary>
-    private readonly Dictionary<SystemRole, Capability[]> _capabilities = new()
+    private readonly Dictionary<Guid, Capability[]> _capabilities = new()
     {
-        [SystemRole.Chair] = [Capability.MeetingCreator, Capability.MeetingApprover],
-        [SystemRole.Secretary] = [Capability.MeetingCreator, Capability.MinutesEditor],
-        [SystemRole.Member] = [],
-        [SystemRole.Admin] = [Capability.AdminUsers],
+        [BuiltInRoles.Chair] = [Capability.MeetingCreator, Capability.MeetingApprover],
+        [BuiltInRoles.Secretary] = [Capability.MeetingCreator, Capability.MinutesEditor],
+        [BuiltInRoles.Member] = [],
+        [BuiltInRoles.Admin] = [Capability.AdminUsers],
     };
 
-    public FakeUserAccountRepository WithCapabilities(SystemRole role, params Capability[] caps)
+    public FakeUserAccountRepository WithCapabilities(Guid role, params Capability[] caps)
     {
         _capabilities[role] = caps;
         return this;
     }
 
     public Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(
-        SystemRole role, CancellationToken ct = default)
+        Guid role, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyCollection<Capability>>(
             _capabilities.TryGetValue(role, out var caps) ? caps : []);
 
@@ -86,13 +121,13 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository
         => Task.FromResult(_users.Count(u =>
             u.IsActive
             && u.Id != exceptId
-            && _capabilities.TryGetValue(u.Role, out var caps)
+            && _capabilities.TryGetValue(u.RoleId, out var caps)
             && caps.Contains(capability)));
 
     public Task AddAsync(User user, CancellationToken ct = default)
     {
         _users.Add(user);
-        _snapshots[user.Id] = (user.FullName, user.Email, user.Role);
+        _snapshots[user.Id] = (user.FullName, user.Email, user.RoleId);
         return Task.CompletedTask;
     }
 
@@ -126,7 +161,8 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository
         {
             user.FullName = original.FullName;
             user.Email = original.Email;
-            user.Role = original.Role;
+            user.RoleId = original.RoleId;
+            WithRoleLoaded(user);
         }
 
         return Task.CompletedTask;

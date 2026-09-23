@@ -121,6 +121,9 @@ app.MapUserEndpoints();
 // /api/roles/capabilities — UC-09 and UC-10 (SCRUM-60). Same gate as /api/users.
 app.MapRolePermissionEndpoints();
 
+// /api/roles — UC-11 … UC-13, create / rename / delete a role (SCRUM-63). Same gate.
+app.MapRoleEndpoints();
+
 // Health endpoint — the frontend calls this to confirm the backend is alive.
 app.MapGet("/api/health", () => Results.Ok(new
 {

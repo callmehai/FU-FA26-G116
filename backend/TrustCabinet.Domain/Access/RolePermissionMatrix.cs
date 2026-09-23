@@ -34,14 +34,18 @@ public sealed record PermissionDescriptor(
     string Description,
     string FunctionalGroup);
 
-/// <summary>One row of the matrix: a role and the capabilities currently granted to it.</summary>
+/// <summary>
+/// One row of the matrix: a role and the capabilities currently granted to it. Carries the role's
+/// name and description too, since roles are rows (ADR-0008) and the screen has no other place to
+/// learn them from.
+/// </summary>
 /// <param name="IsBuiltIn">
-/// Whether the role is part of the system's definition rather than something anyone created. All
-/// four are, today — <see cref="SystemRole"/> is an enum (ADR-0004), so a role cannot be added
-/// without a deployment. The flag is on the wire because the diagram asks for it and because the
-/// screen needs a reason to show the role name as fixed text rather than as an editable field.
+/// One of the four roles the system ships with. The screen shows its name as fixed text; its
+/// capabilities stay editable like any other role's.
 /// </param>
 public sealed record RolePermissions(
-    SystemRole Role,
-    IReadOnlyCollection<Capability> Capabilities,
-    bool IsBuiltIn = true);
+    Guid Id,
+    string Name,
+    string? Description,
+    bool IsBuiltIn,
+    IReadOnlyCollection<Capability> Capabilities);

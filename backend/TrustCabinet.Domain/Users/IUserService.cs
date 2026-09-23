@@ -1,5 +1,3 @@
-using TrustCabinet.Domain.Enums;
-
 namespace TrustCabinet.Domain.Users;
 
 /// <summary>
@@ -57,11 +55,15 @@ public interface IUserService
         Guid id, bool isActive, Guid actorId, CancellationToken ct = default);
 }
 
-/// <summary>What UC-05 collects. Nullable strings: a missing field is a validation error, not a 400.</summary>
-public sealed record NewUser(string? FullName, string? Email, string? Password, SystemRole Role);
+/// <summary>
+/// What UC-05 collects. Nullable strings: a missing field is a validation error, not a 400.
+/// <paramref name="RoleId"/> is <see cref="Guid.Empty"/> when the caller sent none or an
+/// unreadable one — it matches no role, so it lands on the same "Vai trò không tồn tại." message.
+/// </summary>
+public sealed record NewUser(string? FullName, string? Email, string? Password, Guid RoleId);
 
 /// <summary>
 /// What UC-06 collects. No password: changing someone else's password is UC-08, and no
 /// administrator screen should be able to set one silently while editing a name.
 /// </summary>
-public sealed record UserEdit(string? FullName, string? Email, SystemRole Role);
+public sealed record UserEdit(string? FullName, string? Email, Guid RoleId);

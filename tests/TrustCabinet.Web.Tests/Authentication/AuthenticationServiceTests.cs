@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging.Abstractions;
+using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -27,14 +28,14 @@ public class AuthenticationServiceTests
 
     private static User NewUser(
         string email = "thuky@trustcabinet.local",
-        SystemRole role = SystemRole.Secretary,
+        Guid? role = null,
         bool isActive = true,
         string password = Password) => new()
         {
             FullName = "Nguyễn Thư Ký",
             Email = email,
             PasswordHash = new FakePasswordHasher().Hash(password),
-            Role = role,
+            RoleId = role ?? BuiltInRoles.Secretary,
             IsActive = isActive,
         };
 
@@ -44,7 +45,7 @@ public class AuthenticationServiceTests
     public async Task An_active_user_with_the_right_password_signs_in()
     {
         var user = NewUser();
-        _users.WithUser(user).WithCapabilities(SystemRole.Secretary,
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary,
             Capability.MeetingCreator, Capability.MinutesEditor);
 
         var result = await NewService().SignInAsync(user.Email, Password);
@@ -59,7 +60,7 @@ public class AuthenticationServiceTests
     public async Task Signing_in_issues_an_access_token_and_a_stored_refresh_token()
     {
         var user = NewUser();
-        _users.WithUser(user).WithCapabilities(SystemRole.Secretary, Capability.MeetingCreator);
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MeetingCreator);
 
         var result = await NewService().SignInAsync(user.Email, Password);
 
@@ -81,8 +82,8 @@ public class AuthenticationServiceTests
         // Deliberately not the seeded mapping: if the service derived capabilities from the role
         // name instead of reading role_capabilities, this would come back with the real Chair set
         // and the administrator screen in SCRUM-60 could never change anything.
-        var user = NewUser(role: SystemRole.Chair);
-        _users.WithUser(user).WithCapabilities(SystemRole.Chair, Capability.AdminUsers);
+        var user = NewUser(role: BuiltInRoles.Chair);
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Chair, Capability.AdminUsers);
 
         var result = await NewService().SignInAsync(user.Email, Password);
 
@@ -92,9 +93,8 @@ public class AuthenticationServiceTests
     [Fact]
     public async Task A_member_signs_in_although_they_have_no_capability()
     {
-        // Member carries no capability by design — attending, reading and voting need none. This
-        // must stay distinct from MSG04, or every ordinary participant would be locked out.
-        var user = NewUser(role: SystemRole.Member);
+        // Member carries no capability by design — attending, reading and voting need none.
+        var user = NewUser(role: BuiltInRoles.Member);
         _users.WithUser(user);
 
         var result = await NewService().SignInAsync(user.Email, Password);
@@ -107,7 +107,7 @@ public class AuthenticationServiceTests
     public async Task Email_case_and_surrounding_spaces_do_not_prevent_sign_in()
     {
         var user = NewUser(email: "thuky@trustcabinet.local");
-        _users.WithUser(user).WithCapabilities(SystemRole.Secretary, Capability.MeetingCreator);
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MeetingCreator);
 
         var result = await NewService().SignInAsync("  ThuKy@TrustCabinet.Local  ", Password);
 
@@ -269,7 +269,7 @@ public class AuthenticationServiceTests
     public async Task A_deactivated_account_is_told_so_only_after_the_password_matched()
     {
         var user = NewUser(isActive: false);
-        _users.WithUser(user).WithCapabilities(SystemRole.Secretary, Capability.MeetingCreator);
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MeetingCreator);
 
         var result = await NewService().SignInAsync(user.Email, Password);
 
@@ -290,19 +290,38 @@ public class AuthenticationServiceTests
         Assert.Equal(SignInOutcome.InvalidCredentials, result.Outcome);
     }
 
-    // ------------------------------------------------------------ branch 3: no system access
+    // ------------------------------------------- no "no system access" branch any more (SCRUM-63)
 
     [Fact]
-    public async Task A_role_that_grants_nothing_has_no_way_in()
+    public async Task A_role_that_grants_nothing_still_signs_in()
     {
-        // role_capabilities emptied for Secretary — nothing left to sign in to.
-        var user = NewUser(role: SystemRole.Secretary);
+        // role_capabilities emptied for Secretary. MSG04 used to refuse this unless the role was
+        // Member; since roles are data (ADR-0008) a role with nothing granted is a legitimate
+        // configuration that works like Member, and telling them apart would mean comparing role
+        // ids in business code.
+        var user = NewUser(role: BuiltInRoles.Secretary);
         _users.WithUser(user);
 
         var result = await NewService().SignInAsync(user.Email, Password);
 
-        Assert.Equal(SignInOutcome.NoSystemAccess, result.Outcome);
-        Assert.Empty(_refreshTokens.ActiveTokens);
+        Assert.Equal(SignInOutcome.Success, result.Outcome);
+        Assert.Empty(result.Capabilities!);
+    }
+
+    [Fact]
+    public async Task A_custom_role_signs_in_with_its_name_and_capabilities()
+    {
+        var deputy = new Role { Name = "Thư ký phó" };
+        _users.WithRole(deputy, Capability.MinutesEditor);
+
+        var user = NewUser(role: deputy.Id);
+        _users.WithUser(user);
+
+        var result = await NewService().SignInAsync(user.Email, Password);
+
+        Assert.Equal(SignInOutcome.Success, result.Outcome);
+        Assert.Equal([Capability.MinutesEditor], result.Capabilities);
+        Assert.Equal("Thư ký phó", result.User!.Role!.Name);
     }
 
     // ------------------------------------------------------------------------------ refresh
@@ -311,7 +330,7 @@ public class AuthenticationServiceTests
     public async Task A_refresh_token_can_be_exchanged_for_a_new_pair()
     {
         var user = NewUser();
-        _users.WithUser(user).WithCapabilities(SystemRole.Secretary, Capability.MeetingCreator);
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MeetingCreator);
         var service = NewService();
 
         var signIn = await service.SignInAsync(user.Email, Password);
@@ -326,7 +345,7 @@ public class AuthenticationServiceTests
     public async Task A_refresh_token_works_only_once()
     {
         var user = NewUser();
-        _users.WithUser(user).WithCapabilities(SystemRole.Secretary, Capability.MeetingCreator);
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MeetingCreator);
         var service = NewService();
 
         var signIn = await service.SignInAsync(user.Email, Password);
@@ -342,7 +361,7 @@ public class AuthenticationServiceTests
     public async Task An_expired_refresh_token_is_rejected()
     {
         var user = NewUser();
-        _users.WithUser(user).WithCapabilities(SystemRole.Secretary, Capability.MeetingCreator);
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MeetingCreator);
         var service = NewService();
 
         var signIn = await service.SignInAsync(user.Email, Password);
@@ -370,7 +389,7 @@ public class AuthenticationServiceTests
     public async Task Deactivating_an_account_ends_its_session_at_the_next_refresh()
     {
         var user = NewUser();
-        _users.WithUser(user).WithCapabilities(SystemRole.Secretary, Capability.MeetingCreator);
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MeetingCreator);
         var service = NewService();
 
         var signIn = await service.SignInAsync(user.Email, Password);
@@ -387,32 +406,34 @@ public class AuthenticationServiceTests
     }
 
     [Fact]
-    public async Task Losing_every_capability_ends_the_session_at_the_next_refresh()
+    public async Task Losing_every_capability_reaches_the_next_access_token()
     {
         var user = NewUser();
-        _users.WithUser(user).WithCapabilities(SystemRole.Secretary, Capability.MeetingCreator);
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MeetingCreator);
         var service = NewService();
 
         var signIn = await service.SignInAsync(user.Email, Password);
 
         // role_capabilities emptied for their role while they were signed in.
-        _users.WithCapabilities(SystemRole.Secretary);
+        _users.WithCapabilities(BuiltInRoles.Secretary);
 
         var refreshed = await service.RefreshAsync(signIn.RefreshToken!);
 
-        Assert.Equal(SignInOutcome.NoSystemAccess, refreshed.Outcome);
-        Assert.Empty(_refreshTokens.ActiveTokens);
+        // Still a session — a role with nothing granted works like Member — but the new token
+        // carries none of the capabilities that were taken away.
+        Assert.Equal(SignInOutcome.Success, refreshed.Outcome);
+        Assert.Empty(refreshed.Capabilities!);
     }
 
     [Fact]
     public async Task A_capability_granted_meanwhile_arrives_with_the_next_access_token()
     {
         var user = NewUser();
-        _users.WithUser(user).WithCapabilities(SystemRole.Secretary, Capability.MeetingCreator);
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MeetingCreator);
         var service = NewService();
 
         var signIn = await service.SignInAsync(user.Email, Password);
-        _users.WithCapabilities(SystemRole.Secretary, Capability.MeetingCreator, Capability.MinutesEditor);
+        _users.WithCapabilities(BuiltInRoles.Secretary, Capability.MeetingCreator, Capability.MinutesEditor);
 
         var refreshed = await service.RefreshAsync(signIn.RefreshToken!);
 
@@ -429,7 +450,7 @@ public class AuthenticationServiceTests
     public async Task Signing_out_destroys_the_session_on_the_server()
     {
         var user = NewUser();
-        _users.WithUser(user).WithCapabilities(SystemRole.Secretary, Capability.MeetingCreator);
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MeetingCreator);
         var service = NewService();
 
         var signIn = await service.SignInAsync(user.Email, Password);
@@ -447,7 +468,7 @@ public class AuthenticationServiceTests
     public async Task Signing_out_twice_is_not_an_error()
     {
         var user = NewUser();
-        _users.WithUser(user).WithCapabilities(SystemRole.Secretary, Capability.MeetingCreator);
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MeetingCreator);
         var service = NewService();
 
         var signIn = await service.SignInAsync(user.Email, Password);
@@ -461,7 +482,7 @@ public class AuthenticationServiceTests
     public async Task Signing_out_one_session_leaves_the_others_alone()
     {
         var user = NewUser();
-        _users.WithUser(user).WithCapabilities(SystemRole.Secretary, Capability.MeetingCreator);
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MeetingCreator);
         var service = NewService();
 
         var laptop = await service.SignInAsync(user.Email, Password);

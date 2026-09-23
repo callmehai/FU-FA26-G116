@@ -4,6 +4,7 @@ using Npgsql;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Infrastructure.Access;
@@ -23,10 +24,10 @@ public sealed class RolePermissionService(
     ILogger<RolePermissionService> logger) : IRolePermissionService
 {
     public async Task<RolePermissionMatrix> GetMatrixAsync(CancellationToken ct = default)
-        => Build(await roles.GetMatrixAsync(ct));
+        => Build(await roles.ListRolesAsync(ct), await roles.GetMatrixAsync(ct));
 
     public async Task<RolePermissionResult> UpdateAsync(
-        SystemRole role,
+        Guid roleId,
         IReadOnlyCollection<Capability> capabilities,
         Guid actorId,
         CancellationToken ct = default)
@@ -41,7 +42,7 @@ public sealed class RolePermissionService(
         // touching this table at all, so a lock taken here would never have stopped it. Both
         // sides queue behind one name instead — see IAdministratorInvariantGuard.
         var written = await administratorInvariant.WriteAsync(
-            token => UpdateWithinTransactionAsync(role, capabilities, actorId, token), ct);
+            token => UpdateWithinTransactionAsync(roleId, capabilities, actorId, token), ct);
 
         // After the commit, never inside it. Revoking runs one Redis round trip per affected
         // account, in sequence; doing that under the lock would block every other administrative
@@ -64,9 +65,9 @@ public sealed class RolePermissionService(
                 // happen. One account's session lapsing on its own is the smaller loss.
                 logger.LogError(
                     exception,
-                    "Permissions for {Role} changed, but ending the sessions of {UserId} failed. "
-                    + "The session lapses on its own when the access token expires.",
-                    role, userId);
+                    "Permissions for role {RoleId} changed, but ending the sessions of {UserId} "
+                    + "failed. The session lapses on its own when the access token expires.",
+                    roleId, userId);
             }
         }
 
@@ -87,22 +88,24 @@ public sealed class RolePermissionService(
     }
 
     private async Task<Written> UpdateWithinTransactionAsync(
-        SystemRole role,
+        Guid roleId,
         IReadOnlyCollection<Capability> capabilities,
         Guid actorId,
         CancellationToken ct)
     {
+        var roleList = await roles.ListRolesAsync(ct);
         var matrix = await roles.GetMatrixAsync(ct);
+        var role = roleList.FirstOrDefault(r => r.Id == roleId);
 
         // The diagram's "Validate permission configuration". Every reason is collected before
         // answering, so the screen shows all of them at once rather than one per attempt.
         var errors = await ValidateAsync(role, capabilities, matrix, ct);
 
-        if (errors.Count > 0)
+        if (role is null || errors.Count > 0)
         {
             logger.LogWarning(
-                "Permission configuration for {Role} rejected: {Reasons}.",
-                role, string.Join("; ", errors.Values));
+                "Permission configuration for role {RoleId} rejected: {Reasons}.",
+                roleId, string.Join("; ", errors.Values));
 
             // MSG17 — the invalid branch.
             return RolePermissionResult.Invalid(errors);
@@ -111,7 +114,7 @@ public sealed class RolePermissionService(
         // Duplicates would otherwise be written twice and break the composite primary key; the
         // set is also what the audit entry and the comparison below should speak in.
         var requested = capabilities.Distinct().OrderBy(c => c).ToArray();
-        var before = matrix.TryGetValue(role, out var current)
+        var before = matrix.TryGetValue(roleId, out var current)
             ? current.OrderBy(c => c).ToArray()
             : [];
 
@@ -120,10 +123,10 @@ public sealed class RolePermissionService(
         // did not happen, and no session ended for capabilities nobody lost.
         if (before.SequenceEqual(requested))
         {
-            return RolePermissionResult.Success(Build(matrix));
+            return RolePermissionResult.Success(Build(roleList, matrix));
         }
 
-        await roles.ReplaceCapabilitiesAsync(role, requested, ct);
+        await roles.ReplaceCapabilitiesAsync(roleId, requested, ct);
 
         try
         {
@@ -139,20 +142,20 @@ public sealed class RolePermissionService(
             // a dropped connection or a lock timeout comes straight from the driver, and those
             // are exactly the transient failures the branch is meant to describe.
             logger.LogError(
-                exception, "Saving the permission configuration for {Role} failed.", role);
+                exception, "Saving the permission configuration for role {RoleId} failed.", roleId);
             return RolePermissionResult.Failure(RolePermissionOutcome.SaveFailed);
         }
 
         await audit.RecordAsync(
             AuditActions.RolePermissionsUpdated,
             AuditActions.RoleObjectType,
-            // No object id: the row's identity is the role, which is an enum and not a Guid.
-            // It travels in the details instead, where the before/after values already are.
-            null,
+            roleId,
             actorId,
             new
             {
-                Role = role.ToString(),
+                // The name as it was at the time: a role can be renamed later, and the evidence
+                // should read the way the administrator saw it.
+                role.Name,
                 Before = before.Select(c => c.ToString()).ToArray(),
                 After = requested.Select(c => c.ToString()).ToArray(),
             },
@@ -170,20 +173,20 @@ public sealed class RolePermissionService(
         //
         // Collected here, revoked by the caller once the transaction has committed — see
         // UpdateAsync for why Redis must not be reached while the lock is held.
-        var affected = await roles.FindActiveUserIdsInRoleAsync(role, ct);
+        var affected = await roles.FindActiveUserIdsInRoleAsync(roleId, ct);
 
         logger.LogInformation(
-            "Permissions for {Role} changed by {ActorId}; {Count} session(s) to end.",
-            role, actorId, affected.Count);
+            "Permissions for role {RoleId} changed by {ActorId}; {Count} session(s) to end.",
+            roleId, actorId, affected.Count);
 
         // Rebuilt from the requested values rather than re-queried: the save succeeded, so this is
         // what the table now holds, and a second round trip would only be able to disagree.
-        var updated = new Dictionary<SystemRole, IReadOnlyCollection<Capability>>(matrix)
+        var updated = new Dictionary<Guid, IReadOnlyCollection<Capability>>(matrix)
         {
-            [role] = requested,
+            [roleId] = requested,
         };
 
-        return new Written(RolePermissionResult.Success(Build(updated)), affected);
+        return new Written(RolePermissionResult.Success(Build(roleList, updated)), affected);
     }
 
     /// <summary>
@@ -191,21 +194,23 @@ public sealed class RolePermissionService(
     /// configuration is acceptable.
     /// </summary>
     private async Task<Dictionary<string, string>> ValidateAsync(
-        SystemRole role,
+        Role? role,
         IReadOnlyCollection<Capability> capabilities,
-        IReadOnlyDictionary<SystemRole, IReadOnlyCollection<Capability>> matrix,
+        IReadOnlyDictionary<Guid, IReadOnlyCollection<Capability>> matrix,
         CancellationToken ct)
     {
         var errors = new Dictionary<string, string>();
 
-        // A value outside the enum arrives as a cast integer when a caller posts a number or a
-        // name neither enum has. Stored unchecked it would become a grant nothing matches, which
-        // is a silent way to hand out or withhold rights.
-        if (!Enum.IsDefined(role))
+        // An id no role has: a stale screen after another administrator deleted the role, or a
+        // made-up value. Written unchecked, the foreign key would refuse it as a 500.
+        if (role is null)
         {
-            errors["role"] = "Vai trò không hợp lệ.";
+            errors["roleId"] = "Vai trò không hợp lệ.";
         }
 
+        // A value outside the enum arrives as a cast integer when a caller posts a number or a
+        // name the enum does not have. Stored unchecked it would become a grant nothing matches,
+        // which is a silent way to hand out or withhold rights.
         var unknown = capabilities.Where(c => !Enum.IsDefined(c)).ToArray();
 
         if (unknown.Length > 0)
@@ -214,7 +219,7 @@ public sealed class RolePermissionService(
         }
 
         // Nothing below can be judged without a valid role and a valid capability list.
-        if (errors.Count > 0)
+        if (role is null || errors.Count > 0)
         {
             return errors;
         }
@@ -238,13 +243,13 @@ public sealed class RolePermissionService(
         // Not checked on the frontend alone: the acceptance criteria say "Kiểm ở server, không
         // phải ẩn nút".
         var rolesAfterwards = matrix
-            .Where(entry => entry.Key != role && entry.Value.Contains(Capability.AdminUsers))
+            .Where(entry => entry.Key != role.Id && entry.Value.Contains(Capability.AdminUsers))
             .Select(entry => entry.Key)
             .ToList();
 
         if (capabilities.Contains(Capability.AdminUsers))
         {
-            rolesAfterwards.Add(role);
+            rolesAfterwards.Add(role.Id);
         }
 
         if (await roles.CountActiveUsersInRolesAsync(rolesAfterwards, ct) == 0)
@@ -262,12 +267,16 @@ public sealed class RolePermissionService(
     /// granted, alongside the catalogue that gives the grid its columns.
     /// </summary>
     private static RolePermissionMatrix Build(
-        IReadOnlyDictionary<SystemRole, IReadOnlyCollection<Capability>> matrix)
+        IReadOnlyCollection<Role> roleList,
+        IReadOnlyDictionary<Guid, IReadOnlyCollection<Capability>> matrix)
         => new(
             PermissionCatalog.All,
-            [.. Enum.GetValues<SystemRole>().Select(role => new RolePermissions(
-                role,
-                matrix.TryGetValue(role, out var capabilities)
+            [.. roleList.Select(role => new RolePermissions(
+                role.Id,
+                role.Name,
+                role.Description,
+                role.IsBuiltIn,
+                matrix.TryGetValue(role.Id, out var capabilities)
                     ? [.. capabilities.OrderBy(c => c)]
                     : []))]);
 }

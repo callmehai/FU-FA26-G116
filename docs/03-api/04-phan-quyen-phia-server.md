@@ -78,7 +78,8 @@ từ đầu. Tài khoản không còn hoặc đã bị vô hiệu hoá thì tr�
   "id": "0199...",
   "email": "thuky@trustcabinet.local",
   "fullName": "Nguyễn Thư Ký",
-  "role": "Secretary",                              // PascalCase, đúng tên enum
+  "roleId": "01a0ce78-7203-7c7f-8326-7a0baebf4c22",  // id dòng trong bảng roles (SCRUM-63)
+  "roleName": "Thư ký",                             // tên hiện tại, để hiển thị
   "capabilities": ["MeetingCreator", "MinutesEditor"]
 }
 ```

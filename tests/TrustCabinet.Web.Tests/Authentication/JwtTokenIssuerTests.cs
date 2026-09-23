@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Authentication;
@@ -30,7 +31,7 @@ public class JwtTokenIssuerTests
         FullName = "Nguyễn Thư Ký",
         Email = "thuky@trustcabinet.local",
         PasswordHash = "khong-lien-quan",
-        Role = SystemRole.Secretary,
+        RoleId = BuiltInRoles.Secretary,
     };
 
     private static JwtTokenIssuer NewIssuer(AuthenticationOptions? options = null)
@@ -45,7 +46,9 @@ public class JwtTokenIssuerTests
 
         Assert.Equal(Secretary.Id.ToString(), token.Claims.First(c => c.Type == "sub").Value);
         Assert.Equal(Secretary.Email, token.Claims.First(c => c.Type == "email").Value);
-        Assert.Equal("Secretary", token.Claims.First(c => c.Type == ClaimTypes.Role).Value);
+        // No role claim: authorization reads capabilities, and a role can be renamed while the
+        // token is alive (ADR-0008).
+        Assert.DoesNotContain(token.Claims, c => c.Type is ClaimTypes.Role or "role");
     }
 
     [Fact]

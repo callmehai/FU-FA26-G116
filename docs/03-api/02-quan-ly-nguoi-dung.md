@@ -83,9 +83,10 @@ thái tài khoản.
 ### Phân quyền kiểm theo capability, không theo tên role
 
 Policy `AdminUsers` khai báo ở `Program.cs` kiểm claim `cap` trong access token, không so sánh
-`role == "Admin"`. Đây là điều `AccessEnums` đã ghi: *"what it allows is expressed as capabilities,
-never checked by comparing against the role name in business code"*. Chuyển `AdminUsers` sang role
-khác trong bảng `role_capabilities` là có hiệu lực ngay, không cần sửa code.
+vai trò của người gọi với Admin. Code nghiệp vụ không bao giờ so sánh vai trò — vai trò chỉ là một
+bó quyền có tên ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)). Chuyển `AdminUsers` sang
+vai trò khác trong bảng `role_capabilities` — kể cả một vai trò quản trị viên tự tạo — là có hiệu
+lực ngay, không cần sửa code.
 
 Policy gắn trên **cả nhóm** `/api/users` chứ không gắn từng route: thêm một endpoint mới vào nhóm
 thì nó tự kế thừa, không có chuyện quên.
@@ -108,7 +109,8 @@ Bảng đối chiếu đầy đủ ở mục *403 hay 404?* trong `AGENTS.md`.
     "id": "01999f2e-…",
     "fullName": "Lê Thành Viên",
     "email": "thanhvien@trustcabinet.local",
-    "role": "Member",
+    "roleId": "01a0ce78-7204-7558-b181-e908a08e83a3",
+    "roleName": "Thành viên",
     "isActive": true,
     "hasPassword": true,
     "hasGoogleLink": false,
@@ -125,6 +127,9 @@ Vài điểm cố ý:
   này — ẩn đi thì không bao giờ bật lại được.
 - **Không phân trang.** Một tổ chức duy nhất (ADR-0004), số nhân sự đếm được; phân trang là bộ máy
   cho một danh sách không ai phải cuộn. Đã đánh dấu `ponytail:` trong code.
+- **Vai trò là `roleId` + `roleName`** (từ `SCRUM-63`, trước là `"role": "Member"`). Tên lấy từ bảng
+  `roles`, nên vai trò quản trị viên tự tạo cũng hiện đúng tên — FE không giữ bảng nhãn nào. Danh
+  sách vai trò để chọn: `GET /api/roles` ([04-quan-ly-vai-tro.md](04-quan-ly-vai-tro.md)).
 - **`passwordHash` và `googleSubjectId` không bao giờ lên wire.** Response dựng từ `UserAccount`
   (một projection) chứ không serialize thẳng entity `User` — serialize entity nghĩa là mỗi lần ai
   đó thêm field là một lần rò rỉ không ai để ý trong review. `hasPassword` / `hasGoogleLink` chỉ
@@ -137,7 +142,7 @@ Vài điểm cố ý:
   "fullName": "Trần Chủ Toạ",
   "email": "chutoa@trustcabinet.local",
   "password": "MatKhauDaiVaAnToan@2026",
-  "role": "Chair"
+  "roleId": "01a0ce78-7202-7945-be13-d2022cf25203"
 }
 ```
 
@@ -154,15 +159,15 @@ Vài điểm cố ý:
 Tài khoản tạo ra **luôn ở trạng thái active** — diagram ghi rõ "Create active user account". Muốn
 tắt thì dùng UC-07.
 
-`role` nhận **không phân biệt hoa thường** (`"chair"` cũng được): quy ước viết hoa của JSON hai đầu
-khác nhau, và chữ thường không nên thành lỗi validation. Giá trị enum không biết thì trả lỗi
-`role` chứ không phải `400` từ model binder — diagram cần "Display invalid fields", nên phải chỉ ra
-được *field nào*.
+`roleId` là id một dòng của `roles` — vai trò mặc định hoặc vai trò tự tạo. Thiếu, không phải Guid,
+hoặc không tồn tại (ví dụ vừa bị quản trị viên khác xoá) thì trả `MSG09` với lỗi ở key `roleId`
+(`Vai trò không tồn tại.`) chứ không phải `400` từ model binder — diagram cần "Display invalid
+fields", nên phải chỉ ra được *field nào*.
 
 ## UC-06 · `PUT /api/users/{id}`
 
 ```json
-{ "fullName": "Tên Mới", "email": "moi@trustcabinet.local", "role": "Secretary" }
+{ "fullName": "Tên Mới", "email": "moi@trustcabinet.local", "roleId": "01a0ce78-7203-7c7f-8326-7a0baebf4c22" }
 ```
 
 `200 OK` trả `MSG10` cùng shape như trên.

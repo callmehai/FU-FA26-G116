@@ -3,15 +3,15 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Domain.Entities;
 
 /// <summary>
-/// Which capabilities a role carries. Reference data, seeded by the migration rather than entered
-/// by an administrator, so that a fresh database is immediately consistent with the code.
+/// Which capabilities a role carries — the role ↔ capability matrix an administrator edits at
+/// runtime (SCRUM-60). The initial rows come from <c>ReferenceDataSeeder</c>, never from HasData
+/// (ADR-0007).
 ///
-/// It is a table rather than a hard-coded switch so an administrator screen can adjust it later
-/// without a deployment (SCRUM-60). Note the tension that story has to resolve first: the rows
-/// below ship via HasData, so a later migration would overwrite whatever an administrator changed.
+/// Deleting a role takes its rows with it (<c>ON DELETE CASCADE</c>): they are that role's own
+/// data, not anybody else's.
 /// </summary>
 public class RoleCapability
 {
-    public SystemRole Role { get; set; }
+    public Guid RoleId { get; set; }
     public Capability Capability { get; set; }
 }

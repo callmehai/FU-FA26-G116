@@ -37,7 +37,8 @@ public sealed class JwtTokenIssuer(IOptions<AuthenticationOptions> options) : IT
             new(JwtRegisteredClaimNames.Jti, Guid.CreateVersion7().ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(ClaimTypes.Name, user.FullName),
-            new(ClaimTypes.Role, user.Role.ToString()),
+            // No role claim: nothing authorizes on the role — capabilities below are what is
+            // checked — and a role's name can change while the token is alive (ADR-0008).
         };
 
         // One claim per capability rather than a comma-joined string, so [Authorize] policies can

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Authentication;
@@ -49,28 +50,28 @@ public static class DevelopmentDataSeeder
             FullName = "Trần Chủ Toạ",
             Email = "chutoa@trustcabinet.local",
             PasswordHash = demoPasswordHash,
-            Role = SystemRole.Chair,
+            RoleId = BuiltInRoles.Chair,
         };
         var secretary = new User
         {
             FullName = "Nguyễn Thư Ký",
             Email = "thuky@trustcabinet.local",
             PasswordHash = demoPasswordHash,
-            Role = SystemRole.Secretary,
+            RoleId = BuiltInRoles.Secretary,
         };
         var member = new User
         {
             FullName = "Lê Thành Viên",
             Email = "thanhvien@trustcabinet.local",
             PasswordHash = demoPasswordHash,
-            Role = SystemRole.Member,
+            RoleId = BuiltInRoles.Member,
         };
         var administrator = new User
         {
             FullName = "Phạm Quản Trị",
             Email = "quantri@trustcabinet.local",
             PasswordHash = demoPasswordHash,
-            Role = SystemRole.Admin,
+            RoleId = BuiltInRoles.Admin,
         };
 
         db.AddRange(chair, secretary, member, administrator);
