@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -22,7 +23,10 @@ public sealed partial class RoleService(
     IAdministratorInvariantGuard administratorInvariant,
     ILogger<RoleService> logger) : IRoleService
 {
-    /// <summary>Matches RoleConfiguration's HasMaxLength, so an over-long value is MSG20, not a 500.</summary>
+    /// <summary>
+    /// Enforced here only: the column is citext, which ignores RoleConfiguration's HasMaxLength, and
+    /// this service is the only writer of role names.
+    /// </summary>
     private const int MaxNameLength = 64;
 
     private const int MaxDescriptionLength = 256;
@@ -261,6 +265,14 @@ public sealed partial class RoleService(
             logger.LogInformation("Role {Operation} rejected: name already taken (unique index).", operation);
             return RoleOutcome.DuplicateName;
         }
+        catch (DbUpdateConcurrencyException)
+        {
+            // UPDATE matched no row: the role was deleted between reading it and saving the rename
+            // (renaming does not take the guard). The diagram's "Role not found" — the client
+            // refreshes its list — rather than "cannot be saved, retry", which could never succeed.
+            logger.LogInformation("Role {Operation} rejected: the role no longer exists.", operation);
+            return RoleOutcome.NotFound;
+        }
         catch (Exception exception) when (exception is DbUpdateException or NpgsqlException)
         {
             // NpgsqlException as well: a dropped connection or a timeout comes straight from the
@@ -313,7 +325,7 @@ public sealed partial class RoleService(
 
         if (unknown.Length > 0)
         {
-            errors["capabilities"] = $"Quyền không hợp lệ: {string.Join(", ", unknown)}.";
+            errors["capabilities"] = $"Quyền không hợp lệ: {string.Join(", ", unknown.Select(c => c ?? "null"))}.";
             return [];
         }
 
@@ -322,11 +334,13 @@ public sealed partial class RoleService(
     }
 
     /// <summary>
-    /// Trimmed, with runs of whitespace collapsed to one space — "Thư  ký   phó" and "Thư ký phó"
-    /// would otherwise be two roles that look identical on screen.
+    /// Trimmed, with runs of whitespace collapsed to one space, and in Unicode NFC — "Thư  ký   phó",
+    /// or "Thư ký phó" typed as base letters plus combining marks (Unikey's "Unicode tổ hợp"), would
+    /// otherwise be roles that look identical on screen yet pass citext's unique index. NFC also makes
+    /// the 64-character limit count letters as the user sees them.
     /// </summary>
     private static string NormaliseName(string? name)
-        => Whitespace().Replace(name ?? "", " ").Trim();
+        => Whitespace().Replace((name ?? "").Normalize(NormalizationForm.FormC), " ").Trim();
 
     /// <summary>Trimmed; blank is stored as null rather than an empty string.</summary>
     private static string? NormaliseDescription(string? description)

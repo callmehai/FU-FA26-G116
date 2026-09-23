@@ -53,14 +53,16 @@ public static class RoleEndpoints
 
     /// <summary>UC-11.</summary>
     private static async Task<IResult> CreateAsync(
-        [FromBody] CreateRoleRequest request,
+        [FromBody] CreateRoleRequest? request,
         ClaimsPrincipal principal,
         IRoleService roles,
         CancellationToken ct)
     {
         var result = await roles.CreateAsync(
-            new NewRole(request.Name, request.Description, request.Capabilities),
-            CapabilityGate.GatedUserId(principal),
+            // An empty body is a form with nothing filled in: MSG20 for the name, not the
+            // framework's own 400 the frontend has no code for.
+            new NewRole(request?.Name, request?.Description, request?.Capabilities),
+            AdminCallerRevalidation.RevalidatedUserId(principal),
             ct);
 
         if (!result.Succeeded)
@@ -77,15 +79,15 @@ public static class RoleEndpoints
     /// <summary>UC-12 — name and description only; capabilities change through UC-10.</summary>
     private static async Task<IResult> UpdateAsync(
         Guid id,
-        [FromBody] UpdateRoleRequest request,
+        [FromBody] UpdateRoleRequest? request,
         ClaimsPrincipal principal,
         IRoleService roles,
         CancellationToken ct)
     {
         var result = await roles.UpdateAsync(
             id,
-            new RoleEdit(request.Name, request.Description),
-            CapabilityGate.GatedUserId(principal),
+            new RoleEdit(request?.Name, request?.Description),
+            AdminCallerRevalidation.RevalidatedUserId(principal),
             ct);
 
         return result.Succeeded
@@ -101,7 +103,7 @@ public static class RoleEndpoints
         IRoleService roles,
         CancellationToken ct)
     {
-        var result = await roles.DeleteAsync(id, CapabilityGate.GatedUserId(principal), ct);
+        var result = await roles.DeleteAsync(id, AdminCallerRevalidation.RevalidatedUserId(principal), ct);
 
         return result.Succeeded
             ? Results.Ok(new RoleMessageResponse(Msg23Deleted, "Xoá vai trò thành công."))
@@ -111,8 +113,8 @@ public static class RoleEndpoints
     /// <summary>The failing branches, each with the status code that describes it.</summary>
     private static IResult Rejected(RoleResult result, string saveFailedMessage) => result.Outcome switch
     {
-        // No body: a role id the caller may not know about is exactly what AGENTS.md's
-        // "403 or 404?" table says not to describe.
+        // No body: there is nothing to say about an id that matches no role. The client refreshes
+        // its list, as the diagrams' "Role not found" branch has it.
         RoleOutcome.NotFound => Results.NotFound(),
 
         RoleOutcome.InvalidInformation => Results.Json(

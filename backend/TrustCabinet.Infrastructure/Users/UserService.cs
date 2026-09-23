@@ -101,6 +101,14 @@ public sealed partial class UserService(
             logger.LogInformation("Create rejected: email already taken (unique index).");
             return UserResult.Failure(UserOutcome.DuplicateEmail);
         }
+        catch (Exception ex) when (IsForeignKeyViolation(ex))
+        {
+            // The role was deleted between FindRoleAsync above and this insert — creating an
+            // account does not take the guard. role_id is the only foreign key this insert sets, so
+            // the answer is the one FindRoleAsync gives for a role that is gone.
+            logger.LogInformation("Create rejected: the chosen role was deleted meanwhile.");
+            return UserResult.Invalid(new Dictionary<string, string> { ["roleId"] = RoleNotFound });
+        }
 
         await audit.RecordAsync(
             AuditActions.UserCreated,
@@ -462,7 +470,7 @@ public sealed partial class UserService(
 
         if (role is null)
         {
-            errors["roleId"] = "Vai trò không tồn tại.";
+            errors["roleId"] = RoleNotFound;
         }
 
         return role;
@@ -495,4 +503,10 @@ public sealed partial class UserService(
     /// </summary>
     private static bool IsDuplicateEmail(Exception exception)
         => exception is DbUpdateException { InnerException: PostgresException { SqlState: "23505" } };
+
+    /// <summary>SQLSTATE 23503 — matched on the code for the reason <see cref="IsDuplicateEmail"/> gives.</summary>
+    private static bool IsForeignKeyViolation(Exception exception)
+        => exception is DbUpdateException { InnerException: PostgresException { SqlState: "23503" } };
+
+    private const string RoleNotFound = "Vai trò không tồn tại.";
 }

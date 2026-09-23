@@ -46,10 +46,9 @@ public class JwtTokenIssuerTests
 
         Assert.Equal(Secretary.Id.ToString(), token.Claims.First(c => c.Type == "sub").Value);
         Assert.Equal(Secretary.Email, token.Claims.First(c => c.Type == "email").Value);
-        // The role's id, not its name: a role can be renamed while the token is alive (ADR-0008).
-        Assert.Equal(
-            BuiltInRoles.Secretary.ToString(),
-            token.Claims.First(c => c.Type == ClaimTypes.Role).Value);
+        // No role claim: authorization reads capabilities, and a role can be renamed while the
+        // token is alive (ADR-0008).
+        Assert.DoesNotContain(token.Claims, c => c.Type is ClaimTypes.Role or "role");
     }
 
     [Fact]

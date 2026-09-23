@@ -266,6 +266,27 @@ public class RoleEndpointsTests : IDisposable
         Assert.Equal("MSG20", (await JsonOf(response)).GetProperty("code").GetString());
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("null")]
+    public async Task Create_and_update_answer_MSG20_when_there_is_no_body_at_all(string body)
+    {
+        var role = GivenCustomRole();
+        var client = AdminClient();
+
+        HttpContent Json() => new StringContent(body, System.Text.Encoding.UTF8, "application/json");
+
+        foreach (var response in new[]
+        {
+            await client.PostAsync("/api/roles", Json()),
+            await client.PutAsync($"/api/roles/{role.Id}", Json()),
+        })
+        {
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal("MSG20", (await JsonOf(response)).GetProperty("code").GetString());
+        }
+    }
+
     [Fact]
     public async Task Create_answers_MSG21_with_409_for_a_name_already_used()
     {

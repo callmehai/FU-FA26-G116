@@ -220,6 +220,15 @@ public class RoleServiceTests
     }
 
     [Fact]
+    public async Task Create_names_a_null_capability_rather_than_leaving_a_blank()
+    {
+        var result = await NewService().CreateAsync(
+            new NewRole("Thư ký phó", null, ["MinutesEditor", null!]), _actorId);
+
+        Assert.Equal("Quyền không hợp lệ: null.", result.Errors!["capabilities"]);
+    }
+
+    [Fact]
     public async Task Create_reports_every_invalid_field_at_once()
     {
         var result = await NewService().CreateAsync(
@@ -254,6 +263,31 @@ public class RoleServiceTests
         Assert.Equal(RoleOutcome.DuplicateName, result.Outcome);
         Assert.Equal(0, _roles.SaveCount);
         Assert.Empty(_audit.Records);
+    }
+
+    [Fact]
+    public async Task Create_answers_MSG21_for_the_same_name_typed_with_combining_marks()
+    {
+        // Unikey's "Unicode tổ hợp" types "Thư ký phó" as base letters plus combining marks — a
+        // different byte string that citext would not call equal. Normalised to NFC first.
+        GivenCustomRole("Thư ký phó");
+        var decomposed = "Thư ký phó".Normalize(System.Text.NormalizationForm.FormD);
+
+        var result = await NewService().CreateAsync(new NewRole(decomposed, null, []), _actorId);
+
+        Assert.Equal(RoleOutcome.DuplicateName, result.Outcome);
+    }
+
+    [Fact]
+    public async Task Create_stores_the_name_in_NFC_and_measures_it_that_way()
+    {
+        // 64 letters with diacritics: 128 UTF-16 units decomposed, 64 composed.
+        var name = new string('ế', 64).Normalize(System.Text.NormalizationForm.FormD);
+
+        var result = await NewService().CreateAsync(new NewRole(name, null, []), _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.True(result.Role!.Name.IsNormalized(System.Text.NormalizationForm.FormC));
     }
 
     [Fact]
@@ -442,6 +476,20 @@ public class RoleServiceTests
         var result = await NewService().UpdateAsync(role.Id, new RoleEdit("Phó thư ký", null), _actorId);
 
         Assert.Equal(RoleOutcome.DuplicateName, result.Outcome);
+        Assert.Empty(_audit.Records);
+    }
+
+    [Fact]
+    public async Task Update_answers_not_found_when_the_role_was_deleted_before_the_save()
+    {
+        // Renaming does not take the guard, so a delete can land between the read and the
+        // UPDATE, which then matches no row. "Role not found" — refresh — not "retry".
+        var role = GivenCustomRole();
+        _roles.NextSaveThrows = new DbUpdateConcurrencyException("0 rows affected");
+
+        var result = await NewService().UpdateAsync(role.Id, new RoleEdit("Phó thư ký", null), _actorId);
+
+        Assert.Equal(RoleOutcome.NotFound, result.Outcome);
         Assert.Empty(_audit.Records);
     }
 

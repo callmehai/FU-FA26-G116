@@ -285,6 +285,24 @@ public class UserServiceTests
         Assert.Empty(_audit.Records);
     }
 
+    [Fact]
+    public async Task Create_answers_MSG09_on_the_role_when_the_role_is_deleted_before_the_save()
+    {
+        // The role existed when the form was checked, then was deleted before the insert; the
+        // foreign key refuses it. The same answer as a role that was already gone, not a 500.
+        _users.NextSaveThrows = new Microsoft.EntityFrameworkCore.DbUpdateException(
+            "insert or update violates foreign key constraint",
+            new Npgsql.PostgresException("fk", "ERROR", "ERROR", "23503"));
+
+        var result = await NewService().CreateAsync(
+            new NewUser("Tên hợp lệ", "hople@trustcabinet.local", ValidPassword, BuiltInRoles.Member),
+            _actorId);
+
+        Assert.Equal(UserOutcome.InvalidInformation, result.Outcome);
+        Assert.Equal("Vai trò không tồn tại.", result.Errors!["roleId"]);
+        Assert.Empty(_audit.Records);
+    }
+
     // -------------------------------------------------------------- UC-06 · Update user account
 
     [Fact]

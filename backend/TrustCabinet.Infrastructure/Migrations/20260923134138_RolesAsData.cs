@@ -1,6 +1,5 @@
 using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using TrustCabinet.Domain.Access;
 
 #nullable disable
 
@@ -17,17 +16,18 @@ namespace TrustCabinet.Infrastructure.Migrations
     ///
     /// The four built-in roles are inserted here with SQL rather than HasData: the fill step needs
     /// them in this same migration, and HasData would make later migrations fight administrators'
-    /// edits (ADR-0007). Their ids come from <see cref="BuiltInRoles"/> so they are written once.
+    /// edits (ADR-0007). Their ids are literals equal to <c>BuiltInRoles</c>, not references to it:
+    /// a migration is frozen once applied, and must not change if that class ever does.
     /// </summary>
     public partial class RolesAsData : Migration
     {
         /// <summary>The enum names the old columns hold, and the built-in role each one became.</summary>
         private static readonly (string EnumName, Guid Id, string Name, string Description)[] BuiltIn =
         [
-            ("Chair", BuiltInRoles.Chair, "Chủ toạ", "Chủ trì và phê duyệt cuộc họp."),
-            ("Secretary", BuiltInRoles.Secretary, "Thư ký", "Tạo cuộc họp và soạn biên bản."),
-            ("Member", BuiltInRoles.Member, "Thành viên", "Dự họp, đọc tài liệu và biểu quyết."),
-            ("Admin", BuiltInRoles.Admin, "Quản trị viên", "Quản lý tài khoản người dùng và phân quyền."),
+            ("Chair", new Guid("01a0ce78-7202-7945-be13-d2022cf25203"), "Chủ toạ", "Chủ trì và phê duyệt cuộc họp."),
+            ("Secretary", new Guid("01a0ce78-7203-7c7f-8326-7a0baebf4c22"), "Thư ký", "Tạo cuộc họp và soạn biên bản."),
+            ("Member", new Guid("01a0ce78-7204-7558-b181-e908a08e83a3"), "Thành viên", "Dự họp, đọc tài liệu và biểu quyết."),
+            ("Admin", new Guid("01a0ce78-7205-7486-b976-d52d428d5451"), "Quản trị viên", "Quản lý tài khoản người dùng và phân quyền."),
         ];
 
         /// <inheritdoc />
