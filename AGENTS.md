@@ -152,8 +152,10 @@ does not reveal that it exists; keep it that way rather than switching to 403.
 Tóm lại: giấu **sự tồn tại của một dòng dữ liệu**, không giấu **sự tồn tại của một endpoint**.
 
 **CSS**: use the variables declared on `:root` in `global.css` (`--lacquer`, `--ink`, `--surface`,
-`--muted-ink`, `--chip-*`, …). The palette already covers light and dark via
-`prefers-color-scheme`; a hardcoded colour will break dark mode.
+`--muted-ink`, `--chip-*`, …) rather than hardcoded colours. The UI is **light only**, like the
+AI-eCabinet reference — do not add a `prefers-color-scheme: dark` palette. Sizes and spacing follow
+the reference too (60px app bar, 256px sidebar, 36px controls, 14px body text, tables without a card
+frame); check against it before inventing new ones.
 
 **Dropdowns** use `components/Select.tsx`, not a native `<select>`: the browser hands a native
 select's popup to the operating system, which ignores the page stylesheet and looked wrong in dark
@@ -191,9 +193,9 @@ When a change affects design or scope, update `docs/` in the **same commit** as 
 - **Never commit a connection string, API key or credential.** `appsettings.json` is committed, so
   secrets do not go there. Use `dotnet user-secrets set "ConnectionStrings:TrustCabinet" "..."` locally
   (the repo is public) and environment variables in deployment.
-- Authentication and RBAC are **mocked in the browser** (`features/auth/AuthProvider.tsx`,
-  `types/user.ts`), and the meetings list reads `features/meetings/sampleData.ts`. All of it is
-  deliberate scaffolding — delete it as the real endpoints land, and never treat it as working
-  auth.
+- Sign-in, sign-out and the admin screens (users, role matrix) call the real API. Tokens live in
+  `features/auth/session.ts`; a user's capabilities come from the backend, never from a table in
+  the frontend. The meetings screens still read `features/meetings/sampleData.ts` — deliberate
+  scaffolding until the meeting endpoints land.
 - The AI-eCabinet repo (`~/Developer/ai-ecabinet`) is a private, unlicensed reference. Read it to
   understand the domain; do not copy source files into this repo. It is a graded capstone.

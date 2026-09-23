@@ -51,7 +51,7 @@ export function App() {
             <Route
               path={routes.meetingNew}
               element={
-                <RequireCapability cap="meeting_creator">
+                <RequireCapability cap="MeetingCreator">
                   <CreateMeetingPage />
                 </RequireCapability>
               }
@@ -61,7 +61,7 @@ export function App() {
             <Route
               path={routes.adminUsers}
               element={
-                <RequireCapability cap="admin_users">
+                <RequireCapability cap="AdminUsers">
                   <UsersPage />
                 </RequireCapability>
               }
@@ -69,7 +69,7 @@ export function App() {
             <Route
               path={routes.adminRoles}
               element={
-                <RequireCapability cap="admin_users">
+                <RequireCapability cap="AdminUsers">
                   <RolesPage />
                 </RequireCapability>
               }

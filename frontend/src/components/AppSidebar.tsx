@@ -14,8 +14,8 @@ interface NavEntry {
 
 const ENTRIES: NavEntry[] = [
   { to: routes.meetings, label: 'Cuộc họp', icon: 'calendar' },
-  { to: routes.adminUsers, label: 'Người dùng & Quyền', icon: 'users', cap: 'admin_users' },
-  { to: routes.adminRoles, label: 'Vai trò', icon: 'shield', cap: 'admin_users' },
+  { to: routes.adminUsers, label: 'Người dùng & Quyền', icon: 'users', cap: 'AdminUsers' },
+  { to: routes.adminRoles, label: 'Vai trò', icon: 'shield', cap: 'AdminUsers' },
 ]
 
 /** Navigation for the management workspace. */
@@ -26,7 +26,7 @@ export function AppSidebar() {
     <nav className="sidebar-nav">
       {ENTRIES.filter((e) => !e.cap || can(e.cap)).map((entry) => (
         <NavLink key={entry.to} to={entry.to}>
-          <Icon name={entry.icon} />
+          <Icon name={entry.icon} size={16} />
           <span>{entry.label}</span>
         </NavLink>
       ))}

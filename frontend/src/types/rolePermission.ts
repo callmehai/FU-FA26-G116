@@ -1,18 +1,11 @@
+import type { Capability, Role } from './user'
+
 /**
  * The role ↔ capability matrix (SCRUM-60, UC-09 and UC-10).
  *
- * These mirror the backend's response shapes exactly, so the codes here are the backend's
- * PascalCase enum names — `AdminUsers`, not the `admin_users` used by the temporary
- * `ROLE_CAPABILITIES` table in `types/user.ts`. That table is scaffolding that goes away with
- * SCRUM-46; this is the real matrix, read from the database, and an administrator can change it
- * at runtime. Do not hardcode a copy of it.
+ * These mirror the backend's response shapes exactly. This is the real matrix, read from the
+ * database, and an administrator can change it at runtime — do not hardcode a copy of it.
  */
-
-/** A role's PascalCase name, as the backend spells it. */
-export type RoleCode = 'Chair' | 'Secretary' | 'Member' | 'Admin'
-
-/** A capability's PascalCase name, as the backend spells it. */
-export type CapabilityCode = 'MeetingCreator' | 'MeetingApprover' | 'MinutesEditor' | 'AdminUsers'
 
 /**
  * One capability, described for a human reader.
@@ -21,7 +14,7 @@ export type CapabilityCode = 'MeetingCreator' | 'MeetingApprover' | 'MinutesEdit
  * enum cannot reach this screen as a blank column.
  */
 export interface PermissionDescriptor {
-  code: CapabilityCode
+  code: Capability
   name: string
   description: string
   functionalGroup: string
@@ -29,8 +22,8 @@ export interface PermissionDescriptor {
 
 /** One row of the grid. */
 export interface RolePermissions {
-  role: RoleCode
-  capabilities: CapabilityCode[]
+  role: Role
+  capabilities: Capability[]
   /** Whether the role is part of the system's definition. All four are, today. */
   isBuiltIn: boolean
 }
@@ -46,14 +39,4 @@ export interface MatrixMutationResponse {
   code: string
   message: string
   matrix: RolePermissionMatrix
-}
-
-/**
- * A refused configuration. `errors` is field name → message for MSG17, and absent for MSG18,
- * where nothing about the request was wrong and retrying is the right advice.
- */
-export interface MatrixErrorResponse {
-  code: string
-  message: string
-  errors?: Record<string, string>
 }

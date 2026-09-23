@@ -1,7 +1,7 @@
+import type { ReactNode } from 'react'
 import { NotFound } from '../../components/NotFound'
 import type { Capability } from '../../types/user'
 import { useAuth } from './useAuth'
-import type { ReactNode } from 'react'
 
 /**
  * Capability gate for a single route.

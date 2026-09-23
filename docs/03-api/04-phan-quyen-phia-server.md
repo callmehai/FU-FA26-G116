@@ -78,9 +78,9 @@ từ đầu. Tài khoản không còn hoặc đã bị vô hiệu hoá thì tr�
 }
 ```
 
-Bảng cứng `ROLE_CAPABILITIES` trong [`frontend/src/types/user.ts`](../../frontend/src/types/user.ts)
-là scaffolding, sẽ biến mất cùng SCRUM-46. Nó **không** phải nguồn sự thật và đang lệch với backend
-(mã quyền ở đó là `snake_case`, backend trả PascalCase). Đừng thêm capability mới vào đó.
+FE không giữ bản sao nào của ánh xạ vai trò ↔ quyền: [`frontend/src/types/user.ts`](../../frontend/src/types/user.ts)
+chỉ khai báo kiểu `Capability` (PascalCase, đúng tên enum), còn danh sách quyền của từng người
+luôn lấy từ `capabilities` ở trên. Đừng thêm lại một bảng cứng ở FE.
 
 ## Thêm một endpoint nghiệp vụ mới
 
