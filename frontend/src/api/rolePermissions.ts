@@ -1,10 +1,6 @@
 import { api } from './client'
-import type {
-  CapabilityCode,
-  MatrixMutationResponse,
-  RoleCode,
-  RolePermissionMatrix,
-} from '../types/rolePermission'
+import type { MatrixMutationResponse, RolePermissionMatrix } from '../types/rolePermission'
+import type { Capability, Role } from '../types/user'
 
 /**
  * The role ↔ capability matrix endpoints (SCRUM-60).
@@ -24,8 +20,9 @@ export const getRolePermissionMatrix = () =>
  * have after the change, including the ones it already had. An empty array is a valid request and
  * strips the role of everything — which is why it must always be sent explicitly.
  *
- * Rejected with MSG17 when it would leave no role holding `AdminUsers`: the system would then
- * have nobody able to reach this screen, and no way back except a database console.
+ * Rejected with MSG17 (`errors.adminUsers`) when it would leave no active account holding
+ * `AdminUsers`: the system would then have nobody able to reach this screen, and no way back
+ * except a database console. The rule counts accounts, not roles, so only the backend can judge it.
  */
-export const updateRolePermissions = (role: RoleCode, capabilities: CapabilityCode[]) =>
+export const updateRolePermissions = (role: Role, capabilities: Capability[]) =>
   api.put<MatrixMutationResponse>('/api/roles/capabilities', { role, capabilities })

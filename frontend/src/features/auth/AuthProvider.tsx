@@ -1,70 +1,73 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react'
-import { ROLE_CAPABILITIES, type Capability, type Role, type User } from '../../types/user'
-import { AuthContext } from './authContext'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import * as authApi from '../../api/auth'
+import type { Capability, CurrentUser } from '../../types/user'
+import { AuthContext, type AuthStatus } from './authContext'
+import * as session from './session'
 
-/**
- * Session state for the whole app.
- *
- * TEMPORARY: authentication is mocked in the browser because the backend has no user table, no
- * password hashing and no token issuing yet. `signIn` accepts any credentials and fabricates a
- * user, so screens can be built and reviewed before auth lands.
- *
- * When the real endpoints exist, only this file changes: `signIn` posts to `/api/auth/login`, the
- * returned token is attached by `api/client.ts`, and the localStorage cache below gives way to
- * whatever the token strategy requires.
- */
-
-const STORAGE_KEY = 'trustcabinet.session'
-
-function readCachedUser(): User | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as User) : null
-  } catch {
-    // Private mode or a corrupted value — treat it as signed out rather than crashing the app.
-    return null
-  }
+interface SessionState {
+  status: AuthStatus
+  user: CurrentUser | null
+  sessionExpired: boolean
 }
 
+/**
+ * Session state for the whole app (SCRUM-11).
+ *
+ * The user — and with it every capability the UI gates on — always comes from the backend: from
+ * the sign-in response, or from a refresh on reload. Tokens are handled by `session.ts`; this
+ * component mirrors what it reports into React.
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Read straight into the initial state: the cache is synchronous, so there is no restoring
-  // phase for guards to wait on and no first paint showing a signed-in user as signed out.
-  const [user, setUser] = useState<User | null>(readCachedUser)
+  const [state, setState] = useState<SessionState>({ status: 'loading', user: null, sessionExpired: false })
 
-  const signIn = useCallback((email: string, role: Role) => {
-    const localPart = email.split('@')[0] || 'nguoi.dung'
+  useEffect(() => {
+    const unsubscribe = session.subscribe((user, expired) =>
+      setState({ status: user ? 'authenticated' : 'anonymous', user, sessionExpired: expired }),
+    )
 
-    const next: User = {
-      id: crypto.randomUUID(),
-      fullName: localPart.replace(/[._]/g, ' '),
-      email,
-      role,
-      capabilities: ROLE_CAPABILITIES[role],
-    }
+    void session.restoreSession().then((user) => {
+      // A successful restore has already been reported through the subscription.
+      if (!user) setState((s) => (s.status === 'loading' ? { ...s, status: 'anonymous' } : s))
+    })
 
-    setUser(next)
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-    } catch {
-      // The session simply will not survive a reload; not worth blocking sign-in over.
-    }
+    return unsubscribe
   }, [])
 
-  const signOut = useCallback(() => {
-    setUser(null)
-    try {
-      localStorage.removeItem(STORAGE_KEY)
-    } catch {
-      // Nothing to clean up when storage is unavailable.
+  // Coming back to the tab: re-read capabilities, so a menu an administrator took away in the
+  // meantime disappears before the user clicks it and meets a 403.
+  const authenticated = state.status === 'authenticated'
+  useEffect(() => {
+    if (!authenticated) return
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void session.reloadSession()
     }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [authenticated])
+
+  const signIn = useCallback(async (email: string, password: string) => {
+    session.startSession(await authApi.signIn(email, password))
+  }, [])
+
+  const signInWithGoogle = useCallback(async (idToken: string) => {
+    session.startSession(await authApi.signInWithGoogle(idToken))
+  }, [])
+
+  const signOut = useCallback(() => session.signOut(), [])
+
+  const reloadSession = useCallback(async () => {
+    await session.reloadSession()
   }, [])
 
   const can = useCallback(
-    (capability: Capability) => user?.capabilities.includes(capability) ?? false,
-    [user],
+    (capability: Capability) => state.user?.capabilities.includes(capability) ?? false,
+    [state.user],
   )
 
-  const value = useMemo(() => ({ user, can, signIn, signOut }), [user, can, signIn, signOut])
+  const value = useMemo(
+    () => ({ ...state, can, signIn, signInWithGoogle, signOut, reloadSession }),
+    [state, can, signIn, signInWithGoogle, signOut, reloadSession],
+  )
 
   return <AuthContext value={value}>{children}</AuthContext>
 }

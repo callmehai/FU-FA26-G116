@@ -57,7 +57,7 @@ export function MeetingsPage() {
         title="Cuộc họp"
         description="Danh sách các cuộc họp bạn có quyền xem."
         action={
-          can('meeting_creator') && (
+          can('MeetingCreator') && (
             <Link className="btn btn-primary" to={routes.meetingNew}>
               <Icon name="plus" size={16} />
               Tạo cuộc họp
@@ -82,7 +82,7 @@ export function MeetingsPage() {
         <Select value={sensitivity} options={SENSITIVITY_OPTIONS} onChange={setSensitivity} label="Mức độ" />
       </div>
 
-      <div className="card table-card">
+      <div className="table-card table-fill">
         <table className="data-table">
           <thead>
             <tr>
