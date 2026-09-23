@@ -362,9 +362,13 @@ nó chỉ tồn tại trong một database toàn cuộc họp bịa.
 
 ## Còn nợ
 
-- **Toàn bộ phần FE** của cả ba use case: nút *Continue with Google*, hộp xác nhận đăng xuất, và
-  xoá cơ chế giả lập trong `features/auth/AuthProvider.tsx` cùng ô chọn vai trò ở màn đăng nhập
-  (SCRUM-46).
+- ~~Toàn bộ phần FE của cả ba use case~~ — **đã làm**: màn đăng nhập gọi `/login` và `/google`
+  (nút Google dùng Google Identity Services), hộp xác nhận đăng xuất gọi `/logout` trước khi xoá
+  token, `AuthProvider` khôi phục phiên bằng `/refresh` khi tải lại trang. Token nằm ở
+  `frontend/src/features/auth/session.ts`: access token chỉ trong bộ nhớ, refresh token trong
+  `localStorage` (xem mục cookie bên dưới); refresh chạy single-flight, có Web Lock để hai tab
+  không tranh nhau một RT dùng-một-lần. Google `client_id` đang lặp lại ở FE vì backend chưa có
+  endpoint trả nó.
 - **Màn hình liên kết tài khoản Google.** Hiện phải `update users set google_subject_id = ...` bằng
   SQL. Thuộc màn quản trị người dùng (SCRUM-60).
 - **RT đang trả trong response body**, chưa phải cookie `HttpOnly`. Frontend không thuộc phạm vi

@@ -348,5 +348,7 @@ vào bằng chứng. Đã đánh dấu `ponytail:` trong code.
   được lỗi này.
 - **Liên kết tài khoản với Google từ màn hình quản trị.** Hiện vẫn làm bằng SQL — xem
   [01-xac-thuc.md](01-xac-thuc.md).
-- **Màn hình FE** (`frontend/src/features/access/UsersPage.tsx`) vẫn là placeholder. Story này chỉ
-  làm backend.
+- ~~Màn hình FE~~ — **đã làm**: `frontend/src/features/access/UsersPage.tsx` (danh sách, tìm/lọc
+  phía client, vô hiệu hoá/kích hoạt có hộp xác nhận) và `UserFormDialog.tsx` (tạo/sửa, lỗi theo
+  từng field). `MSG12` ở `/status` được FE phân biệt bằng cách đọc lại tài khoản: đã đúng trạng
+  thái thì là danh sách cũ, ngược lại là quản trị viên cuối cùng.

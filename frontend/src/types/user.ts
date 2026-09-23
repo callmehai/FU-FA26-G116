@@ -1,40 +1,71 @@
 /**
- * Capabilities gate what a user may do. They are deliberately coarse and named after actions
- * rather than job titles, so a role change never means editing every screen.
+ * Roles and capabilities, spelled exactly as the backend spells them: PascalCase enum names.
  *
- * The UI uses them only to decide what to render. Authorization is the backend's job: hiding a
- * button is not access control, and every request must be re-checked server-side.
+ * Capabilities gate what a user may do. The UI uses them only to decide what to render —
+ * authorization is the backend's job, and every request is re-checked server-side. Which role
+ * carries which capability is not known here: it lives in the `role_capabilities` table, an
+ * administrator can change it at runtime, and the backend hands each user their own list at
+ * sign-in. Never keep a copy of that mapping in the frontend.
  */
-export const CAPABILITIES = ['meeting_creator', 'meeting_approver', 'minutes_editor', 'admin_users'] as const
+export type Role = 'Chair' | 'Secretary' | 'Member' | 'Admin'
 
-export type Capability = (typeof CAPABILITIES)[number]
+export type Capability = 'MeetingCreator' | 'MeetingApprover' | 'MinutesEditor' | 'AdminUsers'
 
-export type Role = 'chair' | 'secretary' | 'member' | 'admin'
-
+/** Vietnamese names for the four built-in roles. The backend returns only the enum name. */
 export const ROLE_LABEL: Record<Role, string> = {
-  chair: 'Chủ toạ',
-  secretary: 'Thư ký',
-  member: 'Thành viên',
-  admin: 'Quản trị viên',
+  Chair: 'Chủ toạ',
+  Secretary: 'Thư ký',
+  Member: 'Thành viên',
+  Admin: 'Quản trị viên',
+}
+
+export const ROLES = Object.keys(ROLE_LABEL) as Role[]
+
+/** The signed-in user — GET /api/auth/me, and the `user` of every sign-in response. */
+export interface CurrentUser {
+  id: string
+  email: string
+  fullName: string
+  role: Role
+  /** May be empty: a Member signs in normally without holding any capability. */
+  capabilities: Capability[]
 }
 
 /**
- * Which capabilities each role carries.
+ * One account as the user-management screens see it (SCRUM-13).
  *
- * TEMPORARY: the real mapping belongs in the backend, which will return a user's capabilities at
- * sign-in. This table exists so screens can be built and demoed before that endpoint lands.
+ * `hasPassword` / `hasGoogleLink` only say whether each sign-in method exists; the backend never
+ * sends the hash or the Google subject.
  */
-export const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
-  chair: ['meeting_creator', 'meeting_approver'],
-  secretary: ['meeting_creator', 'minutes_editor'],
-  member: [],
-  admin: ['admin_users'],
-}
-
-export interface User {
+export interface UserAccount {
   id: string
   fullName: string
   email: string
   role: Role
-  capabilities: Capability[]
+  isActive: boolean
+  hasPassword: boolean
+  hasGoogleLink: boolean
+  createdAt: string
+}
+
+/** What POST /api/users (MSG07), PUT /api/users/{id} (MSG10) and PUT …/status (MSG11) return. */
+export interface UserMutationResponse {
+  code: string
+  message: string
+  /** The account after the change — patch it into the list instead of fetching again. */
+  user: UserAccount
+}
+
+export interface CreateUserRequest {
+  fullName: string
+  email: string
+  password: string
+  role: Role
+}
+
+/** No `password` and no `isActive`: the backend ignores both here, on purpose. */
+export interface UpdateUserRequest {
+  fullName: string
+  email: string
+  role: Role
 }

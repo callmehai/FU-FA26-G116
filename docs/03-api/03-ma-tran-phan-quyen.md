@@ -363,13 +363,13 @@ service vẫn có hai đường đọc riêng.
 
 ## Còn nợ
 
-**Chưa đóng được `SCRUM-60`.** Phần backend đã xong, nhưng 2 trong 8 tiêu chí nghiệm thu thuộc về
-FE và chưa làm:
+Cả 8 tiêu chí nghiệm thu đã có code; phần FE nằm ở
+[`frontend/src/features/access/RolesPage.tsx`](../../frontend/src/features/access/RolesPage.tsx):
 
 | Tiêu chí nghiệm thu | Trạng thái |
 |---|---|
-| Màn hình ma trận 4×4, bật/tắt từng ô | ❌ **chưa làm** — chưa có page component, chưa có route |
-| Route thiếu quyền trả `404` | ❌ **chưa làm** — chưa có route nào để gác |
+| Màn hình ma trận 4×4, bật/tắt từng ô | ✅ sửa nháp theo từng vai trò, lưu từng vai trò bằng một `PUT` |
+| Route thiếu quyền trả `404` | ✅ `/mgmt/admin/roles` bọc `RequireCapability cap="AdminUsers"` |
 | Chỉ người có `admin_users` vào được | ✅ ở tầng API |
 | Chặn tự khoá, kiểm ở server | ✅ |
 | Ghi audit log kèm trước/sau | ✅ |
@@ -377,11 +377,5 @@ FE và chưa làm:
 | Không tạo được quyền mới | ✅ |
 | Quyết `HasData` + viết ADR | ✅ [ADR-0007](../05-decisions/0007-ma-tran-phan-quyen-sua-duoc-luc-chay.md) |
 
-[`types/rolePermission.ts`](../../frontend/src/types/rolePermission.ts) và
-[`api/rolePermissions.ts`](../../frontend/src/api/rolePermissions.ts) đã sẵn sàng cho FE dùng —
-xem thêm [note cho FE](03-ma-tran-phan-quyen-note-cho-fe.md). Hiện hai file đó **chưa có ai
-import**, đúng như dự kiến: chúng là hợp đồng để FE bắt đầu, không phải code chết.
-- **`ROLE_CAPABILITIES` trong [`frontend/src/types/user.ts`](../../frontend/src/types/user.ts) vẫn
-  là bản sao cứng** của ma trận, dùng chữ thường gạch dưới (`admin_users`) khác với backend
-  (`AdminUsers`). Đó là scaffolding sẽ bị xoá ở `SCRUM-46`. Từ giờ nó **có thể sai**, vì quản trị
-  viên đổi được ma trận thật lúc chạy — đừng dùng nó để quyết định gì ngoài việc dựng giao diện.
+`ROLE_CAPABILITIES` (bản sao cứng của ma trận trong `frontend/src/types/user.ts`) **đã bị xoá**;
+FE dùng mã PascalCase của backend và lấy `capabilities` của người dùng từ response đăng nhập.

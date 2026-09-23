@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { Icon } from './Icon'
 
 export interface SelectOption<T extends string> {
@@ -15,6 +15,11 @@ export interface SelectOption<T extends string> {
  *
  * Keyboard behaviour follows the ARIA listbox pattern: arrows move the highlight, Enter or Space
  * commits it, Escape closes without changing the value, and focus returns to the trigger.
+ *
+ * The menu opens in the browser's top layer (Popover API), positioned against the trigger. Inside
+ * a modal dialog nothing else works: the dialog's scrolling body would clip an absolutely
+ * positioned menu, and z-index cannot lift anything above a `showModal()` dialog — only another
+ * top-layer element sits over it. It flips upwards when there is no room below.
  */
 export function Select<T extends string>({
   value,
@@ -38,6 +43,7 @@ export function Select<T extends string>({
 
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLUListElement>(null)
 
   const selected = options.find((o) => o.value === value)
 
@@ -51,6 +57,38 @@ export function Select<T extends string>({
 
     document.addEventListener('pointerdown', onPointerDown)
     return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [open])
+
+  // Lift the menu into the top layer and keep it pinned to the trigger while anything scrolls.
+  useLayoutEffect(() => {
+    const menu = menuRef.current
+    const trigger = triggerRef.current
+    if (!open || !menu || !trigger) return
+
+    menu.showPopover?.()
+
+    function place() {
+      if (!menu || !trigger) return
+      const box = trigger.getBoundingClientRect()
+      const gap = 4
+      const below = window.innerHeight - box.bottom
+      const upwards = below < menu.offsetHeight + gap * 2 && box.top > below
+
+      menu.style.left = `${box.left}px`
+      menu.style.minWidth = `${box.width}px`
+      menu.style.top = upwards ? 'auto' : `${box.bottom + gap}px`
+      menu.style.bottom = upwards ? `${window.innerHeight - box.top + gap}px` : 'auto'
+    }
+
+    place()
+    // Capture phase: a scroll inside the dialog body does not bubble to window.
+    window.addEventListener('scroll', place, true)
+    window.addEventListener('resize', place)
+    return () => {
+      window.removeEventListener('scroll', place, true)
+      window.removeEventListener('resize', place)
+      if (menu.matches(':popover-open')) menu.hidePopover()
+    }
   }, [open])
 
   function openAt(index: number) {
@@ -117,7 +155,7 @@ export function Select<T extends string>({
       </button>
 
       {open && (
-        <ul className="select-menu" role="listbox" id={listId} aria-label={label}>
+        <ul ref={menuRef} className="select-menu" role="listbox" id={listId} aria-label={label} popover="manual">
           {options.map((option, index) => (
             <li
               key={option.value}
