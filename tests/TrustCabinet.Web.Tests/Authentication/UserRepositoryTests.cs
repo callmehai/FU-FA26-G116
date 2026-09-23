@@ -136,6 +136,39 @@ public class UserRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task An_unlinked_active_account_is_linked_by_its_email()
+    {
+        var user = await AddUserAsync("ThuKy@TrustCabinet.local");
+
+        var linked = await new UserRepository(_db)
+            .LinkGoogleSubjectByEmailAsync("thuky@trustcabinet.LOCAL", "sub-moi");
+
+        Assert.Equal(user.Id, linked!.Id);
+        Assert.Equal("sub-moi", linked.GoogleSubjectId);
+        Assert.Equal(user.Id, (await new UserRepository(_db).FindByGoogleSubjectIdAsync("sub-moi"))!.Id);
+    }
+
+    [Fact]
+    public async Task An_already_linked_account_is_never_relinked()
+    {
+        await AddUserAsync("linked@x.local", googleSubjectId: "sub-cu");
+
+        Assert.Null(await new UserRepository(_db).LinkGoogleSubjectByEmailAsync("linked@x.local", "sub-moi"));
+        Assert.Equal(1, await _db.Users.CountAsync(u => u.GoogleSubjectId == "sub-cu"));
+    }
+
+    [Fact]
+    public async Task A_deactivated_account_is_not_linked()
+    {
+        var user = await AddUserAsync("off@x.local");
+        user.IsActive = false;
+        await _db.SaveChangesAsync();
+
+        Assert.Null(await new UserRepository(_db).LinkGoogleSubjectByEmailAsync("off@x.local", "sub-moi"));
+        Assert.Equal(0, await _db.Users.CountAsync(u => u.GoogleSubjectId != null));
+    }
+
+    [Fact]
     public async Task An_email_is_matched_without_regard_to_case()
     {
         var user = await AddUserAsync("ThuKy@TrustCabinet.local");

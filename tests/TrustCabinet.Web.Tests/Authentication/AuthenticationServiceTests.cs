@@ -3,6 +3,7 @@ using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Authentication;
+using TrustCabinet.Web.Tests.Users;
 
 namespace TrustCabinet.Web.Tests.Authentication;
 
@@ -21,7 +22,7 @@ public class AuthenticationServiceTests
     private readonly FakePasswordHasher _passwordHasher = new();
 
     private AuthenticationService NewService() => new(
-        _users, _passwordHasher, _tokenIssuer, _refreshTokens, _google,
+        _users, _passwordHasher, _tokenIssuer, _refreshTokens, _google, new FakeAuditService(),
         NullLogger<AuthenticationService>.Instance);
 
     private static User NewUser(
@@ -254,7 +255,7 @@ public class AuthenticationServiceTests
         _users.WithUser(user);
 
         var service = new AuthenticationService(
-            _users, new PasswordHasher(), _tokenIssuer, _refreshTokens, _google,
+            _users, new PasswordHasher(), _tokenIssuer, _refreshTokens, _google, new FakeAuditService(),
             NullLogger<AuthenticationService>.Instance);
 
         var result = await service.SignInAsync(user.Email, "SET-BY-SCRUM-11");
