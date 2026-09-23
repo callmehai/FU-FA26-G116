@@ -1,28 +1,30 @@
 import { useCallback, useEffect, useState } from 'react'
+import { deleteRole, listRoles } from '../../api/roles'
 import { getRolePermissionMatrix, updateRolePermissions } from '../../api/rolePermissions'
 import { Badge } from '../../components/Badge'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { Icon } from '../../components/Icon'
 import { PageHeader } from '../../components/PageHeader'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
+import type { RoleRecord } from '../../types/role'
 import type { PermissionDescriptor, RolePermissionMatrix } from '../../types/rolePermission'
-import { ROLE_LABEL, type Capability, type Role } from '../../types/user'
+import type { Capability } from '../../types/user'
 import { useAccessLost } from '../auth/useAccessLost'
 import { useAuth } from '../auth/useAuth'
+import { RoleFormDialog, type RoleFormTarget } from './RoleFormDialog'
 
-/** The capability that opens this screen, and the one the lockout rule protects. */
 const ADMIN_CAPABILITY: Capability = 'AdminUsers'
 
 interface RowError {
   message: string
-  /** Set when the backend refused because nobody active would be left holding `AdminUsers`. */
   lockout: boolean
 }
 
 function sameSet(a: readonly Capability[], b: readonly Capability[]) {
-  return a.length === b.length && a.every((c) => b.includes(c))
+  return a.length === b.length && a.every((capability) => b.includes(capability))
 }
 
-/** Consecutive columns sharing a functional group, for the grouped header row. */
 function groupColumns(columns: PermissionDescriptor[]) {
   const groups: { name: string; span: number }[] = []
   for (const column of columns) {
@@ -33,51 +35,59 @@ function groupColumns(columns: PermissionDescriptor[]) {
   return groups
 }
 
-/**
- * The role ↔ capability matrix (SCRUM-60): view it (UC-09) and set one role's capabilities
- * (UC-10).
- *
- * Columns and their labels come from the backend, never from a table here, and there is no way to
- * add a capability or a role — both are enums in code. Ticking boxes only edits a draft; each role
- * is saved on its own, because the backend takes one role per request and sending its complete
- * end state is what keeps one administrator's edit from overwriting another's.
- *
- * The lockout rule (someone active must keep `AdminUsers`) counts accounts, which this screen
- * cannot see, so it is left entirely to the backend: warn, let the user try, show the refusal.
- */
+/** SCRUM-60/63: edit the role-capability matrix and manage custom roles. */
 export function RolesPage() {
-  const { user: me, signOut } = useAuth()
+  const { user: me, signOut, reloadSession } = useAuth()
   const toast = useToast()
   const handleAccessLost = useAccessLost()
 
   const [matrix, setMatrix] = useState<RolePermissionMatrix | null>(null)
+  const [roles, setRoles] = useState<RoleRecord[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
-  /** Unsaved edits, per role. A role is absent here when it matches the saved matrix. */
-  const [drafts, setDrafts] = useState<Partial<Record<Role, Capability[]>>>({})
-  const [saving, setSaving] = useState<Role | null>(null)
-  const [rowErrors, setRowErrors] = useState<Partial<Record<Role, RowError>>>({})
+  const [drafts, setDrafts] = useState<Record<string, Capability[]>>({})
+  const [saving, setSaving] = useState<string | null>(null)
+  const [rowErrors, setRowErrors] = useState<Record<string, RowError | undefined>>({})
   const [ownRoleChanged, setOwnRoleChanged] = useState(false)
+  const [formTarget, setFormTarget] = useState<RoleFormTarget | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<RoleRecord | null>(null)
 
   const load = useCallback(async () => {
     try {
-      setMatrix(await getRolePermissionMatrix())
+      const [nextMatrix, nextRoles] = await Promise.all([getRolePermissionMatrix(), listRoles()])
+      setMatrix(nextMatrix)
+      setRoles(nextRoles)
+      setDrafts((current) => Object.fromEntries(
+        Object.entries(current).filter(([id, capabilities]) => {
+          const role = nextMatrix.roles.find((item) => item.id === id)
+          return role !== undefined && !sameSet(capabilities, role.capabilities)
+        }),
+      ))
+      setRowErrors((current) => Object.fromEntries(
+        Object.entries(current).filter(([id]) => nextMatrix.roles.some((role) => role.id === id)),
+      ))
+      setDeleteTarget((current) => {
+        if (!current) return current
+        return nextRoles.find((role) => role.id === current.id) ?? null
+      })
       setLoadError(null)
-    } catch (err) {
-      if (!handleAccessLost(err)) setLoadError(errorMessage(err))
+    } catch (error) {
+      if (!handleAccessLost(error)) setLoadError(errorMessage(error))
     }
   }, [handleAccessLost])
 
   useEffect(() => {
     let cancelled = false
-    getRolePermissionMatrix().then(
-      (result) => {
-        if (!cancelled) setMatrix(result)
+    Promise.all([getRolePermissionMatrix(), listRoles()]).then(
+      ([nextMatrix, nextRoles]) => {
+        if (!cancelled) {
+          setMatrix(nextMatrix)
+          setRoles(nextRoles)
+        }
       },
-      (err: unknown) => {
-        if (!cancelled && !handleAccessLost(err)) setLoadError(errorMessage(err))
+      (error: unknown) => {
+        if (!cancelled && !handleAccessLost(error)) setLoadError(errorMessage(error))
       },
     )
-    // StrictMode runs effects twice in dev; only the surviving run may write state.
     return () => {
       cancelled = true
     }
@@ -86,76 +96,70 @@ export function RolesPage() {
   const columns = matrix?.capabilities ?? []
   const groups = groupColumns(columns)
   const groupStarts = new Set(
-    columns.filter((c, i) => c.functionalGroup !== columns[i - 1]?.functionalGroup).map((c) => c.code),
+    columns.filter((column, index) => column.functionalGroup !== columns[index - 1]?.functionalGroup)
+      .map((column) => column.code),
   )
   const groupStart = (code: Capability) => (groupStarts.has(code) ? ' matrix-group-start' : '')
 
-  function saved(role: Role) {
-    return matrix?.roles.find((r) => r.role === role)?.capabilities ?? []
+  function saved(roleId: string) {
+    return matrix?.roles.find((role) => role.id === roleId)?.capabilities ?? []
   }
 
-  function effective(role: Role) {
-    return drafts[role] ?? saved(role)
+  function effective(roleId: string) {
+    return drafts[roleId] ?? saved(roleId)
   }
 
-  function toggle(role: Role, capability: Capability) {
-    const current = effective(role)
-    // Keep the column order, so the request lists capabilities the way the screen shows them.
-    const next = columns
-      .map((c) => c.code)
-      .filter((code) => (code === capability ? !current.includes(code) : current.includes(code)))
-
+  function toggle(roleId: string, capability: Capability) {
+    const current = effective(roleId)
+    const next = columns.map((column) => column.code).filter((code) =>
+      code === capability ? !current.includes(code) : current.includes(code),
+    )
     setDrafts((all) => {
       const rest = { ...all }
-      if (sameSet(next, saved(role))) delete rest[role]
-      else rest[role] = next
+      if (sameSet(next, saved(roleId))) delete rest[roleId]
+      else rest[roleId] = next
       return rest
     })
-    setRowErrors((all) => ({ ...all, [role]: undefined }))
+    setRowErrors((all) => ({ ...all, [roleId]: undefined }))
   }
 
-  function discard(role: Role) {
+  function discard(roleId: string) {
     setDrafts((all) => {
       const rest = { ...all }
-      delete rest[role]
+      delete rest[roleId]
       return rest
     })
-    setRowErrors((all) => ({ ...all, [role]: undefined }))
+    setRowErrors((all) => ({ ...all, [roleId]: undefined }))
   }
 
-  /** UC-10 for one role. `capabilities` is the role's whole end state, never a delta. */
-  async function save(role: Role) {
-    const capabilities = drafts[role]
+  async function save(roleId: string) {
+    const capabilities = drafts[roleId]
     if (!capabilities) return
 
-    setSaving(role)
-    setRowErrors((all) => ({ ...all, [role]: undefined }))
+    setSaving(roleId)
+    setRowErrors((all) => ({ ...all, [roleId]: undefined }))
     try {
-      const response = await updateRolePermissions(role, capabilities)
+      const response = await updateRolePermissions(roleId, capabilities)
       setMatrix(response.matrix)
-      // Drop this draft, and any other that the new matrix happens to match already.
       setDrafts((all) => {
-        const rest: typeof all = {}
-        for (const [r, caps] of Object.entries(all) as [Role, Capability[]][]) {
-          const now = response.matrix.roles.find((x) => x.role === r)?.capabilities ?? []
-          if (r !== role && !sameSet(caps, now)) rest[r] = caps
+        const rest: Record<string, Capability[]> = {}
+        for (const [id, pendingCapabilities] of Object.entries(all)) {
+          const current = response.matrix.roles.find((role) => role.id === id)?.capabilities ?? []
+          if (id !== roleId && !sameSet(pendingCapabilities, current)) rest[id] = pendingCapabilities
         }
         return rest
       })
       toast.show(response.message)
-      if (role === me?.role) setOwnRoleChanged(true)
-    } catch (err) {
-      if (handleAccessLost(err)) return
-      // MSG17 names each problem under its own key; `adminUsers` is the lockout rule. MSG18 is a
-      // 500 with a body and means "send the same again", which errorMessage already conveys.
-      const invalid = isApiError(err, 400, 'MSG17') ? (err.body?.errors ?? {}) : null
+      if (roleId === me?.roleId) setOwnRoleChanged(true)
+    } catch (error) {
+      if (handleAccessLost(error)) return
+      const invalid = isApiError(error, 400, 'MSG17') ? error.body?.errors : undefined
       const lockoutMessage = invalid?.adminUsers
-      const details = invalid ? Object.values(invalid).join(' ') : ''
       setRowErrors((all) => ({
         ...all,
-        [role]: {
+        [roleId]: {
           lockout: lockoutMessage !== undefined,
-          message: lockoutMessage ?? (details || errorMessage(err)),
+          message: lockoutMessage ?? (invalid ? Object.values(invalid).join(' ') : errorMessage(error)),
         },
       }))
     } finally {
@@ -163,15 +167,37 @@ export function RolesPage() {
     }
   }
 
-  /**
-   * Soft warning only: the screen cannot know who holds which role, so it cannot tell whether the
-   * backend will accept this — it may well, if the capability lives on in a role people hold.
-   */
-  function dropsLastVisibleAdminCapability(role: Role) {
-    if (!matrix || effective(role).includes(ADMIN_CAPABILITY) || !saved(role).includes(ADMIN_CAPABILITY)) {
+  function dropsLastVisibleAdminCapability(roleId: string) {
+    if (!matrix || effective(roleId).includes(ADMIN_CAPABILITY) || !saved(roleId).includes(ADMIN_CAPABILITY)) {
       return false
     }
-    return !matrix.roles.some((r) => r.role !== role && effective(r.role).includes(ADMIN_CAPABILITY))
+    return !matrix.roles.some((role) => role.id !== roleId && effective(role.id).includes(ADMIN_CAPABILITY))
+  }
+
+  async function confirmDelete(role: RoleRecord) {
+    try {
+      const response = await deleteRole(role.id)
+      toast.show(response.message)
+      setDrafts((current) => {
+        const rest = { ...current }
+        delete rest[role.id]
+        return rest
+      })
+      await load()
+    } catch (error) {
+      if (handleAccessLost(error)) return
+      if (isApiError(error, 409, 'MSG25')) {
+        const count = error.body?.userCount
+        await load()
+        throw new Error(
+          typeof count === 'number'
+            ? `Vai trò này vẫn còn ${count} tài khoản mang. Hãy chuyển họ sang vai trò khác trước khi xoá.`
+            : errorMessage(error),
+        )
+      }
+      if (isApiError(error, 404) || isApiError(error, 409, 'MSG24')) await load()
+      throw error
+    }
   }
 
   const columnCount = columns.length + 2
@@ -180,7 +206,12 @@ export function RolesPage() {
     <>
       <PageHeader
         title="Vai trò"
-        description="Chọn những quyền mỗi vai trò được mang. Mỗi vai trò lưu riêng."
+        description="Quản lý vai trò và chọn những quyền mỗi vai trò được mang. Mỗi vai trò lưu riêng."
+        action={
+          <button type="button" className="btn btn-primary" onClick={() => setFormTarget({ mode: 'create' })}>
+            Tạo vai trò
+          </button>
+        }
       />
 
       {ownRoleChanged && (
@@ -199,14 +230,7 @@ export function RolesPage() {
         {loadError ? (
           <div className="cell-empty">
             <p className="cell-error">{loadError}</p>
-            <button
-              type="button"
-              className="btn btn-outline btn-sm"
-              onClick={() => {
-                setLoadError(null)
-                void load()
-              }}
-            >
+            <button type="button" className="btn btn-outline btn-sm" onClick={() => void load()}>
               Thử lại
             </button>
           </div>
@@ -217,57 +241,49 @@ export function RolesPage() {
             <thead>
               <tr>
                 <th rowSpan={2}>Vai trò</th>
-                {groups.map((g) => (
-                  <th key={g.name} colSpan={g.span} className="matrix-group matrix-group-start">
-                    {g.name}
+                {groups.map((group) => (
+                  <th key={group.name} colSpan={group.span} className="matrix-group matrix-group-start">
+                    {group.name}
                   </th>
                 ))}
-                <th rowSpan={2} className="col-action">
-                  <span className="visually-hidden">Thao tác</span>
-                </th>
+                <th rowSpan={2} className="col-action"><span className="visually-hidden">Thao tác</span></th>
               </tr>
               <tr>
-                {columns.map((c) => (
-                  <th key={c.code} className={`matrix-cap${groupStart(c.code)}`}>
-                    {c.name}
+                {columns.map((column) => (
+                  <th key={column.code} className={`matrix-cap${groupStart(column.code)}`}>
+                    {column.name}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {matrix.roles.map(({ role }) => {
-                const dirty = drafts[role] !== undefined
-                const error = rowErrors[role]
-                const current = effective(role)
-                const roleLabel = ROLE_LABEL[role] ?? role
-                const warn = dirty && !error && dropsLastVisibleAdminCapability(role)
-
+              {matrix.roles.map(({ id, name, isBuiltIn }) => {
+                const dirty = drafts[id] !== undefined
+                const error = rowErrors[id]
+                const current = effective(id)
+                const warn = dirty && !error && dropsLastVisibleAdminCapability(id)
                 return [
-                  <tr key={role} className={dirty ? 'matrix-row-dirty' : undefined}>
+                  <tr key={id} className={dirty ? 'matrix-row-dirty' : undefined}>
                     <td className="cell-title">
-                      {roleLabel}
-                      {role === me?.role && (
-                        <>
-                          {' '}
-                          <Badge tone="blue">Vai trò của bạn</Badge>
-                        </>
-                      )}
+                      {name}{' '}
+                      {isBuiltIn && <Badge tone="outline">Mặc định</Badge>}{' '}
+                      {id === me?.roleId && <Badge tone="blue">Vai trò của bạn</Badge>}
                     </td>
-                    {columns.map((c) => {
-                      const checked = current.includes(c.code)
-                      const changed = checked !== saved(role).includes(c.code)
-                      const flagged = error?.lockout && c.code === ADMIN_CAPABILITY
+                    {columns.map((column) => {
+                      const checked = current.includes(column.code)
+                      const changed = checked !== saved(id).includes(column.code)
+                      const flagged = error?.lockout && column.code === ADMIN_CAPABILITY
                       return (
                         <td
-                          key={c.code}
-                          className={`matrix-cell${groupStart(c.code)}${changed ? ' matrix-cell-changed' : ''}${flagged ? ' matrix-cell-error' : ''}`}
+                          key={column.code}
+                          className={`matrix-cell${groupStart(column.code)}${changed ? ' matrix-cell-changed' : ''}${flagged ? ' matrix-cell-error' : ''}`}
                         >
                           <input
                             type="checkbox"
                             checked={checked}
                             disabled={saving !== null}
-                            onChange={() => toggle(role, c.code)}
-                            aria-label={`${roleLabel} — ${c.name}`}
+                            onChange={() => toggle(id, column.code)}
+                            aria-label={`${name} — ${column.name}`}
                           />
                         </td>
                       )
@@ -275,33 +291,21 @@ export function RolesPage() {
                     <td className="col-action">
                       {dirty && (
                         <span className="row-actions">
-                          <button
-                            type="button"
-                            className="btn btn-ghost btn-sm"
-                            onClick={() => discard(role)}
-                            disabled={saving !== null}
-                          >
+                          <button type="button" className="btn btn-ghost btn-sm" onClick={() => discard(id)} disabled={saving !== null}>
                             Hoàn tác
                           </button>
-                          <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
-                            onClick={() => void save(role)}
-                            disabled={saving !== null}
-                          >
-                            {saving === role ? 'Đang lưu…' : 'Lưu'}
+                          <button type="button" className="btn btn-primary btn-sm" onClick={() => void save(id)} disabled={saving !== null}>
+                            {saving === id ? 'Đang lưu…' : 'Lưu'}
                           </button>
                         </span>
                       )}
                     </td>
                   </tr>,
                   (error || warn) && (
-                    <tr key={`${role}-note`} className="matrix-note-row">
+                    <tr key={`${id}-note`} className="matrix-note-row">
                       <td colSpan={columnCount}>
                         {error ? (
-                          <p className="alert alert-error" role="alert">
-                            {error.message}
-                          </p>
+                          <p className="alert alert-error" role="alert">{error.message}</p>
                         ) : (
                           <p className="alert alert-warning">
                             Sau khi lưu, không vai trò nào trên bảng còn quyền quản trị người dùng. Hệ thống sẽ từ
@@ -320,19 +324,84 @@ export function RolesPage() {
 
       {matrix && (
         <dl className="capability-legend">
-          {columns.map((c) => (
-            <div key={c.code}>
-              <dt>{c.name}</dt>
-              <dd>{c.description}</dd>
-            </div>
+          {columns.map((column) => (
+            <div key={column.code}><dt>{column.name}</dt><dd>{column.description}</dd></div>
           ))}
         </dl>
       )}
 
+      {roles && (
+        <div className="table-card">
+          <table className="data-table">
+            <thead>
+              <tr><th>Tên vai trò</th><th>Mô tả</th><th>Tài khoản</th><th className="col-action">Thao tác</th></tr>
+            </thead>
+            <tbody>
+              {roles.map((role) => (
+                <tr key={role.id}>
+                  <td className="cell-title">
+                    {role.name}{' '}{role.isBuiltIn && <Badge tone="outline">Mặc định</Badge>}
+                  </td>
+                  <td className="cell-muted">{role.description ?? '—'}</td>
+                  <td>{role.userCount}</td>
+                  <td className="col-action">
+                    {!role.isBuiltIn && (
+                      <span className="row-actions">
+                        <button type="button" className="icon-button" onClick={() => setFormTarget({ mode: 'edit', role })} title="Sửa vai trò" aria-label={`Sửa vai trò ${role.name}`}>
+                          <Icon name="pencil" size={16} />
+                        </button>
+                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setDeleteTarget(role)} aria-label={`Xoá vai trò ${role.name}`}>
+                          Xoá
+                        </button>
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       <p className="page-note">
         Lưu quyền của một vai trò sẽ kết thúc phiên đăng nhập của những người đang mang vai trò đó, để quyền mới có
-        hiệu lực. Danh mục quyền và vai trò do hệ thống định nghĩa, không thêm mới từ màn hình này.
+        hiệu lực. Danh mục quyền do hệ thống định nghĩa. Bạn có thể tạo vai trò mới từ màn hình này.
       </p>
+
+      {formTarget && matrix && (
+        <RoleFormDialog
+          key={formTarget.mode === 'edit' ? formTarget.role.id : 'create'}
+          target={formTarget}
+          capabilities={matrix.capabilities}
+          onSaved={(response) => {
+            setFormTarget(null)
+            toast.show(response.message)
+            if (response.role.id === me?.roleId) void reloadSession()
+            void load()
+          }}
+          onAccessLost={handleAccessLost}
+          onGone={() => {
+            setFormTarget(null)
+            void load()
+          }}
+          onClose={() => setFormTarget(null)}
+        />
+      )}
+
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Xoá vai trò"
+          tone="danger"
+          confirmLabel="Xoá vai trò"
+          pendingLabel="Đang xoá…"
+          onConfirm={() => confirmDelete(deleteTarget)}
+          onClose={() => setDeleteTarget(null)}
+        >
+          {deleteTarget.userCount > 0
+            ? `Danh sách hiện ghi nhận ${deleteTarget.userCount} tài khoản mang vai trò “${deleteTarget.name}”, kể cả tài khoản đã vô hiệu hoá. Hệ thống sẽ kiểm tra lại khi xoá và từ chối nếu vẫn còn tài khoản.`
+            : `Bạn có chắc muốn xoá vai trò “${deleteTarget.name}”? Thao tác này không thể hoàn tác.`}
+        </ConfirmDialog>
+      )}
     </>
   )
 }

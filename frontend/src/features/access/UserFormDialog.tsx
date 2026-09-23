@@ -6,16 +6,17 @@ import { Select } from '../../components/Select'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { generatePassword } from '../../lib/password'
-import { ROLE_LABEL, ROLES, type Role, type UserAccount, type UserMutationResponse } from '../../types/user'
-
-const ROLE_OPTIONS = ROLES.map((value) => ({ value, label: ROLE_LABEL[value] }))
+import type { RoleRecord } from '../../types/role'
+import type { UserAccount, UserMutationResponse } from '../../types/user'
 
 /** The backend's own minimum. Checked here only to save a round trip; the backend checks again. */
 const MIN_PASSWORD_LENGTH = 12
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-type Field = 'fullName' | 'email' | 'password' | 'role'
+type Field = 'fullName' | 'email' | 'password' | 'roleId'
 type FieldErrors = Partial<Record<Field, string>>
+
+const DEFAULT_USER_ROLE_ID = '01a0ce78-7204-7558-b181-e908a08e83a3'
 
 export type UserFormTarget = { mode: 'create' } | { mode: 'edit'; id: string }
 
@@ -28,6 +29,7 @@ export type UserFormTarget = { mode: 'create' } | { mode: 'edit'; id: string }
  */
 export function UserFormDialog({
   target,
+  roles,
   currentUserId,
   onSaved,
   onGone,
@@ -35,6 +37,7 @@ export function UserFormDialog({
   onClose,
 }: {
   target: UserFormTarget
+  roles: RoleRecord[]
   currentUserId: string | undefined
   onSaved: (response: UserMutationResponse) => void
   /** The account no longer exists (404). */
@@ -53,7 +56,9 @@ export function UserFormDialog({
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [role, setRole] = useState<Role>('Member')
+  const [roleId, setRoleId] = useState(
+    roles.some((role) => role.id === DEFAULT_USER_ROLE_ID) ? DEFAULT_USER_ROLE_ID : '',
+  )
 
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
@@ -63,7 +68,7 @@ export function UserFormDialog({
     setOriginal(account)
     setFullName(account.fullName)
     setEmail(account.email)
-    setRole(account.role)
+    setRoleId(account.roleId)
   }, [])
 
   const fail = useCallback(
@@ -121,6 +126,7 @@ export function UserFormDialog({
     if (!editing && password.length < MIN_PASSWORD_LENGTH) {
       errors.password = `Mật khẩu phải có ít nhất ${MIN_PASSWORD_LENGTH} ký tự.`
     }
+    if (!roles.some((role) => role.id === roleId)) errors.roleId = 'Vui lòng chọn vai trò.'
     return errors
   }
 
@@ -133,7 +139,7 @@ export function UserFormDialog({
 
     setPending(true)
     try {
-      const body = { fullName: fullName.trim(), email: email.trim(), role }
+      const body = { fullName: fullName.trim(), email: email.trim(), roleId }
       onSaved(editing ? await updateUser(editing, body) : await createUser({ ...body, password }))
     } catch (err) {
       setPending(false)
@@ -160,7 +166,7 @@ export function UserFormDialog({
     if (!pending) onClose()
   }
 
-  const roleChanged = original !== null && role !== original.role
+  const roleChanged = original !== null && roleId !== original.roleId
   const isSelf = editing !== null && editing === currentUserId
   const formId = 'user-form'
 
@@ -293,8 +299,13 @@ export function UserFormDialog({
 
           <div className="field span-2">
             <span className="field-required">Vai trò</span>
-            <Select value={role} options={ROLE_OPTIONS} onChange={setRole} label="Vai trò" />
-            {fieldErrors.role && <small className="field-error">{fieldErrors.role}</small>}
+            <Select
+              value={roleId}
+              options={roles.map(({ id, name }) => ({ value: id, label: name }))}
+              onChange={setRoleId}
+              label="Vai trò"
+            />
+            {fieldErrors.roleId && <small className="field-error">{fieldErrors.roleId}</small>}
           </div>
 
           {original && (

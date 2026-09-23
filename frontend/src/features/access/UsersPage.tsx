@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { listRoles } from '../../api/roles'
 import { changeUserStatus, getUser, listUsers } from '../../api/users'
 import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
@@ -8,18 +9,14 @@ import { Select } from '../../components/Select'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDate } from '../../lib/format'
-import { ROLE_LABEL, ROLES, type Role, type UserAccount, type UserMutationResponse } from '../../types/user'
+import type { RoleRecord } from '../../types/role'
+import type { UserAccount, UserMutationResponse } from '../../types/user'
 import { useAccessLost } from '../auth/useAccessLost'
 import { useAuth } from '../auth/useAuth'
 import { UserFormDialog, type UserFormTarget } from './UserFormDialog'
 
-type RoleFilter = Role | 'all'
+type RoleFilter = string | 'all'
 type StatusFilter = 'all' | 'active' | 'inactive'
-
-const ROLE_FILTER_OPTIONS: { value: RoleFilter; label: string }[] = [
-  { value: 'all', label: 'Tất cả vai trò' },
-  ...ROLES.map((value) => ({ value, label: ROLE_LABEL[value] })),
-]
 
 const STATUS_FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: 'all', label: 'Mọi trạng thái' },
@@ -43,6 +40,7 @@ export function UsersPage() {
   const handleAccessLost = useAccessLost()
 
   const [users, setUsers] = useState<UserAccount[] | null>(null)
+  const [roles, setRoles] = useState<RoleRecord[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
 
   const [query, setQuery] = useState('')
@@ -54,7 +52,9 @@ export function UsersPage() {
 
   const load = useCallback(async () => {
     try {
-      setUsers(await listUsers())
+      const [accounts, availableRoles] = await Promise.all([listUsers(), listRoles()])
+      setUsers(accounts)
+      setRoles(availableRoles)
       setLoadError(null)
     } catch (err) {
       if (!handleAccessLost(err)) setLoadError(errorMessage(err))
@@ -63,9 +63,12 @@ export function UsersPage() {
 
   useEffect(() => {
     let cancelled = false
-    listUsers().then(
-      (list) => {
-        if (!cancelled) setUsers(list)
+    Promise.all([listUsers(), listRoles()]).then(
+      ([accounts, availableRoles]) => {
+        if (!cancelled) {
+          setUsers(accounts)
+          setRoles(availableRoles)
+        }
       },
       (err: unknown) => {
         if (!cancelled && !handleAccessLost(err)) setLoadError(errorMessage(err))
@@ -94,7 +97,7 @@ export function UsersPage() {
     // JavaScript sort would undo ("Đ" would land after "Z").
     return (users ?? []).filter(
       (u) =>
-        (roleFilter === 'all' || u.role === roleFilter) &&
+        (roleFilter === 'all' || u.roleId === roleFilter) &&
         (statusFilter === 'all' || u.isActive === (statusFilter === 'active')) &&
         (!needle || fold(u.fullName).includes(needle) || fold(u.email).includes(needle)),
     )
@@ -160,6 +163,10 @@ export function UsersPage() {
   }
 
   const activeCount = users?.filter((u) => u.isActive).length ?? 0
+  const roleFilterOptions: { value: RoleFilter; label: string }[] = [
+    { value: 'all', label: 'Tất cả vai trò' },
+    ...(roles ?? []).map(({ id, name }) => ({ value: id, label: name })),
+  ]
 
   return (
     <>
@@ -183,7 +190,7 @@ export function UsersPage() {
             aria-label="Tìm theo họ tên hoặc email"
           />
         </label>
-        <Select value={roleFilter} options={ROLE_FILTER_OPTIONS} onChange={setRoleFilter} label="Lọc theo vai trò" />
+        <Select value={roleFilter} options={roleFilterOptions} onChange={setRoleFilter} label="Lọc theo vai trò" />
         <Select
           value={statusFilter}
           options={STATUS_FILTER_OPTIONS}
@@ -194,6 +201,7 @@ export function UsersPage() {
           className="btn btn-primary toolbar-end"
           type="button"
           onClick={() => setFormTarget({ mode: 'create' })}
+          disabled={roles === null}
         >
           Tạo tài khoản
         </button>
@@ -250,7 +258,7 @@ export function UsersPage() {
                     </td>
                     <td className="cell-muted">{u.email}</td>
                     <td>
-                      <Badge tone="slate">{ROLE_LABEL[u.role] ?? u.role}</Badge>
+                      <Badge tone="slate">{u.roleName}</Badge>
                     </td>
                     <td>
                       <span className="chip-row">
@@ -300,6 +308,7 @@ export function UsersPage() {
       {formTarget && (
         <UserFormDialog
           target={formTarget}
+          roles={roles ?? []}
           currentUserId={me?.id}
           onSaved={handleSaved}
           onGone={handleGone}

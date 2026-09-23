@@ -633,6 +633,12 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .span-2 { grid-column: 1 / -1; }
 .form-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.role-capabilities { min-width: 0; margin: 0; padding: 0; border: 0; }
+.role-capabilities legend { margin-bottom: 8px; font-size: 14px; font-weight: 500; }
+.role-capability-options { display: flex; flex-direction: column; gap: 10px; }
+.role-capability-options label { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 4px 8px; align-items: start; font-size: 14px; }
+.role-capability-options input { grid-row: span 2; margin: 2px 0 0; }
+.role-capability-options small { grid-column: 2; color: var(--muted-ink); font-size: 13px; }
 
 /* ---------- Dialog (components/Dialog.tsx, native <dialog>) ---------- */
 .dialog {
