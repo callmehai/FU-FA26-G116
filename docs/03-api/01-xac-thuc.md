@@ -272,8 +272,16 @@ Logout chỉ huỷ RT của *phiên đó*. Đăng xuất trên laptop không đ�
 
 ### `GET /api/auth/me`
 
-Cần header `Authorization: Bearer <accessToken>`. Đọc trực tiếp từ claim trong AT, không truy vấn
-database — để trình duyệt vừa reload có thể dựng lại session bằng một request rẻ.
+Cần header `Authorization: Bearer <accessToken>`.
+
+Đọc **từ database**, không đọc từ claim trong AT. Trước đây đọc từ claim cho rẻ, và đó là sai:
+AT là ảnh chụp lúc đăng nhập, nên tài khoản vừa bị vô hiệu hoá — hoặc vai trò vừa bị gỡ quyền qua
+màn hình SCRUM-60 — vẫn được báo là còn nguyên quyền cho tới khi AT hết hạn. Đây lại đúng là
+endpoint mà giao diện dựa vào để render, nên câu trả lời cũ sẽ vẽ ra một màn hình quản trị đầy đủ
+cho người mà mọi endpoint khác đều từ chối (SCRUM-12).
+
+Trả `401` khi AT không có `sub` đọc được, khi tài khoản không còn tồn tại, hoặc khi tài khoản đã bị
+vô hiệu hoá — không phải `403`: phiên đã chấm dứt, việc cần làm là đăng nhập lại.
 
 ## Access token và refresh token
 
@@ -293,8 +301,10 @@ Ngược lại, RT chỉ có giá trị khi Redis còn giữ. Đó là thứ là
 server, không chỉ xoá ở trình duyệt" (tiêu chí nghiệm thu SCRUM-11) là sự thật chứ không phải lời
 tuyên bố.
 
-AT mang sẵn `capabilities` trong claim để endpoint phân quyền không phải query database mỗi
-request. Cái giá phải trả: đổi quyền chỉ có hiệu lực ở lần refresh kế tiếp.
+AT mang sẵn `capabilities` trong claim, nhưng claim **không phải** nguồn có thẩm quyền: nó chỉ là
+lớp lọc đầu tiên, rẻ. Mọi endpoint nghiệp vụ đọc lại tài khoản từ database trước khi chạy, nên đổi
+quyền có hiệu lực ngay ở request kế tiếp chứ không phải chờ lần refresh — xem
+[`04-phan-quyen-phia-server.md`](04-phan-quyen-phia-server.md).
 
 ### Vì sao RT nằm ở Redis mà không phải một bảng
 

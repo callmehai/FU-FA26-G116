@@ -52,14 +52,14 @@ public static class UserEndpoints
     }
 
     /// <summary>
-    /// The authorization policy name. Defined in Program.cs against
+    /// The authorization policy name. Registered by <see cref="CapabilityGate"/> against
     /// <see cref="JwtTokenIssuer.CapabilityClaim"/>, so the check is on the capability the token
     /// carries rather than on a role name.
     ///
     /// Kept as an alias of <see cref="AdminCallerRevalidation.AdminUsersPolicy"/>, which is where
     /// it now lives alongside the re-read that backs it up.
     /// </summary>
-    public const string AdminUsersPolicy = AdminCallerRevalidation.AdminUsersPolicy;
+    public static string AdminUsersPolicy => AdminCallerRevalidation.AdminUsersPolicy;
 
     /// <summary>UC-04 — the whole list, sorted, as the service returns it.</summary>
     private static async Task<IResult> ListAsync(IUserService users, CancellationToken ct)

@@ -1,95 +1,36 @@
 using System.Security.Claims;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Users;
 
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// Re-reads the caller's own account before an administration request runs, and refuses unless
-/// they are still active and still hold <see cref="Capability.AdminUsers"/>.
+/// The <see cref="Capability.AdminUsers"/> gate, for the two groups that administer access itself.
 ///
-/// The bearer token is a snapshot of who the caller was when it was issued. Revoking their
-/// refresh tokens does not touch the access token they already hold, so without this an
-/// administrator who has just been deactivated — or whose role has just lost the capability —
-/// keeps full power until that token expires. Long enough to deactivate whoever deactivated them,
-/// or to grant their own role its rights back.
-///
-/// Shared by <c>UserEndpoints</c> and <c>RolePermissionEndpoints</c>: both administer access
-/// itself, and the window this closes is precisely where the damage would be done. SCRUM-60 makes
-/// it sharper still — an administrator can now take AdminUsers away from a role, and the people
-/// holding that role must stop being administrators at their next request rather than at their
-/// token's expiry.
+/// Everything it used to do now lives in <see cref="CapabilityGate"/>, which does the same for any
+/// capability — SCRUM-12 asks for the check on *every* business endpoint, and the meeting and
+/// minutes endpoints that follow need the same two-step gate rather than a copy of it. This type
+/// stays as the name the access-management endpoints read well with.
 /// </summary>
 public static class AdminCallerRevalidation
 {
     /// <summary>
-    /// The authorization policy name. Defined in Program.cs against
-    /// <c>JwtTokenIssuer.CapabilityClaim</c>, so the first check is on the capability the token
-    /// carries rather than on a role name. This filter is the second, authoritative one.
+    /// The authorization policy name, registered by
+    /// <see cref="CapabilityGate.AddCapabilityPolicies"/> along with every other capability's.
     /// </summary>
-    public const string AdminUsersPolicy = "AdminUsers";
+    public static string AdminUsersPolicy => CapabilityGate.PolicyFor(Capability.AdminUsers);
 
     /// <summary>
-    /// Applies the policy and the re-read together, so no administration endpoint can be added
-    /// with only one of the two.
+    /// Requires <see cref="Capability.AdminUsers"/>: the token policy and the database re-read
+    /// together. See <see cref="CapabilityGate"/> for why one check is not enough.
     /// </summary>
     public static RouteGroupBuilder RequireAdminUsers(this RouteGroupBuilder group)
-        => group
-            .RequireAuthorization(AdminUsersPolicy)
-            .AddEndpointFilter(RevalidateAsync);
+        => group.RequireCapability(Capability.AdminUsers);
 
-    /// <summary>
-    /// 403 rather than 401: the token is genuine and unexpired, it is the account behind it that
-    /// may no longer do this.
-    /// </summary>
-    public static async ValueTask<object?> RevalidateAsync(
-        EndpointFilterInvocationContext context, EndpointFilterDelegate next)
-    {
-        var callerId = CurrentUserId(context.HttpContext.User);
-
-        // No usable "sub" claim. Refused rather than defaulted: an actor id of Guid.Empty would
-        // match no account, silently disabling the rules that compare the caller against what
-        // they are changing, and would be written into the audit log as the actor.
-        if (callerId is null)
-        {
-            return Results.Forbid();
-        }
-
-        var users = context.HttpContext.RequestServices.GetRequiredService<IUserAccountRepository>();
-        var caller = await users.FindByIdAsync(callerId.Value, context.HttpContext.RequestAborted);
-
-        if (caller is null || !caller.IsActive)
-        {
-            return Results.Forbid();
-        }
-
-        var capabilities = await users.GetCapabilitiesAsync(
-            caller.Role, context.HttpContext.RequestAborted);
-
-        // Checked against the capability, not the role name — the same rule the policy follows,
-        // except read from the database rather than from the token.
-        return capabilities.Contains(Capability.AdminUsers)
-            ? await next(context)
-            : Results.Forbid();
-    }
-
-    /// <summary>
-    /// Who is making the request, from the validated token, or null when the token carries no
-    /// usable "sub". Never from the body: an actor id a caller can choose is not evidence of
-    /// anything, and it is what the audit log records.
-    /// </summary>
+    /// <inheritdoc cref="CapabilityGate.CurrentUserId"/>
     public static Guid? CurrentUserId(ClaimsPrincipal principal)
-        => Guid.TryParse(principal.FindFirstValue("sub"), out var id) ? id : null;
+        => CapabilityGate.CurrentUserId(principal);
 
-    /// <summary>
-    /// The caller's id for a handler that only runs behind <see cref="RevalidateAsync"/>, which
-    /// has already refused the request if there was no usable one. Throws rather than substituting
-    /// a placeholder, so removing that filter fails loudly instead of quietly writing an actor
-    /// nobody can trace.
-    /// </summary>
+    /// <inheritdoc cref="CapabilityGate.GatedUserId"/>
     public static Guid RevalidatedUserId(ClaimsPrincipal principal)
-        => CurrentUserId(principal)
-            ?? throw new InvalidOperationException(
-                "No caller id on a revalidated request — RevalidateAsync should have refused it. "
-                + "Did the endpoint filter get removed from the group?");
+        => CapabilityGate.GatedUserId(principal);
 }

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Domain.Users;
 using TrustCabinet.Infrastructure.Authentication;
 
 namespace TrustCabinet.Web.Endpoints;
@@ -125,16 +126,48 @@ public static class AuthEndpoints
     }
 
     /// <summary>
-    /// Who the bearer token says you are. Read straight from the validated token rather than the
-    /// database — the claims were put there at sign-in, and this endpoint's job is to let a
-    /// reloaded browser restore its session without a round trip to the users table.
+    /// Who you are and what you may do, read from the database rather than from the token.
+    ///
+    /// It used to answer from the token's claims, which was cheaper and wrong. SCRUM-12 makes the
+    /// database the authority precisely because an access token is a snapshot taken at sign-in:
+    /// answering from it would tell an administrator who has just been deactivated — or whose role
+    /// has just lost a capability via the SCRUM-60 screen — that they still hold it, for as long as
+    /// the token lives. This endpoint is what the interface renders from, so that answer would
+    /// paint a full admin console for someone every endpoint then refuses.
+    ///
+    /// The same read the capability gate does, for the same reason. One extra query per call, on an
+    /// endpoint a browser calls once per page load.
     /// </summary>
-    private static IResult Me(ClaimsPrincipal principal) => Results.Ok(new CurrentUserResponse(
-        Id: principal.FindFirstValue("sub") ?? "",
-        Email: principal.FindFirstValue("email") ?? "",
-        FullName: principal.FindFirstValue(ClaimTypes.Name) ?? "",
-        Role: principal.FindFirstValue(ClaimTypes.Role) ?? "",
-        Capabilities: [.. principal.FindAll(JwtTokenIssuer.CapabilityClaim).Select(c => c.Value)]));
+    private static async Task<IResult> Me(
+        ClaimsPrincipal principal, IUserAccountRepository users, CancellationToken ct)
+    {
+        var callerId = CapabilityGate.CurrentUserId(principal);
+
+        // A validated token with no usable "sub". Refused rather than answered with blanks: the
+        // capability gate rejects such a token everywhere else, and this endpoint has no business
+        // being the one place it is accepted.
+        if (callerId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var caller = await users.FindByIdAsync(callerId.Value, ct);
+
+        // 401 rather than 403: there is no longer an account behind this token, so the session
+        // itself is over. The client's move is to sign in again, which is what 401 tells it.
+        if (caller is null || !caller.IsActive)
+        {
+            return Results.Unauthorized();
+        }
+
+        return Results.Ok(new CurrentUserResponse(
+            Id: caller.Id.ToString(),
+            Email: caller.Email,
+            FullName: caller.FullName,
+            Role: caller.Role.ToString(),
+            Capabilities: [.. (await users.GetCapabilitiesAsync(caller.Role, ct))
+                .Select(c => c.ToString())]));
+    }
 
     /// <summary>
     /// The three failing branches of UC-01. All 401: the distinction between them is in the
