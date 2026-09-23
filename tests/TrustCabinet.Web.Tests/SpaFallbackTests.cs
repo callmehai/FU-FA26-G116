@@ -30,11 +30,23 @@ public class SpaFallbackTests : IClassFixture<SpaFallbackTests.WithBuiltFrontend
     [Fact]
     public async Task Real_api_route_is_not_shadowed_by_a_fallback()
     {
-        // No body, so no Content-Type: the matcher discards the JSON-body endpoint, and any
-        // fallback still standing for /api/users would answer instead of the auth gate.
+        // Passes on main too: it does not reproduce SCRUM-62, it guards the design choice. Fixing
+        // the bug with an /api/{**path} → 404 endpoint instead would fail here — no body means no
+        // Content-Type, the matcher discards the JSON-body endpoint, and that 404 answers instead
+        // of the auth gate.
         var response = await _factory.CreateClient().PostAsync("/api/users", content: null);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Health_still_answers_with_a_built_frontend()
+    {
+        // HealthEndpointTests runs without an index.html; this is the same call with one present.
+        var response = await _factory.CreateClient().GetAsync("/api/health");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
     }
 
     [Fact]
