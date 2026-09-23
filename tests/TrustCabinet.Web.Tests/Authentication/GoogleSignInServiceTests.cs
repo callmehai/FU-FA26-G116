@@ -2,7 +2,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Infrastructure.Authentication;
+using TrustCabinet.Web.Tests.Users;
 
 namespace TrustCabinet.Web.Tests.Authentication;
 
@@ -21,9 +23,10 @@ public class GoogleSignInServiceTests
     private readonly FakeRefreshTokenStore _refreshTokens = new();
     private readonly FakeTokenIssuer _tokenIssuer = new();
     private readonly FakeGoogleTokenVerifier _google = new();
+    private readonly FakeAuditService _audit = new();
 
     private AuthenticationService NewService() => new(
-        _users, new FakePasswordHasher(), _tokenIssuer, _refreshTokens, _google,
+        _users, new FakePasswordHasher(), _tokenIssuer, _refreshTokens, _google, _audit,
         NullLogger<AuthenticationService>.Instance);
 
     /// <summary>
@@ -149,26 +152,65 @@ public class GoogleSignInServiceTests
     }
 
     [Fact]
-    public async Task A_matching_email_is_not_enough_without_a_link()
+    public async Task An_account_created_with_that_email_is_linked_at_its_first_google_sign_in()
     {
-        // The internal account has the same email as the Google one, but no google_subject_id.
-        _google.WithValidToken(IdToken, GoogleSubject, GoogleEmail);
-        _users.WithUser(NewGoogleUser(googleSubjectId: null))
-            .WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor);
+        // An administrator created the account with this Gmail; nobody has linked it (ADR-0009).
+        var user = NewGoogleUser(googleSubjectId: null);
+        _google.WithValidToken(IdToken, GoogleSubject, GoogleEmail.ToUpperInvariant());
+        _users.WithUser(user).WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor);
 
         var result = await NewService().SignInWithGoogleAsync(IdToken);
 
-        // The security property of linking by `sub`: an email address can be changed, or on a
-        // workspace domain reassigned to a new person, and matching on it would hand that person
-        // the previous owner's account.
-        Assert.Equal(GoogleSignInOutcome.NotLinked, result.Outcome);
+        Assert.Equal(GoogleSignInOutcome.Success, result.Outcome);
+        Assert.Equal(GoogleSubject, user.GoogleSubjectId);
+        var record = Assert.Single(_audit.Records);
+        Assert.Equal(AuditActions.UserGoogleLinked, record.Action);
+        Assert.Equal(user.Id, record.ObjectId);
+        Assert.Equal(user.Id, record.ActorId);
     }
 
     [Fact]
-    public async Task A_different_google_subject_does_not_match()
+    public async Task An_account_already_linked_to_another_google_identity_is_not_relinked()
     {
+        // Same email, different subject: the address was changed or reassigned after the account
+        // was linked. The subject decides from the first sign-in on, so the new holder of the
+        // address does not get the previous owner's account.
         _google.WithValidToken(IdToken, "sub-cua-nguoi-khac", GoogleEmail);
-        _users.WithUser(NewGoogleUser()).WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor);
+        var user = NewGoogleUser();
+        _users.WithUser(user).WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor);
+
+        var result = await NewService().SignInWithGoogleAsync(IdToken);
+
+        Assert.Equal(GoogleSignInOutcome.NotLinked, result.Outcome);
+        Assert.Equal(GoogleSubject, user.GoogleSubjectId);
+        Assert.Empty(_audit.Records);
+    }
+
+    [Fact]
+    public async Task An_account_deactivated_before_its_first_google_sign_in_is_refused_as_deactivated()
+    {
+        var user = NewGoogleUser(googleSubjectId: null, isActive: false);
+        _google.WithValidToken(IdToken, GoogleSubject, GoogleEmail);
+        _users.WithUser(user).WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor);
+
+        var result = await NewService().SignInWithGoogleAsync(IdToken);
+
+        // MSG04, not MSG03: the account exists and was deactivated, so "not authorised" would be
+        // the wrong thing to tell them. Still not linked.
+        Assert.Equal(GoogleSignInOutcome.AccountDeactivated, result.Outcome);
+        Assert.Null(user.GoogleSubjectId);
+        Assert.Empty(_audit.Records);
+        Assert.Empty(_refreshTokens.ActiveTokens);
+    }
+
+    [Fact]
+    public async Task A_deactivated_account_linked_to_another_google_identity_stays_not_linked()
+    {
+        // Same email, different subject: the caller is not that account's owner, so it learns
+        // nothing about the account's state.
+        _google.WithValidToken(IdToken, "sub-cua-nguoi-khac", GoogleEmail);
+        _users.WithUser(NewGoogleUser(isActive: false))
+            .WithCapabilities(SystemRole.Secretary, Capability.MinutesEditor);
 
         var result = await NewService().SignInWithGoogleAsync(IdToken);
 

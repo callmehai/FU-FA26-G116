@@ -37,6 +37,12 @@ public static class AuditActions
     public const string UserDeactivated = "user.deactivated";
     public const string UserReactivated = "user.reactivated";
 
+    /// <summary>
+    /// A Google identity was linked to an account at its first Google sign-in (ADR-0009). The
+    /// actor is the account itself: nobody else was involved.
+    /// </summary>
+    public const string UserGoogleLinked = "user.google_linked";
+
     /// <summary>What <c>AuditLogEntry.ObjectType</c> carries for all of the above.</summary>
     public const string UserObjectType = "User";
 

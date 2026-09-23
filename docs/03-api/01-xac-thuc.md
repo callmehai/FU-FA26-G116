@@ -121,8 +121,8 @@ cách nào, chỉ cần biết đã có phiên.
 | `code` | Khi nào | `message` |
 |---|---|---|
 | `MSG01` | ID token không verify được: thiếu, sai định dạng, hết hạn, sai audience, sai chữ ký, hoặc email chưa verified | `Đăng nhập bằng Google không thành công.` |
-| `MSG03` | Google xác thực OK nhưng **chưa có tài khoản nội bộ nào liên kết** với Google identity đó | `Tài khoản Google này chưa được cấp quyền truy cập hệ thống.` |
-| `MSG04` | Tài khoản đã liên kết nhưng bị vô hiệu hoá | `Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.` |
+| `MSG03` | Google xác thực OK nhưng **chưa có tài khoản nội bộ nào liên kết** với Google identity đó, và cũng không có tài khoản nào tự liên kết được (xem dưới) | `Tài khoản Google này chưa được cấp quyền truy cập hệ thống.` |
+| `MSG04` | Tài khoản bị vô hiệu hoá: đã liên kết, **hoặc** chưa liên kết nhưng email trùng email Google đã xác minh | `Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.` |
 | `MSG05` | Role không còn capability nào | `Tài khoản chưa được cấp quyền truy cập hệ thống.` |
 
 ### Liên kết theo `sub`, không theo email
@@ -130,17 +130,34 @@ cách nào, chỉ cần biết đã có phiên.
 Tài khoản nội bộ liên kết với Google qua cột `users.google_subject_id` — chính là claim `sub` của
 ID token.
 
-**Không** match theo email, dù token cũng mang email. `sub` được Google bảo đảm ổn định và duy nhất
-suốt đời tài khoản, còn địa chỉ email thì đổi được, và trên domain workspace còn có thể bị cấp lại
-cho người khác. Match theo email nghĩa là người được cấp lại địa chỉ đó sẽ vào được tài khoản của
-người cũ.
+Đã liên kết rồi thì **chỉ** so theo `sub`, không theo email. `sub` được Google bảo đảm ổn định và
+duy nhất suốt đời tài khoản, còn địa chỉ email thì đổi được, và trên domain workspace còn có thể bị
+cấp lại cho người khác. Match theo email mỗi lần nghĩa là người được cấp lại địa chỉ đó sẽ vào được
+tài khoản của người cũ.
+
+### Tự liên kết ở lần đăng nhập đầu
+
+Email chỉ được dùng **một lần** cho mỗi tài khoản: lần đăng nhập Google đầu tiên
+([ADR-0009](../05-decisions/0009-tu-lien-ket-google-lan-dau-theo-email.md)). Không tìm thấy theo
+`sub` thì tìm tài khoản thoả cả ba: `email` trùng email trong token (`citext`), email đó Google đã
+xác minh, `google_subject_id IS NULL` và `is_active = true`. Có thì lưu `sub` vào đó (một câu
+`UPDATE ... WHERE`), ghi audit `user.google_linked`, rồi đi tiếp như bình thường.
+
+Tài khoản trùng email nhưng **đã bị vô hiệu hoá trước khi kịp liên kết** thì không liên kết, và trả
+`MSG04` (không phải `MSG03`): tài khoản có tồn tại, bảo "chưa được cấp quyền" là sai. Người gọi đã
+được Google xác minh là chủ email đó, nên cho họ biết tài khoản của mình bị khoá không lộ gì. Tài
+khoản trùng email nhưng đã liên kết với `sub` **khác** thì vẫn `MSG03` — người gọi không phải chủ.
+
+Nghĩa là: admin tạo tài khoản bằng Gmail của ai (`POST /api/users`) thì người đó bấm **Tiếp tục với
+Google** là vào, không cần thao tác DB. Tài khoản đã liên kết thì không bao giờ bị liên kết lại.
 
 ### Không tự tạo tài khoản
 
 Google identity chưa ai liên kết thì trả `MSG03`, **không** tạo tài khoản mới. Cấp tài khoản là
 việc của quản trị viên; cho tự đăng ký ở đây nghĩa là bất kỳ ai có Gmail đều vào được hệ thống.
 
-Liên kết một tài khoản (hiện làm bằng SQL, màn hình quản trị là SCRUM-60):
+Liên kết một tài khoản mà email **khác** Gmail của người dùng (ví dụ tài khoản seed
+`thuky@trustcabinet.local`) thì vẫn phải làm bằng SQL:
 
 ```sql
 update users set google_subject_id = '<sub từ ID token>'
@@ -379,8 +396,9 @@ nó chỉ tồn tại trong một database toàn cuộc họp bịa.
   `localStorage` (xem mục cookie bên dưới); refresh chạy single-flight, có Web Lock để hai tab
   không tranh nhau một RT dùng-một-lần. Google `client_id` đang lặp lại ở FE vì backend chưa có
   endpoint trả nó.
-- **Màn hình liên kết tài khoản Google.** Hiện phải `update users set google_subject_id = ...` bằng
-  SQL. Thuộc màn quản trị người dùng (SCRUM-60).
+- ~~**Liên kết tài khoản Google.**~~ — **đã làm**: tự liên kết ở lần đăng nhập đầu theo email đã
+  xác minh ([ADR-0009](../05-decisions/0009-tu-lien-ket-google-lan-dau-theo-email.md)). Còn thiếu:
+  gỡ / đổi liên kết của một tài khoản đã liên kết — hiện vẫn bằng SQL, chưa có ticket.
 - **RT đang trả trong response body**, chưa phải cookie `HttpOnly`. Frontend không thuộc phạm vi
   lượt này; khi làm FE (SCRUM-46) thì chuyển sang cookie, vì token nằm trong tầm với của
   JavaScript là token mà bất kỳ lỗi XSS nào trên trang cũng đọc được.

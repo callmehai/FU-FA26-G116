@@ -151,10 +151,14 @@ Gọi đường dẫn tương đối `/api/auth/google` (Vite proxy sẵn), **kh
 
 ### Quan trọng: lần đầu chắc chắn nhận MSG03
 
-Backend tra tài khoản theo claim `sub` của Google, và **hiện chưa tài khoản seed nào được liên
-kết**. Nên lần đầu bạn bấm nút Google, kết quả sẽ là `MSG03` — **đúng, không phải bug**.
+Backend tra tài khoản theo claim `sub` của Google. Chưa có tài khoản nào mang `sub` đó thì nó tự
+liên kết tài khoản **có email trùng Gmail của bạn** (đang hoạt động, chưa liên kết) — xem
+[ADR-0009](../05-decisions/0009-tu-lien-ket-google-lan-dau-theo-email.md). Cách nhanh nhất: vào
+Quản lý người dùng, tạo tài khoản bằng đúng Gmail của bạn, rồi bấm nút Google — vào luôn, **không**
+cần SQL.
 
-Để vào được:
+Tài khoản seed (`thuky@trustcabinet.local`, …) thì email không phải Gmail của bạn, nên lần đầu bấm
+nút Google sẽ nhận `MSG03` — **đúng, không phải bug**. Muốn đăng nhập Google vào tài khoản seed:
 
 1. Bấm nút Google, đăng nhập (Gmail của bạn phải nằm trong danh sách *test users* của Google Console)
 2. Nhận `MSG03`
@@ -166,10 +170,8 @@ kết**. Nên lần đầu bạn bấm nút Google, kết quả sẽ là `MSG03`
    ```
 5. Bấm lại → `200`
 
-Email Gmail của bạn **không cần** trùng email tài khoản nội bộ: backend liên kết theo `sub`, không
-theo email. Bạn link `sub` vào tài khoản nào thì đăng nhập vào tài khoản đó.
-
-Màn hình liên kết tài khoản thuộc SCRUM-60, chưa có.
+Liên kết bằng SQL thì Gmail **không cần** trùng email tài khoản nội bộ: bạn link `sub` vào tài
+khoản nào thì đăng nhập vào tài khoản đó. Đã liên kết rồi thì backend chỉ so theo `sub`.
 
 ---
 
