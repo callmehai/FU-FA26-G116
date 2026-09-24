@@ -7,12 +7,12 @@ trong tài liệu quản lý vai trò đang dùng cho use case khác.
 
 Các endpoint cho người tạo khởi tạo cuộc họp nháp, chọn người duyệt và sửa trước khi gửi duyệt.
 Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết. Danh sách `GET /api/meetings` thuộc
-SCRUM-18, chưa nằm trong contract này; danh sách UI hiện tại vẫn dùng dữ liệu mẫu. Sau khi tạo,
-form hiển thị xác nhận và mã cuộc họp.
+SCRUM-18, chưa nằm trong contract này; danh sách UI hiện tại vẫn dùng dữ liệu mẫu. Khi tích hợp FE,
+form sẽ hiển thị xác nhận và mã cuộc họp sau khi tạo.
 
-Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24. Theo xác nhận yêu cầu đã nhận, người duyệt bắt buộc
-khi tạo mới và Thời gian kết thúc tùy chọn; nếu nhập thì phải sau thời gian bắt đầu theo BR-25. Form
-khởi tạo Hình thức là `InPerson` và Mức độ mật là `Normal`.
+Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24. [UC-11 và UC-12](../01-requirements/05-use-case-specifications.md)
+ghi quyết định đã xác nhận: người duyệt bắt buộc, Thời gian kết thúc tùy chọn; nếu nhập thì phải
+sau thời gian bắt đầu theo BR-25. Form khởi tạo Hình thức là `InPerson` và Mức độ mật là `Normal`.
 
 ## Quyền truy cập
 
@@ -110,8 +110,8 @@ Endpoint trả đồng thời mọi lỗi field phát hiện được. Với PUT
 trạng thái trước khi parse JSON: nếu meeting không còn sửa được thì trả `409 MSG03`, kể cả body JSON
 sai cú pháp hoặc sai kiểu. Request PUT có Content-Type thiếu hoặc không hỗ trợ trả `415` với code
 `MEETING_UNSUPPORTED_CONTENT_TYPE`. Với meeting còn sửa được và Content-Type hợp lệ, JSON sai cú
-pháp/sai kiểu trả `400` và code `MEETING_INVALID_INFORMATION` không có `errors`. POST JSON lỗi cũng
-trả `400`.
+pháp/sai kiểu trả `400` và code `MEETING_INVALID_INFORMATION` không có `errors`. Body PUT lớn hơn
+64 KiB trả `413 MEETING_BODY_TOO_LARGE`. POST JSON lỗi cũng trả `400`.
 
 ## Mã phản hồi
 
@@ -124,6 +124,7 @@ trả `400`.
 | 403 | — | Không có `MeetingCreator` theo gate hai lớp |
 | 404 | — | GET: không tồn tại hoặc caller không có quan hệ; PUT: không tồn tại hoặc caller không phải người tạo; body rỗng |
 | 409 | `MSG03` | Trạng thái hiện tại không cho sửa |
+| 413 | `MEETING_BODY_TOO_LARGE` | Body PUT vượt quá 64 KiB |
 | 415 | `MEETING_UNSUPPORTED_CONTENT_TYPE` | PUT không gửi JSON hoặc Content-Type không hỗ trợ |
 | 503 | `MSG01` | Không thể lưu khi tạo; thử lại |
 | 503 | `MSG04` | Không thể lưu khi sửa; thử lại |
@@ -143,7 +144,9 @@ lưu các thay đổi này trong cùng transaction.
 
 PUT kiểm tra quyền sở hữu và trạng thái hiện tại bằng truy vấn không khóa trước khi chờ body. Sau khi
 xác nhận meeting còn sửa được, hệ thống kiểm tra Content-Type rồi đọc body vào buffer ngoài
-transaction khóa ghi. Khi xử lý cập nhật, transaction `ReadCommitted` khóa đúng meeting row bằng
+transaction khóa ghi. Body bị giới hạn 64 KiB ngay cả khi không có `Content-Length`; quá giới hạn
+thì ngừng đọc và trả `413`, không tạo thêm bản sao buffer. Khi xử lý cập nhật, transaction
+`ReadCommitted` khóa đúng meeting row bằng
 PostgreSQL `FOR UPDATE`, đọc lại trạng thái và trả `409 MSG03` nếu trạng thái đổi trong lúc body đang
 được gửi. Chỉ sau lần kiểm tra khóa này hệ thống mới parse JSON, validate và lưu; không có network
 read trong lúc giữ row lock.
@@ -168,8 +171,8 @@ stale content.
 
 - Đồng bộ nội dung BR-24–BR-29 chính thức vào tài liệu BA và map từng luật vào validation/lifecycle.
 - Vẽ Class Diagram tạo/đọc/sửa và ghi Controller trong sequence là ASP.NET Minimal API.
-- Cập nhật Jira và UC-11/UC-12 với xác nhận `assignedApproverId` bắt buộc, `endsAt` tùy chọn, cùng
-  giới hạn length và format timezone. UC spec hiện chưa có trong workspace này.
+- Đồng bộ hai quy tắc đã ghi trong UC-11/UC-12 vào Jira SCRUM-17, cùng giới hạn length và format
+  timezone khi có quyền cập nhật Jira.
 - Ghi rõ quyền GET, ownership và hành vi khi sửa `Rejected`.
 - Bổ sung mã thành công/lỗi chưa có vào sequence/message catalog.
 - Kiểm tra lại định danh UC theo convention Jira để tránh nhầm UC-11/UC-12 quản lý vai trò.
