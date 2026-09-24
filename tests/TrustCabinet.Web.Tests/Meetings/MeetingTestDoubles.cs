@@ -13,8 +13,11 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
 
     public int SaveCount { get; private set; }
 
-    public Task<Meeting?> FindOwnedAsync(Guid id, Guid creatorId, CancellationToken ct = default)
-        => Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id && m.CreatedById == creatorId));
+    public Task<Meeting?> FindAccessibleAsync(Guid id, Guid actorId, CancellationToken ct = default)
+        => Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id
+            && (m.CreatedById == actorId
+                || m.AssignedApproverId == actorId
+                || m.Participants.Any(participant => participant.UserId == actorId))));
 
     public Task<Meeting?> FindOwnedForUpdateAsync(Guid id, Guid creatorId, CancellationToken ct = default)
         => Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id && m.CreatedById == creatorId));

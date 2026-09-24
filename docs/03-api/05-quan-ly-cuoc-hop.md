@@ -5,9 +5,10 @@ trong tài liệu quản lý vai trò đang dùng cho use case khác.
 
 ## Phạm vi
 
-Các endpoint cho người tạo khởi tạo cuộc họp nháp, đọc cuộc họp của mình, chọn người duyệt và sửa
-trước khi gửi duyệt. Danh sách `GET /api/meetings` thuộc SCRUM-18, chưa nằm trong contract này; danh
-sách UI hiện tại vẫn dùng dữ liệu mẫu. Sau khi tạo, form hiển thị xác nhận và mã cuộc họp.
+Các endpoint cho người tạo khởi tạo cuộc họp nháp, chọn người duyệt và sửa trước khi gửi duyệt.
+Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết. Danh sách `GET /api/meetings` thuộc
+SCRUM-18, chưa nằm trong contract này; danh sách UI hiện tại vẫn dùng dữ liệu mẫu. Sau khi tạo,
+form hiển thị xác nhận và mã cuộc họp.
 
 Theo BR-24 và form hiện tại, Tiêu đề, Thời gian bắt đầu và Người duyệt là bắt buộc. Thời gian kết
 thúc tùy chọn; nếu nhập thì phải sau thời gian bắt đầu theo BR-25. Form khởi tạo Hình thức là
@@ -15,12 +16,14 @@ thúc tùy chọn; nếu nhập thì phải sau thời gian bắt đầu theo BR
 
 ## Quyền truy cập
 
-Các endpoint nằm trong group có `RequireCapability(MeetingCreator)`. Cổng đọc claim và xác minh
-lại capability từ database theo SCRUM-12; không kiểm theo tên vai trò.
+POST, `GET /api/meetings/approvers` và PUT yêu cầu capability `MeetingCreator`; cổng đọc claim và
+xác minh lại capability từ database theo SCRUM-12, không kiểm theo tên vai trò. GET chi tiết yêu cầu
+đăng nhập và tài khoản còn hoạt động, sau đó kiểm tra quan hệ cuộc họp theo BR-29.
 
-GET và PUT lọc `Id` **và** `CreatedById` trong truy vấn. ID không tồn tại và ID thuộc người tạo khác
-cùng trả `404` không body. Vì task này chỉ dựng luồng Meeting Organizer, phạm vi đọc giới hạn cho
-người tạo; quyền người dự/người duyệt cần được chốt cùng use case tương ứng.
+GET chỉ trả meeting khi caller là người tạo, người duyệt được gán, hoặc có bản ghi tham dự cuộc họp
+(bao gồm Chair, Secretary và Participant). Không có quan hệ thì trả `404` rỗng, giống ID không tồn
+tại. PUT vẫn chỉ cho người tạo/người tổ chức sửa; ID không tồn tại và meeting của người tổ chức khác
+cùng trả `404` rỗng.
 
 Sửa chỉ được ở `Draft` và `Rejected`. Hệ thống đọc trạng thái mới nhất sau khi khóa dòng và trước
 khi validate nội dung. Trạng thái khác trả `409 MSG03`. Sửa `Rejected` giữ nguyên trạng thái và
@@ -114,7 +117,7 @@ Endpoint trả đồng thời mọi lỗi field phát hiện được. JSON sai 
 | 400 | `MEETING_INVALID_INFORMATION` | Thông tin không hợp lệ; có thể có `errors` theo field |
 | 401 | — | Chưa đăng nhập |
 | 403 | — | Không có `MeetingCreator` theo gate hai lớp |
-| 404 | — | Không tồn tại hoặc không phải người tạo; body rỗng |
+| 404 | — | GET: không tồn tại hoặc caller không có quan hệ; PUT: không tồn tại hoặc caller không phải người tạo; body rỗng |
 | 409 | `MSG03` | Trạng thái hiện tại không cho sửa |
 | 503 | `MSG01` | Không thể lưu khi tạo; thử lại |
 | 503 | `MSG04` | Không thể lưu khi sửa; thử lại |
@@ -141,8 +144,8 @@ thắng”; contract chưa có ETag/version để từ chối stale content.
 ## Hợp đồng tích hợp FE
 
 - Gọi API qua client hiện có bằng đường dẫn tương đối `/api/...` để tự mang token và refresh phiên.
-- Khi nhận `403`, xử lý như quyền đã thay đổi; `404` ở GET/PUT không phân biệt ID không tồn tại
-  với ID của người tạo khác.
+- Khi nhận `403`, xử lý như quyền hệ thống đã thay đổi; GET chi tiết trả `404` nếu caller không có
+  quan hệ với meeting.
 - Chỉ hiển thị thao tác sửa cho người có `MeetingCreator`, đúng `createdById`, và trạng thái
   `Draft`/`Rejected`. Backend vẫn kiểm tra lại quyền sở hữu và trạng thái khi PUT.
 - Nếu PUT trả `409 MSG03`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
