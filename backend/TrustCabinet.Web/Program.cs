@@ -6,6 +6,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Access;
 using TrustCabinet.Infrastructure.Authentication;
+using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Users;
 using TrustCabinet.Web;
 using TrustCabinet.Web.Endpoints;
@@ -16,6 +17,7 @@ builder.Services.AddTrustCabinetDatabase(builder.Configuration);
 builder.Services.AddTrustCabinetAuthentication(builder.Configuration);
 builder.Services.AddTrustCabinetUserManagement();
 builder.Services.AddTrustCabinetRolePermissions();
+builder.Services.AddTrustCabinetMeetings();
 
 // The audit log records where a request came from, and only the web layer can see that.
 builder.Services.AddHttpContextAccessor();
@@ -123,6 +125,9 @@ app.MapRolePermissionEndpoints();
 
 // /api/roles — UC-11 … UC-13, create / rename / delete a role (SCRUM-63). Same gate.
 app.MapRoleEndpoints();
+
+// /api/meetings — UC-11 create and UC-12 read/update owned meetings.
+app.MapMeetingEndpoints();
 
 // Health endpoint — the frontend calls this to confirm the backend is alive.
 app.MapGet("/api/health", () => Results.Ok(new
