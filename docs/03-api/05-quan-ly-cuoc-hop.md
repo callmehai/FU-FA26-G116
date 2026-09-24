@@ -5,17 +5,17 @@ trong tài liệu quản lý vai trò đang dùng cho use case khác.
 
 ## Phạm vi
 
-Ba endpoint cho người tạo khởi tạo cuộc họp nháp, đọc cuộc họp của mình và sửa trước khi gửi duyệt.
-Danh sách `GET /api/meetings` thuộc SCRUM-18, chưa nằm trong contract này. Form sau khi tạo mở thẳng
-chi tiết; danh sách UI hiện tại vẫn dùng dữ liệu mẫu.
+Các endpoint cho người tạo khởi tạo cuộc họp nháp, đọc cuộc họp của mình, chọn người duyệt và sửa
+trước khi gửi duyệt. Danh sách `GET /api/meetings` thuộc SCRUM-18, chưa nằm trong contract này; danh
+sách UI hiện tại vẫn dùng dữ liệu mẫu. Sau khi tạo, form hiển thị xác nhận và mã cuộc họp.
 
-> **Trạng thái BA:** chưa có Class Diagram cuộc họp và chưa có nội dung BR-24–BR-28 trong repo.
-> Bảng validation và một số message code dưới đây là baseline kỹ thuật để triển khai task theo yêu
-> cầu đã cung cấp; BA cần đối chiếu, bổ sung BR và sequence/class diagram sau.
+Theo BR-24 và form hiện tại, Tiêu đề, Thời gian bắt đầu và Người duyệt là bắt buộc. Thời gian kết
+thúc tùy chọn; nếu nhập thì phải sau thời gian bắt đầu theo BR-25. Form khởi tạo Hình thức là
+`InPerson` và Mức độ mật là `Secret`.
 
 ## Quyền truy cập
 
-Cả ba endpoint nằm trong group có `RequireCapability(MeetingCreator)`. Cổng đọc claim và xác minh
+Các endpoint nằm trong group có `RequireCapability(MeetingCreator)`. Cổng đọc claim và xác minh
 lại capability từ database theo SCRUM-12; không kiểm theo tên vai trò.
 
 GET và PUT lọc `Id` **và** `CreatedById` trong truy vấn. ID không tồn tại và ID thuộc người tạo khác
@@ -28,9 +28,14 @@ không thêm dòng lịch sử trạng thái.
 
 ## Contract
 
+### GET `/api/meetings/approvers`
+
+Trả danh sách tài khoản đang hoạt động có capability `MeetingApprover`, sắp xếp theo tên. Response
+chỉ gồm `id` và `fullName`; endpoint kế thừa gate `MeetingCreator`.
+
 ### POST `/api/meetings`
 
-Request body của POST và PUT đều có cùng bảy field:
+Request body của POST và PUT có các field:
 
 ```json
 {
@@ -40,12 +45,19 @@ Request body của POST và PUT đều có cùng bảy field:
   "mode": "InPerson",
   "location": "Phòng họp A",
   "sensitivity": "Internal",
-  "description": "Thảo luận kế hoạch tuần."
+  "description": "Thảo luận kế hoạch tuần.",
+  "assignedApproverId": "dc36f21a-c030-4ddb-a6ec-9d1254230001"
 }
 ```
 
+`title`, `startsAt` và `assignedApproverId` là bắt buộc. `endsAt` có thể `null` hoặc bị bỏ qua;
+nếu có giá trị, nó phải lớn hơn `startsAt`. Nếu `mode` hoặc `sensitivity` bị bỏ qua, service dùng
+giá trị khởi tạo của form (`InPerson`, `Secret`). Người duyệt phải là tài khoản đang hoạt động có
+capability `MeetingApprover`.
+
 POST trả `201 Created`, header `Location: /api/meetings/{id}` và envelope `code`, `message`,
-`meeting`. `meeting` gồm `id`, bảy field, `status`, `createdById`, `createdAt`, `updatedAt`.
+`meeting`. `meeting` gồm thông tin cuộc họp, `assignedApproverId`, `status`, `createdById`,
+`createdAt`, `updatedAt`.
 
 ### GET `/api/meetings/{id}`
 
@@ -54,7 +66,7 @@ enum. Thời gian trong response luôn UTC.
 
 ### PUT `/api/meetings/{id}`
 
-PUT thay toàn bộ bảy field thông tin cuộc họp bằng dữ liệu request. Trả `200 OK`, envelope
+PUT thay toàn bộ tám field thông tin cuộc họp bằng dữ liệu request. Trả `200 OK`, envelope
 `{ "code": "MSG02", "message": "Cập nhật cuộc họp thành công.", "meeting": { ... } }`.
 
 Không chấp nhận quyền thay đổi `id`, `createdById`, `status`, `createdAt`, `updatedAt` hay dữ liệu
@@ -65,9 +77,11 @@ con qua body. Khi lưu cuộc họp bị từ chối, trạng thái vẫn là `R
 | Field | Quy tắc |
 |---|---|
 | `title` | Bắt buộc sau trim; tối đa 300 ký tự |
-| `startsAt`, `endsAt` | Bắt buộc, ISO 8601 có `Z` hoặc offset rõ ràng; kết thúc phải lớn hơn bắt đầu |
-| `mode` | Một trong `InPerson`, `Online`, `Hybrid` |
-| `sensitivity` | Một trong `Normal`, `Internal`, `Confidential`, `Secret` |
+| `startsAt` | Bắt buộc, ISO 8601 có `Z` hoặc offset rõ ràng |
+| `endsAt` | Tùy chọn; nếu có, ISO 8601 có `Z` hoặc offset rõ ràng và phải lớn hơn giờ bắt đầu |
+| `assignedApproverId` | Bắt buộc; tài khoản đang hoạt động và có capability `MeetingApprover` |
+| `mode` | Một trong `InPerson`, `Online`, `Hybrid`; mặc định `InPerson` nếu bỏ qua |
+| `sensitivity` | Một trong `Normal`, `Internal`, `Confidential`, `Secret`; mặc định `Secret` nếu bỏ qua |
 | `location` | Tùy chọn; trim; tối đa 300 ký tự |
 | `description` | Tùy chọn; tối đa 4.000 ký tự; giữ xuống dòng |
 
@@ -113,9 +127,10 @@ Endpoint trả đồng thời mọi lỗi field phát hiện được. JSON sai 
 
 ## Persistence và transaction
 
-Không cần migration: entity `Meeting` và cấu hình hiện có đã có đủ field của contract. POST lưu
-meeting `Draft` cùng một dòng `MeetingStatusHistory` (`FromStatus = null`, `ToStatus = Draft`,
-`ActorId = creator`). EF Core lưu các thay đổi này trong cùng transaction.
+Cần migration để cho phép `ends_at` null và thêm FK nullable `assigned_approver_id` (nullable để
+giữ dữ liệu cũ). POST qua API bắt buộc gán người duyệt, lưu meeting `Draft` cùng người duyệt và một
+dòng `MeetingStatusHistory` (`FromStatus = null`, `ToStatus = Draft`, `ActorId = creator`). EF Core
+lưu các thay đổi này trong cùng transaction.
 
 PUT chạy transaction `ReadCommitted`, khóa đúng meeting row bằng PostgreSQL `FOR UPDATE`, rồi đọc
 lại meeting và trạng thái trong transaction. Transaction kết thúc trước response. Cập nhật thông tin
@@ -123,7 +138,7 @@ không thay status hoặc lịch sử. Nếu body sau chuẩn hóa giống dữ 
 không ghi DB hoặc đổi `updatedAt`. Dữ liệu cho phép sửa giữa hai form cũ dùng “lần ghi sau cùng
 thắng”; contract chưa có ETag/version để từ chối stale content.
 
-## Hợp đồng tích hợp FE (chưa triển khai trong task backend này)
+## Hợp đồng tích hợp FE
 
 - Gọi API qua client hiện có bằng đường dẫn tương đối `/api/...` để tự mang token và refresh phiên.
 - Khi nhận `403`, xử lý như quyền đã thay đổi; `404` ở GET/PUT không phân biệt ID không tồn tại
@@ -137,7 +152,7 @@ thắng”; contract chưa có ETag/version để từ chối stale content.
 
 ## Checklist BA cần hoàn tất
 
-- Bổ sung nội dung chính thức BR-24–BR-28, map từng luật vào bảng validation/lifecycle.
+- Đồng bộ nội dung BR-24–BR-29 chính thức vào tài liệu BA và map từng luật vào validation/lifecycle.
 - Vẽ Class Diagram tạo/đọc/sửa và ghi Controller trong sequence là ASP.NET Minimal API.
 - Xác nhận field bắt buộc/optional, giới hạn length và format timezone theo BA.
 - Ghi rõ quyền GET, ownership và hành vi khi sửa `Rejected`.

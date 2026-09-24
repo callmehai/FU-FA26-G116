@@ -20,8 +20,8 @@ public class Meeting : Entity
     public MeetingStatus Status { get; set; }
 
     /// <summary>
-    /// Also deliberately without a default: the caller names the sensitivity, because silently
-    /// defaulting to the most permissive value is how a confidential meeting leaks.
+    /// Deliberately has no database default. The application applies the form's explicit initial
+    /// choice (`Secret`) when a request omits this optional selector.
     /// </summary>
     public Sensitivity Sensitivity { get; set; }
 
@@ -32,11 +32,15 @@ public class Meeting : Entity
 
     public DateTimeOffset StartsAt { get; set; }
 
-    /// <summary>Planned end. Must be after <see cref="StartsAt"/> — enforced in the domain (SCRUM-17).</summary>
-    public DateTimeOffset EndsAt { get; set; }
+    /// <summary>Optional planned end; when supplied, it must be after <see cref="StartsAt"/>.</summary>
+    public DateTimeOffset? EndsAt { get; set; }
 
     public Guid CreatedById { get; set; }
     public User CreatedBy { get; set; } = null!;
+
+    /// <summary>The active approver assignment for this meeting's current approval cycle.</summary>
+    public Guid? AssignedApproverId { get; set; }
+    public User? AssignedApprover { get; set; }
 
     public ICollection<MeetingParticipant> Participants { get; set; } = [];
     public ICollection<MeetingStatusHistory> StatusHistory { get; set; } = [];

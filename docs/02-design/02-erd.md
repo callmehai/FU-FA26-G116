@@ -39,6 +39,7 @@ erDiagram
     Role ||--o{ User : "vai trò (RESTRICT)"
     Role ||--o{ RoleCapability : "quyền (CASCADE)"
     User ||--o{ Meeting : "người tạo"
+    User o|--o{ Meeting : "người duyệt được gán"
     User ||--o{ MeetingParticipant : "được mời"
     User ||--o{ MeetingStatusHistory : "người thực hiện"
     Meeting ||--o{ MeetingParticipant : "thành phần tham dự"
@@ -70,8 +71,9 @@ erDiagram
         string Mode "InPerson|Online|Hybrid"
         string Location
         timestamptz StartsAt
-        timestamptz EndsAt
+        timestamptz EndsAt "nullable"
         uuid CreatedById FK
+        uuid AssignedApproverId FK "nullable với dữ liệu cũ; bắt buộc khi tạo mới"
     }
     MeetingParticipant {
         uuid Id PK

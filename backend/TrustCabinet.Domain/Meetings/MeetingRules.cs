@@ -49,22 +49,36 @@ public static partial class MeetingRules
             fieldErrors["startsAt"] = "Thời gian bắt đầu không hợp lệ.";
         }
 
-        var endsAtValid = TryParseTimestamp(input.EndsAt, out var endsAt);
-        if (!endsAtValid)
+        DateTimeOffset? endsAt = null;
+        if (!string.IsNullOrWhiteSpace(input.EndsAt))
         {
-            fieldErrors["endsAt"] = "Thời gian kết thúc không hợp lệ.";
-        }
-        else if (startsAtValid && endsAt <= startsAt)
-        {
-            fieldErrors["endsAt"] = "Thời gian kết thúc phải sau thời gian bắt đầu.";
+            if (!TryParseTimestamp(input.EndsAt, out var parsedEndsAt))
+            {
+                fieldErrors["endsAt"] = "Thời gian kết thúc không hợp lệ.";
+            }
+            else if (startsAtValid && parsedEndsAt <= startsAt)
+            {
+                fieldErrors["endsAt"] = "Thời gian kết thúc phải sau thời gian bắt đầu.";
+            }
+            else
+            {
+                endsAt = parsedEndsAt.ToUniversalTime();
+            }
         }
 
-        if (!TryParseDefinedEnum(input.Mode, out MeetingMode mode))
+        if (input.AssignedApproverId is null || input.AssignedApproverId == Guid.Empty)
+        {
+            fieldErrors["assignedApproverId"] = "Vui lòng chọn người duyệt.";
+        }
+
+        var mode = MeetingMode.InPerson;
+        if (input.Mode is not null && !TryParseDefinedEnum(input.Mode, out mode))
         {
             fieldErrors["mode"] = "Hình thức cuộc họp không hợp lệ.";
         }
 
-        if (!TryParseDefinedEnum(input.Sensitivity, out Sensitivity sensitivity))
+        var sensitivity = Sensitivity.Secret;
+        if (input.Sensitivity is not null && !TryParseDefinedEnum(input.Sensitivity, out sensitivity))
         {
             fieldErrors["sensitivity"] = "Mức độ mật không hợp lệ.";
         }
@@ -79,11 +93,12 @@ public static partial class MeetingRules
         validated = new ValidatedMeetingInput(
             title,
             startsAt.ToUniversalTime(),
-            endsAt.ToUniversalTime(),
+            endsAt,
             mode,
             location,
             sensitivity,
-            description);
+            description,
+            input.AssignedApproverId!.Value);
         return true;
     }
 

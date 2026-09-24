@@ -24,7 +24,7 @@ public class MeetingServiceTests
         string location = "Phòng họp A",
         string sensitivity = "Internal",
         string description = "Nội dung")
-        => new(title, startsAt, endsAt, mode, location, sensitivity, description);
+        => new(title, startsAt, endsAt, mode, location, sensitivity, description, Guid.CreateVersion7());
 
     private Meeting GivenMeeting(MeetingStatus status = MeetingStatus.Draft, Guid? creatorId = null)
     {
@@ -39,6 +39,7 @@ public class MeetingServiceTests
             StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
             EndsAt = new DateTimeOffset(2026, 10, 1, 3, 0, 0, TimeSpan.Zero),
             CreatedById = creatorId ?? _actorId,
+            AssignedApproverId = _actorId,
         };
         _repository.Meetings.Add(meeting);
         return meeting;
@@ -80,6 +81,7 @@ public class MeetingServiceTests
         Assert.Contains("startsAt", result.Errors.Keys);
         Assert.Contains("mode", result.Errors.Keys);
         Assert.Contains("location", result.Errors.Keys);
+        Assert.Contains("sensitivity", result.Errors.Keys);
         Assert.Contains("description", result.Errors.Keys);
     }
 

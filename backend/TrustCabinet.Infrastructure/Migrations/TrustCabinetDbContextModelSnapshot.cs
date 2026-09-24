@@ -544,6 +544,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid?>("AssignedApproverId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_approver_id");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -558,7 +562,7 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(4000)")
                         .HasColumnName("description");
 
-                    b.Property<DateTimeOffset>("EndsAt")
+                    b.Property<DateTimeOffset?>("EndsAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("ends_at");
 
@@ -602,6 +606,9 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_meetings");
+
+                    b.HasIndex("AssignedApproverId")
+                        .HasDatabaseName("ix_meetings_assigned_approver_id");
 
                     b.HasIndex("CreatedById")
                         .HasDatabaseName("ix_meetings_created_by_id");
@@ -1873,12 +1880,20 @@ namespace TrustCabinet.Infrastructure.Migrations
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.Meeting", b =>
                 {
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "AssignedApprover")
+                        .WithMany()
+                        .HasForeignKey("AssignedApproverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_meetings_users_assigned_approver_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.User", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_meetings_users_created_by_id");
+
+                    b.Navigation("AssignedApprover");
 
                     b.Navigation("CreatedBy");
                 });

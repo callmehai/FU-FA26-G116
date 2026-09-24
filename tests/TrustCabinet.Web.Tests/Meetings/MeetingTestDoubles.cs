@@ -19,6 +19,12 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
     public Task<Meeting?> FindOwnedForUpdateAsync(Guid id, Guid creatorId, CancellationToken ct = default)
         => Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id && m.CreatedById == creatorId));
 
+    public Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<MeetingApproverOption>>([]);
+
+    public Task<bool> IsEligibleApproverAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult(id != Guid.Empty);
+
     public Task AddAsync(Meeting meeting, CancellationToken ct = default)
     {
         _pendingAdds.Add(meeting);
@@ -71,6 +77,7 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
             StartsAt = meeting.StartsAt,
             EndsAt = meeting.EndsAt,
             CreatedById = meeting.CreatedById,
+            AssignedApproverId = meeting.AssignedApproverId,
             StatusHistory = [.. meeting.StatusHistory],
         };
 }
