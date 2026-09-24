@@ -160,6 +160,8 @@ public sealed class MeetingEndpointsTests : IDisposable
             location = "Phòng họp B",
             sensitivity = "Secret",
             description = "Nội dung mới",
+            assignedApproverId = createBody.RootElement.GetProperty("meeting")
+                .GetProperty("assignedApproverId").GetGuid(),
             status = "Published",
             createdById = Guid.CreateVersion7(),
         });

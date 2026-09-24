@@ -23,8 +23,11 @@ public class MeetingServiceTests
         string mode = "InPerson",
         string location = "Phòng họp A",
         string sensitivity = "Internal",
-        string description = "Nội dung")
-        => new(title, startsAt, endsAt, mode, location, sensitivity, description, Guid.CreateVersion7());
+        string description = "Nội dung",
+        Guid? assignedApproverId = null)
+        => new(
+            title, startsAt, endsAt, mode, location, sensitivity, description,
+            assignedApproverId ?? Guid.CreateVersion7());
 
     private Meeting GivenMeeting(MeetingStatus status = MeetingStatus.Draft, Guid? creatorId = null)
     {
@@ -177,7 +180,8 @@ public class MeetingServiceTests
         var meeting = GivenMeeting();
         var updatedAt = meeting.UpdatedAt;
 
-        var result = await NewService().UpdateAsync(meeting.Id, ValidInput(), _actorId);
+        var result = await NewService().UpdateAsync(
+            meeting.Id, ValidInput(assignedApproverId: _actorId), _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Equal(updatedAt, meeting.UpdatedAt);
