@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { useId, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { Icon } from './Icon'
 
 /**
@@ -25,7 +25,10 @@ export function Dialog({
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
 
-  useEffect(() => {
+  // A layout effect, not a passive one: its cleanup runs before React removes the <dialog> from the
+  // page. `close()` on a dialog that is already detached cannot hand focus back to the button that
+  // opened it, and keyboard users are left on <body>.
+  useLayoutEffect(() => {
     const dialog = ref.current
     if (dialog && !dialog.open) {
       dialog.showModal()
