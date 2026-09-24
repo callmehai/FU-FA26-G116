@@ -179,7 +179,7 @@ public sealed class MeetingEndpointsTests : IDisposable
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.Equal("InPerson", meeting.GetProperty("mode").GetString());
-        Assert.Equal("Secret", meeting.GetProperty("sensitivity").GetString());
+        Assert.Equal("Normal", meeting.GetProperty("sensitivity").GetString());
         Assert.Equal(JsonValueKind.Null, meeting.GetProperty("endsAt").ValueKind);
     }
 
@@ -247,6 +247,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var creator = GivenCreator();
         var approver = GivenMember("approver@trustcabinet.local");
         var meeting = OwnedMeetingBy(creator, approver.Id);
+        meeting.Status = MeetingStatus.WaitingApproval;
         _factory.Meetings.Meetings.Add(meeting);
         using var client = _factory.ClientFor(approver);
 
@@ -263,6 +264,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var creator = GivenCreator();
         var participant = GivenMember("participant@trustcabinet.local");
         var meeting = OwnedMeetingBy(creator, participantId: participant.Id);
+        meeting.Status = MeetingStatus.Published;
         _factory.Meetings.Meetings.Add(meeting);
         using var client = _factory.ClientFor(participant);
 
@@ -271,6 +273,38 @@ public sealed class MeetingEndpointsTests : IDisposable
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(meeting.Id, body.RootElement.GetProperty("id").GetGuid());
+    }
+
+    [Fact]
+    public async Task Get_enforces_lifecycle_visibility_for_related_readers()
+    {
+        var creator = GivenCreator();
+        var approver = GivenMember("lifecycle-approver@trustcabinet.local");
+        var participant = GivenMember("lifecycle-participant@trustcabinet.local");
+        using var approverClient = _factory.ClientFor(approver);
+        using var participantClient = _factory.ClientFor(participant);
+
+        foreach (var status in Enum.GetValues<MeetingStatus>())
+        {
+            var meeting = OwnedMeetingBy(creator, approver.Id, participant.Id);
+            meeting.Status = status;
+            _factory.Meetings.Meetings.Add(meeting);
+
+            var approverResponse = await approverClient.GetAsync($"/api/meetings/{meeting.Id}");
+            var participantResponse = await participantClient.GetAsync($"/api/meetings/{meeting.Id}");
+
+            Assert.Equal(
+                status == MeetingStatus.Draft ? HttpStatusCode.NotFound : HttpStatusCode.OK,
+                approverResponse.StatusCode);
+            var participantCanRead = status is MeetingStatus.Published
+                or MeetingStatus.InProgress
+                or MeetingStatus.Ended
+                or MeetingStatus.MinutesIssued
+                or MeetingStatus.Archived;
+            Assert.Equal(
+                participantCanRead ? HttpStatusCode.OK : HttpStatusCode.NotFound,
+                participantResponse.StatusCode);
+        }
     }
 
     [Fact]
@@ -330,6 +364,48 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         Assert.Equal("MSG03", body.RootElement.GetProperty("code").GetString());
         Assert.Equal("Đã gửi duyệt", meeting.Title);
+    }
+
+    [Theory]
+    [InlineData("{")]
+    [InlineData("{\"title\":42}")]
+    public async Task Put_checks_status_before_parsing_invalid_json(string json)
+    {
+        var creator = GivenCreator();
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+        var meeting = OwnedMeetingBy(creator);
+        meeting.Status = MeetingStatus.WaitingApproval;
+        _factory.Meetings.Meetings.Add(meeting);
+
+        using var request = new HttpRequestMessage(HttpMethod.Put, $"/api/meetings/{meeting.Id}")
+        {
+            Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
+        };
+        var response = await client.SendAsync(request);
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal("MSG03", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("Giao ban tuần", meeting.Title);
+    }
+
+    [Fact]
+    public async Task Put_returns_400_for_invalid_json_when_meeting_is_editable()
+    {
+        var creator = GivenCreator();
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+        var meeting = OwnedMeetingBy(creator);
+        _factory.Meetings.Meetings.Add(meeting);
+
+        using var request = new HttpRequestMessage(HttpMethod.Put, $"/api/meetings/{meeting.Id}")
+        {
+            Content = new StringContent("{", System.Text.Encoding.UTF8, "application/json"),
+        };
+        var response = await client.SendAsync(request);
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MEETING_INVALID_INFORMATION", body.RootElement.GetProperty("code").GetString());
     }
 
     [Fact]

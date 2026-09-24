@@ -10,9 +10,9 @@ Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết
 SCRUM-18, chưa nằm trong contract này; danh sách UI hiện tại vẫn dùng dữ liệu mẫu. Sau khi tạo,
 form hiển thị xác nhận và mã cuộc họp.
 
-Theo BR-24 và form hiện tại, Tiêu đề, Thời gian bắt đầu và Người duyệt là bắt buộc. Thời gian kết
-thúc tùy chọn; nếu nhập thì phải sau thời gian bắt đầu theo BR-25. Form khởi tạo Hình thức là
-`InPerson` và Mức độ mật là `Secret`.
+Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24. Người duyệt bắt buộc khi tạo mới theo ERD và
+tiêu chí chấp nhận SCRUM-17. Thời gian kết thúc tùy chọn; nếu nhập thì phải sau thời gian bắt đầu
+theo BR-25. Form khởi tạo Hình thức là `InPerson` và Mức độ mật là `Normal`.
 
 ## Quyền truy cập
 
@@ -20,10 +20,11 @@ POST, `GET /api/meetings/approvers` và PUT yêu cầu capability `MeetingCreato
 xác minh lại capability từ database theo SCRUM-12, không kiểm theo tên vai trò. GET chi tiết yêu cầu
 đăng nhập và tài khoản còn hoạt động, sau đó kiểm tra quan hệ cuộc họp theo BR-29.
 
-GET chỉ trả meeting khi caller là người tạo, người duyệt được gán, hoặc có bản ghi tham dự cuộc họp
-(bao gồm Chair, Secretary và Participant). Không có quan hệ thì trả `404` rỗng, giống ID không tồn
-tại. PUT vẫn chỉ cho người tạo/người tổ chức sửa; ID không tồn tại và meeting của người tổ chức khác
-cùng trả `404` rỗng.
+GET luôn cho người tạo đọc. Người duyệt được gán chỉ đọc từ khi meeting rời `Draft`; thành phần tham
+dự (Chair, Secretary và Participant) chỉ đọc từ `Published` trở đi. Vì vậy meeting `Draft` chỉ người
+tạo thấy, còn các trạng thái trước khi công bố không lộ cho thành phần tham dự. Không đủ quyền đọc
+thì trả `404` rỗng, giống ID không tồn tại. PUT vẫn chỉ cho người tạo/người tổ chức sửa; ID không tồn
+tại và meeting của người tổ chức khác cùng trả `404` rỗng.
 
 Sửa chỉ được ở `Draft` và `Rejected`. Hệ thống đọc trạng thái mới nhất sau khi khóa dòng và trước
 khi validate nội dung. Trạng thái khác trả `409 MSG03`. Sửa `Rejected` giữ nguyên trạng thái và
@@ -55,7 +56,7 @@ Request body của POST và PUT có các field:
 
 `title`, `startsAt` và `assignedApproverId` là bắt buộc. `endsAt` có thể `null` hoặc bị bỏ qua;
 nếu có giá trị, nó phải lớn hơn `startsAt`. Nếu `mode` hoặc `sensitivity` bị bỏ qua, service dùng
-giá trị khởi tạo của form (`InPerson`, `Secret`). Người duyệt phải là tài khoản đang hoạt động có
+giá trị khởi tạo của form (`InPerson`, `Normal`). Người duyệt phải là tài khoản đang hoạt động có
 capability `MeetingApprover`.
 
 POST trả `201 Created`, header `Location: /api/meetings/{id}` và envelope `code`, `message`,
@@ -84,7 +85,7 @@ con qua body. Khi lưu cuộc họp bị từ chối, trạng thái vẫn là `R
 | `endsAt` | Tùy chọn; nếu có, ISO 8601 có `Z` hoặc offset rõ ràng và phải lớn hơn giờ bắt đầu |
 | `assignedApproverId` | Bắt buộc; tài khoản đang hoạt động và có capability `MeetingApprover` |
 | `mode` | Một trong `InPerson`, `Online`, `Hybrid`; mặc định `InPerson` nếu bỏ qua |
-| `sensitivity` | Một trong `Normal`, `Internal`, `Confidential`, `Secret`; mặc định `Secret` nếu bỏ qua |
+| `sensitivity` | Một trong `Normal`, `Internal`, `Confidential`, `Secret`; mặc định `Normal` nếu bỏ qua |
 | `location` | Tùy chọn; trim; tối đa 300 ký tự |
 | `description` | Tùy chọn; tối đa 4.000 ký tự; giữ xuống dòng |
 
@@ -105,8 +106,10 @@ Lỗi validation trả `400`:
 }
 ```
 
-Endpoint trả đồng thời mọi lỗi field phát hiện được. JSON sai cú pháp hoặc sai kiểu trả lỗi binding
-`400`; client cần hiển thị lỗi khi response không có `errors`.
+Endpoint trả đồng thời mọi lỗi field phát hiện được. Với PUT, hệ thống khóa meeting và kiểm tra
+trạng thái trước khi parse JSON: nếu meeting không còn sửa được thì trả `409 MSG03`, kể cả body JSON
+sai cú pháp hoặc sai kiểu. Với meeting còn sửa được, JSON sai cú pháp/sai kiểu trả `400` và code
+`MEETING_INVALID_INFORMATION` không có `errors`. POST JSON lỗi cũng trả `400`.
 
 ## Mã phản hồi
 
@@ -130,8 +133,8 @@ Endpoint trả đồng thời mọi lỗi field phát hiện được. JSON sai 
 
 ## Persistence và transaction
 
-Cần migration để cho phép `ends_at` null và thêm FK nullable `assigned_approver_id` (nullable để
-giữ dữ liệu cũ). POST qua API bắt buộc gán người duyệt, lưu meeting `Draft` cùng người duyệt và một
+Cột `ends_at` nullable và FK nullable `assigned_approver_id` giữ được các meeting cũ; API POST vẫn
+bắt buộc gán người duyệt cho meeting mới theo ERD. POST lưu meeting `Draft` cùng người duyệt và một
 dòng `MeetingStatusHistory` (`FromStatus = null`, `ToStatus = Draft`, `ActorId = creator`). EF Core
 lưu các thay đổi này trong cùng transaction.
 
@@ -157,7 +160,7 @@ thắng”; contract chưa có ETag/version để từ chối stale content.
 
 - Đồng bộ nội dung BR-24–BR-29 chính thức vào tài liệu BA và map từng luật vào validation/lifecycle.
 - Vẽ Class Diagram tạo/đọc/sửa và ghi Controller trong sequence là ASP.NET Minimal API.
-- Xác nhận field bắt buộc/optional, giới hạn length và format timezone theo BA.
+- Đồng bộ tính bắt buộc của người duyệt và tính tùy chọn của `endsAt` vào UC-11/UC-12, cùng giới hạn length và format timezone.
 - Ghi rõ quyền GET, ownership và hành vi khi sửa `Rejected`.
 - Bổ sung mã thành công/lỗi chưa có vào sequence/message catalog.
 - Kiểm tra lại định danh UC theo convention Jira để tránh nhầm UC-11/UC-12 quản lý vai trò.

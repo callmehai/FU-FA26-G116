@@ -139,7 +139,7 @@ public class MeetingServiceTests
         var meeting = Assert.Single(_repository.Meetings);
         Assert.Null(meeting.EndsAt);
         Assert.Equal(MeetingMode.InPerson, meeting.Mode);
-        Assert.Equal(Sensitivity.Secret, meeting.Sensitivity);
+        Assert.Equal(Sensitivity.Normal, meeting.Sensitivity);
     }
 
     [Fact]
@@ -236,7 +236,7 @@ public class MeetingServiceTests
         var saved = Assert.Single(_repository.Meetings);
         Assert.Null(saved.EndsAt);
         Assert.Equal(MeetingMode.InPerson, saved.Mode);
-        Assert.Equal(Sensitivity.Secret, saved.Sensitivity);
+        Assert.Equal(Sensitivity.Normal, saved.Sensitivity);
     }
 
     [Fact]
@@ -331,6 +331,7 @@ public class MeetingServiceTests
     public async Task Get_allows_the_assigned_approver_and_a_meeting_participant()
     {
         var meeting = GivenMeeting();
+        meeting.Status = MeetingStatus.Published;
         meeting.AssignedApproverId = _otherActorId;
         var participantId = Guid.CreateVersion7();
         meeting.Participants.Add(new MeetingParticipant
