@@ -11,17 +11,21 @@ public sealed record MeetingInput(
     string? Mode,
     string? Location,
     string? Sensitivity,
-    string? Description);
+    string? Description,
+    Guid? AssignedApproverId = null);
 
 /// <summary>A validated and normalized form value, ready to persist.</summary>
 public sealed record ValidatedMeetingInput(
     string Title,
     DateTimeOffset StartsAt,
-    DateTimeOffset EndsAt,
+    DateTimeOffset? EndsAt,
     MeetingMode Mode,
     string Location,
     Sensitivity Sensitivity,
-    string Description);
+    string Description,
+    Guid AssignedApproverId);
+
+public sealed record MeetingApproverOption(Guid Id, string FullName);
 
 /// <summary>A safe, flat representation returned by the meeting service.</summary>
 public sealed record MeetingDetails(
@@ -29,12 +33,13 @@ public sealed record MeetingDetails(
     string Title,
     string Description,
     DateTimeOffset StartsAt,
-    DateTimeOffset EndsAt,
+    DateTimeOffset? EndsAt,
     MeetingMode Mode,
     string Location,
     Sensitivity Sensitivity,
     MeetingStatus Status,
     Guid CreatedById,
+    Guid? AssignedApproverId,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt)
 {
@@ -49,6 +54,7 @@ public sealed record MeetingDetails(
         meeting.Sensitivity,
         meeting.Status,
         meeting.CreatedById,
+        meeting.AssignedApproverId,
         meeting.CreatedAt,
         meeting.UpdatedAt);
 }

@@ -15,6 +15,7 @@ public static class MeetingEndpoints
             .RequireCapability(Capability.MeetingCreator);
 
         meetings.MapPost("/", CreateAsync);
+        meetings.MapGet("/approvers", ListApproversAsync);
         meetings.MapGet("/{id:guid}", GetAsync);
         meetings.MapPut("/{id:guid}", UpdateAsync);
         return app;
@@ -55,6 +56,11 @@ public static class MeetingEndpoints
             _ => SaveFailed("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."),
         };
     }
+
+    private static async Task<IResult> ListApproversAsync(
+        IMeetingService service,
+        CancellationToken ct)
+        => Results.Ok(await service.ListEligibleApproversAsync(ct));
 
     private static async Task<IResult> UpdateAsync(
         Guid id,
@@ -106,10 +112,11 @@ public sealed record MeetingRequest(
     string? Mode,
     string? Location,
     string? Sensitivity,
-    string? Description)
+    string? Description,
+    Guid? AssignedApproverId)
 {
     public MeetingInput ToInput() => new(
-        Title, StartsAt, EndsAt, Mode, Location, Sensitivity, Description);
+        Title, StartsAt, EndsAt, Mode, Location, Sensitivity, Description, AssignedApproverId);
 }
 
 public sealed record MeetingResponse(
@@ -117,12 +124,13 @@ public sealed record MeetingResponse(
     string Title,
     string Description,
     DateTimeOffset StartsAt,
-    DateTimeOffset EndsAt,
+    DateTimeOffset? EndsAt,
     string Mode,
     string Location,
     string Sensitivity,
     string Status,
     Guid CreatedById,
+    Guid? AssignedApproverId,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt)
 {
@@ -137,6 +145,7 @@ public sealed record MeetingResponse(
         meeting.Sensitivity.ToString(),
         meeting.Status.ToString(),
         meeting.CreatedById,
+        meeting.AssignedApproverId,
         meeting.CreatedAt,
         meeting.UpdatedAt);
 }

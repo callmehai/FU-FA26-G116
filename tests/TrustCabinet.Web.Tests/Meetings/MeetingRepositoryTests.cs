@@ -58,6 +58,12 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             _creatorId = creator.Id;
             _db.Users.Add(creator);
             await _db.SaveChangesAsync();
+            _db.RoleCapabilities.Add(new RoleCapability
+            {
+                RoleId = role.Id,
+                Capability = Capability.MeetingApprover,
+            });
+            await _db.SaveChangesAsync();
             _db.ChangeTracker.Clear();
         }
         catch (NpgsqlException exception)
@@ -89,7 +95,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         return new MeetingService(new MeetingRepository(context), NullLogger<MeetingService>.Instance);
     }
 
-    private static MeetingInput Input(string title = "PostgreSQL meeting")
+    private MeetingInput Input(string title = "PostgreSQL meeting")
         => new(
             title,
             "2026-10-01T09:00:00+07:00",
@@ -97,7 +103,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             "Online",
             "Conference link",
             "Confidential",
-            "Integration test");
+            "Integration test",
+            _creatorId);
 
     [Fact]
     public async Task Create_persists_the_meeting_and_initial_history_as_one_operation()

@@ -5,6 +5,8 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using TrustCabinet.Domain.Access;
+using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
@@ -74,7 +76,8 @@ public sealed class MeetingEndpointsTests : IDisposable
             "InPerson",
             "Phòng họp A",
             "Internal",
-            "Kế hoạch tuần.");
+            "Kế hoạch tuần.",
+            Guid.CreateVersion7());
 
     private static async Task<JsonDocument> JsonOf(HttpResponseMessage response)
         => JsonDocument.Parse(await response.Content.ReadAsStringAsync());

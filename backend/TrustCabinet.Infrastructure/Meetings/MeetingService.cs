@@ -32,6 +32,7 @@ public sealed class MeetingService(
             Description = valid.Description,
             Status = MeetingStatus.Draft,
             CreatedById = actorId,
+            AssignedApproverId = valid.AssignedApproverId,
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -50,6 +51,14 @@ public sealed class MeetingService(
 
         try
         {
+            if (!await meetings.IsEligibleApproverAsync(valid!.AssignedApproverId, ct))
+            {
+                return MeetingResult.Invalid(new Dictionary<string, string>
+                {
+                    ["assignedApproverId"] = "Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp.",
+                });
+            }
+
             await meetings.AddAsync(meeting, ct);
             await meetings.SaveChangesAsync(ct);
             return MeetingResult.Success(MeetingDetails.From(meeting));
@@ -86,6 +95,10 @@ public sealed class MeetingService(
         }
     }
 
+    public Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(
+        CancellationToken ct = default)
+        => meetings.ListEligibleApproversAsync(ct);
+
     public async Task<MeetingResult> UpdateAsync(
         Guid id, MeetingInput input, Guid actorId, CancellationToken ct = default)
     {
@@ -110,6 +123,14 @@ public sealed class MeetingService(
                     return MeetingResult.Invalid(errors);
                 }
 
+                if (!await meetings.IsEligibleApproverAsync(valid!.AssignedApproverId, token))
+                {
+                    return MeetingResult.Invalid(new Dictionary<string, string>
+                    {
+                        ["assignedApproverId"] = "Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp.",
+                    });
+                }
+
                 if (HasChanges(meeting, valid!))
                 {
                     meeting.Title = valid.Title;
@@ -119,6 +140,7 @@ public sealed class MeetingService(
                     meeting.Location = valid.Location;
                     meeting.Sensitivity = valid.Sensitivity;
                     meeting.Description = valid.Description;
+                    meeting.AssignedApproverId = valid.AssignedApproverId;
                     meeting.UpdatedAt = DateTimeOffset.UtcNow;
                     await meetings.SaveChangesAsync(token);
                 }
@@ -144,7 +166,8 @@ public sealed class MeetingService(
             || meeting.Mode != input.Mode
             || !string.Equals(meeting.Location, input.Location, StringComparison.Ordinal)
             || meeting.Sensitivity != input.Sensitivity
-            || !string.Equals(meeting.Description, input.Description, StringComparison.Ordinal);
+            || !string.Equals(meeting.Description, input.Description, StringComparison.Ordinal)
+            || meeting.AssignedApproverId != input.AssignedApproverId;
 
     private static bool IsPersistenceFailure(Exception exception)
         => exception is DbUpdateException or NpgsqlException or TimeoutException;

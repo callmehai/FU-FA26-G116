@@ -8,6 +8,10 @@ public interface IMeetingRepository
 
     Task<Meeting?> FindOwnedForUpdateAsync(Guid id, Guid creatorId, CancellationToken ct = default);
 
+    Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(CancellationToken ct = default);
+
+    Task<bool> IsEligibleApproverAsync(Guid id, CancellationToken ct = default);
+
     Task AddAsync(Meeting meeting, CancellationToken ct = default);
 
     Task SaveChangesAsync(CancellationToken ct = default);

@@ -1,5 +1,7 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 
 namespace TrustCabinet.Infrastructure.Meetings;
@@ -32,6 +34,25 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             m => m.Id == id && m.CreatedById == creatorId, ct);
     }
 
+    public async Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(
+        CancellationToken ct = default)
+        => await db.Users
+            .AsNoTracking()
+            .Where(user => user.IsActive
+                && db.RoleCapabilities.Any(capability =>
+                    capability.RoleId == user.RoleId
+                    && capability.Capability == Capability.MeetingApprover))
+            .OrderBy(user => user.FullName)
+            .Select(user => new MeetingApproverOption(user.Id, user.FullName))
+            .ToListAsync(ct);
+
+    public Task<bool> IsEligibleApproverAsync(Guid id, CancellationToken ct = default)
+        => db.Users.AnyAsync(user => user.Id == id
+            && user.IsActive
+            && db.RoleCapabilities.Any(capability =>
+                capability.RoleId == user.RoleId
+                && capability.Capability == Capability.MeetingApprover), ct);
+
     public Task AddAsync(Meeting meeting, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
@@ -44,7 +65,8 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
     public async Task<T> InTransactionAsync<T>(
         Func<CancellationToken, Task<T>> operation, CancellationToken ct = default)
     {
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        await using var transaction = await db.Database.BeginTransactionAsync(
+            IsolationLevel.ReadCommitted, ct);
         var result = await operation(ct);
         await transaction.CommitAsync(ct);
         return result;
