@@ -10,14 +10,18 @@ public static class MeetingEndpoints
 {
     public static IEndpointRouteBuilder MapMeetingEndpoints(this IEndpointRouteBuilder app)
     {
-        var meetings = app.MapGroup("/api/meetings")
+        var creatorMeetings = app.MapGroup("/api/meetings")
             .WithTags("Meetings")
             .RequireCapability(Capability.MeetingCreator);
 
-        meetings.MapPost("/", CreateAsync);
-        meetings.MapGet("/approvers", ListApproversAsync);
-        meetings.MapGet("/{id:guid}", GetAsync);
-        meetings.MapPut("/{id:guid}", UpdateAsync);
+        creatorMeetings.MapPost("/", CreateAsync);
+        creatorMeetings.MapGet("/approvers", ListApproversAsync);
+        creatorMeetings.MapPut("/{id:guid}", UpdateAsync);
+
+        app.MapGroup("/api/meetings")
+            .WithTags("Meetings")
+            .RequireActiveUser()
+            .MapGet("/{id:guid}", GetAsync);
         return app;
     }
 
@@ -48,7 +52,13 @@ public static class MeetingEndpoints
         IMeetingService service,
         CancellationToken ct)
     {
-        var result = await service.GetAsync(id, CapabilityGate.GatedUserId(principal), ct);
+        var actorId = CapabilityGate.CurrentUserId(principal);
+        if (actorId is null)
+        {
+            return Results.Forbid();
+        }
+
+        var result = await service.GetAsync(id, actorId.Value, ct);
         return result.Outcome switch
         {
             MeetingOutcome.Success => Results.Ok(MeetingResponse.From(result.Meeting!)),

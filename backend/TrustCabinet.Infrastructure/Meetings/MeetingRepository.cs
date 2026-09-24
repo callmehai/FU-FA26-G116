@@ -9,11 +9,14 @@ namespace TrustCabinet.Infrastructure.Meetings;
 /// <summary>Queries and persists meetings; authorization and state rules stay in the service.</summary>
 public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingRepository
 {
-    public Task<Meeting?> FindOwnedAsync(
-        Guid id, Guid creatorId, CancellationToken ct = default)
+    public Task<Meeting?> FindAccessibleAsync(
+        Guid id, Guid actorId, CancellationToken ct = default)
         => db.Meetings
             .AsNoTracking()
-            .SingleOrDefaultAsync(m => m.Id == id && m.CreatedById == creatorId, ct);
+            .SingleOrDefaultAsync(m => m.Id == id
+                && (m.CreatedById == actorId
+                    || m.AssignedApproverId == actorId
+                    || m.Participants.Any(participant => participant.UserId == actorId)), ct);
 
     public async Task<Meeting?> FindOwnedForUpdateAsync(
         Guid id, Guid creatorId, CancellationToken ct = default)

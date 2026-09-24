@@ -81,6 +81,19 @@ public static class CapabilityGate
                     : Results.Forbid());
 
     /// <summary>
+    /// Requires an authenticated caller whose account is still active according to the database.
+    /// Use for resource endpoints whose access is authorized by a relationship rather than one
+    /// system capability.
+    /// </summary>
+    public static RouteGroupBuilder RequireActiveUser(this RouteGroupBuilder group)
+        => group
+            .RequireAuthorization()
+            .AddEndpointFilter(async (context, next) =>
+                await IsActiveUserAsync(context)
+                    ? await next(context)
+                    : Results.Forbid());
+
+    /// <summary>
     /// Whether the caller still holds <paramref name="capability"/> according to the database, as
     /// opposed to according to the token they presented.
     /// </summary>
@@ -107,6 +120,19 @@ public static class CapabilityGate
         }
 
         return (await users.GetCapabilitiesAsync(caller.RoleId, ct)).Contains(capability);
+    }
+
+    private static async ValueTask<bool> IsActiveUserAsync(EndpointFilterInvocationContext context)
+    {
+        var callerId = CurrentUserId(context.HttpContext.User);
+        if (callerId is null)
+        {
+            return false;
+        }
+
+        var users = context.HttpContext.RequestServices.GetRequiredService<IUserAccountRepository>();
+        var caller = await users.FindByIdAsync(callerId.Value, context.HttpContext.RequestAborted);
+        return caller is not null && caller.IsActive;
     }
 
     /// <summary>

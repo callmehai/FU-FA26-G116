@@ -79,7 +79,7 @@ public sealed class MeetingService(
     {
         try
         {
-            var meeting = await meetings.FindOwnedAsync(id, actorId, ct);
+            var meeting = await meetings.FindAccessibleAsync(id, actorId, ct);
             return meeting is null
                 ? MeetingResult.Failure(MeetingOutcome.NotFound)
                 : MeetingResult.Success(MeetingDetails.From(meeting));
