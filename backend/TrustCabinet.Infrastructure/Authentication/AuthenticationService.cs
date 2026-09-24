@@ -167,19 +167,26 @@ public sealed class AuthenticationService(
             return SignInResult.Failure(SignInOutcome.InvalidCredentials);
         }
 
-        // Single-use: consuming it here means a replay of the same token finds nothing.
-        var userId = await refreshTokens.ConsumeAsync(refreshToken, ct);
+        // Read the account before spending the token. Consumed first, a database error here would
+        // leave the browser holding a spent token: its retry would be refused, and after the reuse
+        // grace period read as theft, ending every session the account has. Peeked first, a failure
+        // leaves the token as it was and the retry simply works.
+        var owner = await refreshTokens.PeekAsync(refreshToken, ct);
 
-        if (userId is null)
+        if (owner is null)
         {
+            // Consumed anyway, for its verdict: a spent token presented again is how reuse is
+            // detected, and that detection lives in ConsumeAsync.
+            await refreshTokens.ConsumeAsync(refreshToken, ct);
             logger.LogInformation("Refresh rejected: token unknown, expired or already used.");
             return SignInResult.Failure(SignInOutcome.InvalidCredentials);
         }
 
-        var user = await users.FindByIdAsync(userId.Value, ct);
+        var user = await users.FindByIdAsync(owner.Value, ct);
 
         if (user is null)
         {
+            await refreshTokens.ConsumeAsync(refreshToken, ct);
             return SignInResult.Failure(SignInOutcome.InvalidCredentials);
         }
 
@@ -195,6 +202,14 @@ public sealed class AuthenticationService(
 
         // Re-read, so a capability change reaches the next access token.
         var capabilities = await users.GetCapabilitiesAsync(user.RoleId, ct);
+
+        // Single-use: consuming it here means a replay of the same token finds nothing. Another
+        // request may have spent it since the peek — then this one lost the race and is refused.
+        if (await refreshTokens.ConsumeAsync(refreshToken, ct) != user.Id)
+        {
+            logger.LogInformation("Refresh rejected: token of account {UserId} was spent concurrently.", user.Id);
+            return SignInResult.Failure(SignInOutcome.InvalidCredentials);
+        }
 
         return await IssueAsync(user, capabilities, ct);
     }

@@ -394,12 +394,19 @@ phải sống ít nhất bằng RT được cấp ra ở chính lần refresh đ
 | Trong **60 giây** (`ReuseGracePeriod`) | Chỉ trả `401`, giữ marker. Không coi là trộm |
 | Quá 60 giây | `RevokeAllForUserAsync` — mọi phiên của tài khoản chết, kể cả phiên kẻ trộm vừa lấy được — ghi log `Warning`, rồi **xoá marker** |
 
-**Vì sao có 60 giây ân hạn.** Tiêu RT và việc trình duyệt nhận RT mới không phải một bước. Refresh bị
-huỷ giữa chừng (F5 khi đang refresh, chuyển trang) hoặc lỗi sau khi RT đã bị tiêu (Postgres chập
-chờn → `500`) để lại trình duyệt cầm RT đã dùng, và nó gửi lại ở lần tải trang kế tiếp. Không có
-khoảng ân hạn thì sự cố bình thường đó đăng xuất người dùng trên mọi thiết bị. Giới hạn đã biết: nếu
-lần thử lại đến **sau** 60 giây (tab bỏ không sau một lần lỗi) thì vẫn bị coi là trộm — hướng nâng
-cấp là "trả lại" RT khi refresh lỗi sau lúc tiêu nó.
+**Đọc tài khoản trước, tiêu RT sau.** `RefreshAsync` hỏi chủ của RT bằng `PeekAsync` (không xoá),
+đọc tài khoản và quyền từ Postgres, rồi mới `ConsumeAsync`. Postgres chập chờn → `500` thì RT vẫn
+nguyên, lần thử lại chạy bình thường. Nếu tiêu RT trước thì trình duyệt sẽ cầm một RT đã dùng: thử lại
+trong 60 giây bị `401` và mất phiên, sau 60 giây bị coi là trộm. RT không có chủ (lạ, hết hạn, đã
+dùng) vẫn đi qua `ConsumeAsync` để được phán xử — phát hiện dùng lại nằm ở đó. Có request khác tiêu
+mất RT giữa lúc peek và lúc consume thì request này thua, trả `401`.
+
+**Vì sao có 60 giây ân hạn.** Tiêu RT và việc trình duyệt nhận RT mới vẫn không phải một bước. Refresh
+bị huỷ giữa chừng (F5 khi đang refresh, chuyển trang), hoặc response đi lạc sau khi RT đã bị tiêu,
+để lại trình duyệt cầm RT đã dùng, và nó gửi lại ở lần tải trang kế tiếp. Không có khoảng ân hạn thì
+sự cố bình thường đó đăng xuất người dùng trên mọi thiết bị. Giới hạn đã biết: nếu lần thử lại đến
+**sau** 60 giây thì vẫn bị coi là trộm. Lỗi Postgres không còn rơi vào trường hợp này (xem trên), chỉ
+còn lỗi xảy ra sau khi đã tiêu RT: Redis lỗi lúc lưu RT mới, hoặc response không về tới trình duyệt.
 
 **Vì sao xoá marker sau khi phát hiện.** Để một RT bị trộm chỉ kích hoạt huỷ-mọi-phiên **một lần**.
 Giữ lại thì kẻ trộm cứ replay token cũ là đá người dùng ra, kể cả sau khi họ đăng nhập lại, suốt 7

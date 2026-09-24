@@ -39,13 +39,13 @@ public sealed class RedisRefreshTokenStore(
     /// How long after a token is spent a second use of it is only refused, not treated as theft.
     ///
     /// Spending a token and the client receiving its replacement are not one step. A refresh the
-    /// browser aborts (a reload mid-request) or one that fails after the token was consumed (a
-    /// database blip) leaves the browser holding the spent token, and it presents it again at the
-    /// next page load. Without this window that ordinary accident would end every session on every
-    /// device. A thief replaying a stolen token minutes or days later is still caught.
-    /// ponytail: fixed window; a refresh that fails and is retried only after the window has
-    /// passed (an idle tab after an outage) still reads as theft. Upgrade path: un-consume the
-    /// token when the refresh fails after consuming it.
+    /// browser aborts (a reload mid-request) or whose response is lost after the token was consumed
+    /// leaves the browser holding the spent token, and it presents it again at the next page load.
+    /// Without this window that ordinary accident would end every session on every device. A thief
+    /// replaying a stolen token minutes or days later is still caught. (A database error does not
+    /// get here: the refresh reads the account through <see cref="PeekAsync"/> before consuming.)
+    /// ponytail: fixed window; a refresh that fails after consuming — Redis refusing the new
+    /// token, a lost response — and is retried only after the window still reads as theft.
     /// </summary>
     internal static readonly TimeSpan ReuseGracePeriod = TimeSpan.FromSeconds(60);
 
@@ -162,6 +162,12 @@ public sealed class RedisRefreshTokenStore(
             default:
                 return null;
         }
+    }
+
+    public async Task<Guid?> PeekAsync(string refreshToken, CancellationToken ct = default)
+    {
+        var stored = await redis.GetDatabase().StringGetAsync(TokenKey(Hash(refreshToken)));
+        return Guid.TryParse((string?)stored, out var userId) ? userId : null;
     }
 
     public async Task<Guid?> RevokeAsync(string refreshToken, CancellationToken ct = default)

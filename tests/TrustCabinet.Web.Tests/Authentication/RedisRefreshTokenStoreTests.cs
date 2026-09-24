@@ -92,6 +92,20 @@ public class RedisRefreshTokenStoreTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Peeking_names_the_owner_without_spending_the_token()
+    {
+        var (store, token, userId) = Arrange();
+
+        await store.StoreAsync(token, userId, TimeSpan.FromMinutes(5));
+
+        Assert.Equal(userId, await store.PeekAsync(token));
+        // Still live: a refresh that fails after peeking must leave the token usable for its retry.
+        Assert.Equal(userId, await store.ConsumeAsync(token));
+        // Spent now, so a peek no longer finds it.
+        Assert.Null(await store.PeekAsync(token));
+    }
+
+    [Fact]
     public async Task An_unknown_token_consumes_to_nothing()
     {
         var (store, token, _) = Arrange();

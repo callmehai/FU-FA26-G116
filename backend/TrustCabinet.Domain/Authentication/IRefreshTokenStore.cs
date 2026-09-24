@@ -18,6 +18,16 @@ public interface IRefreshTokenStore
     Task StoreAsync(string refreshToken, Guid userId, TimeSpan lifetime, CancellationToken ct = default);
 
     /// <summary>
+    /// The account a live token belongs to, or null — without consuming it.
+    ///
+    /// Lets a refresh do everything that can fail (reading the account from the database) before
+    /// it spends the token. A token consumed by a refresh that then fails is left in the browser as
+    /// a spent token, which the next attempt presents and <see cref="ConsumeAsync"/> reads as
+    /// theft. Not a validity check on its own: only <see cref="ConsumeAsync"/> decides.
+    /// </summary>
+    Task<Guid?> PeekAsync(string refreshToken, CancellationToken ct = default);
+
+    /// <summary>
     /// Consumes the token, returning the account it belonged to, or null if it is unknown,
     /// expired or already used.
     ///
