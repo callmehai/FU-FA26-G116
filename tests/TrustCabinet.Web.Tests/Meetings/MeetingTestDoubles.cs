@@ -29,8 +29,14 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
 
         return Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id
             && (m.CreatedById == actorId
-                || m.AssignedApproverId == actorId
-                || m.Participants.Any(participant => participant.UserId == actorId))));
+                || (m.Status != TrustCabinet.Domain.Enums.MeetingStatus.Draft
+                    && m.AssignedApproverId == actorId)
+                || ((m.Status == TrustCabinet.Domain.Enums.MeetingStatus.Published
+                        || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.InProgress
+                        || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.Ended
+                        || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.MinutesIssued
+                        || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.Archived)
+                    && m.Participants.Any(participant => participant.UserId == actorId)))));
     }
 
     public Task<Meeting?> FindOwnedForUpdateAsync(Guid id, Guid creatorId, CancellationToken ct = default)

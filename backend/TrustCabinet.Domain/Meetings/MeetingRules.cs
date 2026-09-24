@@ -77,7 +77,7 @@ public static partial class MeetingRules
             fieldErrors["mode"] = "Hình thức cuộc họp không hợp lệ.";
         }
 
-        var sensitivity = Sensitivity.Secret;
+        var sensitivity = Sensitivity.Normal;
         if (input.Sensitivity is not null && !TryParseDefinedEnum(input.Sensitivity, out sensitivity))
         {
             fieldErrors["sensitivity"] = "Mức độ mật không hợp lệ.";

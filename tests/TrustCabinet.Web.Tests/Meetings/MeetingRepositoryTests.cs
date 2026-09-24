@@ -246,7 +246,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task FindAccessible_returns_meetings_to_the_creator_approver_or_participant_only()
+    public async Task FindAccessible_applies_lifecycle_visibility_to_approvers_and_participants()
     {
         var creator = await _db.Users.SingleAsync(user => user.Id == _creatorId);
         var approver = NewUser("Meeting Approver", _approverRoleId);
@@ -254,11 +254,12 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var unrelated = NewUser("Unrelated User", _approverRoleId);
         _db.Users.AddRange(approver, participant, unrelated);
 
-        var meeting = new Meeting
+        var statuses = Enum.GetValues<MeetingStatus>();
+        var meetings = statuses.Select(status => new Meeting
         {
-            Title = "Accessible meeting",
+            Title = $"Accessible meeting {status}",
             Description = string.Empty,
-            Status = MeetingStatus.Draft,
+            Status = status,
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.InPerson,
             StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
@@ -272,15 +273,86 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
                     Role = MeetingRole.Member,
                 },
             ],
-        };
-        _db.Meetings.Add(meeting);
+        }).ToArray();
+        _db.Meetings.AddRange(meetings);
         await _db.SaveChangesAsync();
 
         var repository = new MeetingRepository(_db);
 
-        Assert.NotNull(await repository.FindAccessibleAsync(meeting.Id, creator.Id));
-        Assert.NotNull(await repository.FindAccessibleAsync(meeting.Id, approver.Id));
-        Assert.NotNull(await repository.FindAccessibleAsync(meeting.Id, participant.Id));
-        Assert.Null(await repository.FindAccessibleAsync(meeting.Id, unrelated.Id));
+        foreach (var meeting in meetings)
+        {
+            Assert.NotNull(await repository.FindAccessibleAsync(meeting.Id, creator.Id));
+
+            var approverCanRead = meeting.Status != MeetingStatus.Draft;
+            Assert.Equal(approverCanRead, await repository.FindAccessibleAsync(meeting.Id, approver.Id) is not null);
+
+            var participantCanRead = meeting.Status is MeetingStatus.Published
+                or MeetingStatus.InProgress
+                or MeetingStatus.Ended
+                or MeetingStatus.MinutesIssued
+                or MeetingStatus.Archived;
+            Assert.Equal(participantCanRead, await repository.FindAccessibleAsync(meeting.Id, participant.Id) is not null);
+
+            Assert.Null(await repository.FindAccessibleAsync(meeting.Id, unrelated.Id));
+        }
+    }
+}
+
+/// <summary>Lifecycle visibility query coverage that does not require PostgreSQL to create a database.</summary>
+public sealed class MeetingRepositoryVisibilityTests : IDisposable
+{
+    private readonly TrustCabinetDbContext _db = new(
+        new DbContextOptionsBuilder<TrustCabinetDbContext>()
+            .UseInMemoryDatabase($"meeting-visibility-{Guid.CreateVersion7()}")
+            .Options);
+
+    public void Dispose() => _db.Dispose();
+
+    [Fact]
+    public async Task FindAccessible_filters_approvers_and_participants_by_lifecycle_status()
+    {
+        var creatorId = Guid.CreateVersion7();
+        var approverId = Guid.CreateVersion7();
+        var participantId = Guid.CreateVersion7();
+        var unrelatedId = Guid.CreateVersion7();
+        var meetings = Enum.GetValues<MeetingStatus>().Select(status => new Meeting
+        {
+            Title = $"Visibility test {status}",
+            Description = string.Empty,
+            Status = status,
+            Sensitivity = Sensitivity.Normal,
+            Mode = MeetingMode.InPerson,
+            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
+            CreatedById = creatorId,
+            AssignedApproverId = approverId,
+            Participants =
+            [
+                new MeetingParticipant
+                {
+                    UserId = participantId,
+                    Role = MeetingRole.Member,
+                },
+            ],
+        }).ToArray();
+        _db.Meetings.AddRange(meetings);
+        await _db.SaveChangesAsync();
+
+        var repository = new MeetingRepository(_db);
+        foreach (var meeting in meetings)
+        {
+            Assert.NotNull(await repository.FindAccessibleAsync(meeting.Id, creatorId));
+            Assert.Equal(
+                meeting.Status != MeetingStatus.Draft,
+                await repository.FindAccessibleAsync(meeting.Id, approverId) is not null);
+            var participantCanRead = meeting.Status is MeetingStatus.Published
+                or MeetingStatus.InProgress
+                or MeetingStatus.Ended
+                or MeetingStatus.MinutesIssued
+                or MeetingStatus.Archived;
+            Assert.Equal(
+                participantCanRead,
+                await repository.FindAccessibleAsync(meeting.Id, participantId) is not null);
+            Assert.Null(await repository.FindAccessibleAsync(meeting.Id, unrelatedId));
+        }
     }
 }

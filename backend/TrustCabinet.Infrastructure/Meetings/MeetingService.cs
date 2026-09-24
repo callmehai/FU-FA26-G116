@@ -99,8 +99,15 @@ public sealed class MeetingService(
         CancellationToken ct = default)
         => meetings.ListEligibleApproversAsync(ct);
 
-    public async Task<MeetingResult> UpdateAsync(
+    public Task<MeetingResult> UpdateAsync(
         Guid id, MeetingInput input, Guid actorId, CancellationToken ct = default)
+        => UpdateAsync(id, _ => Task.FromResult(input), actorId, ct);
+
+    public async Task<MeetingResult> UpdateAsync(
+        Guid id,
+        Func<CancellationToken, Task<MeetingInput>> inputFactory,
+        Guid actorId,
+        CancellationToken ct = default)
     {
         try
         {
@@ -118,6 +125,7 @@ public sealed class MeetingService(
                     return MeetingResult.Failure(MeetingOutcome.NotEditable);
                 }
 
+                var input = await inputFactory(token);
                 if (!MeetingRules.TryValidate(input, out var valid, out var errors))
                 {
                     return MeetingResult.Invalid(errors);

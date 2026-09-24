@@ -15,8 +15,13 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             .AsNoTracking()
             .SingleOrDefaultAsync(m => m.Id == id
                 && (m.CreatedById == actorId
-                    || m.AssignedApproverId == actorId
-                    || m.Participants.Any(participant => participant.UserId == actorId)), ct);
+                    || (m.Status != MeetingStatus.Draft && m.AssignedApproverId == actorId)
+                    || ((m.Status == MeetingStatus.Published
+                            || m.Status == MeetingStatus.InProgress
+                            || m.Status == MeetingStatus.Ended
+                            || m.Status == MeetingStatus.MinutesIssued
+                            || m.Status == MeetingStatus.Archived)
+                        && m.Participants.Any(participant => participant.UserId == actorId))), ct);
 
     public async Task<Meeting?> FindOwnedForUpdateAsync(
         Guid id, Guid creatorId, CancellationToken ct = default)

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text.Json;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 
@@ -74,16 +75,27 @@ public static class MeetingEndpoints
 
     private static async Task<IResult> UpdateAsync(
         Guid id,
-        [FromBody] MeetingRequest? request,
+        HttpRequest request,
         ClaimsPrincipal principal,
         IMeetingService service,
         CancellationToken ct)
     {
-        var result = await service.UpdateAsync(
-            id,
-            request?.ToInput() ?? EmptyInput,
-            CapabilityGate.GatedUserId(principal),
-            ct);
+        MeetingResult result;
+        try
+        {
+            result = await service.UpdateAsync(
+                id,
+                async token => (await request.ReadFromJsonAsync<MeetingRequest>(cancellationToken: token))
+                    ?.ToInput() ?? EmptyInput,
+                CapabilityGate.GatedUserId(principal),
+                ct);
+        }
+        catch (JsonException)
+        {
+            return Results.Json(
+                new MeetingErrorResponse("MEETING_INVALID_INFORMATION", "Nội dung JSON không hợp lệ."),
+                statusCode: StatusCodes.Status400BadRequest);
+        }
 
         return result.Outcome switch
         {
