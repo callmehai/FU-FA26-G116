@@ -12,9 +12,13 @@ interface LoginError {
 }
 
 /**
- * UC-02. Kept apart from the password flow, which just shows the backend's message for its three
- * 401 codes: UC-02 numbers its messages differently, so MSG03 here means "this Google account is
- * not linked", not "account deactivated" as it does on /login.
+ * UC-02. Kept apart from the password flow, which just shows the backend's message for its 401
+ * codes: UC-02 numbers its messages differently, so MSG03 here means "no account for this Google
+ * identity", not "account deactivated" as it does on /login (that is MSG04 here).
+ *
+ * The first Google sign-in links itself to the active account with the same verified email
+ * (ADR-0009), so MSG03 means no such account exists — or that one is linked to another Google
+ * identity. Either way only an administrator can fix it.
  */
 function googleSignInError(error: unknown): LoginError {
   // The backend answers 404 when Google sign-in is switched off in its configuration.
@@ -22,7 +26,7 @@ function googleSignInError(error: unknown): LoginError {
   if (isApiError(error, 401, 'MSG03')) {
     return {
       message: errorMessage(error),
-      hint: 'Liên hệ quản trị viên để liên kết tài khoản Google này với tài khoản của bạn.',
+      hint: 'Hãy chọn đúng tài khoản Google có email đã đăng ký với hệ thống, hoặc liên hệ quản trị viên để được cấp tài khoản.',
     }
   }
   return { message: errorMessage(error) }

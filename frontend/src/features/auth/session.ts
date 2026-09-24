@@ -30,6 +30,12 @@ const REFRESH_MARGIN_MS = 60_000
 
 let accessToken: string | null = null
 let accessTokenExpiresAt = 0
+/**
+ * Who the current access token was issued for, as the backend described them in the same response.
+ * The token's claims are what the capability policy checks, so this — not the latest /me — is what
+ * the backend will actually let the user do until the next refresh.
+ */
+let tokenUser: CurrentUser | null = null
 let refreshing: Promise<SignInResponse | null> | null = null
 
 /** `expired` is true when the backend ended a session the user did not sign out of. */
@@ -72,6 +78,7 @@ function markSignedIn(signedIn: boolean) {
 export function startSession(response: SignInResponse) {
   accessToken = response.accessToken
   accessTokenExpiresAt = Date.parse(response.accessTokenExpiresAt)
+  tokenUser = response.user
   markSignedIn(true)
   emit(response.user)
 }
@@ -80,6 +87,7 @@ export function startSession(response: SignInResponse) {
 function endSession(expired: boolean) {
   accessToken = null
   accessTokenExpiresAt = 0
+  tokenUser = null
   markSignedIn(false)
   emit(null, expired)
 }
@@ -138,19 +146,50 @@ export async function restoreSession(): Promise<CurrentUser | null> {
 }
 
 /**
- * Re-reads the user from GET /api/auth/me so the UI picks up capability changes an administrator
- * made — that endpoint reads the database, not the token (docs/03-api/04-phan-quyen-phia-server.md).
- * An expired access token is refreshed by the client on the way; a 401 that survives it means the
- * account is gone or deactivated, and the session ends. Any other failure leaves it alone.
+ * Whether /me no longer describes the account the token was issued for. Compared field by field
+ * rather than on a hand-picked list, so a field the backend adds later is covered too. A change that
+ * does not matter to authorization (a new display name) costs one harmless refresh.
+ */
+function tokenIsStale(user: CurrentUser) {
+  if (!tokenUser) return false
+  const issued: Record<string, unknown> = { ...tokenUser }
+  const current: Record<string, unknown> = { ...user }
+  const keys = new Set([...Object.keys(issued), ...Object.keys(current)])
+  return [...keys].some((key) => {
+    const a = issued[key]
+    const b = current[key]
+    // Capabilities are a set: the same ones in another order are not a change.
+    if (Array.isArray(a) && Array.isArray(b)) return a.length !== b.length || a.some((x) => !b.includes(x))
+    return a !== b
+  })
+}
+
+/**
+ * Re-reads the user from GET /api/auth/me so the UI picks up changes an administrator made — that
+ * endpoint reads the database, not the token (docs/03-api/04-phan-quyen-phia-server.md).
+ *
+ * When the answer no longer matches the token — a capability granted or taken away, a new role, a
+ * new email — the token is refreshed straight away. Rendering from /me alone would show a menu the
+ * token cannot open yet (every request 403s until the token expires), or hide one it still can.
+ * Every such change also revokes the user's refresh tokens on the backend, so this refresh usually
+ * ends the session, and the user signs in again with the new rights — which is the intent.
+ *
+ * A 401 here has already been through the client's refresh, and `refresh()` ends the session when
+ * the backend refuses it. The session is not ended here on top of that: a refresh that failed
+ * because the backend is down must not sign anyone out.
  */
 export async function reloadSession(): Promise<CurrentUser | null> {
   if (!accessToken && !mightBeSignedIn()) return null
   try {
     const user = await authApi.getCurrentUser()
+    if (tokenIsStale(user)) {
+      // Resolves null once the backend refused the refresh token; the session has ended then.
+      const refreshed = await refresh().catch(() => undefined)
+      if (refreshed !== undefined) return refreshed?.user ?? null
+    }
     emit(user)
     return user
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 401) endSession(true)
+  } catch {
     return null
   }
 }

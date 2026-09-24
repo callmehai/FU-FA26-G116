@@ -529,7 +529,9 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .card-pending p { margin: 0; }
 
 /* A table sits straight on the page — no frame — as in the reference system. */
-.table-card { overflow-x: auto; background: var(--surface); }
+/* flex: none — inside the column-flex .content a card would otherwise shrink to the viewport and
+   clip its own rows (overflow-x: auto clips vertically too). .table-fill opts back into flexing. */
+.table-card { flex: none; overflow-x: auto; background: var(--surface); }
 
 /* A listing fills the rest of the viewport and scrolls inside, under a sticky header. */
 .table-fill { flex: 1; min-height: 240px; overflow: auto; }
@@ -551,6 +553,9 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .data-table tbody tr:hover { background: #eef1f480; }
 
 .cell-title { font-weight: 500; }
+/* The one cell allowed to wrap: every other cell is nowrap, so without this a long name pushes the
+   actions column out of view at a 1200px window. */
+.data-table td.cell-title { white-space: normal; min-width: 96px; }
 .cell-muted { color: var(--muted-ink); white-space: nowrap; }
 .cell-empty { margin: 0; padding: 48px 16px; color: var(--muted-ink); text-align: center; }
 .cell-empty .btn { margin-top: 4px; }
@@ -708,12 +713,14 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .matrix-table th.matrix-group { color: var(--muted-ink); font-size: 13px; font-weight: 500; }
 .matrix-table th.matrix-group,
 .matrix-table th.matrix-cap { text-align: center; }
-/* Fixed, equal capability columns; the role column takes whatever width is left. */
-.matrix-table th.matrix-cap { width: 176px; }
+/* Equal capability columns; the role column takes whatever width is left. 136px, not wider: at a
+   1200px window four of them, the actions and the role column must still fit, or the
+   actions column slides out of view behind the card's horizontal scroll. Long names wrap. */
+.matrix-table th.matrix-cap { width: 136px; white-space: normal; }
 /* A rule where each functional group starts, down through the body. */
 .matrix-table .matrix-group-start { border-left: 1px solid var(--line); }
 /* Reserve room for Hoàn tác / Lưu, so the columns do not jump when a row becomes dirty. */
-.matrix-table .col-action { width: 180px; }
+.matrix-table .col-action { width: 160px; }
 .matrix-table td { height: 53px; }
 .matrix-cell { text-align: center; }
 .matrix-cell-changed { background: var(--chip-amber-bg); }
