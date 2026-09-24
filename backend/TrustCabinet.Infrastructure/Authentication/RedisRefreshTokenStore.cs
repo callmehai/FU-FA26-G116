@@ -28,6 +28,7 @@ namespace TrustCabinet.Infrastructure.Authentication;
 public sealed class RedisRefreshTokenStore(
     IConnectionMultiplexer redis,
     IOptions<AuthenticationOptions> options,
+    TimeProvider time,
     ILogger<RedisRefreshTokenStore> logger) : IRefreshTokenStore
 {
     private const string TokenKeyPrefix = "rt:";
@@ -35,24 +36,55 @@ public sealed class RedisRefreshTokenStore(
     private const string UserKeyPrefix = "rt-user:";
 
     /// <summary>
-    /// Consume and mark as used in one step. KEYS[1] is the token key, KEYS[2] its used-marker,
-    /// ARGV[1] how long the marker lives in seconds. Returns {owner, 0} for a live token,
-    /// {owner, 1} for one already spent, nil for one never seen or long gone.
+    /// How long after a token is spent a second use of it is only refused, not treated as theft.
     ///
-    /// A script rather than GETDEL followed by SET: between those two commands a replay would find
-    /// neither key, and be waved through as merely unknown instead of caught.
+    /// Spending a token and the client receiving its replacement are not one step. A refresh the
+    /// browser aborts (a reload mid-request) or one that fails after the token was consumed (a
+    /// database blip) leaves the browser holding the spent token, and it presents it again at the
+    /// next page load. Without this window that ordinary accident would end every session on every
+    /// device. A thief replaying a stolen token minutes or days later is still caught.
+    /// ponytail: fixed window; a refresh that fails and is retried only after the window has
+    /// passed (an idle tab after an outage) still reads as theft. Upgrade path: un-consume the
+    /// token when the refresh fails after consuming it.
+    /// </summary>
+    internal static readonly TimeSpan ReuseGracePeriod = TimeSpan.FromSeconds(60);
+
+    private const int Live = 0;
+    private const int SpentWithinGrace = 1;
+    private const int Reused = 2;
+
+    /// <summary>
+    /// Consume and mark as used in one step. KEYS[1] is the token key, KEYS[2] its used-marker;
+    /// ARGV[1] is how long the marker lives, ARGV[2] the current time and ARGV[3] the grace period,
+    /// all in seconds. The marker holds "owner|spentAt".
+    ///
+    /// Returns {owner, 0} for a live token, {owner, 1} for one spent within the grace period,
+    /// {owner, 2} for a reuse, and nil for a token never seen or long gone. A reuse deletes the
+    /// marker, so one stolen token ends the account's sessions once rather than every time it is
+    /// replayed — including sessions the user signed in to after the first detection.
+    ///
+    /// A script rather than separate commands: between a GETDEL and a SET a replay would find
+    /// neither key and be waved through as merely unknown instead of caught. <c>return nil</c>
+    /// rather than <c>false</c>: under RESP3 a Lua false comes back as a boolean, not a null.
     /// </summary>
     private const string ConsumeScript = """
         local owner = redis.call('GETDEL', KEYS[1])
         if owner then
-          redis.call('SET', KEYS[2], owner, 'EX', ARGV[1])
+          redis.call('SET', KEYS[2], owner .. '|' .. ARGV[2], 'EX', ARGV[1])
           return {owner, 0}
         end
         local spent = redis.call('GET', KEYS[2])
-        if spent then
-          return {spent, 1}
+        if not spent then
+          return nil
         end
-        return false
+        local separator = string.find(spent, '|', 1, true)
+        local spentOwner = string.sub(spent, 1, separator - 1)
+        local spentAt = tonumber(string.sub(spent, separator + 1))
+        if tonumber(ARGV[2]) - spentAt < tonumber(ARGV[3]) then
+          return {spentOwner, 1}
+        end
+        redis.call('DEL', KEYS[2])
+        return {spentOwner, 2}
         """;
 
     public async Task StoreAsync(
@@ -79,11 +111,11 @@ public sealed class RedisRefreshTokenStore(
     /// valid before either deleted it.
     ///
     /// Reuse detection (OAuth 2.1 refresh token rotation): a spent token leaves an
-    /// <c>rt-used</c> marker for a full refresh token lifetime. Presenting it again means two
-    /// parties held the same token — the thief and the real user, in whichever order — and there is
-    /// no telling which is which, so every session of that account ends. Without this, whoever
-    /// refreshed first kept the session and the other was merely turned away; when the thief wins
-    /// that race, the real user is the one locked out.
+    /// <c>rt-used</c> marker for a full refresh token lifetime. Presenting it again, after
+    /// <see cref="ReuseGracePeriod"/>, means two parties held the same token — the thief and the
+    /// real user, in whichever order — and there is no telling which is which, so every session of
+    /// that account ends. Without this, whoever refreshed first kept the session and the other was
+    /// merely turned away; when the thief wins that race, the real user is the one locked out.
     /// </summary>
     public async Task<Guid?> ConsumeAsync(string refreshToken, CancellationToken ct = default)
     {
@@ -91,7 +123,11 @@ public sealed class RedisRefreshTokenStore(
         var result = await redis.GetDatabase().ScriptEvaluateAsync(
             ConsumeScript,
             [TokenKey(hash), UsedKey(hash)],
-            [(long)TimeSpan.FromDays(options.Value.RefreshTokenDays).TotalSeconds]);
+            [
+                (long)TimeSpan.FromDays(options.Value.RefreshTokenDays).TotalSeconds,
+                time.GetUtcNow().ToUnixTimeSeconds(),
+                (long)ReuseGracePeriod.TotalSeconds,
+            ]);
 
         if (result.IsNull)
         {
@@ -106,16 +142,26 @@ public sealed class RedisRefreshTokenStore(
             return null;
         }
 
-        if ((long)parts[1] == 1)
+        switch ((int)parts[1])
         {
-            logger.LogWarning(
-                "Refresh token reuse detected for account {UserId}; revoking all of its sessions.",
-                userId);
-            await RevokeAllForUserAsync(userId, ct);
-            return null;
-        }
+            case Live:
+                return userId;
 
-        return userId;
+            case SpentWithinGrace:
+                logger.LogInformation(
+                    "Refresh rejected: token of account {UserId} was spent moments ago.", userId);
+                return null;
+
+            case Reused:
+                logger.LogWarning(
+                    "Refresh token reuse detected for account {UserId}; revoking all of its sessions.",
+                    userId);
+                await RevokeAllForUserAsync(userId, ct);
+                return null;
+
+            default:
+                return null;
+        }
     }
 
     public Task RevokeAsync(string refreshToken, CancellationToken ct = default)

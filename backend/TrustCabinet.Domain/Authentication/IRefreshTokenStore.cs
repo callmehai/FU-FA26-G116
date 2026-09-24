@@ -25,7 +25,8 @@ public interface IRefreshTokenStore
     /// a stolen refresh token stops working as soon as the legitimate client next refreshes.
     ///
     /// Presenting an already-used token is treated as evidence of theft: besides returning null,
-    /// it revokes every session of the account the token belonged to.
+    /// it revokes every session of the account the token belonged to — unless it was spent only
+    /// moments ago, which is an interrupted refresh rather than a theft.
     /// </summary>
     Task<Guid?> ConsumeAsync(string refreshToken, CancellationToken ct = default);
 

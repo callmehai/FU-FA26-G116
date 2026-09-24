@@ -50,6 +50,11 @@ export function RolesPage() {
   const toast = useToast()
   const handleAccessLost = useAccessLost()
 
+  /** UC-03's MSG01 when the sign-out never reached the server, as the account menu shows it. */
+  async function signOutToApply() {
+    if (!(await signOut())) toast.show('Không thể đăng xuất. Vui lòng thử lại.', 'error')
+  }
+
   const [matrix, setMatrix] = useState<RolePermissionMatrix | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   /** Unsaved edits, per role. A role is absent here when it matches the saved matrix. */
@@ -189,7 +194,7 @@ export function RolesPage() {
             Bạn vừa đổi quyền của chính vai trò mình đang mang. Phiên đăng nhập hiện tại vẫn giữ quyền cũ và sẽ
             kết thúc ở lần gia hạn tiếp theo — hãy đăng nhập lại để áp dụng quyền mới.
           </p>
-          <button type="button" className="btn btn-outline btn-sm" onClick={() => void signOut()}>
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => void signOutToApply()}>
             Đăng nhập lại
           </button>
         </div>

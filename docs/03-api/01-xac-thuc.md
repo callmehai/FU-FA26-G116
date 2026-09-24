@@ -57,7 +57,7 @@ Set-Cookie: tc_refresh_token=8Kx2v…; max-age=604800; path=/api/auth; secure; s
 | Thuộc tính | Vì sao |
 |---|---|
 | `HttpOnly` | JavaScript không đọc được, nên lỗi XSS trên trang không lấy được RT |
-| `Secure` | Chỉ gửi qua HTTPS. Trình duyệt coi `http://localhost` là ngữ cảnh an toàn nên dev vẫn chạy |
+| `Secure` | Chỉ gửi qua HTTPS. Trình duyệt coi `http://localhost` là ngữ cảnh an toàn nên dev vẫn chạy — nhưng HTTP ở địa chỉ khác (IP LAN khi chạy `vite --host`, staging không TLS) thì cookie bị bỏ: đăng nhập được, F5 là mất phiên |
 | `SameSite=Strict` | Trang khác không gọi `/api/auth/refresh` bằng cookie của người dùng được |
 | `Path=/api/auth` | Cookie chỉ đi kèm request tới `/api/auth/*`, không bám theo mọi request API |
 | `Max-Age` | Bằng tuổi RT (`RefreshTokenDays`, mặc định 7 ngày = `604800` giây) |
@@ -291,9 +291,13 @@ Trả về đúng shape của `login` và đặt cookie mới. RT **dùng một 
 huỷ RT vừa dùng và cấp RT mới, nên RT bị đánh cắp sẽ hết tác dụng ngay khi client thật refresh lần
 kế tiếp.
 
-**Gửi lại một RT đã dùng rồi thì mọi phiên của tài khoản đó bị huỷ**, không chỉ trả `401`. Một RT
-xuất hiện hai lần nghĩa là có hai bên cùng giữ nó — kẻ trộm và người dùng thật, không biết bên nào
-trước — nên không bên nào được giữ phiên. Xem [phát hiện RT bị dùng lại](#phát-hiện-rt-bị-dùng-lại).
+**Gửi lại một RT đã dùng rồi — sau quá 60 giây — thì mọi phiên của tài khoản đó bị huỷ**, không chỉ
+trả `401`. Một RT xuất hiện hai lần nghĩa là có hai bên cùng giữ nó — kẻ trộm và người dùng thật,
+không biết bên nào trước — nên không bên nào được giữ phiên. Xem
+[phát hiện RT bị dùng lại](#phát-hiện-rt-bị-dùng-lại).
+
+Refresh thất bại (`401`) thì **xoá luôn cookie**, cùng thuộc tính như `/logout`: RT bị từ chối là RT
+chết hẳn, để lại thì trình duyệt gửi nó ở mọi lần tải trang.
 
 Mỗi lần refresh đều đọc lại `users` và `role_capabilities`, nên vô hiệu hoá tài khoản hay đổi quyền
 có hiệu lực ở lần refresh tiếp theo — không phải chờ hết 7 ngày. Khi gặp tài khoản đã bị vô hiệu
@@ -367,18 +371,35 @@ rt-user:{userId}         → set các hash    "người này đang có những p
 Rotation một mình chưa đủ: trước đây một lần replay chỉ bị *bỏ qua*. Kẻ trộm refresh trước thì giữ
 được phiên, còn người dùng thật bị đẩy ra.
 
-Giờ mỗi lần refresh thành công, hash của RT vừa dùng được giữ trong `rt-used:{hash}` với TTL **bằng
-tuổi RT** (`RefreshTokenDays`), không phải thời gian còn lại của token — marker phải sống ít nhất bằng RT
-được cấp ra ở chính lần refresh đó. Gặp lại một RT có trong `rt-used` thì gọi `RevokeAllForUserAsync`: mọi phiên
-của tài khoản đó chết, kể cả phiên kẻ trộm vừa lấy được, và ghi log `Warning`.
+Giờ mỗi lần refresh thành công, RT vừa dùng để lại marker `rt-used:{hash}` → `"{userId}|{thời điểm
+dùng}"`, TTL **bằng tuổi RT** (`RefreshTokenDays`), không phải thời gian còn lại của token — marker
+phải sống ít nhất bằng RT được cấp ra ở chính lần refresh đó. Gặp lại một RT có marker:
 
-Đọc–xoá `rt:` và ghi `rt-used:` chạy trong **một Lua script** (`RedisRefreshTokenStore.ConsumeScript`)
-chứ không phải `GETDEL` rồi `SET`: giữa hai lệnh, một lần replay sẽ không thấy key nào và bị coi là
-token lạ thay vì bị bắt.
+| Gặp lại sau khi dùng | Xử lý |
+|---|---|
+| Trong **60 giây** (`ReuseGracePeriod`) | Chỉ trả `401`, giữ marker. Không coi là trộm |
+| Quá 60 giây | `RevokeAllForUserAsync` — mọi phiên của tài khoản chết, kể cả phiên kẻ trộm vừa lấy được — ghi log `Warning`, rồi **xoá marker** |
 
-Hệ quả cho FE: hai request refresh song song với cùng một RT giờ **đăng xuất người dùng trên mọi
-thiết bị**, không chỉ làm một request thất bại. FE đã có single-flight + Web Lock nên không gặp;
-đừng bỏ chúng.
+**Vì sao có 60 giây ân hạn.** Tiêu RT và việc trình duyệt nhận RT mới không phải một bước. Refresh bị
+huỷ giữa chừng (F5 khi đang refresh, chuyển trang) hoặc lỗi sau khi RT đã bị tiêu (Postgres chập
+chờn → `500`) để lại trình duyệt cầm RT đã dùng, và nó gửi lại ở lần tải trang kế tiếp. Không có
+khoảng ân hạn thì sự cố bình thường đó đăng xuất người dùng trên mọi thiết bị. Giới hạn đã biết: nếu
+lần thử lại đến **sau** 60 giây (tab bỏ không sau một lần lỗi) thì vẫn bị coi là trộm — hướng nâng
+cấp là "trả lại" RT khi refresh lỗi sau lúc tiêu nó.
+
+**Vì sao xoá marker sau khi phát hiện.** Để một RT bị trộm chỉ kích hoạt huỷ-mọi-phiên **một lần**.
+Giữ lại thì kẻ trộm cứ replay token cũ là đá người dùng ra, kể cả sau khi họ đăng nhập lại, suốt 7
+ngày.
+
+Đọc–xoá `rt:`, ghi / đọc / xoá `rt-used:` chạy trong **một Lua script**
+(`RedisRefreshTokenStore.ConsumeScript`): tách thành nhiều lệnh thì giữa `GETDEL` và `SET`, một lần
+replay sẽ không thấy key nào và bị coi là token lạ thay vì bị bắt. Script trả `nil` chứ không trả
+`false`, vì dưới RESP3 `false` của Lua về thành boolean chứ không phải null.
+
+Hệ quả cho FE: hai request refresh song song với cùng một RT thì request thua nhận `401` và cookie
+bị xoá. Single-flight + Web Lock ngăn chuyện đó trong cùng một origin; đừng bỏ chúng. Web Lock và
+`localStorage` tách theo origin còn cookie thì không tách theo port, nên mở cả `:5173` lẫn `:5225`
+trong một trình duyệt là tự tạo ra cuộc đua đó — dev chỉ dùng `:5173`.
 
 Logout (`RevokeAsync`) không ghi `rt-used`: RT bị huỷ bằng đăng xuất mà bị gửi lại chỉ nhận `401`.
 

@@ -132,9 +132,16 @@ public static class AuthEndpoints
     {
         var result = await authentication.RefreshAsync(PresentedRefreshToken(http.Request), ct);
 
-        return result.Succeeded
-            ? Issued(SignInResponse.From(result), result.RefreshToken!, tokenIssuer, http.Response)
-            : Rejected(result.Outcome);
+        if (result.Succeeded)
+        {
+            return Issued(SignInResponse.From(result), result.RefreshToken!, tokenIssuer, http.Response);
+        }
+
+        // A refused token is dead for good — spent, revoked, expired or its account deactivated.
+        // Left in place, the browser would present it at every page load, and a spent one would
+        // read as theft once the reuse grace period has passed.
+        ClearRefreshTokenCookie(http.Response);
+        return Rejected(result.Outcome);
     }
 
     private static async Task<IResult> SignOutAsync(
@@ -146,8 +153,7 @@ public static class AuthEndpoints
 
         // Cleared unconditionally, valid token or not: whatever the browser holds is of no further
         // use once the user has signed out, and leaving it would have the next refresh try it.
-        http.Response.Cookies.Append(
-            RefreshTokenCookie, "", RefreshTokenCookieOptions(TimeSpan.Zero));
+        ClearRefreshTokenCookie(http.Response);
 
         // 204 whether or not the token was still valid: signing out is idempotent, and reporting
         // "that token was already gone" would only confirm token states to a caller.
@@ -211,6 +217,12 @@ public static class AuthEndpoints
 
         return Results.Ok(body);
     }
+
+    /// <summary>
+    /// Same attributes as when it was set: a browser only deletes a cookie whose path matches.
+    /// </summary>
+    private static void ClearRefreshTokenCookie(HttpResponse response)
+        => response.Cookies.Append(RefreshTokenCookie, "", RefreshTokenCookieOptions(TimeSpan.Zero));
 
     /// <summary>
     /// <c>Secure</c> even in development: browsers treat http://localhost as a secure context and

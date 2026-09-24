@@ -269,6 +269,20 @@ public class AuthEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task A_refused_refresh_clears_the_cookie()
+    {
+        var client = NewClient();
+        var refreshToken = await SignInForRefreshToken(client);
+        await PostWithCookie(client, "/api/auth/refresh", refreshToken);
+
+        // The spent token is dead for good; left in the browser it would be sent at every load.
+        var replay = await PostWithCookie(client, "/api/auth/refresh", refreshToken);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, replay.StatusCode);
+        AssertClearsTheCookie(replay);
+    }
+
+    [Fact]
     public async Task Refresh_ignores_a_token_sent_in_the_body()
     {
         var client = NewClient();
@@ -289,7 +303,7 @@ public class AuthEndpointsTests : IDisposable
         var logout = await PostWithCookie(client, "/api/auth/logout", refreshToken);
 
         Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
-        Assert.Contains("max-age=0", RefreshCookieHeader(logout));
+        AssertClearsTheCookie(logout);
 
         // The acceptance criterion: a client that kept the token cannot resume the session.
         var afterLogout = await PostWithCookie(client, "/api/auth/refresh", refreshToken);
@@ -316,7 +330,22 @@ public class AuthEndpointsTests : IDisposable
         var logout = await _factory.CreateClient().PostAsync("/api/auth/logout", content: null);
 
         Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
-        Assert.Contains("max-age=0", RefreshCookieHeader(logout));
+        AssertClearsTheCookie(logout);
+    }
+
+    /// <summary>
+    /// Max-Age=0 alone is not enough: a browser deletes the cookie only when the path matches the
+    /// one it was set with, so the attributes are checked too.
+    /// </summary>
+    private static void AssertClearsTheCookie(HttpResponseMessage response)
+    {
+        var cookie = RefreshCookieHeader(response);
+        Assert.StartsWith("tc_refresh_token=;", cookie);
+        Assert.Contains("max-age=0", cookie);
+        Assert.Contains("path=/api/auth", cookie);
+        Assert.Contains("secure", cookie);
+        Assert.Contains("samesite=strict", cookie);
+        Assert.Contains("httponly", cookie);
     }
 
     [Fact]

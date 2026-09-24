@@ -35,13 +35,16 @@ Cách FE đang làm, trong [`session.ts`](../../frontend/src/features/auth/sessi
   đăng nhập từ trước thay đổi này chỉ có RT trong `localStorage`, không có cookie, nên phải đăng
   nhập lại **một lần**.
 - **Giữ single-flight + Web Lock cho refresh.** Backend **phát hiện RT bị dùng lại**: gửi lại một RT
-  đã dùng thì **mọi phiên của tài khoản đó bị huỷ**, trên mọi thiết bị. Hai tab refresh song song
-  với cùng một cookie là đúng tình huống đó — trước chỉ một request thất bại, giờ là đăng xuất
-  toàn bộ. Đừng bỏ Web Lock.
+  đã dùng quá 60 giây sau khi dùng thì **mọi phiên của tài khoản đó bị huỷ**, trên mọi thiết bị;
+  trong 60 giây thì chỉ `401` và cookie bị xoá. Hai tab refresh song song với cùng một cookie là
+  đúng tình huống đó. Đừng bỏ Web Lock, và dev chỉ mở `:5173` — cookie không tách theo port, còn
+  Web Lock thì có, nên mở thêm `:5225` là hai bên không còn chờ nhau.
 - **Cookie có `Secure`.** Chrome và Firefox chấp nhận trên `http://localhost` (coi là ngữ cảnh an
   toàn). Safari có thể không lưu cookie `Secure` qua `http://localhost` — nếu phiên mất sau F5 trên
-  Safari lúc dev thì đó là lý do, test bằng Chrome/Firefox.
-- **Đăng xuất phải tới được server** — xem mục 5.
+  Safari lúc dev thì đó là lý do, test bằng Chrome/Firefox. HTTP ở địa chỉ khác localhost (mở bằng
+  IP LAN khi chạy `vite --host`, ví dụ từ điện thoại) thì cookie luôn bị bỏ: đăng nhập được, F5 là
+  mất phiên.
+- **Đăng xuất phải tới được server, và chạy trong Web Lock của refresh** — xem mục 5.
 
 ---
 
@@ -159,7 +162,12 @@ lần cũng không lỗi.
 **Bước 2 thất bại vì mạng thì dừng, hiện `MSG01`.** Cookie `HttpOnly` chỉ server xoá được: nếu FE
 vẫn xoá phía mình rồi chuyển về `/login`, cookie còn nguyên và F5 là đăng nhập lại ngay — người
 dùng tưởng đã đăng xuất mà không phải. `signOut()` trong `session.ts` trả `false` trong trường hợp
-này và giữ nguyên phiên để người dùng bấm lại.
+này và giữ nguyên phiên để người dùng bấm lại. Mọi chỗ gọi `signOut()` phải xử lý `false` — màn
+Vai trò (nút "Đăng nhập lại") hiện toast `MSG01`, menu tài khoản hiện lỗi trong hộp xác nhận.
+
+**`signOut()` chờ refresh đang chạy và giữ Web Lock của refresh.** Nếu `/logout` đua với một
+`/refresh` cùng RT, server xoay RT mà logout định huỷ, và `Set-Cookie` của refresh có thể tới sau
+lệnh xoá cookie của logout — người dùng thấy màn đăng nhập nhưng F5 là vào lại.
 
 Lưu ý: `/logout` chỉ huỷ phiên **của thiết bị đó**. Đăng xuất trên laptop không đăng xuất trên điện
 thoại. Chưa có endpoint "đăng xuất mọi thiết bị".

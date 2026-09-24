@@ -160,17 +160,25 @@ export async function reloadSession(): Promise<CurrentUser | null> {
  * touch an HttpOnly cookie. So the call has to succeed: if it does not reach the server, the
  * cookie survives and the next reload would sign the user straight back in.
  *
+ * Taken under the refresh lock, after any refresh already in flight. Racing one, the server would
+ * rotate the token the logout came to revoke, and the refresh's new cookie could land after the
+ * logout cleared it — a user shown the login page whom a reload signs straight back in. The
+ * session ends inside the lock too, so a tab waiting to refresh finds it over rather than trying.
+ *
  * Returns false when the server could not be reached — UC-03's MSG01 — and leaves the session as
  * it was, so the user can retry rather than believe they signed out.
  */
 export async function signOut() {
+  await refreshing?.catch(() => undefined)
   try {
-    await authApi.signOut()
+    await withRefreshLock(async () => {
+      await authApi.signOut()
+      endSession(false)
+    })
+    return true
   } catch {
     return false
   }
-  endSession(false)
-  return true
 }
 
 configureAuth({
