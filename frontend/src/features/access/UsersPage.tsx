@@ -117,7 +117,8 @@ export function UsersPage() {
     } else {
       patch(response.user)
       // Editing yourself: re-read name, email and capabilities from /api/auth/me so the shell and
-      // the sidebar match what the backend now enforces.
+      // the sidebar match what the backend now enforces. A new role or email has revoked this
+      // session on the backend; the reload notices and ends it here too, rather than minutes later.
       if (response.user.id === me?.id) void reloadSession()
     }
   }
@@ -142,9 +143,16 @@ export function UsersPage() {
       }
       if (!isApiError(err, 409, 'MSG12')) throw err
 
-      const fresh = await getUser(target.id).catch(() => null)
-      if (fresh) patch(fresh)
-      if (fresh?.isActive === activate) {
+      let fresh: UserAccount
+      try {
+        fresh = await getUser(target.id)
+      } catch (lookupErr) {
+        if (handleAccessLost(lookupErr)) return
+        // Cannot tell the causes apart without the account: say what the backend said.
+        throw err
+      }
+      patch(fresh)
+      if (fresh.isActive === activate) {
         throw new Error(
           activate
             ? 'Tài khoản này đã được kích hoạt từ trước. Danh sách đã được cập nhật.'
