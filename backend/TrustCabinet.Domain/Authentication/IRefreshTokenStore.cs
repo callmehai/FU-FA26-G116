@@ -23,6 +23,9 @@ public interface IRefreshTokenStore
     ///
     /// Single-use on purpose (rotation): each refresh invalidates the token it was called with, so
     /// a stolen refresh token stops working as soon as the legitimate client next refreshes.
+    ///
+    /// Presenting an already-used token is treated as evidence of theft: besides returning null,
+    /// it revokes every session of the account the token belonged to.
     /// </summary>
     Task<Guid?> ConsumeAsync(string refreshToken, CancellationToken ct = default);
 

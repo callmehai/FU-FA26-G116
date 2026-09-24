@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using TrustCabinet.Infrastructure.Authentication;
 
@@ -52,7 +54,15 @@ public class RedisRefreshTokenStoreTests : IAsyncLifetime
     /// else is using this Redis, so nothing here may collide with another test or a dev session.
     /// </summary>
     private (RedisRefreshTokenStore Store, string Token, Guid UserId) Arrange()
-        => (new RedisRefreshTokenStore(_redis!), $"rt-test-{Guid.NewGuid()}", Guid.CreateVersion7());
+        => (new RedisRefreshTokenStore(
+                _redis!,
+                Options.Create(new AuthenticationOptions { RefreshTokenDays = 7 }),
+                NullLogger<RedisRefreshTokenStore>.Instance),
+            $"rt-test-{Guid.NewGuid()}",
+            Guid.CreateVersion7());
+
+    private static string KeyFor(string prefix, string token) => prefix + Convert.ToHexStringLower(
+        System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token)));
 
     [Fact]
     public async Task A_stored_token_can_be_consumed_once()
@@ -178,5 +188,44 @@ public class RedisRefreshTokenStoreTests : IAsyncLifetime
         Assert.InRange(ttl.Value, TimeSpan.FromMinutes(29), TimeSpan.FromMinutes(30));
 
         await store.ConsumeAsync(token);
+    }
+
+    [Fact]
+    public async Task Replaying_a_used_token_ends_every_session_of_its_account()
+    {
+        var (store, stolen, userId) = Arrange();
+        var otherDevice = stolen + "-phone";
+
+        await store.StoreAsync(stolen, userId, TimeSpan.FromMinutes(5));
+        await store.StoreAsync(otherDevice, userId, TimeSpan.FromMinutes(5));
+
+        // The thief refreshes first and receives a rotated token of their own.
+        Assert.Equal(userId, await store.ConsumeAsync(stolen));
+        var thiefsRotated = stolen + "-rotated";
+        await store.StoreAsync(thiefsRotated, userId, TimeSpan.FromMinutes(5));
+
+        // The real user then presents the same token: two holders of one token, no telling which
+        // is honest, so nobody keeps a session — the thief included.
+        Assert.Null(await store.ConsumeAsync(stolen));
+        Assert.Null(await store.ConsumeAsync(thiefsRotated));
+        Assert.Null(await store.ConsumeAsync(otherDevice));
+    }
+
+    [Fact]
+    public async Task A_used_token_is_remembered_for_a_full_refresh_token_lifetime()
+    {
+        var (store, token, userId) = Arrange();
+
+        await store.StoreAsync(token, userId, TimeSpan.FromMinutes(5));
+        await store.ConsumeAsync(token);
+
+        var ttl = await _redis!.GetDatabase().KeyTimeToLiveAsync(KeyFor("rt-used:", token));
+
+        // Seven days, not the five minutes the token itself had left: the marker has to last as
+        // long as the token issued in exchange for it, and it must still expire on its own.
+        Assert.NotNull(ttl);
+        Assert.InRange(ttl.Value, TimeSpan.FromDays(7) - TimeSpan.FromMinutes(1), TimeSpan.FromDays(7));
+        // Hashed like the token key: the marker is no more a usable token than the key was.
+        Assert.False(await _redis.GetDatabase().KeyExistsAsync($"rt-used:{token}"));
     }
 }

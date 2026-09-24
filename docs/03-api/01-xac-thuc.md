@@ -46,6 +46,32 @@ rollback tự quyết định trước — cấp mật khẩu cho họ, hoặc x
 | POST | `/api/auth/logout` | không cần | Huỷ RT ở phía server |
 | GET | `/api/auth/me` | Bearer AT | Thông tin người đang đăng nhập |
 
+### Refresh token nằm trong cookie `tc_refresh_token`
+
+`/login`, `/google` và `/refresh` khi thành công đều đặt RT vào cookie:
+
+```
+Set-Cookie: tc_refresh_token=8Kx2v…; max-age=604800; path=/api/auth; secure; samesite=strict; httponly
+```
+
+| Thuộc tính | Vì sao |
+|---|---|
+| `HttpOnly` | JavaScript không đọc được, nên lỗi XSS trên trang không lấy được RT |
+| `Secure` | Chỉ gửi qua HTTPS. Trình duyệt coi `http://localhost` là ngữ cảnh an toàn nên dev vẫn chạy |
+| `SameSite=Strict` | Trang khác không gọi `/api/auth/refresh` bằng cookie của người dùng được |
+| `Path=/api/auth` | Cookie chỉ đi kèm request tới `/api/auth/*`, không bám theo mọi request API |
+| `Max-Age` | Bằng tuổi RT (`RefreshTokenDays`, mặc định 7 ngày = `604800` giây) |
+
+Không dùng tiền tố `__Host-` vì tiền tố đó bắt buộc `Path=/`, tức gửi RT kèm mọi request.
+
+`/refresh` và `/logout` đọc RT **từ cookie trước**, không có cookie thì mới đọc `refreshToken` trong
+body. Body giờ không bắt buộc — gửi request rỗng cũng được.
+
+**Đang chuyển tiếp (3 bước, xem comment trên SCRUM-11).** Bước 1 (PR này): đặt cookie nhưng **vẫn
+trả** `refreshToken` trong body và vẫn nhận RT từ body, để FE đang dùng `localStorage` chạy bình
+thường. Bước 2: FE bỏ `localStorage`, dùng cookie. Bước 3: backend bỏ `refreshToken` khỏi response
+body và bỏ đọc từ body — khi đó `/refresh` không có cookie thì trả `401 MSG01` như RT hết hạn.
+
 ## UC-01 · Đăng nhập bằng email và mật khẩu
 
 Sequence diagram: [SignIn.png](../06-sequencediagram/SignIn.png).
@@ -56,7 +82,7 @@ Sequence diagram: [SignIn.png](../06-sequencediagram/SignIn.png).
 { "email": "thuky@trustcabinet.local", "password": "…" }
 ```
 
-`200 OK`:
+`200 OK`, kèm `Set-Cookie: tc_refresh_token=…` (xem trên):
 
 ```json
 {
@@ -256,12 +282,19 @@ thành endpoint vì chưa story nào yêu cầu.
 
 ### `POST /api/auth/refresh`
 
+RT lấy từ cookie `tc_refresh_token`; không có cookie thì từ body (chỉ trong giai đoạn chuyển tiếp):
+
 ```json
 { "refreshToken": "8Kx2v…" }
 ```
 
-Trả về đúng shape của `login`. RT **dùng một lần** (rotation): mỗi lần refresh sẽ huỷ RT vừa dùng và
-cấp RT mới, nên RT bị đánh cắp sẽ hết tác dụng ngay khi client thật refresh lần kế tiếp.
+Trả về đúng shape của `login` và đặt cookie mới. RT **dùng một lần** (rotation): mỗi lần refresh sẽ
+huỷ RT vừa dùng và cấp RT mới, nên RT bị đánh cắp sẽ hết tác dụng ngay khi client thật refresh lần
+kế tiếp.
+
+**Gửi lại một RT đã dùng rồi thì mọi phiên của tài khoản đó bị huỷ**, không chỉ trả `401`. Một RT
+xuất hiện hai lần nghĩa là có hai bên cùng giữ nó — kẻ trộm và người dùng thật, không biết bên nào
+trước — nên không bên nào được giữ phiên. Xem [phát hiện RT bị dùng lại](#phát-hiện-rt-bị-dùng-lại).
 
 Mỗi lần refresh đều đọc lại `users` và `role_capabilities`, nên vô hiệu hoá tài khoản hay đổi quyền
 có hiệu lực ở lần refresh tiếp theo — không phải chờ hết 7 ngày. Khi gặp tài khoản đã bị vô hiệu
@@ -269,12 +302,17 @@ hoá, **toàn bộ** RT của người đó bị huỷ, không chỉ cái vừa 
 
 ### `POST /api/auth/logout`
 
+RT lấy từ cookie, không có thì từ body, như `/refresh`:
+
 ```json
 { "refreshToken": "8Kx2v…" }
 ```
 
 `204 No Content`, **luôn luôn** — kể cả khi RT đã hết hạn hoặc chưa từng tồn tại. Gọi hai lần không
 phải lỗi; trả `400` ở lần thứ hai chỉ để lộ trạng thái token cho người gọi.
+
+Cũng **luôn luôn** xoá cookie (`Set-Cookie: tc_refresh_token=; max-age=0; …`), kể cả khi RT không
+còn hợp lệ: sau khi đăng xuất thì cookie đó không còn dùng vào việc gì.
 
 Logout chỉ huỷ RT của *phiên đó*. Đăng xuất trên laptop không đăng xuất trên điện thoại.
 
@@ -321,12 +359,33 @@ thao tác là một lần tra key, và `GETDEL` đọc–xoá trong **một** l�
 quan trọng: nếu tách thành `GET` rồi `DEL`, hai request refresh đồng thời cùng một RT bị đánh cắp sẽ
 **cùng** đọc thấy hợp lệ trước khi cái nào kịp xoá.
 
-Hai loại key, cả hai đều tự hết hạn:
+Ba loại key, cả ba đều tự hết hạn:
 
 ```
-rt:{sha256(token)}   → user id         "token này còn hợp lệ không, của ai?"
-rt-user:{userId}     → set các hash    "người này đang có những phiên nào?" → để huỷ tất cả
+rt:{sha256(token)}       → user id         "token này còn hợp lệ không, của ai?"
+rt-used:{sha256(token)}  → user id         "token này đã bị dùng rồi chưa?" → phát hiện dùng lại
+rt-user:{userId}         → set các hash    "người này đang có những phiên nào?" → để huỷ tất cả
 ```
+
+### Phát hiện RT bị dùng lại
+
+Rotation một mình chưa đủ: trước đây một lần replay chỉ bị *bỏ qua*. Kẻ trộm refresh trước thì giữ
+được phiên, còn người dùng thật bị đẩy ra.
+
+Giờ mỗi lần refresh thành công, hash của RT vừa dùng được giữ trong `rt-used:{hash}` với TTL **bằng
+tuổi RT** (`RefreshTokenDays`), không phải thời gian còn lại của token — marker phải sống ít nhất bằng RT
+được cấp ra ở chính lần refresh đó. Gặp lại một RT có trong `rt-used` thì gọi `RevokeAllForUserAsync`: mọi phiên
+của tài khoản đó chết, kể cả phiên kẻ trộm vừa lấy được, và ghi log `Warning`.
+
+Đọc–xoá `rt:` và ghi `rt-used:` chạy trong **một Lua script** (`RedisRefreshTokenStore.ConsumeScript`)
+chứ không phải `GETDEL` rồi `SET`: giữa hai lệnh, một lần replay sẽ không thấy key nào và bị coi là
+token lạ thay vì bị bắt.
+
+Hệ quả cho FE: hai request refresh song song với cùng một RT giờ **đăng xuất người dùng trên mọi
+thiết bị**, không chỉ làm một request thất bại. FE đã có single-flight + Web Lock nên không gặp;
+đừng bỏ chúng.
+
+Logout (`RevokeAsync`) không ghi `rt-used`: RT bị huỷ bằng đăng xuất mà bị gửi lại chỉ nhận `401`.
 
 Redis lưu **hash** của token, không lưu token. Dump Redis ra không được phép là một nắm session
 dùng được ngay. Ở đây dùng SHA-256 trần, không salt, không stretching — khác với mật khẩu — vì đầu
@@ -407,17 +466,15 @@ nó chỉ tồn tại trong một database toàn cuộc họp bịa.
 - ~~**Liên kết tài khoản Google.**~~ — **đã làm**: tự liên kết ở lần đăng nhập đầu theo email đã
   xác minh ([ADR-0009](../05-decisions/0009-tu-lien-ket-google-lan-dau-theo-email.md)). Còn thiếu:
   gỡ / đổi liên kết của một tài khoản đã liên kết — hiện vẫn bằng SQL, chưa có ticket.
-- **RT đang trả trong response body**, chưa phải cookie `HttpOnly`. Frontend không thuộc phạm vi
-  lượt này; khi làm FE (SCRUM-46) thì chuyển sang cookie, vì token nằm trong tầm với của
-  JavaScript là token mà bất kỳ lỗi XSS nào trên trang cũng đọc được.
+- **RT vẫn còn trong response body.** Cookie `HttpOnly` đã có (bước 1, xem
+  [trên](#refresh-token-nằm-trong-cookie-tc_refresh_token)); còn bước 2 (FE bỏ `localStorage`) và
+  bước 3 (backend bỏ `refreshToken` khỏi body và bỏ đọc từ body). Chưa xong bước 3 thì RT vẫn nằm
+  trong tầm với của JavaScript.
 - **Chưa giới hạn số lần thử sai.** Chưa có rate limit cho `/api/auth/login`, nên chưa chặn dò mật
   khẩu. Nên làm trước khi hệ thống ra khỏi môi trường nội bộ — và phần chống dò email ở trên mất
   phần lớn giá trị nếu thiếu nó.
-- **Chưa phát hiện refresh token bị dùng lại.** Rotation hoạt động đúng (token cũ chết), nhưng một
-  lần replay chỉ bị *bỏ qua* chứ không bị coi là bằng chứng token đã bị đánh cắp. Kẻ trộm refresh
-  trước thì giữ được phiên, còn người dùng thật bị đẩy ra — ngược với điều mong muốn. Cách chuẩn
-  (OAuth 2.1): giữ hash của token đã dùng trong `rt-used:{hash}` một khoảng bằng tuổi RT, gặp lại
-  thì `RevokeAllForUserAsync`.
+- ~~**Chưa phát hiện refresh token bị dùng lại.**~~ — **đã làm**, xem
+  [phát hiện RT bị dùng lại](#phát-hiện-rt-bị-dùng-lại).
 - **Timing oracle với hash sai định dạng.** `PasswordHasher.Verify` bắt `FormatException` rồi trả
   `false` ngay, không tốn công băm: hash thật ~34 ms, hash sai định dạng ~0,002 ms. Tài khoản có
   `password_hash` hỏng vì thế phân biệt được cả với tài khoản thường lẫn email không tồn tại. Sửa

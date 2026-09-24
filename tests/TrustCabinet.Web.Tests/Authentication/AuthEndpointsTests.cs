@@ -286,6 +286,100 @@ public class AuthEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.NoContent, again.StatusCode);
     }
 
+    /// <summary>
+    /// The one Set-Cookie header for the refresh token cookie, lower-cased for attribute checks.
+    /// </summary>
+    private static string RefreshCookieHeader(HttpResponseMessage response)
+        => Assert.Single(
+                response.Headers.GetValues("Set-Cookie"),
+                h => h.StartsWith("tc_refresh_token=", StringComparison.Ordinal))
+            .ToLowerInvariant();
+
+    /// <summary>
+    /// A POST carrying the cookie by hand. The test client talks plain http, over which a real
+    /// cookie jar would never send a Secure cookie, so it cannot be relied on to do it here.
+    /// </summary>
+    private static Task<HttpResponseMessage> PostWithCookie(
+        HttpClient client, string path, string refreshToken, object? body = null)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, path)
+        {
+            Content = body is null ? null : JsonContent.Create(body),
+        };
+        request.Headers.Add("Cookie", $"tc_refresh_token={refreshToken}");
+        return client.SendAsync(request);
+    }
+
+    [Fact]
+    public async Task Login_sets_the_refresh_token_as_an_HttpOnly_cookie()
+    {
+        var client = NewClient();
+
+        var response = await PostLogin(client, Email, Password);
+        var body = await response.Content.ReadFromJsonAsync<SignInBody>();
+        var cookie = RefreshCookieHeader(response);
+
+        // Same token in both places until the frontend stops reading the body (step 3).
+        Assert.StartsWith($"tc_refresh_token={body!.RefreshToken}".ToLowerInvariant(), cookie);
+        Assert.Contains("httponly", cookie);
+        Assert.Contains("secure", cookie);
+        Assert.Contains("samesite=strict", cookie);
+        Assert.Contains("path=/api/auth", cookie);
+        Assert.Contains("max-age=604800", cookie); // seven days, the refresh token's lifetime
+    }
+
+    [Fact]
+    public async Task Refresh_reads_the_token_from_the_cookie_with_no_body_at_all()
+    {
+        var client = NewClient();
+        var signIn = await (await PostLogin(client, Email, Password)).Content.ReadFromJsonAsync<SignInBody>();
+
+        var response = await PostWithCookie(client, "/api/auth/refresh", signIn!.RefreshToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var refreshed = await response.Content.ReadFromJsonAsync<SignInBody>();
+        // The rotated token replaces the cookie, not just the body.
+        Assert.StartsWith(
+            $"tc_refresh_token={refreshed!.RefreshToken}".ToLowerInvariant(), RefreshCookieHeader(response));
+    }
+
+    [Fact]
+    public async Task Refresh_prefers_the_cookie_over_the_body()
+    {
+        var client = NewClient();
+        var signIn = await (await PostLogin(client, Email, Password)).Content.ReadFromJsonAsync<SignInBody>();
+
+        var response = await PostWithCookie(
+            client, "/api/auth/refresh", signIn!.RefreshToken, new { refreshToken = "khong-phai-token" });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Logout_through_the_cookie_invalidates_the_token_and_clears_the_cookie()
+    {
+        var client = NewClient();
+        var signIn = await (await PostLogin(client, Email, Password)).Content.ReadFromJsonAsync<SignInBody>();
+
+        var logout = await PostWithCookie(client, "/api/auth/logout", signIn!.RefreshToken);
+
+        Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
+        Assert.Contains("max-age=0", RefreshCookieHeader(logout));
+
+        var afterLogout = await PostWithCookie(client, "/api/auth/refresh", signIn.RefreshToken);
+        Assert.Equal(HttpStatusCode.Unauthorized, afterLogout.StatusCode);
+    }
+
+    [Fact]
+    public async Task Logout_clears_the_cookie_even_with_no_valid_token()
+    {
+        var logout = await _factory.CreateClient().PostAsync("/api/auth/logout", content: null);
+
+        Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
+        Assert.Contains("max-age=0", RefreshCookieHeader(logout));
+    }
+
     private sealed record SignInBody(
         string AccessToken, string RefreshToken, DateTimeOffset AccessTokenExpiresAt, CurrentUserBody User);
 
