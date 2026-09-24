@@ -18,9 +18,12 @@ export const signIn = (email: string, password: string) =>
 export const signInWithGoogle = (idToken: string) =>
   api.post<SignInResponse>('/api/auth/google', { idToken }, { anonymous: true })
 
-/** Trades a refresh token for a new pair. The old refresh token is dead as soon as this succeeds. */
-export const refreshSession = (refreshToken: string) =>
-  api.post<SignInResponse>('/api/auth/refresh', { refreshToken }, { anonymous: true })
+/**
+ * Trades the refresh token for a new pair. The token travels in the HttpOnly cookie the browser
+ * attaches by itself; the old one is dead as soon as this succeeds.
+ */
+export const refreshSession = () =>
+  api.post<SignInResponse>('/api/auth/refresh', undefined, { anonymous: true })
 
 /**
  * Who the caller is and what they may do, read from the database rather than from the token's
@@ -29,6 +32,8 @@ export const refreshSession = (refreshToken: string) =>
  */
 export const getCurrentUser = () => api.get<CurrentUser>('/api/auth/me')
 
-/** Revokes the refresh token server-side. Always 204, even for an unknown or expired token. */
-export const signOut = (refreshToken: string) =>
-  api.post<void>('/api/auth/logout', { refreshToken }, { anonymous: true })
+/**
+ * Revokes the cookie's refresh token server-side and has the browser drop the cookie. Always 204,
+ * even for an unknown or expired token.
+ */
+export const signOut = () => api.post<void>('/api/auth/logout', undefined, { anonymous: true })

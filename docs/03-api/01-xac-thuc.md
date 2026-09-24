@@ -64,13 +64,15 @@ Set-Cookie: tc_refresh_token=8Kx2v…; max-age=604800; path=/api/auth; secure; s
 
 Không dùng tiền tố `__Host-` vì tiền tố đó bắt buộc `Path=/`, tức gửi RT kèm mọi request.
 
-`/refresh` và `/logout` đọc RT **từ cookie trước**, không có cookie thì mới đọc `refreshToken` trong
-body. Body giờ không bắt buộc — gửi request rỗng cũng được.
+RT **chỉ** nằm trong cookie: response body không có `refreshToken`, và `/refresh`, `/logout` chỉ đọc
+cookie — gửi RT trong body bị bỏ qua. Không có đường lùi qua body là cố ý: RT mà JavaScript gửi
+được là RT mà JavaScript giữ được, đúng thứ cookie `HttpOnly` sinh ra để ngăn. `/refresh` không có
+cookie thì trả `401 MSG01`, y như RT hết hạn.
 
-**Đang chuyển tiếp (3 bước, xem comment trên SCRUM-11).** Bước 1 (PR này): đặt cookie nhưng **vẫn
-trả** `refreshToken` trong body và vẫn nhận RT từ body, để FE đang dùng `localStorage` chạy bình
-thường. Bước 2: FE bỏ `localStorage`, dùng cookie. Bước 3: backend bỏ `refreshToken` khỏi response
-body và bỏ đọc từ body — khi đó `/refresh` không có cookie thì trả `401 MSG01` như RT hết hạn.
+Chuyển sang cookie theo comment của SCRUM-11, gộp cả ba bước (backend đặt cookie, FE bỏ
+`localStorage`, backend bỏ RT khỏi body) vào một PR. Phiên đăng nhập từ trước PR này chỉ có RT
+trong `localStorage`, không có cookie, nên người dùng phải đăng nhập lại **một lần**; FE tự xoá key
+cũ.
 
 ## UC-01 · Đăng nhập bằng email và mật khẩu
 
@@ -87,7 +89,6 @@ Sequence diagram: [SignIn.png](../06-sequencediagram/SignIn.png).
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIs…",
-  "refreshToken": "8Kx2v…",
   "accessTokenExpiresAt": "2026-09-21T10:15:00+00:00",
   "user": {
     "id": "01999f2e-…",
@@ -273,8 +274,10 @@ việc của FE, làm cùng SCRUM-46.
 
 Backend không có việc mới. `POST /api/auth/logout` đã có sẵn và bổ sung cho UC-03 phần diagram
 không vẽ nhưng tiêu chí nghiệm thu SCRUM-11 yêu cầu: **huỷ phiên ở phía server**, để một client
-giữ lại RT vẫn không dùng lại được. FE nên gọi nó *trước* khi xoá token cục bộ; nếu bỏ qua, RT vẫn
-sống tới 7 ngày dù trình duyệt đã sạch.
+giữ lại RT vẫn không dùng lại được. Từ khi RT nằm trong cookie `HttpOnly`, đây cũng là **cách duy
+nhất** xoá được cookie — JavaScript không đụng tới nó. Vì vậy FE coi `/logout` không tới được server
+là "không xoá được" — `MSG01` của UC-03 — và giữ nguyên phiên để người dùng thử lại; nếu cứ xoá phía
+trình duyệt thì F5 sẽ đăng nhập lại ngay bằng cookie còn sót.
 
 Logout chỉ huỷ RT của phiên đó — đăng xuất trên laptop không đăng xuất trên điện thoại. Huỷ mọi
 thiết bị thì đã có `RevokeAllForUserAsync`, hiện chỉ dùng khi tài khoản bị vô hiệu hoá; chưa expose
@@ -282,11 +285,7 @@ thành endpoint vì chưa story nào yêu cầu.
 
 ### `POST /api/auth/refresh`
 
-RT lấy từ cookie `tc_refresh_token`; không có cookie thì từ body (chỉ trong giai đoạn chuyển tiếp):
-
-```json
-{ "refreshToken": "8Kx2v…" }
-```
+Không cần body: RT lấy từ cookie `tc_refresh_token`.
 
 Trả về đúng shape của `login` và đặt cookie mới. RT **dùng một lần** (rotation): mỗi lần refresh sẽ
 huỷ RT vừa dùng và cấp RT mới, nên RT bị đánh cắp sẽ hết tác dụng ngay khi client thật refresh lần
@@ -302,11 +301,7 @@ hoá, **toàn bộ** RT của người đó bị huỷ, không chỉ cái vừa 
 
 ### `POST /api/auth/logout`
 
-RT lấy từ cookie, không có thì từ body, như `/refresh`:
-
-```json
-{ "refreshToken": "8Kx2v…" }
-```
+Không cần body: RT lấy từ cookie, như `/refresh`.
 
 `204 No Content`, **luôn luôn** — kể cả khi RT đã hết hạn hoặc chưa từng tồn tại. Gọi hai lần không
 phải lỗi; trả `400` ở lần thứ hai chỉ để lộ trạng thái token cho người gọi.
@@ -460,16 +455,14 @@ nó chỉ tồn tại trong một database toàn cuộc họp bịa.
   (nút Google dùng Google Identity Services), hộp xác nhận đăng xuất gọi `/logout` trước khi xoá
   token, `AuthProvider` khôi phục phiên bằng `/refresh` khi tải lại trang. Token nằm ở
   `frontend/src/features/auth/session.ts`: access token chỉ trong bộ nhớ, refresh token trong
-  `localStorage` (xem mục cookie bên dưới); refresh chạy single-flight, có Web Lock để hai tab
-  không tranh nhau một RT dùng-một-lần. Google `client_id` đang lặp lại ở FE vì backend chưa có
+  cookie `HttpOnly` (FE không thấy); refresh chạy single-flight, có Web Lock để hai tab không
+  tranh nhau một RT dùng-một-lần. Google `client_id` đang lặp lại ở FE vì backend chưa có
   endpoint trả nó.
 - ~~**Liên kết tài khoản Google.**~~ — **đã làm**: tự liên kết ở lần đăng nhập đầu theo email đã
   xác minh ([ADR-0009](../05-decisions/0009-tu-lien-ket-google-lan-dau-theo-email.md)). Còn thiếu:
   gỡ / đổi liên kết của một tài khoản đã liên kết — hiện vẫn bằng SQL, chưa có ticket.
-- **RT vẫn còn trong response body.** Cookie `HttpOnly` đã có (bước 1, xem
-  [trên](#refresh-token-nằm-trong-cookie-tc_refresh_token)); còn bước 2 (FE bỏ `localStorage`) và
-  bước 3 (backend bỏ `refreshToken` khỏi body và bỏ đọc từ body). Chưa xong bước 3 thì RT vẫn nằm
-  trong tầm với của JavaScript.
+- ~~**RT trả trong response body, FE lưu ở `localStorage`.**~~ — **đã làm**: RT chỉ còn trong cookie
+  `HttpOnly`, xem [trên](#refresh-token-nằm-trong-cookie-tc_refresh_token).
 - **Chưa giới hạn số lần thử sai.** Chưa có rate limit cho `/api/auth/login`, nên chưa chặn dò mật
   khẩu. Nên làm trước khi hệ thống ra khỏi môi trường nội bộ — và phần chống dò email ở trên mất
   phần lớn giá trị nếu thiếu nó.

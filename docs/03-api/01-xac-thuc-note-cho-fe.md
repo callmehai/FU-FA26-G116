@@ -11,40 +11,37 @@ Hợp đồng API đầy đủ: [01-xac-thuc.md](01-xac-thuc.md). File này khô
 > Bỏ bảng `ROLE_LABEL` ở FE, hiển thị `roleName`. `MSG04` (`/login`) và `MSG05` (`/google`) — "không
 > có quyền truy cập hệ thống" — **không còn được trả về**. Phần về `role` ở mục 1 dưới đây là lịch sử.
 
-> **Đổi từ bước 1 chuyển RT sang cookie** (comment SCRUM-11, 24/09): backend giờ đặt RT vào cookie
-> `HttpOnly` tên **`tc_refresh_token`**, và vẫn trả `refreshToken` trong body như cũ, nên FE hiện
-> tại **không phải sửa gì**. Việc của FE ở bước 2 xem [mục 0](#0-bước-2-chuyển-rt-sang-cookie).
-> Mục 4 và mục 7 bên dưới mô tả cách cũ (RT trong body / `localStorage`), giữ lại tới bước 3.
+> **Đổi: refresh token chuyển sang cookie `HttpOnly`** (comment SCRUM-11, 24/09 — cả ba bước gộp
+> một PR): response **không còn `refreshToken`**, `/refresh` và `/logout` **không nhận body**. FE đã
+> sửa theo, xem [mục 0](#0-refresh-token-nằm-trong-cookie). Mục 4, 5, 7 đã cập nhật theo.
 
 ---
 
-## 0. Bước 2: chuyển RT sang cookie
+## 0. Refresh token nằm trong cookie
 
 Hợp đồng đầy đủ ở [01-xac-thuc.md](01-xac-thuc.md#refresh-token-nằm-trong-cookie-tc_refresh_token).
-Phần FE cần biết:
+Cách FE đang làm, trong [`session.ts`](../../frontend/src/features/auth/session.ts):
 
 - **FE không đọc, không ghi cookie.** Nó `HttpOnly`, JavaScript không thấy. Trình duyệt tự lưu khi
   `/login`, `/google`, `/refresh` trả về, và tự gửi kèm mọi request tới `/api/auth/*` (cookie có
   `Path=/api/auth`). `fetch` cùng origin mặc định `credentials: 'same-origin'` nên không cần thêm
   option gì; Vite proxy chuyển tiếp header `Cookie` bình thường.
-- **`/refresh` và `/logout` gọi không cần body.** Backend đọc cookie trước, body chỉ là đường lùi
-  trong lúc chuyển tiếp. Sau bước 3, body bị bỏ qua hẳn.
-- **Khôi phục phiên khi F5:** không còn RT trong `localStorage` để biết "có phiên hay không", nên cứ
-  gọi `POST /api/auth/refresh` lúc khởi động: `200` là có phiên, `401` là chưa đăng nhập. Đừng coi
-  `401` đó là lỗi.
-- **Dọn key cũ** `trustcabinet.refreshToken` trong `localStorage` một lần khi khởi động, để RT cũ
-  không nằm lại trên máy người dùng.
-- **Giữ single-flight + Web Lock cho refresh.** Backend giờ **phát hiện RT bị dùng lại**: gửi lại
-  một RT đã dùng thì **mọi phiên của tài khoản đó bị huỷ**, trên mọi thiết bị. Hai tab refresh song
-  song với cùng một cookie là đúng tình huống đó — trước chỉ một request thất bại, giờ là đăng xuất
-  toàn bộ.
+- **`/refresh` và `/logout` gọi không body.** Gửi `refreshToken` trong body cũng bị bỏ qua.
+- **`localStorage` chỉ giữ cờ `trustcabinet.signedIn`**, không phải credential. Nó cho biết có nên
+  thử `/refresh` khi F5 hay không (khách chưa đăng nhập khỏi tốn một request `401`), phân biệt
+  "phiên hết hạn" với "chưa từng đăng nhập", và báo cho tab khác khi một tab đăng xuất (sự kiện
+  `storage`). Không đọc được `localStorage` thì cứ thử `/refresh`.
+- **Key cũ** `trustcabinet.refreshToken` và `trustcabinet.session` bị xoá khi khởi động. Ai đang
+  đăng nhập từ trước thay đổi này chỉ có RT trong `localStorage`, không có cookie, nên phải đăng
+  nhập lại **một lần**.
+- **Giữ single-flight + Web Lock cho refresh.** Backend **phát hiện RT bị dùng lại**: gửi lại một RT
+  đã dùng thì **mọi phiên của tài khoản đó bị huỷ**, trên mọi thiết bị. Hai tab refresh song song
+  với cùng một cookie là đúng tình huống đó — trước chỉ một request thất bại, giờ là đăng xuất
+  toàn bộ. Đừng bỏ Web Lock.
 - **Cookie có `Secure`.** Chrome và Firefox chấp nhận trên `http://localhost` (coi là ngữ cảnh an
   toàn). Safari có thể không lưu cookie `Secure` qua `http://localhost` — nếu phiên mất sau F5 trên
   Safari lúc dev thì đó là lý do, test bằng Chrome/Firefox.
-- Đăng xuất: `/logout` luôn trả `Set-Cookie … max-age=0`, trình duyệt tự xoá cookie. FE chỉ cần xoá
-  access token trong bộ nhớ.
-
-Xong bước 2 thì báo backend làm bước 3 (bỏ `refreshToken` khỏi response body).
+- **Đăng xuất phải tới được server** — xem mục 5.
 
 ---
 
@@ -115,20 +112,21 @@ thì hiện thêm hướng dẫn "liên hệ quản trị viên để liên kế
 ## 4. Vòng đời token
 
 ```
-login/google  →  accessToken (JWT, 15 phút)  +  refreshToken (opaque, 7 ngày)
+login/google  →  accessToken (JWT, 15 phút, trong body)  +  cookie tc_refresh_token (opaque, 7 ngày)
                  accessTokenExpiresAt: "2026-09-21T08:14:48.381003+00:00"
 ```
 
 - **Access token** gắn vào mọi request: `Authorization: Bearer <accessToken>`.
 - **Refresh token** chỉ dùng cho `/api/auth/refresh` và `/api/auth/logout`. Nằm trong cookie
-  `tc_refresh_token` (xem mục 0); body `{"refreshToken":"..."}` chỉ còn tới bước 3.
+  `tc_refresh_token` (xem mục 0), trình duyệt tự gửi.
 
 **Refresh token dùng một lần.** Mỗi lần `/refresh` thành công trả về RT **mới** và RT cũ chết ngay.
 Hai hệ quả bắt buộc phải xử lý:
 
-- **Phải lưu lại RT mới** sau mỗi lần refresh. Quên là lần refresh sau 401.
+- **RT mới thay RT cũ** sau mỗi lần refresh — trình duyệt tự ghi đè cookie, FE không phải làm gì.
 - **Không được để hai request refresh chạy song song.** Nếu 3 request cùng nhận 401 và cùng gọi
-  `/refresh` với cùng một RT, thì một cái thắng và hai cái kia nhận 401 → đăng xuất oan. Cần một
+  `/refresh` với cùng một RT, thì backend coi là RT bị đánh cắp và **huỷ mọi phiên** → đăng xuất
+  oan trên mọi thiết bị. Cần một
   promise refresh dùng chung (single-flight): request đầu tiên gọi refresh, các request còn lại chờ
   cùng promise đó.
 
@@ -146,7 +144,7 @@ Nhưng **vẫn phải gọi `POST /api/auth/logout`**, và gọi **trước** kh
 
 ```
 1. Hiện hộp xác nhận            ← theo diagram
-2. POST /api/auth/logout { refreshToken }   ← huỷ phiên phía server
+2. POST /api/auth/logout (không body)   ← huỷ phiên phía server + xoá cookie
 3. Xoá token cục bộ
 4. Điều hướng về /login
 ```
@@ -156,8 +154,12 @@ Bỏ bước 2 thì refresh token **vẫn sống tới 7 ngày** dù trình duy�
 server, không chỉ xoá ở trình duyệt"), nên đừng bỏ.
 
 `/logout` **luôn** trả `204` không body, kể cả khi token đã hết hạn hoặc không tồn tại, và gọi hai
-lần cũng không lỗi. Nên bước 3 và 4 cứ chạy dù bước 2 có thất bại vì mạng — đừng khoá người dùng
-trong trạng thái không đăng xuất được.
+lần cũng không lỗi.
+
+**Bước 2 thất bại vì mạng thì dừng, hiện `MSG01`.** Cookie `HttpOnly` chỉ server xoá được: nếu FE
+vẫn xoá phía mình rồi chuyển về `/login`, cookie còn nguyên và F5 là đăng nhập lại ngay — người
+dùng tưởng đã đăng xuất mà không phải. `signOut()` trong `session.ts` trả `false` trong trường hợp
+này và giữ nguyên phiên để người dùng bấm lại.
 
 Lưu ý: `/logout` chỉ huỷ phiên **của thiết bị đó**. Đăng xuất trên laptop không đăng xuất trên điện
 thoại. Chưa có endpoint "đăng xuất mọi thiết bị".
@@ -217,14 +219,10 @@ khoản nào thì đăng nhập vào tài khoản đó. Đã liên kết rồi t
 
 ## 7. Lưu token ở đâu
 
-Refresh token giờ nằm trong cookie `HttpOnly` — xem mục 0. Phần dưới là cách cũ, chỉ đúng tới khi
-FE làm xong bước 2:
-
 - **Access token**: giữ trong memory (React state / context). Nó chỉ sống 15 phút, mất khi F5 thì
   refresh lại là có ngay.
-- **Refresh token**: `localStorage` là lựa chọn thực tế duy nhất nếu muốn giữ phiên qua F5 — nhưng
-  hiểu rõ đánh đổi: bất kỳ lỗi XSS nào trên trang cũng đọc được nó. Đừng lưu vào đó bất cứ thứ gì
-  khác liên quan phiên.
+- **Refresh token**: cookie `HttpOnly` do backend đặt — xem mục 0. FE không lưu ở đâu cả. Đừng lưu
+  vào `localStorage` bất cứ thứ gì dùng được như credential.
 - **`AuthProvider` hiện lưu cả object user vào `localStorage`** dưới key `trustcabinet.session`.
   Bỏ cách đó: user thật lấy từ `/api/auth/me` hoặc từ response `login`, không tin dữ liệu trong
   localStorage vì người dùng sửa được (sửa `role` thành `admin` chẳng hạn) — UI sẽ hiện menu admin

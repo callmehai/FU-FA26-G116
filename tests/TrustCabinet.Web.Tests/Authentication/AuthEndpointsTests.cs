@@ -103,6 +103,10 @@ public class AuthEndpointsTests : IDisposable
     private static Task<HttpResponseMessage> PostLogin(HttpClient client, string email, string password)
         => client.PostAsJsonAsync("/api/auth/login", new { email, password });
 
+    /// <summary>Signs in and returns the refresh token the response put in its cookie.</summary>
+    private static async Task<string> SignInForRefreshToken(HttpClient client)
+        => RefreshCookieValue(await PostLogin(client, Email, Password));
+
     [Fact]
     public async Task Login_returns_a_token_pair_and_the_user()
     {
@@ -115,7 +119,6 @@ public class AuthEndpointsTests : IDisposable
         var body = await response.Content.ReadFromJsonAsync<SignInBody>();
         Assert.NotNull(body);
         Assert.False(string.IsNullOrWhiteSpace(body.AccessToken));
-        Assert.False(string.IsNullOrWhiteSpace(body.RefreshToken));
         Assert.Equal(Email, body.User.Email);
         // The role by id and by its current name (ADR-0008), never the old enum string.
         Assert.Equal(BuiltInRoles.Secretary.ToString(), body.User.RoleId);
@@ -231,44 +234,65 @@ public class AuthEndpointsTests : IDisposable
     public async Task Refresh_exchanges_the_token_for_a_new_pair()
     {
         var client = NewClient();
-        var signIn = await (await PostLogin(client, Email, Password)).Content.ReadFromJsonAsync<SignInBody>();
+        var refreshToken = await SignInForRefreshToken(client);
 
-        var response = await client.PostAsJsonAsync("/api/auth/refresh",
-            new { refreshToken = signIn!.RefreshToken });
+        var response = await PostWithCookie(client, "/api/auth/refresh", refreshToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var refreshed = await response.Content.ReadFromJsonAsync<SignInBody>();
-        Assert.NotEqual(signIn.RefreshToken, refreshed!.RefreshToken);
+        Assert.False(string.IsNullOrWhiteSpace(
+            (await response.Content.ReadFromJsonAsync<SignInBody>())!.AccessToken));
+        // Rotated: the cookie now holds a different token.
+        Assert.NotEqual(refreshToken, RefreshCookieValue(response));
     }
 
     [Fact]
     public async Task Refresh_rejects_a_token_that_was_already_used()
     {
         var client = NewClient();
-        var signIn = await (await PostLogin(client, Email, Password)).Content.ReadFromJsonAsync<SignInBody>();
+        var refreshToken = await SignInForRefreshToken(client);
 
-        await client.PostAsJsonAsync("/api/auth/refresh", new { refreshToken = signIn!.RefreshToken });
-        var replay = await client.PostAsJsonAsync("/api/auth/refresh", new { refreshToken = signIn.RefreshToken });
+        await PostWithCookie(client, "/api/auth/refresh", refreshToken);
+        var replay = await PostWithCookie(client, "/api/auth/refresh", refreshToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, replay.StatusCode);
     }
 
     [Fact]
-    public async Task Logout_invalidates_the_refresh_token_server_side()
+    public async Task Refresh_without_the_cookie_answers_like_an_expired_token()
     {
         var client = NewClient();
-        var signIn = await (await PostLogin(client, Email, Password)).Content.ReadFromJsonAsync<SignInBody>();
 
-        var logout = await client.PostAsJsonAsync("/api/auth/logout",
-            new { refreshToken = signIn!.RefreshToken });
+        var response = await client.PostAsync("/api/auth/refresh", content: null);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal("MSG01", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
+    }
+
+    [Fact]
+    public async Task Refresh_ignores_a_token_sent_in_the_body()
+    {
+        var client = NewClient();
+        var refreshToken = await SignInForRefreshToken(client);
+
+        // The body fallback is gone on purpose: a token a script can send is one a script can hold.
+        var response = await client.PostAsJsonAsync("/api/auth/refresh", new { refreshToken });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Logout_invalidates_the_refresh_token_server_side_and_clears_the_cookie()
+    {
+        var client = NewClient();
+        var refreshToken = await SignInForRefreshToken(client);
+
+        var logout = await PostWithCookie(client, "/api/auth/logout", refreshToken);
 
         Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
+        Assert.Contains("max-age=0", RefreshCookieHeader(logout));
 
         // The acceptance criterion: a client that kept the token cannot resume the session.
-        var afterLogout = await client.PostAsJsonAsync("/api/auth/refresh",
-            new { refreshToken = signIn.RefreshToken });
-
+        var afterLogout = await PostWithCookie(client, "/api/auth/refresh", refreshToken);
         Assert.Equal(HttpStatusCode.Unauthorized, afterLogout.StatusCode);
     }
 
@@ -276,99 +300,14 @@ public class AuthEndpointsTests : IDisposable
     public async Task Logout_is_idempotent()
     {
         var client = NewClient();
-        var signIn = await (await PostLogin(client, Email, Password)).Content.ReadFromJsonAsync<SignInBody>();
+        var refreshToken = await SignInForRefreshToken(client);
 
-        await client.PostAsJsonAsync("/api/auth/logout", new { refreshToken = signIn!.RefreshToken });
-        var again = await client.PostAsJsonAsync("/api/auth/logout", new { refreshToken = signIn.RefreshToken });
+        await PostWithCookie(client, "/api/auth/logout", refreshToken);
+        var again = await PostWithCookie(client, "/api/auth/logout", refreshToken);
 
         // Signing out twice is not an error, and the second call must not reveal that the token
         // had already gone.
         Assert.Equal(HttpStatusCode.NoContent, again.StatusCode);
-    }
-
-    /// <summary>
-    /// The one Set-Cookie header for the refresh token cookie, lower-cased for attribute checks.
-    /// </summary>
-    private static string RefreshCookieHeader(HttpResponseMessage response)
-        => Assert.Single(
-                response.Headers.GetValues("Set-Cookie"),
-                h => h.StartsWith("tc_refresh_token=", StringComparison.Ordinal))
-            .ToLowerInvariant();
-
-    /// <summary>
-    /// A POST carrying the cookie by hand. The test client talks plain http, over which a real
-    /// cookie jar would never send a Secure cookie, so it cannot be relied on to do it here.
-    /// </summary>
-    private static Task<HttpResponseMessage> PostWithCookie(
-        HttpClient client, string path, string refreshToken, object? body = null)
-    {
-        var request = new HttpRequestMessage(HttpMethod.Post, path)
-        {
-            Content = body is null ? null : JsonContent.Create(body),
-        };
-        request.Headers.Add("Cookie", $"tc_refresh_token={refreshToken}");
-        return client.SendAsync(request);
-    }
-
-    [Fact]
-    public async Task Login_sets_the_refresh_token_as_an_HttpOnly_cookie()
-    {
-        var client = NewClient();
-
-        var response = await PostLogin(client, Email, Password);
-        var body = await response.Content.ReadFromJsonAsync<SignInBody>();
-        var cookie = RefreshCookieHeader(response);
-
-        // Same token in both places until the frontend stops reading the body (step 3).
-        Assert.StartsWith($"tc_refresh_token={body!.RefreshToken}".ToLowerInvariant(), cookie);
-        Assert.Contains("httponly", cookie);
-        Assert.Contains("secure", cookie);
-        Assert.Contains("samesite=strict", cookie);
-        Assert.Contains("path=/api/auth", cookie);
-        Assert.Contains("max-age=604800", cookie); // seven days, the refresh token's lifetime
-    }
-
-    [Fact]
-    public async Task Refresh_reads_the_token_from_the_cookie_with_no_body_at_all()
-    {
-        var client = NewClient();
-        var signIn = await (await PostLogin(client, Email, Password)).Content.ReadFromJsonAsync<SignInBody>();
-
-        var response = await PostWithCookie(client, "/api/auth/refresh", signIn!.RefreshToken);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var refreshed = await response.Content.ReadFromJsonAsync<SignInBody>();
-        // The rotated token replaces the cookie, not just the body.
-        Assert.StartsWith(
-            $"tc_refresh_token={refreshed!.RefreshToken}".ToLowerInvariant(), RefreshCookieHeader(response));
-    }
-
-    [Fact]
-    public async Task Refresh_prefers_the_cookie_over_the_body()
-    {
-        var client = NewClient();
-        var signIn = await (await PostLogin(client, Email, Password)).Content.ReadFromJsonAsync<SignInBody>();
-
-        var response = await PostWithCookie(
-            client, "/api/auth/refresh", signIn!.RefreshToken, new { refreshToken = "khong-phai-token" });
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Logout_through_the_cookie_invalidates_the_token_and_clears_the_cookie()
-    {
-        var client = NewClient();
-        var signIn = await (await PostLogin(client, Email, Password)).Content.ReadFromJsonAsync<SignInBody>();
-
-        var logout = await PostWithCookie(client, "/api/auth/logout", signIn!.RefreshToken);
-
-        Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
-        Assert.Contains("max-age=0", RefreshCookieHeader(logout));
-
-        var afterLogout = await PostWithCookie(client, "/api/auth/refresh", signIn.RefreshToken);
-        Assert.Equal(HttpStatusCode.Unauthorized, afterLogout.StatusCode);
     }
 
     [Fact]
@@ -380,8 +319,55 @@ public class AuthEndpointsTests : IDisposable
         Assert.Contains("max-age=0", RefreshCookieHeader(logout));
     }
 
+    [Fact]
+    public async Task Login_puts_the_refresh_token_in_an_HttpOnly_cookie_and_not_in_the_body()
+    {
+        var client = NewClient();
+
+        var response = await PostLogin(client, Email, Password);
+        var raw = await response.Content.ReadAsStringAsync();
+        var cookie = RefreshCookieHeader(response);
+
+        Assert.DoesNotContain("refreshToken", raw, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(RefreshCookieValue(response), raw);
+        Assert.Contains("httponly", cookie);
+        Assert.Contains("secure", cookie);
+        Assert.Contains("samesite=strict", cookie);
+        Assert.Contains("path=/api/auth", cookie);
+        Assert.Contains("max-age=604800", cookie); // seven days, the refresh token's lifetime
+    }
+
+    /// <summary>
+    /// The one Set-Cookie header for the refresh token cookie, lower-cased for attribute checks.
+    /// </summary>
+    private static string RefreshCookieHeader(HttpResponseMessage response)
+        => Assert.Single(
+                response.Headers.GetValues("Set-Cookie"),
+                h => h.StartsWith("tc_refresh_token=", StringComparison.Ordinal))
+            .ToLowerInvariant();
+
+    /// <summary>The refresh token itself, as the cookie carries it, case preserved.</summary>
+    private static string RefreshCookieValue(HttpResponseMessage response)
+    {
+        var header = Assert.Single(
+            response.Headers.GetValues("Set-Cookie"),
+            h => h.StartsWith("tc_refresh_token=", StringComparison.Ordinal));
+        return Uri.UnescapeDataString(header["tc_refresh_token=".Length..header.IndexOf(';')]);
+    }
+
+    /// <summary>
+    /// A POST carrying the cookie by hand. The test client talks plain http, over which a real
+    /// cookie jar would never send a Secure cookie, so it cannot be relied on to do it here.
+    /// </summary>
+    private static Task<HttpResponseMessage> PostWithCookie(HttpClient client, string path, string refreshToken)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, path);
+        request.Headers.Add("Cookie", $"tc_refresh_token={Uri.EscapeDataString(refreshToken)}");
+        return client.SendAsync(request);
+    }
+
     private sealed record SignInBody(
-        string AccessToken, string RefreshToken, DateTimeOffset AccessTokenExpiresAt, CurrentUserBody User);
+        string AccessToken, DateTimeOffset AccessTokenExpiresAt, CurrentUserBody User);
 
     private sealed record CurrentUserBody(
         string Id, string Email, string FullName, string RoleId, string RoleName, string[] Capabilities);
