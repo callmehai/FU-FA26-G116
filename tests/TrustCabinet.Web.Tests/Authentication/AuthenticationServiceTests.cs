@@ -358,6 +358,28 @@ public class AuthenticationServiceTests
     }
 
     [Fact]
+    public async Task A_database_error_during_refresh_leaves_the_token_usable()
+    {
+        var user = NewUser();
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MeetingCreator);
+        var service = NewService();
+
+        var signIn = await service.SignInAsync(user.Email, Password);
+
+        // PostgreSQL blips while the account is being read.
+        _users.OnFindById = () => throw new InvalidOperationException("database unavailable");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.RefreshAsync(signIn.RefreshToken!));
+
+        // The browser still holds the same token and retries once the database is back. Spent by
+        // the failed attempt, the retry would be refused — or, past the reuse grace period, read as
+        // theft and end every session of the account.
+        _users.OnFindById = null;
+        var retried = await service.RefreshAsync(signIn.RefreshToken!);
+
+        Assert.Equal(SignInOutcome.Success, retried.Outcome);
+    }
+
+    [Fact]
     public async Task An_expired_refresh_token_is_rejected()
     {
         var user = NewUser();

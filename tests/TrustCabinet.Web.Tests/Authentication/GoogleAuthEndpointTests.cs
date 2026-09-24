@@ -95,7 +95,11 @@ public class GoogleAuthEndpointTests : IDisposable
 
         var body = await response.Content.ReadFromJsonAsync<SignInBody>();
         Assert.False(string.IsNullOrWhiteSpace(body!.AccessToken));
-        Assert.False(string.IsNullOrWhiteSpace(body.RefreshToken));
+        // The refresh token rides only in the HttpOnly cookie, never in the body.
+        Assert.Contains(
+            response.Headers.GetValues("Set-Cookie"),
+            h => h.StartsWith("tc_refresh_token=", StringComparison.Ordinal)
+                && h.Length > "tc_refresh_token=".Length);
         Assert.Equal(Email, body.User.Email);
         Assert.Equal(BuiltInRoles.Secretary.ToString(), body.User.RoleId);
         Assert.Equal("Thư ký", body.User.RoleName);
@@ -111,10 +115,13 @@ public class GoogleAuthEndpointTests : IDisposable
         var raw = await (await PostGoogle()).Content.ReadAsStringAsync();
 
         // The client should not have to care which way the session was established.
-        foreach (var field in new[] { "accessToken", "refreshToken", "accessTokenExpiresAt", "user" })
+        foreach (var field in new[] { "accessToken", "accessTokenExpiresAt", "user" })
         {
             Assert.Contains($"\"{field}\"", raw);
         }
+
+        // Nor a refresh token in the body on either path: it travels only in the HttpOnly cookie.
+        Assert.DoesNotContain("refreshToken", raw);
     }
 
     [Theory]
@@ -226,7 +233,7 @@ public class GoogleAuthEndpointTests : IDisposable
     }
 
     private sealed record SignInBody(
-        string AccessToken, string RefreshToken, DateTimeOffset AccessTokenExpiresAt, CurrentUserBody User);
+        string AccessToken, DateTimeOffset AccessTokenExpiresAt, CurrentUserBody User);
 
     private sealed record CurrentUserBody(
         string Id, string Email, string FullName, string RoleId, string RoleName, string[] Capabilities);
