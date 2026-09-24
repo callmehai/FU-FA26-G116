@@ -9,24 +9,38 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
 
     public List<Meeting> Meetings { get; } = [];
 
+    public List<MeetingApproverOption> EligibleApprovers { get; } = [];
+
+    public HashSet<Guid> IneligibleApproverIds { get; } = [];
+
     public Exception? NextSaveThrows { get; set; }
+
+    public Exception? NextReadThrows { get; set; }
 
     public int SaveCount { get; private set; }
 
     public Task<Meeting?> FindAccessibleAsync(Guid id, Guid actorId, CancellationToken ct = default)
-        => Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id
+    {
+        if (NextReadThrows is { } exception)
+        {
+            NextReadThrows = null;
+            throw exception;
+        }
+
+        return Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id
             && (m.CreatedById == actorId
                 || m.AssignedApproverId == actorId
                 || m.Participants.Any(participant => participant.UserId == actorId))));
+    }
 
     public Task<Meeting?> FindOwnedForUpdateAsync(Guid id, Guid creatorId, CancellationToken ct = default)
         => Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id && m.CreatedById == creatorId));
 
     public Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<MeetingApproverOption>>([]);
+        => Task.FromResult<IReadOnlyList<MeetingApproverOption>>([.. EligibleApprovers]);
 
     public Task<bool> IsEligibleApproverAsync(Guid id, CancellationToken ct = default)
-        => Task.FromResult(id != Guid.Empty);
+        => Task.FromResult(id != Guid.Empty && !IneligibleApproverIds.Contains(id));
 
     public Task AddAsync(Meeting meeting, CancellationToken ct = default)
     {
