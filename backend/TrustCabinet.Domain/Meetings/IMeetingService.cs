@@ -1,0 +1,11 @@
+namespace TrustCabinet.Domain.Meetings;
+
+public interface IMeetingService
+{
+    Task<MeetingResult> CreateAsync(MeetingInput input, Guid actorId, CancellationToken ct = default);
+
+    Task<MeetingResult> GetAsync(Guid id, Guid actorId, CancellationToken ct = default);
+
+    Task<MeetingResult> UpdateAsync(
+        Guid id, MeetingInput input, Guid actorId, CancellationToken ct = default);
+}
