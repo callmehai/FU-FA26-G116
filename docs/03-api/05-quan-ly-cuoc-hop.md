@@ -10,9 +10,9 @@ Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết
 SCRUM-18, chưa nằm trong contract này; danh sách UI hiện tại vẫn dùng dữ liệu mẫu. Sau khi tạo,
 form hiển thị xác nhận và mã cuộc họp.
 
-Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24. Người duyệt bắt buộc khi tạo mới theo ERD và
-tiêu chí chấp nhận SCRUM-17. Thời gian kết thúc tùy chọn; nếu nhập thì phải sau thời gian bắt đầu
-theo BR-25. Form khởi tạo Hình thức là `InPerson` và Mức độ mật là `Normal`.
+Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24. Theo xác nhận yêu cầu đã nhận, người duyệt bắt buộc
+khi tạo mới và Thời gian kết thúc tùy chọn; nếu nhập thì phải sau thời gian bắt đầu theo BR-25. Form
+khởi tạo Hình thức là `InPerson` và Mức độ mật là `Normal`.
 
 ## Quyền truy cập
 
@@ -108,8 +108,10 @@ Lỗi validation trả `400`:
 
 Endpoint trả đồng thời mọi lỗi field phát hiện được. Với PUT, hệ thống khóa meeting và kiểm tra
 trạng thái trước khi parse JSON: nếu meeting không còn sửa được thì trả `409 MSG03`, kể cả body JSON
-sai cú pháp hoặc sai kiểu. Với meeting còn sửa được, JSON sai cú pháp/sai kiểu trả `400` và code
-`MEETING_INVALID_INFORMATION` không có `errors`. POST JSON lỗi cũng trả `400`.
+sai cú pháp hoặc sai kiểu. Request PUT có Content-Type thiếu hoặc không hỗ trợ trả `415` với code
+`MEETING_UNSUPPORTED_CONTENT_TYPE`. Với meeting còn sửa được và Content-Type hợp lệ, JSON sai cú
+pháp/sai kiểu trả `400` và code `MEETING_INVALID_INFORMATION` không có `errors`. POST JSON lỗi cũng
+trả `400`.
 
 ## Mã phản hồi
 
@@ -122,6 +124,7 @@ sai cú pháp hoặc sai kiểu. Với meeting còn sửa được, JSON sai cú
 | 403 | — | Không có `MeetingCreator` theo gate hai lớp |
 | 404 | — | GET: không tồn tại hoặc caller không có quan hệ; PUT: không tồn tại hoặc caller không phải người tạo; body rỗng |
 | 409 | `MSG03` | Trạng thái hiện tại không cho sửa |
+| 415 | `MEETING_UNSUPPORTED_CONTENT_TYPE` | PUT không gửi JSON hoặc Content-Type không hỗ trợ |
 | 503 | `MSG01` | Không thể lưu khi tạo; thử lại |
 | 503 | `MSG04` | Không thể lưu khi sửa; thử lại |
 | 503 | `MEETING_LOAD_FAILED` | Không tải được chi tiết; thử lại |
@@ -138,11 +141,16 @@ bắt buộc gán người duyệt cho meeting mới theo ERD. POST lưu meeting
 dòng `MeetingStatusHistory` (`FromStatus = null`, `ToStatus = Draft`, `ActorId = creator`). EF Core
 lưu các thay đổi này trong cùng transaction.
 
-PUT chạy transaction `ReadCommitted`, khóa đúng meeting row bằng PostgreSQL `FOR UPDATE`, rồi đọc
-lại meeting và trạng thái trong transaction. Transaction kết thúc trước response. Cập nhật thông tin
-không thay status hoặc lịch sử. Nếu body sau chuẩn hóa giống dữ liệu đã lưu, trả thành công nhưng
-không ghi DB hoặc đổi `updatedAt`. Dữ liệu cho phép sửa giữa hai form cũ dùng “lần ghi sau cùng
-thắng”; contract chưa có ETag/version để từ chối stale content.
+PUT kiểm tra quyền sở hữu và trạng thái hiện tại bằng truy vấn không khóa trước khi chờ body. Sau khi
+xác nhận meeting còn sửa được, hệ thống kiểm tra Content-Type rồi đọc body vào buffer ngoài
+transaction khóa ghi. Khi xử lý cập nhật, transaction `ReadCommitted` khóa đúng meeting row bằng
+PostgreSQL `FOR UPDATE`, đọc lại trạng thái và trả `409 MSG03` nếu trạng thái đổi trong lúc body đang
+được gửi. Chỉ sau lần kiểm tra khóa này hệ thống mới parse JSON, validate và lưu; không có network
+read trong lúc giữ row lock.
+Transaction kết thúc trước response. Cập nhật thông tin không thay status hoặc lịch sử. Nếu body sau
+chuẩn hóa giống dữ liệu đã lưu, trả thành công nhưng không ghi DB hoặc đổi `updatedAt`. Dữ liệu cho
+phép sửa giữa hai form cũ dùng “lần ghi sau cùng thắng”; contract chưa có ETag/version để từ chối
+stale content.
 
 ## Hợp đồng tích hợp FE
 
@@ -160,7 +168,8 @@ thắng”; contract chưa có ETag/version để từ chối stale content.
 
 - Đồng bộ nội dung BR-24–BR-29 chính thức vào tài liệu BA và map từng luật vào validation/lifecycle.
 - Vẽ Class Diagram tạo/đọc/sửa và ghi Controller trong sequence là ASP.NET Minimal API.
-- Đồng bộ tính bắt buộc của người duyệt và tính tùy chọn của `endsAt` vào UC-11/UC-12, cùng giới hạn length và format timezone.
+- Cập nhật Jira và UC-11/UC-12 với xác nhận `assignedApproverId` bắt buộc, `endsAt` tùy chọn, cùng
+  giới hạn length và format timezone. UC spec hiện chưa có trong workspace này.
 - Ghi rõ quyền GET, ownership và hành vi khi sửa `Rejected`.
 - Bổ sung mã thành công/lỗi chưa có vào sequence/message catalog.
 - Kiểm tra lại định danh UC theo convention Jira để tránh nhầm UC-11/UC-12 quản lý vai trò.
