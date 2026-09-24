@@ -19,6 +19,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     private string _connectionString = null!;
     private TrustCabinetDbContext _db = null!;
     private Guid _creatorId;
+    private Guid _approverRoleId;
 
     private TrustCabinetDbContext NewContext() => new(
         new DbContextOptionsBuilder<TrustCabinetDbContext>()
@@ -48,6 +49,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             await _db.Database.EnsureCreatedAsync();
 
             var role = new Role { Name = "Meeting test secretary", IsBuiltIn = false };
+            _approverRoleId = role.Id;
             var creator = new User
             {
                 FullName = "Meeting Test Creator",
@@ -105,6 +107,21 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             "Confidential",
             "Integration test",
             _creatorId);
+
+    private static User NewUser(string fullName, Guid roleId, bool isActive = true) => new()
+    {
+        FullName = fullName,
+        Email = $"{Guid.CreateVersion7():N}@trustcabinet.local",
+        PasswordHash = "test-hash",
+        RoleId = roleId,
+        IsActive = isActive,
+    };
+
+    private Role NewRole(string prefix) => new()
+    {
+        Name = $"{prefix} {Guid.CreateVersion7():N}",
+        IsBuiltIn = false,
+    };
 
     [Fact]
     public async Task Create_persists_the_meeting_and_initial_history_as_one_operation()
@@ -181,5 +198,89 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             .Where(m => m.Id == id)
             .Select(m => m.Status)
             .SingleAsync());
+    }
+
+    [Fact]
+    public async Task ListEligibleApprovers_returns_only_active_users_with_the_capability_in_name_order()
+    {
+        var alice = NewUser("Alice Approver", _approverRoleId);
+        var bob = NewUser("Bob Approver", _approverRoleId);
+        var inactive = NewUser("Inactive Approver", _approverRoleId, isActive: false);
+        var noApproverRole = NewRole("Meeting test member");
+        var notAnApprover = NewUser("Not An Approver", noApproverRole.Id);
+        _db.Roles.Add(noApproverRole);
+        _db.Users.AddRange(alice, bob, inactive, notAnApprover);
+        _db.RoleCapabilities.Add(new RoleCapability
+        {
+            RoleId = noApproverRole.Id,
+            Capability = Capability.MinutesEditor,
+        });
+        await _db.SaveChangesAsync();
+
+        var result = await new MeetingRepository(_db).ListEligibleApproversAsync();
+
+        Assert.Equal(
+            ["Alice Approver", "Bob Approver", "Meeting Test Creator"],
+            result.Select(option => option.FullName));
+        Assert.Equal(alice.Id, result[0].Id);
+        Assert.Equal(bob.Id, result[1].Id);
+        Assert.Equal(_creatorId, result[2].Id);
+    }
+
+    [Fact]
+    public async Task IsEligibleApprover_requires_an_active_account_with_the_capability()
+    {
+        var inactive = NewUser("Inactive Approver", _approverRoleId, isActive: false);
+        var noApproverRole = NewRole("Meeting test member");
+        var notAnApprover = NewUser("Not An Approver", noApproverRole.Id);
+        _db.Roles.Add(noApproverRole);
+        _db.Users.AddRange(inactive, notAnApprover);
+        await _db.SaveChangesAsync();
+
+        var repository = new MeetingRepository(_db);
+
+        Assert.True(await repository.IsEligibleApproverAsync(_creatorId));
+        Assert.False(await repository.IsEligibleApproverAsync(inactive.Id));
+        Assert.False(await repository.IsEligibleApproverAsync(notAnApprover.Id));
+        Assert.False(await repository.IsEligibleApproverAsync(Guid.CreateVersion7()));
+    }
+
+    [Fact]
+    public async Task FindAccessible_returns_meetings_to_the_creator_approver_or_participant_only()
+    {
+        var creator = await _db.Users.SingleAsync(user => user.Id == _creatorId);
+        var approver = NewUser("Meeting Approver", _approverRoleId);
+        var participant = NewUser("Meeting Participant", _approverRoleId);
+        var unrelated = NewUser("Unrelated User", _approverRoleId);
+        _db.Users.AddRange(approver, participant, unrelated);
+
+        var meeting = new Meeting
+        {
+            Title = "Accessible meeting",
+            Description = string.Empty,
+            Status = MeetingStatus.Draft,
+            Sensitivity = Sensitivity.Internal,
+            Mode = MeetingMode.InPerson,
+            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
+            CreatedById = creator.Id,
+            AssignedApproverId = approver.Id,
+            Participants =
+            [
+                new MeetingParticipant
+                {
+                    UserId = participant.Id,
+                    Role = MeetingRole.Member,
+                },
+            ],
+        };
+        _db.Meetings.Add(meeting);
+        await _db.SaveChangesAsync();
+
+        var repository = new MeetingRepository(_db);
+
+        Assert.NotNull(await repository.FindAccessibleAsync(meeting.Id, creator.Id));
+        Assert.NotNull(await repository.FindAccessibleAsync(meeting.Id, approver.Id));
+        Assert.NotNull(await repository.FindAccessibleAsync(meeting.Id, participant.Id));
+        Assert.Null(await repository.FindAccessibleAsync(meeting.Id, unrelated.Id));
     }
 }

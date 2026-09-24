@@ -68,6 +68,47 @@ public sealed class MeetingEndpointsTests : IDisposable
         return user;
     }
 
+    private User GivenMember(string email)
+    {
+        var user = new User
+        {
+            FullName = "Lê Thành Viên",
+            Email = email,
+            PasswordHash = "test-hash",
+            RoleId = BuiltInRoles.Member,
+        };
+        _factory.Accounts.WithUser(user);
+        return user;
+    }
+
+    private static Meeting OwnedMeetingBy(User creator, Guid? approverId = null, Guid? participantId = null)
+    {
+        var meeting = new Meeting
+        {
+            Title = "Giao ban tuần",
+            Description = "Kế hoạch tuần.",
+            Status = MeetingStatus.Draft,
+            Sensitivity = Sensitivity.Internal,
+            Mode = MeetingMode.InPerson,
+            Location = "Phòng họp A",
+            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
+            EndsAt = new DateTimeOffset(2026, 10, 1, 3, 0, 0, TimeSpan.Zero),
+            CreatedById = creator.Id,
+            AssignedApproverId = approverId,
+        };
+
+        if (participantId is { } id)
+        {
+            meeting.Participants.Add(new MeetingParticipant
+            {
+                MeetingId = meeting.Id,
+                UserId = id,
+            });
+        }
+
+        return meeting;
+    }
+
     private static MeetingRequest ValidRequest(string? title = "Giao ban tuần")
         => new(
             title,
@@ -121,6 +162,64 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Post_uses_defaults_and_accepts_an_omitted_optional_end_time()
+    {
+        var creator = GivenCreator();
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+        var request = new
+        {
+            title = "Giao ban tuần",
+            startsAt = "2026-10-01T09:00:00+07:00",
+            assignedApproverId = Guid.CreateVersion7(),
+        };
+
+        var response = await client.PostAsJsonAsync("/api/meetings", request);
+        using var body = await JsonOf(response);
+        var meeting = body.RootElement.GetProperty("meeting");
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal("InPerson", meeting.GetProperty("mode").GetString());
+        Assert.Equal("Secret", meeting.GetProperty("sensitivity").GetString());
+        Assert.Equal(JsonValueKind.Null, meeting.GetProperty("endsAt").ValueKind);
+    }
+
+    [Fact]
+    public async Task Post_rejects_an_approver_without_the_required_capability()
+    {
+        var invalidApproverId = Guid.CreateVersion7();
+        _factory.Meetings.IneligibleApproverIds.Add(invalidApproverId);
+        using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
+
+        var response = await client.PostAsJsonAsync(
+            "/api/meetings", ValidRequest() with { AssignedApproverId = invalidApproverId });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MEETING_INVALID_INFORMATION", body.RootElement.GetProperty("code").GetString());
+        Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("assignedApproverId", out _));
+        Assert.Empty(_factory.Meetings.Meetings);
+    }
+
+    [Fact]
+    public async Task Get_approvers_returns_the_repository_options()
+    {
+        var first = new MeetingApproverOption(Guid.CreateVersion7(), "An Nguyễn");
+        var second = new MeetingApproverOption(Guid.CreateVersion7(), "Bình Trần");
+        _factory.Meetings.EligibleApprovers.AddRange([first, second]);
+        using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
+
+        var response = await client.GetAsync("/api/meetings/approvers");
+        using var body = await JsonOf(response);
+        var options = body.RootElement.EnumerateArray().ToArray();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(2, options.Length);
+        Assert.Equal(first.Id, options[0].GetProperty("id").GetGuid());
+        Assert.Equal(first.FullName, options[0].GetProperty("fullName").GetString());
+        Assert.Equal(second.Id, options[1].GetProperty("id").GetGuid());
+    }
+
+    [Fact]
     public async Task Missing_and_other_owner_resources_return_the_same_empty_404()
     {
         var creator = GivenCreator();
@@ -140,6 +239,38 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Empty(await ownedByOther.Content.ReadAsStringAsync());
         Assert.Empty(await nonexistent.Content.ReadAsStringAsync());
         Assert.Equal(HttpStatusCode.NotFound, updateOther.StatusCode);
+    }
+
+    [Fact]
+    public async Task Get_allows_an_active_assigned_approver_without_MeetingCreator()
+    {
+        var creator = GivenCreator();
+        var approver = GivenMember("approver@trustcabinet.local");
+        var meeting = OwnedMeetingBy(creator, approver.Id);
+        _factory.Meetings.Meetings.Add(meeting);
+        using var client = _factory.ClientFor(approver);
+
+        var response = await client.GetAsync($"/api/meetings/{meeting.Id}");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(meeting.Id, body.RootElement.GetProperty("id").GetGuid());
+    }
+
+    [Fact]
+    public async Task Get_allows_an_active_meeting_participant_without_MeetingCreator()
+    {
+        var creator = GivenCreator();
+        var participant = GivenMember("participant@trustcabinet.local");
+        var meeting = OwnedMeetingBy(creator, participantId: participant.Id);
+        _factory.Meetings.Meetings.Add(meeting);
+        using var client = _factory.ClientFor(participant);
+
+        var response = await client.GetAsync($"/api/meetings/{meeting.Id}");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(meeting.Id, body.RootElement.GetProperty("id").GetGuid());
     }
 
     [Fact]
@@ -202,6 +333,64 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Put_returns_validation_errors_without_mutating_the_meeting()
+    {
+        var creator = GivenCreator();
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+        var meeting = OwnedMeetingBy(creator, Guid.CreateVersion7());
+        _factory.Meetings.Meetings.Add(meeting);
+        var request = ValidRequest("Dữ liệu không hợp lệ") with
+        {
+            StartsAt = "2026-10-01T09:00:00+07:00",
+            EndsAt = "2026-10-01T09:00:00+07:00",
+            AssignedApproverId = meeting.AssignedApproverId,
+        };
+
+        var response = await client.PutAsJsonAsync($"/api/meetings/{meeting.Id}", request);
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MEETING_INVALID_INFORMATION", body.RootElement.GetProperty("code").GetString());
+        Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("endsAt", out _));
+        Assert.Equal("Giao ban tuần", Assert.Single(_factory.Meetings.Meetings).Title);
+        Assert.Equal(0, _factory.Meetings.SaveCount);
+    }
+
+    [Fact]
+    public async Task Put_save_failure_returns_MSG04_and_503()
+    {
+        var creator = GivenCreator();
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+        var meeting = OwnedMeetingBy(creator, Guid.CreateVersion7());
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.NextSaveThrows = new Npgsql.NpgsqlException("database unavailable");
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/meetings/{meeting.Id}", ValidRequest("Không được lưu") with
+            {
+                AssignedApproverId = meeting.AssignedApproverId,
+            });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal("MSG04", body.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task Get_returns_MEETING_LOAD_FAILED_when_the_repository_fails()
+    {
+        var creator = GivenCreator();
+        using var client = _factory.ClientFor(creator);
+        _factory.Meetings.NextReadThrows = new Npgsql.NpgsqlException("database unavailable");
+
+        var response = await client.GetAsync($"/api/meetings/{Guid.CreateVersion7()}");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal("MEETING_LOAD_FAILED", body.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
     public async Task Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate()
     {
         using var anonymous = _factory.CreateClient();
@@ -210,9 +399,11 @@ public sealed class MeetingEndpointsTests : IDisposable
 
         var anonymousResponse = await anonymous.GetAsync($"/api/meetings/{Guid.CreateVersion7()}");
         var forbiddenResponse = await wrongCapability.PostAsJsonAsync("/api/meetings", ValidRequest());
+        var forbiddenApprovers = await wrongCapability.GetAsync("/api/meetings/approvers");
 
         Assert.Equal(HttpStatusCode.Unauthorized, anonymousResponse.StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, forbiddenResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, forbiddenApprovers.StatusCode);
     }
 
     [Fact]
