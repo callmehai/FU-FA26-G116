@@ -203,10 +203,19 @@ configureAuth({
 })
 
 // Signing out in one tab signs out every tab: they all share the one refresh cookie, which the
-// sign-out has just revoked.
+// sign-out has just revoked. Signing in works the same way the other way round: the new cookie is
+// shared too, so a tab without a session picks it up with a refresh instead of waiting for F5.
+// The marker only changes on sign-in and sign-out, never on a refresh, so this costs nothing
+// while a session merely continues.
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (event) => {
-    if (event.key === SIGNED_IN_KEY && event.newValue === null && accessToken) {
+    if (event.key !== SIGNED_IN_KEY) return
+    if (event.newValue !== null && !accessToken) {
+      // An outage just leaves this tab signed out, as it was.
+      void refresh().catch(() => undefined)
+      return
+    }
+    if (event.newValue === null && accessToken) {
       accessToken = null
       accessTokenExpiresAt = 0
       emit(null)

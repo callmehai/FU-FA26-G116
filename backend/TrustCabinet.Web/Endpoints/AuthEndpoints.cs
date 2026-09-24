@@ -141,7 +141,7 @@ public static class AuthEndpoints
         // Left in place, the browser would present it at every page load, and a spent one would
         // read as theft once the reuse grace period has passed.
         ClearRefreshTokenCookie(http.Response);
-        return Rejected(result.Outcome);
+        return Rejected(result.Outcome, "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
     }
 
     private static async Task<IResult> SignOutAsync(
@@ -241,7 +241,13 @@ public static class AuthEndpoints
     /// The failing branches of UC-01. All 401: the distinction between them is in the
     /// message code, and none of them reveals whether the email exists.
     /// </summary>
-    private static IResult Rejected(SignInOutcome outcome)
+    /// <param name="invalidMessage">
+    /// MSG01's wording. "Wrong email or password" makes no sense for a refresh, which sent neither;
+    /// there the same code reads as an expired session. The code is the contract, so only the
+    /// words differ.
+    /// </param>
+    private static IResult Rejected(
+        SignInOutcome outcome, string invalidMessage = "Email hoặc mật khẩu không đúng.")
     {
         var (code, message) = outcome switch
         {
@@ -249,7 +255,7 @@ public static class AuthEndpoints
                 (Msg03AccountUnavailable, "Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên."),
             // Covers InvalidCredentials and, defensively, an outcome added later without a case
             // here: the safe default for an unknown authentication outcome is to refuse.
-            _ => (Msg01InvalidCredentials, "Email hoặc mật khẩu không đúng."),
+            _ => (Msg01InvalidCredentials, invalidMessage),
         };
 
         return Results.Json(new AuthErrorResponse(code, message), statusCode: StatusCodes.Status401Unauthorized);

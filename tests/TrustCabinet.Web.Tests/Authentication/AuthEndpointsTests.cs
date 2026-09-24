@@ -265,7 +265,11 @@ public class AuthEndpointsTests : IDisposable
         var response = await client.PostAsync("/api/auth/refresh", content: null);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        Assert.Equal("MSG01", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
+
+        var body = await response.Content.ReadFromJsonAsync<AuthErrorBody>();
+        Assert.Equal("MSG01", body!.Code);
+        // Same code as a failed sign-in, but a refresh sent no email or password to be wrong.
+        Assert.Equal("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", body.Message);
     }
 
     [Fact]

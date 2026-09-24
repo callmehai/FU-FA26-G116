@@ -164,10 +164,15 @@ public sealed class RedisRefreshTokenStore(
         }
     }
 
-    public Task RevokeAsync(string refreshToken, CancellationToken ct = default)
-        // The user-index entry is left behind deliberately: removing it would need a read to learn
-        // whose token this was, and a dangling hash in the set costs nothing.
-        => redis.GetDatabase().KeyDeleteAsync(TokenKey(Hash(refreshToken)));
+    public async Task<Guid?> RevokeAsync(string refreshToken, CancellationToken ct = default)
+    {
+        // GETDEL rather than DEL: same effect, and it says whose session just ended, for the log.
+        // The user-index entry is left behind deliberately: a dangling hash in the set costs
+        // nothing, since ConsumeAsync validates against the token key.
+        var stored = await redis.GetDatabase().StringGetDeleteAsync(TokenKey(Hash(refreshToken)));
+
+        return Guid.TryParse((string?)stored, out var userId) ? userId : null;
+    }
 
     public async Task RevokeAllForUserAsync(Guid userId, CancellationToken ct = default)
     {

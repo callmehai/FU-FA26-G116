@@ -119,8 +119,9 @@ public class RedisRefreshTokenStoreTests : IAsyncLifetime
         var (store, token, userId) = Arrange();
 
         await store.StoreAsync(token, userId, TimeSpan.FromMinutes(5));
-        await store.RevokeAsync(token);
 
+        // It names whose session ended — what the sign-out log records.
+        Assert.Equal(userId, await store.RevokeAsync(token));
         Assert.Null(await store.ConsumeAsync(token));
     }
 
@@ -129,7 +130,7 @@ public class RedisRefreshTokenStoreTests : IAsyncLifetime
     {
         var (store, token, _) = Arrange();
 
-        await store.RevokeAsync(token);
+        Assert.Null(await store.RevokeAsync(token));
     }
 
     [Fact]

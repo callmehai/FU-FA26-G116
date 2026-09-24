@@ -30,8 +30,11 @@ public interface IRefreshTokenStore
     /// </summary>
     Task<Guid?> ConsumeAsync(string refreshToken, CancellationToken ct = default);
 
-    /// <summary>Drops the token without issuing anything. Sign-out; harmless if already gone.</summary>
-    Task RevokeAsync(string refreshToken, CancellationToken ct = default);
+    /// <summary>
+    /// Drops the token without issuing anything, returning the account it belonged to, or null if
+    /// it was already gone. Sign-out; harmless if already gone.
+    /// </summary>
+    Task<Guid?> RevokeAsync(string refreshToken, CancellationToken ct = default);
 
     /// <summary>
     /// Drops every refresh token belonging to an account — "sign me out everywhere", and what an

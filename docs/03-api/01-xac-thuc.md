@@ -69,6 +69,10 @@ cookie — gửi RT trong body bị bỏ qua. Không có đường lùi qua body
 được là RT mà JavaScript giữ được, đúng thứ cookie `HttpOnly` sinh ra để ngăn. `/refresh` không có
 cookie thì trả `401 MSG01`, y như RT hết hạn.
 
+`MSG01` của `/refresh` mang câu **`Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.`** chứ không
+phải "Email hoặc mật khẩu không đúng." — refresh không gửi email hay mật khẩu nào để mà sai. Mã
+vẫn là `MSG01`, nên FE (khớp theo `code`) không phải sửa gì.
+
 Chuyển sang cookie theo comment của SCRUM-11, gộp cả ba bước (backend đặt cookie, FE bỏ
 `localStorage`, backend bỏ RT khỏi body) vào một PR. Phiên đăng nhập từ trước PR này chỉ có RT
 trong `localStorage`, không có cookie, nên người dùng phải đăng nhập lại **một lần**; FE tự xoá key
@@ -312,6 +316,16 @@ phải lỗi; trả `400` ở lần thứ hai chỉ để lộ trạng thái tok
 
 Cũng **luôn luôn** xoá cookie (`Set-Cookie: tc_refresh_token=; max-age=0; …`), kể cả khi RT không
 còn hợp lệ: sau khi đăng xuất thì cookie đó không còn dùng vào việc gì.
+
+Ghi log `Information`: `Sign-out: session of account {UserId} ended.`, hoặc `Sign-out with no live
+refresh token` khi không có gì để huỷ. Chưa ghi `audit_log` — xem phần còn nợ.
+
+**Race đã biết, cố ý không xử lý ở backend.** Hai `/refresh` song song cùng một RT: request thua nhận
+`401` kèm lệnh xoá cookie, và nếu response đó về **sau** response `200` của request thắng thì cookie
+mới cũng bị xoá — mất phiên ở trình duyệt đó. Không xoá cookie cho request thua thì lại để một RT đã
+chết nằm lại sau mỗi refresh bị huỷ giữa chừng, và bị gửi lại tới khi thành "dùng lại". FE đã chặn
+race này bằng single-flight + Web Lock; nó chỉ còn xảy ra khi mở cùng lúc hai origin (`:5173` và
+`:5225`) trong một trình duyệt.
 
 Logout chỉ huỷ RT của *phiên đó*. Đăng xuất trên laptop không đăng xuất trên điện thoại.
 

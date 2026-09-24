@@ -211,11 +211,8 @@ internal sealed class FakeRefreshTokenStore : IRefreshTokenStore
         return Task.FromResult<Guid?>(entry.ExpiresAt <= Now ? null : entry.UserId);
     }
 
-    public Task RevokeAsync(string refreshToken, CancellationToken ct = default)
-    {
-        _tokens.Remove(refreshToken);
-        return Task.CompletedTask;
-    }
+    public Task<Guid?> RevokeAsync(string refreshToken, CancellationToken ct = default)
+        => Task.FromResult<Guid?>(_tokens.Remove(refreshToken, out var entry) ? entry.UserId : null);
 
     /// <summary>
     /// Every account whose sessions were dropped, in order.

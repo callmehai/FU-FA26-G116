@@ -45,6 +45,11 @@ Cách FE đang làm, trong [`session.ts`](../../frontend/src/features/auth/sessi
   IP LAN khi chạy `vite --host`, ví dụ từ điện thoại) thì cookie luôn bị bỏ: đăng nhập được, F5 là
   mất phiên.
 - **Đăng xuất phải tới được server, và chạy trong Web Lock của refresh** — xem mục 5.
+- **Đồng bộ giữa các tab qua cờ `trustcabinet.signedIn`** (sự kiện `storage`): tab này đăng xuất
+  thì tab khác về màn đăng nhập; tab này đăng nhập thì tab khác đang không có phiên (ví dụ đứng ở
+  `/login`) tự gọi `/refresh` bằng cookie vừa được đặt và vào luôn, không phải F5.
+- **`/refresh` thất bại** trả `MSG01` với câu "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+  (khác câu của `/login`). FE hiện đang tự hiển thị thông báo hết phiên nên không dùng câu này.
 
 ---
 

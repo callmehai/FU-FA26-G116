@@ -199,13 +199,23 @@ public sealed class AuthenticationService(
         return await IssueAsync(user, capabilities, ct);
     }
 
-    public Task SignOutAsync(string refreshToken, CancellationToken ct = default)
-        // Blank token: nothing to revoke. Still a successful sign-out — the client is discarding
-        // its access token either way, and a 400 here would only tell a caller that its token was
-        // already invalid.
-        => string.IsNullOrWhiteSpace(refreshToken)
-            ? Task.CompletedTask
-            : refreshTokens.RevokeAsync(refreshToken, ct);
+    public async Task SignOutAsync(string refreshToken, CancellationToken ct = default)
+    {
+        // Blank or already-dead token: nothing to revoke. Still a successful sign-out — the client
+        // is discarding its access token either way, and a 400 here would only tell a caller that
+        // its token was already invalid.
+        var userId = string.IsNullOrWhiteSpace(refreshToken)
+            ? null
+            : await refreshTokens.RevokeAsync(refreshToken, ct);
+
+        if (userId is null)
+        {
+            logger.LogInformation("Sign-out with no live refresh token; nothing to revoke.");
+            return;
+        }
+
+        logger.LogInformation("Sign-out: session of account {UserId} ended.", userId);
+    }
 
     private async Task<SignInResult> IssueAsync(
         User user, IReadOnlyCollection<Capability> capabilities, CancellationToken ct)
