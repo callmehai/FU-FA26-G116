@@ -46,6 +46,38 @@ rollback tự quyết định trước — cấp mật khẩu cho họ, hoặc x
 | POST | `/api/auth/logout` | không cần | Huỷ RT ở phía server |
 | GET | `/api/auth/me` | Bearer AT | Thông tin người đang đăng nhập |
 
+### Refresh token nằm trong cookie `tc_refresh_token`
+
+`/login`, `/google` và `/refresh` khi thành công đều đặt RT vào cookie:
+
+```
+Set-Cookie: tc_refresh_token=8Kx2v…; max-age=604800; path=/api/auth; secure; samesite=strict; httponly
+```
+
+| Thuộc tính | Vì sao |
+|---|---|
+| `HttpOnly` | JavaScript không đọc được, nên lỗi XSS trên trang không lấy được RT |
+| `Secure` | Chỉ gửi qua HTTPS. Trình duyệt coi `http://localhost` là ngữ cảnh an toàn nên dev vẫn chạy — nhưng HTTP ở địa chỉ khác (IP LAN khi chạy `vite --host`, staging không TLS) thì cookie bị bỏ: đăng nhập được, F5 là mất phiên |
+| `SameSite=Strict` | Trang khác không gọi `/api/auth/refresh` bằng cookie của người dùng được |
+| `Path=/api/auth` | Cookie chỉ đi kèm request tới `/api/auth/*`, không bám theo mọi request API |
+| `Max-Age` | Bằng tuổi RT (`RefreshTokenDays`, mặc định 7 ngày = `604800` giây) |
+
+Không dùng tiền tố `__Host-` vì tiền tố đó bắt buộc `Path=/`, tức gửi RT kèm mọi request.
+
+RT **chỉ** nằm trong cookie: response body không có `refreshToken`, và `/refresh`, `/logout` chỉ đọc
+cookie — gửi RT trong body bị bỏ qua. Không có đường lùi qua body là cố ý: RT mà JavaScript gửi
+được là RT mà JavaScript giữ được, đúng thứ cookie `HttpOnly` sinh ra để ngăn. `/refresh` không có
+cookie thì trả `401 MSG01`, y như RT hết hạn.
+
+`MSG01` của `/refresh` mang câu **`Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.`** chứ không
+phải "Email hoặc mật khẩu không đúng." — refresh không gửi email hay mật khẩu nào để mà sai. Mã
+vẫn là `MSG01`, nên FE (khớp theo `code`) không phải sửa gì.
+
+Chuyển sang cookie theo comment của SCRUM-11, gộp cả ba bước (backend đặt cookie, FE bỏ
+`localStorage`, backend bỏ RT khỏi body) vào một PR. Phiên đăng nhập từ trước PR này chỉ có RT
+trong `localStorage`, không có cookie, nên người dùng phải đăng nhập lại **một lần**; FE tự xoá key
+cũ.
+
 ## UC-01 · Đăng nhập bằng email và mật khẩu
 
 Sequence diagram: [SignIn.png](../06-sequencediagram/SignIn.png).
@@ -56,12 +88,11 @@ Sequence diagram: [SignIn.png](../06-sequencediagram/SignIn.png).
 { "email": "thuky@trustcabinet.local", "password": "…" }
 ```
 
-`200 OK`:
+`200 OK`, kèm `Set-Cookie: tc_refresh_token=…` (xem trên):
 
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIs…",
-  "refreshToken": "8Kx2v…",
   "accessTokenExpiresAt": "2026-09-21T10:15:00+00:00",
   "user": {
     "id": "01999f2e-…",
@@ -247,8 +278,10 @@ việc của FE, làm cùng SCRUM-46.
 
 Backend không có việc mới. `POST /api/auth/logout` đã có sẵn và bổ sung cho UC-03 phần diagram
 không vẽ nhưng tiêu chí nghiệm thu SCRUM-11 yêu cầu: **huỷ phiên ở phía server**, để một client
-giữ lại RT vẫn không dùng lại được. FE nên gọi nó *trước* khi xoá token cục bộ; nếu bỏ qua, RT vẫn
-sống tới 7 ngày dù trình duyệt đã sạch.
+giữ lại RT vẫn không dùng lại được. Từ khi RT nằm trong cookie `HttpOnly`, đây cũng là **cách duy
+nhất** xoá được cookie — JavaScript không đụng tới nó. Vì vậy FE coi `/logout` không tới được server
+là "không xoá được" — `MSG01` của UC-03 — và giữ nguyên phiên để người dùng thử lại; nếu cứ xoá phía
+trình duyệt thì F5 sẽ đăng nhập lại ngay bằng cookie còn sót.
 
 Logout chỉ huỷ RT của phiên đó — đăng xuất trên laptop không đăng xuất trên điện thoại. Huỷ mọi
 thiết bị thì đã có `RevokeAllForUserAsync`, hiện chỉ dùng khi tài khoản bị vô hiệu hoá; chưa expose
@@ -256,12 +289,19 @@ thành endpoint vì chưa story nào yêu cầu.
 
 ### `POST /api/auth/refresh`
 
-```json
-{ "refreshToken": "8Kx2v…" }
-```
+Không cần body: RT lấy từ cookie `tc_refresh_token`.
 
-Trả về đúng shape của `login`. RT **dùng một lần** (rotation): mỗi lần refresh sẽ huỷ RT vừa dùng và
-cấp RT mới, nên RT bị đánh cắp sẽ hết tác dụng ngay khi client thật refresh lần kế tiếp.
+Trả về đúng shape của `login` và đặt cookie mới. RT **dùng một lần** (rotation): mỗi lần refresh sẽ
+huỷ RT vừa dùng và cấp RT mới, nên RT bị đánh cắp sẽ hết tác dụng ngay khi client thật refresh lần
+kế tiếp.
+
+**Gửi lại một RT đã dùng rồi — sau quá 60 giây — thì mọi phiên của tài khoản đó bị huỷ**, không chỉ
+trả `401`. Một RT xuất hiện hai lần nghĩa là có hai bên cùng giữ nó — kẻ trộm và người dùng thật,
+không biết bên nào trước — nên không bên nào được giữ phiên. Xem
+[phát hiện RT bị dùng lại](#phát-hiện-rt-bị-dùng-lại).
+
+Refresh thất bại (`401`) thì **xoá luôn cookie**, cùng thuộc tính như `/logout`: RT bị từ chối là RT
+chết hẳn, để lại thì trình duyệt gửi nó ở mọi lần tải trang.
 
 Mỗi lần refresh đều đọc lại `users` và `role_capabilities`, nên vô hiệu hoá tài khoản hay đổi quyền
 có hiệu lực ở lần refresh tiếp theo — không phải chờ hết 7 ngày. Khi gặp tài khoản đã bị vô hiệu
@@ -269,12 +309,23 @@ hoá, **toàn bộ** RT của người đó bị huỷ, không chỉ cái vừa 
 
 ### `POST /api/auth/logout`
 
-```json
-{ "refreshToken": "8Kx2v…" }
-```
+Không cần body: RT lấy từ cookie, như `/refresh`.
 
 `204 No Content`, **luôn luôn** — kể cả khi RT đã hết hạn hoặc chưa từng tồn tại. Gọi hai lần không
 phải lỗi; trả `400` ở lần thứ hai chỉ để lộ trạng thái token cho người gọi.
+
+Cũng **luôn luôn** xoá cookie (`Set-Cookie: tc_refresh_token=; max-age=0; …`), kể cả khi RT không
+còn hợp lệ: sau khi đăng xuất thì cookie đó không còn dùng vào việc gì.
+
+Ghi log `Information`: `Sign-out: session of account {UserId} ended.`, hoặc `Sign-out with no live
+refresh token` khi không có gì để huỷ. Chưa ghi `audit_log` — xem phần còn nợ.
+
+**Race đã biết, cố ý không xử lý ở backend.** Hai `/refresh` song song cùng một RT: request thua nhận
+`401` kèm lệnh xoá cookie, và nếu response đó về **sau** response `200` của request thắng thì cookie
+mới cũng bị xoá — mất phiên ở trình duyệt đó. Không xoá cookie cho request thua thì lại để một RT đã
+chết nằm lại sau mỗi refresh bị huỷ giữa chừng, và bị gửi lại tới khi thành "dùng lại". FE đã chặn
+race này bằng single-flight + Web Lock; nó chỉ còn xảy ra khi mở cùng lúc hai origin (`:5173` và
+`:5225`) trong một trình duyệt.
 
 Logout chỉ huỷ RT của *phiên đó*. Đăng xuất trên laptop không đăng xuất trên điện thoại.
 
@@ -321,12 +372,57 @@ thao tác là một lần tra key, và `GETDEL` đọc–xoá trong **một** l�
 quan trọng: nếu tách thành `GET` rồi `DEL`, hai request refresh đồng thời cùng một RT bị đánh cắp sẽ
 **cùng** đọc thấy hợp lệ trước khi cái nào kịp xoá.
 
-Hai loại key, cả hai đều tự hết hạn:
+Ba loại key, cả ba đều tự hết hạn:
 
 ```
-rt:{sha256(token)}   → user id         "token này còn hợp lệ không, của ai?"
-rt-user:{userId}     → set các hash    "người này đang có những phiên nào?" → để huỷ tất cả
+rt:{sha256(token)}       → user id         "token này còn hợp lệ không, của ai?"
+rt-used:{sha256(token)}  → user id         "token này đã bị dùng rồi chưa?" → phát hiện dùng lại
+rt-user:{userId}         → set các hash    "người này đang có những phiên nào?" → để huỷ tất cả
 ```
+
+### Phát hiện RT bị dùng lại
+
+Rotation một mình chưa đủ: trước đây một lần replay chỉ bị *bỏ qua*. Kẻ trộm refresh trước thì giữ
+được phiên, còn người dùng thật bị đẩy ra.
+
+Giờ mỗi lần refresh thành công, RT vừa dùng để lại marker `rt-used:{hash}` → `"{userId}|{thời điểm
+dùng}"`, TTL **bằng tuổi RT** (`RefreshTokenDays`), không phải thời gian còn lại của token — marker
+phải sống ít nhất bằng RT được cấp ra ở chính lần refresh đó. Gặp lại một RT có marker:
+
+| Gặp lại sau khi dùng | Xử lý |
+|---|---|
+| Trong **60 giây** (`ReuseGracePeriod`) | Chỉ trả `401`, giữ marker. Không coi là trộm |
+| Quá 60 giây | `RevokeAllForUserAsync` — mọi phiên của tài khoản chết, kể cả phiên kẻ trộm vừa lấy được — ghi log `Warning`, rồi **xoá marker** |
+
+**Đọc tài khoản trước, tiêu RT sau.** `RefreshAsync` hỏi chủ của RT bằng `PeekAsync` (không xoá),
+đọc tài khoản và quyền từ Postgres, rồi mới `ConsumeAsync`. Postgres chập chờn → `500` thì RT vẫn
+nguyên, lần thử lại chạy bình thường. Nếu tiêu RT trước thì trình duyệt sẽ cầm một RT đã dùng: thử lại
+trong 60 giây bị `401` và mất phiên, sau 60 giây bị coi là trộm. RT không có chủ (lạ, hết hạn, đã
+dùng) vẫn đi qua `ConsumeAsync` để được phán xử — phát hiện dùng lại nằm ở đó. Có request khác tiêu
+mất RT giữa lúc peek và lúc consume thì request này thua, trả `401`.
+
+**Vì sao có 60 giây ân hạn.** Tiêu RT và việc trình duyệt nhận RT mới vẫn không phải một bước. Refresh
+bị huỷ giữa chừng (F5 khi đang refresh, chuyển trang), hoặc response đi lạc sau khi RT đã bị tiêu,
+để lại trình duyệt cầm RT đã dùng, và nó gửi lại ở lần tải trang kế tiếp. Không có khoảng ân hạn thì
+sự cố bình thường đó đăng xuất người dùng trên mọi thiết bị. Giới hạn đã biết: nếu lần thử lại đến
+**sau** 60 giây thì vẫn bị coi là trộm. Lỗi Postgres không còn rơi vào trường hợp này (xem trên), chỉ
+còn lỗi xảy ra sau khi đã tiêu RT: Redis lỗi lúc lưu RT mới, hoặc response không về tới trình duyệt.
+
+**Vì sao xoá marker sau khi phát hiện.** Để một RT bị trộm chỉ kích hoạt huỷ-mọi-phiên **một lần**.
+Giữ lại thì kẻ trộm cứ replay token cũ là đá người dùng ra, kể cả sau khi họ đăng nhập lại, suốt 7
+ngày.
+
+Đọc–xoá `rt:`, ghi / đọc / xoá `rt-used:` chạy trong **một Lua script**
+(`RedisRefreshTokenStore.ConsumeScript`): tách thành nhiều lệnh thì giữa `GETDEL` và `SET`, một lần
+replay sẽ không thấy key nào và bị coi là token lạ thay vì bị bắt. Script trả `nil` chứ không trả
+`false`, vì dưới RESP3 `false` của Lua về thành boolean chứ không phải null.
+
+Hệ quả cho FE: hai request refresh song song với cùng một RT thì request thua nhận `401` và cookie
+bị xoá. Single-flight + Web Lock ngăn chuyện đó trong cùng một origin; đừng bỏ chúng. Web Lock và
+`localStorage` tách theo origin còn cookie thì không tách theo port, nên mở cả `:5173` lẫn `:5225`
+trong một trình duyệt là tự tạo ra cuộc đua đó — dev chỉ dùng `:5173`.
+
+Logout (`RevokeAsync`) không ghi `rt-used`: RT bị huỷ bằng đăng xuất mà bị gửi lại chỉ nhận `401`.
 
 Redis lưu **hash** của token, không lưu token. Dump Redis ra không được phép là một nắm session
 dùng được ngay. Ở đây dùng SHA-256 trần, không salt, không stretching — khác với mật khẩu — vì đầu
@@ -401,23 +497,19 @@ nó chỉ tồn tại trong một database toàn cuộc họp bịa.
   (nút Google dùng Google Identity Services), hộp xác nhận đăng xuất gọi `/logout` trước khi xoá
   token, `AuthProvider` khôi phục phiên bằng `/refresh` khi tải lại trang. Token nằm ở
   `frontend/src/features/auth/session.ts`: access token chỉ trong bộ nhớ, refresh token trong
-  `localStorage` (xem mục cookie bên dưới); refresh chạy single-flight, có Web Lock để hai tab
-  không tranh nhau một RT dùng-một-lần. Google `client_id` đang lặp lại ở FE vì backend chưa có
+  cookie `HttpOnly` (FE không thấy); refresh chạy single-flight, có Web Lock để hai tab không
+  tranh nhau một RT dùng-một-lần. Google `client_id` đang lặp lại ở FE vì backend chưa có
   endpoint trả nó.
 - ~~**Liên kết tài khoản Google.**~~ — **đã làm**: tự liên kết ở lần đăng nhập đầu theo email đã
   xác minh ([ADR-0009](../05-decisions/0009-tu-lien-ket-google-lan-dau-theo-email.md)). Còn thiếu:
   gỡ / đổi liên kết của một tài khoản đã liên kết — hiện vẫn bằng SQL, chưa có ticket.
-- **RT đang trả trong response body**, chưa phải cookie `HttpOnly`. Frontend không thuộc phạm vi
-  lượt này; khi làm FE (SCRUM-46) thì chuyển sang cookie, vì token nằm trong tầm với của
-  JavaScript là token mà bất kỳ lỗi XSS nào trên trang cũng đọc được.
+- ~~**RT trả trong response body, FE lưu ở `localStorage`.**~~ — **đã làm**: RT chỉ còn trong cookie
+  `HttpOnly`, xem [trên](#refresh-token-nằm-trong-cookie-tc_refresh_token).
 - **Chưa giới hạn số lần thử sai.** Chưa có rate limit cho `/api/auth/login`, nên chưa chặn dò mật
   khẩu. Nên làm trước khi hệ thống ra khỏi môi trường nội bộ — và phần chống dò email ở trên mất
   phần lớn giá trị nếu thiếu nó.
-- **Chưa phát hiện refresh token bị dùng lại.** Rotation hoạt động đúng (token cũ chết), nhưng một
-  lần replay chỉ bị *bỏ qua* chứ không bị coi là bằng chứng token đã bị đánh cắp. Kẻ trộm refresh
-  trước thì giữ được phiên, còn người dùng thật bị đẩy ra — ngược với điều mong muốn. Cách chuẩn
-  (OAuth 2.1): giữ hash của token đã dùng trong `rt-used:{hash}` một khoảng bằng tuổi RT, gặp lại
-  thì `RevokeAllForUserAsync`.
+- ~~**Chưa phát hiện refresh token bị dùng lại.**~~ — **đã làm**, xem
+  [phát hiện RT bị dùng lại](#phát-hiện-rt-bị-dùng-lại).
 - **Timing oracle với hash sai định dạng.** `PasswordHasher.Verify` bắt `FormatException` rồi trả
   `false` ngay, không tốn công băm: hash thật ~34 ms, hash sai định dạng ~0,002 ms. Tài khoản có
   `password_hash` hỏng vì thế phân biệt được cả với tài khoản thường lẫn email không tồn tại. Sửa

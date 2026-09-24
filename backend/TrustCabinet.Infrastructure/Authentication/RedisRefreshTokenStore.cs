@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using TrustCabinet.Domain.Authentication;
 
@@ -14,16 +16,76 @@ namespace TrustCabinet.Infrastructure.Authentication;
 /// <see cref="ConsumeAsync"/>. A PostgreSQL table would need a sweeper, an index, and a
 /// transaction to get the same guarantees.
 ///
-/// Two kinds of key, both expiring by themselves:
+/// Three kinds of key, all expiring by themselves:
 ///
-///   rt:{sha256(token)}  → the user id.        Answers "is this token still valid, and whose?"
-///   rt-user:{userId}    → set of token hashes. Answers "which tokens does this account hold?",
-///                         which is what makes revoking every session possible at all.
+///   rt:{sha256(token)}      → the user id.        Answers "is this token still valid, and whose?"
+///   rt-used:{sha256(token)} → the user id.        Answers "was this token already spent?" — see
+///                                                 <see cref="ConsumeAsync"/>.
+///   rt-user:{userId}        → set of token hashes. Answers "which tokens does this account hold?",
+///                                                 which is what makes revoking every session
+///                                                 possible at all.
 /// </summary>
-public sealed class RedisRefreshTokenStore(IConnectionMultiplexer redis) : IRefreshTokenStore
+public sealed class RedisRefreshTokenStore(
+    IConnectionMultiplexer redis,
+    IOptions<AuthenticationOptions> options,
+    TimeProvider time,
+    ILogger<RedisRefreshTokenStore> logger) : IRefreshTokenStore
 {
     private const string TokenKeyPrefix = "rt:";
+    private const string UsedKeyPrefix = "rt-used:";
     private const string UserKeyPrefix = "rt-user:";
+
+    /// <summary>
+    /// How long after a token is spent a second use of it is only refused, not treated as theft.
+    ///
+    /// Spending a token and the client receiving its replacement are not one step. A refresh the
+    /// browser aborts (a reload mid-request) or whose response is lost after the token was consumed
+    /// leaves the browser holding the spent token, and it presents it again at the next page load.
+    /// Without this window that ordinary accident would end every session on every device. A thief
+    /// replaying a stolen token minutes or days later is still caught. (A database error does not
+    /// get here: the refresh reads the account through <see cref="PeekAsync"/> before consuming.)
+    /// ponytail: fixed window; a refresh that fails after consuming — Redis refusing the new
+    /// token, a lost response — and is retried only after the window still reads as theft.
+    /// </summary>
+    internal static readonly TimeSpan ReuseGracePeriod = TimeSpan.FromSeconds(60);
+
+    private const int Live = 0;
+    private const int SpentWithinGrace = 1;
+    private const int Reused = 2;
+
+    /// <summary>
+    /// Consume and mark as used in one step. KEYS[1] is the token key, KEYS[2] its used-marker;
+    /// ARGV[1] is how long the marker lives, ARGV[2] the current time and ARGV[3] the grace period,
+    /// all in seconds. The marker holds "owner|spentAt".
+    ///
+    /// Returns {owner, 0} for a live token, {owner, 1} for one spent within the grace period,
+    /// {owner, 2} for a reuse, and nil for a token never seen or long gone. A reuse deletes the
+    /// marker, so one stolen token ends the account's sessions once rather than every time it is
+    /// replayed — including sessions the user signed in to after the first detection.
+    ///
+    /// A script rather than separate commands: between a GETDEL and a SET a replay would find
+    /// neither key and be waved through as merely unknown instead of caught. <c>return nil</c>
+    /// rather than <c>false</c>: under RESP3 a Lua false comes back as a boolean, not a null.
+    /// </summary>
+    private const string ConsumeScript = """
+        local owner = redis.call('GETDEL', KEYS[1])
+        if owner then
+          redis.call('SET', KEYS[2], owner .. '|' .. ARGV[2], 'EX', ARGV[1])
+          return {owner, 0}
+        end
+        local spent = redis.call('GET', KEYS[2])
+        if not spent then
+          return nil
+        end
+        local separator = string.find(spent, '|', 1, true)
+        local spentOwner = string.sub(spent, 1, separator - 1)
+        local spentAt = tonumber(string.sub(spent, separator + 1))
+        if tonumber(ARGV[2]) - spentAt < tonumber(ARGV[3]) then
+          return {spentOwner, 1}
+        end
+        redis.call('DEL', KEYS[2])
+        return {spentOwner, 2}
+        """;
 
     public async Task StoreAsync(
         string refreshToken, Guid userId, TimeSpan lifetime, CancellationToken ct = default)
@@ -43,22 +105,80 @@ public sealed class RedisRefreshTokenStore(IConnectionMultiplexer redis) : IRefr
         await Task.WhenAll(store, index, expire);
     }
 
+    /// <summary>
+    /// Single-use via GETDEL inside <see cref="ConsumeScript"/>: reading and deleting in one step
+    /// is what stops two simultaneous refreshes with the same stolen token from both reading it as
+    /// valid before either deleted it.
+    ///
+    /// Reuse detection (OAuth 2.1 refresh token rotation): a spent token leaves an
+    /// <c>rt-used</c> marker for a full refresh token lifetime. Presenting it again, after
+    /// <see cref="ReuseGracePeriod"/>, means two parties held the same token — the thief and the
+    /// real user, in whichever order — and there is no telling which is which, so every session of
+    /// that account ends. Without this, whoever refreshed first kept the session and the other was
+    /// merely turned away; when the thief wins that race, the real user is the one locked out.
+    /// </summary>
     public async Task<Guid?> ConsumeAsync(string refreshToken, CancellationToken ct = default)
     {
-        // GETDEL, not GET-then-DEL: reading and deleting in one command is what makes the token
-        // single-use under concurrency. With two commands, two simultaneous refreshes with the
-        // same stolen token would both read it as valid before either deleted it.
-        var stored = await redis.GetDatabase().StringGetDeleteAsync(TokenKey(Hash(refreshToken)));
+        var hash = Hash(refreshToken);
+        var result = await redis.GetDatabase().ScriptEvaluateAsync(
+            ConsumeScript,
+            [TokenKey(hash), UsedKey(hash)],
+            [
+                (long)TimeSpan.FromDays(options.Value.RefreshTokenDays).TotalSeconds,
+                time.GetUtcNow().ToUnixTimeSeconds(),
+                (long)ReuseGracePeriod.TotalSeconds,
+            ]);
 
-        // Cast is required: RedisValue converts implicitly to both string and ReadOnlySpan<byte>,
-        // so Guid.TryParse cannot pick an overload on its own.
+        if (result.IsNull)
+        {
+            return null;
+        }
+
+        var parts = (RedisResult[])result!;
+
+        // Cast is required: RedisResult converts explicitly to string, and Guid.TryParse needs one.
+        if (!Guid.TryParse((string?)parts[0], out var userId))
+        {
+            return null;
+        }
+
+        switch ((int)parts[1])
+        {
+            case Live:
+                return userId;
+
+            case SpentWithinGrace:
+                logger.LogInformation(
+                    "Refresh rejected: token of account {UserId} was spent moments ago.", userId);
+                return null;
+
+            case Reused:
+                logger.LogWarning(
+                    "Refresh token reuse detected for account {UserId}; revoking all of its sessions.",
+                    userId);
+                await RevokeAllForUserAsync(userId, ct);
+                return null;
+
+            default:
+                return null;
+        }
+    }
+
+    public async Task<Guid?> PeekAsync(string refreshToken, CancellationToken ct = default)
+    {
+        var stored = await redis.GetDatabase().StringGetAsync(TokenKey(Hash(refreshToken)));
         return Guid.TryParse((string?)stored, out var userId) ? userId : null;
     }
 
-    public Task RevokeAsync(string refreshToken, CancellationToken ct = default)
-        // The user-index entry is left behind deliberately: removing it would need a read to learn
-        // whose token this was, and a dangling hash in the set costs nothing.
-        => redis.GetDatabase().KeyDeleteAsync(TokenKey(Hash(refreshToken)));
+    public async Task<Guid?> RevokeAsync(string refreshToken, CancellationToken ct = default)
+    {
+        // GETDEL rather than DEL: same effect, and it says whose session just ended, for the log.
+        // The user-index entry is left behind deliberately: a dangling hash in the set costs
+        // nothing, since ConsumeAsync validates against the token key.
+        var stored = await redis.GetDatabase().StringGetDeleteAsync(TokenKey(Hash(refreshToken)));
+
+        return Guid.TryParse((string?)stored, out var userId) ? userId : null;
+    }
 
     public async Task RevokeAllForUserAsync(Guid userId, CancellationToken ct = default)
     {
@@ -84,6 +204,8 @@ public sealed class RedisRefreshTokenStore(IConnectionMultiplexer redis) : IRefr
         => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken)));
 
     private static RedisKey TokenKey(string hash) => TokenKeyPrefix + hash;
+
+    private static RedisKey UsedKey(string hash) => UsedKeyPrefix + hash;
 
     private static RedisKey UserKey(Guid userId) => UserKeyPrefix + userId;
 }

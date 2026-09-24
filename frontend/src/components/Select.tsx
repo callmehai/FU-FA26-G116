@@ -146,7 +146,10 @@ export function Select<T extends string>({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listId}
-        aria-label={label}
+        // An aria-label replaces the button's text, so it must carry the value too.
+        aria-label={selected ? `${label}: ${selected.label}` : label}
+        // Focus stays on the trigger while the menu is open; this points at the highlighted option.
+        aria-activedescendant={open ? `${listId}-${highlighted}` : undefined}
         onClick={() => (open ? setOpen(false) : openAt(Math.max(0, options.findIndex((o) => o.value === value))))}
         onKeyDown={onKeyDown}
       >
@@ -159,6 +162,7 @@ export function Select<T extends string>({
           {options.map((option, index) => (
             <li
               key={option.value}
+              id={`${listId}-${index}`}
               role="option"
               aria-selected={option.value === value}
               className={index === highlighted ? 'select-option select-option-active' : 'select-option'}

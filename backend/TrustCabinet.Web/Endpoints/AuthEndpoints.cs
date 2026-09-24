@@ -38,6 +38,17 @@ public static class AuthEndpoints
     private const string Google03NotAuthorized = "MSG03";
     private const string Google04AccountUnavailable = "MSG04";
 
+    /// <summary>
+    /// The refresh token's cookie. <c>HttpOnly</c> is the point of it: a token JavaScript cannot
+    /// read is a token an XSS on the page cannot steal. <c>Path=/api/auth</c> keeps it off every
+    /// other request, and <c>SameSite=Strict</c> keeps another site from spending it.
+    ///
+    /// No <c>__Host-</c> prefix: that prefix demands <c>Path=/</c>, which would send the token with
+    /// every API call.
+    /// </summary>
+    internal const string RefreshTokenCookie = "tc_refresh_token";
+    private const string RefreshTokenCookiePath = "/api/auth";
+
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
         var auth = app.MapGroup("/api/auth").WithTags("Authentication");
@@ -54,13 +65,17 @@ public static class AuthEndpoints
     private static async Task<IResult> SignInAsync(
         [FromBody] SignInRequest request,
         IAuthenticationService authentication,
+        ITokenIssuer tokenIssuer,
+        HttpResponse response,
         CancellationToken ct)
     {
         // Blank input is the same answer as wrong input: an empty password must not be
         // distinguishable from an incorrect one.
         var result = await authentication.SignInAsync(request.Email ?? "", request.Password ?? "", ct);
 
-        return result.Succeeded ? Results.Ok(SignInResponse.From(result)) : Rejected(result.Outcome);
+        return result.Succeeded
+            ? Issued(SignInResponse.From(result), result.RefreshToken!, tokenIssuer, response)
+            : Rejected(result.Outcome);
     }
 
     /// <summary>
@@ -72,6 +87,8 @@ public static class AuthEndpoints
         [FromBody] GoogleSignInRequest request,
         IAuthenticationService authentication,
         IOptions<GoogleAuthenticationOptions> googleOptions,
+        ITokenIssuer tokenIssuer,
+        HttpResponse response,
         CancellationToken ct)
     {
         // Not configured means the feature does not exist, so it answers like any unknown URL
@@ -86,7 +103,7 @@ public static class AuthEndpoints
 
         if (result.Succeeded)
         {
-            return Results.Ok(SignInResponse.FromGoogle(result));
+            return Issued(SignInResponse.FromGoogle(result), result.RefreshToken!, tokenIssuer, response);
         }
 
         var (code, message) = result.Outcome switch
@@ -103,22 +120,40 @@ public static class AuthEndpoints
             new AuthErrorResponse(code, message), statusCode: StatusCodes.Status401Unauthorized);
     }
 
+    /// <summary>
+    /// The refresh token comes from the cookie only. No cookie is answered exactly like an expired
+    /// token — MSG01 — since from here the two are indistinguishable anyway.
+    /// </summary>
     private static async Task<IResult> RefreshAsync(
-        [FromBody] RefreshRequest request,
         IAuthenticationService authentication,
+        ITokenIssuer tokenIssuer,
+        HttpContext http,
         CancellationToken ct)
     {
-        var result = await authentication.RefreshAsync(request.RefreshToken ?? "", ct);
+        var result = await authentication.RefreshAsync(PresentedRefreshToken(http.Request), ct);
 
-        return result.Succeeded ? Results.Ok(SignInResponse.From(result)) : Rejected(result.Outcome);
+        if (result.Succeeded)
+        {
+            return Issued(SignInResponse.From(result), result.RefreshToken!, tokenIssuer, http.Response);
+        }
+
+        // A refused token is dead for good — spent, revoked, expired or its account deactivated.
+        // Left in place, the browser would present it at every page load, and a spent one would
+        // read as theft once the reuse grace period has passed.
+        ClearRefreshTokenCookie(http.Response);
+        return Rejected(result.Outcome, "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
     }
 
     private static async Task<IResult> SignOutAsync(
-        [FromBody] RefreshRequest request,
         IAuthenticationService authentication,
+        HttpContext http,
         CancellationToken ct)
     {
-        await authentication.SignOutAsync(request.RefreshToken ?? "", ct);
+        await authentication.SignOutAsync(PresentedRefreshToken(http.Request), ct);
+
+        // Cleared unconditionally, valid token or not: whatever the browser holds is of no further
+        // use once the user has signed out, and leaving it would have the next refresh try it.
+        ClearRefreshTokenCookie(http.Response);
 
         // 204 whether or not the token was still valid: signing out is idempotent, and reporting
         // "that token was already gone" would only confirm token states to a caller.
@@ -165,10 +200,54 @@ public static class AuthEndpoints
     }
 
     /// <summary>
+    /// Deliberately no body fallback: a refresh token JavaScript can send is a refresh token
+    /// JavaScript can hold, which is what the cookie exists to prevent.
+    /// </summary>
+    private static string PresentedRefreshToken(HttpRequest request)
+        => request.Cookies[RefreshTokenCookie] ?? "";
+
+    /// <summary>The access token and the user in the body; the refresh token only in the cookie.</summary>
+    private static IResult Issued(
+        SignInResponse body, string refreshToken, ITokenIssuer tokenIssuer, HttpResponse response)
+    {
+        response.Cookies.Append(
+            RefreshTokenCookie,
+            refreshToken,
+            RefreshTokenCookieOptions(tokenIssuer.RefreshTokenLifetime));
+
+        return Results.Ok(body);
+    }
+
+    /// <summary>
+    /// Same attributes as when it was set: a browser only deletes a cookie whose path matches.
+    /// </summary>
+    private static void ClearRefreshTokenCookie(HttpResponse response)
+        => response.Cookies.Append(RefreshTokenCookie, "", RefreshTokenCookieOptions(TimeSpan.Zero));
+
+    /// <summary>
+    /// <c>Secure</c> even in development: browsers treat http://localhost as a secure context and
+    /// accept it there, so there is no reason for a weaker cookie anywhere.
+    /// </summary>
+    private static CookieOptions RefreshTokenCookieOptions(TimeSpan maxAge) => new()
+    {
+        HttpOnly = true,
+        Secure = true,
+        SameSite = SameSiteMode.Strict,
+        Path = RefreshTokenCookiePath,
+        MaxAge = maxAge,
+    };
+
+    /// <summary>
     /// The failing branches of UC-01. All 401: the distinction between them is in the
     /// message code, and none of them reveals whether the email exists.
     /// </summary>
-    private static IResult Rejected(SignInOutcome outcome)
+    /// <param name="invalidMessage">
+    /// MSG01's wording. "Wrong email or password" makes no sense for a refresh, which sent neither;
+    /// there the same code reads as an expired session. The code is the contract, so only the
+    /// words differ.
+    /// </param>
+    private static IResult Rejected(
+        SignInOutcome outcome, string invalidMessage = "Email hoặc mật khẩu không đúng.")
     {
         var (code, message) = outcome switch
         {
@@ -176,7 +255,7 @@ public static class AuthEndpoints
                 (Msg03AccountUnavailable, "Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên."),
             // Covers InvalidCredentials and, defensively, an outcome added later without a case
             // here: the safe default for an unknown authentication outcome is to refuse.
-            _ => (Msg01InvalidCredentials, "Email hoặc mật khẩu không đúng."),
+            _ => (Msg01InvalidCredentials, invalidMessage),
         };
 
         return Results.Json(new AuthErrorResponse(code, message), statusCode: StatusCodes.Status401Unauthorized);
@@ -192,25 +271,19 @@ public sealed record SignInRequest(string? Email, string? Password);
 /// </summary>
 public sealed record GoogleSignInRequest(string? IdToken);
 
-public sealed record RefreshRequest(string? RefreshToken);
-
 public sealed record AuthErrorResponse(string Code, string Message);
 
 /// <summary>
-/// What a successful sign-in returns. The refresh token is in the body rather than a cookie for
-/// now — the frontend is not part of this story.
-/// ponytail: body, not an HttpOnly cookie. Move it to a cookie when the frontend lands (SCRUM-46),
-/// since a token in JavaScript's reach is readable by any XSS on the page.
+/// What a successful sign-in returns. No refresh token: that travels only in the HttpOnly cookie,
+/// out of reach of any script on the page.
 /// </summary>
 public sealed record SignInResponse(
     string AccessToken,
-    string RefreshToken,
     DateTimeOffset AccessTokenExpiresAt,
     CurrentUserResponse User)
 {
     public static SignInResponse From(Domain.Authentication.SignInResult result) => new(
         result.AccessToken!,
-        result.RefreshToken!,
         result.AccessTokenExpiresAt!.Value,
         CurrentUserResponse.From(result.User!, result.Capabilities ?? []));
 
@@ -220,7 +293,6 @@ public sealed record SignInResponse(
     /// </summary>
     public static SignInResponse FromGoogle(GoogleSignInResult result) => new(
         result.AccessToken!,
-        result.RefreshToken!,
         result.AccessTokenExpiresAt!.Value,
         CurrentUserResponse.From(result.User!, result.Capabilities ?? []));
 }

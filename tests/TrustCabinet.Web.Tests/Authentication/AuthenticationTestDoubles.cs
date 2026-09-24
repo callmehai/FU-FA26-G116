@@ -59,8 +59,14 @@ internal sealed class FakeUserRepository : IUserRepository
             u => string.Equals(u.Email, email, StringComparison.OrdinalIgnoreCase)));
     }
 
+    /// <summary>Runs at the start of <see cref="FindByIdAsync"/> — throw from it to fake a database outage.</summary>
+    public Action? OnFindById { get; set; }
+
     public Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default)
-        => Task.FromResult(_users.FirstOrDefault(u => u.Id == id));
+    {
+        OnFindById?.Invoke();
+        return Task.FromResult(_users.FirstOrDefault(u => u.Id == id));
+    }
 
     public Task<User?> FindByGoogleSubjectIdAsync(string? googleSubjectId, CancellationToken ct = default)
     {
@@ -198,6 +204,10 @@ internal sealed class FakeRefreshTokenStore : IRefreshTokenStore
         return Task.CompletedTask;
     }
 
+    public Task<Guid?> PeekAsync(string refreshToken, CancellationToken ct = default)
+        => Task.FromResult<Guid?>(
+            _tokens.TryGetValue(refreshToken, out var entry) && entry.ExpiresAt > Now ? entry.UserId : null);
+
     public Task<Guid?> ConsumeAsync(string refreshToken, CancellationToken ct = default)
     {
         if (!_tokens.TryGetValue(refreshToken, out var entry))
@@ -211,11 +221,8 @@ internal sealed class FakeRefreshTokenStore : IRefreshTokenStore
         return Task.FromResult<Guid?>(entry.ExpiresAt <= Now ? null : entry.UserId);
     }
 
-    public Task RevokeAsync(string refreshToken, CancellationToken ct = default)
-    {
-        _tokens.Remove(refreshToken);
-        return Task.CompletedTask;
-    }
+    public Task<Guid?> RevokeAsync(string refreshToken, CancellationToken ct = default)
+        => Task.FromResult<Guid?>(_tokens.Remove(refreshToken, out var entry) ? entry.UserId : null);
 
     /// <summary>
     /// Every account whose sessions were dropped, in order.

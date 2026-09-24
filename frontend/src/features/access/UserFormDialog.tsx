@@ -167,6 +167,8 @@ export function UserFormDialog({
   }
 
   const roleChanged = original !== null && roleId !== original.roleId
+  // The backend ends the account's sessions on either change (UserService.UpdateAsync).
+  const emailChanged = original !== null && email.trim() !== original.email
   const isSelf = editing !== null && editing === currentUserId
   const formId = 'user-form'
 
@@ -181,7 +183,7 @@ export function UserFormDialog({
             </>
           )
         ) : (
-          'Tài khoản mới ở trạng thái hoạt động và đăng nhập được ngay bằng email và mật khẩu này.'
+          'Tài khoản mới ở trạng thái hoạt động và đăng nhập được ngay bằng email và mật khẩu này. Nếu email là tài khoản Google, người dùng cũng đăng nhập được bằng Google.'
         )
       }
       onClose={close}
@@ -310,16 +312,21 @@ export function UserFormDialog({
 
           {original && (
             <p className="field-hint span-2">
-              Đăng nhập bằng: {signInMethods(original)}. Đổi mật khẩu và liên kết Google không thực hiện ở
-              đây.
+              Đăng nhập bằng: {signInMethods(original)}.{' '}
+              {original.hasGoogleLink
+                ? 'Đổi email không đổi tài khoản Google đã liên kết.'
+                : 'Lần đầu người này đăng nhập bằng Google với đúng email trên, tài khoản sẽ tự liên kết.'}{' '}
+              Đổi mật khẩu không thực hiện ở đây.
             </p>
           )}
 
-          {roleChanged && (
+          {(roleChanged || emailChanged) && (
             <p className="alert alert-warning span-2">
               {isSelf
-                ? 'Bạn đang đổi vai trò của chính mình. Sau khi lưu, bạn sẽ bị đăng xuất và cần đăng nhập lại.'
-                : 'Đổi vai trò sẽ đăng xuất người này khỏi mọi thiết bị để quyền mới có hiệu lực.'}
+                ? `Bạn đang đổi ${roleChanged ? 'vai trò' : 'email'} của chính mình. Sau khi lưu, bạn sẽ bị đăng xuất và cần đăng nhập lại.`
+                : roleChanged
+                  ? 'Đổi vai trò sẽ đăng xuất người này khỏi mọi thiết bị để quyền mới có hiệu lực.'
+                  : 'Đổi email sẽ đăng xuất người này khỏi mọi thiết bị.'}
             </p>
           )}
         </form>
