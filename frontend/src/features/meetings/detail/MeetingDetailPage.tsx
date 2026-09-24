@@ -95,7 +95,7 @@ export function MeetingDetailPage() {
               </div>
               <div className="field-item">
                 <span>Thời gian kết thúc</span>
-                <strong>{formatDateTime(meeting.endsAt)}</strong>
+                <strong>{meeting.endsAt ? formatDateTime(meeting.endsAt) : 'Chưa xác định'}</strong>
               </div>
               <div className="field-item">
                 <span>Địa điểm</span>

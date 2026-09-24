@@ -61,6 +61,35 @@ export interface Meeting {
   location: string
   /** ISO 8601 timestamps. */
   startsAt: string
-  endsAt: string
+  endsAt: string | null
   createdAt: string
+}
+
+export interface MeetingApproverOption {
+  id: string
+  fullName: string
+}
+
+export interface CreateMeetingRequest {
+  title: string
+  startsAt: string
+  endsAt: string | null
+  mode: MeetingMode
+  location: string
+  sensitivity: Sensitivity
+  description: string
+  assignedApproverId: string
+}
+
+export interface MeetingDetails extends Meeting {
+  description: string
+  createdById: string
+  assignedApproverId: string | null
+  updatedAt: string
+}
+
+export interface MeetingMutationResponse {
+  code: string
+  message: string
+  meeting: MeetingDetails
 }
