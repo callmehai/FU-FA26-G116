@@ -34,6 +34,8 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   thay cho enum `SystemRole` ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)). Migration
   sửa tay giữ dữ liệu cũ, hợp đồng mới `roleId` + `roleName` ở `/api/users`, `/api/auth/*`,
   `/api/roles/capabilities`, mã `MSG19`–`MSG25`, và phần FE cần làm
+- [`06-thong-bao-trong-ung-dung.md`](06-thong-bao-trong-ung-dung.md) — SCRUM-14: API danh sách,
+  đánh dấu đã đọc, kiểm tra đích, SignalR và các nguồn tạo thông báo
 
 Dự kiến có thêm:
 

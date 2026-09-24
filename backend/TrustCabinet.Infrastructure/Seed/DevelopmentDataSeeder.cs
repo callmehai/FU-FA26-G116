@@ -111,6 +111,34 @@ public static class DevelopmentDataSeeder
             NewHistory(published, MeetingStatus.WaitingApproval, MeetingStatus.Approved, chair, "2026-09-16T09:15:00Z"),
             NewHistory(published, MeetingStatus.Approved, MeetingStatus.Published, secretary, "2026-09-16T09:20:00Z"));
 
+        // Two inbox rows make the SCRUM-14 list/read/read-all APIs testable in Postman on a fresh
+        // development database without exposing an arbitrary notification-creation endpoint.
+        db.AddRange(
+            new Notification
+            {
+                User = member,
+                Meeting = published,
+                Type = NotificationType.MeetingInvited,
+                TargetType = "Meeting",
+                TargetId = published.Id,
+                ActionUrl = $"/mgmt/meetings/{published.Id:D}",
+                Title = "Bạn được mời họp",
+                Body = $"Bạn được mời tham dự cuộc họp \"{published.Title}\".",
+                DeduplicationKey = $"demo:meeting-invited:{published.Id:D}:{member.Id:D}",
+            },
+            new Notification
+            {
+                User = member,
+                Meeting = published,
+                Type = NotificationType.MeetingPublished,
+                TargetType = "Meeting",
+                TargetId = published.Id,
+                ActionUrl = $"/mgmt/meetings/{published.Id:D}",
+                Title = "Cuộc họp đã công bố",
+                Body = $"Cuộc họp \"{published.Title}\" đã được công bố.",
+                DeduplicationKey = $"demo:meeting-published:{published.Id:D}:{member.Id:D}",
+            });
+
         await db.SaveChangesAsync(ct);
     }
 

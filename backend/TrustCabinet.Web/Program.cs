@@ -1,11 +1,13 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Access;
 using TrustCabinet.Infrastructure.Authentication;
+using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Infrastructure.Users;
 using TrustCabinet.Web;
 using TrustCabinet.Web.Endpoints;
@@ -16,6 +18,14 @@ builder.Services.AddTrustCabinetDatabase(builder.Configuration);
 builder.Services.AddTrustCabinetAuthentication(builder.Configuration);
 builder.Services.AddTrustCabinetUserManagement();
 builder.Services.AddTrustCabinetRolePermissions();
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserIdProvider, NotificationUserIdProvider>();
+builder.Services.AddScoped<NotificationService>();
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddHostedService<NotificationWorker>();
+}
+builder.Services.AddSingleton(TimeProvider.System);
 
 // The audit log records where a request came from, and only the web layer can see that.
 builder.Services.AddHttpContextAccessor();
@@ -61,6 +71,22 @@ builder.Services
         // ASP.NET Core rewrites "sub" and "email" into long WS-Federation URIs by default, so
         // FindFirstValue("sub") would return null. Off, so the claims read back as written.
         options.MapInboundClaims = false;
+        // Browser WebSocket clients cannot set Authorization headers. Accept a query token only on
+        // this hub path; all API endpoints still require the normal bearer header.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Path.StartsWithSegments("/hubs/notifications")
+                    && context.Request.Query.TryGetValue("access_token", out var token)
+                    && token.Count == 1)
+                {
+                    context.Token = token[0];
+                }
+
+                return Task.CompletedTask;
+            },
+        };
     });
 
 // One authorization policy per capability, so any endpoint group can ask for the one it needs with
@@ -123,6 +149,10 @@ app.MapRolePermissionEndpoints();
 
 // /api/roles — UC-11 … UC-13, create / rename / delete a role (SCRUM-63). Same gate.
 app.MapRoleEndpoints();
+
+// SCRUM-14: user-scoped notification list/read APIs and realtime delivery.
+app.MapNotificationEndpoints();
+app.MapHub<NotificationHub>("/hubs/notifications").RequireAuthorization();
 
 // Health endpoint — the frontend calls this to confirm the backend is alive.
 app.MapGet("/api/health", () => Results.Ok(new
