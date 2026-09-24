@@ -409,6 +409,39 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Put_checks_state_before_rejecting_a_missing_or_unsupported_content_type()
+    {
+        var creator = GivenCreator();
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+        var editable = OwnedMeetingBy(creator);
+        var waiting = OwnedMeetingBy(creator);
+        waiting.Status = MeetingStatus.WaitingApproval;
+        _factory.Meetings.Meetings.AddRange([editable, waiting]);
+
+        using var unsupportedRequest = new HttpRequestMessage(HttpMethod.Put, $"/api/meetings/{editable.Id}")
+        {
+            Content = new StringContent("{}", System.Text.Encoding.UTF8, "text/plain"),
+        };
+        using var missingTypeRequest = new HttpRequestMessage(HttpMethod.Put, $"/api/meetings/{editable.Id}")
+        {
+            Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json"),
+        };
+        missingTypeRequest.Content.Headers.ContentType = null;
+        using var waitingRequest = new HttpRequestMessage(HttpMethod.Put, $"/api/meetings/{waiting.Id}")
+        {
+            Content = new StringContent("{}", System.Text.Encoding.UTF8, "text/plain"),
+        };
+
+        var unsupportedResponse = await client.SendAsync(unsupportedRequest);
+        var missingTypeResponse = await client.SendAsync(missingTypeRequest);
+        var waitingResponse = await client.SendAsync(waitingRequest);
+
+        Assert.Equal(HttpStatusCode.UnsupportedMediaType, unsupportedResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.UnsupportedMediaType, missingTypeResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, waitingResponse.StatusCode);
+    }
+
+    [Fact]
     public async Task Put_returns_validation_errors_without_mutating_the_meeting()
     {
         var creator = GivenCreator();

@@ -23,6 +23,12 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
                             || m.Status == MeetingStatus.Archived)
                         && m.Participants.Any(participant => participant.UserId == actorId))), ct);
 
+    public Task<Meeting?> FindOwnedAsync(
+        Guid id, Guid creatorId, CancellationToken ct = default)
+        => db.Meetings
+            .AsNoTracking()
+            .SingleOrDefaultAsync(m => m.Id == id && m.CreatedById == creatorId, ct);
+
     public async Task<Meeting?> FindOwnedForUpdateAsync(
         Guid id, Guid creatorId, CancellationToken ct = default)
     {

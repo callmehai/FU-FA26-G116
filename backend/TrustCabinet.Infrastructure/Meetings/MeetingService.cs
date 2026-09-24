@@ -99,6 +99,32 @@ public sealed class MeetingService(
         CancellationToken ct = default)
         => meetings.ListEligibleApproversAsync(ct);
 
+    public async Task<MeetingResult> CheckUpdateAsync(
+        Guid id, Guid actorId, CancellationToken ct = default)
+    {
+        try
+        {
+            var meeting = await meetings.FindOwnedAsync(id, actorId, ct);
+            if (meeting is null)
+            {
+                return MeetingResult.Failure(MeetingOutcome.NotFound);
+            }
+
+            return MeetingRules.IsEditable(meeting.Status)
+                ? MeetingResult.Success(MeetingDetails.From(meeting))
+                : MeetingResult.Failure(MeetingOutcome.NotEditable);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception) when (IsPersistenceFailure(exception))
+        {
+            logger.LogError(exception, "Could not check whether meeting {MeetingId} can be updated by actor {ActorId}.", id, actorId);
+            return MeetingResult.Failure(MeetingOutcome.ReadFailed);
+        }
+    }
+
     public Task<MeetingResult> UpdateAsync(
         Guid id, MeetingInput input, Guid actorId, CancellationToken ct = default)
         => UpdateAsync(id, _ => Task.FromResult(input), actorId, ct);

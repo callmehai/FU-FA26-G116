@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using HttpJsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 using System.Security.Claims;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 
@@ -78,16 +80,42 @@ public static class MeetingEndpoints
         HttpRequest request,
         ClaimsPrincipal principal,
         IMeetingService service,
+        IOptions<HttpJsonOptions> jsonOptions,
         CancellationToken ct)
     {
+        var actorId = CapabilityGate.GatedUserId(principal);
+        var state = await service.CheckUpdateAsync(id, actorId, ct);
+        if (state.Outcome != MeetingOutcome.Success)
+        {
+            return UpdateStateError(state.Outcome);
+        }
+
+        if (!request.HasJsonContentType())
+        {
+            return Results.Json(
+                new MeetingErrorResponse("MEETING_UNSUPPORTED_CONTENT_TYPE", "Content-Type phải là application/json."),
+                statusCode: StatusCodes.Status415UnsupportedMediaType);
+        }
+
+        await using var bodyBuffer = new MemoryStream();
+        await request.Body.CopyToAsync(bodyBuffer, ct);
+        var body = bodyBuffer.ToArray();
+
         MeetingResult result;
         try
         {
             result = await service.UpdateAsync(
                 id,
-                async token => (await request.ReadFromJsonAsync<MeetingRequest>(cancellationToken: token))
-                    ?.ToInput() ?? EmptyInput,
-                CapabilityGate.GatedUserId(principal),
+                async token =>
+                {
+                    await using var bufferedBody = new MemoryStream(body, writable: false);
+                    var parsed = await JsonSerializer.DeserializeAsync<MeetingRequest>(
+                        bufferedBody,
+                        jsonOptions.Value.SerializerOptions,
+                        token);
+                    return parsed?.ToInput() ?? EmptyInput;
+                },
+                actorId,
                 ct);
         }
         catch (JsonException)
@@ -109,6 +137,16 @@ public static class MeetingEndpoints
             _ => SaveFailed("MSG04", "Không thể cập nhật cuộc họp. Vui lòng thử lại."),
         };
     }
+
+    private static IResult UpdateStateError(MeetingOutcome outcome)
+        => outcome switch
+        {
+            MeetingOutcome.NotFound => Results.NotFound(),
+            MeetingOutcome.NotEditable => Results.Json(
+                new MeetingErrorResponse("MSG03", "Cuộc họp này không thể chỉnh sửa được nữa."),
+                statusCode: StatusCodes.Status409Conflict),
+            _ => SaveFailed("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."),
+        };
 
     private static IResult Invalid(MeetingResult result)
         => Results.Json(

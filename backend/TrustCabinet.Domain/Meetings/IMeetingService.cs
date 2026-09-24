@@ -8,6 +8,8 @@ public interface IMeetingService
 
     Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(CancellationToken ct = default);
 
+    Task<MeetingResult> CheckUpdateAsync(Guid id, Guid actorId, CancellationToken ct = default);
+
     Task<MeetingResult> UpdateAsync(
         Guid id, MeetingInput input, Guid actorId, CancellationToken ct = default);
 
