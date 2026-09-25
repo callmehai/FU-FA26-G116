@@ -51,6 +51,12 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         }
 
         var total = visible.LongCount();
+        var offset = ((long)query.Page - 1) * query.PageSize;
+        if (offset >= total)
+        {
+            return Task.FromResult(new MeetingListPage([], query.Page, query.PageSize, total));
+        }
+
         var ordered = (query.SortBy, query.SortDirection) switch
         {
             (MeetingSortBy.Title, MeetingSortDirection.Asc) => visible.OrderBy(m => m.Title),
@@ -61,7 +67,7 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
             _ => visible.OrderByDescending(m => m.StartsAt),
         };
         var items = ordered.ThenBy(m => m.Id)
-            .Skip((query.Page - 1) * query.PageSize)
+            .Skip(checked((int)offset))
             .Take(query.PageSize)
             .Select(m => new MeetingListItem(
                 m.Id, m.Title, m.StartsAt, m.CreatedAt, m.Status, m.Sensitivity))

@@ -37,6 +37,8 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository
     /// </summary>
     public Exception? NextSaveThrows { get; set; }
 
+    public Exception? NextReadThrows { get; set; }
+
     public IReadOnlyList<User> Users => _users;
 
     public FakeUserAccountRepository WithUser(User user)
@@ -70,7 +72,15 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository
             [.. _users.OrderBy(u => u.FullName).ThenBy(u => u.Email).Select(Loaded)]);
 
     public Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default)
-        => Task.FromResult(_users.FirstOrDefault(u => u.Id == id) is { } user ? Loaded(user) : null);
+    {
+        if (NextReadThrows is { } exception)
+        {
+            NextReadThrows = null;
+            throw exception;
+        }
+
+        return Task.FromResult(_users.FirstOrDefault(u => u.Id == id) is { } user ? Loaded(user) : null);
+    }
 
     /// <summary>The account with its role (re)attached, as the real query's Include returns it.</summary>
     private User Loaded(User user)

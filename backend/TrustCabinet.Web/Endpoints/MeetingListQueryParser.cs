@@ -60,10 +60,6 @@ public static partial class MeetingListQueryParser
 
         var page = ParsePositiveInt(rawPage, "page", 1, int.MaxValue, fieldErrors);
         var pageSize = ParsePositiveInt(rawPageSize, "pageSize", 20, 100, fieldErrors);
-        if (((long)page - 1) * pageSize > int.MaxValue)
-        {
-            fieldErrors["page"] = "Trang yêu cầu vượt quá giới hạn cho phép.";
-        }
 
         var sortBy = rawSortBy switch
         {

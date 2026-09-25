@@ -466,6 +466,21 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             }
         }
     }
+
+    [Fact]
+    public async Task Authorized_page_beyond_int_offset_returns_empty_with_the_authorized_count()
+    {
+        _db.Meetings.Add(ListMeeting("Visible", MeetingStatus.Draft,
+            new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero)));
+        await _db.SaveChangesAsync();
+
+        var page = await new MeetingRepository(_db).FindAuthorizedPageAsync(
+            _creatorId, ListQuery(page: int.MaxValue, pageSize: 20));
+
+        Assert.Empty(page.Items);
+        Assert.Equal(int.MaxValue, page.Page);
+        Assert.Equal(1, page.TotalCount);
+    }
 }
 
 /// <summary>Lifecycle visibility query coverage that does not require PostgreSQL to create a database.</summary>
