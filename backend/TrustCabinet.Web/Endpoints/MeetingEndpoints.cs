@@ -21,11 +21,15 @@ public static class MeetingEndpoints
         creatorMeetings.MapGet("/approvers", ListApproversAsync);
         creatorMeetings.MapPut("/{id:guid}", UpdateAsync);
 
-        var readableMeetings = app.MapGroup("/api/meetings")
+        var listMeetings = app.MapGroup("/api/meetings")
             .WithTags("Meetings")
-            .RequireActiveUser();
-        readableMeetings.MapGet("/", ListAsync);
-        readableMeetings.MapGet("/{id:guid}", GetAsync);
+            .RequireActiveUser(SaveFailed("MSG08", "Không thể tải danh sách cuộc họp. Vui lòng thử lại."));
+        listMeetings.MapGet("/", ListAsync);
+
+        var detailMeetings = app.MapGroup("/api/meetings")
+            .WithTags("Meetings")
+            .RequireActiveUser(SaveFailed("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."));
+        detailMeetings.MapGet("/{id:guid}", GetAsync);
         return app;
     }
 

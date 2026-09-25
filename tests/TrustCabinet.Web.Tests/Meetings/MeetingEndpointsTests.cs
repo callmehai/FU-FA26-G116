@@ -190,6 +190,13 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Empty(beyondBody.RootElement.GetProperty("items").EnumerateArray());
         Assert.Equal(1, beyondBody.RootElement.GetProperty("totalCount").GetInt64());
         Assert.Equal(1, beyondBody.RootElement.GetProperty("totalPages").GetInt64());
+
+        var veryLargePage = await client.GetAsync("/api/meetings?page=2147483647&pageSize=20");
+        using var veryLargeBody = await JsonOf(veryLargePage);
+        Assert.Equal(HttpStatusCode.OK, veryLargePage.StatusCode);
+        Assert.Empty(veryLargeBody.RootElement.GetProperty("items").EnumerateArray());
+        Assert.Equal(int.MaxValue, veryLargeBody.RootElement.GetProperty("page").GetInt32());
+        Assert.Equal(1, veryLargeBody.RootElement.GetProperty("totalCount").GetInt64());
     }
 
     [Fact]
@@ -220,6 +227,22 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal("MSG08", body.RootElement.GetProperty("code").GetString());
         Assert.Equal("Không thể tải danh sách cuộc họp. Vui lòng thử lại.",
             body.RootElement.GetProperty("message").GetString());
+    }
+
+    [Fact]
+    public async Task List_returns_MSG08_when_active_account_lookup_fails()
+    {
+        using var client = _factory.ClientFor(GivenCreator());
+        _factory.Accounts.NextReadThrows = new Npgsql.NpgsqlException("database unavailable");
+
+        var response = await client.GetAsync("/api/meetings");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal("MSG08", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("Không thể tải danh sách cuộc họp. Vui lòng thử lại.",
+            body.RootElement.GetProperty("message").GetString());
+        Assert.Null(_factory.Meetings.LastListQuery);
     }
 
     [Fact]
@@ -639,6 +662,19 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("MEETING_LOAD_FAILED", body.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task Get_preserves_its_error_code_when_active_account_lookup_fails()
+    {
+        using var client = _factory.ClientFor(GivenCreator());
+        _factory.Accounts.NextReadThrows = new Npgsql.NpgsqlException("database unavailable");
+
+        var response = await client.GetAsync($"/api/meetings/{Guid.CreateVersion7()}");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         Assert.Equal("MEETING_LOAD_FAILED", body.RootElement.GetProperty("code").GetString());
     }
 

@@ -80,11 +80,13 @@ Khi nhiều dòng có cùng giá trị sort, xếp tiếp theo `id asc`. Ví d�
 }
 ```
 
-Không có kết quả hoặc trang vượt quá trang cuối vẫn trả `200` với `items: []` (BR-12). Khi không có
+Không có kết quả hoặc trang vượt quá trang cuối, kể cả khi offset lớn hơn giới hạn `int`, vẫn trả
+`200` với `items: []` (BR-12). Khi không có
 kết quả, `totalCount` và `totalPages` đều bằng `0`. Query sai trả `400` với `code` là
 `MEETING_INVALID_QUERY`, `message` là `Tham số truy vấn không hợp lệ.` và `errors` theo tên tham số.
 Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài giới
-giới hạn. Lỗi truy xuất database trả `500` với `code: MEETING_LIST_FAILED` và thông điệp
+giới hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `500` với
+`code: MEETING_LIST_FAILED` và thông điệp
 `Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-14.
 
 Sequence UC-14 hiện ghi BR-29 và BR-32 ở bước repository; BA cần bổ sung BR-30/31 và nhánh query
