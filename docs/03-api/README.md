@@ -34,8 +34,9 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   thay cho enum `SystemRole` ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)). Migration
   sửa tay giữ dữ liệu cũ, hợp đồng mới `roleId` + `roleName` ở `/api/users`, `/api/auth/*`,
   `/api/roles/capabilities`, mã `MSG19`–`MSG25`, và phần FE cần làm
-- [`05-quan-ly-cuoc-hop.md`](05-quan-ly-cuoc-hop.md) — contract tạo, đọc và sửa cuộc họp
-  (`SCRUM-17`, UC-11/UC-12): ba endpoint, quyền, validation baseline và các điểm cần BA bổ sung
+- [`05-quan-ly-cuoc-hop.md`](05-quan-ly-cuoc-hop.md) — contract tạo, đọc, sửa và lấy danh sách cuộc
+  họp (`SCRUM-17`/`SCRUM-18`, UC-11/UC-12/UC-14): quyền theo từng cuộc họp, lọc và phân trang ở
+  server, validation baseline và các điểm cần BA bổ sung
 
 Dự kiến có thêm:
 

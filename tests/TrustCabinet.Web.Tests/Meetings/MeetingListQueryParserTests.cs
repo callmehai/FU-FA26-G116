@@ -1,0 +1,124 @@
+using Microsoft.AspNetCore.Http;
+using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Web.Endpoints;
+
+namespace TrustCabinet.Web.Tests.Meetings;
+
+public sealed class MeetingListQueryParserTests
+{
+    private static (MeetingListQuery? Query, IReadOnlyDictionary<string, string> Errors) Parse(string queryString)
+    {
+        var request = new DefaultHttpContext().Request;
+        request.QueryString = new QueryString(queryString);
+        var valid = MeetingListQueryParser.TryParse(request.Query, out var query, out var errors);
+        Assert.Equal(errors.Count == 0, valid);
+        return (query, errors);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("?status=&sensitivity=&q=&from=&to=&page=&pageSize=&sortBy=&sortDir=")]
+    public void Empty_query_uses_defaults(string input)
+    {
+        var (query, errors) = Parse(input);
+
+        Assert.Empty(errors);
+        Assert.NotNull(query);
+        Assert.Null(query.Status);
+        Assert.Null(query.Sensitivity);
+        Assert.Null(query.Query);
+        Assert.Null(query.From);
+        Assert.Null(query.To);
+        Assert.Equal(1, query.Page);
+        Assert.Equal(20, query.PageSize);
+        Assert.Equal(MeetingSortBy.StartsAt, query.SortBy);
+        Assert.Equal(MeetingSortDirection.Desc, query.SortDirection);
+    }
+
+    [Fact]
+    public void Valid_query_normalizes_dates_search_and_sort()
+    {
+        var (query, errors) = Parse("?status=Published&sensitivity=Secret&q=%20Giao%20ban%20"
+            + "&from=2026-10-01T09%3A00%3A00%2B07%3A00&to=2026-10-02T09%3A00%3A00%2B07%3A00"
+            + "&page=2&pageSize=100&sortBy=title&sortDir=desc");
+
+        Assert.Empty(errors);
+        Assert.NotNull(query);
+        Assert.Equal(MeetingStatus.Published, query.Status);
+        Assert.Equal(Sensitivity.Secret, query.Sensitivity);
+        Assert.Equal("Giao ban", query.Query);
+        Assert.Equal(new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero), query.From);
+        Assert.Equal(new DateTimeOffset(2026, 10, 2, 2, 0, 0, TimeSpan.Zero), query.To);
+        Assert.Equal(2, query.Page);
+        Assert.Equal(100, query.PageSize);
+        Assert.Equal(MeetingSortBy.Title, query.SortBy);
+        Assert.Equal(MeetingSortDirection.Desc, query.SortDirection);
+    }
+
+    [Theory]
+    [InlineData("title", MeetingSortBy.Title, MeetingSortDirection.Asc)]
+    [InlineData("startsAt", MeetingSortBy.StartsAt, MeetingSortDirection.Desc)]
+    [InlineData("createdAt", MeetingSortBy.CreatedAt, MeetingSortDirection.Desc)]
+    public void Sort_field_without_direction_uses_field_default(
+        string raw, MeetingSortBy expectedBy, MeetingSortDirection expectedDirection)
+    {
+        var (query, errors) = Parse($"?sortBy={raw}");
+
+        Assert.Empty(errors);
+        Assert.Equal(expectedBy, query!.SortBy);
+        Assert.Equal(expectedDirection, query.SortDirection);
+    }
+
+    [Fact]
+    public void Direction_without_sort_field_applies_to_starts_at()
+    {
+        var (query, errors) = Parse("?sortDir=asc");
+
+        Assert.Empty(errors);
+        Assert.Equal(MeetingSortBy.StartsAt, query!.SortBy);
+        Assert.Equal(MeetingSortDirection.Asc, query.SortDirection);
+    }
+
+    [Theory]
+    [InlineData("?status=published", "status")]
+    [InlineData("?sensitivity=Unknown", "sensitivity")]
+    [InlineData("?from=2026-10-01", "from")]
+    [InlineData("?to=2026-10-01T09:00:00", "to")]
+    [InlineData("?page=0", "page")]
+    [InlineData("?page=abc", "page")]
+    [InlineData("?pageSize=101", "pageSize")]
+    [InlineData("?pageSize=-1", "pageSize")]
+    [InlineData("?sortBy=location", "sortBy")]
+    [InlineData("?sortDir=up", "sortDir")]
+    [InlineData("?status=Draft&status=Published", "status")]
+    public void Invalid_value_returns_its_field_error(string input, string field)
+    {
+        var (query, errors) = Parse(input);
+
+        Assert.Null(query);
+        Assert.Contains(field, errors.Keys);
+    }
+
+    [Fact]
+    public void Reversed_range_and_skip_overflow_are_invalid()
+    {
+        var (range, rangeErrors) = Parse(
+            "?from=2026-10-02T00%3A00%3A00Z&to=2026-10-01T00%3A00%3A00Z");
+        var (overflow, overflowErrors) = Parse("?page=2147483647&pageSize=100");
+
+        Assert.Null(range);
+        Assert.Contains("to", rangeErrors.Keys);
+        Assert.Null(overflow);
+        Assert.Contains("page", overflowErrors.Keys);
+    }
+
+    [Fact]
+    public void Parser_reports_independent_errors_together()
+    {
+        var (query, errors) = Parse("?status=Wrong&page=0&sortDir=wrong");
+
+        Assert.Null(query);
+        Assert.Equal(["page", "sortDir", "status"], errors.Keys.Order(StringComparer.Ordinal));
+    }
+}
