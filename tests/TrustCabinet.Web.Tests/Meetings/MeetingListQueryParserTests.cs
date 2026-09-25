@@ -101,16 +101,23 @@ public sealed class MeetingListQueryParserTests
     }
 
     [Fact]
-    public void Reversed_range_and_skip_overflow_are_invalid()
+    public void Reversed_range_is_invalid()
     {
         var (range, rangeErrors) = Parse(
             "?from=2026-10-02T00%3A00%3A00Z&to=2026-10-01T00%3A00%3A00Z");
-        var (overflow, overflowErrors) = Parse("?page=2147483647&pageSize=100");
 
         Assert.Null(range);
         Assert.Contains("to", rangeErrors.Keys);
-        Assert.Null(overflow);
-        Assert.Contains("page", overflowErrors.Keys);
+    }
+
+    [Fact]
+    public void Large_page_is_valid_query()
+    {
+        var (query, errors) = Parse("?page=2147483647&pageSize=100");
+
+        Assert.Empty(errors);
+        Assert.Equal(int.MaxValue, query!.Page);
+        Assert.Equal(100, query.PageSize);
     }
 
     [Fact]
