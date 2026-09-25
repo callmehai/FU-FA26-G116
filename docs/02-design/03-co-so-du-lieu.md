@@ -57,6 +57,20 @@ không cần nhớ lệnh nào sau khi `git pull` về một migration mới. Mu
 Ngoài Development thì **không bao giờ** tự migrate — triển khai thật chạy `dotnet ef database
 update` như một bước có người duyệt.
 
+### 4. Chạy test backend
+
+```bash
+dotnet test TrustCabinet.sln
+```
+
+Một số test chạy trên PostgreSQL thật (mỗi lớp test tự tạo rồi xoá một database riêng, không đụng
+vào dữ liệu dev). Chúng lấy mật khẩu từ biến môi trường `POSTGRES_PASSWORD`, không có thì đọc từ
+file `.env` ở gốc repo — chính file mà `docker compose` đã dùng ở bước 1, nên không phải khai báo
+lại. Xem [`TestPostgres.cs`](../../tests/TrustCabinet.Web.Tests/TestPostgres.cs).
+
+Mật khẩu **không được viết cứng trong test**. Thêm một lớp test cần database thì dùng
+`TestPostgres.ConnectionString("trustcabinet_<tên>_tests")`.
+
 ## Dữ liệu tham chiếu — bắt buộc phải seed
 
 Khác với dữ liệu mẫu ở mục dưới (chỉ có ở Development), **ma trận `role_capabilities` là dữ liệu

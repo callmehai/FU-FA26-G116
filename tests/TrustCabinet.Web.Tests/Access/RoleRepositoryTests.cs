@@ -25,8 +25,7 @@ namespace TrustCabinet.Web.Tests.Access;
 /// </summary>
 public class RoleRepositoryTests : IAsyncLifetime
 {
-    private const string ConnectionString =
-        "Host=localhost;Port=5432;Database=trustcabinet_role_tests;Username=trustcabinet;Password=123";
+    private static readonly string ConnectionString = TestPostgres.ConnectionString("trustcabinet_role_tests");
 
     private TrustCabinetDbContext _db = null!;
 

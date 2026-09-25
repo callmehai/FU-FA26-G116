@@ -31,8 +31,9 @@ jobs:
         env:
           POSTGRES_DB: trustcabinet
           POSTGRES_USER: trustcabinet
-          # Chỉ là mật khẩu của container dùng một lần trong CI, không phải secret.
-          POSTGRES_PASSWORD: "123"
+          # Chỉ là mật khẩu của container dùng một lần trong CI, không phải secret. Service không
+          # đọc được env của job nên phải ghi lại ở bước dotnet test bên dưới — sửa thì sửa cả hai.
+          POSTGRES_PASSWORD: ci-throwaway
         ports:
           - 5432:5432
         options: >-
@@ -58,7 +59,10 @@ jobs:
       # kèm lý do, chứ đừng gỡ cờ này.
       - run: dotnet build TrustCabinet.sln --no-restore --configuration Release -warnaserror
 
+      # Test đọc mật khẩu Postgres từ biến này (xem tests/TrustCabinet.Web.Tests/TestPostgres.cs).
       - run: dotnet test TrustCabinet.sln --no-build --configuration Release --verbosity normal
+        env:
+          POSTGRES_PASSWORD: ci-throwaway
 
   frontend:
     name: Frontend — lint & build
