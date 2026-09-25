@@ -1,6 +1,6 @@
-# 05 · Tạo, đọc và sửa cuộc họp
+# 05 · Danh sách, tạo, đọc và sửa cuộc họp
 
-**UC-11 Create Meeting / UC-12 Update Meeting — SCRUM-17.** Mã UC ghi kèm tên vì UC-11/UC-12
+**UC-11 Create Meeting / UC-12 Update Meeting — SCRUM-17; UC-14 View Meeting List — SCRUM-18.** Mã UC ghi kèm tên vì UC-11/UC-12
 trong tài liệu quản lý vai trò đang dùng cho use case khác.
 
 ## Phạm vi
@@ -9,9 +9,9 @@ Các endpoint cho người tạo khởi tạo cuộc họp nháp và sửa trư�
 không yêu cầu chọn người duyệt. Với PUT, `assignedApproverId` bị bỏ trống hoặc gửi `null` sẽ bỏ
 gán người duyệt; muốn giữ người duyệt hiện tại thì gửi lại ID đó. UC-15 yêu cầu chọn người duyệt hợp
 lệ trước khi gửi.
-Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết. Danh sách `GET /api/meetings` thuộc
-SCRUM-18, chưa nằm trong contract này; danh sách UI hiện tại vẫn dùng dữ liệu mẫu. Form tạo hiển thị
-xác nhận và mã cuộc họp sau khi tạo.
+Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. `GET /api/meetings`
+được bổ sung trong SCRUM-18; giao diện hiện tại vẫn dùng dữ liệu mẫu và chưa tích hợp API. Form tạo
+hiển thị xác nhận và mã cuộc họp sau khi tạo.
 
 Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24. [UC-11 và UC-12](../01-requirements/05-use-case-specifications.md)
 ghi nhận thay đổi yêu cầu ngày 27/09/2026: người duyệt chỉ bắt buộc khi gửi duyệt ở UC-15. Thời gian
@@ -30,11 +30,66 @@ tạo thấy, còn các trạng thái trước khi công bố không lộ cho th
 thì trả `404` rỗng, giống ID không tồn tại. PUT vẫn chỉ cho người tạo/người tổ chức sửa; ID không tồn
 tại và meeting của người tổ chức khác cùng trả `404` rỗng.
 
+GET danh sách dùng đúng quy tắc đọc trên **trong truy vấn database**, trước `COUNT`, sắp xếp và phân
+trang. Endpoint chỉ yêu cầu đăng nhập và tài khoản còn hoạt động; không đòi capability
+`MeetingCreator`. `totalCount` không bao gồm cuộc họp caller không được xem.
+
 Sửa chỉ được ở `Draft` và `Rejected`. Hệ thống đọc trạng thái mới nhất sau khi khóa dòng và trước
 khi validate nội dung. Trạng thái khác trả `409 MEETING_NOT_EDITABLE`. Sửa `Rejected` giữ nguyên
 trạng thái và không thêm dòng lịch sử trạng thái.
 
 ## Contract
+
+### GET `/api/meetings`
+
+Các tham số query đều tùy chọn. Giá trị rỗng tương đương không gửi; mỗi tham số chỉ được gửi một
+lần. Tất cả bộ lọc được kết hợp bằng AND (BR-30/BR-31).
+
+| Tham số | Quy tắc |
+|---|---|
+| `status` | Tên enum PascalCase trong chín `MeetingStatus` |
+| `sensitivity` | `Normal`, `Internal`, `Confidential` hoặc `Secret` |
+| `q` | Trim; tìm chuỗi con của `title` không phân biệt hoa/thường. `%`, `_`, `\` là ký tự thường, không phải wildcard |
+| `from`, `to` | ISO 8601 có `Z` hoặc offset; lọc `startsAt` trong khoảng UTC, gồm cả hai đầu; có thể chỉ gửi một đầu |
+| `page`, `pageSize` | Mặc định `1`, `20`; `page ≥ 1`, `pageSize` từ `1` đến `100` |
+| `sortBy` | `title`, `startsAt`, `createdAt`; mặc định `startsAt` |
+| `sortDir` | `asc`, `desc`; mặc định `asc` cho `title`, `desc` cho hai cột thời gian |
+
+Khi nhiều dòng có cùng giá trị sort, xếp tiếp theo `id asc`. Ví dụ:
+`GET /api/meetings?status=Published&sensitivity=Internal&q=giao&from=2026-10-01T00%3A00%3A00Z&page=2&pageSize=20&sortBy=startsAt&sortDir=desc`.
+Đổi trang phải gửi lại bộ lọc và sort hiện tại (BR-32); FE sẽ tích hợp bước này sau.
+
+`200 OK` trả:
+
+```json
+{
+  "items": [
+    {
+      "id": "dc36f21a-c030-4ddb-a6ec-9d1254230001",
+      "title": "Giao ban tuần",
+      "startsAt": "2026-10-01T02:00:00+00:00",
+      "createdAt": "2026-09-25T02:00:00+00:00",
+      "status": "Published",
+      "sensitivity": "Internal"
+    }
+  ],
+  "page": 2,
+  "pageSize": 20,
+  "totalCount": 21,
+  "totalPages": 2
+}
+```
+
+Không có kết quả hoặc trang vượt quá trang cuối vẫn trả `200` với `items: []` (BR-12). Khi không có
+kết quả, `totalCount` và `totalPages` đều bằng `0`. Query sai trả `400` với `code` là
+`MEETING_INVALID_QUERY`, `message` là `Tham số truy vấn không hợp lệ.` và `errors` theo tên tham số.
+Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài giới
+giới hạn. Lỗi truy xuất database trả `500` với `code: MEETING_LIST_FAILED` và thông điệp
+`Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-14.
+
+Sequence UC-14 hiện ghi BR-29 và BR-32 ở bước repository; BA cần bổ sung BR-30/31 và nhánh query
+sai `400` vào diagram/spec. Đây là nhánh validation của HTTP, không thay đổi hai nhánh truy xuất
+thành công/thất bại trong diagram hiện tại.
 
 ### GET `/api/meetings/approvers`
 
@@ -163,8 +218,8 @@ stale content.
 - Chỉ hiển thị thao tác sửa cho người có `MeetingCreator`, đúng `createdById`, và trạng thái
   `Draft`/`Rejected`. Backend vẫn kiểm tra lại quyền sở hữu và trạng thái khi PUT.
 - Nếu PUT trả `409 MEETING_NOT_EDITABLE`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
-- Sau khi POST hoặc PUT thành công, có thể mở `meeting.id` bằng GET chi tiết. Tìm cuộc họp từ
-  danh sách cần API riêng thuộc SCRUM-18.
+- Sau khi POST hoặc PUT thành công, có thể mở `meeting.id` bằng GET chi tiết. GET danh sách có
+  contract ở trên; FE cần thay dữ liệu mẫu trong task tích hợp riêng.
 - UC hiện tại chưa có API lịch sử trạng thái, nên FE chưa thể hiển thị lịch sử thật.
 
 ## Checklist BA cần hoàn tất

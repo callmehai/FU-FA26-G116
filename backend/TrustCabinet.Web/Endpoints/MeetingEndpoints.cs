@@ -8,7 +8,7 @@ using TrustCabinet.Domain.Meetings;
 
 namespace TrustCabinet.Web.Endpoints;
 
-/// <summary>HTTP boundary for UC-11 Create Meeting and UC-12 Update Meeting.</summary>
+/// <summary>HTTP boundary for meeting creation, updates, detail and authorized listing.</summary>
 public static class MeetingEndpoints
 {
     public static IEndpointRouteBuilder MapMeetingEndpoints(this IEndpointRouteBuilder app)
@@ -21,10 +21,11 @@ public static class MeetingEndpoints
         creatorMeetings.MapGet("/approvers", ListApproversAsync);
         creatorMeetings.MapPut("/{id:guid}", UpdateAsync);
 
-        app.MapGroup("/api/meetings")
+        var readableMeetings = app.MapGroup("/api/meetings")
             .WithTags("Meetings")
-            .RequireActiveUser()
-            .MapGet("/{id:guid}", GetAsync);
+            .RequireActiveUser();
+        readableMeetings.MapGet("/", ListAsync);
+        readableMeetings.MapGet("/{id:guid}", GetAsync);
         return app;
     }
 
@@ -68,6 +69,31 @@ public static class MeetingEndpoints
             MeetingOutcome.NotFound => Results.NotFound(),
             _ => ServerError("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."),
         };
+    }
+
+    private static async Task<IResult> ListAsync(
+        HttpRequest request,
+        ClaimsPrincipal principal,
+        IMeetingService service,
+        CancellationToken ct)
+    {
+        var actorId = CapabilityGate.CurrentUserId(principal);
+        if (actorId is null)
+        {
+            return Results.Forbid();
+        }
+
+        if (!MeetingListQueryParser.TryParse(request.Query, out var query, out var errors))
+        {
+            return Results.Json(
+                new MeetingErrorResponse("MEETING_INVALID_QUERY", "Tham số truy vấn không hợp lệ.", errors),
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var result = await service.ListAsync(query!, actorId.Value, ct);
+        return result.Outcome == MeetingOutcome.Success
+            ? Results.Ok(MeetingListResponse.From(result.Page!))
+            : SaveFailed("MSG08", "Không thể tải danh sách cuộc họp. Vui lòng thử lại.");
     }
 
     private static async Task<IResult> ListApproversAsync(
@@ -197,6 +223,34 @@ public sealed record MeetingResponse(
 }
 
 public sealed record MeetingMutationResponse(string Code, string Message, MeetingResponse Meeting);
+
+public sealed record MeetingListItemResponse(
+    Guid Id,
+    string Title,
+    DateTimeOffset StartsAt,
+    DateTimeOffset CreatedAt,
+    string Status,
+    string Sensitivity)
+{
+    public static MeetingListItemResponse From(MeetingListItem item) => new(
+        item.Id, item.Title, item.StartsAt, item.CreatedAt,
+        item.Status.ToString(), item.Sensitivity.ToString());
+}
+
+public sealed record MeetingListResponse(
+    IReadOnlyList<MeetingListItemResponse> Items,
+    int Page,
+    int PageSize,
+    long TotalCount,
+    long TotalPages)
+{
+    public static MeetingListResponse From(MeetingListPage page) => new(
+        page.Items.Select(MeetingListItemResponse.From).ToArray(),
+        page.Page,
+        page.PageSize,
+        page.TotalCount,
+        page.TotalCount / page.PageSize + (page.TotalCount % page.PageSize == 0 ? 0 : 1));
+}
 
 public sealed record MeetingErrorResponse(
     string Code,

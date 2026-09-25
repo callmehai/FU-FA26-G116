@@ -126,7 +126,7 @@ app.MapRolePermissionEndpoints();
 // /api/roles — UC-11 … UC-13, create / rename / delete a role (SCRUM-63). Same gate.
 app.MapRoleEndpoints();
 
-// /api/meetings — UC-11 Create Meeting / UC-12 Update Meeting (SCRUM-17).
+// /api/meetings — UC-11/UC-12 mutations (SCRUM-17) and UC-14 list (SCRUM-18).
 app.MapMeetingEndpoints();
 
 // Health endpoint — the frontend calls this to confirm the backend is alive.
