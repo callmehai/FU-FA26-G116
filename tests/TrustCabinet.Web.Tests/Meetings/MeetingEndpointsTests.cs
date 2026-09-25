@@ -136,6 +136,105 @@ public sealed class MeetingEndpointsTests : IDisposable
         => JsonDocument.Parse(await response.Content.ReadAsStringAsync());
 
     [Fact]
+    public async Task List_requires_authentication_and_an_active_account()
+    {
+        using var anonymousClient = _factory.CreateClient();
+        var anonymous = await anonymousClient.GetAsync("/api/meetings");
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymous.StatusCode);
+
+        var inactive = GivenMember("inactive-list@trustcabinet.local");
+        inactive.IsActive = false;
+        using var inactiveClient = _factory.ClientFor(inactive);
+        var refused = await inactiveClient.GetAsync("/api/meetings");
+        Assert.Equal(HttpStatusCode.Forbidden, refused.StatusCode);
+    }
+
+    [Fact]
+    public async Task List_returns_only_authorized_items_and_pagination_metadata()
+    {
+        var creator = GivenCreator();
+        var unrelated = GivenMember("unrelated-list@trustcabinet.local");
+        var owned = OwnedMeetingBy(creator);
+        owned.Title = "Giao ban % tuần";
+        var hidden = OwnedMeetingBy(unrelated);
+        hidden.Title = owned.Title;
+        _factory.Meetings.Meetings.AddRange([owned, hidden]);
+        using var client = _factory.ClientFor(creator);
+
+        var response = await client.GetAsync(
+            "/api/meetings?status=Draft&q=Giao&page=1&pageSize=1&sortBy=createdAt&sortDir=asc");
+        using var body = await JsonOf(response);
+        var root = body.RootElement;
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(1, root.GetProperty("page").GetInt32());
+        Assert.Equal(1, root.GetProperty("pageSize").GetInt32());
+        Assert.Equal(1, root.GetProperty("totalCount").GetInt64());
+        Assert.Equal(1, root.GetProperty("totalPages").GetInt64());
+        Assert.Equal(MeetingSortBy.CreatedAt, _factory.Meetings.LastListQuery!.SortBy);
+        Assert.Equal(MeetingSortDirection.Asc, _factory.Meetings.LastListQuery.SortDirection);
+        var item = Assert.Single(root.GetProperty("items").EnumerateArray());
+        Assert.Equal(owned.Id, item.GetProperty("id").GetGuid());
+        Assert.Equal("Draft", item.GetProperty("status").GetString());
+        Assert.Equal("Internal", item.GetProperty("sensitivity").GetString());
+        Assert.Equal(
+            ["id", "title", "startsAt", "createdAt", "status", "sensitivity"],
+            item.EnumerateObject().Select(property => property.Name));
+    }
+
+    [Fact]
+    public async Task List_returns_empty_page_for_no_match_or_page_beyond_end()
+    {
+        var creator = GivenCreator();
+        _factory.Meetings.Meetings.Add(OwnedMeetingBy(creator));
+        using var client = _factory.ClientFor(creator);
+
+        var noMatch = await client.GetAsync("/api/meetings?status=Archived");
+        using var noMatchBody = await JsonOf(noMatch);
+        Assert.Equal(HttpStatusCode.OK, noMatch.StatusCode);
+        Assert.Empty(noMatchBody.RootElement.GetProperty("items").EnumerateArray());
+        Assert.Equal(0, noMatchBody.RootElement.GetProperty("totalCount").GetInt64());
+        Assert.Equal(0, noMatchBody.RootElement.GetProperty("totalPages").GetInt64());
+
+        var beyond = await client.GetAsync("/api/meetings?page=2&pageSize=1");
+        using var beyondBody = await JsonOf(beyond);
+        Assert.Equal(HttpStatusCode.OK, beyond.StatusCode);
+        Assert.Empty(beyondBody.RootElement.GetProperty("items").EnumerateArray());
+        Assert.Equal(1, beyondBody.RootElement.GetProperty("totalCount").GetInt64());
+        Assert.Equal(1, beyondBody.RootElement.GetProperty("totalPages").GetInt64());
+    }
+
+    [Fact]
+    public async Task List_returns_field_errors_for_invalid_query()
+    {
+        using var client = _factory.ClientFor(GivenCreator());
+
+        var response = await client.GetAsync("/api/meetings?status=Wrong&page=0");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MEETING_INVALID_QUERY", body.RootElement.GetProperty("code").GetString());
+        Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("status", out _));
+        Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("page", out _));
+        Assert.Null(_factory.Meetings.LastListQuery);
+    }
+
+    [Fact]
+    public async Task List_returns_MSG08_when_the_database_read_fails()
+    {
+        _factory.Meetings.NextReadThrows = new Npgsql.NpgsqlException("database unavailable");
+        using var client = _factory.ClientFor(GivenCreator());
+
+        var response = await client.GetAsync("/api/meetings");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal("MSG08", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("Không thể tải danh sách cuộc họp. Vui lòng thử lại.",
+            body.RootElement.GetProperty("message").GetString());
+    }
+
+    [Fact]
     public async Task Post_creates_a_draft_and_returns_a_location_that_get_can_read()
     {
         var creator = GivenCreator();

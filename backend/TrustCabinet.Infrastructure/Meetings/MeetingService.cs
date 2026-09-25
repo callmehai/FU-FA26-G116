@@ -7,7 +7,7 @@ using TrustCabinet.Domain.Meetings;
 
 namespace TrustCabinet.Infrastructure.Meetings;
 
-/// <summary>UC-11 and UC-12 meeting rules and persistence orchestration.</summary>
+/// <summary>Meeting rules and persistence orchestration for UC-11, UC-12 and UC-14.</summary>
 public sealed class MeetingService(
     IMeetingRepository meetings,
     ILogger<MeetingService> logger) : IMeetingService
@@ -92,6 +92,24 @@ public sealed class MeetingService(
         {
             logger.LogError(exception, "Could not read meeting {MeetingId} for actor {ActorId}.", id, actorId);
             return MeetingResult.Failure(MeetingOutcome.ReadFailed);
+        }
+    }
+
+    public async Task<MeetingListResult> ListAsync(
+        MeetingListQuery query, Guid actorId, CancellationToken ct = default)
+    {
+        try
+        {
+            return MeetingListResult.Success(await meetings.FindAuthorizedPageAsync(actorId, query, ct));
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception) when (IsPersistenceFailure(exception))
+        {
+            logger.LogError(exception, "Could not list meetings for actor {ActorId}.", actorId);
+            return MeetingListResult.ReadFailed();
         }
     }
 

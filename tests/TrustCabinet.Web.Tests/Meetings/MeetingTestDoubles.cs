@@ -17,6 +17,58 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
 
     public Exception? NextReadThrows { get; set; }
 
+    public MeetingListQuery? LastListQuery { get; private set; }
+
+    public Guid? LastListActorId { get; private set; }
+
+    public Task<MeetingListPage> FindAuthorizedPageAsync(
+        Guid actorId, MeetingListQuery query, CancellationToken ct = default)
+    {
+        LastListActorId = actorId;
+        LastListQuery = query;
+        if (NextReadThrows is { } exception)
+        {
+            NextReadThrows = null;
+            throw exception;
+        }
+
+        var visible = Meetings.Where(m => m.CreatedById == actorId
+            || (m.Status != TrustCabinet.Domain.Enums.MeetingStatus.Draft
+                && m.AssignedApproverId == actorId)
+            || ((m.Status == TrustCabinet.Domain.Enums.MeetingStatus.Published
+                    || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.InProgress
+                    || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.Ended
+                    || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.MinutesIssued
+                    || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.Archived)
+                && m.Participants.Any(p => p.UserId == actorId)));
+        if (query.Status is { } status) visible = visible.Where(m => m.Status == status);
+        if (query.Sensitivity is { } sensitivity) visible = visible.Where(m => m.Sensitivity == sensitivity);
+        if (query.From is { } from) visible = visible.Where(m => m.StartsAt >= from);
+        if (query.To is { } to) visible = visible.Where(m => m.StartsAt <= to);
+        if (query.Query is { Length: > 0 } search)
+        {
+            visible = visible.Where(m => m.Title.Contains(search, StringComparison.OrdinalIgnoreCase));
+        }
+
+        var total = visible.LongCount();
+        var ordered = (query.SortBy, query.SortDirection) switch
+        {
+            (MeetingSortBy.Title, MeetingSortDirection.Asc) => visible.OrderBy(m => m.Title),
+            (MeetingSortBy.Title, MeetingSortDirection.Desc) => visible.OrderByDescending(m => m.Title),
+            (MeetingSortBy.CreatedAt, MeetingSortDirection.Asc) => visible.OrderBy(m => m.CreatedAt),
+            (MeetingSortBy.CreatedAt, MeetingSortDirection.Desc) => visible.OrderByDescending(m => m.CreatedAt),
+            (MeetingSortBy.StartsAt, MeetingSortDirection.Asc) => visible.OrderBy(m => m.StartsAt),
+            _ => visible.OrderByDescending(m => m.StartsAt),
+        };
+        var items = ordered.ThenBy(m => m.Id)
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .Select(m => new MeetingListItem(
+                m.Id, m.Title, m.StartsAt, m.CreatedAt, m.Status, m.Sensitivity))
+            .ToArray();
+        return Task.FromResult(new MeetingListPage(items, query.Page, query.PageSize, total));
+    }
+
     public int SaveCount { get; private set; }
 
     public Task<Meeting?> FindAccessibleAsync(Guid id, Guid actorId, CancellationToken ct = default)
