@@ -80,7 +80,130 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 ---
 
-## 3. Nội dung đặc tả (Điền thông tin chi tiết các UC bên dưới)
+## 3. Nội dung đặc tả (Detailed Use Case Specifications)
 
-<!-- Bắt đầu điền nội dung UC chi tiết tại đây -->
+### FEATURE 1: XÁC THỰC & PHIÊN ĐĂNG NHẬP (AUTHENTICATION)
+
+---
+
+### UC-01: Sign in with Email and Password (Đăng nhập bằng Email và Mật khẩu)
+
+- **Use Case ID**: UC-01
+- **Use Case Name**: Sign in with Email and Password
+- **Primary Actor**: Internal User, System Admin, Workspace Manager, DPO, Auditor
+- **Secondary Actor**: Identity Provider
+- **Mô tả (Description)**: As an Internal User, I want to sign in using my email and password so that I can securely access the system through my internal account.
+- **Điều kiện tiên quyết (Preconditions)**:
+  - PRE-1: The user has an existing internal account.
+  - PRE-2: The user's account is active.
+  - PRE-3: The user is currently on the system login page.
+- **Điều kiện sau (Postconditions)**:
+  - POST-1: The user is authenticated.
+  - POST-2: The system identifies the corresponding internal user.
+  - POST-3: The user is redirected to the appropriate authenticated page.
+- **Sơ đồ liên quan (Related Diagrams)**:
+  - Sequence Diagram: [SignIn.png](../06-sequencediagram/SignIn.png)
+
+#### Luồng sự kiện chính (Main Flow):
+1. The user enters their email and password on the login page.
+2. The user clicks “Sign In”.
+3. The system validates the provided credentials through the authentication service.
+4. The system logs the user in and redirects the user to the appropriate authenticated page.
+
+#### Luồng sự kiện thay thế (Alternative Flows):
+- N/A
+
+#### Luồng ngoại lệ / Lỗi (Exception Flows):
+- **EX-1**: System cannot authenticate the user
+  1. The entered email or password is invalid. (BR-01, BR-02)
+  2. The system displays MSG01 – “Invalid email or password.”
+- **EX-2**: The internal account has been deactivated
+  1. The corresponding internal account is inactive or has been deactivated. (BR-03)
+  2. The system displays MSG03 – “Your account is currently unavailable. Please contact your administrator for assistance.”
+- **EX-3**: User is not allowed to access the system
+  1. The user does not have an active role or permission required to access the system. (BR-04)
+  2. The system displays MSG04 – “You do not currently have access to the system. Please contact your administrator for assistance.”
+
+---
+
+### UC-02: Sign in with Google (Đăng nhập bằng Google)
+
+- **Use Case ID**: UC-02
+- **Use Case Name**: Sign in with Google
+- **Primary Actor**: Internal User, System Admin, Workspace Manager, DPO, Auditor
+- **Secondary Actor**: Google Identity Provider
+- **Mô tả (Description)**: As an Internal User, I want to sign in using my Google account so that I can securely and quickly access the system through my existing internal account.
+- **Điều kiện tiên quyết (Preconditions)**:
+  - PRE-1: The user has an existing internal account.
+  - PRE-2: The user's account is active.
+  - PRE-3: The user is currently on the system login page.
+- **Điều kiện sau (Postconditions)**:
+  - POST-1: User is authenticated.
+  - POST-2: A valid server-side session is created.
+  - POST-3: System identifies the corresponding internal user.
+  - POST-4: User is redirected to the appropriate authenticated page.
+- **Sơ đồ liên quan (Related Diagrams)**:
+  - Sequence Diagram: [SignInWithGoogle.png](../06-sequencediagram/SignInWithGoogle.png)
+
+#### Luồng sự kiện chính (Main Flow):
+1. User selects “Continue with Google” on the login page.
+2. User signs in using their Google account.
+3. System verifies that the Google account is associated with an authorized internal user.
+4. System signs the user in and grants access according to the user's assigned role.
+
+#### Luồng sự kiện thay thế (Alternative Flows):
+- N/A
+
+#### Luồng ngoại lệ / Lỗi (Exception Flows):
+- **EX-1**: User can’t authenticate with Google
+  1. The user fails to authenticate with Google or cancels the Google sign-in process. (BR-04)
+  2. System displays message MSG01 – “Google sign-in was unsuccessful. Please try again.”
+- **EX-2**: System can’t verify the Google account
+  1. The system cannot verify the identity information returned by Google. (BR-05)
+  2. System displays message MSG02 – “Unable to verify your Google account. Please try again.”
+- **EX-3**: Google account is not linked to an internal account
+  1. The authenticated Google account is not associated with any existing internal account. (BR-06)
+  2. System displays message MSG03 – “This Google account is not authorized. Please contact your administrator for assistance.”
+- **EX-4**: The internal account has been deactivated
+  1. The internal account associated with the Google account is inactive or has been deactivated. (BR-03)
+  2. System displays message MSG04 – “Your account is currently unavailable. Please contact your administrator for assistance.”
+- **EX-5**: User is not allowed to access the system
+  1. The internal user does not have an active role or required permission to access the system. (BR-04)
+  2. System displays message MSG05 – “You do not currently have access to the system. Please contact your administrator for assistance.”
+
+---
+
+### UC-03: Sign Out (Đăng xuất)
+
+- **Use Case ID**: UC-03
+- **Use Case Name**: Sign Out
+- **Primary Actor**: Internal User, System Admin, Workspace Manager, DPO, Auditor
+- **Secondary Actor**: None
+- **Mô tả (Description)**: As an authenticated user, I want to sign out of the system so that I can securely end my current access to the system.
+- **Điều kiện tiên quyết (Preconditions)**:
+  - PRE-1: The user is currently signed in to the system.
+  - PRE-2: The user is currently accessing an authenticated area of the system.
+- **Điều kiện sau (Postconditions)**:
+  - POST-1: User is signed out of the system.
+  - POST-2: The user's current authentication state is invalidated.
+  - POST-3: User is redirected to the login page.
+  - POST-4: Protected system functions are no longer accessible until the user signs in again.
+- **Sơ đồ liên quan (Related Diagrams)**:
+  - Sequence Diagram: [SignOut.png](../06-sequencediagram/SignOut.png)
+
+#### Luồng sự kiện chính (Main Flow):
+1. User selects “Sign Out”.
+2. System displays a confirmation message.
+3. User confirms the sign-out action.
+4. System signs the user out.
+5. System redirects the user to the login page.
+
+#### Luồng sự kiện thay thế (Alternative Flows):
+- N/A
+
+#### Luồng ngoại lệ / Lỗi (Exception Flows):
+- **EX-1**: System can’t complete the sign-out action
+  1. The system cannot complete the sign-out operation. (BR-09)
+  2. System displays message MSG01 – “Unable to sign out. Please try again.”
+
 
