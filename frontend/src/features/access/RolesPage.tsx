@@ -310,17 +310,17 @@ export function RolesPage() {
               <table className="data-table matrix-table">
                 <thead>
                   <tr>
-                    <th rowSpan={2}>Vai trò</th>
+                    <th rowSpan={2} className="matrix-role">Vai trò</th>
                     {groups.map((group) => (
                       <th key={group.name} colSpan={group.span} className="matrix-group matrix-group-start">
                         {group.name}
                       </th>
                     ))}
-                    <th rowSpan={2} className="col-action"><span className="visually-hidden">Thao tác</span></th>
+                    <th rowSpan={2} className="col-action">Thao tác</th>
                   </tr>
                   <tr>
                     {columns.map((column) => (
-                      <th key={column.code} className={`matrix-cap${groupStart(column.code)}`}>
+                      <th key={column.code} className={`matrix-cap${groupStart(column.code)}`} title={column.description}>
                         {column.name}
                       </th>
                     ))}
@@ -348,13 +348,16 @@ export function RolesPage() {
                               key={column.code}
                               className={`matrix-cell${groupStart(column.code)}${changed ? ' matrix-cell-changed' : ''}${flagged ? ' matrix-cell-error' : ''}`}
                             >
-                              <input
-                                type="checkbox"
-                                checked={checked}
-                                disabled={saving !== null}
-                                onChange={() => toggle(id, column.code)}
-                                aria-label={`${name} — ${column.name}`}
-                              />
+                              {/* The label covers the whole cell, so a click anywhere in it toggles. */}
+                              <label className="matrix-hit">
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  disabled={saving !== null}
+                                  onChange={() => toggle(id, column.code)}
+                                  aria-label={`${name} — ${column.name}`}
+                                />
+                              </label>
                             </td>
                           )
                         })}
@@ -390,17 +393,6 @@ export function RolesPage() {
                 </tbody>
               </table>
             </div>
-
-            <p className="page-note">
-              Lưu quyền của một vai trò sẽ kết thúc phiên đăng nhập của những người đang mang vai trò đó, để quyền mới
-              có hiệu lực.
-            </p>
-
-            <dl className="capability-legend">
-              {columns.map((column) => (
-                <div key={column.code}><dt>{column.name}</dt><dd>{column.description}</dd></div>
-              ))}
-            </dl>
           </>
         )
       )}
@@ -434,9 +426,16 @@ export function RolesPage() {
           pendingLabel="Đang xoá…"
           onConfirm={() => confirmDelete(deleteTarget)}
           onClose={() => setDeleteTarget(null)}
+          // The count is already known, so say why up front instead of sending a request bound to
+          // fail with MSG25. The backend still rechecks on delete: this count may be stale.
+          blocker={
+            deleteTarget.userCount > 0
+              ? `Vai trò này vẫn còn ${deleteTarget.userCount} tài khoản mang, kể cả tài khoản đã vô hiệu hoá. Hãy chuyển họ sang vai trò khác trước khi xoá.`
+              : undefined
+          }
         >
           {deleteTarget.userCount > 0
-            ? `Danh sách hiện ghi nhận ${deleteTarget.userCount} tài khoản mang vai trò “${deleteTarget.name}”, kể cả tài khoản đã vô hiệu hoá. Hệ thống sẽ kiểm tra lại khi xoá và từ chối nếu vẫn còn tài khoản.`
+            ? `Chưa thể xoá vai trò “${deleteTarget.name}”.`
             : `Bạn có chắc muốn xoá vai trò “${deleteTarget.name}”? Thao tác này không thể hoàn tác.`}
         </ConfirmDialog>
       )}
