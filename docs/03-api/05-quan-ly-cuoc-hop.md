@@ -5,9 +5,10 @@ trong tài liệu quản lý vai trò đang dùng cho use case khác.
 
 ## Phạm vi
 
-Các endpoint cho người tạo khởi tạo cuộc họp nháp và sửa trước khi gửi duyệt. Luồng giao diện tạo/sửa
-không yêu cầu chọn người duyệt; `assignedApproverId` có thể được giữ hoặc gửi nếu đã có. UC-15 yêu
-cầu chọn người duyệt trước khi gửi.
+Các endpoint cho người tạo khởi tạo cuộc họp nháp và sửa trước khi gửi duyệt. Luồng tạo/sửa nháp
+không yêu cầu chọn người duyệt. Với PUT, `assignedApproverId` bị bỏ trống hoặc gửi `null` sẽ bỏ
+gán người duyệt; muốn giữ người duyệt hiện tại thì gửi lại ID đó. UC-15 yêu cầu chọn người duyệt hợp
+lệ trước khi gửi.
 Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết. Danh sách `GET /api/meetings` thuộc
 SCRUM-18, chưa nằm trong contract này; danh sách UI hiện tại vẫn dùng dữ liệu mẫu. Form tạo hiển thị
 xác nhận và mã cuộc họp sau khi tạo.
@@ -58,9 +59,9 @@ Request body của POST và PUT có các field:
 ```
 
 `title` và `startsAt` là bắt buộc. `assignedApproverId` có thể `null` hoặc bị bỏ qua. Với POST,
-nếu được gửi, nó phải là tài khoản đang hoạt động có capability `MeetingApprover`. Với PUT, một
-người duyệt mới chỉ được gán khi tài khoản đang hoạt động và có capability này; nếu giữ nguyên người
-duyệt hiện có thì việc tài khoản đó đã bị vô hiệu hóa không chặn cập nhật thông tin cuộc họp.
+nếu được gửi, nó phải là tài khoản đang hoạt động có capability `MeetingApprover`. Với PUT, bỏ qua
+hoặc gửi `null` sẽ bỏ gán người duyệt; nếu gửi ID khác ID hiện tại thì người đó phải đang hoạt động
+và có capability này. Gửi lại ID hiện tại không chặn cập nhật nếu tài khoản đó đã bị vô hiệu hóa.
 UC-15 phải kiểm tra và yêu cầu người duyệt hợp lệ trước khi chuyển meeting sang `WaitingApproval`.
 `endsAt` có thể `null` hoặc bị bỏ qua; nếu có giá trị, nó phải lớn hơn `startsAt`. Nếu `mode` hoặc
 `sensitivity` bị bỏ qua, service dùng giá trị khởi tạo của form (`InPerson`, `Normal`).
@@ -176,8 +177,8 @@ stale content.
 
 - Đồng bộ nội dung BR-24–BR-29 chính thức vào tài liệu BA và map từng luật vào validation/lifecycle.
 - Vẽ Class Diagram tạo/đọc/sửa và ghi Controller trong sequence là ASP.NET Minimal API.
-- Đồng bộ hai quy tắc đã ghi trong UC-11/UC-12 vào Jira SCRUM-17, cùng giới hạn length và format
-  timezone khi có quyền cập nhật Jira.
+- Tác giả đã ghi các điều chỉnh về người duyệt, `endsAt`, giá trị mặc định và validation vào comment
+  của Jira SCRUM-17 ngày 28/09/2026; BA đối chiếu với BR-24–BR-29 và cập nhật tài liệu/diagram nếu cần.
 - Ghi rõ quyền GET, ownership và hành vi khi sửa `Rejected`.
 - Bổ sung mã thành công/lỗi chưa có vào sequence/message catalog.
 - Kiểm tra lại định danh UC theo convention Jira để tránh nhầm UC-11/UC-12 quản lý vai trò.

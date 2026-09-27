@@ -209,47 +209,31 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 ### UC-11: Tạo cuộc họp (SCRUM-17)
 
-Quyết định yêu cầu được người yêu cầu xác nhận ngày 24/09/2026:
+Yêu cầu hiện hành được điều chỉnh ngày 27/09/2026, thay thế yêu cầu ngày 24/09/2026:
 
-- `assignedApproverId` là trường bắt buộc. Người duyệt được gán phải là tài khoản đang hoạt động
-  có capability `MeetingApprover`. Thiếu trường này thì tạo cuộc họp bị từ chối với lỗi validation;
-  hệ thống không lưu bản nháp.
-- `endsAt` là trường tùy chọn. Khi bỏ qua hoặc gửi `null`, cuộc họp được tạo với giờ kết thúc dự
-  kiến chưa xác định. Khi có giá trị, giờ kết thúc phải sau `startsAt`.
-
-Luồng và mã phản hồi chi tiết: [hợp đồng API tạo cuộc họp](../03-api/05-quan-ly-cuoc-hop.md#post-apimeetings).
-Sơ đồ hiện có: [CreateMeeting.png](../06-sequencediagram/meeting-management/CreateMeeting.png).
-
-### UC-12: Cập nhật thông tin cuộc họp (SCRUM-17)
-
-PUT thay toàn bộ thông tin có thể sửa của cuộc họp. Theo cùng quyết định yêu cầu của UC-11,
-payload cập nhật phải có `assignedApproverId`, còn `endsAt` có thể bỏ qua hoặc gửi `null`. Nếu có
-`endsAt`, giá trị phải sau `startsAt`. Validation áp dụng khi cuộc họp còn ở trạng thái được phép
-sửa; trạng thái không cho sửa được kiểm tra trước nội dung request.
-
-Luồng và mã phản hồi chi tiết: [hợp đồng API cập nhật cuộc họp](../03-api/05-quan-ly-cuoc-hop.md#put-apimeetingsid).
-Sơ đồ hiện có: [UpdateMeeting.png](../06-sequencediagram/meeting-management/UpdateMeeting.png).
-
-### UC-11: Tạo cuộc họp (SCRUM-17)
-
-Điều chỉnh yêu cầu ngày 27/09/2026: người duyệt không còn bắt buộc khi tạo bản nháp.
-
-- `assignedApproverId` có thể bỏ qua hoặc gửi `null`. Nếu được gán sớm, tài khoản đó phải đang hoạt
-  động và có capability `MeetingApprover`. Cuộc họp phải được gán một người duyệt hợp lệ ở UC-15
-  trước khi gửi duyệt.
-- `endsAt` là trường tùy chọn. Khi bỏ qua hoặc gửi `null`, cuộc họp được tạo với giờ kết thúc dự
-  kiến chưa xác định. Khi có giá trị, giờ kết thúc phải sau `startsAt`.
+- `title` bắt buộc sau khi trim, tối đa 300 ký tự. `startsAt` bắt buộc và phải là timestamp ISO
+  8601 có `Z` hoặc offset múi giờ rõ ràng.
+- `assignedApproverId` có thể bỏ qua hoặc gửi `null` khi tạo bản nháp. Nếu được gán sớm, người đó
+  phải là tài khoản đang hoạt động có capability `MeetingApprover`. UC-15 phải chọn người duyệt hợp
+  lệ trước khi chuyển cuộc họp sang `WaitingApproval`.
+- `endsAt` tùy chọn; bỏ qua hoặc gửi `null` nghĩa là chưa xác định giờ kết thúc. Nếu có giá trị,
+  phải dùng định dạng timestamp như trên và lớn hơn `startsAt`.
+- Nếu bỏ qua, `mode` mặc định `InPerson` và `sensitivity` mặc định `Normal`. Giá trị hợp lệ lần
+  lượt là `InPerson`/`Online`/`Hybrid` và `Normal`/`Internal`/`Confidential`/`Secret`.
+- `location` tùy chọn, được trim và tối đa 300 ký tự; `description` tùy chọn, tối đa 4.000 ký tự.
+  Timestamp được chuẩn hóa sang UTC trước khi lưu.
 
 Luồng và mã phản hồi chi tiết: [hợp đồng API tạo cuộc họp](../03-api/05-quan-ly-cuoc-hop.md#post-apimeetings).
 Sơ đồ hiện có: [CreateMeeting.png](../06-sequencediagram/meeting-management/CreateMeeting.png).
 
 ### UC-12: Cập nhật thông tin cuộc họp (SCRUM-17)
 
-PUT thay toàn bộ thông tin có thể sửa của cuộc họp. `assignedApproverId` có thể bỏ qua hoặc gửi
-`null`; một người duyệt mới chỉ được gán nếu tài khoản đang hoạt động và có capability
-`MeetingApprover`. `endsAt` cũng có thể bỏ qua hoặc gửi `null`; nếu có giá trị, nó phải sau
-`startsAt`. Validation áp dụng khi cuộc họp còn ở trạng thái được phép sửa; trạng thái không cho
-sửa được kiểm tra trước nội dung request.
+PUT thay toàn bộ tám trường thông tin cuộc họp. Chỉ được sửa khi trạng thái là `Draft` hoặc
+`Rejected`; backend kiểm tra trạng thái hiện tại trước khi đọc và validate body. Các quy tắc về
+`title`, `startsAt`, `endsAt`, `mode`, `sensitivity`, `location` và `description` giống UC-11.
+`assignedApproverId` có thể bỏ qua hoặc gửi `null` để bỏ gán người duyệt. Nếu giữ nguyên người
+duyệt hiện có, gửi lại ID đó; nếu gán người duyệt mới thì tài khoản phải đang hoạt động và có
+capability `MeetingApprover`.
 
 Luồng và mã phản hồi chi tiết: [hợp đồng API cập nhật cuộc họp](../03-api/05-quan-ly-cuoc-hop.md#put-apimeetingsid).
 Sơ đồ hiện có: [UpdateMeeting.png](../06-sequencediagram/meeting-management/UpdateMeeting.png).
