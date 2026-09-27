@@ -1012,6 +1012,11 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("ActionUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("action_url");
+
                     b.Property<string>("Body")
                         .IsRequired()
                         .HasMaxLength(2000)
@@ -1022,13 +1027,31 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<string>("DeduplicationKey")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("deduplication_key");
+
                     b.Property<Guid?>("MeetingId")
                         .HasColumnType("uuid")
                         .HasColumnName("meeting_id");
 
+                    b.Property<DateTimeOffset?>("PushedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("pushed_at");
+
                     b.Property<DateTimeOffset?>("ReadAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("read_at");
+
+                    b.Property<Guid?>("TargetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("target_id");
+
+                    b.Property<string>("TargetType")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("target_type");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -1053,8 +1076,15 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_notifications");
 
+                    b.HasIndex("DeduplicationKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_notifications_deduplication_key");
+
                     b.HasIndex("MeetingId")
                         .HasDatabaseName("ix_notifications_meeting_id");
+
+                    b.HasIndex("PushedAt", "CreatedAt")
+                        .HasDatabaseName("ix_notifications_pushed_at_created_at");
 
                     b.HasIndex("UserId", "ReadAt", "CreatedAt")
                         .HasDatabaseName("ix_notifications_user_id_read_at_created_at");

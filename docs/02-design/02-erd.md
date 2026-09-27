@@ -352,6 +352,21 @@ Chỉ lưu **sự kiện cuộc gọi**, không lưu media. Âm thanh và hình 
 WebRTC; backend chỉ làm tín hiệu. Rớt mạng vào lại sinh một dòng `CallParticipant` mới, nhờ đó cộng
 đúng thời gian thực sự kết nối.
 
+## 6. Thông báo trong ứng dụng (SCRUM-14)
+
+`notifications` thuộc về đúng một user (`user_id`) và có thể trỏ tới một meeting
+(`meeting_id`). `read_at` null nghĩa là chưa đọc. `deduplication_key` nullable có unique index:
+nhắc họp dùng `meeting-starting-soon:<meeting-id>:<user-id>`, còn lời mời khi thêm participant
+vào meeting đã công bố dùng `meeting-invited:<meeting-id>:<participant-id>`.
+`pushed_at` null nghĩa là worker chưa push dòng đã commit qua SignalR; client mất kết nối vẫn
+đọc lại từ DB qua API. Hai cột mới không làm thay đổi quan hệ user/meeting có sẵn.
+
+Theo class diagram Notification Management, notification còn lưu `target_type`, `target_id` và
+`action_url`. Với thông báo họp, các giá trị là `Meeting`, ID cuộc họp và đường dẫn
+`/mgmt/meetings/{id}`. `meeting_id` tiếp tục là khóa ngoại để giữ quan hệ và bảo vệ tính toàn vẹn
+dữ liệu. Migration điền ba giá trị đích cho các notification họp đã tồn tại. `isRead` được suy ra
+từ `read_at`, không lưu thêm một cột bool.
+
 ## Những quyết định cần biết
 
 | Quyết định | Lý do |
