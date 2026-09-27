@@ -86,11 +86,11 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 ### UC-11: Tạo cuộc họp (SCRUM-17)
 
-Quyết định yêu cầu được người yêu cầu xác nhận ngày 24/09/2026:
+Điều chỉnh yêu cầu ngày 27/09/2026: người duyệt không còn bắt buộc khi tạo bản nháp.
 
-- `assignedApproverId` là trường bắt buộc. Người duyệt được gán phải là tài khoản đang hoạt động
-  có capability `MeetingApprover`. Thiếu trường này thì tạo cuộc họp bị từ chối với lỗi validation;
-  hệ thống không lưu bản nháp.
+- `assignedApproverId` có thể bỏ qua hoặc gửi `null`. Nếu được gán sớm, tài khoản đó phải đang hoạt
+  động và có capability `MeetingApprover`. Cuộc họp phải được gán một người duyệt hợp lệ ở UC-15
+  trước khi gửi duyệt.
 - `endsAt` là trường tùy chọn. Khi bỏ qua hoặc gửi `null`, cuộc họp được tạo với giờ kết thúc dự
   kiến chưa xác định. Khi có giá trị, giờ kết thúc phải sau `startsAt`.
 
@@ -99,11 +99,17 @@ Sơ đồ hiện có: [CreateMeeting.png](../06-sequencediagram/meeting-manageme
 
 ### UC-12: Cập nhật thông tin cuộc họp (SCRUM-17)
 
-PUT thay toàn bộ thông tin có thể sửa của cuộc họp. Theo cùng quyết định yêu cầu của UC-11,
-payload cập nhật phải có `assignedApproverId`, còn `endsAt` có thể bỏ qua hoặc gửi `null`. Nếu có
-`endsAt`, giá trị phải sau `startsAt`. Validation áp dụng khi cuộc họp còn ở trạng thái được phép
-sửa; trạng thái không cho sửa được kiểm tra trước nội dung request.
+PUT thay toàn bộ thông tin có thể sửa của cuộc họp. `assignedApproverId` có thể bỏ qua hoặc gửi
+`null`; một người duyệt mới chỉ được gán nếu tài khoản đang hoạt động và có capability
+`MeetingApprover`. `endsAt` cũng có thể bỏ qua hoặc gửi `null`; nếu có giá trị, nó phải sau
+`startsAt`. Validation áp dụng khi cuộc họp còn ở trạng thái được phép sửa; trạng thái không cho
+sửa được kiểm tra trước nội dung request.
 
 Luồng và mã phản hồi chi tiết: [hợp đồng API cập nhật cuộc họp](../03-api/05-quan-ly-cuoc-hop.md#put-apimeetingsid).
 Sơ đồ hiện có: [UpdateMeeting.png](../06-sequencediagram/meeting-management/UpdateMeeting.png).
+
+### UC-15: Gửi duyệt cuộc họp
+
+Người tổ chức chọn một tài khoản đang hoạt động có capability `MeetingApprover` khi gửi cuộc họp
+để duyệt. Draft chưa có người duyệt không được chuyển sang `WaitingApproval`.
 

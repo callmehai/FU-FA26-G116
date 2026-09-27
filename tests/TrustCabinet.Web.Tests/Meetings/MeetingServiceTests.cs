@@ -164,7 +164,7 @@ public class MeetingServiceTests
     }
 
     [Fact]
-    public async Task Create_rejects_a_missing_approver()
+    public async Task Create_allows_a_missing_approver_for_a_draft()
     {
         var input = new MeetingInput(
             "Giao ban tuần",
@@ -178,10 +178,11 @@ public class MeetingServiceTests
 
         var result = await NewService().CreateAsync(input, _actorId);
 
-        Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
-        Assert.Contains("assignedApproverId", result.Errors!.Keys);
-        Assert.Empty(_repository.Meetings);
-        Assert.Equal(0, _repository.SaveCount);
+        Assert.True(result.Succeeded);
+        var meeting = Assert.Single(_repository.Meetings);
+        Assert.Null(meeting.AssignedApproverId);
+        Assert.Equal(MeetingStatus.Draft, meeting.Status);
+        Assert.Equal(1, _repository.SaveCount);
     }
 
     [Fact]

@@ -66,9 +66,9 @@ public static partial class MeetingRules
             }
         }
 
-        if (input.AssignedApproverId is null || input.AssignedApproverId == Guid.Empty)
+        if (input.AssignedApproverId == Guid.Empty)
         {
-            fieldErrors["assignedApproverId"] = "Vui lòng chọn người duyệt.";
+            fieldErrors["assignedApproverId"] = "Người duyệt không hợp lệ.";
         }
 
         var mode = MeetingMode.InPerson;
@@ -98,7 +98,7 @@ public static partial class MeetingRules
             location,
             sensitivity,
             description,
-            input.AssignedApproverId!.Value);
+            input.AssignedApproverId);
         return true;
     }
 

@@ -182,7 +182,6 @@ public sealed class MeetingEndpointsTests : IDisposable
         {
             title = "Giao ban tuần",
             startsAt = "2026-10-01T09:00:00+07:00",
-            assignedApproverId = Guid.CreateVersion7(),
         };
 
         var response = await client.PostAsJsonAsync("/api/meetings", request);
@@ -193,6 +192,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal("InPerson", meeting.GetProperty("mode").GetString());
         Assert.Equal("Normal", meeting.GetProperty("sensitivity").GetString());
         Assert.Equal(JsonValueKind.Null, meeting.GetProperty("endsAt").ValueKind);
+        Assert.Equal(JsonValueKind.Null, meeting.GetProperty("assignedApproverId").ValueKind);
     }
 
     [Fact]

@@ -51,7 +51,8 @@ public sealed class MeetingService(
 
         try
         {
-            if (!await meetings.IsEligibleApproverAsync(valid!.AssignedApproverId, ct))
+            if (valid!.AssignedApproverId is Guid approverId
+                && !await meetings.IsEligibleApproverAsync(approverId, ct))
             {
                 return MeetingResult.Invalid(new Dictionary<string, string>
                 {
@@ -157,7 +158,9 @@ public sealed class MeetingService(
                     return MeetingResult.Invalid(errors);
                 }
 
-                if (!await meetings.IsEligibleApproverAsync(valid!.AssignedApproverId, token))
+                if (valid!.AssignedApproverId is Guid approverId
+                    && valid.AssignedApproverId != meeting.AssignedApproverId
+                    && !await meetings.IsEligibleApproverAsync(approverId, token))
                 {
                     return MeetingResult.Invalid(new Dictionary<string, string>
                     {

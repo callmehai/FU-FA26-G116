@@ -23,7 +23,7 @@ public sealed record ValidatedMeetingInput(
     string Location,
     Sensitivity Sensitivity,
     string Description,
-    Guid AssignedApproverId);
+    Guid? AssignedApproverId);
 
 public sealed record MeetingApproverOption(Guid Id, string FullName);
 
