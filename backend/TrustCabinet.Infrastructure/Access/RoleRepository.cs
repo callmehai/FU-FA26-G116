@@ -29,6 +29,7 @@ public sealed class RoleRepository(TrustCabinetDbContext db) : IRoleRepository
                 row.Role.Name,
                 row.Role.Description,
                 row.Role.IsBuiltIn,
+                BuiltInRoles.IsDefault(row.Role.Id),
                 row.UserCount))];
     }
 

@@ -1,6 +1,6 @@
 import { api } from './client'
 import type { MatrixMutationResponse, RolePermissionMatrix } from '../types/rolePermission'
-import type { Capability, Role } from '../types/user'
+import type { Capability } from '../types/user'
 
 /**
  * The role ↔ capability matrix endpoints (SCRUM-60).
@@ -24,5 +24,5 @@ export const getRolePermissionMatrix = () =>
  * `AdminUsers`: the system would then have nobody able to reach this screen, and no way back
  * except a database console. The rule counts accounts, not roles, so only the backend can judge it.
  */
-export const updateRolePermissions = (role: Role, capabilities: Capability[]) =>
-  api.put<MatrixMutationResponse>('/api/roles/capabilities', { role, capabilities })
+export const updateRolePermissions = (roleId: string, capabilities: Capability[]) =>
+  api.put<MatrixMutationResponse>('/api/roles/capabilities', { roleId, capabilities })

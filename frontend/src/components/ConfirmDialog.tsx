@@ -15,6 +15,7 @@ export function ConfirmDialog({
   confirmLabel,
   pendingLabel,
   tone = 'primary',
+  blocker,
   onConfirm,
   onClose,
 }: {
@@ -23,6 +24,11 @@ export function ConfirmDialog({
   confirmLabel: string
   pendingLabel: string
   tone?: 'primary' | 'danger'
+  /**
+   * Why the action cannot go ahead, when that is known before asking: shown where a failure
+   * would be, and the confirm button stays disabled so no request is sent.
+   */
+  blocker?: string
   /** Throw to keep the dialog open; the thrown error is shown via `errorMessage`. */
   onConfirm: () => Promise<void>
   onClose: () => void
@@ -59,7 +65,7 @@ export function ConfirmDialog({
             type="button"
             className={`btn ${tone === 'danger' ? 'btn-danger' : 'btn-primary'}`}
             onClick={confirm}
-            disabled={pending}
+            disabled={pending || blocker !== undefined}
           >
             {pending ? pendingLabel : confirmLabel}
           </button>
@@ -67,9 +73,9 @@ export function ConfirmDialog({
       }
     >
       <p className="dialog-text">{children}</p>
-      {error && (
+      {(error ?? blocker) && (
         <p className="alert alert-error dialog-error" role="alert">
-          {error}
+          {error ?? blocker}
         </p>
       )}
     </Dialog>
