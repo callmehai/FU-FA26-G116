@@ -25,18 +25,6 @@ public sealed class MeetingEndpointsTests : IDisposable
 
     public void Dispose() => _factory.Dispose();
 
-    private sealed class UnknownLengthContent(byte[] body) : HttpContent
-    {
-        protected override bool TryComputeLength(out long length)
-        {
-            length = 0;
-            return false;
-        }
-
-        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
-            => stream.WriteAsync(body.AsMemory()).AsTask();
-    }
-
     private sealed class Factory : TrustCabinetApiFactory
     {
         internal FakeMeetingRepository Meetings { get; } = new();
@@ -345,7 +333,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var updateBody = await JsonOf(update);
 
         Assert.Equal(HttpStatusCode.OK, update.StatusCode);
-        Assert.Equal("MSG02", updateBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MEETING_UPDATED", updateBody.RootElement.GetProperty("code").GetString());
         Assert.Equal("Đã cập nhật", updateBody.RootElement.GetProperty("meeting").GetProperty("title").GetString());
         Assert.Equal("Hybrid", updateBody.RootElement.GetProperty("meeting").GetProperty("mode").GetString());
         Assert.Equal("Draft", updateBody.RootElement.GetProperty("meeting").GetProperty("status").GetString());
@@ -397,7 +385,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Put_returns_MSG03_if_the_meeting_is_not_editable()
+    public async Task Put_returns_MEETING_NOT_EDITABLE_if_the_meeting_is_not_editable()
     {
         var creator = GivenCreator();
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
@@ -418,7 +406,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        Assert.Equal("MSG03", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MEETING_NOT_EDITABLE", body.RootElement.GetProperty("code").GetString());
         Assert.Equal("Đã gửi duyệt", meeting.Title);
     }
 
@@ -441,7 +429,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        Assert.Equal("MSG03", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MEETING_NOT_EDITABLE", body.RootElement.GetProperty("code").GetString());
         Assert.Equal("Giao ban tuần", meeting.Title);
     }
 
@@ -497,35 +485,6 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.Conflict, waitingResponse.StatusCode);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task Put_rejects_json_larger_than_64_kib(bool unknownLength)
-    {
-        var creator = GivenCreator();
-        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
-        var meeting = OwnedMeetingBy(creator);
-        _factory.Meetings.Meetings.Add(meeting);
-        var oversizedBody = new byte[64 * 1024 + 1];
-
-        using HttpContent content = unknownLength
-            ? new UnknownLengthContent(oversizedBody)
-            : new ByteArrayContent(oversizedBody);
-        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        using var request = new HttpRequestMessage(HttpMethod.Put, $"/api/meetings/{meeting.Id}")
-        {
-            Content = content,
-        };
-
-        var response = await client.SendAsync(request);
-        using var body = await JsonOf(response);
-
-        Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
-        Assert.Equal("MEETING_BODY_TOO_LARGE", body.RootElement.GetProperty("code").GetString());
-        Assert.Equal("Giao ban tuần", meeting.Title);
-        Assert.Equal(0, _factory.Meetings.SaveCount);
-    }
-
     [Fact]
     public async Task Put_returns_validation_errors_without_mutating_the_meeting()
     {
@@ -551,7 +510,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Put_save_failure_returns_MSG04_and_503()
+    public async Task Put_save_failure_returns_MEETING_UPDATE_FAILED_and_500()
     {
         var creator = GivenCreator();
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
@@ -566,8 +525,8 @@ public sealed class MeetingEndpointsTests : IDisposable
             });
         using var body = await JsonOf(response);
 
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("MSG04", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("MEETING_UPDATE_FAILED", body.RootElement.GetProperty("code").GetString());
     }
 
     [Fact]
@@ -580,7 +539,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var response = await client.GetAsync($"/api/meetings/{Guid.CreateVersion7()}");
         using var body = await JsonOf(response);
 
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         Assert.Equal("MEETING_LOAD_FAILED", body.RootElement.GetProperty("code").GetString());
     }
 
@@ -601,7 +560,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Create_save_failure_returns_MSG01_and_503()
+    public async Task Create_save_failure_returns_MEETING_CREATE_FAILED_and_500()
     {
         using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
         _factory.Meetings.NextSaveThrows = new Npgsql.NpgsqlException("database unavailable");
@@ -609,8 +568,8 @@ public sealed class MeetingEndpointsTests : IDisposable
         var response = await client.PostAsJsonAsync("/api/meetings", ValidRequest());
         using var body = await JsonOf(response);
 
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("MSG01", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("MEETING_CREATE_FAILED", body.RootElement.GetProperty("code").GetString());
         Assert.Empty(_factory.Meetings.Meetings);
     }
 }

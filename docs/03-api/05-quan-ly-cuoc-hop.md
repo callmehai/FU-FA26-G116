@@ -31,8 +31,8 @@ thì trả `404` rỗng, giống ID không tồn tại. PUT vẫn chỉ cho ngư
 tại và meeting của người tổ chức khác cùng trả `404` rỗng.
 
 Sửa chỉ được ở `Draft` và `Rejected`. Hệ thống đọc trạng thái mới nhất sau khi khóa dòng và trước
-khi validate nội dung. Trạng thái khác trả `409 MSG03`. Sửa `Rejected` giữ nguyên trạng thái và
-không thêm dòng lịch sử trạng thái.
+khi validate nội dung. Trạng thái khác trả `409 MEETING_NOT_EDITABLE`. Sửa `Rejected` giữ nguyên
+trạng thái và không thêm dòng lịch sử trạng thái.
 
 ## Contract
 
@@ -78,7 +78,7 @@ enum. Thời gian trong response luôn UTC.
 ### PUT `/api/meetings/{id}`
 
 PUT thay toàn bộ tám field thông tin cuộc họp bằng dữ liệu request. Trả `200 OK`, envelope
-`{ "code": "MSG02", "message": "Cập nhật cuộc họp thành công.", "meeting": { ... } }`.
+`{ "code": "MEETING_UPDATED", "message": "Cập nhật cuộc họp thành công.", "meeting": { ... } }`.
 
 Không chấp nhận quyền thay đổi `id`, `createdById`, `status`, `createdAt`, `updatedAt` hay dữ liệu
 con qua body. Khi lưu cuộc họp bị từ chối, trạng thái vẫn là `Rejected`.
@@ -113,34 +113,31 @@ Lỗi validation trả `400`:
 }
 ```
 
-Endpoint trả đồng thời mọi lỗi field phát hiện được. Với PUT, hệ thống khóa meeting và kiểm tra
-trạng thái trước khi parse JSON: nếu meeting không còn sửa được thì trả `409 MSG03`, kể cả body JSON
-sai cú pháp hoặc sai kiểu. Request PUT có Content-Type thiếu hoặc không hỗ trợ trả `415` với code
+Endpoint trả đồng thời mọi lỗi field phát hiện được. Với PUT, hệ thống kiểm tra trạng thái trước khi
+đọc/parse JSON: nếu meeting đã không còn sửa được thì trả `409 MEETING_NOT_EDITABLE`, kể cả body
+JSON sai cú pháp hoặc sai kiểu. Transaction cập nhật vẫn khóa và kiểm tra lại trạng thái trước khi
+validate/lưu để xử lý cạnh tranh. Request PUT có Content-Type thiếu hoặc không hỗ trợ trả `415` với code
 `MEETING_UNSUPPORTED_CONTENT_TYPE`. Với meeting còn sửa được và Content-Type hợp lệ, JSON sai cú
-pháp/sai kiểu trả `400` và code `MEETING_INVALID_INFORMATION` không có `errors`. Body PUT lớn hơn
-64 KiB trả `413 MEETING_BODY_TOO_LARGE`. POST JSON lỗi cũng trả `400`.
+pháp/sai kiểu trả `400` và code `MEETING_INVALID_INFORMATION` không có `errors`. POST JSON lỗi cũng trả `400`.
 
 ## Mã phản hồi
 
 | HTTP | Code | Ý nghĩa |
 |---:|---|---|
 | 201 | `MEETING_CREATED` | Tạo nháp thành công |
-| 200 | `MSG02` | Sửa thông tin thành công |
+| 200 | `MEETING_UPDATED` | Sửa thông tin thành công |
 | 400 | `MEETING_INVALID_INFORMATION` | Thông tin không hợp lệ; có thể có `errors` theo field |
 | 401 | — | Chưa đăng nhập |
 | 403 | — | Không có `MeetingCreator` theo gate hai lớp |
 | 404 | — | GET: không tồn tại hoặc caller không có quan hệ; PUT: không tồn tại hoặc caller không phải người tạo; body rỗng |
-| 409 | `MSG03` | Trạng thái hiện tại không cho sửa |
-| 413 | `MEETING_BODY_TOO_LARGE` | Body PUT vượt quá 64 KiB |
+| 409 | `MEETING_NOT_EDITABLE` | Trạng thái hiện tại không cho sửa |
 | 415 | `MEETING_UNSUPPORTED_CONTENT_TYPE` | PUT không gửi JSON hoặc Content-Type không hỗ trợ |
-| 503 | `MSG01` | Không thể lưu khi tạo; thử lại |
-| 503 | `MSG04` | Không thể lưu khi sửa; thử lại |
-| 503 | `MEETING_LOAD_FAILED` | Không tải được chi tiết; thử lại |
+| 500 | `MEETING_CREATE_FAILED` | Không thể lưu khi tạo; thử lại |
+| 500 | `MEETING_UPDATE_FAILED` | Không thể lưu khi sửa; thử lại |
+| 500 | `MEETING_LOAD_FAILED` | Không tải được chi tiết; thử lại |
 
-`MSG01`–`MSG04` đến từ mô tả use case được cung cấp. `MEETING_CREATED`,
-`MEETING_INVALID_INFORMATION`, `MEETING_LOAD_FAILED` và cách gắn status `503` là mã/status baseline
-được thêm vì sequence chưa định danh cụ thể các nhánh thành công tạo, validation và đọc lỗi. BA cần
-đồng bộ chúng vào tài liệu yêu cầu/message catalog.
+Các response code của nhóm endpoint này dùng chung tiền tố `MEETING_`. Lỗi persistence trả `500`;
+API chưa phân loại riêng tình trạng dịch vụ tạm thời để trả `503`.
 
 ## Persistence và transaction
 
@@ -148,14 +145,11 @@ Cột `ends_at` và FK `assigned_approver_id` đều nullable. POST lưu meeting
 người duyệt, cùng một dòng `MeetingStatusHistory` (`FromStatus = null`, `ToStatus = Draft`, `ActorId = creator`). EF Core
 lưu các thay đổi này trong cùng transaction.
 
-PUT kiểm tra quyền sở hữu và trạng thái hiện tại bằng truy vấn không khóa trước khi chờ body. Sau khi
-xác nhận meeting còn sửa được, hệ thống kiểm tra Content-Type rồi đọc body vào buffer ngoài
-transaction khóa ghi. Body bị giới hạn 64 KiB ngay cả khi không có `Content-Length`; quá giới hạn
-thì ngừng đọc và trả `413`, không tạo thêm bản sao buffer. Khi xử lý cập nhật, transaction
-`ReadCommitted` khóa đúng meeting row bằng
-PostgreSQL `FOR UPDATE`, đọc lại trạng thái và trả `409 MSG03` nếu trạng thái đổi trong lúc body đang
-được gửi. Chỉ sau lần kiểm tra khóa này hệ thống mới parse JSON, validate và lưu; không có network
-read trong lúc giữ row lock.
+PUT kiểm tra quyền sở hữu và trạng thái hiện tại bằng truy vấn không khóa trước khi đọc body. Sau khi
+xác nhận meeting còn sửa được, hệ thống kiểm tra Content-Type rồi deserialize JSON ngoài transaction
+khóa ghi. Khi xử lý cập nhật, transaction `ReadCommitted` khóa đúng meeting row bằng PostgreSQL
+`FOR UPDATE`, đọc lại trạng thái và trả `409 MEETING_NOT_EDITABLE` nếu trạng thái đã đổi. Sau lần kiểm tra
+khóa, hệ thống validate dữ liệu và lưu; không có network read trong lúc giữ row lock.
 Transaction kết thúc trước response. Cập nhật thông tin không thay status hoặc lịch sử. Nếu body sau
 chuẩn hóa giống dữ liệu đã lưu, trả thành công nhưng không ghi DB hoặc đổi `updatedAt`. Dữ liệu cho
 phép sửa giữa hai form cũ dùng “lần ghi sau cùng thắng”; contract chưa có ETag/version để từ chối
@@ -168,7 +162,7 @@ stale content.
   quan hệ với meeting.
 - Chỉ hiển thị thao tác sửa cho người có `MeetingCreator`, đúng `createdById`, và trạng thái
   `Draft`/`Rejected`. Backend vẫn kiểm tra lại quyền sở hữu và trạng thái khi PUT.
-- Nếu PUT trả `409 MSG03`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
+- Nếu PUT trả `409 MEETING_NOT_EDITABLE`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
 - Sau khi POST hoặc PUT thành công, có thể mở `meeting.id` bằng GET chi tiết. Tìm cuộc họp từ
   danh sách cần API riêng thuộc SCRUM-18.
 - UC hiện tại chưa có API lịch sử trạng thái, nên FE chưa thể hiển thị lịch sử thật.
