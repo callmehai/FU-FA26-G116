@@ -71,9 +71,9 @@ CI chạy đúng bốn lệnh này trên mọi pull request
 
 ## Quy trình làm việc
 
-Nhóm chạy theo Sprint 1 tuần, xử lý từng Use Case theo đường ống BA → BE → FE → Tester, không
-làm xong hết tài liệu rồi mới code. Chi tiết — ai bàn giao gì cho ai, Definition of Done, quy ước
-branch/PR — nằm trong [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md). Đọc trước khi
+Nhóm chạy theo Sprint 1 tuần, xử lý từng Use Case theo đường ống BE → FE → BA chốt tài liệu →
+Tester, không làm xong hết tài liệu rồi mới code. Chi tiết — ai bàn giao gì cho ai, Definition of
+Done, quy ước branch/PR — nằm trong [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md). Đọc trước khi
 bắt tay vào việc đầu tiên.
 
 Jira (project `SCRUM`) là nguồn sự thật cho yêu cầu, user story và kế hoạch Sprint.

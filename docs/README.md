@@ -9,7 +9,7 @@ tránh cảnh tài liệu trên Drive lệch hẳn với hệ thống thật.
 ## Quy trình làm việc
 
 [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) — Sprint 1 tuần, đường ống
-BA → BE → FE → Tester, Definition of Done. Đọc trước khi bắt tay vào việc đầu tiên.
+BE → FE → BA chốt tài liệu → Tester, Definition of Done. Đọc trước khi bắt tay vào việc đầu tiên.
 
 ## Cấu trúc
 
