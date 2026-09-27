@@ -73,9 +73,7 @@ export function RolesPage() {
       ))
       setDeleteTarget((current) => {
         if (!current) return current
-        // Keep the confirmation mounted when another admin has already deleted this role.
-        // The failed delete response belongs in the dialog so it is not mistaken for success.
-        return nextRoles.find((role) => role.id === current.id) ?? current
+        return nextRoles.find((role) => role.id === current.id) ?? null
       })
       setLoadError(null)
     } catch (error) {
@@ -186,8 +184,10 @@ export function RolesPage() {
         throw error
       }
       if (isApiError(error, 404)) {
+        // Nothing left to retry: close the dialog and say why, rather than offer the same 404 again.
+        toast.show('Vai trò này không còn tồn tại. Danh sách đã được cập nhật.', 'error')
         await load()
-        throw new Error('Vai trò này không còn tồn tại. Danh sách đã được cập nhật.')
+        return
       }
       if (isApiError(error, 409, 'MSG24')) await load()
       throw error
@@ -390,6 +390,11 @@ export function RolesPage() {
                 </tbody>
               </table>
             </div>
+
+            <p className="page-note">
+              Lưu quyền của một vai trò sẽ kết thúc phiên đăng nhập của những người đang mang vai trò đó, để quyền mới
+              có hiệu lực.
+            </p>
 
             <dl className="capability-legend">
               {columns.map((column) => (
