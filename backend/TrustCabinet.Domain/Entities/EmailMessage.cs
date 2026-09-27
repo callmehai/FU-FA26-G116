@@ -30,4 +30,16 @@ public class EmailMessage : Entity
     /// <summary>The meeting that caused this email, for tracing.</summary>
     public Guid? MeetingId { get; set; }
     public Meeting? Meeting { get; set; }
+
+    /// <summary>The published lifecycle row that created this durable invitation job.</summary>
+    public Guid? OriginHistoryId { get; set; }
+
+    /// <summary>The recipient identity captured at publication time.</summary>
+    public Guid? RecipientUserId { get; set; }
+    public User? RecipientUser { get; set; }
+
+    public EmailMessageType? MessageType { get; set; }
+
+    /// <summary>Serialized publication-time content used by the worker without rereading the meeting.</summary>
+    public string? PayloadSnapshot { get; set; }
 }

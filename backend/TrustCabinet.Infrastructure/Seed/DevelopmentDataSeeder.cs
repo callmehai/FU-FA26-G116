@@ -95,6 +95,9 @@ public static class DevelopmentDataSeeder
                 "2026-09-08T07:00:00Z", "2026-09-08T09:30:00Z", secretary),
         };
 
+        meetings[0].AssignedApprover = chair;
+        meetings[1].AssignedApprover = chair;
+
         db.AddRange(meetings);
 
         var published = meetings[0];
@@ -172,6 +175,17 @@ public static class DevelopmentDataSeeder
             Meeting = meeting,
             FromStatus = from,
             ToStatus = to,
+            Action = (from, to) switch
+            {
+                (null, MeetingStatus.Draft) => MeetingHistoryAction.Create,
+                (MeetingStatus.Draft, MeetingStatus.WaitingApproval) => MeetingHistoryAction.SubmitForApproval,
+                (MeetingStatus.WaitingApproval, MeetingStatus.Approved) => MeetingHistoryAction.Approve,
+                (MeetingStatus.WaitingApproval, MeetingStatus.Rejected) => MeetingHistoryAction.Reject,
+                (MeetingStatus.Rejected, MeetingStatus.Draft) => MeetingHistoryAction.ReturnToDraft,
+                (MeetingStatus.Approved, MeetingStatus.Published) => MeetingHistoryAction.Publish,
+                _ => MeetingHistoryAction.LegacyTransition,
+            },
+            AssignedApproverId = to == MeetingStatus.WaitingApproval ? meeting.AssignedApproverId : null,
             Actor = actor,
             OccurredAt = At(occurredAt),
         };

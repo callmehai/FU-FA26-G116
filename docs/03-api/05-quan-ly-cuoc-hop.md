@@ -1,12 +1,13 @@
-# 05 · Danh sách, tạo, đọc và sửa cuộc họp
+# 05 · API quản lý cuộc họp
 
-**UC-11 Create Meeting / UC-12 Update Meeting — SCRUM-17; UC-14 View Meeting List — SCRUM-18.** Mã UC ghi kèm tên vì UC-11/UC-12
+**UC-11 Create Meeting / UC-12 Update Meeting — SCRUM-17; UC-14 View Meeting List — SCRUM-18;
+UC-15 Submit / UC-16 Review / UC-17 Publish — SCRUM-19.** Mã UC ghi kèm tên vì UC-11/UC-12
 trong tài liệu quản lý vai trò đang dùng cho use case khác.
 
 ## Phạm vi
 
-Các endpoint cho người tạo khởi tạo cuộc họp nháp, chọn người duyệt và sửa trước khi gửi duyệt.
-Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. Danh sách
+Các endpoint cho người tạo khởi tạo cuộc họp nháp, chọn người duyệt, sửa, chuyển lifecycle và đọc
+lịch sử. Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. Danh sách
 `GET /api/meetings` thuộc SCRUM-18; giao diện hiện tại vẫn dùng dữ liệu mẫu và chưa tích hợp API.
 Khi tích hợp FE, form sẽ hiển thị xác nhận và mã cuộc họp sau khi tạo.
 
@@ -33,6 +34,25 @@ trang. Endpoint chỉ yêu cầu đăng nhập và tài khoản còn hoạt đ�
 Sửa chỉ được ở `Draft` và `Rejected`. Hệ thống đọc trạng thái mới nhất sau khi khóa dòng và trước
 khi validate nội dung. Trạng thái khác trả `409 MSG03`. Sửa `Rejected` giữ nguyên trạng thái và
 không thêm dòng lịch sử trạng thái.
+
+### Authorization matrix cho SCRUM-19
+
+| Hành vi | Quan hệ/capability bắt buộc | Chair có tự được phép không? |
+|---|---|---|
+| SubmitForApproval | Meeting Organizer (`CreatedById`) + `MeetingCreator`; meeting Draft và ready | Không |
+| ReturnToDraft | Meeting Organizer + `MeetingCreator`; meeting Rejected | Không |
+| Approve/Reject | Current `AssignedApproverId` + capability `MeetingApprover`; meeting WaitingApproval | Không; chỉ được nếu Chair đồng thời là current Assigned Approver |
+| Publish | Meeting Organizer + `MeetingCreator`; meeting Approved | Không; chỉ được nếu Chair đồng thời là Organizer |
+| Đọc full lifecycle history/rejection reason | Meeting Organizer hoặc current Assigned Approver | Chair relationship riêng không cấp quyền ở bất kỳ trạng thái nào |
+| Đọc timeline sau Publish | Người có quyền đọc meeting đã công bố | Chỉ timeline; rejection reason bị ẩn |
+
+Người từng là Assigned Approver không giữ quyền đọc history chỉ vì assignment cũ xuất hiện trong
+một history row. Authorization dùng assignment hiện tại; snapshot cũ là bằng chứng kiểm toán,
+không phải access grant. Organizer/current Assigned Approver được đọc full history ở mọi lifecycle
+status. Participant có thể đọc timeline sau Publish theo meeting read policy; rejection reason luôn
+được ẩn với họ, trừ khi đồng thời là Organizer hoặc current Assigned Approver. Former approver không
+có quyền chỉ vì assignment cũ, nhưng nếu họ là participant thì vẫn nhận timeline đã redacted sau
+Publish. Người không đủ quyền đọc meeting nhận `404` body rỗng như một meeting không tồn tại.
 
 ## Contract
 
@@ -133,6 +153,124 @@ PUT thay toàn bộ tám field thông tin cuộc họp bằng dữ liệu reques
 Không chấp nhận quyền thay đổi `id`, `createdById`, `status`, `createdAt`, `updatedAt` hay dữ liệu
 con qua body. Khi lưu cuộc họp bị từ chối, trạng thái vẫn là `Rejected`.
 
+### POST `/api/meetings/{id}/transitions` — SCRUM-19
+
+Các endpoint SCRUM-19 trong mục này là contract đã chốt để triển khai và bàn giao kiểm thử; chúng
+không tự khẳng định code đã được merge hay đạt Backend Ready.
+
+Endpoint nhận một action, không nhận actor, source/target status hoặc timestamp từ client:
+
+| Action | Body bổ sung | Transition |
+|---|---|---|
+| `SubmitForApproval` | `assignedApproverId` bắt buộc | Draft → WaitingApproval |
+| `Approve` | Không | WaitingApproval → Approved |
+| `Reject` | `reason` bắt buộc, sau trim 1–1.000 ký tự | WaitingApproval → Rejected |
+| `ReturnToDraft` | Không | Rejected → Draft |
+| `Publish` | Không | Approved → Published |
+
+`ReturnToDraft` chỉ do Organizer thực hiện, tạo đúng một lifecycle history, giữ nguyên rejection
+history/reason cũ và không tạo invitation. Sau đó Organizer sửa meeting ở Draft và submit lại bằng
+flow bình thường; `Rejected → WaitingApproval` trực tiếp không hợp lệ. Cycle mới có thể chọn một
+current Assigned Approver khác.
+
+Publish snapshot recipient bên trong transaction và persist notification/invitation jobs từ chính
+snapshot đó. Theo BR-45, snapshot chỉ gồm participant có user active và `Response != Delegated`;
+row đã Delegated không nhận invitation, và API không tự thêm người được ủy quyền chỉ từ
+`DelegatedToUserId`. Người đó vẫn đủ điều kiện nếu có participant row riêng, active và chưa Delegated.
+Thay đổi participant sau commit không sửa batch đã tạo. Transition và toàn bộ notification/outbox
+rows được commit cùng nhau; HTTP 200 xác nhận email job đã được xếp hàng, không xác nhận email đã
+được gửi. Worker SCRUM-15 xử lý gửi bất đồng bộ và quản lý retry/failure theo contract của worker.
+Các writer participant thuộc SCRUM-20 phải dùng cùng meeting-row lock/serialization protocol để một
+lần Publish và thay đổi participant đồng thời có ranh giới snapshot xác định.
+
+### GET `/api/meetings/{id}/history` — SCRUM-19
+
+Trả lifecycle history theo `occurredAt ASC`, rồi `id ASC`, có pagination. Mỗi item tối thiểu có
+`id`, `meetingId`, `action`, `fromStatus`, `resultingStatus`, `actorId`, `actorName`, `occurredAt`,
+`rejectionReason` và snapshot `assignedApproverId` khi action là SubmitForApproval.
+
+Meeting Organizer và current Assigned Approver đọc được toàn bộ history và rejection reason.
+Participant có quyền đọc meeting từ Published trở đi nhận timeline với `rejectionReason: null`;
+participant relationship không cấp quyền action. Former approver không có quyền chỉ nhờ assignment
+trước đây, nhưng một quan hệ participant độc lập vẫn cho timeline đã redacted sau Publish. API không
+có endpoint update/delete history; các row là immutable audit evidence.
+Query `page`/`pageSize` mặc định `1`/`20`; `page >= 1`, `pageSize` từ `1` đến `100`. Trả `200`
+với `{ items, page, pageSize, totalCount, totalPages }`; trang vượt cuối trả `items: []`.
+
+### GET `/api/meetings/{id}/submission-readiness` — SCRUM-19
+
+Đọc readiness từ cùng validator mà SubmitForApproval gọi lại trong transaction. Meeting chỉ ready
+khi mandatory meeting information và required agenda information đầy đủ; agenda required không
+được rỗng. Endpoint chỉ đọc, không đổi status/assignment hoặc tạo history/notification. `200 OK`
+trả `{ meetingId, status, ready, errors }`; dữ liệu chưa ready là `ready: false` cùng map lỗi, không
+phải HTTP error. Chỉ Organizer có `MeetingCreator` được gọi khi meeting ở `Draft`.
+
+Readiness áp dụng rule hiện tại trên dữ liệu đã persist; validator Meeting dùng lại
+`MeetingRules`, validator Agenda thuộc `Domain.Agenda`. Agenda phải có ít nhất một item. Bảng dưới
+được suy ra từ entity/configuration `Meeting` và `AgendaItem`; field nullable/không bắt buộc không
+được biến thành điều kiện submit mới.
+
+| Entity.field | Điều kiện khi submit | Schema/rule |
+|---|---|---|
+| `Meeting.Title` | Bắt buộc sau trim, 1–300 ký tự | `required`, EF `IsRequired`, max 300 |
+| `Meeting.StartsAt` | Bắt buộc và hợp lệ | `DateTimeOffset` non-null; request tạo/sửa phải có ISO 8601 với zone |
+| `Meeting.EndsAt` | Tùy chọn; nếu có phải sau `StartsAt` | Nullable theo entity/BR-25 |
+| `Meeting.Mode`, `Meeting.Sensitivity` | Phải là enum đã định nghĩa | Non-null, lưu chuỗi |
+| `Meeting.Location` | Không bắt buộc; tối đa 300 ký tự | Không thêm yêu cầu theo mode |
+| `Meeting.Description` | Không bắt buộc; tối đa 4.000 ký tự | Chuỗi optional về nghiệp vụ |
+| `AgendaItems` | Có ít nhất một item | Agenda là required cho submit |
+| `AgendaItem.Position` | Sau sắp xếp phải liên tục từ 1 đến N | Index không unique để hỗ trợ reorder; vị trí trùng/thiếu không ready |
+| `AgendaItem.Title` | Bắt buộc sau trim, 1–300 ký tự | `required`, EF `IsRequired`, max 300 |
+| `AgendaItem.Description` | Không bắt buộc; tối đa 4.000 ký tự | EF max 4000 |
+| `AgendaItem.PlannedDurationMinutes` | Lớn hơn 0 | `int` non-null; 0 không được xem là agenda hoàn chỉnh |
+| `AgendaItem.PresenterId` / `PresenterName` | Chính xác một: user nội bộ hoặc tên khách sau trim; tên khách tối đa 200 | Hai dạng presenter trong entity; không kiểm tra active presenter |
+| `AgendaItem.Status` | Phải là enum hợp lệ và `Pending` | Chưa mở agenda item trước khi submit |
+| Actual times, documents, voting sessions | Không bắt buộc | Phát sinh trong phiên họp hoặc thuộc flow khác |
+
+`assignedApproverId` được chọn ở POST chứ không quyết định readiness; Submit kiểm tra lại user active
+và capability `MeetingApprover` bên trong transaction. GET readiness không giữ transaction khi Organizer
+chọn người duyệt, nên POST luôn chạy lại toàn bộ kiểm tra.
+
+### Lỗi workflow SCRUM-19
+
+Mọi lỗi workflow có body `{ code, message, errors? }`; `errors` là map field -> message và chỉ có
+trên lỗi readiness/validation. Actor lấy từ phiên đăng nhập; client không gửi actor, source/target
+status hoặc timestamp. POST chỉ nhận JSON object với các field đúng theo action, không nhận field
+lạ/trùng, enum dạng số, hoặc field không áp dụng cho action. Request body tối đa 64 KiB.
+
+| HTTP | Code | Khi nào |
+|---:|---|---|
+| 400 | `MEETING_INVALID_TRANSITION_REQUEST` | JSON/action/GUID/field sai hoặc field không áp dụng cho action |
+| 400 | `MEETING_SUBMISSION_NOT_READY` | Submit thiếu meeting/agenda information; trả `errors` theo field |
+| 400 | `MEETING_APPROVER_INVALID` | Approver không còn active hoặc thiếu `MeetingApprover` |
+| 400 | `MEETING_REJECTION_REASON_REQUIRED` | Reject không có reason hoặc reason chỉ có whitespace |
+| 400 | `MEETING_REJECTION_REASON_TOO_LONG` | Reason sau trim dài hơn 1.000 ký tự |
+| 400 | `MEETING_INVALID_QUERY` | Query pagination history không hợp lệ |
+| 401 | — | Chưa đăng nhập |
+| 403 | `MEETING_ACTION_FORBIDDEN` | Đọc được meeting nhưng không phải actor/relationship/capability của action |
+| 403 | — | Tài khoản inactive theo active-user gate |
+| 404 | — | Meeting không tồn tại hoặc caller không được phép đọc/action trên tài nguyên; body rỗng |
+| 409 | `MEETING_STATUS_CONFLICT` | Source status sai hoặc request cạnh tranh thua transition khác; không ghi history/jobs |
+| 413 | `MEETING_BODY_TOO_LARGE` | Transition JSON vượt 64 KiB |
+| 415 | `MEETING_UNSUPPORTED_CONTENT_TYPE` | POST không dùng `application/json` |
+| 503 | `MEETING_WORKFLOW_FAILED` | Lỗi database/transaction khi transition; transaction rollback |
+| 503 | `MEETING_LOAD_FAILED` | Lỗi đọc readiness/history |
+
+`GET submission-readiness` trả `409 MEETING_STATUS_CONFLICT` nếu meeting không còn ở `Draft`;
+history/readiness trả `404` nếu caller không được phép xem resource. Retry action sau khi commit thường
+trả `409` do state đã đổi. Client nên tải lại meeting/history để xác định kết quả đã commit, và không
+được suy diễn rằng `409` có nghĩa lần gọi trước thất bại.
+
+### Ranh giới tích hợp
+
+SCRUM-19 ghi database notification cho approver/participants và durable email jobs trong cùng
+transaction với transition. Email được gửi sau commit bởi worker của SCRUM-15; cho đến khi worker đó
+được tích hợp và kiểm thử, response Publish chỉ xác nhận meeting đã Published và jobs đã xếp hàng.
+Database notification rows được tạo ở đây; realtime push theo SCRUM-14 là phần tích hợp riêng.
+Recipient filter đã chốt theo BR-45 và được gom thành shared policy để SCRUM-20 dùng lại. Writer
+participant/agenda thuộc các story tương ứng phải tham gia meeting-row lock protocol trước khi có thể
+xác nhận concurrency test của snapshot/readiness; update sau commit không đổi rows đã persist.
+
 ## Validation baseline
 
 | Field | Quy tắc |
@@ -222,7 +360,7 @@ stale content.
 - Nếu PUT trả `409 MSG03`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
 - Sau khi POST hoặc PUT thành công, có thể mở `meeting.id` bằng GET chi tiết. GET danh sách thuộc
   SCRUM-18 đã có contract ở trên; FE cần thay dữ liệu mẫu trong task tích hợp riêng.
-- UC hiện tại chưa có API lịch sử trạng thái, nên FE chưa thể hiển thị lịch sử thật.
+- SCRUM-19 cung cấp contract history ở trên; việc tích hợp timeline thật thuộc task FE riêng.
 
 ## Checklist BA cần hoàn tất
 
@@ -231,5 +369,7 @@ stale content.
 - Đồng bộ hai quy tắc đã ghi trong UC-11/UC-12 vào Jira SCRUM-17, cùng giới hạn length và format
   timezone khi có quyền cập nhật Jira.
 - Ghi rõ quyền GET, ownership và hành vi khi sửa `Rejected`.
+- Cập nhật sequence diagram UC-15 để bỏ direct `Rejected → WaitingApproval`, thêm
+  `ReturnToDraft`, và cập nhật UC-16 authorization/history theo BR-29/34/35.
 - Bổ sung mã thành công/lỗi chưa có vào sequence/message catalog.
 - Kiểm tra lại định danh UC theo convention Jira để tránh nhầm UC-11/UC-12 quản lý vai trò.

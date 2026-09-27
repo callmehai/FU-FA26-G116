@@ -19,6 +19,12 @@ public class MeetingStatusHistory : Entity
 
     public MeetingStatus ToStatus { get; set; }
 
+    public required MeetingHistoryAction Action { get; set; }
+
+    /// <summary>The approver selected for a submission; null for other actions and legacy rows.</summary>
+    public Guid? AssignedApproverId { get; set; }
+    public User? AssignedApprover { get; set; }
+
     public Guid ActorId { get; set; }
     public User Actor { get; set; } = null!;
 

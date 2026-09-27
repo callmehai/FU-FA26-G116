@@ -42,8 +42,12 @@ erDiagram
     User o|--o{ Meeting : "người duyệt được gán"
     User ||--o{ MeetingParticipant : "được mời"
     User ||--o{ MeetingStatusHistory : "người thực hiện"
+    User o|--o{ MeetingStatusHistory : "approver snapshot"
     Meeting ||--o{ MeetingParticipant : "thành phần tham dự"
     Meeting ||--o{ MeetingStatusHistory : "lịch sử trạng thái"
+    MeetingStatusHistory o|--o{ Notification : "nguồn thông báo"
+    MeetingStatusHistory o|--o{ EmailMessage : "nguồn invitation job"
+    User o|--o{ EmailMessage : "recipient snapshot"
 
     User {
         uuid Id PK
@@ -90,11 +94,36 @@ erDiagram
         uuid MeetingId FK
         string FromStatus "null ở bản ghi tạo mới"
         string ToStatus
+        string Action "Create|SubmitForApproval|Approve|Reject|ReturnToDraft|Publish|LegacyTransition"
         uuid ActorId FK
+        uuid AssignedApproverId FK "snapshot, null ngoài Submit hoặc dữ liệu cũ"
         string Reason "bắt buộc khi từ chối"
         timestamptz OccurredAt
     }
+    Notification {
+        uuid Id PK
+        uuid UserId FK "recipient"
+        uuid MeetingId FK
+        uuid OriginHistoryId FK "snapshot event"
+        string Type
+        string Title
+        string Body
+    }
+    EmailMessage {
+        uuid Id PK
+        uuid MeetingId FK
+        uuid OriginHistoryId FK "snapshot event"
+        uuid RecipientUserId FK
+        string MessageType "MeetingInvitation"
+        string PayloadSnapshot "publication-time content"
+        string ToAddress "captured at Publish"
+        string Status "Queued|Sent|Failed"
+    }
 ```
+
+`MeetingStatusHistory` là append-only audit evidence: FK từ history tới Meeting dùng RESTRICT, EF
+và PostgreSQL chặn sửa/xóa/truncate. Notification và invitation job của một transition giữ
+`OriginHistoryId` để truy được batch tạo cùng lần commit.
 
 `Response` và `Attendance` là **hai câu hỏi khác nhau**: một là người ta trả lời thư mời thế nào,
 hai là thực tế có mặt hay không. Nhận lời rồi không đến là chuyện bình thường, và số liệu quorum

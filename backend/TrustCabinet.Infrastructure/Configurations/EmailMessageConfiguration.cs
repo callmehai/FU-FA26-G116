@@ -13,6 +13,8 @@ public class EmailMessageConfiguration : IEntityTypeConfiguration<EmailMessage>
         builder.Property(e => e.Body).HasMaxLength(50000);
         builder.Property(e => e.LastError).HasMaxLength(2000);
         builder.Property(e => e.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
+        builder.Property(e => e.MessageType).HasConversion<string>().HasMaxLength(64);
+        builder.Property(e => e.PayloadSnapshot).HasMaxLength(50000);
 
         // The sender picks up whatever is still queued, oldest first.
         builder.HasIndex(e => new { e.Status, e.CreatedAt });
@@ -22,5 +24,19 @@ public class EmailMessageConfiguration : IEntityTypeConfiguration<EmailMessage>
             .WithMany()
             .HasForeignKey(e => e.MeetingId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(e => e.RecipientUser)
+            .WithMany()
+            .HasForeignKey(e => e.RecipientUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<MeetingStatusHistory>()
+            .WithMany()
+            .HasForeignKey(e => e.OriginHistoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(e => new { e.OriginHistoryId, e.RecipientUserId, e.MessageType })
+            .IsUnique()
+            .HasFilter("origin_history_id IS NOT NULL");
     }
 }

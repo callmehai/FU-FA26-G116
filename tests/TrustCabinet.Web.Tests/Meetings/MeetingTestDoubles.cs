@@ -1,4 +1,5 @@
 using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 
 namespace TrustCabinet.Web.Tests.Meetings;
@@ -6,12 +7,20 @@ namespace TrustCabinet.Web.Tests.Meetings;
 internal sealed class FakeMeetingRepository : IMeetingRepository
 {
     private readonly List<Meeting> _pendingAdds = [];
+    private readonly List<Notification> _pendingNotifications = [];
+    private readonly List<EmailMessage> _pendingEmailMessages = [];
 
     public List<Meeting> Meetings { get; } = [];
 
     public List<MeetingApproverOption> EligibleApprovers { get; } = [];
 
     public HashSet<Guid> IneligibleApproverIds { get; } = [];
+
+    public Dictionary<Guid, HashSet<Capability>> UserCapabilities { get; } = [];
+
+    public List<Notification> Notifications { get; } = [];
+
+    public List<EmailMessage> EmailMessages { get; } = [];
 
     public Exception? NextSaveThrows { get; set; }
 
@@ -109,6 +118,49 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
     public Task<bool> IsEligibleApproverAsync(Guid id, CancellationToken ct = default)
         => Task.FromResult(id != Guid.Empty && !IneligibleApproverIds.Contains(id));
 
+    public Task<Meeting?> FindWorkflowAsync(Guid id, bool forUpdate = false, CancellationToken ct = default)
+        => Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id));
+
+    public Task<MeetingHistoryPage> FindHistoryPageAsync(
+        Guid meetingId, int page, int pageSize, CancellationToken ct = default)
+    {
+        var records = Meetings.Single(m => m.Id == meetingId).StatusHistory
+            .OrderBy(item => item.OccurredAt)
+            .ThenBy(item => item.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(item => new MeetingHistoryRecord(
+                item.Id, meetingId, item.Action, item.FromStatus, item.ToStatus, item.ActorId,
+                item.Actor?.FullName ?? "Test User", item.OccurredAt,
+                item.Action == TrustCabinet.Domain.Enums.MeetingHistoryAction.Reject ? item.Reason : null,
+                item.AssignedApproverId))
+            .ToArray();
+        return Task.FromResult(new MeetingHistoryPage(
+            records, page, pageSize, Meetings.Single(m => m.Id == meetingId).StatusHistory.Count));
+    }
+
+    public Task<bool> IsActiveUserWithCapabilityAsync(
+        Guid userId, Capability capability, CancellationToken ct = default)
+        => Task.FromResult(UserCapabilities.TryGetValue(userId, out var capabilities)
+            && capabilities.Contains(capability));
+
+    public Task<string?> FindUserDisplayNameAsync(Guid userId, CancellationToken ct = default)
+        => Task.FromResult<string?>("Test User");
+
+    public Task AddNotificationsAsync(
+        IReadOnlyCollection<Notification> notifications, CancellationToken ct = default)
+    {
+        _pendingNotifications.AddRange(notifications);
+        return Task.CompletedTask;
+    }
+
+    public Task AddEmailMessagesAsync(
+        IReadOnlyCollection<EmailMessage> messages, CancellationToken ct = default)
+    {
+        _pendingEmailMessages.AddRange(messages);
+        return Task.CompletedTask;
+    }
+
     public Task AddAsync(Meeting meeting, CancellationToken ct = default)
     {
         _pendingAdds.Add(meeting);
@@ -122,11 +174,17 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         {
             NextSaveThrows = null;
             _pendingAdds.Clear();
+            _pendingNotifications.Clear();
+            _pendingEmailMessages.Clear();
             throw exception;
         }
 
         Meetings.AddRange(_pendingAdds);
         _pendingAdds.Clear();
+        Notifications.AddRange(_pendingNotifications);
+        _pendingNotifications.Clear();
+        EmailMessages.AddRange(_pendingEmailMessages);
+        _pendingEmailMessages.Clear();
         return Task.CompletedTask;
     }
 
@@ -134,6 +192,8 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         Func<CancellationToken, Task<T>> operation, CancellationToken ct = default)
     {
         var snapshot = Meetings.Select(Clone).ToArray();
+        var notifications = Notifications.ToArray();
+        var emailMessages = EmailMessages.ToArray();
         try
         {
             return await operation(ct);
@@ -142,6 +202,10 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         {
             Meetings.Clear();
             Meetings.AddRange(snapshot);
+            Notifications.Clear();
+            Notifications.AddRange(notifications);
+            EmailMessages.Clear();
+            EmailMessages.AddRange(emailMessages);
             throw;
         }
     }
@@ -162,6 +226,28 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
             EndsAt = meeting.EndsAt,
             CreatedById = meeting.CreatedById,
             AssignedApproverId = meeting.AssignedApproverId,
+            AgendaItems = meeting.AgendaItems.Select(item => new AgendaItem
+            {
+                Id = item.Id,
+                MeetingId = item.MeetingId,
+                Position = item.Position,
+                Title = item.Title,
+                Description = item.Description,
+                PlannedDurationMinutes = item.PlannedDurationMinutes,
+                PresenterId = item.PresenterId,
+                PresenterName = item.PresenterName,
+                Status = item.Status,
+            }).ToList(),
+            Participants = meeting.Participants.Select(participant => new MeetingParticipant
+            {
+                Id = participant.Id,
+                MeetingId = participant.MeetingId,
+                UserId = participant.UserId,
+                Role = participant.Role,
+                Response = participant.Response,
+                DelegatedToUserId = participant.DelegatedToUserId,
+                User = participant.User,
+            }).ToList(),
             StatusHistory = [.. meeting.StatusHistory],
         };
 }

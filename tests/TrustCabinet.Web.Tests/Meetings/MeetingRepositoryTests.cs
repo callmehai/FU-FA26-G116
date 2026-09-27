@@ -9,7 +9,7 @@ using TrustCabinet.Infrastructure.Meetings;
 
 namespace TrustCabinet.Web.Tests.Meetings;
 
-/// <summary>PostgreSQL integration checks for atomic creation and state-safe concurrent updates.</summary>
+/// <summary>PostgreSQL integration checks for meeting transactions, row locks and audit constraints.</summary>
 public sealed class MeetingRepositoryTests : IAsyncLifetime
 {
     private const string AdminConnectionString =
@@ -46,7 +46,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             }
 
             _db = NewContext();
-            await _db.Database.EnsureCreatedAsync();
+            await _db.Database.MigrateAsync();
 
             var role = new Role { Name = "Meeting test secretary", IsBuiltIn = false };
             _approverRoleId = role.Id;
@@ -60,11 +60,9 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             _creatorId = creator.Id;
             _db.Users.Add(creator);
             await _db.SaveChangesAsync();
-            _db.RoleCapabilities.Add(new RoleCapability
-            {
-                RoleId = role.Id,
-                Capability = Capability.MeetingApprover,
-            });
+            _db.RoleCapabilities.AddRange(
+                new RoleCapability { RoleId = role.Id, Capability = Capability.MeetingApprover },
+                new RoleCapability { RoleId = role.Id, Capability = Capability.MeetingCreator });
             await _db.SaveChangesAsync();
             _db.ChangeTracker.Clear();
         }
@@ -206,6 +204,207 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(MeetingOutcome.SaveFailed, result.Outcome);
         Assert.Equal(0, await _db.Meetings.CountAsync());
         Assert.Equal(0, await _db.MeetingStatusHistory.CountAsync());
+    }
+
+    [Fact]
+    public async Task PostgreSql_rejects_history_update_delete_truncate_and_meeting_deletion()
+    {
+        var created = await NewService().CreateAsync(Input(), _creatorId);
+        Assert.True(created.Succeeded);
+        var history = await _db.MeetingStatusHistory.SingleAsync();
+        var tampered = "tampered";
+
+        await Assert.ThrowsAsync<PostgresException>(async () =>
+            await _db.Database.ExecuteSqlInterpolatedAsync(
+                $"UPDATE meeting_status_history SET reason = {tampered} WHERE id = {history.Id}"));
+
+        await Assert.ThrowsAsync<PostgresException>(async () =>
+            await _db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE meeting_status_history"));
+
+        await Assert.ThrowsAsync<PostgresException>(async () =>
+            await _db.Database.ExecuteSqlInterpolatedAsync(
+                $"DELETE FROM meetings WHERE id = {created.Meeting!.Id}"));
+
+        Assert.Equal(1, await _db.MeetingStatusHistory.CountAsync());
+    }
+
+    [Fact]
+    public async Task Workflow_migration_backfills_known_actions_and_marks_unclassifiable_rows_legacy()
+    {
+        await _db.Database.MigrateAsync("20260924150426_MeetingApproverAndOptionalEndTime");
+        var meeting = new Meeting
+        {
+            Title = "Legacy history migration",
+            Description = string.Empty,
+            Status = MeetingStatus.Published,
+            Sensitivity = Sensitivity.Internal,
+            Mode = MeetingMode.InPerson,
+            Location = string.Empty,
+            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
+            CreatedById = _creatorId,
+        };
+        _db.Meetings.Add(meeting);
+        await _db.SaveChangesAsync();
+
+        var createHistoryId = Guid.CreateVersion7();
+        var legacyHistoryId = Guid.CreateVersion7();
+        var occurredAt = new DateTimeOffset(2026, 9, 20, 10, 0, 0, TimeSpan.Zero);
+        var reason = "Giữ nguyên lý do cũ";
+        await _db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO meeting_status_history
+                (id, meeting_id, from_status, to_status, actor_id, reason, occurred_at, created_at, updated_at)
+            VALUES
+                ({createHistoryId}, {meeting.Id}, {null}, {"Draft"}, {_creatorId}, {reason}, {occurredAt}, {occurredAt}, {occurredAt}),
+                ({legacyHistoryId}, {meeting.Id}, {"Draft"}, {"Published"}, {_creatorId}, {string.Empty}, {occurredAt.AddMinutes(1)}, {occurredAt}, {occurredAt})
+            """);
+
+        await _db.Database.MigrateAsync();
+        _db.ChangeTracker.Clear();
+        var rows = await _db.MeetingStatusHistory
+            .Where(item => item.MeetingId == meeting.Id)
+            .ToDictionaryAsync(item => item.Id);
+
+        Assert.Equal(MeetingHistoryAction.Create, rows[createHistoryId].Action);
+        Assert.Equal(MeetingHistoryAction.LegacyTransition, rows[legacyHistoryId].Action);
+        Assert.Null(rows[createHistoryId].AssignedApproverId);
+        Assert.Equal(reason, rows[createHistoryId].Reason);
+        Assert.Equal(occurredAt, rows[createHistoryId].OccurredAt);
+    }
+
+    [Fact]
+    public async Task Lifecycle_round_trip_persists_one_immutable_history_per_action_and_publish_snapshot()
+    {
+        var created = await NewService().CreateAsync(Input(), _creatorId);
+        Assert.True(created.Succeeded);
+        var meetingId = created.Meeting!.Id;
+        _db.AgendaItems.Add(new AgendaItem
+        {
+            MeetingId = meetingId,
+            Position = 1,
+            Title = "Báo cáo",
+            PlannedDurationMinutes = 30,
+            PresenterId = _creatorId,
+        });
+
+        var inactive = NewUser("Inactive recipient", _approverRoleId, isActive: false);
+        var delegated = NewUser("Delegated recipient", _approverRoleId);
+        _db.Users.AddRange(inactive, delegated);
+        await _db.SaveChangesAsync();
+        _db.MeetingParticipants.AddRange(
+            new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId },
+            new MeetingParticipant { MeetingId = meetingId, UserId = inactive.Id },
+            new MeetingParticipant
+            {
+                MeetingId = meetingId,
+                UserId = delegated.Id,
+                Response = InvitationResponse.Delegated,
+                DelegatedToUserId = _creatorId,
+            });
+        await _db.SaveChangesAsync();
+
+        var service = NewService();
+        var submit = await service.TransitionAsync(
+            meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, _creatorId),
+            _creatorId);
+        var reject = await service.TransitionAsync(
+            meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.Reject, Reason: "Bổ sung số liệu"),
+            _creatorId);
+        var returnToDraft = await service.TransitionAsync(
+            meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.ReturnToDraft),
+            _creatorId);
+        var resubmit = await service.TransitionAsync(
+            meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, _creatorId),
+            _creatorId);
+        var approve = await service.TransitionAsync(
+            meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.Approve),
+            _creatorId);
+        var publish = await service.TransitionAsync(
+            meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.Publish),
+            _creatorId);
+
+        Assert.All([submit, reject, returnToDraft, resubmit, approve, publish], result =>
+            Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome));
+        Assert.Equal(MeetingStatus.Published, publish.Meeting!.Status);
+
+        await using var verify = NewContext();
+        var history = await verify.MeetingStatusHistory
+            .Where(item => item.MeetingId == meetingId)
+            .OrderBy(item => item.OccurredAt)
+            .ThenBy(item => item.Id)
+            .ToListAsync();
+        Assert.Equal(7, history.Count);
+        Assert.Equal(
+            [
+                MeetingHistoryAction.Create,
+                MeetingHistoryAction.SubmitForApproval,
+                MeetingHistoryAction.Reject,
+                MeetingHistoryAction.ReturnToDraft,
+                MeetingHistoryAction.SubmitForApproval,
+                MeetingHistoryAction.Approve,
+                MeetingHistoryAction.Publish,
+            ],
+            history.Select(item => item.Action));
+        Assert.Equal("Bổ sung số liệu", history.Single(item => item.Action == MeetingHistoryAction.Reject).Reason);
+        Assert.All(history.Where(item => item.Action == MeetingHistoryAction.SubmitForApproval), item =>
+            Assert.Equal(_creatorId, item.AssignedApproverId));
+
+        var invitations = await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync();
+        Assert.Equal(_creatorId, Assert.Single(invitations).RecipientUserId);
+        Assert.Equal(history[^1].Id, invitations[0].OriginHistoryId);
+        var publishNotifications = await verify.Notifications
+            .Where(item => item.MeetingId == meetingId && item.Type == NotificationType.MeetingInvited)
+            .ToListAsync();
+        Assert.Equal(_creatorId, Assert.Single(publishNotifications).UserId);
+        Assert.Equal(history[^1].Id, publishNotifications[0].OriginHistoryId);
+    }
+
+    [Fact]
+    public async Task Concurrent_publish_requests_only_commit_one_transition_and_invitation_batch()
+    {
+        var created = await NewService().CreateAsync(Input(), _creatorId);
+        Assert.True(created.Succeeded);
+        var meetingId = created.Meeting!.Id;
+        _db.AgendaItems.Add(new AgendaItem
+        {
+            MeetingId = meetingId,
+            Position = 1,
+            Title = "Báo cáo",
+            PlannedDurationMinutes = 30,
+            PresenterId = _creatorId,
+        });
+        _db.MeetingParticipants.Add(new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId });
+        await _db.SaveChangesAsync();
+
+        var service = NewService();
+        Assert.Equal(MeetingWorkflowOutcome.Success, (await service.TransitionAsync(
+            meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, _creatorId),
+            _creatorId)).Outcome);
+        Assert.Equal(MeetingWorkflowOutcome.Success, (await service.TransitionAsync(
+            meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.Approve),
+            _creatorId)).Outcome);
+
+        await using var competingContext = NewContext();
+        var competingService = NewService(competingContext);
+        var request1 = service.TransitionAsync(
+            meetingId, new MeetingTransitionCommand(MeetingTransitionAction.Publish), _creatorId);
+        var request2 = competingService.TransitionAsync(
+            meetingId, new MeetingTransitionCommand(MeetingTransitionAction.Publish), _creatorId);
+        var results = await Task.WhenAll(request1, request2);
+
+        Assert.Single(results, result => result.Outcome == MeetingWorkflowOutcome.Success);
+        Assert.Single(results, result => result.Outcome == MeetingWorkflowOutcome.StatusConflict);
+        await using var verify = NewContext();
+        Assert.Single(await verify.MeetingStatusHistory.Where(item =>
+            item.MeetingId == meetingId && item.Action == MeetingHistoryAction.Publish).ToListAsync());
+        Assert.Single(await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync());
     }
 
     [Fact]

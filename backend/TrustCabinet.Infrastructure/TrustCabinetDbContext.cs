@@ -37,6 +37,29 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
     public DbSet<CallSession> CallSessions => Set<CallSession>();
     public DbSet<CallParticipant> CallParticipants => Set<CallParticipant>();
 
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        EnsureMeetingHistoryIsAppendOnly();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        EnsureMeetingHistoryIsAppendOnly();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void EnsureMeetingHistoryIsAppendOnly()
+    {
+        var mutation = ChangeTracker.Entries<MeetingStatusHistory>()
+            .FirstOrDefault(entry => entry.State is EntityState.Modified or EntityState.Deleted);
+        if (mutation is not null)
+        {
+            throw new InvalidOperationException("Meeting lifecycle history is append-only.");
+        }
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Used for User.Email and Role.Name. PostgreSQL compares text case-sensitively, so without citext

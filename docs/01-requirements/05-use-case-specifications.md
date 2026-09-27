@@ -107,3 +107,73 @@ sửa; trạng thái không cho sửa được kiểm tra trước nội dung re
 Luồng và mã phản hồi chi tiết: [hợp đồng API cập nhật cuộc họp](../03-api/05-quan-ly-cuoc-hop.md#put-apimeetingsid).
 Sơ đồ hiện có: [UpdateMeeting.png](../06-sequencediagram/meeting-management/UpdateMeeting.png).
 
+### UC-15: Gửi duyệt cuộc họp (SCRUM-19)
+
+- **Actor chính:** Meeting Organizer.
+- **Điều kiện tiên quyết:** Actor đã đăng nhập, tài khoản còn hoạt động, là người tổ chức của cuộc
+  họp và có capability `MeetingCreator`.
+- **Điều kiện sau khi thành công:** Cuộc họp chuyển từ `Draft` sang `WaitingApproval`; người duyệt
+  hợp lệ được gán cho approval cycle hiện tại; hệ thống ghi lifecycle history và tạo thông báo chờ
+  duyệt cho người đó trong cùng transaction.
+
+#### Luồng chính
+
+1. Hệ thống kiểm tra cuộc họp đang ở `Draft` và toàn bộ mandatory meeting information cùng required
+   agenda information đã đầy đủ theo BR-33. Agenda required không được rỗng.
+2. Organizer chọn một tài khoản đang hoạt động và hiện có capability `MeetingApprover`.
+3. Hệ thống khóa/đọc lại cuộc họp, chạy lại cùng readiness validator và kiểm tra lại người duyệt.
+4. Hệ thống gán người duyệt, chuyển `Draft → WaitingApproval`, ghi action
+   `SubmitForApproval` và tạo thông báo một cách nguyên tử.
+
+#### Luồng sửa và gửi lại sau từ chối
+
+1. Một cuộc họp `Rejected` không được submit trực tiếp sang `WaitingApproval`.
+2. Meeting Organizer thực hiện action `ReturnToDraft`; hệ thống chuyển `Rejected → Draft`, ghi đúng
+   một lifecycle history, giữ nguyên rejection history/reason cũ và không tạo invitation.
+3. Organizer sửa meeting ở `Draft`, rồi thực hiện lại luồng chính. Organizer có thể chọn một người
+   duyệt hợp lệ khác cho cycle mới.
+
+Sơ đồ UC-15 phải bỏ nhánh direct `Rejected → WaitingApproval` và thể hiện flow qua `Draft`.
+Quy tắc liên quan: BR-29, BR-33, BR-34, BR-35, BR-38.
+
+### UC-16: Phê duyệt hoặc từ chối cuộc họp (SCRUM-19)
+
+- **Actor chính:** Meeting Approver đang được gán cho approval cycle hiện tại.
+- **Điều kiện tiên quyết:** Actor đã đăng nhập, tài khoản còn hoạt động, vẫn có capability
+  `MeetingApprover`, đúng `Meeting.AssignedApproverId`, và cuộc họp đang `WaitingApproval`.
+- **Điều kiện sau khi thành công:** Approve chuyển sang `Approved`; Reject chuyển sang `Rejected`
+  và lưu rejection reason bắt buộc. Mỗi quyết định tạo đúng một lifecycle history.
+
+Chair chỉ là relationship với meeting và không tự có quyền Approve/Reject. Nếu một Chair đồng thời
+là current Assigned Approver thì quyền đến từ assignment cùng capability `MeetingApprover`.
+
+Meeting Organizer và current Assigned Approver được đọc toàn bộ lifecycle history, gồm rejection
+reason. Khi assignment đổi, người duyệt cũ không tiếp tục có quyền này chỉ vì từng là approver;
+history snapshot cũ không phải một access grant. Participant được quyền đọc meeting từ Published
+trở đi có thể xem timeline nhưng không nhận rejection reason.
+
+Quy tắc liên quan: BR-29, BR-35, BR-36, BR-38.
+Sơ đồ hiện có: [ReviewMeetingApproval.png](../06-sequencediagram/meeting-management/ReviewMeetingApproval.png).
+
+### UC-17: Công bố cuộc họp (SCRUM-19)
+
+- **Actor chính:** Meeting Organizer.
+- **Điều kiện tiên quyết:** Actor đã đăng nhập, tài khoản còn hoạt động, là người tổ chức được phép
+  thao tác cuộc họp, và cuộc họp đang `Approved`.
+- **Điều kiện sau khi thành công:** Cuộc họp chuyển sang `Published`, có lifecycle history; hệ thống
+  đã persist notification và invitation jobs cho recipient snapshot trong cùng transaction.
+
+Chair không tự có quyền Publish. Nếu Chair đồng thời là Meeting Organizer thì quyền Publish đến từ
+quan hệ Organizer.
+
+Recipient được snapshot trong transaction Publish bằng policy do SCRUM-20 sở hữu. Chỉ participant
+hợp lệ tại thời điểm snapshot được tạo notification/invitation; thay đổi participant sau commit
+không sửa batch đã tạo. Theo BR-45, chỉ participant có tài khoản active và response khác `Delegated`
+được nhận. Không tự thêm người được ủy quyền chỉ dựa trên `DelegatedToUserId`; nếu người đó có
+participant row riêng, active và chưa Delegated thì row đó đủ điều kiện như bình thường.
+Việc gửi email chạy bất đồng bộ theo SCRUM-15; lỗi delivery được retry và không đưa meeting từ
+`Published` về trạng thái cũ.
+
+Quy tắc liên quan: BR-29, BR-37–BR-45.
+Sơ đồ hiện có: [PublishMeeting.png](../06-sequencediagram/meeting-management/PublishMeeting.png).
+

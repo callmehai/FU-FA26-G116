@@ -20,6 +20,28 @@ public enum MeetingStatus
     Archived,
 }
 
+/// <summary>Server-owned lifecycle action written to immutable meeting history.</summary>
+public enum MeetingHistoryAction
+{
+    Create,
+    SubmitForApproval,
+    Approve,
+    Reject,
+    ReturnToDraft,
+    Publish,
+    LegacyTransition,
+}
+
+/// <summary>Actions accepted by the meeting transition API. LegacyTransition is never a command.</summary>
+public enum MeetingTransitionAction
+{
+    SubmitForApproval,
+    Approve,
+    Reject,
+    ReturnToDraft,
+    Publish,
+}
+
 /// <summary>
 /// How sensitive a meeting's contents are. Independent of <see cref="MeetingStatus"/>: it decides
 /// who may read documents and recordings, not where the meeting is in its lifecycle.

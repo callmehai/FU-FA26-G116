@@ -24,5 +24,14 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
             .WithMany()
             .HasForeignKey(n => n.MeetingId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne<MeetingStatusHistory>()
+            .WithMany()
+            .HasForeignKey(n => n.OriginHistoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(n => new { n.OriginHistoryId, n.UserId, n.Type })
+            .IsUnique()
+            .HasFilter("origin_history_id IS NOT NULL");
     }
 }

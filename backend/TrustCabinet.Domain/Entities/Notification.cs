@@ -22,6 +22,9 @@ public class Notification : Entity
     public Guid? MeetingId { get; set; }
     public Meeting? Meeting { get; set; }
 
+    /// <summary>The lifecycle history row that produced this notification, when applicable.</summary>
+    public Guid? OriginHistoryId { get; set; }
+
     /// <summary>Null until read. The unread count is the number of rows where this is null.</summary>
     public DateTimeOffset? ReadAt { get; set; }
 }

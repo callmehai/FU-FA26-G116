@@ -21,4 +21,13 @@ public interface IMeetingService
         Func<CancellationToken, Task<MeetingInput>> inputFactory,
         Guid actorId,
         CancellationToken ct = default);
+
+    Task<MeetingSubmissionReadiness> GetSubmissionReadinessAsync(
+        Guid id, Guid actorId, CancellationToken ct = default);
+
+    Task<MeetingWorkflowResult> TransitionAsync(
+        Guid id, MeetingTransitionCommand command, Guid actorId, CancellationToken ct = default);
+
+    Task<MeetingHistoryResult> GetHistoryAsync(
+        Guid id, Guid actorId, int page, int pageSize, CancellationToken ct = default);
 }

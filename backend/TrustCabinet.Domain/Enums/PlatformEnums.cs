@@ -4,6 +4,7 @@ namespace TrustCabinet.Domain.Enums;
 public enum NotificationType
 {
     MeetingInvited,
+    MeetingWaitingApproval,
     MeetingPublished,
     MeetingStartingSoon,
     MeetingCancelled,
@@ -20,6 +21,11 @@ public enum EmailStatus
     Sent,
     /// <summary>Every retry used up. Kept so a human can see what was never delivered.</summary>
     Failed,
+}
+
+public enum EmailMessageType
+{
+    MeetingInvitation,
 }
 
 /// <summary>Whether a call is person-to-person or the room attached to a meeting.</summary>
