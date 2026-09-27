@@ -20,9 +20,9 @@ what deliberately has no table (task tracking, voiceprints, organisations, org u
 an entity.
 
 **Before working on any feature, read [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md)
-and follow the team's Sprint, BA → BE → FE → Tester workflow.** It defines how a Use Case moves
-from Jira to Done, what each role hands over, and what Done means. Jira (project `SCRUM`) is the
-source of truth for requirements.
+and follow the team's Sprint, BE → FE → BA Final Review → Tester workflow.** It defines how a Use
+Case moves from Jira to Done, what each role hands over, and what Done means. Jira (project
+`SCRUM`) is the source of truth for requirements.
 
 ## Language rules
 
@@ -167,13 +167,27 @@ mode.
 
 ## Documentation
 
-When a change affects design or scope, update `docs/` in the **same commit** as the code.
+When a change affects the API contract, a technical decision or the scope, update `docs/` in the
+**same commit** as the code.
 
 - Significant technical decision → write a new ADR in [docs/05-decisions/](docs/05-decisions/);
   never edit an accepted one.
 - Scope change → update `docs/01-requirements/` **and**
   [frontend/src/pages/scopeData.ts](frontend/src/pages/scopeData.ts) (the landing page reads it).
 - New or changed endpoint → update [docs/03-api/](docs/03-api/).
+
+**BA settles the requirement docs last, not first.** BE writes the basic UC Specification and
+Sequence Diagram, then implements; BE and FE change whatever the Use Case needs and note each change
+as a comment in the Jira ticket; after FE integration the ticket moves to `BA Final Review` and BA
+brings the UC Specification, diagrams and business rules in line with the code. So:
+
+- when implementing, a deviation from the ticket or the docs is allowed — but tell the user and
+  make sure it is noted in the ticket;
+- when reviewing, never request changes, or ask BA to update docs, just because the UC
+  Specification, diagrams or business rules lag behind the code. Do flag a requirement change that
+  is **not** noted in the ticket, and docs the author wrote that contradict themselves.
+
+Details in [docs/DEVELOPMENT_WORKFLOW.md §2.1](docs/DEVELOPMENT_WORKFLOW.md#21-changing-a-requirement-during-implementation).
 
 ## Watch out
 
