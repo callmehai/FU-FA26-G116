@@ -21,6 +21,9 @@ BA → BE → FE → Tester, Definition of Done. Đọc trước khi bắt tay v
 | [03-api/](03-api/) | Hợp đồng REST & SignalR hub — FE và BE thống nhất ở đây trước khi code |
 | [04-meetings/](04-meetings/) | Biên bản họp nhóm, họp với giảng viên hướng dẫn, ghi chú sprint |
 | [05-decisions/](05-decisions/) | ADR — mỗi quyết định kỹ thuật một file, kèm lý do và phương án đã loại |
+| [06-sequencediagram/](06-sequencediagram/) | Sơ đồ tuần tự các luồng nghiệp vụ |
+| [07-classdiagram/](07-classdiagram/) | Sơ đồ lớp chi tiết của hệ thống |
+| [08-reports/](08-reports/) | Các báo cáo đồ án chính thức (Report 1, Report 2...) |
 | [assets/](assets/) | Ảnh, sơ đồ, file nguồn (`.drawio`, `.excalidraw`) được các tài liệu trên nhúng |
 
 ## Quy ước
