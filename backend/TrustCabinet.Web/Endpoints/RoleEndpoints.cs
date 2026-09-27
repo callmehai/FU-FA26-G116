@@ -162,11 +162,12 @@ public sealed record UpdateRoleRequest(string? Name, string? Description);
 
 /// <summary>One role as the role list shows it.</summary>
 /// <param name="UserCount">Every account holding it, deactivated ones included.</param>
+/// <param name="IsDefault">Whether this role is selected by default when creating a user.</param>
 public sealed record RoleResponse(
-    string Id, string Name, string? Description, bool IsBuiltIn, int UserCount)
+    string Id, string Name, string? Description, bool IsBuiltIn, bool IsDefault, int UserCount)
 {
     public static RoleResponse From(RoleSummary role) => new(
-        role.Id.ToString(), role.Name, role.Description, role.IsBuiltIn, role.UserCount);
+        role.Id.ToString(), role.Name, role.Description, role.IsBuiltIn, role.IsDefault, role.UserCount);
 }
 
 /// <summary>What a successful create or update returns: the code, and the role as it now stands.</summary>

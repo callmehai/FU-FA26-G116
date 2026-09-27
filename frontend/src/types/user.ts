@@ -1,33 +1,21 @@
 /**
- * Roles and capabilities, spelled exactly as the backend spells them: PascalCase enum names.
+ * Capabilities match the backend enum names. Role names and IDs come from role records.
  *
  * Capabilities gate what a user may do. The UI uses them only to decide what to render —
- * authorization is the backend's job, and every request is re-checked server-side. Which role
- * carries which capability is not known here: it lives in the `role_capabilities` table, an
- * administrator can change it at runtime, and the backend hands each user their own list at
- * sign-in. Never keep a copy of that mapping in the frontend.
+ * authorization is the backend's job, and every request is re-checked server-side. Roles are
+ * database records; the backend returns their IDs and display names. Which role carries which
+ * capability lives in `role_capabilities`, and must never be hardcoded here.
  */
-export type Role = 'Chair' | 'Secretary' | 'Member' | 'Admin'
-
 export type Capability = 'MeetingCreator' | 'MeetingApprover' | 'MinutesEditor' | 'AdminUsers'
-
-/** Vietnamese names for the four built-in roles. The backend returns only the enum name. */
-export const ROLE_LABEL: Record<Role, string> = {
-  Chair: 'Chủ toạ',
-  Secretary: 'Thư ký',
-  Member: 'Thành viên',
-  Admin: 'Quản trị viên',
-}
-
-export const ROLES = Object.keys(ROLE_LABEL) as Role[]
 
 /** The signed-in user — GET /api/auth/me, and the `user` of every sign-in response. */
 export interface CurrentUser {
   id: string
   email: string
   fullName: string
-  role: Role
-  /** May be empty: a Member signs in normally without holding any capability. */
+  roleId: string
+  roleName: string
+  /** May be empty: users with no granted capabilities may still sign in. */
   capabilities: Capability[]
 }
 
@@ -41,7 +29,8 @@ export interface UserAccount {
   id: string
   fullName: string
   email: string
-  role: Role
+  roleId: string
+  roleName: string
   isActive: boolean
   hasPassword: boolean
   hasGoogleLink: boolean
@@ -60,12 +49,12 @@ export interface CreateUserRequest {
   fullName: string
   email: string
   password: string
-  role: Role
+  roleId: string
 }
 
 /** No `password` and no `isActive`: the backend ignores both here, on purpose. */
 export interface UpdateUserRequest {
   fullName: string
   email: string
-  role: Role
+  roleId: string
 }

@@ -6,8 +6,8 @@ namespace TrustCabinet.Domain.Access;
 /// Generated once and pasted in, never computed: the migration that introduced <c>roles</c>, the
 /// reference-data seeder, the tests and every database have to agree on exactly these four values.
 ///
-/// This is the only place code names a particular role. Business code still never compares roles —
-/// it asks for a capability — so nothing outside seeding and ordering should read these.
+/// This is the only place the built-in role ids are declared. Callers use helpers here for stable
+/// ordering and the default user role; authorization rules still use capabilities.
 /// </summary>
 public static class BuiltInRoles
 {
@@ -23,6 +23,9 @@ public static class BuiltInRoles
     private static readonly Guid[] Ordered = [Chair, Secretary, Member, Admin];
 
     public static IReadOnlyList<Guid> All => Ordered;
+
+    /// <summary>The built-in role selected by default when creating a user.</summary>
+    public static bool IsDefault(Guid roleId) => roleId == Member;
 
     /// <summary>
     /// Where a role goes in a list: the built-in ones first in <see cref="All"/>'s order, then every
