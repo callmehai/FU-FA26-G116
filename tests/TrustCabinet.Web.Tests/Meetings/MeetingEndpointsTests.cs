@@ -130,8 +130,7 @@ public sealed class MeetingEndpointsTests : IDisposable
             "InPerson",
             "Phòng họp A",
             "Internal",
-            "Kế hoạch tuần.",
-            Guid.CreateVersion7());
+            "Kế hoạch tuần.");
 
     private static async Task<JsonDocument> JsonOf(HttpResponseMessage response)
         => JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -193,6 +192,66 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Post_transition_maps_null_rejection_reason_to_required_reason_error()
+    {
+        var creator = GivenCreator();
+        var approver = GivenMember("null-reason-approver@trustcabinet.local");
+        var meeting = OwnedMeetingBy(creator, approver.Id);
+        meeting.Status = MeetingStatus.WaitingApproval;
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[approver.Id] = [Capability.MeetingApprover];
+        using var client = _factory.ClientFor(approver, Capability.MeetingApprover);
+
+        var response = await client.PostAsync(
+            $"/api/meetings/{meeting.Id}/transitions",
+            new StringContent("{\"action\":\"Reject\",\"reason\":null}", Encoding.UTF8, "application/json"));
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MEETING_REJECTION_REASON_REQUIRED", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
+    }
+
+    [Fact]
+    public async Task Post_transition_rejects_submit_from_rejected_without_side_effects()
+    {
+        var creator = GivenCreator();
+        var formerApproverId = Guid.CreateVersion7();
+        var meeting = OwnedMeetingBy(creator, formerApproverId);
+        meeting.Status = MeetingStatus.Rejected;
+        meeting.StatusHistory.Add(new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            FromStatus = MeetingStatus.WaitingApproval,
+            ToStatus = MeetingStatus.Rejected,
+            Action = MeetingHistoryAction.Reject,
+            ActorId = formerApproverId,
+            AssignedApproverId = formerApproverId,
+            Reason = "Cần bổ sung số liệu",
+            OccurredAt = DateTimeOffset.UtcNow,
+        });
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+
+        var response = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions", new
+        {
+            action = "SubmitForApproval",
+            assignedApproverId = Guid.CreateVersion7(),
+        });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal("MEETING_STATUS_CONFLICT", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(MeetingStatus.Rejected, meeting.Status);
+        Assert.Equal(formerApproverId, meeting.AssignedApproverId);
+        Assert.Single(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Empty(_factory.Meetings.EmailMessages);
+    }
+
+    [Fact]
     public async Task Get_submission_readiness_uses_persisted_meeting_and_agenda_data_without_writing()
     {
         var creator = GivenCreator();
@@ -217,6 +276,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var creator = GivenCreator();
         var approver = GivenMember("assigned-history@trustcabinet.local");
         var meeting = OwnedMeetingBy(creator, approver.Id);
+        meeting.Status = MeetingStatus.Rejected;
         meeting.StatusHistory.Add(new MeetingStatusHistory
         {
             MeetingId = meeting.Id,
@@ -266,6 +326,81 @@ public sealed class MeetingEndpointsTests : IDisposable
         var entry = Assert.Single(body.RootElement.GetProperty("items").EnumerateArray());
         Assert.Equal("Reject", entry.GetProperty("action").GetString());
         Assert.Equal(JsonValueKind.Null, entry.GetProperty("rejectionReason").ValueKind);
+    }
+
+    [Fact]
+    public async Task Get_history_does_not_treat_a_legacy_draft_approver_as_current()
+    {
+        var creator = GivenCreator();
+        var formerApprover = GivenMember("legacy-draft-approver@trustcabinet.local");
+        var meeting = OwnedMeetingBy(creator, formerApprover.Id);
+        meeting.StatusHistory.Add(new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            FromStatus = null,
+            ToStatus = MeetingStatus.Draft,
+            Action = MeetingHistoryAction.Create,
+            ActorId = creator.Id,
+            OccurredAt = DateTimeOffset.UtcNow,
+        });
+        _factory.Meetings.Meetings.Add(meeting);
+        using var client = _factory.ClientFor(formerApprover);
+
+        var detail = await client.GetAsync($"/api/meetings/{meeting.Id}");
+        var history = await client.GetAsync($"/api/meetings/{meeting.Id}/history");
+        var list = await client.GetAsync("/api/meetings");
+
+        Assert.Equal(HttpStatusCode.NotFound, detail.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, history.StatusCode);
+        var action = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions", new
+        {
+            action = "Approve",
+        });
+        Assert.Equal(HttpStatusCode.NotFound, action.StatusCode);
+        using var listBody = await JsonOf(list);
+        Assert.Empty(listBody.RootElement.GetProperty("items").EnumerateArray());
+    }
+
+    [Fact]
+    public async Task Get_history_returns_empty_for_an_out_of_range_page_before_offset_cast()
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        meeting.StatusHistory.Add(new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            ToStatus = MeetingStatus.Draft,
+            Action = MeetingHistoryAction.Create,
+            ActorId = creator.Id,
+            OccurredAt = DateTimeOffset.UtcNow,
+        });
+        _factory.Meetings.Meetings.Add(meeting);
+        using var client = _factory.ClientFor(creator);
+
+        var response = await client.GetAsync(
+            $"/api/meetings/{meeting.Id}/history?page=2147483647&pageSize=100");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Empty(body.RootElement.GetProperty("items").EnumerateArray());
+        Assert.Equal(1, body.RootElement.GetProperty("totalCount").GetInt64());
+    }
+
+    [Fact]
+    public async Task Get_history_returns_invalid_query_when_offset_is_unrepresentable_within_data()
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.HistoryTotalCountOverride = long.MaxValue;
+        using var client = _factory.ClientFor(creator);
+
+        var response = await client.GetAsync(
+            $"/api/meetings/{meeting.Id}/history?page=2147483647&pageSize=100");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MEETING_INVALID_QUERY", body.RootElement.GetProperty("code").GetString());
     }
 
     [Fact]
@@ -437,7 +572,6 @@ public sealed class MeetingEndpointsTests : IDisposable
         {
             title = "Giao ban tuần",
             startsAt = "2026-10-01T09:00:00+07:00",
-            assignedApproverId = Guid.CreateVersion7(),
         };
 
         var response = await client.PostAsJsonAsync("/api/meetings", request);
@@ -448,23 +582,27 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal("InPerson", meeting.GetProperty("mode").GetString());
         Assert.Equal("Normal", meeting.GetProperty("sensitivity").GetString());
         Assert.Equal(JsonValueKind.Null, meeting.GetProperty("endsAt").ValueKind);
+        Assert.Equal(JsonValueKind.Null, meeting.GetProperty("assignedApproverId").ValueKind);
     }
 
     [Fact]
-    public async Task Post_rejects_an_approver_without_the_required_capability()
+    public async Task Post_does_not_create_a_current_assignment_from_a_client_supplied_approver()
     {
-        var invalidApproverId = Guid.CreateVersion7();
-        _factory.Meetings.IneligibleApproverIds.Add(invalidApproverId);
-        using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
+        var creator = GivenCreator();
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
 
-        var response = await client.PostAsJsonAsync(
-            "/api/meetings", ValidRequest() with { AssignedApproverId = invalidApproverId });
+        var response = await client.PostAsJsonAsync("/api/meetings", new
+        {
+            title = "Giao ban tuần",
+            startsAt = "2026-10-01T09:00:00+07:00",
+            assignedApproverId = Guid.CreateVersion7(),
+        });
         using var body = await JsonOf(response);
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal("MEETING_INVALID_INFORMATION", body.RootElement.GetProperty("code").GetString());
-        Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("assignedApproverId", out _));
-        Assert.Empty(_factory.Meetings.Meetings);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal(JsonValueKind.Null,
+            body.RootElement.GetProperty("meeting").GetProperty("assignedApproverId").ValueKind);
+        Assert.Null(Assert.Single(_factory.Meetings.Meetings).AssignedApproverId);
     }
 
     [Fact]
@@ -592,8 +730,7 @@ public sealed class MeetingEndpointsTests : IDisposable
             location = "Phòng họp B",
             sensitivity = "Secret",
             description = "Nội dung mới",
-            assignedApproverId = createBody.RootElement.GetProperty("meeting")
-                .GetProperty("assignedApproverId").GetGuid(),
+            assignedApproverId = Guid.CreateVersion7(),
             status = "Published",
             createdById = Guid.CreateVersion7(),
         });
@@ -605,18 +742,22 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal("Hybrid", updateBody.RootElement.GetProperty("meeting").GetProperty("mode").GetString());
         Assert.Equal("Draft", updateBody.RootElement.GetProperty("meeting").GetProperty("status").GetString());
         Assert.Equal(creator.Id, updateBody.RootElement.GetProperty("meeting").GetProperty("createdById").GetGuid());
+        Assert.Equal(JsonValueKind.Null,
+            updateBody.RootElement.GetProperty("meeting").GetProperty("assignedApproverId").ValueKind);
     }
 
-    [Fact]
-    public async Task Put_returns_MSG03_if_the_meeting_is_not_editable()
+    [Theory]
+    [InlineData(MeetingStatus.WaitingApproval)]
+    [InlineData(MeetingStatus.Rejected)]
+    public async Task Put_returns_MSG03_if_the_meeting_is_not_editable(MeetingStatus status)
     {
         var creator = GivenCreator();
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
         var meeting = new Meeting
         {
-            Title = "Đã gửi duyệt",
+            Title = status.ToString(),
             Description = string.Empty,
-            Status = MeetingStatus.WaitingApproval,
+            Status = status,
             Sensitivity = Sensitivity.Normal,
             Mode = MeetingMode.InPerson,
             CreatedById = creator.Id,
@@ -630,7 +771,7 @@ public sealed class MeetingEndpointsTests : IDisposable
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         Assert.Equal("MSG03", body.RootElement.GetProperty("code").GetString());
-        Assert.Equal("Đã gửi duyệt", meeting.Title);
+        Assert.Equal(status.ToString(), meeting.Title);
     }
 
     [Theory]
@@ -748,7 +889,6 @@ public sealed class MeetingEndpointsTests : IDisposable
         {
             StartsAt = "2026-10-01T09:00:00+07:00",
             EndsAt = "2026-10-01T09:00:00+07:00",
-            AssignedApproverId = meeting.AssignedApproverId,
         };
 
         var response = await client.PutAsJsonAsync($"/api/meetings/{meeting.Id}", request);
@@ -771,10 +911,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         _factory.Meetings.NextSaveThrows = new Npgsql.NpgsqlException("database unavailable");
 
         var response = await client.PutAsJsonAsync(
-            $"/api/meetings/{meeting.Id}", ValidRequest("Không được lưu") with
-            {
-                AssignedApproverId = meeting.AssignedApproverId,
-            });
+            $"/api/meetings/{meeting.Id}", ValidRequest("Không được lưu"));
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);

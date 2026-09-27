@@ -46,11 +46,9 @@ public class MeetingServiceTests
         string? mode = "InPerson",
         string location = "Phòng họp A",
         string? sensitivity = "Internal",
-        string description = "Nội dung",
-        Guid? assignedApproverId = null)
+        string description = "Nội dung")
         => new(
-            title, startsAt, endsAt, mode, location, sensitivity, description,
-            assignedApproverId ?? Guid.CreateVersion7());
+            title, startsAt, endsAt, mode, location, sensitivity, description);
 
     private Meeting GivenMeeting(MeetingStatus status = MeetingStatus.Draft, Guid? creatorId = null)
     {
@@ -65,7 +63,6 @@ public class MeetingServiceTests
             StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
             EndsAt = new DateTimeOffset(2026, 10, 1, 3, 0, 0, TimeSpan.Zero),
             CreatedById = creatorId ?? _actorId,
-            AssignedApproverId = _actorId,
         };
         _repository.Meetings.Add(meeting);
         return meeting;
@@ -187,7 +184,7 @@ public class MeetingServiceTests
     }
 
     [Fact]
-    public async Task Create_rejects_a_missing_approver()
+    public async Task Create_leaves_the_approver_unassigned_until_submission()
     {
         var input = new MeetingInput(
             "Giao ban tuần",
@@ -196,38 +193,31 @@ public class MeetingServiceTests
             null,
             null,
             null,
-            null,
             null);
 
         var result = await NewService().CreateAsync(input, _actorId);
 
-        Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
-        Assert.Contains("assignedApproverId", result.Errors!.Keys);
-        Assert.Empty(_repository.Meetings);
-        Assert.Equal(0, _repository.SaveCount);
+        Assert.True(result.Succeeded);
+        Assert.Null(Assert.Single(_repository.Meetings).AssignedApproverId);
     }
 
     [Fact]
-    public async Task Create_rejects_an_approver_without_the_required_capability()
+    public async Task Create_does_not_assign_or_validate_a_draft_approver()
     {
         var approverId = Guid.CreateVersion7();
         _repository.IneligibleApproverIds.Add(approverId);
 
-        var result = await NewService().CreateAsync(
-            ValidInput(assignedApproverId: approverId), _actorId);
+        var result = await NewService().CreateAsync(ValidInput(), _actorId);
 
-        Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
-        Assert.Contains("assignedApproverId", result.Errors!.Keys);
-        Assert.Empty(_repository.Meetings);
-        Assert.Equal(0, _repository.SaveCount);
+        Assert.True(result.Succeeded);
+        Assert.Null(Assert.Single(_repository.Meetings).AssignedApproverId);
     }
 
-    [Theory]
-    [InlineData(MeetingStatus.Draft)]
-    [InlineData(MeetingStatus.Rejected)]
-    public async Task Update_changes_the_editable_fields_and_preserves_status(MeetingStatus status)
+    [Fact]
+    public async Task Update_changes_draft_fields_and_clears_legacy_assignment_without_changing_lifecycle()
     {
-        var meeting = GivenMeeting(status);
+        var meeting = GivenMeeting(MeetingStatus.Draft);
+        meeting.AssignedApproverId = _otherActorId;
         var priorHistory = meeting.StatusHistory.ToArray();
 
         var result = await NewService().UpdateAsync(
@@ -240,7 +230,8 @@ public class MeetingServiceTests
         Assert.Equal("Giao ban mới", saved.Title);
         Assert.Equal(MeetingMode.Hybrid, saved.Mode);
         Assert.Equal(Sensitivity.Secret, saved.Sensitivity);
-        Assert.Equal(status, saved.Status);
+        Assert.Equal(MeetingStatus.Draft, saved.Status);
+        Assert.Null(saved.AssignedApproverId);
         Assert.Equal(_actorId, saved.CreatedById);
         Assert.Equal(priorHistory, saved.StatusHistory);
     }
@@ -252,7 +243,7 @@ public class MeetingServiceTests
 
         var result = await NewService().UpdateAsync(
             meeting.Id,
-            ValidInput(endsAt: null, mode: null, sensitivity: null, assignedApproverId: _actorId),
+            ValidInput(endsAt: null, mode: null, sensitivity: null),
             _actorId);
 
         Assert.True(result.Succeeded);
@@ -270,7 +261,7 @@ public class MeetingServiceTests
 
         var result = await NewService().UpdateAsync(
             meeting.Id,
-            ValidInput(title: "", startsAt: "bad", assignedApproverId: _actorId),
+            ValidInput(title: "", startsAt: "bad"),
             _actorId);
 
         Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
@@ -280,25 +271,8 @@ public class MeetingServiceTests
         Assert.Equal(0, _repository.SaveCount);
     }
 
-    [Fact]
-    public async Task Update_rejects_an_ineligible_approver_without_saving()
-    {
-        var meeting = GivenMeeting();
-        var invalidApproverId = Guid.CreateVersion7();
-        _repository.IneligibleApproverIds.Add(invalidApproverId);
-
-        var result = await NewService().UpdateAsync(
-            meeting.Id,
-            ValidInput(title: "Không được lưu", assignedApproverId: invalidApproverId),
-            _actorId);
-
-        Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
-        Assert.Contains("assignedApproverId", result.Errors!.Keys);
-        Assert.Equal("Giao ban tuần", Assert.Single(_repository.Meetings).Title);
-        Assert.Equal(0, _repository.SaveCount);
-    }
-
     [Theory]
+    [InlineData(MeetingStatus.Rejected)]
     [InlineData(MeetingStatus.WaitingApproval)]
     [InlineData(MeetingStatus.Approved)]
     [InlineData(MeetingStatus.Published)]
@@ -306,7 +280,7 @@ public class MeetingServiceTests
     [InlineData(MeetingStatus.Ended)]
     [InlineData(MeetingStatus.MinutesIssued)]
     [InlineData(MeetingStatus.Archived)]
-    public async Task Update_rejects_a_meeting_outside_draft_or_rejected(MeetingStatus status)
+    public async Task Update_rejects_a_meeting_outside_draft(MeetingStatus status)
     {
         var meeting = GivenMeeting(status);
         var oldTitle = meeting.Title;
@@ -328,7 +302,7 @@ public class MeetingServiceTests
         var updatedAt = meeting.UpdatedAt;
 
         var result = await NewService().UpdateAsync(
-            meeting.Id, ValidInput(assignedApproverId: _actorId), _actorId);
+            meeting.Id, ValidInput(), _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Equal(updatedAt, meeting.UpdatedAt);
@@ -466,7 +440,7 @@ public class MeetingServiceTests
 
         var result = await NewService().UpdateAsync(
             meeting.Id,
-            ValidInput(title: "Không được lưu", assignedApproverId: _actorId),
+            ValidInput(title: "Không được lưu"),
             _actorId);
 
         Assert.Equal(MeetingOutcome.SaveFailed, result.Outcome);

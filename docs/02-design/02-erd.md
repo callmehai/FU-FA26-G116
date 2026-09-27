@@ -77,7 +77,7 @@ erDiagram
         timestamptz StartsAt
         timestamptz EndsAt "nullable"
         uuid CreatedById FK
-        uuid AssignedApproverId FK "nullable với dữ liệu cũ; bắt buộc khi tạo mới"
+        uuid AssignedApproverId FK "null ở Draft; assignment hiện tại, set khi Submit; clear khi ReturnToDraft"
     }
     MeetingParticipant {
         uuid Id PK

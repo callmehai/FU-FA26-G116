@@ -74,14 +74,7 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
     }
 
     private IQueryable<Meeting> AccessibleTo(Guid actorId)
-        => db.Meetings.AsNoTracking().Where(m => m.CreatedById == actorId
-            || (m.Status != MeetingStatus.Draft && m.AssignedApproverId == actorId)
-            || ((m.Status == MeetingStatus.Published
-                    || m.Status == MeetingStatus.InProgress
-                    || m.Status == MeetingStatus.Ended
-                    || m.Status == MeetingStatus.MinutesIssued
-                    || m.Status == MeetingStatus.Archived)
-                && m.Participants.Any(participant => participant.UserId == actorId)));
+        => db.Meetings.AsNoTracking().Where(MeetingReadPolicy.ForUser(actorId));
 
     public Task<Meeting?> FindOwnedAsync(
         Guid id, Guid creatorId, CancellationToken ct = default)
@@ -156,13 +149,23 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
         return await query.SingleOrDefaultAsync(meeting => meeting.Id == id, ct);
     }
 
-    public async Task<MeetingHistoryPage> FindHistoryPageAsync(
+    public async Task<MeetingHistoryPage?> FindHistoryPageAsync(
         Guid meetingId, int page, int pageSize, CancellationToken ct = default)
     {
         var history = db.MeetingStatusHistory.AsNoTracking()
             .Where(item => item.MeetingId == meetingId);
         var total = await history.LongCountAsync(ct);
         var offset = ((long)page - 1) * pageSize;
+        if (offset >= total)
+        {
+            return new MeetingHistoryPage([], page, pageSize, total);
+        }
+
+        if (offset > int.MaxValue)
+        {
+            return null;
+        }
+
         var items = await history
             .OrderBy(item => item.OccurredAt)
             .ThenBy(item => item.Id)

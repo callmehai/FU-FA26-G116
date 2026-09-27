@@ -13,7 +13,7 @@ public static partial class MeetingRules
     private const int MaxDescriptionLength = 4000;
 
     public static bool IsEditable(MeetingStatus status)
-        => status is MeetingStatus.Draft or MeetingStatus.Rejected;
+        => status == MeetingStatus.Draft;
 
     public static bool TryValidate(
         MeetingInput input,
@@ -37,11 +37,6 @@ public static partial class MeetingRules
             {
                 endsAt = parsedEndsAt.ToUniversalTime();
             }
-        }
-
-        if (input.AssignedApproverId is null || input.AssignedApproverId == Guid.Empty)
-        {
-            fieldErrors["assignedApproverId"] = "Vui lòng chọn người duyệt.";
         }
 
         var mode = MeetingMode.InPerson;
@@ -75,8 +70,7 @@ public static partial class MeetingRules
             mode,
             location,
             sensitivity,
-            description,
-            input.AssignedApproverId!.Value);
+            description);
         return true;
     }
 

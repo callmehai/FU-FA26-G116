@@ -86,11 +86,9 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 ### UC-11: Tạo cuộc họp (SCRUM-17)
 
-Quyết định yêu cầu được người yêu cầu xác nhận ngày 24/09/2026:
-
-- `assignedApproverId` là trường bắt buộc. Người duyệt được gán phải là tài khoản đang hoạt động
-  có capability `MeetingApprover`. Thiếu trường này thì tạo cuộc họp bị từ chối với lỗi validation;
-  hệ thống không lưu bản nháp.
+Cuộc họp được tạo ở trạng thái `Draft` và chưa có Assigned Meeting Approver. Organizer chọn người
+duyệt hợp lệ ở action `SubmitForApproval`; người đó phải là tài khoản đang hoạt động có capability
+`MeetingApprover`. Việc chưa chọn người duyệt không ngăn lưu bản nháp.
 - `endsAt` là trường tùy chọn. Khi bỏ qua hoặc gửi `null`, cuộc họp được tạo với giờ kết thúc dự
   kiến chưa xác định. Khi có giá trị, giờ kết thúc phải sau `startsAt`.
 
@@ -99,10 +97,11 @@ Sơ đồ hiện có: [CreateMeeting.png](../06-sequencediagram/meeting-manageme
 
 ### UC-12: Cập nhật thông tin cuộc họp (SCRUM-17)
 
-PUT thay toàn bộ thông tin có thể sửa của cuộc họp. Theo cùng quyết định yêu cầu của UC-11,
-payload cập nhật phải có `assignedApproverId`, còn `endsAt` có thể bỏ qua hoặc gửi `null`. Nếu có
-`endsAt`, giá trị phải sau `startsAt`. Validation áp dụng khi cuộc họp còn ở trạng thái được phép
-sửa; trạng thái không cho sửa được kiểm tra trước nội dung request.
+PUT thay toàn bộ bảy trường thông tin có thể sửa của cuộc họp; payload không nhận assignment. Chỉ
+meeting ở `Draft` được sửa. Meeting `Rejected` phải qua action `ReturnToDraft` trước; sau đó
+assignment cycle cũ đã được xóa và người duyệt mới được chọn ở lần Submit tiếp theo. `endsAt` có thể
+bỏ qua hoặc gửi `null`; nếu có, giá trị phải sau `startsAt`. Trạng thái được kiểm tra trước nội dung
+request.
 
 Luồng và mã phản hồi chi tiết: [hợp đồng API cập nhật cuộc họp](../03-api/05-quan-ly-cuoc-hop.md#put-apimeetingsid).
 Sơ đồ hiện có: [UpdateMeeting.png](../06-sequencediagram/meeting-management/UpdateMeeting.png).
@@ -133,7 +132,8 @@ Sơ đồ hiện có: [UpdateMeeting.png](../06-sequencediagram/meeting-manageme
 3. Organizer sửa meeting ở `Draft`, rồi thực hiện lại luồng chính. Organizer có thể chọn một người
    duyệt hợp lệ khác cho cycle mới.
 
-Sơ đồ UC-15 phải bỏ nhánh direct `Rejected → WaitingApproval` và thể hiện flow qua `Draft`.
+Sequence diagram UC-15 chỉ cho submit từ `Draft`. Nếu meeting đang `Rejected`, sơ đồ thể hiện riêng
+`ReturnToDraft` trước khi Organizer sửa và submit lại: [sơ đồ](../06-sequencediagram/meeting-management/SubmitMeetingForApproval.png), [source Mermaid](../06-sequencediagram/meeting-management/SubmitMeetingForApproval.mmd).
 Quy tắc liên quan: BR-29, BR-33, BR-34, BR-35, BR-38.
 
 ### UC-16: Phê duyệt hoặc từ chối cuộc họp (SCRUM-19)
@@ -168,12 +168,12 @@ quan hệ Organizer.
 
 Recipient được snapshot trong transaction Publish bằng policy do SCRUM-20 sở hữu. Chỉ participant
 hợp lệ tại thời điểm snapshot được tạo notification/invitation; thay đổi participant sau commit
-không sửa batch đã tạo. Theo BR-45, chỉ participant có tài khoản active và response khác `Delegated`
+không sửa batch đã tạo. Theo BR-54, chỉ participant có tài khoản active và response khác `Delegated`
 được nhận. Không tự thêm người được ủy quyền chỉ dựa trên `DelegatedToUserId`; nếu người đó có
 participant row riêng, active và chưa Delegated thì row đó đủ điều kiện như bình thường.
 Việc gửi email chạy bất đồng bộ theo SCRUM-15; lỗi delivery được retry và không đưa meeting từ
 `Published` về trạng thái cũ.
 
-Quy tắc liên quan: BR-29, BR-37–BR-45.
+Quy tắc liên quan: BR-29, BR-37–BR-45, BR-54.
 Sơ đồ hiện có: [PublishMeeting.png](../06-sequencediagram/meeting-management/PublishMeeting.png).
 

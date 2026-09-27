@@ -29,7 +29,7 @@ public sealed class MeetingWorkflowServiceTests
             Location = "Phòng A",
             StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
             CreatedById = _organizerId,
-            AssignedApproverId = _approverId,
+            AssignedApproverId = status == MeetingStatus.Draft ? null : _approverId,
         };
         _repository.Meetings.Add(meeting);
         return meeting;
@@ -90,6 +90,7 @@ public sealed class MeetingWorkflowServiceTests
             Action = MeetingHistoryAction.Reject,
             ActorId = _approverId,
             Reason = "Cần bổ sung số liệu",
+            AssignedApproverId = _approverId,
             OccurredAt = DateTimeOffset.UtcNow.AddMinutes(-1),
         });
 
@@ -100,11 +101,37 @@ public sealed class MeetingWorkflowServiceTests
 
         Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
         Assert.Equal(MeetingStatus.Draft, meeting.Status);
+        Assert.Null(meeting.AssignedApproverId);
         Assert.Equal(2, meeting.StatusHistory.Count);
         Assert.Equal("Cần bổ sung số liệu", meeting.StatusHistory.First().Reason);
         Assert.Equal(MeetingHistoryAction.ReturnToDraft, meeting.StatusHistory.Last().Action);
+        Assert.Equal(_approverId, meeting.StatusHistory.First().AssignedApproverId);
         Assert.Empty(_repository.EmailMessages);
         Assert.Empty(_repository.Notifications);
+        Assert.Equal(MeetingWorkflowOutcome.NotFound,
+            (await NewService().GetHistoryAsync(meeting.Id, _approverId, 1, 20)).Outcome);
+        Assert.Equal(MeetingWorkflowOutcome.Success,
+            (await NewService().GetHistoryAsync(meeting.Id, _organizerId, 1, 20)).Outcome);
+    }
+
+    [Fact]
+    public async Task Draft_approver_selected_by_legacy_data_cannot_read_detail_or_history()
+    {
+        var meeting = GivenMeeting();
+        meeting.AssignedApproverId = _approverId;
+
+        var detail = await NewService().GetAsync(meeting.Id, _approverId);
+        var organizerDetail = await NewService().GetAsync(meeting.Id, _organizerId);
+        var history = await NewService().GetHistoryAsync(meeting.Id, _approverId, 1, 20);
+        var action = await NewService().TransitionAsync(
+            meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.Approve),
+            _approverId);
+
+        Assert.Equal(MeetingOutcome.NotFound, detail.Outcome);
+        Assert.Null(organizerDetail.Meeting!.AssignedApproverId);
+        Assert.Equal(MeetingWorkflowOutcome.NotFound, history.Outcome);
+        Assert.Equal(MeetingWorkflowOutcome.NotFound, action.Outcome);
     }
 
     [Fact]
@@ -231,6 +258,8 @@ public sealed class MeetingWorkflowServiceTests
         var email = Assert.Single(_repository.EmailMessages);
         Assert.Equal(active.UserId, email.RecipientUserId);
         Assert.Equal(meeting.Id, email.MeetingId);
+        Assert.Equal(EmailStatus.Queued, email.Status);
+        Assert.Null(email.SentAt);
         Assert.Equal(MeetingHistoryAction.Publish, meeting.StatusHistory.Single().Action);
         Assert.Equal(meeting.StatusHistory.Single().Id, email.OriginHistoryId);
         using var payload = System.Text.Json.JsonDocument.Parse(email.PayloadSnapshot!);
@@ -296,6 +325,7 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Equal("Cần bổ sung số liệu", Assert.Single(current.Page!.Items).RejectionReason);
         Assert.Null(Assert.Single(participant.Page!.Items).RejectionReason);
         Assert.Equal("Cần bổ sung số liệu", Assert.Single(organizer.Page!.Items).RejectionReason);
+        Assert.True(_repository.LastWorkflowForUpdate);
     }
 
     private static MeetingParticipant Participant(

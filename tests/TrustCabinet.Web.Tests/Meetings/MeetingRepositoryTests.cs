@@ -103,8 +103,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             "Online",
             "Conference link",
             "Confidential",
-            "Integration test",
-            _creatorId);
+            "Integration test");
 
     private static User NewUser(string fullName, Guid roleId, bool isActive = true) => new()
     {
@@ -220,6 +219,11 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
 
         await Assert.ThrowsAsync<PostgresException>(async () =>
             await _db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE meeting_status_history"));
+
+        await Assert.ThrowsAsync<PostgresException>(async () =>
+            await _db.Database.ExecuteSqlInterpolatedAsync(
+                $"DELETE FROM meeting_status_history WHERE id = {history.Id}"));
+        Assert.Equal(1, await _db.MeetingStatusHistory.CountAsync());
 
         await Assert.ThrowsAsync<PostgresException>(async () =>
             await _db.Database.ExecuteSqlInterpolatedAsync(
@@ -738,5 +742,44 @@ public sealed class MeetingRepositoryVisibilityTests : IDisposable
                 await repository.FindAccessibleAsync(meeting.Id, participantId) is not null);
             Assert.Null(await repository.FindAccessibleAsync(meeting.Id, unrelatedId));
         }
+    }
+
+    [Fact]
+    public async Task FindHistoryPage_returns_empty_for_an_out_of_range_offset_before_casting()
+    {
+        var actor = new User
+        {
+            FullName = "History Actor",
+            Email = "history-actor@trustcabinet.local",
+            PasswordHash = "test-hash",
+        };
+        var meeting = new Meeting
+        {
+            Title = "History paging",
+            Description = string.Empty,
+            Status = MeetingStatus.Draft,
+            Sensitivity = Sensitivity.Normal,
+            Mode = MeetingMode.InPerson,
+            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
+            CreatedById = Guid.CreateVersion7(),
+        };
+        _db.Meetings.Add(meeting);
+        _db.MeetingStatusHistory.Add(new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            Action = MeetingHistoryAction.Create,
+            ToStatus = MeetingStatus.Draft,
+            ActorId = actor.Id,
+            Actor = actor,
+            OccurredAt = DateTimeOffset.UtcNow,
+        });
+        await _db.SaveChangesAsync();
+
+        var page = await new MeetingRepository(_db).FindHistoryPageAsync(
+            meeting.Id, int.MaxValue, 100);
+
+        Assert.NotNull(page);
+        Assert.Empty(page.Items);
+        Assert.Equal(1, page.TotalCount);
     }
 }

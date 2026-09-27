@@ -239,6 +239,9 @@ public static class MeetingEndpoints
                 case "reason" when property.Value.ValueKind == JsonValueKind.String:
                     reason = property.Value.GetString();
                     break;
+                case "reason" when property.Value.ValueKind == JsonValueKind.Null:
+                    reason = null;
+                    break;
                 default:
                     return null;
             }
@@ -474,11 +477,10 @@ public sealed record MeetingRequest(
     string? Mode,
     string? Location,
     string? Sensitivity,
-    string? Description,
-    Guid? AssignedApproverId)
+    string? Description)
 {
     public MeetingInput ToInput() => new(
-        Title, StartsAt, EndsAt, Mode, Location, Sensitivity, Description, AssignedApproverId);
+        Title, StartsAt, EndsAt, Mode, Location, Sensitivity, Description);
 }
 
 public sealed record MeetingResponse(

@@ -37,7 +37,7 @@ public sealed class MeetingService(
             Description = valid.Description,
             Status = MeetingStatus.Draft,
             CreatedById = actorId,
-            AssignedApproverId = valid.AssignedApproverId,
+            AssignedApproverId = null,
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -57,14 +57,6 @@ public sealed class MeetingService(
 
         try
         {
-            if (!await meetings.IsEligibleApproverAsync(valid!.AssignedApproverId, ct))
-            {
-                return MeetingResult.Invalid(new Dictionary<string, string>
-                {
-                    ["assignedApproverId"] = "Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp.",
-                });
-            }
-
             await meetings.AddAsync(meeting, ct);
             await meetings.SaveChangesAsync(ct);
             return MeetingResult.Success(MeetingDetails.From(meeting));
@@ -181,24 +173,17 @@ public sealed class MeetingService(
                     return MeetingResult.Invalid(errors);
                 }
 
-                if (!await meetings.IsEligibleApproverAsync(valid!.AssignedApproverId, token))
+                var normalized = valid!;
+                if (HasChanges(meeting, normalized))
                 {
-                    return MeetingResult.Invalid(new Dictionary<string, string>
-                    {
-                        ["assignedApproverId"] = "Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp.",
-                    });
-                }
-
-                if (HasChanges(meeting, valid!))
-                {
-                    meeting.Title = valid.Title;
-                    meeting.StartsAt = valid.StartsAt;
-                    meeting.EndsAt = valid.EndsAt;
-                    meeting.Mode = valid.Mode;
-                    meeting.Location = valid.Location;
-                    meeting.Sensitivity = valid.Sensitivity;
-                    meeting.Description = valid.Description;
-                    meeting.AssignedApproverId = valid.AssignedApproverId;
+                    meeting.Title = normalized.Title;
+                    meeting.StartsAt = normalized.StartsAt;
+                    meeting.EndsAt = normalized.EndsAt;
+                    meeting.Mode = normalized.Mode;
+                    meeting.Location = normalized.Location;
+                    meeting.Sensitivity = normalized.Sensitivity;
+                    meeting.Description = normalized.Description;
+                    meeting.AssignedApproverId = null;
                     meeting.UpdatedAt = UtcNow;
                     await meetings.SaveChangesAsync(token);
                 }
@@ -225,7 +210,7 @@ public sealed class MeetingService(
             || !string.Equals(meeting.Location, input.Location, StringComparison.Ordinal)
             || meeting.Sensitivity != input.Sensitivity
             || !string.Equals(meeting.Description, input.Description, StringComparison.Ordinal)
-            || meeting.AssignedApproverId != input.AssignedApproverId;
+            || meeting.AssignedApproverId is not null;
 
     private static bool IsPersistenceFailure(Exception exception)
         => exception is DbUpdateException or NpgsqlException or TimeoutException;
@@ -241,7 +226,7 @@ public sealed class MeetingService(
                 return ReadinessFailure(MeetingWorkflowOutcome.NotFound, id);
             }
 
-            if (!CanReadMeeting(meeting, actorId))
+            if (!MeetingReadPolicy.CanRead(meeting, actorId))
             {
                 return ReadinessFailure(MeetingWorkflowOutcome.NotFound, id);
             }
@@ -301,7 +286,7 @@ public sealed class MeetingService(
             return await meetings.InTransactionAsync(async token =>
             {
                 var meeting = await meetings.FindWorkflowAsync(id, forUpdate: true, token);
-                if (meeting is null || !CanReadMeeting(meeting, actorId))
+                if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId))
                 {
                     return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.NotFound);
                 }
@@ -358,6 +343,10 @@ public sealed class MeetingService(
                 if (command.Action == MeetingTransitionAction.SubmitForApproval)
                 {
                     meeting.AssignedApproverId = command.AssignedApproverId;
+                }
+                else if (command.Action == MeetingTransitionAction.ReturnToDraft)
+                {
+                    meeting.AssignedApproverId = null;
                 }
 
                 var history = new MeetingStatusHistory
@@ -458,24 +447,32 @@ public sealed class MeetingService(
 
         try
         {
-            var meeting = await meetings.FindWorkflowAsync(id, ct: ct);
-            if (meeting is null || !CanReadMeeting(meeting, actorId))
+            return await meetings.InTransactionAsync(async token =>
             {
-                return MeetingHistoryResult.Failure(MeetingWorkflowOutcome.NotFound);
-            }
-
-            var history = await meetings.FindHistoryPageAsync(id, page, pageSize, ct);
-            if (!CanReadFullHistory(meeting, actorId))
-            {
-                history = history with
+                var meeting = await meetings.FindWorkflowAsync(id, forUpdate: true, token);
+                if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId))
                 {
-                    Items = history.Items
-                        .Select(item => item with { RejectionReason = null })
-                        .ToArray(),
-                };
-            }
+                    return MeetingHistoryResult.Failure(MeetingWorkflowOutcome.NotFound);
+                }
 
-            return MeetingHistoryResult.Success(history);
+                var history = await meetings.FindHistoryPageAsync(id, page, pageSize, token);
+                if (history is null)
+                {
+                    return MeetingHistoryResult.Failure(MeetingWorkflowOutcome.InvalidRequest);
+                }
+
+                if (!MeetingReadPolicy.CanReadFullHistory(meeting, actorId))
+                {
+                    history = history with
+                    {
+                        Items = history.Items
+                            .Select(item => item with { RejectionReason = null })
+                            .ToArray(),
+                    };
+                }
+
+                return MeetingHistoryResult.Success(history);
+            }, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -487,19 +484,6 @@ public sealed class MeetingService(
             return MeetingHistoryResult.Failure(MeetingWorkflowOutcome.ReadFailed);
         }
     }
-
-    private static bool CanReadMeeting(Meeting meeting, Guid actorId)
-        => meeting.CreatedById == actorId
-            || meeting.AssignedApproverId == actorId
-            || (IsPublishedOrLater(meeting.Status)
-                && meeting.Participants.Any(participant => participant.UserId == actorId));
-
-    private static bool CanReadFullHistory(Meeting meeting, Guid actorId)
-        => meeting.CreatedById == actorId || meeting.AssignedApproverId == actorId;
-
-    private static bool IsPublishedOrLater(MeetingStatus status)
-        => status is MeetingStatus.Published or MeetingStatus.InProgress or MeetingStatus.Ended
-            or MeetingStatus.MinutesIssued or MeetingStatus.Archived;
 
     private static MeetingSubmissionReadiness ReadinessFailure(
         MeetingWorkflowOutcome outcome, Guid id, MeetingStatus status = MeetingStatus.Draft)

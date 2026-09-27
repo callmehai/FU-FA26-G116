@@ -20,7 +20,7 @@ public interface IMeetingRepository
 
     Task<Meeting?> FindWorkflowAsync(Guid id, bool forUpdate = false, CancellationToken ct = default);
 
-    Task<MeetingHistoryPage> FindHistoryPageAsync(
+    Task<MeetingHistoryPage?> FindHistoryPageAsync(
         Guid meetingId, int page, int pageSize, CancellationToken ct = default);
 
     Task<bool> IsActiveUserWithCapabilityAsync(

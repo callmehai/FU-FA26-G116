@@ -6,14 +6,14 @@ trong tài liệu quản lý vai trò đang dùng cho use case khác.
 
 ## Phạm vi
 
-Các endpoint cho người tạo khởi tạo cuộc họp nháp, chọn người duyệt, sửa, chuyển lifecycle và đọc
+Các endpoint cho người tạo khởi tạo cuộc họp nháp, chọn người duyệt khi gửi duyệt, sửa, chuyển lifecycle và đọc
 lịch sử. Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. Danh sách
 `GET /api/meetings` thuộc SCRUM-18; giao diện hiện tại vẫn dùng dữ liệu mẫu và chưa tích hợp API.
 Khi tích hợp FE, form sẽ hiển thị xác nhận và mã cuộc họp sau khi tạo.
 
-Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24. [UC-11 và UC-12](../01-requirements/05-use-case-specifications.md)
-ghi quyết định đã xác nhận: người duyệt bắt buộc, Thời gian kết thúc tùy chọn; nếu nhập thì phải
-sau thời gian bắt đầu theo BR-25. Form khởi tạo Hình thức là `InPerson` và Mức độ mật là `Normal`.
+Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24; Thời gian kết thúc tùy chọn, nếu nhập thì phải
+sau thời gian bắt đầu theo BR-25. Cuộc họp mới ở `Draft` chưa có approver; Organizer chọn approver
+hợp lệ trong action `SubmitForApproval`. Form khởi tạo Hình thức là `InPerson` và Mức độ mật là `Normal`.
 
 ## Quyền truy cập
 
@@ -31,9 +31,9 @@ GET danh sách dùng đúng quy tắc đọc trên **trong truy vấn database**
 trang. Endpoint chỉ yêu cầu đăng nhập và tài khoản còn hoạt động; không đòi capability
 `MeetingCreator`. `totalCount` không bao gồm cuộc họp caller không được xem.
 
-Sửa chỉ được ở `Draft` và `Rejected`. Hệ thống đọc trạng thái mới nhất sau khi khóa dòng và trước
-khi validate nội dung. Trạng thái khác trả `409 MSG03`. Sửa `Rejected` giữ nguyên trạng thái và
-không thêm dòng lịch sử trạng thái.
+Sửa chỉ được ở `Draft`. Meeting `Rejected` phải được Organizer chuyển về `Draft` bằng
+`ReturnToDraft` trước; transition đó tạo history và xóa assignment cycle cũ. Hệ thống đọc trạng thái
+mới nhất sau khi khóa dòng và trước khi validate nội dung. Trạng thái khác `Draft` trả `409 MSG03`.
 
 ### Authorization matrix cho SCRUM-19
 
@@ -126,19 +126,18 @@ Request body của POST và PUT có các field:
   "mode": "InPerson",
   "location": "Phòng họp A",
   "sensitivity": "Internal",
-  "description": "Thảo luận kế hoạch tuần.",
-  "assignedApproverId": "dc36f21a-c030-4ddb-a6ec-9d1254230001"
+  "description": "Thảo luận kế hoạch tuần."
 }
 ```
 
-`title`, `startsAt` và `assignedApproverId` là bắt buộc. `endsAt` có thể `null` hoặc bị bỏ qua;
+`title` và `startsAt` là bắt buộc. `endsAt` có thể `null` hoặc bị bỏ qua;
 nếu có giá trị, nó phải lớn hơn `startsAt`. Nếu `mode` hoặc `sensitivity` bị bỏ qua, service dùng
-giá trị khởi tạo của form (`InPerson`, `Normal`). Người duyệt phải là tài khoản đang hoạt động có
-capability `MeetingApprover`.
+giá trị khởi tạo của form (`InPerson`, `Normal`). Body không gán approver; `assignedApproverId`
+nếu được gửi sẽ không tạo assignment.
 
 POST trả `201 Created`, header `Location: /api/meetings/{id}` và envelope `code`, `message`,
 `meeting`. `meeting` gồm thông tin cuộc họp, `assignedApproverId`, `status`, `createdById`,
-`createdAt`, `updatedAt`.
+`createdAt`, `updatedAt`; `assignedApproverId` là `null` khi meeting ở `Draft`.
 
 ### GET `/api/meetings/{id}`
 
@@ -147,11 +146,12 @@ enum. Thời gian trong response luôn UTC.
 
 ### PUT `/api/meetings/{id}`
 
-PUT thay toàn bộ tám field thông tin cuộc họp bằng dữ liệu request. Trả `200 OK`, envelope
+PUT thay toàn bộ bảy field thông tin cuộc họp bằng dữ liệu request. Trả `200 OK`, envelope
 `{ "code": "MSG02", "message": "Cập nhật cuộc họp thành công.", "meeting": { ... } }`.
 
 Không chấp nhận quyền thay đổi `id`, `createdById`, `status`, `createdAt`, `updatedAt` hay dữ liệu
-con qua body. Khi lưu cuộc họp bị từ chối, trạng thái vẫn là `Rejected`.
+con qua body. Body không gán approver. Chỉ meeting `Draft` được sửa; `Rejected` phải qua
+`ReturnToDraft` trước rồi mới được sửa.
 
 ### POST `/api/meetings/{id}/transitions` — SCRUM-19
 
@@ -174,7 +174,7 @@ flow bình thường; `Rejected → WaitingApproval` trực tiếp không hợp 
 current Assigned Approver khác.
 
 Publish snapshot recipient bên trong transaction và persist notification/invitation jobs từ chính
-snapshot đó. Theo BR-45, snapshot chỉ gồm participant có user active và `Response != Delegated`;
+snapshot đó. Theo BR-54, snapshot chỉ gồm participant có user active và `Response != Delegated`;
 row đã Delegated không nhận invitation, và API không tự thêm người được ủy quyền chỉ từ
 `DelegatedToUserId`. Người đó vẫn đủ điều kiện nếu có participant row riêng, active và chưa Delegated.
 Thay đổi participant sau commit không sửa batch đã tạo. Transition và toàn bộ notification/outbox
@@ -195,7 +195,10 @@ participant relationship không cấp quyền action. Former approver không có
 trước đây, nhưng một quan hệ participant độc lập vẫn cho timeline đã redacted sau Publish. API không
 có endpoint update/delete history; các row là immutable audit evidence.
 Query `page`/`pageSize` mặc định `1`/`20`; `page >= 1`, `pageSize` từ `1` đến `100`. Trả `200`
-với `{ items, page, pageSize, totalCount, totalPages }`; trang vượt cuối trả `items: []`.
+với `{ items, page, pageSize, totalCount, totalPages }`; trang vượt cuối trả `items: []`, kể cả
+khi offset lớn hơn `Int32.MaxValue`. Repository kiểm tra tổng số dòng trước khi ép offset sang `int`.
+Nếu offset vượt `Int32.MaxValue` nhưng vẫn nằm trong tập history hiện có, trả `400 MEETING_INVALID_QUERY`
+vì EF paging không thể biểu diễn vị trí đó an toàn.
 
 ### GET `/api/meetings/{id}/submission-readiness` — SCRUM-19
 
@@ -227,9 +230,9 @@ Readiness áp dụng rule hiện tại trên dữ liệu đã persist; validator
 | `AgendaItem.Status` | Phải là enum hợp lệ và `Pending` | Chưa mở agenda item trước khi submit |
 | Actual times, documents, voting sessions | Không bắt buộc | Phát sinh trong phiên họp hoặc thuộc flow khác |
 
-`assignedApproverId` được chọn ở POST chứ không quyết định readiness; Submit kiểm tra lại user active
-và capability `MeetingApprover` bên trong transaction. GET readiness không giữ transaction khi Organizer
-chọn người duyệt, nên POST luôn chạy lại toàn bộ kiểm tra.
+`assignedApproverId` được chọn trong action SubmitForApproval chứ không quyết định readiness; Submit
+kiểm tra lại user active và capability `MeetingApprover` bên trong transaction. GET readiness không
+giữ transaction khi Organizer chọn người duyệt, nên Submit luôn chạy lại toàn bộ kiểm tra.
 
 ### Lỗi workflow SCRUM-19
 
@@ -267,7 +270,7 @@ SCRUM-19 ghi database notification cho approver/participants và durable email j
 transaction với transition. Email được gửi sau commit bởi worker của SCRUM-15; cho đến khi worker đó
 được tích hợp và kiểm thử, response Publish chỉ xác nhận meeting đã Published và jobs đã xếp hàng.
 Database notification rows được tạo ở đây; realtime push theo SCRUM-14 là phần tích hợp riêng.
-Recipient filter đã chốt theo BR-45 và được gom thành shared policy để SCRUM-20 dùng lại. Writer
+Recipient filter đã chốt theo BR-54 và được gom thành shared policy để SCRUM-20 dùng lại. Writer
 participant/agenda thuộc các story tương ứng phải tham gia meeting-row lock protocol trước khi có thể
 xác nhận concurrency test của snapshot/readiness; update sau commit không đổi rows đã persist.
 
@@ -278,7 +281,6 @@ xác nhận concurrency test của snapshot/readiness; update sau commit không 
 | `title` | Bắt buộc sau trim; tối đa 300 ký tự |
 | `startsAt` | Bắt buộc, ISO 8601 có `Z` hoặc offset rõ ràng |
 | `endsAt` | Tùy chọn; nếu có, ISO 8601 có `Z` hoặc offset rõ ràng và phải lớn hơn giờ bắt đầu |
-| `assignedApproverId` | Bắt buộc; tài khoản đang hoạt động và có capability `MeetingApprover` |
 | `mode` | Một trong `InPerson`, `Online`, `Hybrid`; mặc định `InPerson` nếu bỏ qua |
 | `sensitivity` | Một trong `Normal`, `Internal`, `Confidential`, `Secret`; mặc định `Normal` nếu bỏ qua |
 | `location` | Tùy chọn; trim; tối đa 300 ký tự |
@@ -332,8 +334,8 @@ pháp/sai kiểu trả `400` và code `MEETING_INVALID_INFORMATION` không có `
 
 ## Persistence và transaction
 
-Cột `ends_at` nullable và FK nullable `assigned_approver_id` giữ được các meeting cũ; API POST vẫn
-bắt buộc gán người duyệt cho meeting mới theo ERD. POST lưu meeting `Draft` cùng người duyệt và một
+Cột `ends_at` nullable và FK nullable `assigned_approver_id` giữ được các meeting cũ; Draft không có
+current assignment. POST lưu meeting `Draft` không assignment và một
 dòng `MeetingStatusHistory` (`FromStatus = null`, `ToStatus = Draft`, `ActorId = creator`). EF Core
 lưu các thay đổi này trong cùng transaction.
 
@@ -356,7 +358,8 @@ stale content.
 - Khi nhận `403`, xử lý như quyền hệ thống đã thay đổi; GET chi tiết trả `404` nếu caller không có
   quan hệ với meeting.
 - Chỉ hiển thị thao tác sửa cho người có `MeetingCreator`, đúng `createdById`, và trạng thái
-  `Draft`/`Rejected`. Backend vẫn kiểm tra lại quyền sở hữu và trạng thái khi PUT.
+  `Draft`. Meeting `Rejected` cần `ReturnToDraft` trước khi sửa. Backend vẫn kiểm tra lại quyền sở
+  hữu và trạng thái khi PUT.
 - Nếu PUT trả `409 MSG03`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
 - Sau khi POST hoặc PUT thành công, có thể mở `meeting.id` bằng GET chi tiết. GET danh sách thuộc
   SCRUM-18 đã có contract ở trên; FE cần thay dữ liệu mẫu trong task tích hợp riêng.

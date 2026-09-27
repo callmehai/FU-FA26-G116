@@ -10,9 +10,9 @@ Mã trạng thái giữ nguyên tiếng Anh để dùng trực tiếp trong code
 |---|---|---|
 | `Draft` | Nháp | Thư ký đang soạn, chưa ai khác thấy |
 | `WaitingApproval` | Chờ duyệt | Đã gửi, đang đợi người có quyền duyệt |
-| `Rejected` | Bị từ chối | Người duyệt trả lại, quay về sửa |
+| `Rejected` | Bị từ chối | Người duyệt trả lại; Organizer phải chuyển về `Draft` trước khi sửa |
 | `Approved` | Đã duyệt | Được chấp thuận, chưa thông báo cho thành phần tham dự |
-| `Published` | Đã công bố | Đã gửi thư mời, thành phần tham dự nhìn thấy |
+| `Published` | Đã công bố | Meeting đã công bố; invitation jobs đã xếp hàng; thành phần tham dự nhìn thấy. Email được gửi bất đồng bộ |
 | `InProgress` | Đang diễn ra | Chủ toạ đã bắt đầu phiên họp |
 | `Ended` | Đã kết thúc | Phiên họp đóng, chờ xử lý hậu kỳ (ASR, biên bản) |
 | `MinutesIssued` | Đã ban hành biên bản | Biên bản đã được phê duyệt và chốt |
@@ -32,9 +32,14 @@ transition riêng `Rejected → Draft`; transition này ghi lịch sử, giữ n
 không kích hoạt thư mời. Organizer sửa cuộc họp ở `Draft`, sau đó gửi lại theo đúng flow
 `Draft → WaitingApproval` và có thể chọn lại một người duyệt đang hợp lệ.
 
+`Published` xác nhận transaction công bố đã lưu meeting, history và invitation jobs. Đây không phải
+xác nhận email đã được giao: trạng thái gửi thực tế được theo dõi bằng `EmailStatus` và `SentAt`;
+lỗi gửi hoặc retry không chuyển meeting khỏi `Published`.
+
 ## Vì sao cần ghi lại
 
-- **Phân quyền bám theo trạng thái.** Sửa nội dung chỉ được phép ở `Draft` và `Rejected`. Biểu
+- **Phân quyền bám theo trạng thái.** Sửa nội dung chỉ được phép ở `Draft`; meeting `Rejected` phải
+  được Organizer đưa về `Draft` trước. Biểu
   quyết chỉ mở khi `InProgress`. Biên bản chỉ sinh được sau `Ended`.
 - **Lịch sử trạng thái là bằng chứng.** Màn chi tiết hiển thị timeline ai chuyển trạng thái, lúc
   nào. Đây là dữ liệu kiểm toán, không phải log kỹ thuật — không được xoá hay sửa.
@@ -45,7 +50,7 @@ không kích hoạt thư mời. Organizer sửa cuộc họp ở `Draft`, sau đ
 - **Chair không phải quyền phê duyệt hay công bố.** Chair chỉ là quan hệ trong một cuộc họp.
   Approve/Reject thuộc người duyệt đang được gán và còn capability `MeetingApprover`; Publish thuộc
   Meeting Organizer. Một Chair chỉ làm được các action đó khi đồng thời có đúng quan hệ tương ứng.
-- **Recipient được snapshot khi Publish.** Chỉ participant row có user active và `Response` khác
+- **Recipient được snapshot khi Publish (BR-54).** Chỉ participant row có user active và `Response` khác
   `Delegated` được đưa vào batch notification/invitation. Không tự thêm delegate chỉ vì
   `DelegatedToUserId` trỏ tới họ; participant row riêng của delegate vẫn được xét theo rule này.
   Thay đổi participants sau commit không sửa batch đã tạo.

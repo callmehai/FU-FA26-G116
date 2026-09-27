@@ -1,0 +1,74 @@
+sequenceDiagram
+    title UC-15 - Submit Meeting for Approval
+    actor Organizer as Meeting Organizer
+    participant Page as Management Page
+    participant API as Meeting API
+    participant Service as Meeting Service
+    participant M as Meeting Repo
+    participant U as User Repo
+    participant DB as Database
+
+    opt Meeting is Rejected
+        Organizer->>Page: Return meeting to Draft
+        Page->>API: POST /api/meetings/{id}/transitions, action=ReturnToDraft
+        API->>Service: ReturnToDraft(meetingId, actor)
+        Service->>M: Lock and load meeting
+        M->>DB: SELECT meeting FOR UPDATE
+        DB-->>M: Current meeting
+        M-->>Service: Rejected meeting owned by Organizer
+        Service->>M: Set Draft, clear assignment, append history
+        M->>DB: Save status and history atomically
+        DB-->>M: Commit
+        M-->>Service: Transition committed
+        Service-->>API: Success, rejection history retained
+        API-->>Page: 200 OK
+        Page-->>Organizer: Confirm Draft restored
+        Note over Organizer,Page: No invitation is created. Organizer may now edit the meeting.
+    end
+
+    Organizer->>Page: Edit Draft and open approver picker
+    Page->>API: GET /api/meetings/approvers
+    API->>Service: List eligible approvers
+    Service->>U: Find active users with capability
+    U->>DB: Query eligible users
+    DB-->>U: Eligible approver list
+    U-->>Service: Eligible approver list
+    Service-->>API: Eligible approver list
+    API-->>Page: 200 OK
+    Page-->>Organizer: Display eligible approvers
+    Organizer->>Page: Select approver and submit
+    Page->>API: POST /api/meetings/{id}/transitions, action=SubmitForApproval, assignedApproverId
+    API->>Service: SubmitForApproval(meetingId, actor, approverId)
+    Service->>M: Lock meeting and load agenda
+    M->>DB: Read meeting and agenda
+    DB-->>M: Persisted meeting and agenda
+    M-->>Service: Current data
+    Service->>Service: Check Organizer, Draft, and readiness
+
+    alt Meeting is not Draft
+        Service-->>API: 409 MEETING_STATUS_CONFLICT
+        API-->>Page: Refresh meeting status
+    else Required information is incomplete
+        Service-->>API: 400 MEETING_SUBMISSION_NOT_READY
+        API-->>Page: Show field errors
+    else Meeting is ready
+        Service->>U: Validate active approver and capability
+        U->>DB: Check account and meeting_approver
+        DB-->>U: Eligibility result
+        U-->>Service: Eligibility result
+        alt Approver is no longer eligible
+            Service-->>API: 400 MEETING_APPROVER_INVALID
+            API-->>Page: Ask Organizer to select another approver
+        else Approver is eligible
+            Service->>M: Assign approver, set WaitingApproval, append history
+            Service->>M: Queue approval notification
+            M->>DB: Commit meeting, history, and notification
+            DB-->>M: Commit
+            M-->>Service: Submission committed
+            Service-->>API: Success
+            API-->>Page: 200 OK
+            Page-->>Organizer: Show submission confirmation
+        end
+    end
+
+    Note over Organizer,Service: Rejected cannot transition directly to WaitingApproval. ReturnToDraft must commit first.

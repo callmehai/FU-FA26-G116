@@ -22,6 +22,8 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
 
     public List<EmailMessage> EmailMessages { get; } = [];
 
+    public long? HistoryTotalCountOverride { get; set; }
+
     public Exception? NextSaveThrows { get; set; }
 
     public Exception? NextReadThrows { get; set; }
@@ -29,6 +31,8 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
     public MeetingListQuery? LastListQuery { get; private set; }
 
     public Guid? LastListActorId { get; private set; }
+
+    public bool LastWorkflowForUpdate { get; private set; }
 
     public Task<MeetingListPage> FindAuthorizedPageAsync(
         Guid actorId, MeetingListQuery query, CancellationToken ct = default)
@@ -41,15 +45,7 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
             throw exception;
         }
 
-        var visible = Meetings.Where(m => m.CreatedById == actorId
-            || (m.Status != TrustCabinet.Domain.Enums.MeetingStatus.Draft
-                && m.AssignedApproverId == actorId)
-            || ((m.Status == TrustCabinet.Domain.Enums.MeetingStatus.Published
-                    || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.InProgress
-                    || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.Ended
-                    || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.MinutesIssued
-                    || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.Archived)
-                && m.Participants.Any(p => p.UserId == actorId)));
+        var visible = Meetings.Where(m => MeetingReadPolicy.CanRead(m, actorId));
         if (query.Status is { } status) visible = visible.Where(m => m.Status == status);
         if (query.Sensitivity is { } sensitivity) visible = visible.Where(m => m.Sensitivity == sensitivity);
         if (query.From is { } from) visible = visible.Where(m => m.StartsAt >= from);
@@ -95,15 +91,7 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         }
 
         return Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id
-            && (m.CreatedById == actorId
-                || (m.Status != TrustCabinet.Domain.Enums.MeetingStatus.Draft
-                    && m.AssignedApproverId == actorId)
-                || ((m.Status == TrustCabinet.Domain.Enums.MeetingStatus.Published
-                        || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.InProgress
-                        || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.Ended
-                        || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.MinutesIssued
-                        || m.Status == TrustCabinet.Domain.Enums.MeetingStatus.Archived)
-                    && m.Participants.Any(participant => participant.UserId == actorId)))));
+            && MeetingReadPolicy.CanRead(m, actorId)));
     }
 
     public Task<Meeting?> FindOwnedForUpdateAsync(Guid id, Guid creatorId, CancellationToken ct = default)
@@ -119,15 +107,31 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         => Task.FromResult(id != Guid.Empty && !IneligibleApproverIds.Contains(id));
 
     public Task<Meeting?> FindWorkflowAsync(Guid id, bool forUpdate = false, CancellationToken ct = default)
-        => Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id));
+    {
+        LastWorkflowForUpdate = forUpdate;
+        return Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id));
+    }
 
-    public Task<MeetingHistoryPage> FindHistoryPageAsync(
+    public Task<MeetingHistoryPage?> FindHistoryPageAsync(
         Guid meetingId, int page, int pageSize, CancellationToken ct = default)
     {
-        var records = Meetings.Single(m => m.Id == meetingId).StatusHistory
+        var meeting = Meetings.Single(m => m.Id == meetingId);
+        var history = meeting.StatusHistory
             .OrderBy(item => item.OccurredAt)
-            .ThenBy(item => item.Id)
-            .Skip((page - 1) * pageSize)
+            .ThenBy(item => item.Id);
+        var total = HistoryTotalCountOverride ?? meeting.StatusHistory.Count;
+        var offset = ((long)page - 1) * pageSize;
+        if (offset >= total)
+        {
+            return Task.FromResult<MeetingHistoryPage?>(new MeetingHistoryPage([], page, pageSize, total));
+        }
+
+        if (offset > int.MaxValue)
+        {
+            return Task.FromResult<MeetingHistoryPage?>(null);
+        }
+
+        var records = history.Skip((int)offset)
             .Take(pageSize)
             .Select(item => new MeetingHistoryRecord(
                 item.Id, meetingId, item.Action, item.FromStatus, item.ToStatus, item.ActorId,
@@ -135,8 +139,8 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
                 item.Action == TrustCabinet.Domain.Enums.MeetingHistoryAction.Reject ? item.Reason : null,
                 item.AssignedApproverId))
             .ToArray();
-        return Task.FromResult(new MeetingHistoryPage(
-            records, page, pageSize, Meetings.Single(m => m.Id == meetingId).StatusHistory.Count));
+        return Task.FromResult<MeetingHistoryPage?>(new MeetingHistoryPage(
+            records, page, pageSize, total));
     }
 
     public Task<bool> IsActiveUserWithCapabilityAsync(
