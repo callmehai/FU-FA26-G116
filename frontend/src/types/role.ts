@@ -6,6 +6,7 @@ export interface RoleRecord {
   name: string
   description: string | null
   isBuiltIn: boolean
+  isDefault: boolean
   userCount: number
 }
 

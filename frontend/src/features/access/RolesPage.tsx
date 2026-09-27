@@ -53,6 +53,7 @@ export function RolesPage() {
   const [saving, setSaving] = useState<string | null>(null)
   const [rowErrors, setRowErrors] = useState<Record<string, RowError | undefined>>({})
   const [ownRoleChanged, setOwnRoleChanged] = useState(false)
+  const [activeTab, setActiveTab] = useState<'roles' | 'matrix'>('roles')
   const [formTarget, setFormTarget] = useState<RoleFormTarget | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<RoleRecord | null>(null)
 
@@ -72,7 +73,9 @@ export function RolesPage() {
       ))
       setDeleteTarget((current) => {
         if (!current) return current
-        return nextRoles.find((role) => role.id === current.id) ?? null
+        // Keep the confirmation mounted when another admin has already deleted this role.
+        // The failed delete response belongs in the dialog so it is not mistaken for success.
+        return nextRoles.find((role) => role.id === current.id) ?? current
       })
       setLoadError(null)
     } catch (error) {
@@ -81,22 +84,9 @@ export function RolesPage() {
   }, [handleAccessLost])
 
   useEffect(() => {
-    let cancelled = false
-    Promise.all([getRolePermissionMatrix(), listRoles()]).then(
-      ([nextMatrix, nextRoles]) => {
-        if (!cancelled) {
-          setMatrix(nextMatrix)
-          setRoles(nextRoles)
-        }
-      },
-      (error: unknown) => {
-        if (!cancelled && !handleAccessLost(error)) setLoadError(errorMessage(error))
-      },
-    )
-    return () => {
-      cancelled = true
-    }
-  }, [handleAccessLost])
+    // Let load own the request and defer its state updates past the effect's synchronous phase.
+    void Promise.resolve().then(load)
+  }, [load])
 
   const columns = matrix?.capabilities ?? []
   const groups = groupColumns(columns)
@@ -192,15 +182,14 @@ export function RolesPage() {
     } catch (error) {
       if (handleAccessLost(error)) return
       if (isApiError(error, 409, 'MSG25')) {
-        const count = error.body?.userCount
         await load()
-        throw new Error(
-          typeof count === 'number'
-            ? `Vai trò này vẫn còn ${count} tài khoản mang. Hãy chuyển họ sang vai trò khác trước khi xoá.`
-            : errorMessage(error),
-        )
+        throw error
       }
-      if (isApiError(error, 404) || isApiError(error, 409, 'MSG24')) await load()
+      if (isApiError(error, 404)) {
+        await load()
+        throw new Error('Vai trò này không còn tồn tại. Danh sách đã được cập nhật.')
+      }
+      if (isApiError(error, 409, 'MSG24')) await load()
       throw error
     }
   }
@@ -211,7 +200,6 @@ export function RolesPage() {
     <>
       <PageHeader
         title="Vai trò"
-        description="Quản lý vai trò và chọn những quyền mỗi vai trò được mang. Mỗi vai trò lưu riêng."
         action={
           <button type="button" className="btn btn-primary" onClick={() => setFormTarget({ mode: 'create' })}>
             Tạo vai trò
@@ -231,147 +219,186 @@ export function RolesPage() {
         </div>
       )}
 
-      <div className="table-card">
-        {loadError ? (
-          <div className="cell-empty">
-            <p className="cell-error">{loadError}</p>
-            <button type="button" className="btn btn-outline btn-sm" onClick={() => void load()}>
-              Thử lại
-            </button>
-          </div>
-        ) : !matrix ? (
-          <p className="cell-empty">Đang tải ma trận phân quyền…</p>
+      <div className="tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'roles'}
+          className={`tab${activeTab === 'roles' ? ' tab-active' : ''}`}
+          onClick={() => setActiveTab('roles')}
+        >
+          Danh sách vai trò {roles ? `(${roles.length})` : ''}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'matrix'}
+          className={`tab${activeTab === 'matrix' ? ' tab-active' : ''}`}
+          onClick={() => setActiveTab('matrix')}
+        >
+          Ma trận phân quyền
+        </button>
+      </div>
+
+      {loadError ? (
+        <div className="cell-empty">
+          <p className="cell-error">{loadError}</p>
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => void load()}>
+            Thử lại
+          </button>
+        </div>
+      ) : activeTab === 'roles' ? (
+        !roles ? (
+          <p className="cell-empty">Đang tải danh sách vai trò…</p>
         ) : (
-          <table className="data-table matrix-table">
-            <thead>
-              <tr>
-                <th rowSpan={2}>Vai trò</th>
-                {groups.map((group) => (
-                  <th key={group.name} colSpan={group.span} className="matrix-group matrix-group-start">
-                    {group.name}
-                  </th>
-                ))}
-                <th rowSpan={2} className="col-action"><span className="visually-hidden">Thao tác</span></th>
-              </tr>
-              <tr>
-                {columns.map((column) => (
-                  <th key={column.code} className={`matrix-cap${groupStart(column.code)}`}>
-                    {column.name}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {matrix.roles.map(({ id, name, isBuiltIn }) => {
-                const dirty = drafts[id] !== undefined
-                const error = rowErrors[id]
-                const current = effective(id)
-                const warn = dirty && !error && dropsLastVisibleAdminCapability(id)
-                return [
-                  <tr key={id} className={dirty ? 'matrix-row-dirty' : undefined}>
+          <div className="table-card">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Tên vai trò</th>
+                  <th>Mô tả</th>
+                  <th>Tài khoản</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {roles.map((role) => (
+                  <tr key={role.id}>
                     <td className="cell-title">
-                      {name}{' '}
-                      {isBuiltIn && <Badge tone="outline">Mặc định</Badge>}{' '}
-                      {id === me?.roleId && <Badge tone="blue">Vai trò của bạn</Badge>}
+                      {role.name}{' '}
+                      {role.isBuiltIn && <Badge tone="outline">Mặc định</Badge>}{' '}
+                      {role.id === me?.roleId && <Badge tone="blue">Vai trò của bạn</Badge>}
                     </td>
-                    {columns.map((column) => {
-                      const checked = current.includes(column.code)
-                      const changed = checked !== saved(id).includes(column.code)
-                      const flagged = error?.lockout && column.code === ADMIN_CAPABILITY
-                      return (
-                        <td
-                          key={column.code}
-                          className={`matrix-cell${groupStart(column.code)}${changed ? ' matrix-cell-changed' : ''}${flagged ? ' matrix-cell-error' : ''}`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            disabled={saving !== null}
-                            onChange={() => toggle(id, column.code)}
-                            aria-label={`${name} — ${column.name}`}
-                          />
-                        </td>
-                      )
-                    })}
-                    <td className="col-action">
-                      {dirty && (
+                    <td className="cell-muted">{role.description ?? '—'}</td>
+                    <td>{role.userCount}</td>
+                    <td>
+                      {!role.isBuiltIn && (
                         <span className="row-actions">
-                          <button type="button" className="btn btn-ghost btn-sm" onClick={() => discard(id)} disabled={saving !== null}>
-                            Hoàn tác
+                          <button
+                            type="button"
+                            className="icon-button"
+                            onClick={() => setFormTarget({ mode: 'edit', role })}
+                            title="Sửa vai trò"
+                            aria-label={`Sửa vai trò ${role.name}`}
+                          >
+                            <Icon name="pencil" size={16} />
                           </button>
-                          <button type="button" className="btn btn-primary btn-sm" onClick={() => void save(id)} disabled={saving !== null}>
-                            {saving === id ? 'Đang lưu…' : 'Lưu'}
+                          <button
+                            type="button"
+                            className="icon-button"
+                            onClick={() => setDeleteTarget(role)}
+                            title="Xoá vai trò"
+                            aria-label={`Xoá vai trò ${role.name}`}
+                          >
+                            <Icon name="trash" size={16} />
                           </button>
                         </span>
                       )}
                     </td>
-                  </tr>,
-                  (error || warn) && (
-                    <tr key={`${id}-note`} className="matrix-note-row">
-                      <td colSpan={columnCount}>
-                        {error ? (
-                          <p className="alert alert-error" role="alert">{error.message}</p>
-                        ) : (
-                          <p className="alert alert-warning">
-                            Sau khi lưu, không vai trò nào trên bảng còn quyền quản trị người dùng. Hệ thống sẽ từ
-                            chối nếu thao tác này khiến không còn ai quản trị được.
-                          </p>
-                        )}
-                      </td>
-                    </tr>
-                  ),
-                ]
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      ) : (
+        !matrix ? (
+          <p className="cell-empty">Đang tải ma trận phân quyền…</p>
+        ) : (
+          <>
+            <div className="table-card">
+              <table className="data-table matrix-table">
+                <thead>
+                  <tr>
+                    <th rowSpan={2}>Vai trò</th>
+                    {groups.map((group) => (
+                      <th key={group.name} colSpan={group.span} className="matrix-group matrix-group-start">
+                        {group.name}
+                      </th>
+                    ))}
+                    <th rowSpan={2} className="col-action"><span className="visually-hidden">Thao tác</span></th>
+                  </tr>
+                  <tr>
+                    {columns.map((column) => (
+                      <th key={column.code} className={`matrix-cap${groupStart(column.code)}`}>
+                        {column.name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {matrix.roles.map(({ id, name, isBuiltIn }) => {
+                    const dirty = drafts[id] !== undefined
+                    const error = rowErrors[id]
+                    const current = effective(id)
+                    const warn = dirty && !error && dropsLastVisibleAdminCapability(id)
+                    return [
+                      <tr key={id} className={dirty ? 'matrix-row-dirty' : undefined}>
+                        <td className="cell-title">
+                          {name}{' '}
+                          {isBuiltIn && <Badge tone="outline">Mặc định</Badge>}{' '}
+                          {id === me?.roleId && <Badge tone="blue">Vai trò của bạn</Badge>}
+                        </td>
+                        {columns.map((column) => {
+                          const checked = current.includes(column.code)
+                          const changed = checked !== saved(id).includes(column.code)
+                          const flagged = error?.lockout && column.code === ADMIN_CAPABILITY
+                          return (
+                            <td
+                              key={column.code}
+                              className={`matrix-cell${groupStart(column.code)}${changed ? ' matrix-cell-changed' : ''}${flagged ? ' matrix-cell-error' : ''}`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                disabled={saving !== null}
+                                onChange={() => toggle(id, column.code)}
+                                aria-label={`${name} — ${column.name}`}
+                              />
+                            </td>
+                          )
+                        })}
+                        <td className="col-action">
+                          {dirty && (
+                            <span className="row-actions">
+                              <button type="button" className="btn btn-ghost btn-sm" onClick={() => discard(id)} disabled={saving !== null}>
+                                Hoàn tác
+                              </button>
+                              <button type="button" className="btn btn-primary btn-sm" onClick={() => void save(id)} disabled={saving !== null}>
+                                {saving === id ? 'Đang lưu…' : 'Lưu'}
+                              </button>
+                            </span>
+                          )}
+                        </td>
+                      </tr>,
+                      (error || warn) && (
+                        <tr key={`${id}-note`} className="matrix-note-row">
+                          <td colSpan={columnCount}>
+                            {error ? (
+                              <p className="alert alert-error" role="alert">{error.message}</p>
+                            ) : (
+                              <p className="alert alert-warning">
+                                Sau khi lưu, không vai trò nào trên bảng còn quyền quản trị người dùng. Hệ thống sẽ từ
+                                chối nếu thao tác này khiến không còn ai quản trị được.
+                              </p>
+                            )}
+                          </td>
+                        </tr>
+                      ),
+                    ]
+                  })}
+                </tbody>
+              </table>
+            </div>
 
-      {matrix && (
-        <dl className="capability-legend">
-          {columns.map((column) => (
-            <div key={column.code}><dt>{column.name}</dt><dd>{column.description}</dd></div>
-          ))}
-        </dl>
-      )}
-
-      {roles && (
-        <div className="table-card">
-          <table className="data-table">
-            <thead>
-              <tr><th>Tên vai trò</th><th>Mô tả</th><th>Tài khoản</th><th className="col-action">Thao tác</th></tr>
-            </thead>
-            <tbody>
-              {roles.map((role) => (
-                <tr key={role.id}>
-                  <td className="cell-title">
-                    {role.name}{' '}{role.isBuiltIn && <Badge tone="outline">Mặc định</Badge>}
-                  </td>
-                  <td className="cell-muted">{role.description ?? '—'}</td>
-                  <td>{role.userCount}</td>
-                  <td className="col-action">
-                    {!role.isBuiltIn && (
-                      <span className="row-actions">
-                        <button type="button" className="icon-button" onClick={() => setFormTarget({ mode: 'edit', role })} title="Sửa vai trò" aria-label={`Sửa vai trò ${role.name}`}>
-                          <Icon name="pencil" size={16} />
-                        </button>
-                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setDeleteTarget(role)} aria-label={`Xoá vai trò ${role.name}`}>
-                          Xoá
-                        </button>
-                      </span>
-                    )}
-                  </td>
-                </tr>
+            <dl className="capability-legend">
+              {columns.map((column) => (
+                <div key={column.code}><dt>{column.name}</dt><dd>{column.description}</dd></div>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </dl>
+          </>
+        )
       )}
-
-      <p className="page-note">
-        Lưu quyền của một vai trò sẽ kết thúc phiên đăng nhập của những người đang mang vai trò đó, để quyền mới có
-        hiệu lực. Danh mục quyền do hệ thống định nghĩa. Bạn có thể tạo vai trò mới từ màn hình này.
-      </p>
 
       {formTarget && matrix && (
         <RoleFormDialog
@@ -387,6 +414,7 @@ export function RolesPage() {
           onAccessLost={handleAccessLost}
           onGone={() => {
             setFormTarget(null)
+            toast.show('Vai trò này không còn tồn tại.', 'error')
             void load()
           }}
           onClose={() => setFormTarget(null)}

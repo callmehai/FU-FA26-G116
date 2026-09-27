@@ -69,8 +69,9 @@ giữ bốn id cố định, sinh một lần rồi dán cứng:
 | Member | `01a0ce78-7204-7558-b181-e908a08e83a3` | Thành viên |
 | Admin | `01a0ce78-7205-7486-b976-d52d428d5451` | Quản trị viên |
 
-Đây là chỗ **duy nhất** code nhắc tới một vai trò cụ thể (seed và thứ tự hiển thị). Code nghiệp vụ
-không bao giờ so sánh vai trò — nó hỏi quyền.
+Backend dùng `BuiltInRoles.IsDefault` để đánh dấu `Member` là vai trò mặc định khi tạo tài khoản;
+frontend chỉ đọc cờ `isDefault`. Các quy tắc phân quyền vẫn dựa trên capability, không dựa trên tên
+vai trò.
 
 ---
 
@@ -118,14 +119,16 @@ phải Guid (`/api/roles/Chair`) không khớp route → `404`.
 
 ```json
 [
-  { "id": "01a0ce78-7202-…", "name": "Chủ toạ", "description": "Chủ trì và phê duyệt cuộc họp.", "isBuiltIn": true, "userCount": 1 },
-  { "id": "0199…", "name": "Thư ký phó", "description": null, "isBuiltIn": false, "userCount": 0 }
+  { "id": "01a0ce78-7202-…", "name": "Chủ toạ", "description": "Chủ trì và phê duyệt cuộc họp.", "isBuiltIn": true, "isDefault": false, "userCount": 1 },
+  { "id": "01a0ce78-7204-…", "name": "Thành viên", "description": null, "isBuiltIn": true, "isDefault": true, "userCount": 5 },
+  { "id": "0199…", "name": "Thư ký phó", "description": null, "isBuiltIn": false, "isDefault": false, "userCount": 0 }
 ]
 ```
 
 - **Thứ tự cố định:** bốn vai trò mặc định trước (`Chair`, `Secretary`, `Member`, `Admin`), rồi vai
   trò tự tạo theo `created_at`. `roles` trong `GET /api/roles/capabilities` dùng **cùng thứ tự**.
 - `userCount` đếm **mọi** tài khoản mang vai trò, kể cả đã vô hiệu hoá — đúng con số chặn việc xoá.
+- `isDefault` đánh dấu vai trò được chọn sẵn khi tạo tài khoản; frontend không cần biết id seed.
 - Không kèm quyền: quyền ở `GET /api/roles/capabilities`.
 
 ### 4.2 `POST /api/roles`
@@ -150,7 +153,7 @@ phải Guid (`/api/roles/Chair`) không khớp route → `404`.
 Thành công: `201`, `Location: /api/roles/{id}`:
 
 ```json
-{ "code": "MSG19", "message": "Tạo vai trò thành công.", "role": { "id": "…", "name": "Thư ký phó", "description": "…", "isBuiltIn": false, "userCount": 0 } }
+{ "code": "MSG19", "message": "Tạo vai trò thành công.", "role": { "id": "…", "name": "Thư ký phó", "description": "…", "isBuiltIn": false, "isDefault": false, "userCount": 0 } }
 ```
 
 ### 4.3 `PUT /api/roles/{id}`
@@ -386,5 +389,4 @@ Nếu các điểm trên đã ổn định trong môi trường tích hợp thì
 
 FE đã chạy `npm run lint`, `npm run build` và `git diff --check`. Health trả `200`; hai endpoint
 `GET /api/roles` và `GET /api/roles/capabilities` không token trả `401`. Luồng giao diện với tài khoản
-có `AdminUsers` vẫn cần Tester xác minh trước khi đánh dấu ticket Done. Bản note độc lập cũng được lưu
-tại [04-quan-ly-vai-tro-note-cho-be-ba.md](04-quan-ly-vai-tro-note-cho-be-ba.md).
+có `AdminUsers` vẫn cần Tester xác minh trước khi đánh dấu ticket Done.

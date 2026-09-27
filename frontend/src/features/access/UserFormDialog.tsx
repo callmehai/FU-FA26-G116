@@ -16,8 +16,6 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 type Field = 'fullName' | 'email' | 'password' | 'roleId'
 type FieldErrors = Partial<Record<Field, string>>
 
-const DEFAULT_USER_ROLE_ID = '01a0ce78-7204-7558-b181-e908a08e83a3'
-
 export type UserFormTarget = { mode: 'create' } | { mode: 'edit'; id: string }
 
 /**
@@ -57,7 +55,7 @@ export function UserFormDialog({
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [roleId, setRoleId] = useState(
-    roles.some((role) => role.id === DEFAULT_USER_ROLE_ID) ? DEFAULT_USER_ROLE_ID : '',
+    roles.find((role) => role.isDefault)?.id ?? '',
   )
 
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})

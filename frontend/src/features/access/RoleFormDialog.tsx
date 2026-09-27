@@ -10,6 +10,10 @@ export type RoleFormTarget = { mode: 'create' } | { mode: 'edit'; role: RoleReco
 type RoleField = 'name' | 'description' | 'capabilities'
 type RoleFieldErrors = Partial<Record<RoleField, string>>
 
+function normaliseRoleName(value: string) {
+  return value.normalize('NFC').replace(/\s+/gu, ' ').trim()
+}
+
 /** Create a custom role, or edit its name and description. Permissions stay in the matrix. */
 export function RoleFormDialog({
   target,
@@ -41,10 +45,10 @@ export function RoleFormDialog({
 
   function validate(): RoleFieldErrors {
     const errors: RoleFieldErrors = {}
-    const trimmedName = name.trim()
-    if (!trimmedName) errors.name = 'Tên vai trò không được để trống.'
-    else if (trimmedName.length > 64) errors.name = 'Tên vai trò không được dài quá 64 ký tự.'
-    if (description.length > 256) errors.description = 'Mô tả không được dài quá 256 ký tự.'
+    const normalizedName = normaliseRoleName(name)
+    if (!normalizedName) errors.name = 'Tên vai trò không được để trống.'
+    else if (normalizedName.length > 64) errors.name = 'Tên vai trò không được dài quá 64 ký tự.'
+    if (description.trim().length > 256) errors.description = 'Mô tả không được dài quá 256 ký tự.'
     return errors
   }
 
@@ -57,7 +61,7 @@ export function RoleFormDialog({
 
     setPending(true)
     try {
-      const body = { name: name.trim(), description: description.trim() || null }
+      const body = { name: normaliseRoleName(name), description: description.trim() || null }
       const response = editing
         ? await updateRole(target.role.id, body)
         : await createRole({ ...body, capabilities: selected })
@@ -76,7 +80,6 @@ export function RoleFormDialog({
         setFieldErrors({ name: errorMessage(error) })
       } else if (isApiError(error, 409, 'MSG24')) {
         setFormError(errorMessage(error))
-        onGone()
       } else {
         setFormError(errorMessage(error))
       }
@@ -110,7 +113,6 @@ export function RoleFormDialog({
           <span className="field-required">Tên vai trò</span>
           <input
             value={name}
-            maxLength={64}
             onChange={(event) => setName(event.target.value)}
             aria-invalid={!!fieldErrors.name}
             autoFocus
@@ -121,7 +123,6 @@ export function RoleFormDialog({
           <span>Mô tả</span>
           <textarea
             value={description}
-            maxLength={256}
             rows={3}
             onChange={(event) => setDescription(event.target.value)}
             aria-invalid={!!fieldErrors.description}

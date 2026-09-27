@@ -62,23 +62,18 @@ export function UsersPage() {
   }, [handleAccessLost])
 
   useEffect(() => {
-    let cancelled = false
-    Promise.all([listUsers(), listRoles()]).then(
-      ([accounts, availableRoles]) => {
-        if (!cancelled) {
-          setUsers(accounts)
-          setRoles(availableRoles)
-        }
-      },
-      (err: unknown) => {
-        if (!cancelled && !handleAccessLost(err)) setLoadError(errorMessage(err))
-      },
-    )
-    // StrictMode runs effects twice in dev; only the surviving run may write state.
-    return () => {
-      cancelled = true
+    // Let load own the request and defer its state updates past the effect's synchronous phase.
+    void Promise.resolve().then(load)
+  }, [load])
+
+  async function openUserForm(target: UserFormTarget) {
+    try {
+      setRoles(await listRoles())
+      setFormTarget(target)
+    } catch (error) {
+      if (!handleAccessLost(error)) toast.show(errorMessage(error), 'error')
     }
-  }, [handleAccessLost])
+  }
 
   function retry() {
     setLoadError(null)
@@ -208,7 +203,7 @@ export function UsersPage() {
         <button
           className="btn btn-primary toolbar-end"
           type="button"
-          onClick={() => setFormTarget({ mode: 'create' })}
+          onClick={() => void openUserForm({ mode: 'create' })}
           disabled={roles === null}
         >
           Tạo tài khoản
@@ -281,7 +276,7 @@ export function UsersPage() {
                         <button
                           type="button"
                           className="icon-button"
-                          onClick={() => setFormTarget({ mode: 'edit', id: u.id })}
+                          onClick={() => void openUserForm({ mode: 'edit', id: u.id })}
                           title="Sửa hồ sơ"
                           aria-label={`Sửa tài khoản ${u.fullName}`}
                         >

@@ -20,7 +20,6 @@ export interface ApiErrorBody {
   code: string
   message: string
   errors?: Record<string, string>
-  userCount?: number
 }
 
 /** A non-2xx response from the backend. Keeps the status and, when there was one, the body. */
