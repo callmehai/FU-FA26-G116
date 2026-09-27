@@ -46,8 +46,9 @@ public sealed record RoleEdit(string? Name, string? Description);
 /// Every account holding the role, deactivated ones included — exactly the number that blocks
 /// deleting it.
 /// </param>
+/// <param name="IsDefault">Whether this role is selected by default when creating a user.</param>
 public sealed record RoleSummary(
-    Guid Id, string Name, string? Description, bool IsBuiltIn, int UserCount);
+    Guid Id, string Name, string? Description, bool IsBuiltIn, bool IsDefault, int UserCount);
 
 /// <summary>
 /// Which alt branch of UC-11 … UC-13 happened. The endpoint maps each to a message code and a

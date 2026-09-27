@@ -62,7 +62,8 @@ internal sealed class FakeRoleRepository : IRoleRepository
                 .OrderBy(r => BuiltInRoles.SortKey(r.Id))
                 .ThenBy(r => r.CreatedAt)
                 .Select(r => new RoleSummary(
-                    r.Id, r.Name, r.Description, r.IsBuiltIn, _userCounts.GetValueOrDefault(r.Id)))]);
+                    r.Id, r.Name, r.Description, r.IsBuiltIn, BuiltInRoles.IsDefault(r.Id),
+                    _userCounts.GetValueOrDefault(r.Id)))]);
 
     public Task<Role?> FindByIdAsync(Guid id, CancellationToken ct = default)
         => Task.FromResult(_roles.FirstOrDefault(r => r.Id == id));

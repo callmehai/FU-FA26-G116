@@ -181,6 +181,11 @@ public class RoleEndpointsTests : IDisposable
 
         // Capabilities live in GET /api/roles/capabilities only.
         Assert.False(custom.TryGetProperty("capabilities", out _));
+
+        // Exactly one role is preselected when creating a user: Member.
+        Assert.Equal(
+            [BuiltInRoles.Member.ToString()],
+            roles.Where(r => r.GetProperty("isDefault").GetBoolean()).Select(r => r.GetProperty("id").GetString()));
     }
 
     // --------------------------------------------------------------- POST /api/roles
