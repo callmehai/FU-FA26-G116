@@ -5,14 +5,17 @@ trong tài liệu quản lý vai trò đang dùng cho use case khác.
 
 ## Phạm vi
 
-Các endpoint cho người tạo khởi tạo cuộc họp nháp, chọn người duyệt và sửa trước khi gửi duyệt.
+Các endpoint cho người tạo khởi tạo cuộc họp nháp và sửa trước khi gửi duyệt. Không bắt buộc chọn
+người duyệt khi tạo/sửa nháp; nếu muốn giữ người duyệt đã gán khi cập nhật, request phải gửi lại ID
+đó. UC-15 yêu cầu người duyệt hợp lệ trước khi gửi.
 Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. Danh sách
 `GET /api/meetings` thuộc SCRUM-18; giao diện hiện tại vẫn dùng dữ liệu mẫu và chưa tích hợp API.
 Khi tích hợp FE, form sẽ hiển thị xác nhận và mã cuộc họp sau khi tạo.
 
 Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24. [UC-11 và UC-12](../01-requirements/05-use-case-specifications.md)
-ghi quyết định đã xác nhận: người duyệt bắt buộc, Thời gian kết thúc tùy chọn; nếu nhập thì phải
-sau thời gian bắt đầu theo BR-25. Form khởi tạo Hình thức là `InPerson` và Mức độ mật là `Normal`.
+ghi nhận thay đổi yêu cầu ngày 27/09/2026: người duyệt chỉ bắt buộc khi gửi duyệt ở UC-15. Thời gian
+kết thúc tùy chọn; nếu nhập thì phải sau thời gian bắt đầu theo BR-25. Form khởi tạo Hình thức là
+`InPerson` và Mức độ mật là `Normal`.
 
 ## Quyền truy cập
 
@@ -111,10 +114,13 @@ Request body của POST và PUT có các field:
 }
 ```
 
-`title`, `startsAt` và `assignedApproverId` là bắt buộc. `endsAt` có thể `null` hoặc bị bỏ qua;
-nếu có giá trị, nó phải lớn hơn `startsAt`. Nếu `mode` hoặc `sensitivity` bị bỏ qua, service dùng
-giá trị khởi tạo của form (`InPerson`, `Normal`). Người duyệt phải là tài khoản đang hoạt động có
-capability `MeetingApprover`.
+`title` và `startsAt` là bắt buộc. `assignedApproverId` có thể `null` hoặc bị bỏ qua. Với POST,
+nếu được gửi, nó phải là tài khoản đang hoạt động có capability `MeetingApprover`. Với PUT, một
+người duyệt mới chỉ được gán khi tài khoản đang hoạt động và có capability này; nếu giữ nguyên người
+duyệt hiện có thì việc tài khoản đó đã bị vô hiệu hóa không chặn cập nhật thông tin cuộc họp.
+UC-15 phải kiểm tra và yêu cầu người duyệt hợp lệ trước khi chuyển meeting sang `WaitingApproval`.
+`endsAt` có thể `null` hoặc bị bỏ qua; nếu có giá trị, nó phải lớn hơn `startsAt`. Nếu `mode` hoặc
+`sensitivity` bị bỏ qua, service dùng giá trị khởi tạo của form (`InPerson`, `Normal`).
 
 POST trả `201 Created`, header `Location: /api/meetings/{id}` và envelope `code`, `message`,
 `meeting`. `meeting` gồm thông tin cuộc họp, `assignedApproverId`, `status`, `createdById`,
@@ -140,7 +146,7 @@ con qua body. Khi lưu cuộc họp bị từ chối, trạng thái vẫn là `R
 | `title` | Bắt buộc sau trim; tối đa 300 ký tự |
 | `startsAt` | Bắt buộc, ISO 8601 có `Z` hoặc offset rõ ràng |
 | `endsAt` | Tùy chọn; nếu có, ISO 8601 có `Z` hoặc offset rõ ràng và phải lớn hơn giờ bắt đầu |
-| `assignedApproverId` | Bắt buộc; tài khoản đang hoạt động và có capability `MeetingApprover` |
+| `assignedApproverId` | Tùy chọn khi tạo/sửa nháp; nếu có giá trị thì tài khoản đang hoạt động và có capability `MeetingApprover`. Bắt buộc tại UC-15 trước khi gửi duyệt |
 | `mode` | Một trong `InPerson`, `Online`, `Hybrid`; mặc định `InPerson` nếu bỏ qua |
 | `sensitivity` | Một trong `Normal`, `Internal`, `Confidential`, `Secret`; mặc định `Normal` nếu bỏ qua |
 | `location` | Tùy chọn; trim; tối đa 300 ký tự |
@@ -194,9 +200,8 @@ pháp/sai kiểu trả `400` và code `MEETING_INVALID_INFORMATION` không có `
 
 ## Persistence và transaction
 
-Cột `ends_at` nullable và FK nullable `assigned_approver_id` giữ được các meeting cũ; API POST vẫn
-bắt buộc gán người duyệt cho meeting mới theo ERD. POST lưu meeting `Draft` cùng người duyệt và một
-dòng `MeetingStatusHistory` (`FromStatus = null`, `ToStatus = Draft`, `ActorId = creator`). EF Core
+Cột `ends_at` và FK `assigned_approver_id` đều nullable. POST lưu meeting `Draft`, có thể chưa có
+người duyệt, cùng một dòng `MeetingStatusHistory` (`FromStatus = null`, `ToStatus = Draft`, `ActorId = creator`). EF Core
 lưu các thay đổi này trong cùng transaction.
 
 PUT kiểm tra quyền sở hữu và trạng thái hiện tại bằng truy vấn không khóa trước khi chờ body. Sau khi

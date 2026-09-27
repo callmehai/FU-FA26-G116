@@ -73,7 +73,7 @@ erDiagram
         timestamptz StartsAt
         timestamptz EndsAt "nullable"
         uuid CreatedById FK
-        uuid AssignedApproverId FK "nullable với dữ liệu cũ; bắt buộc khi tạo mới"
+        uuid AssignedApproverId FK "null khi tạo nháp; bắt buộc trước khi gửi duyệt"
     }
     MeetingParticipant {
         uuid Id PK
