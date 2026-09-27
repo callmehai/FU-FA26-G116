@@ -353,6 +353,50 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Put_with_null_assigned_approver_clears_the_existing_assignment()
+    {
+        var creator = GivenCreator();
+        var previousApproverId = Guid.CreateVersion7();
+        var meeting = OwnedMeetingBy(creator, previousApproverId);
+        _factory.Meetings.Meetings.Add(meeting);
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/meetings/{meeting.Id}",
+            ValidRequest() with { Title = "Cập nhật không có người duyệt", AssignedApproverId = null });
+        using var body = await JsonOf(response);
+        var responseMeeting = body.RootElement.GetProperty("meeting");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(JsonValueKind.Null, responseMeeting.GetProperty("assignedApproverId").ValueKind);
+        Assert.Null(meeting.AssignedApproverId);
+        Assert.Equal(1, _factory.Meetings.SaveCount);
+    }
+
+    [Fact]
+    public async Task Put_allows_resubmitting_an_existing_approver_who_is_no_longer_eligible()
+    {
+        var creator = GivenCreator();
+        var existingApproverId = Guid.CreateVersion7();
+        var meeting = OwnedMeetingBy(creator, existingApproverId);
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.IneligibleApproverIds.Add(existingApproverId);
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/meetings/{meeting.Id}",
+            ValidRequest() with { Title = "Cập nhật thông tin", AssignedApproverId = existingApproverId });
+        using var body = await JsonOf(response);
+        var responseMeeting = body.RootElement.GetProperty("meeting");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(existingApproverId, responseMeeting.GetProperty("assignedApproverId").GetGuid());
+        Assert.Equal("Cập nhật thông tin", responseMeeting.GetProperty("title").GetString());
+        Assert.Equal(existingApproverId, meeting.AssignedApproverId);
+        Assert.Equal(1, _factory.Meetings.SaveCount);
+    }
+
+    [Fact]
     public async Task Put_returns_MSG03_if_the_meeting_is_not_editable()
     {
         var creator = GivenCreator();
