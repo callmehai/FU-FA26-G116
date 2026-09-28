@@ -10,8 +10,8 @@ không yêu cầu chọn người duyệt. Với PUT, `assignedApproverId` bị 
 gán người duyệt; muốn giữ người duyệt hiện tại thì gửi lại ID đó. UC-15 yêu cầu chọn người duyệt hợp
 lệ trước khi gửi.
 Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. `GET /api/meetings`
-được bổ sung trong SCRUM-18; giao diện hiện tại vẫn dùng dữ liệu mẫu và chưa tích hợp API. Form tạo
-hiển thị xác nhận và mã cuộc họp sau khi tạo.
+được bổ sung trong SCRUM-18; màn danh sách hiện vẫn dùng dữ liệu mẫu và chưa tích hợp API. Màn tạo,
+sửa và chi tiết đã gọi API thật: tạo xong thì báo thành công và mở trang chi tiết của cuộc họp mới.
 
 Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24. [UC-11 và UC-12](../01-requirements/05-use-case-specifications.md)
 ghi nhận thay đổi yêu cầu ngày 27/09/2026: người duyệt chỉ bắt buộc khi gửi duyệt ở UC-15. Thời gian

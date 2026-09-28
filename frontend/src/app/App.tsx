@@ -17,6 +17,9 @@ const MeetingsPage = lazy(() =>
 const CreateMeetingPage = lazy(() =>
   import('../features/meetings/CreateMeetingPage').then((m) => ({ default: m.CreateMeetingPage })),
 )
+const EditMeetingPage = lazy(() =>
+  import('../features/meetings/EditMeetingPage').then((m) => ({ default: m.EditMeetingPage })),
+)
 const MeetingDetailPage = lazy(() =>
   import('../features/meetings/detail/MeetingDetailPage').then((m) => ({ default: m.MeetingDetailPage })),
 )
@@ -53,6 +56,15 @@ export function App() {
               element={
                 <RequireCapability cap="MeetingCreator">
                   <CreateMeetingPage />
+                </RequireCapability>
+              }
+            />
+            {/* The page also 404s for anyone but the meeting's creator, as PUT does. */}
+            <Route
+              path={routes.meetingEdit(':meetingId')}
+              element={
+                <RequireCapability cap="MeetingCreator">
+                  <EditMeetingPage />
                 </RequireCapability>
               }
             />

@@ -495,6 +495,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 }
 
 .page-header-desc { margin: 4px 0 0; color: var(--muted-ink); font-size: 14px; }
+.page-header-actions { display: flex; flex: none; align-items: center; gap: 16px; }
+.page-loading { margin: 0; padding: 48px 0; color: var(--muted-ink); text-align: center; }
 
 .sensitivity-flag { margin: 0; color: var(--lacquer); font-weight: 600; font-size: 14px; }
 
@@ -526,7 +528,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 .card-title { margin-bottom: 14px; }
 .card-pending { color: var(--muted-ink); }
-.card-pending p { margin: 0; }
+.card-pending p, p.card-pending { margin: 0; }
 
 /* A table sits straight on the page — no frame — as in the reference system. */
 /* flex: none — inside the column-flex .content a card would otherwise shrink to the viewport and
@@ -609,11 +611,16 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .tab-active { border-bottom-color: var(--lacquer); color: var(--ink); font-weight: 600; }
 
 /* ---------- Meeting detail ---------- */
-.detail-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: 20px; }
+.detail-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: 20px; align-items: start; }
 
 .field-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
 .field-item { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .field-item > span { color: var(--muted-ink); font-size: 13px; }
+.field-grid .span-all { grid-column: 1 / -1; }
+/* An unset value reads as absent, not as data: muted and italic, never an em dash that looks typed. */
+.value-empty { color: var(--muted-ink); font-style: italic; }
+/* Free text keeps the author's line breaks. */
+.value-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 
 /* Dot and line are both drawn by the <li>, from one origin, so they cannot drift apart: the dot's
    centre and the line's centre sit on the same x (4px). Each item draws the segment from its own dot
@@ -654,6 +661,57 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .span-2 { grid-column: 1 / -1; }
 .form-actions { display: flex; justify-content: flex-end; gap: 8px; }
+/* A page-level form and the alerts about it share one readable column, instead of stretching
+   across the 1280px content width. flex: none for the same reason as .table-card: inside the
+   column-flex .content it would shrink to the viewport and spill past the page padding. */
+.form-page { display: flex; flex: none; flex-direction: column; width: 100%; max-width: 760px; }
+.form-card { flex: none; gap: 20px 16px; padding: 24px; }
+/* The actions sit under a divider at the end of the form, where the eye already is. */
+.form-card .form-actions { margin-top: 4px; padding-top: 20px; border-top: 1px solid var(--line); }
+.field-foot { display: flex; justify-content: space-between; gap: 12px; }
+.field-counter { flex: none; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+/* An inline action inside a line of text ("… Thử lại"). */
+.link-button {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* ---------- Segmented control (components/SegmentedControl.tsx) ----------
+   Native radios with the dots hidden: the selected option lifts onto a white pill, the rest stay
+   on the grey track. Same 36px height as every other control. */
+.segmented {
+  display: flex;
+  height: var(--control-height);
+  padding: 3px;
+  border-radius: var(--radius);
+  background: var(--surface-alt);
+}
+.segmented-option { position: relative; display: flex; flex: 1; min-width: 0; }
+.segmented-option input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.segmented-option span {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border-radius: 6px;
+  color: var(--muted-ink);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color .15s, color .15s, box-shadow .15s;
+}
+.segmented-option:hover span { color: var(--ink); }
+.segmented-option input:checked + span { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm); }
+.segmented-option input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 1px; }
+.segmented-option input:disabled + span { opacity: .5; cursor: not-allowed; }
 .role-capabilities { min-width: 0; margin: 0; padding: 0; border: 0; }
 .role-capabilities legend { margin-bottom: 8px; font-size: 14px; font-weight: 500; }
 .role-capability-options { display: flex; flex-direction: column; gap: 10px; }

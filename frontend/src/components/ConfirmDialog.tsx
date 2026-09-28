@@ -14,6 +14,7 @@ export function ConfirmDialog({
   children,
   confirmLabel,
   pendingLabel,
+  cancelLabel = 'Huỷ',
   tone = 'primary',
   blocker,
   onConfirm,
@@ -23,6 +24,8 @@ export function ConfirmDialog({
   children: ReactNode
   confirmLabel: string
   pendingLabel: string
+  /** Say what backing out means when a bare "Huỷ" would be ambiguous — e.g. "Tiếp tục sửa". */
+  cancelLabel?: string
   tone?: 'primary' | 'danger'
   /**
    * Why the action cannot go ahead, when that is known before asking: shown where a failure
@@ -59,7 +62,7 @@ export function ConfirmDialog({
       footer={
         <>
           <button type="button" className="btn btn-ghost" onClick={close} disabled={pending}>
-            Huỷ
+            {cancelLabel}
           </button>
           <button
             type="button"
