@@ -53,8 +53,8 @@ là bốn dòng **mặc định** có id cố định. `Capability` **vẫn là 
 | `role_capabilities` | PK `(role, capability)` | PK `(role_id, capability)`, `role_id` → FK `roles.id` **`ON DELETE CASCADE`** |
 
 - **`RESTRICT` ở `users`** là chốt chặn cuối của luật "chỉ xoá vai trò không còn ai giữ": có người
-  được gán vào vai trò chen giữa lúc kiểm và lúc xoá thì database từ chối (`23503` hoặc `23001`),
-  service bắt lỗi đó và trả `MSG25`, không thành `500`.
+  được gán vào vai trò chen giữa lúc kiểm và lúc xoá thì database từ chối (`23503`), service bắt lỗi
+  đó và trả `MSG25`, không thành `500`.
 - **`CASCADE` ở `role_capabilities`**: xoá vai trò thì quyền của nó đi theo.
 
 ### Vai trò mặc định — `BuiltInRoles`
@@ -239,7 +239,7 @@ vẫn đếm theo **tài khoản** chứ không theo tên vai trò: một ngư�
 Với **tạo** và **xoá**, ghi DB và audit cùng nằm trong transaction của guard. **Đổi tên** không qua
 guard nên audit là một lần lưu riêng sau khi đổi tên đã lưu — đúng quy ước của `AuditService` (audit
 lỗi thì thao tác đã xảy ra vẫn giữ, người dùng nhận `500`). Một câu lệnh bị database từ chối
-(`23505`, `23503`, `23001`) không làm hỏng transaction: EF bọc `SaveChanges` trong savepoint và rollback về
+(`23505`, `23503`) không làm hỏng transaction: EF bọc `SaveChanges` trong savepoint và rollback về
 đó.
 
 Tạo tài khoản (`POST /api/users`) cũng không qua guard: vai trò bị xoá chen giữa lúc kiểm và lúc lưu
@@ -288,7 +288,7 @@ thực hiện theo luồng ở mục 9 trước khi ticket được đánh dấu
 
 | File | Loại | Nội dung |
 |---|---|---|
-| `RoleServiceTests` | Unit, test double | Mọi nhánh alt của 3 sequence diagram + chuẩn hoá tên, mã quyền dạng số, race `23505`/`23503`/`23001` |
+| `RoleServiceTests` | Unit, test double | Mọi nhánh alt của 3 sequence diagram + chuẩn hoá tên, mã quyền dạng số, race `23505`/`23503` |
 | `RoleEndpointsTests` | HTTP in-memory | `401`/`403` cho cả 4 endpoint, mã MSG, shape JSON, `404` không body |
 | `RoleRepositoryTests` | PostgreSQL thật | `citext` với tiếng Việt, unique index → `MSG21`, FK `RESTRICT` → `MSG25`, cascade, `userCount` gồm tài khoản vô hiệu hoá |
 | `RolesAsDataMigrationTests` | PostgreSQL thật | Migration giữ đủ người + ma trận (kể cả dòng admin đã sửa), dừng khi gặp giá trị lạ, `Down()` đảo ngược và từ chối khi còn vai trò tự tạo |

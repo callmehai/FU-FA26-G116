@@ -215,14 +215,12 @@ public sealed partial class RoleService(
         {
             await roles.SaveChangesAsync(ct);
         }
-        catch (Exception exception) when (
-            HasSqlState(exception, PostgresErrorCodes.ForeignKeyViolation)
-            || HasSqlState(exception, PostgresErrorCodes.RestrictViolation))
+        catch (Exception exception) when (HasSqlState(exception, PostgresErrorCodes.ForeignKeyViolation))
         {
             // "Role was assigned to a user account in the meantime": somebody was given the role
             // between the count above and this delete — account creation does not take the guard.
-            // The foreign key refused it (23503 or RESTRICT's 23001); answer MSG25 with the fresh
-            // count rather than a 500. At least one, since the refusal proves someone holds it.
+            // The RESTRICT foreign key refused it; answer MSG25 with the fresh count rather than
+            // a 500. At least one, since the refusal proves someone holds it.
             var nowHeldBy = Math.Max(1, await roles.CountUsersAsync(id, ct));
 
             logger.LogInformation(

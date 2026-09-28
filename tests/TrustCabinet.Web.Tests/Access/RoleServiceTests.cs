@@ -587,17 +587,15 @@ public class RoleServiceTests
         Assert.Empty(_audit.Records);
     }
 
-    [Theory]
-    [InlineData(PostgresErrorCodes.ForeignKeyViolation)]
-    [InlineData(PostgresErrorCodes.RestrictViolation)]
-    public async Task Delete_answers_MSG25_when_someone_was_given_the_role_in_the_meantime(string sqlState)
+    [Fact]
+    public async Task Delete_answers_MSG25_when_someone_was_given_the_role_in_the_meantime()
     {
         // The diagram's "Role was assigned to a user account in the meantime": the count said
         // nobody, then an account was created with the role, and the RESTRICT foreign key refused
         // the delete. MSG25 with the fresh count — not a 500.
         var role = GivenCustomRole();
         _roles.OnSave = () => _roles.WithUsers(role.Id, 2);
-        _roles.NextSaveThrows = FakeRoleRepository.Refused(sqlState);
+        _roles.NextSaveThrows = FakeRoleRepository.Refused(PostgresErrorCodes.ForeignKeyViolation);
 
         var result = await NewService().DeleteAsync(role.Id, _actorId);
 

@@ -51,7 +51,7 @@ lần. Tất cả bộ lọc được kết hợp bằng AND (BR-30/BR-31).
 | `sensitivity` | `Normal`, `Internal`, `Confidential` hoặc `Secret` |
 | `q` | Trim; tìm chuỗi con của `title` không phân biệt hoa/thường. `%`, `_`, `\` là ký tự thường, không phải wildcard |
 | `from`, `to` | ISO 8601 có `Z` hoặc offset; giây tùy chọn, ví dụ `2026-10-01T09:00+07:00`; chuẩn hóa UTC, lọc `startsAt` gồm cả hai đầu; có thể chỉ gửi một đầu |
-| `page`, `pageSize` | Mặc định `1`, `20`; `page ≥ 1`, `pageSize` từ `1` đến `100` |
+| `page`, `pageSize` | Mặc định `1`, `20`; `page` từ `1` đến `2.147.483.647`, `pageSize` từ `1` đến `100` |
 | `sortBy` | `title`, `startsAt`, `createdAt`; mặc định `startsAt` |
 | `sortDir` | `asc`, `desc`; mặc định `asc` cho `title`, `desc` cho hai cột thời gian |
 
@@ -177,10 +177,9 @@ Lỗi validation trả `400`:
 Endpoint trả đồng thời mọi lỗi field phát hiện được. Với PUT, hệ thống kiểm tra trạng thái trước khi
 đọc/parse JSON: nếu meeting đã không còn sửa được thì trả `409 MEETING_NOT_EDITABLE`, kể cả body
 JSON sai cú pháp hoặc sai kiểu. Transaction cập nhật vẫn khóa và kiểm tra lại trạng thái trước khi
-parse JSON, validate và lưu để xử lý cạnh tranh. Request PUT có Content-Type thiếu hoặc không hỗ trợ trả `415` với code
+validate/lưu để xử lý cạnh tranh. Request PUT có Content-Type thiếu hoặc không hỗ trợ trả `415` với code
 `MEETING_UNSUPPORTED_CONTENT_TYPE`. Với meeting còn sửa được và Content-Type hợp lệ, JSON sai cú
 pháp/sai kiểu trả `400` và code `MEETING_INVALID_INFORMATION` không có `errors`. POST JSON lỗi cũng trả `400`.
-Body PUT vượt quá 64 KiB trả `413 MEETING_BODY_TOO_LARGE`, kể cả khi request không có `Content-Length`.
 
 ## Mã phản hồi
 
@@ -194,7 +193,6 @@ Body PUT vượt quá 64 KiB trả `413 MEETING_BODY_TOO_LARGE`, kể cả khi r
 | 403 | — | POST/PUT/approvers: thiếu `MeetingCreator`; GET list/detail: tài khoản không hoạt động |
 | 404 | — | GET: không tồn tại hoặc caller không có quan hệ; PUT: không tồn tại hoặc caller không phải người tạo; body rỗng |
 | 409 | `MEETING_NOT_EDITABLE` | Trạng thái hiện tại không cho sửa |
-| 413 | `MEETING_BODY_TOO_LARGE` | Body PUT vượt quá 64 KiB |
 | 415 | `MEETING_UNSUPPORTED_CONTENT_TYPE` | PUT không gửi JSON hoặc Content-Type không hỗ trợ |
 | 500 | `MEETING_CREATE_FAILED` | Không thể lưu khi tạo; thử lại |
 | 500 | `MEETING_UPDATE_FAILED` | Không thể lưu khi sửa; thử lại |
@@ -210,10 +208,10 @@ người duyệt, cùng một dòng `MeetingStatusHistory` (`FromStatus = null`,
 lưu các thay đổi này trong cùng transaction.
 
 PUT kiểm tra quyền sở hữu và trạng thái hiện tại bằng truy vấn không khóa trước khi đọc body. Sau khi
-xác nhận meeting còn sửa được, hệ thống kiểm tra Content-Type rồi đọc body vào buffer tối đa 64 KiB
-ngoài transaction khóa ghi. Khi xử lý cập nhật, transaction `ReadCommitted` khóa đúng meeting row bằng PostgreSQL
+xác nhận meeting còn sửa được, hệ thống kiểm tra Content-Type rồi deserialize JSON ngoài transaction
+khóa ghi. Khi xử lý cập nhật, transaction `ReadCommitted` khóa đúng meeting row bằng PostgreSQL
 `FOR UPDATE`, đọc lại trạng thái và trả `409 MEETING_NOT_EDITABLE` nếu trạng thái đã đổi. Sau lần kiểm tra
-khóa, hệ thống parse JSON từ buffer, validate dữ liệu và lưu; không có network read trong lúc giữ row lock.
+khóa, hệ thống validate dữ liệu và lưu; không có network read trong lúc giữ row lock.
 Transaction kết thúc trước response. Cập nhật thông tin không thay status hoặc lịch sử. Nếu body sau
 chuẩn hóa giống dữ liệu đã lưu, trả thành công nhưng không ghi DB hoặc đổi `updatedAt`. Dữ liệu cho
 phép sửa giữa hai form cũ dùng “lần ghi sau cùng thắng”; contract chưa có ETag/version để từ chối

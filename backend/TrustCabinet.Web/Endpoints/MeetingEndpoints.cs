@@ -11,8 +11,6 @@ namespace TrustCabinet.Web.Endpoints;
 /// <summary>HTTP boundary for meeting creation, updates, detail and authorized listing.</summary>
 public static class MeetingEndpoints
 {
-    private const int MaxUpdateBodyBytes = 64 * 1024;
-
     public static IEndpointRouteBuilder MapMeetingEndpoints(this IEndpointRouteBuilder app)
     {
         var creatorMeetings = app.MapGroup("/api/meetings")
@@ -129,46 +127,11 @@ public static class MeetingEndpoints
                 statusCode: StatusCodes.Status415UnsupportedMediaType);
         }
 
-        if (request.ContentLength > MaxUpdateBodyBytes)
-        {
-            return BodyTooLarge();
-        }
-
-        await using var bodyBuffer = new MemoryStream();
-        var readBuffer = new byte[8192];
-        while (true)
-        {
-            var bytesToRead = Math.Min(readBuffer.Length, MaxUpdateBodyBytes + 1 - (int)bodyBuffer.Length);
-            var bytesRead = await request.Body.ReadAsync(readBuffer.AsMemory(0, bytesToRead), ct);
-            if (bytesRead == 0)
-            {
-                break;
-            }
-
-            if (bodyBuffer.Length + bytesRead > MaxUpdateBodyBytes)
-            {
-                return BodyTooLarge();
-            }
-
-            await bodyBuffer.WriteAsync(readBuffer.AsMemory(0, bytesRead), ct);
-        }
-
-        MeetingResult result;
+        MeetingInput input;
         try
         {
-            result = await service.UpdateAsync(
-                id,
-                async token =>
-                {
-                    bodyBuffer.Position = 0;
-                    var parsed = await JsonSerializer.DeserializeAsync<MeetingRequest>(
-                        bodyBuffer,
-                        jsonOptions.Value.SerializerOptions,
-                        token);
-                    return parsed?.ToInput() ?? EmptyInput;
-                },
-                actorId,
-                ct);
+            var parsed = await request.ReadFromJsonAsync<MeetingRequest>(jsonOptions.Value.SerializerOptions, ct);
+            input = parsed?.ToInput() ?? EmptyInput;
         }
         catch (JsonException)
         {
@@ -177,6 +140,7 @@ public static class MeetingEndpoints
                 statusCode: StatusCodes.Status400BadRequest);
         }
 
+        var result = await service.UpdateAsync(id, input, actorId, ct);
         return result.Outcome switch
         {
             MeetingOutcome.Success => Results.Ok(new MeetingMutationResponse(
@@ -199,11 +163,6 @@ public static class MeetingEndpoints
                 statusCode: StatusCodes.Status409Conflict),
             _ => ServerError("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."),
         };
-
-    private static IResult BodyTooLarge()
-        => Results.Json(
-            new MeetingErrorResponse("MEETING_BODY_TOO_LARGE", "Nội dung JSON vượt quá 64 KiB."),
-            statusCode: StatusCodes.Status413PayloadTooLarge);
 
     private static IResult Invalid(MeetingResult result)
         => Results.Json(

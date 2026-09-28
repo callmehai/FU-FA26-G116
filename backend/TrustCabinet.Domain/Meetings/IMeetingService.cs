@@ -15,10 +15,4 @@ public interface IMeetingService
 
     Task<MeetingResult> UpdateAsync(
         Guid id, MeetingInput input, Guid actorId, CancellationToken ct = default);
-
-    Task<MeetingResult> UpdateAsync(
-        Guid id,
-        Func<CancellationToken, Task<MeetingInput>> inputFactory,
-        Guid actorId,
-        CancellationToken ct = default);
 }

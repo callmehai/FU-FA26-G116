@@ -25,18 +25,6 @@ public sealed class MeetingEndpointsTests : IDisposable
 
     public void Dispose() => _factory.Dispose();
 
-    private sealed class UnknownLengthContent(byte[] body) : HttpContent
-    {
-        protected override bool TryComputeLength(out long length)
-        {
-            length = 0;
-            return false;
-        }
-
-        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
-            => stream.WriteAsync(body.AsMemory()).AsTask();
-    }
-
     private sealed class Factory : TrustCabinetApiFactory
     {
         internal FakeMeetingRepository Meetings { get; } = new();
@@ -638,35 +626,6 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.UnsupportedMediaType, unsupportedResponse.StatusCode);
         Assert.Equal(HttpStatusCode.UnsupportedMediaType, missingTypeResponse.StatusCode);
         Assert.Equal(HttpStatusCode.Conflict, waitingResponse.StatusCode);
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task Put_rejects_json_larger_than_64_kib(bool unknownLength)
-    {
-        var creator = GivenCreator();
-        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
-        var meeting = OwnedMeetingBy(creator);
-        _factory.Meetings.Meetings.Add(meeting);
-        var oversizedBody = new byte[64 * 1024 + 1];
-
-        using HttpContent content = unknownLength
-            ? new UnknownLengthContent(oversizedBody)
-            : new ByteArrayContent(oversizedBody);
-        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        using var request = new HttpRequestMessage(HttpMethod.Put, $"/api/meetings/{meeting.Id}")
-        {
-            Content = content,
-        };
-
-        var response = await client.SendAsync(request);
-        using var body = await JsonOf(response);
-
-        Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
-        Assert.Equal("MEETING_BODY_TOO_LARGE", body.RootElement.GetProperty("code").GetString());
-        Assert.Equal("Giao ban tuần", meeting.Title);
-        Assert.Equal(0, _factory.Meetings.SaveCount);
     }
 
     [Fact]

@@ -36,8 +36,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         // RESTRICT: the last line of "only a role nobody holds can be deleted". The service checks
         // first, but an account assigned to the role between that check and the delete would
-        // otherwise be left pointing at nothing — the database refuses instead (23503 or 23001),
-        // and the service answers MSG25.
+        // otherwise be left pointing at nothing — the database refuses instead (23503), and the
+        // service answers MSG25.
         builder.HasOne(u => u.Role)
             .WithMany()
             .HasForeignKey(u => u.RoleId)
