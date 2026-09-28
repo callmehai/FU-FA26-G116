@@ -521,6 +521,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 }
 
 .search input { width: 100%; padding-left: 36px; }
+/* In a crowded toolbar the search gives way first, so the filters stay on one line. */
+.search-flex { flex: 1 1 200px; width: auto; }
 
 /* ---------- Cards & tables ---------- */
 .card {
@@ -570,6 +572,95 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .col-action { text-align: right; }
 
 .row-inactive td { color: var(--muted-ink); }
+/* A row that opens its record. The title stays a real link for keyboard and middle-click. */
+.row-link { cursor: pointer; }
+.row-link .cell-title a:hover { text-decoration: underline; text-underline-offset: 2px; }
+/* The previous page stays readable but visibly stale while the next one loads. */
+.data-table-stale tbody { opacity: .55; transition: opacity .15s; }
+.empty-title { margin: 0 0 12px; color: var(--ink); font-weight: 500; }
+.cell-empty .field-hint { margin-top: 4px; }
+
+/* Sortable header: the whole label is the button; the arrow is faint until the column is active. */
+.sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.sort-button .icon { color: var(--muted-ink); opacity: .6; }
+.sort-button:hover .icon, .sort-button-active .icon { color: var(--ink); opacity: 1; }
+
+/* Placeholder rows for the first load, sized like real content so nothing jumps when it arrives. */
+.row-skeleton td { height: 45px; }
+.skeleton {
+  display: block;
+  width: 70%;
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--surface-alt) 25%, var(--line) 50%, var(--surface-alt) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+.row-skeleton td:first-child .skeleton { width: 85%; }
+.row-skeleton td:nth-child(n+4) .skeleton { width: 56px; }
+.row-skeleton td:last-child .skeleton { width: 24px; margin-left: auto; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* Two date inputs drawn as one control, so the range reads as a single filter. */
+.date-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: var(--control-height);
+  margin: 0;
+  padding: 0 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px #0000000d;
+  color: var(--muted-ink);
+}
+.date-range-label { padding: 0 4px 0 8px; font-size: 14px; white-space: nowrap; }
+.date-range input { width: 132px; height: 32px; padding: 0 6px; border: none; box-shadow: none; }
+.date-range input:focus-visible { box-shadow: none; }
+.date-range:focus-within { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
+.date-range-invalid { border-color: var(--danger); }
+
+/* ---------- Pagination (components/Pagination.tsx) ---------- */
+.pagination {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+}
+.pagination-summary { margin: 0; color: var(--muted-ink); font-variant-numeric: tabular-nums; }
+.pagination-summary b { color: var(--ink); font-weight: 600; }
+.pagination-controls { display: flex; align-items: center; gap: 4px; }
+.pagination-size { display: inline-flex; align-items: center; gap: 8px; margin-right: 12px; color: var(--muted-ink); }
+.pagination-size .select-trigger { min-width: 72px; }
+.pagination-page {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.pagination-page:hover:not(:disabled) { background: var(--surface-alt); }
+.pagination-page-current { border-color: var(--line); background: var(--surface); font-weight: 600; box-shadow: var(--shadow-sm); }
+.pagination-page:disabled { cursor: default; }
+.pagination-gap { min-width: 24px; color: var(--muted-ink); text-align: center; }
 .row-actions { display: inline-flex; gap: 2px; white-space: nowrap; }
 .chip-row { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 
