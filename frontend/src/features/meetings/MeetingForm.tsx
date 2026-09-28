@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState, type FormEvent } from 'react'
 import { useBeforeUnload } from 'react-router-dom'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { Icon } from '../../components/Icon'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { Select, type SelectOption } from '../../components/Select'
 import { fromDateTimeInput, toDateTimeInput } from '../../lib/dateInput'
@@ -93,7 +94,9 @@ function toRequest(values: Values): MeetingRequest {
     startsAt: fromDateTimeInput(values.startsAt)!,
     endsAt: fromDateTimeInput(values.endsAt),
     mode: values.mode,
-    location: values.location.trim(),
+    // An online meeting happens in the in-app call room, so it has no place. What was typed stays in
+    // the form (switching back restores it) but is not saved.
+    location: values.mode === 'Online' ? '' : values.location.trim(),
     sensitivity: values.sensitivity,
     description: values.description,
     assignedApproverId: values.approverId || null,
@@ -269,18 +272,38 @@ export function MeetingForm({
           {fieldErrors.mode && <small className="field-error">{fieldErrors.mode}</small>}
         </div>
 
-        <label className="field" data-field="location">
-          <span>Địa điểm</span>
-          <input
-            name="location"
-            value={values.location}
-            onChange={(e) => set('location', e.target.value)}
-            maxLength={LOCATION_MAX}
-            placeholder="Ví dụ: Phòng họp A — Tầng 4"
-            aria-invalid={!!fieldErrors.location}
-          />
-          {fieldErrors.location && <small className="field-error">{fieldErrors.location}</small>}
-        </label>
+        {/* The place follows the mode. The cell keeps its size in every mode, so switching does not
+            shift the rest of the form. */}
+        {values.mode === 'Online' ? (
+          <div className="field" data-field="location">
+            <span>Địa điểm</span>
+            <p className="field-static">
+              <Icon name="video" size={16} />
+              Phòng gọi trực tuyến trong TrustCabinet
+            </p>
+            <small className="field-hint">Không cần địa điểm hay đường dẫn họp bên ngoài.</small>
+          </div>
+        ) : (
+          <label className="field" data-field="location">
+            <span>{values.mode === 'Hybrid' ? 'Địa điểm họp trực tiếp' : 'Địa điểm'}</span>
+            <input
+              name="location"
+              value={values.location}
+              onChange={(e) => set('location', e.target.value)}
+              maxLength={LOCATION_MAX}
+              placeholder="Ví dụ: Phòng họp A — Tầng 4"
+              aria-invalid={!!fieldErrors.location}
+            />
+            {fieldErrors.location ? (
+              <small className="field-error">{fieldErrors.location}</small>
+            ) : (
+              // One line in every mode, so switching mode never moves the rows below.
+              <small className="field-hint">
+                {values.mode === 'Hybrid' ? 'Người ở xa vào phòng gọi trực tuyến.' : 'Phòng họp hoặc địa chỉ.'}
+              </small>
+            )}
+          </label>
+        )}
 
         <div className="field" data-field="sensitivity">
           <span>Mức độ mật</span>
