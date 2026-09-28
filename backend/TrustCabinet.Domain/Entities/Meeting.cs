@@ -21,7 +21,7 @@ public class Meeting : Entity
 
     /// <summary>
     /// Deliberately has no database default. The application applies the form's explicit initial
-    /// choice (`Secret`) when a request omits this optional selector.
+    /// choice (`Normal`) when a request omits this optional selector.
     /// </summary>
     public Sensitivity Sensitivity { get; set; }
 

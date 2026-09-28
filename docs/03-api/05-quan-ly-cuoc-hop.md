@@ -5,12 +5,13 @@ trong tài liệu quản lý vai trò đang dùng cho use case khác.
 
 ## Phạm vi
 
-Các endpoint cho người tạo khởi tạo cuộc họp nháp và sửa trước khi gửi duyệt. Không bắt buộc chọn
-người duyệt khi tạo/sửa nháp; nếu muốn giữ người duyệt đã gán khi cập nhật, request phải gửi lại ID
-đó. UC-15 yêu cầu người duyệt hợp lệ trước khi gửi.
-Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. Danh sách
-`GET /api/meetings` thuộc SCRUM-18; giao diện hiện tại vẫn dùng dữ liệu mẫu và chưa tích hợp API.
-Khi tích hợp FE, form sẽ hiển thị xác nhận và mã cuộc họp sau khi tạo.
+Các endpoint cho người tạo khởi tạo cuộc họp nháp và sửa trước khi gửi duyệt. Luồng tạo/sửa nháp
+không yêu cầu chọn người duyệt. Với PUT, `assignedApproverId` bị bỏ trống hoặc gửi `null` sẽ bỏ
+gán người duyệt; muốn giữ người duyệt hiện tại thì gửi lại ID đó. UC-15 yêu cầu chọn người duyệt hợp
+lệ trước khi gửi.
+Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. `GET /api/meetings`
+được bổ sung trong SCRUM-18; giao diện hiện tại vẫn dùng dữ liệu mẫu và chưa tích hợp API. Form tạo
+hiển thị xác nhận và mã cuộc họp sau khi tạo.
 
 Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24. [UC-11 và UC-12](../01-requirements/05-use-case-specifications.md)
 ghi nhận thay đổi yêu cầu ngày 27/09/2026: người duyệt chỉ bắt buộc khi gửi duyệt ở UC-15. Thời gian
@@ -34,8 +35,8 @@ trang. Endpoint chỉ yêu cầu đăng nhập và tài khoản còn hoạt đ�
 `MeetingCreator`. `totalCount` không bao gồm cuộc họp caller không được xem.
 
 Sửa chỉ được ở `Draft` và `Rejected`. Hệ thống đọc trạng thái mới nhất sau khi khóa dòng và trước
-khi validate nội dung. Trạng thái khác trả `409 MSG03`. Sửa `Rejected` giữ nguyên trạng thái và
-không thêm dòng lịch sử trạng thái.
+khi validate nội dung. Trạng thái khác trả `409 MEETING_NOT_EDITABLE`. Sửa `Rejected` giữ nguyên
+trạng thái và không thêm dòng lịch sử trạng thái.
 
 ## Contract
 
@@ -84,8 +85,8 @@ Không có kết quả hoặc trang vượt quá trang cuối, kể cả khi off
 kết quả, `totalCount` và `totalPages` đều bằng `0`. Query sai trả `400` với `code` là
 `MEETING_INVALID_QUERY`, `message` là `Tham số truy vấn không hợp lệ.` và `errors` theo tên tham số.
 Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài giới
-hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `503` với
-`code: MSG08` và thông điệp
+giới hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `500` với
+`code: MEETING_LIST_FAILED` và thông điệp
 `Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-14.
 
 Sequence UC-14 hiện ghi BR-29 và BR-32 ở bước repository; BA cần bổ sung BR-30/31 và nhánh query
@@ -115,9 +116,9 @@ Request body của POST và PUT có các field:
 ```
 
 `title` và `startsAt` là bắt buộc. `assignedApproverId` có thể `null` hoặc bị bỏ qua. Với POST,
-nếu được gửi, nó phải là tài khoản đang hoạt động có capability `MeetingApprover`. Với PUT, một
-người duyệt mới chỉ được gán khi tài khoản đang hoạt động và có capability này; nếu giữ nguyên người
-duyệt hiện có thì việc tài khoản đó đã bị vô hiệu hóa không chặn cập nhật thông tin cuộc họp.
+nếu được gửi, nó phải là tài khoản đang hoạt động có capability `MeetingApprover`. Với PUT, bỏ qua
+hoặc gửi `null` sẽ bỏ gán người duyệt; nếu gửi ID khác ID hiện tại thì người đó phải đang hoạt động
+và có capability này. Gửi lại ID hiện tại không chặn cập nhật nếu tài khoản đó đã bị vô hiệu hóa.
 UC-15 phải kiểm tra và yêu cầu người duyệt hợp lệ trước khi chuyển meeting sang `WaitingApproval`.
 `endsAt` có thể `null` hoặc bị bỏ qua; nếu có giá trị, nó phải lớn hơn `startsAt`. Nếu `mode` hoặc
 `sensitivity` bị bỏ qua, service dùng giá trị khởi tạo của form (`InPerson`, `Normal`).
@@ -134,7 +135,7 @@ enum. Thời gian trong response luôn UTC.
 ### PUT `/api/meetings/{id}`
 
 PUT thay toàn bộ tám field thông tin cuộc họp bằng dữ liệu request. Trả `200 OK`, envelope
-`{ "code": "MSG02", "message": "Cập nhật cuộc họp thành công.", "meeting": { ... } }`.
+`{ "code": "MEETING_UPDATED", "message": "Cập nhật cuộc họp thành công.", "meeting": { ... } }`.
 
 Không chấp nhận quyền thay đổi `id`, `createdById`, `status`, `createdAt`, `updatedAt` hay dữ liệu
 con qua body. Khi lưu cuộc họp bị từ chối, trạng thái vẫn là `Rejected`.
@@ -169,34 +170,34 @@ Lỗi validation trả `400`:
 }
 ```
 
-Endpoint trả đồng thời mọi lỗi field phát hiện được. Với PUT, hệ thống khóa meeting và kiểm tra
-trạng thái trước khi parse JSON: nếu meeting không còn sửa được thì trả `409 MSG03`, kể cả body JSON
-sai cú pháp hoặc sai kiểu. Request PUT có Content-Type thiếu hoặc không hỗ trợ trả `415` với code
+Endpoint trả đồng thời mọi lỗi field phát hiện được. Với PUT, hệ thống kiểm tra trạng thái trước khi
+đọc/parse JSON: nếu meeting đã không còn sửa được thì trả `409 MEETING_NOT_EDITABLE`, kể cả body
+JSON sai cú pháp hoặc sai kiểu. Transaction cập nhật vẫn khóa và kiểm tra lại trạng thái trước khi
+parse JSON, validate và lưu để xử lý cạnh tranh. Request PUT có Content-Type thiếu hoặc không hỗ trợ trả `415` với code
 `MEETING_UNSUPPORTED_CONTENT_TYPE`. Với meeting còn sửa được và Content-Type hợp lệ, JSON sai cú
-pháp/sai kiểu trả `400` và code `MEETING_INVALID_INFORMATION` không có `errors`. Body PUT lớn hơn
-64 KiB trả `413 MEETING_BODY_TOO_LARGE`. POST JSON lỗi cũng trả `400`.
+pháp/sai kiểu trả `400` và code `MEETING_INVALID_INFORMATION` không có `errors`. POST JSON lỗi cũng trả `400`.
+Body PUT vượt quá 64 KiB trả `413 MEETING_BODY_TOO_LARGE`, kể cả khi request không có `Content-Length`.
 
 ## Mã phản hồi
 
 | HTTP | Code | Ý nghĩa |
 |---:|---|---|
 | 201 | `MEETING_CREATED` | Tạo nháp thành công |
-| 200 | `MSG02` | Sửa thông tin thành công |
+| 200 | `MEETING_UPDATED` | Sửa thông tin thành công |
 | 400 | `MEETING_INVALID_INFORMATION` | Thông tin không hợp lệ; có thể có `errors` theo field |
+| 400 | `MEETING_INVALID_QUERY` | Query danh sách không hợp lệ; có `errors` theo tham số |
 | 401 | — | Chưa đăng nhập |
-| 403 | — | Không có `MeetingCreator` theo gate hai lớp |
+| 403 | — | POST/PUT/approvers: thiếu `MeetingCreator`; GET list/detail: tài khoản không hoạt động |
 | 404 | — | GET: không tồn tại hoặc caller không có quan hệ; PUT: không tồn tại hoặc caller không phải người tạo; body rỗng |
-| 409 | `MSG03` | Trạng thái hiện tại không cho sửa |
+| 409 | `MEETING_NOT_EDITABLE` | Trạng thái hiện tại không cho sửa |
 | 413 | `MEETING_BODY_TOO_LARGE` | Body PUT vượt quá 64 KiB |
 | 415 | `MEETING_UNSUPPORTED_CONTENT_TYPE` | PUT không gửi JSON hoặc Content-Type không hỗ trợ |
-| 503 | `MSG01` | Không thể lưu khi tạo; thử lại |
-| 503 | `MSG04` | Không thể lưu khi sửa; thử lại |
-| 503 | `MEETING_LOAD_FAILED` | Không tải được chi tiết; thử lại |
+| 500 | `MEETING_CREATE_FAILED` | Không thể lưu khi tạo; thử lại |
+| 500 | `MEETING_UPDATE_FAILED` | Không thể lưu khi sửa; thử lại |
+| 500 | `MEETING_LOAD_FAILED` | Không tải được chi tiết; thử lại |
+| 500 | `MEETING_LIST_FAILED` | Không tải được danh sách; thử lại |
 
-`MSG01`–`MSG04` đến từ mô tả use case được cung cấp. `MEETING_CREATED`,
-`MEETING_INVALID_INFORMATION`, `MEETING_LOAD_FAILED` và cách gắn status `503` là mã/status baseline
-được thêm vì sequence chưa định danh cụ thể các nhánh thành công tạo, validation và đọc lỗi. BA cần
-đồng bộ chúng vào tài liệu yêu cầu/message catalog.
+Các response code của nhóm endpoint này dùng chung tiền tố `MEETING_`. Lỗi persistence trả `500`.
 
 ## Persistence và transaction
 
@@ -204,14 +205,11 @@ Cột `ends_at` và FK `assigned_approver_id` đều nullable. POST lưu meeting
 người duyệt, cùng một dòng `MeetingStatusHistory` (`FromStatus = null`, `ToStatus = Draft`, `ActorId = creator`). EF Core
 lưu các thay đổi này trong cùng transaction.
 
-PUT kiểm tra quyền sở hữu và trạng thái hiện tại bằng truy vấn không khóa trước khi chờ body. Sau khi
-xác nhận meeting còn sửa được, hệ thống kiểm tra Content-Type rồi đọc body vào buffer ngoài
-transaction khóa ghi. Body bị giới hạn 64 KiB ngay cả khi không có `Content-Length`; quá giới hạn
-thì ngừng đọc và trả `413`, không tạo thêm bản sao buffer. Khi xử lý cập nhật, transaction
-`ReadCommitted` khóa đúng meeting row bằng
-PostgreSQL `FOR UPDATE`, đọc lại trạng thái và trả `409 MSG03` nếu trạng thái đổi trong lúc body đang
-được gửi. Chỉ sau lần kiểm tra khóa này hệ thống mới parse JSON, validate và lưu; không có network
-read trong lúc giữ row lock.
+PUT kiểm tra quyền sở hữu và trạng thái hiện tại bằng truy vấn không khóa trước khi đọc body. Sau khi
+xác nhận meeting còn sửa được, hệ thống kiểm tra Content-Type rồi đọc body vào buffer tối đa 64 KiB
+ngoài transaction khóa ghi. Khi xử lý cập nhật, transaction `ReadCommitted` khóa đúng meeting row bằng PostgreSQL
+`FOR UPDATE`, đọc lại trạng thái và trả `409 MEETING_NOT_EDITABLE` nếu trạng thái đã đổi. Sau lần kiểm tra
+khóa, hệ thống parse JSON từ buffer, validate dữ liệu và lưu; không có network read trong lúc giữ row lock.
 Transaction kết thúc trước response. Cập nhật thông tin không thay status hoặc lịch sử. Nếu body sau
 chuẩn hóa giống dữ liệu đã lưu, trả thành công nhưng không ghi DB hoặc đổi `updatedAt`. Dữ liệu cho
 phép sửa giữa hai form cũ dùng “lần ghi sau cùng thắng”; contract chưa có ETag/version để từ chối
@@ -224,17 +222,17 @@ stale content.
   quan hệ với meeting.
 - Chỉ hiển thị thao tác sửa cho người có `MeetingCreator`, đúng `createdById`, và trạng thái
   `Draft`/`Rejected`. Backend vẫn kiểm tra lại quyền sở hữu và trạng thái khi PUT.
-- Nếu PUT trả `409 MSG03`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
-- Sau khi POST hoặc PUT thành công, có thể mở `meeting.id` bằng GET chi tiết. GET danh sách thuộc
-  SCRUM-18 đã có contract ở trên; FE cần thay dữ liệu mẫu trong task tích hợp riêng.
+- Nếu PUT trả `409 MEETING_NOT_EDITABLE`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
+- Sau khi POST hoặc PUT thành công, có thể mở `meeting.id` bằng GET chi tiết. GET danh sách có
+  contract ở trên; FE cần thay dữ liệu mẫu trong task tích hợp riêng.
 - UC hiện tại chưa có API lịch sử trạng thái, nên FE chưa thể hiển thị lịch sử thật.
 
 ## Checklist BA cần hoàn tất
 
 - Đồng bộ nội dung BR-24–BR-29 chính thức vào tài liệu BA và map từng luật vào validation/lifecycle.
 - Vẽ Class Diagram tạo/đọc/sửa và ghi Controller trong sequence là ASP.NET Minimal API.
-- Đồng bộ hai quy tắc đã ghi trong UC-11/UC-12 vào Jira SCRUM-17, cùng giới hạn length và format
-  timezone khi có quyền cập nhật Jira.
+- Tác giả đã ghi các điều chỉnh về người duyệt, `endsAt`, giá trị mặc định và validation vào comment
+  của Jira SCRUM-17 ngày 28/09/2026; BA đối chiếu với BR-24–BR-29 và cập nhật tài liệu/diagram nếu cần.
 - Ghi rõ quyền GET, ownership và hành vi khi sửa `Rejected`.
 - Bổ sung mã thành công/lỗi chưa có vào sequence/message catalog.
 - Kiểm tra lại định danh UC theo convention Jira để tránh nhầm UC-11/UC-12 quản lý vai trò.

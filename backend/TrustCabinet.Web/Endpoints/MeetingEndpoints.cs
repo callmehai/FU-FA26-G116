@@ -25,12 +25,12 @@ public static class MeetingEndpoints
 
         var listMeetings = app.MapGroup("/api/meetings")
             .WithTags("Meetings")
-            .RequireActiveUser(SaveFailed("MSG08", "Không thể tải danh sách cuộc họp. Vui lòng thử lại."));
+            .RequireActiveUser(ServerError("MEETING_LIST_FAILED", "Không thể tải danh sách cuộc họp. Vui lòng thử lại."));
         listMeetings.MapGet("/", ListAsync);
 
         var detailMeetings = app.MapGroup("/api/meetings")
             .WithTags("Meetings")
-            .RequireActiveUser(SaveFailed("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."));
+            .RequireActiveUser(ServerError("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."));
         detailMeetings.MapGet("/{id:guid}", GetAsync);
         return app;
     }
@@ -52,7 +52,7 @@ public static class MeetingEndpoints
                 $"/api/meetings/{result.Meeting!.Id}",
                 new MeetingMutationResponse("MEETING_CREATED", "Tạo cuộc họp thành công.", MeetingResponse.From(result.Meeting))),
             MeetingOutcome.InvalidInformation => Invalid(result),
-            _ => SaveFailed("MSG01", "Không thể tạo cuộc họp. Vui lòng thử lại."),
+            _ => ServerError("MEETING_CREATE_FAILED", "Không thể tạo cuộc họp. Vui lòng thử lại."),
         };
     }
 
@@ -73,7 +73,7 @@ public static class MeetingEndpoints
         {
             MeetingOutcome.Success => Results.Ok(MeetingResponse.From(result.Meeting!)),
             MeetingOutcome.NotFound => Results.NotFound(),
-            _ => SaveFailed("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."),
+            _ => ServerError("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."),
         };
     }
 
@@ -99,7 +99,7 @@ public static class MeetingEndpoints
         var result = await service.ListAsync(query!, actorId.Value, ct);
         return result.Outcome == MeetingOutcome.Success
             ? Results.Ok(MeetingListResponse.From(result.Page!))
-            : SaveFailed("MSG08", "Không thể tải danh sách cuộc họp. Vui lòng thử lại.");
+            : ServerError("MEETING_LIST_FAILED", "Không thể tải danh sách cuộc họp. Vui lòng thử lại.");
     }
 
     private static async Task<IResult> ListApproversAsync(
@@ -180,13 +180,13 @@ public static class MeetingEndpoints
         return result.Outcome switch
         {
             MeetingOutcome.Success => Results.Ok(new MeetingMutationResponse(
-                "MSG02", "Cập nhật cuộc họp thành công.", MeetingResponse.From(result.Meeting!))),
+                "MEETING_UPDATED", "Cập nhật cuộc họp thành công.", MeetingResponse.From(result.Meeting!))),
             MeetingOutcome.InvalidInformation => Invalid(result),
             MeetingOutcome.NotFound => Results.NotFound(),
             MeetingOutcome.NotEditable => Results.Json(
-                new MeetingErrorResponse("MSG03", "Cuộc họp này không thể chỉnh sửa được nữa."),
+                new MeetingErrorResponse("MEETING_NOT_EDITABLE", "Cuộc họp này không thể chỉnh sửa được nữa."),
                 statusCode: StatusCodes.Status409Conflict),
-            _ => SaveFailed("MSG04", "Không thể cập nhật cuộc họp. Vui lòng thử lại."),
+            _ => ServerError("MEETING_UPDATE_FAILED", "Không thể cập nhật cuộc họp. Vui lòng thử lại."),
         };
     }
 
@@ -195,9 +195,9 @@ public static class MeetingEndpoints
         {
             MeetingOutcome.NotFound => Results.NotFound(),
             MeetingOutcome.NotEditable => Results.Json(
-                new MeetingErrorResponse("MSG03", "Cuộc họp này không thể chỉnh sửa được nữa."),
+                new MeetingErrorResponse("MEETING_NOT_EDITABLE", "Cuộc họp này không thể chỉnh sửa được nữa."),
                 statusCode: StatusCodes.Status409Conflict),
-            _ => SaveFailed("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."),
+            _ => ServerError("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."),
         };
 
     private static IResult BodyTooLarge()
@@ -213,10 +213,10 @@ public static class MeetingEndpoints
                 result.Errors),
             statusCode: StatusCodes.Status400BadRequest);
 
-    private static IResult SaveFailed(string code, string message)
+    private static IResult ServerError(string code, string message)
         => Results.Json(
             new MeetingErrorResponse(code, message),
-            statusCode: StatusCodes.Status503ServiceUnavailable);
+            statusCode: StatusCodes.Status500InternalServerError);
 
     private static readonly MeetingInput EmptyInput = new(null, null, null, null, null, null, null);
 }
