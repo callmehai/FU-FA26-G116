@@ -23,12 +23,12 @@ public static class MeetingEndpoints
 
         var listMeetings = app.MapGroup("/api/meetings")
             .WithTags("Meetings")
-            .RequireActiveUser(SaveFailed("MSG08", "Không thể tải danh sách cuộc họp. Vui lòng thử lại."));
+            .RequireActiveUser(ServerError("MEETING_LIST_FAILED", "Không thể tải danh sách cuộc họp. Vui lòng thử lại."));
         listMeetings.MapGet("/", ListAsync);
 
         var detailMeetings = app.MapGroup("/api/meetings")
             .WithTags("Meetings")
-            .RequireActiveUser(SaveFailed("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."));
+            .RequireActiveUser(ServerError("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."));
         detailMeetings.MapGet("/{id:guid}", GetAsync);
         return app;
     }
@@ -97,7 +97,7 @@ public static class MeetingEndpoints
         var result = await service.ListAsync(query!, actorId.Value, ct);
         return result.Outcome == MeetingOutcome.Success
             ? Results.Ok(MeetingListResponse.From(result.Page!))
-            : SaveFailed("MSG08", "Không thể tải danh sách cuộc họp. Vui lòng thử lại.");
+            : ServerError("MEETING_LIST_FAILED", "Không thể tải danh sách cuộc họp. Vui lòng thử lại.");
     }
 
     private static async Task<IResult> ListApproversAsync(

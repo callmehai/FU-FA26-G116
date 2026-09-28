@@ -184,17 +184,18 @@ pháp/sai kiểu trả `400` và code `MEETING_INVALID_INFORMATION` không có `
 | 201 | `MEETING_CREATED` | Tạo nháp thành công |
 | 200 | `MEETING_UPDATED` | Sửa thông tin thành công |
 | 400 | `MEETING_INVALID_INFORMATION` | Thông tin không hợp lệ; có thể có `errors` theo field |
+| 400 | `MEETING_INVALID_QUERY` | Query danh sách không hợp lệ; có `errors` theo tham số |
 | 401 | — | Chưa đăng nhập |
-| 403 | — | Không có `MeetingCreator` theo gate hai lớp |
+| 403 | — | POST/PUT/approvers: thiếu `MeetingCreator`; GET list/detail: tài khoản không hoạt động |
 | 404 | — | GET: không tồn tại hoặc caller không có quan hệ; PUT: không tồn tại hoặc caller không phải người tạo; body rỗng |
 | 409 | `MEETING_NOT_EDITABLE` | Trạng thái hiện tại không cho sửa |
 | 415 | `MEETING_UNSUPPORTED_CONTENT_TYPE` | PUT không gửi JSON hoặc Content-Type không hỗ trợ |
 | 500 | `MEETING_CREATE_FAILED` | Không thể lưu khi tạo; thử lại |
 | 500 | `MEETING_UPDATE_FAILED` | Không thể lưu khi sửa; thử lại |
 | 500 | `MEETING_LOAD_FAILED` | Không tải được chi tiết; thử lại |
+| 500 | `MEETING_LIST_FAILED` | Không tải được danh sách; thử lại |
 
-Các response code của nhóm endpoint này dùng chung tiền tố `MEETING_`. Lỗi persistence trả `500`;
-API chưa phân loại riêng tình trạng dịch vụ tạm thời để trả `503`.
+Các response code của nhóm endpoint này dùng chung tiền tố `MEETING_`. Lỗi persistence trả `500`.
 
 ## Persistence và transaction
 

@@ -215,7 +215,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task List_returns_MSG08_when_the_database_read_fails()
+    public async Task List_returns_MEETING_LIST_FAILED_and_500_when_the_database_read_fails()
     {
         _factory.Meetings.NextReadThrows = new Npgsql.NpgsqlException("database unavailable");
         using var client = _factory.ClientFor(GivenCreator());
@@ -223,14 +223,14 @@ public sealed class MeetingEndpointsTests : IDisposable
         var response = await client.GetAsync("/api/meetings");
         using var body = await JsonOf(response);
 
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("MSG08", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("MEETING_LIST_FAILED", body.RootElement.GetProperty("code").GetString());
         Assert.Equal("Không thể tải danh sách cuộc họp. Vui lòng thử lại.",
             body.RootElement.GetProperty("message").GetString());
     }
 
     [Fact]
-    public async Task List_returns_MSG08_when_active_account_lookup_fails()
+    public async Task List_returns_MEETING_LIST_FAILED_and_500_when_active_account_lookup_fails()
     {
         using var client = _factory.ClientFor(GivenCreator());
         _factory.Accounts.NextReadThrows = new Npgsql.NpgsqlException("database unavailable");
@@ -238,8 +238,8 @@ public sealed class MeetingEndpointsTests : IDisposable
         var response = await client.GetAsync("/api/meetings");
         using var body = await JsonOf(response);
 
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("MSG08", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("MEETING_LIST_FAILED", body.RootElement.GetProperty("code").GetString());
         Assert.Equal("Không thể tải danh sách cuộc họp. Vui lòng thử lại.",
             body.RootElement.GetProperty("message").GetString());
         Assert.Null(_factory.Meetings.LastListQuery);
@@ -674,7 +674,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var response = await client.GetAsync($"/api/meetings/{Guid.CreateVersion7()}");
         using var body = await JsonOf(response);
 
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         Assert.Equal("MEETING_LOAD_FAILED", body.RootElement.GetProperty("code").GetString());
     }
 
