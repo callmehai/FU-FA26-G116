@@ -22,7 +22,7 @@ builder.Services.AddTrustCabinetRolePermissions();
 builder.Services.AddTrustCabinetMeetings();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IUserIdProvider, NotificationUserIdProvider>();
-builder.Services.AddScoped<NotificationService>();
+builder.Services.AddTrustCabinetNotifications();
 if (!builder.Environment.IsEnvironment("Testing"))
 {
     builder.Services.AddHostedService<NotificationWorker>();

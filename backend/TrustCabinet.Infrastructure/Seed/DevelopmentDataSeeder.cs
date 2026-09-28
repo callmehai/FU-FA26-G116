@@ -121,10 +121,10 @@ public static class DevelopmentDataSeeder
                 Type = NotificationType.MeetingInvited,
                 TargetType = "Meeting",
                 TargetId = published.Id,
-                ActionUrl = $"/mgmt/meetings/{published.Id:D}",
                 Title = "Bạn được mời họp",
                 Body = $"Bạn được mời tham dự cuộc họp \"{published.Title}\".",
                 DeduplicationKey = $"demo:meeting-invited:{published.Id:D}:{member.Id:D}",
+                PushedAt = published.CreatedAt,
             },
             new Notification
             {
@@ -133,10 +133,10 @@ public static class DevelopmentDataSeeder
                 Type = NotificationType.MeetingPublished,
                 TargetType = "Meeting",
                 TargetId = published.Id,
-                ActionUrl = $"/mgmt/meetings/{published.Id:D}",
                 Title = "Cuộc họp đã công bố",
                 Body = $"Cuộc họp \"{published.Title}\" đã được công bố.",
                 DeduplicationKey = $"demo:meeting-published:{published.Id:D}:{member.Id:D}",
+                PushedAt = published.CreatedAt,
             });
 
         await db.SaveChangesAsync(ct);

@@ -26,9 +26,6 @@ public class Notification : Entity
     public string? TargetType { get; set; }
     public Guid? TargetId { get; set; }
 
-    /// <summary>A relative application route, never an arbitrary external URL.</summary>
-    public string? ActionUrl { get; set; }
-
     /// <summary>Null until read. The unread count is the number of rows where this is null.</summary>
     public DateTimeOffset? ReadAt { get; set; }
 

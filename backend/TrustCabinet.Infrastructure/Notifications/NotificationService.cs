@@ -1,25 +1,25 @@
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Domain.Notifications;
 
 namespace TrustCabinet.Infrastructure.Notifications;
 
-public sealed record NotificationPage(
-    IReadOnlyList<Notification> Items, int UnreadCount, int TotalCount);
-
-public sealed record NotificationTarget(string TargetType, Guid TargetId, string Url);
-
 /// <summary>Owns notification visibility and read state; caller ids always come from validated auth.</summary>
-public sealed class NotificationService(TrustCabinetDbContext db, TimeProvider clock)
+public sealed class NotificationService(
+    INotificationRepository repository,
+    IMeetingRepository meetings,
+    TimeProvider clock) : INotificationService
 {
-    private readonly NotificationRepository repository = new(db);
-
     public async Task<NotificationPage> ListAsync(
-        Guid userId, int limit, int offset, CancellationToken ct = default)
+        Guid userId, int page, int pageSize, CancellationToken ct = default)
     {
-        var items = await repository.FindByRecipientAsync(userId, limit, offset, ct);
+        var items = await repository.FindByRecipientAsync(userId, page, pageSize, ct);
         return new NotificationPage(items,
             await repository.CountUnreadAsync(userId, ct),
-            await repository.CountByRecipientAsync(userId, ct));
+            await repository.CountByRecipientAsync(userId, ct),
+            page,
+            pageSize);
     }
 
     public Task<int> GetUnreadCountAsync(Guid userId, CancellationToken ct = default)
@@ -54,8 +54,7 @@ public sealed class NotificationService(TrustCabinetDbContext db, TimeProvider c
             return null;
         }
 
-        return new NotificationTarget(notification.TargetType!,
-            notification.TargetId!.Value, notification.ActionUrl!);
+        return new NotificationTarget(notification.TargetType!, notification.TargetId!.Value);
     }
 
     public static bool ValidateOwnership(Guid userId, Notification notification)
@@ -67,13 +66,12 @@ public sealed class NotificationService(TrustCabinetDbContext db, TimeProvider c
         if (!ValidateOwnership(userId, notification)
             || notification.TargetType != "Meeting"
             || notification.TargetId is not { } meetingId
-            || notification.MeetingId != meetingId
-            || notification.ActionUrl != $"/mgmt/meetings/{meetingId:D}")
+            || notification.MeetingId != meetingId)
         {
             return false;
         }
 
-        return await repository.CanOpenMeetingAsync(userId, meetingId, ct);
+        return await meetings.FindAccessibleAsync(meetingId, userId, ct) is not null;
     }
 
     /// <summary>
@@ -110,7 +108,6 @@ public sealed class NotificationService(TrustCabinetDbContext db, TimeProvider c
             MeetingId = meeting.Id,
             TargetType = "Meeting",
             TargetId = meeting.Id,
-            ActionUrl = $"/mgmt/meetings/{meeting.Id:D}",
             Type = NotificationType.MeetingInvited,
             Title = "Bạn được mời họp",
             Body = $"Bạn được mời tham dự cuộc họp \"{meeting.Title}\".",
@@ -149,7 +146,6 @@ public sealed class NotificationService(TrustCabinetDbContext db, TimeProvider c
                 MeetingId = item.MeetingId,
                 TargetType = "Meeting",
                 TargetId = item.MeetingId,
-                ActionUrl = $"/mgmt/meetings/{item.MeetingId:D}",
                 Type = NotificationType.MeetingStartingSoon,
                 Title = "Cuộc họp sắp bắt đầu",
                 Body = $"Cuộc họp \"{item.MeetingTitle}\" sẽ bắt đầu trong vòng 15 phút.",

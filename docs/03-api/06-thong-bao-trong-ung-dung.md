@@ -9,7 +9,7 @@ không lấy từ request.
 
 | Method | Path | Kết quả |
 |---|---|---|
-| `GET` | `/api/notifications?limit=50&offset=0` | `{ items, unreadCount, totalCount, limit, offset }`; mới nhất trước, `limit` từ 1 đến 100 |
+| `GET` | `/api/notifications?page=1&pageSize=20` | `{ items, unreadCount, totalCount, page, pageSize, totalPages }`; mới nhất trước, `pageSize` từ 1 đến 100 |
 | `GET` | `/api/notifications/unread-count` | `{ unreadCount }` cho nút chuông |
 | `POST` | `/api/notifications/{id}/read` | Notification đã đọc; gọi lại giữ `readAt` cũ |
 | `POST` | `/api/notifications/read-all` | `{ markedCount, unreadCount: 0 }` |
@@ -17,7 +17,8 @@ không lấy từ request.
 
 Mỗi item có `id`, `type`, `title`, `body`, `meetingId`, `targetType`, `targetId`,
 `actionUrl`, `isRead`, `readAt`, `createdAt`. Với thông báo họp, `targetType` là `Meeting`,
-`targetId` là ID cuộc họp và `actionUrl` là `/mgmt/meetings/{id}`. FE chỉ dùng
+`targetId` là ID cuộc họp và `actionUrl` là `/mgmt/meetings/{id}`. `actionUrl` được dựng khi trả
+response từ `targetType`/`targetId`, không được lưu trong database. FE chỉ dùng
 `GET /{id}/target` để mở đích: endpoint kiểm tra lại quyền và chỉ trả URL khi còn hợp lệ.
 `isRead` được tính từ `readAt`; `Notification.MarkAsRead` giữ nguyên thời điểm đọc khi gọi lặp.
 `NotificationService` xử lý nghiệp vụ và `NotificationRepository` đọc/ghi các dòng theo người nhận.
@@ -37,7 +38,7 @@ nếu code chưa thực hiện.
 
 | UC | Sequence diagram | Backend hiện tại | Chênh lệch / cần chốt |
 |---|---|---|---|
-| UC-18 · Xem thông báo | Trả danh sách và số chưa đọc mà không đổi trạng thái đã đọc. | `GET /api/notifications` đúng hành vi này, nhưng service thực hiện ba truy vấn riêng cho danh sách, `unreadCount` và `totalCount`; API còn có `limit`/`offset`. | Kết quả nghiệp vụ khớp; phân trang và `totalCount` là phần mở rộng không thể hiện trong diagram. |
+| UC-18 · Xem thông báo | Trả danh sách và số chưa đọc mà không đổi trạng thái đã đọc. | `GET /api/notifications` đúng hành vi này, nhưng service thực hiện ba truy vấn riêng cho danh sách, `unreadCount` và `totalCount`; API dùng `page`/`pageSize` thống nhất với danh sách cuộc họp. | Kết quả nghiệp vụ khớp; phân trang và `totalCount` là phần mở rộng không thể hiện trong diagram. |
 | UC-19 · Đánh dấu đã đọc | Sau khi lưu, repository lấy `unreadCount` mới và controller trả notification cùng số chưa đọc. | `POST /api/notifications/{id}/read` trả riêng `NotificationResponse`; client phải gọi thêm `/unread-count`. Thao tác gọi lặp vẫn giữ `readAt` cũ. | Thiếu `unreadCount` trong response so với diagram. Cần chốt sửa contract hay sửa diagram. |
 | UC-20 · Đánh dấu tất cả đã đọc | Cả nhánh không có dòng chưa đọc và nhánh thành công đều trả danh sách notification mới nhất cùng `unreadCount`. | `POST /api/notifications/read-all` chỉ trả `{ markedCount, unreadCount: 0 }`; không đọc lại hay trả danh sách. | Response gọn hơn diagram và có thêm `markedCount`. Cần chốt FE tự cập nhật danh sách hay backend trả lại toàn bộ page. |
 | UC-21 · Mở đích | Nếu notification chưa đọc thì đánh dấu đã đọc trước, sau đó kiểm tra quyền hiện tại và trả đích meeting hoặc task. | `GET /api/notifications/{id}/target` chỉ kiểm tra và trả đích; không thay đổi `ReadAt`. Backend chỉ hỗ trợ `Meeting`, vì task/action item nằm ngoài phạm vi. | Khác diagram ở bước tự đánh dấu đã đọc. Nếu giữ endpoint `GET` không side effect thì phải sửa diagram; nếu bám diagram thì cần một contract có mutation rõ ràng. |
@@ -47,17 +48,17 @@ nếu code chưa thực hiện.
 | Class diagram | Code hiện tại | Thay đổi / cải tiến |
 |---|---|---|
 | `NotificationController` gọi `NotificationService`. | ASP.NET Minimal API ánh xạ thành `NotificationEndpoints`; mọi route dùng `NotificationService` và lấy `userId` từ claim đã xác thực. | Không có controller instance như UML, nhưng ranh giới Web → Service vẫn được giữ. Caller không thể truyền `recipientUserId` để đọc dữ liệu người khác. |
-| `NotificationService` trả danh sách, số chưa đọc, đánh dấu đã đọc và mở target. | Service trả `NotificationPage`, nhận `limit`/`offset`, trả `markedCount` khi mark-all và tách `GetTargetAsync` khỏi mutation read status. | Bổ sung phân trang và dữ liệu phục vụ FE. Việc tách target thành `GET` không side effect an toàn hơn về HTTP, nhưng chưa khớp UC-21/BR-53. |
+| `NotificationService` trả danh sách, số chưa đọc, đánh dấu đã đọc và mở target. | `INotificationService` trả `NotificationPage`, nhận `page`/`pageSize`, trả `markedCount` khi mark-all và tách `GetTargetAsync` khỏi mutation read status. | Bổ sung phân trang và dữ liệu phục vụ FE. Việc tách target thành `GET` không side effect an toàn hơn về HTTP, nhưng chưa khớp UC-21/BR-53. |
 | `NotificationRepository` có các thao tác theo recipient và notification ID. | Repository luôn ghép `notificationId` với `userId`, có thêm total count, truy vấn reminder, deduplication và hàng đợi realtime. | Bảo vệ ownership ngay trong query, hỗ trợ phân trang, retry an toàn và không tạo trùng notification. `MarkAllUnreadAsReadAsync` trả số dòng đã đổi thay vì `void`. |
-| `Notification` có `notificationId`, `recipientUserId`, `kind`, target, `actionUrl`, `readAt`, `createdAt`. | `Id`, `UserId`, `Type` dùng enum, `TargetType`, `TargetId`, `ActionUrl`, `ReadAt`, `CreatedAt`; có thêm `Body`, `MeetingId`, `UpdatedAt`, `DeduplicationKey`, `PushedAt`. `IsRead` là giá trị suy ra. | Dùng `DateTimeOffset`, enum và route tương đối thay cho chuỗi tùy ý. `ReadAt` là nguồn sự thật duy nhất; gọi lặp `MarkAsRead` không làm mất thời điểm đọc đầu tiên. |
+| `Notification` có `notificationId`, `recipientUserId`, `kind`, target, `actionUrl`, `readAt`, `createdAt`. | `Id`, `UserId`, `Type` dùng enum, `TargetType`, `TargetId`, `ReadAt`, `CreatedAt`; có thêm `Body`, `MeetingId`, `UpdatedAt`, `DeduplicationKey`, `PushedAt`. `ActionUrl` chỉ có trong response và `IsRead` là giá trị suy ra. | Không ghim route UI vào database. `ReadAt` là nguồn sự thật duy nhất; gọi lặp `MarkAsRead` không làm mất thời điểm đọc đầu tiên. |
 | `User` có `username`, `email`, `status` và quan hện 1–n với notification. | Domain dùng `FullName`, `Email`, `IsActive`; FK `Notification.UserId` là `Restrict`. | UML đang dùng tên field không khớp domain model đã chốt; quan hệ người nhận vẫn khớp. |
 | `NotificationPanel` hiển thị danh sách, unread badge, lỗi và thao tác mở/đánh dấu. | `AppShell.tsx` mới chỉ có nút chuông tĩnh; chưa có types, API client, panel hay SignalR client ở FE. | Boundary trong diagram chưa được triển khai. Backend có thể bàn giao cho FE, nhưng SCRUM-14 chưa đạt acceptance criteria end-to-end. |
 
 Các cải tiến kỹ thuật không thể hiện trong class diagram gồm SignalR chỉ gửi đúng
 recipient, kiểm tra lại tài khoản active khi kết nối hub, lưu database trước khi push,
 khử trùng bằng `DeduplicationKey`, timestamp `PushedAt`, index cho truy vấn unread/pending và
-`TimeProvider` để test thời gian xác định. Khi mở target, backend chỉ chấp nhận route meeting
-đúng mẫu và kiểm tra lại quyền hiện tại, tránh dùng `actionUrl` như một URL tùy ý.
+`TimeProvider` để test thời gian xác định. Khi mở target, backend kiểm tra quyền hiện tại qua
+`IMeetingRepository.FindAccessibleAsync`; URL chỉ được dựng từ target hợp lệ ở lớp Web.
 
 ### So với UC Description và Business Rules
 
@@ -78,17 +79,13 @@ Management là `UC-031` (gộp `UC-NOTI-01`, `UC-NOTI-02`, `UC-NOTI-03`, `UC-NOT
 khi phần đặc tả chi tiết dùng `UC-18`–`UC-21`. Repo hiện dùng hệ mã chi tiết
 `UC-18`–`UC-21` và story `SCRUM-14`; BA cần chốt mapping traceability chính thức.
 
-Các nhánh `retrieval/update failed` trong diagram cũng chưa có contract lỗi riêng. Lỗi
-database hiện thoát ra middleware thành lỗi server, không trả mã nghiệp vụ, trạng thái đã
-lưu thực tế hay `unreadCount` như các nhánh lỗi trong diagram.
+Query phân trang sai trả `400` với `code=NOTIFICATION_INVALID_QUERY` và lỗi database khi kiểm tra
+tài khoản active trả `503` với `code=NOTIFICATION_LOAD_FAILED`. Các nhánh lỗi lưu trạng thái đọc
+vẫn chưa trả trạng thái đã lưu thực tế hay `unreadCount` như diagram.
 
-Ngoài ra, bước “kiểm tra quyền hiện tại” của UC-21 chưa dùng chung luật với API
-chi tiết meeting. `NotificationRepository.CanOpenMeetingAsync` hiện chỉ cho creator hoặc participant
-mở meeting từ `Published` trở đi; nó bỏ qua assigned approver và không cho creator mở
-`Draft`/`WaitingApproval`/`Approved`/`Rejected`. Trong khi contract meeting cho creator đọc mọi
-trạng thái, assigned approver đọc khi meeting đã rời `Draft`, và participant đọc từ
-`Published`. Hai chỗ này cần dùng cùng một quy tắc để notification không trả `404` cho
-người vẫn còn quyền xem meeting.
+Bước “kiểm tra quyền hiện tại” của UC-21 dùng chung
+`IMeetingRepository.FindAccessibleAsync` với API chi tiết meeting: creator đọc mọi trạng thái,
+assigned approver đọc khi meeting đã rời `Draft`, và participant đọc từ `Published`.
 
 Những phần backend có thêm ngoài bốn diagram gồm endpoint đếm riêng, phân trang,
 `totalCount`, SignalR, worker nhắc meeting sắp bắt đầu, `deduplicationKey` và trạng thái
@@ -152,10 +149,10 @@ notification thử vào database **Development** bằng SQL sau trong pgAdmin ho
 ```sql
 INSERT INTO notifications
     (id, user_id, type, title, body, meeting_id, target_type, target_id,
-     action_url, created_at, updated_at, deduplication_key)
+     created_at, updated_at, deduplication_key)
 SELECT gen_random_uuid(), u.id, 'MeetingInvited', 'Thử Postman',
        'Thông báo thử cho SCRUM-14', m.id, 'Meeting', m.id,
-       '/mgmt/meetings/' || m.id::text, now(), now(), 'manual:scrum-14'
+       now(), now(), 'manual:scrum-14'
 FROM users u
 JOIN meeting_participants p ON p.user_id = u.id
 JOIN meetings m ON m.id = p.meeting_id
@@ -172,7 +169,8 @@ Chạy câu `DELETE` riêng **sau** các request Postman, không chạy cùng c�
 1. Đăng nhập qua `/api/auth/login`, đặt access token làm Bearer token trong Postman.
 2. Gọi `GET /api/notifications` và `/unread-count`; xác nhận số chưa đọc bằng số item có
    `readAt=null` trong DB. Item thông báo họp phải có `targetType=Meeting`, `targetId=meetingId`
-   và `actionUrl=/mgmt/meetings/{meetingId}`. `limit=0` phải trả `400`.
+   và `actionUrl=/mgmt/meetings/{meetingId}`. `pageSize=0` phải trả `400` cùng
+   `code=NOTIFICATION_INVALID_QUERY`.
 3. Gọi `POST /{id}/read` hai lần; `readAt` không thay đổi ở lần hai. Gọi `/read-all` và kiểm tra
    `unreadCount=0`.
 4. Đăng nhập bằng user khác; `POST /{id}/read` và `GET /{id}/target` với ID của user đầu phải

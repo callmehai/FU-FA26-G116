@@ -1,12 +1,16 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Users;
 using TrustCabinet.Infrastructure;
+using TrustCabinet.Infrastructure.Meetings;
+using TrustCabinet.Infrastructure.Migrations;
 using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Web.Tests.Users;
 
@@ -14,6 +18,18 @@ namespace TrustCabinet.Web.Tests.Notifications;
 
 public class NotificationWorkerTests
 {
+    [Fact]
+    public void Migration_marks_preexisting_notifications_as_already_pushed()
+    {
+        var migration = new NotificationManagement();
+        var sql = Assert.Single(migration.UpOperations.OfType<SqlOperation>()).Sql;
+
+        Assert.Contains("SET pushed_at = created_at", sql, StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            migration.UpOperations.OfType<AddColumnOperation>(),
+            operation => operation.Name == "action_url");
+    }
+
     [Fact]
     public async Task Persisted_notification_is_pushed_only_to_its_recipient_and_not_repeated()
     {
@@ -30,7 +46,8 @@ public class NotificationWorkerTests
         services.AddSingleton(TimeProvider.System);
         services.AddDbContext<TrustCabinetDbContext>(options =>
             options.UseInMemoryDatabase(databaseName));
-        services.AddScoped<NotificationService>();
+        services.AddScoped<IMeetingRepository, MeetingRepository>();
+        services.AddTrustCabinetNotifications();
         services.AddSingleton<IUserAccountRepository>(accounts);
         using var provider = services.BuildServiceProvider();
         var notification = new Notification

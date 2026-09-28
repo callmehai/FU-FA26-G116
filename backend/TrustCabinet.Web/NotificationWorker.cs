@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
+using TrustCabinet.Domain.Notifications;
 using TrustCabinet.Domain.Users;
-using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Web.Endpoints;
 
 namespace TrustCabinet.Web;
@@ -35,7 +35,7 @@ public sealed class NotificationWorker(
     public async Task ProcessOnceAsync(CancellationToken ct)
     {
         using var scope = scopes.CreateScope();
-        var service = scope.ServiceProvider.GetRequiredService<NotificationService>();
+        var service = scope.ServiceProvider.GetRequiredService<INotificationService>();
         var users = scope.ServiceProvider.GetRequiredService<IUserAccountRepository>();
         await service.QueueStartingSoonAsync(ct);
         foreach (var notification in await service.PendingPushAsync(100, ct))

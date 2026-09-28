@@ -1035,6 +1035,15 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("read_at");
 
+                    b.Property<Guid?>("TargetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("target_id");
+
+                    b.Property<string>("TargetType")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("target_type");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(300)

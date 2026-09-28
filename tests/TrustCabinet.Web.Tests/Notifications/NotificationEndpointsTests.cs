@@ -56,6 +56,8 @@ public class NotificationEndpointsTests : IDisposable
         var list = await client.GetFromJsonAsync<NotificationListJson>("/api/notifications");
         Assert.NotNull(list);
         Assert.Equal(1, list.UnreadCount);
+        Assert.Equal(1, list.Page);
+        Assert.Equal(20, list.PageSize);
         Assert.Equal(mine.Id, Assert.Single(list.Items).Id);
         Assert.Equal(HttpStatusCode.NotFound,
             (await client.PostAsync($"/api/notifications/{theirs.Id}/read", null)).StatusCode);
@@ -69,8 +71,10 @@ public class NotificationEndpointsTests : IDisposable
                 "/api/notifications/unread-count"))!.UnreadCount);
         Assert.Equal(HttpStatusCode.OK,
             (await client.PostAsync("/api/notifications/read-all", null)).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest,
-            (await client.GetAsync("/api/notifications?limit=0")).StatusCode);
+        var invalid = await client.GetAsync("/api/notifications?page=0");
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        Assert.Equal("NOTIFICATION_INVALID_QUERY",
+            (await invalid.Content.ReadFromJsonAsync<ErrorJson>())!.Code);
     }
 
     [Fact]
@@ -92,9 +96,11 @@ public class NotificationEndpointsTests : IDisposable
         PasswordHash = "hash",
     };
 
-    private sealed record NotificationListJson(NotificationJson[] Items, int UnreadCount);
+    private sealed record NotificationListJson(
+        NotificationJson[] Items, int UnreadCount, int Page, int PageSize);
     private sealed record NotificationJson(Guid Id);
     private sealed record UnreadCountJson(int UnreadCount);
+    private sealed record ErrorJson(string Code);
 
     private sealed class Factory : TrustCabinetApiFactory
     {

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
+using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Notifications;
 
 namespace TrustCabinet.Web.Tests.Notifications;
@@ -20,9 +21,9 @@ public class NotificationServiceTests
         var item = NewNotification(mine.Id);
         db.Notifications.AddRange(item, NewNotification(other.Id));
         await db.SaveChangesAsync();
-        var service = new NotificationService(db, new FrozenClock());
+        var service = NewService(db);
 
-        Assert.Single((await service.ListAsync(mine.Id, 50, 0)).Items);
+        Assert.Single((await service.ListAsync(mine.Id, 1, 20)).Items);
         Assert.Null(await service.MarkReadAsync(other.Id, item.Id));
         Assert.Equal(1, await service.GetUnreadCountAsync(mine.Id));
 
@@ -41,7 +42,7 @@ public class NotificationServiceTests
         var other = Guid.CreateVersion7();
         db.Notifications.AddRange(NewNotification(owner), NewNotification(owner), NewNotification(other));
         await db.SaveChangesAsync();
-        var service = new NotificationService(db, new FrozenClock());
+        var service = NewService(db);
 
         Assert.Equal(2, await service.MarkAllReadAsync(owner));
         Assert.Equal(0, await service.MarkAllReadAsync(owner));
@@ -66,7 +67,7 @@ public class NotificationServiceTests
             new MeetingParticipant { MeetingId = meeting.Id, UserId = active.Id },
             new MeetingParticipant { MeetingId = meeting.Id, UserId = inactive.Id });
         await db.SaveChangesAsync();
-        var service = new NotificationService(db, new FrozenClock());
+        var service = NewService(db);
 
         Assert.Equal(1, await service.QueueStartingSoonAsync());
         Assert.Equal(0, await service.QueueStartingSoonAsync());
@@ -89,7 +90,7 @@ public class NotificationServiceTests
         db.Meetings.Add(meeting);
         db.MeetingParticipants.Add(participant);
         await db.SaveChangesAsync();
-        var service = new NotificationService(db, new FrozenClock());
+        var service = NewService(db);
 
         await service.QueueParticipantInvitedAsync(meeting, participant, recipient);
         await service.QueueParticipantInvitedAsync(meeting, participant, recipient);
@@ -98,7 +99,33 @@ public class NotificationServiceTests
         Assert.Equal(NotificationType.MeetingInvited, invitation.Type);
         Assert.Null(await service.GetTargetAsync(stranger.Id, invitation.Id));
         var target = await service.GetTargetAsync(recipient.Id, invitation.Id);
-        Assert.Equal($"/mgmt/meetings/{meeting.Id:D}", target?.Url);
+        Assert.Equal(meeting.Id, target?.TargetId);
+    }
+
+    [Fact]
+    public async Task Target_uses_the_shared_meeting_access_rule_for_creator_and_approver()
+    {
+        await using var db = NewDb();
+        var creator = NewUser("creator@example.com");
+        var approver = NewUser("approver@example.com");
+        var meeting = NewMeeting(creator);
+        meeting.Status = MeetingStatus.Draft;
+        meeting.AssignedApproverId = approver.Id;
+        var creatorNotification = TargetedNotification(creator.Id, meeting.Id);
+        var approverNotification = TargetedNotification(approver.Id, meeting.Id);
+        db.Users.AddRange(creator, approver);
+        db.Meetings.Add(meeting);
+        db.Notifications.AddRange(creatorNotification, approverNotification);
+        await db.SaveChangesAsync();
+        var service = NewService(db);
+
+        Assert.NotNull(await service.GetTargetAsync(creator.Id, creatorNotification.Id));
+        Assert.Null(await service.GetTargetAsync(approver.Id, approverNotification.Id));
+
+        meeting.Status = MeetingStatus.WaitingApproval;
+        await db.SaveChangesAsync();
+
+        Assert.NotNull(await service.GetTargetAsync(approver.Id, approverNotification.Id));
     }
 
     private static TrustCabinetDbContext NewDb()
@@ -108,6 +135,9 @@ public class NotificationServiceTests
             .Options;
         return new TrustCabinetDbContext(options);
     }
+
+    private static NotificationService NewService(TrustCabinetDbContext db)
+        => new(new NotificationRepository(db), new MeetingRepository(db), new FrozenClock());
 
     private static User NewUser(string email) => new()
     {
@@ -119,6 +149,16 @@ public class NotificationServiceTests
     private static Notification NewNotification(Guid userId) => new()
     {
         UserId = userId,
+        Type = NotificationType.MeetingInvited,
+        Title = "Bạn được mời họp",
+    };
+
+    private static Notification TargetedNotification(Guid userId, Guid meetingId) => new()
+    {
+        UserId = userId,
+        MeetingId = meetingId,
+        TargetType = "Meeting",
+        TargetId = meetingId,
         Type = NotificationType.MeetingInvited,
         Title = "Bạn được mời họp",
     };

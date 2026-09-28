@@ -361,10 +361,11 @@ vào meeting đã công bố dùng `meeting-invited:<meeting-id>:<participant-id
 `pushed_at` null nghĩa là worker chưa push dòng đã commit qua SignalR; client mất kết nối vẫn
 đọc lại từ DB qua API. Hai cột mới không làm thay đổi quan hệ user/meeting có sẵn.
 
-Theo class diagram Notification Management, notification còn lưu `target_type`, `target_id` và
-`action_url`. Với thông báo họp, các giá trị là `Meeting`, ID cuộc họp và đường dẫn
-`/mgmt/meetings/{id}`. `meeting_id` tiếp tục là khóa ngoại để giữ quan hệ và bảo vệ tính toàn vẹn
-dữ liệu. Migration điền ba giá trị đích cho các notification họp đã tồn tại. `isRead` được suy ra
+Notification lưu `target_type` và `target_id`; với thông báo họp, các giá trị là `Meeting` và ID
+cuộc họp. Route UI không được lưu trong database: API dựng `actionUrl` từ hai trường target khi trả
+response, nên thay đổi route không làm hỏng các notification đã có. `meeting_id` tiếp tục là khóa
+ngoại để giữ quan hệ và bảo vệ tính toàn vẹn dữ liệu. Migration điền target và đánh dấu các dòng
+cũ đã được xử lý realtime để worker không push lại hàng loạt ở lần chạy đầu. `isRead` được suy ra
 từ `read_at`, không lưu thêm một cột bool.
 
 ## Những quyết định cần biết

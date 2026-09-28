@@ -1,23 +1,30 @@
 using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Notifications;
 
 namespace TrustCabinet.Infrastructure.Notifications;
 
-public sealed record UpcomingMeetingRecipient(Guid MeetingId, string MeetingTitle, Guid UserId);
-
 /// <summary>Persists notifications and owns the recipient-scoped queries from the class diagram.</summary>
-public sealed class NotificationRepository(TrustCabinetDbContext db)
+public sealed class NotificationRepository(TrustCabinetDbContext db) : INotificationRepository
 {
     public Task<List<Notification>> FindByRecipientAsync(
-        Guid userId, int limit, int offset, CancellationToken ct = default)
-        => db.Notifications.AsNoTracking()
+        Guid userId, int page, int pageSize, CancellationToken ct = default)
+    {
+        var offset = ((long)page - 1) * pageSize;
+        if (offset > int.MaxValue)
+        {
+            return Task.FromResult(new List<Notification>());
+        }
+
+        return db.Notifications.AsNoTracking()
             .Where(notification => notification.UserId == userId)
             .OrderByDescending(notification => notification.CreatedAt)
             .ThenByDescending(notification => notification.Id)
-            .Skip(offset)
-            .Take(limit)
+            .Skip((int)offset)
+            .Take(pageSize)
             .ToListAsync(ct);
+    }
 
     public Task<Notification?> FindByIdAndRecipientAsync(
         Guid notificationId, Guid userId, CancellationToken ct = default)
@@ -90,17 +97,6 @@ public sealed class NotificationRepository(TrustCabinetDbContext db)
                 && meetingIds.Contains(notification.MeetingId.Value))
             .Select(notification => notification.DeduplicationKey)
             .ToListAsync(ct);
-
-    public Task<bool> CanOpenMeetingAsync(Guid userId, Guid meetingId,
-        CancellationToken ct = default)
-        => db.Meetings.AnyAsync(meeting => meeting.Id == meetingId
-            && (meeting.CreatedById == userId
-                || meeting.Participants.Any(participant => participant.UserId == userId))
-            && (meeting.Status == MeetingStatus.Published
-                || meeting.Status == MeetingStatus.InProgress
-                || meeting.Status == MeetingStatus.Ended
-                || meeting.Status == MeetingStatus.MinutesIssued
-                || meeting.Status == MeetingStatus.Archived), ct);
 
     public Task<List<Notification>> FindPendingPushAsync(int limit,
         CancellationToken ct = default)

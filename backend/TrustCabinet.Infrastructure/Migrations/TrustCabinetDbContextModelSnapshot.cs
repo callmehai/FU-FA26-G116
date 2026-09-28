@@ -1012,11 +1012,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ActionUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("action_url");
-
                     b.Property<string>("Body")
                         .IsRequired()
                         .HasMaxLength(2000)

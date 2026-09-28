@@ -13,7 +13,6 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
         builder.Property(n => n.Type).HasConversion<string>().HasMaxLength(64).IsRequired();
         builder.Property(n => n.DeduplicationKey).HasMaxLength(150);
         builder.Property(n => n.TargetType).HasMaxLength(64);
-        builder.Property(n => n.ActionUrl).HasMaxLength(500);
         builder.Ignore(n => n.IsRead);
 
         // The bell reads "my unread, newest first" on every page load, so it gets its own index.
