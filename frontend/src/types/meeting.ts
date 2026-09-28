@@ -87,6 +87,35 @@ export interface MeetingListItem {
   sensitivity: Sensitivity
 }
 
+/** The columns GET /api/meetings can sort by. */
+export type MeetingSortBy = 'title' | 'startsAt' | 'createdAt'
+export type SortDirection = 'asc' | 'desc'
+
+/** GET /api/meetings — one page of the meetings the caller may see, filtered and sorted server-side. */
+export interface MeetingListResponse {
+  items: MeetingListItem[]
+  page: number
+  pageSize: number
+  /** Counts only meetings the caller may see. */
+  totalCount: number
+  /** 0 when there are no results. */
+  totalPages: number
+}
+
+/** Criteria for GET /api/meetings. Omitted fields are not filtered on. */
+export interface MeetingListQuery {
+  q?: string
+  status?: MeetingStatus
+  sensitivity?: Sensitivity
+  /** UTC ISO; both ends inclusive, on the meeting's start time. */
+  from?: string
+  to?: string
+  page: number
+  pageSize: number
+  sortBy: MeetingSortBy
+  sortDir: SortDirection
+}
+
 /**
  * Body of POST /api/meetings and PUT /api/meetings/{id}. PUT replaces all eight fields, so an
  * omitted or null approver on PUT unassigns them.

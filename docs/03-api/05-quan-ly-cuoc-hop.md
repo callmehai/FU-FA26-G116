@@ -10,8 +10,8 @@ không yêu cầu chọn người duyệt. Với PUT, `assignedApproverId` bị 
 gán người duyệt; muốn giữ người duyệt hiện tại thì gửi lại ID đó. UC-15 yêu cầu chọn người duyệt hợp
 lệ trước khi gửi.
 Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. `GET /api/meetings`
-được bổ sung trong SCRUM-18; màn danh sách hiện vẫn dùng dữ liệu mẫu và chưa tích hợp API. Màn tạo,
-sửa và chi tiết đã gọi API thật: tạo xong thì báo thành công và mở trang chi tiết của cuộc họp mới.
+được bổ sung trong SCRUM-18. Màn danh sách, tạo, sửa và chi tiết đều gọi API thật: tạo xong thì báo
+thành công và mở trang chi tiết của cuộc họp mới.
 
 Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24. [UC-11 và UC-12](../01-requirements/05-use-case-specifications.md)
 ghi nhận thay đổi yêu cầu ngày 27/09/2026: người duyệt chỉ bắt buộc khi gửi duyệt ở UC-15. Thời gian
@@ -57,7 +57,9 @@ lần. Tất cả bộ lọc được kết hợp bằng AND (BR-30/BR-31).
 
 Khi nhiều dòng có cùng giá trị sort, xếp tiếp theo `id asc`. Ví dụ:
 `GET /api/meetings?status=Published&sensitivity=Internal&q=giao&from=2026-10-01T00%3A00%3A00Z&page=2&pageSize=20&sortBy=startsAt&sortDir=desc`.
-Đổi trang phải gửi lại bộ lọc và sort hiện tại (BR-32); FE sẽ tích hợp bước này sau.
+Đổi trang phải gửi lại bộ lọc và sort hiện tại (BR-32). FE giữ toàn bộ tiêu chí trên URL của màn
+danh sách (`/mgmt/meetings?q=…&status=…&page=…`), nên tải lại trang, chia sẻ đường dẫn hay quay lại từ
+trang chi tiết đều giữ nguyên bộ lọc và trang đang xem.
 
 Khi gửi timezone có dấu `+` trong query, mã hóa dấu này thành `%2B`, ví dụ
 `from=2026-10-01T09%3A00%2B07%3A00`. Timestamp thiếu timezone trả `400 MEETING_INVALID_QUERY`.
@@ -225,8 +227,9 @@ stale content.
 - Chỉ hiển thị thao tác sửa cho người có `MeetingCreator`, đúng `createdById`, và trạng thái
   `Draft`/`Rejected`. Backend vẫn kiểm tra lại quyền sở hữu và trạng thái khi PUT.
 - Nếu PUT trả `409 MEETING_NOT_EDITABLE`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
-- Sau khi POST hoặc PUT thành công, có thể mở `meeting.id` bằng GET chi tiết. GET danh sách có
-  contract ở trên; FE cần thay dữ liệu mẫu trong task tích hợp riêng.
+- Sau khi POST hoặc PUT thành công, có thể mở `meeting.id` bằng GET chi tiết.
+- Khoảng thời gian trên màn danh sách chọn theo ngày; FE gửi `from` là 00:00 và `to` là 23:59:59.999
+  theo giờ của thiết bị, đổi sang UTC, nên chọn cùng một ngày ở hai đầu sẽ lọc đúng ngày đó.
 - UC hiện tại chưa có API lịch sử trạng thái, nên FE chưa thể hiển thị lịch sử thật.
 
 ## Checklist BA cần hoàn tất

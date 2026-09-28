@@ -9,9 +9,8 @@ namespace TrustCabinet.Infrastructure.Seed;
 /// <summary>
 /// Demo rows for local development — NOT reference data, and never seeded outside Development.
 ///
-/// The meetings mirror frontend/src/features/meetings/sampleData.ts, so screens that were built
-/// against the hard-coded array look the same once they read the real endpoint. When SCRUM-46
-/// deletes that file, this becomes the only copy.
+/// The meetings once mirrored the frontend's hard-coded sampleData.ts, so screens built against it
+/// looked the same on the real endpoint. SCRUM-18 deleted that file; this is now the only copy.
 /// </summary>
 public static class DevelopmentDataSeeder
 {

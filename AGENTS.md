@@ -209,7 +209,7 @@ Details in [docs/DEVELOPMENT_WORKFLOW.md §2.1](docs/DEVELOPMENT_WORKFLOW.md#21-
   (the repo is public) and environment variables in deployment.
 - Sign-in, sign-out and the admin screens (users, role matrix) call the real API. Tokens live in
   `features/auth/session.ts`; a user's capabilities come from the backend, never from a table in
-  the frontend. The meetings screens still read `features/meetings/sampleData.ts` — deliberate
-  scaffolding until the meeting endpoints land.
+  the frontend. The meeting list, create, edit and detail screens call the real API as well; on the
+  detail screen every tab but "Thông tin chung" is still a placeholder until its endpoint exists.
 - The AI-eCabinet repo (`~/Developer/ai-ecabinet`) is a private, unlicensed reference. Read it to
   understand the domain; do not copy source files into this repo. It is a graded capstone.
