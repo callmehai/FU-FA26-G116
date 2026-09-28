@@ -257,7 +257,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   background: var(--surface);
   box-shadow: var(--shadow);
   list-style: none;
-  max-height: 280px;
+  /* Fits the longest fixed list (all ten status filters) without a scrollbar; longer lists scroll. */
+  max-height: 360px;
   overflow-y: auto;
 }
 
