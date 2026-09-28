@@ -169,8 +169,10 @@ export function Select<T extends string>({
               onMouseEnter={() => setHighlighted(index)}
               onClick={() => commit(index)}
             >
-              <span className="select-check">{option.value === value ? '✓' : ''}</span>
-              {option.label}
+              {/* Label first, so it lines up with the value in the trigger; the check sits at the
+                  end of the row, where it marks one row without indenting all the others. */}
+              <span className="select-option-label">{option.label}</span>
+              <span className="select-check">{option.value === value && <Icon name="check" size={16} />}</span>
             </li>
           ))}
         </ul>
