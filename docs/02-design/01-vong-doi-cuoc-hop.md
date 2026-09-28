@@ -26,6 +26,10 @@ Draft ──gửi duyệt──> WaitingApproval ──duyệt──> Approved �
         Archived <──lưu trữ── MinutesIssued <──ban hành biên bản── Ended <┘
 ```
 
+Khi gửi duyệt theo UC-15, người tổ chức phải chọn một tài khoản đang hoạt động có capability
+`MeetingApprover`. Trường `AssignedApproverId` được để trống trong bản nháp cho tới khi người duyệt
+được chọn.
+
 ## Vì sao cần ghi lại
 
 - **Phân quyền bám theo trạng thái.** Sửa nội dung chỉ được phép ở `Draft` và `Rejected`. Biểu

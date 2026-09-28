@@ -207,3 +207,39 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   2. System displays message MSG01 – “Unable to sign out. Please try again.”
 
 
+### UC-11: Tạo cuộc họp (SCRUM-17)
+
+Yêu cầu hiện hành được điều chỉnh ngày 27/09/2026, thay thế yêu cầu ngày 24/09/2026:
+
+- `title` bắt buộc sau khi trim, tối đa 300 ký tự. `startsAt` bắt buộc và phải là timestamp ISO
+  8601 có `Z` hoặc offset múi giờ rõ ràng.
+- `assignedApproverId` có thể bỏ qua hoặc gửi `null` khi tạo bản nháp. Nếu được gán sớm, người đó
+  phải là tài khoản đang hoạt động có capability `MeetingApprover`. UC-15 phải chọn người duyệt hợp
+  lệ trước khi chuyển cuộc họp sang `WaitingApproval`.
+- `endsAt` tùy chọn; bỏ qua hoặc gửi `null` nghĩa là chưa xác định giờ kết thúc. Nếu có giá trị,
+  phải dùng định dạng timestamp như trên và lớn hơn `startsAt`.
+- Nếu bỏ qua, `mode` mặc định `InPerson` và `sensitivity` mặc định `Normal`. Giá trị hợp lệ lần
+  lượt là `InPerson`/`Online`/`Hybrid` và `Normal`/`Internal`/`Confidential`/`Secret`.
+- `location` tùy chọn, được trim và tối đa 300 ký tự; `description` tùy chọn, tối đa 4.000 ký tự.
+  Timestamp được chuẩn hóa sang UTC trước khi lưu.
+
+Luồng và mã phản hồi chi tiết: [hợp đồng API tạo cuộc họp](../03-api/05-quan-ly-cuoc-hop.md#post-apimeetings).
+Sơ đồ hiện có: [CreateMeeting.png](../06-sequencediagram/meeting-management/CreateMeeting.png).
+
+### UC-12: Cập nhật thông tin cuộc họp (SCRUM-17)
+
+PUT thay toàn bộ tám trường thông tin cuộc họp. Chỉ được sửa khi trạng thái là `Draft` hoặc
+`Rejected`; backend kiểm tra trạng thái hiện tại trước khi đọc và validate body. Các quy tắc về
+`title`, `startsAt`, `endsAt`, `mode`, `sensitivity`, `location` và `description` giống UC-11.
+`assignedApproverId` có thể bỏ qua hoặc gửi `null` để bỏ gán người duyệt. Nếu giữ nguyên người
+duyệt hiện có, gửi lại ID đó; nếu gán người duyệt mới thì tài khoản phải đang hoạt động và có
+capability `MeetingApprover`.
+
+Luồng và mã phản hồi chi tiết: [hợp đồng API cập nhật cuộc họp](../03-api/05-quan-ly-cuoc-hop.md#put-apimeetingsid).
+Sơ đồ hiện có: [UpdateMeeting.png](../06-sequencediagram/meeting-management/UpdateMeeting.png).
+
+### UC-15: Gửi duyệt cuộc họp
+
+Người tổ chức chọn một tài khoản đang hoạt động có capability `MeetingApprover` khi gửi cuộc họp
+để duyệt. Draft chưa có người duyệt không được chuyển sang `WaitingApproval`.
+
