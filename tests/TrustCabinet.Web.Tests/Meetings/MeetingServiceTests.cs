@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
 using TrustCabinet.Domain.Entities;
@@ -9,6 +10,28 @@ namespace TrustCabinet.Web.Tests.Meetings;
 
 public class MeetingServiceTests
 {
+    private sealed class CaptureLogger : ILogger<MeetingService>
+    {
+        public LogLevel? LastLevel { get; private set; }
+
+        public Exception? LastException { get; private set; }
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+            LastLevel = logLevel;
+            LastException = exception;
+        }
+    }
+
     private readonly FakeMeetingRepository _repository = new();
     private readonly Guid _actorId = Guid.CreateVersion7();
     private readonly Guid _otherActorId = Guid.CreateVersion7();
@@ -359,6 +382,55 @@ public class MeetingServiceTests
         var result = await NewService().GetAsync(Guid.CreateVersion7(), _actorId);
 
         Assert.Equal(MeetingOutcome.ReadFailed, result.Outcome);
+    }
+
+    [Fact]
+    public async Task List_forwards_criteria_and_actor_and_returns_the_page()
+    {
+        var meeting = GivenMeeting();
+        var query = new MeetingListQuery(
+            MeetingStatus.Draft, Sensitivity.Internal, "Giao ban", null, null,
+            1, 20, MeetingSortBy.Title, MeetingSortDirection.Asc);
+
+        var result = await NewService().ListAsync(query, _actorId);
+
+        Assert.Equal(MeetingOutcome.Success, result.Outcome);
+        Assert.Same(query, _repository.LastListQuery);
+        Assert.Equal(_actorId, _repository.LastListActorId);
+        Assert.Equal(meeting.Id, Assert.Single(result.Page!.Items).Id);
+        Assert.Equal(1, result.Page.TotalCount);
+    }
+
+    [Fact]
+    public async Task List_maps_a_database_failure_to_read_failed()
+    {
+        var failure = new NpgsqlException("database unavailable");
+        _repository.NextReadThrows = failure;
+        var logger = new CaptureLogger();
+        var query = new MeetingListQuery(
+            null, null, null, null, null, 1, 20,
+            MeetingSortBy.StartsAt, MeetingSortDirection.Desc);
+
+        var result = await new MeetingService(_repository, logger).ListAsync(query, _actorId);
+
+        Assert.Equal(MeetingOutcome.ReadFailed, result.Outcome);
+        Assert.Null(result.Page);
+        Assert.Equal(LogLevel.Error, logger.LastLevel);
+        Assert.Same(failure, logger.LastException);
+    }
+
+    [Fact]
+    public async Task List_propagates_request_cancellation()
+    {
+        using var source = new CancellationTokenSource();
+        source.Cancel();
+        _repository.NextReadThrows = new OperationCanceledException(source.Token);
+        var query = new MeetingListQuery(
+            null, null, null, null, null, 1, 20,
+            MeetingSortBy.StartsAt, MeetingSortDirection.Desc);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => NewService().ListAsync(query, _actorId, source.Token));
     }
 
     [Fact]

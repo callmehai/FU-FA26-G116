@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
 
@@ -85,13 +87,33 @@ public static class CapabilityGate
     /// Use for resource endpoints whose access is authorized by a relationship rather than one
     /// system capability.
     /// </summary>
-    public static RouteGroupBuilder RequireActiveUser(this RouteGroupBuilder group)
+    public static RouteGroupBuilder RequireActiveUser(
+        this RouteGroupBuilder group, IResult databaseFailure)
         => group
             .RequireAuthorization()
             .AddEndpointFilter(async (context, next) =>
-                await IsActiveUserAsync(context)
-                    ? await next(context)
-                    : Results.Forbid());
+            {
+                try
+                {
+                    if (!await IsActiveUserAsync(context))
+                    {
+                        return Results.Forbid();
+                    }
+                }
+                catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception exception) when (exception is DbUpdateException or NpgsqlException or TimeoutException)
+                {
+                    context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>()
+                        .CreateLogger(nameof(CapabilityGate))
+                        .LogError(exception, "Could not check active account for meeting request.");
+                    return databaseFailure;
+                }
+
+                return await next(context);
+            });
 
     /// <summary>
     /// Whether the caller still holds <paramref name="capability"/> according to the database, as
