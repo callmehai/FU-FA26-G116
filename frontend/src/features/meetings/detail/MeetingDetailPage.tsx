@@ -167,8 +167,14 @@ function Overview({ meeting, showApprover }: { meeting: Meeting; showApprover: b
         )}
       </div>
       <div className="field-item">
-        <span>Địa điểm</span>
-        {meeting.location ? <strong>{meeting.location}</strong> : <em className="value-empty">Chưa có</em>}
+        <span>{meeting.mode === 'Hybrid' ? 'Địa điểm họp trực tiếp' : 'Địa điểm'}</span>
+        {meeting.mode === 'Online' ? (
+          <strong>Phòng gọi trực tuyến</strong>
+        ) : meeting.location ? (
+          <strong>{meeting.location}</strong>
+        ) : (
+          <em className="value-empty">Chưa có</em>
+        )}
       </div>
       {showApprover && <ApproverValue approverId={meeting.assignedApproverId} />}
       <div className="field-item span-all">

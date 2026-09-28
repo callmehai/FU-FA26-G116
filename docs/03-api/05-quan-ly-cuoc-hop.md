@@ -227,6 +227,10 @@ stale content.
 - Chỉ hiển thị thao tác sửa cho người có `MeetingCreator`, đúng `createdById`, và trạng thái
   `Draft`/`Rejected`. Backend vẫn kiểm tra lại quyền sở hữu và trạng thái khi PUT.
 - Nếu PUT trả `409 MEETING_NOT_EDITABLE`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
+- Form đổi trường địa điểm theo `mode`: `InPerson` nhập địa điểm; `Online` không có địa điểm vì
+  cuộc họp diễn ra trong phòng gọi trực tuyến của TrustCabinet (README: gọi nhóm theo phòng họp), FE
+  gửi `location` rỗng; `Hybrid` nhập địa điểm cho người họp trực tiếp, người ở xa vào phòng gọi.
+  Không có trường đường dẫn họp bên ngoài.
 - Sau khi POST hoặc PUT thành công, có thể mở `meeting.id` bằng GET chi tiết.
 - Khoảng thời gian trên màn danh sách chọn theo ngày; FE gửi `from` là 00:00 và `to` là 23:59:59.999
   theo giờ của thiết bị, đổi sang UTC, nên chọn cùng một ngày ở hai đầu sẽ lọc đúng ngày đó.

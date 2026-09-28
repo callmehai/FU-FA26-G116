@@ -759,6 +759,20 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .form-card { flex: none; gap: 20px 16px; padding: 24px; }
 /* The actions sit under a divider at the end of the form, where the eye already is. */
 .form-card .form-actions { margin-top: 4px; padding-top: 20px; border-top: 1px solid var(--line); }
+/* A value the user does not type, shown where an input would be and at the same height. */
+.field-static {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--control-height);
+  margin: 0;
+  padding: 0 12px;
+  border-radius: var(--radius);
+  background: var(--surface-alt);
+  color: var(--ink);
+  font-size: 14px;
+}
+.field-static .icon { color: var(--muted-ink); }
 .field-foot { display: flex; justify-content: space-between; gap: 12px; }
 .field-counter { flex: none; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
 /* An inline action inside a line of text ("… Thử lại"). */
