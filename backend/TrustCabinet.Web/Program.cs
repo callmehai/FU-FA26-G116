@@ -23,11 +23,7 @@ builder.Services.AddTrustCabinetMeetings();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IUserIdProvider, NotificationUserIdProvider>();
 builder.Services.AddTrustCabinetNotifications();
-if (!builder.Environment.IsEnvironment("Testing"))
-{
-    builder.Services.AddHostedService<NotificationWorker>();
-}
-builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddHostedService<NotificationWorker>();
 
 // The audit log records where a request came from, and only the web layer can see that.
 builder.Services.AddHttpContextAccessor();
@@ -157,7 +153,7 @@ app.MapMeetingEndpoints();
 
 // SCRUM-14: user-scoped notification list/read APIs and realtime delivery.
 app.MapNotificationEndpoints();
-app.MapHub<NotificationHub>("/hubs/notifications").RequireAuthorization();
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 // Health endpoint — the frontend calls this to confirm the backend is alive.
 app.MapGet("/api/health", () => Results.Ok(new

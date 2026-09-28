@@ -48,8 +48,7 @@ public sealed class NotificationService(
         Guid userId, Guid notificationId, CancellationToken ct = default)
     {
         var notification = await repository.FindByIdAndRecipientAsync(notificationId, userId, ct);
-        if (notification is null || !ValidateOwnership(userId, notification)
-            || !await CanOpenTargetAsync(userId, notification, ct))
+        if (notification is null || !await CanOpenTargetAsync(userId, notification, ct))
         {
             return null;
         }
@@ -57,14 +56,10 @@ public sealed class NotificationService(
         return new NotificationTarget(notification.TargetType!, notification.TargetId!.Value);
     }
 
-    public static bool ValidateOwnership(Guid userId, Notification notification)
-        => notification.UserId == userId;
-
-    public async Task<bool> CanOpenTargetAsync(Guid userId, Notification notification,
+    private async Task<bool> CanOpenTargetAsync(Guid userId, Notification notification,
         CancellationToken ct = default)
     {
-        if (!ValidateOwnership(userId, notification)
-            || notification.TargetType != "Meeting"
+        if (notification.TargetType != "Meeting"
             || notification.TargetId is not { } meetingId
             || notification.MeetingId != meetingId)
         {
@@ -72,47 +67,6 @@ public sealed class NotificationService(
         }
 
         return await meetings.FindAccessibleAsync(meetingId, userId, ct) is not null;
-    }
-
-    /// <summary>
-    /// Called by the future participant-add handler for a published meeting. It only adds a row to
-    /// the current DbContext, so the participant and notification commit in the same SaveChanges.
-    /// </summary>
-    public async Task QueueParticipantInvitedAsync(
-        Meeting meeting, MeetingParticipant participant, User recipient, CancellationToken ct = default)
-    {
-        if (meeting.Status != MeetingStatus.Published)
-        {
-            throw new InvalidOperationException("Invitation notification requires a published meeting.");
-        }
-
-        if (participant.MeetingId != meeting.Id || participant.UserId != recipient.Id)
-        {
-            throw new ArgumentException("Participant, recipient, and meeting must match.");
-        }
-
-        if (!recipient.IsActive)
-        {
-            return;
-        }
-
-        var key = $"meeting-invited:{meeting.Id:D}:{participant.Id:D}";
-        if (repository.IsQueued(key) || await repository.ExistsAsync(key, ct))
-        {
-            return;
-        }
-
-        repository.Add(new Notification
-        {
-            UserId = recipient.Id,
-            MeetingId = meeting.Id,
-            TargetType = "Meeting",
-            TargetId = meeting.Id,
-            Type = NotificationType.MeetingInvited,
-            Title = "Bạn được mời họp",
-            Body = $"Bạn được mời tham dự cuộc họp \"{meeting.Title}\".",
-            DeduplicationKey = key,
-        });
     }
 
     /// <summary>Queues one reminder per invited active user during the 15 minutes before start.</summary>

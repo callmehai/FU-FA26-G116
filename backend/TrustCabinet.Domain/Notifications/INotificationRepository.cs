@@ -20,10 +20,6 @@ public interface INotificationRepository
     Task<int> MarkAllUnreadAsReadAsync(
         Guid userId, DateTimeOffset now, CancellationToken ct = default);
 
-    bool IsQueued(string key);
-
-    Task<bool> ExistsAsync(string key, CancellationToken ct = default);
-
     void Add(Notification notification);
 
     Task<List<UpcomingMeetingRecipient>> FindUpcomingMeetingRecipientsAsync(

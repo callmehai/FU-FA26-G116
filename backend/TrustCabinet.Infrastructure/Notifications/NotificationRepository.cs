@@ -41,11 +41,6 @@ public sealed class NotificationRepository(TrustCabinetDbContext db) : INotifica
     public async Task MarkAsReadAsync(Notification notification, DateTimeOffset now,
         CancellationToken ct = default)
     {
-        if (notification.IsRead)
-        {
-            return;
-        }
-
         notification.MarkAsRead(ToDatabasePrecision(now));
         await db.SaveChangesAsync(ct);
     }
@@ -68,13 +63,6 @@ public sealed class NotificationRepository(TrustCabinetDbContext db) : INotifica
 
         return unread.Count;
     }
-
-    public bool IsQueued(string key)
-        => db.ChangeTracker.Entries<Notification>().Any(entry =>
-            entry.State == EntityState.Added && entry.Entity.DeduplicationKey == key);
-
-    public Task<bool> ExistsAsync(string key, CancellationToken ct = default)
-        => db.Notifications.AnyAsync(notification => notification.DeduplicationKey == key, ct);
 
     public void Add(Notification notification) => db.Notifications.Add(notification);
 

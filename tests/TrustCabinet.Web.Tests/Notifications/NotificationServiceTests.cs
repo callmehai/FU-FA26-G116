@@ -78,31 +78,6 @@ public class NotificationServiceTests
     }
 
     [Fact]
-    public async Task Adding_participant_to_published_meeting_queues_one_invitation_and_target_is_protected()
-    {
-        await using var db = NewDb();
-        var organizer = NewUser("organizer@example.com");
-        var recipient = NewUser("recipient@example.com");
-        var stranger = NewUser("stranger@example.com");
-        var meeting = NewMeeting(organizer);
-        var participant = new MeetingParticipant { MeetingId = meeting.Id, UserId = recipient.Id };
-        db.Users.AddRange(organizer, recipient, stranger);
-        db.Meetings.Add(meeting);
-        db.MeetingParticipants.Add(participant);
-        await db.SaveChangesAsync();
-        var service = NewService(db);
-
-        await service.QueueParticipantInvitedAsync(meeting, participant, recipient);
-        await service.QueueParticipantInvitedAsync(meeting, participant, recipient);
-        await db.SaveChangesAsync();
-        var invitation = Assert.Single(await db.Notifications.ToListAsync());
-        Assert.Equal(NotificationType.MeetingInvited, invitation.Type);
-        Assert.Null(await service.GetTargetAsync(stranger.Id, invitation.Id));
-        var target = await service.GetTargetAsync(recipient.Id, invitation.Id);
-        Assert.Equal(meeting.Id, target?.TargetId);
-    }
-
-    [Fact]
     public async Task Target_uses_the_shared_meeting_access_rule_for_creator_and_approver()
     {
         await using var db = NewDb();

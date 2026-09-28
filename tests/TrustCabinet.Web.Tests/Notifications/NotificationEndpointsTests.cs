@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -58,6 +59,8 @@ public class NotificationEndpointsTests : IDisposable
         Assert.Equal(1, list.UnreadCount);
         Assert.Equal(1, list.Page);
         Assert.Equal(20, list.PageSize);
+        Assert.Equal(1, list.TotalCount);
+        Assert.Equal(1, list.TotalPages);
         Assert.Equal(mine.Id, Assert.Single(list.Items).Id);
         Assert.Equal(HttpStatusCode.NotFound,
             (await client.PostAsync($"/api/notifications/{theirs.Id}/read", null)).StatusCode);
@@ -89,6 +92,31 @@ public class NotificationEndpointsTests : IDisposable
             (await client.GetAsync("/api/notifications")).StatusCode);
     }
 
+    [Fact]
+    public async Task List_returns_NOTIFICATION_LOAD_FAILED_and_500_when_account_lookup_fails()
+    {
+        var user = NewUser("database-error@example.com");
+        _factory.Accounts.WithUser(user);
+        _factory.Accounts.NextReadThrows = new Npgsql.NpgsqlException("database unavailable");
+        using var client = _factory.ClientFor(user);
+
+        var response = await client.GetAsync("/api/notifications");
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("NOTIFICATION_LOAD_FAILED",
+            (await response.Content.ReadFromJsonAsync<ErrorJson>())!.Code);
+    }
+
+    [Fact]
+    public void Test_factory_removes_the_notification_worker()
+    {
+        _ = _factory.CreateClient();
+
+        Assert.DoesNotContain(
+            _factory.Services.GetServices<IHostedService>(),
+            service => service is NotificationWorker);
+    }
+
     private static User NewUser(string email) => new()
     {
         FullName = email,
@@ -97,7 +125,12 @@ public class NotificationEndpointsTests : IDisposable
     };
 
     private sealed record NotificationListJson(
-        NotificationJson[] Items, int UnreadCount, int Page, int PageSize);
+        NotificationJson[] Items,
+        int UnreadCount,
+        int TotalCount,
+        int Page,
+        int PageSize,
+        int TotalPages);
     private sealed record NotificationJson(Guid Id);
     private sealed record UnreadCountJson(int UnreadCount);
     private sealed record ErrorJson(string Code);

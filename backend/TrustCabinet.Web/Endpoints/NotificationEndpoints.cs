@@ -10,7 +10,7 @@ public static class NotificationEndpoints
     {
         var notifications = app.MapGroup("/api/notifications")
             .WithTags("Notifications")
-            .RequireActiveUser(ServiceUnavailable());
+            .RequireActiveUser(LoadFailed());
 
         notifications.MapGet("/", ListAsync);
         notifications.MapGet("/unread-count", CountAsync);
@@ -39,16 +39,7 @@ public static class NotificationEndpoints
 
         var result = await service.ListAsync(
             CapabilityGate.GatedUserId(principal), page, pageSize, ct);
-        return Results.Ok(new
-        {
-            items = result.Items.Select(NotificationResponse.From),
-            result.UnreadCount,
-            result.TotalCount,
-            result.Page,
-            result.PageSize,
-            totalPages = result.TotalCount / result.PageSize
-                + (result.TotalCount % result.PageSize == 0 ? 0 : 1),
-        });
+        return Results.Ok(NotificationListResponse.From(result));
     }
 
     private static async Task<IResult> CountAsync(
@@ -82,12 +73,31 @@ public static class NotificationEndpoints
             : Results.Ok(NotificationTargetResponse.From(target));
     }
 
-    private static IResult ServiceUnavailable()
+    private static IResult LoadFailed()
         => Results.Json(
             new NotificationErrorResponse(
                 "NOTIFICATION_LOAD_FAILED",
                 "Không thể tải thông báo. Vui lòng thử lại."),
-            statusCode: StatusCodes.Status503ServiceUnavailable);
+            statusCode: StatusCodes.Status500InternalServerError);
+}
+
+public sealed record NotificationListResponse(
+    IReadOnlyList<NotificationResponse> Items,
+    int UnreadCount,
+    int TotalCount,
+    int Page,
+    int PageSize,
+    int TotalPages)
+{
+    public static NotificationListResponse From(NotificationPage page)
+        => new(
+            page.Items.Select(NotificationResponse.From).ToArray(),
+            page.UnreadCount,
+            page.TotalCount,
+            page.Page,
+            page.PageSize,
+            page.TotalCount / page.PageSize
+                + (page.TotalCount % page.PageSize == 0 ? 0 : 1));
 }
 
 public sealed record NotificationResponse(
