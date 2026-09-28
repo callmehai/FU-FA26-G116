@@ -20,8 +20,8 @@ namespace TrustCabinet.Web.Tests.Access;
 /// </summary>
 public class AdministratorInvariantGuardTests : IAsyncLifetime
 {
-    private const string ConnectionString =
-        "Host=localhost;Port=5432;Database=trustcabinet_lock_tests;Username=trustcabinet;Password=123";
+    private static readonly string ConnectionString =
+        PostgresTestDatabase.ConnectionString("trustcabinet_lock_tests");
 
     private TrustCabinetDbContext _db = null!;
 
