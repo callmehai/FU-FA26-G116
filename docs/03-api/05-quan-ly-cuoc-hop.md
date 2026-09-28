@@ -10,8 +10,8 @@ không yêu cầu chọn người duyệt. Với PUT, `assignedApproverId` bị 
 gán người duyệt; muốn giữ người duyệt hiện tại thì gửi lại ID đó. UC-15 yêu cầu chọn người duyệt hợp
 lệ trước khi gửi.
 Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. `GET /api/meetings`
-được bổ sung trong SCRUM-18; giao diện hiện tại vẫn dùng dữ liệu mẫu và chưa tích hợp API. Form tạo
-hiển thị xác nhận và mã cuộc họp sau khi tạo.
+được bổ sung trong SCRUM-18; màn danh sách hiện vẫn dùng dữ liệu mẫu và chưa tích hợp API. Màn tạo,
+sửa và chi tiết đã gọi API thật: tạo xong thì báo thành công và mở trang chi tiết của cuộc họp mới.
 
 Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24. [UC-11 và UC-12](../01-requirements/05-use-case-specifications.md)
 ghi nhận thay đổi yêu cầu ngày 27/09/2026: người duyệt chỉ bắt buộc khi gửi duyệt ở UC-15. Thời gian
@@ -225,6 +225,10 @@ stale content.
 - Chỉ hiển thị thao tác sửa cho người có `MeetingCreator`, đúng `createdById`, và trạng thái
   `Draft`/`Rejected`. Backend vẫn kiểm tra lại quyền sở hữu và trạng thái khi PUT.
 - Nếu PUT trả `409 MEETING_NOT_EDITABLE`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
+- Form đổi trường địa điểm theo `mode`: `InPerson` nhập địa điểm; `Online` không có địa điểm vì
+  cuộc họp diễn ra trong phòng gọi trực tuyến của TrustCabinet (README: gọi nhóm theo phòng họp), FE
+  gửi `location` rỗng; `Hybrid` nhập địa điểm cho người họp trực tiếp, người ở xa vào phòng gọi.
+  Không có trường đường dẫn họp bên ngoài.
 - Sau khi POST hoặc PUT thành công, có thể mở `meeting.id` bằng GET chi tiết. GET danh sách có
   contract ở trên; FE cần thay dữ liệu mẫu trong task tích hợp riêng.
 - UC hiện tại chưa có API lịch sử trạng thái, nên FE chưa thể hiển thị lịch sử thật.

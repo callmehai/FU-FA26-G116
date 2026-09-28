@@ -32,6 +32,9 @@ export const MEETING_STATUS_LABEL: Record<MeetingStatus, string> = {
   Archived: 'Đã lưu trữ',
 }
 
+/** UC-12: the only states whose information can still be changed. The backend checks again on PUT. */
+export const EDITABLE_STATUSES: readonly MeetingStatus[] = ['Draft', 'Rejected']
+
 /** How sensitive a meeting's contents are. Drives the access banner and document handling. */
 export const SENSITIVITIES = ['Normal', 'Internal', 'Confidential', 'Secret'] as const
 export type Sensitivity = (typeof SENSITIVITIES)[number]
@@ -44,7 +47,8 @@ export const SENSITIVITY_LABEL: Record<Sensitivity, string> = {
 }
 
 /** Whether attendees gather in a room, join remotely, or both. */
-export type MeetingMode = 'InPerson' | 'Online' | 'Hybrid'
+export const MEETING_MODES = ['InPerson', 'Online', 'Hybrid'] as const
+export type MeetingMode = (typeof MEETING_MODES)[number]
 
 export const MEETING_MODE_LABEL: Record<MeetingMode, string> = {
   InPerson: 'Trực tiếp',
@@ -52,15 +56,61 @@ export const MEETING_MODE_LABEL: Record<MeetingMode, string> = {
   Hybrid: 'Kết hợp',
 }
 
+/** GET /api/meetings/{id}, and the `meeting` of every create/update response. Timestamps are UTC ISO 8601. */
 export interface Meeting {
   id: string
   title: string
+  /** Empty string when none was given. */
+  description: string
+  startsAt: string
+  /** Null until the organizer settles when the meeting ends. */
+  endsAt: string | null
+  mode: MeetingMode
+  /** Empty string when none was given. */
+  location: string
+  sensitivity: Sensitivity
+  status: MeetingStatus
+  createdById: string
+  /** Optional while drafting; UC-15 requires one before the meeting is sent for approval. */
+  assignedApproverId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+/** One row of the meeting list — only what the list shows. */
+export interface MeetingListItem {
+  id: string
+  title: string
+  startsAt: string
+  createdAt: string
   status: MeetingStatus
   sensitivity: Sensitivity
+}
+
+/**
+ * Body of POST /api/meetings and PUT /api/meetings/{id}. PUT replaces all eight fields, so an
+ * omitted or null approver on PUT unassigns them.
+ */
+export interface MeetingRequest {
+  title: string
+  startsAt: string
+  endsAt: string | null
   mode: MeetingMode
   location: string
-  /** ISO 8601 timestamps. */
-  startsAt: string
-  endsAt: string
-  createdAt: string
+  sensitivity: Sensitivity
+  description: string
+  assignedApproverId: string | null
+}
+
+/** POST answers MEETING_CREATED, PUT answers MEETING_UPDATED. */
+export interface MeetingMutationResponse {
+  code: string
+  message: string
+  meeting: Meeting
+}
+
+/** GET /api/meetings/approvers — active accounts holding `MeetingApprover`, sorted by name. */
+export interface MeetingApprover {
+  id: string
+  fullName: string
 }

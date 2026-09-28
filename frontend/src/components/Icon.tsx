@@ -23,6 +23,8 @@ const PATHS = {
   unlock: 'M5 11h14v10H5zM8 11V7a4 4 0 0 1 7.9-1',
   x: 'M18 6L6 18M6 6l12 12',
   logOut: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9',
+  check: 'M20 6L9 17l-5-5',
+  video: 'M23 7l-7 5 7 5V7zM3 5h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z',
 } as const
 
 export type IconName = keyof typeof PATHS
