@@ -183,6 +183,27 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task List_filters_by_timestamps_without_seconds_and_with_timezone()
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        _factory.Meetings.Meetings.Add(meeting);
+        using var client = _factory.ClientFor(creator);
+
+        var response = await client.GetAsync(
+            "/api/meetings?from=2026-10-01T09%3A00%2B07%3A00&to=2026-10-01T09%3A01%2B07%3A00");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var item = Assert.Single(body.RootElement.GetProperty("items").EnumerateArray());
+        Assert.Equal(meeting.Id, item.GetProperty("id").GetGuid());
+        Assert.Equal(new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
+            _factory.Meetings.LastListQuery!.From);
+        Assert.Equal(new DateTimeOffset(2026, 10, 1, 2, 1, 0, TimeSpan.Zero),
+            _factory.Meetings.LastListQuery.To);
+    }
+
+    [Fact]
     public async Task List_returns_empty_page_for_no_match_or_page_beyond_end()
     {
         var creator = GivenCreator();

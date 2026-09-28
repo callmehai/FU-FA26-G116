@@ -50,7 +50,7 @@ lần. Tất cả bộ lọc được kết hợp bằng AND (BR-30/BR-31).
 | `status` | Tên enum PascalCase trong chín `MeetingStatus` |
 | `sensitivity` | `Normal`, `Internal`, `Confidential` hoặc `Secret` |
 | `q` | Trim; tìm chuỗi con của `title` không phân biệt hoa/thường. `%`, `_`, `\` là ký tự thường, không phải wildcard |
-| `from`, `to` | ISO 8601 có `Z` hoặc offset; lọc `startsAt` trong khoảng UTC, gồm cả hai đầu; có thể chỉ gửi một đầu |
+| `from`, `to` | ISO 8601 có `Z` hoặc offset; giây tùy chọn, ví dụ `2026-10-01T09:00+07:00`; chuẩn hóa UTC, lọc `startsAt` gồm cả hai đầu; có thể chỉ gửi một đầu |
 | `page`, `pageSize` | Mặc định `1`, `20`; `page ≥ 1`, `pageSize` từ `1` đến `100` |
 | `sortBy` | `title`, `startsAt`, `createdAt`; mặc định `startsAt` |
 | `sortDir` | `asc`, `desc`; mặc định `asc` cho `title`, `desc` cho hai cột thời gian |
@@ -58,6 +58,9 @@ lần. Tất cả bộ lọc được kết hợp bằng AND (BR-30/BR-31).
 Khi nhiều dòng có cùng giá trị sort, xếp tiếp theo `id asc`. Ví dụ:
 `GET /api/meetings?status=Published&sensitivity=Internal&q=giao&from=2026-10-01T00%3A00%3A00Z&page=2&pageSize=20&sortBy=startsAt&sortDir=desc`.
 Đổi trang phải gửi lại bộ lọc và sort hiện tại (BR-32); FE sẽ tích hợp bước này sau.
+
+Khi gửi timezone có dấu `+` trong query, mã hóa dấu này thành `%2B`, ví dụ
+`from=2026-10-01T09%3A00%2B07%3A00`. Timestamp thiếu timezone trả `400 MEETING_INVALID_QUERY`.
 
 `200 OK` trả:
 
@@ -84,14 +87,15 @@ Không có kết quả hoặc trang vượt quá trang cuối, kể cả khi off
 `200` với `items: []` (BR-12). Khi không có
 kết quả, `totalCount` và `totalPages` đều bằng `0`. Query sai trả `400` với `code` là
 `MEETING_INVALID_QUERY`, `message` là `Tham số truy vấn không hợp lệ.` và `errors` theo tên tham số.
-Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài giới
+Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài
 giới hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `500` với
 `code: MEETING_LIST_FAILED` và thông điệp
 `Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-14.
 
-Sequence UC-14 hiện ghi BR-29 và BR-32 ở bước repository; BA cần bổ sung BR-30/31 và nhánh query
-sai `400` vào diagram/spec. Đây là nhánh validation của HTTP, không thay đổi hai nhánh truy xuất
-thành công/thất bại trong diagram hiện tại.
+Sequence UC-14 hiện ghi BR-29 và BR-32 ở bước repository. Khi ticket đến `BA Final Review`, BA
+đồng bộ BR-30/31, định dạng timestamp, giới hạn phân trang và nhánh query sai
+`400 MEETING_INVALID_QUERY` vào diagram/spec; Controller kiểm tra query trước khi gọi Service/Repository.
+Nhánh lỗi truy xuất dùng `500 MEETING_LIST_FAILED` theo contract hiện hành.
 
 ### GET `/api/meetings/approvers`
 
