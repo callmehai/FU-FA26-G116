@@ -22,8 +22,8 @@ namespace TrustCabinet.Web.Tests.Access;
 /// </summary>
 public class RolesAsDataMigrationTests : IAsyncLifetime
 {
-    private const string ConnectionString =
-        "Host=localhost;Port=5432;Database=trustcabinet_migration_tests;Username=trustcabinet;Password=123";
+    private static readonly string ConnectionString =
+        PostgresTestDatabase.ConnectionString("trustcabinet_migration_tests");
 
     /// <summary>The migration just before RolesAsData: roles are still enum names in text columns.</summary>
     private const string BeforeRolesAsData = "20260922103215_FixAttendanceDefault";

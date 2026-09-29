@@ -37,6 +37,8 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`05-quan-ly-cuoc-hop.md`](05-quan-ly-cuoc-hop.md) — contract tạo, đọc, sửa và lấy danh sách cuộc
   họp (`SCRUM-17`/`SCRUM-18`, UC-11/UC-12/UC-14): quyền theo từng cuộc họp, lọc và phân trang ở
   server, validation baseline và các điểm cần BA bổ sung
+- [`06-thong-bao-trong-ung-dung.md`](06-thong-bao-trong-ung-dung.md) — SCRUM-14: API danh sách,
+  đánh dấu đã đọc, kiểm tra đích, SignalR và các nguồn tạo thông báo
 
 Dự kiến có thêm:
 

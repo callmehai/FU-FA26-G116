@@ -22,6 +22,29 @@ public class Notification : Entity
     public Guid? MeetingId { get; set; }
     public Meeting? Meeting { get; set; }
 
+    /// <summary>The kind and identifier of the resource opened from this notification.</summary>
+    public string? TargetType { get; set; }
+    public Guid? TargetId { get; set; }
+
     /// <summary>Null until read. The unread count is the number of rows where this is null.</summary>
     public DateTimeOffset? ReadAt { get; set; }
+
+    public bool IsRead => ReadAt is not null;
+
+    public void MarkAsRead(DateTimeOffset now)
+    {
+        if (IsRead)
+        {
+            return;
+        }
+
+        ReadAt = now;
+        UpdatedAt = now;
+    }
+
+    /// <summary>Stable event key so retries never create the same notification twice.</summary>
+    public string? DeduplicationKey { get; set; }
+
+    /// <summary>Null until the realtime dispatcher has attempted to push this persisted row.</summary>
+    public DateTimeOffset? PushedAt { get; set; }
 }
