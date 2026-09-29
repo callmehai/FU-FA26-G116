@@ -96,7 +96,8 @@ Những phần backend có thêm ngoài bốn diagram gồm endpoint đếm riê
 
 Hub: `/hubs/notifications`, yêu cầu JWT và chỉ chấp nhận `access_token` trong query string ở
 đúng path hub khi WebSocket không gửi được header. Hub lấy user ID từ claim `sub` đã xác thực,
-kiểm tra tài khoản còn hoạt động và không cung cấp method để client gửi thông báo tùy ý.
+kiểm tra tài khoản còn hoạt động và không cung cấp method để client gửi thông báo tùy ý. Server
+đóng kết nối hub khi access token hết hạn; client phải lấy token mới rồi kết nối lại.
 
 Server gửi sự kiện `notificationReceived` **chỉ đến người nhận**:
 

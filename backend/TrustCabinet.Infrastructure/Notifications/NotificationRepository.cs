@@ -48,12 +48,25 @@ public sealed class NotificationRepository(TrustCabinetDbContext db) : INotifica
     public async Task<int> MarkAllUnreadAsReadAsync(
         Guid userId, DateTimeOffset now, CancellationToken ct = default)
     {
+        var readAt = ToDatabasePrecision(now);
+        if (db.Database.IsRelational())
+        {
+            return await db.Notifications
+                .Where(notification => notification.UserId == userId
+                    && notification.ReadAt == null)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(notification => notification.ReadAt, readAt)
+                    .SetProperty(notification => notification.UpdatedAt, readAt), ct);
+        }
+
+        // EF's in-memory provider cannot execute bulk updates. Keep the lightweight service and
+        // endpoint tests provider-agnostic while production PostgreSQL uses the single UPDATE above.
         var unread = await db.Notifications
             .Where(notification => notification.UserId == userId && notification.ReadAt == null)
             .ToListAsync(ct);
         foreach (var notification in unread)
         {
-            notification.MarkAsRead(ToDatabasePrecision(now));
+            notification.MarkAsRead(readAt);
         }
 
         if (unread.Count > 0)

@@ -153,7 +153,8 @@ app.MapMeetingEndpoints();
 
 // SCRUM-14: user-scoped notification list/read APIs and realtime delivery.
 app.MapNotificationEndpoints();
-app.MapHub<NotificationHub>("/hubs/notifications");
+app.MapHub<NotificationHub>("/hubs/notifications", options =>
+    options.CloseOnAuthenticationExpiration = true);
 
 // Health endpoint — the frontend calls this to confirm the backend is alive.
 app.MapGet("/api/health", () => Results.Ok(new
