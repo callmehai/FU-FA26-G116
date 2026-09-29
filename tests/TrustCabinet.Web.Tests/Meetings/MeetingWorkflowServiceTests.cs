@@ -75,6 +75,8 @@ public sealed class MeetingWorkflowServiceTests
         var notification = Assert.Single(_repository.Notifications);
         Assert.Equal(_approverId, notification.UserId);
         Assert.Equal(NotificationType.MeetingWaitingApproval, notification.Type);
+        Assert.Equal("Meeting", notification.TargetType);
+        Assert.Equal(meeting.Id, notification.TargetId);
         Assert.Empty(_repository.EmailMessages);
     }
 

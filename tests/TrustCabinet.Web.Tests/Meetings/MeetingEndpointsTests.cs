@@ -161,11 +161,257 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("MSG48", body.RootElement.GetProperty("code").GetString());
         Assert.Equal("WaitingApproval", body.RootElement.GetProperty("meeting").GetProperty("status").GetString());
         Assert.Equal("SubmitForApproval", body.RootElement.GetProperty("history").GetProperty("action").GetString());
         Assert.Equal(approverId, body.RootElement.GetProperty("history").GetProperty("assignedApproverId").GetGuid());
-        Assert.Single(_factory.Meetings.Notifications);
+        var notification = Assert.Single(_factory.Meetings.Notifications);
+        Assert.Equal("Meeting", notification.TargetType);
+        Assert.Equal(meeting.Id, notification.TargetId);
         Assert.Empty(_factory.Meetings.EmailMessages);
+    }
+
+    [Theory]
+    [InlineData("Approve", "MSG43")]
+    [InlineData("Reject", "MSG44")]
+    [InlineData("ReturnToDraft", "MSG49")]
+    [InlineData("Publish", "MSG45")]
+    public async Task Post_transition_returns_action_specific_success_codes(string action, string expectedCode)
+    {
+        var creator = GivenCreator();
+        var actor = creator;
+        Guid? approverId = null;
+        var meeting = OwnedMeetingBy(creator);
+        if (action is "Approve" or "Reject")
+        {
+            var approver = GivenMember($"{action.ToLowerInvariant()}@trustcabinet.local");
+            actor = approver;
+            approverId = approver.Id;
+            meeting.AssignedApproverId = approver.Id;
+            meeting.Status = MeetingStatus.WaitingApproval;
+            _factory.Meetings.UserCapabilities[approver.Id] = [Capability.MeetingApprover];
+        }
+        else
+        {
+            meeting.Status = action == "ReturnToDraft" ? MeetingStatus.Rejected : MeetingStatus.Approved;
+            _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+        }
+
+        _factory.Meetings.Meetings.Add(meeting);
+        using var client = _factory.ClientFor(actor);
+        var json = action == "Reject"
+            ? JsonSerializer.Serialize(new { action, reason = "Cần bổ sung thông tin" })
+            : JsonSerializer.Serialize(new { action });
+        var response = await client.PostAsync(
+            $"/api/meetings/{meeting.Id}/transitions",
+            new StringContent(json, Encoding.UTF8, "application/json"));
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(expectedCode, body.RootElement.GetProperty("code").GetString());
+    }
+
+    [Theory]
+    [InlineData("Approve", MeetingStatus.Rejected, "MSG63")]
+    [InlineData("ReturnToDraft", MeetingStatus.Draft, "MSG64")]
+    [InlineData("Publish", MeetingStatus.Draft, "MSG46")]
+    public async Task Post_transition_returns_action_specific_conflict_codes(
+        string action, MeetingStatus status, string expectedCode)
+    {
+        var creator = GivenCreator();
+        var actor = creator;
+        var meeting = OwnedMeetingBy(creator);
+        meeting.Status = status;
+        if (action == "Approve")
+        {
+            var approver = GivenMember("conflict-approver@trustcabinet.local");
+            actor = approver;
+            meeting.AssignedApproverId = approver.Id;
+            _factory.Meetings.UserCapabilities[approver.Id] = [Capability.MeetingApprover];
+        }
+        else
+        {
+            _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+        }
+
+        _factory.Meetings.Meetings.Add(meeting);
+        using var client = _factory.ClientFor(actor);
+        var response = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions", new { action });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal(expectedCode, body.RootElement.GetProperty("code").GetString());
+    }
+
+    [Theory]
+    [InlineData("SubmitForApproval", "MSG42")]
+    [InlineData("Approve", "MSG59")]
+    [InlineData("Publish", "MSG47")]
+    public async Task Post_transition_maps_persistence_failures_to_action_specific_codes(
+        string action, string expectedCode)
+    {
+        var creator = GivenCreator();
+        var actor = creator;
+        var meeting = OwnedMeetingBy(creator);
+        Guid? approverId = null;
+        switch (action)
+        {
+            case "SubmitForApproval":
+                approverId = Guid.CreateVersion7();
+                meeting.AgendaItems.Add(new AgendaItem
+                {
+                    MeetingId = meeting.Id,
+                    Position = 1,
+                    Title = "Báo cáo",
+                    PlannedDurationMinutes = 30,
+                    PresenterId = Guid.CreateVersion7(),
+                });
+                _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+                break;
+            case "Approve":
+                actor = GivenMember("approve-save-failure@trustcabinet.local");
+                approverId = actor.Id;
+                meeting.AssignedApproverId = actor.Id;
+                meeting.Status = MeetingStatus.WaitingApproval;
+                _factory.Meetings.UserCapabilities[actor.Id] = [Capability.MeetingApprover];
+                break;
+            case "Publish":
+                meeting.Status = MeetingStatus.Approved;
+                _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+                break;
+        }
+
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.NextSaveThrows = new Npgsql.NpgsqlException("database unavailable");
+        using var client = _factory.ClientFor(actor);
+        var json = action == "SubmitForApproval"
+            ? JsonSerializer.Serialize(new { action, assignedApproverId = approverId })
+            : JsonSerializer.Serialize(new { action });
+        var response = await client.PostAsync(
+            $"/api/meetings/{meeting.Id}/transitions",
+            new StringContent(json, Encoding.UTF8, "application/json"));
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal(expectedCode, body.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task Post_submit_returns_MSG51_when_not_ready_and_MSG52_for_an_ineligible_approver()
+    {
+        var creator = GivenCreator();
+        var approverId = Guid.CreateVersion7();
+        var meeting = OwnedMeetingBy(creator);
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+        using var client = _factory.ClientFor(creator);
+
+        var notReady = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions", new
+        {
+            action = "SubmitForApproval",
+            assignedApproverId = approverId,
+        });
+        using var notReadyBody = await JsonOf(notReady);
+        meeting.AgendaItems.Add(new AgendaItem
+        {
+            MeetingId = meeting.Id,
+            Position = 1,
+            Title = "Báo cáo",
+            PlannedDurationMinutes = 30,
+            PresenterId = Guid.CreateVersion7(),
+        });
+        _factory.Meetings.IneligibleApproverIds.Add(approverId);
+        var ineligible = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions", new
+        {
+            action = "SubmitForApproval",
+            assignedApproverId = approverId,
+        });
+        using var ineligibleBody = await JsonOf(ineligible);
+
+        Assert.Equal(HttpStatusCode.BadRequest, notReady.StatusCode);
+        Assert.Equal("MSG51", notReadyBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.BadRequest, ineligible.StatusCode);
+        Assert.Equal("MSG52", ineligibleBody.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task Post_reject_returns_MSG54_when_reason_exceeds_1000_characters()
+    {
+        var creator = GivenCreator();
+        var approver = GivenMember("long-reason-approver@trustcabinet.local");
+        var meeting = OwnedMeetingBy(creator, approver.Id);
+        meeting.Status = MeetingStatus.WaitingApproval;
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[approver.Id] = [Capability.MeetingApprover];
+        using var client = _factory.ClientFor(approver);
+
+        var response = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions", new
+        {
+            action = "Reject",
+            reason = new string('x', 1001),
+        });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MSG54", body.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task Post_transition_returns_MSG55_when_the_owner_lacks_the_required_capability()
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        _factory.Meetings.Meetings.Add(meeting);
+        using var client = _factory.ClientFor(creator);
+
+        var response = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions", new
+        {
+            action = "Publish",
+        });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal("MSG55", body.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task Get_workflow_endpoints_return_MSG60_and_MSG62_for_transient_read_failures()
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        _factory.Meetings.Meetings.Add(meeting);
+        using var client = _factory.ClientFor(creator);
+        _factory.Meetings.NextWorkflowReadThrows = new Npgsql.NpgsqlException("database unavailable");
+
+        var readiness = await client.GetAsync($"/api/meetings/{meeting.Id}/submission-readiness");
+        using var readinessBody = await JsonOf(readiness);
+        _factory.Accounts.NextReadThrows = new Npgsql.NpgsqlException("database unavailable");
+        var history = await client.GetAsync($"/api/meetings/{meeting.Id}/history");
+        using var historyBody = await JsonOf(history);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, readiness.StatusCode);
+        Assert.Equal("MSG60", readinessBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, history.StatusCode);
+        Assert.Equal("MSG62", historyBody.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task Post_transition_requires_json_and_returns_MSG57()
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        _factory.Meetings.Meetings.Add(meeting);
+        using var client = _factory.ClientFor(creator);
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"/api/meetings/{meeting.Id}/transitions")
+        {
+            Content = new StringContent("{}", Encoding.UTF8, "text/plain"),
+        };
+
+        var response = await client.SendAsync(request);
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
+        Assert.Equal("MSG57", body.RootElement.GetProperty("code").GetString());
     }
 
     [Fact]
@@ -180,12 +426,18 @@ public sealed class MeetingEndpointsTests : IDisposable
             $"/api/meetings/{meeting.Id}/transitions",
             new { action = "ReturnToDraft", status = "Draft" });
         using var unknownBody = await JsonOf(unknownField);
+        var nullReasonOnReturn = await client.PostAsync(
+            $"/api/meetings/{meeting.Id}/transitions",
+            new StringContent("{\"action\":\"ReturnToDraft\",\"reason\":null}", Encoding.UTF8, "application/json"));
+        using var nullReasonBody = await JsonOf(nullReasonOnReturn);
         var numericAction = await client.PostAsync(
             $"/api/meetings/{meeting.Id}/transitions",
             new StringContent("{\"action\":0}", Encoding.UTF8, "application/json"));
 
         Assert.Equal(HttpStatusCode.BadRequest, unknownField.StatusCode);
-        Assert.Equal("MEETING_INVALID_TRANSITION_REQUEST", unknownBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG50", unknownBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.BadRequest, nullReasonOnReturn.StatusCode);
+        Assert.Equal("MSG50", nullReasonBody.RootElement.GetProperty("code").GetString());
         Assert.Equal(HttpStatusCode.BadRequest, numericAction.StatusCode);
         Assert.Equal(MeetingStatus.Draft, meeting.Status);
         Assert.Empty(meeting.StatusHistory);
@@ -208,7 +460,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal("MEETING_REJECTION_REASON_REQUIRED", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG53", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
         Assert.Empty(meeting.StatusHistory);
     }
@@ -243,7 +495,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        Assert.Equal("MEETING_STATUS_CONFLICT", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG41", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(MeetingStatus.Rejected, meeting.Status);
         Assert.Equal(formerApproverId, meeting.AssignedApproverId);
         Assert.Single(meeting.StatusHistory);
@@ -400,7 +652,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal("MEETING_INVALID_QUERY", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG56", body.RootElement.GetProperty("code").GetString());
     }
 
     [Fact]
@@ -634,7 +886,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("MEETING_APPROVERS_LOAD_FAILED", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG61", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(
             "Không thể tải danh sách người duyệt. Vui lòng thử lại.",
             body.RootElement.GetProperty("message").GetString());
@@ -650,7 +902,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("MEETING_APPROVERS_LOAD_FAILED", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG61", body.RootElement.GetProperty("code").GetString());
         Assert.Empty(_factory.Meetings.EligibleApprovers);
     }
 
@@ -664,7 +916,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("MEETING_APPROVERS_LOAD_FAILED", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG61", body.RootElement.GetProperty("code").GetString());
         Assert.Empty(_factory.Meetings.EligibleApprovers);
     }
 
@@ -933,7 +1185,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
-        Assert.Equal("MEETING_BODY_TOO_LARGE", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG58", body.RootElement.GetProperty("code").GetString());
         Assert.Equal("Giao ban tuần", meeting.Title);
         Assert.Equal(0, _factory.Meetings.SaveCount);
     }

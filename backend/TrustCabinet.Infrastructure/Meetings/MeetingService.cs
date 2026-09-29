@@ -9,7 +9,7 @@ using TrustCabinet.Domain.Meetings;
 
 namespace TrustCabinet.Infrastructure.Meetings;
 
-/// <summary>Meeting rules and persistence orchestration for UC-11, UC-12 and UC-14.</summary>
+/// <summary>Meeting rules and persistence orchestration across creation, listing and lifecycle workflows.</summary>
 public sealed class MeetingService(
     IMeetingRepository meetings,
     ILogger<MeetingService> logger,
@@ -535,6 +535,8 @@ public sealed class MeetingService(
             Id = Guid.CreateVersion7(),
             UserId = userId,
             MeetingId = meeting.Id,
+            TargetType = "Meeting",
+            TargetId = meeting.Id,
             OriginHistoryId = originHistoryId,
             Type = type,
             Title = LimitText(title, 300),

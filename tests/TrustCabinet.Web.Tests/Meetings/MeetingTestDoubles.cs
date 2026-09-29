@@ -28,6 +28,8 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
 
     public Exception? NextReadThrows { get; set; }
 
+    public Exception? NextWorkflowReadThrows { get; set; }
+
     public Exception? NextApproverReadThrows { get; set; }
 
     public MeetingListQuery? LastListQuery { get; private set; }
@@ -127,6 +129,12 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
     public Task<Meeting?> FindWorkflowAsync(Guid id, bool forUpdate = false, CancellationToken ct = default)
     {
         LastWorkflowForUpdate = forUpdate;
+        if (NextWorkflowReadThrows is { } exception)
+        {
+            NextWorkflowReadThrows = null;
+            throw exception;
+        }
+
         return Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id));
     }
 

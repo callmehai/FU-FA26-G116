@@ -23,7 +23,7 @@ sequence diagram, code BE, code FE và test đều phải khớp với bảng n�
 
 ## Mã tiếp theo
 
-**`MSG48`** — `MSG41`–`MSG47` đã dành sẵn cho UC-15/16/17 (xem [bên dưới](#dành-sẵn-chưa-có-code)).
+**`MSG65`** — `MSG41`–`MSG64` hiện đã được sử dụng.
 
 ## Danh mục
 
@@ -109,20 +109,34 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG39` | 400 | `GET /api/notifications` | Tham số phân trang không hợp lệ — kèm `errors` | `Tham số truy vấn không hợp lệ.` | BE |
 | `MSG40` | 500 | mọi endpoint `/api/notifications/*` | Lỗi database khi kiểm tra tài khoản đang hoạt động | `Không thể tải thông báo. Vui lòng thử lại.` | BE |
 
-### Dành sẵn, chưa có code
+### Luồng cuộc họp — UC-15, UC-16, UC-17 (`/api/meetings`)
 
-Có trong sequence diagram cuộc họp nhưng chưa có endpoint. Người làm các use case này dùng đúng
-các mã dưới đây; `message` tiếng Việt đặt khi code.
-
-| Mã | Use case | Tình huống (theo sơ đồ) |
-|---|---|---|
-| `MSG41` | UC-15 Gửi duyệt cuộc họp | *This meeting can no longer be submitted for approval.* |
-| `MSG42` | UC-15 Gửi duyệt cuộc họp | *Unable to submit the meeting for approval. Please try again.* |
-| `MSG43` | UC-16 Duyệt cuộc họp | *Meeting approved successfully.* |
-| `MSG44` | UC-16 Từ chối cuộc họp | *Meeting rejected successfully.* |
-| `MSG45` | UC-17 Phát hành cuộc họp | *Meeting published successfully.* |
-| `MSG46` | UC-17 Phát hành cuộc họp | *This meeting can no longer be published.* |
-| `MSG47` | UC-17 Phát hành cuộc họp | *Unable to publish the meeting. Please try again.* |
+| Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
+|---|---|---|---|---|---|
+| `MSG41` | 409 | GET readiness, POST SubmitForApproval | Cuộc họp không còn ở Draft nên không thể gửi duyệt | `Cuộc họp không còn ở trạng thái Draft.` | BE |
+| `MSG42` | 503 | POST SubmitForApproval | Không lưu được yêu cầu gửi duyệt | `Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG43` | 200 | POST Approve | Duyệt cuộc họp thành công | `Đã duyệt cuộc họp.` | BE |
+| `MSG44` | 200 | POST Reject | Từ chối cuộc họp thành công | `Đã từ chối cuộc họp.` | BE |
+| `MSG45` | 200 | POST Publish | Công bố cuộc họp thành công | `Đã công bố cuộc họp.` | BE |
+| `MSG46` | 409 | POST Publish | Cuộc họp không còn ở Approved nên không thể công bố | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
+| `MSG47` | 503 | POST Publish | Không lưu được yêu cầu công bố | `Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG48` | 200 | POST SubmitForApproval | Gửi duyệt cuộc họp thành công | `Đã gửi cuộc họp để duyệt.` | BE |
+| `MSG49` | 200 | POST ReturnToDraft | Đưa cuộc họp bị từ chối về Nháp thành công | `Đã đưa cuộc họp về bản nháp.` | BE |
+| `MSG50` | 400 | POST transitions | JSON, action, GUID hoặc field không hợp lệ | `Yêu cầu chuyển trạng thái không hợp lệ.` | BE |
+| `MSG51` | 400 | POST SubmitForApproval | Thông tin cuộc họp hoặc agenda chưa sẵn sàng — kèm `errors` | `Cuộc họp chưa đủ thông tin để gửi duyệt.` | BE |
+| `MSG52` | 400 | POST SubmitForApproval | Người duyệt không còn active hoặc thiếu `MeetingApprover` | `Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp.` | BE |
+| `MSG53` | 400 | POST Reject | Lý do từ chối bị thiếu hoặc chỉ có khoảng trắng | `Cần nhập lý do từ chối.` | BE |
+| `MSG54` | 400 | POST Reject | Lý do từ chối dài hơn 1.000 ký tự sau khi trim | `Lý do từ chối không được vượt quá 1.000 ký tự.` | BE |
+| `MSG55` | 403 | GET readiness, POST transitions | Caller không có quyền thực hiện action | `Bạn không có quyền thực hiện thao tác này.` | BE |
+| `MSG56` | 400 | GET history | Query phân trang history không hợp lệ | `Tham số truy vấn không hợp lệ.` | BE |
+| `MSG57` | 415 | POST transitions | Content-Type không phải `application/json` | `Content-Type phải là application/json.` | BE |
+| `MSG58` | 413 | POST transitions, PUT meeting | Body JSON vượt quá 64 KiB | `Nội dung JSON vượt quá 64 KiB.` | BE |
+| `MSG59` | 503 | POST Approve, Reject, ReturnToDraft | Không lưu được transition | `Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG60` | 503 | GET readiness, GET history | Không tải được readiness/history | `Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG61` | 503 | GET approvers | Không tải được danh sách người duyệt hoặc không kiểm tra được quyền truy cập | `Không thể tải danh sách người duyệt. Vui lòng thử lại.` | BE |
+| `MSG62` | 503 | GET readiness, POST transitions, GET history | Không kiểm tra được trạng thái active của tài khoản | `Không thể kiểm tra tài khoản để thực hiện thao tác cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG63` | 409 | POST Approve, Reject | Approval cycle không còn chờ quyết định | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
+| `MSG64` | 409 | POST ReturnToDraft | Cuộc họp không còn ở Rejected | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
 
 ## Bảng đổi mã cũ → mới
 
@@ -142,13 +156,26 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MEETING_CREATED` | | `MSG29` |
 | `MEETING_UPDATED` | | `MSG30` |
 | `MEETING_INVALID_INFORMATION` | | `MSG31` |
-| `MEETING_INVALID_QUERY` | | `MSG32` |
+| `MEETING_INVALID_QUERY` | GET meeting list | `MSG32` |
 | `MEETING_NOT_EDITABLE` | | `MSG33` |
-| `MEETING_UNSUPPORTED_CONTENT_TYPE` | | `MSG34` |
+| `MEETING_UNSUPPORTED_CONTENT_TYPE` | PUT meeting | `MSG34` |
 | `MEETING_CREATE_FAILED` | | `MSG35` |
 | `MEETING_UPDATE_FAILED` | | `MSG36` |
 | `MEETING_LOAD_FAILED` | | `MSG37` |
 | `MEETING_LIST_FAILED` | | `MSG38` |
+| `MEETING_TRANSITION_COMPLETED` | | `MSG43`, `MSG44`, `MSG45`, `MSG48`, `MSG49` theo action |
+| `MEETING_STATUS_CONFLICT` | | `MSG41`, `MSG46`, `MSG63`, `MSG64` theo action |
+| `MEETING_INVALID_TRANSITION_REQUEST` | | `MSG50` |
+| `MEETING_SUBMISSION_NOT_READY` | | `MSG51` |
+| `MEETING_APPROVER_INVALID` | | `MSG52` |
+| `MEETING_REJECTION_REASON_REQUIRED` | | `MSG53` |
+| `MEETING_REJECTION_REASON_TOO_LONG` | | `MSG54` |
+| `MEETING_ACTION_FORBIDDEN` | | `MSG55` |
+| `MEETING_INVALID_QUERY` | GET history | `MSG56` |
+| `MEETING_UNSUPPORTED_CONTENT_TYPE` | POST transitions | `MSG57` |
+| `MEETING_BODY_TOO_LARGE` | | `MSG58` |
+| `MEETING_WORKFLOW_FAILED` | | `MSG42`, `MSG47`, `MSG59` theo action |
+| `MEETING_LOAD_FAILED` (workflow) | | `MSG60`, `MSG62` theo endpoint |
 | `NOTIFICATION_INVALID_QUERY` | | `MSG39` |
 | `NOTIFICATION_LOAD_FAILED` | | `MSG40` |
 

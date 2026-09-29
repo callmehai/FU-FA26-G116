@@ -119,7 +119,7 @@ thành công/thất bại trong diagram hiện tại.
 Trả danh sách tài khoản đang hoạt động có capability `MeetingApprover`, sắp xếp theo tên. Response
 chỉ gồm `id` và `fullName`; endpoint kế thừa gate `MeetingCreator`. Nếu hệ thống không đọc được
 danh sách do lỗi database hoặc timeout, trả `503 Service Unavailable` với
-`{ "code": "MEETING_APPROVERS_LOAD_FAILED", "message": "Không thể tải danh sách người duyệt. Vui lòng thử lại." }`.
+`{ "code": "MSG61", "message": "Không thể tải danh sách người duyệt. Vui lòng thử lại." }`.
 
 ### POST `/api/meetings`
 
@@ -180,6 +180,11 @@ history/reason cũ và không tạo invitation. Sau đó Organizer sửa meeting
 flow bình thường; `Rejected → WaitingApproval` trực tiếp không hợp lệ. Cycle mới có thể chọn một
 current Assigned Approver khác.
 
+Transition thành công trả `200 OK` với `{ code, message, meeting, history }`. Code thành công theo
+action lần lượt là `MSG48` (SubmitForApproval), `MSG43` (Approve), `MSG44` (Reject), `MSG49`
+(ReturnToDraft) và `MSG45` (Publish). FE nên dùng `code` để xử lý tình huống; `message` chỉ dành
+cho hiển thị.
+
 Publish snapshot recipient bên trong transaction và persist notification/invitation jobs từ chính
 snapshot đó. Theo BR-54, snapshot chỉ gồm participant có user active và `Response != Delegated`;
 row đã Delegated không nhận invitation, và API không tự thêm người được ủy quyền chỉ từ
@@ -204,7 +209,7 @@ có endpoint update/delete history; các row là immutable audit evidence.
 Query `page`/`pageSize` mặc định `1`/`20`; `page >= 1`, `pageSize` từ `1` đến `100`. Trả `200`
 với `{ items, page, pageSize, totalCount, totalPages }`; trang vượt cuối trả `items: []`, kể cả
 khi offset lớn hơn `Int32.MaxValue`. Repository kiểm tra tổng số dòng trước khi ép offset sang `int`.
-Nếu offset vượt `Int32.MaxValue` nhưng vẫn nằm trong tập history hiện có, trả `400 MEETING_INVALID_QUERY`
+Nếu offset vượt `Int32.MaxValue` nhưng vẫn nằm trong tập history hiện có, trả `400 MSG56`
 vì EF paging không thể biểu diễn vị trí đó an toàn.
 
 ### GET `/api/meetings/{id}/submission-readiness` — SCRUM-19
@@ -250,23 +255,23 @@ lạ/trùng, enum dạng số, hoặc field không áp dụng cho action. Reques
 
 | HTTP | Code | Khi nào |
 |---:|---|---|
-| 400 | `MEETING_INVALID_TRANSITION_REQUEST` | JSON/action/GUID/field sai hoặc field không áp dụng cho action |
-| 400 | `MEETING_SUBMISSION_NOT_READY` | Submit thiếu meeting/agenda information; trả `errors` theo field |
-| 400 | `MEETING_APPROVER_INVALID` | Approver không còn active hoặc thiếu `MeetingApprover` |
-| 400 | `MEETING_REJECTION_REASON_REQUIRED` | Reject không có reason hoặc reason chỉ có whitespace |
-| 400 | `MEETING_REJECTION_REASON_TOO_LONG` | Reason sau trim dài hơn 1.000 ký tự |
-| 400 | `MEETING_INVALID_QUERY` | Query pagination history không hợp lệ |
+| 400 | `MSG50` | JSON/action/GUID/field sai hoặc field không áp dụng cho action |
+| 400 | `MSG51` | Submit thiếu meeting/agenda information; trả `errors` theo field |
+| 400 | `MSG52` | Approver không còn active hoặc thiếu `MeetingApprover` |
+| 400 | `MSG53` | Reject không có reason hoặc reason chỉ có whitespace |
+| 400 | `MSG54` | Reason sau trim dài hơn 1.000 ký tự |
+| 400 | `MSG56` | Query pagination history không hợp lệ |
 | 401 | — | Chưa đăng nhập |
-| 403 | `MEETING_ACTION_FORBIDDEN` | Đọc được meeting nhưng không phải actor/relationship/capability của action |
+| 403 | `MSG55` | Đọc được meeting nhưng không phải actor/relationship/capability của action |
 | 403 | — | Tài khoản inactive theo active-user gate |
 | 404 | — | Meeting không tồn tại hoặc caller không được phép đọc/action trên tài nguyên; body rỗng |
-| 409 | `MEETING_STATUS_CONFLICT` | Source status sai hoặc request cạnh tranh thua transition khác; không ghi history/jobs |
-| 413 | `MEETING_BODY_TOO_LARGE` | Transition JSON vượt 64 KiB |
-| 415 | `MEETING_UNSUPPORTED_CONTENT_TYPE` | POST không dùng `application/json` |
-| 503 | `MEETING_WORKFLOW_FAILED` | Lỗi database/transaction khi transition; transaction rollback |
-| 503 | `MEETING_LOAD_FAILED` | Lỗi đọc readiness/history |
+| 409 | `MSG41`, `MSG46`, `MSG63`, `MSG64` | Submit, Publish, quyết định duyệt hoặc ReturnToDraft không còn hợp lệ; không ghi history/jobs |
+| 413 | `MSG58` | JSON request vượt 64 KiB |
+| 415 | `MSG57` | POST không dùng `application/json` |
+| 503 | `MSG42`, `MSG47`, `MSG59` | Lỗi database/transaction khi transition; transaction rollback |
+| 503 | `MSG60`, `MSG62` | Không tải được readiness/history hoặc không kiểm tra được tài khoản active |
 
-`GET submission-readiness` trả `409 MEETING_STATUS_CONFLICT` nếu meeting không còn ở `Draft`;
+`GET submission-readiness` trả `409 MSG41` nếu meeting không còn ở `Draft`;
 history/readiness trả `404` nếu caller không được phép xem resource. Retry action sau khi commit thường
 trả `409` do state đã đổi. Client nên tải lại meeting/history để xác định kết quả đã commit, và không
 được suy diễn rằng `409` có nghĩa lần gọi trước thất bại.
@@ -315,7 +320,7 @@ trạng thái trước khi parse JSON: nếu meeting không còn sửa được 
 sai cú pháp hoặc sai kiểu. Request PUT có Content-Type thiếu hoặc không hỗ trợ trả `415` với code
 `MSG34`. Với meeting còn sửa được và Content-Type hợp lệ, JSON sai cú
 pháp/sai kiểu trả `400` và code `MSG31` không có `errors`. Body PUT lớn hơn
-64 KiB trả `413 MEETING_BODY_TOO_LARGE`. POST JSON lỗi cũng trả `400`.
+64 KiB trả `413 MSG58`. POST JSON lỗi cũng trả `400`.
 
 ## Mã phản hồi
 
@@ -329,7 +334,7 @@ pháp/sai kiểu trả `400` và code `MSG31` không có `errors`. Body PUT lớ
 | 403 | — | Không có `MeetingCreator` theo gate hai lớp |
 | 404 | — | GET: không tồn tại hoặc caller không có quan hệ; PUT: không tồn tại hoặc caller không phải người tạo; body rỗng |
 | 409 | `MSG33` | Trạng thái hiện tại không cho sửa |
-| 413 | `MEETING_BODY_TOO_LARGE` | Body PUT vượt quá 64 KiB |
+| 413 | `MSG58` | Body PUT vượt quá 64 KiB |
 | 415 | `MSG34` | PUT không gửi JSON hoặc Content-Type không hỗ trợ |
 | 500 | `MSG35` | Không thể lưu khi tạo; thử lại |
 | 500 | `MSG36` | Không thể lưu khi sửa; thử lại |
@@ -371,6 +376,8 @@ stale content.
 - Nếu PUT trả `409 MSG33`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
 - Sau khi POST hoặc PUT thành công, có thể mở `meeting.id` bằng GET chi tiết. GET danh sách thuộc
   SCRUM-18 đã có contract ở trên; FE cần thay dữ liệu mẫu trong task tích hợp riêng.
+- Trước khi gửi duyệt, lấy danh sách bằng `GET /api/meetings/approvers` rồi gửi `assignedApproverId`
+  trong action `SubmitForApproval`; trường này không thuộc POST/PUT tạo hoặc sửa thông tin Draft.
 - SCRUM-19 cung cấp contract history ở trên; việc tích hợp timeline thật thuộc task FE riêng.
 
 ## Checklist BA cần hoàn tất

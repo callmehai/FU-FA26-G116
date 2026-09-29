@@ -22,6 +22,30 @@ public static class MeetingEndpoints
     private const string Msg36UpdateFailed = "MSG36";
     private const string Msg37LoadFailed = "MSG37";
     private const string Msg38ListFailed = "MSG38";
+    private const string Msg41SubmitConflict = "MSG41";
+    private const string Msg42SubmitFailed = "MSG42";
+    private const string Msg43Approved = "MSG43";
+    private const string Msg44Rejected = "MSG44";
+    private const string Msg45Published = "MSG45";
+    private const string Msg46PublishConflict = "MSG46";
+    private const string Msg47PublishFailed = "MSG47";
+    private const string Msg48Submitted = "MSG48";
+    private const string Msg49ReturnedToDraft = "MSG49";
+    private const string Msg50InvalidTransition = "MSG50";
+    private const string Msg51SubmissionNotReady = "MSG51";
+    private const string Msg52ApproverInvalid = "MSG52";
+    private const string Msg53RejectionReasonRequired = "MSG53";
+    private const string Msg54RejectionReasonTooLong = "MSG54";
+    private const string Msg55ActionForbidden = "MSG55";
+    private const string Msg56HistoryInvalidQuery = "MSG56";
+    private const string Msg57WorkflowUnsupportedContentType = "MSG57";
+    private const string Msg58BodyTooLarge = "MSG58";
+    private const string Msg59TransitionFailed = "MSG59";
+    private const string Msg60WorkflowReadFailed = "MSG60";
+    private const string Msg61ApproversLoadFailed = "MSG61";
+    private const string Msg62WorkflowActiveUserCheckFailed = "MSG62";
+    private const string Msg63ApprovalConflict = "MSG63";
+    private const string Msg64ReturnToDraftConflict = "MSG64";
 
     public static IEndpointRouteBuilder MapMeetingEndpoints(this IEndpointRouteBuilder app)
     {
@@ -34,7 +58,7 @@ public static class MeetingEndpoints
             .RequireCapability(
                 Capability.MeetingCreator,
                 SaveFailed(
-                    "MEETING_APPROVERS_LOAD_FAILED",
+                    Msg61ApproversLoadFailed,
                     "Không thể tải danh sách người duyệt. Vui lòng thử lại."));
 
         creatorMeetings.MapPost("/", CreateAsync);
@@ -53,7 +77,9 @@ public static class MeetingEndpoints
 
         var workflowMeetings = app.MapGroup("/api/meetings")
             .WithTags("Meetings")
-            .RequireActiveUser(SaveFailed("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."));
+            .RequireActiveUser(SaveFailed(
+                Msg62WorkflowActiveUserCheckFailed,
+                "Không thể kiểm tra tài khoản để thực hiện thao tác cuộc họp. Vui lòng thử lại."));
         workflowMeetings.MapGet("/{id:guid}/submission-readiness", GetSubmissionReadinessAsync);
         workflowMeetings.MapPost("/{id:guid}/transitions", TransitionAsync);
         workflowMeetings.MapGet("/{id:guid}/history", GetHistoryAsync);
@@ -79,10 +105,10 @@ public static class MeetingEndpoints
                 result.MeetingId, result.Status.ToString(), result.Ready, result.Errors)),
             MeetingWorkflowOutcome.NotFound => Results.NotFound(),
             MeetingWorkflowOutcome.Forbidden => WorkflowError(
-                StatusCodes.Status403Forbidden, "MEETING_ACTION_FORBIDDEN", "Bạn không có quyền kiểm tra điều kiện gửi duyệt."),
+                StatusCodes.Status403Forbidden, Msg55ActionForbidden, "Bạn không có quyền thực hiện thao tác này."),
             MeetingWorkflowOutcome.StatusConflict => WorkflowError(
-                StatusCodes.Status409Conflict, "MEETING_STATUS_CONFLICT", "Cuộc họp không còn ở trạng thái Draft."),
-            _ => SaveFailed("MEETING_LOAD_FAILED", "Không thể tải điều kiện gửi duyệt. Vui lòng thử lại."),
+                StatusCodes.Status409Conflict, Msg41SubmitConflict, "Cuộc họp không còn ở trạng thái Draft."),
+            _ => SaveFailed(Msg60WorkflowReadFailed, "Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại."),
         };
     }
 
@@ -103,7 +129,7 @@ public static class MeetingEndpoints
         {
             return WorkflowError(
                 StatusCodes.Status415UnsupportedMediaType,
-                "MEETING_UNSUPPORTED_CONTENT_TYPE",
+                Msg57WorkflowUnsupportedContentType,
                 "Content-Type phải là application/json.");
         }
 
@@ -151,7 +177,7 @@ public static class MeetingEndpoints
         {
             return WorkflowError(
                 StatusCodes.Status400BadRequest,
-                "MEETING_INVALID_TRANSITION_REQUEST",
+                Msg50InvalidTransition,
                 "Yêu cầu chuyển trạng thái không hợp lệ.");
         }
 
@@ -159,26 +185,30 @@ public static class MeetingEndpoints
         return result.Outcome switch
         {
             MeetingWorkflowOutcome.Success => Results.Ok(new MeetingTransitionResponse(
-                "MEETING_TRANSITION_COMPLETED",
+                TransitionSuccessCode(command.Action),
                 TransitionMessage(command.Action),
                 MeetingResponse.From(result.Meeting!),
                 MeetingHistoryItemResponse.From(result.History!))),
             MeetingWorkflowOutcome.NotFound => Results.NotFound(),
             MeetingWorkflowOutcome.Forbidden => WorkflowError(
-                StatusCodes.Status403Forbidden, "MEETING_ACTION_FORBIDDEN", "Bạn không có quyền thực hiện thao tác này."),
+                StatusCodes.Status403Forbidden, Msg55ActionForbidden, "Bạn không có quyền thực hiện thao tác này."),
             MeetingWorkflowOutcome.InvalidRequest => WorkflowError(
-                StatusCodes.Status400BadRequest, "MEETING_INVALID_TRANSITION_REQUEST", "Yêu cầu chuyển trạng thái không hợp lệ."),
+                StatusCodes.Status400BadRequest, Msg50InvalidTransition, "Yêu cầu chuyển trạng thái không hợp lệ."),
             MeetingWorkflowOutcome.SubmissionNotReady => WorkflowError(
-                StatusCodes.Status400BadRequest, "MEETING_SUBMISSION_NOT_READY", "Cuộc họp chưa đủ thông tin để gửi duyệt.", result.Errors),
+                StatusCodes.Status400BadRequest, Msg51SubmissionNotReady, "Cuộc họp chưa đủ thông tin để gửi duyệt.", result.Errors),
             MeetingWorkflowOutcome.InvalidApprover => WorkflowError(
-                StatusCodes.Status400BadRequest, "MEETING_APPROVER_INVALID", "Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp."),
+                StatusCodes.Status400BadRequest, Msg52ApproverInvalid, "Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp."),
             MeetingWorkflowOutcome.RejectionReasonRequired => WorkflowError(
-                StatusCodes.Status400BadRequest, "MEETING_REJECTION_REASON_REQUIRED", "Cần nhập lý do từ chối."),
+                StatusCodes.Status400BadRequest, Msg53RejectionReasonRequired, "Cần nhập lý do từ chối."),
             MeetingWorkflowOutcome.RejectionReasonTooLong => WorkflowError(
-                StatusCodes.Status400BadRequest, "MEETING_REJECTION_REASON_TOO_LONG", "Lý do từ chối không được vượt quá 1.000 ký tự."),
+                StatusCodes.Status400BadRequest, Msg54RejectionReasonTooLong, "Lý do từ chối không được vượt quá 1.000 ký tự."),
             MeetingWorkflowOutcome.StatusConflict => WorkflowError(
-                StatusCodes.Status409Conflict, "MEETING_STATUS_CONFLICT", "Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này."),
-            _ => SaveFailed("MEETING_WORKFLOW_FAILED", "Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại."),
+                StatusCodes.Status409Conflict,
+                TransitionConflictCode(command.Action),
+                "Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này."),
+            _ => SaveFailed(
+                TransitionFailureCode(command.Action),
+                "Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại."),
         };
     }
 
@@ -220,7 +250,7 @@ public static class MeetingEndpoints
             MeetingWorkflowOutcome.Success => Results.Ok(MeetingHistoryPageResponse.From(result.Page!)),
             MeetingWorkflowOutcome.NotFound => Results.NotFound(),
             MeetingWorkflowOutcome.InvalidRequest => InvalidHistoryQuery(),
-            _ => SaveFailed("MEETING_LOAD_FAILED", "Không thể tải lịch sử cuộc họp. Vui lòng thử lại."),
+            _ => SaveFailed(Msg60WorkflowReadFailed, "Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại."),
         };
     }
 
@@ -234,6 +264,7 @@ public static class MeetingEndpoints
         string? actionText = null;
         string? reason = null;
         Guid? assignedApproverId = null;
+        var hasReason = false;
         var seen = new HashSet<string>(StringComparer.Ordinal);
         foreach (var property in root.EnumerateObject())
         {
@@ -255,9 +286,11 @@ public static class MeetingEndpoints
                     assignedApproverId = parsedId;
                     break;
                 case "reason" when property.Value.ValueKind == JsonValueKind.String:
+                    hasReason = true;
                     reason = property.Value.GetString();
                     break;
                 case "reason" when property.Value.ValueKind == JsonValueKind.Null:
+                    hasReason = true;
                     reason = null;
                     break;
                 default:
@@ -274,9 +307,9 @@ public static class MeetingEndpoints
         var command = new MeetingTransitionCommand(action, assignedApproverId, reason);
         return action switch
         {
-            MeetingTransitionAction.SubmitForApproval when assignedApproverId.HasValue && reason is null => command,
+            MeetingTransitionAction.SubmitForApproval when assignedApproverId.HasValue && !hasReason => command,
             MeetingTransitionAction.Reject when !assignedApproverId.HasValue => command,
-            _ when !assignedApproverId.HasValue && reason is null => command,
+            _ when !assignedApproverId.HasValue && !hasReason => command,
             _ => null,
         };
     }
@@ -291,8 +324,36 @@ public static class MeetingEndpoints
         _ => "Đã chuyển trạng thái cuộc họp.",
     };
 
+    private static string TransitionSuccessCode(MeetingTransitionAction action) => action switch
+    {
+        MeetingTransitionAction.SubmitForApproval => Msg48Submitted,
+        MeetingTransitionAction.Approve => Msg43Approved,
+        MeetingTransitionAction.Reject => Msg44Rejected,
+        MeetingTransitionAction.ReturnToDraft => Msg49ReturnedToDraft,
+        MeetingTransitionAction.Publish => Msg45Published,
+        _ => Msg50InvalidTransition,
+    };
+
+    private static string TransitionConflictCode(MeetingTransitionAction action) => action switch
+    {
+        MeetingTransitionAction.SubmitForApproval => Msg41SubmitConflict,
+        MeetingTransitionAction.Approve or MeetingTransitionAction.Reject => Msg63ApprovalConflict,
+        MeetingTransitionAction.ReturnToDraft => Msg64ReturnToDraftConflict,
+        MeetingTransitionAction.Publish => Msg46PublishConflict,
+        _ => Msg50InvalidTransition,
+    };
+
+    private static string TransitionFailureCode(MeetingTransitionAction action) => action switch
+    {
+        MeetingTransitionAction.SubmitForApproval => Msg42SubmitFailed,
+        MeetingTransitionAction.Approve or MeetingTransitionAction.Reject or MeetingTransitionAction.ReturnToDraft
+            => Msg59TransitionFailed,
+        MeetingTransitionAction.Publish => Msg47PublishFailed,
+        _ => Msg59TransitionFailed,
+    };
+
     private static IResult InvalidHistoryQuery()
-        => WorkflowError(StatusCodes.Status400BadRequest, "MEETING_INVALID_QUERY", "Tham số truy vấn không hợp lệ.");
+        => WorkflowError(StatusCodes.Status400BadRequest, Msg56HistoryInvalidQuery, "Tham số truy vấn không hợp lệ.");
 
     private static IResult WorkflowError(
         int statusCode,
@@ -377,7 +438,7 @@ public static class MeetingEndpoints
         {
             MeetingOutcome.Success => Results.Ok(result.Approvers),
             _ => SaveFailed(
-                "MEETING_APPROVERS_LOAD_FAILED",
+                Msg61ApproversLoadFailed,
                 "Không thể tải danh sách người duyệt. Vui lòng thử lại."),
         };
     }
@@ -477,7 +538,7 @@ public static class MeetingEndpoints
 
     private static IResult BodyTooLarge()
         => Results.Json(
-            new MeetingErrorResponse("MEETING_BODY_TOO_LARGE", "Nội dung JSON vượt quá 64 KiB."),
+            new MeetingErrorResponse(Msg58BodyTooLarge, "Nội dung JSON vượt quá 64 KiB."),
             statusCode: StatusCodes.Status413PayloadTooLarge);
 
     private static IResult Invalid(MeetingResult result)
