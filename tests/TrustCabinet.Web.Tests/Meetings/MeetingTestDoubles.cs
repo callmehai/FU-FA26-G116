@@ -28,6 +28,8 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
 
     public Exception? NextReadThrows { get; set; }
 
+    public Exception? NextApproverReadThrows { get; set; }
+
     public MeetingListQuery? LastListQuery { get; private set; }
 
     public Guid? LastListActorId { get; private set; }
@@ -101,7 +103,15 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         => Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id && m.CreatedById == creatorId));
 
     public Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<MeetingApproverOption>>([.. EligibleApprovers]);
+    {
+        if (NextApproverReadThrows is { } exception)
+        {
+            NextApproverReadThrows = null;
+            throw exception;
+        }
+
+        return Task.FromResult<IReadOnlyList<MeetingApproverOption>>([.. EligibleApprovers]);
+    }
 
     public Task<bool> IsEligibleApproverAsync(Guid id, CancellationToken ct = default)
         => Task.FromResult(id != Guid.Empty && !IneligibleApproverIds.Contains(id));
@@ -162,6 +172,12 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         IReadOnlyCollection<EmailMessage> messages, CancellationToken ct = default)
     {
         _pendingEmailMessages.AddRange(messages);
+        return Task.CompletedTask;
+    }
+
+    public Task AddHistoryAsync(MeetingStatusHistory history, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
         return Task.CompletedTask;
     }
 

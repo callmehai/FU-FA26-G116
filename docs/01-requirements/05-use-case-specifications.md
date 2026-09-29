@@ -133,7 +133,7 @@ Sơ đồ hiện có: [UpdateMeeting.png](../06-sequencediagram/meeting-manageme
    duyệt hợp lệ khác cho cycle mới.
 
 Sequence diagram UC-15 chỉ cho submit từ `Draft`. Nếu meeting đang `Rejected`, sơ đồ thể hiện riêng
-`ReturnToDraft` trước khi Organizer sửa và submit lại: [sơ đồ](../06-sequencediagram/meeting-management/SubmitMeetingForApproval.png), [source Mermaid](../06-sequencediagram/meeting-management/SubmitMeetingForApproval.mmd).
+`ReturnToDraft` trước khi Organizer sửa và submit lại: [sơ đồ](../assets/diagrams/meeting-management/SubmitMeetingForApproval.png), [source Mermaid](../assets/diagrams/meeting-management/SubmitMeetingForApproval.mmd).
 Quy tắc liên quan: BR-29, BR-33, BR-34, BR-35, BR-38.
 
 ### UC-16: Phê duyệt hoặc từ chối cuộc họp (SCRUM-19)
@@ -144,6 +144,11 @@ Quy tắc liên quan: BR-29, BR-33, BR-34, BR-35, BR-38.
 - **Điều kiện sau khi thành công:** Approve chuyển sang `Approved`; Reject chuyển sang `Rejected`
   và lưu rejection reason bắt buộc. Mỗi quyết định tạo đúng một lifecycle history.
 
+Reason của Reject sau khi trim phải dài 1–1.000 ký tự. Status và history được ghi trong cùng một
+transaction; nếu lưu hoặc commit thất bại, transaction rollback và không để lại quyết định một phần.
+Actor, trạng thái `WaitingApproval`, assignment hiện tại, tài khoản active và capability
+`MeetingApprover` được kiểm tra lại trước khi ghi.
+
 Chair chỉ là relationship với meeting và không tự có quyền Approve/Reject. Nếu một Chair đồng thời
 là current Assigned Approver thì quyền đến từ assignment cùng capability `MeetingApprover`.
 
@@ -153,7 +158,7 @@ history snapshot cũ không phải một access grant. Participant được quy�
 trở đi có thể xem timeline nhưng không nhận rejection reason.
 
 Quy tắc liên quan: BR-29, BR-35, BR-36, BR-38.
-Sơ đồ hiện có: [ReviewMeetingApproval.png](../06-sequencediagram/meeting-management/ReviewMeetingApproval.png).
+Sơ đồ UC-16 có transaction boundary và nhánh rollback: [sơ đồ](../assets/diagrams/meeting-management/ReviewMeetingApproval.png), [source Mermaid](../assets/diagrams/meeting-management/ReviewMeetingApproval.mmd).
 
 ### UC-17: Công bố cuộc họp (SCRUM-19)
 
@@ -166,14 +171,16 @@ Sơ đồ hiện có: [ReviewMeetingApproval.png](../06-sequencediagram/meeting-
 Chair không tự có quyền Publish. Nếu Chair đồng thời là Meeting Organizer thì quyền Publish đến từ
 quan hệ Organizer.
 
-Recipient được snapshot trong transaction Publish bằng policy do SCRUM-20 sở hữu. Chỉ participant
-hợp lệ tại thời điểm snapshot được tạo notification/invitation; thay đổi participant sau commit
-không sửa batch đã tạo. Theo BR-54, chỉ participant có tài khoản active và response khác `Delegated`
-được nhận. Không tự thêm người được ủy quyền chỉ dựa trên `DelegatedToUserId`; nếu người đó có
-participant row riêng, active và chưa Delegated thì row đó đủ điều kiện như bình thường.
-Việc gửi email chạy bất đồng bộ theo SCRUM-15; lỗi delivery được retry và không đưa meeting từ
-`Published` về trạng thái cũ.
+Trong transaction Publish, hệ thống snapshot participant row theo policy SCRUM-20/BR-54, chỉ chọn
+row có user active và `Response != Delegated`. Không tự thêm delegate chỉ vì `DelegatedToUserId`
+trỏ tới họ; participant row riêng, active và chưa Delegated vẫn đủ điều kiện. Cùng transaction đó
+cập nhật `Published`, thêm lifecycle history, tạo notification và persist invitation jobs với
+recipient/content snapshot. Nếu bất kỳ ghi nào hoặc commit thất bại, rollback toàn bộ và không gửi
+invitation. Sau commit, email job có `EmailStatus = Queued`, `SentAt = null`; Publish `200` không
+xác nhận email đã được giao. Worker SCRUM-15 xử lý/retry bất đồng bộ; delivery failure không đổi
+meeting khỏi `Published`. Thay đổi participant sau commit không sửa batch đã tạo.
 
 Quy tắc liên quan: BR-29, BR-37–BR-45, BR-54.
-Sơ đồ hiện có: [PublishMeeting.png](../06-sequencediagram/meeting-management/PublishMeeting.png).
+Sơ đồ UC-17 thể hiện snapshot, queue và transaction rollback: [sơ đồ](../assets/diagrams/meeting-management/PublishMeeting.png), [source Mermaid](../assets/diagrams/meeting-management/PublishMeeting.mmd).
+Sơ đồ lớp domain dùng chung cho UC-15–17: [Meeting lifecycle classes](../assets/diagrams/meeting-management/MeetingLifecycleClasses.png), [source Mermaid](../assets/diagrams/meeting-management/MeetingLifecycleClasses.mmd).
 

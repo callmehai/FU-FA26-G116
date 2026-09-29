@@ -9,7 +9,7 @@ public interface IMeetingService
     Task<MeetingListResult> ListAsync(
         MeetingListQuery query, Guid actorId, CancellationToken ct = default);
 
-    Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(CancellationToken ct = default);
+    Task<MeetingApproverListResult> ListEligibleApproversAsync(CancellationToken ct = default);
 
     Task<MeetingResult> CheckUpdateAsync(Guid id, Guid actorId, CancellationToken ct = default);
 

@@ -19,9 +19,17 @@ public static class MeetingEndpoints
             .WithTags("Meetings")
             .RequireCapability(Capability.MeetingCreator);
 
+        var approverList = app.MapGroup("/api/meetings")
+            .WithTags("Meetings")
+            .RequireCapability(
+                Capability.MeetingCreator,
+                SaveFailed(
+                    "MEETING_APPROVERS_LOAD_FAILED",
+                    "Không thể tải danh sách người duyệt. Vui lòng thử lại."));
+
         creatorMeetings.MapPost("/", CreateAsync);
-        creatorMeetings.MapGet("/approvers", ListApproversAsync);
         creatorMeetings.MapPut("/{id:guid}", UpdateAsync);
+        approverList.MapGet("/approvers", ListApproversAsync);
 
         var listMeetings = app.MapGroup("/api/meetings")
             .WithTags("Meetings")
@@ -353,7 +361,16 @@ public static class MeetingEndpoints
     private static async Task<IResult> ListApproversAsync(
         IMeetingService service,
         CancellationToken ct)
-        => Results.Ok(await service.ListEligibleApproversAsync(ct));
+    {
+        var result = await service.ListEligibleApproversAsync(ct);
+        return result.Outcome switch
+        {
+            MeetingOutcome.Success => Results.Ok(result.Approvers),
+            _ => SaveFailed(
+                "MEETING_APPROVERS_LOAD_FAILED",
+                "Không thể tải danh sách người duyệt. Vui lòng thử lại."),
+        };
+    }
 
     private static async Task<IResult> UpdateAsync(
         Guid id,

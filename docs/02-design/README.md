@@ -5,6 +5,7 @@
 - [`01-vong-doi-cuoc-hop.md`](01-vong-doi-cuoc-hop.md) — 9 trạng thái của cuộc họp và 4 mức mật
 - [`02-erd.md`](02-erd.md) — mô hình dữ liệu, kèm phần lấy gì / bỏ gì so với AI-eCabinet
 - [`03-co-so-du-lieu.md`](03-co-so-du-lieu.md) — cài PostgreSQL, chuỗi kết nối, vòng đời migration
+- Sơ đồ lớp meeting lifecycle cho UC-15/16/17: [PNG](../assets/diagrams/meeting-management/MeetingLifecycleClasses.png), [source Mermaid](../assets/diagrams/meeting-management/MeetingLifecycleClasses.mmd)
 
 Dự kiến có thêm:
 

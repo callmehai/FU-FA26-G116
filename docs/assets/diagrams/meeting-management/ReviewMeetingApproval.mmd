@@ -1,0 +1,75 @@
+sequenceDiagram
+    title UC-16 - Review Meeting Approval
+    actor Approver as Assigned Meeting Approver
+    participant Page as Meeting Management Page
+    participant API as Meeting API
+    participant Service as Meeting Service
+    participant DB as Database
+
+    Approver->>Page: Choose Approve or Reject
+    alt Reject
+        Page-->>Approver: Request rejection reason
+        Approver->>Page: Enter reason and confirm
+    else Approve
+        Page-->>Approver: Confirm approval
+    end
+    Page->>API: POST /api/meetings/{id}/transitions
+    API->>Service: Transition(meetingId, action, reason, actor)
+
+    alt Reject reason is missing or exceeds 1000 characters
+        Service-->>API: 400 MEETING_REJECTION_REASON_REQUIRED or MEETING_REJECTION_REASON_TOO_LONG
+        API-->>Page: Show rejection reason validation
+        Page-->>Approver: Keep the decision form open
+    else Approve or Reject with a valid reason
+        Service->>DB: BEGIN and lock meeting row
+        DB-->>Service: Current status and AssignedApproverId
+
+        alt Meeting is missing or caller cannot read it
+            Service->>DB: ROLLBACK without writes
+            Service-->>API: 404 Not Found
+            API-->>Page: Display meeting unavailable
+        else Meeting is visible to caller
+            Service->>DB: Check active actor, current assignment, and meeting_approver
+            DB-->>Service: Current authorization result
+            alt Actor is no longer the eligible Assigned Approver
+                Service->>DB: ROLLBACK without writes
+                Service-->>API: 403 MEETING_ACTION_FORBIDDEN
+                API-->>Page: Display access denied
+            else Actor is the current eligible Assigned Approver
+              alt Meeting is no longer WaitingApproval
+                Service->>DB: ROLLBACK without writes
+                Service-->>API: 409 MEETING_STATUS_CONFLICT
+                API-->>Page: Refresh the current meeting status
+              else Decision can proceed
+                alt Approve
+                Service->>DB: UPDATE status to Approved and INSERT Approve history
+                else Reject with valid reason
+                Service->>DB: UPDATE status to Rejected and INSERT Reject history with reason
+                end
+
+                alt SaveChanges fails
+                    DB-->>Service: Persistence error before commit
+                    Service->>DB: ROLLBACK the whole transaction
+                    Service-->>API: 503 MEETING_WORKFLOW_FAILED
+                    API-->>Page: Show retryable decision error
+                else Status and one history row are staged
+                    DB-->>Service: Pending writes
+                    Service->>DB: COMMIT
+                    alt Commit fails
+                        DB-->>Service: Commit error
+                        Service->>DB: ROLLBACK the whole transaction
+                        Service-->>API: 503 MEETING_WORKFLOW_FAILED
+                        API-->>Page: Show retryable decision error
+                    else Commit succeeds
+                        DB-->>Service: Status and one history row committed
+                        Service-->>API: Transition result
+                        API-->>Page: 200 MEETING_TRANSITION_COMPLETED
+                        Page-->>Approver: Show decision confirmation
+                    end
+                end
+              end
+            end
+        end
+    end
+
+    Note over Service,DB: Status and history commit atomically. Rejection reason is stored in history.

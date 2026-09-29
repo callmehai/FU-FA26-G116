@@ -25,6 +25,17 @@ public sealed record ValidatedMeetingInput(
 
 public sealed record MeetingApproverOption(Guid Id, string FullName);
 
+public sealed record MeetingApproverListResult(
+    MeetingOutcome Outcome,
+    IReadOnlyList<MeetingApproverOption>? Approvers = null)
+{
+    public static MeetingApproverListResult Success(IReadOnlyList<MeetingApproverOption> approvers)
+        => new(MeetingOutcome.Success, approvers);
+
+    public static MeetingApproverListResult ReadFailed()
+        => new(MeetingOutcome.ReadFailed);
+}
+
 /// <summary>A safe, flat representation returned by the meeting service.</summary>
 public sealed record MeetingDetails(
     Guid Id,

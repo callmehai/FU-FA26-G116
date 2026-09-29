@@ -112,7 +112,9 @@ thành công/thất bại trong diagram hiện tại.
 ### GET `/api/meetings/approvers`
 
 Trả danh sách tài khoản đang hoạt động có capability `MeetingApprover`, sắp xếp theo tên. Response
-chỉ gồm `id` và `fullName`; endpoint kế thừa gate `MeetingCreator`.
+chỉ gồm `id` và `fullName`; endpoint kế thừa gate `MeetingCreator`. Nếu hệ thống không đọc được
+danh sách do lỗi database hoặc timeout, trả `503 Service Unavailable` với
+`{ "code": "MEETING_APPROVERS_LOAD_FAILED", "message": "Không thể tải danh sách người duyệt. Vui lòng thử lại." }`.
 
 ### POST `/api/meetings`
 
@@ -372,7 +374,5 @@ stale content.
 - Đồng bộ hai quy tắc đã ghi trong UC-11/UC-12 vào Jira SCRUM-17, cùng giới hạn length và format
   timezone khi có quyền cập nhật Jira.
 - Ghi rõ quyền GET, ownership và hành vi khi sửa `Rejected`.
-- Cập nhật sequence diagram UC-15 để bỏ direct `Rejected → WaitingApproval`, thêm
-  `ReturnToDraft`, và cập nhật UC-16 authorization/history theo BR-29/34/35.
 - Bổ sung mã thành công/lỗi chưa có vào sequence/message catalog.
 - Kiểm tra lại định danh UC theo convention Jira để tránh nhầm UC-11/UC-12 quản lý vai trò.

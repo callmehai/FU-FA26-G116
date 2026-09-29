@@ -1,6 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
@@ -12,6 +19,26 @@ namespace TrustCabinet.Web.Tests.Meetings;
 /// <summary>PostgreSQL integration checks for meeting transactions, row locks and audit constraints.</summary>
 public sealed class MeetingRepositoryTests : IAsyncLifetime
 {
+    private sealed class PostgreSqlMeetingApiFactory(string connectionString) : TrustCabinetApiFactory
+    {
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            base.ConfigureWebHost(builder);
+            builder.ConfigureServices(services =>
+            {
+                services.RemoveAll<DbContextOptions<TrustCabinetDbContext>>();
+                services.RemoveAll<TrustCabinetDbContext>();
+                services.AddDbContext<TrustCabinetDbContext>(options => options
+                    .UseNpgsql(connectionString)
+                    .UseSnakeCaseNamingConvention());
+                services.RemoveAll<IMeetingRepository>();
+                services.AddScoped<IMeetingRepository, MeetingRepository>();
+                services.RemoveAll<IMeetingService>();
+                services.AddScoped<IMeetingService, MeetingService>();
+            });
+        }
+    }
+
     private const string AdminConnectionString =
         "Host=localhost;Port=5432;Database=postgres;Username=trustcabinet;Password=123";
 
@@ -366,6 +393,56 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             .ToListAsync();
         Assert.Equal(_creatorId, Assert.Single(publishNotifications).UserId);
         Assert.Equal(history[^1].Id, publishNotifications[0].OriginHistoryId);
+    }
+
+    [Fact]
+    public async Task Approve_endpoint_persists_transition_history_through_the_real_EF_repository()
+    {
+        var meeting = new Meeting
+        {
+            Title = "EF-backed approval",
+            Description = "Integration test",
+            Status = MeetingStatus.WaitingApproval,
+            Sensitivity = Sensitivity.Internal,
+            Mode = MeetingMode.InPerson,
+            Location = "Phòng A",
+            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
+            CreatedById = _creatorId,
+            AssignedApproverId = _creatorId,
+        };
+        _db.Meetings.Add(meeting);
+        _db.MeetingStatusHistory.Add(new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            FromStatus = MeetingStatus.Draft,
+            ToStatus = MeetingStatus.WaitingApproval,
+            Action = MeetingHistoryAction.SubmitForApproval,
+            ActorId = _creatorId,
+            AssignedApproverId = _creatorId,
+            OccurredAt = DateTimeOffset.UtcNow,
+        });
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+
+        using var app = new PostgreSqlMeetingApiFactory(_connectionString);
+        using var client = app.CreateClient();
+        var user = await _db.Users.AsNoTracking().SingleAsync(item => item.Id == _creatorId);
+        var issuer = app.Services.GetRequiredService<ITokenIssuer>();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", issuer.CreateAccessToken(user, [Capability.MeetingApprover]));
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/meetings/{meeting.Id}/transitions", new { action = "Approve" });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        _db.ChangeTracker.Clear();
+        var persisted = await _db.Meetings.AsNoTracking().SingleAsync(item => item.Id == meeting.Id);
+        var approvalHistory = await _db.MeetingStatusHistory.AsNoTracking()
+            .SingleAsync(item => item.MeetingId == meeting.Id && item.Action == MeetingHistoryAction.Approve);
+        Assert.Equal(MeetingStatus.Approved, persisted.Status);
+        Assert.Equal(MeetingStatus.WaitingApproval, approvalHistory.FromStatus);
+        Assert.Equal(MeetingStatus.Approved, approvalHistory.ToStatus);
+        Assert.Equal(_creatorId, approvalHistory.ActorId);
     }
 
     [Fact]

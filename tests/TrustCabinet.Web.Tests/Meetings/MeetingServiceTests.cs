@@ -418,7 +418,19 @@ public class MeetingServiceTests
 
         var result = await NewService().ListEligibleApproversAsync();
 
-        Assert.Equal(expected, result);
+        Assert.Equal(MeetingOutcome.Success, result.Outcome);
+        Assert.Equal(expected, result.Approvers);
+    }
+
+    [Fact]
+    public async Task List_eligible_approvers_maps_database_failure_to_read_failed()
+    {
+        _repository.NextApproverReadThrows = new NpgsqlException("database unavailable");
+
+        var result = await NewService().ListEligibleApproversAsync();
+
+        Assert.Equal(MeetingOutcome.ReadFailed, result.Outcome);
+        Assert.Null(result.Approvers);
     }
 
     [Fact]

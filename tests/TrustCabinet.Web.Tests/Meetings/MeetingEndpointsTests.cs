@@ -625,6 +625,64 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Get_approvers_returns_a_structured_503_when_the_repository_is_unavailable()
+    {
+        _factory.Meetings.NextApproverReadThrows = new Npgsql.NpgsqlException("database unavailable");
+        using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
+
+        var response = await client.GetAsync("/api/meetings/approvers");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal("MEETING_APPROVERS_LOAD_FAILED", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(
+            "Không thể tải danh sách người duyệt. Vui lòng thử lại.",
+            body.RootElement.GetProperty("message").GetString());
+    }
+
+    [Fact]
+    public async Task Get_approvers_returns_the_contract_503_when_capability_account_lookup_fails()
+    {
+        _factory.Accounts.NextReadThrows = new Npgsql.NpgsqlException("database unavailable");
+        using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
+
+        var response = await client.GetAsync("/api/meetings/approvers");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal("MEETING_APPROVERS_LOAD_FAILED", body.RootElement.GetProperty("code").GetString());
+        Assert.Empty(_factory.Meetings.EligibleApprovers);
+    }
+
+    [Fact]
+    public async Task Get_approvers_returns_the_contract_503_when_capability_read_times_out()
+    {
+        _factory.Accounts.NextCapabilitiesReadThrows = new TimeoutException("database timed out");
+        using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
+
+        var response = await client.GetAsync("/api/meetings/approvers");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal("MEETING_APPROVERS_LOAD_FAILED", body.RootElement.GetProperty("code").GetString());
+        Assert.Empty(_factory.Meetings.EligibleApprovers);
+    }
+
+    [Fact]
+    public async Task Get_approvers_propagates_request_cancellation_from_capability_lookup()
+    {
+        _factory.Accounts.WaitForReadCancellation = true;
+        using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
+        using var cancellation = new CancellationTokenSource();
+
+        var request = client.GetAsync("/api/meetings/approvers", cancellation.Token);
+        await _factory.Accounts.ReadCancellationWaitStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await cancellation.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await request);
+    }
+
+    [Fact]
     public async Task Missing_and_other_owner_resources_return_the_same_empty_404()
     {
         var creator = GivenCreator();

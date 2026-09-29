@@ -216,6 +216,13 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
         return Task.CompletedTask;
     }
 
+    public Task AddHistoryAsync(MeetingStatusHistory history, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        db.MeetingStatusHistory.Add(history);
+        return Task.CompletedTask;
+    }
+
     public Task AddAsync(Meeting meeting, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();

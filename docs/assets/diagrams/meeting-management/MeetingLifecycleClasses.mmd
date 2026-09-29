@@ -1,0 +1,125 @@
+classDiagram
+    direction LR
+
+    class Meeting {
+        +Guid Id
+        +string Title
+        +MeetingStatus Status
+        +Guid CreatedById
+        +Guid? AssignedApproverId
+        +DateTimeOffset StartsAt
+        +DateTimeOffset? EndsAt
+    }
+    class MeetingStatusHistory {
+        +Guid Id
+        +MeetingHistoryAction Action
+        +MeetingStatus? FromStatus
+        +MeetingStatus ToStatus
+        +Guid ActorId
+        +Guid? AssignedApproverId
+        +string Reason
+        +DateTimeOffset OccurredAt
+    }
+    class MeetingParticipant {
+        +Guid MeetingId
+        +Guid UserId
+        +MeetingRole Role
+        +InvitationResponse Response
+        +Guid? DelegatedToUserId
+    }
+    class User {
+        +Guid Id
+        +string FullName
+        +bool IsActive
+        +Guid RoleId
+    }
+    class Role {
+        +Guid Id
+        +string Name
+    }
+    class RoleCapability {
+        +Guid RoleId
+        +Capability Capability
+    }
+    class Notification {
+        +Guid UserId
+        +NotificationType Type
+        +Guid? MeetingId
+        +Guid? OriginHistoryId
+    }
+    class EmailMessage {
+        +EmailStatus Status
+        +DateTimeOffset? SentAt
+        +Guid? MeetingId
+        +Guid? OriginHistoryId
+        +Guid? RecipientUserId
+        +EmailMessageType? MessageType
+        +string? PayloadSnapshot
+    }
+    class MeetingStatus {
+        <<enumeration>>
+        Draft
+        WaitingApproval
+        Rejected
+        Approved
+        Published
+        InProgress
+        Ended
+        MinutesIssued
+        Archived
+    }
+    class MeetingHistoryAction {
+        <<enumeration>>
+        Create
+        SubmitForApproval
+        Approve
+        Reject
+        ReturnToDraft
+        Publish
+        LegacyTransition
+    }
+    class MeetingRole {
+        <<enumeration>>
+        Chair
+        Secretary
+        Member
+        Guest
+    }
+    class InvitationResponse {
+        <<enumeration>>
+        Pending
+        Accepted
+        Declined
+        Delegated
+    }
+    class Capability {
+        <<enumeration>>
+        MeetingCreator
+        MeetingApprover
+    }
+    class EmailStatus {
+        <<enumeration>>
+        Queued
+        Sent
+        Failed
+    }
+
+    User "1" <-- "0..*" Meeting : CreatedBy
+    User "0..1" <-- "0..*" Meeting : AssignedApprover
+    Meeting "1" *-- "0..*" MeetingStatusHistory : immutable lifecycle
+    User "1" <-- "0..*" MeetingStatusHistory : Actor
+    User "0..1" <-- "0..*" MeetingStatusHistory : approver snapshot
+    Meeting "1" *-- "0..*" MeetingParticipant : participants
+    User "1" <-- "0..*" MeetingParticipant : participant
+    User "1" <-- "0..*" Notification : recipient
+    Meeting "0..1" <-- "0..*" Notification : about meeting
+    MeetingStatusHistory "0..1" <-- "0..*" Notification : origin
+    User "0..1" <-- "0..*" EmailMessage : recipient snapshot
+    Meeting "0..1" <-- "0..*" EmailMessage : invitation for
+    MeetingStatusHistory "0..1" <-- "0..*" EmailMessage : origin
+    Role "1" <-- "0..*" User : current role
+    Role "1" *-- "0..*" RoleCapability : capability grants
+
+    note for MeetingStatusHistory "Audit evidence: INSERT only; updates and deletes are rejected."
+    note for MeetingParticipant "Publish selects active users whose Response is not Delegated."
+    note for EmailMessage "Publish stores Queued jobs with a payload snapshot. SentAt records delivery, not publication."

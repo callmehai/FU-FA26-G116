@@ -111,9 +111,24 @@ public sealed class MeetingService(
         }
     }
 
-    public Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(
+    public async Task<MeetingApproverListResult> ListEligibleApproversAsync(
         CancellationToken ct = default)
-        => meetings.ListEligibleApproversAsync(ct);
+    {
+        try
+        {
+            var approvers = await meetings.ListEligibleApproversAsync(ct);
+            return MeetingApproverListResult.Success(approvers);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception) when (IsPersistenceFailure(exception))
+        {
+            logger.LogError(exception, "Could not list eligible meeting approvers.");
+            return MeetingApproverListResult.ReadFailed();
+        }
+    }
 
     public async Task<MeetingResult> CheckUpdateAsync(
         Guid id, Guid actorId, CancellationToken ct = default)
@@ -366,6 +381,7 @@ public sealed class MeetingService(
                     UpdatedAt = now,
                 };
                 meeting.StatusHistory.Add(history);
+                await meetings.AddHistoryAsync(history, token);
 
                 if (command.Action == MeetingTransitionAction.SubmitForApproval)
                 {
