@@ -41,7 +41,7 @@ export function RolesPage() {
   const toast = useToast()
   const handleAccessLost = useAccessLost()
 
-  /** UC-03's MSG01 when the sign-out never reached the server, as the account menu shows it. */
+  /** UC-03's MSG06 when the sign-out never reached the server, as the account menu shows it. */
   async function signOutToApply() {
     if (!(await signOut())) toast.show('Không thể đăng xuất. Vui lòng thử lại.', 'error')
   }

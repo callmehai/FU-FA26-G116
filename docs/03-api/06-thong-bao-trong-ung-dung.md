@@ -79,8 +79,8 @@ Management là `UC-031` (gộp `UC-NOTI-01`, `UC-NOTI-02`, `UC-NOTI-03`, `UC-NOT
 khi phần đặc tả chi tiết dùng `UC-18`–`UC-21`. Repo hiện dùng hệ mã chi tiết
 `UC-18`–`UC-21` và story `SCRUM-14`; BA cần chốt mapping traceability chính thức.
 
-Query phân trang sai trả `400` với `code=NOTIFICATION_INVALID_QUERY` và lỗi database khi kiểm tra
-tài khoản active trả `500` với `code=NOTIFICATION_LOAD_FAILED`, thống nhất status với API danh sách
+Query phân trang sai trả `400` với `code=MSG39` và lỗi database khi kiểm tra
+tài khoản active trả `500` với `code=MSG40`, thống nhất status với API danh sách
 cuộc họp. Các nhánh lỗi lưu trạng thái đọc
 vẫn chưa trả trạng thái đã lưu thực tế hay `unreadCount` như diagram.
 
@@ -170,7 +170,7 @@ Chạy câu `DELETE` riêng **sau** các request Postman, không chạy cùng c�
 2. Gọi `GET /api/notifications` và `/unread-count`; xác nhận số chưa đọc bằng số item có
    `readAt=null` trong DB. Item thông báo họp phải có `targetType=Meeting`, `targetId=meetingId`
    và `actionUrl=/mgmt/meetings/{meetingId}`. `pageSize=0` phải trả `400` cùng
-   `code=NOTIFICATION_INVALID_QUERY`.
+   `code=MSG39`.
 3. Gọi `POST /{id}/read` hai lần; `readAt` không thay đổi ở lần hai. Gọi `/read-all` và kiểm tra
    `unreadCount=0`.
 4. Đăng nhập bằng user khác; `POST /{id}/read` và `GET /{id}/target` với ID của user đầu phải

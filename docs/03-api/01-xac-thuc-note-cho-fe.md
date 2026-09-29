@@ -8,8 +8,8 @@ Hợp đồng API đầy đủ: [01-xac-thuc.md](01-xac-thuc.md). File này khô
 
 > **Đổi từ `SCRUM-63`** ([04-quan-ly-vai-tro.md](04-quan-ly-vai-tro.md)): object `user` không còn
 > `"role": "Secretary"` mà trả **`roleId`** (Guid) + **`roleName`** (tên hiển thị, ví dụ `"Thư ký"`).
-> Bỏ bảng `ROLE_LABEL` ở FE, hiển thị `roleName`. `MSG04` (`/login`) và `MSG05` (`/google`) — "không
-> có quyền truy cập hệ thống" — **không còn được trả về**. Phần về `role` ở mục 1 dưới đây là lịch sử.
+> Bỏ bảng `ROLE_LABEL` ở FE, hiển thị `roleName`. Nhánh "không có quyền truy cập hệ thống" (trước
+> đây `MSG04` ở `/login`, `MSG05` ở `/google`) **không còn được trả về**. Phần về `role` ở mục 1 dưới đây là lịch sử.
 
 > **Đổi: refresh token chuyển sang cookie `HttpOnly`** (comment SCRUM-11, 24/09 — cả ba bước gộp
 > một PR): response **không còn `refreshToken`**, `/refresh` và `/logout` **không nhận body**. FE đã
@@ -83,8 +83,8 @@ backend đã trả `capabilities` sẵn trong response, không cần bảng tra 
 | Endpoint | 401 có body? | Body |
 |---|---|---|
 | `POST /api/auth/login` | **Có** | `{"code":"MSG01","message":"Email hoặc mật khẩu không đúng."}` |
-| `POST /api/auth/google` | **Có** | `{"code":"MSG01","message":"Đăng nhập bằng Google không thành công."}` |
-| `POST /api/auth/refresh` | **Có** | như trên |
+| `POST /api/auth/google` | **Có** | `{"code":"MSG03","message":"Đăng nhập bằng Google không thành công."}` |
+| `POST /api/auth/refresh` | **Có** | `{"code":"MSG01","message":"Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."}` |
 | `GET /api/auth/me` | **KHÔNG** | `Content-Length: 0` (middleware JWT trả, không qua code mình) |
 
 `api/client.ts` hiện tại throw `ApiError` khi `!res.ok` và **không đọc body**, nên FE mất mất `code`.
@@ -96,23 +96,25 @@ lúc nào; `code` là hợp đồng.
 
 ---
 
-## 3. Mã thông báo: UC-01 và UC-02 đánh số KHÁC nhau
+## 3. Mã thông báo: đánh số chung toàn dự án
 
-Đây là chủ ý theo đặc tả use case, không phải backend nhầm. Đừng "dọn" cho giống nhau.
+Mỗi mã chỉ mang một nghĩa trên mọi endpoint — xem [danh mục mã](00-danh-muc-ma-thong-bao.md).
+Trước đây UC-01 và UC-02 mỗi bên tự đánh số từ `MSG01`, nên cùng một mã mang hai nghĩa; nay đã
+đánh lại.
 
 | Tình huống | `/api/auth/login` | `/api/auth/google` |
 |---|---|---|
-| Sai thông tin / token Google không verify được | `MSG01` | `MSG01` |
-| Tài khoản Google chưa được liên kết | — | `MSG03` |
-| Tài khoản bị vô hiệu hoá | `MSG03` | **`MSG04`** |
-| ~~Không có quyền truy cập hệ thống~~ | ~~`MSG04`~~ — bỏ từ `SCRUM-63` | ~~`MSG05`~~ — bỏ từ `SCRUM-63` |
+| Sai email hoặc mật khẩu | `MSG01` | — |
+| Tài khoản bị vô hiệu hoá | `MSG02` | `MSG02` |
+| Token Google không verify được | — | `MSG03` |
+| Tài khoản Google chưa được liên kết | — | `MSG05` |
+| ~~Không có quyền truy cập hệ thống~~ | bỏ từ `SCRUM-63` | bỏ từ `SCRUM-63` |
 
-Nghĩa là **không dùng chung một hàm map `code` → câu thông báo cho cả hai luồng.** `MSG03` ở
-`/login` nghĩa là "tài khoản bị vô hiệu hoá", còn `MSG03` ở `/google` nghĩa là "chưa liên kết
-Google" — hai câu hoàn toàn khác nhau. Tách hai bảng map.
+`MSG04` ("Không xác minh được tài khoản Google") có trong đặc tả nhưng backend chưa trả riêng: token
+nào không verify được đều là `MSG03`. `MSG06` ("Không thể đăng xuất") do FE tự hiển thị.
 
 Backend đã trả sẵn `message` tiếng Việt đúng cho từng trường hợp, nên cách an toàn nhất là **hiển
-thị `message` từ response** và chỉ dùng `code` khi cần rẽ nhánh hành vi (ví dụ: `MSG03` ở `/google`
+thị `message` từ response** và chỉ dùng `code` khi cần rẽ nhánh hành vi (ví dụ: `MSG05` ở `/google`
 thì hiện thêm hướng dẫn "liên hệ quản trị viên để liên kết tài khoản").
 
 ---
@@ -146,7 +148,7 @@ thay vì đợi 401 rồi mới retry. Ít race hơn nhiều.
 ## 5. Đăng xuất (UC-03) — phần này gần như toàn bộ là việc của FE
 
 Sequence diagram [SignOut.png](../06-sequencediagram/SignOut.png) chỉ có `User` và
-`Authenticated Page`: hộp xác nhận, xoá JWT, `MSG01` nếu xoá lỗi. Backend không có participant nào.
+`Authenticated Page`: hộp xác nhận, xoá JWT, `MSG06` nếu xoá lỗi. Backend không có participant nào.
 
 Nhưng **vẫn phải gọi `POST /api/auth/logout`**, và gọi **trước** khi xoá token cục bộ:
 
@@ -164,11 +166,11 @@ server, không chỉ xoá ở trình duyệt"), nên đừng bỏ.
 `/logout` **luôn** trả `204` không body, kể cả khi token đã hết hạn hoặc không tồn tại, và gọi hai
 lần cũng không lỗi.
 
-**Bước 2 thất bại vì mạng thì dừng, hiện `MSG01`.** Cookie `HttpOnly` chỉ server xoá được: nếu FE
+**Bước 2 thất bại vì mạng thì dừng, hiện `MSG06`.** Cookie `HttpOnly` chỉ server xoá được: nếu FE
 vẫn xoá phía mình rồi chuyển về `/login`, cookie còn nguyên và F5 là đăng nhập lại ngay — người
 dùng tưởng đã đăng xuất mà không phải. `signOut()` trong `session.ts` trả `false` trong trường hợp
 này và giữ nguyên phiên để người dùng bấm lại. Mọi chỗ gọi `signOut()` phải xử lý `false` — màn
-Vai trò (nút "Đăng nhập lại") hiện toast `MSG01`, menu tài khoản hiện lỗi trong hộp xác nhận.
+Vai trò (nút "Đăng nhập lại") hiện toast `MSG06`, menu tài khoản hiện lỗi trong hộp xác nhận.
 
 **`signOut()` chờ refresh đang chạy và giữ Web Lock của refresh.** Nếu `/logout` đua với một
 `/refresh` cùng RT, server xoay RT mà logout định huỷ, và `Set-Cookie` của refresh có thể tới sau
@@ -189,10 +191,10 @@ POST /api/auth/google
 ```
 
 **a) Phải gửi ID token, không phải access token.** GIS trả về field `credential` — đó là ID token
-(JWT, ba phần cách nhau bởi dấu `.`). Gửi cái đó. Access token dạng `ya29...` sẽ luôn `MSG01` vì
+(JWT, ba phần cách nhau bởi dấu `.`). Gửi cái đó. Access token dạng `ya29...` sẽ luôn `MSG03` vì
 không phải JWT.
 
-**b) `client_id` phải đúng cái này**, nếu không token có `aud` khác và backend từ chối (`MSG01`):
+**b) `client_id` phải đúng cái này**, nếu không token có `aud` khác và backend từ chối (`MSG03`):
 
 ```
 1024662324975-ma0lj2lpl48kdl3bb56aj53nk3hsnd5f.apps.googleusercontent.com
@@ -204,7 +206,7 @@ config thay vì hardcode ở FE — hiện **chưa có** endpoint đó, cần th
 **c) Phải chạy ở `http://localhost:5173`.** Origin khác thì Google chặn ngay trước khi tới backend.
 Gọi đường dẫn tương đối `/api/auth/google` (Vite proxy sẵn), **không** hardcode `localhost:5225`.
 
-### Quan trọng: lần đầu chắc chắn nhận MSG03
+### Quan trọng: lần đầu chắc chắn nhận MSG05
 
 Backend tra tài khoản theo claim `sub` của Google. Chưa có tài khoản nào mang `sub` đó thì nó tự
 liên kết tài khoản **có email trùng Gmail của bạn** (đang hoạt động, chưa liên kết) — xem
@@ -213,10 +215,10 @@ Quản lý người dùng, tạo tài khoản bằng đúng Gmail của bạn, r
 cần SQL.
 
 Tài khoản seed (`thuky@trustcabinet.local`, …) thì email không phải Gmail của bạn, nên lần đầu bấm
-nút Google sẽ nhận `MSG03` — **đúng, không phải bug**. Muốn đăng nhập Google vào tài khoản seed:
+nút Google sẽ nhận `MSG05` — **đúng, không phải bug**. Muốn đăng nhập Google vào tài khoản seed:
 
 1. Bấm nút Google, đăng nhập (Gmail của bạn phải nằm trong danh sách *test users* của Google Console)
-2. Nhận `MSG03`
+2. Nhận `MSG05`
 3. Log ID token ra, dán vào [jwt.io](https://jwt.io), copy field `sub` (chuỗi ~21 số)
 4. Chạy SQL:
    ```sql

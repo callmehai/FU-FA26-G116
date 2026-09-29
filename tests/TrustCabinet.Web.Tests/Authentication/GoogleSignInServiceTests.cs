@@ -108,7 +108,7 @@ public class GoogleSignInServiceTests
         Assert.Empty(result.Capabilities!);
     }
 
-    // ------------------------------------------------------------ branch: MSG01, bad ID token
+    // ------------------------------------------------------------ branch: MSG03, bad ID token
 
     [Theory]
     [InlineData("")]
@@ -137,7 +137,7 @@ public class GoogleSignInServiceTests
         Assert.Equal(0, _users.LookupCount);
     }
 
-    // -------------------------------------------------------------- branch: MSG03, not linked
+    // -------------------------------------------------------------- branch: MSG05, not linked
 
     [Fact]
     public async Task A_google_account_nobody_linked_is_refused()
@@ -196,7 +196,7 @@ public class GoogleSignInServiceTests
 
         var result = await NewService().SignInWithGoogleAsync(IdToken);
 
-        // MSG04, not MSG03: the account exists and was deactivated, so "not authorised" would be
+        // MSG02, not MSG05: the account exists and was deactivated, so "not authorised" would be
         // the wrong thing to tell them. Still not linked.
         Assert.Equal(GoogleSignInOutcome.AccountDeactivated, result.Outcome);
         Assert.Null(user.GoogleSubjectId);
@@ -218,7 +218,7 @@ public class GoogleSignInServiceTests
         Assert.Equal(GoogleSignInOutcome.NotLinked, result.Outcome);
     }
 
-    // ------------------------------------------------------------ branch: MSG04, deactivated
+    // ------------------------------------------------------------ branch: MSG02, deactivated
 
     [Fact]
     public async Task A_deactivated_linked_account_is_refused()
@@ -229,13 +229,12 @@ public class GoogleSignInServiceTests
 
         var result = await NewService().SignInWithGoogleAsync(IdToken);
 
-        // MSG04 here, whereas the same situation is MSG03 in UC-01 — the two use cases number
-        // their messages differently, which is why the outcomes are separate enums.
+        // MSG02, the same code UC-01 answers for a deactivated account.
         Assert.Equal(GoogleSignInOutcome.AccountDeactivated, result.Outcome);
         Assert.Empty(_refreshTokens.ActiveTokens);
     }
 
-    // ------------------------------------------- no MSG05 "no system access" any more (SCRUM-63)
+    // ------------------------------------------- no "no system access" branch any more (SCRUM-63)
 
     [Fact]
     public async Task A_linked_account_whose_role_grants_nothing_signs_in()

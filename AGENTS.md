@@ -158,6 +158,25 @@ does not reveal that it exists; keep it that way rather than switching to 403.
 
 Tóm lại: giấu **sự tồn tại của một dòng dữ liệu**, không giấu **sự tồn tại của một endpoint**.
 
+**Message codes** (`code` in an error or success body, and messages the FE shows on its own)
+come from one project-wide catalogue:
+[docs/03-api/00-danh-muc-ma-thong-bao.md](docs/03-api/00-danh-muc-ma-thong-bao.md). Read it before
+adding or changing a message.
+
+- Format `MSGnn` (`MSG07`, `MSG41`; three digits past `MSG99`). No string codes such as
+  `MEETING_CREATED`.
+- One global sequence. Never restart at `MSG01` for a new use case, even when a use-case spec or
+  sequence diagram does — take the next free code from the catalogue instead and flag the
+  mismatch in the PR.
+- One code = one situation. Reuse a code only for the same situation on another endpoint; never
+  give two different situations the same code.
+- Never renumber or reuse a code once it has reached `main`: the FE and the tester match on it.
+  A retired code stays in the catalogue marked as no longer used.
+- Declare codes as named constants at the top of the endpoint file (`private const string
+  Msg29Created = "MSG29";`), and match on the code in the FE, never on the message text.
+- Adding a code means updating the catalogue — the table row and "Mã tiếp theo" — in the **same
+  commit** as the code.
+
 **CSS**: use the variables declared on `:root` in `global.css` (`--lacquer`, `--ink`, `--surface`,
 `--muted-ink`, `--chip-*`, …) rather than hardcoded colours. The UI is **light only**, like the
 AI-eCabinet reference — do not add a `prefers-color-scheme: dark` palette. Sizes and spacing follow

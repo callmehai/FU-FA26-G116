@@ -26,11 +26,12 @@ public static class RoleEndpoints
     private const string Msg25InUse = "MSG25";
 
     /// <summary>
-    /// The diagrams' "Unable to create / update / delete role" has no code of its own. It is the
-    /// same situation as UC-10's MSG18 — nothing was wrong with the request, retry — so it shares
-    /// that code until the BA assigns one.
+    /// The diagrams' "Unable to create / update / delete role": one code per operation, since each
+    /// is its own message in the catalogue (docs/03-api/00-danh-muc-ma-thong-bao.md).
     /// </summary>
-    private const string Msg18SaveFailed = "MSG18";
+    private const string Msg26CreateFailed = "MSG26";
+    private const string Msg27UpdateFailed = "MSG27";
+    private const string Msg28DeleteFailed = "MSG28";
 
     public static IEndpointRouteBuilder MapRoleEndpoints(this IEndpointRouteBuilder app)
     {
@@ -67,7 +68,7 @@ public static class RoleEndpoints
 
         if (!result.Succeeded)
         {
-            return Rejected(result, "Không thể tạo vai trò. Vui lòng thử lại.");
+            return Rejected(result, Msg26CreateFailed, "Không thể tạo vai trò. Vui lòng thử lại.");
         }
 
         return Results.Created(
@@ -93,7 +94,7 @@ public static class RoleEndpoints
         return result.Succeeded
             ? Results.Ok(new RoleMutationResponse(
                 Msg22Updated, "Cập nhật vai trò thành công.", RoleResponse.From(result.Role!)))
-            : Rejected(result, "Không thể cập nhật vai trò. Vui lòng thử lại.");
+            : Rejected(result, Msg27UpdateFailed, "Không thể cập nhật vai trò. Vui lòng thử lại.");
     }
 
     /// <summary>UC-13.</summary>
@@ -107,11 +108,12 @@ public static class RoleEndpoints
 
         return result.Succeeded
             ? Results.Ok(new RoleMessageResponse(Msg23Deleted, "Xoá vai trò thành công."))
-            : Rejected(result, "Không thể xoá vai trò. Vui lòng thử lại.");
+            : Rejected(result, Msg28DeleteFailed, "Không thể xoá vai trò. Vui lòng thử lại.");
     }
 
     /// <summary>The failing branches, each with the status code that describes it.</summary>
-    private static IResult Rejected(RoleResult result, string saveFailedMessage) => result.Outcome switch
+    private static IResult Rejected(
+        RoleResult result, string saveFailedCode, string saveFailedMessage) => result.Outcome switch
     {
         // No body: there is nothing to say about an id that matches no role. The client refreshes
         // its list, as the diagrams' "Role not found" branch has it.
@@ -145,7 +147,7 @@ public static class RoleEndpoints
         // SaveFailed, and defensively any outcome added later without a case here. 500: nothing
         // the administrator did was wrong, so retrying is the right advice.
         _ => Results.Json(
-            new RoleErrorResponse(Msg18SaveFailed, saveFailedMessage, null),
+            new RoleErrorResponse(saveFailedCode, saveFailedMessage, null),
             statusCode: StatusCodes.Status500InternalServerError),
     };
 }
