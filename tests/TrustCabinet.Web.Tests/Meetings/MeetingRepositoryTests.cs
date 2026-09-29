@@ -108,11 +108,15 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             await _db.DisposeAsync();
         }
 
-        NpgsqlConnection.ClearAllPools();
+        await using (var poolKey = new NpgsqlConnection(_connectionString))
+        {
+            NpgsqlConnection.ClearPool(poolKey);
+        }
+
         await using var admin = new NpgsqlConnection(AdminConnectionString);
         await admin.OpenAsync();
         await using var drop = admin.CreateCommand();
-        drop.CommandText = $"DROP DATABASE IF EXISTS \"{_databaseName}\" WITH (FORCE)";
+        drop.CommandText = $"DROP DATABASE IF EXISTS \"{_databaseName}\"";
         await drop.ExecuteNonQueryAsync();
     }
 
