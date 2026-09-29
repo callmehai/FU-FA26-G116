@@ -22,8 +22,8 @@ namespace TrustCabinet.Web.Tests.Access;
 /// </summary>
 public class RolesAsDataMigrationTests : IAsyncLifetime
 {
-    private const string ConnectionString =
-        "Host=localhost;Port=5432;Database=trustcabinet_migration_tests;Username=trustcabinet;Password=123";
+    private readonly PostgreSqlTestDatabase _database = new(
+        "Host=localhost;Port=5432;Database=trustcabinet_migration_tests;Username=trustcabinet;Password=123");
 
     /// <summary>The migration just before RolesAsData: roles are still enum names in text columns.</summary>
     private const string BeforeRolesAsData = "20260922103215_FixAttendanceDefault";
@@ -34,13 +34,13 @@ public class RolesAsDataMigrationTests : IAsyncLifetime
     {
         _db = new TrustCabinetDbContext(
             new DbContextOptionsBuilder<TrustCabinetDbContext>()
-                .UseNpgsql(ConnectionString, npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history"))
+                .UseNpgsql(_database.DataSource, npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history"))
                 .UseSnakeCaseNamingConvention()
                 .Options);
 
         try
         {
-            await _db.Database.EnsureDeletedAsync();
+            await MigrateToAsync(BeforeRolesAsData);
         }
         catch (NpgsqlException e)
         {
@@ -48,14 +48,12 @@ public class RolesAsDataMigrationTests : IAsyncLifetime
                 "These tests need the development PostgreSQL. Start it with "
                 + "`docker compose up -d postgres`.", e);
         }
-
-        await MigrateToAsync(BeforeRolesAsData);
     }
 
     public async Task DisposeAsync()
     {
-        await _db.Database.EnsureDeletedAsync();
         await _db.DisposeAsync();
+        await _database.DisposeAsync();
     }
 
     private Task MigrateToAsync(string? target = null)

@@ -25,14 +25,14 @@ namespace TrustCabinet.Web.Tests.Access;
 /// </summary>
 public class RoleRepositoryTests : IAsyncLifetime
 {
-    private const string ConnectionString =
-        "Host=localhost;Port=5432;Database=trustcabinet_role_tests;Username=trustcabinet;Password=123";
+    private readonly PostgreSqlTestDatabase _database = new(
+        "Host=localhost;Port=5432;Database=trustcabinet_role_tests;Username=trustcabinet;Password=123");
 
     private TrustCabinetDbContext _db = null!;
 
-    private static TrustCabinetDbContext NewContext() => new(
+    private TrustCabinetDbContext NewContext() => new(
         new DbContextOptionsBuilder<TrustCabinetDbContext>()
-            .UseNpgsql(ConnectionString)
+            .UseNpgsql(_database.DataSource)
             .UseSnakeCaseNamingConvention()
             .Options);
 
@@ -42,7 +42,6 @@ public class RoleRepositoryTests : IAsyncLifetime
 
         try
         {
-            await _db.Database.EnsureDeletedAsync();
             await _db.Database.EnsureCreatedAsync();
         }
         catch (Npgsql.NpgsqlException e)
@@ -59,8 +58,8 @@ public class RoleRepositoryTests : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await _db.Database.EnsureDeletedAsync();
         await _db.DisposeAsync();
+        await _database.DisposeAsync();
     }
 
     private static RoleService ServiceOver(TrustCabinetDbContext db, IRoleRepository? roles = null)

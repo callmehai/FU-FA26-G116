@@ -22,8 +22,8 @@ namespace TrustCabinet.Web.Tests.Authentication;
 /// </summary>
 public class UserRepositoryTests : IAsyncLifetime
 {
-    private const string ConnectionString =
-        "Host=localhost;Port=5432;Database=trustcabinet_repo_tests;Username=trustcabinet;Password=123";
+    private readonly PostgreSqlTestDatabase _database = new(
+        "Host=localhost;Port=5432;Database=trustcabinet_repo_tests;Username=trustcabinet;Password=123");
 
     private TrustCabinetDbContext _db = null!;
 
@@ -34,7 +34,7 @@ public class UserRepositoryTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         var options = new DbContextOptionsBuilder<TrustCabinetDbContext>()
-            .UseNpgsql(ConnectionString)
+            .UseNpgsql(_database.DataSource)
             .UseSnakeCaseNamingConvention()
             .Options;
 
@@ -42,7 +42,6 @@ public class UserRepositoryTests : IAsyncLifetime
 
         try
         {
-            await _db.Database.EnsureDeletedAsync();
             await _db.Database.EnsureCreatedAsync();
         }
         catch (Npgsql.NpgsqlException e)
@@ -61,8 +60,8 @@ public class UserRepositoryTests : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await _db.Database.EnsureDeletedAsync();
         await _db.DisposeAsync();
+        await _database.DisposeAsync();
     }
 
     private async Task<User> AddUserAsync(

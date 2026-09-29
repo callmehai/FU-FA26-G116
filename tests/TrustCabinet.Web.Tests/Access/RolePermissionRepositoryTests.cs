@@ -24,14 +24,14 @@ namespace TrustCabinet.Web.Tests.Access;
 /// </summary>
 public class RolePermissionRepositoryTests : IAsyncLifetime
 {
-    private const string ConnectionString =
-        "Host=localhost;Port=5432;Database=trustcabinet_roleperm_tests;Username=trustcabinet;Password=123";
+    private readonly PostgreSqlTestDatabase _database = new(
+        "Host=localhost;Port=5432;Database=trustcabinet_roleperm_tests;Username=trustcabinet;Password=123");
 
     private TrustCabinetDbContext _db = null!;
 
-    private static DbContextOptions<TrustCabinetDbContext> Options()
+    private DbContextOptions<TrustCabinetDbContext> Options()
         => new DbContextOptionsBuilder<TrustCabinetDbContext>()
-            .UseNpgsql(ConnectionString)
+            .UseNpgsql(_database.DataSource)
             .UseSnakeCaseNamingConvention()
             .Options;
 
@@ -41,7 +41,6 @@ public class RolePermissionRepositoryTests : IAsyncLifetime
 
         try
         {
-            await _db.Database.EnsureDeletedAsync();
             await _db.Database.EnsureCreatedAsync();
         }
         catch (Npgsql.NpgsqlException e)
@@ -58,8 +57,8 @@ public class RolePermissionRepositoryTests : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await _db.Database.EnsureDeletedAsync();
         await _db.DisposeAsync();
+        await _database.DisposeAsync();
     }
 
     private async Task<User> AddActiveUserAsync(Guid role)
