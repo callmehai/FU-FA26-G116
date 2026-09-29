@@ -176,6 +176,10 @@ adding or changing a message.
   Msg29Created = "MSG29";`), and match on the code in the FE, never on the message text.
 - Adding a code means updating the catalogue — the table row and "Mã tiếp theo" — in the **same
   commit** as the code.
+- `MessageCodeCatalogueTests` enforces this by reading the source: a code the FE matches with
+  `isApiError` that the catalogue lacks (or lists under another status), a backend code missing
+  from the catalogue or asserted by no test, or an inline `"MSGnn"` literal fails CI. It cannot
+  tell whether a code is used for the *right situation* — that is still the reviewer's job.
 
 **CSS**: use the variables declared on `:root` in `global.css` (`--lacquer`, `--ink`, `--surface`,
 `--muted-ink`, `--chip-*`, …) rather than hardcoded colours. The UI is **light only**, like the
