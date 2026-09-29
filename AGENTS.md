@@ -24,6 +24,12 @@ and follow the team's Sprint, BE → FE → BA Final Review → Tester workflow.
 Case moves from Jira to Done, what each role hands over, and what Done means. Jira (project
 `SCRUM`) is the source of truth for requirements.
 
+**Frontend work** follows two skills in [.claude/skills/](.claude/skills/):
+[frontend-ui-design](.claude/skills/frontend-ui-design/SKILL.md) for how a screen is designed and
+built, and [verify-ui-in-browser](.claude/skills/verify-ui-in-browser/SKILL.md) for running the app
+and checking the change in a real browser before the PR. Claude Code loads them as skills; any other
+agent reads the two files directly.
+
 ## Language rules
 
 | Where | Language |
@@ -35,6 +41,7 @@ Case moves from Jira to Done, what each role hands over, and what Done means. Ji
 | UI text, user-facing strings | Vietnamese — it is a Vietnamese product |
 | `docs/`, `README.md` | Vietnamese |
 | `docs/DEVELOPMENT_WORKFLOW.md` | **English** — exception: AI coding agents read it as instructions |
+| `.claude/skills/` | **English** — same exception |
 
 Keep English technical terms as-is inside Vietnamese text (*endpoint*, *migration*, *hub*,
 *proxy*) rather than half-translating them.
@@ -209,7 +216,7 @@ Details in [docs/DEVELOPMENT_WORKFLOW.md §2.1](docs/DEVELOPMENT_WORKFLOW.md#21-
   (the repo is public) and environment variables in deployment.
 - Sign-in, sign-out and the admin screens (users, role matrix) call the real API. Tokens live in
   `features/auth/session.ts`; a user's capabilities come from the backend, never from a table in
-  the frontend. The meetings screens still read `features/meetings/sampleData.ts` — deliberate
-  scaffolding until the meeting endpoints land.
+  the frontend. The meeting list, create, edit and detail screens call the real API as well; on the
+  detail screen every tab but "Thông tin chung" is still a placeholder until its endpoint exists.
 - The AI-eCabinet repo (`~/Developer/ai-ecabinet`) is a private, unlicensed reference. Read it to
   understand the domain; do not copy source files into this repo. It is a graded capstone.

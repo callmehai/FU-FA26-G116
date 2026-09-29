@@ -10,6 +10,11 @@ const PATHS = {
   bell: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0',
   chevronLeft: 'M15 18l-6-6 6-6',
   chevronDown: 'M6 9l6 6 6-6',
+  chevronRight: 'M9 18l6-6-6-6',
+  // Sort indicators on table headers: both ways (sortable, not sorted), then each direction.
+  sortBoth: 'M8 9l4-4 4 4M8 15l4 4 4-4',
+  sortAsc: 'M12 19V5M6 11l6-6 6 6',
+  sortDesc: 'M12 5v14M6 13l6 6 6-6',
   search: 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.35-4.35',
   eye: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
   plus: 'M12 5v14M5 12h14',
@@ -23,6 +28,8 @@ const PATHS = {
   unlock: 'M5 11h14v10H5zM8 11V7a4 4 0 0 1 7.9-1',
   x: 'M18 6L6 18M6 6l12 12',
   logOut: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9',
+  check: 'M20 6L9 17l-5-5',
+  video: 'M23 7l-7 5 7 5V7zM3 5h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z',
 } as const
 
 export type IconName = keyof typeof PATHS

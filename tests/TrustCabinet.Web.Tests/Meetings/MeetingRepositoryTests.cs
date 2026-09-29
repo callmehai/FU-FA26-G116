@@ -123,6 +123,51 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         IsBuiltIn = false,
     };
 
+    private static MeetingListQuery ListQuery(
+        MeetingStatus? status = null,
+        Sensitivity? sensitivity = null,
+        string? search = null,
+        DateTimeOffset? from = null,
+        DateTimeOffset? to = null,
+        int page = 1,
+        int pageSize = 20,
+        MeetingSortBy sortBy = MeetingSortBy.StartsAt,
+        MeetingSortDirection direction = MeetingSortDirection.Desc)
+        => new(status, sensitivity, search, from, to, page, pageSize, sortBy, direction);
+
+    private Meeting ListMeeting(
+        string title,
+        MeetingStatus status,
+        DateTimeOffset startsAt,
+        Sensitivity sensitivity = Sensitivity.Normal,
+        Guid? approverId = null,
+        Guid? participantId = null,
+        DateTimeOffset? createdAt = null)
+    {
+        var meeting = new Meeting
+        {
+            Title = title,
+            Status = status,
+            Sensitivity = sensitivity,
+            Mode = MeetingMode.InPerson,
+            StartsAt = startsAt,
+            CreatedAt = createdAt ?? startsAt.AddDays(-1),
+            UpdatedAt = createdAt ?? startsAt.AddDays(-1),
+            CreatedById = _creatorId,
+            AssignedApproverId = approverId,
+        };
+        if (participantId is { } id)
+        {
+            meeting.Participants.Add(new MeetingParticipant
+            {
+                UserId = id,
+                Role = MeetingRole.Member,
+            });
+        }
+
+        return meeting;
+    }
+
     [Fact]
     public async Task Create_persists_the_meeting_and_initial_history_as_one_operation()
     {
@@ -295,6 +340,146 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
 
             Assert.Null(await repository.FindAccessibleAsync(meeting.Id, unrelated.Id));
         }
+    }
+
+    [Fact]
+    public async Task Authorized_page_uses_the_same_lifecycle_visibility_for_items_and_total_count()
+    {
+        var approver = NewUser("List Approver", _approverRoleId);
+        var participant = NewUser("List Participant", _approverRoleId);
+        var unrelated = NewUser("List Unrelated", _approverRoleId);
+        _db.Users.AddRange(approver, participant, unrelated);
+        var startsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero);
+        var meetings = Enum.GetValues<MeetingStatus>()
+            .Select(status => ListMeeting(
+                $"List visibility {status}", status, startsAt,
+                approverId: approver.Id, participantId: participant.Id))
+            .ToArray();
+        _db.Meetings.AddRange(meetings);
+        await _db.SaveChangesAsync();
+
+        var repository = new MeetingRepository(_db);
+        var creatorPage = await repository.FindAuthorizedPageAsync(_creatorId, ListQuery());
+        var approverPage = await repository.FindAuthorizedPageAsync(approver.Id, ListQuery());
+        var participantPage = await repository.FindAuthorizedPageAsync(participant.Id, ListQuery());
+        var unrelatedPage = await repository.FindAuthorizedPageAsync(unrelated.Id, ListQuery());
+
+        Assert.Equal(9, creatorPage.TotalCount);
+        Assert.Equal(9, creatorPage.Items.Count);
+        Assert.Equal(8, approverPage.TotalCount);
+        Assert.DoesNotContain(approverPage.Items, item => item.Status == MeetingStatus.Draft);
+        Assert.Equal(5, participantPage.TotalCount);
+        MeetingStatus[] publishedStatuses =
+        [
+            MeetingStatus.Published, MeetingStatus.InProgress, MeetingStatus.Ended,
+            MeetingStatus.MinutesIssued, MeetingStatus.Archived,
+        ];
+        Assert.All(participantPage.Items, item => Assert.Contains(item.Status, publishedStatuses));
+        Assert.Equal(0, unrelatedPage.TotalCount);
+        Assert.Empty(unrelatedPage.Items);
+        var approverFirst = await repository.FindAuthorizedPageAsync(
+            approver.Id, ListQuery(pageSize: 2));
+        Assert.Equal(8, approverFirst.TotalCount);
+        Assert.Equal(2, approverFirst.Items.Count);
+    }
+
+    [Fact]
+    public async Task Authorized_page_applies_all_filters_and_literal_case_insensitive_search()
+    {
+        var from = new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = from.AddDays(1);
+        var lowerBoundary = ListMeeting("Giao % Ban", MeetingStatus.Published, from, Sensitivity.Secret);
+        var upperBoundary = ListMeeting("GIAO % BAN", MeetingStatus.Published, to, Sensitivity.Secret);
+        var underscore = ListMeeting("Giao_Ban", MeetingStatus.Published, from.AddHours(1), Sensitivity.Secret);
+        var backslash = ListMeeting(@"Giao\Ban", MeetingStatus.Published, from.AddHours(1), Sensitivity.Secret);
+        var wrongStatus = ListMeeting("Giao % Ban", MeetingStatus.Draft, from.AddHours(1), Sensitivity.Secret);
+        var wrongSensitivity = ListMeeting("Giao % Ban", MeetingStatus.Published, from.AddHours(1), Sensitivity.Internal);
+        var outsideRange = ListMeeting("Giao % Ban", MeetingStatus.Published, to.AddSeconds(1), Sensitivity.Secret);
+        _db.Meetings.AddRange(
+            lowerBoundary, upperBoundary, underscore, backslash,
+            wrongStatus, wrongSensitivity, outsideRange);
+        await _db.SaveChangesAsync();
+
+        var repository = new MeetingRepository(_db);
+        var percent = await repository.FindAuthorizedPageAsync(_creatorId, ListQuery(
+            MeetingStatus.Published, Sensitivity.Secret, "%", from, to));
+        var underscorePage = await repository.FindAuthorizedPageAsync(_creatorId, ListQuery(
+            MeetingStatus.Published, Sensitivity.Secret, "_", from, to));
+        var backslashPage = await repository.FindAuthorizedPageAsync(_creatorId, ListQuery(
+            MeetingStatus.Published, Sensitivity.Secret, "\\", from, to));
+        var onlyFrom = await repository.FindAuthorizedPageAsync(_creatorId, ListQuery(
+            MeetingStatus.Published, Sensitivity.Secret, "%", from: from));
+        var onlyTo = await repository.FindAuthorizedPageAsync(_creatorId, ListQuery(
+            MeetingStatus.Published, Sensitivity.Secret, "%", to: to));
+
+        Assert.Equal(2, percent.TotalCount);
+        Assert.Equal(
+            new[] { lowerBoundary.Id, upperBoundary.Id }.Order(),
+            percent.Items.Select(item => item.Id).Order());
+        Assert.Equal(1, underscorePage.TotalCount);
+        Assert.Equal(underscore.Id, Assert.Single(underscorePage.Items).Id);
+        Assert.Equal(backslash.Id, Assert.Single(backslashPage.Items).Id);
+        Assert.Equal(3, onlyFrom.TotalCount);
+        Assert.Equal(2, onlyTo.TotalCount);
+    }
+
+    [Fact]
+    public async Task Authorized_page_sorts_all_columns_in_both_directions_and_pages_stably()
+    {
+        var baseTime = new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
+        var first = ListMeeting("A", MeetingStatus.Draft, baseTime, createdAt: baseTime.AddDays(3));
+        var second = ListMeeting("B", MeetingStatus.Draft, baseTime.AddDays(2), createdAt: baseTime);
+        var third = ListMeeting("A", MeetingStatus.Draft, baseTime.AddDays(1), createdAt: baseTime.AddDays(1));
+        var fourth = ListMeeting("C", MeetingStatus.Draft, baseTime.AddDays(1), createdAt: baseTime.AddDays(1));
+        var all = new[] { first, second, third, fourth };
+        _db.Meetings.AddRange(all);
+        await _db.SaveChangesAsync();
+
+        var repository = new MeetingRepository(_db);
+        foreach (var sortBy in Enum.GetValues<MeetingSortBy>())
+        {
+            foreach (var direction in Enum.GetValues<MeetingSortDirection>())
+            {
+                var sorted = (sortBy, direction) switch
+                {
+                    (MeetingSortBy.Title, MeetingSortDirection.Asc) => all.OrderBy(m => m.Title),
+                    (MeetingSortBy.Title, MeetingSortDirection.Desc) => all.OrderByDescending(m => m.Title),
+                    (MeetingSortBy.CreatedAt, MeetingSortDirection.Asc) => all.OrderBy(m => m.CreatedAt),
+                    (MeetingSortBy.CreatedAt, MeetingSortDirection.Desc) => all.OrderByDescending(m => m.CreatedAt),
+                    (MeetingSortBy.StartsAt, MeetingSortDirection.Asc) => all.OrderBy(m => m.StartsAt),
+                    _ => all.OrderByDescending(m => m.StartsAt),
+                };
+                var expected = sorted.ThenBy(m => m.Id).Select(m => m.Id).ToArray();
+                var firstPage = await repository.FindAuthorizedPageAsync(_creatorId,
+                    ListQuery(pageSize: 2, sortBy: sortBy, direction: direction));
+                var secondPage = await repository.FindAuthorizedPageAsync(_creatorId,
+                    ListQuery(page: 2, pageSize: 2, sortBy: sortBy, direction: direction));
+                var beyond = await repository.FindAuthorizedPageAsync(_creatorId,
+                    ListQuery(page: 3, pageSize: 2, sortBy: sortBy, direction: direction));
+
+                Assert.Equal(4, firstPage.TotalCount);
+                Assert.Equal(4, secondPage.TotalCount);
+                Assert.Equal(expected,
+                    firstPage.Items.Concat(secondPage.Items).Select(item => item.Id));
+                Assert.Empty(beyond.Items);
+                Assert.Equal(4, beyond.TotalCount);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Authorized_page_beyond_int_offset_returns_empty_with_the_authorized_count()
+    {
+        _db.Meetings.Add(ListMeeting("Visible", MeetingStatus.Draft,
+            new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero)));
+        await _db.SaveChangesAsync();
+
+        var page = await new MeetingRepository(_db).FindAuthorizedPageAsync(
+            _creatorId, ListQuery(page: int.MaxValue, pageSize: 20));
+
+        Assert.Empty(page.Items);
+        Assert.Equal(int.MaxValue, page.Page);
+        Assert.Equal(1, page.TotalCount);
     }
 }
 

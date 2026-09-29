@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace TrustCabinet.Web.Tests;
 
@@ -25,5 +27,15 @@ public class TrustCabinetApiFactory : WebApplicationFactory<Program>
         // tests substitute their own in-memory store, so no test depends on a Redis being up.
         builder.UseSetting("ConnectionStrings:Redis", "localhost:6379");
         builder.UseSetting("Authentication:SigningKey", "khoa-ky-chi-dung-trong-test-du-32-ky-tu");
+        builder.ConfigureServices(services =>
+        {
+            var notificationWorker = services.SingleOrDefault(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService)
+                && descriptor.ImplementationType == typeof(NotificationWorker));
+            if (notificationWorker is not null)
+            {
+                services.Remove(notificationWorker);
+            }
+        });
     }
 }

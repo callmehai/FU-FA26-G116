@@ -44,6 +44,19 @@ dùng biến môi trường `ConnectionStrings__TrustCabinet`.
 Chưa đặt mà chạy app thì backend dừng ngay với thông báo chỉ đúng vào lệnh trên — đó là cố ý, chạy
 với database sai còn tệ hơn là không chạy.
 
+### Cấu hình PostgreSQL cho integration test
+
+Các repository test chạy trên PostgreSQL thật không dùng connection string trong source code hay
+user-secrets của ứng dụng. Chúng đọc cấu hình theo thứ tự:
+
+1. `TRUSTCABINET_TEST_CONNECTION_STRING` — dùng khi cần chỉ định đầy đủ host, port và tài khoản;
+2. biến môi trường `POSTGRES_PASSWORD`;
+3. `POSTGRES_PASSWORD` trong file `.env` ở gốc repo hoặc worktree đang chạy test.
+
+Vì vậy mỗi Git worktree phải có `.env` riêng, hoặc terminal chạy test phải có một trong hai biến môi
+trường trên. Thiếu cả ba nguồn thì toàn bộ integration test PostgreSQL sẽ thất bại trước khi chạy
+assertion. CI đặt `POSTGRES_PASSWORD` cho PostgreSQL service dùng một lần.
+
 ### 3. Chạy ứng dụng
 
 ```bash
