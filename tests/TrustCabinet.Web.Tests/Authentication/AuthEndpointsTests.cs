@@ -273,6 +273,20 @@ public class AuthEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Refresh_answers_MSG02_once_the_account_is_deactivated()
+    {
+        var client = NewClient();
+        var refreshToken = await SignInForRefreshToken(client);
+        (await _factory.Users.FindByEmailAsync(Email))!.IsActive = false;
+
+        var response = await PostWithCookie(client, "/api/auth/refresh", refreshToken);
+
+        // The same code as /login and /google answer for a deactivated account.
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal("MSG02", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
+    }
+
+    [Fact]
     public async Task A_refused_refresh_clears_the_cookie()
     {
         var client = NewClient();

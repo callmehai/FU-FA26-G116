@@ -689,6 +689,21 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Put_returns_MSG37_when_the_state_check_cannot_read_the_meeting()
+    {
+        var creator = GivenCreator();
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+        _factory.Meetings.NextReadThrows = new Npgsql.NpgsqlException("database unavailable");
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/meetings/{Guid.CreateVersion7()}", ValidRequest("Không đọc được"));
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("MSG37", body.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
     public async Task Get_preserves_its_error_code_when_active_account_lookup_fails()
     {
         using var client = _factory.ClientFor(GivenCreator());

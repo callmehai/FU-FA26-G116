@@ -71,7 +71,8 @@ cookie thì trả `401 MSG01`, y như RT hết hạn.
 
 `MSG01` của `/refresh` mang câu **`Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.`** chứ không
 phải "Email hoặc mật khẩu không đúng." — refresh không gửi email hay mật khẩu nào để mà sai. Mã
-vẫn là `MSG01`, nên FE (khớp theo `code`) không phải sửa gì.
+vẫn là `MSG01`, nên FE (khớp theo `code`) không phải sửa gì. Tài khoản bị vô hiệu hoá giữa phiên
+thì `/refresh` trả `MSG02`, cùng mã với `/login` và `/google`.
 
 Chuyển sang cookie theo comment của SCRUM-11, gộp cả ba bước (backend đặt cookie, FE bỏ
 `localStorage`, backend bỏ RT khỏi body) vào một PR. Phiên đăng nhập từ trước PR này chỉ có RT

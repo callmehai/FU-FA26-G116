@@ -37,7 +37,8 @@ Trạng thái: **BE** = backend trả trong body JSON · **FE** = FE tự hiển
 | `MSG01` | 401 | `POST /login` | Email không tồn tại, sai mật khẩu, hoặc bỏ trống | `Email hoặc mật khẩu không đúng.` | BE |
 | `MSG01` | 401 | `POST /refresh` | Refresh token hết hạn, bị thu hồi, hoặc không có cookie | `Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.` | BE |
 | `MSG02` | 401 | `POST /login`, `POST /google`, `POST /refresh` | Tài khoản bị vô hiệu hoá | `Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.` | BE |
-| `MSG03` | 401 | `POST /google` | ID token Google không verify được (thiếu, sai định dạng, hết hạn, sai audience, sai chữ ký, email chưa xác minh); người dùng huỷ đăng nhập Google | `Đăng nhập bằng Google không thành công.` | BE |
+| `MSG03` | 401 | `POST /google` | ID token Google không verify được (thiếu, sai định dạng, hết hạn, sai audience, sai chữ ký, email chưa xác minh) | `Đăng nhập bằng Google không thành công.` | BE |
+| `MSG03` | — | — (FE, trước khi gọi `/google`) | Google báo lỗi hoặc người dùng huỷ đăng nhập Google — không có ID token để gửi | `Đăng nhập bằng Google không thành công.` | FE |
 | `MSG04` | — | `POST /google` | Không xác minh được thông tin Google trả về | *Unable to verify your Google account. Please try again.* | Dành sẵn — verifier chưa tách được khỏi `MSG03` |
 | `MSG05` | 401 | `POST /google` | Google xác thực OK nhưng không có tài khoản nội bộ nào liên kết/tự liên kết được | `Tài khoản Google này chưa được cấp quyền truy cập hệ thống.` | BE |
 | `MSG06` | — | — (FE, sau `POST /logout`) | `/logout` không tới được server, phiên được giữ nguyên | `Không thể đăng xuất. Vui lòng thử lại.` | FE |
@@ -95,7 +96,7 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG34` | 415 | `PUT /api/meetings/{id}` | Content-Type không phải `application/json` | `Content-Type phải là application/json.` | BE |
 | `MSG35` | 500 | `POST /api/meetings` | Không lưu được khi tạo | `Không thể tạo cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG36` | 500 | `PUT /api/meetings/{id}` | Không lưu được khi sửa | `Không thể cập nhật cuộc họp. Vui lòng thử lại.` | BE |
-| `MSG37` | 500 | `GET /api/meetings/{id}`, `PUT /api/meetings/{id}` | Không tải được chi tiết cuộc họp (kể cả lỗi khi kiểm tra tài khoản đang hoạt động) | `Không thể tải thông tin cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG37` | 500 | `GET /api/meetings/{id}`, `PUT /api/meetings/{id}` | Không tải được chi tiết cuộc họp. Ở `GET` gồm cả lỗi khi kiểm tra tài khoản đang hoạt động; ở `PUT` chỉ khi bước kiểm tra trạng thái không đọc được cuộc họp | `Không thể tải thông tin cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG38` | 500 | `GET /api/meetings` | Không tải được danh sách (kể cả lỗi khi kiểm tra tài khoản đang hoạt động) | `Không thể tải danh sách cuộc họp. Vui lòng thử lại.` | BE |
 
 "Không tìm thấy cuộc họp" và "không có quyền xem cuộc họp" **không có mã**: API trả `404` không
@@ -130,7 +131,7 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | Mã cũ | Nơi dùng | Mã mới |
 |---|---|---|
 | `MSG01` | `/login`, `/refresh` | `MSG01` (giữ nguyên) |
-| `MSG03` | `/login` — tài khoản bị vô hiệu hoá | `MSG02` |
+| `MSG03` | `/login`, `/refresh` — tài khoản bị vô hiệu hoá | `MSG02` |
 | `MSG01` | `/google` — token không verify được | `MSG03` |
 | `MSG03` | `/google` — chưa liên kết | `MSG05` |
 | `MSG04` | `/google` — tài khoản bị vô hiệu hoá | `MSG02` |

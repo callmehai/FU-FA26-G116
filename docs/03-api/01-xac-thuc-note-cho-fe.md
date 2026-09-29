@@ -102,13 +102,13 @@ Mỗi mã chỉ mang một nghĩa trên mọi endpoint — xem [danh mục mã](
 Trước đây UC-01 và UC-02 mỗi bên tự đánh số từ `MSG01`, nên cùng một mã mang hai nghĩa; nay đã
 đánh lại.
 
-| Tình huống | `/api/auth/login` | `/api/auth/google` |
-|---|---|---|
-| Sai email hoặc mật khẩu | `MSG01` | — |
-| Tài khoản bị vô hiệu hoá | `MSG02` | `MSG02` |
-| Token Google không verify được | — | `MSG03` |
-| Tài khoản Google chưa được liên kết | — | `MSG05` |
-| ~~Không có quyền truy cập hệ thống~~ | bỏ từ `SCRUM-63` | bỏ từ `SCRUM-63` |
+| Tình huống | `/api/auth/login` | `/api/auth/google` | `/api/auth/refresh` |
+|---|---|---|---|
+| Sai email hoặc mật khẩu / phiên hết hạn | `MSG01` | — | `MSG01` |
+| Tài khoản bị vô hiệu hoá | `MSG02` | `MSG02` | `MSG02` |
+| Token Google không verify được | — | `MSG03` | — |
+| Tài khoản Google chưa được liên kết | — | `MSG05` | — |
+| ~~Không có quyền truy cập hệ thống~~ | bỏ từ `SCRUM-63` | bỏ từ `SCRUM-63` | — |
 
 `MSG04` ("Không xác minh được tài khoản Google") có trong đặc tả nhưng backend chưa trả riêng: token
 nào không verify được đều là `MSG03`. `MSG06` ("Không thể đăng xuất") do FE tự hiển thị.

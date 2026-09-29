@@ -21,8 +21,10 @@ public static class UserEndpoints
     /// </summary>
     private const string Msg07Created = "MSG07";
     private const string Msg08DuplicateEmail = "MSG08";
+    private const string Msg09Invalid = "MSG09";
     private const string Msg10Updated = "MSG10";
     private const string Msg11StatusChanged = "MSG11";
+    private const string Msg12StatusChangeNotAllowed = "MSG12";
 
     public static IEndpointRouteBuilder MapUserEndpoints(this IEndpointRouteBuilder app)
     {
@@ -138,7 +140,7 @@ public static class UserEndpoints
         {
             return Results.Json(
                 new UserErrorResponse(
-                    "MSG09",
+                    Msg09Invalid,
                     "Thông tin tài khoản không hợp lệ.",
                     new Dictionary<string, string>
                     {
@@ -173,14 +175,14 @@ public static class UserEndpoints
 
         UserOutcome.InvalidInformation => Results.Json(
             new UserErrorResponse(
-                "MSG09", "Thông tin tài khoản không hợp lệ.", result.Errors),
+                Msg09Invalid, "Thông tin tài khoản không hợp lệ.", result.Errors),
             statusCode: StatusCodes.Status400BadRequest),
 
         // StatusChangeNotAllowed, and defensively any outcome added later without a case here.
         // 409: the request was understood and well-formed, it conflicts with the account's state.
         _ => Results.Json(
             new UserErrorResponse(
-                "MSG12",
+                Msg12StatusChangeNotAllowed,
                 "Không thể đổi trạng thái tài khoản này.",
                 null),
             statusCode: StatusCodes.Status409Conflict),

@@ -6,7 +6,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 
 - [`00-danh-muc-ma-thong-bao.md`](00-danh-muc-ma-thong-bao.md) — **danh mục mọi mã `MSGnn`**:
   quy tắc đặt mã, mã tiếp theo còn trống, từng mã trả ở endpoint nào với HTTP và câu thông báo gì,
-  và bảng đổi mã cũ → mới (kể cả mã trong sequence diagram). Thêm mã mới thì sửa file này trước
+  và bảng đổi mã cũ → mới (kể cả mã trong sequence diagram). Thêm mã mới thì sửa file này trước.
 - [`01-xac-thuc.md`](01-xac-thuc.md) — đăng nhập và đăng xuất (UC-01, UC-02, UC-03 / SCRUM-11):
   `/api/auth/login`, `/google`, `/refresh`, `/logout`, `/me`; access token và refresh token; mã
   thông báo `MSG01`–`MSG06`
