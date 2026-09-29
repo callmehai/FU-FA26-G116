@@ -19,24 +19,20 @@ namespace TrustCabinet.Web.Endpoints;
 public static class AuthEndpoints
 {
     /// <summary>
-    /// Message codes from the UC-01 specification. The response carries the code and a Vietnamese
+    /// Message codes for UC-01 … UC-03, from the project-wide catalogue
+    /// (docs/03-api/00-danh-muc-ma-thong-bao.md). The response carries the code and a Vietnamese
     /// message: the code is what the frontend and the test suite match on, so rewording the text
     /// never breaks either.
     ///
-    /// UC-01's MSG04 ("no system access") is gone with SCRUM-63 — see <c>SignInOutcome</c>.
+    /// A deactivated account is MSG02 on both /login and /google — one situation, one code.
+    /// MSG04 ("unable to verify the Google account") is catalogued but not emitted: the verifier
+    /// cannot tell it apart from an invalid token, so both answer MSG03. The old "no system access"
+    /// branch is gone with SCRUM-63 and has no code — see <c>SignInOutcome</c>.
     /// </summary>
     private const string Msg01InvalidCredentials = "MSG01";
-    private const string Msg03AccountUnavailable = "MSG03";
-
-    /// <summary>
-    /// UC-02 numbers its messages differently from UC-01 for the same situations, so its codes are
-    /// separate constants rather than reused ones: a deactivated account is MSG03 in UC-01 and
-    /// MSG04 here. Do not "tidy" these into one set — the two use-case specifications are what the
-    /// tester checks against. MSG05 went with UC-01's MSG04.
-    /// </summary>
-    private const string Google01SignInUnsuccessful = "MSG01";
-    private const string Google03NotAuthorized = "MSG03";
-    private const string Google04AccountUnavailable = "MSG04";
+    private const string Msg02AccountUnavailable = "MSG02";
+    private const string Msg03GoogleSignInUnsuccessful = "MSG03";
+    private const string Msg05GoogleNotAuthorized = "MSG05";
 
     /// <summary>
     /// The refresh token's cookie. <c>HttpOnly</c> is the point of it: a token JavaScript cannot
@@ -109,11 +105,11 @@ public static class AuthEndpoints
         var (code, message) = result.Outcome switch
         {
             GoogleSignInOutcome.NotLinked =>
-                (Google03NotAuthorized, "Tài khoản Google này chưa được cấp quyền truy cập hệ thống."),
+                (Msg05GoogleNotAuthorized, "Tài khoản Google này chưa được cấp quyền truy cập hệ thống."),
             GoogleSignInOutcome.AccountDeactivated =>
-                (Google04AccountUnavailable, "Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên."),
+                (Msg02AccountUnavailable, "Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên."),
             // InvalidGoogleToken, and defensively any outcome added later without a case here.
-            _ => (Google01SignInUnsuccessful, "Đăng nhập bằng Google không thành công."),
+            _ => (Msg03GoogleSignInUnsuccessful, "Đăng nhập bằng Google không thành công."),
         };
 
         return Results.Json(
@@ -252,7 +248,7 @@ public static class AuthEndpoints
         var (code, message) = outcome switch
         {
             SignInOutcome.AccountDeactivated =>
-                (Msg03AccountUnavailable, "Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên."),
+                (Msg02AccountUnavailable, "Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên."),
             // Covers InvalidCredentials and, defensively, an outcome added later without a case
             // here: the safe default for an unknown authentication outcome is to refuse.
             _ => (Msg01InvalidCredentials, invalidMessage),
@@ -267,7 +263,7 @@ public sealed record SignInRequest(string? Email, string? Password);
 
 /// <summary>
 /// The Google ID token the browser obtained from Google Identity Services. Nullable so a malformed
-/// body answers MSG01 like any other unusable token, rather than a 400 that distinguishes itself.
+/// body answers MSG03 like any other unusable token, rather than a 400 that distinguishes itself.
 /// </summary>
 public sealed record GoogleSignInRequest(string? IdToken);
 

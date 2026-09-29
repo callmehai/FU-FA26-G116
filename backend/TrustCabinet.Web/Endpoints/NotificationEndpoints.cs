@@ -6,6 +6,13 @@ namespace TrustCabinet.Web.Endpoints;
 
 public static class NotificationEndpoints
 {
+    /// <summary>
+    /// Message codes for the notification endpoints, from the project-wide catalogue
+    /// (docs/03-api/00-danh-muc-ma-thong-bao.md).
+    /// </summary>
+    private const string Msg39InvalidQuery = "MSG39";
+    private const string Msg40LoadFailed = "MSG40";
+
     public static IEndpointRouteBuilder MapNotificationEndpoints(this IEndpointRouteBuilder app)
     {
         var notifications = app.MapGroup("/api/notifications")
@@ -31,7 +38,7 @@ public static class NotificationEndpoints
         {
             return Results.Json(
                 new NotificationErrorResponse(
-                    "NOTIFICATION_INVALID_QUERY",
+                    Msg39InvalidQuery,
                     "Tham số truy vấn không hợp lệ.",
                     errors),
                 statusCode: StatusCodes.Status400BadRequest);
@@ -76,7 +83,7 @@ public static class NotificationEndpoints
     private static IResult LoadFailed()
         => Results.Json(
             new NotificationErrorResponse(
-                "NOTIFICATION_LOAD_FAILED",
+                Msg40LoadFailed,
                 "Không thể tải thông báo. Vui lòng thử lại."),
             statusCode: StatusCodes.Status500InternalServerError);
 }

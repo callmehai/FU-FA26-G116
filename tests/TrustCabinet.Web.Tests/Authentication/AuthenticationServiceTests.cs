@@ -285,7 +285,7 @@ public class AuthenticationServiceTests
 
         var result = await NewService().SignInAsync(user.Email, "SaiMatKhau@2026");
 
-        // Credentials are checked first on purpose: answering MSG03 here would confirm the address
+        // Credentials are checked first on purpose: answering MSG02 here would confirm the address
         // belongs to a real, if disabled, account to someone who does not know the password.
         Assert.Equal(SignInOutcome.InvalidCredentials, result.Outcome);
     }
@@ -295,7 +295,7 @@ public class AuthenticationServiceTests
     [Fact]
     public async Task A_role_that_grants_nothing_still_signs_in()
     {
-        // role_capabilities emptied for Secretary. MSG04 used to refuse this unless the role was
+        // role_capabilities emptied for Secretary. The old "no system access" branch refused this unless the role was
         // Member; since roles are data (ADR-0008) a role with nothing granted is a legitimate
         // configuration that works like Member, and telling them apart would mean comparing role
         // ids in business code.

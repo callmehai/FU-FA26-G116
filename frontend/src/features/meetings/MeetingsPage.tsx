@@ -111,7 +111,7 @@ export function MeetingsPage() {
         setLoad({
           kind: 'error',
           message: errorMessage(err),
-          invalidQuery: isApiError(err, 400, 'MEETING_INVALID_QUERY'),
+          invalidQuery: isApiError(err, 400, 'MSG32'),
         })
       } finally {
         if (!cancelled) setRefreshing(false)

@@ -101,7 +101,7 @@ export function EditMeetingPage() {
               }}
               onError={(err) => {
                 if (handleAccessLost(err)) return true
-                if (isApiError(err, 409, 'MEETING_NOT_EDITABLE')) {
+                if (isApiError(err, 409, 'MSG33')) {
                   // Contract: show the reason, then reload the current state before allowing more edits.
                   setConflict(errorMessage(err))
                   void reload()
