@@ -349,7 +349,7 @@ public sealed partial class RoleService(
         => string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
     private static RoleSummary Summarise(Role role, int userCount)
-        => new(role.Id, role.Name, role.Description, role.IsBuiltIn, userCount);
+        => new(role.Id, role.Name, role.Description, role.IsBuiltIn, BuiltInRoles.IsDefault(role.Id), userCount);
 
     /// <summary>
     /// Whether the database refused the save with this SQLSTATE. Matched on the code rather than

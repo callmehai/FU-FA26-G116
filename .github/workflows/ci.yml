@@ -11,6 +11,9 @@ jobs:
   backend:
     name: Backend — build & test
     runs-on: ubuntu-latest
+    env:
+      # Cùng giá trị với PostgreSQL service bên dưới; chỉ tồn tại trong runner CI dùng một lần.
+      POSTGRES_PASSWORD: "123"
 
     # RedisRefreshTokenStoreTests và UserRepositoryTests chạy thật trên Redis và PostgreSQL chứ
     # không dùng fake, nên CI phải có cả hai. Đây là chỗ bắt được lỗi mà fake không thấy: fake

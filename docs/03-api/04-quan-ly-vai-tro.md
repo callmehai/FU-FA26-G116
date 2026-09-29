@@ -1,7 +1,7 @@
 # 04 · Quản lý vai trò
 
-> **Trạng thái: đã làm phần BE — `SCRUM-63`.** Người làm BE: Hoàng Đức Lộc. Phần FE (mục 8) chờ
-> ticket sang cột **Frontend**. Quyết định nền: [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md).
+> **Trạng thái: BE đã làm; FE đã cập nhật theo mục 8 và chờ Tester xác minh tích hợp.** Người làm BE:
+> Hoàng Đức Lộc (`SCRUM-63`). Quyết định nền: [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md).
 > Sequence diagram: [CreateRole](../06-sequencediagram/CreateRole.png),
 > [UpdateRole](../06-sequencediagram/UpdateRole.png), [DeleteRole](../06-sequencediagram/DeleteRole.png).
 
@@ -69,8 +69,9 @@ giữ bốn id cố định, sinh một lần rồi dán cứng:
 | Member | `01a0ce78-7204-7558-b181-e908a08e83a3` | Thành viên |
 | Admin | `01a0ce78-7205-7486-b976-d52d428d5451` | Quản trị viên |
 
-Đây là chỗ **duy nhất** code nhắc tới một vai trò cụ thể (seed và thứ tự hiển thị). Code nghiệp vụ
-không bao giờ so sánh vai trò — nó hỏi quyền.
+Backend dùng `BuiltInRoles.IsDefault` để đánh dấu `Member` là vai trò mặc định khi tạo tài khoản;
+frontend chỉ đọc cờ `isDefault`. Các quy tắc phân quyền vẫn dựa trên capability, không dựa trên tên
+vai trò.
 
 ---
 
@@ -118,14 +119,16 @@ phải Guid (`/api/roles/Chair`) không khớp route → `404`.
 
 ```json
 [
-  { "id": "01a0ce78-7202-…", "name": "Chủ toạ", "description": "Chủ trì và phê duyệt cuộc họp.", "isBuiltIn": true, "userCount": 1 },
-  { "id": "0199…", "name": "Thư ký phó", "description": null, "isBuiltIn": false, "userCount": 0 }
+  { "id": "01a0ce78-7202-…", "name": "Chủ toạ", "description": "Chủ trì và phê duyệt cuộc họp.", "isBuiltIn": true, "isDefault": false, "userCount": 1 },
+  { "id": "01a0ce78-7204-…", "name": "Thành viên", "description": null, "isBuiltIn": true, "isDefault": true, "userCount": 5 },
+  { "id": "0199…", "name": "Thư ký phó", "description": null, "isBuiltIn": false, "isDefault": false, "userCount": 0 }
 ]
 ```
 
 - **Thứ tự cố định:** bốn vai trò mặc định trước (`Chair`, `Secretary`, `Member`, `Admin`), rồi vai
   trò tự tạo theo `created_at`. `roles` trong `GET /api/roles/capabilities` dùng **cùng thứ tự**.
 - `userCount` đếm **mọi** tài khoản mang vai trò, kể cả đã vô hiệu hoá — đúng con số chặn việc xoá.
+- `isDefault` đánh dấu vai trò được chọn sẵn khi tạo tài khoản; frontend không cần biết id seed.
 - Không kèm quyền: quyền ở `GET /api/roles/capabilities`.
 
 ### 4.2 `POST /api/roles`
@@ -150,7 +153,7 @@ phải Guid (`/api/roles/Chair`) không khớp route → `404`.
 Thành công: `201`, `Location: /api/roles/{id}`:
 
 ```json
-{ "code": "MSG19", "message": "Tạo vai trò thành công.", "role": { "id": "…", "name": "Thư ký phó", "description": "…", "isBuiltIn": false, "userCount": 0 } }
+{ "code": "MSG19", "message": "Tạo vai trò thành công.", "role": { "id": "…", "name": "Thư ký phó", "description": "…", "isBuiltIn": false, "isDefault": false, "userCount": 0 } }
 ```
 
 ### 4.3 `PUT /api/roles/{id}`
@@ -261,30 +264,25 @@ thì FK từ chối (`23503`) và API trả `MSG09` `errors.roleId` như vai tr�
   đơn giản không mang quyền nào. **Chờ BA sửa UC-01/UC-02** (mục 10). Nếu BA muốn giữ, cần định
   nghĩa mới không dựa vào tên vai trò (ví dụ cờ `can_sign_in` trên `roles`) — phạm vi thêm.
 
-## 8. Phần FE (chưa làm — chờ cột Frontend)
+## 8. Phần FE
 
-> **⚠️ Merge PR BE này trước PR FE thì FE trên `main` hỏng.** PR chỉ sửa BE (theo phân công), hợp
-> đồng ở mục 4.5 đổi, còn `frontend/` vẫn đọc/gửi `role`. CI không bắt được vì không có test hợp đồng
-> FE–BE. Những gì hỏng, đã kiểm trên code FE hiện tại:
->
-> | Chỗ | Triệu chứng |
-> |---|---|
-> | `components/AppShell.tsx` (header) | Không hiện vai trò — `user.role` giờ `undefined` |
-> | `features/access/UsersPage.tsx` | Badge vai trò trống; lọc theo vai trò luôn ra danh sách rỗng |
-> | `features/access/UserFormDialog.tsx` | **Không tạo / sửa được người dùng**: gửi `role`, BE trả `MSG09` với `errors.roleId`, form chỉ hiện `fieldErrors.role` nên bấm Lưu không thấy gì xảy ra |
-> | `features/access/RolesPage.tsx` + `api/rolePermissions.ts` | Ma trận hiện **mọi ô trống** (so `r.role`); lưu nhận `MSG17` `roleId` |
->
-> Nên merge PR FE cùng lúc (hoặc ngay sau) PR này. Danh sách việc cần làm:
+FE dùng `roleId` làm định danh và tên do backend trả về để hiển thị:
 
-- `types/user.ts`: bỏ union `Role` và bảng `ROLE_LABEL`/`ROLES`; `CurrentUser` và `UserAccount` mang
-  `roleId` + `roleName`.
-- `api/roles.ts` mới: `listRoles`, `createRole`, `updateRole`, `deleteRole`; `updateRolePermissions`
-  gửi `roleId`.
-- Màn hình **Vai trò**: nút *Tạo vai trò* mở dialog (tên, mô tả, chọn quyền); mỗi dòng vai trò tự tạo
-  có nút sửa và xoá; vai trò mặc định có badge *Mặc định* và không có hai nút đó; hiện `userCount`.
-  `MSG25` hiện ngay trong dialog xác nhận xoá, kèm số người.
-- Màn hình **Người dùng & Quyền**: bộ lọc vai trò và ô chọn vai trò lấy từ `GET /api/roles`.
-- Đăng nhập: bỏ xử lý `MSG04` (UC-01) / `MSG05` (UC-02).
+- `types/user.ts` không còn union `Role` hay bảng cứng `ROLE_LABEL`/`ROLES`; `CurrentUser` và
+  `UserAccount` có `roleId` + `roleName`.
+- `api/roles.ts` gọi bốn endpoint quản lý vai trò; `api/rolePermissions.ts` gửi `roleId` khi lưu ma trận.
+- Màn hình **Vai trò** tạo vai trò với quyền ban đầu tuỳ chọn, sửa tên/mô tả vai trò tự tạo, hiển thị
+  `userCount`; vai trò mặc định có badge và không có nút sửa/xoá. Xoá vai trò đang có người bị chặn;
+  `MSG25` hiển thị số tài khoản từ backend.
+- Màn hình **Người dùng & Quyền** tải bộ lọc và lựa chọn vai trò từ `GET /api/roles`; các request tạo/sửa
+  người dùng gửi `roleId`.
+- Header hiển thị `roleName`; màn hình ma trận dùng id vai trò cho draft, lưu quyền và xử lý trạng thái
+  của vai trò hiện tại.
+- `Capability` vẫn là enum; không có chức năng thêm quyền. FE chỉ hiển thị/ẩn route; API vẫn kiểm quyền
+  server-side và trả `403` khi thiếu quyền. Route bị giới hạn tiếp tục render 404.
+
+Đã chạy `npm run lint` và `npm run build` trong `frontend/`; kiểm tra tích hợp với backend cần được Tester
+thực hiện theo luồng ở mục 9 trước khi ticket được đánh dấu Done.
 
 ## 9. Test
 
@@ -347,3 +345,48 @@ trò thành dữ liệu (ADR-0008) thì:
 - [x] Tài liệu liên quan đã cập nhật
 - [ ] BA đã trả lời mục 10 (đang chờ — ghi rõ trong PR)
 - [ ] Ticket `SCRUM-63` chuyển sang cột **Frontend**
+
+## 12. Note bàn giao BE/BA cho SCRUM-63
+
+FE hiện dùng `roleId` làm định danh vai trò, lấy tên từ backend, hỗ trợ tạo/sửa/xoá vai trò tự tạo,
+chọn vai trò động trong màn hình người dùng và cập nhật ma trận theo id. `Capability` vẫn là enum;
+không có thao tác tạo capability.
+
+### Gửi BE
+
+Đối chiếu code backend với hợp đồng FE đang dùng, hiện chưa thấy yêu cầu sửa BE mới. Nhờ BE xác nhận
+môi trường/nhánh tích hợp cung cấp đúng các điểm sau để Tester chạy end-to-end:
+
+- `GET /api/roles` trả `id`, `name`, `description`, `isBuiltIn`, `userCount`.
+- Request tạo/sửa người dùng và cập nhật ma trận nhận `roleId`; response người dùng trả `roleId` và
+  `roleName`.
+- FE luôn gửi `DELETE /api/roles/{id}` để backend kiểm tra số người hiện tại. Nếu còn tài khoản mang
+  vai trò, kể cả đã vô hiệu hoá, BE trả `409 MSG25` kèm `userCount` mới.
+- Endpoint quản trị yêu cầu `AdminUsers`, thiếu quyền trả `403`; route UI bị giới hạn tiếp tục trả
+  `404`.
+
+Nếu các điểm trên đã ổn định trong môi trường tích hợp thì không cần thay đổi BE riêng cho phần FE.
+
+### Cần BA chốt
+
+- Chốt số UC (hiện tài liệu dùng UC-11/12/13) và dải mã `MSG19`–`MSG25`.
+- Chốt bỏ hay giữ nhánh đăng nhập khi vai trò không có capability nào (`MSG04` UC-01 / `MSG05`
+  UC-02). Code hiện đã bỏ nhánh này; nếu chấp nhận thì cập nhật đặc tả UC-01/UC-02.
+- Chốt dùng chung `MSG18` cho lỗi tạo/sửa/xoá hay cần mã riêng.
+- Chốt vai trò mặc định có được sửa mô tả không; hợp đồng hiện khoá cả tên và mô tả.
+- Xác nhận `MSG24` và `MSG25` dùng HTTP `409`.
+- Xác nhận trạng thái ADR-0008: thông tin ticket SCRUM-63 được chuyển tiếp ghi “Đề xuất”, còn file
+  ADR hiện ghi “Đã chấp nhận”.
+
+### Tester cần xác minh
+
+- Tạo vai trò không quyền và có quyền; sửa tên/mô tả; vai trò mặc định không có thao tác sửa/xoá.
+- Xoá vai trò trống; từ chối khi còn tài khoản active/inactive; kiểm tra race gán người và hiển thị
+  `MSG25` với số người mới do BE trả.
+- Gán vai trò tự tạo cho người dùng; kiểm tra ma trận quyền cho vai trò tự tạo.
+- Thiếu `AdminUsers`: API trả `403`, route UI trả `404`; xác minh vẫn còn ít nhất một tài khoản active
+  giữ `AdminUsers`.
+
+FE đã chạy `npm run lint`, `npm run build` và `git diff --check`. Health trả `200`; hai endpoint
+`GET /api/roles` và `GET /api/roles/capabilities` không token trả `401`. Luồng giao diện với tài khoản
+có `AdminUsers` vẫn cần Tester xác minh trước khi đánh dấu ticket Done.

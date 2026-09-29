@@ -32,6 +32,10 @@ transition riêng `Rejected → Draft`; transition này ghi lịch sử, giữ n
 không kích hoạt thư mời. Organizer sửa cuộc họp ở `Draft`, sau đó gửi lại theo đúng flow
 `Draft → WaitingApproval` và có thể chọn lại một người duyệt đang hợp lệ.
 
+Khi gửi duyệt theo UC-15, người tổ chức phải chọn một tài khoản đang hoạt động có capability
+`MeetingApprover`. Trường `AssignedApproverId` được để trống trong bản nháp cho tới khi người duyệt
+được chọn.
+
 `Published` xác nhận transaction công bố đã lưu meeting, history và invitation jobs. Đây không phải
 xác nhận email đã được giao: trạng thái gửi thực tế được theo dõi bằng `EmailStatus` và `SentAt`;
 lỗi gửi hoặc retry không chuyển meeting khỏi `Published`.

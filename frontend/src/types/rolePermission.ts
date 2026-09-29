@@ -1,4 +1,4 @@
-import type { Capability, Role } from './user'
+import type { Capability } from './user'
 
 /**
  * The role ↔ capability matrix (SCRUM-60, UC-09 and UC-10).
@@ -22,9 +22,11 @@ export interface PermissionDescriptor {
 
 /** One row of the grid. */
 export interface RolePermissions {
-  role: Role
+  id: string
+  name: string
+  description: string | null
   capabilities: Capability[]
-  /** Whether the role is part of the system's definition. All four are, today. */
+  /** Whether the role is one of the four system defaults. */
   isBuiltIn: boolean
 }
 

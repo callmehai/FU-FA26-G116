@@ -14,6 +14,7 @@ export const routes = {
   meetings: '/mgmt/meetings',
   meetingNew: '/mgmt/meetings/new',
   meeting: (id: string) => `/mgmt/meetings/${id}`,
+  meetingEdit: (id: string) => `/mgmt/meetings/${id}/edit`,
   adminUsers: '/mgmt/admin/users',
   adminRoles: '/mgmt/admin/roles',
 

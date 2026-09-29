@@ -9,9 +9,8 @@ namespace TrustCabinet.Infrastructure.Seed;
 /// <summary>
 /// Demo rows for local development — NOT reference data, and never seeded outside Development.
 ///
-/// The meetings mirror frontend/src/features/meetings/sampleData.ts, so screens that were built
-/// against the hard-coded array look the same once they read the real endpoint. When SCRUM-46
-/// deletes that file, this becomes the only copy.
+/// The meetings once mirrored the frontend's hard-coded sampleData.ts, so screens built against it
+/// looked the same on the real endpoint. SCRUM-18 deleted that file; this is now the only copy.
 /// </summary>
 public static class DevelopmentDataSeeder
 {
@@ -113,6 +112,34 @@ public static class DevelopmentDataSeeder
             NewHistory(published, MeetingStatus.Draft, MeetingStatus.WaitingApproval, secretary, "2026-09-16T08:40:00Z"),
             NewHistory(published, MeetingStatus.WaitingApproval, MeetingStatus.Approved, chair, "2026-09-16T09:15:00Z"),
             NewHistory(published, MeetingStatus.Approved, MeetingStatus.Published, secretary, "2026-09-16T09:20:00Z"));
+
+        // Two inbox rows make the SCRUM-14 list/read/read-all APIs testable in Postman on a fresh
+        // development database without exposing an arbitrary notification-creation endpoint.
+        db.AddRange(
+            new Notification
+            {
+                User = member,
+                Meeting = published,
+                Type = NotificationType.MeetingInvited,
+                TargetType = "Meeting",
+                TargetId = published.Id,
+                Title = "Bạn được mời họp",
+                Body = $"Bạn được mời tham dự cuộc họp \"{published.Title}\".",
+                DeduplicationKey = $"demo:meeting-invited:{published.Id:D}:{member.Id:D}",
+                PushedAt = published.CreatedAt,
+            },
+            new Notification
+            {
+                User = member,
+                Meeting = published,
+                Type = NotificationType.MeetingPublished,
+                TargetType = "Meeting",
+                TargetId = published.Id,
+                Title = "Cuộc họp đã công bố",
+                Body = $"Cuộc họp \"{published.Title}\" đã được công bố.",
+                DeduplicationKey = $"demo:meeting-published:{published.Id:D}:{member.Id:D}",
+                PushedAt = published.CreatedAt,
+            });
 
         await db.SaveChangesAsync(ct);
     }

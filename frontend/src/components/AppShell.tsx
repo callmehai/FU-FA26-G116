@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { routes } from '../lib/routes'
-import { ROLE_LABEL } from '../types/user'
 import { useAuth } from '../features/auth/useAuth'
 import { BrandMark } from './BrandMark'
 import { ConfirmDialog } from './ConfirmDialog'
@@ -94,7 +93,7 @@ export function AppShell({ sidebar, wide = false }: { sidebar: ReactNode; wide?:
               <div className="account-id">
                 <p className="account-name">{user.fullName}</p>
                 <p className="account-meta">{user.email}</p>
-                <p className="account-meta">{ROLE_LABEL[user.role] ?? user.role}</p>
+                <p className="account-meta">{user.roleName}</p>
               </div>
               <hr />
               <button type="button" className="menu-item" onClick={askToSignOut}>

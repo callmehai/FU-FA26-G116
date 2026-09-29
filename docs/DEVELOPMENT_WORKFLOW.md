@@ -19,7 +19,7 @@ Everything else in `docs/` stays Vietnamese.
 | Source of truth for requirements | Jira (project `SCRUM`, <https://sep490g116.atlassian.net>) |
 | Source of truth for scope | [README.md](../README.md) → *Phạm vi chức năng dự kiến* and *Không làm* |
 | Source of truth for design decisions | [docs/05-decisions/](05-decisions/) (ADRs) |
-| Jira statuses | `To Do` → `In Progress` → `In Review` → `Done` |
+| Jira statuses | `To Do` → `Business Analyst` → `Backend` → `Frontend` → `BA Final Review` → `Done` |
 | Roles | BA · BE · FE · Tester |
 
 Jira holds requirements, user stories/use cases, tasks, bugs and Sprint planning. If Jira and a
@@ -37,24 +37,26 @@ Jira Requirement
     ↓
 Use Case
     ↓
-BA: UC Specification
+BE: basic UC Specification + Sequence Diagram        (Jira: Backend)
     ↓
-BA: Sequence Diagram
+BE: Backend implementation — changes noted in Jira
     ↓
-BA: Update Class Diagram
+FE: Frontend integration — changes noted in Jira     (Jira: Frontend)
     ↓
-BE: Backend implementation
+BA: reconcile docs with what was built               (Jira: BA Final Review)
     ↓
-FE: Frontend implementation
-    ↓
-Tester: Test
-    ↓
-Bug Fix / Retest
+Tester: Test → Bug Fix / Retest
     ↓
 Review
     ↓
 Done
 ```
+
+**Documentation follows the code, then BA settles it.** BE writes the basic UC Specification and
+Sequence Diagram first, just enough to build against. While implementing, BE and FE change
+whatever the Use Case turns out to need and record each change in the Jira ticket. Only after FE
+has integrated does the ticket go back to BA, who brings the specification, diagrams and business
+rules in line with what was built. See [§2.1](#21-changing-a-requirement-during-implementation).
 
 **This is a pipeline, not phases.** Different Use Cases sit at different stages at the same time.
 A hand-off happens as soon as one Use Case is ready, never when the whole Sprint is ready.
@@ -63,17 +65,36 @@ Example of a normal week:
 
 | | Mon–Tue | Wed–Thu | Fri |
 |---|---|---|---|
-| **BA** | UC01 spec + diagrams | UC02 spec + diagrams | UC03 spec + diagrams |
-| **BE** | — | UC01 implementation | UC02 implementation |
-| **FE** | — | — | UC01 implementation |
+| **BE** | UC01 basic docs + implementation | UC02 basic docs + implementation | UC03 basic docs |
+| **FE** | — | UC01 integration | UC02 integration |
+| **BA** | clarify UC02, UC03 in Jira | — | UC01 final review |
 | **Tester** | prepare test cases | prepare test cases | UC01 testing |
 
 Rules that follow from this:
 
-- BA hands a Use Case to BE **as soon as that one Use Case is sufficiently defined**.
+- BE starts a Use Case **as soon as the Jira requirement is understood**, writing the basic docs
+  itself rather than waiting for BA.
 - FE starts **as soon as the API it needs is usable**, not when all of BE is finished.
 - Tester starts **as soon as a feature is usable**, not at the end of the Sprint.
 - Never block the whole team waiting for every Use Case to be finished at one stage.
+
+### 2.1 Changing a requirement during implementation
+
+BE or FE may find that the Use Case needs something the Jira ticket or the basic docs did not say:
+a field that has to be optional, an extra error branch, an endpoint FE turns out to need.
+
+- **Make the change.** Do not stop and wait for BA.
+- **Note it in the Jira ticket** as a comment, in the same working session: what changed, why, and
+  which UC Specification, diagram or business rule is now out of date. This note is what BA works
+  from in `BA Final Review`; a change that is not in the ticket gets lost.
+- Keep the API contract in [docs/03-api/](03-api/) current in the same PR — FE builds against it.
+- The UC Specification, the diagrams and the business rules may lag behind the code until
+  `BA Final Review`. BE/FE may edit them, but are not required to.
+- **Do not ask BA to update documentation while the ticket is in `Backend` or `Frontend`.** BA
+  updates it once, at the end, with everything that changed.
+
+This freedom is about the Use Case's own details. Scope boundaries (§8), the security rules in
+[AGENTS.md](../AGENTS.md) and accepted ADRs still hold; changing those needs a team decision.
 
 ---
 
@@ -97,15 +118,19 @@ nothing external is blocking it.
 
 ### 4.1 BA
 
-For each Use Case:
+Before development (Jira `Business Analyst`):
 
-- Understand the requirement from Jira.
-- Clarify anything ambiguous **before** implementation starts, not during it.
-- Write the UC Specification.
-- Create or update the Sequence Diagram.
-- Update the Class Diagram where the Use Case changes it.
-- Check that specification and diagrams agree with each other.
-- Hand the Use Case to BE as soon as it is sufficiently defined. Do not wait for other Use Cases.
+- Make sure the Jira requirement itself is clear enough for BE to start. An unclear requirement
+  is BA's to clarify; the basic docs are BE's to write.
+
+After FE integration (Jira `BA Final Review`):
+
+- Read the change notes BE and FE left in the ticket.
+- Bring the UC Specification, the Sequence Diagram, the Class Diagram and the business rules in
+  line with what was built.
+- Check that specification and diagrams agree with each other and with the code.
+- If a change noted in the ticket is not acceptable as a requirement, reopen it with BE/FE rather
+  than documenting around it.
 
 BA documentation describes **business and system behaviour**, not implementation details. It says
 what happens and under which rules, not which C# class or React component does it.
@@ -115,16 +140,17 @@ go in [docs/assets/](assets/).
 
 ### 4.2 Backend (BE)
 
-When a Use Case arrives from BA:
+When a Use Case moves to `Backend`:
 
-- Read the UC Specification, the Sequence Diagram and the relevant part of the Class Diagram.
+- Read the Jira requirement and any existing docs for the Use Case.
+- Write the basic UC Specification and Sequence Diagram — enough to build against, not final.
 - Identify: API endpoints, business rules, data requirements, validation, dependencies.
-- Implement the backend.
-- Keep the implementation consistent with the BA documentation.
+- Implement the backend. Where it needs to differ from the ticket or the basic docs, change it
+  and note the change in the ticket ([§2.1](#21-changing-a-requirement-during-implementation)).
 - Provide or update the API contract FE needs — see [docs/03-api/](03-api/).
 - Test the backend (`dotnet test`).
 - **Notify FE** when the API is ready to integrate against.
-- If the requirement or the BA documentation is unclear, ask. Do not guess silently.
+- If the Jira requirement itself is unclear, ask. Do not guess silently.
 
 Every endpoint re-authorizes server-side and list endpoints filter rows server-side. The UI is
 never the security boundary — see [AGENTS.md](../AGENTS.md).
@@ -138,7 +164,9 @@ When the API is sufficiently ready:
 - Integrate with the BE APIs through `src/api/` — never `fetch` directly from a component.
 - Handle all four states: loading, success, validation error, server error.
 - Test the flow locally against the running backend.
-- Hand the finished feature to Tester.
+- Note any change to the requirement in the ticket, the same way BE does
+  ([§2.1](#21-changing-a-requirement-during-implementation)).
+- Move the ticket to `BA Final Review` and hand the finished feature to Tester.
 
 ### 4.4 Tester
 
@@ -170,7 +198,8 @@ At the end of each Sprint:
 
 A Use Case is Done only when **all** of these hold:
 
-- [ ] BA documentation is complete and internally consistent.
+- [ ] BA documentation is complete, internally consistent, and matches what was built — settled in
+      `BA Final Review` from the ticket's change notes.
 - [ ] BE implementation is complete.
 - [ ] FE implementation/integration is complete, where the Use Case has a UI.
 - [ ] Testing has been completed.
@@ -199,7 +228,9 @@ Branch and PR conventions:
 - Commit messages in Vietnamese, PR title and description in English, PR review comments in
   Vietnamese. Full table in [AGENTS.md](../AGENTS.md).
 - Open a PR and wait for a review before merging. Do not merge your own PR unreviewed.
-- When a change affects design or scope, update `docs/` **in the same commit** as the code.
+- When a change affects the API contract, an ADR or the project scope, update `docs/` **in the
+  same commit** as the code. The UC Specification, diagrams and business rules may wait for
+  `BA Final Review` ([§2.1](#21-changing-a-requirement-during-implementation)).
 
 ---
 
@@ -210,8 +241,9 @@ Branch and PR conventions:
 - Detailed entities and classes are refined progressively — through requirements, Use Cases,
   Sequence Diagrams, data requirements, and implementation. Do not try to finish the data model in
   one sitting.
-- **Do not invent requirements to make a diagram look complete.** A gap in a diagram is a question
-  for BA, not a blank to fill in.
+- **Do not invent requirements to make a diagram look complete.** When implementation forces a
+  decision the ticket did not make, make it and record it in the ticket for BA — a decision nobody
+  wrote down is the problem, not the decision itself.
 - A significant technical decision becomes an ADR in [docs/05-decisions/](05-decisions/). Never
   edit an accepted ADR — write a new one that supersedes it.
 
@@ -252,13 +284,25 @@ AI-generated draft minutes → decisions and voting results.
 ### When implementing a Use Case
 
 - Stay within that Use Case's scope.
-- Follow the BA specification and diagrams.
-- If the code and the documentation conflict, **flag the conflict**. Do not silently change the
-  requirement to match the code, or the code to match a document you suspect is stale.
-- Do not invent APIs, entities, fields or business rules without evidence in Jira or in `docs/`.
+- Start from the Jira ticket and the existing docs. If there are no docs yet, write the basic UC
+  Specification and Sequence Diagram first.
+- If the Use Case needs to differ from the ticket or the docs, change it — but never silently: list
+  the change so it can be noted in the Jira ticket (§2.1), and tell the user.
+- Do not invent APIs, entities, fields or business rules that the Use Case does not need.
 - Reuse existing project patterns instead of introducing new ones.
 - Avoid refactoring that the task does not require.
 - Keep changes focused and reviewable — one Use Case per branch.
+
+### When reviewing a pull request
+
+- Judge the code against the Jira ticket **and the change notes in it**, not only against the BA
+  docs. A difference that is noted in the ticket is an accepted change, not a defect.
+- Do not request changes because the UC Specification, diagrams or business rules are behind the
+  code, and do not ask for BA to update them before merge — that happens in `BA Final Review`.
+- **Do** flag a requirement change that appears in the code but is not noted in the ticket; the
+  author must add the note.
+- Still flag docs the author wrote that contradict themselves, and an API contract in
+  [docs/03-api/](03-api/) that does not match the code.
 
 ### Never
 
