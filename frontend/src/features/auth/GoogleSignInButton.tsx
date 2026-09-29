@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 /**
  * The OAuth client the backend verifies ID tokens against (`Authentication:Google:ClientId` in
  * appsettings.json). Not a secret — the browser sends it to Google in the clear. It has to match
- * the backend's value exactly, or every token comes back MSG01 for the wrong audience.
+ * the backend's value exactly, or every token comes back MSG03 for the wrong audience.
  *
  * ponytail: duplicated from appsettings.json because the backend has no endpoint exposing it.
  * Ask BE for one if the value ever differs between environments.

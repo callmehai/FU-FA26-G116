@@ -6,8 +6,8 @@ import { api } from './client'
  * Sign-in endpoints (SCRUM-11). All anonymous: the credential is in the body, and a 401 here means
  * "wrong credentials", not "your session expired" — it must never trigger a token refresh.
  *
- * UC-01 and UC-02 number their messages differently for the same situation (a deactivated account
- * is MSG03 on /login but MSG04 on /google). Keep them apart; see `LoginPage`.
+ * Message codes follow the project-wide catalogue (docs/03-api/00-danh-muc-ma-thong-bao.md): a
+ * deactivated account is MSG02 on both /login and /google; see `LoginPage` for the Google-only ones.
  */
 
 /** UC-01. */

@@ -12,6 +12,16 @@ namespace TrustCabinet.Web.Endpoints;
 public static class MeetingEndpoints
 {
     private const int MaxMeetingRequestBodyBytes = 64 * 1024;
+    private const string Msg29Created = "MSG29";
+    private const string Msg30Updated = "MSG30";
+    private const string Msg31InvalidInformation = "MSG31";
+    private const string Msg32InvalidQuery = "MSG32";
+    private const string Msg33NotEditable = "MSG33";
+    private const string Msg34UnsupportedContentType = "MSG34";
+    private const string Msg35CreateFailed = "MSG35";
+    private const string Msg36UpdateFailed = "MSG36";
+    private const string Msg37LoadFailed = "MSG37";
+    private const string Msg38ListFailed = "MSG38";
 
     public static IEndpointRouteBuilder MapMeetingEndpoints(this IEndpointRouteBuilder app)
     {
@@ -33,12 +43,12 @@ public static class MeetingEndpoints
 
         var listMeetings = app.MapGroup("/api/meetings")
             .WithTags("Meetings")
-            .RequireActiveUser(SaveFailed("MSG08", "Không thể tải danh sách cuộc họp. Vui lòng thử lại."));
+            .RequireActiveUser(ServerError(Msg38ListFailed, "Không thể tải danh sách cuộc họp. Vui lòng thử lại."));
         listMeetings.MapGet("/", ListAsync);
 
         var detailMeetings = app.MapGroup("/api/meetings")
             .WithTags("Meetings")
-            .RequireActiveUser(SaveFailed("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."));
+            .RequireActiveUser(ServerError(Msg37LoadFailed, "Không thể tải thông tin cuộc họp. Vui lòng thử lại."));
         detailMeetings.MapGet("/{id:guid}", GetAsync);
 
         var workflowMeetings = app.MapGroup("/api/meetings")
@@ -306,9 +316,9 @@ public static class MeetingEndpoints
         {
             MeetingOutcome.Success => Results.Created(
                 $"/api/meetings/{result.Meeting!.Id}",
-                new MeetingMutationResponse("MEETING_CREATED", "Tạo cuộc họp thành công.", MeetingResponse.From(result.Meeting))),
+                new MeetingMutationResponse(Msg29Created, "Tạo cuộc họp thành công.", MeetingResponse.From(result.Meeting))),
             MeetingOutcome.InvalidInformation => Invalid(result),
-            _ => SaveFailed("MSG01", "Không thể tạo cuộc họp. Vui lòng thử lại."),
+            _ => ServerError(Msg35CreateFailed, "Không thể tạo cuộc họp. Vui lòng thử lại."),
         };
     }
 
@@ -329,7 +339,7 @@ public static class MeetingEndpoints
         {
             MeetingOutcome.Success => Results.Ok(MeetingResponse.From(result.Meeting!)),
             MeetingOutcome.NotFound => Results.NotFound(),
-            _ => SaveFailed("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."),
+            _ => ServerError(Msg37LoadFailed, "Không thể tải thông tin cuộc họp. Vui lòng thử lại."),
         };
     }
 
@@ -348,14 +358,14 @@ public static class MeetingEndpoints
         if (!MeetingListQueryParser.TryParse(request.Query, out var query, out var errors))
         {
             return Results.Json(
-                new MeetingErrorResponse("MEETING_INVALID_QUERY", "Tham số truy vấn không hợp lệ.", errors),
+                new MeetingErrorResponse(Msg32InvalidQuery, "Tham số truy vấn không hợp lệ.", errors),
                 statusCode: StatusCodes.Status400BadRequest);
         }
 
         var result = await service.ListAsync(query!, actorId.Value, ct);
         return result.Outcome == MeetingOutcome.Success
             ? Results.Ok(MeetingListResponse.From(result.Page!))
-            : SaveFailed("MSG08", "Không thể tải danh sách cuộc họp. Vui lòng thử lại.");
+            : ServerError(Msg38ListFailed, "Không thể tải danh sách cuộc họp. Vui lòng thử lại.");
     }
 
     private static async Task<IResult> ListApproversAsync(
@@ -390,7 +400,7 @@ public static class MeetingEndpoints
         if (!request.HasJsonContentType())
         {
             return Results.Json(
-                new MeetingErrorResponse("MEETING_UNSUPPORTED_CONTENT_TYPE", "Content-Type phải là application/json."),
+                new MeetingErrorResponse(Msg34UnsupportedContentType, "Content-Type phải là application/json."),
                 statusCode: StatusCodes.Status415UnsupportedMediaType);
         }
 
@@ -438,20 +448,20 @@ public static class MeetingEndpoints
         catch (JsonException)
         {
             return Results.Json(
-                new MeetingErrorResponse("MEETING_INVALID_INFORMATION", "Nội dung JSON không hợp lệ."),
+                new MeetingErrorResponse(Msg31InvalidInformation, "Nội dung JSON không hợp lệ."),
                 statusCode: StatusCodes.Status400BadRequest);
         }
 
         return result.Outcome switch
         {
             MeetingOutcome.Success => Results.Ok(new MeetingMutationResponse(
-                "MSG02", "Cập nhật cuộc họp thành công.", MeetingResponse.From(result.Meeting!))),
+                Msg30Updated, "Cập nhật cuộc họp thành công.", MeetingResponse.From(result.Meeting!))),
             MeetingOutcome.InvalidInformation => Invalid(result),
             MeetingOutcome.NotFound => Results.NotFound(),
             MeetingOutcome.NotEditable => Results.Json(
-                new MeetingErrorResponse("MSG03", "Cuộc họp này không thể chỉnh sửa được nữa."),
+                new MeetingErrorResponse(Msg33NotEditable, "Cuộc họp này không thể chỉnh sửa được nữa."),
                 statusCode: StatusCodes.Status409Conflict),
-            _ => SaveFailed("MSG04", "Không thể cập nhật cuộc họp. Vui lòng thử lại."),
+            _ => ServerError(Msg36UpdateFailed, "Không thể cập nhật cuộc họp. Vui lòng thử lại."),
         };
     }
 
@@ -460,9 +470,9 @@ public static class MeetingEndpoints
         {
             MeetingOutcome.NotFound => Results.NotFound(),
             MeetingOutcome.NotEditable => Results.Json(
-                new MeetingErrorResponse("MSG03", "Cuộc họp này không thể chỉnh sửa được nữa."),
+                new MeetingErrorResponse(Msg33NotEditable, "Cuộc họp này không thể chỉnh sửa được nữa."),
                 statusCode: StatusCodes.Status409Conflict),
-            _ => SaveFailed("MEETING_LOAD_FAILED", "Không thể tải thông tin cuộc họp. Vui lòng thử lại."),
+            _ => ServerError(Msg37LoadFailed, "Không thể tải thông tin cuộc họp. Vui lòng thử lại."),
         };
 
     private static IResult BodyTooLarge()
@@ -473,10 +483,15 @@ public static class MeetingEndpoints
     private static IResult Invalid(MeetingResult result)
         => Results.Json(
             new MeetingErrorResponse(
-                "MEETING_INVALID_INFORMATION",
+                Msg31InvalidInformation,
                 "Thông tin cuộc họp không hợp lệ.",
                 result.Errors),
             statusCode: StatusCodes.Status400BadRequest);
+
+    private static IResult ServerError(string code, string message)
+        => Results.Json(
+            new MeetingErrorResponse(code, message),
+            statusCode: StatusCodes.Status500InternalServerError);
 
     private static IResult SaveFailed(string code, string message)
         => Results.Json(

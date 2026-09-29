@@ -10,7 +10,7 @@ namespace TrustCabinet.Infrastructure.Authentication;
 /// UC-01's <c>:Authentication Service</c>. Decides which branch a sign-in attempt takes, and
 /// issues the token pair for the one that succeeds.
 ///
-/// There is no "no system access" branch (UC-01's MSG04, UC-02's MSG05) any more. It refused a
+/// There is no "no system access" branch any more (it never had a code in the catalogue). It refused a
 /// role with no capabilities unless that role was Member; since roles became data (ADR-0008) a role
 /// without capabilities is a legitimate configuration that works exactly like Member, and deciding
 /// otherwise would mean comparing role ids in business code. Pending BA confirmation — see
@@ -66,7 +66,7 @@ public sealed class AuthenticationService(
             return SignInResult.Failure(SignInOutcome.InvalidCredentials);
         }
 
-        // Branch 2 — MSG03. Deactivated, not deleted (SCRUM-13): the row still exists because
+        // Branch 2 — MSG02. Deactivated, not deleted (SCRUM-13): the row still exists because
         // their past approvals stay attributable, but it is no longer a way in.
         if (!user.IsActive)
         {
@@ -85,7 +85,7 @@ public sealed class AuthenticationService(
     public async Task<GoogleSignInResult> SignInWithGoogleAsync(
         string idToken, CancellationToken ct = default)
     {
-        // Branch 1 — MSG01 in UC-02's numbering. Everything the verifier rejects lands here:
+        // Branch 1 — MSG03. Everything the verifier rejects lands here:
         // absent, malformed, expired, wrong audience, bad signature, unverified email.
         var identity = await googleTokenVerifier.VerifyAsync(idToken, ct);
 
@@ -98,7 +98,7 @@ public sealed class AuthenticationService(
 
         // Not linked yet: the first Google sign-in of an account an administrator created with
         // this (Google-verified) email links it (ADR-0009). Otherwise nothing ever writes the
-        // subject, and every Google sign-in answers MSG03.
+        // subject, and every Google sign-in answers MSG05.
         if (user is null)
         {
             user = await users.LinkGoogleSubjectByEmailAsync(identity.Email, identity.Subject, ct);
@@ -112,10 +112,10 @@ public sealed class AuthenticationService(
                     AuditActions.UserGoogleLinked, AuditActions.UserObjectType, user.Id, user.Id, ct: ct);
             }
             // Created for this Gmail but deactivated before its first Google sign-in: not linked,
-            // but answered MSG04 like a linked deactivated account, since "not authorised" would
+            // but answered MSG02 like a linked deactivated account, since "not authorised" would
             // send them asking for access they already have. Telling the verified owner of the
             // address that an account under it is deactivated leaks nothing. An account already
-            // linked to a *different* subject stays MSG03 — this caller is not its owner.
+            // linked to a *different* subject stays MSG05 — this caller is not its owner.
             else if (await users.FindByEmailAsync(identity.Email, ct)
                      is { IsActive: false, GoogleSubjectId: null } deactivated)
             {
@@ -126,7 +126,7 @@ public sealed class AuthenticationService(
             }
         }
 
-        // Branch 2 — MSG03. Google proved who they are; that is not the same as being one of ours.
+        // Branch 2 — MSG05. Google proved who they are; that is not the same as being one of ours.
         // No account is created here: provisioning is an administrator's job, and self-registration
         // would let anybody holding a Google account in.
         if (user is null)
@@ -136,8 +136,7 @@ public sealed class AuthenticationService(
             return GoogleSignInResult.Failure(GoogleSignInOutcome.NotLinked);
         }
 
-        // Branch 3 — MSG04 (MSG03's situation in UC-01; the two use cases number these
-        // differently, which is why the outcomes are two separate enums).
+        // Branch 3 — MSG02, the same code UC-01 answers for a deactivated account.
         if (!user.IsActive)
         {
             logger.LogInformation("Google sign-in rejected: account {UserId} is deactivated.", user.Id);

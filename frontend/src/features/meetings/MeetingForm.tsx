@@ -197,7 +197,7 @@ export function MeetingForm({
     } catch (err) {
       setPending(false)
       if (onError(err)) return
-      if (isApiError(err, 400, 'MEETING_INVALID_INFORMATION') && err.body?.errors) {
+      if (isApiError(err, 400, 'MSG31') && err.body?.errors) {
         // Every invalid field at once, keyed by the request's own field names.
         const serverErrors = err.body.errors as FieldErrors
         setFieldErrors(serverErrors)

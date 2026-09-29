@@ -33,7 +33,7 @@ trang. Endpoint chỉ yêu cầu đăng nhập và tài khoản còn hoạt đ�
 
 Sửa chỉ được ở `Draft`. Meeting `Rejected` phải được Organizer chuyển về `Draft` bằng
 `ReturnToDraft` trước; transition đó tạo history và xóa assignment cycle cũ. Hệ thống đọc trạng thái
-mới nhất sau khi khóa dòng và trước khi validate nội dung. Trạng thái khác `Draft` trả `409 MSG03`.
+mới nhất sau khi khóa dòng và trước khi validate nội dung. Trạng thái khác `Draft` trả `409 MSG33`.
 
 ### Authorization matrix cho SCRUM-19
 
@@ -73,7 +73,12 @@ lần. Tất cả bộ lọc được kết hợp bằng AND (BR-30/BR-31).
 
 Khi nhiều dòng có cùng giá trị sort, xếp tiếp theo `id asc`. Ví dụ:
 `GET /api/meetings?status=Published&sensitivity=Internal&q=giao&from=2026-10-01T00%3A00%3A00Z&page=2&pageSize=20&sortBy=startsAt&sortDir=desc`.
-Đổi trang phải gửi lại bộ lọc và sort hiện tại (BR-32); FE sẽ tích hợp bước này sau.
+Đổi trang phải gửi lại bộ lọc và sort hiện tại (BR-32). FE giữ toàn bộ tiêu chí trên URL của màn
+danh sách (`/mgmt/meetings?q=…&status=…&page=…`), nên tải lại trang, chia sẻ đường dẫn hay quay lại từ
+trang chi tiết đều giữ nguyên bộ lọc và trang đang xem.
+
+Khi gửi timezone có dấu `+` trong query, mã hóa dấu này thành `%2B`, ví dụ
+`from=2026-10-01T09%3A00%2B07%3A00`. Timestamp thiếu timezone trả `400 MSG32`.
 
 `200 OK` trả:
 
@@ -99,10 +104,10 @@ Khi nhiều dòng có cùng giá trị sort, xếp tiếp theo `id asc`. Ví d�
 Không có kết quả hoặc trang vượt quá trang cuối, kể cả khi offset lớn hơn giới hạn `int`, vẫn trả
 `200` với `items: []` (BR-12). Khi không có
 kết quả, `totalCount` và `totalPages` đều bằng `0`. Query sai trả `400` với `code` là
-`MEETING_INVALID_QUERY`, `message` là `Tham số truy vấn không hợp lệ.` và `errors` theo tên tham số.
+`MSG32`, `message` là `Tham số truy vấn không hợp lệ.` và `errors` theo tên tham số.
 Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài giới
-hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `503` với
-`code: MSG08` và thông điệp
+hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `500` với
+`code: MSG38` và thông điệp
 `Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-14.
 
 Sequence UC-14 hiện ghi BR-29 và BR-32 ở bước repository; BA cần bổ sung BR-30/31 và nhánh query
@@ -149,7 +154,7 @@ enum. Thời gian trong response luôn UTC.
 ### PUT `/api/meetings/{id}`
 
 PUT thay toàn bộ bảy field thông tin cuộc họp bằng dữ liệu request. Trả `200 OK`, envelope
-`{ "code": "MSG02", "message": "Cập nhật cuộc họp thành công.", "meeting": { ... } }`.
+`{ "code": "MSG30", "message": "Cập nhật cuộc họp thành công.", "meeting": { ... } }`.
 
 Không chấp nhận quyền thay đổi `id`, `createdById`, `status`, `createdAt`, `updatedAt` hay dữ liệu
 con qua body. Body không gán approver. Chỉ meeting `Draft` được sửa; `Rejected` phải qua
@@ -296,7 +301,7 @@ Lỗi validation trả `400`:
 
 ```json
 {
-  "code": "MEETING_INVALID_INFORMATION",
+  "code": "MSG31",
   "message": "Thông tin cuộc họp không hợp lệ.",
   "errors": {
     "title": "Tên cuộc họp không được để trống.",
@@ -306,33 +311,34 @@ Lỗi validation trả `400`:
 ```
 
 Endpoint trả đồng thời mọi lỗi field phát hiện được. Với PUT, hệ thống khóa meeting và kiểm tra
-trạng thái trước khi parse JSON: nếu meeting không còn sửa được thì trả `409 MSG03`, kể cả body JSON
+trạng thái trước khi parse JSON: nếu meeting không còn sửa được thì trả `409 MSG33`, kể cả body JSON
 sai cú pháp hoặc sai kiểu. Request PUT có Content-Type thiếu hoặc không hỗ trợ trả `415` với code
-`MEETING_UNSUPPORTED_CONTENT_TYPE`. Với meeting còn sửa được và Content-Type hợp lệ, JSON sai cú
-pháp/sai kiểu trả `400` và code `MEETING_INVALID_INFORMATION` không có `errors`. Body PUT lớn hơn
+`MSG34`. Với meeting còn sửa được và Content-Type hợp lệ, JSON sai cú
+pháp/sai kiểu trả `400` và code `MSG31` không có `errors`. Body PUT lớn hơn
 64 KiB trả `413 MEETING_BODY_TOO_LARGE`. POST JSON lỗi cũng trả `400`.
 
 ## Mã phản hồi
 
 | HTTP | Code | Ý nghĩa |
 |---:|---|---|
-| 201 | `MEETING_CREATED` | Tạo nháp thành công |
-| 200 | `MSG02` | Sửa thông tin thành công |
-| 400 | `MEETING_INVALID_INFORMATION` | Thông tin không hợp lệ; có thể có `errors` theo field |
+| 201 | `MSG29` | Tạo nháp thành công |
+| 200 | `MSG30` | Sửa thông tin thành công |
+| 400 | `MSG31` | Thông tin không hợp lệ; có thể có `errors` theo field |
+| 400 | `MSG32` | Query danh sách không hợp lệ; có `errors` theo tham số |
 | 401 | — | Chưa đăng nhập |
 | 403 | — | Không có `MeetingCreator` theo gate hai lớp |
 | 404 | — | GET: không tồn tại hoặc caller không có quan hệ; PUT: không tồn tại hoặc caller không phải người tạo; body rỗng |
-| 409 | `MSG03` | Trạng thái hiện tại không cho sửa |
+| 409 | `MSG33` | Trạng thái hiện tại không cho sửa |
 | 413 | `MEETING_BODY_TOO_LARGE` | Body PUT vượt quá 64 KiB |
-| 415 | `MEETING_UNSUPPORTED_CONTENT_TYPE` | PUT không gửi JSON hoặc Content-Type không hỗ trợ |
-| 503 | `MSG01` | Không thể lưu khi tạo; thử lại |
-| 503 | `MSG04` | Không thể lưu khi sửa; thử lại |
-| 503 | `MEETING_LOAD_FAILED` | Không tải được chi tiết; thử lại |
+| 415 | `MSG34` | PUT không gửi JSON hoặc Content-Type không hỗ trợ |
+| 500 | `MSG35` | Không thể lưu khi tạo; thử lại |
+| 500 | `MSG36` | Không thể lưu khi sửa; thử lại |
+| 500 | `MSG37` | Không tải được chi tiết; thử lại |
+| 500 | `MSG38` | Không tải được danh sách; thử lại |
 
-`MSG01`–`MSG04` đến từ mô tả use case được cung cấp. `MEETING_CREATED`,
-`MEETING_INVALID_INFORMATION`, `MEETING_LOAD_FAILED` và cách gắn status `503` là mã/status baseline
-được thêm vì sequence chưa định danh cụ thể các nhánh thành công tạo, validation và đọc lỗi. BA cần
-đồng bộ chúng vào tài liệu yêu cầu/message catalog.
+Mã thuộc dải chung của dự án, xem [danh mục mã](00-danh-muc-ma-thong-bao.md). Các lỗi persistence
+của CRUD/list trả `500`; lỗi workflow SCRUM-19 giữ contract `503` để client nhận biết lỗi tạm thời
+của transaction hoặc capability lookup.
 
 ## Persistence và transaction
 
@@ -346,7 +352,7 @@ xác nhận meeting còn sửa được, hệ thống kiểm tra Content-Type r�
 transaction khóa ghi. Body bị giới hạn 64 KiB ngay cả khi không có `Content-Length`; quá giới hạn
 thì ngừng đọc và trả `413`, không tạo thêm bản sao buffer. Khi xử lý cập nhật, transaction
 `ReadCommitted` khóa đúng meeting row bằng
-PostgreSQL `FOR UPDATE`, đọc lại trạng thái và trả `409 MSG03` nếu trạng thái đổi trong lúc body đang
+PostgreSQL `FOR UPDATE`, đọc lại trạng thái và trả `409 MSG33` nếu trạng thái đổi trong lúc body đang
 được gửi. Chỉ sau lần kiểm tra khóa này hệ thống mới parse JSON, validate và lưu; không có network
 read trong lúc giữ row lock.
 Transaction kết thúc trước response. Cập nhật thông tin không thay status hoặc lịch sử. Nếu body sau
@@ -362,7 +368,7 @@ stale content.
 - Chỉ hiển thị thao tác sửa cho người có `MeetingCreator`, đúng `createdById`, và trạng thái
   `Draft`. Meeting `Rejected` cần `ReturnToDraft` trước khi sửa. Backend vẫn kiểm tra lại quyền sở
   hữu và trạng thái khi PUT.
-- Nếu PUT trả `409 MSG03`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
+- Nếu PUT trả `409 MSG33`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
 - Sau khi POST hoặc PUT thành công, có thể mở `meeting.id` bằng GET chi tiết. GET danh sách thuộc
   SCRUM-18 đã có contract ở trên; FE cần thay dữ liệu mẫu trong task tích hợp riêng.
 - SCRUM-19 cung cấp contract history ở trên; việc tích hợp timeline thật thuộc task FE riêng.

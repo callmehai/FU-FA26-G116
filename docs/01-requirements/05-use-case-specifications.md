@@ -70,7 +70,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   1. ...
 
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
-- **EX-1**: [Mô tả lỗi hoặc điều kiện thất bại, mã MSG tương ứng]
+- **EX-1**: [Mô tả lỗi hoặc điều kiện thất bại, mã MSG tương ứng — lấy mã kế tiếp trong docs/03-api/00-danh-muc-ma-thong-bao.md, không đánh số lại từ MSG01 cho mỗi use case]
   1. Hệ thống hiển thị thông báo lỗi `[Mã MSG] - [Nội dung thông báo]`.
   2. Actor quay lại bước ...
 
@@ -119,10 +119,10 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   2. The system displays MSG01 – “Invalid email or password.”
 - **EX-2**: The internal account has been deactivated
   1. The corresponding internal account is inactive or has been deactivated. (BR-03)
-  2. The system displays MSG03 – “Your account is currently unavailable. Please contact your administrator for assistance.”
+  2. The system displays MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”
 - **EX-3**: User is not allowed to access the system
   1. The user does not have an active role or permission required to access the system. (BR-04)
-  2. The system displays MSG04 – “You do not currently have access to the system. Please contact your administrator for assistance.”
+  2. ~~The system displays “You do not currently have access to the system. Please contact your administrator for assistance.”~~ Removed with SCRUM-63 ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)); no message code is assigned.
 
 ---
 
@@ -157,19 +157,19 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
 - **EX-1**: User can’t authenticate with Google
   1. The user fails to authenticate with Google or cancels the Google sign-in process. (BR-04)
-  2. System displays message MSG01 – “Google sign-in was unsuccessful. Please try again.”
+  2. System displays message MSG03 – “Google sign-in was unsuccessful. Please try again.”
 - **EX-2**: System can’t verify the Google account
   1. The system cannot verify the identity information returned by Google. (BR-05)
-  2. System displays message MSG02 – “Unable to verify your Google account. Please try again.”
+  2. System displays message MSG04 – “Unable to verify your Google account. Please try again.”
 - **EX-3**: Google account is not linked to an internal account
   1. The authenticated Google account is not associated with any existing internal account. (BR-06)
-  2. System displays message MSG03 – “This Google account is not authorized. Please contact your administrator for assistance.”
+  2. System displays message MSG05 – “This Google account is not authorized. Please contact your administrator for assistance.”
 - **EX-4**: The internal account has been deactivated
   1. The internal account associated with the Google account is inactive or has been deactivated. (BR-03)
-  2. System displays message MSG04 – “Your account is currently unavailable. Please contact your administrator for assistance.”
+  2. System displays message MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”
 - **EX-5**: User is not allowed to access the system
   1. The internal user does not have an active role or required permission to access the system. (BR-04)
-  2. System displays message MSG05 – “You do not currently have access to the system. Please contact your administrator for assistance.”
+  2. ~~System displays message “You do not currently have access to the system. Please contact your administrator for assistance.”~~ Removed with SCRUM-63 ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)); no message code is assigned.
 
 ---
 
@@ -204,7 +204,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
 - **EX-1**: System can’t complete the sign-out action
   1. The system cannot complete the sign-out operation. (BR-09)
-  2. System displays message MSG01 – “Unable to sign out. Please try again.”
+  2. System displays message MSG06 – “Unable to sign out. Please try again.”
 
 
 ### UC-11: Tạo cuộc họp (SCRUM-17)

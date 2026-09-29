@@ -76,7 +76,7 @@ public class NotificationEndpointsTests : IDisposable
             (await client.PostAsync("/api/notifications/read-all", null)).StatusCode);
         var invalid = await client.GetAsync("/api/notifications?page=0");
         Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
-        Assert.Equal("NOTIFICATION_INVALID_QUERY",
+        Assert.Equal("MSG39",
             (await invalid.Content.ReadFromJsonAsync<ErrorJson>())!.Code);
     }
 
@@ -93,7 +93,7 @@ public class NotificationEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task List_returns_NOTIFICATION_LOAD_FAILED_and_500_when_account_lookup_fails()
+    public async Task List_returns_MSG40_and_500_when_account_lookup_fails()
     {
         var user = NewUser("database-error@example.com");
         _factory.Accounts.WithUser(user);
@@ -103,7 +103,7 @@ public class NotificationEndpointsTests : IDisposable
         var response = await client.GetAsync("/api/notifications");
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        Assert.Equal("NOTIFICATION_LOAD_FAILED",
+        Assert.Equal("MSG40",
             (await response.Content.ReadFromJsonAsync<ErrorJson>())!.Code);
     }
 

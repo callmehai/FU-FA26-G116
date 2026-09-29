@@ -71,7 +71,8 @@ cookie thì trả `401 MSG01`, y như RT hết hạn.
 
 `MSG01` của `/refresh` mang câu **`Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.`** chứ không
 phải "Email hoặc mật khẩu không đúng." — refresh không gửi email hay mật khẩu nào để mà sai. Mã
-vẫn là `MSG01`, nên FE (khớp theo `code`) không phải sửa gì.
+vẫn là `MSG01`, nên FE (khớp theo `code`) không phải sửa gì. Tài khoản bị vô hiệu hoá giữa phiên
+thì `/refresh` trả `MSG02`, cùng mã với `/login` và `/google`.
 
 Chuyển sang cookie theo comment của SCRUM-11, gộp cả ba bước (backend đặt cookie, FE bỏ
 `localStorage`, backend bỏ RT khỏi body) vào một PR. Phiên đăng nhập từ trước PR này chỉ có RT
@@ -109,15 +110,15 @@ Vai trò trả về bằng `roleId` + `roleName` (tên hiện tại trong bảng
 `"role": "Secretary"` — đổi từ `SCRUM-63`, xem [04-quan-ly-vai-tro.md](04-quan-ly-vai-tro.md). Shape
 này dùng chung cho `/login`, `/google`, `/refresh` và `/me`.
 
-Các nhánh lỗi đều trả `401` kèm mã thông báo của UC-01. FE khớp theo `code`, không khớp theo
+Các nhánh lỗi đều trả `401` kèm mã thông báo trong [danh mục mã](00-danh-muc-ma-thong-bao.md). FE khớp theo `code`, không khớp theo
 `message` — đổi chữ trong `message` không được làm FE vỡ.
 
 | `code` | Khi nào | `message` |
 |---|---|---|
 | `MSG01` | Email không tồn tại, **hoặc** sai mật khẩu, **hoặc** bỏ trống | `Email hoặc mật khẩu không đúng.` |
-| `MSG03` | Tài khoản đã bị vô hiệu hoá (`users.is_active = false`) | `Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.` |
+| `MSG02` | Tài khoản đã bị vô hiệu hoá (`users.is_active = false`) | `Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.` |
 
-> **`MSG04` ("chưa được cấp quyền truy cập hệ thống") đã bỏ từ `SCRUM-63`.** Nó từ chối vai trò
+> **Nhánh "chưa được cấp quyền truy cập hệ thống" đã bỏ từ `SCRUM-63`, không có mã.** Nó từ chối vai trò
 > không có capability nào trừ `Member`; khi vai trò thành dữ liệu (ADR-0008), vai trò tự tạo không
 > có quyền nào là cấu hình hợp lệ, hoạt động y như `Member`. Giờ mọi vai trò không có quyền đều đăng
 > nhập được, token đơn giản không mang capability nào. **Chờ BA sửa đặc tả UC-01.**
@@ -126,7 +127,7 @@ Vài điểm cố ý, đừng "sửa" lại:
 
 - **`MSG01` gộp ba tình huống.** Tiêu chí nghiệm thu của SCRUM-11: lỗi chung chung, không tiết lộ
   email có tồn tại hay không. Tách ra thành "email không tồn tại" là làm hỏng yêu cầu này.
-- **Kiểm mật khẩu trước, kiểm `is_active` sau.** Nếu trả `MSG03` trước khi so mật khẩu thì người
+- **Kiểm mật khẩu trước, kiểm `is_active` sau.** Nếu trả `MSG02` trước khi so mật khẩu thì người
   không biết mật khẩu vẫn biết được địa chỉ đó là tài khoản thật.
 - **Email không tồn tại vẫn phải băm một lần.** Băm mật khẩu chậm có chủ đích, nên bỏ qua bước này
   khi không tìm thấy user sẽ làm nhánh "không có tài khoản" trả lời nhanh hơn nhánh "sai mật
@@ -141,7 +142,7 @@ Sequence diagram: [SignInWithGoogle.png](../06-sequencediagram/SignInWithGoogle.
 
 Chia việc giữa FE và BE đúng như diagram: `LoginPage` mở Google và tự xử lý nhánh ngoài (Google
 lỗi hoặc người dùng huỷ), **xong rồi** mới gọi `AuthController`. Nghĩa là nhánh ngoài không bao giờ
-đến backend — không có ID token nào để gửi lên, nên MSG01 của nhánh đó do FE tự hiển thị.
+đến backend — không có ID token nào để gửi lên, nên `MSG03` của nhánh đó do FE tự hiển thị.
 
 ### `POST /api/auth/google`
 
@@ -152,17 +153,18 @@ lỗi hoặc người dùng huỷ), **xong rồi** mới gọi `AuthController`.
 `200 OK` trả về **đúng shape** của `/api/auth/login` — client không cần biết phiên được tạo bằng
 cách nào, chỉ cần biết đã có phiên.
 
-> **Chú ý mã thông báo:** UC-02 đánh số khác UC-01 cho cùng tình huống. Tài khoản bị vô hiệu hoá là
-> `MSG03` ở UC-01 nhưng `MSG04` ở đây. ("Không có quyền truy cập" — `MSG04` ở UC-01, `MSG05` ở đây —
-> đã bỏ ở cả hai từ `SCRUM-63`.) Đây là lý do code có **hai** enum outcome riêng (`SignInOutcome` và `GoogleSignInOutcome`)
-> chứ không dùng chung — gộp lại là một trong hai use case bị lấy mã của cái kia. Đừng "dọn" cho
-> giống nhau.
+> **Chú ý mã thông báo:** mã được đánh số chung toàn dự án, không đánh lại theo từng use case (xem
+> [danh mục mã](00-danh-muc-ma-thong-bao.md)). Tài khoản bị vô hiệu hoá là `MSG02` ở cả UC-01 lẫn
+> UC-02. `MSG04` ("Không xác minh được tài khoản Google") có trong đặc tả nhưng backend chưa trả riêng:
+> verifier không phân biệt được trường hợp đó với token sai, nên cả hai đều là `MSG03`. Nhánh "không
+> có quyền truy cập" đã bỏ từ `SCRUM-63`. Code vẫn có **hai** enum outcome riêng (`SignInOutcome` và
+> `GoogleSignInOutcome`) vì hai luồng có các nhánh khác nhau, không phải vì mã khác nhau.
 
 | `code` | Khi nào | `message` |
 |---|---|---|
-| `MSG01` | ID token không verify được: thiếu, sai định dạng, hết hạn, sai audience, sai chữ ký, hoặc email chưa verified | `Đăng nhập bằng Google không thành công.` |
-| `MSG03` | Google xác thực OK nhưng **chưa có tài khoản nội bộ nào liên kết** với Google identity đó, và cũng không có tài khoản nào tự liên kết được (xem dưới) | `Tài khoản Google này chưa được cấp quyền truy cập hệ thống.` |
-| `MSG04` | Tài khoản bị vô hiệu hoá: đã liên kết, **hoặc** chưa liên kết nhưng email trùng email Google đã xác minh | `Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.` |
+| `MSG03` | ID token không verify được: thiếu, sai định dạng, hết hạn, sai audience, sai chữ ký, hoặc email chưa verified | `Đăng nhập bằng Google không thành công.` |
+| `MSG05` | Google xác thực OK nhưng **chưa có tài khoản nội bộ nào liên kết** với Google identity đó, và cũng không có tài khoản nào tự liên kết được (xem dưới) | `Tài khoản Google này chưa được cấp quyền truy cập hệ thống.` |
+| `MSG02` | Tài khoản bị vô hiệu hoá: đã liên kết, **hoặc** chưa liên kết nhưng email trùng email Google đã xác minh | `Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.` |
 
 ### Liên kết theo `sub`, không theo email
 
@@ -183,16 +185,16 @@ xác minh, `google_subject_id IS NULL` và `is_active = true`. Có thì lưu `su
 `UPDATE ... WHERE`), ghi audit `user.google_linked`, rồi đi tiếp như bình thường.
 
 Tài khoản trùng email nhưng **đã bị vô hiệu hoá trước khi kịp liên kết** thì không liên kết, và trả
-`MSG04` (không phải `MSG03`): tài khoản có tồn tại, bảo "chưa được cấp quyền" là sai. Người gọi đã
+`MSG02` (không phải `MSG05`): tài khoản có tồn tại, bảo "chưa được cấp quyền" là sai. Người gọi đã
 được Google xác minh là chủ email đó, nên cho họ biết tài khoản của mình bị khoá không lộ gì. Tài
-khoản trùng email nhưng đã liên kết với `sub` **khác** thì vẫn `MSG03` — người gọi không phải chủ.
+khoản trùng email nhưng đã liên kết với `sub` **khác** thì vẫn `MSG05` — người gọi không phải chủ.
 
 Nghĩa là: admin tạo tài khoản bằng Gmail của ai (`POST /api/users`) thì người đó bấm **Tiếp tục với
 Google** là vào, không cần thao tác DB. Tài khoản đã liên kết thì không bao giờ bị liên kết lại.
 
 ### Không tự tạo tài khoản
 
-Google identity chưa ai liên kết thì trả `MSG03`, **không** tạo tài khoản mới. Cấp tài khoản là
+Google identity chưa ai liên kết thì trả `MSG05`, **không** tạo tài khoản mới. Cấp tài khoản là
 việc của quản trị viên; cho tự đăng ký ở đây nghĩa là bất kỳ ai có Gmail đều vào được hệ thống.
 
 Liên kết một tài khoản mà email **khác** Gmail của người dùng (ví dụ tài khoản seed
@@ -273,14 +275,14 @@ audience rỗng.
 Sequence diagram: [SignOut.png](../06-sequencediagram/SignOut.png).
 
 UC-03 chỉ có `User` và `Authenticated Page` — **không có participant backend nào**. Việc của nó là
-xoá JWT ở trình duyệt, hiện hộp xác nhận trước khi xoá, và MSG01 khi không xoá được. Toàn bộ là
+xoá JWT ở trình duyệt, hiện hộp xác nhận trước khi xoá, và `MSG06` khi không xoá được. Toàn bộ là
 việc của FE, làm cùng SCRUM-46.
 
 Backend không có việc mới. `POST /api/auth/logout` đã có sẵn và bổ sung cho UC-03 phần diagram
 không vẽ nhưng tiêu chí nghiệm thu SCRUM-11 yêu cầu: **huỷ phiên ở phía server**, để một client
 giữ lại RT vẫn không dùng lại được. Từ khi RT nằm trong cookie `HttpOnly`, đây cũng là **cách duy
 nhất** xoá được cookie — JavaScript không đụng tới nó. Vì vậy FE coi `/logout` không tới được server
-là "không xoá được" — `MSG01` của UC-03 — và giữ nguyên phiên để người dùng thử lại; nếu cứ xoá phía
+là "không xoá được" — `MSG06` — và giữ nguyên phiên để người dùng thử lại; nếu cứ xoá phía
 trình duyệt thì F5 sẽ đăng nhập lại ngay bằng cookie còn sót.
 
 Logout chỉ huỷ RT của phiên đó — đăng xuất trên laptop không đăng xuất trên điện thoại. Huỷ mọi

@@ -100,7 +100,15 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         => Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id && m.CreatedById == creatorId));
 
     public Task<Meeting?> FindOwnedAsync(Guid id, Guid creatorId, CancellationToken ct = default)
-        => Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id && m.CreatedById == creatorId));
+    {
+        if (NextReadThrows is { } exception)
+        {
+            NextReadThrows = null;
+            throw exception;
+        }
+
+        return Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id && m.CreatedById == creatorId));
+    }
 
     public Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(CancellationToken ct = default)
     {
