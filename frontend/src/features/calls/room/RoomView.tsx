@@ -9,7 +9,9 @@ import {
   useChat,
   useIsSpeaking,
   useLocalParticipant,
+  useMediaDeviceSelect,
   useParticipants,
+  useSpeakingParticipants,
   useTracks,
   type ReceivedChatMessage,
   type TrackReferenceOrPlaceholder,
@@ -17,6 +19,8 @@ import {
 import { type Participant, ParticipantEvent, type Room, RoomEvent, Track, type TrackPublication } from 'livekit-client'
 import { muteCallParticipant } from '../../../api/calls'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
+import { Dialog } from '../../../components/Dialog'
+import { Select } from '../../../components/Select'
 import { Icon, type IconName } from '../../../components/Icon'
 import { useToast } from '../../../components/toastContext'
 import { avatarColors, initials } from '../../../lib/avatar'
@@ -75,6 +79,7 @@ function RoomLayout({
     window.matchMedia(PANEL_OVERLAY_QUERY).matches ? null : 'people',
   )
   const [confirmingLeave, setConfirmingLeave] = useState(false)
+  const [choosingDevices, setChoosingDevices] = useState(false)
   const [reconnecting, setReconnecting] = useState(false)
   const participants = useParticipants()
   const chat = useChat()
@@ -82,7 +87,8 @@ function RoomLayout({
   const unread = panel === 'chat' ? 0 : chat.chatMessages.length - seenMessages
   const toast = useToast()
   const selfMuting = useRef(false)
-  const { isMicrophoneEnabled, localParticipant } = useLocalParticipant()
+  const { isMicrophoneEnabled, isCameraEnabled, localParticipant } = useLocalParticipant()
+  const [cameraBusy, setCameraBusy] = useState(false)
 
   // Closing the tab while connected asks first; the browser shows its own wording.
   useBeforeUnload((event) => event.preventDefault())
@@ -119,6 +125,18 @@ function RoomLayout({
       toast.show(deviceErrorMessage(err, 'micro'), 'error')
     } finally {
       selfMuting.current = false
+    }
+  }
+
+  /** Camera on or off without leaving the call (SCRUM-42): the track is muted, not the call redone. */
+  async function toggleCamera() {
+    setCameraBusy(true)
+    try {
+      await localParticipant.setCameraEnabled(!isCameraEnabled)
+    } catch (err) {
+      toast.show(deviceErrorMessage(err, 'camera'), 'error')
+    } finally {
+      setCameraBusy(false)
     }
   }
 
@@ -173,6 +191,14 @@ function RoomLayout({
             off={!isMicrophoneEnabled}
             onClick={() => void toggleMic()}
           />
+          <ControlButton
+            icon={isCameraEnabled ? 'video' : 'videoOff'}
+            label={isCameraEnabled ? 'Tắt camera' : 'Bật camera'}
+            off={!isCameraEnabled}
+            disabled={cameraBusy}
+            onClick={() => void toggleCamera()}
+          />
+          <ControlButton icon="sliders" label="Thiết bị" onClick={() => setChoosingDevices(true)} />
         </div>
         <div className="room-controls-group">
           <ControlButton
@@ -202,6 +228,8 @@ function RoomLayout({
         </div>
       </footer>
 
+      {choosingDevices && <DevicesDialog onClose={() => setChoosingDevices(false)} />}
+
       {confirmingLeave && (
         <ConfirmDialog
           title="Rời phòng họp"
@@ -225,6 +253,7 @@ function ControlButton({
   onClick,
   off = false,
   active = false,
+  disabled = false,
   badge,
 }: {
   icon: IconName
@@ -232,11 +261,13 @@ function ControlButton({
   onClick: () => void
   off?: boolean
   active?: boolean
+  disabled?: boolean
   badge?: number
 }) {
   return (
     <button
       type="button"
+      disabled={disabled}
       className={`room-control${off ? ' room-control-off' : ''}${active ? ' room-control-active' : ''}`}
       aria-pressed={active || undefined}
       title={label}
@@ -264,21 +295,85 @@ function StartAudioBanner() {
   )
 }
 
+const WIDE_PAGE = 9
+const NARROW_PAGE = 4
+
 function ParticipantGrid() {
   // One tile per participant: their camera when on, a placeholder otherwise.
   const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: true }], { onlySubscribed: false })
-  const ordered = useMemo(
-    // Everyone else first, yourself last — the way people expect to find themselves.
-    () => [...tracks].sort((a, b) => Number(a.participant.isLocal) - Number(b.participant.isLocal)),
-    [tracks],
+  const speakers = useSpeakingParticipants()
+  const pageSize = usePageSize()
+  const [order, setOrder] = useState<string[]>([])
+  const [page, setPage] = useState(0)
+
+  const localIdentity = tracks.find((t) => t.participant.isLocal)?.participant.identity
+  const nextOrder = tileOrder(
+    order,
+    tracks.map((t) => t.participant.identity),
+    speakers.map((p) => p.identity),
+    localIdentity,
+    pageSize,
   )
+  // Adjusting state while rendering, guarded so it settles: the order is kept between renders.
+  if (nextOrder.join() !== order.join()) setOrder(nextOrder)
+
+  const pages = Math.max(1, Math.ceil(nextOrder.length / pageSize))
+  const current = Math.min(page, pages - 1)
+  const byIdentity = new Map(tracks.map((t) => [t.participant.identity, t]))
+  // Only the visible page is rendered, so adaptive stream stops downloading everyone else's video.
+  const visible = nextOrder
+    .slice(current * pageSize, (current + 1) * pageSize)
+    .map((id) => byIdentity.get(id))
+    .filter((t): t is TrackReferenceOrPlaceholder => t !== undefined)
 
   return (
-    <div className="room-grid" data-count={Math.min(ordered.length, 9)}>
-      {ordered.map((trackRef) => (
-        <ParticipantTile key={trackRef.participant.identity} trackRef={trackRef} />
-      ))}
+    <div className="room-grid-wrap">
+      <div className="room-grid" data-count={visible.length}>
+        {visible.map((trackRef) => (
+          <ParticipantTile key={trackRef.participant.identity} trackRef={trackRef} />
+        ))}
+      </div>
+      {pages > 1 && (
+        <nav className="room-pager" aria-label="Trang người dự">
+          <button type="button" className="icon-button" aria-label="Trang trước" disabled={current === 0} onClick={() => setPage(current - 1)}>
+            <Icon name="chevronLeft" />
+          </button>
+          <span>
+            Trang {current + 1}/{pages}
+          </span>
+          <button type="button" className="icon-button" aria-label="Trang sau" disabled={current >= pages - 1} onClick={() => setPage(current + 1)}>
+            <Icon name="chevronRight" />
+          </button>
+        </nav>
+      )}
     </div>
+  )
+}
+
+/**
+ * A stable tile order so tiles do not jump around. Newcomers go to the end; someone who starts
+ * speaking while off the first page moves to its front. Yourself always last, the way people
+ * expect to find themselves.
+ */
+function tileOrder(previous: string[], present: string[], speaking: string[], self: string | undefined, pageSize: number) {
+  const kept = previous.filter((id) => present.includes(id))
+  let order = [...kept, ...present.filter((id) => !kept.includes(id))].filter((id) => id !== self)
+  for (const id of speaking) {
+    const at = order.indexOf(id)
+    if (at >= pageSize) order = [id, ...order.slice(0, at), ...order.slice(at + 1)]
+  }
+  return self ? [...order, self] : order
+}
+
+/** 9 tiles on a wide window, 4 on a narrow one — matching the grid's breakpoint in global.css. */
+function usePageSize() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const query = window.matchMedia('(max-width: 1023px)')
+      query.addEventListener('change', onChange)
+      return () => query.removeEventListener('change', onChange)
+    },
+    () => (window.matchMedia('(max-width: 1023px)').matches ? NARROW_PAGE : WIDE_PAGE),
   )
 }
 
@@ -294,7 +389,10 @@ function ParticipantTile({ trackRef }: { trackRef: TrackReferenceOrPlaceholder }
   return (
     <figure className={`room-tile${speaking ? ' room-tile-speaking' : ''}`}>
       {showVideo ? (
-        <VideoTrack trackRef={trackRef} className="room-tile-video" />
+        <VideoTrack
+          trackRef={trackRef}
+          className={`room-tile-video${participant.isLocal ? ' room-tile-video-self' : ''}`}
+        />
       ) : (
         <span className="room-tile-avatar" style={{ backgroundColor: colors.bg, color: colors.fg }} aria-hidden="true">
           {initials(name)}
@@ -326,7 +424,7 @@ function ParticipantsPanel({
     () =>
       [...participants].sort((a, b) => {
         const byRole = ROLE_ORDER[meetingRoleOf(a) ?? 'Member'] - ROLE_ORDER[meetingRoleOf(b) ?? 'Member']
-        return byRole || (a.name ?? '').localeCompare(b.name ?? '', 'vi')
+        return byRole || (a.name ?? '').localeCompare(b.name ?? '', 'vi', { numeric: true })
       }),
     [participants],
   )
@@ -517,5 +615,66 @@ function useMicrophoneOn(participant: Participant) {
       }
     },
     () => participant.isMicrophoneEnabled,
+  )
+}
+
+/** Switch microphone, camera and speaker without leaving the room (SCRUM-42). */
+function DevicesDialog({ onClose }: { onClose: () => void }) {
+  return (
+    <Dialog
+      title="Thiết bị"
+      description="Đổi thiết bị có hiệu lực ngay, không phải vào lại phòng."
+      onClose={onClose}
+      footer={
+        <button type="button" className="btn btn-primary" onClick={onClose}>
+          Xong
+        </button>
+      }
+    >
+      <div className="room-devices">
+        <DeviceField kind="audioinput" label="Micro" />
+        <DeviceField kind="videoinput" label="Camera" />
+        <DeviceField kind="audiooutput" label="Loa" />
+      </div>
+    </Dialog>
+  )
+}
+
+function DeviceField({ kind, label }: { kind: MediaDeviceKind; label: string }) {
+  const toast = useToast()
+  const { devices, activeDeviceId, setActiveMediaDevice } = useMediaDeviceSelect({
+    kind,
+    requestPermissions: kind !== 'audiooutput',
+  })
+  const options = devices
+    .filter((d) => d.deviceId)
+    .map((d, i) => ({ value: d.deviceId, label: d.label || `${label} ${i + 1}` }))
+
+  return (
+    <label className="field">
+      <span className="field-label">{label}</span>
+      {options.length === 0 ? (
+        <span className="field-hint">
+          {kind === 'audiooutput'
+            ? 'Trình duyệt này không cho chọn loa.'
+            : `Chưa có quyền dùng ${label.toLowerCase()}, hoặc máy không có ${label.toLowerCase()}.`}
+        </span>
+      ) : (
+        <Select
+          label={label}
+          value={
+            options.find((o) => o.value === activeDeviceId)?.value ??
+            options.find((o) => o.value === 'default')?.value ??
+            options[0].value
+          }
+          options={options}
+          onChange={(id) =>
+            void setActiveMediaDevice(id).catch((err: unknown) =>
+              toast.show(kind === 'audiooutput' ? errorMessage(err) : deviceErrorMessage(err, kind === 'audioinput' ? 'micro' : 'camera'), 'error'),
+            )
+          }
+        />
+      )}
+    </label>
   )
 }
