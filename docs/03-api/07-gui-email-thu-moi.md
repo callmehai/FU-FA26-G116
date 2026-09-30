@@ -1,0 +1,94 @@
+# Gửi email thư mời cuộc họp — SCRUM-15
+
+SCRUM-15 không thêm HTTP endpoint riêng. Luồng công bố của SCRUM-19 gọi
+`IMeetingInvitationQueue.QueueForPublishedMeetingAsync(meetingId)` sau khi đã chuyển meeting sang
+`Published`, nhưng trước khi commit transaction. Mỗi thành phần tham dự tạo một dòng
+`email_messages` ở trạng thái `Queued`; request công bố chỉ ghi queue và không chờ SMTP.
+Unique index `(meeting_id, to_address)` và bước bỏ qua địa chỉ đã tồn tại giúp việc enqueue có tính
+idempotent nếu transaction công bố được gọi lại.
+
+## Luồng xử lý nền
+
+`EmailDeliveryWorker` đọc `email_messages` theo `created_at`, rồi `id`, và gửi từng thư một. Worker
+claim một dòng bằng `FOR UPDATE SKIP LOCKED`, chuyển sang `Processing` và cấp lease trước khi kết nối
+SMTP. Vì vậy nhiều instance backend không cùng lấy một email; lease hết hạn giúp phục hồi job nếu
+instance đang gửi bị dừng. Mỗi lần claim được ghi vào `attempt_count`:
+
+1. Gửi thành công: chuyển sang `Sent`, đặt `sent_at`, xoá `last_error`.
+2. Gửi thất bại nhưng còn lượt thử: về `Queued`, lưu lỗi và đặt `next_attempt_at` theo exponential
+   backoff; worker tiếp tục xử lý thư khác thay vì chặn cả hàng đợi.
+3. Dùng hết lượt thử: chuyển sang `Failed` và giữ lỗi cuối để truy vết.
+
+Lỗi SMTP không thay đổi trạng thái `Published` của meeting. Queue nằm trong PostgreSQL nên các job
+`Queued` còn lại tiếp tục được xử lý sau khi ứng dụng khởi động lại. Cách gửi có ngữ nghĩa
+at-least-once: nếu tiến trình dừng ngay sau khi SMTP đã nhận thư nhưng trước khi trạng thái `Sent`
+được lưu, lần chạy sau có thể gửi lại thư đó.
+
+SMTP được kết nối bằng MailKit và không phụ thuộc Gmail hay một nhà cung cấp cụ thể. Chọn
+`StartTls` cho cổng submission thông dụng (thường là 587), `SslOnConnect` cho TLS ngay khi kết nối
+(thường là 465), hoặc `None` chỉ cho SMTP nội bộ không mã hoá.
+
+Mỗi thư gồm nội dung tiếng Việt, đường dẫn trực tiếp tới
+`/mgmt/meetings/{id}` và tệp `thu-moi-hop.ics` có `METHOD:REQUEST`, người tham dự, thời gian, địa điểm
+và URL cuộc họp. Outlook và Google Calendar có thể nhập tệp này.
+
+## Điểm tích hợp với SCRUM-19
+
+Service công bố phải dùng cùng scoped `TrustCabinetDbContext` và gọi queue trong transaction đang
+chuyển trạng thái. Thứ tự bắt buộc:
+
+1. Khóa và kiểm tra meeting đang ở `Approved`.
+2. Chuyển sang `Published`, thêm `MeetingStatusHistory` bất biến.
+3. Gọi `QueueForPublishedMeetingAsync`.
+4. Commit transaction.
+
+Nếu transaction rollback thì các dòng email cũng rollback. Không gọi queue trước khi trạng thái
+`Published` được lưu, và không gọi SMTP trực tiếp từ request.
+
+## Cấu hình
+
+Các giá trị không bí mật nằm dưới section `Email` trong `appsettings.json`:
+
+```json
+{
+  "Email": {
+    "ApplicationBaseUrl": "https://hop.example.vn",
+    "MaxAttempts": 3,
+    "RetryDelaySeconds": 5,
+    "PollingIntervalSeconds": 5,
+    "ProcessingLeaseSeconds": 120,
+    "Smtp": {
+      "Enabled": true,
+      "Host": "smtp.example.vn",
+      "Port": 587,
+      "Security": "StartTls",
+      "Username": "",
+      "Password": "",
+      "FromAddress": "no-reply@example.vn",
+      "FromName": "TrustCabinet",
+      "TimeoutSeconds": 30
+    }
+  }
+}
+```
+
+Không commit username/password SMTP. Đặt chúng bằng user-secrets khi phát triển:
+
+```powershell
+dotnet user-secrets set "Email:Smtp:Enabled" "true" --project backend/TrustCabinet.Web
+dotnet user-secrets set "Email:Smtp:Host" "smtp.example.vn" --project backend/TrustCabinet.Web
+dotnet user-secrets set "Email:Smtp:Port" "587" --project backend/TrustCabinet.Web
+dotnet user-secrets set "Email:Smtp:Security" "StartTls" --project backend/TrustCabinet.Web
+dotnet user-secrets set "Email:Smtp:Username" "..." --project backend/TrustCabinet.Web
+dotnet user-secrets set "Email:Smtp:Password" "..." --project backend/TrustCabinet.Web
+dotnet user-secrets set "Email:Smtp:FromAddress" "no-reply@example.vn" --project backend/TrustCabinet.Web
+```
+
+Production dùng các biến môi trường tương ứng, ví dụ
+`Email__Smtp__Password` và `Email__ApplicationBaseUrl`. Khi `Enabled` là `false`, worker không được
+khởi động; các dòng queue vẫn được giữ trong database.
+
+Giới hạn cấu hình: `MaxAttempts` từ 1–20; retry/polling từ 1–3.600 giây; lease từ 10–3.600 giây;
+timeout SMTP từ 1–300 giây. `ProcessingLeaseSeconds` phải dài hơn timeout SMTP. Khi bật SMTP,
+backend kiểm tra cấu hình ngay lúc khởi động và dừng với lỗi rõ ràng nếu thiếu host, sender, URL
+frontend, security mode không hợp lệ hoặc cặp username/password không đầy đủ.

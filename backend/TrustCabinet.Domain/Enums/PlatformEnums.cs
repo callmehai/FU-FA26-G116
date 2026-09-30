@@ -17,6 +17,8 @@ public enum NotificationType
 public enum EmailStatus
 {
     Queued,
+    /// <summary>Claimed by a worker until its lease expires.</summary>
+    Processing,
     Sent,
     /// <summary>Every retry used up. Kept so a human can see what was never delivered.</summary>
     Failed,

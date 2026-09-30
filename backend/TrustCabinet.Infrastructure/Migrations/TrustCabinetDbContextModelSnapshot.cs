@@ -495,9 +495,21 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("last_error");
 
+                    b.Property<DateTimeOffset?>("LeaseExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lease_expires_at");
+
+                    b.Property<Guid?>("LeaseToken")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lease_token");
+
                     b.Property<Guid?>("MeetingId")
                         .HasColumnType("uuid")
                         .HasColumnName("meeting_id");
+
+                    b.Property<DateTimeOffset?>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_at");
 
                     b.Property<DateTimeOffset?>("SentAt")
                         .HasColumnType("timestamp with time zone")
@@ -518,7 +530,7 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Property<string>("ToAddress")
                         .IsRequired()
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)")
+                        .HasColumnType("citext")
                         .HasColumnName("to_address");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -528,11 +540,16 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_email_messages");
 
-                    b.HasIndex("MeetingId")
-                        .HasDatabaseName("ix_email_messages_meeting_id");
+                    b.HasIndex("LeaseExpiresAt")
+                        .HasDatabaseName("ix_email_messages_lease_expires_at");
 
-                    b.HasIndex("Status", "CreatedAt")
-                        .HasDatabaseName("ix_email_messages_status_created_at");
+                    b.HasIndex("MeetingId", "ToAddress")
+                        .IsUnique()
+                        .HasDatabaseName("ix_email_messages_meeting_id_to_address")
+                        .HasFilter("meeting_id IS NOT NULL");
+
+                    b.HasIndex("Status", "NextAttemptAt", "CreatedAt")
+                        .HasDatabaseName("ix_email_messages_status_next_attempt_at_created_at");
 
                     b.ToTable("email_messages", (string)null);
                 });

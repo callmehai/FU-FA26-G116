@@ -7,6 +7,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Access;
 using TrustCabinet.Infrastructure.Authentication;
+using TrustCabinet.Infrastructure.Email;
 using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Infrastructure.Users;
@@ -24,6 +25,7 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<IUserIdProvider, NotificationUserIdProvider>();
 builder.Services.AddTrustCabinetNotifications();
 builder.Services.AddHostedService<NotificationWorker>();
+builder.Services.AddTrustCabinetEmailDelivery(builder.Configuration);
 
 // The audit log records where a request came from, and only the web layer can see that.
 builder.Services.AddHttpContextAccessor();

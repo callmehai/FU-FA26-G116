@@ -25,6 +25,15 @@ public class EmailMessage : Entity
 
     public string LastError { get; set; } = string.Empty;
 
+    /// <summary>Earliest time at which a failed message may be attempted again.</summary>
+    public DateTimeOffset? NextAttemptAt { get; set; }
+
+    /// <summary>Identifies the worker attempt currently allowed to finalize this message.</summary>
+    public Guid? LeaseToken { get; set; }
+
+    /// <summary>Allows another worker to recover this message after a crash or forced shutdown.</summary>
+    public DateTimeOffset? LeaseExpiresAt { get; set; }
+
     public DateTimeOffset? SentAt { get; set; }
 
     /// <summary>The meeting that caused this email, for tracing.</summary>
