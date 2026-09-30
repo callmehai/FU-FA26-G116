@@ -310,6 +310,9 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task Lifecycle_round_trip_persists_one_immutable_history_per_action_and_publish_snapshot()
     {
+        var approver = NewUser("Workflow approver", _approverRoleId);
+        _db.Users.Add(approver);
+        await _db.SaveChangesAsync();
         var created = await NewService().CreateAsync(Input(), _creatorId);
         Assert.True(created.Succeeded);
         var meetingId = created.Meeting!.Id;
@@ -341,24 +344,24 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var service = NewService();
         var submit = await service.TransitionAsync(
             meetingId,
-            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, _creatorId),
+            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, approver.Id),
             _creatorId);
         var reject = await service.TransitionAsync(
             meetingId,
             new MeetingTransitionCommand(MeetingTransitionAction.Reject, Reason: "Bổ sung số liệu"),
-            _creatorId);
+            approver.Id);
         var returnToDraft = await service.TransitionAsync(
             meetingId,
             new MeetingTransitionCommand(MeetingTransitionAction.ReturnToDraft),
             _creatorId);
         var resubmit = await service.TransitionAsync(
             meetingId,
-            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, _creatorId),
+            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, approver.Id),
             _creatorId);
         var approve = await service.TransitionAsync(
             meetingId,
             new MeetingTransitionCommand(MeetingTransitionAction.Approve),
-            _creatorId);
+            approver.Id);
         var publish = await service.TransitionAsync(
             meetingId,
             new MeetingTransitionCommand(MeetingTransitionAction.Publish),
@@ -388,7 +391,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             history.Select(item => item.Action));
         Assert.Equal("Bổ sung số liệu", history.Single(item => item.Action == MeetingHistoryAction.Reject).Reason);
         Assert.All(history.Where(item => item.Action == MeetingHistoryAction.SubmitForApproval), item =>
-            Assert.Equal(_creatorId, item.AssignedApproverId));
+            Assert.Equal(approver.Id, item.AssignedApproverId));
 
         var invitations = await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync();
         Assert.Equal(_creatorId, Assert.Single(invitations).RecipientUserId);
@@ -496,6 +499,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task Approve_endpoint_persists_transition_history_through_the_real_EF_repository()
     {
+        var approver = NewUser("HTTP workflow approver", _approverRoleId);
+        _db.Users.Add(approver);
         var meeting = new Meeting
         {
             Title = "EF-backed approval",
@@ -506,7 +511,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             Location = "Phòng A",
             StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
             CreatedById = _creatorId,
-            AssignedApproverId = _creatorId,
+            AssignedApproverId = approver.Id,
         };
         _db.Meetings.Add(meeting);
         _db.MeetingStatusHistory.Add(new MeetingStatusHistory
@@ -516,7 +521,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             ToStatus = MeetingStatus.WaitingApproval,
             Action = MeetingHistoryAction.SubmitForApproval,
             ActorId = _creatorId,
-            AssignedApproverId = _creatorId,
+            AssignedApproverId = approver.Id,
             OccurredAt = DateTimeOffset.UtcNow,
         });
         await _db.SaveChangesAsync();
@@ -524,7 +529,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
 
         using var app = new PostgreSqlMeetingApiFactory(_connectionString);
         using var client = app.CreateClient();
-        var user = await _db.Users.AsNoTracking().SingleAsync(item => item.Id == _creatorId);
+        var user = await _db.Users.AsNoTracking().SingleAsync(item => item.Id == approver.Id);
         var issuer = app.Services.GetRequiredService<ITokenIssuer>();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
             "Bearer", issuer.CreateAccessToken(user, [Capability.MeetingApprover]));
@@ -540,12 +545,14 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(MeetingStatus.Approved, persisted.Status);
         Assert.Equal(MeetingStatus.WaitingApproval, approvalHistory.FromStatus);
         Assert.Equal(MeetingStatus.Approved, approvalHistory.ToStatus);
-        Assert.Equal(_creatorId, approvalHistory.ActorId);
+        Assert.Equal(approver.Id, approvalHistory.ActorId);
     }
 
     [Fact]
     public async Task Publish_persists_a_long_unicode_invitation_subject_without_corrupting_the_title_snapshot()
     {
+        var approver = NewUser("Unicode workflow approver", _approverRoleId);
+        _db.Users.Add(approver);
         var title = new string('a', 290) + string.Concat(Enumerable.Repeat("📋", 5));
         var service = NewService();
         var created = await service.CreateAsync(Input(title), _creatorId);
@@ -563,10 +570,10 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         await _db.SaveChangesAsync();
 
         Assert.Equal(MeetingWorkflowOutcome.Success, (await service.TransitionAsync(
-            meetingId, new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, _creatorId),
+            meetingId, new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, approver.Id),
             _creatorId)).Outcome);
         Assert.Equal(MeetingWorkflowOutcome.Success, (await service.TransitionAsync(
-            meetingId, new MeetingTransitionCommand(MeetingTransitionAction.Approve), _creatorId)).Outcome);
+            meetingId, new MeetingTransitionCommand(MeetingTransitionAction.Approve), approver.Id)).Outcome);
         var published = await service.TransitionAsync(
             meetingId, new MeetingTransitionCommand(MeetingTransitionAction.Publish), _creatorId);
 
@@ -583,6 +590,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task Concurrent_publish_requests_only_commit_one_transition_and_invitation_batch()
     {
+        var approver = NewUser("Concurrent workflow approver", _approverRoleId);
+        _db.Users.Add(approver);
         var created = await NewService().CreateAsync(Input(), _creatorId);
         Assert.True(created.Succeeded);
         var meetingId = created.Meeting!.Id;
@@ -600,12 +609,12 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var service = NewService();
         Assert.Equal(MeetingWorkflowOutcome.Success, (await service.TransitionAsync(
             meetingId,
-            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, _creatorId),
+            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, approver.Id),
             _creatorId)).Outcome);
         Assert.Equal(MeetingWorkflowOutcome.Success, (await service.TransitionAsync(
             meetingId,
             new MeetingTransitionCommand(MeetingTransitionAction.Approve),
-            _creatorId)).Outcome);
+            approver.Id)).Outcome);
 
         await using var competingContext = NewContext();
         var competingService = NewService(competingContext);

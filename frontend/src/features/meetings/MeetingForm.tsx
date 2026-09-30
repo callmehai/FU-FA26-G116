@@ -304,16 +304,6 @@ export function MeetingForm({
           {fieldErrors.sensitivity && <small className="field-error">{fieldErrors.sensitivity}</small>}
         </div>
 
-        <div className="field">
-          <span>Người duyệt</span>
-          <p className="field-static">
-            {meeting?.status === 'Rejected' ? 'Giữ nguyên người duyệt hiện tại' : 'Chọn khi gửi duyệt'}
-          </p>
-          <small className="field-hint">
-            {meeting?.status === 'Rejected' ? 'Chỉ chọn lại ở lần gửi duyệt mới.' : 'Lưu bản nháp chưa gán người duyệt.'}
-          </small>
-        </div>
-
         <label className="field span-2" data-field="description">
           <span>Mô tả</span>
           <textarea

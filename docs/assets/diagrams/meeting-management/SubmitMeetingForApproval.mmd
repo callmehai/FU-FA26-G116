@@ -62,7 +62,7 @@ sequenceDiagram
     else Thiếu thông tin meeting hoặc agenda
         Service->>DB: Kết thúc transaction không ghi dữ liệu
         Service-->>API: 400 MSG51 và lỗi theo field
-    else Người duyệt không active hoặc thiếu MeetingApprover
+    else Người duyệt là Organizer, không active hoặc thiếu MeetingApprover
         Service->>DB: Kết thúc transaction không ghi dữ liệu
         Service-->>API: 400 MSG52
     else Đủ điều kiện gửi duyệt
@@ -81,3 +81,4 @@ sequenceDiagram
     end
 
     Note over Organizer,Service: Rejected được sửa thông tin, giữ assignment và lịch sử, nhưng phải ReturnToDraft trước khi gửi duyệt lại.
+    Note over Organizer,Service: WaitingApproval không được rút về Draft hoặc đổi assignment, kể cả khi approver mất quyền.

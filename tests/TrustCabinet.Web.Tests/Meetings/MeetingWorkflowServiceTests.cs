@@ -287,6 +287,72 @@ public sealed class MeetingWorkflowServiceTests
         Assert.True(utf8.GetByteCount(subject) > 0);
     }
 
+    [Theory]
+    [InlineData(Sensitivity.Normal)]
+    [InlineData(Sensitivity.Internal)]
+    [InlineData(Sensitivity.Confidential)]
+    [InlineData(Sensitivity.Secret)]
+    public async Task Organizer_cannot_submit_to_self_even_with_both_capabilities(Sensitivity sensitivity)
+    {
+        var meeting = GivenMeeting();
+        meeting.Sensitivity = sensitivity;
+        meeting.Participants.Add(new MeetingParticipant { MeetingId = meeting.Id, UserId = _organizerId, Role = MeetingRole.Chair });
+        meeting.AgendaItems.Add(Agenda(meeting.Id));
+        Grant(_organizerId, Capability.MeetingApprover);
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, _organizerId), _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.InvalidApprover, result.Outcome);
+        Assert.Equal(MeetingStatus.Draft, meeting.Status);
+        Assert.Null(meeting.AssignedApproverId);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_repository.EmailMessages);
+    }
+
+    [Theory]
+    [InlineData(MeetingTransitionAction.Approve)]
+    [InlineData(MeetingTransitionAction.Reject)]
+    public async Task Legacy_self_assignment_cannot_approve_or_reject(MeetingTransitionAction action)
+    {
+        var meeting = GivenMeeting(MeetingStatus.WaitingApproval);
+        meeting.AssignedApproverId = _organizerId;
+        Grant(_organizerId, Capability.MeetingApprover);
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(action, Reason: action == MeetingTransitionAction.Reject ? "Lý do" : null),
+            _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Forbidden, result.Outcome);
+        Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_repository.EmailMessages);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Waiting_approval_cannot_be_withdrawn_even_when_approver_loses_capability(bool approverEligible)
+    {
+        var meeting = GivenMeeting(MeetingStatus.WaitingApproval);
+        if (!approverEligible)
+        {
+            _repository.UserCapabilities.Remove(_approverId);
+        }
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.ReturnToDraft), _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.StatusConflict, result.Outcome);
+        Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
+        Assert.Equal(_approverId, meeting.AssignedApproverId);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_repository.EmailMessages);
+    }
+
     [Fact]
     public async Task Publish_persistence_failure_rolls_back_status_history_notifications_and_jobs()
     {

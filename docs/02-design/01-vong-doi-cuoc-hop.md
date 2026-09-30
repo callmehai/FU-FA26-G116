@@ -34,8 +34,14 @@ từ chối) hoặc ở `Draft`, sau đó gửi lại theo đúng flow
 `Draft → WaitingApproval` và có thể chọn lại một người duyệt đang hợp lệ.
 
 Khi gửi duyệt theo UC-15, người tổ chức phải chọn một tài khoản đang hoạt động có capability
-`MeetingApprover`. Trường `AssignedApproverId` được để trống trong bản nháp cho tới khi người duyệt
+`MeetingApprover`, khác chính Organizer. Cấm tự duyệt ở mọi mức độ mật; Chair có hai capability
+cũng không được submit cho mình hoặc quyết định trên assignment cũ trỏ về mình.
+Trường `AssignedApproverId` được để trống trong bản nháp cho tới khi người duyệt
 được chọn.
+
+Giữ rule không cho rút `WaitingApproval` về Draft hoặc đổi assignment khi chờ duyệt. Approver
+inactive/mất capability thì meeting vẫn chờ; cần khôi phục quyền/active qua quản trị hoặc team chốt
+flow xử lý khác ở ticket riêng. Không có transition tự động hay đường bypass trong SCRUM-19.
 
 `Published` xác nhận transaction công bố đã lưu meeting, history và invitation jobs. Đây không phải
 xác nhận email đã được giao: trạng thái gửi thực tế được theo dõi bằng `EmailStatus` và `SentAt`;
@@ -54,7 +60,7 @@ lỗi gửi hoặc retry không chuyển meeting khỏi `Published`.
   quyền này chỉ vì assignment cũ vẫn xuất hiện trong lịch sử. Participant được xem meeting sau
   Published có thể xem timeline nhưng không được xem rejection reason.
 - **Chair không phải quyền phê duyệt hay công bố.** Chair chỉ là quan hệ trong một cuộc họp.
-  Approve/Reject thuộc người duyệt đang được gán và còn capability `MeetingApprover`; Publish thuộc
+  Approve/Reject thuộc người duyệt đang được gán, khác Organizer và còn capability `MeetingApprover`; Publish thuộc
   Meeting Organizer. Một Chair chỉ làm được các action đó khi đồng thời có đúng quan hệ tương ứng.
 - **Recipient được snapshot khi Publish (BR-54).** Chỉ participant row có user active và `Response` khác
   `Delegated` được đưa vào batch notification/invitation. Không tự thêm delegate chỉ vì

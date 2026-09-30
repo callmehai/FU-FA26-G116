@@ -14,7 +14,7 @@ import { useMeeting } from './useMeeting'
 
 /**
  * UC-12 Update Meeting (SCRUM-17). The form is filled from a fresh GET rather than from whatever
- * screen linked here, and only the meeting's creator may edit it, in Draft or Rejected.
+ * screen linked here, and only the meeting's creator may edit it, only in Draft or Rejected.
  */
 export function EditMeetingPage() {
   const { meetingId } = useParams()
@@ -23,7 +23,7 @@ export function EditMeetingPage() {
   const toast = useToast()
   const handleAccessLost = useAccessLost()
   const { state, reload, retry } = useMeeting(meetingId)
-  /** Set when a save hit 409: the meeting left its editable state while the form was open. */
+  /** Set when a save hit 409: the meeting left Draft/Rejected while the form was open. */
   const [conflict, setConflict] = useState<string | null>(null)
 
   if (state.kind === 'notFound') return <NotFound />
@@ -75,7 +75,8 @@ export function EditMeetingPage() {
           <div className="alert alert-warning page-alert" role="alert">
             <p>
               {conflict ?? 'Cuộc họp này không thể chỉnh sửa được nữa.'} Trạng thái hiện tại:{' '}
-              <b>{MEETING_STATUS_LABEL[meeting.status]}</b>. Chỉ sửa được khi cuộc họp ở trạng thái Nháp hoặc Bị từ chối.
+              <b>{MEETING_STATUS_LABEL[meeting.status]}</b>. Chỉ sửa được khi cuộc họp ở trạng thái Nháp hoặc Bị từ
+              chối.
             </p>
             <button type="button" className="btn btn-outline btn-sm" onClick={backToMeeting}>
               Về trang cuộc họp
@@ -84,11 +85,11 @@ export function EditMeetingPage() {
         ) : (
           <>
             {meeting.status === 'Rejected' && (
-              <div className="alert alert-info" role="note">
-                Sửa thông tin không thay đổi trạng thái, người duyệt hoặc lịch sử từ chối. Để gửi duyệt lại, người tổ chức
-                cần đưa cuộc họp về Nháp trước.
-              </div>
+              <p className="alert alert-info page-alert">
+                Cuộc họp đang ở trạng thái Bị từ chối. Lưu thay đổi không tự gửi duyệt lại — trạng thái vẫn giữ nguyên.
+              </p>
             )}
+
             <MeetingForm
               meeting={meeting}
               submitLabel="Lưu thay đổi"

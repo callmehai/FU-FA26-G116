@@ -249,7 +249,7 @@ Sơ đồ hiện có: [UpdateMeeting.png](../06-sequencediagram/meeting-manageme
 
 1. Hệ thống kiểm tra cuộc họp đang ở `Draft` và toàn bộ mandatory meeting information cùng required
    agenda information đã đầy đủ theo BR-33. Agenda required không được rỗng.
-2. Organizer chọn một tài khoản đang hoạt động và hiện có capability `MeetingApprover`.
+2. Organizer chọn một tài khoản khác mình, đang hoạt động và hiện có capability `MeetingApprover`.
 3. Hệ thống khóa/đọc lại cuộc họp, chạy lại cùng readiness validator và kiểm tra lại người duyệt.
 4. Hệ thống gán người duyệt, chuyển `Draft → WaitingApproval`, ghi action
    `SubmitForApproval` và tạo thông báo một cách nguyên tử.
@@ -266,11 +266,16 @@ Sequence diagram UC-15 chỉ cho submit từ `Draft`. Nếu meeting đang `Rejec
 `ReturnToDraft` trước khi submit lại; sửa thông tin có thể thực hiện ở `Rejected` hoặc `Draft`: [sơ đồ](../assets/diagrams/meeting-management/SubmitMeetingForApproval.png), [source Mermaid](../assets/diagrams/meeting-management/SubmitMeetingForApproval.mmd).
 Quy tắc liên quan: BR-29, BR-33, BR-34, BR-35, BR-38.
 
+Không cho rút `WaitingApproval` về Draft hay đổi assignment ở trạng thái này. Approver mất quyền
+hoặc inactive thì meeting vẫn chờ; quản trị phải khôi phục quyền/active hoặc team chốt flow xử lý
+khác ở ticket riêng. Readiness dùng field bắt buộc/giới hạn của schema Agenda, không tự áp thêm rule
+thứ tự liên tục, thời lượng dương, presenter bắt buộc hoặc trạng thái Pending trước SCRUM-25.
+
 ### UC-16: Phê duyệt hoặc từ chối cuộc họp (SCRUM-19)
 
 - **Actor chính:** Meeting Approver đang được gán cho approval cycle hiện tại.
 - **Điều kiện tiên quyết:** Actor đã đăng nhập, tài khoản còn hoạt động, vẫn có capability
-  `MeetingApprover`, đúng `Meeting.AssignedApproverId`, và cuộc họp đang `WaitingApproval`.
+  `MeetingApprover`, đúng `Meeting.AssignedApproverId`, khác Organizer và cuộc họp đang `WaitingApproval`.
 - **Điều kiện sau khi thành công:** Approve chuyển sang `Approved`; Reject chuyển sang `Rejected`
   và lưu rejection reason bắt buộc. Mỗi quyết định tạo đúng một lifecycle history.
 
@@ -280,7 +285,10 @@ Actor, trạng thái `WaitingApproval`, assignment hiện tại, tài khoản ac
 `MeetingApprover` được kiểm tra lại trước khi ghi.
 
 Chair chỉ là relationship với meeting và không tự có quyền Approve/Reject. Nếu một Chair đồng thời
-là current Assigned Approver thì quyền đến từ assignment cùng capability `MeetingApprover`.
+là current Assigned Approver thì quyền đến từ assignment cùng capability `MeetingApprover`, và
+người đó phải khác Organizer. Cấm tự duyệt ở mọi mức độ mật; assignment cũ trỏ về Organizer cũng
+không được Approve/Reject. Submit cho chính Organizer trả `400 MSG52`; quyết định tự duyệt trả
+`403 MSG55`, không thay đổi status/history/jobs.
 
 Meeting Organizer và current Assigned Approver được đọc toàn bộ lifecycle history, gồm rejection
 reason. Khi assignment đổi, người duyệt cũ không tiếp tục có quyền này chỉ vì từng là approver;

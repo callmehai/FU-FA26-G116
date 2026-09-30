@@ -8,7 +8,7 @@ namespace TrustCabinet.Web.Tests.Meetings;
 public sealed class MeetingSubmissionReadinessTests
 {
     [Fact]
-    public void Agenda_readiness_requires_a_nonempty_complete_contiguous_agenda()
+    public void Agenda_readiness_requires_a_nonempty_agenda_with_a_title()
     {
         var noAgenda = AgendaSubmissionRules.Validate([]);
         var invalid = AgendaSubmissionRules.Validate(
@@ -22,22 +22,23 @@ public sealed class MeetingSubmissionReadinessTests
         ]);
 
         Assert.Contains("agendaItems", noAgenda.Keys);
-        Assert.Contains("agendaItems", invalid.Keys);
+        Assert.Single(invalid);
+        Assert.EndsWith(".title", invalid.Single().Key);
     }
 
     [Fact]
-    public void Agenda_readiness_accepts_either_an_internal_or_guest_presenter()
+    public void Agenda_readiness_does_not_impose_unsettled_order_duration_presenter_or_pending_rules()
     {
         var internalPresenter = new AgendaItem
         {
-            Position = 1,
+            Position = 8,
             Title = "Báo cáo",
-            PlannedDurationMinutes = 30,
-            PresenterId = Guid.CreateVersion7(),
+            PlannedDurationMinutes = 0,
+            Status = AgendaItemStatus.InProgress,
         };
         var guestPresenter = new AgendaItem
         {
-            Position = 2,
+            Position = 8,
             Title = "Thảo luận",
             PlannedDurationMinutes = 15,
             PresenterName = "Khách mời",
@@ -49,7 +50,7 @@ public sealed class MeetingSubmissionReadinessTests
     }
 
     [Fact]
-    public void Agenda_readiness_rejects_invalid_fields_and_non_pending_items()
+    public void Agenda_readiness_rejects_schema_length_and_enum_violations()
     {
         var item = new AgendaItem
         {
@@ -58,16 +59,15 @@ public sealed class MeetingSubmissionReadinessTests
             Description = new string('x', 4001),
             PlannedDurationMinutes = 0,
             PresenterName = new string('x', 201),
-            Status = AgendaItemStatus.InProgress,
+            Status = (AgendaItemStatus)999,
         };
 
         var errors = AgendaSubmissionRules.Validate([item]);
 
-        Assert.Contains("agendaItems", errors.Keys); // Position starts at 2 rather than 1.
+        Assert.Equal(4, errors.Count);
         Assert.Contains($"agendaItems[{item.Id}].title", errors.Keys);
         Assert.Contains($"agendaItems[{item.Id}].description", errors.Keys);
-        Assert.Contains($"agendaItems[{item.Id}].plannedDurationMinutes", errors.Keys);
-        Assert.Contains($"agendaItems[{item.Id}].presenter", errors.Keys);
+        Assert.Contains($"agendaItems[{item.Id}].presenterName", errors.Keys);
         Assert.Contains($"agendaItems[{item.Id}].status", errors.Keys);
     }
 

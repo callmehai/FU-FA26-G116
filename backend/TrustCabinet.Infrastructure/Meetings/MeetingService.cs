@@ -317,6 +317,8 @@ public sealed class MeetingService(
                     ? meeting.AssignedApproverId == actorId
                     : meeting.CreatedById == actorId;
                 if (!isExpectedActor
+                    || (command.Action is MeetingTransitionAction.Approve or MeetingTransitionAction.Reject
+                        && meeting.CreatedById == actorId)
                     || !await meetings.IsActiveUserWithCapabilityAsync(actorId, requiredCapability, token))
                 {
                     return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.Forbidden);
@@ -350,7 +352,8 @@ public sealed class MeetingService(
                         return MeetingWorkflowResult.Invalid(MeetingWorkflowOutcome.SubmissionNotReady, readinessErrors);
                     }
 
-                    if (!await meetings.IsEligibleApproverAsync(command.AssignedApproverId!.Value, token))
+                    if (command.AssignedApproverId == meeting.CreatedById
+                        || !await meetings.IsEligibleApproverAsync(command.AssignedApproverId!.Value, token))
                     {
                         return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.InvalidApprover);
                     }

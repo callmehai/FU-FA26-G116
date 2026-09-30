@@ -38,8 +38,11 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   sửa tay giữ dữ liệu cũ, hợp đồng mới `roleId` + `roleName` ở `/api/users`, `/api/auth/*`,
   `/api/roles/capabilities`, mã `MSG19`–`MSG28`, và phần FE cần làm
 - [`05-quan-ly-cuoc-hop.md`](05-quan-ly-cuoc-hop.md) — contract tạo, đọc, sửa và lấy danh sách cuộc
-  họp (`SCRUM-17`/`SCRUM-18`, UC-11/UC-12/UC-14): quyền theo từng cuộc họp, lọc và phân trang ở
-  server, validation baseline và các điểm cần BA bổ sung; mã `MSG29`–`MSG38`
+  họp (`SCRUM-17`/`SCRUM-18`, UC-11/UC-12/UC-14) cùng readiness, transitions và history
+  (`SCRUM-19`, UC-15/UC-16/UC-17): authorization, validation, snapshot và lỗi workflow; mã
+  `MSG29`–`MSG38`, `MSG41`–`MSG64` (MSG57 đã ngừng dùng)
+- [`06-scrum19-ban-giao-tich-hop.md`](06-scrum19-ban-giao-tich-hop.md) — ranh giới backend/FE,
+  checklist Tester và contract publication snapshot/email jobs bàn giao cho worker SCRUM-15
 - [`06-thong-bao-trong-ung-dung.md`](06-thong-bao-trong-ung-dung.md) — SCRUM-14: API danh sách,
   đánh dấu đã đọc, kiểm tra đích, SignalR và các nguồn tạo thông báo; mã `MSG39`–`MSG40`
 

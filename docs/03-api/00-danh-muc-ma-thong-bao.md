@@ -124,7 +124,7 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG49` | 200 | POST ReturnToDraft | Đưa cuộc họp bị từ chối về Nháp thành công | `Đã đưa cuộc họp về bản nháp.` | BE |
 | `MSG50` | 400 | POST transitions | JSON, action, GUID hoặc field không hợp lệ | `Yêu cầu chuyển trạng thái không hợp lệ.` | BE |
 | `MSG51` | 400 | POST SubmitForApproval | Thông tin cuộc họp hoặc agenda chưa sẵn sàng — kèm `errors` | `Cuộc họp chưa đủ thông tin để gửi duyệt.` | BE |
-| `MSG52` | 400 | POST SubmitForApproval | Người duyệt không còn active hoặc thiếu `MeetingApprover` | `Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp.` | BE |
+| `MSG52` | 400 | POST SubmitForApproval | Người duyệt không còn active, thiếu `MeetingApprover` hoặc trùng Organizer | `Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp.` | BE |
 | `MSG53` | 400 | POST Reject | Lý do từ chối bị thiếu hoặc chỉ có khoảng trắng | `Cần nhập lý do từ chối.` | BE |
 | `MSG54` | 400 | POST Reject | Lý do từ chối dài hơn 1.000 ký tự sau khi trim | `Lý do từ chối không được vượt quá 1.000 ký tự.` | BE |
 | `MSG55` | 403 | GET readiness, POST transitions | Caller không có quyền thực hiện action | `Bạn không có quyền thực hiện thao tác này.` | BE |

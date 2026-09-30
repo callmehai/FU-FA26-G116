@@ -135,6 +135,60 @@ public sealed class MeetingEndpointsTests : IDisposable
     private static async Task<JsonDocument> JsonOf(HttpResponseMessage response)
         => JsonDocument.Parse(await response.Content.ReadAsStringAsync());
 
+    [Theory]
+    [InlineData(Sensitivity.Normal)]
+    [InlineData(Sensitivity.Internal)]
+    [InlineData(Sensitivity.Confidential)]
+    [InlineData(Sensitivity.Secret)]
+    public async Task Submit_to_the_organizer_returns_MSG52_without_writing_any_workflow_rows(Sensitivity sensitivity)
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        meeting.Sensitivity = sensitivity;
+        meeting.Participants.Add(new MeetingParticipant { MeetingId = meeting.Id, UserId = creator.Id, Role = MeetingRole.Chair });
+        meeting.AgendaItems.Add(new AgendaItem { MeetingId = meeting.Id, Title = "Báo cáo" });
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator, Capability.MeetingApprover];
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator, Capability.MeetingApprover);
+
+        var response = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions",
+            new { action = "SubmitForApproval", assignedApproverId = creator.Id });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MSG52", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(MeetingStatus.Draft, meeting.Status);
+        Assert.Null(meeting.AssignedApproverId);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Empty(_factory.Meetings.EmailMessages);
+    }
+
+    [Theory]
+    [InlineData("Approve")]
+    [InlineData("Reject")]
+    public async Task Legacy_self_assignment_returns_MSG55_without_approving_or_rejecting(string action)
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator, creator.Id);
+        meeting.Status = MeetingStatus.WaitingApproval;
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator, Capability.MeetingApprover];
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator, Capability.MeetingApprover);
+        var json = action == "Reject" ? "{\"action\":\"Reject\",\"reason\":\"Lý do\"}" : "{\"action\":\"Approve\"}";
+
+        var response = await client.PostAsync($"/api/meetings/{meeting.Id}/transitions",
+            new StringContent(json, Encoding.UTF8, "application/json"));
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal("MSG55", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Empty(_factory.Meetings.EmailMessages);
+    }
+
     [Fact]
     public async Task Post_transition_accepts_the_documented_submit_contract_and_returns_history()
     {

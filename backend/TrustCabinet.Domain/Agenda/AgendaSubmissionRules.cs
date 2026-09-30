@@ -1,5 +1,4 @@
 using TrustCabinet.Domain.Entities;
-using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Domain.Agenda;
 
@@ -16,13 +15,7 @@ public static class AgendaSubmissionRules
             return errors;
         }
 
-        var ordered = items.OrderBy(item => item.Position).ThenBy(item => item.Id).ToArray();
-        if (ordered.Where((item, index) => item.Position != index + 1).Any())
-        {
-            errors["agendaItems"] = "Vị trí các mục chương trình phải liên tục từ 1.";
-        }
-
-        foreach (var item in ordered)
+        foreach (var item in items)
         {
             var prefix = $"agendaItems[{item.Id}]";
             var title = item.Title?.Trim() ?? string.Empty;
@@ -36,22 +29,15 @@ public static class AgendaSubmissionRules
                 errors[$"{prefix}.description"] = "Mô tả mục không được vượt quá 4.000 ký tự.";
             }
 
-            if (item.PlannedDurationMinutes <= 0)
-            {
-                errors[$"{prefix}.plannedDurationMinutes"] = "Thời lượng dự kiến phải lớn hơn 0.";
-            }
-
-            var hasPresenterId = item.PresenterId.HasValue;
             var presenterName = item.PresenterName?.Trim() ?? string.Empty;
-            var hasPresenterName = presenterName.Length > 0;
-            if (hasPresenterId == hasPresenterName || presenterName.Length > 200)
+            if (presenterName.Length > 200)
             {
-                errors[$"{prefix}.presenter"] = "Mỗi mục cần đúng một người trình bày nội bộ hoặc khách mời (tối đa 200 ký tự).";
+                errors[$"{prefix}.presenterName"] = "Tên người trình bày không được vượt quá 200 ký tự.";
             }
 
-            if (!Enum.IsDefined(item.Status) || item.Status != AgendaItemStatus.Pending)
+            if (!Enum.IsDefined(item.Status))
             {
-                errors[$"{prefix}.status"] = "Trạng thái mục phải là Pending trước khi gửi duyệt.";
+                errors[$"{prefix}.status"] = "Trạng thái mục không hợp lệ.";
             }
         }
 

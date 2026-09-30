@@ -24,7 +24,7 @@ sequenceDiagram
         alt Meeting không tồn tại hoặc caller không được đọc
             Service->>DB: Kết thúc transaction không ghi dữ liệu
             Service-->>API: 404
-        else Caller không phải current approver active có MeetingApprover
+        else Caller là Organizer hoặc không phải current approver active có MeetingApprover
             Service->>DB: Kết thúc transaction không ghi dữ liệu
             Service-->>API: 403 MSG55
         else Meeting không còn WaitingApproval
