@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
+import { getMeetingCall } from '../../../api/calls'
 import { BackLink } from '../../../components/BackLink'
 import { Icon } from '../../../components/Icon'
 import { NotFound } from '../../../components/NotFound'
@@ -123,6 +124,7 @@ function MeetingDetail({
   const canEdit = isOrganizer && EDITABLE_STATUSES.includes(meeting.status)
   // UC-15 AF-1: after publishing, the organizer may still move the time, place and link.
   const canReschedule = isOrganizer && RESCHEDULABLE_STATUSES.includes(meeting.status)
+  const roomOpen = useCallRoomOpen(meeting)
 
   /** Display names the page already knows: whoever acted in the history, and the approver list. */
   const names = useMemo(() => {
@@ -202,12 +204,20 @@ function MeetingDetail({
             </span>
           </p>
         </div>
-        {(canEdit || canReschedule) && (
+        {(canEdit || canReschedule || roomOpen) && (
           <div className="page-header-actions">
-            <Link className="btn btn-outline btn-lg" to={routes.meetingEdit(meeting.id)} state={forwardBack}>
-              <Icon name={canEdit ? 'pencil' : 'calendar'} size={16} />
-              {canEdit ? 'Chỉnh sửa' : 'Dời lịch'}
-            </Link>
+            {roomOpen && (
+              <Link className="btn btn-primary btn-lg" to={routes.meetingRoom(meeting.id)}>
+                <Icon name="video" size={16} />
+                Vào phòng họp
+              </Link>
+            )}
+            {(canEdit || canReschedule) && (
+              <Link className="btn btn-outline btn-lg" to={routes.meetingEdit(meeting.id)} state={forwardBack}>
+                <Icon name={canEdit ? 'pencil' : 'calendar'} size={16} />
+                {canEdit ? 'Chỉnh sửa' : 'Dời lịch'}
+              </Link>
+            )}
           </div>
         )}
       </div>
@@ -388,4 +398,27 @@ function DetailSkeleton() {
       </div>
     </div>
   )
+}
+
+/**
+ * Whether to offer "join the call room" (SCRUM-41). Only an online or hybrid meeting in progress
+ * has a room, so nothing is asked otherwise; and the backend answers 404 to someone who is not
+ * invited (e.g. the organizer who is not a participant), which simply hides the button.
+ */
+function useCallRoomOpen(meeting: Meeting) {
+  const [open, setOpen] = useState(false)
+  const eligible = meeting.mode !== 'InPerson' && meeting.status === 'InProgress'
+
+  useEffect(() => {
+    if (!eligible) return
+    let cancelled = false
+    getMeetingCall(meeting.id)
+      .then((call) => !cancelled && setOpen(call.status === 'Open'))
+      .catch(() => !cancelled && setOpen(false))
+    return () => {
+      cancelled = true
+    }
+  }, [eligible, meeting.id])
+
+  return eligible && open
 }
