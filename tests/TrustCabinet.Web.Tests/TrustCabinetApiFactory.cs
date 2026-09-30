@@ -36,6 +36,15 @@ public class TrustCabinetApiFactory : WebApplicationFactory<Program>
             {
                 services.Remove(notificationWorker);
             }
+
+            // Same for the call room reconciliation: it would reach for a real LiveKit.
+            var callRoomJanitor = services.SingleOrDefault(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService)
+                && descriptor.ImplementationType == typeof(CallRoomJanitor));
+            if (callRoomJanitor is not null)
+            {
+                services.Remove(callRoomJanitor);
+            }
         });
     }
 }

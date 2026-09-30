@@ -60,6 +60,9 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   queue/SMTP không thuộc contract frontend
 - [`07-gui-email-thu-moi-note-cai-dat-may-moi.md`](07-gui-email-thu-moi-note-cai-dat-may-moi.md) —
   checklist cấu hình database, User Secrets, SMTP, migration và kiểm tra worker trên máy mới
+- [`09-phong-hop-truc-tuyen.md`](09-phong-hop-truc-tuyen.md) — phòng họp trực tuyến trên LiveKit
+  (`SCRUM-39`/`SCRUM-41`): ai được vào phòng, cấp token, chủ toạ tắt mic, webhook và job đối soát;
+  mã `MSG117`, `MSG118`, `MSG123`, `MSG124`, `MSG280`–`MSG284`
 
 Dự kiến có thêm:
 
