@@ -34,6 +34,7 @@ import {
   MessageSquare,
   Mic,
   MicOff,
+  Monitor,
   Paperclip,
   PenLine,
   PhoneOff,
@@ -131,6 +132,8 @@ const ICONS = {
   // SCRUM-42: device settings.
   sliders: SlidersHorizontal,
   videoOff: VideoOff,
+  // SCRUM-43: screen sharing.
+  monitor: Monitor,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS

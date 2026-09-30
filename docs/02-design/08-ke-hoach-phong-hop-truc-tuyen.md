@@ -815,15 +815,14 @@ Dưới 1024px, panel đè lên stage dạng sheet. Nền stage là `--stage-bg`
   `box-shadow`, không dùng `border`).
 
 **Chia sẻ màn hình:**
-- Có người chia sẻ → `ScreenShareStage` (khung lớn) + dải camera; nhãn "X đang trình bày".
-- Bấm Chia sẻ → `ScreenShareConfirmDialog`:
-  - tiêu đề `Chia sẻ màn hình`;
-  - nội dung `Mọi người trong phòng sẽ thấy nội dung bạn chọn. Trước khi chia sẻ, hãy đóng tin
-    nhắn, email hoặc tài liệu riêng tư. Nên chọn một tab hoặc một cửa sổ thay vì toàn màn hình.`;
-  - thêm dòng `X đang trình bày — bạn chia sẻ thì phần của X sẽ dừng.` nếu có người đang chia sẻ;
-  - nút `Chọn nội dung để chia sẻ` / `Huỷ`.
-- Gọi `setScreenShareEnabled(true, { audio: true, selfBrowserSurface: 'exclude',
-  surfaceSwitching: 'include', contentHint: 'detail' })`.
+- Có người chia sẻ → `ScreenShareStage` (khung lớn) + dải camera ô 16:9 nhỏ; nhãn "X đang trình bày".
+- Người đang trình bày không xem lại màn hình của chính mình (sẽ lặp gương khi chia sẻ toàn màn
+  hình): khung lớn là thẻ `Bạn đang trình bày cho mọi người` + nút `Dừng trình bày`, như Google Meet.
+- Bấm Chia sẻ → mở thẳng bảng chọn của trình duyệt, không có hộp xác nhận riêng (PO 20/10/2026:
+  làm như Google Meet / Discord, bớt cảnh báo). Bảng chọn của trình duyệt đã cho thấy nội dung sẽ
+  chia sẻ.
+- Gọi `setScreenShareEnabled(true, { audio: true, selfBrowserSurface: 'include',
+  surfaceSwitching: 'include', contentHint: 'detail' })` — có cả thẻ hiện tại trong bảng chọn.
 - Người dùng bấm "Dừng chia sẻ" trên thanh trình duyệt → SDK tự unpublish → `LocalTrackUnpublished`
   với `source === Track.Source.ScreenShare` → cập nhật nút.
 - Người khác bắt đầu chia sẻ khi mình đang chia sẻ → tự `setScreenShareEnabled(false)` + toast

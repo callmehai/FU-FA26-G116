@@ -87,7 +87,11 @@ function RoomLayout({
   const unread = panel === 'chat' ? 0 : chat.chatMessages.length - seenMessages
   const toast = useToast()
   const selfMuting = useRef(false)
-  const { isMicrophoneEnabled, isCameraEnabled, localParticipant } = useLocalParticipant()
+  const { isMicrophoneEnabled, isCameraEnabled, isScreenShareEnabled, localParticipant } = useLocalParticipant()
+  const screenShares = useTracks([Track.Source.ScreenShare], { onlySubscribed: false })
+  // One presenter at a time. A share the server muted to enforce that is still published for a
+  // moment, so it is skipped; if two overlap briefly, the one who started last is shown.
+  const presenter = screenShares.filter((t) => t.publication && !t.publication.isMuted).at(-1)
   const [cameraBusy, setCameraBusy] = useState(false)
 
   // Closing the tab while connected asks first; the browser shows its own wording.
@@ -102,10 +106,20 @@ function RoomLayout({
         toast.show('Chủ toạ đã tắt micro của bạn. Bạn có thể bật lại khi cần phát biểu.', 'info')
       }
     }
+    // Someone else started presenting while I am: step aside (SCRUM-43). The server mutes the
+    // older share as well, for a client that does not do this.
+    const onPublished = (publication: TrackPublication, participant: Participant) => {
+      if (publication.source !== Track.Source.ScreenShare || participant.isLocal) return
+      if (!room.localParticipant.isScreenShareEnabled) return
+      void room.localParticipant.setScreenShareEnabled(false)
+      toast.show(`${participant.name || 'Người khác'} bắt đầu trình bày, phần chia sẻ của bạn đã dừng.`, 'info')
+    }
+    room.on(RoomEvent.TrackPublished, onPublished)
     room.on(RoomEvent.Reconnecting, onReconnecting)
     room.on(RoomEvent.Reconnected, onReconnected)
     room.on(RoomEvent.TrackMuted, onMuted)
     return () => {
+      room.off(RoomEvent.TrackPublished, onPublished)
       room.off(RoomEvent.Reconnecting, onReconnecting)
       room.off(RoomEvent.Reconnected, onReconnected)
       room.off(RoomEvent.TrackMuted, onMuted)
@@ -140,6 +154,31 @@ function RoomLayout({
     }
   }
 
+  /**
+   * Straight to the browser's own picker, like Meet or Discord: it already shows what will be shared.
+   * Cancelling it is not an error worth telling anyone about.
+   */
+  async function startScreenShare() {
+    try {
+      await localParticipant.setScreenShareEnabled(true, {
+        audio: true,
+        // The room's own tab is offered too (presenting a TrustCabinet screen is common); the
+        // presenter sees a card instead of their own share, so it never mirrors itself.
+        selfBrowserSurface: 'include',
+        surfaceSwitching: 'include',
+        contentHint: 'detail',
+      })
+    } catch (err) {
+      if (err instanceof Error && err.name === 'NotAllowedError') return
+      toast.show('Không chia sẻ được màn hình. Vui lòng thử lại.', 'error')
+    }
+  }
+
+  function toggleScreenShare() {
+    if (isScreenShareEnabled) void localParticipant.setScreenShareEnabled(false)
+    else void startScreenShare()
+  }
+
   const restricted = meeting.sensitivity === 'Secret' || meeting.sensitivity === 'Confidential'
 
   return (
@@ -169,7 +208,26 @@ function RoomLayout({
 
       <div className="room-body">
         <main className="room-stage" aria-label="Người trong phòng">
-          <ParticipantGrid />
+          {presenter ? (
+            <div className="room-presenting">
+              <figure className="room-screen">
+                <VideoTrack trackRef={presenter} className="room-screen-video" />
+                <figcaption className="room-tile-name">
+                  <Icon name="monitor" size={14} />
+                  <span>
+                    {presenter.participant.isLocal
+                      ? 'Bạn đang trình bày'
+                      : `${presenter.participant.name || 'Người dự'} đang trình bày`}
+                  </span>
+                </figcaption>
+              </figure>
+              <div className="room-filmstrip">
+                <ParticipantGrid compact />
+              </div>
+            </div>
+          ) : (
+            <ParticipantGrid />
+          )}
         </main>
 
         {panel && (
@@ -197,6 +255,12 @@ function RoomLayout({
             off={!isCameraEnabled}
             disabled={cameraBusy}
             onClick={() => void toggleCamera()}
+          />
+          <ControlButton
+            icon="monitor"
+            label={isScreenShareEnabled ? 'Dừng chia sẻ' : 'Chia sẻ màn hình'}
+            active={isScreenShareEnabled}
+            onClick={toggleScreenShare}
           />
           <ControlButton icon="sliders" label="Thiết bị" onClick={() => setChoosingDevices(true)} />
         </div>
@@ -298,11 +362,13 @@ function StartAudioBanner() {
 const WIDE_PAGE = 9
 const NARROW_PAGE = 4
 
-function ParticipantGrid() {
+function ParticipantGrid({ compact = false }: { compact?: boolean }) {
   // One tile per participant: their camera when on, a placeholder otherwise.
   const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: true }], { onlySubscribed: false })
   const speakers = useSpeakingParticipants()
-  const pageSize = usePageSize()
+  const wideOrNarrow = usePageSize()
+  // Beside a shared screen the cameras shrink to a strip of four.
+  const pageSize = compact ? NARROW_PAGE : wideOrNarrow
   const [order, setOrder] = useState<string[]>([])
   const [page, setPage] = useState(0)
 

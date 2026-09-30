@@ -2039,6 +2039,15 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .room-pager { flex: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; }
 .room-pager .icon-button { color: #fff; }
 .room-pager .icon-button:hover:not(:disabled) { background: var(--stage-tile); }
+.room-presenting { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 12px; }
+.room-screen { position: relative; margin: 0; min-height: 0; border-radius: 12px; background: #000; overflow: hidden; display: grid; }
+.room-screen-video { width: 100%; height: 100%; object-fit: contain; }
+.room-filmstrip { min-width: 0; min-height: 0; display: flex; }
+.room-filmstrip .room-grid { --cols: 1 !important; }
+@media (max-width: 1023px) {
+  .room-presenting { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) 120px; }
+  .room-filmstrip .room-grid { --cols: 4 !important; }
+}
 .room-devices { display: grid; gap: 16px; min-width: min(420px, 80vw); }
 
 .room-grid {
