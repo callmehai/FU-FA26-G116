@@ -396,7 +396,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Post_transition_requires_json_and_returns_MSG57()
+    public async Task Post_transition_requires_json_and_returns_MSG34()
     {
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
@@ -411,7 +411,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
-        Assert.Equal("MSG57", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG34", body.RootElement.GetProperty("code").GetString());
     }
 
     [Fact]

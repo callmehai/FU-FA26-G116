@@ -23,7 +23,7 @@ sequence diagram, code BE, code FE và test đều phải khớp với bảng n�
 
 ## Mã tiếp theo
 
-**`MSG65`** — `MSG41`–`MSG64` hiện đã được sử dụng.
+**`MSG65`** — `MSG41`–`MSG64` đã được cấp; `MSG57` ngừng dùng và không được tái sử dụng.
 
 ## Danh mục
 
@@ -93,7 +93,7 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG31` | 400 | `POST /api/meetings`, `PUT /api/meetings/{id}` | Thông tin không hợp lệ — kèm `errors`; PUT với JSON sai cú pháp thì không có `errors` | `Thông tin cuộc họp không hợp lệ.` / `Nội dung JSON không hợp lệ.` | BE |
 | `MSG32` | 400 | `GET /api/meetings` | Tham số truy vấn danh sách không hợp lệ — kèm `errors` | `Tham số truy vấn không hợp lệ.` | BE |
 | `MSG33` | 409 | `PUT /api/meetings/{id}` | Cuộc họp không còn ở trạng thái sửa được | `Cuộc họp này không thể chỉnh sửa được nữa.` | BE |
-| `MSG34` | 415 | `PUT /api/meetings/{id}` | Content-Type không phải `application/json` | `Content-Type phải là application/json.` | BE |
+| `MSG34` | 415 | `PUT /api/meetings/{id}`, `POST /api/meetings/{id}/transitions` | Content-Type không phải `application/json` | `Content-Type phải là application/json.` | BE |
 | `MSG35` | 500 | `POST /api/meetings` | Không lưu được khi tạo | `Không thể tạo cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG36` | 500 | `PUT /api/meetings/{id}` | Không lưu được khi sửa | `Không thể cập nhật cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG37` | 500 | `GET /api/meetings/{id}`, `PUT /api/meetings/{id}` | Không tải được chi tiết cuộc họp. Ở `GET` gồm cả lỗi khi kiểm tra tài khoản đang hoạt động; ở `PUT` chỉ khi bước kiểm tra trạng thái không đọc được cuộc họp | `Không thể tải thông tin cuộc họp. Vui lòng thử lại.` | BE |
@@ -129,7 +129,7 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG54` | 400 | POST Reject | Lý do từ chối dài hơn 1.000 ký tự sau khi trim | `Lý do từ chối không được vượt quá 1.000 ký tự.` | BE |
 | `MSG55` | 403 | GET readiness, POST transitions | Caller không có quyền thực hiện action | `Bạn không có quyền thực hiện thao tác này.` | BE |
 | `MSG56` | 400 | GET history | Query phân trang history không hợp lệ | `Tham số truy vấn không hợp lệ.` | BE |
-| `MSG57` | 415 | POST transitions | Content-Type không phải `application/json` | `Content-Type phải là application/json.` | BE |
+| `MSG57` | — | POST transitions | Trùng tình huống Content-Type của `MSG34`; dùng `MSG34` | — | Ngừng dùng; không tái sử dụng |
 | `MSG58` | 413 | POST transitions, PUT meeting | Body JSON vượt quá 64 KiB | `Nội dung JSON vượt quá 64 KiB.` | BE |
 | `MSG59` | 503 | POST Approve, Reject, ReturnToDraft | Không lưu được transition | `Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG60` | 503 | GET readiness, GET history | Không tải được readiness/history | `Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại.` | BE |
@@ -172,7 +172,7 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MEETING_REJECTION_REASON_TOO_LONG` | | `MSG54` |
 | `MEETING_ACTION_FORBIDDEN` | | `MSG55` |
 | `MEETING_INVALID_QUERY` | GET history | `MSG56` |
-| `MEETING_UNSUPPORTED_CONTENT_TYPE` | POST transitions | `MSG57` |
+| `MEETING_UNSUPPORTED_CONTENT_TYPE`, `MSG57` | POST transitions | `MSG34` |
 | `MEETING_BODY_TOO_LARGE` | | `MSG58` |
 | `MEETING_WORKFLOW_FAILED` | | `MSG42`, `MSG47`, `MSG59` theo action |
 | `MEETING_LOAD_FAILED` (workflow) | | `MSG60`, `MSG62` theo endpoint |

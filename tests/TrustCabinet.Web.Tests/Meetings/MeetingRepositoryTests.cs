@@ -13,6 +13,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Meetings;
+using TrustCabinet.Infrastructure.Seed;
 
 namespace TrustCabinet.Web.Tests.Meetings;
 
@@ -397,6 +398,99 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             .ToListAsync();
         Assert.Equal(_creatorId, Assert.Single(publishNotifications).UserId);
         Assert.Equal(history[^1].Id, publishNotifications[0].OriginHistoryId);
+    }
+
+    [Fact]
+    public async Task History_endpoint_reads_while_another_transaction_holds_the_meeting_row_lock()
+    {
+        var created = await NewService().CreateAsync(Input(), _creatorId);
+        Assert.True(created.Succeeded);
+        var meetingId = created.Meeting!.Id;
+
+        await using var blocker = new NpgsqlConnection(_connectionString);
+        await blocker.OpenAsync();
+        await using var transaction = await blocker.BeginTransactionAsync();
+        await using (var locked = blocker.CreateCommand())
+        {
+            locked.Transaction = transaction;
+            locked.CommandText = "SELECT id FROM meetings WHERE id = @id FOR UPDATE";
+            locked.Parameters.AddWithValue("id", meetingId);
+            await locked.ExecuteScalarAsync();
+        }
+
+        // A regression to FOR UPDATE fails quickly with lock_timeout while the blocker is held.
+        var readerConnection = new NpgsqlConnectionStringBuilder(_connectionString)
+        {
+            Options = "-c lock_timeout=500ms",
+            Pooling = false,
+        }.ConnectionString;
+        using var app = new PostgreSqlMeetingApiFactory(readerConnection);
+        using var client = app.CreateClient();
+        var user = await _db.Users.AsNoTracking().SingleAsync(item => item.Id == _creatorId);
+        var issuer = app.Services.GetRequiredService<ITokenIssuer>();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", issuer.CreateAccessToken(user, []));
+
+        var response = await client.GetAsync($"/api/meetings/{meetingId}/history");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var body = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal("Create", Assert.Single(body.RootElement.GetProperty("items").EnumerateArray())
+            .GetProperty("action").GetString());
+        await transaction.RollbackAsync();
+    }
+
+    [Fact]
+    public async Task Development_workflow_demo_is_ready_and_can_be_published_through_the_API_without_reseeding()
+    {
+        // This fixture owns its database; remove its placeholder user to exercise a fresh dev seed.
+        await _db.Users.Where(user => user.Id == _creatorId).ExecuteDeleteAsync();
+        await ReferenceDataSeeder.SeedAsync(_db);
+        await DevelopmentDataSeeder.SeedAsync(_db);
+        _db.ChangeTracker.Clear();
+        var organizer = await _db.Users.SingleAsync(user => user.Email == "thuky@trustcabinet.local");
+        var approver = await _db.Users.SingleAsync(user => user.Email == "chutoa@trustcabinet.local");
+        var demo = await _db.Meetings.SingleAsync(meeting => meeting.Title == "SCRUM-19 — Luồng duyệt và công bố (demo)");
+        var meetingId = demo.Id;
+        Assert.Null(demo.AssignedApproverId);
+
+        using var app = new PostgreSqlMeetingApiFactory(_connectionString);
+        var issuer = app.Services.GetRequiredService<ITokenIssuer>();
+        using var organizerClient = app.CreateClient();
+        organizerClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", issuer.CreateAccessToken(organizer, [Capability.MeetingCreator]));
+        using var approverClient = app.CreateClient();
+        approverClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", issuer.CreateAccessToken(approver, [Capability.MeetingApprover]));
+
+        var readiness = await organizerClient.GetAsync($"/api/meetings/{meetingId}/submission-readiness");
+        Assert.Equal(HttpStatusCode.OK, readiness.StatusCode);
+        using var readinessBody = System.Text.Json.JsonDocument.Parse(await readiness.Content.ReadAsStringAsync());
+        Assert.True(readinessBody.RootElement.GetProperty("ready").GetBoolean());
+
+        var submitted = await organizerClient.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions",
+            new { action = "SubmitForApproval", assignedApproverId = approver.Id });
+        Assert.Equal(HttpStatusCode.OK, submitted.StatusCode);
+        var approved = await approverClient.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions",
+            new { action = "Approve" });
+        Assert.Equal(HttpStatusCode.OK, approved.StatusCode);
+        var published = await organizerClient.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions",
+            new { action = "Publish" });
+        Assert.Equal(HttpStatusCode.OK, published.StatusCode);
+
+        _db.ChangeTracker.Clear();
+        var count = await _db.Meetings.CountAsync();
+        await DevelopmentDataSeeder.SeedAsync(_db);
+        _db.ChangeTracker.Clear();
+        Assert.Equal(count, await _db.Meetings.CountAsync());
+        Assert.Equal(MeetingStatus.Published, (await _db.Meetings.SingleAsync(meeting => meeting.Id == meetingId)).Status);
+        Assert.Equal(4, await _db.MeetingStatusHistory.CountAsync(history => history.MeetingId == meetingId));
+        var invitations = await _db.EmailMessages.Where(email => email.MeetingId == meetingId).ToListAsync();
+        Assert.Equal(3, invitations.Count);
+        Assert.All(invitations, email =>
+        {
+            Assert.Equal(EmailStatus.Queued, email.Status);
+            Assert.Null(email.SentAt);
+        });
     }
 
     [Fact]

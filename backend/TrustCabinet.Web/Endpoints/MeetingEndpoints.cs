@@ -38,7 +38,6 @@ public static class MeetingEndpoints
     private const string Msg54RejectionReasonTooLong = "MSG54";
     private const string Msg55ActionForbidden = "MSG55";
     private const string Msg56HistoryInvalidQuery = "MSG56";
-    private const string Msg57WorkflowUnsupportedContentType = "MSG57";
     private const string Msg58BodyTooLarge = "MSG58";
     private const string Msg59TransitionFailed = "MSG59";
     private const string Msg60WorkflowReadFailed = "MSG60";
@@ -129,32 +128,14 @@ public static class MeetingEndpoints
         {
             return WorkflowError(
                 StatusCodes.Status415UnsupportedMediaType,
-                Msg57WorkflowUnsupportedContentType,
+                Msg34UnsupportedContentType,
                 "Content-Type phải là application/json.");
         }
 
-        if (request.ContentLength > MaxMeetingRequestBodyBytes)
+        using var bodyBuffer = await ReadBoundedBodyAsync(request, ct);
+        if (bodyBuffer is null)
         {
             return BodyTooLarge();
-        }
-
-        using var bodyBuffer = new MemoryStream();
-        var buffer = new byte[8192];
-        while (true)
-        {
-            var bytesToRead = Math.Min(buffer.Length, MaxMeetingRequestBodyBytes + 1 - (int)bodyBuffer.Length);
-            var bytesRead = await request.Body.ReadAsync(buffer.AsMemory(0, bytesToRead), ct);
-            if (bytesRead == 0)
-            {
-                break;
-            }
-
-            if (bodyBuffer.Length + bytesRead > MaxMeetingRequestBodyBytes)
-            {
-                return BodyTooLarge();
-            }
-
-            await bodyBuffer.WriteAsync(buffer.AsMemory(0, bytesRead), ct);
         }
 
         MeetingTransitionCommand? command;
@@ -468,28 +449,10 @@ public static class MeetingEndpoints
                 statusCode: StatusCodes.Status415UnsupportedMediaType);
         }
 
-        if (request.ContentLength > MaxMeetingRequestBodyBytes)
+        using var bodyBuffer = await ReadBoundedBodyAsync(request, ct);
+        if (bodyBuffer is null)
         {
             return BodyTooLarge();
-        }
-
-        await using var bodyBuffer = new MemoryStream();
-        var readBuffer = new byte[8192];
-        while (true)
-        {
-            var bytesToRead = Math.Min(readBuffer.Length, MaxMeetingRequestBodyBytes + 1 - (int)bodyBuffer.Length);
-            var bytesRead = await request.Body.ReadAsync(readBuffer.AsMemory(0, bytesToRead), ct);
-            if (bytesRead == 0)
-            {
-                break;
-            }
-
-            if (bodyBuffer.Length + bytesRead > MaxMeetingRequestBodyBytes)
-            {
-                return BodyTooLarge();
-            }
-
-            await bodyBuffer.WriteAsync(readBuffer.AsMemory(0, bytesRead), ct);
         }
 
         MeetingResult result;
@@ -538,6 +501,43 @@ public static class MeetingEndpoints
                 statusCode: StatusCodes.Status409Conflict),
             _ => ServerError(Msg37LoadFailed, "Không thể tải thông tin cuộc họp. Vui lòng thử lại."),
         };
+
+    private static async Task<MemoryStream?> ReadBoundedBodyAsync(HttpRequest request, CancellationToken ct)
+    {
+        if (request.ContentLength > MaxMeetingRequestBodyBytes)
+        {
+            return null;
+        }
+
+        var body = new MemoryStream();
+        try
+        {
+            var buffer = new byte[8192];
+            while (true)
+            {
+                var bytesToRead = Math.Min(buffer.Length, MaxMeetingRequestBodyBytes + 1 - (int)body.Length);
+                var bytesRead = await request.Body.ReadAsync(buffer.AsMemory(0, bytesToRead), ct);
+                if (bytesRead == 0)
+                {
+                    body.Position = 0;
+                    return body;
+                }
+
+                if (body.Length + bytesRead > MaxMeetingRequestBodyBytes)
+                {
+                    body.Dispose();
+                    return null;
+                }
+
+                await body.WriteAsync(buffer.AsMemory(0, bytesRead), ct);
+            }
+        }
+        catch
+        {
+            body.Dispose();
+            throw;
+        }
+    }
 
     private static IResult BodyTooLarge()
         => Results.Json(

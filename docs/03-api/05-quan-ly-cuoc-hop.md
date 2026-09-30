@@ -215,11 +215,34 @@ Participant có quyền đọc meeting từ Published trở đi nhận timeline 
 participant relationship không cấp quyền action. Former approver không có quyền chỉ nhờ assignment
 trước đây, nhưng một quan hệ participant độc lập vẫn cho timeline đã redacted sau Publish. API không
 có endpoint update/delete history; các row là immutable audit evidence.
+GET history đọc meeting bằng truy vấn không tracking, không dùng `FOR UPDATE`. Một transaction đang
+khóa meeting để PUT/transition không làm request history phải chờ khóa ghi; GET chỉ đọc dữ liệu đã commit.
 Query `page`/`pageSize` mặc định `1`/`20`; `page >= 1`, `pageSize` từ `1` đến `100`. Trả `200`
 với `{ items, page, pageSize, totalCount, totalPages }`; trang vượt cuối trả `items: []`, kể cả
 khi offset lớn hơn `Int32.MaxValue`. Repository kiểm tra tổng số dòng trước khi ép offset sang `int`.
 Nếu offset vượt `Int32.MaxValue` nhưng vẫn nằm trong tập history hiện có, trả `400 MSG56`
 vì EF paging không thể biểu diễn vị trí đó an toàn.
+
+### Dữ liệu Development để kiểm thử workflow
+
+Development seeder bổ sung một meeting `Draft` có sẵn agenda và ba participant active/chưa Delegated,
+để test API trước khi endpoint quản lý agenda và participant được tích hợp:
+
+- ID: `0199ac54-d000-7000-8000-000000000019`.
+- Tiêu đề: `SCRUM-19 — Luồng duyệt và công bố (demo)`.
+- Organizer: `thuky@trustcabinet.local`; approver có thể chọn `chutoa@trustcabinet.local` từ GET approvers.
+- Participant: thư ký, chủ tọa và `thanhvien@trustcabinet.local`.
+- Tài khoản demo dùng mật khẩu Development đã ghi ở `DevelopmentDataSeeder.DemoPassword`.
+
+Đăng nhập Organizer, gọi readiness (ban đầu `ready: true`), submit với ID approver, đăng nhập approver
+để Approve/Reject, rồi dùng Organizer để ReturnToDraft hoặc Publish theo trạng thái hiện tại.
+Publish tạo ba invitation jobs `Queued`, không xác nhận email đã gửi. Có thể kiểm tra history và
+notification bằng API; participant chỉ thấy meeting sau Publish và reason được redacted.
+
+Seeder chỉ chèn meeting này một lần khi đủ tài khoản demo; trên database Development cũ có các
+tài khoản đó, khởi động lại app sẽ thêm demo còn thiếu. Các lần khởi động sau không reset status,
+agenda, participant, assignment hay history đã thao tác. Không tự tái tạo một Draft sau khi demo
+được Publish; muốn chạy lại từ đầu, dùng một database Development riêng mới.
 
 ### GET `/api/meetings/{id}/submission-readiness` — SCRUM-19
 
@@ -279,7 +302,7 @@ khoảng trắng bao quanh hoặc tên khác chữ hoa/chữ thường. Request 
 | 404 | — | Meeting không tồn tại hoặc caller không được phép đọc/action trên tài nguyên; body rỗng |
 | 409 | `MSG41`, `MSG46`, `MSG63`, `MSG64` | Submit, Publish, quyết định duyệt hoặc ReturnToDraft không còn hợp lệ; không ghi history/jobs |
 | 413 | `MSG58` | JSON request vượt 64 KiB |
-| 415 | `MSG57` | POST không dùng `application/json` |
+| 415 | `MSG34` | POST không dùng `application/json`; dùng chung code với PUT |
 | 503 | `MSG42`, `MSG47`, `MSG59` | Lỗi database/transaction khi transition; transaction rollback |
 | 503 | `MSG60`, `MSG62` | Không tải được readiness/history hoặc không kiểm tra được tài khoản active |
 

@@ -469,7 +469,7 @@ public sealed class MeetingService(
         {
             return await meetings.InTransactionAsync(async token =>
             {
-                var meeting = await meetings.FindWorkflowAsync(id, forUpdate: true, token);
+                var meeting = await meetings.FindWorkflowAsync(id, forUpdate: false, token);
                 if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId))
                 {
                     return MeetingHistoryResult.Failure(MeetingWorkflowOutcome.NotFound);

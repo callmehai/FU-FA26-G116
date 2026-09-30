@@ -346,7 +346,7 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Equal("Cần bổ sung số liệu", Assert.Single(current.Page!.Items).RejectionReason);
         Assert.Null(Assert.Single(participant.Page!.Items).RejectionReason);
         Assert.Equal("Cần bổ sung số liệu", Assert.Single(organizer.Page!.Items).RejectionReason);
-        Assert.True(_repository.LastWorkflowForUpdate);
+        Assert.False(_repository.LastWorkflowForUpdate);
     }
 
     private static MeetingParticipant Participant(

@@ -20,13 +20,16 @@ public static class DevelopmentDataSeeder
     /// </summary>
     public const string DemoPassword = "TrustCabinet@2026";
 
+    // Stable development identity prevents reseeding a meeting a tester has already edited.
+    private static readonly Guid WorkflowDemoMeetingId = Guid.Parse("0199ac54-d000-7000-8000-000000000019");
+
     /// <summary>
-    /// Fills an empty database with demo rows, and on a database that already has users does one
-    /// narrow repair: see <see cref="RepairPlaceholderPasswordsAsync"/>.
+    /// Fills an empty database with demo rows, repairs old placeholder passwords, and adds the
+    /// workflow demo once when the original demo accounts are present.
     ///
     /// Idempotent either way. It never duplicates rows, and the only rows it ever writes to on a
-    /// populated database are demo accounts still holding the pre-SCRUM-11 placeholder hash — so
-    /// data you were working on, including a password set by hand, is left alone.
+    /// populated database are demo accounts still holding the pre-SCRUM-11 placeholder hash.
+    /// The workflow demo is inserted once, never reset, including after it has been published.
     /// </summary>
     public static async Task SeedAsync(TrustCabinetDbContext db, CancellationToken ct = default)
     {
@@ -41,6 +44,7 @@ public static class DevelopmentDataSeeder
         if (await db.Users.AnyAsync(ct))
         {
             await RepairPlaceholderPasswordsAsync(db, demoPasswordHash, ct);
+            await SeedWorkflowDemoAsync(db, ct);
             return;
         }
 
@@ -141,6 +145,67 @@ public static class DevelopmentDataSeeder
                 PushedAt = published.CreatedAt,
             });
 
+        await db.SaveChangesAsync(ct);
+        await SeedWorkflowDemoAsync(db, ct);
+    }
+
+    private static async Task SeedWorkflowDemoAsync(TrustCabinetDbContext db, CancellationToken ct)
+    {
+        if (await db.Meetings.AnyAsync(meeting => meeting.Id == WorkflowDemoMeetingId, ct))
+        {
+            return;
+        }
+
+        var accounts = await db.Users
+            .Where(user => user.IsActive && (
+                user.Email == "thuky@trustcabinet.local"
+                || user.Email == "chutoa@trustcabinet.local"
+                || user.Email == "thanhvien@trustcabinet.local"))
+            .ToListAsync(ct);
+        var organizer = accounts.SingleOrDefault(user => user.Email == "thuky@trustcabinet.local");
+        var chair = accounts.SingleOrDefault(user => user.Email == "chutoa@trustcabinet.local");
+        var member = accounts.SingleOrDefault(user => user.Email == "thanhvien@trustcabinet.local");
+        if (organizer is null || chair is null || member is null)
+        {
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var meeting = new Meeting
+        {
+            Id = WorkflowDemoMeetingId,
+            Title = "SCRUM-19 — Luồng duyệt và công bố (demo)",
+            Description = "Dữ liệu Development để kiểm thử readiness, gửi duyệt, từ chối và công bố qua API.",
+            Status = MeetingStatus.Draft,
+            Sensitivity = Sensitivity.Internal,
+            Mode = MeetingMode.InPerson,
+            Location = "Phòng họp demo SCRUM-19",
+            StartsAt = now.AddDays(1),
+            EndsAt = now.AddDays(1).AddHours(1),
+            CreatedBy = organizer,
+        };
+        meeting.AgendaItems.Add(new AgendaItem
+        {
+            Meeting = meeting,
+            Position = 1,
+            Title = "Rà soát kế hoạch triển khai",
+            Description = "Agenda mẫu đã đủ thông tin để gửi duyệt.",
+            PlannedDurationMinutes = 30,
+            Presenter = member,
+            Status = AgendaItemStatus.Pending,
+        });
+        meeting.Participants.Add(new MeetingParticipant { Meeting = meeting, User = organizer, Role = MeetingRole.Secretary });
+        meeting.Participants.Add(new MeetingParticipant { Meeting = meeting, User = chair, Role = MeetingRole.Chair });
+        meeting.Participants.Add(new MeetingParticipant { Meeting = meeting, User = member, Role = MeetingRole.Member });
+        meeting.StatusHistory.Add(new MeetingStatusHistory
+        {
+            Meeting = meeting,
+            ToStatus = MeetingStatus.Draft,
+            Action = MeetingHistoryAction.Create,
+            Actor = organizer,
+            OccurredAt = now,
+        });
+        db.Meetings.Add(meeting);
         await db.SaveChangesAsync(ct);
     }
 
