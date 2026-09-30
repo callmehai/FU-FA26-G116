@@ -10,6 +10,12 @@ namespace TrustCabinet.Domain.Entities;
 /// </summary>
 public class EmailMessage : Entity
 {
+    /// <summary>
+    /// Identifies the business event that created this message. Repeating the same event is
+    /// idempotent, while a later event for the same meeting and recipient gets a different key.
+    /// </summary>
+    public required string DeduplicationKey { get; set; }
+
     public required string ToAddress { get; set; }
 
     public required string Subject { get; set; }
@@ -24,6 +30,15 @@ public class EmailMessage : Entity
     public int AttemptCount { get; set; }
 
     public string LastError { get; set; } = string.Empty;
+
+    /// <summary>Earliest time at which a failed message may be attempted again.</summary>
+    public DateTimeOffset? NextAttemptAt { get; set; }
+
+    /// <summary>Identifies the worker attempt currently allowed to finalize this message.</summary>
+    public Guid? LeaseToken { get; set; }
+
+    /// <summary>Allows another worker to recover this message after a crash or forced shutdown.</summary>
+    public DateTimeOffset? LeaseExpiresAt { get; set; }
 
     public DateTimeOffset? SentAt { get; set; }
 

@@ -362,6 +362,11 @@ tất cả participant trong luồng publish meeting của SCRUM-19, không ph�
 đọc lại từ DB qua API. Migration SCRUM-14 thêm bốn cột `deduplication_key`, `pushed_at`,
 `target_type` và `target_id` mà không thay đổi quan hệ user/meeting có sẵn.
 
+`email_messages.deduplication_key` cũng có unique index nhưng định danh một **sự kiện gửi cụ thể**,
+không phải chỉ một cặp meeting/người nhận. Nhờ đó retry transaction của cùng lần công bố không tạo
+thư trùng, còn các sự kiện đổi lịch, hủy họp hoặc phát hành biên bản vẫn có thể gửi thư mới cho cùng
+người nhận.
+
 Notification lưu `target_type` và `target_id`; với thông báo họp, các giá trị là `Meeting` và ID
 cuộc họp. Route UI không được lưu trong database: API dựng `actionUrl` từ hai trường target khi trả
 response, nên thay đổi route không làm hỏng các notification đã có. `meeting_id` tiếp tục là khóa
