@@ -258,7 +258,13 @@ public sealed class CallRoomService(
         {
             if (present.Count == 0)
             {
-                await liveKit.DeleteRoomAsync(room, ct);
+                // Nobody who belongs here. Close it — unless the roster is not enforced (load tests),
+                // where the synthetic participants are exactly what is being tried out.
+                if (options.Value.EnforceRoster || live.Count == 0)
+                {
+                    await liveKit.DeleteRoomAsync(room, ct);
+                }
+
                 return;
             }
 

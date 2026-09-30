@@ -212,6 +212,20 @@ public sealed class CallRoomServiceTests
         Assert.Empty(_liveKit.Removed);
     }
 
+    [Fact]
+    public async Task A_room_nobody_invited_is_in_is_closed_unless_the_roster_is_not_enforced()
+    {
+        _liveKit.Join(Room, new RoomParticipant("lk-load-test-1", "bot", DateTimeOffset.UtcNow, []));
+
+        _options.EnforceRoster = false;
+        await Service.ReconcileAsync();
+        Assert.Empty(_liveKit.Deleted);
+
+        _options.EnforceRoster = true;
+        await Service.ReconcileAsync();
+        Assert.Contains(Room, _liveKit.Deleted);
+    }
+
     private CallWebhookEvent Webhook(string name, Guid? identity, DateTimeOffset? joinedAt = null)
         => new(
             "EV_" + Guid.NewGuid().ToString("N"),
