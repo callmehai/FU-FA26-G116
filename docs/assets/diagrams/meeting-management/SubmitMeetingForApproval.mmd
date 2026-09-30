@@ -1,74 +1,75 @@
 sequenceDiagram
-    title UC-15 - Submit Meeting for Approval
-    actor Organizer as Meeting Organizer
-    participant Page as Management Page
+    title UC-15 - Gửi duyệt cuộc họp
+    actor Organizer as Người tổ chức
+    participant Page as Màn quản lý cuộc họp
     participant API as Meeting API
     participant Service as Meeting Service
-    participant M as Meeting Repo
-    participant U as User Repo
     participant DB as Database
 
-    opt Meeting is Rejected
-        Organizer->>Page: Return meeting to Draft
-        Page->>API: POST /api/meetings/{id}/transitions, action=ReturnToDraft
-        API->>Service: ReturnToDraft(meetingId, actor)
-        Service->>M: Lock and load meeting
-        M->>DB: SELECT meeting FOR UPDATE
-        DB-->>M: Current meeting
-        M-->>Service: Rejected meeting owned by Organizer
-        Service->>M: Set Draft, clear assignment, append history
-        M->>DB: Save status and history atomically
-        DB-->>M: Commit
-        M-->>Service: Transition committed
-        Service-->>API: Success, rejection history retained
-        API-->>Page: 200 OK
-        Page-->>Organizer: Confirm Draft restored
-        Note over Organizer,Page: No invitation is created. Organizer may now edit the meeting.
-    end
-
-    Organizer->>Page: Edit Draft and open approver picker
-    Page->>API: GET /api/meetings/approvers
-    API->>Service: List eligible approvers
-    Service->>U: Find active users with capability
-    U->>DB: Query eligible users
-    DB-->>U: Eligible approver list
-    U-->>Service: Eligible approver list
-    Service-->>API: Eligible approver list
-    API-->>Page: 200 OK
-    Page-->>Organizer: Display eligible approvers
-    Organizer->>Page: Select approver and submit
-    Page->>API: POST /api/meetings/{id}/transitions, action=SubmitForApproval, assignedApproverId
-    API->>Service: SubmitForApproval(meetingId, actor, approverId)
-    Service->>M: Lock meeting and load agenda
-    M->>DB: Read meeting and agenda
-    DB-->>M: Persisted meeting and agenda
-    M-->>Service: Current data
-    Service->>Service: Check Organizer, Draft, and readiness
-
-    alt Meeting is not Draft
-        Service-->>API: 409 MEETING_STATUS_CONFLICT
-        API-->>Page: Refresh meeting status
-    else Required information is incomplete
-        Service-->>API: 400 MEETING_SUBMISSION_NOT_READY
-        API-->>Page: Show field errors
-    else Meeting is ready
-        Service->>U: Validate active approver and capability
-        U->>DB: Check account and meeting_approver
-        DB-->>U: Eligibility result
-        U-->>Service: Eligibility result
-        alt Approver is no longer eligible
-            Service-->>API: 400 MEETING_APPROVER_INVALID
-            API-->>Page: Ask Organizer to select another approver
-        else Approver is eligible
-            Service->>M: Assign approver, set WaitingApproval, append history
-            Service->>M: Queue approval notification
-            M->>DB: Commit meeting, history, and notification
-            DB-->>M: Commit
-            M-->>Service: Submission committed
-            Service-->>API: Success
-            API-->>Page: 200 OK
-            Page-->>Organizer: Show submission confirmation
+    opt Cuộc họp đang Rejected
+        Note over Organizer,Page: Có thể sửa thông tin ở Rejected, giữ nguyên assignment và lịch sử từ chối
+        Organizer->>Page: Đưa cuộc họp về Nháp
+        Page->>API: POST transitions, action=ReturnToDraft
+        API->>Service: ReturnToDraft với actor từ phiên đăng nhập
+        Service->>DB: BEGIN, khóa meeting và kiểm tra Organizer + MeetingCreator
+        alt Đúng quyền và meeting đang Rejected
+            Service->>DB: Đổi sang Draft, xóa assignment, thêm history, COMMIT
+            DB-->>Service: Đã lưu nguyên tử, giữ nguyên lý do từ chối cũ
+            Service-->>API: Kết quả chuyển trạng thái
+            API-->>Page: 200 MSG49
+        else Sai quyền hoặc sai trạng thái
+            Service->>DB: Kết thúc transaction không ghi dữ liệu
+            Service-->>API: 404 hoặc 403 MSG55 hoặc 409 MSG64
+            API-->>Page: Hiển thị lỗi, tải lại trạng thái
         end
     end
 
-    Note over Organizer,Service: Rejected cannot transition directly to WaitingApproval. ReturnToDraft must commit first.
+    Organizer->>Page: Hoàn thiện thông tin và chương trình ở Draft
+    Page->>API: GET submission-readiness
+    API->>Service: Kiểm tra quyền Organizer và dữ liệu đã lưu
+    Service->>DB: Đọc meeting và agenda
+    DB-->>Service: Dữ liệu hiện tại
+    Service-->>API: Readiness và lỗi theo field
+    API-->>Page: 200 ready, errors
+    Page->>API: GET /api/meetings/approvers
+    API->>DB: Kiểm tra MeetingCreator và lấy user active có MeetingApprover
+    DB-->>API: Danh sách người duyệt hợp lệ
+    API-->>Page: 200 danh sách người duyệt
+    Organizer->>Page: Chọn người duyệt và gửi duyệt
+    Page->>API: POST transitions, action=SubmitForApproval, assignedApproverId
+    Note over API: action phải khớp chính xác tên enum, request sai trả 400 MSG50.
+    API->>Service: SubmitForApproval với actor từ phiên đăng nhập
+    Service->>DB: BEGIN và khóa meeting
+    DB-->>Service: Meeting, agenda và assignment hiện tại
+
+    alt Meeting không tồn tại hoặc caller không được đọc
+        Service->>DB: Kết thúc transaction không ghi dữ liệu
+        Service-->>API: 404
+    else Không phải Organizer đang có MeetingCreator
+        Service->>DB: Kết thúc transaction không ghi dữ liệu
+        Service-->>API: 403 MSG55
+    else Meeting không còn Draft
+        Service->>DB: Kết thúc transaction không ghi dữ liệu
+        Service-->>API: 409 MSG41
+    else Thiếu thông tin meeting hoặc agenda
+        Service->>DB: Kết thúc transaction không ghi dữ liệu
+        Service-->>API: 400 MSG51 và lỗi theo field
+    else Người duyệt không active hoặc thiếu MeetingApprover
+        Service->>DB: Kết thúc transaction không ghi dữ liệu
+        Service-->>API: 400 MSG52
+    else Đủ điều kiện gửi duyệt
+        Service->>DB: Gán approver, đổi WaitingApproval, thêm history và notification
+        alt Lưu hoặc commit thất bại
+            DB-->>Service: Lỗi persistence
+            Service->>DB: ROLLBACK toàn bộ thay đổi
+            Service-->>API: 503 MSG42
+        else Lưu và commit thành công
+            Service->>DB: COMMIT
+            DB-->>Service: Meeting, history và notification đã lưu nguyên tử
+            Service-->>API: Kết quả gửi duyệt
+            API-->>Page: 200 MSG48
+            Page-->>Organizer: Xác nhận đã gửi duyệt
+        end
+    end
+
+    Note over Organizer,Service: Rejected phải qua ReturnToDraft trước khi sửa và gửi duyệt lại.

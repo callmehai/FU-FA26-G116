@@ -1,78 +1,65 @@
 sequenceDiagram
-    title UC-17 - Publish Meeting
-    actor Organizer as Meeting Organizer
-    participant Page as Meeting Management Page
+    title UC-17 - Công bố cuộc họp
+    actor Organizer as Người tổ chức
+    participant Page as Màn quản lý cuộc họp
     participant API as Meeting API
     participant Service as Meeting Service
     participant DB as Database
-    participant Worker as SCRUM-15 Email Worker
-    participant Email as Email Service
+    participant Worker as Worker email SCRUM-15
+    participant Email as Dịch vụ email
 
-    Organizer->>Page: Select Publish
+    Organizer->>Page: Chọn Công bố
     Page->>API: POST /api/meetings/{id}/transitions, action=Publish
-    API->>Service: Publish(meetingId, authenticated actor)
-    Service->>DB: BEGIN and lock meeting row
-    DB-->>Service: Current owner and status
-    Service->>DB: Check Organizer is active with MeetingCreator
-    DB-->>Service: Current authorization result
+    Note over API: action phải khớp chính xác tên enum, request sai trả 400 MSG50.
+    API->>Service: Publish với actor từ phiên đăng nhập
+    Service->>DB: BEGIN và khóa meeting
+    DB-->>Service: Organizer, trạng thái và participants hiện tại
 
-    alt Meeting is missing or caller cannot read it
-        Service->>DB: ROLLBACK without writes
-        Service-->>API: 404 Not Found
-        API-->>Page: Display meeting unavailable
-    else Meeting is visible to caller
-      alt Caller is not the active Organizer with MeetingCreator
-        Service->>DB: ROLLBACK without writes
-        Service-->>API: 403 MEETING_ACTION_FORBIDDEN
-        API-->>Page: Display publication access denied
-      else Caller is the authorized Organizer
-        alt Meeting is no longer Approved
-            Service->>DB: ROLLBACK without writes
-            Service-->>API: 409 MEETING_STATUS_CONFLICT
-            API-->>Page: Refresh current meeting status
-        else Meeting is Approved
-            Service->>DB: Read participant rows and current user status
-            DB-->>Service: Participant and active-account data
-            Service->>Service: Snapshot active participants where Response != Delegated
-            Note over Service: DelegatedToUserId alone does not add a recipient. Later participant changes cannot alter this batch.
-            Service->>DB: UPDATE status to Published
-            Service->>DB: INSERT Publish history and participant notifications
-            Service->>DB: INSERT invitation jobs with recipient/content snapshot
-            Note over DB: Each EmailMessage is Queued with SentAt = null.
-            alt SaveChanges fails
-                DB-->>Service: Persistence error
-                Service->>DB: ROLLBACK status, history, notifications, and email jobs
-                Service-->>API: 503 MEETING_WORKFLOW_FAILED
-                API-->>Page: Show retryable publication error
-            else All writes are staged in the transaction
-                DB-->>Service: Pending status, history, notification, and email rows
-                Service->>DB: COMMIT
-                alt Commit fails
-                    DB-->>Service: Commit error
-                    Service->>DB: ROLLBACK the whole transaction
-                    Service-->>API: 503 MEETING_WORKFLOW_FAILED
-                    API-->>Page: Show retryable publication error
-                else Commit succeeds
-                DB-->>Service: Published status, history, snapshot, and jobs committed
-                Service-->>API: Published, invitation jobs queued
-                API-->>Page: 200 MEETING_TRANSITION_COMPLETED
-                Page-->>Organizer: Show publication confirmation
+    alt Meeting không tồn tại hoặc caller không được đọc
+        Service->>DB: Kết thúc transaction không ghi dữ liệu
+        Service-->>API: 404
+    else Caller không phải Organizer active có MeetingCreator
+        Service->>DB: Kết thúc transaction không ghi dữ liệu
+        Service-->>API: 403 MSG55
+    else Meeting không còn Approved
+        Service->>DB: Kết thúc transaction không ghi dữ liệu
+        Service-->>API: 409 MSG46
+        API-->>Page: Tải lại trạng thái hiện tại
+    else Được phép công bố
+        Service->>Service: Snapshot participants có user active và Response khác Delegated
+        Note over Service: DelegatedToUserId riêng không thêm recipient, thay đổi sau commit không sửa batch này.
+        Service->>DB: Đổi Published, thêm history và participant notifications
+        Service->>DB: Thêm invitation jobs với recipient và nội dung snapshot
+        Note over DB: EmailMessage có Status=Queued và SentAt=null.
+        alt SaveChanges thất bại
+            DB-->>Service: Lỗi persistence
+            Service->>DB: ROLLBACK status, history, notifications và email jobs
+            Service-->>API: 503 MSG47
+        else Các thay đổi đã được ghi trong transaction
+            Service->>DB: COMMIT
+            alt Commit thất bại
+                DB-->>Service: Lỗi commit
+                Service->>DB: ROLLBACK toàn bộ transaction
+                Service-->>API: 503 MSG47
+            else Commit thành công
+                DB-->>Service: Meeting, history và invitation jobs đã lưu nguyên tử
+                Service-->>API: Meeting Published, jobs đã xếp hàng
+                API-->>Page: 200 MSG45
+                Page-->>Organizer: Xác nhận công bố
 
-                opt After commit, SCRUM-15 processes queued email jobs
-                    Worker->>DB: Read queued job and stored snapshot
-                    DB-->>Worker: Recipient and immutable invitation payload
-                    Worker->>Email: Send invitation
-                    alt Delivery succeeds
-                        Email-->>Worker: Accepted for delivery
-                        Worker->>DB: Set EmailStatus=Sent and SentAt
-                    else Delivery keeps failing after retries
-                        Email-->>Worker: Delivery failed
-                        Worker->>DB: Set EmailStatus=Failed and retain error
+                opt Sau commit, worker SCRUM-15 được tích hợp
+                    Worker->>DB: Đọc queued job và snapshot đã lưu
+                    DB-->>Worker: Recipient và nội dung thư mời
+                    Worker->>Email: Gửi thư mời
+                    alt Gửi thành công
+                        Email-->>Worker: Đã nhận thư để chuyển
+                        Worker->>DB: Đặt Status=Sent và SentAt
+                    else Gửi vẫn lỗi sau retry
+                        Email-->>Worker: Lỗi gửi
+                        Worker->>DB: Đặt Status=Failed và giữ thông tin lỗi
                     end
-                    Note over Worker,DB: Delivery outcome never rolls Published back.
-                end
+                    Note over Worker,DB: Kết quả gửi email không đổi trạng thái Published.
                 end
             end
         end
-      end
     end

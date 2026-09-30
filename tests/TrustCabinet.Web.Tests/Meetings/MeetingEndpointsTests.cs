@@ -443,6 +443,35 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Empty(meeting.StatusHistory);
     }
 
+    [Theory]
+    [InlineData("4")]
+    [InlineData("04")]
+    [InlineData("+4")]
+    [InlineData("SubmitForApproval,Publish")]
+    [InlineData("Publish,Publish")]
+    [InlineData(" Publish ")]
+    [InlineData("publish")]
+    public async Task Post_transition_requires_one_exact_action_name_without_publishing(string action)
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        meeting.Status = MeetingStatus.Approved;
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/meetings/{meeting.Id}/transitions", new { action });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MSG50", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(MeetingStatus.Approved, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Empty(_factory.Meetings.EmailMessages);
+    }
+
     [Fact]
     public async Task Post_transition_maps_null_rejection_reason_to_required_reason_error()
     {
@@ -1056,9 +1085,62 @@ public sealed class MeetingEndpointsTests : IDisposable
             updateBody.RootElement.GetProperty("meeting").GetProperty("assignedApproverId").ValueKind);
     }
 
+    [Fact]
+    public async Task Put_updates_an_owned_rejected_meeting_without_restarting_approval()
+    {
+        var creator = GivenCreator();
+        var approverId = Guid.CreateVersion7();
+        var meeting = OwnedMeetingBy(creator, approverId);
+        meeting.Status = MeetingStatus.Rejected;
+        var rejection = new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            FromStatus = MeetingStatus.WaitingApproval,
+            ToStatus = MeetingStatus.Rejected,
+            Action = MeetingHistoryAction.Reject,
+            ActorId = approverId,
+            Reason = "Cần bổ sung số liệu",
+            OccurredAt = DateTimeOffset.UtcNow,
+        };
+        meeting.StatusHistory.Add(rejection);
+        _factory.Meetings.Meetings.Add(meeting);
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+
+        var response = await client.PutAsJsonAsync($"/api/meetings/{meeting.Id}", new
+        {
+            title = "Đã bổ sung số liệu",
+            startsAt = "2026-10-01T09:30:00+07:00",
+            endsAt = "2026-10-01T10:30:00+07:00",
+            mode = "Hybrid",
+            location = "Phòng họp B",
+            sensitivity = "Secret",
+            description = "Nội dung mới",
+            assignedApproverId = Guid.CreateVersion7(),
+            status = "Draft",
+        });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("MSG30", body.RootElement.GetProperty("code").GetString());
+        var updated = body.RootElement.GetProperty("meeting");
+        Assert.Equal("Đã bổ sung số liệu", updated.GetProperty("title").GetString());
+        Assert.Equal("Rejected", updated.GetProperty("status").GetString());
+        Assert.Equal(approverId, updated.GetProperty("assignedApproverId").GetGuid());
+        Assert.Equal("Đã bổ sung số liệu", meeting.Title);
+        Assert.Same(rejection, Assert.Single(meeting.StatusHistory));
+        Assert.Equal("Cần bổ sung số liệu", rejection.Reason);
+        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Empty(_factory.Meetings.EmailMessages);
+    }
+
     [Theory]
     [InlineData(MeetingStatus.WaitingApproval)]
-    [InlineData(MeetingStatus.Rejected)]
+    [InlineData(MeetingStatus.Approved)]
+    [InlineData(MeetingStatus.Published)]
+    [InlineData(MeetingStatus.InProgress)]
+    [InlineData(MeetingStatus.Ended)]
+    [InlineData(MeetingStatus.MinutesIssued)]
+    [InlineData(MeetingStatus.Archived)]
     public async Task Put_returns_MSG33_if_the_meeting_is_not_editable(MeetingStatus status)
     {
         var creator = GivenCreator();
@@ -1107,12 +1189,15 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal("Giao ban tuần", meeting.Title);
     }
 
-    [Fact]
-    public async Task Put_returns_400_for_invalid_json_when_meeting_is_editable()
+    [Theory]
+    [InlineData(MeetingStatus.Draft)]
+    [InlineData(MeetingStatus.Rejected)]
+    public async Task Put_returns_400_for_invalid_json_when_meeting_is_editable(MeetingStatus status)
     {
         var creator = GivenCreator();
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
         var meeting = OwnedMeetingBy(creator);
+        meeting.Status = status;
         _factory.Meetings.Meetings.Add(meeting);
 
         using var request = new HttpRequestMessage(HttpMethod.Put, $"/api/meetings/{meeting.Id}")

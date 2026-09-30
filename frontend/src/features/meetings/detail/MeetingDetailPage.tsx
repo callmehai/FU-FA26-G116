@@ -131,7 +131,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         <aside className="card">
           <h2 className="card-title">Lịch sử trạng thái</h2>
           <p className="card-pending">
-            Chưa hiển thị được: backend chưa có <code>GET /api/meetings/{'{id}'}/history</code>.
+            Lịch sử trạng thái sẽ hiển thị sau khi tích hợp luồng duyệt và công bố cuộc họp.
           </p>
         </aside>
       </div>

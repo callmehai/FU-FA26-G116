@@ -21,7 +21,7 @@ namespace TrustCabinet.Web.Tests.Access;
 public class AdministratorInvariantGuardTests : IAsyncLifetime
 {
     private readonly PostgreSqlTestDatabase _database = new(
-        "Host=localhost;Port=5432;Database=trustcabinet_lock_tests;Username=trustcabinet;Password=123");
+        PostgresTestDatabase.ConnectionString("trustcabinet_lock_tests"));
 
     private TrustCabinetDbContext _db = null!;
 

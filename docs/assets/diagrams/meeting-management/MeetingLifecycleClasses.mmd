@@ -106,20 +106,20 @@ classDiagram
 
     User "1" <-- "0..*" Meeting : CreatedBy
     User "0..1" <-- "0..*" Meeting : AssignedApprover
-    Meeting "1" *-- "0..*" MeetingStatusHistory : immutable lifecycle
+    Meeting "1" -- "0..*" MeetingStatusHistory : lịch sử chỉ ghi thêm
     User "1" <-- "0..*" MeetingStatusHistory : Actor
     User "0..1" <-- "0..*" MeetingStatusHistory : approver snapshot
-    Meeting "1" *-- "0..*" MeetingParticipant : participants
-    User "1" <-- "0..*" MeetingParticipant : participant
-    User "1" <-- "0..*" Notification : recipient
-    Meeting "0..1" <-- "0..*" Notification : about meeting
-    MeetingStatusHistory "0..1" <-- "0..*" Notification : origin
+    Meeting "1" *-- "0..*" MeetingParticipant : thành phần tham dự
+    User "1" <-- "0..*" MeetingParticipant : người tham dự
+    User "1" <-- "0..*" Notification : người nhận
+    Meeting "0..1" <-- "0..*" Notification : cuộc họp liên quan
+    MeetingStatusHistory "0..1" <-- "0..*" Notification : nguồn sự kiện
     User "0..1" <-- "0..*" EmailMessage : recipient snapshot
-    Meeting "0..1" <-- "0..*" EmailMessage : invitation for
-    MeetingStatusHistory "0..1" <-- "0..*" EmailMessage : origin
-    Role "1" <-- "0..*" User : current role
-    Role "1" *-- "0..*" RoleCapability : capability grants
+    Meeting "0..1" <-- "0..*" EmailMessage : thư mời cuộc họp
+    MeetingStatusHistory "0..1" <-- "0..*" EmailMessage : nguồn sự kiện
+    Role "1" <-- "0..*" User : vai trò hiện tại
+    Role "1" *-- "0..*" RoleCapability : quyền được cấp
 
-    note for MeetingStatusHistory "Audit evidence: INSERT only; updates and deletes are rejected."
-    note for MeetingParticipant "Publish selects active users whose Response is not Delegated."
-    note for EmailMessage "Publish stores Queued jobs with a payload snapshot. SentAt records delivery, not publication."
+    note for MeetingStatusHistory "Bằng chứng kiểm toán: chỉ INSERT, chặn UPDATE và DELETE."
+    note for MeetingParticipant "Publish chọn user active có Response khác Delegated."
+    note for EmailMessage "Publish lưu Queued jobs và nội dung snapshot. SentAt ghi thời điểm gửi thư."

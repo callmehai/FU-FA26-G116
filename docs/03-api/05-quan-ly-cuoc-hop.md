@@ -8,8 +8,10 @@ trong tài liệu quản lý vai trò đang dùng cho use case khác.
 
 Các endpoint cho người tạo khởi tạo cuộc họp nháp, chọn người duyệt khi gửi duyệt, sửa, chuyển lifecycle và đọc
 lịch sử. Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. Danh sách
-`GET /api/meetings` thuộc SCRUM-18; giao diện hiện tại vẫn dùng dữ liệu mẫu và chưa tích hợp API.
-Khi tích hợp FE, form sẽ hiển thị xác nhận và mã cuộc họp sau khi tạo.
+`GET /api/meetings` thuộc SCRUM-18. Danh sách, tạo, sửa và chi tiết đã gọi API thật; form tạo/sửa
+chỉ gửi bảy field thông tin, không chọn hoặc gửi approver. Người duyệt được chọn khi gửi duyệt.
+Các type/API wrapper cho readiness, transitions và history đã có; màn thao tác workflow và timeline
+thật thuộc bước tích hợp FE của SCRUM-19.
 
 Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24; Thời gian kết thúc tùy chọn, nếu nhập thì phải
 sau thời gian bắt đầu theo BR-25. Cuộc họp mới ở `Draft` chưa có approver; Organizer chọn approver
@@ -31,9 +33,10 @@ GET danh sách dùng đúng quy tắc đọc trên **trong truy vấn database**
 trang. Endpoint chỉ yêu cầu đăng nhập và tài khoản còn hoạt động; không đòi capability
 `MeetingCreator`. `totalCount` không bao gồm cuộc họp caller không được xem.
 
-Sửa chỉ được ở `Draft`. Meeting `Rejected` phải được Organizer chuyển về `Draft` bằng
-`ReturnToDraft` trước; transition đó tạo history và xóa assignment cycle cũ. Hệ thống đọc trạng thái
-mới nhất sau khi khóa dòng và trước khi validate nội dung. Trạng thái khác `Draft` trả `409 MSG33`.
+Organizer được sửa thông tin khi meeting ở `Draft` hoặc `Rejected`. PUT ở `Rejected` giữ nguyên
+trạng thái, current Assigned Approver và rejection history/reason; không tạo lifecycle history,
+notification hoặc invitation. Hệ thống đọc trạng thái mới nhất sau khi khóa dòng và trước khi
+validate nội dung. Trạng thái khác `Draft`/`Rejected` trả `409 MSG33`.
 
 ### Authorization matrix cho SCRUM-19
 
@@ -78,7 +81,8 @@ danh sách (`/mgmt/meetings?q=…&status=…&page=…`), nên tải lại trang,
 trang chi tiết đều giữ nguyên bộ lọc và trang đang xem.
 
 Khi gửi timezone có dấu `+` trong query, mã hóa dấu này thành `%2B`, ví dụ
-`from=2026-10-01T09%3A00%2B07%3A00`. Timestamp thiếu timezone trả `400 MSG32`.
+`from=2026-10-01T09%3A00%2B07%3A00`. Phần giây có thể bỏ qua; nếu có giây, phần thập phân
+tối đa bảy chữ số. Timestamp thiếu timezone trả `400 MSG32`.
 
 `200 OK` trả:
 
@@ -157,8 +161,10 @@ PUT thay toàn bộ bảy field thông tin cuộc họp bằng dữ liệu reque
 `{ "code": "MSG30", "message": "Cập nhật cuộc họp thành công.", "meeting": { ... } }`.
 
 Không chấp nhận quyền thay đổi `id`, `createdById`, `status`, `createdAt`, `updatedAt` hay dữ liệu
-con qua body. Body không gán approver. Chỉ meeting `Draft` được sửa; `Rejected` phải qua
-`ReturnToDraft` trước rồi mới được sửa.
+con qua body. Body không gán approver. Meeting `Draft` và `Rejected` đều được sửa trực tiếp.
+PUT không chuyển trạng thái; khi sửa `Rejected`, người duyệt hiện tại và rejection history/reason
+được giữ nguyên. Muốn gửi duyệt lại, Organizer thực hiện `ReturnToDraft`, rồi `SubmitForApproval`
+với người duyệt được chọn cho cycle mới.
 
 ### POST `/api/meetings/{id}/transitions` — SCRUM-19
 
@@ -176,9 +182,10 @@ Endpoint nhận một action, không nhận actor, source/target status hoặc t
 | `Publish` | Không | Approved → Published |
 
 `ReturnToDraft` chỉ do Organizer thực hiện, tạo đúng một lifecycle history, giữ nguyên rejection
-history/reason cũ và không tạo invitation. Sau đó Organizer sửa meeting ở Draft và submit lại bằng
-flow bình thường; `Rejected → WaitingApproval` trực tiếp không hợp lệ. Cycle mới có thể chọn một
-current Assigned Approver khác.
+history/reason cũ, xóa current assignment và không tạo invitation. Organizer có thể sửa thông tin
+trước khi ReturnToDraft (ở Rejected) hoặc sau đó (ở Draft), rồi submit lại bằng flow bình thường;
+`Rejected → WaitingApproval` trực tiếp không hợp lệ. Cycle mới có thể chọn một current Assigned
+Approver khác.
 
 Transition thành công trả `200 OK` với `{ code, message, meeting, history }`. Code thành công theo
 action lần lượt là `MSG48` (SubmitForApproval), `MSG43` (Approve), `MSG44` (Reject), `MSG49`
@@ -251,7 +258,9 @@ giữ transaction khi Organizer chọn người duyệt, nên Submit luôn chạ
 Mọi lỗi workflow có body `{ code, message, errors? }`; `errors` là map field -> message và chỉ có
 trên lỗi readiness/validation. Actor lấy từ phiên đăng nhập; client không gửi actor, source/target
 status hoặc timestamp. POST chỉ nhận JSON object với các field đúng theo action, không nhận field
-lạ/trùng, enum dạng số, hoặc field không áp dụng cho action. Request body tối đa 64 KiB.
+lạ/trùng, enum dạng số, hoặc field không áp dụng cho action. `action` phải khớp chính xác một tên
+trong bảng action: không nhận chuỗi số (`"4"`), danh sách tên (`"SubmitForApproval,Publish"`),
+khoảng trắng bao quanh hoặc tên khác chữ hoa/chữ thường. Request body tối đa 64 KiB.
 
 | HTTP | Code | Khi nào |
 |---:|---|---|
@@ -371,14 +380,18 @@ stale content.
 - Khi nhận `403`, xử lý như quyền hệ thống đã thay đổi; GET chi tiết trả `404` nếu caller không có
   quan hệ với meeting.
 - Chỉ hiển thị thao tác sửa cho người có `MeetingCreator`, đúng `createdById`, và trạng thái
-  `Draft`. Meeting `Rejected` cần `ReturnToDraft` trước khi sửa. Backend vẫn kiểm tra lại quyền sở
-  hữu và trạng thái khi PUT.
+  `Draft` hoặc `Rejected`. Backend kiểm tra lại quyền sở hữu và trạng thái khi PUT.
 - Nếu PUT trả `409 MSG33`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
-- Sau khi POST hoặc PUT thành công, có thể mở `meeting.id` bằng GET chi tiết. GET danh sách thuộc
-  SCRUM-18 đã có contract ở trên; FE cần thay dữ liệu mẫu trong task tích hợp riêng.
+- Sau khi POST hoặc PUT thành công, FE hiển thị message và mở chi tiết `meeting.id`. Danh sách
+  SCRUM-18 đã tích hợp lọc, sort và pagination server-side; tiêu chí được giữ trên URL.
 - Trước khi gửi duyệt, lấy danh sách bằng `GET /api/meetings/approvers` rồi gửi `assignedApproverId`
-  trong action `SubmitForApproval`; trường này không thuộc POST/PUT tạo hoặc sửa thông tin Draft.
+  trong action `SubmitForApproval`; trường này không thuộc POST/PUT tạo hoặc sửa thông tin meeting.
 - SCRUM-19 cung cấp contract history ở trên; việc tích hợp timeline thật thuộc task FE riêng.
+- `src/api/meetings.ts` đã có `transitionMeeting`, `getMeetingSubmissionReadiness` và
+  `getMeetingHistory`; các request/response type tương ứng nằm trong `src/types/meeting.ts`.
+- FE mở form và nút chỉnh sửa ở cả `Draft` và `Rejected` theo contract PUT. Sửa nội dung ở
+  Rejected giữ nguyên trạng thái, assignment và rejection history; gửi duyệt lại vẫn cần
+  `ReturnToDraft` trước `SubmitForApproval`.
 
 ## Checklist BA cần hoàn tất
 

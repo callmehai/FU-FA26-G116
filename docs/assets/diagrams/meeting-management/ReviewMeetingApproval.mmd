@@ -1,75 +1,60 @@
 sequenceDiagram
-    title UC-16 - Review Meeting Approval
-    actor Approver as Assigned Meeting Approver
-    participant Page as Meeting Management Page
+    title UC-16 - Duyệt hoặc từ chối cuộc họp
+    actor Approver as Người duyệt đang được gán
+    participant Page as Màn quản lý cuộc họp
     participant API as Meeting API
     participant Service as Meeting Service
     participant DB as Database
 
-    Approver->>Page: Choose Approve or Reject
-    alt Reject
-        Page-->>Approver: Request rejection reason
-        Approver->>Page: Enter reason and confirm
-    else Approve
-        Page-->>Approver: Confirm approval
+    Approver->>Page: Chọn Approve hoặc Reject
+    opt Reject
+        Page-->>Approver: Yêu cầu lý do từ chối
+        Approver->>Page: Nhập lý do và xác nhận
     end
     Page->>API: POST /api/meetings/{id}/transitions
-    API->>Service: Transition(meetingId, action, reason, actor)
+    Note over API: action phải khớp chính xác tên enum, request sai trả 400 MSG50.
+    API->>Service: Chuyển trạng thái với actor từ phiên đăng nhập
 
-    alt Reject reason is missing or exceeds 1000 characters
-        Service-->>API: 400 MEETING_REJECTION_REASON_REQUIRED or MEETING_REJECTION_REASON_TOO_LONG
-        API-->>Page: Show rejection reason validation
-        Page-->>Approver: Keep the decision form open
-    else Approve or Reject with a valid reason
-        Service->>DB: BEGIN and lock meeting row
-        DB-->>Service: Current status and AssignedApproverId
-
-        alt Meeting is missing or caller cannot read it
-            Service->>DB: ROLLBACK without writes
-            Service-->>API: 404 Not Found
-            API-->>Page: Display meeting unavailable
-        else Meeting is visible to caller
-            Service->>DB: Check active actor, current assignment, and meeting_approver
-            DB-->>Service: Current authorization result
-            alt Actor is no longer the eligible Assigned Approver
-                Service->>DB: ROLLBACK without writes
-                Service-->>API: 403 MEETING_ACTION_FORBIDDEN
-                API-->>Page: Display access denied
-            else Actor is the current eligible Assigned Approver
-              alt Meeting is no longer WaitingApproval
-                Service->>DB: ROLLBACK without writes
-                Service-->>API: 409 MEETING_STATUS_CONFLICT
-                API-->>Page: Refresh the current meeting status
-              else Decision can proceed
-                alt Approve
-                Service->>DB: UPDATE status to Approved and INSERT Approve history
-                else Reject with valid reason
-                Service->>DB: UPDATE status to Rejected and INSERT Reject history with reason
+    alt Reject thiếu lý do hoặc dài quá 1.000 ký tự sau trim
+        Service-->>API: 400 MSG53 hoặc MSG54
+        API-->>Page: Hiển thị lỗi, giữ nguyên nội dung đang nhập
+    else Request hợp lệ
+        Service->>DB: BEGIN và khóa meeting
+        DB-->>Service: Trạng thái và AssignedApproverId hiện tại
+        alt Meeting không tồn tại hoặc caller không được đọc
+            Service->>DB: Kết thúc transaction không ghi dữ liệu
+            Service-->>API: 404
+        else Caller không phải current approver active có MeetingApprover
+            Service->>DB: Kết thúc transaction không ghi dữ liệu
+            Service-->>API: 403 MSG55
+        else Meeting không còn WaitingApproval
+            Service->>DB: Kết thúc transaction không ghi dữ liệu
+            Service-->>API: 409 MSG63
+            API-->>Page: Tải lại trạng thái hiện tại
+        else Quyết định hợp lệ
+            alt Approve
+                Service->>DB: Đổi sang Approved và thêm Approve history
+            else Reject
+                Service->>DB: Đổi sang Rejected và thêm Reject history chứa lý do
+            end
+            alt SaveChanges thất bại
+                DB-->>Service: Lỗi persistence
+                Service->>DB: ROLLBACK toàn bộ thay đổi
+                Service-->>API: 503 MSG59
+            else Các thay đổi đã được ghi trong transaction
+                Service->>DB: COMMIT
+                alt Commit thất bại
+                    DB-->>Service: Lỗi commit
+                    Service->>DB: ROLLBACK toàn bộ transaction
+                    Service-->>API: 503 MSG59
+                else Commit thành công
+                    DB-->>Service: Status và một history đã lưu nguyên tử
+                    Service-->>API: Kết quả quyết định
+                    API-->>Page: 200 MSG43 cho Approve hoặc MSG44 cho Reject
+                    Page-->>Approver: Xác nhận quyết định
                 end
-
-                alt SaveChanges fails
-                    DB-->>Service: Persistence error before commit
-                    Service->>DB: ROLLBACK the whole transaction
-                    Service-->>API: 503 MEETING_WORKFLOW_FAILED
-                    API-->>Page: Show retryable decision error
-                else Status and one history row are staged
-                    DB-->>Service: Pending writes
-                    Service->>DB: COMMIT
-                    alt Commit fails
-                        DB-->>Service: Commit error
-                        Service->>DB: ROLLBACK the whole transaction
-                        Service-->>API: 503 MEETING_WORKFLOW_FAILED
-                        API-->>Page: Show retryable decision error
-                    else Commit succeeds
-                        DB-->>Service: Status and one history row committed
-                        Service-->>API: Transition result
-                        API-->>Page: 200 MEETING_TRANSITION_COMPLETED
-                        Page-->>Approver: Show decision confirmation
-                    end
-                end
-              end
             end
         end
     end
 
-    Note over Service,DB: Status and history commit atomically. Rejection reason is stored in history.
+    Note over Service,DB: History chỉ ghi thêm. Organizer và current approver đọc được lý do từ chối.

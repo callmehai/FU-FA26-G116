@@ -39,8 +39,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         }
     }
 
-    private const string AdminConnectionString =
-        "Host=localhost;Port=5432;Database=postgres;Username=trustcabinet;Password=123";
+    private static readonly string AdminConnectionString =
+        PostgresTestDatabase.ConnectionString("postgres");
 
     private string _databaseName = null!;
     private string _connectionString = null!;

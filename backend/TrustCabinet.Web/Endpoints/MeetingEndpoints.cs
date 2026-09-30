@@ -299,7 +299,8 @@ public static class MeetingEndpoints
         }
 
         if (!Enum.TryParse<MeetingTransitionAction>(actionText, ignoreCase: false, out var action)
-            || !Enum.IsDefined(action))
+            || !Enum.IsDefined(action)
+            || !string.Equals(actionText, action.ToString(), StringComparison.Ordinal))
         {
             return null;
         }

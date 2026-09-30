@@ -381,6 +381,24 @@ Chỉ lưu **sự kiện cuộc gọi**, không lưu media. Âm thanh và hình 
 WebRTC; backend chỉ làm tín hiệu. Rớt mạng vào lại sinh một dòng `CallParticipant` mới, nhờ đó cộng
 đúng thời gian thực sự kết nối.
 
+## 6. Thông báo trong ứng dụng (SCRUM-14)
+
+`notifications` thuộc về đúng một user (`user_id`) và có thể trỏ tới một meeting
+(`meeting_id`). `read_at` null nghĩa là chưa đọc. `deduplication_key` nullable có unique index;
+nhắc họp dùng `meeting-starting-soon:<meeting-id>:<user-id>`. Notification lời mời được tạo trong
+luồng Publish của SCRUM-19 theo recipient snapshot (user active, `Response != Delegated`), không
+phải khi thêm từng participant. `origin_history_id` truy tới lần Publish đã tạo batch đó.
+`pushed_at` null nghĩa là worker chưa push dòng đã commit qua SignalR; client mất kết nối vẫn
+đọc lại từ DB qua API. Migration SCRUM-14 thêm bốn cột `deduplication_key`, `pushed_at`,
+`target_type` và `target_id` mà không thay đổi quan hệ user/meeting có sẵn.
+
+Notification lưu `target_type` và `target_id`; với thông báo họp, các giá trị là `Meeting` và ID
+cuộc họp. Route UI không được lưu trong database: API dựng `actionUrl` từ hai trường target khi trả
+response, nên thay đổi route không làm hỏng các notification đã có. `meeting_id` tiếp tục là khóa
+ngoại để giữ quan hệ và bảo vệ tính toàn vẹn dữ liệu. Migration điền target và đánh dấu các dòng
+cũ đã được xử lý realtime để worker không push lại hàng loạt ở lần chạy đầu. `isRead` được suy ra
+từ `read_at`, không lưu thêm một cột bool.
+
 ## Những quyết định cần biết
 
 | Quyết định | Lý do |
@@ -393,7 +411,7 @@ WebRTC; backend chỉ làm tín hiệu. Rớt mạng vào lại sinh một dòng
 | Enum lưu dạng **chuỗi** | Đọc thẳng trong DB là hiểu; thêm trạng thái mới không đánh số lại dòng cũ |
 | `Status`, `Sensitivity` **không có default** ở DB | Tầng ứng dụng phải nói rõ. Mặc định ngầm về giá trị dễ dãi nhất là cách một cuộc họp mật bị lộ |
 | Mọi khoá ngoại trỏ tới `users` đều `Restrict` | Người dùng vô hiệu hoá chứ không xoá; bằng chứng kiểm toán phải giữ được quy kết trách nhiệm |
-| `Meeting` → dữ liệu con là `Cascade` | Xoá một cuộc họp nháp thì dữ liệu con đi theo, không để lại rác |
+| `Meeting` → dữ liệu con là `Cascade`, ngoại trừ lifecycle history dùng `Restrict` | Không để lại dữ liệu con mồ côi; cuộc họp có lịch sử kiểm toán không thể bị xóa kéo theo bằng chứng |
 | `agenda_items.Position` **không** unique | Kéo thả đổi thứ tự ghi nhiều dòng một lúc; unique index sẽ chặn trạng thái trung gian |
 | `meeting_notes` unique có `AreNullsDistinct(false)` | PostgreSQL mặc định coi hai NULL là khác nhau, nên ghi chú cấp cuộc họp sẽ lọt nếu không khai báo |
 | `audit_log.Details` kiểu `jsonb` | Hỏi được câu mà các cột không trả lời, không phải sửa schema |

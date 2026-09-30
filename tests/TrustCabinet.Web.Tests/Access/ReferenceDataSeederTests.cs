@@ -19,7 +19,7 @@ namespace TrustCabinet.Web.Tests.Access;
 public class ReferenceDataSeederTests : IAsyncLifetime
 {
     private readonly PostgreSqlTestDatabase _database = new(
-        "Host=localhost;Port=5432;Database=trustcabinet_seed_tests;Username=trustcabinet;Password=123");
+        PostgresTestDatabase.ConnectionString("trustcabinet_seed_tests"));
 
     private TrustCabinetDbContext _db = null!;
 

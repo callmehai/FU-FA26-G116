@@ -10,7 +10,7 @@ Mã trạng thái giữ nguyên tiếng Anh để dùng trực tiếp trong code
 |---|---|---|
 | `Draft` | Nháp | Thư ký đang soạn, chưa ai khác thấy |
 | `WaitingApproval` | Chờ duyệt | Đã gửi, đang đợi người có quyền duyệt |
-| `Rejected` | Bị từ chối | Người duyệt trả lại; Organizer phải chuyển về `Draft` trước khi sửa |
+| `Rejected` | Bị từ chối | Người duyệt trả lại; Organizer được sửa thông tin, nhưng phải chuyển về `Draft` trước khi gửi duyệt lại |
 | `Approved` | Đã duyệt | Được chấp thuận, chưa thông báo cho thành phần tham dự |
 | `Published` | Đã công bố | Meeting đã công bố; invitation jobs đã xếp hàng; thành phần tham dự nhìn thấy. Email được gửi bất đồng bộ |
 | `InProgress` | Đang diễn ra | Chủ toạ đã bắt đầu phiên họp |
@@ -29,7 +29,8 @@ Draft ──gửi duyệt──> WaitingApproval ──duyệt──> Approved �
 
 `Rejected` không được gửi thẳng sang `WaitingApproval`. Meeting Organizer phải thực hiện một
 transition riêng `Rejected → Draft`; transition này ghi lịch sử, giữ nguyên lý do từ chối cũ và
-không kích hoạt thư mời. Organizer sửa cuộc họp ở `Draft`, sau đó gửi lại theo đúng flow
+không kích hoạt thư mời. Organizer được sửa thông tin ở `Rejected` (giữ nguyên người duyệt và lý do
+từ chối) hoặc ở `Draft`, sau đó gửi lại theo đúng flow
 `Draft → WaitingApproval` và có thể chọn lại một người duyệt đang hợp lệ.
 
 Khi gửi duyệt theo UC-15, người tổ chức phải chọn một tài khoản đang hoạt động có capability
@@ -42,8 +43,9 @@ lỗi gửi hoặc retry không chuyển meeting khỏi `Published`.
 
 ## Vì sao cần ghi lại
 
-- **Phân quyền bám theo trạng thái.** Sửa nội dung chỉ được phép ở `Draft`; meeting `Rejected` phải
-  được Organizer đưa về `Draft` trước. Biểu
+- **Phân quyền bám theo trạng thái.** Organizer được sửa nội dung ở `Draft` hoặc `Rejected`.
+  Sửa thông tin không chuyển trạng thái hay thay đổi rejection history; gửi duyệt lại cần
+  `ReturnToDraft` trước. Biểu
   quyết chỉ mở khi `InProgress`. Biên bản chỉ sinh được sau `Ended`.
 - **Lịch sử trạng thái là bằng chứng.** Màn chi tiết hiển thị timeline ai chuyển trạng thái, lúc
   nào. Đây là dữ liệu kiểm toán, không phải log kỹ thuật — không được xoá hay sửa.

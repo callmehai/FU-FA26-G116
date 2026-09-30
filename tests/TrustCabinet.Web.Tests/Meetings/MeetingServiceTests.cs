@@ -254,9 +254,46 @@ public class MeetingServiceTests
     }
 
     [Fact]
-    public async Task Update_returns_validation_errors_without_saving()
+    public async Task Update_changes_rejected_information_without_changing_assignment_or_rejection_history()
     {
-        var meeting = GivenMeeting();
+        var meeting = GivenMeeting(MeetingStatus.Rejected);
+        meeting.AssignedApproverId = _otherActorId;
+        var rejection = new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            FromStatus = MeetingStatus.WaitingApproval,
+            ToStatus = MeetingStatus.Rejected,
+            Action = MeetingHistoryAction.Reject,
+            ActorId = _otherActorId,
+            Reason = "Cần bổ sung số liệu",
+            OccurredAt = DateTimeOffset.UtcNow,
+        };
+        meeting.StatusHistory.Add(rejection);
+        var service = NewService();
+
+        var check = await service.CheckUpdateAsync(meeting.Id, _actorId);
+        var result = await service.UpdateAsync(
+            meeting.Id, ValidInput(title: "  Đã bổ sung số liệu  ", endsAt: null), _actorId);
+
+        Assert.True(check.Succeeded);
+        Assert.True(result.Succeeded);
+        Assert.Equal("Đã bổ sung số liệu", meeting.Title);
+        Assert.Null(meeting.EndsAt);
+        Assert.Equal(MeetingStatus.Rejected, meeting.Status);
+        Assert.Equal(_otherActorId, meeting.AssignedApproverId);
+        Assert.Same(rejection, Assert.Single(meeting.StatusHistory));
+        Assert.Equal("Cần bổ sung số liệu", rejection.Reason);
+        Assert.Equal(1, _repository.SaveCount);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_repository.EmailMessages);
+    }
+
+    [Theory]
+    [InlineData(MeetingStatus.Draft)]
+    [InlineData(MeetingStatus.Rejected)]
+    public async Task Update_returns_validation_errors_without_saving(MeetingStatus status)
+    {
+        var meeting = GivenMeeting(status);
         var oldTitle = meeting.Title;
 
         var result = await NewService().UpdateAsync(
@@ -272,7 +309,6 @@ public class MeetingServiceTests
     }
 
     [Theory]
-    [InlineData(MeetingStatus.Rejected)]
     [InlineData(MeetingStatus.WaitingApproval)]
     [InlineData(MeetingStatus.Approved)]
     [InlineData(MeetingStatus.Published)]
@@ -280,7 +316,7 @@ public class MeetingServiceTests
     [InlineData(MeetingStatus.Ended)]
     [InlineData(MeetingStatus.MinutesIssued)]
     [InlineData(MeetingStatus.Archived)]
-    public async Task Update_rejects_a_meeting_outside_draft(MeetingStatus status)
+    public async Task Update_rejects_a_meeting_outside_draft_or_rejected(MeetingStatus status)
     {
         var meeting = GivenMeeting(status);
         var oldTitle = meeting.Title;
@@ -309,10 +345,12 @@ public class MeetingServiceTests
         Assert.Equal(0, _repository.SaveCount);
     }
 
-    [Fact]
-    public async Task Get_and_update_return_the_same_not_found_for_missing_or_other_owners()
+    [Theory]
+    [InlineData(MeetingStatus.Draft)]
+    [InlineData(MeetingStatus.Rejected)]
+    public async Task Get_and_update_return_the_same_not_found_for_missing_or_other_owners(MeetingStatus status)
     {
-        var meeting = GivenMeeting();
+        var meeting = GivenMeeting(status);
         var service = NewService();
 
         var missing = await service.GetAsync(Guid.CreateVersion7(), _actorId);

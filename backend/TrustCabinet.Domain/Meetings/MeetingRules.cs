@@ -13,7 +13,7 @@ public static partial class MeetingRules
     private const int MaxDescriptionLength = 4000;
 
     public static bool IsEditable(MeetingStatus status)
-        => status == MeetingStatus.Draft;
+        => status is MeetingStatus.Draft or MeetingStatus.Rejected;
 
     public static bool TryValidate(
         MeetingInput input,

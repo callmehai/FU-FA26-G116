@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
@@ -57,6 +58,24 @@ public sealed class MeetingListQueryParserTests
     }
 
     [Theory]
+    [InlineData("from", "2026-10-01T09:00+07:00", "2026-10-01T02:00:00Z")]
+    [InlineData("to", "2026-10-01T09:00+07:00", "2026-10-01T02:00:00Z")]
+    [InlineData("from", "2026-10-01T02:00Z", "2026-10-01T02:00:00Z")]
+    [InlineData("to", "2026-10-01T09:00-07:00", "2026-10-01T16:00:00Z")]
+    [InlineData("from", "2026-10-01T09:00:15.1234567+07:00", "2026-10-01T02:00:15.1234567Z")]
+    public void Timestamp_with_timezone_is_normalized_to_utc(
+        string field, string timestamp, string expectedUtc)
+    {
+        var (query, errors) = Parse($"?{field}={Uri.EscapeDataString(timestamp)}");
+
+        Assert.Empty(errors);
+        Assert.NotNull(query);
+        var actual = field == "from" ? query.From : query.To;
+        Assert.Equal(DateTimeOffset.Parse(expectedUtc, CultureInfo.InvariantCulture), actual);
+        Assert.Equal(TimeSpan.Zero, actual!.Value.Offset);
+    }
+
+    [Theory]
     [InlineData("title", MeetingSortBy.Title, MeetingSortDirection.Asc)]
     [InlineData("startsAt", MeetingSortBy.StartsAt, MeetingSortDirection.Desc)]
     [InlineData("createdAt", MeetingSortBy.CreatedAt, MeetingSortDirection.Desc)]
@@ -85,6 +104,10 @@ public sealed class MeetingListQueryParserTests
     [InlineData("?sensitivity=Unknown", "sensitivity")]
     [InlineData("?from=2026-10-01", "from")]
     [InlineData("?to=2026-10-01T09:00:00", "to")]
+    [InlineData("?from=2026-10-01T09:00", "from")]
+    [InlineData("?to=2026-10-01T09:00.5Z", "to")]
+    [InlineData("?from=2026-09-31T09:00Z", "from")]
+    [InlineData("?to=2026-10-01T25:00Z", "to")]
     [InlineData("?page=0", "page")]
     [InlineData("?page=abc", "page")]
     [InlineData("?pageSize=101", "pageSize")]

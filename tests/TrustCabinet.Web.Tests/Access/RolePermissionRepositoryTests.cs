@@ -25,7 +25,7 @@ namespace TrustCabinet.Web.Tests.Access;
 public class RolePermissionRepositoryTests : IAsyncLifetime
 {
     private readonly PostgreSqlTestDatabase _database = new(
-        "Host=localhost;Port=5432;Database=trustcabinet_roleperm_tests;Username=trustcabinet;Password=123");
+        PostgresTestDatabase.ConnectionString("trustcabinet_roleperm_tests"));
 
     private TrustCabinetDbContext _db = null!;
 

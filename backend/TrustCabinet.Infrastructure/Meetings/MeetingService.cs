@@ -198,7 +198,11 @@ public sealed class MeetingService(
                     meeting.Location = normalized.Location;
                     meeting.Sensitivity = normalized.Sensitivity;
                     meeting.Description = normalized.Description;
-                    meeting.AssignedApproverId = null;
+                    if (meeting.Status == MeetingStatus.Draft)
+                    {
+                        meeting.AssignedApproverId = null;
+                    }
+
                     meeting.UpdatedAt = UtcNow;
                     await meetings.SaveChangesAsync(token);
                 }

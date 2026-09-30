@@ -23,7 +23,7 @@ namespace TrustCabinet.Web.Tests.Authentication;
 public class UserRepositoryTests : IAsyncLifetime
 {
     private readonly PostgreSqlTestDatabase _database = new(
-        "Host=localhost;Port=5432;Database=trustcabinet_repo_tests;Username=trustcabinet;Password=123");
+        PostgresTestDatabase.ConnectionString("trustcabinet_repo_tests"));
 
     private TrustCabinetDbContext _db = null!;
 

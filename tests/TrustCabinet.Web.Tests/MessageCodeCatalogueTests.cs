@@ -36,6 +36,9 @@ public sealed partial class MessageCodeCatalogueTests
     [GeneratedRegex(@"\*\*`(MSG\d+)`\*\*")]
     private static partial Regex NextCode();
 
+    [GeneratedRegex(@"\b(\d{3})\s+(MSG\d+)\b")]
+    private static partial Regex DiagramResponseCode();
+
     /// <summary>A scanner that finds nothing would make every other test here pass vacuously.</summary>
     [Fact]
     public void The_scanners_find_codes_on_all_three_sides()
@@ -136,6 +139,27 @@ public sealed partial class MessageCodeCatalogueTests
 
         Assert.True(next.Success, "The catalogue has no **`MSGnn`** under \"Mã tiếp theo\".");
         Assert.Equal(highest + 1, int.Parse(next.Groups[1].Value[3..]));
+    }
+
+    [Theory]
+    [InlineData("SubmitMeetingForApproval")]
+    [InlineData("ReviewMeetingApproval")]
+    [InlineData("PublishMeeting")]
+    public void Workflow_sequences_use_catalogued_codes_with_the_documented_status(string diagram)
+    {
+        var source = File.ReadAllText(Path.Combine(
+            RepoRoot, "docs", "assets", "diagrams", "meeting-management", $"{diagram}.mmd"));
+        Assert.DoesNotMatch(@"\bMEETING_[A-Z_]+\b", source);
+        var responses = DiagramResponseCode().Matches(source);
+        Assert.NotEmpty(responses);
+        var catalogue = CatalogueStatuses();
+        foreach (Match response in responses)
+        {
+            var status = int.Parse(response.Groups[1].Value);
+            var code = response.Groups[2].Value;
+            Assert.True(catalogue.TryGetValue(code, out var statuses) && statuses.Contains(status),
+                $"{diagram}: {status} {code} does not match the message catalogue.");
+        }
     }
 
     /// <summary>Code → the HTTP statuses the catalogue lists for it; empty for FE-only or reserved.</summary>
