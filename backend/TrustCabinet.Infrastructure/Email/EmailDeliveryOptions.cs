@@ -7,13 +7,16 @@ public sealed class EmailDeliveryOptions
     /// <summary>Public frontend origin used to build links inside invitations.</summary>
     public string ApplicationBaseUrl { get; set; } = string.Empty;
 
-    public int MaxAttempts { get; set; } = 3;
+    public int MaxAttempts { get; set; } = 8;
 
-    public int RetryDelaySeconds { get; set; } = 5;
+    public int RetryDelaySeconds { get; set; } = 60;
 
     public int PollingIntervalSeconds { get; set; } = 5;
 
     public int ProcessingLeaseSeconds { get; set; } = 120;
+
+    /// <summary>Upper bound for one complete SMTP attempt, including connect and disconnect.</summary>
+    public int SendAttemptTimeoutSeconds { get; set; } = 60;
 
     public SmtpOptions Smtp { get; set; } = new();
 }

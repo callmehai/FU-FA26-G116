@@ -8,6 +8,7 @@ public class EmailMessageConfiguration : IEntityTypeConfiguration<EmailMessage>
 {
     public void Configure(EntityTypeBuilder<EmailMessage> builder)
     {
+        builder.Property(e => e.DeduplicationKey).HasMaxLength(512).IsRequired();
         builder.Property(e => e.ToAddress)
             .HasColumnType("citext")
             .HasMaxLength(256)
@@ -21,11 +22,10 @@ public class EmailMessageConfiguration : IEntityTypeConfiguration<EmailMessage>
         builder.HasIndex(e => new { e.Status, e.NextAttemptAt, e.CreatedAt });
         builder.HasIndex(e => e.LeaseExpiresAt);
 
-        // Publishing is a one-way transition. Retrying its transaction must not produce a second
-        // invitation for the same participant (citext also makes this case-insensitive).
-        builder.HasIndex(e => new { e.MeetingId, e.ToAddress })
-            .IsUnique()
-            .HasFilter("meeting_id IS NOT NULL");
+        // One business event creates at most one message. A later reschedule, cancellation or
+        // minutes event for the same meeting and recipient uses another key and remains allowed.
+        builder.HasIndex(e => e.DeduplicationKey).IsUnique();
+        builder.HasIndex(e => e.MeetingId);
 
         // SetNull: the record that an invitation was sent outlives the meeting being deleted.
         builder.HasOne(e => e.Meeting)

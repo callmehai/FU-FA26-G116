@@ -35,7 +35,9 @@ public static class EmailServiceCollectionExtensions
         if (options.MaxAttempts is < 1 or > 20
             || options.RetryDelaySeconds is < 1 or > 3600
             || options.PollingIntervalSeconds is < 1 or > 3600
-            || options.ProcessingLeaseSeconds is < 10 or > 3600)
+            || options.ProcessingLeaseSeconds is < 10 or > 3600
+            || options.SendAttemptTimeoutSeconds is < 1 or > 300
+            || options.ProcessingLeaseSeconds <= options.SendAttemptTimeoutSeconds)
         {
             return false;
         }
@@ -51,7 +53,6 @@ public static class EmailServiceCollectionExtensions
             && options.Smtp.Port is >= 1 and <= 65535
             && MailboxAddress.TryParse(options.Smtp.FromAddress, out _)
             && options.Smtp.TimeoutSeconds is >= 1 and <= 300
-            && options.ProcessingLeaseSeconds > options.Smtp.TimeoutSeconds
             && Enum.IsDefined(options.Smtp.Security)
             && (string.IsNullOrWhiteSpace(options.Smtp.Username)
                 == string.IsNullOrWhiteSpace(options.Smtp.Password));
@@ -61,6 +62,6 @@ public static class EmailServiceCollectionExtensions
         "Email configuration is invalid. When Email:Smtp:Enabled is true, set an absolute "
         + "Email:ApplicationBaseUrl, SMTP host, port, sender address and timeout. Username and "
         + "password must either both be supplied or both be omitted. The processing lease must "
-        + "be longer than the SMTP timeout, and retry, lease and polling values must be within "
+        + "be longer than the complete send-attempt timeout, and retry, lease, SMTP timeout and polling values must be within "
         + "their documented ranges.";
 }

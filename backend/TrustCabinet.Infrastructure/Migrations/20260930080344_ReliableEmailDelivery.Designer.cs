@@ -492,6 +492,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<string>("DeduplicationKey")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("deduplication_key");
+
                     b.Property<string>("LastError")
                         .IsRequired()
                         .HasMaxLength(2000)
@@ -546,10 +552,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasIndex("LeaseExpiresAt")
                         .HasDatabaseName("ix_email_messages_lease_expires_at");
 
-                    b.HasIndex("MeetingId", "ToAddress")
+                    b.HasIndex("DeduplicationKey")
                         .IsUnique()
-                        .HasDatabaseName("ix_email_messages_meeting_id_to_address")
-                        .HasFilter("meeting_id IS NOT NULL");
+                        .HasDatabaseName("ix_email_messages_deduplication_key");
+
+                    b.HasIndex("MeetingId")
+                        .HasDatabaseName("ix_email_messages_meeting_id");
 
                     b.HasIndex("Status", "NextAttemptAt", "CreatedAt")
                         .HasDatabaseName("ix_email_messages_status_next_attempt_at_created_at");

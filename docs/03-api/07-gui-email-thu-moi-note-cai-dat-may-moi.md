@@ -129,7 +129,6 @@ hoặc bất kỳ file nào được Git theo dõi.
 | Không thấy log worker | `Email:Smtp:Enabled` phải là `true`, sau đó restart backend |
 | SMTP báo sai mật khẩu | Dùng App Password/SMTP password, không dùng mật khẩu đăng nhập thông thường |
 | Timeout | Kiểm tra host, port, firewall và `Security` |
-| Backend báo cấu hình email không hợp lệ | Kiểm tra đủ host, sender, URL, username/password và lease dài hơn timeout |
+| Backend báo cấu hình email không hợp lệ | Kiểm tra đủ host, sender, URL, username/password và lease dài hơn `SendAttemptTimeoutSeconds` |
 | PostgreSQL báo thiếu password | So sánh connection string trong User Secrets với `.env` |
 | Queue ở `Failed` | Xem `attempt_count` và `last_error` trong `email_messages` |
-

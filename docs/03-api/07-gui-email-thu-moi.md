@@ -3,9 +3,10 @@
 SCRUM-15 không thêm HTTP endpoint riêng. Luồng công bố của SCRUM-19 gọi
 `IMeetingInvitationQueue.QueueForPublishedMeetingAsync(meetingId)` sau khi đã chuyển meeting sang
 `Published`, nhưng trước khi commit transaction. Mỗi thành phần tham dự tạo một dòng
-`email_messages` ở trạng thái `Queued`; request công bố chỉ ghi queue và không chờ SMTP.
-Unique index `(meeting_id, to_address)` và bước bỏ qua địa chỉ đã tồn tại giúp việc enqueue có tính
-idempotent nếu transaction công bố được gọi lại.
+`email_messages` ở trạng thái `Queued`; request công bố chỉ ghi queue và không chờ SMTP. Chỉ tài khoản
+đang hoạt động mới được nhận thư. `deduplication_key` có unique index và định danh đúng sự kiện nghiệp
+vụ, ví dụ lần công bố meeting cho một user. Gọi lại cùng sự kiện không tạo thư trùng, nhưng một sự kiện
+đổi lịch, hủy họp hoặc phát hành biên bản sau này vẫn có thể tạo thư mới cho cùng người nhận.
 
 ## Luồng xử lý nền
 
@@ -19,6 +20,11 @@ instance đang gửi bị dừng. Mỗi lần claim được ghi vào `attempt_c
    backoff; worker tiếp tục xử lý thư khác thay vì chặn cả hàng đợi.
 3. Dùng hết lượt thử: chuyển sang `Failed` và giữ lỗi cuối để truy vết.
 
+Một lần gửi có deadline tổng thể ngắn hơn lease. Vì vậy thao tác SMTP chậm bị hủy và đưa về lịch retry
+trước khi worker khác được phép claim dòng đó. Dòng `Queued` hoặc lease đã hết hạn mà đạt
+`MaxAttempts` được chuyển sang `Failed`, không được claim vô hạn. Sau khi SMTP trả thành công, bước ghi
+`Sent` không dùng cancellation token dừng host để shutdown thông thường không bỏ mất cập nhật này.
+
 Lỗi SMTP không thay đổi trạng thái `Published` của meeting. Queue nằm trong PostgreSQL nên các job
 `Queued` còn lại tiếp tục được xử lý sau khi ứng dụng khởi động lại. Cách gửi có ngữ nghĩa
 at-least-once: nếu tiến trình dừng ngay sau khi SMTP đã nhận thư nhưng trước khi trạng thái `Sent`
@@ -30,7 +36,9 @@ SMTP được kết nối bằng MailKit và không phụ thuộc Gmail hay mộ
 
 Mỗi thư gồm nội dung tiếng Việt, đường dẫn trực tiếp tới
 `/mgmt/meetings/{id}` và tệp `thu-moi-hop.ics` có `METHOD:REQUEST`, người tham dự, thời gian, địa điểm
-và URL cuộc họp. Outlook và Google Calendar có thể nhập tệp này.
+và URL cuộc họp. Nội dung thư hiển thị giờ Việt Nam (`Asia/Ho_Chi_Minh`); tệp lịch giữ thời gian UTC
+theo RFC 5545 để Outlook và Google Calendar tự đổi sang múi giờ của người dùng. Các parameter tên
+người trong tệp lịch được quote và encode theo RFC 5545/RFC 6868.
 
 ## Điểm tích hợp với SCRUM-19
 
@@ -53,10 +61,11 @@ Các giá trị không bí mật nằm dưới section `Email` trong `appsetting
 {
   "Email": {
     "ApplicationBaseUrl": "https://hop.example.vn",
-    "MaxAttempts": 3,
-    "RetryDelaySeconds": 5,
+    "MaxAttempts": 8,
+    "RetryDelaySeconds": 60,
     "PollingIntervalSeconds": 5,
     "ProcessingLeaseSeconds": 120,
+    "SendAttemptTimeoutSeconds": 60,
     "Smtp": {
       "Enabled": true,
       "Host": "smtp.example.vn",
@@ -86,9 +95,11 @@ dotnet user-secrets set "Email:Smtp:FromAddress" "no-reply@example.vn" --project
 
 Production dùng các biến môi trường tương ứng, ví dụ
 `Email__Smtp__Password` và `Email__ApplicationBaseUrl`. Khi `Enabled` là `false`, worker không được
-khởi động; các dòng queue vẫn được giữ trong database.
+khởi động và lần công bố meeting không tạo dòng email mới; các dòng đã có trong queue vẫn được giữ
+trong database.
 
 Giới hạn cấu hình: `MaxAttempts` từ 1–20; retry/polling từ 1–3.600 giây; lease từ 10–3.600 giây;
-timeout SMTP từ 1–300 giây. `ProcessingLeaseSeconds` phải dài hơn timeout SMTP. Khi bật SMTP,
+timeout SMTP và deadline toàn bộ lần gửi từ 1–300 giây. `ProcessingLeaseSeconds` phải dài hơn
+`SendAttemptTimeoutSeconds`. Khi bật SMTP,
 backend kiểm tra cấu hình ngay lúc khởi động và dừng với lỗi rõ ràng nếu thiếu host, sender, URL
 frontend, security mode không hợp lệ hoặc cặp username/password không đầy đủ.

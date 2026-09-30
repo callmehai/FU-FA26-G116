@@ -81,6 +81,140 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
         Assert.Null(stored.LeaseExpiresAt);
     }
 
+    [Fact]
+    public async Task Processor_sends_queued_messages_oldest_first_and_marks_them_sent()
+    {
+        var older = QueuedMessage("older@trustcabinet.local", Now);
+        var newer = QueuedMessage("newer@trustcabinet.local", Now.AddMinutes(1));
+        _db.EmailMessages.AddRange(newer, older);
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+        var sender = new RecordingSender();
+        var processor = Processor(_db, sender);
+
+        Assert.Equal(EmailProcessingOutcome.Sent, (await processor.ProcessNextAsync()).Outcome);
+        Assert.Equal(EmailProcessingOutcome.Sent, (await processor.ProcessNextAsync()).Outcome);
+        Assert.Equal(EmailProcessingOutcome.NoWork, (await processor.ProcessNextAsync()).Outcome);
+
+        Assert.Equal(
+            ["older@trustcabinet.local", "newer@trustcabinet.local"],
+            sender.Recipients);
+        Assert.All(await _db.EmailMessages.ToListAsync(), message =>
+        {
+            Assert.Equal(EmailStatus.Sent, message.Status);
+            Assert.Equal(1, message.AttemptCount);
+            Assert.Equal(Now, message.SentAt);
+        });
+    }
+
+    [Fact]
+    public async Task Processor_retries_then_preserves_a_permanent_failure_for_audit()
+    {
+        _db.EmailMessages.Add(QueuedMessage("failed@trustcabinet.local", Now));
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+        var sender = new FailingSender("SMTP unavailable");
+        var time = new AdjustableTimeProvider(Now);
+        var processor = Processor(_db, sender, time, maxAttempts: 2, retryDelaySeconds: 60);
+
+        var first = await processor.ProcessNextAsync();
+        Assert.Equal(EmailProcessingOutcome.RetryScheduled, first.Outcome);
+        var afterFirst = await _db.EmailMessages.AsNoTracking().SingleAsync();
+        Assert.Equal(EmailStatus.Queued, afterFirst.Status);
+        Assert.Equal(Now.AddMinutes(1), afterFirst.NextAttemptAt);
+
+        time.Advance(TimeSpan.FromSeconds(30));
+        Assert.Equal(EmailProcessingOutcome.NoWork, (await processor.ProcessNextAsync()).Outcome);
+
+        time.Advance(TimeSpan.FromSeconds(30));
+        Assert.Equal(
+            EmailProcessingOutcome.PermanentlyFailed,
+            (await processor.ProcessNextAsync()).Outcome);
+        var afterSecond = await _db.EmailMessages.AsNoTracking().SingleAsync();
+        Assert.Equal(EmailStatus.Failed, afterSecond.Status);
+        Assert.Equal(2, afterSecond.AttemptCount);
+        Assert.Null(afterSecond.NextAttemptAt);
+        Assert.Contains("SMTP unavailable", afterSecond.LastError, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Expired_claim_at_maximum_attempts_is_failed_without_another_send()
+    {
+        var exhausted = QueuedMessage("exhausted@trustcabinet.local", Now.AddMinutes(-1));
+        exhausted.Status = EmailStatus.Processing;
+        exhausted.AttemptCount = 3;
+        exhausted.LeaseToken = Guid.NewGuid();
+        exhausted.LeaseExpiresAt = Now.AddSeconds(-1);
+        _db.EmailMessages.Add(exhausted);
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+        var sender = new RecordingSender();
+
+        var result = await Processor(_db, sender, maxAttempts: 3).ProcessNextAsync();
+
+        Assert.Equal(EmailProcessingOutcome.NoWork, result.Outcome);
+        Assert.Empty(sender.Recipients);
+        var stored = await _db.EmailMessages.AsNoTracking().SingleAsync();
+        Assert.Equal(EmailStatus.Failed, stored.Status);
+        Assert.Null(stored.LeaseToken);
+        Assert.Null(stored.LeaseExpiresAt);
+    }
+
+    [Fact]
+    public async Task Host_shutdown_after_smtp_acceptance_does_not_cancel_sent_finalization()
+    {
+        var email = QueuedMessage();
+        _db.EmailMessages.Add(email);
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+        using var shutdown = new CancellationTokenSource();
+        var processor = Processor(_db, new CancelAfterAcceptedSender(shutdown));
+
+        var result = await processor.ProcessNextAsync(shutdown.Token);
+
+        Assert.Equal(EmailProcessingOutcome.Sent, result.Outcome);
+        var stored = await _db.EmailMessages.AsNoTracking().SingleAsync();
+        Assert.Equal(EmailStatus.Sent, stored.Status);
+        Assert.Equal(Now, stored.SentAt);
+    }
+
+    [Fact]
+    public async Task Complete_send_attempt_times_out_before_its_lease_can_expire()
+    {
+        _db.EmailMessages.Add(QueuedMessage());
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+
+        var result = await Processor(
+                _db,
+                new NeverCompletingSender(),
+                sendAttemptTimeoutSeconds: 1,
+                processingLeaseSeconds: 10)
+            .ProcessNextAsync();
+
+        Assert.Equal(EmailProcessingOutcome.RetryScheduled, result.Outcome);
+        var stored = await _db.EmailMessages.AsNoTracking().SingleAsync();
+        Assert.Equal(EmailStatus.Queued, stored.Status);
+        Assert.Null(stored.LeaseToken);
+        Assert.Null(stored.LeaseExpiresAt);
+    }
+
+    [Fact]
+    public async Task Deduplication_is_per_business_event_not_per_meeting_and_recipient()
+    {
+        var meetingId = Guid.CreateVersion7();
+        var invitation = QueuedMessage();
+        invitation.DeduplicationKey = $"meeting:{meetingId:D}:published:user-1";
+        var reschedule = QueuedMessage();
+        reschedule.ToAddress = invitation.ToAddress;
+        reschedule.DeduplicationKey = $"meeting:{meetingId:D}:rescheduled:1:user-1";
+        _db.EmailMessages.AddRange(invitation, reschedule);
+
+        await _db.SaveChangesAsync();
+
+        Assert.Equal(2, await _db.EmailMessages.CountAsync());
+    }
+
     private static TrustCabinetDbContext NewContext() => new(
         new DbContextOptionsBuilder<TrustCabinetDbContext>()
             .UseNpgsql(ConnectionString)
@@ -89,28 +223,37 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
 
     private static EmailQueueProcessor Processor(
         TrustCabinetDbContext db,
-        IEmailSender sender)
+        IEmailSender sender,
+        TimeProvider? time = null,
+        int maxAttempts = 3,
+        int retryDelaySeconds = 60,
+        int sendAttemptTimeoutSeconds = 60,
+        int processingLeaseSeconds = 120)
         => new(
             db,
             sender,
             Options.Create(new EmailDeliveryOptions
             {
-                MaxAttempts = 3,
-                RetryDelaySeconds = 1,
+                MaxAttempts = maxAttempts,
+                RetryDelaySeconds = retryDelaySeconds,
                 PollingIntervalSeconds = 1,
-                ProcessingLeaseSeconds = 120,
+                ProcessingLeaseSeconds = processingLeaseSeconds,
+                SendAttemptTimeoutSeconds = sendAttemptTimeoutSeconds,
             }),
-            new FixedTimeProvider(Now),
+            time ?? new FixedTimeProvider(Now),
             NullLogger<EmailQueueProcessor>.Instance);
 
-    private static EmailMessage QueuedMessage() => new()
+    private static EmailMessage QueuedMessage(
+        string recipient = "recipient@trustcabinet.local",
+        DateTimeOffset? createdAt = null) => new()
     {
-        ToAddress = "recipient@trustcabinet.local",
+        DeduplicationKey = $"test:{Guid.CreateVersion7():D}",
+        ToAddress = recipient,
         Subject = "Meeting invitation",
         Body = "Invitation body",
         Status = EmailStatus.Queued,
-        CreatedAt = Now,
-        UpdatedAt = Now,
+        CreatedAt = createdAt ?? Now,
+        UpdatedAt = createdAt ?? Now,
     };
 
     private sealed class BlockingSender : IEmailSender
@@ -132,12 +275,45 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
 
     private sealed class RecordingSender : IEmailSender
     {
+        public List<string> Recipients { get; } = [];
+
         public Task SendAsync(EmailMessage message, CancellationToken ct = default)
-            => Task.CompletedTask;
+        {
+            Recipients.Add(message.ToAddress);
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FailingSender(string message) : IEmailSender
+    {
+        public Task SendAsync(EmailMessage email, CancellationToken ct = default)
+            => Task.FromException(new InvalidOperationException(message));
+    }
+
+    private sealed class CancelAfterAcceptedSender(CancellationTokenSource shutdown) : IEmailSender
+    {
+        public Task SendAsync(EmailMessage message, CancellationToken ct = default)
+        {
+            shutdown.Cancel();
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class NeverCompletingSender : IEmailSender
+    {
+        public Task SendAsync(EmailMessage message, CancellationToken ct = default)
+            => Task.Delay(Timeout.InfiniteTimeSpan, ct);
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => now;
+    }
+
+    private sealed class AdjustableTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+
+        public void Advance(TimeSpan duration) => now = now.Add(duration);
     }
 }

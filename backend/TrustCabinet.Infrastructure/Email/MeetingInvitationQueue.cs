@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Text;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Notifications;
@@ -13,9 +14,21 @@ public sealed class MeetingInvitationQueue(
     TimeProvider time,
     ILogger<MeetingInvitationQueue> logger) : IMeetingInvitationQueue
 {
+    private static readonly TimeZoneInfo VietnamTimeZone =
+        TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+
     public async Task<int> QueueForPublishedMeetingAsync(
         Guid meetingId, CancellationToken ct = default)
     {
+        var emailOptions = options.Value;
+        if (!emailOptions.Smtp.Enabled)
+        {
+            logger.LogInformation(
+                "Email delivery is disabled; no invitation emails were queued for meeting {MeetingId}.",
+                meetingId);
+            return 0;
+        }
+
         var meeting = await db.Meetings
             .Include(item => item.Participants)
                 .ThenInclude(participant => participant.User)
@@ -32,23 +45,32 @@ public sealed class MeetingInvitationQueue(
                 $"Meeting {meetingId} is {meeting.Status}, so its invitations cannot be queued.");
         }
 
-        var emailOptions = options.Value;
         var meetingUrl = BuildMeetingUrl(emailOptions.ApplicationBaseUrl, meeting.Id);
         var now = time.GetUtcNow();
-        var existingAddresses = new HashSet<string>(
-            await db.EmailMessages
-                .Where(item => item.MeetingId == meeting.Id)
-                .Select(item => item.ToAddress)
-                .ToListAsync(ct),
-            StringComparer.OrdinalIgnoreCase);
-        var messages = meeting.Participants
+        var recipients = meeting.Participants
             .Select(participant => participant.User)
-            .Where(user => !existingAddresses.Contains(user.Email))
-            .Select(user => new EmailMessage
+            .Where(user => user.IsActive)
+            .Select(user => new
             {
-                ToAddress = user.Email,
+                User = user,
+                DeduplicationKey = InvitationDeduplicationKey(meeting.Id, user.Id),
+            })
+            .ToArray();
+        var candidateKeys = recipients.Select(item => item.DeduplicationKey).ToArray();
+        var existingKeys = new HashSet<string>(
+            await db.EmailMessages
+                .Where(item => candidateKeys.Contains(item.DeduplicationKey))
+                .Select(item => item.DeduplicationKey)
+                .ToListAsync(ct),
+            StringComparer.Ordinal);
+        var messages = recipients
+            .Where(item => !existingKeys.Contains(item.DeduplicationKey))
+            .Select(item => new EmailMessage
+            {
+                DeduplicationKey = item.DeduplicationKey,
+                ToAddress = item.User.Email,
                 Subject = BuildSubject(meeting.Title),
-                Body = BuildBody(user, meeting, meetingUrl),
+                Body = BuildBody(item.User, meeting, meetingUrl),
                 CalendarAttachment = CalendarInvitationBuilder.Build(
                     meeting.Id,
                     meeting.Title,
@@ -56,8 +78,8 @@ public sealed class MeetingInvitationQueue(
                     meeting.Location,
                     meeting.StartsAt,
                     meeting.EndsAt,
-                    user.FullName,
-                    user.Email,
+                    item.User.FullName,
+                    item.User.Email,
                     meetingUrl,
                     emailOptions.Smtp.FromName,
                     emailOptions.Smtp.FromAddress,
@@ -90,6 +112,9 @@ public sealed class MeetingInvitationQueue(
     private static string BuildMeetingUrl(string applicationBaseUrl, Guid meetingId)
         => $"{applicationBaseUrl.Trim().TrimEnd('/')}/mgmt/meetings/{meetingId:D}";
 
+    private static string InvitationDeduplicationKey(Guid meetingId, Guid recipientId)
+        => $"meeting:{meetingId:D}:published:{recipientId:D}";
+
     private static string BuildSubject(string title)
     {
         const string prefix = "Thư mời họp: ";
@@ -97,28 +122,44 @@ public sealed class MeetingInvitationQueue(
         var singleLineTitle = title
             .Replace('\r', ' ')
             .Replace('\n', ' ');
-        return prefix + singleLineTitle[..Math.Min(
-            singleLineTitle.Length,
-            maxSubjectLength - prefix.Length)];
+        return prefix + TruncateByRunes(singleLineTitle, maxSubjectLength - prefix.Length);
     }
 
     private static string BuildBody(User user, Meeting meeting, string meetingUrl)
     {
+        var startsAt = TimeZoneInfo.ConvertTime(meeting.StartsAt, VietnamTimeZone);
         var end = meeting.EndsAt is null
             ? string.Empty
-            : $"\nKết thúc: {meeting.EndsAt.Value:dd/MM/yyyy HH:mm zzz}";
+            : $"\nKết thúc: {TimeZoneInfo.ConvertTime(meeting.EndsAt.Value, VietnamTimeZone):dd/MM/yyyy HH:mm zzz}";
 
         return $"""
             Xin chào {user.FullName},
 
             Bạn được mời tham dự cuộc họp "{meeting.Title}".
 
-            Bắt đầu: {meeting.StartsAt:dd/MM/yyyy HH:mm zzz}{end}
+            Bắt đầu: {startsAt:dd/MM/yyyy HH:mm zzz}{end}
             Địa điểm/Hình thức: {meeting.Location}
 
             Xem chi tiết và tài liệu cuộc họp: {meetingUrl}
 
             Tệp lịch .ics được đính kèm để bạn thêm cuộc họp vào Outlook hoặc Google Calendar.
             """;
+    }
+
+    private static string TruncateByRunes(string value, int maxRunes)
+    {
+        var result = new StringBuilder(Math.Min(value.Length, maxRunes));
+        var count = 0;
+        foreach (var rune in value.EnumerateRunes())
+        {
+            if (count++ == maxRunes)
+            {
+                break;
+            }
+
+            result.Append(rune);
+        }
+
+        return result.ToString();
     }
 }

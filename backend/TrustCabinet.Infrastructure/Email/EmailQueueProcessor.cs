@@ -34,7 +34,9 @@ internal sealed class EmailQueueProcessor(
 
         try
         {
-            await sender.SendAsync(message, ct);
+            using var attemptCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            attemptCts.CancelAfter(TimeSpan.FromSeconds(options.Value.SendAttemptTimeoutSeconds));
+            await sender.SendAsync(message, attemptCts.Token);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -50,7 +52,10 @@ internal sealed class EmailQueueProcessor(
         // Finalization errors deliberately escape to the worker. SMTP may already have accepted
         // the message, so recording that database error as a send failure would be misleading.
         var sentAt = time.GetUtcNow();
-        if (!await FinalizeSentAsync(message.Id, message.LeaseToken!.Value, sentAt, ct))
+        // SMTP may already have accepted the message. Host shutdown must not cancel this small
+        // database update, otherwise the expired lease would cause the same email to be sent again.
+        if (!await FinalizeSentAsync(
+                message.Id, message.LeaseToken!.Value, sentAt, CancellationToken.None))
         {
             return LeaseLost(message);
         }
@@ -118,62 +123,42 @@ internal sealed class EmailQueueProcessor(
     {
         var now = time.GetUtcNow();
         var leaseToken = Guid.NewGuid();
-        EmailMessage? message;
-
-        if (db.Database.IsRelational())
+        if (!string.Equals(
+                db.Database.ProviderName,
+                "Npgsql.EntityFrameworkCore.PostgreSQL",
+                StringComparison.Ordinal))
         {
-            if (!string.Equals(
-                    db.Database.ProviderName,
-                    "Npgsql.EntityFrameworkCore.PostgreSQL",
-                    StringComparison.Ordinal))
-            {
-                throw new NotSupportedException(
-                    "The durable email queue currently requires PostgreSQL.");
-            }
-
-            await using var transaction = await db.Database.BeginTransactionAsync(ct);
-            var candidates = await db.EmailMessages
-                .FromSqlInterpolated($"""
-                    SELECT *
-                    FROM email_messages
-                    WHERE
-                        (status = 'Queued'
-                            AND (next_attempt_at IS NULL OR next_attempt_at <= {now}))
-                        OR (status = 'Processing' AND lease_expires_at <= {now})
-                    ORDER BY created_at, id
-                    FOR UPDATE SKIP LOCKED
-                    LIMIT 1
-                    """)
-                .ToListAsync(ct);
-            message = candidates.SingleOrDefault();
-
-            if (message is not null)
-            {
-                Claim(message, leaseToken, now);
-                await db.SaveChangesAsync(ct);
-            }
-
-            await transaction.CommitAsync(ct);
+            throw new NotSupportedException(
+                "The durable email queue requires PostgreSQL.");
         }
-        else
+
+        await MarkExhaustedMessagesFailedAsync(now, ct);
+
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        var candidates = await db.EmailMessages
+            .FromSqlInterpolated($"""
+                SELECT *
+                FROM email_messages
+                WHERE attempt_count < {options.Value.MaxAttempts}
+                  AND (
+                    (status = 'Queued'
+                        AND (next_attempt_at IS NULL OR next_attempt_at <= {now}))
+                    OR (status = 'Processing' AND lease_expires_at <= {now})
+                  )
+                ORDER BY created_at, id
+                FOR UPDATE SKIP LOCKED
+                LIMIT 1
+                """)
+            .ToListAsync(ct);
+        var message = candidates.SingleOrDefault();
+
+        if (message is not null)
         {
-            // The non-relational path exists for isolated unit tests. Production uses the locked
-            // PostgreSQL query above so two application instances cannot claim the same row.
-            message = await db.EmailMessages
-                .Where(item =>
-                    (item.Status == EmailStatus.Queued
-                        && (item.NextAttemptAt == null || item.NextAttemptAt <= now))
-                    || (item.Status == EmailStatus.Processing && item.LeaseExpiresAt <= now))
-                .OrderBy(item => item.CreatedAt)
-                .ThenBy(item => item.Id)
-                .FirstOrDefaultAsync(ct);
-
-            if (message is not null)
-            {
-                Claim(message, leaseToken, now);
-                await db.SaveChangesAsync(ct);
-            }
+            Claim(message, leaseToken, now);
+            await db.SaveChangesAsync(ct);
         }
+
+        await transaction.CommitAsync(ct);
 
         if (message is not null)
         {
@@ -182,6 +167,23 @@ internal sealed class EmailQueueProcessor(
 
         return message;
     }
+
+    private Task<int> MarkExhaustedMessagesFailedAsync(DateTimeOffset now, CancellationToken ct)
+        => db.EmailMessages
+            .Where(item => item.AttemptCount >= options.Value.MaxAttempts
+                && (item.Status == EmailStatus.Queued
+                    || (item.Status == EmailStatus.Processing && item.LeaseExpiresAt <= now)))
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(item => item.Status, EmailStatus.Failed)
+                    .SetProperty(
+                        item => item.LastError,
+                        "Email reached the maximum attempt count before delivery was confirmed.")
+                    .SetProperty(item => item.NextAttemptAt, (DateTimeOffset?)null)
+                    .SetProperty(item => item.LeaseToken, (Guid?)null)
+                    .SetProperty(item => item.LeaseExpiresAt, (DateTimeOffset?)null)
+                    .SetProperty(item => item.UpdatedAt, now),
+                ct);
 
     private void Claim(EmailMessage message, Guid leaseToken, DateTimeOffset now)
     {
@@ -199,37 +201,18 @@ internal sealed class EmailQueueProcessor(
         DateTimeOffset sentAt,
         CancellationToken ct)
     {
-        if (db.Database.IsRelational())
-        {
-            var updated = await ClaimedMessage(id, leaseToken)
-                .ExecuteUpdateAsync(
-                    setters => setters
-                        .SetProperty(item => item.Status, EmailStatus.Sent)
-                        .SetProperty(item => item.SentAt, sentAt)
-                        .SetProperty(item => item.LastError, string.Empty)
-                        .SetProperty(item => item.NextAttemptAt, (DateTimeOffset?)null)
-                        .SetProperty(item => item.LeaseToken, (Guid?)null)
-                        .SetProperty(item => item.LeaseExpiresAt, (DateTimeOffset?)null)
-                        .SetProperty(item => item.UpdatedAt, sentAt),
-                    ct);
-            return updated == 1;
-        }
-
-        var message = await ClaimedMessage(id, leaseToken).SingleOrDefaultAsync(ct);
-        if (message is null)
-        {
-            return false;
-        }
-
-        message.Status = EmailStatus.Sent;
-        message.SentAt = sentAt;
-        message.LastError = string.Empty;
-        message.NextAttemptAt = null;
-        message.LeaseToken = null;
-        message.LeaseExpiresAt = null;
-        message.UpdatedAt = sentAt;
-        await db.SaveChangesAsync(ct);
-        return true;
+        var updated = await ClaimedMessage(id, leaseToken)
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(item => item.Status, EmailStatus.Sent)
+                    .SetProperty(item => item.SentAt, sentAt)
+                    .SetProperty(item => item.LastError, string.Empty)
+                    .SetProperty(item => item.NextAttemptAt, (DateTimeOffset?)null)
+                    .SetProperty(item => item.LeaseToken, (Guid?)null)
+                    .SetProperty(item => item.LeaseExpiresAt, (DateTimeOffset?)null)
+                    .SetProperty(item => item.UpdatedAt, sentAt),
+                ct);
+        return updated == 1;
     }
 
     private async Task<bool> FinalizeFailureAsync(
@@ -242,35 +225,17 @@ internal sealed class EmailQueueProcessor(
         CancellationToken ct)
     {
         var status = exhausted ? EmailStatus.Failed : EmailStatus.Queued;
-        if (db.Database.IsRelational())
-        {
-            var updated = await ClaimedMessage(id, leaseToken)
-                .ExecuteUpdateAsync(
-                    setters => setters
-                        .SetProperty(item => item.Status, status)
-                        .SetProperty(item => item.LastError, error)
-                        .SetProperty(item => item.NextAttemptAt, nextAttemptAt)
-                        .SetProperty(item => item.LeaseToken, (Guid?)null)
-                        .SetProperty(item => item.LeaseExpiresAt, (DateTimeOffset?)null)
-                        .SetProperty(item => item.UpdatedAt, failedAt),
-                    ct);
-            return updated == 1;
-        }
-
-        var message = await ClaimedMessage(id, leaseToken).SingleOrDefaultAsync(ct);
-        if (message is null)
-        {
-            return false;
-        }
-
-        message.Status = status;
-        message.LastError = error;
-        message.NextAttemptAt = nextAttemptAt;
-        message.LeaseToken = null;
-        message.LeaseExpiresAt = null;
-        message.UpdatedAt = failedAt;
-        await db.SaveChangesAsync(ct);
-        return true;
+        var updated = await ClaimedMessage(id, leaseToken)
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(item => item.Status, status)
+                    .SetProperty(item => item.LastError, error)
+                    .SetProperty(item => item.NextAttemptAt, nextAttemptAt)
+                    .SetProperty(item => item.LeaseToken, (Guid?)null)
+                    .SetProperty(item => item.LeaseExpiresAt, (DateTimeOffset?)null)
+                    .SetProperty(item => item.UpdatedAt, failedAt),
+                ct);
+        return updated == 1;
     }
 
     private IQueryable<EmailMessage> ClaimedMessage(Guid id, Guid leaseToken)

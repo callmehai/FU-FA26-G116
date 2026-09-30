@@ -41,8 +41,8 @@ internal static class CalendarInvitationBuilder
         lines.Add($"DESCRIPTION:{Escape(JoinDescription(description, meetingUrl))}");
         lines.Add($"LOCATION:{Escape(location)}");
         lines.Add($"URL:{Escape(meetingUrl)}");
-        lines.Add($"ORGANIZER;CN={EscapeParameter(organizerName)}:mailto:{organizerEmail}");
-        lines.Add($"ATTENDEE;CN={EscapeParameter(attendeeName)};RSVP=TRUE:mailto:{attendeeEmail}");
+        lines.Add($"ORGANIZER;CN=\"{EncodeParameter(organizerName)}\":mailto:{organizerEmail}");
+        lines.Add($"ATTENDEE;CN=\"{EncodeParameter(attendeeName)}\";RSVP=TRUE:mailto:{attendeeEmail}");
         lines.Add("STATUS:CONFIRMED");
         lines.Add("SEQUENCE:0");
         lines.Add("END:VEVENT");
@@ -68,8 +68,15 @@ internal static class CalendarInvitationBuilder
             .Replace("\n", "\\n", StringComparison.Ordinal)
             .Replace("\r", "\\n", StringComparison.Ordinal);
 
-    private static string EscapeParameter(string value)
-        => Escape(value).Replace(":", "\\:", StringComparison.Ordinal);
+    // RFC 5545 requires parameter values containing ',', ';' or ':' to be quoted. RFC 6868
+    // supplies the encoding for characters (notably a quote) that cannot appear literally there.
+    private static string EncodeParameter(string value)
+        => value
+            .Replace("^", "^^", StringComparison.Ordinal)
+            .Replace("\"", "^'", StringComparison.Ordinal)
+            .Replace("\r\n", "^n", StringComparison.Ordinal)
+            .Replace("\n", "^n", StringComparison.Ordinal)
+            .Replace("\r", "^n", StringComparison.Ordinal);
 
     // RFC 5545 limits a content line to 75 octets. UTF-8 characters may span multiple bytes, so
     // fold by rune rather than by char and account for the continuation space on following lines.

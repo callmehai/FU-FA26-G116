@@ -10,6 +10,12 @@ namespace TrustCabinet.Domain.Entities;
 /// </summary>
 public class EmailMessage : Entity
 {
+    /// <summary>
+    /// Identifies the business event that created this message. Repeating the same event is
+    /// idempotent, while a later event for the same meeting and recipient gets a different key.
+    /// </summary>
+    public required string DeduplicationKey { get; set; }
+
     public required string ToAddress { get; set; }
 
     public required string Subject { get; set; }
