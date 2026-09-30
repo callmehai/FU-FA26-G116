@@ -8,6 +8,9 @@ SCRUM-15 không thêm HTTP endpoint riêng. Luồng công bố của SCRUM-19 g�
 vụ, ví dụ lần công bố meeting cho một user. Gọi lại cùng sự kiện không tạo thư trùng, nhưng một sự kiện
 đổi lịch, hủy họp hoặc phát hành biên bản sau này vẫn có thể tạo thư mới cho cùng người nhận.
 
+Phần FE cần tích hợp được tóm tắt riêng tại
+[`07-gui-email-thu-moi-note-cho-fe.md`](07-gui-email-thu-moi-note-cho-fe.md).
+
 ## Luồng xử lý nền
 
 `EmailDeliveryWorker` đọc `email_messages` theo `created_at`, rồi `id`, và gửi từng thư một. Worker

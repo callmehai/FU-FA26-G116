@@ -11,12 +11,9 @@ namespace TrustCabinet.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Some development databases applied an earlier, removed EmailDeliveryOutbox
-            // migration. IF EXISTS/IF NOT EXISTS keeps this migration valid for both those
-            // databases and a clean installation from the migrations currently in the repo.
-            migrationBuilder.Sql("DROP INDEX IF EXISTS ix_email_messages_meeting_id;");
-            migrationBuilder.Sql("DROP INDEX IF EXISTS ix_email_messages_status_created_at;");
-            migrationBuilder.Sql("DROP INDEX IF EXISTS ix_email_messages_meeting_id_to_address;");
+            migrationBuilder.DropIndex(
+                name: "ix_email_messages_status_created_at",
+                table: "email_messages");
 
             migrationBuilder.AlterColumn<string>(
                 name: "to_address",
@@ -28,9 +25,18 @@ namespace TrustCabinet.Infrastructure.Migrations
                 oldType: "character varying(256)",
                 oldMaxLength: 256);
 
-            migrationBuilder.Sql(
-                "ALTER TABLE email_messages ADD COLUMN IF NOT EXISTS "
-                + "lease_expires_at timestamp with time zone;");
+            migrationBuilder.AddColumn<string>(
+                name: "deduplication_key",
+                table: "email_messages",
+                type: "character varying(512)",
+                maxLength: 512,
+                nullable: false);
+
+            migrationBuilder.AddColumn<DateTimeOffset>(
+                name: "lease_expires_at",
+                table: "email_messages",
+                type: "timestamp with time zone",
+                nullable: true);
 
             migrationBuilder.AddColumn<Guid>(
                 name: "lease_token",
@@ -38,62 +44,59 @@ namespace TrustCabinet.Infrastructure.Migrations
                 type: "uuid",
                 nullable: true);
 
-            migrationBuilder.Sql(
-                "ALTER TABLE email_messages ADD COLUMN IF NOT EXISTS "
-                + "next_attempt_at timestamp with time zone;");
-            migrationBuilder.Sql(
-                "ALTER TABLE email_messages ADD COLUMN IF NOT EXISTS "
-                + "deduplication_key character varying(512);");
-            migrationBuilder.Sql(
-                "UPDATE email_messages SET deduplication_key = 'legacy:' || id::text "
-                + "WHERE deduplication_key IS NULL;");
-            migrationBuilder.Sql(
-                "ALTER TABLE email_messages ALTER COLUMN deduplication_key SET NOT NULL;");
+            migrationBuilder.AddColumn<DateTimeOffset>(
+                name: "next_attempt_at",
+                table: "email_messages",
+                type: "timestamp with time zone",
+                nullable: true);
 
-            migrationBuilder.Sql(
-                "CREATE INDEX IF NOT EXISTS ix_email_messages_lease_expires_at "
-                + "ON email_messages (lease_expires_at);");
-            migrationBuilder.Sql(
-                "CREATE UNIQUE INDEX IF NOT EXISTS ix_email_messages_deduplication_key "
-                + "ON email_messages (deduplication_key);");
-            migrationBuilder.Sql(
-                "CREATE INDEX IF NOT EXISTS ix_email_messages_meeting_id "
-                + "ON email_messages (meeting_id);");
-            migrationBuilder.Sql(
-                "CREATE INDEX IF NOT EXISTS ix_email_messages_status_next_attempt_at_created_at "
-                + "ON email_messages (status, next_attempt_at, created_at);");
+            migrationBuilder.CreateIndex(
+                name: "ix_email_messages_deduplication_key",
+                table: "email_messages",
+                column: "deduplication_key",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_email_messages_lease_expires_at",
+                table: "email_messages",
+                column: "lease_expires_at");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_email_messages_status_next_attempt_at_created_at",
+                table: "email_messages",
+                columns: new[] { "status", "next_attempt_at", "created_at" });
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DROP INDEX IF EXISTS ix_email_messages_lease_expires_at;");
-            migrationBuilder.Sql("DROP INDEX IF EXISTS ix_email_messages_deduplication_key;");
-            migrationBuilder.Sql(
-                "DROP INDEX IF EXISTS ix_email_messages_status_next_attempt_at_created_at;");
+            migrationBuilder.DropIndex(
+                name: "ix_email_messages_deduplication_key",
+                table: "email_messages");
 
-            migrationBuilder.DropColumn(
-                name: "lease_token",
+            migrationBuilder.DropIndex(
+                name: "ix_email_messages_lease_expires_at",
+                table: "email_messages");
+
+            migrationBuilder.DropIndex(
+                name: "ix_email_messages_status_next_attempt_at_created_at",
                 table: "email_messages");
 
             migrationBuilder.DropColumn(
                 name: "deduplication_key",
                 table: "email_messages");
 
-            migrationBuilder.Sql(
-                """
-                DO $$
-                BEGIN
-                    IF NOT EXISTS (
-                        SELECT 1
-                        FROM __ef_migrations_history
-                        WHERE migration_id = '20260924144819_EmailDeliveryOutbox'
-                    ) THEN
-                        ALTER TABLE email_messages DROP COLUMN IF EXISTS lease_expires_at;
-                        ALTER TABLE email_messages DROP COLUMN IF EXISTS next_attempt_at;
-                    END IF;
-                END $$;
-                """);
+            migrationBuilder.DropColumn(
+                name: "lease_expires_at",
+                table: "email_messages");
+
+            migrationBuilder.DropColumn(
+                name: "lease_token",
+                table: "email_messages");
+
+            migrationBuilder.DropColumn(
+                name: "next_attempt_at",
+                table: "email_messages");
 
             migrationBuilder.AlterColumn<string>(
                 name: "to_address",
@@ -105,12 +108,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                 oldType: "citext",
                 oldMaxLength: 256);
 
-            migrationBuilder.Sql(
-                "CREATE INDEX IF NOT EXISTS ix_email_messages_meeting_id "
-                + "ON email_messages (meeting_id);");
-            migrationBuilder.Sql(
-                "CREATE INDEX IF NOT EXISTS ix_email_messages_status_created_at "
-                + "ON email_messages (status, created_at);");
+            migrationBuilder.CreateIndex(
+                name: "ix_email_messages_status_created_at",
+                table: "email_messages",
+                columns: new[] { "status", "created_at" });
         }
     }
 }

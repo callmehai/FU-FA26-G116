@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MimeKit;
@@ -7,12 +8,28 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Email;
+using TrustCabinet.Infrastructure.Migrations;
 
 namespace TrustCabinet.Web.Tests.Email;
 
 public sealed class EmailDeliveryTests
 {
     private static readonly DateTimeOffset Now = new(2026, 10, 1, 2, 0, 0, TimeSpan.Zero);
+
+    [Fact]
+    public void Migration_does_not_depend_on_machine_local_schema_history()
+    {
+        var migration = new ReliableEmailDelivery();
+
+        Assert.Empty(migration.UpOperations.OfType<SqlOperation>());
+        Assert.Empty(migration.DownOperations.OfType<SqlOperation>());
+        Assert.Equal(
+            ["deduplication_key", "lease_expires_at", "lease_token", "next_attempt_at"],
+            migration.UpOperations
+                .OfType<AddColumnOperation>()
+                .Select(operation => operation.Name)
+                .Order(StringComparer.Ordinal));
+    }
 
     [Fact]
     public async Task Published_meeting_is_queued_once_per_participant_with_calendar_attachment()

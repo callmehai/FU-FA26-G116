@@ -89,6 +89,14 @@ Không cần chạy `dotnet ef database update` cho luồng thông thường. De
 biến `TRUSTCABINET_CONNECTION`, không đọc User Secrets; vì vậy gọi `dotnet ef` trực tiếp mà không đặt
 biến này sẽ báo thiếu password dù `dotnet run` vẫn đọc secret đúng.
 
+### Database dev từng áp dụng migration ngoài Git
+
+Migration dùng chung chỉ hỗ trợ chuỗi migration đang được theo dõi trong repository. Nếu database
+dev từng áp dụng migration cục bộ đã bị xoá khỏi Git, chẳng hạn `EmailDeliveryOutbox`, hãy sao lưu dữ
+liệu dev cần giữ rồi chủ động tạo lại database/volume từ lịch sử migration hiện tại. Không thêm
+`IF EXISTS`, `IF NOT EXISTS`, backfill `legacy:` hoặc kiểm tra tên migration cục bộ vào migration dùng
+chung để vá riêng cho một máy.
+
 ## 6. Điều kiện để có email thật
 
 - `Email:Smtp:Enabled` là `true` trước khi backend khởi động.

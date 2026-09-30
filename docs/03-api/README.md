@@ -45,6 +45,9 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`07-gui-email-thu-moi.md`](07-gui-email-thu-moi.md) — hàng đợi email bền vững của `SCRUM-15`,
   worker gửi tuần tự, retry và log trạng thái, tệp lịch `.ics`, cấu hình SMTP và điểm tích hợp vào
   transaction công bố của `SCRUM-19`
+- [`07-gui-email-thu-moi-note-cho-fe.md`](07-gui-email-thu-moi-note-cho-fe.md) — note bàn giao cho FE:
+  ý nghĩa thật của kết quả công bố, route từ email, cách xử lý `MSG45`–`MSG47` và những trạng thái
+  queue/SMTP không thuộc contract frontend
 - [`07-gui-email-thu-moi-note-cai-dat-may-moi.md`](07-gui-email-thu-moi-note-cai-dat-may-moi.md) —
   checklist cấu hình database, User Secrets, SMTP, migration và kiểm tra worker trên máy mới
 
