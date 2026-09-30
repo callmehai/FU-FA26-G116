@@ -4,9 +4,12 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 
 Đã có:
 
+- [`00-danh-muc-ma-thong-bao.md`](00-danh-muc-ma-thong-bao.md) — **danh mục mọi mã `MSGnn`**:
+  quy tắc đặt mã, mã tiếp theo còn trống, từng mã trả ở endpoint nào với HTTP và câu thông báo gì,
+  và bảng đổi mã cũ → mới (kể cả mã trong sequence diagram). Thêm mã mới thì sửa file này trước.
 - [`01-xac-thuc.md`](01-xac-thuc.md) — đăng nhập và đăng xuất (UC-01, UC-02, UC-03 / SCRUM-11):
   `/api/auth/login`, `/google`, `/refresh`, `/logout`, `/me`; access token và refresh token; mã
-  thông báo của từng use case (lưu ý UC-01 và UC-02 đánh số khác nhau)
+  thông báo `MSG01`–`MSG06`
 - [`01-xac-thuc-note-cho-fe.md`](01-xac-thuc-note-cho-fe.md) — note cho FE khi làm SCRUM-46: những
   chỗ dễ làm sai mà lỗi lại trông như bug backend (chữ hoa/thường của `role`, hai kiểu 401, refresh
   token dùng một lần, thứ tự gọi khi đăng xuất)
@@ -33,12 +36,12 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   `GET/POST/PUT/DELETE /api/roles` — tạo, đổi tên, xoá vai trò; vai trò là bảng `roles` khoá `Guid`
   thay cho enum `SystemRole` ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)). Migration
   sửa tay giữ dữ liệu cũ, hợp đồng mới `roleId` + `roleName` ở `/api/users`, `/api/auth/*`,
-  `/api/roles/capabilities`, mã `MSG19`–`MSG25`, và phần FE cần làm
+  `/api/roles/capabilities`, mã `MSG19`–`MSG28`, và phần FE cần làm
 - [`05-quan-ly-cuoc-hop.md`](05-quan-ly-cuoc-hop.md) — contract tạo, đọc, sửa và lấy danh sách cuộc
   họp (`SCRUM-17`/`SCRUM-18`, UC-11/UC-12/UC-14): quyền theo từng cuộc họp, lọc và phân trang ở
-  server, validation baseline và các điểm cần BA bổ sung
+  server, validation baseline và các điểm cần BA bổ sung; mã `MSG29`–`MSG38`
 - [`06-thong-bao-trong-ung-dung.md`](06-thong-bao-trong-ung-dung.md) — SCRUM-14: API danh sách,
-  đánh dấu đã đọc, kiểm tra đích, SignalR và các nguồn tạo thông báo
+  đánh dấu đã đọc, kiểm tra đích, SignalR và các nguồn tạo thông báo; mã `MSG39`–`MSG40`
 
 Dự kiến có thêm:
 

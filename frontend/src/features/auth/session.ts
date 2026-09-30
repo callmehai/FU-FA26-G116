@@ -204,7 +204,7 @@ export async function reloadSession(): Promise<CurrentUser | null> {
  * logout cleared it — a user shown the login page whom a reload signs straight back in. The
  * session ends inside the lock too, so a tab waiting to refresh finds it over rather than trying.
  *
- * Returns false when the server could not be reached — UC-03's MSG01 — and leaves the session as
+ * Returns false when the server could not be reached — UC-03's MSG06 — and leaves the session as
  * it was, so the user can retry rather than believe they signed out.
  */
 export async function signOut() {

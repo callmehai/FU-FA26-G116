@@ -131,7 +131,7 @@ export interface MeetingRequest {
   assignedApproverId: string | null
 }
 
-/** POST answers MEETING_CREATED, PUT answers MEETING_UPDATED. */
+/** POST answers MSG29, PUT answers MSG30. */
 export interface MeetingMutationResponse {
   code: string
   message: string

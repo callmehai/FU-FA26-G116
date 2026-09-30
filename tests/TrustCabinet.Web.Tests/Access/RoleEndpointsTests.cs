@@ -316,8 +316,39 @@ public class RoleEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
         var body = await JsonOf(response);
-        Assert.Equal("MSG18", body.GetProperty("code").GetString());
+        Assert.Equal("MSG26", body.GetProperty("code").GetString());
         Assert.Equal("Không thể tạo vai trò. Vui lòng thử lại.", body.GetProperty("message").GetString());
+    }
+
+    [Fact]
+    public async Task Update_answers_MSG27_when_the_database_refuses()
+    {
+        var role = GivenCustomRole();
+        _factory.Roles.NextSaveThrows = new NpgsqlException("connection lost");
+
+        var response = await AdminClient().PutAsJsonAsync(
+            $"/api/roles/{role.Id}", new { name = "Phó thư ký" });
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+        var body = await JsonOf(response);
+        Assert.Equal("MSG27", body.GetProperty("code").GetString());
+        Assert.Equal("Không thể cập nhật vai trò. Vui lòng thử lại.", body.GetProperty("message").GetString());
+    }
+
+    [Fact]
+    public async Task Delete_answers_MSG28_when_the_database_refuses()
+    {
+        var role = GivenCustomRole();
+        _factory.Roles.NextSaveThrows = new NpgsqlException("connection lost");
+
+        var response = await AdminClient().DeleteAsync($"/api/roles/{role.Id}");
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+        var body = await JsonOf(response);
+        Assert.Equal("MSG28", body.GetProperty("code").GetString());
+        Assert.Equal("Không thể xoá vai trò. Vui lòng thử lại.", body.GetProperty("message").GetString());
     }
 
     // ---------------------------------------------------------- PUT /api/roles/{id}

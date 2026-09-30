@@ -155,20 +155,20 @@ public class AuthEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Login_answers_MSG03_for_a_deactivated_account()
+    public async Task Login_answers_MSG02_for_a_deactivated_account()
     {
         var client = NewClient(isActive: false);
 
         var response = await PostLogin(client, Email, Password);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        Assert.Equal("MSG03", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
+        Assert.Equal("MSG02", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
     }
 
     [Fact]
     public async Task Login_succeeds_when_the_role_grants_nothing()
     {
-        // MSG04 is gone (SCRUM-63): a role with no capabilities works like Member — attending,
+        // "No system access" is gone (SCRUM-63): a role with no capabilities works like Member — attending,
         // reading and voting need none — so its holders sign in rather than being locked out.
         var client = NewClient(role: BuiltInRoles.Chair, capabilities: []);
 
@@ -270,6 +270,20 @@ public class AuthEndpointsTests : IDisposable
         Assert.Equal("MSG01", body!.Code);
         // Same code as a failed sign-in, but a refresh sent no email or password to be wrong.
         Assert.Equal("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", body.Message);
+    }
+
+    [Fact]
+    public async Task Refresh_answers_MSG02_once_the_account_is_deactivated()
+    {
+        var client = NewClient();
+        var refreshToken = await SignInForRefreshToken(client);
+        (await _factory.Users.FindByEmailAsync(Email))!.IsActive = false;
+
+        var response = await PostWithCookie(client, "/api/auth/refresh", refreshToken);
+
+        // The same code as /login and /google answer for a deactivated account.
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal("MSG02", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
     }
 
     [Fact]

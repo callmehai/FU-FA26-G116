@@ -127,7 +127,7 @@ public class GoogleAuthEndpointTests : IDisposable
     [Theory]
     [InlineData("")]
     [InlineData("khong-phai-id-token")]
-    public async Task An_unverifiable_token_answers_MSG01(string idToken)
+    public async Task An_unverifiable_token_answers_MSG03(string idToken)
     {
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
         _factory.Users.WithUser(NewGoogleUser()).WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
@@ -135,25 +135,25 @@ public class GoogleAuthEndpointTests : IDisposable
         var response = await PostGoogle(idToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        Assert.Equal("MSG01", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
+        Assert.Equal("MSG03", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
     }
 
     [Fact]
-    public async Task An_unlinked_google_account_answers_MSG03()
+    public async Task An_unlinked_google_account_answers_MSG05()
     {
         _factory.Google.WithValidToken(IdToken, "sub-chua-lien-ket", "nguoi.la@gmail.com");
 
         var response = await PostGoogle();
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        Assert.Equal("MSG03", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
+        Assert.Equal("MSG05", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
     }
 
     [Fact]
     public async Task An_account_an_administrator_created_with_that_gmail_signs_in_without_manual_linking()
     {
         // The SCRUM-11 bug: an account made through POST /api/users has no google_subject_id, and
-        // nothing but SQL could set one, so this answered MSG03 for everybody.
+        // nothing but SQL could set one, so this answered MSG05 for everybody.
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
         _factory.Users.WithUser(NewGoogleUser(googleSubjectId: null))
             .WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor);
@@ -165,7 +165,7 @@ public class GoogleAuthEndpointTests : IDisposable
     }
 
     [Fact]
-    public async Task A_deactivated_account_answers_MSG04()
+    public async Task A_deactivated_account_answers_MSG02()
     {
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
         _factory.Users.WithUser(NewGoogleUser(isActive: false))
@@ -173,14 +173,13 @@ public class GoogleAuthEndpointTests : IDisposable
 
         var response = await PostGoogle();
 
-        // MSG04, not MSG03: UC-02 numbers this differently from UC-01. Changing it to match the
-        // password flow would break the acceptance criteria for this use case.
+        // MSG02, the same code the password flow answers: one situation, one code.
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        Assert.Equal("MSG04", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
+        Assert.Equal("MSG02", (await response.Content.ReadFromJsonAsync<AuthErrorBody>())!.Code);
     }
 
     [Fact]
-    public async Task An_account_deactivated_before_its_first_google_sign_in_answers_MSG04()
+    public async Task An_account_deactivated_before_its_first_google_sign_in_answers_MSG02()
     {
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
         _factory.Users.WithUser(NewGoogleUser(googleSubjectId: null, isActive: false))
@@ -190,14 +189,14 @@ public class GoogleAuthEndpointTests : IDisposable
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<AuthErrorBody>();
-        Assert.Equal("MSG04", body!.Code);
+        Assert.Equal("MSG02", body!.Code);
         Assert.Equal("Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.", body.Message);
     }
 
     [Fact]
     public async Task A_role_granting_nothing_still_signs_in()
     {
-        // MSG05 went with UC-01's MSG04 (SCRUM-63): a role with nothing granted works like Member.
+        // "No system access" is gone (SCRUM-63): a role with nothing granted works like Member.
         _factory.Google.WithValidToken(IdToken, GoogleSubject, Email);
         _factory.Users.WithUser(NewGoogleUser());
 

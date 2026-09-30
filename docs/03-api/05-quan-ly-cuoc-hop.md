@@ -35,7 +35,7 @@ trang. Endpoint chỉ yêu cầu đăng nhập và tài khoản còn hoạt đ�
 `MeetingCreator`. `totalCount` không bao gồm cuộc họp caller không được xem.
 
 Sửa chỉ được ở `Draft` và `Rejected`. Hệ thống đọc trạng thái mới nhất sau khi khóa dòng và trước
-khi validate nội dung. Trạng thái khác trả `409 MEETING_NOT_EDITABLE`. Sửa `Rejected` giữ nguyên
+khi validate nội dung. Trạng thái khác trả `409 MSG33`. Sửa `Rejected` giữ nguyên
 trạng thái và không thêm dòng lịch sử trạng thái.
 
 ## Contract
@@ -62,7 +62,7 @@ danh sách (`/mgmt/meetings?q=…&status=…&page=…`), nên tải lại trang,
 trang chi tiết đều giữ nguyên bộ lọc và trang đang xem.
 
 Khi gửi timezone có dấu `+` trong query, mã hóa dấu này thành `%2B`, ví dụ
-`from=2026-10-01T09%3A00%2B07%3A00`. Timestamp thiếu timezone trả `400 MEETING_INVALID_QUERY`.
+`from=2026-10-01T09%3A00%2B07%3A00`. Timestamp thiếu timezone trả `400 MSG32`.
 
 `200 OK` trả:
 
@@ -88,16 +88,16 @@ Khi gửi timezone có dấu `+` trong query, mã hóa dấu này thành `%2B`, 
 Không có kết quả hoặc trang vượt quá trang cuối, kể cả khi offset lớn hơn giới hạn `int`, vẫn trả
 `200` với `items: []` (BR-12). Khi không có
 kết quả, `totalCount` và `totalPages` đều bằng `0`. Query sai trả `400` với `code` là
-`MEETING_INVALID_QUERY`, `message` là `Tham số truy vấn không hợp lệ.` và `errors` theo tên tham số.
+`MSG32`, `message` là `Tham số truy vấn không hợp lệ.` và `errors` theo tên tham số.
 Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài
 giới hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `500` với
-`code: MEETING_LIST_FAILED` và thông điệp
+`code: MSG38` và thông điệp
 `Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-14.
 
 Sequence UC-14 hiện ghi BR-29 và BR-32 ở bước repository. Khi ticket đến `BA Final Review`, BA
 đồng bộ BR-30/31, định dạng timestamp, giới hạn phân trang và nhánh query sai
-`400 MEETING_INVALID_QUERY` vào diagram/spec; Controller kiểm tra query trước khi gọi Service/Repository.
-Nhánh lỗi truy xuất dùng `500 MEETING_LIST_FAILED` theo contract hiện hành.
+`400 MSG32` vào diagram/spec; Controller kiểm tra query trước khi gọi Service/Repository.
+Nhánh lỗi truy xuất dùng `500 MSG38` theo contract hiện hành.
 
 ### GET `/api/meetings/approvers`
 
@@ -141,7 +141,7 @@ enum. Thời gian trong response luôn UTC.
 ### PUT `/api/meetings/{id}`
 
 PUT thay toàn bộ tám field thông tin cuộc họp bằng dữ liệu request. Trả `200 OK`, envelope
-`{ "code": "MEETING_UPDATED", "message": "Cập nhật cuộc họp thành công.", "meeting": { ... } }`.
+`{ "code": "MSG30", "message": "Cập nhật cuộc họp thành công.", "meeting": { ... } }`.
 
 Không chấp nhận quyền thay đổi `id`, `createdById`, `status`, `createdAt`, `updatedAt` hay dữ liệu
 con qua body. Khi lưu cuộc họp bị từ chối, trạng thái vẫn là `Rejected`.
@@ -167,7 +167,7 @@ Lỗi validation trả `400`:
 
 ```json
 {
-  "code": "MEETING_INVALID_INFORMATION",
+  "code": "MSG31",
   "message": "Thông tin cuộc họp không hợp lệ.",
   "errors": {
     "title": "Tên cuộc họp không được để trống.",
@@ -177,31 +177,32 @@ Lỗi validation trả `400`:
 ```
 
 Endpoint trả đồng thời mọi lỗi field phát hiện được. Với PUT, hệ thống kiểm tra trạng thái trước khi
-đọc/parse JSON: nếu meeting đã không còn sửa được thì trả `409 MEETING_NOT_EDITABLE`, kể cả body
+đọc/parse JSON: nếu meeting đã không còn sửa được thì trả `409 MSG33`, kể cả body
 JSON sai cú pháp hoặc sai kiểu. Transaction cập nhật vẫn khóa và kiểm tra lại trạng thái trước khi
 validate/lưu để xử lý cạnh tranh. Request PUT có Content-Type thiếu hoặc không hỗ trợ trả `415` với code
-`MEETING_UNSUPPORTED_CONTENT_TYPE`. Với meeting còn sửa được và Content-Type hợp lệ, JSON sai cú
-pháp/sai kiểu trả `400` và code `MEETING_INVALID_INFORMATION` không có `errors`. POST JSON lỗi cũng trả `400`.
+`MSG34`. Với meeting còn sửa được và Content-Type hợp lệ, JSON sai cú
+pháp/sai kiểu trả `400` và code `MSG31` không có `errors`. POST JSON lỗi cũng trả `400`.
 
 ## Mã phản hồi
 
 | HTTP | Code | Ý nghĩa |
 |---:|---|---|
-| 201 | `MEETING_CREATED` | Tạo nháp thành công |
-| 200 | `MEETING_UPDATED` | Sửa thông tin thành công |
-| 400 | `MEETING_INVALID_INFORMATION` | Thông tin không hợp lệ; có thể có `errors` theo field |
-| 400 | `MEETING_INVALID_QUERY` | Query danh sách không hợp lệ; có `errors` theo tham số |
+| 201 | `MSG29` | Tạo nháp thành công |
+| 200 | `MSG30` | Sửa thông tin thành công |
+| 400 | `MSG31` | Thông tin không hợp lệ; có thể có `errors` theo field |
+| 400 | `MSG32` | Query danh sách không hợp lệ; có `errors` theo tham số |
 | 401 | — | Chưa đăng nhập |
 | 403 | — | POST/PUT/approvers: thiếu `MeetingCreator`; GET list/detail: tài khoản không hoạt động |
 | 404 | — | GET: không tồn tại hoặc caller không có quan hệ; PUT: không tồn tại hoặc caller không phải người tạo; body rỗng |
-| 409 | `MEETING_NOT_EDITABLE` | Trạng thái hiện tại không cho sửa |
-| 415 | `MEETING_UNSUPPORTED_CONTENT_TYPE` | PUT không gửi JSON hoặc Content-Type không hỗ trợ |
-| 500 | `MEETING_CREATE_FAILED` | Không thể lưu khi tạo; thử lại |
-| 500 | `MEETING_UPDATE_FAILED` | Không thể lưu khi sửa; thử lại |
-| 500 | `MEETING_LOAD_FAILED` | Không tải được chi tiết; thử lại |
-| 500 | `MEETING_LIST_FAILED` | Không tải được danh sách; thử lại |
+| 409 | `MSG33` | Trạng thái hiện tại không cho sửa |
+| 415 | `MSG34` | PUT không gửi JSON hoặc Content-Type không hỗ trợ |
+| 500 | `MSG35` | Không thể lưu khi tạo; thử lại |
+| 500 | `MSG36` | Không thể lưu khi sửa; thử lại |
+| 500 | `MSG37` | Không tải được chi tiết; thử lại |
+| 500 | `MSG38` | Không tải được danh sách; thử lại |
 
-Các response code của nhóm endpoint này dùng chung tiền tố `MEETING_`. Lỗi persistence trả `500`.
+Mã thuộc dải chung của dự án, xem [danh mục mã](00-danh-muc-ma-thong-bao.md). Trước đây nhóm endpoint
+này dùng mã dạng chữ `MEETING_*`; bảng đổi mã cũ → mới nằm trong danh mục. Lỗi persistence trả `500`.
 
 ## Persistence và transaction
 
@@ -212,7 +213,7 @@ lưu các thay đổi này trong cùng transaction.
 PUT kiểm tra quyền sở hữu và trạng thái hiện tại bằng truy vấn không khóa trước khi đọc body. Sau khi
 xác nhận meeting còn sửa được, hệ thống kiểm tra Content-Type rồi deserialize JSON ngoài transaction
 khóa ghi. Khi xử lý cập nhật, transaction `ReadCommitted` khóa đúng meeting row bằng PostgreSQL
-`FOR UPDATE`, đọc lại trạng thái và trả `409 MEETING_NOT_EDITABLE` nếu trạng thái đã đổi. Sau lần kiểm tra
+`FOR UPDATE`, đọc lại trạng thái và trả `409 MSG33` nếu trạng thái đã đổi. Sau lần kiểm tra
 khóa, hệ thống validate dữ liệu và lưu; không có network read trong lúc giữ row lock.
 Transaction kết thúc trước response. Cập nhật thông tin không thay status hoặc lịch sử. Nếu body sau
 chuẩn hóa giống dữ liệu đã lưu, trả thành công nhưng không ghi DB hoặc đổi `updatedAt`. Dữ liệu cho
@@ -226,7 +227,7 @@ stale content.
   quan hệ với meeting.
 - Chỉ hiển thị thao tác sửa cho người có `MeetingCreator`, đúng `createdById`, và trạng thái
   `Draft`/`Rejected`. Backend vẫn kiểm tra lại quyền sở hữu và trạng thái khi PUT.
-- Nếu PUT trả `409 MEETING_NOT_EDITABLE`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
+- Nếu PUT trả `409 MSG33`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
 - Form đổi trường địa điểm theo `mode`: `InPerson` nhập địa điểm; `Online` không có địa điểm vì
   cuộc họp diễn ra trong phòng gọi trực tuyến của TrustCabinet (README: gọi nhóm theo phòng họp), FE
   gửi `location` rỗng; `Hybrid` nhập địa điểm cho người họp trực tiếp, người ở xa vào phòng gọi.

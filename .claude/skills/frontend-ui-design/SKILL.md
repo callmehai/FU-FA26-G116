@@ -107,13 +107,40 @@ meetings run in the in-app call room (README: *Gọi nhóm theo phòng họp*).
 - **Free text** keeps its line breaks (`white-space: pre-wrap`).
 - **Icons** come from `components/Icon.tsx` (add a path there), never a text glyph like ✓.
 
-## 6. Copy
+## 6. Features used during a meeting are panels
+
+Agenda, attendance, speaking requests, live voting, documents, recording and the secretary's
+notes are used **during** a meeting, and an online meeting happens in the full-screen call room,
+where navigating the tab away drops the call. So each of them is written **once** as a panel that
+both the meeting detail tab and the room's side panel render —
+[ADR-0011](../../../docs/05-decisions/0011-tinh-nang-hop-la-panel-dung-chung.md).
+
+- `src/features/<feature>/<Feature>Panel.tsx`, props `{ meetingId, variant: 'page' | 'room' }`.
+- It loads its own data through `src/api/` and subscribes to `/hubs/meetings` itself; the parent
+  passes nothing but the id.
+- It works at **360px** wide and has no `PageHeader` or breadcrumb inside.
+- Actions open a `Dialog`/`ConfirmDialog`, never navigate. In `variant='room'`, a link to another
+  screen opens a **new tab** (`target="_blank" rel="noopener"`).
+- What the user may do comes from the server, never from guessing on their role.
+- Export the feature's API calls from `src/api/<feature>.ts` so the room can reuse them (the room's
+  "raise hand" button calls the speaking-request API).
+- Events everyone must notice (a vote opens, someone is invited to speak, recording starts, a
+  meeting session starts or ends) are published on the hub so the room can show them.
+- A meeting can have several **meeting sessions** (Report 3). Per-session data is resolved by the
+  **server**: the panel still takes only `meetingId`, the response says which `meetingSessionId`
+  it belongs to, and writes are refused when no session is in progress. The panel reloads on the
+  hub's session-started/ended events. Do not confuse it with `CallSession`, which is one run of
+  the LiveKit room.
+
+Verify both places: the detail tab, and the panel at 360px inside a narrow window.
+
+## 7. Copy
 
 Vietnamese, specific, and about consequences: "Lưu thay đổi không tự gửi duyệt lại — trạng thái vẫn
 giữ nguyên." beats "Lưu ý khi sửa". Say what a button does ("Tạo cuộc họp", "Lưu thay đổi"). Show
 the backend's `message` when there is one; branch on `code`, never on text.
 
-## 7. Before you commit
+## 8. Before you commit
 
 ```bash
 cd frontend && npm run lint && npm run build

@@ -171,7 +171,7 @@ Thứ tự kiểm theo sequence diagram UC-12:
    audit — quy ước "không đổi gì thì không ghi gì" của `SCRUM-60`
 5. Trùng tên vai trò **khác** → `MSG21`. Đổi hoa/thường tên của chính nó là hợp lệ
 6. Lưu → `MSG22` + `role`. Vai trò bị quản trị viên khác xoá chen giữa lúc đọc và lúc lưu → `404`
-   (nhánh "Role not found", FE tải lại danh sách), không phải `MSG18`
+   (nhánh "Role not found", FE tải lại danh sách), không phải `MSG27`
 
 **Không** nhận `capabilities` (có gửi cũng bị bỏ qua) — quyền chỉ sửa qua
 `PUT /api/roles/capabilities`, để luật chống tự khoá canh ở một chỗ. Không đi qua guard: đổi tên
@@ -217,10 +217,12 @@ Thứ tự theo UC-13, chạy trong guard:
 | `MSG23` | `200` | Xoá thành công | `Xoá vai trò thành công.` |
 | `MSG24` | `409` | Sửa tên hoặc xoá vai trò mặc định | `Đây là vai trò mặc định của hệ thống, không đổi tên hoặc xoá được. Bạn vẫn sửa được quyền của nó.` |
 | `MSG25` | `409` | Xoá vai trò còn người mang — kèm `userCount` | `Vai trò này vẫn còn {n} tài khoản mang. Hãy chuyển họ sang vai trò khác trước khi xoá.` |
-| `MSG18` | `500` | Database từ chối vì lý do khác (mất kết nối, timeout) — nhánh "Unable to …" của diagram | `Không thể tạo / cập nhật / xoá vai trò. Vui lòng thử lại.` |
+| `MSG26` | `500` | Tạo: database từ chối vì lý do khác (mất kết nối, timeout) — nhánh "Unable to create role" của diagram | `Không thể tạo vai trò. Vui lòng thử lại.` |
+| `MSG27` | `500` | Sửa: như trên — nhánh "Unable to update role" | `Không thể cập nhật vai trò. Vui lòng thử lại.` |
+| `MSG28` | `500` | Xoá: như trên — nhánh "Unable to delete role" | `Không thể xoá vai trò. Vui lòng thử lại.` |
 
-Diagram không đặt mã cho nhánh "Unable to create/update/delete role"; tạm dùng chung `MSG18` (cùng
-nghĩa "lưu không được, thử lại" của UC-10) — **chờ BA chốt**, mục 10.
+Diagram không đặt mã cho nhánh "Unable to create/update/delete role". Trước đây ba nhánh tạm dùng
+chung `MSG18` của UC-10; nay mỗi nhánh có mã riêng theo [danh mục mã](00-danh-muc-ma-thong-bao.md).
 
 ---
 
@@ -259,7 +261,7 @@ thì FK từ chối (`23503`) và API trả `MSG09` `errors.roleId` như vai tr�
 
 - **Tạo / đổi tên / xoá không kết thúc phiên của ai.** `/api/auth/me` trả tên mới ở lần FE đọc lại.
 - Sửa quyền của vai trò vẫn kết thúc phiên người giữ nó, như `SCRUM-60`.
-- **Đã bỏ nhánh `MSG04` của UC-01 (và `MSG05` của UC-02)** theo đề xuất: mọi vai trò không có quyền
+- **Đã bỏ nhánh `MSG04` của UC-01 (và `MSG05` của UC-02) — số cũ, trước khi đánh lại mã chung** theo đề xuất: mọi vai trò không có quyền
   nào đều đăng nhập được như `Member`. Refresh cũng không còn cắt phiên vì "hết quyền" — token mới
   đơn giản không mang quyền nào. **Chờ BA sửa UC-01/UC-02** (mục 10). Nếu BA muốn giữ, cần định
   nghĩa mới không dựa vào tên vai trò (ví dụ cờ `can_sign_in` trên `roles`) — phạm vi thêm.
@@ -299,17 +301,17 @@ thực hiện theo luồng ở mục 9 trước khi ticket được đánh dấu
 ## 10. Câu hỏi mở cho BA
 
 1. Chốt số UC (hiện dùng UC-11/12/13 theo sequence diagram) và mã `MSG19`–`MSG25`.
-2. **Bỏ `MSG04` của UC-01 / `MSG05` của UC-02** — xem ghi chú dưới. **Code đã bỏ**; cần BA quyết giữ
+2. **Bỏ `MSG04` của UC-01 / `MSG05` của UC-02 (số cũ)** — xem ghi chú dưới. **Code đã bỏ**; cần BA quyết giữ
    hay bỏ và sửa đặc tả UC-01/UC-02 theo.
-3. Nhánh "Unable to create/update/delete role" dùng chung `MSG18` hay có mã riêng.
+3. ~~Nhánh "Unable to create/update/delete role" dùng chung `MSG18` hay có mã riêng.~~ Đã chốt: mã riêng `MSG26`–`MSG28`.
 4. Vai trò mặc định có cần đổi **mô tả** được không? Hiện khoá cả tên lẫn mô tả.
 5. `MSG24` và `MSG25` trả `409` — tester có kỳ vọng mã HTTP khác không?
 6. ADR-0008 đang ghi *Đã chấp nhận* ngay trong PR triển khai nó — nhóm xác nhận khi duyệt PR.
 
-### Ghi chú cho BA: vì sao bỏ `MSG04` / `MSG05`
+### Ghi chú cho BA: vì sao bỏ `MSG04` / `MSG05` (số cũ)
 
 **Luật cũ** (UC-01 bước kiểm quyền, UC-02 tương tự): tài khoản mà vai trò **không có quyền nào** thì
-bị từ chối đăng nhập — `MSG04` / `MSG05` "chưa được cấp quyền truy cập hệ thống" — **trừ** vai trò
+bị từ chối đăng nhập — `MSG04` / `MSG05` (số cũ) "chưa được cấp quyền truy cập hệ thống" — **trừ** vai trò
 `Member`, vốn không có quyền nào mà vẫn phải vào được để dự họp.
 
 **Vì sao không giữ được nguyên văn:** chữ "trừ `Member`" là so sánh tên vai trò trong code. Khi vai
@@ -324,7 +326,7 @@ trò thành dữ liệu (ADR-0008) thì:
 - Mọi tài khoản **đang hoạt động** đều đăng nhập được, kể cả vai trò không có quyền nào — vào được như
   `Member`: xem cuộc họp mình được mời, không mở được màn hình quản trị.
 - `/refresh` không còn cắt phiên với lý do "hết quyền"; token mới chỉ đơn giản không mang quyền nào.
-- Chặn một người đăng nhập vẫn làm được bằng **vô hiệu hoá tài khoản** (UC-07, `MSG03` / `MSG04`).
+- Chặn một người đăng nhập vẫn làm được bằng **vô hiệu hoá tài khoản** (UC-07; đăng nhập nhận `MSG02`).
 - Hệ quả BA cần biết: nếu quản trị viên gỡ hết quyền của `Chủ toạ` / `Thư ký` / `Quản trị viên`,
   người mang các vai trò đó **vẫn đăng nhập được** (trước đây bị chặn) — chỉ mất chức năng.
 
@@ -332,7 +334,7 @@ trò thành dữ liệu (ADR-0008) thì:
 
 | Phương án | Việc phải làm |
 |---|---|
-| **A. Chấp nhận bỏ** (đề xuất) | Sửa đặc tả UC-01/UC-02: xoá bước kiểm quyền và `MSG04`/`MSG05` loại này; FE bỏ xử lý hai mã đó |
+| **A. Chấp nhận bỏ** (đề xuất) | Sửa đặc tả UC-01/UC-02: xoá bước kiểm quyền và `MSG04`/`MSG05` (số cũ) loại này; FE bỏ xử lý hai mã đó |
 | B. Giữ luật "không có quyền thì không vào" | Cần định nghĩa không dựa vào tên: ví dụ cờ `can_sign_in` trên `roles` do quản trị viên bật/tắt. Thêm cột, migration, UI — ticket riêng |
 
 ## 11. Xong là khi
@@ -371,8 +373,8 @@ Nếu các điểm trên đã ổn định trong môi trường tích hợp thì
 
 - Chốt số UC (hiện tài liệu dùng UC-11/12/13) và dải mã `MSG19`–`MSG25`.
 - Chốt bỏ hay giữ nhánh đăng nhập khi vai trò không có capability nào (`MSG04` UC-01 / `MSG05`
-  UC-02). Code hiện đã bỏ nhánh này; nếu chấp nhận thì cập nhật đặc tả UC-01/UC-02.
-- Chốt dùng chung `MSG18` cho lỗi tạo/sửa/xoá hay cần mã riêng.
+  UC-02, số cũ). Code hiện đã bỏ nhánh này; nếu chấp nhận thì cập nhật đặc tả UC-01/UC-02.
+- ~~Chốt dùng chung `MSG18` cho lỗi tạo/sửa/xoá hay cần mã riêng.~~ Đã chốt: `MSG26`–`MSG28`.
 - Chốt vai trò mặc định có được sửa mô tả không; hợp đồng hiện khoá cả tên và mô tả.
 - Xác nhận `MSG24` và `MSG25` dùng HTTP `409`.
 - Xác nhận trạng thái ADR-0008: thông tin ticket SCRUM-63 được chuyển tiếp ghi “Đề xuất”, còn file

@@ -230,6 +230,23 @@ public class RolePermissionEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Put_answers_MSG18_when_the_database_refuses()
+    {
+        _factory.Roles.NextSaveThrows = new Npgsql.NpgsqlException("connection lost");
+
+        var response = await AdminClient().PutAsJsonAsync(
+            "/api/roles/capabilities",
+            new { roleId = BuiltInRoles.Member, capabilities = new[] { "MeetingCreator" } });
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+        var json = await JsonOf(response);
+        Assert.Equal("MSG18", json.GetProperty("code").GetString());
+        Assert.Equal(
+            "Không thể cập nhật phân quyền. Vui lòng thử lại.", json.GetProperty("message").GetString());
+    }
+
+    [Fact]
     public async Task Put_accepts_a_capability_name_in_any_casing()
     {
         // JSON casing conventions differ between the two ends; a code is not a secret handshake.

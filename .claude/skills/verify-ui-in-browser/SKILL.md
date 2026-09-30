@@ -80,7 +80,7 @@ For each screen, walk the state table in **frontend-ui-design** §2:
   ```js
   const real = window.fetch
   window.fetch = (u, i) => String(u).startsWith('/api/meetings?')
-    ? Promise.resolve(new Response(JSON.stringify({ code: 'MEETING_LIST_FAILED', message: '…' }),
+    ? Promise.resolve(new Response(JSON.stringify({ code: 'MSG38', message: '…' }),
         { status: 500, headers: { 'Content-Type': 'application/json' } }))
     : real(u, i)
   ```
