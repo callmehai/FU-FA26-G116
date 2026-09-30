@@ -49,6 +49,18 @@ export function VotingPanel({ meetingId, variant }: { meetingId: string; variant
    tự suy từ vai trò. Server kiểm lại ở mọi request như mọi endpoint khác.
 5. Hàm gọi API của tính năng nằm trong `src/api/<tính năng>.ts`, để phòng họp gọi lại được. Ví dụ:
    nút "Giơ tay" trên thanh điều khiển gọi đúng hàm đăng ký phát biểu của `SCRUM-27`.
+6. **Dữ liệu theo phiên họp** (Meeting Session, Report 3 — xem thuật ngữ ở
+   [ADR-0010](0010-phong-hop-truc-tuyen-dung-livekit-sfu.md)):
+   - Tính năng có dữ liệu gắn với một phiên thì lưu kèm `meeting_session_id` ở phía server. Ứng
+     viên: điểm danh, đăng ký phát biểu, ghi âm, và biểu quyết hay nghị sự nếu nghiệp vụ gắn theo
+     phiên. BA chốt danh sách trong UC của từng tính năng.
+   - Props **không** đổi: panel vẫn chỉ nhận `meetingId`. **Server** xác định phiên đang
+     `InProgress`, trả kèm `meetingSessionId` trong response, và từ chối thao tác ghi khi không có
+     phiên nào đang diễn ra. FE không tự chọn phiên để ghi.
+   - Trong `variant = 'page'`, panel được phép cho xem lại dữ liệu của phiên đã `Completed`, với
+     danh sách phiên lấy từ API.
+   - Hub `/hubs/meetings` phát sự kiện bắt đầu / kết thúc phiên. Panel nghe sự kiện này để tải lại,
+     còn phòng họp nghe để báo "Phiên họp đã kết thúc".
 
 ### 3. Realtime
 
@@ -60,6 +72,7 @@ export function VotingPanel({ meetingId, variant }: { meetingId: string; variant
   - mở biểu quyết → `Chủ toạ mở biểu quyết: … — Bỏ phiếu`;
   - mời phát biểu → báo riêng người được mời;
   - bắt đầu / dừng ghi âm;
+  - bắt đầu / kết thúc phiên họp;
   - đổi mục đang bàn → header phòng hiện "Mục đang bàn: …".
 - Ai làm tính năng có hub trước thì dựng hub, người sau dùng lại. Không mỗi tính năng một hub.
 
@@ -121,3 +134,7 @@ phiên trình duyệt riêng:
 5. **Khung hẹp.** Panel ở bề ngang 360px không vỡ bố cục, không cuộn ngang.
 6. **Link mở tab mới.** Mở tài liệu hay ghi chú dài từ trong phòng → tab mới, cuộc gọi ở tab cũ vẫn
    chạy.
+7. **Theo phiên họp** (khi đã có `meeting_sessions`), với cuộc họp có hai phiên:
+   - dữ liệu ghi ở phiên 1 không lẫn sang phiên 2;
+   - giữa hai phiên, thao tác ghi bị từ chối và phòng họp đóng;
+   - trên màn chi tiết vẫn xem lại được dữ liệu phiên 1.

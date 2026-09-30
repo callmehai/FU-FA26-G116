@@ -124,8 +124,13 @@ both the meeting detail tab and the room's side panel render —
 - What the user may do comes from the server, never from guessing on their role.
 - Export the feature's API calls from `src/api/<feature>.ts` so the room can reuse them (the room's
   "raise hand" button calls the speaking-request API).
-- Events everyone must notice (a vote opens, someone is invited to speak, recording starts) are
-  published on the hub so the room can show them.
+- Events everyone must notice (a vote opens, someone is invited to speak, recording starts, a
+  meeting session starts or ends) are published on the hub so the room can show them.
+- A meeting can have several **meeting sessions** (Report 3). Per-session data is resolved by the
+  **server**: the panel still takes only `meetingId`, the response says which `meetingSessionId`
+  it belongs to, and writes are refused when no session is in progress. The panel reloads on the
+  hub's session-started/ended events. Do not confuse it with `CallSession`, which is one run of
+  the LiveKit room.
 
 Verify both places: the detail tab, and the panel at 360px inside a narrow window.
 
