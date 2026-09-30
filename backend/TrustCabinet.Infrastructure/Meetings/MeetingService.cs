@@ -229,7 +229,7 @@ public sealed class MeetingService(
             || !string.Equals(meeting.Location, input.Location, StringComparison.Ordinal)
             || meeting.Sensitivity != input.Sensitivity
             || !string.Equals(meeting.Description, input.Description, StringComparison.Ordinal)
-            || meeting.AssignedApproverId is not null;
+            || (meeting.Status == MeetingStatus.Draft && meeting.AssignedApproverId is not null);
 
     private static bool IsPersistenceFailure(Exception exception)
         => exception is DbUpdateException or NpgsqlException or TimeoutException;
@@ -550,7 +550,21 @@ public sealed class MeetingService(
         };
 
     private static string LimitText(string value, int maximum)
-        => value.Length <= maximum ? value : value[..maximum];
+    {
+        if (value.Length <= maximum)
+        {
+            return value;
+        }
+
+        // Do not turn a valid supplementary character into an unencodable UTF-16 fragment.
+        var length = maximum;
+        if (length > 0 && char.IsHighSurrogate(value[length - 1]) && char.IsLowSurrogate(value[length]))
+        {
+            length--;
+        }
+
+        return value[..length];
+    }
 
     private static MeetingHistoryRecord ToHistoryRecord(MeetingStatusHistory history, string actorName)
         => new(

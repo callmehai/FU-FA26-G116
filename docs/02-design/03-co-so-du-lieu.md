@@ -222,7 +222,9 @@ dotnet dotnet-ef migrations remove \
 Chạy `dotnet test TrustCabinet.sln` khi PostgreSQL dev đang hoạt động. Tài khoản test cần quyền
 tạo database; test không được skip nếu PostgreSQL không kết nối được.
 
-Mỗi test case dùng database có suffix GUID để các lượt chạy không đụng dữ liệu của nhau.
+Các test case access/auth và meeting dùng database có suffix GUID để các lượt chạy không đụng
+dữ liệu của nhau. Fixture notification hiện còn dùng database tên cố định; không chạy đồng thời
+nhiều lượt suite dùng chung PostgreSQL khi fixture này chưa được chuyển sang cơ chế cô lập.
 Các fixture access/auth dùng
 [`PostgreSqlTestDatabase`](../../tests/TrustCabinet.Web.Tests/PostgreSqlTestDatabase.cs) để sở hữu
 `NpgsqlDataSource` và connection pool riêng. Khi teardown, đóng `DbContext` rồi dispose data source

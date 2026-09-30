@@ -205,7 +205,9 @@ public static class MeetingEndpoints
             MeetingWorkflowOutcome.StatusConflict => WorkflowError(
                 StatusCodes.Status409Conflict,
                 TransitionConflictCode(command.Action),
-                "Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này."),
+                command.Action == MeetingTransitionAction.SubmitForApproval
+                    ? "Cuộc họp không còn ở trạng thái Draft."
+                    : "Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này."),
             _ => SaveFailed(
                 TransitionFailureCode(command.Action),
                 "Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại."),

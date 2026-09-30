@@ -269,6 +269,25 @@ public sealed class MeetingWorkflowServiceTests
     }
 
     [Fact]
+    public async Task Publish_truncates_a_long_invitation_subject_without_splitting_a_surrogate_pair()
+    {
+        var meeting = GivenMeeting(MeetingStatus.Approved);
+        meeting.Title = new string('a', 290) + string.Concat(Enumerable.Repeat("📋", 5));
+        Assert.Equal(300, meeting.Title.Length);
+        meeting.Participants.Add(Participant(meeting, active: true, InvitationResponse.Pending));
+
+        var result = await NewService().TransitionAsync(
+            meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Publish), _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        var subject = Assert.Single(_repository.EmailMessages).Subject;
+        Assert.StartsWith("Thư mời: ", subject);
+        Assert.True(subject.Length <= 300);
+        var utf8 = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+        Assert.True(utf8.GetByteCount(subject) > 0);
+    }
+
+    [Fact]
     public async Task Publish_persistence_failure_rolls_back_status_history_notifications_and_jobs()
     {
         var meeting = GivenMeeting(MeetingStatus.Approved);

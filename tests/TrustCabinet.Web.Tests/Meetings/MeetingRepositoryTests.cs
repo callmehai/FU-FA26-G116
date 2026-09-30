@@ -450,6 +450,43 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Publish_persists_a_long_unicode_invitation_subject_without_corrupting_the_title_snapshot()
+    {
+        var title = new string('a', 290) + string.Concat(Enumerable.Repeat("📋", 5));
+        var service = NewService();
+        var created = await service.CreateAsync(Input(title), _creatorId);
+        Assert.True(created.Succeeded);
+        var meetingId = created.Meeting!.Id;
+        _db.AgendaItems.Add(new AgendaItem
+        {
+            MeetingId = meetingId,
+            Position = 1,
+            Title = "Báo cáo",
+            PlannedDurationMinutes = 30,
+            PresenterId = _creatorId,
+        });
+        _db.MeetingParticipants.Add(new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId });
+        await _db.SaveChangesAsync();
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, (await service.TransitionAsync(
+            meetingId, new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, _creatorId),
+            _creatorId)).Outcome);
+        Assert.Equal(MeetingWorkflowOutcome.Success, (await service.TransitionAsync(
+            meetingId, new MeetingTransitionCommand(MeetingTransitionAction.Approve), _creatorId)).Outcome);
+        var published = await service.TransitionAsync(
+            meetingId, new MeetingTransitionCommand(MeetingTransitionAction.Publish), _creatorId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, published.Outcome);
+        _db.ChangeTracker.Clear();
+        var email = await _db.EmailMessages.SingleAsync(item => item.MeetingId == meetingId);
+        Assert.StartsWith("Thư mời: ", email.Subject);
+        Assert.True(email.Subject.Length <= 300);
+        Assert.DoesNotContain("\uFFFD", email.Subject);
+        using var snapshot = System.Text.Json.JsonDocument.Parse(email.PayloadSnapshot!);
+        Assert.Equal(title, snapshot.RootElement.GetProperty("Title").GetString());
+    }
+
+    [Fact]
     public async Task Concurrent_publish_requests_only_commit_one_transition_and_invitation_batch()
     {
         var created = await NewService().CreateAsync(Input(), _creatorId);

@@ -331,18 +331,41 @@ public class MeetingServiceTests
         Assert.Equal(0, _repository.SaveCount);
     }
 
-    [Fact]
-    public async Task Update_does_not_save_when_information_is_unchanged()
+    [Theory]
+    [InlineData(MeetingStatus.Draft, false)]
+    [InlineData(MeetingStatus.Rejected, false)]
+    [InlineData(MeetingStatus.Rejected, true)]
+    public async Task Update_does_not_save_when_information_is_unchanged(MeetingStatus status, bool assigned)
     {
-        var meeting = GivenMeeting();
+        var meeting = GivenMeeting(status);
+        meeting.AssignedApproverId = assigned ? _otherActorId : null;
+        meeting.UpdatedAt = new DateTimeOffset(2026, 9, 1, 0, 0, 0, TimeSpan.Zero);
         var updatedAt = meeting.UpdatedAt;
 
         var result = await NewService().UpdateAsync(
-            meeting.Id, ValidInput(), _actorId);
+            meeting.Id, ValidInput(title: "  Giao ban tuần  ", location: "  Phòng họp A  "), _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Equal(updatedAt, meeting.UpdatedAt);
+        Assert.Equal(status, meeting.Status);
+        Assert.Equal(assigned ? _otherActorId : (Guid?)null, meeting.AssignedApproverId);
         Assert.Equal(0, _repository.SaveCount);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_repository.EmailMessages);
+    }
+
+    [Fact]
+    public async Task Update_clears_a_legacy_draft_assignment_even_when_information_is_unchanged()
+    {
+        var meeting = GivenMeeting();
+        meeting.AssignedApproverId = _otherActorId;
+
+        var result = await NewService().UpdateAsync(meeting.Id, ValidInput(), _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(MeetingStatus.Draft, meeting.Status);
+        Assert.Null(meeting.AssignedApproverId);
+        Assert.Equal(1, _repository.SaveCount);
     }
 
     [Theory]

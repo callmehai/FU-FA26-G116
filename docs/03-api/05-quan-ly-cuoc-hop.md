@@ -199,6 +199,8 @@ row đã Delegated không nhận invitation, và API không tự thêm người 
 Thay đổi participant sau commit không sửa batch đã tạo. Transition và toàn bộ notification/outbox
 rows được commit cùng nhau; HTTP 200 xác nhận email job đã được xếp hàng, không xác nhận email đã
 được gửi. Worker SCRUM-15 xử lý gửi bất đồng bộ và quản lý retry/failure theo contract của worker.
+Subject thư mời tối đa 300 ký tự UTF-16 và được rút gọn không tách đôi surrogate pair; tiêu đề đầy
+đủ trong payload snapshot không bị thay đổi.
 Các writer participant thuộc SCRUM-20 phải dùng cùng meeting-row lock/serialization protocol để một
 lần Publish và thay đổi participant đồng thời có ranh giới snapshot xác định.
 
@@ -255,7 +257,8 @@ giữ transaction khi Organizer chọn người duyệt, nên Submit luôn chạ
 
 ### Lỗi workflow SCRUM-19
 
-Mọi lỗi workflow có body `{ code, message, errors? }`; `errors` là map field -> message và chỉ có
+Lỗi workflow có MSG code trả body `{ code, message, errors? }`. `401`, `403` từ active-user gate và
+`404` che giấu tài nguyên không có body lỗi này. `errors` là map field -> message và chỉ có
 trên lỗi readiness/validation. Actor lấy từ phiên đăng nhập; client không gửi actor, source/target
 status hoặc timestamp. POST chỉ nhận JSON object với các field đúng theo action, không nhận field
 lạ/trùng, enum dạng số, hoặc field không áp dụng cho action. `action` phải khớp chính xác một tên
@@ -370,7 +373,8 @@ PostgreSQL `FOR UPDATE`, đọc lại trạng thái và trả `409 MSG33` nếu 
 được gửi. Chỉ sau lần kiểm tra khóa này hệ thống mới parse JSON, validate và lưu; không có network
 read trong lúc giữ row lock.
 Transaction kết thúc trước response. Cập nhật thông tin không thay status hoặc lịch sử. Nếu body sau
-chuẩn hóa giống dữ liệu đã lưu, trả thành công nhưng không ghi DB hoặc đổi `updatedAt`. Dữ liệu cho
+chuẩn hóa giống dữ liệu đã lưu, trả thành công nhưng không ghi DB hoặc đổi `updatedAt`, kể cả ở
+`Rejected` có current approver. Dữ liệu cho
 phép sửa giữa hai form cũ dùng “lần ghi sau cùng thắng”; contract chưa có ETag/version để từ chối
 stale content.
 

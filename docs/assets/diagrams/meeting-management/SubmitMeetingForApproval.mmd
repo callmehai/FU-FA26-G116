@@ -13,10 +13,18 @@ sequenceDiagram
         API->>Service: ReturnToDraft với actor từ phiên đăng nhập
         Service->>DB: BEGIN, khóa meeting và kiểm tra Organizer + MeetingCreator
         alt Đúng quyền và meeting đang Rejected
-            Service->>DB: Đổi sang Draft, xóa assignment, thêm history, COMMIT
-            DB-->>Service: Đã lưu nguyên tử, giữ nguyên lý do từ chối cũ
-            Service-->>API: Kết quả chuyển trạng thái
-            API-->>Page: 200 MSG49
+            Service->>DB: Đổi sang Draft, xóa assignment và thêm history
+            alt SaveChanges hoặc COMMIT thất bại
+                DB-->>Service: Lỗi persistence hoặc commit
+                Service->>DB: ROLLBACK toàn bộ thay đổi
+                Service-->>API: 503 MSG59
+                API-->>Page: Hiển thị lỗi, tải lại trạng thái để xác định kết quả
+            else Commit thành công
+                Service->>DB: COMMIT
+                DB-->>Service: Đã lưu nguyên tử, giữ nguyên lý do từ chối cũ
+                Service-->>API: Kết quả chuyển trạng thái
+                API-->>Page: 200 MSG49
+            end
         else Sai quyền hoặc sai trạng thái
             Service->>DB: Kết thúc transaction không ghi dữ liệu
             Service-->>API: 404 hoặc 403 MSG55 hoặc 409 MSG64
@@ -72,4 +80,4 @@ sequenceDiagram
         end
     end
 
-    Note over Organizer,Service: Rejected phải qua ReturnToDraft trước khi sửa và gửi duyệt lại.
+    Note over Organizer,Service: Rejected được sửa thông tin, giữ assignment và lịch sử, nhưng phải ReturnToDraft trước khi gửi duyệt lại.

@@ -525,6 +525,13 @@ public sealed class MeetingEndpointsTests : IDisposable
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         Assert.Equal("MSG41", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("Cuộc họp không còn ở trạng thái Draft.", body.RootElement.GetProperty("message").GetString());
+        var readinessResponse = await client.GetAsync($"/api/meetings/{meeting.Id}/submission-readiness");
+        using var readinessBody = await JsonOf(readinessResponse);
+        Assert.Equal(HttpStatusCode.Conflict, readinessResponse.StatusCode);
+        Assert.Equal("MSG41", readinessBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal(body.RootElement.GetProperty("message").GetString(),
+            readinessBody.RootElement.GetProperty("message").GetString());
         Assert.Equal(MeetingStatus.Rejected, meeting.Status);
         Assert.Equal(formerApproverId, meeting.AssignedApproverId);
         Assert.Single(meeting.StatusHistory);
