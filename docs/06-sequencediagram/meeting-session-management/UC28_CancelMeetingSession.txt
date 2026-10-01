@@ -1,0 +1,240 @@
+title UC-28 - Cancel Meeting Session
+
+actor "Secretary" as Secretary
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+control ":Notification Service" as NotificationService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Participant Repository" as MeetingParticipantRepository
+participant ":Meeting Session Repository" as MeetingSessionRepository
+participant ":Meeting Status History Repository" as MeetingStatusHistoryRepository
+participant ":Notification Repository" as NotificationRepository
+database ":Database" as Database
+
+Secretary->MeetingPage: Confirm cancellation
+activate MeetingPage
+
+MeetingPage->MeetingController: Cancel Meeting Session
+activate MeetingController
+
+MeetingController->MeetingService: cancelMeetingSession(sessionId, secretaryId)
+activate MeetingService
+
+MeetingService->MeetingSessionRepository: Get selected Meeting Session
+activate MeetingSessionRepository
+
+MeetingSessionRepository->Database: Retrieve Meeting Session
+activate Database
+
+Database-->MeetingSessionRepository: Meeting Session
+deactivate Database
+
+MeetingSessionRepository-->MeetingService: Meeting Session
+deactivate MeetingSessionRepository
+
+MeetingService->MeetingRepository: Get parent meeting
+activate MeetingRepository
+
+MeetingRepository->Database: Retrieve meeting
+activate Database
+
+Database-->MeetingRepository: Meeting
+deactivate Database
+
+MeetingRepository-->MeetingService: Meeting
+deactivate MeetingRepository
+
+MeetingService->MeetingParticipantRepository: Verify Secretary assignment
+activate MeetingParticipantRepository
+
+MeetingParticipantRepository->Database: Find Secretary assignment
+activate Database
+
+Database-->MeetingParticipantRepository: Assignment result
+deactivate Database
+
+MeetingParticipantRepository-->MeetingService: Assignment result
+deactivate MeetingParticipantRepository
+
+MeetingService->MeetingService: Validate session can be cancelled\n(BR-54, BR-57, BR-58)
+
+alt Session can no longer be cancelled - EX-1
+    MeetingService-->MeetingController: MSG56 - This meeting session can no longer be cancelled
+    deactivate MeetingService
+
+    MeetingController-->MeetingPage: Return session cancellation failure
+    deactivate MeetingController
+
+    MeetingPage-->Secretary: MSG56 - This meeting session can no longer be cancelled
+
+else Session can be cancelled
+
+    alt Meeting is Published
+        MeetingService->MeetingSessionRepository: Check other Planned Meeting Sessions\n(BR-77)
+        activate MeetingSessionRepository
+
+        MeetingSessionRepository->Database: Find other Planned Meeting Sessions
+        activate Database
+
+        Database-->MeetingSessionRepository: Remaining Planned Sessions / None
+        deactivate Database
+
+        MeetingSessionRepository-->MeetingService: Remaining Planned Sessions / None
+        deactivate MeetingSessionRepository
+
+        alt No other Planned Meeting Session remains - EX-2
+            MeetingService-->MeetingController: MSG77 - The last planned meeting session of a\npublished meeting cannot be cancelled
+            deactivate MeetingService
+
+            MeetingController-->MeetingPage: Return session cancellation failure
+            deactivate MeetingController
+
+            MeetingPage-->Secretary: MSG77 - The last planned meeting session of a\npublished meeting cannot be cancelled
+
+        else Another Planned Meeting Session remains
+            MeetingService->MeetingSessionRepository: Set status = Cancelled\n(BR-57, BR-58)
+            activate MeetingSessionRepository
+
+            MeetingSessionRepository->Database: Update Meeting Session
+            activate Database
+
+            Database-->MeetingSessionRepository: Meeting Session updated
+            deactivate Database
+
+            MeetingSessionRepository-->MeetingService: Meeting Session cancelled
+            deactivate MeetingSessionRepository
+
+            MeetingService->MeetingParticipantRepository: Get affected participants
+            activate MeetingParticipantRepository
+
+            MeetingParticipantRepository->Database: Retrieve affected participants
+            activate Database
+
+            Database-->MeetingParticipantRepository: Participant list
+            deactivate Database
+
+            MeetingParticipantRepository-->MeetingService: Participant list
+            deactivate MeetingParticipantRepository
+
+            MeetingService->NotificationService: Notify session cancellation\n(BR-76)
+            activate NotificationService
+
+            NotificationService->NotificationRepository: Create notifications
+            activate NotificationRepository
+
+            NotificationRepository->Database: Insert notifications
+            activate Database
+
+            Database-->NotificationRepository: Notifications created
+            deactivate Database
+
+            NotificationRepository-->NotificationService: Notifications created
+            deactivate NotificationRepository
+
+            NotificationService-->MeetingService: Notification completed
+            deactivate NotificationService
+
+            MeetingService-->MeetingController: Meeting Session cancelled successfully
+            deactivate MeetingService
+
+            MeetingController-->MeetingPage: MSG50 - Meeting session cancelled successfully
+            deactivate MeetingController
+
+            MeetingPage-->Secretary: MSG50 - Meeting session cancelled successfully
+        end
+
+    else Meeting is Draft, Rejected, Approved, or InProgress
+        MeetingService->MeetingSessionRepository: Set status = Cancelled\n(BR-57, BR-58)
+        activate MeetingSessionRepository
+
+        MeetingSessionRepository->Database: Update Meeting Session
+        activate Database
+
+        Database-->MeetingSessionRepository: Meeting Session updated
+        deactivate Database
+
+        MeetingSessionRepository-->MeetingService: Meeting Session cancelled
+        deactivate MeetingSessionRepository
+
+        alt Meeting is InProgress
+            MeetingService->MeetingSessionRepository: Check Planned or InProgress Sessions\n(BR-61)
+            activate MeetingSessionRepository
+
+            MeetingSessionRepository->Database: Find Planned / InProgress Sessions
+            activate Database
+
+            Database-->MeetingSessionRepository: Remaining Sessions / None
+            deactivate Database
+
+            MeetingSessionRepository-->MeetingService: Remaining Sessions / None
+            deactivate MeetingSessionRepository
+
+            alt No Planned or InProgress Session remains
+                MeetingService->MeetingRepository: Change Meeting status to Ended\n(BR-61)
+                activate MeetingRepository
+
+                MeetingRepository->Database: Update Meeting status
+                activate Database
+
+                Database-->MeetingRepository: Meeting updated
+                deactivate Database
+
+                MeetingRepository-->MeetingService: Meeting status updated
+                deactivate MeetingRepository
+
+                MeetingService->MeetingStatusHistoryRepository: Record InProgress -> Ended\n(BR-38)
+                activate MeetingStatusHistoryRepository
+
+                MeetingStatusHistoryRepository->Database: Insert lifecycle history
+                activate Database
+
+                Database-->MeetingStatusHistoryRepository: History recorded
+                deactivate Database
+
+                MeetingStatusHistoryRepository-->MeetingService: Lifecycle recorded
+                deactivate MeetingStatusHistoryRepository
+            end
+
+            MeetingService->MeetingParticipantRepository: Get affected participants
+            activate MeetingParticipantRepository
+
+            MeetingParticipantRepository->Database: Retrieve affected participants
+            activate Database
+
+            Database-->MeetingParticipantRepository: Participant list
+            deactivate Database
+
+            MeetingParticipantRepository-->MeetingService: Participant list
+            deactivate MeetingParticipantRepository
+
+            MeetingService->NotificationService: Notify session cancellation\n(BR-76)
+            activate NotificationService
+
+            NotificationService->NotificationRepository: Create notifications
+            activate NotificationRepository
+
+            NotificationRepository->Database: Insert notifications
+            activate Database
+
+            Database-->NotificationRepository: Notifications created
+            deactivate Database
+
+            NotificationRepository-->NotificationService: Notifications created
+            deactivate NotificationRepository
+
+            NotificationService-->MeetingService: Notification completed
+            deactivate NotificationService
+        end
+
+        MeetingService-->MeetingController: Meeting Session cancelled successfully
+        deactivate MeetingService
+
+        MeetingController-->MeetingPage: MSG50 - Meeting session cancelled successfully
+        deactivate MeetingController
+
+        MeetingPage-->Secretary: MSG50 - Meeting session cancelled successfully
+    end
+end
+
+deactivate MeetingPage

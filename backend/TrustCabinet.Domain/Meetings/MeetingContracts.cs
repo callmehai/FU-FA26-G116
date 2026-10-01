@@ -11,8 +11,7 @@ public sealed record MeetingInput(
     string? Mode,
     string? Location,
     string? Sensitivity,
-    string? Description,
-    Guid? AssignedApproverId = null);
+    string? Description);
 
 /// <summary>A validated and normalized form value, ready to persist.</summary>
 public sealed record ValidatedMeetingInput(
@@ -22,10 +21,20 @@ public sealed record ValidatedMeetingInput(
     MeetingMode Mode,
     string Location,
     Sensitivity Sensitivity,
-    string Description,
-    Guid? AssignedApproverId);
+    string Description);
 
 public sealed record MeetingApproverOption(Guid Id, string FullName);
+
+public sealed record MeetingApproverListResult(
+    MeetingOutcome Outcome,
+    IReadOnlyList<MeetingApproverOption>? Approvers = null)
+{
+    public static MeetingApproverListResult Success(IReadOnlyList<MeetingApproverOption> approvers)
+        => new(MeetingOutcome.Success, approvers);
+
+    public static MeetingApproverListResult ReadFailed()
+        => new(MeetingOutcome.ReadFailed);
+}
 
 /// <summary>A safe, flat representation returned by the meeting service.</summary>
 public sealed record MeetingDetails(
@@ -54,7 +63,7 @@ public sealed record MeetingDetails(
         meeting.Sensitivity,
         meeting.Status,
         meeting.CreatedById,
-        meeting.AssignedApproverId,
+        meeting.Status == MeetingStatus.Draft ? null : meeting.AssignedApproverId,
         meeting.CreatedAt,
         meeting.UpdatedAt);
 }

@@ -71,16 +71,37 @@ public static class CapabilityGate
     ///
     /// Applied to the group rather than to each route on purpose — a new <c>MapGet</c> inside a
     /// gated group inherits the gate, where a per-route list would silently leave the one somebody
-    /// forgot wide open.
+    /// forgot wide open. Routes with a documented persistence-failure contract can provide a
+    /// response for database errors raised while the authoritative capability is re-read.
     /// </summary>
     public static RouteGroupBuilder RequireCapability(
-        this RouteGroupBuilder group, Capability capability)
+        this RouteGroupBuilder group, Capability capability, IResult? databaseFailure = null)
         => group
             .RequireAuthorization(PolicyFor(capability))
             .AddEndpointFilter(async (context, next) =>
-                await StillHeldAsync(context, capability)
-                    ? await next(context)
-                    : Results.Forbid());
+            {
+                bool isStillHeld;
+                try
+                {
+                    isStillHeld = await StillHeldAsync(context, capability);
+                }
+                catch (OperationCanceledException) when (
+                    context.HttpContext.RequestAborted.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception exception) when (
+                    databaseFailure is not null
+                    && (exception is DbUpdateException or NpgsqlException or TimeoutException))
+                {
+                    context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>()
+                        .CreateLogger(nameof(CapabilityGate))
+                        .LogError(exception, "Could not check capability {Capability} for request.", capability);
+                    return databaseFailure;
+                }
+
+                return isStillHeld ? await next(context) : Results.Forbid();
+            });
 
     /// <summary>
     /// Requires an authenticated caller whose account is still active according to the database.

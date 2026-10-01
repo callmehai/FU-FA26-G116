@@ -1,0 +1,48 @@
+title UC-05 - Create User Account
+
+actor "System Admin" as Admin
+boundary "User Management Page" as UserPage
+control ":User Controller" as UserController
+control ":User Service" as UserService
+participant ":User Repository" as UserRepository
+control ":Audit Service" as AuditService
+database ":Database" as Database
+
+Admin->UserPage: Submit user information
+UserPage->UserController: Create user account
+activate UserController
+UserController->UserService: Create user account
+activate UserService
+UserService->UserRepository: Check Username and Email availability
+activate UserRepository
+UserRepository->Database: Find matching user accounts
+activate Database
+Database-->UserRepository: Matching account information
+UserRepository-->UserService: Username and Email availability
+alt Invalid user information
+    UserService-->UserController: Invalid user information
+    UserController-->UserPage: Validation errors
+    UserPage-->Admin: Display invalid fields
+else Username or Email already exists
+    UserService-->UserController: Duplicate account information
+    UserController-->UserPage: MSG08 - Username or Email already exists
+    UserPage-->Admin: Display duplicate account message
+else User information is valid
+    UserService->UserRepository: Create active user account
+    UserRepository->Database: Store user account
+    Database-->UserRepository: User account created
+    UserRepository-->UserService: Created user account
+    UserService->AuditService: Record user account creation
+    activate AuditService
+    AuditService->Database: Store audit record
+    Database-->AuditService: Audit record created
+    AuditService-->UserService: Creation recorded
+    UserService-->UserController: User account created successfully
+    UserController-->UserPage: MSG07 - User account created successfully
+    UserPage-->Admin: Return to User Accounts list
+    deactivate AuditService
+end
+deactivate Database
+deactivate UserRepository
+deactivate UserService
+deactivate UserController

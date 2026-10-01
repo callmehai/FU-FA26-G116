@@ -1,0 +1,49 @@
+title UC-19 - Mark Notification as Read
+
+actor "Meeting Organizer / Meeting Approver / System Admin / Chair / Secretary / Participant" as User
+boundary "Notification Panel" as NotificationPanel
+control ":Notification Controller" as NotificationController
+control ":Notification Service" as NotificationService
+participant ":Notification Repository" as NotificationRepository
+database ":Database" as Database
+
+User->NotificationPanel: Select "Mark as Read"
+NotificationPanel->NotificationController: Mark notification as read
+activate NotificationController
+NotificationController->NotificationService: Mark notification as read
+activate NotificationService
+NotificationService->NotificationRepository: Find notification for current user (BR-47)
+activate NotificationRepository
+NotificationRepository->Database: Retrieve notification
+activate Database
+Database-->NotificationRepository: Notification result
+NotificationRepository-->NotificationService: Notification result
+alt Notification does not exist or belongs to another user - EX-1
+    NotificationService-->NotificationController: Notification is not available
+    NotificationController-->NotificationPanel: This notification is no longer available
+    NotificationPanel-->User: Display notification unavailable message
+else Notification is available
+    NotificationService->NotificationRepository: Mark notification as read
+    NotificationRepository->Database: Update notification read status
+    alt Read status cannot be saved - EX-2
+        Database-->NotificationRepository: Update failed
+        NotificationRepository-->NotificationService: Read status unchanged
+        NotificationService-->NotificationController: Unable to mark notification as read
+        NotificationController-->NotificationPanel: Unable to mark this notification as read.\nPlease try again.
+        NotificationPanel-->User: Display actual saved status and unread count
+    else Notification marked as read successfully
+        Database-->NotificationRepository: Read status updated
+        NotificationRepository-->NotificationService: Notification marked as read
+        NotificationService->NotificationRepository: Get latest unread count
+        NotificationRepository->Database: Count unread notifications\nfor current user
+        Database-->NotificationRepository: Unread count
+        NotificationRepository-->NotificationService: Latest unread count
+        NotificationService-->NotificationController: Notification updated successfully\nwith unread count
+        NotificationController-->NotificationPanel: Refresh notification status\nand unread badge
+        NotificationPanel-->User: Display notification as read\nand updated unread count
+    end
+end
+deactivate Database
+deactivate NotificationRepository
+deactivate NotificationService
+deactivate NotificationController

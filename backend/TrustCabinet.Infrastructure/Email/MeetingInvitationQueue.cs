@@ -146,18 +146,17 @@ public sealed class MeetingInvitationQueue(
             """;
     }
 
-    private static string TruncateByRunes(string value, int maxRunes)
+    private static string TruncateByRunes(string value, int maxLength)
     {
-        var result = new StringBuilder(Math.Min(value.Length, maxRunes));
-        var count = 0;
+        var result = new StringBuilder(Math.Min(value.Length, maxLength));
         foreach (var rune in value.EnumerateRunes())
         {
-            if (count++ == maxRunes)
+            if (result.Length + rune.Utf16SequenceLength > maxLength)
             {
                 break;
             }
 
-            result.Append(rune);
+            result.Append(rune.ToString());
         }
 
         return result.ToString();

@@ -36,6 +36,9 @@ public sealed partial class MessageCodeCatalogueTests
     [GeneratedRegex(@"\*\*`(MSG\d+)`\*\*")]
     private static partial Regex NextCode();
 
+    [GeneratedRegex(@"\b(\d{3})\s+(MSG\d+)\b")]
+    private static partial Regex DiagramResponseCode();
+
     /// <summary>A scanner that finds nothing would make every other test here pass vacuously.</summary>
     [Fact]
     public void The_scanners_find_codes_on_all_three_sides()
@@ -136,6 +139,74 @@ public sealed partial class MessageCodeCatalogueTests
 
         Assert.True(next.Success, "The catalogue has no **`MSGnn`** under \"Mã tiếp theo\".");
         Assert.Equal(highest + 1, int.Parse(next.Groups[1].Value[3..]));
+    }
+
+    [Theory]
+    [InlineData("MSG48", "UC-26")]
+    [InlineData("MSG49", "UC-27")]
+    [InlineData("MSG50", "UC-28")]
+    [InlineData("MSG51", "UC-29")]
+    [InlineData("MSG52", "UC-30")]
+    [InlineData("MSG53", "UC-26 / UC-27")]
+    [InlineData("MSG54", "UC-26")]
+    [InlineData("MSG55", "UC-27")]
+    [InlineData("MSG56", "UC-28")]
+    [InlineData("MSG57", "UC-29")]
+    [InlineData("MSG58", "UC-29")]
+    [InlineData("MSG59", "UC-30")]
+    [InlineData("MSG65", "ADR-0010")]
+    [InlineData("MSG77", "UC-28")]
+    public void Meeting_workflow_preserves_main_code_reservations(string code, string source)
+    {
+        var endpoint = File.ReadAllText(Path.Combine(
+            RepoRoot, "backend", "TrustCabinet.Web", "Endpoints", "MeetingEndpoints.cs"));
+        Assert.DoesNotContain(code, BackendConstant().Matches(endpoint)
+            .Select(match => match.Groups[1].Value));
+        var row = Assert.Single(Regex.Matches(File.ReadAllText(CataloguePath),
+            @"^\|\s*`(MSG\d+)`\s*\|\s*((?:UC-|ADR-)[^|]+)\|", RegexOptions.Multiline),
+            match => match.Groups[1].Value == code);
+        Assert.Contains(source, row.Groups[2].Value, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("Msg78Submitted", "MSG78")]
+    [InlineData("Msg79ReturnedToDraft", "MSG79")]
+    [InlineData("Msg80InvalidTransition", "MSG80")]
+    [InlineData("Msg81SubmissionNotReady", "MSG81")]
+    [InlineData("Msg82ApproverInvalid", "MSG82")]
+    [InlineData("Msg83RejectionReasonRequired", "MSG83")]
+    [InlineData("Msg84RejectionReasonTooLong", "MSG84")]
+    [InlineData("Msg85ActionForbidden", "MSG85")]
+    [InlineData("Msg86HistoryInvalidQuery", "MSG86")]
+    [InlineData("Msg87BodyTooLarge", "MSG87")]
+    [InlineData("Msg88TransitionFailed", "MSG88")]
+    [InlineData("Msg89OrganizerTransferred", "MSG89")]
+    public void Workflow_codes_use_the_allocation_after_main_reservations(string constant, string code)
+    {
+        var endpoint = File.ReadAllText(Path.Combine(
+            RepoRoot, "backend", "TrustCabinet.Web", "Endpoints", "MeetingEndpoints.cs"));
+        Assert.Contains($"private const string {constant} = \"{code}\";", endpoint, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("SubmitMeetingForApproval")]
+    [InlineData("ReviewMeetingApproval")]
+    [InlineData("PublishMeeting")]
+    public void Workflow_sequences_use_catalogued_codes_with_the_documented_status(string diagram)
+    {
+        var source = File.ReadAllText(Path.Combine(
+            RepoRoot, "docs", "assets", "diagrams", "meeting-management", $"{diagram}.mmd"));
+        Assert.DoesNotMatch(@"\bMEETING_[A-Z_]+\b", source);
+        var responses = DiagramResponseCode().Matches(source);
+        Assert.NotEmpty(responses);
+        var catalogue = CatalogueStatuses();
+        foreach (Match response in responses)
+        {
+            var status = int.Parse(response.Groups[1].Value);
+            var code = response.Groups[2].Value;
+            Assert.True(catalogue.TryGetValue(code, out var statuses) && statuses.Contains(status),
+                $"{diagram}: {status} {code} does not match the message catalogue.");
+        }
     }
 
     /// <summary>Code → the HTTP statuses the catalogue lists for it; empty for FE-only or reserved.</summary>
