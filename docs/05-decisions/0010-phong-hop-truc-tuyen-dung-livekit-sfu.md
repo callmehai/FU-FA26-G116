@@ -1,6 +1,6 @@
 # ADR-0010: Phòng họp trực tuyến dùng LiveKit (SFU) tự host
 
-- **Trạng thái:** Đề xuất
+- **Trạng thái:** Đã chấp nhận
 - **Ngày:** 2026-09-30
 - **Người quyết định:** Hải Trần Việt, chờ nhóm SEP490-G116 duyệt qua pull request
 
@@ -41,7 +41,7 @@ Vì vậy giữa hai phiên, cuộc họp vẫn `InProgress` dù không ai đang
 | | `MeetingSession` — phiên họp | `CallSession` — lượt mở phòng gọi |
 |---|---|---|
 | Là gì | Khái niệm nghiệp vụ: một buổi trong cuộc họp | Khái niệm kỹ thuật: một lần phòng LiveKit hoạt động, từ người đầu tiên vào tới khi phòng đóng |
-| Ai tạo | Chủ toạ bấm bắt đầu / kết thúc phiên | Webhook và job đối soát của backend |
+| Ai tạo | Thư ký tạo/lập kế hoạch; Chủ toạ bắt đầu / kết thúc phiên | Webhook và job đối soát của backend |
 | Bảng | `meeting_sessions` (chưa có trong code) | `call_sessions`, `call_participants` |
 | Quan hệ | Một phiên họp có **không, một hoặc nhiều** lượt mở phòng (LiveKit khởi động lại thì phòng mở lại) | Mỗi lượt mở phòng thuộc **đúng một** phiên họp |
 
@@ -62,9 +62,7 @@ Chúng tôi sẽ dùng **LiveKit** — SFU mã nguồn mở (Apache-2.0) — **t
      giữa hai phiên cuộc họp vẫn `InProgress` nhưng phòng phải đóng.
    - Tên phòng (`meeting-{meetingId}`) và danh tính (`userId`) do server đặt, người gọi không chọn
      được. Mọi phiên của một cuộc họp dùng chung một tên phòng, vì giữa hai phiên phòng đóng.
-     Thiết kế này **giả định mỗi lúc một cuộc họp có tối đa một phiên `InProgress`** — BA cần xác
-     nhận trong UC `Start Meeting Session`. Nếu hai phiên được chạy song song thì tên phòng phải
-     đổi thành theo phiên.
+     Thiết kế này tuân theo Report 3: **mỗi lúc một cuộc họp có tối đa một phiên `InProgress`** (BR-59). Nếu sau này cho phép hai phiên chạy song song thì tên phòng phải đổi thành theo phiên.
    - Tắt mic người khác (chỉ chủ toạ, chỉ tắt không bật), luật một người chia sẻ màn hình, và đá
      người mất quyền đều làm qua RoomService API của LiveKit từ backend.
 3. **Trạng thái phòng lấy từ webhook, có đối soát.**
