@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql;
 using TrustCabinet.Infrastructure;
 
 namespace TrustCabinet.Web.Tests.Email;
@@ -15,8 +14,8 @@ public sealed class EmailMigrationPostgresTests : IAsyncLifetime
     private const string BeforeReliableEmailDelivery =
         "20260924153656_NotificationManagement";
 
-    private static readonly string ConnectionString =
-        PostgresTestDatabase.ConnectionString("trustcabinet_email_migration_tests");
+    private readonly PostgreSqlTestDatabase _database = new(
+        PostgresTestDatabase.ConnectionString("trustcabinet_email_migration_tests"));
 
     private TrustCabinetDbContext _db = null!;
 
@@ -25,30 +24,18 @@ public sealed class EmailMigrationPostgresTests : IAsyncLifetime
         _db = new TrustCabinetDbContext(
             new DbContextOptionsBuilder<TrustCabinetDbContext>()
                 .UseNpgsql(
-                    ConnectionString,
+                    _database.DataSource,
                     npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history"))
                 .UseSnakeCaseNamingConvention()
                 .Options);
-
-        try
-        {
-            await _db.Database.EnsureDeletedAsync();
-        }
-        catch (NpgsqlException exception)
-        {
-            throw new InvalidOperationException(
-                "Email migration tests need the development PostgreSQL. Start it with "
-                + "`docker compose up -d postgres`.",
-                exception);
-        }
 
         await MigrateToAsync(BeforeReliableEmailDelivery);
     }
 
     public async Task DisposeAsync()
     {
-        await _db.Database.EnsureDeletedAsync();
         await _db.DisposeAsync();
+        await _database.DisposeAsync();
     }
 
     [Fact]

@@ -13,8 +13,8 @@ namespace TrustCabinet.Web.Tests.Notifications;
 /// </summary>
 public sealed class NotificationRepositoryPostgresTests : IAsyncLifetime
 {
-    private static readonly string ConnectionString =
-        PostgresTestDatabase.ConnectionString("trustcabinet_notification_tests");
+    private readonly PostgreSqlTestDatabase _database = new(
+        PostgresTestDatabase.ConnectionString("trustcabinet_notification_tests"));
 
     private TrustCabinetDbContext _db = null!;
 
@@ -23,7 +23,6 @@ public sealed class NotificationRepositoryPostgresTests : IAsyncLifetime
         _db = NewContext();
         try
         {
-            await _db.Database.EnsureDeletedAsync();
             await _db.Database.EnsureCreatedAsync();
         }
         catch (NpgsqlException exception)
@@ -37,8 +36,8 @@ public sealed class NotificationRepositoryPostgresTests : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await _db.Database.EnsureDeletedAsync();
         await _db.DisposeAsync();
+        await _database.DisposeAsync();
     }
 
     [Fact]
@@ -95,9 +94,9 @@ public sealed class NotificationRepositoryPostgresTests : IAsyncLifetime
         Assert.Equal(included.Id, recipient.UserId);
     }
 
-    private static TrustCabinetDbContext NewContext() => new(
+    private TrustCabinetDbContext NewContext() => new(
         new DbContextOptionsBuilder<TrustCabinetDbContext>()
-            .UseNpgsql(ConnectionString)
+            .UseNpgsql(_database.DataSource)
             .UseSnakeCaseNamingConvention()
             .Options);
 
