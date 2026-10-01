@@ -81,7 +81,7 @@ cũ.
 
 ## UC-01 · Đăng nhập bằng email và mật khẩu
 
-Sequence diagram: [SignIn.png](../06-sequencediagram/SignIn.png).
+Sequence diagram: [UC01_SignIn.png](../06-sequencediagram/auth/UC01_SignIn.png).
 
 ### `POST /api/auth/login`
 
@@ -138,7 +138,7 @@ Vài điểm cố ý, đừng "sửa" lại:
 
 ## UC-02 · Đăng nhập bằng Google
 
-Sequence diagram: [SignInWithGoogle.png](../06-sequencediagram/SignInWithGoogle.png).
+Sequence diagram: [UC02_SignInWithGoogle.png](../06-sequencediagram/auth/UC02_SignInWithGoogle.png).
 
 Chia việc giữa FE và BE đúng như diagram: `LoginPage` mở Google và tự xử lý nhánh ngoài (Google
 lỗi hoặc người dùng huỷ), **xong rồi** mới gọi `AuthController`. Nghĩa là nhánh ngoài không bao giờ
@@ -272,7 +272,7 @@ audience rỗng.
 
 ## UC-03 · Đăng xuất
 
-Sequence diagram: [SignOut.png](../06-sequencediagram/SignOut.png).
+Sequence diagram: [UC03_SignOut.png](../06-sequencediagram/auth/UC03_SignOut.png).
 
 UC-03 chỉ có `User` và `Authenticated Page` — **không có participant backend nào**. Việc của nó là
 xoá JWT ở trình duyệt, hiện hộp xác nhận trước khi xoá, và `MSG06` khi không xoá được. Toàn bộ là

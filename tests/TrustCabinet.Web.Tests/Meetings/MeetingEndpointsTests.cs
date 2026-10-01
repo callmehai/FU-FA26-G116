@@ -163,7 +163,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Administrator_transfers_disabled_organizer_meeting_with_MSG65_and_typed_history()
+    public async Task Administrator_transfers_disabled_organizer_meeting_with_MSG89_and_typed_history()
     {
         var (administrator, replacement, meeting) = GivenOrganizerRecovery();
         var previousOrganizerId = meeting.CreatedById;
@@ -175,7 +175,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("MSG65", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG89", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(meeting.Id, body.RootElement.GetProperty("meetingId").GetGuid());
         Assert.Equal("Approved", body.RootElement.GetProperty("status").GetString());
         Assert.Equal(replacement.Id, body.RootElement.GetProperty("organizerId").GetGuid());
@@ -267,13 +267,13 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal("MSG50", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG80", body.RootElement.GetProperty("code").GetString());
         Assert.Empty(meeting.StatusHistory);
         Assert.Empty(_factory.Meetings.Notifications);
     }
 
     [Fact]
-    public async Task Invalid_replacement_returns_MSG66_and_transfer_persistence_failure_returns_MSG59()
+    public async Task Invalid_replacement_returns_MSG66_and_transfer_persistence_failure_returns_MSG88()
     {
         var (administrator, replacement, meeting) = GivenOrganizerRecovery();
         var previousOrganizerId = meeting.CreatedById;
@@ -292,7 +292,7 @@ public sealed class MeetingEndpointsTests : IDisposable
             new { action = "TransferOrganizer", organizerId = replacement.Id });
         using var failedBody = await JsonOf(failed);
         Assert.Equal(HttpStatusCode.ServiceUnavailable, failed.StatusCode);
-        Assert.Equal("MSG59", failedBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG88", failedBody.RootElement.GetProperty("code").GetString());
         var persisted = Assert.Single(_factory.Meetings.Meetings);
         Assert.Equal(previousOrganizerId, persisted.CreatedById);
         Assert.Empty(persisted.StatusHistory);
@@ -305,7 +305,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     [InlineData(Sensitivity.Internal)]
     [InlineData(Sensitivity.Confidential)]
     [InlineData(Sensitivity.Secret)]
-    public async Task Submit_to_the_organizer_returns_MSG52_without_writing_any_workflow_rows(Sensitivity sensitivity)
+    public async Task Submit_to_the_organizer_returns_MSG82_without_writing_any_workflow_rows(Sensitivity sensitivity)
     {
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
@@ -321,7 +321,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal("MSG52", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG82", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(MeetingStatus.Draft, meeting.Status);
         Assert.Null(meeting.AssignedApproverId);
         Assert.Empty(meeting.StatusHistory);
@@ -332,7 +332,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     [Theory]
     [InlineData("Approve")]
     [InlineData("Reject")]
-    public async Task Legacy_self_assignment_returns_MSG55_without_approving_or_rejecting(string action)
+    public async Task Legacy_self_assignment_returns_MSG85_without_approving_or_rejecting(string action)
     {
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator, creator.Id);
@@ -347,7 +347,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        Assert.Equal("MSG55", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG85", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
         Assert.Empty(meeting.StatusHistory);
         Assert.Empty(_factory.Meetings.Notifications);
@@ -357,7 +357,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task Legacy_missing_or_self_assignment_returns_MSG49_when_the_organizer_withdraws(bool selfAssignment)
+    public async Task Legacy_missing_or_self_assignment_returns_MSG79_when_the_organizer_withdraws(bool selfAssignment)
     {
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator, selfAssignment ? creator.Id : null);
@@ -371,7 +371,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("MSG49", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG79", body.RootElement.GetProperty("code").GetString());
         Assert.Equal("WaitingApproval", body.RootElement.GetProperty("history").GetProperty("fromStatus").GetString());
         Assert.Equal("Draft", body.RootElement.GetProperty("history").GetProperty("resultingStatus").GetString());
         Assert.Equal(MeetingStatus.Draft, meeting.Status);
@@ -408,7 +408,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("MSG48", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG78", body.RootElement.GetProperty("code").GetString());
         Assert.Equal("WaitingApproval", body.RootElement.GetProperty("meeting").GetProperty("status").GetString());
         Assert.Equal("SubmitForApproval", body.RootElement.GetProperty("history").GetProperty("action").GetString());
         Assert.Equal(approverId, body.RootElement.GetProperty("history").GetProperty("assignedApproverId").GetGuid());
@@ -443,7 +443,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var success = organizerHasCapability && !approverEligible;
         Assert.Equal(!organizerHasCapability ? HttpStatusCode.Forbidden
             : approverEligible ? HttpStatusCode.Conflict : HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(!organizerHasCapability ? "MSG55" : approverEligible ? "MSG64" : "MSG49",
+        Assert.Equal(!organizerHasCapability ? "MSG85" : approverEligible ? "MSG64" : "MSG79",
             body.RootElement.GetProperty("code").GetString());
         Assert.Equal(success ? MeetingStatus.Draft : MeetingStatus.WaitingApproval, meeting.Status);
         Assert.Equal(success ? null : (Guid?)approverId, meeting.AssignedApproverId);
@@ -482,7 +482,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     [Theory]
     [InlineData("Approve", "MSG43")]
     [InlineData("Reject", "MSG44")]
-    [InlineData("ReturnToDraft", "MSG49")]
+    [InlineData("ReturnToDraft", "MSG79")]
     [InlineData("Publish", "MSG45")]
     public async Task Post_transition_returns_action_specific_success_codes(string action, string expectedCode)
     {
@@ -553,7 +553,7 @@ public sealed class MeetingEndpointsTests : IDisposable
 
     [Theory]
     [InlineData("SubmitForApproval", "MSG42")]
-    [InlineData("Approve", "MSG59")]
+    [InlineData("Approve", "MSG88")]
     [InlineData("Publish", "MSG47")]
     public async Task Post_transition_maps_persistence_failures_to_action_specific_codes(
         string action, string expectedCode)
@@ -605,7 +605,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Post_submit_returns_MSG51_when_not_ready_and_MSG52_for_an_ineligible_approver()
+    public async Task Post_submit_returns_MSG81_when_not_ready_and_MSG82_for_an_ineligible_approver()
     {
         var creator = GivenCreator();
         var approverId = Guid.CreateVersion7();
@@ -637,13 +637,13 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var ineligibleBody = await JsonOf(ineligible);
 
         Assert.Equal(HttpStatusCode.BadRequest, notReady.StatusCode);
-        Assert.Equal("MSG51", notReadyBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG81", notReadyBody.RootElement.GetProperty("code").GetString());
         Assert.Equal(HttpStatusCode.BadRequest, ineligible.StatusCode);
-        Assert.Equal("MSG52", ineligibleBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG82", ineligibleBody.RootElement.GetProperty("code").GetString());
     }
 
     [Fact]
-    public async Task Post_reject_returns_MSG54_when_reason_exceeds_1000_characters()
+    public async Task Post_reject_returns_MSG84_when_reason_exceeds_1000_characters()
     {
         var creator = GivenCreator();
         var approver = GivenMember("long-reason-approver@trustcabinet.local");
@@ -661,11 +661,11 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal("MSG54", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG84", body.RootElement.GetProperty("code").GetString());
     }
 
     [Fact]
-    public async Task Post_transition_returns_MSG55_when_the_owner_lacks_the_required_capability()
+    public async Task Post_transition_returns_MSG85_when_the_owner_lacks_the_required_capability()
     {
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
@@ -679,7 +679,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        Assert.Equal("MSG55", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG85", body.RootElement.GetProperty("code").GetString());
     }
 
     [Fact]
@@ -766,9 +766,9 @@ public sealed class MeetingEndpointsTests : IDisposable
             new StringContent("{\"action\":0}", Encoding.UTF8, "application/json"));
 
         Assert.Equal(HttpStatusCode.BadRequest, unknownField.StatusCode);
-        Assert.Equal("MSG50", unknownBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG80", unknownBody.RootElement.GetProperty("code").GetString());
         Assert.Equal(HttpStatusCode.BadRequest, nullReasonOnReturn.StatusCode);
-        Assert.Equal("MSG50", nullReasonBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG80", nullReasonBody.RootElement.GetProperty("code").GetString());
         Assert.Equal(HttpStatusCode.BadRequest, numericAction.StatusCode);
         Assert.Equal(MeetingStatus.Draft, meeting.Status);
         Assert.Empty(meeting.StatusHistory);
@@ -796,7 +796,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal("MSG50", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG80", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(MeetingStatus.Approved, meeting.Status);
         Assert.Empty(meeting.StatusHistory);
         Assert.Empty(_factory.Meetings.Notifications);
@@ -820,7 +820,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal("MSG53", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG83", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
         Assert.Empty(meeting.StatusHistory);
     }
@@ -1019,7 +1019,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal("MSG56", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG86", body.RootElement.GetProperty("code").GetString());
     }
 
     [Fact]
@@ -1632,7 +1632,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
-        Assert.Equal("MSG58", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG87", body.RootElement.GetProperty("code").GetString());
         Assert.Equal("Giao ban tuần", meeting.Title);
         Assert.Equal(0, _factory.Meetings.SaveCount);
     }

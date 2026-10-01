@@ -1,5 +1,5 @@
 sequenceDiagram
-    title UC-17 - Công bố cuộc họp
+    title UC-21 - Công bố cuộc họp
     actor Organizer as Người tổ chức
     actor Admin as Quản trị
     participant Page as Màn quản lý cuộc họp
@@ -20,10 +20,10 @@ sequenceDiagram
             Note over Service,DB: Không tạo notification/email, giữ nguyên history và approval cũ.
             alt Lưu hoặc commit thất bại
                 Service->>DB: ROLLBACK toàn bộ
-                Service-->>API: 503 MSG59
+                Service-->>API: 503 MSG88
             else Commit thành công
                 Service->>DB: COMMIT
-                Service-->>API: 200 MSG65, history TransferOrganizer
+                Service-->>API: 200 MSG89, history TransferOrganizer
             end
         else Sai quyền, trạng thái hoặc người nhận
             Service->>DB: Kết thúc transaction không ghi dữ liệu
@@ -34,7 +34,7 @@ sequenceDiagram
 
     Organizer->>Page: Chọn Công bố
     Page->>API: POST /api/meetings/{id}/transitions, action=Publish
-    Note over API: action phải khớp chính xác tên enum, request sai trả 400 MSG50.
+    Note over API: action phải khớp chính xác tên enum, request sai trả 400 MSG80.
     API->>Service: Publish với actor từ phiên đăng nhập
     Service->>DB: BEGIN và khóa meeting
     DB-->>Service: Organizer, trạng thái và participants hiện tại
@@ -44,7 +44,7 @@ sequenceDiagram
         Service-->>API: 404
     else Caller không phải Organizer active có MeetingCreator
         Service->>DB: Kết thúc transaction không ghi dữ liệu
-        Service-->>API: 403 MSG55
+        Service-->>API: 403 MSG85
     else Meeting không còn Approved
         Service->>DB: Kết thúc transaction không ghi dữ liệu
         Service-->>API: 409 MSG46

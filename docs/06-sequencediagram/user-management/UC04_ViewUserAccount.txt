@@ -1,0 +1,29 @@
+title UC-04 - View User Accounts
+
+actor "System Admin" as Admin
+boundary "User Management Page" as UserPage
+control ":User Controller" as UserController
+control ":User Service" as UserService
+participant ":User Repository" as UserRepository
+database ":Database" as Database
+
+Admin->UserPage: Open User Accounts
+activate UserPage
+UserPage->UserController: Request user account list
+activate UserController
+UserController->UserService: Get user accounts
+activate UserService
+UserService->UserRepository: Find user accounts
+activate UserRepository
+UserRepository->Database: Retrieve user accounts
+activate Database
+Database-->UserRepository: User account data
+UserRepository-->UserService: User accounts
+UserService-->UserController: Sorted user account list
+UserController-->UserPage: User account list
+UserPage-->Admin: Display user accounts
+deactivate Database
+deactivate UserRepository
+deactivate UserService
+deactivate UserController
+deactivate UserPage

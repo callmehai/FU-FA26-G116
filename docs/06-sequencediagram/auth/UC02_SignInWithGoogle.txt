@@ -1,0 +1,52 @@
+title UC-02 - Sign in with Google
+
+actor "User" as User
+boundary "Login Page" as LoginPage
+participant ":Google" as Google
+control ":AuthController" as AuthController
+participant ":AuthenticationService" as AuthenticationService
+participant ":UserRepository" as UserRepository
+database ":Database" as Database
+
+User->LoginPage: Click "Continue with Google"
+LoginPage->Google: Open Google sign-in
+activate Google
+User->Google: Select Google account and sign in
+alt Google authentication failed or cancelled
+    Google-->LoginPage: Authentication failed
+    LoginPage-->User: MSG01 - Google sign-in unsuccessful
+else Google authentication successful
+    Google-->LoginPage: Return authenticated Google account
+    LoginPage->AuthController: signInWithGoogle(googleAccount)
+    activate AuthController
+    AuthController->AuthenticationService: signInWithGoogle(googleAccount)
+    activate AuthenticationService
+    AuthenticationService->UserRepository: Find internal account by Google account
+    activate UserRepository
+    UserRepository->Database: Get linked user account
+    activate Database
+    Database-->UserRepository: User account or not found
+    UserRepository-->AuthenticationService: User account or not found
+    alt Google account is not linked
+        AuthenticationService-->AuthController: Internal account not found
+        AuthController-->LoginPage: MSG03 - Google account not authorized
+        LoginPage-->User: Display error message
+    else Internal account is deactivated
+        AuthenticationService-->AuthController: Account deactivated
+        AuthController-->LoginPage: MSG04 - Account unavailable
+        LoginPage-->User: Display error message
+    else User has no active role or access
+        AuthenticationService-->AuthController: Access denied
+        AuthController-->LoginPage: MSG05 - No system access
+        LoginPage-->User: Display error message
+    else User is authorized
+        AuthenticationService-->AuthController: Sign in successful
+        AuthController-->LoginPage: Sign in successful
+        LoginPage-->User: Redirect to authenticated page
+    end
+    deactivate Database
+    deactivate UserRepository
+    deactivate AuthenticationService
+    deactivate AuthController
+end
+deactivate Google

@@ -1,0 +1,27 @@
+title UC-09 - View Role & Permission Matrix
+
+actor "System Admin" as Admin
+boundary "Role & Permission Management Page" as RolePage
+control ":Role Permission Controller" as RoleController
+control ":Role Permission Service" as RoleService
+participant ":Role Permission Repository" as RoleRepository
+database ":Database" as Database
+
+Admin->RolePage: Access Role & Permission Management
+RolePage->RoleController: Request role and permission matrix
+activate RoleController
+RoleController->RoleService: Get role and permission matrix
+activate RoleService
+RoleService->RoleRepository: Get role and permission matrix
+activate RoleRepository
+RoleRepository->Database: Retrieve role and permission matrix
+activate Database
+Database-->RoleRepository: Role and permission matrix
+RoleRepository-->RoleService: Role and permission matrix
+RoleService-->RoleController: Role and permission matrix
+RoleController-->RolePage: Display role and permission matrix
+RolePage-->Admin: Show role and permission matrix
+deactivate Database
+deactivate RoleRepository
+deactivate RoleService
+deactivate RoleController

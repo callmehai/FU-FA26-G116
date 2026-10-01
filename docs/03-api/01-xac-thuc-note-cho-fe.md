@@ -147,7 +147,7 @@ thay vì đợi 401 rồi mới retry. Ít race hơn nhiều.
 
 ## 5. Đăng xuất (UC-03) — phần này gần như toàn bộ là việc của FE
 
-Sequence diagram [SignOut.png](../06-sequencediagram/SignOut.png) chỉ có `User` và
+Sequence diagram [UC03_SignOut.png](../06-sequencediagram/auth/UC03_SignOut.png) chỉ có `User` và
 `Authenticated Page`: hộp xác nhận, xoá JWT, `MSG06` nếu xoá lỗi. Backend không có participant nào.
 
 Nhưng **vẫn phải gọi `POST /api/auth/logout`**, và gọi **trước** khi xoá token cục bộ:

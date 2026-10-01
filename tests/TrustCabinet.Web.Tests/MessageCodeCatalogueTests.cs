@@ -142,6 +142,53 @@ public sealed partial class MessageCodeCatalogueTests
     }
 
     [Theory]
+    [InlineData("MSG48", "UC-26")]
+    [InlineData("MSG49", "UC-27")]
+    [InlineData("MSG50", "UC-28")]
+    [InlineData("MSG51", "UC-29")]
+    [InlineData("MSG52", "UC-30")]
+    [InlineData("MSG53", "UC-26 / UC-27")]
+    [InlineData("MSG54", "UC-26")]
+    [InlineData("MSG55", "UC-27")]
+    [InlineData("MSG56", "UC-28")]
+    [InlineData("MSG57", "UC-29")]
+    [InlineData("MSG58", "UC-29")]
+    [InlineData("MSG59", "UC-30")]
+    [InlineData("MSG65", "ADR-0010")]
+    [InlineData("MSG77", "UC-28")]
+    public void Meeting_workflow_preserves_main_code_reservations(string code, string source)
+    {
+        var endpoint = File.ReadAllText(Path.Combine(
+            RepoRoot, "backend", "TrustCabinet.Web", "Endpoints", "MeetingEndpoints.cs"));
+        Assert.DoesNotContain(code, BackendConstant().Matches(endpoint)
+            .Select(match => match.Groups[1].Value));
+        var row = Assert.Single(Regex.Matches(File.ReadAllText(CataloguePath),
+            @"^\|\s*`(MSG\d+)`\s*\|\s*((?:UC-|ADR-)[^|]+)\|", RegexOptions.Multiline),
+            match => match.Groups[1].Value == code);
+        Assert.Contains(source, row.Groups[2].Value, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("Msg78Submitted", "MSG78")]
+    [InlineData("Msg79ReturnedToDraft", "MSG79")]
+    [InlineData("Msg80InvalidTransition", "MSG80")]
+    [InlineData("Msg81SubmissionNotReady", "MSG81")]
+    [InlineData("Msg82ApproverInvalid", "MSG82")]
+    [InlineData("Msg83RejectionReasonRequired", "MSG83")]
+    [InlineData("Msg84RejectionReasonTooLong", "MSG84")]
+    [InlineData("Msg85ActionForbidden", "MSG85")]
+    [InlineData("Msg86HistoryInvalidQuery", "MSG86")]
+    [InlineData("Msg87BodyTooLarge", "MSG87")]
+    [InlineData("Msg88TransitionFailed", "MSG88")]
+    [InlineData("Msg89OrganizerTransferred", "MSG89")]
+    public void Workflow_codes_use_the_allocation_after_main_reservations(string constant, string code)
+    {
+        var endpoint = File.ReadAllText(Path.Combine(
+            RepoRoot, "backend", "TrustCabinet.Web", "Endpoints", "MeetingEndpoints.cs"));
+        Assert.Contains($"private const string {constant} = \"{code}\";", endpoint, StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("SubmitMeetingForApproval")]
     [InlineData("ReviewMeetingApproval")]
     [InlineData("PublishMeeting")]

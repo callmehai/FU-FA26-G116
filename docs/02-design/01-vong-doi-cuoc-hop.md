@@ -30,7 +30,7 @@ Draft ──gửi duyệt──> WaitingApproval ──duyệt──> Approved �
 Organizer được sửa ở `Draft` hoặc `Rejected`. Để gửi duyệt lại sau từ chối, phải thực hiện
 `ReturnToDraft` trước; assignment cũ được xóa và lịch sử/lý do từ chối được giữ nguyên.
 
-Khi gửi duyệt theo UC-15, người tổ chức phải chọn một tài khoản đang hoạt động có capability
+Khi gửi duyệt theo UC-19, người tổ chức phải chọn một tài khoản đang hoạt động có capability
 `MeetingApprover`, khác chính Organizer. Trường `AssignedApproverId` để trống trong bản nháp cho
 tới khi gửi duyệt.
 

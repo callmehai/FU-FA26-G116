@@ -1,8 +1,7 @@
 # 05 · API quản lý cuộc họp
 
-**UC-11 Create Meeting / UC-12 Update Meeting — SCRUM-17; UC-14 View Meeting List — SCRUM-18;
-UC-15 Submit / UC-16 Review / UC-17 Publish — SCRUM-19.** Mã UC ghi kèm tên vì UC-11/UC-12
-trong tài liệu quản lý vai trò đang dùng cho use case khác.
+**UC-15 Create Meeting / UC-16 Update Meeting — SCRUM-17; UC-17 View Meeting Details /
+UC-18 View Meeting List — SCRUM-18; UC-19 Submit / UC-20 Review / UC-21 Publish — SCRUM-19.**
 
 ## Phạm vi
 
@@ -114,9 +113,9 @@ kết quả, `totalCount` và `totalPages` đều bằng `0`. Query sai trả `4
 Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài giới
 hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `500` với
 `code: MSG38` và thông điệp
-`Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-14.
+`Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-18.
 
-Sequence UC-14 hiện ghi BR-29 và BR-32 ở bước repository; BA cần bổ sung BR-30/31 và nhánh query
+Sequence UC-18 hiện ghi BR-29 và BR-32 ở bước repository; BA cần bổ sung BR-30/31 và nhánh query
 sai `400` vào diagram/spec. Đây là nhánh validation của HTTP, không thay đổi hai nhánh truy xuất
 thành công/thất bại trong diagram hiện tại.
 
@@ -192,7 +191,7 @@ Backend đọc lại quyền `AdminUsers` của actor, khóa meeting rồi kiể
 assignment và nội dung đã duyệt giữ nguyên. Người tạo ban đầu vẫn được chứng minh bằng actor của
 history Create. Không thêm notification/email jobs. Organizer mới Publish bằng flow bình thường.
 
-Success trả `200 MSG65` với `{ code, message, meetingId, status, organizerId, history }`.
+Success trả `200 MSG89` với `{ code, message, meetingId, status, organizerId, history }`.
 `status` là `Approved`, `organizerId` là Organizer mới; response không chứa object `meeting`,
 tiêu đề, mô tả, địa điểm, thời gian hoặc mức độ mật của cuộc họp. Quyền recovery không cấp
 quyền đọc nội dung. `history` chỉ là event `TransferOrganizer` vừa tạo với actor/time từ server,
@@ -204,7 +203,7 @@ rejection reason. Quyền Organizer cũ kết thúc sau transfer; participant re
 Không phải admin hiện tại trả `404` để không lộ resource. Người nhận thiếu/inactive/không có
 MeetingCreator, trùng Organizer cũ hoặc current Assigned Approver trả `400 MSG66`. Meeting không
 còn Approved hoặc Organizer cũ vẫn active trả `409 MSG67`, kể cả khi gọi lại sau transfer thành công.
-Sai shape/thiếu organizerId trả `400 MSG50`; lỗi persistence/timeout rollback toàn bộ trả `503 MSG59`.
+Sai shape/thiếu organizerId trả `400 MSG80`; lỗi persistence/timeout rollback toàn bộ trả `503 MSG88`.
 Các action khác không nhận organizerId. Quyền Chair hoặc MeetingApprover riêng không cho transfer/Publish.
 
 `ReturnToDraft` chỉ do Organizer thực hiện, tạo đúng một lifecycle history, giữ nguyên rejection
@@ -214,15 +213,15 @@ trước khi ReturnToDraft (ở Rejected) hoặc sau đó (ở Draft), rồi sub
 Approver khác.
 
 Không cho Organizer tự duyệt ở mọi mức độ mật: `assignedApproverId == CreatedById` khi submit trả
-`400 MSG52`, kể cả Organizer là Chair và có cả hai capability. Assignment cũ trỏ về Organizer cũng
-không được Approve/Reject (`403 MSG55`); không tự sửa dữ liệu/ghi thêm history khi từ chối action.
+`400 MSG82`, kể cả Organizer là Chair và có cả hai capability. Assignment cũ trỏ về Organizer cũng
+không được Approve/Reject (`403 MSG85`); không tự sửa dữ liệu/ghi thêm history khi từ chối action.
 
 Organizer active, còn `MeetingCreator` được dùng `ReturnToDraft` để rút `WaitingApproval` khi
 assignment không hợp lệ: dữ liệu cũ chưa có người duyệt, người duyệt là chính Organizer, hoặc
 current Assigned Approver đã inactive/mất capability `MeetingApprover`. Server khóa meeting
 và đọc lại assignment/eligibility hiện tại trong transaction. Nếu approver là người khác Organizer,
 còn active và có `MeetingApprover`, trả `409 MSG64`, không ghi history/jobs.
-Rút thành công trả `200 MSG49`, chuyển sang Draft, xóa current assignment và ghi đúng một history
+Rút thành công trả `200 MSG79`, chuyển sang Draft, xóa current assignment và ghi đúng một history
 `ReturnToDraft` với `fromStatus = WaitingApproval`, actor/time từ server. History cũ giữ nguyên;
 không tạo notification/invitation mới. Organizer sửa nháp và chọn người duyệt mới qua
 `SubmitForApproval` bình thường. Không gán lại trực tiếp trong WaitingApproval hoặc dùng PUT để
@@ -230,8 +229,8 @@ bypass lifecycle; Approve/Reject vẫn kiểm tra current assignment và quyền
 
 Các action ngoài `TransferOrganizer` thành công trả `200 OK` với `{ code, message, meeting, history }`.
 `TransferOrganizer` dùng response tối thiểu đã mô tả ở trên. Code thành công theo
-action lần lượt là `MSG48` (SubmitForApproval), `MSG43` (Approve), `MSG44` (Reject), `MSG49`
-(ReturnToDraft), `MSG45` (Publish) và `MSG65` (TransferOrganizer). FE nên dùng `code` để xử lý tình huống; `message` chỉ dành
+action lần lượt là `MSG78` (SubmitForApproval), `MSG43` (Approve), `MSG44` (Reject), `MSG79`
+(ReturnToDraft), `MSG45` (Publish) và `MSG89` (TransferOrganizer). FE nên dùng `code` để xử lý tình huống; `message` chỉ dành
 cho hiển thị.
 
 Publish tạo notification theo BR-54: chỉ participant có user active và `Response != Delegated`;
@@ -264,7 +263,7 @@ khóa meeting để PUT/transition không làm request history phải chờ khó
 Query `page`/`pageSize` mặc định `1`/`20`; `page >= 1`, `pageSize` từ `1` đến `100`. Trả `200`
 với `{ items, page, pageSize, totalCount, totalPages }`; trang vượt cuối trả `items: []`, kể cả
 khi offset lớn hơn `Int32.MaxValue`. Repository kiểm tra tổng số dòng trước khi ép offset sang `int`.
-Nếu offset vượt `Int32.MaxValue` nhưng vẫn nằm trong tập history hiện có, trả `400 MSG56`
+Nếu offset vượt `Int32.MaxValue` nhưng vẫn nằm trong tập history hiện có, trả `400 MSG86`
 vì EF paging không thể biểu diễn vị trí đó an toàn.
 
 ### Dữ liệu Development để kiểm thử workflow
@@ -334,21 +333,21 @@ khoảng trắng bao quanh hoặc tên khác chữ hoa/chữ thường. Request 
 
 | HTTP | Code | Khi nào |
 |---:|---|---|
-| 400 | `MSG50` | JSON/action/GUID/field sai hoặc field không áp dụng cho action |
-| 400 | `MSG51` | Submit thiếu meeting/agenda information; trả `errors` theo field |
-| 400 | `MSG52` | Approver không còn active, thiếu `MeetingApprover` hoặc là chính Organizer |
-| 400 | `MSG53` | Reject không có reason hoặc reason chỉ có whitespace |
-| 400 | `MSG54` | Reason sau trim dài hơn 1.000 ký tự |
-| 400 | `MSG56` | Query pagination history không hợp lệ |
+| 400 | `MSG80` | JSON/action/GUID/field sai hoặc field không áp dụng cho action |
+| 400 | `MSG81` | Submit thiếu meeting/agenda information; trả `errors` theo field |
+| 400 | `MSG82` | Approver không còn active, thiếu `MeetingApprover` hoặc là chính Organizer |
+| 400 | `MSG83` | Reject không có reason hoặc reason chỉ có whitespace |
+| 400 | `MSG84` | Reason sau trim dài hơn 1.000 ký tự |
+| 400 | `MSG86` | Query pagination history không hợp lệ |
 | 401 | — | Chưa đăng nhập |
-| 403 | `MSG55` | Đọc được meeting nhưng không phải actor/relationship/capability của action, hoặc assignment cũ cho Organizer tự duyệt |
+| 403 | `MSG85` | Đọc được meeting nhưng không phải actor/relationship/capability của action, hoặc assignment cũ cho Organizer tự duyệt |
 | 403 | — | Tài khoản inactive theo active-user gate |
 | 404 | — | Meeting không tồn tại hoặc caller không được phép đọc/action trên tài nguyên; body rỗng |
 | 409 | `MSG41`, `MSG46`, `MSG63`, `MSG64` | Submit, Publish, quyết định duyệt hoặc ReturnToDraft không còn hợp lệ; không ghi history/jobs |
-| 200/400/409 | `MSG65` / `MSG66` / `MSG67` | TransferOrganizer thành công / đích không hợp lệ / trạng thái hoặc Organizer cũ không cho transfer |
-| 413 | `MSG58` | JSON request vượt 64 KiB |
+| 200/400/409 | `MSG89` / `MSG66` / `MSG67` | TransferOrganizer thành công / đích không hợp lệ / trạng thái hoặc Organizer cũ không cho transfer |
+| 413 | `MSG87` | JSON request vượt 64 KiB |
 | 415 | `MSG34` | POST không dùng `application/json`; dùng chung code với PUT |
-| 503 | `MSG42`, `MSG47`, `MSG59` | Lỗi database/transaction khi transition; transaction rollback |
+| 503 | `MSG42`, `MSG47`, `MSG88` | Lỗi database/transaction khi transition; transaction rollback |
 | 503 | `MSG60`, `MSG62` | Không tải được readiness/history hoặc không kiểm tra được tài khoản active |
 
 `GET submission-readiness` trả `409 MSG41` nếu meeting không còn ở `Draft`;
@@ -408,7 +407,7 @@ trạng thái trước khi parse JSON: nếu meeting không còn sửa được 
 sai cú pháp hoặc sai kiểu. Request PUT có Content-Type thiếu hoặc không hỗ trợ trả `415` với code
 `MSG34`. Với meeting còn sửa được và Content-Type hợp lệ, JSON sai cú
 pháp/sai kiểu trả `400` và code `MSG31` không có `errors`. Body PUT lớn hơn
-64 KiB trả `413 MSG58`. POST JSON lỗi cũng trả `400`.
+64 KiB trả `413 MSG87`. POST JSON lỗi cũng trả `400`.
 
 ## Mã phản hồi
 
@@ -422,7 +421,7 @@ pháp/sai kiểu trả `400` và code `MSG31` không có `errors`. Body PUT lớ
 | 403 | — | Không có `MeetingCreator` theo gate hai lớp |
 | 404 | — | GET: không tồn tại hoặc caller không có quan hệ; PUT: không tồn tại hoặc caller không phải người tạo; body rỗng |
 | 409 | `MSG33` | Trạng thái hiện tại không cho sửa |
-| 413 | `MSG58` | Body PUT vượt quá 64 KiB |
+| 413 | `MSG87` | Body PUT vượt quá 64 KiB |
 | 415 | `MSG34` | PUT không gửi JSON hoặc Content-Type không hỗ trợ |
 | 500 | `MSG35` | Không thể lưu khi tạo; thử lại |
 | 500 | `MSG36` | Không thể lưu khi sửa; thử lại |
@@ -479,8 +478,8 @@ stale content.
 
 - Đồng bộ nội dung BR-24–BR-29 chính thức vào tài liệu BA và map từng luật vào validation/lifecycle.
 - Vẽ Class Diagram tạo/đọc/sửa và ghi Controller trong sequence là ASP.NET Minimal API.
-- Đồng bộ hai quy tắc đã ghi trong UC-11/UC-12 vào Jira SCRUM-17, cùng giới hạn length và format
+- Đồng bộ hai quy tắc đã ghi trong UC-15/UC-16 vào Jira SCRUM-17, cùng giới hạn length và format
   timezone khi có quyền cập nhật Jira.
 - Ghi rõ quyền GET, ownership và hành vi khi sửa `Rejected`.
 - Bổ sung mã thành công/lỗi chưa có vào sequence/message catalog.
-- Kiểm tra lại định danh UC theo convention Jira để tránh nhầm UC-11/UC-12 quản lý vai trò.
+- Định danh Use Case đã được chuẩn hóa theo danh mục hiện tại: UC-15 → UC-21 cho Meeting Management.

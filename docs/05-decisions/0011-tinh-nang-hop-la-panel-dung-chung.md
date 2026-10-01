@@ -1,6 +1,6 @@
 # ADR-0011: Tính năng dùng trong lúc họp là panel dùng chung cho màn chi tiết và phòng họp
 
-- **Trạng thái:** Đề xuất
+- **Trạng thái:** Đã chấp nhận
 - **Ngày:** 2026-09-30
 - **Người quyết định:** Hải Trần Việt, Gia Khánh Phạm; chờ nhóm SEP490-G116 duyệt qua pull request
 
@@ -51,16 +51,24 @@ export function VotingPanel({ meetingId, variant }: { meetingId: string; variant
    nút "Giơ tay" trên thanh điều khiển gọi đúng hàm đăng ký phát biểu của `SCRUM-27`.
 6. **Dữ liệu theo phiên họp** (Meeting Session, Report 3 — xem thuật ngữ ở
    [ADR-0010](0010-phong-hop-truc-tuyen-dung-livekit-sfu.md)):
-   - Tính năng có dữ liệu gắn với một phiên thì lưu kèm `meeting_session_id` ở phía server. Ứng
-     viên: điểm danh, đăng ký phát biểu, ghi âm, và biểu quyết hay nghị sự nếu nghiệp vụ gắn theo
-     phiên. BA chốt danh sách trong UC của từng tính năng.
-   - Props **không** đổi: panel vẫn chỉ nhận `meetingId`. **Server** xác định phiên đang
-     `InProgress`, trả kèm `meetingSessionId` trong response, và từ chối thao tác ghi khi không có
-     phiên nào đang diễn ra. FE không tự chọn phiên để ghi.
-   - Trong `variant = 'page'`, panel được phép cho xem lại dữ liệu của phiên đã `Completed`, với
-     danh sách phiên lấy từ API.
-   - Hub `/hubs/meetings` phát sự kiện bắt đầu / kết thúc phiên. Panel nghe sự kiện này để tải lại,
-     còn phòng họp nghe để báo "Phiên họp đã kết thúc".
+   - Tính năng có dữ liệu gắn với một phiên thì lưu kèm `meeting_session_id` ở phía server. Agenda
+     được chốt là dữ liệu theo phiên; các tính năng khác theo UC tương ứng.
+   - Phải tách **planning context** và **live context**. Không áp dụng quy tắc "chỉ ghi khi có phiên
+     `InProgress`" cho mọi thao tác.
+   - Với Agenda ở `variant = 'page'`, Secretary có thể chọn một Meeting Session đang `Planned` để
+     tạo, sửa, xoá hoặc sắp xếp Agenda Items. Các request planning phải xác định rõ
+     `meetingSessionId` mục tiêu; việc này vẫn được phép khi meeting đã `Published` hoặc
+     `InProgress`, miễn session mục tiêu vẫn `Planned` theo Report 3.
+   - Với thao tác live trong phòng họp, server xác định Meeting Session đang `InProgress`, trả kèm
+     `meetingSessionId`, và từ chối thao tác live khi không có phiên đang diễn ra. Ví dụ: Set
+     Current Agenda Item / Complete Agenda Item, điểm danh live, phát biểu, ghi âm và biểu quyết
+     nếu UC của tính năng đó gắn với active session.
+   - Props panel có thể vẫn chỉ nhận `meetingId`; panel ở page tự tải danh sách session và quản lý
+     session đang được chọn, còn panel ở room làm việc với active session do server xác định.
+   - Trong `variant = 'page'`, panel được phép xem lại dữ liệu của session `Completed` hoặc
+     `Cancelled`; dữ liệu lịch sử không được trộn giữa các session.
+   - Hub `/hubs/meetings` phát sự kiện session started / ended / cancelled và các thay đổi live cần
+     thiết. Panel nghe các sự kiện này để tải lại trạng thái phù hợp.
 
 ### 3. Realtime
 
@@ -135,6 +143,7 @@ phiên trình duyệt riêng:
 6. **Link mở tab mới.** Mở tài liệu hay ghi chú dài từ trong phòng → tab mới, cuộc gọi ở tab cũ vẫn
    chạy.
 7. **Theo phiên họp** (khi đã có `meeting_sessions`), với cuộc họp có hai phiên:
-   - dữ liệu ghi ở phiên 1 không lẫn sang phiên 2;
-   - giữa hai phiên, thao tác ghi bị từ chối và phòng họp đóng;
-   - trên màn chi tiết vẫn xem lại được dữ liệu phiên 1.
+   - dữ liệu của phiên 1 không lẫn sang phiên 2;
+   - giữa hai phiên, **thao tác live** bị từ chối và phòng họp đóng;
+   - Secretary vẫn có thể chuẩn bị Agenda cho một session tương lai đang `Planned` trên màn chi tiết;
+   - trên màn chi tiết vẫn xem lại được dữ liệu phiên `Completed` hoặc `Cancelled`.

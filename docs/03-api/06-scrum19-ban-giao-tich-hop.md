@@ -67,7 +67,7 @@ Cùng migration bổ sung ID Organizer cũ/mới cho history
 Theo quyết định người dùng ngày 01/10/2026, quản trị active/có AdminUsers được TransferOrganizer
 khi Organizer cũ inactive và meeting còn Approved. Người nhận active/có MeetingCreator, khác
 người cũ/current approver. History lưu Organizer cũ/mới và actor/time; trạng thái, approval và
-notification/email giữ nguyên. FE/Tester nhận body organizerId, MSG65/66/67 cùng lỗi shape,
+notification/email giữ nguyên. FE/Tester nhận body organizerId, MSG89/MSG66/MSG67 cùng lỗi shape,
 quyền và persistence theo [API contract](05-quan-ly-cuoc-hop.md). Organizer mới dùng Publish bình thường.
 Response transfer chỉ có `code`, `message`, `meetingId`, `status`, `organizerId` và history của
 thao tác vừa tạo; không trả nội dung meeting cho người có quyền recovery. FE tích hợp type/API
@@ -77,3 +77,17 @@ PR #50 tách RoleService/fixture đã đóng mà chưa merge. Vì thế branch n
 RoleService và helper/fixture PostgreSQL; các fix này chưa vào main. PR #41 hiện dùng dependency
 branch làm base nên diff review không thể hiện toàn bộ thay đổi sẽ vào main. Mô tả PR phải ghi rõ
 phần prerequisite này; không gọi việc tách phạm vi là đã hoàn tất hoặc tạo branch mới để che diff.
+
+## Đồng bộ main ngày 02/10/2026
+
+Use Case Meeting Management dùng UC-15–21 theo bộ tài liệu BA đã vào main.
+Các mã workflow cũ bị trùng chuyển sang MSG78–MSG89 theo
+[bảng đổi mã](00-danh-muc-ma-thong-bao.md#đồng-bộ-với-main-ngày-02102026).
+Giữ MSG48–MSG59/MSG77 cho Meeting Session và MSG65 cho phòng chưa mở (ADR-0010).
+FE/Tester dùng API contract sau đồng bộ, gồm MSG89 cho TransferOrganizer thành công.
+
+Spec BA mới mô tả gửi duyệt trực tiếp từ Rejected, Secretary đọc rejection reason và Publish
+phải có Planned Meeting Session (BR-56). Backend SCRUM-19 hiện vẫn dùng ReturnToDraft trước
+khi gửi lại; full rejection history chỉ dành cho Organizer/current Assigned Approver;
+Publish chưa kiểm tra Meeting Session vì model/tính năng này chưa được triển khai.
+Các khác biệt được ghi tại UC-19/20/21 và Jira SCRUM-19 để đối chiếu ở BA Final Review.

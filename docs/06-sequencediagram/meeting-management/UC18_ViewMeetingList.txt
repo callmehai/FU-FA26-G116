@@ -1,0 +1,55 @@
+title UC-18 - View Meeting List
+
+actor "Meeting Organizer / Meeting Approver / Chair / Secretary / Participant" as User
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+User->MeetingPage: Request meeting list with current criteria
+activate MeetingPage
+
+MeetingPage->MeetingController: View meeting list
+activate MeetingController
+
+MeetingController->MeetingController: Validate search, filter, sorting, and paging criteria
+
+alt Query criteria are invalid - EX-2
+    MeetingController-->MeetingPage: MSG32 - Invalid query parameters
+    deactivate MeetingController
+    MeetingPage-->User: MSG32 - Invalid query parameters
+
+else Query criteria are valid
+    MeetingController->MeetingService: getMeetingList(userId, criteria)
+    activate MeetingService
+    MeetingService->MeetingRepository: Find authorized meetings with criteria\n(BR-29, BR-30, BR-31, BR-32)
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve authorized, filtered, sorted meeting page
+    activate Database
+
+    alt Meeting list cannot be retrieved - EX-1
+        Database-->MeetingRepository: Retrieval failed
+        deactivate Database
+        MeetingRepository-->MeetingService: Meeting list retrieval failed
+        deactivate MeetingRepository
+        MeetingService-->MeetingController: MSG38 - Unable to load meetings.\nPlease try again
+        deactivate MeetingService
+        MeetingController-->MeetingPage: Return meeting list loading failure
+        deactivate MeetingController
+        MeetingPage-->User: MSG38 - Unable to load meetings.\nPlease try again
+
+    else Meeting list retrieved successfully
+        Database-->MeetingRepository: Authorized meeting page
+        deactivate Database
+        MeetingRepository-->MeetingService: Meeting list or empty list
+        deactivate MeetingRepository
+        MeetingService-->MeetingController: Meeting list or empty list
+        deactivate MeetingService
+        MeetingController-->MeetingPage: Display meeting list
+        deactivate MeetingController
+        MeetingPage-->User: Meeting list or no matching meetings
+    end
+end
+
+deactivate MeetingPage
