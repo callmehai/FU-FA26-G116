@@ -1,0 +1,130 @@
+title UC-19 - Submit Meeting for Approval
+
+actor "Meeting Organizer" as Organizer
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+control ":Notification Service" as NotificationService
+participant ":Meeting Repository" as MeetingRepository
+participant ":User Repository" as UserRepository
+participant ":Meeting Status History Repository" as MeetingStatusHistoryRepository
+participant ":Notification Repository" as NotificationRepository
+database ":Database" as Database
+
+Organizer->MeetingPage: Submit meeting for approval with selected approver
+activate MeetingPage
+
+MeetingPage->MeetingController: Submit meeting for approval
+activate MeetingController
+
+MeetingController->MeetingService: submitMeetingForApproval(meetingId, approverId)
+activate MeetingService
+
+MeetingService->MeetingRepository: Get current meeting
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting and current status
+activate Database
+Database-->MeetingRepository: Meeting
+deactivate Database
+MeetingRepository-->MeetingService: Meeting
+deactivate MeetingRepository
+
+MeetingService->MeetingService: Validate meeting-level submission readiness\nMeeting Sessions are not required (BR-33, BR-55)
+
+alt Meeting-level information is incomplete - EX-1
+    MeetingService-->MeetingController: Submission requirements are incomplete
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Return missing required information
+    deactivate MeetingController
+    MeetingPage-->Organizer: Required meeting information is incomplete
+
+else Meeting-level information is complete
+    MeetingService->UserRepository: Validate selected Meeting Approver\n(BR-35)
+    activate UserRepository
+    UserRepository->Database: Check approver status and permission
+    activate Database
+    Database-->UserRepository: Approver eligibility result
+    deactivate Database
+    UserRepository-->MeetingService: Approver eligibility result
+    deactivate UserRepository
+
+    alt Selected approver is no longer eligible - EX-3
+        MeetingService-->MeetingController: Selected Meeting Approver is no longer eligible
+        deactivate MeetingService
+        MeetingController-->MeetingPage: Return approver validation failure
+        deactivate MeetingController
+        MeetingPage-->Organizer: Selected Meeting Approver is no longer eligible
+
+    else Selected approver is eligible
+        MeetingService->MeetingRepository: Recheck meeting status
+        activate MeetingRepository
+        MeetingRepository->Database: Retrieve current meeting status
+        activate Database
+        Database-->MeetingRepository: Current meeting status
+        deactivate Database
+        MeetingRepository-->MeetingService: Current meeting status
+        deactivate MeetingRepository
+
+        alt Meeting is no longer Draft or Rejected - EX-2
+            MeetingService-->MeetingController: MSG41 - This meeting can no longer be\nsubmitted for approval
+            deactivate MeetingService
+            MeetingController-->MeetingPage: Return submission restriction
+            deactivate MeetingController
+            MeetingPage-->Organizer: MSG41 - This meeting can no longer be\nsubmitted for approval
+
+        else Meeting is Draft or Rejected
+            MeetingService->MeetingRepository: Assign approver and change status\nto WaitingApproval (BR-34, BR-35)
+            activate MeetingRepository
+            MeetingRepository->Database: Store approval assignment and update meeting status
+            activate Database
+
+            alt Submission cannot be completed - EX-4
+                Database-->MeetingRepository: Transaction failed
+                deactivate Database
+                MeetingRepository-->MeetingService: Submission failed
+                deactivate MeetingRepository
+                MeetingService-->MeetingController: MSG42 - Unable to submit the meeting\nfor approval. Please try again
+                deactivate MeetingService
+                MeetingController-->MeetingPage: Return submission failure
+                deactivate MeetingController
+                MeetingPage-->Organizer: MSG42 - Unable to submit the meeting\nfor approval. Please try again
+
+            else Meeting submitted successfully
+                Database-->MeetingRepository: Assignment stored and status updated
+                deactivate Database
+                MeetingRepository-->MeetingService: Meeting moved to WaitingApproval
+                deactivate MeetingRepository
+
+                MeetingService->MeetingStatusHistoryRepository: Record submission, acting organizer,\nassigned approver and resulting status (BR-38)
+                activate MeetingStatusHistoryRepository
+                MeetingStatusHistoryRepository->Database: Insert lifecycle history
+                activate Database
+                Database-->MeetingStatusHistoryRepository: History recorded
+                deactivate Database
+                MeetingStatusHistoryRepository-->MeetingService: Transition recorded
+                deactivate MeetingStatusHistoryRepository
+
+                MeetingService->NotificationService: Notify assigned Meeting Approver
+                activate NotificationService
+                NotificationService->NotificationRepository: Create approval notification
+                activate NotificationRepository
+                NotificationRepository->Database: Insert notification
+                activate Database
+                Database-->NotificationRepository: Notification created
+                deactivate Database
+                NotificationRepository-->NotificationService: Notification created
+                deactivate NotificationRepository
+                NotificationService-->MeetingService: Notification initiated
+                deactivate NotificationService
+
+                MeetingService-->MeetingController: Meeting submitted successfully
+                deactivate MeetingService
+                MeetingController-->MeetingPage: Meeting submitted for approval successfully
+                deactivate MeetingController
+                MeetingPage-->Organizer: Meeting submitted for approval successfully
+            end
+        end
+    end
+end
+
+deactivate MeetingPage

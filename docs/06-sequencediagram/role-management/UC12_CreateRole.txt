@@ -1,0 +1,57 @@
+title UC-11 - Create Role
+
+actor "System Admin" as Admin
+boundary "Role & Permission Management Page" as RolePage
+control ":Role Controller" as RoleController
+control ":Role Service" as RoleService
+participant ":Role Repository" as RoleRepository
+control ":Audit Service" as AuditService
+database ":Database" as Database
+
+Admin->RolePage: Submit new role (name, description, permissions)
+RolePage->RoleController: Create role
+activate RoleController
+RoleController->RoleService: Create role
+activate RoleService
+RoleService->RoleService: Validate role information
+alt Invalid role information
+    RoleService-->RoleController: Invalid role information
+    RoleController-->RolePage: MSG20 - Invalid role information
+    RolePage-->Admin: Show validation errors
+else Valid role information
+    RoleService->RoleRepository: Check whether role name exists
+    activate RoleRepository
+    RoleRepository->Database: Find role by name (case-insensitive)
+    activate Database
+    Database-->RoleRepository: Search result
+    RoleRepository-->RoleService: Role name exists / available
+    alt Role name already exists
+        RoleService-->RoleController: Duplicate role name
+        RoleController-->RolePage: MSG21 - Role name already exists
+        RolePage-->Admin: Show duplicate name error
+    else Role name is available
+        RoleService->RoleRepository: Save new role and its permissions
+        RoleRepository->Database: Insert role and role permissions
+        Database-->RoleRepository: Insert result
+        RoleRepository-->RoleService: Save result
+        alt Role cannot be saved
+            RoleService-->RoleController: Unable to create role
+            RoleController-->RolePage: Error - Unable to create role
+            RolePage-->Admin: Show error message
+        else Role saved
+            RoleService->AuditService: Record role creation
+            activate AuditService
+            AuditService->Database: Save audit log
+            Database-->AuditService: Audit log saved
+            AuditService-->RoleService: Audit recorded
+            RoleService-->RoleController: Role created successfully
+            RoleController-->RolePage: MSG19 - Role created successfully
+            RolePage-->Admin: Show success message and updated role list
+            deactivate AuditService
+        end
+    end
+    deactivate Database
+    deactivate RoleRepository
+end
+deactivate RoleService
+deactivate RoleController

@@ -1,0 +1,50 @@
+title UC-06 - Update User Account
+
+actor "System Admin / Workspace Manager" as Admin
+boundary "User Management Page" as UserPage
+control ":User Controller" as UserController
+control ":User Service" as UserService
+participant ":User Repository" as UserRepository
+control ":Audit Service" as AuditService
+database ":Database" as Database
+
+Admin->UserPage: Select Edit Account
+UserPage->UserController: Request user account information
+activate UserController
+UserController->UserService: Get user account information
+activate UserService
+UserService->UserRepository: Find user account
+activate UserRepository
+UserRepository->Database: Retrieve user account
+activate Database
+Database-->UserRepository: User account information
+UserRepository-->UserService: User account information
+UserService-->UserController: Current user account information
+UserController-->UserPage: Display Edit User form
+UserPage-->Admin: Show current user information
+Admin->UserPage: Submit updated user information
+UserPage->UserController: Update user account
+UserController->UserService: Update user account
+alt Invalid user information
+    UserService-->UserController: Invalid user information
+    UserController-->UserPage: Validation errors
+    UserPage-->Admin: Display invalid fields
+else User information is valid
+    UserService->UserRepository: Update user account information
+    UserRepository->Database: Store updated user information
+    Database-->UserRepository: User account updated
+    UserRepository-->UserService: Updated user account
+    UserService->AuditService: Record user account update
+    activate AuditService
+    AuditService->Database: Store audit record
+    Database-->AuditService: Audit record created
+    AuditService-->UserService: Update recorded
+    UserService-->UserController: User account updated successfully
+    UserController-->UserPage: MSG10 - User account updated successfully
+    UserPage-->Admin: Return to User Accounts list
+    deactivate AuditService
+end
+deactivate Database
+deactivate UserRepository
+deactivate UserService
+deactivate UserController

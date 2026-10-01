@@ -1,0 +1,55 @@
+title UC-21 - Open Notification Target
+
+actor "Meeting Organizer / Meeting Approver / System Admin / Chair / Secretary / Participant" as User
+boundary "Notification Panel" as NotificationPanel
+control ":Notification Controller" as NotificationController
+control ":Notification Service" as NotificationService
+participant ":Notification Repository" as NotificationRepository
+database ":Database" as Database
+
+User->NotificationPanel: Select a notification
+NotificationPanel->NotificationController: Open notification target
+activate NotificationController
+NotificationController->NotificationService: Open notification target
+activate NotificationService
+NotificationService->NotificationRepository: Find notification for current user\n(BR-47, BR-52)
+activate NotificationRepository
+NotificationRepository->Database: Retrieve notification,\nread status and linked target
+activate Database
+Database-->NotificationRepository: Notification result
+NotificationRepository-->NotificationService: Notification result
+alt Notification does not exist or belongs to another user - EX-1
+    NotificationService-->NotificationController: Notification is not available
+    NotificationController-->NotificationPanel: This notification is no longer available
+    NotificationPanel-->User: Display notification unavailable message
+else Notification is available
+    alt Notification is already read - AF-1
+        NotificationService->NotificationService: Keep read status and unread count unchanged\n(BR-50)
+    else Notification is unread
+        NotificationService->NotificationRepository: Mark notification as read\n(BR-48, BR-53)
+        NotificationRepository->Database: Update notification read status
+        alt Read status cannot be saved - EX-3
+            Database-->NotificationRepository: Update failed
+            NotificationRepository-->NotificationService: Read status remains unchanged
+            NotificationService-->NotificationController: Read status could not be saved
+            NotificationController-->NotificationPanel: Unable to mark the notification as read
+        else Read status saved successfully
+            Database-->NotificationRepository: Read status updated
+            NotificationRepository-->NotificationService: Notification marked as read
+        end
+    end
+    NotificationService->NotificationService: Check current access to linked meeting or task\n(BR-29, BR-52)
+    alt Target no longer exists or user no longer has access - EX-2
+        NotificationService-->NotificationController: Target cannot be opened
+        NotificationController-->NotificationPanel: This meeting or task is no longer available to you.
+        NotificationPanel-->User: Display access message without\nrevealing protected target content
+    else Target is available and user has access
+        NotificationService-->NotificationController: Target can be opened
+        NotificationController-->NotificationPanel: Navigate to linked meeting or task
+        NotificationPanel-->User: Display linked meeting or task
+    end
+end
+deactivate Database
+deactivate NotificationRepository
+deactivate NotificationService
+deactivate NotificationController

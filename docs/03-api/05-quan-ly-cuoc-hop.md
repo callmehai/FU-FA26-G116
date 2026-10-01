@@ -1,7 +1,6 @@
 # 05 · Danh sách, tạo, đọc và sửa cuộc họp
 
-**UC-11 Create Meeting / UC-12 Update Meeting — SCRUM-17; UC-14 View Meeting List — SCRUM-18.** Mã UC ghi kèm tên vì UC-11/UC-12
-trong tài liệu quản lý vai trò đang dùng cho use case khác.
+**UC-15 Create Meeting / UC-16 Update Meeting — SCRUM-17; UC-17 View Meeting Details / UC-18 View Meeting List — SCRUM-18.**
 
 ## Phạm vi
 
@@ -13,8 +12,8 @@ Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết
 được bổ sung trong SCRUM-18. Màn danh sách, tạo, sửa và chi tiết đều gọi API thật: tạo xong thì báo
 thành công và mở trang chi tiết của cuộc họp mới.
 
-Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24. [UC-11 và UC-12](../01-requirements/05-use-case-specifications.md)
-ghi nhận thay đổi yêu cầu ngày 27/09/2026: người duyệt chỉ bắt buộc khi gửi duyệt ở UC-15. Thời gian
+Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24. [UC-15 và UC-16](../01-requirements/05-use-case-specifications.md)
+ghi nhận thay đổi yêu cầu ngày 27/09/2026: người duyệt chỉ bắt buộc khi gửi duyệt ở UC-19. Thời gian
 kết thúc tùy chọn; nếu nhập thì phải sau thời gian bắt đầu theo BR-25. Form khởi tạo Hình thức là
 `InPerson` và Mức độ mật là `Normal`.
 
@@ -92,9 +91,9 @@ kết quả, `totalCount` và `totalPages` đều bằng `0`. Query sai trả `4
 Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài
 giới hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `500` với
 `code: MSG38` và thông điệp
-`Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-14.
+`Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-18.
 
-Sequence UC-14 hiện ghi BR-29 và BR-32 ở bước repository. Khi ticket đến `BA Final Review`, BA
+Sequence UC-18 hiện ghi BR-29 và BR-32 ở bước repository. Khi ticket đến `BA Final Review`, BA
 đồng bộ BR-30/31, định dạng timestamp, giới hạn phân trang và nhánh query sai
 `400 MSG32` vào diagram/spec; Controller kiểm tra query trước khi gọi Service/Repository.
 Nhánh lỗi truy xuất dùng `500 MSG38` theo contract hiện hành.
@@ -125,7 +124,7 @@ Request body của POST và PUT có các field:
 nếu được gửi, nó phải là tài khoản đang hoạt động có capability `MeetingApprover`. Với PUT, bỏ qua
 hoặc gửi `null` sẽ bỏ gán người duyệt; nếu gửi ID khác ID hiện tại thì người đó phải đang hoạt động
 và có capability này. Gửi lại ID hiện tại không chặn cập nhật nếu tài khoản đó đã bị vô hiệu hóa.
-UC-15 phải kiểm tra và yêu cầu người duyệt hợp lệ trước khi chuyển meeting sang `WaitingApproval`.
+UC-19 phải kiểm tra và yêu cầu người duyệt hợp lệ trước khi chuyển meeting sang `WaitingApproval`.
 `endsAt` có thể `null` hoặc bị bỏ qua; nếu có giá trị, nó phải lớn hơn `startsAt`. Nếu `mode` hoặc
 `sensitivity` bị bỏ qua, service dùng giá trị khởi tạo của form (`InPerson`, `Normal`).
 
@@ -153,7 +152,7 @@ con qua body. Khi lưu cuộc họp bị từ chối, trạng thái vẫn là `R
 | `title` | Bắt buộc sau trim; tối đa 300 ký tự |
 | `startsAt` | Bắt buộc, ISO 8601 có `Z` hoặc offset rõ ràng |
 | `endsAt` | Tùy chọn; nếu có, ISO 8601 có `Z` hoặc offset rõ ràng và phải lớn hơn giờ bắt đầu |
-| `assignedApproverId` | Tùy chọn khi tạo/sửa nháp; nếu có giá trị thì tài khoản đang hoạt động và có capability `MeetingApprover`. Bắt buộc tại UC-15 trước khi gửi duyệt |
+| `assignedApproverId` | Tùy chọn khi tạo/sửa nháp; nếu có giá trị thì tài khoản đang hoạt động và có capability `MeetingApprover`. Bắt buộc tại UC-19 trước khi gửi duyệt |
 | `mode` | Một trong `InPerson`, `Online`, `Hybrid`; mặc định `InPerson` nếu bỏ qua |
 | `sensitivity` | Một trong `Normal`, `Internal`, `Confidential`, `Secret`; mặc định `Normal` nếu bỏ qua |
 | `location` | Tùy chọn; trim; tối đa 300 ký tự |
@@ -245,4 +244,4 @@ stale content.
   của Jira SCRUM-17 ngày 28/09/2026; BA đối chiếu với BR-24–BR-29 và cập nhật tài liệu/diagram nếu cần.
 - Ghi rõ quyền GET, ownership và hành vi khi sửa `Rejected`.
 - Bổ sung mã thành công/lỗi chưa có vào sequence/message catalog.
-- Kiểm tra lại định danh UC theo convention Jira để tránh nhầm UC-11/UC-12 quản lý vai trò.
+- Định danh Use Case đã được chuẩn hóa theo danh mục hiện tại: UC-15 → UC-21 cho Meeting Management.

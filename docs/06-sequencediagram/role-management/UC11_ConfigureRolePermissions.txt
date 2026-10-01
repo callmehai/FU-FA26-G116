@@ -1,0 +1,49 @@
+title UC-10 - Configure Role Permissions
+
+actor "System Admin" as Admin
+boundary "Role & Permission Management Page" as RolePage
+control ":Role Permission Controller" as RoleController
+control ":Role Permission Service" as RoleService
+participant ":Role Permission Repository" as RoleRepository
+control ":Audit Service" as AuditService
+database ":Database" as Database
+
+Admin->RolePage: Configure permissions for role
+RolePage->RoleController: Submit updated role permissions
+activate RoleController
+RoleController->RoleService: Update role permissions
+activate RoleService
+RoleService->RoleService: Validate permission configuration
+alt Invalid permission configuration
+    RoleService-->RoleController: Invalid permission configuration
+    RoleController-->RolePage: MSG17 - Invalid permission configuration
+    RolePage-->Admin: Show validation error
+else Valid permission configuration
+    RoleService->RoleRepository: Save updated role permissions
+    activate RoleRepository
+    RoleRepository->Database: Update role permission configuration
+    activate Database
+    alt Permission configuration cannot be saved
+        Database-->RoleRepository: Update failed
+        RoleRepository-->RoleService: Save failed
+        RoleService-->RoleController: Unable to update role permissions
+        RoleController-->RolePage: MSG18 - Unable to update role permissions
+        RolePage-->Admin: Show update error
+    else Permission configuration saved
+        Database-->RoleRepository: Update successful
+        RoleRepository-->RoleService: Role permissions updated
+        RoleService->AuditService: Record role permission change
+        activate AuditService
+        AuditService->Database: Save audit log
+        Database-->AuditService: Audit log saved
+        AuditService-->RoleService: Audit recorded
+        RoleService-->RoleController: Role permissions updated successfully
+        RoleController-->RolePage: MSG16 - Role permissions updated successfully
+        RolePage-->Admin: Show success message
+        deactivate AuditService
+    end
+    deactivate Database
+    deactivate RoleRepository
+end
+deactivate RoleService
+deactivate RoleController

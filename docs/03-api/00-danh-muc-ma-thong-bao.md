@@ -23,7 +23,7 @@ sequence diagram, code BE, code FE và test đều phải khớp với bảng n�
 
 ## Mã tiếp theo
 
-**`MSG48`** — `MSG41`–`MSG47` đã dành sẵn cho UC-15/16/17 (xem [bên dưới](#dành-sẵn-chưa-có-code)).
+**`MSG78`** — `MSG41`–`MSG59` và `MSG77` đã dành sẵn cho các Use Case cuộc họp và phiên họp (xem [bên dưới](#dành-sẵn-chưa-có-code)).
 
 ## Danh mục
 
@@ -69,7 +69,7 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG17` | 400 | `PUT /api/roles/capabilities` | Cấu hình không hợp lệ — kèm `errors` (`roleId`, `capabilities`, `adminUsers`) | `Cấu hình phân quyền không hợp lệ.` | BE |
 | `MSG18` | 500 | `PUT /api/roles/capabilities` | Database từ chối ghi | `Không thể cập nhật phân quyền. Vui lòng thử lại.` | BE |
 
-### Quản lý vai trò — UC-11, UC-12, UC-13 theo sơ đồ vai trò (`/api/roles`)
+### Quản lý vai trò — UC-15, UC-16, UC-13 theo sơ đồ vai trò (`/api/roles`)
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
@@ -84,7 +84,7 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG27` | 500 | `PUT /api/roles/{id}` | Database từ chối khi sửa | `Không thể cập nhật vai trò. Vui lòng thử lại.` | BE |
 | `MSG28` | 500 | `DELETE /api/roles/{id}` | Database từ chối khi xoá | `Không thể xoá vai trò. Vui lòng thử lại.` | BE |
 
-### Quản lý cuộc họp — UC-11 … UC-14 theo sơ đồ cuộc họp (`/api/meetings`)
+### Quản lý cuộc họp — UC-15 … UC-18 (`/api/meetings`)
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
@@ -102,7 +102,7 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 "Không tìm thấy cuộc họp" và "không có quyền xem cuộc họp" **không có mã**: API trả `404` không
 body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *403 hay 404*).
 
-### Thông báo trong ứng dụng — UC-18 … UC-21 (`/api/notifications`)
+### Thông báo trong ứng dụng — UC-22 … UC-25 (`/api/notifications`)
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
@@ -116,13 +116,26 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 
 | Mã | Use case | Tình huống (theo sơ đồ) |
 |---|---|---|
-| `MSG41` | UC-15 Gửi duyệt cuộc họp | *This meeting can no longer be submitted for approval.* |
-| `MSG42` | UC-15 Gửi duyệt cuộc họp | *Unable to submit the meeting for approval. Please try again.* |
-| `MSG43` | UC-16 Duyệt cuộc họp | *Meeting approved successfully.* |
-| `MSG44` | UC-16 Từ chối cuộc họp | *Meeting rejected successfully.* |
-| `MSG45` | UC-17 Phát hành cuộc họp | *Meeting published successfully.* |
-| `MSG46` | UC-17 Phát hành cuộc họp | *This meeting can no longer be published.* |
-| `MSG47` | UC-17 Phát hành cuộc họp | *Unable to publish the meeting. Please try again.* |
+| `MSG41` | UC-19 Gửi duyệt cuộc họp | *This meeting can no longer be submitted for approval.* |
+| `MSG42` | UC-19 Gửi duyệt cuộc họp | *Unable to submit the meeting for approval. Please try again.* |
+| `MSG43` | UC-20 Duyệt cuộc họp | *Meeting approved successfully.* |
+| `MSG44` | UC-20 Từ chối cuộc họp | *Meeting rejected successfully.* |
+| `MSG45` | UC-21 Phát hành cuộc họp | *Meeting published successfully.* |
+| `MSG46` | UC-21 Phát hành cuộc họp | *This meeting can no longer be published.* |
+| `MSG47` | UC-21 Phát hành cuộc họp | *Unable to publish the meeting. Please try again.* |
+| `MSG48` | UC-26 Create Meeting Session | *Meeting session created successfully.* |
+| `MSG49` | UC-27 Update Meeting Session | *Meeting session updated successfully.* |
+| `MSG50` | UC-28 Cancel Meeting Session | *Meeting session cancelled successfully.* |
+| `MSG51` | UC-29 Start Meeting Session | *Meeting session started successfully.* |
+| `MSG52` | UC-30 End Meeting Session | *Meeting session ended successfully.* |
+| `MSG53` | UC-26 / UC-27 | *Invalid meeting session information.* |
+| `MSG54` | UC-26 | *Meeting sessions can no longer be added to this meeting.* |
+| `MSG55` | UC-27 | *This meeting session can no longer be edited.* |
+| `MSG56` | UC-28 | *This meeting session can no longer be cancelled.* |
+| `MSG57` | UC-29 | *Another meeting session is already in progress. End it before starting another session.* |
+| `MSG58` | UC-29 | *This meeting session cannot be started.* |
+| `MSG59` | UC-30 | *This meeting session cannot be ended.* |
+| `MSG77` | UC-28 | *The last planned meeting session of a published meeting cannot be cancelled.* |
 
 ## Bảng đổi mã cũ → mới
 
@@ -172,24 +185,24 @@ bảng này; **các file PNG trong `docs/06-sequencediagram/` vẫn mang số c�
 | UC-02 SignInWithGoogle | `MSG05` | Không có quyền truy cập hệ thống | bỏ, không có mã |
 | UC-03 SignOut | `MSG01` | Không thể đăng xuất | `MSG06` |
 | CreateRole / UpdateRole / DeleteRole | *(không mã)* | Unable to create / update / delete role | `MSG26` / `MSG27` / `MSG28` |
-| UC-11 CreateMeeting | *(không mã)* | Meeting created successfully | `MSG29` |
-| UC-11 CreateMeeting | `MSG01` | Unable to create the meeting | `MSG35` |
-| UC-11, UC-12 | *(không mã)* | Validation errors | `MSG31` |
-| UC-12 UpdateMeeting | `MSG02` | Meeting updated successfully | `MSG30` |
-| UC-12 UpdateMeeting | `MSG03` | This meeting can no longer be edited | `MSG33` |
-| UC-12 UpdateMeeting | `MSG04` | Unable to update the meeting | `MSG36` |
-| UC-13 ViewMeetingDetails | `MSG05` | Meeting not found | không mã — `404` không body |
-| UC-13 ViewMeetingDetails | *(không mã)* | You do not have permission to view this meeting | không mã — `404` không body |
-| UC-13 ViewMeetingDetails | `MSG06` | Unable to load meeting details | `MSG37` |
-| UC-14 ViewMeetingList | `MSG08` | Unable to load meetings | `MSG38` |
-| UC-15 SubmitMeetingForApproval | `MSG11` | This meeting can no longer be submitted | `MSG41` |
-| UC-15 SubmitMeetingForApproval | `MSG12` | Unable to submit the meeting | `MSG42` |
-| UC-16 ReviewMeetingApproval | `MSG13` | Meeting approved successfully | `MSG43` |
-| UC-16 ReviewMeetingApproval | `MSG14` | Meeting rejected successfully | `MSG44` |
-| UC-17 PublishMeeting | `MSG18` | Meeting published successfully | `MSG45` |
-| UC-17 PublishMeeting | `MSG19` | This meeting can no longer be published | `MSG46` |
-| UC-17 PublishMeeting | `MSG20` | Unable to publish the meeting | `MSG47` |
-| UC-18 ViewNotifications | *(không mã)* | Notifications cannot be loaded | `MSG40` — hiện BE chỉ trả mã này khi lỗi ở bước kiểm tra tài khoản; lỗi đọc danh sách vẫn là `500` không body |
+| UC-15 CreateMeeting | *(không mã)* | Meeting created successfully | `MSG29` |
+| UC-15 CreateMeeting | `MSG01` | Unable to create the meeting | `MSG35` |
+| UC-15, UC-16 | *(không mã)* | Validation errors | `MSG31` |
+| UC-16 UpdateMeeting | `MSG02` | Meeting updated successfully | `MSG30` |
+| UC-16 UpdateMeeting | `MSG03` | This meeting can no longer be edited | `MSG33` |
+| UC-16 UpdateMeeting | `MSG04` | Unable to update the meeting | `MSG36` |
+| UC-17 ViewMeetingDetails | `MSG05` | Meeting not found | không mã — `404` không body |
+| UC-17 ViewMeetingDetails | *(không mã)* | You do not have permission to view this meeting | không mã — `404` không body |
+| UC-17 ViewMeetingDetails | `MSG06` | Unable to load meeting details | `MSG37` |
+| UC-18 ViewMeetingList | `MSG08` | Unable to load meetings | `MSG38` |
+| UC-19 SubmitMeetingForApproval | `MSG11` | This meeting can no longer be submitted | `MSG41` |
+| UC-19 SubmitMeetingForApproval | `MSG12` | Unable to submit the meeting | `MSG42` |
+| UC-20 ReviewMeetingApproval | `MSG13` | Meeting approved successfully | `MSG43` |
+| UC-20 ReviewMeetingApproval | `MSG14` | Meeting rejected successfully | `MSG44` |
+| UC-21 PublishMeeting | `MSG18` | Meeting published successfully | `MSG45` |
+| UC-21 PublishMeeting | `MSG19` | This meeting can no longer be published | `MSG46` |
+| UC-21 PublishMeeting | `MSG20` | Unable to publish the meeting | `MSG47` |
+| UC-22 ViewNotifications | *(không mã)* | Notifications cannot be loaded | `MSG40` — hiện BE chỉ trả mã này khi lỗi ở bước kiểm tra tài khoản; lỗi đọc danh sách vẫn là `500` không body |
 
 Sơ đồ thông báo UC-19/20/21 không ghi mã, và các nhánh lỗi lưu "đã đọc" của chúng chưa có mã
 riêng trong code: mark-read trả `404` không body khi không thấy thông báo.

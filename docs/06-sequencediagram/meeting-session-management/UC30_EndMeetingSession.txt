@@ -1,0 +1,120 @@
+title UC-30 - End Meeting Session
+
+actor "Chair" as Chair
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Participant Repository" as MeetingParticipantRepository
+participant ":Meeting Session Repository" as MeetingSessionRepository
+participant ":Meeting Status History Repository" as MeetingStatusHistoryRepository
+database ":Database" as Database
+
+Chair->MeetingPage: Confirm End Session
+activate MeetingPage
+
+MeetingPage->MeetingController: End Meeting Session
+activate MeetingController
+
+MeetingController->MeetingService: endMeetingSession(sessionId, chairId)
+activate MeetingService
+
+MeetingService->MeetingSessionRepository: Get current Meeting Session
+activate MeetingSessionRepository
+
+MeetingSessionRepository->Database: Retrieve Meeting Session
+activate Database
+
+Database-->MeetingSessionRepository: Meeting Session
+deactivate Database
+
+MeetingSessionRepository-->MeetingService: Meeting Session
+deactivate MeetingSessionRepository
+
+MeetingService->MeetingParticipantRepository: Verify Chair assignment
+activate MeetingParticipantRepository
+
+MeetingParticipantRepository->Database: Find Chair assignment
+activate Database
+
+Database-->MeetingParticipantRepository: Assignment result
+deactivate Database
+
+MeetingParticipantRepository-->MeetingService: Assignment result
+deactivate MeetingParticipantRepository
+
+MeetingService->MeetingService: Validate session end conditions\n(BR-58, BR-63)
+
+alt Session cannot be ended - EX-1
+    MeetingService-->MeetingController: MSG59 - This meeting session cannot be ended
+    deactivate MeetingService
+
+    MeetingController-->MeetingPage: Return session end failure
+    deactivate MeetingController
+
+    MeetingPage-->Chair: MSG59 - This meeting session cannot be ended
+
+else Session can be ended
+    MeetingService->MeetingSessionRepository: Set status = Completed\nand record actual end time (BR-58)
+    activate MeetingSessionRepository
+
+    MeetingSessionRepository->Database: Update Meeting Session
+    activate Database
+
+    Database-->MeetingSessionRepository: Meeting Session updated
+    deactivate Database
+
+    MeetingSessionRepository-->MeetingService: Meeting Session completed
+    deactivate MeetingSessionRepository
+
+    MeetingService->MeetingSessionRepository: Check Planned or InProgress Meeting Sessions
+    activate MeetingSessionRepository
+
+    MeetingSessionRepository->Database: Find Planned / InProgress Sessions
+    activate Database
+
+    Database-->MeetingSessionRepository: Remaining Sessions / None
+    deactivate Database
+
+    MeetingSessionRepository-->MeetingService: Remaining Sessions / None
+    deactivate MeetingSessionRepository
+
+    alt Other Planned or InProgress Sessions remain - AF-1
+        MeetingService->MeetingService: Keep Meeting status = InProgress
+
+    else No Planned or InProgress Session remains
+        MeetingService->MeetingRepository: Change Meeting status to Ended\n(BR-61)
+        activate MeetingRepository
+
+        MeetingRepository->Database: Update Meeting status
+        activate Database
+
+        Database-->MeetingRepository: Meeting updated
+        deactivate Database
+
+        MeetingRepository-->MeetingService: Meeting status updated
+        deactivate MeetingRepository
+
+        MeetingService->MeetingStatusHistoryRepository: Record InProgress -> Ended\n(BR-38)
+        activate MeetingStatusHistoryRepository
+
+        MeetingStatusHistoryRepository->Database: Insert lifecycle history
+        activate Database
+
+        Database-->MeetingStatusHistoryRepository: History recorded
+        deactivate Database
+
+        MeetingStatusHistoryRepository-->MeetingService: Lifecycle recorded
+        deactivate MeetingStatusHistoryRepository
+    end
+
+    MeetingService-->MeetingController: Meeting Session ended successfully
+    deactivate MeetingService
+
+    MeetingController-->MeetingPage: MSG52 - Meeting session ended successfully
+    deactivate MeetingController
+
+    MeetingPage-->Chair: MSG52 - Meeting session ended successfully
+end
+
+deactivate MeetingPage

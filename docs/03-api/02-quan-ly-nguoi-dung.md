@@ -14,11 +14,11 @@ Bản vẽ từng use case:
 
 | Use case | Sequence diagram |
 |---|---|
-| UC-04 — Xem danh sách tài khoản | [ViewUserAccount.png](../06-sequencediagram/ViewUserAccount.png) |
-| UC-05 — Tạo tài khoản | [CreateUserAccount.png](../06-sequencediagram/CreateUserAccount.png) |
-| UC-06 — Sửa tài khoản | [UpdateUserAccount.png](../06-sequencediagram/UpdateUserAccount.png) |
-| UC-07 — Vô hiệu hoá / kích hoạt lại | [DeactivateReactivateUserAccount.png](../06-sequencediagram/DeactivateReactivateUserAccount.png) |
-| UC-08 — Đặt lại mật khẩu | [ResetUserPassword.png](../06-sequencediagram/ResetUserPassword.png) — **chưa hiện thực**, xem [Còn nợ](#còn-nợ) |
+| UC-04 — Xem danh sách tài khoản | [UC04_ViewUserAccount.png](../06-sequencediagram/user-management/UC04_ViewUserAccount.png) |
+| UC-05 — Tạo tài khoản | [UC05_CreateUserAccount.png](../06-sequencediagram/user-management/UC05_CreateUserAccount.png) |
+| UC-06 — Sửa tài khoản | [UC06_UpdateUserAccount.png](../06-sequencediagram/user-management/UC06_UpdateUserAccount.png) |
+| UC-07 — Vô hiệu hoá / kích hoạt lại | [UC07_DeactivateReactivateUserAccount.png](../06-sequencediagram/user-management/UC07_DeactivateReactivateUserAccount.png) |
+| UC-08 — Đặt lại mật khẩu | [UC08_ResetUserPassword.png](../06-sequencediagram/user-management/UC08_ResetUserPassword.png) — **chưa hiện thực**, xem [Còn nợ](#còn-nợ) |
 
 | Participant trong diagram | Code |
 |---|---|
@@ -338,7 +338,7 @@ vào bằng chứng. Đã đánh dấu `ponytail:` trong code.
 
 ## Còn nợ
 
-- **UC-08 — đặt lại mật khẩu** ([ResetUserPassword.png](../06-sequencediagram/ResetUserPassword.png)).
+- **UC-08 — đặt lại mật khẩu** ([UC08_ResetUserPassword.png](../06-sequencediagram/user-management/UC08_ResetUserPassword.png)).
   Bản vẽ đã có, code thì chưa: cần `:Email Service` mà hạ tầng gửi mail chưa có, và `MSG15 - Unable
   to send reset email` trong bản vẽ chỉ có nghĩa khi thật sự có chỗ gửi mail. Bảng `email_messages`
   đã sẵn sàng làm hàng đợi (SCRUM-15), `:Authentication Service` trong bản vẽ đã tồn tại, và token
