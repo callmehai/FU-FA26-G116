@@ -27,9 +27,8 @@ worker/realtime cần thiết, BA Final Review và Tester hoàn tất. Không co
 
 ## Contract SCRUM-19 → producer/worker SCRUM-15
 
-PR #49 đã vào main (`1d0b954`). Code tích hợp hiện nằm trong checkout của branch SCRUM-19 gốc,
-cùng phần đồng bộ main đang chờ người dùng commit; chưa push hoặc cập nhật PR #41.
-Contract producer dưới đây đã được triển khai và kiểm thử local. Ghi chú Jira dùng để bàn giao cho
+PR #49 đã vào main (`1d0b954`). Code tích hợp nằm trên branch SCRUM-19 và trong PR #41.
+Contract producer dưới đây đã được triển khai và kiểm thử. Ghi chú Jira dùng để bàn giao cho
 owner SCRUM-15 review thay đổi contract, không phải xác nhận owner đã đồng ý.
 Chỉ có một producer `IMeetingInvitationQueue`; SCRUM-19 không tạo Subject/Body hoặc `.ics` riêng.
 
@@ -89,20 +88,21 @@ và rollback schema. Chạy upgrade đến migration mới nhất; không dừng
 
 ## Tách thay đổi ngoài ticket
 
-Fix `RoleService` cho PostgreSQL RESTRICT (`23001`) và refactor các fixture Access/Authentication/Notifications
-được chuẩn bị riêng trên branch `codex/role-postgres-test-fixes` từ `origin/main`, chưa commit.
-Đây là dependency sửa lỗi full suite, không phải hành vi meeting. `PostgreSqlTestDatabase` là helper
-chung cần cho fixture meeting chạy PostgreSQL thật với database riêng.
+Fix `RoleService` cho PostgreSQL RESTRICT (`23001`) và hạ tầng cô lập PostgreSQL integration tests
+được tách sang [draft PR #50](https://github.com/callmehai/TrustCabinet/pull/50), branch
+`codex/role-postgres-isolation` từ main. Dependency chứa helper
+`PostgreSqlTestDatabase`, chuyển các fixture Access/Authentication/Notifications/Email sang database
+riêng và sửa cleanup pool của fixture meeting; không chứa workflow SCRUM-19 hoặc thay đổi producer.
 
-Vì PR #41 đã chứa các fix đó từ commit trước, phải đưa dependency lên main trước rồi cập nhật base
-của SCRUM-19 để chúng tự hết xuất hiện trong diff PR. Không revert chúng ngay khỏi feature khi chưa
-có dependency: việc đó sẽ đưa lại lỗi Role/cleanup và có thể làm fixture meeting mất helper. Việc
-commit, tạo PR dependency và cập nhật branch do người dùng thực hiện; agent không commit/push/merge.
+PR #41 dùng branch dependency làm base để diff review chỉ còn phần SCRUM-19. Hai branch được
+ghép bằng merge thông thường, không viết lại history của feature. Review và merge dependency vào
+main trước, đồng bộ main mới vào feature nếu dependency được squash/rebase merge, rồi chuyển base
+PR #41 về main; các fix độc lập không trở lại diff SCRUM-19.
 
-Các worktree cũ chỉ giữ bản thử nghiệm để đối chiếu. Người dùng tiếp tục trên branch SCRUM-19 gốc;
-không cần chuyển sang chúng để lấy fix. Patch producer cũ sửa migration PR #49 trước khi merge
-đã lỗi thời và không được áp lên main hiện tại. Việc tách Role/test ra khỏi diff PR vẫn phụ thuộc
-vào việc đưa dependency đó lên main; chạy test xanh không đồng nghĩa đã hoàn tất tách phạm vi.
+Frontend chỉ gồm type/API wrapper và bỏ dropdown approver khỏi form. Readiness giữ validation tối
+thiểu đã ghi Jira; các rule nghiệp vụ agenda chưa chốt thuộc SCRUM-25. Producer email nhận snapshot
+trong transaction Publish và worker SCRUM-15 giữ nguyên; phần tích hợp này tiếp tục nằm trong #41.
+Các worktree thử nghiệm cũ được giữ nguyên, không dùng làm nguồn dependency đã tách.
 
 ## Kiểm chứng checkout gốc ngày 01/10/2026
 
@@ -116,6 +116,6 @@ vào việc đưa dependency đó lên main; chạy test xanh không đồng ngh
 - `dotnet ef migrations has-pending-model-changes ... --no-build`: không có thay đổi model còn thiếu.
 - Frontend `npm run lint` và `npm run build`: pass; đây là kiểm tra CI, không thêm task UI backend.
 
-Kết quả trên là kiểm thử local, chưa phải CI của PR sau khi push. Không chạy lại Postman CLI/Newman
-trong lượt này. Tài liệu, code và phần đồng bộ main chưa được agent commit/push; không đổi trạng
-thái Jira sang Done và không merge PR GitHub.
+Kết quả trên là kiểm thử local. CI kiểm chứng từng head sau khi push; không chạy lại Postman
+CLI/Newman hoặc gửi SMTP thật trong lượt tách phạm vi. Không đổi trạng thái Jira sang Done;
+dependency và PR #41 vẫn cần review trước khi merge vào main.
