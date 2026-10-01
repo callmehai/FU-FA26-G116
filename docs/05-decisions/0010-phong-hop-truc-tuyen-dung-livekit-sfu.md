@@ -31,8 +31,9 @@ dụ phiên sáng 08:00–10:00 và phiên chiều 14:00–16:00.
 
 - `Start Meeting Session` chuyển phiên `Planned → InProgress`. Phiên đầu tiên bắt đầu thì cuộc họp
   chuyển `Published → InProgress`.
+- `Cancel Meeting Session` chuyển một phiên tương lai `Planned → Cancelled`; bản ghi được giữ lại để bảo toàn lịch sử lịch họp.
 - `End Meeting Session` chuyển phiên `InProgress → Completed`. Cuộc họp chỉ chuyển `Ended` khi
-  phiên cuối cùng hoàn thành.
+  không còn phiên `Planned` hoặc `InProgress`.
 
 Vì vậy giữa hai phiên, cuộc họp vẫn `InProgress` dù không ai đang họp.
 
@@ -113,7 +114,7 @@ Kế hoạch triển khai chi tiết: [08-ke-hoach-phong-hop-truc-tuyen.md](../0
     giá trị, ít nhất 32 ký tự.
   - Môi trường thật cần domain, TLS, và mở cổng 7881/TCP, 7882/UDP (hoặc TURN/TLS 443).
 - **Điều kiện mở phòng theo phiên họp phụ thuộc bảng `meeting_sessions`, mà bảng này chưa có
-  trong code.** Vòng đời phiên thuộc UC `Start Meeting Session` / `End Meeting Session` (Report 3).
+  trong code.** Vòng đời phiên thuộc các UC `Create / Update / Cancel / Start / End Meeting Session` (Report 3).
   Hai UC này chưa có ticket Jira. Cho tới khi có:
   - PR hạ tầng (`SCRUM-39`) tạm mở phòng khi `Meeting.Status = InProgress`. Điều kiện nằm gọn
     trong `CallRoomRules.StatusOf`, `CallRepository.ListAllowedUserIdsAsync` và job đối soát;
