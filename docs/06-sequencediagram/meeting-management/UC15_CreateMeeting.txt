@@ -1,4 +1,4 @@
-title UC-11 - Create Meeting
+title UC-15 - Create Meeting
 
 actor "Meeting Organizer" as Organizer
 boundary "Meeting Management Page" as MeetingPage
@@ -9,41 +9,55 @@ database ":Database" as Database
 
 Organizer->MeetingPage: Submit meeting information
 activate MeetingPage
+
 MeetingPage->MeetingController: Create meeting
 activate MeetingController
-MeetingController->MeetingService: Create meeting
+
+MeetingController->MeetingService: createMeeting(meetingInfo)
 activate MeetingService
-MeetingService->MeetingService: Validate meeting information\n(BR-24, BR-25)
 
-loop Meeting information is invalid - EX-1
-    MeetingService-->MeetingController: Invalid meeting information
-    MeetingController-->MeetingPage: Validation errors
-    MeetingPage-->Organizer: Display validation messages
-    Organizer->MeetingPage: Resubmit meeting information
-    MeetingPage->MeetingController: Create meeting
-    MeetingController->MeetingService: Create meeting
-    MeetingService->MeetingService: Validate corrected information\n(BR-24, BR-25)
+MeetingService->MeetingService: Validate meeting information
+(BR-24, BR-25)
+
+alt Meeting information is invalid - EX-1
+    MeetingService-->MeetingController: MSG31 - Invalid meeting information
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Return validation errors
+    deactivate MeetingController
+    MeetingPage-->Organizer: MSG31 - Invalid meeting information
+
+else Meeting information is valid
+    MeetingService->MeetingRepository: Create meeting with Draft status
+(BR-26)
+    activate MeetingRepository
+
+    MeetingRepository->Database: Insert meeting
+    activate Database
+
+    alt Meeting cannot be created - EX-2
+        Database-->MeetingRepository: Creation failed
+        deactivate Database
+        MeetingRepository-->MeetingService: Meeting creation failed
+        deactivate MeetingRepository
+        MeetingService-->MeetingController: MSG35 - Unable to create the meeting.
+Please try again
+        deactivate MeetingService
+        MeetingController-->MeetingPage: Return meeting creation failure
+        deactivate MeetingController
+        MeetingPage-->Organizer: MSG35 - Unable to create the meeting.
+Please try again
+
+    else Meeting created successfully
+        Database-->MeetingRepository: Meeting created
+        deactivate Database
+        MeetingRepository-->MeetingService: Created meeting
+        deactivate MeetingRepository
+        MeetingService-->MeetingController: Meeting created successfully
+        deactivate MeetingService
+        MeetingController-->MeetingPage: MSG29 - Meeting created successfully
+        deactivate MeetingController
+        MeetingPage-->Organizer: MSG29 - Meeting created successfully
+    end
 end
 
-MeetingService->MeetingRepository: Create meeting with Draft status\n(BR-26)
-activate MeetingRepository
-MeetingRepository->Database: Store meeting
-activate Database
-alt Meeting cannot be created - EX-2
-    Database-->MeetingRepository: Creation failed
-    MeetingRepository-->MeetingService: Meeting creation failed
-    MeetingService-->MeetingController: Unable to create meeting
-    MeetingController-->MeetingPage: MSG01 - Unable to create the meeting.\nPlease try again.
-    MeetingPage-->Organizer: Display creation error
-else Meeting created successfully
-    Database-->MeetingRepository: Meeting created
-    MeetingRepository-->MeetingService: Created meeting
-    MeetingService-->MeetingController: Meeting created successfully
-    MeetingController-->MeetingPage: Meeting created successfully
-    MeetingPage-->Organizer: Display success confirmation
-end
-deactivate Database
-deactivate MeetingRepository
-deactivate MeetingService
-deactivate MeetingController
 deactivate MeetingPage

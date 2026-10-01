@@ -1,117 +1,120 @@
-title UC-16 - Review Meeting Approval
+title UC-20 - Review Meeting Approval
 
 actor "Meeting Approver" as Approver
 boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Controller" as MeetingController
 control ":Meeting Service" as MeetingService
 participant ":Meeting Repository" as MeetingRepository
-participant ":Meeting History Repository" as HistoryRepository
+participant ":Meeting Status History Repository" as MeetingStatusHistoryRepository
 database ":Database" as Database
 
-alt Approver selects Approve
-    Approver->MeetingPage: Select Approve
-    MeetingPage->MeetingController: Approve meeting
-    activate MeetingController
-    MeetingController->MeetingService: Approve meeting
-    activate MeetingService
-    MeetingService->MeetingRepository: Get current approval state
-    activate MeetingRepository
-    MeetingRepository->Database: Retrieve current status and approval assignment
-    activate Database
-    Database-->MeetingRepository: Current approval state
-    MeetingRepository-->MeetingService: Current approval state
-    alt Approver is no longer authorized - EX-4
-        MeetingService-->MeetingController: Approval access denied
-        MeetingController-->MeetingPage: You are no longer authorized\nto review this meeting.
-        MeetingPage-->Approver: Display access denied message
-    else Meeting is no longer WaitingApproval - EX-2
+Approver->MeetingPage: Submit approval decision
+activate MeetingPage
+
+MeetingPage->MeetingController: Review meeting approval
+activate MeetingController
+
+MeetingController->MeetingService: reviewMeetingApproval(meetingId, decision, rejectionReason)
+activate MeetingService
+
+MeetingService->MeetingRepository: Get current approval state
+activate MeetingRepository
+MeetingRepository->Database: Retrieve current status and approval assignment
+activate Database
+Database-->MeetingRepository: Current approval state
+deactivate Database
+MeetingRepository-->MeetingService: Current approval state
+deactivate MeetingRepository
+
+MeetingService->MeetingService: Verify assigned Meeting Approver
+and approval permission (BR-35)
+
+alt Approver is no longer authorized - EX-4
+    MeetingService-->MeetingController: User is no longer authorized to review the meeting
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Return approval access denial
+    deactivate MeetingController
+    MeetingPage-->Approver: You are no longer authorized to review this meeting
+
+else Approver is authorized
+    MeetingService->MeetingService: Verify meeting is WaitingApproval
+
+    alt Meeting is no longer WaitingApproval - EX-2
         MeetingService-->MeetingController: Meeting is no longer awaiting approval
-        MeetingController-->MeetingPage: This meeting is no longer\nawaiting approval.
-        MeetingPage-->Approver: Display status changed message
-    else Approval can proceed
-        MeetingService->MeetingRepository: Change status from WaitingApproval\nto Approved (BR-36)
-        MeetingRepository->Database: Update meeting status
-        alt Approval decision cannot be completed - EX-3
-            Database-->MeetingRepository: Update failed
-            MeetingRepository-->MeetingService: Approval failed
-            MeetingService-->MeetingController: Unable to complete approval
-            MeetingController-->MeetingPage: Unable to complete the approval decision.\nPlease try again.
-            MeetingPage-->Approver: Display approval error
-        else Meeting approved successfully
-            Database-->MeetingRepository: Status updated
-            MeetingRepository-->MeetingService: Meeting approved
-            MeetingService->HistoryRepository: Record approval decision,\nacting user and timestamp (BR-38)
-            activate HistoryRepository
-            HistoryRepository->Database: Store lifecycle history
-            Database-->HistoryRepository: History recorded
-            HistoryRepository-->MeetingService: Approval recorded
-            MeetingService-->MeetingController: Meeting approved successfully
-            MeetingController-->MeetingPage: MSG13 - Meeting approved successfully.
-            MeetingPage-->Approver: Display success message
-            deactivate HistoryRepository
+        deactivate MeetingService
+        MeetingController-->MeetingPage: Return status change
+        deactivate MeetingController
+        MeetingPage-->Approver: This meeting is no longer awaiting approval
+
+    else Meeting is WaitingApproval
+        alt Decision is Reject and rejection reason is missing - EX-1
+            MeetingService-->MeetingController: Rejection reason is required
+            deactivate MeetingService
+            MeetingController-->MeetingPage: Return rejection reason validation
+            deactivate MeetingController
+            MeetingPage-->Approver: Rejection reason is required
+
+        else Approval decision is valid
+            MeetingService->MeetingRepository: Apply approval decision
+WaitingApproval -> Approved / Rejected (BR-36)
+            activate MeetingRepository
+            MeetingRepository->Database: Update meeting status
+            activate Database
+
+            alt Approval decision cannot be completed - EX-3
+                Database-->MeetingRepository: Update failed
+                deactivate Database
+                MeetingRepository-->MeetingService: Approval decision failed
+                deactivate MeetingRepository
+                MeetingService-->MeetingController: Unable to complete the approval decision.
+Please try again
+                deactivate MeetingService
+                MeetingController-->MeetingPage: Return approval decision failure
+                deactivate MeetingController
+                MeetingPage-->Approver: Unable to complete the approval decision.
+Please try again
+
+            else Approval decision completed
+                Database-->MeetingRepository: Meeting status updated
+                deactivate Database
+                MeetingRepository-->MeetingService: Approval decision applied
+                deactivate MeetingRepository
+
+                alt Decision is Approve
+                    MeetingService->MeetingStatusHistoryRepository: Record approval decision,
+acting user and resulting status (BR-38)
+                    activate MeetingStatusHistoryRepository
+                    MeetingStatusHistoryRepository->Database: Insert lifecycle history
+                    activate Database
+                    Database-->MeetingStatusHistoryRepository: History recorded
+                    deactivate Database
+                    MeetingStatusHistoryRepository-->MeetingService: Approval recorded
+                    deactivate MeetingStatusHistoryRepository
+                    MeetingService-->MeetingController: Meeting approved successfully
+                    deactivate MeetingService
+                    MeetingController-->MeetingPage: MSG43 - Meeting approved successfully
+                    deactivate MeetingController
+                    MeetingPage-->Approver: MSG43 - Meeting approved successfully
+
+                else Decision is Reject - AF-1
+                    MeetingService->MeetingStatusHistoryRepository: Record rejection decision,
+rejection reason, acting user and resulting status (BR-38)
+                    activate MeetingStatusHistoryRepository
+                    MeetingStatusHistoryRepository->Database: Insert lifecycle history
+                    activate Database
+                    Database-->MeetingStatusHistoryRepository: History recorded
+                    deactivate Database
+                    MeetingStatusHistoryRepository-->MeetingService: Rejection recorded
+                    deactivate MeetingStatusHistoryRepository
+                    MeetingService-->MeetingController: Meeting rejected successfully
+                    deactivate MeetingService
+                    MeetingController-->MeetingPage: MSG44 - Meeting rejected successfully
+                    deactivate MeetingController
+                    MeetingPage-->Approver: MSG44 - Meeting rejected successfully
+                end
+            end
         end
     end
-    deactivate Database
-    deactivate MeetingRepository
-    deactivate MeetingService
-    deactivate MeetingController
-else Approver selects Reject - AF-1
-    Approver->MeetingPage: Select Reject
-    MeetingPage-->Approver: Request rejection reason
-    Approver->MeetingPage: Enter rejection reason and confirm
-    MeetingPage->MeetingController: Reject meeting with reason
-    activate MeetingController
-    MeetingController->MeetingService: Reject meeting with reason
-    activate MeetingService
-    MeetingService->MeetingService: Validate rejection reason\n(BR-38)
-    loop Rejection reason is missing - EX-1
-        MeetingService-->MeetingController: Rejection reason is required
-        MeetingController-->MeetingPage: Display rejection reason validation
-        MeetingPage-->Approver: Request valid rejection reason
-        Approver->MeetingPage: Enter rejection reason and confirm
-        MeetingPage->MeetingController: Reject meeting with reason
-        MeetingController->MeetingService: Reject meeting with reason
-        MeetingService->MeetingService: Validate rejection reason\n(BR-38)
-    end
-    MeetingService->MeetingRepository: Get current approval state
-    activate MeetingRepository
-    MeetingRepository->Database: Retrieve current status and approval assignment
-    activate Database
-    Database-->MeetingRepository: Current approval state
-    MeetingRepository-->MeetingService: Current approval state
-    alt Approver is no longer authorized - EX-4
-        MeetingService-->MeetingController: Approval access denied
-        MeetingController-->MeetingPage: You are no longer authorized\nto review this meeting.
-        MeetingPage-->Approver: Display access denied message
-    else Meeting is no longer WaitingApproval - EX-2
-        MeetingService-->MeetingController: Meeting is no longer awaiting approval
-        MeetingController-->MeetingPage: This meeting is no longer\nawaiting approval.
-        MeetingPage-->Approver: Display status changed message
-    else Rejection can proceed
-        MeetingService->MeetingRepository: Change status from WaitingApproval\nto Rejected (BR-36)
-        MeetingRepository->Database: Update meeting status
-        alt Rejection decision cannot be completed - EX-3
-            Database-->MeetingRepository: Update failed
-            MeetingRepository-->MeetingService: Rejection failed
-            MeetingService-->MeetingController: Unable to complete rejection
-            MeetingController-->MeetingPage: Unable to complete the approval decision.\nPlease try again.
-            MeetingPage-->Approver: Display rejection error
-        else Meeting rejected successfully
-            Database-->MeetingRepository: Status updated
-            MeetingRepository-->MeetingService: Meeting rejected
-            MeetingService->HistoryRepository: Record rejection decision, reason,\nacting user and timestamp (BR-38)
-            activate HistoryRepository
-            HistoryRepository->Database: Store lifecycle history
-            Database-->HistoryRepository: History recorded
-            HistoryRepository-->MeetingService: Rejection recorded
-            MeetingService-->MeetingController: Meeting rejected successfully
-            MeetingController-->MeetingPage: MSG14 - Meeting rejected successfully.
-            MeetingPage-->Approver: Display success message
-            deactivate HistoryRepository
-        end
-    end
-    deactivate Database
-    deactivate MeetingRepository
-    deactivate MeetingService
-    deactivate MeetingController
 end
+
+deactivate MeetingPage

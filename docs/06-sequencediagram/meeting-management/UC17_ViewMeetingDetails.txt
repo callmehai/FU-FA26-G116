@@ -1,56 +1,79 @@
-title UC-13 - View Meeting Details
+title UC-17 - View Meeting Details
 
 actor "Meeting Organizer / Meeting Approver / Chair / Secretary / Participant" as User
 boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Controller" as MeetingController
 control ":Meeting Service" as MeetingService
 participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Session Repository" as MeetingSessionRepository
+participant ":Agenda Item Repository" as AgendaItemRepository
 database ":Database" as Database
 
 User->MeetingPage: Request meeting details
 activate MeetingPage
+
 MeetingPage->MeetingController: View meeting details
 activate MeetingController
-MeetingController->MeetingService: Get meeting details
+
+MeetingController->MeetingService: getMeetingDetails(meetingId, userId)
 activate MeetingService
-MeetingService->MeetingRepository: Check meeting existence
+
+MeetingService->MeetingRepository: Get accessible meeting
+(BR-29)
 activate MeetingRepository
-MeetingRepository->Database: Find meeting
+MeetingRepository->Database: Retrieve meeting and verify authorized relationship
 activate Database
-alt Meeting does not exist - EX-1
-    Database-->MeetingRepository: Meeting not found
-    MeetingRepository-->MeetingService: Meeting does not exist
+Database-->MeetingRepository: Accessible meeting / Not found
+deactivate Database
+MeetingRepository-->MeetingService: Accessible meeting / Not found
+deactivate MeetingRepository
+
+alt Meeting does not exist or is not accessible - EX-1
     MeetingService-->MeetingController: Meeting not found
-    MeetingController-->MeetingPage: MSG05 - Meeting not found.
-    MeetingPage-->User: Display not found message
-else Meeting exists
-    Database-->MeetingRepository: Meeting found
-    MeetingRepository-->MeetingService: Meeting exists
-    MeetingService->MeetingService: Verify user access\n(BR-29)
-    alt User is not authorized - EX-2
-        MeetingService-->MeetingController: Access denied
-        MeetingController-->MeetingPage: You do not have permission\nto view this meeting.
-        MeetingPage-->User: Display access denied message
-    else User is authorized
-        MeetingService->MeetingRepository: Get current meeting information
-        MeetingRepository->Database: Retrieve meeting details
-        alt Meeting details cannot be retrieved - EX-3
-            Database-->MeetingRepository: Retrieval failed
-            MeetingRepository-->MeetingService: Unable to retrieve meeting details
-            MeetingService-->MeetingController: Unable to load meeting details
-            MeetingController-->MeetingPage: MSG06 - Unable to load meeting details.\nPlease try again.
-            MeetingPage-->User: Display loading error
-        else Meeting details retrieved successfully
-            Database-->MeetingRepository: Current meeting information
-            MeetingRepository-->MeetingService: Meeting details
-            MeetingService-->MeetingController: Meeting details
-            MeetingController-->MeetingPage: Meeting details
-            MeetingPage-->User: Display meeting details
-        end
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Meeting not found
+    deactivate MeetingController
+    MeetingPage-->User: Meeting not found
+
+else Meeting is accessible
+    MeetingService->MeetingSessionRepository: Get Meeting Sessions for meeting
+    activate MeetingSessionRepository
+    MeetingSessionRepository->Database: Retrieve Meeting Sessions
+    activate Database
+    Database-->MeetingSessionRepository: Meeting Session list
+    deactivate Database
+    MeetingSessionRepository-->MeetingService: Meeting Session list
+    deactivate MeetingSessionRepository
+
+    MeetingService->AgendaItemRepository: Get Agenda Items for Meeting Sessions
+    activate AgendaItemRepository
+    AgendaItemRepository->Database: Retrieve Agenda Items
+    activate Database
+
+    alt Meeting details cannot be retrieved - EX-2
+        Database-->AgendaItemRepository: Retrieval failed
+        deactivate Database
+        AgendaItemRepository-->MeetingService: Meeting detail retrieval failed
+        deactivate AgendaItemRepository
+        MeetingService-->MeetingController: MSG37 - Unable to load meeting details.
+Please try again
+        deactivate MeetingService
+        MeetingController-->MeetingPage: Return meeting detail loading failure
+        deactivate MeetingController
+        MeetingPage-->User: MSG37 - Unable to load meeting details.
+Please try again
+
+    else Meeting details retrieved successfully
+        Database-->AgendaItemRepository: Agenda Item list
+        deactivate Database
+        AgendaItemRepository-->MeetingService: Agenda Item list
+        deactivate AgendaItemRepository
+        MeetingService-->MeetingController: Meeting details, Sessions, and Agenda Items
+        deactivate MeetingService
+        MeetingController-->MeetingPage: Display meeting details
+        deactivate MeetingController
+        MeetingPage-->User: Meeting details with Session schedule and agendas
     end
 end
-deactivate Database
-deactivate MeetingRepository
-deactivate MeetingService
-deactivate MeetingController
+
 deactivate MeetingPage

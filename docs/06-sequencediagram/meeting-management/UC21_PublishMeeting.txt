@@ -1,69 +1,121 @@
-title UC-17 - Publish Meeting
+title UC-21 - Publish Meeting
 
 actor "Meeting Organizer" as Organizer
 boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Controller" as MeetingController
 control ":Meeting Service" as MeetingService
-participant ":Meeting Repository" as MeetingRepository
-participant ":Meeting History Repository" as HistoryRepository
 control ":Notification Service" as NotificationService
 control ":Email Service" as EmailService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Session Repository" as MeetingSessionRepository
+participant ":Meeting Status History Repository" as MeetingStatusHistoryRepository
 database ":Database" as Database
 
-Organizer->MeetingPage: Select Publish Meeting
+Organizer->MeetingPage: Publish Meeting
 activate MeetingPage
+
 MeetingPage->MeetingController: Publish meeting
 activate MeetingController
-MeetingController->MeetingService: Publish meeting
+
+MeetingController->MeetingService: publishMeeting(meetingId, organizerId)
 activate MeetingService
+
 MeetingService->MeetingRepository: Get current publication state
 activate MeetingRepository
-MeetingRepository->Database: Retrieve current meeting status
+MeetingRepository->Database: Retrieve meeting and publication authorization
 activate Database
-Database-->MeetingRepository: Current meeting status
-MeetingRepository-->MeetingService: Current meeting status
-MeetingService->MeetingService: Revalidate publication permission\nand meeting status
-alt Organizer is no longer authorized to publish the meeting - EX-1
-    MeetingService-->MeetingController: Publication access denied
-    MeetingController-->MeetingPage: MSG19 - This meeting can no longer be published.
-    MeetingPage-->Organizer: Display publication restriction message
-else Meeting is no longer Approved - EX-1
-    MeetingService-->MeetingController: Meeting is no longer eligible for publication
-    MeetingController-->MeetingPage: MSG19 - This meeting can no longer be published.
-    MeetingPage-->Organizer: Display publication restriction message
+Database-->MeetingRepository: Meeting publication state
+deactivate Database
+MeetingRepository-->MeetingService: Meeting publication state
+deactivate MeetingRepository
+
+MeetingService->MeetingService: Validate organizer authorization
+and Approved status (BR-37, BR-41)
+
+alt Meeting is no longer eligible for publication - EX-1
+    MeetingService-->MeetingController: MSG46 - This meeting can no longer be published
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Return publication restriction
+    deactivate MeetingController
+    MeetingPage-->Organizer: MSG46 - This meeting can no longer be published
+
 else Meeting is eligible for publication
-    MeetingService->MeetingRepository: Change status from Approved\nto Published (BR-37)
-    MeetingRepository->Database: Update meeting status
-    alt Meeting cannot be published - EX-2
-        Database-->MeetingRepository: Update failed
-        MeetingRepository-->MeetingService: Publication failed
-        MeetingService-->MeetingController: Unable to publish meeting
-        MeetingController-->MeetingPage: MSG20 - Unable to publish the meeting.\nPlease try again.
-        MeetingPage-->Organizer: Display publication error
-    else Meeting published successfully
-        Database-->MeetingRepository: Status updated
-        MeetingRepository-->MeetingService: Meeting published
-        MeetingService->HistoryRepository: Record publication,\nacting user and timestamp (BR-38)
-        activate HistoryRepository
-        HistoryRepository->Database: Store lifecycle history
-        Database-->HistoryRepository: History recorded
-        HistoryRepository-->MeetingService: Publication recorded
-        MeetingService->NotificationService: Create publication notifications\nfor meeting participants
-        activate NotificationService
-        NotificationService-->MeetingService: Notifications created
-        MeetingService->EmailService: Queue invitation emails with .ics\nfor meeting participants\n(BR-39, BR-40, BR-41)
-        activate EmailService
-        EmailService-->MeetingService: Invitation emails queued
-        MeetingService-->MeetingController: Meeting published successfully
-        MeetingController-->MeetingPage: MSG18 - Meeting published successfully.
-        MeetingPage-->Organizer: Display success message
-        deactivate EmailService
-        deactivate NotificationService
-        deactivate HistoryRepository
+    MeetingService->MeetingSessionRepository: Check valid Planned Meeting Session
+(BR-56)
+    activate MeetingSessionRepository
+    MeetingSessionRepository->Database: Find valid Planned Meeting Session
+    activate Database
+    Database-->MeetingSessionRepository: Valid Planned Session / None
+    deactivate Database
+    MeetingSessionRepository-->MeetingService: Valid Planned Session / None
+    deactivate MeetingSessionRepository
+
+    alt No valid Planned Meeting Session exists - EX-2
+        MeetingService-->MeetingController: Meeting Session schedule is not ready
+        deactivate MeetingService
+        MeetingController-->MeetingPage: At least one valid Meeting Session
+must be prepared before publication
+        deactivate MeetingController
+        MeetingPage-->Organizer: At least one valid Meeting Session
+must be prepared before publication
+
+    else Valid Planned Meeting Session exists
+        MeetingService->MeetingRepository: Change status from Approved to Published
+(BR-37)
+        activate MeetingRepository
+        MeetingRepository->Database: Update meeting status
+        activate Database
+
+        alt Meeting cannot be published - EX-3
+            Database-->MeetingRepository: Update failed
+            deactivate Database
+            MeetingRepository-->MeetingService: Publication failed
+            deactivate MeetingRepository
+            MeetingService-->MeetingController: MSG47 - Unable to publish the meeting.
+Please try again
+            deactivate MeetingService
+            MeetingController-->MeetingPage: Return publication failure
+            deactivate MeetingController
+            MeetingPage-->Organizer: MSG47 - Unable to publish the meeting.
+Please try again
+
+        else Meeting published successfully
+            Database-->MeetingRepository: Status updated
+            deactivate Database
+            MeetingRepository-->MeetingService: Meeting published
+            deactivate MeetingRepository
+
+            MeetingService->MeetingStatusHistoryRepository: Record publication,
+acting user and resulting status (BR-38)
+            activate MeetingStatusHistoryRepository
+            MeetingStatusHistoryRepository->Database: Insert lifecycle history
+            activate Database
+            Database-->MeetingStatusHistoryRepository: History recorded
+            deactivate Database
+            MeetingStatusHistoryRepository-->MeetingService: Publication recorded
+            deactivate MeetingStatusHistoryRepository
+
+            MeetingService->NotificationService: Create publication notifications
+for meeting participants
+            activate NotificationService
+            NotificationService-->MeetingService: Notifications created
+            deactivate NotificationService
+
+            MeetingService->EmailService: Queue participant invitation delivery tasks
+(BR-39, BR-40)
+            activate EmailService
+            EmailService-->MeetingService: Invitation delivery queued
+            deactivate EmailService
+
+            MeetingService-->MeetingController: Meeting published successfully
+            deactivate MeetingService
+            MeetingController-->MeetingPage: MSG45 - Meeting published successfully.
+Invitations are queued for delivery
+            deactivate MeetingController
+            MeetingPage-->Organizer: MSG45 - Meeting published successfully.
+Invitations are queued for delivery
+        end
     end
 end
-deactivate Database
-deactivate MeetingRepository
-deactivate MeetingService
-deactivate MeetingController
+
 deactivate MeetingPage
