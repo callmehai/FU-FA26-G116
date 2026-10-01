@@ -1,0 +1,136 @@
+title UC-27 - Update Meeting Session
+
+actor "Secretary" as Secretary
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+control ":Notification Service" as NotificationService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Participant Repository" as MeetingParticipantRepository
+participant ":Meeting Session Repository" as MeetingSessionRepository
+participant ":Notification Repository" as NotificationRepository
+database ":Database" as Database
+
+Secretary->MeetingPage: Submit updated session information
+activate MeetingPage
+
+MeetingPage->MeetingController: Update Meeting Session
+activate MeetingController
+
+MeetingController->MeetingService: updateMeetingSession(sessionId, sessionInfo)
+activate MeetingService
+
+MeetingService->MeetingSessionRepository: Get selected Meeting Session
+activate MeetingSessionRepository
+
+MeetingSessionRepository->Database: Retrieve Meeting Session
+activate Database
+
+Database-->MeetingSessionRepository: Meeting Session
+deactivate Database
+
+MeetingSessionRepository-->MeetingService: Meeting Session
+deactivate MeetingSessionRepository
+
+MeetingService->MeetingRepository: Get parent meeting
+activate MeetingRepository
+
+MeetingRepository->Database: Retrieve meeting
+activate Database
+
+Database-->MeetingRepository: Meeting
+deactivate Database
+
+MeetingRepository-->MeetingService: Meeting
+deactivate MeetingRepository
+
+MeetingService->MeetingParticipantRepository: Verify Secretary assignment
+activate MeetingParticipantRepository
+
+MeetingParticipantRepository->Database: Find Secretary assignment
+activate Database
+
+Database-->MeetingParticipantRepository: Assignment result
+deactivate Database
+
+MeetingParticipantRepository-->MeetingService: Assignment result
+deactivate MeetingParticipantRepository
+
+MeetingService->MeetingService: Validate updated session information\nand planned time (BR-62, BR-75)
+
+alt Session information is invalid - EX-1
+    MeetingService-->MeetingController: MSG53 - Invalid meeting session information
+    deactivate MeetingService
+
+    MeetingController-->MeetingPage: Return validation errors
+    deactivate MeetingController
+
+    MeetingPage-->Secretary: MSG53 - Invalid meeting session information
+
+else Session information is valid
+
+    alt Session can no longer be updated - EX-2
+        MeetingService-->MeetingController: MSG55 - This meeting session can no longer be edited
+        deactivate MeetingService
+
+        MeetingController-->MeetingPage: Return session update failure
+        deactivate MeetingController
+
+        MeetingPage-->Secretary: MSG55 - This meeting session can no longer be edited
+
+    else Meeting is open for session planning\nand Session is Planned
+        MeetingService->MeetingSessionRepository: Update Meeting Session\nand keep Planned status (BR-54, BR-57, BR-58)
+        activate MeetingSessionRepository
+
+        MeetingSessionRepository->Database: Update Meeting Session
+        activate Database
+
+        Database-->MeetingSessionRepository: Meeting Session updated
+        deactivate Database
+
+        MeetingSessionRepository-->MeetingService: Updated Meeting Session
+        deactivate MeetingSessionRepository
+
+        alt Meeting is Published or InProgress
+            MeetingService->MeetingParticipantRepository: Get affected participants
+            activate MeetingParticipantRepository
+
+            MeetingParticipantRepository->Database: Retrieve affected participants
+            activate Database
+
+            Database-->MeetingParticipantRepository: Participant list
+            deactivate Database
+
+            MeetingParticipantRepository-->MeetingService: Participant list
+            deactivate MeetingParticipantRepository
+
+            MeetingService->NotificationService: Notify session schedule change\n(BR-76)
+            activate NotificationService
+
+            NotificationService->NotificationRepository: Create notifications
+            activate NotificationRepository
+
+            NotificationRepository->Database: Insert notifications
+            activate Database
+
+            Database-->NotificationRepository: Notifications created
+            deactivate Database
+
+            NotificationRepository-->NotificationService: Notifications created
+            deactivate NotificationRepository
+
+            NotificationService-->MeetingService: Notification completed
+            deactivate NotificationService
+        end
+
+        MeetingService-->MeetingController: Meeting Session updated successfully
+        deactivate MeetingService
+
+        MeetingController-->MeetingPage: MSG49 - Meeting session updated successfully
+        deactivate MeetingController
+
+        MeetingPage-->Secretary: MSG49 - Meeting session updated successfully
+    end
+end
+
+deactivate MeetingPage

@@ -1,0 +1,141 @@
+title UC-29 - Start Meeting Session
+
+actor "Chair" as Chair
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Participant Repository" as MeetingParticipantRepository
+participant ":Meeting Session Repository" as MeetingSessionRepository
+participant ":Meeting Status History Repository" as MeetingStatusHistoryRepository
+database ":Database" as Database
+
+Chair->MeetingPage: Start Meeting Session
+activate MeetingPage
+
+MeetingPage->MeetingController: Start Meeting Session
+activate MeetingController
+
+MeetingController->MeetingService: startMeetingSession(sessionId, chairId)
+activate MeetingService
+
+MeetingService->MeetingSessionRepository: Get selected Meeting Session
+activate MeetingSessionRepository
+
+MeetingSessionRepository->Database: Retrieve Meeting Session
+activate Database
+
+Database-->MeetingSessionRepository: Meeting Session
+deactivate Database
+
+MeetingSessionRepository-->MeetingService: Meeting Session
+deactivate MeetingSessionRepository
+
+MeetingService->MeetingRepository: Get parent meeting
+activate MeetingRepository
+
+MeetingRepository->Database: Retrieve meeting
+activate Database
+
+Database-->MeetingRepository: Meeting
+deactivate Database
+
+MeetingRepository-->MeetingService: Meeting
+deactivate MeetingRepository
+
+MeetingService->MeetingParticipantRepository: Verify Chair assignment
+activate MeetingParticipantRepository
+
+MeetingParticipantRepository->Database: Find Chair assignment
+activate Database
+
+Database-->MeetingParticipantRepository: Assignment result
+deactivate Database
+
+MeetingParticipantRepository-->MeetingService: Assignment result
+deactivate MeetingParticipantRepository
+
+MeetingService->MeetingSessionRepository: Check other InProgress Meeting Session\n(BR-59)
+activate MeetingSessionRepository
+
+MeetingSessionRepository->Database: Find InProgress Meeting Session
+activate Database
+
+Database-->MeetingSessionRepository: Active Session / None
+deactivate Database
+
+MeetingSessionRepository-->MeetingService: Active Session / None
+deactivate MeetingSessionRepository
+
+MeetingService->MeetingService: Validate session start conditions\n(BR-58, BR-59, BR-63)
+
+alt Another Meeting Session is already InProgress - EX-1
+    MeetingService-->MeetingController: MSG57 - Another meeting session is already in progress.\nEnd it before starting another session
+    deactivate MeetingService
+
+    MeetingController-->MeetingPage: Return session start failure
+    deactivate MeetingController
+
+    MeetingPage-->Chair: MSG57 - Another meeting session is already in progress.\nEnd it before starting another session
+
+else No other Meeting Session is InProgress
+
+    alt Session cannot be started - EX-2
+        MeetingService-->MeetingController: MSG58 - This meeting session cannot be started
+        deactivate MeetingService
+
+        MeetingController-->MeetingPage: Return session start failure
+        deactivate MeetingController
+
+        MeetingPage-->Chair: MSG58 - This meeting session cannot be started
+
+    else Session can be started
+        MeetingService->MeetingSessionRepository: Set status = InProgress\nand record actual start time (BR-58)
+        activate MeetingSessionRepository
+
+        MeetingSessionRepository->Database: Update Meeting Session
+        activate Database
+
+        Database-->MeetingSessionRepository: Meeting Session updated
+        deactivate Database
+
+        MeetingSessionRepository-->MeetingService: Meeting Session started
+        deactivate MeetingSessionRepository
+
+        alt Meeting is Published
+            MeetingService->MeetingRepository: Change Meeting status to InProgress\n(BR-60)
+            activate MeetingRepository
+
+            MeetingRepository->Database: Update Meeting status
+            activate Database
+
+            Database-->MeetingRepository: Meeting updated
+            deactivate Database
+
+            MeetingRepository-->MeetingService: Meeting status updated
+            deactivate MeetingRepository
+
+            MeetingService->MeetingStatusHistoryRepository: Record Published -> InProgress\n(BR-38)
+            activate MeetingStatusHistoryRepository
+
+            MeetingStatusHistoryRepository->Database: Insert lifecycle history
+            activate Database
+
+            Database-->MeetingStatusHistoryRepository: History recorded
+            deactivate Database
+
+            MeetingStatusHistoryRepository-->MeetingService: Lifecycle recorded
+            deactivate MeetingStatusHistoryRepository
+        end
+
+        MeetingService-->MeetingController: Meeting Session started successfully
+        deactivate MeetingService
+
+        MeetingController-->MeetingPage: MSG51 - Meeting session started successfully
+        deactivate MeetingController
+
+        MeetingPage-->Chair: MSG51 - Meeting session started successfully
+    end
+end
+
+deactivate MeetingPage

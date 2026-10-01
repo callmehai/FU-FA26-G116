@@ -1,0 +1,124 @@
+title UC-26 - Create Meeting Session
+
+actor "Secretary" as Secretary
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+control ":Notification Service" as NotificationService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Participant Repository" as MeetingParticipantRepository
+participant ":Meeting Session Repository" as MeetingSessionRepository
+participant ":Notification Repository" as NotificationRepository
+database ":Database" as Database
+
+Secretary->MeetingPage: Submit session information
+activate MeetingPage
+
+MeetingPage->MeetingController: Create Meeting Session
+activate MeetingController
+
+MeetingController->MeetingService: createMeetingSession(meetingId, sessionInfo)
+activate MeetingService
+
+MeetingService->MeetingRepository: Get selected meeting
+activate MeetingRepository
+
+MeetingRepository->Database: Retrieve meeting
+activate Database
+
+Database-->MeetingRepository: Meeting
+deactivate Database
+
+MeetingRepository-->MeetingService: Meeting
+deactivate MeetingRepository
+
+MeetingService->MeetingParticipantRepository: Verify Secretary assignment
+activate MeetingParticipantRepository
+
+MeetingParticipantRepository->Database: Find Secretary assignment
+activate Database
+
+Database-->MeetingParticipantRepository: Assignment result
+deactivate Database
+
+MeetingParticipantRepository-->MeetingService: Assignment result
+deactivate MeetingParticipantRepository
+
+MeetingService->MeetingService: Validate session information\nand planned time (BR-62, BR-75)
+
+alt Session information is invalid - EX-1
+    MeetingService-->MeetingController: MSG53 - Invalid meeting session information
+    deactivate MeetingService
+
+    MeetingController-->MeetingPage: Return validation errors
+    deactivate MeetingController
+
+    MeetingPage-->Secretary: MSG53 - Invalid meeting session information
+
+else Session information is valid
+
+    alt Meeting is not open for session planning - EX-2
+        MeetingService-->MeetingController: MSG54 - Meeting sessions can no longer\nbe added to this meeting
+        deactivate MeetingService
+
+        MeetingController-->MeetingPage: Return session creation failure
+        deactivate MeetingController
+
+        MeetingPage-->Secretary: MSG54 - Meeting sessions can no longer\nbe added to this meeting
+
+    else Meeting is open for session planning
+        MeetingService->MeetingSessionRepository: Create Meeting Session\nwith Planned status (BR-54, BR-58)
+        activate MeetingSessionRepository
+
+        MeetingSessionRepository->Database: Insert Meeting Session
+        activate Database
+
+        Database-->MeetingSessionRepository: Meeting Session created
+        deactivate Database
+
+        MeetingSessionRepository-->MeetingService: Created Meeting Session
+        deactivate MeetingSessionRepository
+
+        alt Meeting is Published or InProgress
+            MeetingService->MeetingParticipantRepository: Get affected participants
+            activate MeetingParticipantRepository
+
+            MeetingParticipantRepository->Database: Retrieve affected participants
+            activate Database
+
+            Database-->MeetingParticipantRepository: Participant list
+            deactivate Database
+
+            MeetingParticipantRepository-->MeetingService: Participant list
+            deactivate MeetingParticipantRepository
+
+            MeetingService->NotificationService: Notify session schedule change\n(BR-76)
+            activate NotificationService
+
+            NotificationService->NotificationRepository: Create notifications
+            activate NotificationRepository
+
+            NotificationRepository->Database: Insert notifications
+            activate Database
+
+            Database-->NotificationRepository: Notifications created
+            deactivate Database
+
+            NotificationRepository-->NotificationService: Notifications created
+            deactivate NotificationRepository
+
+            NotificationService-->MeetingService: Notification completed
+            deactivate NotificationService
+        end
+
+        MeetingService-->MeetingController: Meeting Session created successfully
+        deactivate MeetingService
+
+        MeetingController-->MeetingPage: MSG48 - Meeting session created successfully
+        deactivate MeetingController
+
+        MeetingPage-->Secretary: MSG48 - Meeting session created successfully
+    end
+end
+
+deactivate MeetingPage

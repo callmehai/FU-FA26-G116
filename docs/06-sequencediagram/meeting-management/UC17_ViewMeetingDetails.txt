@@ -1,0 +1,56 @@
+title UC-13 - View Meeting Details
+
+actor "Meeting Organizer / Meeting Approver / Chair / Secretary / Participant" as User
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+User->MeetingPage: Request meeting details
+activate MeetingPage
+MeetingPage->MeetingController: View meeting details
+activate MeetingController
+MeetingController->MeetingService: Get meeting details
+activate MeetingService
+MeetingService->MeetingRepository: Check meeting existence
+activate MeetingRepository
+MeetingRepository->Database: Find meeting
+activate Database
+alt Meeting does not exist - EX-1
+    Database-->MeetingRepository: Meeting not found
+    MeetingRepository-->MeetingService: Meeting does not exist
+    MeetingService-->MeetingController: Meeting not found
+    MeetingController-->MeetingPage: MSG05 - Meeting not found.
+    MeetingPage-->User: Display not found message
+else Meeting exists
+    Database-->MeetingRepository: Meeting found
+    MeetingRepository-->MeetingService: Meeting exists
+    MeetingService->MeetingService: Verify user access\n(BR-29)
+    alt User is not authorized - EX-2
+        MeetingService-->MeetingController: Access denied
+        MeetingController-->MeetingPage: You do not have permission\nto view this meeting.
+        MeetingPage-->User: Display access denied message
+    else User is authorized
+        MeetingService->MeetingRepository: Get current meeting information
+        MeetingRepository->Database: Retrieve meeting details
+        alt Meeting details cannot be retrieved - EX-3
+            Database-->MeetingRepository: Retrieval failed
+            MeetingRepository-->MeetingService: Unable to retrieve meeting details
+            MeetingService-->MeetingController: Unable to load meeting details
+            MeetingController-->MeetingPage: MSG06 - Unable to load meeting details.\nPlease try again.
+            MeetingPage-->User: Display loading error
+        else Meeting details retrieved successfully
+            Database-->MeetingRepository: Current meeting information
+            MeetingRepository-->MeetingService: Meeting details
+            MeetingService-->MeetingController: Meeting details
+            MeetingController-->MeetingPage: Meeting details
+            MeetingPage-->User: Display meeting details
+        end
+    end
+end
+deactivate Database
+deactivate MeetingRepository
+deactivate MeetingService
+deactivate MeetingController
+deactivate MeetingPage

@@ -1,0 +1,95 @@
+title UC-15 - Submit Meeting for Approval
+
+actor "Meeting Organizer" as Organizer
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+participant ":User Repository" as UserRepository
+participant ":Meeting History Repository" as HistoryRepository
+control ":Notification Service" as NotificationService
+database ":Database" as Database
+
+Organizer->MeetingPage: Submit / resubmit meeting for approval
+activate MeetingPage
+MeetingPage->MeetingController: Request submission for approval
+activate MeetingController
+MeetingController->MeetingService: Prepare meeting submission
+activate MeetingService
+MeetingService->MeetingRepository: Get current meeting
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting and current status
+activate Database
+Database-->MeetingRepository: Meeting information
+MeetingRepository-->MeetingService: Meeting information
+MeetingService->MeetingService: Validate submission readiness\n(BR-33)
+alt Meeting information is incomplete - EX-1
+    MeetingService-->MeetingController: Submission requirements are incomplete
+    MeetingController-->MeetingPage: Display missing required information
+    MeetingPage-->Organizer: Display validation errors
+else Meeting is ready for submission
+    MeetingService->UserRepository: Find eligible Meeting Approvers\n(BR-35)
+    activate UserRepository
+    UserRepository->Database: Retrieve active users with approval permission
+    Database-->UserRepository: Eligible Meeting Approvers
+    UserRepository-->MeetingService: Eligible Meeting Approvers
+    MeetingService-->MeetingController: Eligible Meeting Approvers
+    MeetingController-->MeetingPage: Display Meeting Approver selection
+    MeetingPage-->Organizer: Show eligible Meeting Approvers
+    Organizer->MeetingPage: Select Meeting Approver and confirm
+    MeetingPage->MeetingController: Submit meeting with selected approver
+    MeetingController->MeetingService: Submit meeting with selected approver
+    MeetingService->UserRepository: Validate selected Meeting Approver\n(BR-35)
+    UserRepository->Database: Check approver status and permission
+    Database-->UserRepository: Approver eligibility result
+    UserRepository-->MeetingService: Approver eligibility result
+    alt Selected approver is no longer eligible - EX-3
+        MeetingService-->MeetingController: Invalid Meeting Approver
+        MeetingController-->MeetingPage: Selected approver is no longer eligible
+        MeetingPage-->Organizer: Request another Meeting Approver
+    else Selected approver is eligible
+        MeetingService->MeetingRepository: Recheck meeting status
+        MeetingRepository->Database: Retrieve current meeting status
+        Database-->MeetingRepository: Current meeting status
+        MeetingRepository-->MeetingService: Current meeting status
+        alt Meeting is no longer Draft or Rejected - EX-2
+            MeetingService-->MeetingController: Meeting is no longer eligible for submission
+            MeetingController-->MeetingPage: MSG11 - This meeting can no longer be\nsubmitted for approval.
+            MeetingPage-->Organizer: Display submission restriction message
+        else Meeting is still Draft or Rejected
+            MeetingService->MeetingRepository: Assign approver and change status\nto WaitingApproval (BR-34, BR-35)
+            MeetingRepository->Database: Store approval assignment\nand update meeting status
+            alt Submission cannot be completed - EX-4
+                Database-->MeetingRepository: Transaction failed
+                MeetingRepository-->MeetingService: Submission failed
+                MeetingService-->MeetingController: Unable to submit meeting
+                MeetingController-->MeetingPage: MSG12 - Unable to submit the meeting\nfor approval. Please try again.
+                MeetingPage-->Organizer: Display submission error
+            else Meeting submitted successfully
+                Database-->MeetingRepository: Assignment stored and status updated
+                MeetingRepository-->MeetingService: Meeting moved to WaitingApproval
+                MeetingService->HistoryRepository: Record submission / resubmission,\nacting organizer, approver and status (BR-38)
+                activate HistoryRepository
+                HistoryRepository->Database: Store lifecycle history
+                Database-->HistoryRepository: History recorded
+                HistoryRepository-->MeetingService: Transition recorded
+                MeetingService->NotificationService: Notify assigned Meeting Approver
+                activate NotificationService
+                NotificationService->Database: Queue approval notification
+                Database-->NotificationService: Notification queued
+                NotificationService-->MeetingService: Notification initiated
+                MeetingService-->MeetingController: Meeting submitted successfully
+                MeetingController-->MeetingPage: Meeting submitted for approval successfully
+                MeetingPage-->Organizer: Display success message
+                deactivate NotificationService
+                deactivate HistoryRepository
+            end
+        end
+    end
+    deactivate UserRepository
+end
+deactivate Database
+deactivate MeetingRepository
+deactivate MeetingService
+deactivate MeetingController
+deactivate MeetingPage

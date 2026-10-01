@@ -1,0 +1,37 @@
+title UC-14 - View Meeting List
+
+actor "Meeting Organizer / Meeting Approver / Chair / Secretary / Participant" as User
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+User->MeetingPage: Open Meetings
+activate MeetingPage
+MeetingPage->MeetingController: Request meeting list
+activate MeetingController
+MeetingController->MeetingService: Get meeting list
+activate MeetingService
+MeetingService->MeetingRepository: Find authorized meetings\n(BR-29, BR-32)
+activate MeetingRepository
+MeetingRepository->Database: Retrieve authorized meeting page
+activate Database
+alt Meeting list cannot be retrieved - EX-1
+    Database-->MeetingRepository: Retrieval failed
+    MeetingRepository-->MeetingService: Unable to retrieve meeting list
+    MeetingService-->MeetingController: Unable to load meetings
+    MeetingController-->MeetingPage: MSG08 - Unable to load meetings.\nPlease try again.
+    MeetingPage-->User: Display loading error
+else Meeting list retrieved successfully
+    Database-->MeetingRepository: Authorized meeting page
+    MeetingRepository-->MeetingService: Meeting list
+    MeetingService-->MeetingController: Meeting list
+    MeetingController-->MeetingPage: Meeting list
+    MeetingPage-->User: Display meeting list
+end
+deactivate Database
+deactivate MeetingRepository
+deactivate MeetingService
+deactivate MeetingController
+deactivate MeetingPage

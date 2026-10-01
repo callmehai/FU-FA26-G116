@@ -1,0 +1,49 @@
+title UC-11 - Create Meeting
+
+actor "Meeting Organizer" as Organizer
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+Organizer->MeetingPage: Submit meeting information
+activate MeetingPage
+MeetingPage->MeetingController: Create meeting
+activate MeetingController
+MeetingController->MeetingService: Create meeting
+activate MeetingService
+MeetingService->MeetingService: Validate meeting information\n(BR-24, BR-25)
+
+loop Meeting information is invalid - EX-1
+    MeetingService-->MeetingController: Invalid meeting information
+    MeetingController-->MeetingPage: Validation errors
+    MeetingPage-->Organizer: Display validation messages
+    Organizer->MeetingPage: Resubmit meeting information
+    MeetingPage->MeetingController: Create meeting
+    MeetingController->MeetingService: Create meeting
+    MeetingService->MeetingService: Validate corrected information\n(BR-24, BR-25)
+end
+
+MeetingService->MeetingRepository: Create meeting with Draft status\n(BR-26)
+activate MeetingRepository
+MeetingRepository->Database: Store meeting
+activate Database
+alt Meeting cannot be created - EX-2
+    Database-->MeetingRepository: Creation failed
+    MeetingRepository-->MeetingService: Meeting creation failed
+    MeetingService-->MeetingController: Unable to create meeting
+    MeetingController-->MeetingPage: MSG01 - Unable to create the meeting.\nPlease try again.
+    MeetingPage-->Organizer: Display creation error
+else Meeting created successfully
+    Database-->MeetingRepository: Meeting created
+    MeetingRepository-->MeetingService: Created meeting
+    MeetingService-->MeetingController: Meeting created successfully
+    MeetingController-->MeetingPage: Meeting created successfully
+    MeetingPage-->Organizer: Display success confirmation
+end
+deactivate Database
+deactivate MeetingRepository
+deactivate MeetingService
+deactivate MeetingController
+deactivate MeetingPage

@@ -1,0 +1,14 @@
+title UC-03 - Sign Out
+
+actor "User" as User
+boundary "Authenticated Page" as AuthenticatedPage
+
+User->AuthenticatedPage: Select "Sign Out"
+AuthenticatedPage-->User: Display confirmation message
+User->AuthenticatedPage: Confirm sign out
+AuthenticatedPage->AuthenticatedPage: Remove JWT authentication token
+alt JWT cannot be cleared
+    AuthenticatedPage-->User: MSG01 - Unable to sign out. Please try again.
+else JWT removed successfully
+    AuthenticatedPage-->User: Redirect to login page
+end

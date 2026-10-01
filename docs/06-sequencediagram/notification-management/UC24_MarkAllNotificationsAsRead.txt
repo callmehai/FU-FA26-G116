@@ -1,0 +1,45 @@
+title UC-20 - Mark All Notifications as Read
+
+actor "Meeting Organizer / Meeting Approver / System Admin / Chair / Secretary / Participant" as User
+boundary "Notification Panel" as NotificationPanel
+control ":Notification Controller" as NotificationController
+control ":Notification Service" as NotificationService
+participant ":Notification Repository" as NotificationRepository
+database ":Database" as Database
+
+User->NotificationPanel: Select "Mark All as Read"
+NotificationPanel->NotificationController: Mark all notifications as read
+activate NotificationController
+NotificationController->NotificationService: Mark all unread notifications as read
+activate NotificationService
+NotificationService->NotificationRepository: Mark all unread notifications\nfor current user as read (BR-47, BR-51)
+activate NotificationRepository
+NotificationRepository->Database: Update all unread notifications\nbelonging to current user
+activate Database
+alt No unread notifications - AF-1
+    Database-->NotificationRepository: No unread notifications found
+    NotificationRepository-->NotificationService: No unread notifications
+    NotificationService-->NotificationController: No changes required
+    NotificationController-->NotificationPanel: Display current notification list\nwith unread count = 0
+    NotificationPanel-->User: Show current notifications\nand zero unread count
+else Notifications cannot be updated - EX-1
+    Database-->NotificationRepository: Update failed
+    NotificationRepository-->NotificationService: Notifications remain unchanged
+    NotificationService-->NotificationController: Unable to update notifications
+    NotificationController-->NotificationPanel: Unable to mark all notifications as read.\nPlease try again.
+    NotificationPanel-->User: Display current read statuses\nand unread count
+else Notifications updated successfully
+    Database-->NotificationRepository: Notifications marked as read
+    NotificationRepository-->NotificationService: Update completed
+    NotificationService->NotificationRepository: Get latest notifications\nand unread count
+    NotificationRepository->Database: Retrieve notification states\nand unread count
+    Database-->NotificationRepository: Notifications and unread count
+    NotificationRepository-->NotificationService: Latest notification state
+    NotificationService-->NotificationController: Notifications updated successfully
+    NotificationController-->NotificationPanel: Refresh notification list\nand unread badge
+    NotificationPanel-->User: Display updated statuses\nand unread count
+end
+deactivate Database
+deactivate NotificationRepository
+deactivate NotificationService
+deactivate NotificationController

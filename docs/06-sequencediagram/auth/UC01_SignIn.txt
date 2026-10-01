@@ -1,0 +1,42 @@
+title UC-01 - Sign in with Username and Password
+
+actor "User" as User
+boundary "Login Page" as LoginPage
+control ":Auth Controller" as AuthController
+participant ":Authentication Service" as AuthService
+participant ":User Repository" as UserRepository
+database "Database" as Database
+
+User->LoginPage: Enter email and password
+User->LoginPage: Click "Sign In"
+LoginPage->AuthController: signIn(username, password)
+activate AuthController
+AuthController->AuthService: signIn(username, password)
+activate AuthService
+AuthService->UserRepository: Find user by username
+activate UserRepository
+UserRepository->Database: Get user account
+activate Database
+Database-->UserRepository: User account or not found
+UserRepository-->AuthService: User account or not found
+alt Invalid username or password
+    AuthService-->AuthController: Invalid credentials
+    AuthController-->LoginPage: MSG01 - Invalid email or password
+    LoginPage-->User: Display error message
+else Internal account is deactivated
+    AuthService-->AuthController: Account deactivated
+    AuthController-->LoginPage: MSG03 - Account unavailable
+    LoginPage-->User: Display error message
+else User has no active role or access
+    AuthService-->AuthController: Access denied
+    AuthController-->LoginPage: MSG04 - No system access
+    LoginPage-->User: Display error message
+else User is authorized
+    AuthService-->AuthController: Sign in successful
+    AuthController-->LoginPage: Redirect to authenticated page
+    LoginPage-->User: Display authenticated page
+end
+deactivate Database
+deactivate UserRepository
+deactivate AuthService
+deactivate AuthController
