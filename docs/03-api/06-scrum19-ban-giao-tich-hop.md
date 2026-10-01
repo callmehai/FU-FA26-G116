@@ -69,23 +69,11 @@ khi Organizer cũ inactive và meeting còn Approved. Người nhận active/có
 người cũ/current approver. History lưu Organizer cũ/mới và actor/time; trạng thái, approval và
 notification/email giữ nguyên. FE/Tester nhận body organizerId, MSG65/66/67 cùng lỗi shape,
 quyền và persistence theo [API contract](05-quan-ly-cuoc-hop.md). Organizer mới dùng Publish bình thường.
-Không có UI workflow trong thay đổi backend; chỉ type/API wrapper cho contract mới.
+Response transfer chỉ có `code`, `message`, `meetingId`, `status`, `organizerId` và history của
+thao tác vừa tạo; không trả nội dung meeting cho người có quyền recovery. FE tích hợp type/API
+wrapper và UI ở task riêng.
 
 PR #50 tách RoleService/fixture đã đóng mà chưa merge. Vì thế branch này vẫn chứa fix RESTRICT của
 RoleService và helper/fixture PostgreSQL; các fix này chưa vào main. PR #41 hiện dùng dependency
 branch làm base nên diff review không thể hiện toàn bộ thay đổi sẽ vào main. Mô tả PR phải ghi rõ
 phần prerequisite này; không gọi việc tách phạm vi là đã hoàn tất hoặc tạo branch mới để che diff.
-
-## Kiểm chứng bản local ngày 01/10/2026
-
-- `dotnet build TrustCabinet.sln --no-restore -warnaserror`: 0 warning/error.
-- `dotnet test TrustCabinet.sln --no-build`: 767/767 pass, 0 fail, 0 skipped; PostgreSQL thật với
-  database riêng cho từng fixture và Redis local. Gồm HTTP → service → EF cho transfer rồi Publish,
-  migration bỏ email metadata giữ delivery jobs, và từ chối downgrade sau khi có transfer history.
-- `npm run lint` và `npm run build`: pass; thay đổi frontend chỉ là type/API contract, không thêm UI.
-- EF không có pending model changes; Mermaid Publish đã validate/export; `git diff --check` sạch.
-
-Lượt test trong sandbox Windows ban đầu lỗi quyền EventLog/TLS; chạy lại ngoài sandbox pass toàn bộ.
-Không gửi SMTP thật, không áp migration vào database Development của người dùng. Các thay đổi ở
-checkout hiện tại chưa commit/push; CI trên PR không tự chứng minh bản local này. Backend Ready
-không thay thế FE integration, BA Final Review và Tester sign-off của Story Done.

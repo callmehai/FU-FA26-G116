@@ -39,6 +39,9 @@ public sealed record MeetingWorkflowResult(
     public static MeetingWorkflowResult Success(MeetingDetails meeting, MeetingHistoryRecord? history = null)
         => new(MeetingWorkflowOutcome.Success, meeting, history);
 
+    public static MeetingWorkflowResult OrganizerTransferred(MeetingHistoryRecord history)
+        => new(MeetingWorkflowOutcome.Success, History: history);
+
     public static MeetingWorkflowResult Failure(MeetingWorkflowOutcome outcome) => new(outcome);
 
     public static MeetingWorkflowResult Invalid(

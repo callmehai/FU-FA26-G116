@@ -168,6 +168,14 @@ public static class MeetingEndpoints
         var result = await service.TransitionAsync(id, command, actorId.Value, ct);
         return result.Outcome switch
         {
+            MeetingWorkflowOutcome.Success when command.Action == MeetingTransitionAction.TransferOrganizer
+                => Results.Ok(new MeetingOrganizerTransferResponse(
+                    TransitionSuccessCode(command.Action),
+                    TransitionMessage(command.Action),
+                    result.History!.MeetingId,
+                    result.History.ResultingStatus.ToString(),
+                    result.History.NewOrganizerId!.Value,
+                    MeetingHistoryItemResponse.From(result.History))),
             MeetingWorkflowOutcome.Success => Results.Ok(new MeetingTransitionResponse(
                 TransitionSuccessCode(command.Action),
                 TransitionMessage(command.Action),
@@ -722,4 +730,12 @@ public sealed record MeetingTransitionResponse(
     string Code,
     string Message,
     MeetingResponse Meeting,
+    MeetingHistoryItemResponse History);
+
+public sealed record MeetingOrganizerTransferResponse(
+    string Code,
+    string Message,
+    Guid MeetingId,
+    string Status,
+    Guid OrganizerId,
     MeetingHistoryItemResponse History);

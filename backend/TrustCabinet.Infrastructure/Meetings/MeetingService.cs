@@ -478,8 +478,11 @@ public sealed class MeetingService(
 
                 await meetings.SaveChangesAsync(token);
                 var actorName = await meetings.FindUserDisplayNameAsync(actorId, token) ?? string.Empty;
-                return MeetingWorkflowResult.Success(
-                    MeetingDetails.From(meeting), ToHistoryRecord(history, actorName));
+                var historyRecord = ToHistoryRecord(history, actorName);
+                // Recovery permission does not grant access to meeting contents.
+                return transfersOrganizer
+                    ? MeetingWorkflowResult.OrganizerTransferred(historyRecord)
+                    : MeetingWorkflowResult.Success(MeetingDetails.From(meeting), historyRecord);
             }, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)

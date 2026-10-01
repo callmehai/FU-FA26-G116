@@ -541,6 +541,7 @@ public sealed class MeetingWorkflowServiceTests
             administrator);
 
         Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        Assert.Null(result.Meeting);
         Assert.Equal(MeetingStatus.Approved, meeting.Status);
         Assert.Equal(replacement, meeting.CreatedById);
         Assert.Equal(_approverId, meeting.AssignedApproverId);

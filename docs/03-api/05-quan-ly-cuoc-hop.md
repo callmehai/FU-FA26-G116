@@ -192,7 +192,10 @@ Backend đọc lại quyền `AdminUsers` của actor, khóa meeting rồi kiể
 assignment và nội dung đã duyệt giữ nguyên. Người tạo ban đầu vẫn được chứng minh bằng actor của
 history Create. Không thêm notification/email jobs. Organizer mới Publish bằng flow bình thường.
 
-Success trả `200 MSG65` và một history `TransferOrganizer` với actor/time từ server,
+Success trả `200 MSG65` với `{ code, message, meetingId, status, organizerId, history }`.
+`status` là `Approved`, `organizerId` là Organizer mới; response không chứa object `meeting`,
+tiêu đề, mô tả, địa điểm, thời gian hoặc mức độ mật của cuộc họp. Quyền recovery không cấp
+quyền đọc nội dung. `history` chỉ là event `TransferOrganizer` vừa tạo với actor/time từ server,
 `previousOrganizerId`, `newOrganizerId`, `fromStatus = resultingStatus = Approved`. Không sửa history
 cũ. Organizer mới cùng current Assigned Approver đọc full history; admin không tự được đọc meeting/
 history qua GET chỉ vì có AdminUsers. Participant timeline ẩn hai field Organizer snapshot này cùng
@@ -225,7 +228,8 @@ không tạo notification/invitation mới. Organizer sửa nháp và chọn ng�
 `SubmitForApproval` bình thường. Không gán lại trực tiếp trong WaitingApproval hoặc dùng PUT để
 bypass lifecycle; Approve/Reject vẫn kiểm tra current assignment và quyền hiện tại.
 
-Transition thành công trả `200 OK` với `{ code, message, meeting, history }`. Code thành công theo
+Các action ngoài `TransferOrganizer` thành công trả `200 OK` với `{ code, message, meeting, history }`.
+`TransferOrganizer` dùng response tối thiểu đã mô tả ở trên. Code thành công theo
 action lần lượt là `MSG48` (SubmitForApproval), `MSG43` (Approve), `MSG44` (Reject), `MSG49`
 (ReturnToDraft), `MSG45` (Publish) và `MSG65` (TransferOrganizer). FE nên dùng `code` để xử lý tình huống; `message` chỉ dành
 cho hiển thị.

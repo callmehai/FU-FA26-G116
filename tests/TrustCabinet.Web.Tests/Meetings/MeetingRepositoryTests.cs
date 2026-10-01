@@ -512,6 +512,13 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, transferred.StatusCode);
         using var responseBody = System.Text.Json.JsonDocument.Parse(await transferred.Content.ReadAsStringAsync());
         Assert.Equal("MSG65", responseBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal(meetingId, responseBody.RootElement.GetProperty("meetingId").GetGuid());
+        Assert.Equal("Approved", responseBody.RootElement.GetProperty("status").GetString());
+        Assert.Equal(replacement.Id, responseBody.RootElement.GetProperty("organizerId").GetGuid());
+        Assert.Equal(
+            ["code", "history", "meetingId", "message", "organizerId", "status"],
+            responseBody.RootElement.EnumerateObject().Select(property => property.Name).Order(StringComparer.Ordinal));
+        Assert.DoesNotContain("Organizer recovery", responseBody.RootElement.GetRawText(), StringComparison.Ordinal);
         Assert.Equal(_creatorId, responseBody.RootElement.GetProperty("history").GetProperty("previousOrganizerId").GetGuid());
         Assert.Equal(replacement.Id, responseBody.RootElement.GetProperty("history").GetProperty("newOrganizerId").GetGuid());
 

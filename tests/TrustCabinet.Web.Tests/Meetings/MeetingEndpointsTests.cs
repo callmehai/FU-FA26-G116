@@ -176,8 +176,10 @@ public sealed class MeetingEndpointsTests : IDisposable
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("MSG65", body.RootElement.GetProperty("code").GetString());
-        Assert.Equal("Approved", body.RootElement.GetProperty("meeting").GetProperty("status").GetString());
-        Assert.Equal(replacement.Id, body.RootElement.GetProperty("meeting").GetProperty("createdById").GetGuid());
+        Assert.Equal(meeting.Id, body.RootElement.GetProperty("meetingId").GetGuid());
+        Assert.Equal("Approved", body.RootElement.GetProperty("status").GetString());
+        Assert.Equal(replacement.Id, body.RootElement.GetProperty("organizerId").GetGuid());
+        Assert.False(body.RootElement.TryGetProperty("meeting", out _));
         var history = body.RootElement.GetProperty("history");
         Assert.Equal("TransferOrganizer", history.GetProperty("action").GetString());
         Assert.Equal(previousOrganizerId, history.GetProperty("previousOrganizerId").GetGuid());
@@ -196,6 +198,38 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.Conflict, repeat.StatusCode);
         Assert.Equal("MSG67", repeatBody.RootElement.GetProperty("code").GetString());
         Assert.Single(meeting.StatusHistory);
+    }
+
+    [Fact]
+    public async Task Transfer_does_not_return_sensitive_content_to_a_recovery_administrator()
+    {
+        var (administrator, replacement, meeting) = GivenOrganizerRecovery();
+        meeting.Title = "Restricted title for recovery";
+        meeting.Description = "Restricted description for recovery";
+        meeting.Location = "Restricted location for recovery";
+        meeting.Sensitivity = Sensitivity.Secret;
+        using var client = _factory.ClientFor(administrator, Capability.AdminUsers);
+
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}/history")).StatusCode);
+
+        var response = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions",
+            new { action = "TransferOrganizer", organizerId = replacement.Id });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            ["code", "history", "meetingId", "message", "organizerId", "status"],
+            body.RootElement.EnumerateObject().Select(property => property.Name).Order(StringComparer.Ordinal));
+        var responseJson = body.RootElement.GetRawText();
+        Assert.DoesNotContain(meeting.Title, responseJson, StringComparison.Ordinal);
+        Assert.DoesNotContain(meeting.Description, responseJson, StringComparison.Ordinal);
+        Assert.DoesNotContain(meeting.Location, responseJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"sensitivity\"", responseJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"startsAt\"", responseJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"endsAt\"", responseJson, StringComparison.Ordinal);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}/history")).StatusCode);
     }
 
     [Fact]
