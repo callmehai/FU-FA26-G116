@@ -38,13 +38,19 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   sửa tay giữ dữ liệu cũ, hợp đồng mới `roleId` + `roleName` ở `/api/users`, `/api/auth/*`,
   `/api/roles/capabilities`, mã `MSG19`–`MSG28`, và phần FE cần làm
 - [`05-quan-ly-cuoc-hop.md`](05-quan-ly-cuoc-hop.md) — contract tạo, đọc, sửa và lấy danh sách cuộc
-  họp (`SCRUM-17`/`SCRUM-18`, UC-11/UC-12/UC-14) cùng readiness, transitions và history
-  (`SCRUM-19`, UC-15/UC-16/UC-17): authorization, validation, snapshot và lỗi workflow; mã
-  `MSG29`–`MSG38`, `MSG41`–`MSG64` (MSG57 đã ngừng dùng)
-- [`06-scrum19-ban-giao-tich-hop.md`](06-scrum19-ban-giao-tich-hop.md) — ranh giới backend/FE,
-  checklist Tester và contract publication snapshot/email jobs bàn giao cho worker SCRUM-15
+  họp (`SCRUM-17`/`SCRUM-18`, UC-11/UC-12/UC-14): quyền theo từng cuộc họp, lọc và phân trang ở
+  server, validation baseline và các điểm cần BA bổ sung; mã `MSG29`–`MSG38`
+- [`06-scrum19-ban-giao-tich-hop.md`](06-scrum19-ban-giao-tich-hop.md) — contract FE/Tester và tích hợp producer SCRUM-15, recipient snapshot và trạng thái Queued
 - [`06-thong-bao-trong-ung-dung.md`](06-thong-bao-trong-ung-dung.md) — SCRUM-14: API danh sách,
   đánh dấu đã đọc, kiểm tra đích, SignalR và các nguồn tạo thông báo; mã `MSG39`–`MSG40`
+- [`07-gui-email-thu-moi.md`](07-gui-email-thu-moi.md) — hàng đợi email bền vững của `SCRUM-15`,
+  worker gửi tuần tự, retry và log trạng thái, tệp lịch `.ics`, cấu hình SMTP và điểm tích hợp vào
+  transaction công bố của `SCRUM-19`
+- [`07-gui-email-thu-moi-note-cho-fe.md`](07-gui-email-thu-moi-note-cho-fe.md) — note bàn giao cho FE:
+  ý nghĩa thật của kết quả công bố, route từ email, cách xử lý `MSG45`–`MSG47` và những trạng thái
+  queue/SMTP không thuộc contract frontend
+- [`07-gui-email-thu-moi-note-cai-dat-may-moi.md`](07-gui-email-thu-moi-note-cai-dat-may-moi.md) —
+  checklist cấu hình database, User Secrets, SMTP, migration và kiểm tra worker trên máy mới
 
 Dự kiến có thêm:
 

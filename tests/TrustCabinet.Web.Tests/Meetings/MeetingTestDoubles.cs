@@ -1,8 +1,27 @@
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Domain.Notifications;
 
 namespace TrustCabinet.Web.Tests.Meetings;
+
+internal sealed class FakeMeetingInvitationQueue : IMeetingInvitationQueue
+{
+    public List<MeetingPublicationInvitation> Publications { get; } = [];
+    public Exception? NextQueueThrows { get; set; }
+
+    public Task<int> QueueForPublishedMeetingAsync(MeetingPublicationInvitation publication, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (NextQueueThrows is { } exception)
+        {
+            NextQueueThrows = null;
+            throw exception;
+        }
+        Publications.Add(publication);
+        return Task.FromResult(publication.Recipients.Count);
+    }
+}
 
 internal sealed class FakeMeetingRepository : IMeetingRepository
 {

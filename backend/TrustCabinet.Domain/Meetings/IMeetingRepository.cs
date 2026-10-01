@@ -30,8 +30,6 @@ public interface IMeetingRepository
 
     Task AddNotificationsAsync(IReadOnlyCollection<Notification> notifications, CancellationToken ct = default);
 
-    Task AddEmailMessagesAsync(IReadOnlyCollection<EmailMessage> messages, CancellationToken ct = default);
-
     Task AddHistoryAsync(MeetingStatusHistory history, CancellationToken ct = default);
 
     Task AddAsync(Meeting meeting, CancellationToken ct = default);

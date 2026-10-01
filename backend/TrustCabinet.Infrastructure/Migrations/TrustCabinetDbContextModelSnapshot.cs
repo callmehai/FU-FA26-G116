@@ -489,11 +489,25 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<string>("DeduplicationKey")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("deduplication_key");
+
                     b.Property<string>("LastError")
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("last_error");
+
+                    b.Property<DateTimeOffset?>("LeaseExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lease_expires_at");
+
+                    b.Property<Guid?>("LeaseToken")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lease_token");
 
                     b.Property<Guid?>("MeetingId")
                         .HasColumnType("uuid")
@@ -503,6 +517,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")
                         .HasColumnName("message_type");
+
+                    b.Property<DateTimeOffset?>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_at");
 
                     b.Property<Guid?>("OriginHistoryId")
                         .HasColumnType("uuid")
@@ -536,7 +554,7 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Property<string>("ToAddress")
                         .IsRequired()
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)")
+                        .HasColumnType("citext")
                         .HasColumnName("to_address");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -546,19 +564,26 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_email_messages");
 
+                    b.HasIndex("DeduplicationKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_email_messages_deduplication_key");
+
+                    b.HasIndex("LeaseExpiresAt")
+                        .HasDatabaseName("ix_email_messages_lease_expires_at");
+
                     b.HasIndex("MeetingId")
                         .HasDatabaseName("ix_email_messages_meeting_id");
 
                     b.HasIndex("RecipientUserId")
                         .HasDatabaseName("ix_email_messages_recipient_user_id");
 
-                    b.HasIndex("Status", "CreatedAt")
-                        .HasDatabaseName("ix_email_messages_status_created_at");
-
                     b.HasIndex("OriginHistoryId", "RecipientUserId", "MessageType")
                         .IsUnique()
                         .HasDatabaseName("ix_email_messages_origin_history_id_recipient_user_id_message_")
                         .HasFilter("origin_history_id IS NOT NULL");
+
+                    b.HasIndex("Status", "NextAttemptAt", "CreatedAt")
+                        .HasDatabaseName("ix_email_messages_status_next_attempt_at_created_at");
 
                     b.ToTable("email_messages", (string)null);
                 });
@@ -1121,13 +1146,13 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasIndex("MeetingId")
                         .HasDatabaseName("ix_notifications_meeting_id");
 
+                    b.HasIndex("PushedAt", "CreatedAt")
+                        .HasDatabaseName("ix_notifications_pushed_at_created_at");
+
                     b.HasIndex("OriginHistoryId", "UserId", "Type")
                         .IsUnique()
                         .HasDatabaseName("ix_notifications_origin_history_id_user_id_type")
                         .HasFilter("origin_history_id IS NOT NULL");
-
-                    b.HasIndex("PushedAt", "CreatedAt")
-                        .HasDatabaseName("ix_notifications_pushed_at_created_at");
 
                     b.HasIndex("UserId", "ReadAt", "CreatedAt")
                         .HasDatabaseName("ix_notifications_user_id_read_at_created_at");

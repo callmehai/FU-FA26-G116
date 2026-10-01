@@ -11,6 +11,7 @@ using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Domain.Notifications;
 using TrustCabinet.Domain.Users;
 using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Seed;
@@ -43,6 +44,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         internal FakeMeetingRepository Meetings { get; } = new();
 
         internal FakeUserAccountRepository Accounts { get; } = new();
+        internal FakeMeetingInvitationQueue Invitations { get; } = new();
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -55,6 +57,8 @@ public sealed class MeetingEndpointsTests : IDisposable
                 services.AddSingleton<IMeetingRepository>(Meetings);
                 services.RemoveAll<IMeetingService>();
                 services.AddScoped<IMeetingService, MeetingService>();
+                services.RemoveAll<IMeetingInvitationQueue>();
+                services.AddSingleton<IMeetingInvitationQueue>(Invitations);
             });
         }
 
@@ -223,6 +227,67 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal("Meeting", notification.TargetType);
         Assert.Equal(meeting.Id, notification.TargetId);
         Assert.Empty(_factory.Meetings.EmailMessages);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task Waiting_withdrawal_checks_current_approver_and_organizer_permissions(
+        bool approverEligible, bool organizerHasCapability)
+    {
+        var creator = GivenCreator();
+        var approverId = Guid.CreateVersion7();
+        var meeting = OwnedMeetingBy(creator, approverId);
+        meeting.Status = MeetingStatus.WaitingApproval;
+        _factory.Meetings.Meetings.Add(meeting);
+        if (organizerHasCapability)
+            _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+        if (approverEligible)
+            _factory.Meetings.UserCapabilities[approverId] = [Capability.MeetingApprover];
+        using var client = _factory.ClientFor(creator);
+
+        var response = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions",
+            new { action = "ReturnToDraft" });
+        using var body = await JsonOf(response);
+
+        var success = organizerHasCapability && !approverEligible;
+        Assert.Equal(!organizerHasCapability ? HttpStatusCode.Forbidden
+            : approverEligible ? HttpStatusCode.Conflict : HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(!organizerHasCapability ? "MSG55" : approverEligible ? "MSG64" : "MSG49",
+            body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(success ? MeetingStatus.Draft : MeetingStatus.WaitingApproval, meeting.Status);
+        Assert.Equal(success ? null : (Guid?)approverId, meeting.AssignedApproverId);
+        Assert.Equal(success ? 1 : 0, meeting.StatusHistory.Count);
+        if (success)
+        {
+            Assert.Equal("WaitingApproval", body.RootElement.GetProperty("history").GetProperty("fromStatus").GetString());
+            Assert.Equal("Draft", body.RootElement.GetProperty("history").GetProperty("resultingStatus").GetString());
+        }
+        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Empty(_factory.Meetings.EmailMessages);
+        Assert.Empty(_factory.Invitations.Publications);
+    }
+
+    [Fact]
+    public async Task Current_approver_cannot_withdraw_a_blocked_meeting_for_the_organizer()
+    {
+        var creator = GivenCreator();
+        var approver = GivenMember("blocked-approver@trustcabinet.local");
+        var meeting = OwnedMeetingBy(creator, approver.Id);
+        meeting.Status = MeetingStatus.WaitingApproval;
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[approver.Id] = [Capability.MeetingCreator];
+        using var client = _factory.ClientFor(approver, Capability.MeetingCreator);
+
+        var response = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions",
+            new { action = "ReturnToDraft" });
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Empty(_factory.Invitations.Publications);
     }
 
     [Theory]
@@ -426,6 +491,29 @@ public sealed class MeetingEndpointsTests : IDisposable
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         Assert.Equal("MSG55", body.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task Publish_producer_configuration_failure_returns_MSG47_and_rolls_back_the_workflow()
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        meeting.Status = MeetingStatus.Approved;
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+        _factory.Invitations.NextQueueThrows = new MeetingInvitationQueueException("Sender missing");
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/meetings/{meeting.Id}/transitions", new { action = "Publish" });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal("MSG47", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(MeetingStatus.Approved, Assert.Single(_factory.Meetings.Meetings).Status);
+        Assert.Empty(_factory.Meetings.Meetings.Single().StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Empty(_factory.Invitations.Publications);
     }
 
     [Fact]

@@ -266,9 +266,17 @@ Sequence diagram UC-15 chỉ cho submit từ `Draft`. Nếu meeting đang `Rejec
 `ReturnToDraft` trước khi submit lại; sửa thông tin có thể thực hiện ở `Rejected` hoặc `Draft`: [sơ đồ](../assets/diagrams/meeting-management/SubmitMeetingForApproval.png), [source Mermaid](../assets/diagrams/meeting-management/SubmitMeetingForApproval.mmd).
 Quy tắc liên quan: BR-29, BR-33, BR-34, BR-35, BR-38.
 
-Không cho rút `WaitingApproval` về Draft hay đổi assignment ở trạng thái này. Approver mất quyền
-hoặc inactive thì meeting vẫn chờ; quản trị phải khôi phục quyền/active hoặc team chốt flow xử lý
-khác ở ticket riêng. Readiness dùng field bắt buộc/giới hạn của schema Agenda, không tự áp thêm rule
+#### Luồng khôi phục khi người duyệt không còn hợp lệ
+
+1. Meeting đang `WaitingApproval`, nhưng Assigned Approver inactive hoặc mất `MeetingApprover`.
+2. Organizer còn active và có `MeetingCreator` thực hiện `ReturnToDraft`. Hệ thống kiểm tra lại
+   điều kiện trong transaction; approver còn hợp lệ hoặc trạng thái đã đổi thì từ chối thao tác.
+3. Hệ thống chuyển `WaitingApproval → Draft`, xóa assignment và ghi đúng một history với actor,
+   thời điểm và trạng thái nguồn. Giữ nguyên history cũ, không tạo notification/thư mời mới.
+4. Organizer sửa nháp và thực hiện luồng chính để chọn một người duyệt hợp lệ mới. Không gán lại
+   trực tiếp trong WaitingApproval; không yêu cầu khôi phục quyền người duyệt cũ để tiếp tục.
+
+Readiness dùng field bắt buộc/giới hạn của schema Agenda, không tự áp thêm rule
 thứ tự liên tục, thời lượng dương, presenter bắt buộc hoặc trạng thái Pending trước SCRUM-25.
 
 ### UC-16: Phê duyệt hoặc từ chối cuộc họp (SCRUM-19)

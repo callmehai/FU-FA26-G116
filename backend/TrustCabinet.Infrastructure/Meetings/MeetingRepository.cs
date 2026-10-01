@@ -208,14 +208,6 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
         return Task.CompletedTask;
     }
 
-    public Task AddEmailMessagesAsync(
-        IReadOnlyCollection<EmailMessage> messages, CancellationToken ct = default)
-    {
-        ct.ThrowIfCancellationRequested();
-        db.EmailMessages.AddRange(messages);
-        return Task.CompletedTask;
-    }
-
     public Task AddHistoryAsync(MeetingStatusHistory history, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();

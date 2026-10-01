@@ -121,7 +121,7 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG46` | 409 | POST Publish | Cuộc họp không còn ở Approved nên không thể công bố | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
 | `MSG47` | 503 | POST Publish | Không lưu được yêu cầu công bố | `Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG48` | 200 | POST SubmitForApproval | Gửi duyệt cuộc họp thành công | `Đã gửi cuộc họp để duyệt.` | BE |
-| `MSG49` | 200 | POST ReturnToDraft | Đưa cuộc họp bị từ chối về Nháp thành công | `Đã đưa cuộc họp về bản nháp.` | BE |
+| `MSG49` | 200 | POST ReturnToDraft | Đưa cuộc họp bị từ chối hoặc kẹt duyệt do approver không hợp lệ về Nháp thành công | `Đã đưa cuộc họp về bản nháp.` | BE |
 | `MSG50` | 400 | POST transitions | JSON, action, GUID hoặc field không hợp lệ | `Yêu cầu chuyển trạng thái không hợp lệ.` | BE |
 | `MSG51` | 400 | POST SubmitForApproval | Thông tin cuộc họp hoặc agenda chưa sẵn sàng — kèm `errors` | `Cuộc họp chưa đủ thông tin để gửi duyệt.` | BE |
 | `MSG52` | 400 | POST SubmitForApproval | Người duyệt không còn active, thiếu `MeetingApprover` hoặc trùng Organizer | `Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp.` | BE |
@@ -136,7 +136,7 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG61` | 503 | GET approvers | Không tải được danh sách người duyệt hoặc không kiểm tra được quyền truy cập | `Không thể tải danh sách người duyệt. Vui lòng thử lại.` | BE |
 | `MSG62` | 503 | GET readiness, POST transitions, GET history | Không kiểm tra được trạng thái active của tài khoản | `Không thể kiểm tra tài khoản để thực hiện thao tác cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG63` | 409 | POST Approve, Reject | Approval cycle không còn chờ quyết định | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
-| `MSG64` | 409 | POST ReturnToDraft | Cuộc họp không còn ở Rejected | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
+| `MSG64` | 409 | POST ReturnToDraft | Trạng thái không cho về Draft hoặc approver đang chờ vẫn hợp lệ | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
 
 ## Bảng đổi mã cũ → mới
 

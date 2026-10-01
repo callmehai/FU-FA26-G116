@@ -10,6 +10,12 @@ namespace TrustCabinet.Domain.Entities;
 /// </summary>
 public class EmailMessage : Entity
 {
+    /// <summary>
+    /// Identifies the business event that created this message. Repeating the same event is
+    /// idempotent, while a later event for the same meeting and recipient gets a different key.
+    /// </summary>
+    public required string DeduplicationKey { get; set; }
+
     public required string ToAddress { get; set; }
 
     public required string Subject { get; set; }
@@ -25,21 +31,25 @@ public class EmailMessage : Entity
 
     public string LastError { get; set; } = string.Empty;
 
+    /// <summary>Earliest time at which a failed message may be attempted again.</summary>
+    public DateTimeOffset? NextAttemptAt { get; set; }
+
+    /// <summary>Identifies the worker attempt currently allowed to finalize this message.</summary>
+    public Guid? LeaseToken { get; set; }
+
+    /// <summary>Allows another worker to recover this message after a crash or forced shutdown.</summary>
+    public DateTimeOffset? LeaseExpiresAt { get; set; }
+
     public DateTimeOffset? SentAt { get; set; }
 
     /// <summary>The meeting that caused this email, for tracing.</summary>
     public Guid? MeetingId { get; set; }
     public Meeting? Meeting { get; set; }
 
-    /// <summary>The published lifecycle row that created this durable invitation job.</summary>
     public Guid? OriginHistoryId { get; set; }
-
-    /// <summary>The recipient identity captured at publication time.</summary>
     public Guid? RecipientUserId { get; set; }
     public User? RecipientUser { get; set; }
-
     public EmailMessageType? MessageType { get; set; }
-
-    /// <summary>Serialized publication-time content used by the worker without rereading the meeting.</summary>
+    /// <summary>Legacy SCRUM-19 payload. New jobs use persisted Body/CalendarAttachment.</summary>
     public string? PayloadSnapshot { get; set; }
 }

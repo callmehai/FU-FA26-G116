@@ -43,7 +43,7 @@ validate nội dung. Trạng thái khác `Draft`/`Rejected` trả `409 MSG33`.
 | Hành vi | Quan hệ/capability bắt buộc | Chair có tự được phép không? |
 |---|---|---|
 | SubmitForApproval | Meeting Organizer (`CreatedById`) + `MeetingCreator`; meeting Draft và ready | Không |
-| ReturnToDraft | Meeting Organizer + `MeetingCreator`; meeting Rejected | Không |
+| ReturnToDraft | Meeting Organizer active + `MeetingCreator`; Rejected hoặc WaitingApproval có Assigned Approver inactive/mất `MeetingApprover` | Không |
 | Approve/Reject | Current `AssignedApproverId` + capability `MeetingApprover`, khác Organizer; meeting WaitingApproval | Không; chỉ được nếu Chair đồng thời là current Assigned Approver và không phải Organizer |
 | Publish | Meeting Organizer + `MeetingCreator`; meeting Approved | Không; chỉ được nếu Chair đồng thời là Organizer |
 | Đọc full lifecycle history/rejection reason | Meeting Organizer hoặc current Assigned Approver | Chair relationship riêng không cấp quyền ở bất kỳ trạng thái nào |
@@ -178,7 +178,7 @@ Endpoint nhận một action, không nhận actor, source/target status hoặc t
 | `SubmitForApproval` | `assignedApproverId` bắt buộc | Draft → WaitingApproval |
 | `Approve` | Không | WaitingApproval → Approved |
 | `Reject` | `reason` bắt buộc, sau trim 1–1.000 ký tự | WaitingApproval → Rejected |
-| `ReturnToDraft` | Không | Rejected → Draft |
+| `ReturnToDraft` | Không | Rejected → Draft; hoặc WaitingApproval → Draft khi approver hiện tại không còn hợp lệ |
 | `Publish` | Không | Approved → Published |
 
 `ReturnToDraft` chỉ do Organizer thực hiện, tạo đúng một lifecycle history, giữ nguyên rejection
@@ -191,11 +191,15 @@ Không cho Organizer tự duyệt ở mọi mức độ mật: `assignedApprover
 `400 MSG52`, kể cả Organizer là Chair và có cả hai capability. Assignment cũ trỏ về Organizer cũng
 không được Approve/Reject (`403 MSG55`); không tự sửa dữ liệu/ghi thêm history khi từ chối action.
 
-Giữ rule không rút `WaitingApproval` về Draft và không đổi approver trong trạng thái này.
-`ReturnToDraft` vẫn chỉ nhận `Rejected`; gọi khi `WaitingApproval` trả `409 MSG64` mà không ghi
-history/jobs. Nếu approver mất quyền hoặc inactive, cuộc họp tiếp tục chờ duyệt; cần khôi phục
-quyền/active của người được gán qua quản trị hoặc team chốt một flow mới ở ticket riêng. Không
-được bypass bằng PUT, submit lại, Chair relationship hay chỉnh assignment trực tiếp.
+Organizer active, còn `MeetingCreator` được dùng `ReturnToDraft` để rút `WaitingApproval` khi
+current Assigned Approver đã inactive hoặc mất capability `MeetingApprover`. Server khóa meeting
+và đọc lại eligibility hiện tại trong transaction; nếu
+approver đã được khôi phục và vẫn hợp lệ, trả `409 MSG64`, không ghi history/jobs.
+Rút thành công trả `200 MSG49`, chuyển sang Draft, xóa current assignment và ghi đúng một history
+`ReturnToDraft` với `fromStatus = WaitingApproval`, actor/time từ server. History cũ giữ nguyên;
+không tạo notification/invitation mới. Organizer sửa nháp và chọn người duyệt mới qua
+`SubmitForApproval` bình thường. Không gán lại trực tiếp trong WaitingApproval hoặc dùng PUT để
+bypass lifecycle; Approve/Reject vẫn kiểm tra current assignment và quyền hiện tại.
 
 Transition thành công trả `200 OK` với `{ code, message, meeting, history }`. Code thành công theo
 action lần lượt là `MSG48` (SubmitForApproval), `MSG43` (Approve), `MSG44` (Reject), `MSG49`
@@ -326,6 +330,10 @@ trả `409` do state đã đổi. Client nên tải lại meeting/history để 
 SCRUM-19 ghi database notification cho approver/participants và durable email jobs trong cùng
 transaction với transition. Email được gửi sau commit bởi worker của SCRUM-15; cho đến khi worker đó
 được tích hợp và kiểm thử, response Publish chỉ xác nhận meeting đã Published và jobs đã xếp hàng.
+Producer duy nhất thuộc SCRUM-15 nhận snapshot từ Publish và persist Subject/Body/CalendarAttachment
+cùng DeduplicationKey. Worker gửi đúng ToAddress/Body/.ics đã lưu. SMTP Enabled=false vẫn tạo Queued
+jobs; thiếu URL/sender hợp lệ hoặc producer/persistence/timeout lỗi trả 503 MSG47 và rollback toàn bộ
+transaction. PayloadSnapshot chỉ giữ cho dữ liệu cũ, không phải dữ liệu worker đọc để render.
 Database notification rows được tạo ở đây; realtime push theo SCRUM-14 là phần tích hợp riêng.
 Recipient filter đã chốt theo BR-54 và được gom thành shared policy để SCRUM-20 dùng lại. Writer
 participant/agenda thuộc các story tương ứng phải tham gia meeting-row lock protocol trước khi có thể

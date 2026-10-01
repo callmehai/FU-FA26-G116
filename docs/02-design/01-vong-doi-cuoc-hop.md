@@ -39,9 +39,12 @@ cũng không được submit cho mình hoặc quyết định trên assignment c
 Trường `AssignedApproverId` được để trống trong bản nháp cho tới khi người duyệt
 được chọn.
 
-Giữ rule không cho rút `WaitingApproval` về Draft hoặc đổi assignment khi chờ duyệt. Approver
-inactive/mất capability thì meeting vẫn chờ; cần khôi phục quyền/active qua quản trị hoặc team chốt
-flow xử lý khác ở ticket riêng. Không có transition tự động hay đường bypass trong SCRUM-19.
+Khi current Assigned Approver inactive hoặc mất capability `MeetingApprover`, Organizer còn active
+và có `MeetingCreator` được rút `WaitingApproval → Draft` bằng action `ReturnToDraft`.
+Hệ thống kiểm tra lại điều kiện khi xử
+lý, ghi một lifecycle history, xóa current assignment và không tạo notification/thư mời mới.
+Sau đó Organizer sửa nháp và submit bình thường để chọn người duyệt mới. Nếu approver vẫn hợp lệ,
+không cho rút; không tự động rút hoặc gán lại trực tiếp trong WaitingApproval.
 
 `Published` xác nhận transaction công bố đã lưu meeting, history và invitation jobs. Đây không phải
 xác nhận email đã được giao: trạng thái gửi thực tế được theo dõi bằng `EmailStatus` và `SentAt`;

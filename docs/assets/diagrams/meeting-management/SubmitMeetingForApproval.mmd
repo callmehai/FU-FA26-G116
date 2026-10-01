@@ -6,13 +6,14 @@ sequenceDiagram
     participant Service as Meeting Service
     participant DB as Database
 
-    opt Cuộc họp đang Rejected
-        Note over Organizer,Page: Có thể sửa thông tin ở Rejected, giữ nguyên assignment và lịch sử từ chối
+    opt Cuộc họp đang Rejected hoặc WaitingApproval bị kẹt vì approver không hợp lệ
+        Note over Organizer,Page: Rejected được sửa thông tin, WaitingApproval phải rút trước khi sửa
         Organizer->>Page: Đưa cuộc họp về Nháp
         Page->>API: POST transitions, action=ReturnToDraft
         API->>Service: ReturnToDraft với actor từ phiên đăng nhập
-        Service->>DB: BEGIN, khóa meeting và kiểm tra Organizer + MeetingCreator
-        alt Đúng quyền và meeting đang Rejected
+        Service->>DB: BEGIN, khóa meeting và kiểm tra Organizer active + MeetingCreator
+        Service->>DB: Nếu WaitingApproval, đọc lại approver active và MeetingApprover
+        alt Đúng quyền, Rejected hoặc WaitingApproval với approver inactive, mất quyền
             Service->>DB: Đổi sang Draft, xóa assignment và thêm history
             alt SaveChanges hoặc COMMIT thất bại
                 DB-->>Service: Lỗi persistence hoặc commit
@@ -81,4 +82,4 @@ sequenceDiagram
     end
 
     Note over Organizer,Service: Rejected được sửa thông tin, giữ assignment và lịch sử, nhưng phải ReturnToDraft trước khi gửi duyệt lại.
-    Note over Organizer,Service: WaitingApproval không được rút về Draft hoặc đổi assignment, kể cả khi approver mất quyền.
+    Note over Organizer,Service: WaitingApproval chỉ được rút khi approver không hợp lệ, không gán lại trực tiếp. Sau ReturnToDraft, chọn approver mới qua submit bình thường.

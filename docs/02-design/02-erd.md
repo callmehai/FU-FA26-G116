@@ -115,9 +115,13 @@ erDiagram
         uuid OriginHistoryId FK "snapshot event"
         uuid RecipientUserId FK
         string MessageType "MeetingInvitation"
-        string PayloadSnapshot "publication-time content"
+        string DeduplicationKey UK "publication history + recipient"
+        string Subject
+        string Body "rendered publication snapshot"
+        string CalendarAttachment "rendered .ics"
+        string PayloadSnapshot "legacy nullable; not used by worker"
         string ToAddress "captured at Publish"
-        string Status "Queued|Sent|Failed"
+        string Status "Queued|Processing|Sent|Failed"
     }
 ```
 

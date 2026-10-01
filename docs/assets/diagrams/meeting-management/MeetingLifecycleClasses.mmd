@@ -48,6 +48,10 @@ classDiagram
         +Guid? OriginHistoryId
     }
     class EmailMessage {
+        +string DeduplicationKey
+        +string Subject
+        +string Body
+        +string? CalendarAttachment
         +EmailStatus Status
         +DateTimeOffset? SentAt
         +Guid? MeetingId
@@ -100,6 +104,7 @@ classDiagram
     class EmailStatus {
         <<enumeration>>
         Queued
+        Processing
         Sent
         Failed
     }
@@ -122,4 +127,4 @@ classDiagram
 
     note for MeetingStatusHistory "Bằng chứng kiểm toán: chỉ INSERT, chặn UPDATE và DELETE."
     note for MeetingParticipant "Publish chọn user active có Response khác Delegated."
-    note for EmailMessage "Publish lưu Queued jobs và nội dung snapshot. SentAt ghi thời điểm gửi thư."
+    note for EmailMessage "Producer SCRUM-15 lưu Body/.ics từ snapshot Publish; worker gửi giá trị đã lưu. PayloadSnapshot chỉ dành cho dữ liệu cũ."

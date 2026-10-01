@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
-using System.Text.Json;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Domain.Notifications;
 
 namespace TrustCabinet.Infrastructure.Meetings;
 
@@ -13,7 +13,8 @@ namespace TrustCabinet.Infrastructure.Meetings;
 public sealed class MeetingService(
     IMeetingRepository meetings,
     ILogger<MeetingService> logger,
-    TimeProvider? timeProvider = null) : IMeetingService
+    TimeProvider? timeProvider = null,
+    IMeetingInvitationQueue? invitations = null) : IMeetingService
 {
     private DateTimeOffset UtcNow => (timeProvider ?? TimeProvider.System).GetUtcNow();
 
@@ -332,6 +333,8 @@ public sealed class MeetingService(
                         (MeetingStatus.WaitingApproval, MeetingStatus.Approved, MeetingHistoryAction.Approve),
                     MeetingTransitionAction.Reject =>
                         (MeetingStatus.WaitingApproval, MeetingStatus.Rejected, MeetingHistoryAction.Reject),
+                    MeetingTransitionAction.ReturnToDraft when meeting.Status == MeetingStatus.WaitingApproval =>
+                        (MeetingStatus.WaitingApproval, MeetingStatus.Draft, MeetingHistoryAction.ReturnToDraft),
                     MeetingTransitionAction.ReturnToDraft =>
                         (MeetingStatus.Rejected, MeetingStatus.Draft, MeetingHistoryAction.ReturnToDraft),
                     MeetingTransitionAction.Publish =>
@@ -342,6 +345,19 @@ public sealed class MeetingService(
                 if (meeting.Status != fromStatus)
                 {
                     return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.StatusConflict);
+                }
+
+                // Recover a blocked approval cycle only after rechecking the assigned user's
+                // current eligibility under the meeting lock. An eligible approver keeps the cycle.
+                if (command.Action == MeetingTransitionAction.ReturnToDraft
+                    && fromStatus == MeetingStatus.WaitingApproval)
+                {
+                    if (meeting.AssignedApproverId is not { } assignedApproverId
+                        || await meetings.IsActiveUserWithCapabilityAsync(
+                            assignedApproverId, Capability.MeetingApprover, token))
+                    {
+                        return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.StatusConflict);
+                    }
                 }
 
                 if (command.Action == MeetingTransitionAction.SubmitForApproval)
@@ -404,6 +420,10 @@ public sealed class MeetingService(
                 }
                 else if (command.Action == MeetingTransitionAction.Publish)
                 {
+                    if (invitations is null)
+                    {
+                        throw new MeetingInvitationQueueException("SCRUM-15 invitation producer is not registered.");
+                    }
                     var recipients = MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants);
 
                     var notifications = recipients.Select(participant => CreateNotification(
@@ -416,31 +436,13 @@ public sealed class MeetingService(
                         history.Id)).ToArray();
                     await meetings.AddNotificationsAsync(notifications, token);
 
-                    var snapshot = JsonSerializer.Serialize(new MeetingInvitationSnapshot(
-                        meeting.Id,
-                        meeting.Title,
-                        meeting.Description,
-                        meeting.StartsAt,
-                        meeting.EndsAt,
-                        meeting.Location,
-                        meeting.Sensitivity.ToString(),
-                        $"/mgmt/meetings/{meeting.Id}"));
-                    var emailMessages = recipients.Select(participant => new EmailMessage
-                    {
-                        Id = Guid.CreateVersion7(),
-                        ToAddress = participant.User!.Email,
-                        Subject = LimitText($"Thư mời: {meeting.Title}", 300),
-                        Body = $"Bạn được mời tham dự cuộc họp “{meeting.Title}”.",
-                        Status = EmailStatus.Queued,
-                        MeetingId = meeting.Id,
-                        OriginHistoryId = history.Id,
-                        RecipientUserId = participant.UserId,
-                        MessageType = EmailMessageType.MeetingInvitation,
-                        PayloadSnapshot = snapshot,
-                        CreatedAt = now,
-                        UpdatedAt = now,
-                    }).ToArray();
-                    await meetings.AddEmailMessagesAsync(emailMessages, token);
+                    // Flush inside the still-open transaction. SCRUM-15 owns rendering and queue persistence.
+                    await meetings.SaveChangesAsync(token);
+                    await invitations.QueueForPublishedMeetingAsync(new MeetingPublicationInvitation(
+                        meeting.Id, history.Id, meeting.Title, meeting.Description, meeting.Location,
+                        meeting.StartsAt, meeting.EndsAt, now,
+                        recipients.Select(participant => new MeetingInvitationRecipient(
+                            participant.UserId, participant.User!.FullName, participant.User.Email)).ToArray()), token);
                 }
 
                 await meetings.SaveChangesAsync(token);
@@ -453,7 +455,7 @@ public sealed class MeetingService(
         {
             throw;
         }
-        catch (Exception exception) when (IsPersistenceFailure(exception))
+        catch (Exception exception) when (IsPersistenceFailure(exception) || exception is MeetingInvitationQueueException)
         {
             logger.LogError(exception, "Could not perform {Action} for meeting {MeetingId}.", command.Action, id);
             return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.SaveFailed);
@@ -582,13 +584,4 @@ public sealed class MeetingService(
             history.Action == MeetingHistoryAction.Reject ? history.Reason : null,
             history.AssignedApproverId);
 
-    private sealed record MeetingInvitationSnapshot(
-        Guid MeetingId,
-        string Title,
-        string Description,
-        DateTimeOffset StartsAt,
-        DateTimeOffset? EndsAt,
-        string Location,
-        string Sensitivity,
-        string DetailPath);
 }

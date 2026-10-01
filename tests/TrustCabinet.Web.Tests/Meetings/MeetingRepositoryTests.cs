@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using System.Net;
 using System.Net.Http.Headers;
@@ -11,8 +12,10 @@ using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Domain.Notifications;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Meetings;
+using TrustCabinet.Infrastructure.Email;
 using TrustCabinet.Infrastructure.Seed;
 
 namespace TrustCabinet.Web.Tests.Meetings;
@@ -20,7 +23,7 @@ namespace TrustCabinet.Web.Tests.Meetings;
 /// <summary>PostgreSQL integration checks for meeting transactions, row locks and audit constraints.</summary>
 public sealed class MeetingRepositoryTests : IAsyncLifetime
 {
-    private sealed class PostgreSqlMeetingApiFactory(string connectionString) : TrustCabinetApiFactory
+    private sealed class PostgreSqlMeetingApiFactory(string connectionString, bool validInvitationConfiguration = true) : TrustCabinetApiFactory
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -36,6 +39,11 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
                 services.AddScoped<IMeetingRepository, MeetingRepository>();
                 services.RemoveAll<IMeetingService>();
                 services.AddScoped<IMeetingService, MeetingService>();
+                services.Configure<EmailDeliveryOptions>(options =>
+                {
+                    options.ApplicationBaseUrl = validInvitationConfiguration ? "https://hop.example.vn" : "";
+                    options.Smtp.FromAddress = validInvitationConfiguration ? "no-reply@example.vn" : "";
+                });
             });
         }
     }
@@ -124,7 +132,12 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     private MeetingService NewService(TrustCabinetDbContext? db = null)
     {
         var context = db ?? _db;
-        return new MeetingService(new MeetingRepository(context), NullLogger<MeetingService>.Instance);
+        var invitations = new MeetingInvitationQueue(context, Options.Create(new EmailDeliveryOptions
+        {
+            ApplicationBaseUrl = "https://hop.example.vn",
+            Smtp = new SmtpOptions { FromAddress = "no-reply@example.vn" },
+        }), TimeProvider.System, NullLogger<MeetingInvitationQueue>.Instance);
+        return new MeetingService(new MeetingRepository(context), NullLogger<MeetingService>.Instance, invitations: invitations);
     }
 
     private MeetingInput Input(string title = "PostgreSQL meeting")
@@ -305,6 +318,70 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Null(rows[createHistoryId].AssignedApproverId);
         Assert.Equal(reason, rows[createHistoryId].Reason);
         Assert.Equal(occurredAt, rows[createHistoryId].OccurredAt);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Http_withdrawal_recovers_an_ineligible_approver_and_resubmits_to_a_new_one(bool deactivate)
+    {
+        var oldApprover = NewUser("Blocked approver", _approverRoleId);
+        var newApprover = NewUser("Replacement approver", _approverRoleId);
+        _db.Users.AddRange(oldApprover, newApprover);
+        await _db.SaveChangesAsync();
+        var created = await NewService().CreateAsync(Input(), _creatorId);
+        var meetingId = created.Meeting!.Id;
+        _db.AgendaItems.Add(new AgendaItem { MeetingId = meetingId, Title = "Báo cáo", Position = 1 });
+        await _db.SaveChangesAsync();
+        Assert.True((await NewService().TransitionAsync(meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, oldApprover.Id), _creatorId)).Succeeded);
+
+        if (deactivate)
+            oldApprover.IsActive = false;
+        else
+        {
+            var roleWithoutApproval = new Role { Name = "No approval capability" };
+            _db.Roles.Add(roleWithoutApproval);
+            oldApprover.RoleId = roleWithoutApproval.Id;
+        }
+        await _db.SaveChangesAsync();
+        using var app = new PostgreSqlMeetingApiFactory(_connectionString);
+        using var client = app.CreateClient();
+        var organizer = await _db.Users.SingleAsync(user => user.Id == _creatorId);
+        var issuer = app.Services.GetRequiredService<ITokenIssuer>();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
+            issuer.CreateAccessToken(organizer, [Capability.MeetingCreator]));
+
+        var withdrawal = await client.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions",
+            new { action = "ReturnToDraft" });
+        Assert.Equal(HttpStatusCode.OK, withdrawal.StatusCode);
+        await using var verify = NewContext();
+        var draft = await verify.Meetings.AsNoTracking().SingleAsync(meeting => meeting.Id == meetingId);
+        Assert.Equal(MeetingStatus.Draft, draft.Status);
+        Assert.Null(draft.AssignedApproverId);
+        var history = await verify.MeetingStatusHistory.AsNoTracking()
+            .Where(item => item.MeetingId == meetingId).OrderBy(item => item.OccurredAt).ThenBy(item => item.Id).ToListAsync();
+        Assert.Equal(3, history.Count);
+        Assert.Equal(oldApprover.Id, history[1].AssignedApproverId);
+        Assert.Equal(MeetingHistoryAction.ReturnToDraft, history[2].Action);
+        Assert.Equal(MeetingStatus.WaitingApproval, history[2].FromStatus);
+        Assert.Equal(MeetingStatus.Draft, history[2].ToStatus);
+        Assert.Equal(_creatorId, history[2].ActorId);
+        Assert.Equal(1, await verify.Notifications.CountAsync(item => item.MeetingId == meetingId));
+        Assert.False(await verify.EmailMessages.AnyAsync(item => item.MeetingId == meetingId));
+
+        var retry = await client.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions",
+            new { action = "ReturnToDraft" });
+        Assert.Equal(HttpStatusCode.Conflict, retry.StatusCode);
+        var resubmit = await client.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions",
+            new { action = "SubmitForApproval", assignedApproverId = newApprover.Id });
+        Assert.Equal(HttpStatusCode.OK, resubmit.StatusCode);
+        var waiting = await verify.Meetings.AsNoTracking().SingleAsync(meeting => meeting.Id == meetingId);
+        Assert.Equal(MeetingStatus.WaitingApproval, waiting.Status);
+        Assert.Equal(newApprover.Id, waiting.AssignedApproverId);
+        Assert.Equal(4, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
+        Assert.Equal(1, await verify.Notifications.CountAsync(item =>
+            item.MeetingId == meetingId && item.UserId == newApprover.Id));
     }
 
     [Fact]
@@ -494,6 +571,83 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             Assert.Equal(EmailStatus.Queued, email.Status);
             Assert.Null(email.SentAt);
         });
+        var publication = await _db.MeetingStatusHistory.SingleAsync(history =>
+            history.MeetingId == meetingId && history.Action == MeetingHistoryAction.Publish);
+        Assert.Equal(3, invitations.Select(email => email.DeduplicationKey).Distinct().Count());
+        Assert.All(invitations, email =>
+        {
+            Assert.Equal(publication.Id, email.OriginHistoryId);
+            Assert.False(string.IsNullOrWhiteSpace(email.DeduplicationKey));
+            Assert.NotNull(email.CalendarAttachment);
+            Assert.Null(email.PayloadSnapshot);
+        });
+        var expectedAddresses = invitations.Select(email => email.ToAddress).Order().ToArray();
+        var expectedBodies = invitations.Select(email => email.Body).Order().ToArray();
+        var expectedCalendars = invitations.Select(email => email.CalendarAttachment).Order().ToArray();
+        await _db.Meetings.Where(meeting => meeting.Id == meetingId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(meeting => meeting.Title, "Changed after commit"));
+        var recipientIds = invitations.Select(email => email.RecipientUserId!.Value).ToArray();
+        await _db.Users.Where(user => recipientIds.Contains(user.Id)).ExecuteUpdateAsync(setters =>
+            setters.SetProperty(user => user.IsActive, false));
+        await _db.MeetingParticipants.Where(participant => participant.MeetingId == meetingId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(participant => participant.Response, InvitationResponse.Delegated));
+
+        await using var workerDb = NewContext();
+        var sender = new RecordingInvitationSender();
+        var processor = new EmailQueueProcessor(workerDb, sender, Options.Create(new EmailDeliveryOptions()),
+            TimeProvider.System, NullLogger<EmailQueueProcessor>.Instance);
+        for (var index = 0; index < 3; index++)
+            Assert.Equal(EmailProcessingOutcome.Sent, (await processor.ProcessNextAsync()).Outcome);
+        Assert.Equal(EmailProcessingOutcome.NoWork, (await processor.ProcessNextAsync()).Outcome);
+        Assert.Equal(expectedAddresses, sender.Sent.Select(email => email.ToAddress).Order());
+        Assert.Equal(expectedBodies, sender.Sent.Select(email => email.Body).Order());
+        Assert.Equal(expectedCalendars, sender.Sent.Select(email => email.CalendarAttachment).Order());
+        _db.ChangeTracker.Clear();
+        Assert.All(await _db.EmailMessages.Where(email => email.MeetingId == meetingId).ToListAsync(), email =>
+        {
+            Assert.Equal(EmailStatus.Sent, email.Status);
+            Assert.NotNull(email.SentAt);
+        });
+    }
+
+    private sealed class RecordingInvitationSender : IEmailSender
+    {
+        public List<EmailMessage> Sent { get; } = [];
+        public Task SendAsync(EmailMessage message, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            Sent.Add(message);
+            return Task.CompletedTask;
+        }
+    }
+
+    [Fact]
+    public async Task Publish_endpoint_rolls_back_the_real_transaction_when_invitation_configuration_is_missing()
+    {
+        var created = await NewService().CreateAsync(Input(), _creatorId);
+        var meetingId = created.Meeting!.Id;
+        await _db.Meetings.Where(meeting => meeting.Id == meetingId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(meeting => meeting.Status, MeetingStatus.Approved));
+        _db.MeetingParticipants.Add(new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId });
+        await _db.SaveChangesAsync();
+        using var app = new PostgreSqlMeetingApiFactory(_connectionString, validInvitationConfiguration: false);
+        using var client = app.CreateClient();
+        var user = await _db.Users.AsNoTracking().SingleAsync(item => item.Id == _creatorId);
+        var issuer = app.Services.GetRequiredService<ITokenIssuer>();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", issuer.CreateAccessToken(user, [Capability.MeetingCreator]));
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/meetings/{meetingId}/transitions", new { action = "Publish" });
+        using var body = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal("MSG47", body.RootElement.GetProperty("code").GetString());
+        await using var verify = NewContext();
+        Assert.Equal(MeetingStatus.Approved, (await verify.Meetings.SingleAsync(item => item.Id == meetingId)).Status);
+        Assert.Equal(1, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
+        Assert.Empty(await verify.Notifications.Where(item => item.MeetingId == meetingId).ToListAsync());
+        Assert.Empty(await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync());
     }
 
     [Fact]
@@ -580,11 +734,13 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(MeetingWorkflowOutcome.Success, published.Outcome);
         _db.ChangeTracker.Clear();
         var email = await _db.EmailMessages.SingleAsync(item => item.MeetingId == meetingId);
-        Assert.StartsWith("Thư mời: ", email.Subject);
+        Assert.StartsWith("Thư mời họp: ", email.Subject);
         Assert.True(email.Subject.Length <= 300);
         Assert.DoesNotContain("\uFFFD", email.Subject);
-        using var snapshot = System.Text.Json.JsonDocument.Parse(email.PayloadSnapshot!);
-        Assert.Equal(title, snapshot.RootElement.GetProperty("Title").GetString());
+        Assert.Contains(title, email.Body, StringComparison.Ordinal);
+        Assert.Contains("SUMMARY:" + title, email.CalendarAttachment!.Replace("\r\n ", ""), StringComparison.Ordinal);
+        Assert.Null(email.PayloadSnapshot);
+        Assert.False(string.IsNullOrWhiteSpace(email.DeduplicationKey));
     }
 
     [Fact]

@@ -10,10 +10,11 @@ namespace TrustCabinet.Web.Tests.Meetings;
 public sealed class MeetingWorkflowServiceTests
 {
     private readonly FakeMeetingRepository _repository = new();
+    private readonly FakeMeetingInvitationQueue _invitations = new();
     private readonly Guid _organizerId = Guid.CreateVersion7();
     private readonly Guid _approverId = Guid.CreateVersion7();
 
-    private MeetingService NewService() => new(_repository, NullLogger<MeetingService>.Instance);
+    private MeetingService NewService() => new(_repository, NullLogger<MeetingService>.Instance, invitations: _invitations);
 
     private Meeting GivenMeeting(MeetingStatus status = MeetingStatus.Draft)
     {
@@ -257,19 +258,21 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Equal(active.UserId, notification.UserId);
         Assert.Equal(NotificationType.MeetingInvited, notification.Type);
         Assert.Equal(meeting.StatusHistory.Single().Id, notification.OriginHistoryId);
-        var email = Assert.Single(_repository.EmailMessages);
-        Assert.Equal(active.UserId, email.RecipientUserId);
-        Assert.Equal(meeting.Id, email.MeetingId);
-        Assert.Equal(EmailStatus.Queued, email.Status);
-        Assert.Null(email.SentAt);
+        var publication = Assert.Single(_invitations.Publications);
+        Assert.Equal(active.UserId, Assert.Single(publication.Recipients).UserId);
+        Assert.Equal(active.User.Email, publication.Recipients.Single().Email);
+        Assert.Equal(meeting.Id, publication.MeetingId);
         Assert.Equal(MeetingHistoryAction.Publish, meeting.StatusHistory.Single().Action);
-        Assert.Equal(meeting.StatusHistory.Single().Id, email.OriginHistoryId);
-        using var payload = System.Text.Json.JsonDocument.Parse(email.PayloadSnapshot!);
-        Assert.Equal("Giao ban tuần", payload.RootElement.GetProperty("Title").GetString());
+        Assert.Equal(meeting.StatusHistory.Single().Id, publication.OriginHistoryId);
+        Assert.Equal("Giao ban tuần", publication.Title);
+        active.User.Email = "changed@example.vn";
+        meeting.Title = "Changed after publication";
+        Assert.NotEqual(active.User.Email, publication.Recipients.Single().Email);
+        Assert.Equal("Giao ban tuần", publication.Title);
     }
 
     [Fact]
-    public async Task Publish_truncates_a_long_invitation_subject_without_splitting_a_surrogate_pair()
+    public async Task Publish_hands_the_full_unicode_title_to_the_email_owner()
     {
         var meeting = GivenMeeting(MeetingStatus.Approved);
         meeting.Title = new string('a', 290) + string.Concat(Enumerable.Repeat("📋", 5));
@@ -280,11 +283,7 @@ public sealed class MeetingWorkflowServiceTests
             meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Publish), _organizerId);
 
         Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
-        var subject = Assert.Single(_repository.EmailMessages).Subject;
-        Assert.StartsWith("Thư mời: ", subject);
-        Assert.True(subject.Length <= 300);
-        var utf8 = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
-        Assert.True(utf8.GetByteCount(subject) > 0);
+        Assert.Equal(meeting.Title, Assert.Single(_invitations.Publications).Title);
     }
 
     [Theory]
@@ -334,7 +333,7 @@ public sealed class MeetingWorkflowServiceTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task Waiting_approval_cannot_be_withdrawn_even_when_approver_loses_capability(bool approverEligible)
+    public async Task Waiting_approval_can_be_withdrawn_only_when_approver_is_ineligible(bool approverEligible)
     {
         var meeting = GivenMeeting(MeetingStatus.WaitingApproval);
         if (!approverEligible)
@@ -345,12 +344,81 @@ public sealed class MeetingWorkflowServiceTests
         var result = await NewService().TransitionAsync(meeting.Id,
             new MeetingTransitionCommand(MeetingTransitionAction.ReturnToDraft), _organizerId);
 
-        Assert.Equal(MeetingWorkflowOutcome.StatusConflict, result.Outcome);
-        Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
-        Assert.Equal(_approverId, meeting.AssignedApproverId);
-        Assert.Empty(meeting.StatusHistory);
+        Assert.Equal(approverEligible ? MeetingWorkflowOutcome.StatusConflict : MeetingWorkflowOutcome.Success,
+            result.Outcome);
+        Assert.Equal(approverEligible ? MeetingStatus.WaitingApproval : MeetingStatus.Draft, meeting.Status);
+        Assert.Equal(approverEligible ? _approverId : (Guid?)null, meeting.AssignedApproverId);
+        if (approverEligible)
+        {
+            Assert.Empty(meeting.StatusHistory);
+        }
+        else
+        {
+            var history = Assert.Single(meeting.StatusHistory);
+            Assert.Equal(MeetingHistoryAction.ReturnToDraft, history.Action);
+            Assert.Equal(MeetingStatus.WaitingApproval, history.FromStatus);
+            Assert.Equal(MeetingStatus.Draft, history.ToStatus);
+            Assert.Equal(_organizerId, history.ActorId);
+        }
+        Assert.True(_repository.LastWorkflowForUpdate);
         Assert.Empty(_repository.Notifications);
         Assert.Empty(_repository.EmailMessages);
+        Assert.Empty(_invitations.Publications);
+    }
+
+    [Fact]
+    public async Task Withdrawal_save_failure_rolls_back_the_blocked_approval_cycle()
+    {
+        var meeting = GivenMeeting(MeetingStatus.WaitingApproval);
+        _repository.UserCapabilities.Remove(_approverId);
+        _repository.NextSaveThrows = new NpgsqlException("database unavailable");
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.ReturnToDraft), _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.SaveFailed, result.Outcome);
+        var persisted = Assert.Single(_repository.Meetings);
+        Assert.Equal(MeetingStatus.WaitingApproval, persisted.Status);
+        Assert.Equal(_approverId, persisted.AssignedApproverId);
+        Assert.Empty(persisted.StatusHistory);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_invitations.Publications);
+    }
+
+    [Theory]
+    [InlineData(MeetingStatus.Draft)]
+    [InlineData(MeetingStatus.Approved)]
+    [InlineData(MeetingStatus.Published)]
+    public async Task Ineligible_approver_does_not_allow_withdrawal_from_other_states(MeetingStatus status)
+    {
+        var meeting = GivenMeeting(status);
+        _repository.UserCapabilities.Remove(_approverId);
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.ReturnToDraft), _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.StatusConflict, result.Outcome);
+        Assert.Equal(status, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_invitations.Publications);
+    }
+
+    [Fact]
+    public async Task Invitation_producer_failure_after_the_first_flush_rolls_back_status_and_history()
+    {
+        var meeting = GivenMeeting(MeetingStatus.Approved);
+        meeting.Participants.Add(Participant(meeting, active: true, InvitationResponse.Pending));
+        _invitations.NextQueueThrows = new NpgsqlException("Queue unavailable");
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.Publish), _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.SaveFailed, result.Outcome);
+        Assert.Equal(MeetingStatus.Approved, Assert.Single(_repository.Meetings).Status);
+        Assert.Empty(_repository.Meetings.Single().StatusHistory);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_invitations.Publications);
     }
 
     [Fact]

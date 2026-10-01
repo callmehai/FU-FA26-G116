@@ -5,6 +5,7 @@ sequenceDiagram
     participant API as Meeting API
     participant Service as Meeting Service
     participant DB as Database
+    participant Producer as Producer invitation SCRUM-15
     participant Worker as Worker email SCRUM-15
     participant Email as Dịch vụ email
 
@@ -29,9 +30,11 @@ sequenceDiagram
         Service->>Service: Snapshot participants có user active và Response khác Delegated
         Note over Service: DelegatedToUserId riêng không thêm recipient, thay đổi sau commit không sửa batch này.
         Service->>DB: Đổi Published, thêm history và participant notifications
-        Service->>DB: Thêm invitation jobs với recipient và nội dung snapshot
+        Service->>DB: SaveChanges khi transaction còn mở
+        Service->>Producer: Truyền snapshot nội dung/recipient và history ID
+        Producer->>DB: Persist Subject, Body, .ics, DeduplicationKey và Queued jobs
         Note over DB: EmailMessage có Status=Queued và SentAt=null.
-        alt SaveChanges thất bại
+        alt Persistence hoặc cấu hình producer thất bại
             DB-->>Service: Lỗi persistence
             Service->>DB: ROLLBACK status, history, notifications và email jobs
             Service-->>API: 503 MSG47
@@ -48,9 +51,9 @@ sequenceDiagram
                 Page-->>Organizer: Xác nhận công bố
 
                 opt Sau commit, worker SCRUM-15 được tích hợp
-                    Worker->>DB: Đọc queued job và snapshot đã lưu
-                    DB-->>Worker: Recipient và nội dung thư mời
-                    Worker->>Email: Gửi thư mời
+                    Worker->>DB: Claim queued job có lease
+                    DB-->>Worker: ToAddress, Body và .ics đã lưu
+                    Worker->>Email: Gửi đúng nội dung persisted, không query lại meeting/participant
                     alt Gửi thành công
                         Email-->>Worker: Đã nhận thư để chuyển
                         Worker->>DB: Đặt Status=Sent và SentAt
