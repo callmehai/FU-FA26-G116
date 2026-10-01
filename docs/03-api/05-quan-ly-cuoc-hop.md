@@ -208,15 +208,15 @@ action lần lượt là `MSG48` (SubmitForApproval), `MSG43` (Approve), `MSG44`
 (ReturnToDraft) và `MSG45` (Publish). FE nên dùng `code` để xử lý tình huống; `message` chỉ dành
 cho hiển thị.
 
-Publish snapshot recipient bên trong transaction và persist notification/invitation jobs từ chính
-snapshot đó. Theo BR-54, snapshot chỉ gồm participant có user active và `Response != Delegated`;
-row đã Delegated không nhận invitation, và API không tự thêm người được ủy quyền chỉ từ
-`DelegatedToUserId`. Người đó vẫn đủ điều kiện nếu có participant row riêng, active và chưa Delegated.
-Thay đổi participant sau commit không sửa batch đã tạo. Transition và toàn bộ notification/outbox
-rows được commit cùng nhau; HTTP 200 xác nhận email job đã được xếp hàng, không xác nhận email đã
+Publish tạo notification theo BR-54: chỉ participant có user active và `Response != Delegated`;
+không tự thêm người được ủy quyền chỉ từ `DelegatedToUserId`. Delegate cần participant row riêng
+hợp lệ để nhận notification. Email dùng producer SCRUM-15: gọi
+`QueueForPublishedMeetingAsync(meetingId)` trong cùng transaction; producer đọc meeting đã
+Published và chọn các participant có user active, không lọc `Response`.
+Producer lưu `ToAddress`, `Subject`, `Body` và `CalendarAttachment` khi tạo job; thay đổi dữ liệu
+sau commit không sửa nội dung job đã lưu. Khi SMTP được bật, job mới có trạng thái `Queued`;
+SMTP tắt thì không tạo job mới. HTTP 200 chỉ xác nhận công bố thành công, không xác nhận email đã
 được gửi. Worker SCRUM-15 xử lý gửi bất đồng bộ và quản lý retry/failure theo contract của worker.
-Subject thư mời tối đa 300 ký tự UTF-16 và được rút gọn không tách đôi surrogate pair; tiêu đề đầy
-đủ trong payload snapshot không bị thay đổi.
 Các writer participant thuộc SCRUM-20 phải dùng cùng meeting-row lock/serialization protocol để một
 lần Publish và thay đổi participant đồng thời có ranh giới snapshot xác định.
 
@@ -252,7 +252,7 @@ Development seeder bổ sung một meeting `Draft` có sẵn agenda và ba parti
 
 Đăng nhập Organizer, gọi readiness (ban đầu `ready: true`), submit với ID approver, đăng nhập approver
 để Approve/Reject, rồi dùng Organizer để ReturnToDraft hoặc Publish theo trạng thái hiện tại.
-Publish tạo ba invitation jobs `Queued`, không xác nhận email đã gửi. Có thể kiểm tra history và
+Khi bật SMTP, Publish tạo ba invitation jobs `Queued`, không xác nhận email đã gửi. Có thể kiểm tra history và
 notification bằng API; participant chỉ thấy meeting sau Publish và reason được redacted.
 
 Seeder chỉ chèn meeting này một lần khi đủ tài khoản demo; trên database Development cũ có các
@@ -329,15 +329,15 @@ trả `409` do state đã đổi. Client nên tải lại meeting/history để 
 
 ### Ranh giới tích hợp
 
-SCRUM-19 ghi database notification cho approver/participants và durable email jobs trong cùng
-transaction với transition. Email được gửi sau commit bởi worker của SCRUM-15; cho đến khi worker đó
-được tích hợp và kiểm thử, response Publish chỉ xác nhận meeting đã Published và jobs đã xếp hàng.
-Producer duy nhất thuộc SCRUM-15 nhận snapshot từ Publish và persist Subject/Body/CalendarAttachment
-cùng DeduplicationKey. Worker gửi đúng ToAddress/Body/.ics đã lưu. SMTP Enabled=false vẫn tạo Queued
-jobs; thiếu URL/sender hợp lệ hoặc producer/persistence/timeout lỗi trả 503 MSG47 và rollback toàn bộ
-transaction. PayloadSnapshot chỉ giữ cho dữ liệu cũ, không phải dữ liệu worker đọc để render.
+SCRUM-19 ghi status, history, database notification và gọi producer SCRUM-15 bằng meeting ID trong
+cùng scoped DbContext/transaction. Producer chọn participant có user active, lưu nội dung email
+và dùng `DeduplicationKey = meeting:{meetingId}:published:{userId}`. Worker gửi nội dung đã lưu sau
+commit. SMTP `Enabled=false` không tạo job mới; các job cũ vẫn được giữ. Producer/persistence/timeout
+lỗi trả `503 MSG47` và rollback toàn bộ transaction. Các cột email `OriginHistoryId`,
+`RecipientUserId`, `MessageType`, `PayloadSnapshot` được giữ để tương thích dữ liệu cũ; producer
+hiện tại không ghi chúng và worker không đọc `PayloadSnapshot` để render.
 Database notification rows được tạo ở đây; realtime push theo SCRUM-14 là phần tích hợp riêng.
-Recipient filter đã chốt theo BR-54 và được gom thành shared policy để SCRUM-20 dùng lại. Writer
+Recipient filter của notification đã chốt theo BR-54 và được gom thành shared policy để SCRUM-20 dùng lại. Writer
 participant/agenda thuộc các story tương ứng phải tham gia meeting-row lock protocol trước khi có thể
 xác nhận concurrency test của snapshot/readiness; update sau commit không đổi rows đã persist.
 

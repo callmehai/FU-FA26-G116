@@ -218,7 +218,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(MeetingHistoryAction.ReturnToDraft, Assert.Single(meeting.StatusHistory).Action);
         Assert.Empty(_factory.Meetings.Notifications);
         Assert.Empty(_factory.Meetings.EmailMessages);
-        Assert.Empty(_factory.Invitations.Publications);
+        Assert.Empty(_factory.Invitations.MeetingIds);
     }
 
     [Fact]
@@ -294,7 +294,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         }
         Assert.Empty(_factory.Meetings.Notifications);
         Assert.Empty(_factory.Meetings.EmailMessages);
-        Assert.Empty(_factory.Invitations.Publications);
+        Assert.Empty(_factory.Invitations.MeetingIds);
     }
 
     [Fact]
@@ -315,7 +315,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
         Assert.Empty(meeting.StatusHistory);
         Assert.Empty(_factory.Meetings.Notifications);
-        Assert.Empty(_factory.Invitations.Publications);
+        Assert.Empty(_factory.Invitations.MeetingIds);
     }
 
     [Theory]
@@ -529,7 +529,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         meeting.Status = MeetingStatus.Approved;
         _factory.Meetings.Meetings.Add(meeting);
         _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
-        _factory.Invitations.NextQueueThrows = new MeetingInvitationQueueException("Sender missing");
+        _factory.Invitations.NextQueueThrows = new InvalidOperationException("Sender missing");
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
 
         var response = await client.PostAsJsonAsync(
@@ -541,7 +541,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(MeetingStatus.Approved, Assert.Single(_factory.Meetings.Meetings).Status);
         Assert.Empty(_factory.Meetings.Meetings.Single().StatusHistory);
         Assert.Empty(_factory.Meetings.Notifications);
-        Assert.Empty(_factory.Invitations.Publications);
+        Assert.Empty(_factory.Invitations.MeetingIds);
     }
 
     [Fact]

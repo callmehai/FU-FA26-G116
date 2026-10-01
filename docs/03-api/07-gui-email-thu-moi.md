@@ -1,11 +1,12 @@
 # Gửi email thư mời cuộc họp — SCRUM-15
 
 SCRUM-15 không thêm HTTP endpoint riêng. Luồng công bố của SCRUM-19 gọi
-`IMeetingInvitationQueue.QueueForPublishedMeetingAsync(publicationSnapshot)` sau khi đã chuyển meeting sang
-`Published`, nhưng trước khi commit transaction. Mỗi thành phần tham dự tạo một dòng
-`email_messages` ở trạng thái `Queued`; request công bố chỉ ghi queue và không chờ SMTP. Chỉ participant có tài khoản
-active và Response khác Delegated theo BR-54 tại transaction Publish mới được nhận thư. `deduplication_key` có unique index và định danh đúng sự kiện nghiệp
-vụ, `meeting:{meetingId}:published:{historyId}:{userId}` cho một publication/recipient. Gọi lại cùng sự kiện không tạo thư trùng, nhưng một sự kiện
+`IMeetingInvitationQueue.QueueForPublishedMeetingAsync(meetingId)` sau khi đã chuyển meeting sang
+`Published`, nhưng trước khi commit transaction. Khi bật SMTP, mỗi thành phần tham dự tạo một dòng
+`email_messages` ở trạng thái `Queued`; request công bố chỉ ghi queue và không chờ SMTP. Chỉ tài khoản
+đang hoạt động mới được nhận thư; producer không lọc `Response` của participant. `deduplication_key`
+có unique index; thư mời công bố dùng `meeting:{meetingId}:published:{userId}`.
+Gọi lại cùng sự kiện không tạo thư trùng, nhưng một sự kiện
 đổi lịch, hủy họp hoặc phát hành biên bản sau này vẫn có thể tạo thư mới cho cùng người nhận.
 
 Phần FE cần tích hợp được tóm tắt riêng tại
@@ -50,8 +51,9 @@ chuyển trạng thái. Thứ tự bắt buộc:
 
 1. Khóa và kiểm tra meeting đang ở `Approved`.
 2. Chuyển sang `Published`, thêm `MeetingStatusHistory` bất biến.
-3. Chốt recipient và nội dung vào snapshot; tạo notifications và SaveChanges trong transaction còn mở.
-4. Gọi `QueueForPublishedMeetingAsync` với snapshot và Publish history ID; producer render Body/.ics, gán DeduplicationKey và persist Queued jobs.
+3. Tạo notifications và SaveChanges trong transaction còn mở.
+4. Gọi `QueueForPublishedMeetingAsync(meetingId)`; producer đọc meeting/participants, render và lưu
+   Subject/Body/.ics cùng DeduplicationKey khi SMTP được bật.
 5. Commit transaction. Worker chỉ gửi Body/CalendarAttachment đã lưu; không render lại từ meeting/participant hiện tại.
 
 Nếu transaction rollback thì các dòng email cũng rollback. Không gọi queue trước khi trạng thái
@@ -99,8 +101,8 @@ dotnet user-secrets set "Email:Smtp:FromAddress" "no-reply@example.vn" --project
 
 Production dùng các biến môi trường tương ứng, ví dụ
 `Email__Smtp__Password` và `Email__ApplicationBaseUrl`. Khi `Enabled` là `false`, worker không được
-khởi động; Publish vẫn tạo Queued jobs. URL frontend và sender phải hợp lệ để render invitation
-ngay cả khi worker tắt. Cấu hình producer thiếu/sai khiến Publish rollback và trả 503 MSG47.
+khởi động và lần công bố meeting không tạo dòng email mới; các dòng đã có trong queue vẫn được giữ
+trong database. Khi bật SMTP, lỗi producer hoặc lưu queue khiến Publish rollback và trả `503 MSG47`.
 
 Giới hạn cấu hình: `MaxAttempts` từ 1–20; retry/polling từ 1–3.600 giây; lease từ 10–3.600 giây;
 timeout SMTP và deadline toàn bộ lần gửi từ 1–300 giây. `ProcessingLeaseSeconds` phải dài hơn

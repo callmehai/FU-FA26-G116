@@ -23,11 +23,12 @@ namespace TrustCabinet.Web.Tests.Meetings;
 /// <summary>PostgreSQL integration checks for meeting transactions, row locks and audit constraints.</summary>
 public sealed class MeetingRepositoryTests : IAsyncLifetime
 {
-    private sealed class PostgreSqlMeetingApiFactory(string connectionString, bool validInvitationConfiguration = true) : TrustCabinetApiFactory
+    private sealed class PostgreSqlMeetingApiFactory(string connectionString, bool failInvitationQueue = false) : TrustCabinetApiFactory
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             base.ConfigureWebHost(builder);
+            builder.UseSetting("Email:Smtp:Enabled", "false");
             builder.ConfigureServices(services =>
             {
                 services.RemoveAll<DbContextOptions<TrustCabinetDbContext>>();
@@ -41,11 +42,25 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
                 services.AddScoped<IMeetingService, MeetingService>();
                 services.Configure<EmailDeliveryOptions>(options =>
                 {
-                    options.ApplicationBaseUrl = validInvitationConfiguration ? "https://hop.example.vn" : "";
-                    options.Smtp.FromAddress = validInvitationConfiguration ? "no-reply@example.vn" : "";
+                    options.ApplicationBaseUrl = "https://hop.example.vn";
+                    options.Smtp.FromAddress = "no-reply@example.vn";
+                    options.Smtp.Host = "unused-in-test.example.vn";
+                    // Enable the producer without registering the hosted SMTP worker.
+                    options.Smtp.Enabled = true;
                 });
+                if (failInvitationQueue)
+                {
+                    services.RemoveAll<IMeetingInvitationQueue>();
+                    services.AddScoped<IMeetingInvitationQueue, FailingInvitationQueue>();
+                }
             });
         }
+    }
+
+    private sealed class FailingInvitationQueue : IMeetingInvitationQueue
+    {
+        public Task<int> QueueForPublishedMeetingAsync(Guid meetingId, CancellationToken ct = default)
+            => Task.FromException<int>(new InvalidOperationException("Invitation producer unavailable."));
     }
 
     private static readonly string AdminConnectionString =
@@ -129,13 +144,13 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         await drop.ExecuteNonQueryAsync();
     }
 
-    private MeetingService NewService(TrustCabinetDbContext? db = null)
+    private MeetingService NewService(TrustCabinetDbContext? db = null, bool smtpEnabled = true)
     {
         var context = db ?? _db;
         var invitations = new MeetingInvitationQueue(context, Options.Create(new EmailDeliveryOptions
         {
             ApplicationBaseUrl = "https://hop.example.vn",
-            Smtp = new SmtpOptions { FromAddress = "no-reply@example.vn" },
+            Smtp = new SmtpOptions { Enabled = smtpEnabled, FromAddress = "no-reply@example.vn" },
         }), TimeProvider.System, NullLogger<MeetingInvitationQueue>.Instance);
         return new MeetingService(new MeetingRepository(context), NullLogger<MeetingService>.Instance, invitations: invitations);
     }
@@ -451,8 +466,10 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.False(await verify.EmailMessages.AnyAsync(item => item.MeetingId == meeting.Id));
     }
 
-    [Fact]
-    public async Task Lifecycle_round_trip_persists_one_immutable_history_per_action_and_publish_snapshot()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Lifecycle_round_trip_persists_history_and_queues_invitations_only_when_SMTP_is_enabled(bool smtpEnabled)
     {
         var approver = NewUser("Workflow approver", _approverRoleId);
         _db.Users.Add(approver);
@@ -485,7 +502,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             });
         await _db.SaveChangesAsync();
 
-        var service = NewService();
+        var service = NewService(smtpEnabled: smtpEnabled);
         var submit = await service.TransitionAsync(
             meetingId,
             new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, approver.Id),
@@ -538,8 +555,17 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             Assert.Equal(approver.Id, item.AssignedApproverId));
 
         var invitations = await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync();
-        Assert.Equal(_creatorId, Assert.Single(invitations).RecipientUserId);
-        Assert.Equal(history[^1].Id, invitations[0].OriginHistoryId);
+        Assert.Equal(smtpEnabled ? 2 : 0, invitations.Count);
+        Assert.Equal(
+            (smtpEnabled
+                ? new[] { $"meeting:{meetingId:D}:published:{_creatorId:D}", $"meeting:{meetingId:D}:published:{delegated.Id:D}" }
+                : Array.Empty<string>()).Order(),
+            invitations.Select(item => item.DeduplicationKey).Order());
+        Assert.All(invitations, invitation =>
+        {
+            Assert.Null(invitation.RecipientUserId);
+            Assert.Null(invitation.OriginHistoryId);
+        });
         var publishNotifications = await verify.Notifications
             .Where(item => item.MeetingId == meetingId && item.Type == NotificationType.MeetingInvited)
             .ToListAsync();
@@ -638,12 +664,11 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             Assert.Equal(EmailStatus.Queued, email.Status);
             Assert.Null(email.SentAt);
         });
-        var publication = await _db.MeetingStatusHistory.SingleAsync(history =>
-            history.MeetingId == meetingId && history.Action == MeetingHistoryAction.Publish);
         Assert.Equal(3, invitations.Select(email => email.DeduplicationKey).Distinct().Count());
         Assert.All(invitations, email =>
         {
-            Assert.Equal(publication.Id, email.OriginHistoryId);
+            Assert.Null(email.OriginHistoryId);
+            Assert.Null(email.RecipientUserId);
             Assert.False(string.IsNullOrWhiteSpace(email.DeduplicationKey));
             Assert.NotNull(email.CalendarAttachment);
             Assert.Null(email.PayloadSnapshot);
@@ -653,7 +678,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var expectedCalendars = invitations.Select(email => email.CalendarAttachment).Order().ToArray();
         await _db.Meetings.Where(meeting => meeting.Id == meetingId)
             .ExecuteUpdateAsync(setters => setters.SetProperty(meeting => meeting.Title, "Changed after commit"));
-        var recipientIds = invitations.Select(email => email.RecipientUserId!.Value).ToArray();
+        var recipientIds = await _db.Users.Where(user => expectedAddresses.Contains(user.Email))
+            .Select(user => user.Id).ToArrayAsync();
         await _db.Users.Where(user => recipientIds.Contains(user.Id)).ExecuteUpdateAsync(setters =>
             setters.SetProperty(user => user.IsActive, false));
         await _db.MeetingParticipants.Where(participant => participant.MeetingId == meetingId)
@@ -689,7 +715,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Publish_endpoint_rolls_back_the_real_transaction_when_invitation_configuration_is_missing()
+    public async Task Publish_endpoint_rolls_back_the_real_transaction_when_invitation_producer_fails()
     {
         var created = await NewService().CreateAsync(Input(), _creatorId);
         var meetingId = created.Meeting!.Id;
@@ -697,7 +723,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             .ExecuteUpdateAsync(setters => setters.SetProperty(meeting => meeting.Status, MeetingStatus.Approved));
         _db.MeetingParticipants.Add(new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId });
         await _db.SaveChangesAsync();
-        using var app = new PostgreSqlMeetingApiFactory(_connectionString, validInvitationConfiguration: false);
+        using var app = new PostgreSqlMeetingApiFactory(_connectionString, failInvitationQueue: true);
         using var client = app.CreateClient();
         var user = await _db.Users.AsNoTracking().SingleAsync(item => item.Id == _creatorId);
         var issuer = app.Services.GetRequiredService<ITokenIssuer>();

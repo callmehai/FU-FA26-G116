@@ -6,7 +6,6 @@ using MimeKit;
 using System.Text;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Notifications;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Email;
 using TrustCabinet.Infrastructure.Migrations;
@@ -15,8 +14,6 @@ namespace TrustCabinet.Web.Tests.Email;
 
 public sealed class EmailDeliveryTests
 {
-    // Consumer unit tests use an opaque publication token; PostgreSQL workflow tests verify the actual history FK.
-    private static readonly Guid PublicationHistoryId = new("0199a100-0000-7000-8000-000000000015");
     private static readonly DateTimeOffset Now = new(2026, 10, 1, 2, 0, 0, TimeSpan.Zero);
 
     [Fact]
@@ -50,7 +47,7 @@ public sealed class EmailDeliveryTests
             new FixedTimeProvider(Now),
             NullLogger<MeetingInvitationQueue>.Instance);
 
-        var count = await queue.QueueForPublishedMeetingAsync(Publication(meeting));
+        var count = await queue.QueueForPublishedMeetingAsync(meeting.Id);
 
         Assert.Equal(2, count);
         var messages = await db.EmailMessages.OrderBy(item => item.ToAddress).ToListAsync();
@@ -69,22 +66,21 @@ public sealed class EmailDeliveryTests
             ["an@trustcabinet.local", "binh@trustcabinet.local"],
             messages.Select(item => item.ToAddress));
 
-        var repeatedCount = await queue.QueueForPublishedMeetingAsync(Publication(meeting));
+        var repeatedCount = await queue.QueueForPublishedMeetingAsync(meeting.Id);
         Assert.Equal(0, repeatedCount);
         Assert.Equal(2, await db.EmailMessages.CountAsync());
     }
 
     [Fact]
-    public async Task Only_recipients_supplied_in_the_publication_snapshot_are_queued()
+    public async Task Inactive_participants_are_not_queued()
     {
         await using var db = NewDatabase();
         var meeting = PublishedMeeting();
+        meeting.Participants.First().User.IsActive = false;
         db.Meetings.Add(meeting);
         await db.SaveChangesAsync();
 
-        var publication = Publication(meeting);
-        publication = publication with { Recipients = publication.Recipients.Where(recipient => recipient.Email != "an@trustcabinet.local").ToArray() };
-        var count = await Queue(db).QueueForPublishedMeetingAsync(publication);
+        var count = await Queue(db).QueueForPublishedMeetingAsync(meeting.Id);
 
         Assert.Equal(1, count);
         Assert.DoesNotContain(
@@ -93,7 +89,7 @@ public sealed class EmailDeliveryTests
     }
 
     [Fact]
-    public async Task Missing_producer_configuration_is_rejected_even_when_SMTP_is_disabled()
+    public async Task Disabled_email_delivery_does_not_queue_malformed_messages()
     {
         await using var db = NewDatabase();
         var meeting = PublishedMeeting();
@@ -104,10 +100,14 @@ public sealed class EmailDeliveryTests
         options.ApplicationBaseUrl = string.Empty;
         options.Smtp.FromAddress = string.Empty;
 
-        var queue = new MeetingInvitationQueue(db, Options.Create(options), new FixedTimeProvider(Now),
-            NullLogger<MeetingInvitationQueue>.Instance);
-        await Assert.ThrowsAsync<MeetingInvitationQueueException>(
-            () => queue.QueueForPublishedMeetingAsync(Publication(meeting)));
+        var count = await new MeetingInvitationQueue(
+                db,
+                Options.Create(options),
+                new FixedTimeProvider(Now),
+                NullLogger<MeetingInvitationQueue>.Instance)
+            .QueueForPublishedMeetingAsync(meeting.Id);
+
+        Assert.Equal(0, count);
         Assert.Empty(await db.EmailMessages.ToListAsync());
     }
 
@@ -121,7 +121,7 @@ public sealed class EmailDeliveryTests
         db.Meetings.Add(meeting);
         await db.SaveChangesAsync();
 
-        await Queue(db).QueueForPublishedMeetingAsync(Publication(meeting));
+        await Queue(db).QueueForPublishedMeetingAsync(meeting.Id);
 
         var subject = (await db.EmailMessages.FirstAsync()).Subject;
         Assert.Equal(300, subject.Length);
@@ -159,38 +159,23 @@ public sealed class EmailDeliveryTests
     }
 
     [Fact]
-    public async Task Publication_snapshot_is_used_after_meeting_and_participants_change()
+    public async Task Non_published_meeting_cannot_queue_invitations()
     {
         await using var db = NewDatabase();
         var meeting = PublishedMeeting();
+        meeting.Status = MeetingStatus.Approved;
         db.Meetings.Add(meeting);
         await db.SaveChangesAsync();
-        var snapshot = Publication(meeting);
-        var options = DeliveryOptions();
-        options.Smtp.Enabled = false;
-        meeting.Title = "Changed title";
-        meeting.Location = "Changed location";
-        meeting.Participants.First().User.Email = "changed@example.vn";
-        meeting.Participants.First().Response = InvitationResponse.Delegated;
-        meeting.Participants.Last().User.IsActive = false;
-        await db.SaveChangesAsync();
 
-        var count = await new MeetingInvitationQueue(db, Options.Create(options), new FixedTimeProvider(Now),
-            NullLogger<MeetingInvitationQueue>.Instance).QueueForPublishedMeetingAsync(snapshot);
+        var queue = new MeetingInvitationQueue(
+            db,
+            Options.Create(DeliveryOptions()),
+            new FixedTimeProvider(Now),
+            NullLogger<MeetingInvitationQueue>.Instance);
 
-        Assert.Equal(2, count);
-        var messages = await db.EmailMessages.ToListAsync();
-        Assert.Contains(messages, message => message.ToAddress == "an@trustcabinet.local");
-        Assert.All(messages, message =>
-        {
-            Assert.Equal(EmailStatus.Queued, message.Status);
-            Assert.Null(message.SentAt);
-            Assert.Null(message.PayloadSnapshot);
-            Assert.Equal(snapshot.OriginHistoryId, message.OriginHistoryId);
-            Assert.False(string.IsNullOrWhiteSpace(message.DeduplicationKey));
-            Assert.Contains(snapshot.Title, message.Body, StringComparison.Ordinal);
-            Assert.Contains("LOCATION:" + snapshot.Location, message.CalendarAttachment!.Replace("\r\n ", ""), StringComparison.Ordinal);
-        });
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => queue.QueueForPublishedMeetingAsync(meeting.Id));
+        Assert.Empty(await db.EmailMessages.ToListAsync());
     }
 
     [Fact]
@@ -211,12 +196,6 @@ public sealed class EmailDeliveryTests
         Assert.Equal("REQUEST", calendar.ContentType.Parameters["method"]);
         Assert.Equal("thu-moi-hop.ics", calendar.FileName);
     }
-
-    private static MeetingPublicationInvitation Publication(Meeting meeting)
-        => new(meeting.Id, PublicationHistoryId, meeting.Title, meeting.Description,
-            meeting.Location, meeting.StartsAt, meeting.EndsAt, Now,
-            meeting.Participants.Select(participant => new MeetingInvitationRecipient(participant.UserId,
-                    participant.User.FullName, participant.User.Email)).ToArray());
 
     private static MeetingInvitationQueue Queue(TrustCabinetDbContext db)
         => new(

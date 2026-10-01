@@ -237,7 +237,7 @@ public sealed class MeetingWorkflowServiceTests
     }
 
     [Fact]
-    public async Task Publish_snapshots_only_active_non_delegated_participants_into_notifications_and_email_jobs()
+    public async Task Publish_notifies_active_non_delegated_participants_and_passes_meeting_id_to_the_email_owner()
     {
         var meeting = GivenMeeting(MeetingStatus.Approved);
         var active = Participant(meeting, active: true, InvitationResponse.Accepted);
@@ -258,21 +258,12 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Equal(active.UserId, notification.UserId);
         Assert.Equal(NotificationType.MeetingInvited, notification.Type);
         Assert.Equal(meeting.StatusHistory.Single().Id, notification.OriginHistoryId);
-        var publication = Assert.Single(_invitations.Publications);
-        Assert.Equal(active.UserId, Assert.Single(publication.Recipients).UserId);
-        Assert.Equal(active.User.Email, publication.Recipients.Single().Email);
-        Assert.Equal(meeting.Id, publication.MeetingId);
+        Assert.Equal(meeting.Id, Assert.Single(_invitations.MeetingIds));
         Assert.Equal(MeetingHistoryAction.Publish, meeting.StatusHistory.Single().Action);
-        Assert.Equal(meeting.StatusHistory.Single().Id, publication.OriginHistoryId);
-        Assert.Equal("Giao ban tuần", publication.Title);
-        active.User.Email = "changed@example.vn";
-        meeting.Title = "Changed after publication";
-        Assert.NotEqual(active.User.Email, publication.Recipients.Single().Email);
-        Assert.Equal("Giao ban tuần", publication.Title);
     }
 
     [Fact]
-    public async Task Publish_hands_the_full_unicode_title_to_the_email_owner()
+    public async Task Publish_keeps_the_full_unicode_title_available_to_the_email_owner()
     {
         var meeting = GivenMeeting(MeetingStatus.Approved);
         meeting.Title = new string('a', 290) + string.Concat(Enumerable.Repeat("📋", 5));
@@ -283,7 +274,9 @@ public sealed class MeetingWorkflowServiceTests
             meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Publish), _organizerId);
 
         Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
-        Assert.Equal(meeting.Title, Assert.Single(_invitations.Publications).Title);
+        Assert.Equal(meeting.Id, Assert.Single(_invitations.MeetingIds));
+        Assert.Equal(new string('a', 290) + string.Concat(Enumerable.Repeat("📋", 5)),
+            _repository.Meetings.Single().Title);
     }
 
     [Theory]
@@ -363,7 +356,7 @@ public sealed class MeetingWorkflowServiceTests
         Assert.True(_repository.LastWorkflowForUpdate);
         Assert.Empty(_repository.Notifications);
         Assert.Empty(_repository.EmailMessages);
-        Assert.Empty(_invitations.Publications);
+        Assert.Empty(_invitations.MeetingIds);
     }
 
     [Theory]
@@ -390,7 +383,7 @@ public sealed class MeetingWorkflowServiceTests
         Assert.True(_repository.LastWorkflowForUpdate);
         Assert.Empty(_repository.Notifications);
         Assert.Empty(_repository.EmailMessages);
-        Assert.Empty(_invitations.Publications);
+        Assert.Empty(_invitations.MeetingIds);
 
         var resubmit = await NewService().TransitionAsync(meeting.Id,
             new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, _approverId), _organizerId);
@@ -403,7 +396,7 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Equal(MeetingHistoryAction.ReturnToDraft, withdrawal.Action);
         Assert.Equal(MeetingStatus.Draft, withdrawal.ToStatus);
         Assert.Equal(_approverId, Assert.Single(_repository.Notifications).UserId);
-        Assert.Empty(_invitations.Publications);
+        Assert.Empty(_invitations.MeetingIds);
     }
 
     [Fact]
@@ -422,7 +415,7 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Equal(_approverId, persisted.AssignedApproverId);
         Assert.Empty(persisted.StatusHistory);
         Assert.Empty(_repository.Notifications);
-        Assert.Empty(_invitations.Publications);
+        Assert.Empty(_invitations.MeetingIds);
     }
 
     [Theory]
@@ -441,7 +434,7 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Equal(status, meeting.Status);
         Assert.Empty(meeting.StatusHistory);
         Assert.Empty(_repository.Notifications);
-        Assert.Empty(_invitations.Publications);
+        Assert.Empty(_invitations.MeetingIds);
     }
 
     [Fact]
@@ -449,7 +442,7 @@ public sealed class MeetingWorkflowServiceTests
     {
         var meeting = GivenMeeting(MeetingStatus.Approved);
         meeting.Participants.Add(Participant(meeting, active: true, InvitationResponse.Pending));
-        _invitations.NextQueueThrows = new NpgsqlException("Queue unavailable");
+        _invitations.NextQueueThrows = new InvalidOperationException("Queue unavailable");
 
         var result = await NewService().TransitionAsync(meeting.Id,
             new MeetingTransitionCommand(MeetingTransitionAction.Publish), _organizerId);
@@ -458,7 +451,7 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Equal(MeetingStatus.Approved, Assert.Single(_repository.Meetings).Status);
         Assert.Empty(_repository.Meetings.Single().StatusHistory);
         Assert.Empty(_repository.Notifications);
-        Assert.Empty(_invitations.Publications);
+        Assert.Empty(_invitations.MeetingIds);
     }
 
     [Fact]

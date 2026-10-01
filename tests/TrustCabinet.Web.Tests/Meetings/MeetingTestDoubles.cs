@@ -7,10 +7,10 @@ namespace TrustCabinet.Web.Tests.Meetings;
 
 internal sealed class FakeMeetingInvitationQueue : IMeetingInvitationQueue
 {
-    public List<MeetingPublicationInvitation> Publications { get; } = [];
+    public List<Guid> MeetingIds { get; } = [];
     public Exception? NextQueueThrows { get; set; }
 
-    public Task<int> QueueForPublishedMeetingAsync(MeetingPublicationInvitation publication, CancellationToken ct = default)
+    public Task<int> QueueForPublishedMeetingAsync(Guid meetingId, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         if (NextQueueThrows is { } exception)
@@ -18,8 +18,8 @@ internal sealed class FakeMeetingInvitationQueue : IMeetingInvitationQueue
             NextQueueThrows = null;
             throw exception;
         }
-        Publications.Add(publication);
-        return Task.FromResult(publication.Recipients.Count);
+        MeetingIds.Add(meetingId);
+        return Task.FromResult(0);
     }
 }
 

@@ -423,7 +423,7 @@ public sealed class MeetingService(
                 {
                     if (invitations is null)
                     {
-                        throw new MeetingInvitationQueueException("SCRUM-15 invitation producer is not registered.");
+                        throw new InvalidOperationException("SCRUM-15 invitation producer is not registered.");
                     }
                     var recipients = MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants);
 
@@ -437,13 +437,9 @@ public sealed class MeetingService(
                         history.Id)).ToArray();
                     await meetings.AddNotificationsAsync(notifications, token);
 
-                    // Flush inside the still-open transaction. SCRUM-15 owns rendering and queue persistence.
+                    // Persist Published before SCRUM-15 reads it using the same scoped transaction.
                     await meetings.SaveChangesAsync(token);
-                    await invitations.QueueForPublishedMeetingAsync(new MeetingPublicationInvitation(
-                        meeting.Id, history.Id, meeting.Title, meeting.Description, meeting.Location,
-                        meeting.StartsAt, meeting.EndsAt, now,
-                        recipients.Select(participant => new MeetingInvitationRecipient(
-                            participant.UserId, participant.User!.FullName, participant.User.Email)).ToArray()), token);
+                    await invitations.QueueForPublishedMeetingAsync(meeting.Id, token);
                 }
 
                 await meetings.SaveChangesAsync(token);
@@ -456,7 +452,8 @@ public sealed class MeetingService(
         {
             throw;
         }
-        catch (Exception exception) when (IsPersistenceFailure(exception) || exception is MeetingInvitationQueueException)
+        catch (Exception exception) when (IsPersistenceFailure(exception)
+            || (command.Action == MeetingTransitionAction.Publish && exception is InvalidOperationException))
         {
             logger.LogError(exception, "Could not perform {Action} for meeting {MeetingId}.", command.Action, id);
             return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.SaveFailed);

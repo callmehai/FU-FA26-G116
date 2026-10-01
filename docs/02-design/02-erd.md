@@ -46,8 +46,8 @@ erDiagram
     Meeting ||--o{ MeetingParticipant : "thành phần tham dự"
     Meeting ||--o{ MeetingStatusHistory : "lịch sử trạng thái"
     MeetingStatusHistory o|--o{ Notification : "nguồn thông báo"
-    MeetingStatusHistory o|--o{ EmailMessage : "nguồn invitation job"
-    User o|--o{ EmailMessage : "recipient snapshot"
+    MeetingStatusHistory o|--o{ EmailMessage : "nguồn job cũ, nullable"
+    User o|--o{ EmailMessage : "recipient của job cũ, nullable"
 
     User {
         uuid Id PK
@@ -112,10 +112,10 @@ erDiagram
     EmailMessage {
         uuid Id PK
         uuid MeetingId FK
-        uuid OriginHistoryId FK "snapshot event"
-        uuid RecipientUserId FK
-        string MessageType "MeetingInvitation"
-        string DeduplicationKey UK "publication history + recipient"
+        uuid OriginHistoryId FK "legacy nullable; job mới không ghi"
+        uuid RecipientUserId FK "legacy nullable; job mới không ghi"
+        string MessageType "legacy nullable; job mới không ghi"
+        string DeduplicationKey UK "meeting + publication event + recipient"
         string Subject
         string Body "rendered publication snapshot"
         string CalendarAttachment "rendered .ics"
@@ -126,8 +126,11 @@ erDiagram
 ```
 
 `MeetingStatusHistory` là append-only audit evidence: FK từ history tới Meeting dùng RESTRICT, EF
-và PostgreSQL chặn sửa/xóa/truncate. Notification và invitation job của một transition giữ
-`OriginHistoryId` để truy được batch tạo cùng lần commit.
+và PostgreSQL chặn sửa/xóa/truncate. Notification của một transition giữ `OriginHistoryId` để
+truy được batch tạo cùng lần commit. Producer email SCRUM-15 lưu nội dung thư khi Publish và dùng
+`meeting:{meetingId}:published:{userId}` để chống trùng. Các cột nullable `OriginHistoryId`,
+`RecipientUserId`, `MessageType`, `PayloadSnapshot` của email giữ cho dữ liệu cũ; job mới không ghi
+chúng. Email chọn participant có user active, không áp dụng bộ lọc `Response` của notification.
 
 `Response` và `Attendance` là **hai câu hỏi khác nhau**: một là người ta trả lời thư mời thế nào,
 hai là thực tế có mặt hay không. Nhận lời rồi không đến là chuyện bình thường, và số liệu quorum

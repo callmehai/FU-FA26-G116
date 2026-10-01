@@ -13,20 +13,21 @@ nhưng backend bỏ qua field này; FE cần bỏ dropdown/request field cũ và
 
 ## Tích hợp producer/worker SCRUM-15
 
-Publish chốt recipient theo BR-54, ghi status, history và notifications trong cùng transaction.
-Sau SaveChanges, service gọi `QueueForPublishedMeetingAsync(MeetingPublicationInvitation)` bằng
-snapshot gồm thông tin meeting, Publish history ID, thời điểm công bố và UserId/FullName/Email.
-Producer dùng cùng scoped DbContext/transaction để render và lưu jobs; không query lại participant.
+Publish ghi status, history và notifications theo BR-54 trong cùng transaction. Sau SaveChanges,
+service gọi `QueueForPublishedMeetingAsync(meetingId)` bằng cùng scoped DbContext/transaction.
+Producer SCRUM-15 đọc meeting Published cùng participants, render và lưu nội dung job một lần.
 
-- Recipient là participant có user active và `Response != Delegated`; delegate cần participant row
-  riêng hợp lệ. Thay đổi meeting/user/participant sau commit không đổi batch đã tạo.
-- `DeduplicationKey` là `meeting:{meetingId}:published:{historyId}:{userId}`.
-- Jobs lưu `ToAddress`, `Subject`, `Body`, `CalendarAttachment` và các ID truy vết. Worker gửi
-  nội dung đã lưu; `PayloadSnapshot` chỉ giữ cho dữ liệu cũ, job mới không ghi trường này.
-- Publish thành công xác nhận jobs `Queued`, `SentAt = null`; không xác nhận email đã được giao.
+- Notification chỉ chọn participant có user active và `Response != Delegated`; delegate cần
+  participant row riêng hợp lệ. Email chọn participant có user active theo producer SCRUM-15,
+  không lọc `Response` và không tự thêm `DelegatedToUserId`.
+- `DeduplicationKey` là `meeting:{meetingId}:published:{userId}`.
+- Jobs lưu `ToAddress`, `Subject`, `Body`, `CalendarAttachment`; worker gửi nội dung đã lưu.
+  Các cột nullable `OriginHistoryId`, `RecipientUserId`, `MessageType`, `PayloadSnapshot` giữ cho
+  dữ liệu cũ, job mới không ghi chúng. Thay đổi dữ liệu sau commit không sửa nội dung job đã lưu.
+- Khi bật SMTP, job mới có `Queued`, `SentAt = null`; Publish không xác nhận email đã được giao.
 - Producer không tạo được jobs thì Publish rollback toàn bộ và trả `503 MSG47`.
-- SMTP `Enabled=false` dừng worker, nhưng Publish vẫn tạo jobs. URL frontend/sender phải hợp lệ
-  để render invitation; cấu hình theo [hướng dẫn email](07-gui-email-thu-moi.md).
+- SMTP `Enabled=false` dừng worker và không tạo job mới; Publish vẫn thành công và giữ nguyên
+  jobs cũ. Cấu hình theo [hướng dẫn email](07-gui-email-thu-moi.md).
 
 ## Nâng cấp database có email cũ
 
@@ -42,7 +43,8 @@ thay đổi schema. Xem thêm [hướng dẫn cài đặt](07-gui-email-thu-moi-
 ## Checklist FE/Tester
 
 - FE bổ sung type/API wrapper, lựa chọn approver khi submit, workflow controls và timeline.
-- Kiểm tra Draft → WaitingApproval → Approved → Published; email vẫn Queued tại response.
+- Kiểm tra Draft → WaitingApproval → Approved → Published; bật SMTP thì job mới là Queued,
+  tắt SMTP thì không thêm job mới.
 - Sửa `Rejected` giữ trạng thái, assignment và rejection history; ReturnToDraft trước khi submit lại.
 - Reject bắt buộc reason 1–1.000 ký tự sau trim; cấm tự submit/duyệt.
 - Organizer active/có `MeetingCreator` được rút WaitingApproval khi assignment thiếu, trỏ về

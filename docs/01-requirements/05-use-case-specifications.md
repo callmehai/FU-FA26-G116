@@ -291,19 +291,20 @@ Chi tiết: [API chuyển trạng thái](../03-api/05-quan-ly-cuoc-hop.md),
 - **Điều kiện tiên quyết:** Actor đã đăng nhập, tài khoản còn hoạt động, là người tổ chức có
   capability `MeetingCreator`, và cuộc họp đang `Approved`.
 - **Điều kiện sau khi thành công:** Cuộc họp chuyển sang `Published`, ghi lịch sử, tạo thông báo và
-  xếp hàng thư mời cho thành phần tham dự hợp lệ.
+  xếp hàng thư mời cho thành phần tham dự có tài khoản active khi SMTP được bật.
 
 #### Luồng chính
 
 1. Organizer chọn công bố cuộc họp đã được duyệt.
-2. Hệ thống kiểm tra điều kiện, xác định người nhận và lưu trạng thái, lịch sử, thông báo, thư mời.
-3. Hệ thống thông báo công bố thành công; worker gửi thư mời bất đồng bộ.
+2. Hệ thống kiểm tra điều kiện, lưu trạng thái, lịch sử và thông báo; producer SCRUM-15 xếp hàng
+   thư mời khi SMTP được bật.
+3. Hệ thống thông báo công bố thành công; worker gửi thư mời đã xếp hàng bất đồng bộ.
 
 #### Ngoại lệ
 
 - Không đúng Organizer, không còn quyền hoặc cuộc họp không còn `Approved`: không công bố.
-- Công bố thành công xác nhận thư mời đã được xếp hàng; lỗi gửi email được worker xử lý và không
-  đổi trạng thái `Published`.
+- SMTP tắt: công bố vẫn thành công nhưng không tạo email job. Khi SMTP bật, lỗi gửi email được
+  worker xử lý và không đổi trạng thái `Published`.
 
 Chi tiết: [API chuyển trạng thái](../03-api/05-quan-ly-cuoc-hop.md),
 [Sequence Diagram](../assets/diagrams/meeting-management/PublishMeeting.png),

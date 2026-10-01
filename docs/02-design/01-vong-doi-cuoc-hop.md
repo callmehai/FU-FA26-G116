@@ -12,7 +12,7 @@ Mã trạng thái giữ nguyên tiếng Anh để dùng trực tiếp trong code
 | `WaitingApproval` | Chờ duyệt | Đã gửi, đang đợi người có quyền duyệt |
 | `Rejected` | Bị từ chối | Organizer được sửa; chuyển về `Draft` trước khi gửi duyệt lại |
 | `Approved` | Đã duyệt | Được chấp thuận, chưa thông báo cho thành phần tham dự |
-| `Published` | Đã công bố | Thành phần tham dự nhìn thấy; thư mời đã xếp hàng để gửi bất đồng bộ |
+| `Published` | Đã công bố | Thành phần tham dự nhìn thấy; thư mời xếp hàng để gửi bất đồng bộ khi SMTP bật |
 | `InProgress` | Đang diễn ra | Chủ toạ đã bắt đầu phiên họp |
 | `Ended` | Đã kết thúc | Phiên họp đóng, chờ xử lý hậu kỳ (ASR, biên bản) |
 | `MinutesIssued` | Đã ban hành biên bản | Biên bản đã được phê duyệt và chốt |
@@ -38,8 +38,9 @@ Khi `WaitingApproval` thiếu người duyệt, gán chính Organizer, hoặc ng
 `MeetingApprover`, Organizer active có `MeetingCreator` được `ReturnToDraft` để chọn lại người duyệt.
 Không cho rút khi người duyệt khác Organizer vẫn hợp lệ.
 
-`Published` xác nhận thư mời đã xếp hàng, chưa xác nhận email đã được giao. Lỗi gửi không đổi
-trạng thái cuộc họp. Chi tiết quyền, người nhận và các transition:
+`Published` chưa xác nhận email đã được giao. Khi SMTP bật, thư mời được xếp hàng trong transaction
+công bố; SMTP tắt thì không tạo email job. Lỗi gửi không đổi trạng thái cuộc họp. Chi tiết quyền,
+người nhận và các transition:
 [API quản lý cuộc họp](../03-api/05-quan-ly-cuoc-hop.md).
 
 ## Vì sao cần ghi lại
