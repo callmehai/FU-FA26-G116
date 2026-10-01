@@ -43,7 +43,7 @@ validate nội dung. Trạng thái khác `Draft`/`Rejected` trả `409 MSG33`.
 | Hành vi | Quan hệ/capability bắt buộc | Chair có tự được phép không? |
 |---|---|---|
 | SubmitForApproval | Meeting Organizer (`CreatedById`) + `MeetingCreator`; meeting Draft và ready | Không |
-| ReturnToDraft | Meeting Organizer active + `MeetingCreator`; Rejected hoặc WaitingApproval có Assigned Approver inactive/mất `MeetingApprover` | Không |
+| ReturnToDraft | Meeting Organizer active + `MeetingCreator`; Rejected hoặc WaitingApproval có assignment không hợp lệ (thiếu người duyệt, trỏ về Organizer, inactive hoặc mất `MeetingApprover`) | Không |
 | Approve/Reject | Current `AssignedApproverId` + capability `MeetingApprover`, khác Organizer; meeting WaitingApproval | Không; chỉ được nếu Chair đồng thời là current Assigned Approver và không phải Organizer |
 | Publish | Meeting Organizer + `MeetingCreator`; meeting Approved | Không; chỉ được nếu Chair đồng thời là Organizer |
 | Đọc full lifecycle history/rejection reason | Meeting Organizer hoặc current Assigned Approver | Chair relationship riêng không cấp quyền ở bất kỳ trạng thái nào |
@@ -192,9 +192,10 @@ Không cho Organizer tự duyệt ở mọi mức độ mật: `assignedApprover
 không được Approve/Reject (`403 MSG55`); không tự sửa dữ liệu/ghi thêm history khi từ chối action.
 
 Organizer active, còn `MeetingCreator` được dùng `ReturnToDraft` để rút `WaitingApproval` khi
-current Assigned Approver đã inactive hoặc mất capability `MeetingApprover`. Server khóa meeting
-và đọc lại eligibility hiện tại trong transaction; nếu
-approver đã được khôi phục và vẫn hợp lệ, trả `409 MSG64`, không ghi history/jobs.
+assignment không hợp lệ: dữ liệu cũ chưa có người duyệt, người duyệt là chính Organizer, hoặc
+current Assigned Approver đã inactive/mất capability `MeetingApprover`. Server khóa meeting
+và đọc lại assignment/eligibility hiện tại trong transaction. Nếu approver là người khác Organizer,
+còn active và có `MeetingApprover`, trả `409 MSG64`, không ghi history/jobs.
 Rút thành công trả `200 MSG49`, chuyển sang Draft, xóa current assignment và ghi đúng một history
 `ReturnToDraft` với `fromStatus = WaitingApproval`, actor/time từ server. History cũ giữ nguyên;
 không tạo notification/invitation mới. Organizer sửa nháp và chọn người duyệt mới qua

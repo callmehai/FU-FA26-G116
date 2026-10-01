@@ -366,6 +366,46 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Empty(_invitations.Publications);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Legacy_missing_or_self_assignment_can_be_withdrawn_and_resubmitted(bool selfAssignment)
+    {
+        var meeting = GivenMeeting(MeetingStatus.WaitingApproval);
+        meeting.AssignedApproverId = selfAssignment ? _organizerId : null;
+        meeting.AgendaItems.Add(Agenda(meeting.Id));
+        Grant(_organizerId, Capability.MeetingApprover);
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.ReturnToDraft), _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        Assert.Equal(MeetingStatus.Draft, meeting.Status);
+        Assert.Null(meeting.AssignedApproverId);
+        var withdrawal = Assert.Single(meeting.StatusHistory);
+        Assert.Equal(MeetingHistoryAction.ReturnToDraft, withdrawal.Action);
+        Assert.Equal(MeetingStatus.WaitingApproval, withdrawal.FromStatus);
+        Assert.Equal(MeetingStatus.Draft, withdrawal.ToStatus);
+        Assert.Equal(_organizerId, withdrawal.ActorId);
+        Assert.True(_repository.LastWorkflowForUpdate);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_repository.EmailMessages);
+        Assert.Empty(_invitations.Publications);
+
+        var resubmit = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, _approverId), _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, resubmit.Outcome);
+        Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
+        Assert.Equal(_approverId, meeting.AssignedApproverId);
+        Assert.Equal(2, meeting.StatusHistory.Count);
+        Assert.Same(withdrawal, meeting.StatusHistory.First());
+        Assert.Equal(MeetingHistoryAction.ReturnToDraft, withdrawal.Action);
+        Assert.Equal(MeetingStatus.Draft, withdrawal.ToStatus);
+        Assert.Equal(_approverId, Assert.Single(_repository.Notifications).UserId);
+        Assert.Empty(_invitations.Publications);
+    }
+
     [Fact]
     public async Task Withdrawal_save_failure_rolls_back_the_blocked_approval_cycle()
     {

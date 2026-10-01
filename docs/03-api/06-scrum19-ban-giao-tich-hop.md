@@ -14,7 +14,8 @@ worker/realtime cần thiết, BA Final Review và Tester hoàn tất. Không co
 ## Quyết định sau review PR #41
 
 - Quyết định mới ngày 01/10/2026 thay rule không cho rút trước đó: Organizer active/có
-  `MeetingCreator` được rút `WaitingApproval` về Draft khi approver inactive/mất `MeetingApprover`.
+  `MeetingCreator` được rút `WaitingApproval` về Draft khi approver inactive/mất `MeetingApprover`,
+  hoặc assignment cũ bị thiếu/trỏ về chính Organizer.
   Dùng action `ReturnToDraft`, ghi một history, xóa
   assignment, không tạo notification/invitation; sau đó chọn người duyệt mới qua submit bình thường.
   Nếu approver vẫn hợp lệ thì không cho rút; không gán lại trực tiếp trong WaitingApproval.
@@ -79,7 +80,8 @@ và rollback schema. Chạy upgrade đến migration mới nhất; không dừng
 - Current approver phải active/có capability; former approver không có quyền nhờ history cũ.
 - Organizer/current approver xem full reason; participant chỉ xem timeline redacted sau Published.
 - Self-submit/legacy self-review bị từ chối. WaitingApproval ReturnToDraft chỉ thành công khi
-  approver không còn hợp lệ; sai quyền hoặc approver hợp lệ bị từ chối, không ghi side effects.
+  assignment bị thiếu, trỏ về Organizer hoặc approver inactive/mất quyền; sai quyền hoặc approver
+  là người khác Organizer, active và có quyền bị từ chối, không ghi side effects.
 - Approver list database/timeout ở capability gate hoặc repository đều trả `503 MSG61`;
   request cancellation vẫn được propagate, không đổi thành 503.
 - History đọc khi meeting đang bị writer khóa; concurrent Publish chỉ commit một history/batch.
@@ -119,3 +121,26 @@ Các worktree thử nghiệm cũ được giữ nguyên, không dùng làm ngu�
 Kết quả trên là kiểm thử local. CI kiểm chứng từng head sau khi push; không chạy lại Postman
 CLI/Newman hoặc gửi SMTP thật trong lượt tách phạm vi. Không đổi trạng thái Jira sang Done;
 dependency và PR #41 vẫn cần review trước khi merge vào main.
+
+## Review bổ sung ngày 01/10/2026
+
+Khắc phục trường hợp dữ liệu cũ `WaitingApproval` không có Assigned Approver hoặc gán chính
+Organizer: Approve/Reject không hợp lệ, nhưng ReturnToDraft trước đó cũng trả conflict, làm meeting
+bị kẹt. ReturnToDraft hiện cho Organizer active/có `MeetingCreator` rút hai trường hợp này dưới
+meeting-row lock. Người duyệt khác Organizer còn active/có quyền vẫn giữ cycle hiện tại và không
+cho rút. Không đổi schema, không sửa history cũ hoặc thêm thao tác UI.
+
+Sáu regression cases bổ sung ở unit, HTTP và PostgreSQL xác nhận clear assignment, giữ history cũ,
+thêm đúng một history bất biến, không tạo notification/email khi rút và gửi duyệt lại cho người khác.
+Bốn case unit/HTTP đã thất bại trước sửa với StatusConflict/409, rồi pass sau sửa.
+Ghi chú triển khai và trạng thái commit/dependency đã lưu ở
+[SCRUM-19 comment 10115](https://sep490g116.atlassian.net/browse/SCRUM-19?focusedCommentId=10115).
+
+- Release build `-warnaserror`: 0 warning/error.
+- Full solution: 724/724 test pass, 0 failed, 0 skipped; dùng PostgreSQL thật với database test riêng.
+- Frontend lint/build pass; ModelSnapshot không có pending model changes; `git diff --check` sạch.
+- Các thay đổi mới cần commit/push để CI kiểm tra head mới. PR #41 hiện còn đặt trên dependency
+  PR #50; review/merge #50 vào main trước rồi đồng bộ base #41 về main, tiếp tục review trước merge.
+
+Không coi kết quả local là CI của head mới hoặc đánh dấu SCRUM-19 Done. FE workflow integration,
+BA Final Review và Tester vẫn theo pipeline đã ghi.

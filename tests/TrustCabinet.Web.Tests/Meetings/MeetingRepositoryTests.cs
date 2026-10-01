@@ -384,6 +384,73 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             item.MeetingId == meetingId && item.UserId == newApprover.Id));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Http_withdrawal_recovers_legacy_missing_or_self_assignment_and_preserves_immutable_history(bool selfAssignment)
+    {
+        var newApprover = NewUser("Replacement for self assignment", _approverRoleId);
+        _db.Users.Add(newApprover);
+        Guid? legacyApproverId = selfAssignment ? _creatorId : null;
+        var meeting = ListMeeting("Legacy self assignment", MeetingStatus.WaitingApproval,
+            new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero), approverId: legacyApproverId);
+        meeting.AgendaItems.Add(new AgendaItem { Title = "Báo cáo", Position = 1 });
+        _db.Meetings.Add(meeting);
+        var originalHistory = new MeetingStatusHistory
+        {
+            Meeting = meeting,
+            Action = MeetingHistoryAction.SubmitForApproval,
+            FromStatus = MeetingStatus.Draft,
+            ToStatus = MeetingStatus.WaitingApproval,
+            ActorId = _creatorId,
+            AssignedApproverId = legacyApproverId,
+            OccurredAt = DateTimeOffset.UtcNow.AddMinutes(-1),
+        };
+        _db.MeetingStatusHistory.Add(originalHistory);
+        await _db.SaveChangesAsync();
+
+        using var app = new PostgreSqlMeetingApiFactory(_connectionString);
+        using var client = app.CreateClient();
+        var organizer = await _db.Users.SingleAsync(user => user.Id == _creatorId);
+        var issuer = app.Services.GetRequiredService<ITokenIssuer>();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
+            issuer.CreateAccessToken(organizer, [Capability.MeetingCreator, Capability.MeetingApprover]));
+
+        var withdrawal = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions",
+            new { action = "ReturnToDraft" });
+        Assert.Equal(HttpStatusCode.OK, withdrawal.StatusCode);
+
+        await using var verify = NewContext();
+        var draft = await verify.Meetings.AsNoTracking().SingleAsync(item => item.Id == meeting.Id);
+        Assert.Equal(MeetingStatus.Draft, draft.Status);
+        Assert.Null(draft.AssignedApproverId);
+        var history = await verify.MeetingStatusHistory.AsNoTracking()
+            .Where(item => item.MeetingId == meeting.Id).OrderBy(item => item.OccurredAt).ThenBy(item => item.Id).ToListAsync();
+        Assert.Equal(2, history.Count);
+        Assert.Equal(originalHistory.Id, history[0].Id);
+        Assert.Equal(legacyApproverId, history[0].AssignedApproverId);
+        Assert.Equal(MeetingHistoryAction.ReturnToDraft, history[1].Action);
+        Assert.Equal(MeetingStatus.WaitingApproval, history[1].FromStatus);
+        Assert.Equal(MeetingStatus.Draft, history[1].ToStatus);
+        Assert.Equal(_creatorId, history[1].ActorId);
+        Assert.False(await verify.Notifications.AnyAsync(item => item.MeetingId == meeting.Id));
+        Assert.False(await verify.EmailMessages.AnyAsync(item => item.MeetingId == meeting.Id));
+        await Assert.ThrowsAsync<PostgresException>(async () =>
+            await verify.Database.ExecuteSqlInterpolatedAsync(
+                $"UPDATE meeting_status_history SET reason = {"changed"} WHERE id = {history[1].Id}"));
+
+        var resubmit = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions",
+            new { action = "SubmitForApproval", assignedApproverId = newApprover.Id });
+        Assert.Equal(HttpStatusCode.OK, resubmit.StatusCode);
+        var waiting = await verify.Meetings.AsNoTracking().SingleAsync(item => item.Id == meeting.Id);
+        Assert.Equal(MeetingStatus.WaitingApproval, waiting.Status);
+        Assert.Equal(newApprover.Id, waiting.AssignedApproverId);
+        Assert.Equal(3, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meeting.Id));
+        Assert.Equal(1, await verify.Notifications.CountAsync(item =>
+            item.MeetingId == meeting.Id && item.UserId == newApprover.Id));
+        Assert.False(await verify.EmailMessages.AnyAsync(item => item.MeetingId == meeting.Id));
+    }
+
     [Fact]
     public async Task Lifecycle_round_trip_persists_one_immutable_history_per_action_and_publish_snapshot()
     {

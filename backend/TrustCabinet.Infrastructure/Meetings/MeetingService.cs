@@ -347,13 +347,14 @@ public sealed class MeetingService(
                     return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.StatusConflict);
                 }
 
-                // Recover a blocked approval cycle only after rechecking the assigned user's
-                // current eligibility under the meeting lock. An eligible approver keeps the cycle.
+                // Recover blocked or legacy invalid assignments under the meeting lock.
+                // A different, active and capable approver keeps the current approval cycle.
                 if (command.Action == MeetingTransitionAction.ReturnToDraft
                     && fromStatus == MeetingStatus.WaitingApproval)
                 {
-                    if (meeting.AssignedApproverId is not { } assignedApproverId
-                        || await meetings.IsActiveUserWithCapabilityAsync(
+                    if (meeting.AssignedApproverId is { } assignedApproverId
+                        && assignedApproverId != meeting.CreatedById
+                        && await meetings.IsActiveUserWithCapabilityAsync(
                             assignedApproverId, Capability.MeetingApprover, token))
                     {
                         return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.StatusConflict);

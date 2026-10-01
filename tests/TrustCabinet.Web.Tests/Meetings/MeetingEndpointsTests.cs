@@ -193,6 +193,34 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Empty(_factory.Meetings.EmailMessages);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Legacy_missing_or_self_assignment_returns_MSG49_when_the_organizer_withdraws(bool selfAssignment)
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator, selfAssignment ? creator.Id : null);
+        meeting.Status = MeetingStatus.WaitingApproval;
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator, Capability.MeetingApprover];
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator, Capability.MeetingApprover);
+
+        var response = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions",
+            new { action = "ReturnToDraft" });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("MSG49", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("WaitingApproval", body.RootElement.GetProperty("history").GetProperty("fromStatus").GetString());
+        Assert.Equal("Draft", body.RootElement.GetProperty("history").GetProperty("resultingStatus").GetString());
+        Assert.Equal(MeetingStatus.Draft, meeting.Status);
+        Assert.Null(meeting.AssignedApproverId);
+        Assert.Equal(MeetingHistoryAction.ReturnToDraft, Assert.Single(meeting.StatusHistory).Action);
+        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Empty(_factory.Meetings.EmailMessages);
+        Assert.Empty(_factory.Invitations.Publications);
+    }
+
     [Fact]
     public async Task Post_transition_accepts_the_documented_submit_contract_and_returns_history()
     {
