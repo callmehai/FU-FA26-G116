@@ -4,6 +4,7 @@ import type {
   MeetingListQuery,
   MeetingListResponse,
   MeetingMutationResponse,
+  MeetingOrganizerTransferResponse,
   MeetingRequest,
 } from '../types/meeting'
 import { api } from './client'
@@ -41,3 +42,10 @@ export const updateMeeting = (id: string, body: MeetingRequest) =>
 
 /** Who can be picked as approver. Needs `MeetingCreator`, like the forms that use it. */
 export const listMeetingApprovers = () => api.get<MeetingApprover[]>('/api/meetings/approvers')
+
+/** AdminUsers recovery only; the active replacement organizer publishes through the normal flow. */
+export const transferMeetingOrganizer = (id: string, organizerId: string) =>
+  api.post<MeetingOrganizerTransferResponse>(`/api/meetings/${id}/transitions`, {
+    action: 'TransferOrganizer',
+    organizerId,
+  })

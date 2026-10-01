@@ -45,6 +45,12 @@ người nhận và các transition:
 
 ## Vì sao cần ghi lại
 
+Meeting Approved có Organizer inactive được quản trị active/có AdminUsers chuyển sang Organizer
+mới bằng `TransferOrganizer`. Người mới phải active/có MeetingCreator, khác người cũ và current
+Assigned Approver; sau đó công bố bằng quyền Organizer bình thường. Trạng thái Approved, nội dung
+và assignment không đổi; thao tác transfer ghi history bất biến với Organizer cũ/mới và actor/time,
+không tạo notification/invitation. Không có quyền Publish riêng cho admin hoặc Chair.
+
 - **Phân quyền bám theo trạng thái.** Sửa nội dung chỉ được phép ở `Draft` và `Rejected`. Biểu
   quyết chỉ mở khi `InProgress`. Biên bản chỉ sinh được sau `Ended`.
 - **Lịch sử trạng thái là bằng chứng.** Màn chi tiết hiển thị timeline ai chuyển trạng thái, lúc

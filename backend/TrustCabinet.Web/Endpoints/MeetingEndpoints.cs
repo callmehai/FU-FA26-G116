@@ -45,6 +45,9 @@ public static class MeetingEndpoints
     private const string Msg62WorkflowActiveUserCheckFailed = "MSG62";
     private const string Msg63ApprovalConflict = "MSG63";
     private const string Msg64ReturnToDraftConflict = "MSG64";
+    private const string Msg65OrganizerTransferred = "MSG65";
+    private const string Msg66OrganizerInvalid = "MSG66";
+    private const string Msg67OrganizerTransferConflict = "MSG67";
 
     public static IEndpointRouteBuilder MapMeetingEndpoints(this IEndpointRouteBuilder app)
     {
@@ -179,6 +182,8 @@ public static class MeetingEndpoints
                 StatusCodes.Status400BadRequest, Msg51SubmissionNotReady, "Cuộc họp chưa đủ thông tin để gửi duyệt.", result.Errors),
             MeetingWorkflowOutcome.InvalidApprover => WorkflowError(
                 StatusCodes.Status400BadRequest, Msg52ApproverInvalid, "Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp."),
+            MeetingWorkflowOutcome.InvalidOrganizer => WorkflowError(
+                StatusCodes.Status400BadRequest, Msg66OrganizerInvalid, "Người tổ chức mới không hợp lệ hoặc không còn quyền tạo cuộc họp."),
             MeetingWorkflowOutcome.RejectionReasonRequired => WorkflowError(
                 StatusCodes.Status400BadRequest, Msg53RejectionReasonRequired, "Cần nhập lý do từ chối."),
             MeetingWorkflowOutcome.RejectionReasonTooLong => WorkflowError(
@@ -247,6 +252,7 @@ public static class MeetingEndpoints
         string? actionText = null;
         string? reason = null;
         Guid? assignedApproverId = null;
+        Guid? organizerId = null;
         var hasReason = false;
         var seen = new HashSet<string>(StringComparer.Ordinal);
         foreach (var property in root.EnumerateObject())
@@ -268,6 +274,14 @@ public static class MeetingEndpoints
                     }
                     assignedApproverId = parsedId;
                     break;
+                case "organizerId" when property.Value.ValueKind == JsonValueKind.String:
+                    if (!Guid.TryParse(property.Value.GetString(), out var parsedOrganizerId)
+                        || parsedOrganizerId == Guid.Empty)
+                    {
+                        return null;
+                    }
+                    organizerId = parsedOrganizerId;
+                    break;
                 case "reason" when property.Value.ValueKind == JsonValueKind.String:
                     hasReason = true;
                     reason = property.Value.GetString();
@@ -288,12 +302,16 @@ public static class MeetingEndpoints
             return null;
         }
 
-        var command = new MeetingTransitionCommand(action, assignedApproverId, reason);
+        var command = new MeetingTransitionCommand(action, assignedApproverId, reason, organizerId);
         return action switch
         {
-            MeetingTransitionAction.SubmitForApproval when assignedApproverId.HasValue && !hasReason => command,
-            MeetingTransitionAction.Reject when !assignedApproverId.HasValue => command,
-            _ when !assignedApproverId.HasValue && !hasReason => command,
+            MeetingTransitionAction.SubmitForApproval when assignedApproverId.HasValue && !hasReason
+                && !organizerId.HasValue => command,
+            MeetingTransitionAction.Reject when !assignedApproverId.HasValue && !organizerId.HasValue => command,
+            MeetingTransitionAction.TransferOrganizer when organizerId.HasValue
+                && !assignedApproverId.HasValue && !hasReason => command,
+            _ when action != MeetingTransitionAction.TransferOrganizer
+                && !assignedApproverId.HasValue && !hasReason && !organizerId.HasValue => command,
             _ => null,
         };
     }
@@ -305,6 +323,7 @@ public static class MeetingEndpoints
         MeetingTransitionAction.Reject => "Đã từ chối cuộc họp.",
         MeetingTransitionAction.ReturnToDraft => "Đã đưa cuộc họp về bản nháp.",
         MeetingTransitionAction.Publish => "Đã công bố cuộc họp.",
+        MeetingTransitionAction.TransferOrganizer => "Đã chuyển cuộc họp cho người tổ chức mới.",
         _ => "Đã chuyển trạng thái cuộc họp.",
     };
 
@@ -315,6 +334,7 @@ public static class MeetingEndpoints
         MeetingTransitionAction.Reject => Msg44Rejected,
         MeetingTransitionAction.ReturnToDraft => Msg49ReturnedToDraft,
         MeetingTransitionAction.Publish => Msg45Published,
+        MeetingTransitionAction.TransferOrganizer => Msg65OrganizerTransferred,
         _ => Msg50InvalidTransition,
     };
 
@@ -324,6 +344,7 @@ public static class MeetingEndpoints
         MeetingTransitionAction.Approve or MeetingTransitionAction.Reject => Msg63ApprovalConflict,
         MeetingTransitionAction.ReturnToDraft => Msg64ReturnToDraftConflict,
         MeetingTransitionAction.Publish => Msg46PublishConflict,
+        MeetingTransitionAction.TransferOrganizer => Msg67OrganizerTransferConflict,
         _ => Msg50InvalidTransition,
     };
 
@@ -414,13 +435,15 @@ public static class MeetingEndpoints
     }
 
     private static async Task<IResult> ListApproversAsync(
+        ClaimsPrincipal principal,
         IMeetingService service,
         CancellationToken ct)
     {
+        var actorId = CapabilityGate.GatedUserId(principal);
         var result = await service.ListEligibleApproversAsync(ct);
         return result.Outcome switch
         {
-            MeetingOutcome.Success => Results.Ok(result.Approvers),
+            MeetingOutcome.Success => Results.Ok(result.Approvers!.Where(approver => approver.Id != actorId).ToArray()),
             _ => SaveFailed(
                 Msg61ApproversLoadFailed,
                 "Không thể tải danh sách người duyệt. Vui lòng thử lại."),
@@ -661,7 +684,9 @@ public sealed record MeetingHistoryItemResponse(
     string ActorName,
     DateTimeOffset OccurredAt,
     string? RejectionReason,
-    Guid? AssignedApproverId)
+    Guid? AssignedApproverId,
+    Guid? PreviousOrganizerId = null,
+    Guid? NewOrganizerId = null)
 {
     public static MeetingHistoryItemResponse From(MeetingHistoryRecord history) => new(
         history.Id,
@@ -673,7 +698,9 @@ public sealed record MeetingHistoryItemResponse(
         history.ActorName,
         history.OccurredAt,
         history.RejectionReason,
-        history.AssignedApproverId);
+        history.AssignedApproverId,
+        history.PreviousOrganizerId,
+        history.NewOrganizerId);
 }
 
 public sealed record MeetingHistoryPageResponse(

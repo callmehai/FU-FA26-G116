@@ -26,6 +26,8 @@ public interface IMeetingRepository
     Task<bool> IsActiveUserWithCapabilityAsync(
         Guid userId, Capability capability, CancellationToken ct = default);
 
+    Task<bool> IsUserActiveAsync(Guid userId, CancellationToken ct = default);
+
     Task<string?> FindUserDisplayNameAsync(Guid userId, CancellationToken ct = default);
 
     Task AddNotificationsAsync(IReadOnlyCollection<Notification> notifications, CancellationToken ct = default);

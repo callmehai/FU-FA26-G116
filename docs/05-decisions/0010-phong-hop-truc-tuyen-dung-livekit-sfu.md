@@ -121,7 +121,8 @@ Kế hoạch triển khai chi tiết: [08-ke-hoach-phong-hop-truc-tuyen.md](../0
     trong `CallRoomRules.StatusOf`, `CallRepository.ListAllowedUserIdsAsync` và job đối soát;
   - ticket làm `meeting_sessions` phải đồng thời đổi ba chỗ đó sang "có phiên `InProgress`", thêm
     cột `call_sessions.meeting_session_id` bằng migration mới, và thêm test cho trường hợp giữa
-    hai phiên. Mã `MSG65` ("phòng chưa mở") giữ nguyên nghĩa, chỉ đổi điều kiện.
+    hai phiên. Tình huống "phòng chưa mở" giữ nguyên nghĩa, chỉ đổi điều kiện; lấy mã còn trống
+    từ catalogue lúc triển khai. `MSG65` đã dành cho TransferOrganizer của SCRUM-19.
 - **Webhook không tin tuyệt đối.** Mọi xử lý webhook phải idempotent; job đối soát là nguồn đúng
   cuối cùng.
 - **`SCRUM-59` (khách ngoài hệ thống) phải thiết kế thêm:**

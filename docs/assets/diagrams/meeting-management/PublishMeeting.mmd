@@ -1,6 +1,7 @@
 sequenceDiagram
     title UC-17 - Công bố cuộc họp
     actor Organizer as Người tổ chức
+    actor Admin as Quản trị
     participant Page as Màn quản lý cuộc họp
     participant API as Meeting API
     participant Service as Meeting Service
@@ -8,6 +9,28 @@ sequenceDiagram
     participant Producer as Producer invitation SCRUM-15
     participant Worker as Worker email SCRUM-15
     participant Email as Dịch vụ email
+
+    opt Meeting Approved có Organizer inactive
+        Admin->>API: POST transitions, action=TransferOrganizer, organizerId
+        API->>Service: Actor từ phiên đăng nhập, kiểm tra AdminUsers hiện tại
+        Service->>DB: BEGIN, khóa meeting, kiểm tra Approved và Organizer cũ inactive
+        Service->>DB: Kiểm tra người mới active, có MeetingCreator, khác current approver
+        alt Đủ điều kiện khôi phục
+            Service->>DB: Đổi Organizer, thêm history có người cũ và mới, giữ Approved
+            Note over Service,DB: Không tạo notification/email, giữ nguyên history và approval cũ.
+            alt Lưu hoặc commit thất bại
+                Service->>DB: ROLLBACK toàn bộ
+                Service-->>API: 503 MSG59
+            else Commit thành công
+                Service->>DB: COMMIT
+                Service-->>API: 200 MSG65, history TransferOrganizer
+            end
+        else Sai quyền, trạng thái hoặc người nhận
+            Service->>DB: Kết thúc transaction không ghi dữ liệu
+            Service-->>API: 404 hoặc 409 MSG67 hoặc 400 MSG66
+        end
+        Note over Page,API: Sau transfer, Organizer mới công bố theo flow bình thường.
+    end
 
     Organizer->>Page: Chọn Công bố
     Page->>API: POST /api/meetings/{id}/transitions, action=Publish

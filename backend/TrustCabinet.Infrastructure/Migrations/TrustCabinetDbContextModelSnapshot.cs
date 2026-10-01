@@ -513,27 +513,9 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("meeting_id");
 
-                    b.Property<string>("MessageType")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("message_type");
-
                     b.Property<DateTimeOffset?>("NextAttemptAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("next_attempt_at");
-
-                    b.Property<Guid?>("OriginHistoryId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("origin_history_id");
-
-                    b.Property<string>("PayloadSnapshot")
-                        .HasMaxLength(50000)
-                        .HasColumnType("character varying(50000)")
-                        .HasColumnName("payload_snapshot");
-
-                    b.Property<Guid?>("RecipientUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("recipient_user_id");
 
                     b.Property<DateTimeOffset?>("SentAt")
                         .HasColumnType("timestamp with time zone")
@@ -573,14 +555,6 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("MeetingId")
                         .HasDatabaseName("ix_email_messages_meeting_id");
-
-                    b.HasIndex("RecipientUserId")
-                        .HasDatabaseName("ix_email_messages_recipient_user_id");
-
-                    b.HasIndex("OriginHistoryId", "RecipientUserId", "MessageType")
-                        .IsUnique()
-                        .HasDatabaseName("ix_email_messages_origin_history_id_recipient_user_id_message_")
-                        .HasFilter("origin_history_id IS NOT NULL");
 
                     b.HasIndex("Status", "NextAttemptAt", "CreatedAt")
                         .HasDatabaseName("ix_email_messages_status_next_attempt_at_created_at");
@@ -920,9 +894,17 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("meeting_id");
 
+                    b.Property<Guid?>("NewOrganizerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("new_organizer_id");
+
                     b.Property<DateTimeOffset>("OccurredAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("occurred_at");
+
+                    b.Property<Guid?>("PreviousOrganizerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("previous_organizer_id");
 
                     b.Property<string>("Reason")
                         .IsRequired()
@@ -948,6 +930,12 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("AssignedApproverId")
                         .HasDatabaseName("ix_meeting_status_history_assigned_approver_id");
+
+                    b.HasIndex("NewOrganizerId")
+                        .HasDatabaseName("ix_meeting_status_history_new_organizer_id");
+
+                    b.HasIndex("PreviousOrganizerId")
+                        .HasDatabaseName("ix_meeting_status_history_previous_organizer_id");
 
                     b.HasIndex("MeetingId", "OccurredAt")
                         .HasDatabaseName("ix_meeting_status_history_meeting_id_occurred_at");
@@ -1973,21 +1961,7 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_email_messages_meetings_meeting_id");
 
-                    b.HasOne("TrustCabinet.Domain.Entities.MeetingStatusHistory", null)
-                        .WithMany()
-                        .HasForeignKey("OriginHistoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_email_messages_meeting_status_history_origin_history_id");
-
-                    b.HasOne("TrustCabinet.Domain.Entities.User", "RecipientUser")
-                        .WithMany()
-                        .HasForeignKey("RecipientUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_email_messages_users_recipient_user_id");
-
                     b.Navigation("Meeting");
-
-                    b.Navigation("RecipientUser");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.Meeting", b =>
@@ -2135,11 +2109,27 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_meeting_status_history_meetings_meeting_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "NewOrganizer")
+                        .WithMany()
+                        .HasForeignKey("NewOrganizerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_meeting_status_history_users_new_organizer_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "PreviousOrganizer")
+                        .WithMany()
+                        .HasForeignKey("PreviousOrganizerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_meeting_status_history_users_previous_organizer_id");
+
                     b.Navigation("Actor");
 
                     b.Navigation("AssignedApprover");
 
                     b.Navigation("Meeting");
+
+                    b.Navigation("NewOrganizer");
+
+                    b.Navigation("PreviousOrganizer");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.MeetingSummary", b =>

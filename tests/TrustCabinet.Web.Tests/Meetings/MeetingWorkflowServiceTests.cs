@@ -516,6 +516,221 @@ public sealed class MeetingWorkflowServiceTests
         Assert.False(_repository.LastWorkflowForUpdate);
     }
 
+    [Fact]
+    public async Task Administrative_transfer_recovers_an_approved_meeting_and_records_typed_organizer_ids()
+    {
+        var meeting = GivenMeeting(MeetingStatus.Approved);
+        var administrator = Guid.CreateVersion7();
+        var replacement = Guid.CreateVersion7();
+        Grant(administrator, Capability.AdminUsers);
+        Grant(replacement, Capability.MeetingCreator);
+        _repository.InactiveUserIds.Add(_organizerId);
+        var approval = new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            FromStatus = MeetingStatus.WaitingApproval,
+            ToStatus = MeetingStatus.Approved,
+            Action = MeetingHistoryAction.Approve,
+            ActorId = _approverId,
+            OccurredAt = DateTimeOffset.UtcNow.AddMinutes(-1),
+        };
+        meeting.StatusHistory.Add(approval);
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.TransferOrganizer, OrganizerId: replacement),
+            administrator);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        Assert.Equal(MeetingStatus.Approved, meeting.Status);
+        Assert.Equal(replacement, meeting.CreatedById);
+        Assert.Equal(_approverId, meeting.AssignedApproverId);
+        Assert.Equal(2, meeting.StatusHistory.Count);
+        Assert.Same(approval, meeting.StatusHistory.First());
+        var transfer = meeting.StatusHistory.Last();
+        Assert.Equal(MeetingHistoryAction.TransferOrganizer, transfer.Action);
+        Assert.Equal(MeetingStatus.Approved, transfer.FromStatus);
+        Assert.Equal(MeetingStatus.Approved, transfer.ToStatus);
+        Assert.Equal(administrator, transfer.ActorId);
+        Assert.Equal(_organizerId, transfer.PreviousOrganizerId);
+        Assert.Equal(replacement, transfer.NewOrganizerId);
+        Assert.Equal(_organizerId, result.History!.PreviousOrganizerId);
+        Assert.Equal(replacement, result.History.NewOrganizerId);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_invitations.MeetingIds);
+        Assert.True(_repository.LastWorkflowForUpdate);
+
+        Assert.Equal(MeetingOutcome.NotFound, (await NewService().GetAsync(meeting.Id, administrator)).Outcome);
+        Assert.Equal(MeetingWorkflowOutcome.NotFound,
+            (await NewService().GetHistoryAsync(meeting.Id, administrator, 1, 20)).Outcome);
+        var retry = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.TransferOrganizer, OrganizerId: Guid.CreateVersion7()),
+            administrator);
+        Assert.Equal(MeetingWorkflowOutcome.StatusConflict, retry.Outcome);
+        Assert.Equal(2, meeting.StatusHistory.Count);
+
+        var publish = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.Publish), replacement);
+        Assert.Equal(MeetingWorkflowOutcome.Success, publish.Outcome);
+        Assert.Equal(MeetingStatus.Published, meeting.Status);
+        Assert.Equal(meeting.Id, Assert.Single(_invitations.MeetingIds));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Transfer_requires_current_active_administrator_before_reading_the_meeting(bool inactive)
+    {
+        var meeting = GivenMeeting(MeetingStatus.Approved);
+        var administrator = Guid.CreateVersion7();
+        Grant(administrator, inactive ? Capability.AdminUsers : Capability.MeetingCreator);
+        if (inactive) _repository.InactiveUserIds.Add(administrator);
+        _repository.InactiveUserIds.Add(_organizerId);
+        _repository.NextWorkflowReadThrows = new InvalidOperationException("Resource must not be loaded");
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.TransferOrganizer, OrganizerId: Guid.CreateVersion7()),
+            administrator);
+
+        Assert.Equal(MeetingWorkflowOutcome.NotFound, result.Outcome);
+        Assert.NotNull(_repository.NextWorkflowReadThrows);
+        Assert.Equal(_organizerId, meeting.CreatedById);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_repository.Notifications);
+    }
+
+    [Fact]
+    public async Task Transfer_cannot_replace_an_active_organizer_even_if_their_creator_capability_was_removed()
+    {
+        var meeting = GivenMeeting(MeetingStatus.Approved);
+        _repository.UserCapabilities[_organizerId].Clear();
+        var administrator = Guid.CreateVersion7();
+        var replacement = Guid.CreateVersion7();
+        Grant(administrator, Capability.AdminUsers);
+        Grant(replacement, Capability.MeetingCreator);
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.TransferOrganizer, OrganizerId: replacement),
+            administrator);
+
+        Assert.Equal(MeetingWorkflowOutcome.StatusConflict, result.Outcome);
+        Assert.Equal(_organizerId, meeting.CreatedById);
+        Assert.Empty(meeting.StatusHistory);
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("inactive")]
+    [InlineData("withoutCapability")]
+    [InlineData("previousOrganizer")]
+    [InlineData("assignedApprover")]
+    public async Task Transfer_rejects_an_invalid_organizer_without_recording_history(string target)
+    {
+        var meeting = GivenMeeting(MeetingStatus.Approved);
+        var administrator = Guid.CreateVersion7();
+        var replacement = target switch
+        {
+            "previousOrganizer" => _organizerId,
+            "assignedApprover" => _approverId,
+            _ => Guid.CreateVersion7(),
+        };
+        Grant(administrator, Capability.AdminUsers);
+        _repository.InactiveUserIds.Add(_organizerId);
+        if (target != "missing")
+        {
+            Grant(replacement, target == "withoutCapability" ? Capability.MeetingApprover : Capability.MeetingCreator);
+        }
+        if (target == "inactive") _repository.InactiveUserIds.Add(replacement);
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.TransferOrganizer, OrganizerId: replacement),
+            administrator);
+
+        Assert.Equal(MeetingWorkflowOutcome.InvalidOrganizer, result.Outcome);
+        Assert.Equal(_organizerId, meeting.CreatedById);
+        Assert.Equal(_approverId, meeting.AssignedApproverId);
+        Assert.Equal(MeetingStatus.Approved, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_invitations.MeetingIds);
+    }
+
+    [Theory]
+    [InlineData(MeetingStatus.Draft)]
+    [InlineData(MeetingStatus.WaitingApproval)]
+    [InlineData(MeetingStatus.Rejected)]
+    [InlineData(MeetingStatus.Published)]
+    public async Task Transfer_requires_an_approved_meeting(MeetingStatus status)
+    {
+        var meeting = GivenMeeting(status);
+        var administrator = Guid.CreateVersion7();
+        var replacement = Guid.CreateVersion7();
+        Grant(administrator, Capability.AdminUsers);
+        Grant(replacement, Capability.MeetingCreator);
+        _repository.InactiveUserIds.Add(_organizerId);
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.TransferOrganizer, OrganizerId: replacement),
+            administrator);
+
+        Assert.Equal(MeetingWorkflowOutcome.StatusConflict, result.Outcome);
+        Assert.Equal(status, meeting.Status);
+        Assert.Equal(_organizerId, meeting.CreatedById);
+        Assert.Empty(meeting.StatusHistory);
+    }
+
+    [Fact]
+    public async Task Transfer_save_failure_rolls_back_the_organizer_and_history()
+    {
+        var meeting = GivenMeeting(MeetingStatus.Approved);
+        var administrator = Guid.CreateVersion7();
+        var replacement = Guid.CreateVersion7();
+        Grant(administrator, Capability.AdminUsers);
+        Grant(replacement, Capability.MeetingCreator);
+        _repository.InactiveUserIds.Add(_organizerId);
+        _repository.NextSaveThrows = new TimeoutException("Persistence unavailable");
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.TransferOrganizer, OrganizerId: replacement),
+            administrator);
+
+        Assert.Equal(MeetingWorkflowOutcome.SaveFailed, result.Outcome);
+        var persisted = Assert.Single(_repository.Meetings);
+        Assert.Equal(_organizerId, persisted.CreatedById);
+        Assert.Equal(_approverId, persisted.AssignedApproverId);
+        Assert.Equal(MeetingStatus.Approved, persisted.Status);
+        Assert.Empty(persisted.StatusHistory);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_invitations.MeetingIds);
+    }
+
+    [Fact]
+    public async Task Transfer_organizer_ids_are_visible_only_in_full_history()
+    {
+        var meeting = GivenMeeting(MeetingStatus.Published);
+        var member = Participant(meeting, active: true, InvitationResponse.Accepted);
+        meeting.Participants.Add(member);
+        meeting.StatusHistory.Add(new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            FromStatus = MeetingStatus.Approved,
+            ToStatus = MeetingStatus.Approved,
+            Action = MeetingHistoryAction.TransferOrganizer,
+            ActorId = Guid.CreateVersion7(),
+            PreviousOrganizerId = Guid.CreateVersion7(),
+            NewOrganizerId = _organizerId,
+            OccurredAt = DateTimeOffset.UtcNow,
+        });
+
+        var full = await NewService().GetHistoryAsync(meeting.Id, _organizerId, 1, 20);
+        var limited = await NewService().GetHistoryAsync(meeting.Id, member.UserId, 1, 20);
+
+        Assert.NotNull(Assert.Single(full.Page!.Items).PreviousOrganizerId);
+        Assert.Equal(_organizerId, full.Page.Items.Single().NewOrganizerId);
+        Assert.Null(Assert.Single(limited.Page!.Items).PreviousOrganizerId);
+        Assert.Null(limited.Page.Items.Single().NewOrganizerId);
+        Assert.Equal(MeetingHistoryAction.TransferOrganizer, limited.Page.Items.Single().Action);
+    }
+
     private static MeetingParticipant Participant(
         Meeting meeting, bool active, InvitationResponse response)
     {

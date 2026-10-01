@@ -46,10 +46,4 @@ public class EmailMessage : Entity
     public Guid? MeetingId { get; set; }
     public Meeting? Meeting { get; set; }
 
-    public Guid? OriginHistoryId { get; set; }
-    public Guid? RecipientUserId { get; set; }
-    public User? RecipientUser { get; set; }
-    public EmailMessageType? MessageType { get; set; }
-    /// <summary>Legacy SCRUM-19 payload. New jobs use persisted Body/CalendarAttachment.</summary>
-    public string? PayloadSnapshot { get; set; }
 }

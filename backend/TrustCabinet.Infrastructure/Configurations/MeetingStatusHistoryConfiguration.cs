@@ -32,5 +32,15 @@ public class MeetingStatusHistoryConfiguration : IEntityTypeConfiguration<Meetin
             .WithMany()
             .HasForeignKey(h => h.AssignedApproverId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(h => h.PreviousOrganizer)
+            .WithMany()
+            .HasForeignKey(h => h.PreviousOrganizerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(h => h.NewOrganizer)
+            .WithMany()
+            .HasForeignKey(h => h.NewOrganizerId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

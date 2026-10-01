@@ -22,8 +22,8 @@ Producer SCRUM-15 đọc meeting Published cùng participants, render và lưu n
   không lọc `Response` và không tự thêm `DelegatedToUserId`.
 - `DeduplicationKey` là `meeting:{meetingId}:published:{userId}`.
 - Jobs lưu `ToAddress`, `Subject`, `Body`, `CalendarAttachment`; worker gửi nội dung đã lưu.
-  Các cột nullable `OriginHistoryId`, `RecipientUserId`, `MessageType`, `PayloadSnapshot` giữ cho
-  dữ liệu cũ, job mới không ghi chúng. Thay đổi dữ liệu sau commit không sửa nội dung job đã lưu.
+  Bốn cột email không dùng `OriginHistoryId`, `RecipientUserId`, `MessageType`, `PayloadSnapshot`
+  được bỏ bằng migration mới. Thay đổi dữ liệu sau commit không sửa nội dung job đã lưu.
 - Khi bật SMTP, job mới có `Queued`, `SentAt = null`; Publish không xác nhận email đã được giao.
 - Producer không tạo được jobs thì Publish rollback toàn bộ và trả `503 MSG47`.
 - SMTP `Enabled=false` dừng worker và không tạo job mới; Publish vẫn thành công và giữ nguyên
@@ -40,6 +40,14 @@ Chạy upgrade đến migration mới nhất, không dừng ở migration Stage.
 `AlignMeetingWorkflowEmailDelivery` đồng bộ metadata của model meeting/email; Up/Down không
 thay đổi schema. Xem thêm [hướng dẫn cài đặt](07-gui-email-thu-moi-note-cai-dat-may-moi.md).
 
+Migration mới `MeetingWorkflowReviewCorrections` bỏ bốn cột email trên, hai FK, composite unique
+index và index phụ của recipient; không đụng `Notification.OriginHistoryId` hoặc bảo vệ append-only.
+Migration giữ nguyên jobs, key, nội dung, delivery state và lease. Down khôi phục schema nullable,
+không khôi phục giá trị metadata cũ đã bị bỏ. Nếu đã có history TransferOrganizer, Down bị chặn
+để không mất bằng chứng Organizer cũ/mới hoặc để lại action mà model cũ không đọc được.
+Cùng migration bổ sung ID Organizer cũ/mới cho history
+`TransferOrganizer`; không sửa các migration đã phát hành.
+
 ## Checklist FE/Tester
 
 - FE bổ sung type/API wrapper, lựa chọn approver khi submit, workflow controls và timeline.
@@ -53,3 +61,31 @@ thay đổi schema. Xem thêm [hướng dẫn cài đặt](07-gui-email-thu-moi-
 - Kiểm tra rollback khi lưu lỗi và concurrent Publish chỉ tạo một history/batch.
 - Writer participant SCRUM-20 và agenda SCRUM-25 dùng cùng meeting-row lock protocol.
 - Xử lý HTTP/message codes theo API contract; trạng thái gửi email theo SCRUM-15.
+
+## Khôi phục meeting Approved và phạm vi PR
+
+Theo quyết định người dùng ngày 01/10/2026, quản trị active/có AdminUsers được TransferOrganizer
+khi Organizer cũ inactive và meeting còn Approved. Người nhận active/có MeetingCreator, khác
+người cũ/current approver. History lưu Organizer cũ/mới và actor/time; trạng thái, approval và
+notification/email giữ nguyên. FE/Tester nhận body organizerId, MSG65/66/67 cùng lỗi shape,
+quyền và persistence theo [API contract](05-quan-ly-cuoc-hop.md). Organizer mới dùng Publish bình thường.
+Không có UI workflow trong thay đổi backend; chỉ type/API wrapper cho contract mới.
+
+PR #50 tách RoleService/fixture đã đóng mà chưa merge. Vì thế branch này vẫn chứa fix RESTRICT của
+RoleService và helper/fixture PostgreSQL; các fix này chưa vào main. PR #41 hiện dùng dependency
+branch làm base nên diff review không thể hiện toàn bộ thay đổi sẽ vào main. Mô tả PR phải ghi rõ
+phần prerequisite này; không gọi việc tách phạm vi là đã hoàn tất hoặc tạo branch mới để che diff.
+
+## Kiểm chứng bản local ngày 01/10/2026
+
+- `dotnet build TrustCabinet.sln --no-restore -warnaserror`: 0 warning/error.
+- `dotnet test TrustCabinet.sln --no-build`: 767/767 pass, 0 fail, 0 skipped; PostgreSQL thật với
+  database riêng cho từng fixture và Redis local. Gồm HTTP → service → EF cho transfer rồi Publish,
+  migration bỏ email metadata giữ delivery jobs, và từ chối downgrade sau khi có transfer history.
+- `npm run lint` và `npm run build`: pass; thay đổi frontend chỉ là type/API contract, không thêm UI.
+- EF không có pending model changes; Mermaid Publish đã validate/export; `git diff --check` sạch.
+
+Lượt test trong sandbox Windows ban đầu lỗi quyền EventLog/TLS; chạy lại ngoài sandbox pass toàn bộ.
+Không gửi SMTP thật, không áp migration vào database Development của người dùng. Các thay đổi ở
+checkout hiện tại chưa commit/push; CI trên PR không tự chứng minh bản local này. Backend Ready
+không thay thế FE integration, BA Final Review và Tester sign-off của Story Done.

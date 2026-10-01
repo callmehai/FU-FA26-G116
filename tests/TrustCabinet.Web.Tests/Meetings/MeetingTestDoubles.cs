@@ -37,6 +37,8 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
 
     public Dictionary<Guid, HashSet<Capability>> UserCapabilities { get; } = [];
 
+    public HashSet<Guid> InactiveUserIds { get; } = [];
+
     public List<Notification> Notifications { get; } = [];
 
     public List<EmailMessage> EmailMessages { get; } = [];
@@ -182,7 +184,9 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
                 item.Id, meetingId, item.Action, item.FromStatus, item.ToStatus, item.ActorId,
                 item.Actor?.FullName ?? "Test User", item.OccurredAt,
                 item.Action == TrustCabinet.Domain.Enums.MeetingHistoryAction.Reject ? item.Reason : null,
-                item.AssignedApproverId))
+                item.AssignedApproverId,
+                item.PreviousOrganizerId,
+                item.NewOrganizerId))
             .ToArray();
         return Task.FromResult<MeetingHistoryPage?>(new MeetingHistoryPage(
             records, page, pageSize, total));
@@ -191,7 +195,11 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
     public Task<bool> IsActiveUserWithCapabilityAsync(
         Guid userId, Capability capability, CancellationToken ct = default)
         => Task.FromResult(UserCapabilities.TryGetValue(userId, out var capabilities)
+            && !InactiveUserIds.Contains(userId)
             && capabilities.Contains(capability));
+
+    public Task<bool> IsUserActiveAsync(Guid userId, CancellationToken ct = default)
+        => Task.FromResult(UserCapabilities.ContainsKey(userId) && !InactiveUserIds.Contains(userId));
 
     public Task<string?> FindUserDisplayNameAsync(Guid userId, CancellationToken ct = default)
         => Task.FromResult<string?>("Test User");

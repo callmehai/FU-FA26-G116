@@ -47,6 +47,7 @@ validate nội dung. Trạng thái khác `Draft`/`Rejected` trả `409 MSG33`.
 | ReturnToDraft | Meeting Organizer active + `MeetingCreator`; Rejected hoặc WaitingApproval có assignment không hợp lệ (thiếu người duyệt, trỏ về Organizer, inactive hoặc mất `MeetingApprover`) | Không |
 | Approve/Reject | Current `AssignedApproverId` + capability `MeetingApprover`, khác Organizer; meeting WaitingApproval | Không; chỉ được nếu Chair đồng thời là current Assigned Approver và không phải Organizer |
 | Publish | Meeting Organizer + `MeetingCreator`; meeting Approved | Không; chỉ được nếu Chair đồng thời là Organizer |
+| TransferOrganizer | Actor active có `AdminUsers`; meeting Approved và Organizer hiện tại inactive; Organizer mới active có `MeetingCreator`, khác người cũ và current Assigned Approver | Không |
 | Đọc full lifecycle history/rejection reason | Meeting Organizer hoặc current Assigned Approver | Chair relationship riêng không cấp quyền ở bất kỳ trạng thái nào |
 | Đọc timeline sau Publish | Người có quyền đọc meeting đã công bố | Chỉ timeline; rejection reason bị ẩn |
 
@@ -121,7 +122,8 @@ thành công/thất bại trong diagram hiện tại.
 
 ### GET `/api/meetings/approvers`
 
-Trả danh sách tài khoản đang hoạt động có capability `MeetingApprover`, sắp xếp theo tên. Response
+Trả danh sách tài khoản đang hoạt động có capability `MeetingApprover`, loại người đang gọi API,
+sắp xếp theo tên. Response
 chỉ gồm `id` và `fullName`; endpoint kế thừa gate `MeetingCreator`. Nếu hệ thống không đọc được
 danh sách do lỗi database hoặc timeout, trả `503 Service Unavailable` với
 `{ "code": "MSG61", "message": "Không thể tải danh sách người duyệt. Vui lòng thử lại." }`.
@@ -181,6 +183,26 @@ Endpoint nhận một action, không nhận actor, source/target status hoặc t
 | `Reject` | `reason` bắt buộc, sau trim 1–1.000 ký tự | WaitingApproval → Rejected |
 | `ReturnToDraft` | Không | Rejected → Draft; hoặc WaitingApproval → Draft khi approver hiện tại không còn hợp lệ |
 | `Publish` | Không | Approved → Published |
+| `TransferOrganizer` | `organizerId` GUID khác rỗng, bắt buộc | Approved → Approved; đổi Organizer khi người cũ inactive |
+
+`TransferOrganizer` là đường khôi phục khi meeting đã duyệt nhưng Organizer bị vô hiệu hóa.
+Gửi `{"action":"TransferOrganizer","organizerId":"<GUID người tổ chức mới>"}` qua endpoint này.
+Backend đọc lại quyền `AdminUsers` của actor, khóa meeting rồi kiểm tra trạng thái/Organizer cũ và
+đích đến trong transaction. Chỉ đổi `CreatedById` (Organizer hiện tại); trạng thái vẫn Approved,
+assignment và nội dung đã duyệt giữ nguyên. Người tạo ban đầu vẫn được chứng minh bằng actor của
+history Create. Không thêm notification/email jobs. Organizer mới Publish bằng flow bình thường.
+
+Success trả `200 MSG65` và một history `TransferOrganizer` với actor/time từ server,
+`previousOrganizerId`, `newOrganizerId`, `fromStatus = resultingStatus = Approved`. Không sửa history
+cũ. Organizer mới cùng current Assigned Approver đọc full history; admin không tự được đọc meeting/
+history qua GET chỉ vì có AdminUsers. Participant timeline ẩn hai field Organizer snapshot này cùng
+rejection reason. Quyền Organizer cũ kết thúc sau transfer; participant relationship riêng vẫn áp dụng.
+
+Không phải admin hiện tại trả `404` để không lộ resource. Người nhận thiếu/inactive/không có
+MeetingCreator, trùng Organizer cũ hoặc current Assigned Approver trả `400 MSG66`. Meeting không
+còn Approved hoặc Organizer cũ vẫn active trả `409 MSG67`, kể cả khi gọi lại sau transfer thành công.
+Sai shape/thiếu organizerId trả `400 MSG50`; lỗi persistence/timeout rollback toàn bộ trả `503 MSG59`.
+Các action khác không nhận organizerId. Quyền Chair hoặc MeetingApprover riêng không cho transfer/Publish.
 
 `ReturnToDraft` chỉ do Organizer thực hiện, tạo đúng một lifecycle history, giữ nguyên rejection
 history/reason cũ, xóa current assignment và không tạo invitation. Organizer có thể sửa thông tin
@@ -205,7 +227,7 @@ bypass lifecycle; Approve/Reject vẫn kiểm tra current assignment và quyền
 
 Transition thành công trả `200 OK` với `{ code, message, meeting, history }`. Code thành công theo
 action lần lượt là `MSG48` (SubmitForApproval), `MSG43` (Approve), `MSG44` (Reject), `MSG49`
-(ReturnToDraft) và `MSG45` (Publish). FE nên dùng `code` để xử lý tình huống; `message` chỉ dành
+(ReturnToDraft), `MSG45` (Publish) và `MSG65` (TransferOrganizer). FE nên dùng `code` để xử lý tình huống; `message` chỉ dành
 cho hiển thị.
 
 Publish tạo notification theo BR-54: chỉ participant có user active và `Response != Delegated`;
@@ -225,6 +247,8 @@ lần Publish và thay đổi participant đồng thời có ranh giới snapsho
 Trả lifecycle history theo `occurredAt ASC`, rồi `id ASC`, có pagination. Mỗi item tối thiểu có
 `id`, `meetingId`, `action`, `fromStatus`, `resultingStatus`, `actorId`, `actorName`, `occurredAt`,
 `rejectionReason` và snapshot `assignedApproverId` khi action là SubmitForApproval.
+
+History TransferOrganizer còn có `previousOrganizerId` và `newOrganizerId`; các action khác trả null.
 
 Meeting Organizer và current Assigned Approver đọc được toàn bộ history và rejection reason.
 Participant có quyền đọc meeting từ Published trở đi nhận timeline với `rejectionReason: null`;
@@ -317,6 +341,7 @@ khoảng trắng bao quanh hoặc tên khác chữ hoa/chữ thường. Request 
 | 403 | — | Tài khoản inactive theo active-user gate |
 | 404 | — | Meeting không tồn tại hoặc caller không được phép đọc/action trên tài nguyên; body rỗng |
 | 409 | `MSG41`, `MSG46`, `MSG63`, `MSG64` | Submit, Publish, quyết định duyệt hoặc ReturnToDraft không còn hợp lệ; không ghi history/jobs |
+| 200/400/409 | `MSG65` / `MSG66` / `MSG67` | TransferOrganizer thành công / đích không hợp lệ / trạng thái hoặc Organizer cũ không cho transfer |
 | 413 | `MSG58` | JSON request vượt 64 KiB |
 | 415 | `MSG34` | POST không dùng `application/json`; dùng chung code với PUT |
 | 503 | `MSG42`, `MSG47`, `MSG59` | Lỗi database/transaction khi transition; transaction rollback |
@@ -333,9 +358,9 @@ SCRUM-19 ghi status, history, database notification và gọi producer SCRUM-15 
 cùng scoped DbContext/transaction. Producer chọn participant có user active, lưu nội dung email
 và dùng `DeduplicationKey = meeting:{meetingId}:published:{userId}`. Worker gửi nội dung đã lưu sau
 commit. SMTP `Enabled=false` không tạo job mới; các job cũ vẫn được giữ. Producer/persistence/timeout
-lỗi trả `503 MSG47` và rollback toàn bộ transaction. Các cột email `OriginHistoryId`,
-`RecipientUserId`, `MessageType`, `PayloadSnapshot` được giữ để tương thích dữ liệu cũ; producer
-hiện tại không ghi chúng và worker không đọc `PayloadSnapshot` để render.
+lỗi trả `503 MSG47` và rollback toàn bộ transaction. Bốn cột email không dùng `OriginHistoryId`,
+`RecipientUserId`, `MessageType`, `PayloadSnapshot` đã được bỏ bằng migration mới; key, nội dung
+thư/.ics, `MeetingId` và trạng thái delivery vẫn giữ. `Notification.OriginHistoryId` không thay đổi.
 Database notification rows được tạo ở đây; realtime push theo SCRUM-14 là phần tích hợp riêng.
 Recipient filter của notification đã chốt theo BR-54 và được gom thành shared policy để SCRUM-20 dùng lại. Writer
 participant/agenda thuộc các story tương ứng phải tham gia meeting-row lock protocol trước khi có thể

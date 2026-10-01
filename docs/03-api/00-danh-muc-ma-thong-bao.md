@@ -23,7 +23,7 @@ sequence diagram, code BE, code FE và test đều phải khớp với bảng n�
 
 ## Mã tiếp theo
 
-**`MSG65`** — `MSG41`–`MSG64` đã được cấp; `MSG57` ngừng dùng và không được tái sử dụng.
+**`MSG68`** — `MSG41`–`MSG67` đã được cấp; `MSG57` ngừng dùng và không được tái sử dụng.
 
 ## Danh mục
 
@@ -137,6 +137,9 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG62` | 503 | GET readiness, POST transitions, GET history | Không kiểm tra được trạng thái active của tài khoản | `Không thể kiểm tra tài khoản để thực hiện thao tác cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG63` | 409 | POST Approve, Reject | Approval cycle không còn chờ quyết định | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
 | `MSG64` | 409 | POST ReturnToDraft | Trạng thái không cho về Draft hoặc approver đang chờ vẫn hợp lệ | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
+| `MSG65` | 200 | POST TransferOrganizer | Chuyển meeting Approved từ Organizer inactive sang Organizer mới thành công | `Đã chuyển cuộc họp cho người tổ chức mới.` | BE |
+| `MSG66` | 400 | POST TransferOrganizer | Organizer mới không hợp lệ, inactive, thiếu MeetingCreator hoặc là Assigned Approver | `Người tổ chức mới không hợp lệ hoặc không còn quyền tạo cuộc họp.` | BE |
+| `MSG67` | 409 | POST TransferOrganizer | Meeting không còn Approved hoặc Organizer hiện tại vẫn active | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
 
 ## Bảng đổi mã cũ → mới
 

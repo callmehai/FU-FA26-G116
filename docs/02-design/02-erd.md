@@ -43,11 +43,11 @@ erDiagram
     User ||--o{ MeetingParticipant : "được mời"
     User ||--o{ MeetingStatusHistory : "người thực hiện"
     User o|--o{ MeetingStatusHistory : "approver snapshot"
+    User o|--o{ MeetingStatusHistory : "Organizer trước transfer"
+    User o|--o{ MeetingStatusHistory : "Organizer sau transfer"
     Meeting ||--o{ MeetingParticipant : "thành phần tham dự"
     Meeting ||--o{ MeetingStatusHistory : "lịch sử trạng thái"
     MeetingStatusHistory o|--o{ Notification : "nguồn thông báo"
-    MeetingStatusHistory o|--o{ EmailMessage : "nguồn job cũ, nullable"
-    User o|--o{ EmailMessage : "recipient của job cũ, nullable"
 
     User {
         uuid Id PK
@@ -94,9 +94,11 @@ erDiagram
         uuid MeetingId FK
         string FromStatus "null ở bản ghi tạo mới"
         string ToStatus
-        string Action "Create|SubmitForApproval|Approve|Reject|ReturnToDraft|Publish|LegacyTransition"
+        string Action "Create|SubmitForApproval|Approve|Reject|ReturnToDraft|TransferOrganizer|Publish|LegacyTransition"
         uuid ActorId FK
         uuid AssignedApproverId FK "snapshot, null ngoài Submit hoặc dữ liệu cũ"
+        uuid PreviousOrganizerId FK "snapshot trước TransferOrganizer, nullable"
+        uuid NewOrganizerId FK "snapshot sau TransferOrganizer, nullable"
         string Reason "bắt buộc khi từ chối"
         timestamptz OccurredAt
     }
@@ -112,14 +114,10 @@ erDiagram
     EmailMessage {
         uuid Id PK
         uuid MeetingId FK
-        uuid OriginHistoryId FK "legacy nullable; job mới không ghi"
-        uuid RecipientUserId FK "legacy nullable; job mới không ghi"
-        string MessageType "legacy nullable; job mới không ghi"
         string DeduplicationKey UK "meeting + publication event + recipient"
         string Subject
         string Body "rendered publication snapshot"
         string CalendarAttachment "rendered .ics"
-        string PayloadSnapshot "legacy nullable; not used by worker"
         string ToAddress "captured at Publish"
         string Status "Queued|Processing|Sent|Failed"
     }
@@ -128,9 +126,12 @@ erDiagram
 `MeetingStatusHistory` là append-only audit evidence: FK từ history tới Meeting dùng RESTRICT, EF
 và PostgreSQL chặn sửa/xóa/truncate. Notification của một transition giữ `OriginHistoryId` để
 truy được batch tạo cùng lần commit. Producer email SCRUM-15 lưu nội dung thư khi Publish và dùng
-`meeting:{meetingId}:published:{userId}` để chống trùng. Các cột nullable `OriginHistoryId`,
-`RecipientUserId`, `MessageType`, `PayloadSnapshot` của email giữ cho dữ liệu cũ; job mới không ghi
-chúng. Email chọn participant có user active, không áp dụng bộ lọc `Response` của notification.
+`meeting:{meetingId}:published:{userId}` để chống trùng. Migration mới bỏ bốn cột email không dùng
+`OriginHistoryId`, `RecipientUserId`, `MessageType`, `PayloadSnapshot` cùng FK/index tương ứng;
+giữ `MeetingId`, key, nội dung và trạng thái delivery. `Notification.OriginHistoryId` vẫn giữ.
+Email chọn participant có user active, không áp dụng bộ lọc `Response` của notification.
+History `TransferOrganizer` giữ ID Organizer cũ/mới và actor quản trị, trong khi trạng thái meeting
+vẫn `Approved`; các field nullable này không sửa hoặc diễn giải lại history cũ.
 
 `Response` và `Attendance` là **hai câu hỏi khác nhau**: một là người ta trả lời thư mời thế nào,
 hai là thực tế có mặt hay không. Nhận lời rồi không đến là chuyện bình thường, và số liệu quorum

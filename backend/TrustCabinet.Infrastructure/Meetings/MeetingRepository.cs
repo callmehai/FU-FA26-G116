@@ -181,7 +181,9 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
                 item.Actor.FullName,
                 item.OccurredAt,
                 item.Action == MeetingHistoryAction.Reject ? item.Reason : null,
-                item.AssignedApproverId))
+                item.AssignedApproverId,
+                item.PreviousOrganizerId,
+                item.NewOrganizerId))
             .ToListAsync(ct);
 
         return new MeetingHistoryPage(items, page, pageSize, total);
@@ -193,6 +195,9 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             && db.RoleCapabilities.Any(roleCapability =>
                 roleCapability.RoleId == user.RoleId
                 && roleCapability.Capability == capability), ct);
+
+    public Task<bool> IsUserActiveAsync(Guid userId, CancellationToken ct = default)
+        => db.Users.AnyAsync(user => user.Id == userId && user.IsActive, ct);
 
     public Task<string?> FindUserDisplayNameAsync(Guid userId, CancellationToken ct = default)
         => db.Users.AsNoTracking()

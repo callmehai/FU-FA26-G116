@@ -5,7 +5,8 @@ namespace TrustCabinet.Domain.Meetings;
 public sealed record MeetingTransitionCommand(
     MeetingTransitionAction Action,
     Guid? AssignedApproverId = null,
-    string? Reason = null);
+    string? Reason = null,
+    Guid? OrganizerId = null);
 
 public sealed record MeetingHistoryRecord(
     Guid Id,
@@ -17,7 +18,9 @@ public sealed record MeetingHistoryRecord(
     string ActorName,
     DateTimeOffset OccurredAt,
     string? RejectionReason,
-    Guid? AssignedApproverId);
+    Guid? AssignedApproverId,
+    Guid? PreviousOrganizerId = null,
+    Guid? NewOrganizerId = null);
 
 public sealed record MeetingHistoryPage(
     IReadOnlyList<MeetingHistoryRecord> Items,
@@ -51,6 +54,7 @@ public enum MeetingWorkflowOutcome
     InvalidRequest,
     SubmissionNotReady,
     InvalidApprover,
+    InvalidOrganizer,
     RejectionReasonRequired,
     RejectionReasonTooLong,
     StatusConflict,

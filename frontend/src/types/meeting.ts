@@ -138,8 +138,29 @@ export interface MeetingMutationResponse {
   meeting: Meeting
 }
 
-/** GET /api/meetings/approvers — active accounts holding `MeetingApprover`, sorted by name. */
+/** GET /api/meetings/approvers — active `MeetingApprover` accounts excluding the caller, sorted by name. */
 export interface MeetingApprover {
   id: string
   fullName: string
+}
+
+/** Immutable lifecycle row returned by the backend; organizer snapshots are hidden from participants. */
+export interface MeetingHistoryItem {
+  id: string
+  meetingId: string
+  action: 'Create' | 'SubmitForApproval' | 'Approve' | 'Reject' | 'ReturnToDraft' | 'Publish' | 'TransferOrganizer' | 'LegacyTransition'
+  fromStatus: MeetingStatus | null
+  resultingStatus: MeetingStatus
+  actorId: string
+  actorName: string
+  occurredAt: string
+  rejectionReason: string | null
+  assignedApproverId: string | null
+  previousOrganizerId: string | null
+  newOrganizerId: string | null
+}
+
+/** POST TransferOrganizer — MSG65, recovery of an Approved meeting with an inactive organizer. */
+export interface MeetingOrganizerTransferResponse extends MeetingMutationResponse {
+  history: MeetingHistoryItem
 }

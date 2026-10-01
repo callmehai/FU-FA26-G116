@@ -466,6 +466,106 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.False(await verify.EmailMessages.AnyAsync(item => item.MeetingId == meeting.Id));
     }
 
+    [Fact]
+    public async Task Http_administrator_transfers_an_approved_meeting_and_new_organizer_publishes_with_immutable_history()
+    {
+        var adminRole = NewRole("Recovery administrator");
+        var administrator = NewUser("Recovery Administrator", adminRole.Id);
+        var replacement = NewUser("Replacement Organizer", _approverRoleId);
+        var approver = NewUser("Original Assigned Approver", _approverRoleId);
+        _db.Roles.Add(adminRole);
+        _db.Users.AddRange(administrator, replacement, approver);
+        _db.RoleCapabilities.Add(new RoleCapability { RoleId = adminRole.Id, Capability = Capability.AdminUsers });
+        await _db.SaveChangesAsync();
+        var created = await NewService().CreateAsync(Input("Organizer recovery"), _creatorId);
+        var meetingId = created.Meeting!.Id;
+        _db.AgendaItems.Add(new AgendaItem { MeetingId = meetingId, Title = "Báo cáo", Position = 1 });
+        _db.MeetingParticipants.Add(new MeetingParticipant
+        {
+            MeetingId = meetingId,
+            UserId = replacement.Id,
+            Role = MeetingRole.Member,
+            Response = InvitationResponse.Accepted,
+        });
+        await _db.SaveChangesAsync();
+        Assert.True((await NewService().TransitionAsync(meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, approver.Id), _creatorId)).Succeeded);
+        Assert.True((await NewService().TransitionAsync(meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.Approve), approver.Id)).Succeeded);
+        var originalHistory = await _db.MeetingStatusHistory.AsNoTracking()
+            .Where(item => item.MeetingId == meetingId).OrderBy(item => item.Id).ToListAsync();
+        var oldOrganizer = await _db.Users.SingleAsync(user => user.Id == _creatorId);
+        oldOrganizer.IsActive = false;
+        await _db.SaveChangesAsync();
+
+        using var app = new PostgreSqlMeetingApiFactory(_connectionString);
+        using var administratorClient = app.CreateClient();
+        using var replacementClient = app.CreateClient();
+        var issuer = app.Services.GetRequiredService<ITokenIssuer>();
+        administratorClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
+            issuer.CreateAccessToken(administrator, [Capability.AdminUsers]));
+        replacementClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
+            issuer.CreateAccessToken(replacement, [Capability.MeetingCreator]));
+
+        var transferred = await administratorClient.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions",
+            new { action = "TransferOrganizer", organizerId = replacement.Id });
+        Assert.Equal(HttpStatusCode.OK, transferred.StatusCode);
+        using var responseBody = System.Text.Json.JsonDocument.Parse(await transferred.Content.ReadAsStringAsync());
+        Assert.Equal("MSG65", responseBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal(_creatorId, responseBody.RootElement.GetProperty("history").GetProperty("previousOrganizerId").GetGuid());
+        Assert.Equal(replacement.Id, responseBody.RootElement.GetProperty("history").GetProperty("newOrganizerId").GetGuid());
+
+        await using var verify = NewContext();
+        var recovered = await verify.Meetings.AsNoTracking().SingleAsync(item => item.Id == meetingId);
+        Assert.Equal(MeetingStatus.Approved, recovered.Status);
+        Assert.Equal(replacement.Id, recovered.CreatedById);
+        Assert.Equal(approver.Id, recovered.AssignedApproverId);
+        var transfer = await verify.MeetingStatusHistory.AsNoTracking().SingleAsync(item =>
+            item.MeetingId == meetingId && item.Action == MeetingHistoryAction.TransferOrganizer);
+        Assert.Equal(MeetingStatus.Approved, transfer.FromStatus);
+        Assert.Equal(MeetingStatus.Approved, transfer.ToStatus);
+        Assert.Equal(administrator.Id, transfer.ActorId);
+        Assert.Equal(_creatorId, transfer.PreviousOrganizerId);
+        Assert.Equal(replacement.Id, transfer.NewOrganizerId);
+        Assert.Equal(4, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
+        Assert.Equal(1, await verify.Notifications.CountAsync(item => item.MeetingId == meetingId));
+        Assert.False(await verify.EmailMessages.AnyAsync(item => item.MeetingId == meetingId));
+        Assert.Equal(HttpStatusCode.NotFound,
+            (await administratorClient.GetAsync($"/api/meetings/{meetingId}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound,
+            (await administratorClient.GetAsync($"/api/meetings/{meetingId}/history")).StatusCode);
+
+        await Assert.ThrowsAsync<PostgresException>(async () =>
+            await verify.Database.ExecuteSqlInterpolatedAsync(
+                $"UPDATE meeting_status_history SET new_organizer_id = {_creatorId} WHERE id = {transfer.Id}"));
+        await Assert.ThrowsAsync<PostgresException>(async () =>
+            await verify.Database.ExecuteSqlInterpolatedAsync(
+                $"DELETE FROM meeting_status_history WHERE id = {transfer.Id}"));
+        var persistedOriginal = await verify.MeetingStatusHistory.AsNoTracking()
+            .Where(item => item.MeetingId == meetingId && item.Action != MeetingHistoryAction.TransferOrganizer)
+            .OrderBy(item => item.Id).ToListAsync();
+        Assert.Equal(originalHistory.Select(item => item.Id), persistedOriginal.Select(item => item.Id));
+        for (var index = 0; index < originalHistory.Count; index++)
+        {
+            Assert.Equal(originalHistory[index].ActorId, persistedOriginal[index].ActorId);
+            Assert.Equal(originalHistory[index].Action, persistedOriginal[index].Action);
+            Assert.Equal(originalHistory[index].OccurredAt, persistedOriginal[index].OccurredAt);
+            Assert.Equal(originalHistory[index].AssignedApproverId, persistedOriginal[index].AssignedApproverId);
+            Assert.Null(persistedOriginal[index].PreviousOrganizerId);
+            Assert.Null(persistedOriginal[index].NewOrganizerId);
+        }
+
+        var published = await replacementClient.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions",
+            new { action = "Publish" });
+        Assert.Equal(HttpStatusCode.OK, published.StatusCode);
+        Assert.Equal(MeetingStatus.Published,
+            await verify.Meetings.Where(item => item.Id == meetingId).Select(item => item.Status).SingleAsync());
+        Assert.Equal(5, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
+        var email = Assert.Single(await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync());
+        Assert.Equal(replacement.Email, email.ToAddress);
+        Assert.Equal(EmailStatus.Queued, email.Status);
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -563,8 +663,6 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             invitations.Select(item => item.DeduplicationKey).Order());
         Assert.All(invitations, invitation =>
         {
-            Assert.Null(invitation.RecipientUserId);
-            Assert.Null(invitation.OriginHistoryId);
         });
         var publishNotifications = await verify.Notifications
             .Where(item => item.MeetingId == meetingId && item.Type == NotificationType.MeetingInvited)
@@ -667,11 +765,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(3, invitations.Select(email => email.DeduplicationKey).Distinct().Count());
         Assert.All(invitations, email =>
         {
-            Assert.Null(email.OriginHistoryId);
-            Assert.Null(email.RecipientUserId);
             Assert.False(string.IsNullOrWhiteSpace(email.DeduplicationKey));
             Assert.NotNull(email.CalendarAttachment);
-            Assert.Null(email.PayloadSnapshot);
         });
         var expectedAddresses = invitations.Select(email => email.ToAddress).Order().ToArray();
         var expectedBodies = invitations.Select(email => email.Body).Order().ToArray();
@@ -832,7 +927,6 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.DoesNotContain("\uFFFD", email.Subject);
         Assert.Contains(title, email.Body, StringComparison.Ordinal);
         Assert.Contains("SUMMARY:" + title, email.CalendarAttachment!.Replace("\r\n ", ""), StringComparison.Ordinal);
-        Assert.Null(email.PayloadSnapshot);
         Assert.False(string.IsNullOrWhiteSpace(email.DeduplicationKey));
     }
 

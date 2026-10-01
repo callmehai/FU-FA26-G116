@@ -8,14 +8,6 @@ public class EmailMessageConfiguration : IEntityTypeConfiguration<EmailMessage>
 {
     public void Configure(EntityTypeBuilder<EmailMessage> builder)
     {
-        builder.Property(e => e.MessageType).HasConversion<string>().HasMaxLength(64);
-        builder.Property(e => e.PayloadSnapshot).HasMaxLength(50000);
-        builder.HasOne(e => e.RecipientUser).WithMany().HasForeignKey(e => e.RecipientUserId)
-            .OnDelete(DeleteBehavior.Restrict);
-        builder.HasOne<MeetingStatusHistory>().WithMany().HasForeignKey(e => e.OriginHistoryId)
-            .OnDelete(DeleteBehavior.Restrict);
-        builder.HasIndex(e => new { e.OriginHistoryId, e.RecipientUserId, e.MessageType })
-            .IsUnique().HasFilter("origin_history_id IS NOT NULL");
         builder.Property(e => e.DeduplicationKey).HasMaxLength(512).IsRequired();
         builder.Property(e => e.ToAddress)
             .HasColumnType("citext")

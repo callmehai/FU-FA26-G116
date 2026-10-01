@@ -29,6 +29,7 @@ public enum MeetingHistoryAction
     Reject,
     ReturnToDraft,
     Publish,
+    TransferOrganizer,
     LegacyTransition,
 }
 
@@ -40,6 +41,7 @@ public enum MeetingTransitionAction
     Reject,
     ReturnToDraft,
     Publish,
+    TransferOrganizer,
 }
 
 /// <summary>

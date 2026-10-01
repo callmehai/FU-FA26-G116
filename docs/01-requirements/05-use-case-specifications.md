@@ -306,6 +306,15 @@ Chi tiết: [API chuyển trạng thái](../03-api/05-quan-ly-cuoc-hop.md),
 - SMTP tắt: công bố vẫn thành công nhưng không tạo email job. Khi SMTP bật, lỗi gửi email được
   worker xử lý và không đổi trạng thái `Published`.
 
+#### Khôi phục Organizer trước công bố
+
+Khi meeting Approved nhưng Organizer inactive, quản trị còn active/có AdminUsers được chuyển
+meeting cho Organizer mới active/có MeetingCreator và khác current Assigned Approver. Hệ thống
+ghi một history TransferOrganizer gồm người cũ/mới, actor và thời điểm; giữ Approved, nội dung,
+assignment và history cũ, không tạo thư mời/thông báo. Organizer mới thực hiện luồng công bố chính.
+Organizer cũ còn active hoặc meeting đã rời Approved thì không transfer. Quyền admin không tự cấp
+quyền đọc nội dung/history hay Publish; việc chuyển phải được kiểm tra lại trên server.
+
 Chi tiết: [API chuyển trạng thái](../03-api/05-quan-ly-cuoc-hop.md),
 [Sequence Diagram](../assets/diagrams/meeting-management/PublishMeeting.png),
 [source Mermaid](../assets/diagrams/meeting-management/PublishMeeting.mmd).

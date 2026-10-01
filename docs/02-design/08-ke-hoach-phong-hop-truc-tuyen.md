@@ -552,7 +552,7 @@ thứ tự **trong cùng một resource** nhưng có thể mất → janitor bù
 public static class CallEndpoints
 {
     // Codes from docs/03-api/00-danh-muc-ma-thong-bao.md. Take the NEXT FREE numbers at implementation
-    // time: PR #41 (SCRUM-19) uses MSG41–MSG64, so once it merges the next free code is MSG65.
+    // time: SCRUM-19 uses MSG41–MSG67, including organizer transfer. Do not reserve codes here.
     private const string MsgRoomNotOpen = "MSG__";       // 409
     private const string MsgInPersonMeeting = "MSG__";   // 409
     private const string MsgCallUnavailable = "MSG__";   // 503
@@ -565,7 +565,7 @@ public static class CallEndpoints
 }
 ```
 
-Tên hằng số theo mẫu `Msg65RoomNotOpen` khi đã có số. `MessageCodeCatalogueTests` chỉ quét
+Tên hằng số theo mẫu `MsgNNRoomNotOpen` khi catalogue đã cấp số. `MessageCodeCatalogueTests` chỉ quét
 `backend/TrustCabinet.Web/Endpoints/**` — **mọi mã phải khai báo ở file này**, và mỗi mã phải có
 test assert chuỗi `"MSGnn"`.
 
@@ -926,8 +926,8 @@ cd frontend && npm run lint && npm run build
 
 ### PR1 — `feat/scrum-39-livekit-infrastructure` (BE + hạ tầng, ~1,5 ngày)
 
-- [ ] Kiểm `gh pr view 41`: đã merge thì rebase, lấy mã MSG từ `MSG65`; chưa merge thì lấy số kế
-      tiếp trên `main` và báo Quang Huy để tránh trùng.
+- [ ] Kiểm PR #41 và catalogue hiện tại: đồng bộ nhánh trước khi lấy mã MSG còn trống;
+      SCRUM-19 đã cấp `MSG41`–`MSG67`. Báo Quang Huy để tránh cấp trùng giữa các PR.
 - [ ] `docker/livekit.dev.yaml`, service `livekit` (profile `calls`), `.env.example`; chạy §4.5,
       xác nhận `LIVEKIT_KEYS` hoạt động (**CHƯA KIỂM**), không thì chuyển `LIVEKIT_CONFIG`.
 - [ ] `appsettings*.json` §4.4.

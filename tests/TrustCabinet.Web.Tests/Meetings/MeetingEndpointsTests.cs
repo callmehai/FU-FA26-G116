@@ -139,6 +139,133 @@ public sealed class MeetingEndpointsTests : IDisposable
     private static async Task<JsonDocument> JsonOf(HttpResponseMessage response)
         => JsonDocument.Parse(await response.Content.ReadAsStringAsync());
 
+    private (User Administrator, User Replacement, Meeting Meeting) GivenOrganizerRecovery()
+    {
+        var organizer = GivenCreator("disabled-organizer@trustcabinet.local");
+        organizer.IsActive = false;
+        var administrator = new User
+        {
+            FullName = "Quản trị",
+            Email = "recovery-admin@trustcabinet.local",
+            PasswordHash = "test-hash",
+            RoleId = BuiltInRoles.Admin,
+        };
+        _factory.Accounts.WithUser(administrator);
+        var replacement = GivenCreator("replacement-organizer@trustcabinet.local");
+        var meeting = OwnedMeetingBy(organizer, Guid.CreateVersion7());
+        meeting.Status = MeetingStatus.Approved;
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[administrator.Id] = [Capability.AdminUsers];
+        _factory.Meetings.UserCapabilities[organizer.Id] = [Capability.MeetingCreator];
+        _factory.Meetings.UserCapabilities[replacement.Id] = [Capability.MeetingCreator];
+        _factory.Meetings.InactiveUserIds.Add(organizer.Id);
+        return (administrator, replacement, meeting);
+    }
+
+    [Fact]
+    public async Task Administrator_transfers_disabled_organizer_meeting_with_MSG65_and_typed_history()
+    {
+        var (administrator, replacement, meeting) = GivenOrganizerRecovery();
+        var previousOrganizerId = meeting.CreatedById;
+        var approverId = meeting.AssignedApproverId;
+        using var client = _factory.ClientFor(administrator, Capability.AdminUsers);
+
+        var response = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions",
+            new { action = "TransferOrganizer", organizerId = replacement.Id });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("MSG65", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("Approved", body.RootElement.GetProperty("meeting").GetProperty("status").GetString());
+        Assert.Equal(replacement.Id, body.RootElement.GetProperty("meeting").GetProperty("createdById").GetGuid());
+        var history = body.RootElement.GetProperty("history");
+        Assert.Equal("TransferOrganizer", history.GetProperty("action").GetString());
+        Assert.Equal(previousOrganizerId, history.GetProperty("previousOrganizerId").GetGuid());
+        Assert.Equal(replacement.Id, history.GetProperty("newOrganizerId").GetGuid());
+        Assert.Equal(administrator.Id, history.GetProperty("actorId").GetGuid());
+        Assert.Equal(approverId, meeting.AssignedApproverId);
+        Assert.Single(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Empty(_factory.Invitations.MeetingIds);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}/history")).StatusCode);
+
+        var repeat = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions",
+            new { action = "TransferOrganizer", organizerId = replacement.Id });
+        using var repeatBody = await JsonOf(repeat);
+        Assert.Equal(HttpStatusCode.Conflict, repeat.StatusCode);
+        Assert.Equal("MSG67", repeatBody.RootElement.GetProperty("code").GetString());
+        Assert.Single(meeting.StatusHistory);
+    }
+
+    [Fact]
+    public async Task Transfer_rechecks_administrator_capability_despite_the_old_access_token()
+    {
+        var (administrator, replacement, meeting) = GivenOrganizerRecovery();
+        using var client = _factory.ClientFor(administrator, Capability.AdminUsers);
+        _factory.Meetings.UserCapabilities[administrator.Id].Clear();
+
+        var response = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions",
+            new { action = "TransferOrganizer", organizerId = replacement.Id });
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.NotEqual(replacement.Id, meeting.CreatedById);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+    }
+
+    [Theory]
+    [InlineData("{\"action\":\"TransferOrganizer\"}")]
+    [InlineData("{\"action\":\"TransferOrganizer\",\"organizerId\":null}")]
+    [InlineData("{\"action\":\"TransferOrganizer\",\"organizerId\":23}")]
+    [InlineData("{\"action\":\"TransferOrganizer\",\"organizerId\":\"00000000-0000-0000-0000-000000000000\"}")]
+    [InlineData("{\"action\":\"TransferOrganizer\",\"organizerId\":\"0199a000-0000-7000-8000-000000000001\",\"reason\":null}")]
+    [InlineData("{\"action\":\"TransferOrganizer\",\"organizerId\":\"0199a000-0000-7000-8000-000000000001\",\"assignedApproverId\":\"0199a000-0000-7000-8000-000000000002\"}")]
+    [InlineData("{\"action\":\"TransferOrganizer\",\"organizerId\":\"0199a000-0000-7000-8000-000000000001\",\"organizerId\":\"0199a000-0000-7000-8000-000000000002\"}")]
+    [InlineData("{\"action\":\"Publish\",\"organizerId\":\"0199a000-0000-7000-8000-000000000001\"}")]
+    public async Task Transfer_body_shape_is_strict_and_other_commands_do_not_accept_organizerId(string json)
+    {
+        var (administrator, _, meeting) = GivenOrganizerRecovery();
+        using var client = _factory.ClientFor(administrator, Capability.AdminUsers);
+
+        var response = await client.PostAsync($"/api/meetings/{meeting.Id}/transitions",
+            new StringContent(json, Encoding.UTF8, "application/json"));
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MSG50", body.RootElement.GetProperty("code").GetString());
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+    }
+
+    [Fact]
+    public async Task Invalid_replacement_returns_MSG66_and_transfer_persistence_failure_returns_MSG59()
+    {
+        var (administrator, replacement, meeting) = GivenOrganizerRecovery();
+        var previousOrganizerId = meeting.CreatedById;
+        using var client = _factory.ClientFor(administrator, Capability.AdminUsers);
+        _factory.Meetings.InactiveUserIds.Add(replacement.Id);
+
+        var invalid = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions",
+            new { action = "TransferOrganizer", organizerId = replacement.Id });
+        using var invalidBody = await JsonOf(invalid);
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        Assert.Equal("MSG66", invalidBody.RootElement.GetProperty("code").GetString());
+
+        _factory.Meetings.InactiveUserIds.Remove(replacement.Id);
+        _factory.Meetings.NextSaveThrows = new TimeoutException("Database unavailable");
+        var failed = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions",
+            new { action = "TransferOrganizer", organizerId = replacement.Id });
+        using var failedBody = await JsonOf(failed);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, failed.StatusCode);
+        Assert.Equal("MSG59", failedBody.RootElement.GetProperty("code").GetString());
+        var persisted = Assert.Single(_factory.Meetings.Meetings);
+        Assert.Equal(previousOrganizerId, persisted.CreatedById);
+        Assert.Empty(persisted.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Empty(_factory.Invitations.MeetingIds);
+    }
+
     [Theory]
     [InlineData(Sensitivity.Normal)]
     [InlineData(Sensitivity.Internal)]
@@ -1061,6 +1188,30 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(JsonValueKind.Null,
             body.RootElement.GetProperty("meeting").GetProperty("assignedApproverId").ValueKind);
         Assert.Null(Assert.Single(_factory.Meetings.Meetings).AssignedApproverId);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Get_approvers_excludes_the_caller_and_preserves_other_options(bool includeOtherApprover)
+    {
+        var creator = GivenCreator();
+        var other = new MeetingApproverOption(Guid.CreateVersion7(), "An Nguyễn");
+        _factory.Meetings.EligibleApprovers.Add(new MeetingApproverOption(creator.Id, creator.FullName));
+        if (includeOtherApprover)
+            _factory.Meetings.EligibleApprovers.Add(other);
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator, Capability.MeetingApprover);
+
+        var response = await client.GetAsync("/api/meetings/approvers");
+        using var body = await JsonOf(response);
+        var options = body.RootElement.EnumerateArray().ToArray();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.DoesNotContain(options, option => option.GetProperty("id").GetGuid() == creator.Id);
+        if (includeOtherApprover)
+            Assert.Equal(other.Id, Assert.Single(options).GetProperty("id").GetGuid());
+        else
+            Assert.Empty(options);
     }
 
     [Fact]

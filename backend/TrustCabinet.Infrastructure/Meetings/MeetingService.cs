@@ -305,8 +305,17 @@ public sealed class MeetingService(
         {
             return await meetings.InTransactionAsync(async token =>
             {
+                var transfersOrganizer = command.Action == MeetingTransitionAction.TransferOrganizer;
+                // Recovery authorization is independent of ordinary meeting visibility. Check the
+                // current database permission before looking up a resource the administrator cannot read.
+                if (transfersOrganizer
+                    && !await meetings.IsActiveUserWithCapabilityAsync(actorId, Capability.AdminUsers, token))
+                {
+                    return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.NotFound);
+                }
+
                 var meeting = await meetings.FindWorkflowAsync(id, forUpdate: true, token);
-                if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId))
+                if (meeting is null || (!transfersOrganizer && !MeetingReadPolicy.CanRead(meeting, actorId)))
                 {
                     return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.NotFound);
                 }
@@ -317,10 +326,10 @@ public sealed class MeetingService(
                 var isExpectedActor = command.Action is MeetingTransitionAction.Approve or MeetingTransitionAction.Reject
                     ? meeting.AssignedApproverId == actorId
                     : meeting.CreatedById == actorId;
-                if (!isExpectedActor
+                if (!transfersOrganizer && (!isExpectedActor
                     || (command.Action is MeetingTransitionAction.Approve or MeetingTransitionAction.Reject
                         && meeting.CreatedById == actorId)
-                    || !await meetings.IsActiveUserWithCapabilityAsync(actorId, requiredCapability, token))
+                    || !await meetings.IsActiveUserWithCapabilityAsync(actorId, requiredCapability, token)))
                 {
                     return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.Forbidden);
                 }
@@ -339,12 +348,30 @@ public sealed class MeetingService(
                         (MeetingStatus.Rejected, MeetingStatus.Draft, MeetingHistoryAction.ReturnToDraft),
                     MeetingTransitionAction.Publish =>
                         (MeetingStatus.Approved, MeetingStatus.Published, MeetingHistoryAction.Publish),
+                    MeetingTransitionAction.TransferOrganizer =>
+                        (MeetingStatus.Approved, MeetingStatus.Approved, MeetingHistoryAction.TransferOrganizer),
                     _ => throw new InvalidOperationException("Unknown meeting transition action."),
                 };
 
                 if (meeting.Status != fromStatus)
                 {
                     return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.StatusConflict);
+                }
+
+                if (transfersOrganizer)
+                {
+                    if (await meetings.IsUserActiveAsync(meeting.CreatedById, token))
+                    {
+                        return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.StatusConflict);
+                    }
+
+                    if (command.OrganizerId == meeting.CreatedById
+                        || command.OrganizerId == meeting.AssignedApproverId
+                        || !await meetings.IsActiveUserWithCapabilityAsync(
+                            command.OrganizerId!.Value, Capability.MeetingCreator, token))
+                    {
+                        return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.InvalidOrganizer);
+                    }
                 }
 
                 // Recover blocked or legacy invalid assignments under the meeting lock.
@@ -377,8 +404,13 @@ public sealed class MeetingService(
                 }
 
                 var now = UtcNow;
+                var previousOrganizerId = transfersOrganizer ? meeting.CreatedById : (Guid?)null;
                 meeting.Status = toStatus;
                 meeting.UpdatedAt = now;
+                if (transfersOrganizer)
+                {
+                    meeting.CreatedById = command.OrganizerId!.Value;
+                }
                 if (command.Action == MeetingTransitionAction.SubmitForApproval)
                 {
                     meeting.AssignedApproverId = command.AssignedApproverId;
@@ -400,6 +432,8 @@ public sealed class MeetingService(
                     AssignedApproverId = command.Action == MeetingTransitionAction.SubmitForApproval
                         ? command.AssignedApproverId
                         : null,
+                    PreviousOrganizerId = previousOrganizerId,
+                    NewOrganizerId = transfersOrganizer ? command.OrganizerId : null,
                     OccurredAt = now,
                     CreatedAt = now,
                     UpdatedAt = now,
@@ -489,7 +523,12 @@ public sealed class MeetingService(
                     history = history with
                     {
                         Items = history.Items
-                            .Select(item => item with { RejectionReason = null })
+                            .Select(item => item with
+                            {
+                                RejectionReason = null,
+                                PreviousOrganizerId = null,
+                                NewOrganizerId = null,
+                            })
                             .ToArray(),
                     };
                 }
@@ -522,10 +561,14 @@ public sealed class MeetingService(
         return command.Action switch
         {
             MeetingTransitionAction.SubmitForApproval =>
-                command.AssignedApproverId is { } id && id != Guid.Empty && command.Reason is null,
+                command.AssignedApproverId is { } id && id != Guid.Empty && command.Reason is null
+                    && command.OrganizerId is null,
             MeetingTransitionAction.Reject =>
-                command.AssignedApproverId is null,
-            _ => command.AssignedApproverId is null && command.Reason is null,
+                command.AssignedApproverId is null && command.OrganizerId is null,
+            MeetingTransitionAction.TransferOrganizer =>
+                command.OrganizerId is { } organizerId && organizerId != Guid.Empty
+                    && command.AssignedApproverId is null && command.Reason is null,
+            _ => command.AssignedApproverId is null && command.Reason is null && command.OrganizerId is null,
         };
     }
 
@@ -580,6 +623,8 @@ public sealed class MeetingService(
             actorName,
             history.OccurredAt,
             history.Action == MeetingHistoryAction.Reject ? history.Reason : null,
-            history.AssignedApproverId);
+            history.AssignedApproverId,
+            history.PreviousOrganizerId,
+            history.NewOrganizerId);
 
 }
