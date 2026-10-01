@@ -29,8 +29,7 @@ deactivate Database
 MeetingRepository-->MeetingService: Meeting
 deactivate MeetingRepository
 
-MeetingService->MeetingService: Validate meeting-level submission readiness
-Meeting Sessions are not required (BR-33, BR-55)
+MeetingService->MeetingService: Validate meeting-level submission readiness\nMeeting Sessions are not required (BR-33, BR-55)
 
 alt Meeting-level information is incomplete - EX-1
     MeetingService-->MeetingController: Submission requirements are incomplete
@@ -40,8 +39,7 @@ alt Meeting-level information is incomplete - EX-1
     MeetingPage-->Organizer: Required meeting information is incomplete
 
 else Meeting-level information is complete
-    MeetingService->UserRepository: Validate selected Meeting Approver
-(BR-35)
+    MeetingService->UserRepository: Validate selected Meeting Approver\n(BR-35)
     activate UserRepository
     UserRepository->Database: Check approver status and permission
     activate Database
@@ -68,17 +66,14 @@ else Meeting-level information is complete
         deactivate MeetingRepository
 
         alt Meeting is no longer Draft or Rejected - EX-2
-            MeetingService-->MeetingController: MSG41 - This meeting can no longer be
-submitted for approval
+            MeetingService-->MeetingController: MSG41 - This meeting can no longer be\nsubmitted for approval
             deactivate MeetingService
             MeetingController-->MeetingPage: Return submission restriction
             deactivate MeetingController
-            MeetingPage-->Organizer: MSG41 - This meeting can no longer be
-submitted for approval
+            MeetingPage-->Organizer: MSG41 - This meeting can no longer be\nsubmitted for approval
 
         else Meeting is Draft or Rejected
-            MeetingService->MeetingRepository: Assign approver and change status
-to WaitingApproval (BR-34, BR-35)
+            MeetingService->MeetingRepository: Assign approver and change status\nto WaitingApproval (BR-34, BR-35)
             activate MeetingRepository
             MeetingRepository->Database: Store approval assignment and update meeting status
             activate Database
@@ -88,13 +83,11 @@ to WaitingApproval (BR-34, BR-35)
                 deactivate Database
                 MeetingRepository-->MeetingService: Submission failed
                 deactivate MeetingRepository
-                MeetingService-->MeetingController: MSG42 - Unable to submit the meeting
-for approval. Please try again
+                MeetingService-->MeetingController: MSG42 - Unable to submit the meeting\nfor approval. Please try again
                 deactivate MeetingService
                 MeetingController-->MeetingPage: Return submission failure
                 deactivate MeetingController
-                MeetingPage-->Organizer: MSG42 - Unable to submit the meeting
-for approval. Please try again
+                MeetingPage-->Organizer: MSG42 - Unable to submit the meeting\nfor approval. Please try again
 
             else Meeting submitted successfully
                 Database-->MeetingRepository: Assignment stored and status updated
@@ -102,8 +95,7 @@ for approval. Please try again
                 MeetingRepository-->MeetingService: Meeting moved to WaitingApproval
                 deactivate MeetingRepository
 
-                MeetingService->MeetingStatusHistoryRepository: Record submission, acting organizer,
-assigned approver and resulting status (BR-38)
+                MeetingService->MeetingStatusHistoryRepository: Record submission, acting organizer,\nassigned approver and resulting status (BR-38)
                 activate MeetingStatusHistoryRepository
                 MeetingStatusHistoryRepository->Database: Insert lifecycle history
                 activate Database

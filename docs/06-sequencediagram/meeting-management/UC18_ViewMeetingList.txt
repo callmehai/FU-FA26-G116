@@ -23,8 +23,7 @@ alt Query criteria are invalid - EX-2
 else Query criteria are valid
     MeetingController->MeetingService: getMeetingList(userId, criteria)
     activate MeetingService
-    MeetingService->MeetingRepository: Find authorized meetings with criteria
-(BR-29, BR-30, BR-31, BR-32)
+    MeetingService->MeetingRepository: Find authorized meetings with criteria\n(BR-29, BR-30, BR-31, BR-32)
     activate MeetingRepository
     MeetingRepository->Database: Retrieve authorized, filtered, sorted meeting page
     activate Database
@@ -34,13 +33,11 @@ else Query criteria are valid
         deactivate Database
         MeetingRepository-->MeetingService: Meeting list retrieval failed
         deactivate MeetingRepository
-        MeetingService-->MeetingController: MSG38 - Unable to load meetings.
-Please try again
+        MeetingService-->MeetingController: MSG38 - Unable to load meetings.\nPlease try again
         deactivate MeetingService
         MeetingController-->MeetingPage: Return meeting list loading failure
         deactivate MeetingController
-        MeetingPage-->User: MSG38 - Unable to load meetings.
-Please try again
+        MeetingPage-->User: MSG38 - Unable to load meetings.\nPlease try again
 
     else Meeting list retrieved successfully
         Database-->MeetingRepository: Authorized meeting page

@@ -33,8 +33,7 @@ else Request format is supported
     MeetingRepository-->MeetingService: Meeting
     deactivate MeetingRepository
 
-    MeetingService->MeetingService: Validate meeting is editable
-(BR-27)
+    MeetingService->MeetingService: Validate meeting is editable\n(BR-27)
 
     alt Meeting is no longer editable - EX-2
         MeetingService-->MeetingController: MSG33 - This meeting can no longer be edited
@@ -44,8 +43,7 @@ else Request format is supported
         MeetingPage-->Organizer: MSG33 - This meeting can no longer be edited
 
     else Meeting is Draft or Rejected
-        MeetingService->MeetingService: Validate submitted meeting information
-(BR-25)
+        MeetingService->MeetingService: Validate submitted meeting information\n(BR-25)
 
         alt Meeting information is invalid - EX-1
             MeetingService-->MeetingController: MSG31 - Invalid meeting information
@@ -55,8 +53,7 @@ else Request format is supported
             MeetingPage-->Organizer: MSG31 - Invalid meeting information
 
         else Meeting information is valid
-            MeetingService->MeetingRepository: Update meeting information
-without changing lifecycle status (BR-28)
+            MeetingService->MeetingRepository: Update meeting information\nwithout changing lifecycle status (BR-28)
             activate MeetingRepository
             MeetingRepository->Database: Update meeting
             activate Database
@@ -66,13 +63,11 @@ without changing lifecycle status (BR-28)
                 deactivate Database
                 MeetingRepository-->MeetingService: Meeting update failed
                 deactivate MeetingRepository
-                MeetingService-->MeetingController: MSG36 - Unable to update the meeting.
-Please try again
+                MeetingService-->MeetingController: MSG36 - Unable to update the meeting.\nPlease try again
                 deactivate MeetingService
                 MeetingController-->MeetingPage: Return meeting update failure
                 deactivate MeetingController
-                MeetingPage-->Organizer: MSG36 - Unable to update the meeting.
-Please try again
+                MeetingPage-->Organizer: MSG36 - Unable to update the meeting.\nPlease try again
 
             else Meeting updated successfully
                 Database-->MeetingRepository: Meeting updated

@@ -18,8 +18,7 @@ activate MeetingController
 MeetingController->MeetingService: getMeetingDetails(meetingId, userId)
 activate MeetingService
 
-MeetingService->MeetingRepository: Get accessible meeting
-(BR-29)
+MeetingService->MeetingRepository: Get accessible meeting\n(BR-29)
 activate MeetingRepository
 MeetingRepository->Database: Retrieve meeting and verify authorized relationship
 activate Database
@@ -40,39 +39,42 @@ else Meeting is accessible
     activate MeetingSessionRepository
     MeetingSessionRepository->Database: Retrieve Meeting Sessions
     activate Database
-    Database-->MeetingSessionRepository: Meeting Session list
+    Database-->MeetingSessionRepository: Meeting Session list / Retrieval failed
     deactivate Database
-    MeetingSessionRepository-->MeetingService: Meeting Session list
+    MeetingSessionRepository-->MeetingService: Meeting Session list / Retrieval failed
     deactivate MeetingSessionRepository
 
-    MeetingService->AgendaItemRepository: Get Agenda Items for Meeting Sessions
-    activate AgendaItemRepository
-    AgendaItemRepository->Database: Retrieve Agenda Items
-    activate Database
-
-    alt Meeting details cannot be retrieved - EX-2
-        Database-->AgendaItemRepository: Retrieval failed
-        deactivate Database
-        AgendaItemRepository-->MeetingService: Meeting detail retrieval failed
-        deactivate AgendaItemRepository
-        MeetingService-->MeetingController: MSG37 - Unable to load meeting details.
-Please try again
+    alt Meeting Session details cannot be retrieved - EX-2
+        MeetingService-->MeetingController: MSG37 - Unable to load meeting details.\nPlease try again
         deactivate MeetingService
         MeetingController-->MeetingPage: Return meeting detail loading failure
         deactivate MeetingController
-        MeetingPage-->User: MSG37 - Unable to load meeting details.
-Please try again
+        MeetingPage-->User: MSG37 - Unable to load meeting details.\nPlease try again
 
-    else Meeting details retrieved successfully
-        Database-->AgendaItemRepository: Agenda Item list
+    else Meeting Sessions retrieved successfully
+        MeetingService->AgendaItemRepository: Get Agenda Items for Meeting Sessions
+        activate AgendaItemRepository
+        AgendaItemRepository->Database: Retrieve Agenda Items
+        activate Database
+        Database-->AgendaItemRepository: Agenda Item list / Retrieval failed
         deactivate Database
-        AgendaItemRepository-->MeetingService: Agenda Item list
+        AgendaItemRepository-->MeetingService: Agenda Item list / Retrieval failed
         deactivate AgendaItemRepository
-        MeetingService-->MeetingController: Meeting details, Sessions, and Agenda Items
-        deactivate MeetingService
-        MeetingController-->MeetingPage: Display meeting details
-        deactivate MeetingController
-        MeetingPage-->User: Meeting details with Session schedule and agendas
+
+        alt Agenda details cannot be retrieved - EX-2
+            MeetingService-->MeetingController: MSG37 - Unable to load meeting details.\nPlease try again
+            deactivate MeetingService
+            MeetingController-->MeetingPage: Return meeting detail loading failure
+            deactivate MeetingController
+            MeetingPage-->User: MSG37 - Unable to load meeting details.\nPlease try again
+
+        else Meeting details retrieved successfully
+            MeetingService-->MeetingController: Meeting details, Sessions, and Agenda Items
+            deactivate MeetingService
+            MeetingController-->MeetingPage: Display meeting details
+            deactivate MeetingController
+            MeetingPage-->User: Meeting details with Session schedule and agendas
+        end
     end
 end
 

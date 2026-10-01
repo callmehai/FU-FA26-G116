@@ -26,8 +26,7 @@ deactivate Database
 MeetingRepository-->MeetingService: Current approval state
 deactivate MeetingRepository
 
-MeetingService->MeetingService: Verify assigned Meeting Approver
-and approval permission (BR-35)
+MeetingService->MeetingService: Verify assigned Meeting Approver\nand approval permission (BR-35)
 
 alt Approver is no longer authorized - EX-4
     MeetingService-->MeetingController: User is no longer authorized to review the meeting
@@ -55,8 +54,7 @@ else Approver is authorized
             MeetingPage-->Approver: Rejection reason is required
 
         else Approval decision is valid
-            MeetingService->MeetingRepository: Apply approval decision
-WaitingApproval -> Approved / Rejected (BR-36)
+            MeetingService->MeetingRepository: Apply approval decision\nWaitingApproval -> Approved / Rejected (BR-36)
             activate MeetingRepository
             MeetingRepository->Database: Update meeting status
             activate Database
@@ -66,13 +64,11 @@ WaitingApproval -> Approved / Rejected (BR-36)
                 deactivate Database
                 MeetingRepository-->MeetingService: Approval decision failed
                 deactivate MeetingRepository
-                MeetingService-->MeetingController: Unable to complete the approval decision.
-Please try again
+                MeetingService-->MeetingController: Unable to complete the approval decision.\nPlease try again
                 deactivate MeetingService
                 MeetingController-->MeetingPage: Return approval decision failure
                 deactivate MeetingController
-                MeetingPage-->Approver: Unable to complete the approval decision.
-Please try again
+                MeetingPage-->Approver: Unable to complete the approval decision.\nPlease try again
 
             else Approval decision completed
                 Database-->MeetingRepository: Meeting status updated
@@ -81,8 +77,7 @@ Please try again
                 deactivate MeetingRepository
 
                 alt Decision is Approve
-                    MeetingService->MeetingStatusHistoryRepository: Record approval decision,
-acting user and resulting status (BR-38)
+                    MeetingService->MeetingStatusHistoryRepository: Record approval decision,\nacting user and resulting status (BR-38)
                     activate MeetingStatusHistoryRepository
                     MeetingStatusHistoryRepository->Database: Insert lifecycle history
                     activate Database
@@ -97,8 +92,7 @@ acting user and resulting status (BR-38)
                     MeetingPage-->Approver: MSG43 - Meeting approved successfully
 
                 else Decision is Reject - AF-1
-                    MeetingService->MeetingStatusHistoryRepository: Record rejection decision,
-rejection reason, acting user and resulting status (BR-38)
+                    MeetingService->MeetingStatusHistoryRepository: Record rejection decision,\nrejection reason, acting user and resulting status (BR-38)
                     activate MeetingStatusHistoryRepository
                     MeetingStatusHistoryRepository->Database: Insert lifecycle history
                     activate Database
