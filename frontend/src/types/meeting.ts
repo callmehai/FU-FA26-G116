@@ -71,7 +71,7 @@ export interface Meeting {
   sensitivity: Sensitivity
   status: MeetingStatus
   createdById: string
-  /** Null in Draft; selected by SubmitForApproval for the current approval cycle. */
+  /** Optional while drafting; UC-15 requires one before the meeting is sent for approval. */
   assignedApproverId: string | null
   createdAt: string
   updatedAt: string
@@ -117,8 +117,8 @@ export interface MeetingListQuery {
 }
 
 /**
- * Body of POST /api/meetings and PUT /api/meetings/{id}. PUT replaces seven information fields.
- * Assignment belongs to SubmitForApproval, not to draft creation or editing.
+ * Body of POST /api/meetings and PUT /api/meetings/{id}. PUT replaces all eight fields, so an
+ * omitted or null approver on PUT unassigns them.
  */
 export interface MeetingRequest {
   title: string
@@ -128,6 +128,7 @@ export interface MeetingRequest {
   location: string
   sensitivity: Sensitivity
   description: string
+  assignedApproverId: string | null
 }
 
 /** POST answers MSG29, PUT answers MSG30. */
@@ -141,53 +142,4 @@ export interface MeetingMutationResponse {
 export interface MeetingApprover {
   id: string
   fullName: string
-}
-
-/** POST /api/meetings/{id}/transitions accepts only fields belonging to its action. */
-export type MeetingTransitionRequest =
-  | { action: 'SubmitForApproval'; assignedApproverId: string; reason?: never }
-  | { action: 'Reject'; reason: string; assignedApproverId?: never }
-  | { action: 'Approve' | 'ReturnToDraft' | 'Publish'; assignedApproverId?: never; reason?: never }
-
-export type MeetingHistoryAction = MeetingTransitionRequest['action'] | 'Create' | 'LegacyTransition'
-
-/** Immutable lifecycle evidence. A participant's timeline omits rejection reasons. */
-export interface MeetingHistoryItem {
-  id: string
-  meetingId: string
-  action: MeetingHistoryAction
-  fromStatus: MeetingStatus | null
-  resultingStatus: MeetingStatus
-  actorId: string
-  actorName: string
-  occurredAt: string
-  rejectionReason: string | null
-  /** Assignment snapshot on SubmitForApproval; null for other actions and legacy rows. */
-  assignedApproverId: string | null
-}
-
-export interface MeetingHistoryQuery {
-  page: number
-  pageSize: number
-}
-
-export interface MeetingHistoryResponse extends MeetingHistoryQuery {
-  items: MeetingHistoryItem[]
-  totalCount: number
-  totalPages: number
-}
-
-export interface MeetingTransitionResponse {
-  code: string
-  message: string
-  meeting: Meeting
-  history: MeetingHistoryItem
-}
-
-/** GET readiness is read-only; SubmitForApproval revalidates the persisted data. */
-export interface MeetingSubmissionReadiness {
-  meetingId: string
-  status: MeetingStatus
-  ready: boolean
-  errors: Record<string, string>
 }

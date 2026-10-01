@@ -3,6 +3,7 @@ import { useBeforeUnload } from 'react-router-dom'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { SegmentedControl } from '../../components/SegmentedControl'
+import { Select, type SelectOption } from '../../components/Select'
 import { fromDateTimeInput, toDateTimeInput } from '../../lib/dateInput'
 import { errorMessage, isApiError } from '../../lib/errors'
 import {
@@ -11,18 +12,21 @@ import {
   SENSITIVITIES,
   SENSITIVITY_LABEL,
   type Meeting,
+  type MeetingApprover,
   type MeetingMode,
   type MeetingMutationResponse,
   type MeetingRequest,
   type Sensitivity,
 } from '../../types/meeting'
+import { useMeetingApprovers } from './useMeetingApprovers'
 
 /** The backend's limits (MeetingRules). The inputs enforce them; the backend checks again. */
 const TITLE_MAX = 300
 const LOCATION_MAX = 300
 const DESCRIPTION_MAX = 4000
 
-type Field = 'title' | 'startsAt' | 'endsAt' | 'mode' | 'location' | 'sensitivity' | 'description'
+type Field =
+  'title' | 'startsAt' | 'endsAt' | 'mode' | 'location' | 'sensitivity' | 'description' | 'assignedApproverId'
 type FieldErrors = Partial<Record<Field, string>>
 
 /** Field order on screen, so the first error to focus is the one highest on the page. */
@@ -33,6 +37,7 @@ const FIELD_ORDER: Field[] = [
   'mode',
   'location',
   'sensitivity',
+  'assignedApproverId',
   'description',
 ]
 
@@ -44,6 +49,8 @@ interface Values {
   location: string
   sensitivity: Sensitivity
   description: string
+  /** '' = no approver yet. */
+  approverId: string
 }
 
 const MODE_OPTIONS = MEETING_MODES.map((value) => ({ value, label: MEETING_MODE_LABEL[value] }))
@@ -59,6 +66,7 @@ function initialValues(meeting: Meeting | null): Values {
     location: meeting?.location ?? '',
     sensitivity: meeting?.sensitivity ?? 'Normal',
     description: meeting?.description ?? '',
+    approverId: meeting?.assignedApproverId ?? '',
   }
 }
 
@@ -91,6 +99,7 @@ function toRequest(values: Values): MeetingRequest {
     location: values.mode === 'Online' ? '' : values.location.trim(),
     sensitivity: values.sensitivity,
     description: values.description,
+    assignedApproverId: values.approverId || null,
   }
 }
 
@@ -133,6 +142,7 @@ export function MeetingForm({
   const formRef = useRef<HTMLFormElement>(null)
   const submitted = useRef(false)
 
+  const approvers = useMeetingApprovers()
   const dirty = !sameValues(values, initial)
 
   // Closing the tab or reloading with unsaved input asks first. In-app links are not covered: the
@@ -149,7 +159,7 @@ export function MeetingForm({
   function set<K extends keyof Values>(key: K, value: Values[K]) {
     const next = { ...values, [key]: value }
     setValues(next)
-    const field: Field = key
+    const field: Field = key === 'approverId' ? 'assignedApproverId' : key
     setFieldErrors((errors) => {
       const rest: FieldErrors = { ...errors }
       delete rest[field]
@@ -202,6 +212,8 @@ export function MeetingForm({
     if (dirty) setConfirmDiscard(true)
     else onCancel()
   }
+
+  const approverOptions = approverChoices(approvers.list, meeting?.assignedApproverId ?? null)
 
   return (
     <>
@@ -304,6 +316,32 @@ export function MeetingForm({
           {fieldErrors.sensitivity && <small className="field-error">{fieldErrors.sensitivity}</small>}
         </div>
 
+        <div className="field" data-field="assignedApproverId">
+          <span>Người duyệt</span>
+          <Select
+            value={values.approverId}
+            options={approverOptions}
+            onChange={(v) => set('approverId', v)}
+            label="Người duyệt"
+          />
+          {fieldErrors.assignedApproverId ? (
+            <small className="field-error">{fieldErrors.assignedApproverId}</small>
+          ) : approvers.error ? (
+            <small className="field-error">
+              {approvers.error}{' '}
+              <button type="button" className="link-button" onClick={approvers.reload}>
+                Thử lại
+              </button>
+            </small>
+          ) : approvers.list?.length === 0 ? (
+            <small className="field-hint">
+              Chưa có tài khoản nào được phân quyền duyệt cuộc họp. Liên hệ quản trị viên.
+            </small>
+          ) : (
+            <small className="field-hint">Có thể chọn sau; bắt buộc trước khi gửi duyệt.</small>
+          )}
+        </div>
+
         <label className="field span-2" data-field="description">
           <span>Mô tả</span>
           <textarea
@@ -354,4 +392,20 @@ export function MeetingForm({
       )}
     </>
   )
+}
+
+/**
+ * The approver dropdown: "none yet" first, then everyone eligible. An edit keeps the current
+ * approver selectable even when they are no longer eligible — PUT accepts resending the current id,
+ * and silently switching to "none" would unassign them on save.
+ */
+function approverChoices(list: MeetingApprover[] | null, currentId: string | null): SelectOption<string>[] {
+  const options: SelectOption<string>[] = [{ value: '', label: 'Chưa chọn' }]
+  for (const approver of list ?? []) options.push({ value: approver.id, label: approver.fullName })
+  if (currentId && list && !list.some((a) => a.id === currentId)) {
+    options.push({ value: currentId, label: 'Người duyệt hiện tại (không còn quyền duyệt)' })
+  } else if (currentId && !list) {
+    options.push({ value: currentId, label: 'Người duyệt hiện tại' })
+  }
+  return options
 }

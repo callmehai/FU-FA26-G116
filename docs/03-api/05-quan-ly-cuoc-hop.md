@@ -8,10 +8,11 @@ trong tài liệu quản lý vai trò đang dùng cho use case khác.
 
 Các endpoint cho người tạo khởi tạo cuộc họp nháp, chọn người duyệt khi gửi duyệt, sửa, chuyển lifecycle và đọc
 lịch sử. Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. Danh sách
-`GET /api/meetings` thuộc SCRUM-18. Danh sách, tạo, sửa và chi tiết đã gọi API thật; form tạo/sửa
-chỉ gửi bảy field thông tin, không chọn hoặc gửi approver. Người duyệt được chọn khi gửi duyệt.
-Các type/API wrapper cho readiness, transitions và history đã có; màn thao tác workflow và timeline
-thật thuộc bước tích hợp FE của SCRUM-19.
+`GET /api/meetings` thuộc SCRUM-18. Danh sách, tạo, sửa và chi tiết đã gọi API thật. Backend POST/PUT
+chỉ cập nhật bảy field thông tin; người duyệt được chọn trong action `SubmitForApproval`.
+PR backend SCRUM-19 không thay đổi code frontend. Form hiện có vẫn gửi `assignedApproverId`, nhưng
+POST/PUT bỏ qua field này và không thay assignment. Việc bỏ dropdown cũ, cập nhật type/API wrapper
+cho readiness, transitions và history, cùng màn thao tác workflow và timeline thuộc bước tích hợp FE.
 
 Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24; Thời gian kết thúc tùy chọn, nếu nhập thì phải
 sau thời gian bắt đầu theo BR-25. Cuộc họp mới ở `Draft` chưa có approver; Organizer chọn approver
@@ -437,8 +438,10 @@ stale content.
 - Trước khi gửi duyệt, lấy danh sách bằng `GET /api/meetings/approvers` rồi gửi `assignedApproverId`
   trong action `SubmitForApproval`; trường này không thuộc POST/PUT tạo hoặc sửa thông tin meeting.
 - SCRUM-19 cung cấp contract history ở trên; việc tích hợp timeline thật thuộc task FE riêng.
-- `src/api/meetings.ts` đã có `transitionMeeting`, `getMeetingSubmissionReadiness` và
-  `getMeetingHistory`; các request/response type tương ứng nằm trong `src/types/meeting.ts`.
+- Task FE bổ sung `transitionMeeting`, `getMeetingSubmissionReadiness` và `getMeetingHistory`
+  vào `src/api/meetings.ts`, cùng các request/response type tương ứng trong `src/types/meeting.ts`.
+- Task FE bỏ dropdown approver và `assignedApproverId` khỏi request tạo/sửa. Dropdown trên form
+  hiện có chưa có tác dụng với POST/PUT mới; người duyệt chỉ được lưu qua `SubmitForApproval`.
 - FE mở form và nút chỉnh sửa ở cả `Draft` và `Rejected` theo contract PUT. Sửa nội dung ở
   Rejected giữ nguyên trạng thái, assignment và rejection history; gửi duyệt lại vẫn cần
   `ReturnToDraft` trước `SubmitForApproval`.

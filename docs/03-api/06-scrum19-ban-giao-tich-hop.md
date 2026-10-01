@@ -3,9 +3,14 @@
 ## Phạm vi backend
 
 SCRUM-19 cung cấp readiness, transitions, history, authorization, immutable audit evidence và
-notification/email jobs nguyên tử theo [API contract](05-quan-ly-cuoc-hop.md). FE có type/API wrapper;
-UI chọn approver lúc submit, review/publish và timeline thật là phần tích hợp của FE. Form tạo/sửa
-chỉ bỏ dropdown approver vì POST/PUT không nhận assignment; không thêm widget workflow vào form.
+notification/email jobs nguyên tử theo [API contract](05-quan-ly-cuoc-hop.md). PR #41 không có
+thay đổi code frontend so với nhánh đích. Type/API wrapper và UI chọn approver lúc submit,
+review/publish, readiness và timeline được bàn giao để FE triển khai riêng.
+
+Form frontend hiện tại vẫn có dropdown và gửi `assignedApproverId` khi tạo/sửa. POST/PUT bỏ qua
+field này và chỉ cập nhật bảy field thông tin; người duyệt chỉ được gán bởi action
+`SubmitForApproval`. FE cần bỏ dropdown/field request cũ khỏi form và đưa lựa chọn approver vào
+flow gửi duyệt. Cho tới khi FE tích hợp, lựa chọn ở dropdown cũ không được backend áp dụng.
 
 `Backend Ready` chỉ xác nhận API và unit/integration tests backend. Story chưa Done cho tới khi FE,
 worker/realtime cần thiết, BA Final Review và Tester hoàn tất. Không coi Publish thành công là email
@@ -74,6 +79,9 @@ và rollback schema. Chạy upgrade đến migration mới nhất; không dừng
 
 ## Checklist handoff cho FE/Tester
 
+- FE cập nhật type/API wrapper theo contract, bỏ dropdown và `assignedApproverId` khỏi request
+  POST/PUT của form tạo/sửa; bổ sung lựa chọn approver và gọi `SubmitForApproval` trong flow riêng.
+  Các thay đổi frontend này không được cung cấp bởi PR #41.
 - Happy path: Draft → WaitingApproval → Approved → Published; email vẫn Queued tại response.
 - Reject thiếu/null/whitespace reason: `400 MSG53`; reason hợp lệ trim và giữ bất biến trong history.
 - Rejected phải ReturnToDraft trước submit mới; history riêng, clear assignment, không invitation.
@@ -101,12 +109,16 @@ ghép bằng merge thông thường, không viết lại history của feature. 
 main trước, đồng bộ main mới vào feature nếu dependency được squash/rebase merge, rồi chuyển base
 PR #41 về main; các fix độc lập không trở lại diff SCRUM-19.
 
-Frontend chỉ gồm type/API wrapper và bỏ dropdown approver khỏi form. Readiness giữ validation tối
-thiểu đã ghi Jira; các rule nghiệp vụ agenda chưa chốt thuộc SCRUM-25. Producer email nhận snapshot
+Ba thay đổi frontend (type, API wrapper và form) đã được hoàn nguyên về nhánh đích để PR #41 chỉ
+bàn giao contract cho FE. Readiness giữ validation tối thiểu đã ghi Jira; các rule nghiệp vụ agenda
+chưa chốt thuộc SCRUM-25. Producer email nhận snapshot
 trong transaction Publish và worker SCRUM-15 giữ nguyên; phần tích hợp này tiếp tục nằm trong #41.
 Các worktree thử nghiệm cũ được giữ nguyên, không dùng làm nguồn dependency đã tách.
 
 ## Kiểm chứng checkout gốc ngày 01/10/2026
+
+Kết quả 718/724 tests trong mục này và mục review bổ sung dưới đây được ghi nhận trước khi hoàn
+nguyên frontend. Kiểm chứng sau khi hoàn nguyên được ghi riêng ở cuối tài liệu.
 
 - `dotnet build TrustCabinet.sln --no-restore -warnaserror`: pass, 0 warning/error.
 - `dotnet test TrustCabinet.sln --no-build`: 718/718 pass, 0 skipped, dùng PostgreSQL thật với
@@ -144,3 +156,16 @@ Ghi chú triển khai và trạng thái commit/dependency đã lưu ở
 
 Không coi kết quả local là CI của head mới hoặc đánh dấu SCRUM-19 Done. FE workflow integration,
 BA Final Review và Tester vẫn theo pipeline đã ghi.
+
+## Hoàn nguyên frontend theo phạm vi backend ngày 01/10/2026
+
+Khôi phục `frontend/src/api/meetings.ts`, `frontend/src/types/meeting.ts` và
+`frontend/src/features/meetings/MeetingForm.tsx` về đúng phiên bản ở nhánh đích PR #41.
+Đây là hoàn nguyên thay đổi của PR, không xóa file khỏi dự án. API và code backend không đổi;
+phần tích hợp frontend được bàn giao theo checklist ở trên.
+
+- So sánh toàn bộ `frontend/` với nhánh đích: không còn diff trong working tree.
+- Frontend `npm run lint` và `npm run build`: pass.
+- `MessageCodeCatalogueTests`: 11/11 pass, 0 failed, 0 skipped.
+- Chưa chạy lại toàn bộ 724 tests hoặc kiểm thử browser trong lượt hoàn nguyên này.
+- Cần commit/push phần hoàn nguyên để GitHub loại ba file frontend khỏi diff PR #41.
