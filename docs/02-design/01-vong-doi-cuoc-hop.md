@@ -10,9 +10,9 @@ Mã trạng thái giữ nguyên tiếng Anh để dùng trực tiếp trong code
 |---|---|---|
 | `Draft` | Nháp | Thư ký đang soạn, chưa ai khác thấy |
 | `WaitingApproval` | Chờ duyệt | Đã gửi, đang đợi người có quyền duyệt |
-| `Rejected` | Bị từ chối | Người duyệt trả lại; Organizer được sửa thông tin, nhưng phải chuyển về `Draft` trước khi gửi duyệt lại |
+| `Rejected` | Bị từ chối | Organizer được sửa; chuyển về `Draft` trước khi gửi duyệt lại |
 | `Approved` | Đã duyệt | Được chấp thuận, chưa thông báo cho thành phần tham dự |
-| `Published` | Đã công bố | Meeting đã công bố; invitation jobs đã xếp hàng; thành phần tham dự nhìn thấy. Email được gửi bất đồng bộ |
+| `Published` | Đã công bố | Thành phần tham dự nhìn thấy; thư mời đã xếp hàng để gửi bất đồng bộ |
 | `InProgress` | Đang diễn ra | Chủ toạ đã bắt đầu phiên họp |
 | `Ended` | Đã kết thúc | Phiên họp đóng, chờ xử lý hậu kỳ (ASR, biên bản) |
 | `MinutesIssued` | Đã ban hành biên bản | Biên bản đã được phê duyệt và chốt |
@@ -27,48 +27,27 @@ Draft ──gửi duyệt──> WaitingApproval ──duyệt──> Approved �
         Archived <──lưu trữ── MinutesIssued <──ban hành biên bản── Ended <┘
 ```
 
-`Rejected` không được gửi thẳng sang `WaitingApproval`. Meeting Organizer phải thực hiện một
-transition riêng `Rejected → Draft`; transition này ghi lịch sử, giữ nguyên lý do từ chối cũ và
-không kích hoạt thư mời. Organizer được sửa thông tin ở `Rejected` (giữ nguyên người duyệt và lý do
-từ chối) hoặc ở `Draft`, sau đó gửi lại theo đúng flow
-`Draft → WaitingApproval` và có thể chọn lại một người duyệt đang hợp lệ.
+Organizer được sửa ở `Draft` hoặc `Rejected`. Để gửi duyệt lại sau từ chối, phải thực hiện
+`ReturnToDraft` trước; assignment cũ được xóa và lịch sử/lý do từ chối được giữ nguyên.
 
 Khi gửi duyệt theo UC-15, người tổ chức phải chọn một tài khoản đang hoạt động có capability
-`MeetingApprover`, khác chính Organizer. Cấm tự duyệt ở mọi mức độ mật; Chair có hai capability
-cũng không được submit cho mình hoặc quyết định trên assignment cũ trỏ về mình.
-Trường `AssignedApproverId` được để trống trong bản nháp cho tới khi người duyệt
-được chọn.
+`MeetingApprover`, khác chính Organizer. Trường `AssignedApproverId` để trống trong bản nháp cho
+tới khi gửi duyệt.
 
-Khi current Assigned Approver inactive hoặc mất capability `MeetingApprover`, Organizer còn active
-và có `MeetingCreator` được rút `WaitingApproval → Draft` bằng action `ReturnToDraft`.
-Hệ thống kiểm tra lại điều kiện khi xử
-lý, ghi một lifecycle history, xóa current assignment và không tạo notification/thư mời mới.
-Sau đó Organizer sửa nháp và submit bình thường để chọn người duyệt mới. Nếu approver vẫn hợp lệ,
-không cho rút; không tự động rút hoặc gán lại trực tiếp trong WaitingApproval.
+Khi `WaitingApproval` thiếu người duyệt, gán chính Organizer, hoặc người duyệt inactive/mất
+`MeetingApprover`, Organizer active có `MeetingCreator` được `ReturnToDraft` để chọn lại người duyệt.
+Không cho rút khi người duyệt khác Organizer vẫn hợp lệ.
 
-`Published` xác nhận transaction công bố đã lưu meeting, history và invitation jobs. Đây không phải
-xác nhận email đã được giao: trạng thái gửi thực tế được theo dõi bằng `EmailStatus` và `SentAt`;
-lỗi gửi hoặc retry không chuyển meeting khỏi `Published`.
+`Published` xác nhận thư mời đã xếp hàng, chưa xác nhận email đã được giao. Lỗi gửi không đổi
+trạng thái cuộc họp. Chi tiết quyền, người nhận và các transition:
+[API quản lý cuộc họp](../03-api/05-quan-ly-cuoc-hop.md).
 
 ## Vì sao cần ghi lại
 
-- **Phân quyền bám theo trạng thái.** Organizer được sửa nội dung ở `Draft` hoặc `Rejected`.
-  Sửa thông tin không chuyển trạng thái hay thay đổi rejection history; gửi duyệt lại cần
-  `ReturnToDraft` trước. Biểu
+- **Phân quyền bám theo trạng thái.** Sửa nội dung chỉ được phép ở `Draft` và `Rejected`. Biểu
   quyết chỉ mở khi `InProgress`. Biên bản chỉ sinh được sau `Ended`.
 - **Lịch sử trạng thái là bằng chứng.** Màn chi tiết hiển thị timeline ai chuyển trạng thái, lúc
   nào. Đây là dữ liệu kiểm toán, không phải log kỹ thuật — không được xoá hay sửa.
-- **Quyền đọc lịch sử bám theo quan hệ hiện tại.** Meeting Organizer và người duyệt đang được gán
-  xem được toàn bộ lifecycle history, gồm lý do từ chối. Người từng được gán trước đó không giữ
-  quyền này chỉ vì assignment cũ vẫn xuất hiện trong lịch sử. Participant được xem meeting sau
-  Published có thể xem timeline nhưng không được xem rejection reason.
-- **Chair không phải quyền phê duyệt hay công bố.** Chair chỉ là quan hệ trong một cuộc họp.
-  Approve/Reject thuộc người duyệt đang được gán, khác Organizer và còn capability `MeetingApprover`; Publish thuộc
-  Meeting Organizer. Một Chair chỉ làm được các action đó khi đồng thời có đúng quan hệ tương ứng.
-- **Recipient được snapshot khi Publish (BR-54).** Chỉ participant row có user active và `Response` khác
-  `Delegated` được đưa vào batch notification/invitation. Không tự thêm delegate chỉ vì
-  `DelegatedToUserId` trỏ tới họ; participant row riêng của delegate vẫn được xét theo rule này.
-  Thay đổi participants sau commit không sửa batch đã tạo.
 - **Nhãn trong timeline khác nhãn trạng thái.** Timeline ghi *việc đã xảy ra* ("Đã gửi duyệt"),
   còn ô trạng thái ghi *cuộc họp đang là gì* ("Chờ duyệt"). Cùng một mã, hai cách diễn đạt.
 

@@ -210,13 +210,13 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 ### UC-11: Tạo cuộc họp (SCRUM-17)
 
 Cuộc họp được tạo ở trạng thái `Draft` và chưa có Assigned Meeting Approver. Organizer chọn người
-duyệt hợp lệ ở action `SubmitForApproval`; người đó phải là tài khoản đang hoạt động có capability
-`MeetingApprover`. Việc chưa chọn người duyệt không ngăn lưu bản nháp.
+duyệt khi thực hiện `SubmitForApproval`. Request tạo chỉ nhận bảy trường: `title`, `startsAt`,
+`endsAt`, `mode`, `sensitivity`, `location`, `description`; không nhận assignment.
 
 - `title` bắt buộc sau trim, tối đa 300 ký tự. `startsAt` bắt buộc và phải là timestamp ISO 8601
   có `Z` hoặc offset múi giờ rõ ràng; timestamp được chuẩn hóa sang UTC trước khi lưu.
-- `endsAt` là trường tùy chọn. Khi bỏ qua hoặc gửi `null`, cuộc họp được tạo với giờ kết thúc dự
-  kiến chưa xác định. Khi có giá trị, giờ kết thúc phải sau `startsAt`.
+- `endsAt` tùy chọn; bỏ qua hoặc gửi `null` nghĩa là chưa xác định giờ kết thúc. Nếu có, phải
+  sau `startsAt`.
 - `mode` mặc định `InPerson`; hợp lệ: `InPerson`/`Online`/`Hybrid`. `sensitivity` mặc định `Normal`;
   hợp lệ: `Normal`/`Internal`/`Confidential`/`Secret`.
 - `location` tùy chọn, trim và tối đa 300 ký tự. `description` tùy chọn, tối đa 4.000 ký tự.
@@ -228,10 +228,8 @@ Sơ đồ hiện có: [CreateMeeting.png](../06-sequencediagram/meeting-manageme
 
 PUT thay toàn bộ bảy trường thông tin có thể sửa của cuộc họp; payload không nhận assignment.
 Organizer được sửa ở `Draft` hoặc `Rejected`. Sửa thông tin ở `Rejected` không chuyển trạng thái,
-không đổi người duyệt và không thay đổi rejection history/reason. Muốn gửi duyệt lại, Organizer phải
-qua action `ReturnToDraft`; assignment cycle cũ được xóa và người duyệt được chọn ở lần Submit tiếp theo. `endsAt` có thể
-bỏ qua hoặc gửi `null`; nếu có, giá trị phải sau `startsAt`. Trạng thái được kiểm tra trước nội dung
-request.
+không đổi người duyệt và giữ nguyên lịch sử/lý do từ chối. Muốn gửi duyệt lại, Organizer phải thực
+hiện `ReturnToDraft`; assignment cũ được xóa và người duyệt được chọn ở lần Submit tiếp theo.
 
 Luồng và mã phản hồi chi tiết: [hợp đồng API cập nhật cuộc họp](../03-api/05-quan-ly-cuoc-hop.md#put-apimeetingsid).
 Sơ đồ hiện có: [UpdateMeeting.png](../06-sequencediagram/meeting-management/UpdateMeeting.png).
@@ -241,43 +239,27 @@ Sơ đồ hiện có: [UpdateMeeting.png](../06-sequencediagram/meeting-manageme
 - **Actor chính:** Meeting Organizer.
 - **Điều kiện tiên quyết:** Actor đã đăng nhập, tài khoản còn hoạt động, là người tổ chức của cuộc
   họp và có capability `MeetingCreator`.
-- **Điều kiện sau khi thành công:** Cuộc họp chuyển từ `Draft` sang `WaitingApproval`; người duyệt
-  hợp lệ được gán cho approval cycle hiện tại; hệ thống ghi lifecycle history và tạo thông báo chờ
-  duyệt cho người đó trong cùng transaction.
+- **Điều kiện sau khi thành công:** Cuộc họp chuyển từ `Draft` sang `WaitingApproval`, được gán người
+  duyệt, ghi lịch sử và tạo thông báo chờ duyệt.
 
 #### Luồng chính
 
-1. Hệ thống kiểm tra cuộc họp đang ở `Draft` và toàn bộ mandatory meeting information cùng required
-   agenda information đã đầy đủ theo BR-33. Agenda required không được rỗng.
+1. Organizer chuẩn bị đủ thông tin cuộc họp và agenda bắt buộc; cuộc họp đang ở `Draft`.
 2. Organizer chọn một tài khoản khác mình, đang hoạt động và hiện có capability `MeetingApprover`.
-3. Hệ thống khóa/đọc lại cuộc họp, chạy lại cùng readiness validator và kiểm tra lại người duyệt.
-4. Hệ thống gán người duyệt, chuyển `Draft → WaitingApproval`, ghi action
-   `SubmitForApproval` và tạo thông báo một cách nguyên tử.
+3. Hệ thống kiểm tra điều kiện, gán người duyệt, chuyển trạng thái và thông báo thành công.
 
-#### Luồng sửa và gửi lại sau từ chối
+#### Luồng thay thế và ngoại lệ
 
-1. Một cuộc họp `Rejected` không được submit trực tiếp sang `WaitingApproval`.
-2. Meeting Organizer thực hiện action `ReturnToDraft`; hệ thống chuyển `Rejected → Draft`, ghi đúng
-   một lifecycle history, giữ nguyên rejection history/reason cũ và không tạo invitation.
-3. Organizer có thể sửa thông tin ở `Rejected` trước bước 2 hoặc ở `Draft` sau đó, rồi thực hiện lại luồng chính. Organizer có thể chọn một người
-   duyệt hợp lệ khác cho cycle mới.
+- Thiếu thông tin, sai trạng thái hoặc người duyệt không hợp lệ: cuộc họp không được gửi duyệt.
+- Sau từ chối, Organizer có thể sửa ở `Rejected`, nhưng phải `ReturnToDraft` trước khi gửi lại.
+  Assignment cũ được xóa; lịch sử/lý do từ chối được giữ nguyên.
+- Nếu cuộc họp đang `WaitingApproval` nhưng thiếu người duyệt, gán chính Organizer, người duyệt
+  inactive hoặc mất `MeetingApprover`, Organizer được `ReturnToDraft` rồi chọn người duyệt mới.
+  Không cho rút về nháp khi người duyệt khác Organizer vẫn hợp lệ.
 
-Sequence diagram UC-15 chỉ cho submit từ `Draft`. Nếu meeting đang `Rejected`, sơ đồ thể hiện riêng
-`ReturnToDraft` trước khi submit lại; sửa thông tin có thể thực hiện ở `Rejected` hoặc `Draft`: [sơ đồ](../assets/diagrams/meeting-management/SubmitMeetingForApproval.png), [source Mermaid](../assets/diagrams/meeting-management/SubmitMeetingForApproval.mmd).
-Quy tắc liên quan: BR-29, BR-33, BR-34, BR-35, BR-38.
-
-#### Luồng khôi phục khi người duyệt không còn hợp lệ
-
-1. Meeting đang `WaitingApproval`, nhưng Assigned Approver inactive hoặc mất `MeetingApprover`.
-2. Organizer còn active và có `MeetingCreator` thực hiện `ReturnToDraft`. Hệ thống kiểm tra lại
-   điều kiện trong transaction; approver còn hợp lệ hoặc trạng thái đã đổi thì từ chối thao tác.
-3. Hệ thống chuyển `WaitingApproval → Draft`, xóa assignment và ghi đúng một history với actor,
-   thời điểm và trạng thái nguồn. Giữ nguyên history cũ, không tạo notification/thư mời mới.
-4. Organizer sửa nháp và thực hiện luồng chính để chọn một người duyệt hợp lệ mới. Không gán lại
-   trực tiếp trong WaitingApproval; không yêu cầu khôi phục quyền người duyệt cũ để tiếp tục.
-
-Readiness dùng field bắt buộc/giới hạn của schema Agenda, không tự áp thêm rule
-thứ tự liên tục, thời lượng dương, presenter bắt buộc hoặc trạng thái Pending trước SCRUM-25.
+Chi tiết: [API chuyển trạng thái](../03-api/05-quan-ly-cuoc-hop.md),
+[Sequence Diagram](../assets/diagrams/meeting-management/SubmitMeetingForApproval.png),
+[source Mermaid](../assets/diagrams/meeting-management/SubmitMeetingForApproval.mmd).
 
 ### UC-16: Phê duyệt hoặc từ chối cuộc họp (SCRUM-19)
 
@@ -285,48 +267,45 @@ thứ tự liên tục, thời lượng dương, presenter bắt buộc hoặc t
 - **Điều kiện tiên quyết:** Actor đã đăng nhập, tài khoản còn hoạt động, vẫn có capability
   `MeetingApprover`, đúng `Meeting.AssignedApproverId`, khác Organizer và cuộc họp đang `WaitingApproval`.
 - **Điều kiện sau khi thành công:** Approve chuyển sang `Approved`; Reject chuyển sang `Rejected`
-  và lưu rejection reason bắt buộc. Mỗi quyết định tạo đúng một lifecycle history.
+  và lưu lý do từ chối. Quyết định được ghi vào lịch sử.
 
-Reason của Reject sau khi trim phải dài 1–1.000 ký tự. Status và history được ghi trong cùng một
-transaction; nếu lưu hoặc commit thất bại, transaction rollback và không để lại quyết định một phần.
-Actor, trạng thái `WaitingApproval`, assignment hiện tại, tài khoản active và capability
-`MeetingApprover` được kiểm tra lại trước khi ghi.
+#### Luồng chính
 
-Chair chỉ là relationship với meeting và không tự có quyền Approve/Reject. Nếu một Chair đồng thời
-là current Assigned Approver thì quyền đến từ assignment cùng capability `MeetingApprover`, và
-người đó phải khác Organizer. Cấm tự duyệt ở mọi mức độ mật; assignment cũ trỏ về Organizer cũng
-không được Approve/Reject. Submit cho chính Organizer trả `400 MSG52`; quyết định tự duyệt trả
-`403 MSG55`, không thay đổi status/history/jobs.
+1. Người duyệt xem thông tin cuộc họp được gán cho mình.
+2. Người duyệt chọn Approve hoặc Reject; khi Reject phải nhập lý do.
+3. Hệ thống kiểm tra điều kiện, lưu quyết định, chuyển trạng thái và thông báo thành công.
 
-Meeting Organizer và current Assigned Approver được đọc toàn bộ lifecycle history, gồm rejection
-reason. Khi assignment đổi, người duyệt cũ không tiếp tục có quyền này chỉ vì từng là approver;
-history snapshot cũ không phải một access grant. Participant được quyền đọc meeting từ Published
-trở đi có thể xem timeline nhưng không nhận rejection reason.
+#### Ngoại lệ
 
-Quy tắc liên quan: BR-29, BR-35, BR-36, BR-38.
-Sơ đồ UC-16 có transaction boundary và nhánh rollback: [sơ đồ](../assets/diagrams/meeting-management/ReviewMeetingApproval.png), [source Mermaid](../assets/diagrams/meeting-management/ReviewMeetingApproval.mmd).
+- Không đúng người duyệt, không còn quyền, tự duyệt hoặc cuộc họp không còn `WaitingApproval`:
+  không thực hiện quyết định.
+- Reject thiếu lý do hợp lệ: yêu cầu người duyệt bổ sung.
+
+Chi tiết: [API chuyển trạng thái](../03-api/05-quan-ly-cuoc-hop.md),
+[Sequence Diagram](../assets/diagrams/meeting-management/ReviewMeetingApproval.png),
+[source Mermaid](../assets/diagrams/meeting-management/ReviewMeetingApproval.mmd).
 
 ### UC-17: Công bố cuộc họp (SCRUM-19)
 
 - **Actor chính:** Meeting Organizer.
-- **Điều kiện tiên quyết:** Actor đã đăng nhập, tài khoản còn hoạt động, là người tổ chức được phép
-  thao tác cuộc họp, và cuộc họp đang `Approved`.
-- **Điều kiện sau khi thành công:** Cuộc họp chuyển sang `Published`, có lifecycle history; hệ thống
-  đã persist notification và invitation jobs cho recipient snapshot trong cùng transaction.
+- **Điều kiện tiên quyết:** Actor đã đăng nhập, tài khoản còn hoạt động, là người tổ chức có
+  capability `MeetingCreator`, và cuộc họp đang `Approved`.
+- **Điều kiện sau khi thành công:** Cuộc họp chuyển sang `Published`, ghi lịch sử, tạo thông báo và
+  xếp hàng thư mời cho thành phần tham dự hợp lệ.
 
-Chair không tự có quyền Publish. Nếu Chair đồng thời là Meeting Organizer thì quyền Publish đến từ
-quan hệ Organizer.
+#### Luồng chính
 
-Trong transaction Publish, hệ thống snapshot participant row theo policy SCRUM-20/BR-54, chỉ chọn
-row có user active và `Response != Delegated`. Không tự thêm delegate chỉ vì `DelegatedToUserId`
-trỏ tới họ; participant row riêng, active và chưa Delegated vẫn đủ điều kiện. Cùng transaction đó
-cập nhật `Published`, thêm lifecycle history, tạo notification và persist invitation jobs với
-recipient/content snapshot. Nếu bất kỳ ghi nào hoặc commit thất bại, rollback toàn bộ và không gửi
-invitation. Sau commit, email job có `EmailStatus = Queued`, `SentAt = null`; Publish `200` không
-xác nhận email đã được giao. Worker SCRUM-15 xử lý/retry bất đồng bộ; delivery failure không đổi
-meeting khỏi `Published`. Thay đổi participant sau commit không sửa batch đã tạo.
+1. Organizer chọn công bố cuộc họp đã được duyệt.
+2. Hệ thống kiểm tra điều kiện, xác định người nhận và lưu trạng thái, lịch sử, thông báo, thư mời.
+3. Hệ thống thông báo công bố thành công; worker gửi thư mời bất đồng bộ.
 
-Quy tắc liên quan: BR-29, BR-37–BR-45, BR-54.
-Sơ đồ UC-17 thể hiện snapshot, queue và transaction rollback: [sơ đồ](../assets/diagrams/meeting-management/PublishMeeting.png), [source Mermaid](../assets/diagrams/meeting-management/PublishMeeting.mmd).
-Sơ đồ lớp domain dùng chung cho UC-15–17: [Meeting lifecycle classes](../assets/diagrams/meeting-management/MeetingLifecycleClasses.png), [source Mermaid](../assets/diagrams/meeting-management/MeetingLifecycleClasses.mmd).
+#### Ngoại lệ
+
+- Không đúng Organizer, không còn quyền hoặc cuộc họp không còn `Approved`: không công bố.
+- Công bố thành công xác nhận thư mời đã được xếp hàng; lỗi gửi email được worker xử lý và không
+  đổi trạng thái `Published`.
+
+Chi tiết: [API chuyển trạng thái](../03-api/05-quan-ly-cuoc-hop.md),
+[Sequence Diagram](../assets/diagrams/meeting-management/PublishMeeting.png),
+[source Mermaid](../assets/diagrams/meeting-management/PublishMeeting.mmd).
 
