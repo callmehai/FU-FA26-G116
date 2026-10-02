@@ -46,6 +46,11 @@
   --chip-blue-bg: #dbeafe;    --chip-blue-fg: #1d4ed8;
   --chip-indigo-bg: #e0e7ff;  --chip-indigo-fg: #4338ca;
   --chip-violet-bg: #ede9fe;  --chip-violet-fg: #6d28d9;
+
+  /* A state's colour as an edge or a wash, stronger than its chip (the meeting workflow bar). */
+  --accent-amber: #d97706;
+  --accent-emerald: #059669;
+  --wash-amber: #fffbeb;
 }
 
 /* ---------- Base ---------- */
@@ -241,6 +246,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 .select-trigger[aria-expanded='true'] { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
 .select-trigger .icon { color: var(--muted-ink); }
+.select-placeholder { color: var(--muted-ink); }
 .select-trigger[aria-expanded='true'] .icon { transform: rotate(180deg); }
 
 .select-menu {
@@ -752,6 +758,69 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .timeline-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .timeline-actor { font-size: 13.5px; font-weight: 500; }
 .timeline time { display: block; margin-top: 2px; color: var(--muted-ink); font-size: 12.5px; }
+.timeline-detail { margin: 4px 0 0; color: var(--ink-soft); font-size: 13px; }
+/* A rejection reason is the author's own words: quoted, line breaks kept. */
+.timeline-reason,
+.workflow-reason {
+  margin: 6px 0 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--line);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--surface-alt);
+  color: var(--ink);
+  font-size: 13.5px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.timeline-skeleton li { display: flex; flex-direction: column; gap: 8px; }
+.timeline-skeleton li::before { background: var(--line); }
+.timeline-skeleton .skeleton:first-child { width: 55%; height: 18px; border-radius: 999px; }
+.timeline-skeleton .skeleton:last-child { width: 40%; }
+.history-error { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; color: var(--chip-red-fg); }
+.history-error p { margin: 0; }
+.history-inline-error { margin: 14px 0 0; color: var(--chip-red-fg); font-size: 13px; }
+.history-more { margin-top: 12px; color: var(--ink-soft); }
+
+/* ---------- Approval workflow (SCRUM-19) ----------
+   Where the meeting stands and the next step for the person looking, between the page header and
+   the tabs. The left edge carries the state's colour; the text stays ink for contrast. */
+.workflow-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--workflow-accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.workflow-slate { --workflow-accent: var(--muted-ink); --workflow-tint: var(--chip-slate-bg); --workflow-ink: var(--ink-soft); }
+.workflow-amber { --workflow-accent: var(--accent-amber); --workflow-tint: var(--chip-amber-bg); --workflow-ink: var(--chip-amber-fg); }
+.workflow-warning { --workflow-accent: var(--accent-amber); --workflow-tint: var(--chip-amber-bg); --workflow-ink: var(--chip-amber-fg); background: var(--wash-amber); }
+.workflow-red { --workflow-accent: var(--danger); --workflow-tint: var(--chip-red-bg); --workflow-ink: var(--chip-red-fg); }
+.workflow-emerald { --workflow-accent: var(--accent-emerald); --workflow-tint: var(--chip-emerald-bg); --workflow-ink: var(--chip-emerald-fg); }
+.workflow-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--workflow-tint);
+  color: var(--workflow-ink);
+}
+.workflow-body { flex: 1; min-width: 0; padding-top: 1px; }
+.workflow-body h2 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+.workflow-body p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+.workflow-body p + p, .workflow-reason + p { margin-top: 6px; }
+.workflow-reason { margin-bottom: 0; }
+.workflow-actions { display: flex; flex: none; align-self: center; gap: 8px; }
+.readiness-list { margin: 6px 0 0; padding-left: 20px; color: var(--ink-soft); font-size: 14px; }
+.readiness-list li + li { margin-top: 2px; }
+.alert .readiness-list { color: inherit; }
+.dialog-note { margin-top: 16px; font-size: 13.5px; }
 
 /* ---------- Forms ---------- */
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
@@ -952,6 +1021,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 /* ---------- Narrow screens ---------- */
 @media (max-width: 960px) {
+  .workflow-bar { flex-wrap: wrap; }
+  .workflow-actions { width: 100%; justify-content: flex-end; }
   .detail-grid { grid-template-columns: minmax(0, 1fr); }
   .field-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

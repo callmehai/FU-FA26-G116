@@ -86,7 +86,8 @@ export function EditMeetingPage() {
           <>
             {meeting.status === 'Rejected' && (
               <p className="alert alert-info page-alert">
-                Cuộc họp đang ở trạng thái Bị từ chối. Lưu thay đổi không tự gửi duyệt lại — trạng thái vẫn giữ nguyên.
+                Cuộc họp đang ở trạng thái Bị từ chối. Lưu thay đổi không tự gửi duyệt lại — sau khi lưu, đưa cuộc họp
+                về nháp ở trang chi tiết rồi gửi duyệt lại.
               </p>
             )}
 

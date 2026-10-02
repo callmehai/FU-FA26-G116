@@ -13,7 +13,8 @@ export type MeetingState =
 
 /**
  * GET /api/meetings/{id} for a page. `reload` fetches again without flashing the loading state, so
- * a page can refresh what it shows after a conflict.
+ * a page can refresh what it shows after a conflict. `replace` shows a meeting the server just
+ * returned — a transition answers with the updated meeting, so no second request is needed.
  */
 export function useMeeting(id: string | undefined) {
   const handleAccessLost = useAccessLost()
@@ -50,5 +51,7 @@ export function useMeeting(id: string | undefined) {
     void load({ cancelled: false })
   }, [load])
 
-  return { state, reload, retry }
+  const replace = useCallback((meeting: Meeting) => setState({ kind: 'loaded', meeting }), [])
+
+  return { state, reload, retry, replace }
 }

@@ -1,16 +1,20 @@
 import type {
   Meeting,
   MeetingApprover,
+  MeetingHistoryPage,
   MeetingListQuery,
   MeetingListResponse,
   MeetingMutationResponse,
   MeetingRequest,
+  MeetingSubmissionReadiness,
+  MeetingTransitionRequest,
+  MeetingTransitionResponse,
 } from '../types/meeting'
 import { api } from './client'
 
 /**
- * Meetings (SCRUM-17: UC-11 create, UC-12 update; SCRUM-18: UC-14 list). Contract in
- * docs/03-api/05-quan-ly-cuoc-hop.md.
+ * Meetings (SCRUM-17: create, update; SCRUM-18: list; SCRUM-19: approval and publishing). Contract
+ * in docs/03-api/05-quan-ly-cuoc-hop.md.
  *
  * Reading a meeting needs a relationship with it rather than a capability, so a caller who may not
  * see it gets the same empty 404 as an unknown id. Creating and editing need `MeetingCreator`, and
@@ -39,5 +43,24 @@ export const createMeeting = (body: MeetingRequest) => api.post<MeetingMutationR
 export const updateMeeting = (id: string, body: MeetingRequest) =>
   api.put<MeetingMutationResponse>(`/api/meetings/${id}`, body)
 
-/** Who can be picked as approver. Needs `MeetingCreator`, like the forms that use it. */
+/**
+ * Who can be picked as approver: active accounts holding `MeetingApprover`, minus the caller.
+ * Needs `MeetingCreator`. 503 MSG61 when the list cannot be read.
+ */
 export const listMeetingApprovers = () => api.get<MeetingApprover[]>('/api/meetings/approvers')
+
+/**
+ * SCRUM-19 — submit, approve, reject, return to draft or publish. The server re-checks the actor's
+ * relationship and the current status inside one transaction; a status that moved on meanwhile
+ * answers 409 (MSG41, MSG46, MSG63 or MSG64) and writes nothing.
+ */
+export const transitionMeeting = (id: string, body: MeetingTransitionRequest) =>
+  api.post<MeetingTransitionResponse>(`/api/meetings/${id}/transitions`, body)
+
+/** SCRUM-19 — lifecycle history, oldest first. Rejection reasons are hidden from participants. */
+export const getMeetingHistory = (id: string, page = 1, pageSize = 50) =>
+  api.get<MeetingHistoryPage>(`/api/meetings/${id}/history?page=${page}&pageSize=${pageSize}`)
+
+/** SCRUM-19 — whether a draft may be sent for approval yet. Organizer only, Draft only (else 409 MSG41). */
+export const getMeetingSubmissionReadiness = (id: string) =>
+  api.get<MeetingSubmissionReadiness>(`/api/meetings/${id}/submission-readiness`)
