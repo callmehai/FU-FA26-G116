@@ -26,6 +26,10 @@
       "value": "TrustCabinet@2026"
     },
     {
+      "key": "tempEmail",
+      "value": "uc08-postman@trustcabinet.local"
+    },
+    {
       "key": "tempPassword",
       "value": "MatKhauBanDau@2026"
     },
@@ -124,7 +128,7 @@
       ]
     },
     {
-      "name": "03 · Tạo tài khoản tạm cho kịch bản",
+      "name": "03 · Tạo tài khoản thử (chỉ lần chạy đầu tiên)",
       "request": {
         "method": "POST",
         "header": [
@@ -149,7 +153,15 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.collectionVariables.set('tempEmail', 'uc08-' + Date.now() + '@trustcabinet.local');"
+              "const auth = { Authorization: 'Bearer ' + pm.collectionVariables.get('adminToken') };",
+              "pm.sendRequest({ url: pm.collectionVariables.get('baseUrl') + '/api/users', header: auth }, (err, res) => {",
+              "    const existing = res.json().find(u => u.email === pm.collectionVariables.get('tempEmail'));",
+              "    pm.collectionVariables.set('tempActive', existing ? String(existing.isActive) : 'true');",
+              "    if (existing) {",
+              "        pm.collectionVariables.set('tempId', existing.id);",
+              "        pm.execution.skipRequest();",
+              "    }",
+              "});"
             ]
           }
         },
@@ -161,6 +173,160 @@
               "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
               "pm.test('code = MSG07', () => pm.expect(pm.response.json().code).to.eql('MSG07'));",
               "pm.collectionVariables.set('tempId', pm.response.json().user.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 · Kích hoạt lại tài khoản thử (lần chạy trước đã khoá nó)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}/status",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"isActive\": true\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.collectionVariables.get('tempActive') === 'true') { pm.execution.skipRequest(); }"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG11', () => pm.expect(pm.response.json().code).to.eql('MSG11'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 · Đưa vai trò về Thành viên",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Người Thử UC08\",\n  \"email\": \"{{tempEmail}}\",\n  \"roleId\": \"{{memberRoleId}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG10', () => pm.expect(pm.response.json().code).to.eql('MSG10'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 · Gửi link để đặt mật khẩu ban đầu",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}/password-reset"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.sendRequest({ url: pm.collectionVariables.get('mailpitUrl') + '/api/v1/messages', method: 'DELETE' }, () => {});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG13', () => pm.expect(pm.response.json().code).to.eql('MSG13'));",
+              "",
+              "const base = pm.collectionVariables.get('mailpitUrl');",
+              "const to = pm.collectionVariables.get('tempEmail');",
+              "pm.sendRequest(base + '/api/v1/search?query=' + encodeURIComponent('to:' + to), (err, res) => {",
+              "    pm.test('Mailpit received the reset email', () => {",
+              "        pm.expect(err).to.eql(null);",
+              "        pm.expect(res.json().messages.length).to.be.above(0);",
+              "    });",
+              "    const id = res.json().messages[0].ID;",
+              "    pm.sendRequest(base + '/api/v1/message/' + id, (err2, msg) => {",
+              "        const text = msg.json().Text;",
+              "        const match = /reset-password#token=([A-Za-z0-9_-]+)/.exec(text);",
+              "        pm.test('the email carries the link with the token in the fragment', () => pm.expect(match).to.not.eql(null));",
+              "        pm.collectionVariables.set('setupToken', match[1]);",
+              "    });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 · Đặt mật khẩu ban đầu bằng chính luồng UC-08",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/password-reset",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{setupToken}}\",\n  \"newPassword\": \"{{tempPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG92', () => pm.expect(pm.response.json().code).to.eql('MSG92'));"
             ]
           }
         }
@@ -246,7 +412,7 @@
       ]
     },
     {
-      "name": "12 · UC-08 · Mật khẩu mới quá ngắn → MSG80, link chưa bị tiêu",
+      "name": "12 · UC-08 · Mật khẩu mới quá ngắn → MSG94, link chưa bị tiêu",
       "request": {
         "method": "POST",
         "header": [
@@ -268,7 +434,7 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
-              "pm.test('code = MSG80', () => pm.expect(pm.response.json().code).to.eql('MSG80'));",
+              "pm.test('code = MSG94', () => pm.expect(pm.response.json().code).to.eql('MSG94'));",
               "pm.test('lỗi theo field newPassword', () => pm.expect(pm.response.json().errors).to.have.property('newPassword'));"
             ]
           }
@@ -276,7 +442,7 @@
       ]
     },
     {
-      "name": "13 · UC-08 · Đặt mật khẩu mới bằng link → MSG78",
+      "name": "13 · UC-08 · Đặt mật khẩu mới bằng link → MSG92",
       "request": {
         "method": "POST",
         "header": [
@@ -298,7 +464,7 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('code = MSG78', () => pm.expect(pm.response.json().code).to.eql('MSG78'));",
+              "pm.test('code = MSG92', () => pm.expect(pm.response.json().code).to.eql('MSG92'));",
               "pm.test('không cấp token đăng nhập', () => pm.expect(pm.response.json()).to.not.have.property('accessToken'));"
             ]
           }
@@ -306,7 +472,7 @@
       ]
     },
     {
-      "name": "14 · UC-08 · Dùng lại link lần hai → MSG79",
+      "name": "14 · UC-08 · Dùng lại link lần hai → MSG93",
       "request": {
         "method": "POST",
         "header": [
@@ -328,7 +494,7 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
-              "pm.test('code = MSG79', () => pm.expect(pm.response.json().code).to.eql('MSG79'));"
+              "pm.test('code = MSG93', () => pm.expect(pm.response.json().code).to.eql('MSG93'));"
             ]
           }
         }
@@ -492,7 +658,7 @@
       ]
     },
     {
-      "name": "22 · UC-08 · Link cũ đã bị link mới thay thế → MSG79",
+      "name": "22 · UC-08 · Link cũ đã bị link mới thay thế → MSG93",
       "request": {
         "method": "POST",
         "header": [
@@ -514,14 +680,14 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
-              "pm.test('code = MSG79', () => pm.expect(pm.response.json().code).to.eql('MSG79'));"
+              "pm.test('code = MSG93', () => pm.expect(pm.response.json().code).to.eql('MSG93'));"
             ]
           }
         }
       ]
     },
     {
-      "name": "23 · UC-08 · Link mới vẫn dùng được → MSG78",
+      "name": "23 · UC-08 · Link mới vẫn dùng được → MSG92",
       "request": {
         "method": "POST",
         "header": [
@@ -543,14 +709,14 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
-              "pm.test('code = MSG78', () => pm.expect(pm.response.json().code).to.eql('MSG78'));"
+              "pm.test('code = MSG92', () => pm.expect(pm.response.json().code).to.eql('MSG92'));"
             ]
           }
         }
       ]
     },
     {
-      "name": "24 · UC-08 · Link giả → MSG79",
+      "name": "24 · UC-08 · Link giả → MSG93",
       "request": {
         "method": "POST",
         "header": [
@@ -572,7 +738,7 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
-              "pm.test('code = MSG79', () => pm.expect(pm.response.json().code).to.eql('MSG79'));"
+              "pm.test('code = MSG93', () => pm.expect(pm.response.json().code).to.eql('MSG93'));"
             ]
           }
         }
@@ -787,7 +953,7 @@
       ]
     },
     {
-      "name": "36 · UC-08 · Link gửi trước khi vô hiệu hoá không sống lại sau khi kích hoạt lại → MSG79",
+      "name": "36 · UC-08 · Link gửi trước khi vô hiệu hoá không sống lại sau khi kích hoạt lại → MSG93",
       "request": {
         "method": "POST",
         "header": [
@@ -809,7 +975,7 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
-              "pm.test('code = MSG79', () => pm.expect(pm.response.json().code).to.eql('MSG79'));"
+              "pm.test('code = MSG93', () => pm.expect(pm.response.json().code).to.eql('MSG93'));"
             ]
           }
         }

@@ -33,9 +33,9 @@ public static class AuthEndpoints
     private const string Msg02AccountUnavailable = "MSG02";
     private const string Msg03GoogleSignInUnsuccessful = "MSG03";
     private const string Msg05GoogleNotAuthorized = "MSG05";
-    private const string Msg78PasswordReset = "MSG78";
-    private const string Msg79PasswordResetLinkInvalid = "MSG79";
-    private const string Msg80PasswordResetInvalidPassword = "MSG80";
+    private const string Msg92PasswordReset = "MSG92";
+    private const string Msg93PasswordResetLinkInvalid = "MSG93";
+    private const string Msg94PasswordResetInvalidPassword = "MSG94";
 
     /// <summary>
     /// The refresh token's cookie. <c>HttpOnly</c> is the point of it: a token JavaScript cannot
@@ -177,18 +177,18 @@ public static class AuthEndpoints
         return result.Outcome switch
         {
             UserOutcome.Success => Results.Ok(new PasswordResetResponse(
-                Msg78PasswordReset,
+                Msg92PasswordReset,
                 "Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.")),
 
             UserOutcome.InvalidInformation => Results.Json(
                 new PasswordResetResponse(
-                    Msg80PasswordResetInvalidPassword, "Mật khẩu mới không hợp lệ.", result.Errors),
+                    Msg94PasswordResetInvalidPassword, "Mật khẩu mới không hợp lệ.", result.Errors),
                 statusCode: StatusCodes.Status400BadRequest),
 
             // PasswordResetLinkInvalid, and defensively anything added later: refuse.
             _ => Results.Json(
                 new PasswordResetResponse(
-                    Msg79PasswordResetLinkInvalid,
+                    Msg93PasswordResetLinkInvalid,
                     "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên."),
                 statusCode: StatusCodes.Status400BadRequest),
         };
@@ -309,13 +309,13 @@ public sealed record AuthErrorResponse(string Code, string Message);
 
 /// <summary>
 /// UC-08's link: the token from the email's fragment and the new password. Nullable so a missing
-/// field is MSG79 or MSG80, not a 400 from the model binder.
+/// field is MSG93 or MSG94, not a 400 from the model binder.
 /// </summary>
 public sealed record ResetPasswordRequest(string? Token, string? NewPassword);
 
 /// <summary>
 /// Every answer of <c>POST /api/auth/password-reset</c>. <paramref name="Errors"/> is set only for
-/// MSG80, keyed <c>newPassword</c>.
+/// MSG94, keyed <c>newPassword</c>.
 /// </summary>
 public sealed record PasswordResetResponse(
     string Code, string Message, IReadOnlyDictionary<string, string>? Errors = null);

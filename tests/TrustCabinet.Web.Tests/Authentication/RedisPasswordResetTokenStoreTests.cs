@@ -48,12 +48,50 @@ public class RedisPasswordResetTokenStoreTests : IAsyncLifetime
 
     private RedisPasswordResetTokenStore NewStore() => new(_redis!);
 
+    /// <summary>Create then activate — what UserService does once the email has gone out.</summary>
+    private static async Task<string> IssueAsync(
+        RedisPasswordResetTokenStore store, Guid userId, TimeSpan lifetime)
+    {
+        var token = await store.CreateAsync(userId, lifetime);
+        await store.ActivateAsync(userId, token, lifetime);
+        return token;
+    }
+
+    [Fact]
+    public async Task A_created_token_does_not_work_until_it_is_activated()
+    {
+        var store = NewStore();
+        var userId = Guid.CreateVersion7();
+        var token = await store.CreateAsync(userId, Lifetime);
+
+        Assert.Null(await store.PeekAsync(token));
+
+        await store.ActivateAsync(userId, token, Lifetime);
+
+        Assert.Equal(userId, await store.PeekAsync(token));
+    }
+
+    [Fact]
+    public async Task Creating_a_token_that_is_never_activated_leaves_the_current_link_working()
+    {
+        // The MSG15 case: a second link was created, its email failed, so it was never activated.
+        // The link already in the person's inbox must still work.
+        var store = NewStore();
+        var userId = Guid.CreateVersion7();
+        var emailed = await IssueAsync(store, userId, Lifetime);
+
+        var neverSent = await store.CreateAsync(userId, Lifetime);
+
+        Assert.Null(await store.PeekAsync(neverSent));
+        Assert.Equal(userId, await store.ConsumeAsync(emailed));
+    }
+
     [Fact]
     public async Task A_created_token_can_be_peeked_and_then_spent_exactly_once()
     {
         var store = NewStore();
         var userId = Guid.CreateVersion7();
-        var token = await store.CreateAsync(userId, Lifetime);
+        var token = await IssueAsync(store, userId, Lifetime);
 
         Assert.Equal(userId, await store.PeekAsync(token));
         Assert.Equal(userId, await store.PeekAsync(token));
@@ -66,7 +104,7 @@ public class RedisPasswordResetTokenStoreTests : IAsyncLifetime
     public async Task Of_two_simultaneous_submissions_only_one_spends_the_token()
     {
         var store = NewStore();
-        var token = await store.CreateAsync(Guid.CreateVersion7(), Lifetime);
+        var token = await IssueAsync(store, Guid.CreateVersion7(), Lifetime);
 
         var results = await Task.WhenAll(store.ConsumeAsync(token), store.ConsumeAsync(token));
 
@@ -78,8 +116,8 @@ public class RedisPasswordResetTokenStoreTests : IAsyncLifetime
     {
         var store = NewStore();
         var userId = Guid.CreateVersion7();
-        var older = await store.CreateAsync(userId, Lifetime);
-        var newer = await store.CreateAsync(userId, Lifetime);
+        var older = await IssueAsync(store, userId, Lifetime);
+        var newer = await IssueAsync(store, userId, Lifetime);
 
         Assert.Null(await store.PeekAsync(older));
         Assert.Null(await store.ConsumeAsync(older));
@@ -92,8 +130,8 @@ public class RedisPasswordResetTokenStoreTests : IAsyncLifetime
         var store = NewStore();
         var first = Guid.CreateVersion7();
         var second = Guid.CreateVersion7();
-        var firstToken = await store.CreateAsync(first, Lifetime);
-        await store.CreateAsync(second, Lifetime);
+        var firstToken = await IssueAsync(store, first, Lifetime);
+        await IssueAsync(store, second, Lifetime);
 
         Assert.Equal(first, await store.ConsumeAsync(firstToken));
     }
@@ -103,7 +141,7 @@ public class RedisPasswordResetTokenStoreTests : IAsyncLifetime
     {
         var store = NewStore();
         var userId = Guid.CreateVersion7();
-        var token = await store.CreateAsync(userId, Lifetime);
+        var token = await IssueAsync(store, userId, Lifetime);
 
         await store.RevokeAsync(userId);
 
@@ -125,7 +163,7 @@ public class RedisPasswordResetTokenStoreTests : IAsyncLifetime
     {
         var store = NewStore();
         var userId = Guid.CreateVersion7();
-        var token = await store.CreateAsync(userId, Lifetime);
+        var token = await IssueAsync(store, userId, Lifetime);
         var db = _redis!.GetDatabase();
 
         Assert.False(await db.KeyExistsAsync("prt:" + token));

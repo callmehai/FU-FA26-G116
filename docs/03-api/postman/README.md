@@ -2,11 +2,16 @@
 
 | Collection | Phạm vi |
 |---|---|
-| [`uc08-uc09-quan-ly-nguoi-dung.postman_collection.json`](uc08-uc09-quan-ly-nguoi-dung.postman_collection.json) | UC-08 đặt lại mật khẩu (cả hai nửa) và UC-09 gán vai trò — 31 bước (44 request kể cả request phụ trong script), 65 assertion |
+| [`uc08-uc09-quan-ly-nguoi-dung.postman_collection.json`](uc08-uc09-quan-ly-nguoi-dung.postman_collection.json) | UC-08 đặt lại mật khẩu (cả hai nửa) và UC-09 gán vai trò — 35 bước (51 request kể cả request phụ trong script), 73 assertion |
 
-Collection chạy **theo thứ tự** trên backend local và tự dọn dẹp: nó tạo một tài khoản tạm
-`uc08-<timestamp>@trustcabinet.local`, chạy kịch bản trên tài khoản đó, cuối cùng vô hiệu hoá nó
-(tài khoản không xoá được, theo ERD).
+Collection chạy **theo thứ tự** trên backend local, trên **một tài khoản thử cố định**
+`uc08-postman@trustcabinet.local`. Tài khoản không xoá được (ERD), nên collection không tạo tài khoản
+mới mỗi lần chạy — DB dev không đầy dần:
+
+- lần chạy đầu tiên tạo tài khoản; các lần sau tìm thấy thì bỏ qua bước tạo;
+- bước 04–07 đưa nó về trạng thái biết trước: kích hoạt lại, vai trò Thành viên, và đặt mật khẩu ban
+  đầu bằng chính luồng UC-08 (lần chạy trước đã đổi mật khẩu của nó);
+- bước cuối vô hiệu hoá nó lại.
 
 ## Cần gì
 

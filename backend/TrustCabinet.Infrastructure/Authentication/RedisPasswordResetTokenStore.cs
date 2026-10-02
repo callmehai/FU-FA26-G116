@@ -13,8 +13,9 @@ namespace TrustCabinet.Infrastructure.Authentication;
 /// Two kinds of key, both expiring with the token:
 ///
 ///   prt:{sha256(token)} → the user id.          Answers "whose token is this?"
-///   prt-user:{userId}   → the newest token hash. Answers "is it still the current one?" — what
-///                                                makes a newer link supersede an older one.
+///   prt-user:{userId}   → the activated hash.    Answers "is it the current one?" — what makes
+///                                                a newer link supersede an older one, and what a
+///                                                token created but never emailed never becomes.
 /// </summary>
 public sealed class RedisPasswordResetTokenStore(IConnectionMultiplexer redis)
     : IPasswordResetTokenStore
@@ -27,20 +28,20 @@ public sealed class RedisPasswordResetTokenStore(IConnectionMultiplexer redis)
     {
         // 256 bits from the CSPRNG, URL-safe so it survives being put in a link unescaped.
         var token = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(32));
-        var hash = Hash(token);
-        var db = redis.GetDatabase();
-
-        // The user key is overwritten, not added to: from now on only this hash is current, and
-        // any earlier token fails the check in IsCurrentAsync without having to be found and
-        // deleted. MULTI, so two administrators resetting the same account at once cannot leave
-        // the user key pointing at one token and the newer token key at the other.
-        var transaction = db.CreateTransaction();
-        _ = transaction.StringSetAsync(TokenKey(hash), userId.ToString(), lifetime);
-        _ = transaction.StringSetAsync(UserKey(userId), hash, lifetime);
-        await transaction.ExecuteAsync();
+        // Only the token key: without the user key pointing at it, IsCurrentAsync refuses it, and
+        // the account's existing link is left exactly as it was.
+        await redis.GetDatabase().StringSetAsync(TokenKey(Hash(token)), userId.ToString(), lifetime);
 
         return token;
     }
+
+    /// <summary>
+    /// The user key is overwritten, not added to: from now on only this hash is current, and any
+    /// earlier token fails the check in IsCurrentAsync without having to be found and deleted.
+    /// </summary>
+    public Task ActivateAsync(
+        Guid userId, string token, TimeSpan lifetime, CancellationToken ct = default)
+        => redis.GetDatabase().StringSetAsync(UserKey(userId), Hash(token), lifetime);
 
     public async Task<Guid?> PeekAsync(string token, CancellationToken ct = default)
     {

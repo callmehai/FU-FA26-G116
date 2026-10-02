@@ -354,7 +354,8 @@ public sealed partial class UserService(
         var token = await passwordResetTokens.CreateAsync(user.Id, PasswordResetLinkLifetime, ct);
 
         // EX-2 — MSG15. Not audited: the evidence should say what happened, and nothing reached
-        // the person. The token just created stays behind unseen and expires on its own.
+        // the person. The token just created was never activated, so it does not work and expires
+        // on its own — and a link sent earlier, already in the person's inbox, keeps working.
         if (!await passwordResetEmail.SendAsync(
                 user.Email, user.FullName, token, PasswordResetLinkLifetime, ct))
         {
@@ -362,6 +363,11 @@ public sealed partial class UserService(
                 "Password reset for account {UserId} could not be emailed.", user.Id);
             return UserResult.Failure(UserOutcome.PasswordResetEmailFailed);
         }
+
+        // Only now does the new link work and the old one stop. CancellationToken.None: the email
+        // is out, and an administrator closing the tab must not leave it carrying a dead link.
+        await passwordResetTokens.ActivateAsync(
+            user.Id, token, PasswordResetLinkLifetime, CancellationToken.None);
 
         await audit.RecordAsync(
             AuditActions.UserPasswordResetRequested,
@@ -522,10 +528,6 @@ public sealed partial class UserService(
         {
             try
             {
-                // An outstanding reset link goes too. Otherwise a link sent before a deactivation
-                // works again if the account is reactivated within the hour, and a link sent to a
-                // mistyped or compromised address keeps working after the email is corrected.
-                await passwordResetTokens.RevokeAsync(userId, ct);
                 await refreshTokens.RevokeAllForUserAsync(userId, ct);
             }
             catch (Exception exception)
@@ -538,6 +540,26 @@ public sealed partial class UserService(
                     exception,
                     "Account {UserId} was changed, but ending its sessions failed. The session "
                     + "lapses on its own when the access token expires.",
+                    userId);
+            }
+
+            // An outstanding UC-08 reset link goes too, for every change that ends the sessions:
+            //   - deactivation: otherwise reactivating within the hour brings the link back;
+            //   - email change: otherwise a link sent to a mistyped or compromised address keeps
+            //     working after the address is corrected;
+            //   - role change: not needed for safety, but it rides on the same signal, and an
+            //     administrator who changed someone's access can send a fresh link in one click.
+            // Separate from the revoke above, so a failure in either cannot skip the other.
+            try
+            {
+                await passwordResetTokens.RevokeAsync(userId, ct);
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(
+                    exception,
+                    "Account {UserId} was changed, but revoking its password reset link failed. "
+                    + "The link expires on its own within the hour.",
                     userId);
             }
         }

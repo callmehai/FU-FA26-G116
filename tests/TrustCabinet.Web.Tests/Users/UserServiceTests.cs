@@ -888,6 +888,36 @@ public class UserServiceTests
     }
 
     [Fact]
+    public async Task A_failed_resend_keeps_the_link_already_in_the_inbox_working()
+    {
+        // The first email went out; the second one hits an SMTP outage. The administrator sees
+        // MSG15 — and the person's first link must still work, not die silently.
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        _resetEmail.Fails = true;
+
+        var resend = await service.RequestPasswordResetAsync(target.Id, _actorId);
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal(UserOutcome.PasswordResetEmailFailed, resend.Outcome);
+        Assert.True(result.Succeeded);
+    }
+
+    [Fact]
+    public async Task A_link_whose_email_failed_never_works()
+    {
+        var target = GivenUser();
+        _resetEmail.Fails = true;
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+    }
+
+    [Fact]
     public async Task Reset_request_reports_not_found_for_an_unknown_account()
     {
         var result = await NewService().RequestPasswordResetAsync(Guid.CreateVersion7(), _actorId);
@@ -1074,6 +1104,37 @@ public class UserServiceTests
 
         await service.UpdateAsync(
             target.Id, new UserEdit(target.FullName, "dachinhsua@trustcabinet.local", target.RoleId), _actorId);
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+    }
+
+    [Fact]
+    public async Task Sessions_still_end_when_revoking_the_reset_link_fails()
+    {
+        // Two separate steps: a Redis error on the link must not leave the deactivated person's
+        // sessions running.
+        var target = GivenUser();
+        var service = NewService();
+        _resetTokens.RevokeThrows = new InvalidOperationException("Redis down");
+
+        var result = await service.ChangeStatusAsync(target.Id, isActive: false, _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal([target.Id], _refreshTokens.RevokedUsers);
+    }
+
+    [Fact]
+    public async Task The_reset_link_is_still_revoked_when_ending_the_sessions_fails()
+    {
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        _refreshTokens.OnRevokeAll = () => throw new InvalidOperationException("Redis down");
+
+        await service.ChangeStatusAsync(target.Id, isActive: false, _actorId);
+        _refreshTokens.OnRevokeAll = null;
+        await service.ChangeStatusAsync(target.Id, isActive: true, _actorId);
         var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
 
         Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);

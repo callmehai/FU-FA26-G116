@@ -268,9 +268,14 @@ internal sealed class FakePasswordResetTokenStore : IPasswordResetTokenStore
     {
         var token = Guid.NewGuid().ToString("N");
         _tokens[token] = (userId, Now.Add(lifetime));
-        _current[userId] = token;
         Created.Add(token);
         return Task.FromResult(token);
+    }
+
+    public Task ActivateAsync(Guid userId, string token, TimeSpan lifetime, CancellationToken ct = default)
+    {
+        _current[userId] = token;
+        return Task.CompletedTask;
     }
 
     public Task<Guid?> PeekAsync(string token, CancellationToken ct = default)
@@ -283,8 +288,17 @@ internal sealed class FakePasswordResetTokenStore : IPasswordResetTokenStore
         return Task.FromResult(owner);
     }
 
+    /// <summary>Makes the next <see cref="RevokeAsync"/> throw, standing in for Redis being down.</summary>
+    public Exception? RevokeThrows { get; set; }
+
     public Task RevokeAsync(Guid userId, CancellationToken ct = default)
     {
+        if (RevokeThrows is { } exception)
+        {
+            RevokeThrows = null;
+            throw exception;
+        }
+
         _current.Remove(userId);
         return Task.CompletedTask;
     }

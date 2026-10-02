@@ -605,7 +605,7 @@ public class UserEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Reset_with_the_emailed_link_answers_MSG78_without_signing_in()
+    public async Task Reset_with_the_emailed_link_answers_MSG92_without_signing_in()
     {
         var target = GivenUser();
         await AdminClient().PostAsync($"/api/users/{target.Id}/password-reset", null);
@@ -617,7 +617,7 @@ public class UserEndpointsTests : IDisposable
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var body = await JsonOf(response);
-        Assert.Equal("MSG78", body.GetProperty("code").GetString());
+        Assert.Equal("MSG92", body.GetProperty("code").GetString());
         Assert.False(body.TryGetProperty("accessToken", out _));
         Assert.True(new FakePasswordHasher().Verify(target.PasswordHash!, NewPassword));
     }
@@ -626,18 +626,18 @@ public class UserEndpointsTests : IDisposable
     [InlineData("{\"token\":\"khong-ton-tai\",\"newPassword\":\"MotMatKhauMoiRatDai@2026\"}")]
     [InlineData("{\"newPassword\":\"MotMatKhauMoiRatDai@2026\"}")]
     [InlineData("{}")]
-    public async Task Reset_with_a_dead_link_answers_MSG79(string body)
+    public async Task Reset_with_a_dead_link_answers_MSG93(string body)
     {
         var response = await _factory.CreateClient().PostAsync(
             "/api/auth/password-reset",
             new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal("MSG79", (await JsonOf(response)).GetProperty("code").GetString());
+        Assert.Equal("MSG93", (await JsonOf(response)).GetProperty("code").GetString());
     }
 
     [Fact]
-    public async Task Reset_with_a_too_short_password_answers_MSG80_on_the_field()
+    public async Task Reset_with_a_too_short_password_answers_MSG94_on_the_field()
     {
         var target = GivenUser();
         await AdminClient().PostAsync($"/api/users/{target.Id}/password-reset", null);
@@ -648,7 +648,7 @@ public class UserEndpointsTests : IDisposable
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var body = await JsonOf(response);
-        Assert.Equal("MSG80", body.GetProperty("code").GetString());
+        Assert.Equal("MSG94", body.GetProperty("code").GetString());
         Assert.True(body.GetProperty("errors").TryGetProperty("newPassword", out _));
     }
 }

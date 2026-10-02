@@ -23,7 +23,7 @@ sequence diagram, code BE, code FE và test đều phải khớp với bảng n�
 
 ## Mã tiếp theo
 
-**`MSG81`** — `MSG41`–`MSG59` và `MSG77` đã dành sẵn cho các Use Case cuộc họp và phiên họp (xem [bên dưới](#dành-sẵn-chưa-có-code)).
+**`MSG95`** — `MSG41`–`MSG59` và `MSG77` đã dành sẵn cho các Use Case cuộc họp và phiên họp (xem [bên dưới](#dành-sẵn-chưa-có-code)); `MSG78`–`MSG91` đã được workflow SCRUM-19 dùng (PR #53, chưa merge); đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94`.
 
 ## Danh mục
 
@@ -47,9 +47,9 @@ Trạng thái: **BE** = backend trả trong body JSON · **FE** = FE tự hiển
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
-| `MSG78` | 200 | `POST /api/auth/password-reset` | Đặt mật khẩu mới thành công | `Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.` | BE |
-| `MSG79` | 400 | `POST /api/auth/password-reset` | Liên kết không hợp lệ, hết hạn, đã dùng, đã bị liên kết mới hơn thay thế, hoặc tài khoản đã bị vô hiệu hoá | `Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.` | BE |
-| `MSG80` | 400 | `POST /api/auth/password-reset` | Mật khẩu mới không hợp lệ — kèm `errors.newPassword` | `Mật khẩu mới không hợp lệ.` | BE |
+| `MSG92` | 200 | `POST /api/auth/password-reset` | Đặt mật khẩu mới thành công | `Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.` | BE |
+| `MSG93` | 400 | `POST /api/auth/password-reset` | Liên kết không hợp lệ, hết hạn, đã dùng, đã bị liên kết mới hơn thay thế, hoặc tài khoản đã bị vô hiệu hoá | `Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.` | BE |
+| `MSG94` | 400 | `POST /api/auth/password-reset` | Mật khẩu mới không hợp lệ — kèm `errors.newPassword` | `Mật khẩu mới không hợp lệ.` | BE |
 
 Đặc tả UC-08 chỉ có nửa "quản trị viên gửi liên kết"; ba mã này là của nửa "người dùng mở liên kết",
 đặc tả và sơ đồ chưa vẽ. Ghi lại để BA bổ sung ở `BA Final Review`.
@@ -229,9 +229,9 @@ Các mã sau mang nhiều câu chữ hoặc nhiều nguyên nhân nhưng vẫn *
 
 - `MSG01` — sai thông tin đăng nhập (`/login`) và phiên hết hạn (`/refresh`): cùng là "không xác
   thực được", khác câu chữ.
-- `MSG09`, `MSG17`, `MSG20`, `MSG31`, `MSG32`, `MSG39`, `MSG80` — lỗi validation; nguyên nhân cụ thể nằm
+- `MSG09`, `MSG17`, `MSG20`, `MSG31`, `MSG32`, `MSG39`, `MSG94` — lỗi validation; nguyên nhân cụ thể nằm
   trong `errors` theo key.
-- `MSG79` — năm nguyên nhân (không tồn tại, hết hạn, đã dùng, bị thay thế, tài khoản bị vô hiệu
+- `MSG93` — năm nguyên nhân (không tồn tại, hết hạn, đã dùng, bị thay thế, tài khoản bị vô hiệu
   hoá) gộp một mã có chủ ý: endpoint ẩn danh, phân biệt chúng chỉ giúp người dò liên kết.
 - `MSG12` — ba nguyên nhân, xem [02-quan-ly-nguoi-dung-note-cho-fe.md](02-quan-ly-nguoi-dung-note-cho-fe.md).
 - `MSG31` — thêm biến thể "Nội dung JSON không hợp lệ." khi PUT gửi JSON sai cú pháp (không có `errors`).

@@ -59,13 +59,14 @@ khai báo thì không có cách nào phân biệt "cố tình làm tốt hơn" v
    vào nhánh *"Status change is not allowed"* bản vẽ đã có sẵn nhưng không nói khi nào. Với
    **UC-06** thì đây là nhánh hoàn toàn mới: bản vẽ UC-06 không có operand "not allowed" nào.
 6. **UC-08 có thêm nửa thứ hai mà bản vẽ không có:** người dùng mở liên kết và đặt mật khẩu mới
-   (`POST /api/auth/password-reset`, `MSG78`–`MSG80`). Thiếu nửa này thì email gửi đi một liên kết
+   (`POST /api/auth/password-reset`, `MSG92`–`MSG94`). Thiếu nửa này thì email gửi đi một liên kết
    không dẫn tới đâu.
 7. **UC-08 trả `404` khi không có tài khoản** — bản vẽ không có nhánh này (giả định quản trị viên
    chọn từ danh sách vừa tải), giống các UC khác ở trên.
 8. **UC-08 EX-1 ("không đủ điều kiện", `MSG14`) được định nghĩa là: tài khoản đã bị vô hiệu hoá.**
    Đặc tả chỉ nói "cannot use the password reset function" mà không nói khi nào. Tài khoản chỉ đăng
-   nhập bằng Google vẫn đủ điều kiện.
+   nhập bằng Google hiện vẫn đủ điều kiện — tức là quản trị viên thêm được một mật khẩu cho tài
+   khoản vốn không có; **đang chờ BA xác nhận** (đã hỏi trong SCRUM-13).
 9. **BR-20 và BR-22 (UC-08 bước 4) không được định nghĩa ở đâu trong tài liệu.** Code hiểu "secure
    password reset request" là: token ngẫu nhiên 256 bit, chỉ lưu bản băm, hiệu lực 60 phút, dùng
    một lần, mỗi tài khoản chỉ có một liên kết còn hiệu lực (gửi lại thì liên kết cũ chết).
@@ -311,9 +312,14 @@ Vài điểm cố ý:
   nút này không bao giờ khoá ai ra khỏi hệ thống, và không đăng xuất ai.
 - **"Không đủ điều kiện" (MSG14) chỉ có một nguyên nhân: tài khoản đã bị vô hiệu hoá** (PRE-3 của
   đặc tả). Tài khoản chỉ đăng nhập bằng Google (`hasPassword: false`) **vẫn đủ điều kiện** — đặt
-  mật khẩu xong thì nó có thêm cách đăng nhập bằng mật khẩu. Đặc tả chưa nói rõ, đã note cho BA.
-- **Gửi lại thì liên kết cũ chết.** Mỗi tài khoản chỉ có một liên kết còn hiệu lực — liên kết mới
-  nhất. Bấm hai lần thì hộp thư có hai email nhưng chỉ email sau dùng được.
+  mật khẩu xong thì nó có thêm cách đăng nhập bằng mật khẩu. Đặc tả chưa nói rõ — **đang chờ BA xác
+  nhận**; nếu BA chọn chặn thì chỉ cần thêm điều kiện `hasPassword` vào nhánh MSG14.
+- **Gửi lại thành công thì liên kết cũ chết.** Mỗi tài khoản chỉ có một liên kết còn hiệu lực — liên
+  kết của email gửi thành công gần nhất. Bấm hai lần thì hộp thư có hai email nhưng chỉ email sau
+  dùng được.
+- **Gửi lại mà email hỏng (MSG15) thì liên kết cũ vẫn dùng được.** Token mới được tạo trước khi gửi
+  (email phải chứa nó) nhưng chỉ được *kích hoạt* sau khi server mail nhận thư; token không bao giờ
+  được kích hoạt thì không dùng được và tự hết hạn.
 - **Liên kết đang chờ cũng chết khi tài khoản bị vô hiệu hoá, đổi email hoặc đổi vai trò** (cùng chỗ
   huỷ phiên ở UC-06/UC-07). Không thì vô hiệu hoá rồi kích hoạt lại trong vòng một giờ làm liên kết
   sống lại, và liên kết đã gửi nhầm địa chỉ vẫn dùng được sau khi quản trị viên sửa email. Sửa tên
@@ -353,18 +359,18 @@ mật khẩu không có phiên nào để gửi; token chính là bằng chứng
 
 | Tình huống | HTTP | `code` |
 |---|---|---|
-| Đổi mật khẩu thành công | `200` | `MSG78` |
-| Liên kết không hợp lệ, hết hạn, đã dùng, đã bị liên kết mới thay thế, hoặc tài khoản đã bị vô hiệu hoá | `400` | `MSG79` |
-| Mật khẩu mới dưới 12 ký tự — kèm `errors.newPassword` | `400` | `MSG80` |
+| Đổi mật khẩu thành công | `200` | `MSG92` |
+| Liên kết không hợp lệ, hết hạn, đã dùng, đã bị liên kết mới thay thế, hoặc tài khoản đã bị vô hiệu hoá | `400` | `MSG93` |
+| Mật khẩu mới dưới 12 ký tự — kèm `errors.newPassword` | `400` | `MSG94` |
 
 ```json
-{ "code": "MSG80", "message": "Mật khẩu mới không hợp lệ.", "errors": { "newPassword": "Mật khẩu phải có ít nhất 12 ký tự." } }
+{ "code": "MSG94", "message": "Mật khẩu mới không hợp lệ.", "errors": { "newPassword": "Mật khẩu phải có ít nhất 12 ký tự." } }
 ```
 
 - **Kiểm liên kết trước, mật khẩu sau.** Liên kết chết thì báo ngay, không để người dùng gõ xong mật
   khẩu hợp lệ rồi mới biết.
-- **Mật khẩu sai luật (MSG80) không làm tiêu liên kết** — sửa lại rồi gửi tiếp bằng đúng liên kết đó.
-- **Năm nguyên nhân của MSG79 gộp một mã có chủ ý.** Endpoint ẩn danh; phân biệt "hết hạn" với "không
+- **Mật khẩu sai luật (MSG94) không làm tiêu liên kết** — sửa lại rồi gửi tiếp bằng đúng liên kết đó.
+- **Năm nguyên nhân của MSG93 gộp một mã có chủ ý.** Endpoint ẩn danh; phân biệt "hết hạn" với "không
   tồn tại" chỉ giúp người dò liên kết.
 - **Thành công thì huỷ toàn bộ refresh token, và không cấp token đăng nhập.** Người dùng đăng nhập
   lại bằng mật khẩu vừa đặt. Huỷ **hai lần**:
@@ -415,7 +421,7 @@ FE khớp theo `code`, không khớp theo `message` — đổi chữ trong `mess
 | `MSG13` | `200` | Đã gửi email đặt lại mật khẩu (UC-08) |
 | `MSG14` | `409` | Tài khoản không dùng được chức năng đặt lại mật khẩu (đã bị vô hiệu hoá) |
 | `MSG15` | `503` | Không gửi được email đặt lại mật khẩu |
-| `MSG78` / `MSG79` / `MSG80` | `200` / `400` / `400` | `POST /api/auth/password-reset` — xem [mục riêng](#nửa-sau-của-uc-08--post-apiauthpassword-reset) |
+| `MSG92` / `MSG93` / `MSG94` | `200` / `400` / `400` | `POST /api/auth/password-reset` — xem [mục riêng](#nửa-sau-của-uc-08--post-apiauthpassword-reset) |
 | *(không có code)* | `404` | Không tìm thấy tài khoản |
 
 `400` kèm từng field sai, vì diagram yêu cầu "Display invalid fields":
@@ -491,10 +497,8 @@ vào bằng chứng. Đã đánh dấu `ponytail:` trong code.
 - ~~UC-08 — đặt lại mật khẩu~~ — **đã làm**, xem [mục UC-08](#uc-08--post-apiusersidpassword-reset).
   Còn thiếu ở FE: nút trên màn hình quản lý người dùng và trang `/reset-password` — xem
   [note cho FE](02-quan-ly-nguoi-dung-note-cho-fe.md#8-uc-08--đặt-lại-mật-khẩu).
-- **Gửi lại liên kết khi email trước gửi hỏng làm chết luôn liên kết trước đó.** Token mới được tạo
-  (và thay thế token cũ) *trước* khi gửi mail, vì email phải chứa nó. Nếu lần gửi sau hỏng (MSG15),
-  liên kết của lần gửi thành công trước đó cũng không còn dùng được. Chấp nhận: quản trị viên đã thấy
-  MSG15 và sẽ gửi lại; chiều ngược lại (giữ nhiều liên kết sống) mới là chiều nới lỏng bảo mật.
+- **Tài khoản chỉ đăng nhập bằng Google có được đặt lại mật khẩu không** — chờ BA xác nhận, xem
+  điểm 8 ở đầu file.
 - **Access token còn sống tới 15 phút sau khi đặt lại mật khẩu.** Refresh token đã bị huỷ, nhưng JWT
   đã cấp thì không thu hồi được. Muốn đóng hẳn: thêm cột kiểu `security_stamp` / `password_changed_at`
   vào `users`, đưa vào token, và kiểm nó ở refresh cùng `AdminCallerRevalidation`. Chưa làm vì cần

@@ -15,10 +15,22 @@ namespace TrustCabinet.Domain.Authentication;
 public interface IPasswordResetTokenStore
 {
     /// <summary>
-    /// Creates a reset token for the account, superseding any earlier one, and returns the raw
-    /// token — the only time it exists outside the email it is about to be put in.
+    /// Creates a reset token for the account and returns the raw token — the only time it exists
+    /// outside the email it is about to be put in.
+    ///
+    /// The token does not work yet, and the account's current link keeps working: nothing changes
+    /// until <see cref="ActivateAsync"/>. The email has to carry the token, so it exists before the
+    /// email is sent — but superseding the old link at that point would kill a link already in the
+    /// person's inbox whenever the new email then fails to go out.
     /// </summary>
     Task<string> CreateAsync(Guid userId, TimeSpan lifetime, CancellationToken ct = default);
+
+    /// <summary>
+    /// Makes a token from <see cref="CreateAsync"/> the account's one working link, superseding
+    /// any earlier one. Called once the email carrying it has been sent. A token never activated
+    /// stays unusable and expires on its own.
+    /// </summary>
+    Task ActivateAsync(Guid userId, string token, TimeSpan lifetime, CancellationToken ct = default);
 
     /// <summary>
     /// The account a live, current token belongs to, or null — without spending it. Lets the reset

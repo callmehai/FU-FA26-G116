@@ -1,12 +1,15 @@
 using System.Text;
 using MailKit.Security;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using TrustCabinet.Domain.Entities;
 
 namespace TrustCabinet.Infrastructure.Email;
 
-internal sealed class SmtpEmailSender(IOptions<EmailDeliveryOptions> options) : IEmailSender
+internal sealed class SmtpEmailSender(
+    IOptions<EmailDeliveryOptions> options,
+    ILogger<SmtpEmailSender> logger) : IEmailSender
 {
     public async Task SendAsync(EmailMessage queued, CancellationToken ct = default)
     {
@@ -38,8 +41,12 @@ internal sealed class SmtpEmailSender(IOptions<EmailDeliveryOptions> options) : 
         {
             await smtp.DisconnectAsync(quit: true, ct);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            // Warning, not error: nothing was lost. Kept so a server that keeps dropping the
+            // connection at QUIT can still be noticed.
+            logger.LogWarning(
+                exception, "The SMTP server accepted message {MessageId} but QUIT failed.", queued.Id);
         }
     }
 

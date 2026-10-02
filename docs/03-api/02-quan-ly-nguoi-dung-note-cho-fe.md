@@ -244,18 +244,19 @@ POST /api/auth/password-reset
 
 | HTTP | `code` | FE nên làm gì |
 |---|---|---|
-| `200` | `MSG78` | Báo thành công, chuyển tới `/login`. **Không có token đăng nhập trong response** — người dùng tự đăng nhập bằng mật khẩu mới |
-| `400` | `MSG80` | Tô đỏ field mật khẩu từ `errors.newPassword`. **Liên kết vẫn còn dùng được** — giữ form, cho sửa và gửi lại |
-| `400` | `MSG79` | Liên kết chết (hết hạn 60 phút, đã dùng, có liên kết mới hơn, hoặc tài khoản bị khoá). Ẩn form, hiện hướng dẫn liên hệ quản trị viên |
+| `200` | `MSG92` | Báo thành công, chuyển tới `/login`. **Không có token đăng nhập trong response** — người dùng tự đăng nhập bằng mật khẩu mới |
+| `400` | `MSG94` | Tô đỏ field mật khẩu từ `errors.newPassword`. **Liên kết vẫn còn dùng được** — giữ form, cho sửa và gửi lại |
+| `400` | `MSG93` | Liên kết chết (hết hạn 60 phút, đã dùng, có liên kết mới hơn, hoặc tài khoản bị khoá). Ẩn form, hiện hướng dẫn liên hệ quản trị viên |
 
 Hai mã `400` khác nhau hoàn toàn về cách xử lý — khớp theo `code`.
 
-- Không có fragment `token` thì hiện luôn trạng thái `MSG79`, khỏi gọi API.
+- Không có fragment `token` thì hiện luôn trạng thái `MSG93`, khỏi gọi API.
 - Đặt lại thành công sẽ **huỷ mọi refresh token** của người đó. Nếu chính trình duyệt này đang đăng
   nhập tài khoản đó, nó vẫn chạy tới khi access token hết hạn (tối đa 15 phút), rồi lần refresh tiếp
   theo ra `401 MSG01` — luồng đăng nhập lại như bình thường.
-- Một liên kết đã gửi sẽ chết (→ `MSG79`) nếu quản trị viên vô hiệu hoá tài khoản, đổi email hoặc đổi
-  vai trò sau đó, hoặc bấm gửi lại.
+- Một liên kết đã gửi sẽ chết (→ `MSG93`) nếu quản trị viên vô hiệu hoá tài khoản, đổi email hoặc đổi
+  vai trò sau đó, hoặc bấm gửi lại **thành công**. Gửi lại mà ra `503 MSG15` thì liên kết cũ vẫn
+  dùng được — toast MSG15 không cần nói gì về liên kết cũ.
 - Gọi qua `src/api/` (`api.post`), thêm type trong `src/types/` — như mọi endpoint khác.
 
 ---

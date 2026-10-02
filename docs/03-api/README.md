@@ -17,7 +17,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   SCRUM-13): `/api/users` xem, tạo, sửa và vô hiệu hoá/kích hoạt lại tài khoản; mã `MSG07`–`MSG12`;
   vì sao đổi trạng thái là endpoint riêng, và vì sao vô hiệu hoá phải kết thúc phiên. UC-08 đặt lại
   mật khẩu qua liên kết email (`POST /api/users/{id}/password-reset`, `POST /api/auth/password-reset`,
-  mã `MSG13`–`MSG15`, `MSG78`–`MSG80`); UC-09 gán vai trò chạy trên `PUT /api/users/{id}`
+  mã `MSG13`–`MSG15`, `MSG92`–`MSG94`); UC-09 gán vai trò chạy trên `PUT /api/users/{id}`
 - [`postman/`](postman/README.md) — collection Postman kiểm thử API UC-08 và UC-09 trên backend local,
   kèm cách chạy bằng newman
 - [`02-quan-ly-nguoi-dung-note-cho-fe.md`](02-quan-ly-nguoi-dung-note-cho-fe.md) — note cho FE khi
