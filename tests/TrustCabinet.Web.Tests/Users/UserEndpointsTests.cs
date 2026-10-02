@@ -45,6 +45,10 @@ public class UserEndpointsTests : IDisposable
 
         internal FakeAdministratorInvariantGuard Invariant { get; } = new();
 
+        internal FakePasswordResetTokenStore ResetTokens { get; } = new();
+
+        internal FakePasswordResetEmailSender ResetEmail { get; } = new();
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             base.ConfigureWebHost(builder);
@@ -65,6 +69,12 @@ public class UserEndpointsTests : IDisposable
 
                 services.RemoveAll<IRefreshTokenStore>();
                 services.AddSingleton<IRefreshTokenStore>(RefreshTokens);
+
+                // UC-08: no Redis for the links and no SMTP server for the email.
+                services.RemoveAll<IPasswordResetTokenStore>();
+                services.AddSingleton<IPasswordResetTokenStore>(ResetTokens);
+                services.RemoveAll<IPasswordResetEmailSender>();
+                services.AddSingleton<IPasswordResetEmailSender>(ResetEmail);
 
                 // The real hasher is deliberately slow and every create test pays for it.
                 services.RemoveAll<IPasswordHasher>();
@@ -524,5 +534,121 @@ public class UserEndpointsTests : IDisposable
             $"/api/users/{Guid.CreateVersion7()}/status", new { isActive = false });
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    // ------------------------------------------------------------------ UC-08 · Reset password
+
+    private const string NewPassword = "MotMatKhauMoiRatDai@2026";
+
+    [Fact]
+    public async Task Reset_request_answers_MSG13_and_emails_the_account()
+    {
+        var target = GivenUser();
+        var client = AdminClient();
+
+        var response = await client.PostAsync($"/api/users/{target.Id}/password-reset", null);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await JsonOf(response);
+        Assert.Equal("MSG13", body.GetProperty("code").GetString());
+        Assert.Equal(target.Id.ToString(), body.GetProperty("user").GetProperty("id").GetString());
+        Assert.Equal(target.Email, Assert.Single(_factory.ResetEmail.Sent).ToAddress);
+    }
+
+    [Fact]
+    public async Task Reset_request_answers_MSG14_for_a_deactivated_account()
+    {
+        var target = GivenUser(isActive: false);
+        var client = AdminClient();
+
+        var response = await client.PostAsync($"/api/users/{target.Id}/password-reset", null);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal("MSG14", (await JsonOf(response)).GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task Reset_request_answers_MSG15_when_the_email_cannot_be_sent()
+    {
+        var target = GivenUser();
+        var client = AdminClient();
+        _factory.ResetEmail.Fails = true;
+
+        var response = await client.PostAsync($"/api/users/{target.Id}/password-reset", null);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal("MSG15", (await JsonOf(response)).GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task Reset_request_answers_404_for_an_unknown_account()
+    {
+        var client = AdminClient();
+
+        var response = await client.PostAsync($"/api/users/{Guid.CreateVersion7()}/password-reset", null);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Reset_request_needs_admin_users()
+    {
+        var target = GivenUser();
+        var client = _factory.ClientFor(
+            GivenUser("Nguyễn Thư Ký", "thuky@trustcabinet.local", BuiltInRoles.Secretary),
+            Capability.MeetingCreator);
+
+        var response = await client.PostAsync($"/api/users/{target.Id}/password-reset", null);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Empty(_factory.ResetEmail.Sent);
+    }
+
+    [Fact]
+    public async Task Reset_with_the_emailed_link_answers_MSG92_without_signing_in()
+    {
+        var target = GivenUser();
+        await AdminClient().PostAsync($"/api/users/{target.Id}/password-reset", null);
+        var token = Assert.Single(_factory.ResetEmail.Sent).Token;
+
+        // Anonymous: someone resetting a forgotten password has no session to send.
+        var response = await _factory.CreateClient().PostAsJsonAsync(
+            "/api/auth/password-reset", new { token, newPassword = NewPassword });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await JsonOf(response);
+        Assert.Equal("MSG92", body.GetProperty("code").GetString());
+        Assert.False(body.TryGetProperty("accessToken", out _));
+        Assert.True(new FakePasswordHasher().Verify(target.PasswordHash!, NewPassword));
+    }
+
+    [Theory]
+    [InlineData("{\"token\":\"khong-ton-tai\",\"newPassword\":\"MotMatKhauMoiRatDai@2026\"}")]
+    [InlineData("{\"newPassword\":\"MotMatKhauMoiRatDai@2026\"}")]
+    [InlineData("{}")]
+    public async Task Reset_with_a_dead_link_answers_MSG93(string body)
+    {
+        var response = await _factory.CreateClient().PostAsync(
+            "/api/auth/password-reset",
+            new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MSG93", (await JsonOf(response)).GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task Reset_with_a_too_short_password_answers_MSG94_on_the_field()
+    {
+        var target = GivenUser();
+        await AdminClient().PostAsync($"/api/users/{target.Id}/password-reset", null);
+        var token = Assert.Single(_factory.ResetEmail.Sent).Token;
+
+        var response = await _factory.CreateClient().PostAsJsonAsync(
+            "/api/auth/password-reset", new { token, newPassword = "ngan" });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await JsonOf(response);
+        Assert.Equal("MSG94", body.GetProperty("code").GetString());
+        Assert.True(body.GetProperty("errors").TryGetProperty("newPassword", out _));
     }
 }

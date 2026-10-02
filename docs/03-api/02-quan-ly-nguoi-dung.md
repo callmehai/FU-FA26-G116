@@ -1,10 +1,11 @@
 # 02 · Quản lý người dùng
 
 Hiện thực **UC-04, UC-05, UC-06 và UC-07 (SCRUM-13)**: xem danh sách, tạo, sửa và vô hiệu hoá /
-kích hoạt lại tài khoản người dùng.
+kích hoạt lại tài khoản người dùng; **UC-08** đặt lại mật khẩu qua email (dùng hạ tầng SMTP của
+SCRUM-15); và **UC-09** gán / đổi vai trò hệ thống — chạy trên chính endpoint sửa tài khoản của UC-06,
+xem [mục UC-09](#uc-09--gán--đổi-vai-trò-hệ-thống--dùng-put-apiusersid).
 
-**UC-08 (đặt lại mật khẩu) chưa làm** — chưa có hạ tầng gửi email, và làm nửa vời sẽ để lại một
-endpoint báo "đã gửi mail" trong khi không có mail nào được gửi. Xem phần [Còn nợ](#còn-nợ).
+Kịch bản kiểm thử API bằng Postman cho UC-08 và UC-09: [postman/](postman/README.md).
 
 Sequence diagram chia bốn participant: `User Management Page` → `:User Controller` →
 `:User Service` → `:User Repository` → `Database`, cộng thêm `:Audit Service` và `:Token
@@ -18,7 +19,8 @@ Bản vẽ từng use case:
 | UC-05 — Tạo tài khoản | [UC05_CreateUserAccount.png](../06-sequencediagram/user-management/UC05_CreateUserAccount.png) |
 | UC-06 — Sửa tài khoản | [UC06_UpdateUserAccount.png](../06-sequencediagram/user-management/UC06_UpdateUserAccount.png) |
 | UC-07 — Vô hiệu hoá / kích hoạt lại | [UC07_DeactivateReactivateUserAccount.png](../06-sequencediagram/user-management/UC07_DeactivateReactivateUserAccount.png) |
-| UC-08 — Đặt lại mật khẩu | [UC08_ResetUserPassword.png](../06-sequencediagram/user-management/UC08_ResetUserPassword.png) — **chưa hiện thực**, xem [Còn nợ](#còn-nợ) |
+| UC-08 — Đặt lại mật khẩu | [UC08_ResetUserPassword.png](../06-sequencediagram/user-management/UC08_ResetUserPassword.png) — chỉ vẽ nửa quản trị viên gửi liên kết |
+| UC-09 — Gán / đổi vai trò | *chưa có* — đặc tả đang trỏ nhầm sang sơ đồ UC-11 |
 
 | Participant trong diagram | Code |
 |---|---|
@@ -27,11 +29,13 @@ Bản vẽ từng use case:
 | `:User Repository` | [`backend/TrustCabinet.Infrastructure/Users/UserAccountRepository.cs`](../../backend/TrustCabinet.Infrastructure/Users/UserAccountRepository.cs) |
 | `:Audit Service` | [`backend/TrustCabinet.Infrastructure/Audit/AuditService.cs`](../../backend/TrustCabinet.Infrastructure/Audit/AuditService.cs) |
 | `:Token Service` | `IRefreshTokenStore.RevokeAllForUserAsync` — bản vẽ chỉ có ở UC-07, code dùng cả ở UC-06 (xem mục 4 bên dưới). Chi tiết: [Vô hiệu hoá phải kết thúc phiên](#vô-hiệu-hoá-phải-kết-thúc-phiên). Bản vẽ trước đây đặt tên là `:Session Service`; đổi thành `:Token Service` vì hệ thống dùng JWT chứ không có session phía server — xem [07-classdiagram/README.md](../07-classdiagram/README.md#phụ-lục--có-dùng-jwt-không-mà-sao-lại-có-session-server) |
-| `Database` | bảng `users` và `audit_log` |
+| `:Authentication Service` (UC-08 — "Create password reset request") | [`IPasswordResetTokenStore`](../../backend/TrustCabinet.Domain/Authentication/IPasswordResetTokenStore.cs) → [`RedisPasswordResetTokenStore`](../../backend/TrustCabinet.Infrastructure/Authentication/RedisPasswordResetTokenStore.cs) |
+| `:Email Service` (UC-08) | [`IPasswordResetEmailSender`](../../backend/TrustCabinet.Domain/Users/IPasswordResetEmailSender.cs) → [`PasswordResetEmailSender`](../../backend/TrustCabinet.Infrastructure/Email/PasswordResetEmailSender.cs) |
+| `Database` | bảng `users` và `audit_log`; token đặt lại mật khẩu nằm ở Redis |
 
-### Năm chỗ code khác bản vẽ
+### Những chỗ code khác bản vẽ
 
-Bản vẽ là thiết kế nghiệp vụ, không phải đặc tả kỹ thuật đầy đủ. Năm chỗ sau code làm khác, đều có
+Bản vẽ là thiết kế nghiệp vụ, không phải đặc tả kỹ thuật đầy đủ. Những chỗ sau code làm khác, đều có
 lý do. Liệt kê đủ ở đây là cố ý: người đối chiếu code với bản vẽ mà gặp một chỗ lệch không được
 khai báo thì không có cách nào phân biệt "cố tình làm tốt hơn" với "làm sót".
 
@@ -54,9 +58,30 @@ khai báo thì không có cách nào phân biệt "cố tình làm tốt hơn" v
    [phần riêng bên dưới](#luật-không-được-xoá-sổ-quản-trị-viên-cuối-cùng). Với **UC-07** thì nó lấp
    vào nhánh *"Status change is not allowed"* bản vẽ đã có sẵn nhưng không nói khi nào. Với
    **UC-06** thì đây là nhánh hoàn toàn mới: bản vẽ UC-06 không có operand "not allowed" nào.
+6. **UC-08 có thêm nửa thứ hai mà bản vẽ không có:** người dùng mở liên kết và đặt mật khẩu mới
+   (`POST /api/auth/password-reset`, `MSG92`–`MSG94`). Thiếu nửa này thì email gửi đi một liên kết
+   không dẫn tới đâu.
+7. **UC-08 trả `404` khi không có tài khoản** — bản vẽ không có nhánh này (giả định quản trị viên
+   chọn từ danh sách vừa tải), giống các UC khác ở trên.
+8. **UC-08 EX-1 ("không đủ điều kiện", `MSG14`) được định nghĩa là: tài khoản đã bị vô hiệu hoá.**
+   Đặc tả chỉ nói "cannot use the password reset function" mà không nói khi nào. Tài khoản chỉ đăng
+   nhập bằng Google hiện vẫn đủ điều kiện — tức là quản trị viên thêm được một mật khẩu cho tài
+   khoản vốn không có; **đang chờ BA xác nhận** (đã hỏi trong SCRUM-13).
+9. **BR-20 và BR-22 (UC-08 bước 4) không được định nghĩa ở đâu trong tài liệu.** Code hiểu "secure
+   password reset request" là: token ngẫu nhiên 256 bit, chỉ lưu bản băm, hiệu lực 60 phút, dùng
+   một lần, mỗi tài khoản chỉ có một liên kết còn hiệu lực (gửi lại thì liên kết cũ chết).
+10. **`:Authentication Service` và `:Email Service` của bản vẽ UC-08 không phải hai service riêng.**
+    "Create password reset request" là `IPasswordResetTokenStore` (Redis); `:Email Service` gửi
+    **đồng bộ** qua SMTP chứ không qua hàng đợi `email_messages` — lý do ở
+    [mục UC-08](#uc-08--post-apiusersidpassword-reset). `MSG15` trả HTTP `503`.
+11. **Luật mới không có trong đặc tả:** liên kết đang chờ bị thu hồi khi tài khoản bị vô hiệu hoá,
+    đổi email hoặc đổi vai trò; đặt lại thành công thì huỷ mọi refresh token của tài khoản.
+12. **UC-09 không có endpoint và sequence diagram riêng.** Gán / đổi vai trò chạy trên
+    `PUT /api/users/{id}` của UC-06 — xem [mục UC-09](#uc-09--gán--đổi-vai-trò-hệ-thống--dùng-put-apiusersid).
+    "Sơ đồ liên quan" của UC-09 trong đặc tả đang trỏ nhầm sang `UC11_ConfigureRolePermissions.png`.
 
 **Không có thay đổi database.** Cả hai bảng đã có sẵn từ migration `ExpandDomainModel`; story này
-chỉ đọc và ghi vào chúng.
+chỉ đọc và ghi vào chúng. UC-08 cũng không thêm migration: token đặt lại mật khẩu sống ở Redis.
 
 ## Endpoint
 
@@ -69,6 +94,9 @@ Tất cả đều đòi capability **`AdminUsers`** — tiêu chí nghiệm thu 
 | POST | `/api/users` | UC-05 — tạo tài khoản mới, trạng thái active |
 | PUT | `/api/users/{id}` | UC-06 (nửa sau) — sửa họ tên, email, vai trò |
 | PUT | `/api/users/{id}/status` | UC-07 — vô hiệu hoá hoặc kích hoạt lại |
+| POST | `/api/users/{id}/password-reset` | UC-08 — gửi email chứa liên kết đặt lại mật khẩu |
+
+Nửa sau của UC-08 nằm ngoài nhóm này vì nó **ẩn danh**: `POST /api/auth/password-reset`.
 
 ### Vì sao `status` là endpoint riêng
 
@@ -256,6 +284,135 @@ Vì vậy chuyển vai trò sang một role **cũng có** `AdminUsers` thì đư
 bị mất. Sửa tên hay email của quản trị viên duy nhất cũng được phép — chỉ đổi vai trò và vô hiệu
 hoá mới bị kiểm.
 
+## UC-08 · `POST /api/users/{id}/password-reset`
+
+Quản trị viên bấm "Đặt lại mật khẩu", xác nhận, hệ thống gửi **một liên kết dùng một lần** tới email
+đăng ký của tài khoản. Không có body. Quản trị viên **không bao giờ thấy hay đặt** mật khẩu.
+
+`200 OK`:
+
+```json
+{
+  "code": "MSG13",
+  "message": "Đã gửi email đặt lại mật khẩu.",
+  "user": { "…": "như shape ở UC-04" }
+}
+```
+
+| Tình huống | HTTP | `code` |
+|---|---|---|
+| Đã gửi email | `200` | `MSG13` |
+| Tài khoản đã bị vô hiệu hoá (EX-1) | `409` | `MSG14` |
+| Không gửi được email (EX-2): SMTP tắt, không kết nối được, hoặc server từ chối | `503` | `MSG15` |
+| Không có tài khoản đó | `404` | *(không body)* |
+
+Vài điểm cố ý:
+
+- **Mật khẩu hiện tại vẫn dùng được** cho tới khi người dùng mở liên kết và đặt mật khẩu mới. Bấm
+  nút này không bao giờ khoá ai ra khỏi hệ thống, và không đăng xuất ai.
+- **"Không đủ điều kiện" (MSG14) chỉ có một nguyên nhân: tài khoản đã bị vô hiệu hoá** (PRE-3 của
+  đặc tả). Tài khoản chỉ đăng nhập bằng Google (`hasPassword: false`) **vẫn đủ điều kiện** — đặt
+  mật khẩu xong thì nó có thêm cách đăng nhập bằng mật khẩu. Đặc tả chưa nói rõ — **đang chờ BA xác
+  nhận**; nếu BA chọn chặn thì chỉ cần thêm điều kiện `hasPassword` vào nhánh MSG14.
+- **Gửi lại thành công thì liên kết cũ chết.** Mỗi tài khoản chỉ có một liên kết còn hiệu lực — liên
+  kết của email gửi thành công gần nhất. Bấm hai lần thì hộp thư có hai email nhưng chỉ email sau
+  dùng được.
+- **Gửi lại mà email hỏng (MSG15) thì liên kết cũ vẫn dùng được.** Token mới được tạo trước khi gửi
+  (email phải chứa nó) nhưng chỉ được *kích hoạt* sau khi server mail nhận thư; token không bao giờ
+  được kích hoạt thì không dùng được và tự hết hạn.
+- **Kích hoạt xong thì đọc lại tài khoản từ database.** Gửi mail có thể mất tới
+  `Email:SendAttemptTimeoutSeconds`; nếu trong lúc đó quản trị viên khác vô hiệu hoá tài khoản hoặc
+  đổi email, bước thu hồi của họ chạy *trước* khi liên kết được kích hoạt nên trượt mất nó. Đọc lại
+  (projection, không lấy entity đang track — entity đó vẫn giữ giá trị cũ) mà thấy tài khoản không
+  còn hoạt động hoặc email khác địa chỉ vừa gửi thì tự thu hồi liên kết. Thay đổi nào commit sau lần
+  đọc này thì bước thu hồi của chính nó chạy sau khi kích hoạt, nên vẫn bắt được. Quản trị viên vẫn
+  nhận MSG13 — email đã thực sự đi, y như khi thay đổi kia tới ngay sau đó.
+- **Liên kết đang chờ cũng chết khi tài khoản bị vô hiệu hoá, đổi email hoặc đổi vai trò** (cùng chỗ
+  huỷ phiên ở UC-06/UC-07). Không thì vô hiệu hoá rồi kích hoạt lại trong vòng một giờ làm liên kết
+  sống lại, và liên kết đã gửi nhầm địa chỉ vẫn dùng được sau khi quản trị viên sửa email. Sửa tên
+  thì liên kết vẫn còn.
+- **Gửi đồng bộ qua SMTP, không qua hàng đợi `email_messages`.** Hàng đợi lưu cả nội dung email vào
+  database, mà nội dung này chứa một credential còn sống — nó sẽ nằm trong bảng rất lâu sau khi
+  liên kết hết hạn. Thêm nữa, MSG15 phải trả lời ngay trong request, hàng đợi không làm được. Thời
+  gian chờ tối đa bằng `Email:SendAttemptTimeoutSeconds` (mặc định 60 giây).
+- **Server đã nhận thư thì coi là đã gửi**, kể cả khi lệnh `QUIT` sau đó lỗi — trước đây
+  `SmtpEmailSender` báo lỗi ở bước này, nghĩa là UC-08 sẽ trả MSG15 cho một liên kết đã nằm trong hộp
+  thư, còn hàng đợi thư mời (SCRUM-15) sẽ gửi lại lần nữa. Bản sửa áp dụng cho cả hai.
+- **Đã gửi mail rồi thì dòng audit luôn được ghi**, kể cả khi quản trị viên đóng tab ngay sau đó.
+- **Phải bật `Email:Smtp:Enabled`** (cấu hình như SCRUM-15, xem
+  [07-gui-email-thu-moi-note-cai-dat-may-moi.md](07-gui-email-thu-moi-note-cai-dat-may-moi.md)). Tắt
+  thì mọi lần gọi đều là `503 MSG15` — không phải "thành công" mà không có mail nào đi.
+
+### Liên kết trong email
+
+```
+{Email:ApplicationBaseUrl}/reset-password#token=<43 ký tự base64url>
+```
+
+- **Token nằm sau dấu `#` (fragment), không nằm ở query string.** Trình duyệt không bao giờ gửi
+  fragment lên server, nên token không rơi vào access log, proxy hay header `Referer`.
+- 256 bit ngẫu nhiên, **hiệu lực 60 phút, dùng một lần**. Redis chỉ lưu SHA-256 của token
+  (`prt:{hash}` → user id, `prt-user:{userId}` → hash mới nhất), cả hai key tự hết hạn. Dump Redis
+  không ra được liên kết nào dùng được.
+
+## Nửa sau của UC-08 · `POST /api/auth/password-reset`
+
+Trang `/reset-password` (FE) đọc token từ fragment rồi gửi cùng mật khẩu mới. **Ẩn danh** — người quên
+mật khẩu không có phiên nào để gửi; token chính là bằng chứng.
+
+```json
+{ "token": "…", "newPassword": "MatKhauMoiSauReset@2026" }
+```
+
+| Tình huống | HTTP | `code` |
+|---|---|---|
+| Đổi mật khẩu thành công | `200` | `MSG92` |
+| Liên kết không hợp lệ, hết hạn, đã dùng, đã bị liên kết mới thay thế, hoặc tài khoản đã bị vô hiệu hoá | `400` | `MSG93` |
+| Mật khẩu mới dưới 12 ký tự — kèm `errors.newPassword` | `400` | `MSG94` |
+
+```json
+{ "code": "MSG94", "message": "Mật khẩu mới không hợp lệ.", "errors": { "newPassword": "Mật khẩu phải có ít nhất 12 ký tự." } }
+```
+
+- **Kiểm liên kết trước, mật khẩu sau.** Liên kết chết thì báo ngay, không để người dùng gõ xong mật
+  khẩu hợp lệ rồi mới biết.
+- **Mật khẩu sai luật (MSG94) không làm tiêu liên kết** — sửa lại rồi gửi tiếp bằng đúng liên kết đó.
+- **Năm nguyên nhân của MSG93 gộp một mã có chủ ý.** Endpoint ẩn danh; phân biệt "hết hạn" với "không
+  tồn tại" chỉ giúp người dò liên kết.
+- **Thành công thì huỷ toàn bộ refresh token, và không cấp token đăng nhập.** Người dùng đăng nhập
+  lại bằng mật khẩu vừa đặt. Huỷ **hai lần**:
+  - *trước* khi lưu mật khẩu — nếu Redis lỗi thì mật khẩu cũ và phiên cũ vẫn nguyên như trước, chứ
+    không phải mật khẩu mới nằm cạnh đúng những phiên mà người ta đặt lại mật khẩu để chấm dứt;
+  - *sau* khi lưu — cho một lần đăng nhập bằng mật khẩu cũ (hoặc một lần refresh đang chạy dở) rơi
+    vào khoảng giữa hai bước. Lần này lỗi thì chỉ ghi log: mật khẩu đã đổi, liên kết đã tiêu.
+- **Access token đã cấp vẫn dùng được tới khi hết hạn** (tối đa 15 phút), ở mọi endpoint — JWT không
+  thu hồi được, và phần kiểm lại người gọi của `/api/users` chỉ xem `is_active` và capability, không
+  xem mật khẩu có vừa đổi hay không. Đóng hẳn cửa sổ này cần một "security stamp" trên `users` (cần
+  migration); xem [Còn nợ](#còn-nợ).
+- Luật mật khẩu giống UC-05: tối thiểu 12 ký tự.
+
+## UC-09 · Gán / đổi vai trò hệ thống — dùng `PUT /api/users/{id}`
+
+**Không có endpoint riêng.** Mọi thứ đặc tả UC-09 đòi hỏi đã có ở `PUT /api/users/{id}` của UC-06
+từ SCRUM-13 / SCRUM-63; thêm một `PUT /api/users/{id}/role` chỉ là một đường thứ hai làm cùng một
+việc, phải giữ hai bộ luật đồng bộ với nhau.
+
+| Bước trong đặc tả UC-09 | Ở đâu |
+|---|---|
+| 3 · Hiện thông tin và vai trò hiện tại | `GET /api/users/{id}` → `roleId`, `roleName` |
+| 5 · Hiện danh sách vai trò có thể gán | `GET /api/roles` ([04-quan-ly-vai-tro.md](04-quan-ly-vai-tro.md)) |
+| 7 / AF-1 · Gán hoặc thay vai trò | `PUT /api/users/{id}` với `roleId` mới, giữ nguyên `fullName`, `email` |
+| 8 · Ghi audit | `user.updated`, `details` chứa vai trò cũ và mới (id **và** tên) |
+| 9 · `MSG10` | `200 MSG10` |
+| EX-1 · Vai trò không còn | `400 MSG09`, `errors.roleId = "Vai trò không tồn tại."`, không đổi gì |
+| EX-2 · Hạ vai trò quản trị viên cuối cùng | `409 MSG12`, giữ vai trò cũ — xem [luật quản trị viên cuối cùng](#luật-không-được-xoá-sổ-quản-trị-viên-cuối-cùng) |
+
+Thêm một điều đặc tả không nói: **đổi vai trò sẽ đăng xuất người đó** (POST-2 "nhận capability của vai
+trò mới" chỉ thật sự đúng khi access token cũ — mang capability cũ — không được gia hạn nữa).
+
+Đặc tả UC-09 đang trỏ "Sơ đồ liên quan" sang `UC11_ConfigureRolePermissions.png` — sơ đồ của use case
+khác. UC-09 chưa có sequence diagram riêng; để BA vẽ ở `BA Final Review`.
+
 ## Mã thông báo
 
 FE khớp theo `code`, không khớp theo `message` — đổi chữ trong `message` không được làm FE vỡ.
@@ -267,7 +424,11 @@ FE khớp theo `code`, không khớp theo `message` — đổi chữ trong `mess
 | `MSG09` | `400` | Thông tin không hợp lệ — kèm `errors` |
 | `MSG10` | `200` | Cập nhật tài khoản thành công |
 | `MSG11` | `200` | Đổi trạng thái thành công (cả hai chiều) |
-| `MSG12` | `409` | Không được phép đổi trạng thái |
+| `MSG12` | `409` | Không được phép đổi trạng thái / hạ vai trò quản trị viên cuối cùng |
+| `MSG13` | `200` | Đã gửi email đặt lại mật khẩu (UC-08) |
+| `MSG14` | `409` | Tài khoản không dùng được chức năng đặt lại mật khẩu (đã bị vô hiệu hoá) |
+| `MSG15` | `503` | Không gửi được email đặt lại mật khẩu |
+| `MSG92` / `MSG93` / `MSG94` | `200` / `400` / `400` | `POST /api/auth/password-reset` — xem [mục riêng](#nửa-sau-của-uc-08--post-apiauthpassword-reset) |
 | *(không có code)* | `404` | Không tìm thấy tài khoản |
 
 `400` kèm từng field sai, vì diagram yêu cầu "Display invalid fields":
@@ -314,6 +475,8 @@ Mỗi thao tác ghi thành công đều ghi một dòng `audit_log`:
 | `user.updated` | UC-06 — `details` chứa **cả giá trị cũ và mới** |
 | `user.deactivated` | UC-07 |
 | `user.reactivated` | UC-07 |
+| `user.password_reset_requested` | UC-08 — quản trị viên gửi liên kết; `details` chỉ có email nhận. Gửi mail hỏng (MSG15) thì **không** ghi |
+| `user.password_reset` | UC-08 — liên kết được dùng; **actor là chính tài khoản đó**, không có `details` |
 
 Bốn điểm cố ý:
 
@@ -321,7 +484,7 @@ Bốn điểm cố ý:
   việc chưa chắc đã xảy ra.
 - **`actorId` lấy từ token**, không lấy từ body. Một `actorId` do caller tự chọn thì không chứng
   minh được gì, mà đây chính là thứ audit log dùng làm bằng chứng.
-- **Không bao giờ có mật khẩu trong `details`**, kể cả đã băm. Audit log nhiều người đọc hơn bảng
+- **Không bao giờ có mật khẩu hay token đặt lại mật khẩu trong `details`**, kể cả đã băm. Audit log nhiều người đọc hơn bảng
   `users` và cố ý không bao giờ bị xoá — một credential rơi vào đây là rơi vĩnh viễn. Có test chặn.
 - **Tiếng Việt ghi nguyên chữ, không escape.** `System.Text.Json` mặc định escape mọi ký tự ngoài
   ASCII, biến `"Trần Chủ Toạ"` thành `"Trần Chủ Toạ"` — bằng chứng mà không ai đọc
@@ -338,11 +501,17 @@ vào bằng chứng. Đã đánh dấu `ponytail:` trong code.
 
 ## Còn nợ
 
-- **UC-08 — đặt lại mật khẩu** ([UC08_ResetUserPassword.png](../06-sequencediagram/user-management/UC08_ResetUserPassword.png)).
-  Bản vẽ đã có, code thì chưa: cần `:Email Service` mà hạ tầng gửi mail chưa có, và `MSG15 - Unable
-  to send reset email` trong bản vẽ chỉ có nghĩa khi thật sự có chỗ gửi mail. Bảng `email_messages`
-  đã sẵn sàng làm hàng đợi (SCRUM-15), `:Authentication Service` trong bản vẽ đã tồn tại, và token
-  đặt lại mật khẩu có thể dùng chung Redis với refresh token. Làm khi SCRUM-15 xong.
+- ~~UC-08 — đặt lại mật khẩu~~ — **đã làm**, xem [mục UC-08](#uc-08--post-apiusersidpassword-reset).
+  Còn thiếu ở FE: nút trên màn hình quản lý người dùng và trang `/reset-password` — xem
+  [note cho FE](02-quan-ly-nguoi-dung-note-cho-fe.md#8-uc-08--đặt-lại-mật-khẩu).
+- **Tài khoản chỉ đăng nhập bằng Google có được đặt lại mật khẩu không** — chờ BA xác nhận, xem
+  điểm 8 ở đầu file.
+- **Access token còn sống tới 15 phút sau khi đặt lại mật khẩu.** Refresh token đã bị huỷ, nhưng JWT
+  đã cấp thì không thu hồi được. Muốn đóng hẳn: thêm cột kiểu `security_stamp` / `password_changed_at`
+  vào `users`, đưa vào token, và kiểm nó ở refresh cùng `AdminCallerRevalidation`. Chưa làm vì cần
+  migration và chạm vào luồng xác thực của mọi endpoint — cùng cửa sổ 15 phút đã chấp nhận ở UC-07.
+- **Endpoint ẩn danh `/api/auth/password-reset` chưa có rate limit.** Token 256 bit nên dò không có
+  nghĩa; rate limit sẽ làm chung cho cả `/api/auth/*` khi cần.
 - **Ghi audit và ghi nghiệp vụ nằm ở hai transaction.** `AuditService` tự `SaveChanges` sau khi
   nghiệp vụ đã commit, nên nếu dòng audit ghi hỏng thì thay đổi nghiệp vụ **đã xảy ra rồi** và
   không rollback lại được: kết quả là 500 kèm một thay đổi không có bằng chứng. Trường hợp duy nhất

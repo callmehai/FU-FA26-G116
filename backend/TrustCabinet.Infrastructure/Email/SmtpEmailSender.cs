@@ -1,12 +1,15 @@
 using System.Text;
 using MailKit.Security;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using TrustCabinet.Domain.Entities;
 
 namespace TrustCabinet.Infrastructure.Email;
 
-internal sealed class SmtpEmailSender(IOptions<EmailDeliveryOptions> options) : IEmailSender
+internal sealed class SmtpEmailSender(
+    IOptions<EmailDeliveryOptions> options,
+    ILogger<SmtpEmailSender> logger) : IEmailSender
 {
     public async Task SendAsync(EmailMessage queued, CancellationToken ct = default)
     {
@@ -30,7 +33,21 @@ internal sealed class SmtpEmailSender(IOptions<EmailDeliveryOptions> options) : 
         }
 
         await smtp.SendAsync(message, ct);
-        await smtp.DisconnectAsync(quit: true, ct);
+
+        // The server has accepted the message; a failed QUIT does not unsend it. Reported as a
+        // failure, it would make the queue send the invitation again and UC-08 answer MSG15 for a
+        // reset link that is already in the inbox. Disposing the client closes the socket anyway.
+        try
+        {
+            await smtp.DisconnectAsync(quit: true, ct);
+        }
+        catch (Exception exception)
+        {
+            // Warning, not error: nothing was lost. Kept so a server that keeps dropping the
+            // connection at QUIT can still be noticed.
+            logger.LogWarning(
+                exception, "The SMTP server accepted message {MessageId} but QUIT failed.", queued.Id);
+        }
     }
 
     internal static MimeMessage BuildMessage(EmailMessage queued, SmtpOptions options)

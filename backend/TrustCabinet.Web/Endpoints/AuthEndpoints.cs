@@ -33,6 +33,9 @@ public static class AuthEndpoints
     private const string Msg02AccountUnavailable = "MSG02";
     private const string Msg03GoogleSignInUnsuccessful = "MSG03";
     private const string Msg05GoogleNotAuthorized = "MSG05";
+    private const string Msg92PasswordReset = "MSG92";
+    private const string Msg93PasswordResetLinkInvalid = "MSG93";
+    private const string Msg94PasswordResetInvalidPassword = "MSG94";
 
     /// <summary>
     /// The refresh token's cookie. <c>HttpOnly</c> is the point of it: a token JavaScript cannot
@@ -54,6 +57,9 @@ public static class AuthEndpoints
         auth.MapPost("/refresh", RefreshAsync).AllowAnonymous();
         auth.MapPost("/logout", SignOutAsync).AllowAnonymous();
         auth.MapGet("/me", Me).RequireAuthorization();
+        // UC-08's link lands here. Anonymous: the token in the body is the proof, and someone who
+        // has forgotten their password has no session to send.
+        auth.MapPost("/password-reset", ResetPasswordAsync).AllowAnonymous();
 
         return app;
     }
@@ -154,6 +160,38 @@ public static class AuthEndpoints
         // 204 whether or not the token was still valid: signing out is idempotent, and reporting
         // "that token was already gone" would only confirm token states to a caller.
         return Results.NoContent();
+    }
+
+    /// <summary>
+    /// The second half of UC-08 — the person sets a new password with the token from the email.
+    /// Not a sign-in: no tokens are issued, so the person signs in afterwards with the password
+    /// they just chose, which proves they remember it.
+    /// </summary>
+    private static async Task<IResult> ResetPasswordAsync(
+        [FromBody] ResetPasswordRequest request,
+        IUserService users,
+        CancellationToken ct)
+    {
+        var result = await users.ResetPasswordAsync(request.Token, request.NewPassword, ct);
+
+        return result.Outcome switch
+        {
+            UserOutcome.Success => Results.Ok(new PasswordResetResponse(
+                Msg92PasswordReset,
+                "Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.")),
+
+            UserOutcome.InvalidInformation => Results.Json(
+                new PasswordResetResponse(
+                    Msg94PasswordResetInvalidPassword, "Mật khẩu mới không hợp lệ.", result.Errors),
+                statusCode: StatusCodes.Status400BadRequest),
+
+            // PasswordResetLinkInvalid, and defensively anything added later: refuse.
+            _ => Results.Json(
+                new PasswordResetResponse(
+                    Msg93PasswordResetLinkInvalid,
+                    "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên."),
+                statusCode: StatusCodes.Status400BadRequest),
+        };
     }
 
     /// <summary>
@@ -268,6 +306,19 @@ public sealed record SignInRequest(string? Email, string? Password);
 public sealed record GoogleSignInRequest(string? IdToken);
 
 public sealed record AuthErrorResponse(string Code, string Message);
+
+/// <summary>
+/// UC-08's link: the token from the email's fragment and the new password. Nullable so a missing
+/// field is MSG93 or MSG94, not a 400 from the model binder.
+/// </summary>
+public sealed record ResetPasswordRequest(string? Token, string? NewPassword);
+
+/// <summary>
+/// Every answer of <c>POST /api/auth/password-reset</c>. <paramref name="Errors"/> is set only for
+/// MSG94, keyed <c>newPassword</c>.
+/// </summary>
+public sealed record PasswordResetResponse(
+    string Code, string Message, IReadOnlyDictionary<string, string>? Errors = null);
 
 /// <summary>
 /// What a successful sign-in returns. No refresh token: that travels only in the HttpOnly cookie,

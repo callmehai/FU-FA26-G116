@@ -26,6 +26,14 @@ public interface IUserAccountRepository
     Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
+    /// The account's email if it is still active, or null — read from the database as it is now,
+    /// never from an entity this context already tracks. UC-08 asks it after a slow email send, to
+    /// see whether another administrator deactivated the account or changed its address meanwhile;
+    /// a tracked entity would only answer with what this request loaded before the send.
+    /// </summary>
+    Task<string?> FindActiveEmailAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>
     /// The role with this id, or null — UC-05 and UC-06 check the chosen role exists, now that a
     /// role is a row an administrator can delete rather than an enum value (ADR-0008).
     /// </summary>
