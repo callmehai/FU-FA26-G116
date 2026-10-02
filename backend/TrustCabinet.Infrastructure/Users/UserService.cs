@@ -356,8 +356,12 @@ public sealed partial class UserService(
         // EX-2 — MSG15. Not audited: the evidence should say what happened, and nothing reached
         // the person. The token just created was never activated, so it does not work and expires
         // on its own — and a link sent earlier, already in the person's inbox, keeps working.
+        // The address the link goes to, kept apart from the entity, which is what gets compared
+        // after the send below.
+        var sentTo = user.Email;
+
         if (!await passwordResetEmail.SendAsync(
-                user.Email, user.FullName, token, PasswordResetLinkLifetime, ct))
+                sentTo, user.FullName, token, PasswordResetLinkLifetime, ct))
         {
             logger.LogWarning(
                 "Password reset for account {UserId} could not be emailed.", user.Id);
@@ -369,6 +373,28 @@ public sealed partial class UserService(
         await passwordResetTokens.ActivateAsync(
             user.Id, token, PasswordResetLinkLifetime, CancellationToken.None);
 
+        // The send can take up to Email:SendAttemptTimeoutSeconds. If another administrator
+        // deactivated the account or changed its email meanwhile, their revoke (GuardedWriteAsync)
+        // ran before the activation above and missed this link — which went to the old address.
+        // So read the account again, fresh from the database, and take the link back ourselves.
+        // A change committed after this read revokes after the activation, so it is caught by
+        // their own revoke: between the two, no ordering leaves the link alive.
+        //
+        // Still MSG13: the email did go out, exactly as if the other change had come a moment
+        // after it — which the rules already answer by revoking the link. That change has its own
+        // audit entry.
+        var currentEmail = await users.FindActiveEmailAsync(user.Id, CancellationToken.None);
+
+        // Case-insensitive like the citext column: a change of case is the same mailbox.
+        if (!string.Equals(currentEmail, sentTo, StringComparison.OrdinalIgnoreCase))
+        {
+            await passwordResetTokens.RevokeAsync(user.Id, CancellationToken.None);
+            logger.LogInformation(
+                "Password reset link for account {UserId} revoked: the account was deactivated or "
+                + "its email changed while the email was being sent.",
+                user.Id);
+        }
+
         await audit.RecordAsync(
             AuditActions.UserPasswordResetRequested,
             AuditActions.UserObjectType,
@@ -376,7 +402,7 @@ public sealed partial class UserService(
             actorId,
             // Where the link went. Never the token: the audit log outlives the link and is read by
             // more people than the mailbox.
-            new { user.Email },
+            new { Email = sentTo },
             // Not the request's token: the email is out, and an administrator closing the tab a
             // moment later must not leave a live link in someone's inbox with no record of it.
             CancellationToken.None);

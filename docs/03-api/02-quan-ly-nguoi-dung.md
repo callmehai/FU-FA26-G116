@@ -320,6 +320,13 @@ Vài điểm cố ý:
 - **Gửi lại mà email hỏng (MSG15) thì liên kết cũ vẫn dùng được.** Token mới được tạo trước khi gửi
   (email phải chứa nó) nhưng chỉ được *kích hoạt* sau khi server mail nhận thư; token không bao giờ
   được kích hoạt thì không dùng được và tự hết hạn.
+- **Kích hoạt xong thì đọc lại tài khoản từ database.** Gửi mail có thể mất tới
+  `Email:SendAttemptTimeoutSeconds`; nếu trong lúc đó quản trị viên khác vô hiệu hoá tài khoản hoặc
+  đổi email, bước thu hồi của họ chạy *trước* khi liên kết được kích hoạt nên trượt mất nó. Đọc lại
+  (projection, không lấy entity đang track — entity đó vẫn giữ giá trị cũ) mà thấy tài khoản không
+  còn hoạt động hoặc email khác địa chỉ vừa gửi thì tự thu hồi liên kết. Thay đổi nào commit sau lần
+  đọc này thì bước thu hồi của chính nó chạy sau khi kích hoạt, nên vẫn bắt được. Quản trị viên vẫn
+  nhận MSG13 — email đã thực sự đi, y như khi thay đổi kia tới ngay sau đó.
 - **Liên kết đang chờ cũng chết khi tài khoản bị vô hiệu hoá, đổi email hoặc đổi vai trò** (cùng chỗ
   huỷ phiên ở UC-06/UC-07). Không thì vô hiệu hoá rồi kích hoạt lại trong vòng một giờ làm liên kết
   sống lại, và liên kết đã gửi nhầm địa chỉ vẫn dùng được sau khi quản trị viên sửa email. Sửa tên

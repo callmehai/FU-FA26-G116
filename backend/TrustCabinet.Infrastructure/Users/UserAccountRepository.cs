@@ -27,6 +27,15 @@ public sealed class UserAccountRepository(TrustCabinetDbContext db) : IUserAccou
     public Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default)
         => db.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id, ct);
 
+    public Task<string?> FindActiveEmailAsync(Guid id, CancellationToken ct = default)
+        // A projection, not an entity query: EF resolves an entity query to the instance it
+        // already tracks and keeps that instance's values, so it would hand back the email as this
+        // request first loaded it. A projection is always read from the row.
+        => db.Users
+            .Where(u => u.Id == id && u.IsActive)
+            .Select(u => u.Email)
+            .FirstOrDefaultAsync(ct);
+
     public Task<Role?> FindRoleAsync(Guid roleId, CancellationToken ct = default)
         => db.Roles.FirstOrDefaultAsync(r => r.Id == roleId, ct);
 

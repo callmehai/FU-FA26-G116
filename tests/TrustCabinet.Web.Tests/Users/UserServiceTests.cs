@@ -918,6 +918,64 @@ public class UserServiceTests
     }
 
     [Fact]
+    public async Task A_deactivation_during_the_send_still_kills_the_link()
+    {
+        // The race: another administrator deactivates the account while the email is on its way.
+        // Their revoke runs before this request activates the link, so it misses it.
+        var target = GivenUser();
+        var service = NewService();
+        _resetEmail.OnSend = async () =>
+        {
+            target.IsActive = false;
+            await _resetTokens.RevokeAsync(target.Id);
+        };
+
+        var request = await service.RequestPasswordResetAsync(target.Id, _actorId);
+        _resetEmail.OnSend = null;
+        target.IsActive = true;
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.True(request.Succeeded);
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+    }
+
+    [Fact]
+    public async Task An_email_change_during_the_send_kills_the_link_sent_to_the_old_address()
+    {
+        var target = GivenUser();
+        var service = NewService();
+        _resetEmail.OnSend = async () =>
+        {
+            target.Email = "dachinhsua@trustcabinet.local";
+            await _resetTokens.RevokeAsync(target.Id);
+        };
+
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal("thanhvien@trustcabinet.local", Assert.Single(_resetEmail.Sent).ToAddress);
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+    }
+
+    [Fact]
+    public async Task A_change_of_case_during_the_send_keeps_the_link()
+    {
+        // citext: the same mailbox, so nothing to take back.
+        var target = GivenUser();
+        var service = NewService();
+        _resetEmail.OnSend = () =>
+        {
+            target.Email = "ThanhVien@TrustCabinet.local";
+            return Task.CompletedTask;
+        };
+
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.True(result.Succeeded);
+    }
+
+    [Fact]
     public async Task Reset_request_reports_not_found_for_an_unknown_account()
     {
         var result = await NewService().RequestPasswordResetAsync(Guid.CreateVersion7(), _actorId);

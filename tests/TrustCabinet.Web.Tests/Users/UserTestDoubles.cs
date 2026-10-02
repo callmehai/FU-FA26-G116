@@ -90,6 +90,9 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository
         return user;
     }
 
+    public Task<string?> FindActiveEmailAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult(_users.FirstOrDefault(u => u.Id == id && u.IsActive)?.Email);
+
     public Task<Role?> FindRoleAsync(Guid roleId, CancellationToken ct = default)
         => Task.FromResult(_roles.GetValueOrDefault(roleId));
 
@@ -316,17 +319,31 @@ internal sealed class FakePasswordResetEmailSender : IPasswordResetEmailSender
 {
     public bool Fails { get; set; }
 
+    /// <summary>
+    /// Runs while the email is "on its way" — where a test puts what another administrator does
+    /// during a slow send.
+    /// </summary>
+    public Func<Task>? OnSend { get; set; }
+
     public List<(string ToAddress, string FullName, string Token)> Sent { get; } = [];
 
     public Task<bool> SendAsync(
         string toAddress, string fullName, string resetToken, TimeSpan validFor, CancellationToken ct = default)
+        => SendNowAsync(toAddress, fullName, resetToken);
+
+    private async Task<bool> SendNowAsync(string toAddress, string fullName, string resetToken)
     {
+        if (OnSend is { } during)
+        {
+            await during();
+        }
+
         if (Fails)
         {
-            return Task.FromResult(false);
+            return false;
         }
 
         Sent.Add((toAddress, fullName, resetToken));
-        return Task.FromResult(true);
+        return true;
     }
 }
