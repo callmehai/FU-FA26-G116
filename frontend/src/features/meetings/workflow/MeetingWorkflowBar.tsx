@@ -14,10 +14,10 @@ import { workflowFailure, type WorkflowOutcome } from './workflowOutcome'
 export type WorkflowRole = 'organizer' | 'approver'
 
 type Tone = 'slate' | 'amber' | 'red' | 'emerald' | 'warning'
-type OpenDialog = 'submit' | 'approve' | 'reject' | 'returnToDraft' | null
+type OpenDialog = 'submit' | 'approve' | 'reject' | 'returnToDraft' | 'publish' | null
 
 /**
- * The approval workflow of one meeting (SCRUM-19, UC-19 … UC-20), as a bar under the page header:
+ * The approval workflow of one meeting (SCRUM-19, UC-19 … UC-21), as a bar under the page header:
  * where the meeting stands, who it is waiting on, and the next step for the person looking —
  * with that step's button right there. It only appears for the organizer and the current approver,
  * and only until the meeting is published.
@@ -60,7 +60,7 @@ export function MeetingWorkflowBar({
   }
 
   /** For the confirm-only actions: an ending failure closes the dialog, anything else stays in it. */
-  async function confirm(action: 'Approve' | 'ReturnToDraft') {
+  async function confirm(action: 'Approve' | 'ReturnToDraft' | 'Publish') {
     try {
       const response = await transitionMeeting(meeting.id, { action })
       onOutcome({ kind: 'done', response })
@@ -108,6 +108,20 @@ export function MeetingWorkflowBar({
           onClose={() => setDialog(null)}
         >
           Duyệt “{meeting.title}”? Sau khi duyệt, người tổ chức có thể công bố cuộc họp tới thành phần tham dự.
+        </ConfirmDialog>
+      )}
+      {dialog === 'publish' && (
+        <ConfirmDialog
+          title="Công bố cuộc họp"
+          confirmLabel="Công bố"
+          pendingLabel="Đang công bố…"
+          onConfirm={() => confirm('Publish')}
+          onClose={() => setDialog(null)}
+        >
+          {/* SCRUM-15: what publishing sets off, never a promise that an email arrived — delivery
+              happens afterwards, in the background, and may be switched off. */}
+          Công bố “{meeting.title}”? Thành phần tham dự sẽ thấy cuộc họp và nhận lời mời họp. Sau khi công bố, thông tin
+          cuộc họp không sửa được nữa.
         </ConfirmDialog>
       )}
       {dialog === 'returnToDraft' && (
@@ -246,11 +260,18 @@ function organizerView(
         tone: 'emerald',
         icon: 'checkCircle',
         title: 'Cuộc họp đã được duyệt',
-        body: approve ? (
+        body: (
           <p>
-            {approve.actorName} đã duyệt lúc {formatDateTime(approve.occurredAt)}.
+            {approve ? `${approve.actorName} đã duyệt lúc ${formatDateTime(approve.occurredAt)}. ` : ''}
+            Công bố để thành phần tham dự thấy cuộc họp và nhận lời mời.
           </p>
-        ) : null,
+        ),
+        actions: (
+          <button type="button" className="btn btn-primary" onClick={() => open('publish')}>
+            <Icon name="send" size={16} />
+            Công bố
+          </button>
+        ),
       }
     }
     default:

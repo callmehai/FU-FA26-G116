@@ -502,8 +502,9 @@ stale content.
   "Rút về nháp"; backend trả `409` nếu người duyệt thật ra vẫn hợp lệ.
 - **WaitingApproval (Approver):** "Duyệt" mở dialog xác nhận; "Từ chối" mở dialog bắt buộc lý do
   1–1.000 ký tự, có bộ đếm. `MSG83`/`MSG84` hiện dưới ô lý do; lý do đã gõ được giữ khi lỗi.
-- **Approved:** hiện người duyệt và thời điểm. Approver thấy quyết định của chính họ ở cả Rejected
-  và Approved, kèm lý do khi từ chối.
+- **Approved:** hiện người duyệt và thời điểm; Organizer có "Công bố". Cách xử lý `MSG45`–`MSG47` theo
+  [note FE của SCRUM-15](07-gui-email-thu-moi-note-cho-fe.md#trạng-thái-tích-hợp-fe). Approver thấy
+  quyết định của chính họ ở cả Rejected và Approved, kèm lý do khi từ chối.
 - **Kết quả:** thành công thì toast `message` của backend, thay meeting và thêm dòng history từ
   response, không gọi lại API. `409`, `403 MSG85` và `403 MSG46` (Organizer mất `MeetingCreator` lúc
   công bố) đóng dialog, toast lý do, rồi tải lại meeting và history; hai mã `403` tải lại cả phiên. `403` không có code đi theo
