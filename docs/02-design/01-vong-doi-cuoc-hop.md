@@ -10,9 +10,9 @@ Mã trạng thái giữ nguyên tiếng Anh để dùng trực tiếp trong code
 |---|---|---|
 | `Draft` | Nháp | Thư ký đang soạn, chưa ai khác thấy |
 | `WaitingApproval` | Chờ duyệt | Đã gửi, đang đợi người có quyền duyệt |
-| `Rejected` | Bị từ chối | Người duyệt trả lại, quay về sửa |
+| `Rejected` | Bị từ chối | Organizer được sửa; chuyển về `Draft` trước khi gửi duyệt lại |
 | `Approved` | Đã duyệt | Được chấp thuận, chưa thông báo cho thành phần tham dự |
-| `Published` | Đã công bố | Đã gửi thư mời, thành phần tham dự nhìn thấy |
+| `Published` | Đã công bố | Thành phần tham dự nhìn thấy; thư mời xếp hàng để gửi bất đồng bộ khi SMTP bật |
 | `InProgress` | Đang diễn ra | Chủ toạ đã bắt đầu phiên họp |
 | `Ended` | Đã kết thúc | Phiên họp đóng, chờ xử lý hậu kỳ (ASR, biên bản) |
 | `MinutesIssued` | Đã ban hành biên bản | Biên bản đã được phê duyệt và chốt |
@@ -21,16 +21,35 @@ Mã trạng thái giữ nguyên tiếng Anh để dùng trực tiếp trong code
 ```
 Draft ──gửi duyệt──> WaitingApproval ──duyệt──> Approved ──công bố──> Published
   ^                        │                                              │
-  └────từ chối─────── Rejected                                       bắt đầu họp
+  │                        └──từ chối──> Rejected                         │
+  └────Organizer đưa về nháp──────────────┘                           bắt đầu họp
                                                                           v
         Archived <──lưu trữ── MinutesIssued <──ban hành biên bản── Ended <┘
 ```
 
-Khi gửi duyệt theo UC-15, người tổ chức phải chọn một tài khoản đang hoạt động có capability
-`MeetingApprover`. Trường `AssignedApproverId` được để trống trong bản nháp cho tới khi người duyệt
-được chọn.
+Organizer được sửa ở `Draft` hoặc `Rejected`. Để gửi duyệt lại sau từ chối, phải thực hiện
+`ReturnToDraft` trước; assignment cũ được xóa và lịch sử/lý do từ chối được giữ nguyên.
+
+Khi gửi duyệt theo UC-19, người tổ chức phải chọn một tài khoản đang hoạt động có capability
+`MeetingApprover`, khác chính Organizer. Trường `AssignedApproverId` để trống trong bản nháp cho
+tới khi gửi duyệt.
+
+Khi `WaitingApproval` thiếu người duyệt, gán chính Organizer, hoặc người duyệt inactive/mất
+`MeetingApprover`, Organizer active có `MeetingCreator` được `ReturnToDraft` để chọn lại người duyệt.
+Không cho rút khi người duyệt khác Organizer vẫn hợp lệ.
+
+`Published` chưa xác nhận email đã được giao. Khi SMTP bật, thư mời được xếp hàng trong transaction
+công bố; SMTP tắt thì không tạo email job. Lỗi gửi không đổi trạng thái cuộc họp. Chi tiết quyền,
+người nhận và các transition:
+[API quản lý cuộc họp](../03-api/05-quan-ly-cuoc-hop.md).
 
 ## Vì sao cần ghi lại
+
+Meeting Approved có Organizer inactive được quản trị active/có AdminUsers chuyển sang Organizer
+mới bằng `TransferOrganizer`. Người mới phải active/có MeetingCreator, khác người cũ và current
+Assigned Approver; sau đó công bố bằng quyền Organizer bình thường. Trạng thái Approved, nội dung
+và assignment không đổi; thao tác transfer ghi history bất biến với Organizer cũ/mới và actor/time,
+không tạo notification/invitation. Không có quyền Publish riêng cho admin hoặc Chair.
 
 - **Phân quyền bám theo trạng thái.** Sửa nội dung chỉ được phép ở `Draft` và `Rejected`. Biểu
   quyết chỉ mở khi `InProgress`. Biên bản chỉ sinh được sau `Ended`.

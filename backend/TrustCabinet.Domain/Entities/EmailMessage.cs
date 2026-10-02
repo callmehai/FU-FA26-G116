@@ -45,4 +45,5 @@ public class EmailMessage : Entity
     /// <summary>The meeting that caused this email, for tracing.</summary>
     public Guid? MeetingId { get; set; }
     public Meeting? Meeting { get; set; }
+
 }

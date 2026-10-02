@@ -42,8 +42,12 @@ erDiagram
     User o|--o{ Meeting : "người duyệt được gán"
     User ||--o{ MeetingParticipant : "được mời"
     User ||--o{ MeetingStatusHistory : "người thực hiện"
+    User o|--o{ MeetingStatusHistory : "approver snapshot"
+    User o|--o{ MeetingStatusHistory : "Organizer trước transfer"
+    User o|--o{ MeetingStatusHistory : "Organizer sau transfer"
     Meeting ||--o{ MeetingParticipant : "thành phần tham dự"
     Meeting ||--o{ MeetingStatusHistory : "lịch sử trạng thái"
+    MeetingStatusHistory o|--o{ Notification : "nguồn thông báo"
 
     User {
         uuid Id PK
@@ -73,7 +77,7 @@ erDiagram
         timestamptz StartsAt
         timestamptz EndsAt "nullable"
         uuid CreatedById FK
-        uuid AssignedApproverId FK "null khi tạo nháp; bắt buộc trước khi gửi duyệt"
+        uuid AssignedApproverId FK "null ở Draft; assignment hiện tại, set khi Submit; clear khi ReturnToDraft"
     }
     MeetingParticipant {
         uuid Id PK
@@ -90,11 +94,44 @@ erDiagram
         uuid MeetingId FK
         string FromStatus "null ở bản ghi tạo mới"
         string ToStatus
+        string Action "Create|SubmitForApproval|Approve|Reject|ReturnToDraft|TransferOrganizer|Publish|LegacyTransition"
         uuid ActorId FK
+        uuid AssignedApproverId FK "snapshot, null ngoài Submit hoặc dữ liệu cũ"
+        uuid PreviousOrganizerId FK "snapshot trước TransferOrganizer, nullable"
+        uuid NewOrganizerId FK "snapshot sau TransferOrganizer, nullable"
         string Reason "bắt buộc khi từ chối"
         timestamptz OccurredAt
     }
+    Notification {
+        uuid Id PK
+        uuid UserId FK "recipient"
+        uuid MeetingId FK
+        uuid OriginHistoryId FK "snapshot event"
+        string Type
+        string Title
+        string Body
+    }
+    EmailMessage {
+        uuid Id PK
+        uuid MeetingId FK
+        string DeduplicationKey UK "meeting + publication event + recipient"
+        string Subject
+        string Body "rendered publication snapshot"
+        string CalendarAttachment "rendered .ics"
+        string ToAddress "captured at Publish"
+        string Status "Queued|Processing|Sent|Failed"
+    }
 ```
+
+`MeetingStatusHistory` là append-only audit evidence: FK từ history tới Meeting dùng RESTRICT, EF
+và PostgreSQL chặn sửa/xóa/truncate. Notification của một transition giữ `OriginHistoryId` để
+truy được batch tạo cùng lần commit. Producer email SCRUM-15 lưu nội dung thư khi Publish và dùng
+`meeting:{meetingId}:published:{userId}` để chống trùng. Migration mới bỏ bốn cột email không dùng
+`OriginHistoryId`, `RecipientUserId`, `MessageType`, `PayloadSnapshot` cùng FK/index tương ứng;
+giữ `MeetingId`, key, nội dung và trạng thái delivery. `Notification.OriginHistoryId` vẫn giữ.
+Email chọn participant có user active, không áp dụng bộ lọc `Response` của notification.
+History `TransferOrganizer` giữ ID Organizer cũ/mới và actor quản trị, trong khi trạng thái meeting
+vẫn `Approved`; các field nullable này không sửa hoặc diễn giải lại history cũ.
 
 `Response` và `Attendance` là **hai câu hỏi khác nhau**: một là người ta trả lời thư mời thế nào,
 hai là thực tế có mặt hay không. Nhận lời rồi không đến là chuyện bình thường, và số liệu quorum
@@ -356,16 +393,12 @@ WebRTC; backend chỉ làm tín hiệu. Rớt mạng vào lại sinh một dòng
 
 `notifications` thuộc về đúng một user (`user_id`) và có thể trỏ tới một meeting
 (`meeting_id`). `read_at` null nghĩa là chưa đọc. `deduplication_key` nullable có unique index;
-nhắc họp dùng `meeting-starting-soon:<meeting-id>:<user-id>`. Notification lời mời sẽ được tạo cho
-tất cả participant trong luồng publish meeting của SCRUM-19, không phải khi thêm từng participant.
+nhắc họp dùng `meeting-starting-soon:<meeting-id>:<user-id>`. Notification lời mời được tạo trong
+luồng Publish của SCRUM-19 theo recipient snapshot (user active, `Response != Delegated`), không
+phải khi thêm từng participant. `origin_history_id` truy tới lần Publish đã tạo batch đó.
 `pushed_at` null nghĩa là worker chưa push dòng đã commit qua SignalR; client mất kết nối vẫn
 đọc lại từ DB qua API. Migration SCRUM-14 thêm bốn cột `deduplication_key`, `pushed_at`,
 `target_type` và `target_id` mà không thay đổi quan hệ user/meeting có sẵn.
-
-`email_messages.deduplication_key` cũng có unique index nhưng định danh một **sự kiện gửi cụ thể**,
-không phải chỉ một cặp meeting/người nhận. Nhờ đó retry transaction của cùng lần công bố không tạo
-thư trùng, còn các sự kiện đổi lịch, hủy họp hoặc phát hành biên bản vẫn có thể gửi thư mới cho cùng
-người nhận.
 
 Notification lưu `target_type` và `target_id`; với thông báo họp, các giá trị là `Meeting` và ID
 cuộc họp. Route UI không được lưu trong database: API dựng `actionUrl` từ hai trường target khi trả
@@ -386,7 +419,7 @@ từ `read_at`, không lưu thêm một cột bool.
 | Enum lưu dạng **chuỗi** | Đọc thẳng trong DB là hiểu; thêm trạng thái mới không đánh số lại dòng cũ |
 | `Status`, `Sensitivity` **không có default** ở DB | Tầng ứng dụng phải nói rõ. Mặc định ngầm về giá trị dễ dãi nhất là cách một cuộc họp mật bị lộ |
 | Mọi khoá ngoại trỏ tới `users` đều `Restrict` | Người dùng vô hiệu hoá chứ không xoá; bằng chứng kiểm toán phải giữ được quy kết trách nhiệm |
-| `Meeting` → dữ liệu con là `Cascade` | Xoá một cuộc họp nháp thì dữ liệu con đi theo, không để lại rác |
+| `Meeting` → dữ liệu con là `Cascade`, ngoại trừ lifecycle history dùng `Restrict` | Không để lại dữ liệu con mồ côi; cuộc họp có lịch sử kiểm toán không thể bị xóa kéo theo bằng chứng |
 | `agenda_items.Position` **không** unique | Kéo thả đổi thứ tự ghi nhiều dòng một lúc; unique index sẽ chặn trạng thái trung gian |
 | `meeting_notes` unique có `AreNullsDistinct(false)` | PostgreSQL mặc định coi hai NULL là khác nhau, nên ghi chú cấp cuộc họp sẽ lọt nếu không khai báo |
 | `audit_log.Details` kiểu `jsonb` | Hỏi được câu mà các cột không trả lời, không phải sửa schema |

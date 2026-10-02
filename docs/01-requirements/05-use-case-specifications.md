@@ -774,6 +774,10 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 ### UC-15: Create Meeting (Tạo cuộc họp)
 
+> Ghi chú triển khai backend SCRUM-17: cuộc họp mới là `Draft`, chưa được gán người duyệt.
+> Request chỉ nhận `title`, `startsAt`, `endsAt`, `mode`, `sensitivity`, `location`, `description`;
+> người duyệt được chọn khi `SubmitForApproval` ở UC-19. Chi tiết: [hợp đồng API](../03-api/05-quan-ly-cuoc-hop.md#post-apimeetings).
+
 - **Use Case ID**: UC-15
 - **Use Case Name**: Create Meeting
 - **Primary Actor**: Meeting Organizer
@@ -827,6 +831,10 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 ---
 
 ### UC-16: Update Meeting (Cập nhật thông tin cuộc họp)
+
+> Ghi chú triển khai backend SCRUM-17: PUT thay toàn bộ bảy trường thông tin như UC-15, không cập nhật
+> assignment. Sửa ở `Rejected` giữ nguyên trạng thái, người duyệt và lịch sử/lý do từ chối; gửi duyệt lại
+> phải `ReturnToDraft` trước, rồi chọn approver mới qua UC-19. Chi tiết: [hợp đồng API](../03-api/05-quan-ly-cuoc-hop.md#put-apimeetingsid).
 
 - **Use Case ID**: UC-16
 - **Use Case Name**: Update Meeting
@@ -983,6 +991,15 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 ### UC-19: Submit Meeting for Approval (Gửi duyệt cuộc họp)
 
+> Ghi chú triển khai backend SCRUM-19: `SubmitForApproval` chỉ chuyển `Draft` → `WaitingApproval`.
+> Organizer active/có `MeetingCreator` chọn một người khác mình, active/có `MeetingApprover`; backend
+> kiểm tra lại quyền, assignment và readiness trong transaction. Readiness hiện yêu cầu agenda không
+> rỗng; chưa kiểm tra lịch Meeting Session. `Rejected` cần `ReturnToDraft` trước khi gửi lại; thao tác này
+> xóa assignment cũ và giữ lịch sử/lý do từ chối. Organizer cũng được rút `WaitingApproval` khi thiếu
+> approver, gán chính mình hoặc approver inactive/mất quyền; không cho rút khi người duyệt khác mình
+> vẫn hợp lệ. Luồng và message codes hiện hành: [API chuyển trạng thái](../03-api/05-quan-ly-cuoc-hop.md),
+> [danh mục thông báo](../03-api/00-danh-muc-ma-thong-bao.md).
+
 - **Use Case ID**: UC-19
 - **Use Case Name**: Submit Meeting for Approval
 - **Primary Actor**: Meeting Organizer
@@ -1049,6 +1066,12 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 ---
 
 ### UC-20: Review Meeting Approval (Phê duyệt / Từ chối cuộc họp)
+
+> Ghi chú triển khai backend SCRUM-19: chỉ Assigned Approver của cycle hiện tại, active/có
+> `MeetingApprover` và khác Organizer, được Approve/Reject ở `WaitingApproval`. Reject yêu cầu lý do
+> 1–1.000 ký tự sau trim. Backend hiện chỉ trả lý do từ chối đầy đủ cho Organizer/current Assigned
+> Approver; quyền Secretary riêng không cấp full history. Participant được đọc timeline sau Published
+> với lý do từ chối và snapshot chuyển Organizer đã ẩn. Chi tiết: [hợp đồng API](../03-api/05-quan-ly-cuoc-hop.md).
 
 - **Use Case ID**: UC-20
 - **Use Case Name**: Review Meeting Approval
@@ -1130,6 +1153,17 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 ---
 
 ### UC-21: Publish Meeting (Phát hành cuộc họp)
+
+> Ghi chú phạm vi triển khai backend SCRUM-19: điều kiện lịch Meeting Session/BR-56 bên dưới là yêu cầu
+> BA mới trong main, chưa được backend hiện tại thực thi. Publish hiện yêu cầu Organizer active/có
+> `MeetingCreator` và meeting `Approved`; lưu status/history/notification và jobs email trong cùng
+> transaction, rollback toàn bộ nếu producer/persistence lỗi. Notification chọn user active và loại
+> `Delegated`; producer email SCRUM-15 chọn participant có user active, không lọc Response. SMTP tắt
+> thì không tạo email job; SMTP bật thì job mới là `Queued`, chưa xác nhận đã gửi. Khi Organizer cũ
+> inactive, quản trị active/có `AdminUsers` được `TransferOrganizer` cho người mới active/có
+> `MeetingCreator`, khác current approver; giữ Approved/assignment/history cũ, không tạo thư mời.
+> Transfer không cấp quyền đọc nội dung/history hoặc Publish cho admin; response chỉ xác nhận thao tác.
+> Chi tiết: [API chuyển trạng thái](../03-api/05-quan-ly-cuoc-hop.md), [bàn giao triển khai](../03-api/06-scrum19-ban-giao-tich-hop.md).
 
 - **Use Case ID**: UC-21
 - **Use Case Name**: Publish Meeting

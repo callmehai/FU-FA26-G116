@@ -867,9 +867,19 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("action");
+
                     b.Property<Guid>("ActorId")
                         .HasColumnType("uuid")
                         .HasColumnName("actor_id");
+
+                    b.Property<Guid?>("AssignedApproverId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_approver_id");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -884,9 +894,17 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("meeting_id");
 
+                    b.Property<Guid?>("NewOrganizerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("new_organizer_id");
+
                     b.Property<DateTimeOffset>("OccurredAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("occurred_at");
+
+                    b.Property<Guid?>("PreviousOrganizerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("previous_organizer_id");
 
                     b.Property<string>("Reason")
                         .IsRequired()
@@ -909,6 +927,15 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("ActorId")
                         .HasDatabaseName("ix_meeting_status_history_actor_id");
+
+                    b.HasIndex("AssignedApproverId")
+                        .HasDatabaseName("ix_meeting_status_history_assigned_approver_id");
+
+                    b.HasIndex("NewOrganizerId")
+                        .HasDatabaseName("ix_meeting_status_history_new_organizer_id");
+
+                    b.HasIndex("PreviousOrganizerId")
+                        .HasDatabaseName("ix_meeting_status_history_previous_organizer_id");
 
                     b.HasIndex("MeetingId", "OccurredAt")
                         .HasDatabaseName("ix_meeting_status_history_meeting_id_occurred_at");
@@ -1056,6 +1083,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("meeting_id");
 
+                    b.Property<Guid?>("OriginHistoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("origin_history_id");
+
                     b.Property<DateTimeOffset?>("PushedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("pushed_at");
@@ -1105,6 +1136,11 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("PushedAt", "CreatedAt")
                         .HasDatabaseName("ix_notifications_pushed_at_created_at");
+
+                    b.HasIndex("OriginHistoryId", "UserId", "Type")
+                        .IsUnique()
+                        .HasDatabaseName("ix_notifications_origin_history_id_user_id_type")
+                        .HasFilter("origin_history_id IS NOT NULL");
 
                     b.HasIndex("UserId", "ReadAt", "CreatedAt")
                         .HasDatabaseName("ix_notifications_user_id_read_at_created_at");
@@ -2060,16 +2096,40 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_meeting_status_history_users_actor_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "AssignedApprover")
+                        .WithMany()
+                        .HasForeignKey("AssignedApproverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_meeting_status_history_users_assigned_approver_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
                         .WithMany("StatusHistory")
                         .HasForeignKey("MeetingId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_meeting_status_history_meetings_meeting_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "NewOrganizer")
+                        .WithMany()
+                        .HasForeignKey("NewOrganizerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_meeting_status_history_users_new_organizer_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "PreviousOrganizer")
+                        .WithMany()
+                        .HasForeignKey("PreviousOrganizerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_meeting_status_history_users_previous_organizer_id");
+
                     b.Navigation("Actor");
 
+                    b.Navigation("AssignedApprover");
+
                     b.Navigation("Meeting");
+
+                    b.Navigation("NewOrganizer");
+
+                    b.Navigation("PreviousOrganizer");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.MeetingSummary", b =>
@@ -2120,6 +2180,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasForeignKey("MeetingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_notifications_meetings_meeting_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingStatusHistory", null)
+                        .WithMany()
+                        .HasForeignKey("OriginHistoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_notifications_meeting_status_history_origin_history_id");
 
                     b.HasOne("TrustCabinet.Domain.Entities.User", "User")
                         .WithMany()

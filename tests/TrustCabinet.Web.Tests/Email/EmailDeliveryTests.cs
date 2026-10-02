@@ -29,6 +29,8 @@ public sealed class EmailDeliveryTests
                 .OfType<AddColumnOperation>()
                 .Select(operation => operation.Name)
                 .Order(StringComparer.Ordinal));
+        Assert.False(Assert.Single(migration.UpOperations.OfType<AddColumnOperation>(),
+            operation => operation.Name == "deduplication_key").IsNullable);
     }
 
     [Fact]
@@ -115,14 +117,14 @@ public sealed class EmailDeliveryTests
         await using var db = NewDatabase();
         var meeting = PublishedMeeting();
         const string prefix = "Thư mời họp: ";
-        meeting.Title = new string('a', 300 - prefix.Length - 1) + "😀";
+        meeting.Title = new string('a', 300 - prefix.Length - 2) + "😀";
         db.Meetings.Add(meeting);
         await db.SaveChangesAsync();
 
         await Queue(db).QueueForPublishedMeetingAsync(meeting.Id);
 
         var subject = (await db.EmailMessages.FirstAsync()).Subject;
-        Assert.Equal(300, subject.EnumerateRunes().Count());
+        Assert.Equal(300, subject.Length);
         Assert.EndsWith("😀", subject, StringComparison.Ordinal);
         _ = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true)
             .GetBytes(subject);

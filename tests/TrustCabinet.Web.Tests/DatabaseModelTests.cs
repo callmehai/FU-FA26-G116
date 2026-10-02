@@ -67,6 +67,46 @@ public class DatabaseModelTests
     }
 
     [Fact]
+    public async Task Meeting_history_rejects_update_and_delete_through_ef()
+    {
+        var updateContext = NewContext();
+        var history = new MeetingStatusHistory
+        {
+            MeetingId = Guid.CreateVersion7(),
+            ActorId = Guid.CreateVersion7(),
+            Action = MeetingHistoryAction.Approve,
+            ToStatus = MeetingStatus.Approved,
+            OccurredAt = DateTimeOffset.UtcNow,
+        };
+        updateContext.Attach(history);
+        updateContext.Entry(history).State = EntityState.Modified;
+
+        Assert.Throws<InvalidOperationException>(() => updateContext.SaveChanges());
+        await updateContext.DisposeAsync();
+
+        var deleteContext = NewContext();
+        deleteContext.Attach(history);
+        deleteContext.Entry(history).State = EntityState.Deleted;
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => deleteContext.SaveChangesAsync());
+        await deleteContext.DisposeAsync();
+    }
+
+    [Fact]
+    public void Meeting_history_action_is_required_and_meeting_delete_is_restricted()
+    {
+        using var db = NewContext();
+        var history = db.Model.FindEntityType(typeof(MeetingStatusHistory))!;
+        var action = history.FindProperty(nameof(MeetingStatusHistory.Action))!;
+        var meetingForeignKey = history.GetForeignKeys()
+            .Single(foreignKey => foreignKey.PrincipalEntityType.ClrType == typeof(Meeting));
+
+        Assert.False(action.IsNullable);
+        Assert.Equal(typeof(string), action.GetProviderClrType());
+        Assert.Equal(DeleteBehavior.Restrict, meetingForeignKey.DeleteBehavior);
+    }
+
+    [Fact]
     public void Email_is_case_insensitive()
     {
         using var db = NewContext();
@@ -269,7 +309,7 @@ public class DatabaseModelTests
     }
 
     [Fact]
-    public void Deleting_a_meeting_takes_its_participants_and_history_with_it()
+    public void Deleting_a_meeting_cascades_participants_but_preserves_lifecycle_history()
     {
         using var db = NewContext();
 
@@ -283,7 +323,9 @@ public class DatabaseModelTests
                 .GetForeignKeys()
                 .Single(fk => fk.DependentToPrincipal?.Name == navigation);
 
-            Assert.Equal(DeleteBehavior.Cascade, foreignKey.DeleteBehavior);
+            Assert.Equal(
+                entity == typeof(MeetingParticipant) ? DeleteBehavior.Cascade : DeleteBehavior.Restrict,
+                foreignKey.DeleteBehavior);
         }
     }
 
