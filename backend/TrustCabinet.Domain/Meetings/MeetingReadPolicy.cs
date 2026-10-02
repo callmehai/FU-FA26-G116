@@ -10,12 +10,17 @@ public static class MeetingReadPolicy
     private static readonly Expression<Func<Meeting, Guid, bool>> ReadExpression
         = (meeting, userId) => meeting.CreatedById == userId
             || (meeting.Status != MeetingStatus.Draft && meeting.AssignedApproverId == userId)
-            || ((meeting.Status == MeetingStatus.Published
+            || meeting.Participants.Any(participant => participant.MeetingId == meeting.Id
+                && participant.UserId == userId
+                && participant.Response != InvitationResponse.Delegated
+                && participant.DelegatedToUserId == null
+                && (participant.Role == MeetingRole.Chair
+                    || participant.Role == MeetingRole.Secretary
+                    || meeting.Status == MeetingStatus.Published
                     || meeting.Status == MeetingStatus.InProgress
                     || meeting.Status == MeetingStatus.Ended
                     || meeting.Status == MeetingStatus.MinutesIssued
-                    || meeting.Status == MeetingStatus.Archived)
-                && meeting.Participants.Any(participant => participant.UserId == userId));
+                    || meeting.Status == MeetingStatus.Archived));
 
     private static readonly Func<Meeting, Guid, bool> Read = ReadExpression.Compile();
 

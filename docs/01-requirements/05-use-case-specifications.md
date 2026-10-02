@@ -893,6 +893,11 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 ### UC-17: View Meeting Details (Xem chi tiết cuộc họp)
 
+> Ghi chú triển khai SCRUM-18: Organizer đọc ở mọi trạng thái; current Assigned Approver đọc sau
+> `Draft`; Chair/Secretary được gán hợp lệ đọc ở mọi trạng thái; Member thường chỉ đọc từ
+> `Published`. Assignment participant hợp lệ phải thuộc đúng meeting/user, chưa `Delegated` và
+> không có `DelegatedToUserId`. User không liên quan nhận cùng `404` như ID không tồn tại.
+
 - **Use Case ID**: UC-17
 - **Use Case Name**: View Meeting Details
 - **Primary Actor**: Meeting Organizer, Meeting Approver, Chair, Secretary, Participant
@@ -933,6 +938,9 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 ---
 
 ### UC-18: View Meeting List (Xem danh sách cuộc họp)
+
+> Ghi chú triển khai SCRUM-18: danh sách áp dụng cùng read-policy của UC-17 trong truy vấn database,
+> trước search/filter/count/sort/page; meeting không được phép đọc không được tính vào `totalCount`.
 
 - **Use Case ID**: UC-18
 - **Use Case Name**: View Meeting List
@@ -1079,8 +1087,9 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 > `MeetingApprover` và khác Organizer, được Approve/Reject ở `WaitingApproval`. Reject yêu cầu lý do
 > 1–1.000 ký tự sau trim. Organizer/current Assigned Approver và Secretary được gán của chính meeting
 > (user active, chưa ủy quyền) được đọc lý do từ chối qua history. Secretary không tự được full history
-> hoặc chi tiết meeting trước Published; snapshot chuyển Organizer vẫn ẩn. Participant khác chỉ đọc
-> timeline đã redacted sau Published. Chi tiết: [hợp đồng API](../03-api/05-quan-ly-cuoc-hop.md).
+> hoặc organizer-transfer metadata. Secretary và Chair được gán hợp lệ đọc chi tiết meeting trước
+> Published; Chair không thấy rejection reason. Member thường chỉ đọc timeline đã redacted từ
+> Published. Chi tiết: [hợp đồng API](../03-api/05-quan-ly-cuoc-hop.md).
 
 - **Use Case ID**: UC-20
 - **Use Case Name**: Review Meeting Approval

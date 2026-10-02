@@ -24,7 +24,7 @@ public sealed class MeetingReadPolicyTests
     [Theory]
     [MemberData(nameof(ReadStates))]
     public void In_memory_and_query_policies_keep_relationship_permissions_for_every_state(
-        MeetingStatus status, bool assignedApproverCanRead, bool participantCanRead)
+        MeetingStatus status, bool assignedApproverCanRead, bool memberCanRead)
     {
         var organizer = Guid.CreateVersion7();
         var approver = Guid.CreateVersion7();
@@ -37,14 +37,20 @@ public sealed class MeetingReadPolicyTests
             CreatedById = organizer,
             // Includes legacy drafts that still hold an assignment: that alone grants no access.
             AssignedApproverId = approver,
-            Participants = [new MeetingParticipant { UserId = participant }],
         };
+        meeting.Participants.Add(new MeetingParticipant
+        {
+            MeetingId = meeting.Id,
+            UserId = participant,
+            Role = MeetingRole.Member,
+            Response = InvitationResponse.Accepted,
+        });
 
         foreach (var (userId, canRead, canReadFullHistory) in new[]
         {
             (organizer, true, true),
             (approver, assignedApproverCanRead, assignedApproverCanRead),
-            (participant, participantCanRead, false),
+            (participant, memberCanRead, false),
             (outsider, false, false),
         })
         {
@@ -84,8 +90,8 @@ public sealed class MeetingReadPolicyTests
 
     [Theory]
     [MemberData(nameof(ReadStates))]
-    public void Assigned_secretary_can_read_rejection_evidence_without_full_history_or_content_access(
-        MeetingStatus status, bool assignedApproverCanRead, bool participantCanRead)
+    public void Assigned_secretary_can_read_content_and_rejection_evidence_without_transfer_metadata(
+        MeetingStatus status, bool assignedApproverCanRead, bool memberCanRead)
     {
         var secretary = new User { FullName = "Assigned secretary", Email = "secretary@example.test" };
         var meeting = new Meeting { Title = "Secretary evidence", Status = status };
@@ -100,16 +106,39 @@ public sealed class MeetingReadPolicyTests
         Assert.True(MeetingReadPolicy.CanReadHistory(meeting, secretary.Id));
         Assert.True(MeetingReadPolicy.CanReadRejectionReason(meeting, secretary.Id));
         Assert.False(MeetingReadPolicy.CanReadFullHistory(meeting, secretary.Id));
-        Assert.Equal(participantCanRead, MeetingReadPolicy.CanRead(meeting, secretary.Id));
-        Assert.Equal(participantCanRead, MeetingReadPolicy.ForUser(secretary.Id).Compile()(meeting));
+        Assert.True(MeetingReadPolicy.CanRead(meeting, secretary.Id));
+        Assert.True(MeetingReadPolicy.ForUser(secretary.Id).Compile()(meeting));
         // The data row already covers assigned approver access in the shared policy test above.
         _ = assignedApproverCanRead;
+        _ = memberCanRead;
+    }
+
+    [Theory]
+    [MemberData(nameof(ReadStates))]
+    public void Assigned_chair_can_read_content_with_redacted_history(
+        MeetingStatus status, bool assignedApproverCanRead, bool memberCanRead)
+    {
+        var chair = Guid.CreateVersion7();
+        var meeting = new Meeting { Title = "Chair access", Status = status };
+        meeting.Participants.Add(new MeetingParticipant
+        {
+            MeetingId = meeting.Id,
+            UserId = chair,
+            Role = MeetingRole.Chair,
+            Response = InvitationResponse.Accepted,
+        });
+
+        Assert.True(MeetingReadPolicy.CanRead(meeting, chair));
+        Assert.True(MeetingReadPolicy.ForUser(chair).Compile()(meeting));
+        Assert.True(MeetingReadPolicy.CanReadHistory(meeting, chair));
+        Assert.False(MeetingReadPolicy.CanReadFullHistory(meeting, chair));
+        Assert.False(MeetingReadPolicy.CanReadRejectionReason(meeting, chair));
+        _ = assignedApproverCanRead;
+        _ = memberCanRead;
     }
 
     [Theory]
     [InlineData("member")]
-    [InlineData("chair")]
-    [InlineData("inactive")]
     [InlineData("delegated")]
     [InlineData("delegateReference")]
     [InlineData("otherMeeting")]
@@ -128,8 +157,6 @@ public sealed class MeetingReadPolicyTests
         switch (scenario)
         {
             case "member": participant.Role = MeetingRole.Member; break;
-            case "chair": participant.Role = MeetingRole.Chair; break;
-            case "inactive": user.IsActive = false; break;
             case "delegated": participant.Response = InvitationResponse.Delegated; break;
             case "delegateReference": participant.DelegatedToUserId = Guid.CreateVersion7(); break;
             case "otherMeeting": participant.MeetingId = Guid.CreateVersion7(); break;
@@ -139,6 +166,35 @@ public sealed class MeetingReadPolicyTests
 
         Assert.False(MeetingReadPolicy.CanReadHistory(meeting, user.Id));
         Assert.False(MeetingReadPolicy.CanReadRejectionReason(meeting, user.Id));
+    }
+
+    [Theory]
+    [InlineData(MeetingRole.Chair, "delegated")]
+    [InlineData(MeetingRole.Secretary, "delegateReference")]
+    [InlineData(MeetingRole.Member, "otherMeeting")]
+    [InlineData(MeetingRole.Member, "otherUser")]
+    public void Invalid_participant_assignment_never_grants_content_access(MeetingRole role, string scenario)
+    {
+        var userId = Guid.CreateVersion7();
+        var meeting = new Meeting { Title = "Assignment validation", Status = MeetingStatus.Published };
+        var participant = new MeetingParticipant
+        {
+            MeetingId = meeting.Id,
+            UserId = userId,
+            Role = role,
+            Response = InvitationResponse.Accepted,
+        };
+        switch (scenario)
+        {
+            case "delegated": participant.Response = InvitationResponse.Delegated; break;
+            case "delegateReference": participant.DelegatedToUserId = Guid.CreateVersion7(); break;
+            case "otherMeeting": participant.MeetingId = Guid.CreateVersion7(); break;
+            case "otherUser": participant.UserId = Guid.CreateVersion7(); break;
+        }
+        meeting.Participants.Add(participant);
+
+        Assert.False(MeetingReadPolicy.CanRead(meeting, userId));
+        Assert.False(MeetingReadPolicy.ForUser(userId).Compile()(meeting));
     }
 
     [Fact]

@@ -103,6 +103,56 @@ public class NotificationServiceTests
         Assert.NotNull(await service.GetTargetAsync(approver.Id, approverNotification.Id));
     }
 
+    [Fact]
+    public async Task Target_uses_the_shared_meeting_access_rule_for_participant_roles()
+    {
+        await using var db = NewDb();
+        var creator = NewUser("participant-policy-creator@example.com");
+        var secretary = NewUser("participant-policy-secretary@example.com");
+        var chair = NewUser("participant-policy-chair@example.com");
+        var member = NewUser("participant-policy-member@example.com");
+        var meeting = NewMeeting(creator);
+        meeting.Status = MeetingStatus.Draft;
+        meeting.Participants.Add(new MeetingParticipant
+        {
+            MeetingId = meeting.Id,
+            UserId = secretary.Id,
+            Role = MeetingRole.Secretary,
+            Response = InvitationResponse.Accepted,
+        });
+        meeting.Participants.Add(new MeetingParticipant
+        {
+            MeetingId = meeting.Id,
+            UserId = chair.Id,
+            Role = MeetingRole.Chair,
+            Response = InvitationResponse.Accepted,
+        });
+        meeting.Participants.Add(new MeetingParticipant
+        {
+            MeetingId = meeting.Id,
+            UserId = member.Id,
+            Role = MeetingRole.Member,
+            Response = InvitationResponse.Accepted,
+        });
+        var secretaryNotification = TargetedNotification(secretary.Id, meeting.Id);
+        var chairNotification = TargetedNotification(chair.Id, meeting.Id);
+        var memberNotification = TargetedNotification(member.Id, meeting.Id);
+        db.Users.AddRange(creator, secretary, chair, member);
+        db.Meetings.Add(meeting);
+        db.Notifications.AddRange(secretaryNotification, chairNotification, memberNotification);
+        await db.SaveChangesAsync();
+        var service = NewService(db);
+
+        Assert.NotNull(await service.GetTargetAsync(secretary.Id, secretaryNotification.Id));
+        Assert.NotNull(await service.GetTargetAsync(chair.Id, chairNotification.Id));
+        Assert.Null(await service.GetTargetAsync(member.Id, memberNotification.Id));
+
+        meeting.Status = MeetingStatus.Published;
+        await db.SaveChangesAsync();
+
+        Assert.NotNull(await service.GetTargetAsync(member.Id, memberNotification.Id));
+    }
+
     private static TrustCabinetDbContext NewDb()
     {
         var options = new DbContextOptionsBuilder<TrustCabinetDbContext>()

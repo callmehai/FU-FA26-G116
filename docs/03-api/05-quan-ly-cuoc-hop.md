@@ -23,11 +23,21 @@ POST, `GET /api/meetings/approvers` và PUT yêu cầu capability `MeetingCreato
 xác minh lại capability từ database theo SCRUM-12, không kiểm theo tên vai trò. GET chi tiết yêu cầu
 đăng nhập và tài khoản còn hoạt động, sau đó kiểm tra quan hệ cuộc họp theo BR-29.
 
-GET luôn cho người tạo đọc. Người duyệt được gán chỉ đọc từ khi meeting rời `Draft`; thành phần tham
-dự (Chair, Secretary và Participant) chỉ đọc từ `Published` trở đi. Vì vậy meeting `Draft` chỉ người
-tạo thấy, còn các trạng thái trước khi công bố không lộ cho thành phần tham dự. Không đủ quyền đọc
-thì trả `404` rỗng, giống ID không tồn tại. PUT vẫn chỉ cho người tạo/người tổ chức sửa; ID không tồn
-tại và meeting của người tổ chức khác cùng trả `404` rỗng.
+GET luôn cho Organizer hiện tại đọc. Current Assigned Approver chỉ đọc từ khi meeting rời `Draft`.
+Chair và Secretary được gán hợp lệ đọc được ở mọi trạng thái; Member thường chỉ đọc từ `Published`
+trở đi. Assignment participant hợp lệ phải thuộc đúng meeting/user, có `Response != Delegated` và
+`DelegatedToUserId = null`; caller vẫn phải là user active. User không liên quan không được đọc.
+Không đủ quyền đọc thì trả `404` rỗng, giống ID không tồn tại. PUT vẫn chỉ cho Organizer sửa; ID
+không tồn tại và meeting của Organizer khác cùng trả `404` rỗng.
+
+| Quan hệ | Trước `Published` | Từ `Published` |
+|---|---:|---:|
+| Organizer hiện tại | Có | Có |
+| Current Assigned Approver | Có sau khi rời `Draft` | Có |
+| Chair được gán hợp lệ | Có | Có |
+| Secretary được gán hợp lệ | Có | Có |
+| Member thường được gán | Không | Có |
+| User không liên quan | Không | Không |
 
 GET danh sách dùng đúng quy tắc đọc trên **trong truy vấn database**, trước `COUNT`, sắp xếp và phân
 trang. Endpoint chỉ yêu cầu đăng nhập và tài khoản còn hoạt động; không đòi capability
@@ -47,16 +57,17 @@ validate nội dung. Trạng thái khác `Draft`/`Rejected` trả `409 MSG33`.
 | Approve/Reject | Current `AssignedApproverId` + capability `MeetingApprover`, khác Organizer; meeting WaitingApproval | Không; chỉ được nếu Chair đồng thời là current Assigned Approver và không phải Organizer |
 | Publish | Meeting Organizer + `MeetingCreator`; meeting Approved và có ít nhất một Meeting Session Planned hợp lệ (BR-56) | Không; chỉ được nếu Chair đồng thời là Organizer |
 | TransferOrganizer | Actor active có `AdminUsers`; meeting Approved và Organizer hiện tại inactive; Organizer mới active có `MeetingCreator`, khác người cũ và current Assigned Approver | Không |
-| Đọc full lifecycle history/rejection reason | Meeting Organizer hoặc current Assigned Approver | Chair relationship riêng không cấp quyền ở bất kỳ trạng thái nào |
+| Đọc full lifecycle history/rejection reason | Meeting Organizer hoặc current Assigned Approver | Chair relationship riêng chỉ cấp timeline đã redacted |
 | Đọc history/rejection reason của Secretary | Participant của chính meeting có role Secretary, user active, chưa ủy quyền (`Response != Delegated`, `DelegatedToUserId = null`) | Không; Secretary không được xem snapshot Organizer cũ/mới nếu không đồng thời có full-history permission |
-| Đọc timeline sau Publish | Người có quyền đọc meeting đã công bố | Chỉ timeline; rejection reason bị ẩn |
+| Đọc timeline redacted | Chair ở mọi trạng thái; Member từ Published; mọi quan hệ đọc hợp lệ khác không có full-history permission | Không có rejection reason hoặc organizer-transfer metadata |
 
 Người từng là Assigned Approver không giữ quyền đọc history chỉ vì assignment cũ xuất hiện trong
 một history row. Authorization dùng assignment hiện tại; snapshot cũ là bằng chứng kiểm toán,
 không phải access grant. Organizer/current Assigned Approver được đọc full history ở mọi lifecycle
-status (Assigned Approver không được đọc Draft). Secretary được gán hợp lệ có thể đọc history/lý do
-từ chối trước Published và sau khi gửi lại; quyền này không mở rộng GET chi tiết/danh sách.
-Participant khác có thể đọc timeline sau Publish theo meeting read policy; rejection reason
+status (Assigned Approver không được đọc Draft). Secretary được gán hợp lệ có thể đọc chi tiết,
+danh sách và history/lý do từ chối trước Published và sau khi gửi lại. Chair được gán hợp lệ đọc
+chi tiết/danh sách/timeline ở mọi trạng thái nhưng không thấy rejection reason hoặc transfer IDs.
+Member thường có thể đọc timeline từ Published theo meeting read policy; rejection reason
 được ẩn với họ, trừ khi đồng thời là Organizer hoặc current Assigned Approver. Former approver không
 có quyền chỉ vì assignment cũ, nhưng nếu họ là participant thì vẫn nhận timeline đã redacted sau
 Publish. Người không đủ quyền đọc meeting nhận `404` body rỗng như một meeting không tồn tại.
@@ -153,7 +164,7 @@ nếu được gửi sẽ không tạo assignment.
 
 POST trả `201 Created`, header `Location: /api/meetings/{id}` và envelope `code`, `message`,
 `meeting`. `meeting` gồm thông tin cuộc họp, `assignedApproverId`, `status`, `createdById`,
-`createdAt`, `updatedAt`; `assignedApproverId` là `null` khi meeting ở `Draft`.
+`createdAt`, `updatedAt`; meeting vừa được POST có `assignedApproverId = null`.
 
 ### GET `/api/meetings/{id}`
 
@@ -294,7 +305,8 @@ Development seeder bổ sung một meeting `Draft` có sẵn agenda và ba parti
 Seeder không tự thêm Meeting Session: Publish demo chưa có phiên trả `400 MSG90`, giữ Approved.
 Sau khi phần UC-26–30 tạo phiên hợp lệ, Publish mới thành công; khi bật SMTP sẽ tạo ba invitation jobs
 `Queued`, không xác nhận email đã gửi. Có thể kiểm tra history/notification bằng API; participant khác
-Secretary chỉ thấy meeting sau Publish và reason được redacted.
+Secretary thấy meeting ở mọi trạng thái và đọc được rejection reason; Chair cũng đọc meeting trước
+Published nhưng nhận timeline redacted. Member thường chỉ thấy meeting từ Published.
 
 Seeder chỉ chèn meeting này một lần khi đủ tài khoản demo; trên database Development cũ có các
 tài khoản đó, khởi động lại app sẽ thêm demo còn thiếu. Các lần khởi động sau không reset status,
@@ -445,8 +457,8 @@ của transaction hoặc capability lookup.
 
 ## Persistence và transaction
 
-Cột `ends_at` nullable và FK nullable `assigned_approver_id` giữ được các meeting cũ; Draft không có
-current assignment. POST lưu meeting `Draft` không assignment và một
+Cột `ends_at` nullable và FK nullable `assigned_approver_id` giữ được các meeting cũ. POST lưu
+meeting `Draft` không assignment và một
 dòng `MeetingStatusHistory` (`FromStatus = null`, `ToStatus = Draft`, `ActorId = creator`). EF Core
 lưu các thay đổi này trong cùng transaction.
 
@@ -459,8 +471,8 @@ PostgreSQL `FOR UPDATE`, đọc lại trạng thái và trả `409 MSG33` nếu 
 được gửi. Chỉ sau lần kiểm tra khóa này hệ thống mới parse JSON, validate và lưu; không có network
 read trong lúc giữ row lock.
 Transaction kết thúc trước response. Cập nhật thông tin không thay status hoặc lịch sử. Nếu body sau
-chuẩn hóa giống dữ liệu đã lưu, trả thành công nhưng không ghi DB hoặc đổi `updatedAt`, kể cả ở
-`Rejected` có current approver. Dữ liệu cho
+chuẩn hóa giống dữ liệu đã lưu, trả thành công nhưng không ghi DB hoặc đổi `updatedAt`. PUT không
+xóa assignment hiện có, kể cả dữ liệu Draft cũ hoặc `Rejected` có current approver. Dữ liệu cho
 phép sửa giữa hai form cũ dùng “lần ghi sau cùng thắng”; contract chưa có ETag/version để từ chối
 stale content.
 

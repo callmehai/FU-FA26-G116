@@ -1102,10 +1102,11 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             Assert.Equal(System.Text.Json.JsonValueKind.Null, item.GetProperty("previousOrganizerId").ValueKind);
             Assert.Equal(System.Text.Json.JsonValueKind.Null, item.GetProperty("newOrganizerId").ValueKind);
         });
-        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
         using var list = System.Text.Json.JsonDocument.Parse(await (await client.GetAsync("/api/meetings"))
             .Content.ReadAsStringAsync());
-        Assert.Empty(list.RootElement.GetProperty("items").EnumerateArray());
+        Assert.Equal(meeting.Id, Assert.Single(list.RootElement.GetProperty("items").EnumerateArray())
+            .GetProperty("id").GetGuid());
 
         switch (invalidated)
         {
@@ -1115,6 +1116,10 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         }
         await _db.SaveChangesAsync();
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}/history")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
+        using var invalidatedList = System.Text.Json.JsonDocument.Parse(await (await client.GetAsync("/api/meetings"))
+            .Content.ReadAsStringAsync());
+        Assert.Empty(invalidatedList.RootElement.GetProperty("items").EnumerateArray());
     }
 
     [Fact]
@@ -1251,8 +1256,10 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var creator = await _db.Users.SingleAsync(user => user.Id == _creatorId);
         var approver = NewUser("Meeting Approver", _approverRoleId);
         var participant = NewUser("Meeting Participant", _approverRoleId);
+        var chair = NewUser("Meeting Chair", _approverRoleId);
+        var secretary = NewUser("Meeting Secretary", _approverRoleId);
         var unrelated = NewUser("Unrelated User", _approverRoleId);
-        _db.Users.AddRange(approver, participant, unrelated);
+        _db.Users.AddRange(approver, participant, chair, secretary, unrelated);
 
         var statuses = Enum.GetValues<MeetingStatus>();
         var meetings = statuses.Select(status => new Meeting
@@ -1272,6 +1279,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
                     UserId = participant.Id,
                     Role = MeetingRole.Member,
                 },
+                new MeetingParticipant { UserId = chair.Id, Role = MeetingRole.Chair },
+                new MeetingParticipant { UserId = secretary.Id, Role = MeetingRole.Secretary },
             ],
         }).ToArray();
         _db.Meetings.AddRange(meetings);
@@ -1292,6 +1301,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
                 or MeetingStatus.MinutesIssued
                 or MeetingStatus.Archived;
             Assert.Equal(participantCanRead, await repository.FindAccessibleAsync(meeting.Id, participant.Id) is not null);
+            Assert.NotNull(await repository.FindAccessibleAsync(meeting.Id, chair.Id));
+            Assert.NotNull(await repository.FindAccessibleAsync(meeting.Id, secretary.Id));
 
             Assert.Null(await repository.FindAccessibleAsync(meeting.Id, unrelated.Id));
         }
@@ -1302,14 +1313,21 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     {
         var approver = NewUser("List Approver", _approverRoleId);
         var participant = NewUser("List Participant", _approverRoleId);
+        var chair = NewUser("List Chair", _approverRoleId);
+        var secretary = NewUser("List Secretary", _approverRoleId);
         var unrelated = NewUser("List Unrelated", _approverRoleId);
-        _db.Users.AddRange(approver, participant, unrelated);
+        _db.Users.AddRange(approver, participant, chair, secretary, unrelated);
         var startsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero);
         var meetings = Enum.GetValues<MeetingStatus>()
             .Select(status => ListMeeting(
                 $"List visibility {status}", status, startsAt,
                 approverId: approver.Id, participantId: participant.Id))
             .ToArray();
+        foreach (var meeting in meetings)
+        {
+            meeting.Participants.Add(new MeetingParticipant { UserId = chair.Id, Role = MeetingRole.Chair });
+            meeting.Participants.Add(new MeetingParticipant { UserId = secretary.Id, Role = MeetingRole.Secretary });
+        }
         _db.Meetings.AddRange(meetings);
         await _db.SaveChangesAsync();
 
@@ -1317,6 +1335,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var creatorPage = await repository.FindAuthorizedPageAsync(_creatorId, ListQuery());
         var approverPage = await repository.FindAuthorizedPageAsync(approver.Id, ListQuery());
         var participantPage = await repository.FindAuthorizedPageAsync(participant.Id, ListQuery());
+        var chairPage = await repository.FindAuthorizedPageAsync(chair.Id, ListQuery());
+        var secretaryPage = await repository.FindAuthorizedPageAsync(secretary.Id, ListQuery());
         var unrelatedPage = await repository.FindAuthorizedPageAsync(unrelated.Id, ListQuery());
 
         Assert.Equal(9, creatorPage.TotalCount);
@@ -1330,6 +1350,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             MeetingStatus.MinutesIssued, MeetingStatus.Archived,
         ];
         Assert.All(participantPage.Items, item => Assert.Contains(item.Status, publishedStatuses));
+        Assert.Equal(9, chairPage.TotalCount);
+        Assert.Equal(9, secretaryPage.TotalCount);
         Assert.Equal(0, unrelatedPage.TotalCount);
         Assert.Empty(unrelatedPage.Items);
         var approverFirst = await repository.FindAuthorizedPageAsync(

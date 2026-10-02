@@ -214,7 +214,7 @@ public class MeetingServiceTests
     }
 
     [Fact]
-    public async Task Update_changes_draft_fields_and_clears_legacy_assignment_without_changing_lifecycle()
+    public async Task Update_changes_draft_fields_and_preserves_assignment_without_changing_lifecycle()
     {
         var meeting = GivenMeeting(MeetingStatus.Draft);
         meeting.AssignedApproverId = _otherActorId;
@@ -231,7 +231,7 @@ public class MeetingServiceTests
         Assert.Equal(MeetingMode.Hybrid, saved.Mode);
         Assert.Equal(Sensitivity.Secret, saved.Sensitivity);
         Assert.Equal(MeetingStatus.Draft, saved.Status);
-        Assert.Null(saved.AssignedApproverId);
+        Assert.Equal(_otherActorId, saved.AssignedApproverId);
         Assert.Equal(_actorId, saved.CreatedById);
         Assert.Equal(priorHistory, saved.StatusHistory);
     }
@@ -355,7 +355,7 @@ public class MeetingServiceTests
     }
 
     [Fact]
-    public async Task Update_clears_a_legacy_draft_assignment_even_when_information_is_unchanged()
+    public async Task Update_preserves_a_draft_assignment_when_information_is_unchanged()
     {
         var meeting = GivenMeeting();
         meeting.AssignedApproverId = _otherActorId;
@@ -364,8 +364,8 @@ public class MeetingServiceTests
 
         Assert.True(result.Succeeded);
         Assert.Equal(MeetingStatus.Draft, meeting.Status);
-        Assert.Null(meeting.AssignedApproverId);
-        Assert.Equal(1, _repository.SaveCount);
+        Assert.Equal(_otherActorId, meeting.AssignedApproverId);
+        Assert.Equal(0, _repository.SaveCount);
     }
 
     [Theory]

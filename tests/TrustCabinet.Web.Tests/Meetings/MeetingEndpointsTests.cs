@@ -963,7 +963,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     [InlineData(MeetingStatus.Draft)]
     [InlineData(MeetingStatus.Rejected)]
     [InlineData(MeetingStatus.Approved)]
-    public async Task Assigned_secretary_can_read_rejection_before_publication_without_detail_or_list_access(MeetingStatus status)
+    public async Task Assigned_secretary_can_read_detail_list_and_rejection_before_publication(MeetingStatus status)
     {
         var creator = GivenCreator();
         var secretary = GivenMember("assigned-secretary@trustcabinet.local");
@@ -1011,9 +1011,10 @@ public sealed class MeetingEndpointsTests : IDisposable
             Assert.Equal(JsonValueKind.Null, item.GetProperty("previousOrganizerId").ValueKind);
             Assert.Equal(JsonValueKind.Null, item.GetProperty("newOrganizerId").ValueKind);
         });
-        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
         using var listBody = await JsonOf(await client.GetAsync("/api/meetings"));
-        Assert.Empty(listBody.RootElement.GetProperty("items").EnumerateArray());
+        Assert.Equal(meeting.Id, Assert.Single(listBody.RootElement.GetProperty("items").EnumerateArray())
+            .GetProperty("id").GetGuid());
     }
 
     [Theory]
@@ -1104,6 +1105,47 @@ public sealed class MeetingEndpointsTests : IDisposable
         var entry = Assert.Single(body.RootElement.GetProperty("items").EnumerateArray());
         Assert.Equal("Reject", entry.GetProperty("action").GetString());
         Assert.Equal(JsonValueKind.Null, entry.GetProperty("rejectionReason").ValueKind);
+    }
+
+    [Fact]
+    public async Task Assigned_chair_reads_prepublication_detail_with_redacted_history()
+    {
+        var creator = GivenCreator();
+        var chair = GivenMember("history-chair@trustcabinet.local");
+        var meeting = OwnedMeetingBy(creator);
+        meeting.Status = MeetingStatus.Rejected;
+        meeting.Participants.Add(new MeetingParticipant
+        {
+            MeetingId = meeting.Id,
+            UserId = chair.Id,
+            User = chair,
+            Role = MeetingRole.Chair,
+            Response = InvitationResponse.Accepted,
+        });
+        meeting.StatusHistory.Add(new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            FromStatus = MeetingStatus.WaitingApproval,
+            ToStatus = MeetingStatus.Rejected,
+            Action = MeetingHistoryAction.Reject,
+            ActorId = Guid.CreateVersion7(),
+            Reason = "Lý do chỉ dành cho người tổ chức và thư ký",
+            PreviousOrganizerId = Guid.CreateVersion7(),
+            NewOrganizerId = creator.Id,
+            OccurredAt = DateTimeOffset.UtcNow,
+        });
+        _factory.Meetings.Meetings.Add(meeting);
+        using var client = _factory.ClientFor(chair);
+
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
+        var historyResponse = await client.GetAsync($"/api/meetings/{meeting.Id}/history");
+        using var historyBody = await JsonOf(historyResponse);
+
+        Assert.Equal(HttpStatusCode.OK, historyResponse.StatusCode);
+        var entry = Assert.Single(historyBody.RootElement.GetProperty("items").EnumerateArray());
+        Assert.Equal(JsonValueKind.Null, entry.GetProperty("rejectionReason").ValueKind);
+        Assert.Equal(JsonValueKind.Null, entry.GetProperty("previousOrganizerId").ValueKind);
+        Assert.Equal(JsonValueKind.Null, entry.GetProperty("newOrganizerId").ValueKind);
     }
 
     [Fact]

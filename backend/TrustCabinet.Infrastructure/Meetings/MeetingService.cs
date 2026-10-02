@@ -177,7 +177,7 @@ public sealed class MeetingService(
                     return MeetingResult.Failure(MeetingOutcome.NotFound);
                 }
 
-                // Match UC-12: check the current, locked state before validating submitted fields.
+                // Match UC-16: check the current, locked state before validating submitted fields.
                 if (!MeetingRules.IsEditable(meeting.Status))
                 {
                     return MeetingResult.Failure(MeetingOutcome.NotEditable);
@@ -199,11 +199,6 @@ public sealed class MeetingService(
                     meeting.Location = normalized.Location;
                     meeting.Sensitivity = normalized.Sensitivity;
                     meeting.Description = normalized.Description;
-                    if (meeting.Status == MeetingStatus.Draft)
-                    {
-                        meeting.AssignedApproverId = null;
-                    }
-
                     meeting.UpdatedAt = UtcNow;
                     await meetings.SaveChangesAsync(token);
                 }
@@ -229,8 +224,7 @@ public sealed class MeetingService(
             || meeting.Mode != input.Mode
             || !string.Equals(meeting.Location, input.Location, StringComparison.Ordinal)
             || meeting.Sensitivity != input.Sensitivity
-            || !string.Equals(meeting.Description, input.Description, StringComparison.Ordinal)
-            || (meeting.Status == MeetingStatus.Draft && meeting.AssignedApproverId is not null);
+            || !string.Equals(meeting.Description, input.Description, StringComparison.Ordinal);
 
     private static bool IsPersistenceFailure(Exception exception)
         => exception is DbUpdateException or NpgsqlException or TimeoutException;

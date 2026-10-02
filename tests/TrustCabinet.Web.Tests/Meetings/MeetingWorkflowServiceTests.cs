@@ -896,7 +896,7 @@ public sealed class MeetingWorkflowServiceTests
     [InlineData(MeetingStatus.Rejected)]
     [InlineData(MeetingStatus.Approved)]
     [InlineData(MeetingStatus.Published)]
-    public async Task Assigned_secretary_reads_rejection_reason_without_transfer_ids_or_extra_detail_access(MeetingStatus status)
+    public async Task Assigned_secretary_reads_detail_and_rejection_reason_without_transfer_ids(MeetingStatus status)
     {
         var meeting = GivenMeeting(status);
         var secretary = Participant(meeting, active: true, InvitationResponse.Accepted);
@@ -933,18 +933,15 @@ public sealed class MeetingWorkflowServiceTests
             Assert.Null(item.PreviousOrganizerId);
             Assert.Null(item.NewOrganizerId);
         });
-        Assert.Equal(status == MeetingStatus.Published ? MeetingOutcome.Success : MeetingOutcome.NotFound,
-            details.Outcome);
+        Assert.Equal(MeetingOutcome.Success, details.Outcome);
     }
 
     [Theory]
     [InlineData("member")]
     [InlineData("globalSecretary")]
     [InlineData("otherMeeting")]
-    [InlineData("inactive")]
     [InlineData("delegated")]
     [InlineData("delegationTarget")]
-    [InlineData("missingUser")]
     public async Task Invalid_secretary_relationship_does_not_grant_prepublication_history(string invalid)
     {
         var meeting = GivenMeeting(MeetingStatus.Rejected);
@@ -958,10 +955,8 @@ public sealed class MeetingWorkflowServiceTests
                 secretary.User.RoleId = TrustCabinet.Domain.Access.BuiltInRoles.Secretary;
                 break;
             case "otherMeeting": secretary.MeetingId = Guid.CreateVersion7(); break;
-            case "inactive": secretary.User.IsActive = false; break;
             case "delegated": secretary.Response = InvitationResponse.Delegated; break;
             case "delegationTarget": secretary.DelegatedToUserId = Guid.CreateVersion7(); break;
-            case "missingUser": secretary.User = null!; break;
         }
         meeting.Participants.Add(secretary);
 
