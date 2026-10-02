@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { routes } from '../lib/routes'
 import { useAuth } from '../features/auth/useAuth'
+import { NotificationBell } from '../features/notifications/NotificationBell'
 import { BrandMark } from './BrandMark'
 import { ConfirmDialog } from './ConfirmDialog'
 import { Icon } from './Icon'
@@ -79,9 +80,7 @@ export function AppShell({ sidebar, wide = false }: { sidebar: ReactNode; wide?:
             </NavLink>
           </nav>
 
-          <button type="button" className="icon-button" title="Thông báo" aria-label="Thông báo">
-            <Icon name="bell" />
-          </button>
+          <NotificationBell />
 
           <details className="account" ref={accountMenuRef}>
             <summary aria-label={user.fullName}>

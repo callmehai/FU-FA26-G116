@@ -56,6 +56,14 @@ export function configureAuth(hooks: AuthHooks) {
   auth = hooks
 }
 
+/**
+ * The session's access token, refreshed first when it is about to expire. For the realtime hubs,
+ * which authenticate their own connection instead of going through `request`.
+ */
+export function getAccessToken(): Promise<string | null> {
+  return auth ? auth.getAccessToken() : Promise.resolve(null)
+}
+
 interface RequestOptions extends RequestInit {
   /** Send no bearer token and never try to refresh — for the sign-in endpoints themselves. */
   anonymous?: boolean
