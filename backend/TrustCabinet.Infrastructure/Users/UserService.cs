@@ -12,7 +12,7 @@ using TrustCabinet.Domain.Users;
 namespace TrustCabinet.Infrastructure.Users;
 
 /// <summary>
-/// UC-04 … UC-07's <c>:User Service</c>. Every rule about user accounts lives here: validation,
+/// UC-04 … UC-08's <c>:User Service</c>. Every rule about user accounts lives here: validation,
 /// email availability, whether a status change is allowed, and what the audit log records.
 ///
 /// The order inside each write is the order the diagrams give: check, then persist, then audit.
@@ -24,6 +24,8 @@ public sealed partial class UserService(
     IAuditService audit,
     IRefreshTokenStore refreshTokens,
     IAdministratorInvariantGuard administratorInvariant,
+    IPasswordResetTokenStore passwordResetTokens,
+    IPasswordResetEmailSender passwordResetEmail,
     ILogger<UserService> logger) : IUserService
 {
     /// <summary>
@@ -32,6 +34,12 @@ public sealed partial class UserService(
     /// mostly produces "Password@1".
     /// </summary>
     private const int MinimumPasswordLength = 12;
+
+    /// <summary>
+    /// How long a UC-08 reset link works. Long enough to find the email and act on it, short
+    /// enough that a link left in an inbox is not a standing way into the account.
+    /// </summary>
+    internal static readonly TimeSpan PasswordResetLinkLifetime = TimeSpan.FromMinutes(60);
 
     public async Task<IReadOnlyCollection<UserAccount>> ListAsync(CancellationToken ct = default)
         => [.. (await users.ListAsync(ct)).Select(UserAccount.From)];
@@ -318,6 +326,125 @@ public sealed partial class UserService(
         return new Written(
             UserResult.Success(UserAccount.From(user)),
             isActive ? null : user.Id);
+    }
+
+    public async Task<UserResult> RequestPasswordResetAsync(
+        Guid id, Guid actorId, CancellationToken ct = default)
+    {
+        var user = await users.FindByIdAsync(id, ct);
+
+        if (user is null)
+        {
+            return UserResult.Failure(UserOutcome.NotFound);
+        }
+
+        // EX-1 — MSG14. A deactivated account cannot sign in, so a password for it is of no use,
+        // and mailing a working credential for an account the organisation has closed is the
+        // opposite of what deactivating it meant (PRE-3: "exists and is active").
+        if (!user.IsActive)
+        {
+            logger.LogInformation(
+                "Password reset rejected: account {UserId} is deactivated.", user.Id);
+            return UserResult.Failure(UserOutcome.PasswordResetNotAvailable);
+        }
+
+        // The diagram's ":Authentication Service — Create password reset request". The current
+        // password is left alone: it keeps working until the person uses the link, so pressing
+        // this button can never lock anyone out.
+        var token = await passwordResetTokens.CreateAsync(user.Id, PasswordResetLinkLifetime, ct);
+
+        // EX-2 — MSG15. Not audited: the evidence should say what happened, and nothing reached
+        // the person. The token just created stays behind unseen and expires on its own.
+        if (!await passwordResetEmail.SendAsync(
+                user.Email, user.FullName, token, PasswordResetLinkLifetime, ct))
+        {
+            logger.LogWarning(
+                "Password reset for account {UserId} could not be emailed.", user.Id);
+            return UserResult.Failure(UserOutcome.PasswordResetEmailFailed);
+        }
+
+        await audit.RecordAsync(
+            AuditActions.UserPasswordResetRequested,
+            AuditActions.UserObjectType,
+            user.Id,
+            actorId,
+            // Where the link went. Never the token: the audit log outlives the link and is read by
+            // more people than the mailbox.
+            new { user.Email },
+            ct);
+
+        logger.LogInformation(
+            "Password reset for account {UserId} requested by {ActorId}.", user.Id, actorId);
+
+        return UserResult.Success(UserAccount.From(user));
+    }
+
+    public async Task<UserResult> ResetPasswordAsync(
+        string? token, string? newPassword, CancellationToken ct = default)
+    {
+        // The link first, the password second: a dead link should say so straight away rather than
+        // after the person has typed a valid password into a form that can never succeed.
+        if (string.IsNullOrWhiteSpace(token)
+            || await passwordResetTokens.PeekAsync(token, ct) is not { } ownerId)
+        {
+            return UserResult.Failure(UserOutcome.PasswordResetLinkInvalid);
+        }
+
+        // Peeked, not consumed: a password that breaks the rule must leave the link usable for the
+        // corrected attempt.
+        var password = newPassword ?? "";
+
+        if (password.Length < MinimumPasswordLength)
+        {
+            return UserResult.Invalid(new Dictionary<string, string>
+            {
+                ["newPassword"] = $"Mật khẩu phải có ít nhất {MinimumPasswordLength} ký tự.",
+            });
+        }
+
+        // Spent before anything is written. Of two simultaneous submissions only one gets the
+        // account back; the other is a dead link like any other.
+        if (await passwordResetTokens.ConsumeAsync(token, ct) != ownerId)
+        {
+            return UserResult.Failure(UserOutcome.PasswordResetLinkInvalid);
+        }
+
+        var user = await users.FindByIdAsync(ownerId, ct);
+
+        // Deactivated after the link was sent: the link dies with the account. Same answer as any
+        // dead link — this endpoint is anonymous, and it should not tell a holder of an old link
+        // what became of the account.
+        if (user is null || !user.IsActive)
+        {
+            logger.LogInformation(
+                "Password reset refused: account {UserId} is gone or deactivated.", ownerId);
+            return UserResult.Failure(UserOutcome.PasswordResetLinkInvalid);
+        }
+
+        // Signed out everywhere, and before the new password is saved. A reset is what someone does
+        // when the old password may be known to someone else, so a session opened with it must not
+        // outlive it — and a refresh only re-checks is_active, so a session left open here would
+        // run for the refresh token's full seven days. In this order a Redis failure leaves the old
+        // password and the old sessions together, as they were; in the other order it would leave
+        // a new password next to sessions it was meant to end, with the link already spent.
+        await refreshTokens.RevokeAllForUserAsync(user.Id, ct);
+
+        user.PasswordHash = passwordHasher.Hash(password);
+        user.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await users.SaveChangesAsync(ct);
+
+        await audit.RecordAsync(
+            AuditActions.UserPasswordReset,
+            AuditActions.UserObjectType,
+            user.Id,
+            // The account itself: the administrator sent the link but never saw the password.
+            user.Id,
+            ct: ct);
+
+        logger.LogInformation("Password of account {UserId} reset through its link.", user.Id);
+
+        return UserResult.Success(UserAccount.From(user));
     }
 
     /// <summary>
