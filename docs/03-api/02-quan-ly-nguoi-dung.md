@@ -63,6 +63,21 @@ khai báo thì không có cách nào phân biệt "cố tình làm tốt hơn" v
    không dẫn tới đâu.
 7. **UC-08 trả `404` khi không có tài khoản** — bản vẽ không có nhánh này (giả định quản trị viên
    chọn từ danh sách vừa tải), giống các UC khác ở trên.
+8. **UC-08 EX-1 ("không đủ điều kiện", `MSG14`) được định nghĩa là: tài khoản đã bị vô hiệu hoá.**
+   Đặc tả chỉ nói "cannot use the password reset function" mà không nói khi nào. Tài khoản chỉ đăng
+   nhập bằng Google vẫn đủ điều kiện.
+9. **BR-20 và BR-22 (UC-08 bước 4) không được định nghĩa ở đâu trong tài liệu.** Code hiểu "secure
+   password reset request" là: token ngẫu nhiên 256 bit, chỉ lưu bản băm, hiệu lực 60 phút, dùng
+   một lần, mỗi tài khoản chỉ có một liên kết còn hiệu lực (gửi lại thì liên kết cũ chết).
+10. **`:Authentication Service` và `:Email Service` của bản vẽ UC-08 không phải hai service riêng.**
+    "Create password reset request" là `IPasswordResetTokenStore` (Redis); `:Email Service` gửi
+    **đồng bộ** qua SMTP chứ không qua hàng đợi `email_messages` — lý do ở
+    [mục UC-08](#uc-08--post-apiusersidpassword-reset). `MSG15` trả HTTP `503`.
+11. **Luật mới không có trong đặc tả:** liên kết đang chờ bị thu hồi khi tài khoản bị vô hiệu hoá,
+    đổi email hoặc đổi vai trò; đặt lại thành công thì huỷ mọi refresh token của tài khoản.
+12. **UC-09 không có endpoint và sequence diagram riêng.** Gán / đổi vai trò chạy trên
+    `PUT /api/users/{id}` của UC-06 — xem [mục UC-09](#uc-09--gán--đổi-vai-trò-hệ-thống--dùng-put-apiusersid).
+    "Sơ đồ liên quan" của UC-09 trong đặc tả đang trỏ nhầm sang `UC11_ConfigureRolePermissions.png`.
 
 **Không có thay đổi database.** Cả hai bảng đã có sẵn từ migration `ExpandDomainModel`; story này
 chỉ đọc và ghi vào chúng. UC-08 cũng không thêm migration: token đặt lại mật khẩu sống ở Redis.
