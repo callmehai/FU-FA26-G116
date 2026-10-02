@@ -1,4 +1,3 @@
-using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
@@ -8,67 +7,26 @@ namespace TrustCabinet.Web.Tests.Meetings;
 public sealed class MeetingSubmissionReadinessTests
 {
     [Fact]
-    public void Agenda_readiness_requires_a_nonempty_agenda_with_a_title()
+    public void Submission_readiness_does_not_depend_on_agenda_or_session_content()
     {
-        var noAgenda = AgendaSubmissionRules.Validate([]);
-        var invalid = AgendaSubmissionRules.Validate(
-        [
-            new AgendaItem
-            {
-                Position = 2,
-                Title = " ",
-                PlannedDurationMinutes = 0,
-            },
-        ]);
-
-        Assert.Contains("agendaItems", noAgenda.Keys);
-        Assert.Single(invalid);
-        Assert.EndsWith(".title", invalid.Single().Key);
-    }
-
-    [Fact]
-    public void Agenda_readiness_does_not_impose_unsettled_order_duration_presenter_or_pending_rules()
-    {
-        var internalPresenter = new AgendaItem
+        var meeting = new Meeting
         {
-            Position = 8,
-            Title = "Báo cáo",
-            PlannedDurationMinutes = 0,
-            Status = AgendaItemStatus.InProgress,
+            Title = "Giao ban tuần",
+            Status = MeetingStatus.Rejected,
+            Sensitivity = Sensitivity.Normal,
+            Mode = MeetingMode.Online,
+            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
+            CreatedById = Guid.CreateVersion7(),
         };
-        var guestPresenter = new AgendaItem
+        Assert.Empty(MeetingSubmissionReadinessRules.Validate(meeting));
+        meeting.AgendaItems.Add(new AgendaItem { Title = " " });
+        meeting.Sessions.Add(new MeetingSession
         {
-            Position = 8,
-            Title = "Thảo luận",
-            PlannedDurationMinutes = 15,
-            PresenterName = "Khách mời",
-        };
-
-        var errors = AgendaSubmissionRules.Validate([internalPresenter, guestPresenter]);
-
-        Assert.Empty(errors);
-    }
-
-    [Fact]
-    public void Agenda_readiness_rejects_schema_length_and_enum_violations()
-    {
-        var item = new AgendaItem
-        {
-            Position = 2,
-            Title = new string('x', 301),
-            Description = new string('x', 4001),
-            PlannedDurationMinutes = 0,
-            PresenterName = new string('x', 201),
-            Status = (AgendaItemStatus)999,
-        };
-
-        var errors = AgendaSubmissionRules.Validate([item]);
-
-        Assert.Equal(4, errors.Count);
-        Assert.Contains($"agendaItems[{item.Id}].title", errors.Keys);
-        Assert.Contains($"agendaItems[{item.Id}].description", errors.Keys);
-        Assert.Contains($"agendaItems[{item.Id}].presenterName", errors.Keys);
-        Assert.Contains($"agendaItems[{item.Id}].status", errors.Keys);
+            MeetingId = meeting.Id,
+            Title = " ",
+            Status = MeetingSessionStatus.Cancelled,
+        });
+        Assert.Empty(MeetingSubmissionReadinessRules.Validate(meeting));
     }
 
     [Fact]

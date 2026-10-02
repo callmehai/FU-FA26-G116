@@ -23,7 +23,7 @@ sequence diagram, code BE, code FE và test đều phải khớp với bảng n�
 
 ## Mã tiếp theo
 
-**`MSG90`** — `MSG48`–`MSG59` và `MSG77` giữ nguyên cho Meeting Session; `MSG65` giữ cho phòng chưa mở theo ADR-0010. Workflow SCRUM-19 dùng `MSG60`–`MSG64`, `MSG66`–`MSG67` và `MSG78`–`MSG89`.
+**`MSG91`** — `MSG48`–`MSG59` và `MSG77` giữ nguyên cho Meeting Session; `MSG65` giữ cho phòng chưa mở theo ADR-0010. Workflow SCRUM-19 dùng `MSG60`–`MSG64`, `MSG66`–`MSG67` và `MSG78`–`MSG90`.
 
 ## Danh mục
 
@@ -113,7 +113,7 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
-| `MSG41` | 409 | GET readiness, POST SubmitForApproval | Cuộc họp không còn ở Draft nên không thể gửi duyệt | `Cuộc họp không còn ở trạng thái Draft.` | BE |
+| `MSG41` | 409 | GET readiness, POST SubmitForApproval | Cuộc họp không còn ở Draft hoặc Rejected nên không thể gửi duyệt | `Cuộc họp không còn ở trạng thái Draft hoặc Rejected.` | BE |
 | `MSG42` | 503 | POST SubmitForApproval | Không lưu được yêu cầu gửi duyệt | `Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG43` | 200 | POST Approve | Duyệt cuộc họp thành công | `Đã duyệt cuộc họp.` | BE |
 | `MSG44` | 200 | POST Reject | Từ chối cuộc họp thành công | `Đã từ chối cuộc họp.` | BE |
@@ -123,7 +123,7 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG78` | 200 | POST SubmitForApproval | Gửi duyệt cuộc họp thành công | `Đã gửi cuộc họp để duyệt.` | BE |
 | `MSG79` | 200 | POST ReturnToDraft | Đưa cuộc họp bị từ chối hoặc kẹt duyệt do approver không hợp lệ về Nháp thành công | `Đã đưa cuộc họp về bản nháp.` | BE |
 | `MSG80` | 400 | POST transitions | JSON, action, GUID hoặc field không hợp lệ | `Yêu cầu chuyển trạng thái không hợp lệ.` | BE |
-| `MSG81` | 400 | POST SubmitForApproval | Thông tin cuộc họp hoặc agenda chưa sẵn sàng — kèm `errors` | `Cuộc họp chưa đủ thông tin để gửi duyệt.` | BE |
+| `MSG81` | 400 | POST SubmitForApproval | Thông tin cấp cuộc họp chưa sẵn sàng — kèm `errors` | `Cuộc họp chưa đủ thông tin để gửi duyệt.` | BE |
 | `MSG82` | 400 | POST SubmitForApproval | Người duyệt không còn active, thiếu `MeetingApprover` hoặc trùng Organizer | `Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp.` | BE |
 | `MSG83` | 400 | POST Reject | Lý do từ chối bị thiếu hoặc chỉ có khoảng trắng | `Cần nhập lý do từ chối.` | BE |
 | `MSG84` | 400 | POST Reject | Lý do từ chối dài hơn 1.000 ký tự sau khi trim | `Lý do từ chối không được vượt quá 1.000 ký tự.` | BE |
@@ -137,6 +137,7 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG63` | 409 | POST Approve, Reject | Approval cycle không còn chờ quyết định | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
 | `MSG64` | 409 | POST ReturnToDraft | Trạng thái không cho về Draft hoặc approver đang chờ vẫn hợp lệ | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
 | `MSG89` | 200 | POST TransferOrganizer | Chuyển meeting Approved từ Organizer inactive sang Organizer mới thành công | `Đã chuyển cuộc họp cho người tổ chức mới.` | BE |
+| `MSG90` | 400 | POST Publish | Không có phiên họp Planned hợp lệ thuộc cuộc họp — kèm `errors.meetingSessions` (UC-21/BR-56) | `Cần có ít nhất một phiên họp Planned hợp lệ trước khi công bố.` | BE |
 | `MSG66` | 400 | POST TransferOrganizer | Organizer mới không hợp lệ, inactive, thiếu MeetingCreator hoặc là Assigned Approver | `Người tổ chức mới không hợp lệ hoặc không còn quyền tạo cuộc họp.` | BE |
 | `MSG67` | 409 | POST TransferOrganizer | Meeting không còn Approved hoặc Organizer hiện tại vẫn active | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
 

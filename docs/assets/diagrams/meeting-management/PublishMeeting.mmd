@@ -38,6 +38,7 @@ sequenceDiagram
     API->>Service: Publish với actor từ phiên đăng nhập
     Service->>DB: BEGIN và khóa meeting
     DB-->>Service: Organizer, trạng thái và participants hiện tại
+    Note over Service,DB: Trước khi ghi thay đổi, query phiên Planned của meeting và validate tiêu đề/thời gian trong transaction.
 
     alt Meeting không tồn tại hoặc caller không được đọc
         Service->>DB: Kết thúc transaction không ghi dữ liệu
@@ -49,7 +50,11 @@ sequenceDiagram
         Service->>DB: Kết thúc transaction không ghi dữ liệu
         Service-->>API: 409 MSG46
         API-->>Page: Tải lại trạng thái hiện tại
-    else Được phép công bố
+    else Không có ít nhất một phiên Planned hợp lệ của meeting
+        Service->>DB: Kết thúc transaction, giữ Approved, không ghi history, notification hoặc email
+        Service-->>API: 400 MSG90, errors.meetingSessions
+        API-->>Page: Yêu cầu chuẩn bị phiên hợp lệ trước khi công bố
+    else Được phép công bố, có phiên Planned hợp lệ
         Service->>Service: Chọn recipient notification theo BR-54, user active và Response khác Delegated
         Note over Service: DelegatedToUserId riêng không thêm recipient notification.
         Service->>DB: Đổi Published, thêm history và participant notifications

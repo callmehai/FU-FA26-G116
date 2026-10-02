@@ -42,7 +42,7 @@ public class DatabaseModelTests
             [
                 "agenda_items", "audit_log", "call_participants", "call_sessions",
                 "document_comments", "document_versions", "documents", "email_messages",
-                "meeting_minutes", "meeting_notes", "meeting_participants",
+                "meeting_minutes", "meeting_notes", "meeting_participants", "meeting_sessions",
                 "meeting_status_history", "meeting_summaries", "meetings", "minutes_signatures",
                 "notifications", "recordings", "role_capabilities", "roles", "speaking_requests",
                 "transcript_segments", "transcripts", "users", "vote_choices",
@@ -54,6 +54,7 @@ public class DatabaseModelTests
     [Theory]
     [InlineData(typeof(Meeting), nameof(Meeting.Status))]
     [InlineData(typeof(Meeting), nameof(Meeting.Sensitivity))]
+    [InlineData(typeof(MeetingSession), nameof(MeetingSession.Status))]
     [InlineData(typeof(RoleCapability), nameof(RoleCapability.Capability))]
     public void Enums_are_stored_as_text(Type entity, string property)
     {
@@ -104,6 +105,27 @@ public class DatabaseModelTests
         Assert.False(action.IsNullable);
         Assert.Equal(typeof(string), action.GetProviderClrType());
         Assert.Equal(DeleteBehavior.Restrict, meetingForeignKey.DeleteBehavior);
+    }
+
+    [Fact]
+    public void Meeting_sessions_store_required_schedule_and_index_the_parent_and_status()
+    {
+        using var db = NewContext();
+        var session = db.Model.FindEntityType(typeof(MeetingSession))!;
+
+        Assert.Equal(300, session.FindProperty(nameof(MeetingSession.Title))!.GetMaxLength());
+        Assert.False(session.FindProperty(nameof(MeetingSession.Title))!.IsNullable);
+        Assert.False(session.FindProperty(nameof(MeetingSession.PlannedStartsAt))!.IsNullable);
+        Assert.False(session.FindProperty(nameof(MeetingSession.PlannedEndsAt))!.IsNullable);
+        Assert.False(session.FindProperty(nameof(MeetingSession.Status))!.IsNullable);
+        Assert.Equal(typeof(string), session.FindProperty(nameof(MeetingSession.Status))!.GetProviderClrType());
+        Assert.Contains(session.GetIndexes(), index =>
+            index.Properties.Select(property => property.Name).SequenceEqual(
+                [nameof(MeetingSession.MeetingId), nameof(MeetingSession.Status)]) && !index.IsUnique);
+        var foreignKey = Assert.Single(session.GetForeignKeys());
+        Assert.Equal(typeof(Meeting), foreignKey.PrincipalEntityType.ClrType);
+        Assert.Equal(nameof(Meeting.Sessions), foreignKey.PrincipalToDependent!.Name);
+        Assert.Equal(DeleteBehavior.Cascade, foreignKey.DeleteBehavior);
     }
 
     [Fact]

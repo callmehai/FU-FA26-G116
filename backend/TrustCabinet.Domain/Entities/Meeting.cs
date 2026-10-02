@@ -43,6 +43,7 @@ public class Meeting : Entity
     public User? AssignedApprover { get; set; }
 
     public ICollection<MeetingParticipant> Participants { get; set; } = [];
+    public ICollection<MeetingSession> Sessions { get; set; } = [];
     public ICollection<MeetingStatusHistory> StatusHistory { get; set; } = [];
     public ICollection<AgendaItem> AgendaItems { get; set; } = [];
     public ICollection<Document> Documents { get; set; } = [];

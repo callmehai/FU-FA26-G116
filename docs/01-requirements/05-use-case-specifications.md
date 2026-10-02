@@ -834,7 +834,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 > Ghi chú triển khai backend SCRUM-17: PUT thay toàn bộ bảy trường thông tin như UC-15, không cập nhật
 > assignment. Sửa ở `Rejected` giữ nguyên trạng thái, người duyệt và lịch sử/lý do từ chối; gửi duyệt lại
-> phải `ReturnToDraft` trước, rồi chọn approver mới qua UC-19. Chi tiết: [hợp đồng API](../03-api/05-quan-ly-cuoc-hop.md#put-apimeetingsid).
+> trực tiếp qua `SubmitForApproval` ở UC-19; `ReturnToDraft` là tùy chọn. Chi tiết: [hợp đồng API](../03-api/05-quan-ly-cuoc-hop.md#put-apimeetingsid).
 
 - **Use Case ID**: UC-16
 - **Use Case Name**: Update Meeting
@@ -991,10 +991,11 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 ### UC-19: Submit Meeting for Approval (Gửi duyệt cuộc họp)
 
-> Ghi chú triển khai backend SCRUM-19: `SubmitForApproval` chỉ chuyển `Draft` → `WaitingApproval`.
+> Ghi chú triển khai backend SCRUM-19: `SubmitForApproval` chuyển `Draft` hoặc `Rejected` → `WaitingApproval`.
 > Organizer active/có `MeetingCreator` chọn một người khác mình, active/có `MeetingApprover`; backend
-> kiểm tra lại quyền, assignment và readiness trong transaction. Readiness hiện yêu cầu agenda không
-> rỗng; chưa kiểm tra lịch Meeting Session. `Rejected` cần `ReturnToDraft` trước khi gửi lại; thao tác này
+> kiểm tra lại quyền, assignment và thông tin cấp meeting trong transaction. Agenda và Meeting Session
+> không bắt buộc lúc gửi duyệt. Gửi lại trực tiếp từ `Rejected` thay assignment cho cycle mới, ghi đúng
+> một history Submit từ Rejected và giữ toàn bộ lịch sử/lý do từ chối cũ. `ReturnToDraft` vẫn là tùy chọn,
 > xóa assignment cũ và giữ lịch sử/lý do từ chối. Organizer cũng được rút `WaitingApproval` khi thiếu
 > approver, gán chính mình hoặc approver inactive/mất quyền; không cho rút khi người duyệt khác mình
 > vẫn hợp lệ. Luồng và message codes hiện hành: [API chuyển trạng thái](../03-api/05-quan-ly-cuoc-hop.md),
@@ -1010,6 +1011,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   - PRE-2: The selected meeting exists.
   - PRE-3: The Meeting Organizer is authorized to submit the selected meeting for approval.
   - PRE-4: The meeting is in Draft or Rejected status.
+  - PRE-5 (triển khai): Organizer còn active/có `MeetingCreator`; người duyệt được chọn khác Organizer, còn active/có `MeetingApprover`. Không cho chọn chính Organizer làm người duyệt.
 - **Điều kiện sau (Postconditions)**:
   - POST-1: The meeting status is WaitingApproval.
   - POST-2: A valid Meeting Approver is assigned to the current approval cycle.
@@ -1040,6 +1042,12 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   2. The Meeting Organizer chooses Resubmit for Approval.
   3. The flow resumes at Step 2 of the Main Flow and completes successfully when the submission requirements are satisfied.
 
+- **AF-2: Rút approval cycle có assignment không hợp lệ**
+  1. Organizer active/có `MeetingCreator` chọn `ReturnToDraft` khi meeting WaitingApproval thiếu approver, gán chính Organizer, hoặc approver inactive/mất `MeetingApprover`.
+  2. Backend khóa meeting và kiểm tra lại assignment/quyền trong transaction; người duyệt khác Organizer còn hợp lệ thì trả `409 MSG64`, không thay dữ liệu.
+  3. Nếu hợp lệ, chuyển WaitingApproval → Draft, xóa current assignment, append một history ReturnToDraft với actor/time từ server; không thêm notification/email, giữ history cũ. Thành công `200 MSG79`.
+  4. Organizer có thể sửa nháp rồi chọn approver mới ở Main Flow. Lỗi lưu rollback toàn bộ (`503 MSG88`); không gán lại trực tiếp trong WaitingApproval.
+
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
 
 - **EX-1: Incomplete Meeting-Level Information**
@@ -1069,9 +1077,10 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 > Ghi chú triển khai backend SCRUM-19: chỉ Assigned Approver của cycle hiện tại, active/có
 > `MeetingApprover` và khác Organizer, được Approve/Reject ở `WaitingApproval`. Reject yêu cầu lý do
-> 1–1.000 ký tự sau trim. Backend hiện chỉ trả lý do từ chối đầy đủ cho Organizer/current Assigned
-> Approver; quyền Secretary riêng không cấp full history. Participant được đọc timeline sau Published
-> với lý do từ chối và snapshot chuyển Organizer đã ẩn. Chi tiết: [hợp đồng API](../03-api/05-quan-ly-cuoc-hop.md).
+> 1–1.000 ký tự sau trim. Organizer/current Assigned Approver và Secretary được gán của chính meeting
+> (user active, chưa ủy quyền) được đọc lý do từ chối qua history. Secretary không tự được full history
+> hoặc chi tiết meeting trước Published; snapshot chuyển Organizer vẫn ẩn. Participant khác chỉ đọc
+> timeline đã redacted sau Published. Chi tiết: [hợp đồng API](../03-api/05-quan-ly-cuoc-hop.md).
 
 - **Use Case ID**: UC-20
 - **Use Case Name**: Review Meeting Approval
@@ -1084,6 +1093,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   - PRE-3: The Meeting Approver has the permission to approve the meeting.
   - PRE-4: The Meeting Approver is the approver currently assigned to the selected meeting.
   - PRE-5: The meeting is in WaitingApproval status.
+  - PRE-6 (triển khai): Người duyệt hiện tại còn active/có `MeetingApprover` và khác Organizer, kể cả khi Organizer đồng thời có capability duyệt hoặc là Chair.
 - **Điều kiện sau (Postconditions)**:
   - POST-1: The Meeting Approver's decision is recorded.
   - POST-2: If approved, the meeting status is Approved.
@@ -1129,6 +1139,10 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   4. The Meeting Approver enters a valid rejection reason.
   5. The flow resumes at Step 4 of AF-1.
 
+- **EX-1b: Lý do từ chối vượt giới hạn**
+  1. Ở bước 4 AF-1, lý do sau trim vượt 1.000 ký tự thì trả `400 MSG84`; lý do rỗng sau trim trả `400 MSG83` ở EX-1.
+  2. Meeting/assignment/history giữ nguyên; người duyệt nhập lại lý do từ 1 đến 1.000 ký tự. Lý do hợp lệ được lưu sau trim.
+
 - **EX-2: Meeting Is No Longer Awaiting Approval**
   1. At Step 5 of the Main Flow or Step 5 of AF-1, the system determines that the meeting is no longer in WaitingApproval status.
   2. No approval or rejection decision is applied.
@@ -1154,9 +1168,12 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 ### UC-21: Publish Meeting (Phát hành cuộc họp)
 
-> Ghi chú phạm vi triển khai backend SCRUM-19: điều kiện lịch Meeting Session/BR-56 bên dưới là yêu cầu
-> BA mới trong main, chưa được backend hiện tại thực thi. Publish hiện yêu cầu Organizer active/có
-> `MeetingCreator` và meeting `Approved`; lưu status/history/notification và jobs email trong cùng
+> Ghi chú triển khai backend SCRUM-19: Publish kiểm tra BR-56 sau khi khóa meeting và kiểm tra
+> Organizer active/có `MeetingCreator`, trạng thái `Approved`, trong cùng transaction. Phiên Planned
+> hợp lệ thuộc chính meeting, có tiêu đề 1–300 ký tự không chỉ whitespace, hai mốc thời gian đã đặt và
+> kết thúc sau bắt đầu. Không có phiên hợp lệ trả `400 MSG90`, giữ Approved và không tạo history/
+> notification/email. Model/migration phiên phục vụ guard; API quản lý phiên UC-26–30 thuộc task riêng.
+> Nếu hợp lệ, lưu status/history/notification và jobs email trong cùng
 > transaction, rollback toàn bộ nếu producer/persistence lỗi. Notification chọn user active và loại
 > `Delegated`; producer email SCRUM-15 chọn participant có user active, không lọc Response. SMTP tắt
 > thì không tạo email job; SMTP bật thì job mới là `Queued`, chưa xác nhận đã gửi. Khi Organizer cũ
@@ -1193,7 +1210,13 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 7. The system displays MSG45 – "Meeting published successfully. Invitations are queued for delivery."
 
 #### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
+
+- **AF-1: Khôi phục Organizer bị vô hiệu hóa trước khi Publish**
+  1. Actor quản trị còn active/có `AdminUsers` chọn `TransferOrganizer` cho meeting Approved có Organizer cũ inactive.
+  2. Backend khóa meeting, kiểm tra lại quyền/trạng thái và người nhận: active/có `MeetingCreator`, khác Organizer cũ/current approver.
+  3. Chỉ thay Organizer hiện tại; giữ Approved, approval assignment và nội dung. Append history TransferOrganizer với ID Organizer cũ/mới, actor/time từ server; không sửa history cũ hoặc tạo notification/email.
+  4. Thành công trả `200 MSG89` với IDs/status/history của thao tác, không trả nội dung meeting. Quyền recovery không tự cho admin đọc meeting/history hay Publish; Organizer mới tiếp tục Main Flow và vẫn phải đáp ứng BR-56.
+  5. Sai quyền/không tồn tại trả `404`; người nhận không hợp lệ `400 MSG66`; meeting không Approved hoặc Organizer cũ còn active `409 MSG67`; lỗi lưu rollback `503 MSG88`.
 
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
 
@@ -1207,7 +1230,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **EX-2: Meeting Session Schedule Is Not Ready**
   1. At Step 3 of the Main Flow, the system determines that the meeting has no valid planned Meeting Session. (BR-56)
   2. The meeting remains Approved.
-  3. The system informs the Meeting Organizer that at least one valid Meeting Session must be prepared before publication.
+  3. Hệ thống trả `400 MSG90` cùng `errors.meetingSessions`, yêu cầu ít nhất một phiên Planned hợp lệ trước khi công bố.
   4. Invitation delivery is not initiated.
   5. The use case ends.
 

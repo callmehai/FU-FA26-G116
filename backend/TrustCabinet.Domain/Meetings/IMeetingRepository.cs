@@ -20,6 +20,8 @@ public interface IMeetingRepository
 
     Task<Meeting?> FindWorkflowAsync(Guid id, bool forUpdate = false, CancellationToken ct = default);
 
+    Task<bool> HasValidPlannedSessionAsync(Guid meetingId, CancellationToken ct = default);
+
     Task<MeetingHistoryPage?> FindHistoryPageAsync(
         Guid meetingId, int page, int pageSize, CancellationToken ct = default);
 

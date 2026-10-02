@@ -48,6 +48,7 @@ public static class MeetingEndpoints
     private const string Msg89OrganizerTransferred = "MSG89";
     private const string Msg66OrganizerInvalid = "MSG66";
     private const string Msg67OrganizerTransferConflict = "MSG67";
+    private const string Msg90PublicationNotReady = "MSG90";
 
     public static IEndpointRouteBuilder MapMeetingEndpoints(this IEndpointRouteBuilder app)
     {
@@ -109,7 +110,7 @@ public static class MeetingEndpoints
             MeetingWorkflowOutcome.Forbidden => WorkflowError(
                 StatusCodes.Status403Forbidden, Msg85ActionForbidden, "Bạn không có quyền thực hiện thao tác này."),
             MeetingWorkflowOutcome.StatusConflict => WorkflowError(
-                StatusCodes.Status409Conflict, Msg41SubmitConflict, "Cuộc họp không còn ở trạng thái Draft."),
+                StatusCodes.Status409Conflict, Msg41SubmitConflict, "Cuộc họp không còn ở trạng thái Draft hoặc Rejected."),
             _ => SaveFailed(Msg60WorkflowReadFailed, "Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại."),
         };
     }
@@ -188,6 +189,8 @@ public static class MeetingEndpoints
                 StatusCodes.Status400BadRequest, Msg80InvalidTransition, "Yêu cầu chuyển trạng thái không hợp lệ."),
             MeetingWorkflowOutcome.SubmissionNotReady => WorkflowError(
                 StatusCodes.Status400BadRequest, Msg81SubmissionNotReady, "Cuộc họp chưa đủ thông tin để gửi duyệt.", result.Errors),
+            MeetingWorkflowOutcome.PublicationNotReady => WorkflowError(
+                StatusCodes.Status400BadRequest, Msg90PublicationNotReady, "Cần có ít nhất một phiên họp Planned hợp lệ trước khi công bố.", result.Errors),
             MeetingWorkflowOutcome.InvalidApprover => WorkflowError(
                 StatusCodes.Status400BadRequest, Msg82ApproverInvalid, "Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp."),
             MeetingWorkflowOutcome.InvalidOrganizer => WorkflowError(
@@ -200,7 +203,7 @@ public static class MeetingEndpoints
                 StatusCodes.Status409Conflict,
                 TransitionConflictCode(command.Action),
                 command.Action == MeetingTransitionAction.SubmitForApproval
-                    ? "Cuộc họp không còn ở trạng thái Draft."
+                    ? "Cuộc họp không còn ở trạng thái Draft hoặc Rejected."
                     : "Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này."),
             _ => SaveFailed(
                 TransitionFailureCode(command.Action),

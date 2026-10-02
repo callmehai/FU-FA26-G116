@@ -165,6 +165,19 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             "Confidential",
             "Integration test");
 
+    private async Task AddPlannedSessionAsync(Guid meetingId)
+    {
+        _db.MeetingSessions.Add(new MeetingSession
+        {
+            MeetingId = meetingId,
+            Title = "Phiên họp kế hoạch",
+            PlannedStartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
+            PlannedEndsAt = new DateTimeOffset(2026, 10, 1, 3, 0, 0, TimeSpan.Zero),
+            Status = MeetingSessionStatus.Planned,
+        });
+        await _db.SaveChangesAsync();
+    }
+
     private static User NewUser(string fullName, Guid roleId, bool isActive = true) => new()
     {
         FullName = fullName,
@@ -562,6 +575,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             Assert.Null(persistedOriginal[index].NewOrganizerId);
         }
 
+        await AddPlannedSessionAsync(meetingId);
         var published = await replacementClient.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions",
             new { action = "Publish" });
         Assert.Equal(HttpStatusCode.OK, published.StatusCode);
@@ -630,6 +644,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             meetingId,
             new MeetingTransitionCommand(MeetingTransitionAction.Approve),
             approver.Id);
+        await AddPlannedSessionAsync(meetingId);
         var publish = await service.TransitionAsync(
             meetingId,
             new MeetingTransitionCommand(MeetingTransitionAction.Publish),
@@ -718,7 +733,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Development_workflow_demo_is_ready_and_can_be_published_through_the_API_without_reseeding()
+    public async Task Development_workflow_demo_is_ready_and_can_be_published_after_planning_a_session_without_reseeding()
     {
         // This fixture owns its database; remove its placeholder user to exercise a fresh dev seed.
         await _db.Users.Where(user => user.Id == _creatorId).ExecuteDeleteAsync();
@@ -751,6 +766,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var approved = await approverClient.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions",
             new { action = "Approve" });
         Assert.Equal(HttpStatusCode.OK, approved.StatusCode);
+        await AddPlannedSessionAsync(meetingId);
         var published = await organizerClient.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions",
             new { action = "Publish" });
         Assert.Equal(HttpStatusCode.OK, published.StatusCode);
@@ -825,6 +841,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             .ExecuteUpdateAsync(setters => setters.SetProperty(meeting => meeting.Status, MeetingStatus.Approved));
         _db.MeetingParticipants.Add(new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId });
         await _db.SaveChangesAsync();
+        await AddPlannedSessionAsync(meetingId);
         using var app = new PostgreSqlMeetingApiFactory(_connectionString, failInvitationQueue: true);
         using var client = app.CreateClient();
         var user = await _db.Users.AsNoTracking().SingleAsync(item => item.Id == _creatorId);
@@ -923,6 +940,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             _creatorId)).Outcome);
         Assert.Equal(MeetingWorkflowOutcome.Success, (await service.TransitionAsync(
             meetingId, new MeetingTransitionCommand(MeetingTransitionAction.Approve), approver.Id)).Outcome);
+        await AddPlannedSessionAsync(meetingId);
         var published = await service.TransitionAsync(
             meetingId, new MeetingTransitionCommand(MeetingTransitionAction.Publish), _creatorId);
 
@@ -935,6 +953,168 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Contains(title, email.Body, StringComparison.Ordinal);
         Assert.Contains("SUMMARY:" + title, email.CalendarAttachment!.Replace("\r\n ", ""), StringComparison.Ordinal);
         Assert.False(string.IsNullOrWhiteSpace(email.DeduplicationKey));
+    }
+
+    [Fact]
+    public async Task Rejected_resubmission_persists_a_new_cycle_without_returning_to_draft_or_rewriting_rejection()
+    {
+        var originalApprover = NewUser("Original approver", _approverRoleId);
+        var replacement = NewUser("Replacement approver", _approverRoleId);
+        _db.Users.AddRange(originalApprover, replacement);
+        await _db.SaveChangesAsync();
+        var created = await NewService().CreateAsync(Input(), _creatorId);
+        var meetingId = created.Meeting!.Id;
+        Assert.True((await NewService().TransitionAsync(meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, originalApprover.Id),
+            _creatorId)).Succeeded);
+        Assert.True((await NewService().TransitionAsync(meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.Reject, Reason: "Bổ sung tài liệu"),
+            originalApprover.Id)).Succeeded);
+        var rejection = await _db.MeetingStatusHistory.AsNoTracking().SingleAsync(item =>
+            item.MeetingId == meetingId && item.Action == MeetingHistoryAction.Reject);
+
+        var readiness = await NewService().GetSubmissionReadinessAsync(meetingId, _creatorId);
+        var resubmit = await NewService().TransitionAsync(meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, replacement.Id), _creatorId);
+
+        Assert.True(readiness.Ready);
+        Assert.Equal(MeetingStatus.Rejected, readiness.Status);
+        Assert.Equal(MeetingWorkflowOutcome.Success, resubmit.Outcome);
+        await using var verify = NewContext();
+        var meeting = await verify.Meetings.AsNoTracking().SingleAsync(item => item.Id == meetingId);
+        Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
+        Assert.Equal(replacement.Id, meeting.AssignedApproverId);
+        var history = await verify.MeetingStatusHistory.AsNoTracking().Where(item => item.MeetingId == meetingId)
+            .OrderBy(item => item.OccurredAt).ThenBy(item => item.Id).ToListAsync();
+        Assert.Equal(4, history.Count);
+        Assert.DoesNotContain(history, item => item.Action == MeetingHistoryAction.ReturnToDraft);
+        Assert.Equal(MeetingStatus.Rejected, history.Last().FromStatus);
+        Assert.Equal(replacement.Id, history.Last().AssignedApproverId);
+        var persistedRejection = Assert.Single(history, item => item.Id == rejection.Id);
+        Assert.Equal(rejection.Reason, persistedRejection.Reason);
+        Assert.Equal(rejection.ActorId, persistedRejection.ActorId);
+        Assert.Equal(rejection.OccurredAt, persistedRejection.OccurredAt);
+        Assert.Equal(2, await verify.Notifications.CountAsync(item => item.MeetingId == meetingId));
+        Assert.False(await verify.EmailMessages.AnyAsync(item => item.MeetingId == meetingId));
+    }
+
+    [Fact]
+    public async Task Publish_endpoint_rechecks_persisted_planned_sessions_and_rejects_without_side_effects()
+    {
+        var created = await NewService().CreateAsync(Input(), _creatorId);
+        var meetingId = created.Meeting!.Id;
+        await _db.Meetings.Where(item => item.Id == meetingId).ExecuteUpdateAsync(setters =>
+            setters.SetProperty(item => item.Status, MeetingStatus.Approved));
+        var otherMeeting = await NewService().CreateAsync(Input("Other meeting"), _creatorId);
+        await AddPlannedSessionAsync(otherMeeting.Meeting!.Id);
+        var invalidSession = new MeetingSession
+        {
+            MeetingId = meetingId,
+            Title = "Phiên bị hủy",
+            PlannedStartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
+            PlannedEndsAt = new DateTimeOffset(2026, 10, 1, 1, 0, 0, TimeSpan.Zero),
+            Status = MeetingSessionStatus.Cancelled,
+        };
+        _db.MeetingSessions.Add(invalidSession);
+        await _db.SaveChangesAsync();
+        using var app = new PostgreSqlMeetingApiFactory(_connectionString);
+        using var client = app.CreateClient();
+        var organizer = await _db.Users.AsNoTracking().SingleAsync(item => item.Id == _creatorId);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
+            app.Services.GetRequiredService<ITokenIssuer>().CreateAccessToken(organizer, [Capability.MeetingCreator]));
+
+        var rejected = await client.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions", new { action = "Publish" });
+        using var rejectedBody = System.Text.Json.JsonDocument.Parse(await rejected.Content.ReadAsStringAsync());
+        Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode);
+        Assert.Equal("MSG90", rejectedBody.RootElement.GetProperty("code").GetString());
+        Assert.True(rejectedBody.RootElement.GetProperty("errors").TryGetProperty("meetingSessions", out _));
+        await using var verify = NewContext();
+        Assert.Equal(MeetingStatus.Approved, await verify.Meetings.Where(item => item.Id == meetingId)
+            .Select(item => item.Status).SingleAsync());
+        Assert.Single(await verify.MeetingStatusHistory.Where(item => item.MeetingId == meetingId).ToListAsync());
+        Assert.False(await verify.Notifications.AnyAsync(item => item.MeetingId == meetingId));
+        Assert.False(await verify.EmailMessages.AnyAsync(item => item.MeetingId == meetingId));
+
+        await _db.MeetingSessions.Where(item => item.Id == invalidSession.Id).ExecuteUpdateAsync(setters =>
+            setters.SetProperty(item => item.Status, MeetingSessionStatus.Planned));
+        var invalidTimes = await client.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions", new { action = "Publish" });
+        Assert.Equal(HttpStatusCode.BadRequest, invalidTimes.StatusCode);
+        await _db.MeetingSessions.Where(item => item.Id == invalidSession.Id).ExecuteUpdateAsync(setters =>
+            setters.SetProperty(item => item.PlannedEndsAt, invalidSession.PlannedStartsAt.AddHours(1)));
+        var published = await client.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions", new { action = "Publish" });
+        Assert.Equal(HttpStatusCode.OK, published.StatusCode);
+        Assert.Equal(2, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
+    }
+
+    [Theory]
+    [InlineData("member")]
+    [InlineData("delegated")]
+    [InlineData("delegationTarget")]
+    public async Task Secretary_history_uses_current_persisted_assignment_and_preserves_detail_privacy(string invalidated)
+    {
+        var secretary = NewUser("Assigned Secretary", _approverRoleId);
+        _db.Users.Add(secretary);
+        await _db.SaveChangesAsync();
+        var meeting = ListMeeting("Restricted meeting", MeetingStatus.Rejected,
+            new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero), Sensitivity.Secret);
+        _db.Meetings.Add(meeting);
+        var assignment = new MeetingParticipant
+        {
+            MeetingId = meeting.Id,
+            UserId = secretary.Id,
+            Role = MeetingRole.Secretary,
+            Response = InvitationResponse.Accepted,
+        };
+        _db.MeetingParticipants.Add(assignment);
+        _db.MeetingStatusHistory.AddRange(new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            Action = MeetingHistoryAction.Reject,
+            FromStatus = MeetingStatus.WaitingApproval,
+            ToStatus = MeetingStatus.Rejected,
+            ActorId = _creatorId,
+            Reason = "Lý do dành cho thư ký",
+        }, new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            Action = MeetingHistoryAction.TransferOrganizer,
+            FromStatus = MeetingStatus.Approved,
+            ToStatus = MeetingStatus.Approved,
+            ActorId = _creatorId,
+            PreviousOrganizerId = _creatorId,
+            NewOrganizerId = _creatorId,
+        });
+        await _db.SaveChangesAsync();
+        using var app = new PostgreSqlMeetingApiFactory(_connectionString);
+        using var client = app.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
+            app.Services.GetRequiredService<ITokenIssuer>().CreateAccessToken(secretary, []));
+
+        var response = await client.GetAsync($"/api/meetings/{meeting.Id}/history");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var body = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var items = body.RootElement.GetProperty("items").EnumerateArray().ToArray();
+        Assert.Equal("Lý do dành cho thư ký", Assert.Single(items,
+            item => item.GetProperty("action").GetString() == "Reject")
+            .GetProperty("rejectionReason").GetString());
+        Assert.All(items, item =>
+        {
+            Assert.Equal(System.Text.Json.JsonValueKind.Null, item.GetProperty("previousOrganizerId").ValueKind);
+            Assert.Equal(System.Text.Json.JsonValueKind.Null, item.GetProperty("newOrganizerId").ValueKind);
+        });
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
+        using var list = System.Text.Json.JsonDocument.Parse(await (await client.GetAsync("/api/meetings"))
+            .Content.ReadAsStringAsync());
+        Assert.Empty(list.RootElement.GetProperty("items").EnumerateArray());
+
+        switch (invalidated)
+        {
+            case "member": assignment.Role = MeetingRole.Member; break;
+            case "delegated": assignment.Response = InvitationResponse.Delegated; break;
+            case "delegationTarget": assignment.DelegatedToUserId = _creatorId; break;
+        }
+        await _db.SaveChangesAsync();
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}/history")).StatusCode);
     }
 
     [Fact]
@@ -966,6 +1146,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             new MeetingTransitionCommand(MeetingTransitionAction.Approve),
             approver.Id)).Outcome);
 
+        await AddPlannedSessionAsync(meetingId);
         await using var competingContext = NewContext();
         var competingService = NewService(competingContext);
         var request1 = service.TransitionAsync(

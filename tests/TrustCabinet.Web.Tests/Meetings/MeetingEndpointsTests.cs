@@ -136,6 +136,16 @@ public sealed class MeetingEndpointsTests : IDisposable
             "Internal",
             "Kế hoạch tuần.");
 
+    private static void AddPlannedSession(Meeting meeting)
+        => meeting.Sessions.Add(new MeetingSession
+        {
+            MeetingId = meeting.Id,
+            Title = "Phiên họp kế hoạch",
+            PlannedStartsAt = meeting.StartsAt,
+            PlannedEndsAt = meeting.StartsAt.AddHours(1),
+            Status = MeetingSessionStatus.Planned,
+        });
+
     private static async Task<JsonDocument> JsonOf(HttpResponseMessage response)
         => JsonDocument.Parse(await response.Content.ReadAsStringAsync());
 
@@ -502,6 +512,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         else
         {
             meeting.Status = action == "ReturnToDraft" ? MeetingStatus.Rejected : MeetingStatus.Approved;
+            if (action == "Publish") AddPlannedSession(meeting);
             _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
         }
 
@@ -585,6 +596,7 @@ public sealed class MeetingEndpointsTests : IDisposable
                 break;
             case "Publish":
                 meeting.Status = MeetingStatus.Approved;
+                AddPlannedSession(meeting);
                 _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
                 break;
         }
@@ -610,6 +622,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var creator = GivenCreator();
         var approverId = Guid.CreateVersion7();
         var meeting = OwnedMeetingBy(creator);
+        meeting.Title = " ";
         _factory.Meetings.Meetings.Add(meeting);
         _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
         using var client = _factory.ClientFor(creator);
@@ -620,14 +633,7 @@ public sealed class MeetingEndpointsTests : IDisposable
             assignedApproverId = approverId,
         });
         using var notReadyBody = await JsonOf(notReady);
-        meeting.AgendaItems.Add(new AgendaItem
-        {
-            MeetingId = meeting.Id,
-            Position = 1,
-            Title = "Báo cáo",
-            PlannedDurationMinutes = 30,
-            PresenterId = Guid.CreateVersion7(),
-        });
+        meeting.Title = "Giao ban tuần";
         _factory.Meetings.IneligibleApproverIds.Add(approverId);
         var ineligible = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions", new
         {
@@ -688,6 +694,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
         meeting.Status = MeetingStatus.Approved;
+        AddPlannedSession(meeting);
         _factory.Meetings.Meetings.Add(meeting);
         _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
         _factory.Invitations.NextQueueThrows = new InvalidOperationException("Sender missing");
@@ -826,13 +833,14 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Post_transition_rejects_submit_from_rejected_without_side_effects()
+    public async Task Post_transition_resubmits_rejected_directly_and_preserves_the_previous_rejection()
     {
         var creator = GivenCreator();
         var formerApproverId = Guid.CreateVersion7();
+        var newApproverId = Guid.CreateVersion7();
         var meeting = OwnedMeetingBy(creator, formerApproverId);
         meeting.Status = MeetingStatus.Rejected;
-        meeting.StatusHistory.Add(new MeetingStatusHistory
+        var rejection = new MeetingStatusHistory
         {
             MeetingId = meeting.Id,
             FromStatus = MeetingStatus.WaitingApproval,
@@ -842,36 +850,73 @@ public sealed class MeetingEndpointsTests : IDisposable
             AssignedApproverId = formerApproverId,
             Reason = "Cần bổ sung số liệu",
             OccurredAt = DateTimeOffset.UtcNow,
-        });
+        };
+        meeting.StatusHistory.Add(rejection);
         _factory.Meetings.Meetings.Add(meeting);
         _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
 
+        var readinessResponse = await client.GetAsync($"/api/meetings/{meeting.Id}/submission-readiness");
+        using var readinessBody = await JsonOf(readinessResponse);
+        Assert.Equal(HttpStatusCode.OK, readinessResponse.StatusCode);
+        Assert.True(readinessBody.RootElement.GetProperty("ready").GetBoolean());
+
         var response = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions", new
+        {
+            action = "SubmitForApproval",
+            assignedApproverId = newApproverId,
+        });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("MSG78", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
+        Assert.Equal(newApproverId, meeting.AssignedApproverId);
+        Assert.Equal(2, meeting.StatusHistory.Count);
+        Assert.Same(rejection, meeting.StatusHistory.First());
+        Assert.Equal("Cần bổ sung số liệu", rejection.Reason);
+        Assert.Equal(formerApproverId, rejection.AssignedApproverId);
+        var submission = meeting.StatusHistory.Last();
+        Assert.Equal(MeetingStatus.Rejected, submission.FromStatus);
+        Assert.Equal(MeetingHistoryAction.SubmitForApproval, submission.Action);
+        Assert.Equal(newApproverId, Assert.Single(_factory.Meetings.Notifications).UserId);
+        Assert.Empty(_factory.Meetings.EmailMessages);
+        Assert.Empty(_factory.Invitations.MeetingIds);
+    }
+
+    [Fact]
+    public async Task Submit_and_readiness_from_approved_return_MSG41_without_side_effects()
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator, Guid.CreateVersion7());
+        meeting.Status = MeetingStatus.Approved;
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+
+        var readiness = await client.GetAsync($"/api/meetings/{meeting.Id}/submission-readiness");
+        using var readinessBody = await JsonOf(readiness);
+        Assert.Equal(HttpStatusCode.Conflict, readiness.StatusCode);
+        Assert.Equal("MSG41", readinessBody.RootElement.GetProperty("code").GetString());
+
+        var submission = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions", new
         {
             action = "SubmitForApproval",
             assignedApproverId = Guid.CreateVersion7(),
         });
-        using var body = await JsonOf(response);
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        Assert.Equal("MSG41", body.RootElement.GetProperty("code").GetString());
-        Assert.Equal("Cuộc họp không còn ở trạng thái Draft.", body.RootElement.GetProperty("message").GetString());
-        var readinessResponse = await client.GetAsync($"/api/meetings/{meeting.Id}/submission-readiness");
-        using var readinessBody = await JsonOf(readinessResponse);
-        Assert.Equal(HttpStatusCode.Conflict, readinessResponse.StatusCode);
-        Assert.Equal("MSG41", readinessBody.RootElement.GetProperty("code").GetString());
-        Assert.Equal(body.RootElement.GetProperty("message").GetString(),
-            readinessBody.RootElement.GetProperty("message").GetString());
-        Assert.Equal(MeetingStatus.Rejected, meeting.Status);
-        Assert.Equal(formerApproverId, meeting.AssignedApproverId);
-        Assert.Single(meeting.StatusHistory);
+        using var submissionBody = await JsonOf(submission);
+        Assert.Equal(HttpStatusCode.Conflict, submission.StatusCode);
+        Assert.Equal("MSG41", submissionBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal(MeetingStatus.Approved, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
         Assert.Empty(_factory.Meetings.Notifications);
         Assert.Empty(_factory.Meetings.EmailMessages);
+        Assert.Empty(_factory.Invitations.MeetingIds);
+        Assert.Equal(0, _factory.Meetings.SaveCount);
     }
 
     [Fact]
-    public async Task Get_submission_readiness_uses_persisted_meeting_and_agenda_data_without_writing()
+    public async Task Get_submission_readiness_does_not_require_agenda_or_sessions_and_does_not_write()
     {
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator, Guid.CreateVersion7());
@@ -883,10 +928,124 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.False(body.RootElement.GetProperty("ready").GetBoolean());
-        Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("agendaItems", out _));
+        Assert.True(body.RootElement.GetProperty("ready").GetBoolean());
+        Assert.Empty(body.RootElement.GetProperty("errors").EnumerateObject());
         Assert.Equal(MeetingStatus.Draft, meeting.Status);
         Assert.Equal(0, _factory.Meetings.SaveCount);
+    }
+
+    [Fact]
+    public async Task Publish_without_a_valid_planned_session_returns_MSG90_without_side_effects()
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        meeting.Status = MeetingStatus.Approved;
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+
+        var response = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions",
+            new { action = "Publish" });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MSG90", body.RootElement.GetProperty("code").GetString());
+        Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("meetingSessions", out _));
+        Assert.Equal(MeetingStatus.Approved, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Empty(_factory.Meetings.EmailMessages);
+        Assert.Empty(_factory.Invitations.MeetingIds);
+        Assert.Equal(0, _factory.Meetings.SaveCount);
+    }
+
+    [Theory]
+    [InlineData(MeetingStatus.Draft)]
+    [InlineData(MeetingStatus.Rejected)]
+    [InlineData(MeetingStatus.Approved)]
+    public async Task Assigned_secretary_can_read_rejection_before_publication_without_detail_or_list_access(MeetingStatus status)
+    {
+        var creator = GivenCreator();
+        var secretary = GivenMember("assigned-secretary@trustcabinet.local");
+        var meeting = OwnedMeetingBy(creator);
+        meeting.Status = status;
+        meeting.Participants.Add(new MeetingParticipant
+        {
+            MeetingId = meeting.Id,
+            UserId = secretary.Id,
+            User = secretary,
+            Role = MeetingRole.Secretary,
+            Response = InvitationResponse.Accepted,
+        });
+        meeting.StatusHistory.Add(new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            Action = MeetingHistoryAction.Reject,
+            FromStatus = MeetingStatus.WaitingApproval,
+            ToStatus = MeetingStatus.Rejected,
+            ActorId = Guid.CreateVersion7(),
+            Reason = "Lý do dành cho thư ký",
+        });
+        meeting.StatusHistory.Add(new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            Action = MeetingHistoryAction.TransferOrganizer,
+            FromStatus = MeetingStatus.Approved,
+            ToStatus = MeetingStatus.Approved,
+            ActorId = Guid.CreateVersion7(),
+            PreviousOrganizerId = Guid.CreateVersion7(),
+            NewOrganizerId = creator.Id,
+        });
+        _factory.Meetings.Meetings.Add(meeting);
+        using var client = _factory.ClientFor(secretary);
+
+        var response = await client.GetAsync($"/api/meetings/{meeting.Id}/history");
+        using var body = await JsonOf(response);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var entries = body.RootElement.GetProperty("items").EnumerateArray().ToArray();
+        Assert.Equal("Lý do dành cho thư ký", Assert.Single(entries,
+            item => item.GetProperty("action").GetString() == "Reject")
+            .GetProperty("rejectionReason").GetString());
+        Assert.All(entries, item =>
+        {
+            Assert.Equal(JsonValueKind.Null, item.GetProperty("previousOrganizerId").ValueKind);
+            Assert.Equal(JsonValueKind.Null, item.GetProperty("newOrganizerId").ValueKind);
+        });
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
+        using var listBody = await JsonOf(await client.GetAsync("/api/meetings"));
+        Assert.Empty(listBody.RootElement.GetProperty("items").EnumerateArray());
+    }
+
+    [Theory]
+    [InlineData("globalRoleOnly")]
+    [InlineData("otherMeeting")]
+    [InlineData("delegated")]
+    [InlineData("delegationTarget")]
+    public async Task Invalid_secretary_assignment_does_not_grant_history_access(string invalid)
+    {
+        var creator = GivenCreator();
+        var secretary = GivenCreator("unassigned-secretary@trustcabinet.local");
+        var meeting = OwnedMeetingBy(creator);
+        meeting.Status = MeetingStatus.Rejected;
+        if (invalid != "globalRoleOnly")
+        {
+            meeting.Participants.Add(new MeetingParticipant
+            {
+                MeetingId = invalid == "otherMeeting" ? Guid.CreateVersion7() : meeting.Id,
+                UserId = secretary.Id,
+                User = secretary,
+                Role = MeetingRole.Secretary,
+                Response = invalid == "delegated" ? InvitationResponse.Delegated : InvitationResponse.Accepted,
+                DelegatedToUserId = invalid == "delegationTarget" ? Guid.CreateVersion7() : null,
+            });
+        }
+        _factory.Meetings.Meetings.Add(meeting);
+        using var client = _factory.ClientFor(secretary, Capability.MeetingCreator);
+
+        var response = await client.GetAsync($"/api/meetings/{meeting.Id}/history");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
     }
 
     [Fact]

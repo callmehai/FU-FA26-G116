@@ -32,6 +32,10 @@ public sealed class MeetingWorkflowServiceTests
             CreatedById = _organizerId,
             AssignedApproverId = status == MeetingStatus.Draft ? null : _approverId,
         };
+        if (status == MeetingStatus.Approved)
+        {
+            meeting.Sessions.Add(PlannedSession(meeting.Id));
+        }
         _repository.Meetings.Add(meeting);
         return meeting;
     }
@@ -54,6 +58,16 @@ public sealed class MeetingWorkflowServiceTests
             Title = "Báo cáo",
             PlannedDurationMinutes = 30,
             PresenterId = Guid.CreateVersion7(),
+        };
+
+    private static MeetingSession PlannedSession(Guid meetingId)
+        => new()
+        {
+            MeetingId = meetingId,
+            Title = "Phiên họp kế hoạch",
+            PlannedStartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
+            PlannedEndsAt = new DateTimeOffset(2026, 10, 1, 3, 0, 0, TimeSpan.Zero),
+            Status = MeetingSessionStatus.Planned,
         };
 
     [Fact]
@@ -175,9 +189,10 @@ public sealed class MeetingWorkflowServiceTests
     }
 
     [Fact]
-    public async Task Readiness_get_and_submit_use_the_same_agenda_validation()
+    public async Task Readiness_get_and_submit_use_the_same_meeting_information_validation()
     {
         var meeting = GivenMeeting();
+        meeting.Title = " ";
 
         var readiness = await NewService().GetSubmissionReadinessAsync(meeting.Id, _organizerId);
         var submit = await NewService().TransitionAsync(
@@ -186,7 +201,7 @@ public sealed class MeetingWorkflowServiceTests
             _organizerId);
 
         Assert.False(readiness.Ready);
-        Assert.Contains("agendaItems", readiness.Errors.Keys);
+        Assert.Contains("title", readiness.Errors.Keys);
         Assert.Equal(MeetingWorkflowOutcome.SubmissionNotReady, submit.Outcome);
         Assert.Equal(readiness.Errors, submit.Errors);
         Assert.Equal(MeetingStatus.Draft, meeting.Status);
@@ -730,6 +745,232 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Null(Assert.Single(limited.Page!.Items).PreviousOrganizerId);
         Assert.Null(limited.Page.Items.Single().NewOrganizerId);
         Assert.Equal(MeetingHistoryAction.TransferOrganizer, limited.Page.Items.Single().Action);
+    }
+
+    [Theory]
+    [InlineData(MeetingStatus.Draft)]
+    [InlineData(MeetingStatus.Rejected)]
+    public async Task Submit_accepts_draft_or_rejected_without_agenda_or_sessions(MeetingStatus status)
+    {
+        var meeting = GivenMeeting(status);
+        var previousApproverId = _approverId;
+        var replacement = Guid.CreateVersion7();
+        Grant(replacement, Capability.MeetingApprover);
+        MeetingStatusHistory? rejection = null;
+        if (status == MeetingStatus.Rejected)
+        {
+            rejection = new MeetingStatusHistory
+            {
+                MeetingId = meeting.Id,
+                Action = MeetingHistoryAction.Reject,
+                FromStatus = MeetingStatus.WaitingApproval,
+                ToStatus = MeetingStatus.Rejected,
+                ActorId = previousApproverId,
+                Reason = "Bổ sung tài liệu",
+                AssignedApproverId = previousApproverId,
+            };
+            meeting.StatusHistory.Add(rejection);
+        }
+
+        var readiness = await NewService().GetSubmissionReadinessAsync(meeting.Id, _organizerId);
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, replacement), _organizerId);
+
+        Assert.True(readiness.Ready);
+        Assert.Equal(status, readiness.Status);
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
+        Assert.Equal(replacement, meeting.AssignedApproverId);
+        var submission = meeting.StatusHistory.Last();
+        Assert.Equal(status, submission.FromStatus);
+        Assert.Equal(MeetingHistoryAction.SubmitForApproval, submission.Action);
+        Assert.Equal(replacement, submission.AssignedApproverId);
+        if (rejection is not null)
+        {
+            Assert.Same(rejection, meeting.StatusHistory.First());
+            Assert.Equal("Bổ sung tài liệu", rejection.Reason);
+            Assert.Equal(previousApproverId, rejection.AssignedApproverId);
+        }
+        Assert.Equal(status == MeetingStatus.Rejected ? 2 : 1, meeting.StatusHistory.Count);
+        Assert.Equal(replacement, Assert.Single(_repository.Notifications).UserId);
+        Assert.Empty(_invitations.MeetingIds);
+    }
+
+    [Theory]
+    [InlineData("invalidApprover", MeetingWorkflowOutcome.InvalidApprover)]
+    [InlineData("invalidInformation", MeetingWorkflowOutcome.SubmissionNotReady)]
+    [InlineData("saveFailure", MeetingWorkflowOutcome.SaveFailed)]
+    public async Task Failed_rejected_resubmission_keeps_assignment_and_rejection_evidence(
+        string failure, MeetingWorkflowOutcome expected)
+    {
+        var meeting = GivenMeeting(MeetingStatus.Rejected);
+        var replacement = Guid.CreateVersion7();
+        Grant(replacement, Capability.MeetingApprover);
+        var rejection = new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            Action = MeetingHistoryAction.Reject,
+            FromStatus = MeetingStatus.WaitingApproval,
+            ToStatus = MeetingStatus.Rejected,
+            ActorId = _approverId,
+            Reason = "Giữ nguyên bằng chứng từ chối",
+            AssignedApproverId = _approverId,
+        };
+        meeting.StatusHistory.Add(rejection);
+        switch (failure)
+        {
+            case "invalidApprover": _repository.IneligibleApproverIds.Add(replacement); break;
+            case "invalidInformation": meeting.Title = " "; break;
+            case "saveFailure": _repository.NextSaveThrows = new TimeoutException("Persistence unavailable"); break;
+        }
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, replacement), _organizerId);
+
+        Assert.Equal(expected, result.Outcome);
+        var persisted = Assert.Single(_repository.Meetings);
+        Assert.Equal(MeetingStatus.Rejected, persisted.Status);
+        Assert.Equal(_approverId, persisted.AssignedApproverId);
+        Assert.Same(rejection, Assert.Single(persisted.StatusHistory));
+        Assert.Equal("Giữ nguyên bằng chứng từ chối", rejection.Reason);
+        Assert.Equal(_approverId, rejection.AssignedApproverId);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_repository.EmailMessages);
+        Assert.Empty(_invitations.MeetingIds);
+    }
+
+    [Theory]
+    [InlineData("none")]
+    [InlineData("cancelled")]
+    [InlineData("completed")]
+    [InlineData("inProgress")]
+    [InlineData("otherMeeting")]
+    [InlineData("blankTitle")]
+    [InlineData("longTitle")]
+    [InlineData("defaultStart")]
+    [InlineData("defaultEnd")]
+    [InlineData("equalTimes")]
+    [InlineData("reversedTimes")]
+    [InlineData("emptyId")]
+    public async Task Publish_requires_a_valid_planned_session_before_any_side_effect(string invalid)
+    {
+        var meeting = GivenMeeting(MeetingStatus.Approved);
+        meeting.Sessions.Clear();
+        var session = PlannedSession(meeting.Id);
+        switch (invalid)
+        {
+            case "cancelled": session.Status = MeetingSessionStatus.Cancelled; break;
+            case "completed": session.Status = MeetingSessionStatus.Completed; break;
+            case "inProgress": session.Status = MeetingSessionStatus.InProgress; break;
+            case "otherMeeting": session.MeetingId = Guid.CreateVersion7(); break;
+            case "blankTitle": session.Title = " "; break;
+            case "longTitle": session.Title = new string('x', 301); break;
+            case "defaultStart": session.PlannedStartsAt = default; break;
+            case "defaultEnd": session.PlannedEndsAt = default; break;
+            case "equalTimes": session.PlannedEndsAt = session.PlannedStartsAt; break;
+            case "reversedTimes": session.PlannedEndsAt = session.PlannedStartsAt.AddMinutes(-1); break;
+            case "emptyId": session.Id = Guid.Empty; break;
+        }
+        if (invalid != "none") meeting.Sessions.Add(session);
+        meeting.Participants.Add(Participant(meeting, active: true, InvitationResponse.Accepted));
+        var updatedAt = meeting.UpdatedAt;
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.Publish), _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.PublicationNotReady, result.Outcome);
+        Assert.Contains("meetingSessions", result.Errors!.Keys);
+        Assert.Equal(MeetingStatus.Approved, meeting.Status);
+        Assert.Equal(updatedAt, meeting.UpdatedAt);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_repository.EmailMessages);
+        Assert.Empty(_invitations.MeetingIds);
+        Assert.Equal(0, _repository.SaveCount);
+        Assert.True(_repository.LastWorkflowForUpdate);
+    }
+
+    [Theory]
+    [InlineData(MeetingStatus.Draft)]
+    [InlineData(MeetingStatus.WaitingApproval)]
+    [InlineData(MeetingStatus.Rejected)]
+    [InlineData(MeetingStatus.Approved)]
+    [InlineData(MeetingStatus.Published)]
+    public async Task Assigned_secretary_reads_rejection_reason_without_transfer_ids_or_extra_detail_access(MeetingStatus status)
+    {
+        var meeting = GivenMeeting(status);
+        var secretary = Participant(meeting, active: true, InvitationResponse.Accepted);
+        secretary.Role = MeetingRole.Secretary;
+        meeting.Participants.Add(secretary);
+        meeting.StatusHistory.Add(new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            Action = MeetingHistoryAction.Reject,
+            FromStatus = MeetingStatus.WaitingApproval,
+            ToStatus = MeetingStatus.Rejected,
+            ActorId = _approverId,
+            Reason = "Lý do dành cho thư ký",
+        });
+        meeting.StatusHistory.Add(new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            Action = MeetingHistoryAction.TransferOrganizer,
+            FromStatus = MeetingStatus.Approved,
+            ToStatus = MeetingStatus.Approved,
+            ActorId = Guid.CreateVersion7(),
+            PreviousOrganizerId = Guid.CreateVersion7(),
+            NewOrganizerId = _organizerId,
+        });
+
+        var history = await NewService().GetHistoryAsync(meeting.Id, secretary.UserId, 1, 20);
+        var details = await NewService().GetAsync(meeting.Id, secretary.UserId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, history.Outcome);
+        Assert.Equal("Lý do dành cho thư ký", Assert.Single(history.Page!.Items,
+            item => item.Action == MeetingHistoryAction.Reject).RejectionReason);
+        Assert.All(history.Page.Items, item =>
+        {
+            Assert.Null(item.PreviousOrganizerId);
+            Assert.Null(item.NewOrganizerId);
+        });
+        Assert.Equal(status == MeetingStatus.Published ? MeetingOutcome.Success : MeetingOutcome.NotFound,
+            details.Outcome);
+    }
+
+    [Theory]
+    [InlineData("member")]
+    [InlineData("globalSecretary")]
+    [InlineData("otherMeeting")]
+    [InlineData("inactive")]
+    [InlineData("delegated")]
+    [InlineData("delegationTarget")]
+    [InlineData("missingUser")]
+    public async Task Invalid_secretary_relationship_does_not_grant_prepublication_history(string invalid)
+    {
+        var meeting = GivenMeeting(MeetingStatus.Rejected);
+        var secretary = Participant(meeting, active: true, InvitationResponse.Accepted);
+        secretary.Role = MeetingRole.Secretary;
+        switch (invalid)
+        {
+            case "member": secretary.Role = MeetingRole.Member; break;
+            case "globalSecretary":
+                secretary.Role = MeetingRole.Member;
+                secretary.User.RoleId = TrustCabinet.Domain.Access.BuiltInRoles.Secretary;
+                break;
+            case "otherMeeting": secretary.MeetingId = Guid.CreateVersion7(); break;
+            case "inactive": secretary.User.IsActive = false; break;
+            case "delegated": secretary.Response = InvitationResponse.Delegated; break;
+            case "delegationTarget": secretary.DelegatedToUserId = Guid.CreateVersion7(); break;
+            case "missingUser": secretary.User = null!; break;
+        }
+        meeting.Participants.Add(secretary);
+
+        var result = await NewService().GetHistoryAsync(meeting.Id, secretary.UserId, 1, 20);
+
+        Assert.Equal(MeetingWorkflowOutcome.NotFound, result.Outcome);
+        Assert.Null(result.Page);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_invitations.MeetingIds);
     }
 
     private static MeetingParticipant Participant(

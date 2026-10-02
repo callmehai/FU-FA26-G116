@@ -10,7 +10,7 @@ Mã trạng thái giữ nguyên tiếng Anh để dùng trực tiếp trong code
 |---|---|---|
 | `Draft` | Nháp | Thư ký đang soạn, chưa ai khác thấy |
 | `WaitingApproval` | Chờ duyệt | Đã gửi, đang đợi người có quyền duyệt |
-| `Rejected` | Bị từ chối | Organizer được sửa; chuyển về `Draft` trước khi gửi duyệt lại |
+| `Rejected` | Bị từ chối | Organizer được sửa và gửi duyệt lại trực tiếp; về `Draft` là tùy chọn |
 | `Approved` | Đã duyệt | Được chấp thuận, chưa thông báo cho thành phần tham dự |
 | `Published` | Đã công bố | Thành phần tham dự nhìn thấy; thư mời xếp hàng để gửi bất đồng bộ khi SMTP bật |
 | `InProgress` | Đang diễn ra | Chủ toạ đã bắt đầu phiên họp |
@@ -27,8 +27,13 @@ Draft ──gửi duyệt──> WaitingApproval ──duyệt──> Approved �
         Archived <──lưu trữ── MinutesIssued <──ban hành biên bản── Ended <┘
 ```
 
-Organizer được sửa ở `Draft` hoặc `Rejected`. Để gửi duyệt lại sau từ chối, phải thực hiện
-`ReturnToDraft` trước; assignment cũ được xóa và lịch sử/lý do từ chối được giữ nguyên.
+Organizer được sửa ở `Draft` hoặc `Rejected`. `SubmitForApproval` cho gửi lại trực tiếp
+`Rejected → WaitingApproval`; thay assignment bằng người được chọn cho cycle mới và append một
+history Submit, giữ nguyên lịch sử/lý do từ chối cũ. `ReturnToDraft` vẫn là tùy chọn, xóa assignment
+hiện tại rồi cho submit từ Draft. Secretary được gán hợp lệ có thể đọc lý do từ chối qua history.
+
+Publish chỉ chuyển `Approved → Published` khi có ít nhất một Meeting Session Planned hợp lệ
+thuộc meeting (BR-56). Thiếu phiên trả `400 MSG90`, giữ Approved và không tạo history/thông báo/thư mời.
 
 Khi gửi duyệt theo UC-19, người tổ chức phải chọn một tài khoản đang hoạt động có capability
 `MeetingApprover`, khác chính Organizer. Trường `AssignedApproverId` để trống trong bản nháp cho

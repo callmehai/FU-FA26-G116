@@ -860,6 +860,54 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.ToTable("meeting_participants", (string)null);
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.MeetingSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("MeetingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("meeting_id");
+
+                    b.Property<DateTimeOffset>("PlannedEndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("planned_ends_at");
+
+                    b.Property<DateTimeOffset>("PlannedStartsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("planned_starts_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_meeting_sessions");
+
+                    b.HasIndex("MeetingId", "Status")
+                        .HasDatabaseName("ix_meeting_sessions_meeting_id_status");
+
+                    b.ToTable("meeting_sessions", (string)null);
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.MeetingStatusHistory", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2087,6 +2135,18 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.MeetingSession", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
+                        .WithMany("Sessions")
+                        .HasForeignKey("MeetingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_meeting_sessions_meetings_meeting_id");
+
+                    b.Navigation("Meeting");
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.MeetingStatusHistory", b =>
                 {
                     b.HasOne("TrustCabinet.Domain.Entities.User", "Actor")
@@ -2439,6 +2499,8 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("Participants");
 
                     b.Navigation("Recordings");
+
+                    b.Navigation("Sessions");
 
                     b.Navigation("SpeakingRequests");
 

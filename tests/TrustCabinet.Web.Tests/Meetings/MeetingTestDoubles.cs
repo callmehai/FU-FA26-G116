@@ -201,6 +201,13 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
     public Task<bool> IsUserActiveAsync(Guid userId, CancellationToken ct = default)
         => Task.FromResult(UserCapabilities.ContainsKey(userId) && !InactiveUserIds.Contains(userId));
 
+    public Task<bool> HasValidPlannedSessionAsync(Guid meetingId, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(Meetings.Single(meeting => meeting.Id == meetingId).Sessions
+            .Any(session => MeetingSessionRules.IsValidPlanned(session, meetingId)));
+    }
+
     public Task<string?> FindUserDisplayNameAsync(Guid userId, CancellationToken ct = default)
         => Task.FromResult<string?>("Test User");
 
@@ -289,6 +296,15 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
             EndsAt = meeting.EndsAt,
             CreatedById = meeting.CreatedById,
             AssignedApproverId = meeting.AssignedApproverId,
+            Sessions = meeting.Sessions.Select(session => new MeetingSession
+            {
+                Id = session.Id,
+                MeetingId = session.MeetingId,
+                Title = session.Title,
+                PlannedStartsAt = session.PlannedStartsAt,
+                PlannedEndsAt = session.PlannedEndsAt,
+                Status = session.Status,
+            }).ToList(),
             AgendaItems = meeting.AgendaItems.Select(item => new AgendaItem
             {
                 Id = item.Id,

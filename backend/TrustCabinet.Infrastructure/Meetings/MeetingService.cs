@@ -257,7 +257,7 @@ public sealed class MeetingService(
                 return ReadinessFailure(MeetingWorkflowOutcome.Forbidden, id, meeting.Status);
             }
 
-            if (meeting.Status != MeetingStatus.Draft)
+            if (meeting.Status is not (MeetingStatus.Draft or MeetingStatus.Rejected))
             {
                 return ReadinessFailure(MeetingWorkflowOutcome.StatusConflict, id, meeting.Status);
             }
@@ -336,6 +336,8 @@ public sealed class MeetingService(
 
                 var (fromStatus, toStatus, historyAction) = command.Action switch
                 {
+                    MeetingTransitionAction.SubmitForApproval when meeting.Status == MeetingStatus.Rejected =>
+                        (MeetingStatus.Rejected, MeetingStatus.WaitingApproval, MeetingHistoryAction.SubmitForApproval),
                     MeetingTransitionAction.SubmitForApproval =>
                         (MeetingStatus.Draft, MeetingStatus.WaitingApproval, MeetingHistoryAction.SubmitForApproval),
                     MeetingTransitionAction.Approve =>
@@ -401,6 +403,16 @@ public sealed class MeetingService(
                     {
                         return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.InvalidApprover);
                     }
+                }
+
+                if (command.Action == MeetingTransitionAction.Publish
+                    && !await meetings.HasValidPlannedSessionAsync(meeting.Id, token))
+                {
+                    return MeetingWorkflowResult.Invalid(MeetingWorkflowOutcome.PublicationNotReady,
+                        new Dictionary<string, string>
+                        {
+                            ["meetingSessions"] = "Cần có ít nhất một phiên họp Planned với tiêu đề và thời gian hợp lệ trước khi công bố.",
+                        });
                 }
 
                 var now = UtcNow;
@@ -510,7 +522,7 @@ public sealed class MeetingService(
             return await meetings.InTransactionAsync(async token =>
             {
                 var meeting = await meetings.FindWorkflowAsync(id, forUpdate: false, token);
-                if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId))
+                if (meeting is null || !MeetingReadPolicy.CanReadHistory(meeting, actorId))
                 {
                     return MeetingHistoryResult.Failure(MeetingWorkflowOutcome.NotFound);
                 }
@@ -521,14 +533,16 @@ public sealed class MeetingService(
                     return MeetingHistoryResult.Failure(MeetingWorkflowOutcome.InvalidRequest);
                 }
 
-                if (!MeetingReadPolicy.CanReadFullHistory(meeting, actorId))
+                var canReadFullHistory = MeetingReadPolicy.CanReadFullHistory(meeting, actorId);
+                var canReadRejectionReason = MeetingReadPolicy.CanReadRejectionReason(meeting, actorId);
+                if (!canReadFullHistory)
                 {
                     history = history with
                     {
                         Items = history.Items
                             .Select(item => item with
                             {
-                                RejectionReason = null,
+                                RejectionReason = canReadRejectionReason ? item.RejectionReason : null,
                                 PreviousOrganizerId = null,
                                 NewOrganizerId = null,
                             })

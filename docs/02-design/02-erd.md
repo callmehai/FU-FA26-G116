@@ -1,7 +1,7 @@
 # Mô hình dữ liệu (ERD)
 
 Toàn bộ mô hình dữ liệu của TrustCabinet, suy ra từ tiêu chí nghiệm thu của các story trong Jira.
-**27 bảng.** Đây là tài liệu nguồn để vẽ Class Diagram (`SCRUM-55`) và ERD nộp (`SCRUM-56`), và để
+**28 bảng.** Đây là tài liệu nguồn để vẽ Class Diagram (`SCRUM-55`) và ERD nộp (`SCRUM-56`), và để
 BE biết mình đang làm việc với cái gì.
 
 Hiện thực: EF Core 10 code-first, PostgreSQL qua Npgsql
@@ -21,6 +21,7 @@ Cách chạy: [03-co-so-du-lieu.md](03-co-so-du-lieu.md).
 |---|---|---|
 | Truy cập | `users`, `roles`, `role_capabilities` | `SCRUM-11`, `SCRUM-12`, `SCRUM-13`, `SCRUM-60`, `SCRUM-63` |
 | Cuộc họp | `meetings`, `meeting_status_history`, `meeting_participants` | `SCRUM-17`, `SCRUM-18`, `SCRUM-19`, `SCRUM-20`, `SCRUM-26` |
+| Lịch phiên họp | `meeting_sessions` | UC-26–30; guard Publish UC-21/BR-56 trong `SCRUM-19` |
 | Tài liệu | `documents`, `document_versions`, `document_comments` | `SCRUM-21`, `SCRUM-22`, `SCRUM-23` |
 | Nghị sự | `agenda_items` | `SCRUM-25` |
 | Trong phiên | `speaking_requests`, `meeting_notes` | `SCRUM-27`, `SCRUM-30` |
@@ -47,6 +48,7 @@ erDiagram
     User o|--o{ MeetingStatusHistory : "Organizer sau transfer"
     Meeting ||--o{ MeetingParticipant : "thành phần tham dự"
     Meeting ||--o{ MeetingStatusHistory : "lịch sử trạng thái"
+    Meeting ||--o{ MeetingSession : "lịch phiên họp"
     MeetingStatusHistory o|--o{ Notification : "nguồn thông báo"
 
     User {
@@ -78,6 +80,14 @@ erDiagram
         timestamptz EndsAt "nullable"
         uuid CreatedById FK
         uuid AssignedApproverId FK "null ở Draft; assignment hiện tại, set khi Submit; clear khi ReturnToDraft"
+    }
+    MeetingSession {
+        uuid Id PK
+        uuid MeetingId FK
+        string Title "bắt buộc, tối đa 300"
+        timestamptz PlannedStartsAt
+        timestamptz PlannedEndsAt
+        string Status "Planned|InProgress|Completed|Cancelled"
     }
     MeetingParticipant {
         uuid Id PK
@@ -132,6 +142,13 @@ giữ `MeetingId`, key, nội dung và trạng thái delivery. `Notification.Ori
 Email chọn participant có user active, không áp dụng bộ lọc `Response` của notification.
 History `TransferOrganizer` giữ ID Organizer cũ/mới và actor quản trị, trong khi trạng thái meeting
 vẫn `Approved`; các field nullable này không sửa hoặc diễn giải lại history cũ.
+
+`meeting_sessions` được thêm bằng migration `MeetingSessionsForPublication` để thực thi BR-56:
+Publish chỉ được phép khi có ít nhất một phiên Planned của chính meeting, tiêu đề không chỉ
+whitespace, các mốc thời gian đã đặt và kết thúc sau bắt đầu. Index `(MeetingId, Status)` phục vụ
+guard; FK tới meeting dùng Cascade như các dữ liệu con khác. Entity có `CreatedAt`/`UpdatedAt`
+như các entity còn lại. Migration chỉ tạo bảng mới, không sửa dữ liệu hoặc tự sinh phiên cho meeting cũ.
+API UC-26–30 thuộc phần quản lý phiên; writer phải khóa meeting cha trước khi sửa lịch trong transaction.
 
 `Response` và `Attendance` là **hai câu hỏi khác nhau**: một là người ta trả lời thư mời thế nào,
 hai là thực tế có mặt hay không. Nhận lời rồi không đến là chuyện bình thường, và số liệu quorum

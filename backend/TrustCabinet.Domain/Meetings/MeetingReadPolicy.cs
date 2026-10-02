@@ -34,6 +34,20 @@ public static class MeetingReadPolicy
         => meeting.CreatedById == userId
             || (meeting.Status != MeetingStatus.Draft && meeting.AssignedApproverId == userId);
 
+    public static bool CanReadHistory(Meeting meeting, Guid userId)
+        => CanRead(meeting, userId) || IsAssignedSecretary(meeting, userId);
+
+    public static bool CanReadRejectionReason(Meeting meeting, Guid userId)
+        => CanReadFullHistory(meeting, userId) || IsAssignedSecretary(meeting, userId);
+
+    private static bool IsAssignedSecretary(Meeting meeting, Guid userId)
+        => meeting.Participants.Any(participant => participant.MeetingId == meeting.Id
+            && participant.UserId == userId
+            && participant.Role == MeetingRole.Secretary
+            && participant.Response != InvitationResponse.Delegated
+            && participant.DelegatedToUserId is null
+            && participant.User is { IsActive: true });
+
     private sealed class BindUser(ParameterExpression user, Expression value) : ExpressionVisitor
     {
         protected override Expression VisitParameter(ParameterExpression node)

@@ -6,7 +6,7 @@ sequenceDiagram
     participant Service as Meeting Service
     participant DB as Database
 
-    opt Cuộc họp đang Rejected hoặc WaitingApproval bị kẹt vì approver không hợp lệ
+    opt Organizer chọn về Draft từ Rejected, hoặc WaitingApproval bị kẹt vì approver không hợp lệ
         Note over Organizer,Page: Rejected được sửa thông tin, WaitingApproval phải rút trước khi sửa
         Organizer->>Page: Đưa cuộc họp về Nháp
         Page->>API: POST transitions, action=ReturnToDraft
@@ -33,10 +33,10 @@ sequenceDiagram
         end
     end
 
-    Organizer->>Page: Hoàn thiện thông tin và chương trình ở Draft
+    Organizer->>Page: Hoàn thiện thông tin cấp meeting ở Draft hoặc Rejected
     Page->>API: GET submission-readiness
     API->>Service: Kiểm tra quyền Organizer và dữ liệu đã lưu
-    Service->>DB: Đọc meeting và agenda
+    Service->>DB: Đọc thông tin meeting
     DB-->>Service: Dữ liệu hiện tại
     Service-->>API: Readiness và lỗi theo field
     API-->>Page: 200 ready, errors
@@ -49,7 +49,7 @@ sequenceDiagram
     Note over API: action phải khớp chính xác tên enum, request sai trả 400 MSG80.
     API->>Service: SubmitForApproval với actor từ phiên đăng nhập
     Service->>DB: BEGIN và khóa meeting
-    DB-->>Service: Meeting, agenda và assignment hiện tại
+    DB-->>Service: Meeting và assignment hiện tại
 
     alt Meeting không tồn tại hoặc caller không được đọc
         Service->>DB: Kết thúc transaction không ghi dữ liệu
@@ -57,17 +57,17 @@ sequenceDiagram
     else Không phải Organizer đang có MeetingCreator
         Service->>DB: Kết thúc transaction không ghi dữ liệu
         Service-->>API: 403 MSG85
-    else Meeting không còn Draft
+    else Meeting không còn Draft hoặc Rejected
         Service->>DB: Kết thúc transaction không ghi dữ liệu
         Service-->>API: 409 MSG41
-    else Thiếu thông tin meeting hoặc agenda
+    else Thiếu thông tin bắt buộc cấp meeting
         Service->>DB: Kết thúc transaction không ghi dữ liệu
         Service-->>API: 400 MSG81 và lỗi theo field
     else Người duyệt là Organizer, không active hoặc thiếu MeetingApprover
         Service->>DB: Kết thúc transaction không ghi dữ liệu
         Service-->>API: 400 MSG82
     else Đủ điều kiện gửi duyệt
-        Service->>DB: Gán approver, đổi WaitingApproval, thêm history và notification
+        Service->>DB: Gán approver, đổi WaitingApproval, thêm Submit history từ Draft hoặc Rejected và notification
         alt Lưu hoặc commit thất bại
             DB-->>Service: Lỗi persistence
             Service->>DB: ROLLBACK toàn bộ thay đổi
@@ -81,5 +81,5 @@ sequenceDiagram
         end
     end
 
-    Note over Organizer,Service: Rejected được sửa thông tin, giữ assignment và lịch sử, nhưng phải ReturnToDraft trước khi gửi duyệt lại.
+    Note over Organizer,Service: Rejected được gửi lại trực tiếp, thay assignment cho cycle mới, giữ lịch sử/lý do từ chối. Agenda và Meeting Session không bắt buộc khi submit.
     Note over Organizer,Service: WaitingApproval chỉ được rút khi approver không hợp lệ, không gán lại trực tiếp. Sau ReturnToDraft, chọn approver mới qua submit bình thường.

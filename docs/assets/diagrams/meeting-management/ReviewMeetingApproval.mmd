@@ -57,4 +57,5 @@ sequenceDiagram
         end
     end
 
-    Note over Service,DB: History chỉ ghi thêm. Organizer và current approver đọc được lý do từ chối.
+    Note over Service,DB: History chỉ ghi thêm. Organizer, current approver và Secretary được gán active, chưa ủy quyền đọc lý do từ chối.
+    Note over Service,DB: Secretary đọc qua GET history cả trước Published, snapshot chuyển Organizer vẫn ẩn, quyền chi tiết/danh sách giữ nguyên.

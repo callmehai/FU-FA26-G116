@@ -82,6 +82,65 @@ public sealed class MeetingReadPolicyTests
         Assert.True(MeetingReadPolicy.CanReadFullHistory(meeting, newApprover));
     }
 
+    [Theory]
+    [MemberData(nameof(ReadStates))]
+    public void Assigned_secretary_can_read_rejection_evidence_without_full_history_or_content_access(
+        MeetingStatus status, bool assignedApproverCanRead, bool participantCanRead)
+    {
+        var secretary = new User { FullName = "Assigned secretary", Email = "secretary@example.test" };
+        var meeting = new Meeting { Title = "Secretary evidence", Status = status };
+        meeting.Participants.Add(new MeetingParticipant
+        {
+            MeetingId = meeting.Id,
+            UserId = secretary.Id,
+            User = secretary,
+            Role = MeetingRole.Secretary,
+        });
+
+        Assert.True(MeetingReadPolicy.CanReadHistory(meeting, secretary.Id));
+        Assert.True(MeetingReadPolicy.CanReadRejectionReason(meeting, secretary.Id));
+        Assert.False(MeetingReadPolicy.CanReadFullHistory(meeting, secretary.Id));
+        Assert.Equal(participantCanRead, MeetingReadPolicy.CanRead(meeting, secretary.Id));
+        Assert.Equal(participantCanRead, MeetingReadPolicy.ForUser(secretary.Id).Compile()(meeting));
+        // The data row already covers assigned approver access in the shared policy test above.
+        _ = assignedApproverCanRead;
+    }
+
+    [Theory]
+    [InlineData("member")]
+    [InlineData("chair")]
+    [InlineData("inactive")]
+    [InlineData("delegated")]
+    [InlineData("delegateReference")]
+    [InlineData("otherMeeting")]
+    [InlineData("otherUser")]
+    public void Unassigned_or_ineligible_secretary_cannot_read_prepublication_rejection_evidence(string scenario)
+    {
+        var user = new User { FullName = "Caller", Email = "caller@example.test" };
+        var meeting = new Meeting { Title = "Rejected meeting", Status = MeetingStatus.Rejected };
+        var participant = new MeetingParticipant
+        {
+            MeetingId = meeting.Id,
+            UserId = user.Id,
+            User = user,
+            Role = MeetingRole.Secretary,
+        };
+        switch (scenario)
+        {
+            case "member": participant.Role = MeetingRole.Member; break;
+            case "chair": participant.Role = MeetingRole.Chair; break;
+            case "inactive": user.IsActive = false; break;
+            case "delegated": participant.Response = InvitationResponse.Delegated; break;
+            case "delegateReference": participant.DelegatedToUserId = Guid.CreateVersion7(); break;
+            case "otherMeeting": participant.MeetingId = Guid.CreateVersion7(); break;
+            case "otherUser": participant.UserId = Guid.CreateVersion7(); break;
+        }
+        meeting.Participants.Add(participant);
+
+        Assert.False(MeetingReadPolicy.CanReadHistory(meeting, user.Id));
+        Assert.False(MeetingReadPolicy.CanReadRejectionReason(meeting, user.Id));
+    }
+
     [Fact]
     public void Query_policy_translates_to_parameterized_PostgreSql_for_different_callers()
     {

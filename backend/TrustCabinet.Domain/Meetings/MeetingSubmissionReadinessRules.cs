@@ -1,4 +1,3 @@
-using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 
 namespace TrustCabinet.Domain.Meetings;
@@ -14,11 +13,6 @@ public static class MeetingSubmissionReadinessRules
         if (meeting.CreatedById == Guid.Empty)
         {
             errors["createdById"] = "Chưa xác định được người tổ chức cuộc họp.";
-        }
-
-        foreach (var (key, message) in AgendaSubmissionRules.Validate(meeting.AgendaItems))
-        {
-            errors[key] = message;
         }
 
         return errors;
