@@ -2,7 +2,7 @@
 
 | Collection | Phạm vi |
 |---|---|
-| [`uc08-uc09-quan-ly-nguoi-dung.postman_collection.json`](uc08-uc09-quan-ly-nguoi-dung.postman_collection.json) | UC-08 đặt lại mật khẩu (cả hai nửa) và UC-09 gán vai trò — 38 request, 59 assertion |
+| [`uc08-uc09-quan-ly-nguoi-dung.postman_collection.json`](uc08-uc09-quan-ly-nguoi-dung.postman_collection.json) | UC-08 đặt lại mật khẩu (cả hai nửa) và UC-09 gán vai trò — 31 bước (44 request kể cả request phụ trong script), 65 assertion |
 
 Collection chạy **theo thứ tự** trên backend local và tự dọn dẹp: nó tạo một tài khoản tạm
 `uc08-<timestamp>@trustcabinet.local`, chạy kịch bản trên tài khoản đó, cuối cùng vô hiệu hoá nó
@@ -41,7 +41,8 @@ Biến của collection (`baseUrl`, `mailpitUrl`, email và mật khẩu demo) s
 ## Lưu ý
 
 - Request **44** (hạ vai trò quản trị viên cuối cùng → `MSG12`) chỉ chạy khi tài khoản quản trị viên
-  đang đăng nhập là người **duy nhất** còn hoạt động mang vai trò đó; nếu không nó tự bỏ qua, vì khi
+  đang đăng nhập là tài khoản **duy nhất** còn hoạt động giữ capability `AdminUsers` (qua bất kỳ vai
+  trò nào — đếm giống server, đọc từ `GET /api/roles/capabilities`); nếu không nó tự bỏ qua, vì khi
   đó request sẽ hạ vai trò thật.
 - `MSG15` (không gửi được email) không nằm trong collection: muốn thử thì `docker stop tc-mailpit`
   rồi gọi lại `POST /api/users/{id}/password-reset` — nhận `503 MSG15` sau vài giây.

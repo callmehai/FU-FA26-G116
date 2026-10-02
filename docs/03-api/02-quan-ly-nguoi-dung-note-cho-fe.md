@@ -251,8 +251,11 @@ POST /api/auth/password-reset
 Hai mã `400` khác nhau hoàn toàn về cách xử lý — khớp theo `code`.
 
 - Không có fragment `token` thì hiện luôn trạng thái `MSG79`, khỏi gọi API.
-- Đặt lại thành công sẽ **đăng xuất người đó ở mọi thiết bị**. Nếu chính trình duyệt này đang đăng nhập
-  tài khoản đó, lần refresh tiếp theo sẽ ra `401 MSG01` — luồng đăng nhập lại như bình thường.
+- Đặt lại thành công sẽ **huỷ mọi refresh token** của người đó. Nếu chính trình duyệt này đang đăng
+  nhập tài khoản đó, nó vẫn chạy tới khi access token hết hạn (tối đa 15 phút), rồi lần refresh tiếp
+  theo ra `401 MSG01` — luồng đăng nhập lại như bình thường.
+- Một liên kết đã gửi sẽ chết (→ `MSG79`) nếu quản trị viên vô hiệu hoá tài khoản, đổi email hoặc đổi
+  vai trò sau đó, hoặc bấm gửi lại.
 - Gọi qua `src/api/` (`api.post`), thêm type trong `src/types/` — như mọi endpoint khác.
 
 ---
@@ -265,4 +268,5 @@ riêng như đặc tả mô tả, đó chỉ là một dialog chọn vai trò (`
 này với hai field kia lấy từ `GET /api/users/{id}`.
 
 Mã trả về giống UC-06: `MSG10` thành công, `MSG09` kèm `errors.roleId` khi vai trò vừa bị xoá, `MSG12`
-khi đó là quản trị viên cuối cùng (mục 4). Đổi vai trò sẽ đăng xuất người được đổi.
+khi đó là quản trị viên cuối cùng (mục 4). Đổi vai trò sẽ đăng xuất người được đổi, và làm chết liên
+kết đặt lại mật khẩu đang chờ của họ (nếu có).

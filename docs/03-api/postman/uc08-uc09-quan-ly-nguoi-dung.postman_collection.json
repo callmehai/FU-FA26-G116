@@ -646,6 +646,56 @@
       ]
     },
     {
+      "name": "32b · UC-08 · Gửi link trước khi vô hiệu hoá",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}/password-reset"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.sendRequest({ url: pm.collectionVariables.get('mailpitUrl') + '/api/v1/messages', method: 'DELETE' }, () => {});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG13', () => pm.expect(pm.response.json().code).to.eql('MSG13'));",
+              "",
+              "const base = pm.collectionVariables.get('mailpitUrl');",
+              "const to = pm.collectionVariables.get('tempEmail');",
+              "pm.sendRequest(base + '/api/v1/search?query=' + encodeURIComponent('to:' + to), (err, res) => {",
+              "    pm.test('Mailpit received the reset email', () => {",
+              "        pm.expect(err).to.eql(null);",
+              "        pm.expect(res.json().messages.length).to.be.above(0);",
+              "    });",
+              "    const id = res.json().messages[0].ID;",
+              "    pm.sendRequest(base + '/api/v1/message/' + id, (err2, msg) => {",
+              "        const text = msg.json().Text;",
+              "        const match = /reset-password#token=([A-Za-z0-9_-]+)/.exec(text);",
+              "        pm.test('the email carries the link with the token in the fragment', () => pm.expect(match).to.not.eql(null));",
+              "        pm.collectionVariables.set('deactivatedToken', match[1]);",
+              "    });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "33 · Vô hiệu hoá tài khoản tạm",
       "request": {
         "method": "PUT",
@@ -731,6 +781,35 @@
             "exec": [
               "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
               "pm.test('code = MSG11', () => pm.expect(pm.response.json().code).to.eql('MSG11'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "36 · UC-08 · Link gửi trước khi vô hiệu hoá không sống lại sau khi kích hoạt lại → MSG79",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/password-reset",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{deactivatedToken}}\",\n  \"newPassword\": \"{{newPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('code = MSG79', () => pm.expect(pm.response.json().code).to.eql('MSG79'));"
             ]
           }
         }
@@ -880,14 +959,21 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "// Only meaningful while the signed-in admin is the sole active holder of AdminUsers — otherwise this",
-              "// request would really demote them. Checked first and skipped if anyone else administers.",
-              "pm.sendRequest({ url: pm.collectionVariables.get('baseUrl') + '/api/users',",
-              "                 header: { Authorization: 'Bearer ' + pm.collectionVariables.get('adminToken') } }, (err, res) => {",
-              "    const me = res.json().find(u => u.id === pm.collectionVariables.get('adminId'));",
-              "    pm.collectionVariables.set('adminName', me.fullName);",
-              "    const admins = res.json().filter(u => u.isActive && u.roleId === me.roleId);",
-              "    if (admins.length !== 1) { pm.execution.skipRequest(); }",
+              "// Only meaningful while the signed-in admin is the sole active account holding AdminUsers (through",
+              "// any role) — otherwise this request would really demote them. The server counts by capability, so",
+              "// this check does too: it reads which roles carry AdminUsers, then counts active users in them.",
+              "const base = pm.collectionVariables.get('baseUrl');",
+              "const auth = { Authorization: 'Bearer ' + pm.collectionVariables.get('adminToken') };",
+              "pm.sendRequest({ url: base + '/api/roles/capabilities', header: auth }, (err, matrix) => {",
+              "    const adminRoles = matrix.json().roles",
+              "        .filter(r => r.capabilities.includes('AdminUsers'))",
+              "        .map(r => r.id);",
+              "    pm.sendRequest({ url: base + '/api/users', header: auth }, (err2, res) => {",
+              "        const me = res.json().find(u => u.id === pm.collectionVariables.get('adminId'));",
+              "        pm.collectionVariables.set('adminName', me.fullName);",
+              "        const admins = res.json().filter(u => u.isActive && adminRoles.includes(u.roleId));",
+              "        if (admins.length !== 1 || admins[0].id !== me.id) { pm.execution.skipRequest(); }",
+              "    });",
               "});"
             ]
           }

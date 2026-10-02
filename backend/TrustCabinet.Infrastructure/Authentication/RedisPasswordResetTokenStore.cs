@@ -32,10 +32,12 @@ public sealed class RedisPasswordResetTokenStore(IConnectionMultiplexer redis)
 
         // The user key is overwritten, not added to: from now on only this hash is current, and
         // any earlier token fails the check in IsCurrentAsync without having to be found and
-        // deleted.
-        await Task.WhenAll(
-            db.StringSetAsync(TokenKey(hash), userId.ToString(), lifetime),
-            db.StringSetAsync(UserKey(userId), hash, lifetime));
+        // deleted. MULTI, so two administrators resetting the same account at once cannot leave
+        // the user key pointing at one token and the newer token key at the other.
+        var transaction = db.CreateTransaction();
+        _ = transaction.StringSetAsync(TokenKey(hash), userId.ToString(), lifetime);
+        _ = transaction.StringSetAsync(UserKey(userId), hash, lifetime);
+        await transaction.ExecuteAsync();
 
         return token;
     }
@@ -58,6 +60,13 @@ public sealed class RedisPasswordResetTokenStore(IConnectionMultiplexer redis)
 
         return await IsCurrentAsync(owner, hash);
     }
+
+    /// <summary>
+    /// Dropping the user key is enough: every token of the account then fails
+    /// <see cref="IsCurrentAsync"/>, and the token keys expire on their own.
+    /// </summary>
+    public Task RevokeAsync(Guid userId, CancellationToken ct = default)
+        => redis.GetDatabase().KeyDeleteAsync(UserKey(userId));
 
     /// <summary>The owner, if the token had one and is still that account's newest.</summary>
     private async Task<Guid?> IsCurrentAsync(RedisValue owner, string hash)

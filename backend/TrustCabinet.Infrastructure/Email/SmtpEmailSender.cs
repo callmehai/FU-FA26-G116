@@ -30,7 +30,17 @@ internal sealed class SmtpEmailSender(IOptions<EmailDeliveryOptions> options) : 
         }
 
         await smtp.SendAsync(message, ct);
-        await smtp.DisconnectAsync(quit: true, ct);
+
+        // The server has accepted the message; a failed QUIT does not unsend it. Reported as a
+        // failure, it would make the queue send the invitation again and UC-08 answer MSG15 for a
+        // reset link that is already in the inbox. Disposing the client closes the socket anyway.
+        try
+        {
+            await smtp.DisconnectAsync(quit: true, ct);
+        }
+        catch (Exception)
+        {
+        }
     }
 
     internal static MimeMessage BuildMessage(EmailMessage queued, SmtpOptions options)

@@ -31,4 +31,10 @@ public interface IPasswordResetTokenStore
     /// or superseded. Single-use: of two simultaneous submissions only one gets an account back.
     /// </summary>
     Task<Guid?> ConsumeAsync(string token, CancellationToken ct = default);
+
+    /// <summary>
+    /// Kills whatever link the account has outstanding — when it is deactivated, or its email or
+    /// role changes. Harmless when there is none.
+    /// </summary>
+    Task RevokeAsync(Guid userId, CancellationToken ct = default);
 }

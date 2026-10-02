@@ -15,12 +15,12 @@ public sealed class PasswordResetEmailSenderTests
 
     private readonly RecordingEmailSender _smtp = new();
 
-    private PasswordResetEmailSender NewSender(bool enabled = true) => new(
+    private PasswordResetEmailSender NewSender(bool enabled = true, int timeoutSeconds = 5) => new(
         _smtp,
         Options.Create(new EmailDeliveryOptions
         {
             ApplicationBaseUrl = "https://trustcabinet.example/",
-            SendAttemptTimeoutSeconds = 5,
+            SendAttemptTimeoutSeconds = timeoutSeconds,
             Smtp = new SmtpOptions { Enabled = enabled, Host = "smtp.example", FromAddress = "no-reply@trustcabinet.example" },
         }),
         NullLogger<PasswordResetEmailSender>.Instance);
@@ -71,6 +71,18 @@ public sealed class PasswordResetEmailSenderTests
     }
 
     [Fact]
+    public async Task A_server_that_never_answers_is_a_failed_send_after_the_timeout()
+    {
+        // A hung server must answer MSG15, not keep the administrator's request open forever.
+        _smtp.Hangs = true;
+
+        var sent = await NewSender(timeoutSeconds: 1).SendAsync(
+            "thanhvien@trustcabinet.local", "Lê Thành Viên", Token, TimeSpan.FromMinutes(60));
+
+        Assert.False(sent);
+    }
+
+    [Fact]
     public async Task A_cancelled_request_is_not_reported_as_a_failed_send()
     {
         // The administrator went away; there is nobody to show MSG15 to, and swallowing the
@@ -87,17 +99,24 @@ public sealed class PasswordResetEmailSenderTests
     {
         public Exception? Throws { get; set; }
 
+        /// <summary>Never completes until cancelled, like a server that accepted the connection and went quiet.</summary>
+        public bool Hangs { get; set; }
+
         public List<EmailMessage> Sent { get; } = [];
 
-        public Task SendAsync(EmailMessage message, CancellationToken ct = default)
+        public async Task SendAsync(EmailMessage message, CancellationToken ct = default)
         {
+            if (Hangs)
+            {
+                await Task.Delay(Timeout.Infinite, ct);
+            }
+
             if (Throws is { } exception)
             {
                 throw exception;
             }
 
             Sent.Add(message);
-            return Task.CompletedTask;
         }
     }
 }

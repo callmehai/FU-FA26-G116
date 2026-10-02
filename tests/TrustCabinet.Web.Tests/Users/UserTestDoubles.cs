@@ -283,6 +283,12 @@ internal sealed class FakePasswordResetTokenStore : IPasswordResetTokenStore
         return Task.FromResult(owner);
     }
 
+    public Task RevokeAsync(Guid userId, CancellationToken ct = default)
+    {
+        _current.Remove(userId);
+        return Task.CompletedTask;
+    }
+
     private Guid? Live(string token)
         => _tokens.TryGetValue(token, out var entry)
            && entry.ExpiresAt > Now

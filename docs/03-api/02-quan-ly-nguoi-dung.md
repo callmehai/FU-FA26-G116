@@ -299,10 +299,18 @@ Vài điểm cố ý:
   mật khẩu xong thì nó có thêm cách đăng nhập bằng mật khẩu. Đặc tả chưa nói rõ, đã note cho BA.
 - **Gửi lại thì liên kết cũ chết.** Mỗi tài khoản chỉ có một liên kết còn hiệu lực — liên kết mới
   nhất. Bấm hai lần thì hộp thư có hai email nhưng chỉ email sau dùng được.
+- **Liên kết đang chờ cũng chết khi tài khoản bị vô hiệu hoá, đổi email hoặc đổi vai trò** (cùng chỗ
+  huỷ phiên ở UC-06/UC-07). Không thì vô hiệu hoá rồi kích hoạt lại trong vòng một giờ làm liên kết
+  sống lại, và liên kết đã gửi nhầm địa chỉ vẫn dùng được sau khi quản trị viên sửa email. Sửa tên
+  thì liên kết vẫn còn.
 - **Gửi đồng bộ qua SMTP, không qua hàng đợi `email_messages`.** Hàng đợi lưu cả nội dung email vào
   database, mà nội dung này chứa một credential còn sống — nó sẽ nằm trong bảng rất lâu sau khi
   liên kết hết hạn. Thêm nữa, MSG15 phải trả lời ngay trong request, hàng đợi không làm được. Thời
   gian chờ tối đa bằng `Email:SendAttemptTimeoutSeconds` (mặc định 60 giây).
+- **Server đã nhận thư thì coi là đã gửi**, kể cả khi lệnh `QUIT` sau đó lỗi — trước đây
+  `SmtpEmailSender` báo lỗi ở bước này, nghĩa là UC-08 sẽ trả MSG15 cho một liên kết đã nằm trong hộp
+  thư, còn hàng đợi thư mời (SCRUM-15) sẽ gửi lại lần nữa. Bản sửa áp dụng cho cả hai.
+- **Đã gửi mail rồi thì dòng audit luôn được ghi**, kể cả khi quản trị viên đóng tab ngay sau đó.
 - **Phải bật `Email:Smtp:Enabled`** (cấu hình như SCRUM-15, xem
   [07-gui-email-thu-moi-note-cai-dat-may-moi.md](07-gui-email-thu-moi-note-cai-dat-may-moi.md)). Tắt
   thì mọi lần gọi đều là `503 MSG15` — không phải "thành công" mà không có mail nào đi.
@@ -343,10 +351,16 @@ mật khẩu không có phiên nào để gửi; token chính là bằng chứng
 - **Mật khẩu sai luật (MSG80) không làm tiêu liên kết** — sửa lại rồi gửi tiếp bằng đúng liên kết đó.
 - **Năm nguyên nhân của MSG79 gộp một mã có chủ ý.** Endpoint ẩn danh; phân biệt "hết hạn" với "không
   tồn tại" chỉ giúp người dò liên kết.
-- **Thành công thì đăng xuất mọi nơi** (huỷ toàn bộ refresh token), **và không cấp token đăng nhập.**
-  Người dùng đăng nhập lại bằng mật khẩu vừa đặt. Huỷ phiên làm **trước** khi lưu mật khẩu: nếu Redis
-  lỗi thì mật khẩu cũ và phiên cũ vẫn nguyên như trước, chứ không phải mật khẩu mới nằm cạnh đúng
-  những phiên mà người ta đặt lại mật khẩu để chấm dứt.
+- **Thành công thì huỷ toàn bộ refresh token, và không cấp token đăng nhập.** Người dùng đăng nhập
+  lại bằng mật khẩu vừa đặt. Huỷ **hai lần**:
+  - *trước* khi lưu mật khẩu — nếu Redis lỗi thì mật khẩu cũ và phiên cũ vẫn nguyên như trước, chứ
+    không phải mật khẩu mới nằm cạnh đúng những phiên mà người ta đặt lại mật khẩu để chấm dứt;
+  - *sau* khi lưu — cho một lần đăng nhập bằng mật khẩu cũ (hoặc một lần refresh đang chạy dở) rơi
+    vào khoảng giữa hai bước. Lần này lỗi thì chỉ ghi log: mật khẩu đã đổi, liên kết đã tiêu.
+- **Access token đã cấp vẫn dùng được tới khi hết hạn** (tối đa 15 phút), ở mọi endpoint — JWT không
+  thu hồi được, và phần kiểm lại người gọi của `/api/users` chỉ xem `is_active` và capability, không
+  xem mật khẩu có vừa đổi hay không. Đóng hẳn cửa sổ này cần một "security stamp" trên `users` (cần
+  migration); xem [Còn nợ](#còn-nợ).
 - Luật mật khẩu giống UC-05: tối thiểu 12 ký tự.
 
 ## UC-09 · Gán / đổi vai trò hệ thống — dùng `PUT /api/users/{id}`
@@ -466,6 +480,10 @@ vào bằng chứng. Đã đánh dấu `ponytail:` trong code.
   (và thay thế token cũ) *trước* khi gửi mail, vì email phải chứa nó. Nếu lần gửi sau hỏng (MSG15),
   liên kết của lần gửi thành công trước đó cũng không còn dùng được. Chấp nhận: quản trị viên đã thấy
   MSG15 và sẽ gửi lại; chiều ngược lại (giữ nhiều liên kết sống) mới là chiều nới lỏng bảo mật.
+- **Access token còn sống tới 15 phút sau khi đặt lại mật khẩu.** Refresh token đã bị huỷ, nhưng JWT
+  đã cấp thì không thu hồi được. Muốn đóng hẳn: thêm cột kiểu `security_stamp` / `password_changed_at`
+  vào `users`, đưa vào token, và kiểm nó ở refresh cùng `AdminCallerRevalidation`. Chưa làm vì cần
+  migration và chạm vào luồng xác thực của mọi endpoint — cùng cửa sổ 15 phút đã chấp nhận ở UC-07.
 - **Endpoint ẩn danh `/api/auth/password-reset` chưa có rate limit.** Token 256 bit nên dò không có
   nghĩa; rate limit sẽ làm chung cho cả `/api/auth/*` khi cần.
 - **Ghi audit và ghi nghiệp vụ nằm ở hai transaction.** `AuditService` tự `SaveChanges` sau khi

@@ -99,6 +99,19 @@ public class RedisPasswordResetTokenStoreTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Revoking_kills_the_outstanding_token()
+    {
+        var store = NewStore();
+        var userId = Guid.CreateVersion7();
+        var token = await store.CreateAsync(userId, Lifetime);
+
+        await store.RevokeAsync(userId);
+
+        Assert.Null(await store.PeekAsync(token));
+        Assert.Null(await store.ConsumeAsync(token));
+    }
+
+    [Fact]
     public async Task An_unknown_token_belongs_to_nobody()
     {
         var store = NewStore();

@@ -371,7 +371,9 @@ public sealed partial class UserService(
             // Where the link went. Never the token: the audit log outlives the link and is read by
             // more people than the mailbox.
             new { user.Email },
-            ct);
+            // Not the request's token: the email is out, and an administrator closing the tab a
+            // moment later must not leave a live link in someone's inbox with no record of it.
+            CancellationToken.None);
 
         logger.LogInformation(
             "Password reset for account {UserId} requested by {ActorId}.", user.Id, actorId);
@@ -421,30 +423,66 @@ public sealed partial class UserService(
             return UserResult.Failure(UserOutcome.PasswordResetLinkInvalid);
         }
 
-        // Signed out everywhere, and before the new password is saved. A reset is what someone does
-        // when the old password may be known to someone else, so a session opened with it must not
-        // outlive it — and a refresh only re-checks is_active, so a session left open here would
-        // run for the refresh token's full seven days. In this order a Redis failure leaves the old
-        // password and the old sessions together, as they were; in the other order it would leave
-        // a new password next to sessions it was meant to end, with the link already spent.
+        // Hashed before the sessions are touched: the hasher is deliberately slow, and every
+        // millisecond between the revoke below and the save is a window in which the old password
+        // still signs in.
+        var newHash = passwordHasher.Hash(password);
+
+        // Signed out everywhere — twice. A reset is what someone does when the old password may be
+        // known to someone else, so a session opened with it must not outlive it, and a refresh
+        // only re-checks is_active, so a surviving session would run for the refresh token's full
+        // seven days.
+        //
+        // Before the save, so a Redis failure leaves the old password and the old sessions
+        // together, as they were — not a new password next to the sessions it was meant to end,
+        // with the link already spent.
         await refreshTokens.RevokeAllForUserAsync(user.Id, ct);
 
-        user.PasswordHash = passwordHasher.Hash(password);
+        user.PasswordHash = newHash;
         user.UpdatedAt = DateTimeOffset.UtcNow;
 
         await users.SaveChangesAsync(ct);
 
+        // And after it, for a sign-in with the old password — or a refresh already past its
+        // consume — that landed between the first revoke and the save. From here on the old
+        // password no longer signs in, so nothing new can slip through.
+        await RevokeSessionsAfterResetAsync(user.Id);
+
+        // CancellationToken.None from the save on: the password has changed, and a client that
+        // hung up a moment ago must not leave that change without its evidence.
         await audit.RecordAsync(
             AuditActions.UserPasswordReset,
             AuditActions.UserObjectType,
             user.Id,
             // The account itself: the administrator sent the link but never saw the password.
             user.Id,
-            ct: ct);
+            ct: CancellationToken.None);
 
         logger.LogInformation("Password of account {UserId} reset through its link.", user.Id);
 
         return UserResult.Success(UserAccount.From(user));
+    }
+
+    /// <summary>
+    /// The second revoke of <see cref="ResetPasswordAsync"/>. Logged rather than thrown: the new
+    /// password is saved and the link spent, so failing the request would tell the person their
+    /// reset did not happen when it did, with no link left to retry. The first revoke has already
+    /// ended every session that existed when the reset began.
+    /// </summary>
+    private async Task RevokeSessionsAfterResetAsync(Guid userId)
+    {
+        try
+        {
+            await refreshTokens.RevokeAllForUserAsync(userId, CancellationToken.None);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(
+                exception,
+                "Password of account {UserId} was reset, but the second session revoke failed; a "
+                + "sign-in made during the reset may stay open.",
+                userId);
+        }
     }
 
     /// <summary>
@@ -484,6 +522,10 @@ public sealed partial class UserService(
         {
             try
             {
+                // An outstanding reset link goes too. Otherwise a link sent before a deactivation
+                // works again if the account is reactivated within the hour, and a link sent to a
+                // mistyped or compromised address keeps working after the email is corrected.
+                await passwordResetTokens.RevokeAsync(userId, ct);
                 await refreshTokens.RevokeAllForUserAsync(userId, ct);
             }
             catch (Exception exception)

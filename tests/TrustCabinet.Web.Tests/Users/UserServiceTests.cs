@@ -907,7 +907,8 @@ public class UserServiceTests
 
         Assert.True(result.Succeeded);
         Assert.True(new FakePasswordHasher().Verify(target.PasswordHash!, NewPassword));
-        Assert.Equal([target.Id], _refreshTokens.RevokedUsers);
+        // Before the save and again after it — see the next test.
+        Assert.Equal([target.Id, target.Id], _refreshTokens.RevokedUsers);
 
         var recorded = Assert.Single(_audit.Records);
         Assert.Equal(AuditActions.UserPasswordReset, recorded.Action);
@@ -1002,6 +1003,94 @@ public class UserServiceTests
 
         Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
         Assert.Equal(before, target.PasswordHash);
+    }
+
+    [Fact]
+    public async Task Reset_ends_a_session_opened_with_the_old_password_while_it_ran()
+    {
+        // A sign-in with the old password that lands between the first revoke and the save gets a
+        // fresh refresh token. The second revoke, after the save, is what ends it.
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        var revokes = 0;
+        _refreshTokens.OnRevokeAll = () =>
+        {
+            if (++revokes == 1)
+            {
+                _refreshTokens.StoreAsync("dang-nhap-chen-giua", target.Id, TimeSpan.FromDays(7));
+            }
+        };
+
+        await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Null(await _refreshTokens.PeekAsync("dang-nhap-chen-giua"));
+    }
+
+    [Fact]
+    public async Task Reset_still_succeeds_when_only_the_second_revoke_fails()
+    {
+        // The password is saved and the link spent; failing now would send the person back to a
+        // link that no longer works, for a reset that did happen.
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        var revokes = 0;
+        _refreshTokens.OnRevokeAll = () =>
+        {
+            if (++revokes == 2)
+            {
+                throw new InvalidOperationException("Redis down");
+            }
+        };
+
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.True(result.Succeeded);
+        Assert.Single(_audit.Records, r => r.Action == AuditActions.UserPasswordReset);
+    }
+
+    [Fact]
+    public async Task Deactivating_an_account_kills_its_outstanding_reset_link()
+    {
+        // Otherwise reactivating it within the hour would bring the link back to life.
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+
+        await service.ChangeStatusAsync(target.Id, isActive: false, _actorId);
+        await service.ChangeStatusAsync(target.Id, isActive: true, _actorId);
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+    }
+
+    [Fact]
+    public async Task Changing_the_email_kills_the_link_sent_to_the_old_address()
+    {
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+
+        await service.UpdateAsync(
+            target.Id, new UserEdit(target.FullName, "dachinhsua@trustcabinet.local", target.RoleId), _actorId);
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+    }
+
+    [Fact]
+    public async Task Renaming_an_account_leaves_its_reset_link_working()
+    {
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+
+        await service.UpdateAsync(
+            target.Id, new UserEdit("Tên Đã Sửa", target.Email, target.RoleId), _actorId);
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.True(result.Succeeded);
     }
 
     [Fact]

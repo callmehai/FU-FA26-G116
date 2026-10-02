@@ -1,3 +1,4 @@
+using MailKit.Net.Smtp;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TrustCabinet.Domain.Entities;
@@ -52,9 +53,19 @@ internal sealed class PasswordResetEmailSender(
 
             return true;
         }
+        catch (SmtpCommandException exception) when (!ct.IsCancellationRequested)
+        {
+            // The server's reply usually quotes the recipient back, and the address is personal
+            // data — so the status code, not the message. The caller logs which account this was.
+            logger.LogError(
+                "The password reset email was refused by the mail server: {StatusCode} ({ErrorCode}).",
+                exception.StatusCode,
+                exception.ErrorCode);
+            return false;
+        }
         catch (Exception exception) when (!ct.IsCancellationRequested)
         {
-            // Not the address: it is personal data, and the caller logs which account this was.
+            // Connection, TLS, authentication or timeout — none of these carries the address.
             logger.LogError(exception, "The password reset email could not be sent.");
             return false;
         }
