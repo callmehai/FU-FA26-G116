@@ -150,6 +150,23 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MSG57` | UC-29 | *Another meeting session is already in progress. End it before starting another session.* |
 | `MSG58` | UC-29 | *This meeting session cannot be started.* |
 | `MSG59` | UC-30 | *This meeting session cannot be ended.* |
+| `MSG60` | UC-31 Create Agenda Item | *Agenda item created successfully.* |
+| `MSG61` | UC-32 Update Agenda Item | *Agenda item updated successfully.* |
+| `MSG62` | UC-33 Delete Agenda Item | *Agenda item deleted successfully.* |
+| `MSG63` | UC-34 Reorder Agenda Items | *Agenda order updated successfully.* |
+| `MSG64` | UC-35 Set Current Agenda Item | *Current agenda item updated successfully.* |
+| `MSG65` | UC-36 Complete Agenda Item | *Agenda item completed successfully.* |
+| `MSG66` | UC-31 / UC-32 | *Invalid agenda item information.* (Các lỗi trường: *Agenda item title is required.*, *Planned duration must be greater than 0.*, *One or more selected documents are not available to this meeting.*) |
+| `MSG67` | UC-31 / UC-32 / UC-33 / UC-34 | *The agenda for this meeting session can no longer be modified.* |
+| `MSG68` | UC-31 | *Unable to create the agenda item. Please try again.* |
+| `MSG69` | UC-32 | *Unable to update the agenda item. Please try again.* |
+| `MSG70` | UC-33 | *Unable to delete the agenda item. Please try again.* |
+| `MSG71` | UC-34 | *Unable to update the agenda order. Please try again.* |
+| `MSG72` | UC-35 | *Another agenda item is already in progress. Complete it before starting another agenda item.* |
+| `MSG73` | UC-35 | *This agenda item cannot be set as current.* |
+| `MSG74` | UC-36 | *This agenda item cannot be completed.* |
+| `MSG75` | UC-35 | *Unable to set the current agenda item. Please try again.* |
+| `MSG76` | UC-36 | *Unable to complete the agenda item. Please try again.* |
 | `MSG77` | UC-28 | *The last planned meeting session of a published meeting cannot be cancelled.* |
 | `MSG83` | UC-20 Từ chối cuộc họp | *Rejection reason is required.* |
 | `MSG84` | UC-20 Từ chối cuộc họp | *Rejection reason must not exceed 1000 characters.* |
