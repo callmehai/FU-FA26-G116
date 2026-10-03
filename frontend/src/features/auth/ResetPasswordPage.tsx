@@ -58,7 +58,8 @@ export function ResetPasswordPage() {
 
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
+  const [showNew, setShowNew] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
@@ -119,20 +120,6 @@ export function ResetPasswordPage() {
     }
   }
 
-  // On both fields, so the two inputs share one width; either button shows or hides both.
-  const visibilityToggle = (
-    <button
-      type="button"
-      className="icon-button"
-      onClick={() => setShowPassword((v) => !v)}
-      title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-      aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-      aria-pressed={showPassword}
-    >
-      <Icon name={showPassword ? 'eyeOff' : 'eye'} size={16} />
-    </button>
-  )
-
   return (
     <div className="login-screen">
       <div className="login-card">
@@ -168,11 +155,11 @@ export function ResetPasswordPage() {
               <label className="field-required" htmlFor="reset-new-password">
                 Mật khẩu mới
               </label>
-              <div className="input-group">
+              <div className="input-reveal">
                 <input
                   ref={newPasswordRef}
                   id="reset-new-password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showNew ? 'text' : 'password'}
                   value={newPassword}
                   onChange={(e) => {
                     setNewPassword(e.target.value)
@@ -184,7 +171,7 @@ export function ResetPasswordPage() {
                   spellCheck={false}
                   autoFocus
                 />
-                {visibilityToggle}
+                <RevealToggle shown={showNew} onToggle={() => setShowNew((v) => !v)} />
               </div>
               {fieldErrors.newPassword ? (
                 <small id="reset-new-password-note" className="field-error">
@@ -201,11 +188,11 @@ export function ResetPasswordPage() {
               <label className="field-required" htmlFor="reset-confirm-password">
                 Nhập lại mật khẩu mới
               </label>
-              <div className="input-group">
+              <div className="input-reveal">
                 <input
                   ref={confirmPasswordRef}
                   id="reset-confirm-password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showConfirm ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => {
                     setConfirmPassword(e.target.value)
@@ -216,7 +203,7 @@ export function ResetPasswordPage() {
                   autoComplete="new-password"
                   spellCheck={false}
                 />
-                {visibilityToggle}
+                <RevealToggle shown={showConfirm} onToggle={() => setShowConfirm((v) => !v)} />
               </div>
               {fieldErrors.confirmPassword ? (
                 <small id="reset-confirm-password-note" className="field-error">
@@ -237,5 +224,22 @@ export function ResetPasswordPage() {
         )}
       </div>
     </div>
+  )
+}
+
+/** The show/hide button inside a password box (`.input-reveal`). */
+function RevealToggle({ shown, onToggle }: { shown: boolean; onToggle: () => void }) {
+  const label = shown ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'
+  return (
+    <button
+      type="button"
+      className="icon-button"
+      onClick={onToggle}
+      title={label}
+      aria-label={label}
+      aria-pressed={shown}
+    >
+      <Icon name={shown ? 'eyeOff' : 'eye'} size={16} />
+    </button>
   )
 }
