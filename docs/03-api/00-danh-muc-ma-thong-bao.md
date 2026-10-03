@@ -48,7 +48,7 @@ Trạng thái: **BE** = backend trả trong body JSON · **FE** = FE tự hiển
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
 | `MSG92` | 200 | `POST /api/auth/password-reset` | Đặt mật khẩu mới thành công | `Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.` | BE |
-| `MSG93` | 400 | `POST /api/auth/password-reset` | Liên kết không hợp lệ, hết hạn, đã dùng, đã bị liên kết mới hơn thay thế, hoặc tài khoản đã bị vô hiệu hoá | `Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.` | BE |
+| `MSG93` | 400 | `POST /api/auth/password-reset` | Liên kết không hợp lệ, hết hạn, đã dùng, đã bị liên kết mới hơn thay thế, hoặc tài khoản đã bị vô hiệu hoá / không có mật khẩu | `Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.` | BE |
 | `MSG93` | — | — (FE, trang `/reset-password` không có `#token=`) | Liên kết không mang token — cùng tình huống "liên kết không dùng được", nên FE hiện đúng câu của MSG93 mà không gọi API | `Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.` | FE |
 | `MSG94` | 400 | `POST /api/auth/password-reset` | Mật khẩu mới không hợp lệ — kèm `errors.newPassword` | `Mật khẩu mới không hợp lệ.` | BE |
 
@@ -232,7 +232,7 @@ Các mã sau mang nhiều câu chữ hoặc nhiều nguyên nhân nhưng vẫn *
   thực được", khác câu chữ.
 - `MSG09`, `MSG17`, `MSG20`, `MSG31`, `MSG32`, `MSG39`, `MSG94` — lỗi validation; nguyên nhân cụ thể nằm
   trong `errors` theo key.
-- `MSG93` — năm nguyên nhân (không tồn tại, hết hạn, đã dùng, bị thay thế, tài khoản bị vô hiệu
-  hoá) gộp một mã có chủ ý: endpoint ẩn danh, phân biệt chúng chỉ giúp người dò liên kết.
+- `MSG93` — sáu nguyên nhân (không tồn tại, hết hạn, đã dùng, bị thay thế, tài khoản bị vô hiệu
+  hoá, tài khoản không có mật khẩu) gộp một mã có chủ ý: endpoint ẩn danh, phân biệt chúng chỉ giúp người dò liên kết.
 - `MSG12` — ba nguyên nhân, xem [02-quan-ly-nguoi-dung-note-cho-fe.md](02-quan-ly-nguoi-dung-note-cho-fe.md).
 - `MSG31` — thêm biến thể "Nội dung JSON không hợp lệ." khi PUT gửi JSON sai cú pháp (không có `errors`).

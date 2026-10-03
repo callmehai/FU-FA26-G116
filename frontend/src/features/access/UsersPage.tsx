@@ -34,8 +34,9 @@ const NO_PASSWORD_RESET_MESSAGE =
  * password can reset one (BA, SCRUM-13) — the backend answers MSG14 for the others as well.
  */
 function resetUnavailableReason(account: UserAccount) {
-  if (!account.isActive) return 'Tài khoản đã bị vô hiệu hoá — kích hoạt lại trước khi đặt lại mật khẩu'
+  // No password first: reactivating would not help such an account, so "reactivate first" would mislead.
   if (!account.hasPassword) return 'Tài khoản chỉ đăng nhập bằng Google — không có mật khẩu để đặt lại'
+  if (!account.isActive) return 'Tài khoản đã bị vô hiệu hoá — kích hoạt lại trước khi đặt lại mật khẩu'
   return null
 }
 
@@ -208,8 +209,8 @@ export function UsersPage() {
         throw err
       }
       patch(fresh)
-      if (!fresh.isActive) throw new Error(DEACTIVATED_RESET_MESSAGE)
       if (!fresh.hasPassword) throw new Error(NO_PASSWORD_RESET_MESSAGE)
+      if (!fresh.isActive) throw new Error(DEACTIVATED_RESET_MESSAGE)
       throw err
     }
   }
@@ -300,6 +301,7 @@ export function UsersPage() {
             ) : (
               visible.map((u) => {
                 const isSelf = u.id === me?.id
+                const resetUnavailable = resetUnavailableReason(u)
                 return (
                   <tr key={u.id} className={u.isActive ? undefined : 'row-inactive'}>
                     <td className="cell-title">
@@ -354,8 +356,8 @@ export function UsersPage() {
                           type="button"
                           className="icon-button"
                           onClick={() => setResetTarget(u)}
-                          disabled={resetUnavailableReason(u) !== null}
-                          title={resetUnavailableReason(u) ?? 'Gửi liên kết đặt lại mật khẩu'}
+                          disabled={resetUnavailable !== null}
+                          title={resetUnavailable ?? 'Gửi liên kết đặt lại mật khẩu'}
                           aria-label={`Gửi liên kết đặt lại mật khẩu cho ${u.fullName}`}
                         >
                           <Icon name="key" size={16} />
@@ -417,10 +419,10 @@ export function UsersPage() {
           blocker={
             resetRow === undefined
               ? 'Tài khoản này không còn tồn tại.'
-              : resetRow?.isActive === false
-                ? DEACTIVATED_RESET_MESSAGE
-                : resetRow?.hasPassword === false
-                  ? NO_PASSWORD_RESET_MESSAGE
+              : resetRow?.hasPassword === false
+                ? NO_PASSWORD_RESET_MESSAGE
+                : resetRow?.isActive === false
+                  ? DEACTIVATED_RESET_MESSAGE
                   : undefined
           }
           onConfirm={() => sendPasswordReset(resetTarget)}
