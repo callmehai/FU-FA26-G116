@@ -805,14 +805,12 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 2. The system displays the meeting creation form.
 3. The Meeting Organizer enters the meeting information, including:
    - Meeting Name
-   - Planned Start Time
-   - Planned End Time, if known (optional; when provided, it must be later than Planned Start Time)
    - Meeting Mode
    - Location
    - Confidentiality Level
    - Description
 4. The Meeting Organizer submits the meeting information.
-5. The system validates the entered information (BR-24, BR-25).
+5. The system validates the entered meeting-level information (BR-24).
 6. The system creates the meeting with Draft status (BR-26).
 7. The system displays MSG29 – "Meeting created successfully."
 
@@ -859,7 +857,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 1. The Meeting Organizer selects a meeting and chooses Edit Meeting.
 2. The system displays the current meeting information.
 3. The Meeting Organizer submits the updated information.
-4. The system validates the submitted information (BR-25, BR-27).
+4. The system validates the submitted meeting-level information (BR-27).
 5. The system updates the meeting (BR-28).
 6. The system displays MSG30 – "Meeting updated successfully."
 
@@ -908,7 +906,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 1. The user requests to view a meeting.
 2. The system verifies that the meeting exists and that the user may view it under BR-29. The system does not reveal which check failed.
 3. The system retrieves the meeting information, its Meeting Sessions, and the Agenda Items associated with those sessions.
-4. The system displays the meeting details, including Meeting Name, Planned Start Time, Planned End Time, Meeting Mode, Location, Confidentiality Level, Description, Meeting Status, Meeting Session schedule, and the agenda of each session.
+4. The system displays the meeting-level information (Meeting Name, Meeting Mode, Location, Confidentiality Level, Description, and Meeting Status) separately from each Meeting Session's Title, Planned Start Time, Planned End Time, and Status, together with the agenda of each session.
 5. The user reviews the meeting information, session schedule, and agendas.
 
 #### Luồng sự kiện thay thế (Alternative Flows):
@@ -960,6 +958,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **AF-2: Filter Meetings**
   1. At Step 4 of the Main Flow, the user selects one or more filter criteria, such as Meeting Status, Confidentiality Level, or Time Range.
   2. The system applies the selected criteria to the meetings available to the user.
+   For Time Range, a meeting matches only when at least one non-cancelled Meeting Session has a planned schedule overlapping the selected range; meetings without a scheduled Meeting Session do not match. (BR-30)
   3. The system displays the matching meetings.
   4. The flow resumes at Step 4 of the Main Flow.
 

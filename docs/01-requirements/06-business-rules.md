@@ -48,12 +48,12 @@ yêu cầu thêm quyền riêng để đăng nhập.
 | BR-ID | Rule Statement (nguyên văn Report 3) | Applies To (Report 3) | Rationale | Enforced By |
 |---|---|---|---|---|
 | `BR-24` | All required meeting information must be provided before a meeting can be created. | UC-15 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
-| `BR-25` | A meeting's Planned End Time must be later than its Planned Start Time. | UC-15, UC-16 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
+| `BR-25` | Planned Start Time and Planned End Time are not stored as meeting-level schedule fields. A meeting's planned schedule is defined by its Meeting Sessions. | UC-15, UC-16, UC-17, UC-18, UC-26, UC-27 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-26` | A newly created meeting must have Draft status. | UC-15 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-27` | Meeting information may be edited only while the meeting is in Draft or Rejected status. | UC-16 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-28` | Updating meeting information must not implicitly change the meeting lifecycle status. | UC-16 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-29` | A user may access a meeting only when the user has an authorized relationship with that meeting as its Meeting Organizer, assigned Meeting Approver, Chair, Secretary, or Participant. Authentication alone does not grant access to a meeting. | UC-25 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
-| `BR-30` | The meeting list may be searched by Meeting Name and filtered by Meeting Status, Confidentiality Level, and Time Range. | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
+| `BR-30` | The meeting list may be searched by Meeting Name and filtered by Meeting Status, Confidentiality Level, and Time Range. A meeting matches a Time Range when at least one non-cancelled Meeting Session has a planned schedule that overlaps the selected range; meetings without a scheduled Meeting Session do not match a Time Range filter. | UC-18 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-31` | When multiple search or filter criteria are applied, a record must satisfy all applicable criteria to appear in the result. | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-32` | The meeting list must support sorting, and the current search, filter, and sorting criteria must be preserved when navigating between pages. | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-33` | A meeting may be submitted or resubmitted for approval only when all mandatory meeting-level information is complete and the meeting is in Draft or Rejected status. Meeting Sessions are not required for approval submission. | UC-19 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
@@ -77,9 +77,9 @@ thuộc cả quan hệ với meeting và trạng thái hiện tại. Người t�
 cấp quyền đọc; mở đích phải kiểm tra lại theo BR-29. Quyền đọc tài liệu, recording và dữ liệu nhạy cảm
 tuân theo các rule riêng.
 
-**Làm rõ khi triển khai (SCRUM-17, comment 10076):** Planned End Time là tùy chọn khi tạo/sửa
-cuộc họp. BR-25 chỉ được kiểm tra khi người dùng cung cấp giờ kết thúc; khi đó giờ kết thúc phải
-sau Planned Start Time. Câu BR-25 trong bảng giữ nguyên văn Report 3.
+**Áp dụng trong TrustCabinet:** Planned Start Time và Planned End Time thuộc về Meeting Session,
+không phải thông tin cấp Meeting (BR-25). Khi tạo/sửa Meeting Session, Planned End Time phải sau
+Planned Start Time (BR-62).
 
 ## BR-45–BR-53 — Thông báo
 

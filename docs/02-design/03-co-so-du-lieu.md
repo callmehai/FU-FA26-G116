@@ -131,7 +131,7 @@ DB; nó chỉ đụng đúng những dòng mang chuỗi đó, không đè mật 
 Bảng và cột dùng **snake_case** (`meeting_status_history`, `starts_at`), sinh tự động từ
 `UseSnakeCaseNamingConvention()`. Lý do: PostgreSQL hạ chữ thường mọi identifier không đóng ngoặc
 kép, nên để PascalCase thì mọi câu SQL viết tay đều phải gõ `SELECT * FROM "Meetings"`. Trong code
-C# tên vẫn là `Meeting.StartsAt` như bình thường — EF lo phần ánh xạ.
+C# tên vẫn là `Meeting.Title` như bình thường — EF lo phần ánh xạ.
 
 Bảng lịch sử migration cũng đổi thành `__ef_migrations_history` cho đồng bộ, thay vì
 `__EFMigrationsHistory` mặc định của EF.

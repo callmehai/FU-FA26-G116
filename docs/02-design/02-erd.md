@@ -10,6 +10,9 @@ Hiện thực: EF Core 10 code-first, PostgreSQL qua Npgsql
 ở [backend/TrustCabinet.Infrastructure/Configurations/](../../backend/TrustCabinet.Infrastructure/Configurations/).
 Cách chạy: [03-co-so-du-lieu.md](03-co-so-du-lieu.md).
 
+Sơ đồ nghiệp vụ bên dưới đồng bộ với Report 3: `MeetingSession` sở hữu lịch dự kiến của cuộc họp.
+Thay đổi ERD này không cập nhật entity, schema hay migration trong phạm vi cập nhật tài liệu này.
+
 > **Mô hình này đi trước tài liệu BA, có chủ đích.** Nó được suy ra từ tiêu chí nghiệm thu đã viết
 > trong Jira, chứ không phải từ Use Case Specification đã duyệt. Khi BA viết UC spec và vẽ Class
 > Diagram, phải đối chiếu lại: chỗ nào lệch thì sửa **một trong hai**, có chủ ý, chứ đừng để hai
@@ -40,6 +43,7 @@ erDiagram
     Role ||--o{ RoleCapability : "quyền (CASCADE)"
     User ||--o{ Meeting : "người tạo"
     User o|--o{ Meeting : "người duyệt được gán"
+    Meeting ||--o{ MeetingSession : "lên lịch phiên họp"
     User ||--o{ MeetingParticipant : "được mời"
     User ||--o{ MeetingStatusHistory : "người thực hiện"
     Meeting ||--o{ MeetingParticipant : "thành phần tham dự"
@@ -70,10 +74,17 @@ erDiagram
         string Sensitivity "Normal|Internal|Confidential|Secret"
         string Mode "InPerson|Online|Hybrid"
         string Location
-        timestamptz StartsAt
-        timestamptz EndsAt "nullable"
+        string Description
         uuid CreatedById FK
         uuid AssignedApproverId FK "null khi tạo nháp; bắt buộc trước khi gửi duyệt"
+    }
+    MeetingSession {
+        uuid Id PK
+        uuid MeetingId FK
+        string Title
+        timestamptz PlannedStartTime
+        timestamptz PlannedEndTime
+        string Status "Planned|InProgress|Completed|Cancelled"
     }
     MeetingParticipant {
         uuid Id PK
