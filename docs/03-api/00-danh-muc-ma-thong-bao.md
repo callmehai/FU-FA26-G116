@@ -102,9 +102,9 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG29` | 201 | `POST /api/meetings` | Tạo cuộc họp nháp thành công | `Tạo cuộc họp thành công.` | BE |
 | `MSG30` | 200 | `PUT /api/meetings/{id}` | Cập nhật cuộc họp thành công | `Cập nhật cuộc họp thành công.` | BE |
 | `MSG31` | 400 | `POST /api/meetings`, `PUT /api/meetings/{id}` | Thông tin không hợp lệ — kèm `errors`; PUT với JSON sai cú pháp thì không có `errors` | `Thông tin cuộc họp không hợp lệ.` / `Nội dung JSON không hợp lệ.` | BE |
-| `MSG32` | 400 | `GET /api/meetings` | Tham số truy vấn danh sách không hợp lệ — kèm `errors` | `Tham số truy vấn không hợp lệ.` | BE |
+| `MSG32` | 400 | `GET /api/meetings` | Tiêu chí hiển thị danh sách cuộc họp không hợp lệ — kèm `errors` | `Tiêu chí danh sách cuộc họp không hợp lệ.` | BE |
 | `MSG33` | 409 | `PUT /api/meetings/{id}` | Cuộc họp không còn ở trạng thái sửa được | `Cuộc họp này không thể chỉnh sửa được nữa.` | BE |
-| `MSG34` | 415 | `PUT /api/meetings/{id}` | Content-Type không phải `application/json` | `Content-Type phải là application/json.` | BE |
+| `MSG34` | 415 | `PUT /api/meetings/{id}` | Lỗi kỹ thuật khi request không được gửi dưới dạng JSON — ngoài luồng nghiệp vụ UC-16 | `Content-Type phải là application/json.` | BE — phản hồi API kỹ thuật hiện hành |
 | `MSG35` | 500 | `POST /api/meetings` | Không lưu được khi tạo | `Không thể tạo cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG36` | 500 | `PUT /api/meetings/{id}` | Không lưu được khi sửa | `Không thể cập nhật cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG37` | 500 | `GET /api/meetings/{id}`, `PUT /api/meetings/{id}` | Không tải được chi tiết cuộc họp. Ở `GET` gồm cả lỗi khi kiểm tra tài khoản đang hoạt động; ở `PUT` chỉ khi bước kiểm tra trạng thái không đọc được cuộc họp | `Không thể tải thông tin cuộc họp. Vui lòng thử lại.` | BE |
@@ -117,7 +117,7 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
-| `MSG39` | 400 | `GET /api/notifications` | Tham số phân trang không hợp lệ — kèm `errors` | `Tham số truy vấn không hợp lệ.` | BE |
+| `MSG39` | 400 | `GET /api/notifications` | Không thể hiển thị phần danh sách thông báo được yêu cầu — kèm `errors` | `Trang thông báo được yêu cầu không khả dụng.` | BE |
 | `MSG40` | 500 | mọi endpoint `/api/notifications/*` | Lỗi database khi kiểm tra tài khoản đang hoạt động | `Không thể tải thông báo. Vui lòng thử lại.` | BE |
 
 ### Dành sẵn, chưa có code
@@ -147,6 +147,11 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MSG58` | UC-29 | *This meeting session cannot be started.* |
 | `MSG59` | UC-30 | *This meeting session cannot be ended.* |
 | `MSG77` | UC-28 | *The last planned meeting session of a published meeting cannot be cancelled.* |
+| `MSG83` | UC-20 Từ chối cuộc họp | *Rejection reason is required.* |
+| `MSG84` | UC-20 Từ chối cuộc họp | *Rejection reason must not exceed 1000 characters.* |
+| `MSG90` | UC-21 Phát hành cuộc họp | *At least one valid planned Meeting Session is required before publication.* |
+
+`MSG83`, `MSG84` và `MSG90` thuộc dải đã dành cho workflow SCRUM-19 và được gán cho các nhánh UC-20/UC-21 nêu trên.
 
 ## Bảng đổi mã cũ → mới
 
