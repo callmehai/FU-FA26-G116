@@ -861,11 +861,12 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         await using var verify = NewContext();
         Assert.Equal(MeetingStatus.Published, (await verify.Meetings.SingleAsync(item => item.Id == meetingId)).Status);
         Assert.Equal(2, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
-        Assert.Equal(
-            1,
-            await verify.MeetingStatusHistory.CountAsync(item =>
-                item.MeetingId == meetingId && item.Action == MeetingHistoryAction.Publish));
-        Assert.Empty(await verify.Notifications.Where(item => item.MeetingId == meetingId).ToListAsync());
+        var publicationHistory = await verify.MeetingStatusHistory.SingleAsync(item =>
+            item.MeetingId == meetingId && item.Action == MeetingHistoryAction.Publish);
+        var notification = Assert.Single(
+            await verify.Notifications.Where(item => item.MeetingId == meetingId).ToListAsync());
+        Assert.Equal(NotificationType.MeetingInvited, notification.Type);
+        Assert.Equal(publicationHistory.Id, notification.OriginHistoryId);
         Assert.Empty(await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync());
     }
 
