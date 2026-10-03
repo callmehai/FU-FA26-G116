@@ -38,6 +38,11 @@ Danh mục này tập trung các quy tắc `BR-01` đến `BR-77` được cung 
 | `BR-22` | Password reset may only be initiated for an account that is eligible to use password-based authentication. | UC-08 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-23` | A role-permission configuration may contain only permissions defined by the system and must satisfy the system's permission-configuration rules before it can be applied. | UC-11 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 
+**Quy tắc TrustCabinet đã được BA xác nhận:** tài khoản nội bộ đang hoạt động được phép đăng nhập
+dù chưa được gán role hoặc chưa có capability. Capability chỉ quyết định chức năng nào được phép
+dùng sau khi đăng nhập. Quy tắc này thay thế cách áp dụng BR-04 nguyên văn Report 3 ở trên; không
+yêu cầu thêm quyền riêng để đăng nhập.
+
 ## BR-24–BR-44 — Cuộc họp và vòng đời phê duyệt
 
 | BR-ID | Rule Statement (nguyên văn Report 3) | Applies To (Report 3) | Rationale | Enforced By |
@@ -63,6 +68,18 @@ Danh mục này tập trung các quy tắc `BR-01` đến `BR-77` được cung 
 | `BR-42` | All participant invitation notifications must include a direct link to the published meeting details and attached materials. | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-43` | System logging must track the queuing and delivery status of all asynchronous invitation messages for auditability. | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-44` | Re-publishing or updating invitation delivery for an already published meeting requires explicit organizer action and creates a distinct lifecycle record. | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
+
+**Áp dụng trong TrustCabinet — BA đã chốt (UC-17, UC-18 và mở đích notification):** quyền đọc phụ
+thuộc cả quan hệ với meeting và trạng thái hiện tại. Người tạo được đọc ở mọi trạng thái. Người duyệt
+đang được gán được đọc từ `WaitingApproval` trở đi. Người được gán vào meeting với vai trò `Chair`,
+`Secretary`, `Member` hoặc `Guest` được đọc từ `Published` trở đi. Trạng thái lời mời (`Pending`,
+`Accepted`, `Declined` hoặc `Delegated`) không làm mất quyền đọc meeting đã công bố. Notification không
+cấp quyền đọc; mở đích phải kiểm tra lại theo BR-29. Quyền đọc tài liệu, recording và dữ liệu nhạy cảm
+tuân theo các rule riêng.
+
+**Làm rõ khi triển khai (SCRUM-17, comment 10076):** Planned End Time là tùy chọn khi tạo/sửa
+cuộc họp. BR-25 chỉ được kiểm tra khi người dùng cung cấp giờ kết thúc; khi đó giờ kết thúc phải
+sau Planned Start Time. Câu BR-25 trong bảng giữ nguyên văn Report 3.
 
 ## BR-45–BR-53 — Thông báo
 

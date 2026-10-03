@@ -140,10 +140,6 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **EX-2**: The internal account has been deactivated
   1. The corresponding internal account is inactive or has been deactivated. (BR-03)
   2. The system displays MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”
-- **EX-3**: User is not allowed to access the system
-  1. The user does not have an active role or permission required to access the system. (BR-04)
-  2. ~~The system displays “You do not currently have access to the system. Please contact your administrator for assistance.”~~ Removed with SCRUM-63 ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)); no message code is assigned.
-
 ---
 
 ### UC-02: Sign in with Google (Đăng nhập bằng Google)
@@ -168,15 +164,15 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 #### Luồng sự kiện chính (Main Flow):
 1. User selects “Continue with Google” on the login page.
 2. User signs in using their Google account.
-3. System verifies that the Google account is associated with an authorized internal user.
-4. System signs the user in and grants access according to the user's assigned role.
+3. System verifies that the Google identity is linked to an active internal user account.
+4. System signs the user in; the user's capabilities determine access to protected functions.
 
 #### Luồng sự kiện thay thế (Alternative Flows):
 - N/A
 
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
 - **EX-1**: User can’t authenticate with Google
-  1. The user fails to authenticate with Google or cancels the Google sign-in process. (BR-04)
+  1. The user fails to authenticate with Google or cancels the Google sign-in process.
   2. System displays message MSG03 – “Google sign-in was unsuccessful. Please try again.”
 - **EX-2**: System can’t verify the Google account
   1. The system cannot verify the identity information returned by Google. (BR-05)
@@ -187,10 +183,6 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **EX-4**: The internal account has been deactivated
   1. The internal account associated with the Google account is inactive or has been deactivated. (BR-03)
   2. System displays message MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”
-- **EX-5**: User is not allowed to access the system
-  1. The internal user does not have an active role or required permission to access the system. (BR-04)
-  2. ~~System displays message “You do not currently have access to the system. Please contact your administrator for assistance.”~~ Removed with SCRUM-63 ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)); no message code is assigned.
-
 ---
 
 ### UC-03: Sign Out (Đăng xuất)
@@ -806,7 +798,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 3. The Meeting Organizer enters the meeting information, including:
    - Meeting Name
    - Planned Start Time
-   - Planned End Time
+   - Planned End Time, if known (optional; when provided, it must be later than Planned Start Time)
    - Meeting Mode
    - Location
    - Confidentiality Level
@@ -906,20 +898,19 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 #### Luồng sự kiện chính (Main Flow — View Meeting Details):
 1. The user requests to view a meeting.
-2. The system verifies that the meeting exists.
-3. The system verifies that the user has an authorized relationship or assignment to the meeting.
-4. The system retrieves the meeting information, its Meeting Sessions, and the Agenda Items associated with those sessions.
-5. The system displays the meeting details, including Meeting Name, Planned Start Time, Planned End Time, Meeting Mode, Location, Confidentiality Level, Description, Meeting Status, Meeting Session schedule, and the agenda of each session.
-6. The user reviews the meeting information, session schedule, and agendas.
+2. The system verifies that the meeting exists and that the user may view it under BR-29. The system does not reveal which check failed.
+3. The system retrieves the meeting information, its Meeting Sessions, and the Agenda Items associated with those sessions.
+4. The system displays the meeting details, including Meeting Name, Planned Start Time, Planned End Time, Meeting Mode, Location, Confidentiality Level, Description, Meeting Status, Meeting Session schedule, and the agenda of each session.
+5. The user reviews the meeting information, session schedule, and agendas.
 
 #### Luồng sự kiện thay thế (Alternative Flows):
 - N/A
 
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
 
-- **EX-1: Meeting Does Not Exist**
-  1. At Step 2, the system cannot find the selected meeting.
-  2. The system displays "Meeting not found."
+- **EX-1: Meeting Does Not Exist or Is Not Accessible**
+  1. At Step 2, the system cannot find the selected meeting or the user is not authorized to view it.
+  2. The system does not disclose whether the meeting exists.
   3. The use case ends.
 
 - **EX-2: Meeting Details Cannot Be Retrieved**
@@ -938,7 +929,6 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **Mô tả (Description)**: Allows an authorized user to view and browse only the meetings to which the user has an authorized relationship or assignment.
 - **Điều kiện tiên quyết (Preconditions)**:
   - PRE-1: The user is authenticated.
-  - PRE-2: The user is authorized to access the Meeting module.
 - **Điều kiện sau (Postconditions)**:
   - POST-1: The system displays the list of meetings that the user is authorized to view.
   - POST-2: No meeting information is modified.
@@ -947,7 +937,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 #### Luồng sự kiện chính (Main Flow — View Meeting List):
 1. The user selects Meetings from the navigation menu.
-2. The system identifies meetings for which the user has an authorized relationship or assignment as Meeting Organizer, Meeting Approver, Chair, Secretary, or Participant.
+2. The system identifies only meetings the user may view under BR-29: meetings created by the user at any status; meetings assigned to the user as Meeting Approver from WaitingApproval onward; and meetings where the user is assigned as Chair, Secretary, Member, or Guest from Published onward.
 3. The system sorts and displays only those authorized meetings.
 4. The user browses the displayed meetings.
 
@@ -980,7 +970,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 - **EX-2: Invalid Meeting List Criteria**
   1. The system determines that the selected search, filter, sort, or display criteria are invalid.
-  2. The system displays MSG32 – "The meeting list criteria are invalid."
+  2. The system displays MSG32 – "Tiêu chí danh sách cuộc họp không hợp lệ."
   3. The user may clear or adjust the search/filter criteria.
   4. The use case ends.
 
