@@ -37,7 +37,10 @@ export interface UserAccount {
   createdAt: string
 }
 
-/** What POST /api/users (MSG07), PUT /api/users/{id} (MSG10) and PUT …/status (MSG11) return. */
+/**
+ * What POST /api/users (MSG07), PUT /api/users/{id} (MSG10), PUT …/status (MSG11) and
+ * POST …/password-reset (MSG13) return.
+ */
 export interface UserMutationResponse {
   code: string
   message: string
