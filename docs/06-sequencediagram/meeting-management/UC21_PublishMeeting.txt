@@ -7,6 +7,7 @@ control ":Meeting Service" as MeetingService
 participant ":Meeting Repository" as MeetingRepository
 participant ":User Repository" as UserRepository
 participant ":Meeting Session Repository" as MeetingSessionRepository
+participant ":Meeting Participant Repository" as ParticipantRepository
 participant ":Meeting Status History Repository" as MeetingStatusHistoryRepository
 participant ":Notification Service" as NotificationService
 participant ":Notification Repository" as NotificationRepository
@@ -38,16 +39,25 @@ deactivate Database
 UserRepository-->MeetingService: Organizer eligibility
 deactivate UserRepository
 
-MeetingService->MeetingService: Revalidate Organizer and Approved status
+MeetingService->ParticipantRepository: Get current Chair and Secretary assignments with active accounts (BR-89)
+activate ParticipantRepository
+ParticipantRepository->Database: Retrieve current required-role holders and account status
+activate Database
+Database-->ParticipantRepository: Active Chair and Secretary assignments
+deactivate Database
+ParticipantRepository-->MeetingService: Required-role readiness
+deactivate ParticipantRepository
 
-alt Meeting is not Approved or Organizer is inactive, unauthorized, or no longer assigned - EX-1
+MeetingService->MeetingService: Revalidate Organizer, Approved status,\nand at least one active current Chair and Secretary (BR-37, BR-89)
+
+alt Meeting is not Approved, Organizer is ineligible, or required active Chair/Secretary is missing - EX-1
     MeetingService-->MeetingController: MSG46 - This meeting can no longer be published
     deactivate MeetingService
     MeetingController-->MeetingPage: Return publication restriction
     deactivate MeetingController
     MeetingPage-->Organizer: MSG46 - This meeting can no longer be published
 
-else Current Organizer is active and meeting is Approved
+else Organizer is eligible, meeting is Approved, and required active roles exist
     MeetingService->MeetingSessionRepository: Find a valid Planned Meeting Session
     activate MeetingSessionRepository
     MeetingSessionRepository->Database: Read sessions belonging to meeting
@@ -66,7 +76,7 @@ else Current Organizer is active and meeting is Approved
         MeetingPage-->Organizer: MSG90 - At least one valid planned Meeting Session is required before publication
 
     else At least one valid Planned Meeting Session exists
-        MeetingService->MeetingRepository: Revalidate and change Approved to Published
+        MeetingService->MeetingRepository: Revalidate publication readiness and change Approved to Published (BR-37, BR-56, BR-89)
         activate MeetingRepository
         MeetingRepository->Database: Save publication status
         activate Database

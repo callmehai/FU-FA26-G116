@@ -69,11 +69,11 @@ else Meeting is accessible
             MeetingPage-->User: MSG37 - Unable to load meeting details.\nPlease try again
 
         else Meeting details retrieved successfully
-            MeetingService-->MeetingController: Meeting details, Sessions, and Agenda Items
+            MeetingService-->MeetingController: Meeting information\n(Name, Mode, Location, Confidentiality, Description, Status)\nand Meeting Session details (Title, Planned Start/End Time, Status) with Agenda Items
             deactivate MeetingService
             MeetingController-->MeetingPage: Display meeting details
             deactivate MeetingController
-            MeetingPage-->User: Meeting details with Session schedule and agendas
+            MeetingPage-->User: Meeting-level information separately from each\nMeeting Session schedule and agenda
         end
     end
 end

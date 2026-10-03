@@ -25,7 +25,7 @@ else Query criteria are valid
     activate MeetingService
     MeetingService->MeetingRepository: Find authorized meetings with criteria\n(BR-29, BR-30, BR-31, BR-32)
     activate MeetingRepository
-    MeetingRepository->Database: Retrieve authorized, filtered, sorted meeting page
+    MeetingRepository->Database: Filter Time Range by overlapping planned schedules\nof non-cancelled Meeting Sessions (BR-30); meetings without a matching session are excluded
     activate Database
 
     alt Meeting list cannot be retrieved - EX-1

@@ -1,0 +1,47 @@
+title UC-42 - View Participant Response Status
+
+actor "Secretary" as Secretary
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Participant Controller" as ParticipantController
+control ":Meeting Participant Service" as ParticipantService
+participant ":Meeting Participant Repository" as ParticipantRepository
+database ":Database" as Database
+
+Secretary->MeetingPage: Request Participant Response Status
+activate MeetingPage
+MeetingPage->ParticipantController: View Participant Response Status
+activate ParticipantController
+ParticipantController->ParticipantService: getParticipantResponseStatus(meetingId, secretaryId)
+activate ParticipantService
+
+ParticipantService->ParticipantRepository: Get current participants and latest responses;\nverify active assigned Secretary at any meeting status (BR-84, BR-87, BR-88)
+activate ParticipantRepository
+ParticipantRepository->Database: Retrieve current participant responses;\nexclude historical records
+activate Database
+Database-->ParticipantRepository: Responses / Not accessible / Retrieval failed
+deactivate Database
+ParticipantRepository-->ParticipantService: Responses / Not accessible / Retrieval failed
+deactivate ParticipantRepository
+
+alt Meeting does not exist or is not accessible - EX-1
+    ParticipantService-->ParticipantController: Meeting not found
+    deactivate ParticipantService
+    ParticipantController-->MeetingPage: Meeting not found
+    deactivate ParticipantController
+    MeetingPage-->Secretary: Meeting not found; no response data disclosed
+else Participant Response Status cannot be retrieved - EX-2
+    ParticipantService-->ParticipantController: Response retrieval failed
+    deactivate ParticipantService
+    ParticipantController-->MeetingPage: Response retrieval failed
+    deactivate ParticipantController
+    MeetingPage-->Secretary: MSG95 - Unable to load meeting participants. Please try again.
+else Participant Response Status is retrieved
+    ParticipantService->ParticipantService: Count Pending, Accepted, Declined, and Delegated;\nall-Pending is returned as a valid empty-response summary (BR-87)
+    ParticipantService-->ParticipantController: Participant rows and response summary
+    deactivate ParticipantService
+    ParticipantController-->MeetingPage: Display response details and status counts
+    deactivate ParticipantController
+    MeetingPage-->Secretary: Participant Response Status summary
+end
+
+deactivate MeetingPage

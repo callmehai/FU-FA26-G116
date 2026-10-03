@@ -62,7 +62,7 @@ else Meeting is Draft or Rejected
         MeetingPage-->Organizer: MSG33 - This meeting can no longer be edited
 
     else Meeting remains editable
-        MeetingService->MeetingService: Validate submitted meeting information
+        MeetingService->MeetingService: Validate submitted meeting-level information\n(BR-27; schedule belongs to Meeting Sessions)
 
         alt Meeting information is invalid - EX-1
             MeetingService-->MeetingController: MSG31 - Invalid meeting information
