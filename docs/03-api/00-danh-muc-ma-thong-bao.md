@@ -3,6 +3,10 @@
 Nguồn sự thật duy nhất cho mọi mã `code` mà API trả về hoặc FE tự hiển thị. Đặc tả use case,
 sequence diagram, code BE, code FE và test đều phải khớp với bảng này.
 
+Business Rule là hệ quy tắc riêng, không dùng mã `BR` thay mã `MSG`. Nội dung BR tập trung tại
+[danh mục Business Rules](../01-requirements/06-business-rules.md); UC dẫn chiếu BR và MSG tại
+các bước tương ứng, còn sequence thể hiện cùng BR ID và message của nhánh đó.
+
 ## Quy tắc
 
 1. **Một dải số chung cho cả dự án.** Không đánh lại từ `MSG01` cho mỗi use case hay mỗi sơ đồ —
@@ -117,7 +121,7 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
-| `MSG39` | 400 | `GET /api/notifications` | Tham số phân trang không hợp lệ — kèm `errors` | `Tham số truy vấn không hợp lệ.` | BE |
+| `MSG39` | 400 | `GET /api/notifications` | Không thể hiển thị phần danh sách thông báo được yêu cầu — kèm `errors` | `Trang thông báo được yêu cầu không khả dụng.` | BE |
 | `MSG40` | 500 | mọi endpoint `/api/notifications/*` | Lỗi database khi kiểm tra tài khoản đang hoạt động | `Không thể tải thông báo. Vui lòng thử lại.` | BE |
 
 ### Luồng cuộc họp — UC-19, UC-20, UC-21 (`/api/meetings`)
@@ -179,6 +183,11 @@ Các mã đã vào main giữ nguyên tình huống; người làm phiên họp 
 | `MSG58` | UC-29 | *This meeting session cannot be started.* |
 | `MSG59` | UC-30 | *This meeting session cannot be ended.* |
 | `MSG77` | UC-28 | *The last planned meeting session of a published meeting cannot be cancelled.* |
+| `MSG83` | UC-20 Từ chối cuộc họp | *Rejection reason is required.* |
+| `MSG84` | UC-20 Từ chối cuộc họp | *Rejection reason must not exceed 1000 characters.* |
+| `MSG90` | UC-21 Phát hành cuộc họp | *At least one valid planned Meeting Session is required before publication.* |
+
+`MSG83`, `MSG84` và `MSG90` thuộc dải đã dành cho workflow SCRUM-19 và được gán cho các nhánh UC-20/UC-21 nêu trên.
 
 ## Bảng đổi mã cũ → mới
 

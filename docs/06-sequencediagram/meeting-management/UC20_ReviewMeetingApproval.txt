@@ -5,72 +5,148 @@ boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Controller" as MeetingController
 control ":Meeting Service" as MeetingService
 participant ":Meeting Repository" as MeetingRepository
+participant ":User Repository" as UserRepository
 participant ":Meeting Status History Repository" as MeetingStatusHistoryRepository
 database ":Database" as Database
 
-Approver->MeetingPage: Submit Approve or Reject decision
+Approver->MeetingPage: Submit approval decision
+activate MeetingPage
 MeetingPage->MeetingController: Review meeting approval
-MeetingController->MeetingService: reviewMeetingApproval(meetingId, decision, rejectionReason)
-MeetingService->MeetingRepository: Lock meeting and get current approval state
-MeetingRepository->Database: Retrieve status and assigned approver FOR UPDATE
-Database-->MeetingRepository: Current approval state
-MeetingRepository-->MeetingService: Current approval state
-MeetingService->MeetingService: Verify current assigned approver, active account\nand MeetingApprover capability (BR-35)
+activate MeetingController
+MeetingController->MeetingService: reviewMeetingApproval(meetingId, decision, rejectionReason, actorId)
+activate MeetingService
 
-alt Approver is no longer authorized - EX-4
-    MeetingService-->MeetingController: MSG85 - User is no longer authorized
-    MeetingController-->MeetingPage: Return approval access denial
-    MeetingPage-->Approver: MSG85 - You can no longer review this meeting
-else Approver is authorized
-    MeetingService->MeetingService: Verify WaitingApproval status
+MeetingService->MeetingRepository: Get current approval state
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting, Organizer, and assigned approver
+activate Database
+Database-->MeetingRepository: Current approval state
+deactivate Database
+MeetingRepository-->MeetingService: Current approval state
+deactivate MeetingRepository
+
+MeetingService->UserRepository: Verify actor is active and has MeetingApprover
+activate UserRepository
+UserRepository->Database: Check actor status and capability
+activate Database
+Database-->UserRepository: Actor eligibility
+deactivate Database
+UserRepository-->MeetingService: Actor eligibility
+deactivate UserRepository
+
+MeetingService->MeetingService: Verify actor is current Assigned Approver\nand differs from Organizer
+
+alt Actor is not the active, authorized current approver - EX-4
+    MeetingService-->MeetingController: Review authorization denied
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Return authorization error
+    deactivate MeetingController
+    MeetingPage-->Approver: You are no longer authorized to review this meeting
+
+else Actor is the active, authorized current approver
+    MeetingService->MeetingService: Verify meeting is WaitingApproval
 
     alt Meeting is no longer WaitingApproval - EX-2
-        MeetingService-->MeetingController: MSG63 - Meeting is no longer awaiting approval
+        MeetingService-->MeetingController: Meeting is no longer awaiting approval
+        deactivate MeetingService
         MeetingController-->MeetingPage: Return status conflict
-        MeetingPage-->Approver: MSG63 - Meeting is no longer awaiting approval
+        deactivate MeetingController
+        MeetingPage-->Approver: This meeting is no longer awaiting approval
+
     else Meeting is WaitingApproval
-        MeetingService->MeetingService: For Reject, trim rejection reason\nand validate 1-1,000 characters
+        alt Decision is Approve
+            MeetingService->MeetingRepository: Revalidate actor and status; change WaitingApproval to Approved
+            activate MeetingRepository
+            MeetingRepository->Database: Save approval transition
+            activate Database
 
-        alt Reject reason is empty after trim - EX-1
-            MeetingService-->MeetingController: MSG83 - Rejection reason is required
-            MeetingController-->MeetingPage: Return required reason validation
-            MeetingPage-->Approver: MSG83 - Rejection reason is required
-        else Reject reason exceeds 1,000 characters - EX-1
-            MeetingService-->MeetingController: MSG84 - Rejection reason is too long
-            MeetingController-->MeetingPage: Return reason length validation
-            MeetingPage-->Approver: MSG84 - Rejection reason must not exceed 1,000 characters
-        else Approval decision is valid
-            MeetingService->MeetingRepository: Apply WaitingApproval -> Approved / Rejected\n(BR-36)
-            MeetingRepository->Database: Update meeting status
+            alt Approval cannot be completed - EX-3
+                Database-->MeetingRepository: Save failed
+                deactivate Database
+                MeetingRepository-->MeetingService: Approval failed
+                deactivate MeetingRepository
+                MeetingService-->MeetingController: Unable to complete the approval decision. Please try again
+                deactivate MeetingService
+                MeetingController-->MeetingPage: Return approval failure
+                deactivate MeetingController
+                MeetingPage-->Approver: Unable to complete the approval decision. Please try again
 
-            alt Approval decision cannot be completed - EX-3
-                Database-->MeetingRepository: Transaction failed
-                MeetingRepository-->MeetingService: Approval decision failed
-                MeetingService-->MeetingController: MSG88 - Unable to complete approval decision
-                MeetingController-->MeetingPage: Return approval decision failure
-                MeetingPage-->Approver: MSG88 - Unable to complete approval decision
-            else Approval decision completed
-                Database-->MeetingRepository: Meeting status updated
-                MeetingRepository-->MeetingService: Approval decision applied
+            else Meeting approved
+                Database-->MeetingRepository: Status changed to Approved
+                deactivate Database
+                MeetingRepository-->MeetingService: Approval applied
+                deactivate MeetingRepository
+                MeetingService->MeetingStatusHistoryRepository: Record approval, actor, and resulting status
+                activate MeetingStatusHistoryRepository
+                MeetingStatusHistoryRepository->Database: Insert lifecycle history
+                activate Database
+                Database-->MeetingStatusHistoryRepository: History recorded
+                deactivate Database
+                MeetingStatusHistoryRepository-->MeetingService: Approval recorded
+                deactivate MeetingStatusHistoryRepository
+                MeetingService-->MeetingController: MSG43 - Meeting approved successfully
+                deactivate MeetingService
+                MeetingController-->MeetingPage: MSG43 - Meeting approved successfully
+                deactivate MeetingController
+                MeetingPage-->Approver: MSG43 - Meeting approved successfully
+            end
 
-                alt Decision is Approve
-                    MeetingService->MeetingStatusHistoryRepository: Append Approve history (BR-38)
+        else Decision is Reject
+            MeetingService->MeetingService: Trim rejection reason
+
+            alt Trimmed reason is empty - EX-1
+                MeetingService-->MeetingController: MSG83 - Rejection reason is required
+                deactivate MeetingService
+                MeetingController-->MeetingPage: Return rejection reason validation
+                deactivate MeetingController
+                MeetingPage-->Approver: MSG83 - Rejection reason is required
+
+            else Trimmed reason exceeds 1000 characters - EX-5
+                MeetingService-->MeetingController: MSG84 - Rejection reason must not exceed 1000 characters
+                deactivate MeetingService
+                MeetingController-->MeetingPage: Return rejection reason validation
+                deactivate MeetingController
+                MeetingPage-->Approver: MSG84 - Rejection reason must not exceed 1000 characters
+
+            else Rejection reason is valid
+                MeetingService->MeetingRepository: Revalidate actor and status; change WaitingApproval to Rejected
+                activate MeetingRepository
+                MeetingRepository->Database: Save rejection transition
+                activate Database
+
+                alt Rejection cannot be completed - EX-3
+                    Database-->MeetingRepository: Save failed
+                    deactivate Database
+                    MeetingRepository-->MeetingService: Rejection failed
+                    deactivate MeetingRepository
+                    MeetingService-->MeetingController: Unable to complete the approval decision. Please try again
+                    deactivate MeetingService
+                    MeetingController-->MeetingPage: Return rejection failure
+                    deactivate MeetingController
+                    MeetingPage-->Approver: Unable to complete the approval decision. Please try again
+
+                else Meeting rejected
+                    Database-->MeetingRepository: Status changed to Rejected
+                    deactivate Database
+                    MeetingRepository-->MeetingService: Rejection applied
+                    deactivate MeetingRepository
+                    MeetingService->MeetingStatusHistoryRepository: Record rejection, trimmed reason, actor, and resulting status
+                    activate MeetingStatusHistoryRepository
                     MeetingStatusHistoryRepository->Database: Insert lifecycle history
+                    activate Database
                     Database-->MeetingStatusHistoryRepository: History recorded
-                    MeetingStatusHistoryRepository-->MeetingService: Approval recorded
-                    MeetingService-->MeetingController: MSG43 - Meeting approved successfully
-                    MeetingController-->MeetingPage: MSG43 - Meeting approved successfully
-                    MeetingPage-->Approver: MSG43 - Meeting approved successfully
-                else Decision is Reject - AF-1
-                    MeetingService->MeetingStatusHistoryRepository: Append Reject history with trimmed reason\n(BR-38)
-                    MeetingStatusHistoryRepository->Database: Insert lifecycle history
-                    Database-->MeetingStatusHistoryRepository: History recorded
+                    deactivate Database
                     MeetingStatusHistoryRepository-->MeetingService: Rejection recorded
+                    deactivate MeetingStatusHistoryRepository
                     MeetingService-->MeetingController: MSG44 - Meeting rejected successfully
+                    deactivate MeetingService
                     MeetingController-->MeetingPage: MSG44 - Meeting rejected successfully
+                    deactivate MeetingController
                     MeetingPage-->Approver: MSG44 - Meeting rejected successfully
                 end
             end
         end
     end
 end
+
+deactivate MeetingPage
