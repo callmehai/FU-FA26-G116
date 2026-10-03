@@ -38,6 +38,11 @@ Danh mục này tập trung các quy tắc `BR-01` đến `BR-77` được cung 
 | `BR-22` | Password reset may only be initiated for an account that is eligible to use password-based authentication. | UC-08 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-23` | A role-permission configuration may contain only permissions defined by the system and must satisfy the system's permission-configuration rules before it can be applied. | UC-11 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 
+**Quy tắc TrustCabinet đã được BA xác nhận:** tài khoản nội bộ đang hoạt động được phép đăng nhập
+dù chưa được gán role hoặc chưa có capability. Capability chỉ quyết định chức năng nào được phép
+dùng sau khi đăng nhập. Quy tắc này thay thế cách áp dụng BR-04 nguyên văn Report 3 ở trên; không
+yêu cầu thêm quyền riêng để đăng nhập.
+
 ## BR-24–BR-44 — Cuộc họp và vòng đời phê duyệt
 
 | BR-ID | Rule Statement (nguyên văn Report 3) | Applies To (Report 3) | Rationale | Enforced By |
@@ -63,6 +68,18 @@ Danh mục này tập trung các quy tắc `BR-01` đến `BR-77` được cung 
 | `BR-42` | All participant invitation notifications must include a direct link to the published meeting details and attached materials. | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-43` | System logging must track the queuing and delivery status of all asynchronous invitation messages for auditability. | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-44` | Re-publishing or updating invitation delivery for an already published meeting requires explicit organizer action and creates a distinct lifecycle record. | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
+
+**Áp dụng trong TrustCabinet — BA đã chốt (UC-17, UC-18 và mở đích notification):** quyền đọc phụ
+thuộc cả quan hệ với meeting và trạng thái hiện tại. Người tạo được đọc ở mọi trạng thái. Người duyệt
+đang được gán được đọc từ `WaitingApproval` trở đi. Người được gán vào meeting với vai trò `Chair`,
+`Secretary`, `Member` hoặc `Guest` được đọc từ `Published` trở đi. Trạng thái lời mời (`Pending`,
+`Accepted`, `Declined` hoặc `Delegated`) không làm mất quyền đọc meeting đã công bố. Notification không
+cấp quyền đọc; mở đích phải kiểm tra lại theo BR-29. Quyền đọc tài liệu, recording và dữ liệu nhạy cảm
+tuân theo các rule riêng.
+
+**Làm rõ khi triển khai (SCRUM-17, comment 10076):** Planned End Time là tùy chọn khi tạo/sửa
+cuộc họp. BR-25 chỉ được kiểm tra khi người dùng cung cấp giờ kết thúc; khi đó giờ kết thúc phải
+sau Planned Start Time. Câu BR-25 trong bảng giữ nguyên văn Report 3.
 
 ## BR-45–BR-53 — Thông báo
 
@@ -99,7 +116,7 @@ Danh mục này tập trung các quy tắc `BR-01` đến `BR-77` được cung 
 |---|---|---|---|---|
 | `BR-64` | Each Agenda Item belongs to exactly one Meeting Session. Reordering changes the order only within that Meeting Session and does not move an Agenda Item to another session. | UC-31, UC-34, UC-35, UC-36 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-65` | Only the Secretary assigned to the parent meeting may create, update, delete, or reorder Agenda Items, and only while the selected Meeting Session is Planned. | UC-31, UC-32, UC-33, UC-34 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
-| `BR-66` | An Agenda Item must have a Title and a Planned Duration greater than zero. Presenter and Description may be provided. Any attached documents must be available to the parent meeting. | UC-31, UC-32 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
+| `BR-66` | An Agenda Item must have a Title and a Planned Duration greater than zero. Presenter and Description are optional. Any attached documents must be available to the parent meeting. | UC-31, UC-32 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-67` | A newly created Agenda Item starts in Pending status and is assigned an explicit order within its Meeting Session. The Secretary may change that order while the session remains Planned. | UC-31, UC-34 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-68` | After a Meeting Session leaves Planned status, its agenda structure cannot be created, updated, deleted, or reordered. Only agenda execution state may change during the active session. | UC-31, UC-32, UC-33, UC-34 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |
 | `BR-69` | Only the Chair assigned to the parent meeting may set or complete the current Agenda Item while the Meeting Session is InProgress. | UC-35, UC-36 | Chưa ghi trong Report 3 | Chưa ghi trong Report 3 |

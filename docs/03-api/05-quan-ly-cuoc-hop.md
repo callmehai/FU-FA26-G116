@@ -23,10 +23,11 @@ POST, `GET /api/meetings/approvers` và PUT yêu cầu capability `MeetingCreato
 xác minh lại capability từ database theo SCRUM-12, không kiểm theo tên vai trò. GET chi tiết yêu cầu
 đăng nhập và tài khoản còn hoạt động, sau đó kiểm tra quan hệ cuộc họp theo BR-29.
 
-GET luôn cho người tạo đọc. Người duyệt được gán chỉ đọc từ khi meeting rời `Draft`; thành phần tham
-dự (Chair, Secretary và Participant) chỉ đọc từ `Published` trở đi. Vì vậy meeting `Draft` chỉ người
-tạo thấy, còn các trạng thái trước khi công bố không lộ cho thành phần tham dự. Không đủ quyền đọc
-thì trả `404` rỗng, giống ID không tồn tại. PUT vẫn chỉ cho người tạo/người tổ chức sửa; ID không tồn
+Quyền đọc theo BR-29, đã được BA chốt: người tạo đọc mọi trạng thái; người duyệt hiện được gán đọc từ
+`WaitingApproval` trở đi; người được gán vào meeting với vai trò `Chair`, `Secretary`, `Member` hoặc
+`Guest` đọc từ `Published` trở đi. Trạng thái lời mời không làm mất quyền xem meeting đã công bố.
+Vì vậy `Draft` chỉ người tạo thấy; trước khi công bố, thành phần tham dự chưa đọc được. Không đủ quyền
+đọc thì trả `404` rỗng, giống ID không tồn tại. PUT vẫn chỉ cho người tạo/người tổ chức sửa; ID không tồn
 tại và meeting của người tổ chức khác cùng trả `404` rỗng.
 
 GET danh sách dùng đúng quy tắc đọc trên **trong truy vấn database**, trước `COUNT`, sắp xếp và phân
@@ -87,7 +88,8 @@ Khi gửi timezone có dấu `+` trong query, mã hóa dấu này thành `%2B`, 
 Không có kết quả hoặc trang vượt quá trang cuối, kể cả khi offset lớn hơn giới hạn `int`, vẫn trả
 `200` với `items: []` (BR-12). Khi không có
 kết quả, `totalCount` và `totalPages` đều bằng `0`. Query sai trả `400` với `code` là
-`MSG32`, `message` là `Tham số truy vấn không hợp lệ.` và `errors` theo tên tham số.
+`MSG32`, `message` là `Tiêu chí danh sách cuộc họp không hợp lệ.` theo catalogue; backend hiện trả
+`Tham số truy vấn không hợp lệ.` nên cần sửa code để khớp catalogue. `errors` liệt kê theo tên tham số.
 Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài
 giới hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `500` với
 `code: MSG38` và thông điệp

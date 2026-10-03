@@ -50,6 +50,14 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **UC-29**: Bắt đầu phiên họp (Start Meeting Session)
 - **UC-30**: Kết thúc phiên họp (End Meeting Session)
 
+### 1.7 Quản lý chương trình nghị sự (Agenda Management)
+- **UC-31**: Tạo mục chương trình nghị sự (Create Agenda Item)
+- **UC-32**: Cập nhật mục chương trình nghị sự (Update Agenda Item)
+- **UC-33**: Xóa mục chương trình nghị sự (Delete Agenda Item)
+- **UC-34**: Sắp xếp lại thứ tự mục chương trình nghị sự (Reorder Agenda Items)
+- **UC-35**: Đặt mục chương trình nghị sự hiện tại (Set Current Agenda Item)
+- **UC-36**: Hoàn thành mục chương trình nghị sự (Complete Agenda Item)
+
 ---
 
 ## 2. Đặc tả chi tiết từng Use Case (Template & Specifications)
@@ -132,10 +140,6 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **EX-2**: The internal account has been deactivated
   1. The corresponding internal account is inactive or has been deactivated. (BR-03)
   2. The system displays MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”
-- **EX-3**: User is not allowed to access the system
-  1. The user does not have an active role or permission required to access the system. (BR-04)
-  2. ~~The system displays “You do not currently have access to the system. Please contact your administrator for assistance.”~~ Removed with SCRUM-63 ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)); no message code is assigned.
-
 ---
 
 ### UC-02: Sign in with Google (Đăng nhập bằng Google)
@@ -160,15 +164,15 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 #### Luồng sự kiện chính (Main Flow):
 1. User selects “Continue with Google” on the login page.
 2. User signs in using their Google account.
-3. System verifies that the Google account is associated with an authorized internal user.
-4. System signs the user in and grants access according to the user's assigned role.
+3. System verifies that the Google identity is linked to an active internal user account.
+4. System signs the user in; the user's capabilities determine access to protected functions.
 
 #### Luồng sự kiện thay thế (Alternative Flows):
 - N/A
 
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
 - **EX-1**: User can’t authenticate with Google
-  1. The user fails to authenticate with Google or cancels the Google sign-in process. (BR-04)
+  1. The user fails to authenticate with Google or cancels the Google sign-in process.
   2. System displays message MSG03 – “Google sign-in was unsuccessful. Please try again.”
 - **EX-2**: System can’t verify the Google account
   1. The system cannot verify the identity information returned by Google. (BR-05)
@@ -179,10 +183,6 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **EX-4**: The internal account has been deactivated
   1. The internal account associated with the Google account is inactive or has been deactivated. (BR-03)
   2. System displays message MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”
-- **EX-5**: User is not allowed to access the system
-  1. The internal user does not have an active role or required permission to access the system. (BR-04)
-  2. ~~System displays message “You do not currently have access to the system. Please contact your administrator for assistance.”~~ Removed with SCRUM-63 ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)); no message code is assigned.
-
 ---
 
 ### UC-03: Sign Out (Đăng xuất)
@@ -798,7 +798,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 3. The Meeting Organizer enters the meeting information, including:
    - Meeting Name
    - Planned Start Time
-   - Planned End Time
+   - Planned End Time, if known (optional; when provided, it must be later than Planned Start Time)
    - Meeting Mode
    - Location
    - Confidentiality Level
@@ -898,20 +898,19 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 #### Luồng sự kiện chính (Main Flow — View Meeting Details):
 1. The user requests to view a meeting.
-2. The system verifies that the meeting exists.
-3. The system verifies that the user has an authorized relationship or assignment to the meeting.
-4. The system retrieves the meeting information, its Meeting Sessions, and the Agenda Items associated with those sessions.
-5. The system displays the meeting details, including Meeting Name, Planned Start Time, Planned End Time, Meeting Mode, Location, Confidentiality Level, Description, Meeting Status, Meeting Session schedule, and the agenda of each session.
-6. The user reviews the meeting information, session schedule, and agendas.
+2. The system verifies that the meeting exists and that the user may view it under BR-29. The system does not reveal which check failed.
+3. The system retrieves the meeting information, its Meeting Sessions, and the Agenda Items associated with those sessions.
+4. The system displays the meeting details, including Meeting Name, Planned Start Time, Planned End Time, Meeting Mode, Location, Confidentiality Level, Description, Meeting Status, Meeting Session schedule, and the agenda of each session.
+5. The user reviews the meeting information, session schedule, and agendas.
 
 #### Luồng sự kiện thay thế (Alternative Flows):
 - N/A
 
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
 
-- **EX-1: Meeting Does Not Exist**
-  1. At Step 2, the system cannot find the selected meeting.
-  2. The system displays "Meeting not found."
+- **EX-1: Meeting Does Not Exist or Is Not Accessible**
+  1. At Step 2, the system cannot find the selected meeting or the user is not authorized to view it.
+  2. The system does not disclose whether the meeting exists.
   3. The use case ends.
 
 - **EX-2: Meeting Details Cannot Be Retrieved**
@@ -930,7 +929,6 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **Mô tả (Description)**: Allows an authorized user to view and browse only the meetings to which the user has an authorized relationship or assignment.
 - **Điều kiện tiên quyết (Preconditions)**:
   - PRE-1: The user is authenticated.
-  - PRE-2: The user is authorized to access the Meeting module.
 - **Điều kiện sau (Postconditions)**:
   - POST-1: The system displays the list of meetings that the user is authorized to view.
   - POST-2: No meeting information is modified.
@@ -939,7 +937,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 #### Luồng sự kiện chính (Main Flow — View Meeting List):
 1. The user selects Meetings from the navigation menu.
-2. The system identifies meetings for which the user has an authorized relationship or assignment as Meeting Organizer, Meeting Approver, Chair, Secretary, or Participant.
+2. The system identifies only meetings the user may view under BR-29: meetings created by the user at any status; meetings assigned to the user as Meeting Approver from WaitingApproval onward; and meetings where the user is assigned as Chair, Secretary, Member, or Guest from Published onward.
 3. The system sorts and displays only those authorized meetings.
 4. The user browses the displayed meetings.
 
@@ -972,7 +970,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 - **EX-2: Invalid Meeting List Criteria**
   1. The system determines that the selected search, filter, sort, or display criteria are invalid.
-  2. The system displays MSG32 – "The meeting list criteria are invalid."
+  2. The system displays MSG32 – "Tiêu chí danh sách cuộc họp không hợp lệ."
   3. The user may clear or adjust the search/filter criteria.
   4. The use case ends.
 
@@ -1572,3 +1570,328 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   2. The Meeting Session remains unchanged.
   3. The system displays MSG59 – "This meeting session cannot be ended."
   4. The use case ends.
+
+---
+
+### FEATURE 7: QUẢN LÝ CHƯƠNG TRÌNH NGHỊ SỰ (AGENDA MANAGEMENT)
+
+---
+
+### UC-31: Create Agenda Item (Tạo mục chương trình nghị sự)
+
+- **Use Case ID**: UC-31
+- **Use Case Name**: Create Agenda Item
+- **Primary Actor**: Secretary
+- **Secondary Actor**: None
+- **Mô tả (Description)**: Allows the Secretary to add a new Agenda Item to a planned Meeting Session, specifying title, planned duration, optional presenter, optional description, and attached meeting documents.
+- **Điều kiện tiên quyết (Preconditions)**:
+  - PRE-1: The Secretary is authenticated and assigned to the selected meeting.
+  - PRE-2: Selected Meeting Session exists and belongs to the selected meeting.
+  - PRE-3: Selected Meeting Session is Planned.
+- **Điều kiện sau (Postconditions)**:
+  - POST-1: The new Agenda Item belongs to the selected Meeting Session.
+  - POST-2: The new Agenda Item starts in Pending.
+  - POST-3: The new Agenda Item appears at the end of that Meeting Session agenda.
+  - POST-4: Selected meeting documents are associated with the Agenda Item.
+- **Sơ đồ liên quan (Related Diagrams)**:
+  - Sequence Diagram: [UC31_CreateAgendaItem.png](../06-sequencediagram/agenda-management/UC31_CreateAgendaItem.png)
+
+#### Luồng sự kiện chính (Main Flow — Create Agenda Item):
+1. The Secretary opens the agenda of a selected Meeting Session.
+2. The Secretary selects Add Agenda Item.
+3. The system displays the Agenda Item information form.
+4. The Secretary enters the agenda information, including:
+   - Title
+   - Planned Duration
+   - optional Presenter
+   - optional Description
+   - any meeting documents to be attached
+5. The Secretary submits the Agenda Item information.
+6. The system validates the submitted information and selected documents. (BR-65, BR-66, BR-74)
+7. The system creates the Agenda Item in Pending status, associates it with the selected Meeting Session, and places it at the end of the session agenda. (BR-64, BR-67)
+8. The system displays MSG60 – "Agenda item created successfully."
+
+#### Luồng sự kiện thay thế (Alternative Flows):
+- N/A
+
+#### Luồng ngoại lệ / Lỗi (Exception Flows):
+
+- **EX-1: Invalid Agenda Item Information**
+  1. At Step 6, the submitted Agenda Item information violates BR-66.
+  2. The system displays MSG66 – "Invalid agenda item information." with the applicable field message(s):
+     - "Agenda item title is required."
+     - "Planned duration must be greater than 0."
+     - "One or more selected documents are not available to this meeting."
+  3. The Secretary corrects the invalid information.
+  4. The flow resumes at Step 6 of the Main Flow.
+
+- **EX-2: Agenda Can No Longer Be Modified**
+  1. At Step 6, the Meeting Session is no longer Planned or the parent meeting no longer permits agenda planning. (BR-65, BR-68, BR-74)
+  2. The Agenda Item is not created.
+  3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
+  4. The use case ends.
+
+- **EX-3: Agenda Item Cannot Be Created**
+  1. At Step 7, the system cannot create the Agenda Item.
+  2. The Agenda Item is not created.
+  3. The system displays MSG68 – "Unable to create the agenda item. Please try again."
+  4. The use case ends.
+
+---
+
+### UC-32: Update Agenda Item (Cập nhật mục chương trình nghị sự)
+
+- **Use Case ID**: UC-32
+- **Use Case Name**: Update Agenda Item
+- **Primary Actor**: Secretary
+- **Secondary Actor**: None
+- **Mô tả (Description)**: Allows the Secretary to update the information and attached documents of an existing Agenda Item in a planned Meeting Session.
+- **Điều kiện tiên quyết (Preconditions)**:
+  - PRE-1: The Secretary is authenticated and assigned to the selected meeting.
+  - PRE-2: Selected Meeting Session belongs to the selected meeting and is Planned.
+  - PRE-3: Selected Agenda Item exists, belongs to the Meeting Session, and is Pending.
+- **Điều kiện sau (Postconditions)**:
+  - POST-1: The Agenda Item information and attached documents are updated.
+- **Sơ đồ liên quan (Related Diagrams)**:
+  - Sequence Diagram: [UC32_UpdateAgendaItem.png](../06-sequencediagram/agenda-management/UC32_UpdateAgendaItem.png)
+
+#### Luồng sự kiện chính (Main Flow — Update Agenda Item):
+1. The Secretary opens the agenda of a selected Meeting Session.
+2. The Secretary selects Edit for the target Agenda Item.
+3. The system displays the Agenda Item edit form with current information (Title, Planned Duration, Presenter, Description, attached documents).
+4. The Secretary modifies the information (Title, Planned Duration, optional Presenter, optional Description, attached meeting documents).
+5. The Secretary submits the updated Agenda Item information.
+6. The system validates the updated information and attached documents. (BR-65, BR-66, BR-74)
+7. The system saves the updated Agenda Item information. (BR-68)
+8. The system displays MSG61 – "Agenda item updated successfully."
+
+#### Luồng sự kiện thay thế (Alternative Flows):
+- N/A
+
+#### Luồng ngoại lệ / Lỗi (Exception Flows):
+
+- **EX-1: Invalid Agenda Item Information**
+  1. At Step 6, the updated Agenda Item information violates BR-66.
+  2. The system displays MSG66 – "Invalid agenda item information." with the applicable field message(s):
+     - "Agenda item title is required."
+     - "Planned duration must be greater than 0."
+     - "One or more selected documents are not available to this meeting."
+  3. The Secretary corrects the invalid information.
+  4. The flow resumes at Step 6 of the Main Flow.
+
+- **EX-2: Agenda Item Can No Longer Be Updated**
+  1. At Step 6, the Meeting Session is no longer Planned or the parent meeting no longer permits agenda planning. (BR-65, BR-68, BR-74)
+  2. The Agenda Item remains unchanged.
+  3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
+  4. The use case ends.
+
+- **EX-3: Agenda Item Cannot Be Updated**
+  1. At Step 7, the system cannot update the Agenda Item.
+  2. The Agenda Item remains unchanged.
+  3. The system displays MSG69 – "Unable to update the agenda item. Please try again."
+  4. The use case ends.
+
+---
+
+### UC-33: Delete Agenda Item (Xóa mục chương trình nghị sự)
+
+- **Use Case ID**: UC-33
+- **Use Case Name**: Delete Agenda Item
+- **Primary Actor**: Secretary
+- **Secondary Actor**: None
+- **Mô tả (Description)**: Allows the Secretary to remove an Agenda Item from a planned Meeting Session.
+- **Điều kiện tiên quyết (Preconditions)**:
+  - PRE-1: The Secretary is authenticated and assigned to the selected meeting.
+  - PRE-2: Selected Meeting Session belongs to the selected meeting and is Planned.
+  - PRE-3: Selected Agenda Item exists, belongs to the Meeting Session, and is Pending.
+- **Điều kiện sau (Postconditions)**:
+  - POST-1: The Agenda Item is removed from the Meeting Session agenda.
+  - POST-2: Remaining Agenda Items in the session retain contiguous explicit ordering.
+- **Sơ đồ liên quan (Related Diagrams)**:
+  - Sequence Diagram: [UC33_DeleteAgendaItem.png](../06-sequencediagram/agenda-management/UC33_DeleteAgendaItem.png)
+
+#### Luồng sự kiện chính (Main Flow — Delete Agenda Item):
+1. The Secretary opens the agenda of a selected Meeting Session.
+2. The Secretary selects Delete for the target Agenda Item.
+3. The system requests confirmation.
+4. The Secretary confirms the deletion.
+5. The system verifies that the Secretary is assigned to the meeting, the Meeting Session is Planned, and the Agenda Item is Pending. (BR-65, BR-68, BR-74)
+6. The system removes the Agenda Item and re-indexes remaining items to preserve explicit contiguous ordering.
+7. The system displays MSG62 – "Agenda item deleted successfully."
+
+#### Luồng sự kiện thay thế (Alternative Flows):
+- N/A
+
+#### Luồng ngoại lệ / Lỗi (Exception Flows):
+
+- **EX-1: Agenda Item Can No Longer Be Deleted**
+  1. At Step 5, the Meeting Session is no longer Planned or the parent meeting no longer permits agenda modification. (BR-65, BR-68, BR-74)
+  2. The Agenda Item is not deleted.
+  3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
+  4. The use case ends.
+
+- **EX-2: Agenda Item Cannot Be Deleted**
+  1. At Step 6, the system cannot delete the Agenda Item.
+  2. The Agenda Item remains unchanged.
+  3. The system displays MSG70 – "Unable to delete the agenda item. Please try again."
+  4. The use case ends.
+
+---
+
+### UC-34: Reorder Agenda Items (Sắp xếp lại thứ tự mục chương trình nghị sự)
+
+- **Use Case ID**: UC-34
+- **Use Case Name**: Reorder Agenda Items
+- **Primary Actor**: Secretary
+- **Secondary Actor**: None
+- **Mô tả (Description)**: Allows the Secretary to reorder Agenda Items within a planned Meeting Session.
+- **Điều kiện tiên quyết (Preconditions)**:
+  - PRE-1: The Secretary is authenticated and assigned to the selected meeting.
+  - PRE-2: Selected Meeting Session belongs to the selected meeting and is Planned.
+  - PRE-3: Selected Meeting Session contains two or more Agenda Items.
+- **Điều kiện sau (Postconditions)**:
+  - POST-1: The new explicit order of Agenda Items is saved within the Meeting Session.
+- **Sơ đồ liên quan (Related Diagrams)**:
+  - Sequence Diagram: [UC34_ReorderAgendaItems.png](../06-sequencediagram/agenda-management/UC34_ReorderAgendaItems.png)
+
+#### Luồng sự kiện chính (Main Flow — Reorder Agenda Items):
+1. The Secretary opens the agenda of a selected Meeting Session.
+2. The Secretary reorders the Agenda Items.
+3. The Secretary submits the new agenda order.
+4. The system validates that all reordered items belong to the same Meeting Session, the Secretary is assigned to the meeting, and the Meeting Session is Planned. (BR-64, BR-65, BR-67, BR-74)
+5. The system saves the updated explicit order of the Agenda Items. (BR-67, BR-68)
+6. The system displays MSG63 – "Agenda order updated successfully."
+
+#### Luồng sự kiện thay thế (Alternative Flows):
+- N/A
+
+#### Luồng ngoại lệ / Lỗi (Exception Flows):
+
+- **EX-1: Agenda Order Can No Longer Be Modified**
+  1. At Step 4, the Meeting Session is no longer Planned or the parent meeting no longer permits agenda modification. (BR-65, BR-68, BR-74)
+  2. The agenda order remains unchanged.
+  3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
+  4. The use case ends.
+
+- **EX-2: Agenda Order Cannot Be Updated**
+  1. At Step 5, the system cannot update the agenda order.
+  2. The agenda order remains unchanged.
+  3. The system displays MSG71 – "Unable to update the agenda order. Please try again."
+  4. The use case ends.
+
+---
+
+### UC-35: Set Current Agenda Item (Đặt mục chương trình nghị sự hiện tại)
+
+- **Use Case ID**: UC-35
+- **Use Case Name**: Set Current Agenda Item
+- **Primary Actor**: Chair
+- **Secondary Actor**: None
+- **Mô tả (Description)**: Allows the Chair to set a Pending Agenda Item as the active/current item of an in-progress Meeting Session, recording its actual start time.
+- **Điều kiện tiên quyết (Preconditions)**:
+  - PRE-1: The Chair is authenticated and assigned to the selected meeting.
+  - PRE-2: Selected Meeting Session is InProgress.
+  - PRE-3: Selected Agenda Item belongs to the Meeting Session and is Pending.
+- **Điều kiện sau (Postconditions)**:
+  - POST-1: The selected Agenda Item is InProgress and becomes the current Agenda Item of the Meeting Session.
+  - POST-2: The actual start time of the Agenda Item is recorded.
+- **Sơ đồ liên quan (Related Diagrams)**:
+  - Sequence Diagram: [UC35_SetCurrentAgendaItem.png](../06-sequencediagram/agenda-management/UC35_SetCurrentAgendaItem.png)
+
+#### Luồng sự kiện chính (Main Flow — Set Current Agenda Item):
+1. The Chair opens the in-progress Meeting Session agenda.
+2. The Chair selects Start / Set as Current for a Pending Agenda Item.
+3. The system verifies that:
+   - the Chair is still assigned to the meeting;
+   - the Meeting Session is InProgress;
+   - the selected Agenda Item belongs to that Meeting Session;
+   - the selected Agenda Item is Pending; and
+   - no other Agenda Item of the same Meeting Session is InProgress.  
+   (BR-64, BR-69, BR-70, BR-71)
+4. The system changes the selected Agenda Item status to InProgress and records its actual start time. (BR-70, BR-72)
+5. The system makes the new current Agenda Item available in real time to authorized users viewing the same Meeting Session. (BR-73)
+6. The system displays MSG64 – "Current agenda item updated successfully."
+
+#### Luồng sự kiện thay thế (Alternative Flows):
+- N/A
+
+#### Luồng ngoại lệ / Lỗi (Exception Flows):
+
+- **EX-1: Another Agenda Item Is In Progress**
+  1. At Step 3, another Agenda Item of the same Meeting Session is already InProgress. (BR-71)
+  2. The selected Agenda Item remains Pending.
+  3. The system displays MSG72 – "Another agenda item is already in progress. Complete it before starting another agenda item."
+  4. The use case ends.
+
+- **EX-2: Agenda Item Cannot Be Set as Current**
+  1. At Step 3:
+     - the selected Agenda Item does not belong to the Meeting Session; or
+     - the Meeting Session is no longer InProgress; or
+     - the selected Agenda Item is no longer Pending; or
+     - the Chair is no longer assigned to the meeting.  
+     (BR-64, BR-69, BR-70)
+  2. The Agenda Item remains unchanged.
+  3. The system displays MSG73 – "This agenda item cannot be set as current."
+  4. The use case ends.
+
+- **EX-3: Agenda Item Cannot Be Set as Current Due to System Error**
+  1. At Step 4, the system cannot set the current Agenda Item.
+  2. The Agenda Item remains unchanged.
+  3. The system displays MSG75 – "Unable to set the current agenda item. Please try again."
+  4. The use case ends.
+
+---
+
+### UC-36: Complete Agenda Item (Hoàn thành mục chương trình nghị sự)
+
+- **Use Case ID**: UC-36
+- **Use Case Name**: Complete Agenda Item
+- **Primary Actor**: Chair
+- **Secondary Actor**: None
+- **Mô tả (Description)**: Allows the Chair to mark the currently active Agenda Item as Done, recording its actual end time and duration used.
+- **Điều kiện tiên quyết (Preconditions)**:
+  - PRE-1: The Chair is authenticated and assigned to the selected meeting.
+  - PRE-2: Selected Meeting Session is InProgress.
+  - PRE-3: Selected Agenda Item belongs to the Meeting Session and is InProgress.
+- **Điều kiện sau (Postconditions)**:
+  - POST-1: The selected Agenda Item is Done.
+  - POST-2: The actual end time and actual time used for the Agenda Item are recorded.
+  - POST-3: The Meeting Session has no current Agenda Item until the Chair starts another Agenda Item.
+- **Sơ đồ liên quan (Related Diagrams)**:
+  - Sequence Diagram: [UC36_CompleteAgendaItem.png](../06-sequencediagram/agenda-management/UC36_CompleteAgendaItem.png)
+
+#### Luồng sự kiện chính (Main Flow — Complete Agenda Item):
+1. The Chair views the current in-progress Agenda Item in the active Meeting Session.
+2. The Chair selects Complete Agenda Item.
+3. The system verifies that:
+   - the Chair is still assigned to the meeting;
+   - the Meeting Session is InProgress; and
+   - the selected Agenda Item belongs to that Meeting Session and is currently InProgress.  
+   (BR-64, BR-69, BR-70)
+4. The system changes the Agenda Item status to Done.
+5. The system records the actual end time and the actual time used for the Agenda Item. (BR-72)
+6. The system makes the completed Agenda Item state available in real time to authorized users viewing the same Meeting Session. (BR-73)
+7. The system displays MSG65 – "Agenda item completed successfully."
+
+#### Luồng sự kiện thay thế (Alternative Flows):
+- N/A
+
+#### Luồng ngoại lệ / Lỗi (Exception Flows):
+
+- **EX-1: Agenda Item Cannot Be Completed**
+  1. At Step 3:
+     - the selected Agenda Item does not belong to the Meeting Session; or
+     - the Meeting Session is no longer InProgress; or
+     - the selected Agenda Item is no longer InProgress; or
+     - the Chair is no longer assigned to the meeting.  
+     (BR-64, BR-69, BR-70)
+  2. The Agenda Item remains unchanged.
+  3. The system displays MSG74 – "This agenda item cannot be completed."
+  4. The use case ends.
+
+- **EX-2: Agenda Item Cannot Be Completed Due to System Error**
+  1. At Step 4 or Step 5, the system cannot complete the Agenda Item.
+  2. The Agenda Item remains unchanged.
+  3. The system displays MSG76 – "Unable to complete the agenda item. Please try again."
+  4. The use case ends.
+
