@@ -14,9 +14,9 @@ Phần FE cần tích hợp được tóm tắt riêng tại
 
 ## Luồng xử lý nền
 
-`EmailDeliveryWorker` trước hết đối soát một meeting Published chưa có invitation job để khởi tạo
-lại phần queue bị lỗi sau publication, sau đó đọc `email_messages` theo `created_at`, rồi `id`, và
-gửi từng thư một. Worker
+`EmailDeliveryWorker` thử đối soát một meeting Published chưa có invitation job trong scope riêng.
+Lỗi đối soát được log nhưng không chặn hàng đợi đã lưu: worker luôn mở một scope/DbContext mới để
+đọc `email_messages` theo `created_at`, rồi `id`, và gửi từng thư một. Worker
 claim một dòng bằng `FOR UPDATE SKIP LOCKED`, chuyển sang `Processing` và cấp lease trước khi kết nối
 SMTP. Vì vậy nhiều instance backend không cùng lấy một email; lease hết hạn giúp phục hồi job nếu
 instance đang gửi bị dừng. Mỗi lần claim được ghi vào `attempt_count`:

@@ -883,12 +883,6 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   3. The system displays MSG36 – "Unable to update the meeting. Please try again."
   4. The use case ends.
 
-- **EX-4: Unsupported Request Format**
-  1. At Step 4, the system determines that the submitted request is not in JSON format (Content-Type is not `application/json`).
-  2. The meeting remains unchanged.
-  3. The system displays MSG34 – "Content-Type must be application/json."
-  4. The use case ends.
-
 ---
 
 ### UC-17: View Meeting Details (Xem chi tiết cuộc họp)
@@ -991,7 +985,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 - **EX-2: Invalid Search or Filter Criteria**
   1. The system determines that the search, filter, sorting, or paging criteria are invalid.
-  2. The system displays MSG32 – "Invalid query parameters."
+  2. The system displays MSG32 – "Invalid meeting list criteria."
   3. The user may clear or adjust the search/filter criteria.
   4. The use case ends.
 

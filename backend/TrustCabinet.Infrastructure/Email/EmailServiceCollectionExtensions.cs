@@ -21,6 +21,8 @@ public static class EmailServiceCollectionExtensions
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<IMeetingInvitationQueue, MeetingInvitationQueue>();
         services.AddScoped<EmailQueueProcessor>();
+        services.AddScoped<IEmailQueueProcessor>(provider =>
+            provider.GetRequiredService<EmailQueueProcessor>());
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddSingleton<IPasswordResetEmailSender, PasswordResetEmailSender>();
 

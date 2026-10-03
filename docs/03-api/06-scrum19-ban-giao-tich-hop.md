@@ -29,6 +29,8 @@ Producer SCRUM-15 đọc meeting Published cùng participants, render và lưu n
 - Producer không tạo được jobs thì Publish vẫn trả `200 MSG45`; meeting/history giữ Published,
   backend ghi log và email worker tự đối soát để thử lại. Retry dùng deduplication key nên không tạo
   thêm publication history hoặc email trùng.
+- Đối soát và xử lý email đã Queued dùng hai scope/DbContext độc lập. Lỗi đối soát chỉ được log;
+  processor vẫn chạy trong lượt đó để một meeting lỗi không chặn email của meeting khác.
 - Chỉ lỗi lưu status/history/notification của publication mới rollback và trả `503 MSG47`.
 - SMTP `Enabled=false` dừng worker và không tạo job mới; Publish vẫn thành công và giữ nguyên
   jobs cũ. Cấu hình theo [hướng dẫn email](07-gui-email-thu-moi.md).
