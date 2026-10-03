@@ -70,7 +70,7 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG11` | 200 | `PUT /api/users/{id}/status` | Vô hiệu hoá / kích hoạt lại thành công | `Đổi trạng thái tài khoản thành công.` | BE |
 | `MSG12` | 409 | `PUT /api/users/{id}`, `PUT /api/users/{id}/status` | Không được đổi trạng thái / hạ vai trò (tự khoá, quản trị viên cuối cùng) | `Không thể đổi trạng thái tài khoản này.` | BE |
 | `MSG13` | 200 | `POST /api/users/{id}/password-reset` | Đã gửi email đặt lại mật khẩu | `Đã gửi email đặt lại mật khẩu.` | BE |
-| `MSG14` | 409 | `POST /api/users/{id}/password-reset` | Tài khoản không dùng được chức năng đặt lại mật khẩu (đã bị vô hiệu hoá) | `Tài khoản này không dùng được chức năng đặt lại mật khẩu.` | BE |
+| `MSG14` | 409 | `POST /api/users/{id}/password-reset` | Tài khoản không dùng được chức năng đặt lại mật khẩu (đã bị vô hiệu hoá, hoặc chưa có mật khẩu — chỉ đăng nhập bằng Google) | `Tài khoản này không dùng được chức năng đặt lại mật khẩu.` | BE |
 | `MSG15` | 503 | `POST /api/users/{id}/password-reset` | Không gửi được email đặt lại mật khẩu (SMTP tắt, không kết nối được, hoặc từ chối) | `Không gửi được email đặt lại mật khẩu. Vui lòng thử lại.` | BE |
 
 ### Ma trận phân quyền — UC-09, UC-10 (`/api/roles/capabilities`)

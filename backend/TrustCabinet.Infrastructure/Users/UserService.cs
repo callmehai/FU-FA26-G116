@@ -348,6 +348,16 @@ public sealed partial class UserService(
             return UserResult.Failure(UserOutcome.PasswordResetNotAvailable);
         }
 
+        // EX-1 — MSG14 too (BA, SCRUM-13). A Google-only account has no password to reset, and
+        // this use case resets one; it is not a way to add password sign-in to an account. Same
+        // test as UserAccount.HasPassword, so the button the UI disables and this answer agree.
+        if (string.IsNullOrEmpty(user.PasswordHash))
+        {
+            logger.LogInformation(
+                "Password reset rejected: account {UserId} has no password.", user.Id);
+            return UserResult.Failure(UserOutcome.PasswordResetNotAvailable);
+        }
+
         // The diagram's ":Authentication Service — Create password reset request". The current
         // password is left alone: it keeps working until the person uses the link, so pressing
         // this button can never lock anyone out.
@@ -447,11 +457,13 @@ public sealed partial class UserService(
 
         // Deactivated after the link was sent: the link dies with the account. Same answer as any
         // dead link — this endpoint is anonymous, and it should not tell a holder of an old link
-        // what became of the account.
-        if (user is null || !user.IsActive)
+        // what became of the account. No password: a link minted before the request side refused
+        // such accounts must not add password sign-in either.
+        if (user is null || !user.IsActive || string.IsNullOrEmpty(user.PasswordHash))
         {
             logger.LogInformation(
-                "Password reset refused: account {UserId} is gone or deactivated.", ownerId);
+                "Password reset refused: account {UserId} is gone, deactivated or has no password.",
+                ownerId);
             return UserResult.Failure(UserOutcome.PasswordResetLinkInvalid);
         }
 

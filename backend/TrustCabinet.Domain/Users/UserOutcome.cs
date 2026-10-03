@@ -32,7 +32,10 @@ public enum UserOutcome
     /// </summary>
     StatusChangeNotAllowed,
 
-    /// <summary>UC-08's EX-1 — the account cannot receive a reset link (it is deactivated). MSG14.</summary>
+    /// <summary>
+    /// UC-08's EX-1 — the account cannot receive a reset link: it is deactivated, or it has no
+    /// password to reset (Google sign-in only). MSG14.
+    /// </summary>
     PasswordResetNotAvailable,
 
     /// <summary>UC-08's EX-2 — the reset email could not be sent. MSG15.</summary>

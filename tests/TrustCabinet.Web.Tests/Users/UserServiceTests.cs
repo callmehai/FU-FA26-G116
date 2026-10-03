@@ -875,6 +875,25 @@ public class UserServiceTests
         Assert.Empty(_audit.Records);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task Reset_request_answers_not_available_for_an_account_without_a_password(
+        string? passwordHash)
+    {
+        // Google sign-in only. Resetting is not a way to add a password (BA, SCRUM-13).
+        var target = GivenUser();
+        target.PasswordHash = passwordHash;
+        target.GoogleSubjectId = "google-sub-123";
+
+        var result = await NewService().RequestPasswordResetAsync(target.Id, _actorId);
+
+        Assert.Equal(UserOutcome.PasswordResetNotAvailable, result.Outcome);
+        Assert.Empty(_resetTokens.Created);
+        Assert.Empty(_resetEmail.Sent);
+        Assert.Empty(_audit.Records);
+    }
+
     [Fact]
     public async Task Reset_request_answers_email_failed_and_records_nothing_when_the_mail_cannot_go()
     {
@@ -1033,6 +1052,27 @@ public class UserServiceTests
 
         Assert.Equal(UserOutcome.PasswordResetLinkInvalid, older.Outcome);
         Assert.True(newer.Succeeded);
+    }
+
+    [Fact]
+    public async Task A_live_link_does_not_give_a_password_to_an_account_without_one()
+    {
+        // A link minted before the request side refused such accounts: it must not add password
+        // sign-in either, and it is spent like any other dead link.
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        target.PasswordHash = null;
+        target.GoogleSubjectId = "google-sub-123";
+        _audit.Records.Clear();
+
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+        Assert.Null(target.PasswordHash);
+        Assert.Empty(_refreshTokens.RevokedUsers);
+        Assert.Empty(_audit.Records);
+        Assert.Null(await _resetTokens.PeekAsync(_resetTokens.Created[0]));
     }
 
     [Fact]
