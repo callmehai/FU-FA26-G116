@@ -61,6 +61,9 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     {
         public Task<int> QueueForPublishedMeetingAsync(Guid meetingId, CancellationToken ct = default)
             => Task.FromException<int>(new InvalidOperationException("Invitation producer unavailable."));
+
+        public Task<Guid?> QueueNextUninitializedPublishedMeetingAsync(CancellationToken ct = default)
+            => Task.FromException<Guid?>(new InvalidOperationException("Invitation producer unavailable."));
     }
 
     private static readonly string AdminConnectionString =
@@ -833,7 +836,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Publish_endpoint_rolls_back_the_real_transaction_when_invitation_producer_fails()
+    public async Task Publish_endpoint_commits_the_real_transaction_when_invitation_producer_fails()
     {
         var created = await NewService().CreateAsync(Input(), _creatorId);
         var meetingId = created.Meeting!.Id;
@@ -853,11 +856,15 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             $"/api/meetings/{meetingId}/transitions", new { action = "Publish" });
         using var body = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
 
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("MSG47", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("MSG45", body.RootElement.GetProperty("code").GetString());
         await using var verify = NewContext();
-        Assert.Equal(MeetingStatus.Approved, (await verify.Meetings.SingleAsync(item => item.Id == meetingId)).Status);
-        Assert.Equal(1, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
+        Assert.Equal(MeetingStatus.Published, (await verify.Meetings.SingleAsync(item => item.Id == meetingId)).Status);
+        Assert.Equal(2, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
+        Assert.Equal(
+            1,
+            await verify.MeetingStatusHistory.CountAsync(item =>
+                item.MeetingId == meetingId && item.Action == MeetingHistoryAction.Publish));
         Assert.Empty(await verify.Notifications.Where(item => item.MeetingId == meetingId).ToListAsync());
         Assert.Empty(await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync());
     }

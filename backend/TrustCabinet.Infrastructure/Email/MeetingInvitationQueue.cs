@@ -109,6 +109,32 @@ public sealed class MeetingInvitationQueue(
         return messages.Length;
     }
 
+    public async Task<Guid?> QueueNextUninitializedPublishedMeetingAsync(
+        CancellationToken ct = default)
+    {
+        if (!options.Value.Smtp.Enabled)
+        {
+            return null;
+        }
+
+        var meetingId = await db.Meetings
+            .Where(meeting => meeting.Status == MeetingStatus.Published)
+            .Where(meeting => meeting.Participants.Any(participant => participant.User.IsActive))
+            .Where(meeting => !db.EmailMessages.Any(message => message.MeetingId == meeting.Id))
+            .OrderBy(meeting => meeting.CreatedAt)
+            .ThenBy(meeting => meeting.Id)
+            .Select(meeting => (Guid?)meeting.Id)
+            .FirstOrDefaultAsync(ct);
+
+        if (meetingId is null)
+        {
+            return null;
+        }
+
+        await QueueForPublishedMeetingAsync(meetingId.Value, ct);
+        return meetingId;
+    }
+
     private static string BuildMeetingUrl(string applicationBaseUrl, Guid meetingId)
         => $"{applicationBaseUrl.Trim().TrimEnd('/')}/mgmt/meetings/{meetingId:D}";
 

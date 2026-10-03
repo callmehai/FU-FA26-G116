@@ -453,7 +453,7 @@ public sealed class MeetingWorkflowServiceTests
     }
 
     [Fact]
-    public async Task Invitation_producer_failure_after_the_first_flush_rolls_back_status_and_history()
+    public async Task Invitation_producer_failure_keeps_the_successful_publication_for_worker_retry()
     {
         var meeting = GivenMeeting(MeetingStatus.Approved);
         meeting.Participants.Add(Participant(meeting, active: true, InvitationResponse.Pending));
@@ -462,11 +462,16 @@ public sealed class MeetingWorkflowServiceTests
         var result = await NewService().TransitionAsync(meeting.Id,
             new MeetingTransitionCommand(MeetingTransitionAction.Publish), _organizerId);
 
-        Assert.Equal(MeetingWorkflowOutcome.SaveFailed, result.Outcome);
-        Assert.Equal(MeetingStatus.Approved, Assert.Single(_repository.Meetings).Status);
-        Assert.Empty(_repository.Meetings.Single().StatusHistory);
-        Assert.Empty(_repository.Notifications);
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        Assert.Equal(MeetingStatus.Published, Assert.Single(_repository.Meetings).Status);
+        Assert.Equal(MeetingHistoryAction.Publish, Assert.Single(meeting.StatusHistory).Action);
+        Assert.Single(_repository.Notifications);
         Assert.Empty(_invitations.MeetingIds);
+
+        await _invitations.QueueForPublishedMeetingAsync(meeting.Id);
+
+        Assert.Equal([meeting.Id], _invitations.MeetingIds);
+        Assert.Single(meeting.StatusHistory);
     }
 
     [Fact]

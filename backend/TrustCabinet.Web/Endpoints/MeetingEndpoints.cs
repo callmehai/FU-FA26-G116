@@ -183,6 +183,8 @@ public static class MeetingEndpoints
                 MeetingResponse.From(result.Meeting!),
                 MeetingHistoryItemResponse.From(result.History!))),
             MeetingWorkflowOutcome.NotFound => Results.NotFound(),
+            MeetingWorkflowOutcome.Forbidden when command.Action == MeetingTransitionAction.Publish => WorkflowError(
+                StatusCodes.Status403Forbidden, Msg46PublishConflict, "Cuộc họp này không còn có thể công bố."),
             MeetingWorkflowOutcome.Forbidden => WorkflowError(
                 StatusCodes.Status403Forbidden, Msg85ActionForbidden, "Bạn không có quyền thực hiện thao tác này."),
             MeetingWorkflowOutcome.InvalidRequest => WorkflowError(
@@ -202,9 +204,12 @@ public static class MeetingEndpoints
             MeetingWorkflowOutcome.StatusConflict => WorkflowError(
                 StatusCodes.Status409Conflict,
                 TransitionConflictCode(command.Action),
-                command.Action == MeetingTransitionAction.SubmitForApproval
-                    ? "Cuộc họp không còn ở trạng thái Draft hoặc Rejected."
-                    : "Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này."),
+                command.Action switch
+                {
+                    MeetingTransitionAction.SubmitForApproval => "Cuộc họp không còn ở trạng thái Draft hoặc Rejected.",
+                    MeetingTransitionAction.Publish => "Cuộc họp này không còn có thể công bố.",
+                    _ => "Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.",
+                }),
             _ => SaveFailed(
                 TransitionFailureCode(command.Action),
                 "Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại."),
@@ -435,7 +440,7 @@ public static class MeetingEndpoints
         if (!MeetingListQueryParser.TryParse(request.Query, out var query, out var errors))
         {
             return Results.Json(
-                new MeetingErrorResponse(Msg32InvalidQuery, "Tham số truy vấn không hợp lệ.", errors),
+                new MeetingErrorResponse(Msg32InvalidQuery, "Tiêu chí danh sách cuộc họp không hợp lệ.", errors),
                 statusCode: StatusCodes.Status400BadRequest);
         }
 

@@ -49,11 +49,11 @@ else Meeting is eligible for publication
     deactivate MeetingSessionRepository
 
     alt No valid Planned Meeting Session exists - EX-2
-        MeetingService-->MeetingController: Meeting Session schedule is not ready
+        MeetingService-->MeetingController: MSG90 - Meeting Session schedule is not ready
         deactivate MeetingService
-        MeetingController-->MeetingPage: At least one valid Meeting Session\nmust be prepared before publication
+        MeetingController-->MeetingPage: MSG90 - At least one valid Meeting Session\nmust be prepared before publication
         deactivate MeetingController
-        MeetingPage-->Organizer: At least one valid Meeting Session\nmust be prepared before publication
+        MeetingPage-->Organizer: MSG90 - At least one valid Meeting Session\nmust be prepared before publication
 
     else Valid Planned Meeting Session exists
         MeetingService->MeetingRepository: Change status from Approved to Published\n(BR-37)
@@ -92,16 +92,31 @@ else Meeting is eligible for publication
             NotificationService-->MeetingService: Notifications created
             deactivate NotificationService
 
+            MeetingService->MeetingRepository: Commit publication transaction
+            activate MeetingRepository
+            MeetingRepository->Database: Commit status, history and notifications
+            activate Database
+            Database-->MeetingRepository: Publication committed
+            deactivate Database
+            MeetingRepository-->MeetingService: Publication committed
+            deactivate MeetingRepository
+
             MeetingService->EmailService: Queue participant invitation delivery tasks\n(BR-39, BR-40)
             activate EmailService
-            EmailService-->MeetingService: Invitation delivery queued
-            deactivate EmailService
+            alt Email delivery initialization is unavailable - AF-1
+                EmailService-->MeetingService: Queue initialization failed
+                deactivate EmailService
+                MeetingService->MeetingService: Log failure; worker reconciles Published meeting later
+            else Invitation delivery initialized
+                EmailService-->MeetingService: Invitation delivery queued
+                deactivate EmailService
+            end
 
             MeetingService-->MeetingController: Meeting published successfully
             deactivate MeetingService
-            MeetingController-->MeetingPage: MSG45 - Meeting published successfully.\nInvitations are queued for delivery
+            MeetingController-->MeetingPage: MSG45 - Meeting published successfully
             deactivate MeetingController
-            MeetingPage-->Organizer: MSG45 - Meeting published successfully.\nInvitations are queued for delivery
+            MeetingPage-->Organizer: MSG45 - Meeting published successfully
         end
     end
 end

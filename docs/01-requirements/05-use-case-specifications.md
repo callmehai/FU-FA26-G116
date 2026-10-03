@@ -1182,8 +1182,9 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 > hợp lệ thuộc chính meeting, có tiêu đề 1–300 ký tự không chỉ whitespace, hai mốc thời gian đã đặt và
 > kết thúc sau bắt đầu. Không có phiên hợp lệ trả `400 MSG90`, giữ Approved và không tạo history/
 > notification/email. Model/migration phiên phục vụ guard; API quản lý phiên UC-26–30 thuộc task riêng.
-> Nếu hợp lệ, lưu status/history/notification và jobs email trong cùng
-> transaction, rollback toàn bộ nếu producer/persistence lỗi. Notification chọn user active và loại
+> Nếu hợp lệ, lưu status/history/notification trong transaction rồi thử khởi tạo email job sau
+> commit. Lỗi persistence của publication rollback và trả `MSG47`; producer email không khả dụng
+> không hoàn tác publication, backend ghi log và worker đối soát để thử lại. Notification chọn user active và loại
 > `Delegated`; producer email SCRUM-15 chọn participant có user active, không lọc Response. SMTP tắt
 > thì không tạo email job; SMTP bật thì job mới là `Queued`, chưa xác nhận đã gửi. Khi Organizer cũ
 > inactive, quản trị active/có `AdminUsers` được `TransferOrganizer` cho người mới active/có
@@ -1205,7 +1206,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **Điều kiện sau (Postconditions)**:
   - POST-1: The meeting status is Published.
   - POST-2: The publication is recorded in the meeting lifecycle history.
-  - POST-3: Asynchronous invitation delivery tasks are queued for all meeting participants (BR-39, BR-40).
+  - POST-3: The system attempts to initialize asynchronous invitation delivery tasks; temporary email unavailability does not undo a successful publication. (BR-39, BR-40)
 - **Sơ đồ liên quan (Related Diagrams)**:
   - Sequence Diagram: [UC21_PublishMeeting.png](../06-sequencediagram/meeting-management/UC21_PublishMeeting.png)
 
@@ -1216,11 +1217,17 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 4. The system changes the meeting status from Approved to Published. (BR-37)
 5. The system records the publication action, acting user, and timestamp in the meeting lifecycle history. (BR-38)
 6. The system initiates invitation delivery for the meeting participants.
-7. The system displays MSG45 – "Meeting published successfully. Invitations are queued for delivery."
+7. The system displays MSG45 – "Meeting published successfully."
 
 #### Luồng sự kiện thay thế (Alternative Flows):
 
-- **AF-1: Khôi phục Organizer bị vô hiệu hóa trước khi Publish**
+- **AF-1: Email Delivery Is Temporarily Unavailable**
+  1. At Step 6 of the Main Flow, the system cannot initialize the invitation delivery jobs.
+  2. The meeting remains Published and the publication history remains recorded.
+  3. The system logs the initialization failure and the background worker retries from the durable Published state.
+  4. The system displays MSG45 because publication itself completed successfully.
+
+- **AF-2: Khôi phục Organizer bị vô hiệu hóa trước khi Publish**
   1. Actor quản trị còn active/có `AdminUsers` chọn `TransferOrganizer` cho meeting Approved có Organizer cũ inactive.
   2. Backend khóa meeting, kiểm tra lại quyền/trạng thái và người nhận: active/có `MeetingCreator`, khác Organizer cũ/current approver.
   3. Chỉ thay Organizer hiện tại; giữ Approved, approval assignment và nội dung. Append history TransferOrganizer với ID Organizer cũ/mới, actor/time từ server; không sửa history cũ hoặc tạo notification/email.
@@ -1244,7 +1251,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   5. The use case ends.
 
 - **EX-3: Meeting Cannot Be Published**
-  1. At Step 4 of the Main Flow, the system cannot complete the publication.
+  1. At Step 4 or Step 5 of the Main Flow, the system cannot persist the publication or its lifecycle evidence.
   2. The meeting remains Approved.
   3. Invitation delivery is not initiated.
   4. The system displays MSG47 – "Unable to publish the meeting. Please try again."

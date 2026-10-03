@@ -671,10 +671,12 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Post_transition_returns_MSG85_when_the_owner_lacks_the_required_capability()
+    public async Task Publish_returns_MSG46_when_the_owner_lacks_the_required_capability()
     {
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
+        meeting.Status = MeetingStatus.Approved;
+        AddPlannedSession(meeting);
         _factory.Meetings.Meetings.Add(meeting);
         using var client = _factory.ClientFor(creator);
 
@@ -685,11 +687,18 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        Assert.Equal("MSG85", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG46", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(
+            "Cuộc họp này không còn có thể công bố.",
+            body.RootElement.GetProperty("message").GetString());
+        Assert.Equal(MeetingStatus.Approved, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Empty(_factory.Invitations.MeetingIds);
     }
 
     [Fact]
-    public async Task Publish_producer_configuration_failure_returns_MSG47_and_rolls_back_the_workflow()
+    public async Task Publish_producer_configuration_failure_returns_MSG45_and_keeps_the_publication()
     {
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
@@ -704,10 +713,12 @@ public sealed class MeetingEndpointsTests : IDisposable
             $"/api/meetings/{meeting.Id}/transitions", new { action = "Publish" });
         using var body = await JsonOf(response);
 
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("MSG47", body.RootElement.GetProperty("code").GetString());
-        Assert.Equal(MeetingStatus.Approved, Assert.Single(_factory.Meetings.Meetings).Status);
-        Assert.Empty(_factory.Meetings.Meetings.Single().StatusHistory);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("MSG45", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(MeetingStatus.Published, Assert.Single(_factory.Meetings.Meetings).Status);
+        Assert.Equal(
+            MeetingHistoryAction.Publish,
+            Assert.Single(_factory.Meetings.Meetings.Single().StatusHistory).Action);
         Assert.Empty(_factory.Meetings.Notifications);
         Assert.Empty(_factory.Invitations.MeetingIds);
     }
@@ -1309,6 +1320,9 @@ public sealed class MeetingEndpointsTests : IDisposable
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal("MSG32", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(
+            "Tiêu chí danh sách cuộc họp không hợp lệ.",
+            body.RootElement.GetProperty("message").GetString());
         Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("status", out _));
         Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("page", out _));
         Assert.Null(_factory.Meetings.LastListQuery);

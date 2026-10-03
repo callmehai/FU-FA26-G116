@@ -21,6 +21,12 @@ internal sealed class FakeMeetingInvitationQueue : IMeetingInvitationQueue
         MeetingIds.Add(meetingId);
         return Task.FromResult(0);
     }
+
+    public Task<Guid?> QueueNextUninitializedPublishedMeetingAsync(CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult<Guid?>(null);
+    }
 }
 
 internal sealed class FakeMeetingRepository : IMeetingRepository

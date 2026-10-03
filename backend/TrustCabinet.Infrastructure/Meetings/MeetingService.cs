@@ -297,7 +297,7 @@ public sealed class MeetingService(
 
         try
         {
-            return await meetings.InTransactionAsync(async token =>
+            var result = await meetings.InTransactionAsync(async token =>
             {
                 var transfersOrganizer = command.Action == MeetingTransitionAction.TransferOrganizer;
                 // Recovery authorization is independent of ordinary meeting visibility. Check the
@@ -461,10 +461,6 @@ public sealed class MeetingService(
                 }
                 else if (command.Action == MeetingTransitionAction.Publish)
                 {
-                    if (invitations is null)
-                    {
-                        throw new InvalidOperationException("SCRUM-15 invitation producer is not registered.");
-                    }
                     var recipients = MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants);
 
                     var notifications = recipients.Select(participant => CreateNotification(
@@ -476,10 +472,6 @@ public sealed class MeetingService(
                         now,
                         history.Id)).ToArray();
                     await meetings.AddNotificationsAsync(notifications, token);
-
-                    // Persist Published before SCRUM-15 reads it using the same scoped transaction.
-                    await meetings.SaveChangesAsync(token);
-                    await invitations.QueueForPublishedMeetingAsync(meeting.Id, token);
                 }
 
                 await meetings.SaveChangesAsync(token);
@@ -490,16 +482,52 @@ public sealed class MeetingService(
                     ? MeetingWorkflowResult.OrganizerTransferred(historyRecord)
                     : MeetingWorkflowResult.Success(MeetingDetails.From(meeting), historyRecord);
             }, ct);
+
+            if (command.Action == MeetingTransitionAction.Publish
+                && result.Outcome == MeetingWorkflowOutcome.Success)
+            {
+                await TryQueuePublishedMeetingAsync(id, ct);
+            }
+
+            return result;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }
-        catch (Exception exception) when (IsPersistenceFailure(exception)
-            || (command.Action == MeetingTransitionAction.Publish && exception is InvalidOperationException))
+        catch (Exception exception) when (IsPersistenceFailure(exception))
         {
             logger.LogError(exception, "Could not perform {Action} for meeting {MeetingId}.", command.Action, id);
             return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.SaveFailed);
+        }
+    }
+
+    private async Task TryQueuePublishedMeetingAsync(Guid meetingId, CancellationToken ct)
+    {
+        if (invitations is null)
+        {
+            logger.LogError(
+                "Invitation jobs were not initialized for published meeting {MeetingId} because the producer is not registered. The email worker can reconcile the publication later.",
+                meetingId);
+            return;
+        }
+
+        try
+        {
+            await invitations.QueueForPublishedMeetingAsync(meetingId, ct);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            logger.LogWarning(
+                "Invitation job initialization was cancelled after meeting {MeetingId} was published. The email worker will retry it.",
+                meetingId);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(
+                exception,
+                "Invitation jobs were not initialized after meeting {MeetingId} was published. The email worker will retry them.",
+                meetingId);
         }
     }
 

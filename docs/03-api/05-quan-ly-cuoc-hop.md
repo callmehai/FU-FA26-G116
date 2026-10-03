@@ -123,7 +123,7 @@ tối đa bảy chữ số. Timestamp thiếu timezone trả `400 MSG32`.
 Không có kết quả hoặc trang vượt quá trang cuối, kể cả khi offset lớn hơn giới hạn `int`, vẫn trả
 `200` với `items: []` (BR-12). Khi không có
 kết quả, `totalCount` và `totalPages` đều bằng `0`. Query sai trả `400` với `code` là
-`MSG32`, `message` là `Tham số truy vấn không hợp lệ.` và `errors` theo tên tham số.
+`MSG32`, `message` là `Tiêu chí danh sách cuộc họp không hợp lệ.` và `errors` theo tên tham số.
 Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài giới
 hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `500` với
 `code: MSG38` và thông điệp
@@ -257,12 +257,16 @@ không thêm history/notification và không gọi producer email, kể cả SMT
 Publish tạo notification theo BR-54: chỉ participant có user active và `Response != Delegated`;
 không tự thêm người được ủy quyền chỉ từ `DelegatedToUserId`. Delegate cần participant row riêng
 hợp lệ để nhận notification. Email dùng producer SCRUM-15: gọi
-`QueueForPublishedMeetingAsync(meetingId)` trong cùng transaction; producer đọc meeting đã
-Published và chọn các participant có user active, không lọc `Response`.
+`QueueForPublishedMeetingAsync(meetingId)` sau khi transaction công bố đã commit; producer đọc
+meeting đã Published và chọn các participant có user active, không lọc `Response`.
 Producer lưu `ToAddress`, `Subject`, `Body` và `CalendarAttachment` khi tạo job; thay đổi dữ liệu
 sau commit không sửa nội dung job đã lưu. Khi SMTP được bật, job mới có trạng thái `Queued`;
 SMTP tắt thì không tạo job mới. HTTP 200 chỉ xác nhận công bố thành công, không xác nhận email đã
-được gửi. Worker SCRUM-15 xử lý gửi bất đồng bộ và quản lý retry/failure theo contract của worker.
+được gửi. Nếu producer chưa khởi tạo được job, API vẫn trả `200 MSG45`, meeting và publication
+history vẫn Published; backend ghi log và worker tự đối soát meeting Published chưa có job để thử
+lại. Deduplication key bảo đảm retry không tạo email trùng hoặc publication history mới. Lỗi lưu
+status/history/notification trước commit vẫn rollback và trả `503 MSG47`. Worker SCRUM-15 xử lý
+gửi bất đồng bộ và quản lý retry/failure theo contract của worker.
 Các writer participant thuộc SCRUM-20 phải dùng cùng meeting-row lock/serialization protocol để một
 lần Publish và thay đổi participant đồng thời có ranh giới snapshot xác định.
 
@@ -364,6 +368,7 @@ khoảng trắng bao quanh hoặc tên khác chữ hoa/chữ thường. Request 
 | 403 | `MSG85` | Đọc được meeting nhưng không phải actor/relationship/capability của action, hoặc assignment cũ cho Organizer tự duyệt |
 | 403 | — | Tài khoản inactive theo active-user gate |
 | 404 | — | Meeting không tồn tại hoặc caller không được phép đọc/action trên tài nguyên; body rỗng |
+| 403 | `MSG46` | Organizer còn đọc được meeting nhưng đã mất `MeetingCreator`; không công bố hoặc tạo history/jobs |
 | 409 | `MSG41`, `MSG46`, `MSG63`, `MSG64` | Submit, Publish, quyết định duyệt hoặc ReturnToDraft không còn hợp lệ; không ghi history/jobs |
 | 200/400/409 | `MSG89` / `MSG66` / `MSG67` | TransferOrganizer thành công / đích không hợp lệ / trạng thái hoặc Organizer cũ không cho transfer |
 | 413 | `MSG87` | JSON request vượt 64 KiB |
@@ -382,7 +387,8 @@ SCRUM-19 ghi status, history, database notification và gọi producer SCRUM-15 
 cùng scoped DbContext/transaction. Producer chọn participant có user active, lưu nội dung email
 và dùng `DeduplicationKey = meeting:{meetingId}:published:{userId}`. Worker gửi nội dung đã lưu sau
 commit. SMTP `Enabled=false` không tạo job mới; các job cũ vẫn được giữ. Producer/persistence/timeout
-lỗi trả `503 MSG47` và rollback toàn bộ transaction. Bốn cột email không dùng `OriginHistoryId`,
+lỗi lưu publication trả `503 MSG47` và rollback toàn bộ transaction. Lỗi khởi tạo email sau commit
+không rollback publication; worker đối soát và thử lại. Bốn cột email không dùng `OriginHistoryId`,
 `RecipientUserId`, `MessageType`, `PayloadSnapshot` đã được bỏ bằng migration mới; key, nội dung
 thư/.ics, `MeetingId` và trạng thái delivery vẫn giữ. `Notification.OriginHistoryId` không thay đổi.
 Database notification rows được tạo ở đây; realtime push theo SCRUM-14 là phần tích hợp riêng.

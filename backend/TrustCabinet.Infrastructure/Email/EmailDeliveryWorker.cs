@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Domain.Notifications;
 
 namespace TrustCabinet.Infrastructure.Email;
 
@@ -21,6 +22,8 @@ internal sealed class EmailDeliveryWorker(
             try
             {
                 await using var scope = scopeFactory.CreateAsyncScope();
+                var invitationQueue = scope.ServiceProvider.GetRequiredService<IMeetingInvitationQueue>();
+                await invitationQueue.QueueNextUninitializedPublishedMeetingAsync(stoppingToken);
                 var processor = scope.ServiceProvider.GetRequiredService<EmailQueueProcessor>();
                 result = await processor.ProcessNextAsync(stoppingToken);
             }
@@ -30,7 +33,7 @@ internal sealed class EmailDeliveryWorker(
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "Could not read or update the invitation email queue.");
+                logger.LogError(exception, "Could not initialize, read or update the invitation email queue.");
                 await Delay(TimeSpan.FromSeconds(options.Value.PollingIntervalSeconds), stoppingToken);
                 continue;
             }

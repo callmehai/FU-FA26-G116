@@ -15,7 +15,7 @@ Agenda và Meeting Session không bắt buộc lúc gửi duyệt.
 ## Tích hợp producer/worker SCRUM-15
 
 Publish ghi status, history và notifications theo BR-54 trong cùng transaction. Sau SaveChanges,
-service gọi `QueueForPublishedMeetingAsync(meetingId)` bằng cùng scoped DbContext/transaction.
+service commit publication trước rồi gọi `QueueForPublishedMeetingAsync(meetingId)` bằng cùng scoped DbContext.
 Producer SCRUM-15 đọc meeting Published cùng participants, render và lưu nội dung job một lần.
 
 - Notification chỉ chọn participant có user active và `Response != Delegated`; delegate cần
@@ -26,7 +26,10 @@ Producer SCRUM-15 đọc meeting Published cùng participants, render và lưu n
   Bốn cột email không dùng `OriginHistoryId`, `RecipientUserId`, `MessageType`, `PayloadSnapshot`
   được bỏ bằng migration mới. Thay đổi dữ liệu sau commit không sửa nội dung job đã lưu.
 - Khi bật SMTP, job mới có `Queued`, `SentAt = null`; Publish không xác nhận email đã được giao.
-- Producer không tạo được jobs thì Publish rollback toàn bộ và trả `503 MSG47`.
+- Producer không tạo được jobs thì Publish vẫn trả `200 MSG45`; meeting/history giữ Published,
+  backend ghi log và email worker tự đối soát để thử lại. Retry dùng deduplication key nên không tạo
+  thêm publication history hoặc email trùng.
+- Chỉ lỗi lưu status/history/notification của publication mới rollback và trả `503 MSG47`.
 - SMTP `Enabled=false` dừng worker và không tạo job mới; Publish vẫn thành công và giữ nguyên
   jobs cũ. Cấu hình theo [hướng dẫn email](07-gui-email-thu-moi.md).
 
@@ -60,6 +63,10 @@ Cùng migration bổ sung ID Organizer cũ/mới cho history
   Organizer, hoặc approver inactive/mất quyền. Approver khác Organizer còn hợp lệ thì không cho rút.
 - Organizer/current approver đọc full history; Secretary được gán, active/chưa ủy quyền đọc rejection reason qua history cả trước Publish, nhưng snapshot chuyển Organizer vẫn ẩn. Participant khác chỉ đọc timeline đã redacted sau Publish.
 - Publish thiếu phiên Planned hợp lệ trả `400 MSG90` với `errors.meetingSessions`; Approved/assignment/history/notification/email giữ nguyên, producer không được gọi. SMTP tắt vẫn kiểm tra BR-56.
+- Organizer còn đọc được meeting Approved nhưng mất `MeetingCreator` nhận `403 MSG46`; caller không
+  được đọc tài nguyên vẫn nhận `404`.
+- UC17 Session/Agenda detail và API quản lý phiên vẫn thuộc task UC-26–30; guard `MSG90` được giữ,
+  chưa xác nhận UC17 hoặc luồng Publish qua UI hoàn tất khi task đó chưa tích hợp.
 - Kiểm tra rollback khi lưu lỗi và concurrent Publish chỉ tạo một history/batch.
 - Writer participant SCRUM-20 và Meeting Session UC-26–30 khóa meeting cha trong cùng transaction trước khi sửa, để bảo vệ snapshot người nhận và BR-56 khi Publish đồng thời.
 - Xử lý HTTP/message codes theo API contract; trạng thái gửi email theo SCRUM-15.

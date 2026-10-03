@@ -108,8 +108,8 @@ trong bảng đệm. Xem [bàn giao tích hợp](06-scrum19-ban-giao-tich-hop.md
 - Người tham dự có địa chỉ email thật và hợp lệ.
 - Máy cho phép kết nối outbound tới SMTP host/port.
 - Luồng công bố của SCRUM-19 gọi
-  `IMeetingInvitationQueue.QueueForPublishedMeetingAsync(meetingId)` trong cùng transaction chuyển
-  meeting sang `Published`.
+  `IMeetingInvitationQueue.QueueForPublishedMeetingAsync(meetingId)` sau khi transaction chuyển
+  meeting sang `Published` đã commit; worker tự đối soát để thử lại nếu bước khởi tạo job lỗi.
 
 Nếu SCRUM-19 chưa tích hợp thì worker vẫn chạy nhưng không có job mới để gửi.
 
