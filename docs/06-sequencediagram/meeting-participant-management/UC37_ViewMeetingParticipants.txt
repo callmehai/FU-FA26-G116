@@ -14,7 +14,7 @@ activate ParticipantController
 ParticipantController->ParticipantService: getMeetingParticipants(meetingId, secretaryId)
 activate ParticipantService
 
-ParticipantService->ParticipantRepository: Get current participants and verify assigned Secretary\n(BR-78, BR-84, BR-88)
+ParticipantService->ParticipantRepository: Get current participants and verify active assigned Secretary at any meeting status\n(BR-78, BR-84, BR-88)
 activate ParticipantRepository
 ParticipantRepository->Database: Retrieve Secretary assignment and current participants;\nexclude historical records
 activate Database

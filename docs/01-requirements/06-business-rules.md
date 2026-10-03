@@ -71,11 +71,13 @@ yêu cầu thêm quyền riêng để đăng nhập.
 
 **Áp dụng trong TrustCabinet — BA đã chốt (UC-17, UC-18 và mở đích notification):** quyền đọc phụ
 thuộc cả quan hệ với meeting và trạng thái hiện tại. Người tạo được đọc ở mọi trạng thái. Người duyệt
-đang được gán được đọc từ `WaitingApproval` trở đi. Người được gán vào meeting với vai trò `Chair`,
-`Secretary`, `Member` hoặc `Guest` được đọc từ `Published` trở đi. Trạng thái lời mời (`Pending`,
+đang được gán được đọc từ `WaitingApproval` trở đi. Secretary hiện hành có tài khoản hoạt động được đọc từ `Draft` để chuẩn bị cuộc họp theo F08;
+ở `WaitingApproval` được xem nhưng không được thêm participant, đổi role hoặc xóa participant.
+Người được gán vào meeting chỉ với vai trò `Chair`, `Member` hoặc `Guest` được đọc từ `Published` trở đi. Trạng thái lời mời (`Pending`,
 `Accepted`, `Declined` hoặc `Delegated`) không làm mất quyền đọc meeting đã công bố. Notification không
 cấp quyền đọc; mở đích phải kiểm tra lại theo BR-29. Quyền đọc tài liệu, recording và dữ liệu nhạy cảm
-tuân theo các rule riêng.
+tuân theo các rule riêng. Ngoại lệ quyền đọc của Secretary trước `Published` là quyết định F08
+ngày 03/10/2026, cần đồng bộ vào UC-17/18 và kiểm tra quyền API khi triển khai F08.
 
 **Áp dụng trong TrustCabinet:** Planned Start Time và Planned End Time thuộc về Meeting Session,
 không phải thông tin cấp Meeting (BR-25). Khi tạo/sửa Meeting Session, Planned End Time phải sau

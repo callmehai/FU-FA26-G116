@@ -34,14 +34,14 @@ deactivate Database
 ParticipantRepository-->ParticipantService: Assignment, participant, and role counts
 deactivate ParticipantRepository
 
-ParticipantService->ParticipantService: Validate assigned Secretary, editable status, target participant,\nMeeting Role, and required-role protection (BR-78, BR-80, BR-89)
+ParticipantService->ParticipantService: Validate assigned Secretary, editable status (excluding WaitingApproval), target participant,\nMeeting Role, and required-role protection (BR-78, BR-80, BR-89)
 
-alt Meeting is Ended, MinutesIssued, or Archived - EX-3
+alt Meeting is WaitingApproval, Ended, MinutesIssued, or Archived - EX-3
     ParticipantService-->ParticipantController: Participant list is read-only
     deactivate ParticipantService
     ParticipantController-->MeetingPage: Modification rejected
     deactivate ParticipantController
-    MeetingPage-->Secretary: MSG98 - The meeting participant list can no longer be modified.
+    MeetingPage-->Secretary: MSG98 - The meeting participant list cannot be modified in its current status.
 else Submitted Meeting Role is invalid - EX-1
     ParticipantService-->ParticipantController: Validation failed
     deactivate ParticipantService

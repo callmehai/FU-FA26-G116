@@ -44,7 +44,7 @@ deactivate Database
 UserRepository-->ParticipantService: User eligibility
 deactivate UserRepository
 
-ParticipantService->ParticipantService: Validate actor, meeting status, user, uniqueness, and Meeting Role;\nfirst participant must be a Secretary assigned by the Meeting Organizer\n(BR-78, BR-79, BR-80)
+ParticipantService->ParticipantService: Validate actor, meeting status, user, uniqueness, and Meeting Role;\neditable statuses: Draft, Rejected, Approved, Published, InProgress;\nfirst participant must be a Secretary assigned by the Meeting Organizer\n(BR-78, BR-79, BR-80)
 
 alt Participant information is invalid - EX-1
     ParticipantService-->ParticipantController: Validation failed
@@ -52,12 +52,12 @@ alt Participant information is invalid - EX-1
     ParticipantController-->MeetingPage: Display participant validation errors
     deactivate ParticipantController
     MeetingPage-->Actor: MSG97 - Invalid meeting participant information.\nApplicable field message(s)
-else Meeting is Ended, MinutesIssued, or Archived - EX-2
+else Meeting is WaitingApproval, Ended, MinutesIssued, or Archived - EX-2
     ParticipantService-->ParticipantController: Participant list is read-only
     deactivate ParticipantService
     ParticipantController-->MeetingPage: Modification rejected
     deactivate ParticipantController
-    MeetingPage-->Actor: MSG98 - The meeting participant list can no longer be modified.
+    MeetingPage-->Actor: MSG98 - The meeting participant list cannot be modified in its current status.
 else Participant can be added
     ParticipantService->ParticipantRepository: Create participant with selected Meeting Role and Pending response\n(BR-80, BR-81)
     activate ParticipantRepository
