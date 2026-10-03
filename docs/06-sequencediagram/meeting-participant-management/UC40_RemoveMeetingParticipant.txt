@@ -1,0 +1,87 @@
+title UC-40 - Remove Meeting Participant
+
+actor "Secretary" as Secretary
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Participant Controller" as ParticipantController
+control ":Meeting Participant Service" as ParticipantService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Participant Repository" as ParticipantRepository
+participant ":Notification Service" as NotificationService
+database ":Database" as Database
+
+Secretary->MeetingPage: Confirm Remove Meeting Participant
+activate MeetingPage
+MeetingPage->ParticipantController: Remove Meeting Participant
+activate ParticipantController
+ParticipantController->ParticipantService: removeMeetingParticipant(meetingId, participantId)
+activate ParticipantService
+
+ParticipantService->MeetingRepository: Get meeting and current status
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting
+activate Database
+Database-->MeetingRepository: Meeting and status
+deactivate Database
+MeetingRepository-->ParticipantService: Meeting and status
+deactivate MeetingRepository
+
+ParticipantService->ParticipantRepository: Get Secretary assignment, target participant,\nrequired-role counts, and delegation relationships (BR-78, BR-84, BR-89)
+activate ParticipantRepository
+ParticipantRepository->Database: Retrieve current participant and delegation data
+activate Database
+Database-->ParticipantRepository: Participant, role counts, and delegations
+deactivate Database
+ParticipantRepository-->ParticipantService: Participant, role counts, and delegations
+deactivate ParticipantRepository
+
+ParticipantService->ParticipantService: Validate removal eligibility and required-role protection\n(BR-78, BR-84, BR-89)
+
+alt Meeting is Ended, MinutesIssued, or Archived - EX-2
+    ParticipantService-->ParticipantController: Participant list is read-only
+    deactivate ParticipantService
+    ParticipantController-->MeetingPage: Removal rejected
+    deactivate ParticipantController
+    MeetingPage-->Secretary: MSG98 - The meeting participant list can no longer be modified.
+else Removal would remove the last required-role holder - EX-1
+    ParticipantService-->ParticipantController: Required Meeting Role would be removed
+    deactivate ParticipantService
+    ParticipantController-->MeetingPage: Removal rejected
+    deactivate ParticipantController
+    MeetingPage-->Secretary: MSG109 - The meeting must retain its required Chair and Secretary.\nAssign a replacement first.
+else Participant can be removed
+    ParticipantService->ParticipantRepository: Atomically remove current assignment and end outgoing delegation;\nretain inactive response and attendance evidence when required (BR-84, BR-89)
+    activate ParticipantRepository
+    ParticipantRepository->Database: Revalidate role counts and save removal
+    activate Database
+    Database-->ParticipantRepository: Removal saved with affected users / Save failed
+    deactivate Database
+    ParticipantRepository-->ParticipantService: Removed assignment and affected users / Save failed
+    deactivate ParticipantRepository
+
+    alt Participant cannot be removed - EX-3
+        ParticipantService-->ParticipantController: Save failed
+        deactivate ParticipantService
+        ParticipantController-->MeetingPage: Removal failed
+        deactivate ParticipantController
+        MeetingPage-->Secretary: MSG104 - Unable to remove the meeting participant. Please try again.
+    else Participant is removed
+        opt Meeting is InProgress
+            ParticipantService->ParticipantService: Re-evaluate affected room access; eject only users\nwith no effective room-entry relationship (BR-84)
+        end
+
+        opt Meeting is Published or InProgress
+            ParticipantService->NotificationService: Queue removal notification without protected link and email;\nrecord delivery failure for retry without rollback (BR-82)
+            activate NotificationService
+            NotificationService-->ParticipantService: Queued / Retry recorded
+            deactivate NotificationService
+        end
+
+        ParticipantService-->ParticipantController: Participant removed
+        deactivate ParticipantService
+        ParticipantController-->MeetingPage: Removal successful
+        deactivate ParticipantController
+        MeetingPage-->Secretary: MSG103 - Meeting participant removed successfully.
+    end
+end
+
+deactivate MeetingPage

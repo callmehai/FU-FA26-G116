@@ -58,6 +58,14 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **UC-35**: Đặt mục chương trình nghị sự hiện tại (Set Current Agenda Item)
 - **UC-36**: Hoàn thành mục chương trình nghị sự (Complete Agenda Item)
 
+### 1.8 Thành phần tham dự & Vai trò trong cuộc họp (Meeting Participants & Meeting Roles)
+- **UC-37**: Xem thành phần tham dự (View Meeting Participants)
+- **UC-38**: Thêm thành phần tham dự (Add Meeting Participant)
+- **UC-39**: Gán / Thay đổi vai trò trong cuộc họp (Assign / Change Meeting Role)
+- **UC-40**: Xóa thành phần tham dự (Remove Meeting Participant)
+- **UC-41**: Phản hồi lời mời họp (Respond to Meeting Invitation)
+- **UC-42**: Xem trạng thái phản hồi của thành phần tham dự (View Participant Response Status)
+
 ---
 
 ## 2. Đặc tả chi tiết từng Use Case (Template & Specifications)
@@ -1894,4 +1902,415 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   2. The Agenda Item remains unchanged.
   3. The system displays MSG76 – "Unable to complete the agenda item. Please try again."
   4. The use case ends.
+
+---
+
+### FEATURE 8: THÀNH PHẦN THAM DỰ & VAI TRÒ TRONG CUỘC HỌP (MEETING PARTICIPANTS & MEETING ROLES)
+
+> **Bản nháp để review.** Nội dung được tách từ `SCRUM-20`. Các mã `BR-78`–`BR-89` và
+> `MSG95`–`MSG109` dưới đây là mã dự thảo để giữ đặc tả dễ đối chiếu; chưa cập nhật Business Rule
+> catalogue, Message Code catalogue hoặc Sequence Diagram cho đến khi đặc tả được duyệt.
+
+---
+
+### UC-37: View Meeting Participants (Xem thành phần tham dự)
+
+- **Use Case ID**: UC-37
+- **Use Case Name**: View Meeting Participants
+- **Primary Actor**: Secretary
+- **Secondary Actor**: None
+- **Mô tả (Description)**: Allows the Secretary assigned to a meeting to view the internal users invited to that meeting and each participant's meeting-specific role.
+- **Điều kiện tiên quyết (Preconditions)**:
+  - PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
+  - PRE-2: The selected meeting exists.
+- **Điều kiện sau (Postconditions)**:
+  - POST-1: The current participant list and meeting roles are displayed.
+  - POST-2: No participant information is modified.
+- **Sơ đồ liên quan (Related Diagrams)**:
+  - Sequence Diagram: To be created after this specification is approved.
+
+#### Luồng sự kiện chính (Main Flow — View Meeting Participants):
+1. The Secretary opens the selected meeting.
+2. The Secretary selects the Meeting Participants tab.
+3. The system verifies that the Secretary is still assigned to the meeting.
+4. The system retrieves the current internal participants of the selected meeting; participant records retained only as historical evidence are excluded. (BR-79, BR-84, BR-88)
+5. The system displays each participant's Full Name, Email, and Meeting Role.
+6. The Secretary reviews the participant list.
+
+#### Luồng sự kiện thay thế (Alternative Flows):
+
+- **AF-1: No Participants Have Been Added**
+  1. At Step 4, the meeting has no participants.
+  2. The system displays an empty participant list.
+  3. The use case ends successfully.
+
+#### Luồng ngoại lệ / Lỗi (Exception Flows):
+
+- **EX-1: Meeting Is Not Accessible**
+  1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.
+  2. The system displays the same not-found result used for an unknown meeting and does not disclose participant data. (BR-88)
+  3. The use case ends.
+
+- **EX-2: Participant List Cannot Be Retrieved**
+  1. At Step 4, the system cannot retrieve the participant list.
+  2. The system displays MSG95 – "Unable to load meeting participants. Please try again."
+  3. The use case ends.
+
+---
+
+### UC-38: Add Meeting Participant (Thêm thành phần tham dự)
+
+- **Use Case ID**: UC-38
+- **Use Case Name**: Add Meeting Participant
+- **Primary Actor**: Meeting Organizer (initial Secretary assignment), Secretary
+- **Secondary Actor**: None
+- **Mô tả (Description)**: Allows the Meeting Organizer to add and assign the first Secretary when the meeting does not yet have one. After the first Secretary has been assigned, the Secretary manages the participant list and invites active internal users with meeting-specific roles. Participants are selected individually; the system does not support inviting an organisational unit.
+- **Điều kiện tiên quyết (Preconditions)**:
+  - PRE-1: The actor is authenticated and is either the Meeting Organizer creating the initial Secretary assignment or a Secretary already assigned to the selected meeting.
+  - PRE-2: The selected meeting exists and is in Draft, WaitingApproval, Rejected, Approved, Published, or InProgress status.
+  - PRE-3: The selected user has an active internal account and is not already a participant of the meeting.
+- **Điều kiện sau (Postconditions)**:
+  - POST-1: The selected user is added to the meeting exactly once.
+  - POST-2: The selected user's invitation response is Pending.
+  - POST-3: The selected meeting role is recorded independently of the user's system role.
+  - POST-4: If the meeting is Published or InProgress, an in-app notification and an invitation email are queued for the new participant.
+- **Sơ đồ liên quan (Related Diagrams)**:
+  - Sequence Diagram: To be created after this specification is approved.
+
+#### Luồng sự kiện chính (Main Flow — Add Meeting Participant):
+1. The authorized actor opens the Meeting Participants tab of the selected meeting.
+2. The actor selects Add Participant.
+3. The system displays active internal users who are not already participants of the meeting. (BR-79)
+4. The actor selects one user and assigns one Meeting Role:
+   - Chair
+   - Secretary
+   - Member
+   - Guest
+5. The actor submits the participant information.
+6. The system verifies that:
+   - when the meeting has no Secretary, the actor is its Meeting Organizer and the selected Meeting Role is Secretary;
+   - when the meeting already has a Secretary, the actor is an assigned Secretary;
+   - the meeting still permits participant management;
+   - the selected user is active and not already invited; and
+   - the selected Meeting Role is valid.
+   (BR-78, BR-79, BR-80)
+7. The system adds the selected user with Pending response status and records the selected Meeting Role. (BR-80, BR-81)
+8. If the meeting is Published or InProgress, the system queues an in-app notification and an invitation email for asynchronous delivery to the new participant. (BR-39, BR-40, BR-45, BR-82)
+9. The system displays MSG96 – "Meeting participant added successfully."
+
+#### Luồng sự kiện thay thế (Alternative Flows):
+
+- **AF-1: Invitation Notification Delivery Is Unavailable**
+  1. At Step 8, the meeting is Published or InProgress but in-app or email invitation delivery is unavailable.
+  2. The participant remains successfully added with Pending response status. (BR-40, BR-82)
+  3. The system records the delivery failure for retry.
+  4. The flow resumes at Step 9 of the Main Flow.
+
+#### Luồng ngoại lệ / Lỗi (Exception Flows):
+
+- **EX-1: Invalid Participant Information**
+  1. At Step 6, the selected user is inactive, is already a participant, or the submitted Meeting Role is invalid. (BR-79, BR-80)
+  2. The participant is not added.
+  3. The system displays MSG97 – "Invalid meeting participant information." with the applicable field message(s):
+     - "The selected user is not available."
+     - "This user is already a meeting participant."
+     - "A valid meeting role is required."
+     - "The Meeting Organizer must assign a Secretary as the first meeting participant."
+  4. The actor corrects the information.
+  5. The flow resumes at Step 6 of the Main Flow.
+
+- **EX-2: Participant List Can No Longer Be Modified**
+  1. At Step 6, the meeting is Ended, MinutesIssued, or Archived. (BR-78)
+  2. The participant is not added.
+  3. The system displays MSG98 – "The meeting participant list can no longer be modified."
+  4. The use case ends.
+
+- **EX-3: Participant Cannot Be Added**
+  1. At Step 7, the system cannot save the new participant.
+  2. The participant is not added and no invitation is sent.
+  3. The system displays MSG99 – "Unable to add the meeting participant. Please try again."
+  4. The use case ends.
+
+---
+
+### UC-39: Assign / Change Meeting Role (Gán / Thay đổi vai trò trong cuộc họp)
+
+- **Use Case ID**: UC-39
+- **Use Case Name**: Assign / Change Meeting Role
+- **Primary Actor**: Secretary
+- **Secondary Actor**: None
+- **Mô tả (Description)**: Allows the Secretary to assign or change an existing participant's role within one meeting without changing that user's system role.
+- **Điều kiện tiên quyết (Preconditions)**:
+  - PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
+  - PRE-2: The selected meeting is in Draft, WaitingApproval, Rejected, Approved, Published, or InProgress status.
+  - PRE-3: The selected participant exists in the selected meeting.
+- **Điều kiện sau (Postconditions)**:
+  - POST-1: The participant's Meeting Role is updated for the selected meeting only.
+  - POST-2: The participant's system role and invitation response remain unchanged.
+  - POST-3: If the meeting is Published or InProgress, an in-app notification and an email describing the new Meeting Role are queued for the affected participant.
+- **Sơ đồ liên quan (Related Diagrams)**:
+  - Sequence Diagram: To be created after this specification is approved.
+
+#### Luồng sự kiện chính (Main Flow — Assign / Change Meeting Role):
+1. The Secretary opens the Meeting Participants tab of the selected meeting.
+2. The Secretary selects Change Role for a participant.
+3. The system displays the participant's current Meeting Role.
+4. The Secretary selects Chair, Secretary, Member, or Guest.
+5. The Secretary submits the selected Meeting Role.
+6. The system verifies that the Secretary is still assigned to the meeting, the meeting still permits participant management, the participant still belongs to the meeting, the selected Meeting Role is valid, and the change would not remove a required Chair or Secretary. (BR-78, BR-80, BR-89)
+7. The system updates only the participant's Meeting Role for the selected meeting. (BR-80, BR-83)
+8. If the meeting is Published or InProgress, the system queues an in-app notification and an email describing the new Meeting Role for asynchronous delivery to the participant. (BR-82)
+9. The system displays MSG100 – "Meeting role updated successfully."
+
+#### Luồng sự kiện thay thế (Alternative Flows):
+
+- **AF-1: Selected Role Is Unchanged**
+  1. At Step 5, the selected Meeting Role is the participant's current role.
+  2. The system leaves the participant unchanged.
+  3. The system displays MSG100 – "Meeting role updated successfully."
+  4. The use case ends successfully.
+
+- **AF-2: Role Change Notification Delivery Is Unavailable**
+  1. At Step 8, the Meeting Role has been updated but notification delivery is unavailable.
+  2. The Meeting Role change remains successful. (BR-82)
+  3. The system records the delivery failure for retry.
+  4. The flow resumes at Step 9 of the Main Flow.
+
+#### Luồng ngoại lệ / Lỗi (Exception Flows):
+
+- **EX-1: Invalid Meeting Role**
+  1. At Step 6, the submitted Meeting Role is not Chair, Secretary, Member, or Guest. (BR-80)
+  2. The participant's Meeting Role remains unchanged.
+  3. The system displays MSG101 – "A valid meeting role is required."
+  4. The Secretary selects a valid Meeting Role.
+  5. The flow resumes at Step 6 of the Main Flow.
+
+- **EX-2: Required Meeting Role Would Be Removed**
+  1. At Step 6, the change would remove the last assigned Secretary, or would remove the last assigned Chair while the meeting is Published or InProgress. (BR-89)
+  2. The participant's Meeting Role remains unchanged.
+  3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."
+  4. The use case ends.
+
+- **EX-3: Participant List Can No Longer Be Modified**
+  1. At Step 6, the meeting is Ended, MinutesIssued, or Archived. (BR-78)
+  2. The participant's Meeting Role remains unchanged.
+  3. The system displays MSG98 – "The meeting participant list can no longer be modified."
+  4. The use case ends.
+
+- **EX-4: Meeting Role Cannot Be Updated**
+  1. At Step 7, the system cannot save the Meeting Role change.
+  2. The participant's Meeting Role remains unchanged.
+  3. The system displays MSG102 – "Unable to update the meeting role. Please try again."
+  4. The use case ends.
+
+---
+
+### UC-40: Remove Meeting Participant (Xóa thành phần tham dự)
+
+- **Use Case ID**: UC-40
+- **Use Case Name**: Remove Meeting Participant
+- **Primary Actor**: Secretary
+- **Secondary Actor**: None
+- **Mô tả (Description)**: Allows the Secretary to remove an internal participant while the meeting has not yet ended.
+- **Điều kiện tiên quyết (Preconditions)**:
+  - PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
+  - PRE-2: The selected meeting is in Draft, WaitingApproval, Rejected, Approved, Published, or InProgress status.
+  - PRE-3: The selected participant exists in the selected meeting.
+- **Điều kiện sau (Postconditions)**:
+  - POST-1: The selected user is no longer an active participant of the meeting.
+  - POST-2: Access granted by the removed participant assignment and any delegation made by that participant is revoked. Access granted to the removed user by a separate incoming delegation remains effective.
+  - POST-3: If the meeting is Published or InProgress, an in-app notification and a removal email are queued for the removed user.
+  - POST-4: If the removed user or a delegate affected by the ended delegation has no remaining participant or delegated access and is currently in the online meeting room, that user is removed from the room.
+- **Sơ đồ liên quan (Related Diagrams)**:
+  - Sequence Diagram: To be created after this specification is approved.
+
+#### Luồng sự kiện chính (Main Flow — Remove Meeting Participant):
+1. The Secretary opens the Meeting Participants tab of the selected meeting.
+2. The Secretary selects Remove for the target participant.
+3. The system requests confirmation.
+4. The Secretary confirms the removal.
+5. The system verifies that the Secretary is still assigned to the meeting, the meeting still permits participant management, the participant still belongs to the meeting, and the removal would not remove a required Chair or Secretary. (BR-78, BR-84, BR-89)
+6. The system removes the active participant assignment, ends any delegation created by that participant, and identifies every user whose access has changed. If the meeting is Published or InProgress, the system retains the response and attendance evidence under an explicitly inactive or removed assignment rather than physically deleting it; that retained record no longer counts as a current participant or required-role holder. (BR-84, BR-89)
+7. If the meeting is InProgress, the system re-evaluates room-entry access for the removed user and every delegate affected by the ended delegation. It removes each currently connected affected user who no longer has access through another current participant assignment or effective delegation. (BR-84)
+8. If the meeting is Published or InProgress, the system queues an in-app notification without a protected meeting link and a removal email for asynchronous delivery to the removed user. (BR-82)
+9. The system displays MSG103 – "Meeting participant removed successfully."
+
+#### Luồng sự kiện thay thế (Alternative Flows):
+
+- **AF-1: Secretary Cancels the Removal**
+  1. At Step 3, the Secretary does not confirm the removal.
+  2. The participant remains unchanged.
+  3. The use case ends successfully.
+
+- **AF-2: Removal Notification Delivery Is Unavailable**
+  1. At Step 8, the participant has been removed but notification delivery is unavailable.
+  2. The removal and applicable access revocation remain successful. (BR-82, BR-84)
+  3. The system records the delivery failure for retry.
+  4. The flow resumes at Step 9 of the Main Flow.
+
+#### Luồng ngoại lệ / Lỗi (Exception Flows):
+
+- **EX-1: Required Meeting Role Would Be Removed**
+  1. At Step 5, the removal would remove the last assigned Secretary, or would remove the last assigned Chair while the meeting is Published or InProgress. (BR-89)
+  2. The participant is not removed.
+  3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."
+  4. The use case ends.
+
+- **EX-2: Participant List Can No Longer Be Modified**
+  1. At Step 5, the meeting is Ended, MinutesIssued, or Archived. (BR-78)
+  2. The participant is not removed.
+  3. The system displays MSG98 – "The meeting participant list can no longer be modified."
+  4. The use case ends.
+
+- **EX-3: Participant Cannot Be Removed**
+  1. At Step 6, the system cannot remove the participant.
+  2. The participant remains assigned to the meeting and retains existing access.
+  3. The system displays MSG104 – "Unable to remove the meeting participant. Please try again."
+  4. The use case ends.
+
+---
+
+### UC-41: Respond to Meeting Invitation (Phản hồi lời mời họp)
+
+- **Use Case ID**: UC-41
+- **Use Case Name**: Respond to Meeting Invitation
+- **Primary Actor**: Meeting Participant
+- **Secondary Actor**: None
+- **Mô tả (Description)**: Allows an invited participant to accept, decline, or delegate their own invitation to another active internal user until the meeting ends.
+- **Điều kiện tiên quyết (Preconditions)**:
+  - PRE-1: The Meeting Participant is authenticated and has an active account.
+  - PRE-2: The Meeting Participant is currently invited to the selected meeting.
+  - PRE-3: The selected meeting is Published or InProgress.
+- **Điều kiện sau (Postconditions)**:
+  - POST-1: The participant's latest Invitation Response is Accepted, Declined, or Delegated.
+  - POST-2: The response time is recorded.
+  - POST-3: For a Delegated response, the selected delegate is recorded on the original participant's response and receives delegated access without automatically receiving a Meeting Role.
+  - POST-4: When a previous delegation is replaced or withdrawn, access granted solely by that delegation is revoked. Any affected user currently connected to the online meeting room is removed only when no room-entry access remains through another current participant assignment or effective delegation.
+- **Sơ đồ liên quan (Related Diagrams)**:
+  - Sequence Diagram: To be created after this specification is approved.
+
+#### Luồng sự kiện chính (Main Flow — Respond to Meeting Invitation):
+1. The Meeting Participant opens the invitation or the published meeting details.
+2. The system displays the participant's current Invitation Response.
+3. The Meeting Participant selects Accepted or Declined.
+4. The Meeting Participant submits the response.
+5. The system verifies that the submitted response is Accepted or Declined, the current user owns the invitation and remains a current participant of the meeting, and the meeting is still Published or InProgress. (BR-85, BR-88)
+6. In one atomic operation, the system records the selected Invitation Response and response time, clears any previous delegate, and revokes access granted solely by the previous delegation. (BR-85, BR-86, BR-87)
+7. If the meeting is InProgress, the system re-evaluates room-entry access for the previous delegate and removes that user from the room only when the user is connected and has no room-entry access through another current participant assignment or effective delegation. (BR-86)
+8. The system displays MSG105 – "Meeting invitation response recorded successfully."
+
+#### Luồng sự kiện thay thế (Alternative Flows):
+
+- **AF-1: Delegate the Invitation**
+  1. At Step 3, the Meeting Participant selects Delegated.
+  2. The system displays active internal users who may be selected as delegate.
+  3. The Meeting Participant selects another active internal user.
+  4. The system verifies that the current user owns the invitation and remains a current participant, the meeting is still Published or InProgress, and the selected delegate is active, is not the responding participant, and is not already representing another participant in the same meeting. (BR-85, BR-86, BR-88)
+  5. In one atomic operation, the system records Delegated and `DelegatedToUserId` on the original participant's record, revokes access granted solely to any previous delegate, and grants the selected delegate the applicable access. The system does not automatically create another Meeting Participant row or change an existing participant's Meeting Role. (BR-85, BR-86, BR-87)
+  6. After the atomic update, the original participant's own assignment retains meeting read access but no longer grants room-entry access while the Delegated response remains effective. A separate incoming delegation to that participant remains effective. The selected delegate has meeting read access and room-entry access; Chair and Secretary privileges are not transferred. (BR-86, BR-88)
+  7. If the meeting is InProgress, the system re-evaluates room-entry access for the original participant and any previous delegate. It removes each currently connected affected user who has no room-entry access through another current participant assignment or effective delegation. (BR-86)
+  8. If the selected delegate is already a participant, the system preserves that participant's existing Meeting Role and access.
+  9. The flow resumes at Step 8 of the Main Flow.
+
+- **AF-2: Change a Previous Response**
+  1. At Step 2, the Meeting Participant has already responded to the invitation.
+  2. The Meeting Participant selects another response and submits it.
+  3. If the new response is Delegated, the flow continues at Step 2 of AF-1 so that the new delegate is revalidated.
+  4. Otherwise, the flow resumes at Step 5 of the Main Flow so that ownership, current participation, meeting status, and the new response are revalidated before the atomic update. (BR-85, BR-86, BR-87)
+
+#### Luồng ngoại lệ / Lỗi (Exception Flows):
+
+- **EX-1: Invalid Invitation Response**
+  1. At Step 5, the submitted response is not Accepted or Declined; or at AF-1 Step 4, Delegated has no valid delegate, the participant selects themself, or the selected user already represents another participant in the same meeting. (BR-85, BR-86)
+  2. The previous Invitation Response remains unchanged.
+  3. The system displays MSG106 – "Invalid meeting invitation response." with the applicable validation message.
+  4. The Meeting Participant corrects the response.
+  5. For an invalid Accepted or Declined response, the flow resumes at Step 3 of the Main Flow. For an invalid delegate, the flow resumes at Step 2 of AF-1.
+
+- **EX-2: Invitation Can No Longer Be Answered**
+  1. At Step 5 or AF-1 Step 4, the meeting is no longer Published or InProgress, or the current user no longer owns a current participant invitation for the meeting. (BR-85)
+  2. The previous Invitation Response remains unchanged.
+  3. The system displays MSG107 – "This meeting invitation can no longer be answered."
+  4. The use case ends.
+
+- **EX-3: Invitation Response Cannot Be Saved**
+  1. At Step 6 of the Main Flow or Step 5 of AF-1, the system cannot save the Invitation Response or apply the corresponding delegated access atomically.
+  2. The previous Invitation Response and access remain unchanged.
+  3. The system displays MSG108 – "Unable to save the meeting invitation response. Please try again."
+  4. The use case ends.
+
+---
+
+### UC-42: View Participant Response Status (Xem trạng thái phản hồi của thành phần tham dự)
+
+- **Use Case ID**: UC-42
+- **Use Case Name**: View Participant Response Status
+- **Primary Actor**: Secretary
+- **Secondary Actor**: None
+- **Mô tả (Description)**: Allows the Secretary assigned to a meeting to review every current participant's invitation response and a summary by response status.
+- **Điều kiện tiên quyết (Preconditions)**:
+  - PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
+  - PRE-2: The selected meeting exists.
+- **Điều kiện sau (Postconditions)**:
+  - POST-1: The latest response status of every current participant is displayed.
+  - POST-2: The number of Pending, Accepted, Declined, and Delegated responses is displayed.
+  - POST-3: Invitation Response data is not modified.
+- **Sơ đồ liên quan (Related Diagrams)**:
+  - Sequence Diagram: To be created after this specification is approved.
+
+#### Luồng sự kiện chính (Main Flow — View Participant Response Status):
+1. The Secretary opens the Meeting Participants tab of the selected meeting.
+2. The Secretary selects Participant Response Status.
+3. The system verifies that the Secretary is still assigned to the meeting.
+4. The system retrieves all current participants and their latest Invitation Response; participant records retained only as historical evidence are excluded. (BR-84, BR-87, BR-88)
+5. The system displays each participant's Full Name, Meeting Role, Invitation Response, response time, and delegate when applicable.
+6. The system displays the total number of Pending, Accepted, Declined, and Delegated responses. (BR-87)
+7. The Secretary reviews the response status summary.
+
+#### Luồng sự kiện thay thế (Alternative Flows):
+
+- **AF-1: No Participant Has Responded**
+  1. At Step 4, every current participant has Pending response status.
+  2. The system displays all participants as Pending and shows zero for Accepted, Declined, and Delegated.
+  3. The use case ends successfully.
+
+#### Luồng ngoại lệ / Lỗi (Exception Flows):
+
+- **EX-1: Meeting Is Not Accessible**
+  1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.
+  2. The system displays the same not-found result used for an unknown meeting and does not disclose participant response data. (BR-88)
+  3. The use case ends.
+
+- **EX-2: Participant Response Status Cannot Be Retrieved**
+  1. At Step 4, the system cannot retrieve the participant response data.
+  2. The system displays MSG95 – "Unable to load meeting participants. Please try again."
+  3. The use case ends.
+
+---
+
+#### Quy tắc nghiệp vụ dự thảo của F08 (Draft Business Rules)
+
+| BR-ID | Draft Rule Statement | Applies To |
+|---|---|---|
+| `BR-78` | When a meeting has no Secretary, only its Meeting Organizer may add the first participant, and that participant must be assigned the Secretary Meeting Role. After a Secretary has been assigned, only an assigned Secretary may add participants, change Meeting Roles, or remove participants. Participant management is allowed while the meeting is Draft, WaitingApproval, Rejected, Approved, Published, or InProgress, and becomes read-only when the meeting is Ended, MinutesIssued, or Archived. | UC-38, UC-39, UC-40 |
+| `BR-79` | Internal participants are selected individually from active user accounts. A user may appear at most once in the same meeting. The system has no organisational-unit invitation, and external link guests are not Meeting Participants. | UC-37, UC-38 |
+| `BR-80` | Each internal participant has exactly one meeting-specific role: Chair, Secretary, Member, or Guest. A Meeting Role is independent of the user's system Role. | UC-38, UC-39 |
+| `BR-81` | A newly added participant starts with Pending Invitation Response, no delegate, and no response time. | UC-38 |
+| `BR-82` | While a meeting is Published or InProgress, adding a participant notifies the added user, changing a Meeting Role notifies that participant, and removing a participant notifies the removed user. Each notification uses both in-app and email delivery. Delivery is asynchronous; delivery failure is recorded for retry and does not roll back the participant change. A removal notification must not contain a protected meeting link. | UC-38, UC-39, UC-40 |
+| `BR-83` | Changing a Meeting Role changes only the participant's role in the selected meeting and does not change the user's system Role or Invitation Response. | UC-39 |
+| `BR-84` | Removing a participant revokes access granted by that participant assignment and ends any delegation made by that participant. If the removed user is also another participant's delegate, that separate incoming delegation remains effective. Room-entry access must be re-evaluated for both the removed user and every delegate affected by an ended outgoing delegation; a connected user is removed from the room only when no room-entry access remains through another current participant assignment or effective delegation. For a Published or InProgress meeting, response and attendance evidence must be preserved under an explicitly inactive or removed assignment instead of being physically deleted. A retained historical record is excluded from current-participant views, access checks, and required-role counts. Participant assignments cannot be removed after the meeting reaches Ended. | UC-37, UC-40, UC-42 |
+| `BR-85` | Only the invited participant may answer their own invitation. A valid response is Accepted, Declined, or Delegated and may be changed while the meeting is Published or InProgress. | UC-41 |
+| `BR-86` | A Delegated response records one other active internal user in `DelegatedToUserId` on the original participant row. It does not automatically create another Meeting Participant row or transfer a Chair or Secretary role. While the delegation is effective, the original participant's own assignment retains meeting read access but does not grant room-entry access; room-entry access from a separate incoming delegation remains effective. The selected delegate receives meeting read and room-entry access, and an existing participant keeps their current Meeting Role. A user cannot delegate to themself or represent more than one participant in the same meeting. Replacing or withdrawing a delegation revokes access granted solely by the previous delegation. After any such access change, the original participant and previous delegate must be re-evaluated and a connected user removed from the room only when no other current participant or effective delegation grants room-entry access. The response and access change must be atomic and the one-delegation-per-user rule must be concurrency-safe. | UC-41 |
+| `BR-87` | The latest Invitation Response and response time are recorded for each participant. Invitation Response is independent of Attendance; accepting an invitation does not mean the participant actually attended. | UC-41, UC-42 |
+| `BR-88` | Participant and response data must be authorized and filtered on the server. Current participants and users holding an effective delegation receive only the meeting access allowed by their relationship; delegated access does not grant Chair or Secretary operations. A caller who may not access a specific meeting receives the same not-found result as an unknown meeting, and no unauthorized participant row is returned to the browser. | UC-37, UC-41, UC-42 |
+| `BR-89` | After the initial Secretary assignment, a meeting must always retain at least one current participant assigned as Secretary. The transition to Published requires at least one current Chair and one current Secretary whose accounts are active. A Meeting Role change or participant removal cannot remove the last current Secretary in any editable status, or the last current Chair while the meeting is Published or InProgress; assign a replacement first. Multiple Chairs and Secretaries are allowed, but each participant has only one Meeting Role. Before a Meeting Session starts, the system must revalidate that at least one current Chair and one current Secretary still have active accounts. This start check validates assignment and account status, not Invitation Response. | UC-38, UC-39, UC-40; publication/start checks to be synchronized with UC-21 and UC-29 |
+
+#### Quyết định đã chốt khi review F08
+
+1. **Khởi tạo Secretary đầu tiên**: Meeting Organizer của UC-15, được xác định bằng `Meeting.CreatedById`, chỉ được dùng UC-38 để thêm participant đầu tiên với Meeting Role `Secretary`.
+2. **Chuyển quyền quản lý**: sau khi đã có Secretary, việc thêm participant, đổi Meeting Role và xóa participant do Secretary được gán thực hiện; Meeting Organizer không mặc nhiên là Secretary.
+3. **Trạng thái được sửa danh sách**: được thêm participant, đổi Meeting Role và xóa participant từ `Draft` đến hết `InProgress`; participant được phản hồi hoặc đổi phản hồi từ `Published` đến hết `InProgress`. Khi meeting chuyển sang `Ended`, `MinutesIssued` hoặc `Archived`, danh sách trở thành hồ sơ chỉ đọc; nếu cần sửa sai phải dùng một luồng đính chính có lưu lịch sử thay vì thay đổi trực tiếp.
+4. **Ủy quyền tham dự**: giữ `Delegated` theo SCRUM-20. Người được ủy quyền không tự động có Meeting Role; họ được cấp quyền xem meeting và vào phòng trong phạm vi ủy quyền. Nếu đã là participant thì giữ nguyên role. Chair/Secretary không được chuyển bằng thao tác ủy quyền, và một người chỉ đại diện cho tối đa một participant trong cùng meeting. Quyền vào phòng này thay đổi quyết định hiện hành trong ADR-0010 (đang loại `Delegated`) và BR-29 (chưa cấp quyền cho `DelegatedToUserId`), nên trước khi triển khai phải ghi change note trong SCRUM-20 và viết ADR mới thay thế phần quyền truy cập liên quan; không sửa ADR đã chấp nhận.
+5. **Thông báo sau khi Published**: thêm participant, đổi Meeting Role hoặc xóa participant đều queue in-app notification và email cho người bị ảnh hưởng để gửi bất đồng bộ. Lỗi gửi không hoàn tác thay đổi và phải được retry. Thông báo xóa không chứa link mở nội dung đã bị thu hồi. Khi xóa làm kết thúc một ủy quyền, quyền vào phòng của cả participant bị xóa và delegate liên quan đều được tính lại; chỉ đưa một người khỏi phòng nếu họ không còn quyền nào khác từ participant hoặc ủy quyền.
+6. **Vai trò bắt buộc**: sau bước khởi tạo, meeting luôn giữ ít nhất một participant hiện hành được gán Secretary. Tại thời điểm chuyển sang `Published`, meeting phải có ít nhất một Chair và một Secretary hiện hành với tài khoản đang hoạt động. Không được xóa hoặc đổi role của Secretary hiện hành cuối cùng ở bất kỳ trạng thái còn sửa được nào; từ `Published` đến hết `InProgress`, cũng không được xóa hoặc đổi role của Chair hiện hành cuối cùng. Trước `Published`, meeting có thể tạm thời chưa có Chair nhưng không thể được publish cho tới khi gán Chair hợp lệ. Participant mang role bắt buộc vẫn có thể chọn `Declined` hoặc `Delegated`; phản hồi không tự động xóa hay chuyển Meeting Role. Trước khi bắt đầu Meeting Session, hệ thống kiểm tra lại rằng vẫn có ít nhất một Chair và một Secretary hiện hành với tài khoản đang hoạt động; theo quyết định này, bước kiểm tra không dựa trên Invitation Response. Có thể có nhiều Chair/Secretary, nhưng mỗi participant chỉ mang một Meeting Role.
 
