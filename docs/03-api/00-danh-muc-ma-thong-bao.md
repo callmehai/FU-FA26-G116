@@ -49,6 +49,7 @@ Trạng thái: **BE** = backend trả trong body JSON · **FE** = FE tự hiển
 |---|---|---|---|---|---|
 | `MSG92` | 200 | `POST /api/auth/password-reset` | Đặt mật khẩu mới thành công | `Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.` | BE |
 | `MSG93` | 400 | `POST /api/auth/password-reset` | Liên kết không hợp lệ, hết hạn, đã dùng, đã bị liên kết mới hơn thay thế, hoặc tài khoản đã bị vô hiệu hoá | `Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.` | BE |
+| `MSG93` | — | — (FE, trang `/reset-password` không có `#token=`) | Liên kết không mang token — cùng tình huống "liên kết không dùng được", nên FE hiện đúng câu của MSG93 mà không gọi API | `Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.` | FE |
 | `MSG94` | 400 | `POST /api/auth/password-reset` | Mật khẩu mới không hợp lệ — kèm `errors.newPassword` | `Mật khẩu mới không hợp lệ.` | BE |
 
 Đặc tả UC-08 chỉ có nửa "quản trị viên gửi liên kết"; ba mã này là của nửa "người dùng mở liên kết",

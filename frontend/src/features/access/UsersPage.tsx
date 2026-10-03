@@ -418,6 +418,8 @@ export function UsersPage() {
           Gửi liên kết đặt lại mật khẩu tới <b>{resetTarget.email}</b>? Liên kết dùng được một lần trong 60 phút; liên
           kết gửi trước đó (nếu có) sẽ hết hiệu lực. Mật khẩu hiện tại vẫn dùng được cho tới khi {resetTarget.fullName}{' '}
           đặt mật khẩu mới.
+          {resetTarget.id === me?.id &&
+            ' Đây là tài khoản của bạn: khi đặt mật khẩu mới qua liên kết, mọi phiên đăng nhập của bạn sẽ kết thúc.'}
           {!resetTarget.hasPassword &&
             ' Tài khoản này hiện chỉ đăng nhập bằng Google; sau khi đặt, người này đăng nhập được thêm bằng mật khẩu.'}
         </ConfirmDialog>

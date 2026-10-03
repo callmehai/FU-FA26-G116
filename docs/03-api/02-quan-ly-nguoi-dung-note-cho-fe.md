@@ -230,7 +230,8 @@ mục 8.2). Những chỗ FE làm khác gợi ý bên dưới được ghi trong
 > che toast); `MSG15` giữ nút "Gửi liên kết" để thử lại ngay. `MSG14` đọc lại tài khoản
 > (`GET /api/users/{id}`), cập nhật dòng đó và khoá nút xác nhận. Tài khoản chỉ có Google
 > (`hasPassword: false`) vẫn gửi được, hộp xác nhận nói thêm là người đó sẽ có thêm cách đăng nhập
-> bằng mật khẩu.
+> bằng mật khẩu. Quản trị viên gửi cho chính mình cũng được (backend cho phép), hộp xác nhận cảnh báo
+> là mọi phiên của họ sẽ kết thúc khi dùng liên kết.
 
 ### 8.2 Trang công khai `/reset-password`
 
@@ -273,9 +274,11 @@ Hai mã `400` khác nhau hoàn toàn về cách xử lý — khớp theo `code`.
 > **FE đã làm:** trang nằm ngoài `RequireAuth` và `AppShell`, dùng khung của trang đăng nhập. Token
 > đọc từ fragment rồi xoá khỏi thanh địa chỉ (`navigate(..., { replace: true })`); dán một liên kết mới
 > vào **cùng tab** (chỉ đổi fragment, không tải lại trang) cũng nhận token mới. FE kiểm ≥ 12 ký tự và
-> "nhập lại khớp" trước khi gửi. `MSG92` → toast thông điệp của backend rồi chuyển tới `/login`.
-> `MSG93` hoặc không có token → ẩn form, hiện hướng dẫn liên hệ quản trị viên và nút về trang đăng
-> nhập. `MSG94` → lỗi dưới ô mật khẩu mới, giữ nguyên form. Lỗi khác (5xx, mất mạng) → alert trên
+> "nhập lại khớp" trước khi gửi. `MSG92` → toast thông điệp của backend rồi chuyển tới `/login`;
+> nếu trình duyệt này đang giữ một phiên đăng nhập thì đăng xuất phiên đó trước, không thì `/login`
+> sẽ đưa thẳng vào ứng dụng. `MSG93` → ẩn form, hiện `message` của backend, hướng dẫn liên hệ quản trị
+> viên và nút về trang đăng nhập (focus vào nút); không có token thì hiện đúng câu đó mà không gọi API
+> (dòng FE của `MSG93` trong danh mục mã). `MSG94` → lỗi dưới ô mật khẩu mới, giữ nguyên form. Lỗi khác (5xx, mất mạng) → alert trên
 > form, giữ nguyên những gì đã nhập.
 
 ---
