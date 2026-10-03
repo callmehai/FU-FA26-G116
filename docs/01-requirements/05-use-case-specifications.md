@@ -2,6 +2,8 @@
 
 Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ thống họp không giấy tờ **TrustCabinet**.
 
+**Nguồn quy tắc nghiệp vụ:** [Danh mục Business Rules BR-01 → BR-77](06-business-rules.md). UC trong tài liệu này dẫn chiếu mã BR tại các điều kiện/bước liên quan; nội dung định nghĩa BR được quản lý tập trung ở danh mục đó để tránh các bản sao lệch nhau. Mã `BR` là mã quy tắc nghiệp vụ, độc lập với mã thông báo `MSG`.
+
 ---
 
 ## 1. Danh mục Use Case (Use Case Index)

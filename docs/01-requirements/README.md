@@ -11,6 +11,7 @@ Thư mục lưu trữ tài liệu yêu cầu nghiệp vụ và đặc tả Use C
 ## 1. Cấu trúc tài liệu
 
 - [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả chi tiết toàn bộ 30 Use Case (UC-01 → UC-30) từ Report 3.
+- [06-business-rules.md](06-business-rules.md) — Danh mục tập trung BR-01 → BR-77 được nhập từ Report 3; UC Specification và Sequence Diagram dẫn chiếu mã tại đây.
 - `01-pham-vi.md` — Danh sách phạm vi chức năng theo mô hình MoSCoW.
 - `02-user-stories.md` — Danh sách User Story và Acceptance Criteria (AC).
 - `03-yeu-cau-phi-chuc-nang.md` — Yêu cầu phi chức năng (NFR): hiệu năng, bảo mật, tải người dùng đồng thời.
@@ -24,6 +25,7 @@ Thư mục lưu trữ tài liệu yêu cầu nghiệp vụ và đặc tả Use C
 
 ### 2.1. Nguyên tắc cốt lõi: Tập trung nghiệp vụ, không kỹ thuật
 - **Nghiệp vụ thuần túy**: Mô tả hành động của Actor (nhập liệu, chọn, xác nhận) và phản hồi của Hệ thống (kiểm tra điều kiện, ghi nhận thay đổi, thông báo kết quả).
+- **Business Rules dùng chung**: Định nghĩa BR tập trung tại [06-business-rules.md](06-business-rules.md). UC Specification và Sequence Diagram chỉ dẫn chiếu đúng ID (`BR-XX`) ở bước áp dụng; không chép lại một phiên bản BR riêng.
 - **Tuyệt đối KHÔNG đưa chi tiết kỹ thuật vào Use Case Spec**:
   - Không nhắc đến HTTP method, URL endpoint, HTTP status code (`GET /api/meetings`, `200 OK`, `400 Bad Request`, `500 Internal Server Error`).
   - Không nhắc đến Database table, SQL query, ORM (`SELECT`, `SaveChanges()`, `Foreign Key`).

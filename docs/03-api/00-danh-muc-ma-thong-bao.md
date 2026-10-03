@@ -3,6 +3,10 @@
 Nguồn sự thật duy nhất cho mọi mã `code` mà API trả về hoặc FE tự hiển thị. Đặc tả use case,
 sequence diagram, code BE, code FE và test đều phải khớp với bảng này.
 
+Business Rule là hệ quy tắc riêng, không dùng mã `BR` thay mã `MSG`. Nội dung BR tập trung tại
+[danh mục Business Rules](../01-requirements/06-business-rules.md); UC dẫn chiếu BR và MSG tại
+các bước tương ứng, còn sequence thể hiện cùng BR ID và message của nhánh đó.
+
 ## Quy tắc
 
 1. **Một dải số chung cho cả dự án.** Không đánh lại từ `MSG01` cho mỗi use case hay mỗi sơ đồ —

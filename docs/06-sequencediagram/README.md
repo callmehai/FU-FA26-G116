@@ -287,12 +287,13 @@ trừ khi chính UC hoặc thiết kế được duyệt yêu cầu participant 
 Khi vẽ Sequence Diagram, ưu tiên:
 
 1. Use Case Specification trong Report 3
-2. Business Rules được UC tham chiếu
+2. [Danh mục Business Rules BR-01 → BR-77](../01-requirements/06-business-rules.md) được UC tham chiếu
 3. System Messages được UC tham chiếu
 4. Thiết kế/domain đã được nhóm chấp nhận
 5. Code hiện tại nếu cần phản ánh cấu trúc lớp
 
 Không tự thêm business behavior không có trong các nguồn trên.
+Business Rule ghi ngay cạnh message nơi rule được kiểm tra/áp dụng; dùng đúng ID và ý nghĩa trong danh mục chung.
 
 ## 12. Template chuẩn
 
