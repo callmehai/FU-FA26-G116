@@ -1,5 +1,6 @@
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
+using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
@@ -107,6 +108,9 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository
         WithRoleLoaded(user);
         return user;
     }
+
+    public Task<string?> FindActiveEmailAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult(_users.FirstOrDefault(u => u.Id == id && u.IsActive)?.Email);
 
     public Task<Role?> FindRoleAsync(Guid roleId, CancellationToken ct = default)
         => Task.FromResult(_roles.GetValueOrDefault(roleId));
@@ -274,4 +278,99 @@ internal sealed class FakeAdministratorInvariantGuard : IAdministratorInvariantG
     /// <summary>True while a guarded write is running — what a collaborator checks to prove it
     /// was called inside the lock rather than after it.</summary>
     public bool IsInsideWrite => _inside;
+}
+
+/// <summary>
+/// UC-08's reset tokens in memory, with the same contract as the Redis store: single-use, one
+/// current token per account, expiry against an overridable clock.
+/// </summary>
+internal sealed class FakePasswordResetTokenStore : IPasswordResetTokenStore
+{
+    private readonly Dictionary<string, (Guid UserId, DateTimeOffset ExpiresAt)> _tokens = [];
+    private readonly Dictionary<Guid, string> _current = [];
+
+    public DateTimeOffset Now { get; set; } = DateTimeOffset.UtcNow;
+
+    /// <summary>The raw tokens handed out, newest last — what the email would have carried.</summary>
+    public List<string> Created { get; } = [];
+
+    public Task<string> CreateAsync(Guid userId, TimeSpan lifetime, CancellationToken ct = default)
+    {
+        var token = Guid.NewGuid().ToString("N");
+        _tokens[token] = (userId, Now.Add(lifetime));
+        Created.Add(token);
+        return Task.FromResult(token);
+    }
+
+    public Task ActivateAsync(Guid userId, string token, TimeSpan lifetime, CancellationToken ct = default)
+    {
+        _current[userId] = token;
+        return Task.CompletedTask;
+    }
+
+    public Task<Guid?> PeekAsync(string token, CancellationToken ct = default)
+        => Task.FromResult(Live(token));
+
+    public Task<Guid?> ConsumeAsync(string token, CancellationToken ct = default)
+    {
+        var owner = Live(token);
+        _tokens.Remove(token);
+        return Task.FromResult(owner);
+    }
+
+    /// <summary>Makes the next <see cref="RevokeAsync"/> throw, standing in for Redis being down.</summary>
+    public Exception? RevokeThrows { get; set; }
+
+    public Task RevokeAsync(Guid userId, CancellationToken ct = default)
+    {
+        if (RevokeThrows is { } exception)
+        {
+            RevokeThrows = null;
+            throw exception;
+        }
+
+        _current.Remove(userId);
+        return Task.CompletedTask;
+    }
+
+    private Guid? Live(string token)
+        => _tokens.TryGetValue(token, out var entry)
+           && entry.ExpiresAt > Now
+           && _current.GetValueOrDefault(entry.UserId) == token
+            ? entry.UserId
+            : null;
+}
+
+/// <summary>Records each reset email instead of sending it; <see cref="Fails"/> makes it refuse.</summary>
+internal sealed class FakePasswordResetEmailSender : IPasswordResetEmailSender
+{
+    public bool Fails { get; set; }
+
+    /// <summary>
+    /// Runs while the email is "on its way" — where a test puts what another administrator does
+    /// during a slow send.
+    /// </summary>
+    public Func<Task>? OnSend { get; set; }
+
+    public List<(string ToAddress, string FullName, string Token)> Sent { get; } = [];
+
+    public Task<bool> SendAsync(
+        string toAddress, string fullName, string resetToken, TimeSpan validFor, CancellationToken ct = default)
+        => SendNowAsync(toAddress, fullName, resetToken);
+
+    private async Task<bool> SendNowAsync(string toAddress, string fullName, string resetToken)
+    {
+        if (OnSend is { } during)
+        {
+            await during();
+        }
+
+        if (Fails)
+        {
+            return false;
+        }
+
+        Sent.Add((toAddress, fullName, resetToken));
+        return true;
+    }
 }

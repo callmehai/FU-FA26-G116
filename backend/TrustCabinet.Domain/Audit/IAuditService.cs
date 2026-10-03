@@ -43,6 +43,15 @@ public static class AuditActions
     /// </summary>
     public const string UserGoogleLinked = "user.google_linked";
 
+    /// <summary>UC-08 — an administrator had a reset link emailed to the account.</summary>
+    public const string UserPasswordResetRequested = "user.password_reset_requested";
+
+    /// <summary>
+    /// UC-08's link was used and the password changed. The actor is the account itself — the
+    /// administrator only sent the link, they never learn or choose the password.
+    /// </summary>
+    public const string UserPasswordReset = "user.password_reset";
+
     /// <summary>What <c>AuditLogEntry.ObjectType</c> carries for all of the above.</summary>
     public const string UserObjectType = "User";
 

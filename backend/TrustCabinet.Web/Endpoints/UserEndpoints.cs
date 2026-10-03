@@ -6,7 +6,7 @@ using TrustCabinet.Infrastructure.Authentication;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// UC-04 … UC-07's <c>:User Controller</c> — turns HTTP into a call on <see cref="IUserService"/>,
+/// UC-04 … UC-08's <c>:User Controller</c> — turns HTTP into a call on <see cref="IUserService"/>,
 /// and an outcome into a status code and a message code.
 ///
 /// It holds no rules of its own, exactly like <c>AuthEndpoints</c>: which branch applies is the
@@ -15,7 +15,7 @@ namespace TrustCabinet.Web.Endpoints;
 public static class UserEndpoints
 {
     /// <summary>
-    /// Message codes from the UC-05 … UC-07 specifications. The response carries the code and a
+    /// Message codes from the UC-05 … UC-08 specifications. The response carries the code and a
     /// Vietnamese message: the code is what the frontend and the tester match on, so rewording the
     /// text never breaks either.
     /// </summary>
@@ -25,6 +25,9 @@ public static class UserEndpoints
     private const string Msg10Updated = "MSG10";
     private const string Msg11StatusChanged = "MSG11";
     private const string Msg12StatusChangeNotAllowed = "MSG12";
+    private const string Msg13PasswordResetSent = "MSG13";
+    private const string Msg14PasswordResetNotAvailable = "MSG14";
+    private const string Msg15PasswordResetEmailFailed = "MSG15";
 
     public static IEndpointRouteBuilder MapUserEndpoints(this IEndpointRouteBuilder app)
     {
@@ -48,6 +51,9 @@ public static class UserEndpoints
         // with different rules, and a single PUT would make it possible to deactivate someone as a
         // side effect of renaming them.
         users.MapPut("/{id:guid}/status", ChangeStatusAsync);
+        // UC-08. POST, not PUT: each call issues a new link and sends another email, so it is
+        // neither idempotent nor an update of something the caller describes.
+        users.MapPost("/{id:guid}/password-reset", RequestPasswordResetAsync);
 
         return app;
     }
@@ -161,6 +167,26 @@ public static class UserEndpoints
     }
 
     /// <summary>
+    /// UC-08 — emails the account a link to set a new password. No body: the administrator only
+    /// confirms, they never see or choose the password.
+    /// </summary>
+    private static async Task<IResult> RequestPasswordResetAsync(
+        Guid id,
+        ClaimsPrincipal principal,
+        IUserService users,
+        CancellationToken ct)
+    {
+        var result = await users.RequestPasswordResetAsync(id, RevalidatedUserId(principal), ct);
+
+        return result.Succeeded
+            ? Results.Ok(new UserMutationResponse(
+                Msg13PasswordResetSent,
+                "Đã gửi email đặt lại mật khẩu.",
+                UserResponse.From(result.Account!)))
+            : Rejected(result);
+    }
+
+    /// <summary>
     /// The failing branches. Each maps to the status code that describes it, and validation
     /// errors come back per field so the form can mark them — the diagram's "Display invalid
     /// fields".
@@ -177,6 +203,23 @@ public static class UserEndpoints
             new UserErrorResponse(
                 Msg09Invalid, "Thông tin tài khoản không hợp lệ.", result.Errors),
             statusCode: StatusCodes.Status400BadRequest),
+
+        // 409 like MSG12: the request is fine, the account's state is what refuses it.
+        UserOutcome.PasswordResetNotAvailable => Results.Json(
+            new UserErrorResponse(
+                Msg14PasswordResetNotAvailable,
+                "Tài khoản này không dùng được chức năng đặt lại mật khẩu.",
+                null),
+            statusCode: StatusCodes.Status409Conflict),
+
+        // 503: nothing is wrong with the request or the account — the mail server is unavailable,
+        // and the same request may well succeed later, which is what the message tells the admin.
+        UserOutcome.PasswordResetEmailFailed => Results.Json(
+            new UserErrorResponse(
+                Msg15PasswordResetEmailFailed,
+                "Không gửi được email đặt lại mật khẩu. Vui lòng thử lại.",
+                null),
+            statusCode: StatusCodes.Status503ServiceUnavailable),
 
         // StatusChangeNotAllowed, and defensively any outcome added later without a case here.
         // 409: the request was understood and well-formed, it conflicts with the account's state.

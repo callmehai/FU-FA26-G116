@@ -53,6 +53,28 @@ public interface IUserService
     /// </summary>
     Task<UserResult> ChangeStatusAsync(
         Guid id, bool isActive, Guid actorId, CancellationToken ct = default);
+
+    /// <summary>
+    /// UC-08 — emails the account a single-use link to choose a new password. The current password
+    /// keeps working until the link is used: an administrator pressing the button must not be able
+    /// to lock someone out.
+    ///
+    /// <see cref="UserOutcome.PasswordResetNotAvailable"/> for a deactivated account,
+    /// <see cref="UserOutcome.PasswordResetEmailFailed"/> when the mail could not be sent.
+    /// </summary>
+    Task<UserResult> RequestPasswordResetAsync(
+        Guid id, Guid actorId, CancellationToken ct = default);
+
+    /// <summary>
+    /// The other end of UC-08's link: the person sets a new password with the token from the email.
+    /// Spends the token and ends every session of the account. Anonymous — the token is the proof.
+    ///
+    /// <see cref="UserOutcome.PasswordResetLinkInvalid"/> for a dead link,
+    /// <see cref="UserOutcome.InvalidInformation"/> (key <c>newPassword</c>) for a password that
+    /// breaks the rule, without spending the link.
+    /// </summary>
+    Task<UserResult> ResetPasswordAsync(
+        string? token, string? newPassword, CancellationToken ct = default);
 }
 
 /// <summary>

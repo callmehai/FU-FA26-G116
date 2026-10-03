@@ -67,6 +67,8 @@ Cùng migration bổ sung ID Organizer cũ/mới cho history
   được đọc tài nguyên vẫn nhận `404`.
 - UC17 Session/Agenda detail và API quản lý phiên vẫn thuộc task UC-26–30; guard `MSG90` được giữ,
   chưa xác nhận UC17 hoặc luồng Publish qua UI hoàn tất khi task đó chưa tích hợp.
+- BA còn đổi câu `MSG39` của notification pagination thành `Trang thông báo được yêu cầu không khả dụng.`;
+  endpoint notification nằm ngoài phạm vi PR meeting này và cần được đồng bộ ở task notification.
 - Kiểm tra rollback khi lưu lỗi và concurrent Publish chỉ tạo một history/batch.
 - Writer participant SCRUM-20 và Meeting Session UC-26–30 khóa meeting cha trong cùng transaction trước khi sửa, để bảo vệ snapshot người nhận và BR-56 khi Publish đồng thời.
 - Xử lý HTTP/message codes theo API contract; trạng thái gửi email theo SCRUM-15.
