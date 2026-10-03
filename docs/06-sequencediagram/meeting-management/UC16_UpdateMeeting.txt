@@ -13,27 +13,46 @@ activate MeetingPage
 MeetingPage->MeetingController: Update meeting
 activate MeetingController
 
-MeetingController->MeetingController: Validate request format
+MeetingController->MeetingService: Check meeting is owned and editable
+activate MeetingService
+MeetingService->MeetingRepository: Find meeting owned by organizer
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting and status
+activate Database
+Database-->MeetingRepository: Meeting and status
+deactivate Database
+MeetingRepository-->MeetingService: Meeting and status
+deactivate MeetingRepository
 
-alt Request format is unsupported - EX-4
-    MeetingController-->MeetingPage: MSG34 - Content-Type must be application/json
+alt Meeting not found
+    MeetingService-->MeetingController: Meeting not found
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Return not found
     deactivate MeetingController
-    MeetingPage-->Organizer: MSG34 - Content-Type must be application/json
+    MeetingPage-->Organizer: Meeting not found
 
-else Request format is supported
-    MeetingController->MeetingService: updateMeeting(meetingId, meetingInfo)
+else Meeting is no longer Draft or Rejected - EX-2
+    MeetingService-->MeetingController: MSG33 - This meeting can no longer be edited
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Return edit restriction
+    deactivate MeetingController
+    MeetingPage-->Organizer: MSG33 - This meeting can no longer be edited
+
+else Meeting is Draft or Rejected
+    MeetingService-->MeetingController: Meeting is editable
+    deactivate MeetingService
+    MeetingController->MeetingService: Update meeting information
     activate MeetingService
-
-    MeetingService->MeetingRepository: Get current meeting and status
+    MeetingService->MeetingRepository: Recheck owned meeting for update
     activate MeetingRepository
-    MeetingRepository->Database: Retrieve meeting
+    MeetingRepository->Database: Retrieve current meeting and status
     activate Database
-    Database-->MeetingRepository: Meeting
+    Database-->MeetingRepository: Current meeting and status
     deactivate Database
-    MeetingRepository-->MeetingService: Meeting
+    MeetingRepository-->MeetingService: Current meeting and status
     deactivate MeetingRepository
 
-    MeetingService->MeetingService: Validate meeting is editable\n(BR-27)
+    MeetingService->MeetingService: Recheck Draft or Rejected status
 
     alt Meeting is no longer editable - EX-2
         MeetingService-->MeetingController: MSG33 - This meeting can no longer be edited
@@ -42,8 +61,8 @@ else Request format is supported
         deactivate MeetingController
         MeetingPage-->Organizer: MSG33 - This meeting can no longer be edited
 
-    else Meeting is Draft or Rejected
-        MeetingService->MeetingService: Validate submitted meeting information\n(BR-25)
+    else Meeting remains editable
+        MeetingService->MeetingService: Validate submitted meeting information
 
         alt Meeting information is invalid - EX-1
             MeetingService-->MeetingController: MSG31 - Invalid meeting information
@@ -53,9 +72,9 @@ else Request format is supported
             MeetingPage-->Organizer: MSG31 - Invalid meeting information
 
         else Meeting information is valid
-            MeetingService->MeetingRepository: Update meeting information\nwithout changing lifecycle status (BR-28)
+            MeetingService->MeetingRepository: Update meeting information;\nkeep lifecycle status and approval assignment unchanged
             activate MeetingRepository
-            MeetingRepository->Database: Update meeting
+            MeetingRepository->Database: Save meeting information
             activate Database
 
             alt Meeting cannot be updated - EX-3
@@ -70,7 +89,7 @@ else Request format is supported
                 MeetingPage-->Organizer: MSG36 - Unable to update the meeting.\nPlease try again
 
             else Meeting updated successfully
-                Database-->MeetingRepository: Meeting updated
+                Database-->MeetingRepository: Meeting information saved
                 deactivate Database
                 MeetingRepository-->MeetingService: Updated meeting
                 deactivate MeetingRepository

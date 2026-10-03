@@ -2,6 +2,8 @@
 
 Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ thống họp không giấy tờ **TrustCabinet**.
 
+**Nguồn quy tắc nghiệp vụ:** [Danh mục Business Rules BR-01 → BR-77](06-business-rules.md). UC trong tài liệu này dẫn chiếu mã BR tại các điều kiện/bước liên quan; nội dung định nghĩa BR được quản lý tập trung ở danh mục đó để tránh các bản sao lệch nhau. Mã `BR` là mã quy tắc nghiệp vụ, độc lập với mã thông báo `MSG`.
+
 ---
 
 ## 1. Danh mục Use Case (Use Case Index)
@@ -841,6 +843,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **Điều kiện sau (Postconditions)**:
   - POST-1: The meeting information is updated successfully.
   - POST-2: The updated information is available when the meeting is viewed again.
+  - POST-3: The meeting lifecycle status and current Meeting Approver assignment remain unchanged.
 - **Sơ đồ liên quan (Related Diagrams)**:
   - Sequence Diagram: [UC16_UpdateMeeting.png](../06-sequencediagram/meeting-management/UC16_UpdateMeeting.png)
 
@@ -873,12 +876,6 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   1. At Step 5, the system cannot complete the update.
   2. The previous meeting information remains unchanged.
   3. The system displays MSG36 – "Unable to update the meeting. Please try again."
-  4. The use case ends.
-
-- **EX-4: Unsupported Request Format**
-  1. At Step 4, the system determines that the submitted request is not in JSON format (Content-Type is not `application/json`).
-  2. The meeting remains unchanged.
-  3. The system displays MSG34 – "Content-Type must be application/json."
   4. The use case ends.
 
 ---
@@ -942,7 +939,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 #### Luồng sự kiện chính (Main Flow — View Meeting List):
 1. The user selects Meetings from the navigation menu.
-2. The system identifies meetings for which the user has an authorized relationship or assignment as Meeting Organizer, Meeting Approver, Chair, Secretary, or Participant, checked on the server side.
+2. The system identifies meetings for which the user has an authorized relationship or assignment as Meeting Organizer, Meeting Approver, Chair, Secretary, or Participant.
 3. The system sorts and displays only those authorized meetings.
 4. The user browses the displayed meetings.
 
@@ -973,9 +970,9 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   2. The system displays MSG38 – "Unable to load meetings. Please try again."
   3. The use case ends.
 
-- **EX-2: Invalid Search or Filter Criteria**
-  1. The system determines that the search, filter, sorting, or paging criteria are invalid.
-  2. The system displays MSG32 – "Invalid query parameters."
+- **EX-2: Invalid Meeting List Criteria**
+  1. The system determines that the selected search, filter, sort, or display criteria are invalid.
+  2. The system displays MSG32 – "The meeting list criteria are invalid."
   3. The user may clear or adjust the search/filter criteria.
   4. The use case ends.
 
@@ -1008,7 +1005,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 3. The system identifies users who are eligible to act as Meeting Approvers.
 4. The system displays the eligible Meeting Approvers.
 5. The Meeting Organizer selects a Meeting Approver.
-6. The system verifies that the selected user is still eligible to approve meetings.
+6. The system verifies that the selected user is eligible to review the meeting and is not the Meeting Organizer.
 7. The system verifies that the meeting is still in Draft or Rejected status.
 8. The system assigns the selected Meeting Approver to the current approval cycle.
 9. The system changes the meeting status to WaitingApproval.
@@ -1036,7 +1033,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   3. The use case ends.
 
 - **EX-3: No Valid Meeting Approver**
-  1. At Step 6, the system determines that the selected approver is no longer active or no longer authorized to approve meetings.
+  1. At Step 6, the system determines that the selected user is not eligible to review the meeting or is the Meeting Organizer.
   2. The meeting remains Draft or Rejected and no approval assignment is created.
   3. The Meeting Organizer selects another eligible approver.
 
@@ -1058,9 +1055,8 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **Điều kiện tiên quyết (Preconditions)**:
   - PRE-1: The Meeting Approver is authenticated.
   - PRE-2: The selected meeting exists.
-  - PRE-3: The Meeting Approver has the permission to approve the meeting.
-  - PRE-4: The Meeting Approver is the approver currently assigned to the selected meeting.
-  - PRE-5: The meeting is in WaitingApproval status.
+  - PRE-3: The Meeting Approver is currently assigned to review the selected meeting and is not its Meeting Organizer.
+  - PRE-4: The meeting is in WaitingApproval status.
 - **Điều kiện sau (Postconditions)**:
   - POST-1: The Meeting Approver's decision is recorded.
   - POST-2: If approved, the meeting status is Approved.
@@ -1071,7 +1067,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   - Sequence Diagram: [UC20_ReviewMeetingApproval.png](../06-sequencediagram/meeting-management/UC20_ReviewMeetingApproval.png)
 
 #### Luồng sự kiện chính (Main Flow — Review Meeting Approval):
-1. The Meeting Approver selects an assigned meeting that is awaiting approval.
+1. The Meeting Approver selects a meeting assigned to them that is awaiting approval.
 2. The system verifies that the current user is the assigned Meeting Approver.
 3. The system displays the meeting information for review.
 4. The Meeting Approver selects Approve.
@@ -1088,7 +1084,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   1. At Step 4 of the Main Flow, the Meeting Approver selects Reject.
   2. The system requests a rejection reason.
   3. The Meeting Approver enters the rejection reason.
-  4. The system validates the rejection reason.
+  4. The system trims the rejection reason and validates that it is not empty and does not exceed 1000 characters.
   5. The system re-verifies that:
      - the Meeting Approver is still authorized to reject the selected meeting; and
      - the meeting is still in WaitingApproval status.
@@ -1100,11 +1096,17 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
 
 - **EX-1: Rejection Reason Is Missing**
-  1. At Step 4 of AF-1, the system determines that the rejection reason is missing or empty. (BR-36)
-  2. The system displays a validation message indicating that a rejection reason is required.
+  1. At Step 4 of AF-1, the system determines that the trimmed rejection reason is empty. (BR-36)
+  2. The system displays MSG83 – "Rejection reason is required."
   3. The meeting remains in WaitingApproval status.
   4. The Meeting Approver enters a valid rejection reason.
   5. The flow resumes at Step 4 of AF-1.
+
+- **EX-5: Rejection Reason Is Too Long**
+  1. At Step 4 of AF-1, the trimmed rejection reason exceeds 1000 characters.
+  2. The system displays MSG84 – "Rejection reason must not exceed 1000 characters."
+  3. The meeting remains in WaitingApproval status.
+  4. The Meeting Approver enters a valid rejection reason and the flow resumes at Step 4 of AF-1.
 
 - **EX-2: Meeting Is No Longer Awaiting Approval**
   1. At Step 5 of the Main Flow or Step 5 of AF-1, the system determines that the meeting is no longer in WaitingApproval status.
@@ -1141,22 +1143,22 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   - PRE-2: The selected meeting exists.
   - PRE-3: The Meeting Organizer is authorized to publish the selected meeting.
   - PRE-4: The meeting is in Approved status.
-  - PRE-5: The meeting contains at least one valid planned Meeting Session. (BR-56)
+  - PRE-5: The meeting contains at least one valid Planned Meeting Session. A valid session belongs to the meeting, is in Planned status, has a non-blank title within the allowed length, and has valid planned start/end times with the end after the start. (BR-56)
 - **Điều kiện sau (Postconditions)**:
   - POST-1: The meeting status is Published.
   - POST-2: The publication is recorded in the meeting lifecycle history.
-  - POST-3: Asynchronous invitation delivery tasks are queued for all meeting participants (BR-39, BR-40).
+  - POST-3: The system attempts to initiate email invitation delivery for active participants when delivery is available (BR-39, BR-40).
 - **Sơ đồ liên quan (Related Diagrams)**:
   - Sequence Diagram: [UC21_PublishMeeting.png](../06-sequencediagram/meeting-management/UC21_PublishMeeting.png)
 
 #### Luồng sự kiện chính (Main Flow — Publish Meeting):
 1. The Meeting Organizer selects an Approved meeting.
 2. The Meeting Organizer selects Publish Meeting.
-3. The system verifies that the Meeting Organizer is still authorized to publish the meeting, the meeting is still Approved, and at least one valid planned Meeting Session exists. (BR-37, BR-56)
+3. The system verifies that the Meeting Organizer remains authorized for the selected meeting, that the meeting is still Approved, and that at least one valid Planned Meeting Session exists. (BR-37, BR-56)
 4. The system changes the meeting status from Approved to Published. (BR-37)
 5. The system records the publication action, acting user, and timestamp in the meeting lifecycle history. (BR-38)
-6. The system initiates invitation delivery for the meeting participants.
-7. The system displays MSG45 – "Meeting published successfully. Invitations are queued for delivery."
+6. The system attempts to initiate email invitation delivery for active participants. The meeting remains Published if email delivery is unavailable.
+7. The system displays MSG45 – "Meeting published successfully."
 
 #### Luồng sự kiện thay thế (Alternative Flows):
 - N/A
@@ -1171,9 +1173,9 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   5. The use case ends.
 
 - **EX-2: Meeting Session Schedule Is Not Ready**
-  1. At Step 3 of the Main Flow, the system determines that the meeting has no valid planned Meeting Session. (BR-56)
+  1. At Step 3 of the Main Flow, the system determines that the meeting has no valid Planned Meeting Session. (BR-56)
   2. The meeting remains Approved.
-  3. The system informs the Meeting Organizer that at least one valid Meeting Session must be prepared before publication.
+  3. The system displays MSG90 – "At least one valid planned Meeting Session is required before publication."
   4. Invitation delivery is not initiated.
   5. The use case ends.
 
@@ -1220,9 +1222,9 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   2. The system displays MSG40 – "Unable to load notifications. Please try again."
   3. The use case ends unsuccessfully.
 
-- **EX-2: Invalid Paging Parameters**
-  1. At Step 2 of the Main Flow, the system determines that the requested paging parameters are invalid.
-  2. The system displays MSG39 – "Invalid query parameters."
+- **EX-2: Requested Notification Page Is Unavailable**
+  1. At Step 2 of the Main Flow, the system cannot display the requested portion of the notification list.
+  2. The system displays MSG39 – "The requested notification page is unavailable."
   3. The use case ends unsuccessfully.
 
 ---
@@ -1297,21 +1299,21 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **Use Case Name**: Open Notification Target
 - **Primary Actor**: Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant
 - **Secondary Actor**: None
-- **Mô tả (Description)**: Allows a user to open the meeting or task linked to one of their notifications.
+- **Mô tả (Description)**: Allows a user to open the meeting linked to one of their notifications.
 - **Điều kiện tiên quyết (Preconditions)**:
   - PRE-1: The user is signed in.
 - **Điều kiện sau (Postconditions)**:
-  - POST-1: The user sees the linked meeting or task.
+  - POST-1: The user sees the linked meeting.
   - POST-2: The selected notification is marked as read if successfully saved.
 - **Sơ đồ liên quan (Related Diagrams)**:
   - Sequence Diagram: [UC25_OpenNotificationTarget.png](../06-sequencediagram/notification-management/UC25_OpenNotificationTarget.png)
 
 #### Luồng sự kiện chính (Main Flow — Open Notification Target):
 1. The user selects the notification bell and clicks on a specific notification.
-2. The system checks that the notification belongs to the user's account and identifies its linked meeting or task. (BR-47, BR-52)
+2. The system checks that the notification belongs to the user's account and identifies its linked meeting. (BR-47, BR-52)
 3. The system marks the notification as read if needed and updates the unread count. (BR-48, BR-50, BR-53)
-4. The system checks whether the user currently has permission to view the linked meeting or task. (BR-29, BR-52)
-5. The system opens the meeting or task.
+4. The system checks whether the user currently has permission to view the linked meeting. (BR-29, BR-52)
+5. The system opens the meeting.
 
 #### Luồng sự kiện thay thế (Alternative Flows):
 
