@@ -27,7 +27,7 @@ các bước tương ứng, còn sequence thể hiện cùng BR ID và message c
 
 ## Mã tiếp theo
 
-**`MSG127`** — `MSG41`–`MSG59` và `MSG77`–`MSG126` đã dành sẵn cho các Use Case cuộc họp, participant, guest và room (xem [bên dưới](#dành-sẵn-chưa-có-code)); `MSG78`–`MSG91` đã được workflow SCRUM-19 dùng (PR #53, chưa merge); đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94`.
+**`MSG129`** — `MSG41`–`MSG59` và `MSG77`–`MSG128` đã dành sẵn cho các Use Case cuộc họp, participant, guest, room, session list và agenda view (xem [bên dưới](#dành-sẵn-chưa-có-code)); `MSG78`–`MSG91` đã được workflow SCRUM-19 dùng (PR #53, chưa merge); đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94`.
 
 ## Danh mục
 
@@ -174,6 +174,8 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MSG95`–`MSG109` | UC-37–UC-42 F08 | Mã tải roster, thêm participant, role, removal, response và readiness; xem đặc tả UC. |
 | `MSG110`–`MSG116` | UC-43–UC-44 Start/End Meeting | Mã thành công, điều kiện không hợp lệ và lỗi hệ thống; xem đặc tả UC. |
 | `MSG117`–`MSG126` | UC-45–UC-52 GOF09 Online Meeting Room | Mã trạng thái room, thiết bị, chia sẻ, presence, moderation, chat và xác minh Guest; xem đặc tả UC. |
+| `MSG127` | UC-53 View Meeting Sessions | *Unable to load meeting sessions. Please try again.* |
+| `MSG128` | UC-54 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |
 
 `MSG83`, `MSG84` và `MSG90` thuộc dải đã dành cho workflow SCRUM-19 và được gán cho các nhánh UC-20/UC-21 nêu trên.
 

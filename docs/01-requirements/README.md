@@ -10,7 +10,7 @@ Thư mục lưu trữ tài liệu yêu cầu nghiệp vụ và đặc tả Use C
 
 ## 1. Cấu trúc tài liệu
 
-- [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case UC-01 → UC-52; UC-01 → UC-37 và BR-01 → BR-77 từ Report 3, F08/GOF09 và các phần liên quan đã được bổ sung từ Report 3 source-of-truth.
+- [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case UC-01 → UC-54; UC-01 → UC-37 và BR-01 → BR-77 từ Report 3, cùng các UC và BR liên quan F08/GOF09 và UC-53/54 từ các bản cập nhật Report 3.
 - [06-business-rules.md](06-business-rules.md) — Danh mục tập trung BR-01 → BR-103; UC Specification và Sequence Diagram dẫn chiếu mã tại đây.
 - `01-pham-vi.md` — Danh sách phạm vi chức năng theo mô hình MoSCoW.
 - `02-user-stories.md` — Danh sách User Story và Acceptance Criteria (AC).

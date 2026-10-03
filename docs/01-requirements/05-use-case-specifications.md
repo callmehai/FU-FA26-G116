@@ -36,6 +36,8 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **UC-19**: Gửi duyệt cuộc họp (Submit Meeting for Approval)
 - **UC-20**: Phê duyệt / Từ chối cuộc họp (Review Meeting Approval)
 - **UC-21**: Phát hành cuộc họp (Publish Meeting)
+- **UC-43**: Bắt đầu cuộc họp (Start Meeting)
+- **UC-44**: Kết thúc cuộc họp (End Meeting)
 
 ### 1.5 Quản lý thông báo (Notification Management)
 - **UC-22**: Xem danh sách thông báo (View Notifications)
@@ -49,6 +51,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **UC-28**: Hủy phiên họp (Cancel Meeting Session)
 - **UC-29**: Bắt đầu phiên họp (Start Meeting Session)
 - **UC-30**: Kết thúc phiên họp (End Meeting Session)
+- **UC-53**: Xem danh sách phiên họp (View Meeting Sessions)
 
 ### 1.7 Quản lý chương trình nghị sự (Agenda Management)
 - **UC-31**: Tạo mục chương trình nghị sự (Create Agenda Item)
@@ -57,6 +60,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **UC-34**: Sắp xếp lại thứ tự mục chương trình nghị sự (Reorder Agenda Items)
 - **UC-35**: Đặt mục chương trình nghị sự hiện tại (Set Current Agenda Item)
 - **UC-36**: Hoàn thành mục chương trình nghị sự (Complete Agenda Item)
+- **UC-54**: Xem chương trình nghị sự cuộc họp (View Meeting Agenda)
 
 ### 1.8 Thành phần tham dự & Vai trò trong cuộc họp (Meeting Participants & Meeting Roles)
 - **UC-37**: Xem thành phần tham dự (View Meeting Participants)
@@ -65,9 +69,6 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **UC-40**: Xóa thành phần tham dự (Remove Meeting Participant)
 - **UC-41**: Phản hồi lời mời họp (Respond to Meeting Invitation)
 - **UC-42**: Xem trạng thái phản hồi của thành phần tham dự (View Participant Response Status)
-- **UC-43**: Bắt đầu cuộc họp (Start Meeting)
-- **UC-44**: Kết thúc cuộc họp (End Meeting)
-- **UC-45–UC-52**: Quản lý phòng họp trực tuyến (Online Meeting Room Management)
 
 ### 1.9 Quản lý phòng họp trực tuyến (Online Meeting Room Management)
 - **UC-45**: Vào phòng họp trực tuyến (Join Meeting Room)
@@ -78,6 +79,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **UC-50**: Xem người đang trong phòng (View Meeting Room Participants)
 - **UC-51**: Điều phối phòng họp (Moderate Meeting Room)
 - **UC-52**: Chat trong phòng họp (Use In-room Chat)
+
 
 ---
 
@@ -1340,6 +1342,21 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 
 ### FEATURE 6: QUẢN LÝ PHIÊN HỌP (MEETING SESSION MANAGEMENT)
 
+#### UC-53: View Meeting Sessions (Xem danh sách phiên họp)
+
+- **Use Case ID**: UC-53
+- **Use Case Name**: View Meeting Sessions
+- **Primary Actor**: Secretary, Chair, Meeting Organizer, Meeting Approver, authorized Meeting Participant
+- **Description**: Allows an authorized user to view the Meeting Sessions belonging to a meeting, including schedule and lifecycle status.
+- **Preconditions**: The user is authenticated and currently authorized to view the selected meeting; the meeting exists.
+- **Postconditions**: The authorized Meeting Session list is displayed; no meeting or session data is changed.
+- **Main Flow**:
+  1. The user opens an authorized meeting and selects Meeting Sessions.
+  2. The system verifies access to the meeting and retrieves its Meeting Sessions in schedule order.
+  3. The system displays the session title, planned start/end time, and lifecycle status.
+- **Alternative Flow — No Sessions**: If no Meeting Sessions exist, display an empty session list. The use case ends successfully.
+- **Exception Flows**: If the meeting is not accessible, return the same not-found result as for an unknown meeting and disclose no session data. If the sessions cannot be loaded, display MSG127.
+
 ---
 
 ### UC-26: Create Meeting Session (Tạo phiên họp)
@@ -1583,6 +1600,21 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 ### FEATURE 7: QUẢN LÝ CHƯƠNG TRÌNH NGHỊ SỰ (AGENDA MANAGEMENT)
 
 ---
+
+#### UC-54: View Meeting Agenda (Xem chương trình nghị sự cuộc họp)
+
+- **Use Case ID**: UC-54
+- **Use Case Name**: View Meeting Agenda
+- **Primary Actor**: Secretary, Chair, Meeting Organizer, Meeting Approver, authorized Meeting Participant
+- **Description**: Allows an authorized user to view the Agenda Items associated with a meeting's session, including agenda order and execution status where available.
+- **Preconditions**: The user is authenticated and currently authorized to view the selected meeting and session.
+- **Postconditions**: The authorized agenda is displayed; no agenda or lifecycle data is changed.
+- **Main Flow**:
+  1. The user opens an authorized Meeting Session and selects its Agenda.
+  2. The system verifies access to the meeting and session and retrieves the Agenda Items in their defined order.
+  3. The system displays the agenda and current execution status where available.
+- **Alternative Flow — No Agenda Items**: If the session has no Agenda Items, display an empty agenda. The use case ends successfully.
+- **Exception Flows**: If the meeting or session is not accessible, return the same not-found result as for an unknown resource and disclose no agenda data. If the agenda cannot be loaded, display MSG128.
 
 ### UC-31: Create Agenda Item (Tạo mục chương trình nghị sự)
 
