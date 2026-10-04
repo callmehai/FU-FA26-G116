@@ -1,14 +1,27 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Icon } from '../../../components/Icon'
 import { NotFound } from '../../../components/NotFound'
+import { useToast } from '../../../components/toastContext'
+import { isApiError } from '../../../lib/errors'
 import { formatDateTime } from '../../../lib/format'
 import { routes } from '../../../lib/routes'
-import { EDITABLE_STATUSES, MEETING_MODE_LABEL, SENSITIVITY_LABEL, type Meeting } from '../../../types/meeting'
+import {
+  EDITABLE_STATUSES,
+  MEETING_MODE_LABEL,
+  SENSITIVITY_LABEL,
+  type Meeting,
+  type MeetingApprover,
+} from '../../../types/meeting'
+import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
 import { StatusBadge } from '../StatusBadge'
 import { useMeeting } from '../useMeeting'
 import { useMeetingApprovers } from '../useMeetingApprovers'
+import { MeetingHistory } from '../workflow/MeetingHistory'
+import { MeetingWorkflowBar, type WorkflowRole } from '../workflow/MeetingWorkflowBar'
+import { useMeetingHistory } from '../workflow/useMeetingHistory'
+import type { WorkflowOutcome } from '../workflow/workflowOutcome'
 
 /** The detail screen is split by lifecycle concern rather than by data table. */
 const TABS = [
@@ -31,13 +44,17 @@ const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview'>, string> = {
   minutes: 'GET /api/meetings/{id}/minutes',
 }
 
+/** The approval workflow ends at publishing; after that the bar has nothing left to say. */
+const REVIEW_STATUSES = ['WaitingApproval', 'Rejected', 'Approved'] as const
+
 /**
- * UC-13 View Meeting Details, reading GET /api/meetings/{id} (SCRUM-17). A meeting the caller has
- * no relationship with answers 404 exactly like an unknown id, and renders the same NotFound.
+ * UC-13 View Meeting Details, reading GET /api/meetings/{id} (SCRUM-17), with the approval
+ * workflow and the lifecycle history of SCRUM-19. A meeting the caller has no relationship with
+ * answers 404 exactly like an unknown id, and renders the same NotFound.
  */
 export function MeetingDetailPage() {
   const { meetingId } = useParams()
-  const { state, retry } = useMeeting(meetingId)
+  const { state, retry, reload, replace } = useMeeting(meetingId)
 
   if (state.kind === 'notFound') return <NotFound />
 
@@ -61,18 +78,85 @@ export function MeetingDetailPage() {
     )
   }
 
-  return <MeetingDetail meeting={state.meeting} />
+  // Keyed by id: another meeting opened from a notification starts with a fresh history.
+  return <MeetingDetail key={state.meeting.id} meeting={state.meeting} reload={reload} replace={replace} />
 }
 
-function MeetingDetail({ meeting }: { meeting: Meeting }) {
-  const { user, can } = useAuth()
+function MeetingDetail({
+  meeting,
+  reload,
+  replace,
+}: {
+  meeting: Meeting
+  reload: () => Promise<void>
+  replace: (meeting: Meeting) => void
+}) {
+  const { user, can, reloadSession } = useAuth()
+  const toast = useToast()
+  const handleAccessLost = useAccessLost()
   const [tab, setTab] = useState<TabId>('overview')
+  const history = useMeetingHistory(meeting.id)
 
   const isOrganizer = meeting.createdById === user?.id && can('MeetingCreator')
+  const isApprover =
+    meeting.assignedApproverId === user?.id && meeting.createdById !== user?.id && can('MeetingApprover')
+  const role: WorkflowRole | null =
+    isOrganizer && (meeting.status === 'Draft' || REVIEW_STATUSES.some((s) => s === meeting.status))
+      ? 'organizer'
+      : isApprover && REVIEW_STATUSES.some((s) => s === meeting.status)
+        ? 'approver'
+        : null
+  // Only the organizer may list approvers; they need it, while the meeting is under review, to name
+  // the approver and to see when the one they picked can no longer decide.
+  const approvers = useMeetingApprovers(role === 'organizer')
+
   // Hidden, not disabled, when it does not apply: a greyed-out button for something the user can
   // never do here is noise. The backend re-checks ownership and status on save regardless.
   const canEdit = isOrganizer && EDITABLE_STATUSES.includes(meeting.status)
   const restricted = meeting.sensitivity === 'Secret' || meeting.sensitivity === 'Confidential'
+
+  /** Display names the page already knows: whoever acted in the history, and the approver list. */
+  const names = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const approver of approvers.list ?? []) map.set(approver.id, approver.fullName)
+    for (const item of history.items) map.set(item.actorId, item.actorName)
+    return map
+  }, [approvers.list, history.items])
+  const nameOf = useCallback((id: string) => (id === user?.id ? 'bạn' : (names.get(id) ?? null)), [names, user?.id])
+
+  const { reload: reloadHistory, append: appendHistory } = history
+  const onOutcome = useCallback(
+    (outcome: WorkflowOutcome) => {
+      switch (outcome.kind) {
+        case 'done':
+          toast.show(outcome.response.message)
+          replace(outcome.response.meeting)
+          appendHistory(outcome.response.history)
+          return
+        case 'conflict':
+        case 'forbidden':
+          // The action no longer applies: say why, then show what is true now.
+          toast.show(outcome.message, 'error')
+          if (outcome.kind === 'forbidden') void reloadSession()
+          void reload()
+          void reloadHistory()
+          return
+        case 'gone':
+          void reload()
+          return
+        case 'accessLost':
+          handleAccessLost(outcome.error)
+      }
+    },
+    [toast, replace, appendHistory, reloadSession, reload, reloadHistory, handleAccessLost],
+  )
+
+  // The history is read separately; it can be the first to learn the meeting is gone.
+  const historyFailure = history.failure
+  useEffect(() => {
+    if (isApiError(historyFailure, 404)) void reload()
+    else if (isApiError(historyFailure, 403)) handleAccessLost(historyFailure)
+  }, [historyFailure, reload, handleAccessLost])
 
   return (
     <>
@@ -100,6 +184,17 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         </div>
       </div>
 
+      {role && (
+        <MeetingWorkflowBar
+          meeting={meeting}
+          role={role}
+          history={history.items}
+          approvers={role === 'organizer' ? approvers : null}
+          nameOf={nameOf}
+          onOutcome={onOutcome}
+        />
+      )}
+
       <div className="tabs" role="tablist">
         {TABS.map((t) => (
           <button
@@ -118,7 +213,10 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       <div className="detail-grid">
         <section>
           {tab === 'overview' ? (
-            <Overview meeting={meeting} showApprover={isOrganizer} />
+            <Overview
+              meeting={meeting}
+              approver={isOrganizer || isApprover ? approverLabel(meeting, user?.id, nameOf, approvers) : null}
+            />
           ) : (
             <div className="card card-pending">
               <p>
@@ -128,18 +226,39 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           )}
         </section>
 
-        <aside className="card">
-          <h2 className="card-title">Lịch sử trạng thái</h2>
-          <p className="card-pending">
-            Chưa hiển thị được: backend chưa có <code>GET /api/meetings/{'{id}'}/history</code>.
-          </p>
-        </aside>
+        <MeetingHistory
+          history={history}
+          onRetry={() => void history.reload()}
+          onLoadMore={() => void history.loadMore()}
+          nameOf={nameOf}
+        />
       </div>
     </>
   )
 }
 
-function Overview({ meeting, showApprover }: { meeting: Meeting; showApprover: boolean }) {
+/**
+ * The "Người duyệt" value, for the organizer and the approver only. A draft has none yet: it is
+ * picked when the meeting is sent for approval.
+ */
+function approverLabel(
+  meeting: Meeting,
+  userId: string | undefined,
+  nameOf: (id: string) => string | null,
+  approvers: { list: MeetingApprover[] | null; error: string | null },
+): { text: string; muted: boolean } {
+  const id = meeting.assignedApproverId
+  if (!id) return { text: meeting.status === 'Draft' ? 'Chọn khi gửi duyệt' : 'Chưa chọn', muted: true }
+  if (id === userId) return { text: 'Bạn', muted: false }
+  const name = nameOf(id)
+  // Missing from the organizer's list of eligible approvers: deactivated or no longer an approver.
+  const lost = approvers.list !== null && !approvers.list.some((a) => a.id === id)
+  if (name) return { text: lost ? `${name} (không còn quyền duyệt)` : name, muted: false }
+  if (approvers.list) return { text: 'Không còn quyền duyệt', muted: true }
+  return { text: approvers.error ? 'Không tải được tên' : 'Đang tải…', muted: true }
+}
+
+function Overview({ meeting, approver }: { meeting: Meeting; approver: { text: string; muted: boolean } | null }) {
   return (
     <div className="card field-grid">
       <div className="field-item">
@@ -176,7 +295,12 @@ function Overview({ meeting, showApprover }: { meeting: Meeting; showApprover: b
           <em className="value-empty">Chưa có</em>
         )}
       </div>
-      {showApprover && <ApproverValue approverId={meeting.assignedApproverId} />}
+      {approver && (
+        <div className="field-item">
+          <span>Người duyệt</span>
+          {approver.muted ? <em className="value-empty">{approver.text}</em> : <strong>{approver.text}</strong>}
+        </div>
+      )}
       <div className="field-item span-all">
         <span>Mô tả</span>
         {meeting.description ? (
@@ -185,32 +309,6 @@ function Overview({ meeting, showApprover }: { meeting: Meeting; showApprover: b
           <em className="value-empty">Chưa có mô tả</em>
         )}
       </div>
-    </div>
-  )
-}
-
-/**
- * The response carries only the approver's id. The organizer may list approvers, so their name is
- * looked up there; nobody else is shown this field.
- */
-function ApproverValue({ approverId }: { approverId: string | null }) {
-  const approvers = useMeetingApprovers(approverId !== null)
-  const name = approvers.list?.find((a) => a.id === approverId)?.fullName
-
-  return (
-    <div className="field-item">
-      <span>Người duyệt</span>
-      {approverId === null ? (
-        <em className="value-empty">Chưa chọn</em>
-      ) : name ? (
-        <strong>{name}</strong>
-      ) : approvers.list ? (
-        <em className="value-empty">Không còn quyền duyệt</em>
-      ) : approvers.error ? (
-        <em className="value-empty">Không tải được tên</em>
-      ) : (
-        <em className="value-empty">Đang tải…</em>
-      )}
     </div>
   )
 }

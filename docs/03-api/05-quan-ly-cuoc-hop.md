@@ -11,7 +11,9 @@ Meeting Sessions theo BR-25. Tạo/sửa Meeting không chọn hoặc gán ngư�
 duyệt diễn ra trong UC-19. Cập nhật Meeting không làm thay đổi trạng thái vòng đời (BR-28).
 Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. `GET /api/meetings`
 được bổ sung trong SCRUM-18. Màn danh sách, tạo, sửa và chi tiết đều gọi API thật: tạo xong thì báo
-thành công và mở trang chi tiết của cuộc họp mới.
+thành công và mở trang chi tiết của cuộc họp mới. FE đã bỏ dropdown người duyệt khỏi form tạo/sửa;
+gửi duyệt, duyệt, từ chối và lịch sử trạng thái nằm trên trang chi tiết — xem
+[Hợp đồng tích hợp FE](#hợp-đồng-tích-hợp-fe).
 
 Meeting creation yêu cầu các thông tin cấp Meeting theo BR-24; không bao gồm Planned Start Time hay
 Planned End Time. Meeting Session được lập lịch riêng theo UC-26/UC-27. Form khởi tạo Hình thức là
@@ -474,17 +476,49 @@ stale content.
 - Nếu PUT trả `409 MSG33`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
 - Sau khi POST hoặc PUT thành công, FE hiển thị message và mở chi tiết `meeting.id`. Danh sách
   SCRUM-18 đã tích hợp lọc, sort và pagination server-side; tiêu chí được giữ trên URL.
-- Trước khi gửi duyệt, lấy danh sách bằng `GET /api/meetings/approvers` rồi gửi `assignedApproverId`
-  trong action `SubmitForApproval`; trường này không thuộc POST/PUT tạo hoặc sửa thông tin meeting.
-- SCRUM-19 cung cấp contract history ở trên; việc tích hợp timeline thật thuộc task FE riêng.
-- Task FE bổ sung `transitionMeeting`, `getMeetingSubmissionReadiness` và `getMeetingHistory`
-  vào `src/api/meetings.ts`, cùng các request/response type tương ứng trong `src/types/meeting.ts`.
-- Task FE bỏ dropdown approver và `assignedApproverId` khỏi request tạo/sửa. Dropdown trên form
-  hiện có chưa có tác dụng với POST/PUT mới; người duyệt chỉ được lưu qua `SubmitForApproval`.
 - FE mở form và nút chỉnh sửa ở cả `Draft` và `Rejected` theo contract PUT. Sửa nội dung ở
   Rejected giữ nguyên trạng thái, assignment và rejection history; gửi duyệt lại trực tiếp bằng
   `SubmitForApproval`. `ReturnToDraft` là tùy chọn.
 - Publish không yêu cầu Meeting Session; FE không chặn nút công bố chỉ vì chưa có phiên.
+
+### Luồng duyệt trên trang chi tiết (SCRUM-19)
+
+`transitionMeeting`, `getMeetingSubmissionReadiness` và `getMeetingHistory` nằm trong
+`src/api/meetings.ts`; giao diện ở `src/features/meetings/workflow/`. Request tạo/sửa không còn
+`assignedApproverId`.
+
+- **Thanh trạng thái** giữa tiêu đề và các tab, chỉ hiện cho Organizer (có `MeetingCreator`) và
+  current Assigned Approver (có `MeetingApprover`, khác Organizer), từ `Draft` tới `Approved`. Thanh
+  nói cuộc họp đang ở đâu, đang chờ ai, bước tiếp theo, kèm đúng nút của bước đó. Vai trò suy từ
+  `createdById`, `assignedApproverId` và capability do server trả; server vẫn kiểm tra lại mọi action.
+- **Draft và Rejected (Organizer):** gọi readiness mỗi khi meeting đổi (`updatedAt`). Chưa ready thì
+  liệt kê các câu lỗi của backend (đã gộp trùng) và khoá nút gửi; không gọi được readiness thì vẫn cho
+  gửi vì Submit kiểm tra lại. Ở Rejected, thanh hiện người từ chối, thời điểm, lý do và nút "Gửi duyệt
+  lại" (UC-19 AF-1) — gửi thẳng, không qua `ReturnToDraft`.
+- **Gửi duyệt / Gửi duyệt lại:** dialog đọc lại `GET /approvers` mỗi lần mở và bắt buộc chọn một
+  người; gửi lại được chọn cùng người hoặc người khác. Danh sách
+  rỗng thì báo cần quản trị viên phân quyền và khoá nút. `MSG81` hiện danh sách thiếu sót trong
+  dialog; `MSG82` báo dưới ô chọn và tải lại danh sách.
+- **WaitingApproval (Organizer):** "Đang chờ {tên} duyệt" cùng giờ gửi. Người duyệt hiện tại không
+  còn trong `GET /approvers` (bị vô hiệu hoá hoặc mất quyền) thì thanh chuyển sang cảnh báo kèm
+  "Rút về nháp"; backend trả `409` nếu người duyệt thật ra vẫn hợp lệ.
+- **WaitingApproval (Approver):** "Duyệt" mở dialog xác nhận; "Từ chối" mở dialog bắt buộc lý do
+  1–1.000 ký tự, có bộ đếm. `MSG83`/`MSG84` hiện dưới ô lý do; lý do đã gõ được giữ khi lỗi.
+- **Approved:** hiện người duyệt và thời điểm. Approver thấy quyết định của chính họ ở cả Rejected
+  và Approved, kèm lý do khi từ chối.
+- **Kết quả:** thành công thì toast `message` của backend, thay meeting và thêm dòng history từ
+  response, không gọi lại API. `409`, `403 MSG85` và `403 MSG46` (Organizer mất `MeetingCreator` lúc
+  công bố) đóng dialog, toast lý do, rồi tải lại meeting và history; hai mã `403` tải lại cả phiên. `403` không có code đi theo
+  luồng mất quyền chung; `404` hiện trang không tìm thấy. Lỗi `503` ở lại trong dialog để thử lại.
+- **Lịch sử trạng thái** (cột phải, mọi tab): cũ nhất trước như API, mỗi dòng là badge hành động
+  theo màu trạng thái, người thực hiện, thời gian; dòng gửi duyệt ghi người duyệt (khi biết tên), dòng
+  từ chối trích lý do giữ xuống dòng. Gửi duyệt từ Rejected ghi "Gửi duyệt lại". `ReturnToDraft` từ
+  WaitingApproval ghi "Rút về nháp"; dòng từ Rejected (dữ liệu cũ, backend vẫn nhận action này) ghi
+  "Đưa về nháp". Có skeleton, trạng thái rỗng, lỗi kèm "Thử lại" và "Xem thêm" khi quá
+  50 dòng.
+- **Chưa có giao diện:** `TransferOrganizer`. Admin không đọc được meeting và chưa có API liệt kê
+  meeting `Approved` có Organizer bị vô hiệu hoá, nên FE chưa có chỗ hợp lý để đặt thao tác này.
+- Readiness chỉ kiểm tra thông tin cấp cuộc họp; agenda và Meeting Session không bắt buộc (UC-19).
 
 ## Checklist BA cần hoàn tất
 
