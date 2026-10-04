@@ -6,8 +6,6 @@ namespace TrustCabinet.Domain.Meetings;
 /// <summary>The fields a meeting creator may set or change through the meeting form.</summary>
 public sealed record MeetingInput(
     string? Title,
-    string? StartsAt,
-    string? EndsAt,
     string? Mode,
     string? Location,
     string? Sensitivity,
@@ -16,8 +14,6 @@ public sealed record MeetingInput(
 /// <summary>A validated and normalized form value, ready to persist.</summary>
 public sealed record ValidatedMeetingInput(
     string Title,
-    DateTimeOffset StartsAt,
-    DateTimeOffset? EndsAt,
     MeetingMode Mode,
     string Location,
     Sensitivity Sensitivity,
@@ -41,8 +37,6 @@ public sealed record MeetingDetails(
     Guid Id,
     string Title,
     string Description,
-    DateTimeOffset StartsAt,
-    DateTimeOffset? EndsAt,
     MeetingMode Mode,
     string Location,
     Sensitivity Sensitivity,
@@ -56,8 +50,6 @@ public sealed record MeetingDetails(
         meeting.Id,
         meeting.Title,
         meeting.Description,
-        meeting.StartsAt,
-        meeting.EndsAt,
         meeting.Mode,
         meeting.Location,
         meeting.Sensitivity,

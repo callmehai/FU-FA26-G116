@@ -161,8 +161,6 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     private MeetingInput Input(string title = "PostgreSQL meeting")
         => new(
             title,
-            "2026-10-01T09:00:00+07:00",
-            "2026-10-01T10:00:00+07:00",
             "Online",
             "Conference link",
             "Confidential",
@@ -204,7 +202,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         DateTimeOffset? to = null,
         int page = 1,
         int pageSize = 20,
-        MeetingSortBy sortBy = MeetingSortBy.StartsAt,
+        MeetingSortBy sortBy = MeetingSortBy.CreatedAt,
         MeetingSortDirection direction = MeetingSortDirection.Desc)
         => new(status, sensitivity, search, from, to, page, pageSize, sortBy, direction);
 
@@ -223,12 +221,19 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             Status = status,
             Sensitivity = sensitivity,
             Mode = MeetingMode.InPerson,
-            StartsAt = startsAt,
             CreatedAt = createdAt ?? startsAt.AddDays(-1),
             UpdatedAt = createdAt ?? startsAt.AddDays(-1),
             CreatedById = _creatorId,
             AssignedApproverId = approverId,
         };
+        meeting.Sessions.Add(new MeetingSession
+        {
+            Meeting = meeting,
+            Title = $"Phiên {title}",
+            PlannedStartsAt = startsAt,
+            PlannedEndsAt = startsAt.AddHours(1),
+            Status = MeetingSessionStatus.Planned,
+        });
         if (participantId is { } id)
         {
             meeting.Participants.Add(new MeetingParticipant
@@ -252,7 +257,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal("PostgreSQL meeting", meeting.Title);
         Assert.Equal(MeetingStatus.Draft, meeting.Status);
         Assert.Equal(_creatorId, meeting.CreatedById);
-        Assert.Equal(TimeSpan.Zero, meeting.StartsAt.Offset);
+        Assert.Empty(meeting.Sessions);
 
         var history = await verify.MeetingStatusHistory.SingleAsync(h => h.MeetingId == meeting.Id);
         Assert.Null(history.FromStatus);
@@ -320,11 +325,19 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.InPerson,
             Location = string.Empty,
-            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
             CreatedById = _creatorId,
         };
-        _db.Meetings.Add(meeting);
-        await _db.SaveChangesAsync();
+        var legacySchedule = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero);
+        await _db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO meetings (
+                id, title, description, status, sensitivity, mode, location,
+                starts_at, ends_at, created_by_id, assigned_approver_id, created_at, updated_at)
+            VALUES (
+                {meeting.Id}, {meeting.Title}, {meeting.Description}, {meeting.Status.ToString()},
+                {meeting.Sensitivity.ToString()}, {meeting.Mode.ToString()}, {meeting.Location},
+                {legacySchedule}, {legacySchedule.AddHours(1)}, {_creatorId}, {null},
+                {legacySchedule.AddDays(-1)}, {legacySchedule.AddDays(-1)})
+            """);
 
         var createHistoryId = Guid.CreateVersion7();
         var legacyHistoryId = Guid.CreateVersion7();
@@ -800,7 +813,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.All(invitations, email =>
         {
             Assert.False(string.IsNullOrWhiteSpace(email.DeduplicationKey));
-            Assert.NotNull(email.CalendarAttachment);
+            Assert.Null(email.CalendarAttachment);
         });
         var expectedAddresses = invitations.Select(email => email.ToAddress).Order().ToArray();
         var expectedBodies = invitations.Select(email => email.Body).Order().ToArray();
@@ -901,7 +914,6 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.InPerson,
             Location = "Phòng A",
-            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
             CreatedById = _creatorId,
             AssignedApproverId = approver.Id,
         };
@@ -989,7 +1001,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.True(email.Subject.Length <= 300);
         Assert.DoesNotContain("\uFFFD", email.Subject);
         Assert.Contains(title, email.Body, StringComparison.Ordinal);
-        Assert.Contains("SUMMARY:" + title, email.CalendarAttachment!.Replace("\r\n ", ""), StringComparison.Ordinal);
+        Assert.Null(email.CalendarAttachment);
         Assert.False(string.IsNullOrWhiteSpace(email.DeduplicationKey));
     }
 
@@ -1311,7 +1323,6 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             Status = status,
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.InPerson,
-            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
             CreatedById = creator.Id,
             AssignedApproverId = approver.Id,
             Participants =
@@ -1444,6 +1455,35 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Authorized_page_time_range_uses_overlapping_non_cancelled_sessions_without_duplicates()
+    {
+        var from = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero);
+        var to = from.AddHours(1);
+        var overlapping = ListMeeting("Overlapping sessions", MeetingStatus.Draft, from.AddMinutes(-30));
+        overlapping.Sessions.Add(new MeetingSession
+        {
+            Meeting = overlapping,
+            Title = "Second overlap",
+            PlannedStartsAt = from.AddMinutes(15),
+            PlannedEndsAt = to.AddMinutes(15),
+            Status = MeetingSessionStatus.Planned,
+        });
+        var cancelledOnly = ListMeeting("Cancelled session", MeetingStatus.Draft, from);
+        Assert.Single(cancelledOnly.Sessions).Status = MeetingSessionStatus.Cancelled;
+        var noSessions = ListMeeting("No sessions", MeetingStatus.Draft, from);
+        noSessions.Sessions.Clear();
+        var outside = ListMeeting("Outside range", MeetingStatus.Draft, to.AddMinutes(1));
+        _db.Meetings.AddRange(overlapping, cancelledOnly, noSessions, outside);
+        await _db.SaveChangesAsync();
+
+        var page = await new MeetingRepository(_db).FindAuthorizedPageAsync(
+            _creatorId, ListQuery(from: from, to: to));
+
+        Assert.Equal(1, page.TotalCount);
+        Assert.Equal(overlapping.Id, Assert.Single(page.Items).Id);
+    }
+
+    [Fact]
     public async Task Authorized_page_sorts_all_columns_in_both_directions_and_pages_stably()
     {
         var baseTime = new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
@@ -1465,9 +1505,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
                     (MeetingSortBy.Title, MeetingSortDirection.Asc) => all.OrderBy(m => m.Title),
                     (MeetingSortBy.Title, MeetingSortDirection.Desc) => all.OrderByDescending(m => m.Title),
                     (MeetingSortBy.CreatedAt, MeetingSortDirection.Asc) => all.OrderBy(m => m.CreatedAt),
-                    (MeetingSortBy.CreatedAt, MeetingSortDirection.Desc) => all.OrderByDescending(m => m.CreatedAt),
-                    (MeetingSortBy.StartsAt, MeetingSortDirection.Asc) => all.OrderBy(m => m.StartsAt),
-                    _ => all.OrderByDescending(m => m.StartsAt),
+                    _ => all.OrderByDescending(m => m.CreatedAt),
                 };
                 var expected = sorted.ThenBy(m => m.Id).Select(m => m.Id).ToArray();
                 var firstPage = await repository.FindAuthorizedPageAsync(_creatorId,
@@ -1527,7 +1565,6 @@ public sealed class MeetingRepositoryVisibilityTests : IDisposable
             Status = status,
             Sensitivity = Sensitivity.Normal,
             Mode = MeetingMode.InPerson,
-            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
             CreatedById = creatorId,
             AssignedApproverId = approverId,
             Participants =
@@ -1577,7 +1614,6 @@ public sealed class MeetingRepositoryVisibilityTests : IDisposable
             Status = MeetingStatus.Draft,
             Sensitivity = Sensitivity.Normal,
             Mode = MeetingMode.InPerson,
-            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
             CreatedById = Guid.CreateVersion7(),
         };
         _db.Meetings.Add(meeting);

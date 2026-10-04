@@ -180,10 +180,16 @@ public static class DevelopmentDataSeeder
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.InPerson,
             Location = "Phòng họp demo SCRUM-19",
-            StartsAt = now.AddDays(1),
-            EndsAt = now.AddDays(1).AddHours(1),
             CreatedBy = organizer,
         };
+        meeting.Sessions.Add(new MeetingSession
+        {
+            Meeting = meeting,
+            Title = meeting.Title,
+            PlannedStartsAt = now.AddDays(1),
+            PlannedEndsAt = now.AddDays(1).AddHours(1),
+            Status = MeetingSessionStatus.Planned,
+        });
         meeting.AgendaItems.Add(new AgendaItem
         {
             Meeting = meeting,
@@ -249,17 +255,33 @@ public static class DevelopmentDataSeeder
 
     private static Meeting NewMeeting(
         string title, MeetingStatus status, Sensitivity sensitivity, MeetingMode mode,
-        string location, string startsAt, string endsAt, User createdBy) => new()
+        string location, string startsAt, string endsAt, User createdBy)
+    {
+        var meeting = new Meeting
         {
             Title = title,
             Status = status,
             Sensitivity = sensitivity,
             Mode = mode,
             Location = location,
-            StartsAt = At(startsAt),
-            EndsAt = At(endsAt),
             CreatedBy = createdBy,
         };
+        meeting.Sessions.Add(new MeetingSession
+        {
+            Meeting = meeting,
+            Title = title,
+            PlannedStartsAt = At(startsAt),
+            PlannedEndsAt = At(endsAt),
+            Status = status switch
+            {
+                MeetingStatus.InProgress => MeetingSessionStatus.InProgress,
+                MeetingStatus.Ended or MeetingStatus.MinutesIssued or MeetingStatus.Archived
+                    => MeetingSessionStatus.Completed,
+                _ => MeetingSessionStatus.Planned,
+            },
+        });
+        return meeting;
+    }
 
     private static MeetingStatusHistory NewHistory(
         Meeting meeting, MeetingStatus? from, MeetingStatus to, User actor, string occurredAt) => new()
