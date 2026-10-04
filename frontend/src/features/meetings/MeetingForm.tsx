@@ -3,7 +3,6 @@ import { useBeforeUnload } from 'react-router-dom'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { SegmentedControl } from '../../components/SegmentedControl'
-import { fromDateTimeInput, toDateTimeInput } from '../../lib/dateInput'
 import { errorMessage, isApiError } from '../../lib/errors'
 import {
   MEETING_MODES,
@@ -22,16 +21,14 @@ const TITLE_MAX = 300
 const LOCATION_MAX = 300
 const DESCRIPTION_MAX = 4000
 
-type Field = 'title' | 'startsAt' | 'endsAt' | 'mode' | 'location' | 'sensitivity' | 'description'
+type Field = 'title' | 'mode' | 'location' | 'sensitivity' | 'description'
 type FieldErrors = Partial<Record<Field, string>>
 
 /** Field order on screen, so the first error to focus is the one highest on the page. */
-const FIELD_ORDER: Field[] = ['title', 'startsAt', 'endsAt', 'mode', 'location', 'sensitivity', 'description']
+const FIELD_ORDER: Field[] = ['title', 'mode', 'location', 'sensitivity', 'description']
 
 interface Values {
   title: string
-  startsAt: string
-  endsAt: string
   mode: MeetingMode
   location: string
   sensitivity: Sensitivity
@@ -45,8 +42,6 @@ const SENSITIVITY_OPTIONS = SENSITIVITIES.map((value) => ({ value, label: SENSIT
 function initialValues(meeting: Meeting | null): Values {
   return {
     title: meeting?.title ?? '',
-    startsAt: meeting ? toDateTimeInput(meeting.startsAt) : '',
-    endsAt: meeting?.endsAt ? toDateTimeInput(meeting.endsAt) : '',
     mode: meeting?.mode ?? 'InPerson',
     location: meeting?.location ?? '',
     sensitivity: meeting?.sensitivity ?? 'Normal',
@@ -54,29 +49,19 @@ function initialValues(meeting: Meeting | null): Values {
   }
 }
 
-/** BR-25, checked as soon as both times are known rather than only on submit. */
-function endsAtError(values: Values): string | undefined {
-  const start = fromDateTimeInput(values.startsAt)
-  const end = fromDateTimeInput(values.endsAt)
-  if (start && end && end <= start) return 'Thời gian kết thúc phải sau thời gian bắt đầu.'
-  return undefined
-}
-
-/** BR-24 and BR-25 — the same rules the backend applies, so most mistakes never cost a round trip. */
+/**
+ * BR-24 — the same rule the backend applies, so the commonest mistake never costs a round trip. The
+ * meeting has no schedule of its own: times are planned per meeting session (SCRUM-70).
+ */
 function validate(values: Values): FieldErrors {
   const errors: FieldErrors = {}
   if (!values.title.trim()) errors.title = 'Tên cuộc họp không được để trống.'
-  if (!fromDateTimeInput(values.startsAt)) errors.startsAt = 'Vui lòng chọn thời gian bắt đầu.'
-  const endError = endsAtError(values)
-  if (endError) errors.endsAt = endError
   return errors
 }
 
 function toRequest(values: Values): MeetingRequest {
   return {
     title: values.title.trim(),
-    startsAt: fromDateTimeInput(values.startsAt)!,
-    endsAt: fromDateTimeInput(values.endsAt),
     mode: values.mode,
     // An online meeting happens in the in-app call room, so it has no place. What was typed stays in
     // the form (switching back restores it) but is not saved.
@@ -144,12 +129,6 @@ export function MeetingForm({
     setFieldErrors((errors) => {
       const rest: FieldErrors = { ...errors }
       delete rest[key]
-      // The end time is judged against the start, so changing either re-checks it.
-      if (key === 'startsAt' || key === 'endsAt') {
-        delete rest.endsAt
-        const endError = endsAtError(next)
-        if (endError) rest.endsAt = endError
-      }
       return rest
     })
   }
@@ -209,35 +188,6 @@ export function MeetingForm({
             autoFocus={!meeting}
           />
           {fieldErrors.title && <small className="field-error">{fieldErrors.title}</small>}
-        </label>
-
-        <label className="field" data-field="startsAt">
-          <span className="field-required">Thời gian bắt đầu</span>
-          <input
-            type="datetime-local"
-            name="startsAt"
-            value={values.startsAt}
-            onChange={(e) => set('startsAt', e.target.value)}
-            aria-invalid={!!fieldErrors.startsAt}
-          />
-          {fieldErrors.startsAt && <small className="field-error">{fieldErrors.startsAt}</small>}
-        </label>
-
-        <label className="field" data-field="endsAt">
-          <span>Thời gian kết thúc dự kiến</span>
-          <input
-            type="datetime-local"
-            name="endsAt"
-            value={values.endsAt}
-            min={values.startsAt || undefined}
-            onChange={(e) => set('endsAt', e.target.value)}
-            aria-invalid={!!fieldErrors.endsAt}
-          />
-          {fieldErrors.endsAt ? (
-            <small className="field-error">{fieldErrors.endsAt}</small>
-          ) : (
-            <small className="field-hint">Có thể để trống nếu chưa xác định.</small>
-          )}
         </label>
 
         <div className="field" data-field="mode">

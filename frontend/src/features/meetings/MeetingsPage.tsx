@@ -48,7 +48,7 @@ const SENSITIVITY_OPTIONS = [
 
 /** Long enough that typing a word sends one request, short enough to feel live. */
 const SEARCH_DELAY_MS = 300
-const COLUMN_COUNT = 6
+const COLUMN_COUNT = 5
 const SKELETON_ROWS = 5
 
 type Load =
@@ -203,7 +203,6 @@ export function MeetingsPage() {
             {m.title}
           </Link>
         </td>
-        <td className="cell-muted">{formatDateTime(m.startsAt)}</td>
         <td className="cell-muted">{formatDateTime(m.createdAt)}</td>
         <td>
           <StatusBadge status={m.status} />
@@ -276,8 +275,8 @@ export function MeetingsPage() {
             value={state.from}
             max={state.to || undefined}
             onChange={(e) => update({ from: e.target.value })}
-            aria-label="Diễn ra từ ngày"
-            title="Diễn ra từ ngày"
+            aria-label="Có phiên họp diễn ra từ ngày"
+            title="Có phiên họp diễn ra từ ngày"
           />
           <span aria-hidden="true">–</span>
           <input
@@ -285,8 +284,8 @@ export function MeetingsPage() {
             value={state.to}
             min={state.from || undefined}
             onChange={(e) => update({ to: e.target.value })}
-            aria-label="Diễn ra đến ngày"
-            title="Diễn ra đến ngày"
+            aria-label="Có phiên họp diễn ra đến ngày"
+            title="Có phiên họp diễn ra đến ngày"
             aria-invalid={!!rangeError}
           />
         </fieldset>
@@ -311,9 +310,6 @@ export function MeetingsPage() {
             <tr>
               <SortHeader column="title" state={state} onSort={sortBy}>
                 Tên cuộc họp
-              </SortHeader>
-              <SortHeader column="startsAt" state={state} onSort={sortBy}>
-                Thời gian diễn ra
               </SortHeader>
               <SortHeader column="createdAt" state={state} onSort={sortBy}>
                 Tạo lúc

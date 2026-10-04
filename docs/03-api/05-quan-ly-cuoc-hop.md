@@ -480,6 +480,13 @@ stale content.
   Rejected giữ nguyên trạng thái, assignment và rejection history; gửi duyệt lại trực tiếp bằng
   `SubmitForApproval`. `ReturnToDraft` là tùy chọn.
 - Publish không yêu cầu Meeting Session; FE không chặn nút công bố chỉ vì chưa có phiên.
+- **Lịch thuộc Meeting Session (SCRUM-70):** form tạo/sửa chỉ gửi `title`, `mode`, `location`,
+  `sensitivity`, `description`. Danh sách không còn cột "Thời gian diễn ra"; sắp xếp theo `title`
+  hoặc `createdAt`, mặc định `createdAt desc`. Link cũ có `sortBy=startsAt` rơi về mặc định thay vì
+  gửi lên và nhận `400 MSG32`. Bộ lọc ngày vẫn gửi `from`/`to`; backend chỉ khớp meeting có phiên
+  chưa hủy chồng lấp khoảng đó, nên meeting chưa có phiên không hiện khi lọc theo ngày. Trang chi
+  tiết bỏ thời gian bắt đầu/kết thúc khỏi "Thông tin chung" và không lấy giờ từ phiên bù vào; tab
+  "Phiên họp" là placeholder chờ `GET /api/meetings/{meetingId}/sessions` (SCRUM-68).
 
 ### Luồng duyệt trên trang chi tiết (SCRUM-19)
 

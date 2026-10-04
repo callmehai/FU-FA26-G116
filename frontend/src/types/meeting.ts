@@ -56,15 +56,15 @@ export const MEETING_MODE_LABEL: Record<MeetingMode, string> = {
   Hybrid: 'Kết hợp',
 }
 
-/** GET /api/meetings/{id}, and the `meeting` of every create/update response. Timestamps are UTC ISO 8601. */
+/**
+ * GET /api/meetings/{id}, and the `meeting` of every create/update response. Meeting-level fields
+ * only: the schedule belongs to the meeting's sessions (SCRUM-70). Timestamps are UTC ISO 8601.
+ */
 export interface Meeting {
   id: string
   title: string
   /** Empty string when none was given. */
   description: string
-  startsAt: string
-  /** Null until the organizer settles when the meeting ends. */
-  endsAt: string | null
   mode: MeetingMode
   /** Empty string when none was given. */
   location: string
@@ -85,14 +85,13 @@ export interface Meeting {
 export interface MeetingListItem {
   id: string
   title: string
-  startsAt: string
   createdAt: string
   status: MeetingStatus
   sensitivity: Sensitivity
 }
 
 /** The columns GET /api/meetings can sort by. */
-export type MeetingSortBy = 'title' | 'startsAt' | 'createdAt'
+export type MeetingSortBy = 'title' | 'createdAt'
 export type SortDirection = 'asc' | 'desc'
 
 /** GET /api/meetings — one page of the meetings the caller may see, filtered and sorted server-side. */
@@ -111,7 +110,10 @@ export interface MeetingListQuery {
   q?: string
   status?: MeetingStatus
   sensitivity?: Sensitivity
-  /** UTC ISO; both ends inclusive, on the meeting's start time. */
+  /**
+   * UTC ISO; both ends inclusive. A meeting matches when one of its sessions that is not cancelled
+   * overlaps the range, so a meeting without sessions never matches a range.
+   */
   from?: string
   to?: string
   page: number
@@ -121,13 +123,11 @@ export interface MeetingListQuery {
 }
 
 /**
- * Body of POST /api/meetings and PUT /api/meetings/{id}. PUT replaces all seven fields. The approver
+ * Body of POST /api/meetings and PUT /api/meetings/{id}. PUT replaces all five fields. The approver
  * is not part of it: it is chosen when the meeting is sent for approval (SCRUM-19).
  */
 export interface MeetingRequest {
   title: string
-  startsAt: string
-  endsAt: string | null
   mode: MeetingMode
   location: string
   sensitivity: Sensitivity
