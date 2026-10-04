@@ -500,8 +500,15 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         {
             MeetingId = meetingId,
             UserId = replacement.Id,
-            Role = MeetingRole.Member,
+            Role = MeetingRole.Chair,
             Response = InvitationResponse.Accepted,
+        });
+        _db.MeetingParticipants.Add(new MeetingParticipant
+        {
+            MeetingId = meetingId,
+            UserId = approver.Id,
+            Role = MeetingRole.Secretary,
+            Response = InvitationResponse.Delegated,
         });
         await _db.SaveChangesAsync();
         Assert.True((await NewService().TransitionAsync(meetingId,
@@ -585,9 +592,9 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(MeetingStatus.Published,
             await verify.Meetings.Where(item => item.Id == meetingId).Select(item => item.Status).SingleAsync());
         Assert.Equal(5, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
-        var email = Assert.Single(await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync());
-        Assert.Equal(replacement.Email, email.ToAddress);
-        Assert.Equal(EmailStatus.Queued, email.Status);
+        var emails = await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync();
+        Assert.Equal(2, emails.Count);
+        Assert.Contains(emails, email => email.ToAddress == replacement.Email && email.Status == EmailStatus.Queued);
     }
 
     [Theory]
@@ -615,12 +622,13 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         _db.Users.AddRange(inactive, delegated);
         await _db.SaveChangesAsync();
         _db.MeetingParticipants.AddRange(
-            new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId },
+            new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId, Role = MeetingRole.Chair },
             new MeetingParticipant { MeetingId = meetingId, UserId = inactive.Id },
             new MeetingParticipant
             {
                 MeetingId = meetingId,
                 UserId = delegated.Id,
+                Role = MeetingRole.Secretary,
                 Response = InvitationResponse.Delegated,
                 DelegatedToUserId = _creatorId,
             });
@@ -842,7 +850,17 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var meetingId = created.Meeting!.Id;
         await _db.Meetings.Where(meeting => meeting.Id == meetingId)
             .ExecuteUpdateAsync(setters => setters.SetProperty(meeting => meeting.Status, MeetingStatus.Approved));
-        _db.MeetingParticipants.Add(new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId });
+        var secretary = NewUser("Failure-path Secretary", _approverRoleId);
+        _db.Users.Add(secretary);
+        _db.MeetingParticipants.AddRange(
+            new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId, Role = MeetingRole.Chair },
+            new MeetingParticipant
+            {
+                MeetingId = meetingId,
+                User = secretary,
+                Role = MeetingRole.Secretary,
+                Response = InvitationResponse.Delegated,
+            });
         await _db.SaveChangesAsync();
         await AddPlannedSessionAsync(meetingId);
         using var app = new PostgreSqlMeetingApiFactory(_connectionString, failInvitationQueue: true);
@@ -940,7 +958,15 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             PlannedDurationMinutes = 30,
             PresenterId = _creatorId,
         });
-        _db.MeetingParticipants.Add(new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId });
+        _db.MeetingParticipants.AddRange(
+            new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId, Role = MeetingRole.Chair },
+            new MeetingParticipant
+            {
+                MeetingId = meetingId,
+                UserId = approver.Id,
+                Role = MeetingRole.Secretary,
+                Response = InvitationResponse.Delegated,
+            });
         await _db.SaveChangesAsync();
 
         Assert.Equal(MeetingWorkflowOutcome.Success, (await service.TransitionAsync(
@@ -954,7 +980,11 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
 
         Assert.Equal(MeetingWorkflowOutcome.Success, published.Outcome);
         _db.ChangeTracker.Clear();
-        var email = await _db.EmailMessages.SingleAsync(item => item.MeetingId == meetingId);
+        var emails = await _db.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync();
+        Assert.Equal(2, emails.Count);
+        var creatorEmail = await _db.Users
+            .Where(user => user.Id == _creatorId).Select(user => user.Email).SingleAsync();
+        var email = Assert.Single(emails, item => item.ToAddress == creatorEmail);
         Assert.StartsWith("Thư mời họp: ", email.Subject);
         Assert.True(email.Subject.Length <= 300);
         Assert.DoesNotContain("\uFFFD", email.Subject);
@@ -1011,6 +1041,25 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     {
         var created = await NewService().CreateAsync(Input(), _creatorId);
         var meetingId = created.Meeting!.Id;
+        var chair = NewUser("Publish Chair", _approverRoleId);
+        var secretary = NewUser("Publish Secretary", _approverRoleId);
+        _db.Users.AddRange(chair, secretary);
+        _db.MeetingParticipants.AddRange(
+            new MeetingParticipant
+            {
+                MeetingId = meetingId,
+                User = chair,
+                Role = MeetingRole.Chair,
+                Response = InvitationResponse.Delegated,
+            },
+            new MeetingParticipant
+            {
+                MeetingId = meetingId,
+                User = secretary,
+                Role = MeetingRole.Secretary,
+                Response = InvitationResponse.Delegated,
+            });
+        await _db.SaveChangesAsync();
         await _db.Meetings.Where(item => item.Id == meetingId).ExecuteUpdateAsync(setters =>
             setters.SetProperty(item => item.Status, MeetingStatus.Approved));
         using var app = new PostgreSqlMeetingApiFactory(_connectionString);
@@ -1028,7 +1077,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             .Select(item => item.Status).SingleAsync());
         Assert.Equal(2, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
         Assert.False(await verify.Notifications.AnyAsync(item => item.MeetingId == meetingId));
-        Assert.False(await verify.EmailMessages.AnyAsync(item => item.MeetingId == meetingId));
+        Assert.Equal(2, await verify.EmailMessages.CountAsync(item => item.MeetingId == meetingId));
     }
 
     [Theory]
@@ -1123,7 +1172,15 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             PlannedDurationMinutes = 30,
             PresenterId = _creatorId,
         });
-        _db.MeetingParticipants.Add(new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId });
+        _db.MeetingParticipants.AddRange(
+            new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId, Role = MeetingRole.Chair },
+            new MeetingParticipant
+            {
+                MeetingId = meetingId,
+                UserId = approver.Id,
+                Role = MeetingRole.Secretary,
+                Response = InvitationResponse.Delegated,
+            });
         await _db.SaveChangesAsync();
 
         var service = NewService();
@@ -1150,7 +1207,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         await using var verify = NewContext();
         Assert.Single(await verify.MeetingStatusHistory.Where(item =>
             item.MeetingId == meetingId && item.Action == MeetingHistoryAction.Publish).ToListAsync());
-        Assert.Single(await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync());
+        Assert.Equal(2, await verify.EmailMessages.CountAsync(item => item.MeetingId == meetingId));
     }
 
     [Fact]

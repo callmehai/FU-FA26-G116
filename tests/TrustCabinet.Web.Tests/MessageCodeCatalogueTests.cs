@@ -204,6 +204,7 @@ public sealed partial class MessageCodeCatalogueTests
     [InlineData("Msg133ReturnToDraftConflict", "MSG133")]
     [InlineData("Msg134OrganizerInvalid", "MSG134")]
     [InlineData("Msg135OrganizerTransferConflict", "MSG135")]
+    [InlineData("Msg137PublishRosterNotReady", "MSG137")]
     public void Workflow_codes_use_the_allocation_after_main_reservations(string constant, string code)
     {
         var endpoint = File.ReadAllText(Path.Combine(

@@ -35,6 +35,12 @@ public sealed class MeetingWorkflowServiceTests
         if (status == MeetingStatus.Approved)
         {
             meeting.Sessions.Add(PlannedSession(meeting.Id));
+            var chair = Participant(meeting, active: true, InvitationResponse.Delegated);
+            chair.Role = MeetingRole.Chair;
+            var secretary = Participant(meeting, active: true, InvitationResponse.Delegated);
+            secretary.Role = MeetingRole.Secretary;
+            meeting.Participants.Add(chair);
+            meeting.Participants.Add(secretary);
         }
         _repository.Meetings.Add(meeting);
         return meeting;
@@ -861,6 +867,53 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Equal(meeting.Id, Assert.Single(_invitations.MeetingIds));
         Assert.Equal(1, _repository.SaveCount);
         Assert.True(_repository.LastWorkflowForUpdate);
+    }
+
+    [Theory]
+    [InlineData("no-participants")]
+    [InlineData("no-chair")]
+    [InlineData("multiple-chairs")]
+    [InlineData("inactive-chair")]
+    [InlineData("no-secretary")]
+    [InlineData("inactive-secretaries")]
+    public async Task Publish_requires_exactly_one_active_chair_and_an_active_secretary(string scenario)
+    {
+        var meeting = GivenMeeting(MeetingStatus.Approved);
+        meeting.Sessions.Clear();
+        switch (scenario)
+        {
+            case "no-participants":
+                meeting.Participants.Clear();
+                break;
+            case "no-chair":
+                meeting.Participants.Remove(meeting.Participants.Single(item => item.Role == MeetingRole.Chair));
+                break;
+            case "multiple-chairs":
+                var extraChair = Participant(meeting, active: true, InvitationResponse.Pending);
+                extraChair.Role = MeetingRole.Chair;
+                meeting.Participants.Add(extraChair);
+                break;
+            case "inactive-chair":
+                meeting.Participants.Single(item => item.Role == MeetingRole.Chair).User.IsActive = false;
+                break;
+            case "no-secretary":
+                meeting.Participants.Remove(meeting.Participants.Single(item => item.Role == MeetingRole.Secretary));
+                break;
+            case "inactive-secretaries":
+                meeting.Participants.Single(item => item.Role == MeetingRole.Secretary).User.IsActive = false;
+                break;
+        }
+
+        var result = await NewService().TransitionAsync(
+            meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Publish), _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.PublicationRosterNotReady, result.Outcome);
+        Assert.Equal(MeetingStatus.Approved, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_repository.EmailMessages);
+        Assert.Empty(_invitations.MeetingIds);
+        Assert.Equal(0, _repository.SaveCount);
     }
 
     [Theory]

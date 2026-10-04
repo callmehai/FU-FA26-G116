@@ -60,6 +60,7 @@ public enum MeetingWorkflowOutcome
     InvalidOrganizer,
     RejectionReasonRequired,
     RejectionReasonTooLong,
+    PublicationRosterNotReady,
     StatusConflict,
     ReadFailed,
     SaveFailed,

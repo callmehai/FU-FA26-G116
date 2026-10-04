@@ -48,6 +48,7 @@ public static class MeetingEndpoints
     private const string Msg89OrganizerTransferred = "MSG89";
     private const string Msg134OrganizerInvalid = "MSG134";
     private const string Msg135OrganizerTransferConflict = "MSG135";
+    private const string Msg137PublishRosterNotReady = "MSG137";
 
     public static IEndpointRouteBuilder MapMeetingEndpoints(this IEndpointRouteBuilder app)
     {
@@ -198,6 +199,10 @@ public static class MeetingEndpoints
                 StatusCodes.Status400BadRequest, Msg83RejectionReasonRequired, "Cần nhập lý do từ chối."),
             MeetingWorkflowOutcome.RejectionReasonTooLong => WorkflowError(
                 StatusCodes.Status400BadRequest, Msg84RejectionReasonTooLong, "Lý do từ chối không được vượt quá 1.000 ký tự."),
+            MeetingWorkflowOutcome.PublicationRosterNotReady => WorkflowError(
+                StatusCodes.Status409Conflict,
+                Msg137PublishRosterNotReady,
+                "Cuộc họp cần có đúng một Chủ tọa đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố."),
             MeetingWorkflowOutcome.StatusConflict => WorkflowError(
                 StatusCodes.Status409Conflict,
                 TransitionConflictCode(command.Action),

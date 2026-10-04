@@ -65,6 +65,12 @@ Cùng migration bổ sung ID Organizer cũ/mới cho history
   Organizer, hoặc approver inactive/mất quyền. Approver khác Organizer còn hợp lệ thì không cho rút.
 - Organizer/current approver đọc full history; Secretary được gán, active/chưa ủy quyền đọc rejection reason qua history cả trước Publish, nhưng snapshot chuyển Organizer vẫn ẩn. Participant khác chỉ đọc timeline đã redacted sau Publish.
 - Publish không yêu cầu Meeting Session; meeting Approved có thể công bố khi chưa lập phiên theo BR-56.
+- Publish yêu cầu đúng một Chair active và ít nhất một Secretary active; invitation response không
+  ảnh hưởng readiness. Roster không đạt trả `409 MSG137`, giữ Approved và không ghi history,
+  notification hoặc email job. `MSG46` chỉ còn cho meeting không còn Approved hoặc Organizer mất
+  `MeetingCreator`.
+- Hiện chưa có endpoint gán participant (SCRUM-20 chưa hoàn tất), nên meeting tạo mới chưa thể chạy
+  positive flow Publish; Tester dùng dữ liệu seed cho đến khi SCRUM-20 được tích hợp.
 - Organizer còn đọc được meeting Approved nhưng mất `MeetingCreator` nhận `403 MSG46`; caller không
   được đọc tài nguyên vẫn nhận `404`.
 - UC17 Session/Agenda detail và API quản lý phiên vẫn thuộc task UC-26–30, nhưng không chặn luồng

@@ -46,7 +46,7 @@ validate nội dung. Trạng thái khác `Draft`/`Rejected` trả `409 MSG33`.
 | SubmitForApproval | Meeting Organizer (`CreatedById`) + `MeetingCreator`; meeting Draft hoặc Rejected và ready | Không |
 | ReturnToDraft | Meeting Organizer active + `MeetingCreator`; Rejected hoặc WaitingApproval có assignment không hợp lệ (thiếu người duyệt, trỏ về Organizer, inactive hoặc mất `MeetingApprover`) | Không |
 | Approve/Reject | Current `AssignedApproverId` + capability `MeetingApprover`, khác Organizer; meeting WaitingApproval | Không; chỉ được nếu Chair đồng thời là current Assigned Approver và không phải Organizer |
-| Publish | Meeting Organizer + `MeetingCreator`; meeting Approved. Meeting Session là tùy chọn theo BR-56 | Không; chỉ được nếu Chair đồng thời là Organizer |
+| Publish | Meeting Organizer + `MeetingCreator`; meeting Approved; đúng một Chair active và ít nhất một Secretary active. Invitation response không ảnh hưởng readiness; Meeting Session là tùy chọn theo BR-56 | Không; chỉ được nếu Chair đồng thời là Organizer |
 | TransferOrganizer | Actor active có `AdminUsers`; meeting Approved và Organizer hiện tại inactive; Organizer mới active có `MeetingCreator`, khác người cũ và current Assigned Approver | Không |
 | Đọc full lifecycle history/rejection reason | Meeting Organizer hoặc current Assigned Approver | Chair relationship riêng chỉ cấp timeline đã redacted |
 | Đọc history/rejection reason của Secretary | Participant của chính meeting có role Secretary, user active, chưa ủy quyền (`Response != Delegated`, `DelegatedToUserId = null`) | Không; Secretary không được xem snapshot Organizer cũ/mới nếu không đồng thời có full-history permission |
@@ -235,9 +235,10 @@ action lần lượt là `MSG78` (SubmitForApproval), `MSG43` (Approve), `MSG44`
 (ReturnToDraft), `MSG45` (Publish) và `MSG89` (TransferOrganizer). FE nên dùng `code` để xử lý tình huống; `message` chỉ dành
 cho hiển thị.
 
-Publish khóa meeting, kiểm tra quyền và trạng thái Approved trong transaction trước khi ghi bất kỳ
-thay đổi nào. Meeting Session là tùy chọn: meeting Approved có không, một hoặc nhiều phiên đều có
-thể được công bố theo BR-56; Publish không dùng lịch phiên làm điều kiện chuyển trạng thái.
+Publish khóa meeting, kiểm tra quyền, trạng thái Approved, đúng một Chair active và ít nhất một
+Secretary active trong transaction trước khi ghi bất kỳ thay đổi nào. Invitation response không
+ảnh hưởng readiness. Meeting Session là tùy chọn: meeting Approved có không, một hoặc nhiều phiên
+đều có thể được công bố theo BR-56; Publish không dùng lịch phiên làm điều kiện chuyển trạng thái.
 
 Publish tạo notification theo BR-54: chỉ participant có user active và `Response != Delegated`;
 không tự thêm người được ủy quyền chỉ từ `DelegatedToUserId`. Delegate cần participant row riêng
@@ -352,7 +353,8 @@ khoảng trắng bao quanh hoặc tên khác chữ hoa/chữ thường. Request 
 | 403 | — | Tài khoản inactive theo active-user gate |
 | 404 | — | Meeting không tồn tại hoặc caller không được phép đọc/action trên tài nguyên; body rỗng |
 | 403 | `MSG46` | Organizer còn đọc được meeting nhưng đã mất `MeetingCreator`; không công bố hoặc tạo history/jobs |
-| 409 | `MSG41`, `MSG46`, `MSG132`, `MSG133` | Submit, Publish, quyết định duyệt hoặc ReturnToDraft không còn hợp lệ; không ghi history/jobs |
+| 409 | `MSG41`, `MSG46`, `MSG132`, `MSG133` | Submit, Publish, quyết định duyệt hoặc ReturnToDraft không còn hợp lệ do trạng thái; không ghi history/jobs |
+| 409 | `MSG137` | Publish thiếu đúng một Chair active hoặc thiếu Secretary active; không ghi history, notification hoặc email job |
 | 200/400/409 | `MSG89` / `MSG134` / `MSG135` | TransferOrganizer thành công / đích không hợp lệ / trạng thái hoặc Organizer cũ không cho transfer |
 | 413 | `MSG87` | JSON request vượt 64 KiB |
 | 415 | `MSG34` | POST không dùng `application/json`; dùng chung code với PUT |

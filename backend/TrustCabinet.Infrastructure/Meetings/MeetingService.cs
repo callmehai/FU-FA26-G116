@@ -354,6 +354,18 @@ public sealed class MeetingService(
                     return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.StatusConflict);
                 }
 
+                if (command.Action == MeetingTransitionAction.Publish)
+                {
+                    var activeChairCount = meeting.Participants.Count(participant =>
+                        participant.Role == MeetingRole.Chair && participant.User.IsActive);
+                    var hasActiveSecretary = meeting.Participants.Any(participant =>
+                        participant.Role == MeetingRole.Secretary && participant.User.IsActive);
+                    if (activeChairCount != 1 || !hasActiveSecretary)
+                    {
+                        return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.PublicationRosterNotReady);
+                    }
+                }
+
                 if (transfersOrganizer)
                 {
                     if (await meetings.IsUserActiveAsync(meeting.CreatedById, token))

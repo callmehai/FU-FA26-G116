@@ -146,6 +146,27 @@ public sealed class MeetingEndpointsTests : IDisposable
             Status = MeetingSessionStatus.Planned,
         });
 
+    private static void AddPublishRoster(Meeting meeting)
+    {
+        foreach (var role in new[] { MeetingRole.Chair, MeetingRole.Secretary })
+        {
+            var user = new User
+            {
+                FullName = role.ToString(),
+                Email = $"{role.ToString().ToLowerInvariant()}-{Guid.CreateVersion7():N}@trustcabinet.local",
+                PasswordHash = "test-hash",
+                IsActive = true,
+            };
+            meeting.Participants.Add(new MeetingParticipant
+            {
+                Meeting = meeting,
+                User = user,
+                Role = role,
+                Response = InvitationResponse.Delegated,
+            });
+        }
+    }
+
     private static async Task<JsonDocument> JsonOf(HttpResponseMessage response)
         => JsonDocument.Parse(await response.Content.ReadAsStringAsync());
 
@@ -512,7 +533,11 @@ public sealed class MeetingEndpointsTests : IDisposable
         else
         {
             meeting.Status = action == "ReturnToDraft" ? MeetingStatus.Rejected : MeetingStatus.Approved;
-            if (action == "Publish") AddPlannedSession(meeting);
+            if (action == "Publish")
+            {
+                AddPlannedSession(meeting);
+                AddPublishRoster(meeting);
+            }
             _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
         }
 
@@ -597,6 +622,7 @@ public sealed class MeetingEndpointsTests : IDisposable
             case "Publish":
                 meeting.Status = MeetingStatus.Approved;
                 AddPlannedSession(meeting);
+                AddPublishRoster(meeting);
                 _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
                 break;
         }
@@ -677,6 +703,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var meeting = OwnedMeetingBy(creator);
         meeting.Status = MeetingStatus.Approved;
         AddPlannedSession(meeting);
+        AddPublishRoster(meeting);
         _factory.Meetings.Meetings.Add(meeting);
         using var client = _factory.ClientFor(creator);
 
@@ -704,6 +731,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var meeting = OwnedMeetingBy(creator);
         meeting.Status = MeetingStatus.Approved;
         AddPlannedSession(meeting);
+        AddPublishRoster(meeting);
         _factory.Meetings.Meetings.Add(meeting);
         _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
         _factory.Invitations.NextQueueThrows = new InvalidOperationException("Sender missing");
@@ -721,6 +749,33 @@ public sealed class MeetingEndpointsTests : IDisposable
             Assert.Single(_factory.Meetings.Meetings.Single().StatusHistory).Action);
         Assert.Empty(_factory.Meetings.Notifications);
         Assert.Empty(_factory.Invitations.MeetingIds);
+    }
+
+    [Fact]
+    public async Task Publish_returns_MSG137_when_the_required_roster_is_not_ready()
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        meeting.Status = MeetingStatus.Approved;
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/meetings/{meeting.Id}/transitions", new { action = "Publish" });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal("MSG137", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(
+            "Cuộc họp cần có đúng một Chủ tọa đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố.",
+            body.RootElement.GetProperty("message").GetString());
+        Assert.Equal(MeetingStatus.Approved, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Empty(_factory.Meetings.EmailMessages);
+        Assert.Empty(_factory.Invitations.MeetingIds);
+        Assert.Equal(0, _factory.Meetings.SaveCount);
     }
 
     [Fact]
@@ -805,6 +860,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
         meeting.Status = MeetingStatus.Approved;
+        AddPublishRoster(meeting);
         _factory.Meetings.Meetings.Add(meeting);
         _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
@@ -951,6 +1007,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
         meeting.Status = MeetingStatus.Approved;
+        AddPublishRoster(meeting);
         _factory.Meetings.Meetings.Add(meeting);
         _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
