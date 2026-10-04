@@ -452,8 +452,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   - POST-4: Until the link is used, the user's current password and active sessions remain unchanged.
   - POST-5: When the account owner completes the reset, the password is replaced, every active session of that account is ended, the link can no longer be used, and the reset is recorded in the audit log (BR-01, BR-16, BR-20).
 - **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram (request the reset): [UC08_ResetUserPassword.png](../06-sequencediagram/user-management/UC08_ResetUserPassword.png)
-  - Sequence Diagram (complete the reset): [UC08_CompletePasswordReset.png](../06-sequencediagram/user-management/UC08_CompletePasswordReset.png)
+  - Sequence Diagram: [UC08_ResetUserPassword.png](../06-sequencediagram/user-management/UC08_ResetUserPassword.png)
   - Class Diagram: [feature-02b-password-reset-class-diagram.drawio.png](../07-classdiagram/feature-02b-password-reset-class-diagram.drawio.png)
 
 #### Luồng sự kiện chính (Main Flow – Reset User Password):

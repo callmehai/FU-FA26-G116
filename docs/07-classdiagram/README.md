@@ -356,7 +356,7 @@ không phải là trùng email. Thiếu tham số này thì không ai sửa đư
 **Đã xử lý ngày 04/10/2026, theo Cách 2** của đề xuất cũ: UC-08 đã có code (PR #56, #58, #61), nên
 phần đặt lại mật khẩu được vẽ lại theo code ở một bản vẽ riêng,
 [`feature-02b-password-reset-class-diagram.drawio.png`](feature-02b-password-reset-class-diagram.drawio.png).
-Bản vẽ 02 bỏ các thành phần UC-08 cũ và có ghi chú trỏ sang 02b.
+Bản vẽ 02 bỏ các thành phần UC-08 cũ.
 
 | Bản vẽ 02 cũ | Bản vẽ 02b (theo code) |
 |---|---|
@@ -375,7 +375,7 @@ Bản vẽ 02 bỏ các thành phần UC-08 cũ và có ghi chú trỏ sang 02b.
 Liên kết chỉ được kích hoạt **sau khi** gửi mail thành công, nên thứ tự này nằm ở `UserService`, không
 nằm trong kho token.
 
-Sequence diagram tương ứng: `UC08_ResetUserPassword` và `UC08_CompletePasswordReset` trong
+Sequence diagram tương ứng: `UC08_ResetUserPassword` trong
 [`06-sequencediagram/user-management/`](../06-sequencediagram/user-management/).
 
 ---
