@@ -29,6 +29,8 @@ public sealed class EmailDeliveryTests
                 .OfType<AddColumnOperation>()
                 .Select(operation => operation.Name)
                 .Order(StringComparer.Ordinal));
+        Assert.False(Assert.Single(migration.UpOperations.OfType<AddColumnOperation>(),
+            operation => operation.Name == "deduplication_key").IsNullable);
     }
 
     [Fact]
@@ -87,6 +89,42 @@ public sealed class EmailDeliveryTests
     }
 
     [Fact]
+    public async Task Reconciliation_queues_a_published_meeting_that_has_no_invitation_jobs()
+    {
+        await using var db = NewDatabase();
+        var alreadyInitialized = PublishedMeeting();
+        var missingJobs = PublishedMeeting();
+        missingJobs.CreatedAt = alreadyInitialized.CreatedAt.AddMinutes(1);
+        db.Meetings.AddRange(alreadyInitialized, missingJobs);
+        await db.SaveChangesAsync();
+        await Queue(db).QueueForPublishedMeetingAsync(alreadyInitialized.Id);
+
+        var reconciledMeetingId = await Queue(db).QueueNextUninitializedPublishedMeetingAsync();
+
+        Assert.Equal(missingJobs.Id, reconciledMeetingId);
+        Assert.Equal(
+            2,
+            await db.EmailMessages.CountAsync(message => message.MeetingId == missingJobs.Id));
+        Assert.Empty(missingJobs.StatusHistory);
+    }
+
+    [Fact]
+    public async Task Reconciliation_does_nothing_when_all_published_meetings_are_initialized()
+    {
+        await using var db = NewDatabase();
+        var meeting = PublishedMeeting();
+        db.Meetings.Add(meeting);
+        await db.SaveChangesAsync();
+        var queue = Queue(db);
+        await queue.QueueForPublishedMeetingAsync(meeting.Id);
+
+        var reconciledMeetingId = await queue.QueueNextUninitializedPublishedMeetingAsync();
+
+        Assert.Null(reconciledMeetingId);
+        Assert.Equal(2, await db.EmailMessages.CountAsync());
+    }
+
+    [Fact]
     public async Task Disabled_email_delivery_does_not_queue_malformed_messages()
     {
         await using var db = NewDatabase();
@@ -115,14 +153,14 @@ public sealed class EmailDeliveryTests
         await using var db = NewDatabase();
         var meeting = PublishedMeeting();
         const string prefix = "Thư mời họp: ";
-        meeting.Title = new string('a', 300 - prefix.Length - 1) + "😀";
+        meeting.Title = new string('a', 300 - prefix.Length - 2) + "😀";
         db.Meetings.Add(meeting);
         await db.SaveChangesAsync();
 
         await Queue(db).QueueForPublishedMeetingAsync(meeting.Id);
 
         var subject = (await db.EmailMessages.FirstAsync()).Subject;
-        Assert.Equal(300, subject.EnumerateRunes().Count());
+        Assert.Equal(300, subject.Length);
         Assert.EndsWith("😀", subject, StringComparison.Ordinal);
         _ = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true)
             .GetBytes(subject);

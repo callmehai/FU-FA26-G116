@@ -42,7 +42,7 @@ public class DatabaseModelTests
             [
                 "agenda_items", "audit_log", "call_participants", "call_sessions",
                 "document_comments", "document_versions", "documents", "email_messages",
-                "meeting_minutes", "meeting_notes", "meeting_participants",
+                "meeting_minutes", "meeting_notes", "meeting_participants", "meeting_sessions",
                 "meeting_status_history", "meeting_summaries", "meetings", "minutes_signatures",
                 "notifications", "recordings", "role_capabilities", "roles", "speaking_requests",
                 "transcript_segments", "transcripts", "users", "vote_choices",
@@ -54,6 +54,7 @@ public class DatabaseModelTests
     [Theory]
     [InlineData(typeof(Meeting), nameof(Meeting.Status))]
     [InlineData(typeof(Meeting), nameof(Meeting.Sensitivity))]
+    [InlineData(typeof(MeetingSession), nameof(MeetingSession.Status))]
     [InlineData(typeof(RoleCapability), nameof(RoleCapability.Capability))]
     public void Enums_are_stored_as_text(Type entity, string property)
     {
@@ -64,6 +65,67 @@ public class DatabaseModelTests
         // A readable database is worth the few extra bytes, and inserting a new enum member later
         // must not renumber the rows already written.
         Assert.Equal(typeof(string), column.GetProviderClrType());
+    }
+
+    [Fact]
+    public async Task Meeting_history_rejects_update_and_delete_through_ef()
+    {
+        var updateContext = NewContext();
+        var history = new MeetingStatusHistory
+        {
+            MeetingId = Guid.CreateVersion7(),
+            ActorId = Guid.CreateVersion7(),
+            Action = MeetingHistoryAction.Approve,
+            ToStatus = MeetingStatus.Approved,
+            OccurredAt = DateTimeOffset.UtcNow,
+        };
+        updateContext.Attach(history);
+        updateContext.Entry(history).State = EntityState.Modified;
+
+        Assert.Throws<InvalidOperationException>(() => updateContext.SaveChanges());
+        await updateContext.DisposeAsync();
+
+        var deleteContext = NewContext();
+        deleteContext.Attach(history);
+        deleteContext.Entry(history).State = EntityState.Deleted;
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => deleteContext.SaveChangesAsync());
+        await deleteContext.DisposeAsync();
+    }
+
+    [Fact]
+    public void Meeting_history_action_is_required_and_meeting_delete_is_restricted()
+    {
+        using var db = NewContext();
+        var history = db.Model.FindEntityType(typeof(MeetingStatusHistory))!;
+        var action = history.FindProperty(nameof(MeetingStatusHistory.Action))!;
+        var meetingForeignKey = history.GetForeignKeys()
+            .Single(foreignKey => foreignKey.PrincipalEntityType.ClrType == typeof(Meeting));
+
+        Assert.False(action.IsNullable);
+        Assert.Equal(typeof(string), action.GetProviderClrType());
+        Assert.Equal(DeleteBehavior.Restrict, meetingForeignKey.DeleteBehavior);
+    }
+
+    [Fact]
+    public void Meeting_sessions_store_required_schedule_and_index_the_parent_and_status()
+    {
+        using var db = NewContext();
+        var session = db.Model.FindEntityType(typeof(MeetingSession))!;
+
+        Assert.Equal(300, session.FindProperty(nameof(MeetingSession.Title))!.GetMaxLength());
+        Assert.False(session.FindProperty(nameof(MeetingSession.Title))!.IsNullable);
+        Assert.False(session.FindProperty(nameof(MeetingSession.PlannedStartsAt))!.IsNullable);
+        Assert.False(session.FindProperty(nameof(MeetingSession.PlannedEndsAt))!.IsNullable);
+        Assert.False(session.FindProperty(nameof(MeetingSession.Status))!.IsNullable);
+        Assert.Equal(typeof(string), session.FindProperty(nameof(MeetingSession.Status))!.GetProviderClrType());
+        Assert.Contains(session.GetIndexes(), index =>
+            index.Properties.Select(property => property.Name).SequenceEqual(
+                [nameof(MeetingSession.MeetingId), nameof(MeetingSession.Status)]) && !index.IsUnique);
+        var foreignKey = Assert.Single(session.GetForeignKeys());
+        Assert.Equal(typeof(Meeting), foreignKey.PrincipalEntityType.ClrType);
+        Assert.Equal(nameof(Meeting.Sessions), foreignKey.PrincipalToDependent!.Name);
+        Assert.Equal(DeleteBehavior.Cascade, foreignKey.DeleteBehavior);
     }
 
     [Fact]
@@ -269,7 +331,7 @@ public class DatabaseModelTests
     }
 
     [Fact]
-    public void Deleting_a_meeting_takes_its_participants_and_history_with_it()
+    public void Deleting_a_meeting_cascades_participants_but_preserves_lifecycle_history()
     {
         using var db = NewContext();
 
@@ -283,7 +345,9 @@ public class DatabaseModelTests
                 .GetForeignKeys()
                 .Single(fk => fk.DependentToPrincipal?.Name == navigation);
 
-            Assert.Equal(DeleteBehavior.Cascade, foreignKey.DeleteBehavior);
+            Assert.Equal(
+                entity == typeof(MeetingParticipant) ? DeleteBehavior.Cascade : DeleteBehavior.Restrict,
+                foreignKey.DeleteBehavior);
         }
     }
 

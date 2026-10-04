@@ -1909,7 +1909,7 @@ The account owner continues the use case from the email. No sign-in is required:
    - the Meeting Session is InProgress;
    - the selected Agenda Item belongs to that Meeting Session;
    - the selected Agenda Item is Pending; and
-   - no other Agenda Item of the same Meeting Session is InProgress.  
+   - no other Agenda Item of the same Meeting Session is InProgress.
    (BR-64, BR-69, BR-70, BR-71)
 4. The system changes the selected Agenda Item status to InProgress and records its actual start time. (BR-70, BR-72)
 5. The system makes the new current Agenda Item available in real time to authorized users viewing the same Meeting Session. (BR-73)
@@ -1931,7 +1931,7 @@ The account owner continues the use case from the email. No sign-in is required:
      - the selected Agenda Item does not belong to the Meeting Session; or
      - the Meeting Session is no longer InProgress; or
      - the selected Agenda Item is no longer Pending; or
-     - the Chair is no longer assigned to the meeting.  
+     - the Chair is no longer assigned to the meeting.
      (BR-64, BR-69, BR-70)
   2. The Agenda Item remains unchanged.
   3. The system displays MSG73 – "This agenda item cannot be set as current."
@@ -1969,7 +1969,7 @@ The account owner continues the use case from the email. No sign-in is required:
 3. The system verifies that:
    - the Chair is still assigned to the meeting;
    - the Meeting Session is InProgress; and
-   - the selected Agenda Item belongs to that Meeting Session and is currently InProgress.  
+   - the selected Agenda Item belongs to that Meeting Session and is currently InProgress.
    (BR-64, BR-69, BR-70)
 4. The system changes the Agenda Item status to Done.
 5. The system records the actual end time and the actual time used for the Agenda Item. (BR-72)
@@ -1986,7 +1986,7 @@ The account owner continues the use case from the email. No sign-in is required:
      - the selected Agenda Item does not belong to the Meeting Session; or
      - the Meeting Session is no longer InProgress; or
      - the selected Agenda Item is no longer InProgress; or
-     - the Chair is no longer assigned to the meeting.  
+     - the Chair is no longer assigned to the meeting.
      (BR-64, BR-69, BR-70)
   2. The Agenda Item remains unchanged.
   3. The system displays MSG74 – "This agenda item cannot be completed."
@@ -2663,4 +2663,3 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 5. **Thông báo sau khi Published**: thêm participant, đổi Meeting Role hoặc xóa participant đều queue in-app notification và email cho người bị ảnh hưởng để gửi bất đồng bộ. Lỗi gửi không hoàn tác thay đổi và phải được retry. Thông báo xóa không chứa link mở nội dung đã bị thu hồi. Khi xóa làm kết thúc một ủy quyền, quyền vào phòng của cả participant bị xóa và delegate liên quan đều được tính lại; chỉ đưa một người khỏi phòng nếu họ không còn quyền nào khác từ participant hoặc ủy quyền.
 6. **Phòng họp trực tuyến**: room thuộc Meeting, không thuộc Meeting Session; không cần session để mở hoặc vào. Room chỉ available khi mode Online/Hybrid, Meeting Published/InProgress, và caller có quan hệ vào phòng hợp lệ. Khi Meeting kết thúc, room từ chối join mới và disconnect người đang kết nối.
 7. **Guest ngoài hệ thống**: quản lý bằng lời mời riêng theo meeting/email, xác minh email bằng OTP, không tạo internal account; chỉ có Guest access. Thu hồi lời mời phải thu hồi ngay guest session và quyền vào room.
-

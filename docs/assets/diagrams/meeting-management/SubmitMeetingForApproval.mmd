@@ -1,0 +1,85 @@
+sequenceDiagram
+    title UC-19 - Gửi duyệt cuộc họp
+    actor Organizer as Người tổ chức
+    participant Page as Màn quản lý cuộc họp
+    participant API as Meeting API
+    participant Service as Meeting Service
+    participant DB as Database
+
+    opt Organizer chọn về Draft từ Rejected, hoặc WaitingApproval bị kẹt vì approver không hợp lệ
+        Note over Organizer,Page: Rejected được sửa thông tin, WaitingApproval phải rút trước khi sửa
+        Organizer->>Page: Đưa cuộc họp về Nháp
+        Page->>API: POST transitions, action=ReturnToDraft
+        API->>Service: ReturnToDraft với actor từ phiên đăng nhập
+        Service->>DB: BEGIN, khóa meeting và kiểm tra Organizer active + MeetingCreator
+        Service->>DB: Nếu WaitingApproval, đọc lại approver active và MeetingApprover
+        alt Đúng quyền, Rejected hoặc WaitingApproval với approver inactive, mất quyền
+            Service->>DB: Đổi sang Draft, xóa assignment và thêm history
+            alt SaveChanges hoặc COMMIT thất bại
+                DB-->>Service: Lỗi persistence hoặc commit
+                Service->>DB: ROLLBACK toàn bộ thay đổi
+                Service-->>API: 503 MSG88
+                API-->>Page: Hiển thị lỗi, tải lại trạng thái để xác định kết quả
+            else Commit thành công
+                Service->>DB: COMMIT
+                DB-->>Service: Đã lưu nguyên tử, giữ nguyên lý do từ chối cũ
+                Service-->>API: Kết quả chuyển trạng thái
+                API-->>Page: 200 MSG79
+            end
+        else Sai quyền hoặc sai trạng thái
+            Service->>DB: Kết thúc transaction không ghi dữ liệu
+            Service-->>API: 404 hoặc 403 MSG85 hoặc 409 MSG133
+            API-->>Page: Hiển thị lỗi, tải lại trạng thái
+        end
+    end
+
+    Organizer->>Page: Hoàn thiện thông tin cấp meeting ở Draft hoặc Rejected
+    Page->>API: GET submission-readiness
+    API->>Service: Kiểm tra quyền Organizer và dữ liệu đã lưu
+    Service->>DB: Đọc thông tin meeting
+    DB-->>Service: Dữ liệu hiện tại
+    Service-->>API: Readiness và lỗi theo field
+    API-->>Page: 200 ready, errors
+    Page->>API: GET /api/meetings/approvers
+    API->>DB: Kiểm tra MeetingCreator và lấy user active có MeetingApprover
+    DB-->>API: Danh sách người duyệt hợp lệ
+    API-->>Page: 200 danh sách người duyệt
+    Organizer->>Page: Chọn người duyệt và gửi duyệt
+    Page->>API: POST transitions, action=SubmitForApproval, assignedApproverId
+    Note over API: action phải khớp chính xác tên enum, request sai trả 400 MSG80.
+    API->>Service: SubmitForApproval với actor từ phiên đăng nhập
+    Service->>DB: BEGIN và khóa meeting
+    DB-->>Service: Meeting và assignment hiện tại
+
+    alt Meeting không tồn tại hoặc caller không được đọc
+        Service->>DB: Kết thúc transaction không ghi dữ liệu
+        Service-->>API: 404
+    else Không phải Organizer đang có MeetingCreator
+        Service->>DB: Kết thúc transaction không ghi dữ liệu
+        Service-->>API: 403 MSG85
+    else Meeting không còn Draft hoặc Rejected
+        Service->>DB: Kết thúc transaction không ghi dữ liệu
+        Service-->>API: 409 MSG41
+    else Thiếu thông tin bắt buộc cấp meeting
+        Service->>DB: Kết thúc transaction không ghi dữ liệu
+        Service-->>API: 400 MSG81 và lỗi theo field
+    else Người duyệt là Organizer, không active hoặc thiếu MeetingApprover
+        Service->>DB: Kết thúc transaction không ghi dữ liệu
+        Service-->>API: 400 MSG82
+    else Đủ điều kiện gửi duyệt
+        Service->>DB: Gán approver, đổi WaitingApproval, thêm Submit history từ Draft hoặc Rejected và notification
+        alt Lưu hoặc commit thất bại
+            DB-->>Service: Lỗi persistence
+            Service->>DB: ROLLBACK toàn bộ thay đổi
+            Service-->>API: 503 MSG42
+        else Lưu và commit thành công
+            Service->>DB: COMMIT
+            DB-->>Service: Meeting, history và notification đã lưu nguyên tử
+            Service-->>API: Kết quả gửi duyệt
+            API-->>Page: 200 MSG78
+            Page-->>Organizer: Xác nhận đã gửi duyệt
+        end
+    end
+
+    Note over Organizer,Service: Rejected được gửi lại trực tiếp, thay assignment cho cycle mới, giữ lịch sử/lý do từ chối. Agenda và Meeting Session không bắt buộc khi submit.
+    Note over Organizer,Service: WaitingApproval chỉ được rút khi approver không hợp lệ, không gán lại trực tiếp. Sau ReturnToDraft, chọn approver mới qua submit bình thường.

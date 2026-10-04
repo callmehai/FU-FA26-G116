@@ -17,12 +17,17 @@ internal enum EmailProcessingOutcome
 
 internal sealed record EmailProcessingResult(EmailProcessingOutcome Outcome, int AttemptCount = 0);
 
+internal interface IEmailQueueProcessor
+{
+    Task<EmailProcessingResult> ProcessNextAsync(CancellationToken ct = default);
+}
+
 internal sealed class EmailQueueProcessor(
     TrustCabinetDbContext db,
     IEmailSender sender,
     IOptions<EmailDeliveryOptions> options,
     TimeProvider time,
-    ILogger<EmailQueueProcessor> logger)
+    ILogger<EmailQueueProcessor> logger) : IEmailQueueProcessor
 {
     public async Task<EmailProcessingResult> ProcessNextAsync(CancellationToken ct = default)
     {

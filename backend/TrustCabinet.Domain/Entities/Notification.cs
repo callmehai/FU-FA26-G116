@@ -22,6 +22,9 @@ public class Notification : Entity
     public Guid? MeetingId { get; set; }
     public Meeting? Meeting { get; set; }
 
+    /// <summary>The lifecycle history row that produced this notification, when applicable.</summary>
+    public Guid? OriginHistoryId { get; set; }
+
     /// <summary>The kind and identifier of the resource opened from this notification.</summary>
     public string? TargetType { get; set; }
     public Guid? TargetId { get; set; }

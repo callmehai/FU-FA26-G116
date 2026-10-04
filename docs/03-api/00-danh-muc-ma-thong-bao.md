@@ -27,7 +27,7 @@ các bước tương ứng, còn sequence thể hiện cùng BR ID và message c
 
 ## Mã tiếp theo
 
-**`MSG130`** — `MSG41`–`MSG59` và `MSG77`–`MSG128` đã dành sẵn cho các Use Case cuộc họp, participant, guest, room, session list và agenda view (xem [bên dưới](#dành-sẵn-chưa-có-code)); `MSG78`–`MSG91` đã được workflow SCRUM-19 dùng (PR #53, chưa merge); đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG138`** — workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; `MSG90`–`MSG91` ngừng dùng, không tái cấp. `MSG48`–`MSG77` và `MSG95`–`MSG128` đã dành cho Meeting Session, Agenda, participant, room và các màn đọc liên quan. Đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -125,6 +125,39 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG39` | 400 | `GET /api/notifications` | Không thể hiển thị phần danh sách thông báo được yêu cầu — kèm `errors` | `Trang thông báo được yêu cầu không khả dụng.` | BE |
 | `MSG40` | 500 | mọi endpoint `/api/notifications/*` | Lỗi database khi kiểm tra tài khoản đang hoạt động | `Không thể tải thông báo. Vui lòng thử lại.` | BE |
 
+### Luồng cuộc họp — UC-19, UC-20, UC-21 (`/api/meetings`)
+
+| Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
+|---|---|---|---|---|---|
+| `MSG41` | 409 | GET readiness, POST SubmitForApproval | Cuộc họp không còn ở Draft hoặc Rejected nên không thể gửi duyệt | `Cuộc họp không còn ở trạng thái Draft hoặc Rejected.` | BE |
+| `MSG42` | 503 | POST SubmitForApproval | Không lưu được yêu cầu gửi duyệt | `Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG43` | 200 | POST Approve | Duyệt cuộc họp thành công | `Đã duyệt cuộc họp.` | BE |
+| `MSG44` | 200 | POST Reject | Từ chối cuộc họp thành công | `Đã từ chối cuộc họp.` | BE |
+| `MSG45` | 200 | POST Publish | Công bố cuộc họp thành công | `Đã công bố cuộc họp.` | BE |
+| `MSG46` | 403 | POST Publish | Organizer còn đọc được meeting nhưng mất `MeetingCreator` | `Cuộc họp này không còn có thể công bố.` | BE |
+| `MSG46` | 409 | POST Publish | Meeting không còn Approved | `Cuộc họp này không còn có thể công bố.` | BE |
+| `MSG47` | 503 | POST Publish | Không lưu được yêu cầu công bố | `Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG78` | 200 | POST SubmitForApproval | Gửi duyệt cuộc họp thành công | `Đã gửi cuộc họp để duyệt.` | BE |
+| `MSG79` | 200 | POST ReturnToDraft | Đưa cuộc họp về Draft thành công | `Đã đưa cuộc họp về bản nháp.` | BE |
+| `MSG80` | 400 | POST transitions | JSON, action, GUID hoặc field không hợp lệ | `Yêu cầu chuyển trạng thái không hợp lệ.` | BE |
+| `MSG81` | 400 | POST SubmitForApproval | Thông tin cấp cuộc họp chưa sẵn sàng — kèm `errors` | `Cuộc họp chưa đủ thông tin để gửi duyệt.` | BE |
+| `MSG82` | 400 | POST SubmitForApproval | Người duyệt inactive, thiếu `MeetingApprover` hoặc trùng Organizer | `Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp.` | BE |
+| `MSG83` | 400 | POST Reject | Lý do từ chối bị thiếu hoặc chỉ có khoảng trắng | `Cần nhập lý do từ chối.` | BE |
+| `MSG84` | 400 | POST Reject | Lý do từ chối dài hơn 1.000 ký tự sau khi trim | `Lý do từ chối không được vượt quá 1.000 ký tự.` | BE |
+| `MSG85` | 403 | GET readiness, POST transitions | Caller không có quyền thực hiện action | `Bạn không có quyền thực hiện thao tác này.` | BE |
+| `MSG86` | 400 | GET history | Query phân trang history không hợp lệ | `Tham số truy vấn không hợp lệ.` | BE |
+| `MSG87` | 413 | POST transitions, PUT meeting | Body JSON vượt quá 64 KiB | `Nội dung JSON vượt quá 64 KiB.` | BE |
+| `MSG88` | 503 | POST Approve, Reject, ReturnToDraft, TransferOrganizer | Không lưu được transition | `Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG89` | 200 | POST TransferOrganizer | Chuyển meeting Approved từ Organizer inactive sang Organizer mới thành công | `Đã chuyển cuộc họp cho người tổ chức mới.` | BE |
+| `MSG130` | 503 | GET approvers | Không tải được danh sách người duyệt hoặc không kiểm tra được quyền truy cập | `Không thể tải danh sách người duyệt. Vui lòng thử lại.` | BE |
+| `MSG131` | 503 | GET readiness, POST transitions, GET history | Không kiểm tra được trạng thái active của tài khoản | `Không thể kiểm tra tài khoản để thực hiện thao tác cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG132` | 409 | POST Approve, Reject | Approval cycle không còn chờ quyết định | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
+| `MSG133` | 409 | POST ReturnToDraft | Trạng thái không cho về Draft hoặc approver đang chờ vẫn hợp lệ | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
+| `MSG134` | 400 | POST TransferOrganizer | Organizer mới không hợp lệ, inactive, thiếu MeetingCreator hoặc là Assigned Approver | `Người tổ chức mới không hợp lệ hoặc không còn quyền tạo cuộc họp.` | BE |
+| `MSG135` | 409 | POST TransferOrganizer | Meeting không còn Approved hoặc Organizer hiện tại vẫn active | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
+| `MSG136` | 503 | GET readiness, GET history | Không tải được readiness/history | `Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG137` | 409 | POST Publish | Không có đúng một Chair active hoặc không có Secretary active | `Cuộc họp cần có đúng một Chủ tọa đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố.` | BE |
+
 ### Dành sẵn, chưa có code
 
 Có trong sequence diagram cuộc họp nhưng chưa có endpoint. Người làm các use case này dùng đúng
@@ -132,13 +165,6 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 
 | Mã | Use case | Tình huống (theo sơ đồ) |
 |---|---|---|
-| `MSG41` | UC-19 Gửi duyệt cuộc họp | *This meeting can no longer be submitted for approval.* |
-| `MSG42` | UC-19 Gửi duyệt cuộc họp | *Unable to submit the meeting for approval. Please try again.* |
-| `MSG43` | UC-20 Duyệt cuộc họp | *Meeting approved successfully.* |
-| `MSG44` | UC-20 Từ chối cuộc họp | *Meeting rejected successfully.* |
-| `MSG45` | UC-21 Phát hành cuộc họp | *Meeting published successfully.* |
-| `MSG46` | UC-21 Phát hành cuộc họp | *This meeting can no longer be published.* |
-| `MSG47` | UC-21 Phát hành cuộc họp | *Unable to publish the meeting. Please try again.* |
 | `MSG48` | UC-26 Create Meeting Session | *Meeting session created successfully.* |
 | `MSG49` | UC-27 Update Meeting Session | *Meeting session updated successfully.* |
 | `MSG50` | UC-28 Cancel Meeting Session | *Meeting session cancelled successfully.* |
@@ -169,16 +195,15 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MSG75` | UC-35 | *Unable to set the current agenda item. Please try again.* |
 | `MSG76` | UC-36 | *Unable to complete the agenda item. Please try again.* |
 | `MSG77` | UC-28 | *The last planned meeting session of a published meeting cannot be cancelled.* |
-| `MSG83` | UC-20 Từ chối cuộc họp | *Rejection reason is required.* |
-| `MSG84` | UC-20 Từ chối cuộc họp | *Rejection reason must not exceed 1000 characters.* |
 | `MSG90` | UC-21 Phát hành cuộc họp | *At least one valid planned Meeting Session is required before publication.* — **Ngừng dùng**; Report 3 source-of-truth xác định Meeting Sessions là tùy chọn. Không tái sử dụng mã. |
+| `MSG91` | SCRUM-19 | Mã từng được giữ cho workflow nhưng không còn tình huống backend — **Ngừng dùng**, không tái sử dụng. |
 | `MSG95`–`MSG109` | UC-37–UC-42 F08 | Mã tải roster, thêm participant, role, removal, response và readiness; xem đặc tả UC. |
 | `MSG110`–`MSG116` | UC-43–UC-44 Start/End Meeting | Mã thành công, điều kiện không hợp lệ và lỗi hệ thống; xem đặc tả UC. |
 | `MSG117`–`MSG126` | UC-45–UC-52 GOF09 Online Meeting Room | Mã trạng thái room, thiết bị, chia sẻ, presence, moderation, chat và xác minh Guest; xem đặc tả UC. |
 | `MSG127` | UC-53 View Meeting Sessions | *Unable to load meeting sessions. Please try again.* |
 | `MSG128` | UC-54 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |
 
-`MSG83`, `MSG84` và `MSG90` thuộc dải đã dành cho workflow SCRUM-19 và được gán cho các nhánh UC-20/UC-21 nêu trên.
+`MSG83` và `MSG84` đã được workflow SCRUM-19 dùng. `MSG90` và `MSG91` chỉ được giữ để không tái cấp.
 
 ## Bảng đổi mã cũ → mới
 
@@ -207,6 +232,18 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MEETING_LIST_FAILED` | | `MSG38` |
 | `NOTIFICATION_INVALID_QUERY` | | `MSG39` |
 | `NOTIFICATION_LOAD_FAILED` | | `MSG40` |
+| `MEETING_TRANSITION_COMPLETED` | | `MSG43`, `MSG44`, `MSG45`, `MSG78`, `MSG79` theo action |
+| `MEETING_STATUS_CONFLICT` | | `MSG41`, `MSG46`, `MSG132`, `MSG133` theo action |
+| `MEETING_INVALID_TRANSITION_REQUEST` | | `MSG80` |
+| `MEETING_SUBMISSION_NOT_READY` | | `MSG81` |
+| `MEETING_APPROVER_INVALID` | | `MSG82` |
+| `MEETING_REJECTION_REASON_REQUIRED` | | `MSG83` |
+| `MEETING_REJECTION_REASON_TOO_LONG` | | `MSG84` |
+| `MEETING_ACTION_FORBIDDEN` | | `MSG85` |
+| `MEETING_INVALID_QUERY` | GET history | `MSG86` |
+| `MEETING_BODY_TOO_LARGE` | | `MSG87` |
+| `MEETING_WORKFLOW_FAILED` | | `MSG42`, `MSG47`, `MSG88` theo action |
+| `MEETING_LOAD_FAILED` | workflow | `MSG130`, `MSG131`, `MSG136` theo endpoint |
 
 `MSG07`–`MSG17`, `MSG19`–`MSG25` và `MSG18` của ma trận phân quyền không đổi.
 

@@ -150,7 +150,7 @@ app.MapRolePermissionEndpoints();
 // /api/roles — UC-11 … UC-13, create / rename / delete a role (SCRUM-63). Same gate.
 app.MapRoleEndpoints();
 
-// /api/meetings — UC-11/UC-12 mutations (SCRUM-17) and UC-14 list (SCRUM-18).
+// /api/meetings — UC-15/UC-16 mutations (SCRUM-17) and UC-18 list (SCRUM-18).
 app.MapMeetingEndpoints();
 
 // SCRUM-14: user-scoped notification list/read APIs and realtime delivery.

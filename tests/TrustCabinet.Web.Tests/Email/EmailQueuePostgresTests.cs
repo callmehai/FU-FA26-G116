@@ -14,8 +14,8 @@ namespace TrustCabinet.Web.Tests.Email;
 /// </summary>
 public sealed class EmailQueuePostgresTests : IAsyncLifetime
 {
-    private static readonly string ConnectionString =
-        PostgresTestDatabase.ConnectionString("trustcabinet_email_tests");
+    private readonly PostgreSqlTestDatabase _database = new(
+        PostgresTestDatabase.ConnectionString("trustcabinet_email_tests"));
     private static readonly DateTimeOffset Now =
         new(2026, 10, 1, 2, 0, 0, TimeSpan.Zero);
 
@@ -26,7 +26,6 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
         _db = NewContext();
         try
         {
-            await _db.Database.EnsureDeletedAsync();
             await _db.Database.EnsureCreatedAsync();
         }
         catch (NpgsqlException exception)
@@ -40,8 +39,8 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await _db.Database.EnsureDeletedAsync();
         await _db.DisposeAsync();
+        await _database.DisposeAsync();
     }
 
     [Fact]
@@ -215,9 +214,9 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
         Assert.Equal(2, await _db.EmailMessages.CountAsync());
     }
 
-    private static TrustCabinetDbContext NewContext() => new(
+    private TrustCabinetDbContext NewContext() => new(
         new DbContextOptionsBuilder<TrustCabinetDbContext>()
-            .UseNpgsql(ConnectionString)
+            .UseNpgsql(_database.DataSource)
             .UseSnakeCaseNamingConvention()
             .Options);
 

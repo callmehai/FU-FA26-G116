@@ -13,6 +13,7 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<RoleCapability> RoleCapabilities => Set<RoleCapability>();
     public DbSet<Meeting> Meetings => Set<Meeting>();
+    public DbSet<MeetingSession> MeetingSessions => Set<MeetingSession>();
     public DbSet<MeetingParticipant> MeetingParticipants => Set<MeetingParticipant>();
     public DbSet<MeetingStatusHistory> MeetingStatusHistory => Set<MeetingStatusHistory>();
     public DbSet<AgendaItem> AgendaItems => Set<AgendaItem>();
@@ -36,6 +37,29 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
     public DbSet<AuditLogEntry> AuditLog => Set<AuditLogEntry>();
     public DbSet<CallSession> CallSessions => Set<CallSession>();
     public DbSet<CallParticipant> CallParticipants => Set<CallParticipant>();
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        EnsureMeetingHistoryIsAppendOnly();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        EnsureMeetingHistoryIsAppendOnly();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void EnsureMeetingHistoryIsAppendOnly()
+    {
+        var mutation = ChangeTracker.Entries<MeetingStatusHistory>()
+            .FirstOrDefault(entry => entry.State is EntityState.Modified or EntityState.Deleted);
+        if (mutation is not null)
+        {
+            throw new InvalidOperationException("Meeting lifecycle history is append-only.");
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

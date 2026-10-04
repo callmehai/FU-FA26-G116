@@ -33,7 +33,7 @@ quyết.
 | D3 | **Phòng họp không dùng SignalR.** LiveKit tự lo signalling (SDP/ICE) và trạng thái phòng. SignalR `/hubs/calls` chỉ cần nếu làm gọi 1–1 (§8 PR5). | Đã chốt — ADR-0010 |
 | D4 | **Backend là ranh giới bảo mật:** chỉ backend ký token LiveKit, sau khi kiểm quyền. Tắt mic người khác, luật một người chia sẻ màn hình, đá người mất quyền đều do server làm qua RoomService API. | Đã chốt |
 | D5 | Tên phòng LiveKit = `meeting-{meetingId:D}`, dùng chung cho mọi phiên họp của cuộc họp. Phòng tự tạo khi người đầu tiên vào. `CallSession` (lượt mở phòng — **khác** `MeetingSession`, phiên họp nghiệp vụ) được tạo từ webhook, không tạo lúc cấp token. | Đã chốt — ADR-0010 |
-| D6 | Phòng chỉ mở khi cuộc họp **đang có một Meeting Session `InProgress`** (Report 3) **và** `Mode` là `Online` hoặc `Hybrid`. Chỉ người có dòng `meeting_participants` (trừ `Delegated`) được vào. Meeting Session có thể được thêm/sửa khi còn `Planned`, và có thể `Cancelled`; các thay đổi lịch này không tự mở phòng. Chưa có bảng `meeting_sessions` nên code tạm kiểm `Meeting.Status = InProgress` — xem ADR-0010, mục Hệ quả. | Đã chốt — ADR-0010 / Report 3 |
+| D6 | Phòng chỉ mở khi cuộc họp **đang có một Meeting Session `InProgress`** (Report 3) **và** `Mode` là `Online` hoặc `Hybrid`. Chỉ người có dòng `meeting_participants` (trừ `Delegated`) được vào. Meeting Session có thể được thêm/sửa khi còn `Planned`, và có thể `Cancelled`; các thay đổi lịch này không tự mở phòng. SCRUM-19 đã thêm model/bảng `meeting_sessions` tối thiểu cho guard Publish BR-56; API/lifecycle phiên chưa được triển khai nên room code vẫn tạm kiểm `Meeting.Status = InProgress`. Chuyển sang kiểm phiên khi tích hợp UC-26–30; xem ADR-0010, mục Hệ quả. | Đã chốt — ADR-0010 / Report 3 |
 | D7 | **Chat trong phòng là tạm thời:** LiveKit text stream topic `lk.chat`, không lưu database, người vào sau không thấy tin cũ (giống Google Meet). Report 1 FE-07 có chat; Jira chưa có ticket. | Chờ nhóm — đề xuất gộp vào SCRUM-41 |
 | D8 | **Gọi 1–1 (SCRUM-40):** Report 1/2 không có; Jira/README để Must. Không làm chat 1–1. | **Chờ nhóm quyết** — plan để thành PR5 tuỳ chọn |
 | D9 | **SCRUM-44 (ghi cuộc gọi)** mâu thuẫn Report 1 LI-01 ("no recording bot joins the meeting room… excluded, not merely deferred"). Không làm Egress. Hướng hợp LI-01: thư ký bấm ghi âm (SCRUM-29) trong phòng, trình duyệt thư ký trộn audio phòng và ghi trên máy mình. | **Chờ nhóm quyết** — ngoài plan này |
@@ -552,7 +552,7 @@ thứ tự **trong cùng một resource** nhưng có thể mất → janitor bù
 public static class CallEndpoints
 {
     // Codes from docs/03-api/00-danh-muc-ma-thong-bao.md. Take the NEXT FREE numbers at implementation
-    // time: PR #41 (SCRUM-19) uses MSG41–MSG64, so once it merges the next free code is MSG65.
+    // time: sync main and read the current catalogue. MSG65 stays reserved for RoomNotOpen (ADR-0010).
     private const string MsgRoomNotOpen = "MSG__";       // 409
     private const string MsgInPersonMeeting = "MSG__";   // 409
     private const string MsgCallUnavailable = "MSG__";   // 503
@@ -565,7 +565,7 @@ public static class CallEndpoints
 }
 ```
 
-Tên hằng số theo mẫu `Msg65RoomNotOpen` khi đã có số. `MessageCodeCatalogueTests` chỉ quét
+Tên hằng số theo mẫu `MsgNNRoomNotOpen` khi catalogue đã cấp số. `MessageCodeCatalogueTests` chỉ quét
 `backend/TrustCabinet.Web/Endpoints/**` — **mọi mã phải khai báo ở file này**, và mỗi mã phải có
 test assert chuỗi `"MSGnn"`.
 
@@ -926,8 +926,8 @@ cd frontend && npm run lint && npm run build
 
 ### PR1 — `feat/scrum-39-livekit-infrastructure` (BE + hạ tầng, ~1,5 ngày)
 
-- [ ] Kiểm `gh pr view 41`: đã merge thì rebase, lấy mã MSG từ `MSG65`; chưa merge thì lấy số kế
-      tiếp trên `main` và báo Quang Huy để tránh trùng.
+- [ ] Kiểm PR #41 và catalogue hiện tại: đồng bộ nhánh trước khi lấy mã MSG còn trống;
+      Giữ `MSG65` cho phòng chưa mở theo ADR-0010; báo Quang Huy để tránh cấp trùng giữa các PR.
 - [ ] `docker/livekit.dev.yaml`, service `livekit` (profile `calls`), `.env.example`; chạy §4.5,
       xác nhận `LIVEKIT_KEYS` hoạt động (**CHƯA KIỂM**), không thì chuyển `LIVEKIT_CONFIG`.
 - [ ] `appsettings*.json` §4.4.

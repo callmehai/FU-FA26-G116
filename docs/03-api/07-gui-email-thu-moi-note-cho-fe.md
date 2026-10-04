@@ -10,8 +10,8 @@ SCRUM-19 khi endpoint đó được triển khai.
 
 - Gọi endpoint công bố qua module trong `frontend/src/api/`; không gọi `fetch` trực tiếp từ
   component.
-- `MSG45` xác nhận meeting đã chuyển sang `Published` và transaction tạo các email trong queue đã
-  commit. Mã này **không xác nhận SMTP đã gửi thư đến người nhận**.
+- `MSG45` xác nhận meeting đã chuyển sang `Published` và transaction công bố đã commit.
+  Khi SMTP được bật, email mới đã được xếp hàng. Mã này **không xác nhận SMTP đã gửi thư đến người nhận**.
 - Khi nhận `MSG45`, chỉ hiển thị nội dung theo nghĩa "Đã công bố cuộc họp"; không hiển thị "Đã gửi
   email thành công" hoặc số lượng email đã gửi.
 - `MSG46` nghĩa là meeting không còn ở trạng thái cho phép công bố. FE cần hiển thị lỗi và tải lại
@@ -26,7 +26,7 @@ Hiện chưa có API xem trạng thái `email_messages`, vì vậy FE không pol
 ## Khi email bị tắt
 
 `Email:Smtp:Enabled=false` là cấu hình backend. Khi đó thao tác công bố vẫn có thể thành công nhưng
-backend không tạo thư mời mới. FE không cần và không nên hiển thị cấu hình SMTP, trạng thái worker
+backend không tạo thư mời mới; các job cũ vẫn được giữ. FE không cần và không nên hiển thị cấu hình SMTP, trạng thái worker
 hoặc cảnh báo dựa trên giá trị cấu hình này.
 
 ## Đường dẫn trong email
