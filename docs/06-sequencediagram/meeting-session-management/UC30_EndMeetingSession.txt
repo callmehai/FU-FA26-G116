@@ -7,7 +7,6 @@ control ":Meeting Service" as MeetingService
 participant ":Meeting Repository" as MeetingRepository
 participant ":Meeting Participant Repository" as MeetingParticipantRepository
 participant ":Meeting Session Repository" as MeetingSessionRepository
-participant ":Meeting Status History Repository" as MeetingStatusHistoryRepository
 database ":Database" as Database
 
 Chair->MeetingPage: Confirm End Session
@@ -31,7 +30,19 @@ deactivate Database
 MeetingSessionRepository-->MeetingService: Meeting Session
 deactivate MeetingSessionRepository
 
-MeetingService->MeetingParticipantRepository: Verify Chair assignment
+MeetingService->MeetingRepository: Get parent meeting
+activate MeetingRepository
+
+MeetingRepository->Database: Retrieve meeting
+activate Database
+
+Database-->MeetingRepository: Meeting
+deactivate Database
+
+MeetingRepository-->MeetingService: Meeting
+deactivate MeetingRepository
+
+MeetingService->MeetingParticipantRepository: Verify Chair assignment (BR-63)
 activate MeetingParticipantRepository
 
 MeetingParticipantRepository->Database: Find Chair assignment
@@ -43,9 +54,9 @@ deactivate Database
 MeetingParticipantRepository-->MeetingService: Assignment result
 deactivate MeetingParticipantRepository
 
-MeetingService->MeetingService: Validate session end conditions\n(BR-58, BR-63)
+MeetingService->MeetingService: Validate Meeting is InProgress and\nSession is InProgress (BR-58, BR-63)
 
-alt Session cannot be ended - EX-1
+alt Session is not InProgress, Meeting is not InProgress,\nor Chair is no longer assigned - EX-1
     MeetingService-->MeetingController: MSG59 - This meeting session cannot be ended
     deactivate MeetingService
 
@@ -80,33 +91,13 @@ else Session can be ended
     deactivate MeetingSessionRepository
 
     alt Other Planned or InProgress Sessions remain - AF-1
-        MeetingService->MeetingService: Keep Meeting status = InProgress
+        MeetingService->MeetingService: Keep parent Meeting InProgress (BR-60, BR-92)
 
     else No Planned or InProgress Session remains
-        MeetingService->MeetingRepository: Change Meeting status to Ended\n(BR-61)
-        activate MeetingRepository
-
-        MeetingRepository->Database: Update Meeting status
-        activate Database
-
-        Database-->MeetingRepository: Meeting updated
-        deactivate Database
-
-        MeetingRepository-->MeetingService: Meeting status updated
-        deactivate MeetingRepository
-
-        MeetingService->MeetingStatusHistoryRepository: Record InProgress -> Ended\n(BR-38)
-        activate MeetingStatusHistoryRepository
-
-        MeetingStatusHistoryRepository->Database: Insert lifecycle history
-        activate Database
-
-        Database-->MeetingStatusHistoryRepository: History recorded
-        deactivate Database
-
-        MeetingStatusHistoryRepository-->MeetingService: Lifecycle recorded
-        deactivate MeetingStatusHistoryRepository
+        MeetingService->MeetingService: Keep parent Meeting InProgress;\nChair may end it explicitly via UC-44\n(BR-61, BR-92)
     end
+
+    MeetingService->MeetingService: Keep Online Meeting Room unchanged (BR-95)
 
     MeetingService-->MeetingController: Meeting Session ended successfully
     deactivate MeetingService

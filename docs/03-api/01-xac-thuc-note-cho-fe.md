@@ -170,7 +170,8 @@ lần cũng không lỗi.
 vẫn xoá phía mình rồi chuyển về `/login`, cookie còn nguyên và F5 là đăng nhập lại ngay — người
 dùng tưởng đã đăng xuất mà không phải. `signOut()` trong `session.ts` trả `false` trong trường hợp
 này và giữ nguyên phiên để người dùng bấm lại. Mọi chỗ gọi `signOut()` phải xử lý `false` — màn
-Vai trò (nút "Đăng nhập lại") hiện toast `MSG06`, menu tài khoản hiện lỗi trong hộp xác nhận.
+Vai trò (nút "Đăng nhập lại") hiện toast `MSG06`, menu tài khoản hiện lỗi trong hộp xác nhận, trang
+`/reset-password` (đặt lại thành công trên trình duyệt đang đăng nhập) hiện toast `MSG06` sau toast `MSG92`.
 
 **`signOut()` chờ refresh đang chạy và giữ Web Lock của refresh.** Nếu `/logout` đua với một
 `/refresh` cùng RT, server xoay RT mà logout định huỷ, và `Set-Cookie` của refresh có thể tới sau

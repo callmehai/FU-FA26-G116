@@ -1,0 +1,94 @@
+title UC-34 - Reorder Agenda Items
+
+actor "Secretary" as Secretary
+boundary "Meeting Management Page" as MeetingPage
+control ":Agenda Controller" as AgendaController
+control ":Agenda Service" as AgendaService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Participant Repository" as MeetingParticipantRepository
+participant ":Meeting Session Repository" as MeetingSessionRepository
+participant ":Agenda Item Repository" as AgendaItemRepository
+database ":Database" as Database
+
+Secretary->MeetingPage: Submit new agenda order
+activate MeetingPage
+
+MeetingPage->AgendaController: Reorder Agenda Items
+activate AgendaController
+
+AgendaController->AgendaService: reorderAgendaItems(meetingId, sessionId, secretaryId, orderedAgendaItemIds)
+activate AgendaService
+
+AgendaService->MeetingSessionRepository: Get selected Meeting Session
+activate MeetingSessionRepository
+MeetingSessionRepository->Database: Retrieve Meeting Session
+activate Database
+Database-->MeetingSessionRepository: Meeting Session
+deactivate Database
+MeetingSessionRepository-->AgendaService: Meeting Session
+deactivate MeetingSessionRepository
+
+AgendaService->MeetingRepository: Get parent meeting
+activate MeetingRepository
+MeetingRepository->Database: Retrieve parent meeting
+activate Database
+Database-->MeetingRepository: Meeting
+deactivate Database
+MeetingRepository-->AgendaService: Meeting
+deactivate MeetingRepository
+
+AgendaService->MeetingParticipantRepository: Verify Secretary assignment to parent meeting (BR-65)
+activate MeetingParticipantRepository
+MeetingParticipantRepository->Database: Find Secretary assignment
+activate Database
+Database-->MeetingParticipantRepository: Assignment result
+deactivate Database
+MeetingParticipantRepository-->AgendaService: Assignment result
+deactivate MeetingParticipantRepository
+
+AgendaService->AgendaItemRepository: Get Agenda Items of selected Meeting Session
+activate AgendaItemRepository
+AgendaItemRepository->Database: Retrieve session agenda in explicit order
+activate Database
+Database-->AgendaItemRepository: Session Agenda Item list
+deactivate Database
+AgendaItemRepository-->AgendaService: Session Agenda Item list
+deactivate AgendaItemRepository
+
+AgendaService->AgendaService: Validate all reordered items belong to the same Meeting Session\nand retain explicit session ordering (BR-64, BR-67)
+AgendaService->AgendaService: Verify session belongs to selected meeting, assigned Secretary,\nPlanned session and parent meeting permits agenda planning;\nPublished or InProgress alone does not block planning (BR-65, BR-68, BR-74)
+
+alt Agenda order can no longer be modified - EX-1
+    AgendaService-->AgendaController: MSG67 - The agenda for this meeting session can no longer be modified.
+    deactivate AgendaService
+    AgendaController-->MeetingPage: MSG67 - The agenda for this meeting session can no longer be modified.
+    deactivate AgendaController
+    MeetingPage-->Secretary: MSG67 - The agenda for this meeting session can no longer be modified.\nAgenda order remains unchanged
+
+else Agenda modification is permitted and new order is valid
+    AgendaService->AgendaItemRepository: Save updated explicit order within selected Meeting Session\nwithout moving items to another session (BR-64, BR-67, BR-68)
+    activate AgendaItemRepository
+    AgendaItemRepository->Database: Update positions of session Agenda Items
+    activate Database
+    Database-->AgendaItemRepository: Change saved / Save failed without changing agenda order
+    deactivate Database
+    AgendaItemRepository-->AgendaService: Updated agenda order / Save failed
+    deactivate AgendaItemRepository
+
+    alt Agenda order cannot be updated - EX-2
+        AgendaService-->AgendaController: MSG71 - Unable to update the agenda order. Please try again.
+        deactivate AgendaService
+        AgendaController-->MeetingPage: MSG71 - Unable to update the agenda order. Please try again.
+        deactivate AgendaController
+        MeetingPage-->Secretary: MSG71 - Unable to update the agenda order. Please try again.\nAgenda order remains unchanged
+
+    else Agenda order is updated
+        AgendaService-->AgendaController: Agenda order updated successfully
+        deactivate AgendaService
+        AgendaController-->MeetingPage: MSG63 - Agenda order updated successfully.\nUpdated session agenda
+        deactivate AgendaController
+        MeetingPage-->Secretary: MSG63 - Agenda order updated successfully.\nShow updated session agenda
+    end
+end
+
+deactivate MeetingPage

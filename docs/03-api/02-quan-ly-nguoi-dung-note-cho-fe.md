@@ -264,7 +264,7 @@ POST /api/auth/password-reset
 
 Hai mã `400` khác nhau hoàn toàn về cách xử lý — khớp theo `code`.
 
-- Không có fragment `token` thì hiện luôn trạng thái `MSG93`, khỏi gọi API.
+- Không có fragment `token` thì FE tự hiện `MSG129` ("bấm lại liên kết trong email"), khỏi gọi API.
 - Đặt lại thành công sẽ **huỷ mọi refresh token** của người đó. Nếu chính trình duyệt này đang đăng
   nhập tài khoản đó, nó vẫn chạy tới khi access token hết hạn (tối đa 15 phút), rồi lần refresh tiếp
   theo ra `401 MSG01` — luồng đăng nhập lại như bình thường.
@@ -280,10 +280,10 @@ Hai mã `400` khác nhau hoàn toàn về cách xử lý — khớp theo `code`.
 > nếu trình duyệt này đang giữ một phiên đăng nhập thì đăng xuất phiên đó trước, không thì `/login`
 > sẽ đưa thẳng vào ứng dụng; đăng xuất không tới được server thì vẫn báo `MSG92`, kèm toast lỗi `MSG06`
 > (phiên đó còn nguyên). `MSG93` → ẩn form, hiện `message` của backend, hướng dẫn liên hệ quản trị
-> viên và nút về trang đăng nhập (focus vào nút); không có token thì hiện đúng câu đó mà không gọi API
-> (dòng FE của `MSG93` trong danh mục mã), kèm hướng dẫn "bấm lại liên kết trong email". Token chỉ giữ
-> trong bộ nhớ, giống access token — tải lại trang hoặc khôi phục thẻ sẽ rơi vào trường hợp này, trong
-> khi liên kết vẫn còn dùng được. `MSG94` → lỗi dưới ô mật khẩu mới, giữ nguyên form. Lỗi khác (5xx, mất mạng) → alert trên
+> viên và nút về trang đăng nhập (focus vào nút). **Không có token → `MSG129`** (mã FE, không gọi API),
+> khung vàng "hãy bấm lại liên kết trong email", không phải câu "hết hạn" của `MSG93`: token chỉ giữ
+> trong bộ nhớ, giống access token, nên tải lại trang hoặc khôi phục thẻ sẽ rơi vào trường hợp này
+> trong khi liên kết vẫn còn dùng được. `MSG94` → lỗi dưới ô mật khẩu mới, giữ nguyên form. Lỗi khác (5xx, mất mạng) → alert trên
 > form, giữ nguyên những gì đã nhập.
 
 ---

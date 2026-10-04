@@ -12,10 +12,10 @@ import { useAuth } from './useAuth'
 const MIN_PASSWORD_LENGTH = 12
 
 /**
- * MSG93's wording, shown without calling the API when the link carries no token: that is the same
- * situation — a link that cannot reset anything. A real MSG93 shows the backend's own message.
+ * MSG129, the FE's own: the page has no token. Not MSG93 — the usual cause is a reload or a restored
+ * tab after the token was dropped from the URL, and the link itself may well still work.
  */
-const DEAD_LINK_MESSAGE = 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.'
+const NO_TOKEN_MESSAGE = 'Không tìm thấy mã đặt lại mật khẩu. Hãy bấm lại liên kết trong email.'
 
 type Field = 'newPassword' | 'confirmPassword'
 type FieldErrors = Partial<Record<Field, string>>
@@ -47,7 +47,7 @@ function stillFailing(shown: FieldErrors, now: FieldErrors): FieldErrors {
  *
  * Kept only in memory, like the access token (session.ts), so a reload or a restored tab arrives
  * without it. The page cannot tell that from a link with no token, so it says what fixes both:
- * open the link from the email again — it still works if it is unused and under 60 minutes old.
+ * open the link from the email again (MSG129).
  */
 export function ResetPasswordPage() {
   const location = useLocation()
@@ -57,8 +57,8 @@ export function ResetPasswordPage() {
 
   const hashToken = new URLSearchParams(location.hash.slice(1)).get('token')?.trim() || null
   const [token, setToken] = useState(hashToken)
-  /** Set once the link is known to be dead; the form gives way to this message. */
-  const [deadMessage, setDeadMessage] = useState<string | null>(hashToken === null ? DEAD_LINK_MESSAGE : null)
+  /** Set once the backend says the link is dead (MSG93); the form gives way to this message. */
+  const [deadMessage, setDeadMessage] = useState<string | null>(null)
 
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -84,10 +84,24 @@ export function ResetPasswordPage() {
     if (location.hash) navigate({ pathname: location.pathname, search: location.search }, { replace: true })
   }, [location.hash, location.pathname, location.search, navigate])
 
-  // The form the user was typing in has just gone: put focus on the one way forward.
+  // No form to type in, or the one the user was typing in has just gone: focus the one way forward.
   useEffect(() => {
-    if (deadMessage) loginLinkRef.current?.focus()
-  }, [deadMessage])
+    if (token === null || deadMessage) loginLinkRef.current?.focus()
+  }, [token, deadMessage])
+
+  // In place of the form: no token at all, or a link the backend has refused.
+  const notice =
+    token === null
+      ? {
+          tone: 'alert-warning',
+          message: NO_TOKEN_MESSAGE,
+          hint: 'Nếu bạn vừa tải lại trang hoặc mở lại thẻ, liên kết vẫn dùng được khi chưa được dùng, chưa quá 60 phút và chưa có liên kết mới hơn. Bấm lại vẫn không được thì hãy liên hệ quản trị viên.',
+        }
+      : deadMessage && {
+          tone: 'alert-error',
+          message: deadMessage,
+          hint: 'Liên kết chỉ dùng được một lần trong 60 phút, và hết hiệu lực khi có liên kết mới hơn được gửi.',
+        }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -142,15 +156,11 @@ export function ResetPasswordPage() {
           </p>
         </div>
 
-        {deadMessage ? (
+        {notice ? (
           <>
-            <div className="alert alert-error" role="alert">
-              <p>{deadMessage}</p>
-              <p className="alert-hint">
-                {token === null
-                  ? 'Nếu bạn vừa tải lại trang hoặc mở lại thẻ, hãy bấm lại liên kết trong email — liên kết vẫn dùng được nếu chưa được dùng và chưa quá 60 phút.'
-                  : 'Liên kết chỉ dùng được một lần trong 60 phút, và hết hiệu lực khi có liên kết mới hơn được gửi.'}
-              </p>
+            <div className={`alert ${notice.tone}`} role="alert">
+              <p>{notice.message}</p>
+              <p className="alert-hint">{notice.hint}</p>
             </div>
             <Link ref={loginLinkRef} className="btn btn-outline btn-block" to={routes.login}>
               Về trang đăng nhập
