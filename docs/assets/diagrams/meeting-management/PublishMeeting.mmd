@@ -27,7 +27,7 @@ sequenceDiagram
             end
         else Sai quyền, trạng thái hoặc người nhận
             Service->>DB: Kết thúc transaction không ghi dữ liệu
-            Service-->>API: 404 hoặc 409 MSG91 hoặc 400 MSG90
+            Service-->>API: 404 hoặc 409 MSG91 hoặc 400 MSG135
         end
         Note over Page,API: Sau transfer, Organizer mới công bố theo flow bình thường.
     end

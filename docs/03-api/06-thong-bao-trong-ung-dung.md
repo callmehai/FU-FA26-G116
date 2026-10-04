@@ -85,8 +85,10 @@ cuộc họp. Các nhánh lỗi lưu trạng thái đọc
 vẫn chưa trả trạng thái đã lưu thực tế hay `unreadCount` như diagram.
 
 Bước “kiểm tra quyền hiện tại” của UC-21 dùng chung
-`IMeetingRepository.FindAccessibleAsync` với API chi tiết meeting: creator đọc mọi trạng thái,
-assigned approver đọc khi meeting đã rời `Draft`, và participant đọc từ `Published`.
+`IMeetingRepository.FindAccessibleAsync` với API chi tiết meeting theo BR-29: creator đọc mọi trạng thái,
+assigned approver đọc từ `WaitingApproval`, và người được gán vai trò `Chair`, `Secretary`, `Member` hoặc
+`Guest` đọc từ `Published`. Trạng thái lời mời không thu hồi quyền xem meeting đã công bố; notification
+không tự cấp quyền. Quyền đọc tài liệu và recording tiếp tục theo các rule riêng.
 
 Những phần backend có thêm ngoài bốn diagram gồm endpoint đếm riêng, phân trang,
 `totalCount`, SignalR, worker nhắc meeting sắp bắt đầu, `deduplicationKey` và trạng thái

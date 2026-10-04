@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MimeKit;
 using TrustCabinet.Domain.Notifications;
+using TrustCabinet.Domain.Users;
 
 namespace TrustCabinet.Infrastructure.Email;
 
@@ -21,6 +22,7 @@ public static class EmailServiceCollectionExtensions
         services.AddScoped<IMeetingInvitationQueue, MeetingInvitationQueue>();
         services.AddScoped<EmailQueueProcessor>();
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
+        services.AddSingleton<IPasswordResetEmailSender, PasswordResetEmailSender>();
 
         if (configuration.GetValue<bool>("Email:Smtp:Enabled"))
         {

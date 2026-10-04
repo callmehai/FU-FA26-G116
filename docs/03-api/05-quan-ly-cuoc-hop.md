@@ -5,17 +5,22 @@ UC-18 View Meeting List — SCRUM-18; UC-19 Submit / UC-20 Review / UC-21 Publis
 
 ## Phạm vi
 
-Các endpoint cho người tạo khởi tạo cuộc họp nháp, chọn người duyệt khi gửi duyệt, sửa, chuyển lifecycle và đọc
-lịch sử. Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. Danh sách
-`GET /api/meetings` thuộc SCRUM-18. Danh sách, tạo, sửa và chi tiết đã gọi API thật. Backend POST/PUT
-chỉ cập nhật bảy field thông tin; người duyệt được chọn trong action `SubmitForApproval`.
-PR backend SCRUM-19 không thay đổi code frontend. Form hiện có vẫn gửi `assignedApproverId`, nhưng
-POST/PUT bỏ qua field này và không thay assignment. Việc bỏ dropdown cũ, cập nhật type/API wrapper
-cho readiness, transitions và history, cùng màn thao tác workflow và timeline thuộc bước tích hợp FE.
+Các endpoint cho người tạo khởi tạo cuộc họp nháp và sửa thông tin cấp cuộc họp trước khi gửi duyệt.
+Meeting-level information gồm tên, hình thức, địa điểm, mức độ mật và mô tả; lịch dự kiến thuộc
+Meeting Sessions theo BR-25. Tạo/sửa Meeting không chọn hoặc gán người duyệt; việc chọn và gán người
+duyệt diễn ra trong UC-19. Cập nhật Meeting không làm thay đổi trạng thái vòng đời (BR-28).
+Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. `GET /api/meetings`
+được bổ sung trong SCRUM-18. Màn danh sách, tạo, sửa và chi tiết đều gọi API thật: tạo xong thì báo
+thành công và mở trang chi tiết của cuộc họp mới.
 
-Tiêu đề và Thời gian bắt đầu bắt buộc theo BR-24; Thời gian kết thúc tùy chọn, nếu nhập thì phải
-sau thời gian bắt đầu theo BR-25. Cuộc họp mới ở `Draft` chưa có approver; Organizer chọn approver
-hợp lệ trong action `SubmitForApproval`. Form khởi tạo Hình thức là `InPerson` và Mức độ mật là `Normal`.
+Meeting creation yêu cầu các thông tin cấp Meeting theo BR-24; không bao gồm Planned Start Time hay
+Planned End Time. Meeting Session được lập lịch riêng theo UC-26/UC-27. Form khởi tạo Hình thức là
+`InPerson` và Mức độ mật là `Normal`.
+
+Vòng đời đi qua `POST /api/meetings/{id}/transitions` (gửi duyệt, duyệt, từ chối, đưa về nháp,
+chuyển người tổ chức, công bố); `GET …/submission-readiness` và `GET …/history` phục vụ thanh
+quy trình và dòng thời gian trên trang chi tiết. POST/PUT bỏ qua `assignedApproverId` nếu client
+vẫn gửi và không thay assignment.
 
 ## Quyền truy cập
 
@@ -23,10 +28,11 @@ POST, `GET /api/meetings/approvers` và PUT yêu cầu capability `MeetingCreato
 xác minh lại capability từ database theo SCRUM-12, không kiểm theo tên vai trò. GET chi tiết yêu cầu
 đăng nhập và tài khoản còn hoạt động, sau đó kiểm tra quan hệ cuộc họp theo BR-29.
 
-GET luôn cho người tạo đọc. Người duyệt được gán chỉ đọc từ khi meeting rời `Draft`; thành phần tham
-dự (Chair, Secretary và Participant) chỉ đọc từ `Published` trở đi. Vì vậy meeting `Draft` chỉ người
-tạo thấy, còn các trạng thái trước khi công bố không lộ cho thành phần tham dự. Không đủ quyền đọc
-thì trả `404` rỗng, giống ID không tồn tại. PUT vẫn chỉ cho người tạo/người tổ chức sửa; ID không tồn
+Quyền đọc theo BR-29, đã được BA chốt: người tạo đọc mọi trạng thái; người duyệt hiện được gán đọc từ
+`WaitingApproval` trở đi; người được gán vào meeting với vai trò `Chair`, `Secretary`, `Member` hoặc
+`Guest` đọc từ `Published` trở đi. Trạng thái lời mời không làm mất quyền xem meeting đã công bố.
+Vì vậy `Draft` chỉ người tạo thấy; trước khi công bố, thành phần tham dự chưa đọc được. Không đủ quyền
+đọc thì trả `404` rỗng, giống ID không tồn tại. PUT vẫn chỉ cho người tạo/người tổ chức sửa; ID không tồn
 tại và meeting của người tổ chức khác cùng trả `404` rỗng.
 
 GET danh sách dùng đúng quy tắc đọc trên **trong truy vấn database**, trước `COUNT`, sắp xếp và phân
@@ -70,13 +76,13 @@ lần. Tất cả bộ lọc được kết hợp bằng AND (BR-30/BR-31).
 | `status` | Tên enum PascalCase trong chín `MeetingStatus` |
 | `sensitivity` | `Normal`, `Internal`, `Confidential` hoặc `Secret` |
 | `q` | Trim; tìm chuỗi con của `title` không phân biệt hoa/thường. `%`, `_`, `\` là ký tự thường, không phải wildcard |
-| `from`, `to` | ISO 8601 có `Z` hoặc offset; lọc `startsAt` trong khoảng UTC, gồm cả hai đầu; có thể chỉ gửi một đầu |
-| `page`, `pageSize` | Mặc định `1`, `20`; `page ≥ 1`, `pageSize` từ `1` đến `100` |
-| `sortBy` | `title`, `startsAt`, `createdAt`; mặc định `startsAt` |
-| `sortDir` | `asc`, `desc`; mặc định `asc` cho `title`, `desc` cho hai cột thời gian |
+| `from`, `to` | ISO 8601 có `Z` hoặc offset; giây tùy chọn, ví dụ `2026-10-01T09:00+07:00`; chuẩn hóa UTC và lọc theo lịch dự kiến của Meeting Sessions không bị hủy, gồm cả hai đầu; có thể chỉ gửi một đầu. Meeting không có Meeting Session phù hợp không khớp Time Range (BR-30) |
+| `page`, `pageSize` | Mặc định `1`, `20`; `page` từ `1` đến `2.147.483.647`, `pageSize` từ `1` đến `100` |
+| `sortBy` | `title`, `createdAt` |
+| `sortDir` | `asc`, `desc` |
 
 Khi nhiều dòng có cùng giá trị sort, xếp tiếp theo `id asc`. Ví dụ:
-`GET /api/meetings?status=Published&sensitivity=Internal&q=giao&from=2026-10-01T00%3A00%3A00Z&page=2&pageSize=20&sortBy=startsAt&sortDir=desc`.
+`GET /api/meetings?status=Published&sensitivity=Internal&q=giao&from=2026-10-01T00%3A00%3A00Z&page=2&pageSize=20&sortBy=createdAt&sortDir=desc`.
 Đổi trang phải gửi lại bộ lọc và sort hiện tại (BR-32). FE giữ toàn bộ tiêu chí trên URL của màn
 danh sách (`/mgmt/meetings?q=…&status=…&page=…`), nên tải lại trang, chia sẻ đường dẫn hay quay lại từ
 trang chi tiết đều giữ nguyên bộ lọc và trang đang xem.
@@ -93,7 +99,6 @@ tối đa bảy chữ số. Timestamp thiếu timezone trả `400 MSG32`.
     {
       "id": "dc36f21a-c030-4ddb-a6ec-9d1254230001",
       "title": "Giao ban tuần",
-      "startsAt": "2026-10-01T02:00:00+00:00",
       "createdAt": "2026-09-25T02:00:00+00:00",
       "status": "Published",
       "sensitivity": "Internal"
@@ -109,9 +114,10 @@ tối đa bảy chữ số. Timestamp thiếu timezone trả `400 MSG32`.
 Không có kết quả hoặc trang vượt quá trang cuối, kể cả khi offset lớn hơn giới hạn `int`, vẫn trả
 `200` với `items: []` (BR-12). Khi không có
 kết quả, `totalCount` và `totalPages` đều bằng `0`. Query sai trả `400` với `code` là
-`MSG32`, `message` là `Tham số truy vấn không hợp lệ.` và `errors` theo tên tham số.
-Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài giới
-hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `500` với
+`MSG32`, `message` là `Tiêu chí danh sách cuộc họp không hợp lệ.` theo catalogue; backend hiện trả
+`Tham số truy vấn không hợp lệ.` nên cần sửa code để khớp catalogue. `errors` liệt kê theo tên tham số.
+Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài
+giới hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `500` với
 `code: MSG38` và thông điệp
 `Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-18.
 
@@ -123,20 +129,18 @@ Nhánh lỗi truy xuất dùng `500 MSG38` theo contract hiện hành.
 ### GET `/api/meetings/approvers`
 
 Trả danh sách tài khoản đang hoạt động có capability `MeetingApprover`, loại người đang gọi API,
-sắp xếp theo tên. Response
-chỉ gồm `id` và `fullName`; endpoint kế thừa gate `MeetingCreator`. Nếu hệ thống không đọc được
-danh sách do lỗi database hoặc timeout, trả `503 Service Unavailable` với
-`{ "code": "MSG61", "message": "Không thể tải danh sách người duyệt. Vui lòng thử lại." }`.
+sắp xếp theo tên. Response chỉ gồm `id` và `fullName`; endpoint phục vụ bước chọn người duyệt của
+UC-19 và kế thừa gate `MeetingCreator`. Nếu hệ thống không đọc được danh sách do lỗi database hoặc
+timeout, trả `503 Service Unavailable` với
+`{ "code": "MSG131", "message": "Không thể tải danh sách người duyệt. Vui lòng thử lại." }`.
 
 ### POST `/api/meetings`
 
-Request body của POST và PUT có các field:
+Request body của POST và PUT có các thông tin cấp Meeting; không có lịch phiên họp hoặc người duyệt:
 
 ```json
 {
   "title": "Giao ban tuần",
-  "startsAt": "2026-10-01T09:00:00+07:00",
-  "endsAt": "2026-10-01T10:30:00+07:00",
   "mode": "InPerson",
   "location": "Phòng họp A",
   "sensitivity": "Internal",
@@ -144,23 +148,22 @@ Request body của POST và PUT có các field:
 }
 ```
 
-`title` và `startsAt` là bắt buộc. `endsAt` có thể `null` hoặc bị bỏ qua;
-nếu có giá trị, nó phải lớn hơn `startsAt`. Nếu `mode` hoặc `sensitivity` bị bỏ qua, service dùng
-giá trị khởi tạo của form (`InPerson`, `Normal`). Body không gán approver; `assignedApproverId`
-nếu được gửi sẽ không tạo assignment.
+`title` là bắt buộc theo BR-24. Người duyệt được chọn và gán trong UC-19 trước khi chuyển meeting sang
+`WaitingApproval`; `assignedApproverId` nếu được gửi sẽ không tạo assignment. Nếu `mode` hoặc
+`sensitivity` bị bỏ qua, service dùng giá trị khởi tạo của form (`InPerson`, `Normal`).
 
 POST trả `201 Created`, header `Location: /api/meetings/{id}` và envelope `code`, `message`,
-`meeting`. `meeting` gồm thông tin cuộc họp, `assignedApproverId`, `status`, `createdById`,
-`createdAt`, `updatedAt`; `assignedApproverId` là `null` khi meeting ở `Draft`.
+`meeting`. `meeting` gồm thông tin cuộc họp, `assignedApproverId` (`null` khi ở `Draft`), `status`,
+`createdById`, `createdAt`, `updatedAt`.
 
 ### GET `/api/meetings/{id}`
 
-Trả `200 OK` và object meeting phẳng, không bọc envelope. `mode`, `sensitivity` và `status` là chuỗi
-enum. Thời gian trong response luôn UTC.
+Trả `200 OK` và object meeting phẳng, không bọc envelope. Meeting object không có Planned Start Time
+hoặc Planned End Time; lịch thuộc Meeting Sessions. `mode`, `sensitivity` và `status` là chuỗi enum.
 
 ### PUT `/api/meetings/{id}`
 
-PUT thay toàn bộ bảy field thông tin cuộc họp bằng dữ liệu request. Trả `200 OK`, envelope
+PUT cập nhật thông tin cấp cuộc họp bằng dữ liệu request. Trả `200 OK`, envelope
 `{ "code": "MSG30", "message": "Cập nhật cuộc họp thành công.", "meeting": { ... } }`.
 
 Không chấp nhận quyền thay đổi `id`, `createdById`, `status`, `createdAt`, `updatedAt` hay dữ liệu
@@ -202,7 +205,7 @@ history qua GET chỉ vì có AdminUsers. Participant timeline ẩn hai field Or
 rejection reason. Quyền Organizer cũ kết thúc sau transfer; participant relationship riêng vẫn áp dụng.
 
 Không phải admin hiện tại trả `404` để không lộ resource. Người nhận thiếu/inactive/không có
-MeetingCreator, trùng Organizer cũ hoặc current Assigned Approver trả `400 MSG90`. Meeting không
+MeetingCreator, trùng Organizer cũ hoặc current Assigned Approver trả `400 MSG135`. Meeting không
 còn Approved hoặc Organizer cũ vẫn active trả `409 MSG91`, kể cả khi gọi lại sau transfer thành công.
 Sai shape/thiếu organizerId trả `400 MSG80`; lỗi persistence/timeout rollback toàn bộ trả `503 MSG88`.
 Các action khác không nhận organizerId. Quyền Chair hoặc MeetingApprover riêng không cho transfer/Publish.
@@ -221,7 +224,7 @@ Organizer active, còn `MeetingCreator` được dùng `ReturnToDraft` để rú
 assignment không hợp lệ: dữ liệu cũ chưa có người duyệt, người duyệt là chính Organizer, hoặc
 current Assigned Approver đã inactive/mất capability `MeetingApprover`. Server khóa meeting
 và đọc lại assignment/eligibility hiện tại trong transaction. Nếu approver là người khác Organizer,
-còn active và có `MeetingApprover`, trả `409 MSG64`, không ghi history/jobs.
+còn active và có `MeetingApprover`, trả `409 MSG134`, không ghi history/jobs.
 Rút thành công trả `200 MSG79`, chuyển sang Draft, xóa current assignment và ghi đúng một history
 `ReturnToDraft` với `fromStatus = WaitingApproval`, actor/time từ server. History cũ giữ nguyên;
 không tạo notification/invitation mới. Organizer sửa nháp và chọn người duyệt mới qua
@@ -344,12 +347,12 @@ khoảng trắng bao quanh hoặc tên khác chữ hoa/chữ thường. Request 
 | 403 | `MSG85` | Đọc được meeting nhưng không phải actor/relationship/capability của action, hoặc assignment cũ cho Organizer tự duyệt |
 | 403 | — | Tài khoản inactive theo active-user gate |
 | 404 | — | Meeting không tồn tại hoặc caller không được phép đọc/action trên tài nguyên; body rỗng |
-| 409 | `MSG41`, `MSG46`, `MSG63`, `MSG64` | Submit, Publish, quyết định duyệt hoặc ReturnToDraft không còn hợp lệ; không ghi history/jobs |
-| 200/400/409 | `MSG89` / `MSG90` / `MSG91` | TransferOrganizer thành công / đích không hợp lệ / trạng thái hoặc Organizer cũ không cho transfer |
+| 409 | `MSG41`, `MSG46`, `MSG133`, `MSG134` | Submit, Publish, quyết định duyệt hoặc ReturnToDraft không còn hợp lệ; không ghi history/jobs |
+| 200/400/409 | `MSG89` / `MSG135` / `MSG91` | TransferOrganizer thành công / đích không hợp lệ / trạng thái hoặc Organizer cũ không cho transfer |
 | 413 | `MSG87` | JSON request vượt 64 KiB |
 | 415 | `MSG34` | POST không dùng `application/json`; dùng chung code với PUT |
 | 503 | `MSG42`, `MSG47`, `MSG88` | Lỗi database/transaction khi transition; transaction rollback |
-| 503 | `MSG60`, `MSG62` | Không tải được readiness/history hoặc không kiểm tra được tài khoản active |
+| 503 | `MSG130`, `MSG132` | Không tải được readiness/history hoặc không kiểm tra được tài khoản active |
 
 `GET submission-readiness` trả `409 MSG41` nếu meeting không còn ở `Draft`;
 history/readiness trả `404` nếu caller không được phép xem resource. Retry action sau khi commit thường
@@ -379,8 +382,6 @@ title và giới hạn field theo schema thông qua validator sở hữu bởi d
 | Field | Quy tắc |
 |---|---|
 | `title` | Bắt buộc sau trim; tối đa 300 ký tự |
-| `startsAt` | Bắt buộc, ISO 8601 có `Z` hoặc offset rõ ràng |
-| `endsAt` | Tùy chọn; nếu có, ISO 8601 có `Z` hoặc offset rõ ràng và phải lớn hơn giờ bắt đầu |
 | `mode` | Một trong `InPerson`, `Online`, `Hybrid`; mặc định `InPerson` nếu bỏ qua |
 | `sensitivity` | Một trong `Normal`, `Internal`, `Confidential`, `Secret`; mặc định `Normal` nếu bỏ qua |
 | `location` | Tùy chọn; trim; tối đa 300 ký tự |
@@ -397,8 +398,7 @@ Lỗi validation trả `400`:
   "code": "MSG31",
   "message": "Thông tin cuộc họp không hợp lệ.",
   "errors": {
-    "title": "Tên cuộc họp không được để trống.",
-    "endsAt": "Thời gian kết thúc phải sau thời gian bắt đầu."
+    "title": "Tên cuộc họp không được để trống."
   }
 }
 ```
@@ -435,9 +435,9 @@ của transaction hoặc capability lookup.
 
 ## Persistence và transaction
 
-Cột `ends_at` nullable và FK nullable `assigned_approver_id` giữ được các meeting cũ; Draft không có
-current assignment. POST lưu meeting `Draft` không assignment và một
-dòng `MeetingStatusHistory` (`FromStatus = null`, `ToStatus = Draft`, `ActorId = creator`). EF Core
+Cột `assigned_approver_id` nullable. POST lưu meeting `Draft`, chưa gán người duyệt; assignment được
+thực hiện trong UC-19. Planned Start Time và Planned End Time được quản lý riêng bởi MeetingSession.
+POST lưu meeting cùng một dòng `MeetingStatusHistory` (`FromStatus = null`, `ToStatus = Draft`, `ActorId = creator`). EF Core
 lưu các thay đổi này trong cùng transaction.
 
 PUT kiểm tra quyền sở hữu và trạng thái hiện tại bằng truy vấn không khóa trước khi chờ body. Sau khi
@@ -479,8 +479,7 @@ stale content.
 
 - Đồng bộ nội dung BR-24–BR-29 chính thức vào tài liệu BA và map từng luật vào validation/lifecycle.
 - Vẽ Class Diagram tạo/đọc/sửa và ghi Controller trong sequence là ASP.NET Minimal API.
-- Đồng bộ hai quy tắc đã ghi trong UC-15/UC-16 vào Jira SCRUM-17, cùng giới hạn length và format
-  timezone khi có quyền cập nhật Jira.
+- Người duyệt được chọn trong UC-19; Planned Start Time và Planned End Time thuộc Meeting Session.
 - Ghi rõ quyền GET, ownership và hành vi khi sửa `Rejected`.
 - Bổ sung mã thành công/lỗi chưa có vào sequence/message catalog.
 - Định danh Use Case đã được chuẩn hóa theo danh mục hiện tại: UC-15 → UC-21 cho Meeting Management.

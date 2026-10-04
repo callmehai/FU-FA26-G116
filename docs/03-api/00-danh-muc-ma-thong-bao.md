@@ -3,6 +3,10 @@
 Nguồn sự thật duy nhất cho mọi mã `code` mà API trả về hoặc FE tự hiển thị. Đặc tả use case,
 sequence diagram, code BE, code FE và test đều phải khớp với bảng này.
 
+Business Rule là hệ quy tắc riêng, không dùng mã `BR` thay mã `MSG`. Nội dung BR tập trung tại
+[danh mục Business Rules](../01-requirements/06-business-rules.md); UC dẫn chiếu BR và MSG tại
+các bước tương ứng, còn sequence thể hiện cùng BR ID và message của nhánh đó.
+
 ## Quy tắc
 
 1. **Một dải số chung cho cả dự án.** Không đánh lại từ `MSG01` cho mỗi use case hay mỗi sơ đồ —
@@ -23,7 +27,7 @@ sequence diagram, code BE, code FE và test đều phải khớp với bảng n�
 
 ## Mã tiếp theo
 
-**`MSG92`** — `MSG48`–`MSG59` và `MSG77` giữ cho Meeting Session; `MSG65`–`MSG73` giữ cho phòng họp trực tuyến (ADR-0010, PR #44). Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG60`–`MSG64` và `MSG78`–`MSG91`.
+**`MSG136`** — `MSG41`–`MSG59` và `MSG77`–`MSG128` đã dành sẵn cho các Use Case cuộc họp, participant, guest, room, session list và agenda view (xem [bên dưới](#dành-sẵn-chưa-có-code)); workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89`, `MSG91` và `MSG130`–`MSG135`; đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -43,6 +47,18 @@ Trạng thái: **BE** = backend trả trong body JSON · **FE** = FE tự hiển
 | `MSG05` | 401 | `POST /google` | Google xác thực OK nhưng không có tài khoản nội bộ nào liên kết/tự liên kết được | `Tài khoản Google này chưa được cấp quyền truy cập hệ thống.` | BE |
 | `MSG06` | — | — (FE, sau `POST /logout`) | `/logout` không tới được server, phiên được giữ nguyên | `Không thể đăng xuất. Vui lòng thử lại.` | FE |
 
+### Đặt lại mật khẩu qua liên kết — nửa sau của UC-08 (`/api/auth/password-reset`)
+
+| Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
+|---|---|---|---|---|---|
+| `MSG92` | 200 | `POST /api/auth/password-reset` | Đặt mật khẩu mới thành công | `Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.` | BE |
+| `MSG93` | 400 | `POST /api/auth/password-reset` | Liên kết không hợp lệ, hết hạn, đã dùng, đã bị liên kết mới hơn thay thế, hoặc tài khoản đã bị vô hiệu hoá | `Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.` | BE |
+| `MSG94` | 400 | `POST /api/auth/password-reset` | Mật khẩu mới không hợp lệ — kèm `errors.newPassword` | `Mật khẩu mới không hợp lệ.` | BE |
+| `MSG129` | — | — (FE, trang `/reset-password` không có `#token=`) | Trang không có token: liên kết thiếu token, hoặc tải lại / mở lại thẻ sau khi FE đã xoá token khỏi URL. **Khác `MSG93`**: liên kết có thể vẫn dùng được, nên không gọi API và không bảo "hết hạn" | `Không tìm thấy mã đặt lại mật khẩu. Hãy bấm lại liên kết trong email.` | FE |
+
+Đặc tả UC-08 chỉ có nửa "quản trị viên gửi liên kết"; bốn mã này là của nửa "người dùng mở liên kết",
+đặc tả và sơ đồ chưa vẽ. Ghi lại để BA bổ sung ở `BA Final Review`.
+
 `MSG01` dùng chung cho `/login` và `/refresh` có chủ ý: cùng tình huống "không xác thực được",
 chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã bỏ từ `SCRUM-63`
 ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)) và **không có mã**.
@@ -57,9 +73,9 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG10` | 200 | `PUT /api/users/{id}` | Cập nhật tài khoản thành công | `Cập nhật tài khoản thành công.` | BE |
 | `MSG11` | 200 | `PUT /api/users/{id}/status` | Vô hiệu hoá / kích hoạt lại thành công | `Đổi trạng thái tài khoản thành công.` | BE |
 | `MSG12` | 409 | `PUT /api/users/{id}`, `PUT /api/users/{id}/status` | Không được đổi trạng thái / hạ vai trò (tự khoá, quản trị viên cuối cùng) | `Không thể đổi trạng thái tài khoản này.` | BE |
-| `MSG13` | — | UC-08 | Đã gửi email đặt lại mật khẩu | *Password reset email sent successfully* | Dành sẵn — chờ hạ tầng email |
-| `MSG14` | — | UC-08 | Tài khoản không đủ điều kiện đặt lại mật khẩu | *Password reset is not available* | Dành sẵn |
-| `MSG15` | — | UC-08 | Không gửi được email đặt lại mật khẩu | *Unable to send reset email* | Dành sẵn |
+| `MSG13` | 200 | `POST /api/users/{id}/password-reset` | Đã gửi email đặt lại mật khẩu | `Đã gửi email đặt lại mật khẩu.` | BE |
+| `MSG14` | 409 | `POST /api/users/{id}/password-reset` | Tài khoản không dùng được chức năng đặt lại mật khẩu (đã bị vô hiệu hoá) | `Tài khoản này không dùng được chức năng đặt lại mật khẩu.` | BE |
+| `MSG15` | 503 | `POST /api/users/{id}/password-reset` | Không gửi được email đặt lại mật khẩu (SMTP tắt, không kết nối được, hoặc từ chối) | `Không gửi được email đặt lại mật khẩu. Vui lòng thử lại.` | BE |
 
 ### Ma trận phân quyền — UC-09, UC-10 (`/api/roles/capabilities`)
 
@@ -69,7 +85,7 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG17` | 400 | `PUT /api/roles/capabilities` | Cấu hình không hợp lệ — kèm `errors` (`roleId`, `capabilities`, `adminUsers`) | `Cấu hình phân quyền không hợp lệ.` | BE |
 | `MSG18` | 500 | `PUT /api/roles/capabilities` | Database từ chối ghi | `Không thể cập nhật phân quyền. Vui lòng thử lại.` | BE |
 
-### Quản lý vai trò — UC-15, UC-16, UC-13 theo sơ đồ vai trò (`/api/roles`)
+### Quản lý vai trò — UC-12, UC-13, UC-14 (`/api/roles`)
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
@@ -91,9 +107,9 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG29` | 201 | `POST /api/meetings` | Tạo cuộc họp nháp thành công | `Tạo cuộc họp thành công.` | BE |
 | `MSG30` | 200 | `PUT /api/meetings/{id}` | Cập nhật cuộc họp thành công | `Cập nhật cuộc họp thành công.` | BE |
 | `MSG31` | 400 | `POST /api/meetings`, `PUT /api/meetings/{id}` | Thông tin không hợp lệ — kèm `errors`; PUT với JSON sai cú pháp thì không có `errors` | `Thông tin cuộc họp không hợp lệ.` / `Nội dung JSON không hợp lệ.` | BE |
-| `MSG32` | 400 | `GET /api/meetings` | Tham số truy vấn danh sách không hợp lệ — kèm `errors` | `Tham số truy vấn không hợp lệ.` | BE |
+| `MSG32` | 400 | `GET /api/meetings` | Tiêu chí hiển thị danh sách cuộc họp không hợp lệ — kèm `errors` | `Tiêu chí danh sách cuộc họp không hợp lệ.` | BE |
 | `MSG33` | 409 | `PUT /api/meetings/{id}` | Cuộc họp không còn ở trạng thái sửa được | `Cuộc họp này không thể chỉnh sửa được nữa.` | BE |
-| `MSG34` | 415 | `PUT /api/meetings/{id}`, `POST /api/meetings/{id}/transitions` | Content-Type không phải `application/json` | `Content-Type phải là application/json.` | BE |
+| `MSG34` | 415 | `PUT /api/meetings/{id}`, `POST /api/meetings/{id}/transitions` | Lỗi kỹ thuật khi request không được gửi dưới dạng JSON — ngoài luồng nghiệp vụ UC-16 | `Content-Type phải là application/json.` | BE — phản hồi API kỹ thuật hiện hành |
 | `MSG35` | 500 | `POST /api/meetings` | Không lưu được khi tạo | `Không thể tạo cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG36` | 500 | `PUT /api/meetings/{id}` | Không lưu được khi sửa | `Không thể cập nhật cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG37` | 500 | `GET /api/meetings/{id}`, `PUT /api/meetings/{id}` | Không tải được chi tiết cuộc họp. Ở `GET` gồm cả lỗi khi kiểm tra tài khoản đang hoạt động; ở `PUT` chỉ khi bước kiểm tra trạng thái không đọc được cuộc họp | `Không thể tải thông tin cuộc họp. Vui lòng thử lại.` | BE |
@@ -106,7 +122,7 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
-| `MSG39` | 400 | `GET /api/notifications` | Tham số phân trang không hợp lệ — kèm `errors` | `Tham số truy vấn không hợp lệ.` | BE |
+| `MSG39` | 400 | `GET /api/notifications` | Không thể hiển thị phần danh sách thông báo được yêu cầu — kèm `errors` | `Trang thông báo được yêu cầu không khả dụng.` | BE |
 | `MSG40` | 500 | mọi endpoint `/api/notifications/*` | Lỗi database khi kiểm tra tài khoản đang hoạt động | `Không thể tải thông báo. Vui lòng thử lại.` | BE |
 
 ### Luồng cuộc họp — UC-19, UC-20, UC-21 (`/api/meetings`)
@@ -131,24 +147,19 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG86` | 400 | GET history | Query phân trang history không hợp lệ | `Tham số truy vấn không hợp lệ.` | BE |
 | `MSG87` | 413 | POST transitions, PUT meeting | Body JSON vượt quá 64 KiB | `Nội dung JSON vượt quá 64 KiB.` | BE |
 | `MSG88` | 503 | POST Approve, Reject, ReturnToDraft, TransferOrganizer | Không lưu được transition | `Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.` | BE |
-| `MSG60` | 503 | GET readiness, GET history | Không tải được readiness/history | `Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại.` | BE |
-| `MSG61` | 503 | GET approvers | Không tải được danh sách người duyệt hoặc không kiểm tra được quyền truy cập | `Không thể tải danh sách người duyệt. Vui lòng thử lại.` | BE |
-| `MSG62` | 503 | GET readiness, POST transitions, GET history | Không kiểm tra được trạng thái active của tài khoản | `Không thể kiểm tra tài khoản để thực hiện thao tác cuộc họp. Vui lòng thử lại.` | BE |
-| `MSG63` | 409 | POST Approve, Reject | Approval cycle không còn chờ quyết định | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
-| `MSG64` | 409 | POST ReturnToDraft | Trạng thái không cho về Draft hoặc approver đang chờ vẫn hợp lệ | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
 | `MSG89` | 200 | POST TransferOrganizer | Chuyển meeting Approved từ Organizer inactive sang Organizer mới thành công | `Đã chuyển cuộc họp cho người tổ chức mới.` | BE |
-| `MSG90` | 400 | POST TransferOrganizer | Organizer mới không hợp lệ, inactive, thiếu MeetingCreator hoặc là Assigned Approver | `Người tổ chức mới không hợp lệ hoặc không còn quyền tạo cuộc họp.` | BE |
 | `MSG91` | 409 | POST TransferOrganizer | Meeting không còn Approved hoặc Organizer hiện tại vẫn active | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
+| `MSG130` | 503 | GET readiness, GET history | Không tải được readiness/history | `Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG131` | 503 | GET approvers | Không tải được danh sách người duyệt hoặc không kiểm tra được quyền truy cập | `Không thể tải danh sách người duyệt. Vui lòng thử lại.` | BE |
+| `MSG132` | 503 | GET readiness, POST transitions, GET history | Không kiểm tra được trạng thái active của tài khoản | `Không thể kiểm tra tài khoản để thực hiện thao tác cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG133` | 409 | POST Approve, Reject | Approval cycle không còn chờ quyết định | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
+| `MSG134` | 409 | POST ReturnToDraft | Trạng thái không cho về Draft hoặc approver đang chờ vẫn hợp lệ | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
+| `MSG135` | 400 | POST TransferOrganizer | Organizer mới không hợp lệ, inactive, thiếu MeetingCreator hoặc là Assigned Approver | `Người tổ chức mới không hợp lệ hoặc không còn quyền tạo cuộc họp.` | BE |
 
-### Dành sẵn, chưa có code — Phòng họp trực tuyến
+### Dành sẵn, chưa có code
 
-| Mã | Use case | Tình huống |
-|---|---|---|
-| `MSG65` | ADR-0010 / SCRUM-39 | Phòng họp trực tuyến chưa mở; giữ nguyên nghĩa đã vào main |
-
-### Dành sẵn, chưa có code — Meeting Session (UC-26 … UC-30)
-
-Các mã đã vào main giữ nguyên tình huống; người làm phiên họp dùng đúng mã này.
+Có trong sequence diagram cuộc họp nhưng chưa có endpoint. Người làm các use case này dùng đúng
+các mã dưới đây; `message` tiếng Việt đặt khi code.
 
 | Mã | Use case | Tình huống (theo sơ đồ) |
 |---|---|---|
@@ -164,7 +175,33 @@ Các mã đã vào main giữ nguyên tình huống; người làm phiên họp 
 | `MSG57` | UC-29 | *Another meeting session is already in progress. End it before starting another session.* |
 | `MSG58` | UC-29 | *This meeting session cannot be started.* |
 | `MSG59` | UC-30 | *This meeting session cannot be ended.* |
+| `MSG60` | UC-31 Create Agenda Item | *Agenda item created successfully.* |
+| `MSG61` | UC-32 Update Agenda Item | *Agenda item updated successfully.* |
+| `MSG62` | UC-33 Delete Agenda Item | *Agenda item deleted successfully.* |
+| `MSG63` | UC-34 Reorder Agenda Items | *Agenda order updated successfully.* |
+| `MSG64` | UC-35 Set Current Agenda Item | *Current agenda item updated successfully.* |
+| `MSG65` | UC-36 Complete Agenda Item | *Agenda item completed successfully.* |
+| `MSG66` | UC-31 / UC-32 | *Invalid agenda item information.* (Các lỗi trường: *Agenda item title is required.*, *Planned duration must be greater than 0.*, *One or more selected documents are not available to this meeting.*) |
+| `MSG67` | UC-31 / UC-32 / UC-33 / UC-34 | *The agenda for this meeting session can no longer be modified.* |
+| `MSG68` | UC-31 | *Unable to create the agenda item. Please try again.* |
+| `MSG69` | UC-32 | *Unable to update the agenda item. Please try again.* |
+| `MSG70` | UC-33 | *Unable to delete the agenda item. Please try again.* |
+| `MSG71` | UC-34 | *Unable to update the agenda order. Please try again.* |
+| `MSG72` | UC-35 | *Another agenda item is already in progress. Complete it before starting another agenda item.* |
+| `MSG73` | UC-35 | *This agenda item cannot be set as current.* |
+| `MSG74` | UC-36 | *This agenda item cannot be completed.* |
+| `MSG75` | UC-35 | *Unable to set the current agenda item. Please try again.* |
+| `MSG76` | UC-36 | *Unable to complete the agenda item. Please try again.* |
 | `MSG77` | UC-28 | *The last planned meeting session of a published meeting cannot be cancelled.* |
+| `MSG90` | UC-21 Phát hành cuộc họp | *At least one valid planned Meeting Session is required before publication.* — **Ngừng dùng**; Report 3 source-of-truth xác định Meeting Sessions là tùy chọn. Không tái sử dụng mã. |
+| `MSG95`–`MSG109` | UC-37–UC-42 F08 | Mã tải roster, thêm participant, role, removal, response và readiness; xem đặc tả UC. |
+| `MSG110`–`MSG116` | UC-43–UC-44 Start/End Meeting | Mã thành công, điều kiện không hợp lệ và lỗi hệ thống; xem đặc tả UC. |
+| `MSG117`–`MSG126` | UC-45–UC-52 GOF09 Online Meeting Room | Mã trạng thái room, thiết bị, chia sẻ, presence, moderation, chat và xác minh Guest; xem đặc tả UC. |
+| `MSG127` | UC-53 View Meeting Sessions | *Unable to load meeting sessions. Please try again.* |
+| `MSG128` | UC-54 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |
+
+`MSG41`–`MSG47`, `MSG83` và `MSG84` đã có code, xem bảng *Luồng cuộc họp*. `MSG90` ngừng dùng và
+không tái sử dụng; TransferOrganizer dùng `MSG135`.
 
 ## Bảng đổi mã cũ → mới
 
@@ -192,7 +229,7 @@ Các mã đã vào main giữ nguyên tình huống; người làm phiên họp 
 | `MEETING_LOAD_FAILED` | | `MSG37` |
 | `MEETING_LIST_FAILED` | | `MSG38` |
 | `MEETING_TRANSITION_COMPLETED` | | `MSG43`, `MSG44`, `MSG45`, `MSG78`, `MSG79` theo action |
-| `MEETING_STATUS_CONFLICT` | | `MSG41`, `MSG46`, `MSG63`, `MSG64` theo action |
+| `MEETING_STATUS_CONFLICT` | | `MSG41`, `MSG46`, `MSG133`, `MSG134` theo action |
 | `MEETING_INVALID_TRANSITION_REQUEST` | | `MSG80` |
 | `MEETING_SUBMISSION_NOT_READY` | | `MSG81` |
 | `MEETING_APPROVER_INVALID` | | `MSG82` |
@@ -203,7 +240,7 @@ Các mã đã vào main giữ nguyên tình huống; người làm phiên họp 
 | `MEETING_UNSUPPORTED_CONTENT_TYPE` | POST transitions | `MSG34` |
 | `MEETING_BODY_TOO_LARGE` | | `MSG87` |
 | `MEETING_WORKFLOW_FAILED` | | `MSG42`, `MSG47`, `MSG88` theo action |
-| `MEETING_LOAD_FAILED` (workflow) | | `MSG60`, `MSG62` theo endpoint |
+| `MEETING_LOAD_FAILED` (workflow) | | `MSG130`, `MSG132` theo endpoint |
 | `NOTIFICATION_INVALID_QUERY` | | `MSG39` |
 | `NOTIFICATION_LOAD_FAILED` | | `MSG40` |
 
@@ -229,11 +266,25 @@ FE/Tester dùng mã dưới đây và API contract khi tích hợp bản đã đ
 | `MSG58` | `MSG87` | Body JSON quá lớn |
 | `MSG59` | `MSG88` | Không lưu được transition |
 | `MSG65` | `MSG89` | TransferOrganizer thành công; giữ MSG65 của ADR-0010 cho phòng chưa mở |
-| `MSG66` | `MSG90` | Organizer mới không hợp lệ; `MSG66` thuộc phòng họp trực tuyến (PR #44) |
+| `MSG66` | `MSG90`, nay là `MSG135` | Organizer mới không hợp lệ; `MSG66` thuộc phòng họp trực tuyến (PR #44) |
 | `MSG67` | `MSG91` | TransferOrganizer không còn hợp lệ; `MSG67` thuộc phòng họp trực tuyến (PR #44) |
 
 `MSG57` chưa vào main với nghĩa Content-Type của PR41; backend dùng `MSG34`.
 Trong main, `MSG57` vẫn dành cho tình huống phiên họp khác đang InProgress.
+
+### Đồng bộ với main ngày 04/10/2026
+
+Main đã dành `MSG60`–`MSG64` cho agenda (UC-31 … UC-35) và ghi `MSG90` là ngừng dùng, không tái
+sử dụng. Các mã đó của PR #53 chưa vào main, nên PR #53 chuyển sang dải trống tiếp theo:
+
+| Mã cũ trong PR #53 | Mã mới | Tình huống workflow |
+|---|---|---|
+| `MSG60` | `MSG130` | Không tải được readiness/history |
+| `MSG61` | `MSG131` | Không tải được danh sách người duyệt |
+| `MSG62` | `MSG132` | Không kiểm tra được tài khoản active |
+| `MSG63` | `MSG133` | Lượt duyệt không còn chờ quyết định |
+| `MSG64` | `MSG134` | Không được đưa về nháp |
+| `MSG90` | `MSG135` | TransferOrganizer: Organizer mới không hợp lệ |
 
 ### Trong đặc tả use case và sequence diagram
 
@@ -286,7 +337,9 @@ Các mã sau mang nhiều câu chữ hoặc nhiều nguyên nhân nhưng vẫn *
 
 - `MSG01` — sai thông tin đăng nhập (`/login`) và phiên hết hạn (`/refresh`): cùng là "không xác
   thực được", khác câu chữ.
-- `MSG09`, `MSG17`, `MSG20`, `MSG31`, `MSG32`, `MSG39` — lỗi validation; nguyên nhân cụ thể nằm
+- `MSG09`, `MSG17`, `MSG20`, `MSG31`, `MSG32`, `MSG39`, `MSG94` — lỗi validation; nguyên nhân cụ thể nằm
   trong `errors` theo key.
+- `MSG93` — năm nguyên nhân (không tồn tại, hết hạn, đã dùng, bị thay thế, tài khoản bị vô hiệu
+  hoá) gộp một mã có chủ ý: endpoint ẩn danh, phân biệt chúng chỉ giúp người dò liên kết.
 - `MSG12` — ba nguyên nhân, xem [02-quan-ly-nguoi-dung-note-cho-fe.md](02-quan-ly-nguoi-dung-note-cho-fe.md).
 - `MSG31` — thêm biến thể "Nội dung JSON không hợp lệ." khi PUT gửi JSON sai cú pháp (không có `errors`).

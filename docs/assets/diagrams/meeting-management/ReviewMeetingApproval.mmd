@@ -29,7 +29,7 @@ sequenceDiagram
             Service-->>API: 403 MSG85
         else Meeting không còn WaitingApproval
             Service->>DB: Kết thúc transaction không ghi dữ liệu
-            Service-->>API: 409 MSG63
+            Service-->>API: 409 MSG133
             API-->>Page: Tải lại trạng thái hiện tại
         else Quyết định hợp lệ
             alt Approve

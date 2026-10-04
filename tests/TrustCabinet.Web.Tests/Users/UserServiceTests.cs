@@ -24,6 +24,8 @@ public class UserServiceTests
     private readonly FakeAuditService _audit = new();
     private readonly FakeRefreshTokenStore _refreshTokens = new();
     private readonly FakeAdministratorInvariantGuard _invariant = new();
+    private readonly FakePasswordResetTokenStore _resetTokens = new();
+    private readonly FakePasswordResetEmailSender _resetEmail = new();
     private readonly Guid _actorId = Guid.CreateVersion7();
 
     private UserService NewService() => new(
@@ -32,6 +34,8 @@ public class UserServiceTests
         _audit,
         _refreshTokens,
         _invariant,
+        _resetTokens,
+        _resetEmail,
         NullLogger<UserService>.Instance);
 
     private User GivenUser(
@@ -128,7 +132,7 @@ public class UserServiceTests
         // password would make the assertion meaningless.
         var hasher = new TrustCabinet.Infrastructure.Authentication.PasswordHasher();
         var service = new UserService(
-            _users, hasher, _audit, _refreshTokens, _invariant,
+            _users, hasher, _audit, _refreshTokens, _invariant, _resetTokens, _resetEmail,
             NullLogger<UserService>.Instance);
 
         await service.CreateAsync(
@@ -819,6 +823,410 @@ public class UserServiceTests
             Guid.CreateVersion7(), isActive: false, _actorId);
 
         Assert.Equal(UserOutcome.NotFound, result.Outcome);
+    }
+
+    // ---------------------------------------------------------------- UC-08 · Reset user password
+
+    private const string NewPassword = "MotMatKhauMoiRatDai@2026";
+
+    [Fact]
+    public async Task Reset_request_emails_a_link_to_the_registered_address_and_records_it()
+    {
+        var target = GivenUser();
+
+        var result = await NewService().RequestPasswordResetAsync(target.Id, _actorId);
+
+        Assert.True(result.Succeeded);
+        var sent = Assert.Single(_resetEmail.Sent);
+        Assert.Equal(target.Email, sent.ToAddress);
+        Assert.Equal(Assert.Single(_resetTokens.Created), sent.Token);
+
+        var recorded = Assert.Single(_audit.Records);
+        Assert.Equal(AuditActions.UserPasswordResetRequested, recorded.Action);
+        Assert.Equal(target.Id, recorded.ObjectId);
+        Assert.Equal(_actorId, recorded.ActorId);
+        // The link is a credential; the audit log outlives it and has more readers.
+        Assert.DoesNotContain(sent.Token, Serialize(recorded.Details));
+    }
+
+    [Fact]
+    public async Task Reset_request_leaves_the_current_password_and_sessions_alone()
+    {
+        // Pressing the button must not lock anyone out: only using the link changes anything.
+        var target = GivenUser();
+        var before = target.PasswordHash;
+
+        await NewService().RequestPasswordResetAsync(target.Id, _actorId);
+
+        Assert.Equal(before, target.PasswordHash);
+        Assert.Empty(_refreshTokens.RevokedUsers);
+    }
+
+    [Fact]
+    public async Task Reset_request_answers_not_available_for_a_deactivated_account()
+    {
+        var target = GivenUser(isActive: false);
+
+        var result = await NewService().RequestPasswordResetAsync(target.Id, _actorId);
+
+        Assert.Equal(UserOutcome.PasswordResetNotAvailable, result.Outcome);
+        Assert.Empty(_resetTokens.Created);
+        Assert.Empty(_resetEmail.Sent);
+        Assert.Empty(_audit.Records);
+    }
+
+    [Fact]
+    public async Task Reset_request_answers_email_failed_and_records_nothing_when_the_mail_cannot_go()
+    {
+        var target = GivenUser();
+        _resetEmail.Fails = true;
+
+        var result = await NewService().RequestPasswordResetAsync(target.Id, _actorId);
+
+        Assert.Equal(UserOutcome.PasswordResetEmailFailed, result.Outcome);
+        Assert.Empty(_audit.Records);
+    }
+
+    [Fact]
+    public async Task A_failed_resend_keeps_the_link_already_in_the_inbox_working()
+    {
+        // The first email went out; the second one hits an SMTP outage. The administrator sees
+        // MSG15 — and the person's first link must still work, not die silently.
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        _resetEmail.Fails = true;
+
+        var resend = await service.RequestPasswordResetAsync(target.Id, _actorId);
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal(UserOutcome.PasswordResetEmailFailed, resend.Outcome);
+        Assert.True(result.Succeeded);
+    }
+
+    [Fact]
+    public async Task A_link_whose_email_failed_never_works()
+    {
+        var target = GivenUser();
+        _resetEmail.Fails = true;
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+    }
+
+    [Fact]
+    public async Task A_deactivation_during_the_send_still_kills_the_link()
+    {
+        // The race: another administrator deactivates the account while the email is on its way.
+        // Their revoke runs before this request activates the link, so it misses it.
+        var target = GivenUser();
+        var service = NewService();
+        _resetEmail.OnSend = async () =>
+        {
+            target.IsActive = false;
+            await _resetTokens.RevokeAsync(target.Id);
+        };
+
+        var request = await service.RequestPasswordResetAsync(target.Id, _actorId);
+        _resetEmail.OnSend = null;
+        target.IsActive = true;
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.True(request.Succeeded);
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+    }
+
+    [Fact]
+    public async Task An_email_change_during_the_send_kills_the_link_sent_to_the_old_address()
+    {
+        var target = GivenUser();
+        var service = NewService();
+        _resetEmail.OnSend = async () =>
+        {
+            target.Email = "dachinhsua@trustcabinet.local";
+            await _resetTokens.RevokeAsync(target.Id);
+        };
+
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal("thanhvien@trustcabinet.local", Assert.Single(_resetEmail.Sent).ToAddress);
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+    }
+
+    [Fact]
+    public async Task A_change_of_case_during_the_send_keeps_the_link()
+    {
+        // citext: the same mailbox, so nothing to take back.
+        var target = GivenUser();
+        var service = NewService();
+        _resetEmail.OnSend = () =>
+        {
+            target.Email = "ThanhVien@TrustCabinet.local";
+            return Task.CompletedTask;
+        };
+
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.True(result.Succeeded);
+    }
+
+    [Fact]
+    public async Task Reset_request_reports_not_found_for_an_unknown_account()
+    {
+        var result = await NewService().RequestPasswordResetAsync(Guid.CreateVersion7(), _actorId);
+
+        Assert.Equal(UserOutcome.NotFound, result.Outcome);
+    }
+
+    [Fact]
+    public async Task Reset_sets_the_new_password_ends_every_session_and_records_it()
+    {
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        _audit.Records.Clear();
+
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.True(result.Succeeded);
+        Assert.True(new FakePasswordHasher().Verify(target.PasswordHash!, NewPassword));
+        // Before the save and again after it — see the next test.
+        Assert.Equal([target.Id, target.Id], _refreshTokens.RevokedUsers);
+
+        var recorded = Assert.Single(_audit.Records);
+        Assert.Equal(AuditActions.UserPasswordReset, recorded.Action);
+        // The account itself did this — the administrator never saw the password.
+        Assert.Equal(target.Id, recorded.ActorId);
+        Assert.Null(recorded.Details);
+    }
+
+    [Fact]
+    public async Task Reset_link_works_only_once()
+    {
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        var token = _resetTokens.Created[0];
+
+        await service.ResetPasswordAsync(token, NewPassword);
+        var second = await service.ResetPasswordAsync(token, "MatKhauKhacCungDaiDu@2026");
+
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, second.Outcome);
+        Assert.True(new FakePasswordHasher().Verify(target.PasswordHash!, NewPassword));
+    }
+
+    [Fact]
+    public async Task A_newer_reset_link_supersedes_the_older_one()
+    {
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+
+        var older = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+        var newer = await service.ResetPasswordAsync(_resetTokens.Created[1], NewPassword);
+
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, older.Outcome);
+        Assert.True(newer.Succeeded);
+    }
+
+    [Fact]
+    public async Task Reset_refuses_an_expired_link()
+    {
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        _resetTokens.Now += UserService.PasswordResetLinkLifetime;
+
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("khong-phai-token-nao-ca")]
+    public async Task Reset_refuses_an_unknown_link(string? token)
+    {
+        var result = await NewService().ResetPasswordAsync(token, NewPassword);
+
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+        Assert.Empty(_audit.Records);
+    }
+
+    [Fact]
+    public async Task A_too_short_password_is_refused_without_spending_the_link()
+    {
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        var before = target.PasswordHash;
+
+        var refused = await service.ResetPasswordAsync(_resetTokens.Created[0], "ngan");
+        Assert.Equal(before, target.PasswordHash);
+
+        var retried = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal(UserOutcome.InvalidInformation, refused.Outcome);
+        Assert.Contains("newPassword", refused.Errors!.Keys);
+        Assert.True(retried.Succeeded);
+    }
+
+    [Fact]
+    public async Task Reset_refuses_the_link_of_an_account_deactivated_since()
+    {
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        var before = target.PasswordHash;
+        target.IsActive = false;
+
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+        Assert.Equal(before, target.PasswordHash);
+    }
+
+    [Fact]
+    public async Task Reset_ends_a_session_opened_with_the_old_password_while_it_ran()
+    {
+        // A sign-in with the old password that lands between the first revoke and the save gets a
+        // fresh refresh token. The second revoke, after the save, is what ends it.
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        var revokes = 0;
+        _refreshTokens.OnRevokeAll = () =>
+        {
+            if (++revokes == 1)
+            {
+                _refreshTokens.StoreAsync("dang-nhap-chen-giua", target.Id, TimeSpan.FromDays(7));
+            }
+        };
+
+        await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Null(await _refreshTokens.PeekAsync("dang-nhap-chen-giua"));
+    }
+
+    [Fact]
+    public async Task Reset_still_succeeds_when_only_the_second_revoke_fails()
+    {
+        // The password is saved and the link spent; failing now would send the person back to a
+        // link that no longer works, for a reset that did happen.
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        var revokes = 0;
+        _refreshTokens.OnRevokeAll = () =>
+        {
+            if (++revokes == 2)
+            {
+                throw new InvalidOperationException("Redis down");
+            }
+        };
+
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.True(result.Succeeded);
+        Assert.Single(_audit.Records, r => r.Action == AuditActions.UserPasswordReset);
+    }
+
+    [Fact]
+    public async Task Deactivating_an_account_kills_its_outstanding_reset_link()
+    {
+        // Otherwise reactivating it within the hour would bring the link back to life.
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+
+        await service.ChangeStatusAsync(target.Id, isActive: false, _actorId);
+        await service.ChangeStatusAsync(target.Id, isActive: true, _actorId);
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+    }
+
+    [Fact]
+    public async Task Changing_the_email_kills_the_link_sent_to_the_old_address()
+    {
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+
+        await service.UpdateAsync(
+            target.Id, new UserEdit(target.FullName, "dachinhsua@trustcabinet.local", target.RoleId), _actorId);
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+    }
+
+    [Fact]
+    public async Task Sessions_still_end_when_revoking_the_reset_link_fails()
+    {
+        // Two separate steps: a Redis error on the link must not leave the deactivated person's
+        // sessions running.
+        var target = GivenUser();
+        var service = NewService();
+        _resetTokens.RevokeThrows = new InvalidOperationException("Redis down");
+
+        var result = await service.ChangeStatusAsync(target.Id, isActive: false, _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal([target.Id], _refreshTokens.RevokedUsers);
+    }
+
+    [Fact]
+    public async Task The_reset_link_is_still_revoked_when_ending_the_sessions_fails()
+    {
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        _refreshTokens.OnRevokeAll = () => throw new InvalidOperationException("Redis down");
+
+        await service.ChangeStatusAsync(target.Id, isActive: false, _actorId);
+        _refreshTokens.OnRevokeAll = null;
+        await service.ChangeStatusAsync(target.Id, isActive: true, _actorId);
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.Equal(UserOutcome.PasswordResetLinkInvalid, result.Outcome);
+    }
+
+    [Fact]
+    public async Task Renaming_an_account_leaves_its_reset_link_working()
+    {
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+
+        await service.UpdateAsync(
+            target.Id, new UserEdit("Tên Đã Sửa", target.Email, target.RoleId), _actorId);
+        var result = await service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword);
+
+        Assert.True(result.Succeeded);
+    }
+
+    [Fact]
+    public async Task Reset_keeps_the_old_password_when_ending_the_sessions_fails()
+    {
+        // Revoked before the save: a Redis outage must not leave a new password next to the very
+        // sessions the reset was meant to end.
+        var target = GivenUser();
+        var service = NewService();
+        await service.RequestPasswordResetAsync(target.Id, _actorId);
+        var before = target.PasswordHash;
+        _refreshTokens.OnRevokeAll = () => throw new InvalidOperationException("Redis down");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => service.ResetPasswordAsync(_resetTokens.Created[0], NewPassword));
+
+        Assert.Equal(before, target.PasswordHash);
     }
 
     /// <summary>

@@ -71,6 +71,8 @@ public static class AuthenticationServiceCollectionExtensions
         // The store reads the clock for its reuse grace period; TryAdd so a test can substitute it.
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<IRefreshTokenStore, RedisRefreshTokenStore>();
+        // UC-08's reset links, in the same Redis.
+        services.AddSingleton<IPasswordResetTokenStore, RedisPasswordResetTokenStore>();
 
         // Scoped: it depends on the repository, which holds the request's DbContext.
         services.AddScoped<IUserRepository, UserRepository>();

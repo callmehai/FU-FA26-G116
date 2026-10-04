@@ -32,6 +32,19 @@ public enum UserOutcome
     /// </summary>
     StatusChangeNotAllowed,
 
+    /// <summary>UC-08's EX-1 — the account cannot receive a reset link (it is deactivated). MSG14.</summary>
+    PasswordResetNotAvailable,
+
+    /// <summary>UC-08's EX-2 — the reset email could not be sent. MSG15.</summary>
+    PasswordResetEmailFailed,
+
+    /// <summary>
+    /// Completing UC-08 — the reset link is unknown, expired, already used, superseded by a newer
+    /// one, or its account was deactivated since. One outcome for all of them: telling them apart
+    /// would only help someone probing links.
+    /// </summary>
+    PasswordResetLinkInvalid,
+
     /// <summary>The operation went through.</summary>
     Success,
 }

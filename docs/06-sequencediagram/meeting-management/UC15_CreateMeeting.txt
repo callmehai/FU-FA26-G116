@@ -16,7 +16,7 @@ activate MeetingController
 MeetingController->MeetingService: createMeeting(meetingInfo)
 activate MeetingService
 
-MeetingService->MeetingService: Validate meeting information\n(BR-24, BR-25)
+MeetingService->MeetingService: Validate meeting-level information\n(BR-24; schedule belongs to Meeting Sessions)
 
 alt Meeting information is invalid - EX-1
     MeetingService-->MeetingController: MSG31 - Invalid meeting information

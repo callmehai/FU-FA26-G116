@@ -154,8 +154,14 @@ public sealed partial class MessageCodeCatalogueTests
     [InlineData("MSG57", "UC-29")]
     [InlineData("MSG58", "UC-29")]
     [InlineData("MSG59", "UC-30")]
-    [InlineData("MSG65", "ADR-0010")]
+    [InlineData("MSG60", "UC-31")]
+    [InlineData("MSG61", "UC-32")]
+    [InlineData("MSG62", "UC-33")]
+    [InlineData("MSG63", "UC-34")]
+    [InlineData("MSG64", "UC-35")]
+    [InlineData("MSG65", "UC-36")]
     [InlineData("MSG77", "UC-28")]
+    [InlineData("MSG90", "UC-21")]
     public void Meeting_workflow_preserves_main_code_reservations(string code, string source)
     {
         var endpoint = File.ReadAllText(Path.Combine(
@@ -181,6 +187,13 @@ public sealed partial class MessageCodeCatalogueTests
     [InlineData("Msg87BodyTooLarge", "MSG87")]
     [InlineData("Msg88TransitionFailed", "MSG88")]
     [InlineData("Msg89OrganizerTransferred", "MSG89")]
+    [InlineData("Msg91OrganizerTransferConflict", "MSG91")]
+    [InlineData("Msg130WorkflowReadFailed", "MSG130")]
+    [InlineData("Msg131ApproversLoadFailed", "MSG131")]
+    [InlineData("Msg132WorkflowActiveUserCheckFailed", "MSG132")]
+    [InlineData("Msg133ApprovalConflict", "MSG133")]
+    [InlineData("Msg134ReturnToDraftConflict", "MSG134")]
+    [InlineData("Msg135OrganizerInvalid", "MSG135")]
     public void Workflow_codes_use_the_allocation_after_main_reservations(string constant, string code)
     {
         var endpoint = File.ReadAllText(Path.Combine(

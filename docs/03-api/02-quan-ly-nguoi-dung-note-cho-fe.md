@@ -1,15 +1,15 @@
 # Note cho FE — Quản lý người dùng, của Ticket SCRUM-13
 
-Backend của SCRUM-13 đã xong (UC-04 … UC-07). File này ghi những gì FE cần biết để thay
+Backend của SCRUM-13 đã xong (UC-04 … UC-07), cùng UC-08 (đặt lại mật khẩu) và UC-09 (gán vai trò). File này ghi những gì FE cần biết để thay
 placeholder ở [`frontend/src/features/access/UsersPage.tsx`](../../frontend/src/features/access/UsersPage.tsx),
 tập trung vào **những chỗ dễ làm sai mà lỗi lại trông như bug của backend**.
 
 Hợp đồng API đầy đủ: [02-quan-ly-nguoi-dung.md](02-quan-ly-nguoi-dung.md). File này không nhắc
 lại, chỉ nói phần FE.
 
-**UC-08 (đặt lại mật khẩu) chưa có endpoint**, dù bản vẽ
-[UC08_ResetUserPassword.png](../06-sequencediagram/user-management/UC08_ResetUserPassword.png) đã có. Đừng làm nút "Đặt lại
-mật khẩu" rồi để đó — chưa có gì để gọi. Chờ SCRUM-15 (hạ tầng email).
+**UC-08 (đặt lại mật khẩu) đã xong cả BE lẫn FE** — nút trên màn hình này và trang công khai
+`/reset-password`. Xem [mục 8](#8-uc-08--đặt-lại-mật-khẩu). UC-09 không có endpoint mới, xem
+[mục 9](#9-uc-09--gán--đổi-vai-trò).
 
 ---
 
@@ -188,7 +188,8 @@ Backend không bao giờ trả `passwordHash` hay `googleSubjectId` — đừng 
 - **`POST` trả `201`**, không phải `200` — nếu check `res.status === 200` thì sẽ trượt. Header
   `Location` có sẵn đường dẫn tài khoản mới.
 - **Mật khẩu tối thiểu 12 ký tự.** Validate ở FE cho đỡ round trip, nhưng backend vẫn kiểm lại.
-- **`PUT /api/users/{id}` không nhận `password`.** Gửi lên cũng bị bỏ qua. Đổi mật khẩu là UC-08.
+- **`PUT /api/users/{id}` không nhận `password`.** Gửi lên cũng bị bỏ qua. Đổi mật khẩu là UC-08,
+  và quản trị viên không bao giờ tự đặt mật khẩu cho người khác — chỉ gửi liên kết (mục 8).
 - **`PUT /api/users/{id}` không nhận `isActive`.** Gửi lên cũng bị bỏ qua — đổi trạng thái phải
   dùng endpoint `/status` riêng. Đây là cố ý, có test chặn.
 - **Email so sánh không phân biệt hoa thường** (cột `citext`). `An@x.vn` và `an@x.vn` là trùng
@@ -196,3 +197,102 @@ Backend không bao giờ trả `passwordHash` hay `googleSubjectId` — đừng 
 - **Khoảng trắng đầu/cuối được cắt tự động** ở `fullName` và `email`.
 - **Toàn bộ `/api/users` cần capability `AdminUsers`.** Người không có sẽ nhận `403`. Nhớ lọc menu
   bằng `can()`, nhưng nhớ luôn: ẩn nút không phải là bảo mật — backend vẫn kiểm lại mọi request.
+
+---
+
+## 8. UC-08 — Đặt lại mật khẩu
+
+Backend và FE đều đã xong. FE nằm ở
+[`UsersPage.tsx`](../../frontend/src/features/access/UsersPage.tsx) (nút, mục 8.1) và
+[`ResetPasswordPage.tsx`](../../frontend/src/features/auth/ResetPasswordPage.tsx) (trang công khai,
+mục 8.2). Những chỗ FE làm khác gợi ý bên dưới được ghi trong khung **FE đã làm** ở cuối mỗi mục.
+
+### 8.1 Nút "Đặt lại mật khẩu" trên màn hình quản lý người dùng
+
+- Gọi `POST /api/users/{id}/password-reset`, **không có body**. Đặc tả bắt **hộp xác nhận trước**
+  (bước 2–3): mỗi lần gọi là một email gửi đi và liên kết trước đó chết.
+- Ẩn/disable nút với tài khoản `isActive: false` — backend sẽ trả `409 MSG14` nếu vẫn gọi.
+- **Có thể mất tới vài chục giây** khi SMTP chậm hoặc không kết nối được (backend gửi đồng bộ, timeout
+  theo `Email:SendAttemptTimeoutSeconds`). Hiện trạng thái loading trên nút, chặn bấm lặp.
+
+| HTTP | `code` | FE nên làm gì |
+|---|---|---|
+| `200` | `MSG13` | Toast thành công. `user` trong body là tài khoản như shape UC-04 — không có gì đổi để cập nhật |
+| `409` | `MSG14` | Toast: tài khoản đã bị vô hiệu hoá. Refresh lại dòng đó |
+| `503` | `MSG15` | Toast lỗi "thử lại" — đây là lỗi máy chủ mail, không phải lỗi người dùng |
+| `404` | *(không body)* | Refresh danh sách, như các endpoint khác |
+
+`409 MSG14` **khác** `409 MSG12` — khớp theo `code`, đừng gom theo status.
+
+> **FE đã làm:** nút là icon chìa khoá ở cột "Thao tác", **disable** (không ẩn) với tài khoản đã bị vô
+> hiệu hoá — tooltip nói phải kích hoạt lại trước, và cột giữ nguyên độ rộng. Lỗi `MSG15`, `MSG14` và
+> `404` hiện **trong hộp xác nhận** chứ không phải toast — đúng quy ước của `ConfirmDialog` (hộp thoại
+> che toast); `MSG15` giữ nút "Gửi liên kết" để thử lại ngay. `MSG14` đọc lại tài khoản
+> (`GET /api/users/{id}`), cập nhật dòng đó và khoá nút xác nhận. Tài khoản chỉ có Google
+> (`hasPassword: false`) vẫn gửi được, hộp xác nhận nói thêm là người đó sẽ có thêm cách đăng nhập
+> bằng mật khẩu. Quản trị viên gửi cho chính mình cũng được (backend cho phép), hộp xác nhận cảnh báo
+> là mọi phiên của họ sẽ kết thúc khi dùng liên kết.
+
+### 8.2 Trang công khai `/reset-password`
+
+Email gửi liên kết dạng:
+
+```
+http://localhost:5173/reset-password#token=AbC…xyz
+```
+
+- Route **công khai** (không cần đăng nhập), nằm ngoài `AppShell`, cạnh trang đăng nhập. Thêm vào
+  `lib/routes.ts`.
+- **Token nằm trong fragment** (`window.location.hash`), không phải query string. Đọc bằng
+  `new URLSearchParams(location.hash.slice(1)).get('token')`. Fragment không bao giờ được gửi lên
+  server, nên đừng "chuyển" nó sang query string khi điều hướng. Đọc xong thì có thể xoá khỏi thanh
+  địa chỉ bằng `history.replaceState`.
+- Form: mật khẩu mới + nhập lại (so khớp ở FE), tối thiểu 12 ký tự. Gửi:
+
+```json
+POST /api/auth/password-reset
+{ "token": "<từ fragment>", "newPassword": "…" }
+```
+
+| HTTP | `code` | FE nên làm gì |
+|---|---|---|
+| `200` | `MSG92` | Báo thành công, chuyển tới `/login`. **Không có token đăng nhập trong response** — người dùng tự đăng nhập bằng mật khẩu mới |
+| `400` | `MSG94` | Tô đỏ field mật khẩu từ `errors.newPassword`. **Liên kết vẫn còn dùng được** — giữ form, cho sửa và gửi lại |
+| `400` | `MSG93` | Liên kết chết (hết hạn 60 phút, đã dùng, có liên kết mới hơn, hoặc tài khoản bị khoá). Ẩn form, hiện hướng dẫn liên hệ quản trị viên |
+
+Hai mã `400` khác nhau hoàn toàn về cách xử lý — khớp theo `code`.
+
+- Không có fragment `token` thì FE tự hiện `MSG129` ("bấm lại liên kết trong email"), khỏi gọi API.
+- Đặt lại thành công sẽ **huỷ mọi refresh token** của người đó. Nếu chính trình duyệt này đang đăng
+  nhập tài khoản đó, nó vẫn chạy tới khi access token hết hạn (tối đa 15 phút), rồi lần refresh tiếp
+  theo ra `401 MSG01` — luồng đăng nhập lại như bình thường.
+- Một liên kết đã gửi sẽ chết (→ `MSG93`) nếu quản trị viên vô hiệu hoá tài khoản, đổi email hoặc đổi
+  vai trò sau đó, hoặc bấm gửi lại **thành công**. Gửi lại mà ra `503 MSG15` thì liên kết cũ vẫn
+  dùng được — toast MSG15 không cần nói gì về liên kết cũ.
+- Gọi qua `src/api/` (`api.post`), thêm type trong `src/types/` — như mọi endpoint khác.
+
+> **FE đã làm:** trang nằm ngoài `RequireAuth` và `AppShell`, dùng khung của trang đăng nhập. Token
+> đọc từ fragment rồi xoá khỏi thanh địa chỉ (`navigate(..., { replace: true })`); dán một liên kết mới
+> vào **cùng tab** (chỉ đổi fragment, không tải lại trang) cũng nhận token mới. FE kiểm ≥ 12 ký tự và
+> "nhập lại khớp" trước khi gửi. `MSG92` → toast thông điệp của backend rồi chuyển tới `/login`;
+> nếu trình duyệt này đang giữ một phiên đăng nhập thì đăng xuất phiên đó trước, không thì `/login`
+> sẽ đưa thẳng vào ứng dụng; đăng xuất không tới được server thì vẫn báo `MSG92`, kèm toast lỗi `MSG06`
+> (phiên đó còn nguyên). `MSG93` → ẩn form, hiện `message` của backend, hướng dẫn liên hệ quản trị
+> viên và nút về trang đăng nhập (focus vào nút). **Không có token → `MSG129`** (mã FE, không gọi API),
+> khung vàng "hãy bấm lại liên kết trong email", không phải câu "hết hạn" của `MSG93`: token chỉ giữ
+> trong bộ nhớ, giống access token, nên tải lại trang hoặc khôi phục thẻ sẽ rơi vào trường hợp này
+> trong khi liên kết vẫn còn dùng được. `MSG94` → lỗi dưới ô mật khẩu mới, giữ nguyên form. Lỗi khác (5xx, mất mạng) → alert trên
+> form, giữ nguyên những gì đã nhập.
+
+---
+
+## 9. UC-09 — Gán / đổi vai trò
+
+**Không có endpoint mới.** Gán hay đổi vai trò là `PUT /api/users/{id}` với `roleId` mới, giữ nguyên
+`fullName` và `email` hiện tại — chính form sửa của UC-06, đã nối API. Nếu muốn có nút "Gán vai trò"
+riêng như đặc tả mô tả, đó chỉ là một dialog chọn vai trò (`GET /api/roles`) rồi gọi đúng endpoint
+này với hai field kia lấy từ `GET /api/users/{id}`.
+
+Mã trả về giống UC-06: `MSG10` thành công, `MSG09` kèm `errors.roleId` khi vai trò vừa bị xoá, `MSG12`
+khi đó là quản trị viên cuối cùng (mục 4). Đổi vai trò sẽ đăng xuất người được đổi, và làm chết liên
+kết đặt lại mật khẩu đang chờ của họ (nếu có).

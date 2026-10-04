@@ -67,7 +67,7 @@ Cùng migration bổ sung ID Organizer cũ/mới cho history
 Theo quyết định người dùng ngày 01/10/2026, quản trị active/có AdminUsers được TransferOrganizer
 khi Organizer cũ inactive và meeting còn Approved. Người nhận active/có MeetingCreator, khác
 người cũ/current approver. History lưu Organizer cũ/mới và actor/time; trạng thái, approval và
-notification/email giữ nguyên. FE/Tester nhận body organizerId, MSG89/MSG90/MSG91 cùng lỗi shape,
+notification/email giữ nguyên. FE/Tester nhận body organizerId, MSG89/MSG135/MSG91 cùng lỗi shape,
 quyền và persistence theo [API contract](05-quan-ly-cuoc-hop.md). Organizer mới dùng Publish bình thường.
 Response transfer chỉ có `code`, `message`, `meetingId`, `status`, `organizerId` và history của
 thao tác vừa tạo; không trả nội dung meeting cho người có quyền recovery. FE tích hợp type/API

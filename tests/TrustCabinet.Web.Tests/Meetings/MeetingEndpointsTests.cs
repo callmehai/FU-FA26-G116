@@ -284,7 +284,7 @@ public sealed class MeetingEndpointsTests : IDisposable
             new { action = "TransferOrganizer", organizerId = replacement.Id });
         using var invalidBody = await JsonOf(invalid);
         Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
-        Assert.Equal("MSG90", invalidBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG135", invalidBody.RootElement.GetProperty("code").GetString());
 
         _factory.Meetings.InactiveUserIds.Remove(replacement.Id);
         _factory.Meetings.NextSaveThrows = new TimeoutException("Database unavailable");
@@ -443,7 +443,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var success = organizerHasCapability && !approverEligible;
         Assert.Equal(!organizerHasCapability ? HttpStatusCode.Forbidden
             : approverEligible ? HttpStatusCode.Conflict : HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(!organizerHasCapability ? "MSG85" : approverEligible ? "MSG64" : "MSG79",
+        Assert.Equal(!organizerHasCapability ? "MSG85" : approverEligible ? "MSG134" : "MSG79",
             body.RootElement.GetProperty("code").GetString());
         Assert.Equal(success ? MeetingStatus.Draft : MeetingStatus.WaitingApproval, meeting.Status);
         Assert.Equal(success ? null : (Guid?)approverId, meeting.AssignedApproverId);
@@ -520,8 +520,8 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Approve", MeetingStatus.Rejected, "MSG63")]
-    [InlineData("ReturnToDraft", MeetingStatus.Draft, "MSG64")]
+    [InlineData("Approve", MeetingStatus.Rejected, "MSG133")]
+    [InlineData("ReturnToDraft", MeetingStatus.Draft, "MSG134")]
     [InlineData("Publish", MeetingStatus.Draft, "MSG46")]
     public async Task Post_transition_returns_action_specific_conflict_codes(
         string action, MeetingStatus status, string expectedCode)
@@ -721,9 +721,9 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var historyBody = await JsonOf(history);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, readiness.StatusCode);
-        Assert.Equal("MSG60", readinessBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG130", readinessBody.RootElement.GetProperty("code").GetString());
         Assert.Equal(HttpStatusCode.ServiceUnavailable, history.StatusCode);
-        Assert.Equal("MSG62", historyBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG132", historyBody.RootElement.GetProperty("code").GetString());
     }
 
     [Fact]
@@ -1277,7 +1277,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("MSG61", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG131", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(
             "Không thể tải danh sách người duyệt. Vui lòng thử lại.",
             body.RootElement.GetProperty("message").GetString());
@@ -1293,7 +1293,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("MSG61", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG131", body.RootElement.GetProperty("code").GetString());
         Assert.Empty(_factory.Meetings.EligibleApprovers);
     }
 
@@ -1307,7 +1307,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("MSG61", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG131", body.RootElement.GetProperty("code").GetString());
         Assert.Empty(_factory.Meetings.EligibleApprovers);
     }
 
