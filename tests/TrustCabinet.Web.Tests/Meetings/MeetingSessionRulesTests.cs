@@ -18,8 +18,6 @@ public sealed class MeetingSessionRulesTests
         {
             Id = meetingId,
             Title = "Parent schedule differs",
-            StartsAt = PlannedStart.AddDays(10),
-            EndsAt = PlannedStart.AddDays(11),
         };
 
         Assert.True(MeetingSessionRules.IsValidPlanned(session, meetingId));

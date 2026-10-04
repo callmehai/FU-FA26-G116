@@ -6,7 +6,7 @@ Backend cung cấp readiness, transitions, history và notification/email jobs t
 [API contract](05-quan-ly-cuoc-hop.md). Frontend tích hợp type/API wrapper và UI ở task riêng;
 BA đối chiếu tài liệu sau FE integration theo workflow của nhóm.
 
-POST/PUT chỉ cập nhật bảy field thông tin. Form frontend hiện tại vẫn gửi `assignedApproverId`,
+POST/PUT chỉ cập nhật năm field thông tin cấp Meeting. Form frontend hiện tại vẫn gửi `assignedApproverId`,
 nhưng backend bỏ qua field này; FE cần bỏ dropdown/request field cũ và chọn approver qua
 `SubmitForApproval`. Organizer được sửa ở `Draft` hoặc `Rejected`; gửi duyệt lại trực tiếp từ
 Rejected, không bắt buộc `ReturnToDraft`. Readiness chỉ kiểm tra thông tin cấp meeting;
@@ -22,7 +22,7 @@ Producer SCRUM-15 đọc meeting Published cùng participants, render và lưu n
   participant row riêng hợp lệ. Email chọn participant có user active theo producer SCRUM-15,
   không lọc `Response` và không tự thêm `DelegatedToUserId`.
 - `DeduplicationKey` là `meeting:{meetingId}:published:{userId}`.
-- Jobs lưu `ToAddress`, `Subject`, `Body`, `CalendarAttachment`; worker gửi nội dung đã lưu.
+- Jobs Publish lưu `ToAddress`, `Subject`, `Body`; `CalendarAttachment` là null vì lịch thuộc Session.
   Bốn cột email không dùng `OriginHistoryId`, `RecipientUserId`, `MessageType`, `PayloadSnapshot`
   được bỏ bằng migration mới. Thay đổi dữ liệu sau commit không sửa nội dung job đã lưu.
 - Khi bật SMTP, job mới có `Queued`, `SentAt = null`; Publish không xác nhận email đã được giao.

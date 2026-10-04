@@ -28,7 +28,6 @@ public sealed class MeetingWorkflowServiceTests
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.InPerson,
             Location = "Phòng A",
-            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
             CreatedById = _organizerId,
             AssignedApproverId = status == MeetingStatus.Draft ? null : _approverId,
         };

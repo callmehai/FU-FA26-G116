@@ -63,12 +63,12 @@ public static partial class MeetingListQueryParser
 
         var sortBy = rawSortBy switch
         {
-            null or "startsAt" => MeetingSortBy.StartsAt,
+            null => MeetingSortBy.CreatedAt,
             "title" => MeetingSortBy.Title,
             "createdAt" => MeetingSortBy.CreatedAt,
-            _ => MeetingSortBy.StartsAt,
+            _ => MeetingSortBy.CreatedAt,
         };
-        if (rawSortBy is not null && rawSortBy is not ("title" or "startsAt" or "createdAt"))
+        if (rawSortBy is not null && rawSortBy is not ("title" or "createdAt"))
         {
             fieldErrors["sortBy"] = "Trường sắp xếp không hợp lệ.";
         }

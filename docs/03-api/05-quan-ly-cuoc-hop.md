@@ -75,10 +75,10 @@ lần. Tất cả bộ lọc được kết hợp bằng AND (BR-30/BR-31).
 | `status` | Tên enum PascalCase trong chín `MeetingStatus` |
 | `sensitivity` | `Normal`, `Internal`, `Confidential` hoặc `Secret` |
 | `q` | Trim; tìm chuỗi con của `title` không phân biệt hoa/thường. `%`, `_`, `\` là ký tự thường, không phải wildcard |
-| `from`, `to` | ISO 8601 có `Z` hoặc offset; giây tùy chọn, ví dụ `2026-10-01T09:00+07:00`; chuẩn hóa UTC và lọc theo lịch dự kiến của Meeting Sessions không bị hủy, gồm cả hai đầu; có thể chỉ gửi một đầu. Meeting không có Meeting Session phù hợp không khớp Time Range (BR-30) |
+| `from`, `to` | ISO 8601 có `Z` hoặc offset; giây tùy chọn, ví dụ `2026-10-01T09:00+07:00`; chuẩn hóa UTC và lọc bằng `EXISTS` trên Meeting Session không bị hủy. Hai đầu dùng `PlannedEndsAt >= from && PlannedStartsAt <= to`; chỉ `from` dùng `PlannedEndsAt >= from`; chỉ `to` dùng `PlannedStartsAt <= to`. Meeting không có session phù hợp không khớp Time Range (BR-30) |
 | `page`, `pageSize` | Mặc định `1`, `20`; `page` từ `1` đến `2.147.483.647`, `pageSize` từ `1` đến `100` |
-| `sortBy` | `title`, `createdAt` |
-| `sortDir` | `asc`, `desc` |
+| `sortBy` | `title`, `createdAt`; mặc định `createdAt` |
+| `sortDir` | `asc`, `desc`; mặc định `asc` với title, `desc` với createdAt |
 
 Khi nhiều dòng có cùng giá trị sort, xếp tiếp theo `id asc`. Ví dụ:
 `GET /api/meetings?status=Published&sensitivity=Internal&q=giao&from=2026-10-01T00%3A00%3A00Z&page=2&pageSize=20&sortBy=createdAt&sortDir=desc`.
@@ -88,7 +88,8 @@ trang chi tiết đều giữ nguyên bộ lọc và trang đang xem.
 
 Khi gửi timezone có dấu `+` trong query, mã hóa dấu này thành `%2B`, ví dụ
 `from=2026-10-01T09%3A00%2B07%3A00`. Phần giây có thể bỏ qua; nếu có giây, phần thập phân
-tối đa bảy chữ số. Timestamp thiếu timezone trả `400 MSG32`.
+tối đa bảy chữ số. Timestamp thiếu timezone hoặc `sortBy=startsAt` trả `400 MSG32`; backend không
+giữ alias lịch cấp Meeting.
 
 `200 OK` trả:
 
@@ -113,8 +114,8 @@ tối đa bảy chữ số. Timestamp thiếu timezone trả `400 MSG32`.
 Không có kết quả hoặc trang vượt quá trang cuối, kể cả khi offset lớn hơn giới hạn `int`, vẫn trả
 `200` với `items: []` (BR-12). Khi không có
 kết quả, `totalCount` và `totalPages` đều bằng `0`. Query sai trả `400` với `code` là
-`MSG32`, `message` là `Tiêu chí danh sách cuộc họp không hợp lệ.` theo catalogue; backend hiện trả
-`Tham số truy vấn không hợp lệ.` nên cần sửa code để khớp catalogue. `errors` liệt kê theo tên tham số.
+`MSG32`, `message` là `Tiêu chí danh sách cuộc họp không hợp lệ.` theo catalogue. `errors` liệt kê
+theo tên tham số.
 Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài
 giới hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `500` với
 `code: MSG38` và thông điệp
@@ -245,8 +246,9 @@ không tự thêm người được ủy quyền chỉ từ `DelegatedToUserId`.
 hợp lệ để nhận notification. Email dùng producer SCRUM-15: gọi
 `QueueForPublishedMeetingAsync(meetingId)` sau khi transaction công bố đã commit; producer đọc
 meeting đã Published và chọn các participant có user active, không lọc `Response`.
-Producer lưu `ToAddress`, `Subject`, `Body` và `CalendarAttachment` khi tạo job; thay đổi dữ liệu
-sau commit không sửa nội dung job đã lưu. Khi SMTP được bật, job mới có trạng thái `Queued`;
+Producer lưu `ToAddress`, `Subject` và `Body` khi tạo job; invitation Publish mới đặt
+`CalendarAttachment = null` vì lịch thuộc Meeting Session. Thay đổi dữ liệu sau commit không sửa nội
+dung job đã lưu. Khi SMTP được bật, job mới có trạng thái `Queued`;
 SMTP tắt thì không tạo job mới. HTTP 200 chỉ xác nhận công bố thành công, không xác nhận email đã
 được gửi. Nếu producer chưa khởi tạo được job, API vẫn trả `200 MSG45`, meeting và publication
 history vẫn Published; backend ghi log và worker tự đối soát meeting Published chưa có job để thử
@@ -292,7 +294,7 @@ Development seeder bổ sung một meeting `Draft` có sẵn agenda và ba parti
 
 Đăng nhập Organizer, gọi readiness (ban đầu `ready: true`), submit với ID approver, đăng nhập approver
 để Approve/Reject, rồi dùng Organizer gửi lại trực tiếp nếu Rejected hoặc tùy chọn ReturnToDraft.
-Seeder không tự thêm Meeting Session; việc không có phiên không chặn Publish theo BR-56.
+Seeder tạo lịch demo trong Meeting Session; việc không có phiên vẫn không chặn Publish theo BR-56.
 Khi bật SMTP, Publish thành công sẽ tạo ba invitation jobs
 `Queued`, không xác nhận email đã gửi. Có thể kiểm tra history/notification bằng API; participant khác
 Secretary đọc được rejection reason theo ngoại lệ F08; Chair và Member chỉ thấy meeting từ Published.
@@ -318,8 +320,6 @@ Readiness áp dụng rule hiện tại trên dữ liệu đã persist; validator
 | Entity.field | Điều kiện khi submit | Schema/rule |
 |---|---|---|
 | `Meeting.Title` | Bắt buộc sau trim, 1–300 ký tự | `required`, EF `IsRequired`, max 300 |
-| `Meeting.StartsAt` | Bắt buộc và hợp lệ | `DateTimeOffset` non-null; request tạo/sửa phải có ISO 8601 với zone |
-| `Meeting.EndsAt` | Tùy chọn; nếu có phải sau `StartsAt` | Nullable theo entity/BR-25 |
 | `Meeting.Mode`, `Meeting.Sensitivity` | Phải là enum đã định nghĩa | Non-null, lưu chuỗi |
 | `Meeting.Location` | Không bắt buộc; tối đa 300 ký tự | Không thêm yêu cầu theo mode |
 | `Meeting.Description` | Không bắt buộc; tối đa 4.000 ký tự | Chuỗi optional về nghiệp vụ |
@@ -375,7 +375,8 @@ commit. SMTP `Enabled=false` không tạo job mới; các job cũ vẫn được
 lỗi lưu publication trả `503 MSG47` và rollback toàn bộ transaction. Lỗi khởi tạo email sau commit
 không rollback publication; worker đối soát và thử lại. Bốn cột email không dùng `OriginHistoryId`,
 `RecipientUserId`, `MessageType`, `PayloadSnapshot` đã được bỏ bằng migration mới; key, nội dung
-thư/.ics, `MeetingId` và trạng thái delivery vẫn giữ. `Notification.OriginHistoryId` không thay đổi.
+thư, `MeetingId` và trạng thái delivery vẫn giữ. Invitation Publish mới không tạo `.ics`;
+`Notification.OriginHistoryId` không thay đổi.
 Database notification rows được tạo ở đây; realtime push theo SCRUM-14 là phần tích hợp riêng.
 Recipient filter của notification đã chốt theo BR-54 và được gom thành shared policy để SCRUM-20 dùng lại. Writer
 participant thuộc story tương ứng phải khóa meeting cha trong cùng transaction trước khi ghi thay đổi;
@@ -384,7 +385,9 @@ Update sau commit không đổi rows đã persist.
 
 Validation agenda thuộc SCRUM-25/BA; SCRUM-19 không dùng agenda để chặn gửi duyệt.
 Model/migration Meeting Session đã có để chuẩn bị cho UC-26–30; API tạo/sửa/hủy/bắt đầu/kết thúc
-phiên vẫn thuộc phần quản lý phiên họp. Migration không tự sinh lịch cho dữ liệu cũ và Publish không
+phiên vẫn thuộc phần quản lý phiên họp. Migration SCRUM-70 chỉ backfill một session từ lịch legacy
+khi Meeting chưa có session nào, dùng end fallback `start + 1 giờ`, rồi bỏ `meetings.starts_at`/
+`meetings.ends_at` và index liên quan. Session có sẵn luôn là nguồn lịch chính thức. Publish không
 phụ thuộc vào số lượng phiên theo BR-56.
 
 ## Validation baseline
@@ -397,9 +400,8 @@ phụ thuộc vào số lượng phiên theo BR-56.
 | `location` | Tùy chọn; trim; tối đa 300 ký tự |
 | `description` | Tùy chọn; tối đa 4.000 ký tự; giữ xuống dòng |
 
-Thời gian được chuyển UTC trước khi lưu và trả UTC ở response. Khi tích hợp, FE có thể hiển thị/nhập
-giờ local của thiết bị. Không kiểm tra giờ quá khứ, trùng lịch hoặc trùng tên vì yêu cầu hiện tại chưa quy định các luật
-này.
+UC-15/16 không nhận lịch dự kiến. BR-62 (`PlannedEndsAt > PlannedStartsAt`) được áp dụng ở
+Meeting Session. Không kiểm tra trùng tên vì yêu cầu hiện tại chưa quy định luật này.
 
 Lỗi validation trả `400`:
 
