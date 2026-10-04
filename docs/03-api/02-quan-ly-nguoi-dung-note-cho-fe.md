@@ -7,8 +7,8 @@ tập trung vào **những chỗ dễ làm sai mà lỗi lại trông như bug c
 Hợp đồng API đầy đủ: [02-quan-ly-nguoi-dung.md](02-quan-ly-nguoi-dung.md). File này không nhắc
 lại, chỉ nói phần FE.
 
-**UC-08 (đặt lại mật khẩu) đã có endpoint** — FE cần một nút trên màn hình này **và** một trang công
-khai `/reset-password`. Xem [mục 8](#8-uc-08--đặt-lại-mật-khẩu). UC-09 không có endpoint mới, xem
+**UC-08 (đặt lại mật khẩu) đã xong cả BE lẫn FE** — nút trên màn hình này và trang công khai
+`/reset-password`. Xem [mục 8](#8-uc-08--đặt-lại-mật-khẩu). UC-09 không có endpoint mới, xem
 [mục 9](#9-uc-09--gán--đổi-vai-trò).
 
 ---
@@ -202,7 +202,10 @@ Backend không bao giờ trả `passwordHash` hay `googleSubjectId` — đừng 
 
 ## 8. UC-08 — Đặt lại mật khẩu
 
-Backend xong. FE còn **hai việc**, cả hai đều chưa có ở `frontend/`:
+Backend và FE đều đã xong. FE nằm ở
+[`UsersPage.tsx`](../../frontend/src/features/access/UsersPage.tsx) (nút, mục 8.1) và
+[`ResetPasswordPage.tsx`](../../frontend/src/features/auth/ResetPasswordPage.tsx) (trang công khai,
+mục 8.2). Những chỗ FE làm khác gợi ý bên dưới được ghi trong khung **FE đã làm** ở cuối mỗi mục.
 
 ### 8.1 Nút "Đặt lại mật khẩu" trên màn hình quản lý người dùng
 
@@ -220,6 +223,15 @@ Backend xong. FE còn **hai việc**, cả hai đều chưa có ở `frontend/`:
 | `404` | *(không body)* | Refresh danh sách, như các endpoint khác |
 
 `409 MSG14` **khác** `409 MSG12` — khớp theo `code`, đừng gom theo status.
+
+> **FE đã làm:** nút là icon chìa khoá ở cột "Thao tác", **disable** (không ẩn) với tài khoản đã bị vô
+> hiệu hoá — tooltip nói phải kích hoạt lại trước, và cột giữ nguyên độ rộng. Lỗi `MSG15`, `MSG14` và
+> `404` hiện **trong hộp xác nhận** chứ không phải toast — đúng quy ước của `ConfirmDialog` (hộp thoại
+> che toast); `MSG15` giữ nút "Gửi liên kết" để thử lại ngay. `MSG14` đọc lại tài khoản
+> (`GET /api/users/{id}`), cập nhật dòng đó và khoá nút xác nhận. Tài khoản chỉ có Google
+> (`hasPassword: false`) vẫn gửi được, hộp xác nhận nói thêm là người đó sẽ có thêm cách đăng nhập
+> bằng mật khẩu. Quản trị viên gửi cho chính mình cũng được (backend cho phép), hộp xác nhận cảnh báo
+> là mọi phiên của họ sẽ kết thúc khi dùng liên kết.
 
 ### 8.2 Trang công khai `/reset-password`
 
@@ -250,7 +262,7 @@ POST /api/auth/password-reset
 
 Hai mã `400` khác nhau hoàn toàn về cách xử lý — khớp theo `code`.
 
-- Không có fragment `token` thì hiện luôn trạng thái `MSG93`, khỏi gọi API.
+- Không có fragment `token` thì FE tự hiện `MSG129` ("bấm lại liên kết trong email"), khỏi gọi API.
 - Đặt lại thành công sẽ **huỷ mọi refresh token** của người đó. Nếu chính trình duyệt này đang đăng
   nhập tài khoản đó, nó vẫn chạy tới khi access token hết hạn (tối đa 15 phút), rồi lần refresh tiếp
   theo ra `401 MSG01` — luồng đăng nhập lại như bình thường.
@@ -258,6 +270,19 @@ Hai mã `400` khác nhau hoàn toàn về cách xử lý — khớp theo `code`.
   vai trò sau đó, hoặc bấm gửi lại **thành công**. Gửi lại mà ra `503 MSG15` thì liên kết cũ vẫn
   dùng được — toast MSG15 không cần nói gì về liên kết cũ.
 - Gọi qua `src/api/` (`api.post`), thêm type trong `src/types/` — như mọi endpoint khác.
+
+> **FE đã làm:** trang nằm ngoài `RequireAuth` và `AppShell`, dùng khung của trang đăng nhập. Token
+> đọc từ fragment rồi xoá khỏi thanh địa chỉ (`navigate(..., { replace: true })`); dán một liên kết mới
+> vào **cùng tab** (chỉ đổi fragment, không tải lại trang) cũng nhận token mới. FE kiểm ≥ 12 ký tự và
+> "nhập lại khớp" trước khi gửi. `MSG92` → toast thông điệp của backend rồi chuyển tới `/login`;
+> nếu trình duyệt này đang giữ một phiên đăng nhập thì đăng xuất phiên đó trước, không thì `/login`
+> sẽ đưa thẳng vào ứng dụng; đăng xuất không tới được server thì vẫn báo `MSG92`, kèm toast lỗi `MSG06`
+> (phiên đó còn nguyên). `MSG93` → ẩn form, hiện `message` của backend, hướng dẫn liên hệ quản trị
+> viên và nút về trang đăng nhập (focus vào nút). **Không có token → `MSG129`** (mã FE, không gọi API),
+> khung vàng "hãy bấm lại liên kết trong email", không phải câu "hết hạn" của `MSG93`: token chỉ giữ
+> trong bộ nhớ, giống access token, nên tải lại trang hoặc khôi phục thẻ sẽ rơi vào trường hợp này
+> trong khi liên kết vẫn còn dùng được. `MSG94` → lỗi dưới ô mật khẩu mới, giữ nguyên form. Lỗi khác (5xx, mất mạng) → alert trên
+> form, giữ nguyên những gì đã nhập.
 
 ---
 

@@ -25,13 +25,16 @@ const MeetingDetailPage = lazy(() =>
 )
 const UsersPage = lazy(() => import('../features/access/UsersPage').then((m) => ({ default: m.UsersPage })))
 const RolesPage = lazy(() => import('../features/access/RolesPage').then((m) => ({ default: m.RolesPage })))
+const ResetPasswordPage = lazy(() =>
+  import('../features/auth/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })),
+)
 const CalendarPage = lazy(() =>
   import('../features/calendar/CalendarPage').then((m) => ({ default: m.CalendarPage })),
 )
 
 /**
- * Route map: a public login, then every screen behind a session gate, split into two workspaces —
- * management under /mgmt and the calendar under /calendar.
+ * Route map: a public login and password reset, then every screen behind a session gate, split
+ * into two workspaces — management under /mgmt and the calendar under /calendar.
  *
  * Capability-gated routes render the same 404 as an unknown URL, so an admin-only screen never
  * reveals its existence to someone who lacks the capability. None of this is security: the backend
@@ -42,6 +45,8 @@ export function App() {
     <Suspense fallback={<div className="route-fallback">Đang tải…</div>}>
       <Routes>
         <Route path={routes.login} element={<LoginPage />} />
+        {/* Public and outside the session gate: whoever opens the emailed link has no session. */}
+        <Route path={routes.resetPassword} element={<ResetPasswordPage />} />
 
         {/* Bare roots land on the management home. */}
         <Route path="/" element={<Navigate to={routes.meetings} replace />} />

@@ -501,9 +501,8 @@ vào bằng chứng. Đã đánh dấu `ponytail:` trong code.
 
 ## Còn nợ
 
-- ~~UC-08 — đặt lại mật khẩu~~ — **đã làm**, xem [mục UC-08](#uc-08--post-apiusersidpassword-reset).
-  Còn thiếu ở FE: nút trên màn hình quản lý người dùng và trang `/reset-password` — xem
-  [note cho FE](02-quan-ly-nguoi-dung-note-cho-fe.md#8-uc-08--đặt-lại-mật-khẩu).
+- ~~UC-08 — đặt lại mật khẩu~~ — **đã làm** cả BE lẫn FE, xem [mục UC-08](#uc-08--post-apiusersidpassword-reset)
+  và [note cho FE](02-quan-ly-nguoi-dung-note-cho-fe.md#8-uc-08--đặt-lại-mật-khẩu).
 - **Tài khoản chỉ đăng nhập bằng Google có được đặt lại mật khẩu không** — chờ BA xác nhận, xem
   điểm 8 ở đầu file.
 - **Access token còn sống tới 15 phút sau khi đặt lại mật khẩu.** Refresh token đã bị huỷ, nhưng JWT

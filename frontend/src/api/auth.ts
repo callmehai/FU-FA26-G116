@@ -1,4 +1,4 @@
-import type { SignInResponse } from '../types/auth'
+import type { PasswordResetRequest, PasswordResetResponse, SignInResponse } from '../types/auth'
 import type { CurrentUser } from '../types/user'
 import { api } from './client'
 
@@ -37,3 +37,12 @@ export const getCurrentUser = () => api.get<CurrentUser>('/api/auth/me')
  * even for an unknown or expired token.
  */
 export const signOut = () => api.post<void>('/api/auth/logout', undefined, { anonymous: true })
+
+/**
+ * UC-08, second half: sets a new password with the token from the emailed link — the token is the
+ * proof, so the call is anonymous. Success ends every session of that account and signs no one
+ * in. 400 MSG93 when the link is dead (the form cannot help); 400 MSG94 with `errors.newPassword`
+ * when only the password is wrong — the link still works.
+ */
+export const resetPassword = (body: PasswordResetRequest) =>
+  api.post<PasswordResetResponse>('/api/auth/password-reset', body, { anonymous: true })

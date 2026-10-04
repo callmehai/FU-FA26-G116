@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { listRoles } from '../../api/roles'
-import { changeUserStatus, getUser, listUsers } from '../../api/users'
+import { changeUserStatus, getUser, listUsers, requestPasswordReset } from '../../api/users'
 import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
@@ -24,6 +24,9 @@ const STATUS_FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: 'inactive', label: 'Đã vô hiệu hoá' },
 ]
 
+const DEACTIVATED_RESET_MESSAGE =
+  'Tài khoản này đã bị vô hiệu hoá nên không đặt lại mật khẩu được. Danh sách đã được cập nhật.'
+
 /** Lower-case with diacritics stripped, so "nguyen" finds "Nguyễn" and "dung" finds "Dũng". */
 function fold(text: string) {
   return text.normalize('NFD').replace(/\p{M}/gu, '').replace(/đ/gi, 'd').toLowerCase()
@@ -31,8 +34,9 @@ function fold(text: string) {
 
 /**
  * User management (SCRUM-13): list (UC-04), create (UC-05), edit (UC-06), deactivate and
- * reactivate (UC-07). Reaching this screen needs `AdminUsers`; the backend checks it again on every
- * request, so a 403 halfway through is handled as lost access rather than as an error.
+ * reactivate (UC-07), and emailing a password reset link (UC-08). Reaching this screen needs
+ * `AdminUsers`; the backend checks it again on every request, so a 403 halfway through is handled
+ * as lost access rather than as an error.
  */
 export function UsersPage() {
   const { user: me, reloadSession } = useAuth()
@@ -49,6 +53,7 @@ export function UsersPage() {
 
   const [formTarget, setFormTarget] = useState<UserFormTarget | null>(null)
   const [statusTarget, setStatusTarget] = useState<UserAccount | null>(null)
+  const [resetTarget, setResetTarget] = useState<UserAccount | null>(null)
 
   const load = useCallback(async () => {
     try {
@@ -164,6 +169,40 @@ export function UsersPage() {
       )
     }
   }
+
+  /**
+   * UC-08. Errors stay in the dialog, so the administrator can retry MSG15 from where they are.
+   * MSG14 means the list was stale — someone deactivated the account meanwhile — so re-read it;
+   * the dialog's blocker then keeps the confirm button disabled.
+   */
+  async function sendPasswordReset(target: UserAccount) {
+    try {
+      const response = await requestPasswordReset(target.id)
+      patch(response.user)
+      toast.show(response.message)
+    } catch (err) {
+      if (handleAccessLost(err)) return
+      if (isApiError(err, 404)) {
+        void load()
+        throw new Error('Tài khoản này không còn tồn tại. Danh sách đã được tải lại.')
+      }
+      if (!isApiError(err, 409, 'MSG14')) throw err
+
+      let fresh: UserAccount
+      try {
+        fresh = await getUser(target.id)
+      } catch (lookupErr) {
+        if (handleAccessLost(lookupErr)) return
+        throw err
+      }
+      patch(fresh)
+      if (fresh.isActive) throw err
+      throw new Error(DEACTIVATED_RESET_MESSAGE)
+    }
+  }
+
+  // The row as the list now has it: a reload or a MSG14 re-read may have changed it under the dialog.
+  const resetRow = resetTarget && users?.find((u) => u.id === resetTarget.id)
 
   const activeCount = users?.filter((u) => u.isActive).length ?? 0
   const roleFilterOptions: { value: RoleFilter; label: string }[] = [
@@ -298,6 +337,20 @@ export function UsersPage() {
                         >
                           <Icon name={u.isActive ? 'lock' : 'unlock'} size={16} />
                         </button>
+                        <button
+                          type="button"
+                          className="icon-button"
+                          onClick={() => setResetTarget(u)}
+                          disabled={!u.isActive}
+                          title={
+                            u.isActive
+                              ? 'Gửi liên kết đặt lại mật khẩu'
+                              : 'Tài khoản đã bị vô hiệu hoá — kích hoạt lại trước khi đặt lại mật khẩu'
+                          }
+                          aria-label={`Gửi liên kết đặt lại mật khẩu cho ${u.fullName}`}
+                        >
+                          <Icon name="key" size={16} />
+                        </button>
                       </span>
                     </td>
                   </tr>
@@ -346,6 +399,31 @@ export function UsersPage() {
             vai trò hiện có.
           </ConfirmDialog>
         ))}
+
+      {resetTarget && (
+        <ConfirmDialog
+          title="Đặt lại mật khẩu"
+          confirmLabel="Gửi liên kết"
+          pendingLabel="Đang gửi email…"
+          blocker={
+            resetRow === undefined
+              ? 'Tài khoản này không còn tồn tại.'
+              : resetRow?.isActive === false
+                ? DEACTIVATED_RESET_MESSAGE
+                : undefined
+          }
+          onConfirm={() => sendPasswordReset(resetTarget)}
+          onClose={() => setResetTarget(null)}
+        >
+          Gửi liên kết đặt lại mật khẩu tới <b>{resetTarget.email}</b>? Liên kết dùng được một lần trong 60 phút; liên
+          kết gửi trước đó (nếu có) sẽ hết hiệu lực. Mật khẩu hiện tại vẫn dùng được cho tới khi {resetTarget.fullName}{' '}
+          đặt mật khẩu mới.
+          {resetTarget.id === me?.id &&
+            ' Đây là tài khoản của bạn: khi đặt mật khẩu mới qua liên kết, mọi phiên đăng nhập của bạn sẽ kết thúc.'}
+          {!resetTarget.hasPassword &&
+            ' Tài khoản này hiện chỉ đăng nhập bằng Google; sau khi đặt, người này đăng nhập được thêm bằng mật khẩu.'}
+        </ConfirmDialog>
+      )}
     </>
   )
 }

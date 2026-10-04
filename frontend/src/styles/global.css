@@ -164,6 +164,20 @@ code {
 .input-group input { flex: 1; min-width: 0; }
 .input-group .btn { margin-left: 4px; }
 
+/* A password input with its show/hide button drawn inside the box, on the right. Positioned with
+   top/right, not transform — the press animation already owns transform. */
+.input-reveal { position: relative; display: flex; }
+.input-reveal input { flex: 1; min-width: 0; padding-right: 40px; }
+.input-reveal .icon-button {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 32px;
+  height: calc(var(--control-height) - 4px);
+  color: var(--muted-ink);
+}
+.input-reveal .icon-button:hover:not(:disabled) { color: var(--ink); }
+
 input, textarea {
   height: var(--control-height);
   padding: 4px 12px;
@@ -302,7 +316,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   box-shadow: var(--shadow-sm);
 }
 
-.login-head { display: flex; flex-direction: column; gap: 6px; padding-top: 8px; text-align: center; }
+.login-head { display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 8px; text-align: center; }
 .login-head h1 { margin-top: 8px; font-size: 24px; font-weight: 600; line-height: 32px; }
 .login-sub { margin: 0; color: var(--muted-ink); font-size: 14px; }
 .login-card form { display: flex; flex-direction: column; gap: 16px; }
