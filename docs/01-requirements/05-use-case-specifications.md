@@ -439,42 +439,103 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **Use Case ID**: UC-08
 - **Use Case Name**: Reset User Password
 - **Primary Actor**: System Admin
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the System Admin to initiate a password reset for an active user account by sending a secure password reset link to the user's registered email address.
+- **Secondary Actor**: User (the owner of the selected account), who completes the reset from the email
+- **Mô tả (Description)**: Allows the System Admin to send the owner of an eligible user account a secure, single-use password reset link by email. The account owner then opens the link and sets a new password without signing in. The current password keeps working until the new one is set.
 - **Điều kiện tiên quyết (Preconditions)**:
   - PRE-1: The System Admin is authenticated in the system.
   - PRE-2: The System Admin is authorized to reset user passwords.
-  - PRE-3: The selected user account exists and is active.
+  - PRE-3: The selected user account exists.
 - **Điều kiện sau (Postconditions)**:
-  - POST-1: A password reset request is created for the selected user.
-  - POST-2: A password reset email is sent to the user's registered email address.
-  - POST-3: The password reset request is recorded in the audit log.
+  - POST-1: A password reset link valid for 60 minutes is created for the selected user, and any link sent to that user earlier stops working (BR-20).
+  - POST-2: A password reset email containing the link is sent to the user's registered email address.
+  - POST-3: The password reset request is recorded in the audit log (BR-16).
+  - POST-4: Until the link is used, the user's current password and active sessions remain unchanged.
+  - POST-5: When the account owner completes the reset, the password is replaced, every active session of that account is ended, the link can no longer be used, and the reset is recorded in the audit log (BR-01, BR-16, BR-20).
 - **Sơ đồ liên quan (Related Diagrams)**:
   - Sequence Diagram: [UC08_ResetUserPassword.png](../06-sequencediagram/user-management/UC08_ResetUserPassword.png)
+  - Class Diagram: [feature-02b-password-reset-class-diagram.drawio.png](../07-classdiagram/feature-02b-password-reset-class-diagram.drawio.png)
 
 #### Luồng sự kiện chính (Main Flow – Reset User Password):
 1. The System Admin selects a user account and selects Reset Password.
-2. The system requests confirmation of the password reset.
+2. The system requests confirmation, showing the email address the link will be sent to.
 3. The System Admin confirms the password reset.
-4. The system creates a secure password reset request for the selected user (BR-20, BR-22).
-5. The system sends a password reset email to the user's registered email address.
-6. The system records the password reset request in the audit log (BR-16).
-7. The system displays MSG13 – "Password reset email sent successfully."
+4. The system verifies that the selected account is eligible for password reset: it is active and it signs in with a password (BR-22).
+5. The system creates a secure password reset request for the selected user (BR-20).
+6. The system sends a password reset email containing the link to the user's registered email address.
+7. The system makes the new link usable; any link sent to the user earlier stops working (BR-20).
+8. The system records the password reset request in the audit log (BR-16).
+9. The system displays MSG13 – "Password reset email sent successfully."
+
+#### Luồng hoàn tất (Main Flow – Complete Password Reset):
+The account owner continues the use case from the email. No sign-in is required: the link is the proof of identity.
+
+10. The user opens the password reset link from the email.
+11. The system displays the new password form.
+12. The user enters the new password and its confirmation and submits them.
+13. The system verifies that the link is valid: it exists, it has not expired, it has not been used, and no newer link has replaced it (BR-20).
+14. The system validates the new password: it must follow the same password rule as account creation (UC-05) and match its confirmation.
+15. The system marks the link as used, so it cannot be used again (BR-20).
+16. The system verifies that the account is still eligible: it is active and it signs in with a password (BR-03, BR-22).
+17. The system replaces the password with the new one (BR-01) and ends every active session of the account (BR-20).
+18. The system records the completed password reset in the audit log, with the account owner as the actor (BR-16).
+19. The system displays MSG92 – "Password reset successfully. Please sign in with your new password." and takes the user to the sign-in page. The user is not signed in automatically.
 
 #### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
+
+- **AF-1: The Browser Is Already Signed In**
+  1. At Step 19, the browser used to complete the reset still has a signed-in session (of this or another account).
+  2. The system signs that session out before showing the sign-in page.
+  3. If the sign-out succeeds, the flow resumes at Step 19.
+  4. If the sign-out cannot be completed, the system still displays MSG92 – "Password reset successfully. Please sign in with your new password." and also displays MSG06 – "Unable to sign out. Please try again." The browser's session remains signed in, and the new password is already in effect.
+  5. The use case ends.
 
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
 
 - **EX-1: User Account Is Not Eligible for Password Reset**
-  1. Before completing Step 4 of the Main Flow, the system determines that the selected account cannot use the password reset function.
-  2. The system displays MSG14 – "Password reset is not available for this account."
-  3. The use case ends unsuccessfully.
+  1. At Step 4 of the Main Flow, the system determines that the selected account is deactivated, or that it has no password because it only signs in with Google (BR-22). The User Accounts list already makes Reset Password unavailable for such accounts, so this happens when the list is out of date.
+  2. No password reset link is created and no email is sent.
+  3. The system displays MSG14 – "Password reset is not available for this account." When the system can tell which reason applies, it updates the account in the list and states the reason instead (the account is deactivated, or it signs in with Google only).
+  4. The use case ends.
 
 - **EX-2: Password Reset Email Cannot Be Sent**
-  1. At Step 5 of the Main Flow, the system cannot send the password reset email.
-  2. The system displays MSG15 – "Unable to send the password reset email. Please try again."
-  3. The use case ends unsuccessfully.
+  1. At Step 6 of the Main Flow, the system cannot send the password reset email.
+  2. The new link is never made usable. A link sent to the user earlier, if any, keeps working.
+  3. The system displays MSG15 – "Unable to send the password reset email. Please try again."
+  4. The use case ends.
+
+- **EX-3: User Account No Longer Exists**
+  1. At Step 4 of the Main Flow, the system cannot find the selected account.
+  2. No password reset link is created and no email is sent.
+  3. The system informs the System Admin that the account no longer exists and refreshes the User Accounts list. This situation has no message code.
+  4. The use case ends.
+
+- **EX-4: Password Reset Link Is Not Valid**
+  1. At Step 13, 15 or 16, the system determines that the link is unknown, has expired, has already been used (including by a simultaneous submission), has been replaced by a newer link, or belongs to an account that is now deactivated or has no password (BR-20, BR-22).
+  2. The password is not changed. A link that reached Step 15 is used up.
+  3. The system hides the new password form and displays MSG93 – "The password reset link is invalid or has expired. Please contact an administrator." It does not say which of these reasons applies.
+  4. The use case ends.
+
+- **EX-5: New Password Is Invalid**
+  1. At Step 14, the new password does not satisfy the password rule, or the confirmation does not match it.
+  2. The password is not changed and the link remains usable.
+  3. The system shows the reason next to the field concerned. A password that breaks the password rule is MSG94 – "Invalid new password.", shown through its field reason (at least 12 characters); a confirmation that does not match is reported before the link is checked.
+  4. The user corrects the new password and resubmits it.
+  5. The flow resumes at Step 13.
+
+- **EX-6: Password Reset Page Opened Without a Reset Code**
+  1. At Step 11, the page has no reset code. This happens when the link is incomplete, or when the page is reloaded or restored after the code was removed from the address bar.
+  2. The system does not check the link and does not say that it has expired, because the link itself may still be usable.
+  3. The system displays MSG129 – "No password reset code was found. Please open the link in the email again." with a hint that the link still works if it has not been used, is less than 60 minutes old and has not been replaced by a newer link.
+  4. The use case ends. Opening the link from the email again starts a new execution at Step 10.
+
+#### Quy tắc nghiệp vụ liên quan (Business Rules):
+- **BR-01**: The new password is stored only as a secure salted hash.
+- **BR-03**: A deactivated account cannot complete a password reset.
+- **BR-10, BR-21**: The reset link and the existing password are never displayed in User Management.
+- **BR-16**: Both the reset request (actor: System Admin) and the completed reset (actor: account owner) are recorded in the audit log.
+- **BR-20**: How the link is limited (validity, single use, one usable link per account, revocation, ending sessions) is detailed under *Quy tắc TrustCabinet đã được BA xác nhận — UC-08* in [06-business-rules.md](06-business-rules.md).
+- **BR-22**: Eligibility means the account is active and signs in with a password. See the same section.
+- **Password rule**: the new password follows the same rule as account creation (UC-05), recorded in the same section.
 
 ---
 
