@@ -43,6 +43,36 @@ dù chưa được gán role hoặc chưa có capability. Capability chỉ quy�
 dùng sau khi đăng nhập. Quy tắc này thay thế cách áp dụng BR-04 nguyên văn Report 3 ở trên; không
 yêu cầu thêm quyền riêng để đăng nhập.
 
+**Quy tắc TrustCabinet đã được BA xác nhận — UC-08 (đặt lại mật khẩu):** BA chốt trong SCRUM-13
+(BA Final Review). Các quy tắc dưới đây cụ thể hoá BR-20 và BR-22 cho TrustCabinet; câu chữ Report 3
+trong bảng giữ nguyên.
+
+- **BR-20 — liên kết đặt lại mật khẩu:**
+  - hiệu lực **60 phút** kể từ khi email được gửi;
+  - **dùng một lần**: liên kết bị tiêu ngay khi được gửi kèm một mật khẩu mới hợp lệ, kể cả khi sau đó
+    hệ thống phát hiện tài khoản không còn đủ điều kiện; mật khẩu mới sai quy tắc thì liên kết **chưa**
+    bị tiêu, người dùng sửa rồi gửi lại;
+  - mỗi tài khoản chỉ có **một liên kết dùng được** — liên kết của email gửi thành công gần nhất;
+    gửi liên kết mới thì liên kết cũ hết hiệu lực;
+  - gửi email thất bại thì liên kết mới **không** dùng được, còn liên kết cũ (nếu có) **vẫn** dùng
+    được;
+  - liên kết đang chờ bị thu hồi khi tài khoản bị **vô hiệu hoá** (UC-07), **đổi email** (UC-06) hoặc
+    **đổi vai trò hệ thống** (UC-09); đổi họ tên thì không;
+  - yêu cầu đặt lại mật khẩu **không** đổi gì trên tài khoản: mật khẩu hiện tại vẫn dùng được và
+    không ai bị đăng xuất cho tới khi liên kết được dùng;
+  - đặt mật khẩu mới thành công thì **mọi phiên đăng nhập** của tài khoản bị kết thúc, và hệ thống
+    **không** tự đăng nhập người dùng.
+- **BR-22 — tài khoản đủ điều kiện:** tài khoản đang **hoạt động** và **đăng nhập bằng mật khẩu**. Tài
+  khoản chỉ đăng nhập bằng Google (chưa có mật khẩu) **không** đủ điều kiện: UC-08 đặt lại mật khẩu đã
+  có, không phải cách thêm phương thức đăng nhập bằng mật khẩu. Hệ thống kiểm điều kiện này cả khi gửi
+  liên kết lẫn khi liên kết được dùng; giao diện có khoá nút thì hệ thống vẫn kiểm lại.
+- **Mật khẩu mới** theo cùng quy tắc với khi tạo tài khoản (UC-05): tối thiểu 12 ký tự.
+- **Audit (BR-16):** ghi hai sự kiện — yêu cầu đặt lại (người thực hiện là quản trị viên; gửi email
+  thất bại thì không ghi) và đặt lại thành công (người thực hiện là chính chủ tài khoản).
+- Liên kết không hợp lệ vì bất kỳ lý do nào (không tồn tại, hết hạn, đã dùng, bị thay thế, tài khoản
+  bị vô hiệu hoá hoặc không có mật khẩu) đều nhận **cùng một thông báo** `MSG93`. Trang đặt lại mật
+  khẩu không ai cần đăng nhập, nên phân biệt các lý do chỉ giúp người dò liên kết.
+
 ## BR-24–BR-44 — Cuộc họp và vòng đời phê duyệt
 
 | BR-ID | Rule Statement (nguyên văn Report 3) | Applies To (Report 3) | Rationale | Enforced By |
