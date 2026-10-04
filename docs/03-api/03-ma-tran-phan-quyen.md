@@ -1,6 +1,6 @@
 # 03 · Ma trận vai trò – quyền
 
-Hiện thực **UC-09 và UC-10 (SCRUM-60)**: xem ma trận vai trò ↔ quyền, và sửa quyền của từng vai
+Hiện thực **UC-10 và UC-11 (SCRUM-60)**: xem ma trận vai trò ↔ quyền, và sửa quyền của từng vai
 trò mà không phải deploy lại.
 
 Sequence diagram chia bốn participant: `Role & Permission Management Page` →
@@ -28,8 +28,8 @@ cách đọc lại tài khoản người gọi từ database — không tin vào
 
 | Method | Path | Use case |
 |---|---|---|
-| `GET` | `/api/roles/capabilities` | UC-09 — xem ma trận |
-| `PUT` | `/api/roles/capabilities` | UC-10 — đặt quyền cho một vai trò |
+| `GET` | `/api/roles/capabilities` | UC-10 — xem ma trận |
+| `PUT` | `/api/roles/capabilities` | UC-11 — đặt quyền cho một vai trò |
 
 ### `GET /api/roles/capabilities`
 
@@ -176,7 +176,7 @@ SELECT pg_advisory_xact_lock(hashtext('admin-users-invariant'))
 ```
 
 gọi ở `RolePermissionService.UpdateAsync`, `UserService.UpdateAsync` và
-`UserService.ChangeStatusAsync`. Request `GET` (UC-09) không lấy khoá nên vẫn đọc bình thường; chỉ
+`UserService.ChangeStatusAsync`. Request `GET` (UC-10) không lấy khoá nên vẫn đọc bình thường; chỉ
 request ghi thứ hai phải đợi. Chi tiết và lý do chọn isolation `Read Committed` ở
 [ADR-0007](../05-decisions/0007-ma-tran-phan-quyen-sua-duoc-luc-chay.md).
 
@@ -230,13 +230,12 @@ endpoint API:
 
 | Tầng | Trả gì | Vì sao |
 |---|---|---|
-| Route FE (`/mgmt/roles`) | **404**, giống hệt URL không tồn tại | Màn hình bị hạn chế thì không được lộ ra là nó tồn tại — quy ước của `AGENTS.md`, dùng `RequireCapability` |
+| Route FE (`/mgmt/admin/roles`) | **404**, giống hệt URL không tồn tại | Màn hình bị hạn chế thì không được lộ ra là nó tồn tại — quy ước của `AGENTS.md`, dùng `RequireCapability` |
 | Endpoint API (`/api/roles/capabilities`) | **403** | Giống `/api/users` và `docs/03-api/01-xac-thuc.md`. FE cần phân biệt "hết quyền giữa chừng" với "gọi sai URL" để xử lý đúng |
 
-⚠️ **Phần `404` chưa được hiện thực và chưa có test**, vì màn hình FE chưa làm (xem
-[Còn nợ](#còn-nợ)). Người làm FE phải bọc route bằng `RequireCapability` như các màn hình quản trị
-khác; đừng nhìn các test đang assert `403` mà kết luận tiêu chí này đã xong — chúng kiểm tầng API,
-không phải tầng route.
+Route `/mgmt/admin/roles` hiện đã được bọc bằng `RequireCapability cap="AdminUsers"` trong FE;
+route ẩn quyền trả `404`. Đây là quy tắc riêng của route UI. API `/api/roles/capabilities` vẫn trả
+`403` khi người gọi đã đăng nhập nhưng thiếu quyền.
 
 ---
 
@@ -332,7 +331,7 @@ Bản vẽ có method này ở cả 4 tầng (`Controller`, `Service`, `Reposito
 `confirmResetToDefault()` ở `Page`). Nhưng:
 
 - Ticket không nhắc tới nó ở bất kỳ tiêu chí nghiệm thu nào,
-- Không có sequence diagram cho nó (chỉ có UC-09 và UC-10).
+- Không có sequence diagram cho nó (chỉ có UC-10 và UC-11).
 
 Đã thống nhất **không làm** trong sprint này.
 
@@ -348,9 +347,9 @@ Bản vẽ vẽ `Role` là `<<entity>>` với `roleId: UUID`, `roleName`, `descr
 > `name`, `description`, `isBuiltIn` — đúng `<<entity>> Role` của bản vẽ. BA không cần sửa gì ở
 > mục này.
 
-### 4. UC-10 có thêm nhánh "không đổi gì"
+### 4. UC-11 có thêm nhánh "không đổi gì"
 
-Bản vẽ UC-10 chỉ có hai nhánh: hợp lệ và không hợp lệ. Code có thêm một đường: request trùng khớp
+Bản vẽ UC-11 chỉ có hai nhánh: hợp lệ và không hợp lệ. Code có thêm một đường: request trùng khớp
 trạng thái hiện tại thì trả `MSG16` nhưng **không ghi audit log và không huỷ phiên của ai**.
 
 Không phải tối ưu vặt: ghi một dòng audit "đã đổi quyền" cho một lần không đổi gì sẽ làm bẩn đúng
@@ -375,7 +374,7 @@ Cả 8 tiêu chí nghiệm thu đã có code; phần FE nằm ở
 
 | Tiêu chí nghiệm thu | Trạng thái |
 |---|---|
-| Màn hình ma trận 4×4, bật/tắt từng ô | ✅ sửa nháp theo từng vai trò, lưu từng vai trò bằng một `PUT` |
+| Màn hình ma trận vai trò × capability, bật/tắt từng ô | ✅ danh sách vai trò và capability lấy từ API; sửa nháp theo từng vai trò, lưu từng vai trò bằng một `PUT` |
 | Route thiếu quyền trả `404` | ✅ `/mgmt/admin/roles` bọc `RequireCapability cap="AdminUsers"` |
 | Chỉ người có `admin_users` vào được | ✅ ở tầng API |
 | Chặn tự khoá, kiểm ở server | ✅ |

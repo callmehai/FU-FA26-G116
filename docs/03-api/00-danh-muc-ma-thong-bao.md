@@ -3,6 +3,10 @@
 Nguồn sự thật duy nhất cho mọi mã `code` mà API trả về hoặc FE tự hiển thị. Đặc tả use case,
 sequence diagram, code BE, code FE và test đều phải khớp với bảng này.
 
+Business Rule là hệ quy tắc riêng, không dùng mã `BR` thay mã `MSG`. Nội dung BR tập trung tại
+[danh mục Business Rules](../01-requirements/06-business-rules.md); UC dẫn chiếu BR và MSG tại
+các bước tương ứng, còn sequence thể hiện cùng BR ID và message của nhánh đó.
+
 ## Quy tắc
 
 1. **Một dải số chung cho cả dự án.** Không đánh lại từ `MSG01` cho mỗi use case hay mỗi sơ đồ —
@@ -23,7 +27,7 @@ sequence diagram, code BE, code FE và test đều phải khớp với bảng n�
 
 ## Mã tiếp theo
 
-**`MSG95`** — `MSG41`–`MSG59` và `MSG77` đã dành sẵn cho các Use Case cuộc họp và phiên họp (xem [bên dưới](#dành-sẵn-chưa-có-code)); `MSG78`–`MSG91` đã được workflow SCRUM-19 dùng (PR #53, chưa merge); đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94`.
+**`MSG129`** — `MSG41`–`MSG59` và `MSG77`–`MSG128` đã dành sẵn cho các Use Case cuộc họp, participant, guest, room, session list và agenda view (xem [bên dưới](#dành-sẵn-chưa-có-code)); `MSG78`–`MSG91` đã được workflow SCRUM-19 dùng (PR #53, chưa merge); đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94`.
 
 ## Danh mục
 
@@ -81,7 +85,7 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG17` | 400 | `PUT /api/roles/capabilities` | Cấu hình không hợp lệ — kèm `errors` (`roleId`, `capabilities`, `adminUsers`) | `Cấu hình phân quyền không hợp lệ.` | BE |
 | `MSG18` | 500 | `PUT /api/roles/capabilities` | Database từ chối ghi | `Không thể cập nhật phân quyền. Vui lòng thử lại.` | BE |
 
-### Quản lý vai trò — UC-15, UC-16, UC-13 theo sơ đồ vai trò (`/api/roles`)
+### Quản lý vai trò — UC-12, UC-13, UC-14 (`/api/roles`)
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
@@ -103,9 +107,9 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG29` | 201 | `POST /api/meetings` | Tạo cuộc họp nháp thành công | `Tạo cuộc họp thành công.` | BE |
 | `MSG30` | 200 | `PUT /api/meetings/{id}` | Cập nhật cuộc họp thành công | `Cập nhật cuộc họp thành công.` | BE |
 | `MSG31` | 400 | `POST /api/meetings`, `PUT /api/meetings/{id}` | Thông tin không hợp lệ — kèm `errors`; PUT với JSON sai cú pháp thì không có `errors` | `Thông tin cuộc họp không hợp lệ.` / `Nội dung JSON không hợp lệ.` | BE |
-| `MSG32` | 400 | `GET /api/meetings` | Tham số truy vấn danh sách không hợp lệ — kèm `errors` | `Tham số truy vấn không hợp lệ.` | BE |
+| `MSG32` | 400 | `GET /api/meetings` | Tiêu chí hiển thị danh sách cuộc họp không hợp lệ — kèm `errors` | `Tiêu chí danh sách cuộc họp không hợp lệ.` | BE |
 | `MSG33` | 409 | `PUT /api/meetings/{id}` | Cuộc họp không còn ở trạng thái sửa được | `Cuộc họp này không thể chỉnh sửa được nữa.` | BE |
-| `MSG34` | 415 | `PUT /api/meetings/{id}` | Content-Type không phải `application/json` | `Content-Type phải là application/json.` | BE |
+| `MSG34` | 415 | `PUT /api/meetings/{id}` | Lỗi kỹ thuật khi request không được gửi dưới dạng JSON — ngoài luồng nghiệp vụ UC-16 | `Content-Type phải là application/json.` | BE — phản hồi API kỹ thuật hiện hành |
 | `MSG35` | 500 | `POST /api/meetings` | Không lưu được khi tạo | `Không thể tạo cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG36` | 500 | `PUT /api/meetings/{id}` | Không lưu được khi sửa | `Không thể cập nhật cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG37` | 500 | `GET /api/meetings/{id}`, `PUT /api/meetings/{id}` | Không tải được chi tiết cuộc họp. Ở `GET` gồm cả lỗi khi kiểm tra tài khoản đang hoạt động; ở `PUT` chỉ khi bước kiểm tra trạng thái không đọc được cuộc họp | `Không thể tải thông tin cuộc họp. Vui lòng thử lại.` | BE |
@@ -118,7 +122,7 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
-| `MSG39` | 400 | `GET /api/notifications` | Tham số phân trang không hợp lệ — kèm `errors` | `Tham số truy vấn không hợp lệ.` | BE |
+| `MSG39` | 400 | `GET /api/notifications` | Không thể hiển thị phần danh sách thông báo được yêu cầu — kèm `errors` | `Trang thông báo được yêu cầu không khả dụng.` | BE |
 | `MSG40` | 500 | mọi endpoint `/api/notifications/*` | Lỗi database khi kiểm tra tài khoản đang hoạt động | `Không thể tải thông báo. Vui lòng thử lại.` | BE |
 
 ### Dành sẵn, chưa có code
@@ -147,7 +151,34 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MSG57` | UC-29 | *Another meeting session is already in progress. End it before starting another session.* |
 | `MSG58` | UC-29 | *This meeting session cannot be started.* |
 | `MSG59` | UC-30 | *This meeting session cannot be ended.* |
+| `MSG60` | UC-31 Create Agenda Item | *Agenda item created successfully.* |
+| `MSG61` | UC-32 Update Agenda Item | *Agenda item updated successfully.* |
+| `MSG62` | UC-33 Delete Agenda Item | *Agenda item deleted successfully.* |
+| `MSG63` | UC-34 Reorder Agenda Items | *Agenda order updated successfully.* |
+| `MSG64` | UC-35 Set Current Agenda Item | *Current agenda item updated successfully.* |
+| `MSG65` | UC-36 Complete Agenda Item | *Agenda item completed successfully.* |
+| `MSG66` | UC-31 / UC-32 | *Invalid agenda item information.* (Các lỗi trường: *Agenda item title is required.*, *Planned duration must be greater than 0.*, *One or more selected documents are not available to this meeting.*) |
+| `MSG67` | UC-31 / UC-32 / UC-33 / UC-34 | *The agenda for this meeting session can no longer be modified.* |
+| `MSG68` | UC-31 | *Unable to create the agenda item. Please try again.* |
+| `MSG69` | UC-32 | *Unable to update the agenda item. Please try again.* |
+| `MSG70` | UC-33 | *Unable to delete the agenda item. Please try again.* |
+| `MSG71` | UC-34 | *Unable to update the agenda order. Please try again.* |
+| `MSG72` | UC-35 | *Another agenda item is already in progress. Complete it before starting another agenda item.* |
+| `MSG73` | UC-35 | *This agenda item cannot be set as current.* |
+| `MSG74` | UC-36 | *This agenda item cannot be completed.* |
+| `MSG75` | UC-35 | *Unable to set the current agenda item. Please try again.* |
+| `MSG76` | UC-36 | *Unable to complete the agenda item. Please try again.* |
 | `MSG77` | UC-28 | *The last planned meeting session of a published meeting cannot be cancelled.* |
+| `MSG83` | UC-20 Từ chối cuộc họp | *Rejection reason is required.* |
+| `MSG84` | UC-20 Từ chối cuộc họp | *Rejection reason must not exceed 1000 characters.* |
+| `MSG90` | UC-21 Phát hành cuộc họp | *At least one valid planned Meeting Session is required before publication.* — **Ngừng dùng**; Report 3 source-of-truth xác định Meeting Sessions là tùy chọn. Không tái sử dụng mã. |
+| `MSG95`–`MSG109` | UC-37–UC-42 F08 | Mã tải roster, thêm participant, role, removal, response và readiness; xem đặc tả UC. |
+| `MSG110`–`MSG116` | UC-43–UC-44 Start/End Meeting | Mã thành công, điều kiện không hợp lệ và lỗi hệ thống; xem đặc tả UC. |
+| `MSG117`–`MSG126` | UC-45–UC-52 GOF09 Online Meeting Room | Mã trạng thái room, thiết bị, chia sẻ, presence, moderation, chat và xác minh Guest; xem đặc tả UC. |
+| `MSG127` | UC-53 View Meeting Sessions | *Unable to load meeting sessions. Please try again.* |
+| `MSG128` | UC-54 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |
+
+`MSG83`, `MSG84` và `MSG90` thuộc dải đã dành cho workflow SCRUM-19 và được gán cho các nhánh UC-20/UC-21 nêu trên.
 
 ## Bảng đổi mã cũ → mới
 

@@ -23,7 +23,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`02-quan-ly-nguoi-dung-note-cho-fe.md`](02-quan-ly-nguoi-dung-note-cho-fe.md) — note cho FE khi
   làm màn hình quản lý người dùng: `isActive` bắt buộc gửi đúng tên field, ba nguyên nhân khác nhau
   của cùng mã `MSG12`, và vì sao `403` giữa phiên là chuyện bình thường chứ không phải bug
-- [`03-ma-tran-phan-quyen.md`](03-ma-tran-phan-quyen.md) — ma trận vai trò ↔ quyền (UC-09, UC-10 /
+- [`03-ma-tran-phan-quyen.md`](03-ma-tran-phan-quyen.md) — ma trận vai trò ↔ quyền (UC-10, UC-11 /
   SCRUM-60): `GET`/`PUT /api/roles/capabilities`; mã `MSG16`–`MSG18`; luật chống tự khoá hệ thống,
   vì sao đổi ma trận phải kết thúc phiên, và năm chỗ code khác class diagram cần BA sửa. Kèm cảnh
   báo về bước seed sau khi bỏ `HasData` ([ADR-0007](../05-decisions/0007-ma-tran-phan-quyen-sua-duoc-luc-chay.md))
@@ -41,7 +41,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   sửa tay giữ dữ liệu cũ, hợp đồng mới `roleId` + `roleName` ở `/api/users`, `/api/auth/*`,
   `/api/roles/capabilities`, mã `MSG19`–`MSG28`, và phần FE cần làm
 - [`05-quan-ly-cuoc-hop.md`](05-quan-ly-cuoc-hop.md) — contract tạo, đọc, sửa và lấy danh sách cuộc
-  họp (`SCRUM-17`/`SCRUM-18`, UC-11/UC-12/UC-14): quyền theo từng cuộc họp, lọc và phân trang ở
+  họp (`SCRUM-17`/`SCRUM-18`, UC-15–UC-18): quyền theo từng cuộc họp, lọc và phân trang ở
   server, validation baseline và các điểm cần BA bổ sung; mã `MSG29`–`MSG38`
 - [`06-thong-bao-trong-ung-dung.md`](06-thong-bao-trong-ung-dung.md) — SCRUM-14: API danh sách,
   đánh dấu đã đọc, kiểm tra đích, SignalR và các nguồn tạo thông báo; mã `MSG39`–`MSG40`
