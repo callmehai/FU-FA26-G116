@@ -1,0 +1,75 @@
+title UC-53 - View Meeting Sessions
+
+actor "Authorized Meeting User" as User
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Session Controller" as MeetingSessionController
+control ":Meeting Session Service" as MeetingSessionService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Meeting Session Repository" as MeetingSessionRepository
+database ":Database" as Database
+
+User->MeetingPage: View Meeting Sessions
+activate MeetingPage
+MeetingPage->MeetingSessionController: Get Meeting Sessions
+activate MeetingSessionController
+MeetingSessionController->MeetingSessionService: getMeetingSessions(meetingId, userId)
+activate MeetingSessionService
+
+MeetingSessionService->MeetingRepository: Get selected meeting
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting
+activate Database
+Database-->MeetingRepository: Meeting / Not found
+deactivate Database
+MeetingRepository-->MeetingSessionService: Meeting / Not found
+deactivate MeetingRepository
+
+MeetingSessionService->MeetingAccessPolicy: Verify user may view this meeting (BR-29)
+activate MeetingAccessPolicy
+MeetingAccessPolicy-->MeetingSessionService: Authorized / Not authorized
+deactivate MeetingAccessPolicy
+
+alt Meeting does not exist or is not accessible - EX-1
+    MeetingSessionService-->MeetingSessionController: Not found; do not disclose meeting existence
+    deactivate MeetingSessionService
+    MeetingSessionController-->MeetingPage: Return not found
+    deactivate MeetingSessionController
+    MeetingPage-->User: Meeting not found
+
+else Meeting is accessible
+    MeetingSessionService->MeetingSessionRepository: Get sessions ordered by planned start time
+    activate MeetingSessionRepository
+    MeetingSessionRepository->Database: Retrieve Meeting Sessions
+    activate Database
+
+    alt Meeting Sessions cannot be retrieved - EX-2
+        Database-->MeetingSessionRepository: Retrieval failed
+        deactivate Database
+        MeetingSessionRepository-->MeetingSessionService: Retrieval failed
+        deactivate MeetingSessionRepository
+        MeetingSessionService-->MeetingSessionController: MSG127 - Unable to load meeting sessions. Please try again
+        deactivate MeetingSessionService
+        MeetingSessionController-->MeetingPage: Return session list failure
+        deactivate MeetingSessionController
+        MeetingPage-->User: MSG127 - Unable to load meeting sessions. Please try again
+
+    else Meeting Sessions retrieved
+        Database-->MeetingSessionRepository: Ordered Meeting Sessions / Empty list
+        deactivate Database
+        MeetingSessionRepository-->MeetingSessionService: Ordered Meeting Sessions / Empty list
+        deactivate MeetingSessionRepository
+        MeetingSessionService-->MeetingSessionController: Meeting Session list
+        deactivate MeetingSessionService
+        MeetingSessionController-->MeetingPage: Meeting Session list
+        deactivate MeetingSessionController
+
+        alt No Meeting Sessions exist - AF-1
+            MeetingPage-->User: Display empty meeting schedule
+        else Meeting Sessions exist
+            MeetingPage-->User: Display session title, planned schedule, and status
+        end
+    end
+end
+
+deactivate MeetingPage

@@ -27,7 +27,7 @@ các bước tương ứng, còn sequence thể hiện cùng BR ID và message c
 
 ## Mã tiếp theo
 
-**`MSG95`** — `MSG41`–`MSG59` và `MSG77` đã dành sẵn cho các Use Case cuộc họp và phiên họp (xem [bên dưới](#dành-sẵn-chưa-có-code)); `MSG78`–`MSG91` đã được workflow SCRUM-19 dùng (PR #53, chưa merge); đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94`.
+**`MSG129`** — `MSG41`–`MSG59` và `MSG77`–`MSG128` đã dành sẵn cho các Use Case cuộc họp, participant, guest, room, session list và agenda view (xem [bên dưới](#dành-sẵn-chưa-có-code)); `MSG78`–`MSG91` đã được workflow SCRUM-19 dùng (PR #53, chưa merge); đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94`.
 
 ## Danh mục
 
@@ -170,7 +170,12 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MSG77` | UC-28 | *The last planned meeting session of a published meeting cannot be cancelled.* |
 | `MSG83` | UC-20 Từ chối cuộc họp | *Rejection reason is required.* |
 | `MSG84` | UC-20 Từ chối cuộc họp | *Rejection reason must not exceed 1000 characters.* |
-| `MSG90` | UC-21 Phát hành cuộc họp | *At least one valid planned Meeting Session is required before publication.* |
+| `MSG90` | UC-21 Phát hành cuộc họp | *At least one valid planned Meeting Session is required before publication.* — **Ngừng dùng**; Report 3 source-of-truth xác định Meeting Sessions là tùy chọn. Không tái sử dụng mã. |
+| `MSG95`–`MSG109` | UC-37–UC-42 F08 | Mã tải roster, thêm participant, role, removal, response và readiness; xem đặc tả UC. |
+| `MSG110`–`MSG116` | UC-43–UC-44 Start/End Meeting | Mã thành công, điều kiện không hợp lệ và lỗi hệ thống; xem đặc tả UC. |
+| `MSG117`–`MSG126` | UC-45–UC-52 GOF09 Online Meeting Room | Mã trạng thái room, thiết bị, chia sẻ, presence, moderation, chat và xác minh Guest; xem đặc tả UC. |
+| `MSG127` | UC-53 View Meeting Sessions | *Unable to load meeting sessions. Please try again.* |
+| `MSG128` | UC-54 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |
 
 `MSG83`, `MSG84` và `MSG90` thuộc dải đã dành cho workflow SCRUM-19 và được gán cho các nhánh UC-20/UC-21 nêu trên.
 

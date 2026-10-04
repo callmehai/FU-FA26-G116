@@ -2,10 +2,19 @@ import { chromium } from 'playwright';
 import fs from 'fs';
 import path from 'path';
 
+function getDefaultRoot() {
+  const candidate1 = path.resolve('docs/06-sequencediagram');
+  if (fs.existsSync(candidate1)) return candidate1;
+  const candidate2 = path.resolve('../docs/06-sequencediagram');
+  if (fs.existsSync(candidate2)) return candidate2;
+  return candidate1;
+}
+
 /**
  * Recursively find all .txt files matching criteria
  */
-function findTxtFiles(targetPath) {
+function findAllTxtFiles(targetPath) {
+  if (!fs.existsSync(targetPath)) return [];
   const stats = fs.statSync(targetPath);
   if (stats.isFile()) {
     return targetPath.endsWith('.txt') ? [targetPath] : [];
@@ -16,7 +25,7 @@ function findTxtFiles(targetPath) {
   for (const entry of entries) {
     const fullPath = path.join(targetPath, entry.name);
     if (entry.isDirectory()) {
-      results.push(...findTxtFiles(fullPath));
+      results.push(...findAllTxtFiles(fullPath));
     } else if (entry.isFile() && entry.name.endsWith('.txt')) {
       results.push(fullPath);
     }
@@ -24,18 +33,72 @@ function findTxtFiles(targetPath) {
   return results;
 }
 
-async function main() {
-  const argPath = process.argv[2] || path.resolve('../docs/06-sequencediagram');
-  const targetFullPath = path.resolve(argPath);
+function resolveTargets(args, defaultRoot) {
+  const allDiagrams = findAllTxtFiles(defaultRoot);
+  const matchedFiles = new Set();
 
-  if (!fs.existsSync(targetFullPath)) {
-    console.error(`❌ Path not found: ${targetFullPath}`);
-    process.exit(1);
+  for (const arg of args) {
+    if (arg === '--all') {
+      allDiagrams.forEach((f) => matchedFiles.add(f));
+      continue;
+    }
+
+    const directPath = path.resolve(arg);
+    if (fs.existsSync(directPath)) {
+      const stats = fs.statSync(directPath);
+      if (stats.isFile() && directPath.endsWith('.txt')) {
+        matchedFiles.add(directPath);
+      } else if (stats.isDirectory()) {
+        findAllTxtFiles(directPath).forEach((f) => matchedFiles.add(f));
+      }
+      continue;
+    }
+
+    // Try relative to defaultRoot
+    const inDocs = path.join(defaultRoot, arg);
+    if (fs.existsSync(inDocs)) {
+      findAllTxtFiles(inDocs).forEach((f) => matchedFiles.add(f));
+      continue;
+    }
+
+    // Fuzzy / substring match across defaultRoot
+    const normalizedArg = arg.toLowerCase().replace(/\.txt$/, '');
+    const found = allDiagrams.filter((file) => {
+      const base = path.basename(file, '.txt').toLowerCase();
+      return base === normalizedArg || base.includes(normalizedArg) || file.toLowerCase().includes(normalizedArg);
+    });
+
+    if (found.length > 0) {
+      found.forEach((f) => matchedFiles.add(f));
+    } else {
+      console.warn(`⚠️ Warning: No matching file found for argument '${arg}'`);
+    }
   }
 
-  const files = findTxtFiles(targetFullPath);
+  return Array.from(matchedFiles);
+}
+
+async function main() {
+  const args = process.argv.slice(2);
+  const defaultRoot = getDefaultRoot();
+
+  if (args.length === 0) {
+    console.log(`ℹ️ Usage:
+  node export-diagrams.js <path-or-file-or-pattern> [...]
+  node export-diagrams.js --all
+
+Examples:
+  node export-diagrams.js UC17_ViewMeetingDetails.txt
+  node export-diagrams.js docs/06-sequencediagram/meeting-management/UC17_ViewMeetingDetails.txt
+  node export-diagrams.js meeting-management
+  node export-diagrams.js --all
+`);
+    return;
+  }
+
+  const files = resolveTargets(args, defaultRoot);
   if (files.length === 0) {
-    console.log(`ℹ️ No .txt diagram files found in: ${targetFullPath}`);
+    console.log(`ℹ️ No .txt diagram files found for arguments: ${args.join(', ')}`);
     return;
   }
 
