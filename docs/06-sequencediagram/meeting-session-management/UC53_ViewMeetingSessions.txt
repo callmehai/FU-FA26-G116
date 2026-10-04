@@ -38,7 +38,7 @@ alt Meeting does not exist or is not accessible - EX-1
     MeetingPage-->User: Meeting not found
 
 else Meeting is accessible
-    MeetingSessionService->MeetingSessionRepository: Get sessions ordered by planned start time
+    MeetingSessionService->MeetingSessionRepository: Get sessions ordered by planned start time\n(session-level data only, no Agenda Items)
     activate MeetingSessionRepository
     MeetingSessionRepository->Database: Retrieve Meeting Sessions
     activate Database
@@ -67,7 +67,7 @@ else Meeting is accessible
         alt No Meeting Sessions exist - AF-1
             MeetingPage-->User: Display empty meeting schedule
         else Meeting Sessions exist
-            MeetingPage-->User: Display session title, planned schedule, and status
+            MeetingPage-->User: Display session title, planned start/end time, status,\nand actual start/end time when available
         end
     end
 end
