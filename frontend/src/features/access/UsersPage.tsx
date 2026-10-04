@@ -26,6 +26,19 @@ const STATUS_FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
 
 const DEACTIVATED_RESET_MESSAGE =
   'Tài khoản này đã bị vô hiệu hoá nên không đặt lại mật khẩu được. Danh sách đã được cập nhật.'
+const NO_PASSWORD_RESET_MESSAGE =
+  'Tài khoản này chỉ đăng nhập bằng Google, không có mật khẩu để đặt lại. Danh sách đã được cập nhật.'
+
+/**
+ * Why UC-08 is unavailable for an account, or null when it is not. Only accounts that sign in with a
+ * password can reset one (BA, SCRUM-13) — the backend answers MSG14 for the others as well.
+ */
+function resetUnavailableReason(account: UserAccount) {
+  // No password first: reactivating would not help such an account, so "reactivate first" would mislead.
+  if (!account.hasPassword) return 'Tài khoản chỉ đăng nhập bằng Google — không có mật khẩu để đặt lại'
+  if (!account.isActive) return 'Tài khoản đã bị vô hiệu hoá — kích hoạt lại trước khi đặt lại mật khẩu'
+  return null
+}
 
 /** Lower-case with diacritics stripped, so "nguyen" finds "Nguyễn" and "dung" finds "Dũng". */
 function fold(text: string) {
@@ -172,8 +185,8 @@ export function UsersPage() {
 
   /**
    * UC-08. Errors stay in the dialog, so the administrator can retry MSG15 from where they are.
-   * MSG14 means the list was stale — someone deactivated the account meanwhile — so re-read it;
-   * the dialog's blocker then keeps the confirm button disabled.
+   * MSG14 means the list was stale — the account was deactivated, or has no password, by now — so
+   * re-read it; the dialog's blocker then keeps the confirm button disabled.
    */
   async function sendPasswordReset(target: UserAccount) {
     try {
@@ -196,8 +209,9 @@ export function UsersPage() {
         throw err
       }
       patch(fresh)
-      if (fresh.isActive) throw err
-      throw new Error(DEACTIVATED_RESET_MESSAGE)
+      if (!fresh.hasPassword) throw new Error(NO_PASSWORD_RESET_MESSAGE)
+      if (!fresh.isActive) throw new Error(DEACTIVATED_RESET_MESSAGE)
+      throw err
     }
   }
 
@@ -287,6 +301,7 @@ export function UsersPage() {
             ) : (
               visible.map((u) => {
                 const isSelf = u.id === me?.id
+                const resetUnavailable = resetUnavailableReason(u)
                 return (
                   <tr key={u.id} className={u.isActive ? undefined : 'row-inactive'}>
                     <td className="cell-title">
@@ -341,12 +356,8 @@ export function UsersPage() {
                           type="button"
                           className="icon-button"
                           onClick={() => setResetTarget(u)}
-                          disabled={!u.isActive}
-                          title={
-                            u.isActive
-                              ? 'Gửi liên kết đặt lại mật khẩu'
-                              : 'Tài khoản đã bị vô hiệu hoá — kích hoạt lại trước khi đặt lại mật khẩu'
-                          }
+                          disabled={resetUnavailable !== null}
+                          title={resetUnavailable ?? 'Gửi liên kết đặt lại mật khẩu'}
                           aria-label={`Gửi liên kết đặt lại mật khẩu cho ${u.fullName}`}
                         >
                           <Icon name="key" size={16} />
@@ -408,9 +419,11 @@ export function UsersPage() {
           blocker={
             resetRow === undefined
               ? 'Tài khoản này không còn tồn tại.'
-              : resetRow?.isActive === false
-                ? DEACTIVATED_RESET_MESSAGE
-                : undefined
+              : resetRow?.hasPassword === false
+                ? NO_PASSWORD_RESET_MESSAGE
+                : resetRow?.isActive === false
+                  ? DEACTIVATED_RESET_MESSAGE
+                  : undefined
           }
           onConfirm={() => sendPasswordReset(resetTarget)}
           onClose={() => setResetTarget(null)}
@@ -420,8 +433,6 @@ export function UsersPage() {
           đặt mật khẩu mới.
           {resetTarget.id === me?.id &&
             ' Đây là tài khoản của bạn: khi đặt mật khẩu mới qua liên kết, mọi phiên đăng nhập của bạn sẽ kết thúc.'}
-          {!resetTarget.hasPassword &&
-            ' Tài khoản này hiện chỉ đăng nhập bằng Google; sau khi đặt, người này đăng nhập được thêm bằng mật khẩu.'}
         </ConfirmDialog>
       )}
     </>
