@@ -495,7 +495,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   - POST-2: The user receives the capabilities associated with the selected system role.
   - POST-3: The role assignment or change is recorded in the audit log.
 - **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC11_ConfigureRolePermissions.png](../06-sequencediagram/role-management/UC11_ConfigureRolePermissions.png)
+  - Sequence Diagram source: [UC09_AssignSystemRoleToUser.txt](../06-sequencediagram/user-management/UC09_AssignSystemRoleToUser.txt)
 
 #### Luồng sự kiện chính (Main Flow – Assign System Role to User):
 1. The System Admin opens User Management.
@@ -907,22 +907,22 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **Use Case Name**: View Meeting Details
 - **Primary Actor**: Meeting Organizer, Meeting Approver, Chair, Secretary, Participant
 - **Secondary Actor**: None
-- **Mô tả (Description)**: Allows a user associated with a meeting through an authorized meeting relationship or assignment to view the meeting details, its Meeting Sessions, and the agenda prepared for each session.
+- **Mô tả (Description)**: Allows an authorized user to view meeting-level details. Meeting Sessions and agenda are handled by UC-53 and UC-54.
 - **Điều kiện tiên quyết (Preconditions)**:
   - PRE-1: The user is authenticated.
   - PRE-2: A meeting has been selected or identified.
 - **Điều kiện sau (Postconditions)**:
-  - POST-1: The meeting details, available Meeting Session schedule, and session agendas are displayed.
-  - POST-2: No meeting information is modified.
+  - POST-1: Only meeting-level details are displayed.
+  - POST-2: No Meeting, Meeting Session, or Agenda Item is modified.
 - **Sơ đồ liên quan (Related Diagrams)**:
   - Sequence Diagram: [UC17_ViewMeetingDetails.png](../06-sequencediagram/meeting-management/UC17_ViewMeetingDetails.png)
 
 #### Luồng sự kiện chính (Main Flow — View Meeting Details):
 1. The user requests to view a meeting.
 2. The system verifies that the meeting exists and that the user may view it under BR-29. The system does not reveal which check failed.
-3. The system retrieves the meeting information, its Meeting Sessions, and the Agenda Items associated with those sessions.
-4. The system displays the meeting-level information (Meeting Name, Meeting Mode, Location, Confidentiality Level, Description, and Meeting Status) separately from each Meeting Session's Title, Planned Start Time, Planned End Time, and Status, together with the agenda of each session.
-5. The user reviews the meeting information, session schedule, and agendas.
+3. The system retrieves only the meeting-level information.
+4. The system displays Meeting Name, Meeting Mode, Location, Confidentiality Level, Description, and Meeting Status. Meeting Sessions and Agenda Items are not loaded by this use case.
+5. The user reviews the meeting information.
 
 #### Luồng sự kiện thay thế (Alternative Flows):
 - N/A
@@ -935,7 +935,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   3. The use case ends.
 
 - **EX-2: Meeting Details Cannot Be Retrieved**
-  1. At Step 4, the meeting exists and is accessible, but the system cannot retrieve its information.
+  1. At Step 3, the meeting exists and is accessible, but the system cannot retrieve its information.
   2. The system displays MSG37 – "Unable to load meeting details. Please try again."
   3. The use case ends.
 
@@ -1348,6 +1348,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **Use Case Name**: View Meeting Sessions
 - **Primary Actor**: Secretary, Chair, Meeting Organizer, Meeting Approver, authorized Meeting Participant
 - **Description**: Allows an authorized user to view the Meeting Sessions belonging to a meeting, including schedule and lifecycle status.
+- **Related Diagram source**: [UC53_ViewMeetingSessions.txt](../06-sequencediagram/meeting-session-management/UC53_ViewMeetingSessions.txt)
 - **Preconditions**: The user is authenticated and currently authorized to view the selected meeting; the meeting exists.
 - **Postconditions**: The authorized Meeting Session list is displayed; no meeting or session data is changed.
 - **Main Flow**:
@@ -1355,7 +1356,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   2. The system verifies access to the meeting and retrieves its Meeting Sessions in schedule order.
   3. The system displays the session title, planned start/end time, and lifecycle status.
 - **Alternative Flow — No Sessions**: If no Meeting Sessions exist, display an empty session list. The use case ends successfully.
-- **Exception Flows**: If the meeting is not accessible, return the same not-found result as for an unknown meeting and disclose no session data. If the sessions cannot be loaded, display MSG127.
+- **Exception Flows**: If the meeting is not accessible, return the same not-found result as for an unknown meeting and disclose no session data. (BR-29) If the sessions cannot be loaded, display MSG127.
 
 ---
 
@@ -1607,6 +1608,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
 - **Use Case Name**: View Meeting Agenda
 - **Primary Actor**: Secretary, Chair, Meeting Organizer, Meeting Approver, authorized Meeting Participant
 - **Description**: Allows an authorized user to view the Agenda Items associated with a meeting's session, including agenda order and execution status where available.
+- **Related Diagram source**: [UC54_ViewMeetingAgenda.txt](../06-sequencediagram/agenda-management/UC54_ViewMeetingAgenda.txt)
 - **Preconditions**: The user is authenticated and currently authorized to view the selected meeting and session.
 - **Postconditions**: The authorized agenda is displayed; no agenda or lifecycle data is changed.
 - **Main Flow**:
@@ -1614,7 +1616,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   2. The system verifies access to the meeting and session and retrieves the Agenda Items in their defined order.
   3. The system displays the agenda and current execution status where available.
 - **Alternative Flow — No Agenda Items**: If the session has no Agenda Items, display an empty agenda. The use case ends successfully.
-- **Exception Flows**: If the meeting or session is not accessible, return the same not-found result as for an unknown resource and disclose no agenda data. If the agenda cannot be loaded, display MSG128.
+- **Exception Flows**: If the meeting or session is not accessible, return the same not-found result as for an unknown resource and disclose no agenda data. (BR-29) If the agenda cannot be loaded, display MSG128.
 
 ### UC-31: Create Agenda Item (Tạo mục chương trình nghị sự)
 
@@ -2379,10 +2381,11 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 
 - **Primary Actor**: Chair
 - **Description**: Allows an active Chair assigned to a Published meeting to start the meeting. Meeting Sessions are optional and keep their own lifecycle.
-- **Preconditions**: The Chair is authenticated and currently assigned to the meeting; the meeting is Published.
+- **Preconditions**: The Chair is authenticated and currently assigned to the meeting; the meeting is Published; at least one current Chair and Secretary have active accounts. Meeting Sessions are optional. (BR-56, BR-89–BR-91)
 - **Postconditions**: The meeting changes to InProgress and its lifecycle history is recorded. Meeting Session statuses are unchanged.
-- **Main Flow**: The Chair selects Start Meeting; the system revalidates Chair assignment, active Chair and Secretary, and Published status; it changes the meeting to InProgress, records the transition, and displays MSG110. (BR-89–BR-92)
-- **Exception Flows**: If the meeting is not Published or role readiness fails, display MSG111. If starting fails, display MSG112.
+- **Related Diagram source**: [UC43_StartMeeting.txt](../06-sequencediagram/meeting-management/UC43_StartMeeting.txt)
+- **Main Flow**: The Chair selects Start Meeting; the system revalidates Chair assignment, active Chair and Secretary, and Published status; it changes the meeting to InProgress, records the transition, and displays MSG110. (BR-38, BR-56, BR-89–BR-92)
+- **Exception Flows**: If the meeting is not Published or role readiness fails, display MSG112. If starting fails, display MSG115.
 
 ### UC-44: End Meeting (Kết thúc cuộc họp)
 
@@ -2390,8 +2393,9 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 - **Description**: Allows an active Chair assigned to an InProgress meeting to end it after all planned sessions have finished or been cancelled.
 - **Preconditions**: The Chair is authenticated and currently assigned to the meeting; the meeting is InProgress.
 - **Postconditions**: The meeting changes to Ended and its lifecycle history is recorded; any associated room closes and connected users are disconnected. Meeting Session statuses are unchanged.
-- **Main Flow**: The Chair selects End Meeting; the system revalidates Chair assignment, active Chair, InProgress status, and that no Meeting Session remains Planned or InProgress; it changes the meeting to Ended, records the transition, closes the room, and displays MSG113. (BR-90–BR-92, BR-96)
-- **Exception Flows**: If any session remains Planned or InProgress or meeting/role state is no longer eligible, display MSG114. If ending fails, display MSG115.
+- **Related Diagram source**: [UC44_EndMeeting.txt](../06-sequencediagram/meeting-management/UC44_EndMeeting.txt)
+- **Main Flow**: The Chair confirms End Meeting; the system revalidates Chair assignment, active Chair, InProgress status, and that no Meeting Session remains Planned or InProgress; it changes the meeting to Ended, records the transition, closes the room, and displays MSG111. (BR-38, BR-90–BR-92, BR-96)
+- **Exception Flows**: If any session remains Planned or InProgress, display MSG113. If meeting/role state is no longer eligible, display MSG114. If ending fails, display MSG116.
 
 ### UC-45: Join Meeting Room (Vào phòng họp trực tuyến)
 
