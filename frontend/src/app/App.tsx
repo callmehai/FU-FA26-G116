@@ -50,11 +50,13 @@ export function App() {
 
         {/* Bare roots land on the management home. */}
         <Route path="/" element={<Navigate to={routes.meetings} replace />} />
-        <Route path={routes.mgmt} element={<Navigate to={routes.meetings} replace />} />
 
         {/* Management workspace. */}
         <Route element={<RequireAuth />}>
           <Route element={<AppShell sidebar={<AppSidebar />} />}>
+            {/* Inside the guard and the shell: the workspace switcher links here, and following it
+                must not remount either — that would drop the notification connection. */}
+            <Route path={routes.mgmt} element={<Navigate to={routes.meetings} replace />} />
             <Route path={routes.meetings} element={<MeetingsPage />} />
             <Route
               path={routes.meetingNew}

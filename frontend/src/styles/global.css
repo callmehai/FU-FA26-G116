@@ -22,6 +22,8 @@
 
   --lacquer: #a5281b;
   --lacquer-ink: #7c1d14;
+  /* Unread rows in the notification panel: a whisper of the brand red, never a second accent. */
+  --lacquer-wash: #fbf4f2;
   --seal-gold: #c1a15a;
   --focus: #2f6feb;
   --focus-ring: #2f6feb80;
@@ -476,6 +478,199 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 }
 
 .menu-item:hover { background: var(--surface-alt); }
+
+/* ---------- Notifications (features/notifications) ----------
+   The bell carries the unread count; its panel drops down under it like the account menu, with a
+   pinned header and footer around a list that scrolls on its own. */
+.notif { position: relative; }
+.notif-bell { position: relative; }
+.notif-bell-open { background: var(--surface-alt); }
+.notif-bell > span:first-child { display: inline-flex; }
+
+.notif-badge {
+  position: absolute;
+  top: 2px;
+  right: 1px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--lacquer);
+  box-shadow: 0 0 0 2px var(--surface);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+/* A short swing when a notification arrives — the badge alone is easy to miss. */
+@keyframes notif-ring {
+  0%, 100% { transform: rotate(0); }
+  15% { transform: rotate(14deg); }
+  30% { transform: rotate(-12deg); }
+  45% { transform: rotate(8deg); }
+  60% { transform: rotate(-5deg); }
+  75% { transform: rotate(2deg); }
+}
+.notif-ring { animation: notif-ring .9s ease-in-out; transform-origin: 50% 2px; }
+
+.notif-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  max-height: min(560px, calc(100vh - var(--appbar-height) - 24px));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.notif-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 8px 10px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.notif-head h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 15px; font-weight: 600; white-space: nowrap; }
+.notif-head .badge { font-weight: 600; }
+.notif-mark-all { gap: 6px; padding: 0 10px; color: var(--ink-soft); }
+
+.notif-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.notif-body[aria-busy='true'] .notif-list { opacity: .6; transition: opacity .15s; }
+
+.notif-list { margin: 0; padding: 0; list-style: none; }
+.notif-item { position: relative; border-bottom: 1px solid var(--line); }
+.notif-item:last-child { border-bottom: none; }
+
+.notif-open {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+  padding: 12px 44px 12px 16px;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color .15s;
+}
+.notif-open:hover:not(:disabled) { background: var(--surface-alt); }
+.notif-open:disabled { cursor: progress; }
+.notif-open:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.notif-item-unread .notif-open { background: var(--lacquer-wash); }
+.notif-item-unread .notif-open:hover:not(:disabled) { background: var(--surface-alt); }
+
+.notif-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; }
+.notif-tone-blue { background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
+.notif-tone-amber { background: var(--chip-amber-bg); color: var(--chip-amber-fg); }
+.notif-tone-violet { background: var(--chip-violet-bg); color: var(--chip-violet-fg); }
+.notif-tone-emerald { background: var(--chip-emerald-bg); color: var(--chip-emerald-fg); }
+.notif-tone-red { background: var(--chip-red-bg); color: var(--chip-red-fg); }
+.notif-tone-indigo { background: var(--chip-indigo-bg); color: var(--chip-indigo-fg); }
+.notif-tone-slate { background: var(--chip-slate-bg); color: var(--chip-slate-fg); }
+
+.notif-content { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.notif-title { color: var(--ink-soft); font-size: 14px; font-weight: 500; line-height: 20px; overflow-wrap: anywhere; }
+.notif-item-unread .notif-title { color: var(--ink); font-weight: 600; }
+.notif-text {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--muted-ink);
+  font-size: 13px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.notif-time { margin-top: 2px; color: var(--muted-ink); font-size: 12px; line-height: 16px; }
+
+/* Unread: a dot at rest, which turns into a "mark as read" button on hover or keyboard focus. */
+.notif-dot {
+  position: absolute;
+  top: 20px;
+  right: 18px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--lacquer);
+  pointer-events: none;
+}
+.notif-mark {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 32px;
+  height: 32px;
+  color: var(--muted-ink);
+  opacity: 0;
+}
+.notif-mark:hover:not(:disabled) { color: var(--ink); background: var(--line); }
+.notif-item:hover .notif-mark, .notif-mark:focus-visible { opacity: 1; }
+.notif-item:hover .notif-dot, .notif-item:has(.notif-mark:focus-visible) .notif-dot { opacity: 0; }
+/* No hover on touch screens: keep the button visible instead of the dot. */
+@media (hover: none) {
+  .notif-mark { opacity: 1; }
+  .notif-dot { display: none; }
+}
+
+.notif-skeleton { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 12px; padding: 12px 16px; }
+.notif-skeleton .notif-icon { background: var(--surface-alt); }
+.notif-skeleton .notif-content { gap: 8px; padding-top: 4px; }
+.notif-skeleton .skeleton:nth-child(1) { width: 60%; }
+.notif-skeleton .skeleton:nth-child(2) { width: 90%; }
+.notif-skeleton .skeleton:nth-child(3) { width: 30%; height: 10px; }
+
+.notif-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 40px 24px;
+  color: var(--muted-ink);
+  font-size: 13px;
+  text-align: center;
+}
+.notif-state p { margin: 0; }
+.notif-state .btn { margin-top: 12px; gap: 6px; }
+.notif-state-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 8px;
+  border-radius: 50%;
+  background: var(--surface-alt);
+  color: var(--muted-ink);
+}
+.notif-state-title { color: var(--ink); font-size: 14px; font-weight: 500; }
+
+.notif-inline-error { margin: 0; padding: 8px 16px; color: var(--danger); font-size: 13px; }
+.notif-body > .notif-inline-error { border-bottom: 1px solid var(--line); background: var(--chip-red-bg); }
+
+.notif-foot { flex: none; padding: 6px 8px; border-top: 1px solid var(--line); }
+.notif-foot .btn { color: var(--ink-soft); }
+.notif-foot .notif-inline-error { padding: 6px 8px; }
+
+/* On a phone the bell sits too far right for a 400px panel to open under it: span the screen. */
+@media (max-width: 480px) {
+  .notif-panel { position: fixed; top: calc(var(--appbar-height) + 6px); right: 12px; left: 12px; width: auto; }
+  /* The title keeps its line; the action keeps its icon, its tooltip and its accessible name. */
+  .notif-mark-all { width: 36px; padding: 0; justify-content: center; }
+  .notif-mark-all-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+}
 
 /* ---------- Content ----------
    Management screens are capped and centred; the calendar takes the whole width. */

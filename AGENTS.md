@@ -241,5 +241,8 @@ Details in [docs/DEVELOPMENT_WORKFLOW.md §2.1](docs/DEVELOPMENT_WORKFLOW.md#21-
   `features/auth/session.ts`; a user's capabilities come from the backend, never from a table in
   the frontend. The meeting list, create, edit and detail screens call the real API as well; on the
   detail screen every tab but "Thông tin chung" is still a placeholder until its endpoint exists.
+- The notification bell (`features/notifications/`) calls the real API and listens on
+  `/hubs/notifications`. Its provider lives in `RequireAuth`, so keep every signed-in route —
+  redirects included — under that guard; a route outside it remounts the provider and reconnects.
 - The AI-eCabinet repo (`~/Developer/ai-ecabinet`) is a private, unlicensed reference. Read it to
   understand the domain; do not copy source files into this repo. It is a graded capstone.
