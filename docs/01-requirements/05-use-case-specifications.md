@@ -1169,6 +1169,7 @@ Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ th�
   - POST-1: The meeting status is Published.
   - POST-2: The publication is recorded in the meeting lifecycle history.
   - POST-3: The system attempts to initiate email invitation delivery for active participants when delivery is available (BR-39, BR-40).
+  - POST-4: Publishing does not create or modify Meeting Sessions; a meeting may be published with no sessions. (BR-56)
 - **Sơ đồ liên quan (Related Diagrams)**:
   - Sequence Diagram: [UC21_PublishMeeting.png](../06-sequencediagram/meeting-management/UC21_PublishMeeting.png)
 
@@ -2400,74 +2401,166 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 ### UC-45: Join Meeting Room (Vào phòng họp trực tuyến)
 
 - **Primary Actor**: Chair, Secretary, Participant, Guest
-- **Description**: An authorized user enters the online room associated with a meeting. The room belongs to the Meeting, not to a Meeting Session; no Meeting Session is required.
-- **Preconditions**: The user has room-entry access through a current internal participant assignment, effective delegation, or a verified, current Guest invitation. The meeting exists, is Online or Hybrid, and is Published or InProgress. External Guests use a limited meeting-scoped guest session established by email verification without an internal account.
-- **Postconditions**: The user is connected and appears in room presence. Meeting and Meeting Session statuses remain unchanged.
-- **Main Flow**:
-  1. The user selects Join Meeting Room; a Guest uses the verified meeting-specific session.
-  2. The system verifies meeting mode/status and the current room-entry relationship.
-  3. The system admits the user, records current room presence, and displays the room.
-  4. Meeting and Meeting Session lifecycles remain unchanged. (BR-93–BR-95)
-- **Exception Flows**: If the meeting is not Online/Hybrid or not Published/InProgress, deny entry and display MSG117. If admission fails, display MSG118.
+- **Secondary Actor**: None
+- **Description**: Allows an authorized user to enter the online room associated with a meeting. The room belongs to the Meeting, not to a Meeting Session, so a Meeting Session is not required for room access.
+- **Preconditions**:
+  - PRE-1: The user has room-entry access to the selected meeting through a current internal participant assignment, an effective delegation, or a verified current external Guest invitation. An external Guest may use a limited meeting-scoped guest session established from the invitation and email verification; no internal account login is required. (BR-94, BR-101, BR-102)
+  - PRE-2: The selected meeting exists and its Meeting Mode is Online or Hybrid.
+  - PRE-3: The meeting is Published or InProgress.
+  - PRE-4: No Meeting Session is required. (BR-93, BR-94)
+- **Postconditions**:
+  - POST-1: The user is connected to the online meeting room.
+  - POST-2: The user appears as currently connected in the room participant list.
+  - POST-3: The Meeting and all Meeting Session lifecycle statuses remain unchanged.
+- **Main Flow — Join Meeting Room**:
+  1. The user selects Join Meeting Room for the selected meeting. An external Guest uses the verified meeting-specific guest session established from the invitation flow.
+  2. The system verifies that the meeting exists, is Online or Hybrid, is Published or InProgress, and that the user currently has room-entry access through an internal participant assignment, effective delegation, or verified current Guest invitation. (BR-84, BR-86, BR-88, BR-93, BR-94, BR-101, BR-102)
+  3. The system admits the user to the meeting room.
+  4. The system records the user as currently connected to the room and displays the room interface.
+  5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-95)
+- **Alternative Flows**: N/A
+- **Exception Flows**:
+  - **EX-1: Meeting Room Is Not Available**: At Step 2, if the meeting is not Online/Hybrid or not Published/InProgress, the user is not connected; display MSG117 – "The online meeting room is not available." The use case ends. (BR-94)
+  - **EX-2: User Does Not Have Room Access**: At Step 2, if the internal participant/delegation relationship is no longer effective or the external Guest invitation/session has expired or been revoked, return the same not-found/access result used for an inaccessible meeting and disclose no protected room information. The use case ends. (BR-84, BR-86, BR-88, BR-102, BR-103)
+  - **EX-3: Room Join Cannot Be Completed**: After Step 2, if the system cannot connect the user, leave Meeting and Meeting Session lifecycles unchanged, display MSG118 – "Unable to join the meeting room. Please try again." and end the use case.
 
 ### UC-46: Leave Meeting Room (Rời phòng họp trực tuyến)
 
 - **Primary Actor**: Chair, Secretary, Participant, Guest
-- **Description**: A connected user leaves the current meeting room.
-- **Precondition**: The user is connected to the room.
-- **Postconditions**: The user is disconnected and no longer appears in current room presence. Meeting and Meeting Session statuses remain unchanged.
-- **Main Flow**: The user selects Leave; the system disconnects them, updates presence, and leaves the meeting lifecycle unchanged. (BR-95, BR-96)
+- **Secondary Actor**: None
+- **Description**: Allows a connected user to leave the online meeting room without ending the Meeting or any Meeting Session.
+- **Preconditions**: PRE-1: The user is currently connected to the selected meeting room.
+- **Postconditions**:
+  - POST-1: The user is no longer connected to the room.
+  - POST-2: The user is removed from the current room participant list.
+  - POST-3: The Meeting and Meeting Session lifecycle statuses remain unchanged.
+- **Main Flow — Leave Meeting Room**:
+  1. The connected user selects Leave Room.
+  2. The system disconnects the user from the room.
+  3. The system updates the current room participant list.
+  4. The Meeting and Meeting Session lifecycles remain unchanged. (BR-95, BR-96)
+- **Alternative Flows**: N/A
+- **Exception Flows**: N/A
 
 ### UC-47: Manage Microphone (Quản lý micro)
 
 - **Primary Actor**: Chair, Secretary, Participant, Guest
-- **Precondition**: The user is connected to the room.
-- **Postcondition**: The user's own microphone is enabled or disabled; meeting lifecycles are unchanged.
-- **Main Flow**: The user toggles their microphone; the system applies the requested state to that user's own audio and updates the room UI. A user can only control their own microphone; the Chair uses UC-51 to mute someone else. (BR-95, BR-97)
-- **Exception Flow**: If microphone permission/device access is unavailable, keep the microphone disabled and display MSG119.
+- **Secondary Actor**: None
+- **Description**: Allows a user connected to the meeting room to enable or disable their own microphone.
+- **Preconditions**: PRE-1: The user is currently connected to the online meeting room.
+- **Postconditions**:
+  - POST-1: The user’s microphone state reflects the requested enabled or disabled state when the device/permission is available.
+  - POST-2: No Meeting or Meeting Session lifecycle state is changed.
+- **Main Flow — Manage Microphone**:
+  1. The user selects the microphone control.
+  2. The system attempts to apply the requested microphone state to the user’s own audio.
+  3. The room interface displays the resulting microphone state. (BR-95, BR-97)
+- **Alternative Flows**: N/A
+- **Exception Flows**:
+  - **EX-1: Microphone Is Unavailable**: At Step 2, if permission is denied, no usable device is available, or the device cannot be used, the user remains in the room with the microphone disabled. Display MSG119 – "Microphone access is unavailable. Check your browser or device permissions." The use case ends.
 
 ### UC-48: Manage Camera (Quản lý camera)
 
 - **Primary Actor**: Chair, Secretary, Participant, Guest
-- **Precondition**: The user is connected to the room.
-- **Postcondition**: The user's own camera is enabled or disabled; meeting lifecycles are unchanged.
-- **Main Flow**: The user toggles their camera; the system applies the state to that user's own video and updates the room UI. Another user's camera cannot be enabled by the Chair. (BR-95, BR-97)
-- **Exception Flow**: If camera permission/device access is unavailable, keep the camera disabled and display MSG120.
+- **Secondary Actor**: None
+- **Description**: Allows a user connected to the meeting room to enable or disable their own camera.
+- **Preconditions**: PRE-1: The user is currently connected to the online meeting room.
+- **Postconditions**:
+  - POST-1: The user’s camera state reflects the requested enabled or disabled state when the device/permission is available.
+  - POST-2: No Meeting or Meeting Session lifecycle state is changed.
+- **Main Flow — Manage Camera**:
+  1. The user selects the camera control.
+  2. The system attempts to apply the requested camera state to the user’s own video.
+  3. The room interface displays the resulting camera state. (BR-95, BR-97)
+- **Alternative Flows**: N/A
+- **Exception Flows**:
+  - **EX-1: Camera Is Unavailable**: At Step 2, if permission is denied, no usable device is available, or the device cannot be used, the user remains in the room with the camera disabled. Display MSG120 – "Camera access is unavailable. Check your browser or device permissions." The use case ends.
 
 ### UC-49: Manage Screen Sharing (Chia sẻ màn hình)
 
 - **Primary Actor**: Chair, Secretary, Participant, Guest
-- **Precondition**: The user is connected to the room.
-- **Postcondition**: The selected screen content is shared or sharing has stopped; at most one share is active, and meeting lifecycles are unchanged.
-- **Main Flow**: The user selects Share Screen, chooses content using the browser/device picker, and the system starts sharing. If another share is active, it is stopped before the new share starts. (BR-95, BR-98)
-- **Alternative Flow — Stop Sharing**: The user selects Stop Sharing; the system stops their active share and returns the room to its normal layout.
-- **Exception Flow**: If selection is cancelled, no new share starts. For other start failures, display MSG121.
+- **Secondary Actor**: None
+- **Description**: Allows a connected user to start or stop sharing their screen with other users in the meeting room.
+- **Preconditions**: PRE-1: The user is currently connected to the online meeting room.
+- **Postconditions**:
+  - POST-1: The user is either actively sharing the selected screen content or has stopped sharing.
+  - POST-2: At most one active screen share remains in the room.
+  - POST-3: No Meeting or Meeting Session lifecycle state is changed.
+- **Main Flow — Start Screen Sharing**:
+  1. The user selects Share Screen.
+  2. The system asks the user to choose shareable content using the available device/browser mechanism.
+  3. The user selects the content to share.
+  4. The system verifies whether another screen share is active.
+  5. If another share is active, the previous share is stopped before the new share becomes active. (BR-98)
+  6. The system displays the active shared content to users in the room.
+  7. Meeting and Meeting Session lifecycles remain unchanged. (BR-95)
+- **Alternative Flows**:
+  - **AF-1: Stop Screen Sharing** (entry point: Step 1): If the user is already sharing, they select Stop Sharing; the system stops that user’s active share; the room returns to its normal non-sharing layout; the use case ends successfully.
+- **Exception Flows**:
+  - **EX-1: Screen Sharing Cannot Be Started**: At Step 2 or 3, if the user cancels the share selection or the system cannot start the share, no new screen share becomes active. For a failure other than user cancellation, display MSG121 – "Unable to share your screen." The use case ends.
 
 ### UC-50: View Meeting Room Participants (Xem người đang trong phòng)
 
 - **Primary Actor**: Chair, Secretary, Participant, Guest
-- **Precondition**: The user is connected to the room.
-- **Postconditions**: Current room presence is displayed; the meeting roster and Meeting Session are unchanged.
-- **Main Flow**: The user opens the room participant panel; the system retrieves connected users and displays available presence data, including active-speaker indication when available. (BR-99)
-- **Alternative Flow**: If no other user is connected, display only the current user.
-- **Exception Flow**: If room presence cannot be retrieved, display MSG122.
+- **Secondary Actor**: None
+- **Description**: Allows a connected user to view the users who are currently connected to the online meeting room.
+- **Preconditions**: PRE-1: The user is currently connected to the online meeting room.
+- **Postconditions**:
+  - POST-1: The current room participant list is displayed.
+  - POST-2: The Meeting participant roster and Meeting Session data are not modified.
+- **Main Flow — View Meeting Room Participants**:
+  1. The user opens the room participant panel.
+  2. The system retrieves the users currently connected to the room.
+  3. The system displays the connected users and available room presence information, such as active-speaker indication. (BR-99)
+  4. The user reviews the current room participant list.
+- **Alternative Flows**:
+  - **AF-1: No Other User Is Connected**: At Step 2, if no other user is currently connected, the system displays only the current user in the room participant list. The use case ends successfully.
+- **Exception Flows**:
+  - **EX-1: Room Participants Cannot Be Retrieved**: At Step 2, if the system cannot retrieve current room participant state, display MSG122 – "Unable to load meeting room participants. Please try again." The use case ends.
 
 ### UC-51: Moderate Meeting Room (Điều phối phòng họp)
 
 - **Primary Actor**: Chair
-- **Preconditions**: The Chair is authenticated, assigned to the meeting, and connected to its room; the target is connected to the same room.
-- **Postconditions**: The moderation action is applied without changing the target's Meeting Participant assignment/role or either lifecycle.
-- **Main Flow — Mute**: The Chair selects a connected user and Mute. The system revalidates Chair authority and target presence, disables the target's microphone, and updates room state. The Chair cannot enable another user's microphone or camera. (BR-95, BR-97)
-- **Alternative Flow — Remove from Room**: The Chair selects Remove from Room; after revalidation the system disconnects the target from this room only. The target's roster assignment remains and normal entry rules apply on a future attempt.
-- **Exception Flows**: If the caller is no longer an assigned Chair, display MSG123. If the target disconnected or moderation fails, display MSG124.
+- **Secondary Actor**: None
+- **Description**: Allows the Chair assigned to the meeting to perform permitted moderation actions on users currently connected to the online meeting room without changing their Meeting Participant assignment.
+- **Preconditions**:
+  - PRE-1: The Chair is authenticated, assigned to the selected meeting, and currently connected to its room.
+  - PRE-2: The target user is currently connected to the same room.
+- **Postconditions**:
+  - POST-1: The selected moderation action is applied to the target user.
+  - POST-2: The target user’s Meeting Participant assignment and Meeting Role remain unchanged.
+  - POST-3: The Meeting and Meeting Session lifecycles remain unchanged.
+- **Main Flow — Mute a Room Participant**:
+  1. The Chair opens the room participant panel and selects a connected user.
+  2. The Chair selects Mute.
+  3. The system verifies that the current user is still an assigned Chair and that the target is still connected. (BR-97)
+  4. The system disables the target user’s microphone.
+  5. The system makes the updated room state visible to affected users.
+  6. The Meeting and Meeting Session lifecycles remain unchanged. (BR-95)
+- **Alternative Flows**:
+  - **AF-1: Remove User from Current Room** (entry point: Step 2): The Chair selects Remove from Room; the system verifies Chair authorization and target connection; the system disconnects the target user from the current room only; the target’s Meeting Participant assignment remains unchanged and future re-entry follows normal room-access rules. The use case ends successfully.
+- **Exception Flows**:
+  - **EX-1: User Is Not Allowed to Moderate**: At Step 3 of the Main Flow or Step 2 of AF-1, if the current user is no longer an assigned Chair, no moderation action is applied; display MSG123 – "You are not allowed to moderate this meeting room." The use case ends.
+  - **EX-2: Moderation Action Cannot Be Applied**: After authorization succeeds, if the target is no longer connected or the moderation operation cannot be completed, display MSG124 – "Unable to apply the room moderation action." The use case ends.
 
 ### UC-52: Use In-room Chat (Chat trong phòng họp)
 
 - **Primary Actor**: Chair, Secretary, Participant, Guest
-- **Precondition**: The user is connected to the room.
-- **Postconditions**: A valid message is made available to authorized users currently in the same room; Meeting and Meeting Session lifecycles remain unchanged.
-- **Main Flow**: The user enters and sends a message. The system verifies current room connection and non-empty content, then delivers it to authorized users in that room. (BR-95, BR-100)
-- **Exception Flow**: If the user disconnected, the message is empty, or delivery fails, do not treat it as sent and display MSG125.
+- **Secondary Actor**: None
+- **Description**: Allows an authorized user currently connected to the online meeting room to exchange text messages within that room.
+- **Preconditions**: PRE-1: The user is currently connected to the online meeting room.
+- **Postconditions**:
+  - POST-1: A valid submitted message is made available to authorized users currently connected to the same room.
+  - POST-2: The Meeting and Meeting Session lifecycles remain unchanged.
+- **Main Flow — Use In-room Chat**:
+  1. The user enters a text message in the room chat panel.
+  2. The user sends the message.
+  3. The system validates that the user is still connected to the room and that the message is not empty.
+  4. The system makes the message available to authorized users currently connected to the same room. (BR-100)
+  5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-95)
+- **Alternative Flows**: N/A
+- **Exception Flows**:
+  - **EX-1: Chat Message Cannot Be Sent**: At Step 3 or 4, if the user is no longer connected, the message is empty, or the system cannot deliver it, the message is not treated as successfully sent. Display MSG125 – "Unable to send the room message. Please try again." The use case ends.
 
 #### Business Rules — F08 and GOF09
 
