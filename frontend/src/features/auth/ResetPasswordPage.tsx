@@ -44,6 +44,10 @@ function stillFailing(shown: FieldErrors, now: FieldErrors): FieldErrors {
  * puts in `Referer`. It is read once and then dropped from the address bar and the back/forward
  * entry, so it is not copied along with the URL. The browser's own history still keeps the original
  * address — single use and the 60-minute expiry bound that.
+ *
+ * Kept only in memory, like the access token (session.ts), so a reload or a restored tab arrives
+ * without it. The page cannot tell that from a link with no token, so it says what fixes both:
+ * open the link from the email again — it still works if it is unused and under 60 minutes old.
  */
 export function ResetPasswordPage() {
   const location = useLocation()
@@ -102,8 +106,11 @@ export function ResetPasswordPage() {
       // No session comes back: the user signs in with the password they just chose. A session this
       // browser already holds is ended first — /login would otherwise wave it through to the app,
       // under a toast asking to sign in, and if it is this account it dies at the next refresh anyway.
-      if (status === 'authenticated') await signOut()
+      const signedOut = status !== 'authenticated' || (await signOut())
       toast.show(response.message)
+      // The password is reset regardless. A sign-out that did not reach the server leaves that session
+      // as it was, and /login waves it into the app: say so (UC-03's MSG06) rather than imply it ended.
+      if (!signedOut) toast.show('Không thể đăng xuất. Vui lòng thử lại.', 'error')
       navigate(routes.login, { replace: true })
     } catch (err) {
       setPending(false)
@@ -127,7 +134,11 @@ export function ResetPasswordPage() {
           <BrandMark size={64} />
           <h1>Đặt lại mật khẩu</h1>
           <p className="login-sub">
-            {deadMessage ? 'Liên kết này không dùng được nữa.' : 'Chọn mật khẩu mới cho tài khoản của bạn.'}
+            {token === null
+              ? 'Trang này cần được mở từ liên kết trong email.'
+              : deadMessage
+                ? 'Liên kết này không dùng được nữa.'
+                : 'Chọn mật khẩu mới cho tài khoản của bạn.'}
           </p>
         </div>
 
@@ -136,7 +147,9 @@ export function ResetPasswordPage() {
             <div className="alert alert-error" role="alert">
               <p>{deadMessage}</p>
               <p className="alert-hint">
-                Liên kết chỉ dùng được một lần trong 60 phút, và hết hiệu lực khi có liên kết mới hơn được gửi.
+                {token === null
+                  ? 'Nếu bạn vừa tải lại trang hoặc mở lại thẻ, hãy bấm lại liên kết trong email — liên kết vẫn dùng được nếu chưa được dùng và chưa quá 60 phút.'
+                  : 'Liên kết chỉ dùng được một lần trong 60 phút, và hết hiệu lực khi có liên kết mới hơn được gửi.'}
               </p>
             </div>
             <Link ref={loginLinkRef} className="btn btn-outline btn-block" to={routes.login}>
