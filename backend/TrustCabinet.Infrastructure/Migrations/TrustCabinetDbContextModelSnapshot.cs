@@ -587,10 +587,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(4000)")
                         .HasColumnName("description");
 
-                    b.Property<DateTimeOffset?>("EndsAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("ends_at");
-
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasMaxLength(300)
@@ -608,10 +604,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
                         .HasColumnName("sensitivity");
-
-                    b.Property<DateTimeOffset>("StartsAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("starts_at");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -637,12 +629,6 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("CreatedById")
                         .HasDatabaseName("ix_meetings_created_by_id");
-
-                    b.HasIndex("StartsAt")
-                        .HasDatabaseName("ix_meetings_starts_at");
-
-                    b.HasIndex("Status", "StartsAt")
-                        .HasDatabaseName("ix_meetings_status_starts_at");
 
                     b.ToTable("meetings", (string)null);
                 });

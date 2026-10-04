@@ -47,7 +47,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`06-thong-bao-trong-ung-dung.md`](06-thong-bao-trong-ung-dung.md) — SCRUM-14: API danh sách,
   đánh dấu đã đọc, kiểm tra đích, SignalR và các nguồn tạo thông báo; mã `MSG39`–`MSG40`
 - [`07-gui-email-thu-moi.md`](07-gui-email-thu-moi.md) — hàng đợi email bền vững của `SCRUM-15`,
-  worker gửi tuần tự, retry và log trạng thái, tệp lịch `.ics`, cấu hình SMTP và điểm tích hợp vào
+  worker gửi tuần tự, retry và log trạng thái, cấu hình SMTP và điểm tích hợp vào
   transaction công bố của `SCRUM-19`
 - [`07-gui-email-thu-moi-note-cho-fe.md`](07-gui-email-thu-moi-note-cho-fe.md) — note bàn giao cho FE:
   ý nghĩa thật của kết quả công bố, route từ email, cách xử lý `MSG45`–`MSG47` và những trạng thái

@@ -132,9 +132,10 @@ liệu đã lưu. Nút chuông và panel trong `AppShell.tsx` là phần FE tíc
 - **Được mời họp:** chưa triển khai trong SCRUM-14. Luồng publish meeting của SCRUM-19 phải tạo
   notification cho tất cả participant sau khi chuyển trạng thái thành công, cùng transaction với
   thay đổi trạng thái.
-- **Sắp bắt đầu:** worker kiểm tra meeting `Published` mỗi 5 giây và xếp một thông báo cho mỗi
-  participant còn hoạt động khi còn tối đa **15 phút** trước giờ bắt đầu. Unique key ngăn xếp
-  lặp qua nhiều vòng quét.
+- **Sắp bắt đầu:** worker kiểm tra Meeting Session không bị hủy của meeting `Published` hoặc
+  `InProgress` mỗi 5 giây và xếp một thông báo cho mỗi participant còn hoạt động khi còn tối đa
+  **15 phút** trước Planned Start Time. Nội dung nêu cả Meeting và Session; unique key
+  `meeting-session-starting-soon:{sessionId}:{userId}` ngăn xếp lặp theo từng phiên/người nhận.
 - **Được giao nhiệm vụ:** phạm vi đã chốt của TrustCabinet không có task/action item (xem
   [ERD](../02-design/02-erd.md)); vì vậy chưa có nguồn hay URL đích cho loại thông báo này.
   Cần thay đổi phạm vi ở Jira/BA trước khi triển khai.

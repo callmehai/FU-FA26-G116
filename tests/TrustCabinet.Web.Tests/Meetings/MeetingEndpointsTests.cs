@@ -108,8 +108,6 @@ public sealed class MeetingEndpointsTests : IDisposable
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.InPerson,
             Location = "Phòng họp A",
-            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
-            EndsAt = new DateTimeOffset(2026, 10, 1, 3, 0, 0, TimeSpan.Zero),
             CreatedById = creator.Id,
             AssignedApproverId = approverId,
         };
@@ -129,8 +127,6 @@ public sealed class MeetingEndpointsTests : IDisposable
     private static MeetingRequest ValidRequest(string? title = "Giao ban tuần")
         => new(
             title,
-            "2026-10-01T09:00:00+07:00",
-            "2026-10-01T10:00:00+07:00",
             "InPerson",
             "Phòng họp A",
             "Internal",
@@ -141,10 +137,31 @@ public sealed class MeetingEndpointsTests : IDisposable
         {
             MeetingId = meeting.Id,
             Title = "Phiên họp kế hoạch",
-            PlannedStartsAt = meeting.StartsAt,
-            PlannedEndsAt = meeting.StartsAt.AddHours(1),
+            PlannedStartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
+            PlannedEndsAt = new DateTimeOffset(2026, 10, 1, 3, 0, 0, TimeSpan.Zero),
             Status = MeetingSessionStatus.Planned,
         });
+
+    private static void AddPublishRoster(Meeting meeting)
+    {
+        foreach (var role in new[] { MeetingRole.Chair, MeetingRole.Secretary })
+        {
+            var user = new User
+            {
+                FullName = role.ToString(),
+                Email = $"{role.ToString().ToLowerInvariant()}-{Guid.CreateVersion7():N}@trustcabinet.local",
+                PasswordHash = "test-hash",
+                IsActive = true,
+            };
+            meeting.Participants.Add(new MeetingParticipant
+            {
+                Meeting = meeting,
+                User = user,
+                Role = role,
+                Response = InvitationResponse.Delegated,
+            });
+        }
+    }
 
     private static async Task<JsonDocument> JsonOf(HttpResponseMessage response)
         => JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -512,7 +529,11 @@ public sealed class MeetingEndpointsTests : IDisposable
         else
         {
             meeting.Status = action == "ReturnToDraft" ? MeetingStatus.Rejected : MeetingStatus.Approved;
-            if (action == "Publish") AddPlannedSession(meeting);
+            if (action == "Publish")
+            {
+                AddPlannedSession(meeting);
+                AddPublishRoster(meeting);
+            }
             _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
         }
 
@@ -597,6 +618,7 @@ public sealed class MeetingEndpointsTests : IDisposable
             case "Publish":
                 meeting.Status = MeetingStatus.Approved;
                 AddPlannedSession(meeting);
+                AddPublishRoster(meeting);
                 _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
                 break;
         }
@@ -677,6 +699,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var meeting = OwnedMeetingBy(creator);
         meeting.Status = MeetingStatus.Approved;
         AddPlannedSession(meeting);
+        AddPublishRoster(meeting);
         _factory.Meetings.Meetings.Add(meeting);
         using var client = _factory.ClientFor(creator);
 
@@ -703,6 +726,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
         meeting.Status = MeetingStatus.Approved;
+        AddPublishRoster(meeting);
         AddPlannedSession(meeting);
         _factory.Meetings.Meetings.Add(meeting);
         _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
@@ -805,6 +829,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
         meeting.Status = MeetingStatus.Approved;
+        AddPublishRoster(meeting);
         _factory.Meetings.Meetings.Add(meeting);
         _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
@@ -951,6 +976,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
         meeting.Status = MeetingStatus.Approved;
+        AddPublishRoster(meeting);
         _factory.Meetings.Meetings.Add(meeting);
         _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
@@ -1270,7 +1296,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal("Draft", item.GetProperty("status").GetString());
         Assert.Equal("Internal", item.GetProperty("sensitivity").GetString());
         Assert.Equal(
-            ["id", "title", "startsAt", "createdAt", "status", "sensitivity"],
+            ["id", "title", "createdAt", "status", "sensitivity"],
             item.EnumerateObject().Select(property => property.Name));
     }
 
@@ -1391,14 +1417,13 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Post_uses_defaults_and_accepts_an_omitted_optional_end_time()
+    public async Task Post_uses_meeting_level_defaults_without_schedule_fields()
     {
         var creator = GivenCreator();
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
         var request = new
         {
             title = "Giao ban tuần",
-            startsAt = "2026-10-01T09:00:00+07:00",
         };
 
         var response = await client.PostAsJsonAsync("/api/meetings", request);
@@ -1408,7 +1433,8 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.Equal("InPerson", meeting.GetProperty("mode").GetString());
         Assert.Equal("Normal", meeting.GetProperty("sensitivity").GetString());
-        Assert.Equal(JsonValueKind.Null, meeting.GetProperty("endsAt").ValueKind);
+        Assert.False(meeting.TryGetProperty("startsAt", out _));
+        Assert.False(meeting.TryGetProperty("endsAt", out _));
         Assert.Equal(JsonValueKind.Null, meeting.GetProperty("assignedApproverId").ValueKind);
     }
 
@@ -1723,8 +1749,6 @@ public sealed class MeetingEndpointsTests : IDisposable
             Sensitivity = Sensitivity.Normal,
             Mode = MeetingMode.InPerson,
             CreatedById = creator.Id,
-            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
-            EndsAt = new DateTimeOffset(2026, 10, 1, 3, 0, 0, TimeSpan.Zero),
         };
         _factory.Meetings.Meetings.Add(meeting);
 
@@ -1852,18 +1876,14 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
         var meeting = OwnedMeetingBy(creator, Guid.CreateVersion7());
         _factory.Meetings.Meetings.Add(meeting);
-        var request = ValidRequest("Dữ liệu không hợp lệ") with
-        {
-            StartsAt = "2026-10-01T09:00:00+07:00",
-            EndsAt = "2026-10-01T09:00:00+07:00",
-        };
+        var request = ValidRequest("");
 
         var response = await client.PutAsJsonAsync($"/api/meetings/{meeting.Id}", request);
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal("MSG31", body.RootElement.GetProperty("code").GetString());
-        Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("endsAt", out _));
+        Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("title", out _));
         Assert.Equal("Giao ban tuần", Assert.Single(_factory.Meetings.Meetings).Title);
         Assert.Equal(0, _factory.Meetings.SaveCount);
     }

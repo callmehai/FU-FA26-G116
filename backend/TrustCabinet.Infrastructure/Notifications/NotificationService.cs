@@ -69,7 +69,7 @@ public sealed class NotificationService(
         return await meetings.FindAccessibleAsync(meetingId, userId, ct) is not null;
     }
 
-    /// <summary>Queues one reminder per invited active user during the 15 minutes before start.</summary>
+    /// <summary>Queues one reminder per planned session and active invited user before start.</summary>
     public async Task<int> QueueStartingSoonAsync(CancellationToken ct = default)
     {
         var now = clock.GetUtcNow();
@@ -88,7 +88,7 @@ public sealed class NotificationService(
         var created = 0;
         foreach (var item in upcoming)
         {
-            var key = $"meeting-starting-soon:{item.MeetingId:D}:{item.UserId:D}";
+            var key = $"meeting-session-starting-soon:{item.SessionId:D}:{item.UserId:D}";
             if (!existing.Add(key))
             {
                 continue;
@@ -102,7 +102,7 @@ public sealed class NotificationService(
                 TargetId = item.MeetingId,
                 Type = NotificationType.MeetingStartingSoon,
                 Title = "Cuộc họp sắp bắt đầu",
-                Body = $"Cuộc họp \"{item.MeetingTitle}\" sẽ bắt đầu trong vòng 15 phút.",
+                Body = $"Phiên \"{item.SessionTitle}\" của cuộc họp \"{item.MeetingTitle}\" sẽ bắt đầu trong vòng 15 phút.",
                 DeduplicationKey = key,
             });
             created++;

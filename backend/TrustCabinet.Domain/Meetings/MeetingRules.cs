@@ -1,12 +1,10 @@
-using System.Globalization;
-using System.Text.RegularExpressions;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Domain.Meetings;
 
 /// <summary>Validation and normalization rules for the create/update meeting form.</summary>
-public static partial class MeetingRules
+public static class MeetingRules
 {
     private const int MaxTitleLength = 300;
     private const int MaxLocationLength = 300;
@@ -24,21 +22,6 @@ public static partial class MeetingRules
         var title = input.Title?.Trim() ?? string.Empty;
         var location = input.Location?.Trim() ?? string.Empty;
         var description = input.Description ?? string.Empty;
-        var startsAtValid = TryParseTimestamp(input.StartsAt, out var startsAt);
-
-        DateTimeOffset? endsAt = null;
-        if (!string.IsNullOrWhiteSpace(input.EndsAt))
-        {
-            if (!TryParseTimestamp(input.EndsAt, out var parsedEndsAt))
-            {
-                fieldErrors["endsAt"] = "Thời gian kết thúc không hợp lệ.";
-            }
-            else
-            {
-                endsAt = parsedEndsAt.ToUniversalTime();
-            }
-        }
-
         var mode = MeetingMode.InPerson;
         if (input.Mode is not null && !TryParseDefinedEnum(input.Mode, out mode))
         {
@@ -53,8 +36,7 @@ public static partial class MeetingRules
 
         MergeErrors(
             fieldErrors,
-            ValidateInformation(title, startsAtValid ? startsAt : default, endsAt,
-                mode, location, sensitivity, description));
+            ValidateInformation(title, mode, location, sensitivity, description));
 
         errors = fieldErrors;
         if (fieldErrors.Count > 0)
@@ -65,8 +47,6 @@ public static partial class MeetingRules
 
         validated = new ValidatedMeetingInput(
             title,
-            startsAt.ToUniversalTime(),
-            endsAt,
             mode,
             location,
             sensitivity,
@@ -77,8 +57,6 @@ public static partial class MeetingRules
     public static IReadOnlyDictionary<string, string> ValidatePersistedMeetingInformation(Meeting meeting)
         => ValidateInformation(
             meeting.Title,
-            meeting.StartsAt,
-            meeting.EndsAt,
             meeting.Mode,
             meeting.Location,
             meeting.Sensitivity,
@@ -86,8 +64,6 @@ public static partial class MeetingRules
 
     private static IReadOnlyDictionary<string, string> ValidateInformation(
         string? title,
-        DateTimeOffset startsAt,
-        DateTimeOffset? endsAt,
         MeetingMode mode,
         string? location,
         Sensitivity sensitivity,
@@ -102,16 +78,6 @@ public static partial class MeetingRules
         else if (normalizedTitle.Length > MaxTitleLength)
         {
             errors["title"] = "Tên cuộc họp không được vượt quá 300 ký tự.";
-        }
-
-        if (startsAt == default)
-        {
-            errors["startsAt"] = "Thời gian bắt đầu không hợp lệ.";
-        }
-
-        if (endsAt is { } end && end <= startsAt)
-        {
-            errors["endsAt"] = "Thời gian kết thúc phải sau thời gian bắt đầu.";
         }
 
         if (!Enum.IsDefined(mode))
@@ -147,21 +113,6 @@ public static partial class MeetingRules
         }
     }
 
-    private static bool TryParseTimestamp(string? value, out DateTimeOffset timestamp)
-    {
-        timestamp = default;
-        if (string.IsNullOrEmpty(value) || !IsoTimestampPattern().IsMatch(value))
-        {
-            return false;
-        }
-
-        return DateTimeOffset.TryParse(
-            value,
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.None,
-            out timestamp);
-    }
-
     private static bool TryParseDefinedEnum<TEnum>(string? value, out TEnum result)
         where TEnum : struct, Enum
     {
@@ -171,9 +122,4 @@ public static partial class MeetingRules
             && Enum.IsDefined(result)
             && string.Equals(value, result.ToString(), StringComparison.Ordinal);
     }
-
-    [GeneratedRegex(
-        @"\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?(?:Z|[+-]\d{2}:\d{2})\z",
-        RegexOptions.CultureInvariant)]
-    private static partial Regex IsoTimestampPattern();
 }
