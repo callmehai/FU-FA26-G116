@@ -278,9 +278,12 @@ Hai mã `400` khác nhau hoàn toàn về cách xử lý — khớp theo `code`.
 > vào **cùng tab** (chỉ đổi fragment, không tải lại trang) cũng nhận token mới. FE kiểm ≥ 12 ký tự và
 > "nhập lại khớp" trước khi gửi. `MSG92` → toast thông điệp của backend rồi chuyển tới `/login`;
 > nếu trình duyệt này đang giữ một phiên đăng nhập thì đăng xuất phiên đó trước, không thì `/login`
-> sẽ đưa thẳng vào ứng dụng. `MSG93` → ẩn form, hiện `message` của backend, hướng dẫn liên hệ quản trị
+> sẽ đưa thẳng vào ứng dụng; đăng xuất không tới được server thì vẫn báo `MSG92`, kèm toast lỗi `MSG06`
+> (phiên đó còn nguyên). `MSG93` → ẩn form, hiện `message` của backend, hướng dẫn liên hệ quản trị
 > viên và nút về trang đăng nhập (focus vào nút); không có token thì hiện đúng câu đó mà không gọi API
-> (dòng FE của `MSG93` trong danh mục mã). `MSG94` → lỗi dưới ô mật khẩu mới, giữ nguyên form. Lỗi khác (5xx, mất mạng) → alert trên
+> (dòng FE của `MSG93` trong danh mục mã), kèm hướng dẫn "bấm lại liên kết trong email". Token chỉ giữ
+> trong bộ nhớ, giống access token — tải lại trang hoặc khôi phục thẻ sẽ rơi vào trường hợp này, trong
+> khi liên kết vẫn còn dùng được. `MSG94` → lỗi dưới ô mật khẩu mới, giữ nguyên form. Lỗi khác (5xx, mất mạng) → alert trên
 > form, giữ nguyên những gì đã nhập.
 
 ---
