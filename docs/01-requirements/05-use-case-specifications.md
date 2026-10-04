@@ -474,7 +474,7 @@ The account owner continues the use case from the email. No sign-in is required:
 11. The system displays the new password form.
 12. The user enters the new password and its confirmation and submits them.
 13. The system verifies that the link is valid: it exists, it has not expired, it has not been used, and no newer link has replaced it (BR-20).
-14. The system validates the new password against the password rule (BR-22).
+14. The system validates the new password: it must follow the same password rule as account creation (UC-05) and match its confirmation.
 15. The system marks the link as used, so it cannot be used again (BR-20).
 16. The system verifies that the account is still eligible: it is active and it signs in with a password (BR-03, BR-22).
 17. The system replaces the password with the new one (BR-01) and ends every active session of the account (BR-20).
@@ -486,15 +486,16 @@ The account owner continues the use case from the email. No sign-in is required:
 - **AF-1: The Browser Is Already Signed In**
   1. At Step 19, the browser used to complete the reset still has a signed-in session (of this or another account).
   2. The system signs that session out before showing the sign-in page.
-  3. If the sign-out cannot be completed, the system still displays MSG92 – "Password reset successfully. Please sign in with your new password." and also displays MSG06 – "Unable to sign out. Please try again." The browser's session remains signed in, and the new password is already in effect.
-  4. The use case ends.
+  3. If the sign-out succeeds, the flow resumes at Step 19.
+  4. If the sign-out cannot be completed, the system still displays MSG92 – "Password reset successfully. Please sign in with your new password." and also displays MSG06 – "Unable to sign out. Please try again." The browser's session remains signed in, and the new password is already in effect.
+  5. The use case ends.
 
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
 
 - **EX-1: User Account Is Not Eligible for Password Reset**
-  1. At Step 4 of the Main Flow, the system determines that the selected account is deactivated, or that it has no password because it only signs in with Google (BR-22).
+  1. At Step 4 of the Main Flow, the system determines that the selected account is deactivated, or that it has no password because it only signs in with Google (BR-22). The User Accounts list already makes Reset Password unavailable for such accounts, so this happens when the list is out of date.
   2. No password reset link is created and no email is sent.
-  3. The system displays MSG14 – "Password reset is not available for this account."
+  3. The system displays MSG14 – "Password reset is not available for this account." When the system can tell which reason applies, it updates the account in the list and states the reason instead (the account is deactivated, or it signs in with Google only).
   4. The use case ends.
 
 - **EX-2: Password Reset Email Cannot Be Sent**
@@ -506,25 +507,25 @@ The account owner continues the use case from the email. No sign-in is required:
 - **EX-3: User Account No Longer Exists**
   1. At Step 4 of the Main Flow, the system cannot find the selected account.
   2. No password reset link is created and no email is sent.
-  3. The system refreshes the User Accounts list.
+  3. The system informs the System Admin that the account no longer exists and refreshes the User Accounts list. This situation has no message code.
   4. The use case ends.
 
 - **EX-4: Password Reset Link Is Not Valid**
-  1. At Step 13 or Step 16, the system determines that the link is unknown, has expired, has already been used, has been replaced by a newer link, or belongs to an account that is now deactivated or has no password (BR-20, BR-22).
+  1. At Step 13, 15 or 16, the system determines that the link is unknown, has expired, has already been used (including by a simultaneous submission), has been replaced by a newer link, or belongs to an account that is now deactivated or has no password (BR-20, BR-22).
   2. The password is not changed. A link that reached Step 15 is used up.
   3. The system hides the new password form and displays MSG93 – "The password reset link is invalid or has expired. Please contact an administrator." It does not say which of these reasons applies.
   4. The use case ends.
 
 - **EX-5: New Password Is Invalid**
-  1. At Step 14, the new password does not satisfy the password rule.
+  1. At Step 14, the new password does not satisfy the password rule, or the confirmation does not match it.
   2. The password is not changed and the link remains usable.
-  3. The system displays MSG94 – "Invalid new password." with the reason next to the new password field.
+  3. The system shows the reason next to the field concerned. A password that breaks the password rule is MSG94 – "Invalid new password.", shown through its field reason (at least 12 characters); a confirmation that does not match is reported before the link is checked.
   4. The user corrects the new password and resubmits it.
   5. The flow resumes at Step 13.
 
 - **EX-6: Password Reset Page Opened Without a Reset Code**
   1. At Step 11, the page has no reset code. This happens when the link is incomplete, or when the page is reloaded or restored after the code was removed from the address bar.
-  2. The system does not contact the server and does not say that the link has expired, because the link itself may still be usable.
+  2. The system does not check the link and does not say that it has expired, because the link itself may still be usable.
   3. The system displays MSG129 – "No password reset code was found. Please open the link in the email again." with a hint that the link still works if it has not been used, is less than 60 minutes old and has not been replaced by a newer link.
   4. The use case ends. Opening the link from the email again starts a new execution at Step 10.
 
@@ -534,7 +535,8 @@ The account owner continues the use case from the email. No sign-in is required:
 - **BR-10, BR-21**: The reset link and the existing password are never displayed in User Management.
 - **BR-16**: Both the reset request (actor: System Admin) and the completed reset (actor: account owner) are recorded in the audit log.
 - **BR-20**: How the link is limited (validity, single use, one usable link per account, revocation, ending sessions) is detailed under *Quy tắc TrustCabinet đã được BA xác nhận — UC-08* in [06-business-rules.md](06-business-rules.md).
-- **BR-22**: Eligibility means the account is active and signs in with a password; the new password follows the same rule as account creation. See the same section.
+- **BR-22**: Eligibility means the account is active and signs in with a password. See the same section.
+- **Password rule**: the new password follows the same rule as account creation (UC-05), recorded in the same section.
 
 ---
 

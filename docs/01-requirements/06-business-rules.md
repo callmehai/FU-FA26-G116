@@ -48,7 +48,7 @@ yêu cầu thêm quyền riêng để đăng nhập.
 trong bảng giữ nguyên.
 
 - **BR-20 — liên kết đặt lại mật khẩu:**
-  - hiệu lực **60 phút** kể từ khi email được gửi;
+  - hiệu lực **60 phút** kể từ khi liên kết được tạo (ngay trước khi gửi email);
   - **dùng một lần**: liên kết bị tiêu ngay khi được gửi kèm một mật khẩu mới hợp lệ, kể cả khi sau đó
     hệ thống phát hiện tài khoản không còn đủ điều kiện; mật khẩu mới sai quy tắc thì liên kết **chưa**
     bị tiêu, người dùng sửa rồi gửi lại;
@@ -57,7 +57,8 @@ trong bảng giữ nguyên.
   - gửi email thất bại thì liên kết mới **không** dùng được, còn liên kết cũ (nếu có) **vẫn** dùng
     được;
   - liên kết đang chờ bị thu hồi khi tài khoản bị **vô hiệu hoá** (UC-07), **đổi email** (UC-06) hoặc
-    **đổi vai trò hệ thống** (UC-09); đổi họ tên thì không;
+    **đổi vai trò hệ thống** (UC-09); đổi họ tên thì không. Nếu tài khoản bị vô hiệu hoá hoặc đổi email
+    ngay trong lúc email đang được gửi, liên kết vừa gửi cũng bị thu hồi;
   - yêu cầu đặt lại mật khẩu **không** đổi gì trên tài khoản: mật khẩu hiện tại vẫn dùng được và
     không ai bị đăng xuất cho tới khi liên kết được dùng;
   - đặt mật khẩu mới thành công thì **mọi phiên đăng nhập** của tài khoản bị kết thúc, và hệ thống

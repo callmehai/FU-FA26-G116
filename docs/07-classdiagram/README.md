@@ -317,6 +317,8 @@ Code có **một** method chung, phân biệt bằng tham số `action` nhận m
 - `user.updated`
 - `user.deactivated`
 - `user.reactivated`
+- `user.password_reset_requested` (UC-08, người thực hiện là quản trị viên)
+- `user.password_reset` (UC-08, người thực hiện là chính chủ tài khoản)
 
 Vẽ một method chung sẽ sát thực tế hơn, và cũng thể hiện đúng ý định: audit log là bảng chung cho
 toàn hệ thống, các story sau (họp, tài liệu, biên bản) sẽ ghi vào cùng chỗ với cùng method này.
@@ -361,11 +363,11 @@ Bản vẽ 02 bỏ các thành phần UC-08 cũ và có ghi chú trỏ sang 02b.
 | `UserManagementPage.resetUserPassword()` | giữ, thêm boundary thứ hai `ResetPasswordPage.submitNewPassword()` — nửa sau của UC-08, người dùng đặt mật khẩu bằng liên kết |
 | `UserController.resetPassword(userId)` | `UserController.requestPasswordReset(userId)` + `AuthController.resetPassword(resetCode, newPassword)` (ẩn danh) |
 | `UserService.initiatePasswordReset(userId)` | `requestPasswordReset(userId, actorId)` + `resetPassword(resetCode, newPassword)` |
-| `UserService.isPasswordResetEligible(user)` | giữ (private): đang hoạt động **và** có mật khẩu (BR-22) |
+| `UserService.isPasswordResetEligible(user)` | bỏ — điều kiện "đang hoạt động **và** có mật khẩu" (BR-22) được kiểm thẳng trong `requestPasswordReset` và `resetPassword`, không có method riêng |
 | `AuthenticationService.createPasswordResetRequest(userId)` | `PasswordResetTokenStore` — `create` / `activate` / `peek` / `consume` / `revoke` |
 | `EmailService.sendPasswordResetEmail(user)` | `PasswordResetEmailSender.send(...)`: bool — gửi hỏng là một nhánh nghiệp vụ (MSG15), không phải exception |
 | `AuditService.recordPasswordReset(userId)` | `AuditService.record(action, objectType, objectId, actorId, details)` |
-| — | thêm `TokenService.revokeAllForUser()` (kết thúc phiên khi đặt lại xong) và `PasswordHasher.hash()` |
+| — | thêm `<<service>> TokenService.revokeAllForUser()` (kết thúc phiên khi đặt lại xong), `PasswordHasher.hash()` và `AuthController.signOut()` (AF-1: trình duyệt đang đăng nhập) |
 
 **Mâu thuẫn "hai đường cho cùng một việc"** (`UserService` vừa gọi `EmailService` vừa gọi
 `AuthenticationService`) được giải theo code: `UserService` điều phối, gọi riêng
@@ -469,7 +471,7 @@ Bản vẽ có method này ở cả 4 tầng (`Controller`, `Service`, `Reposito
 
 Đã thống nhất không làm trong sprint này.
 
-**Cần sửa — chọn một**, giống cách đã xử lý UC-08 ở bản vẽ 02:
+**Cần sửa — chọn một** (UC-08 ở bản vẽ 02 từng có cùng hai lựa chọn này, xem [PHẦN D](#phần-d--uc-08-đặt-lại-mật-khẩu-đã-tách-sang-bản-vẽ-02b)):
 
 - Bỏ hẳn 4 method đó khỏi bản vẽ, hoặc
 - Thêm ghi chú `<<chưa implement>>` lên từng cái.
@@ -550,7 +552,7 @@ lý do bảng này tồn tại. Để nó không ở đâu cả mới là không
 - [ ] F5 — thêm `TokenService` (bản vẽ 03) **+ bổ sung participant đó vào sequence diagram UC-10**
 - [ ] F6 — thêm `wouldRemoveTheLastAdminCapability()` (bản vẽ 03)
 
-**Cần quyết (1):**
+**Cần quyết (đã xong):**
 
 - [x] D — UC-08: đã tách bản vẽ riêng `feature-02b-password-reset` (04/10/2026)
 
