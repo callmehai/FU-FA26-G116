@@ -91,7 +91,6 @@ public sealed class NotificationRepositoryPostgresTests : IAsyncLifetime
         var recipient = Assert.Single(recipients);
         Assert.Equal(published.Id, recipient.MeetingId);
         Assert.Equal(published.Title, recipient.MeetingTitle);
-        Assert.Equal(Assert.Single(published.Sessions).Id, recipient.SessionId);
         Assert.Equal(included.Id, recipient.UserId);
     }
 
@@ -125,26 +124,15 @@ public sealed class NotificationRepositoryPostgresTests : IAsyncLifetime
     };
 
     private static Meeting NewMeeting(
-        string title, MeetingStatus status, DateTimeOffset startsAt, Guid organizerId)
+        string title, MeetingStatus status, DateTimeOffset startsAt, Guid organizerId) => new()
     {
-        var meeting = new Meeting
-        {
-            Title = title,
-            Status = status,
-            Sensitivity = Sensitivity.Internal,
-            Mode = MeetingMode.Online,
-            CreatedById = organizerId,
-        };
-        meeting.Sessions.Add(new MeetingSession
-        {
-            Meeting = meeting,
-            Title = $"Phiên {title}",
-            PlannedStartsAt = startsAt,
-            PlannedEndsAt = startsAt.AddHours(1),
-            Status = MeetingSessionStatus.Planned,
-        });
-        return meeting;
-    }
+        Title = title,
+        Status = status,
+        Sensitivity = Sensitivity.Internal,
+        Mode = MeetingMode.Online,
+        StartsAt = startsAt,
+        CreatedById = organizerId,
+    };
 
     private static MeetingParticipant NewParticipant(Guid meetingId, Guid userId) => new()
     {

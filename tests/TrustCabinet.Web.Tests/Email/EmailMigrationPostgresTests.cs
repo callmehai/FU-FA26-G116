@@ -133,6 +133,7 @@ public sealed class EmailMigrationPostgresTests : IAsyncLifetime
             Sensitivity = Sensitivity.Normal,
             Mode = MeetingMode.InPerson,
             Location = "Existing meeting room",
+            StartsAt = now.AddDays(1),
             CreatedBy = user,
             CreatedById = user.Id,
         };
@@ -141,17 +142,6 @@ public sealed class EmailMigrationPostgresTests : IAsyncLifetime
         const string legacyPayload = """{"legacy":true}""";
         var leaseToken = Guid.CreateVersion7();
         var leaseExpiresAt = now.AddMinutes(10);
-        _db.Users.Add(user);
-        await _db.SaveChangesAsync();
-        await _db.Database.ExecuteSqlInterpolatedAsync($"""
-            INSERT INTO meetings (
-                id, title, description, status, sensitivity, mode, location,
-                starts_at, ends_at, created_by_id, assigned_approver_id, created_at, updated_at)
-            VALUES (
-                {meeting.Id}, {meeting.Title}, {string.Empty}, {meeting.Status.ToString()},
-                {meeting.Sensitivity.ToString()}, {meeting.Mode.ToString()}, {meeting.Location},
-                {now.AddHours(1)}, {now.AddHours(2)}, {user.Id}, {null}, {now}, {now})
-            """);
         var job = new EmailMessage
         {
             DeduplicationKey = $"meeting:{meeting.Id:D}:published:{user.Id:D}",
@@ -165,6 +155,8 @@ public sealed class EmailMigrationPostgresTests : IAsyncLifetime
             LeaseToken = leaseToken,
             LeaseExpiresAt = leaseExpiresAt,
         };
+        _db.Users.Add(user);
+        _db.Meetings.Add(meeting);
         _db.EmailMessages.Add(job);
         await _db.SaveChangesAsync();
 
@@ -304,6 +296,7 @@ public sealed class EmailMigrationPostgresTests : IAsyncLifetime
             Sensitivity = Sensitivity.Normal,
             Mode = MeetingMode.InPerson,
             Location = "Meeting room",
+            StartsAt = now.AddDays(1),
             CreatedBy = newOrganizer,
             CreatedById = newOrganizer.Id,
         };

@@ -79,21 +79,8 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         var visible = Meetings.Where(m => MeetingReadPolicy.CanRead(m, actorId));
         if (query.Status is { } status) visible = visible.Where(m => m.Status == status);
         if (query.Sensitivity is { } sensitivity) visible = visible.Where(m => m.Sensitivity == sensitivity);
-        if (query.From is { } from && query.To is { } to)
-        {
-            visible = visible.Where(m => m.Sessions.Any(s => s.Status != MeetingSessionStatus.Cancelled
-                && s.PlannedEndsAt >= from && s.PlannedStartsAt <= to));
-        }
-        else if (query.From is { } onlyFrom)
-        {
-            visible = visible.Where(m => m.Sessions.Any(s => s.Status != MeetingSessionStatus.Cancelled
-                && s.PlannedEndsAt >= onlyFrom));
-        }
-        else if (query.To is { } onlyTo)
-        {
-            visible = visible.Where(m => m.Sessions.Any(s => s.Status != MeetingSessionStatus.Cancelled
-                && s.PlannedStartsAt <= onlyTo));
-        }
+        if (query.From is { } from) visible = visible.Where(m => m.StartsAt >= from);
+        if (query.To is { } to) visible = visible.Where(m => m.StartsAt <= to);
         if (query.Query is { Length: > 0 } search)
         {
             visible = visible.Where(m => m.Title.Contains(search, StringComparison.OrdinalIgnoreCase));
@@ -111,13 +98,15 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
             (MeetingSortBy.Title, MeetingSortDirection.Asc) => visible.OrderBy(m => m.Title),
             (MeetingSortBy.Title, MeetingSortDirection.Desc) => visible.OrderByDescending(m => m.Title),
             (MeetingSortBy.CreatedAt, MeetingSortDirection.Asc) => visible.OrderBy(m => m.CreatedAt),
-            _ => visible.OrderByDescending(m => m.CreatedAt),
+            (MeetingSortBy.CreatedAt, MeetingSortDirection.Desc) => visible.OrderByDescending(m => m.CreatedAt),
+            (MeetingSortBy.StartsAt, MeetingSortDirection.Asc) => visible.OrderBy(m => m.StartsAt),
+            _ => visible.OrderByDescending(m => m.StartsAt),
         };
         var items = ordered.ThenBy(m => m.Id)
             .Skip(checked((int)offset))
             .Take(query.PageSize)
             .Select(m => new MeetingListItem(
-                m.Id, m.Title, m.CreatedAt, m.Status, m.Sensitivity))
+                m.Id, m.Title, m.StartsAt, m.CreatedAt, m.Status, m.Sensitivity))
             .ToArray();
         return Task.FromResult(new MeetingListPage(items, query.Page, query.PageSize, total));
     }
@@ -302,6 +291,8 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
             Sensitivity = meeting.Sensitivity,
             Mode = meeting.Mode,
             Location = meeting.Location,
+            StartsAt = meeting.StartsAt,
+            EndsAt = meeting.EndsAt,
             CreatedById = meeting.CreatedById,
             AssignedApproverId = meeting.AssignedApproverId,
             Sessions = meeting.Sessions.Select(session => new MeetingSession

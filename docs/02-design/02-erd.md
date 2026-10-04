@@ -21,11 +21,11 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | User | Tài khoản nội bộ | IMPLEMENTED | Giữ. |
 | Role | Vai trò RBAC cấp hệ thống | IMPLEMENTED | Giữ; độc lập với MeetingRole. |
 | RoleCapability | Quyền năng gắn với Role | IMPLEMENTED | Giữ. |
-| Meeting | Hồ sơ và vòng đời cuộc họp | IMPLEMENTED | Không lưu lịch dự kiến; lịch thuộc MeetingSession. |
+| Meeting | Hồ sơ và vòng đời cuộc họp | NEED MIGRATION / RESTRUCTURE | Bỏ lịch dự kiến khỏi Meeting. |
 | MeetingStatusHistory | Bằng chứng chuyển trạng thái | NEED MIGRATION / RESTRUCTURE | Giữ append-only; đồng bộ vòng đời đích. |
 | MeetingParticipant | Phân công người tham dự nội bộ | NEED MIGRATION / RESTRUCTURE | Bỏ Guest; hỗ trợ phân công Current/Removed và lưu lịch sử. |
 | MeetingGuestInvitation | Lời mời khách ngoài theo cuộc họp | NOT IMPLEMENTED | Thêm entity riêng; khách không phải User/người tham dự nội bộ. |
-| MeetingSession | Lịch và vòng đời của phiên họp | IMPLEMENTED | Đã có entity/schema và lịch dự kiến; API/lifecycle thuộc SCRUM-68. |
+| MeetingSession | Lịch và vòng đời của phiên họp | NOT IMPLEMENTED | Thêm; chứa nghị sự và lịch dự kiến. |
 | AgendaItem | Mục nghị sự của phiên họp | NEED MIGRATION / RESTRUCTURE | Đổi MeetingId thành MeetingSessionId; trạng thái đích Pending/InProgress/Done. |
 | Notification | Thông báo của User | IMPLEMENTED | Giữ User bắt buộc, Meeting tùy chọn. |
 | Document | Tài liệu trong kho cá nhân | NEED MIGRATION / RESTRUCTURE | Bỏ MeetingId/AgendaItemId; thêm OwnerId. |
@@ -560,7 +560,7 @@ erDiagram
 
 | Code/schema hiện tại | Mô hình đích | Thay đổi cần thiết |
 |---|---|---|
-| Meeting trước SCRUM-70 có StartsAt/EndsAt. | Meeting không lưu lịch dự kiến. | Đã backfill Meeting chưa có session và bỏ field/index bằng migration SCRUM-70. |
+| Meeting hiện có StartsAt/EndsAt. | Meeting đích không lưu lịch dự kiến. | Chuyển lịch sang MeetingSession, bỏ các field và index tương ứng. |
 | AgendaItem hiện có MeetingId. | Bắt buộc có AgendaItem.MeetingSessionId. | Thêm session và gán mỗi agenda item vào một session. |
 | MeetingRole hiện có Guest. | Chỉ còn Chair/Secretary/Member. | Dùng MeetingGuestInvitation cho khách bên ngoài. |
 | Tính duy nhất participant áp dụng cho mọi row. | Chỉ duy nhất với phân công Current. | Thêm trạng thái/bằng chứng gỡ phân công và unique constraint có điều kiện. |
@@ -568,7 +568,7 @@ erDiagram
 | DocumentComment hiện tham chiếu Document. | DocumentComment tham chiếu MeetingDocument. | Giữ ngữ cảnh góp ý theo từng cuộc họp. |
 | CallParticipant.UserId hiện bắt buộc. | UserId XOR GuestInvitationId. | Cho phép hai cột identity null riêng rẽ và ràng buộc chỉ một cột có giá trị. |
 | CallSession.StartedById hiện bắt buộc. | Có thể null với MeetingRoom. | Cho phép phòng tồn tại mà không cần starter nội bộ. |
-| MeetingGuestInvitation, MeetingDocument chưa có trong domain/schema. | Cả hai là entity đích. | Sẽ triển khai/migration sau; hiện chưa phải bảng trong DB. MeetingSession đã có schema. |
+| MeetingSession, MeetingGuestInvitation, MeetingDocument chưa có trong domain/schema. | Cả ba là entity đích. | Sẽ triển khai/migration sau; hiện chưa phải bảng trong DB. |
 
 ### Xung đột yêu cầu cần đối chiếu
 

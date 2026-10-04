@@ -135,7 +135,7 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG44` | 200 | POST Reject | Từ chối cuộc họp thành công | `Đã từ chối cuộc họp.` | BE |
 | `MSG45` | 200 | POST Publish | Công bố cuộc họp thành công | `Đã công bố cuộc họp.` | BE |
 | `MSG46` | 403 | POST Publish | Organizer còn đọc được meeting nhưng mất `MeetingCreator` | `Cuộc họp này không còn có thể công bố.` | BE |
-| `MSG46` | 409 | POST Publish | Meeting không còn Approved, hoặc không có đúng một Chair active và ít nhất một Secretary active | `Cuộc họp này không còn có thể công bố.` | BE |
+| `MSG46` | 409 | POST Publish | Meeting không còn Approved | `Cuộc họp này không còn có thể công bố.` | BE |
 | `MSG47` | 503 | POST Publish | Không lưu được yêu cầu công bố | `Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG78` | 200 | POST SubmitForApproval | Gửi duyệt cuộc họp thành công | `Đã gửi cuộc họp để duyệt.` | BE |
 | `MSG79` | 200 | POST ReturnToDraft | Đưa cuộc họp về Draft thành công | `Đã đưa cuộc họp về bản nháp.` | BE |

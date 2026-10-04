@@ -59,9 +59,8 @@ public class NotificationServiceTests
         var inactive = NewUser("inactive@example.com");
         inactive.IsActive = false;
         var meeting = NewMeeting(organizer);
-        var session = Assert.Single(meeting.Sessions);
-        session.PlannedStartsAt = Now.AddMinutes(10);
-        session.PlannedEndsAt = Now.AddHours(1);
+        meeting.StartsAt = Now.AddMinutes(10);
+        meeting.EndsAt = Now.AddHours(1);
         db.Users.AddRange(organizer, active, inactive);
         db.Meetings.Add(meeting);
         db.MeetingParticipants.AddRange(
@@ -76,8 +75,6 @@ public class NotificationServiceTests
         Assert.Equal(active.Id, reminder.UserId);
         Assert.Equal(NotificationType.MeetingStartingSoon, reminder.Type);
         Assert.Equal(meeting.Id, reminder.MeetingId);
-        Assert.Equal($"meeting-session-starting-soon:{session.Id:D}:{active.Id:D}", reminder.DeduplicationKey);
-        Assert.Contains(session.Title, reminder.Body, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -192,26 +189,16 @@ public class NotificationServiceTests
         Title = "Bạn được mời họp",
     };
 
-    private static Meeting NewMeeting(User organizer)
+    private static Meeting NewMeeting(User organizer) => new()
     {
-        var meeting = new Meeting
-        {
-            Title = "Họp giao ban",
-            Status = MeetingStatus.Published,
-            Sensitivity = Sensitivity.Internal,
-            Mode = MeetingMode.Online,
-            CreatedById = organizer.Id,
-        };
-        meeting.Sessions.Add(new MeetingSession
-        {
-            Meeting = meeting,
-            Title = "Phiên giao ban",
-            PlannedStartsAt = Now.AddHours(1),
-            PlannedEndsAt = Now.AddHours(2),
-            Status = MeetingSessionStatus.Planned,
-        });
-        return meeting;
-    }
+        Title = "Họp giao ban",
+        Status = MeetingStatus.Published,
+        Sensitivity = Sensitivity.Internal,
+        Mode = MeetingMode.Online,
+        StartsAt = Now.AddHours(1),
+        EndsAt = Now.AddHours(2),
+        CreatedById = organizer.Id,
+    };
 
     private sealed class FrozenClock : TimeProvider
     {

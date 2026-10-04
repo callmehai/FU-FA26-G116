@@ -81,24 +81,13 @@ public sealed class NotificationRepository(TrustCabinetDbContext db) : INotifica
 
     public Task<List<UpcomingMeetingRecipient>> FindUpcomingMeetingRecipientsAsync(
         DateTimeOffset now, DateTimeOffset cutoff, CancellationToken ct = default)
-        => db.MeetingSessions.AsNoTracking()
-            .Join(
-                db.MeetingParticipants.AsNoTracking(),
-                session => session.MeetingId,
-                participant => participant.MeetingId,
-                (session, participant) => new { Session = session, Participant = participant })
-            .Where(item => item.Session.Status != MeetingSessionStatus.Cancelled
-                && (item.Session.Meeting.Status == MeetingStatus.Published
-                    || item.Session.Meeting.Status == MeetingStatus.InProgress)
-                && item.Session.PlannedStartsAt > now
-                && item.Session.PlannedStartsAt <= cutoff
-                && item.Participant.User.IsActive)
-            .Select(item => new UpcomingMeetingRecipient(
-                item.Session.MeetingId,
-                item.Session.Meeting.Title,
-                item.Session.Id,
-                item.Session.Title,
-                item.Participant.UserId))
+        => db.MeetingParticipants.AsNoTracking()
+            .Where(participant => participant.Meeting.Status == MeetingStatus.Published
+                && participant.Meeting.StartsAt > now
+                && participant.Meeting.StartsAt <= cutoff
+                && participant.User.IsActive)
+            .Select(participant => new UpcomingMeetingRecipient(
+                participant.MeetingId, participant.Meeting.Title, participant.UserId))
             .ToListAsync(ct);
 
     public Task<List<string?>> FindReminderKeysAsync(Guid[] meetingIds,

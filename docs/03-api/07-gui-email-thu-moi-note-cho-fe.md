@@ -43,8 +43,10 @@ riêng của backend để tạo absolute URL trong email.
 
 ## Thời gian và người nhận
 
-- API Meeting không còn trả Planned Start/End Time; FE lấy lịch từ Meeting Session ở story tương ứng.
-- Email Publish không hiển thị lịch và không đính kèm `.ics`; FE chỉ dùng link chi tiết Meeting.
+- API meeting tiếp tục trả thời gian theo contract hiện có. FE định dạng thời gian theo quy ước của
+  ứng dụng; không cần xử lý thời gian bên trong email hay tệp `.ics`.
+- Backend tự hiển thị giờ Việt Nam trong nội dung email và ghi UTC trong `.ics` để ứng dụng lịch tự
+  đổi múi giờ.
 - Backend tự loại tài khoản đã vô hiệu hóa khỏi danh sách nhận thư. FE không lặp lại luật này như
   một biện pháp bảo mật và không thông báo "đã gửi cho N người" vì response công bố không xác nhận
   từng lần gửi.

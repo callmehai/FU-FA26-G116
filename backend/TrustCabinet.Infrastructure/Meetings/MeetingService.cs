@@ -30,6 +30,8 @@ public sealed class MeetingService(
         var meeting = new Meeting
         {
             Title = valid!.Title,
+            StartsAt = valid.StartsAt,
+            EndsAt = valid.EndsAt,
             Mode = valid.Mode,
             Location = valid.Location,
             Sensitivity = valid.Sensitivity,
@@ -191,6 +193,8 @@ public sealed class MeetingService(
                 if (HasChanges(meeting, normalized))
                 {
                     meeting.Title = normalized.Title;
+                    meeting.StartsAt = normalized.StartsAt;
+                    meeting.EndsAt = normalized.EndsAt;
                     meeting.Mode = normalized.Mode;
                     meeting.Location = normalized.Location;
                     meeting.Sensitivity = normalized.Sensitivity;
@@ -215,6 +219,8 @@ public sealed class MeetingService(
 
     private static bool HasChanges(Meeting meeting, ValidatedMeetingInput input)
         => !string.Equals(meeting.Title, input.Title, StringComparison.Ordinal)
+            || meeting.StartsAt != input.StartsAt
+            || meeting.EndsAt != input.EndsAt
             || meeting.Mode != input.Mode
             || !string.Equals(meeting.Location, input.Location, StringComparison.Ordinal)
             || meeting.Sensitivity != input.Sensitivity
@@ -346,18 +352,6 @@ public sealed class MeetingService(
                 if (meeting.Status != fromStatus)
                 {
                     return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.StatusConflict);
-                }
-
-                if (command.Action == MeetingTransitionAction.Publish)
-                {
-                    var activeChairCount = meeting.Participants.Count(participant =>
-                        participant.Role == MeetingRole.Chair && participant.User.IsActive);
-                    var hasActiveSecretary = meeting.Participants.Any(participant =>
-                        participant.Role == MeetingRole.Secretary && participant.User.IsActive);
-                    if (activeChairCount != 1 || !hasActiveSecretary)
-                    {
-                        return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.StatusConflict);
-                    }
                 }
 
                 if (transfersOrganizer)

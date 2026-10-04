@@ -40,9 +40,11 @@ SMTP được kết nối bằng MailKit và không phụ thuộc Gmail hay mộ
 `StartTls` cho cổng submission thông dụng (thường là 587), `SslOnConnect` cho TLS ngay khi kết nối
 (thường là 465), hoặc `None` chỉ cho SMTP nội bộ không mã hoá.
 
-Mỗi thư Publish gồm nội dung tiếng Việt, thông tin Meeting, địa điểm/hình thức và đường dẫn trực tiếp
-tới `/mgmt/meetings/{id}`. Thư không ghi Planned Start/End Time và không tạo tệp `.ics`, vì lịch dự
-kiến thuộc từng Meeting Session chứ không thuộc Meeting.
+Mỗi thư gồm nội dung tiếng Việt, đường dẫn trực tiếp tới
+`/mgmt/meetings/{id}` và tệp `thu-moi-hop.ics` có `METHOD:REQUEST`, người tham dự, thời gian, địa điểm
+và URL cuộc họp. Nội dung thư hiển thị giờ Việt Nam (`Asia/Ho_Chi_Minh`); tệp lịch giữ thời gian UTC
+theo RFC 5545 để Outlook và Google Calendar tự đổi sang múi giờ của người dùng. Các parameter tên
+người trong tệp lịch được quote và encode theo RFC 5545/RFC 6868.
 
 ## Điểm tích hợp với SCRUM-19
 
@@ -53,8 +55,8 @@ khởi tạo queue có ranh giới riêng. Thứ tự bắt buộc:
 2. Chuyển sang `Published`, thêm `MeetingStatusHistory` bất biến.
 3. Tạo notifications, SaveChanges và commit transaction publication.
 4. Gọi `QueueForPublishedMeetingAsync(meetingId)`; producer đọc meeting/participants, render và lưu
-   Subject/Body cùng DeduplicationKey khi SMTP được bật; `CalendarAttachment` là null.
-5. Worker chỉ gửi nội dung đã lưu; không render lại từ meeting/participant hiện tại.
+   Subject/Body/.ics cùng DeduplicationKey khi SMTP được bật.
+5. Worker chỉ gửi Body/CalendarAttachment đã lưu; không render lại từ meeting/participant hiện tại.
 
 Nếu lưu publication lỗi thì rollback status/history/notification và trả `MSG47`. Nếu bước queue lỗi
 sau commit thì giữ Published, trả `MSG45`, ghi log và để worker đối soát thử lại. Deduplication key

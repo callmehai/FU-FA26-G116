@@ -15,6 +15,7 @@ public sealed class MeetingSubmissionReadinessTests
             Status = MeetingStatus.Rejected,
             Sensitivity = Sensitivity.Normal,
             Mode = MeetingMode.Online,
+            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
             CreatedById = Guid.CreateVersion7(),
         };
         Assert.Empty(MeetingSubmissionReadinessRules.Validate(meeting));
@@ -39,6 +40,7 @@ public sealed class MeetingSubmissionReadinessTests
             Sensitivity = Sensitivity.Normal,
             Mode = MeetingMode.Online,
             Location = string.Empty,
+            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
             CreatedById = Guid.CreateVersion7(),
             AgendaItems =
             [
@@ -55,11 +57,13 @@ public sealed class MeetingSubmissionReadinessTests
         Assert.Empty(MeetingSubmissionReadinessRules.Validate(meeting));
 
         meeting.Title = " ";
+        meeting.EndsAt = meeting.StartsAt;
         meeting.Sensitivity = (Sensitivity)999;
         meeting.Description = new string('x', 4001);
         var invalid = MeetingSubmissionReadinessRules.Validate(meeting);
 
         Assert.Contains("title", invalid.Keys);
+        Assert.Contains("endsAt", invalid.Keys);
         Assert.Contains("sensitivity", invalid.Keys);
         Assert.Contains("description", invalid.Keys);
     }

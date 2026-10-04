@@ -34,7 +34,7 @@ public sealed class EmailDeliveryTests
     }
 
     [Fact]
-    public async Task Published_meeting_is_queued_once_per_participant_without_a_calendar_attachment()
+    public async Task Published_meeting_is_queued_once_per_participant_with_calendar_attachment()
     {
         await using var db = NewDatabase();
         var meeting = PublishedMeeting();
@@ -56,10 +56,11 @@ public sealed class EmailDeliveryTests
             Assert.Equal(EmailStatus.Queued, message.Status);
             Assert.Equal(meeting.Id, message.MeetingId);
             Assert.True(message.Subject.Length <= 300);
-            Assert.Contains("Hình thức: Kết hợp", message.Body, StringComparison.Ordinal);
-            Assert.Contains("Địa điểm:", message.Body, StringComparison.Ordinal);
+            Assert.Contains("Bắt đầu: 01/10/2026 09:00 +07:00", message.Body, StringComparison.Ordinal);
             Assert.Contains($"/mgmt/meetings/{meeting.Id:D}", message.Body, StringComparison.Ordinal);
-            Assert.Null(message.CalendarAttachment);
+            Assert.Contains("BEGIN:VCALENDAR\r\n", message.CalendarAttachment, StringComparison.Ordinal);
+            Assert.Contains("METHOD:REQUEST\r\n", message.CalendarAttachment, StringComparison.Ordinal);
+            Assert.Contains("DTSTART:20261001T020000Z\r\n", message.CalendarAttachment, StringComparison.Ordinal);
         });
         Assert.Equal(
             ["an@trustcabinet.local", "binh@trustcabinet.local"],
@@ -258,6 +259,8 @@ public sealed class EmailDeliveryTests
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.Hybrid,
             Location = "Phòng A / trực tuyến",
+            StartsAt = Now,
+            EndsAt = Now.AddHours(1),
             CreatedBy = creator,
             CreatedById = creator.Id,
         };

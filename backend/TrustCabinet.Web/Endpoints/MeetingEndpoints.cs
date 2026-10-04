@@ -598,25 +598,29 @@ public static class MeetingEndpoints
             new MeetingErrorResponse(code, message),
             statusCode: StatusCodes.Status503ServiceUnavailable);
 
-    private static readonly MeetingInput EmptyInput = new(null, null, null, null, null);
+    private static readonly MeetingInput EmptyInput = new(null, null, null, null, null, null, null);
 }
 
 /// <summary>The only caller-editable meeting fields. State, identity and timestamps are server-owned.</summary>
 public sealed record MeetingRequest(
     string? Title,
+    string? StartsAt,
+    string? EndsAt,
     string? Mode,
     string? Location,
     string? Sensitivity,
     string? Description)
 {
     public MeetingInput ToInput() => new(
-        Title, Mode, Location, Sensitivity, Description);
+        Title, StartsAt, EndsAt, Mode, Location, Sensitivity, Description);
 }
 
 public sealed record MeetingResponse(
     Guid Id,
     string Title,
     string Description,
+    DateTimeOffset StartsAt,
+    DateTimeOffset? EndsAt,
     string Mode,
     string Location,
     string Sensitivity,
@@ -630,6 +634,8 @@ public sealed record MeetingResponse(
         meeting.Id,
         meeting.Title,
         meeting.Description,
+        meeting.StartsAt,
+        meeting.EndsAt,
         meeting.Mode.ToString(),
         meeting.Location,
         meeting.Sensitivity.ToString(),
@@ -645,12 +651,13 @@ public sealed record MeetingMutationResponse(string Code, string Message, Meetin
 public sealed record MeetingListItemResponse(
     Guid Id,
     string Title,
+    DateTimeOffset StartsAt,
     DateTimeOffset CreatedAt,
     string Status,
     string Sensitivity)
 {
     public static MeetingListItemResponse From(MeetingListItem item) => new(
-        item.Id, item.Title, item.CreatedAt,
+        item.Id, item.Title, item.StartsAt, item.CreatedAt,
         item.Status.ToString(), item.Sensitivity.ToString());
 }
 

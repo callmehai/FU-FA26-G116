@@ -16,6 +16,10 @@ public class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         builder.Property(m => m.Sensitivity).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(m => m.Mode).HasConversion<string>().HasMaxLength(32).IsRequired();
 
+        // The meetings list filters by status and sorts by start time (SCRUM-18).
+        builder.HasIndex(m => new { m.Status, m.StartsAt });
+        builder.HasIndex(m => m.StartsAt);
+
         builder.HasOne(m => m.CreatedBy)
             .WithMany()
             .HasForeignKey(m => m.CreatedById)

@@ -319,14 +319,15 @@ public class DatabaseModelTests
     }
 
     [Fact]
-    public void Meeting_schedule_columns_are_not_mapped()
+    public void Columns_are_snake_case()
     {
         using var db = NewContext();
 
-        var meeting = db.Model.FindEntityType(typeof(Meeting))!;
+        var column = db.Model.FindEntityType(typeof(Meeting))!
+            .FindProperty(nameof(Meeting.StartsAt))!
+            .GetColumnName();
 
-        Assert.Null(meeting.FindProperty("StartsAt"));
-        Assert.Null(meeting.FindProperty("EndsAt"));
+        Assert.Equal("starts_at", column);
     }
 
     [Fact]

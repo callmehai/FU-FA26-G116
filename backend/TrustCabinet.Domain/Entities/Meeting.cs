@@ -30,6 +30,11 @@ public class Meeting : Entity
     /// <summary>Room name, address, or how to join when the meeting is online.</summary>
     public string Location { get; set; } = string.Empty;
 
+    public DateTimeOffset StartsAt { get; set; }
+
+    /// <summary>Optional planned end; when supplied, it must be after <see cref="StartsAt"/>.</summary>
+    public DateTimeOffset? EndsAt { get; set; }
+
     public Guid CreatedById { get; set; }
     public User CreatedBy { get; set; } = null!;
 
