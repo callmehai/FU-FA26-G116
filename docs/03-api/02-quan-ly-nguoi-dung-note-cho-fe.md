@@ -211,26 +211,28 @@ mục 8.2). Những chỗ FE làm khác gợi ý bên dưới được ghi trong
 
 - Gọi `POST /api/users/{id}/password-reset`, **không có body**. Đặc tả bắt **hộp xác nhận trước**
   (bước 2–3): mỗi lần gọi là một email gửi đi và liên kết trước đó chết.
-- Ẩn/disable nút với tài khoản `isActive: false` — backend sẽ trả `409 MSG14` nếu vẫn gọi.
+- Ẩn/disable nút với tài khoản `isActive: false` **hoặc** `hasPassword: false` (chỉ đăng nhập bằng
+  Google — BA chốt trong SCRUM-13: không có mật khẩu thì không có gì để đặt lại) — backend sẽ trả
+  `409 MSG14` nếu vẫn gọi.
 - **Có thể mất tới vài chục giây** khi SMTP chậm hoặc không kết nối được (backend gửi đồng bộ, timeout
   theo `Email:SendAttemptTimeoutSeconds`). Hiện trạng thái loading trên nút, chặn bấm lặp.
 
 | HTTP | `code` | FE nên làm gì |
 |---|---|---|
 | `200` | `MSG13` | Toast thành công. `user` trong body là tài khoản như shape UC-04 — không có gì đổi để cập nhật |
-| `409` | `MSG14` | Toast: tài khoản đã bị vô hiệu hoá. Refresh lại dòng đó |
+| `409` | `MSG14` | Toast: tài khoản đã bị vô hiệu hoá hoặc chưa có mật khẩu. Refresh lại dòng đó |
 | `503` | `MSG15` | Toast lỗi "thử lại" — đây là lỗi máy chủ mail, không phải lỗi người dùng |
 | `404` | *(không body)* | Refresh danh sách, như các endpoint khác |
 
 `409 MSG14` **khác** `409 MSG12` — khớp theo `code`, đừng gom theo status.
 
 > **FE đã làm:** nút là icon chìa khoá ở cột "Thao tác", **disable** (không ẩn) với tài khoản đã bị vô
-> hiệu hoá — tooltip nói phải kích hoạt lại trước, và cột giữ nguyên độ rộng. Lỗi `MSG15`, `MSG14` và
+> hiệu hoá — tooltip nói phải kích hoạt lại trước — và với tài khoản chưa có mật khẩu — tooltip nói
+> tài khoản chỉ đăng nhập bằng Google; cột giữ nguyên độ rộng. Lỗi `MSG15`, `MSG14` và
 > `404` hiện **trong hộp xác nhận** chứ không phải toast — đúng quy ước của `ConfirmDialog` (hộp thoại
 > che toast); `MSG15` giữ nút "Gửi liên kết" để thử lại ngay. `MSG14` đọc lại tài khoản
-> (`GET /api/users/{id}`), cập nhật dòng đó và khoá nút xác nhận. Tài khoản chỉ có Google
-> (`hasPassword: false`) vẫn gửi được, hộp xác nhận nói thêm là người đó sẽ có thêm cách đăng nhập
-> bằng mật khẩu. Quản trị viên gửi cho chính mình cũng được (backend cho phép), hộp xác nhận cảnh báo
+> (`GET /api/users/{id}`), cập nhật dòng đó và khoá nút xác nhận, kèm lý do (đã bị vô hiệu hoá /
+> chưa có mật khẩu). Quản trị viên gửi cho chính mình cũng được (backend cho phép), hộp xác nhận cảnh báo
 > là mọi phiên của họ sẽ kết thúc khi dùng liên kết.
 
 ### 8.2 Trang công khai `/reset-password`
@@ -258,7 +260,7 @@ POST /api/auth/password-reset
 |---|---|---|
 | `200` | `MSG92` | Báo thành công, chuyển tới `/login`. **Không có token đăng nhập trong response** — người dùng tự đăng nhập bằng mật khẩu mới |
 | `400` | `MSG94` | Tô đỏ field mật khẩu từ `errors.newPassword`. **Liên kết vẫn còn dùng được** — giữ form, cho sửa và gửi lại |
-| `400` | `MSG93` | Liên kết chết (hết hạn 60 phút, đã dùng, có liên kết mới hơn, hoặc tài khoản bị khoá). Ẩn form, hiện hướng dẫn liên hệ quản trị viên |
+| `400` | `MSG93` | Liên kết chết (hết hạn 60 phút, đã dùng, có liên kết mới hơn, hoặc tài khoản bị khoá / không có mật khẩu). Ẩn form, hiện hướng dẫn liên hệ quản trị viên |
 
 Hai mã `400` khác nhau hoàn toàn về cách xử lý — khớp theo `code`.
 

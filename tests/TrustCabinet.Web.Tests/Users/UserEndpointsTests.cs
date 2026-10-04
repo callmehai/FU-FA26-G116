@@ -568,6 +568,21 @@ public class UserEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Reset_request_answers_MSG14_for_an_account_without_a_password()
+    {
+        var target = GivenUser();
+        target.PasswordHash = null;
+        target.GoogleSubjectId = "google-sub-123";
+        var client = AdminClient();
+
+        var response = await client.PostAsync($"/api/users/{target.Id}/password-reset", null);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal("MSG14", (await JsonOf(response)).GetProperty("code").GetString());
+        Assert.Empty(_factory.ResetEmail.Sent);
+    }
+
+    [Fact]
     public async Task Reset_request_answers_MSG15_when_the_email_cannot_be_sent()
     {
         var target = GivenUser();

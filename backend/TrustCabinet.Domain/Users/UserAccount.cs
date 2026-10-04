@@ -12,8 +12,8 @@ namespace TrustCabinet.Domain.Users;
 /// which is exactly the kind of leak nobody notices in review.
 /// </summary>
 /// <param name="HasPassword">
-/// Whether the account can sign in with a password at all — UC-08 will need it to decide whether
-/// resetting one makes sense, and the list screen shows how each person signs in.
+/// Whether the account can sign in with a password at all — UC-08 refuses (MSG14) an account
+/// without one, and the list screen shows how each person signs in.
 /// The hash itself never leaves the backend.
 /// </param>
 public sealed record UserAccount(
