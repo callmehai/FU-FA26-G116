@@ -59,7 +59,8 @@ public interface IUserService
     /// keeps working until the link is used: an administrator pressing the button must not be able
     /// to lock someone out.
     ///
-    /// <see cref="UserOutcome.PasswordResetNotAvailable"/> for a deactivated account,
+    /// <see cref="UserOutcome.PasswordResetNotAvailable"/> for a deactivated account or one with
+    /// no password (Google sign-in only),
     /// <see cref="UserOutcome.PasswordResetEmailFailed"/> when the mail could not be sent.
     /// </summary>
     Task<UserResult> RequestPasswordResetAsync(

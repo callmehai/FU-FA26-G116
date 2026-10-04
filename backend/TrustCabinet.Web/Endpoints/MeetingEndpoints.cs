@@ -40,7 +40,7 @@ public static class MeetingEndpoints
     private const string Msg86HistoryInvalidQuery = "MSG86";
     private const string Msg87BodyTooLarge = "MSG87";
     private const string Msg88TransitionFailed = "MSG88";
-    private const string Msg129WorkflowReadFailed = "MSG129";
+    private const string Msg136WorkflowReadFailed = "MSG136";
     private const string Msg130ApproversLoadFailed = "MSG130";
     private const string Msg131WorkflowActiveUserCheckFailed = "MSG131";
     private const string Msg132ApprovalConflict = "MSG132";
@@ -110,7 +110,7 @@ public static class MeetingEndpoints
                 StatusCodes.Status403Forbidden, Msg85ActionForbidden, "Bạn không có quyền thực hiện thao tác này."),
             MeetingWorkflowOutcome.StatusConflict => WorkflowError(
                 StatusCodes.Status409Conflict, Msg41SubmitConflict, "Cuộc họp không còn ở trạng thái Draft hoặc Rejected."),
-            _ => SaveFailed(Msg129WorkflowReadFailed, "Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại."),
+            _ => SaveFailed(Msg136WorkflowReadFailed, "Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại."),
         };
     }
 
@@ -251,7 +251,7 @@ public static class MeetingEndpoints
             MeetingWorkflowOutcome.Success => Results.Ok(MeetingHistoryPageResponse.From(result.Page!)),
             MeetingWorkflowOutcome.NotFound => Results.NotFound(),
             MeetingWorkflowOutcome.InvalidRequest => InvalidHistoryQuery(),
-            _ => SaveFailed(Msg129WorkflowReadFailed, "Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại."),
+            _ => SaveFailed(Msg136WorkflowReadFailed, "Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại."),
         };
     }
 

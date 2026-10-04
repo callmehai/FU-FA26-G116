@@ -361,7 +361,7 @@ khoảng trắng bao quanh hoặc tên khác chữ hoa/chữ thường. Request 
 | 413 | `MSG87` | JSON request vượt 64 KiB |
 | 415 | `MSG34` | POST không dùng `application/json`; dùng chung code với PUT |
 | 503 | `MSG42`, `MSG47`, `MSG88` | Lỗi database/transaction khi transition; transaction rollback |
-| 503 | `MSG129`, `MSG130`, `MSG131` | Không tải được readiness/history/approvers hoặc không kiểm tra được tài khoản active |
+| 503 | `MSG130`, `MSG131`, `MSG136` | Không tải được readiness/history/approvers hoặc không kiểm tra được tài khoản active |
 
 `GET submission-readiness` trả `409 MSG41` nếu meeting không còn ở `Draft` hoặc `Rejected`;
 history/readiness trả `404` nếu caller không được phép xem resource. Retry action sau khi commit thường

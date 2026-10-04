@@ -49,5 +49,9 @@ Biến của collection (`baseUrl`, `mailpitUrl`, email và mật khẩu demo) s
   đang đăng nhập là tài khoản **duy nhất** còn hoạt động giữ capability `AdminUsers` (qua bất kỳ vai
   trò nào — đếm giống server, đọc từ `GET /api/roles/capabilities`); nếu không nó tự bỏ qua, vì khi
   đó request sẽ hạ vai trò thật.
+- `MSG14` chỉ được thử ở nhánh **tài khoản bị vô hiệu hoá**. Nhánh **tài khoản chưa có mật khẩu**
+  (chỉ đăng nhập bằng Google) không nằm trong collection: API không tạo được tài khoản như vậy. Muốn
+  thử thì `UPDATE users SET password_hash = NULL, google_subject_id = '<sub>' WHERE …` rồi gọi
+  `POST /api/users/{id}/password-reset` — nhận `409 MSG14`. Có test tự động trong `UserEndpointsTests`.
 - `MSG15` (không gửi được email) không nằm trong collection: muốn thử thì `docker stop tc-mailpit`
   rồi gọi lại `POST /api/users/{id}/password-reset` — nhận `503 MSG15` sau vài giây.

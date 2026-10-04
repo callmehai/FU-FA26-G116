@@ -117,7 +117,7 @@ migration sửa tiếp, không downgrade để tránh mất lịch. Nâng cấp 
 
 Model Meeting Session đã có; API lập lịch UC-26–30 thuộc phần quản lý phiên. Meeting chưa có phiên
 vẫn Publish được; `MSG90` giữ trạng thái ngừng dùng và không tái cấp. Các mã workflow bổ sung dùng
-`MSG129`–`MSG135` để không trùng dải Agenda và F08/GOF09 đã được dành trên main.
+`MSG130`–`MSG136` để không trùng dải Agenda, F08/GOF09 và `MSG129` của Reset Password trên main.
 
 PR41 đã merge vào `codex/role-postgres-isolation` ở commit `e27e003`, không phải main. Main mới nhất
 đã fetch là `779d14e` và đã là ancestor của checkout `5238f85`, nhưng workflow PR41 chưa có trên main.

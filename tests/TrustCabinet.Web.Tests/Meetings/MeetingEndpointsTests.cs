@@ -748,7 +748,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Get_workflow_endpoints_return_MSG129_and_MSG131_for_transient_read_failures()
+    public async Task Get_workflow_endpoints_return_MSG136_and_MSG131_for_transient_read_failures()
     {
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
@@ -763,7 +763,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var historyBody = await JsonOf(history);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, readiness.StatusCode);
-        Assert.Equal("MSG129", readinessBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG136", readinessBody.RootElement.GetProperty("code").GetString());
         Assert.Equal(HttpStatusCode.ServiceUnavailable, history.StatusCode);
         Assert.Equal("MSG131", historyBody.RootElement.GetProperty("code").GetString());
     }

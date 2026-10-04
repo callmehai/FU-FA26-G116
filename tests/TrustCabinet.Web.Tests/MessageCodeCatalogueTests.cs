@@ -197,7 +197,7 @@ public sealed partial class MessageCodeCatalogueTests
     [InlineData("Msg87BodyTooLarge", "MSG87")]
     [InlineData("Msg88TransitionFailed", "MSG88")]
     [InlineData("Msg89OrganizerTransferred", "MSG89")]
-    [InlineData("Msg129WorkflowReadFailed", "MSG129")]
+    [InlineData("Msg136WorkflowReadFailed", "MSG136")]
     [InlineData("Msg130ApproversLoadFailed", "MSG130")]
     [InlineData("Msg131WorkflowActiveUserCheckFailed", "MSG131")]
     [InlineData("Msg132ApprovalConflict", "MSG132")]

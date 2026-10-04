@@ -27,7 +27,7 @@ các bước tương ứng, còn sequence thể hiện cùng BR ID và message c
 
 ## Mã tiếp theo
 
-**`MSG136`** — workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG129`–`MSG135`; `MSG90`–`MSG91` ngừng dùng, không tái cấp. `MSG48`–`MSG77` và `MSG95`–`MSG128` đã dành cho Meeting Session, Agenda, participant, room và các màn đọc liên quan. Đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94`.
+**`MSG137`** — workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG136`; `MSG90`–`MSG91` ngừng dùng, không tái cấp. `MSG48`–`MSG77` và `MSG95`–`MSG128` đã dành cho Meeting Session, Agenda, participant, room và các màn đọc liên quan. Đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -52,10 +52,11 @@ Trạng thái: **BE** = backend trả trong body JSON · **FE** = FE tự hiển
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
 | `MSG92` | 200 | `POST /api/auth/password-reset` | Đặt mật khẩu mới thành công | `Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.` | BE |
-| `MSG93` | 400 | `POST /api/auth/password-reset` | Liên kết không hợp lệ, hết hạn, đã dùng, đã bị liên kết mới hơn thay thế, hoặc tài khoản đã bị vô hiệu hoá | `Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.` | BE |
+| `MSG93` | 400 | `POST /api/auth/password-reset` | Liên kết không hợp lệ, hết hạn, đã dùng, đã bị liên kết mới hơn thay thế, hoặc tài khoản đã bị vô hiệu hoá / không có mật khẩu | `Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.` | BE |
 | `MSG94` | 400 | `POST /api/auth/password-reset` | Mật khẩu mới không hợp lệ — kèm `errors.newPassword` | `Mật khẩu mới không hợp lệ.` | BE |
+| `MSG129` | — | — (FE, trang `/reset-password` không có `#token=`) | Trang không có token: liên kết thiếu token, hoặc tải lại / mở lại thẻ sau khi FE đã xoá token khỏi URL. **Khác `MSG93`**: liên kết có thể vẫn dùng được, nên không gọi API và không bảo "hết hạn" | `Không tìm thấy mã đặt lại mật khẩu. Hãy bấm lại liên kết trong email.` | FE |
 
-Đặc tả UC-08 chỉ có nửa "quản trị viên gửi liên kết"; ba mã này là của nửa "người dùng mở liên kết",
+Đặc tả UC-08 chỉ có nửa "quản trị viên gửi liên kết"; bốn mã này là của nửa "người dùng mở liên kết",
 đặc tả và sơ đồ chưa vẽ. Ghi lại để BA bổ sung ở `BA Final Review`.
 
 `MSG01` dùng chung cho `/login` và `/refresh` có chủ ý: cùng tình huống "không xác thực được",
@@ -73,7 +74,7 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG11` | 200 | `PUT /api/users/{id}/status` | Vô hiệu hoá / kích hoạt lại thành công | `Đổi trạng thái tài khoản thành công.` | BE |
 | `MSG12` | 409 | `PUT /api/users/{id}`, `PUT /api/users/{id}/status` | Không được đổi trạng thái / hạ vai trò (tự khoá, quản trị viên cuối cùng) | `Không thể đổi trạng thái tài khoản này.` | BE |
 | `MSG13` | 200 | `POST /api/users/{id}/password-reset` | Đã gửi email đặt lại mật khẩu | `Đã gửi email đặt lại mật khẩu.` | BE |
-| `MSG14` | 409 | `POST /api/users/{id}/password-reset` | Tài khoản không dùng được chức năng đặt lại mật khẩu (đã bị vô hiệu hoá) | `Tài khoản này không dùng được chức năng đặt lại mật khẩu.` | BE |
+| `MSG14` | 409 | `POST /api/users/{id}/password-reset` | Tài khoản không dùng được chức năng đặt lại mật khẩu (đã bị vô hiệu hoá, hoặc chưa có mật khẩu — chỉ đăng nhập bằng Google) | `Tài khoản này không dùng được chức năng đặt lại mật khẩu.` | BE |
 | `MSG15` | 503 | `POST /api/users/{id}/password-reset` | Không gửi được email đặt lại mật khẩu (SMTP tắt, không kết nối được, hoặc từ chối) | `Không gửi được email đặt lại mật khẩu. Vui lòng thử lại.` | BE |
 
 ### Ma trận phân quyền — UC-09, UC-10 (`/api/roles/capabilities`)
@@ -148,13 +149,13 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG87` | 413 | POST transitions, PUT meeting | Body JSON vượt quá 64 KiB | `Nội dung JSON vượt quá 64 KiB.` | BE |
 | `MSG88` | 503 | POST Approve, Reject, ReturnToDraft, TransferOrganizer | Không lưu được transition | `Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG89` | 200 | POST TransferOrganizer | Chuyển meeting Approved từ Organizer inactive sang Organizer mới thành công | `Đã chuyển cuộc họp cho người tổ chức mới.` | BE |
-| `MSG129` | 503 | GET readiness, GET history | Không tải được readiness/history | `Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG130` | 503 | GET approvers | Không tải được danh sách người duyệt hoặc không kiểm tra được quyền truy cập | `Không thể tải danh sách người duyệt. Vui lòng thử lại.` | BE |
 | `MSG131` | 503 | GET readiness, POST transitions, GET history | Không kiểm tra được trạng thái active của tài khoản | `Không thể kiểm tra tài khoản để thực hiện thao tác cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG132` | 409 | POST Approve, Reject | Approval cycle không còn chờ quyết định | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
 | `MSG133` | 409 | POST ReturnToDraft | Trạng thái không cho về Draft hoặc approver đang chờ vẫn hợp lệ | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
 | `MSG134` | 400 | POST TransferOrganizer | Organizer mới không hợp lệ, inactive, thiếu MeetingCreator hoặc là Assigned Approver | `Người tổ chức mới không hợp lệ hoặc không còn quyền tạo cuộc họp.` | BE |
 | `MSG135` | 409 | POST TransferOrganizer | Meeting không còn Approved hoặc Organizer hiện tại vẫn active | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
+| `MSG136` | 503 | GET readiness, GET history | Không tải được readiness/history | `Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại.` | BE |
 
 ### Dành sẵn, chưa có code
 
@@ -241,7 +242,7 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MEETING_INVALID_QUERY` | GET history | `MSG86` |
 | `MEETING_BODY_TOO_LARGE` | | `MSG87` |
 | `MEETING_WORKFLOW_FAILED` | | `MSG42`, `MSG47`, `MSG88` theo action |
-| `MEETING_LOAD_FAILED` | workflow | `MSG129`, `MSG130`, `MSG131` theo endpoint |
+| `MEETING_LOAD_FAILED` | workflow | `MSG130`, `MSG131`, `MSG136` theo endpoint |
 
 `MSG07`–`MSG17`, `MSG19`–`MSG25` và `MSG18` của ma trận phân quyền không đổi.
 
@@ -298,7 +299,7 @@ Các mã sau mang nhiều câu chữ hoặc nhiều nguyên nhân nhưng vẫn *
   thực được", khác câu chữ.
 - `MSG09`, `MSG17`, `MSG20`, `MSG31`, `MSG32`, `MSG39`, `MSG94` — lỗi validation; nguyên nhân cụ thể nằm
   trong `errors` theo key.
-- `MSG93` — năm nguyên nhân (không tồn tại, hết hạn, đã dùng, bị thay thế, tài khoản bị vô hiệu
-  hoá) gộp một mã có chủ ý: endpoint ẩn danh, phân biệt chúng chỉ giúp người dò liên kết.
+- `MSG93` — sáu nguyên nhân (không tồn tại, hết hạn, đã dùng, bị thay thế, tài khoản bị vô hiệu
+  hoá, tài khoản không có mật khẩu) gộp một mã có chủ ý: endpoint ẩn danh, phân biệt chúng chỉ giúp người dò liên kết.
 - `MSG12` — ba nguyên nhân, xem [02-quan-ly-nguoi-dung-note-cho-fe.md](02-quan-ly-nguoi-dung-note-cho-fe.md).
 - `MSG31` — thêm biến thể "Nội dung JSON không hợp lệ." khi PUT gửi JSON sai cú pháp (không có `errors`).
