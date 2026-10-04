@@ -9,13 +9,14 @@ export function historyActionLabel(item: MeetingHistoryItem): string {
     case 'Create':
       return 'Tạo cuộc họp'
     case 'SubmitForApproval':
-      return 'Gửi duyệt'
+      return item.fromStatus === 'Rejected' ? 'Gửi duyệt lại' : 'Gửi duyệt'
     case 'Approve':
       return 'Duyệt'
     case 'Reject':
       return 'Từ chối'
     case 'ReturnToDraft':
-      // Withdrawing a pending review and reopening a rejected meeting are different decisions.
+      // Withdrawing a pending review and reopening a rejected meeting are different decisions. Rows of
+      // the second kind predate direct resubmission; the backend still accepts the action.
       return item.fromStatus === 'WaitingApproval' ? 'Rút về nháp' : 'Đưa về nháp'
     case 'Publish':
       return 'Công bố'

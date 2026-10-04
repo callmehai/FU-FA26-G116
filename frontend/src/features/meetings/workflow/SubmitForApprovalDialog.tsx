@@ -10,7 +10,8 @@ import { workflowFailure } from './workflowOutcome'
 
 /**
  * UC-19 Submit for approval: the organizer picks who reviews this cycle. The approver is chosen
- * here, not on the form — a draft has none (SCRUM-19). The server re-checks readiness and the
+ * here, not on the form — a draft has none (SCRUM-19). A rejected meeting goes through the same
+ * dialog (UC-19 AF-1) and may pick a different approver. The server re-checks readiness and the
  * approver's eligibility in the same transaction, so both can still fail after the list was read.
  */
 export function SubmitForApprovalDialog({
@@ -83,7 +84,7 @@ export function SubmitForApprovalDialog({
 
   return (
     <Dialog
-      title="Gửi duyệt cuộc họp"
+      title={meeting.status === 'Rejected' ? 'Gửi duyệt lại cuộc họp' : 'Gửi duyệt cuộc họp'}
       description={meeting.title}
       onClose={close}
       footer={
@@ -92,7 +93,7 @@ export function SubmitForApprovalDialog({
             Huỷ
           </button>
           <button type="button" className="btn btn-primary" onClick={submit} disabled={pending || noneEligible}>
-            {pending ? 'Đang gửi…' : 'Gửi duyệt'}
+            {pending ? 'Đang gửi…' : meeting.status === 'Rejected' ? 'Gửi duyệt lại' : 'Gửi duyệt'}
           </button>
         </>
       }

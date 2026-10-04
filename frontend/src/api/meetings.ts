@@ -45,14 +45,14 @@ export const updateMeeting = (id: string, body: MeetingRequest) =>
 
 /**
  * Who can be picked as approver: active accounts holding `MeetingApprover`, minus the caller.
- * Needs `MeetingCreator`. 503 MSG61 when the list cannot be read.
+ * Needs `MeetingCreator`. 503 when the list cannot be read.
  */
 export const listMeetingApprovers = () => api.get<MeetingApprover[]>('/api/meetings/approvers')
 
 /**
  * SCRUM-19 — submit, approve, reject, return to draft or publish. The server re-checks the actor's
  * relationship and the current status inside one transaction; a status that moved on meanwhile
- * answers 409 (MSG41, MSG46, MSG63 or MSG64) and writes nothing.
+ * answers 409 and writes nothing (MSG41 submit, MSG46 publish, or the approval/return-to-draft codes).
  */
 export const transitionMeeting = (id: string, body: MeetingTransitionRequest) =>
   api.post<MeetingTransitionResponse>(`/api/meetings/${id}/transitions`, body)
@@ -61,6 +61,6 @@ export const transitionMeeting = (id: string, body: MeetingTransitionRequest) =>
 export const getMeetingHistory = (id: string, page = 1, pageSize = 50) =>
   api.get<MeetingHistoryPage>(`/api/meetings/${id}/history?page=${page}&pageSize=${pageSize}`)
 
-/** SCRUM-19 — whether a draft may be sent for approval yet. Organizer only, Draft only (else 409 MSG41). */
+/** SCRUM-19 — whether a meeting may be (re)submitted yet. Organizer only, Draft or Rejected (else 409 MSG41). */
 export const getMeetingSubmissionReadiness = (id: string) =>
   api.get<MeetingSubmissionReadiness>(`/api/meetings/${id}/submission-readiness`)

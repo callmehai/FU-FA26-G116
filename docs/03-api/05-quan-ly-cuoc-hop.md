@@ -489,33 +489,34 @@ stale content.
   current Assigned Approver (có `MeetingApprover`, khác Organizer), từ `Draft` tới `Approved`. Thanh
   nói cuộc họp đang ở đâu, đang chờ ai, bước tiếp theo, kèm đúng nút của bước đó. Vai trò suy từ
   `createdById`, `assignedApproverId` và capability do server trả; server vẫn kiểm tra lại mọi action.
-- **Draft (Organizer):** gọi readiness mỗi khi meeting đổi (`updatedAt`). Chưa ready thì liệt kê các
-  câu lỗi của backend (đã gộp trùng) và khoá "Gửi duyệt"; không gọi được readiness thì vẫn cho gửi vì
-  Submit kiểm tra lại. Nếu lần duyệt trước bị từ chối, thanh nhắc lại người từ chối, thời điểm và lý do.
-- **Gửi duyệt:** dialog đọc lại `GET /approvers` mỗi lần mở và bắt buộc chọn một người. Danh sách
+- **Draft và Rejected (Organizer):** gọi readiness mỗi khi meeting đổi (`updatedAt`). Chưa ready thì
+  liệt kê các câu lỗi của backend (đã gộp trùng) và khoá nút gửi; không gọi được readiness thì vẫn cho
+  gửi vì Submit kiểm tra lại. Ở Rejected, thanh hiện người từ chối, thời điểm, lý do và nút "Gửi duyệt
+  lại" (UC-19 AF-1) — gửi thẳng, không qua `ReturnToDraft`.
+- **Gửi duyệt / Gửi duyệt lại:** dialog đọc lại `GET /approvers` mỗi lần mở và bắt buộc chọn một
+  người; gửi lại được chọn cùng người hoặc người khác. Danh sách
   rỗng thì báo cần quản trị viên phân quyền và khoá nút. `MSG81` hiện danh sách thiếu sót trong
   dialog; `MSG82` báo dưới ô chọn và tải lại danh sách.
 - **WaitingApproval (Organizer):** "Đang chờ {tên} duyệt" cùng giờ gửi. Người duyệt hiện tại không
   còn trong `GET /approvers` (bị vô hiệu hoá hoặc mất quyền) thì thanh chuyển sang cảnh báo kèm
-  "Rút về nháp"; backend trả `409 MSG64` nếu người duyệt thật ra vẫn hợp lệ.
+  "Rút về nháp"; backend trả `409` nếu người duyệt thật ra vẫn hợp lệ.
 - **WaitingApproval (Approver):** "Duyệt" mở dialog xác nhận; "Từ chối" mở dialog bắt buộc lý do
   1–1.000 ký tự, có bộ đếm. `MSG83`/`MSG84` hiện dưới ô lý do; lý do đã gõ được giữ khi lỗi.
-- **Rejected / Approved:** hiện người quyết định, thời điểm và lý do từ chối (khi server trả về).
-  Organizer có "Đưa về nháp" ở Rejected.
+- **Approved:** hiện người duyệt và thời điểm. Approver thấy quyết định của chính họ ở cả Rejected
+  và Approved, kèm lý do khi từ chối.
 - **Kết quả:** thành công thì toast `message` của backend, thay meeting và thêm dòng history từ
-  response, không gọi lại API. `409` (`MSG41`/`MSG46`/`MSG63`/`MSG64`) và `403 MSG85` đóng dialog,
-  toast lý do, rồi tải lại meeting và history (`MSG85` tải lại cả phiên). `403` không có code đi theo
+  response, không gọi lại API. `409`, `403 MSG85` và `403 MSG46` (Organizer mất `MeetingCreator` lúc
+  công bố) đóng dialog, toast lý do, rồi tải lại meeting và history; hai mã `403` tải lại cả phiên. `403` không có code đi theo
   luồng mất quyền chung; `404` hiện trang không tìm thấy. Lỗi `503` ở lại trong dialog để thử lại.
 - **Lịch sử trạng thái** (cột phải, mọi tab): cũ nhất trước như API, mỗi dòng là badge hành động
   theo màu trạng thái, người thực hiện, thời gian; dòng gửi duyệt ghi người duyệt (khi biết tên), dòng
-  từ chối trích lý do giữ xuống dòng. `ReturnToDraft` từ WaitingApproval ghi "Rút về nháp", từ
-  Rejected ghi "Đưa về nháp". Có skeleton, trạng thái rỗng, lỗi kèm "Thử lại" và "Xem thêm" khi quá
+  từ chối trích lý do giữ xuống dòng. Gửi duyệt từ Rejected ghi "Gửi duyệt lại". `ReturnToDraft` từ
+  WaitingApproval ghi "Rút về nháp"; dòng từ Rejected (dữ liệu cũ, backend vẫn nhận action này) ghi
+  "Đưa về nháp". Có skeleton, trạng thái rỗng, lỗi kèm "Thử lại" và "Xem thêm" khi quá
   50 dòng.
 - **Chưa có giao diện:** `TransferOrganizer`. Admin không đọc được meeting và chưa có API liệt kê
   meeting `Approved` có Organizer bị vô hiệu hoá, nên FE chưa có chỗ hợp lý để đặt thao tác này.
-- Readiness bắt buộc có ít nhất một mục agenda, nhưng FE chưa có màn quản lý agenda (tab "Nội dung
-  cuộc họp" vẫn chờ endpoint). Meeting tạo trên giao diện vì vậy chưa gửi duyệt được cho tới khi có
-  màn agenda; meeting demo của seeder đã có agenda.
+- Readiness chỉ kiểm tra thông tin cấp cuộc họp; agenda và Meeting Session không bắt buộc (UC-19).
 
 ## Checklist BA cần hoàn tất
 

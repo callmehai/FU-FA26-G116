@@ -43,10 +43,11 @@ export function MeetingWorkflowBar({
   onOutcome: (outcome: WorkflowOutcome) => void
 }) {
   const [dialog, setDialog] = useState<OpenDialog>(null)
-  const checkReadiness = role === 'organizer' && meeting.status === 'Draft'
+  // A rejected meeting is resubmitted directly (UC-19 AF-1), so it is checked like a draft.
+  const checkReadiness = role === 'organizer' && (meeting.status === 'Draft' || meeting.status === 'Rejected')
   const { readiness, retry } = useSubmissionReadiness(meeting.id, checkReadiness, meeting.updatedAt)
 
-  // The readiness check is the first to learn that the draft was submitted elsewhere or is gone.
+  // The readiness check is the first to learn that the meeting was submitted elsewhere or is gone.
   useEffect(() => {
     if (readiness.kind !== 'error') return
     const failure = workflowFailure(readiness.failure)
@@ -109,29 +110,17 @@ export function MeetingWorkflowBar({
           Duyệt “{meeting.title}”? Sau khi duyệt, người tổ chức có thể công bố cuộc họp tới thành phần tham dự.
         </ConfirmDialog>
       )}
-      {dialog === 'returnToDraft' &&
-        (meeting.status === 'WaitingApproval' ? (
-          <ConfirmDialog
-            title="Rút về nháp"
-            confirmLabel="Rút về nháp"
-            pendingLabel="Đang rút…"
-            onConfirm={() => confirm('ReturnToDraft')}
-            onClose={() => setDialog(null)}
-          >
-            Cuộc họp trở về trạng thái Nháp. Sau đó bạn chọn người duyệt khác và gửi duyệt lại.
-          </ConfirmDialog>
-        ) : (
-          <ConfirmDialog
-            title="Đưa về nháp"
-            confirmLabel="Đưa về nháp"
-            pendingLabel="Đang chuyển…"
-            onConfirm={() => confirm('ReturnToDraft')}
-            onClose={() => setDialog(null)}
-          >
-            Cuộc họp trở về trạng thái Nháp. Bạn sửa thông tin nếu cần, rồi gửi duyệt lại cho cùng người hoặc người
-            duyệt khác. Lý do từ chối vẫn được giữ trong lịch sử.
-          </ConfirmDialog>
-        ))}
+      {dialog === 'returnToDraft' && (
+        <ConfirmDialog
+          title="Rút về nháp"
+          confirmLabel="Rút về nháp"
+          pendingLabel="Đang rút…"
+          onConfirm={() => confirm('ReturnToDraft')}
+          onClose={() => setDialog(null)}
+        >
+          Cuộc họp trở về trạng thái Nháp. Sau đó bạn chọn người duyệt khác và gửi duyệt lại.
+        </ConfirmDialog>
+      )}
     </>
   )
 }
@@ -190,7 +179,7 @@ function organizerView(
       const submit = latestOf(history, 'SubmitForApproval')
       const approverId = meeting.assignedApproverId
       // The list holds every account that may still approve, so someone missing from it was
-      // deactivated or lost the capability — the one case the organizer may withdraw (MSG64 else).
+      // deactivated or lost the capability — the one case the organizer may withdraw (409 otherwise).
       const stuck = approverList !== null && !approverList.some((a) => a.id === approverId)
       if (stuck) {
         return {
@@ -225,6 +214,7 @@ function organizerView(
     }
     case 'Rejected': {
       const reject = latestOf(history, 'Reject')
+      const canSubmit = readiness.kind === 'ready' || readiness.kind === 'error'
       return {
         tone: 'red',
         icon: 'x',
@@ -232,12 +222,20 @@ function organizerView(
         body: (
           <>
             {reject && <RejectionNote item={reject} />}
-            <p>Sửa thông tin nếu cần, rồi đưa cuộc họp về nháp để gửi duyệt lại.</p>
+            <p>Sửa thông tin nếu cần, rồi gửi duyệt lại cho cùng người hoặc người duyệt khác.</p>
+            {readiness.kind === 'notReady' && <ReadinessText readiness={readiness} onRetry={retryReadiness} />}
           </>
         ),
         actions: (
-          <button type="button" className="btn btn-primary" onClick={() => open('returnToDraft')}>
-            Đưa về nháp
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => open('submit')}
+            disabled={!canSubmit}
+            title={canSubmit ? undefined : 'Hoàn thiện thông tin trước khi gửi duyệt'}
+          >
+            <Icon name="send" size={16} />
+            Gửi duyệt lại
           </button>
         ),
       }
