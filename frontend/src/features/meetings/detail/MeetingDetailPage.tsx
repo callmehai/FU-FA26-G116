@@ -26,6 +26,8 @@ import type { WorkflowOutcome } from '../workflow/workflowOutcome'
 /** The detail screen is split by lifecycle concern rather than by data table. */
 const TABS = [
   { id: 'overview', label: 'Thông tin chung' },
+  // The schedule lives on the meeting's sessions, not on the meeting (SCRUM-70).
+  { id: 'sessions', label: 'Phiên họp' },
   { id: 'attendees', label: 'Thành phần tham dự' },
   { id: 'agenda', label: 'Nội dung cuộc họp' },
   { id: 'documents', label: 'Tài liệu' },
@@ -37,6 +39,7 @@ type TabId = (typeof TABS)[number]['id']
 
 /** What each tab is waiting on, surfaced in the UI so the backlog is visible while building. */
 const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview'>, string> = {
+  sessions: 'GET /api/meetings/{id}/sessions',
   attendees: 'GET /api/meetings/{id}/attendees',
   agenda: 'GET /api/meetings/{id}/agenda',
   documents: 'GET /api/meetings/{id}/documents',
@@ -272,18 +275,6 @@ function Overview({ meeting, approver }: { meeting: Meeting; approver: { text: s
       <div className="field-item">
         <span>Mức độ mật</span>
         <strong>{SENSITIVITY_LABEL[meeting.sensitivity]}</strong>
-      </div>
-      <div className="field-item">
-        <span>Thời gian bắt đầu</span>
-        <strong>{formatDateTime(meeting.startsAt)}</strong>
-      </div>
-      <div className="field-item">
-        <span>Thời gian kết thúc dự kiến</span>
-        {meeting.endsAt ? (
-          <strong>{formatDateTime(meeting.endsAt)}</strong>
-        ) : (
-          <em className="value-empty">Chưa xác định</em>
-        )}
       </div>
       <div className="field-item">
         <span>{meeting.mode === 'Hybrid' ? 'Địa điểm họp trực tiếp' : 'Địa điểm'}</span>

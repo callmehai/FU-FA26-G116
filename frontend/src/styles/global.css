@@ -822,7 +822,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   animation: shimmer 1.2s linear infinite;
 }
 .row-skeleton td:first-child .skeleton { width: 85%; }
-.row-skeleton td:nth-child(n+4) .skeleton { width: 56px; }
+.row-skeleton td:nth-child(n+3) .skeleton { width: 56px; }
 .row-skeleton td:last-child .skeleton { width: 24px; margin-left: auto; }
 @keyframes shimmer { to { background-position: -200% 0; } }
 
