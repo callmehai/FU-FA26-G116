@@ -844,54 +844,22 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Empty(_invitations.MeetingIds);
     }
 
-    [Theory]
-    [InlineData("none")]
-    [InlineData("cancelled")]
-    [InlineData("completed")]
-    [InlineData("inProgress")]
-    [InlineData("otherMeeting")]
-    [InlineData("blankTitle")]
-    [InlineData("longTitle")]
-    [InlineData("defaultStart")]
-    [InlineData("defaultEnd")]
-    [InlineData("equalTimes")]
-    [InlineData("reversedTimes")]
-    [InlineData("emptyId")]
-    public async Task Publish_requires_a_valid_planned_session_before_any_side_effect(string invalid)
+    [Fact]
+    public async Task Publish_does_not_require_a_meeting_session()
     {
         var meeting = GivenMeeting(MeetingStatus.Approved);
         meeting.Sessions.Clear();
-        var session = PlannedSession(meeting.Id);
-        switch (invalid)
-        {
-            case "cancelled": session.Status = MeetingSessionStatus.Cancelled; break;
-            case "completed": session.Status = MeetingSessionStatus.Completed; break;
-            case "inProgress": session.Status = MeetingSessionStatus.InProgress; break;
-            case "otherMeeting": session.MeetingId = Guid.CreateVersion7(); break;
-            case "blankTitle": session.Title = " "; break;
-            case "longTitle": session.Title = new string('x', 301); break;
-            case "defaultStart": session.PlannedStartsAt = default; break;
-            case "defaultEnd": session.PlannedEndsAt = default; break;
-            case "equalTimes": session.PlannedEndsAt = session.PlannedStartsAt; break;
-            case "reversedTimes": session.PlannedEndsAt = session.PlannedStartsAt.AddMinutes(-1); break;
-            case "emptyId": session.Id = Guid.Empty; break;
-        }
-        if (invalid != "none") meeting.Sessions.Add(session);
         meeting.Participants.Add(Participant(meeting, active: true, InvitationResponse.Accepted));
-        var updatedAt = meeting.UpdatedAt;
 
         var result = await NewService().TransitionAsync(meeting.Id,
             new MeetingTransitionCommand(MeetingTransitionAction.Publish), _organizerId);
 
-        Assert.Equal(MeetingWorkflowOutcome.PublicationNotReady, result.Outcome);
-        Assert.Contains("meetingSessions", result.Errors!.Keys);
-        Assert.Equal(MeetingStatus.Approved, meeting.Status);
-        Assert.Equal(updatedAt, meeting.UpdatedAt);
-        Assert.Empty(meeting.StatusHistory);
-        Assert.Empty(_repository.Notifications);
-        Assert.Empty(_repository.EmailMessages);
-        Assert.Empty(_invitations.MeetingIds);
-        Assert.Equal(0, _repository.SaveCount);
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        Assert.Equal(MeetingStatus.Published, meeting.Status);
+        Assert.Equal(MeetingHistoryAction.Publish, Assert.Single(meeting.StatusHistory).Action);
+        Assert.Single(_repository.Notifications);
+        Assert.Equal(meeting.Id, Assert.Single(_invitations.MeetingIds));
+        Assert.Equal(1, _repository.SaveCount);
         Assert.True(_repository.LastWorkflowForUpdate);
     }
 

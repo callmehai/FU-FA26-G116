@@ -206,7 +206,7 @@ public sealed class MeetingEndpointsTests : IDisposable
             new { action = "TransferOrganizer", organizerId = replacement.Id });
         using var repeatBody = await JsonOf(repeat);
         Assert.Equal(HttpStatusCode.Conflict, repeat.StatusCode);
-        Assert.Equal("MSG67", repeatBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG135", repeatBody.RootElement.GetProperty("code").GetString());
         Assert.Single(meeting.StatusHistory);
     }
 
@@ -283,7 +283,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Invalid_replacement_returns_MSG66_and_transfer_persistence_failure_returns_MSG88()
+    public async Task Invalid_replacement_returns_MSG134_and_transfer_persistence_failure_returns_MSG88()
     {
         var (administrator, replacement, meeting) = GivenOrganizerRecovery();
         var previousOrganizerId = meeting.CreatedById;
@@ -294,7 +294,7 @@ public sealed class MeetingEndpointsTests : IDisposable
             new { action = "TransferOrganizer", organizerId = replacement.Id });
         using var invalidBody = await JsonOf(invalid);
         Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
-        Assert.Equal("MSG66", invalidBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG134", invalidBody.RootElement.GetProperty("code").GetString());
 
         _factory.Meetings.InactiveUserIds.Remove(replacement.Id);
         _factory.Meetings.NextSaveThrows = new TimeoutException("Database unavailable");
@@ -453,7 +453,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var success = organizerHasCapability && !approverEligible;
         Assert.Equal(!organizerHasCapability ? HttpStatusCode.Forbidden
             : approverEligible ? HttpStatusCode.Conflict : HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(!organizerHasCapability ? "MSG85" : approverEligible ? "MSG64" : "MSG79",
+        Assert.Equal(!organizerHasCapability ? "MSG85" : approverEligible ? "MSG133" : "MSG79",
             body.RootElement.GetProperty("code").GetString());
         Assert.Equal(success ? MeetingStatus.Draft : MeetingStatus.WaitingApproval, meeting.Status);
         Assert.Equal(success ? null : (Guid?)approverId, meeting.AssignedApproverId);
@@ -531,8 +531,8 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Approve", MeetingStatus.Rejected, "MSG63")]
-    [InlineData("ReturnToDraft", MeetingStatus.Draft, "MSG64")]
+    [InlineData("Approve", MeetingStatus.Rejected, "MSG132")]
+    [InlineData("ReturnToDraft", MeetingStatus.Draft, "MSG133")]
     [InlineData("Publish", MeetingStatus.Draft, "MSG46")]
     public async Task Post_transition_returns_action_specific_conflict_codes(
         string action, MeetingStatus status, string expectedCode)
@@ -724,7 +724,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Get_workflow_endpoints_return_MSG60_and_MSG62_for_transient_read_failures()
+    public async Task Get_workflow_endpoints_return_MSG129_and_MSG131_for_transient_read_failures()
     {
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
@@ -739,9 +739,9 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var historyBody = await JsonOf(history);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, readiness.StatusCode);
-        Assert.Equal("MSG60", readinessBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG129", readinessBody.RootElement.GetProperty("code").GetString());
         Assert.Equal(HttpStatusCode.ServiceUnavailable, history.StatusCode);
-        Assert.Equal("MSG62", historyBody.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG131", historyBody.RootElement.GetProperty("code").GetString());
     }
 
     [Fact]
@@ -946,7 +946,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Publish_without_a_valid_planned_session_returns_MSG90_without_side_effects()
+    public async Task Publish_without_a_meeting_session_returns_MSG45_and_commits()
     {
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
@@ -959,15 +959,14 @@ public sealed class MeetingEndpointsTests : IDisposable
             new { action = "Publish" });
         using var body = await JsonOf(response);
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal("MSG90", body.RootElement.GetProperty("code").GetString());
-        Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("meetingSessions", out _));
-        Assert.Equal(MeetingStatus.Approved, meeting.Status);
-        Assert.Empty(meeting.StatusHistory);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("MSG45", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(MeetingStatus.Published, meeting.Status);
+        Assert.Equal(MeetingHistoryAction.Publish, Assert.Single(meeting.StatusHistory).Action);
         Assert.Empty(_factory.Meetings.Notifications);
         Assert.Empty(_factory.Meetings.EmailMessages);
-        Assert.Empty(_factory.Invitations.MeetingIds);
-        Assert.Equal(0, _factory.Meetings.SaveCount);
+        Assert.Equal(meeting.Id, Assert.Single(_factory.Invitations.MeetingIds));
+        Assert.Equal(1, _factory.Meetings.SaveCount);
     }
 
     [Theory]
@@ -1119,7 +1118,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Assigned_chair_reads_prepublication_detail_with_redacted_history()
+    public async Task Assigned_chair_cannot_read_before_publication()
     {
         var creator = GivenCreator();
         var chair = GivenMember("history-chair@trustcabinet.local");
@@ -1148,15 +1147,9 @@ public sealed class MeetingEndpointsTests : IDisposable
         _factory.Meetings.Meetings.Add(meeting);
         using var client = _factory.ClientFor(chair);
 
-        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
         var historyResponse = await client.GetAsync($"/api/meetings/{meeting.Id}/history");
-        using var historyBody = await JsonOf(historyResponse);
-
-        Assert.Equal(HttpStatusCode.OK, historyResponse.StatusCode);
-        var entry = Assert.Single(historyBody.RootElement.GetProperty("items").EnumerateArray());
-        Assert.Equal(JsonValueKind.Null, entry.GetProperty("rejectionReason").ValueKind);
-        Assert.Equal(JsonValueKind.Null, entry.GetProperty("previousOrganizerId").ValueKind);
-        Assert.Equal(JsonValueKind.Null, entry.GetProperty("newOrganizerId").ValueKind);
+        Assert.Equal(HttpStatusCode.NotFound, historyResponse.StatusCode);
     }
 
     [Fact]
@@ -1492,7 +1485,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("MSG61", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG130", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(
             "Không thể tải danh sách người duyệt. Vui lòng thử lại.",
             body.RootElement.GetProperty("message").GetString());
@@ -1508,7 +1501,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("MSG61", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG130", body.RootElement.GetProperty("code").GetString());
         Assert.Empty(_factory.Meetings.EligibleApprovers);
     }
 
@@ -1522,7 +1515,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("MSG61", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG130", body.RootElement.GetProperty("code").GetString());
         Assert.Empty(_factory.Meetings.EligibleApprovers);
     }
 

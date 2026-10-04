@@ -14,8 +14,7 @@ public static class MeetingReadPolicy
                 && participant.UserId == userId
                 && participant.Response != InvitationResponse.Delegated
                 && participant.DelegatedToUserId == null
-                && (participant.Role == MeetingRole.Chair
-                    || participant.Role == MeetingRole.Secretary
+                && (participant.Role == MeetingRole.Secretary
                     || meeting.Status == MeetingStatus.Published
                     || meeting.Status == MeetingStatus.InProgress
                     || meeting.Status == MeetingStatus.Ended

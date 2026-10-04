@@ -28,7 +28,7 @@ sequenceDiagram
             end
         else Sai quyền hoặc sai trạng thái
             Service->>DB: Kết thúc transaction không ghi dữ liệu
-            Service-->>API: 404 hoặc 403 MSG85 hoặc 409 MSG64
+            Service-->>API: 404 hoặc 403 MSG85 hoặc 409 MSG133
             API-->>Page: Hiển thị lỗi, tải lại trạng thái
         end
     end

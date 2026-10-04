@@ -399,16 +399,6 @@ public sealed class MeetingService(
                     }
                 }
 
-                if (command.Action == MeetingTransitionAction.Publish
-                    && !await meetings.HasValidPlannedSessionAsync(meeting.Id, token))
-                {
-                    return MeetingWorkflowResult.Invalid(MeetingWorkflowOutcome.PublicationNotReady,
-                        new Dictionary<string, string>
-                        {
-                            ["meetingSessions"] = "Cần có ít nhất một phiên họp Planned với tiêu đề và thời gian hợp lệ trước khi công bố.",
-                        });
-                }
-
                 var now = UtcNow;
                 var previousOrganizerId = transfersOrganizer ? meeting.CreatedById : (Guid?)null;
                 meeting.Status = toStatus;

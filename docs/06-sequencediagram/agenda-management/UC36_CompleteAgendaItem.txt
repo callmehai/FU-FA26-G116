@@ -1,0 +1,86 @@
+title UC-36 - Complete Agenda Item
+
+actor "Chair" as Chair
+boundary "Meeting Management Page" as MeetingPage
+control ":Agenda Controller" as AgendaController
+control ":Agenda Service" as AgendaService
+participant ":Meeting Participant Repository" as MeetingParticipantRepository
+participant ":Meeting Session Repository" as MeetingSessionRepository
+participant ":Agenda Item Repository" as AgendaItemRepository
+database ":Database" as Database
+
+Chair->MeetingPage: Complete Agenda Item
+activate MeetingPage
+
+MeetingPage->AgendaController: Complete Agenda Item
+activate AgendaController
+
+AgendaController->AgendaService: completeAgendaItem(meetingId, sessionId, agendaItemId, chairId)
+activate AgendaService
+
+AgendaService->MeetingSessionRepository: Get selected Meeting Session
+activate MeetingSessionRepository
+MeetingSessionRepository->Database: Retrieve Meeting Session
+activate Database
+Database-->MeetingSessionRepository: Meeting Session
+deactivate Database
+MeetingSessionRepository-->AgendaService: Meeting Session
+deactivate MeetingSessionRepository
+
+AgendaService->MeetingParticipantRepository: Verify Chair assignment to parent meeting (BR-69)
+activate MeetingParticipantRepository
+MeetingParticipantRepository->Database: Find Chair assignment
+activate Database
+Database-->MeetingParticipantRepository: Assignment result
+deactivate Database
+MeetingParticipantRepository-->AgendaService: Assignment result
+deactivate MeetingParticipantRepository
+
+AgendaService->AgendaItemRepository: Get selected Agenda Item
+activate AgendaItemRepository
+AgendaItemRepository->Database: Retrieve selected Agenda Item
+activate Database
+Database-->AgendaItemRepository: Agenda Item
+deactivate Database
+AgendaItemRepository-->AgendaService: Agenda Item
+deactivate AgendaItemRepository
+
+AgendaService->AgendaService: Verify assigned Chair, InProgress Meeting Session,\nsession belongs to selected meeting, item belongs to selected session,\nand item is InProgress (BR-64, BR-69, BR-70)
+
+alt Agenda Item cannot be completed - EX-1
+    AgendaService-->AgendaController: MSG74 - This agenda item cannot be completed.
+    deactivate AgendaService
+    AgendaController-->MeetingPage: MSG74 - This agenda item cannot be completed.
+    deactivate AgendaController
+    MeetingPage-->Chair: MSG74 - This agenda item cannot be completed.\nAgenda Item remains unchanged
+
+else Agenda execution conditions are valid
+    AgendaService->AgendaItemRepository: Set current Agenda Item to Done,\nrecord actual end time and actual time used (BR-70, BR-72)
+    activate AgendaItemRepository
+    AgendaItemRepository->Database: Update Agenda Item status and actual timing
+    activate Database
+    Database-->AgendaItemRepository: Change saved / Save failed without changing Agenda Item
+    deactivate Database
+    AgendaItemRepository-->AgendaService: Completed Agenda Item / Save failed
+    deactivate AgendaItemRepository
+
+    alt Agenda Item cannot be completed due to system error - EX-2
+        AgendaService-->AgendaController: MSG76 - Unable to complete the agenda item. Please try again.
+        deactivate AgendaService
+        AgendaController-->MeetingPage: MSG76 - Unable to complete the agenda item. Please try again.
+        deactivate AgendaController
+        MeetingPage-->Chair: MSG76 - Unable to complete the agenda item. Please try again.\nAgenda Item remains unchanged
+
+    else Agenda Item completion is saved
+        AgendaService->AgendaService: Session has no current Agenda Item until Chair starts another;\nkeep Meeting Session InProgress (BR-72)
+        AgendaService->AgendaService: Make completed Agenda Item state available in real time\nto authorized users viewing the same Meeting Session (BR-73)
+
+        AgendaService-->AgendaController: Agenda Item completed successfully
+        deactivate AgendaService
+        AgendaController-->MeetingPage: MSG65 - Agenda item completed successfully.\nCompleted Agenda Item and actual timing
+        deactivate AgendaController
+        MeetingPage-->Chair: MSG65 - Agenda item completed successfully.\nShow Done status, actual end time and actual time used
+    end
+end
+
+deactivate MeetingPage

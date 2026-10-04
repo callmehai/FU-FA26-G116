@@ -1007,51 +1007,28 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Publish_endpoint_rechecks_persisted_planned_sessions_and_rejects_without_side_effects()
+    public async Task Publish_endpoint_allows_a_meeting_without_sessions()
     {
         var created = await NewService().CreateAsync(Input(), _creatorId);
         var meetingId = created.Meeting!.Id;
         await _db.Meetings.Where(item => item.Id == meetingId).ExecuteUpdateAsync(setters =>
             setters.SetProperty(item => item.Status, MeetingStatus.Approved));
-        var otherMeeting = await NewService().CreateAsync(Input("Other meeting"), _creatorId);
-        await AddPlannedSessionAsync(otherMeeting.Meeting!.Id);
-        var invalidSession = new MeetingSession
-        {
-            MeetingId = meetingId,
-            Title = "Phiên bị hủy",
-            PlannedStartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
-            PlannedEndsAt = new DateTimeOffset(2026, 10, 1, 1, 0, 0, TimeSpan.Zero),
-            Status = MeetingSessionStatus.Cancelled,
-        };
-        _db.MeetingSessions.Add(invalidSession);
-        await _db.SaveChangesAsync();
         using var app = new PostgreSqlMeetingApiFactory(_connectionString);
         using var client = app.CreateClient();
         var organizer = await _db.Users.AsNoTracking().SingleAsync(item => item.Id == _creatorId);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
             app.Services.GetRequiredService<ITokenIssuer>().CreateAccessToken(organizer, [Capability.MeetingCreator]));
 
-        var rejected = await client.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions", new { action = "Publish" });
-        using var rejectedBody = System.Text.Json.JsonDocument.Parse(await rejected.Content.ReadAsStringAsync());
-        Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode);
-        Assert.Equal("MSG90", rejectedBody.RootElement.GetProperty("code").GetString());
-        Assert.True(rejectedBody.RootElement.GetProperty("errors").TryGetProperty("meetingSessions", out _));
+        var published = await client.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions", new { action = "Publish" });
+        using var body = System.Text.Json.JsonDocument.Parse(await published.Content.ReadAsStringAsync());
+        Assert.Equal(HttpStatusCode.OK, published.StatusCode);
+        Assert.Equal("MSG45", body.RootElement.GetProperty("code").GetString());
         await using var verify = NewContext();
-        Assert.Equal(MeetingStatus.Approved, await verify.Meetings.Where(item => item.Id == meetingId)
+        Assert.Equal(MeetingStatus.Published, await verify.Meetings.Where(item => item.Id == meetingId)
             .Select(item => item.Status).SingleAsync());
-        Assert.Single(await verify.MeetingStatusHistory.Where(item => item.MeetingId == meetingId).ToListAsync());
+        Assert.Equal(2, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
         Assert.False(await verify.Notifications.AnyAsync(item => item.MeetingId == meetingId));
         Assert.False(await verify.EmailMessages.AnyAsync(item => item.MeetingId == meetingId));
-
-        await _db.MeetingSessions.Where(item => item.Id == invalidSession.Id).ExecuteUpdateAsync(setters =>
-            setters.SetProperty(item => item.Status, MeetingSessionStatus.Planned));
-        var invalidTimes = await client.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions", new { action = "Publish" });
-        Assert.Equal(HttpStatusCode.BadRequest, invalidTimes.StatusCode);
-        await _db.MeetingSessions.Where(item => item.Id == invalidSession.Id).ExecuteUpdateAsync(setters =>
-            setters.SetProperty(item => item.PlannedEndsAt, invalidSession.PlannedStartsAt.AddHours(1)));
-        var published = await client.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions", new { action = "Publish" });
-        Assert.Equal(HttpStatusCode.OK, published.StatusCode);
-        Assert.Equal(2, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
     }
 
     [Theory]
@@ -1309,7 +1286,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
                 or MeetingStatus.MinutesIssued
                 or MeetingStatus.Archived;
             Assert.Equal(participantCanRead, await repository.FindAccessibleAsync(meeting.Id, participant.Id) is not null);
-            Assert.NotNull(await repository.FindAccessibleAsync(meeting.Id, chair.Id));
+            Assert.Equal(participantCanRead, await repository.FindAccessibleAsync(meeting.Id, chair.Id) is not null);
             Assert.NotNull(await repository.FindAccessibleAsync(meeting.Id, secretary.Id));
 
             Assert.Null(await repository.FindAccessibleAsync(meeting.Id, unrelated.Id));
@@ -1358,7 +1335,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             MeetingStatus.MinutesIssued, MeetingStatus.Archived,
         ];
         Assert.All(participantPage.Items, item => Assert.Contains(item.Status, publishedStatuses));
-        Assert.Equal(9, chairPage.TotalCount);
+        Assert.Equal(5, chairPage.TotalCount);
+        Assert.All(chairPage.Items, item => Assert.Contains(item.Status, publishedStatuses));
         Assert.Equal(9, secretaryPage.TotalCount);
         Assert.Equal(0, unrelatedPage.TotalCount);
         Assert.Empty(unrelatedPage.Items);

@@ -64,15 +64,16 @@ Cùng migration bổ sung ID Organizer cũ/mới cho history
 - Organizer active/có `MeetingCreator` được rút WaitingApproval khi assignment thiếu, trỏ về
   Organizer, hoặc approver inactive/mất quyền. Approver khác Organizer còn hợp lệ thì không cho rút.
 - Organizer/current approver đọc full history; Secretary được gán, active/chưa ủy quyền đọc rejection reason qua history cả trước Publish, nhưng snapshot chuyển Organizer vẫn ẩn. Participant khác chỉ đọc timeline đã redacted sau Publish.
-- Publish thiếu phiên Planned hợp lệ trả `400 MSG90` với `errors.meetingSessions`; Approved/assignment/history/notification/email giữ nguyên, producer không được gọi. SMTP tắt vẫn kiểm tra BR-56.
+- Publish không yêu cầu Meeting Session; meeting Approved có thể công bố khi chưa lập phiên theo BR-56.
 - Organizer còn đọc được meeting Approved nhưng mất `MeetingCreator` nhận `403 MSG46`; caller không
   được đọc tài nguyên vẫn nhận `404`.
-- UC17 Session/Agenda detail và API quản lý phiên vẫn thuộc task UC-26–30; guard `MSG90` được giữ,
-  chưa xác nhận UC17 hoặc luồng Publish qua UI hoàn tất khi task đó chưa tích hợp.
+- UC17 Session/Agenda detail và API quản lý phiên vẫn thuộc task UC-26–30, nhưng không chặn luồng
+  Publish của UC-21.
 - BA còn đổi câu `MSG39` của notification pagination thành `Trang thông báo được yêu cầu không khả dụng.`;
   endpoint notification nằm ngoài phạm vi PR meeting này và cần được đồng bộ ở task notification.
 - Kiểm tra rollback khi lưu lỗi và concurrent Publish chỉ tạo một history/batch.
-- Writer participant SCRUM-20 và Meeting Session UC-26–30 khóa meeting cha trong cùng transaction trước khi sửa, để bảo vệ snapshot người nhận và BR-56 khi Publish đồng thời.
+- Writer participant SCRUM-20 khóa meeting cha trong cùng transaction trước khi sửa để bảo vệ
+  snapshot người nhận khi Publish đồng thời.
 - Xử lý HTTP/message codes theo API contract; trạng thái gửi email theo SCRUM-15.
 
 ## Khôi phục meeting Approved và phạm vi PR
@@ -80,7 +81,7 @@ Cùng migration bổ sung ID Organizer cũ/mới cho history
 Theo quyết định người dùng ngày 01/10/2026, quản trị active/có AdminUsers được TransferOrganizer
 khi Organizer cũ inactive và meeting còn Approved. Người nhận active/có MeetingCreator, khác
 người cũ/current approver. History lưu Organizer cũ/mới và actor/time; trạng thái, approval và
-notification/email giữ nguyên. FE/Tester nhận body organizerId, MSG89/MSG66/MSG67 cùng lỗi shape,
+notification/email giữ nguyên. FE/Tester nhận body organizerId, MSG89/MSG134/MSG135 cùng lỗi shape,
 quyền và persistence theo [API contract](05-quan-ly-cuoc-hop.md). Organizer mới dùng Publish bình thường.
 Response transfer chỉ có `code`, `message`, `meetingId`, `status`, `organizerId` và history của
 thao tác vừa tạo; không trả nội dung meeting cho người có quyền recovery. FE tích hợp type/API
@@ -101,8 +102,8 @@ FE/Tester dùng API contract sau đồng bộ, gồm MSG89 cho TransferOrganizer
 
 ## Sửa alignment theo review ngày 02/10/2026
 
-Backend hỗ trợ direct resubmit Rejected, Secretary đọc rejection reason, guard Planned Meeting Session
-trước Publish (BR-56) và bỏ Agenda-required rule chưa có trong UC-19/BR-33. `ReturnToDraft` là tùy chọn
+Backend hỗ trợ direct resubmit Rejected, Secretary đọc rejection reason và bỏ Agenda/Meeting Session
+khỏi điều kiện gửi duyệt. Meeting Session cũng không bắt buộc khi Publish theo BR-56. `ReturnToDraft` là tùy chọn
 cho Rejected; recovery WaitingApproval, TransferOrganizer, cấm self-approval và giới hạn reason
 1–1.000 ký tự được ghi thành PRE/AF/EX tại UC-19–21 để BA Final Review đối chiếu.
 
@@ -112,9 +113,9 @@ FK tới meetings và index `(meeting_id, status)`. Không sửa/xóa cột ho�
 phiên từ lịch cấp meeting. Down xóa bảng mới cùng dữ liệu phiên; môi trường có dữ liệu phiên dùng
 migration sửa tiếp, không downgrade để tránh mất lịch. Nâng cấp code và schema cùng nhau.
 
-Model/guard đã có; API lập lịch UC-26–30 thuộc phần quản lý phiên. Meeting chưa có phiên hợp lệ sẽ
-bị chặn Publish cho tới khi phần đó tạo lịch; không seed lịch giả để bỏ qua BR-56.
-MSG90 dành cho guard, mã tiếp theo MSG91. Catalogue/API/Mermaid được cập nhật cùng patch.
+Model Meeting Session đã có; API lập lịch UC-26–30 thuộc phần quản lý phiên. Meeting chưa có phiên
+vẫn Publish được; `MSG90` giữ trạng thái ngừng dùng và không tái cấp. Các mã workflow bổ sung dùng
+`MSG129`–`MSG135` để không trùng dải Agenda và F08/GOF09 đã được dành trên main.
 
 PR41 đã merge vào `codex/role-postgres-isolation` ở commit `e27e003`, không phải main. Main mới nhất
 đã fetch là `779d14e` và đã là ancestor của checkout `5238f85`, nhưng workflow PR41 chưa có trên main.

@@ -115,7 +115,7 @@ public sealed class MeetingReadPolicyTests
 
     [Theory]
     [MemberData(nameof(ReadStates))]
-    public void Assigned_chair_can_read_content_with_redacted_history(
+    public void Assigned_chair_reads_content_and_redacted_history_only_after_publication(
         MeetingStatus status, bool assignedApproverCanRead, bool memberCanRead)
     {
         var chair = Guid.CreateVersion7();
@@ -128,9 +128,9 @@ public sealed class MeetingReadPolicyTests
             Response = InvitationResponse.Accepted,
         });
 
-        Assert.True(MeetingReadPolicy.CanRead(meeting, chair));
-        Assert.True(MeetingReadPolicy.ForUser(chair).Compile()(meeting));
-        Assert.True(MeetingReadPolicy.CanReadHistory(meeting, chair));
+        Assert.Equal(memberCanRead, MeetingReadPolicy.CanRead(meeting, chair));
+        Assert.Equal(memberCanRead, MeetingReadPolicy.ForUser(chair).Compile()(meeting));
+        Assert.Equal(memberCanRead, MeetingReadPolicy.CanReadHistory(meeting, chair));
         Assert.False(MeetingReadPolicy.CanReadFullHistory(meeting, chair));
         Assert.False(MeetingReadPolicy.CanReadRejectionReason(meeting, chair));
         _ = assignedApproverCanRead;

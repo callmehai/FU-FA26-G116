@@ -148,16 +148,6 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
         return await query.SingleOrDefaultAsync(meeting => meeting.Id == id, ct);
     }
 
-    public async Task<bool> HasValidPlannedSessionAsync(Guid meetingId, CancellationToken ct = default)
-    {
-        var sessions = await db.MeetingSessions.AsNoTracking()
-            .Where(session => session.MeetingId == meetingId && session.Status == MeetingSessionStatus.Planned)
-            .ToListAsync(ct);
-
-        // Validate in .NET so whitespace-only titles have the same meaning as the shared domain rule.
-        return sessions.Any(session => MeetingSessionRules.IsValidPlanned(session, meetingId));
-    }
-
     public async Task<MeetingHistoryPage?> FindHistoryPageAsync(
         Guid meetingId, int page, int pageSize, CancellationToken ct = default)
     {

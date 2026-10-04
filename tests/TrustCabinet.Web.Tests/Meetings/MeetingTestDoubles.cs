@@ -207,13 +207,6 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
     public Task<bool> IsUserActiveAsync(Guid userId, CancellationToken ct = default)
         => Task.FromResult(UserCapabilities.ContainsKey(userId) && !InactiveUserIds.Contains(userId));
 
-    public Task<bool> HasValidPlannedSessionAsync(Guid meetingId, CancellationToken ct = default)
-    {
-        ct.ThrowIfCancellationRequested();
-        return Task.FromResult(Meetings.Single(meeting => meeting.Id == meetingId).Sessions
-            .Any(session => MeetingSessionRules.IsValidPlanned(session, meetingId)));
-    }
-
     public Task<string?> FindUserDisplayNameAsync(Guid userId, CancellationToken ct = default)
         => Task.FromResult<string?>("Test User");
 

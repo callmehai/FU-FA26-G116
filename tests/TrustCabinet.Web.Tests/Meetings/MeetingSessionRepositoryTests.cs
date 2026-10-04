@@ -32,50 +32,6 @@ public sealed class MeetingSessionRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Publication_query_uses_the_current_transaction_and_domain_whitespace_validation()
-    {
-        var meeting = await AddMeetingAsync("Target meeting");
-        var other = await AddMeetingAsync("Other meeting");
-        var whitespace = NewSession(meeting.Id);
-        whitespace.Title = "\u00A0\t\r\n";
-        var invalidTimes = NewSession(meeting.Id);
-        invalidTimes.PlannedEndsAt = invalidTimes.PlannedStartsAt;
-        var cancelled = NewSession(meeting.Id);
-        cancelled.Status = MeetingSessionStatus.Cancelled;
-        _db.MeetingSessions.AddRange(whitespace, invalidTimes, cancelled, NewSession(other.Id));
-        await _db.SaveChangesAsync();
-        var repository = new MeetingRepository(_db);
-
-        Assert.False(await repository.HasValidPlannedSessionAsync(meeting.Id));
-        Assert.False(await repository.HasValidPlannedSessionAsync(Guid.CreateVersion7()));
-        var ready = await repository.InTransactionAsync(async ct =>
-        {
-            Assert.NotNull(_db.Database.CurrentTransaction);
-            _db.MeetingSessions.Add(NewSession(meeting.Id));
-            await _db.SaveChangesAsync(ct);
-            return await repository.HasValidPlannedSessionAsync(meeting.Id, ct);
-        });
-
-        Assert.True(ready);
-        Assert.True(await repository.HasValidPlannedSessionAsync(meeting.Id));
-    }
-
-    [Theory]
-    [InlineData(MeetingSessionStatus.InProgress)]
-    [InlineData(MeetingSessionStatus.Completed)]
-    [InlineData(MeetingSessionStatus.Cancelled)]
-    public async Task Non_Planned_session_does_not_make_publication_ready(MeetingSessionStatus status)
-    {
-        var meeting = await AddMeetingAsync("Session status check");
-        var session = NewSession(meeting.Id);
-        session.Status = status;
-        _db.MeetingSessions.Add(session);
-        await _db.SaveChangesAsync();
-
-        Assert.False(await new MeetingRepository(_db).HasValidPlannedSessionAsync(meeting.Id));
-    }
-
-    [Fact]
     public async Task Session_migration_preserves_existing_meeting_history_and_email_without_backfilling_sessions()
     {
         const string beforeSessions = "20261001153906_MeetingWorkflowReviewCorrections";
@@ -107,7 +63,6 @@ public sealed class MeetingSessionRepositoryTests : IAsyncLifetime
         await _db.GetService<IMigrator>().MigrateAsync();
 
         Assert.Empty(await _db.MeetingSessions.ToListAsync());
-        Assert.False(await new MeetingRepository(_db).HasValidPlannedSessionAsync(meeting.Id));
         Assert.Equal(meeting.Title, (await _db.Meetings.SingleAsync()).Title);
         Assert.Equal(history.Id, (await _db.MeetingStatusHistory.SingleAsync()).Id);
         var preservedEmail = await _db.EmailMessages.SingleAsync();

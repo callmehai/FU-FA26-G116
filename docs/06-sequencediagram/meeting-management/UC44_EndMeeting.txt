@@ -1,0 +1,115 @@
+title UC-44 - End Meeting
+
+actor "Chair" as Chair
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Participant Repository" as MeetingParticipantRepository
+participant ":Meeting Session Repository" as MeetingSessionRepository
+participant ":Meeting Status History Repository" as MeetingStatusHistoryRepository
+participant ":Online Meeting Room" as MeetingRoom
+database ":Database" as Database
+
+Chair->MeetingPage: Confirm End Meeting
+activate MeetingPage
+MeetingPage->MeetingController: End Meeting
+activate MeetingController
+MeetingController->MeetingService: endMeeting(meetingId, chairId)
+activate MeetingService
+
+MeetingService->MeetingRepository: Get current meeting
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting and lifecycle status
+activate Database
+Database-->MeetingRepository: Meeting / Meeting not found
+deactivate Database
+MeetingRepository-->MeetingService: Meeting / Meeting not found
+deactivate MeetingRepository
+
+MeetingService->MeetingParticipantRepository: Verify current Chair assignment (BR-90)
+activate MeetingParticipantRepository
+MeetingParticipantRepository->Database: Retrieve Chair assignment
+activate Database
+Database-->MeetingParticipantRepository: Assignment / No assignment
+deactivate Database
+MeetingParticipantRepository-->MeetingService: Assignment / No assignment
+deactivate MeetingParticipantRepository
+
+MeetingService->MeetingService: Revalidate active Chair, InProgress status, and no Planned or InProgress sessions (BR-90, BR-91)
+
+alt Meeting or Chair is no longer eligible - EX-2
+    MeetingService-->MeetingController: MSG114 - This meeting cannot be ended
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Return meeting end failure
+    deactivate MeetingController
+    MeetingPage-->Chair: MSG114 - This meeting cannot be ended
+
+else Meeting and Chair are eligible
+    MeetingService->MeetingSessionRepository: Check for Planned or InProgress sessions (BR-61, BR-91)
+    activate MeetingSessionRepository
+    MeetingSessionRepository->Database: Retrieve unfinished sessions
+    activate Database
+
+    alt Unfinished sessions remain - EX-1
+        Database-->MeetingSessionRepository: Unfinished sessions
+        deactivate Database
+        MeetingSessionRepository-->MeetingService: Unfinished sessions
+        deactivate MeetingSessionRepository
+        MeetingService-->MeetingController: MSG113 - Complete or cancel all unfinished meeting sessions before ending the meeting
+        deactivate MeetingService
+        MeetingController-->MeetingPage: Return unfinished sessions error
+        deactivate MeetingController
+        MeetingPage-->Chair: MSG113 - Complete or cancel all unfinished meeting sessions before ending the meeting
+
+    else No Planned or InProgress sessions remain
+        Database-->MeetingSessionRepository: None
+        deactivate Database
+        MeetingSessionRepository-->MeetingService: None
+        deactivate MeetingSessionRepository
+        MeetingService->MeetingRepository: Change InProgress to Ended (BR-90, BR-92)
+        activate MeetingRepository
+        MeetingRepository->Database: Save meeting lifecycle transition
+        activate Database
+
+        alt Meeting end cannot be completed - EX-3
+            Database-->MeetingRepository: Save failed
+            deactivate Database
+            MeetingRepository-->MeetingService: Meeting end failed
+            deactivate MeetingRepository
+            MeetingService-->MeetingController: MSG116 - Unable to end the meeting. Please try again
+            deactivate MeetingService
+            MeetingController-->MeetingPage: Return meeting end failure
+            deactivate MeetingController
+            MeetingPage-->Chair: MSG116 - Unable to end the meeting. Please try again
+
+        else Meeting status is Ended
+            Database-->MeetingRepository: Meeting status updated
+            deactivate Database
+            MeetingRepository-->MeetingService: Meeting status updated
+            deactivate MeetingRepository
+
+            MeetingService->MeetingStatusHistoryRepository: Record end action, actor, timestamp, and status (BR-38)
+            activate MeetingStatusHistoryRepository
+            MeetingStatusHistoryRepository->Database: Insert lifecycle history
+            activate Database
+            Database-->MeetingStatusHistoryRepository: History recorded
+            deactivate Database
+            MeetingStatusHistoryRepository-->MeetingService: History recorded
+            deactivate MeetingStatusHistoryRepository
+
+            MeetingService->MeetingRoom: Close room and disconnect connected users (BR-96)
+            activate MeetingRoom
+            MeetingRoom-->MeetingService: Room closed; connected users disconnected
+            deactivate MeetingRoom
+
+            MeetingService-->MeetingController: Meeting ended successfully
+            deactivate MeetingService
+            MeetingController-->MeetingPage: MSG111 - Meeting ended successfully
+            deactivate MeetingController
+            MeetingPage-->Chair: MSG111 - Meeting ended successfully
+        end
+    end
+end
+
+deactivate MeetingPage

@@ -144,12 +144,13 @@ public class NotificationServiceTests
         var service = NewService(db);
 
         Assert.NotNull(await service.GetTargetAsync(secretary.Id, secretaryNotification.Id));
-        Assert.NotNull(await service.GetTargetAsync(chair.Id, chairNotification.Id));
+        Assert.Null(await service.GetTargetAsync(chair.Id, chairNotification.Id));
         Assert.Null(await service.GetTargetAsync(member.Id, memberNotification.Id));
 
         meeting.Status = MeetingStatus.Published;
         await db.SaveChangesAsync();
 
+        Assert.NotNull(await service.GetTargetAsync(chair.Id, chairNotification.Id));
         Assert.NotNull(await service.GetTargetAsync(member.Id, memberNotification.Id));
     }
 

@@ -56,7 +56,6 @@ public enum MeetingWorkflowOutcome
     Forbidden,
     InvalidRequest,
     SubmissionNotReady,
-    PublicationNotReady,
     InvalidApprover,
     InvalidOrganizer,
     RejectionReasonRequired,

@@ -40,15 +40,14 @@ public static class MeetingEndpoints
     private const string Msg86HistoryInvalidQuery = "MSG86";
     private const string Msg87BodyTooLarge = "MSG87";
     private const string Msg88TransitionFailed = "MSG88";
-    private const string Msg60WorkflowReadFailed = "MSG60";
-    private const string Msg61ApproversLoadFailed = "MSG61";
-    private const string Msg62WorkflowActiveUserCheckFailed = "MSG62";
-    private const string Msg63ApprovalConflict = "MSG63";
-    private const string Msg64ReturnToDraftConflict = "MSG64";
+    private const string Msg129WorkflowReadFailed = "MSG129";
+    private const string Msg130ApproversLoadFailed = "MSG130";
+    private const string Msg131WorkflowActiveUserCheckFailed = "MSG131";
+    private const string Msg132ApprovalConflict = "MSG132";
+    private const string Msg133ReturnToDraftConflict = "MSG133";
     private const string Msg89OrganizerTransferred = "MSG89";
-    private const string Msg66OrganizerInvalid = "MSG66";
-    private const string Msg67OrganizerTransferConflict = "MSG67";
-    private const string Msg90PublicationNotReady = "MSG90";
+    private const string Msg134OrganizerInvalid = "MSG134";
+    private const string Msg135OrganizerTransferConflict = "MSG135";
 
     public static IEndpointRouteBuilder MapMeetingEndpoints(this IEndpointRouteBuilder app)
     {
@@ -61,7 +60,7 @@ public static class MeetingEndpoints
             .RequireCapability(
                 Capability.MeetingCreator,
                 SaveFailed(
-                    Msg61ApproversLoadFailed,
+                    Msg130ApproversLoadFailed,
                     "Không thể tải danh sách người duyệt. Vui lòng thử lại."));
 
         creatorMeetings.MapPost("/", CreateAsync);
@@ -81,7 +80,7 @@ public static class MeetingEndpoints
         var workflowMeetings = app.MapGroup("/api/meetings")
             .WithTags("Meetings")
             .RequireActiveUser(SaveFailed(
-                Msg62WorkflowActiveUserCheckFailed,
+                Msg131WorkflowActiveUserCheckFailed,
                 "Không thể kiểm tra tài khoản để thực hiện thao tác cuộc họp. Vui lòng thử lại."));
         workflowMeetings.MapGet("/{id:guid}/submission-readiness", GetSubmissionReadinessAsync);
         workflowMeetings.MapPost("/{id:guid}/transitions", TransitionAsync);
@@ -111,7 +110,7 @@ public static class MeetingEndpoints
                 StatusCodes.Status403Forbidden, Msg85ActionForbidden, "Bạn không có quyền thực hiện thao tác này."),
             MeetingWorkflowOutcome.StatusConflict => WorkflowError(
                 StatusCodes.Status409Conflict, Msg41SubmitConflict, "Cuộc họp không còn ở trạng thái Draft hoặc Rejected."),
-            _ => SaveFailed(Msg60WorkflowReadFailed, "Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại."),
+            _ => SaveFailed(Msg129WorkflowReadFailed, "Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại."),
         };
     }
 
@@ -191,12 +190,10 @@ public static class MeetingEndpoints
                 StatusCodes.Status400BadRequest, Msg80InvalidTransition, "Yêu cầu chuyển trạng thái không hợp lệ."),
             MeetingWorkflowOutcome.SubmissionNotReady => WorkflowError(
                 StatusCodes.Status400BadRequest, Msg81SubmissionNotReady, "Cuộc họp chưa đủ thông tin để gửi duyệt.", result.Errors),
-            MeetingWorkflowOutcome.PublicationNotReady => WorkflowError(
-                StatusCodes.Status400BadRequest, Msg90PublicationNotReady, "Cần có ít nhất một phiên họp Planned hợp lệ trước khi công bố.", result.Errors),
             MeetingWorkflowOutcome.InvalidApprover => WorkflowError(
                 StatusCodes.Status400BadRequest, Msg82ApproverInvalid, "Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp."),
             MeetingWorkflowOutcome.InvalidOrganizer => WorkflowError(
-                StatusCodes.Status400BadRequest, Msg66OrganizerInvalid, "Người tổ chức mới không hợp lệ hoặc không còn quyền tạo cuộc họp."),
+                StatusCodes.Status400BadRequest, Msg134OrganizerInvalid, "Người tổ chức mới không hợp lệ hoặc không còn quyền tạo cuộc họp."),
             MeetingWorkflowOutcome.RejectionReasonRequired => WorkflowError(
                 StatusCodes.Status400BadRequest, Msg83RejectionReasonRequired, "Cần nhập lý do từ chối."),
             MeetingWorkflowOutcome.RejectionReasonTooLong => WorkflowError(
@@ -254,7 +251,7 @@ public static class MeetingEndpoints
             MeetingWorkflowOutcome.Success => Results.Ok(MeetingHistoryPageResponse.From(result.Page!)),
             MeetingWorkflowOutcome.NotFound => Results.NotFound(),
             MeetingWorkflowOutcome.InvalidRequest => InvalidHistoryQuery(),
-            _ => SaveFailed(Msg60WorkflowReadFailed, "Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại."),
+            _ => SaveFailed(Msg129WorkflowReadFailed, "Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại."),
         };
     }
 
@@ -357,10 +354,10 @@ public static class MeetingEndpoints
     private static string TransitionConflictCode(MeetingTransitionAction action) => action switch
     {
         MeetingTransitionAction.SubmitForApproval => Msg41SubmitConflict,
-        MeetingTransitionAction.Approve or MeetingTransitionAction.Reject => Msg63ApprovalConflict,
-        MeetingTransitionAction.ReturnToDraft => Msg64ReturnToDraftConflict,
+        MeetingTransitionAction.Approve or MeetingTransitionAction.Reject => Msg132ApprovalConflict,
+        MeetingTransitionAction.ReturnToDraft => Msg133ReturnToDraftConflict,
         MeetingTransitionAction.Publish => Msg46PublishConflict,
-        MeetingTransitionAction.TransferOrganizer => Msg67OrganizerTransferConflict,
+        MeetingTransitionAction.TransferOrganizer => Msg135OrganizerTransferConflict,
         _ => Msg80InvalidTransition,
     };
 
@@ -461,7 +458,7 @@ public static class MeetingEndpoints
         {
             MeetingOutcome.Success => Results.Ok(result.Approvers!.Where(approver => approver.Id != actorId).ToArray()),
             _ => SaveFailed(
-                Msg61ApproversLoadFailed,
+                Msg130ApproversLoadFailed,
                 "Không thể tải danh sách người duyệt. Vui lòng thử lại."),
         };
     }
