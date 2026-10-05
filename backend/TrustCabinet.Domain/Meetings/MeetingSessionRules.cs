@@ -87,7 +87,7 @@ public static partial class MeetingSessionRules
     }
 
     /// <summary>UTC truncated to the microseconds PostgreSQL keeps, so a resubmitted value compares equal.</summary>
-    private static DateTimeOffset ToStoredPrecision(DateTimeOffset value)
+    public static DateTimeOffset ToStoredPrecision(DateTimeOffset value)
     {
         var utc = value.ToUniversalTime();
         return utc.AddTicks(-(utc.Ticks % 10));

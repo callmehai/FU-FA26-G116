@@ -16,7 +16,9 @@ public sealed record MeetingSessionDetails(
     string Title,
     DateTimeOffset PlannedStartsAt,
     DateTimeOffset PlannedEndsAt,
-    MeetingSessionStatus Status)
+    MeetingSessionStatus Status,
+    DateTimeOffset? ActualStartedAt,
+    DateTimeOffset? ActualEndedAt)
 {
     public static MeetingSessionDetails From(MeetingSession session) => new(
         session.Id,
@@ -24,7 +26,9 @@ public sealed record MeetingSessionDetails(
         session.Title,
         session.PlannedStartsAt,
         session.PlannedEndsAt,
-        session.Status);
+        session.Status,
+        session.ActualStartedAt,
+        session.ActualEndedAt);
 }
 
 public enum MeetingSessionOutcome
@@ -32,10 +36,12 @@ public enum MeetingSessionOutcome
     Success,
     InvalidInformation,
     NotFound,
-    /// <summary>The caller can read the meeting but is not its assigned Secretary.</summary>
+    /// <summary>The caller can read the meeting but is not its assigned Secretary (or Chair, for UC-29/30).</summary>
     Forbidden,
     /// <summary>The meeting or session status no longer allows the action.</summary>
     StatusConflict,
+    /// <summary>BR-59: another session of the meeting is already InProgress.</summary>
+    AnotherSessionInProgress,
     SaveFailed,
     ReadFailed,
 }

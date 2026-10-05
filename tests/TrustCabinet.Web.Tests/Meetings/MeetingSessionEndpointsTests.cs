@@ -16,7 +16,7 @@ using TrustCabinet.Web.Tests.Users;
 
 namespace TrustCabinet.Web.Tests.Meetings;
 
-/// <summary>UC-53 and UC-26 to UC-28 through the real HTTP pipeline, over in-memory repositories.</summary>
+/// <summary>UC-53 and UC-26 to UC-30 through the real HTTP pipeline, over in-memory repositories.</summary>
 public sealed class MeetingSessionEndpointsTests : IDisposable
 {
     private static readonly DateTimeOffset NextWeek = new(DateTimeOffset.UtcNow.UtcDateTime.Date.AddDays(7).AddHours(2), TimeSpan.Zero);
@@ -24,12 +24,14 @@ public sealed class MeetingSessionEndpointsTests : IDisposable
     private readonly User _organizer;
     private readonly User _secretary;
     private readonly User _member;
+    private readonly User _chair;
 
     public MeetingSessionEndpointsTests()
     {
         _organizer = GivenUser("organizer", BuiltInRoles.Secretary);
         _secretary = GivenUser("secretary", BuiltInRoles.Secretary);
         _member = GivenUser("member", BuiltInRoles.Member);
+        _chair = GivenUser("chair", BuiltInRoles.Member);
     }
 
     public void Dispose() => _factory.Dispose();
@@ -157,7 +159,7 @@ public sealed class MeetingSessionEndpointsTests : IDisposable
         Assert.Equal(new[] { earlier.Id, later.Id }, items.Select(item => item.GetProperty("id").GetGuid()));
         Assert.Equal("Cancelled", items[0].GetProperty("status").GetString());
         Assert.Equal(
-            new[] { "id", "meetingId", "title", "plannedStartsAt", "plannedEndsAt", "status" },
+            new[] { "id", "meetingId", "title", "plannedStartsAt", "plannedEndsAt", "status", "actualStartedAt", "actualEndedAt" },
             items[0].EnumerateObject().Select(property => property.Name));
     }
 
@@ -644,5 +646,245 @@ public sealed class MeetingSessionEndpointsTests : IDisposable
         Assert.Equal("MSG140", Code(body));
         Assert.Equal(MeetingSessionStatus.Planned, StoredMeeting(meeting.Id).Sessions.Single().Status);
         Assert.Empty(_factory.Meetings.Notifications);
+    }
+
+    // ---- UC-29 Start Meeting Session -------------------------------------------------------
+
+    private Meeting GivenRunningMeeting(MeetingStatus status = MeetingStatus.InProgress)
+    {
+        var meeting = GivenMeeting(status);
+        meeting.Participants.Add(Participant(meeting, _chair, MeetingRole.Chair));
+        return meeting;
+    }
+
+    private async Task<HttpResponseMessage> PostAsync(User user, Meeting meeting, MeetingSession session, string action)
+    {
+        using var client = _factory.ClientFor(user);
+        return await client.PostAsync($"/api/meetings/{meeting.Id}/sessions/{session.Id}/{action}", null);
+    }
+
+    [Fact]
+    public async Task Start_moves_a_planned_session_to_InProgress_and_leaves_the_meeting_InProgress()
+    {
+        var meeting = GivenRunningMeeting();
+        GivenSession(meeting);
+        var before = MeetingSessionRules.ToStoredPrecision(DateTimeOffset.UtcNow);
+
+        var response = await PostAsync(_chair, meeting, meeting.Sessions.Single(), "start");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("MSG51", Code(body));
+        var json = body.RootElement.GetProperty("session");
+        Assert.Equal("InProgress", json.GetProperty("status").GetString());
+        Assert.Equal(JsonValueKind.Null, json.GetProperty("actualEndedAt").ValueKind);
+        var stored = StoredMeeting(meeting.Id);
+        var started = stored.Sessions.Single();
+        Assert.Equal(MeetingSessionStatus.InProgress, started.Status);
+        Assert.InRange(started.ActualStartedAt!.Value, before, DateTimeOffset.UtcNow);
+        Assert.Equal(started.ActualStartedAt, json.GetProperty("actualStartedAt").GetDateTimeOffset());
+        Assert.Equal(MeetingStatus.InProgress, stored.Status);
+        Assert.Empty(stored.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+    }
+
+    [Theory]
+    [InlineData(MeetingStatus.Published)]
+    [InlineData(MeetingStatus.Ended)]
+    public async Task Start_returns_MSG58_409_unless_the_meeting_is_InProgress(MeetingStatus status)
+    {
+        // A published meeting is started through UC-43 first.
+        var meeting = GivenRunningMeeting(status);
+        var session = GivenSession(meeting);
+
+        var response = await PostAsync(_chair, meeting, session, "start");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal("MSG58", Code(body));
+        Assert.Equal(MeetingSessionStatus.Planned, StoredMeeting(meeting.Id).Sessions.Single().Status);
+    }
+
+    [Fact]
+    public async Task Start_returns_MSG57_while_another_session_is_InProgress()
+    {
+        var meeting = GivenRunningMeeting();
+        GivenSession(meeting, MeetingSessionStatus.InProgress, NextWeek.AddHours(-3), "Phiên đang họp");
+        var next = GivenSession(meeting);
+
+        var response = await PostAsync(_chair, meeting, next, "start");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal("MSG57", Code(body));
+        Assert.Equal(
+            MeetingSessionStatus.Planned,
+            StoredMeeting(meeting.Id).Sessions.Single(item => item.Id == next.Id).Status);
+    }
+
+    [Theory]
+    [InlineData(MeetingSessionStatus.InProgress)]
+    [InlineData(MeetingSessionStatus.Completed)]
+    [InlineData(MeetingSessionStatus.Cancelled)]
+    public async Task Start_returns_MSG58_409_for_a_session_that_is_not_planned(MeetingSessionStatus status)
+    {
+        var meeting = GivenRunningMeeting();
+        var session = GivenSession(meeting, status);
+
+        var response = await PostAsync(_chair, meeting, session, "start");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal("MSG58", Code(body));
+        Assert.Null(StoredMeeting(meeting.Id).Sessions.Single().ActualStartedAt);
+    }
+
+    [Fact]
+    public async Task Start_returns_MSG58_409_when_no_active_secretary_remains()
+    {
+        // BR-89: starting a session needs an active Secretary as well as the Chair.
+        var meeting = GivenRunningMeeting();
+        var session = GivenSession(meeting);
+        _secretary.IsActive = false;
+
+        var response = await PostAsync(_chair, meeting, session, "start");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal("MSG58", Code(body));
+    }
+
+    [Fact]
+    public async Task Start_returns_MSG58_403_to_readers_who_are_not_the_chair_and_404_to_others()
+    {
+        var meeting = GivenRunningMeeting();
+        var session = GivenSession(meeting);
+        var foreign = GivenSession(GivenRunningMeeting());
+        var outsider = GivenUser("outsider", BuiltInRoles.Member);
+
+        var secretary = await PostAsync(_secretary, meeting, session, "start");
+        using var secretaryBody = await JsonOf(secretary);
+        var member = await PostAsync(_member, meeting, session, "start");
+        var stranger = await PostAsync(outsider, meeting, session, "start");
+        var otherMeeting = await PostAsync(_chair, meeting, foreign, "start");
+
+        Assert.Equal(HttpStatusCode.Forbidden, secretary.StatusCode);
+        Assert.Equal("MSG58", Code(secretaryBody));
+        Assert.Equal(HttpStatusCode.Forbidden, member.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, stranger.StatusCode);
+        Assert.Empty(await stranger.Content.ReadAsByteArrayAsync());
+        Assert.Equal(HttpStatusCode.NotFound, otherMeeting.StatusCode);
+        Assert.Equal(MeetingSessionStatus.Planned, StoredMeeting(meeting.Id).Sessions.Single().Status);
+    }
+
+    [Fact]
+    public async Task Start_returns_MSG141_and_keeps_the_session_planned_when_saving_fails()
+    {
+        var meeting = GivenRunningMeeting();
+        var session = GivenSession(meeting);
+        _factory.Meetings.NextSaveThrows = new Microsoft.EntityFrameworkCore.DbUpdateException("write failed");
+
+        var response = await PostAsync(_chair, meeting, session, "start");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("MSG141", Code(body));
+        var stored = StoredMeeting(meeting.Id).Sessions.Single();
+        Assert.Equal(MeetingSessionStatus.Planned, stored.Status);
+        Assert.Null(stored.ActualStartedAt);
+    }
+
+    [Fact]
+    public async Task Start_returns_MSG131_when_the_active_account_check_fails()
+    {
+        var meeting = GivenRunningMeeting();
+        var session = GivenSession(meeting);
+        _factory.Accounts.NextReadThrows = new Npgsql.NpgsqlException("database unavailable");
+
+        var response = await PostAsync(_chair, meeting, session, "start");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal("MSG131", Code(body));
+    }
+
+    // ---- UC-30 End Meeting Session ---------------------------------------------------------
+
+    [Fact]
+    public async Task End_completes_the_last_session_without_ending_the_meeting()
+    {
+        var meeting = GivenRunningMeeting();
+        var session = GivenSession(meeting, MeetingSessionStatus.InProgress);
+        var startedAt = DateTimeOffset.UtcNow.AddHours(-1);
+        session.ActualStartedAt = startedAt;
+
+        var response = await PostAsync(_chair, meeting, session, "end");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("MSG52", Code(body));
+        Assert.Equal("Completed", body.RootElement.GetProperty("session").GetProperty("status").GetString());
+        var stored = StoredMeeting(meeting.Id);
+        var ended = stored.Sessions.Single();
+        Assert.Equal(MeetingSessionStatus.Completed, ended.Status);
+        Assert.Equal(startedAt, ended.ActualStartedAt);
+        Assert.NotNull(ended.ActualEndedAt);
+        Assert.Equal(MeetingStatus.InProgress, stored.Status);
+        Assert.Empty(stored.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+    }
+
+    [Theory]
+    [InlineData(MeetingSessionStatus.Planned)]
+    [InlineData(MeetingSessionStatus.Completed)]
+    [InlineData(MeetingSessionStatus.Cancelled)]
+    public async Task End_returns_MSG59_409_for_a_session_that_is_not_InProgress(MeetingSessionStatus status)
+    {
+        var meeting = GivenRunningMeeting();
+        var session = GivenSession(meeting, status);
+
+        var response = await PostAsync(_chair, meeting, session, "end");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal("MSG59", Code(body));
+        Assert.Equal(status, StoredMeeting(meeting.Id).Sessions.Single().Status);
+    }
+
+    [Fact]
+    public async Task End_returns_MSG59_409_when_the_meeting_is_not_InProgress_and_403_to_the_secretary()
+    {
+        var ended = GivenRunningMeeting(MeetingStatus.Ended);
+        var endedSession = GivenSession(ended, MeetingSessionStatus.InProgress);
+        var running = GivenRunningMeeting();
+        var runningSession = GivenSession(running, MeetingSessionStatus.InProgress);
+
+        var closed = await PostAsync(_chair, ended, endedSession, "end");
+        using var closedBody = await JsonOf(closed);
+        var forbidden = await PostAsync(_secretary, running, runningSession, "end");
+        using var forbiddenBody = await JsonOf(forbidden);
+
+        Assert.Equal(HttpStatusCode.Conflict, closed.StatusCode);
+        Assert.Equal("MSG59", Code(closedBody));
+        Assert.Equal(HttpStatusCode.Forbidden, forbidden.StatusCode);
+        Assert.Equal("MSG59", Code(forbiddenBody));
+        Assert.Equal(MeetingSessionStatus.InProgress, StoredMeeting(running.Id).Sessions.Single().Status);
+    }
+
+    [Fact]
+    public async Task End_returns_MSG142_and_keeps_the_session_running_when_saving_fails()
+    {
+        var meeting = GivenRunningMeeting();
+        var session = GivenSession(meeting, MeetingSessionStatus.InProgress);
+        _factory.Meetings.NextSaveThrows = new Microsoft.EntityFrameworkCore.DbUpdateException("write failed");
+
+        var response = await PostAsync(_chair, meeting, session, "end");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal("MSG142", Code(body));
+        var stored = StoredMeeting(meeting.Id).Sessions.Single();
+        Assert.Equal(MeetingSessionStatus.InProgress, stored.Status);
+        Assert.Null(stored.ActualEndedAt);
     }
 }

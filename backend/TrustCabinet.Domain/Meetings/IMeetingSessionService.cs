@@ -1,6 +1,6 @@
 namespace TrustCabinet.Domain.Meetings;
 
-/// <summary>UC-53 and UC-26 to UC-28. None of these change the parent meeting lifecycle (BR-92).</summary>
+/// <summary>UC-53 and UC-26 to UC-30. None of these change the parent meeting lifecycle (BR-92).</summary>
 public interface IMeetingSessionService
 {
     Task<MeetingSessionListResult> ListAsync(Guid meetingId, Guid actorId, CancellationToken ct = default);
@@ -12,5 +12,11 @@ public interface IMeetingSessionService
         Guid meetingId, Guid sessionId, MeetingSessionInput input, Guid actorId, CancellationToken ct = default);
 
     Task<MeetingSessionResult> CancelAsync(
+        Guid meetingId, Guid sessionId, Guid actorId, CancellationToken ct = default);
+
+    Task<MeetingSessionResult> StartAsync(
+        Guid meetingId, Guid sessionId, Guid actorId, CancellationToken ct = default);
+
+    Task<MeetingSessionResult> EndAsync(
         Guid meetingId, Guid sessionId, Guid actorId, CancellationToken ct = default);
 }

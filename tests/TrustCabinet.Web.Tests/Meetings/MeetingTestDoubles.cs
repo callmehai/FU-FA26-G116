@@ -62,6 +62,12 @@ internal sealed class FakeMeetingSessionRepository(FakeMeetingRepository meeting
         meetings.Meetings.Single(meeting => meeting.Id == session.MeetingId).Sessions.Add(session);
         return Task.CompletedTask;
     }
+
+    public Task<bool> HasSessionInProgressAsync(Guid meetingId, CancellationToken ct = default)
+        => Task.FromResult(meetings.Meetings
+            .Where(meeting => meeting.Id == meetingId)
+            .SelectMany(meeting => meeting.Sessions)
+            .Any(session => session.Status == MeetingSessionStatus.InProgress));
 }
 
 internal sealed class FakeMeetingRepository : IMeetingRepository
@@ -347,6 +353,8 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
                 PlannedStartsAt = session.PlannedStartsAt,
                 PlannedEndsAt = session.PlannedEndsAt,
                 Status = session.Status,
+                ActualStartedAt = session.ActualStartedAt,
+                ActualEndedAt = session.ActualEndedAt,
             }).ToList(),
             AgendaItems = meeting.AgendaItems.Select(item => new AgendaItem
             {

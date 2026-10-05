@@ -88,6 +88,29 @@ public class NotificationServiceTests
         Assert.Equal(0, await service.QueueStartingSoonAsync());
     }
 
+    [Theory]
+    [InlineData(MeetingSessionStatus.InProgress)]
+    [InlineData(MeetingSessionStatus.Completed)]
+    [InlineData(MeetingSessionStatus.Cancelled)]
+    public async Task Reminder_skips_a_session_that_is_no_longer_planned(MeetingSessionStatus status)
+    {
+        // UC-29 may start a session before its planned time; "starting soon" would then be wrong.
+        await using var db = NewDb();
+        var organizer = NewUser("started-organizer@example.com");
+        var participant = NewUser("started-participant@example.com");
+        var meeting = NewMeeting(organizer);
+        meeting.Status = MeetingStatus.InProgress;
+        var session = Assert.Single(meeting.Sessions);
+        session.PlannedStartsAt = Now.AddMinutes(10);
+        session.Status = status;
+        db.Users.AddRange(organizer, participant);
+        db.Meetings.Add(meeting);
+        db.MeetingParticipants.Add(new MeetingParticipant { MeetingId = meeting.Id, UserId = participant.Id });
+        await db.SaveChangesAsync();
+
+        Assert.Equal(0, await NewService(db).QueueStartingSoonAsync());
+    }
+
     [Fact]
     public async Task Target_uses_the_shared_meeting_access_rule_for_creator_and_approver()
     {

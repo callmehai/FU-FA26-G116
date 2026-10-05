@@ -853,6 +853,14 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<DateTimeOffset?>("ActualEndedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actual_ended_at");
+
+                    b.Property<DateTimeOffset?>("ActualStartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actual_started_at");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -887,6 +895,11 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_meeting_sessions");
+
+                    b.HasIndex("MeetingId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_meeting_sessions_meeting_id_in_progress")
+                        .HasFilter("status = 'InProgress'");
 
                     b.HasIndex("MeetingId", "Status")
                         .HasDatabaseName("ix_meeting_sessions_meeting_id_status");

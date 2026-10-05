@@ -20,9 +20,7 @@ public sealed class MeetingSessionRepositoryTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _db = new TrustCabinetDbContext(new DbContextOptionsBuilder<TrustCabinetDbContext>()
-            .UseNpgsql(_database.DataSource, options => options.MigrationsHistoryTable("__ef_migrations_history"))
-            .UseSnakeCaseNamingConvention().Options);
+        _db = NewDb();
         await _db.Database.MigrateAsync();
         await ReferenceDataSeeder.SeedAsync(_db);
     }
@@ -127,18 +125,21 @@ public sealed class MeetingSessionRepositoryTests : IAsyncLifetime
         await _db.GetService<IMigrator>().MigrateAsync(SessionsMigration);
         var (meetingId, _) = await InsertLegacyMeetingAsync(
             "Session is authoritative", PlannedStart, PlannedStart.AddHours(2));
-        var existing = NewSession(meetingId);
-        existing.Title = "Existing authoritative session";
-        existing.PlannedStartsAt = PlannedStart.AddDays(2);
-        existing.PlannedEndsAt = PlannedStart.AddDays(2).AddHours(1);
-        _db.MeetingSessions.Add(existing);
-        await _db.SaveChangesAsync();
-        _db.ChangeTracker.Clear();
+        // Raw SQL: the current model has columns this intermediate schema does not have yet.
+        var existingId = Guid.CreateVersion7();
+        var existingStart = PlannedStart.AddDays(2);
+        await _db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO meeting_sessions (
+                id, meeting_id, title, planned_starts_at, planned_ends_at, status, created_at, updated_at)
+            VALUES (
+                {existingId}, {meetingId}, {"Existing authoritative session"}, {existingStart},
+                {existingStart.AddHours(1)}, {MeetingSessionStatus.Planned.ToString()}, {PlannedStart}, {PlannedStart})
+            """);
 
         await _db.GetService<IMigrator>().MigrateAsync();
 
         var session = await _db.MeetingSessions.SingleAsync(item => item.MeetingId == meetingId);
-        Assert.Equal(existing.Id, session.Id);
+        Assert.Equal(existingId, session.Id);
         Assert.Equal("Existing authoritative session", session.Title);
     }
 
@@ -203,6 +204,85 @@ public sealed class MeetingSessionRepositoryTests : IAsyncLifetime
             Assert.Equal(NotificationType.MeetingSessionChanged, notification.Type);
         });
     }
+
+    [Fact]
+    public async Task Concurrent_starts_leave_exactly_one_session_in_progress_and_end_keeps_the_meeting_running()
+    {
+        var chair = new User { FullName = "Chủ tọa", Email = "session-chair@example.vn", PasswordHash = "x" };
+        var secretary = new User { FullName = "Thư ký", Email = "run-secretary@example.vn", PasswordHash = "x" };
+        var meeting = new Meeting
+        {
+            Title = "Họp đang diễn ra",
+            Status = MeetingStatus.InProgress,
+            CreatedById = secretary.Id,
+            CreatedBy = secretary,
+        };
+        meeting.Participants.Add(new MeetingParticipant { UserId = chair.Id, Role = MeetingRole.Chair });
+        meeting.Participants.Add(new MeetingParticipant { UserId = secretary.Id, Role = MeetingRole.Secretary });
+        var first = NewSession(meeting.Id);
+        var second = NewSession(meeting.Id);
+        second.PlannedStartsAt = PlannedStart.AddHours(2);
+        second.PlannedEndsAt = PlannedStart.AddHours(3);
+        meeting.Sessions.Add(first);
+        meeting.Sessions.Add(second);
+        _db.Users.AddRange(chair, secretary);
+        _db.Meetings.Add(meeting);
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+
+        // Each request has its own unit of work, as it does in the app; only the meeting lock orders them.
+        var results = await Task.WhenAll(new[] { first.Id, second.Id }.Select(async sessionId =>
+        {
+            await using var db = NewDb();
+            return await NewService(db).StartAsync(meeting.Id, sessionId, chair.Id);
+        }));
+
+        Assert.Equal(
+            new[] { Domain.Meetings.MeetingSessionOutcome.Success, Domain.Meetings.MeetingSessionOutcome.AnotherSessionInProgress },
+            results.Select(result => result.Outcome).Order());
+        var started = Assert.Single(await _db.MeetingSessions.Where(s => s.Status == MeetingSessionStatus.InProgress).ToListAsync());
+        Assert.NotNull(started.ActualStartedAt);
+        // The response carries the value PostgreSQL stored, so a later GET returns the same instant.
+        Assert.Equal(started.ActualStartedAt, results.Single(result => result.Session is not null).Session!.ActualStartedAt);
+
+        var ended = await NewService(_db).EndAsync(meeting.Id, started.Id, chair.Id);
+        _db.ChangeTracker.Clear();
+
+        Assert.Equal(MeetingSessionStatus.Completed, ended.Session!.Status);
+        var stored = await _db.MeetingSessions.SingleAsync(s => s.Id == started.Id);
+        Assert.Equal(started.ActualStartedAt, stored.ActualStartedAt);
+        Assert.Equal(ended.Session.ActualEndedAt, stored.ActualEndedAt);
+        Assert.Equal(MeetingStatus.InProgress, (await _db.Meetings.SingleAsync()).Status);
+        Assert.Empty(await _db.MeetingStatusHistory.ToListAsync());
+    }
+
+    [Fact]
+    public async Task Database_rejects_a_second_in_progress_session_of_one_meeting()
+    {
+        var organizer = new User { FullName = "Người tổ chức", Email = "unique-organizer@example.vn", PasswordHash = "x" };
+        var meeting = new Meeting { Title = "Một phiên đang họp", Status = MeetingStatus.InProgress, CreatedBy = organizer };
+        _db.Meetings.Add(meeting);
+        await _db.SaveChangesAsync();
+        var meetingId = meeting.Id;
+        var running = NewSession(meetingId);
+        running.Status = MeetingSessionStatus.InProgress;
+        var other = NewSession(meetingId);
+        other.Status = MeetingSessionStatus.InProgress;
+        _db.MeetingSessions.AddRange(running, other);
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => _db.SaveChangesAsync());
+    }
+
+    private TrustCabinetDbContext NewDb()
+        => new(new DbContextOptionsBuilder<TrustCabinetDbContext>()
+            .UseNpgsql(_database.DataSource, options => options.MigrationsHistoryTable("__ef_migrations_history"))
+            .UseSnakeCaseNamingConvention().Options);
+
+    private static MeetingSessionService NewService(TrustCabinetDbContext db)
+        => new(
+            new MeetingRepository(db),
+            new MeetingSessionRepository(db),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<MeetingSessionService>.Instance);
 
     private async Task<(Guid MeetingId, User Organizer)> InsertLegacyMeetingAsync(
         string title, DateTimeOffset startsAt, DateTimeOffset? endsAt)

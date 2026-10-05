@@ -172,11 +172,12 @@ Chuông thông báo nằm trên app bar, dùng chung cho cả hai workspace. Cod
 - **Được mời họp:** chưa triển khai trong SCRUM-14. Luồng publish meeting của SCRUM-19 phải tạo
   notification cho tất cả participant sau khi chuyển trạng thái thành công, cùng transaction với
   thay đổi trạng thái.
-- **Sắp bắt đầu:** worker kiểm tra Meeting Session không bị hủy của meeting `Published` hoặc
+- **Sắp bắt đầu:** worker kiểm tra Meeting Session còn `Planned` của meeting `Published` hoặc
   `InProgress` mỗi 5 giây và xếp một thông báo cho mỗi participant còn hoạt động khi còn tối đa
   **15 phút** trước Planned Start Time. Nội dung nêu cả Meeting và Session; unique key
   `meeting-session-starting-soon:{sessionId}:{plannedStartsAt UTC ticks}:{userId}` ngăn xếp lặp theo
-  từng phiên/giờ bắt đầu/người nhận; phiên bị dời lịch (UC-27) được nhắc lại theo giờ mới.
+  từng phiên/giờ bắt đầu/người nhận; phiên bị dời lịch (UC-27) được nhắc lại theo giờ mới. Phiên đã
+  bắt đầu sớm (UC-29), kết thúc hoặc bị hủy không được nhắc.
 - **Lịch phiên thay đổi (`MeetingSessionChanged`, SCRUM-68):** tạo, sửa hoặc hủy phiên khi cuộc họp
   `Published`/`InProgress` tạo thông báo cho các participant active, trừ người thao tác, cùng
   transaction với thay đổi phiên — xem [08-quan-ly-phien-hop.md](08-quan-ly-phien-hop.md#thông-báo-br-76).

@@ -25,7 +25,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | MeetingStatusHistory | Bằng chứng chuyển trạng thái | NEED MIGRATION / RESTRUCTURE | Giữ append-only; đồng bộ vòng đời đích. |
 | MeetingParticipant | Phân công người tham dự nội bộ | NEED MIGRATION / RESTRUCTURE | Bỏ Guest; hỗ trợ phân công Current/Removed và lưu lịch sử. |
 | MeetingGuestInvitation | Lời mời khách ngoài theo cuộc họp | NOT IMPLEMENTED | Thêm entity riêng; khách không phải User/người tham dự nội bộ. |
-| MeetingSession | Lịch và vòng đời của phiên họp | IMPLEMENTED | Đã có entity/schema và lịch dự kiến; API/lifecycle thuộc SCRUM-68. |
+| MeetingSession | Lịch và vòng đời của phiên họp | IMPLEMENTED | Lịch dự kiến và API lập lịch (SCRUM-68); bắt đầu/kết thúc ghi `ActualStartedAt`/`ActualEndedAt` (SCRUM-64). Unique index lọc `status = 'InProgress'` trên `meeting_id` ép tối đa một phiên InProgress mỗi cuộc họp (BR-59). |
 | AgendaItem | Mục nghị sự của phiên họp | NEED MIGRATION / RESTRUCTURE | Đổi MeetingId thành MeetingSessionId; trạng thái đích Pending/InProgress/Done. |
 | Notification | Thông báo của User | IMPLEMENTED | Giữ User bắt buộc, Meeting tùy chọn. |
 | Document | Tài liệu trong kho cá nhân | NEED MIGRATION / RESTRUCTURE | Bỏ MeetingId/AgendaItemId; thêm OwnerId. |

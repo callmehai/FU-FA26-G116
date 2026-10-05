@@ -45,12 +45,24 @@ public static class MeetingReadPolicy
         => CanReadFullHistory(meeting, userId) || IsAssignedSecretary(meeting, userId);
 
     public static bool IsAssignedSecretary(Meeting meeting, Guid userId)
-        => meeting.Participants.Any(participant => participant.MeetingId == meeting.Id
-            && participant.UserId == userId
-            && participant.Role == MeetingRole.Secretary
+        => meeting.Participants.Any(participant => participant.UserId == userId
+            && IsActiveAssignment(meeting, participant, MeetingRole.Secretary));
+
+    /// <summary>BR-63: only the assigned Chair starts and ends Meeting Sessions.</summary>
+    public static bool IsAssignedChair(Meeting meeting, Guid userId)
+        => meeting.Participants.Any(participant => participant.UserId == userId
+            && IsActiveAssignment(meeting, participant, MeetingRole.Chair));
+
+    /// <summary>BR-89: a session starts only while the meeting still has an active Secretary.</summary>
+    public static bool HasActiveSecretary(Meeting meeting)
+        => meeting.Participants.Any(participant => IsActiveAssignment(meeting, participant, MeetingRole.Secretary));
+
+    private static bool IsActiveAssignment(Meeting meeting, MeetingParticipant participant, MeetingRole role)
+        => participant.MeetingId == meeting.Id
+            && participant.Role == role
             && participant.Response != InvitationResponse.Delegated
             && participant.DelegatedToUserId is null
-            && participant.User is { IsActive: true });
+            && participant.User is { IsActive: true };
 
     private sealed class BindUser(ParameterExpression user, Expression value) : ExpressionVisitor
     {

@@ -5,7 +5,8 @@ using TrustCabinet.Domain.Meetings;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// HTTP boundary for UC-53 (view) and UC-26 to UC-28 (create, update, cancel) Meeting Sessions.
+/// HTTP boundary for UC-53 (view), UC-26 to UC-28 (create, update, cancel) and UC-29/UC-30 (start, end)
+/// Meeting Sessions.
 /// Access is by relationship to the meeting, so no system capability gates these routes.
 /// </summary>
 public static class MeetingSessionEndpoints
@@ -13,15 +14,22 @@ public static class MeetingSessionEndpoints
     private const string Msg48Created = "MSG48";
     private const string Msg49Updated = "MSG49";
     private const string Msg50Cancelled = "MSG50";
+    private const string Msg51Started = "MSG51";
+    private const string Msg52Ended = "MSG52";
     private const string Msg53InvalidInformation = "MSG53";
     private const string Msg54CannotAdd = "MSG54";
     private const string Msg55CannotEdit = "MSG55";
     private const string Msg56CannotCancel = "MSG56";
+    private const string Msg57AnotherSessionInProgress = "MSG57";
+    private const string Msg58CannotStart = "MSG58";
+    private const string Msg59CannotEnd = "MSG59";
     private const string Msg127LoadFailed = "MSG127";
     private const string Msg131ActiveUserCheckFailed = "MSG131";
     private const string Msg138CreateFailed = "MSG138";
     private const string Msg139UpdateFailed = "MSG139";
     private const string Msg140CancelFailed = "MSG140";
+    private const string Msg141StartFailed = "MSG141";
+    private const string Msg142EndFailed = "MSG142";
 
     public static IEndpointRouteBuilder MapMeetingSessionEndpoints(this IEndpointRouteBuilder app)
     {
@@ -33,15 +41,17 @@ public static class MeetingSessionEndpoints
                 "Không thể tải danh sách phiên họp. Vui lòng thử lại."))
             .MapGet("/", ListAsync);
 
-        var planning = app.MapGroup("/api/meetings/{meetingId:guid}/sessions")
+        var mutations = app.MapGroup("/api/meetings/{meetingId:guid}/sessions")
             .WithTags("Meeting Sessions")
             .RequireActiveUser(Error(
                 StatusCodes.Status503ServiceUnavailable,
                 Msg131ActiveUserCheckFailed,
                 "Không thể kiểm tra tài khoản để thực hiện thao tác cuộc họp. Vui lòng thử lại."));
-        planning.MapPost("/", CreateAsync);
-        planning.MapPut("/{sessionId:guid}", UpdateAsync);
-        planning.MapPost("/{sessionId:guid}/cancel", CancelAsync);
+        mutations.MapPost("/", CreateAsync);
+        mutations.MapPut("/{sessionId:guid}", UpdateAsync);
+        mutations.MapPost("/{sessionId:guid}/cancel", CancelAsync);
+        mutations.MapPost("/{sessionId:guid}/start", StartAsync);
+        mutations.MapPost("/{sessionId:guid}/end", EndAsync);
         return app;
     }
 
@@ -140,7 +150,55 @@ public static class MeetingSessionEndpoints
             "Không thể hủy phiên họp. Vui lòng thử lại.");
     }
 
-    /// <summary>The same code covers "not the assigned Secretary" (403) and "status no longer allows it" (409).</summary>
+    private static async Task<IResult> StartAsync(
+        Guid meetingId, Guid sessionId, ClaimsPrincipal principal, IMeetingSessionService service, CancellationToken ct)
+    {
+        if (CapabilityGate.CurrentUserId(principal) is not { } actorId)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await service.StartAsync(meetingId, sessionId, actorId, ct);
+        if (result.Outcome == MeetingSessionOutcome.AnotherSessionInProgress)
+        {
+            return Error(
+                StatusCodes.Status409Conflict,
+                Msg57AnotherSessionInProgress,
+                "Đang có phiên họp khác diễn ra. Hãy kết thúc phiên đó trước khi bắt đầu phiên mới.");
+        }
+
+        return ToResult(
+            result,
+            StatusCodes.Status200OK,
+            Msg51Started,
+            "Bắt đầu phiên họp thành công.",
+            Msg58CannotStart,
+            "Phiên họp này không thể bắt đầu.",
+            Msg141StartFailed,
+            "Không thể bắt đầu phiên họp. Vui lòng thử lại.");
+    }
+
+    private static async Task<IResult> EndAsync(
+        Guid meetingId, Guid sessionId, ClaimsPrincipal principal, IMeetingSessionService service, CancellationToken ct)
+    {
+        if (CapabilityGate.CurrentUserId(principal) is not { } actorId)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await service.EndAsync(meetingId, sessionId, actorId, ct);
+        return ToResult(
+            result,
+            StatusCodes.Status200OK,
+            Msg52Ended,
+            "Kết thúc phiên họp thành công.",
+            Msg59CannotEnd,
+            "Phiên họp này không thể kết thúc.",
+            Msg142EndFailed,
+            "Không thể kết thúc phiên họp. Vui lòng thử lại.");
+    }
+
+    /// <summary>The same code covers "wrong role" (403) and "status no longer allows it" (409).</summary>
     private static IResult ToResult(
         MeetingSessionResult result,
         int successStatus,
@@ -202,7 +260,9 @@ public sealed record MeetingSessionResponse(
     string Title,
     DateTimeOffset PlannedStartsAt,
     DateTimeOffset PlannedEndsAt,
-    string Status)
+    string Status,
+    DateTimeOffset? ActualStartedAt,
+    DateTimeOffset? ActualEndedAt)
 {
     public static MeetingSessionResponse From(MeetingSessionDetails session) => new(
         session.Id,
@@ -210,7 +270,9 @@ public sealed record MeetingSessionResponse(
         session.Title,
         session.PlannedStartsAt,
         session.PlannedEndsAt,
-        session.Status.ToString());
+        session.Status.ToString(),
+        session.ActualStartedAt,
+        session.ActualEndedAt);
 }
 
 public sealed record MeetingSessionMutationResponse(string Code, string Message, MeetingSessionResponse Session);

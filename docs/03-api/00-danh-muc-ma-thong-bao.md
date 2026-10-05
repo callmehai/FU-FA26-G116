@@ -27,7 +27,7 @@ các bước tương ứng, còn sequence thể hiện cùng BR ID và message c
 
 ## Mã tiếp theo
 
-**`MSG141`** — workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; `MSG90`–`MSG91` ngừng dùng, không tái cấp. Quản lý phiên họp SCRUM-68 dùng `MSG48`–`MSG50`, `MSG53`–`MSG56`, `MSG127` và `MSG138`–`MSG140`; `MSG77` ngừng dùng. `MSG51`–`MSG52`, `MSG57`–`MSG76` và `MSG95`–`MSG128` đã dành cho Start/End Session, Agenda, participant, room và các màn đọc liên quan. Đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG143`** — workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; `MSG90`–`MSG91` ngừng dùng, không tái cấp. Quản lý phiên họp SCRUM-68 dùng `MSG48`–`MSG50`, `MSG53`–`MSG56`, `MSG127` và `MSG138`–`MSG140`; `MSG77` ngừng dùng. Bắt đầu/kết thúc phiên SCRUM-64 dùng `MSG51`–`MSG52`, `MSG57`–`MSG59` và `MSG141`–`MSG142`. `MSG60`–`MSG76` và `MSG95`–`MSG128` đã dành cho Agenda, participant, room và các màn đọc liên quan. Đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -158,13 +158,15 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG136` | 503 | GET readiness, GET history | Không tải được readiness/history | `Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG137` | 409 | POST Publish | Không có đúng một Chair active hoặc không có Secretary active | `Cuộc họp cần có đúng một Chủ tọa đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố.` | BE |
 
-### Quản lý phiên họp — UC-26, UC-27, UC-28, UC-53 (`/api/meetings/{meetingId}/sessions`)
+### Quản lý phiên họp — UC-26–UC-30, UC-53 (`/api/meetings/{meetingId}/sessions`)
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
 | `MSG48` | 201 | `POST /sessions` | Tạo phiên họp thành công | `Tạo phiên họp thành công.` | BE |
 | `MSG49` | 200 | `PUT /sessions/{sessionId}` | Cập nhật phiên họp thành công (kể cả không đổi gì) | `Cập nhật phiên họp thành công.` | BE |
 | `MSG50` | 200 | `POST /sessions/{sessionId}/cancel` | Hủy phiên họp thành công | `Hủy phiên họp thành công.` | BE |
+| `MSG51` | 200 | `POST /sessions/{sessionId}/start` | Bắt đầu phiên họp thành công | `Bắt đầu phiên họp thành công.` | BE |
+| `MSG52` | 200 | `POST /sessions/{sessionId}/end` | Kết thúc phiên họp thành công | `Kết thúc phiên họp thành công.` | BE |
 | `MSG53` | 400 | `POST /sessions`, `PUT /sessions/{sessionId}` | Thông tin phiên họp không hợp lệ — kèm `errors` (`title`, `plannedStartsAt`, `plannedEndsAt`); body không phải JSON hoặc sai cú pháp thì không có `errors` | `Thông tin phiên họp không hợp lệ.` / `Nội dung JSON không hợp lệ.` | BE |
 | `MSG54` | 403 | `POST /sessions` | Đọc được cuộc họp nhưng không phải Thư ký được phân công | `Không thể thêm phiên họp cho cuộc họp này nữa.` | BE |
 | `MSG54` | 409 | `POST /sessions` | Cuộc họp không ở Draft, Rejected, Approved, Published hoặc InProgress | `Không thể thêm phiên họp cho cuộc họp này nữa.` | BE |
@@ -172,16 +174,24 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG55` | 409 | `PUT /sessions/{sessionId}` | Cuộc họp không còn cho lập lịch phiên, hoặc phiên không còn Planned | `Phiên họp này không thể chỉnh sửa được nữa.` | BE |
 | `MSG56` | 403 | `POST /sessions/{sessionId}/cancel` | Đọc được cuộc họp nhưng không phải Thư ký được phân công | `Phiên họp này không thể hủy được nữa.` | BE |
 | `MSG56` | 409 | `POST /sessions/{sessionId}/cancel` | Cuộc họp không còn cho lập lịch phiên, hoặc phiên không còn Planned | `Phiên họp này không thể hủy được nữa.` | BE |
+| `MSG57` | 409 | `POST /sessions/{sessionId}/start` | Một phiên khác của cuộc họp đang InProgress (BR-59) | `Đang có phiên họp khác diễn ra. Hãy kết thúc phiên đó trước khi bắt đầu phiên mới.` | BE |
+| `MSG58` | 403 | `POST /sessions/{sessionId}/start` | Đọc được cuộc họp nhưng không phải Chủ tọa được phân công | `Phiên họp này không thể bắt đầu.` | BE |
+| `MSG58` | 409 | `POST /sessions/{sessionId}/start` | Cuộc họp không InProgress, phiên không còn Planned, hoặc cuộc họp không còn Thư ký active (BR-89) | `Phiên họp này không thể bắt đầu.` | BE |
+| `MSG59` | 403 | `POST /sessions/{sessionId}/end` | Đọc được cuộc họp nhưng không phải Chủ tọa được phân công | `Phiên họp này không thể kết thúc.` | BE |
+| `MSG59` | 409 | `POST /sessions/{sessionId}/end` | Cuộc họp không InProgress hoặc phiên không còn InProgress | `Phiên họp này không thể kết thúc.` | BE |
 | `MSG127` | 500 | `GET /sessions` | Không tải được danh sách phiên (kể cả lỗi khi kiểm tra tài khoản đang hoạt động) | `Không thể tải danh sách phiên họp. Vui lòng thử lại.` | BE |
-| `MSG131` | 503 | `POST /sessions`, `PUT /sessions/{sessionId}`, `POST /sessions/{sessionId}/cancel` | Không kiểm tra được trạng thái active của tài khoản — cùng tình huống với workflow | `Không thể kiểm tra tài khoản để thực hiện thao tác cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG131` | 503 | `POST /sessions`, `PUT /sessions/{sessionId}`, `POST /sessions/{sessionId}/cancel`, `/start`, `/end` | Không kiểm tra được trạng thái active của tài khoản — cùng tình huống với workflow | `Không thể kiểm tra tài khoản để thực hiện thao tác cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG138` | 500 | `POST /sessions` | Không lưu được khi tạo phiên | `Không thể tạo phiên họp. Vui lòng thử lại.` | BE |
 | `MSG139` | 500 | `PUT /sessions/{sessionId}` | Không lưu được khi sửa phiên | `Không thể cập nhật phiên họp. Vui lòng thử lại.` | BE |
 | `MSG140` | 500 | `POST /sessions/{sessionId}/cancel` | Không lưu được khi hủy phiên | `Không thể hủy phiên họp. Vui lòng thử lại.` | BE |
+| `MSG141` | 500 | `POST /sessions/{sessionId}/start` | Không lưu được khi bắt đầu phiên | `Không thể bắt đầu phiên họp. Vui lòng thử lại.` | BE |
+| `MSG142` | 500 | `POST /sessions/{sessionId}/end` | Không lưu được khi kết thúc phiên | `Không thể kết thúc phiên họp. Vui lòng thử lại.` | BE |
 
 "Không tìm thấy cuộc họp/phiên", "không có quyền xem cuộc họp" và "phiên thuộc cuộc họp khác" **không có
 mã**: API trả `404` không body, giống `GET /api/meetings/{id}`. Đặc tả UC-26–UC-28 gộp "không còn là
 Thư ký" vào `MSG54`–`MSG56`; BE tách HTTP `403` (sai người) với `409` (sai trạng thái) nhưng giữ
-cùng mã, như `MSG46`. `MSG138`–`MSG140` là nhánh lỗi lưu mà đặc tả và sơ đồ chưa vẽ.
+cùng mã, như `MSG46`. UC-29/UC-30 làm tương tự với "không còn là Chủ tọa" trong `MSG58`/`MSG59`.
+`MSG138`–`MSG142` là nhánh lỗi lưu mà đặc tả và sơ đồ chưa vẽ.
 
 ### Dành sẵn, chưa có code
 
@@ -190,11 +200,6 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 
 | Mã | Use case | Tình huống (theo sơ đồ) |
 |---|---|---|
-| `MSG51` | UC-29 Start Meeting Session | *Meeting session started successfully.* |
-| `MSG52` | UC-30 End Meeting Session | *Meeting session ended successfully.* |
-| `MSG57` | UC-29 | *Another meeting session is already in progress. End it before starting another session.* |
-| `MSG58` | UC-29 | *This meeting session cannot be started.* |
-| `MSG59` | UC-30 | *This meeting session cannot be ended.* |
 | `MSG60` | UC-31 Create Agenda Item | *Agenda item created successfully.* |
 | `MSG61` | UC-32 Update Agenda Item | *Agenda item updated successfully.* |
 | `MSG62` | UC-33 Delete Agenda Item | *Agenda item deleted successfully.* |

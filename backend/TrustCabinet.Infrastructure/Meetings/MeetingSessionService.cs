@@ -8,8 +8,8 @@ using TrustCabinet.Domain.Meetings;
 namespace TrustCabinet.Infrastructure.Meetings;
 
 /// <summary>
-/// UC-53 and UC-26 to UC-28. Every change runs under the parent meeting row lock, so a concurrent
-/// lifecycle transition or session edit cannot interleave, and never touches the meeting itself (BR-92).
+/// UC-53 and UC-26 to UC-30. Every change runs under the parent meeting row lock, so a concurrent
+/// lifecycle transition or session change cannot interleave, and never touches the meeting itself (BR-92).
 /// </summary>
 public sealed class MeetingSessionService(
     IMeetingRepository meetings,
@@ -45,7 +45,7 @@ public sealed class MeetingSessionService(
 
     public Task<MeetingSessionResult> CreateAsync(
         Guid meetingId, MeetingSessionInput input, Guid actorId, CancellationToken ct = default)
-        => MutateAsync(meetingId, actorId, "create a session", async (meeting, now, token) =>
+        => PlanAsync(meetingId, actorId, "create a session", async (meeting, now, token) =>
         {
             var mustStartAfter = MeetingSessionRules.RequiresFutureStart(meeting.Status) ? now : (DateTimeOffset?)null;
             if (!MeetingSessionRules.TryValidate(input, mustStartAfter, out var valid, out var errors))
@@ -71,7 +71,7 @@ public sealed class MeetingSessionService(
 
     public Task<MeetingSessionResult> UpdateAsync(
         Guid meetingId, Guid sessionId, MeetingSessionInput input, Guid actorId, CancellationToken ct = default)
-        => MutateAsync(meetingId, actorId, "update a session", async (meeting, now, token) =>
+        => PlanAsync(meetingId, actorId, "update a session", async (meeting, now, token) =>
         {
             var session = await sessions.FindAsync(meetingId, sessionId, token);
             if (session is null)
@@ -109,7 +109,7 @@ public sealed class MeetingSessionService(
 
     public Task<MeetingSessionResult> CancelAsync(
         Guid meetingId, Guid sessionId, Guid actorId, CancellationToken ct = default)
-        => MutateAsync(meetingId, actorId, "cancel a session", async (meeting, now, token) =>
+        => PlanAsync(meetingId, actorId, "cancel a session", async (meeting, now, token) =>
         {
             var session = await sessions.FindAsync(meetingId, sessionId, token);
             if (session is null)
@@ -130,11 +130,97 @@ public sealed class MeetingSessionService(
             return MeetingSessionResult.Success(MeetingSessionDetails.From(session));
         }, ct);
 
-    /// <summary>Locks the meeting, then applies BR-29 (404) and BR-54 (403/409) before the action.</summary>
+    public Task<MeetingSessionResult> StartAsync(
+        Guid meetingId, Guid sessionId, Guid actorId, CancellationToken ct = default)
+        => RunAsync(meetingId, actorId, "start a session", async (meeting, now, token) =>
+        {
+            var session = await sessions.FindAsync(meetingId, sessionId, token);
+            if (session is null)
+            {
+                return MeetingSessionResult.Failure(MeetingSessionOutcome.NotFound);
+            }
+
+            // BR-58 and BR-89: only a planned session, and only while an active Secretary remains.
+            if (session.Status != MeetingSessionStatus.Planned || !MeetingReadPolicy.HasActiveSecretary(meeting))
+            {
+                return MeetingSessionResult.Failure(MeetingSessionOutcome.StatusConflict);
+            }
+
+            if (await sessions.HasSessionInProgressAsync(meetingId, token))
+            {
+                return MeetingSessionResult.Failure(MeetingSessionOutcome.AnotherSessionInProgress);
+            }
+
+            // BR-60/BR-95: the meeting and its online room keep their state.
+            session.Status = MeetingSessionStatus.InProgress;
+            session.ActualStartedAt = MeetingSessionRules.ToStoredPrecision(now);
+            session.UpdatedAt = now;
+            await meetings.SaveChangesAsync(token);
+            return MeetingSessionResult.Success(MeetingSessionDetails.From(session));
+        }, ct);
+
+    public Task<MeetingSessionResult> EndAsync(
+        Guid meetingId, Guid sessionId, Guid actorId, CancellationToken ct = default)
+        => RunAsync(meetingId, actorId, "end a session", async (meeting, now, token) =>
+        {
+            var session = await sessions.FindAsync(meetingId, sessionId, token);
+            if (session is null)
+            {
+                return MeetingSessionResult.Failure(MeetingSessionOutcome.NotFound);
+            }
+
+            if (session.Status != MeetingSessionStatus.InProgress)
+            {
+                return MeetingSessionResult.Failure(MeetingSessionOutcome.StatusConflict);
+            }
+
+            // BR-61: ending the last session leaves the meeting InProgress; the Chair ends it via UC-44.
+            session.Status = MeetingSessionStatus.Completed;
+            session.ActualEndedAt = MeetingSessionRules.ToStoredPrecision(now);
+            session.UpdatedAt = now;
+            await meetings.SaveChangesAsync(token);
+            return MeetingSessionResult.Success(MeetingSessionDetails.From(session));
+        }, ct);
+
+    /// <summary>UC-26 to UC-28: BR-54 allows only the assigned Secretary, while the meeting is open for planning.</summary>
+    private Task<MeetingSessionResult> PlanAsync(
+        Guid meetingId,
+        Guid actorId,
+        string action,
+        Func<Meeting, DateTimeOffset, CancellationToken, Task<MeetingSessionResult>> apply,
+        CancellationToken ct)
+        => MutateAsync(
+            meetingId,
+            actorId,
+            action,
+            MeetingReadPolicy.IsAssignedSecretary,
+            MeetingSessionRules.AllowsPlanning,
+            apply,
+            ct);
+
+    /// <summary>UC-29/UC-30: BR-63 allows only the assigned Chair, while the meeting is InProgress.</summary>
+    private Task<MeetingSessionResult> RunAsync(
+        Guid meetingId,
+        Guid actorId,
+        string action,
+        Func<Meeting, DateTimeOffset, CancellationToken, Task<MeetingSessionResult>> apply,
+        CancellationToken ct)
+        => MutateAsync(
+            meetingId,
+            actorId,
+            action,
+            MeetingReadPolicy.IsAssignedChair,
+            status => status == MeetingStatus.InProgress,
+            apply,
+            ct);
+
+    /// <summary>Locks the meeting, then applies BR-29 (404), the actor's role (403) and the meeting status (409).</summary>
     private async Task<MeetingSessionResult> MutateAsync(
         Guid meetingId,
         Guid actorId,
         string action,
+        Func<Meeting, Guid, bool> isAllowedActor,
+        Func<MeetingStatus, bool> allowsAction,
         Func<Meeting, DateTimeOffset, CancellationToken, Task<MeetingSessionResult>> apply,
         CancellationToken ct)
     {
@@ -148,12 +234,12 @@ public sealed class MeetingSessionService(
                     return MeetingSessionResult.Failure(MeetingSessionOutcome.NotFound);
                 }
 
-                if (!MeetingReadPolicy.IsAssignedSecretary(meeting, actorId))
+                if (!isAllowedActor(meeting, actorId))
                 {
                     return MeetingSessionResult.Failure(MeetingSessionOutcome.Forbidden);
                 }
 
-                if (!MeetingSessionRules.AllowsPlanning(meeting.Status))
+                if (!allowsAction(meeting.Status))
                 {
                     return MeetingSessionResult.Failure(MeetingSessionOutcome.StatusConflict);
                 }

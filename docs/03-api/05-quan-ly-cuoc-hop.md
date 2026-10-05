@@ -386,8 +386,8 @@ protocol này bảo vệ snapshot người nhận khi Publish đồng thời.
 Update sau commit không đổi rows đã persist.
 
 Validation agenda thuộc SCRUM-25/BA; SCRUM-19 không dùng agenda để chặn gửi duyệt.
-API xem/tạo/sửa/hủy phiên (UC-53, UC-26–28) có ở [08-quan-ly-phien-hop.md](08-quan-ly-phien-hop.md);
-bắt đầu/kết thúc phiên (UC-29/30) thuộc SCRUM-64. Migration SCRUM-70 chỉ backfill một session từ lịch legacy
+API xem/tạo/sửa/hủy phiên (UC-53, UC-26–28) và bắt đầu/kết thúc phiên (UC-29/30, SCRUM-64) có ở
+[08-quan-ly-phien-hop.md](08-quan-ly-phien-hop.md). Migration SCRUM-70 chỉ backfill một session từ lịch legacy
 khi Meeting chưa có session nào, dùng end fallback `start + 1 giờ`, rồi bỏ `meetings.starts_at`/
 `meetings.ends_at` và index liên quan. Session có sẵn luôn là nguồn lịch chính thức. Publish không
 phụ thuộc vào số lượng phiên theo BR-56.

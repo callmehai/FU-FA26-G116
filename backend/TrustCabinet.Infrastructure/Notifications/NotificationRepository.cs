@@ -87,7 +87,7 @@ public sealed class NotificationRepository(TrustCabinetDbContext db) : INotifica
                 session => session.MeetingId,
                 participant => participant.MeetingId,
                 (session, participant) => new { Session = session, Participant = participant })
-            .Where(item => item.Session.Status != MeetingSessionStatus.Cancelled
+            .Where(item => item.Session.Status == MeetingSessionStatus.Planned
                 && (item.Session.Meeting.Status == MeetingStatus.Published
                     || item.Session.Meeting.Status == MeetingStatus.InProgress)
                 && item.Session.PlannedStartsAt > now

@@ -15,4 +15,7 @@ public interface IMeetingSessionRepository
     Task<MeetingSession?> FindAsync(Guid meetingId, Guid sessionId, CancellationToken ct = default);
 
     Task AddAsync(MeetingSession session, CancellationToken ct = default);
+
+    /// <summary>BR-59: whether any session of the meeting is InProgress.</summary>
+    Task<bool> HasSessionInProgressAsync(Guid meetingId, CancellationToken ct = default);
 }
