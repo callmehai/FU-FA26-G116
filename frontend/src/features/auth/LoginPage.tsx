@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { matchPath, Navigate, useLocation } from 'react-router-dom'
 import { BrandMark } from '../../components/BrandMark'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { routes } from '../../lib/routes'
@@ -48,11 +48,15 @@ export function LoginPage() {
   const [pending, setPending] = useState<'password' | 'google' | null>(null)
   const [error, setError] = useState<LoginError | null>(null)
 
+  const from = (location.state as { from?: { pathname: string; search?: string } } | null)?.from
+  // Arriving from a meeting link — the invitation email's, typically (SCRUM-15). Saying so tells the
+  // user the link worked; it names no meeting, so nothing leaks before sign-in.
+  const toMeeting = from !== undefined && matchPath(routes.meeting(':meetingId'), from.pathname) !== null
+
   if (status === 'loading') return <div className="route-fallback">Đang khôi phục phiên đăng nhập…</div>
 
   // Signed in — including right after a successful submit — go where the user was headed.
   if (status === 'authenticated') {
-    const from = (location.state as { from?: { pathname: string; search?: string } } | null)?.from
     return <Navigate to={from ? `${from.pathname}${from.search ?? ''}` : routes.meetings} replace />
   }
 
@@ -98,10 +102,14 @@ export function LoginPage() {
             <p>{error.message}</p>
             {error.hint && <p className="alert-hint">{error.hint}</p>}
           </div>
+        ) : sessionExpired ? (
+          <p className="alert alert-info login-alert" role="status">
+            Phiên đăng nhập đã kết thúc. Vui lòng đăng nhập lại.
+          </p>
         ) : (
-          sessionExpired && (
+          toMeeting && (
             <p className="alert alert-info login-alert" role="status">
-              Phiên đăng nhập đã kết thúc. Vui lòng đăng nhập lại.
+              Đăng nhập để mở cuộc họp.
             </p>
           )
         )}

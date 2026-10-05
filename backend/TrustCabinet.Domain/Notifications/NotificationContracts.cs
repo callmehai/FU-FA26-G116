@@ -11,4 +11,9 @@ public sealed record NotificationPage(
 
 public sealed record NotificationTarget(string TargetType, Guid TargetId);
 
-public sealed record UpcomingMeetingRecipient(Guid MeetingId, string MeetingTitle, Guid UserId);
+public sealed record UpcomingMeetingRecipient(
+    Guid MeetingId,
+    string MeetingTitle,
+    Guid SessionId,
+    string SessionTitle,
+    Guid UserId);

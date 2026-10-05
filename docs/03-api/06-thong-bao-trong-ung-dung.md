@@ -52,7 +52,7 @@ nếu code chưa thực hiện.
 | `NotificationRepository` có các thao tác theo recipient và notification ID. | Repository luôn ghép `notificationId` với `userId`, có thêm total count, truy vấn reminder, deduplication và hàng đợi realtime. | Bảo vệ ownership ngay trong query, hỗ trợ phân trang, retry an toàn và không tạo trùng notification. `MarkAllUnreadAsReadAsync` trả số dòng đã đổi thay vì `void`. |
 | `Notification` có `notificationId`, `recipientUserId`, `kind`, target, `actionUrl`, `readAt`, `createdAt`. | `Id`, `UserId`, `Type` dùng enum, `TargetType`, `TargetId`, `ReadAt`, `CreatedAt`; có thêm `Body`, `MeetingId`, `UpdatedAt`, `DeduplicationKey`, `PushedAt`. `ActionUrl` chỉ có trong response và `IsRead` là giá trị suy ra. | Không ghim route UI vào database. `ReadAt` là nguồn sự thật duy nhất; gọi lặp `MarkAsRead` không làm mất thời điểm đọc đầu tiên. |
 | `User` có `username`, `email`, `status` và quan hện 1–n với notification. | Domain dùng `FullName`, `Email`, `IsActive`; FK `Notification.UserId` là `Restrict`. | UML đang dùng tên field không khớp domain model đã chốt; quan hệ người nhận vẫn khớp. |
-| `NotificationPanel` hiển thị danh sách, unread badge, lỗi và thao tác mở/đánh dấu. | `AppShell.tsx` mới chỉ có nút chuông tĩnh; chưa có types, API client, panel hay SignalR client ở FE. | Boundary trong diagram chưa được triển khai. Backend có thể bàn giao cho FE, nhưng SCRUM-14 chưa đạt acceptance criteria end-to-end. |
+| `NotificationPanel` hiển thị danh sách, unread badge, lỗi và thao tác mở/đánh dấu. | `features/notifications/`: `NotificationBell` (nút chuông + badge trên app bar), `NotificationPanel` (danh sách) và `NotificationsProvider` (trạng thái + SignalR client). | Tách thêm provider để badge, danh sách và kết nối hub sống qua việc đổi workspace. Chi tiết ở [Hợp đồng tích hợp FE](#hợp-đồng-tích-hợp-fe). |
 
 Các cải tiến kỹ thuật không thể hiện trong class diagram gồm SignalR chỉ gửi đúng
 recipient, kiểm tra lại tài khoản active khi kết nối hub, lưu database trước khi push,
@@ -67,12 +67,12 @@ khử trùng bằng `DeduplicationKey`, timestamp `PushedAt`, index cho truy v�
 | UC-18 yêu cầu hiển thị notification của chính user, chỉ báo chưa đọc và không đổi read status khi mở danh sách (BR-47–BR-49). | Query luôn lọc theo `UserId`; `ListAsync` chỉ đọc dữ liệu và trả `unreadCount`. | Khớp yêu cầu chính. EX-1 chưa có mã/message API riêng khi không tải được danh sách. |
 | UC-19 yêu cầu chỉ sửa notification thuộc user, hiển thị trạng thái đã đọc và `unreadCount` mới. EX-1 yêu cầu thông báo “This notification is no longer available”; EX-2 yêu cầu trả trạng thái thực lưu và số chưa đọc khi lưu lỗi. | Ownership và idempotency đã có. Endpoint thành công không trả `unreadCount`; notification không tồn tại/của user khác trả `404` rỗng; lỗi lưu không có response nghiệp vụ. | Mới khớp phần thay đổi read status và bảo vệ ownership; response thành công và hai nhánh lỗi chưa đủ theo UC Description. |
 | UC-20/BR-51 yêu cầu đánh dấu mọi notification chưa đọc của user, kể cả dòng không nằm trên page hiện tại; sau đó hiển thị trạng thái và số chưa đọc thực lưu. | Repository cập nhật tất cả dòng `UserId` có `ReadAt == null`, không phụ thuộc page. Response luôn ghi `unreadCount: 0` và không đọc lại danh sách/trạng thái. | Phạm vi update khớp BR-51. AF-1 và EX-1 chưa trả current list/current saved state như UC Description. |
-| UC-21/BR-53 yêu cầu khi chọn notification thì thử đánh dấu đã đọc; nếu lưu read status thất bại vẫn tiếp tục mở target nếu user có quyền. | `GetTargetAsync` không thử lưu `ReadAt`, do đó cũng không có nhánh “lưu lỗi nhưng vẫn mở target”. | Chưa đáp ứng main flow, POST-2 và EX-3 của UC-21. |
+| UC-21/BR-53 yêu cầu khi chọn notification thì thử đánh dấu đã đọc; nếu lưu read status thất bại vẫn tiếp tục mở target nếu user có quyền. | `GetTargetAsync` không thử lưu `ReadAt`. FE gọi `POST /{id}/read` (không chờ, bỏ qua lỗi) rồi mới gọi `GET /{id}/target`. | Đáp ứng main flow, POST-2 và EX-3 ở mức hệ thống bằng hai lời gọi; sequence diagram vẫn vẽ một lời gọi có side effect nên cần sửa theo. |
 | BR-45 quy định ba nguồn: được mời họp, meeting sắp bắt đầu, và được giao task. | Nhắc sắp bắt đầu đã chạy qua worker. Nguồn lời mời chờ luồng publish meeting; notification giao task không có. | Mới có một nguồn hoàn chỉnh. Yêu cầu task xung đột với phạm vi repo đã loại task/action item; BA phải chốt nguồn nào ưu tiên. |
 | UC-17 và BR-37–BR-40 quy định sau khi meeting chuyển thành công từ `Approved` sang `Published`, hệ thống xếp invitation delivery bất đồng bộ cho **tất cả** participant; lỗi delivery phải retry và không rollback `Published`. | Backend chưa có UC-17/publish handler nên chưa tạo notification lời mời. Không giữ API tạm theo từng participant vì sai hình dạng nghiệp vụ. | Điểm nối sẽ được triển khai trong luồng **publish meeting** của SCRUM-19. |
 | BR-42 yêu cầu invitation notification có link trực tiếp tới meeting đã publish và tài liệu đính kèm. | Notification có link chi tiết meeting; không có target/link riêng cho tài liệu. | Đã có link meeting; cần BA chốt tài liệu được mở bên trong trang meeting hay cần contract target khác. |
 | BR-43 yêu cầu theo dõi việc xếp hàng và trạng thái delivery của tất cả invitation message cho audit. | Notification chỉ có `PushedAt` và log lỗi chung của worker; không có attempt count, trạng thái pending/failed hay audit record theo lần delivery. | Chưa đủ dữ liệu để đáp ứng BR-43 và retry có kiểm soát của BR-40. |
-| BR-46 yêu cầu lưu notification để xem sau và cập nhật realtime notification cùng unread count khi recipient đang kết nối. | Notification được lưu trước khi worker push `notificationReceived` kèm `unreadCount` qua SignalR. | Khớp yêu cầu backend; FE vẫn phải tích hợp hub và khử trùng theo `id`. |
+| BR-46 yêu cầu lưu notification để xem sau và cập nhật realtime notification cùng unread count khi recipient đang kết nối. | Notification được lưu trước khi worker push `notificationReceived` kèm `unreadCount` qua SignalR. | Khớp yêu cầu; FE nhận sự kiện hub, khử trùng theo `id` và cập nhật badge cùng danh sách. |
 
 `UC list.docx` còn có hai hệ mã song song: danh mục tổng hợp gọi Notification
 Management là `UC-031` (gộp `UC-NOTI-01`, `UC-NOTI-02`, `UC-NOTI-03`, `UC-NOTI-08`), trong
@@ -125,16 +125,57 @@ Server gửi sự kiện `notificationReceived` **chỉ đến người nhận**
 Worker đọc notification đã commit rồi mới push. Realtime là gửi ít nhất một lần: nếu worker
 ngừng sau khi push nhưng trước khi ghi `pushed_at`, client có thể nhận lại cùng `id`; FE cần
 khử trùng theo `id`. Khi user không online, lần `GET /api/notifications` sau vẫn đọc được dữ
-liệu đã lưu. Nút chuông và panel trong `AppShell.tsx` là phần FE tích hợp sau khi API sẵn sàng.
+liệu đã lưu. FE khử trùng theo `id` và đọc lại số chưa đọc mỗi khi kết nối lại — xem
+[Hợp đồng tích hợp FE](#hợp-đồng-tích-hợp-fe).
+
+## Hợp đồng tích hợp FE
+
+Chuông thông báo nằm trên app bar, dùng chung cho cả hai workspace. Code ở
+`frontend/src/features/notifications/`, gọi API qua `src/api/notifications.ts` và hub qua
+`src/api/hubs.ts`.
+
+- **Một kết nối cho mỗi phiên đăng nhập.** `NotificationsProvider` nằm trong `RequireAuth`, phía
+  trên shell của cả hai workspace: chuyển giữa Không gian làm việc và Lịch làm việc giữ nguyên kết
+  nối, badge và danh sách đã tải. Provider gắn `key` theo user, nên tài khoản khác đăng nhập không
+  bao giờ thấy danh sách của tài khoản trước. Mọi route cần đăng nhập phải nằm dưới `RequireAuth`;
+  một route nằm ngoài (kể cả route chỉ để chuyển hướng) làm provider mount lại và mở kết nối mới.
+- **Badge.** Lấy từ `/unread-count` khi vào app, sau đó theo `unreadCount` của mỗi sự kiện hub và
+  mỗi response danh sách. Ẩn khi bằng `0`, hiển thị `99+` khi lớn hơn 99. Nhãn của nút chuông đọc
+  kèm số chưa đọc cho trình đọc màn hình.
+- **Danh sách.** Mỗi lần mở panel đọc lại trang 1 (`pageSize=20`) và giữ danh sách cũ trên màn hình
+  trong lúc đọc. "Xem thông báo cũ hơn" tải trang kế tiếp và bỏ dòng trùng `id`, vì thông báo mới
+  đến làm các dòng cũ dịch sang trang sau. Mỗi loại thông báo có icon và màu riêng; loại FE chưa
+  biết dùng icon chuông, không lỗi.
+- **Đánh dấu đã đọc.** Một dòng: cập nhật ngay (optimistic), trả lại trạng thái cũ và báo lỗi nếu
+  backend từ chối. Tất cả: mọi dòng đã tải chuyển sang đã đọc, số chưa đọc lấy theo response
+  (`unreadCount: 0`) — đúng BR-51, vì backend đánh dấu cả những dòng FE chưa tải.
+- **Mở thông báo** (UC-21): gọi `POST /{id}/read` nhưng không chờ, rồi `GET /{id}/target` và đi tới
+  `url`. `404` hiện toast "Thông báo này không còn khả dụng." (UC-19 EX-1). Thông báo không có
+  `targetType` chỉ được đánh dấu đã đọc, không gọi `target`. FE chỉ điều hướng tới đường dẫn trong
+  app (bắt đầu bằng `/` nhưng không phải `//`), kể cả khi dữ liệu trong database sai.
+- **Realtime.** Sự kiện `notificationReceived` được khử trùng theo `id`. Panel đang đóng: chuông
+  rung và hiện toast tiêu đề kèm nội dung. Panel đang mở: dòng mới hiện ở đầu danh sách. Sự kiện
+  phát trong lúc mất kết nối không được gửi lại, nên mỗi lần kết nối lại, khi tab hiện lại và khi
+  có mạng trở lại, FE đọc lại số chưa đọc (và trang 1 nếu danh sách đã tải).
+- **Kết nối lại.** Thử lại sau 0, 2, 5, 10 giây rồi cứ 30 giây một lần, không bỏ cuộc. Token được
+  lấy mới ở mỗi lần kết nối, nên khi server đóng kết nối vì token hết hạn, lần kết nối sau mang
+  token đã refresh.
+- **Lỗi.** Không tải được lần đầu: hiện `message` của backend (`MSG40`) cùng nút "Thử lại". Không
+  làm mới được khi đã có danh sách: giữ danh sách, hiện một dòng báo lỗi kèm "Thử lại". Không tải
+  được trang sau: báo ở cuối panel. FE luôn gửi `page`/`pageSize` hợp lệ nên không chờ `MSG39`.
+- **Bàn phím và màn hình nhỏ.** `Escape` hoặc bấm ra ngoài đóng panel; `Escape` trả focus về nút
+  chuông. Dưới 480px panel chiếm hết bề ngang, nút "Đánh dấu tất cả đã đọc" chỉ còn icon, và nút
+  đánh dấu từng dòng luôn hiện trên thiết bị cảm ứng.
 
 ## Nguồn tạo thông báo
 
 - **Được mời họp:** chưa triển khai trong SCRUM-14. Luồng publish meeting của SCRUM-19 phải tạo
   notification cho tất cả participant sau khi chuyển trạng thái thành công, cùng transaction với
   thay đổi trạng thái.
-- **Sắp bắt đầu:** worker kiểm tra meeting `Published` mỗi 5 giây và xếp một thông báo cho mỗi
-  participant còn hoạt động khi còn tối đa **15 phút** trước giờ bắt đầu. Unique key ngăn xếp
-  lặp qua nhiều vòng quét.
+- **Sắp bắt đầu:** worker kiểm tra Meeting Session không bị hủy của meeting `Published` hoặc
+  `InProgress` mỗi 5 giây và xếp một thông báo cho mỗi participant còn hoạt động khi còn tối đa
+  **15 phút** trước Planned Start Time. Nội dung nêu cả Meeting và Session; unique key
+  `meeting-session-starting-soon:{sessionId}:{userId}` ngăn xếp lặp theo từng phiên/người nhận.
 - **Được giao nhiệm vụ:** phạm vi đã chốt của TrustCabinet không có task/action item (xem
   [ERD](../02-design/02-erd.md)); vì vậy chưa có nguồn hay URL đích cho loại thông báo này.
   Cần thay đổi phạm vi ở Jira/BA trước khi triển khai.

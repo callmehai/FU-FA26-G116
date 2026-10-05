@@ -41,16 +41,12 @@ public class MeetingServiceTests
 
     private static MeetingInput ValidInput(
         string title = "Giao ban tuần",
-        string startsAt = "2026-10-01T09:00:00+07:00",
-        string? endsAt = "2026-10-01T10:00:00+07:00",
         string? mode = "InPerson",
         string location = "Phòng họp A",
         string? sensitivity = "Internal",
-        string description = "Nội dung",
-        Guid? assignedApproverId = null)
+        string description = "Nội dung")
         => new(
-            title, startsAt, endsAt, mode, location, sensitivity, description,
-            assignedApproverId ?? Guid.CreateVersion7());
+            title, mode, location, sensitivity, description);
 
     private Meeting GivenMeeting(MeetingStatus status = MeetingStatus.Draft, Guid? creatorId = null)
     {
@@ -62,10 +58,7 @@ public class MeetingServiceTests
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.InPerson,
             Location = "Phòng họp A",
-            StartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
-            EndsAt = new DateTimeOffset(2026, 10, 1, 3, 0, 0, TimeSpan.Zero),
             CreatedById = creatorId ?? _actorId,
-            AssignedApproverId = _actorId,
         };
         _repository.Meetings.Add(meeting);
         return meeting;
@@ -93,8 +86,6 @@ public class MeetingServiceTests
         var result = await NewService().CreateAsync(
             ValidInput(
                 title: new string('a', 301),
-                startsAt: "2026-10-01T09:00:00",
-                endsAt: "2026-10-01T09:00:00+07:00",
                 mode: "0",
                 location: new string('b', 301),
                 sensitivity: "not-a-sensitivity",
@@ -102,9 +93,8 @@ public class MeetingServiceTests
             _actorId);
 
         Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
-        Assert.Equal(6, result.Errors!.Count);
+        Assert.Equal(5, result.Errors!.Count);
         Assert.Contains("title", result.Errors.Keys);
-        Assert.Contains("startsAt", result.Errors.Keys);
         Assert.Contains("mode", result.Errors.Keys);
         Assert.Contains("location", result.Errors.Keys);
         Assert.Contains("sensitivity", result.Errors.Keys);
@@ -130,49 +120,31 @@ public class MeetingServiceTests
         Assert.Equal("Có\nxuống dòng", meeting.Description);
         Assert.Equal(MeetingStatus.Draft, meeting.Status);
         Assert.Equal(_actorId, meeting.CreatedById);
-        Assert.Equal(TimeSpan.Zero, meeting.StartsAt.Offset);
+        Assert.Empty(meeting.Sessions);
         var history = Assert.Single(meeting.StatusHistory);
         Assert.Null(history.FromStatus);
         Assert.Equal(MeetingStatus.Draft, history.ToStatus);
         Assert.Equal(_actorId, history.ActorId);
     }
 
-    [Theory]
-    [InlineData("2026-10-01T09:00:00+07:00", "2026-10-01T09:00:00+07:00")]
-    [InlineData("2026-10-01T09:00:00+07:00", "2026-10-01T08:59:59+07:00")]
-    [InlineData("2026-10-01T09:00:00+07:00", "not-a-timestamp")]
-    public async Task Create_rejects_an_end_time_that_is_not_after_the_start(
-        string startsAt, string endsAt)
-    {
-        var result = await NewService().CreateAsync(
-            ValidInput(startsAt: startsAt, endsAt: endsAt), _actorId);
-
-        Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
-        Assert.Contains("endsAt", result.Errors!.Keys);
-        Assert.Empty(_repository.Meetings);
-    }
-
     [Fact]
-    public async Task Create_allows_an_optional_end_time_and_uses_form_defaults()
+    public async Task Create_uses_form_defaults()
     {
         var result = await NewService().CreateAsync(
-            ValidInput(endsAt: null, mode: null, sensitivity: null), _actorId);
+            ValidInput(mode: null, sensitivity: null), _actorId);
 
         Assert.True(result.Succeeded);
         var meeting = Assert.Single(_repository.Meetings);
-        Assert.Null(meeting.EndsAt);
         Assert.Equal(MeetingMode.InPerson, meeting.Mode);
         Assert.Equal(Sensitivity.Normal, meeting.Sensitivity);
     }
 
     [Fact]
-    public async Task Create_accepts_the_documented_maximum_lengths_and_utc_timestamps()
+    public async Task Create_accepts_the_documented_maximum_lengths()
     {
         var result = await NewService().CreateAsync(
             ValidInput(
                 title: new string('t', 300),
-                startsAt: "2026-10-01T09:00:00Z",
-                endsAt: "2026-10-01T10:00:00Z",
                 location: new string('l', 300),
                 description: new string('d', 4000)),
             _actorId);
@@ -182,18 +154,14 @@ public class MeetingServiceTests
         Assert.Equal(300, meeting.Title.Length);
         Assert.Equal(300, meeting.Location.Length);
         Assert.Equal(4000, meeting.Description.Length);
-        Assert.Equal(TimeSpan.Zero, meeting.StartsAt.Offset);
-        Assert.Equal(TimeSpan.Zero, meeting.EndsAt!.Value.Offset);
+        Assert.Empty(meeting.Sessions);
     }
 
     [Fact]
-    public async Task Create_allows_a_missing_approver_for_a_draft()
+    public async Task Create_leaves_the_approver_unassigned_until_submission()
     {
         var input = new MeetingInput(
             "Giao ban tuần",
-            "2026-10-01T09:00:00+07:00",
-            null,
-            null,
             null,
             null,
             null,
@@ -202,33 +170,26 @@ public class MeetingServiceTests
         var result = await NewService().CreateAsync(input, _actorId);
 
         Assert.True(result.Succeeded);
-        var meeting = Assert.Single(_repository.Meetings);
-        Assert.Null(meeting.AssignedApproverId);
-        Assert.Equal(MeetingStatus.Draft, meeting.Status);
-        Assert.Equal(1, _repository.SaveCount);
+        Assert.Null(Assert.Single(_repository.Meetings).AssignedApproverId);
     }
 
     [Fact]
-    public async Task Create_rejects_an_approver_without_the_required_capability()
+    public async Task Create_does_not_assign_or_validate_a_draft_approver()
     {
         var approverId = Guid.CreateVersion7();
         _repository.IneligibleApproverIds.Add(approverId);
 
-        var result = await NewService().CreateAsync(
-            ValidInput(assignedApproverId: approverId), _actorId);
+        var result = await NewService().CreateAsync(ValidInput(), _actorId);
 
-        Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
-        Assert.Contains("assignedApproverId", result.Errors!.Keys);
-        Assert.Empty(_repository.Meetings);
-        Assert.Equal(0, _repository.SaveCount);
+        Assert.True(result.Succeeded);
+        Assert.Null(Assert.Single(_repository.Meetings).AssignedApproverId);
     }
 
-    [Theory]
-    [InlineData(MeetingStatus.Draft)]
-    [InlineData(MeetingStatus.Rejected)]
-    public async Task Update_changes_the_editable_fields_and_preserves_status(MeetingStatus status)
+    [Fact]
+    public async Task Update_changes_draft_fields_and_preserves_assignment_without_changing_lifecycle()
     {
-        var meeting = GivenMeeting(status);
+        var meeting = GivenMeeting(MeetingStatus.Draft);
+        meeting.AssignedApproverId = _otherActorId;
         var priorHistory = meeting.StatusHistory.ToArray();
 
         var result = await NewService().UpdateAsync(
@@ -241,61 +202,78 @@ public class MeetingServiceTests
         Assert.Equal("Giao ban mới", saved.Title);
         Assert.Equal(MeetingMode.Hybrid, saved.Mode);
         Assert.Equal(Sensitivity.Secret, saved.Sensitivity);
-        Assert.Equal(status, saved.Status);
+        Assert.Equal(MeetingStatus.Draft, saved.Status);
+        Assert.Equal(_otherActorId, saved.AssignedApproverId);
         Assert.Equal(_actorId, saved.CreatedById);
         Assert.Equal(priorHistory, saved.StatusHistory);
     }
 
     [Fact]
-    public async Task Update_allows_an_optional_end_time_and_uses_form_defaults()
+    public async Task Update_uses_form_defaults()
     {
         var meeting = GivenMeeting();
 
         var result = await NewService().UpdateAsync(
             meeting.Id,
-            ValidInput(endsAt: null, mode: null, sensitivity: null, assignedApproverId: _actorId),
+            ValidInput(mode: null, sensitivity: null),
             _actorId);
 
         Assert.True(result.Succeeded);
         var saved = Assert.Single(_repository.Meetings);
-        Assert.Null(saved.EndsAt);
         Assert.Equal(MeetingMode.InPerson, saved.Mode);
         Assert.Equal(Sensitivity.Normal, saved.Sensitivity);
     }
 
     [Fact]
-    public async Task Update_returns_validation_errors_without_saving()
+    public async Task Update_changes_rejected_information_without_changing_assignment_or_rejection_history()
     {
-        var meeting = GivenMeeting();
+        var meeting = GivenMeeting(MeetingStatus.Rejected);
+        meeting.AssignedApproverId = _otherActorId;
+        var rejection = new MeetingStatusHistory
+        {
+            MeetingId = meeting.Id,
+            FromStatus = MeetingStatus.WaitingApproval,
+            ToStatus = MeetingStatus.Rejected,
+            Action = MeetingHistoryAction.Reject,
+            ActorId = _otherActorId,
+            Reason = "Cần bổ sung số liệu",
+            OccurredAt = DateTimeOffset.UtcNow,
+        };
+        meeting.StatusHistory.Add(rejection);
+        var service = NewService();
+
+        var check = await service.CheckUpdateAsync(meeting.Id, _actorId);
+        var result = await service.UpdateAsync(
+            meeting.Id, ValidInput(title: "  Đã bổ sung số liệu  "), _actorId);
+
+        Assert.True(check.Succeeded);
+        Assert.True(result.Succeeded);
+        Assert.Equal("Đã bổ sung số liệu", meeting.Title);
+        Assert.Equal(MeetingStatus.Rejected, meeting.Status);
+        Assert.Equal(_otherActorId, meeting.AssignedApproverId);
+        Assert.Same(rejection, Assert.Single(meeting.StatusHistory));
+        Assert.Equal("Cần bổ sung số liệu", rejection.Reason);
+        Assert.Equal(1, _repository.SaveCount);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_repository.EmailMessages);
+    }
+
+    [Theory]
+    [InlineData(MeetingStatus.Draft)]
+    [InlineData(MeetingStatus.Rejected)]
+    public async Task Update_returns_validation_errors_without_saving(MeetingStatus status)
+    {
+        var meeting = GivenMeeting(status);
         var oldTitle = meeting.Title;
 
         var result = await NewService().UpdateAsync(
             meeting.Id,
-            ValidInput(title: "", startsAt: "bad", assignedApproverId: _actorId),
+            ValidInput(title: ""),
             _actorId);
 
         Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
         Assert.Contains("title", result.Errors!.Keys);
-        Assert.Contains("startsAt", result.Errors.Keys);
         Assert.Equal(oldTitle, Assert.Single(_repository.Meetings).Title);
-        Assert.Equal(0, _repository.SaveCount);
-    }
-
-    [Fact]
-    public async Task Update_rejects_an_ineligible_approver_without_saving()
-    {
-        var meeting = GivenMeeting();
-        var invalidApproverId = Guid.CreateVersion7();
-        _repository.IneligibleApproverIds.Add(invalidApproverId);
-
-        var result = await NewService().UpdateAsync(
-            meeting.Id,
-            ValidInput(title: "Không được lưu", assignedApproverId: invalidApproverId),
-            _actorId);
-
-        Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
-        Assert.Contains("assignedApproverId", result.Errors!.Keys);
-        Assert.Equal("Giao ban tuần", Assert.Single(_repository.Meetings).Title);
         Assert.Equal(0, _repository.SaveCount);
     }
 
@@ -314,7 +292,7 @@ public class MeetingServiceTests
 
         var result = await NewService().UpdateAsync(
             meeting.Id,
-            ValidInput(title: "", startsAt: "bad"),
+            ValidInput(title: ""),
             _actorId);
 
         Assert.Equal(MeetingOutcome.NotEditable, result.Outcome);
@@ -322,24 +300,49 @@ public class MeetingServiceTests
         Assert.Equal(0, _repository.SaveCount);
     }
 
-    [Fact]
-    public async Task Update_does_not_save_when_information_is_unchanged()
+    [Theory]
+    [InlineData(MeetingStatus.Draft, false)]
+    [InlineData(MeetingStatus.Rejected, false)]
+    [InlineData(MeetingStatus.Rejected, true)]
+    public async Task Update_does_not_save_when_information_is_unchanged(MeetingStatus status, bool assigned)
     {
-        var meeting = GivenMeeting();
+        var meeting = GivenMeeting(status);
+        meeting.AssignedApproverId = assigned ? _otherActorId : null;
+        meeting.UpdatedAt = new DateTimeOffset(2026, 9, 1, 0, 0, 0, TimeSpan.Zero);
         var updatedAt = meeting.UpdatedAt;
 
         var result = await NewService().UpdateAsync(
-            meeting.Id, ValidInput(assignedApproverId: _actorId), _actorId);
+            meeting.Id, ValidInput(title: "  Giao ban tuần  ", location: "  Phòng họp A  "), _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Equal(updatedAt, meeting.UpdatedAt);
+        Assert.Equal(status, meeting.Status);
+        Assert.Equal(assigned ? _otherActorId : (Guid?)null, meeting.AssignedApproverId);
         Assert.Equal(0, _repository.SaveCount);
+        Assert.Empty(_repository.Notifications);
+        Assert.Empty(_repository.EmailMessages);
     }
 
     [Fact]
-    public async Task Get_and_update_return_the_same_not_found_for_missing_or_other_owners()
+    public async Task Update_preserves_a_draft_assignment_when_information_is_unchanged()
     {
         var meeting = GivenMeeting();
+        meeting.AssignedApproverId = _otherActorId;
+
+        var result = await NewService().UpdateAsync(meeting.Id, ValidInput(), _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(MeetingStatus.Draft, meeting.Status);
+        Assert.Equal(_otherActorId, meeting.AssignedApproverId);
+        Assert.Equal(0, _repository.SaveCount);
+    }
+
+    [Theory]
+    [InlineData(MeetingStatus.Draft)]
+    [InlineData(MeetingStatus.Rejected)]
+    public async Task Get_and_update_return_the_same_not_found_for_missing_or_other_owners(MeetingStatus status)
+    {
+        var meeting = GivenMeeting(status);
         var service = NewService();
 
         var missing = await service.GetAsync(Guid.CreateVersion7(), _actorId);
@@ -409,7 +412,7 @@ public class MeetingServiceTests
         var logger = new CaptureLogger();
         var query = new MeetingListQuery(
             null, null, null, null, null, 1, 20,
-            MeetingSortBy.StartsAt, MeetingSortDirection.Desc);
+            MeetingSortBy.CreatedAt, MeetingSortDirection.Desc);
 
         var result = await new MeetingService(_repository, logger).ListAsync(query, _actorId);
 
@@ -427,7 +430,7 @@ public class MeetingServiceTests
         _repository.NextReadThrows = new OperationCanceledException(source.Token);
         var query = new MeetingListQuery(
             null, null, null, null, null, 1, 20,
-            MeetingSortBy.StartsAt, MeetingSortDirection.Desc);
+            MeetingSortBy.CreatedAt, MeetingSortDirection.Desc);
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
             () => NewService().ListAsync(query, _actorId, source.Token));
@@ -445,7 +448,19 @@ public class MeetingServiceTests
 
         var result = await NewService().ListEligibleApproversAsync();
 
-        Assert.Equal(expected, result);
+        Assert.Equal(MeetingOutcome.Success, result.Outcome);
+        Assert.Equal(expected, result.Approvers);
+    }
+
+    [Fact]
+    public async Task List_eligible_approvers_maps_database_failure_to_read_failed()
+    {
+        _repository.NextApproverReadThrows = new NpgsqlException("database unavailable");
+
+        var result = await NewService().ListEligibleApproversAsync();
+
+        Assert.Equal(MeetingOutcome.ReadFailed, result.Outcome);
+        Assert.Null(result.Approvers);
     }
 
     [Fact]
@@ -467,7 +482,7 @@ public class MeetingServiceTests
 
         var result = await NewService().UpdateAsync(
             meeting.Id,
-            ValidInput(title: "Không được lưu", assignedApproverId: _actorId),
+            ValidInput(title: "Không được lưu"),
             _actorId);
 
         Assert.Equal(MeetingOutcome.SaveFailed, result.Outcome);

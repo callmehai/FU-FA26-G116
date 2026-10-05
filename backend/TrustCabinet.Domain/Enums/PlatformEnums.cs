@@ -3,6 +3,7 @@ namespace TrustCabinet.Domain.Enums;
 /// <summary>What an in-app notification is about (SCRUM-14).</summary>
 public enum NotificationType
 {
+    MeetingWaitingApproval,
     MeetingInvited,
     MeetingPublished,
     MeetingStartingSoon,

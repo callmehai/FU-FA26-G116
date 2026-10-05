@@ -3,8 +3,6 @@ import { useBeforeUnload } from 'react-router-dom'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { SegmentedControl } from '../../components/SegmentedControl'
-import { Select, type SelectOption } from '../../components/Select'
-import { fromDateTimeInput, toDateTimeInput } from '../../lib/dateInput'
 import { errorMessage, isApiError } from '../../lib/errors'
 import {
   MEETING_MODES,
@@ -12,45 +10,29 @@ import {
   SENSITIVITIES,
   SENSITIVITY_LABEL,
   type Meeting,
-  type MeetingApprover,
   type MeetingMode,
   type MeetingMutationResponse,
   type MeetingRequest,
   type Sensitivity,
 } from '../../types/meeting'
-import { useMeetingApprovers } from './useMeetingApprovers'
 
 /** The backend's limits (MeetingRules). The inputs enforce them; the backend checks again. */
 const TITLE_MAX = 300
 const LOCATION_MAX = 300
 const DESCRIPTION_MAX = 4000
 
-type Field =
-  'title' | 'startsAt' | 'endsAt' | 'mode' | 'location' | 'sensitivity' | 'description' | 'assignedApproverId'
+type Field = 'title' | 'mode' | 'location' | 'sensitivity' | 'description'
 type FieldErrors = Partial<Record<Field, string>>
 
 /** Field order on screen, so the first error to focus is the one highest on the page. */
-const FIELD_ORDER: Field[] = [
-  'title',
-  'startsAt',
-  'endsAt',
-  'mode',
-  'location',
-  'sensitivity',
-  'assignedApproverId',
-  'description',
-]
+const FIELD_ORDER: Field[] = ['title', 'mode', 'location', 'sensitivity', 'description']
 
 interface Values {
   title: string
-  startsAt: string
-  endsAt: string
   mode: MeetingMode
   location: string
   sensitivity: Sensitivity
   description: string
-  /** '' = no approver yet. */
-  approverId: string
 }
 
 const MODE_OPTIONS = MEETING_MODES.map((value) => ({ value, label: MEETING_MODE_LABEL[value] }))
@@ -60,46 +42,32 @@ const SENSITIVITY_OPTIONS = SENSITIVITIES.map((value) => ({ value, label: SENSIT
 function initialValues(meeting: Meeting | null): Values {
   return {
     title: meeting?.title ?? '',
-    startsAt: meeting ? toDateTimeInput(meeting.startsAt) : '',
-    endsAt: meeting?.endsAt ? toDateTimeInput(meeting.endsAt) : '',
     mode: meeting?.mode ?? 'InPerson',
     location: meeting?.location ?? '',
     sensitivity: meeting?.sensitivity ?? 'Normal',
     description: meeting?.description ?? '',
-    approverId: meeting?.assignedApproverId ?? '',
   }
 }
 
-/** BR-25, checked as soon as both times are known rather than only on submit. */
-function endsAtError(values: Values): string | undefined {
-  const start = fromDateTimeInput(values.startsAt)
-  const end = fromDateTimeInput(values.endsAt)
-  if (start && end && end <= start) return 'Thời gian kết thúc phải sau thời gian bắt đầu.'
-  return undefined
-}
-
-/** BR-24 and BR-25 — the same rules the backend applies, so most mistakes never cost a round trip. */
+/**
+ * BR-24 — the same rule the backend applies, so the commonest mistake never costs a round trip. The
+ * meeting has no schedule of its own: times are planned per meeting session (SCRUM-70).
+ */
 function validate(values: Values): FieldErrors {
   const errors: FieldErrors = {}
   if (!values.title.trim()) errors.title = 'Tên cuộc họp không được để trống.'
-  if (!fromDateTimeInput(values.startsAt)) errors.startsAt = 'Vui lòng chọn thời gian bắt đầu.'
-  const endError = endsAtError(values)
-  if (endError) errors.endsAt = endError
   return errors
 }
 
 function toRequest(values: Values): MeetingRequest {
   return {
     title: values.title.trim(),
-    startsAt: fromDateTimeInput(values.startsAt)!,
-    endsAt: fromDateTimeInput(values.endsAt),
     mode: values.mode,
     // An online meeting happens in the in-app call room, so it has no place. What was typed stays in
     // the form (switching back restores it) but is not saved.
     location: values.mode === 'Online' ? '' : values.location.trim(),
     sensitivity: values.sensitivity,
     description: values.description,
-    assignedApproverId: values.approverId || null,
   }
 }
 
@@ -142,7 +110,6 @@ export function MeetingForm({
   const formRef = useRef<HTMLFormElement>(null)
   const submitted = useRef(false)
 
-  const approvers = useMeetingApprovers()
   const dirty = !sameValues(values, initial)
 
   // Closing the tab or reloading with unsaved input asks first. In-app links are not covered: the
@@ -159,16 +126,9 @@ export function MeetingForm({
   function set<K extends keyof Values>(key: K, value: Values[K]) {
     const next = { ...values, [key]: value }
     setValues(next)
-    const field: Field = key === 'approverId' ? 'assignedApproverId' : key
     setFieldErrors((errors) => {
       const rest: FieldErrors = { ...errors }
-      delete rest[field]
-      // The end time is judged against the start, so changing either re-checks it.
-      if (key === 'startsAt' || key === 'endsAt') {
-        delete rest.endsAt
-        const endError = endsAtError(next)
-        if (endError) rest.endsAt = endError
-      }
+      delete rest[key]
       return rest
     })
   }
@@ -213,8 +173,6 @@ export function MeetingForm({
     else onCancel()
   }
 
-  const approverOptions = approverChoices(approvers.list, meeting?.assignedApproverId ?? null)
-
   return (
     <>
       <form ref={formRef} className="card form-card form-grid" onSubmit={handleSubmit} noValidate>
@@ -230,35 +188,6 @@ export function MeetingForm({
             autoFocus={!meeting}
           />
           {fieldErrors.title && <small className="field-error">{fieldErrors.title}</small>}
-        </label>
-
-        <label className="field" data-field="startsAt">
-          <span className="field-required">Thời gian bắt đầu</span>
-          <input
-            type="datetime-local"
-            name="startsAt"
-            value={values.startsAt}
-            onChange={(e) => set('startsAt', e.target.value)}
-            aria-invalid={!!fieldErrors.startsAt}
-          />
-          {fieldErrors.startsAt && <small className="field-error">{fieldErrors.startsAt}</small>}
-        </label>
-
-        <label className="field" data-field="endsAt">
-          <span>Thời gian kết thúc dự kiến</span>
-          <input
-            type="datetime-local"
-            name="endsAt"
-            value={values.endsAt}
-            min={values.startsAt || undefined}
-            onChange={(e) => set('endsAt', e.target.value)}
-            aria-invalid={!!fieldErrors.endsAt}
-          />
-          {fieldErrors.endsAt ? (
-            <small className="field-error">{fieldErrors.endsAt}</small>
-          ) : (
-            <small className="field-hint">Có thể để trống nếu chưa xác định.</small>
-          )}
         </label>
 
         <div className="field" data-field="mode">
@@ -316,32 +245,6 @@ export function MeetingForm({
           {fieldErrors.sensitivity && <small className="field-error">{fieldErrors.sensitivity}</small>}
         </div>
 
-        <div className="field" data-field="assignedApproverId">
-          <span>Người duyệt</span>
-          <Select
-            value={values.approverId}
-            options={approverOptions}
-            onChange={(v) => set('approverId', v)}
-            label="Người duyệt"
-          />
-          {fieldErrors.assignedApproverId ? (
-            <small className="field-error">{fieldErrors.assignedApproverId}</small>
-          ) : approvers.error ? (
-            <small className="field-error">
-              {approvers.error}{' '}
-              <button type="button" className="link-button" onClick={approvers.reload}>
-                Thử lại
-              </button>
-            </small>
-          ) : approvers.list?.length === 0 ? (
-            <small className="field-hint">
-              Chưa có tài khoản nào được phân quyền duyệt cuộc họp. Liên hệ quản trị viên.
-            </small>
-          ) : (
-            <small className="field-hint">Có thể chọn sau; bắt buộc trước khi gửi duyệt.</small>
-          )}
-        </div>
-
         <label className="field span-2" data-field="description">
           <span>Mô tả</span>
           <textarea
@@ -392,20 +295,4 @@ export function MeetingForm({
       )}
     </>
   )
-}
-
-/**
- * The approver dropdown: "none yet" first, then everyone eligible. An edit keeps the current
- * approver selectable even when they are no longer eligible — PUT accepts resending the current id,
- * and silently switching to "none" would unassign them on save.
- */
-function approverChoices(list: MeetingApprover[] | null, currentId: string | null): SelectOption<string>[] {
-  const options: SelectOption<string>[] = [{ value: '', label: 'Chưa chọn' }]
-  for (const approver of list ?? []) options.push({ value: approver.id, label: approver.fullName })
-  if (currentId && list && !list.some((a) => a.id === currentId)) {
-    options.push({ value: currentId, label: 'Người duyệt hiện tại (không còn quyền duyệt)' })
-  } else if (currentId && !list) {
-    options.push({ value: currentId, label: 'Người duyệt hiện tại' })
-  }
-  return options
 }

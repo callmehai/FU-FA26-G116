@@ -6,7 +6,9 @@ dùng, SCRUM-60 ma trận phân quyền).
 - [`feature-01-auth-class-diagram.drawio.png`](feature-01-auth-class-diagram.drawio.png) — đối
   chiếu tại **21/09/2026**
 - [`feature-02-user-management-class-diagram.drawio.png`](feature-02-user-management-class-diagram.drawio.png)
-  — đối chiếu tại **21/09/2026**
+  — đối chiếu tại **21/09/2026**; phần UC-08 đã tách sang bản vẽ 02b (**04/10/2026**)
+- [`feature-02b-password-reset-class-diagram.drawio.png`](feature-02b-password-reset-class-diagram.drawio.png)
+  — UC-08 đặt lại mật khẩu, vẽ theo code tại **04/10/2026**, xem [PHẦN D](#phần-d--uc-08-đặt-lại-mật-khẩu-đã-tách-sang-bản-vẽ-02b)
 - [`feature-03-role-management-class-diagram.png`](feature-03-role-management-class-diagram.png)
   — đối chiếu tại **22/09/2026**, phần `Role` đối chiếu lại **23/09/2026** (`SCRUM-63`), xem [PHẦN F](#phần-f--bản-vẽ-03-ma-trận-phân-quyền-scrum-60)
 
@@ -307,7 +309,7 @@ biết gì về hai thứ đó.
 | `recordUserCreation(userId)` | `record(action, objectType, objectId, actorId, details)` |
 | `recordUserUpdate(userId)` | ↑ cùng một method |
 | `recordStatusChange(userId, status)` | ↑ |
-| `recordPasswordReset(userId)` | ↑ (chưa dùng, xem D) |
+| ~~`recordPasswordReset(userId)`~~ | ↑ — đã bỏ khỏi bản vẽ 02, UC-08 vẽ ở bản vẽ 02b (xem D) |
 
 Code có **một** method chung, phân biệt bằng tham số `action` nhận một trong các mã:
 
@@ -315,6 +317,8 @@ Code có **một** method chung, phân biệt bằng tham số `action` nhận m
 - `user.updated`
 - `user.deactivated`
 - `user.reactivated`
+- `user.password_reset_requested` (UC-08, người thực hiện là quản trị viên)
+- `user.password_reset` (UC-08, người thực hiện là chính chủ tài khoản)
 
 Vẽ một method chung sẽ sát thực tế hơn, và cũng thể hiện đúng ý định: audit log là bảng chung cho
 toàn hệ thống, các story sau (họp, tài liệu, biên bản) sẽ ghi vào cùng chỗ với cùng method này.
@@ -347,35 +351,32 @@ không phải là trùng email. Thiếu tham số này thì không ai sửa đư
 
 ---
 
-# PHẦN D — UC-08 (đặt lại mật khẩu): vẽ rồi nhưng chưa có code
+# PHẦN D — UC-08 (đặt lại mật khẩu): đã tách sang bản vẽ 02b
 
-Bản vẽ 02 có các thành phần sau, **không có cái nào tồn tại trong code**:
+**Đã xử lý ngày 04/10/2026, theo Cách 2** của đề xuất cũ: UC-08 đã có code (PR #56, #58, #61), nên
+phần đặt lại mật khẩu được vẽ lại theo code ở một bản vẽ riêng,
+[`feature-02b-password-reset-class-diagram.drawio.png`](feature-02b-password-reset-class-diagram.drawio.png).
+Bản vẽ 02 bỏ các thành phần UC-08 cũ.
 
-| Trên bản vẽ | Trạng thái |
+| Bản vẽ 02 cũ | Bản vẽ 02b (theo code) |
 |---|---|
-| `<<service>> EmailService` + `sendPasswordResetEmail()` | chưa làm |
-| `UserController.resetPassword(userId)` | chưa làm |
-| `UserService.initiatePasswordReset(userId)` | chưa làm |
-| `UserService.isPasswordResetEligible(user)` | chưa làm |
-| `AuthenticationService.createPasswordResetRequest(userId)` | chưa làm |
-| `AuditService.recordPasswordReset(userId)` | chưa làm |
-| `UserManagementPage.resetUserPassword()` | chưa làm |
+| `UserManagementPage.resetUserPassword()` | giữ, thêm boundary thứ hai `ResetPasswordPage.submitNewPassword()` — nửa sau của UC-08, người dùng đặt mật khẩu bằng liên kết |
+| `UserController.resetPassword(userId)` | `UserController.requestPasswordReset(userId)` + `AuthController.resetPassword(resetCode, newPassword)` (ẩn danh) |
+| `UserService.initiatePasswordReset(userId)` | `requestPasswordReset(userId, actorId)` + `resetPassword(resetCode, newPassword)` |
+| `UserService.isPasswordResetEligible(user)` | bỏ — điều kiện "đang hoạt động **và** có mật khẩu" (BR-22) được kiểm thẳng trong `requestPasswordReset` và `resetPassword`, không có method riêng |
+| `AuthenticationService.createPasswordResetRequest(userId)` | `PasswordResetTokenStore` — `create` / `activate` / `peek` / `consume` / `revoke` |
+| `EmailService.sendPasswordResetEmail(user)` | `PasswordResetEmailSender.send(...)`: bool — gửi hỏng là một nhánh nghiệp vụ (MSG15), không phải exception |
+| `AuditService.recordPasswordReset(userId)` | `AuditService.record(action, objectType, objectId, actorId, details)` |
+| — | thêm `<<service>> TokenService.revokeAllForUser()` (kết thúc phiên khi đặt lại xong), `PasswordHasher.hash()` và `AuthController.signOut()` (AF-1: trình duyệt đang đăng nhập) |
 
-UC-08 đã được thống nhất **hoãn lại**, chờ SCRUM-15 (hạ tầng email).
+**Mâu thuẫn "hai đường cho cùng một việc"** (`UserService` vừa gọi `EmailService` vừa gọi
+`AuthenticationService`) được giải theo code: `UserService` điều phối, gọi riêng
+`PasswordResetTokenStore` (tạo / kích hoạt / tiêu liên kết) và `PasswordResetEmailSender` (gửi mail).
+Liên kết chỉ được kích hoạt **sau khi** gửi mail thành công, nên thứ tự này nằm ở `UserService`, không
+nằm trong kho token.
 
-**Đề nghị xử lý — chọn một:**
-
-- **Cách 1 (khuyến nghị):** giữ nguyên trên bản vẽ, nhưng tô màu khác hoặc thêm ghi chú
-  `<<chưa implement — chờ SCRUM-15>>` lên từng thành phần. Bản vẽ vẫn là thiết kế đầy đủ, người
-  đọc biết phần nào đã có thật.
-- **Cách 2:** tách ra một bản vẽ riêng `feature-02b-password-reset`, để bản vẽ 02 chỉ còn phần đã
-  chạy được.
-
-**Một mâu thuẫn cần BA quyết khi làm UC-08:** bản vẽ hiện cho `UserService` vừa gọi thẳng
-`EmailService.sendPasswordResetEmail()`, vừa gọi `AuthenticationService.createPasswordResetRequest()`.
-Hai đường cho cùng một việc. Nên chọn một: hoặc `UserService` → `AuthenticationService` → `EmailService`,
-hoặc `UserService` gọi thẳng cả hai. Chọn cách đầu thì logic về token đặt lại mật khẩu nằm gọn
-trong `AuthenticationService`, nhất quán với chỗ đang giữ refresh token.
+Sequence diagram tương ứng: `UC08_ResetUserPassword` trong
+[`06-sequencediagram/user-management/`](../06-sequencediagram/user-management/).
 
 ---
 
@@ -470,7 +471,7 @@ Bản vẽ có method này ở cả 4 tầng (`Controller`, `Service`, `Reposito
 
 Đã thống nhất không làm trong sprint này.
 
-**Cần sửa — chọn một**, giống cách đã xử lý UC-08 ở bản vẽ 02:
+**Cần sửa — chọn một** (UC-08 ở bản vẽ 02 từng có cùng hai lựa chọn này, xem [PHẦN D](#phần-d--uc-08-đặt-lại-mật-khẩu-đã-tách-sang-bản-vẽ-02b)):
 
 - Bỏ hẳn 4 method đó khỏi bản vẽ, hoặc
 - Thêm ghi chú `<<chưa implement>>` lên từng cái.
@@ -551,9 +552,9 @@ lý do bảng này tồn tại. Để nó không ở đâu cả mới là không
 - [ ] F5 — thêm `TokenService` (bản vẽ 03) **+ bổ sung participant đó vào sequence diagram UC-10**
 - [ ] F6 — thêm `wouldRemoveTheLastAdminCapability()` (bản vẽ 03)
 
-**Cần quyết (1):**
+**Cần quyết (đã xong):**
 
-- [ ] D — UC-08: đánh dấu "chưa implement" hay tách bản vẽ riêng?
+- [x] D — UC-08: đã tách bản vẽ riêng `feature-02b-password-reset` (04/10/2026)
 
 ---
 

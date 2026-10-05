@@ -40,6 +40,13 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository
 
     public Exception? NextReadThrows { get; set; }
 
+    public Exception? NextCapabilitiesReadThrows { get; set; }
+
+    public bool WaitForReadCancellation { get; set; }
+
+    public TaskCompletionSource ReadCancellationWaitStarted { get; } = new(
+        TaskCreationOptions.RunContinuationsAsynchronously);
+
     public IReadOnlyList<User> Users => _users;
 
     public FakeUserAccountRepository WithUser(User user)
@@ -80,7 +87,19 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository
             throw exception;
         }
 
+        if (WaitForReadCancellation)
+        {
+            ReadCancellationWaitStarted.TrySetResult();
+            return WaitUntilCancelledAsync(ct);
+        }
+
         return Task.FromResult(_users.FirstOrDefault(u => u.Id == id) is { } user ? Loaded(user) : null);
+    }
+
+    private static async Task<User?> WaitUntilCancelledAsync(CancellationToken ct)
+    {
+        await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+        return null;
     }
 
     /// <summary>The account with its role (re)attached, as the real query's Include returns it.</summary>
@@ -125,8 +144,16 @@ internal sealed class FakeUserAccountRepository : IUserAccountRepository
 
     public Task<IReadOnlyCollection<Capability>> GetCapabilitiesAsync(
         Guid role, CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyCollection<Capability>>(
+    {
+        if (NextCapabilitiesReadThrows is { } exception)
+        {
+            NextCapabilitiesReadThrows = null;
+            throw exception;
+        }
+
+        return Task.FromResult<IReadOnlyCollection<Capability>>(
             _capabilities.TryGetValue(role, out var caps) ? caps : []);
+    }
 
     public Task<int> CountActiveWithCapabilityAsync(
         Capability capability, Guid exceptId, CancellationToken ct = default)

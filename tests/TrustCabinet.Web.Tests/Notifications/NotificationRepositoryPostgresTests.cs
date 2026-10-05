@@ -13,8 +13,8 @@ namespace TrustCabinet.Web.Tests.Notifications;
 /// </summary>
 public sealed class NotificationRepositoryPostgresTests : IAsyncLifetime
 {
-    private static readonly string ConnectionString =
-        PostgresTestDatabase.ConnectionString("trustcabinet_notification_tests");
+    private readonly PostgreSqlTestDatabase _database = new(
+        PostgresTestDatabase.ConnectionString("trustcabinet_notification_tests"));
 
     private TrustCabinetDbContext _db = null!;
 
@@ -23,7 +23,6 @@ public sealed class NotificationRepositoryPostgresTests : IAsyncLifetime
         _db = NewContext();
         try
         {
-            await _db.Database.EnsureDeletedAsync();
             await _db.Database.EnsureCreatedAsync();
         }
         catch (NpgsqlException exception)
@@ -37,8 +36,8 @@ public sealed class NotificationRepositoryPostgresTests : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await _db.Database.EnsureDeletedAsync();
         await _db.DisposeAsync();
+        await _database.DisposeAsync();
     }
 
     [Fact]
@@ -92,12 +91,13 @@ public sealed class NotificationRepositoryPostgresTests : IAsyncLifetime
         var recipient = Assert.Single(recipients);
         Assert.Equal(published.Id, recipient.MeetingId);
         Assert.Equal(published.Title, recipient.MeetingTitle);
+        Assert.Equal(Assert.Single(published.Sessions).Id, recipient.SessionId);
         Assert.Equal(included.Id, recipient.UserId);
     }
 
-    private static TrustCabinetDbContext NewContext() => new(
+    private TrustCabinetDbContext NewContext() => new(
         new DbContextOptionsBuilder<TrustCabinetDbContext>()
-            .UseNpgsql(ConnectionString)
+            .UseNpgsql(_database.DataSource)
             .UseSnakeCaseNamingConvention()
             .Options);
 
@@ -125,15 +125,26 @@ public sealed class NotificationRepositoryPostgresTests : IAsyncLifetime
     };
 
     private static Meeting NewMeeting(
-        string title, MeetingStatus status, DateTimeOffset startsAt, Guid organizerId) => new()
+        string title, MeetingStatus status, DateTimeOffset startsAt, Guid organizerId)
     {
-        Title = title,
-        Status = status,
-        Sensitivity = Sensitivity.Internal,
-        Mode = MeetingMode.Online,
-        StartsAt = startsAt,
-        CreatedById = organizerId,
-    };
+        var meeting = new Meeting
+        {
+            Title = title,
+            Status = status,
+            Sensitivity = Sensitivity.Internal,
+            Mode = MeetingMode.Online,
+            CreatedById = organizerId,
+        };
+        meeting.Sessions.Add(new MeetingSession
+        {
+            Meeting = meeting,
+            Title = $"Phiên {title}",
+            PlannedStartsAt = startsAt,
+            PlannedEndsAt = startsAt.AddHours(1),
+            Status = MeetingSessionStatus.Planned,
+        });
+        return meeting;
+    }
 
     private static MeetingParticipant NewParticipant(Guid meetingId, Guid userId) => new()
     {

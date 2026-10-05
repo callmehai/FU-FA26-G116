@@ -1,4 +1,5 @@
 using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Domain.Meetings;
 
@@ -16,6 +17,22 @@ public interface IMeetingRepository
     Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(CancellationToken ct = default);
 
     Task<bool> IsEligibleApproverAsync(Guid id, CancellationToken ct = default);
+
+    Task<Meeting?> FindWorkflowAsync(Guid id, bool forUpdate = false, CancellationToken ct = default);
+
+    Task<MeetingHistoryPage?> FindHistoryPageAsync(
+        Guid meetingId, int page, int pageSize, CancellationToken ct = default);
+
+    Task<bool> IsActiveUserWithCapabilityAsync(
+        Guid userId, Capability capability, CancellationToken ct = default);
+
+    Task<bool> IsUserActiveAsync(Guid userId, CancellationToken ct = default);
+
+    Task<string?> FindUserDisplayNameAsync(Guid userId, CancellationToken ct = default);
+
+    Task AddNotificationsAsync(IReadOnlyCollection<Notification> notifications, CancellationToken ct = default);
+
+    Task AddHistoryAsync(MeetingStatusHistory history, CancellationToken ct = default);
 
     Task AddAsync(Meeting meeting, CancellationToken ct = default);
 

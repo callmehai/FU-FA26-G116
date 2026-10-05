@@ -14,9 +14,6 @@ public sealed class MeetingInvitationQueue(
     TimeProvider time,
     ILogger<MeetingInvitationQueue> logger) : IMeetingInvitationQueue
 {
-    private static readonly TimeZoneInfo VietnamTimeZone =
-        TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
-
     public async Task<int> QueueForPublishedMeetingAsync(
         Guid meetingId, CancellationToken ct = default)
     {
@@ -71,19 +68,7 @@ public sealed class MeetingInvitationQueue(
                 ToAddress = item.User.Email,
                 Subject = BuildSubject(meeting.Title),
                 Body = BuildBody(item.User, meeting, meetingUrl),
-                CalendarAttachment = CalendarInvitationBuilder.Build(
-                    meeting.Id,
-                    meeting.Title,
-                    meeting.Description,
-                    meeting.Location,
-                    meeting.StartsAt,
-                    meeting.EndsAt,
-                    item.User.FullName,
-                    item.User.Email,
-                    meetingUrl,
-                    emailOptions.Smtp.FromName,
-                    emailOptions.Smtp.FromAddress,
-                    now),
+                CalendarAttachment = null,
                 MeetingId = meeting.Id,
                 Status = EmailStatus.Queued,
                 CreatedAt = now,
@@ -109,6 +94,32 @@ public sealed class MeetingInvitationQueue(
         return messages.Length;
     }
 
+    public async Task<Guid?> QueueNextUninitializedPublishedMeetingAsync(
+        CancellationToken ct = default)
+    {
+        if (!options.Value.Smtp.Enabled)
+        {
+            return null;
+        }
+
+        var meetingId = await db.Meetings
+            .Where(meeting => meeting.Status == MeetingStatus.Published)
+            .Where(meeting => meeting.Participants.Any(participant => participant.User.IsActive))
+            .Where(meeting => !db.EmailMessages.Any(message => message.MeetingId == meeting.Id))
+            .OrderBy(meeting => meeting.CreatedAt)
+            .ThenBy(meeting => meeting.Id)
+            .Select(meeting => (Guid?)meeting.Id)
+            .FirstOrDefaultAsync(ct);
+
+        if (meetingId is null)
+        {
+            return null;
+        }
+
+        await QueueForPublishedMeetingAsync(meetingId.Value, ct);
+        return meetingId;
+    }
+
     private static string BuildMeetingUrl(string applicationBaseUrl, Guid meetingId)
         => $"{applicationBaseUrl.Trim().TrimEnd('/')}/mgmt/meetings/{meetingId:D}";
 
@@ -127,37 +138,38 @@ public sealed class MeetingInvitationQueue(
 
     private static string BuildBody(User user, Meeting meeting, string meetingUrl)
     {
-        var startsAt = TimeZoneInfo.ConvertTime(meeting.StartsAt, VietnamTimeZone);
-        var end = meeting.EndsAt is null
-            ? string.Empty
-            : $"\nKết thúc: {TimeZoneInfo.ConvertTime(meeting.EndsAt.Value, VietnamTimeZone):dd/MM/yyyy HH:mm zzz}";
-
         return $"""
             Xin chào {user.FullName},
 
             Bạn được mời tham dự cuộc họp "{meeting.Title}".
 
-            Bắt đầu: {startsAt:dd/MM/yyyy HH:mm zzz}{end}
-            Địa điểm/Hình thức: {meeting.Location}
+            Hình thức: {FormatMeetingMode(meeting.Mode)}
+            Địa điểm: {meeting.Location}
 
             Xem chi tiết và tài liệu cuộc họp: {meetingUrl}
-
-            Tệp lịch .ics được đính kèm để bạn thêm cuộc họp vào Outlook hoặc Google Calendar.
             """;
     }
 
-    private static string TruncateByRunes(string value, int maxRunes)
+    private static string FormatMeetingMode(MeetingMode mode)
+        => mode switch
+        {
+            MeetingMode.InPerson => "Trực tiếp",
+            MeetingMode.Online => "Trực tuyến",
+            MeetingMode.Hybrid => "Kết hợp",
+            _ => mode.ToString(),
+        };
+
+    private static string TruncateByRunes(string value, int maxLength)
     {
-        var result = new StringBuilder(Math.Min(value.Length, maxRunes));
-        var count = 0;
+        var result = new StringBuilder(Math.Min(value.Length, maxLength));
         foreach (var rune in value.EnumerateRunes())
         {
-            if (count++ == maxRunes)
+            if (result.Length + rune.Utf16SequenceLength > maxLength)
             {
                 break;
             }
 
-            result.Append(rune);
+            result.Append(rune.ToString());
         }
 
         return result.ToString();

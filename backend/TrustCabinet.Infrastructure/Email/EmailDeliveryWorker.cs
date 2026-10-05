@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Domain.Notifications;
 
 namespace TrustCabinet.Infrastructure.Email;
 
@@ -20,9 +21,7 @@ internal sealed class EmailDeliveryWorker(
             EmailProcessingResult result;
             try
             {
-                await using var scope = scopeFactory.CreateAsyncScope();
-                var processor = scope.ServiceProvider.GetRequiredService<EmailQueueProcessor>();
-                result = await processor.ProcessNextAsync(stoppingToken);
+                result = await ProcessOnceAsync(stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -45,6 +44,36 @@ internal sealed class EmailDeliveryWorker(
             {
                 await Delay(delay, stoppingToken);
             }
+        }
+    }
+
+    internal async Task<EmailProcessingResult> ProcessOnceAsync(CancellationToken ct)
+    {
+        await TryReconcileInvitationJobsAsync(ct);
+
+        await using var processingScope = scopeFactory.CreateAsyncScope();
+        var processor = processingScope.ServiceProvider.GetRequiredService<IEmailQueueProcessor>();
+        return await processor.ProcessNextAsync(ct);
+    }
+
+    private async Task TryReconcileInvitationJobsAsync(CancellationToken ct)
+    {
+        try
+        {
+            await using var reconciliationScope = scopeFactory.CreateAsyncScope();
+            var invitationQueue = reconciliationScope.ServiceProvider
+                .GetRequiredService<IMeetingInvitationQueue>();
+            await invitationQueue.QueueNextUninitializedPublishedMeetingAsync(ct);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(
+                exception,
+                "Could not reconcile invitation jobs for published meetings. Queued email processing will continue.");
         }
     }
 

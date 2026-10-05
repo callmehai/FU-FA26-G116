@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { listMeetingApprovers } from '../../api/meetings'
-import { isApiError } from '../../lib/errors'
+import { errorMessage, isApiError } from '../../lib/errors'
 import type { MeetingApprover } from '../../types/meeting'
 
 /**
- * Accounts that can be picked as a meeting's approver. The endpoint needs `MeetingCreator`, so pass
- * `enabled: false` for anyone else rather than letting the request fail.
+ * Accounts that can be picked as a meeting's approver: active, holding `MeetingApprover`, never the
+ * caller. The endpoint needs `MeetingCreator`, so pass `enabled: false` for anyone else rather than
+ * letting the request fail.
  *
- * A failure here never blocks anything: the approver is optional while drafting.
+ * The organizer also reads it to tell whether the current approver is still eligible: someone
+ * missing from the list was deactivated or lost the capability.
  */
 export function useMeetingApprovers(enabled = true) {
   const [list, setList] = useState<MeetingApprover[] | null>(null)
@@ -24,11 +26,8 @@ export function useMeetingApprovers(enabled = true) {
         setError(null)
       },
       (err: unknown) => {
-        // Losing MeetingCreator mid-way surfaces again, and is handled, when the user saves.
-        if (!cancelled)
-          setError(
-            isApiError(err, 403) ? 'Bạn không còn quyền chọn người duyệt.' : 'Không tải được danh sách người duyệt.',
-          )
+        // Losing MeetingCreator mid-way surfaces again, and is handled, on the next action.
+        if (!cancelled) setError(isApiError(err, 403) ? 'Bạn không còn quyền chọn người duyệt.' : errorMessage(err))
       },
     )
     return () => {
@@ -36,5 +35,10 @@ export function useMeetingApprovers(enabled = true) {
     }
   }, [enabled, attempt])
 
-  return { list, error, reload: () => setAttempt((n) => n + 1) }
+  const reload = useCallback(() => {
+    setError(null)
+    setAttempt((n) => n + 1)
+  }, [])
+
+  return { list, error, reload }
 }

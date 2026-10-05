@@ -6,34 +6,37 @@ namespace TrustCabinet.Domain.Meetings;
 /// <summary>The fields a meeting creator may set or change through the meeting form.</summary>
 public sealed record MeetingInput(
     string? Title,
-    string? StartsAt,
-    string? EndsAt,
     string? Mode,
     string? Location,
     string? Sensitivity,
-    string? Description,
-    Guid? AssignedApproverId = null);
+    string? Description);
 
 /// <summary>A validated and normalized form value, ready to persist.</summary>
 public sealed record ValidatedMeetingInput(
     string Title,
-    DateTimeOffset StartsAt,
-    DateTimeOffset? EndsAt,
     MeetingMode Mode,
     string Location,
     Sensitivity Sensitivity,
-    string Description,
-    Guid? AssignedApproverId);
+    string Description);
 
 public sealed record MeetingApproverOption(Guid Id, string FullName);
+
+public sealed record MeetingApproverListResult(
+    MeetingOutcome Outcome,
+    IReadOnlyList<MeetingApproverOption>? Approvers = null)
+{
+    public static MeetingApproverListResult Success(IReadOnlyList<MeetingApproverOption> approvers)
+        => new(MeetingOutcome.Success, approvers);
+
+    public static MeetingApproverListResult ReadFailed()
+        => new(MeetingOutcome.ReadFailed);
+}
 
 /// <summary>A safe, flat representation returned by the meeting service.</summary>
 public sealed record MeetingDetails(
     Guid Id,
     string Title,
     string Description,
-    DateTimeOffset StartsAt,
-    DateTimeOffset? EndsAt,
     MeetingMode Mode,
     string Location,
     Sensitivity Sensitivity,
@@ -47,14 +50,12 @@ public sealed record MeetingDetails(
         meeting.Id,
         meeting.Title,
         meeting.Description,
-        meeting.StartsAt,
-        meeting.EndsAt,
         meeting.Mode,
         meeting.Location,
         meeting.Sensitivity,
         meeting.Status,
         meeting.CreatedById,
-        meeting.AssignedApproverId,
+        meeting.Status == MeetingStatus.Draft ? null : meeting.AssignedApproverId,
         meeting.CreatedAt,
         meeting.UpdatedAt);
 }

@@ -56,22 +56,26 @@ export const MEETING_MODE_LABEL: Record<MeetingMode, string> = {
   Hybrid: 'Kết hợp',
 }
 
-/** GET /api/meetings/{id}, and the `meeting` of every create/update response. Timestamps are UTC ISO 8601. */
+/**
+ * GET /api/meetings/{id}, and the `meeting` of every create/update response. Meeting-level fields
+ * only: the schedule belongs to the meeting's sessions (SCRUM-70). Timestamps are UTC ISO 8601.
+ */
 export interface Meeting {
   id: string
   title: string
   /** Empty string when none was given. */
   description: string
-  startsAt: string
-  /** Null until the organizer settles when the meeting ends. */
-  endsAt: string | null
   mode: MeetingMode
   /** Empty string when none was given. */
   location: string
   sensitivity: Sensitivity
   status: MeetingStatus
+  /** The organizer: who created the meeting, and who moves it through review and publishing. */
   createdById: string
-  /** Optional while drafting; UC-15 requires one before the meeting is sent for approval. */
+  /**
+   * Who reviews the current cycle (SCRUM-19). Chosen when the meeting is sent for approval, so null
+   * in Draft; kept through Rejected and Approved as a record of who decided.
+   */
   assignedApproverId: string | null
   createdAt: string
   updatedAt: string
@@ -81,14 +85,13 @@ export interface Meeting {
 export interface MeetingListItem {
   id: string
   title: string
-  startsAt: string
   createdAt: string
   status: MeetingStatus
   sensitivity: Sensitivity
 }
 
 /** The columns GET /api/meetings can sort by. */
-export type MeetingSortBy = 'title' | 'startsAt' | 'createdAt'
+export type MeetingSortBy = 'title' | 'createdAt'
 export type SortDirection = 'asc' | 'desc'
 
 /** GET /api/meetings — one page of the meetings the caller may see, filtered and sorted server-side. */
@@ -107,7 +110,10 @@ export interface MeetingListQuery {
   q?: string
   status?: MeetingStatus
   sensitivity?: Sensitivity
-  /** UTC ISO; both ends inclusive, on the meeting's start time. */
+  /**
+   * UTC ISO; both ends inclusive. A meeting matches when one of its sessions that is not cancelled
+   * overlaps the range, so a meeting without sessions never matches a range.
+   */
   from?: string
   to?: string
   page: number
@@ -117,18 +123,15 @@ export interface MeetingListQuery {
 }
 
 /**
- * Body of POST /api/meetings and PUT /api/meetings/{id}. PUT replaces all eight fields, so an
- * omitted or null approver on PUT unassigns them.
+ * Body of POST /api/meetings and PUT /api/meetings/{id}. PUT replaces all five fields. The approver
+ * is not part of it: it is chosen when the meeting is sent for approval (SCRUM-19).
  */
 export interface MeetingRequest {
   title: string
-  startsAt: string
-  endsAt: string | null
   mode: MeetingMode
   location: string
   sensitivity: Sensitivity
   description: string
-  assignedApproverId: string | null
 }
 
 /** POST answers MSG29, PUT answers MSG30. */
@@ -142,4 +145,77 @@ export interface MeetingMutationResponse {
 export interface MeetingApprover {
   id: string
   fullName: string
+}
+
+/**
+ * POST /api/meetings/{id}/transitions (SCRUM-19). The actor, the source status and the time come
+ * from the server; the client only says what to do.
+ */
+export type MeetingTransitionRequest =
+  | { action: 'SubmitForApproval'; assignedApproverId: string }
+  | { action: 'Reject'; reason: string }
+  | { action: 'Approve' | 'ReturnToDraft' | 'Publish' }
+
+export type MeetingTransitionAction = MeetingTransitionRequest['action']
+
+/** Success: MSG78 submit, MSG43 approve, MSG44 reject, MSG79 return to draft, MSG45 publish. */
+export interface MeetingTransitionResponse {
+  code: string
+  message: string
+  meeting: Meeting
+  /** The history row the transition just wrote. */
+  history: MeetingHistoryItem
+}
+
+/** What a lifecycle history row records. `LegacyTransition` marks rows from before SCRUM-19. */
+export type MeetingHistoryAction =
+  | 'Create'
+  | 'SubmitForApproval'
+  | 'Approve'
+  | 'Reject'
+  | 'ReturnToDraft'
+  | 'Publish'
+  | 'TransferOrganizer'
+  | 'LegacyTransition'
+
+/** One immutable row of GET /api/meetings/{id}/history. */
+export interface MeetingHistoryItem {
+  id: string
+  meetingId: string
+  action: MeetingHistoryAction
+  /** Null on the row that created the meeting. */
+  fromStatus: MeetingStatus | null
+  resultingStatus: MeetingStatus
+  actorId: string
+  actorName: string
+  occurredAt: string
+  /**
+   * Set on a `Reject` row for the organizer and the current approver. Everyone else reads the
+   * timeline with it hidden (null).
+   */
+  rejectionReason: string | null
+  /** On a `SubmitForApproval` row: who the meeting was sent to. */
+  assignedApproverId: string | null
+  previousOrganizerId: string | null
+  newOrganizerId: string | null
+}
+
+/** GET /api/meetings/{id}/history — oldest first. */
+export interface MeetingHistoryPage {
+  items: MeetingHistoryItem[]
+  page: number
+  pageSize: number
+  totalCount: number
+  totalPages: number
+}
+
+/**
+ * GET /api/meetings/{id}/submission-readiness — the same check SubmitForApproval runs again.
+ * Not being ready is a normal answer (200), with what is missing keyed by field.
+ */
+export interface MeetingSubmissionReadiness {
+  meetingId: string
+  status: MeetingStatus
+  ready: boolean
+  errors: Record<string, string>
 }

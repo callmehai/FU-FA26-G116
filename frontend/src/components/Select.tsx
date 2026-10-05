@@ -153,7 +153,8 @@ export function Select<T extends string>({
         onClick={() => (open ? setOpen(false) : openAt(Math.max(0, options.findIndex((o) => o.value === value))))}
         onKeyDown={onKeyDown}
       >
-        <span>{selected?.label ?? label}</span>
+        {/* Nothing picked yet: the accessible name stands in, muted so it does not read as a value. */}
+        <span className={selected ? undefined : 'select-placeholder'}>{selected?.label ?? label}</span>
         <Icon name="chevronDown" size={16} />
       </button>
 

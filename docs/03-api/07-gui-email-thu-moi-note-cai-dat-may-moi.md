@@ -93,9 +93,14 @@ biến này sẽ báo thiếu password dù `dotnet run` vẫn đọc secret đú
 
 Migration dùng chung chỉ hỗ trợ chuỗi migration đang được theo dõi trong repository. Nếu database
 dev từng áp dụng migration cục bộ đã bị xoá khỏi Git, chẳng hạn `EmailDeliveryOutbox`, hãy sao lưu dữ
-liệu dev cần giữ rồi chủ động tạo lại database/volume từ lịch sử migration hiện tại. Không thêm
-`IF EXISTS`, `IF NOT EXISTS`, backfill `legacy:` hoặc kiểm tra tên migration cục bộ vào migration dùng
-chung để vá riêng cho một máy.
+liệu dev cần giữ rồi chủ động tạo lại database/volume từ lịch sử migration hiện tại. Không sửa
+migration dùng chung để vá riêng cho lịch sử schema ngoài Git của một máy.
+
+Database theo lịch sử trong Git và có email cũ được hỗ trợ bởi các migration mới
+`StageLegacyEmailJobsForReliableDelivery` và `RestoreLegacyEmailJobsWithDeliveryKeys`. Chúng giữ
+nguyên các jobs qua schema upgrade và bổ sung key nếu thiếu; migration `ReliableEmailDelivery`
+đã vào main không bị sửa. Chạy upgrade đến migration mới nhất, không dừng ở bước giữ dữ liệu
+trong bảng đệm. Xem [bàn giao tích hợp](06-scrum19-ban-giao-tich-hop.md) và test PostgreSQL tương ứng.
 
 ## 6. Điều kiện để có email thật
 
@@ -103,8 +108,8 @@ chung để vá riêng cho một máy.
 - Người tham dự có địa chỉ email thật và hợp lệ.
 - Máy cho phép kết nối outbound tới SMTP host/port.
 - Luồng công bố của SCRUM-19 gọi
-  `IMeetingInvitationQueue.QueueForPublishedMeetingAsync(meetingId)` trong cùng transaction chuyển
-  meeting sang `Published`.
+  `IMeetingInvitationQueue.QueueForPublishedMeetingAsync(meetingId)` sau khi transaction chuyển
+  meeting sang `Published` đã commit; worker tự đối soát để thử lại nếu bước khởi tạo job lỗi.
 
 Nếu SCRUM-19 chưa tích hợp thì worker vẫn chạy nhưng không có job mới để gửi.
 

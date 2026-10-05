@@ -215,7 +215,9 @@ public sealed partial class RoleService(
         {
             await roles.SaveChangesAsync(ct);
         }
-        catch (Exception exception) when (HasSqlState(exception, PostgresErrorCodes.ForeignKeyViolation))
+        catch (Exception exception) when (
+            HasSqlState(exception, PostgresErrorCodes.ForeignKeyViolation)
+            || HasSqlState(exception, PostgresErrorCodes.RestrictViolation))
         {
             // "Role was assigned to a user account in the meantime": somebody was given the role
             // between the count above and this delete — account creation does not take the guard.
@@ -355,8 +357,17 @@ public sealed partial class RoleService(
     /// real one is the inner exception.
     /// </summary>
     private static bool HasSqlState(Exception exception, string sqlState)
-        => exception is DbUpdateException { InnerException: PostgresException postgres }
-            && postgres.SqlState == sqlState;
+    {
+        for (Exception? current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is PostgresException postgres && postgres.SqlState == sqlState)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     [GeneratedRegex(@"\s+")]
     private static partial Regex Whitespace();

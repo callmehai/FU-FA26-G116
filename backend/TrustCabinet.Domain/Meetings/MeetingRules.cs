@@ -1,11 +1,10 @@
-using System.Globalization;
-using System.Text.RegularExpressions;
+using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Domain.Meetings;
 
 /// <summary>Validation and normalization rules for the create/update meeting form.</summary>
-public static partial class MeetingRules
+public static class MeetingRules
 {
     private const int MaxTitleLength = 300;
     private const int MaxLocationLength = 300;
@@ -23,54 +22,6 @@ public static partial class MeetingRules
         var title = input.Title?.Trim() ?? string.Empty;
         var location = input.Location?.Trim() ?? string.Empty;
         var description = input.Description ?? string.Empty;
-
-        if (title.Length == 0)
-        {
-            fieldErrors["title"] = "Tên cuộc họp không được để trống.";
-        }
-        else if (title.Length > MaxTitleLength)
-        {
-            fieldErrors["title"] = "Tên cuộc họp không được vượt quá 300 ký tự.";
-        }
-
-        if (location.Length > MaxLocationLength)
-        {
-            fieldErrors["location"] = "Địa điểm không được vượt quá 300 ký tự.";
-        }
-
-        if (description.Length > MaxDescriptionLength)
-        {
-            fieldErrors["description"] = "Mô tả không được vượt quá 4000 ký tự.";
-        }
-
-        var startsAtValid = TryParseTimestamp(input.StartsAt, out var startsAt);
-        if (!startsAtValid)
-        {
-            fieldErrors["startsAt"] = "Thời gian bắt đầu không hợp lệ.";
-        }
-
-        DateTimeOffset? endsAt = null;
-        if (!string.IsNullOrWhiteSpace(input.EndsAt))
-        {
-            if (!TryParseTimestamp(input.EndsAt, out var parsedEndsAt))
-            {
-                fieldErrors["endsAt"] = "Thời gian kết thúc không hợp lệ.";
-            }
-            else if (startsAtValid && parsedEndsAt <= startsAt)
-            {
-                fieldErrors["endsAt"] = "Thời gian kết thúc phải sau thời gian bắt đầu.";
-            }
-            else
-            {
-                endsAt = parsedEndsAt.ToUniversalTime();
-            }
-        }
-
-        if (input.AssignedApproverId == Guid.Empty)
-        {
-            fieldErrors["assignedApproverId"] = "Người duyệt không hợp lệ.";
-        }
-
         var mode = MeetingMode.InPerson;
         if (input.Mode is not null && !TryParseDefinedEnum(input.Mode, out mode))
         {
@@ -83,6 +34,10 @@ public static partial class MeetingRules
             fieldErrors["sensitivity"] = "Mức độ mật không hợp lệ.";
         }
 
+        MergeErrors(
+            fieldErrors,
+            ValidateInformation(title, mode, location, sensitivity, description));
+
         errors = fieldErrors;
         if (fieldErrors.Count > 0)
         {
@@ -92,29 +47,70 @@ public static partial class MeetingRules
 
         validated = new ValidatedMeetingInput(
             title,
-            startsAt.ToUniversalTime(),
-            endsAt,
             mode,
             location,
             sensitivity,
-            description,
-            input.AssignedApproverId);
+            description);
         return true;
     }
 
-    private static bool TryParseTimestamp(string? value, out DateTimeOffset timestamp)
+    public static IReadOnlyDictionary<string, string> ValidatePersistedMeetingInformation(Meeting meeting)
+        => ValidateInformation(
+            meeting.Title,
+            meeting.Mode,
+            meeting.Location,
+            meeting.Sensitivity,
+            meeting.Description);
+
+    private static IReadOnlyDictionary<string, string> ValidateInformation(
+        string? title,
+        MeetingMode mode,
+        string? location,
+        Sensitivity sensitivity,
+        string? description)
     {
-        timestamp = default;
-        if (string.IsNullOrEmpty(value) || !IsoTimestampPattern().IsMatch(value))
+        var errors = new Dictionary<string, string>(StringComparer.Ordinal);
+        var normalizedTitle = title?.Trim() ?? string.Empty;
+        if (normalizedTitle.Length == 0)
         {
-            return false;
+            errors["title"] = "Tên cuộc họp không được để trống.";
+        }
+        else if (normalizedTitle.Length > MaxTitleLength)
+        {
+            errors["title"] = "Tên cuộc họp không được vượt quá 300 ký tự.";
         }
 
-        return DateTimeOffset.TryParse(
-            value,
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.None,
-            out timestamp);
+        if (!Enum.IsDefined(mode))
+        {
+            errors["mode"] = "Hình thức cuộc họp không hợp lệ.";
+        }
+
+        if (!Enum.IsDefined(sensitivity))
+        {
+            errors["sensitivity"] = "Mức độ mật không hợp lệ.";
+        }
+
+        if ((location?.Length ?? 0) > MaxLocationLength)
+        {
+            errors["location"] = "Địa điểm không được vượt quá 300 ký tự.";
+        }
+
+        if ((description?.Length ?? 0) > MaxDescriptionLength)
+        {
+            errors["description"] = "Mô tả không được vượt quá 4000 ký tự.";
+        }
+
+        return errors;
+    }
+
+    private static void MergeErrors(
+        IDictionary<string, string> target,
+        IReadOnlyDictionary<string, string> source)
+    {
+        foreach (var (field, message) in source)
+        {
+            target[field] = message;
+        }
     }
 
     private static bool TryParseDefinedEnum<TEnum>(string? value, out TEnum result)
@@ -126,9 +122,4 @@ public static partial class MeetingRules
             && Enum.IsDefined(result)
             && string.Equals(value, result.ToString(), StringComparison.Ordinal);
     }
-
-    [GeneratedRegex(
-        @"\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?(?:Z|[+-]\d{2}:\d{2})\z",
-        RegexOptions.CultureInvariant)]
-    private static partial Regex IsoTimestampPattern();
 }

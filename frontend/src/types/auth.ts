@@ -12,3 +12,15 @@ export interface SignInResponse {
   accessTokenExpiresAt: string
   user: CurrentUser
 }
+
+/** POST /api/auth/password-reset — UC-08's second half. `token` comes from the email link's fragment. */
+export interface PasswordResetRequest {
+  token: string
+  newPassword: string
+}
+
+/** Its success body (MSG92). No tokens: the user signs in again with the new password. */
+export interface PasswordResetResponse {
+  code: string
+  message: string
+}

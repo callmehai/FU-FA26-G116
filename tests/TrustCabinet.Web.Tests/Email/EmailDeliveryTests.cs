@@ -29,10 +29,12 @@ public sealed class EmailDeliveryTests
                 .OfType<AddColumnOperation>()
                 .Select(operation => operation.Name)
                 .Order(StringComparer.Ordinal));
+        Assert.False(Assert.Single(migration.UpOperations.OfType<AddColumnOperation>(),
+            operation => operation.Name == "deduplication_key").IsNullable);
     }
 
     [Fact]
-    public async Task Published_meeting_is_queued_once_per_participant_with_calendar_attachment()
+    public async Task Published_meeting_is_queued_once_per_participant_without_a_calendar_attachment()
     {
         await using var db = NewDatabase();
         var meeting = PublishedMeeting();
@@ -54,11 +56,10 @@ public sealed class EmailDeliveryTests
             Assert.Equal(EmailStatus.Queued, message.Status);
             Assert.Equal(meeting.Id, message.MeetingId);
             Assert.True(message.Subject.Length <= 300);
-            Assert.Contains("Bắt đầu: 01/10/2026 09:00 +07:00", message.Body, StringComparison.Ordinal);
+            Assert.Contains("Hình thức: Kết hợp", message.Body, StringComparison.Ordinal);
+            Assert.Contains("Địa điểm:", message.Body, StringComparison.Ordinal);
             Assert.Contains($"/mgmt/meetings/{meeting.Id:D}", message.Body, StringComparison.Ordinal);
-            Assert.Contains("BEGIN:VCALENDAR\r\n", message.CalendarAttachment, StringComparison.Ordinal);
-            Assert.Contains("METHOD:REQUEST\r\n", message.CalendarAttachment, StringComparison.Ordinal);
-            Assert.Contains("DTSTART:20261001T020000Z\r\n", message.CalendarAttachment, StringComparison.Ordinal);
+            Assert.Null(message.CalendarAttachment);
         });
         Assert.Equal(
             ["an@trustcabinet.local", "binh@trustcabinet.local"],
@@ -84,6 +85,42 @@ public sealed class EmailDeliveryTests
         Assert.DoesNotContain(
             await db.EmailMessages.Select(item => item.ToAddress).ToListAsync(),
             address => address == "an@trustcabinet.local");
+    }
+
+    [Fact]
+    public async Task Reconciliation_queues_a_published_meeting_that_has_no_invitation_jobs()
+    {
+        await using var db = NewDatabase();
+        var alreadyInitialized = PublishedMeeting();
+        var missingJobs = PublishedMeeting();
+        missingJobs.CreatedAt = alreadyInitialized.CreatedAt.AddMinutes(1);
+        db.Meetings.AddRange(alreadyInitialized, missingJobs);
+        await db.SaveChangesAsync();
+        await Queue(db).QueueForPublishedMeetingAsync(alreadyInitialized.Id);
+
+        var reconciledMeetingId = await Queue(db).QueueNextUninitializedPublishedMeetingAsync();
+
+        Assert.Equal(missingJobs.Id, reconciledMeetingId);
+        Assert.Equal(
+            2,
+            await db.EmailMessages.CountAsync(message => message.MeetingId == missingJobs.Id));
+        Assert.Empty(missingJobs.StatusHistory);
+    }
+
+    [Fact]
+    public async Task Reconciliation_does_nothing_when_all_published_meetings_are_initialized()
+    {
+        await using var db = NewDatabase();
+        var meeting = PublishedMeeting();
+        db.Meetings.Add(meeting);
+        await db.SaveChangesAsync();
+        var queue = Queue(db);
+        await queue.QueueForPublishedMeetingAsync(meeting.Id);
+
+        var reconciledMeetingId = await queue.QueueNextUninitializedPublishedMeetingAsync();
+
+        Assert.Null(reconciledMeetingId);
+        Assert.Equal(2, await db.EmailMessages.CountAsync());
     }
 
     [Fact]
@@ -115,14 +152,14 @@ public sealed class EmailDeliveryTests
         await using var db = NewDatabase();
         var meeting = PublishedMeeting();
         const string prefix = "Thư mời họp: ";
-        meeting.Title = new string('a', 300 - prefix.Length - 1) + "😀";
+        meeting.Title = new string('a', 300 - prefix.Length - 2) + "😀";
         db.Meetings.Add(meeting);
         await db.SaveChangesAsync();
 
         await Queue(db).QueueForPublishedMeetingAsync(meeting.Id);
 
         var subject = (await db.EmailMessages.FirstAsync()).Subject;
-        Assert.Equal(300, subject.EnumerateRunes().Count());
+        Assert.Equal(300, subject.Length);
         Assert.EndsWith("😀", subject, StringComparison.Ordinal);
         _ = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true)
             .GetBytes(subject);
@@ -221,8 +258,6 @@ public sealed class EmailDeliveryTests
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.Hybrid,
             Location = "Phòng A / trực tuyến",
-            StartsAt = Now,
-            EndsAt = Now.AddHours(1),
             CreatedBy = creator,
             CreatedById = creator.Id,
         };

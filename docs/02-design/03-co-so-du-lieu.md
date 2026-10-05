@@ -217,6 +217,21 @@ dotnet dotnet-ef migrations remove \
 - Hai người cùng thêm migration trong một sprint thì người merge sau phải rebase và sinh lại
   migration của mình — EF không tự trộn hai snapshot.
 
+## PostgreSQL integration tests
+
+Chạy `dotnet test TrustCabinet.sln` khi PostgreSQL dev đang hoạt động. Tài khoản test cần quyền
+tạo database; test không được skip nếu PostgreSQL không kết nối được.
+
+Các test case access/auth, notification, email và meeting dùng database có suffix GUID để các
+lượt chạy không đụng dữ liệu của nhau. Các fixture access/auth, notification và email dùng
+[`PostgreSqlTestDatabase`](../../tests/TrustCabinet.Web.Tests/PostgreSqlTestDatabase.cs) để sở hữu
+`NpgsqlDataSource` và connection pool riêng. Khi teardown, đóng `DbContext` rồi dispose data source
+trước khi `DROP DATABASE`. Không dùng `EnsureDeletedAsync`, `DROP DATABASE ... WITH (FORCE)` hoặc
+`ClearAllPools` để cleanup các fixture này: chúng có thể cần quyền terminate process hoặc ảnh hưởng
+pool của test khác. Fixture meeting đã có database riêng; teardown chỉ đóng pool của connection
+string fixture đó bằng `ClearPool` rồi xóa database, không đóng pool của test khác. Assertion lỗi
+nghiệp vụ và test concurrency vẫn chạy trên PostgreSQL thật.
+
 ## Ba cái bẫy riêng của PostgreSQL
 
 Ai từng làm SQL Server rất dễ vấp:

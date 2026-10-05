@@ -19,6 +19,20 @@ public class MeetingStatusHistory : Entity
 
     public MeetingStatus ToStatus { get; set; }
 
+    public required MeetingHistoryAction Action { get; set; }
+
+    /// <summary>The approver selected for a submission; null for other actions and legacy rows.</summary>
+    public Guid? AssignedApproverId { get; set; }
+    public User? AssignedApprover { get; set; }
+
+    /// <summary>The organizer before an administrative transfer; null for other lifecycle actions.</summary>
+    public Guid? PreviousOrganizerId { get; set; }
+    public User? PreviousOrganizer { get; set; }
+
+    /// <summary>The organizer receiving an approved meeting during administrative recovery.</summary>
+    public Guid? NewOrganizerId { get; set; }
+    public User? NewOrganizer { get; set; }
+
     public Guid ActorId { get; set; }
     public User Actor { get; set; } = null!;
 

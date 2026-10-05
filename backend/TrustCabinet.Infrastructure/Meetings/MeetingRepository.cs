@@ -27,14 +27,24 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             meetings = meetings.Where(m => m.Sensitivity == sensitivity);
         }
 
-        if (query.From is { } from)
+        if (query.From is { } from && query.To is { } to)
         {
-            meetings = meetings.Where(m => m.StartsAt >= from);
+            meetings = meetings.Where(meeting => meeting.Sessions.Any(session =>
+                session.Status != MeetingSessionStatus.Cancelled
+                && session.PlannedEndsAt >= from
+                && session.PlannedStartsAt <= to));
         }
-
-        if (query.To is { } to)
+        else if (query.From is { } onlyFrom)
         {
-            meetings = meetings.Where(m => m.StartsAt <= to);
+            meetings = meetings.Where(meeting => meeting.Sessions.Any(session =>
+                session.Status != MeetingSessionStatus.Cancelled
+                && session.PlannedEndsAt >= onlyFrom));
+        }
+        else if (query.To is { } onlyTo)
+        {
+            meetings = meetings.Where(meeting => meeting.Sessions.Any(session =>
+                session.Status != MeetingSessionStatus.Cancelled
+                && session.PlannedStartsAt <= onlyTo));
         }
 
         if (query.Query is { Length: > 0 } search)
@@ -57,9 +67,7 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             (MeetingSortBy.Title, MeetingSortDirection.Asc) => meetings.OrderBy(m => m.Title),
             (MeetingSortBy.Title, MeetingSortDirection.Desc) => meetings.OrderByDescending(m => m.Title),
             (MeetingSortBy.CreatedAt, MeetingSortDirection.Asc) => meetings.OrderBy(m => m.CreatedAt),
-            (MeetingSortBy.CreatedAt, MeetingSortDirection.Desc) => meetings.OrderByDescending(m => m.CreatedAt),
-            (MeetingSortBy.StartsAt, MeetingSortDirection.Asc) => meetings.OrderBy(m => m.StartsAt),
-            _ => meetings.OrderByDescending(m => m.StartsAt),
+            _ => meetings.OrderByDescending(m => m.CreatedAt),
         };
 
         var items = await ordered
@@ -67,21 +75,14 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             .Skip(checked((int)offset))
             .Take(query.PageSize)
             .Select(m => new MeetingListItem(
-                m.Id, m.Title, m.StartsAt, m.CreatedAt, m.Status, m.Sensitivity))
+                m.Id, m.Title, m.CreatedAt, m.Status, m.Sensitivity))
             .ToListAsync(ct);
 
         return new MeetingListPage(items, query.Page, query.PageSize, totalCount);
     }
 
     private IQueryable<Meeting> AccessibleTo(Guid actorId)
-        => db.Meetings.AsNoTracking().Where(m => m.CreatedById == actorId
-            || (m.Status != MeetingStatus.Draft && m.AssignedApproverId == actorId)
-            || ((m.Status == MeetingStatus.Published
-                    || m.Status == MeetingStatus.InProgress
-                    || m.Status == MeetingStatus.Ended
-                    || m.Status == MeetingStatus.MinutesIssued
-                    || m.Status == MeetingStatus.Archived)
-                && m.Participants.Any(participant => participant.UserId == actorId)));
+        => db.Meetings.AsNoTracking().Where(MeetingReadPolicy.ForUser(actorId));
 
     public Task<Meeting?> FindOwnedAsync(
         Guid id, Guid creatorId, CancellationToken ct = default)
@@ -126,6 +127,105 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             && db.RoleCapabilities.Any(capability =>
                 capability.RoleId == user.RoleId
                 && capability.Capability == Capability.MeetingApprover), ct);
+
+    public async Task<Meeting?> FindWorkflowAsync(
+        Guid id, bool forUpdate = false, CancellationToken ct = default)
+    {
+        if (forUpdate)
+        {
+            var lockedRows = await db.Meetings
+                .FromSqlInterpolated($"SELECT * FROM meetings WHERE id = {id} FOR UPDATE")
+                .AsNoTracking()
+                .ToListAsync(ct);
+            if (lockedRows.Count == 0)
+            {
+                return null;
+            }
+        }
+
+        IQueryable<Meeting> query = db.Meetings
+            .AsSplitQuery()
+            .Include(meeting => meeting.Participants)
+            .ThenInclude(participant => participant.User);
+
+        if (!forUpdate)
+        {
+            query = query.AsNoTracking();
+        }
+
+        return await query.SingleOrDefaultAsync(meeting => meeting.Id == id, ct);
+    }
+
+    public async Task<MeetingHistoryPage?> FindHistoryPageAsync(
+        Guid meetingId, int page, int pageSize, CancellationToken ct = default)
+    {
+        var history = db.MeetingStatusHistory.AsNoTracking()
+            .Where(item => item.MeetingId == meetingId);
+        var total = await history.LongCountAsync(ct);
+        var offset = ((long)page - 1) * pageSize;
+        if (offset >= total)
+        {
+            return new MeetingHistoryPage([], page, pageSize, total);
+        }
+
+        if (offset > int.MaxValue)
+        {
+            return null;
+        }
+
+        var items = await history
+            .OrderBy(item => item.OccurredAt)
+            .ThenBy(item => item.Id)
+            .Skip(checked((int)offset))
+            .Take(pageSize)
+            .Select(item => new MeetingHistoryRecord(
+                item.Id,
+                item.MeetingId,
+                item.Action,
+                item.FromStatus,
+                item.ToStatus,
+                item.ActorId,
+                item.Actor.FullName,
+                item.OccurredAt,
+                item.Action == MeetingHistoryAction.Reject ? item.Reason : null,
+                item.AssignedApproverId,
+                item.PreviousOrganizerId,
+                item.NewOrganizerId))
+            .ToListAsync(ct);
+
+        return new MeetingHistoryPage(items, page, pageSize, total);
+    }
+
+    public Task<bool> IsActiveUserWithCapabilityAsync(
+        Guid userId, Capability capability, CancellationToken ct = default)
+        => db.Users.AnyAsync(user => user.Id == userId && user.IsActive
+            && db.RoleCapabilities.Any(roleCapability =>
+                roleCapability.RoleId == user.RoleId
+                && roleCapability.Capability == capability), ct);
+
+    public Task<bool> IsUserActiveAsync(Guid userId, CancellationToken ct = default)
+        => db.Users.AnyAsync(user => user.Id == userId && user.IsActive, ct);
+
+    public Task<string?> FindUserDisplayNameAsync(Guid userId, CancellationToken ct = default)
+        => db.Users.AsNoTracking()
+            .Where(user => user.Id == userId)
+            .Select(user => user.FullName)
+            .SingleOrDefaultAsync(ct);
+
+    public Task AddNotificationsAsync(
+        IReadOnlyCollection<Notification> notifications, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        db.Notifications.AddRange(notifications);
+        return Task.CompletedTask;
+    }
+
+    public Task AddHistoryAsync(MeetingStatusHistory history, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        db.MeetingStatusHistory.Add(history);
+        return Task.CompletedTask;
+    }
 
     public Task AddAsync(Meeting meeting, CancellationToken ct = default)
     {

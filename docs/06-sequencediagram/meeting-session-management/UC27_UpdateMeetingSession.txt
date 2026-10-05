@@ -44,7 +44,7 @@ deactivate Database
 MeetingRepository-->MeetingService: Meeting
 deactivate MeetingRepository
 
-MeetingService->MeetingParticipantRepository: Verify Secretary assignment
+MeetingService->MeetingParticipantRepository: Verify Secretary assignment (BR-54)
 activate MeetingParticipantRepository
 
 MeetingParticipantRepository->Database: Find Secretary assignment
@@ -69,7 +69,7 @@ alt Session information is invalid - EX-1
 
 else Session information is valid
 
-    alt Session can no longer be updated - EX-2
+    alt Meeting is WaitingApproval/Ended, Secretary\nunassigned, or Session not Planned - EX-2
         MeetingService-->MeetingController: MSG55 - This meeting session can no longer be edited
         deactivate MeetingService
 
@@ -79,7 +79,7 @@ else Session information is valid
         MeetingPage-->Secretary: MSG55 - This meeting session can no longer be edited
 
     else Meeting is open for session planning\nand Session is Planned
-        MeetingService->MeetingSessionRepository: Update Meeting Session\nand keep Planned status (BR-54, BR-57, BR-58)
+        MeetingService->MeetingSessionRepository: Update Meeting Session, keep Planned status;\nMeeting status unchanged (BR-54, BR-57, BR-58)
         activate MeetingSessionRepository
 
         MeetingSessionRepository->Database: Update Meeting Session
