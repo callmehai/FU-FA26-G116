@@ -62,7 +62,8 @@ tra cuộc họp — lỗi này không phụ thuộc cuộc họp nên không l�
 
 `status` ∈ `Planned`, `InProgress`, `Completed`, `Cancelled`. Thời gian luôn trả về ở UTC.
 `actualStartedAt`/`actualEndedAt` là giờ server lúc bắt đầu/kết thúc phiên (UC-29/UC-30), `null` khi
-chưa xảy ra. Phiên đã InProgress/Completed từ trước khi có cột này (dữ liệu seed) vẫn là `null`.
+chưa xảy ra. Phiên đã InProgress/Completed từ trước khi có cột này (database dev đã seed từ trước) vẫn
+là `null`; database seed mới lấy giờ dự kiến làm giờ thực tế cho các phiên seed đó.
 
 ### GET `/api/meetings/{meetingId}/sessions` — UC-53
 
@@ -137,7 +138,8 @@ hợp lệ. Lưu phiên và thông báo cùng một lần commit; lỗi lưu th�
 Hai request bắt đầu hai phiên khác nhau cùng lúc: request sau chờ khóa, thấy phiên kia đã
 `InProgress` và nhận `409 MSG57`. Database còn một unique index lọc
 (`ix_meeting_sessions_meeting_id_in_progress`, `status = 'InProgress'`) để không đường ghi nào khác
-tạo được hai phiên InProgress cho một cuộc họp (BR-59).
+tạo được hai phiên InProgress cho một cuộc họp (BR-59). Hiện mọi đường ghi đều qua khóa nên index không
+bao giờ chặn; nếu có, request đó nhận `500 MSG141` chứ không phải `409 MSG57`.
 
 ## Lệch so với đặc tả — cần BA xem ở BA Final Review
 

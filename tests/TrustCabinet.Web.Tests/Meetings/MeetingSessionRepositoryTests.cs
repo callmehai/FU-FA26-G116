@@ -230,12 +230,21 @@ public sealed class MeetingSessionRepositoryTests : IAsyncLifetime
         await _db.SaveChangesAsync();
         _db.ChangeTracker.Clear();
 
+        // Hold the meeting lock so both requests are queued behind it before either can check BR-59.
+        await using var holder = NewDb();
+        await using var hold = await holder.Database.BeginTransactionAsync();
+        await holder.Database.ExecuteSqlInterpolatedAsync($"SELECT 1 FROM meetings WHERE id = {meeting.Id} FOR UPDATE");
+
         // Each request has its own unit of work, as it does in the app; only the meeting lock orders them.
-        var results = await Task.WhenAll(new[] { first.Id, second.Id }.Select(async sessionId =>
+        var starts = new[] { first.Id, second.Id }.Select(async sessionId =>
         {
             await using var db = NewDb();
             return await NewService(db).StartAsync(meeting.Id, sessionId, chair.Id);
-        }));
+        }).ToArray();
+        await Task.Delay(TimeSpan.FromMilliseconds(500));
+        Assert.All(starts, start => Assert.False(start.IsCompleted));
+        await hold.CommitAsync();
+        var results = await Task.WhenAll(starts);
 
         Assert.Equal(
             new[] { Domain.Meetings.MeetingSessionOutcome.Success, Domain.Meetings.MeetingSessionOutcome.AnotherSessionInProgress },

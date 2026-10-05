@@ -266,19 +266,23 @@ public static class DevelopmentDataSeeder
             Location = location,
             CreatedBy = createdBy,
         };
+        var sessionStatus = status switch
+        {
+            MeetingStatus.InProgress => MeetingSessionStatus.InProgress,
+            MeetingStatus.Ended or MeetingStatus.MinutesIssued or MeetingStatus.Archived
+                => MeetingSessionStatus.Completed,
+            _ => MeetingSessionStatus.Planned,
+        };
         meeting.Sessions.Add(new MeetingSession
         {
             Meeting = meeting,
             Title = title,
             PlannedStartsAt = At(startsAt),
             PlannedEndsAt = At(endsAt),
-            Status = status switch
-            {
-                MeetingStatus.InProgress => MeetingSessionStatus.InProgress,
-                MeetingStatus.Ended or MeetingStatus.MinutesIssued or MeetingStatus.Archived
-                    => MeetingSessionStatus.Completed,
-                _ => MeetingSessionStatus.Planned,
-            },
+            Status = sessionStatus,
+            // A started or finished session has the actual times UC-29/UC-30 would have recorded.
+            ActualStartedAt = sessionStatus == MeetingSessionStatus.Planned ? null : At(startsAt),
+            ActualEndedAt = sessionStatus == MeetingSessionStatus.Completed ? At(endsAt) : null,
         });
         return meeting;
     }
