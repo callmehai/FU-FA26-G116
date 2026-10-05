@@ -88,7 +88,8 @@ public sealed class NotificationService(
         var created = 0;
         foreach (var item in upcoming)
         {
-            var key = $"meeting-session-starting-soon:{item.SessionId:D}:{item.UserId:D}";
+            // The planned start is part of the key, so a session rescheduled by UC-27 is reminded again.
+            var key = $"meeting-session-starting-soon:{item.SessionId:D}:{item.PlannedStartsAt.UtcTicks}:{item.UserId:D}";
             if (!existing.Add(key))
             {
                 continue;

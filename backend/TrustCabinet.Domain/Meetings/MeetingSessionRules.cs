@@ -61,7 +61,7 @@ public static partial class MeetingSessionRules
         {
             fieldErrors["plannedStartsAt"] = "Thời gian bắt đầu dự kiến không hợp lệ.";
         }
-        else if (mustStartAfter is { } now && startsAt <= now && startsAt != unchangedStart)
+        else if (mustStartAfter is { } now && startsAt <= now && ToStoredPrecision(startsAt) != unchangedStart)
         {
             fieldErrors["plannedStartsAt"] = "Thời gian bắt đầu dự kiến phải sau thời điểm hiện tại.";
         }
@@ -82,8 +82,15 @@ public static partial class MeetingSessionRules
             return false;
         }
 
-        validated = new ValidatedMeetingSessionInput(title, startsAt.ToUniversalTime(), endsAt.ToUniversalTime());
+        validated = new ValidatedMeetingSessionInput(title, ToStoredPrecision(startsAt), ToStoredPrecision(endsAt));
         return true;
+    }
+
+    /// <summary>UTC truncated to the microseconds PostgreSQL keeps, so a resubmitted value compares equal.</summary>
+    private static DateTimeOffset ToStoredPrecision(DateTimeOffset value)
+    {
+        var utc = value.ToUniversalTime();
+        return utc.AddTicks(-(utc.Ticks % 10));
     }
 
     private static bool TryParseTimestamp(string? value, out DateTimeOffset timestamp)

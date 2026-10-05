@@ -98,7 +98,8 @@ public sealed class NotificationRepository(TrustCabinetDbContext db) : INotifica
                 item.Session.Meeting.Title,
                 item.Session.Id,
                 item.Session.Title,
-                item.Participant.UserId))
+                item.Participant.UserId,
+                item.Session.PlannedStartsAt))
             .ToListAsync(ct);
 
     public Task<List<string?>> FindReminderKeysAsync(Guid[] meetingIds,

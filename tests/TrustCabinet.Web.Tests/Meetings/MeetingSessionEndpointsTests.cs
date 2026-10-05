@@ -470,7 +470,7 @@ public sealed class MeetingSessionEndpointsTests : IDisposable
     public async Task Update_may_rename_a_published_session_whose_start_has_passed_but_not_reschedule_it_into_the_past()
     {
         var meeting = GivenMeeting(MeetingStatus.Published);
-        var pastStart = DateTimeOffset.UtcNow.AddHours(-1);
+        var pastStart = new DateTimeOffset(DateTimeOffset.UtcNow.UtcDateTime.Date.AddHours(-1), TimeSpan.Zero);
         var session = GivenSession(meeting, startsAt: pastStart);
         using var client = _factory.ClientFor(_secretary);
 

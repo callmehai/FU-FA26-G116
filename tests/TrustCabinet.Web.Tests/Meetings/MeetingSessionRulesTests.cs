@@ -89,6 +89,17 @@ public sealed class MeetingSessionRulesTests
     }
 
     [Fact]
+    public void Timestamps_are_truncated_to_the_microseconds_postgres_stores()
+    {
+        var stored = new DateTimeOffset(2026, 9, 1, 2, 0, 0, TimeSpan.Zero).AddTicks(1_234_560);
+        var input = new MeetingSessionInput("Phiên sáng", "2026-09-01T09:00:00.1234567+07:00", "2026-09-01T23:00:00Z");
+
+        Assert.True(MeetingSessionRules.TryValidate(
+            input, stored.AddHours(1), out var result, out _, unchangedStart: stored));
+        Assert.Equal(stored, result!.PlannedStartsAt);
+    }
+
+    [Fact]
     public void Future_start_rule_skips_an_unchanged_start_but_not_a_rescheduled_one()
     {
         var now = PlannedStart.AddHours(1);

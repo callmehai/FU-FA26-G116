@@ -16,4 +16,5 @@ public sealed record UpcomingMeetingRecipient(
     string MeetingTitle,
     Guid SessionId,
     string SessionTitle,
-    Guid UserId);
+    Guid UserId,
+    DateTimeOffset PlannedStartsAt);

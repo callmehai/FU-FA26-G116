@@ -25,7 +25,9 @@ bốn endpoint yêu cầu đăng nhập và tài khoản còn active (đọc l�
 | 5 | Chỉ với tạo/sửa: dữ liệu hợp lệ — BR-62, BR-75 | `400` + `MSG53` |
 
 Organizer **không** tự động được lập lịch phiên: chỉ Thư ký được phân công (BR-54). Thứ tự kiểm tra
-là quyền → trạng thái → dữ liệu, nên người không có quyền không nhận được chi tiết validation.
+là quyền → trạng thái → dữ liệu, nên người không có quyền không nhận được chi tiết validation. Ngoại
+lệ: body không đọc được (không phải JSON, sai cú pháp) bị trả `400 MSG53` ngay ở endpoint, trước khi
+tra cuộc họp — lỗi này không phụ thuộc cuộc họp nên không lộ gì.
 
 ## Contract
 
@@ -73,7 +75,7 @@ thái nên dùng `POST …/cancel`, không dùng `DELETE`.
 | Field | Luật | Thông báo trong `errors` |
 |---|---|---|
 | `title` | Bắt buộc, trim, tối đa 300 ký tự | `Tên phiên họp không được để trống.` / `… không được vượt quá 300 ký tự.` |
-| `plannedStartsAt` | ISO 8601 có `Z` hoặc offset (`2026-10-12T09:00+07:00`; giây tùy chọn). Không có offset bị từ chối thay vì đoán múi giờ | `Thời gian bắt đầu dự kiến không hợp lệ.` |
+| `plannedStartsAt` | ISO 8601 có `Z` hoặc offset (`2026-10-12T09:00+07:00`; giây tùy chọn). Không có offset bị từ chối thay vì đoán múi giờ. Lưu ở UTC, cắt về micro giây như PostgreSQL | `Thời gian bắt đầu dự kiến không hợp lệ.` |
 | `plannedStartsAt` | BR-75: cuộc họp Published/InProgress thì phải sau thời điểm hiện tại. Khi sửa, chỉ áp dụng nếu giờ bắt đầu **thay đổi** — đổi tên phiên Planned đã quá giờ vẫn được | `Thời gian bắt đầu dự kiến phải sau thời điểm hiện tại.` |
 | `plannedEndsAt` | Cùng định dạng; phải sau `plannedStartsAt` (BR-62) | `Thời gian kết thúc dự kiến không hợp lệ.` / `… phải sau thời gian bắt đầu dự kiến.` |
 
@@ -115,6 +117,9 @@ hợp lệ. Lưu phiên và thông báo cùng một lần commit; lỗi lưu th�
 6. **BR-75 khi sửa** chỉ áp dụng khi giờ bắt đầu thay đổi (đặc tả: "rescheduled").
 7. Class diagram tách `MeetingSessionService` (đọc) và `MeetingService` (ghi); code gộp cả bốn UC vào
    `MeetingSessionService`, dùng `MeetingRepository` để khóa cuộc họp và ghi thông báo.
+8. **Đổi tên phiên cũng gửi thông báo** BR-76 (BR chỉ nêu tạo, dời lịch, hủy): đơn giản hơn và
+   participant vẫn thấy lịch đổi tên.
+9. **Khóa nhắc "sắp bắt đầu"** thêm giờ bắt đầu dự kiến, để phiên bị dời lịch được nhắc lại.
 
 ## Ghi chú cho FE
 

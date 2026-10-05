@@ -76,8 +76,16 @@ public class NotificationServiceTests
         Assert.Equal(active.Id, reminder.UserId);
         Assert.Equal(NotificationType.MeetingStartingSoon, reminder.Type);
         Assert.Equal(meeting.Id, reminder.MeetingId);
-        Assert.Equal($"meeting-session-starting-soon:{session.Id:D}:{active.Id:D}", reminder.DeduplicationKey);
+        Assert.Equal(
+            $"meeting-session-starting-soon:{session.Id:D}:{session.PlannedStartsAt.UtcTicks}:{active.Id:D}",
+            reminder.DeduplicationKey);
         Assert.Contains(session.Title, reminder.Body, StringComparison.Ordinal);
+
+        // UC-27 may move a session after its reminder went out; the new start is reminded again.
+        session.PlannedStartsAt = Now.AddMinutes(12);
+        await db.SaveChangesAsync();
+        Assert.Equal(1, await service.QueueStartingSoonAsync());
+        Assert.Equal(0, await service.QueueStartingSoonAsync());
     }
 
     [Fact]
