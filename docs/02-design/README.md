@@ -5,11 +5,12 @@
 - [`01-vong-doi-cuoc-hop.md`](01-vong-doi-cuoc-hop.md) — 9 trạng thái của cuộc họp và 4 mức mật
 - [`02-erd.md`](02-erd.md) — mô hình dữ liệu, kèm phần lấy gì / bỏ gì so với AI-eCabinet
 - [`03-co-so-du-lieu.md`](03-co-so-du-lieu.md) — cài PostgreSQL, chuỗi kết nối, vòng đời migration
+- [`04-luong-nghiep-vu-chinh.md`](04-luong-nghiep-vu-chinh.md) — 4 Main Business Flows và Shared Voting Sub-flow
+- [`08-ke-hoach-phong-hop-truc-tuyen.md`](08-ke-hoach-phong-hop-truc-tuyen.md) — thiết kế giải pháp phòng họp trực tuyến (LiveKit / WebRTC)
 
 Dự kiến có thêm:
 
-- `04-kien-truc.md` — sơ đồ tổng thể: SPA ↔ ASP.NET Core ↔ PostgreSQL, vị trí SignalR & WebRTC
-- `05-luong-nghiep-vu.md` — sequence diagram cho các luồng chính (tạo họp, biểu quyết, gọi thoại)
+- `05-kien-truc.md` — sơ đồ tổng thể: SPA ↔ ASP.NET Core ↔ PostgreSQL, vị trí SignalR & LiveKit
 - `06-giao-dien.md` — sơ đồ màn hình, wireframe, quy ước thiết kế
 - `07-bao-mat.md` — xác thực, phân quyền RBAC, kiểm soát truy cập tài liệu
 
