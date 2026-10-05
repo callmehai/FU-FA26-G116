@@ -155,6 +155,55 @@ public sealed class MeetingSessionRepositoryTests : IAsyncLifetime
             """).SingleAsync());
     }
 
+    [Fact]
+    public async Task Session_service_plans_sessions_against_postgres_without_touching_the_meeting()
+    {
+        var secretary = new User { FullName = "Thư ký", Email = "session-secretary@example.vn", PasswordHash = "x" };
+        var member = new User { FullName = "Thành viên", Email = "session-member@example.vn", PasswordHash = "x" };
+        var meeting = new Meeting
+        {
+            Title = "Họp công bố",
+            Status = MeetingStatus.Published,
+            CreatedById = secretary.Id,
+            CreatedBy = secretary,
+        };
+        meeting.Participants.Add(new MeetingParticipant { UserId = secretary.Id, Role = MeetingRole.Secretary });
+        meeting.Participants.Add(new MeetingParticipant { UserId = member.Id, Role = MeetingRole.Member });
+        _db.Users.AddRange(secretary, member);
+        _db.Meetings.Add(meeting);
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+        var service = new MeetingSessionService(
+            new MeetingRepository(_db),
+            new MeetingSessionRepository(_db),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<MeetingSessionService>.Instance);
+        var start = DateTimeOffset.UtcNow.AddDays(3);
+
+        var late = await service.CreateAsync(
+            meeting.Id, new("Phiên chiều", start.AddHours(5).ToString("O"), start.AddHours(6).ToString("O")), secretary.Id);
+        var early = await service.CreateAsync(
+            meeting.Id, new("Phiên sáng", start.ToString("O"), start.AddHours(1).ToString("O")), secretary.Id);
+        var updated = await service.UpdateAsync(
+            meeting.Id, early.Session!.Id, new("Phiên sáng sớm", start.ToString("O"), start.AddHours(2).ToString("O")), secretary.Id);
+        var cancelled = await service.CancelAsync(meeting.Id, late.Session!.Id, secretary.Id);
+        _db.ChangeTracker.Clear();
+        var list = await service.ListAsync(meeting.Id, member.Id);
+
+        Assert.Equal(Domain.Meetings.MeetingSessionOutcome.Success, updated.Outcome);
+        Assert.Equal(MeetingSessionStatus.Cancelled, cancelled.Session!.Status);
+        Assert.Equal(
+            new[] { ("Phiên sáng sớm", MeetingSessionStatus.Planned), ("Phiên chiều", MeetingSessionStatus.Cancelled) },
+            list.Sessions!.Select(session => (session.Title, session.Status)));
+        Assert.Equal(MeetingStatus.Published, (await _db.Meetings.SingleAsync()).Status);
+        var notifications = await _db.Notifications.ToListAsync();
+        Assert.Equal(4, notifications.Count);
+        Assert.All(notifications, notification =>
+        {
+            Assert.Equal(member.Id, notification.UserId);
+            Assert.Equal(NotificationType.MeetingSessionChanged, notification.Type);
+        });
+    }
+
     private async Task<(Guid MeetingId, User Organizer)> InsertLegacyMeetingAsync(
         string title, DateTimeOffset startsAt, DateTimeOffset? endsAt)
     {

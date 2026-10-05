@@ -142,15 +142,8 @@ public sealed partial class MessageCodeCatalogueTests
     }
 
     [Theory]
-    [InlineData("MSG48", "UC-26")]
-    [InlineData("MSG49", "UC-27")]
-    [InlineData("MSG50", "UC-28")]
     [InlineData("MSG51", "UC-29")]
     [InlineData("MSG52", "UC-30")]
-    [InlineData("MSG53", "UC-26 / UC-27")]
-    [InlineData("MSG54", "UC-26")]
-    [InlineData("MSG55", "UC-27")]
-    [InlineData("MSG56", "UC-28")]
     [InlineData("MSG57", "UC-29")]
     [InlineData("MSG58", "UC-29")]
     [InlineData("MSG59", "UC-30")]

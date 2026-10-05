@@ -55,6 +55,9 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   queue/SMTP không thuộc contract frontend
 - [`07-gui-email-thu-moi-note-cai-dat-may-moi.md`](07-gui-email-thu-moi-note-cai-dat-may-moi.md) —
   checklist cấu hình database, User Secrets, SMTP, migration và kiểm tra worker trên máy mới
+- [`08-quan-ly-phien-hop.md`](08-quan-ly-phien-hop.md) — quản lý phiên họp (`SCRUM-68`, UC-53,
+  UC-26–UC-28): `GET/POST /api/meetings/{meetingId}/sessions`, `PUT …/{sessionId}`, `POST …/{sessionId}/cancel`;
+  quyền Thư ký được phân công, BR-75/BR-76/BR-77, mã `MSG48`–`MSG56`, `MSG127`, `MSG138`–`MSG140`
 
 Dự kiến có thêm:
 

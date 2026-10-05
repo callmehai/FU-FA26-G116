@@ -153,6 +153,9 @@ app.MapRoleEndpoints();
 // /api/meetings — UC-15/UC-16 mutations (SCRUM-17) and UC-18 list (SCRUM-18).
 app.MapMeetingEndpoints();
 
+// /api/meetings/{meetingId}/sessions — UC-53 view and UC-26 … UC-28 plan sessions (SCRUM-68).
+app.MapMeetingSessionEndpoints();
+
 // SCRUM-14: user-scoped notification list/read APIs and realtime delivery.
 app.MapNotificationEndpoints();
 app.MapHub<NotificationHub>("/hubs/notifications", options =>

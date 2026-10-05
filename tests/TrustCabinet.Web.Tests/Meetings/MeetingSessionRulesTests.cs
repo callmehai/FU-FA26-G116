@@ -68,6 +68,52 @@ public sealed class MeetingSessionRulesTests
         Assert.False(MeetingSessionRules.IsValidPlanned(session, meetingId));
     }
 
+    [Theory]
+    [InlineData("2026-09-01T09:00+07:00", true)]
+    [InlineData("2026-09-01T02:00:00Z", true)]
+    [InlineData("2026-09-01T02:00:00.1234567Z", true)]
+    [InlineData("2026-09-01T09:00:00", false)]
+    [InlineData("2026-09-01", false)]
+    [InlineData("01/09/2026 09:00 +07:00", false)]
+    [InlineData("2026-13-01T09:00:00Z", false)]
+    public void Session_timestamps_need_an_iso_value_with_an_explicit_offset(string start, bool valid)
+    {
+        var input = new MeetingSessionInput("Phiên sáng", start, "2026-09-01T23:00:00Z");
+
+        Assert.Equal(valid, MeetingSessionRules.TryValidate(input, null, out var result, out var errors));
+        Assert.Equal(valid, !errors.ContainsKey("plannedStartsAt"));
+        if (valid)
+        {
+            Assert.Equal(TimeSpan.Zero, result!.PlannedStartsAt.Offset);
+        }
+    }
+
+    [Fact]
+    public void Future_start_rule_skips_an_unchanged_start_but_not_a_rescheduled_one()
+    {
+        var now = PlannedStart.AddHours(1);
+        var unchanged = new MeetingSessionInput("Đổi tên", "2026-09-01T02:00:00Z", "2026-09-01T05:00:00Z");
+        var moved = unchanged with { PlannedStartsAt = "2026-09-01T02:30:00Z" };
+
+        Assert.True(MeetingSessionRules.TryValidate(unchanged, now, out _, out _, unchangedStart: PlannedStart));
+        Assert.False(MeetingSessionRules.TryValidate(moved, now, out _, out var errors, unchangedStart: PlannedStart));
+        Assert.True(errors.ContainsKey("plannedStartsAt"));
+        Assert.False(MeetingSessionRules.TryValidate(unchanged, now, out _, out _));
+    }
+
+    [Theory]
+    [InlineData(MeetingStatus.Draft, true)]
+    [InlineData(MeetingStatus.Rejected, true)]
+    [InlineData(MeetingStatus.Approved, true)]
+    [InlineData(MeetingStatus.Published, true)]
+    [InlineData(MeetingStatus.InProgress, true)]
+    [InlineData(MeetingStatus.WaitingApproval, false)]
+    [InlineData(MeetingStatus.Ended, false)]
+    [InlineData(MeetingStatus.MinutesIssued, false)]
+    [InlineData(MeetingStatus.Archived, false)]
+    public void Sessions_are_planned_only_in_BR54_statuses(MeetingStatus status, bool allowed)
+        => Assert.Equal(allowed, MeetingSessionRules.AllowsPlanning(status));
+
     private static MeetingSession NewSession(Guid meetingId) => new()
     {
         MeetingId = meetingId,

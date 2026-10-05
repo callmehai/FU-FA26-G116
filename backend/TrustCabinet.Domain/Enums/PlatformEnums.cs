@@ -12,6 +12,8 @@ public enum NotificationType
     MinutesWaitingApproval,
     MinutesIssued,
     DocumentAdded,
+    /// <summary>A session was added, rescheduled or cancelled after publication (BR-76).</summary>
+    MeetingSessionChanged,
 }
 
 /// <summary>Delivery state of a queued email (SCRUM-15).</summary>

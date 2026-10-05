@@ -44,7 +44,7 @@ public static class MeetingReadPolicy
     public static bool CanReadRejectionReason(Meeting meeting, Guid userId)
         => CanReadFullHistory(meeting, userId) || IsAssignedSecretary(meeting, userId);
 
-    private static bool IsAssignedSecretary(Meeting meeting, Guid userId)
+    public static bool IsAssignedSecretary(Meeting meeting, Guid userId)
         => meeting.Participants.Any(participant => participant.MeetingId == meeting.Id
             && participant.UserId == userId
             && participant.Role == MeetingRole.Secretary

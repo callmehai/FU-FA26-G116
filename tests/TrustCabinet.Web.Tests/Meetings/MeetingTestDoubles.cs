@@ -29,6 +29,41 @@ internal sealed class FakeMeetingInvitationQueue : IMeetingInvitationQueue
     }
 }
 
+/// <summary>Reads and writes the sessions held by <see cref="FakeMeetingRepository"/> meetings.</summary>
+internal sealed class FakeMeetingSessionRepository(FakeMeetingRepository meetings) : IMeetingSessionRepository
+{
+    public Exception? NextListThrows { get; set; }
+
+    public Task<IReadOnlyList<MeetingSessionDetails>> ListByMeetingAsync(Guid meetingId, CancellationToken ct = default)
+    {
+        if (NextListThrows is { } exception)
+        {
+            NextListThrows = null;
+            throw exception;
+        }
+
+        return Task.FromResult<IReadOnlyList<MeetingSessionDetails>>(meetings.Meetings
+            .Where(meeting => meeting.Id == meetingId)
+            .SelectMany(meeting => meeting.Sessions)
+            .OrderBy(session => session.PlannedStartsAt)
+            .ThenBy(session => session.Id)
+            .Select(MeetingSessionDetails.From)
+            .ToArray());
+    }
+
+    public Task<MeetingSession?> FindAsync(Guid meetingId, Guid sessionId, CancellationToken ct = default)
+        => Task.FromResult(meetings.Meetings
+            .Where(meeting => meeting.Id == meetingId)
+            .SelectMany(meeting => meeting.Sessions)
+            .SingleOrDefault(session => session.Id == sessionId));
+
+    public Task AddAsync(MeetingSession session, CancellationToken ct = default)
+    {
+        meetings.Meetings.Single(meeting => meeting.Id == session.MeetingId).Sessions.Add(session);
+        return Task.CompletedTask;
+    }
+}
+
 internal sealed class FakeMeetingRepository : IMeetingRepository
 {
     private readonly List<Meeting> _pendingAdds = [];
