@@ -1,5 +1,24 @@
 # 07 · Class diagram — các điểm cần sửa cho khớp code
 
+## Sơ đồ theo feature
+
+- [FE-06 — Agenda Management](feature-06-agenda-management-class-diagram.drawio) ([PNG](feature-06-agenda-management-class-diagram.png)) — UC-31–36, UC-54; mô hình đích theo ERD.
+- [FE-07 — Meeting Participant Management](feature-07-meeting-participant-management-class-diagram.drawio) ([PNG](feature-07-meeting-participant-management-class-diagram.png)) — UC-37–42; mô hình đích theo ERD và business rules F08.
+
+## Chuẩn trình bày class diagram
+
+Hai cặp file FE-06 và FE-07 ở trên là **mẫu chuẩn** cho class diagram mới và các lần chỉnh sửa
+diagram hiện có. Giữ thống nhất các điểm sau:
+
+- Căn giữa stereotype và tên class trong phần đầu; căn trái attributes, operations và các nội dung
+  còn lại bên dưới.
+- Đặt chiều ngang class vừa sát dòng dài nhất trong nội dung, chừa một lề nhỏ để chữ không chạm
+  viền; tránh để khoảng trống ngang dư thừa.
+- Giữ màu theo stereotype/layer, đường phân cách phần tên với nội dung, kiểu đường quan hệ và cách
+  sắp xếp các layer như trong hai mẫu.
+- Mỗi diagram có cả file `.drawio` để tiếp tục chỉnh sửa và PNG được xuất từ chính file đó. Khi cập
+  nhật diagram, xuất lại PNG tương ứng để hai file luôn đồng bộ.
+
 Đối chiếu các bản vẽ trong thư mục này với code backend (SCRUM-11 xác thực, SCRUM-13 quản lý người
 dùng, SCRUM-60 ma trận phân quyền).
 
