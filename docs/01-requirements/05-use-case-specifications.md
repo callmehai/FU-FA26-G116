@@ -2,7 +2,7 @@
 
 Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ thống họp không giấy tờ **TrustCabinet**.
 
-**Nguồn quy tắc nghiệp vụ:** [Danh mục Business Rules BR-01 → BR-103](06-business-rules.md). UC trong tài liệu này dẫn chiếu mã BR tại các điều kiện/bước liên quan; nội dung định nghĩa BR được quản lý tập trung ở danh mục đó để tránh các bản sao lệch nhau. Mã `BR` là mã quy tắc nghiệp vụ, độc lập với mã thông báo `MSG`.
+**Nguồn quy tắc nghiệp vụ:** [Danh mục Business Rules BR-01 → BR-157](06-business-rules.md). UC trong tài liệu này dẫn chiếu mã BR tại các điều kiện/bước liên quan; nội dung định nghĩa BR được quản lý tập trung ở danh mục đó để tránh các bản sao lệch nhau. Mã `BR` là mã quy tắc nghiệp vụ, độc lập với mã thông báo `MSG`.
 
 ---
 
@@ -2000,10 +2000,10 @@ The account owner continues the use case from the email. No sign-in is required:
 
 ---
 
-### FEATURE 8: THÀNH PHẦN THAM DỰ & VAI TRÒ TRONG CUỘC HỌP (MEETING PARTICIPANTS & MEETING ROLES)
+### FEATURE 7: THÀNH PHẦN THAM DỰ & VAI TRÒ TRONG CUỘC HỌP (MEETING PARTICIPANTS & MEETING ROLES — FE-07)
 
-> Đồng bộ F08 và GOF09 từ tài liệu Report 3 source-of-truth ngày 03/10/2026. Các UC và Business
-> Rules trong phần này mô tả yêu cầu đích; sequence diagram cần được cập nhật riêng nếu khác nội dung.
+> Đồng bộ FE-07 và FE-09 từ tài liệu Report 3 source-of-truth. Các UC và Business
+> Rules trong phần này mô tả yêu cầu đích; danh mục Business Rules đầy đủ xem tại [06-business-rules.md](06-business-rules.md).
 
 #### Vòng đời quản lý thành phần tham dự đã chốt
 
@@ -2028,8 +2028,8 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
   chỉ mang role `Chair`, `Member` hoặc `Guest` không được cấp quyền đọc trước `Published` chỉ vì
   đã được gán vào danh sách. Quyền độc lập của Organizer/Approver vẫn áp dụng theo BR-29.
 - Chỉ Organizer có quyền công bố được chuyển meeting **`Approved → Published`**. Meeting Session
-  không bắt buộc. Tại thời điểm công bố, meeting phải có một Chair và một Secretary hiện hành
-  có tài khoản hoạt động (BR-89). Không yêu cầu participant xác nhận
+  không bắt buộc. Tại thời điểm công bố, meeting phải có đúng một Chair và ít nhất một Secretary hiện hành
+  có tài khoản hoạt động (BR-124, BR-125). Không yêu cầu participant xác nhận
   trước công bố, vì lúc này chưa gửi lời mời.
 - Khi bắt đầu gửi duyệt, danh sách bị khóa theo trạng thái hiện tại. Nếu màn hình đã mở trước đó
   nhưng meeting vừa chuyển sang `WaitingApproval`, thao tác thêm/đổi role/xóa bị từ chối và dữ
@@ -2057,7 +2057,7 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 1. The Secretary opens the selected meeting.
 2. The Secretary selects the Meeting Participants tab.
 3. The system verifies that the Secretary is still assigned to the meeting.
-4. The system retrieves current internal participants and current external Guest invitations; records retained only as historical evidence are excluded. (BR-79, BR-84, BR-88, BR-101, BR-103)
+4. The system retrieves current internal participants and current external Guest invitations; records retained only as historical evidence are excluded. (BR-82, BR-84, BR-102, BR-103, BR-117, BR-118, BR-121, BR-148)
 5. The system displays Full Name, Email, participant type, and Meeting Role or Guest access type.
 6. The Secretary reviews the participant list.
 
@@ -2072,7 +2072,7 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 
 - **EX-1: Meeting Is Not Accessible**
   1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.
-  2. The system displays the same not-found result used for an unknown meeting and does not disclose participant data. (BR-88)
+  2. The system displays the same not-found result used for an unknown meeting and does not disclose participant data. (BR-117, BR-121)
   3. The use case ends.
 
 - **EX-2: Participant List Cannot Be Retrieved**
@@ -2092,12 +2092,12 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 - **Điều kiện tiên quyết (Preconditions)**:
   - PRE-1: The actor is authenticated and is either the Meeting Organizer creating the initial Secretary assignment or a Secretary already assigned to the selected meeting.
   - PRE-2: The selected meeting exists and is in Draft, Rejected, Approved, Published, or InProgress status.
-  - PRE-3: For an internal participant, the selected user has an active internal account and is not already current. For a Guest, the name and email are valid and the email has no current Guest invitation for the meeting. (BR-79, BR-101)
+  - PRE-3: For an internal participant, the selected user has an active internal account and is not already current. For a Guest, the name and email are valid and the email has no current Guest invitation for the meeting. (BR-81, BR-82, BR-149, BR-151)
 - **Điều kiện sau (Postconditions)**:
   - POST-1: The internal user is added once, or a current Guest invitation is created for the supplied email.
   - POST-2: The invitation response starts Pending with no response time.
-  - POST-3: An internal participant has exactly one Meeting Role: Chair, Secretary, or Member. A Guest has fixed Guest access and no system or privileged meeting role. (BR-80, BR-81, BR-101)
-  - POST-4: If Published or InProgress, invitation delivery is queued; internal participants may receive in-app/email notifications and Guests receive a secure email invitation. (BR-82, BR-102)
+  - POST-3: An internal participant has exactly one Meeting Role: Chair, Secretary, or Member. A Guest has fixed Guest access and no system or privileged meeting role. (BR-85, BR-86, BR-87, BR-150)
+  - POST-4: If Published or InProgress, invitation delivery is queued; internal participants may receive in-app/email notifications and Guests receive a secure email invitation. (BR-90, BR-91, BR-152)
 - **Sơ đồ liên quan (Related Diagrams)**:
   - Sequence Diagram: [UC38_AddMeetingParticipant.png](../06-sequencediagram/meeting-participant-management/UC38_AddMeetingParticipant.png)
 
@@ -2105,7 +2105,7 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 1. The authorized actor opens the Meeting Participants tab of the selected meeting.
 2. The actor selects Add Participant.
 3. The actor selects Add Internal Participant or Invite External Guest.
-4. For an internal participant, the system displays active internal users who are not already current in the meeting. (BR-79)
+4. For an internal participant, the system displays active internal users who are not already current in the meeting. (BR-81, BR-82)
 5. The actor selects one user and assigns one Meeting Role:
    - Chair
    - Secretary
@@ -2118,31 +2118,31 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
    - the selected user is active and not already invited; and
    - the selected Meeting Role is valid; and
    - a Guest name/email is valid, not already invited, and not already represented by a current internal participant.
-   (BR-78–BR-81, BR-101)
-7. The system creates the internal participant with one role or creates the Guest invitation with fixed Guest access; response is Pending. (BR-80, BR-81, BR-101)
-8. If Published or InProgress, the system queues the applicable invitation delivery. Guest delivery uses a secure meeting-specific invitation. (BR-39, BR-40, BR-82, BR-102)
+   (BR-78, BR-79, BR-80, BR-81, BR-82, BR-83, BR-85, BR-86, BR-148, BR-149, BR-151)
+7. The system creates the internal participant with one role or creates the Guest invitation with fixed Guest access; response is Pending. (BR-85, BR-88, BR-148, BR-150)
+8. If Published or InProgress, the system queues the applicable invitation delivery. Guest delivery uses a secure meeting-specific invitation. (BR-39, BR-40, BR-90, BR-91, BR-152)
 9. The system displays MSG96 – "Meeting participant added successfully."
 
 - **AF-1: Invite External Guest**
   1. At Step 3, the actor selects Invite External Guest.
   2. The actor enters Guest Name and Email and submits the invitation.
-  3. The system validates the email and ensures there is no current Guest invitation or internal participant represented by that email. (BR-101)
+  3. The system validates the email and ensures there is no current Guest invitation or internal participant represented by that email. (BR-148, BR-149, BR-151)
   4. The system creates the Guest invitation with fixed Guest access and Pending response.
-  5. If Published or InProgress, the system queues a secure email invitation; delivery failure is retried without undoing the invitation. (BR-82, BR-102)
+  5. If Published or InProgress, the system queues a secure email invitation; delivery failure is retried without undoing the invitation. (BR-91, BR-94, BR-152)
   6. The flow resumes at Step 9 of the Main Flow.
 
 #### Luồng sự kiện thay thế (Alternative Flows):
 
 - **AF-2: Invitation Delivery Is Unavailable**
   1. At Step 8, the meeting is Published or InProgress but in-app or email invitation delivery is unavailable.
-  2. The participant remains successfully added with Pending response status. (BR-40, BR-82)
+  2. The participant remains successfully added with Pending response status. (BR-40, BR-94)
   3. The system records the delivery failure for retry.
   4. The flow resumes at Step 9 of the Main Flow.
 
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
 
 - **EX-1: Invalid Participant Information**
-  1. At Step 6, the selected user is inactive/already current, the role is invalid, or Guest name/email is missing or invalid, already invited, or represented by an internal participant. (BR-79, BR-80, BR-101)
+  1. At Step 6, the selected user is inactive/already current, the role is invalid, or Guest name/email is missing or invalid, already invited, or represented by an internal participant. (BR-81, BR-82, BR-85, BR-148, BR-149, BR-151)
   2. The participant is not added.
   3. The system displays MSG97 – "Invalid meeting participant information." with the applicable field message(s):
      - "The selected user is not available."
@@ -2157,7 +2157,7 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
   5. The flow resumes at Step 6 of the Main Flow.
 
 - **EX-2: Participant List Cannot Be Modified in the Current Status**
-  1. At Step 6, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-78)
+  1. At Step 6, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)
   2. The participant is not added.
   3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."
   4. The use case ends.
@@ -2194,9 +2194,9 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 3. The system displays the participant's current Meeting Role.
 4. The Secretary selects Chair, Secretary, or Member.
 5. The Secretary submits the selected Meeting Role.
-6. The system verifies that the Secretary is still assigned to the meeting, the meeting still permits participant management, the participant still belongs to the meeting, the selected Meeting Role is valid, and the change would not remove a required Chair or Secretary. (BR-78, BR-80, BR-89)
-7. The system updates only the participant's Meeting Role for the selected meeting. (BR-80, BR-83)
-8. If the meeting is Published or InProgress, the system queues an in-app notification and an email describing the new Meeting Role for asynchronous delivery to the participant. (BR-82)
+6. The system verifies that the Secretary is still assigned to the meeting, the meeting still permits participant management, the participant still belongs to the meeting, the selected Meeting Role is valid, and the change would not remove a required Chair or Secretary. (BR-79, BR-80, BR-85, BR-122, BR-123, BR-126)
+7. The system updates only the participant's Meeting Role for the selected meeting. (BR-85, BR-86, BR-96)
+8. If the meeting is Published or InProgress, the system queues an in-app notification and an email describing the new Meeting Role for asynchronous delivery to the participant. (BR-92)
 9. The system displays MSG100 – "Meeting role updated successfully."
 
 #### Luồng sự kiện thay thế (Alternative Flows):
@@ -2209,27 +2209,27 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 
 - **AF-2: Role Change Notification Delivery Is Unavailable**
   1. At Step 8, the Meeting Role has been updated but notification delivery is unavailable.
-  2. The Meeting Role change remains successful. (BR-82)
+  2. The Meeting Role change remains successful. (BR-94)
   3. The system records the delivery failure for retry.
   4. The flow resumes at Step 9 of the Main Flow.
 
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
 
 - **EX-1: Invalid Meeting Role**
-  1. At Step 6, the submitted Meeting Role is not Chair, Secretary, or Member. (BR-80)
+  1. At Step 6, the submitted Meeting Role is not Chair, Secretary, or Member. (BR-85)
   2. The participant's Meeting Role remains unchanged.
   3. The system displays MSG101 – "A valid meeting role is required."
   4. The Secretary selects a valid Meeting Role.
   5. The flow resumes at Step 6 of the Main Flow.
 
 - **EX-2: Required Meeting Role Would Be Removed**
-  1. At Step 6, the change would remove the last assigned Secretary, or would remove the last assigned Chair while the meeting is Published or InProgress. (BR-89)
+  1. At Step 6, the change would remove the last assigned Secretary, or would remove the last assigned Chair while the meeting is Published or InProgress. (BR-122, BR-126)
   2. The participant's Meeting Role remains unchanged.
   3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."
   4. The use case ends.
 
 - **EX-3: Participant List Cannot Be Modified in the Current Status**
-  1. At Step 6, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-78)
+  1. At Step 6, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)
   2. The participant's Meeting Role remains unchanged.
   3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."
   4. The use case ends.
@@ -2257,7 +2257,7 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
   - POST-1: The internal user is no longer current, or the Guest invitation is revoked.
   - POST-2: Access from the removed participant/delegation/Guest relationship is revoked; independent access through another valid relationship remains.
   - POST-3: If Published or InProgress, the applicable internal in-app/email or Guest email notice is queued without a protected link.
-  - POST-4: Affected connected users without another valid room-entry relationship are disconnected. (BR-84, BR-103)
+  - POST-4: Affected connected users without another valid room-entry relationship are disconnected. (BR-97, BR-100, BR-101)
 - **Sơ đồ liên quan (Related Diagrams)**:
   - Sequence Diagram: [UC40_RemoveMeetingParticipant.png](../06-sequencediagram/meeting-participant-management/UC40_RemoveMeetingParticipant.png)
 
@@ -2266,10 +2266,10 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 2. The Secretary selects Remove for an internal participant or external Guest.
 3. The system requests confirmation.
 4. The Secretary confirms the removal.
-5. The system verifies Secretary authority, editable status, current roster membership, and—if internal—that removal will retain required Chair/Secretary roles. (BR-78, BR-84, BR-89, BR-103)
-6. For an internal target, the system removes the current assignment and ends outgoing delegation; for a Guest, it revokes the invitation and Guest access. Published/InProgress response and attendance evidence is retained as history. (BR-84, BR-103)
-7. The system re-evaluates room access for affected users and disconnects only those with no other valid room-entry relationship. (BR-84, BR-103)
-8. If Published or InProgress, the system queues the applicable removal/revocation notification; internal users may receive in-app/email, Guests email only. (BR-82, BR-103)
+5. The system verifies Secretary authority, editable status, current roster membership, and—if internal—that removal will retain required Chair/Secretary roles. (BR-79, BR-80, BR-97, BR-100, BR-122, BR-126)
+6. For an internal target, the system removes the current assignment and ends outgoing delegation; for a Guest, it revokes the invitation and Guest access. Published/InProgress response and attendance evidence is retained as history. (BR-97, BR-98, BR-100, BR-102, BR-103)
+7. The system re-evaluates room access for affected users and disconnects only those with no other valid room-entry relationship. (BR-97, BR-100, BR-101)
+8. If Published or InProgress, the system queues the applicable removal/revocation notification; internal users may receive in-app/email, Guests email only. (BR-93, BR-95)
 9. The system displays MSG103 – "Meeting participant removed successfully."
 
 #### Luồng sự kiện thay thế (Alternative Flows):
@@ -2281,20 +2281,20 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 
 - **AF-2: Removal Notification Delivery Is Unavailable**
   1. At Step 8, the participant has been removed but notification delivery is unavailable.
-  2. The removal and applicable access revocation remain successful. (BR-82, BR-84)
+  2. The removal and applicable access revocation remain successful. (BR-94, BR-97, BR-100)
   3. The system records the delivery failure for retry.
   4. The flow resumes at Step 9 of the Main Flow.
 
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
 
 - **EX-1: Required Meeting Role Would Be Removed**
-  1. At Step 5, the removal would remove the last assigned Secretary, or would remove the last assigned Chair while the meeting is Published or InProgress. (BR-89)
+  1. At Step 5, the removal would remove the last assigned Secretary, or would remove the last assigned Chair while the meeting is Published or InProgress. (BR-122, BR-126)
   2. The participant is not removed.
   3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."
   4. The use case ends.
 
 - **EX-2: Participant List Cannot Be Modified in the Current Status**
-  1. At Step 5, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-78)
+  1. At Step 5, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)
   2. The participant is not removed.
   3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."
   4. The use case ends.
@@ -2315,15 +2315,15 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 - **Secondary Actor**: None
 - **Mô tả (Description)**: Allows an invited internal participant or external Guest to respond to their own invitation while responses are allowed. Internal participants may accept, decline, or delegate; Guests may accept or decline through a verified invitation without internal sign-in.
 - **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: For an internal invitee, the user is authenticated, active, and a current participant. For a Guest, a current invitation exists and the Guest can verify the invited email; internal login is not required. (BR-85, BR-101, BR-102)
+  - PRE-1: For an internal invitee, the user is authenticated, active, and a current participant. For a Guest, a current invitation exists and the Guest can verify the invited email; internal login is not required. (BR-81, BR-89, BR-104, BR-148, BR-153, BR-156)
   - PRE-2: The invitee owns the selected invitation.
   - PRE-3: The selected meeting is Published or InProgress.
 - **Điều kiện sau (Postconditions)**:
   - POST-1: The invitee's latest response is Accepted or Declined; an internal participant may also respond Delegated.
   - POST-2: The response time is recorded.
   - POST-3: For a Delegated response, the selected delegate is recorded on the original participant's response and receives delegated access without automatically receiving a Meeting Role.
-  - POST-4: Guest access remains scoped to the invited meeting and creates no account or system role. (BR-101, BR-102)
-  - POST-5: Replacing/withdrawing internal delegation revokes access granted only by the previous delegate and triggers room-access re-evaluation. (BR-86)
+  - POST-4: Guest access remains scoped to the invited meeting and creates no account or system role. (BR-120, BR-150, BR-154, BR-155)
+  - POST-5: Replacing/withdrawing internal delegation revokes access granted only by the previous delegate and triggers room-access re-evaluation. (BR-101, BR-114)
 - **Sơ đồ liên quan (Related Diagrams)**:
   - Sequence Diagram: [UC41_RespondToMeetingInvitation.png](../06-sequencediagram/meeting-participant-management/UC41_RespondToMeetingInvitation.png)
 
@@ -2332,9 +2332,9 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 2. The system displays the participant's current Invitation Response.
 3. The invitee selects Accepted or Declined. Only internal participants may select Delegated.
 4. The Meeting Participant submits the response.
-5. The system verifies the response type for the invitee, invitation ownership, current relationship, and Published/InProgress status. (BR-85, BR-88, BR-101)
-6. In one atomic operation, the system records the selected Invitation Response and response time, clears any previous delegate, and revokes access granted solely by the previous delegation. (BR-85, BR-86, BR-87)
-7. If the meeting is InProgress, the system re-evaluates room-entry access for the previous delegate and removes that user from the room only when the user is connected and has no room-entry access through another current participant assignment or effective delegation. (BR-86)
+5. The system verifies the response type for the invitee, invitation ownership, current relationship, and Published/InProgress status. (BR-89, BR-104, BR-105, BR-106)
+6. In one atomic operation, the system records the selected Invitation Response and response time, clears any previous delegate, and revokes access granted solely by the previous delegation. (BR-105, BR-114, BR-115)
+7. If the meeting is InProgress, the system re-evaluates room-entry access for the previous delegate and removes that user from the room only when the user is connected and has no room-entry access through another current participant assignment or effective delegation. (BR-101, BR-114)
 8. The system displays MSG105 – "Meeting invitation response recorded successfully."
 
 #### Luồng sự kiện thay thế (Alternative Flows):
@@ -2343,16 +2343,16 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
   1. At Step 3, the Meeting Participant selects Delegated.
   2. The system displays active internal users who may be selected as delegate.
   3. The Meeting Participant selects another active internal user.
-  4. The system verifies that the current user owns the invitation and remains a current participant, the meeting is still Published or InProgress, and the selected delegate is active, is not the responding participant, and is not already representing another participant in the same meeting. (BR-85, BR-86, BR-88)
-  5. In one atomic operation, the system records Delegated and `DelegatedToUserId` on the original participant's record, revokes access granted solely to any previous delegate, and grants the selected delegate the applicable access. The system does not automatically create another Meeting Participant row or change an existing participant's Meeting Role. (BR-85, BR-86, BR-87)
-  6. After the atomic update, the original participant's own assignment retains meeting read access but no longer grants room-entry access while the Delegated response remains effective. A separate incoming delegation to that participant remains effective. The selected delegate has meeting read access and room-entry access; Chair and Secretary privileges are not transferred. (BR-86, BR-88)
-  7. If the meeting is InProgress, the system re-evaluates room-entry access for the original participant and any previous delegate. It removes each currently connected affected user who has no room-entry access through another current participant assignment or effective delegation. (BR-86)
-  8. If the selected delegate is already a participant, the system preserves that participant's existing Meeting Role and access.
+  4. The system verifies that the current user owns the invitation and remains a current participant, the meeting is still Published or InProgress, and the selected delegate is active, is not the responding participant, and is not already representing another participant in the same meeting. (BR-89, BR-107, BR-108, BR-113)
+  5. In one atomic operation, the system records Delegated and `DelegatedToUserId` on the original participant's record, revokes access granted solely to any previous delegate, and grants the selected delegate the applicable access. The system does not automatically create another Meeting Participant row or change an existing participant's Meeting Role. (BR-105, BR-107, BR-109, BR-111, BR-114, BR-115)
+  6. After the atomic update, the original participant's own assignment retains meeting read access but no longer grants room-entry access while the Delegated response remains effective. A separate incoming delegation to that participant remains effective. The selected delegate has meeting read access and room-entry access; Chair and Secretary privileges are not transferred. (BR-109, BR-110, BR-111)
+  7. If the meeting is InProgress, the system re-evaluates room-entry access for the original participant and any previous delegate. It removes each currently connected affected user who has no room-entry access through another current participant assignment or effective delegation. (BR-101, BR-110, BR-114)
+  8. If the selected delegate is already a participant, the system preserves that participant's existing Meeting Role and access. (BR-112)
   9. The flow resumes at Step 8 of the Main Flow.
 
 - **AF-3: Verify and Respond as External Guest**
   1. The Guest follows the secure meeting-specific invitation and submits the one-time code sent to the invited email.
-  2. The system verifies the code, invitation validity, and that it has not expired or been revoked. (BR-102, BR-103)
+  2. The system verifies the code, invitation validity, and that it has not expired or been revoked. (BR-153, BR-154, BR-155)
   3. The Guest selects Accepted or Declined; Delegated is not offered.
   4. The system records the latest response/time and establishes only the limited Guest session for this meeting.
   5. The flow resumes at Step 8 of the Main Flow.
@@ -2361,19 +2361,19 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
   1. At Step 2, the Meeting Participant has already responded to the invitation.
   2. The Meeting Participant selects another response and submits it.
   3. If the new response is Delegated, the flow continues at Step 2 of AF-1 so that the new delegate is revalidated.
-  4. Otherwise, the flow resumes at Step 5 of the Main Flow so that ownership, current participation, meeting status, and the new response are revalidated before the atomic update. (BR-85, BR-86, BR-87)
+  4. Otherwise, the flow resumes at Step 5 of the Main Flow so that ownership, current participation, meeting status, and the new response are revalidated before the atomic update. (BR-89, BR-104, BR-105, BR-106, BR-115)
 
 #### Luồng ngoại lệ / Lỗi (Exception Flows):
 
 - **EX-1: Invalid Invitation Response**
-  1. At Step 5, the submitted response is not Accepted or Declined; or at AF-1 Step 4, Delegated has no valid delegate, the participant selects themself, or the selected user already represents another participant in the same meeting. (BR-85, BR-86)
+  1. At Step 5, the submitted response is not Accepted or Declined; or at AF-1 Step 4, Delegated has no valid delegate, the participant selects themself, or the selected user already represents another participant in the same meeting. (BR-89, BR-105, BR-107, BR-108, BR-113)
   2. The previous Invitation Response remains unchanged.
   3. The system displays MSG106 – "Invalid meeting invitation response." with the applicable validation message.
   4. The Meeting Participant corrects the response.
   5. For an invalid Accepted or Declined response, the flow resumes at Step 3 of the Main Flow. For an invalid delegate, the flow resumes at Step 2 of AF-1.
 
 - **EX-2: Invitation Can No Longer Be Answered**
-  1. At Step 5 or AF-1 Step 4, the meeting is no longer Published or InProgress, or the current user no longer owns a current participant invitation for the meeting. (BR-85)
+  1. At Step 5 or AF-1 Step 4, the meeting is no longer Published or InProgress, or the current user no longer owns a current participant invitation for the meeting. (BR-104, BR-106)
   2. The previous Invitation Response remains unchanged.
   3. The system displays MSG107 – "This meeting invitation can no longer be answered."
   4. The use case ends.
@@ -2413,9 +2413,9 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 1. The Secretary opens the Meeting Participants tab of the selected meeting.
 2. The Secretary selects Participant Response Status.
 3. The system verifies that the Secretary is still assigned to the meeting.
-4. The system retrieves current internal participants and Guest invitations with their latest response; historical records are excluded. (BR-84, BR-87, BR-88, BR-101, BR-103)
+4. The system retrieves current internal participants and Guest invitations with their latest response; historical records are excluded. (BR-102, BR-103, BR-115, BR-116, BR-117, BR-121)
 5. The system displays each invitee's Full Name, Email, participant type, Meeting Role or Guest access type, response, response time, and delegate when applicable.
-6. The system displays the total number of Pending, Accepted, Declined, and Delegated responses. (BR-87)
+6. The system displays the total number of Pending, Accepted, Declined, and Delegated responses. (BR-115)
 7. The Secretary reviews the response status summary.
 
 #### Luồng sự kiện thay thế (Alternative Flows):
@@ -2429,7 +2429,7 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 
 - **EX-1: Meeting Is Not Accessible**
   1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.
-  2. The system displays the same not-found result used for an unknown meeting and does not disclose participant response data. (BR-88)
+  2. The system displays the same not-found result used for an unknown meeting and does not disclose participant response data. (BR-117, BR-121)
   3. The use case ends.
 
 - **EX-2: Participant Response Status Cannot Be Retrieved**
@@ -2443,10 +2443,10 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 
 - **Primary Actor**: Chair
 - **Description**: Allows an active Chair assigned to a Published meeting to start the meeting. Meeting Sessions are optional and keep their own lifecycle.
-- **Preconditions**: The Chair is authenticated and currently assigned to the meeting; the meeting is Published; at least one current Chair and Secretary have active accounts. Meeting Sessions are optional. (BR-56, BR-89–BR-91)
+- **Preconditions**: The Chair is authenticated and currently assigned to the meeting; the meeting is Published; at least one current Chair and Secretary have active accounts. Meeting Sessions are optional. (BR-56, BR-87, BR-127, BR-129, BR-130, BR-131, BR-133)
 - **Postconditions**: The meeting changes to InProgress and its lifecycle history is recorded. Meeting Session statuses are unchanged.
 - **Related Diagram source**: [UC43_StartMeeting.txt](../06-sequencediagram/meeting-management/UC43_StartMeeting.txt)
-- **Main Flow**: The Chair selects Start Meeting; the system revalidates Chair assignment, active Chair and Secretary, and Published status; it changes the meeting to InProgress, records the transition, and displays MSG110. (BR-38, BR-56, BR-89–BR-92)
+- **Main Flow**: The Chair selects Start Meeting; the system revalidates Chair assignment, active Chair and Secretary, and Published status; it changes the meeting to InProgress, records the transition, and displays MSG110. (BR-38, BR-56, BR-127, BR-130, BR-131, BR-135)
 - **Exception Flows**: If the meeting is not Published or role readiness fails, display MSG112. If starting fails, display MSG115.
 
 ### UC-44: End Meeting (Kết thúc cuộc họp)
@@ -2456,7 +2456,7 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 - **Preconditions**: The Chair is authenticated and currently assigned to the meeting; the meeting is InProgress.
 - **Postconditions**: The meeting changes to Ended and its lifecycle history is recorded; any associated room closes and connected users are disconnected. Meeting Session statuses are unchanged.
 - **Related Diagram source**: [UC44_EndMeeting.txt](../06-sequencediagram/meeting-management/UC44_EndMeeting.txt)
-- **Main Flow**: The Chair confirms End Meeting; the system revalidates Chair assignment, active Chair, InProgress status, and that no Meeting Session remains Planned or InProgress; it changes the meeting to Ended, records the transition, closes the room, and displays MSG111. (BR-38, BR-90–BR-92, BR-96)
+- **Main Flow**: The Chair confirms End Meeting; the system revalidates Chair assignment, active Chair, InProgress status, and that no Meeting Session remains Planned or InProgress; it changes the meeting to Ended, records the transition, closes the room, and displays MSG111. (BR-38, BR-61, BR-130, BR-132, BR-134, BR-135, BR-143)
 - **Exception Flows**: If any session remains Planned or InProgress, display MSG113. If meeting/role state is no longer eligible, display MSG114. If ending fails, display MSG116.
 
 ### UC-45: Join Meeting Room (Vào phòng họp trực tuyến)
@@ -2465,24 +2465,24 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 - **Secondary Actor**: None
 - **Description**: Allows an authorized user to enter the online room associated with a meeting. The room belongs to the Meeting, not to a Meeting Session, so a Meeting Session is not required for room access.
 - **Preconditions**:
-  - PRE-1: The user has room-entry access to the selected meeting through a current internal participant assignment, an effective delegation, or a verified current external Guest invitation. An external Guest may use a limited meeting-scoped guest session established from the invitation and email verification; no internal account login is required. (BR-94, BR-101, BR-102)
+  - PRE-1: The user has room-entry access to the selected meeting through a current internal participant assignment, an effective delegation, or a verified current external Guest invitation. An external Guest may use a limited meeting-scoped guest session established from the invitation and email verification; no internal account login is required. (BR-140, BR-148, BR-152, BR-153, BR-156)
   - PRE-2: The selected meeting exists and its Meeting Mode is Online or Hybrid.
   - PRE-3: The meeting is Published or InProgress.
-  - PRE-4: No Meeting Session is required. (BR-93, BR-94)
+  - PRE-4: No Meeting Session is required. (BR-137, BR-138)
 - **Postconditions**:
   - POST-1: The user is connected to the online meeting room.
   - POST-2: The user appears as currently connected in the room participant list.
   - POST-3: The Meeting and all Meeting Session lifecycle statuses remain unchanged.
 - **Main Flow — Join Meeting Room**:
   1. The user selects Join Meeting Room for the selected meeting. An external Guest uses the verified meeting-specific guest session established from the invitation flow.
-  2. The system verifies that the meeting exists, is Online or Hybrid, is Published or InProgress, and that the user currently has room-entry access through an internal participant assignment, effective delegation, or verified current Guest invitation. (BR-84, BR-86, BR-88, BR-93, BR-94, BR-101, BR-102)
+  2. The system verifies that the meeting exists, is Online or Hybrid, is Published or InProgress, and that the user currently has room-entry access through an internal participant assignment, effective delegation, or verified current Guest invitation. (BR-137, BR-138, BR-139, BR-140)
   3. The system admits the user to the meeting room.
   4. The system records the user as currently connected to the room and displays the room interface.
-  5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-95)
+  5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
 - **Alternative Flows**: N/A
 - **Exception Flows**:
-  - **EX-1: Meeting Room Is Not Available**: At Step 2, if the meeting is not Online/Hybrid or not Published/InProgress, the user is not connected; display MSG117 – "The online meeting room is not available." The use case ends. (BR-94)
-  - **EX-2: User Does Not Have Room Access**: At Step 2, if the internal participant/delegation relationship is no longer effective or the external Guest invitation/session has expired or been revoked, return the same not-found/access result used for an inaccessible meeting and disclose no protected room information. The use case ends. (BR-84, BR-86, BR-88, BR-102, BR-103)
+  - **EX-1: Meeting Room Is Not Available**: At Step 2, if the meeting is not Online/Hybrid or not Published/InProgress, the user is not connected; display MSG117 – "The online meeting room is not available." The use case ends. (BR-139)
+  - **EX-2: User Does Not Have Room Access**: At Step 2, if the internal participant/delegation relationship is no longer effective or the external Guest invitation/session has expired or been revoked, return the same not-found/access result used for an inaccessible meeting and disclose no protected room information. The use case ends. (BR-140, BR-155, BR-157)
   - **EX-3: Room Join Cannot Be Completed**: After Step 2, if the system cannot connect the user, leave Meeting and Meeting Session lifecycles unchanged, display MSG118 – "Unable to join the meeting room. Please try again." and end the use case.
 
 ### UC-46: Leave Meeting Room (Rời phòng họp trực tuyến)
@@ -2499,7 +2499,7 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
   1. The connected user selects Leave Room.
   2. The system disconnects the user from the room.
   3. The system updates the current room participant list.
-  4. The Meeting and Meeting Session lifecycles remain unchanged. (BR-95, BR-96)
+  4. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
 - **Alternative Flows**: N/A
 - **Exception Flows**: N/A
 
@@ -2515,7 +2515,7 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 - **Main Flow — Manage Microphone**:
   1. The user selects the microphone control.
   2. The system attempts to apply the requested microphone state to the user’s own audio.
-  3. The room interface displays the resulting microphone state. (BR-95, BR-97)
+  3. The room interface displays the resulting microphone state. (BR-141, BR-144)
 - **Alternative Flows**: N/A
 - **Exception Flows**:
   - **EX-1: Microphone Is Unavailable**: At Step 2, if permission is denied, no usable device is available, or the device cannot be used, the user remains in the room with the microphone disabled. Display MSG119 – "Microphone access is unavailable. Check your browser or device permissions." The use case ends.
@@ -2532,7 +2532,7 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 - **Main Flow — Manage Camera**:
   1. The user selects the camera control.
   2. The system attempts to apply the requested camera state to the user’s own video.
-  3. The room interface displays the resulting camera state. (BR-95, BR-97)
+  3. The room interface displays the resulting camera state. (BR-141, BR-144)
 - **Alternative Flows**: N/A
 - **Exception Flows**:
   - **EX-1: Camera Is Unavailable**: At Step 2, if permission is denied, no usable device is available, or the device cannot be used, the user remains in the room with the camera disabled. Display MSG120 – "Camera access is unavailable. Check your browser or device permissions." The use case ends.
@@ -2552,9 +2552,9 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
   2. The system asks the user to choose shareable content using the available device/browser mechanism.
   3. The user selects the content to share.
   4. The system verifies whether another screen share is active.
-  5. If another share is active, the previous share is stopped before the new share becomes active. (BR-98)
+  5. If another share is active, the previous share is stopped before the new share becomes active. (BR-145)
   6. The system displays the active shared content to users in the room.
-  7. Meeting and Meeting Session lifecycles remain unchanged. (BR-95)
+  7. Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
 - **Alternative Flows**:
   - **AF-1: Stop Screen Sharing** (entry point: Step 1): If the user is already sharing, they select Stop Sharing; the system stops that user’s active share; the room returns to its normal non-sharing layout; the use case ends successfully.
 - **Exception Flows**:
@@ -2572,7 +2572,7 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 - **Main Flow — View Meeting Room Participants**:
   1. The user opens the room participant panel.
   2. The system retrieves the users currently connected to the room.
-  3. The system displays the connected users and available room presence information, such as active-speaker indication. (BR-99)
+  3. The system displays the connected users and available room presence information, such as active-speaker indication. (BR-146)
   4. The user reviews the current room participant list.
 - **Alternative Flows**:
   - **AF-1: No Other User Is Connected**: At Step 2, if no other user is currently connected, the system displays only the current user in the room participant list. The use case ends successfully.
@@ -2594,10 +2594,10 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
 - **Main Flow — Mute a Room Participant**:
   1. The Chair opens the room participant panel and selects a connected user.
   2. The Chair selects Mute.
-  3. The system verifies that the current user is still an assigned Chair and that the target is still connected. (BR-97)
+  3. The system verifies that the current user is still an assigned Chair and that the target is still connected. (BR-144)
   4. The system disables the target user’s microphone.
   5. The system makes the updated room state visible to affected users.
-  6. The Meeting and Meeting Session lifecycles remain unchanged. (BR-95)
+  6. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
 - **Alternative Flows**:
   - **AF-1: Remove User from Current Room** (entry point: Step 2): The Chair selects Remove from Room; the system verifies Chair authorization and target connection; the system disconnects the target user from the current room only; the target’s Meeting Participant assignment remains unchanged and future re-entry follows normal room-access rules. The use case ends successfully.
 - **Exception Flows**:
@@ -2617,31 +2617,28 @@ bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạn
   1. The user enters a text message in the room chat panel.
   2. The user sends the message.
   3. The system validates that the user is still connected to the room and that the message is not empty.
-  4. The system makes the message available to authorized users currently connected to the same room. (BR-100)
-  5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-95)
+  4. The system makes the message available to authorized users currently connected to the same room. (BR-147)
+  5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
 - **Alternative Flows**: N/A
 - **Exception Flows**:
   - **EX-1: Chat Message Cannot Be Sent**: At Step 3 or 4, if the user is no longer connected, the message is empty, or the system cannot deliver it, the message is not treated as successfully sent. Display MSG125 – "Unable to send the room message. Please try again." The use case ends.
 
-#### Business Rules — F08 and GOF09
+---
 
-| BR-ID | Draft Rule Statement | Applies To |
-|---|---|---|
-| `BR-78` | Before the first Secretary is assigned, only the Organizer may add the first internal participant, who must be Secretary. Afterwards only an assigned Secretary may add internal participants, invite Guests, change internal roles, or remove/revoke roster entries. Editing is allowed in Draft, Rejected, Approved, Published, and InProgress; WaitingApproval, Ended, MinutesIssued, and Archived are read-only. | UC-38, UC-39, UC-40 |
-| `BR-79` | Internal participants are selected individually from active accounts and may appear at most once as a current participant per meeting. No organisational-unit invitations. External Guests use separate meeting-specific invitations, not internal participant rows. | UC-37, UC-38 |
-| `BR-80` | Each current internal participant has exactly one meeting role: Chair, Secretary, or Member, independent of system role. Guests have fixed Guest access and cannot satisfy required Chair/Secretary roles. | UC-38, UC-39 |
-| `BR-81` | A new internal participant or Guest invitation starts Pending, with no response time or delegate. Delegation applies only to internal participants. | UC-38, UC-41 |
-| `BR-82` | While Published or InProgress, internal additions may notify in-app and by email; Guest invitations use email; role changes notify the internal participant; removal/revocation may notify by the applicable channels. Delivery is asynchronous and retryable without rollback. Removal notices must not contain protected meeting links. | UC-21, UC-38, UC-39, UC-40 |
-| `BR-83` | Changing a Meeting Role changes only the participant's role in the selected meeting and does not change the user's system Role or Invitation Response. | UC-39 |
-| `BR-84` | Removing an internal participant ends their outgoing delegation; revoking a Guest invitation invalidates Guest access. Independent incoming access remains. Preserve response/attendance evidence for published meetings, exclude historical records from current access/roster/role counts, and disconnect an affected room user only if no other valid room-entry relationship remains. Removal/revocation is disallowed in WaitingApproval and after Ended. | UC-37, UC-40, UC-42, UC-45 |
-| `BR-85` | Only the owner of a current invitation may respond. Internal participants may Accept, Decline, or Delegate; Guests may Accept or Decline using their verified meeting invitation. Responses may change while Published or InProgress. | UC-41 |
-| `BR-86` | Delegation records one other active internal user on the original participant row; it creates no participant row and transfers no Chair/Secretary role. The original retains meeting read access but loses room-entry access while delegated; the delegate receives meeting and room access, and an existing participant keeps their role. A user cannot delegate to themself or represent multiple participants in one meeting. Replacement/withdrawal revokes access granted only by the old delegation; apply access changes atomically and re-evaluate room entry. | UC-41 |
-| `BR-87` | Record the latest response and response time for each current internal participant and Guest invitation. Response is independent of Attendance; Accepted does not prove attendance. Delegated applies only to internal participants. | UC-41, UC-42 |
-| `BR-88` | Authorize and filter roster/response data server-side. Secretary may read/manage before publication in editable states; WaitingApproval is read-only. Internal Chair/Member alone grant no pre-publication meeting read access. Delegates and verified Guests receive only relationship-scoped access; Guests get no privileged operations. Unauthorized access to a specific meeting returns the same not-found result as an unknown meeting and no unauthorized roster data. | UC-37, UC-41, UC-42, UC-45 |
-| `BR-89` | Retain a current internal Secretary at all times after initial assignment. Publication and Meeting/Meeting Session start require active current Chair and Secretary; Guests cannot satisfy these roles. Role change/removal cannot remove the last Secretary in editable states or last Chair while Published/InProgress. Multiple Chairs/Secretaries are allowed; each participant has one role. Invitation response does not affect readiness. | UC-21, UC-29, UC-38–UC-40, UC-43 |
-| `BR-90` | Only an active assigned Chair may explicitly start a Published Meeting or end an InProgress Meeting. | UC-43, UC-44 |
-| `BR-91` | Meeting Sessions are optional. Meeting may start with zero sessions and may end when no session remains Planned or InProgress; zero sessions satisfies the condition. | UC-43, UC-44 |
-| `BR-92` | Meeting and Meeting Session lifecycles are separate; transitions in one do not change the other's status. | UC-28–UC-30, UC-43, UC-44 |
+## 3. Danh mục Business Rules dẫn chiếu (BR-01 → BR-157)
+
+Toàn bộ nội dung nguyên văn, phạm vi áp dụng (`Applies To`) và các quy tắc cụ thể hóa đã được đồng bộ đầy đủ tại [06-business-rules.md](06-business-rules.md).
+
+#### Các điểm cốt lõi đã chốt từ Report 3:
+
+1. **Khởi tạo Secretary đầu tiên**: Meeting Organizer của UC-15 (`Meeting.CreatedById`) chỉ được dùng UC-38 để thêm participant đầu tiên với Meeting Role `Secretary` (BR-78).
+2. **Chuyển quyền quản lý roster**: Sau khi đã có Secretary, việc thêm participant, đổi Meeting Role và xóa participant do Secretary được gán thực hiện (BR-79); Meeting Organizer không mặc nhiên là Secretary.
+3. **Trạng thái được sửa danh sách**: Được thêm participant, đổi Meeting Role và xóa participant ở `Draft`, `Rejected`, `Approved`, `Published` và `InProgress` (BR-80); `WaitingApproval` chỉ được xem, không được sửa; participant được phản hồi hoặc đổi phản hồi từ `Published` đến hết `InProgress` (BR-106).
+4. **Ủy quyền tham dự**: Người được ủy quyền có quyền đọc meeting và vào room trong phạm vi được ủy quyền, không tự động có Meeting Role (BR-109, BR-111); nếu đã là participant thì giữ role hiện tại (BR-112). Chair/Secretary không được chuyển, một người chỉ đại diện cho tối đa một participant trong cùng meeting (BR-113).
+5. **Thông báo sau khi Published**: Thêm participant, đổi Meeting Role hoặc xóa participant đều gửi thông báo (in-app/email) bất đồng bộ (BR-90, BR-91, BR-92, BR-93). Lỗi gửi không hoàn tác thay đổi và được retry (BR-94). Thông báo xóa không chứa link truy cập (BR-95).
+6. **Phòng họp trực tuyến**: Online Meeting Room thuộc về Meeting, không thuộc Meeting Session (BR-137); không cần session để vào room (BR-138). Room chỉ khả dụng khi mode Online/Hybrid, Meeting Published/InProgress (BR-139). Khi Meeting kết thúc, room đóng và ngắt kết nối người dùng (BR-143).
+7. **Khách mời bên ngoài (Guest)**: Quản lý bằng lời mời riêng theo meeting/email, xác minh email bằng OTP, không tạo tài khoản nội bộ (BR-148, BR-153, BR-156); chỉ có Guest access (BR-150). Thu hồi lời mời lập tức hủy quyền truy cập và quyền vào room (BR-157).
+C-43, UC-44 |
 | `BR-93` | The Online Meeting Room belongs to the Meeting, not a Meeting Session. A session is not required to create, join, remain in, or leave the room. | UC-45–UC-52 |
 | `BR-94` | Room is available only for Online/Hybrid meetings in Published/InProgress. Entry requires a current internal participant relationship, effective delegation, or a successfully verified, current, unexpired, unrevoked Guest invitation. | UC-45 |
 | `BR-95` | Room participation and controls do not change Meeting or Meeting Session lifecycle. The same room may stay available across multiple sessions. | UC-45–UC-52 |

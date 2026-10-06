@@ -11,8 +11,8 @@ Thư mục lưu trữ tài liệu yêu cầu nghiệp vụ và đặc tả Use C
 ## 1. Cấu trúc tài liệu
 
 - [00-master-use-case-inventory.md](00-master-use-case-inventory.md) — Danh mục tổng thể Master Use Case Inventory (FE-01 → FE-16, UC-01 → UC-94) & Use Case Diagram Baseline làm nguồn sự thật cho quy hoạch UC toàn dự án.
-- [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case chi tiết UC-01 → UC-54; UC-01 → UC-37 và BR-01 → BR-77 từ Report 3, cùng các UC và BR liên quan F08/GOF09 và UC-53/54 từ các bản cập nhật Report 3.
-- [06-business-rules.md](06-business-rules.md) — Danh mục tập trung BR-01 → BR-103; UC Specification và Sequence Diagram dẫn chiếu mã tại đây.
+- [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case chi tiết UC-01 → UC-54; dẫn chiếu hệ thống Business Rules BR-01 → BR-157 từ Report 3.
+- [06-business-rules.md](06-business-rules.md) — Danh mục tập trung BR-01 → BR-157; UC Specification và Sequence Diagram dẫn chiếu mã tại đây.
 - `01-pham-vi.md` — Danh sách phạm vi chức năng theo mô hình MoSCoW.
 - `02-user-stories.md` — Danh sách User Story và Acceptance Criteria (AC).
 - `03-yeu-cau-phi-chuc-nang.md` — Yêu cầu phi chức năng (NFR): hiệu năng, bảo mật, tải người dùng đồng thời.
