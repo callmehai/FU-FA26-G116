@@ -9,7 +9,7 @@ export type BadgeTone =
   | 'blue'
   | 'indigo'
   | 'violet'
-  | 'lacquer'
+  | 'brand'
   | 'outline'
 
 export function Badge({ tone = 'slate', children }: { tone?: BadgeTone; children: ReactNode }) {

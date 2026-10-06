@@ -1,35 +1,62 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Suspense, useEffect, useRef, useState } from 'react'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { routes } from '../lib/routes'
 import { useAuth } from '../features/auth/useAuth'
+import { avatarColors, initials } from '../lib/avatar'
 import { NotificationBell } from '../features/notifications/NotificationBell'
+import { AppSidebar } from './AppSidebar'
 import { BrandMark } from './BrandMark'
 import { ConfirmDialog } from './ConfirmDialog'
 import { Icon } from './Icon'
 
+/** Where the collapsed/expanded choice survives a reload. A per-browser convenience only. */
+const COLLAPSED_KEY = 'tc.sidebarCollapsed'
+const NARROW_QUERY = '(max-width: 720px)'
+
 /**
- * Chrome shared by every signed-in screen: a collapsible sidebar, a header carrying the workspace
- * switcher and account menu, and the routed content region.
- *
- * `sidebar` differs per workspace — management lists its sections, the calendar shows date
- * navigation — while everything else stays identical, so switching workspaces never redraws the
- * frame. `wide` lets the calendar use the full content width; management keeps a reading measure.
+ * Chrome shared by every signed-in screen (ADR-0012): one vertical sidebar — brand, the sections,
+ * then the account and the notification bell at its foot — and the routed content beside it.
+ * There is no app bar; the page's own header is the first thing in the content.
  */
-export function AppShell({ sidebar, wide = false }: { sidebar: ReactNode; wide?: boolean }) {
+export function AppShell() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsedByUser, setCollapsed] = useState(readCollapsed)
+  // Below 720px there is no room for a 256px sidebar, whatever the user last chose.
+  const narrow = useMediaQuery(NARROW_QUERY)
+  const collapsed = collapsedByUser || narrow
   const [confirmingSignOut, setConfirmingSignOut] = useState(false)
   const accountMenuRef = useRef<HTMLDetailsElement>(null)
+  const { pathname } = useLocation()
 
-  // A <details> menu does not close on an outside click by itself.
+  // Moving to another screen closes the account menu, as it would on any outside click.
   useEffect(() => {
-    function onPointerDown(event: PointerEvent) {
-      const menu = accountMenuRef.current
-      if (menu?.open && !menu.contains(event.target as Node)) menu.removeAttribute('open')
+    accountMenuRef.current?.removeAttribute('open')
+  }, [pathname])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(COLLAPSED_KEY, collapsedByUser ? '1' : '0')
+    } catch {
+      // Storage blocked (private window): the choice just does not outlive the tab.
     }
-    document.addEventListener('pointerdown', onPointerDown)
-    return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [collapsedByUser])
+
+  // A <details> menu does not close on an outside click or on Escape by itself.
+  useEffect(() => {
+    function close(event: Event) {
+      const menu = accountMenuRef.current
+      if (!menu?.open) return
+      if (event instanceof KeyboardEvent ? event.key === 'Escape' : !menu.contains(event.target as Node)) {
+        menu.removeAttribute('open')
+      }
+    }
+    document.addEventListener('pointerdown', close)
+    document.addEventListener('keydown', close)
+    return () => {
+      document.removeEventListener('pointerdown', close)
+      document.removeEventListener('keydown', close)
+    }
   }, [])
 
   if (!user) return null
@@ -45,47 +72,45 @@ export function AppShell({ sidebar, wide = false }: { sidebar: ReactNode; wide?:
     navigate(routes.login, { replace: true })
   }
 
-  const initial = user.fullName.trim().charAt(0).toUpperCase() || '?'
   const avatar = avatarColors(user.fullName)
 
   return (
     <div className={`shell${collapsed ? ' shell-collapsed' : ''}`}>
       <aside className="sidebar">
-        <NavLink className="sidebar-brand" to={routes.meetings}>
-          <BrandMark size={28} />
-          <strong>TrustCabinet</strong>
+        <button
+          type="button"
+          className="sidebar-toggle"
+          onClick={() => setCollapsed((c) => !c)}
+          aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+          title={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+          aria-expanded={!collapsed}
+        >
+          <span>
+            <Icon name="chevronLeft" size={16} />
+          </span>
+        </button>
+
+        <NavLink className="sidebar-brand" to={routes.calendar} title="TrustCabinet">
+          <span className="sidebar-brand-disc">
+            <BrandMark size={32} />
+          </span>
+          <span className="sidebar-label sidebar-brand-text">
+            <strong>TrustCabinet</strong>
+            <span>Phòng họp không giấy</span>
+          </span>
         </NavLink>
 
-        {sidebar}
+        <AppSidebar collapsed={collapsed} />
 
         <div className="sidebar-foot">
-          <button type="button" className="sidebar-collapse" onClick={() => setCollapsed((c) => !c)}>
-            <Icon name="chevronLeft" size={16} />
-            <span>{collapsed ? 'Mở rộng' : 'Thu gọn'}</span>
-          </button>
-        </div>
-      </aside>
-
-      <div className="shell-main">
-        <header className="appbar">
-          <nav className="workspace-switcher" aria-label="Không gian làm việc">
-            {/* Lit for every management screen, not only the meetings list it lands on. */}
-            <NavLink to={routes.mgmt}>
-              <Icon name="grid" size={16} />
-              <span>Không gian làm việc</span>
-            </NavLink>
-            <NavLink to={routes.calendar}>
-              <Icon name="calendar" size={16} />
-              <span>Lịch làm việc</span>
-            </NavLink>
-          </nav>
-
-          <NotificationBell />
-
           <details className="account" ref={accountMenuRef}>
-            <summary aria-label={user.fullName}>
+            <summary aria-label={`Tài khoản ${user.fullName}`} title={collapsed ? user.fullName : undefined}>
               <span className="avatar" style={{ backgroundColor: avatar.bg, color: avatar.fg }}>
-                {initial}
+                {initials(user.fullName)}
+              </span>
+              <span className="sidebar-label account-summary">
+                <span className="account-summary-name">{user.fullName}</span>
+                <span className="account-summary-role">{user.roleName}</span>
               </span>
             </summary>
             <div className="account-menu">
@@ -101,12 +126,17 @@ export function AppShell({ sidebar, wide = false }: { sidebar: ReactNode; wide?:
               </button>
             </div>
           </details>
-        </header>
 
-        <main className={`content${wide ? ' content-wide' : ''}`}>
+          <NotificationBell />
+        </div>
+      </aside>
+
+      <main className="content">
+        {/* A screen's chunk loads inside the shell, so the sidebar never blinks out on navigation. */}
+        <Suspense fallback={<p className="route-fallback">Đang tải…</p>}>
           <Outlet />
-        </main>
-      </div>
+        </Suspense>
+      </main>
 
       {confirmingSignOut && (
         <ConfirmDialog
@@ -123,13 +153,21 @@ export function AppShell({ sidebar, wide = false }: { sidebar: ReactNode; wide?:
   )
 }
 
-/** Soft hues, kept off the brand red so an avatar never reads as a primary button. */
-const AVATAR_HUES = [28, 45, 95, 150, 190, 215, 255, 290, 330]
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
+  useEffect(() => {
+    const list = window.matchMedia(query)
+    const onChange = () => setMatches(list.matches)
+    list.addEventListener('change', onChange)
+    return () => list.removeEventListener('change', onChange)
+  }, [query])
+  return matches
+}
 
-/** A stable tint per name: same person, same colour, on every screen and every visit. */
-function avatarColors(name: string) {
-  let hash = 0
-  for (const char of name) hash = (hash * 31 + char.charCodeAt(0)) >>> 0
-  const hue = AVATAR_HUES[hash % AVATAR_HUES.length]
-  return { bg: `hsl(${hue} 62% 90%)`, fg: `hsl(${hue} 48% 32%)` }
+function readCollapsed() {
+  try {
+    return localStorage.getItem(COLLAPSED_KEY) === '1'
+  } catch {
+    return false
+  }
 }

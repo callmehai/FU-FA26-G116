@@ -35,8 +35,8 @@ approver), `thuky@` (secretary, meeting creator), `thanhvien@` (member) — all
   titles, URL, a summary text, element rectangles).
 - `take_screenshot` to **look**. Then critique it like a designer: alignment, spacing, rows that
   wrap, text that is cut off, states that look broken. Fix, reload, look again.
-- The app's scroll container is `.shell-main`, so `fullPage` screenshots do not scroll. Scroll it
-  in a script first: `document.querySelector('.shell-main').scrollTop = N`.
+- The app's scroll container is `main.content`, so `fullPage` screenshots do not scroll. Scroll it
+  in a script first: `document.querySelector('main.content').scrollTop = N`.
 - Check at a **1200px-wide** window as well as a large one — the toolbar and two-column form
   must still fit.
 

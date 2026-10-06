@@ -1,6 +1,6 @@
 # ADR-0002: Dựng khung giao diện bám theo AI-eCabinet
 
-- **Trạng thái:** Đã chấp nhận
+- **Trạng thái:** Thay thế một phần bởi [ADR-0012](0012-giao-dien-hanh-chinh-sidebar-doc.md) (khung hai không gian và bảng màu)
 - **Ngày:** 2026-09-18
 - **Người quyết định:** Nhóm SEP490-G116
 

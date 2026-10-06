@@ -92,7 +92,9 @@ export function LoginPage() {
     <div className="login-screen">
       <div className="login-card">
         <div className="login-head">
-          <BrandMark size={64} />
+          <span className="login-mark">
+            <BrandMark size={72} />
+          </span>
           <h1>TrustCabinet</h1>
           <p className="login-sub">Đăng nhập hệ thống phòng họp không giấy</p>
         </div>

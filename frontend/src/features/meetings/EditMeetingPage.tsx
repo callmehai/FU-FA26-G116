@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { updateMeeting } from '../../api/meetings'
+import { BackLink } from '../../components/BackLink'
 import { NotFound } from '../../components/NotFound'
 import { PageHeader } from '../../components/PageHeader'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
+import { useForwardedBackState } from '../../lib/backTarget'
 import { routes } from '../../lib/routes'
 import { EDITABLE_STATUSES, MEETING_STATUS_LABEL } from '../../types/meeting'
 import { useAccessLost } from '../auth/useAccessLost'
@@ -25,17 +27,15 @@ export function EditMeetingPage() {
   const { state, reload, retry } = useMeeting(meetingId)
   /** Set when a save hit 409: the meeting left Draft/Rejected while the form was open. */
   const [conflict, setConflict] = useState<string | null>(null)
+  // Where the detail page's back link leads (the calendar, a filtered list) survives the edit.
+  const forwardBack = useForwardedBackState()
 
   if (state.kind === 'notFound') return <NotFound />
 
   if (state.kind === 'loading' || state.kind === 'error') {
     return (
       <>
-        <nav className="breadcrumb" aria-label="Đường dẫn">
-          <Link to={routes.meetings}>Cuộc họp</Link>
-          <span aria-hidden="true">›</span>
-          <span>Chỉnh sửa</span>
-        </nav>
+        <BackLink to={routes.meetings}>Cuộc họp</BackLink>
         {state.kind === 'loading' ? (
           <p className="page-loading">Đang tải thông tin cuộc họp…</p>
         ) : (
@@ -56,17 +56,13 @@ export function EditMeetingPage() {
   if (meeting.createdById !== user?.id) return <NotFound />
 
   const editable = EDITABLE_STATUSES.includes(meeting.status)
-  const backToMeeting = () => navigate(routes.meeting(meeting.id))
+  const backToMeeting = () => navigate(routes.meeting(meeting.id), { state: forwardBack })
 
   return (
     <>
-      <nav className="breadcrumb" aria-label="Đường dẫn">
-        <Link to={routes.meetings}>Cuộc họp</Link>
-        <span aria-hidden="true">›</span>
-        <Link to={routes.meeting(meeting.id)}>{meeting.title}</Link>
-        <span aria-hidden="true">›</span>
-        <span>Chỉnh sửa</span>
-      </nav>
+      <BackLink to={routes.meeting(meeting.id)} state={forwardBack}>
+        {meeting.title}
+      </BackLink>
 
       <PageHeader title="Chỉnh sửa cuộc họp" description={meeting.title} />
 
@@ -98,7 +94,7 @@ export function EditMeetingPage() {
               onSubmit={(body) => updateMeeting(meeting.id, body)}
               onSaved={(response) => {
                 toast.show(response.message)
-                navigate(routes.meeting(meeting.id), { replace: true })
+                navigate(routes.meeting(meeting.id), { replace: true, state: forwardBack })
               }}
               onError={(err) => {
                 if (handleAccessLost(err)) return true

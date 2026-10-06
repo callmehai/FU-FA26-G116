@@ -6,7 +6,8 @@
  * it did nothing — only a hard physical press showed it. A keyframe animation started on press
  * always plays to the end, however short the press was.
  */
-const PRESSABLE = '.btn, .icon-button, .select-trigger, .menu-item, .sidebar-nav a, .sidebar-collapse, .workspace-switcher a'
+const PRESSABLE =
+  '.btn, .icon-button, .select-trigger, .menu-item, .sidebar-item, .sidebar-subitem, .sidebar-toggle > span'
 const PRESSED_CLASS = 'is-pressed'
 
 function press(target: EventTarget | null) {

@@ -8,6 +8,7 @@ import { PageHeader } from '../../components/PageHeader'
 import { Select } from '../../components/Select'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
+import { avatarColors, initials } from '../../lib/avatar'
 import { formatDate } from '../../lib/format'
 import type { RoleRecord } from '../../types/role'
 import type { UserAccount, UserMutationResponse } from '../../types/user'
@@ -23,6 +24,14 @@ const STATUS_FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: 'active', label: 'Đang hoạt động' },
   { value: 'inactive', label: 'Đã vô hiệu hoá' },
 ]
+
+const COLUMN_COUNT = 6
+const SKELETON_ROWS = 6
+
+function avatarStyle(name: string) {
+  const { bg, fg } = avatarColors(name)
+  return { backgroundColor: bg, color: fg }
+}
 
 const DEACTIVATED_RESET_MESSAGE =
   'Tài khoản này đã bị vô hiệu hoá nên không đặt lại mật khẩu được. Danh sách đã được cập nhật.'
@@ -227,149 +236,168 @@ export function UsersPage() {
   return (
     <>
       <PageHeader
+        eyebrow="Quản trị"
         title="Người dùng & Quyền"
         description={
           users
             ? `Quản lý người dùng và phân quyền hệ thống · ${users.length} tài khoản, ${activeCount} đang hoạt động.`
             : 'Quản lý người dùng và phân quyền hệ thống.'
         }
+        action={
+          <button
+            className="btn btn-primary btn-lg"
+            type="button"
+            onClick={() => void openUserForm({ mode: 'create' })}
+            disabled={roles === null}
+          >
+            <Icon name="userPlus" size={18} />
+            Tạo tài khoản
+          </button>
+        }
       />
 
-      <div className="toolbar">
-        <label className="search">
-          <Icon name="search" size={16} />
-          <input
-            type="search"
-            placeholder="Tìm theo tên hoặc email…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-label="Tìm theo họ tên hoặc email"
+      <div className="list-panel list-fill">
+        <div className="toolbar">
+          <label className="search search-flex">
+            <Icon name="search" size={16} />
+            <input
+              type="search"
+              placeholder="Tìm theo tên hoặc email…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label="Tìm theo họ tên hoặc email"
+            />
+          </label>
+          <Select value={roleFilter} options={roleFilterOptions} onChange={setRoleFilter} label="Lọc theo vai trò" />
+          <Select
+            value={statusFilter}
+            options={STATUS_FILTER_OPTIONS}
+            onChange={setStatusFilter}
+            label="Lọc theo trạng thái"
           />
-        </label>
-        <Select value={roleFilter} options={roleFilterOptions} onChange={setRoleFilter} label="Lọc theo vai trò" />
-        <Select
-          value={statusFilter}
-          options={STATUS_FILTER_OPTIONS}
-          onChange={setStatusFilter}
-          label="Lọc theo trạng thái"
-        />
-        <button
-          className="btn btn-primary toolbar-end"
-          type="button"
-          onClick={() => void openUserForm({ mode: 'create' })}
-          disabled={roles === null}
-        >
-          Tạo tài khoản
-        </button>
-      </div>
+        </div>
 
-      <div className="table-card table-fill">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Họ tên</th>
-              <th>Email</th>
-              <th>Vai trò</th>
-              <th>Đăng nhập bằng</th>
-              <th>Trạng thái</th>
-              <th>Ngày tạo</th>
-              <th className="col-action">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loadError ? (
+        <div className="table-card table-fill">
+          <table className="data-table">
+            <thead>
               <tr>
-                <td colSpan={7} className="cell-empty">
-                  <p className="cell-error">{loadError}</p>
-                  <button type="button" className="btn btn-outline btn-sm" onClick={retry}>
-                    Thử lại
-                  </button>
-                </td>
+                <th>Họ tên</th>
+                <th>Vai trò</th>
+                <th>Đăng nhập</th>
+                <th>Trạng thái</th>
+                <th>Ngày tạo</th>
+                <th className="col-action">Thao tác</th>
               </tr>
-            ) : users === null ? (
-              <tr>
-                <td colSpan={7} className="cell-empty">
-                  Đang tải danh sách tài khoản…
-                </td>
-              </tr>
-            ) : visible.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="cell-empty">
-                  {users.length === 0 ? 'Chưa có tài khoản nào.' : 'Không có tài khoản nào khớp bộ lọc.'}
-                </td>
-              </tr>
-            ) : (
-              visible.map((u) => {
-                const isSelf = u.id === me?.id
-                const resetUnavailable = resetUnavailableReason(u)
-                return (
-                  <tr key={u.id} className={u.isActive ? undefined : 'row-inactive'}>
-                    <td className="cell-title">
-                      {u.fullName}
-                      {isSelf && (
-                        <>
-                          {' '}
-                          <Badge tone="blue">Bạn</Badge>
-                        </>
-                      )}
-                    </td>
-                    <td className="cell-muted">{u.email}</td>
-                    <td>
-                      <Badge tone="slate">{u.roleName}</Badge>
-                    </td>
-                    <td>
-                      <span className="chip-row">
-                        {u.hasPassword && <Badge tone="outline">Mật khẩu</Badge>}
-                        {u.hasGoogleLink && <Badge tone="outline">Google</Badge>}
-                      </span>
-                    </td>
-                    <td>{u.isActive ? 'Đang hoạt động' : 'Đã vô hiệu hoá'}</td>
-                    <td className="cell-muted">{formatDate(u.createdAt)}</td>
-                    <td className="col-action">
-                      <span className="row-actions">
-                        <button
-                          type="button"
-                          className="icon-button"
-                          onClick={() => void openUserForm({ mode: 'edit', id: u.id })}
-                          title="Sửa hồ sơ"
-                          aria-label={`Sửa tài khoản ${u.fullName}`}
-                        >
-                          <Icon name="pencil" size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          className="icon-button"
-                          onClick={() => setStatusTarget(u)}
-                          disabled={isSelf}
-                          title={
-                            isSelf
-                              ? 'Không thể tự đổi trạng thái tài khoản của mình'
-                              : u.isActive
-                                ? 'Vô hiệu hoá'
-                                : 'Kích hoạt lại'
-                          }
-                          aria-label={`${u.isActive ? 'Vô hiệu hoá' : 'Kích hoạt lại'} tài khoản ${u.fullName}`}
-                        >
-                          <Icon name={u.isActive ? 'lock' : 'unlock'} size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          className="icon-button"
-                          onClick={() => setResetTarget(u)}
-                          disabled={resetUnavailable !== null}
-                          title={resetUnavailable ?? 'Gửi liên kết đặt lại mật khẩu'}
-                          aria-label={`Gửi liên kết đặt lại mật khẩu cho ${u.fullName}`}
-                        >
-                          <Icon name="key" size={16} />
-                        </button>
-                      </span>
-                    </td>
+            </thead>
+            <tbody>
+              {loadError ? (
+                <tr>
+                  <td colSpan={COLUMN_COUNT} className="cell-empty">
+                    <p className="cell-error">{loadError}</p>
+                    <button type="button" className="btn btn-outline btn-sm" onClick={retry}>
+                      Thử lại
+                    </button>
+                  </td>
+                </tr>
+              ) : users === null ? (
+                Array.from({ length: SKELETON_ROWS }, (_, i) => (
+                  <tr key={i} className="row-skeleton" aria-hidden="true">
+                    {Array.from({ length: COLUMN_COUNT }, (_, j) => (
+                      <td key={j}>
+                        <span className="skeleton" />
+                      </td>
+                    ))}
                   </tr>
-                )
-              })
-            )}
-          </tbody>
-        </table>
+                ))
+              ) : visible.length === 0 ? (
+                <tr>
+                  <td colSpan={COLUMN_COUNT} className="cell-empty">
+                    {users.length === 0 ? 'Chưa có tài khoản nào.' : 'Không có tài khoản nào khớp bộ lọc.'}
+                  </td>
+                </tr>
+              ) : (
+                visible.map((u) => {
+                  const isSelf = u.id === me?.id
+                  const resetUnavailable = resetUnavailableReason(u)
+                  return (
+                    <tr key={u.id} className={u.isActive ? undefined : 'row-inactive'}>
+                      <td className="cell-title">
+                        <span className="person">
+                          <span className="avatar" style={avatarStyle(u.fullName)} aria-hidden="true">
+                            {initials(u.fullName)}
+                          </span>
+                          <span>
+                            <span className="person-name">
+                              {u.fullName}
+                              {isSelf && (
+                                <>
+                                  {' '}
+                                  <Badge tone="blue">Bạn</Badge>
+                                </>
+                              )}
+                            </span>
+                            <span className="cell-sub">{u.email}</span>
+                          </span>
+                        </span>
+                      </td>
+                      <td>
+                        <Badge tone="slate">{u.roleName}</Badge>
+                      </td>
+                      <td className="cell-muted">
+                        {[u.hasPassword && 'Mật khẩu', u.hasGoogleLink && 'Google'].filter(Boolean).join(' · ')}
+                      </td>
+                      <td>
+                        <span className={u.isActive ? 'status status-emerald' : 'status status-ended'}>
+                          {u.isActive ? 'Hoạt động' : 'Đã vô hiệu hoá'}
+                        </span>
+                      </td>
+                      <td className="cell-muted">{formatDate(u.createdAt)}</td>
+                      <td className="col-action">
+                        <span className="row-actions">
+                          <button
+                            type="button"
+                            className="icon-button icon-button-sm"
+                            onClick={() => void openUserForm({ mode: 'edit', id: u.id })}
+                            title="Sửa hồ sơ"
+                            aria-label={`Sửa tài khoản ${u.fullName}`}
+                          >
+                            <Icon name="pencil" size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            className="icon-button icon-button-sm"
+                            onClick={() => setStatusTarget(u)}
+                            disabled={isSelf}
+                            title={
+                              isSelf
+                                ? 'Không thể tự đổi trạng thái tài khoản của mình'
+                                : u.isActive
+                                  ? 'Vô hiệu hoá'
+                                  : 'Kích hoạt lại'
+                            }
+                            aria-label={`${u.isActive ? 'Vô hiệu hoá' : 'Kích hoạt lại'} tài khoản ${u.fullName}`}
+                          >
+                            <Icon name={u.isActive ? 'lock' : 'unlock'} size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            className="icon-button icon-button-sm"
+                            onClick={() => setResetTarget(u)}
+                            disabled={resetUnavailable !== null}
+                            title={resetUnavailable ?? 'Gửi liên kết đặt lại mật khẩu'}
+                            aria-label={`Gửi liên kết đặt lại mật khẩu cho ${u.fullName}`}
+                          >
+                            <Icon name="key" size={16} />
+                          </button>
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {formTarget && (

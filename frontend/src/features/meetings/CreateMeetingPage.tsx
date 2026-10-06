@@ -1,5 +1,6 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { createMeeting } from '../../api/meetings'
+import { BackLink } from '../../components/BackLink'
 import { PageHeader } from '../../components/PageHeader'
 import { useToast } from '../../components/toastContext'
 import { routes } from '../../lib/routes'
@@ -17,11 +18,7 @@ export function CreateMeetingPage() {
 
   return (
     <>
-      <nav className="breadcrumb" aria-label="Đường dẫn">
-        <Link to={routes.meetings}>Cuộc họp</Link>
-        <span aria-hidden="true">›</span>
-        <span>Tạo cuộc họp</span>
-      </nav>
+      <BackLink to={routes.meetings}>Cuộc họp</BackLink>
 
       <PageHeader
         title="Tạo cuộc họp"

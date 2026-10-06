@@ -71,7 +71,7 @@ export function NotificationPanel({ id, onClose }: { id: string; onClose: () => 
       <div className="notif-head">
         <h2 id={titleId}>
           Thông báo
-          {unread > 0 && <span className="badge badge-lacquer">{unread > 99 ? '99+' : unread} mới</span>}
+          {unread > 0 && <span className="badge badge-brand">{unread > 99 ? '99+' : unread} mới</span>}
         </h2>
         <button
           type="button"
