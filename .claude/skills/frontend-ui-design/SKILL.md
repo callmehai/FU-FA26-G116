@@ -7,7 +7,7 @@ description: How to design and build a TrustCabinet screen so it reads like one 
 
 This is about **UI design**, not about making CSS pretty. A screen is good when a user knows
 where they are, what they can do, what just happened, and what to do next — in every state, not
-only the happy path. Repo conventions (tokens, `Select.tsx`, light only, 36px controls, same
+only the happy path. Repo conventions (tokens, `Select.tsx`, light only, 40px controls, same
 origin) live in [AGENTS.md](../../../AGENTS.md); the Use Case workflow lives in
 [docs/DEVELOPMENT_WORKFLOW.md](../../../docs/DEVELOPMENT_WORKFLOW.md). Read both first; this
 skill does not repeat them.
@@ -105,7 +105,8 @@ meetings run in the in-app call room (README: *Gọi nhóm theo phòng họp*).
 - **Grids that mix short and tall cells** use `align-items: start`.
 - **Unset values** read as absent — muted italic "Chưa có", "Chưa xác định" — not an em dash.
 - **Free text** keeps its line breaks (`white-space: pre-wrap`).
-- **Icons** come from `components/Icon.tsx` (add a path there), never a text glyph like ✓.
+- **Icons** come from `components/Icon.tsx` (map a new name to a Lucide glyph there), never a text
+  glyph like ✓ and never a direct `lucide-react` import in a screen.
 
 ## 6. Features used during a meeting are panels
 

@@ -113,8 +113,9 @@ docs/                            # tài liệu đồ án — xem docs/README.md
   DEVELOPMENT_WORKFLOW.md        # quy trình làm việc của nhóm — đọc trước khi bắt tay
 ```
 
-Giao diện dựng theo khung của hệ thống tham chiếu AI-eCabinet: hai không gian làm việc
-(`/mgmt`, `/calendar`) dùng chung một khung. Lý do và ranh giới tham chiếu: xem
+Giao diện theo phong cách hành chính: một sidebar dọc màu xanh, mọi màn dùng chung một khung. Lý
+do: xem [ADR-0012](docs/05-decisions/0012-giao-dien-hanh-chinh-sidebar-doc.md); khung ban đầu và
+ranh giới tham chiếu AI-eCabinet: xem
 [ADR-0002](docs/05-decisions/0002-khung-giao-dien-theo-ai-ecabinet.md).
 
 Vì sao tách `backend/` và `frontend/`: xem

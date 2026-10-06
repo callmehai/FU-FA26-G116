@@ -145,7 +145,9 @@ export function ResetPasswordPage() {
     <div className="login-screen">
       <div className="login-card">
         <div className="login-head">
-          <BrandMark size={64} />
+          <span className="login-mark">
+            <BrandMark size={72} />
+          </span>
           <h1>Đặt lại mật khẩu</h1>
           <p className="login-sub">
             {token === null

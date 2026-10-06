@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { listMeetings } from '../../api/meetings'
-import { Badge } from '../../components/Badge'
 import { Icon } from '../../components/Icon'
 import { PageHeader } from '../../components/PageHeader'
 import { Pagination } from '../../components/Pagination'
 import { Select } from '../../components/Select'
+import { backState } from '../../lib/backTarget'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
 import { routes } from '../../lib/routes'
@@ -30,10 +30,8 @@ import {
   writeListState,
   type ListState,
 } from './listParams'
-import { StatusBadge } from './StatusBadge'
-
-/** A meeting's sensitivity is only called out once it rises above routine. */
-const SENSITIVITY_TONE = { Normal: 'slate', Internal: 'slate', Confidential: 'amber', Secret: 'lacquer' } as const
+import { SensitivityBadge, StatusBadge } from './StatusBadge'
+import { StatusSummary } from './StatusSummary'
 
 // An empty value means "no filter", which is why these lists lead with an all-pass entry.
 const STATUS_OPTIONS = [
@@ -48,7 +46,7 @@ const SENSITIVITY_OPTIONS = [
 
 /** Long enough that typing a word sends one request, short enough to feel live. */
 const SEARCH_DELAY_MS = 300
-const COLUMN_COUNT = 5
+const COLUMN_COUNT = 6
 const SKELETON_ROWS = 5
 
 type Load =
@@ -64,8 +62,11 @@ type Load =
 export function MeetingsPage() {
   const { can } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const handleAccessLost = useAccessLost()
   const [searchParams, setSearchParams] = useSearchParams()
+  // The detail page's back link returns to this list with its filters, sort and page.
+  const back = backState('Cuộc họp', location)
   const state = readListState(searchParams)
   const queryKey = writeListState(state).toString()
   const rangeError = dateRangeError(state)
@@ -195,11 +196,17 @@ export function MeetingsPage() {
       </EmptyRow>
     )
   } else {
-    body = data.items.map((m) => (
+    const offset = (data.page - 1) * data.pageSize
+    body = data.items.map((m, index) => (
       // The whole row opens the meeting; the title link and the eye button are the keyboard routes.
-      <tr key={m.id} className="row-link" onClick={() => navigate(routes.meeting(m.id))}>
+      <tr
+        key={m.id}
+        className={m.status === 'InProgress' ? 'row-link row-live' : 'row-link'}
+        onClick={() => navigate(routes.meeting(m.id), { state: back })}
+      >
+        <td className="cell-index">{offset + index + 1}</td>
         <td className="cell-title">
-          <Link to={routes.meeting(m.id)} onClick={(e) => e.stopPropagation()}>
+          <Link to={routes.meeting(m.id)} state={back} onClick={(e) => e.stopPropagation()}>
             {m.title}
           </Link>
         </td>
@@ -208,12 +215,13 @@ export function MeetingsPage() {
           <StatusBadge status={m.status} />
         </td>
         <td>
-          <Badge tone={SENSITIVITY_TONE[m.sensitivity]}>{SENSITIVITY_LABEL[m.sensitivity]}</Badge>
+          <SensitivityBadge sensitivity={m.sensitivity} />
         </td>
         <td className="col-action">
           <Link
-            className="icon-button"
+            className="icon-button icon-button-sm icon-button-brand"
             to={routes.meeting(m.id)}
+            state={back}
             onClick={(e) => e.stopPropagation()}
             title="Xem chi tiết"
             aria-label={`Xem chi tiết ${m.title}`}
@@ -228,114 +236,128 @@ export function MeetingsPage() {
   return (
     <>
       <PageHeader
-        title="Cuộc họp"
-        description="Danh sách các cuộc họp bạn có quyền xem."
+        title="Danh sách cuộc họp"
+        description={
+          data && !filtered
+            ? `Các cuộc họp bạn có quyền xem · ${data.totalCount.toLocaleString('vi-VN')} cuộc họp`
+            : 'Các cuộc họp bạn có quyền xem.'
+        }
         action={
           canCreate && (
-            <Link className="btn btn-primary" to={routes.meetingNew}>
-              <Icon name="plus" size={16} />
+            <Link className="btn btn-primary btn-lg" to={routes.meetingNew}>
+              <Icon name="plus" size={18} />
               Tạo cuộc họp
             </Link>
           )
         }
       />
 
-      <div className="toolbar">
-        <label className="search search-flex">
-          <Icon name="search" size={16} />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm theo tên cuộc họp…"
-            aria-label="Tìm theo tên cuộc họp"
-          />
-        </label>
+      <StatusSummary
+        active={state.status}
+        showDrafts={canCreate}
+        reloadKey={attempt}
+        onSelect={(status) => update({ status })}
+      />
 
-        <Select
-          value={state.status}
-          options={STATUS_OPTIONS}
-          onChange={(status) => update({ status })}
-          label="Trạng thái"
-        />
-        <Select
-          value={state.sensitivity}
-          options={SENSITIVITY_OPTIONS}
-          onChange={(sensitivity) => update({ sensitivity })}
-          label="Mức độ mật"
-        />
+      <div className="list-panel list-fill">
+        <div className="toolbar">
+          <label className="search search-flex">
+            <Icon name="search" size={16} />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Tìm theo tên cuộc họp…"
+              aria-label="Tìm theo tên cuộc họp"
+            />
+          </label>
 
-        <fieldset className={rangeError ? 'date-range date-range-invalid' : 'date-range'}>
-          <legend className="visually-hidden">Thời gian diễn ra</legend>
-          <span className="date-range-label" aria-hidden="true">
-            Diễn ra
-          </span>
-          <input
-            type="date"
-            value={state.from}
-            max={state.to || undefined}
-            onChange={(e) => update({ from: e.target.value })}
-            aria-label="Có phiên họp diễn ra từ ngày"
-            title="Có phiên họp diễn ra từ ngày"
+          <Select
+            value={state.status}
+            options={STATUS_OPTIONS}
+            onChange={(status) => update({ status })}
+            label="Trạng thái"
           />
-          <span aria-hidden="true">–</span>
-          <input
-            type="date"
-            value={state.to}
-            min={state.from || undefined}
-            onChange={(e) => update({ to: e.target.value })}
-            aria-label="Có phiên họp diễn ra đến ngày"
-            title="Có phiên họp diễn ra đến ngày"
-            aria-invalid={!!rangeError}
+          <Select
+            value={state.sensitivity}
+            options={SENSITIVITY_OPTIONS}
+            onChange={(sensitivity) => update({ sensitivity })}
+            label="Mức độ"
           />
-        </fieldset>
 
-        {/* Icon-only so the toolbar stays on one line; the empty state carries the labelled button. */}
-        {filtered && (
-          <button
-            type="button"
-            className="icon-button"
-            onClick={clearFilters}
-            title="Xoá bộ lọc"
-            aria-label="Xoá bộ lọc"
-          >
-            <Icon name="x" size={16} />
-          </button>
+          <fieldset className={rangeError ? 'date-range date-range-invalid' : 'date-range'}>
+            <legend className="visually-hidden">Thời gian diễn ra</legend>
+            <span className="date-range-label" aria-hidden="true">
+              Thời điểm
+            </span>
+            <input
+              type="date"
+              value={state.from}
+              max={state.to || undefined}
+              onChange={(e) => update({ from: e.target.value })}
+              aria-label="Có phiên họp diễn ra từ ngày"
+              title="Có phiên họp diễn ra từ ngày"
+            />
+            <span aria-hidden="true">–</span>
+            <input
+              type="date"
+              value={state.to}
+              min={state.from || undefined}
+              onChange={(e) => update({ to: e.target.value })}
+              aria-label="Có phiên họp diễn ra đến ngày"
+              title="Có phiên họp diễn ra đến ngày"
+              aria-invalid={!!rangeError}
+            />
+          </fieldset>
+
+          {/* Icon-only so the toolbar stays on one line; the empty state carries the labelled button. */}
+          {filtered && (
+            <button
+              type="button"
+              className="icon-button"
+              onClick={clearFilters}
+              title="Xoá bộ lọc"
+              aria-label="Xoá bộ lọc"
+            >
+              <Icon name="x" size={16} />
+            </button>
+          )}
+        </div>
+
+        <div className="table-card table-fill" aria-busy={refreshing}>
+          <table className={refreshing && data ? 'data-table data-table-stale' : 'data-table'}>
+            <thead>
+              <tr>
+                <th className="cell-index">STT</th>
+                <SortHeader column="title" state={state} onSort={sortBy}>
+                  Tên cuộc họp
+                </SortHeader>
+                <SortHeader column="createdAt" state={state} onSort={sortBy}>
+                  Tạo lúc
+                </SortHeader>
+                <th>Trạng thái</th>
+                <th>Mức độ</th>
+                <th className="col-action">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>{body}</tbody>
+          </table>
+        </div>
+
+        {data && data.totalCount > 0 && !rangeError && load.kind !== 'error' && (
+          <Pagination
+            page={data.page}
+            pageSize={data.pageSize}
+            totalCount={data.totalCount}
+            totalPages={data.totalPages}
+            pageSizes={PAGE_SIZES}
+            itemLabel="cuộc họp"
+            onPageChange={(page) => update({ page })}
+            onPageSizeChange={(pageSize) => update({ pageSize })}
+            disabled={refreshing}
+          />
         )}
       </div>
-
-      <div className="table-card table-fill" aria-busy={refreshing}>
-        <table className={refreshing && data ? 'data-table data-table-stale' : 'data-table'}>
-          <thead>
-            <tr>
-              <SortHeader column="title" state={state} onSort={sortBy}>
-                Tên cuộc họp
-              </SortHeader>
-              <SortHeader column="createdAt" state={state} onSort={sortBy}>
-                Tạo lúc
-              </SortHeader>
-              <th>Trạng thái</th>
-              <th>Mức độ mật</th>
-              <th className="col-action">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>{body}</tbody>
-        </table>
-      </div>
-
-      {data && data.totalCount > 0 && !rangeError && load.kind !== 'error' && (
-        <Pagination
-          page={data.page}
-          pageSize={data.pageSize}
-          totalCount={data.totalCount}
-          totalPages={data.totalPages}
-          pageSizes={PAGE_SIZES}
-          itemLabel="cuộc họp"
-          onPageChange={(page) => update({ page })}
-          onPageSizeChange={(pageSize) => update({ pageSize })}
-          disabled={refreshing}
-        />
-      )}
     </>
   )
 }

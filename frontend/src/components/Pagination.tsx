@@ -59,28 +59,29 @@ export function Pagination({
           `0 ${itemLabel}`
         ) : (
           <>
+            Hiển thị{' '}
             <b>
               {count(first)}–{count(last)}
             </b>{' '}
-            trong {count(totalCount)} {itemLabel}
+            trong <b>{count(totalCount)}</b> {itemLabel}
           </>
         )}
       </p>
 
-      <div className="pagination-controls">
-        <span className="pagination-size">
-          Số dòng
-          <Select
-            value={String(pageSize)}
-            options={pageSizes.map((size) => ({ value: String(size), label: String(size) }))}
-            onChange={(value) => onPageSizeChange(Number(value))}
-            label="Số dòng mỗi trang"
-          />
-        </span>
+      <span className="pagination-size">
+        Số dòng
+        <Select
+          value={String(pageSize)}
+          options={pageSizes.map((size) => ({ value: String(size), label: String(size) }))}
+          onChange={(value) => onPageSizeChange(Number(value))}
+          label="Số dòng mỗi trang"
+        />
+      </span>
 
+      <div className="pagination-controls">
         <button
           type="button"
-          className="icon-button"
+          className="icon-button pagination-step"
           onClick={() => onPageChange(page - 1)}
           disabled={disabled || page <= 1}
           aria-label="Trang trước"
@@ -109,7 +110,7 @@ export function Pagination({
         )}
         <button
           type="button"
-          className="icon-button"
+          className="icon-button pagination-step"
           onClick={() => onPageChange(page + 1)}
           disabled={disabled || page >= totalPages}
           aria-label="Trang sau"

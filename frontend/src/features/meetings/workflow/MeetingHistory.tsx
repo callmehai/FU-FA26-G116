@@ -1,7 +1,7 @@
 import { Icon } from '../../../components/Icon'
 import { formatDateTime } from '../../../lib/format'
 import type { MeetingHistoryItem } from '../../../types/meeting'
-import { StatusBadge } from '../StatusBadge'
+import { STATUS_TONE } from '../statusTone'
 import { historyActionLabel } from './historyLabels'
 import type { MeetingHistoryState } from './useMeetingHistory'
 
@@ -82,14 +82,14 @@ function HistoryRow({ item, nameOf }: { item: MeetingHistoryItem; nameOf: (id: s
     item.action === 'SubmitForApproval' && item.assignedApproverId ? nameOf(item.assignedApproverId) : null
 
   return (
-    <li>
-      <div className="timeline-head">
-        <StatusBadge status={item.resultingStatus} label={historyActionLabel(item)} />
-        <span className="timeline-actor">{item.actorName}</span>
-      </div>
+    // The dot takes the colour of the state the action led to, as the status chips do.
+    <li className={`timeline-${STATUS_TONE[item.resultingStatus]}`}>
+      <p className="timeline-title">{historyActionLabel(item)}</p>
+      <p className="timeline-meta">
+        {item.actorName} · <time dateTime={item.occurredAt}>{formatDateTime(item.occurredAt)}</time>
+      </p>
       {approver && <p className="timeline-detail">Người duyệt: {approver}</p>}
       {item.rejectionReason && <blockquote className="timeline-reason">{item.rejectionReason}</blockquote>}
-      <time dateTime={item.occurredAt}>{formatDateTime(item.occurredAt)}</time>
     </li>
   )
 }

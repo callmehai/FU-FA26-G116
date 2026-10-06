@@ -1,11 +1,9 @@
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
-import { AppSidebar } from '../components/AppSidebar'
 import { NotFound } from '../components/NotFound'
 import { RequireAuth } from '../features/auth/RequireAuth'
 import { RequireCapability } from '../features/auth/RequireCapability'
-import { CalendarSidebar } from '../features/calendar/CalendarSidebar'
 import { LoginPage } from '../features/auth/LoginPage'
 import { routes } from '../lib/routes'
 
@@ -31,10 +29,13 @@ const ResetPasswordPage = lazy(() =>
 const CalendarPage = lazy(() =>
   import('../features/calendar/CalendarPage').then((m) => ({ default: m.CalendarPage })),
 )
+const DocumentsPage = lazy(() =>
+  import('../features/documents/DocumentsPage').then((m) => ({ default: m.DocumentsPage })),
+)
 
 /**
- * Route map: a public login and password reset, then every screen behind a session gate, split
- * into two workspaces — management under /mgmt and the calendar under /calendar.
+ * Route map: a public login and password reset, then every screen behind a session gate, inside
+ * one shell with one sidebar (ADR-0012).
  *
  * Capability-gated routes render the same 404 as an unknown URL, so an admin-only screen never
  * reveals its existence to someone who lacks the capability. None of this is security: the backend
@@ -48,15 +49,16 @@ export function App() {
         {/* Public and outside the session gate: whoever opens the emailed link has no session. */}
         <Route path={routes.resetPassword} element={<ResetPasswordPage />} />
 
-        {/* Bare roots land on the management home. */}
+        {/* The bare root lands on the meeting list. */}
         <Route path="/" element={<Navigate to={routes.meetings} replace />} />
 
-        {/* Management workspace. */}
         <Route element={<RequireAuth />}>
-          <Route element={<AppShell sidebar={<AppSidebar />} />}>
-            {/* Inside the guard and the shell: the workspace switcher links here, and following it
-                must not remount either — that would drop the notification connection. */}
+          <Route element={<AppShell />}>
+            {/* Inside the guard and the shell: following an old /mgmt link must not remount either —
+                that would drop the notification connection. */}
             <Route path={routes.mgmt} element={<Navigate to={routes.meetings} replace />} />
+            <Route path={routes.calendar} element={<CalendarPage />} />
+            <Route path={routes.documents} element={<DocumentsPage />} />
             <Route path={routes.meetings} element={<MeetingsPage />} />
             <Route
               path={routes.meetingNew}
@@ -94,11 +96,6 @@ export function App() {
               }
             />
             <Route path="*" element={<NotFound />} />
-          </Route>
-
-          {/* Calendar workspace — same shell, its own sidebar, full content width. */}
-          <Route element={<AppShell sidebar={<CalendarSidebar />} wide />}>
-            <Route path={routes.calendar} element={<CalendarPage />} />
           </Route>
         </Route>
       </Routes>

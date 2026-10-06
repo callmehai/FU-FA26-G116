@@ -70,9 +70,11 @@ TrustCabinet.sln
 global.json                  pins .NET SDK 10.0.401
 ```
 
-The UI skeleton mirrors the AI-eCabinet reference system — two workspaces (`/mgmt`, `/calendar`)
-sharing one shell. See [ADR-0002](docs/05-decisions/0002-khung-giao-dien-theo-ai-ecabinet.md) for
-what was copied, what was not, and why.
+Every signed-in screen sits in one shell with one vertical blue sidebar — no app bar, no workspace
+switcher; the `/mgmt` and `/calendar` URL prefixes are kept so old links still work. See
+[ADR-0012](docs/05-decisions/0012-giao-dien-hanh-chinh-sidebar-doc.md) for the layout and palette,
+and [ADR-0002](docs/05-decisions/0002-khung-giao-dien-theo-ai-ecabinet.md) for what was taken from
+the AI-eCabinet reference and why.
 
 ## Running in development
 
@@ -184,11 +186,15 @@ adding or changing a message.
   from the catalogue or asserted by no test, or an inline `"MSGnn"` literal fails CI. It cannot
   tell whether a code is used for the *right situation* — that is still the reviewer's job.
 
-**CSS**: use the variables declared on `:root` in `global.css` (`--lacquer`, `--ink`, `--surface`,
-`--muted-ink`, `--chip-*`, …) rather than hardcoded colours. The UI is **light only**, like the
-AI-eCabinet reference — do not add a `prefers-color-scheme: dark` palette. Sizes and spacing follow
-the reference too (60px app bar, 256px sidebar, 36px controls, 14px body text, tables without a card
-frame); check against it before inventing new ones.
+**CSS**: use the variables declared on `:root` in `global.css` (`--brand`, `--gold`, `--ink`,
+`--surface`, `--muted-ink`, `--chip-*`, …) rather than hardcoded colours. Blue `--brand` is the
+primary colour; gold is only a thin accent edge; red (`--danger`) is only for "Mật", the current
+time and warnings. The UI is **light only** — do not add a `prefers-color-scheme: dark` palette.
+Sizes follow ADR-0012 (256px sidebar, 72px collapsed, 40px controls, 44px page-header action, 6px
+radius, 14px body text, never below 12px; a listing is one `.list-panel` of toolbar, table and
+paging); check against it before inventing new ones. A meeting's state uses `StatusBadge` and its
+sensitivity `SensitivityBadge` — they differ by shape as well as colour. Icons come from `components/Icon.tsx`,
+which maps a name to a Lucide glyph — never import `lucide-react` in a screen.
 
 **Dropdowns** use `components/Select.tsx`, not a native `<select>`: the browser hands a native
 select's popup to the operating system, which ignores the page stylesheet and looked wrong in dark

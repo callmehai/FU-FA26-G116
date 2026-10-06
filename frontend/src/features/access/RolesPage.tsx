@@ -199,9 +199,12 @@ export function RolesPage() {
   return (
     <>
       <PageHeader
+        eyebrow="Quản trị"
         title="Vai trò"
+        description="Mỗi vai trò là một nhóm quyền; gán vai trò cho tài khoản ở màn Người dùng & Quyền."
         action={
-          <button type="button" className="btn btn-primary" onClick={() => setFormTarget({ mode: 'create' })}>
+          <button type="button" className="btn btn-primary btn-lg" onClick={() => setFormTarget({ mode: 'create' })}>
+            <Icon name="plus" size={18} />
             Tạo vai trò
           </button>
         }
@@ -219,7 +222,7 @@ export function RolesPage() {
         </div>
       )}
 
-      <div className="tabs" role="tablist">
+      <div className="tabs" role="tablist" aria-label="Vai trò">
         <button
           type="button"
           role="tab"
@@ -227,7 +230,8 @@ export function RolesPage() {
           className={`tab${activeTab === 'roles' ? ' tab-active' : ''}`}
           onClick={() => setActiveTab('roles')}
         >
-          Danh sách vai trò {roles ? `(${roles.length})` : ''}
+          Danh sách vai trò
+          {roles && <span className="tab-count">{roles.length}</span>}
         </button>
         <button
           type="button"
@@ -251,7 +255,7 @@ export function RolesPage() {
         !roles ? (
           <p className="cell-empty">Đang tải danh sách vai trò…</p>
         ) : (
-          <div className="table-card">
+          <div className="list-panel table-card">
             <table className="data-table">
               <thead>
                 <tr>
@@ -306,7 +310,7 @@ export function RolesPage() {
           <p className="cell-empty">Đang tải ma trận phân quyền…</p>
         ) : (
           <>
-            <div className="table-card">
+            <div className="list-panel table-card">
               <table className="data-table matrix-table">
                 <thead>
                   <tr>
