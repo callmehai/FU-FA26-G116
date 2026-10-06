@@ -1402,6 +1402,8 @@ Ghi:
 
 Không vẽ 94 UC vào một hình.
 
+Bản sơ đồ theo mẫu tham khảo: mỗi actor có một ảnh duy nhất chứa toàn bộ UC của actor đó, không tách trang theo Feature: [Use Case Diagram theo Actor](../assets/use-case-diagrams/README.md).
+
 1. **Overall TrustCabinet**
    - 7 actor
    - 16 FE package / representative UC
