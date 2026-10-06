@@ -1,7573 +1,1634 @@
-# Report-3_Software Requirement Specification_Bản Docx
+# Report 3 – Software Requirement Specification
 
-> Source: [Report 3 on Google Drive](https://docs.google.com/document/d/1rQuQxHWq4nJPJYMrrMlAZQ3P173PTXJz/edit)
-> Drive updated: 2026-10-05T16:05:48.807Z
+> Nguồn: [Google Drive](https://docs.google.com/document/d/1rQuQxHWq4nJPJYMrrMlAZQ3P173PTXJz/edit)
 
 CAPSTONE PROJECT REPORT
+
 Report 3 – Software Requirement Specification
+
 – Hanoi, Aug 2026 –
+
 Table of Contents
-Change Log
+
+## Change Log
+
+| Date | A*<br>M, D | In charge | Change Description |
+| --- | --- | --- | --- |
+| 27/09/2026 | A | KhanhPG | Initial changes: add context diagram and actors, use case specification for Authentication |
+| 30/09/2026 | M | KhanhPG | Add Meeting Session use cases, assign Meeting Session planning to the Secretary, complete Meeting Session business rules and system messages, and refine affected Meeting Management flows. |
+| 30/09/2026 | M | KhanhPG | Add Agenda Management use cases linked to Meeting Sessions, including agenda planning, live agenda control, business rules, and system messages. |
+| 01/10/2026 | M | KhanhPG | Replace Meeting Session deletion with cancellation; allow planned-session changes after publication; add post-publication scheduling, notification, and lifecycle rules. |
+| 03/10/2026 | M | KhanhPG | Synchronize Meeting Management and Notification updates; move planned scheduling from Meeting to Meeting Session; verify BR-01 to BR-77 alignment. |
+| 03/10/2026 | M | KhanhPG | Refine Meeting Participant Management actors and support external Guest invitations by email without an internal account login; align UC-21, UC-37–UC-42, UC-45, BR-78–BR-89/BR-94, add BR-101–BR-103 and MSG126. |
+| 03/10/2026 | M | KhanhPG | Synchronize the latest two GitHub commits for Meeting Participant Management: add UC-37 to UC-42, add BR-78 to BR-89 and MSG95 to MSG109, and update affected Meeting Management publication requirements. |
+| 03/10/2026 | M | KhanhPG | Decouple Meeting, Meeting Session, and Online Meeting Room lifecycles; make Meeting Sessions optional for publication; add explicit Start/End Meeting and Online Meeting Room use cases; align affected business rules and system messages. |
+| 04/10/2026 | M | KhanhPG | Refine UC-17 to meeting-level details only; add UC-53 View Meeting Sessions and UC-54 View Meeting Agenda as separate read use cases; align related BR references and system messages. |
+| 04/10/2026 | M | KhanhPG | Move UC-53 View Meeting Sessions into Meeting Session Management and UC-54 View Meeting Agenda into Agenda Management; remove temporary Read Views feature. |
+| 05/10/2026 | M | KhanhPG | Synchronize the feature taxonomy with Reports 1 and 2: map existing UC groups to the FE-01 through FE-16 baseline, split the former Meeting & Schedule Management scope into FE-04 through FE-07, and keep all existing UC IDs unchanged. |
+| 05/10/2026 | M | KhanhPG | Synchronize the Use Case inventory with the PO-confirmed FE-01 to FE-16 baseline. Add placeholder names through UC-94, introduce Personal Document Library, make Secretary the meeting-audio uploader, and reserve the approved Attendance, Summary Generation, Document Comment, Audit Log and Minutes Revision use cases. Detailed specifications for newly added UCs are intentionally deferred. |
+| 05/10/2026 | M | KhanhPG | Refactor BR-78 onward into atomic, independently testable business rules; align Chair cardinality with the approved publication rule (at most one current Chair and exactly one active Chair required for publication); update affected Use Case business-rule references. |
+
 *A - Added M - Modified D - Deleted
-Definition and Acronyms
+
+## Definition and Acronyms
+
 [Fill all the definitions, acronyms,… used within the whole project in the table format as below]
-I. Overall Requirements
-1. Context Diagram
+
+| Acronym | Definition |
+| --- | --- |
+| IMDMS | Internal Meeting and Document Management System |
+| … |  |
+
+## I. Overall Requirements
+
+### 1. Context Diagram
+
 TrustCabinet is an Internal Meeting and Document Management System designed to centralize the management of internal organizational meetings and their related information throughout the meeting lifecycle. The system supports meeting preparation, approval and publication, participant coordination, online meeting rooms, document access, discussion records, voting, meeting minutes, notifications, and administrative management. By bringing these activities into a single platform, TrustCabinet aims to reduce the fragmentation caused by using separate scheduling, messaging, document, and note-taking tools, while improving the traceability and accessibility of meeting information. As illustrated in the context diagram, TrustCabinet interacts with several types of users according to their responsibilities within the system. The System Admin manages user accounts, roles, permissions, and system configuration. Meeting-related activities are performed by the Meeting Organizer, Meeting Approver, Chair, Secretary, and Participant according to their assigned responsibilities for a specific meeting, while invited Guests are provided with limited access to authorized meeting information and materials. The system also integrates with external services to support authentication, post-meeting processing, and communication:
-Google Identity Provider supports Google-based sign-in and provides verified identity information for users accessing TrustCabinet.
-AI / Speech Processing Provider processes meeting audio after the meeting to produce a speaker-attributed transcript and an editable draft summary derived from that transcript. The Secretary may correct transcript text and speaker attribution before generating or regenerating the summary. Formal meeting minutes are prepared separately from approved meeting records and are not directly generated by the AI provider from secretary notes or arbitrary meeting documents.
-Email / SMTP Service handles outbound email delivery, including password-reset messages, meeting invitations, and other meeting-related communications.
+
+- Google Identity Provider supports Google-based sign-in and provides verified identity information for users accessing TrustCabinet.
+
+- AI / Speech Processing Provider processes meeting audio after the meeting to produce a speaker-attributed transcript and an editable draft summary derived from that transcript. The Secretary may correct transcript text and speaker attribution before generating or regenerating the summary. Formal meeting minutes are prepared separately from approved meeting records and are not directly generated by the AI provider from secretary notes or arbitrary meeting documents.
+
+- Email / SMTP Service handles outbound email delivery, including password-reset messages, meeting invitations, and other meeting-related communications.
+
 Through these interactions, TrustCabinet acts as the central point connecting meeting participants, meeting records, documents, voting results, and post-meeting minutes, while external services are used only for specific supporting functions outside the main system boundary.
-2. Main Business Flow
+
+### 2. Main Business Flow
+
 [List all flows with swimlane diagrams as samples below].
-2.1 Candidate Self-Service (BF-01)
+
+#### 2.1 Candidate Self-Service (BF-01)
+
 Trigger: Candidate creates an account.
+
 End condition: Candidate has seen the final outcome of all applications.
-2.2 End-to-End Recruitment (BF-02)
+
+#### 2.2 End-to-End Recruitment (BF-02)
+
 Trigger: HR Manager decides to open a new position and creates a job posting.
+
 End condition: Candidate status reaches HIRED or REJECTED (both terminal).
-2.3 Business Flow Name (Code)
+
+#### 2.3 Business Flow Name (Code)
+
 …
-3. Conceptual Data Model
-3.1 Entity Relationship Diagram
+
+### 3. Conceptual Data Model
+
+#### 3.1 Entity Relationship Diagram
+
 [Provide the ERD using the Crow-Foot notation and the entity descriptions as below. Relationship labels are business verb-ing]
-3.2 Entity Descriptions
+
+#### 3.2 Entity Descriptions
+
 [Provide one block per entity with descriptions and key business attributes only.]
+
 Entity: User
+
+| Field | Value |
+| --- | --- |
+| Purpose | Every person with an account in the system, regardless of role. |
+| Key business attributes | Full name, username, email address, role (Admin / HR Manager / Interviewer / Candidate), account status |
+| Business identity | Username unique across the entire system. Email unique across the entire system. |
+| Status / lifecycle | Active (normal)  ·  Inactive (deactivated by Admin)  ·  Locked (temporary — after repeated failed sign-in attempts) |
+
 Entity: Job Posting
+
+| Field | Value |
+| --- | --- |
+| Purpose | A job opening created by HR Manager, visible to Candidates when Active. |
+| Key business attributes | Job title, department, location, job description, requirements, salary range (optional), application deadline |
+| Business identity | No natural unique key. Multiple postings with the same title in the same department are permitted. |
+| Status / lifecycle | Draft → Active → Closed  (one-way) |
+
 Entity: Application
+
+| Field | Value |
+| --- | --- |
+| Purpose | A Candidate's expression of interest in a specific Job Posting, with CV attached. |
+| Key business attributes | Which Candidate, which Job Posting, CV file, cover letter (optional), current pipeline stage, submission date |
+| Business identity | A Candidate may submit at most one Application per Job Posting. This combination is unique. |
+| Status / lifecycle | Applied → Screening → Interview → Offer → Hired (terminal) or Rejected (terminal, from any stage); Withdrawn (terminal — Candidate-initiated from Applied or Screening only) |
+
 Entities: Internal Note, Interview
+
 [Add one block per additional entity following the same structure.]
-3.3 Data Business Rules
+
+| Field | Value |
+| --- | --- |
+| Purpose | {{ENTITY_PURPOSE}} |
+| Key business attributes | {{KEY_ATTRIBUTES}} |
+| Business identity | {{BUSINESS_IDENTITY}} |
+| Status / lifecycle | {{STATUS_VALUES}} |
+
+#### 3.3 Data Business Rules
+
 [Rules about data that are not obvious from the ERD. ]
-4. User Requirements
-4.1 Actors
-4.2 Use Cases (UC)
-4.3 Use Case Diagrams
-4.3.1 UCs for Guest
-4.3.2 UCs for Candidate
-4.3.3 …
-4.4 Permission Matrix
+
+| Rule | Description | Enforced On |
+| --- | --- | --- |
+| Unique username | No two users may share the same username, regardless of role. | Account creation and username change |
+| Unique email | No two users may share the same email address. | Account creation and email change |
+| One application per job | A Candidate may not submit a second Application for a job they have already applied to, even if the previous was withdrawn. | Application submission |
+| Application requires active job | A Candidate may only apply for a Job Posting with status Active. | Application submission |
+| Accounts never permanently deleted | User accounts are deactivated, not deleted. All associated data must remain accessible. | Account deactivation |
+| Jobs with applications cannot be deleted | A Job Posting with at least one Application (any status) cannot be deleted — must be Closed instead. | Job deletion |
+| Internal notes are permanent | Once saved, an Internal Note cannot be edited or deleted by anyone. They form an audit trail. | Note creation |
+| Evaluations are permanent | Once an Interviewer submits rating and feedback, neither can be changed by anyone. | Evaluation submission |
+| CV files are access-controlled | CV files must never be accessible via a guessable or publicly shareable link. Access verified by system on every download. | CV file access |
+
+### 4. User Requirements
+
+#### 4.1 Actors
+
+| # | Actor | Description |
+| --- | --- | --- |
+| 1 | Guest | An external person who does not have an internal user account. A Guest is invited to a specific meeting by name and email and accesses only that meeting through a secure meeting-specific guest invitation and email verification, without signing in to an internal account. Guest access is limited to permitted meeting functions. |
+| 2 | Meeting Organizer | A system-authorized user responsible for creating, updating, submitting, organizing, and publishing meetings under their management. |
+| 3 | Meeting Approver | A system-authorized user who may be assigned to review a specific meeting approval request and decide whether to approve or reject it. An approval permission alone does not grant access to all meetings. |
+| 4 | System Admin | An administrator responsible for managing user accounts, roles, permissions and system-wide configuration, including viewing relevant business and security audit events. |
+| 5 | Chair | A user assigned to chair a specific meeting and perform chair-related activities within that meeting, including starting or ending the meeting, controlling Meeting Sessions, and moderating authorized meeting-room interactions. |
+| 6 | Secretary | A user assigned to support a specific meeting by preparing Meeting Sessions and agenda items, managing the meeting roster and official attendance, managing authorized meeting documents, uploading the post-meeting audio, reviewing transcripts and summaries, and preparing/finalizing meeting minutes. |
+| 7 | Participant | An internal user assigned to participate in a specific meeting. A Participant may perform authorized meeting activities such as joining the online meeting room, viewing or commenting on meeting documents, responding to invitations, and voting. Chair and Secretary are meeting-specific roles with additional responsibilities. |
+
+#### 4.2 Use Cases (UC)
+
+| ID | Use Case | Feature | Use Case Description |
+| --- | --- | --- | --- |
+| UC-01 | Sign in with Email and Password | Authentication & Account Security | Authenticate users using their registered email and password. |
+| UC-02 | Sign in with Google | Authentication & Account Security | Authenticate users using their authorized Google account. |
+| UC-03 | Sign Out | Authentication & Account Security | End the user's current authenticated session. |
+| UC-04 | View User Accounts | User & Profile Management | View, search, and filter user accounts in the system. |
+| UC-05 | Create User Account | User & Profile Management | Create a new user account with required information. |
+| UC-06 | Update User Account | User & Profile Management | Update editable information of an existing user account. |
+| UC-07 | Deactivate / Reactivate User Account | User & Profile Management | Deactivate or reactivate an existing user account. |
+| UC-08 | Reset User Password | User & Profile Management | Initiate a password reset for an eligible user account. |
+| UC-09 | Assign System Role to User | User & Profile Management | Assign or change the system role of a user account. |
+| UC-10 | View Role & Permission Matrix | Role-Based Access Control | View system roles and their assigned permissions. |
+| UC-11 | Configure Role Permissions | Role-Based Access Control | Configure permissions assigned to a system role. |
+| UC-12 | Create Role | Role-Based Access Control | Create a new custom role with selected permissions. |
+| UC-13 | Update Role | Role-Based Access Control | Update the name or description of a custom role. |
+| UC-14 | Delete Role | Role-Based Access Control | Delete an unused custom role from the system. |
+| UC-15 | Create Meeting | Meeting Management | Create a new meeting with the required meeting-level information; planned scheduling is managed separately through Meeting Sessions. |
+| UC-16 | Update Meeting | Meeting Management | Update the meeting-level information of an editable meeting while it is Draft or Rejected. |
+| UC-17 | View Meeting Details | Meeting Management | View the meeting-level details of an authorized meeting without loading Meeting Sessions or Agenda Items. |
+| UC-18 | View Meeting List | Meeting Management | View, search, and filter meetings the user can access. |
+| UC-19 | Submit Meeting for Approval | Meeting Management | Submit a Draft or Rejected meeting for approval based on its meeting-level information. |
+| UC-20 | Review Meeting Approval | Meeting Management | Approve or reject an assigned meeting approval request. |
+| UC-21 | Publish Meeting | Meeting Management | Publish an approved meeting and initiate participant invitations. Meeting Sessions are optional and are not a publication prerequisite. |
+| UC-22 | View Notifications | Email & In-App Notification | View personal notifications and the unread notification count. |
+| UC-23 | Mark Notification as Read | Email & In-App Notification | Mark a selected notification as read. |
+| UC-24 | Mark All Notifications as Read | Email & In-App Notification | Mark all unread notifications of the user as read. |
+| UC-25 | Open Notification Target | Email & In-App Notification | Open the meeting linked to a selected notification. |
+| UC-26 | Create Meeting Session | Meeting Session Management | Create a Planned Meeting Session, including an additional future session after publication when allowed. |
+| UC-27 | Update Meeting Session | Meeting Session Management | Update the schedule or information of a Planned Meeting Session while it remains eligible for rescheduling. |
+| UC-28 | Cancel Meeting Session | Meeting Session Management | Cancel a Planned Meeting Session while preserving it in the meeting history for traceability. |
+| UC-29 | Start Meeting Session | Meeting Session Management | Start a Planned Meeting Session during an InProgress meeting and record its actual start time without changing the parent Meeting lifecycle. |
+| UC-30 | End Meeting Session | Meeting Session Management | End the current Meeting Session and record its actual completion time without ending the parent Meeting automatically. |
+| UC-31 | Create Agenda Item | Agenda Management | Create a planned agenda item for a selected Meeting Session. |
+| UC-32 | Update Agenda Item | Agenda Management | Update the planned information of an agenda item before its Meeting Session begins. |
+| UC-33 | Delete Agenda Item | Agenda Management | Remove an unnecessary agenda item before its Meeting Session begins. |
+| UC-34 | Reorder Agenda Items | Agenda Management | Change the order of agenda items within a planned Meeting Session. |
+| UC-35 | Set Current Agenda Item | Agenda Management | Set an agenda item as the topic currently being discussed during an active Meeting Session. |
+| UC-36 | Complete Agenda Item | Agenda Management | Complete the current agenda item and record the actual time used. |
+| UC-37 | View Meeting Participants | Meeting Participant Management | View the current internal participants and external Guests associated with a meeting, together with their meeting-specific role or guest access type. |
+| UC-38 | Add Meeting Participant | Meeting Participant Management | Add an active internal user to a meeting or invite an external Guest by email; internal users receive a meeting-specific role and external Guests receive meeting-scoped guest access. |
+| UC-39 | Assign / Change Meeting Role | Meeting Participant Management | Assign or change the meeting-specific role of a current internal participant without changing the user’s system role. |
+| UC-40 | Remove Meeting Participant | Meeting Participant Management | Remove a current internal participant or revoke an external Guest invitation while preserving required historical evidence and access rules. |
+| UC-41 | Respond to Meeting Invitation | Meeting Participant Management | Allow an invited internal participant or external Guest to respond to a meeting invitation; delegation is available only to internal participants. |
+| UC-42 | View Participant Response Status | Meeting Participant Management | View the latest invitation response of current internal participants and external Guests and a response-status summary. |
+| UC-43 | Start Meeting | Meeting Management | Start a Published meeting and move the Meeting lifecycle to InProgress independently of Meeting Sessions and room participation. |
+| UC-44 | End Meeting | Meeting Management | Explicitly end an InProgress meeting after any unfinished Meeting Sessions have been resolved. |
+| UC-45 | Join Meeting Room | Online Meeting Room Management | Join the online room of an authorized Online or Hybrid meeting; an external Guest may join through a verified meeting-specific guest invitation without an internal account login. |
+| UC-46 | Leave Meeting Room | Online Meeting Room Management | Leave the online meeting room without changing the Meeting or Meeting Session lifecycle. |
+| UC-47 | Manage Microphone | Online Meeting Room Management | Enable or disable the user’s own microphone while connected to the meeting room. |
+| UC-48 | Manage Camera | Online Meeting Room Management | Enable or disable the user’s own camera while connected to the meeting room. |
+| UC-49 | Manage Screen Sharing | Online Meeting Room Management | Start or stop sharing the user’s screen while connected to the meeting room. |
+| UC-50 | View Meeting Room Participants | Online Meeting Room Management | View the users currently connected to the online meeting room and their current room presence. |
+| UC-51 | Moderate Meeting Room | Online Meeting Room Management | Allow the assigned Chair to perform permitted moderation actions on users currently in the meeting room. |
+| UC-52 | Use In-room Chat | Online Meeting Room Management | Exchange text messages with authorized users currently connected to the online meeting room. |
+| UC-53 | View Meeting Sessions | Meeting Session Management | View the Meeting Sessions and schedule information of an authorized meeting without loading Agenda Items. |
+| UC-54 | View Meeting Agenda | Agenda Management | View the Agenda Items prepared for a selected Meeting Session without loading them through Meeting Details. |
+| UC-55 | Unlock User Account | User & Profile Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-56 | View Meeting Documents | Personal Document Library & Meeting Document Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-57 | Add Document to Meeting | Personal Document Library & Meeting Document Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-58 | Add New Meeting Document Version | Personal Document Library & Meeting Document Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-59 | View Document Version History | Personal Document Library & Meeting Document Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-60 | Preview Meeting Document | Personal Document Library & Meeting Document Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-61 | View Media Library | Meeting Audio Upload & Media Library | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-62 | Upload Meeting Audio | Meeting Audio Upload & Media Library | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-63 | Play Meeting Audio | Meeting Audio Upload & Media Library | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-64 | View Speaker-Attributed Transcript | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-65 | Edit Transcript & Speaker Attribution | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-66 | View Meeting Summary | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-67 | Edit Meeting Summary | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-68 | Approve Meeting Summary | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-69 | Publish Meeting Summary | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-70 | View Meeting Votes | Voting & Resolution Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-71 | Create / Configure Vote | Voting & Resolution Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-72 | Open / Publish Vote | Voting & Resolution Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-73 | Cast Vote | Voting & Resolution Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-74 | View Vote Status | Voting & Resolution Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-75 | Close Vote | Voting & Resolution Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-76 | View Resolution | Voting & Resolution Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-77 | View Meeting Minutes | Meeting Minutes & Digital Signing | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-78 | Prepare Draft Meeting Minutes | Meeting Minutes & Digital Signing | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-79 | Edit Meeting Minutes | Meeting Minutes & Digital Signing | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-80 | Submit Meeting Minutes for Signing | Meeting Minutes & Digital Signing | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-81 | Sign Meeting Minutes | Meeting Minutes & Digital Signing | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-82 | View Signature Status & Audit Trail | Meeting Minutes & Digital Signing | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-83 | Finalize / Seal Meeting Minutes | Meeting Minutes & Digital Signing | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-84 | View Personal Dashboard & Meeting Workspace | Personal Dashboard & Meeting Workspace | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-85 | View Reports & Statistics | Reporting & Statistics | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-86 | Export Report | Reporting & Statistics | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-87 | Access Meeting via Guest Invitation | Authentication & Account Security | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-88 | Record Attendance | Meeting Participant Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-89 | View Personal Document Library | Personal Document Library & Meeting Document Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-90 | Generate / Regenerate Meeting Summary | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-91 | Comment on Meeting Document | Personal Document Library & Meeting Document Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-92 | View Audit Log | Role-Based Access Control | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-93 | Request Revision of Meeting Minutes | Meeting Minutes & Digital Signing | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-94 | Upload Document to Personal Library | Personal Document Library & Meeting Document Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+
+#### 4.3 Use Case Diagrams
+
+##### 4.3.1 UCs for Guest
+
+##### 4.3.2 UCs for Candidate
+
+##### 4.3.3 …
+
+#### 4.4 Permission Matrix
+
 Full = unrestricted  ·  Restricted = conditions apply (see footnotes)  ·  No = denied
-5. System Functionalities
+
+| Entity | Action | Admin | HR Manager | Interviewer | Candidate | Guest |
+| --- | --- | --- | --- | --- | --- | --- |
+| User account | Create | Full | No | No | No | No |
+| User account | Edit / Deactivate | Full | No | No | No | No |
+| User account | Unlock | Full | No | No | No | No |
+| Job posting | Create | Full | Full | No | No | No |
+| Job posting | Edit | Full | Full | No | No | No |
+| Job posting | Delete | Full | Full | No | No | No |
+| Job posting | Change status | Full | Full | No | No | No |
+| Job posting | View (Active only) | Full | Full | Full | Full | Full |
+| Application | Submit | No | No | No | Full | No |
+| Application | View own | No | No | No | Full | No |
+| Application | View all (per job) | Full | Full | Restricted ¹ | No | No |
+| Application | Update status | Full | Full | No | No | No |
+| Application | Withdraw | No | No | No | Full | No |
+| Internal note | Create / View | Full | Full | No | No | No |
+| Interview | Schedule / Assign | Full | Full | No | No | No |
+| Interview | Submit evaluation | Full | Full | Full | No | No |
+| Dashboard | View | Full | Full | No | No | No |
+
+### 5. System Functionalities
+
 [Provide functionality overview of software system]
-5.1 Screen Inventory
-a. Screen Flow
+
+#### 5.1 Screen Inventory
+
+##### a. Screen Flow
+
 [This part shows the system screens and the relationship among screens – see sample below]
-b. Screen List
+
+##### b. Screen List
+
 [Fill details of each screen into the table with the columns and sample data as below]
-5.2 External API Inventory
+
+| # | Screen Name | Feature | Description |
+| --- | --- | --- | --- |
+| 1 | Sign In | Authentication | Allows any user to authenticate and reach their role-specific area of the system |
+| 2 | User Register | Authentication | Allows a new Candidate to create their own account |
+
+#### 5.2 External API Inventory
+
 [Fill details of each external API into the table with the columns and sample data as below]
-5.3 Background Job Inventory
+
+| # | API Name | Calling Path | Description |
+| --- | --- | --- | --- |
+| 1 | Google Identity | User’s browser → Google Identity Services → TrustCabinet | Hỗ trợ đăng nhập bằng Google; TrustCabinet xác minh danh tính Google trước khi đăng nhập. |
+| 2 | SMTP Email Service | TrustCabinet → SMTP server | Gửi email đặt lại mật khẩu và thư mời họp... |
+
+#### 5.3 Background Job Inventory
+
 [Fill details of each background job into the table with the columns and sample data as below]
-II. Use Case Specifications
-1. FE-01 – Authentication & Account Security
-1.1 UC-01 – Sign in with Email and Password
-1.2 UC-02 – Sign in with Google
-1.3 UC-03 – Sign Out
-1.4 UC-87 – Access Meeting via Guest Invitation
+
+| # | Job Name | Group | Description |
+| --- | --- | --- | --- |
+| 1 | Process notifications | Scheduled worker | Mỗi 5 giây, kiểm tra nhắc lịch đến hạn và gửi thông báo mới đến người dùng đang kết nối. |
+| 2 | Deliver meeting invitation emails | Queue worker | Khi SMTP được bật, xử lý hàng đợi email mời họp và thử gửi lại email lỗi theo chính sách retry. |
+
+## II. Use Case Specifications
+
+### 1. FE-01 – Authentication & Account Security
+
+#### 1.1 UC-01 – Sign in with Email and Password
+
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | As an internal system user, I want to sign in using my email and password so that I can securely access the system through my internal account. |  |  |
+| Preconditions | ● PRE-1: The user has an existing internal account.<br>● PRE-2: The user's account is active.<br>● PRE-3: The user is currently on the system login page. |  |  |
+| Postconditions | ● POST-1: The user is authenticated.<br>● POST-2: The system identifies the corresponding internal user.<br>● POST-3: The user is redirected to the appropriate authenticated page. |  |  |
+| Normal Flow | Sign in with Email and Password<br>1. The user enters their email and password on the login page.<br>2. The user clicks “Sign In”.<br>3. The system validates the provided credentials through the authentication service.<br>4. The system logs the user in and redirects the user to the appropriate authenticated page. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1: System cannot authenticate the user<br>1. The entered email or password is invalid. (BR-01, BR-02)<br>2. The system displays MSG01 – “Invalid email or password.”<br>EX-2: The internal account has been deactivated<br>1. The corresponding internal account is inactive or has been deactivated. (BR-03)<br>2. The system displays MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.” |  |  |
+
+#### 1.2 UC-02 – Sign in with Google
+
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | Google Identity Provider |
+| --- | --- | --- | --- |
+| Description | As an internal system user, I want to sign in using my Google account so that I can securely and quickly access the system through my existing internal account. |  |  |
+| Preconditions | ● PRE-1: The user has an existing internal account.<br>● PRE-2: The user's account is active.<br>● PRE-3: The user is currently on the system login page. |  |  |
+| Postconditions | ● POST-1: User is authenticated.<br>● POST-2: A valid server-side session is created.<br>● POST-3: System identifies the corresponding internal user.<br>● POST-4: User is redirected to the appropriate authenticated page. |  |  |
+| Normal Flow | Sign in with Google<br>1. User selects “Continue with Google” on the login page.<br>2. User signs in using their Google account.<br>3. System verifies that the Google account is associated with an authorized internal user.<br>4. System signs the user in and grants access according to the user's assigned role. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1: User can’t authenticate with Google<br>1. The user fails to authenticate with Google or cancels the Google sign-in process. (BR-04)<br>2. System displays message MSG03 – “Google sign-in was unsuccessful.”<br>EX-2: System can’t verify the Google account<br>1. The system cannot verify the identity information returned by Google. (BR-05)<br>2. System displays message MSG04 – “Unable to verify your Google account. Please try again.”<br>EX-3: Google account is not linked to an internal account<br>1. The authenticated Google account is not associated with any existing internal account. (BR-06)<br>2. System displays message MSG05 – “This Google account has not been granted access to the system.”<br>EX-4: The internal account has been deactivated<br>1. The internal account associated with the Google account is inactive or has been deactivated. (BR-03)<br>2. System displays message MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.” |  |  |
+
+#### 1.3 UC-03 – Sign Out
+
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | As an authenticated user, I want to sign out of the system so that I can securely end my current access to the system. |  |  |
+| Preconditions | ● PRE-1: The user is currently signed in to the system.<br>● PRE-2: The user is currently accessing an authenticated area of the system. |  |  |
+| Postconditions | ● POST-1: User is signed out of the system.<br>● POST-2: The user's current authentication state is invalidated.<br>● POST-3: User is redirected to the login page.<br>● POST-4: Protected system functions are no longer accessible until the user signs in again. |  |  |
+| Normal Flow | Sign Out<br>1. User selects “Sign Out”.<br>2. System displays a confirmation message.<br>3. User confirms the sign-out action.<br>4. System signs the user out.<br>5. System redirects the user to the login page. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1: System can’t complete the sign-out action<br>1. The system cannot complete the sign-out operation. (BR-09)<br>2. System displays message MSG06 – “Unable to sign out. Please try again.” |  |  |
+
+#### 1.4 UC-87 – Access Meeting via Guest Invitation
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-2. FE-02 – User & Profile Management
-2.1 UC-04 – View User Accounts
-2.2 UC-05 – Create User Account
-2.3 UC-06 – Update User Account
-2.4 UC-07 – Deactivate / Reactivate User Account
-2.5 UC-08 – Reset User Password
-2.6 UC-09 – Assign System Role to User
-2.7 UC-55 – Unlock User Account
+
+### 2. FE-02 – User & Profile Management
+
+#### 2.1 UC-04 – View User Accounts
+
+| Primary Actors | System Admin | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the System Admin to view, search, filter, and browse user accounts in the system. |  |  |
+| Preconditions | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin has permission to view user accounts. |  |  |
+| Postconditions | ● POST-1: The user account list is displayed.<br>● POST-2: No user account information is modified. |  |  |
+| Normal Flow | View User Accounts<br>1. The System Admin selects User Accounts from the navigation menu.<br>2. The system retrieves the user accounts.<br>3. The system sorts the user accounts according to the default sorting rule (BR-3).<br>4. The system displays the user account list showing Full Name, Username/Email, System Role, and Account Status.<br>5. The System Admin browses the user account list using pagination controls. |  |  |
+| Alternative Flows | AF-1: Search User Accounts<br>1. At Step 4 of the Main Flow, the System Admin enters a Name, Username, or Email into the search field.<br>2. The system searches for user accounts matching the entered criteria.<br>3. The system displays the matching user accounts.<br>4. The flow resumes at Step 5 of the Main Flow.<br>AF-2: Filter User Accounts<br>1. At Step 4 of the Main Flow, the System Admin selects one or more filter criteria, such as Account Status or System Role.<br>2. The system filters the user accounts according to the selected criteria.<br>3. The system displays the matching user accounts.<br>4. The flow resumes at Step 5 of the Main Flow.<br>AF-3: No User Accounts Match the Current Criteria<br>1. The applied search or filter criteria produce no matching user accounts.<br>2. The system displays an empty list and a no-results message according to BR-12.<br>3. The System Admin may clear or adjust the search/filter parameters.<br>4. The flow resumes at Step 5 of the Main Flow.<br>5. At Step 4 of the Main Flow, the System Admin enters a Name, Username, or Email into the search field.<br>6. The system searches for user accounts matching the entered criteria.<br>7. The system displays the matching user accounts.<br>8. The flow resumes at Step 5 of the Main Flow.<br>AF-2: Filter User Accounts<br>1. At Step 4 of the Main Flow, the System Admin selects one or more filter criteria, such as Account Status or System Role.<br>2. The system filters the user accounts according to the selected criteria.<br>3. The system displays the matching user accounts.<br>4. The flow resumes at Step 5 of the Main Flow. |  |  |
+| Exception Flows | N/A |  |  |
+
+#### 2.2 UC-05 – Create User Account
+
+| Primary Actors | System Admin | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the System Admin to create a new user account by providing the required account information. |  |  |
+| Preconditions | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin has permission to create user accounts. |  |  |
+| Postconditions | ● POST-1: A new user account is created successfully.<br>● POST-2: The new user account appears in User Management.<br>● POST-3: The account creation is recorded in the audit log. |  |  |
+| Normal Flow | Create User Account<br>1. The System Admin selects Create User from the User Accounts screen.<br>2. The system displays the Create User form.<br>3. The System Admin enters the required user information.<br>4. The System Admin submits the user information.<br>5. The system validates the submitted information, including required fields and Username/Email validity and uniqueness (BR-13, BR-14).<br>6. The system creates the new user account with Active status (BR-15).<br>7. The system records the account creation in the audit log (BR-16).<br>8. The system displays MSG07 – "User account created successfully." and returns to the User Accounts list. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1: Invalid User Information<br>1. At Step 5 of the Main Flow, the system determines that one or more submitted values are missing or invalid.<br>2. The system displays MSG09 – "Invalid account information." and the corresponding validation messages for the invalid fields.<br>3. The System Admin corrects the information and resubmits the form.<br>4. The flow resumes at Step 5 of the Main Flow.<br>EX-2: Duplicate User Account<br>1. At Step 5 of the Main Flow, the system determines that the Email is already associated with another account.<br>2. The system displays MSG08 – "Email is already in use."<br>3. The System Admin changes the conflicting information and resubmits the form.<br>4. The flow resumes at Step 5 of the Main Flow. |  |  |
+
+#### 2.3 UC-06 – Update User Account
+
+| Primary Actors | System Admin | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the System Admin to update editable information of an existing user account within their permitted management scope. |  |  |
+| Preconditions | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to update the selected user account.<br>● PRE-3: The selected user account exists. |  |  |
+| Postconditions | ● POST-1: The selected user account information is updated successfully.<br>● POST-2: The update action is recorded in the audit log. |  |  |
+| Normal Flow | Update User Account<br>1. The System Admin selects a user account from the User Accounts list and selects Edit Account.<br>2. The system displays the current user account information.<br>3. The System Admin modifies the editable information, such as Full Name, Job Title, or Contact Information.<br>4. The System Admin submits the updated information.<br>5. The system validates the submitted information, including required fields and data format (BR-14, BR-17).<br>6. The system updates the user account information.<br>7. The system records the update in the audit log (BR-16).<br>8. The system displays MSG10 – "User account updated successfully." and returns to the User Accounts list. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1: Invalid User Information<br>1. At Step 5 of the Main Flow, one or more submitted values are missing or invalid.<br>2. The system displays MSG09 – "Invalid account information." and the corresponding validation messages for the invalid fields.<br>3. The System Admin corrects the information and resubmits it.<br>4. The flow resumes at Step 5 of the Main Flow.<br>EX-2: Email Already in Use<br>1. At Step 5 of the Main Flow, the system determines that the Email is already associated with another account.<br>2. The system displays MSG08 – "Email is already in use."<br>3. The System Admin changes the Email and resubmits the information.<br>4. The flow resumes at Step 5 of the Main Flow. |  |  |
+
+#### 2.4 UC-07 – Deactivate / Reactivate User Account
+
+| Primary Actors | System Admin | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the System Admin to deactivate or reactivate a user account while preserving the user's historical records. |  |  |
+| Preconditions | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to manage user account status.<br>● PRE-3: The selected user account exists. |  |  |
+| Postconditions | ● POST-1: The user account status is changed to Inactive when deactivated or Active when reactivated.<br>● POST-2: A deactivated user can no longer access authenticated system functions.<br>● POST-3: The status change is recorded in the audit log. |  |  |
+| Normal Flow | Deactivate / Reactivate User Account<br>1. The System Admin selects a user account from the User Accounts list.<br>2. The System Admin selects Deactivate Account or Reactivate Account.<br>3. The system requests confirmation of the account status change.<br>4. The System Admin confirms the action.<br>5. The system verifies that the requested status change is allowed (BR-03).<br>6. The system updates the user account status.<br>7. If the account is deactivated, the system ends the user's active sessions (BR-18).<br>8. The system records the status change in the audit log (BR-16).<br>9. The system displays MSG11 – “User account status changed successfully.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1: Status Change Is Not Allowed<br>1. At Step 5 of the Main Flow, the system determines that the requested account status change is not allowed.<br>2. The system displays MSG12 – “Unable to change the status of this user account.”<br>3. The account status remains unchanged.<br>EX-2: Invalid Status Request<br>1. At Step 5 of the Main Flow, the system determines that the request does not specify the account status to set.<br>2. The account status remains unchanged.<br>3. The system displays MSG09 – “Invalid account information.”<br>4. The use case ends unsuccessfully. |  |  |
+
+#### 2.5 UC-08 – Reset User Password
+
+| Primary Actors | System Admin | Secondary Actors | User (the owner of the selected account), who completes the reset from the email |
+| --- | --- | --- | --- |
+| Description | Allows the System Admin to send the owner of an eligible user account a secure, single-use password reset link by email. The account owner then opens the link and sets a new password without signing in. The current password keeps working until the new one is set. |  |  |
+| Preconditions | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to reset user passwords.<br>● PRE-3: The selected user account exists. |  |  |
+| Postconditions | ● POST-1: A password reset link valid for 60 minutes is created for the selected user, and any link sent to that user earlier stops working (BR-20).<br>● POST-2: A password reset email containing the link is sent to the user's registered email address.<br>● POST-3: The password reset request is recorded in the audit log (BR-16).<br>● POST-4: Until the link is used, the user's current password and active sessions remain unchanged.<br>● POST-5: When the account owner completes the reset, the password is replaced, every active session of that account is ended, the link can no longer be used, and the reset is recorded in the audit log (BR-01, BR-16, BR-20). |  |  |
+| Normal Flow | Reset User Password<br>1. The System Admin selects a user account and selects Reset Password.<br>2. The system requests confirmation, showing the email address the link will be sent to.<br>3. The System Admin confirms the password reset.<br>4. The system verifies that the selected account is eligible for password reset: it is active and it signs in with a password (BR-22).<br>5. The system creates a secure password reset request for the selected user (BR-20).<br>6. The system sends a password reset email containing the link to the user's registered email address.<br>7. The system makes the new link usable; any link sent to the user earlier stops working (BR-20).<br>8. The system records the password reset request in the audit log (BR-16).<br>9. The system displays MSG13 – “Password reset email sent successfully.”<br>Complete Password Reset<br>The account owner continues the use case from the email. No sign-in is required: the link is the proof of identity.<br>10. The user opens the password reset link from the email.<br>11. The system displays the new password form.<br>12. The user enters the new password and its confirmation and submits them.<br>13. The system verifies that the link is valid: it exists, it has not expired, it has not been used, and no newer link has replaced it (BR-20).<br>14. The system validates the new password: it must follow the same password rule as account creation (UC-05) and match its confirmation.<br>15. The system marks the link as used, so it cannot be used again (BR-20).<br>16. The system verifies that the account is still eligible: it is active and it signs in with a password (BR-03, BR-22).<br>17. The system replaces the password with the new one (BR-01) and ends every active session of the account (BR-20).<br>18. The system records the completed password reset in the audit log, with the account owner as the actor (BR-16).<br>19. The system displays MSG92 – “Password reset successfully. Please sign in with your new password.” and takes the user to the sign-in page. The user is not signed in automatically. |  |  |
+| Alternative Flows | AF-1: The Browser Is Already Signed In<br>1. At Step 19, the browser used to complete the reset still has a signed-in session (of this or another account).<br>2. The system signs that session out before showing the sign-in page.<br>3. If the sign-out succeeds, the flow resumes at Step 19.<br>4. If the sign-out cannot be completed, the system still displays MSG92 – “Password reset successfully. Please sign in with your new password.” and also displays MSG06 – “Unable to sign out. Please try again.” The browser's session remains signed in, and the new password is already in effect.<br>5. The use case ends. |  |  |
+| Exception Flows | EX-1: User Account Is Not Eligible for Password Reset<br>1. At Step 4 of the Main Flow, the system determines that the selected account is deactivated, or that it has no password because it only signs in with Google (BR-22). The User Accounts list already makes Reset Password unavailable for such accounts, so this happens when the list is out of date.<br>2. No password reset link is created and no email is sent.<br>3. The system displays MSG14 – “Password reset is not available for this account.” When the system can tell which reason applies, it updates the account in the list and states the reason instead (the account is deactivated, or it signs in with Google only).<br>4. The use case ends.<br>EX-2: Password Reset Email Cannot Be Sent<br>1. At Step 6 of the Main Flow, the system cannot send the password reset email.<br>2. The new link is never made usable. A link sent to the user earlier, if any, keeps working.<br>3. The system displays MSG15 – “Unable to send the password reset email. Please try again.”<br>4. The use case ends.<br>EX-3: User Account No Longer Exists<br>1. At Step 4 of the Main Flow, the system cannot find the selected account.<br>2. No password reset link is created and no email is sent.<br>3. The system informs the System Admin that the account no longer exists and refreshes the User Accounts list. This situation has no message code.<br>4. The use case ends.<br>EX-4: Password Reset Link Is Not Valid<br>1. At Step 13, 15 or 16, the system determines that the link is unknown, has expired, has already been used (including by a simultaneous submission), has been replaced by a newer link, or belongs to an account that is now deactivated or has no password (BR-20, BR-22).<br>2. The password is not changed. A link that reached Step 15 is used up.<br>3. The system hides the new password form and displays MSG93 – “The password reset link is invalid or has expired. Please contact an administrator.” It does not say which of these reasons applies.<br>4. The use case ends.<br>EX-5: New Password Is Invalid<br>1. At Step 14, the new password does not satisfy the password rule, or the confirmation does not match it.<br>2. The password is not changed and the link remains usable.<br>3. The system shows the reason next to the field concerned. A password that breaks the password rule is MSG94 – “Invalid new password.”, shown through its field reason (at least 12 characters); a confirmation that does not match is reported before the link is checked.<br>4. The user corrects the new password and resubmits it.<br>5. The flow resumes at Step 13.<br>EX-6: Password Reset Page Opened Without a Reset Code<br>1. At Step 11, the page has no reset code. This happens when the link is incomplete, or when the page is reloaded or restored after the code was removed from the address bar.<br>2. The system does not check the link and does not say that it has expired, because the link itself may still be usable.<br>3. The system displays MSG129 – “No password reset code was found. Please open the link in the email again.” with a hint that the link still works if it has not been used, is less than 60 minutes old and has not been replaced by a newer link.<br>4. The use case ends. Opening the link from the email again starts a new execution at Step 10. |  |  |
+
+#### 2.6 UC-09 – Assign System Role to User
+
+| Primary Actors | System Admin | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the System Admin to assign a system role to a user account or change the user’s existing system role. |  |  |
+| Preconditions | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to assign system roles.<br>● PRE-3: The selected user account exists.<br>● PRE-4: At least one system role is available for assignment. |  |  |
+| Postconditions | ● POST-1: The selected user is associated with the selected system role.<br>● POST-2: The user receives the capabilities associated with the selected system role.<br>● POST-3: The role assignment or change is recorded in the audit log. |  |  |
+| Normal Flow | Assign System Role to User<br>1. The System Admin opens User Management.<br>2. The System Admin selects a user account.<br>3. The system displays the user information and the current system role, if any.<br>4. The System Admin selects Assign System Role.<br>5. The system displays the available system roles.<br>6. The System Admin selects a role and confirms the assignment.<br>7. The system assigns the selected role to the user.<br>8. The system records the role assignment in the audit log.<br>9. The system displays MSG10 – “User account updated successfully.” |  |  |
+| Alternative Flows | AF-1: Change Existing System Role<br>1. At Step 4 of the Main Flow, if the user already has a system role, the System Admin selects Change System Role.<br>2. The System Admin selects a different role.<br>3. The System Admin confirms the change.<br>4. The system replaces the current role with the selected role.<br>5. The system records the role change in the audit log.<br>6. The system displays MSG10 – “User account updated successfully.” |  |  |
+| Exception Flows | EX-1: Selected Role Is Not Available<br>1. The selected role is no longer available for assignment.<br>2. The system displays MSG09 – “Invalid account information.” with the field error “The role does not exist.”<br>3. No role assignment is changed. The use case ends.<br>EX-2: Last Administrator Cannot Be Demoted<br>1. At Step 7 of the Main Flow or Step 4 of AF-1, the system determines that, after the change, no active account would hold the user administration permission.<br>2. The user keeps the previous role.<br>3. The system displays MSG12 – “Unable to change the status of this user account.”<br>4. The use case ends unsuccessfully. |  |  |
+
+#### 2.7 UC-55 – Unlock User Account
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-3. FE-03 – Role-Based Access Control
-3.1 UC-10 – View Role & Permission Matrix
-3.2 UC-11 – Configure Role Permissions
-3.3 UC-12 – Create Role
-3.4 UC-13 – Update Role
-3.5 UC-14 – Delete Role
-3.6 UC-92 – View Audit Log
+
+### 3. FE-03 – Role-Based Access Control
+
+#### 3.1 UC-10 – View Role & Permission Matrix
+
+| Primary Actors | System Admin | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the System Admin to view the predefined roles and their default permissions. |  |  |
+| Preconditions | ● PRE-1: The System Admin is authenticated. |  |  |
+| Postconditions | ● POST-1: No system data is modified. |  |  |
+| Normal Flow | View Role & Permission Matrix<br>1. The System Admin accesses Role & Permission Management.<br>2. The system displays the role and permission matrix. |  |  |
+| Alternative Flows | None. |  |  |
+| Exception Flows | E1 — Role and permission information cannot be retrieved<br>1. The system cannot retrieve the role and permission information.<br>2. The system displays an error message.<br>3. The use case ends unsuccessfully. |  |  |
+
+#### 3.2 UC-11 – Configure Role Permissions
+
+| Primary Actors | System Admin | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the System Admin to configure the default permissions assigned to a predefined system role. |  |  |
+| Preconditions | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to manage role permissions. |  |  |
+| Postconditions | ● POST-1: The selected role is associated with the updated set of default permissions.<br>● POST-2: The permission configuration change is recorded in the audit log. |  |  |
+| Normal Flow | Configure Role Permissions<br>1. The System Admin accesses Role & Permission Management.<br>2. The system displays the Role & Permission Matrix.<br>3. The System Admin configures the permissions assigned to a predefined role.<br>4. The system validates and saves the updated permission configuration (BR-23).<br>5. The system records the configuration change in the audit log (BR-16).<br>6. The system displays MSG16 – “Role permissions updated successfully.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1: Invalid Permission Configuration<br>1. At Step 4 of the Main Flow, the system determines that the updated permission configuration violates a permission rule.<br>2. The system does not save the changes.<br>3. The system displays MSG17 – “Invalid permission configuration.”<br>4. The use case ends unsuccessfully.<br>EX-2: Permission Configuration Cannot Be Saved<br>1. At Step 4 of the Main Flow, the system cannot save the updated permission configuration.<br>2. The existing role permissions remain unchanged.<br>3. The system displays MSG18 – “Unable to update role permissions. Please try again.”<br>4. The use case ends unsuccessfully. |  |  |
+
+#### 3.3 UC-12 – Create Role
+
+| Primary Actors | System Admin | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the System Admin to create a new custom role with a name, an optional description and an optional initial set of permissions, without changing code or redeploying the system. |  |  |
+| Preconditions | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to manage roles. |  |  |
+| Postconditions | ● POST-1: A new custom role is created and appears in the role list and in the Role & Permission Matrix.<br>● POST-2: The new role is associated with the selected permissions (the set may be empty).<br>● POST-3: The role creation is recorded in the audit log. |  |  |
+| Normal Flow | Create Role<br>1. The System Admin accesses Role & Permission Management.<br>2. The System Admin selects “Create Role”.<br>3. The system displays the role creation form.<br>4. The System Admin enters the role name and an optional description, selects the permissions to grant to the role, and submits the form.<br>5. The system validates the role information: the name is required and has at most 64 characters after trimming, the description has at most 256 characters, and every selected permission exists in the permission catalog.<br>6. The system checks that no existing role, including the predefined roles, has the same name (case-insensitive).<br>7. The system saves the new role together with its permissions.<br>8. The system records the role creation in the audit log (BR-16).<br>9. The system displays MSG19 – “Role created successfully.” |  |  |
+| Alternative Flows | AF-1: Role Created Without Permissions<br>1. At Step 4 of the Main Flow, the System Admin does not select any permission.<br>2. The system accepts an empty permission set; user accounts assigned to this role have the same access as a Member.<br>3. The use case continues at Step 5 of the Main Flow. |  |  |
+| Exception Flows | EX-1: Invalid Role Information<br>1. At Step 5 of the Main Flow, the system determines that the name is empty or longer than 64 characters, the description is longer than 256 characters, or a selected permission does not exist.<br>2. The system does not save the role.<br>3. The system displays MSG20 – “Invalid role information.” and highlights the invalid fields.<br>4. The System Admin may correct the information and resubmit; otherwise the use case ends unsuccessfully.<br>EX-2: Duplicate Role Name<br>1. At Step 6 or Step 7 of the Main Flow, the system determines that another role already uses the same name (case-insensitive).<br>2. The system does not save the role.<br>3. The system displays MSG21 – “A role with this name already exists. Please choose a different name.”<br>4. The System Admin may enter a different name and resubmit; otherwise the use case ends unsuccessfully.<br>EX-3: Role Cannot Be Saved<br>1. At Step 7 of the Main Flow, the system cannot save the new role.<br>2. No role is created.<br>3. The system displays MSG26 – “Unable to create the role. Please try again.”<br>4. The use case ends unsuccessfully. |  |  |
+
+#### 3.4 UC-13 – Update Role
+
+| Primary Actors | System Admin | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the System Admin to change the name and description of a custom role. Predefined roles cannot be renamed; the permissions of any role are configured through UC-11. |  |  |
+| Preconditions | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to manage roles.<br>● PRE-3: At least one custom role exists in the system. |  |  |
+| Postconditions | ● POST-1: The name and/or description of the selected role are updated; its permissions and the user accounts holding it remain unchanged.<br>● POST-2: The change is recorded in the audit log with the values before and after the update.<br>● POST-3: No user session is terminated; users holding the role see the new name the next time their information is loaded. |  |  |
+| Normal Flow | Update Role<br>1. The System Admin accesses Role & Permission Management.<br>2. The system displays the list of roles.<br>3. The System Admin selects “Edit” on a custom role.<br>4. The system displays the edit form pre-filled with the current name and description.<br>5. The System Admin modifies the name and/or description and submits the form.<br>6. The system verifies that the selected role exists and is a custom role.<br>7. The system validates the role information using the same rules as UC-12 (name required, at most 64 characters after trimming; description at most 256 characters).<br>8. The system checks that no other role has the same name (case-insensitive). Changing only the letter case of the role’s own name is allowed.<br>9. The system saves the updated role.<br>10. The system records the change in the audit log (BR-16).<br>11. The system displays MSG22 – “Role updated successfully.” |  |  |
+| Alternative Flows | AF-1: No Changes Submitted<br>1. At Step 7 of the Main Flow, the system determines that the submitted name and description are identical to the current values.<br>2. The system does not modify any data and does not record an audit log entry.<br>3. The system displays MSG22 – “Role updated successfully.”<br>4. The use case ends. |  |  |
+| Exception Flows | EX-1: Predefined Role<br>1. At Step 6 of the Main Flow, the system determines that the selected role is a predefined system role.<br>2. The system does not save the changes.<br>3. The system displays MSG24 – “This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions.”<br>4. The use case ends unsuccessfully.<br>EX-2: Invalid Role Information<br>1. At Step 7 of the Main Flow, the system determines that the role information is invalid.<br>2. The system does not save the changes.<br>3. The system displays MSG20 – “Invalid role information.” and highlights the invalid fields.<br>4. The System Admin may correct the information and resubmit; otherwise the use case ends unsuccessfully.<br>EX-3: Duplicate Role Name<br>1. At Step 8 or Step 9 of the Main Flow, the system determines that another role already uses the same name (case-insensitive).<br>2. The system does not save the changes.<br>3. The system displays MSG21 – “A role with this name already exists. Please choose a different name.”<br>4. The System Admin may enter a different name and resubmit; otherwise the use case ends unsuccessfully.<br>EX-4: Role Cannot Be Saved<br>1. At Step 9 of the Main Flow, the system cannot save the updated role.<br>2. The existing role information remains unchanged.<br>3. The system displays MSG27 – “Unable to update the role. Please try again.”<br>4. The use case ends unsuccessfully. |  |  |
+
+#### 3.5 UC-14 – Delete Role
+
+| Primary Actors | System Admin | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the System Admin to delete a custom role that is no longer held by any user account. Predefined roles cannot be deleted. |  |  |
+| Preconditions | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to manage roles.<br>● PRE-3: At least one custom role exists in the system. |  |  |
+| Postconditions | ● POST-1: The selected role and its permission assignments are removed from the system.<br>● POST-2: The deletion, including the role name and the permissions it held, is recorded in the audit log.<br>● POST-3: No user account and no user session is affected. |  |  |
+| Normal Flow | Delete Role<br>1. The System Admin accesses Role & Permission Management.<br>2. The system displays the list of roles with the number of user accounts holding each role.<br>3. The System Admin selects “Delete” on a custom role.<br>4. The system displays a confirmation dialog.<br>5. The System Admin confirms the deletion.<br>6. The system verifies that the selected role exists, is a custom role, and is not held by any user account, including deactivated accounts.<br>7. The system deletes the role together with its permission assignments.<br>8. The system records the role deletion in the audit log (BR-16).<br>9. The system displays MSG23 – “Role deleted successfully.” |  |  |
+| Alternative Flows | AF-1: Deletion Cancelled<br>1. At Step 5 of the Main Flow, the System Admin cancels the deletion.<br>2. The system closes the confirmation dialog without changing any data.<br>3. The use case ends. |  |  |
+| Exception Flows | EX-1: Predefined Role<br>1. At Step 6 of the Main Flow, the system determines that the selected role is a predefined system role.<br>2. The system does not delete the role.<br>3. The system displays MSG24 – “This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions.”<br>4. The use case ends unsuccessfully.<br>EX-2: Role Still Held by User Accounts<br>1. At Step 6 or Step 7 of the Main Flow, the system determines that one or more user accounts (active or deactivated) still hold the role, including an account assigned to the role while the deletion was in progress.<br>2. The system does not delete the role.<br>3. The system displays MSG25 – “This role is still held by {n} user account(s). Reassign them to another role before deleting.” in the confirmation dialog, where {n} is the number of user accounts holding the role.<br>4. The use case ends unsuccessfully.<br>EX-3: Role Cannot Be Deleted<br>1. At Step 7 of the Main Flow, the system cannot delete the role.<br>2. The role and its permission assignments remain unchanged.<br>3. The system displays MSG28 – “Unable to delete the role. Please try again.”<br>4. The use case ends unsuccessfully. |  |  |
+
+#### 3.6 UC-92 – View Audit Log
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-4. FE-04 – Meeting Management
-4.1 UC-15 – Create Meeting
-4.2 UC-16 – Update Meeting
-4.3 UC-17 – View Meeting Details
-4.4 UC-18 – View Meeting List
-4.5 UC-19 – Submit Meeting for Approval
-4.6 UC-20 – Review Meeting Approval
-4.7 UC-21 – Publish Meeting
-4.8 UC-43 – Start Meeting
-4.9 UC-44 – End Meeting
-5. FE-05 – Meeting Session Management
-5.1 UC-26 – Create Meeting Session
-5.2 UC-27 – Update Meeting Session
-5.3 UC-28 – Cancel Meeting Session
-5.4 UC-29 – Start Meeting Session
-5.5 UC-30 – End Meeting Session
-5.6 UC-53 – View Meeting Sessions
-6. FE-06 – Agenda Management
-6.1 UC-31 – Create Agenda Item
-6.2 UC-32 – Update Agenda Item
-6.3 UC-33 – Delete Agenda Item
-6.4 UC-34 – Reorder Agenda Items
-6.5 UC-35 – Set Current Agenda Item
-6.6 UC-36 – Complete Agenda Item
-6.7 UC-54 – View Meeting Agenda
-7. FE-07 – Meeting Participant Management
-7.1 UC-37 – View Meeting Participants
-7.2 UC-38 – Add Meeting Participant
-7.3 UC-39 – Assign / Change Meeting Role
-7.4 UC-40 – Remove Meeting Participant
-7.5 UC-41 – Respond to Meeting Invitation
-7.6 UC-42 – View Participant Response Status
-7.7 UC-88 – Record Attendance
+
+### 4. FE-04 – Meeting Management
+
+#### 4.1 UC-15 – Create Meeting
+
+| Primary Actors | Meeting Organizer | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Meeting Organizer to create a new meeting using the required meeting-level information. Planned Start Time and Planned End Time are defined through Meeting Sessions and are not required when the meeting is first created. |  |  |
+| Preconditions | ● PRE-1: The Meeting Organizer is authenticated.<br>● PRE-2: The Meeting Organizer is authorized to create meetings. |  |  |
+| Postconditions | ● POST-1: A new meeting is created successfully.<br>● POST-2: The meeting is created with Draft status.<br>● POST-3: The Meeting Organizer is recorded as the creator of the meeting.<br>● POST-4: Meeting scheduling is managed separately through Meeting Sessions when the schedule becomes known. |  |  |
+| Normal Flow | Create Meeting<br>1. The Meeting Organizer selects Create Meeting.<br>2. The system displays the meeting creation form.<br>3. The Meeting Organizer enters the meeting information, including:<br>○ Meeting Name<br>○ Meeting Mode<br>○ Location<br>○ Confidentiality Level<br>○ Description<br>4. The Meeting Organizer submits the meeting information.<br>5. The system validates the entered meeting-level information (BR-24).<br>6. The system creates the meeting with Draft status (BR-26).<br>7. The system displays MSG29 – "Meeting created successfully." |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Invalid Meeting Information<br>1. At Step 5, one or more entered values are missing or invalid.<br>2. The system identifies the invalid information.<br>3. The system displays MSG31 – "Invalid meeting information." and the corresponding validation messages.<br>4. The Meeting Organizer corrects the information and resubmits the form.<br>5. The flow resumes at Step 5 of the Main Flow.<br>EX-2 – Meeting Cannot Be Created<br>1. At Step 6, the system cannot complete the meeting creation.<br>2. The system displays MSG35 – "Unable to create the meeting. Please try again."<br>3. No meeting is created.<br>4. The use case ends. |  |  |
+
+#### 4.2 UC-16 – Update Meeting
+
+| Primary Actors | Meeting Organizer | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Meeting Organizer to modify the meeting-level information of an existing meeting while the meeting is still editable. Meeting Session planning is handled separately. |  |  |
+| Preconditions | ● PRE-1: The Meeting Organizer is authenticated.<br>● PRE-2: The selected meeting exists.<br>● PRE-3: The Meeting Organizer is authorized to update the selected meeting.<br>● PRE-4: At the time the edit action is initiated, the meeting is in Draft or Rejected status. |  |  |
+| Postconditions | ● POST-1: The meeting information is updated successfully.<br>● POST-2: The updated information is available when the meeting is viewed again.<br>● POST-3: The meeting lifecycle status and current Meeting Approver assignment remain unchanged. |  |  |
+| Normal Flow | Update Meeting<br>1. The Meeting Organizer selects a meeting and chooses Edit Meeting.<br>2. The system displays the current meeting information.<br>3. The Meeting Organizer submits the updated information.<br>4. The system validates the submitted meeting-level information (BR-27).<br>5. The system updates the meeting (BR-28).<br>6. The system displays MSG30 – "Meeting updated successfully." |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Invalid Meeting Information<br>1. At Step 4, the submitted information is invalid.<br>2. The system displays MSG31 – "Invalid meeting information." and validation messages for the invalid fields.<br>3. The Meeting Organizer corrects the information.<br>4. The flow resumes at Step 4 of the Main Flow.<br>EX-2 – Meeting Is No Longer Editable<br>1. At Step 4, the system determines that the meeting status has changed and the meeting is no longer Draft or Rejected.<br>2. The system displays MSG33 – "This meeting can no longer be edited."<br>3. The meeting remains unchanged.<br>4. The use case ends.<br>EX-3 – Meeting Cannot Be Updated<br>1. At Step 5, the system cannot complete the update.<br>2. The previous meeting information remains unchanged.<br>3. The system displays MSG36 – "Unable to update the meeting. Please try again."<br>4. The use case ends. |  |  |
+
+#### 4.3 UC-17 – View Meeting Details
+
+| Primary Actors | Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows a user with an authorized relationship to a meeting to view its meeting-level information. Meeting Sessions and Agenda Items are viewed through separate use cases. |  |  |
+| Preconditions | ● PRE-1: The user is authenticated.<br>● PRE-2: A meeting has been selected or identified. |  |  |
+| Postconditions | ● POST-1: The meeting-level details are displayed.<br>● POST-2: No Meeting, Meeting Session, or Agenda information is modified. |  |  |
+| Normal Flow | View Meeting Details<br>1. The user requests to view a meeting.<br>2. The system verifies that the meeting exists and that the user may view it under BR-29. The system does not reveal which check failed.<br>3. The system retrieves only the meeting-level information.<br>4. The system displays Meeting Name, Meeting Mode, Location, Confidentiality Level, Description, and Meeting Status.<br>5. The user reviews the meeting-level details. Meeting Sessions and Agenda Items are not loaded by this use case. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Meeting Does Not Exist or Is Not Accessible<br>1. At Step 2, the system cannot find the selected meeting or the user is not authorized to view it.<br>2. The system does not disclose whether the meeting exists.<br>3. The use case ends.<br>EX-2 – Meeting Details Cannot Be Retrieved<br>1. At Step 3, the meeting exists and is accessible, but the system cannot retrieve its meeting-level information.<br>2. The system displays MSG37 – "Unable to load meeting details. Please try again."<br>3. The use case ends. |  |  |
+
+#### 4.4 UC-18 – View Meeting List
+
+| Primary Actors | Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an authorized user to view and browse only the meetings to which the user has an authorized relationship or assignment. |  |  |
+| Preconditions | ● PRE-1: The user is authenticated. |  |  |
+| Postconditions | ● POST-1: The system displays the list of meetings that the user is authorized to view.<br>● POST-2: No meeting information is modified. |  |  |
+| Normal Flow | View Meeting List<br>1. The user selects Meetings from the navigation menu.<br>2. The system identifies only meetings the user may view under BR-29: meetings created by the user at any status; meetings assigned to the user as Meeting Approver from WaitingApproval onward; and meetings where the user is assigned as Chair, Secretary, Member, or Guest from Published onward.<br>3. The system sorts and displays only those authorized meetings.<br>4. The user browses the displayed meetings. |  |  |
+| Alternative Flows | AF-1 – Search Meetings<br>1. At Step 4 of the Main Flow, the user enters a meeting name in the search field.<br>2. The system finds meetings matching the entered search criteria within the meetings available to the user.<br>3. The system displays the matching meetings.<br>4. The flow resumes at Step 4 of the Main Flow.<br>AF-2 – Filter Meetings<br>1. At Step 4 of the Main Flow, the user selects one or more filter criteria, such as Meeting Status, Confidentiality Level, or Time Range.<br>2. The system applies the selected criteria to the meetings available to the user. For Time Range, a meeting matches only when at least one non-cancelled Meeting Session has a planned schedule overlapping the selected range; meetings without a scheduled Meeting Session do not match. (BR-30)<br>3. The system displays the matching meetings.<br>4. The flow resumes at Step 4 of the Main Flow.<br>AF-3 – No Matching Meetings<br>1. The applied search or filter criteria produce no matching meetings within the meetings available to the user.<br>2. The system displays an empty meeting list and the message "No meetings match the filter."<br>3. The user may change or clear the current search/filter criteria.<br>4. The flow resumes at Step 4 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Meeting List Cannot Be Retrieved<br>1. At Step 2 or Step 3 of the Main Flow, the system cannot retrieve the meeting list.<br>2. The system displays MSG38 – "Unable to load meetings. Please try again."<br>3. The use case ends.<br>EX-2 – Invalid Meeting List Criteria<br>1. The system determines that the selected search, filter, sort, or display criteria are invalid.<br>2. The system displays MSG32 – "Tiêu chí danh sách cuộc họp không hợp lệ."<br>3. The user may clear or adjust the search/filter criteria.<br>4. The use case ends. |  |  |
+
+#### 4.5 UC-19 – Submit Meeting for Approval
+
+| Primary Actors | Meeting Organizer | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Meeting Organizer to submit a Draft meeting or resubmit a previously Rejected meeting for review by an assigned Meeting Approver based on the meeting-level information. |  |  |
+| Preconditions | ● PRE-1: The Meeting Organizer is authenticated.<br>● PRE-2: The selected meeting exists.<br>● PRE-3: The Meeting Organizer is authorized to submit the selected meeting for approval.<br>● PRE-4: The meeting is in Draft or Rejected status. |  |  |
+| Postconditions | ● POST-1: The meeting status is WaitingApproval.<br>● POST-2: A valid Meeting Approver is assigned to the current approval cycle.<br>● POST-3: The assigned Meeting Approver is granted access to the meeting for approval purposes.<br>● POST-4: The submission is recorded in the meeting lifecycle history.<br>● POST-5: The assigned Meeting Approver is notified of the pending approval request. |  |  |
+| Normal Flow | Submit Meeting for Approval<br>1. The Meeting Organizer selects a Draft meeting and chooses Submit for Approval.<br>2. The system verifies that all mandatory meeting-level information is complete. Meeting Sessions are not required for approval submission. (BR-33, BR-55)<br>3. The system identifies users who are eligible to act as Meeting Approvers.<br>4. The system displays the eligible Meeting Approvers.<br>5. The Meeting Organizer selects a Meeting Approver.<br>6. The system verifies that the selected user is eligible to review the meeting and is not the Meeting Organizer.<br>7. The system verifies that the meeting is still in Draft or Rejected status.<br>8. The system assigns the selected Meeting Approver to the current approval cycle.<br>9. The system changes the meeting status to WaitingApproval.<br>10. The system records the submission and assigned approver in the meeting lifecycle history.<br>11. The system notifies the assigned Meeting Approver.<br>12. The system displays the submission success message. |  |  |
+| Alternative Flows | AF-1 – Resubmit a Rejected Meeting<br>Entry Point: Step 1 of the Main Flow.<br>1. The Meeting Organizer selects a meeting in Rejected status.<br>2. The Meeting Organizer chooses Resubmit for Approval.<br>3. The flow resumes at Step 2 of the Main Flow and completes successfully when the submission requirements are satisfied. |  |  |
+| Exception Flows | EX-1 – Incomplete Meeting-Level Information<br>1. At Step 2, the system determines that mandatory meeting-level information is incomplete.<br>2. The system identifies the missing or invalid information.<br>3. The meeting remains Draft or Rejected and the use case ends.<br>EX-2 – Meeting Status Not Eligible for Submission<br>1. At Step 7, the system determines that the meeting is not in Draft or Rejected status.<br>2. The system displays MSG41 – "This meeting can no longer be submitted for approval."<br>3. The use case ends.<br>EX-3 – No Valid Meeting Approver<br>1. At Step 6, the system determines that the selected user is not eligible to review the meeting or is the Meeting Organizer.<br>2. The meeting remains Draft or Rejected and no approval assignment is created.<br>3. The Meeting Organizer selects another eligible approver.<br>EX-4 – Submission Cannot Be Completed<br>1. At Step 8 or Step 9, the approval assignment or status change cannot be completed.<br>2. The meeting remains in its previous status and no approval notification is sent.<br>3. The system displays MSG42 – "Unable to submit the meeting for approval. Please try again."<br>4. The use case ends. |  |  |
+
+#### 4.6 UC-20 – Review Meeting Approval
+
+| Primary Actors | Meeting Approver | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Meeting Approver assigned to a meeting approval cycle to review the meeting and decide whether to approve or reject it. |  |  |
+| Preconditions | ● PRE-1: The Meeting Approver is authenticated.<br>● PRE-2: The selected meeting exists.<br>● PRE-3: The Meeting Approver is currently assigned to review the selected meeting and is not its Meeting Organizer.<br>● PRE-4: The meeting is in WaitingApproval status. |  |  |
+| Postconditions | ● POST-1: The Meeting Approver's decision is recorded.<br>● POST-2: If approved, the meeting status is Approved.<br>● POST-3: If rejected, the meeting status is Rejected.<br>● POST-4: If rejected, the rejection reason is recorded and available to the Secretary.<br>● POST-5: The approval or rejection is recorded in the meeting lifecycle history. |  |  |
+| Normal Flow | Review Meeting Approval<br>1. The Meeting Approver selects a meeting assigned to them that is awaiting approval.<br>2. The system verifies that the current user is the assigned Meeting Approver.<br>3. The system displays the meeting information for review.<br>4. The Meeting Approver selects Approve.<br>5. The system re-verifies that:<br>- the Meeting Approver is still authorized to approve the selected meeting; and<br>- the meeting is still in WaitingApproval status.<br>6. The system changes the meeting status from WaitingApproval to Approved.<br>7. The system records the approval decision, acting user, and timestamp in the meeting lifecycle history.<br>8. The system displays MSG43 – "Meeting approved successfully." |  |  |
+| Alternative Flows | AF-1 – Reject Meeting<br>1. At Step 4 of the Main Flow, the Meeting Approver selects Reject.<br>2. The system requests a rejection reason.<br>3. The Meeting Approver enters the rejection reason.<br>4. The system trims the rejection reason and validates that it is not empty and does not exceed 1000 characters.<br>5. The system re-verifies that:<br>- the Meeting Approver is still authorized to reject the selected meeting; and<br>- the meeting is still in WaitingApproval status.<br>6. The system changes the meeting status to Rejected.<br>7. The system records the rejection decision, rejection reason, acting user, and timestamp.<br>8. The rejection reason becomes available to the Secretary.<br>9. The system displays MSG44 – "Meeting rejected successfully." |  |  |
+| Exception Flows | EX-1 – Rejection Reason Is Missing<br>1. At Step 4 of AF-1, the system determines that the trimmed rejection reason is empty. (BR-36)<br>2. The system displays MSG83 – "Rejection reason is required."<br>3. The meeting remains in WaitingApproval status.<br>4. The Meeting Approver enters a valid rejection reason.<br>5. The flow resumes at Step 4 of AF-1.<br>EX-5 – Rejection Reason Is Too Long<br>1. At Step 4 of AF-1, the trimmed rejection reason exceeds 1000 characters.<br>2. The system displays MSG84 – "Rejection reason must not exceed 1000 characters."<br>3. The meeting remains in WaitingApproval status.<br>4. The Meeting Approver enters a valid rejection reason and the flow resumes at Step 4 of AF-1.<br>EX-2 – Meeting Is No Longer Awaiting Approval<br>1. At Step 5 of the Main Flow or Step 5 of AF-1, the system determines that the meeting is no longer in WaitingApproval status.<br>2. No approval or rejection decision is applied.<br>3. The meeting remains in its current status.<br>4. The system displays "This meeting is no longer awaiting approval."<br>5. The use case ends.<br>EX-3 – Approval Decision Cannot Be Completed<br>1. At Step 6 of the Main Flow or Step 6 of AF-1, the system cannot complete the requested approval or rejection decision.<br>2. The requested status transition is not applied.<br>3. No successful approval or rejection decision is recorded in the meeting lifecycle history.<br>4. The system displays "Unable to complete the approval decision. Please try again."<br>5. The use case ends.<br>EX-4 – User Is No Longer Authorized to Review the Meeting<br>1. At Step 5 of the Main Flow or Step 5 of AF-1, the system determines that the Meeting Approver is no longer authorized to approve or reject the selected meeting. (BR-35)<br>2. No approval or rejection decision is applied.<br>3. The meeting status remains unchanged.<br>4. The system informs the Meeting Approver that they are no longer authorized to review the meeting.<br>5. The use case ends. |  |  |
+
+#### 4.7 UC-21 – Publish Meeting
+
+| Primary Actors | Meeting Organizer | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Meeting Organizer to publish an Approved meeting and initiate invitation delivery to current internal participants and external Guests. Meeting Sessions may be prepared before or after publication and are not required for publication. |  |  |
+| Preconditions | ● PRE-1: The Meeting Organizer is authenticated.<br>● PRE-2: The selected meeting exists.<br>● PRE-3: The Meeting Organizer is authorized to publish the selected meeting.<br>● PRE-4: The meeting is in Approved status.<br>● PRE-5: The meeting has exactly one current Chair and at least one current Secretary with active accounts. Invitation Response and Meeting Session creation are not publication prerequisites. (BR-56, BR-124, BR-125, BR-129) |  |  |
+| Postconditions | ● POST-1: The meeting status is Published.<br>● POST-2: The publication is recorded in the meeting lifecycle history.<br>● POST-3: The system attempts to initiate invitation delivery for current internal participants and active external Guest invitations when delivery is available. Internal participants may receive in-app and email delivery; external Guests receive email guest-access invitations. (BR-39, BR-40, BR-90, BR-91, BR-152)<br>● POST-4: Existing Meeting Sessions, if any, remain unchanged. |  |  |
+| Normal Flow | Publish Meeting<br>1. The Meeting Organizer selects an Approved meeting.<br>2. The Meeting Organizer selects Publish Meeting.<br>3. The system verifies that the Meeting Organizer remains authorized, the meeting is still Approved, exactly one current Chair has an active account, and at least one current Secretary has an active account. Meeting Sessions are not required. (BR-37, BR-56, BR-124, BR-125, BR-129)<br>4. The system changes the meeting status from Approved to Published. (BR-37)<br>5. The system records the publication action, acting user, and timestamp in the meeting lifecycle history. (BR-38)<br>6. The system initiates asynchronous invitation delivery for current internal participants and active external Guest invitations. External Guest emails contain a secure meeting-specific guest invitation used for later email verification and guest access. The meeting remains Published if delivery is unavailable. (BR-39, BR-40, BR-90, BR-91, BR-94, BR-152, BR-153, BR-156)<br>7. The system displays MSG45 – "Meeting published successfully." |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Meeting Is No Longer Eligible for Publication<br>1. At Step 3 of the Main Flow, the system determines that the meeting is no longer Approved, the Meeting Organizer is no longer authorized to publish it, there is not exactly one active current Chair, or there is no active current Secretary. (BR-37, BR-124, BR-125)<br>2. The meeting remains unchanged.<br>3. Invitation delivery is not initiated.<br>4. The system displays MSG46 – "This meeting can no longer be published."<br>5. The use case ends.<br>EX-2 – Meeting Cannot Be Published<br>1. At Step 4 of the Main Flow, the system cannot complete the publication.<br>2. The meeting remains Approved.<br>3. Invitation delivery is not initiated.<br>4. The system displays MSG47 – "Unable to publish the meeting. Please try again."<br>5. The use case ends. |  |  |
+
+#### 4.8 UC-43 – Start Meeting
+
+| Primary Actors | Chair | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Chair to explicitly start a Published meeting and move the Meeting lifecycle to InProgress. A Meeting may be started even when no Meeting Session has been created. |  |  |
+| Preconditions | ● PRE-1: The Chair is authenticated and assigned to the selected meeting.<br>● PRE-2: The selected meeting exists.<br>● PRE-3: The meeting is Published.<br>● PRE-4: The meeting has exactly one current Chair and at least one current Secretary with active accounts. Meeting Sessions are optional. (BR-56, BR-127, BR-133) |  |  |
+| Postconditions | ● POST-1: The meeting status is InProgress.<br>● POST-2: The start action, acting user, and timestamp are recorded in the meeting lifecycle history.<br>● POST-3: Existing Meeting Sessions, if any, remain unchanged.<br>● POST-4: Existing room connections, if any, remain unchanged. |  |  |
+| Normal Flow | Start Meeting<br>1. The Chair opens the Published meeting.<br>2. The Chair selects Start Meeting.<br>3. The system verifies that the Chair is still assigned and active, the meeting is still Published, exactly one current Chair has an active account, and at least one current Secretary has an active account. Meeting Sessions are not required. (BR-56, BR-127, BR-130, BR-131, BR-133)<br>4. The system changes the meeting status from Published to InProgress. (BR-131)<br>5. The system records the lifecycle transition, acting user, and timestamp. (BR-38)<br>6. Existing Meeting Sessions remain unchanged, and the Meeting Room remains available according to the meeting mode and lifecycle. (BR-135, BR-139)<br>7. The system displays MSG110 – "Meeting started successfully." |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Meeting Cannot Be Started<br>1. At Step 3, the meeting is no longer Published, the Chair is no longer assigned or active, or the required active Chair/Secretary assignments are no longer valid. (BR-127, BR-130, BR-131)<br>2. The meeting remains unchanged.<br>3. The system displays MSG112 – "This meeting cannot be started."<br>4. The use case ends.<br>EX-2 – Start Cannot Be Completed<br>1. At Step 4, the system cannot complete the lifecycle transition.<br>2. The meeting remains Published.<br>3. The system displays MSG115 – "Unable to start the meeting. Please try again."<br>4. The use case ends. |  |  |
+
+#### 4.9 UC-44 – End Meeting
+
+| Primary Actors | Chair | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Chair to explicitly end an InProgress meeting. Meeting Sessions are optional; if sessions were created, every unfinished session must first be completed or cancelled so that ending the Meeting is an explicit and consistent business action. |  |  |
+| Preconditions | ● PRE-1: The Chair is authenticated and assigned to the selected meeting.<br>● PRE-2: The selected meeting exists and is InProgress.<br>● PRE-3: No Meeting Session remains Planned or InProgress. A meeting with no Meeting Sessions satisfies this condition. (BR-134) |  |  |
+| Postconditions | ● POST-1: The meeting status is Ended.<br>● POST-2: The end action, acting user, and timestamp are recorded in the meeting lifecycle history.<br>● POST-3: Existing Meeting Session statuses remain unchanged.<br>● POST-4: The online meeting room becomes unavailable and any users still connected are disconnected. (BR-143) |  |  |
+| Normal Flow | End Meeting<br>1. The Chair selects End Meeting.<br>2. The system requests confirmation.<br>3. The Chair confirms the action.<br>4. The system verifies that the Chair is still assigned and active, the meeting is still InProgress, and no Meeting Session remains Planned or InProgress. (BR-130, BR-132, BR-134)<br>5. The system changes the meeting status from InProgress to Ended. (BR-132)<br>6. The system records the lifecycle transition, acting user, and timestamp. (BR-38)<br>7. The system makes the online meeting room unavailable and disconnects any users still connected to that room. Existing Meeting Session records remain unchanged. (BR-135, BR-143)<br>8. The system displays MSG111 – "Meeting ended successfully." |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Unfinished Meeting Sessions Remain<br>1. At Step 4, one or more Meeting Sessions remain Planned or InProgress. (BR-134)<br>2. The meeting remains InProgress.<br>3. The system displays MSG113 – "Complete or cancel all unfinished meeting sessions before ending the meeting."<br>4. The use case ends.<br>EX-2 – Meeting Cannot Be Ended<br>1. At Step 4, the meeting is no longer InProgress or the Chair is no longer assigned or active. (BR-130, BR-132)<br>2. The meeting remains unchanged.<br>3. The system displays MSG114 – "This meeting cannot be ended."<br>4. The use case ends.<br>EX-3 – End Cannot Be Completed<br>1. At Step 5, the system cannot complete the lifecycle transition.<br>2. The meeting remains InProgress.<br>3. The system displays MSG116 – "Unable to end the meeting. Please try again."<br>4. The use case ends. |  |  |
+
+### 5. FE-05 – Meeting Session Management
+
+#### 5.1 UC-26 – Create Meeting Session
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Secretary to create a Planned Meeting Session for a meeting, including an additional future session after publication when operationally required. |  |  |
+| Preconditions | ● PRE-1: The Secretary is authenticated.<br>● PRE-2: The selected meeting exists and the Secretary is assigned to it.<br>● PRE-3: The meeting is in Draft, Rejected, Approved, Published, or InProgress status. |  |  |
+| Postconditions | ● POST-1: A new Meeting Session is associated with the selected meeting.<br>● POST-2: The Meeting Session is in Planned status.<br>● POST-3: The meeting lifecycle status remains unchanged.<br>● POST-4: If the meeting is Published or InProgress, affected participants are notified of the session schedule change. |  |  |
+| Normal Flow | Create Meeting Session<br>1. The Secretary opens the selected meeting.<br>2. The Secretary selects Add Session.<br>3. The system displays the Meeting Session information form.<br>4. The Secretary enters the session title, planned start time, and planned end time.<br>5. The Secretary submits the session information.<br>6. The system validates the session information and planned time rules. (BR-62, BR-75)<br>7. The system verifies that the Secretary is still assigned to the meeting and that the meeting is open for session planning. (BR-54)<br>8. The system creates the Meeting Session in Planned status. (BR-58)<br>9. If the meeting is Published or InProgress, the system notifies affected participants of the schedule change. (BR-76)<br>10. The system displays MSG48 – "Meeting session created successfully." and shows the new Meeting Session in the meeting schedule. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Invalid Session Information<br>1. At Step 6, required information is missing or invalid, the planned end time is not later than the planned start time, or a Published/InProgress meeting is given a session start time that is not in the future. (BR-62, BR-75)<br>2. The system displays MSG53 – "Invalid meeting session information." and identifies the invalid information.<br>3. The Secretary corrects the information and resubmits it.<br>4. The flow resumes at Step 6 of the Main Flow.<br>EX-2 – Meeting Is Not Open for Session Planning<br>1. At Step 7, the parent meeting is in WaitingApproval or Ended status, or the Secretary is no longer assigned to the meeting. (BR-54)<br>2. No Meeting Session is created.<br>3. The system displays MSG54 – "Meeting sessions can no longer be added to this meeting."<br>4. The use case ends. |  |  |
+
+#### 5.2 UC-27 – Update Meeting Session
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Secretary to update or reschedule a Planned Meeting Session while that session is still eligible for planning, including after the meeting has been published. |  |  |
+| Preconditions | ● PRE-1: The Secretary is authenticated.<br>● PRE-2: The selected Meeting Session exists and belongs to a meeting to which the Secretary is assigned.<br>● PRE-3: The parent meeting is in Draft, Rejected, Approved, Published, or InProgress status.<br>● PRE-4: The Meeting Session is in Planned status. |  |  |
+| Postconditions | ● POST-1: The selected Meeting Session contains the updated information.<br>● POST-2: The Meeting Session remains Planned.<br>● POST-3: Other Meeting Sessions remain unchanged.<br>● POST-4: If the meeting is Published or InProgress, affected participants are notified of the session schedule change. |  |  |
+| Normal Flow | Update Meeting Session<br>1. The Secretary opens the meeting session schedule.<br>2. The Secretary selects a Planned Meeting Session and chooses Edit.<br>3. The system displays the current session information.<br>4. The Secretary modifies the session information.<br>5. The Secretary submits the changes.<br>6. The system validates the updated session information and planned time rules. (BR-62, BR-75)<br>7. The system verifies that the Secretary is still assigned, the parent meeting remains open for session planning, and the Meeting Session is still Planned. (BR-54, BR-57, BR-58)<br>8. The system updates the Meeting Session while keeping it in Planned status.<br>9. If the meeting is Published or InProgress, the system notifies affected participants of the schedule change. (BR-76)<br>10. The system displays MSG49 – "Meeting session updated successfully." and shows the updated session information. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Invalid Session Information<br>1. At Step 6, the updated information is incomplete or invalid, or a Published/InProgress meeting is given a session start time that is not in the future. (BR-62, BR-75)<br>2. The system displays MSG53 – "Invalid meeting session information." and identifies the invalid information.<br>3. The Secretary corrects the information and resubmits it.<br>4. The flow resumes at Step 6 of the Main Flow.<br>EX-2 – Session Can No Longer Be Updated<br>1. At Step 7, the parent meeting is in WaitingApproval or Ended status, the Secretary is no longer assigned to the meeting, or the selected Meeting Session is no longer Planned. (BR-54, BR-57, BR-58)<br>2. The existing Meeting Session remains unchanged.<br>3. The system displays MSG55 – "This meeting session can no longer be edited."<br>4. The use case ends. |  |  |
+
+#### 5.3 UC-28 – Cancel Meeting Session
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Secretary to cancel a Planned Meeting Session that will no longer take place while preserving the session record for traceability. Cancelling a session does not end or otherwise change the parent Meeting lifecycle. |  |  |
+| Preconditions | ● PRE-1: The Secretary is authenticated.<br>● PRE-2: The selected Meeting Session exists and belongs to a meeting to which the Secretary is assigned.<br>● PRE-3: The parent meeting is in Draft, Rejected, Approved, Published, or InProgress status.<br>● PRE-4: The Meeting Session is in Planned status. |  |  |
+| Postconditions | ● POST-1: The selected Meeting Session is in Cancelled status and remains associated with the meeting for traceability.<br>● POST-2: Other Meeting Sessions remain unchanged.<br>● POST-3: The parent Meeting lifecycle status remains unchanged.<br>● POST-4: If the meeting is Published or InProgress, affected participants are notified of the cancellation. |  |  |
+| Normal Flow | Cancel Meeting Session<br>1. The Secretary selects a Planned Meeting Session.<br>2. The Secretary chooses Cancel Session.<br>3. The system requests confirmation.<br>4. The Secretary confirms the cancellation.<br>5. The system verifies that the Secretary is still assigned, the parent meeting is open for session planning, and the selected Meeting Session is still Planned. (BR-54, BR-57, BR-58)<br>6. The system changes the Meeting Session status from Planned to Cancelled and retains the session record. (BR-57, BR-58, BR-77)<br>7. The parent Meeting lifecycle remains unchanged. (BR-61, BR-77)<br>8. If the meeting is Published or InProgress, the system notifies affected participants of the cancellation. (BR-76)<br>9. The system displays MSG50 – "Meeting session cancelled successfully." and shows the updated meeting schedule. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Session Can No Longer Be Cancelled<br>1. At Step 5, the parent meeting is in WaitingApproval or Ended status, the Secretary is no longer assigned to the meeting, or the selected Meeting Session is no longer Planned. (BR-54, BR-57, BR-58)<br>2. The Meeting Session remains unchanged.<br>3. The system displays MSG56 – "This meeting session can no longer be cancelled."<br>4. The use case ends. |  |  |
+
+#### 5.4 UC-29 – Start Meeting Session
+
+| Primary Actors | Chair | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Chair to start a Planned Meeting Session during an InProgress meeting so that session-scoped activities can begin. Starting a Meeting Session does not start the parent Meeting and does not open or close the online meeting room. |  |  |
+| Preconditions | ● PRE-1: The Chair is authenticated and assigned to the selected meeting.<br>● PRE-2: The parent meeting is InProgress.<br>● PRE-3: The selected Meeting Session is Planned.<br>● PRE-4: No other Meeting Session of the same meeting is currently InProgress. |  |  |
+| Postconditions | ● POST-1: The selected Meeting Session is InProgress.<br>● POST-2: The actual start time is recorded.<br>● POST-3: The parent Meeting lifecycle status remains InProgress.<br>● POST-4: The online meeting room state is unchanged. |  |  |
+| Normal Flow | Start Meeting Session<br>1. The Chair opens the selected Meeting Session.<br>2. The Chair selects Start Session.<br>3. The system verifies that the Chair is still assigned to the meeting, the parent Meeting is InProgress, the Meeting Session is Planned, no other Meeting Session of the same meeting is InProgress, exactly one current Chair has an active account, and at least one current Secretary has an active account. (BR-58, BR-59, BR-60, BR-63, BR-128)<br>4. The system changes the Meeting Session status to InProgress. (BR-58)<br>5. The system records the actual start time.<br>6. The parent Meeting lifecycle and online meeting room remain unchanged. (BR-60, BR-136, BR-142)<br>7. The system displays MSG51 – "Meeting session started successfully." and shows the selected Meeting Session as the current active session. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Another Session Is In Progress<br>1. At Step 3, another Meeting Session of the same meeting is already InProgress. (BR-59)<br>2. The selected Meeting Session remains Planned.<br>3. The system displays MSG57 – "Another meeting session is already in progress. End it before starting another session."<br>4. The use case ends.<br>EX-2 – Session Cannot Be Started<br>1. At Step 3, the parent Meeting is not InProgress, the selected Meeting Session is no longer Planned, the Chair is no longer assigned, or the required active Chair/Secretary assignments are no longer valid. (BR-58, BR-60, BR-63, BR-128)<br>2. The Meeting Session remains unchanged.<br>3. The system displays MSG58 – "This meeting session cannot be started."<br>4. The use case ends. |  |  |
+
+#### 5.5 UC-30 – End Meeting Session
+
+| Primary Actors | Chair | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Chair to end the current Meeting Session so that its completion is recorded. Ending a Meeting Session does not automatically end the parent Meeting or the online meeting room. |  |  |
+| Preconditions | ● PRE-1: The Chair is authenticated and assigned to the selected meeting.<br>● PRE-2: The parent Meeting is InProgress.<br>● PRE-3: The selected Meeting Session is InProgress. |  |  |
+| Postconditions | ● POST-1: The selected Meeting Session is Completed.<br>● POST-2: The actual end time is recorded.<br>● POST-3: The parent Meeting remains InProgress until the Chair explicitly ends the Meeting through UC-44.<br>● POST-4: The online meeting room state is unchanged. |  |  |
+| Normal Flow | End Meeting Session<br>1. The Chair selects End Session for the current Meeting Session.<br>2. The system requests confirmation.<br>3. The Chair confirms the action.<br>4. The system verifies that the Chair is still assigned to the meeting, the parent Meeting is InProgress, and the selected Meeting Session is still InProgress. (BR-58, BR-60, BR-63)<br>5. The system changes the Meeting Session status to Completed and records the actual end time. (BR-58)<br>6. The parent Meeting remains InProgress and the online meeting room remains unchanged. (BR-61, BR-136, BR-142)<br>7. The system displays MSG52 – "Meeting session ended successfully." and shows the updated Meeting Session status. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Session Cannot Be Ended<br>1. At Step 4, the parent Meeting is not InProgress, the selected Meeting Session is no longer InProgress, or the Chair is no longer assigned to the meeting. (BR-58, BR-60, BR-63)<br>2. The Meeting Session remains unchanged.<br>3. The system displays MSG59 – "This meeting session cannot be ended."<br>4. The use case ends. |  |  |
+
+#### 5.6 UC-53 – View Meeting Sessions
+
+| Primary Actors | Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an authorized user to view the Meeting Sessions belonging to a selected meeting. This use case returns session-level information only and does not load Agenda Items. |  |  |
+| Preconditions | ● PRE-1: The user is authenticated.<br>● PRE-2: A meeting has been selected or identified. |  |  |
+| Postconditions | ● POST-1: The Meeting Sessions of the selected meeting are displayed, or an empty schedule is shown when no sessions exist.<br>● POST-2: No Meeting or Meeting Session information is modified. |  |  |
+| Normal Flow | View Meeting Sessions<br>1. The user requests to view the Meeting Sessions of a selected meeting.<br>2. The system verifies that the meeting exists and that the user may view it under BR-29.<br>3. The system retrieves the Meeting Sessions that belong to the selected meeting.<br>4. The system displays each session’s Title, Planned Start Time, Planned End Time, Status, and Actual Start/End Time when available.<br>5. The system does not retrieve Agenda Items as part of this use case. |  |  |
+| Alternative Flows | AF-1 – No Meeting Sessions<br>Entry Point: Step 3 of the Main Flow.<br>1. The selected meeting has no Meeting Sessions.<br>2. The system displays an empty meeting schedule.<br>3. The use case ends successfully. |  |  |
+| Exception Flows | EX-1 – Meeting Does Not Exist or Is Not Accessible<br>1. At Step 2, the meeting does not exist or the user is not authorized to view it.<br>2. The system does not disclose whether the meeting exists.<br>3. The use case ends.<br>EX-2 – Meeting Sessions Cannot Be Retrieved<br>1. At Step 3, the system cannot retrieve the Meeting Sessions.<br>2. The system displays MSG127 – "Unable to load meeting sessions. Please try again."<br>3. The use case ends. |  |  |
+
+### 6. FE-06 – Agenda Management
+
+#### 6.1 UC-31 – Create Agenda Item
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Secretary to add a planned agenda item to a selected Meeting Session so that the agenda can be prepared before that session begins. |  |  |
+| Preconditions | ● PRE-1: The Secretary is authenticated and assigned to the selected meeting.<br>● PRE-2: The selected Meeting Session exists and belongs to the selected meeting.<br>● PRE-3: The selected Meeting Session is in Planned status. |  |  |
+| Postconditions | ● POST-1: A new Agenda Item is associated with the selected Meeting Session.<br>● POST-2: The new Agenda Item is in Pending status.<br>● POST-3: The new Agenda Item appears at the end of the current agenda order for that Meeting Session.<br>● POST-4: Any selected meeting documents are associated with the new Agenda Item. |  |  |
+| Normal Flow | Create Agenda Item<br>1. The Secretary opens the agenda of a selected Meeting Session.<br>2. The Secretary selects Add Agenda Item.<br>3. The system displays the Agenda Item information form.<br>4. The Secretary enters the agenda information, including Title, Planned Duration, an optional Presenter, an optional Description, and any meeting documents to be attached.<br>5. The Secretary submits the Agenda Item information.<br>6. The system validates the submitted information and selected documents. (BR-65, BR-66, BR-74)<br>7. The system creates the Agenda Item in Pending status, associates it with the selected Meeting Session, and places it at the end of the session agenda. (BR-64, BR-67)<br>8. The system displays MSG60 – "Agenda item created successfully." |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Invalid Agenda Item Information<br>1. At Step 6, required information is missing or invalid, or one or more selected documents are not available to the parent meeting. (BR-66)<br>2. The system displays MSG66 – "Invalid agenda item information." with the applicable field message(s):<br>- "Agenda item title is required."<br>- "Planned duration must be greater than 0."<br>- "One or more selected documents are not available to this meeting."<br>3. The Secretary corrects the invalid information.<br>4. The flow resumes at Step 6 of the Main Flow.<br>EX-2 – Agenda Is No Longer Open for Planning<br>1. Before the Agenda Item is created, the Meeting Session is no longer Planned or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)<br>2. No Agenda Item is created.<br>3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."<br>4. The use case ends.<br>EX-3 – Agenda Item Cannot Be Created<br>1. At Step 7, the system cannot complete the creation.<br>2. No Agenda Item is created.<br>3. The system displays MSG68 – "Unable to create the agenda item. Please try again."<br>4. The use case ends. |  |  |
+
+#### 6.2 UC-32 – Update Agenda Item
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Secretary to update the planned information of an Agenda Item while its Meeting Session is still being prepared. |  |  |
+| Preconditions | ● PRE-1: The Secretary is authenticated and assigned to the selected meeting.<br>● PRE-2: The selected Agenda Item exists and belongs to a Meeting Session of the selected meeting.<br>● PRE-3: The parent Meeting Session is in Planned status.<br>● PRE-4: The selected Agenda Item has not started and is in Pending status. |  |  |
+| Postconditions | ● POST-1: The selected Agenda Item contains the updated planned information.<br>● POST-2: The Agenda Item remains in Pending status.<br>● POST-3: The Agenda Item remains associated with the same Meeting Session.<br>● POST-4: Its position in the agenda remains unchanged. |  |  |
+| Normal Flow | Update Agenda Item<br>1. The Secretary opens the agenda of a planned Meeting Session.<br>2. The Secretary selects an Agenda Item and chooses Edit.<br>3. The system displays the current Agenda Item information.<br>4. The Secretary modifies the editable information, including Title, Planned Duration, Presenter, Description, or attached meeting documents.<br>5. The Secretary submits the changes.<br>6. The system validates the updated information and selected documents. (BR-65, BR-66, BR-74)<br>7. The system updates the Agenda Item.<br>8. The system displays MSG61 – "Agenda item updated successfully." |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Invalid Agenda Item Information<br>1. At Step 6, the updated information is incomplete or invalid, or one or more selected documents are not available to the parent meeting. (BR-66)<br>2. The system displays MSG66 – "Invalid agenda item information." with the applicable field message(s):<br>- "Agenda item title is required."<br>- "Planned duration must be greater than 0."<br>- "One or more selected documents are not available to this meeting."<br>3. The Secretary corrects the invalid information.<br>4. The flow resumes at Step 6 of the Main Flow.<br>EX-2 – Agenda Item Can No Longer Be Updated<br>1. Before the update is completed, the Meeting Session is no longer Planned, the Agenda Item is no longer Pending, or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)<br>2. The Agenda Item remains unchanged.<br>3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."<br>4. The use case ends.<br>EX-3 – Agenda Item Cannot Be Updated<br>1. At Step 7, the system cannot save the updated Agenda Item.<br>2. The previous Agenda Item information remains unchanged.<br>3. The system displays MSG69 – "Unable to update the agenda item. Please try again."<br>4. The use case ends. |  |  |
+
+#### 6.3 UC-33 – Delete Agenda Item
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Secretary to remove an unnecessary Agenda Item while its Meeting Session is still being prepared. |  |  |
+| Preconditions | ● PRE-1: The Secretary is authenticated and assigned to the selected meeting.<br>● PRE-2: The selected Agenda Item exists and belongs to a Meeting Session of the selected meeting.<br>● PRE-3: The parent Meeting Session is in Planned status.<br>● PRE-4: The selected Agenda Item is in Pending status. |  |  |
+| Postconditions | ● POST-1: The selected Agenda Item is removed from the Meeting Session agenda.<br>● POST-2: The remaining Agenda Items keep their relative order.<br>● POST-3: Other Meeting Sessions and their agendas remain unchanged. |  |  |
+| Normal Flow | Delete Agenda Item<br>1. The Secretary opens the agenda of a planned Meeting Session.<br>2. The Secretary selects an Agenda Item and chooses Delete.<br>3. The system requests confirmation.<br>4. The Secretary confirms the deletion.<br>5. The system verifies that the Agenda Item can still be removed. (BR-65, BR-68, BR-74)<br>6. The system removes the Agenda Item and preserves the order of the remaining items.<br>7. The system displays MSG62 – "Agenda item deleted successfully." |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Agenda Item Can No Longer Be Deleted<br>1. At Step 5, the Meeting Session is no longer Planned, the Agenda Item is no longer Pending, or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)<br>2. The Agenda Item remains unchanged.<br>3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."<br>4. The use case ends.<br>EX-2 – Agenda Item Cannot Be Deleted<br>1. At Step 6, the system cannot complete the deletion.<br>2. The Agenda Item remains in the agenda.<br>3. The system displays MSG70 – "Unable to delete the agenda item. Please try again."<br>4. The use case ends. |  |  |
+
+#### 6.4 UC-34 – Reorder Agenda Items
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Secretary to change the order of Agenda Items within a planned Meeting Session so that the discussion sequence reflects the intended agenda. |  |  |
+| Preconditions | ● PRE-1: The Secretary is authenticated and assigned to the selected meeting.<br>● PRE-2: The selected Meeting Session exists and is in Planned status.<br>● PRE-3: The Meeting Session contains Agenda Items that can be reordered. |  |  |
+| Postconditions | ● POST-1: The Agenda Items of the selected Meeting Session are stored in the new order.<br>● POST-2: No Agenda Item content, status, or Meeting Session assignment is changed. |  |  |
+| Normal Flow | Reorder Agenda Items<br>1. The Secretary opens the agenda of a planned Meeting Session.<br>2. The Secretary changes the order of the Agenda Items.<br>3. The Secretary confirms the new order.<br>4. The system verifies that the Meeting Session is still open for agenda planning and that all reordered Agenda Items belong to the same Meeting Session. (BR-64, BR-65, BR-67, BR-74)<br>5. The system saves the new agenda order.<br>6. The system displays MSG63 – "Agenda order updated successfully." |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Agenda Is No Longer Open for Reordering<br>1. At Step 4, the Meeting Session is no longer Planned or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)<br>2. The previous agenda order remains unchanged.<br>3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."<br>4. The use case ends.<br>EX-2 – Agenda Order Cannot Be Saved<br>1. At Step 5, the system cannot save the new order.<br>2. The previous agenda order remains unchanged.<br>3. The system displays MSG71 – "Unable to update the agenda order. Please try again."<br>4. The use case ends. |  |  |
+
+#### 6.5 UC-35 – Set Current Agenda Item
+
+| Primary Actors | Chair | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Chair to identify the Agenda Item currently being discussed during an active Meeting Session so that participants can follow the meeting agenda. |  |  |
+| Preconditions | ● PRE-1: The Chair is authenticated and assigned to the selected meeting.<br>● PRE-2: The selected Meeting Session is InProgress.<br>● PRE-3: The selected Agenda Item belongs to that Meeting Session and is in Pending status.<br>● PRE-4: No other Agenda Item of the same Meeting Session is currently InProgress. |  |  |
+| Postconditions | ● POST-1: The selected Agenda Item is InProgress and becomes the current Agenda Item of the Meeting Session.<br>● POST-2: The actual start time of the Agenda Item is recorded. |  |  |
+| Normal Flow | Set Current Agenda Item<br>1. The Chair opens the agenda of the active Meeting Session.<br>2. The Chair selects a Pending Agenda Item and chooses Set as Current.<br>3. The system verifies that the Chair is still assigned to the meeting, the Meeting Session is InProgress, the selected Agenda Item belongs to that Meeting Session and is Pending, and no other Agenda Item of the same session is InProgress. (BR-64, BR-69, BR-70, BR-71)<br>4. The system changes the selected Agenda Item status to InProgress and records its actual start time. (BR-70, BR-72)<br>5. The system makes the new current Agenda Item available in real time to authorized users viewing the same Meeting Session. (BR-73)<br>6. The system displays MSG64 – "Current agenda item updated successfully." |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Another Agenda Item Is In Progress<br>1. At Step 3, another Agenda Item of the same Meeting Session is already InProgress. (BR-71)<br>2. The selected Agenda Item remains Pending.<br>3. The system displays MSG72 – "Another agenda item is already in progress. Complete it before starting another agenda item."<br>4. The use case ends.<br>EX-2 – Agenda Item Cannot Be Set as Current<br>1. At Step 3, the selected Agenda Item does not belong to the Meeting Session, the Meeting Session is no longer InProgress, the selected Agenda Item is no longer Pending, or the Chair is no longer assigned to the meeting. (BR-64, BR-69, BR-70)<br>2. The Agenda Item remains unchanged.<br>3. The system displays MSG73 – "This agenda item cannot be set as current."<br>4. The use case ends.<br>EX-3 – Current Agenda Item Cannot Be Updated<br>1. At Step 4, the system cannot save the current Agenda Item change.<br>2. The Agenda Item remains unchanged.<br>3. The system displays MSG75 – "Unable to set the current agenda item. Please try again."<br>4. The use case ends. |  |  |
+
+#### 6.6 UC-36 – Complete Agenda Item
+
+| Primary Actors | Chair | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Chair to complete the Agenda Item currently being discussed so that its actual completion time and time used are recorded. |  |  |
+| Preconditions | ● PRE-1: The Chair is authenticated and assigned to the selected meeting.<br>● PRE-2: The selected Meeting Session is InProgress.<br>● PRE-3: The selected Agenda Item belongs to that Meeting Session and is currently InProgress. |  |  |
+| Postconditions | ● POST-1: The selected Agenda Item is Done.<br>● POST-2: The actual end time and actual time used for the Agenda Item are recorded.<br>● POST-3: The Meeting Session has no current Agenda Item until the Chair starts another Agenda Item. |  |  |
+| Normal Flow | Complete Agenda Item<br>1. The Chair selects the current Agenda Item of the active Meeting Session.<br>2. The Chair chooses Complete Agenda Item.<br>3. The system verifies that the Chair is still assigned to the meeting, the Meeting Session is InProgress, and the selected Agenda Item belongs to that Meeting Session and is currently InProgress. (BR-64, BR-69, BR-70)<br>4. The system changes the Agenda Item status to Done.<br>5. The system records the actual end time and the actual time used for the Agenda Item. (BR-72)<br>6. The system makes the completed Agenda Item state available in real time to authorized users viewing the same Meeting Session. (BR-73)<br>7. The system displays MSG65 – "Agenda item completed successfully." |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Agenda Item Cannot Be Completed<br>1. At Step 3, the selected Agenda Item does not belong to the Meeting Session, the Meeting Session is no longer InProgress, the selected Agenda Item is no longer InProgress, or the Chair is no longer assigned to the meeting. (BR-64, BR-69, BR-70)<br>2. The Agenda Item remains unchanged.<br>3. The system displays MSG74 – "This agenda item cannot be completed."<br>4. The use case ends.<br>EX-2 – Agenda Item Completion Cannot Be Saved<br>1. At Step 4 or Step 5, the system cannot save the completion information.<br>2. The Agenda Item remains in its previous state.<br>3. The system displays MSG76 – "Unable to complete the agenda item. Please try again."<br>4. The use case ends. |  |  |
+
+#### 6.7 UC-54 – View Meeting Agenda
+
+| Primary Actors | Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an authorized user to view the Agenda Items prepared for a selected Meeting Session. Agenda retrieval is session-scoped and is separate from View Meeting Details. |  |  |
+| Preconditions | ● PRE-1: The user is authenticated.<br>● PRE-2: The selected meeting exists and is accessible to the user.<br>● PRE-3: A Meeting Session belonging to the selected meeting has been selected. |  |  |
+| Postconditions | ● POST-1: The agenda of the selected Meeting Session is displayed, or an empty agenda is shown when no Agenda Items exist.<br>● POST-2: No Meeting Session or Agenda Item is modified. |  |  |
+| Normal Flow | View Meeting Agenda<br>1. The user selects a Meeting Session and requests to view its agenda.<br>2. The system verifies that the user may view the parent meeting under BR-29 and that the selected Meeting Session belongs to that meeting.<br>3. The system retrieves the Agenda Items belonging to the selected Meeting Session. (BR-64)<br>4. The system displays the Agenda Items in their current order with the information available to the user.<br>5. The user reviews the agenda. |  |  |
+| Alternative Flows | AF-1 – No Agenda Items<br>Entry Point: Step 3 of the Main Flow.<br>1. The selected Meeting Session has no Agenda Items.<br>2. The system displays an empty agenda.<br>3. The use case ends successfully. |  |  |
+| Exception Flows | EX-1 – Meeting Session Is Not Accessible<br>1. At Step 2, the parent meeting is not accessible or the selected Meeting Session does not belong to that meeting.<br>2. No agenda information is disclosed.<br>3. The use case ends.<br>EX-2 – Meeting Agenda Cannot Be Retrieved<br>1. At Step 3, the system cannot retrieve the Agenda Items.<br>2. The system displays MSG128 – "Unable to load the meeting agenda. Please try again."<br>3. The use case ends. |  |  |
+
+### 7. FE-07 – Meeting Participant Management
+
+#### 7.1 UC-37 – View Meeting Participants
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Secretary assigned to a meeting to view the current internal participants and external Guests associated with that meeting, together with each internal participant’s Meeting Role or the Guest access type. |  |  |
+| Preconditions | ● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.<br>● PRE-2: The selected meeting exists. |  |  |
+| Postconditions | ● POST-1: The current internal participant and external Guest list is displayed.<br>● POST-2: No participant or guest information is modified. |  |  |
+| Normal Flow | View Meeting Participants<br>1. The Secretary opens the selected meeting.<br>2. The Secretary selects the Meeting Participants tab.<br>3. The system verifies that the Secretary is still assigned to the meeting.<br>4. The system retrieves the current internal participants and current external Guest invitations of the selected meeting; records retained only as historical evidence are excluded. (BR-84, BR-103, BR-117, BR-148)<br>5. The system displays Full Name, Email, participant type, and Meeting Role or Guest access type.<br>6. The Secretary reviews the participant list. |  |  |
+| Alternative Flows | AF-1 – No Participants or Guests Have Been Added<br>1. At Step 4, the meeting has no current internal participants and no current external Guest invitations.<br>2. The system displays an empty participant list.<br>3. The use case ends successfully. |  |  |
+| Exception Flows | EX-1 – Meeting Is Not Accessible<br>1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.<br>2. The system displays the same not-found result used for an unknown meeting and does not disclose participant data. (BR-121)<br>3. The use case ends.<br>EX-2 – Participant List Cannot Be Retrieved<br>1. At Step 4, the system cannot retrieve the participant list.<br>2. The system displays MSG95 – "Unable to load meeting participants. Please try again."<br>3. The use case ends. |  |  |
+
+#### 7.2 UC-38 – Add Meeting Participant
+
+| Primary Actors | Meeting Organizer, Secretary | Secondary Actors | Email / SMTP Service |
+| --- | --- | --- | --- |
+| Description | Allows the Meeting Organizer to add and assign the first Secretary when the meeting does not yet have one. After the first Secretary has been assigned, the Secretary manages the meeting roster by adding active internal users or inviting external Guests by name and email. Internal users are selected individually; organisational-unit invitation is not supported. |  |  |
+| Preconditions | ● PRE-1: The actor is authenticated and is either the Meeting Organizer creating the initial Secretary assignment or a Secretary already assigned to the selected meeting.<br>● PRE-2: The selected meeting exists and is in Draft, Rejected, Approved, Published, or InProgress status.<br>● PRE-3: For an internal participant, the selected user has an active internal account and is not already a current participant. For an external Guest, the Guest name and email are valid and that email does not already have a current Guest invitation for the meeting. (BR-81, BR-82, BR-149) |  |  |
+| Postconditions | ● POST-1: The selected internal user is added once, or one current external Guest invitation is created for the supplied email.<br>● POST-2: The invitation response starts as Pending with no response time.<br>● POST-3: An internal participant is assigned exactly one Meeting Role: Chair, Secretary, or Member. An external Guest has fixed Guest access and receives no system role or privileged Meeting Role. (BR-85, BR-150)<br>● POST-4: If the meeting is Published or InProgress, invitation delivery is queued. Internal participants may receive in-app and email notification; external Guests receive a secure guest invitation by email. (BR-90, BR-91, BR-152) |  |  |
+| Normal Flow | Add Internal Meeting Participant<br>1. The authorized actor opens the Meeting Participants tab of the selected meeting.<br>2. The actor selects Add Participant.<br>3. The system displays active internal users who are not already current participants of the meeting. (BR-81, BR-82)<br>4. The actor selects one user and assigns one Meeting Role: Chair, Secretary, or Member.<br>5. The actor submits the participant information.<br>6. The system verifies that: when the meeting has no Secretary, the actor is its Meeting Organizer and the selected Meeting Role is Secretary; when the meeting already has a Secretary, the actor is an assigned Secretary; the meeting still permits participant management; the selected user is active and not already invited; the selected Meeting Role is valid; and assigning Chair would not create a second current Chair. (BR-78, BR-79, BR-80, BR-81, BR-82, BR-85, BR-123)<br>7. The system adds the selected internal user with Pending response status and records the selected Meeting Role. (BR-85, BR-88)<br>8. If the meeting is Published or InProgress, the system queues the applicable in-app notification and invitation email for asynchronous delivery. (BR-39, BR-40, BR-45, BR-90)<br>9. The system displays MSG96 – "Meeting participant added successfully." |  |  |
+| Alternative Flows | AF-1 – Add External Guest by Email<br>Entry Point: Step 3 of the Main Flow.<br>1. The Secretary selects Add External Guest.<br>2. The system displays fields for Guest Name and Email.<br>3. The Secretary enters the Guest Name and Email and submits the invitation.<br>4. The system verifies that the Secretary is still assigned, the meeting still permits participant management, the email format is valid, the email does not already have a current Guest invitation for this meeting, and the email is not already represented by a current internal participant. (BR-79, BR-80, BR-149, BR-151)<br>5. The system creates a current external Guest invitation with Pending response status and fixed Guest access. No internal user account or system role is created. (BR-84, BR-88, BR-148, BR-150, BR-156)<br>6. If the meeting is Published or InProgress, the system generates a secure meeting-specific guest invitation and queues the invitation email. The Guest will later verify access using the invitation and an email one-time code; no internal account login is required. (BR-91, BR-152, BR-153, BR-156)<br>7. The flow resumes at Step 9 of the Main Flow.<br>AF-2 – Invitation Notification Delivery Is Unavailable<br>1. At Step 8 of the Main Flow or Step 6 of AF-1, the meeting is Published or InProgress but the applicable invitation delivery is unavailable.<br>2. The internal participant or external Guest invitation remains successfully added with Pending response status. (BR-40, BR-94)<br>3. The system records the delivery failure for retry.<br>4. The flow resumes at Step 9 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Invalid Participant or Guest Information<br>1. At Step 6 of the Main Flow or Step 4 of AF-1, the submitted information is invalid. For an internal participant, the user is inactive, already a current participant, the Meeting Role is invalid, or assigning Chair would create a second current Chair. For an external Guest, the name/email is missing or invalid, the email is already invited as a current Guest, or the email is already represented by a current internal participant. (BR-81, BR-82, BR-85, BR-123, BR-148, BR-149, BR-151)<br>2. No participant or Guest invitation is added.<br>3. The system displays MSG97 – "Invalid meeting participant information." with the applicable field message(s), including: "The selected user is not available."; "This user is already a meeting participant."; "A valid meeting role is required."; "The Meeting Organizer must assign a Secretary as the first meeting participant."; "Guest name and email are required."; "Guest email is invalid."; "This guest email is already invited to the meeting."; "This email is already represented by an internal meeting participant."<br>4. The actor corrects the information.<br>5. For an internal participant, the flow resumes at Step 6 of the Main Flow. For an external Guest, the flow resumes at Step 4 of AF-1.<br>EX-2 – Participant List Cannot Be Modified in the Current Status<br>1. At Step 6 of the Main Flow or Step 4 of AF-1, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)<br>2. No participant or Guest invitation is added.<br>3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."<br>4. The use case ends.<br>EX-3 – Participant or Guest Cannot Be Added<br>1. At Step 7 of the Main Flow or Step 5 of AF-1, the system cannot save the new internal participant or external Guest invitation.<br>2. No new participant or Guest access is created and no invitation is sent.<br>3. The system displays MSG99 – "Unable to add the meeting participant. Please try again."<br>4. The use case ends. |  |  |
+
+#### 7.3 UC-39 – Assign / Change Meeting Role
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Secretary to assign or change an existing internal participant's Meeting Role within one meeting without changing that user's system role. External Guests have fixed Guest access and are not managed through this use case. |  |  |
+| Preconditions | ● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.<br>● PRE-2: The selected meeting is in Draft, Rejected, Approved, Published, or InProgress status.<br>● PRE-3: The selected participant is a current internal participant of the selected meeting. |  |  |
+| Postconditions | ● POST-1: The participant's Meeting Role is updated for the selected meeting only.<br>● POST-2: The participant's system role and invitation response remain unchanged.<br>● POST-3: If the meeting is Published or InProgress, an in-app notification and an email describing the new Meeting Role are queued for the affected participant. |  |  |
+| Normal Flow | Assign / Change Meeting Role<br>1. The Secretary opens the Meeting Participants tab of the selected meeting.<br>2. The Secretary selects Change Role for a current internal participant.<br>3. The system displays the participant's current Meeting Role.<br>4. The Secretary selects Chair, Secretary, or Member.<br>5. The Secretary submits the selected Meeting Role.<br>6. The system verifies that the Secretary is still assigned to the meeting, the meeting still permits participant management, the internal participant still belongs to the meeting, the selected Meeting Role is valid, the change would not remove a required Secretary or Chair, and assigning Chair would not create a second current Chair. (BR-79, BR-80, BR-85, BR-122, BR-123, BR-126)<br>7. The system updates only the participant's Meeting Role for the selected meeting. The user's system Role and Invitation Response remain unchanged. (BR-85, BR-86, BR-96)<br>8. If the meeting is Published or InProgress, the system queues an in-app notification and an email describing the new Meeting Role for asynchronous delivery to the participant. (BR-92)<br>9. The system displays MSG100 – "Meeting role updated successfully." |  |  |
+| Alternative Flows | AF-1 – Selected Role Is Unchanged<br>1. At Step 5, the selected Meeting Role is the participant's current role.<br>2. The system leaves the participant unchanged.<br>3. The system displays MSG100 – "Meeting role updated successfully."<br>4. The use case ends successfully.<br>AF-2 – Role Change Notification Delivery Is Unavailable<br>1. At Step 8, the Meeting Role has been updated but notification delivery is unavailable.<br>2. The Meeting Role change remains successful. (BR-94)<br>3. The system records the delivery failure for retry.<br>4. The flow resumes at Step 9 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Invalid Meeting Role<br>1. At Step 6, the submitted Meeting Role is not Chair, Secretary, or Member. (BR-85)<br>2. The participant's Meeting Role remains unchanged.<br>3. The system displays MSG101 – "A valid meeting role is required."<br>4. The Secretary selects a valid Meeting Role.<br>5. The flow resumes at Step 6 of the Main Flow.<br>EX-2 – Required Meeting Role Would Be Removed<br>1. At Step 6, the change would remove the last assigned Secretary, remove the current Chair while the meeting is Published or InProgress, or create a second current Chair. (BR-122, BR-123, BR-126)<br>2. The participant's Meeting Role remains unchanged.<br>3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."<br>4. The use case ends.<br>EX-3 – Participant List Cannot Be Modified in the Current Status<br>1. At Step 6, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)<br>2. The participant's Meeting Role remains unchanged.<br>3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."<br>4. The use case ends.<br>EX-4 – Meeting Role Cannot Be Updated<br>1. At Step 7, the system cannot save the Meeting Role change.<br>2. The participant's Meeting Role remains unchanged.<br>3. The system displays MSG102 – "Unable to update the meeting role. Please try again."<br>4. The use case ends. |  |  |
+
+#### 7.4 UC-40 – Remove Meeting Participant
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Secretary to remove a current internal participant or revoke a current external Guest invitation while the meeting has not yet ended. |  |  |
+| Preconditions | ● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.<br>● PRE-2: The selected meeting is in Draft, Rejected, Approved, Published, or InProgress status.<br>● PRE-3: The selected target is a current internal participant or a current external Guest invitation of the selected meeting. |  |  |
+| Postconditions | ● POST-1: The selected internal user is no longer a current participant, or the selected external Guest invitation is revoked.<br>● POST-2: Access granted by the removed internal participant assignment, outgoing delegation, or external Guest invitation is revoked. Access independently granted through another valid relationship remains effective.<br>● POST-3: If the meeting is Published or InProgress, the affected internal user receives the applicable in-app/email removal notice; an external Guest may receive an email revocation notice. No removal notification contains a protected meeting link.<br>● POST-4: If an affected user is currently in the online meeting room and no other room-entry access remains, the system disconnects that user. (BR-101) |  |  |
+| Normal Flow | Remove Meeting Participant or Guest<br>1. The Secretary opens the Meeting Participants tab of the selected meeting.<br>2. The Secretary selects Remove for the target internal participant or external Guest.<br>3. The system requests confirmation.<br>4. The Secretary confirms the removal.<br>5. The system verifies that the Secretary is still assigned to the meeting, the meeting still permits participant management, the target still belongs to the meeting roster, and—when the target is an internal participant—the removal would not remove a required Secretary or Chair. (BR-79, BR-80, BR-122, BR-126)<br>6. If the target is an internal participant, the system removes the current participant assignment and ends any outgoing delegation created by that participant. If the target is an external Guest, the system revokes the Guest invitation and invalidates access granted by that invitation. For a Published or InProgress meeting, response and attendance evidence is preserved as historical data rather than physically deleted. (BR-97, BR-98, BR-102, BR-157)<br>7. The system re-evaluates room-entry access for every affected user and disconnects any currently connected user who no longer has access through another valid relationship. (BR-101)<br>8. If the meeting is Published or InProgress, the system queues the applicable removal/revocation notification for asynchronous delivery. Internal participants may receive in-app and email delivery; external Guests receive email only. (BR-93)<br>9. The system displays MSG103 – "Meeting participant removed successfully." |  |  |
+| Alternative Flows | AF-1 – Removal Notification Delivery Is Unavailable<br>1. At Step 8, the participant or Guest access has already been removed/revoked but the applicable notification delivery is unavailable.<br>2. The removal and access revocation remain successful. (BR-94)<br>3. The system records the delivery failure for retry.<br>4. The flow resumes at Step 9 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Removal Cancelled<br>1. At Step 3, the Secretary does not confirm the removal.<br>2. The target remains unchanged.<br>3. The use case ends without satisfying the removal postcondition.<br>EX-2 – Required Meeting Role Would Be Removed<br>1. At Step 5, an internal participant removal would remove the last assigned Secretary, or would remove the current Chair while the meeting is Published or InProgress. (BR-122, BR-126)<br>2. The participant is not removed.<br>3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."<br>4. The use case ends.<br>EX-3 – Participant List Cannot Be Modified in the Current Status<br>1. At Step 5, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)<br>2. The target is not removed or revoked.<br>3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."<br>4. The use case ends.<br>EX-4 – Participant or Guest Cannot Be Removed<br>1. At Step 6, the system cannot remove the internal participant or revoke the external Guest invitation.<br>2. The target remains current and retains existing access.<br>3. The system displays MSG104 – "Unable to remove the meeting participant. Please try again."<br>4. The use case ends. |  |  |
+
+#### 7.5 UC-41 – Respond to Meeting Invitation
+
+| Primary Actors | Chair, Secretary, Participant, Guest |  | Email / SMTP Service | None |
+| --- | --- | --- | --- | --- |
+| Description | Allows an invited internal participant or external Guest to respond to their own meeting invitation while responses are allowed. Internal participants may accept, decline, or delegate; external Guests may accept or decline through a verified guest invitation without signing in to an internal account. |  |  |  |
+| Preconditions | ● PRE-1: For an internal invitee, the user is authenticated, has an active account, and is a current internal participant. For an external Guest, a current Guest invitation exists and the Guest can verify access through the invited email; no internal account login is required. (BR-148, BR-153, BR-156)<br>● PRE-2: The invitee currently owns the selected invitation.<br>● PRE-3: The selected meeting is Published or InProgress. |  |  |  |
+| Postconditions | ● POST-1: The invitee's latest Invitation Response is Accepted or Declined; an internal participant may also have Delegated.<br>● POST-2: The response time is recorded.<br>● POST-3: For an internal participant with a Delegated response, the selected delegate is recorded and receives delegated access without automatically receiving a Meeting Role.<br>● POST-4: External Guest access remains scoped to the invited meeting and does not create an internal user account or system role. (BR-148, BR-150, BR-154, BR-156)<br>● POST-5: When a previous internal delegation is replaced or withdrawn, access granted solely by that delegation is revoked and affected room access is re-evaluated. (BR-101, BR-114) |  |  |  |
+| Normal Flow | Respond to Meeting Invitation<br>1. The invitee opens the invitation or published meeting details. An internal invitee uses the authenticated system; an external Guest opens the secure guest invitation link.<br>2. The system identifies the invitation owner. For an internal invitee, it uses the authenticated account. For an external Guest, it validates the guest invitation and requires a one-time verification code sent to the invited email; successful verification establishes a limited meeting-scoped guest session. (BR-104, BR-152, BR-153, BR-154, BR-155, BR-156)<br>3. The system displays the current Invitation Response.<br>4. The invitee selects Accepted or Declined and submits the response.<br>5. The system verifies that the selected response is allowed, the invitee still owns a current invitation, and the meeting is still Published or InProgress. (BR-104, BR-105, BR-106)<br>6. The system records the selected Invitation Response and response time. For an internal participant, the update also clears any previous delegate and revokes access granted solely by that delegation. (BR-114, BR-115)<br>7. If an internal previous delegation was cleared, the system re-evaluates room-entry access and disconnects the previous delegate only when no other valid room-entry relationship remains. (BR-101, BR-114)<br>8. The system displays MSG105 – "Meeting invitation response recorded successfully." |  |  |  |
+| Alternative Flows | AF-1 – Internal Participant Delegates the Invitation<br>Entry Point: Step 4 of the Main Flow.<br>1. An internal Chair, Secretary, or Participant selects Delegated. External Guests cannot use this flow. (BR-89, BR-105)<br>2. The system displays active internal users who may be selected as delegate.<br>3. The internal participant selects another active internal user.<br>4. The system verifies that the responding user owns the invitation and remains a current internal participant, the meeting is still Published or InProgress, and the selected delegate is active, is not the responding participant, and is not already representing another participant in the same meeting. (BR-104, BR-106, BR-107, BR-108, BR-113)<br>5. The system records Delegated and the selected delegate on the original participant record, revokes access granted solely to any previous delegate, and grants the selected delegate the applicable access. No Meeting Role is transferred. (BR-109, BR-111, BR-114, BR-115)<br>6. The original participant retains meeting read access but their own assignment does not grant room-entry access while Delegated remains effective. The selected delegate receives meeting read and room-entry access; Chair and Secretary privileges are not transferred. (BR-109, BR-110, BR-111)<br>7. If the meeting is InProgress, the system re-evaluates room-entry access for the original participant and any previous delegate and disconnects each affected user who has no other valid room-entry relationship. (BR-101)<br>8. If the selected delegate is already a participant, the existing Meeting Role remains unchanged.<br>9. The flow resumes at Step 8 of the Main Flow.<br>AF-2 – Change a Previous Response<br>1. At Step 3, the invitee has already responded.<br>2. The invitee selects another allowed response and submits it.<br>3. If an internal participant selects Delegated, the flow continues at Step 2 of AF-1. External Guests may change only between Accepted and Declined. (BR-105, BR-106)<br>4. Otherwise, the flow resumes at Step 5 of the Main Flow so ownership, meeting status, guest verification when applicable, and the new response are revalidated. |  |  |  |
+| Exception Flows | EX-1 – Invalid Invitation Response<br>1. At Step 5, the submitted response is not permitted for the invitee; or at AF-1 Step 4, the delegation information is invalid. An external Guest cannot submit Delegated. (BR-105, BR-107, BR-108, BR-113)<br>2. The previous Invitation Response remains unchanged.<br>3. The system displays MSG106 – "Invalid meeting invitation response." with the applicable validation message.<br>4. The invitee corrects the response.<br>5. For an invalid Accepted or Declined response, the flow resumes at Step 4 of the Main Flow. For invalid delegation information, the flow resumes at Step 2 of AF-1.<br>EX-2 – Invitation Can No Longer Be Answered<br>1. At Step 2 or Step 5, the meeting is no longer Published or InProgress, the invitation is no longer current, or an external Guest invitation has expired or been revoked. (BR-104, BR-106, BR-155, BR-157)<br>2. The previous Invitation Response remains unchanged.<br>3. The system displays MSG107 – "This meeting invitation can no longer be answered."<br>4. The use case ends.<br>EX-3 – Guest Verification Fails<br>1. At Step 2, an external Guest provides an invalid or expired one-time verification code. (BR-153)<br>2. No guest session is established and the Invitation Response remains unchanged.<br>3. The system displays MSG126 – "Unable to verify the guest invitation. Check the code and try again."<br>4. The Guest may retry verification while the guest invitation remains valid.<br>EX-4 – Invitation Response Cannot Be Saved<br>1. At Step 6 of the Main Flow or Step 5 of AF-1, the system cannot save the Invitation Response or apply the corresponding delegated access atomically.<br>2. The previous Invitation Response and access remain unchanged.<br>3. The system displays MSG108 – "Unable to save the meeting invitation response. Please try again."<br>4. The use case ends. |  |  |  |
+
+#### 7.6 UC-42 – View Participant Response Status
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Secretary assigned to a meeting to review the latest invitation response of every current internal participant and external Guest, together with a summary by response status. |  |  |
+| Preconditions | ● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.<br>● PRE-2: The selected meeting exists. |  |  |
+| Postconditions | ● POST-1: The latest response status of every current internal participant and external Guest is displayed.<br>● POST-2: The number of Pending, Accepted, Declined, and Delegated responses is displayed. Delegated applies only to internal participants.<br>● POST-3: Invitation Response data is not modified. |  |  |
+| Normal Flow | View Participant Response Status<br>1. The Secretary opens the Meeting Participants tab of the selected meeting.<br>2. The Secretary selects Participant Response Status.<br>3. The system verifies that the Secretary is still assigned to the meeting.<br>4. The system retrieves all current internal participants and current external Guest invitations with their latest Invitation Response; records retained only as historical evidence are excluded. (BR-103, BR-115, BR-117, BR-148)<br>5. The system displays each invitee's Full Name, Email, participant type, Meeting Role or Guest access type, Invitation Response, response time, and delegate when applicable.<br>6. The system displays the total number of Pending, Accepted, Declined, and Delegated responses. (BR-115)<br>7. The Secretary reviews the response status summary. |  |  |
+| Alternative Flows | AF-1 – No Invitee Has Responded<br>1. At Step 4, every current internal participant and external Guest has Pending response status.<br>2. The system displays all invitees as Pending and shows zero for Accepted, Declined, and Delegated.<br>3. The use case ends successfully. |  |  |
+| Exception Flows | EX-1 – Meeting Is Not Accessible<br>1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.<br>2. The system displays the same not-found result used for an unknown meeting and does not disclose participant response data. (BR-121)<br>3. The use case ends.<br>EX-2 – Participant Response Status Cannot Be Retrieved<br>1. At Step 4, the system cannot retrieve the participant response data.<br>2. The system displays MSG95 – "Unable to load meeting participants. Please try again."<br>3. The use case ends. |  |  |
+
+#### 7.7 UC-88 – Record Attendance
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-8. FE-08 – Personal Document Library & Meeting Document Management
-8.1 UC-56 – View Meeting Documents
+
+### 8. FE-08 – Personal Document Library & Meeting Document Management
+
+#### 8.1 UC-56 – View Meeting Documents
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-8.2 UC-57 – Add Document to Meeting
+
+#### 8.2 UC-57 – Add Document to Meeting
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-8.3 UC-58 – Add New Meeting Document Version
+
+#### 8.3 UC-58 – Add New Meeting Document Version
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-8.4 UC-59 – View Document Version History
+
+#### 8.4 UC-59 – View Document Version History
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-8.5 UC-60 – Preview Meeting Document
+
+#### 8.5 UC-60 – Preview Meeting Document
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-8.6 UC-89 – View Personal Document Library
+
+#### 8.6 UC-89 – View Personal Document Library
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-8.7 UC-91 – Comment on Meeting Document
+
+#### 8.7 UC-91 – Comment on Meeting Document
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-8.8 UC-94 – Upload Document to Personal Library
+
+#### 8.8 UC-94 – Upload Document to Personal Library
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-9. FE-09 – Online Meeting Room Management
-9.1 UC-45 – Join Meeting Room
-9.2 UC-46 – Leave Meeting Room
-9.3 UC-47 – Manage Microphone
-9.4 UC-48 – Manage Camera
-9.5 UC-49 – Manage Screen Sharing
-9.6 UC-50 – View Meeting Room Participants
-9.7 UC-51 – Moderate Meeting Room
-9.8 UC-52 – Use In-room Chat
-10. FE-10 – Meeting Audio Upload & Media Library
-10.1 UC-61 – View Media Library
+
+### 9. FE-09 – Online Meeting Room Management
+
+#### 9.1 UC-45 – Join Meeting Room
+
+| Primary Actors | Chair, Secretary, Participant, Guest | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an authorized user to enter the online room associated with a meeting. The room belongs to the Meeting, not to a Meeting Session, so a Meeting Session is not required for room access. |  |  |
+| Preconditions | ● PRE-1: The user has room-entry access to the selected meeting through a current internal participant assignment, an effective delegation, or a verified current external Guest invitation. An external Guest may use a limited meeting-scoped guest session established from the invitation and email verification; no internal account login is required. (BR-140, BR-154, BR-156)<br>● PRE-2: The selected meeting exists and its Meeting Mode is Online or Hybrid.<br>● PRE-3: The meeting is Published or InProgress.<br>● PRE-4: No Meeting Session is required. (BR-138) |  |  |
+| Postconditions | ● POST-1: The user is connected to the online meeting room.<br>● POST-2: The user appears as currently connected in the room participant list.<br>● POST-3: The Meeting and all Meeting Session lifecycle statuses remain unchanged. |  |  |
+| Normal Flow | Join Meeting Room<br>1. The user selects Join Meeting Room for the selected meeting. An external Guest uses the verified meeting-specific guest session established from the invitation flow.<br>2. The system verifies that the meeting exists, is Online or Hybrid, is Published or InProgress, and that the user currently has room-entry access through an internal participant assignment, effective delegation, or verified current Guest invitation. (BR-139, BR-140)<br>3. The system admits the user to the meeting room.<br>4. The system records the user as currently connected to the room and displays the room interface.<br>5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141) |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Meeting Room Is Not Available<br>1. At Step 2, the meeting is not Online/Hybrid or is not Published/InProgress. (BR-139)<br>2. The user is not connected to the room.<br>3. The system displays MSG117 – "The online meeting room is not available."<br>4. The use case ends.<br>EX-2 – User Does Not Have Room Access<br>1. At Step 2, the user no longer has room-entry access because the internal participant/delegation relationship is no longer effective or the external Guest invitation/session has expired or been revoked. (BR-140, BR-155, BR-157)<br>2. The system returns the same not-found/access result used for an inaccessible meeting and does not disclose protected room information.<br>3. The use case ends.<br>EX-3 – Room Join Cannot Be Completed<br>1. After Step 2, the system cannot connect the user to the room.<br>2. The Meeting and Meeting Session lifecycles remain unchanged.<br>3. The system displays MSG118 – "Unable to join the meeting room. Please try again."<br>4. The use case ends. |  |  |
+
+#### 9.2 UC-46 – Leave Meeting Room
+
+| Primary Actors | Chair, Secretary, Participant, Guest | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows a connected user to leave the online meeting room without ending the Meeting or any Meeting Session. |  |  |
+| Preconditions | ● PRE-1: The user is currently connected to the selected meeting room. |  |  |
+| Postconditions | ● POST-1: The user is no longer connected to the room.<br>● POST-2: The user is removed from the current room participant list.<br>● POST-3: The Meeting and Meeting Session lifecycle statuses remain unchanged. |  |  |
+| Normal Flow | Leave Meeting Room<br>1. The connected user selects Leave Room.<br>2. The system disconnects the user from the room.<br>3. The system updates the current room participant list.<br>4. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141) |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | N/A |  |  |
+
+#### 9.3 UC-47 – Manage Microphone
+
+| Primary Actors | Chair, Secretary, Participant, Guest | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows a user connected to the meeting room to enable or disable their own microphone. |  |  |
+| Preconditions | ● PRE-1: The user is currently connected to the online meeting room. |  |  |
+| Postconditions | ● POST-1: The user’s microphone state reflects the requested enabled or disabled state when the device/permission is available.<br>● POST-2: No Meeting or Meeting Session lifecycle state is changed. |  |  |
+| Normal Flow | Manage Microphone<br>1. The user selects the microphone control.<br>2. The system attempts to apply the requested microphone state to the user’s own audio.<br>3. The room interface displays the resulting microphone state. (BR-141, BR-144) |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Microphone Is Unavailable<br>1. At Step 2, microphone access is unavailable because permission is denied, no usable device is available, or the device cannot be used.<br>2. The user remains in the room with the microphone disabled.<br>3. The system displays MSG119 – "Microphone access is unavailable. Check your browser or device permissions."<br>4. The use case ends. |  |  |
+
+#### 9.4 UC-48 – Manage Camera
+
+| Primary Actors | Chair, Secretary, Participant, Guest | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows a user connected to the meeting room to enable or disable their own camera. |  |  |
+| Preconditions | ● PRE-1: The user is currently connected to the online meeting room. |  |  |
+| Postconditions | ● POST-1: The user’s camera state reflects the requested enabled or disabled state when the device/permission is available.<br>● POST-2: No Meeting or Meeting Session lifecycle state is changed. |  |  |
+| Normal Flow | Manage Camera<br>1. The user selects the camera control.<br>2. The system attempts to apply the requested camera state to the user’s own video.<br>3. The room interface displays the resulting camera state. (BR-141, BR-144) |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Camera Is Unavailable<br>1. At Step 2, camera access is unavailable because permission is denied, no usable device is available, or the device cannot be used.<br>2. The user remains in the room with the camera disabled.<br>3. The system displays MSG120 – "Camera access is unavailable. Check your browser or device permissions."<br>4. The use case ends. |  |  |
+
+#### 9.5 UC-49 – Manage Screen Sharing
+
+| Primary Actors | Chair, Secretary, Participant, Guest | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows a connected user to start or stop sharing their screen with other users in the meeting room. |  |  |
+| Preconditions | ● PRE-1: The user is currently connected to the online meeting room. |  |  |
+| Postconditions | ● POST-1: The user is either actively sharing the selected screen content or has stopped sharing.<br>● POST-2: At most one active screen share remains in the room.<br>● POST-3: No Meeting or Meeting Session lifecycle state is changed. |  |  |
+| Normal Flow | Start Screen Sharing<br>1. The user selects Share Screen.<br>2. The system asks the user to choose shareable content using the available device/browser mechanism.<br>3. The user selects the content to share.<br>4. The system verifies whether another screen share is active.<br>5. If another share is active, the previous share is stopped before the new share becomes active. (BR-145)<br>6. The system displays the active shared content to users in the room.<br>7. Meeting and Meeting Session lifecycles remain unchanged. (BR-141) |  |  |
+| Alternative Flows | AF-1 – Stop Screen Sharing<br>Entry Point: Step 1 of the Main Flow.<br>1. If the user is already sharing, the user selects Stop Sharing.<br>2. The system stops that user’s active share.<br>3. The room returns to its normal non-sharing layout.<br>4. The use case ends successfully. |  |  |
+| Exception Flows | EX-1 – Screen Sharing Cannot Be Started<br>1. At Step 2 or Step 3, the user cancels the share selection or the system cannot start the share.<br>2. No new screen share becomes active.<br>3. If the failure is not a user cancellation, the system displays MSG121 – "Unable to share your screen."<br>4. The use case ends. |  |  |
+
+#### 9.6 UC-50 – View Meeting Room Participants
+
+| Primary Actors | Chair, Secretary, Participant, Guest | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows a connected user to view the users who are currently connected to the online meeting room. |  |  |
+| Preconditions | ● PRE-1: The user is currently connected to the online meeting room. |  |  |
+| Postconditions | ● POST-1: The current room participant list is displayed.<br>● POST-2: The Meeting participant roster and Meeting Session data are not modified. |  |  |
+| Normal Flow | View Meeting Room Participants<br>1. The user opens the room participant panel.<br>2. The system retrieves the users currently connected to the room.<br>3. The system displays the connected users and available room presence information, such as active-speaker indication. (BR-146)<br>4. The user reviews the current room participant list. |  |  |
+| Alternative Flows | AF-1 – No Other User Is Connected<br>1. At Step 2, no other user is currently connected.<br>2. The system displays only the current user in the room participant list.<br>3. The use case ends successfully. |  |  |
+| Exception Flows | EX-1 – Room Participants Cannot Be Retrieved<br>1. At Step 2, the system cannot retrieve the current room participant state.<br>2. The system displays MSG122 – "Unable to load meeting room participants. Please try again."<br>3. The use case ends. |  |  |
+
+#### 9.7 UC-51 – Moderate Meeting Room
+
+| Primary Actors | Chair | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Chair assigned to the meeting to perform permitted moderation actions on users currently connected to the online meeting room without changing their Meeting Participant assignment. |  |  |
+| Preconditions | ● PRE-1: The Chair is authenticated, assigned to the selected meeting, and currently connected to its room.<br>● PRE-2: The target user is currently connected to the same room. |  |  |
+| Postconditions | ● POST-1: The selected moderation action is applied to the target user.<br>● POST-2: The target user’s Meeting Participant assignment and Meeting Role remain unchanged.<br>● POST-3: The Meeting and Meeting Session lifecycles remain unchanged. |  |  |
+| Normal Flow | Mute a Room Participant<br>1. The Chair opens the room participant panel and selects a connected user.<br>2. The Chair selects Mute.<br>3. The system verifies that the current user is still an assigned Chair and that the target is still connected. (BR-144)<br>4. The system disables the target user’s microphone.<br>5. The system makes the updated room state visible to affected users.<br>6. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141) |  |  |
+| Alternative Flows | AF-1 – Remove User from Current Room<br>Entry Point: Step 2 of the Main Flow.<br>1. The Chair selects Remove from Room.<br>2. The system verifies the Chair authorization and target connection.<br>3. The system disconnects the target user from the current room only.<br>4. The target user’s Meeting Participant assignment remains unchanged; future re-entry still follows the normal room-access rules.<br>5. The use case ends successfully. |  |  |
+| Exception Flows | EX-1 – User Is Not Allowed to Moderate<br>1. At Step 3 of the Main Flow or AF-1 Step 2, the current user is no longer an assigned Chair.<br>2. No moderation action is applied.<br>3. The system displays MSG123 – "You are not allowed to moderate this meeting room."<br>4. The use case ends.<br>EX-2 – Moderation Action Cannot Be Applied<br>1. After authorization succeeds, the target is no longer connected or the moderation operation cannot be completed.<br>2. The system displays MSG124 – "Unable to apply the room moderation action."<br>3. The use case ends. |  |  |
+
+#### 9.8 UC-52 – Use In-room Chat
+
+| Primary Actors | Chair, Secretary, Participant, Guest | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an authorized user currently connected to the online meeting room to exchange text messages within that room. |  |  |
+| Preconditions | ● PRE-1: The user is currently connected to the online meeting room. |  |  |
+| Postconditions | ● POST-1: A valid submitted message is made available to authorized users currently connected to the same room.<br>● POST-2: The Meeting and Meeting Session lifecycles remain unchanged. |  |  |
+| Normal Flow | Use In-room Chat<br>1. The user enters a text message in the room chat panel.<br>2. The user sends the message.<br>3. The system validates that the user is still connected to the room and that the message is not empty.<br>4. The system makes the message available to authorized users currently connected to the same room. (BR-147)<br>5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141) |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Chat Message Cannot Be Sent<br>1. At Step 3 or Step 4, the user is no longer connected, the message is empty, or the system cannot deliver the room message.<br>2. The message is not treated as successfully sent.<br>3. The system displays MSG125 – "Unable to send the room message. Please try again."<br>4. The use case ends. |  |  |
+
+### 10. FE-10 – Meeting Audio Upload & Media Library
+
+#### 10.1 UC-61 – View Media Library
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-10.2 UC-62 – Upload Meeting Audio
+
+#### 10.2 UC-62 – Upload Meeting Audio
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-10.3 UC-63 – Play Meeting Audio
+
+#### 10.3 UC-63 – Play Meeting Audio
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-11. FE-11 – Speaker-Attributed Transcription & Meeting Summary
-11.1 UC-64 – View Speaker-Attributed Transcript
+
+### 11. FE-11 – Speaker-Attributed Transcription & Meeting Summary
+
+#### 11.1 UC-64 – View Speaker-Attributed Transcript
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-11.2 UC-65 – Edit Transcript & Speaker Attribution
+
+#### 11.2 UC-65 – Edit Transcript & Speaker Attribution
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-11.3 UC-90 – Generate / Regenerate Meeting Summary
+
+#### 11.3 UC-90 – Generate / Regenerate Meeting Summary
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-11.4 UC-66 – View Meeting Summary
+
+#### 11.4 UC-66 – View Meeting Summary
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-11.5 UC-67 – Edit Meeting Summary
+
+#### 11.5 UC-67 – Edit Meeting Summary
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-11.6 UC-68 – Approve Meeting Summary
+
+#### 11.6 UC-68 – Approve Meeting Summary
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-11.7 UC-69 – Publish Meeting Summary
+
+#### 11.7 UC-69 – Publish Meeting Summary
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-12. FE-12 – Voting & Resolution Management
-12.1 UC-70 – View Meeting Votes
+
+### 12. FE-12 – Voting & Resolution Management
+
+#### 12.1 UC-70 – View Meeting Votes
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-12.2 UC-71 – Create / Configure Vote
+
+#### 12.2 UC-71 – Create / Configure Vote
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-12.3 UC-72 – Open / Publish Vote
+
+#### 12.3 UC-72 – Open / Publish Vote
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-12.4 UC-73 – Cast Vote
+
+#### 12.4 UC-73 – Cast Vote
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-12.5 UC-74 – View Vote Status
+
+#### 12.5 UC-74 – View Vote Status
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-12.6 UC-75 – Close Vote
+
+#### 12.6 UC-75 – Close Vote
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-12.7 UC-76 – View Resolution
+
+#### 12.7 UC-76 – View Resolution
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-13. FE-13 – Meeting Minutes & Digital Signing
-13.1 UC-77 – View Meeting Minutes
+
+### 13. FE-13 – Meeting Minutes & Digital Signing
+
+#### 13.1 UC-77 – View Meeting Minutes
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-13.2 UC-78 – Prepare Draft Meeting Minutes
+
+#### 13.2 UC-78 – Prepare Draft Meeting Minutes
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-13.3 UC-79 – Edit Meeting Minutes
+
+#### 13.3 UC-79 – Edit Meeting Minutes
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-13.4 UC-80 – Submit Meeting Minutes for Signing
+
+#### 13.4 UC-80 – Submit Meeting Minutes for Signing
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-13.5 UC-81 – Sign Meeting Minutes
+
+#### 13.5 UC-81 – Sign Meeting Minutes
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-13.6 UC-82 – View Signature Status & Audit Trail
+
+#### 13.6 UC-82 – View Signature Status & Audit Trail
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-13.7 UC-83 – Finalize / Seal Meeting Minutes
+
+#### 13.7 UC-83 – Finalize / Seal Meeting Minutes
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-13.8 UC-93 – Request Revision of Meeting Minutes
+
+#### 13.8 UC-93 – Request Revision of Meeting Minutes
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-14. FE-14 – Email & In-App Notification
-14.1 UC-22 – View Notifications
-14.2 UC-23 – Mark Notification as Read
-14.3 UC-24 – Mark All Notifications as Read
-14.4 UC-25 – Open Notification Target
-15. FE-15 – Personal Dashboard & Meeting Workspace
-15.1 UC-84 – View Personal Dashboard & Meeting Workspace
+
+### 14. FE-14 – Email & In-App Notification
+
+#### 14.1 UC-22 – View Notifications
+
+| Primary Actors | Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an authenticated user to view their list of in-app notifications and check the unread notification count. |  |  |
+| Preconditions | ● PRE-1: The user is authenticated in the system. |  |  |
+| Postconditions | ● POST-1: The system displays the user's notifications and unread badge count.<br>● POST-2: Opening the notification list does not change any notification’s read status. |  |  |
+| Normal Flow | View Notifications<br>1. The user selects the notification bell from the navigation header.<br>2. The system retrieves the notifications and unread badge count for the user's account.<br>3. The system displays the user's notifications, indicates which ones are unread, and shows the unread count. (BR-48, BR-49) |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1: Notifications Cannot Be Retrieved<br>1. At Step 2 of the Main Flow, the system cannot load notification records.<br>2. The system displays MSG40 – "Unable to load notifications. Please try again."<br>3. The use case ends unsuccessfully.<br>EX-2: Requested Notification Page Is Unavailable<br>1. At Step 2 of the Main Flow, the system cannot display the requested portion of the notification list.<br>2. The system displays MSG39 – "The requested notification page is unavailable."<br>3. The use case ends unsuccessfully. |  |  |
+
+#### 14.2 UC-23 – Mark Notification as Read
+
+| Primary Actors | Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an authenticated user to mark a specific unread notification as read, updating its status. |  |  |
+| Preconditions | ● PRE-1: The user is authenticated in the system.<br>● PRE-2: The user has at least one unread notification. |  |  |
+| Postconditions | ● POST-1: The selected notification status is changed to Read.<br>● POST-2: The unread count reflects the latest saved notification statuses. |  |  |
+| Normal Flow | Mark Notification as Read<br>1. The user views their notification list.<br>2. The user selects "Mark as Read" for a notification.<br>3. The system verifies that the notification belongs to the user's account. (BR-47)<br>4. The system marks the notification as read.<br>5. The system displays the notification as read and shows the updated unread count. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | N/A |  |  |
+
+#### 14.3 UC-24 – Mark All Notifications as Read
+
+| Primary Actors | Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows a user to mark all of their unread notifications as read. |  |  |
+| Preconditions | ● PRE-1: The user is signed in. |  |  |
+| Postconditions | ● POST-1: All notifications belonging to the user's account that were unread when the request was processed are marked as read.<br>● POST-2: The displayed unread count reflects the latest saved state. |  |  |
+| Normal Flow | Mark All Notifications as Read<br>1. The user selects the notification bell and opens the notification list.<br>2. The user selects "Mark All as Read".<br>3. The system marks all unread notifications belonging to the user's account as read, including those not currently displayed. (BR-47, BR-51)<br>4. The system refreshes the displayed read statuses and unread count. (BR-48) |  |  |
+| Alternative Flows | AF-1 – No Unread Notifications<br>Entry Point: Step 3 of the Main Flow.<br>1. The system finds no unread notifications belonging to the user's account.<br>2. The system displays the current list and an unread count of zero.<br>3. The use case ends successfully. |  |  |
+| Exception Flows | N/A |  |  |
+
+#### 14.4 UC-25 – Open Notification Target
+
+| Primary Actors | Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows a user to open the meeting linked to one of their notifications. |  |  |
+| Preconditions | ● PRE-1: The user is signed in. |  |  |
+| Postconditions | ● POST-1: The user sees the linked meeting.<br>● POST-2: The selected notification is marked as read if successfully saved. |  |  |
+| Normal Flow | Open Notification Target<br>1. The user selects the notification bell and clicks on a specific notification.<br>2. The system checks that the notification belongs to the user's account and identifies its linked meeting. (BR-47, BR-52)<br>3. The system marks the notification as read if needed and updates the unread count. (BR-48, BR-50, BR-53)<br>4. The system checks whether the user currently has permission to view the linked meeting. (BR-29, BR-52)<br>5. The system opens the meeting. |  |  |
+| Alternative Flows | AF-1 – Notification Is Already Read<br>Entry Point: Step 3 of the Main Flow.<br>1. The notification is already read, so its status and the unread count remain unchanged. (BR-50)<br>2. The flow resumes at Step 4 of the Main Flow. |  |  |
+| Exception Flows | N/A |  |  |
+
+### 15. FE-15 – Personal Dashboard & Meeting Workspace
+
+#### 15.1 UC-84 – View Personal Dashboard & Meeting Workspace
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-16. FE-16 – Reporting & Statistics
-16.1 UC-85 – View Reports & Statistics
+
+### 16. FE-16 – Reporting & Statistics
+
+#### 16.1 UC-85 – View Reports & Statistics
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-16.2 UC-86 – Export Report
+
+#### 16.2 UC-86 – Export Report
+
 [Placeholder] Detailed Use Case Specification will be added in the iteration that delivers this feature.
-III. Functional Requirements
+
+## III. Functional Requirements
+
 [Provide descriptions about the system’s functions/screens. The screens are grouped by the system features, and even sub-features if needed, and you need to provide the screen layouts (mock-up screens) and relevant specifications if needed. Other functions (background jobs, external APIs) are provided in the last two sections (Background Job Inventory, External API Inventory)]
-1. Feature Name1
-1.1 SubFeature Name1.1
-1.1.1 Screen Name1
+
+### 1. Feature Name1
+
+#### 1.1 SubFeature Name1.1
+
+##### 1.1.1 Screen Name1
+
 [Content #1: UI layout (Wireframe or Mockup for the screen]
+
 [Content #2: brief descriptions of the screen/function, mapped to the relevant use cases]
+
 [Content #3: provide further descriptions for the screen’s components/fields using table format below]
-1.1.2 Screen Name2
+
+| Field Name | Description |
+| --- | --- |
+| Field Name1 | Field description: data type min/max length or value, initial data, etc. |
+| Field Name2 | … |
+| Field Group-Name1 |  |
+| Field Name3 | … |
+| Field Name4 | … |
+| Field Group-Name2 |  |
+| … | … |
+
+##### 1.1.2 Screen Name2
+
 …
-1.2 SubFeature Name1.2
+
+#### 1.2 SubFeature Name1.2
+
 …
-2. User Authentication
-2.1 User Register
+
+### 2. User Authentication
+
+#### 2.1 User Register
+
 …
-2.2 User Login
+
+#### 2.2 User Login
+
 …
-3. System Administration
-3.1 System Settings
-3.1.1 Setting List
+
+### 3. System Administration
+
+#### 3.1 System Settings
+
+##### 3.1.1 Setting List
+
+(1)(2)(3)
+
 This screen allows the Administrator to:
-View Setting List: view list of current master data.
-Filter Setting List: filter master data by data types, statuses
-Search Settings: enter keyword(s) to search master data by their names or values
-Sort Setting List: sort mater data list (ascending, descending) by clicking column headers
+
+- View Setting List: view list of current master data.
+
+- Filter Setting List: filter master data by data types, statuses
+
+- Search Settings: enter keyword(s) to search master data by their names or values
+
+- Sort Setting List: sort mater data list (ascending, descending) by clicking column headers
+
 On the screen, s/he can also
-Activate/Deactivate Setting: change status of a specific inactive/active master data
-Choose to go to the Setting Details screens for adding new or updating an existing master data by clicking the New Setting or Edit link.
+
+- Activate/Deactivate Setting: change status of a specific inactive/active master data
+
+- Choose to go to the Setting Details screens for adding new or updating an existing master data by clicking the New Setting or Edit link.
+
 Field Description
-3.1.2 Setting Details
+
+| Field Name | Description |
+| --- | --- |
+| (1) | Initial values: all the active setting names with null or blank type<br>Hover the mouse to show the field name: “Setting Type” |
+| (2) | Initial values: All Statuses, Active, Inactive (default value “All Status”)<br>Hover the mouse to show the field name: “Setting Status” |
+| (3) | The change-status action is Activate or Deactivate depending on the current status of the relevant setting (Inactive or Active, respectively). |
+
+##### 3.1.2 Setting Details
+
 This screen allows the Administrator to:
-Add New Setting: add new master data.
-Update Setting Details: update details of a specific master data
+
+- Add New Setting: add new master data.
+
+- Update Setting Details: update details of a specific master data
+
 Field Description
-3.2 User Management
-3.2.1 User List
+
+| Field Name | Description |
+| --- | --- |
+| Name | Data type: non-digit string, max length of 20 characters |
+| Type | Initial data values: all active setting names (with null or blank type) |
+| Value | Data type: any string, max length of 100 characters |
+| Priority | Data type: a positive integer |
+| Description | Data type: any string, max length of 200 characters |
+
+#### 3.2 User Management
+
+##### 3.2.1 User List
+
 …
-3.2.2 User Details
+
+##### 3.2.2 User Details
+
 …
-4. Feature NameN
+
+### 4. Feature NameN
+
 …
-5. Background Job Inventory
-5.1 Unlock Expired Locked Accounts (JOB-01)
+
+### 5. Background Job Inventory
+
+#### 5.1 Unlock Expired Locked Accounts (JOB-01)
+
 Trigger: Scheduled — every 15 minutes
+
 Purpose: Automatically unlocks accounts that were locked after failed sign-in attempts, once the lockout duration has elapsed
+
 Processing steps:
-Find all accounts with status = Locked where the lockout timestamp is more than 10 minutes ago.
-For each account found: reset the failed sign-in count to zero, set status back to Active.
-Log the number of accounts unlocked in this run.
+
+- Find all accounts with status = Locked where the lockout timestamp is more than 10 minutes ago.
+
+- For each account found: reset the failed sign-in count to zero, set status back to Active.
+
+- Log the number of accounts unlocked in this run.
+
 Failure behavior:
-5.2 Clean Up Old Audit Log Entries (JOB-02)
+
+| Scenario | System behavior |
+| --- | --- |
+| Database unreachable | Job retries up to 3 times with 30-second intervals. If still failing, logs a critical error. Accounts remain locked until the next successful run. |
+| No locked accounts found | Job completes immediately with no action — this is normal and expected. |
+
+#### 5.2 Clean Up Old Audit Log Entries (JOB-02)
+
 Trigger: Scheduled — daily at 2:00 AM
+
 Purpose: Removes audit log entries older than the configured retention period to prevent unbounded database growth.
+
 Processing steps:
-Determine the configured log retention period (default: 90 days).
-Find all audit log entries with a timestamp older than the retention threshold.
-Delete the old entries in batches of up to 5,000 records per run — to avoid locking the database for an extended period.
-If records remain after one batch, schedule the next batch to run 5 minutes later rather than deleting everything at once.
-Log the total number of entries deleted and the number of batches processed.
+
+- Determine the configured log retention period (default: 90 days).
+
+- Find all audit log entries with a timestamp older than the retention threshold.
+
+- Delete the old entries in batches of up to 5,000 records per run — to avoid locking the database for an extended period.
+
+- If records remain after one batch, schedule the next batch to run 5 minutes later rather than deleting everything at once.
+
+- Log the total number of entries deleted and the number of batches processed.
+
 Failure behavior:
-6. External API Inventory
-6.1 HTTP Method: URL pattern (API-ID)
-6.2 VnPay Webhook (API-02)
-6.3 SePay Webhook (API-03)
-IV. Non-Functional Requirements
-1. External Interfaces
+
+| Scenario | System behavior |
+| --- | --- |
+| Database timeout during delete | Current batch rolled back. Job logs a warning. Tries again at the next scheduled time. No data corruption. |
+| Retention period not configured | Job uses default of 90 days and logs a warning that the setting was not found. |
+
+### 6. External API Inventory
+
+#### 6.1 HTTP Method: URL pattern (API-ID)
+
+| URL | HTTP method: URL pattern |
+| --- | --- |
+| Purpose | Purpose in one plain-language sentence |
+| Caller | Who the caller is (which external system) |
+| Auth | Authentication requirement (yes/no + type) |
+
+#### 6.2 VnPay Webhook (API-02)
+
+| URL | POST: /api/v1/commerce/payment/webhook/vnpay |
+| --- | --- |
+| Purpose | Receives payment confirmation (IPN) from VNPay; triggers access grant creation |
+| Caller | VNPay payment gateway |
+| Auth | HMAC-SHA512 signature validation |
+
+#### 6.3 SePay Webhook (API-03)
+
+| URL | POST: /api/v1/commerce/payment/webhook/sepay |
+| --- | --- |
+| Purpose | Receives payment confirmation from SePay; triggers access grant creation |
+| Caller | SePay payment gateway |
+| Auth | HMAC signature validation |
+
+## IV. Non-Functional Requirements
+
+### 1. External Interfaces
+
 [This section provides information to ensure that the system will communicate properly with users and with external hardware or software/system elements.]
-2. Quality Attributes
+
+### 2. Quality Attributes
+
 [List all the required system characteristics (quality attributes) specification. Some of the possible attributes are provided with the guide/descriptions are mentioned here]
-2.1 Usability
+
+#### 2.1 Usability
+
 [This section includes all those requirements that affect usability. For example, specify the required training time for a normal user and a power user to become productive at particular operations specify measurable task times for typical tasks or base the new system’s usability requirements on other systems that the users know and like specify requirement to conform to common usability standards, such as IBM’s CUA standards Microsoft’s GUI standards]
-2.2 Performance
+
+#### 2.2 Performance
+
 [The system’s performance characteristics are outlined in this section. Some samples are as below]
-2.3 Security
+
+| Requirement | Target | Condition |
+| --- | --- | --- |
+| Page load time | Any page loads within 2 seconds | Up to 100 users active simultaneously |
+| Form submission response | System acknowledges within 2 seconds | Up to 100 users active simultaneously |
+| Maximum simultaneous users | System remains fully functional for up to 100 users | Single server deployment |
+
+#### 2.3 Security
+
 [State the requirement of security, not the implementation mechanism. Some samples are as below]
-V. Requirement Appendix
-1. Business Rules
-2. System Messages
+
+| Requirement | Description |
+| --- | --- |
+| Authentication required | Every page and action other than the sign-in page, registration page, and public job listings requires the user to be signed in. |
+| Password protection | Passwords must never be stored in a form that a person or program can read. |
+| Account lockout | After a defined number of consecutive failed sign-in attempts, the account is temporarily locked. Threshold and duration defined in TDS §4. |
+| CV file access | CV files may only be accessed by users with permission to view the associated Application. The system verifies permission on every access. |
+
+## V. Requirement Appendix
+
+### 1. Business Rules
+
+| BR-ID | Rule Statement | Applies To | Rationale | Enforced By |
+| --- | --- | --- | --- | --- |
+| BR-01 | Passwords must never be stored in plain text. Password-based credentials must be protected using a secure salted password-hashing mechanism. | UC-01, UC-08 |  |  |
+| BR-02 | Authentication failure messages must not reveal whether a specific username or email exists in the system. | UC-01 |  |  |
+| BR-03 | A deactivated user account must not be allowed to sign in or access authenticated system functions. | UC-01, UC-02, UC-07, UC-08 |  |  |
+| BR-04 | A user without active system access or the required active role/permission must not be allowed to access the system. | UC-01, UC-02 |  |  |
+| BR-05 | Identity information returned by Google must be successfully verified before it can be used for authentication. | UC-02 |  |  |
+| BR-06 | A Google-authenticated email may be used to sign in only when it is linked to an existing internal user account. | UC-02 |  |  |
+| BR-07 | Signing in with Google must not automatically create a new internal user account. |  |  |  |
+| BR-08 | User permissions are determined by the system and must not be selected manually during the sign-in process. |  |  |  |
+| BR-09 | After a successful sign-out, the current authentication state must no longer grant access to protected system functions. The user must authenticate again before protected functions can be accessed. | UC-03 |  |  |
+| BR-10 | Sensitive authentication information, including passwords, password hashes, reset credentials, and authentication tokens, must not be displayed in User Management. | UC-08 |  |  |
+| BR-11 | List views must support pagination when the number of records exceeds the configured page size. |  |  |  |
+| BR-12 | When a search or filter returns no matching records, the system must display an appropriate no-results message instead of treating the result as a system error. | UC-04 |  |  |
+| BR-13 | Username and email must each be unique across user accounts. | UC-05 |  |  |
+| BR-14 | All mandatory user-account information must be provided and valid before an account can be created or updated. | UC-05, UC-06 |  |  |
+| BR-15 | A newly created user account must have Active status by default. | UC-05 |  |  |
+| BR-16 | Successful administrative changes to user accounts or role-permission configuration must be recorded in the audit log. | UC-05, UC-06, UC-07, UC-08, UC-11, UC-12, UC-13, UC-14 |  |  |
+| BR-17 | General user-account updates may modify Full Name, Job Title, and Contact Information. Email, System Role, and password credentials must be managed separately. | UC-06 |  |  |
+| BR-18 | When a user account is deactivated, all active authenticated sessions for that account must be terminated. | UC-07 |  |  |
+| BR-19 | Deactivating a user account must not delete historical records associated with that user. |  |  |  |
+| BR-20 | A password-reset link must have a limited validity period and must not be reusable after a successful password reset. | UC-08 |  |  |
+| BR-21 | An administrator must not be able to view a user's existing password. | UC-08 |  |  |
+| BR-22 | Password reset may only be initiated for an account that is eligible to use password-based authentication. | UC-08 |  |  |
+| BR-23 | A role-permission configuration may contain only permissions defined by the system and must satisfy the system's permission-configuration rules before it can be applied. | UC-11 |  |  |
+| BR-24 | All required meeting information must be provided before a meeting can be created. | UC-15 |  |  |
+| BR-25 | Planned Start Time and Planned End Time are not stored as meeting-level schedule fields. A meeting's planned schedule is defined by its Meeting Sessions. | UC-15, UC-16, UC-17, UC-18, UC-26, UC-27, UC-53 |  |  |
+| BR-26 | A newly created meeting must have Draft status. | UC-15 |  |  |
+| BR-27 | Meeting information may be edited only while the meeting is in Draft or Rejected status. | UC-16 |  |  |
+| BR-28 | Updating meeting information must not implicitly change the meeting lifecycle status. | UC-16 |  |  |
+| BR-29 | A user may access a meeting only when the user has an authorized relationship with that meeting as its Meeting Organizer, assigned Meeting Approver, Chair, Secretary, or Participant. Authentication alone does not grant access to a meeting. | UC-17, UC-25, UC-53, UC-54 |  |  |
+| BR-30 | The meeting list may be searched by Meeting Name and filtered by Meeting Status, Confidentiality Level, and Time Range. A meeting matches a Time Range when at least one non-cancelled Meeting Session has a planned schedule that overlaps the selected range; meetings without a scheduled Meeting Session do not match a Time Range filter. | UC-18 |  |  |
+| BR-31 | When multiple search or filter criteria are applied, a record must satisfy all applicable criteria to appear in the result. |  |  |  |
+| BR-32 | The meeting list must support sorting, and the current search, filter, and sorting criteria must be preserved when navigating between pages. |  |  |  |
+| BR-33 | A meeting may be submitted or resubmitted for approval only when all mandatory meeting-level information is complete and the meeting is in Draft or Rejected status. Meeting Sessions are not required for approval submission. | UC-19 |  |  |
+| BR-34 | Submitting a Draft or Rejected meeting for approval changes its status to WaitingApproval. A meeting in WaitingApproval status cannot be edited until an approval decision is made. | UC-19 |  |  |
+| BR-35 | For each approval cycle, a Meeting Approver must be assigned. Only the Meeting Approver currently assigned to that approval cycle and holding the meeting_approver permission may approve or reject the meeting. | UC-20 |  |  |
+| BR-36 | Approving a meeting changes its status from WaitingApproval to Approved. Rejecting a meeting changes its status from WaitingApproval to Rejected. A rejection reason is mandatory. | UC-20 |  |  |
+| BR-37 | Only an authorized Meeting Organizer may publish a meeting that is in Approved status and satisfies the publication readiness requirements. Publishing changes the meeting status from Approved to Published and initiates participant invitations. | UC-21 |  |  |
+| BR-38 | Every meeting lifecycle transition must create a history record containing at least the acting user, timestamp, action, and resulting status. A rejection history record must also contain the rejection reason. Meeting lifecycle history records are immutable and must not be updated or deleted. | UC-21 |  |  |
+| BR-39 | Invitation delivery must be executed asynchronously via a background task queue to prevent blocking the user publication flow. | UC-21 |  |  |
+| BR-40 | Failure of an asynchronous invitation delivery task must trigger retry logic without reverting the Published state of the meeting. | UC-21 |  |  |
+| BR-41 | Meeting publication scope is strictly limited to meetings in Approved status and cannot be bypassed by direct state manipulation. |  |  |  |
+| BR-42 | All participant invitation notifications must include a direct link to the published meeting details and attached materials. |  |  |  |
+| BR-43 | System logging must track the queuing and delivery status of all asynchronous invitation messages for auditability. |  |  |  |
+| BR-44 | Re-publishing or updating invitation delivery for an already published meeting requires explicit organizer action and creates a distinct lifecycle record. |  |  |  |
+| BR-45 | The system creates an in-app notification for the intended recipient when they are invited to a meeting, when a meeting they are involved in is approaching its start time. |  |  |  |
+| BR-46 | Notifications are saved for later viewing. If the recipient is connected, a new notification and the unread count are updated in real time without a page reload. |  |  |  |
+| BR-47 | A user may retrieve, open, or change the read status of only notifications belonging to that user's account. | UC-23, UC-24, UC-25 |  |  |
+| BR-48 | The notification bell shows how many of the current user's notifications are unread. | UC-22, UC-24, UC-25 |  |  |
+| BR-49 | Opening the notification list does not mark any notification as read. | UC-22 |  |  |
+| BR-50 | Marking an already-read notification as read leaves its status unchanged and does not reduce the unread count again. | UC-25 |  |  |
+| BR-51 | Mark All as Read applies to all notifications belonging to the current recipient that are unread when the request is processed, including notifications not displayed on the current page. | UC-24 |  |  |
+| BR-52 | A meeting notification links to its corresponding target. Opening the link must check the recipient’s current access permission and must not reveal protected content when access is denied. | UC-25 |  |  |
+| BR-53 | Selecting a notification to open its target attempts to mark the notification as read. Failure to save the read status does not block opening an authorized target. | UC-25 |  |  |
+| BR-54 | Meeting Sessions may be created, updated, or cancelled only by the Secretary assigned to the parent meeting. The selected or newly created session must be Planned, and the parent meeting must be Draft, Rejected, Approved, Published, or InProgress. Session planning is not allowed while the meeting is WaitingApproval or after it is Ended. | UC-26, UC-27, UC-28 |  |  |
+| BR-55 | A meeting does not need a Meeting Session in order to be submitted or resubmitted for approval. | UC-19 |  |  |
+| BR-56 | Meeting Sessions are optional for publication. An Approved meeting may be published with zero Meeting Sessions when all other publication requirements are satisfied. | UC-21, UC-43 |  |  |
+| BR-57 | Meeting Sessions are not permanently deleted. A Planned Meeting Session that will no longer take place is changed to Cancelled and retained for traceability. An InProgress, Completed, or Cancelled Meeting Session cannot be updated or cancelled. | UC-27, UC-28 |  |  |
+| BR-58 |  | UC-28, UC-29, UC-30 |  |  |
+| BR-59 | Only one Meeting Session of the same meeting may be InProgress at a time. | UC-29 |  |  |
+| BR-60 | A Planned Meeting Session may be started only while its parent Meeting is InProgress. Starting or ending a Meeting Session does not change the parent Meeting lifecycle status. | UC-29, UC-30 |  |  |
+| BR-61 | Completing or cancelling the last unfinished Meeting Session does not automatically end the parent Meeting. Ending the Meeting is an explicit Chair action defined by UC-44. | UC-28, UC-30, UC-44 |  |  |
+| BR-62 | A Meeting Session's Planned End Time must be later than its Planned Start Time. | UC-26, UC-27 |  |  |
+| BR-63 | Only the Chair assigned to a meeting may start or end a Meeting Session of that meeting. | UC-29, UC-30 |  |  |
+| BR-64 | Each Agenda Item belongs to exactly one Meeting Session. Reordering changes the order only within that Meeting Session and does not move an Agenda Item to another session. | UC-31, UC-34, UC-35, UC-36, UC-54 |  |  |
+| BR-65 | Only the Secretary assigned to the parent meeting may create, update, delete, or reorder Agenda Items, and only while the selected Meeting Session is Planned. | UC-31, UC-32, UC-33, UC-34 |  |  |
+| BR-66 | An Agenda Item must have a Title and a Planned Duration greater than zero. Presenter and Description may be provided. Any attached documents must be available to the parent meeting. | UC-31, UC-32 |  |  |
+| BR-67 | A newly created Agenda Item starts in Pending status and is assigned an explicit order within its Meeting Session. The Secretary may change that order while the session remains Planned. | UC-31, UC-34 |  |  |
+| BR-68 | After a Meeting Session leaves Planned status, its agenda structure cannot be created, updated, deleted, or reordered. Only agenda execution state may change during the active session. | UC-31, UC-32, UC-33, UC-34 |  |  |
+| BR-69 | Only the Chair assigned to the parent meeting may set or complete the current Agenda Item while the Meeting Session is InProgress. | UC-35, UC-36 |  |  |
+| BR-70 | For the agenda execution covered by these use cases, setting a Pending Agenda Item as current changes it to InProgress; completing the current Agenda Item changes it from InProgress to Done. | UC-35, UC-36 |  |  |
+| BR-71 | Only one Agenda Item of the same Meeting Session may be InProgress at a time. The current Agenda Item must be completed before another Agenda Item can be set as current. | UC-35 |  |  |
+| BR-72 | Setting an Agenda Item as current records its actual start time. Completing it records its actual end time and actual time used. Completing an Agenda Item does not automatically end the Meeting Session. | UC-35, UC-36 |  |  |
+| BR-73 | Changes to the current or completed Agenda Item must be reflected in real time for authorized users viewing the same Meeting Session. | UC-35, UC-36 |  |  |
+| BR-74 | Agenda planning for a Meeting Session remains available while that Meeting Session is Planned, including while the parent meeting is Published or InProgress. Agenda planning ends when the Meeting Session starts or is cancelled. | UC-31, UC-32, UC-33, UC-34 |  |  |
+| BR-75 | When the parent meeting is Published or InProgress, a newly created or rescheduled Planned Meeting Session must have a Planned Start Time later than the current time. This prevents retroactive session scheduling after publication. | UC-26, UC-27 |  |  |
+| BR-76 | Creating, rescheduling, or cancelling a Meeting Session after the parent meeting has been Published must notify affected participants of the schedule change. | UC-26, UC-27, UC-28 |  |  |
+| BR-77 | A Published or InProgress meeting may have zero Planned Meeting Sessions. Cancelling the last Planned Meeting Session is allowed and does not change the parent Meeting lifecycle status. | UC-28 |  |  |
+| BR-78 | When a meeting has no Secretary, only the Meeting Organizer may add the first internal participant, and that participant must be assigned the Secretary Meeting Role. | UC-38 |  |  |
+| BR-79 | After the first Secretary has been assigned, only an assigned Secretary may manage the meeting roster. | UC-38, UC-39, UC-40 |  |  |
+| BR-80 | Participant management is allowed only while the Meeting is Draft, Rejected, Approved, Published, or InProgress. | UC-38, UC-39, UC-40 |  |  |
+| BR-81 | An internal participant must reference an active internal user account. | UC-38 |  |  |
+| BR-82 | An internal user may appear at most once as a current participant in the same Meeting. | UC-37, UC-38 |  |  |
+| BR-83 | Internal participants are added individually; organisational-unit invitations are not supported. | UC-38 |  |  |
+| BR-84 | External Guests are represented by meeting-specific Guest invitations rather than internal Meeting Participant records. | UC-37, UC-38, UC-40 |  |  |
+| BR-85 | Each current internal participant has exactly one Meeting Role: Chair, Secretary, or Member. | UC-38, UC-39 |  |  |
+| BR-86 | A participant's Meeting Role is independent of the user's system Role. | UC-38, UC-39 |  |  |
+| BR-87 | An external Guest cannot satisfy a required Chair or Secretary role. | UC-21, UC-29, UC-43 |  |  |
+| BR-88 | A newly added internal participant or external Guest invitation starts with Pending Invitation Response and no response time. | UC-38 |  |  |
+| BR-89 | Delegation is available only to current internal participants. | UC-41 |  |  |
+| BR-90 | When an internal participant is added to a Published or InProgress Meeting, the participant is notified through the applicable invitation channels. | UC-38 |  |  |
+| BR-91 | When an external Guest is invited to a Published or InProgress Meeting, the invitation is delivered by email. | UC-38 |  |  |
+| BR-92 | Changing an internal participant's Meeting Role while the Meeting is Published or InProgress notifies that participant. | UC-39 |  |  |
+| BR-93 | Removing an internal participant or revoking a Guest invitation from a Published or InProgress Meeting notifies the affected invitee through the applicable channel. | UC-40 |  |  |
+| BR-94 | Failure to deliver a participant or Guest notification does not undo an otherwise successful roster change. | UC-38, UC-39, UC-40 |  |  |
+| BR-95 | A participant-removal or Guest-revocation notification must not contain a protected meeting-access link. | UC-40 |  |  |
+| BR-96 | Changing a Meeting Role does not change the participant's Invitation Response. | UC-39 |  |  |
+| BR-97 | Removing a current internal participant revokes access granted by that participant assignment. | UC-40, UC-45 |  |  |
+| BR-98 | Removing a current internal participant ends any outgoing delegation created by that participant. | UC-40, UC-41 |  |  |
+| BR-99 | Removing a participant's own assignment does not invalidate an independent incoming delegation granted to that user. | UC-40, UC-41 |  |  |
+| BR-100 | Revoking an external Guest invitation revokes access granted by that Guest relationship. | UC-40, UC-45 |  |  |
+| BR-101 | After a roster, delegation, or Guest-access relationship changes, room-entry eligibility must be re-evaluated; a connected user is disconnected only when no valid room-entry relationship remains. | UC-40, UC-41, UC-45 |  |  |
+| BR-102 | Removing or revoking a roster entry after publication preserves its Invitation Response and Attendance evidence as historical data. | UC-37, UC-40, UC-42 |  |  |
+| BR-103 | Historical or revoked roster records are excluded from the current roster, current access checks, and required-role counts. | UC-37, UC-40, UC-42 |  |  |
+| BR-104 | Only the owner of a current invitation may respond to that invitation. | UC-41 |  |  |
+| BR-105 | An internal participant may respond Accepted, Declined, or Delegated; an external Guest may respond only Accepted or Declined. | UC-41 |  |  |
+| BR-106 | Invitation Responses may be changed while the Meeting is Published or InProgress. | UC-41 |  |  |
+| BR-107 | A delegation target must be another active internal user. | UC-41 |  |  |
+| BR-108 | A participant cannot delegate their invitation to themself. | UC-41 |  |  |
+| BR-109 | Delegation does not create another Meeting Participant record or transfer the original participant's Meeting Role. | UC-41 |  |  |
+| BR-110 | While delegation is effective, the original participant retains meeting-read access, but the original participant's own assignment does not grant room-entry access. | UC-41, UC-45 |  |  |
+| BR-111 | An effective delegate receives meeting-read and room-entry access granted by the delegation. | UC-41, UC-45 |  |  |
+| BR-112 | If the selected delegate is already a Meeting Participant, the delegate keeps their existing Meeting Role. | UC-41 |  |  |
+| BR-113 | A user may represent at most one other participant through delegation in the same Meeting. | UC-41 |  |  |
+| BR-114 | Replacing or withdrawing a delegation revokes access granted solely by the previous delegation. | UC-41, UC-45 |  |  |
+| BR-115 | The latest Invitation Response and its response time are recorded for each current invitation. | UC-41, UC-42 |  |  |
+| BR-116 | Invitation Response and Attendance are independent; Accepted does not mean the invitee attended the Meeting. | UC-41, UC-42, UC-88 |  |  |
+| BR-117 | Roster and invitation-response information is accessible only to users whose relationship with the Meeting permits that information. | UC-17, UC-37, UC-41, UC-42 |  |  |
+| BR-118 | An active assigned Secretary may read the Meeting before publication; WaitingApproval is read-only for roster management. | UC-17, UC-37, UC-38, UC-39, UC-40 |  |  |
+| BR-119 | A Chair or Member assignment alone does not grant meeting-read access before the Meeting is Published. | UC-17, UC-18 |  |  |
+| BR-120 | An external Guest receives access only to the Meeting to which that Guest was invited. | UC-41, UC-45 |  |  |
+| BR-121 | A user who is not authorized to access a Meeting must not receive its roster or invitation-response information. | UC-37, UC-42 |  |  |
+| BR-122 | After the first Secretary has been assigned, a Meeting must retain at least one current internal participant assigned as Secretary. | UC-38, UC-39, UC-40 |  |  |
+| BR-123 | A Meeting may have at most one current Chair at a time. | UC-38, UC-39 |  |  |
+| BR-124 | Publishing a Meeting requires exactly one current Chair whose internal account is active. | UC-21 |  |  |
+| BR-125 | Publishing a Meeting requires at least one current Secretary whose internal account is active. | UC-21 |  |  |
+| BR-126 | A Published or InProgress Meeting must not lose its current Chair unless a valid replacement is assigned. | UC-39, UC-40 |  |  |
+| BR-127 | Starting a Meeting requires exactly one current Chair and at least one current Secretary whose internal accounts are active. | UC-43 |  |  |
+| BR-128 | Starting a Meeting Session requires exactly one current Chair and at least one current Secretary whose internal accounts are active. | UC-29 |  |  |
+| BR-129 | Invitation Response does not affect Chair or Secretary readiness checks. | UC-21, UC-29, UC-43 |  |  |
+| BR-130 | Only an active current Chair assigned to the Meeting may explicitly start or end that Meeting. | UC-43, UC-44 |  |  |
+| BR-131 | A Meeting may be started only while it is Published. | UC-43 |  |  |
+| BR-132 | A Meeting may be ended only while it is InProgress. | UC-44 |  |  |
+| BR-133 | A Meeting may start with zero Meeting Sessions. | UC-43 |  |  |
+| BR-134 | A Meeting may end only when no Meeting Session remains Planned or InProgress; a Meeting with zero sessions satisfies this condition. | UC-44 |  |  |
+| BR-135 | Changing the Meeting lifecycle does not change any Meeting Session status. | UC-43, UC-44 |  |  |
+| BR-136 | Changing a Meeting Session lifecycle does not change the parent Meeting status. | UC-28, UC-29, UC-30 |  |  |
+| BR-137 | The Online Meeting Room belongs to the Meeting rather than to a Meeting Session. | UC-45, UC-46, UC-47, UC-48, UC-49, UC-50, UC-51, UC-52 |  |  |
+| BR-138 | A Meeting Session is not required to use the Online Meeting Room. | UC-45, UC-46, UC-47, UC-48, UC-49, UC-50, UC-51, UC-52 |  |  |
+| BR-139 | The Online Meeting Room is available only for Online or Hybrid Meetings whose lifecycle status is Published or InProgress. | UC-45 |  |  |
+| BR-140 | Room entry requires a valid current internal participant relationship, effective delegation, or verified current external Guest relationship. | UC-45 |  |  |
+| BR-141 | Joining, leaving, microphone/camera control, screen sharing, room moderation, and in-room chat do not change the Meeting or Meeting Session lifecycle. | UC-45, UC-46, UC-47, UC-48, UC-49, UC-51, UC-52 |  |  |
+| BR-142 | The same Online Meeting Room may remain available across multiple Meeting Sessions of the same Meeting. | UC-45, UC-46, UC-47, UC-48, UC-49, UC-50, UC-51, UC-52 |  |  |
+| BR-143 | When a Meeting becomes Ended, its Online Meeting Room stops accepting joins and disconnects currently connected users. | UC-44, UC-45 |  |  |
+| BR-144 | A room user may control only their own microphone and camera; the assigned Chair may mute or remove another connected user but may not enable another user's microphone or camera. | UC-47, UC-48, UC-51 |  |  |
+| BR-145 | At most one screen share may be active in the same Meeting Room at a time; starting a new share stops the previous active share. | UC-49 |  |  |
+| BR-146 | Meeting Room presence represents users currently connected to the room and is distinct from the Meeting Participant roster. | UC-50 |  |  |
+| BR-147 | In-room chat is scoped to the selected Meeting Room and is available only to authorized users currently connected to that room. | UC-52 |  |  |
+| BR-148 | An external Guest is identified by Guest Name and Email and does not require an internal user account. | UC-37, UC-38, UC-41 |  |  |
+| BR-149 | Within one Meeting, a Guest email may have at most one current Guest invitation. | UC-38 |  |  |
+| BR-150 | An external Guest has fixed Guest access and receives no system Role or privileged Meeting Role. | UC-38, UC-45 |  |  |
+| BR-151 | A Guest invitation must not be created when the same email is already represented by a current internal participant of that Meeting. | UC-38 |  |  |
+| BR-152 | External Guest access requires a secure, meeting-specific invitation. | UC-21, UC-38, UC-41, UC-45 |  |  |
+| BR-153 | An external Guest must verify control of the invited email before Guest access is established. | UC-41, UC-45 |  |  |
+| BR-154 | External Guest access is scoped only to the invited Meeting. | UC-41, UC-45 |  |  |
+| BR-155 | External Guest access expires according to the configured validity period. | UC-41, UC-45 |  |  |
+| BR-156 | External Guest access does not require an internal account login. | UC-38, UC-41, UC-45 |  |  |
+| BR-157 | Revoking an external Guest invitation immediately invalidates access granted by that invitation. | UC-40, UC-41, UC-45 |  |  |
+
+### 2. System Messages
+
+| # | Message code | Message Type | Context | Content |
+| --- | --- | --- | --- | --- |
+| 1 | MSG01 | Form error | UC-01 – Sign in with Email and Password / Exception Flows | Invalid email or password. |
+| 2 | MSG02 | Form error | UC-01 – Sign in with Email and Password / Exception Flows | Your account is currently unavailable. Please contact your administrator for assistance. |
+| 3 | MSG03 | Form error | UC-02 – Sign in with Google / Exception Flows | Google sign-in was unsuccessful. |
+| 4 | MSG04 | Form error | UC-02 – Sign in with Google / Exception Flows | Unable to verify your Google account. Please try again. |
+| 5 | MSG05 | Form error | UC-02 – Sign in with Google / Exception Flows | This Google account has not been granted access to the system. |
+| 6 | MSG02 | Form error | UC-02 – Sign in with Google / Exception Flows | Your account is currently unavailable. Please contact your administrator for assistance. |
+| 7 | MSG06 | Dialog / Toast | UC-03 – Sign Out / Exception Flows | Unable to sign out. Please try again. |
+| 8 | MSG01 | Redirect to sign-in | Common – Session Renewal | Your session has expired. Please sign in again. |
+| 9 | MSG02 | Redirect to sign-in | Common – Session Renewal | Your account is currently unavailable. Please contact your administrator for assistance. |
+| 10 | MSG07 | Toast | UC-05 – Create User Account / Main Flow | User account created successfully. |
+| 11 | MSG08 | Field error | UC-05 – Create User Account / Exception Flows | Email is already in use. |
+| 12 | MSG09 | Field error / Form error | UC-05 – Create User Account / Exception Flows | Invalid account information.<br>Field errors:<br>- fullName: Full name is required. / Full name must not exceed 200 characters.<br>- email: Email is required. / Email is invalid.<br>- password: Password must be at least 12 characters.<br>- roleId: The role does not exist. |
+| 13 | MSG10 | Toast | UC-06 – Update User Account / Main Flow | User account updated successfully. |
+| 14 | MSG08 | Field error | UC-06 – Update User Account / Exception Flows | Email is already in use. |
+| 15 | MSG09 | Field error / Form error | UC-06 – Update User Account / Exception Flows | Invalid account information.<br>Field errors:<br>- fullName: Full name is required. / Full name must not exceed 200 characters.<br>- email: Email is required. / Email is invalid.<br>- password: Password must be at least 12 characters.<br>- roleId: The role does not exist. |
+| 16 | MSG11 | Toast | UC-07 – Deactivate / Reactivate User Account / Main Flow | User account status changed successfully. |
+| 17 | MSG09 | Form error | UC-07 – Deactivate / Reactivate User Account / Exception Flows | Invalid account information.<br>Field errors:<br>- isActive: The status to set for the account is missing. |
+| 18 | MSG12 | Dialog | UC-07 – Deactivate / Reactivate User Account / Exception Flows | Unable to change the status of this user account. |
+| 19 | MSG13 | Toast | UC-08 – Reset User Password / Main Flow | Password reset email sent successfully. |
+| 20 | MSG92 | Toast | UC-08 – Reset User Password / Main Flow | Password reset successfully. Please sign in with your new password. |
+| 21 | MSG06 | Toast | UC-08 – Reset User Password / Alternative Flows | Unable to sign out. Please try again. |
+| 22 | MSG14 | Form error | UC-08 – Reset User Password / Exception Flows | Password reset is not available for this account. |
+| 23 | MSG15 | Toast | UC-08 – Reset User Password / Exception Flows | Unable to send the password reset email. Please try again. |
+| 24 | MSG93 | Page | UC-08 – Reset User Password / Exception Flows | The password reset link is invalid or has expired. Please contact an administrator. |
+| 25 | MSG94 | Field error | UC-08 – Reset User Password / Exception Flows | Invalid new password.<br>Field errors:<br>- newPassword: Password must be at least 12 characters. |
+| 26 | MSG129 | Page | UC-08 – Reset User Password / Exception Flows | No password reset code was found. Please open the link in the email again. |
+| 27 | MSG10 | Toast | UC-09 – Assign System Role to User / Main Flow, Alternative Flows | User account updated successfully. |
+| 28 | MSG09 | Field error / Form error | UC-09 – Assign System Role to User / Exception Flows | Invalid account information.<br>Field errors:<br>- roleId: The role does not exist. |
+| 29 | MSG12 | Form error | UC-09 – Assign System Role to User / Exception Flows | Unable to change the status of this user account. |
+| 30 | MSG16 | Toast | UC-11 – Configure Role Permissions / Main Flow | Role permissions updated successfully. |
+| 31 | MSG17 | Inline error (under role row) | UC-11 – Configure Role Permissions / Exception Flows | Invalid permission configuration.<br>Field errors:<br>- roleId: Invalid role.<br>- capabilities: The list of permissions to set for the role is missing. / Invalid permissions: {permission codes}. / The permission list contains invalid values.<br>- adminUsers: Cannot save this configuration: after saving, no active account would hold the user administration permission, so no one could access the permission screen. |
+| 32 | MSG18 | Inline error (under role row) | UC-11 – Configure Role Permissions / Exception Flows | Unable to update role permissions. Please try again. |
+| 33 | MSG19 | Toast | UC-12 – Create Role / Main Flow | Role created successfully. |
+| 34 | MSG20 | Field error / Form error | UC-12 – Create Role / Exception Flows | Invalid role information.<br>Field errors:<br>- name: Role name is required. / Role name must not exceed 64 characters.<br>- description: Description must not exceed 256 characters.<br>- capabilities: Invalid permissions: {permission codes}. |
+| 35 | MSG21 | Field error | UC-12 – Create Role / Exception Flows | A role with this name already exists. Please choose a different name. |
+| 36 | MSG26 | Form error | UC-12 – Create Role / Exception Flows | Unable to create the role. Please try again. |
+| 37 | MSG22 | Toast | UC-13 – Update Role / Main Flow | Role updated successfully. |
+| 38 | MSG22 | Toast | UC-13 – Update Role / Alternative Flows | Role updated successfully. |
+| 39 | MSG24 | Form error | UC-13 – Update Role / Exception Flows | This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions. |
+| 40 | MSG20 | Field error / Form error | UC-13 – Update Role / Exception Flows | Invalid role information.<br>Field errors:<br>- name: Role name is required. / Role name must not exceed 64 characters.<br>- description: Description must not exceed 256 characters.<br>- capabilities: Invalid permissions: {permission codes}. |
+| 41 | MSG21 | Field error | UC-13 – Update Role / Exception Flows | A role with this name already exists. Please choose a different name. |
+| 42 | MSG27 | Form error | UC-13 – Update Role / Exception Flows | Unable to update the role. Please try again. |
+| 43 | MSG23 | Toast | UC-14 – Delete Role / Main Flow | Role deleted successfully. |
+| 44 | MSG24 | Dialog | UC-14 – Delete Role / Exception Flows | This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions. |
+| 45 | MSG25 | Dialog | UC-14 – Delete Role / Exception Flows | This role is still held by {n} user account(s). Reassign them to another role before deleting. |
+| 46 | MSG28 | Dialog | UC-14 – Delete Role / Exception Flows | Unable to delete the role. Please try again. |
+| 47 | MSG29 | Toast | UC-15 – Create Meeting / Main Flow | Meeting created successfully. |
+| 48 | MSG31 | Field error / Form error | UC-15 – Create Meeting / Exception Flows | Invalid meeting information.<br>Field errors:<br>- title: Meeting title is required. / Meeting title must not exceed 300 characters.<br>- location: Location must not exceed 300 characters.<br>- description: Description must not exceed 4000 characters.<br>- mode: Invalid meeting mode.<br>- sensitivity: Invalid sensitivity level. |
+| 49 | MSG35 | Form error | UC-15 – Create Meeting / Exception Flows | Unable to create the meeting. Please try again. |
+| 50 | MSG30 | Toast | UC-16 – Update Meeting / Main Flow | Meeting updated successfully. |
+| 51 | MSG31 | Field error / Form error | UC-16 – Update Meeting / Exception Flows | Invalid meeting information.<br>Field errors:<br>- title: Meeting title is required. / Meeting title must not exceed 300 characters.<br>- location: Location must not exceed 300 characters.<br>- description: Description must not exceed 4000 characters.<br>- mode: Invalid meeting mode.<br>- sensitivity: Invalid sensitivity level. |
+| 52 | MSG31 | Form error | UC-16 – Update Meeting / Exception Flows | Invalid JSON content. |
+| 53 | MSG34 | API error | Technical API response – outside UC-16 business flow | Content-Type must be application/json. |
+| 54 | MSG33 | Dialog | UC-16 – Update Meeting / Exception Flows | This meeting can no longer be edited. |
+| 55 | MSG36 | Form error | UC-16 – Update Meeting / Exception Flows | Unable to update the meeting. Please try again. |
+| 56 | —<br>(HTTP 404) | Page | UC-17 – View Meeting Details / Exception Flows | Meeting not found. |
+| 57 | MSG37 | Page | UC-17 – View Meeting Details / Exception Flows | Unable to load meeting details. Please try again. |
+| 58 | — | Table message | UC-18 – View Meeting List / Alternative Flows | No meetings match the filter. |
+| 59 | MSG38 | Table message | UC-18 – View Meeting List / Exception Flows | Unable to load meetings. Please try again. |
+| 60 | MSG32 | Table message | UC-18 – View Meeting List / Exception Flows | The meeting list criteria are invalid. |
+| 61 | MSG41 | Dialog | UC-19 – Submit Meeting for Approval / Exception Flows | This meeting can no longer be submitted for approval. |
+| 62 | MSG42 | Toast | UC-19 – Submit Meeting for Approval / Exception Flows | Unable to submit the meeting for approval. Please try again. |
+| 63 | MSG43 | Toast | UC-20 – Review Meeting Approval / Main Flow | Meeting approved successfully. |
+| 64 | MSG44 | Toast | UC-20 – Review Meeting Approval / Alternative Flows | Meeting rejected successfully. |
+| 65 | MSG45 | Toast | UC-21 – Publish Meeting / Main Flow | Meeting published successfully. |
+| 66 | MSG46 | Dialog | UC-21 – Publish Meeting / Exception Flows | This meeting can no longer be published. |
+| 67 | MSG47 | Toast | UC-21 – Publish Meeting / Exception Flows | Unable to publish the meeting. Please try again. |
+| 68 | MSG39 | List message | UC-22 – View Notifications / Exception Flows | The requested notification page is unavailable. |
+| 69 | MSG40 | List message | UC-22 – View Notifications / Exception Flows | Unable to load notifications. Please try again. |
+| 70 | MSG48 | Toast | UC-26 – Create Meeting Session / Main Flow | Meeting session created successfully. |
+| 71 | MSG49 | Toast | UC-27 – Update Meeting Session / Main Flow | Meeting session updated successfully. |
+| 72 | MSG50 | Toast | UC-28 – Cancel Meeting Session / Main Flow | Meeting session cancelled successfully. |
+| 73 | MSG51 | Toast | UC-29 – Start Meeting Session / Main Flow | Meeting session started successfully. |
+| 74 | MSG52 | Toast | UC-30 – End Meeting Session / Main Flow | Meeting session ended successfully. |
+| 75 | MSG53 | Field error / Form error | UC-26 – Create Meeting Session / Exception Flows; UC-27 – Update Meeting Session / Exception Flows | Invalid meeting session information.<br>Field errors:<br>- title: Meeting session title is required.<br>- plannedStartTime: Invalid planned start time. / Planned start time must be in the future when the meeting is Published or InProgress.<br>- plannedEndTime: Invalid planned end time. / Planned end time must be after planned start time. |
+| 76 | MSG54 | Dialog | UC-26 – Create Meeting Session / Exception Flows | Meeting sessions can no longer be added to this meeting. |
+| 77 | MSG55 | Dialog | UC-27 – Update Meeting Session / Exception Flows | This meeting session can no longer be edited. |
+| 78 | MSG56 | Dialog | UC-28 – Cancel Meeting Session / Exception Flows | This meeting session can no longer be cancelled. |
+| 79 | MSG57 | Dialog | UC-29 – Start Meeting Session / Exception Flows | Another meeting session is already in progress. End it before starting another session. |
+| 80 | MSG58 | Dialog | UC-29 – Start Meeting Session / Exception Flows | This meeting session cannot be started. |
+| 81 | MSG59 | Dialog | UC-30 – End Meeting Session / Exception Flows | This meeting session cannot be ended. |
+| 82 | MSG60 | Toast | UC-31 – Create Agenda Item / Main Flow | Agenda item created successfully. |
+| 83 | MSG61 | Toast | UC-32 – Update Agenda Item / Main Flow | Agenda item updated successfully. |
+| 84 | MSG62 | Toast | UC-33 – Delete Agenda Item / Main Flow | Agenda item deleted successfully. |
+| 85 | MSG63 | Toast | UC-34 – Reorder Agenda Items / Main Flow | Agenda order updated successfully. |
+| 86 | MSG64 | Toast | UC-35 – Set Current Agenda Item / Main Flow | Current agenda item updated successfully. |
+| 87 | MSG65 | Toast | UC-36 – Complete Agenda Item / Main Flow | Agenda item completed successfully. |
+| 88 | MSG66 | Field error / Form error | UC-31 – Create Agenda Item / Exception Flows; UC-32 – Update Agenda Item / Exception Flows | Invalid agenda item information.<br>Field errors:<br>- title: Agenda item title is required.<br>- plannedDurationMinutes: Planned duration must be greater than 0.<br>- documents: One or more selected documents are not available to this meeting. |
+| 89 | MSG67 | Dialog | UC-31 – UC-34 / Exception Flows | The agenda for this meeting session can no longer be modified. |
+| 90 | MSG68 | Toast | UC-31 – Create Agenda Item / Exception Flows | Unable to create the agenda item. Please try again. |
+| 91 | MSG69 | Toast | UC-32 – Update Agenda Item / Exception Flows | Unable to update the agenda item. Please try again. |
+| 92 | MSG70 | Dialog / Toast | UC-33 – Delete Agenda Item / Exception Flows | Unable to delete the agenda item. Please try again. |
+| 93 | MSG71 | Toast | UC-34 – Reorder Agenda Items / Exception Flows | Unable to update the agenda order. Please try again. |
+| 94 | MSG72 | Dialog | UC-35 – Set Current Agenda Item / Exception Flows | Another agenda item is already in progress. Complete it before starting another agenda item. |
+| 95 | MSG73 | Dialog | UC-35 – Set Current Agenda Item / Exception Flows | This agenda item cannot be set as current. |
+| 96 | MSG74 | Dialog | UC-36 – Complete Agenda Item / Exception Flows | This agenda item cannot be completed. |
+| 97 | MSG75 | Toast | UC-35 – Set Current Agenda Item / Exception Flows | Unable to set the current agenda item. Please try again. |
+| 98 | MSG76 | Toast | UC-36 – Complete Agenda Item / Exception Flows | Unable to complete the agenda item. Please try again. |
+| 99 | MSG83 | Field error | UC-20 – Review Meeting Approval / Exception Flows | Rejection reason is required. |
+| 100 | MSG84 | Field error | UC-20 – Review Meeting Approval / Exception Flows | Rejection reason must not exceed 1000 characters. |
+| 101 | MSG95 | Page / Table message | UC-37 – View Meeting Participants / Exception Flows; UC-42 – View Participant Response Status / Exception Flows | Unable to load meeting participants. Please try again. |
+| 102 | MSG96 | Toast | UC-38 – Add Meeting Participant / Main Flow | Meeting participant added successfully. |
+| 103 | MSG97 | Field error / Form error | UC-38 – Add Meeting Participant / Exception Flows | Invalid meeting participant information.<br>Field messages:<br>- The selected user is not available.<br>- This user is already a meeting participant.<br>- A valid meeting role is required.<br>- The Meeting Organizer must assign a Secretary as the first meeting participant.<br>- Guest name and email are required.<br>- Guest email is invalid.<br>- This guest email is already invited to the meeting.<br>- This email is already represented by an internal meeting participant. |
+| 104 | MSG98 | Dialog | UC-38, UC-39, UC-40 / Exception Flows | The meeting participant list cannot be modified in its current status. |
+| 105 | MSG99 | Toast | UC-38 – Add Meeting Participant / Exception Flows | Unable to add the meeting participant. Please try again. |
+| 106 | MSG100 | Toast | UC-39 – Assign / Change Meeting Role / Main Flow; Alternative Flows | Meeting role updated successfully. |
+| 107 | MSG101 | Field error | UC-39 – Assign / Change Meeting Role / Exception Flows | A valid meeting role is required. |
+| 108 | MSG102 | Toast | UC-39 – Assign / Change Meeting Role / Exception Flows | Unable to update the meeting role. Please try again. |
+| 109 | MSG103 | Toast | UC-40 – Remove Meeting Participant / Main Flow | Meeting participant removed successfully. |
+| 110 | MSG104 | Toast | UC-40 – Remove Meeting Participant / Exception Flows | Unable to remove the meeting participant. Please try again. |
+| 111 | MSG105 | Toast | UC-41 – Respond to Meeting Invitation / Main Flow | Meeting invitation response recorded successfully. |
+| 112 | MSG106 | Field error / Form error | UC-41 – Respond to Meeting Invitation / Exception Flows | Invalid meeting invitation response. |
+| 113 | MSG107 | Dialog | UC-41 – Respond to Meeting Invitation / Exception Flows | This meeting invitation can no longer be answered. |
+| 114 | MSG108 | Toast | UC-41 – Respond to Meeting Invitation / Exception Flows | Unable to save the meeting invitation response. Please try again. |
+| 115 | MSG109 | Dialog | UC-39 – Assign / Change Meeting Role / Exception Flows; UC-40 – Remove Meeting Participant / Exception Flows | The meeting must retain its required Chair and Secretary. Assign a replacement first. |
+| 116 | MSG110 | Toast | UC-43 – Start Meeting / Main Flow | Meeting started successfully. |
+| 117 | MSG111 | Toast | UC-44 – End Meeting / Main Flow | Meeting ended successfully. |
+| 118 | MSG112 | Dialog | UC-43 – Start Meeting / Exception Flows | This meeting cannot be started. |
+| 119 | MSG113 | Dialog | UC-44 – End Meeting / Exception Flows | Complete or cancel all unfinished meeting sessions before ending the meeting. |
+| 120 | MSG114 | Dialog | UC-44 – End Meeting / Exception Flows | This meeting cannot be ended. |
+| 121 | MSG115 | Toast | UC-43 – Start Meeting / Exception Flows | Unable to start the meeting. Please try again. |
+| 122 | MSG116 | Toast | UC-44 – End Meeting / Exception Flows | Unable to end the meeting. Please try again. |
+| 123 | MSG117 | Dialog | UC-45 – Join Meeting Room / Exception Flows | The online meeting room is not available. |
+| 124 | MSG118 | Toast | UC-45 – Join Meeting Room / Exception Flows | Unable to join the meeting room. Please try again. |
+| 125 | MSG119 | Inline / Dialog | UC-47 – Manage Microphone / Exception Flows | Microphone access is unavailable. Check your browser or device permissions. |
+| 126 | MSG120 | Inline / Dialog | UC-48 – Manage Camera / Exception Flows | Camera access is unavailable. Check your browser or device permissions. |
+| 127 | MSG121 | Toast | UC-49 – Manage Screen Sharing / Exception Flows | Unable to share your screen. |
+| 128 | MSG122 | Page / Panel message | UC-50 – View Meeting Room Participants / Exception Flows | Unable to load meeting room participants. Please try again. |
+| 129 | MSG123 | Dialog | UC-51 – Moderate Meeting Room / Exception Flows | You are not allowed to moderate this meeting room. |
+| 130 | MSG124 | Toast | UC-51 – Moderate Meeting Room / Exception Flows | Unable to apply the room moderation action. |
+| 131 | MSG125 | Toast | UC-52 – Use In-room Chat / Exception Flows | Unable to send the room message. Please try again. |
+| 132 | MSG126 | Inline / Form error | UC-41 – Respond to Meeting Invitation / Exception Flows | Unable to verify the guest invitation. Check the code and try again. |
+| 133 | MSG127 | Page / Panel message | UC-53 – View Meeting Sessions / Exception Flows | Unable to load meeting sessions. Please try again. |
+| 134 | MSG128 | Page / Panel message | UC-54 – View Meeting Agenda / Exception Flows | Unable to load the meeting agenda. Please try again. |
+
 Note: Message codes follow a single project-wide numbering that is shared with the source code. One code identifies one situation, so a code may appear in several use cases when the situation is the same, but two different situations never share a code. MSG04 and MSG41–MSG77 are reserved for use cases that are not implemented yet. “—” marks a message that has no code.
-3. Other Requirements
+
+### 3. Other Requirements
+
 …
-Date
-A*
-M, D
-In charge
-Change Description
-27/09/2026
-A
-KhanhPG
-Initial changes: add context diagram and actors, use case specification for Authentication
-30/09/2026
-M
-KhanhPG
-Add Meeting Session use cases, assign Meeting Session planning to the Secretary, complete Meeting Session business rules and system messages, and refine affected Meeting Management flows.
-30/09/2026
-M
-KhanhPG
-Add Agenda Management use cases linked to Meeting Sessions, including agenda planning, live agenda control, business rules, and system messages.
-01/10/2026
-M
-KhanhPG
-Replace Meeting Session deletion with cancellation; allow planned-session changes after publication; add post-publication scheduling, notification, and lifecycle rules.
-03/10/2026
-M
-KhanhPG
-Synchronize Meeting Management and Notification updates; move planned scheduling from Meeting to Meeting Session; verify BR-01 to BR-77 alignment.
-03/10/2026
-M
-KhanhPG
-Refine Meeting Participant Management actors and support external Guest invitations by email without an internal account login; align UC-21, UC-37–UC-42, UC-45, BR-78–BR-89/BR-94, add BR-101–BR-103 and MSG126.
-03/10/2026
-M
-KhanhPG
-Synchronize the latest two GitHub commits for Meeting Participant Management: add UC-37 to UC-42, add BR-78 to BR-89 and MSG95 to MSG109, and update affected Meeting Management publication requirements.
-03/10/2026
-M
-KhanhPG
-Decouple Meeting, Meeting Session, and Online Meeting Room lifecycles; make Meeting Sessions optional for publication; add explicit Start/End Meeting and Online Meeting Room use cases; align affected business rules and system messages.
-04/10/2026
-M
-KhanhPG
-Refine UC-17 to meeting-level details only; add UC-53 View Meeting Sessions and UC-54 View Meeting Agenda as separate read use cases; align related BR references and system messages.
-04/10/2026
-M
-KhanhPG
-Move UC-53 View Meeting Sessions into Meeting Session Management and UC-54 View Meeting Agenda into Agenda Management; remove temporary Read Views feature.
-05/10/2026
-M
-KhanhPG
-Synchronize the feature taxonomy with Reports 1 and 2: map existing UC groups to the FE-01 through FE-16 baseline, split the former Meeting & Schedule Management scope into FE-04 through FE-07, and keep all existing UC IDs unchanged.
-05/10/2026
-M
-KhanhPG
-Synchronize the Use Case inventory with the PO-confirmed FE-01 to FE-16 baseline. Add placeholder names through UC-94, introduce Personal Document Library, make Secretary the meeting-audio uploader, and reserve the approved Attendance, Summary Generation, Document Comment, Audit Log and Minutes Revision use cases. Detailed specifications for newly added UCs are intentionally deferred.
-05/10/2026
-M
-KhanhPG
-Refactor BR-78 onward into atomic, independently testable business rules; align Chair cardinality with the approved publication rule (at most one current Chair and exactly one active Chair required for publication); update affected Use Case business-rule references.
-Acronym
-Definition
-IMDMS
-Internal Meeting and Document Management System
-…
-Field
-Value
-Purpose
-Every person with an account in the system, regardless of role.
-Key business attributes
-Full name, username, email address, role (Admin / HR Manager / Interviewer / Candidate), account status
-Business identity
-Username unique across the entire system. Email unique across the entire system.
-Status / lifecycle
-Active (normal)  ·  Inactive (deactivated by Admin)  ·  Locked (temporary — after repeated failed sign-in attempts)
-Field
-Value
-Purpose
-A job opening created by HR Manager, visible to Candidates when Active.
-Key business attributes
-Job title, department, location, job description, requirements, salary range (optional), application deadline
-Business identity
-No natural unique key. Multiple postings with the same title in the same department are permitted.
-Status / lifecycle
-Field
-Value
-Purpose
-A Candidate's expression of interest in a specific Job Posting, with CV attached.
-Key business attributes
-Which Candidate, which Job Posting, CV file, cover letter (optional), current pipeline stage, submission date
-Business identity
-A Candidate may submit at most one Application per Job Posting. This combination is unique.
-Status / lifecycle
-Field
-Value
-Purpose
-{{ENTITY_PURPOSE}}
-Key business attributes
-{{KEY_ATTRIBUTES}}
-Business identity
-{{BUSINESS_IDENTITY}}
-Status / lifecycle
-{{STATUS_VALUES}}
-Rule
-Description
-Enforced On
-Unique username
-No two users may share the same username, regardless of role.
-Account creation and username change
-Unique email
-No two users may share the same email address.
-Account creation and email change
-One application per job
-A Candidate may not submit a second Application for a job they have already applied to, even if the previous was withdrawn.
-Application submission
-Application requires active job
-A Candidate may only apply for a Job Posting with status Active.
-Application submission
-Accounts never permanently deleted
-User accounts are deactivated, not deleted. All associated data must remain accessible.
-Account deactivation
-Jobs with applications cannot be deleted
-A Job Posting with at least one Application (any status) cannot be deleted — must be Closed instead.
-Job deletion
-Internal notes are permanent
-Once saved, an Internal Note cannot be edited or deleted by anyone. They form an audit trail.
-Note creation
-Evaluations are permanent
-Once an Interviewer submits rating and feedback, neither can be changed by anyone.
-Evaluation submission
-CV files are access-controlled
-CV files must never be accessible via a guessable or publicly shareable link. Access verified by system on every download.
-CV file access
-#
-Actor
-Description
-1
-Guest
-An external person who does not have an internal user account. A Guest is invited to a specific meeting by name and email and accesses only that meeting through a secure meeting-specific guest invitation and email verification, without signing in to an internal account. Guest access is limited to permitted meeting functions.
-2
-Meeting Organizer
-A system-authorized user responsible for creating, updating, submitting, organizing, and publishing meetings under their management.
-3
-Meeting Approver
-A system-authorized user who may be assigned to review a specific meeting approval request and decide whether to approve or reject it. An approval permission alone does not grant access to all meetings.
-4
-System Admin
-An administrator responsible for managing user accounts, roles, permissions and system-wide configuration, including viewing relevant business and security audit events.
-5
-Chair
-A user assigned to chair a specific meeting and perform chair-related activities within that meeting, including starting or ending the meeting, controlling Meeting Sessions, and moderating authorized meeting-room interactions.
-6
-Secretary
-A user assigned to support a specific meeting by preparing Meeting Sessions and agenda items, managing the meeting roster and official attendance, managing authorized meeting documents, uploading the post-meeting audio, reviewing transcripts and summaries, and preparing/finalizing meeting minutes.
-7
-Participant
-An internal user assigned to participate in a specific meeting. A Participant may perform authorized meeting activities such as joining the online meeting room, viewing or commenting on meeting documents, responding to invitations, and voting. Chair and Secretary are meeting-specific roles with additional responsibilities.
-ID
-Use Case
-Feature
-Use Case Description
-UC-01
-Sign in with Email and Password
-Authentication & Account Security
-Authenticate users using their registered email and password.
-UC-02
-Sign in with Google
-Authentication & Account Security
-Authenticate users using their authorized Google account.
-UC-03
-Sign Out
-Authentication & Account Security
-End the user's current authenticated session.
-UC-04
-View User Accounts
-User & Profile Management
-View, search, and filter user accounts in the system.
-UC-05
-Create User Account
-User & Profile Management
-Create a new user account with required information.
-UC-06
-Update User Account
-User & Profile Management
-Update editable information of an existing user account.
-UC-07
-Deactivate / Reactivate User Account
-User & Profile Management
-Deactivate or reactivate an existing user account.
-UC-08
-Reset User Password
-User & Profile Management
-Initiate a password reset for an eligible user account.
-UC-09
-Assign System Role to User
-User & Profile Management
-Assign or change the system role of a user account.
-UC-10
-View Role & Permission Matrix
-Role-Based Access Control
-View system roles and their assigned permissions.
-UC-11
-Configure Role Permissions
-Role-Based Access Control
-Configure permissions assigned to a system role.
-UC-12
-Create Role
-Role-Based Access Control
-Create a new custom role with selected permissions.
-UC-13
-Update Role
-Role-Based Access Control
-Update the name or description of a custom role.
-UC-14
-Delete Role
-Role-Based Access Control
-Delete an unused custom role from the system.
-UC-15
-Create Meeting
-Meeting Management
-Create a new meeting with the required meeting-level information; planned scheduling is managed separately through Meeting Sessions.
-UC-16
-Update Meeting
-Meeting Management
-Update the meeting-level information of an editable meeting while it is Draft or Rejected.
-UC-17
-View Meeting Details
-Meeting Management
-View the meeting-level details of an authorized meeting without loading Meeting Sessions or Agenda Items.
-UC-18
-View Meeting List
-Meeting Management
-View, search, and filter meetings the user can access.
-UC-19
-Submit Meeting for Approval
-Meeting Management
-Submit a Draft or Rejected meeting for approval based on its meeting-level information.
-UC-20
-Review Meeting Approval
-Meeting Management
-Approve or reject an assigned meeting approval request.
-UC-21
-Publish Meeting
-Meeting Management
-Publish an approved meeting and initiate participant invitations. Meeting Sessions are optional and are not a publication prerequisite.
-  UC-22
-View Notifications
-Email & In-App Notification
-View personal notifications and the unread notification count.
-  UC-23
-Mark Notification as Read
-Email & In-App Notification
-Mark a selected notification as read.
-  UC-24
-Mark All Notifications as Read
-Email & In-App Notification
-Mark all unread notifications of the user as read.
-  UC-25
-Open Notification Target
-Email & In-App Notification
-Open the meeting linked to a selected notification.
-  UC-26
-Create Meeting Session
-Meeting Session Management
-Create a Planned Meeting Session, including an additional future session after publication when allowed.
-UC-27
-Update Meeting Session
-Meeting Session Management
-Update the schedule or information of a Planned Meeting Session while it remains eligible for rescheduling.
-UC-28
-Cancel Meeting Session
-Meeting Session Management
-Cancel a Planned Meeting Session while preserving it in the meeting history for traceability.
-UC-29
-Start Meeting Session
-Meeting Session Management
-Start a Planned Meeting Session during an InProgress meeting and record its actual start time without changing the parent Meeting lifecycle.
-UC-30
-End Meeting Session
-Meeting Session Management
-End the current Meeting Session and record its actual completion time without ending the parent Meeting automatically.
-UC-31
-Create Agenda Item
-Agenda Management
-Create a planned agenda item for a selected Meeting Session.
-UC-32
-Update Agenda Item
-Agenda Management
-Update the planned information of an agenda item before its Meeting Session begins.
-UC-33
-Delete Agenda Item
-Agenda Management
-Remove an unnecessary agenda item before its Meeting Session begins.
-UC-34
-Reorder Agenda Items
-Agenda Management
-Change the order of agenda items within a planned Meeting Session.
-UC-35
-Set Current Agenda Item
-Agenda Management
-Set an agenda item as the topic currently being discussed during an active Meeting Session.
-UC-36
-Complete Agenda Item
-Agenda Management
-Complete the current agenda item and record the actual time used.
-UC-37
-View Meeting Participants
-Meeting Participant Management
-View the current internal participants and external Guests associated with a meeting, together with their meeting-specific role or guest access type.
-UC-38
-Add Meeting Participant
-Meeting Participant Management
-Add an active internal user to a meeting or invite an external Guest by email; internal users receive a meeting-specific role and external Guests receive meeting-scoped guest access.
-UC-39
-Assign / Change Meeting Role
-Meeting Participant Management
-Assign or change the meeting-specific role of a current internal participant without changing the user’s system role.
-UC-40
-Remove Meeting Participant
-Meeting Participant Management
-Remove a current internal participant or revoke an external Guest invitation while preserving required historical evidence and access rules.
-UC-41
-Respond to Meeting Invitation
-Meeting Participant Management
-Allow an invited internal participant or external Guest to respond to a meeting invitation; delegation is available only to internal participants.
-UC-42
-View Participant Response Status
-Meeting Participant Management
-View the latest invitation response of current internal participants and external Guests and a response-status summary.
-UC-43
-Start Meeting
-Meeting Management
-Start a Published meeting and move the Meeting lifecycle to InProgress independently of Meeting Sessions and room participation.
-UC-44
-End Meeting
-Meeting Management
-Explicitly end an InProgress meeting after any unfinished Meeting Sessions have been resolved.
-UC-45
-Join Meeting Room
-Online Meeting Room Management
-Join the online room of an authorized Online or Hybrid meeting; an external Guest may join through a verified meeting-specific guest invitation without an internal account login.
-UC-46
-Leave Meeting Room
-Online Meeting Room Management
-Leave the online meeting room without changing the Meeting or Meeting Session lifecycle.
-UC-47
-Manage Microphone
-Online Meeting Room Management
-Enable or disable the user’s own microphone while connected to the meeting room.
-UC-48
-Manage Camera
-Online Meeting Room Management
-Enable or disable the user’s own camera while connected to the meeting room.
-UC-49
-Manage Screen Sharing
-Online Meeting Room Management
-Start or stop sharing the user’s screen while connected to the meeting room.
-UC-50
-View Meeting Room Participants
-Online Meeting Room Management
-View the users currently connected to the online meeting room and their current room presence.
-UC-51
-Moderate Meeting Room
-Online Meeting Room Management
-Allow the assigned Chair to perform permitted moderation actions on users currently in the meeting room.
-UC-52
-Use In-room Chat
-Online Meeting Room Management
-Exchange text messages with authorized users currently connected to the online meeting room.
-UC-53
-View Meeting Sessions
-Meeting Session Management
-View the Meeting Sessions and schedule information of an authorized meeting without loading Agenda Items.
-UC-54
-View Meeting Agenda
-Agenda Management
-View the Agenda Items prepared for a selected Meeting Session without loading them through Meeting Details.
-UC-55
-Unlock User Account
-User & Profile Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-56
-View Meeting Documents
-Personal Document Library & Meeting Document Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-57
-Add Document to Meeting
-Personal Document Library & Meeting Document Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-58
-Add New Meeting Document Version
-Personal Document Library & Meeting Document Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-59
-View Document Version History
-Personal Document Library & Meeting Document Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-60
-Preview Meeting Document
-Personal Document Library & Meeting Document Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-61
-View Media Library
-Meeting Audio Upload & Media Library
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-62
-Upload Meeting Audio
-Meeting Audio Upload & Media Library
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-63
-Play Meeting Audio
-Meeting Audio Upload & Media Library
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-64
-View Speaker-Attributed Transcript
-Speaker-Attributed Transcription & Meeting Summary
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-65
-Edit Transcript & Speaker Attribution
-Speaker-Attributed Transcription & Meeting Summary
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-66
-View Meeting Summary
-Speaker-Attributed Transcription & Meeting Summary
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-67
-Edit Meeting Summary
-Speaker-Attributed Transcription & Meeting Summary
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-68
-Approve Meeting Summary
-Speaker-Attributed Transcription & Meeting Summary
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-69
-Publish Meeting Summary
-Speaker-Attributed Transcription & Meeting Summary
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-70
-View Meeting Votes
-Voting & Resolution Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-71
-Create / Configure Vote
-Voting & Resolution Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-72
-Open / Publish Vote
-Voting & Resolution Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-73
-Cast Vote
-Voting & Resolution Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-74
-View Vote Status
-Voting & Resolution Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-75
-Close Vote
-Voting & Resolution Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-76
-View Resolution
-Voting & Resolution Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-77
-View Meeting Minutes
-Meeting Minutes & Digital Signing
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-78
-Prepare Draft Meeting Minutes
-Meeting Minutes & Digital Signing
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-79
-Edit Meeting Minutes
-Meeting Minutes & Digital Signing
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-80
-Submit Meeting Minutes for Signing
-Meeting Minutes & Digital Signing
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-81
-Sign Meeting Minutes
-Meeting Minutes & Digital Signing
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-82
-View Signature Status & Audit Trail
-Meeting Minutes & Digital Signing
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-83
-Finalize / Seal Meeting Minutes
-Meeting Minutes & Digital Signing
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-84
-View Personal Dashboard & Meeting Workspace
-Personal Dashboard & Meeting Workspace
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-85
-View Reports & Statistics
-Reporting & Statistics
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-86
-Export Report
-Reporting & Statistics
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-87
-Access Meeting via Guest Invitation
-Authentication & Account Security
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-88
-Record Attendance
-Meeting Participant Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-89
-View Personal Document Library
-Personal Document Library & Meeting Document Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-90
-Generate / Regenerate Meeting Summary
-Speaker-Attributed Transcription & Meeting Summary
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-91
-Comment on Meeting Document
-Personal Document Library & Meeting Document Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-92
-View Audit Log
-Role-Based Access Control
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-93
-Request Revision of Meeting Minutes
-Meeting Minutes & Digital Signing
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-UC-94
-Upload Document to Personal Library
-Personal Document Library & Meeting Document Management
-Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature.
-Entity
-Action
-Admin
-HR Manager
-Interviewer
-Candidate
-Guest
-User account
-Create
-Full
-No
-No
-No
-No
-User account
-Edit / Deactivate
-Full
-No
-No
-No
-No
-User account
-Unlock
-Full
-No
-No
-No
-No
-Job posting
-Create
-Full
-Full
-No
-No
-No
-Job posting
-Edit
-Full
-Full
-No
-No
-No
-Job posting
-Delete
-Full
-Full
-No
-No
-No
-Job posting
-Change status
-Full
-Full
-No
-No
-No
-Job posting
-View (Active only)
-Full
-Full
-Full
-Full
-Full
-Application
-Submit
-No
-No
-No
-Full
-No
-Application
-View own
-No
-No
-No
-Full
-No
-Application
-View all (per job)
-Full
-Full
-Restricted ¹
-No
-No
-Application
-Update status
-Full
-Full
-No
-No
-No
-Application
-Withdraw
-No
-No
-No
-Full
-No
-Internal note
-Create / View
-Full
-Full
-No
-No
-No
-Interview
-Schedule / Assign
-Full
-Full
-No
-No
-No
-Interview
-Submit evaluation
-Full
-Full
-Full
-No
-No
-Dashboard
-View
-Full
-Full
-No
-No
-No
-#
-Screen Name
-Feature
-Description
-1
-Sign In
-Authentication
-Allows any user to authenticate and reach their role-specific area of the system
-2
-User Register
-Authentication
-Allows a new Candidate to create their own account
-#
-API Name
-Calling Path
-Description
-1
-Google Identity
-Hỗ trợ đăng nhập bằng Google; TrustCabinet xác minh danh tính Google trước khi đăng nhập.
-2
-SMTP Email Service
-Gửi email đặt lại mật khẩu và thư mời họp...
-#
-Job Name
-Group
-Description
-1
-Process notifications
-Scheduled worker
-Mỗi 5 giây, kiểm tra nhắc lịch đến hạn và gửi thông báo mới đến người dùng đang kết nối.
-2
-Deliver meeting invitation emails
-Queue worker
-Khi SMTP được bật, xử lý hàng đợi email mời họp và thử gửi lại email lỗi theo chính sách retry.
-Primary Actors
-System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant
-Secondary Actors
-None
-Description
-As an internal system user, I want to sign in using my email and password so that I can securely access the system through my internal account.
-As an internal system user, I want to sign in using my email and password so that I can securely access the system through my internal account.
-As an internal system user, I want to sign in using my email and password so that I can securely access the system through my internal account.
-Preconditions
-● PRE-1: The user has an existing internal account.
-● PRE-2: The user's account is active.
-● PRE-3: The user is currently on the system login page.
-● PRE-1: The user has an existing internal account.
-● PRE-2: The user's account is active.
-● PRE-3: The user is currently on the system login page.
-● PRE-1: The user has an existing internal account.
-● PRE-2: The user's account is active.
-● PRE-3: The user is currently on the system login page.
-Postconditions
-● POST-1: The user is authenticated.
-● POST-2: The system identifies the corresponding internal user.
-● POST-3: The user is redirected to the appropriate authenticated page.
-● POST-1: The user is authenticated.
-● POST-2: The system identifies the corresponding internal user.
-● POST-3: The user is redirected to the appropriate authenticated page.
-● POST-1: The user is authenticated.
-● POST-2: The system identifies the corresponding internal user.
-● POST-3: The user is redirected to the appropriate authenticated page.
-Normal Flow
-Sign in with Email and Password
-1. The user enters their email and password on the login page.
-2. The user clicks “Sign In”.
-3. The system validates the provided credentials through the authentication service.
-4. The system logs the user in and redirects the user to the appropriate authenticated page.
-Sign in with Email and Password
-1. The user enters their email and password on the login page.
-2. The user clicks “Sign In”.
-3. The system validates the provided credentials through the authentication service.
-4. The system logs the user in and redirects the user to the appropriate authenticated page.
-Sign in with Email and Password
-1. The user enters their email and password on the login page.
-2. The user clicks “Sign In”.
-3. The system validates the provided credentials through the authentication service.
-4. The system logs the user in and redirects the user to the appropriate authenticated page.
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1: System cannot authenticate the user
-1. The entered email or password is invalid. (BR-01, BR-02)
-2. The system displays MSG01 – “Invalid email or password.”
-EX-2: The internal account has been deactivated
-1. The corresponding internal account is inactive or has been deactivated. (BR-03)
-2. The system displays MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”
-EX-1: System cannot authenticate the user
-1. The entered email or password is invalid. (BR-01, BR-02)
-2. The system displays MSG01 – “Invalid email or password.”
-EX-2: The internal account has been deactivated
-1. The corresponding internal account is inactive or has been deactivated. (BR-03)
-2. The system displays MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”
-EX-1: System cannot authenticate the user
-1. The entered email or password is invalid. (BR-01, BR-02)
-2. The system displays MSG01 – “Invalid email or password.”
-EX-2: The internal account has been deactivated
-1. The corresponding internal account is inactive or has been deactivated. (BR-03)
-2. The system displays MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”
-Primary Actors
-System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant
-Secondary Actors
-Google Identity Provider
-Description
-As an internal system user, I want to sign in using my Google account so that I can securely and quickly access the system through my existing internal account.
-As an internal system user, I want to sign in using my Google account so that I can securely and quickly access the system through my existing internal account.
-As an internal system user, I want to sign in using my Google account so that I can securely and quickly access the system through my existing internal account.
-Preconditions
-● PRE-1: The user has an existing internal account.
-● PRE-2: The user's account is active.
-● PRE-3: The user is currently on the system login page.
-● PRE-1: The user has an existing internal account.
-● PRE-2: The user's account is active.
-● PRE-3: The user is currently on the system login page.
-● PRE-1: The user has an existing internal account.
-● PRE-2: The user's account is active.
-● PRE-3: The user is currently on the system login page.
-Postconditions
-● POST-1: User is authenticated.
-● POST-2: A valid server-side session is created.
-● POST-3: System identifies the corresponding internal user.
-● POST-4: User is redirected to the appropriate authenticated page.
-● POST-1: User is authenticated.
-● POST-2: A valid server-side session is created.
-● POST-3: System identifies the corresponding internal user.
-● POST-4: User is redirected to the appropriate authenticated page.
-● POST-1: User is authenticated.
-● POST-2: A valid server-side session is created.
-● POST-3: System identifies the corresponding internal user.
-● POST-4: User is redirected to the appropriate authenticated page.
-Normal Flow
-Sign in with Google
-1. User selects “Continue with Google” on the login page.
-2. User signs in using their Google account.
-3. System verifies that the Google account is associated with an authorized internal user.
-4. System signs the user in and grants access according to the user's assigned role.
-Sign in with Google
-1. User selects “Continue with Google” on the login page.
-2. User signs in using their Google account.
-3. System verifies that the Google account is associated with an authorized internal user.
-4. System signs the user in and grants access according to the user's assigned role.
-Sign in with Google
-1. User selects “Continue with Google” on the login page.
-2. User signs in using their Google account.
-3. System verifies that the Google account is associated with an authorized internal user.
-4. System signs the user in and grants access according to the user's assigned role.
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1: User can’t authenticate with Google
-1. The user fails to authenticate with Google or cancels the Google sign-in process. (BR-04)
-2. System displays message MSG03 – “Google sign-in was unsuccessful.”
-EX-2: System can’t verify the Google account
-1. The system cannot verify the identity information returned by Google. (BR-05)
-2. System displays message MSG04 – “Unable to verify your Google account. Please try again.”
-EX-3: Google account is not linked to an internal account
-1. The authenticated Google account is not associated with any existing internal account. (BR-06)
-2. System displays message MSG05 – “This Google account has not been granted access to the system.”
-EX-4: The internal account has been deactivated
-1. The internal account associated with the Google account is inactive or has been deactivated. (BR-03)
-2. System displays message MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”
-EX-1: User can’t authenticate with Google
-1. The user fails to authenticate with Google or cancels the Google sign-in process. (BR-04)
-2. System displays message MSG03 – “Google sign-in was unsuccessful.”
-EX-2: System can’t verify the Google account
-1. The system cannot verify the identity information returned by Google. (BR-05)
-2. System displays message MSG04 – “Unable to verify your Google account. Please try again.”
-EX-3: Google account is not linked to an internal account
-1. The authenticated Google account is not associated with any existing internal account. (BR-06)
-2. System displays message MSG05 – “This Google account has not been granted access to the system.”
-EX-4: The internal account has been deactivated
-1. The internal account associated with the Google account is inactive or has been deactivated. (BR-03)
-2. System displays message MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”
-EX-1: User can’t authenticate with Google
-1. The user fails to authenticate with Google or cancels the Google sign-in process. (BR-04)
-2. System displays message MSG03 – “Google sign-in was unsuccessful.”
-EX-2: System can’t verify the Google account
-1. The system cannot verify the identity information returned by Google. (BR-05)
-2. System displays message MSG04 – “Unable to verify your Google account. Please try again.”
-EX-3: Google account is not linked to an internal account
-1. The authenticated Google account is not associated with any existing internal account. (BR-06)
-2. System displays message MSG05 – “This Google account has not been granted access to the system.”
-EX-4: The internal account has been deactivated
-1. The internal account associated with the Google account is inactive or has been deactivated. (BR-03)
-2. System displays message MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”
-Primary Actors
-System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant
-Secondary Actors
-None
-Description
-As an authenticated user, I want to sign out of the system so that I can securely end my current access to the system.
-As an authenticated user, I want to sign out of the system so that I can securely end my current access to the system.
-As an authenticated user, I want to sign out of the system so that I can securely end my current access to the system.
-Preconditions
-● PRE-1: The user is currently signed in to the system.
-● PRE-2: The user is currently accessing an authenticated area of the system.
-● PRE-1: The user is currently signed in to the system.
-● PRE-2: The user is currently accessing an authenticated area of the system.
-● PRE-1: The user is currently signed in to the system.
-● PRE-2: The user is currently accessing an authenticated area of the system.
-Postconditions
-● POST-1: User is signed out of the system.
-● POST-2: The user's current authentication state is invalidated.
-● POST-3: User is redirected to the login page.
-● POST-4: Protected system functions are no longer accessible until the user signs in again.
-● POST-1: User is signed out of the system.
-● POST-2: The user's current authentication state is invalidated.
-● POST-3: User is redirected to the login page.
-● POST-4: Protected system functions are no longer accessible until the user signs in again.
-● POST-1: User is signed out of the system.
-● POST-2: The user's current authentication state is invalidated.
-● POST-3: User is redirected to the login page.
-● POST-4: Protected system functions are no longer accessible until the user signs in again.
-Normal Flow
-Sign Out
-1. User selects “Sign Out”.
-2. System displays a confirmation message.
-3. User confirms the sign-out action.
-4. System signs the user out.
-5. System redirects the user to the login page.
-Sign Out
-1. User selects “Sign Out”.
-2. System displays a confirmation message.
-3. User confirms the sign-out action.
-4. System signs the user out.
-5. System redirects the user to the login page.
-Sign Out
-1. User selects “Sign Out”.
-2. System displays a confirmation message.
-3. User confirms the sign-out action.
-4. System signs the user out.
-5. System redirects the user to the login page.
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1: System can’t complete the sign-out action
-1. The system cannot complete the sign-out operation. (BR-09)
-2. System displays message MSG06 – “Unable to sign out. Please try again.”
-EX-1: System can’t complete the sign-out action
-1. The system cannot complete the sign-out operation. (BR-09)
-2. System displays message MSG06 – “Unable to sign out. Please try again.”
-EX-1: System can’t complete the sign-out action
-1. The system cannot complete the sign-out operation. (BR-09)
-2. System displays message MSG06 – “Unable to sign out. Please try again.”
-Primary Actors
-System Admin
-Secondary Actors
-None
-Description
-Allows the System Admin to view, search, filter, and browse user accounts in the system.
-Allows the System Admin to view, search, filter, and browse user accounts in the system.
-Allows the System Admin to view, search, filter, and browse user accounts in the system.
-Preconditions
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin has permission to view user accounts.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin has permission to view user accounts.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin has permission to view user accounts.
-Postconditions
-● POST-1: The user account list is displayed.
-● POST-2: No user account information is modified.
-● POST-1: The user account list is displayed.
-● POST-2: No user account information is modified.
-● POST-1: The user account list is displayed.
-● POST-2: No user account information is modified.
-Normal Flow
-View User Accounts
-1. The System Admin selects User Accounts from the navigation menu.
-2. The system retrieves the user accounts.
-3. The system sorts the user accounts according to the default sorting rule (BR-3).
-4. The system displays the user account list showing Full Name, Username/Email, System Role, and Account Status.
-5. The System Admin browses the user account list using pagination controls.
-View User Accounts
-1. The System Admin selects User Accounts from the navigation menu.
-2. The system retrieves the user accounts.
-3. The system sorts the user accounts according to the default sorting rule (BR-3).
-4. The system displays the user account list showing Full Name, Username/Email, System Role, and Account Status.
-5. The System Admin browses the user account list using pagination controls.
-View User Accounts
-1. The System Admin selects User Accounts from the navigation menu.
-2. The system retrieves the user accounts.
-3. The system sorts the user accounts according to the default sorting rule (BR-3).
-4. The system displays the user account list showing Full Name, Username/Email, System Role, and Account Status.
-5. The System Admin browses the user account list using pagination controls.
-Alternative Flows
-AF-1: Search User Accounts
-1. At Step 4 of the Main Flow, the System Admin enters a Name, Username, or Email into the search field.
-2. The system searches for user accounts matching the entered criteria.
-3. The system displays the matching user accounts.
-4. The flow resumes at Step 5 of the Main Flow.
-AF-2: Filter User Accounts
-1. At Step 4 of the Main Flow, the System Admin selects one or more filter criteria, such as Account Status or System Role.
-2. The system filters the user accounts according to the selected criteria.
-3. The system displays the matching user accounts.
-4. The flow resumes at Step 5 of the Main Flow.
-AF-3: No User Accounts Match the Current Criteria
-1. The applied search or filter criteria produce no matching user accounts.
-2. The system displays an empty list and a no-results message according to BR-12.
-3. The System Admin may clear or adjust the search/filter parameters.
-4. The flow resumes at Step 5 of the Main Flow.
-5. At Step 4 of the Main Flow, the System Admin enters a Name, Username, or Email into the search field.
-6. The system searches for user accounts matching the entered criteria.
-7. The system displays the matching user accounts.
-8. The flow resumes at Step 5 of the Main Flow.
-AF-2: Filter User Accounts
-1. At Step 4 of the Main Flow, the System Admin selects one or more filter criteria, such as Account Status or System Role.
-2. The system filters the user accounts according to the selected criteria.
-3. The system displays the matching user accounts.
-4. The flow resumes at Step 5 of the Main Flow.
-AF-1: Search User Accounts
-1. At Step 4 of the Main Flow, the System Admin enters a Name, Username, or Email into the search field.
-2. The system searches for user accounts matching the entered criteria.
-3. The system displays the matching user accounts.
-4. The flow resumes at Step 5 of the Main Flow.
-AF-2: Filter User Accounts
-1. At Step 4 of the Main Flow, the System Admin selects one or more filter criteria, such as Account Status or System Role.
-2. The system filters the user accounts according to the selected criteria.
-3. The system displays the matching user accounts.
-4. The flow resumes at Step 5 of the Main Flow.
-AF-3: No User Accounts Match the Current Criteria
-1. The applied search or filter criteria produce no matching user accounts.
-2. The system displays an empty list and a no-results message according to BR-12.
-3. The System Admin may clear or adjust the search/filter parameters.
-4. The flow resumes at Step 5 of the Main Flow.
-5. At Step 4 of the Main Flow, the System Admin enters a Name, Username, or Email into the search field.
-6. The system searches for user accounts matching the entered criteria.
-7. The system displays the matching user accounts.
-8. The flow resumes at Step 5 of the Main Flow.
-AF-2: Filter User Accounts
-1. At Step 4 of the Main Flow, the System Admin selects one or more filter criteria, such as Account Status or System Role.
-2. The system filters the user accounts according to the selected criteria.
-3. The system displays the matching user accounts.
-4. The flow resumes at Step 5 of the Main Flow.
-AF-1: Search User Accounts
-1. At Step 4 of the Main Flow, the System Admin enters a Name, Username, or Email into the search field.
-2. The system searches for user accounts matching the entered criteria.
-3. The system displays the matching user accounts.
-4. The flow resumes at Step 5 of the Main Flow.
-AF-2: Filter User Accounts
-1. At Step 4 of the Main Flow, the System Admin selects one or more filter criteria, such as Account Status or System Role.
-2. The system filters the user accounts according to the selected criteria.
-3. The system displays the matching user accounts.
-4. The flow resumes at Step 5 of the Main Flow.
-AF-3: No User Accounts Match the Current Criteria
-1. The applied search or filter criteria produce no matching user accounts.
-2. The system displays an empty list and a no-results message according to BR-12.
-3. The System Admin may clear or adjust the search/filter parameters.
-4. The flow resumes at Step 5 of the Main Flow.
-5. At Step 4 of the Main Flow, the System Admin enters a Name, Username, or Email into the search field.
-6. The system searches for user accounts matching the entered criteria.
-7. The system displays the matching user accounts.
-8. The flow resumes at Step 5 of the Main Flow.
-AF-2: Filter User Accounts
-1. At Step 4 of the Main Flow, the System Admin selects one or more filter criteria, such as Account Status or System Role.
-2. The system filters the user accounts according to the selected criteria.
-3. The system displays the matching user accounts.
-4. The flow resumes at Step 5 of the Main Flow.
-Exception Flows
-N/A
-N/A
-N/A
-Primary Actors
-System Admin
-Secondary Actors
-None
-Description
-Allows the System Admin to create a new user account by providing the required account information.
-Allows the System Admin to create a new user account by providing the required account information.
-Allows the System Admin to create a new user account by providing the required account information.
-Preconditions
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin has permission to create user accounts.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin has permission to create user accounts.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin has permission to create user accounts.
-Postconditions
-● POST-1: A new user account is created successfully.
-● POST-2: The new user account appears in User Management.
-● POST-3: The account creation is recorded in the audit log.
-● POST-1: A new user account is created successfully.
-● POST-2: The new user account appears in User Management.
-● POST-3: The account creation is recorded in the audit log.
-● POST-1: A new user account is created successfully.
-● POST-2: The new user account appears in User Management.
-● POST-3: The account creation is recorded in the audit log.
-Normal Flow
-Create User Account
-1. The System Admin selects Create User from the User Accounts screen.
-2. The system displays the Create User form.
-3. The System Admin enters the required user information.
-4. The System Admin submits the user information.
-5. The system validates the submitted information, including required fields and Username/Email validity and uniqueness (BR-13, BR-14).
-6. The system creates the new user account with Active status (BR-15).
-7. The system records the account creation in the audit log (BR-16).
-8. The system displays MSG07 – "User account created successfully." and returns to the User Accounts list.
-Create User Account
-1. The System Admin selects Create User from the User Accounts screen.
-2. The system displays the Create User form.
-3. The System Admin enters the required user information.
-4. The System Admin submits the user information.
-5. The system validates the submitted information, including required fields and Username/Email validity and uniqueness (BR-13, BR-14).
-6. The system creates the new user account with Active status (BR-15).
-7. The system records the account creation in the audit log (BR-16).
-8. The system displays MSG07 – "User account created successfully." and returns to the User Accounts list.
-Create User Account
-1. The System Admin selects Create User from the User Accounts screen.
-2. The system displays the Create User form.
-3. The System Admin enters the required user information.
-4. The System Admin submits the user information.
-5. The system validates the submitted information, including required fields and Username/Email validity and uniqueness (BR-13, BR-14).
-6. The system creates the new user account with Active status (BR-15).
-7. The system records the account creation in the audit log (BR-16).
-8. The system displays MSG07 – "User account created successfully." and returns to the User Accounts list.
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1: Invalid User Information
-1. At Step 5 of the Main Flow, the system determines that one or more submitted values are missing or invalid.
-2. The system displays MSG09 – "Invalid account information." and the corresponding validation messages for the invalid fields.
-3. The System Admin corrects the information and resubmits the form.
-4. The flow resumes at Step 5 of the Main Flow.
-EX-2: Duplicate User Account
-1. At Step 5 of the Main Flow, the system determines that the Email is already associated with another account.
-2. The system displays MSG08 – "Email is already in use."
-3. The System Admin changes the conflicting information and resubmits the form.
-4. The flow resumes at Step 5 of the Main Flow.
-EX-1: Invalid User Information
-1. At Step 5 of the Main Flow, the system determines that one or more submitted values are missing or invalid.
-2. The system displays MSG09 – "Invalid account information." and the corresponding validation messages for the invalid fields.
-3. The System Admin corrects the information and resubmits the form.
-4. The flow resumes at Step 5 of the Main Flow.
-EX-2: Duplicate User Account
-1. At Step 5 of the Main Flow, the system determines that the Email is already associated with another account.
-2. The system displays MSG08 – "Email is already in use."
-3. The System Admin changes the conflicting information and resubmits the form.
-4. The flow resumes at Step 5 of the Main Flow.
-EX-1: Invalid User Information
-1. At Step 5 of the Main Flow, the system determines that one or more submitted values are missing or invalid.
-2. The system displays MSG09 – "Invalid account information." and the corresponding validation messages for the invalid fields.
-3. The System Admin corrects the information and resubmits the form.
-4. The flow resumes at Step 5 of the Main Flow.
-EX-2: Duplicate User Account
-1. At Step 5 of the Main Flow, the system determines that the Email is already associated with another account.
-2. The system displays MSG08 – "Email is already in use."
-3. The System Admin changes the conflicting information and resubmits the form.
-4. The flow resumes at Step 5 of the Main Flow.
-Primary Actors
-System Admin
-Secondary Actors
-None
-Description
-Allows the System Admin to update editable information of an existing user account within their permitted management scope.
-Allows the System Admin to update editable information of an existing user account within their permitted management scope.
-Allows the System Admin to update editable information of an existing user account within their permitted management scope.
-Preconditions
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to update the selected user account.
-● PRE-3: The selected user account exists.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to update the selected user account.
-● PRE-3: The selected user account exists.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to update the selected user account.
-● PRE-3: The selected user account exists.
-Postconditions
-● POST-1: The selected user account information is updated successfully.
-● POST-2: The update action is recorded in the audit log.
-● POST-1: The selected user account information is updated successfully.
-● POST-2: The update action is recorded in the audit log.
-● POST-1: The selected user account information is updated successfully.
-● POST-2: The update action is recorded in the audit log.
-Normal Flow
-Update User Account
-1. The System Admin selects a user account from the User Accounts list and selects Edit Account.
-2. The system displays the current user account information.
-3. The System Admin modifies the editable information, such as Full Name, Job Title, or Contact Information.
-4. The System Admin submits the updated information.
-5. The system validates the submitted information, including required fields and data format (BR-14, BR-17).
-6. The system updates the user account information.
-7. The system records the update in the audit log (BR-16).
-8. The system displays MSG10 – "User account updated successfully." and returns to the User Accounts list.
-Update User Account
-1. The System Admin selects a user account from the User Accounts list and selects Edit Account.
-2. The system displays the current user account information.
-3. The System Admin modifies the editable information, such as Full Name, Job Title, or Contact Information.
-4. The System Admin submits the updated information.
-5. The system validates the submitted information, including required fields and data format (BR-14, BR-17).
-6. The system updates the user account information.
-7. The system records the update in the audit log (BR-16).
-8. The system displays MSG10 – "User account updated successfully." and returns to the User Accounts list.
-Update User Account
-1. The System Admin selects a user account from the User Accounts list and selects Edit Account.
-2. The system displays the current user account information.
-3. The System Admin modifies the editable information, such as Full Name, Job Title, or Contact Information.
-4. The System Admin submits the updated information.
-5. The system validates the submitted information, including required fields and data format (BR-14, BR-17).
-6. The system updates the user account information.
-7. The system records the update in the audit log (BR-16).
-8. The system displays MSG10 – "User account updated successfully." and returns to the User Accounts list.
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1: Invalid User Information
-1. At Step 5 of the Main Flow, one or more submitted values are missing or invalid.
-2. The system displays MSG09 – "Invalid account information." and the corresponding validation messages for the invalid fields.
-3. The System Admin corrects the information and resubmits it.
-4. The flow resumes at Step 5 of the Main Flow.
-EX-2: Email Already in Use
-1. At Step 5 of the Main Flow, the system determines that the Email is already associated with another account.
-2. The system displays MSG08 – "Email is already in use."
-3. The System Admin changes the Email and resubmits the information.
-4. The flow resumes at Step 5 of the Main Flow.
-EX-1: Invalid User Information
-1. At Step 5 of the Main Flow, one or more submitted values are missing or invalid.
-2. The system displays MSG09 – "Invalid account information." and the corresponding validation messages for the invalid fields.
-3. The System Admin corrects the information and resubmits it.
-4. The flow resumes at Step 5 of the Main Flow.
-EX-2: Email Already in Use
-1. At Step 5 of the Main Flow, the system determines that the Email is already associated with another account.
-2. The system displays MSG08 – "Email is already in use."
-3. The System Admin changes the Email and resubmits the information.
-4. The flow resumes at Step 5 of the Main Flow.
-EX-1: Invalid User Information
-1. At Step 5 of the Main Flow, one or more submitted values are missing or invalid.
-2. The system displays MSG09 – "Invalid account information." and the corresponding validation messages for the invalid fields.
-3. The System Admin corrects the information and resubmits it.
-4. The flow resumes at Step 5 of the Main Flow.
-EX-2: Email Already in Use
-1. At Step 5 of the Main Flow, the system determines that the Email is already associated with another account.
-2. The system displays MSG08 – "Email is already in use."
-3. The System Admin changes the Email and resubmits the information.
-4. The flow resumes at Step 5 of the Main Flow.
-Primary Actors
-System Admin
-Secondary Actors
-None
-Description
-Allows the System Admin to deactivate or reactivate a user account while preserving the user's historical records.
-Allows the System Admin to deactivate or reactivate a user account while preserving the user's historical records.
-Allows the System Admin to deactivate or reactivate a user account while preserving the user's historical records.
-Preconditions
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to manage user account status.
-● PRE-3: The selected user account exists.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to manage user account status.
-● PRE-3: The selected user account exists.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to manage user account status.
-● PRE-3: The selected user account exists.
-Postconditions
-● POST-1: The user account status is changed to Inactive when deactivated or Active when reactivated.
-● POST-2: A deactivated user can no longer access authenticated system functions.
-● POST-3: The status change is recorded in the audit log.
-● POST-1: The user account status is changed to Inactive when deactivated or Active when reactivated.
-● POST-2: A deactivated user can no longer access authenticated system functions.
-● POST-3: The status change is recorded in the audit log.
-● POST-1: The user account status is changed to Inactive when deactivated or Active when reactivated.
-● POST-2: A deactivated user can no longer access authenticated system functions.
-● POST-3: The status change is recorded in the audit log.
-Normal Flow
-Deactivate / Reactivate User Account
-1. The System Admin selects a user account from the User Accounts list.
-2. The System Admin selects Deactivate Account or Reactivate Account.
-3. The system requests confirmation of the account status change.
-4. The System Admin confirms the action.
-5. The system verifies that the requested status change is allowed (BR-03).
-6. The system updates the user account status.
-7. If the account is deactivated, the system ends the user's active sessions (BR-18).
-8. The system records the status change in the audit log (BR-16).
-9. The system displays MSG11 – “User account status changed successfully.”
-Deactivate / Reactivate User Account
-1. The System Admin selects a user account from the User Accounts list.
-2. The System Admin selects Deactivate Account or Reactivate Account.
-3. The system requests confirmation of the account status change.
-4. The System Admin confirms the action.
-5. The system verifies that the requested status change is allowed (BR-03).
-6. The system updates the user account status.
-7. If the account is deactivated, the system ends the user's active sessions (BR-18).
-8. The system records the status change in the audit log (BR-16).
-9. The system displays MSG11 – “User account status changed successfully.”
-Deactivate / Reactivate User Account
-1. The System Admin selects a user account from the User Accounts list.
-2. The System Admin selects Deactivate Account or Reactivate Account.
-3. The system requests confirmation of the account status change.
-4. The System Admin confirms the action.
-5. The system verifies that the requested status change is allowed (BR-03).
-6. The system updates the user account status.
-7. If the account is deactivated, the system ends the user's active sessions (BR-18).
-8. The system records the status change in the audit log (BR-16).
-9. The system displays MSG11 – “User account status changed successfully.”
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1: Status Change Is Not Allowed
-1. At Step 5 of the Main Flow, the system determines that the requested account status change is not allowed.
-2. The system displays MSG12 – “Unable to change the status of this user account.”
-3. The account status remains unchanged.
-EX-2: Invalid Status Request
-1. At Step 5 of the Main Flow, the system determines that the request does not specify the account status to set.
-2. The account status remains unchanged.
-3. The system displays MSG09 – “Invalid account information.”
-4. The use case ends unsuccessfully.
-EX-1: Status Change Is Not Allowed
-1. At Step 5 of the Main Flow, the system determines that the requested account status change is not allowed.
-2. The system displays MSG12 – “Unable to change the status of this user account.”
-3. The account status remains unchanged.
-EX-2: Invalid Status Request
-1. At Step 5 of the Main Flow, the system determines that the request does not specify the account status to set.
-2. The account status remains unchanged.
-3. The system displays MSG09 – “Invalid account information.”
-4. The use case ends unsuccessfully.
-EX-1: Status Change Is Not Allowed
-1. At Step 5 of the Main Flow, the system determines that the requested account status change is not allowed.
-2. The system displays MSG12 – “Unable to change the status of this user account.”
-3. The account status remains unchanged.
-EX-2: Invalid Status Request
-1. At Step 5 of the Main Flow, the system determines that the request does not specify the account status to set.
-2. The account status remains unchanged.
-3. The system displays MSG09 – “Invalid account information.”
-4. The use case ends unsuccessfully.
-Primary Actors
-System Admin
-Secondary Actors
-User (the owner of the selected account), who completes the reset from the email
-Description
-Allows the System Admin to send the owner of an eligible user account a secure, single-use password reset link by email. The account owner then opens the link and sets a new password without signing in. The current password keeps working until the new one is set.
-Allows the System Admin to send the owner of an eligible user account a secure, single-use password reset link by email. The account owner then opens the link and sets a new password without signing in. The current password keeps working until the new one is set.
-Allows the System Admin to send the owner of an eligible user account a secure, single-use password reset link by email. The account owner then opens the link and sets a new password without signing in. The current password keeps working until the new one is set.
-Preconditions
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to reset user passwords.
-● PRE-3: The selected user account exists.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to reset user passwords.
-● PRE-3: The selected user account exists.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to reset user passwords.
-● PRE-3: The selected user account exists.
-Postconditions
-● POST-1: A password reset link valid for 60 minutes is created for the selected user, and any link sent to that user earlier stops working (BR-20).
-● POST-2: A password reset email containing the link is sent to the user's registered email address.
-● POST-3: The password reset request is recorded in the audit log (BR-16).
-● POST-4: Until the link is used, the user's current password and active sessions remain unchanged.
-● POST-5: When the account owner completes the reset, the password is replaced, every active session of that account is ended, the link can no longer be used, and the reset is recorded in the audit log (BR-01, BR-16, BR-20).
-● POST-1: A password reset link valid for 60 minutes is created for the selected user, and any link sent to that user earlier stops working (BR-20).
-● POST-2: A password reset email containing the link is sent to the user's registered email address.
-● POST-3: The password reset request is recorded in the audit log (BR-16).
-● POST-4: Until the link is used, the user's current password and active sessions remain unchanged.
-● POST-5: When the account owner completes the reset, the password is replaced, every active session of that account is ended, the link can no longer be used, and the reset is recorded in the audit log (BR-01, BR-16, BR-20).
-● POST-1: A password reset link valid for 60 minutes is created for the selected user, and any link sent to that user earlier stops working (BR-20).
-● POST-2: A password reset email containing the link is sent to the user's registered email address.
-● POST-3: The password reset request is recorded in the audit log (BR-16).
-● POST-4: Until the link is used, the user's current password and active sessions remain unchanged.
-● POST-5: When the account owner completes the reset, the password is replaced, every active session of that account is ended, the link can no longer be used, and the reset is recorded in the audit log (BR-01, BR-16, BR-20).
-Normal Flow
-Reset User Password
-1. The System Admin selects a user account and selects Reset Password.
-2. The system requests confirmation, showing the email address the link will be sent to.
-3. The System Admin confirms the password reset.
-4. The system verifies that the selected account is eligible for password reset: it is active and it signs in with a password (BR-22).
-5. The system creates a secure password reset request for the selected user (BR-20).
-6. The system sends a password reset email containing the link to the user's registered email address.
-7. The system makes the new link usable; any link sent to the user earlier stops working (BR-20).
-8. The system records the password reset request in the audit log (BR-16).
-9. The system displays MSG13 – “Password reset email sent successfully.”
-Complete Password Reset
-The account owner continues the use case from the email. No sign-in is required: the link is the proof of identity.
-10. The user opens the password reset link from the email.
-11. The system displays the new password form.
-12. The user enters the new password and its confirmation and submits them.
-13. The system verifies that the link is valid: it exists, it has not expired, it has not been used, and no newer link has replaced it (BR-20).
-14. The system validates the new password: it must follow the same password rule as account creation (UC-05) and match its confirmation.
-15. The system marks the link as used, so it cannot be used again (BR-20).
-16. The system verifies that the account is still eligible: it is active and it signs in with a password (BR-03, BR-22).
-17. The system replaces the password with the new one (BR-01) and ends every active session of the account (BR-20).
-18. The system records the completed password reset in the audit log, with the account owner as the actor (BR-16).
-19. The system displays MSG92 – “Password reset successfully. Please sign in with your new password.” and takes the user to the sign-in page. The user is not signed in automatically.
-Reset User Password
-1. The System Admin selects a user account and selects Reset Password.
-2. The system requests confirmation, showing the email address the link will be sent to.
-3. The System Admin confirms the password reset.
-4. The system verifies that the selected account is eligible for password reset: it is active and it signs in with a password (BR-22).
-5. The system creates a secure password reset request for the selected user (BR-20).
-6. The system sends a password reset email containing the link to the user's registered email address.
-7. The system makes the new link usable; any link sent to the user earlier stops working (BR-20).
-8. The system records the password reset request in the audit log (BR-16).
-9. The system displays MSG13 – “Password reset email sent successfully.”
-Complete Password Reset
-The account owner continues the use case from the email. No sign-in is required: the link is the proof of identity.
-10. The user opens the password reset link from the email.
-11. The system displays the new password form.
-12. The user enters the new password and its confirmation and submits them.
-13. The system verifies that the link is valid: it exists, it has not expired, it has not been used, and no newer link has replaced it (BR-20).
-14. The system validates the new password: it must follow the same password rule as account creation (UC-05) and match its confirmation.
-15. The system marks the link as used, so it cannot be used again (BR-20).
-16. The system verifies that the account is still eligible: it is active and it signs in with a password (BR-03, BR-22).
-17. The system replaces the password with the new one (BR-01) and ends every active session of the account (BR-20).
-18. The system records the completed password reset in the audit log, with the account owner as the actor (BR-16).
-19. The system displays MSG92 – “Password reset successfully. Please sign in with your new password.” and takes the user to the sign-in page. The user is not signed in automatically.
-Reset User Password
-1. The System Admin selects a user account and selects Reset Password.
-2. The system requests confirmation, showing the email address the link will be sent to.
-3. The System Admin confirms the password reset.
-4. The system verifies that the selected account is eligible for password reset: it is active and it signs in with a password (BR-22).
-5. The system creates a secure password reset request for the selected user (BR-20).
-6. The system sends a password reset email containing the link to the user's registered email address.
-7. The system makes the new link usable; any link sent to the user earlier stops working (BR-20).
-8. The system records the password reset request in the audit log (BR-16).
-9. The system displays MSG13 – “Password reset email sent successfully.”
-Complete Password Reset
-The account owner continues the use case from the email. No sign-in is required: the link is the proof of identity.
-10. The user opens the password reset link from the email.
-11. The system displays the new password form.
-12. The user enters the new password and its confirmation and submits them.
-13. The system verifies that the link is valid: it exists, it has not expired, it has not been used, and no newer link has replaced it (BR-20).
-14. The system validates the new password: it must follow the same password rule as account creation (UC-05) and match its confirmation.
-15. The system marks the link as used, so it cannot be used again (BR-20).
-16. The system verifies that the account is still eligible: it is active and it signs in with a password (BR-03, BR-22).
-17. The system replaces the password with the new one (BR-01) and ends every active session of the account (BR-20).
-18. The system records the completed password reset in the audit log, with the account owner as the actor (BR-16).
-19. The system displays MSG92 – “Password reset successfully. Please sign in with your new password.” and takes the user to the sign-in page. The user is not signed in automatically.
-Alternative Flows
-AF-1: The Browser Is Already Signed In
-1. At Step 19, the browser used to complete the reset still has a signed-in session (of this or another account).
-2. The system signs that session out before showing the sign-in page.
-3. If the sign-out succeeds, the flow resumes at Step 19.
-4. If the sign-out cannot be completed, the system still displays MSG92 – “Password reset successfully. Please sign in with your new password.” and also displays MSG06 – “Unable to sign out. Please try again.” The browser's session remains signed in, and the new password is already in effect.
-5. The use case ends.
-AF-1: The Browser Is Already Signed In
-1. At Step 19, the browser used to complete the reset still has a signed-in session (of this or another account).
-2. The system signs that session out before showing the sign-in page.
-3. If the sign-out succeeds, the flow resumes at Step 19.
-4. If the sign-out cannot be completed, the system still displays MSG92 – “Password reset successfully. Please sign in with your new password.” and also displays MSG06 – “Unable to sign out. Please try again.” The browser's session remains signed in, and the new password is already in effect.
-5. The use case ends.
-AF-1: The Browser Is Already Signed In
-1. At Step 19, the browser used to complete the reset still has a signed-in session (of this or another account).
-2. The system signs that session out before showing the sign-in page.
-3. If the sign-out succeeds, the flow resumes at Step 19.
-4. If the sign-out cannot be completed, the system still displays MSG92 – “Password reset successfully. Please sign in with your new password.” and also displays MSG06 – “Unable to sign out. Please try again.” The browser's session remains signed in, and the new password is already in effect.
-5. The use case ends.
-Exception Flows
-EX-1: User Account Is Not Eligible for Password Reset
-1. At Step 4 of the Main Flow, the system determines that the selected account is deactivated, or that it has no password because it only signs in with Google (BR-22). The User Accounts list already makes Reset Password unavailable for such accounts, so this happens when the list is out of date.
-2. No password reset link is created and no email is sent.
-3. The system displays MSG14 – “Password reset is not available for this account.” When the system can tell which reason applies, it updates the account in the list and states the reason instead (the account is deactivated, or it signs in with Google only).
-4. The use case ends.
-EX-2: Password Reset Email Cannot Be Sent
-1. At Step 6 of the Main Flow, the system cannot send the password reset email.
-2. The new link is never made usable. A link sent to the user earlier, if any, keeps working.
-3. The system displays MSG15 – “Unable to send the password reset email. Please try again.”
-4. The use case ends.
-EX-3: User Account No Longer Exists
-1. At Step 4 of the Main Flow, the system cannot find the selected account.
-2. No password reset link is created and no email is sent.
-3. The system informs the System Admin that the account no longer exists and refreshes the User Accounts list. This situation has no message code.
-4. The use case ends.
-EX-4: Password Reset Link Is Not Valid
-1. At Step 13, 15 or 16, the system determines that the link is unknown, has expired, has already been used (including by a simultaneous submission), has been replaced by a newer link, or belongs to an account that is now deactivated or has no password (BR-20, BR-22).
-2. The password is not changed. A link that reached Step 15 is used up.
-3. The system hides the new password form and displays MSG93 – “The password reset link is invalid or has expired. Please contact an administrator.” It does not say which of these reasons applies.
-4. The use case ends.
-EX-5: New Password Is Invalid
-1. At Step 14, the new password does not satisfy the password rule, or the confirmation does not match it.
-2. The password is not changed and the link remains usable.
-3. The system shows the reason next to the field concerned. A password that breaks the password rule is MSG94 – “Invalid new password.”, shown through its field reason (at least 12 characters); a confirmation that does not match is reported before the link is checked.
-4. The user corrects the new password and resubmits it.
-5. The flow resumes at Step 13.
-EX-6: Password Reset Page Opened Without a Reset Code
-1. At Step 11, the page has no reset code. This happens when the link is incomplete, or when the page is reloaded or restored after the code was removed from the address bar.
-2. The system does not check the link and does not say that it has expired, because the link itself may still be usable.
-3. The system displays MSG129 – “No password reset code was found. Please open the link in the email again.” with a hint that the link still works if it has not been used, is less than 60 minutes old and has not been replaced by a newer link.
-4. The use case ends. Opening the link from the email again starts a new execution at Step 10.
-EX-1: User Account Is Not Eligible for Password Reset
-1. At Step 4 of the Main Flow, the system determines that the selected account is deactivated, or that it has no password because it only signs in with Google (BR-22). The User Accounts list already makes Reset Password unavailable for such accounts, so this happens when the list is out of date.
-2. No password reset link is created and no email is sent.
-3. The system displays MSG14 – “Password reset is not available for this account.” When the system can tell which reason applies, it updates the account in the list and states the reason instead (the account is deactivated, or it signs in with Google only).
-4. The use case ends.
-EX-2: Password Reset Email Cannot Be Sent
-1. At Step 6 of the Main Flow, the system cannot send the password reset email.
-2. The new link is never made usable. A link sent to the user earlier, if any, keeps working.
-3. The system displays MSG15 – “Unable to send the password reset email. Please try again.”
-4. The use case ends.
-EX-3: User Account No Longer Exists
-1. At Step 4 of the Main Flow, the system cannot find the selected account.
-2. No password reset link is created and no email is sent.
-3. The system informs the System Admin that the account no longer exists and refreshes the User Accounts list. This situation has no message code.
-4. The use case ends.
-EX-4: Password Reset Link Is Not Valid
-1. At Step 13, 15 or 16, the system determines that the link is unknown, has expired, has already been used (including by a simultaneous submission), has been replaced by a newer link, or belongs to an account that is now deactivated or has no password (BR-20, BR-22).
-2. The password is not changed. A link that reached Step 15 is used up.
-3. The system hides the new password form and displays MSG93 – “The password reset link is invalid or has expired. Please contact an administrator.” It does not say which of these reasons applies.
-4. The use case ends.
-EX-5: New Password Is Invalid
-1. At Step 14, the new password does not satisfy the password rule, or the confirmation does not match it.
-2. The password is not changed and the link remains usable.
-3. The system shows the reason next to the field concerned. A password that breaks the password rule is MSG94 – “Invalid new password.”, shown through its field reason (at least 12 characters); a confirmation that does not match is reported before the link is checked.
-4. The user corrects the new password and resubmits it.
-5. The flow resumes at Step 13.
-EX-6: Password Reset Page Opened Without a Reset Code
-1. At Step 11, the page has no reset code. This happens when the link is incomplete, or when the page is reloaded or restored after the code was removed from the address bar.
-2. The system does not check the link and does not say that it has expired, because the link itself may still be usable.
-3. The system displays MSG129 – “No password reset code was found. Please open the link in the email again.” with a hint that the link still works if it has not been used, is less than 60 minutes old and has not been replaced by a newer link.
-4. The use case ends. Opening the link from the email again starts a new execution at Step 10.
-EX-1: User Account Is Not Eligible for Password Reset
-1. At Step 4 of the Main Flow, the system determines that the selected account is deactivated, or that it has no password because it only signs in with Google (BR-22). The User Accounts list already makes Reset Password unavailable for such accounts, so this happens when the list is out of date.
-2. No password reset link is created and no email is sent.
-3. The system displays MSG14 – “Password reset is not available for this account.” When the system can tell which reason applies, it updates the account in the list and states the reason instead (the account is deactivated, or it signs in with Google only).
-4. The use case ends.
-EX-2: Password Reset Email Cannot Be Sent
-1. At Step 6 of the Main Flow, the system cannot send the password reset email.
-2. The new link is never made usable. A link sent to the user earlier, if any, keeps working.
-3. The system displays MSG15 – “Unable to send the password reset email. Please try again.”
-4. The use case ends.
-EX-3: User Account No Longer Exists
-1. At Step 4 of the Main Flow, the system cannot find the selected account.
-2. No password reset link is created and no email is sent.
-3. The system informs the System Admin that the account no longer exists and refreshes the User Accounts list. This situation has no message code.
-4. The use case ends.
-EX-4: Password Reset Link Is Not Valid
-1. At Step 13, 15 or 16, the system determines that the link is unknown, has expired, has already been used (including by a simultaneous submission), has been replaced by a newer link, or belongs to an account that is now deactivated or has no password (BR-20, BR-22).
-2. The password is not changed. A link that reached Step 15 is used up.
-3. The system hides the new password form and displays MSG93 – “The password reset link is invalid or has expired. Please contact an administrator.” It does not say which of these reasons applies.
-4. The use case ends.
-EX-5: New Password Is Invalid
-1. At Step 14, the new password does not satisfy the password rule, or the confirmation does not match it.
-2. The password is not changed and the link remains usable.
-3. The system shows the reason next to the field concerned. A password that breaks the password rule is MSG94 – “Invalid new password.”, shown through its field reason (at least 12 characters); a confirmation that does not match is reported before the link is checked.
-4. The user corrects the new password and resubmits it.
-5. The flow resumes at Step 13.
-EX-6: Password Reset Page Opened Without a Reset Code
-1. At Step 11, the page has no reset code. This happens when the link is incomplete, or when the page is reloaded or restored after the code was removed from the address bar.
-2. The system does not check the link and does not say that it has expired, because the link itself may still be usable.
-3. The system displays MSG129 – “No password reset code was found. Please open the link in the email again.” with a hint that the link still works if it has not been used, is less than 60 minutes old and has not been replaced by a newer link.
-4. The use case ends. Opening the link from the email again starts a new execution at Step 10.
-Primary Actors
-System Admin
-Secondary Actors
-None
-Description
-Allows the System Admin to assign a system role to a user account or change the user’s existing system role.
-Allows the System Admin to assign a system role to a user account or change the user’s existing system role.
-Allows the System Admin to assign a system role to a user account or change the user’s existing system role.
-Preconditions
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to assign system roles.
-● PRE-3: The selected user account exists.
-● PRE-4: At least one system role is available for assignment.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to assign system roles.
-● PRE-3: The selected user account exists.
-● PRE-4: At least one system role is available for assignment.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to assign system roles.
-● PRE-3: The selected user account exists.
-● PRE-4: At least one system role is available for assignment.
-Postconditions
-● POST-1: The selected user is associated with the selected system role.
-● POST-2: The user receives the capabilities associated with the selected system role.
-● POST-3: The role assignment or change is recorded in the audit log.
-● POST-1: The selected user is associated with the selected system role.
-● POST-2: The user receives the capabilities associated with the selected system role.
-● POST-3: The role assignment or change is recorded in the audit log.
-● POST-1: The selected user is associated with the selected system role.
-● POST-2: The user receives the capabilities associated with the selected system role.
-● POST-3: The role assignment or change is recorded in the audit log.
-Normal Flow
-Assign System Role to User
-1. The System Admin opens User Management.
-2. The System Admin selects a user account.
-3. The system displays the user information and the current system role, if any.
-4. The System Admin selects Assign System Role.
-5. The system displays the available system roles.
-6. The System Admin selects a role and confirms the assignment.
-7. The system assigns the selected role to the user.
-8. The system records the role assignment in the audit log.
-9. The system displays MSG10 – “User account updated successfully.”
-Assign System Role to User
-1. The System Admin opens User Management.
-2. The System Admin selects a user account.
-3. The system displays the user information and the current system role, if any.
-4. The System Admin selects Assign System Role.
-5. The system displays the available system roles.
-6. The System Admin selects a role and confirms the assignment.
-7. The system assigns the selected role to the user.
-8. The system records the role assignment in the audit log.
-9. The system displays MSG10 – “User account updated successfully.”
-Assign System Role to User
-1. The System Admin opens User Management.
-2. The System Admin selects a user account.
-3. The system displays the user information and the current system role, if any.
-4. The System Admin selects Assign System Role.
-5. The system displays the available system roles.
-6. The System Admin selects a role and confirms the assignment.
-7. The system assigns the selected role to the user.
-8. The system records the role assignment in the audit log.
-9. The system displays MSG10 – “User account updated successfully.”
-Alternative Flows
-AF-1: Change Existing System Role
-1. At Step 4 of the Main Flow, if the user already has a system role, the System Admin selects Change System Role.
-2. The System Admin selects a different role.
-3. The System Admin confirms the change.
-4. The system replaces the current role with the selected role.
-5. The system records the role change in the audit log.
-6. The system displays MSG10 – “User account updated successfully.”
-AF-1: Change Existing System Role
-1. At Step 4 of the Main Flow, if the user already has a system role, the System Admin selects Change System Role.
-2. The System Admin selects a different role.
-3. The System Admin confirms the change.
-4. The system replaces the current role with the selected role.
-5. The system records the role change in the audit log.
-6. The system displays MSG10 – “User account updated successfully.”
-AF-1: Change Existing System Role
-1. At Step 4 of the Main Flow, if the user already has a system role, the System Admin selects Change System Role.
-2. The System Admin selects a different role.
-3. The System Admin confirms the change.
-4. The system replaces the current role with the selected role.
-5. The system records the role change in the audit log.
-6. The system displays MSG10 – “User account updated successfully.”
-Exception Flows
-EX-1: Selected Role Is Not Available
-1. The selected role is no longer available for assignment.
-2. The system displays MSG09 – “Invalid account information.” with the field error “The role does not exist.”
-3. No role assignment is changed. The use case ends.
-EX-2: Last Administrator Cannot Be Demoted
-1. At Step 7 of the Main Flow or Step 4 of AF-1, the system determines that, after the change, no active account would hold the user administration permission.
-2. The user keeps the previous role.
-3. The system displays MSG12 – “Unable to change the status of this user account.”
-4. The use case ends unsuccessfully.
-EX-1: Selected Role Is Not Available
-1. The selected role is no longer available for assignment.
-2. The system displays MSG09 – “Invalid account information.” with the field error “The role does not exist.”
-3. No role assignment is changed. The use case ends.
-EX-2: Last Administrator Cannot Be Demoted
-1. At Step 7 of the Main Flow or Step 4 of AF-1, the system determines that, after the change, no active account would hold the user administration permission.
-2. The user keeps the previous role.
-3. The system displays MSG12 – “Unable to change the status of this user account.”
-4. The use case ends unsuccessfully.
-EX-1: Selected Role Is Not Available
-1. The selected role is no longer available for assignment.
-2. The system displays MSG09 – “Invalid account information.” with the field error “The role does not exist.”
-3. No role assignment is changed. The use case ends.
-EX-2: Last Administrator Cannot Be Demoted
-1. At Step 7 of the Main Flow or Step 4 of AF-1, the system determines that, after the change, no active account would hold the user administration permission.
-2. The user keeps the previous role.
-3. The system displays MSG12 – “Unable to change the status of this user account.”
-4. The use case ends unsuccessfully.
-Primary Actors
-System Admin
-Secondary Actors
-None
-Description
-Allows the System Admin to view the predefined roles and their default permissions.
-Allows the System Admin to view the predefined roles and their default permissions.
-Allows the System Admin to view the predefined roles and their default permissions.
-Preconditions
-● PRE-1: The System Admin is authenticated.
-● PRE-1: The System Admin is authenticated.
-● PRE-1: The System Admin is authenticated.
-Postconditions
-● POST-1: No system data is modified.
-● POST-1: No system data is modified.
-● POST-1: No system data is modified.
-Normal Flow
-View Role & Permission Matrix
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the role and permission matrix.
-View Role & Permission Matrix
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the role and permission matrix.
-View Role & Permission Matrix
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the role and permission matrix.
-Alternative Flows
-None.
-None.
-None.
-Exception Flows
-E1 — Role and permission information cannot be retrieved
-1. The system cannot retrieve the role and permission information.
-2. The system displays an error message.
-3. The use case ends unsuccessfully.
-E1 — Role and permission information cannot be retrieved
-1. The system cannot retrieve the role and permission information.
-2. The system displays an error message.
-3. The use case ends unsuccessfully.
-E1 — Role and permission information cannot be retrieved
-1. The system cannot retrieve the role and permission information.
-2. The system displays an error message.
-3. The use case ends unsuccessfully.
-Primary Actors
-System Admin
-Secondary Actors
-None
-Description
-Allows the System Admin to configure the default permissions assigned to a predefined system role.
-Allows the System Admin to configure the default permissions assigned to a predefined system role.
-Allows the System Admin to configure the default permissions assigned to a predefined system role.
-Preconditions
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to manage role permissions.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to manage role permissions.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to manage role permissions.
-Postconditions
-● POST-1: The selected role is associated with the updated set of default permissions.
-● POST-2: The permission configuration change is recorded in the audit log.
-● POST-1: The selected role is associated with the updated set of default permissions.
-● POST-2: The permission configuration change is recorded in the audit log.
-● POST-1: The selected role is associated with the updated set of default permissions.
-● POST-2: The permission configuration change is recorded in the audit log.
-Normal Flow
-Configure Role Permissions
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the Role & Permission Matrix.
-3. The System Admin configures the permissions assigned to a predefined role.
-4. The system validates and saves the updated permission configuration (BR-23).
-5. The system records the configuration change in the audit log (BR-16).
-6. The system displays MSG16 – “Role permissions updated successfully.”
-Configure Role Permissions
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the Role & Permission Matrix.
-3. The System Admin configures the permissions assigned to a predefined role.
-4. The system validates and saves the updated permission configuration (BR-23).
-5. The system records the configuration change in the audit log (BR-16).
-6. The system displays MSG16 – “Role permissions updated successfully.”
-Configure Role Permissions
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the Role & Permission Matrix.
-3. The System Admin configures the permissions assigned to a predefined role.
-4. The system validates and saves the updated permission configuration (BR-23).
-5. The system records the configuration change in the audit log (BR-16).
-6. The system displays MSG16 – “Role permissions updated successfully.”
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1: Invalid Permission Configuration
-1. At Step 4 of the Main Flow, the system determines that the updated permission configuration violates a permission rule.
-2. The system does not save the changes.
-3. The system displays MSG17 – “Invalid permission configuration.”
-4. The use case ends unsuccessfully.
-EX-2: Permission Configuration Cannot Be Saved
-1. At Step 4 of the Main Flow, the system cannot save the updated permission configuration.
-2. The existing role permissions remain unchanged.
-3. The system displays MSG18 – “Unable to update role permissions. Please try again.”
-4. The use case ends unsuccessfully.
-EX-1: Invalid Permission Configuration
-1. At Step 4 of the Main Flow, the system determines that the updated permission configuration violates a permission rule.
-2. The system does not save the changes.
-3. The system displays MSG17 – “Invalid permission configuration.”
-4. The use case ends unsuccessfully.
-EX-2: Permission Configuration Cannot Be Saved
-1. At Step 4 of the Main Flow, the system cannot save the updated permission configuration.
-2. The existing role permissions remain unchanged.
-3. The system displays MSG18 – “Unable to update role permissions. Please try again.”
-4. The use case ends unsuccessfully.
-EX-1: Invalid Permission Configuration
-1. At Step 4 of the Main Flow, the system determines that the updated permission configuration violates a permission rule.
-2. The system does not save the changes.
-3. The system displays MSG17 – “Invalid permission configuration.”
-4. The use case ends unsuccessfully.
-EX-2: Permission Configuration Cannot Be Saved
-1. At Step 4 of the Main Flow, the system cannot save the updated permission configuration.
-2. The existing role permissions remain unchanged.
-3. The system displays MSG18 – “Unable to update role permissions. Please try again.”
-4. The use case ends unsuccessfully.
-Primary Actors
-System Admin
-Secondary Actors
-None
-Description
-Allows the System Admin to create a new custom role with a name, an optional description and an optional initial set of permissions, without changing code or redeploying the system.
-Allows the System Admin to create a new custom role with a name, an optional description and an optional initial set of permissions, without changing code or redeploying the system.
-Allows the System Admin to create a new custom role with a name, an optional description and an optional initial set of permissions, without changing code or redeploying the system.
-Preconditions
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to manage roles.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to manage roles.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to manage roles.
-Postconditions
-● POST-1: A new custom role is created and appears in the role list and in the Role & Permission Matrix.
-● POST-2: The new role is associated with the selected permissions (the set may be empty).
-● POST-3: The role creation is recorded in the audit log.
-● POST-1: A new custom role is created and appears in the role list and in the Role & Permission Matrix.
-● POST-2: The new role is associated with the selected permissions (the set may be empty).
-● POST-3: The role creation is recorded in the audit log.
-● POST-1: A new custom role is created and appears in the role list and in the Role & Permission Matrix.
-● POST-2: The new role is associated with the selected permissions (the set may be empty).
-● POST-3: The role creation is recorded in the audit log.
-Normal Flow
-Create Role
-1. The System Admin accesses Role & Permission Management.
-2. The System Admin selects “Create Role”.
-3. The system displays the role creation form.
-4. The System Admin enters the role name and an optional description, selects the permissions to grant to the role, and submits the form.
-5. The system validates the role information: the name is required and has at most 64 characters after trimming, the description has at most 256 characters, and every selected permission exists in the permission catalog.
-6. The system checks that no existing role, including the predefined roles, has the same name (case-insensitive).
-7. The system saves the new role together with its permissions.
-8. The system records the role creation in the audit log (BR-16).
-9. The system displays MSG19 – “Role created successfully.”
-Create Role
-1. The System Admin accesses Role & Permission Management.
-2. The System Admin selects “Create Role”.
-3. The system displays the role creation form.
-4. The System Admin enters the role name and an optional description, selects the permissions to grant to the role, and submits the form.
-5. The system validates the role information: the name is required and has at most 64 characters after trimming, the description has at most 256 characters, and every selected permission exists in the permission catalog.
-6. The system checks that no existing role, including the predefined roles, has the same name (case-insensitive).
-7. The system saves the new role together with its permissions.
-8. The system records the role creation in the audit log (BR-16).
-9. The system displays MSG19 – “Role created successfully.”
-Create Role
-1. The System Admin accesses Role & Permission Management.
-2. The System Admin selects “Create Role”.
-3. The system displays the role creation form.
-4. The System Admin enters the role name and an optional description, selects the permissions to grant to the role, and submits the form.
-5. The system validates the role information: the name is required and has at most 64 characters after trimming, the description has at most 256 characters, and every selected permission exists in the permission catalog.
-6. The system checks that no existing role, including the predefined roles, has the same name (case-insensitive).
-7. The system saves the new role together with its permissions.
-8. The system records the role creation in the audit log (BR-16).
-9. The system displays MSG19 – “Role created successfully.”
-Alternative Flows
-AF-1: Role Created Without Permissions
-1. At Step 4 of the Main Flow, the System Admin does not select any permission.
-2. The system accepts an empty permission set; user accounts assigned to this role have the same access as a Member.
-3. The use case continues at Step 5 of the Main Flow.
-AF-1: Role Created Without Permissions
-1. At Step 4 of the Main Flow, the System Admin does not select any permission.
-2. The system accepts an empty permission set; user accounts assigned to this role have the same access as a Member.
-3. The use case continues at Step 5 of the Main Flow.
-AF-1: Role Created Without Permissions
-1. At Step 4 of the Main Flow, the System Admin does not select any permission.
-2. The system accepts an empty permission set; user accounts assigned to this role have the same access as a Member.
-3. The use case continues at Step 5 of the Main Flow.
-Exception Flows
-EX-1: Invalid Role Information
-1. At Step 5 of the Main Flow, the system determines that the name is empty or longer than 64 characters, the description is longer than 256 characters, or a selected permission does not exist.
-2. The system does not save the role.
-3. The system displays MSG20 – “Invalid role information.” and highlights the invalid fields.
-4. The System Admin may correct the information and resubmit; otherwise the use case ends unsuccessfully.
-EX-2: Duplicate Role Name
-1. At Step 6 or Step 7 of the Main Flow, the system determines that another role already uses the same name (case-insensitive).
-2. The system does not save the role.
-3. The system displays MSG21 – “A role with this name already exists. Please choose a different name.”
-4. The System Admin may enter a different name and resubmit; otherwise the use case ends unsuccessfully.
-EX-3: Role Cannot Be Saved
-1. At Step 7 of the Main Flow, the system cannot save the new role.
-2. No role is created.
-3. The system displays MSG26 – “Unable to create the role. Please try again.”
-4. The use case ends unsuccessfully.
-EX-1: Invalid Role Information
-1. At Step 5 of the Main Flow, the system determines that the name is empty or longer than 64 characters, the description is longer than 256 characters, or a selected permission does not exist.
-2. The system does not save the role.
-3. The system displays MSG20 – “Invalid role information.” and highlights the invalid fields.
-4. The System Admin may correct the information and resubmit; otherwise the use case ends unsuccessfully.
-EX-2: Duplicate Role Name
-1. At Step 6 or Step 7 of the Main Flow, the system determines that another role already uses the same name (case-insensitive).
-2. The system does not save the role.
-3. The system displays MSG21 – “A role with this name already exists. Please choose a different name.”
-4. The System Admin may enter a different name and resubmit; otherwise the use case ends unsuccessfully.
-EX-3: Role Cannot Be Saved
-1. At Step 7 of the Main Flow, the system cannot save the new role.
-2. No role is created.
-3. The system displays MSG26 – “Unable to create the role. Please try again.”
-4. The use case ends unsuccessfully.
-EX-1: Invalid Role Information
-1. At Step 5 of the Main Flow, the system determines that the name is empty or longer than 64 characters, the description is longer than 256 characters, or a selected permission does not exist.
-2. The system does not save the role.
-3. The system displays MSG20 – “Invalid role information.” and highlights the invalid fields.
-4. The System Admin may correct the information and resubmit; otherwise the use case ends unsuccessfully.
-EX-2: Duplicate Role Name
-1. At Step 6 or Step 7 of the Main Flow, the system determines that another role already uses the same name (case-insensitive).
-2. The system does not save the role.
-3. The system displays MSG21 – “A role with this name already exists. Please choose a different name.”
-4. The System Admin may enter a different name and resubmit; otherwise the use case ends unsuccessfully.
-EX-3: Role Cannot Be Saved
-1. At Step 7 of the Main Flow, the system cannot save the new role.
-2. No role is created.
-3. The system displays MSG26 – “Unable to create the role. Please try again.”
-4. The use case ends unsuccessfully.
-Primary Actors
-System Admin
-Secondary Actors
-None
-Description
-Allows the System Admin to change the name and description of a custom role. Predefined roles cannot be renamed; the permissions of any role are configured through UC-11.
-Allows the System Admin to change the name and description of a custom role. Predefined roles cannot be renamed; the permissions of any role are configured through UC-11.
-Allows the System Admin to change the name and description of a custom role. Predefined roles cannot be renamed; the permissions of any role are configured through UC-11.
-Preconditions
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to manage roles.
-● PRE-3: At least one custom role exists in the system.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to manage roles.
-● PRE-3: At least one custom role exists in the system.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to manage roles.
-● PRE-3: At least one custom role exists in the system.
-Postconditions
-● POST-1: The name and/or description of the selected role are updated; its permissions and the user accounts holding it remain unchanged.
-● POST-2: The change is recorded in the audit log with the values before and after the update.
-● POST-3: No user session is terminated; users holding the role see the new name the next time their information is loaded.
-● POST-1: The name and/or description of the selected role are updated; its permissions and the user accounts holding it remain unchanged.
-● POST-2: The change is recorded in the audit log with the values before and after the update.
-● POST-3: No user session is terminated; users holding the role see the new name the next time their information is loaded.
-● POST-1: The name and/or description of the selected role are updated; its permissions and the user accounts holding it remain unchanged.
-● POST-2: The change is recorded in the audit log with the values before and after the update.
-● POST-3: No user session is terminated; users holding the role see the new name the next time their information is loaded.
-Normal Flow
-Update Role
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the list of roles.
-3. The System Admin selects “Edit” on a custom role.
-4. The system displays the edit form pre-filled with the current name and description.
-5. The System Admin modifies the name and/or description and submits the form.
-6. The system verifies that the selected role exists and is a custom role.
-7. The system validates the role information using the same rules as UC-12 (name required, at most 64 characters after trimming; description at most 256 characters).
-8. The system checks that no other role has the same name (case-insensitive). Changing only the letter case of the role’s own name is allowed.
-9. The system saves the updated role.
-10. The system records the change in the audit log (BR-16).
-11. The system displays MSG22 – “Role updated successfully.”
-Update Role
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the list of roles.
-3. The System Admin selects “Edit” on a custom role.
-4. The system displays the edit form pre-filled with the current name and description.
-5. The System Admin modifies the name and/or description and submits the form.
-6. The system verifies that the selected role exists and is a custom role.
-7. The system validates the role information using the same rules as UC-12 (name required, at most 64 characters after trimming; description at most 256 characters).
-8. The system checks that no other role has the same name (case-insensitive). Changing only the letter case of the role’s own name is allowed.
-9. The system saves the updated role.
-10. The system records the change in the audit log (BR-16).
-11. The system displays MSG22 – “Role updated successfully.”
-Update Role
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the list of roles.
-3. The System Admin selects “Edit” on a custom role.
-4. The system displays the edit form pre-filled with the current name and description.
-5. The System Admin modifies the name and/or description and submits the form.
-6. The system verifies that the selected role exists and is a custom role.
-7. The system validates the role information using the same rules as UC-12 (name required, at most 64 characters after trimming; description at most 256 characters).
-8. The system checks that no other role has the same name (case-insensitive). Changing only the letter case of the role’s own name is allowed.
-9. The system saves the updated role.
-10. The system records the change in the audit log (BR-16).
-11. The system displays MSG22 – “Role updated successfully.”
-Alternative Flows
-AF-1: No Changes Submitted
-1. At Step 7 of the Main Flow, the system determines that the submitted name and description are identical to the current values.
-2. The system does not modify any data and does not record an audit log entry.
-3. The system displays MSG22 – “Role updated successfully.”
-4. The use case ends.
-AF-1: No Changes Submitted
-1. At Step 7 of the Main Flow, the system determines that the submitted name and description are identical to the current values.
-2. The system does not modify any data and does not record an audit log entry.
-3. The system displays MSG22 – “Role updated successfully.”
-4. The use case ends.
-AF-1: No Changes Submitted
-1. At Step 7 of the Main Flow, the system determines that the submitted name and description are identical to the current values.
-2. The system does not modify any data and does not record an audit log entry.
-3. The system displays MSG22 – “Role updated successfully.”
-4. The use case ends.
-Exception Flows
-EX-1: Predefined Role
-1. At Step 6 of the Main Flow, the system determines that the selected role is a predefined system role.
-2. The system does not save the changes.
-3. The system displays MSG24 – “This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions.”
-4. The use case ends unsuccessfully.
-EX-2: Invalid Role Information
-1. At Step 7 of the Main Flow, the system determines that the role information is invalid.
-2. The system does not save the changes.
-3. The system displays MSG20 – “Invalid role information.” and highlights the invalid fields.
-4. The System Admin may correct the information and resubmit; otherwise the use case ends unsuccessfully.
-EX-3: Duplicate Role Name
-1. At Step 8 or Step 9 of the Main Flow, the system determines that another role already uses the same name (case-insensitive).
-2. The system does not save the changes.
-3. The system displays MSG21 – “A role with this name already exists. Please choose a different name.”
-4. The System Admin may enter a different name and resubmit; otherwise the use case ends unsuccessfully.
-EX-4: Role Cannot Be Saved
-1. At Step 9 of the Main Flow, the system cannot save the updated role.
-2. The existing role information remains unchanged.
-3. The system displays MSG27 – “Unable to update the role. Please try again.”
-4. The use case ends unsuccessfully.
-EX-1: Predefined Role
-1. At Step 6 of the Main Flow, the system determines that the selected role is a predefined system role.
-2. The system does not save the changes.
-3. The system displays MSG24 – “This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions.”
-4. The use case ends unsuccessfully.
-EX-2: Invalid Role Information
-1. At Step 7 of the Main Flow, the system determines that the role information is invalid.
-2. The system does not save the changes.
-3. The system displays MSG20 – “Invalid role information.” and highlights the invalid fields.
-4. The System Admin may correct the information and resubmit; otherwise the use case ends unsuccessfully.
-EX-3: Duplicate Role Name
-1. At Step 8 or Step 9 of the Main Flow, the system determines that another role already uses the same name (case-insensitive).
-2. The system does not save the changes.
-3. The system displays MSG21 – “A role with this name already exists. Please choose a different name.”
-4. The System Admin may enter a different name and resubmit; otherwise the use case ends unsuccessfully.
-EX-4: Role Cannot Be Saved
-1. At Step 9 of the Main Flow, the system cannot save the updated role.
-2. The existing role information remains unchanged.
-3. The system displays MSG27 – “Unable to update the role. Please try again.”
-4. The use case ends unsuccessfully.
-EX-1: Predefined Role
-1. At Step 6 of the Main Flow, the system determines that the selected role is a predefined system role.
-2. The system does not save the changes.
-3. The system displays MSG24 – “This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions.”
-4. The use case ends unsuccessfully.
-EX-2: Invalid Role Information
-1. At Step 7 of the Main Flow, the system determines that the role information is invalid.
-2. The system does not save the changes.
-3. The system displays MSG20 – “Invalid role information.” and highlights the invalid fields.
-4. The System Admin may correct the information and resubmit; otherwise the use case ends unsuccessfully.
-EX-3: Duplicate Role Name
-1. At Step 8 or Step 9 of the Main Flow, the system determines that another role already uses the same name (case-insensitive).
-2. The system does not save the changes.
-3. The system displays MSG21 – “A role with this name already exists. Please choose a different name.”
-4. The System Admin may enter a different name and resubmit; otherwise the use case ends unsuccessfully.
-EX-4: Role Cannot Be Saved
-1. At Step 9 of the Main Flow, the system cannot save the updated role.
-2. The existing role information remains unchanged.
-3. The system displays MSG27 – “Unable to update the role. Please try again.”
-4. The use case ends unsuccessfully.
-Primary Actors
-System Admin
-Secondary Actors
-None
-Description
-Allows the System Admin to delete a custom role that is no longer held by any user account. Predefined roles cannot be deleted.
-Allows the System Admin to delete a custom role that is no longer held by any user account. Predefined roles cannot be deleted.
-Allows the System Admin to delete a custom role that is no longer held by any user account. Predefined roles cannot be deleted.
-Preconditions
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to manage roles.
-● PRE-3: At least one custom role exists in the system.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to manage roles.
-● PRE-3: At least one custom role exists in the system.
-● PRE-1: The System Admin is authenticated in the system.
-● PRE-2: The System Admin is authorized to manage roles.
-● PRE-3: At least one custom role exists in the system.
-Postconditions
-● POST-1: The selected role and its permission assignments are removed from the system.
-● POST-2: The deletion, including the role name and the permissions it held, is recorded in the audit log.
-● POST-3: No user account and no user session is affected.
-● POST-1: The selected role and its permission assignments are removed from the system.
-● POST-2: The deletion, including the role name and the permissions it held, is recorded in the audit log.
-● POST-3: No user account and no user session is affected.
-● POST-1: The selected role and its permission assignments are removed from the system.
-● POST-2: The deletion, including the role name and the permissions it held, is recorded in the audit log.
-● POST-3: No user account and no user session is affected.
-Normal Flow
-Delete Role
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the list of roles with the number of user accounts holding each role.
-3. The System Admin selects “Delete” on a custom role.
-4. The system displays a confirmation dialog.
-5. The System Admin confirms the deletion.
-6. The system verifies that the selected role exists, is a custom role, and is not held by any user account, including deactivated accounts.
-7. The system deletes the role together with its permission assignments.
-8. The system records the role deletion in the audit log (BR-16).
-9. The system displays MSG23 – “Role deleted successfully.”
-Delete Role
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the list of roles with the number of user accounts holding each role.
-3. The System Admin selects “Delete” on a custom role.
-4. The system displays a confirmation dialog.
-5. The System Admin confirms the deletion.
-6. The system verifies that the selected role exists, is a custom role, and is not held by any user account, including deactivated accounts.
-7. The system deletes the role together with its permission assignments.
-8. The system records the role deletion in the audit log (BR-16).
-9. The system displays MSG23 – “Role deleted successfully.”
-Delete Role
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the list of roles with the number of user accounts holding each role.
-3. The System Admin selects “Delete” on a custom role.
-4. The system displays a confirmation dialog.
-5. The System Admin confirms the deletion.
-6. The system verifies that the selected role exists, is a custom role, and is not held by any user account, including deactivated accounts.
-7. The system deletes the role together with its permission assignments.
-8. The system records the role deletion in the audit log (BR-16).
-9. The system displays MSG23 – “Role deleted successfully.”
-Alternative Flows
-AF-1: Deletion Cancelled
-1. At Step 5 of the Main Flow, the System Admin cancels the deletion.
-2. The system closes the confirmation dialog without changing any data.
-3. The use case ends.
-AF-1: Deletion Cancelled
-1. At Step 5 of the Main Flow, the System Admin cancels the deletion.
-2. The system closes the confirmation dialog without changing any data.
-3. The use case ends.
-AF-1: Deletion Cancelled
-1. At Step 5 of the Main Flow, the System Admin cancels the deletion.
-2. The system closes the confirmation dialog without changing any data.
-3. The use case ends.
-Exception Flows
-EX-1: Predefined Role
-1. At Step 6 of the Main Flow, the system determines that the selected role is a predefined system role.
-2. The system does not delete the role.
-3. The system displays MSG24 – “This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions.”
-4. The use case ends unsuccessfully.
-EX-2: Role Still Held by User Accounts
-1. At Step 6 or Step 7 of the Main Flow, the system determines that one or more user accounts (active or deactivated) still hold the role, including an account assigned to the role while the deletion was in progress.
-2. The system does not delete the role.
-3. The system displays MSG25 – “This role is still held by {n} user account(s). Reassign them to another role before deleting.” in the confirmation dialog, where {n} is the number of user accounts holding the role.
-4. The use case ends unsuccessfully.
-EX-3: Role Cannot Be Deleted
-1. At Step 7 of the Main Flow, the system cannot delete the role.
-2. The role and its permission assignments remain unchanged.
-3. The system displays MSG28 – “Unable to delete the role. Please try again.”
-4. The use case ends unsuccessfully.
-EX-1: Predefined Role
-1. At Step 6 of the Main Flow, the system determines that the selected role is a predefined system role.
-2. The system does not delete the role.
-3. The system displays MSG24 – “This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions.”
-4. The use case ends unsuccessfully.
-EX-2: Role Still Held by User Accounts
-1. At Step 6 or Step 7 of the Main Flow, the system determines that one or more user accounts (active or deactivated) still hold the role, including an account assigned to the role while the deletion was in progress.
-2. The system does not delete the role.
-3. The system displays MSG25 – “This role is still held by {n} user account(s). Reassign them to another role before deleting.” in the confirmation dialog, where {n} is the number of user accounts holding the role.
-4. The use case ends unsuccessfully.
-EX-3: Role Cannot Be Deleted
-1. At Step 7 of the Main Flow, the system cannot delete the role.
-2. The role and its permission assignments remain unchanged.
-3. The system displays MSG28 – “Unable to delete the role. Please try again.”
-4. The use case ends unsuccessfully.
-EX-1: Predefined Role
-1. At Step 6 of the Main Flow, the system determines that the selected role is a predefined system role.
-2. The system does not delete the role.
-3. The system displays MSG24 – “This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions.”
-4. The use case ends unsuccessfully.
-EX-2: Role Still Held by User Accounts
-1. At Step 6 or Step 7 of the Main Flow, the system determines that one or more user accounts (active or deactivated) still hold the role, including an account assigned to the role while the deletion was in progress.
-2. The system does not delete the role.
-3. The system displays MSG25 – “This role is still held by {n} user account(s). Reassign them to another role before deleting.” in the confirmation dialog, where {n} is the number of user accounts holding the role.
-4. The use case ends unsuccessfully.
-EX-3: Role Cannot Be Deleted
-1. At Step 7 of the Main Flow, the system cannot delete the role.
-2. The role and its permission assignments remain unchanged.
-3. The system displays MSG28 – “Unable to delete the role. Please try again.”
-4. The use case ends unsuccessfully.
-Primary Actors
-Meeting Organizer
-Secondary Actors
-None
-Description
-Allows the Meeting Organizer to create a new meeting using the required meeting-level information. Planned Start Time and Planned End Time are defined through Meeting Sessions and are not required when the meeting is first created.
-Allows the Meeting Organizer to create a new meeting using the required meeting-level information. Planned Start Time and Planned End Time are defined through Meeting Sessions and are not required when the meeting is first created.
-Allows the Meeting Organizer to create a new meeting using the required meeting-level information. Planned Start Time and Planned End Time are defined through Meeting Sessions and are not required when the meeting is first created.
-Preconditions
-● PRE-1: The Meeting Organizer is authenticated.
-● PRE-2: The Meeting Organizer is authorized to create meetings.
-● PRE-1: The Meeting Organizer is authenticated.
-● PRE-2: The Meeting Organizer is authorized to create meetings.
-● PRE-1: The Meeting Organizer is authenticated.
-● PRE-2: The Meeting Organizer is authorized to create meetings.
-Postconditions
-● POST-1: A new meeting is created successfully.
-● POST-2: The meeting is created with Draft status.
-● POST-3: The Meeting Organizer is recorded as the creator of the meeting.
-● POST-4: Meeting scheduling is managed separately through Meeting Sessions when the schedule becomes known.
-● POST-1: A new meeting is created successfully.
-● POST-2: The meeting is created with Draft status.
-● POST-3: The Meeting Organizer is recorded as the creator of the meeting.
-● POST-4: Meeting scheduling is managed separately through Meeting Sessions when the schedule becomes known.
-● POST-1: A new meeting is created successfully.
-● POST-2: The meeting is created with Draft status.
-● POST-3: The Meeting Organizer is recorded as the creator of the meeting.
-● POST-4: Meeting scheduling is managed separately through Meeting Sessions when the schedule becomes known.
-Normal Flow
-Create Meeting
-1. The Meeting Organizer selects Create Meeting.
-2. The system displays the meeting creation form.
-3. The Meeting Organizer enters the meeting information, including:
-○ Meeting Name
-○ Meeting Mode
-○ Location
-○ Confidentiality Level
-○ Description
-4. The Meeting Organizer submits the meeting information.
-5. The system validates the entered meeting-level information (BR-24).
-6. The system creates the meeting with Draft status (BR-26).
-7. The system displays MSG29 – "Meeting created successfully."
-Create Meeting
-1. The Meeting Organizer selects Create Meeting.
-2. The system displays the meeting creation form.
-3. The Meeting Organizer enters the meeting information, including:
-○ Meeting Name
-○ Meeting Mode
-○ Location
-○ Confidentiality Level
-○ Description
-4. The Meeting Organizer submits the meeting information.
-5. The system validates the entered meeting-level information (BR-24).
-6. The system creates the meeting with Draft status (BR-26).
-7. The system displays MSG29 – "Meeting created successfully."
-Create Meeting
-1. The Meeting Organizer selects Create Meeting.
-2. The system displays the meeting creation form.
-3. The Meeting Organizer enters the meeting information, including:
-○ Meeting Name
-○ Meeting Mode
-○ Location
-○ Confidentiality Level
-○ Description
-4. The Meeting Organizer submits the meeting information.
-5. The system validates the entered meeting-level information (BR-24).
-6. The system creates the meeting with Draft status (BR-26).
-7. The system displays MSG29 – "Meeting created successfully."
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Invalid Meeting Information
-1. At Step 5, one or more entered values are missing or invalid.
-2. The system identifies the invalid information.
-3. The system displays MSG31 – "Invalid meeting information." and the corresponding validation messages.
-4. The Meeting Organizer corrects the information and resubmits the form.
-5. The flow resumes at Step 5 of the Main Flow.
-EX-2 – Meeting Cannot Be Created
-1. At Step 6, the system cannot complete the meeting creation.
-2. The system displays MSG35 – "Unable to create the meeting. Please try again."
-3. No meeting is created.
-4. The use case ends.
-EX-1 – Invalid Meeting Information
-1. At Step 5, one or more entered values are missing or invalid.
-2. The system identifies the invalid information.
-3. The system displays MSG31 – "Invalid meeting information." and the corresponding validation messages.
-4. The Meeting Organizer corrects the information and resubmits the form.
-5. The flow resumes at Step 5 of the Main Flow.
-EX-2 – Meeting Cannot Be Created
-1. At Step 6, the system cannot complete the meeting creation.
-2. The system displays MSG35 – "Unable to create the meeting. Please try again."
-3. No meeting is created.
-4. The use case ends.
-EX-1 – Invalid Meeting Information
-1. At Step 5, one or more entered values are missing or invalid.
-2. The system identifies the invalid information.
-3. The system displays MSG31 – "Invalid meeting information." and the corresponding validation messages.
-4. The Meeting Organizer corrects the information and resubmits the form.
-5. The flow resumes at Step 5 of the Main Flow.
-EX-2 – Meeting Cannot Be Created
-1. At Step 6, the system cannot complete the meeting creation.
-2. The system displays MSG35 – "Unable to create the meeting. Please try again."
-3. No meeting is created.
-4. The use case ends.
-Primary Actors
-Meeting Organizer
-Secondary Actors
-None
-Description
-Allows the Meeting Organizer to modify the meeting-level information of an existing meeting while the meeting is still editable. Meeting Session planning is handled separately.
-Allows the Meeting Organizer to modify the meeting-level information of an existing meeting while the meeting is still editable. Meeting Session planning is handled separately.
-Allows the Meeting Organizer to modify the meeting-level information of an existing meeting while the meeting is still editable. Meeting Session planning is handled separately.
-Preconditions
-● PRE-1: The Meeting Organizer is authenticated.
-● PRE-2: The selected meeting exists.
-● PRE-3: The Meeting Organizer is authorized to update the selected meeting.
-● PRE-4: At the time the edit action is initiated, the meeting is in Draft or Rejected status.
-● PRE-1: The Meeting Organizer is authenticated.
-● PRE-2: The selected meeting exists.
-● PRE-3: The Meeting Organizer is authorized to update the selected meeting.
-● PRE-4: At the time the edit action is initiated, the meeting is in Draft or Rejected status.
-● PRE-1: The Meeting Organizer is authenticated.
-● PRE-2: The selected meeting exists.
-● PRE-3: The Meeting Organizer is authorized to update the selected meeting.
-● PRE-4: At the time the edit action is initiated, the meeting is in Draft or Rejected status.
-Postconditions
-● POST-1: The meeting information is updated successfully.
-● POST-2: The updated information is available when the meeting is viewed again.
-● POST-3: The meeting lifecycle status and current Meeting Approver assignment remain unchanged.
-● POST-1: The meeting information is updated successfully.
-● POST-2: The updated information is available when the meeting is viewed again.
-● POST-3: The meeting lifecycle status and current Meeting Approver assignment remain unchanged.
-● POST-1: The meeting information is updated successfully.
-● POST-2: The updated information is available when the meeting is viewed again.
-● POST-3: The meeting lifecycle status and current Meeting Approver assignment remain unchanged.
-Normal Flow
-Update Meeting
-1. The Meeting Organizer selects a meeting and chooses Edit Meeting.
-2. The system displays the current meeting information.
-3. The Meeting Organizer submits the updated information.
-4. The system validates the submitted meeting-level information (BR-27).
-5. The system updates the meeting (BR-28).
-6. The system displays MSG30 – "Meeting updated successfully."
-Update Meeting
-1. The Meeting Organizer selects a meeting and chooses Edit Meeting.
-2. The system displays the current meeting information.
-3. The Meeting Organizer submits the updated information.
-4. The system validates the submitted meeting-level information (BR-27).
-5. The system updates the meeting (BR-28).
-6. The system displays MSG30 – "Meeting updated successfully."
-Update Meeting
-1. The Meeting Organizer selects a meeting and chooses Edit Meeting.
-2. The system displays the current meeting information.
-3. The Meeting Organizer submits the updated information.
-4. The system validates the submitted meeting-level information (BR-27).
-5. The system updates the meeting (BR-28).
-6. The system displays MSG30 – "Meeting updated successfully."
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Invalid Meeting Information
-1. At Step 4, the submitted information is invalid.
-2. The system displays MSG31 – "Invalid meeting information." and validation messages for the invalid fields.
-3. The Meeting Organizer corrects the information.
-4. The flow resumes at Step 4 of the Main Flow.
-EX-2 – Meeting Is No Longer Editable
-1. At Step 4, the system determines that the meeting status has changed and the meeting is no longer Draft or Rejected.
-2. The system displays MSG33 – "This meeting can no longer be edited."
-3. The meeting remains unchanged.
-4. The use case ends.
-EX-3 – Meeting Cannot Be Updated
-1. At Step 5, the system cannot complete the update.
-2. The previous meeting information remains unchanged.
-3. The system displays MSG36 – "Unable to update the meeting. Please try again."
-4. The use case ends.
-EX-1 – Invalid Meeting Information
-1. At Step 4, the submitted information is invalid.
-2. The system displays MSG31 – "Invalid meeting information." and validation messages for the invalid fields.
-3. The Meeting Organizer corrects the information.
-4. The flow resumes at Step 4 of the Main Flow.
-EX-2 – Meeting Is No Longer Editable
-1. At Step 4, the system determines that the meeting status has changed and the meeting is no longer Draft or Rejected.
-2. The system displays MSG33 – "This meeting can no longer be edited."
-3. The meeting remains unchanged.
-4. The use case ends.
-EX-3 – Meeting Cannot Be Updated
-1. At Step 5, the system cannot complete the update.
-2. The previous meeting information remains unchanged.
-3. The system displays MSG36 – "Unable to update the meeting. Please try again."
-4. The use case ends.
-EX-1 – Invalid Meeting Information
-1. At Step 4, the submitted information is invalid.
-2. The system displays MSG31 – "Invalid meeting information." and validation messages for the invalid fields.
-3. The Meeting Organizer corrects the information.
-4. The flow resumes at Step 4 of the Main Flow.
-EX-2 – Meeting Is No Longer Editable
-1. At Step 4, the system determines that the meeting status has changed and the meeting is no longer Draft or Rejected.
-2. The system displays MSG33 – "This meeting can no longer be edited."
-3. The meeting remains unchanged.
-4. The use case ends.
-EX-3 – Meeting Cannot Be Updated
-1. At Step 5, the system cannot complete the update.
-2. The previous meeting information remains unchanged.
-3. The system displays MSG36 – "Unable to update the meeting. Please try again."
-4. The use case ends.
-Primary Actors
-Meeting Organizer, Meeting Approver, Chair, Secretary, Participant
-Secondary Actors
-None
-Description
-Allows a user with an authorized relationship to a meeting to view its meeting-level information. Meeting Sessions and Agenda Items are viewed through separate use cases.
-Allows a user with an authorized relationship to a meeting to view its meeting-level information. Meeting Sessions and Agenda Items are viewed through separate use cases.
-Allows a user with an authorized relationship to a meeting to view its meeting-level information. Meeting Sessions and Agenda Items are viewed through separate use cases.
-Preconditions
-● PRE-1: The user is authenticated.
-● PRE-2: A meeting has been selected or identified.
-● PRE-1: The user is authenticated.
-● PRE-2: A meeting has been selected or identified.
-● PRE-1: The user is authenticated.
-● PRE-2: A meeting has been selected or identified.
-Postconditions
-● POST-1: The meeting-level details are displayed.
-● POST-2: No Meeting, Meeting Session, or Agenda information is modified.
-● POST-1: The meeting-level details are displayed.
-● POST-2: No Meeting, Meeting Session, or Agenda information is modified.
-● POST-1: The meeting-level details are displayed.
-● POST-2: No Meeting, Meeting Session, or Agenda information is modified.
-Normal Flow
-View Meeting Details
-1. The user requests to view a meeting.
-2. The system verifies that the meeting exists and that the user may view it under BR-29. The system does not reveal which check failed.
-3. The system retrieves only the meeting-level information.
-4. The system displays Meeting Name, Meeting Mode, Location, Confidentiality Level, Description, and Meeting Status.
-5. The user reviews the meeting-level details. Meeting Sessions and Agenda Items are not loaded by this use case.
-View Meeting Details
-1. The user requests to view a meeting.
-2. The system verifies that the meeting exists and that the user may view it under BR-29. The system does not reveal which check failed.
-3. The system retrieves only the meeting-level information.
-4. The system displays Meeting Name, Meeting Mode, Location, Confidentiality Level, Description, and Meeting Status.
-5. The user reviews the meeting-level details. Meeting Sessions and Agenda Items are not loaded by this use case.
-View Meeting Details
-1. The user requests to view a meeting.
-2. The system verifies that the meeting exists and that the user may view it under BR-29. The system does not reveal which check failed.
-3. The system retrieves only the meeting-level information.
-4. The system displays Meeting Name, Meeting Mode, Location, Confidentiality Level, Description, and Meeting Status.
-5. The user reviews the meeting-level details. Meeting Sessions and Agenda Items are not loaded by this use case.
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Meeting Does Not Exist or Is Not Accessible
-1. At Step 2, the system cannot find the selected meeting or the user is not authorized to view it.
-2. The system does not disclose whether the meeting exists.
-3. The use case ends.
-EX-2 – Meeting Details Cannot Be Retrieved
-1. At Step 3, the meeting exists and is accessible, but the system cannot retrieve its meeting-level information.
-2. The system displays MSG37 – "Unable to load meeting details. Please try again."
-3. The use case ends.
-EX-1 – Meeting Does Not Exist or Is Not Accessible
-1. At Step 2, the system cannot find the selected meeting or the user is not authorized to view it.
-2. The system does not disclose whether the meeting exists.
-3. The use case ends.
-EX-2 – Meeting Details Cannot Be Retrieved
-1. At Step 3, the meeting exists and is accessible, but the system cannot retrieve its meeting-level information.
-2. The system displays MSG37 – "Unable to load meeting details. Please try again."
-3. The use case ends.
-EX-1 – Meeting Does Not Exist or Is Not Accessible
-1. At Step 2, the system cannot find the selected meeting or the user is not authorized to view it.
-2. The system does not disclose whether the meeting exists.
-3. The use case ends.
-EX-2 – Meeting Details Cannot Be Retrieved
-1. At Step 3, the meeting exists and is accessible, but the system cannot retrieve its meeting-level information.
-2. The system displays MSG37 – "Unable to load meeting details. Please try again."
-3. The use case ends.
-Primary Actors
-Meeting Organizer, Meeting Approver, Chair, Secretary, Participant
-Secondary Actors
-None
-Description
-Allows an authorized user to view and browse only the meetings to which the user has an authorized relationship or assignment.
-Allows an authorized user to view and browse only the meetings to which the user has an authorized relationship or assignment.
-Allows an authorized user to view and browse only the meetings to which the user has an authorized relationship or assignment.
-Preconditions
-● PRE-1: The user is authenticated.
-● PRE-1: The user is authenticated.
-● PRE-1: The user is authenticated.
-Postconditions
-● POST-1: The system displays the list of meetings that the user is authorized to view.
-● POST-2: No meeting information is modified.
-● POST-1: The system displays the list of meetings that the user is authorized to view.
-● POST-2: No meeting information is modified.
-● POST-1: The system displays the list of meetings that the user is authorized to view.
-● POST-2: No meeting information is modified.
-Normal Flow
-View Meeting List
-1. The user selects Meetings from the navigation menu.
-2. The system identifies only meetings the user may view under BR-29: meetings created by the user at any status; meetings assigned to the user as Meeting Approver from WaitingApproval onward; and meetings where the user is assigned as Chair, Secretary, Member, or Guest from Published onward.
-3. The system sorts and displays only those authorized meetings.
-4. The user browses the displayed meetings.
-View Meeting List
-1. The user selects Meetings from the navigation menu.
-2. The system identifies only meetings the user may view under BR-29: meetings created by the user at any status; meetings assigned to the user as Meeting Approver from WaitingApproval onward; and meetings where the user is assigned as Chair, Secretary, Member, or Guest from Published onward.
-3. The system sorts and displays only those authorized meetings.
-4. The user browses the displayed meetings.
-View Meeting List
-1. The user selects Meetings from the navigation menu.
-2. The system identifies only meetings the user may view under BR-29: meetings created by the user at any status; meetings assigned to the user as Meeting Approver from WaitingApproval onward; and meetings where the user is assigned as Chair, Secretary, Member, or Guest from Published onward.
-3. The system sorts and displays only those authorized meetings.
-4. The user browses the displayed meetings.
-Alternative Flows
-AF-1 – Search Meetings
-1. At Step 4 of the Main Flow, the user enters a meeting name in the search field.
-2. The system finds meetings matching the entered search criteria within the meetings available to the user.
-3. The system displays the matching meetings.
-4. The flow resumes at Step 4 of the Main Flow.
-AF-2 – Filter Meetings
-1. At Step 4 of the Main Flow, the user selects one or more filter criteria, such as Meeting Status, Confidentiality Level, or Time Range.
-2. The system applies the selected criteria to the meetings available to the user. For Time Range, a meeting matches only when at least one non-cancelled Meeting Session has a planned schedule overlapping the selected range; meetings without a scheduled Meeting Session do not match. (BR-30)
-3. The system displays the matching meetings.
-4. The flow resumes at Step 4 of the Main Flow.
-AF-3 – No Matching Meetings
-1. The applied search or filter criteria produce no matching meetings within the meetings available to the user.
-2. The system displays an empty meeting list and the message "No meetings match the filter."
-3. The user may change or clear the current search/filter criteria.
-4. The flow resumes at Step 4 of the Main Flow.
-AF-1 – Search Meetings
-1. At Step 4 of the Main Flow, the user enters a meeting name in the search field.
-2. The system finds meetings matching the entered search criteria within the meetings available to the user.
-3. The system displays the matching meetings.
-4. The flow resumes at Step 4 of the Main Flow.
-AF-2 – Filter Meetings
-1. At Step 4 of the Main Flow, the user selects one or more filter criteria, such as Meeting Status, Confidentiality Level, or Time Range.
-2. The system applies the selected criteria to the meetings available to the user. For Time Range, a meeting matches only when at least one non-cancelled Meeting Session has a planned schedule overlapping the selected range; meetings without a scheduled Meeting Session do not match. (BR-30)
-3. The system displays the matching meetings.
-4. The flow resumes at Step 4 of the Main Flow.
-AF-3 – No Matching Meetings
-1. The applied search or filter criteria produce no matching meetings within the meetings available to the user.
-2. The system displays an empty meeting list and the message "No meetings match the filter."
-3. The user may change or clear the current search/filter criteria.
-4. The flow resumes at Step 4 of the Main Flow.
-AF-1 – Search Meetings
-1. At Step 4 of the Main Flow, the user enters a meeting name in the search field.
-2. The system finds meetings matching the entered search criteria within the meetings available to the user.
-3. The system displays the matching meetings.
-4. The flow resumes at Step 4 of the Main Flow.
-AF-2 – Filter Meetings
-1. At Step 4 of the Main Flow, the user selects one or more filter criteria, such as Meeting Status, Confidentiality Level, or Time Range.
-2. The system applies the selected criteria to the meetings available to the user. For Time Range, a meeting matches only when at least one non-cancelled Meeting Session has a planned schedule overlapping the selected range; meetings without a scheduled Meeting Session do not match. (BR-30)
-3. The system displays the matching meetings.
-4. The flow resumes at Step 4 of the Main Flow.
-AF-3 – No Matching Meetings
-1. The applied search or filter criteria produce no matching meetings within the meetings available to the user.
-2. The system displays an empty meeting list and the message "No meetings match the filter."
-3. The user may change or clear the current search/filter criteria.
-4. The flow resumes at Step 4 of the Main Flow.
-Exception Flows
-EX-1 – Meeting List Cannot Be Retrieved
-1. At Step 2 or Step 3 of the Main Flow, the system cannot retrieve the meeting list.
-2. The system displays MSG38 – "Unable to load meetings. Please try again."
-3. The use case ends.
-EX-2 – Invalid Meeting List Criteria
-1. The system determines that the selected search, filter, sort, or display criteria are invalid.
-2. The system displays MSG32 – "Tiêu chí danh sách cuộc họp không hợp lệ."
-3. The user may clear or adjust the search/filter criteria.
-4. The use case ends.
-EX-1 – Meeting List Cannot Be Retrieved
-1. At Step 2 or Step 3 of the Main Flow, the system cannot retrieve the meeting list.
-2. The system displays MSG38 – "Unable to load meetings. Please try again."
-3. The use case ends.
-EX-2 – Invalid Meeting List Criteria
-1. The system determines that the selected search, filter, sort, or display criteria are invalid.
-2. The system displays MSG32 – "Tiêu chí danh sách cuộc họp không hợp lệ."
-3. The user may clear or adjust the search/filter criteria.
-4. The use case ends.
-EX-1 – Meeting List Cannot Be Retrieved
-1. At Step 2 or Step 3 of the Main Flow, the system cannot retrieve the meeting list.
-2. The system displays MSG38 – "Unable to load meetings. Please try again."
-3. The use case ends.
-EX-2 – Invalid Meeting List Criteria
-1. The system determines that the selected search, filter, sort, or display criteria are invalid.
-2. The system displays MSG32 – "Tiêu chí danh sách cuộc họp không hợp lệ."
-3. The user may clear or adjust the search/filter criteria.
-4. The use case ends.
-Primary Actors
-Meeting Organizer
-Secondary Actors
-None
-Description
-Allows the Meeting Organizer to submit a Draft meeting or resubmit a previously Rejected meeting for review by an assigned Meeting Approver based on the meeting-level information.
-Allows the Meeting Organizer to submit a Draft meeting or resubmit a previously Rejected meeting for review by an assigned Meeting Approver based on the meeting-level information.
-Allows the Meeting Organizer to submit a Draft meeting or resubmit a previously Rejected meeting for review by an assigned Meeting Approver based on the meeting-level information.
-Preconditions
-● PRE-1: The Meeting Organizer is authenticated.
-● PRE-2: The selected meeting exists.
-● PRE-3: The Meeting Organizer is authorized to submit the selected meeting for approval.
-● PRE-4: The meeting is in Draft or Rejected status.
-● PRE-1: The Meeting Organizer is authenticated.
-● PRE-2: The selected meeting exists.
-● PRE-3: The Meeting Organizer is authorized to submit the selected meeting for approval.
-● PRE-4: The meeting is in Draft or Rejected status.
-● PRE-1: The Meeting Organizer is authenticated.
-● PRE-2: The selected meeting exists.
-● PRE-3: The Meeting Organizer is authorized to submit the selected meeting for approval.
-● PRE-4: The meeting is in Draft or Rejected status.
-Postconditions
-● POST-1: The meeting status is WaitingApproval.
-● POST-2: A valid Meeting Approver is assigned to the current approval cycle.
-● POST-3: The assigned Meeting Approver is granted access to the meeting for approval purposes.
-● POST-4: The submission is recorded in the meeting lifecycle history.
-● POST-5: The assigned Meeting Approver is notified of the pending approval request.
-● POST-1: The meeting status is WaitingApproval.
-● POST-2: A valid Meeting Approver is assigned to the current approval cycle.
-● POST-3: The assigned Meeting Approver is granted access to the meeting for approval purposes.
-● POST-4: The submission is recorded in the meeting lifecycle history.
-● POST-5: The assigned Meeting Approver is notified of the pending approval request.
-● POST-1: The meeting status is WaitingApproval.
-● POST-2: A valid Meeting Approver is assigned to the current approval cycle.
-● POST-3: The assigned Meeting Approver is granted access to the meeting for approval purposes.
-● POST-4: The submission is recorded in the meeting lifecycle history.
-● POST-5: The assigned Meeting Approver is notified of the pending approval request.
-Normal Flow
-Submit Meeting for Approval
-1. The Meeting Organizer selects a Draft meeting and chooses Submit for Approval.
-2. The system verifies that all mandatory meeting-level information is complete. Meeting Sessions are not required for approval submission. (BR-33, BR-55)
-3. The system identifies users who are eligible to act as Meeting Approvers.
-4. The system displays the eligible Meeting Approvers.
-5. The Meeting Organizer selects a Meeting Approver.
-6. The system verifies that the selected user is eligible to review the meeting and is not the Meeting Organizer.
-7. The system verifies that the meeting is still in Draft or Rejected status.
-8. The system assigns the selected Meeting Approver to the current approval cycle.
-9. The system changes the meeting status to WaitingApproval.
-10. The system records the submission and assigned approver in the meeting lifecycle history.
-11. The system notifies the assigned Meeting Approver.
-12. The system displays the submission success message.
-Submit Meeting for Approval
-1. The Meeting Organizer selects a Draft meeting and chooses Submit for Approval.
-2. The system verifies that all mandatory meeting-level information is complete. Meeting Sessions are not required for approval submission. (BR-33, BR-55)
-3. The system identifies users who are eligible to act as Meeting Approvers.
-4. The system displays the eligible Meeting Approvers.
-5. The Meeting Organizer selects a Meeting Approver.
-6. The system verifies that the selected user is eligible to review the meeting and is not the Meeting Organizer.
-7. The system verifies that the meeting is still in Draft or Rejected status.
-8. The system assigns the selected Meeting Approver to the current approval cycle.
-9. The system changes the meeting status to WaitingApproval.
-10. The system records the submission and assigned approver in the meeting lifecycle history.
-11. The system notifies the assigned Meeting Approver.
-12. The system displays the submission success message.
-Submit Meeting for Approval
-1. The Meeting Organizer selects a Draft meeting and chooses Submit for Approval.
-2. The system verifies that all mandatory meeting-level information is complete. Meeting Sessions are not required for approval submission. (BR-33, BR-55)
-3. The system identifies users who are eligible to act as Meeting Approvers.
-4. The system displays the eligible Meeting Approvers.
-5. The Meeting Organizer selects a Meeting Approver.
-6. The system verifies that the selected user is eligible to review the meeting and is not the Meeting Organizer.
-7. The system verifies that the meeting is still in Draft or Rejected status.
-8. The system assigns the selected Meeting Approver to the current approval cycle.
-9. The system changes the meeting status to WaitingApproval.
-10. The system records the submission and assigned approver in the meeting lifecycle history.
-11. The system notifies the assigned Meeting Approver.
-12. The system displays the submission success message.
-Alternative Flows
-AF-1 – Resubmit a Rejected Meeting
-Entry Point: Step 1 of the Main Flow.
-1. The Meeting Organizer selects a meeting in Rejected status.
-2. The Meeting Organizer chooses Resubmit for Approval.
-3. The flow resumes at Step 2 of the Main Flow and completes successfully when the submission requirements are satisfied.
-AF-1 – Resubmit a Rejected Meeting
-Entry Point: Step 1 of the Main Flow.
-1. The Meeting Organizer selects a meeting in Rejected status.
-2. The Meeting Organizer chooses Resubmit for Approval.
-3. The flow resumes at Step 2 of the Main Flow and completes successfully when the submission requirements are satisfied.
-AF-1 – Resubmit a Rejected Meeting
-Entry Point: Step 1 of the Main Flow.
-1. The Meeting Organizer selects a meeting in Rejected status.
-2. The Meeting Organizer chooses Resubmit for Approval.
-3. The flow resumes at Step 2 of the Main Flow and completes successfully when the submission requirements are satisfied.
-Exception Flows
-EX-1 – Incomplete Meeting-Level Information
-1. At Step 2, the system determines that mandatory meeting-level information is incomplete.
-2. The system identifies the missing or invalid information.
-3. The meeting remains Draft or Rejected and the use case ends.
-EX-2 – Meeting Status Not Eligible for Submission
-1. At Step 7, the system determines that the meeting is not in Draft or Rejected status.
-2. The system displays MSG41 – "This meeting can no longer be submitted for approval."
-3. The use case ends.
-EX-3 – No Valid Meeting Approver
-1. At Step 6, the system determines that the selected user is not eligible to review the meeting or is the Meeting Organizer.
-2. The meeting remains Draft or Rejected and no approval assignment is created.
-3. The Meeting Organizer selects another eligible approver.
-EX-4 – Submission Cannot Be Completed
-1. At Step 8 or Step 9, the approval assignment or status change cannot be completed.
-2. The meeting remains in its previous status and no approval notification is sent.
-3. The system displays MSG42 – "Unable to submit the meeting for approval. Please try again."
-4. The use case ends.
-EX-1 – Incomplete Meeting-Level Information
-1. At Step 2, the system determines that mandatory meeting-level information is incomplete.
-2. The system identifies the missing or invalid information.
-3. The meeting remains Draft or Rejected and the use case ends.
-EX-2 – Meeting Status Not Eligible for Submission
-1. At Step 7, the system determines that the meeting is not in Draft or Rejected status.
-2. The system displays MSG41 – "This meeting can no longer be submitted for approval."
-3. The use case ends.
-EX-3 – No Valid Meeting Approver
-1. At Step 6, the system determines that the selected user is not eligible to review the meeting or is the Meeting Organizer.
-2. The meeting remains Draft or Rejected and no approval assignment is created.
-3. The Meeting Organizer selects another eligible approver.
-EX-4 – Submission Cannot Be Completed
-1. At Step 8 or Step 9, the approval assignment or status change cannot be completed.
-2. The meeting remains in its previous status and no approval notification is sent.
-3. The system displays MSG42 – "Unable to submit the meeting for approval. Please try again."
-4. The use case ends.
-EX-1 – Incomplete Meeting-Level Information
-1. At Step 2, the system determines that mandatory meeting-level information is incomplete.
-2. The system identifies the missing or invalid information.
-3. The meeting remains Draft or Rejected and the use case ends.
-EX-2 – Meeting Status Not Eligible for Submission
-1. At Step 7, the system determines that the meeting is not in Draft or Rejected status.
-2. The system displays MSG41 – "This meeting can no longer be submitted for approval."
-3. The use case ends.
-EX-3 – No Valid Meeting Approver
-1. At Step 6, the system determines that the selected user is not eligible to review the meeting or is the Meeting Organizer.
-2. The meeting remains Draft or Rejected and no approval assignment is created.
-3. The Meeting Organizer selects another eligible approver.
-EX-4 – Submission Cannot Be Completed
-1. At Step 8 or Step 9, the approval assignment or status change cannot be completed.
-2. The meeting remains in its previous status and no approval notification is sent.
-3. The system displays MSG42 – "Unable to submit the meeting for approval. Please try again."
-4. The use case ends.
-Primary Actors
-Meeting Approver
-Secondary Actors
-None
-Description
-Allows the Meeting Approver assigned to a meeting approval cycle to review the meeting and decide whether to approve or reject it.
-Allows the Meeting Approver assigned to a meeting approval cycle to review the meeting and decide whether to approve or reject it.
-Allows the Meeting Approver assigned to a meeting approval cycle to review the meeting and decide whether to approve or reject it.
-Preconditions
-● PRE-1: The Meeting Approver is authenticated.
-● PRE-2: The selected meeting exists.
-● PRE-3: The Meeting Approver is currently assigned to review the selected meeting and is not its Meeting Organizer.
-● PRE-4: The meeting is in WaitingApproval status.
-● PRE-1: The Meeting Approver is authenticated.
-● PRE-2: The selected meeting exists.
-● PRE-3: The Meeting Approver is currently assigned to review the selected meeting and is not its Meeting Organizer.
-● PRE-4: The meeting is in WaitingApproval status.
-● PRE-1: The Meeting Approver is authenticated.
-● PRE-2: The selected meeting exists.
-● PRE-3: The Meeting Approver is currently assigned to review the selected meeting and is not its Meeting Organizer.
-● PRE-4: The meeting is in WaitingApproval status.
-Postconditions
-● POST-1: The Meeting Approver's decision is recorded.
-● POST-2: If approved, the meeting status is Approved.
-● POST-3: If rejected, the meeting status is Rejected.
-● POST-4: If rejected, the rejection reason is recorded and available to the Secretary.
-● POST-5: The approval or rejection is recorded in the meeting lifecycle history.
-● POST-1: The Meeting Approver's decision is recorded.
-● POST-2: If approved, the meeting status is Approved.
-● POST-3: If rejected, the meeting status is Rejected.
-● POST-4: If rejected, the rejection reason is recorded and available to the Secretary.
-● POST-5: The approval or rejection is recorded in the meeting lifecycle history.
-● POST-1: The Meeting Approver's decision is recorded.
-● POST-2: If approved, the meeting status is Approved.
-● POST-3: If rejected, the meeting status is Rejected.
-● POST-4: If rejected, the rejection reason is recorded and available to the Secretary.
-● POST-5: The approval or rejection is recorded in the meeting lifecycle history.
-Normal Flow
-Review Meeting Approval
-1. The Meeting Approver selects a meeting assigned to them that is awaiting approval.
-2. The system verifies that the current user is the assigned Meeting Approver.
-3. The system displays the meeting information for review.
-4. The Meeting Approver selects Approve.
-5. The system re-verifies that:
-- the Meeting Approver is still authorized to approve the selected meeting; and
-- the meeting is still in WaitingApproval status.
-6. The system changes the meeting status from WaitingApproval to Approved.
-7. The system records the approval decision, acting user, and timestamp in the meeting lifecycle history.
-8. The system displays MSG43 – "Meeting approved successfully."
-Review Meeting Approval
-1. The Meeting Approver selects a meeting assigned to them that is awaiting approval.
-2. The system verifies that the current user is the assigned Meeting Approver.
-3. The system displays the meeting information for review.
-4. The Meeting Approver selects Approve.
-5. The system re-verifies that:
-- the Meeting Approver is still authorized to approve the selected meeting; and
-- the meeting is still in WaitingApproval status.
-6. The system changes the meeting status from WaitingApproval to Approved.
-7. The system records the approval decision, acting user, and timestamp in the meeting lifecycle history.
-8. The system displays MSG43 – "Meeting approved successfully."
-Review Meeting Approval
-1. The Meeting Approver selects a meeting assigned to them that is awaiting approval.
-2. The system verifies that the current user is the assigned Meeting Approver.
-3. The system displays the meeting information for review.
-4. The Meeting Approver selects Approve.
-5. The system re-verifies that:
-- the Meeting Approver is still authorized to approve the selected meeting; and
-- the meeting is still in WaitingApproval status.
-6. The system changes the meeting status from WaitingApproval to Approved.
-7. The system records the approval decision, acting user, and timestamp in the meeting lifecycle history.
-8. The system displays MSG43 – "Meeting approved successfully."
-Alternative Flows
-AF-1 – Reject Meeting
-1. At Step 4 of the Main Flow, the Meeting Approver selects Reject.
-2. The system requests a rejection reason.
-3. The Meeting Approver enters the rejection reason.
-4. The system trims the rejection reason and validates that it is not empty and does not exceed 1000 characters.
-5. The system re-verifies that:
-- the Meeting Approver is still authorized to reject the selected meeting; and
-- the meeting is still in WaitingApproval status.
-6. The system changes the meeting status to Rejected.
-7. The system records the rejection decision, rejection reason, acting user, and timestamp.
-8. The rejection reason becomes available to the Secretary.
-9. The system displays MSG44 – "Meeting rejected successfully."
-AF-1 – Reject Meeting
-1. At Step 4 of the Main Flow, the Meeting Approver selects Reject.
-2. The system requests a rejection reason.
-3. The Meeting Approver enters the rejection reason.
-4. The system trims the rejection reason and validates that it is not empty and does not exceed 1000 characters.
-5. The system re-verifies that:
-- the Meeting Approver is still authorized to reject the selected meeting; and
-- the meeting is still in WaitingApproval status.
-6. The system changes the meeting status to Rejected.
-7. The system records the rejection decision, rejection reason, acting user, and timestamp.
-8. The rejection reason becomes available to the Secretary.
-9. The system displays MSG44 – "Meeting rejected successfully."
-AF-1 – Reject Meeting
-1. At Step 4 of the Main Flow, the Meeting Approver selects Reject.
-2. The system requests a rejection reason.
-3. The Meeting Approver enters the rejection reason.
-4. The system trims the rejection reason and validates that it is not empty and does not exceed 1000 characters.
-5. The system re-verifies that:
-- the Meeting Approver is still authorized to reject the selected meeting; and
-- the meeting is still in WaitingApproval status.
-6. The system changes the meeting status to Rejected.
-7. The system records the rejection decision, rejection reason, acting user, and timestamp.
-8. The rejection reason becomes available to the Secretary.
-9. The system displays MSG44 – "Meeting rejected successfully."
-Exception Flows
-EX-1 – Rejection Reason Is Missing
-1. At Step 4 of AF-1, the system determines that the trimmed rejection reason is empty. (BR-36)
-2. The system displays MSG83 – "Rejection reason is required."
-3. The meeting remains in WaitingApproval status.
-4. The Meeting Approver enters a valid rejection reason.
-5. The flow resumes at Step 4 of AF-1.
-EX-5 – Rejection Reason Is Too Long
-1. At Step 4 of AF-1, the trimmed rejection reason exceeds 1000 characters.
-2. The system displays MSG84 – "Rejection reason must not exceed 1000 characters."
-3. The meeting remains in WaitingApproval status.
-4. The Meeting Approver enters a valid rejection reason and the flow resumes at Step 4 of AF-1.
-EX-2 – Meeting Is No Longer Awaiting Approval
-1. At Step 5 of the Main Flow or Step 5 of AF-1, the system determines that the meeting is no longer in WaitingApproval status.
-2. No approval or rejection decision is applied.
-3. The meeting remains in its current status.
-4. The system displays "This meeting is no longer awaiting approval."
-5. The use case ends.
-EX-3 – Approval Decision Cannot Be Completed
-1. At Step 6 of the Main Flow or Step 6 of AF-1, the system cannot complete the requested approval or rejection decision.
-2. The requested status transition is not applied.
-3. No successful approval or rejection decision is recorded in the meeting lifecycle history.
-4. The system displays "Unable to complete the approval decision. Please try again."
-5. The use case ends.
-EX-4 – User Is No Longer Authorized to Review the Meeting
-1. At Step 5 of the Main Flow or Step 5 of AF-1, the system determines that the Meeting Approver is no longer authorized to approve or reject the selected meeting. (BR-35)
-2. No approval or rejection decision is applied.
-3. The meeting status remains unchanged.
-4. The system informs the Meeting Approver that they are no longer authorized to review the meeting.
-5. The use case ends.
-EX-1 – Rejection Reason Is Missing
-1. At Step 4 of AF-1, the system determines that the trimmed rejection reason is empty. (BR-36)
-2. The system displays MSG83 – "Rejection reason is required."
-3. The meeting remains in WaitingApproval status.
-4. The Meeting Approver enters a valid rejection reason.
-5. The flow resumes at Step 4 of AF-1.
-EX-5 – Rejection Reason Is Too Long
-1. At Step 4 of AF-1, the trimmed rejection reason exceeds 1000 characters.
-2. The system displays MSG84 – "Rejection reason must not exceed 1000 characters."
-3. The meeting remains in WaitingApproval status.
-4. The Meeting Approver enters a valid rejection reason and the flow resumes at Step 4 of AF-1.
-EX-2 – Meeting Is No Longer Awaiting Approval
-1. At Step 5 of the Main Flow or Step 5 of AF-1, the system determines that the meeting is no longer in WaitingApproval status.
-2. No approval or rejection decision is applied.
-3. The meeting remains in its current status.
-4. The system displays "This meeting is no longer awaiting approval."
-5. The use case ends.
-EX-3 – Approval Decision Cannot Be Completed
-1. At Step 6 of the Main Flow or Step 6 of AF-1, the system cannot complete the requested approval or rejection decision.
-2. The requested status transition is not applied.
-3. No successful approval or rejection decision is recorded in the meeting lifecycle history.
-4. The system displays "Unable to complete the approval decision. Please try again."
-5. The use case ends.
-EX-4 – User Is No Longer Authorized to Review the Meeting
-1. At Step 5 of the Main Flow or Step 5 of AF-1, the system determines that the Meeting Approver is no longer authorized to approve or reject the selected meeting. (BR-35)
-2. No approval or rejection decision is applied.
-3. The meeting status remains unchanged.
-4. The system informs the Meeting Approver that they are no longer authorized to review the meeting.
-5. The use case ends.
-EX-1 – Rejection Reason Is Missing
-1. At Step 4 of AF-1, the system determines that the trimmed rejection reason is empty. (BR-36)
-2. The system displays MSG83 – "Rejection reason is required."
-3. The meeting remains in WaitingApproval status.
-4. The Meeting Approver enters a valid rejection reason.
-5. The flow resumes at Step 4 of AF-1.
-EX-5 – Rejection Reason Is Too Long
-1. At Step 4 of AF-1, the trimmed rejection reason exceeds 1000 characters.
-2. The system displays MSG84 – "Rejection reason must not exceed 1000 characters."
-3. The meeting remains in WaitingApproval status.
-4. The Meeting Approver enters a valid rejection reason and the flow resumes at Step 4 of AF-1.
-EX-2 – Meeting Is No Longer Awaiting Approval
-1. At Step 5 of the Main Flow or Step 5 of AF-1, the system determines that the meeting is no longer in WaitingApproval status.
-2. No approval or rejection decision is applied.
-3. The meeting remains in its current status.
-4. The system displays "This meeting is no longer awaiting approval."
-5. The use case ends.
-EX-3 – Approval Decision Cannot Be Completed
-1. At Step 6 of the Main Flow or Step 6 of AF-1, the system cannot complete the requested approval or rejection decision.
-2. The requested status transition is not applied.
-3. No successful approval or rejection decision is recorded in the meeting lifecycle history.
-4. The system displays "Unable to complete the approval decision. Please try again."
-5. The use case ends.
-EX-4 – User Is No Longer Authorized to Review the Meeting
-1. At Step 5 of the Main Flow or Step 5 of AF-1, the system determines that the Meeting Approver is no longer authorized to approve or reject the selected meeting. (BR-35)
-2. No approval or rejection decision is applied.
-3. The meeting status remains unchanged.
-4. The system informs the Meeting Approver that they are no longer authorized to review the meeting.
-5. The use case ends.
-Primary Actors
-Meeting Organizer
-Secondary Actors
-None
-Description
-Allows the Meeting Organizer to publish an Approved meeting and initiate invitation delivery to current internal participants and external Guests. Meeting Sessions may be prepared before or after publication and are not required for publication.
-Allows the Meeting Organizer to publish an Approved meeting and initiate invitation delivery to current internal participants and external Guests. Meeting Sessions may be prepared before or after publication and are not required for publication.
-Allows the Meeting Organizer to publish an Approved meeting and initiate invitation delivery to current internal participants and external Guests. Meeting Sessions may be prepared before or after publication and are not required for publication.
-Preconditions
-● PRE-1: The Meeting Organizer is authenticated.
-● PRE-2: The selected meeting exists.
-● PRE-3: The Meeting Organizer is authorized to publish the selected meeting.
-● PRE-4: The meeting is in Approved status.
-● PRE-5: The meeting has exactly one current Chair and at least one current Secretary with active accounts. Invitation Response and Meeting Session creation are not publication prerequisites. (BR-56, BR-124, BR-125, BR-129)
-● PRE-1: The Meeting Organizer is authenticated.
-● PRE-2: The selected meeting exists.
-● PRE-3: The Meeting Organizer is authorized to publish the selected meeting.
-● PRE-4: The meeting is in Approved status.
-● PRE-5: The meeting has exactly one current Chair and at least one current Secretary with active accounts. Invitation Response and Meeting Session creation are not publication prerequisites. (BR-56, BR-124, BR-125, BR-129)
-● PRE-1: The Meeting Organizer is authenticated.
-● PRE-2: The selected meeting exists.
-● PRE-3: The Meeting Organizer is authorized to publish the selected meeting.
-● PRE-4: The meeting is in Approved status.
-● PRE-5: The meeting has exactly one current Chair and at least one current Secretary with active accounts. Invitation Response and Meeting Session creation are not publication prerequisites. (BR-56, BR-124, BR-125, BR-129)
-Postconditions
-● POST-1: The meeting status is Published.
-● POST-2: The publication is recorded in the meeting lifecycle history.
-● POST-3: The system attempts to initiate invitation delivery for current internal participants and active external Guest invitations when delivery is available. Internal participants may receive in-app and email delivery; external Guests receive email guest-access invitations. (BR-39, BR-40, BR-90, BR-91, BR-152)
-● POST-4: Existing Meeting Sessions, if any, remain unchanged.
-● POST-1: The meeting status is Published.
-● POST-2: The publication is recorded in the meeting lifecycle history.
-● POST-3: The system attempts to initiate invitation delivery for current internal participants and active external Guest invitations when delivery is available. Internal participants may receive in-app and email delivery; external Guests receive email guest-access invitations. (BR-39, BR-40, BR-90, BR-91, BR-152)
-● POST-4: Existing Meeting Sessions, if any, remain unchanged.
-● POST-1: The meeting status is Published.
-● POST-2: The publication is recorded in the meeting lifecycle history.
-● POST-3: The system attempts to initiate invitation delivery for current internal participants and active external Guest invitations when delivery is available. Internal participants may receive in-app and email delivery; external Guests receive email guest-access invitations. (BR-39, BR-40, BR-90, BR-91, BR-152)
-● POST-4: Existing Meeting Sessions, if any, remain unchanged.
-Normal Flow
-Publish Meeting
-1. The Meeting Organizer selects an Approved meeting.
-2. The Meeting Organizer selects Publish Meeting.
-3. The system verifies that the Meeting Organizer remains authorized, the meeting is still Approved, exactly one current Chair has an active account, and at least one current Secretary has an active account. Meeting Sessions are not required. (BR-37, BR-56, BR-124, BR-125, BR-129)
-4. The system changes the meeting status from Approved to Published. (BR-37)
-5. The system records the publication action, acting user, and timestamp in the meeting lifecycle history. (BR-38)
-6. The system initiates asynchronous invitation delivery for current internal participants and active external Guest invitations. External Guest emails contain a secure meeting-specific guest invitation used for later email verification and guest access. The meeting remains Published if delivery is unavailable. (BR-39, BR-40, BR-90, BR-91, BR-94, BR-152, BR-153, BR-156)
-7. The system displays MSG45 – "Meeting published successfully."
-Publish Meeting
-1. The Meeting Organizer selects an Approved meeting.
-2. The Meeting Organizer selects Publish Meeting.
-3. The system verifies that the Meeting Organizer remains authorized, the meeting is still Approved, exactly one current Chair has an active account, and at least one current Secretary has an active account. Meeting Sessions are not required. (BR-37, BR-56, BR-124, BR-125, BR-129)
-4. The system changes the meeting status from Approved to Published. (BR-37)
-5. The system records the publication action, acting user, and timestamp in the meeting lifecycle history. (BR-38)
-6. The system initiates asynchronous invitation delivery for current internal participants and active external Guest invitations. External Guest emails contain a secure meeting-specific guest invitation used for later email verification and guest access. The meeting remains Published if delivery is unavailable. (BR-39, BR-40, BR-90, BR-91, BR-94, BR-152, BR-153, BR-156)
-7. The system displays MSG45 – "Meeting published successfully."
-Publish Meeting
-1. The Meeting Organizer selects an Approved meeting.
-2. The Meeting Organizer selects Publish Meeting.
-3. The system verifies that the Meeting Organizer remains authorized, the meeting is still Approved, exactly one current Chair has an active account, and at least one current Secretary has an active account. Meeting Sessions are not required. (BR-37, BR-56, BR-124, BR-125, BR-129)
-4. The system changes the meeting status from Approved to Published. (BR-37)
-5. The system records the publication action, acting user, and timestamp in the meeting lifecycle history. (BR-38)
-6. The system initiates asynchronous invitation delivery for current internal participants and active external Guest invitations. External Guest emails contain a secure meeting-specific guest invitation used for later email verification and guest access. The meeting remains Published if delivery is unavailable. (BR-39, BR-40, BR-90, BR-91, BR-94, BR-152, BR-153, BR-156)
-7. The system displays MSG45 – "Meeting published successfully."
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Meeting Is No Longer Eligible for Publication
-1. At Step 3 of the Main Flow, the system determines that the meeting is no longer Approved, the Meeting Organizer is no longer authorized to publish it, there is not exactly one active current Chair, or there is no active current Secretary. (BR-37, BR-124, BR-125)
-2. The meeting remains unchanged.
-3. Invitation delivery is not initiated.
-4. The system displays MSG46 – "This meeting can no longer be published."
-5. The use case ends.
-EX-2 – Meeting Cannot Be Published
-1. At Step 4 of the Main Flow, the system cannot complete the publication.
-2. The meeting remains Approved.
-3. Invitation delivery is not initiated.
-4. The system displays MSG47 – "Unable to publish the meeting. Please try again."
-5. The use case ends.
-EX-1 – Meeting Is No Longer Eligible for Publication
-1. At Step 3 of the Main Flow, the system determines that the meeting is no longer Approved, the Meeting Organizer is no longer authorized to publish it, there is not exactly one active current Chair, or there is no active current Secretary. (BR-37, BR-124, BR-125)
-2. The meeting remains unchanged.
-3. Invitation delivery is not initiated.
-4. The system displays MSG46 – "This meeting can no longer be published."
-5. The use case ends.
-EX-2 – Meeting Cannot Be Published
-1. At Step 4 of the Main Flow, the system cannot complete the publication.
-2. The meeting remains Approved.
-3. Invitation delivery is not initiated.
-4. The system displays MSG47 – "Unable to publish the meeting. Please try again."
-5. The use case ends.
-EX-1 – Meeting Is No Longer Eligible for Publication
-1. At Step 3 of the Main Flow, the system determines that the meeting is no longer Approved, the Meeting Organizer is no longer authorized to publish it, there is not exactly one active current Chair, or there is no active current Secretary. (BR-37, BR-124, BR-125)
-2. The meeting remains unchanged.
-3. Invitation delivery is not initiated.
-4. The system displays MSG46 – "This meeting can no longer be published."
-5. The use case ends.
-EX-2 – Meeting Cannot Be Published
-1. At Step 4 of the Main Flow, the system cannot complete the publication.
-2. The meeting remains Approved.
-3. Invitation delivery is not initiated.
-4. The system displays MSG47 – "Unable to publish the meeting. Please try again."
-5. The use case ends.
-Primary Actors
-Chair
-Secondary Actors
-None
-Description
-Allows the Chair to explicitly start a Published meeting and move the Meeting lifecycle to InProgress. A Meeting may be started even when no Meeting Session has been created.
-Allows the Chair to explicitly start a Published meeting and move the Meeting lifecycle to InProgress. A Meeting may be started even when no Meeting Session has been created.
-Allows the Chair to explicitly start a Published meeting and move the Meeting lifecycle to InProgress. A Meeting may be started even when no Meeting Session has been created.
-Preconditions
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The selected meeting exists.
-● PRE-3: The meeting is Published.
-● PRE-4: The meeting has exactly one current Chair and at least one current Secretary with active accounts. Meeting Sessions are optional. (BR-56, BR-127, BR-133)
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The selected meeting exists.
-● PRE-3: The meeting is Published.
-● PRE-4: The meeting has exactly one current Chair and at least one current Secretary with active accounts. Meeting Sessions are optional. (BR-56, BR-127, BR-133)
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The selected meeting exists.
-● PRE-3: The meeting is Published.
-● PRE-4: The meeting has exactly one current Chair and at least one current Secretary with active accounts. Meeting Sessions are optional. (BR-56, BR-127, BR-133)
-Postconditions
-● POST-1: The meeting status is InProgress.
-● POST-2: The start action, acting user, and timestamp are recorded in the meeting lifecycle history.
-● POST-3: Existing Meeting Sessions, if any, remain unchanged.
-● POST-4: Existing room connections, if any, remain unchanged.
-● POST-1: The meeting status is InProgress.
-● POST-2: The start action, acting user, and timestamp are recorded in the meeting lifecycle history.
-● POST-3: Existing Meeting Sessions, if any, remain unchanged.
-● POST-4: Existing room connections, if any, remain unchanged.
-● POST-1: The meeting status is InProgress.
-● POST-2: The start action, acting user, and timestamp are recorded in the meeting lifecycle history.
-● POST-3: Existing Meeting Sessions, if any, remain unchanged.
-● POST-4: Existing room connections, if any, remain unchanged.
-Normal Flow
-Start Meeting
-1. The Chair opens the Published meeting.
-2. The Chair selects Start Meeting.
-3. The system verifies that the Chair is still assigned and active, the meeting is still Published, exactly one current Chair has an active account, and at least one current Secretary has an active account. Meeting Sessions are not required. (BR-56, BR-127, BR-130, BR-131, BR-133)
-4. The system changes the meeting status from Published to InProgress. (BR-131)
-5. The system records the lifecycle transition, acting user, and timestamp. (BR-38)
-6. Existing Meeting Sessions remain unchanged, and the Meeting Room remains available according to the meeting mode and lifecycle. (BR-135, BR-139)
-7. The system displays MSG110 – "Meeting started successfully."
-Start Meeting
-1. The Chair opens the Published meeting.
-2. The Chair selects Start Meeting.
-3. The system verifies that the Chair is still assigned and active, the meeting is still Published, exactly one current Chair has an active account, and at least one current Secretary has an active account. Meeting Sessions are not required. (BR-56, BR-127, BR-130, BR-131, BR-133)
-4. The system changes the meeting status from Published to InProgress. (BR-131)
-5. The system records the lifecycle transition, acting user, and timestamp. (BR-38)
-6. Existing Meeting Sessions remain unchanged, and the Meeting Room remains available according to the meeting mode and lifecycle. (BR-135, BR-139)
-7. The system displays MSG110 – "Meeting started successfully."
-Start Meeting
-1. The Chair opens the Published meeting.
-2. The Chair selects Start Meeting.
-3. The system verifies that the Chair is still assigned and active, the meeting is still Published, exactly one current Chair has an active account, and at least one current Secretary has an active account. Meeting Sessions are not required. (BR-56, BR-127, BR-130, BR-131, BR-133)
-4. The system changes the meeting status from Published to InProgress. (BR-131)
-5. The system records the lifecycle transition, acting user, and timestamp. (BR-38)
-6. Existing Meeting Sessions remain unchanged, and the Meeting Room remains available according to the meeting mode and lifecycle. (BR-135, BR-139)
-7. The system displays MSG110 – "Meeting started successfully."
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Meeting Cannot Be Started
-1. At Step 3, the meeting is no longer Published, the Chair is no longer assigned or active, or the required active Chair/Secretary assignments are no longer valid. (BR-127, BR-130, BR-131)
-2. The meeting remains unchanged.
-3. The system displays MSG112 – "This meeting cannot be started."
-4. The use case ends.
-EX-2 – Start Cannot Be Completed
-1. At Step 4, the system cannot complete the lifecycle transition.
-2. The meeting remains Published.
-3. The system displays MSG115 – "Unable to start the meeting. Please try again."
-4. The use case ends.
-EX-1 – Meeting Cannot Be Started
-1. At Step 3, the meeting is no longer Published, the Chair is no longer assigned or active, or the required active Chair/Secretary assignments are no longer valid. (BR-127, BR-130, BR-131)
-2. The meeting remains unchanged.
-3. The system displays MSG112 – "This meeting cannot be started."
-4. The use case ends.
-EX-2 – Start Cannot Be Completed
-1. At Step 4, the system cannot complete the lifecycle transition.
-2. The meeting remains Published.
-3. The system displays MSG115 – "Unable to start the meeting. Please try again."
-4. The use case ends.
-EX-1 – Meeting Cannot Be Started
-1. At Step 3, the meeting is no longer Published, the Chair is no longer assigned or active, or the required active Chair/Secretary assignments are no longer valid. (BR-127, BR-130, BR-131)
-2. The meeting remains unchanged.
-3. The system displays MSG112 – "This meeting cannot be started."
-4. The use case ends.
-EX-2 – Start Cannot Be Completed
-1. At Step 4, the system cannot complete the lifecycle transition.
-2. The meeting remains Published.
-3. The system displays MSG115 – "Unable to start the meeting. Please try again."
-4. The use case ends.
-Primary Actors
-Chair
-Secondary Actors
-None
-Description
-Allows the Chair to explicitly end an InProgress meeting. Meeting Sessions are optional; if sessions were created, every unfinished session must first be completed or cancelled so that ending the Meeting is an explicit and consistent business action.
-Allows the Chair to explicitly end an InProgress meeting. Meeting Sessions are optional; if sessions were created, every unfinished session must first be completed or cancelled so that ending the Meeting is an explicit and consistent business action.
-Allows the Chair to explicitly end an InProgress meeting. Meeting Sessions are optional; if sessions were created, every unfinished session must first be completed or cancelled so that ending the Meeting is an explicit and consistent business action.
-Preconditions
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The selected meeting exists and is InProgress.
-● PRE-3: No Meeting Session remains Planned or InProgress. A meeting with no Meeting Sessions satisfies this condition. (BR-134)
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The selected meeting exists and is InProgress.
-● PRE-3: No Meeting Session remains Planned or InProgress. A meeting with no Meeting Sessions satisfies this condition. (BR-134)
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The selected meeting exists and is InProgress.
-● PRE-3: No Meeting Session remains Planned or InProgress. A meeting with no Meeting Sessions satisfies this condition. (BR-134)
-Postconditions
-● POST-1: The meeting status is Ended.
-● POST-2: The end action, acting user, and timestamp are recorded in the meeting lifecycle history.
-● POST-3: Existing Meeting Session statuses remain unchanged.
-● POST-4: The online meeting room becomes unavailable and any users still connected are disconnected. (BR-143)
-● POST-1: The meeting status is Ended.
-● POST-2: The end action, acting user, and timestamp are recorded in the meeting lifecycle history.
-● POST-3: Existing Meeting Session statuses remain unchanged.
-● POST-4: The online meeting room becomes unavailable and any users still connected are disconnected. (BR-143)
-● POST-1: The meeting status is Ended.
-● POST-2: The end action, acting user, and timestamp are recorded in the meeting lifecycle history.
-● POST-3: Existing Meeting Session statuses remain unchanged.
-● POST-4: The online meeting room becomes unavailable and any users still connected are disconnected. (BR-143)
-Normal Flow
-End Meeting
-1. The Chair selects End Meeting.
-2. The system requests confirmation.
-3. The Chair confirms the action.
-4. The system verifies that the Chair is still assigned and active, the meeting is still InProgress, and no Meeting Session remains Planned or InProgress. (BR-130, BR-132, BR-134)
-5. The system changes the meeting status from InProgress to Ended. (BR-132)
-6. The system records the lifecycle transition, acting user, and timestamp. (BR-38)
-7. The system makes the online meeting room unavailable and disconnects any users still connected to that room. Existing Meeting Session records remain unchanged. (BR-135, BR-143)
-8. The system displays MSG111 – "Meeting ended successfully."
-End Meeting
-1. The Chair selects End Meeting.
-2. The system requests confirmation.
-3. The Chair confirms the action.
-4. The system verifies that the Chair is still assigned and active, the meeting is still InProgress, and no Meeting Session remains Planned or InProgress. (BR-130, BR-132, BR-134)
-5. The system changes the meeting status from InProgress to Ended. (BR-132)
-6. The system records the lifecycle transition, acting user, and timestamp. (BR-38)
-7. The system makes the online meeting room unavailable and disconnects any users still connected to that room. Existing Meeting Session records remain unchanged. (BR-135, BR-143)
-8. The system displays MSG111 – "Meeting ended successfully."
-End Meeting
-1. The Chair selects End Meeting.
-2. The system requests confirmation.
-3. The Chair confirms the action.
-4. The system verifies that the Chair is still assigned and active, the meeting is still InProgress, and no Meeting Session remains Planned or InProgress. (BR-130, BR-132, BR-134)
-5. The system changes the meeting status from InProgress to Ended. (BR-132)
-6. The system records the lifecycle transition, acting user, and timestamp. (BR-38)
-7. The system makes the online meeting room unavailable and disconnects any users still connected to that room. Existing Meeting Session records remain unchanged. (BR-135, BR-143)
-8. The system displays MSG111 – "Meeting ended successfully."
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Unfinished Meeting Sessions Remain
-1. At Step 4, one or more Meeting Sessions remain Planned or InProgress. (BR-134)
-2. The meeting remains InProgress.
-3. The system displays MSG113 – "Complete or cancel all unfinished meeting sessions before ending the meeting."
-4. The use case ends.
-EX-2 – Meeting Cannot Be Ended
-1. At Step 4, the meeting is no longer InProgress or the Chair is no longer assigned or active. (BR-130, BR-132)
-2. The meeting remains unchanged.
-3. The system displays MSG114 – "This meeting cannot be ended."
-4. The use case ends.
-EX-3 – End Cannot Be Completed
-1. At Step 5, the system cannot complete the lifecycle transition.
-2. The meeting remains InProgress.
-3. The system displays MSG116 – "Unable to end the meeting. Please try again."
-4. The use case ends.
-EX-1 – Unfinished Meeting Sessions Remain
-1. At Step 4, one or more Meeting Sessions remain Planned or InProgress. (BR-134)
-2. The meeting remains InProgress.
-3. The system displays MSG113 – "Complete or cancel all unfinished meeting sessions before ending the meeting."
-4. The use case ends.
-EX-2 – Meeting Cannot Be Ended
-1. At Step 4, the meeting is no longer InProgress or the Chair is no longer assigned or active. (BR-130, BR-132)
-2. The meeting remains unchanged.
-3. The system displays MSG114 – "This meeting cannot be ended."
-4. The use case ends.
-EX-3 – End Cannot Be Completed
-1. At Step 5, the system cannot complete the lifecycle transition.
-2. The meeting remains InProgress.
-3. The system displays MSG116 – "Unable to end the meeting. Please try again."
-4. The use case ends.
-EX-1 – Unfinished Meeting Sessions Remain
-1. At Step 4, one or more Meeting Sessions remain Planned or InProgress. (BR-134)
-2. The meeting remains InProgress.
-3. The system displays MSG113 – "Complete or cancel all unfinished meeting sessions before ending the meeting."
-4. The use case ends.
-EX-2 – Meeting Cannot Be Ended
-1. At Step 4, the meeting is no longer InProgress or the Chair is no longer assigned or active. (BR-130, BR-132)
-2. The meeting remains unchanged.
-3. The system displays MSG114 – "This meeting cannot be ended."
-4. The use case ends.
-EX-3 – End Cannot Be Completed
-1. At Step 5, the system cannot complete the lifecycle transition.
-2. The meeting remains InProgress.
-3. The system displays MSG116 – "Unable to end the meeting. Please try again."
-4. The use case ends.
-Primary Actors
-Secretary
-Secondary Actors
-None
-Description
-Allows the Secretary to create a Planned Meeting Session for a meeting, including an additional future session after publication when operationally required.
-Allows the Secretary to create a Planned Meeting Session for a meeting, including an additional future session after publication when operationally required.
-Allows the Secretary to create a Planned Meeting Session for a meeting, including an additional future session after publication when operationally required.
-Preconditions
-● PRE-1: The Secretary is authenticated.
-● PRE-2: The selected meeting exists and the Secretary is assigned to it.
-● PRE-3: The meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-1: The Secretary is authenticated.
-● PRE-2: The selected meeting exists and the Secretary is assigned to it.
-● PRE-3: The meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-1: The Secretary is authenticated.
-● PRE-2: The selected meeting exists and the Secretary is assigned to it.
-● PRE-3: The meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-Postconditions
-● POST-1: A new Meeting Session is associated with the selected meeting.
-● POST-2: The Meeting Session is in Planned status.
-● POST-3: The meeting lifecycle status remains unchanged.
-● POST-4: If the meeting is Published or InProgress, affected participants are notified of the session schedule change.
-● POST-1: A new Meeting Session is associated with the selected meeting.
-● POST-2: The Meeting Session is in Planned status.
-● POST-3: The meeting lifecycle status remains unchanged.
-● POST-4: If the meeting is Published or InProgress, affected participants are notified of the session schedule change.
-● POST-1: A new Meeting Session is associated with the selected meeting.
-● POST-2: The Meeting Session is in Planned status.
-● POST-3: The meeting lifecycle status remains unchanged.
-● POST-4: If the meeting is Published or InProgress, affected participants are notified of the session schedule change.
-Normal Flow
-Create Meeting Session
-1. The Secretary opens the selected meeting.
-2. The Secretary selects Add Session.
-3. The system displays the Meeting Session information form.
-4. The Secretary enters the session title, planned start time, and planned end time.
-5. The Secretary submits the session information.
-6. The system validates the session information and planned time rules. (BR-62, BR-75)
-7. The system verifies that the Secretary is still assigned to the meeting and that the meeting is open for session planning. (BR-54)
-8. The system creates the Meeting Session in Planned status. (BR-58)
-9. If the meeting is Published or InProgress, the system notifies affected participants of the schedule change. (BR-76)
-10. The system displays MSG48 – "Meeting session created successfully." and shows the new Meeting Session in the meeting schedule.
-Create Meeting Session
-1. The Secretary opens the selected meeting.
-2. The Secretary selects Add Session.
-3. The system displays the Meeting Session information form.
-4. The Secretary enters the session title, planned start time, and planned end time.
-5. The Secretary submits the session information.
-6. The system validates the session information and planned time rules. (BR-62, BR-75)
-7. The system verifies that the Secretary is still assigned to the meeting and that the meeting is open for session planning. (BR-54)
-8. The system creates the Meeting Session in Planned status. (BR-58)
-9. If the meeting is Published or InProgress, the system notifies affected participants of the schedule change. (BR-76)
-10. The system displays MSG48 – "Meeting session created successfully." and shows the new Meeting Session in the meeting schedule.
-Create Meeting Session
-1. The Secretary opens the selected meeting.
-2. The Secretary selects Add Session.
-3. The system displays the Meeting Session information form.
-4. The Secretary enters the session title, planned start time, and planned end time.
-5. The Secretary submits the session information.
-6. The system validates the session information and planned time rules. (BR-62, BR-75)
-7. The system verifies that the Secretary is still assigned to the meeting and that the meeting is open for session planning. (BR-54)
-8. The system creates the Meeting Session in Planned status. (BR-58)
-9. If the meeting is Published or InProgress, the system notifies affected participants of the schedule change. (BR-76)
-10. The system displays MSG48 – "Meeting session created successfully." and shows the new Meeting Session in the meeting schedule.
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Invalid Session Information
-1. At Step 6, required information is missing or invalid, the planned end time is not later than the planned start time, or a Published/InProgress meeting is given a session start time that is not in the future. (BR-62, BR-75)
-2. The system displays MSG53 – "Invalid meeting session information." and identifies the invalid information.
-3. The Secretary corrects the information and resubmits it.
-4. The flow resumes at Step 6 of the Main Flow.
-EX-2 – Meeting Is Not Open for Session Planning
-1. At Step 7, the parent meeting is in WaitingApproval or Ended status, or the Secretary is no longer assigned to the meeting. (BR-54)
-2. No Meeting Session is created.
-3. The system displays MSG54 – "Meeting sessions can no longer be added to this meeting."
-4. The use case ends.
-EX-1 – Invalid Session Information
-1. At Step 6, required information is missing or invalid, the planned end time is not later than the planned start time, or a Published/InProgress meeting is given a session start time that is not in the future. (BR-62, BR-75)
-2. The system displays MSG53 – "Invalid meeting session information." and identifies the invalid information.
-3. The Secretary corrects the information and resubmits it.
-4. The flow resumes at Step 6 of the Main Flow.
-EX-2 – Meeting Is Not Open for Session Planning
-1. At Step 7, the parent meeting is in WaitingApproval or Ended status, or the Secretary is no longer assigned to the meeting. (BR-54)
-2. No Meeting Session is created.
-3. The system displays MSG54 – "Meeting sessions can no longer be added to this meeting."
-4. The use case ends.
-EX-1 – Invalid Session Information
-1. At Step 6, required information is missing or invalid, the planned end time is not later than the planned start time, or a Published/InProgress meeting is given a session start time that is not in the future. (BR-62, BR-75)
-2. The system displays MSG53 – "Invalid meeting session information." and identifies the invalid information.
-3. The Secretary corrects the information and resubmits it.
-4. The flow resumes at Step 6 of the Main Flow.
-EX-2 – Meeting Is Not Open for Session Planning
-1. At Step 7, the parent meeting is in WaitingApproval or Ended status, or the Secretary is no longer assigned to the meeting. (BR-54)
-2. No Meeting Session is created.
-3. The system displays MSG54 – "Meeting sessions can no longer be added to this meeting."
-4. The use case ends.
-Primary Actors
-Secretary
-Secondary Actors
-None
-Description
-Allows the Secretary to update or reschedule a Planned Meeting Session while that session is still eligible for planning, including after the meeting has been published.
-Allows the Secretary to update or reschedule a Planned Meeting Session while that session is still eligible for planning, including after the meeting has been published.
-Allows the Secretary to update or reschedule a Planned Meeting Session while that session is still eligible for planning, including after the meeting has been published.
-Preconditions
-● PRE-1: The Secretary is authenticated.
-● PRE-2: The selected Meeting Session exists and belongs to a meeting to which the Secretary is assigned.
-● PRE-3: The parent meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-4: The Meeting Session is in Planned status.
-● PRE-1: The Secretary is authenticated.
-● PRE-2: The selected Meeting Session exists and belongs to a meeting to which the Secretary is assigned.
-● PRE-3: The parent meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-4: The Meeting Session is in Planned status.
-● PRE-1: The Secretary is authenticated.
-● PRE-2: The selected Meeting Session exists and belongs to a meeting to which the Secretary is assigned.
-● PRE-3: The parent meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-4: The Meeting Session is in Planned status.
-Postconditions
-● POST-1: The selected Meeting Session contains the updated information.
-● POST-2: The Meeting Session remains Planned.
-● POST-3: Other Meeting Sessions remain unchanged.
-● POST-4: If the meeting is Published or InProgress, affected participants are notified of the session schedule change.
-● POST-1: The selected Meeting Session contains the updated information.
-● POST-2: The Meeting Session remains Planned.
-● POST-3: Other Meeting Sessions remain unchanged.
-● POST-4: If the meeting is Published or InProgress, affected participants are notified of the session schedule change.
-● POST-1: The selected Meeting Session contains the updated information.
-● POST-2: The Meeting Session remains Planned.
-● POST-3: Other Meeting Sessions remain unchanged.
-● POST-4: If the meeting is Published or InProgress, affected participants are notified of the session schedule change.
-Normal Flow
-Update Meeting Session
-1. The Secretary opens the meeting session schedule.
-2. The Secretary selects a Planned Meeting Session and chooses Edit.
-3. The system displays the current session information.
-4. The Secretary modifies the session information.
-5. The Secretary submits the changes.
-6. The system validates the updated session information and planned time rules. (BR-62, BR-75)
-7. The system verifies that the Secretary is still assigned, the parent meeting remains open for session planning, and the Meeting Session is still Planned. (BR-54, BR-57, BR-58)
-8. The system updates the Meeting Session while keeping it in Planned status.
-9. If the meeting is Published or InProgress, the system notifies affected participants of the schedule change. (BR-76)
-10. The system displays MSG49 – "Meeting session updated successfully." and shows the updated session information.
-Update Meeting Session
-1. The Secretary opens the meeting session schedule.
-2. The Secretary selects a Planned Meeting Session and chooses Edit.
-3. The system displays the current session information.
-4. The Secretary modifies the session information.
-5. The Secretary submits the changes.
-6. The system validates the updated session information and planned time rules. (BR-62, BR-75)
-7. The system verifies that the Secretary is still assigned, the parent meeting remains open for session planning, and the Meeting Session is still Planned. (BR-54, BR-57, BR-58)
-8. The system updates the Meeting Session while keeping it in Planned status.
-9. If the meeting is Published or InProgress, the system notifies affected participants of the schedule change. (BR-76)
-10. The system displays MSG49 – "Meeting session updated successfully." and shows the updated session information.
-Update Meeting Session
-1. The Secretary opens the meeting session schedule.
-2. The Secretary selects a Planned Meeting Session and chooses Edit.
-3. The system displays the current session information.
-4. The Secretary modifies the session information.
-5. The Secretary submits the changes.
-6. The system validates the updated session information and planned time rules. (BR-62, BR-75)
-7. The system verifies that the Secretary is still assigned, the parent meeting remains open for session planning, and the Meeting Session is still Planned. (BR-54, BR-57, BR-58)
-8. The system updates the Meeting Session while keeping it in Planned status.
-9. If the meeting is Published or InProgress, the system notifies affected participants of the schedule change. (BR-76)
-10. The system displays MSG49 – "Meeting session updated successfully." and shows the updated session information.
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Invalid Session Information
-1. At Step 6, the updated information is incomplete or invalid, or a Published/InProgress meeting is given a session start time that is not in the future. (BR-62, BR-75)
-2. The system displays MSG53 – "Invalid meeting session information." and identifies the invalid information.
-3. The Secretary corrects the information and resubmits it.
-4. The flow resumes at Step 6 of the Main Flow.
-EX-2 – Session Can No Longer Be Updated
-1. At Step 7, the parent meeting is in WaitingApproval or Ended status, the Secretary is no longer assigned to the meeting, or the selected Meeting Session is no longer Planned. (BR-54, BR-57, BR-58)
-2. The existing Meeting Session remains unchanged.
-3. The system displays MSG55 – "This meeting session can no longer be edited."
-4. The use case ends.
-EX-1 – Invalid Session Information
-1. At Step 6, the updated information is incomplete or invalid, or a Published/InProgress meeting is given a session start time that is not in the future. (BR-62, BR-75)
-2. The system displays MSG53 – "Invalid meeting session information." and identifies the invalid information.
-3. The Secretary corrects the information and resubmits it.
-4. The flow resumes at Step 6 of the Main Flow.
-EX-2 – Session Can No Longer Be Updated
-1. At Step 7, the parent meeting is in WaitingApproval or Ended status, the Secretary is no longer assigned to the meeting, or the selected Meeting Session is no longer Planned. (BR-54, BR-57, BR-58)
-2. The existing Meeting Session remains unchanged.
-3. The system displays MSG55 – "This meeting session can no longer be edited."
-4. The use case ends.
-EX-1 – Invalid Session Information
-1. At Step 6, the updated information is incomplete or invalid, or a Published/InProgress meeting is given a session start time that is not in the future. (BR-62, BR-75)
-2. The system displays MSG53 – "Invalid meeting session information." and identifies the invalid information.
-3. The Secretary corrects the information and resubmits it.
-4. The flow resumes at Step 6 of the Main Flow.
-EX-2 – Session Can No Longer Be Updated
-1. At Step 7, the parent meeting is in WaitingApproval or Ended status, the Secretary is no longer assigned to the meeting, or the selected Meeting Session is no longer Planned. (BR-54, BR-57, BR-58)
-2. The existing Meeting Session remains unchanged.
-3. The system displays MSG55 – "This meeting session can no longer be edited."
-4. The use case ends.
-Primary Actors
-Secretary
-Secondary Actors
-None
-Description
-Allows the Secretary to cancel a Planned Meeting Session that will no longer take place while preserving the session record for traceability. Cancelling a session does not end or otherwise change the parent Meeting lifecycle.
-Allows the Secretary to cancel a Planned Meeting Session that will no longer take place while preserving the session record for traceability. Cancelling a session does not end or otherwise change the parent Meeting lifecycle.
-Allows the Secretary to cancel a Planned Meeting Session that will no longer take place while preserving the session record for traceability. Cancelling a session does not end or otherwise change the parent Meeting lifecycle.
-Preconditions
-● PRE-1: The Secretary is authenticated.
-● PRE-2: The selected Meeting Session exists and belongs to a meeting to which the Secretary is assigned.
-● PRE-3: The parent meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-4: The Meeting Session is in Planned status.
-● PRE-1: The Secretary is authenticated.
-● PRE-2: The selected Meeting Session exists and belongs to a meeting to which the Secretary is assigned.
-● PRE-3: The parent meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-4: The Meeting Session is in Planned status.
-● PRE-1: The Secretary is authenticated.
-● PRE-2: The selected Meeting Session exists and belongs to a meeting to which the Secretary is assigned.
-● PRE-3: The parent meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-4: The Meeting Session is in Planned status.
-Postconditions
-● POST-1: The selected Meeting Session is in Cancelled status and remains associated with the meeting for traceability.
-● POST-2: Other Meeting Sessions remain unchanged.
-● POST-3: The parent Meeting lifecycle status remains unchanged.
-● POST-4: If the meeting is Published or InProgress, affected participants are notified of the cancellation.
-● POST-1: The selected Meeting Session is in Cancelled status and remains associated with the meeting for traceability.
-● POST-2: Other Meeting Sessions remain unchanged.
-● POST-3: The parent Meeting lifecycle status remains unchanged.
-● POST-4: If the meeting is Published or InProgress, affected participants are notified of the cancellation.
-● POST-1: The selected Meeting Session is in Cancelled status and remains associated with the meeting for traceability.
-● POST-2: Other Meeting Sessions remain unchanged.
-● POST-3: The parent Meeting lifecycle status remains unchanged.
-● POST-4: If the meeting is Published or InProgress, affected participants are notified of the cancellation.
-Normal Flow
-Cancel Meeting Session
-1. The Secretary selects a Planned Meeting Session.
-2. The Secretary chooses Cancel Session.
-3. The system requests confirmation.
-4. The Secretary confirms the cancellation.
-5. The system verifies that the Secretary is still assigned, the parent meeting is open for session planning, and the selected Meeting Session is still Planned. (BR-54, BR-57, BR-58)
-6. The system changes the Meeting Session status from Planned to Cancelled and retains the session record. (BR-57, BR-58, BR-77)
-7. The parent Meeting lifecycle remains unchanged. (BR-61, BR-77)
-8. If the meeting is Published or InProgress, the system notifies affected participants of the cancellation. (BR-76)
-9. The system displays MSG50 – "Meeting session cancelled successfully." and shows the updated meeting schedule.
-Cancel Meeting Session
-1. The Secretary selects a Planned Meeting Session.
-2. The Secretary chooses Cancel Session.
-3. The system requests confirmation.
-4. The Secretary confirms the cancellation.
-5. The system verifies that the Secretary is still assigned, the parent meeting is open for session planning, and the selected Meeting Session is still Planned. (BR-54, BR-57, BR-58)
-6. The system changes the Meeting Session status from Planned to Cancelled and retains the session record. (BR-57, BR-58, BR-77)
-7. The parent Meeting lifecycle remains unchanged. (BR-61, BR-77)
-8. If the meeting is Published or InProgress, the system notifies affected participants of the cancellation. (BR-76)
-9. The system displays MSG50 – "Meeting session cancelled successfully." and shows the updated meeting schedule.
-Cancel Meeting Session
-1. The Secretary selects a Planned Meeting Session.
-2. The Secretary chooses Cancel Session.
-3. The system requests confirmation.
-4. The Secretary confirms the cancellation.
-5. The system verifies that the Secretary is still assigned, the parent meeting is open for session planning, and the selected Meeting Session is still Planned. (BR-54, BR-57, BR-58)
-6. The system changes the Meeting Session status from Planned to Cancelled and retains the session record. (BR-57, BR-58, BR-77)
-7. The parent Meeting lifecycle remains unchanged. (BR-61, BR-77)
-8. If the meeting is Published or InProgress, the system notifies affected participants of the cancellation. (BR-76)
-9. The system displays MSG50 – "Meeting session cancelled successfully." and shows the updated meeting schedule.
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Session Can No Longer Be Cancelled
-1. At Step 5, the parent meeting is in WaitingApproval or Ended status, the Secretary is no longer assigned to the meeting, or the selected Meeting Session is no longer Planned. (BR-54, BR-57, BR-58)
-2. The Meeting Session remains unchanged.
-3. The system displays MSG56 – "This meeting session can no longer be cancelled."
-4. The use case ends.
-EX-1 – Session Can No Longer Be Cancelled
-1. At Step 5, the parent meeting is in WaitingApproval or Ended status, the Secretary is no longer assigned to the meeting, or the selected Meeting Session is no longer Planned. (BR-54, BR-57, BR-58)
-2. The Meeting Session remains unchanged.
-3. The system displays MSG56 – "This meeting session can no longer be cancelled."
-4. The use case ends.
-EX-1 – Session Can No Longer Be Cancelled
-1. At Step 5, the parent meeting is in WaitingApproval or Ended status, the Secretary is no longer assigned to the meeting, or the selected Meeting Session is no longer Planned. (BR-54, BR-57, BR-58)
-2. The Meeting Session remains unchanged.
-3. The system displays MSG56 – "This meeting session can no longer be cancelled."
-4. The use case ends.
-Primary Actors
-Chair
-Secondary Actors
-None
-Description
-Allows the Chair to start a Planned Meeting Session during an InProgress meeting so that session-scoped activities can begin. Starting a Meeting Session does not start the parent Meeting and does not open or close the online meeting room.
-Allows the Chair to start a Planned Meeting Session during an InProgress meeting so that session-scoped activities can begin. Starting a Meeting Session does not start the parent Meeting and does not open or close the online meeting room.
-Allows the Chair to start a Planned Meeting Session during an InProgress meeting so that session-scoped activities can begin. Starting a Meeting Session does not start the parent Meeting and does not open or close the online meeting room.
-Preconditions
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The parent meeting is InProgress.
-● PRE-3: The selected Meeting Session is Planned.
-● PRE-4: No other Meeting Session of the same meeting is currently InProgress.
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The parent meeting is InProgress.
-● PRE-3: The selected Meeting Session is Planned.
-● PRE-4: No other Meeting Session of the same meeting is currently InProgress.
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The parent meeting is InProgress.
-● PRE-3: The selected Meeting Session is Planned.
-● PRE-4: No other Meeting Session of the same meeting is currently InProgress.
-Postconditions
-● POST-1: The selected Meeting Session is InProgress.
-● POST-2: The actual start time is recorded.
-● POST-3: The parent Meeting lifecycle status remains InProgress.
-● POST-4: The online meeting room state is unchanged.
-● POST-1: The selected Meeting Session is InProgress.
-● POST-2: The actual start time is recorded.
-● POST-3: The parent Meeting lifecycle status remains InProgress.
-● POST-4: The online meeting room state is unchanged.
-● POST-1: The selected Meeting Session is InProgress.
-● POST-2: The actual start time is recorded.
-● POST-3: The parent Meeting lifecycle status remains InProgress.
-● POST-4: The online meeting room state is unchanged.
-Normal Flow
-Start Meeting Session
-1. The Chair opens the selected Meeting Session.
-2. The Chair selects Start Session.
-3. The system verifies that the Chair is still assigned to the meeting, the parent Meeting is InProgress, the Meeting Session is Planned, no other Meeting Session of the same meeting is InProgress, exactly one current Chair has an active account, and at least one current Secretary has an active account. (BR-58, BR-59, BR-60, BR-63, BR-128)
-4. The system changes the Meeting Session status to InProgress. (BR-58)
-5. The system records the actual start time.
-6. The parent Meeting lifecycle and online meeting room remain unchanged. (BR-60, BR-136, BR-142)
-7. The system displays MSG51 – "Meeting session started successfully." and shows the selected Meeting Session as the current active session.
-Start Meeting Session
-1. The Chair opens the selected Meeting Session.
-2. The Chair selects Start Session.
-3. The system verifies that the Chair is still assigned to the meeting, the parent Meeting is InProgress, the Meeting Session is Planned, no other Meeting Session of the same meeting is InProgress, exactly one current Chair has an active account, and at least one current Secretary has an active account. (BR-58, BR-59, BR-60, BR-63, BR-128)
-4. The system changes the Meeting Session status to InProgress. (BR-58)
-5. The system records the actual start time.
-6. The parent Meeting lifecycle and online meeting room remain unchanged. (BR-60, BR-136, BR-142)
-7. The system displays MSG51 – "Meeting session started successfully." and shows the selected Meeting Session as the current active session.
-Start Meeting Session
-1. The Chair opens the selected Meeting Session.
-2. The Chair selects Start Session.
-3. The system verifies that the Chair is still assigned to the meeting, the parent Meeting is InProgress, the Meeting Session is Planned, no other Meeting Session of the same meeting is InProgress, exactly one current Chair has an active account, and at least one current Secretary has an active account. (BR-58, BR-59, BR-60, BR-63, BR-128)
-4. The system changes the Meeting Session status to InProgress. (BR-58)
-5. The system records the actual start time.
-6. The parent Meeting lifecycle and online meeting room remain unchanged. (BR-60, BR-136, BR-142)
-7. The system displays MSG51 – "Meeting session started successfully." and shows the selected Meeting Session as the current active session.
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Another Session Is In Progress
-1. At Step 3, another Meeting Session of the same meeting is already InProgress. (BR-59)
-2. The selected Meeting Session remains Planned.
-3. The system displays MSG57 – "Another meeting session is already in progress. End it before starting another session."
-4. The use case ends.
-EX-2 – Session Cannot Be Started
-1. At Step 3, the parent Meeting is not InProgress, the selected Meeting Session is no longer Planned, the Chair is no longer assigned, or the required active Chair/Secretary assignments are no longer valid. (BR-58, BR-60, BR-63, BR-128)
-2. The Meeting Session remains unchanged.
-3. The system displays MSG58 – "This meeting session cannot be started."
-4. The use case ends.
-EX-1 – Another Session Is In Progress
-1. At Step 3, another Meeting Session of the same meeting is already InProgress. (BR-59)
-2. The selected Meeting Session remains Planned.
-3. The system displays MSG57 – "Another meeting session is already in progress. End it before starting another session."
-4. The use case ends.
-EX-2 – Session Cannot Be Started
-1. At Step 3, the parent Meeting is not InProgress, the selected Meeting Session is no longer Planned, the Chair is no longer assigned, or the required active Chair/Secretary assignments are no longer valid. (BR-58, BR-60, BR-63, BR-128)
-2. The Meeting Session remains unchanged.
-3. The system displays MSG58 – "This meeting session cannot be started."
-4. The use case ends.
-EX-1 – Another Session Is In Progress
-1. At Step 3, another Meeting Session of the same meeting is already InProgress. (BR-59)
-2. The selected Meeting Session remains Planned.
-3. The system displays MSG57 – "Another meeting session is already in progress. End it before starting another session."
-4. The use case ends.
-EX-2 – Session Cannot Be Started
-1. At Step 3, the parent Meeting is not InProgress, the selected Meeting Session is no longer Planned, the Chair is no longer assigned, or the required active Chair/Secretary assignments are no longer valid. (BR-58, BR-60, BR-63, BR-128)
-2. The Meeting Session remains unchanged.
-3. The system displays MSG58 – "This meeting session cannot be started."
-4. The use case ends.
-Primary Actors
-Chair
-Secondary Actors
-None
-Description
-Allows the Chair to end the current Meeting Session so that its completion is recorded. Ending a Meeting Session does not automatically end the parent Meeting or the online meeting room.
-Allows the Chair to end the current Meeting Session so that its completion is recorded. Ending a Meeting Session does not automatically end the parent Meeting or the online meeting room.
-Allows the Chair to end the current Meeting Session so that its completion is recorded. Ending a Meeting Session does not automatically end the parent Meeting or the online meeting room.
-Preconditions
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The parent Meeting is InProgress.
-● PRE-3: The selected Meeting Session is InProgress.
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The parent Meeting is InProgress.
-● PRE-3: The selected Meeting Session is InProgress.
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The parent Meeting is InProgress.
-● PRE-3: The selected Meeting Session is InProgress.
-Postconditions
-● POST-1: The selected Meeting Session is Completed.
-● POST-2: The actual end time is recorded.
-● POST-3: The parent Meeting remains InProgress until the Chair explicitly ends the Meeting through UC-44.
-● POST-4: The online meeting room state is unchanged.
-● POST-1: The selected Meeting Session is Completed.
-● POST-2: The actual end time is recorded.
-● POST-3: The parent Meeting remains InProgress until the Chair explicitly ends the Meeting through UC-44.
-● POST-4: The online meeting room state is unchanged.
-● POST-1: The selected Meeting Session is Completed.
-● POST-2: The actual end time is recorded.
-● POST-3: The parent Meeting remains InProgress until the Chair explicitly ends the Meeting through UC-44.
-● POST-4: The online meeting room state is unchanged.
-Normal Flow
-End Meeting Session
-1. The Chair selects End Session for the current Meeting Session.
-2. The system requests confirmation.
-3. The Chair confirms the action.
-4. The system verifies that the Chair is still assigned to the meeting, the parent Meeting is InProgress, and the selected Meeting Session is still InProgress. (BR-58, BR-60, BR-63)
-5. The system changes the Meeting Session status to Completed and records the actual end time. (BR-58)
-6. The parent Meeting remains InProgress and the online meeting room remains unchanged. (BR-61, BR-136, BR-142)
-7. The system displays MSG52 – "Meeting session ended successfully." and shows the updated Meeting Session status.
-End Meeting Session
-1. The Chair selects End Session for the current Meeting Session.
-2. The system requests confirmation.
-3. The Chair confirms the action.
-4. The system verifies that the Chair is still assigned to the meeting, the parent Meeting is InProgress, and the selected Meeting Session is still InProgress. (BR-58, BR-60, BR-63)
-5. The system changes the Meeting Session status to Completed and records the actual end time. (BR-58)
-6. The parent Meeting remains InProgress and the online meeting room remains unchanged. (BR-61, BR-136, BR-142)
-7. The system displays MSG52 – "Meeting session ended successfully." and shows the updated Meeting Session status.
-End Meeting Session
-1. The Chair selects End Session for the current Meeting Session.
-2. The system requests confirmation.
-3. The Chair confirms the action.
-4. The system verifies that the Chair is still assigned to the meeting, the parent Meeting is InProgress, and the selected Meeting Session is still InProgress. (BR-58, BR-60, BR-63)
-5. The system changes the Meeting Session status to Completed and records the actual end time. (BR-58)
-6. The parent Meeting remains InProgress and the online meeting room remains unchanged. (BR-61, BR-136, BR-142)
-7. The system displays MSG52 – "Meeting session ended successfully." and shows the updated Meeting Session status.
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Session Cannot Be Ended
-1. At Step 4, the parent Meeting is not InProgress, the selected Meeting Session is no longer InProgress, or the Chair is no longer assigned to the meeting. (BR-58, BR-60, BR-63)
-2. The Meeting Session remains unchanged.
-3. The system displays MSG59 – "This meeting session cannot be ended."
-4. The use case ends.
-EX-1 – Session Cannot Be Ended
-1. At Step 4, the parent Meeting is not InProgress, the selected Meeting Session is no longer InProgress, or the Chair is no longer assigned to the meeting. (BR-58, BR-60, BR-63)
-2. The Meeting Session remains unchanged.
-3. The system displays MSG59 – "This meeting session cannot be ended."
-4. The use case ends.
-EX-1 – Session Cannot Be Ended
-1. At Step 4, the parent Meeting is not InProgress, the selected Meeting Session is no longer InProgress, or the Chair is no longer assigned to the meeting. (BR-58, BR-60, BR-63)
-2. The Meeting Session remains unchanged.
-3. The system displays MSG59 – "This meeting session cannot be ended."
-4. The use case ends.
-Primary Actors
-Meeting Organizer, Meeting Approver, Chair, Secretary, Participant
-Secondary Actors
-None
-Description
-Allows an authorized user to view the Meeting Sessions belonging to a selected meeting. This use case returns session-level information only and does not load Agenda Items.
-Allows an authorized user to view the Meeting Sessions belonging to a selected meeting. This use case returns session-level information only and does not load Agenda Items.
-Allows an authorized user to view the Meeting Sessions belonging to a selected meeting. This use case returns session-level information only and does not load Agenda Items.
-Preconditions
-● PRE-1: The user is authenticated.
-● PRE-2: A meeting has been selected or identified.
-● PRE-1: The user is authenticated.
-● PRE-2: A meeting has been selected or identified.
-● PRE-1: The user is authenticated.
-● PRE-2: A meeting has been selected or identified.
-Postconditions
-● POST-1: The Meeting Sessions of the selected meeting are displayed, or an empty schedule is shown when no sessions exist.
-● POST-2: No Meeting or Meeting Session information is modified.
-● POST-1: The Meeting Sessions of the selected meeting are displayed, or an empty schedule is shown when no sessions exist.
-● POST-2: No Meeting or Meeting Session information is modified.
-● POST-1: The Meeting Sessions of the selected meeting are displayed, or an empty schedule is shown when no sessions exist.
-● POST-2: No Meeting or Meeting Session information is modified.
-Normal Flow
-View Meeting Sessions
-1. The user requests to view the Meeting Sessions of a selected meeting.
-2. The system verifies that the meeting exists and that the user may view it under BR-29.
-3. The system retrieves the Meeting Sessions that belong to the selected meeting.
-4. The system displays each session’s Title, Planned Start Time, Planned End Time, Status, and Actual Start/End Time when available.
-5. The system does not retrieve Agenda Items as part of this use case.
-View Meeting Sessions
-1. The user requests to view the Meeting Sessions of a selected meeting.
-2. The system verifies that the meeting exists and that the user may view it under BR-29.
-3. The system retrieves the Meeting Sessions that belong to the selected meeting.
-4. The system displays each session’s Title, Planned Start Time, Planned End Time, Status, and Actual Start/End Time when available.
-5. The system does not retrieve Agenda Items as part of this use case.
-View Meeting Sessions
-1. The user requests to view the Meeting Sessions of a selected meeting.
-2. The system verifies that the meeting exists and that the user may view it under BR-29.
-3. The system retrieves the Meeting Sessions that belong to the selected meeting.
-4. The system displays each session’s Title, Planned Start Time, Planned End Time, Status, and Actual Start/End Time when available.
-5. The system does not retrieve Agenda Items as part of this use case.
-Alternative Flows
-AF-1 – No Meeting Sessions
-Entry Point: Step 3 of the Main Flow.
-1. The selected meeting has no Meeting Sessions.
-2. The system displays an empty meeting schedule.
-3. The use case ends successfully.
-AF-1 – No Meeting Sessions
-Entry Point: Step 3 of the Main Flow.
-1. The selected meeting has no Meeting Sessions.
-2. The system displays an empty meeting schedule.
-3. The use case ends successfully.
-AF-1 – No Meeting Sessions
-Entry Point: Step 3 of the Main Flow.
-1. The selected meeting has no Meeting Sessions.
-2. The system displays an empty meeting schedule.
-3. The use case ends successfully.
-Exception Flows
-EX-1 – Meeting Does Not Exist or Is Not Accessible
-1. At Step 2, the meeting does not exist or the user is not authorized to view it.
-2. The system does not disclose whether the meeting exists.
-3. The use case ends.
-EX-2 – Meeting Sessions Cannot Be Retrieved
-1. At Step 3, the system cannot retrieve the Meeting Sessions.
-2. The system displays MSG127 – "Unable to load meeting sessions. Please try again."
-3. The use case ends.
-EX-1 – Meeting Does Not Exist or Is Not Accessible
-1. At Step 2, the meeting does not exist or the user is not authorized to view it.
-2. The system does not disclose whether the meeting exists.
-3. The use case ends.
-EX-2 – Meeting Sessions Cannot Be Retrieved
-1. At Step 3, the system cannot retrieve the Meeting Sessions.
-2. The system displays MSG127 – "Unable to load meeting sessions. Please try again."
-3. The use case ends.
-EX-1 – Meeting Does Not Exist or Is Not Accessible
-1. At Step 2, the meeting does not exist or the user is not authorized to view it.
-2. The system does not disclose whether the meeting exists.
-3. The use case ends.
-EX-2 – Meeting Sessions Cannot Be Retrieved
-1. At Step 3, the system cannot retrieve the Meeting Sessions.
-2. The system displays MSG127 – "Unable to load meeting sessions. Please try again."
-3. The use case ends.
-Primary Actors
-Secretary
-Secondary Actors
-None
-Description
-Allows the Secretary to add a planned agenda item to a selected Meeting Session so that the agenda can be prepared before that session begins.
-Allows the Secretary to add a planned agenda item to a selected Meeting Session so that the agenda can be prepared before that session begins.
-Allows the Secretary to add a planned agenda item to a selected Meeting Session so that the agenda can be prepared before that session begins.
-Preconditions
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Meeting Session exists and belongs to the selected meeting.
-● PRE-3: The selected Meeting Session is in Planned status.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Meeting Session exists and belongs to the selected meeting.
-● PRE-3: The selected Meeting Session is in Planned status.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Meeting Session exists and belongs to the selected meeting.
-● PRE-3: The selected Meeting Session is in Planned status.
-Postconditions
-● POST-1: A new Agenda Item is associated with the selected Meeting Session.
-● POST-2: The new Agenda Item is in Pending status.
-● POST-3: The new Agenda Item appears at the end of the current agenda order for that Meeting Session.
-● POST-4: Any selected meeting documents are associated with the new Agenda Item.
-● POST-1: A new Agenda Item is associated with the selected Meeting Session.
-● POST-2: The new Agenda Item is in Pending status.
-● POST-3: The new Agenda Item appears at the end of the current agenda order for that Meeting Session.
-● POST-4: Any selected meeting documents are associated with the new Agenda Item.
-● POST-1: A new Agenda Item is associated with the selected Meeting Session.
-● POST-2: The new Agenda Item is in Pending status.
-● POST-3: The new Agenda Item appears at the end of the current agenda order for that Meeting Session.
-● POST-4: Any selected meeting documents are associated with the new Agenda Item.
-Normal Flow
-Create Agenda Item
-1. The Secretary opens the agenda of a selected Meeting Session.
-2. The Secretary selects Add Agenda Item.
-3. The system displays the Agenda Item information form.
-4. The Secretary enters the agenda information, including Title, Planned Duration, an optional Presenter, an optional Description, and any meeting documents to be attached.
-5. The Secretary submits the Agenda Item information.
-6. The system validates the submitted information and selected documents. (BR-65, BR-66, BR-74)
-7. The system creates the Agenda Item in Pending status, associates it with the selected Meeting Session, and places it at the end of the session agenda. (BR-64, BR-67)
-8. The system displays MSG60 – "Agenda item created successfully."
-Create Agenda Item
-1. The Secretary opens the agenda of a selected Meeting Session.
-2. The Secretary selects Add Agenda Item.
-3. The system displays the Agenda Item information form.
-4. The Secretary enters the agenda information, including Title, Planned Duration, an optional Presenter, an optional Description, and any meeting documents to be attached.
-5. The Secretary submits the Agenda Item information.
-6. The system validates the submitted information and selected documents. (BR-65, BR-66, BR-74)
-7. The system creates the Agenda Item in Pending status, associates it with the selected Meeting Session, and places it at the end of the session agenda. (BR-64, BR-67)
-8. The system displays MSG60 – "Agenda item created successfully."
-Create Agenda Item
-1. The Secretary opens the agenda of a selected Meeting Session.
-2. The Secretary selects Add Agenda Item.
-3. The system displays the Agenda Item information form.
-4. The Secretary enters the agenda information, including Title, Planned Duration, an optional Presenter, an optional Description, and any meeting documents to be attached.
-5. The Secretary submits the Agenda Item information.
-6. The system validates the submitted information and selected documents. (BR-65, BR-66, BR-74)
-7. The system creates the Agenda Item in Pending status, associates it with the selected Meeting Session, and places it at the end of the session agenda. (BR-64, BR-67)
-8. The system displays MSG60 – "Agenda item created successfully."
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Invalid Agenda Item Information
-1. At Step 6, required information is missing or invalid, or one or more selected documents are not available to the parent meeting. (BR-66)
-2. The system displays MSG66 – "Invalid agenda item information." with the applicable field message(s):
-- "Agenda item title is required."
-- "Planned duration must be greater than 0."
-- "One or more selected documents are not available to this meeting."
-3. The Secretary corrects the invalid information.
-4. The flow resumes at Step 6 of the Main Flow.
-EX-2 – Agenda Is No Longer Open for Planning
-1. Before the Agenda Item is created, the Meeting Session is no longer Planned or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)
-2. No Agenda Item is created.
-3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-4. The use case ends.
-EX-3 – Agenda Item Cannot Be Created
-1. At Step 7, the system cannot complete the creation.
-2. No Agenda Item is created.
-3. The system displays MSG68 – "Unable to create the agenda item. Please try again."
-4. The use case ends.
-EX-1 – Invalid Agenda Item Information
-1. At Step 6, required information is missing or invalid, or one or more selected documents are not available to the parent meeting. (BR-66)
-2. The system displays MSG66 – "Invalid agenda item information." with the applicable field message(s):
-- "Agenda item title is required."
-- "Planned duration must be greater than 0."
-- "One or more selected documents are not available to this meeting."
-3. The Secretary corrects the invalid information.
-4. The flow resumes at Step 6 of the Main Flow.
-EX-2 – Agenda Is No Longer Open for Planning
-1. Before the Agenda Item is created, the Meeting Session is no longer Planned or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)
-2. No Agenda Item is created.
-3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-4. The use case ends.
-EX-3 – Agenda Item Cannot Be Created
-1. At Step 7, the system cannot complete the creation.
-2. No Agenda Item is created.
-3. The system displays MSG68 – "Unable to create the agenda item. Please try again."
-4. The use case ends.
-EX-1 – Invalid Agenda Item Information
-1. At Step 6, required information is missing or invalid, or one or more selected documents are not available to the parent meeting. (BR-66)
-2. The system displays MSG66 – "Invalid agenda item information." with the applicable field message(s):
-- "Agenda item title is required."
-- "Planned duration must be greater than 0."
-- "One or more selected documents are not available to this meeting."
-3. The Secretary corrects the invalid information.
-4. The flow resumes at Step 6 of the Main Flow.
-EX-2 – Agenda Is No Longer Open for Planning
-1. Before the Agenda Item is created, the Meeting Session is no longer Planned or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)
-2. No Agenda Item is created.
-3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-4. The use case ends.
-EX-3 – Agenda Item Cannot Be Created
-1. At Step 7, the system cannot complete the creation.
-2. No Agenda Item is created.
-3. The system displays MSG68 – "Unable to create the agenda item. Please try again."
-4. The use case ends.
-Primary Actors
-Secretary
-Secondary Actors
-None
-Description
-Allows the Secretary to update the planned information of an Agenda Item while its Meeting Session is still being prepared.
-Allows the Secretary to update the planned information of an Agenda Item while its Meeting Session is still being prepared.
-Allows the Secretary to update the planned information of an Agenda Item while its Meeting Session is still being prepared.
-Preconditions
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Agenda Item exists and belongs to a Meeting Session of the selected meeting.
-● PRE-3: The parent Meeting Session is in Planned status.
-● PRE-4: The selected Agenda Item has not started and is in Pending status.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Agenda Item exists and belongs to a Meeting Session of the selected meeting.
-● PRE-3: The parent Meeting Session is in Planned status.
-● PRE-4: The selected Agenda Item has not started and is in Pending status.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Agenda Item exists and belongs to a Meeting Session of the selected meeting.
-● PRE-3: The parent Meeting Session is in Planned status.
-● PRE-4: The selected Agenda Item has not started and is in Pending status.
-Postconditions
-● POST-1: The selected Agenda Item contains the updated planned information.
-● POST-2: The Agenda Item remains in Pending status.
-● POST-3: The Agenda Item remains associated with the same Meeting Session.
-● POST-4: Its position in the agenda remains unchanged.
-● POST-1: The selected Agenda Item contains the updated planned information.
-● POST-2: The Agenda Item remains in Pending status.
-● POST-3: The Agenda Item remains associated with the same Meeting Session.
-● POST-4: Its position in the agenda remains unchanged.
-● POST-1: The selected Agenda Item contains the updated planned information.
-● POST-2: The Agenda Item remains in Pending status.
-● POST-3: The Agenda Item remains associated with the same Meeting Session.
-● POST-4: Its position in the agenda remains unchanged.
-Normal Flow
-Update Agenda Item
-1. The Secretary opens the agenda of a planned Meeting Session.
-2. The Secretary selects an Agenda Item and chooses Edit.
-3. The system displays the current Agenda Item information.
-4. The Secretary modifies the editable information, including Title, Planned Duration, Presenter, Description, or attached meeting documents.
-5. The Secretary submits the changes.
-6. The system validates the updated information and selected documents. (BR-65, BR-66, BR-74)
-7. The system updates the Agenda Item.
-8. The system displays MSG61 – "Agenda item updated successfully."
-Update Agenda Item
-1. The Secretary opens the agenda of a planned Meeting Session.
-2. The Secretary selects an Agenda Item and chooses Edit.
-3. The system displays the current Agenda Item information.
-4. The Secretary modifies the editable information, including Title, Planned Duration, Presenter, Description, or attached meeting documents.
-5. The Secretary submits the changes.
-6. The system validates the updated information and selected documents. (BR-65, BR-66, BR-74)
-7. The system updates the Agenda Item.
-8. The system displays MSG61 – "Agenda item updated successfully."
-Update Agenda Item
-1. The Secretary opens the agenda of a planned Meeting Session.
-2. The Secretary selects an Agenda Item and chooses Edit.
-3. The system displays the current Agenda Item information.
-4. The Secretary modifies the editable information, including Title, Planned Duration, Presenter, Description, or attached meeting documents.
-5. The Secretary submits the changes.
-6. The system validates the updated information and selected documents. (BR-65, BR-66, BR-74)
-7. The system updates the Agenda Item.
-8. The system displays MSG61 – "Agenda item updated successfully."
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Invalid Agenda Item Information
-1. At Step 6, the updated information is incomplete or invalid, or one or more selected documents are not available to the parent meeting. (BR-66)
-2. The system displays MSG66 – "Invalid agenda item information." with the applicable field message(s):
-- "Agenda item title is required."
-- "Planned duration must be greater than 0."
-- "One or more selected documents are not available to this meeting."
-3. The Secretary corrects the invalid information.
-4. The flow resumes at Step 6 of the Main Flow.
-EX-2 – Agenda Item Can No Longer Be Updated
-1. Before the update is completed, the Meeting Session is no longer Planned, the Agenda Item is no longer Pending, or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)
-2. The Agenda Item remains unchanged.
-3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-4. The use case ends.
-EX-3 – Agenda Item Cannot Be Updated
-1. At Step 7, the system cannot save the updated Agenda Item.
-2. The previous Agenda Item information remains unchanged.
-3. The system displays MSG69 – "Unable to update the agenda item. Please try again."
-4. The use case ends.
-EX-1 – Invalid Agenda Item Information
-1. At Step 6, the updated information is incomplete or invalid, or one or more selected documents are not available to the parent meeting. (BR-66)
-2. The system displays MSG66 – "Invalid agenda item information." with the applicable field message(s):
-- "Agenda item title is required."
-- "Planned duration must be greater than 0."
-- "One or more selected documents are not available to this meeting."
-3. The Secretary corrects the invalid information.
-4. The flow resumes at Step 6 of the Main Flow.
-EX-2 – Agenda Item Can No Longer Be Updated
-1. Before the update is completed, the Meeting Session is no longer Planned, the Agenda Item is no longer Pending, or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)
-2. The Agenda Item remains unchanged.
-3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-4. The use case ends.
-EX-3 – Agenda Item Cannot Be Updated
-1. At Step 7, the system cannot save the updated Agenda Item.
-2. The previous Agenda Item information remains unchanged.
-3. The system displays MSG69 – "Unable to update the agenda item. Please try again."
-4. The use case ends.
-EX-1 – Invalid Agenda Item Information
-1. At Step 6, the updated information is incomplete or invalid, or one or more selected documents are not available to the parent meeting. (BR-66)
-2. The system displays MSG66 – "Invalid agenda item information." with the applicable field message(s):
-- "Agenda item title is required."
-- "Planned duration must be greater than 0."
-- "One or more selected documents are not available to this meeting."
-3. The Secretary corrects the invalid information.
-4. The flow resumes at Step 6 of the Main Flow.
-EX-2 – Agenda Item Can No Longer Be Updated
-1. Before the update is completed, the Meeting Session is no longer Planned, the Agenda Item is no longer Pending, or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)
-2. The Agenda Item remains unchanged.
-3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-4. The use case ends.
-EX-3 – Agenda Item Cannot Be Updated
-1. At Step 7, the system cannot save the updated Agenda Item.
-2. The previous Agenda Item information remains unchanged.
-3. The system displays MSG69 – "Unable to update the agenda item. Please try again."
-4. The use case ends.
-Primary Actors
-Secretary
-Secondary Actors
-None
-Description
-Allows the Secretary to remove an unnecessary Agenda Item while its Meeting Session is still being prepared.
-Allows the Secretary to remove an unnecessary Agenda Item while its Meeting Session is still being prepared.
-Allows the Secretary to remove an unnecessary Agenda Item while its Meeting Session is still being prepared.
-Preconditions
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Agenda Item exists and belongs to a Meeting Session of the selected meeting.
-● PRE-3: The parent Meeting Session is in Planned status.
-● PRE-4: The selected Agenda Item is in Pending status.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Agenda Item exists and belongs to a Meeting Session of the selected meeting.
-● PRE-3: The parent Meeting Session is in Planned status.
-● PRE-4: The selected Agenda Item is in Pending status.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Agenda Item exists and belongs to a Meeting Session of the selected meeting.
-● PRE-3: The parent Meeting Session is in Planned status.
-● PRE-4: The selected Agenda Item is in Pending status.
-Postconditions
-● POST-1: The selected Agenda Item is removed from the Meeting Session agenda.
-● POST-2: The remaining Agenda Items keep their relative order.
-● POST-3: Other Meeting Sessions and their agendas remain unchanged.
-● POST-1: The selected Agenda Item is removed from the Meeting Session agenda.
-● POST-2: The remaining Agenda Items keep their relative order.
-● POST-3: Other Meeting Sessions and their agendas remain unchanged.
-● POST-1: The selected Agenda Item is removed from the Meeting Session agenda.
-● POST-2: The remaining Agenda Items keep their relative order.
-● POST-3: Other Meeting Sessions and their agendas remain unchanged.
-Normal Flow
-Delete Agenda Item
-1. The Secretary opens the agenda of a planned Meeting Session.
-2. The Secretary selects an Agenda Item and chooses Delete.
-3. The system requests confirmation.
-4. The Secretary confirms the deletion.
-5. The system verifies that the Agenda Item can still be removed. (BR-65, BR-68, BR-74)
-6. The system removes the Agenda Item and preserves the order of the remaining items.
-7. The system displays MSG62 – "Agenda item deleted successfully."
-Delete Agenda Item
-1. The Secretary opens the agenda of a planned Meeting Session.
-2. The Secretary selects an Agenda Item and chooses Delete.
-3. The system requests confirmation.
-4. The Secretary confirms the deletion.
-5. The system verifies that the Agenda Item can still be removed. (BR-65, BR-68, BR-74)
-6. The system removes the Agenda Item and preserves the order of the remaining items.
-7. The system displays MSG62 – "Agenda item deleted successfully."
-Delete Agenda Item
-1. The Secretary opens the agenda of a planned Meeting Session.
-2. The Secretary selects an Agenda Item and chooses Delete.
-3. The system requests confirmation.
-4. The Secretary confirms the deletion.
-5. The system verifies that the Agenda Item can still be removed. (BR-65, BR-68, BR-74)
-6. The system removes the Agenda Item and preserves the order of the remaining items.
-7. The system displays MSG62 – "Agenda item deleted successfully."
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Agenda Item Can No Longer Be Deleted
-1. At Step 5, the Meeting Session is no longer Planned, the Agenda Item is no longer Pending, or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)
-2. The Agenda Item remains unchanged.
-3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-4. The use case ends.
-EX-2 – Agenda Item Cannot Be Deleted
-1. At Step 6, the system cannot complete the deletion.
-2. The Agenda Item remains in the agenda.
-3. The system displays MSG70 – "Unable to delete the agenda item. Please try again."
-4. The use case ends.
-EX-1 – Agenda Item Can No Longer Be Deleted
-1. At Step 5, the Meeting Session is no longer Planned, the Agenda Item is no longer Pending, or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)
-2. The Agenda Item remains unchanged.
-3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-4. The use case ends.
-EX-2 – Agenda Item Cannot Be Deleted
-1. At Step 6, the system cannot complete the deletion.
-2. The Agenda Item remains in the agenda.
-3. The system displays MSG70 – "Unable to delete the agenda item. Please try again."
-4. The use case ends.
-EX-1 – Agenda Item Can No Longer Be Deleted
-1. At Step 5, the Meeting Session is no longer Planned, the Agenda Item is no longer Pending, or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)
-2. The Agenda Item remains unchanged.
-3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-4. The use case ends.
-EX-2 – Agenda Item Cannot Be Deleted
-1. At Step 6, the system cannot complete the deletion.
-2. The Agenda Item remains in the agenda.
-3. The system displays MSG70 – "Unable to delete the agenda item. Please try again."
-4. The use case ends.
-Primary Actors
-Secretary
-Secondary Actors
-None
-Description
-Allows the Secretary to change the order of Agenda Items within a planned Meeting Session so that the discussion sequence reflects the intended agenda.
-Allows the Secretary to change the order of Agenda Items within a planned Meeting Session so that the discussion sequence reflects the intended agenda.
-Allows the Secretary to change the order of Agenda Items within a planned Meeting Session so that the discussion sequence reflects the intended agenda.
-Preconditions
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Meeting Session exists and is in Planned status.
-● PRE-3: The Meeting Session contains Agenda Items that can be reordered.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Meeting Session exists and is in Planned status.
-● PRE-3: The Meeting Session contains Agenda Items that can be reordered.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Meeting Session exists and is in Planned status.
-● PRE-3: The Meeting Session contains Agenda Items that can be reordered.
-Postconditions
-● POST-1: The Agenda Items of the selected Meeting Session are stored in the new order.
-● POST-2: No Agenda Item content, status, or Meeting Session assignment is changed.
-● POST-1: The Agenda Items of the selected Meeting Session are stored in the new order.
-● POST-2: No Agenda Item content, status, or Meeting Session assignment is changed.
-● POST-1: The Agenda Items of the selected Meeting Session are stored in the new order.
-● POST-2: No Agenda Item content, status, or Meeting Session assignment is changed.
-Normal Flow
-Reorder Agenda Items
-1. The Secretary opens the agenda of a planned Meeting Session.
-2. The Secretary changes the order of the Agenda Items.
-3. The Secretary confirms the new order.
-4. The system verifies that the Meeting Session is still open for agenda planning and that all reordered Agenda Items belong to the same Meeting Session. (BR-64, BR-65, BR-67, BR-74)
-5. The system saves the new agenda order.
-6. The system displays MSG63 – "Agenda order updated successfully."
-Reorder Agenda Items
-1. The Secretary opens the agenda of a planned Meeting Session.
-2. The Secretary changes the order of the Agenda Items.
-3. The Secretary confirms the new order.
-4. The system verifies that the Meeting Session is still open for agenda planning and that all reordered Agenda Items belong to the same Meeting Session. (BR-64, BR-65, BR-67, BR-74)
-5. The system saves the new agenda order.
-6. The system displays MSG63 – "Agenda order updated successfully."
-Reorder Agenda Items
-1. The Secretary opens the agenda of a planned Meeting Session.
-2. The Secretary changes the order of the Agenda Items.
-3. The Secretary confirms the new order.
-4. The system verifies that the Meeting Session is still open for agenda planning and that all reordered Agenda Items belong to the same Meeting Session. (BR-64, BR-65, BR-67, BR-74)
-5. The system saves the new agenda order.
-6. The system displays MSG63 – "Agenda order updated successfully."
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Agenda Is No Longer Open for Reordering
-1. At Step 4, the Meeting Session is no longer Planned or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)
-2. The previous agenda order remains unchanged.
-3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-4. The use case ends.
-EX-2 – Agenda Order Cannot Be Saved
-1. At Step 5, the system cannot save the new order.
-2. The previous agenda order remains unchanged.
-3. The system displays MSG71 – "Unable to update the agenda order. Please try again."
-4. The use case ends.
-EX-1 – Agenda Is No Longer Open for Reordering
-1. At Step 4, the Meeting Session is no longer Planned or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)
-2. The previous agenda order remains unchanged.
-3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-4. The use case ends.
-EX-2 – Agenda Order Cannot Be Saved
-1. At Step 5, the system cannot save the new order.
-2. The previous agenda order remains unchanged.
-3. The system displays MSG71 – "Unable to update the agenda order. Please try again."
-4. The use case ends.
-EX-1 – Agenda Is No Longer Open for Reordering
-1. At Step 4, the Meeting Session is no longer Planned or the Secretary is no longer assigned to the meeting. (BR-65, BR-68, BR-74)
-2. The previous agenda order remains unchanged.
-3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-4. The use case ends.
-EX-2 – Agenda Order Cannot Be Saved
-1. At Step 5, the system cannot save the new order.
-2. The previous agenda order remains unchanged.
-3. The system displays MSG71 – "Unable to update the agenda order. Please try again."
-4. The use case ends.
-Primary Actors
-Chair
-Secondary Actors
-None
-Description
-Allows the Chair to identify the Agenda Item currently being discussed during an active Meeting Session so that participants can follow the meeting agenda.
-Allows the Chair to identify the Agenda Item currently being discussed during an active Meeting Session so that participants can follow the meeting agenda.
-Allows the Chair to identify the Agenda Item currently being discussed during an active Meeting Session so that participants can follow the meeting agenda.
-Preconditions
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Meeting Session is InProgress.
-● PRE-3: The selected Agenda Item belongs to that Meeting Session and is in Pending status.
-● PRE-4: No other Agenda Item of the same Meeting Session is currently InProgress.
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Meeting Session is InProgress.
-● PRE-3: The selected Agenda Item belongs to that Meeting Session and is in Pending status.
-● PRE-4: No other Agenda Item of the same Meeting Session is currently InProgress.
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Meeting Session is InProgress.
-● PRE-3: The selected Agenda Item belongs to that Meeting Session and is in Pending status.
-● PRE-4: No other Agenda Item of the same Meeting Session is currently InProgress.
-Postconditions
-● POST-1: The selected Agenda Item is InProgress and becomes the current Agenda Item of the Meeting Session.
-● POST-2: The actual start time of the Agenda Item is recorded.
-● POST-1: The selected Agenda Item is InProgress and becomes the current Agenda Item of the Meeting Session.
-● POST-2: The actual start time of the Agenda Item is recorded.
-● POST-1: The selected Agenda Item is InProgress and becomes the current Agenda Item of the Meeting Session.
-● POST-2: The actual start time of the Agenda Item is recorded.
-Normal Flow
-Set Current Agenda Item
-1. The Chair opens the agenda of the active Meeting Session.
-2. The Chair selects a Pending Agenda Item and chooses Set as Current.
-3. The system verifies that the Chair is still assigned to the meeting, the Meeting Session is InProgress, the selected Agenda Item belongs to that Meeting Session and is Pending, and no other Agenda Item of the same session is InProgress. (BR-64, BR-69, BR-70, BR-71)
-4. The system changes the selected Agenda Item status to InProgress and records its actual start time. (BR-70, BR-72)
-5. The system makes the new current Agenda Item available in real time to authorized users viewing the same Meeting Session. (BR-73)
-6. The system displays MSG64 – "Current agenda item updated successfully."
-Set Current Agenda Item
-1. The Chair opens the agenda of the active Meeting Session.
-2. The Chair selects a Pending Agenda Item and chooses Set as Current.
-3. The system verifies that the Chair is still assigned to the meeting, the Meeting Session is InProgress, the selected Agenda Item belongs to that Meeting Session and is Pending, and no other Agenda Item of the same session is InProgress. (BR-64, BR-69, BR-70, BR-71)
-4. The system changes the selected Agenda Item status to InProgress and records its actual start time. (BR-70, BR-72)
-5. The system makes the new current Agenda Item available in real time to authorized users viewing the same Meeting Session. (BR-73)
-6. The system displays MSG64 – "Current agenda item updated successfully."
-Set Current Agenda Item
-1. The Chair opens the agenda of the active Meeting Session.
-2. The Chair selects a Pending Agenda Item and chooses Set as Current.
-3. The system verifies that the Chair is still assigned to the meeting, the Meeting Session is InProgress, the selected Agenda Item belongs to that Meeting Session and is Pending, and no other Agenda Item of the same session is InProgress. (BR-64, BR-69, BR-70, BR-71)
-4. The system changes the selected Agenda Item status to InProgress and records its actual start time. (BR-70, BR-72)
-5. The system makes the new current Agenda Item available in real time to authorized users viewing the same Meeting Session. (BR-73)
-6. The system displays MSG64 – "Current agenda item updated successfully."
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Another Agenda Item Is In Progress
-1. At Step 3, another Agenda Item of the same Meeting Session is already InProgress. (BR-71)
-2. The selected Agenda Item remains Pending.
-3. The system displays MSG72 – "Another agenda item is already in progress. Complete it before starting another agenda item."
-4. The use case ends.
-EX-2 – Agenda Item Cannot Be Set as Current
-1. At Step 3, the selected Agenda Item does not belong to the Meeting Session, the Meeting Session is no longer InProgress, the selected Agenda Item is no longer Pending, or the Chair is no longer assigned to the meeting. (BR-64, BR-69, BR-70)
-2. The Agenda Item remains unchanged.
-3. The system displays MSG73 – "This agenda item cannot be set as current."
-4. The use case ends.
-EX-3 – Current Agenda Item Cannot Be Updated
-1. At Step 4, the system cannot save the current Agenda Item change.
-2. The Agenda Item remains unchanged.
-3. The system displays MSG75 – "Unable to set the current agenda item. Please try again."
-4. The use case ends.
-EX-1 – Another Agenda Item Is In Progress
-1. At Step 3, another Agenda Item of the same Meeting Session is already InProgress. (BR-71)
-2. The selected Agenda Item remains Pending.
-3. The system displays MSG72 – "Another agenda item is already in progress. Complete it before starting another agenda item."
-4. The use case ends.
-EX-2 – Agenda Item Cannot Be Set as Current
-1. At Step 3, the selected Agenda Item does not belong to the Meeting Session, the Meeting Session is no longer InProgress, the selected Agenda Item is no longer Pending, or the Chair is no longer assigned to the meeting. (BR-64, BR-69, BR-70)
-2. The Agenda Item remains unchanged.
-3. The system displays MSG73 – "This agenda item cannot be set as current."
-4. The use case ends.
-EX-3 – Current Agenda Item Cannot Be Updated
-1. At Step 4, the system cannot save the current Agenda Item change.
-2. The Agenda Item remains unchanged.
-3. The system displays MSG75 – "Unable to set the current agenda item. Please try again."
-4. The use case ends.
-EX-1 – Another Agenda Item Is In Progress
-1. At Step 3, another Agenda Item of the same Meeting Session is already InProgress. (BR-71)
-2. The selected Agenda Item remains Pending.
-3. The system displays MSG72 – "Another agenda item is already in progress. Complete it before starting another agenda item."
-4. The use case ends.
-EX-2 – Agenda Item Cannot Be Set as Current
-1. At Step 3, the selected Agenda Item does not belong to the Meeting Session, the Meeting Session is no longer InProgress, the selected Agenda Item is no longer Pending, or the Chair is no longer assigned to the meeting. (BR-64, BR-69, BR-70)
-2. The Agenda Item remains unchanged.
-3. The system displays MSG73 – "This agenda item cannot be set as current."
-4. The use case ends.
-EX-3 – Current Agenda Item Cannot Be Updated
-1. At Step 4, the system cannot save the current Agenda Item change.
-2. The Agenda Item remains unchanged.
-3. The system displays MSG75 – "Unable to set the current agenda item. Please try again."
-4. The use case ends.
-Primary Actors
-Chair
-Secondary Actors
-None
-Description
-Allows the Chair to complete the Agenda Item currently being discussed so that its actual completion time and time used are recorded.
-Allows the Chair to complete the Agenda Item currently being discussed so that its actual completion time and time used are recorded.
-Allows the Chair to complete the Agenda Item currently being discussed so that its actual completion time and time used are recorded.
-Preconditions
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Meeting Session is InProgress.
-● PRE-3: The selected Agenda Item belongs to that Meeting Session and is currently InProgress.
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Meeting Session is InProgress.
-● PRE-3: The selected Agenda Item belongs to that Meeting Session and is currently InProgress.
-● PRE-1: The Chair is authenticated and assigned to the selected meeting.
-● PRE-2: The selected Meeting Session is InProgress.
-● PRE-3: The selected Agenda Item belongs to that Meeting Session and is currently InProgress.
-Postconditions
-● POST-1: The selected Agenda Item is Done.
-● POST-2: The actual end time and actual time used for the Agenda Item are recorded.
-● POST-3: The Meeting Session has no current Agenda Item until the Chair starts another Agenda Item.
-● POST-1: The selected Agenda Item is Done.
-● POST-2: The actual end time and actual time used for the Agenda Item are recorded.
-● POST-3: The Meeting Session has no current Agenda Item until the Chair starts another Agenda Item.
-● POST-1: The selected Agenda Item is Done.
-● POST-2: The actual end time and actual time used for the Agenda Item are recorded.
-● POST-3: The Meeting Session has no current Agenda Item until the Chair starts another Agenda Item.
-Normal Flow
-Complete Agenda Item
-1. The Chair selects the current Agenda Item of the active Meeting Session.
-2. The Chair chooses Complete Agenda Item.
-3. The system verifies that the Chair is still assigned to the meeting, the Meeting Session is InProgress, and the selected Agenda Item belongs to that Meeting Session and is currently InProgress. (BR-64, BR-69, BR-70)
-4. The system changes the Agenda Item status to Done.
-5. The system records the actual end time and the actual time used for the Agenda Item. (BR-72)
-6. The system makes the completed Agenda Item state available in real time to authorized users viewing the same Meeting Session. (BR-73)
-7. The system displays MSG65 – "Agenda item completed successfully."
-Complete Agenda Item
-1. The Chair selects the current Agenda Item of the active Meeting Session.
-2. The Chair chooses Complete Agenda Item.
-3. The system verifies that the Chair is still assigned to the meeting, the Meeting Session is InProgress, and the selected Agenda Item belongs to that Meeting Session and is currently InProgress. (BR-64, BR-69, BR-70)
-4. The system changes the Agenda Item status to Done.
-5. The system records the actual end time and the actual time used for the Agenda Item. (BR-72)
-6. The system makes the completed Agenda Item state available in real time to authorized users viewing the same Meeting Session. (BR-73)
-7. The system displays MSG65 – "Agenda item completed successfully."
-Complete Agenda Item
-1. The Chair selects the current Agenda Item of the active Meeting Session.
-2. The Chair chooses Complete Agenda Item.
-3. The system verifies that the Chair is still assigned to the meeting, the Meeting Session is InProgress, and the selected Agenda Item belongs to that Meeting Session and is currently InProgress. (BR-64, BR-69, BR-70)
-4. The system changes the Agenda Item status to Done.
-5. The system records the actual end time and the actual time used for the Agenda Item. (BR-72)
-6. The system makes the completed Agenda Item state available in real time to authorized users viewing the same Meeting Session. (BR-73)
-7. The system displays MSG65 – "Agenda item completed successfully."
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Agenda Item Cannot Be Completed
-1. At Step 3, the selected Agenda Item does not belong to the Meeting Session, the Meeting Session is no longer InProgress, the selected Agenda Item is no longer InProgress, or the Chair is no longer assigned to the meeting. (BR-64, BR-69, BR-70)
-2. The Agenda Item remains unchanged.
-3. The system displays MSG74 – "This agenda item cannot be completed."
-4. The use case ends.
-EX-2 – Agenda Item Completion Cannot Be Saved
-1. At Step 4 or Step 5, the system cannot save the completion information.
-2. The Agenda Item remains in its previous state.
-3. The system displays MSG76 – "Unable to complete the agenda item. Please try again."
-4. The use case ends.
-EX-1 – Agenda Item Cannot Be Completed
-1. At Step 3, the selected Agenda Item does not belong to the Meeting Session, the Meeting Session is no longer InProgress, the selected Agenda Item is no longer InProgress, or the Chair is no longer assigned to the meeting. (BR-64, BR-69, BR-70)
-2. The Agenda Item remains unchanged.
-3. The system displays MSG74 – "This agenda item cannot be completed."
-4. The use case ends.
-EX-2 – Agenda Item Completion Cannot Be Saved
-1. At Step 4 or Step 5, the system cannot save the completion information.
-2. The Agenda Item remains in its previous state.
-3. The system displays MSG76 – "Unable to complete the agenda item. Please try again."
-4. The use case ends.
-EX-1 – Agenda Item Cannot Be Completed
-1. At Step 3, the selected Agenda Item does not belong to the Meeting Session, the Meeting Session is no longer InProgress, the selected Agenda Item is no longer InProgress, or the Chair is no longer assigned to the meeting. (BR-64, BR-69, BR-70)
-2. The Agenda Item remains unchanged.
-3. The system displays MSG74 – "This agenda item cannot be completed."
-4. The use case ends.
-EX-2 – Agenda Item Completion Cannot Be Saved
-1. At Step 4 or Step 5, the system cannot save the completion information.
-2. The Agenda Item remains in its previous state.
-3. The system displays MSG76 – "Unable to complete the agenda item. Please try again."
-4. The use case ends.
-Primary Actors
-Meeting Organizer, Meeting Approver, Chair, Secretary, Participant
-Secondary Actors
-None
-Description
-Allows an authorized user to view the Agenda Items prepared for a selected Meeting Session. Agenda retrieval is session-scoped and is separate from View Meeting Details.
-Allows an authorized user to view the Agenda Items prepared for a selected Meeting Session. Agenda retrieval is session-scoped and is separate from View Meeting Details.
-Allows an authorized user to view the Agenda Items prepared for a selected Meeting Session. Agenda retrieval is session-scoped and is separate from View Meeting Details.
-Preconditions
-● PRE-1: The user is authenticated.
-● PRE-2: The selected meeting exists and is accessible to the user.
-● PRE-3: A Meeting Session belonging to the selected meeting has been selected.
-● PRE-1: The user is authenticated.
-● PRE-2: The selected meeting exists and is accessible to the user.
-● PRE-3: A Meeting Session belonging to the selected meeting has been selected.
-● PRE-1: The user is authenticated.
-● PRE-2: The selected meeting exists and is accessible to the user.
-● PRE-3: A Meeting Session belonging to the selected meeting has been selected.
-Postconditions
-● POST-1: The agenda of the selected Meeting Session is displayed, or an empty agenda is shown when no Agenda Items exist.
-● POST-2: No Meeting Session or Agenda Item is modified.
-● POST-1: The agenda of the selected Meeting Session is displayed, or an empty agenda is shown when no Agenda Items exist.
-● POST-2: No Meeting Session or Agenda Item is modified.
-● POST-1: The agenda of the selected Meeting Session is displayed, or an empty agenda is shown when no Agenda Items exist.
-● POST-2: No Meeting Session or Agenda Item is modified.
-Normal Flow
-View Meeting Agenda
-1. The user selects a Meeting Session and requests to view its agenda.
-2. The system verifies that the user may view the parent meeting under BR-29 and that the selected Meeting Session belongs to that meeting.
-3. The system retrieves the Agenda Items belonging to the selected Meeting Session. (BR-64)
-4. The system displays the Agenda Items in their current order with the information available to the user.
-5. The user reviews the agenda.
-View Meeting Agenda
-1. The user selects a Meeting Session and requests to view its agenda.
-2. The system verifies that the user may view the parent meeting under BR-29 and that the selected Meeting Session belongs to that meeting.
-3. The system retrieves the Agenda Items belonging to the selected Meeting Session. (BR-64)
-4. The system displays the Agenda Items in their current order with the information available to the user.
-5. The user reviews the agenda.
-View Meeting Agenda
-1. The user selects a Meeting Session and requests to view its agenda.
-2. The system verifies that the user may view the parent meeting under BR-29 and that the selected Meeting Session belongs to that meeting.
-3. The system retrieves the Agenda Items belonging to the selected Meeting Session. (BR-64)
-4. The system displays the Agenda Items in their current order with the information available to the user.
-5. The user reviews the agenda.
-Alternative Flows
-AF-1 – No Agenda Items
-Entry Point: Step 3 of the Main Flow.
-1. The selected Meeting Session has no Agenda Items.
-2. The system displays an empty agenda.
-3. The use case ends successfully.
-AF-1 – No Agenda Items
-Entry Point: Step 3 of the Main Flow.
-1. The selected Meeting Session has no Agenda Items.
-2. The system displays an empty agenda.
-3. The use case ends successfully.
-AF-1 – No Agenda Items
-Entry Point: Step 3 of the Main Flow.
-1. The selected Meeting Session has no Agenda Items.
-2. The system displays an empty agenda.
-3. The use case ends successfully.
-Exception Flows
-EX-1 – Meeting Session Is Not Accessible
-1. At Step 2, the parent meeting is not accessible or the selected Meeting Session does not belong to that meeting.
-2. No agenda information is disclosed.
-3. The use case ends.
-EX-2 – Meeting Agenda Cannot Be Retrieved
-1. At Step 3, the system cannot retrieve the Agenda Items.
-2. The system displays MSG128 – "Unable to load the meeting agenda. Please try again."
-3. The use case ends.
-EX-1 – Meeting Session Is Not Accessible
-1. At Step 2, the parent meeting is not accessible or the selected Meeting Session does not belong to that meeting.
-2. No agenda information is disclosed.
-3. The use case ends.
-EX-2 – Meeting Agenda Cannot Be Retrieved
-1. At Step 3, the system cannot retrieve the Agenda Items.
-2. The system displays MSG128 – "Unable to load the meeting agenda. Please try again."
-3. The use case ends.
-EX-1 – Meeting Session Is Not Accessible
-1. At Step 2, the parent meeting is not accessible or the selected Meeting Session does not belong to that meeting.
-2. No agenda information is disclosed.
-3. The use case ends.
-EX-2 – Meeting Agenda Cannot Be Retrieved
-1. At Step 3, the system cannot retrieve the Agenda Items.
-2. The system displays MSG128 – "Unable to load the meeting agenda. Please try again."
-3. The use case ends.
-Primary Actors
-Secretary
-Secondary Actors
-None
-Description
-Allows the Secretary assigned to a meeting to view the current internal participants and external Guests associated with that meeting, together with each internal participant’s Meeting Role or the Guest access type.
-Allows the Secretary assigned to a meeting to view the current internal participants and external Guests associated with that meeting, together with each internal participant’s Meeting Role or the Guest access type.
-Allows the Secretary assigned to a meeting to view the current internal participants and external Guests associated with that meeting, together with each internal participant’s Meeting Role or the Guest access type.
-Preconditions
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-● PRE-2: The selected meeting exists.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-● PRE-2: The selected meeting exists.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-● PRE-2: The selected meeting exists.
-Postconditions
-● POST-1: The current internal participant and external Guest list is displayed.
-● POST-2: No participant or guest information is modified.
-● POST-1: The current internal participant and external Guest list is displayed.
-● POST-2: No participant or guest information is modified.
-● POST-1: The current internal participant and external Guest list is displayed.
-● POST-2: No participant or guest information is modified.
-Normal Flow
-View Meeting Participants
-1. The Secretary opens the selected meeting.
-2. The Secretary selects the Meeting Participants tab.
-3. The system verifies that the Secretary is still assigned to the meeting.
-4. The system retrieves the current internal participants and current external Guest invitations of the selected meeting; records retained only as historical evidence are excluded. (BR-84, BR-103, BR-117, BR-148)
-5. The system displays Full Name, Email, participant type, and Meeting Role or Guest access type.
-6. The Secretary reviews the participant list.
-View Meeting Participants
-1. The Secretary opens the selected meeting.
-2. The Secretary selects the Meeting Participants tab.
-3. The system verifies that the Secretary is still assigned to the meeting.
-4. The system retrieves the current internal participants and current external Guest invitations of the selected meeting; records retained only as historical evidence are excluded. (BR-84, BR-103, BR-117, BR-148)
-5. The system displays Full Name, Email, participant type, and Meeting Role or Guest access type.
-6. The Secretary reviews the participant list.
-View Meeting Participants
-1. The Secretary opens the selected meeting.
-2. The Secretary selects the Meeting Participants tab.
-3. The system verifies that the Secretary is still assigned to the meeting.
-4. The system retrieves the current internal participants and current external Guest invitations of the selected meeting; records retained only as historical evidence are excluded. (BR-84, BR-103, BR-117, BR-148)
-5. The system displays Full Name, Email, participant type, and Meeting Role or Guest access type.
-6. The Secretary reviews the participant list.
-Alternative Flows
-AF-1 – No Participants or Guests Have Been Added
-1. At Step 4, the meeting has no current internal participants and no current external Guest invitations.
-2. The system displays an empty participant list.
-3. The use case ends successfully.
-AF-1 – No Participants or Guests Have Been Added
-1. At Step 4, the meeting has no current internal participants and no current external Guest invitations.
-2. The system displays an empty participant list.
-3. The use case ends successfully.
-AF-1 – No Participants or Guests Have Been Added
-1. At Step 4, the meeting has no current internal participants and no current external Guest invitations.
-2. The system displays an empty participant list.
-3. The use case ends successfully.
-Exception Flows
-EX-1 – Meeting Is Not Accessible
-1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.
-2. The system displays the same not-found result used for an unknown meeting and does not disclose participant data. (BR-121)
-3. The use case ends.
-EX-2 – Participant List Cannot Be Retrieved
-1. At Step 4, the system cannot retrieve the participant list.
-2. The system displays MSG95 – "Unable to load meeting participants. Please try again."
-3. The use case ends.
-EX-1 – Meeting Is Not Accessible
-1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.
-2. The system displays the same not-found result used for an unknown meeting and does not disclose participant data. (BR-121)
-3. The use case ends.
-EX-2 – Participant List Cannot Be Retrieved
-1. At Step 4, the system cannot retrieve the participant list.
-2. The system displays MSG95 – "Unable to load meeting participants. Please try again."
-3. The use case ends.
-EX-1 – Meeting Is Not Accessible
-1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.
-2. The system displays the same not-found result used for an unknown meeting and does not disclose participant data. (BR-121)
-3. The use case ends.
-EX-2 – Participant List Cannot Be Retrieved
-1. At Step 4, the system cannot retrieve the participant list.
-2. The system displays MSG95 – "Unable to load meeting participants. Please try again."
-3. The use case ends.
-Primary Actors
-Meeting Organizer, Secretary
-Secondary Actors
-Email / SMTP Service
-Description
-Allows the Meeting Organizer to add and assign the first Secretary when the meeting does not yet have one. After the first Secretary has been assigned, the Secretary manages the meeting roster by adding active internal users or inviting external Guests by name and email. Internal users are selected individually; organisational-unit invitation is not supported.
-Allows the Meeting Organizer to add and assign the first Secretary when the meeting does not yet have one. After the first Secretary has been assigned, the Secretary manages the meeting roster by adding active internal users or inviting external Guests by name and email. Internal users are selected individually; organisational-unit invitation is not supported.
-Allows the Meeting Organizer to add and assign the first Secretary when the meeting does not yet have one. After the first Secretary has been assigned, the Secretary manages the meeting roster by adding active internal users or inviting external Guests by name and email. Internal users are selected individually; organisational-unit invitation is not supported.
-Preconditions
-● PRE-1: The actor is authenticated and is either the Meeting Organizer creating the initial Secretary assignment or a Secretary already assigned to the selected meeting.
-● PRE-2: The selected meeting exists and is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-3: For an internal participant, the selected user has an active internal account and is not already a current participant. For an external Guest, the Guest name and email are valid and that email does not already have a current Guest invitation for the meeting. (BR-81, BR-82, BR-149)
-● PRE-1: The actor is authenticated and is either the Meeting Organizer creating the initial Secretary assignment or a Secretary already assigned to the selected meeting.
-● PRE-2: The selected meeting exists and is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-3: For an internal participant, the selected user has an active internal account and is not already a current participant. For an external Guest, the Guest name and email are valid and that email does not already have a current Guest invitation for the meeting. (BR-81, BR-82, BR-149)
-● PRE-1: The actor is authenticated and is either the Meeting Organizer creating the initial Secretary assignment or a Secretary already assigned to the selected meeting.
-● PRE-2: The selected meeting exists and is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-3: For an internal participant, the selected user has an active internal account and is not already a current participant. For an external Guest, the Guest name and email are valid and that email does not already have a current Guest invitation for the meeting. (BR-81, BR-82, BR-149)
-Postconditions
-● POST-1: The selected internal user is added once, or one current external Guest invitation is created for the supplied email.
-● POST-2: The invitation response starts as Pending with no response time.
-● POST-3: An internal participant is assigned exactly one Meeting Role: Chair, Secretary, or Member. An external Guest has fixed Guest access and receives no system role or privileged Meeting Role. (BR-85, BR-150)
-● POST-4: If the meeting is Published or InProgress, invitation delivery is queued. Internal participants may receive in-app and email notification; external Guests receive a secure guest invitation by email. (BR-90, BR-91, BR-152)
-● POST-1: The selected internal user is added once, or one current external Guest invitation is created for the supplied email.
-● POST-2: The invitation response starts as Pending with no response time.
-● POST-3: An internal participant is assigned exactly one Meeting Role: Chair, Secretary, or Member. An external Guest has fixed Guest access and receives no system role or privileged Meeting Role. (BR-85, BR-150)
-● POST-4: If the meeting is Published or InProgress, invitation delivery is queued. Internal participants may receive in-app and email notification; external Guests receive a secure guest invitation by email. (BR-90, BR-91, BR-152)
-● POST-1: The selected internal user is added once, or one current external Guest invitation is created for the supplied email.
-● POST-2: The invitation response starts as Pending with no response time.
-● POST-3: An internal participant is assigned exactly one Meeting Role: Chair, Secretary, or Member. An external Guest has fixed Guest access and receives no system role or privileged Meeting Role. (BR-85, BR-150)
-● POST-4: If the meeting is Published or InProgress, invitation delivery is queued. Internal participants may receive in-app and email notification; external Guests receive a secure guest invitation by email. (BR-90, BR-91, BR-152)
-Normal Flow
-Add Internal Meeting Participant
-1. The authorized actor opens the Meeting Participants tab of the selected meeting.
-2. The actor selects Add Participant.
-3. The system displays active internal users who are not already current participants of the meeting. (BR-81, BR-82)
-4. The actor selects one user and assigns one Meeting Role: Chair, Secretary, or Member.
-5. The actor submits the participant information.
-6. The system verifies that: when the meeting has no Secretary, the actor is its Meeting Organizer and the selected Meeting Role is Secretary; when the meeting already has a Secretary, the actor is an assigned Secretary; the meeting still permits participant management; the selected user is active and not already invited; the selected Meeting Role is valid; and assigning Chair would not create a second current Chair. (BR-78, BR-79, BR-80, BR-81, BR-82, BR-85, BR-123)
-7. The system adds the selected internal user with Pending response status and records the selected Meeting Role. (BR-85, BR-88)
-8. If the meeting is Published or InProgress, the system queues the applicable in-app notification and invitation email for asynchronous delivery. (BR-39, BR-40, BR-45, BR-90)
-9. The system displays MSG96 – "Meeting participant added successfully."
-Add Internal Meeting Participant
-1. The authorized actor opens the Meeting Participants tab of the selected meeting.
-2. The actor selects Add Participant.
-3. The system displays active internal users who are not already current participants of the meeting. (BR-81, BR-82)
-4. The actor selects one user and assigns one Meeting Role: Chair, Secretary, or Member.
-5. The actor submits the participant information.
-6. The system verifies that: when the meeting has no Secretary, the actor is its Meeting Organizer and the selected Meeting Role is Secretary; when the meeting already has a Secretary, the actor is an assigned Secretary; the meeting still permits participant management; the selected user is active and not already invited; the selected Meeting Role is valid; and assigning Chair would not create a second current Chair. (BR-78, BR-79, BR-80, BR-81, BR-82, BR-85, BR-123)
-7. The system adds the selected internal user with Pending response status and records the selected Meeting Role. (BR-85, BR-88)
-8. If the meeting is Published or InProgress, the system queues the applicable in-app notification and invitation email for asynchronous delivery. (BR-39, BR-40, BR-45, BR-90)
-9. The system displays MSG96 – "Meeting participant added successfully."
-Add Internal Meeting Participant
-1. The authorized actor opens the Meeting Participants tab of the selected meeting.
-2. The actor selects Add Participant.
-3. The system displays active internal users who are not already current participants of the meeting. (BR-81, BR-82)
-4. The actor selects one user and assigns one Meeting Role: Chair, Secretary, or Member.
-5. The actor submits the participant information.
-6. The system verifies that: when the meeting has no Secretary, the actor is its Meeting Organizer and the selected Meeting Role is Secretary; when the meeting already has a Secretary, the actor is an assigned Secretary; the meeting still permits participant management; the selected user is active and not already invited; the selected Meeting Role is valid; and assigning Chair would not create a second current Chair. (BR-78, BR-79, BR-80, BR-81, BR-82, BR-85, BR-123)
-7. The system adds the selected internal user with Pending response status and records the selected Meeting Role. (BR-85, BR-88)
-8. If the meeting is Published or InProgress, the system queues the applicable in-app notification and invitation email for asynchronous delivery. (BR-39, BR-40, BR-45, BR-90)
-9. The system displays MSG96 – "Meeting participant added successfully."
-Alternative Flows
-AF-1 – Add External Guest by Email
-Entry Point: Step 3 of the Main Flow.
-1. The Secretary selects Add External Guest.
-2. The system displays fields for Guest Name and Email.
-3. The Secretary enters the Guest Name and Email and submits the invitation.
-4. The system verifies that the Secretary is still assigned, the meeting still permits participant management, the email format is valid, the email does not already have a current Guest invitation for this meeting, and the email is not already represented by a current internal participant. (BR-79, BR-80, BR-149, BR-151)
-5. The system creates a current external Guest invitation with Pending response status and fixed Guest access. No internal user account or system role is created. (BR-84, BR-88, BR-148, BR-150, BR-156)
-6. If the meeting is Published or InProgress, the system generates a secure meeting-specific guest invitation and queues the invitation email. The Guest will later verify access using the invitation and an email one-time code; no internal account login is required. (BR-91, BR-152, BR-153, BR-156)
-7. The flow resumes at Step 9 of the Main Flow.
-AF-2 – Invitation Notification Delivery Is Unavailable
-1. At Step 8 of the Main Flow or Step 6 of AF-1, the meeting is Published or InProgress but the applicable invitation delivery is unavailable.
-2. The internal participant or external Guest invitation remains successfully added with Pending response status. (BR-40, BR-94)
-3. The system records the delivery failure for retry.
-4. The flow resumes at Step 9 of the Main Flow.
-AF-1 – Add External Guest by Email
-Entry Point: Step 3 of the Main Flow.
-1. The Secretary selects Add External Guest.
-2. The system displays fields for Guest Name and Email.
-3. The Secretary enters the Guest Name and Email and submits the invitation.
-4. The system verifies that the Secretary is still assigned, the meeting still permits participant management, the email format is valid, the email does not already have a current Guest invitation for this meeting, and the email is not already represented by a current internal participant. (BR-79, BR-80, BR-149, BR-151)
-5. The system creates a current external Guest invitation with Pending response status and fixed Guest access. No internal user account or system role is created. (BR-84, BR-88, BR-148, BR-150, BR-156)
-6. If the meeting is Published or InProgress, the system generates a secure meeting-specific guest invitation and queues the invitation email. The Guest will later verify access using the invitation and an email one-time code; no internal account login is required. (BR-91, BR-152, BR-153, BR-156)
-7. The flow resumes at Step 9 of the Main Flow.
-AF-2 – Invitation Notification Delivery Is Unavailable
-1. At Step 8 of the Main Flow or Step 6 of AF-1, the meeting is Published or InProgress but the applicable invitation delivery is unavailable.
-2. The internal participant or external Guest invitation remains successfully added with Pending response status. (BR-40, BR-94)
-3. The system records the delivery failure for retry.
-4. The flow resumes at Step 9 of the Main Flow.
-AF-1 – Add External Guest by Email
-Entry Point: Step 3 of the Main Flow.
-1. The Secretary selects Add External Guest.
-2. The system displays fields for Guest Name and Email.
-3. The Secretary enters the Guest Name and Email and submits the invitation.
-4. The system verifies that the Secretary is still assigned, the meeting still permits participant management, the email format is valid, the email does not already have a current Guest invitation for this meeting, and the email is not already represented by a current internal participant. (BR-79, BR-80, BR-149, BR-151)
-5. The system creates a current external Guest invitation with Pending response status and fixed Guest access. No internal user account or system role is created. (BR-84, BR-88, BR-148, BR-150, BR-156)
-6. If the meeting is Published or InProgress, the system generates a secure meeting-specific guest invitation and queues the invitation email. The Guest will later verify access using the invitation and an email one-time code; no internal account login is required. (BR-91, BR-152, BR-153, BR-156)
-7. The flow resumes at Step 9 of the Main Flow.
-AF-2 – Invitation Notification Delivery Is Unavailable
-1. At Step 8 of the Main Flow or Step 6 of AF-1, the meeting is Published or InProgress but the applicable invitation delivery is unavailable.
-2. The internal participant or external Guest invitation remains successfully added with Pending response status. (BR-40, BR-94)
-3. The system records the delivery failure for retry.
-4. The flow resumes at Step 9 of the Main Flow.
-Exception Flows
-EX-1 – Invalid Participant or Guest Information
-1. At Step 6 of the Main Flow or Step 4 of AF-1, the submitted information is invalid. For an internal participant, the user is inactive, already a current participant, the Meeting Role is invalid, or assigning Chair would create a second current Chair. For an external Guest, the name/email is missing or invalid, the email is already invited as a current Guest, or the email is already represented by a current internal participant. (BR-81, BR-82, BR-85, BR-123, BR-148, BR-149, BR-151)
-2. No participant or Guest invitation is added.
-3. The system displays MSG97 – "Invalid meeting participant information." with the applicable field message(s), including: "The selected user is not available."; "This user is already a meeting participant."; "A valid meeting role is required."; "The Meeting Organizer must assign a Secretary as the first meeting participant."; "Guest name and email are required."; "Guest email is invalid."; "This guest email is already invited to the meeting."; "This email is already represented by an internal meeting participant."
-4. The actor corrects the information.
-5. For an internal participant, the flow resumes at Step 6 of the Main Flow. For an external Guest, the flow resumes at Step 4 of AF-1.
-EX-2 – Participant List Cannot Be Modified in the Current Status
-1. At Step 6 of the Main Flow or Step 4 of AF-1, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)
-2. No participant or Guest invitation is added.
-3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."
-4. The use case ends.
-EX-3 – Participant or Guest Cannot Be Added
-1. At Step 7 of the Main Flow or Step 5 of AF-1, the system cannot save the new internal participant or external Guest invitation.
-2. No new participant or Guest access is created and no invitation is sent.
-3. The system displays MSG99 – "Unable to add the meeting participant. Please try again."
-4. The use case ends.
-EX-1 – Invalid Participant or Guest Information
-1. At Step 6 of the Main Flow or Step 4 of AF-1, the submitted information is invalid. For an internal participant, the user is inactive, already a current participant, the Meeting Role is invalid, or assigning Chair would create a second current Chair. For an external Guest, the name/email is missing or invalid, the email is already invited as a current Guest, or the email is already represented by a current internal participant. (BR-81, BR-82, BR-85, BR-123, BR-148, BR-149, BR-151)
-2. No participant or Guest invitation is added.
-3. The system displays MSG97 – "Invalid meeting participant information." with the applicable field message(s), including: "The selected user is not available."; "This user is already a meeting participant."; "A valid meeting role is required."; "The Meeting Organizer must assign a Secretary as the first meeting participant."; "Guest name and email are required."; "Guest email is invalid."; "This guest email is already invited to the meeting."; "This email is already represented by an internal meeting participant."
-4. The actor corrects the information.
-5. For an internal participant, the flow resumes at Step 6 of the Main Flow. For an external Guest, the flow resumes at Step 4 of AF-1.
-EX-2 – Participant List Cannot Be Modified in the Current Status
-1. At Step 6 of the Main Flow or Step 4 of AF-1, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)
-2. No participant or Guest invitation is added.
-3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."
-4. The use case ends.
-EX-3 – Participant or Guest Cannot Be Added
-1. At Step 7 of the Main Flow or Step 5 of AF-1, the system cannot save the new internal participant or external Guest invitation.
-2. No new participant or Guest access is created and no invitation is sent.
-3. The system displays MSG99 – "Unable to add the meeting participant. Please try again."
-4. The use case ends.
-EX-1 – Invalid Participant or Guest Information
-1. At Step 6 of the Main Flow or Step 4 of AF-1, the submitted information is invalid. For an internal participant, the user is inactive, already a current participant, the Meeting Role is invalid, or assigning Chair would create a second current Chair. For an external Guest, the name/email is missing or invalid, the email is already invited as a current Guest, or the email is already represented by a current internal participant. (BR-81, BR-82, BR-85, BR-123, BR-148, BR-149, BR-151)
-2. No participant or Guest invitation is added.
-3. The system displays MSG97 – "Invalid meeting participant information." with the applicable field message(s), including: "The selected user is not available."; "This user is already a meeting participant."; "A valid meeting role is required."; "The Meeting Organizer must assign a Secretary as the first meeting participant."; "Guest name and email are required."; "Guest email is invalid."; "This guest email is already invited to the meeting."; "This email is already represented by an internal meeting participant."
-4. The actor corrects the information.
-5. For an internal participant, the flow resumes at Step 6 of the Main Flow. For an external Guest, the flow resumes at Step 4 of AF-1.
-EX-2 – Participant List Cannot Be Modified in the Current Status
-1. At Step 6 of the Main Flow or Step 4 of AF-1, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)
-2. No participant or Guest invitation is added.
-3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."
-4. The use case ends.
-EX-3 – Participant or Guest Cannot Be Added
-1. At Step 7 of the Main Flow or Step 5 of AF-1, the system cannot save the new internal participant or external Guest invitation.
-2. No new participant or Guest access is created and no invitation is sent.
-3. The system displays MSG99 – "Unable to add the meeting participant. Please try again."
-4. The use case ends.
-Primary Actors
-Secretary
-Secondary Actors
-None
-Description
-Allows the Secretary to assign or change an existing internal participant's Meeting Role within one meeting without changing that user's system role. External Guests have fixed Guest access and are not managed through this use case.
-Allows the Secretary to assign or change an existing internal participant's Meeting Role within one meeting without changing that user's system role. External Guests have fixed Guest access and are not managed through this use case.
-Allows the Secretary to assign or change an existing internal participant's Meeting Role within one meeting without changing that user's system role. External Guests have fixed Guest access and are not managed through this use case.
-Preconditions
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-● PRE-2: The selected meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-3: The selected participant is a current internal participant of the selected meeting.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-● PRE-2: The selected meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-3: The selected participant is a current internal participant of the selected meeting.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-● PRE-2: The selected meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-3: The selected participant is a current internal participant of the selected meeting.
-Postconditions
-● POST-1: The participant's Meeting Role is updated for the selected meeting only.
-● POST-2: The participant's system role and invitation response remain unchanged.
-● POST-3: If the meeting is Published or InProgress, an in-app notification and an email describing the new Meeting Role are queued for the affected participant.
-● POST-1: The participant's Meeting Role is updated for the selected meeting only.
-● POST-2: The participant's system role and invitation response remain unchanged.
-● POST-3: If the meeting is Published or InProgress, an in-app notification and an email describing the new Meeting Role are queued for the affected participant.
-● POST-1: The participant's Meeting Role is updated for the selected meeting only.
-● POST-2: The participant's system role and invitation response remain unchanged.
-● POST-3: If the meeting is Published or InProgress, an in-app notification and an email describing the new Meeting Role are queued for the affected participant.
-Normal Flow
-Assign / Change Meeting Role
-1. The Secretary opens the Meeting Participants tab of the selected meeting.
-2. The Secretary selects Change Role for a current internal participant.
-3. The system displays the participant's current Meeting Role.
-4. The Secretary selects Chair, Secretary, or Member.
-5. The Secretary submits the selected Meeting Role.
-6. The system verifies that the Secretary is still assigned to the meeting, the meeting still permits participant management, the internal participant still belongs to the meeting, the selected Meeting Role is valid, the change would not remove a required Secretary or Chair, and assigning Chair would not create a second current Chair. (BR-79, BR-80, BR-85, BR-122, BR-123, BR-126)
-7. The system updates only the participant's Meeting Role for the selected meeting. The user's system Role and Invitation Response remain unchanged. (BR-85, BR-86, BR-96)
-8. If the meeting is Published or InProgress, the system queues an in-app notification and an email describing the new Meeting Role for asynchronous delivery to the participant. (BR-92)
-9. The system displays MSG100 – "Meeting role updated successfully."
-Assign / Change Meeting Role
-1. The Secretary opens the Meeting Participants tab of the selected meeting.
-2. The Secretary selects Change Role for a current internal participant.
-3. The system displays the participant's current Meeting Role.
-4. The Secretary selects Chair, Secretary, or Member.
-5. The Secretary submits the selected Meeting Role.
-6. The system verifies that the Secretary is still assigned to the meeting, the meeting still permits participant management, the internal participant still belongs to the meeting, the selected Meeting Role is valid, the change would not remove a required Secretary or Chair, and assigning Chair would not create a second current Chair. (BR-79, BR-80, BR-85, BR-122, BR-123, BR-126)
-7. The system updates only the participant's Meeting Role for the selected meeting. The user's system Role and Invitation Response remain unchanged. (BR-85, BR-86, BR-96)
-8. If the meeting is Published or InProgress, the system queues an in-app notification and an email describing the new Meeting Role for asynchronous delivery to the participant. (BR-92)
-9. The system displays MSG100 – "Meeting role updated successfully."
-Assign / Change Meeting Role
-1. The Secretary opens the Meeting Participants tab of the selected meeting.
-2. The Secretary selects Change Role for a current internal participant.
-3. The system displays the participant's current Meeting Role.
-4. The Secretary selects Chair, Secretary, or Member.
-5. The Secretary submits the selected Meeting Role.
-6. The system verifies that the Secretary is still assigned to the meeting, the meeting still permits participant management, the internal participant still belongs to the meeting, the selected Meeting Role is valid, the change would not remove a required Secretary or Chair, and assigning Chair would not create a second current Chair. (BR-79, BR-80, BR-85, BR-122, BR-123, BR-126)
-7. The system updates only the participant's Meeting Role for the selected meeting. The user's system Role and Invitation Response remain unchanged. (BR-85, BR-86, BR-96)
-8. If the meeting is Published or InProgress, the system queues an in-app notification and an email describing the new Meeting Role for asynchronous delivery to the participant. (BR-92)
-9. The system displays MSG100 – "Meeting role updated successfully."
-Alternative Flows
-AF-1 – Selected Role Is Unchanged
-1. At Step 5, the selected Meeting Role is the participant's current role.
-2. The system leaves the participant unchanged.
-3. The system displays MSG100 – "Meeting role updated successfully."
-4. The use case ends successfully.
-AF-2 – Role Change Notification Delivery Is Unavailable
-1. At Step 8, the Meeting Role has been updated but notification delivery is unavailable.
-2. The Meeting Role change remains successful. (BR-94)
-3. The system records the delivery failure for retry.
-4. The flow resumes at Step 9 of the Main Flow.
-AF-1 – Selected Role Is Unchanged
-1. At Step 5, the selected Meeting Role is the participant's current role.
-2. The system leaves the participant unchanged.
-3. The system displays MSG100 – "Meeting role updated successfully."
-4. The use case ends successfully.
-AF-2 – Role Change Notification Delivery Is Unavailable
-1. At Step 8, the Meeting Role has been updated but notification delivery is unavailable.
-2. The Meeting Role change remains successful. (BR-94)
-3. The system records the delivery failure for retry.
-4. The flow resumes at Step 9 of the Main Flow.
-AF-1 – Selected Role Is Unchanged
-1. At Step 5, the selected Meeting Role is the participant's current role.
-2. The system leaves the participant unchanged.
-3. The system displays MSG100 – "Meeting role updated successfully."
-4. The use case ends successfully.
-AF-2 – Role Change Notification Delivery Is Unavailable
-1. At Step 8, the Meeting Role has been updated but notification delivery is unavailable.
-2. The Meeting Role change remains successful. (BR-94)
-3. The system records the delivery failure for retry.
-4. The flow resumes at Step 9 of the Main Flow.
-Exception Flows
-EX-1 – Invalid Meeting Role
-1. At Step 6, the submitted Meeting Role is not Chair, Secretary, or Member. (BR-85)
-2. The participant's Meeting Role remains unchanged.
-3. The system displays MSG101 – "A valid meeting role is required."
-4. The Secretary selects a valid Meeting Role.
-5. The flow resumes at Step 6 of the Main Flow.
-EX-2 – Required Meeting Role Would Be Removed
-1. At Step 6, the change would remove the last assigned Secretary, remove the current Chair while the meeting is Published or InProgress, or create a second current Chair. (BR-122, BR-123, BR-126)
-2. The participant's Meeting Role remains unchanged.
-3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."
-4. The use case ends.
-EX-3 – Participant List Cannot Be Modified in the Current Status
-1. At Step 6, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)
-2. The participant's Meeting Role remains unchanged.
-3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."
-4. The use case ends.
-EX-4 – Meeting Role Cannot Be Updated
-1. At Step 7, the system cannot save the Meeting Role change.
-2. The participant's Meeting Role remains unchanged.
-3. The system displays MSG102 – "Unable to update the meeting role. Please try again."
-4. The use case ends.
-EX-1 – Invalid Meeting Role
-1. At Step 6, the submitted Meeting Role is not Chair, Secretary, or Member. (BR-85)
-2. The participant's Meeting Role remains unchanged.
-3. The system displays MSG101 – "A valid meeting role is required."
-4. The Secretary selects a valid Meeting Role.
-5. The flow resumes at Step 6 of the Main Flow.
-EX-2 – Required Meeting Role Would Be Removed
-1. At Step 6, the change would remove the last assigned Secretary, remove the current Chair while the meeting is Published or InProgress, or create a second current Chair. (BR-122, BR-123, BR-126)
-2. The participant's Meeting Role remains unchanged.
-3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."
-4. The use case ends.
-EX-3 – Participant List Cannot Be Modified in the Current Status
-1. At Step 6, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)
-2. The participant's Meeting Role remains unchanged.
-3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."
-4. The use case ends.
-EX-4 – Meeting Role Cannot Be Updated
-1. At Step 7, the system cannot save the Meeting Role change.
-2. The participant's Meeting Role remains unchanged.
-3. The system displays MSG102 – "Unable to update the meeting role. Please try again."
-4. The use case ends.
-EX-1 – Invalid Meeting Role
-1. At Step 6, the submitted Meeting Role is not Chair, Secretary, or Member. (BR-85)
-2. The participant's Meeting Role remains unchanged.
-3. The system displays MSG101 – "A valid meeting role is required."
-4. The Secretary selects a valid Meeting Role.
-5. The flow resumes at Step 6 of the Main Flow.
-EX-2 – Required Meeting Role Would Be Removed
-1. At Step 6, the change would remove the last assigned Secretary, remove the current Chair while the meeting is Published or InProgress, or create a second current Chair. (BR-122, BR-123, BR-126)
-2. The participant's Meeting Role remains unchanged.
-3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."
-4. The use case ends.
-EX-3 – Participant List Cannot Be Modified in the Current Status
-1. At Step 6, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)
-2. The participant's Meeting Role remains unchanged.
-3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."
-4. The use case ends.
-EX-4 – Meeting Role Cannot Be Updated
-1. At Step 7, the system cannot save the Meeting Role change.
-2. The participant's Meeting Role remains unchanged.
-3. The system displays MSG102 – "Unable to update the meeting role. Please try again."
-4. The use case ends.
-Primary Actors
-Secretary
-Secondary Actors
-None
-Description
-Allows the Secretary to remove a current internal participant or revoke a current external Guest invitation while the meeting has not yet ended.
-Allows the Secretary to remove a current internal participant or revoke a current external Guest invitation while the meeting has not yet ended.
-Allows the Secretary to remove a current internal participant or revoke a current external Guest invitation while the meeting has not yet ended.
-Preconditions
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-● PRE-2: The selected meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-3: The selected target is a current internal participant or a current external Guest invitation of the selected meeting.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-● PRE-2: The selected meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-3: The selected target is a current internal participant or a current external Guest invitation of the selected meeting.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-● PRE-2: The selected meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-● PRE-3: The selected target is a current internal participant or a current external Guest invitation of the selected meeting.
-Postconditions
-● POST-1: The selected internal user is no longer a current participant, or the selected external Guest invitation is revoked.
-● POST-2: Access granted by the removed internal participant assignment, outgoing delegation, or external Guest invitation is revoked. Access independently granted through another valid relationship remains effective.
-● POST-3: If the meeting is Published or InProgress, the affected internal user receives the applicable in-app/email removal notice; an external Guest may receive an email revocation notice. No removal notification contains a protected meeting link.
-● POST-4: If an affected user is currently in the online meeting room and no other room-entry access remains, the system disconnects that user. (BR-101)
-● POST-1: The selected internal user is no longer a current participant, or the selected external Guest invitation is revoked.
-● POST-2: Access granted by the removed internal participant assignment, outgoing delegation, or external Guest invitation is revoked. Access independently granted through another valid relationship remains effective.
-● POST-3: If the meeting is Published or InProgress, the affected internal user receives the applicable in-app/email removal notice; an external Guest may receive an email revocation notice. No removal notification contains a protected meeting link.
-● POST-4: If an affected user is currently in the online meeting room and no other room-entry access remains, the system disconnects that user. (BR-101)
-● POST-1: The selected internal user is no longer a current participant, or the selected external Guest invitation is revoked.
-● POST-2: Access granted by the removed internal participant assignment, outgoing delegation, or external Guest invitation is revoked. Access independently granted through another valid relationship remains effective.
-● POST-3: If the meeting is Published or InProgress, the affected internal user receives the applicable in-app/email removal notice; an external Guest may receive an email revocation notice. No removal notification contains a protected meeting link.
-● POST-4: If an affected user is currently in the online meeting room and no other room-entry access remains, the system disconnects that user. (BR-101)
-Normal Flow
-Remove Meeting Participant or Guest
-1. The Secretary opens the Meeting Participants tab of the selected meeting.
-2. The Secretary selects Remove for the target internal participant or external Guest.
-3. The system requests confirmation.
-4. The Secretary confirms the removal.
-5. The system verifies that the Secretary is still assigned to the meeting, the meeting still permits participant management, the target still belongs to the meeting roster, and—when the target is an internal participant—the removal would not remove a required Secretary or Chair. (BR-79, BR-80, BR-122, BR-126)
-6. If the target is an internal participant, the system removes the current participant assignment and ends any outgoing delegation created by that participant. If the target is an external Guest, the system revokes the Guest invitation and invalidates access granted by that invitation. For a Published or InProgress meeting, response and attendance evidence is preserved as historical data rather than physically deleted. (BR-97, BR-98, BR-102, BR-157)
-7. The system re-evaluates room-entry access for every affected user and disconnects any currently connected user who no longer has access through another valid relationship. (BR-101)
-8. If the meeting is Published or InProgress, the system queues the applicable removal/revocation notification for asynchronous delivery. Internal participants may receive in-app and email delivery; external Guests receive email only. (BR-93)
-9. The system displays MSG103 – "Meeting participant removed successfully."
-Remove Meeting Participant or Guest
-1. The Secretary opens the Meeting Participants tab of the selected meeting.
-2. The Secretary selects Remove for the target internal participant or external Guest.
-3. The system requests confirmation.
-4. The Secretary confirms the removal.
-5. The system verifies that the Secretary is still assigned to the meeting, the meeting still permits participant management, the target still belongs to the meeting roster, and—when the target is an internal participant—the removal would not remove a required Secretary or Chair. (BR-79, BR-80, BR-122, BR-126)
-6. If the target is an internal participant, the system removes the current participant assignment and ends any outgoing delegation created by that participant. If the target is an external Guest, the system revokes the Guest invitation and invalidates access granted by that invitation. For a Published or InProgress meeting, response and attendance evidence is preserved as historical data rather than physically deleted. (BR-97, BR-98, BR-102, BR-157)
-7. The system re-evaluates room-entry access for every affected user and disconnects any currently connected user who no longer has access through another valid relationship. (BR-101)
-8. If the meeting is Published or InProgress, the system queues the applicable removal/revocation notification for asynchronous delivery. Internal participants may receive in-app and email delivery; external Guests receive email only. (BR-93)
-9. The system displays MSG103 – "Meeting participant removed successfully."
-Remove Meeting Participant or Guest
-1. The Secretary opens the Meeting Participants tab of the selected meeting.
-2. The Secretary selects Remove for the target internal participant or external Guest.
-3. The system requests confirmation.
-4. The Secretary confirms the removal.
-5. The system verifies that the Secretary is still assigned to the meeting, the meeting still permits participant management, the target still belongs to the meeting roster, and—when the target is an internal participant—the removal would not remove a required Secretary or Chair. (BR-79, BR-80, BR-122, BR-126)
-6. If the target is an internal participant, the system removes the current participant assignment and ends any outgoing delegation created by that participant. If the target is an external Guest, the system revokes the Guest invitation and invalidates access granted by that invitation. For a Published or InProgress meeting, response and attendance evidence is preserved as historical data rather than physically deleted. (BR-97, BR-98, BR-102, BR-157)
-7. The system re-evaluates room-entry access for every affected user and disconnects any currently connected user who no longer has access through another valid relationship. (BR-101)
-8. If the meeting is Published or InProgress, the system queues the applicable removal/revocation notification for asynchronous delivery. Internal participants may receive in-app and email delivery; external Guests receive email only. (BR-93)
-9. The system displays MSG103 – "Meeting participant removed successfully."
-Alternative Flows
-AF-1 – Removal Notification Delivery Is Unavailable
-1. At Step 8, the participant or Guest access has already been removed/revoked but the applicable notification delivery is unavailable.
-2. The removal and access revocation remain successful. (BR-94)
-3. The system records the delivery failure for retry.
-4. The flow resumes at Step 9 of the Main Flow.
-AF-1 – Removal Notification Delivery Is Unavailable
-1. At Step 8, the participant or Guest access has already been removed/revoked but the applicable notification delivery is unavailable.
-2. The removal and access revocation remain successful. (BR-94)
-3. The system records the delivery failure for retry.
-4. The flow resumes at Step 9 of the Main Flow.
-AF-1 – Removal Notification Delivery Is Unavailable
-1. At Step 8, the participant or Guest access has already been removed/revoked but the applicable notification delivery is unavailable.
-2. The removal and access revocation remain successful. (BR-94)
-3. The system records the delivery failure for retry.
-4. The flow resumes at Step 9 of the Main Flow.
-Exception Flows
-EX-1 – Removal Cancelled
-1. At Step 3, the Secretary does not confirm the removal.
-2. The target remains unchanged.
-3. The use case ends without satisfying the removal postcondition.
-EX-2 – Required Meeting Role Would Be Removed
-1. At Step 5, an internal participant removal would remove the last assigned Secretary, or would remove the current Chair while the meeting is Published or InProgress. (BR-122, BR-126)
-2. The participant is not removed.
-3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."
-4. The use case ends.
-EX-3 – Participant List Cannot Be Modified in the Current Status
-1. At Step 5, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)
-2. The target is not removed or revoked.
-3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."
-4. The use case ends.
-EX-4 – Participant or Guest Cannot Be Removed
-1. At Step 6, the system cannot remove the internal participant or revoke the external Guest invitation.
-2. The target remains current and retains existing access.
-3. The system displays MSG104 – "Unable to remove the meeting participant. Please try again."
-4. The use case ends.
-EX-1 – Removal Cancelled
-1. At Step 3, the Secretary does not confirm the removal.
-2. The target remains unchanged.
-3. The use case ends without satisfying the removal postcondition.
-EX-2 – Required Meeting Role Would Be Removed
-1. At Step 5, an internal participant removal would remove the last assigned Secretary, or would remove the current Chair while the meeting is Published or InProgress. (BR-122, BR-126)
-2. The participant is not removed.
-3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."
-4. The use case ends.
-EX-3 – Participant List Cannot Be Modified in the Current Status
-1. At Step 5, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)
-2. The target is not removed or revoked.
-3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."
-4. The use case ends.
-EX-4 – Participant or Guest Cannot Be Removed
-1. At Step 6, the system cannot remove the internal participant or revoke the external Guest invitation.
-2. The target remains current and retains existing access.
-3. The system displays MSG104 – "Unable to remove the meeting participant. Please try again."
-4. The use case ends.
-EX-1 – Removal Cancelled
-1. At Step 3, the Secretary does not confirm the removal.
-2. The target remains unchanged.
-3. The use case ends without satisfying the removal postcondition.
-EX-2 – Required Meeting Role Would Be Removed
-1. At Step 5, an internal participant removal would remove the last assigned Secretary, or would remove the current Chair while the meeting is Published or InProgress. (BR-122, BR-126)
-2. The participant is not removed.
-3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."
-4. The use case ends.
-EX-3 – Participant List Cannot Be Modified in the Current Status
-1. At Step 5, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)
-2. The target is not removed or revoked.
-3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."
-4. The use case ends.
-EX-4 – Participant or Guest Cannot Be Removed
-1. At Step 6, the system cannot remove the internal participant or revoke the external Guest invitation.
-2. The target remains current and retains existing access.
-3. The system displays MSG104 – "Unable to remove the meeting participant. Please try again."
-4. The use case ends.
-Primary Actors
-Chair, Secretary, Participant, Guest
-Email / SMTP Service
-None
-Description
-Allows an invited internal participant or external Guest to respond to their own meeting invitation while responses are allowed. Internal participants may accept, decline, or delegate; external Guests may accept or decline through a verified guest invitation without signing in to an internal account.
-Allows an invited internal participant or external Guest to respond to their own meeting invitation while responses are allowed. Internal participants may accept, decline, or delegate; external Guests may accept or decline through a verified guest invitation without signing in to an internal account.
-Allows an invited internal participant or external Guest to respond to their own meeting invitation while responses are allowed. Internal participants may accept, decline, or delegate; external Guests may accept or decline through a verified guest invitation without signing in to an internal account.
-Allows an invited internal participant or external Guest to respond to their own meeting invitation while responses are allowed. Internal participants may accept, decline, or delegate; external Guests may accept or decline through a verified guest invitation without signing in to an internal account.
-Preconditions
-● PRE-1: For an internal invitee, the user is authenticated, has an active account, and is a current internal participant. For an external Guest, a current Guest invitation exists and the Guest can verify access through the invited email; no internal account login is required. (BR-148, BR-153, BR-156)
-● PRE-2: The invitee currently owns the selected invitation.
-● PRE-3: The selected meeting is Published or InProgress.
-● PRE-1: For an internal invitee, the user is authenticated, has an active account, and is a current internal participant. For an external Guest, a current Guest invitation exists and the Guest can verify access through the invited email; no internal account login is required. (BR-148, BR-153, BR-156)
-● PRE-2: The invitee currently owns the selected invitation.
-● PRE-3: The selected meeting is Published or InProgress.
-● PRE-1: For an internal invitee, the user is authenticated, has an active account, and is a current internal participant. For an external Guest, a current Guest invitation exists and the Guest can verify access through the invited email; no internal account login is required. (BR-148, BR-153, BR-156)
-● PRE-2: The invitee currently owns the selected invitation.
-● PRE-3: The selected meeting is Published or InProgress.
-● PRE-1: For an internal invitee, the user is authenticated, has an active account, and is a current internal participant. For an external Guest, a current Guest invitation exists and the Guest can verify access through the invited email; no internal account login is required. (BR-148, BR-153, BR-156)
-● PRE-2: The invitee currently owns the selected invitation.
-● PRE-3: The selected meeting is Published or InProgress.
-Postconditions
-● POST-1: The invitee's latest Invitation Response is Accepted or Declined; an internal participant may also have Delegated.
-● POST-2: The response time is recorded.
-● POST-3: For an internal participant with a Delegated response, the selected delegate is recorded and receives delegated access without automatically receiving a Meeting Role.
-● POST-4: External Guest access remains scoped to the invited meeting and does not create an internal user account or system role. (BR-148, BR-150, BR-154, BR-156)
-● POST-5: When a previous internal delegation is replaced or withdrawn, access granted solely by that delegation is revoked and affected room access is re-evaluated. (BR-101, BR-114)
-● POST-1: The invitee's latest Invitation Response is Accepted or Declined; an internal participant may also have Delegated.
-● POST-2: The response time is recorded.
-● POST-3: For an internal participant with a Delegated response, the selected delegate is recorded and receives delegated access without automatically receiving a Meeting Role.
-● POST-4: External Guest access remains scoped to the invited meeting and does not create an internal user account or system role. (BR-148, BR-150, BR-154, BR-156)
-● POST-5: When a previous internal delegation is replaced or withdrawn, access granted solely by that delegation is revoked and affected room access is re-evaluated. (BR-101, BR-114)
-● POST-1: The invitee's latest Invitation Response is Accepted or Declined; an internal participant may also have Delegated.
-● POST-2: The response time is recorded.
-● POST-3: For an internal participant with a Delegated response, the selected delegate is recorded and receives delegated access without automatically receiving a Meeting Role.
-● POST-4: External Guest access remains scoped to the invited meeting and does not create an internal user account or system role. (BR-148, BR-150, BR-154, BR-156)
-● POST-5: When a previous internal delegation is replaced or withdrawn, access granted solely by that delegation is revoked and affected room access is re-evaluated. (BR-101, BR-114)
-● POST-1: The invitee's latest Invitation Response is Accepted or Declined; an internal participant may also have Delegated.
-● POST-2: The response time is recorded.
-● POST-3: For an internal participant with a Delegated response, the selected delegate is recorded and receives delegated access without automatically receiving a Meeting Role.
-● POST-4: External Guest access remains scoped to the invited meeting and does not create an internal user account or system role. (BR-148, BR-150, BR-154, BR-156)
-● POST-5: When a previous internal delegation is replaced or withdrawn, access granted solely by that delegation is revoked and affected room access is re-evaluated. (BR-101, BR-114)
-Normal Flow
-Respond to Meeting Invitation
-1. The invitee opens the invitation or published meeting details. An internal invitee uses the authenticated system; an external Guest opens the secure guest invitation link.
-2. The system identifies the invitation owner. For an internal invitee, it uses the authenticated account. For an external Guest, it validates the guest invitation and requires a one-time verification code sent to the invited email; successful verification establishes a limited meeting-scoped guest session. (BR-104, BR-152, BR-153, BR-154, BR-155, BR-156)
-3. The system displays the current Invitation Response.
-4. The invitee selects Accepted or Declined and submits the response.
-5. The system verifies that the selected response is allowed, the invitee still owns a current invitation, and the meeting is still Published or InProgress. (BR-104, BR-105, BR-106)
-6. The system records the selected Invitation Response and response time. For an internal participant, the update also clears any previous delegate and revokes access granted solely by that delegation. (BR-114, BR-115)
-7. If an internal previous delegation was cleared, the system re-evaluates room-entry access and disconnects the previous delegate only when no other valid room-entry relationship remains. (BR-101, BR-114)
-8. The system displays MSG105 – "Meeting invitation response recorded successfully."
-Respond to Meeting Invitation
-1. The invitee opens the invitation or published meeting details. An internal invitee uses the authenticated system; an external Guest opens the secure guest invitation link.
-2. The system identifies the invitation owner. For an internal invitee, it uses the authenticated account. For an external Guest, it validates the guest invitation and requires a one-time verification code sent to the invited email; successful verification establishes a limited meeting-scoped guest session. (BR-104, BR-152, BR-153, BR-154, BR-155, BR-156)
-3. The system displays the current Invitation Response.
-4. The invitee selects Accepted or Declined and submits the response.
-5. The system verifies that the selected response is allowed, the invitee still owns a current invitation, and the meeting is still Published or InProgress. (BR-104, BR-105, BR-106)
-6. The system records the selected Invitation Response and response time. For an internal participant, the update also clears any previous delegate and revokes access granted solely by that delegation. (BR-114, BR-115)
-7. If an internal previous delegation was cleared, the system re-evaluates room-entry access and disconnects the previous delegate only when no other valid room-entry relationship remains. (BR-101, BR-114)
-8. The system displays MSG105 – "Meeting invitation response recorded successfully."
-Respond to Meeting Invitation
-1. The invitee opens the invitation or published meeting details. An internal invitee uses the authenticated system; an external Guest opens the secure guest invitation link.
-2. The system identifies the invitation owner. For an internal invitee, it uses the authenticated account. For an external Guest, it validates the guest invitation and requires a one-time verification code sent to the invited email; successful verification establishes a limited meeting-scoped guest session. (BR-104, BR-152, BR-153, BR-154, BR-155, BR-156)
-3. The system displays the current Invitation Response.
-4. The invitee selects Accepted or Declined and submits the response.
-5. The system verifies that the selected response is allowed, the invitee still owns a current invitation, and the meeting is still Published or InProgress. (BR-104, BR-105, BR-106)
-6. The system records the selected Invitation Response and response time. For an internal participant, the update also clears any previous delegate and revokes access granted solely by that delegation. (BR-114, BR-115)
-7. If an internal previous delegation was cleared, the system re-evaluates room-entry access and disconnects the previous delegate only when no other valid room-entry relationship remains. (BR-101, BR-114)
-8. The system displays MSG105 – "Meeting invitation response recorded successfully."
-Respond to Meeting Invitation
-1. The invitee opens the invitation or published meeting details. An internal invitee uses the authenticated system; an external Guest opens the secure guest invitation link.
-2. The system identifies the invitation owner. For an internal invitee, it uses the authenticated account. For an external Guest, it validates the guest invitation and requires a one-time verification code sent to the invited email; successful verification establishes a limited meeting-scoped guest session. (BR-104, BR-152, BR-153, BR-154, BR-155, BR-156)
-3. The system displays the current Invitation Response.
-4. The invitee selects Accepted or Declined and submits the response.
-5. The system verifies that the selected response is allowed, the invitee still owns a current invitation, and the meeting is still Published or InProgress. (BR-104, BR-105, BR-106)
-6. The system records the selected Invitation Response and response time. For an internal participant, the update also clears any previous delegate and revokes access granted solely by that delegation. (BR-114, BR-115)
-7. If an internal previous delegation was cleared, the system re-evaluates room-entry access and disconnects the previous delegate only when no other valid room-entry relationship remains. (BR-101, BR-114)
-8. The system displays MSG105 – "Meeting invitation response recorded successfully."
-Alternative Flows
-AF-1 – Internal Participant Delegates the Invitation
-Entry Point: Step 4 of the Main Flow.
-1. An internal Chair, Secretary, or Participant selects Delegated. External Guests cannot use this flow. (BR-89, BR-105)
-2. The system displays active internal users who may be selected as delegate.
-3. The internal participant selects another active internal user.
-4. The system verifies that the responding user owns the invitation and remains a current internal participant, the meeting is still Published or InProgress, and the selected delegate is active, is not the responding participant, and is not already representing another participant in the same meeting. (BR-104, BR-106, BR-107, BR-108, BR-113)
-5. The system records Delegated and the selected delegate on the original participant record, revokes access granted solely to any previous delegate, and grants the selected delegate the applicable access. No Meeting Role is transferred. (BR-109, BR-111, BR-114, BR-115)
-6. The original participant retains meeting read access but their own assignment does not grant room-entry access while Delegated remains effective. The selected delegate receives meeting read and room-entry access; Chair and Secretary privileges are not transferred. (BR-109, BR-110, BR-111)
-7. If the meeting is InProgress, the system re-evaluates room-entry access for the original participant and any previous delegate and disconnects each affected user who has no other valid room-entry relationship. (BR-101)
-8. If the selected delegate is already a participant, the existing Meeting Role remains unchanged.
-9. The flow resumes at Step 8 of the Main Flow.
-AF-2 – Change a Previous Response
-1. At Step 3, the invitee has already responded.
-2. The invitee selects another allowed response and submits it.
-3. If an internal participant selects Delegated, the flow continues at Step 2 of AF-1. External Guests may change only between Accepted and Declined. (BR-105, BR-106)
-4. Otherwise, the flow resumes at Step 5 of the Main Flow so ownership, meeting status, guest verification when applicable, and the new response are revalidated.
-AF-1 – Internal Participant Delegates the Invitation
-Entry Point: Step 4 of the Main Flow.
-1. An internal Chair, Secretary, or Participant selects Delegated. External Guests cannot use this flow. (BR-89, BR-105)
-2. The system displays active internal users who may be selected as delegate.
-3. The internal participant selects another active internal user.
-4. The system verifies that the responding user owns the invitation and remains a current internal participant, the meeting is still Published or InProgress, and the selected delegate is active, is not the responding participant, and is not already representing another participant in the same meeting. (BR-104, BR-106, BR-107, BR-108, BR-113)
-5. The system records Delegated and the selected delegate on the original participant record, revokes access granted solely to any previous delegate, and grants the selected delegate the applicable access. No Meeting Role is transferred. (BR-109, BR-111, BR-114, BR-115)
-6. The original participant retains meeting read access but their own assignment does not grant room-entry access while Delegated remains effective. The selected delegate receives meeting read and room-entry access; Chair and Secretary privileges are not transferred. (BR-109, BR-110, BR-111)
-7. If the meeting is InProgress, the system re-evaluates room-entry access for the original participant and any previous delegate and disconnects each affected user who has no other valid room-entry relationship. (BR-101)
-8. If the selected delegate is already a participant, the existing Meeting Role remains unchanged.
-9. The flow resumes at Step 8 of the Main Flow.
-AF-2 – Change a Previous Response
-1. At Step 3, the invitee has already responded.
-2. The invitee selects another allowed response and submits it.
-3. If an internal participant selects Delegated, the flow continues at Step 2 of AF-1. External Guests may change only between Accepted and Declined. (BR-105, BR-106)
-4. Otherwise, the flow resumes at Step 5 of the Main Flow so ownership, meeting status, guest verification when applicable, and the new response are revalidated.
-AF-1 – Internal Participant Delegates the Invitation
-Entry Point: Step 4 of the Main Flow.
-1. An internal Chair, Secretary, or Participant selects Delegated. External Guests cannot use this flow. (BR-89, BR-105)
-2. The system displays active internal users who may be selected as delegate.
-3. The internal participant selects another active internal user.
-4. The system verifies that the responding user owns the invitation and remains a current internal participant, the meeting is still Published or InProgress, and the selected delegate is active, is not the responding participant, and is not already representing another participant in the same meeting. (BR-104, BR-106, BR-107, BR-108, BR-113)
-5. The system records Delegated and the selected delegate on the original participant record, revokes access granted solely to any previous delegate, and grants the selected delegate the applicable access. No Meeting Role is transferred. (BR-109, BR-111, BR-114, BR-115)
-6. The original participant retains meeting read access but their own assignment does not grant room-entry access while Delegated remains effective. The selected delegate receives meeting read and room-entry access; Chair and Secretary privileges are not transferred. (BR-109, BR-110, BR-111)
-7. If the meeting is InProgress, the system re-evaluates room-entry access for the original participant and any previous delegate and disconnects each affected user who has no other valid room-entry relationship. (BR-101)
-8. If the selected delegate is already a participant, the existing Meeting Role remains unchanged.
-9. The flow resumes at Step 8 of the Main Flow.
-AF-2 – Change a Previous Response
-1. At Step 3, the invitee has already responded.
-2. The invitee selects another allowed response and submits it.
-3. If an internal participant selects Delegated, the flow continues at Step 2 of AF-1. External Guests may change only between Accepted and Declined. (BR-105, BR-106)
-4. Otherwise, the flow resumes at Step 5 of the Main Flow so ownership, meeting status, guest verification when applicable, and the new response are revalidated.
-AF-1 – Internal Participant Delegates the Invitation
-Entry Point: Step 4 of the Main Flow.
-1. An internal Chair, Secretary, or Participant selects Delegated. External Guests cannot use this flow. (BR-89, BR-105)
-2. The system displays active internal users who may be selected as delegate.
-3. The internal participant selects another active internal user.
-4. The system verifies that the responding user owns the invitation and remains a current internal participant, the meeting is still Published or InProgress, and the selected delegate is active, is not the responding participant, and is not already representing another participant in the same meeting. (BR-104, BR-106, BR-107, BR-108, BR-113)
-5. The system records Delegated and the selected delegate on the original participant record, revokes access granted solely to any previous delegate, and grants the selected delegate the applicable access. No Meeting Role is transferred. (BR-109, BR-111, BR-114, BR-115)
-6. The original participant retains meeting read access but their own assignment does not grant room-entry access while Delegated remains effective. The selected delegate receives meeting read and room-entry access; Chair and Secretary privileges are not transferred. (BR-109, BR-110, BR-111)
-7. If the meeting is InProgress, the system re-evaluates room-entry access for the original participant and any previous delegate and disconnects each affected user who has no other valid room-entry relationship. (BR-101)
-8. If the selected delegate is already a participant, the existing Meeting Role remains unchanged.
-9. The flow resumes at Step 8 of the Main Flow.
-AF-2 – Change a Previous Response
-1. At Step 3, the invitee has already responded.
-2. The invitee selects another allowed response and submits it.
-3. If an internal participant selects Delegated, the flow continues at Step 2 of AF-1. External Guests may change only between Accepted and Declined. (BR-105, BR-106)
-4. Otherwise, the flow resumes at Step 5 of the Main Flow so ownership, meeting status, guest verification when applicable, and the new response are revalidated.
-Exception Flows
-EX-1 – Invalid Invitation Response
-1. At Step 5, the submitted response is not permitted for the invitee; or at AF-1 Step 4, the delegation information is invalid. An external Guest cannot submit Delegated. (BR-105, BR-107, BR-108, BR-113)
-2. The previous Invitation Response remains unchanged.
-3. The system displays MSG106 – "Invalid meeting invitation response." with the applicable validation message.
-4. The invitee corrects the response.
-5. For an invalid Accepted or Declined response, the flow resumes at Step 4 of the Main Flow. For invalid delegation information, the flow resumes at Step 2 of AF-1.
-EX-2 – Invitation Can No Longer Be Answered
-1. At Step 2 or Step 5, the meeting is no longer Published or InProgress, the invitation is no longer current, or an external Guest invitation has expired or been revoked. (BR-104, BR-106, BR-155, BR-157)
-2. The previous Invitation Response remains unchanged.
-3. The system displays MSG107 – "This meeting invitation can no longer be answered."
-4. The use case ends.
-EX-3 – Guest Verification Fails
-1. At Step 2, an external Guest provides an invalid or expired one-time verification code. (BR-153)
-2. No guest session is established and the Invitation Response remains unchanged.
-3. The system displays MSG126 – "Unable to verify the guest invitation. Check the code and try again."
-4. The Guest may retry verification while the guest invitation remains valid.
-EX-4 – Invitation Response Cannot Be Saved
-1. At Step 6 of the Main Flow or Step 5 of AF-1, the system cannot save the Invitation Response or apply the corresponding delegated access atomically.
-2. The previous Invitation Response and access remain unchanged.
-3. The system displays MSG108 – "Unable to save the meeting invitation response. Please try again."
-4. The use case ends.
-EX-1 – Invalid Invitation Response
-1. At Step 5, the submitted response is not permitted for the invitee; or at AF-1 Step 4, the delegation information is invalid. An external Guest cannot submit Delegated. (BR-105, BR-107, BR-108, BR-113)
-2. The previous Invitation Response remains unchanged.
-3. The system displays MSG106 – "Invalid meeting invitation response." with the applicable validation message.
-4. The invitee corrects the response.
-5. For an invalid Accepted or Declined response, the flow resumes at Step 4 of the Main Flow. For invalid delegation information, the flow resumes at Step 2 of AF-1.
-EX-2 – Invitation Can No Longer Be Answered
-1. At Step 2 or Step 5, the meeting is no longer Published or InProgress, the invitation is no longer current, or an external Guest invitation has expired or been revoked. (BR-104, BR-106, BR-155, BR-157)
-2. The previous Invitation Response remains unchanged.
-3. The system displays MSG107 – "This meeting invitation can no longer be answered."
-4. The use case ends.
-EX-3 – Guest Verification Fails
-1. At Step 2, an external Guest provides an invalid or expired one-time verification code. (BR-153)
-2. No guest session is established and the Invitation Response remains unchanged.
-3. The system displays MSG126 – "Unable to verify the guest invitation. Check the code and try again."
-4. The Guest may retry verification while the guest invitation remains valid.
-EX-4 – Invitation Response Cannot Be Saved
-1. At Step 6 of the Main Flow or Step 5 of AF-1, the system cannot save the Invitation Response or apply the corresponding delegated access atomically.
-2. The previous Invitation Response and access remain unchanged.
-3. The system displays MSG108 – "Unable to save the meeting invitation response. Please try again."
-4. The use case ends.
-EX-1 – Invalid Invitation Response
-1. At Step 5, the submitted response is not permitted for the invitee; or at AF-1 Step 4, the delegation information is invalid. An external Guest cannot submit Delegated. (BR-105, BR-107, BR-108, BR-113)
-2. The previous Invitation Response remains unchanged.
-3. The system displays MSG106 – "Invalid meeting invitation response." with the applicable validation message.
-4. The invitee corrects the response.
-5. For an invalid Accepted or Declined response, the flow resumes at Step 4 of the Main Flow. For invalid delegation information, the flow resumes at Step 2 of AF-1.
-EX-2 – Invitation Can No Longer Be Answered
-1. At Step 2 or Step 5, the meeting is no longer Published or InProgress, the invitation is no longer current, or an external Guest invitation has expired or been revoked. (BR-104, BR-106, BR-155, BR-157)
-2. The previous Invitation Response remains unchanged.
-3. The system displays MSG107 – "This meeting invitation can no longer be answered."
-4. The use case ends.
-EX-3 – Guest Verification Fails
-1. At Step 2, an external Guest provides an invalid or expired one-time verification code. (BR-153)
-2. No guest session is established and the Invitation Response remains unchanged.
-3. The system displays MSG126 – "Unable to verify the guest invitation. Check the code and try again."
-4. The Guest may retry verification while the guest invitation remains valid.
-EX-4 – Invitation Response Cannot Be Saved
-1. At Step 6 of the Main Flow or Step 5 of AF-1, the system cannot save the Invitation Response or apply the corresponding delegated access atomically.
-2. The previous Invitation Response and access remain unchanged.
-3. The system displays MSG108 – "Unable to save the meeting invitation response. Please try again."
-4. The use case ends.
-EX-1 – Invalid Invitation Response
-1. At Step 5, the submitted response is not permitted for the invitee; or at AF-1 Step 4, the delegation information is invalid. An external Guest cannot submit Delegated. (BR-105, BR-107, BR-108, BR-113)
-2. The previous Invitation Response remains unchanged.
-3. The system displays MSG106 – "Invalid meeting invitation response." with the applicable validation message.
-4. The invitee corrects the response.
-5. For an invalid Accepted or Declined response, the flow resumes at Step 4 of the Main Flow. For invalid delegation information, the flow resumes at Step 2 of AF-1.
-EX-2 – Invitation Can No Longer Be Answered
-1. At Step 2 or Step 5, the meeting is no longer Published or InProgress, the invitation is no longer current, or an external Guest invitation has expired or been revoked. (BR-104, BR-106, BR-155, BR-157)
-2. The previous Invitation Response remains unchanged.
-3. The system displays MSG107 – "This meeting invitation can no longer be answered."
-4. The use case ends.
-EX-3 – Guest Verification Fails
-1. At Step 2, an external Guest provides an invalid or expired one-time verification code. (BR-153)
-2. No guest session is established and the Invitation Response remains unchanged.
-3. The system displays MSG126 – "Unable to verify the guest invitation. Check the code and try again."
-4. The Guest may retry verification while the guest invitation remains valid.
-EX-4 – Invitation Response Cannot Be Saved
-1. At Step 6 of the Main Flow or Step 5 of AF-1, the system cannot save the Invitation Response or apply the corresponding delegated access atomically.
-2. The previous Invitation Response and access remain unchanged.
-3. The system displays MSG108 – "Unable to save the meeting invitation response. Please try again."
-4. The use case ends.
-Primary Actors
-Secretary
-Secondary Actors
-None
-Description
-Allows the Secretary assigned to a meeting to review the latest invitation response of every current internal participant and external Guest, together with a summary by response status.
-Allows the Secretary assigned to a meeting to review the latest invitation response of every current internal participant and external Guest, together with a summary by response status.
-Allows the Secretary assigned to a meeting to review the latest invitation response of every current internal participant and external Guest, together with a summary by response status.
-Preconditions
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-● PRE-2: The selected meeting exists.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-● PRE-2: The selected meeting exists.
-● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-● PRE-2: The selected meeting exists.
-Postconditions
-● POST-1: The latest response status of every current internal participant and external Guest is displayed.
-● POST-2: The number of Pending, Accepted, Declined, and Delegated responses is displayed. Delegated applies only to internal participants.
-● POST-3: Invitation Response data is not modified.
-● POST-1: The latest response status of every current internal participant and external Guest is displayed.
-● POST-2: The number of Pending, Accepted, Declined, and Delegated responses is displayed. Delegated applies only to internal participants.
-● POST-3: Invitation Response data is not modified.
-● POST-1: The latest response status of every current internal participant and external Guest is displayed.
-● POST-2: The number of Pending, Accepted, Declined, and Delegated responses is displayed. Delegated applies only to internal participants.
-● POST-3: Invitation Response data is not modified.
-Normal Flow
-View Participant Response Status
-1. The Secretary opens the Meeting Participants tab of the selected meeting.
-2. The Secretary selects Participant Response Status.
-3. The system verifies that the Secretary is still assigned to the meeting.
-4. The system retrieves all current internal participants and current external Guest invitations with their latest Invitation Response; records retained only as historical evidence are excluded. (BR-103, BR-115, BR-117, BR-148)
-5. The system displays each invitee's Full Name, Email, participant type, Meeting Role or Guest access type, Invitation Response, response time, and delegate when applicable.
-6. The system displays the total number of Pending, Accepted, Declined, and Delegated responses. (BR-115)
-7. The Secretary reviews the response status summary.
-View Participant Response Status
-1. The Secretary opens the Meeting Participants tab of the selected meeting.
-2. The Secretary selects Participant Response Status.
-3. The system verifies that the Secretary is still assigned to the meeting.
-4. The system retrieves all current internal participants and current external Guest invitations with their latest Invitation Response; records retained only as historical evidence are excluded. (BR-103, BR-115, BR-117, BR-148)
-5. The system displays each invitee's Full Name, Email, participant type, Meeting Role or Guest access type, Invitation Response, response time, and delegate when applicable.
-6. The system displays the total number of Pending, Accepted, Declined, and Delegated responses. (BR-115)
-7. The Secretary reviews the response status summary.
-View Participant Response Status
-1. The Secretary opens the Meeting Participants tab of the selected meeting.
-2. The Secretary selects Participant Response Status.
-3. The system verifies that the Secretary is still assigned to the meeting.
-4. The system retrieves all current internal participants and current external Guest invitations with their latest Invitation Response; records retained only as historical evidence are excluded. (BR-103, BR-115, BR-117, BR-148)
-5. The system displays each invitee's Full Name, Email, participant type, Meeting Role or Guest access type, Invitation Response, response time, and delegate when applicable.
-6. The system displays the total number of Pending, Accepted, Declined, and Delegated responses. (BR-115)
-7. The Secretary reviews the response status summary.
-Alternative Flows
-AF-1 – No Invitee Has Responded
-1. At Step 4, every current internal participant and external Guest has Pending response status.
-2. The system displays all invitees as Pending and shows zero for Accepted, Declined, and Delegated.
-3. The use case ends successfully.
-AF-1 – No Invitee Has Responded
-1. At Step 4, every current internal participant and external Guest has Pending response status.
-2. The system displays all invitees as Pending and shows zero for Accepted, Declined, and Delegated.
-3. The use case ends successfully.
-AF-1 – No Invitee Has Responded
-1. At Step 4, every current internal participant and external Guest has Pending response status.
-2. The system displays all invitees as Pending and shows zero for Accepted, Declined, and Delegated.
-3. The use case ends successfully.
-Exception Flows
-EX-1 – Meeting Is Not Accessible
-1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.
-2. The system displays the same not-found result used for an unknown meeting and does not disclose participant response data. (BR-121)
-3. The use case ends.
-EX-2 – Participant Response Status Cannot Be Retrieved
-1. At Step 4, the system cannot retrieve the participant response data.
-2. The system displays MSG95 – "Unable to load meeting participants. Please try again."
-3. The use case ends.
-EX-1 – Meeting Is Not Accessible
-1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.
-2. The system displays the same not-found result used for an unknown meeting and does not disclose participant response data. (BR-121)
-3. The use case ends.
-EX-2 – Participant Response Status Cannot Be Retrieved
-1. At Step 4, the system cannot retrieve the participant response data.
-2. The system displays MSG95 – "Unable to load meeting participants. Please try again."
-3. The use case ends.
-EX-1 – Meeting Is Not Accessible
-1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.
-2. The system displays the same not-found result used for an unknown meeting and does not disclose participant response data. (BR-121)
-3. The use case ends.
-EX-2 – Participant Response Status Cannot Be Retrieved
-1. At Step 4, the system cannot retrieve the participant response data.
-2. The system displays MSG95 – "Unable to load meeting participants. Please try again."
-3. The use case ends.
-Primary Actors
-Chair, Secretary, Participant, Guest
-Secondary Actors
-None
-Description
-Allows an authorized user to enter the online room associated with a meeting. The room belongs to the Meeting, not to a Meeting Session, so a Meeting Session is not required for room access.
-Allows an authorized user to enter the online room associated with a meeting. The room belongs to the Meeting, not to a Meeting Session, so a Meeting Session is not required for room access.
-Allows an authorized user to enter the online room associated with a meeting. The room belongs to the Meeting, not to a Meeting Session, so a Meeting Session is not required for room access.
-Preconditions
-● PRE-1: The user has room-entry access to the selected meeting through a current internal participant assignment, an effective delegation, or a verified current external Guest invitation. An external Guest may use a limited meeting-scoped guest session established from the invitation and email verification; no internal account login is required. (BR-140, BR-154, BR-156)
-● PRE-2: The selected meeting exists and its Meeting Mode is Online or Hybrid.
-● PRE-3: The meeting is Published or InProgress.
-● PRE-4: No Meeting Session is required. (BR-138)
-● PRE-1: The user has room-entry access to the selected meeting through a current internal participant assignment, an effective delegation, or a verified current external Guest invitation. An external Guest may use a limited meeting-scoped guest session established from the invitation and email verification; no internal account login is required. (BR-140, BR-154, BR-156)
-● PRE-2: The selected meeting exists and its Meeting Mode is Online or Hybrid.
-● PRE-3: The meeting is Published or InProgress.
-● PRE-4: No Meeting Session is required. (BR-138)
-● PRE-1: The user has room-entry access to the selected meeting through a current internal participant assignment, an effective delegation, or a verified current external Guest invitation. An external Guest may use a limited meeting-scoped guest session established from the invitation and email verification; no internal account login is required. (BR-140, BR-154, BR-156)
-● PRE-2: The selected meeting exists and its Meeting Mode is Online or Hybrid.
-● PRE-3: The meeting is Published or InProgress.
-● PRE-4: No Meeting Session is required. (BR-138)
-Postconditions
-● POST-1: The user is connected to the online meeting room.
-● POST-2: The user appears as currently connected in the room participant list.
-● POST-3: The Meeting and all Meeting Session lifecycle statuses remain unchanged.
-● POST-1: The user is connected to the online meeting room.
-● POST-2: The user appears as currently connected in the room participant list.
-● POST-3: The Meeting and all Meeting Session lifecycle statuses remain unchanged.
-● POST-1: The user is connected to the online meeting room.
-● POST-2: The user appears as currently connected in the room participant list.
-● POST-3: The Meeting and all Meeting Session lifecycle statuses remain unchanged.
-Normal Flow
-Join Meeting Room
-1. The user selects Join Meeting Room for the selected meeting. An external Guest uses the verified meeting-specific guest session established from the invitation flow.
-2. The system verifies that the meeting exists, is Online or Hybrid, is Published or InProgress, and that the user currently has room-entry access through an internal participant assignment, effective delegation, or verified current Guest invitation. (BR-139, BR-140)
-3. The system admits the user to the meeting room.
-4. The system records the user as currently connected to the room and displays the room interface.
-5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-Join Meeting Room
-1. The user selects Join Meeting Room for the selected meeting. An external Guest uses the verified meeting-specific guest session established from the invitation flow.
-2. The system verifies that the meeting exists, is Online or Hybrid, is Published or InProgress, and that the user currently has room-entry access through an internal participant assignment, effective delegation, or verified current Guest invitation. (BR-139, BR-140)
-3. The system admits the user to the meeting room.
-4. The system records the user as currently connected to the room and displays the room interface.
-5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-Join Meeting Room
-1. The user selects Join Meeting Room for the selected meeting. An external Guest uses the verified meeting-specific guest session established from the invitation flow.
-2. The system verifies that the meeting exists, is Online or Hybrid, is Published or InProgress, and that the user currently has room-entry access through an internal participant assignment, effective delegation, or verified current Guest invitation. (BR-139, BR-140)
-3. The system admits the user to the meeting room.
-4. The system records the user as currently connected to the room and displays the room interface.
-5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Meeting Room Is Not Available
-1. At Step 2, the meeting is not Online/Hybrid or is not Published/InProgress. (BR-139)
-2. The user is not connected to the room.
-3. The system displays MSG117 – "The online meeting room is not available."
-4. The use case ends.
-EX-2 – User Does Not Have Room Access
-1. At Step 2, the user no longer has room-entry access because the internal participant/delegation relationship is no longer effective or the external Guest invitation/session has expired or been revoked. (BR-140, BR-155, BR-157)
-2. The system returns the same not-found/access result used for an inaccessible meeting and does not disclose protected room information.
-3. The use case ends.
-EX-3 – Room Join Cannot Be Completed
-1. After Step 2, the system cannot connect the user to the room.
-2. The Meeting and Meeting Session lifecycles remain unchanged.
-3. The system displays MSG118 – "Unable to join the meeting room. Please try again."
-4. The use case ends.
-EX-1 – Meeting Room Is Not Available
-1. At Step 2, the meeting is not Online/Hybrid or is not Published/InProgress. (BR-139)
-2. The user is not connected to the room.
-3. The system displays MSG117 – "The online meeting room is not available."
-4. The use case ends.
-EX-2 – User Does Not Have Room Access
-1. At Step 2, the user no longer has room-entry access because the internal participant/delegation relationship is no longer effective or the external Guest invitation/session has expired or been revoked. (BR-140, BR-155, BR-157)
-2. The system returns the same not-found/access result used for an inaccessible meeting and does not disclose protected room information.
-3. The use case ends.
-EX-3 – Room Join Cannot Be Completed
-1. After Step 2, the system cannot connect the user to the room.
-2. The Meeting and Meeting Session lifecycles remain unchanged.
-3. The system displays MSG118 – "Unable to join the meeting room. Please try again."
-4. The use case ends.
-EX-1 – Meeting Room Is Not Available
-1. At Step 2, the meeting is not Online/Hybrid or is not Published/InProgress. (BR-139)
-2. The user is not connected to the room.
-3. The system displays MSG117 – "The online meeting room is not available."
-4. The use case ends.
-EX-2 – User Does Not Have Room Access
-1. At Step 2, the user no longer has room-entry access because the internal participant/delegation relationship is no longer effective or the external Guest invitation/session has expired or been revoked. (BR-140, BR-155, BR-157)
-2. The system returns the same not-found/access result used for an inaccessible meeting and does not disclose protected room information.
-3. The use case ends.
-EX-3 – Room Join Cannot Be Completed
-1. After Step 2, the system cannot connect the user to the room.
-2. The Meeting and Meeting Session lifecycles remain unchanged.
-3. The system displays MSG118 – "Unable to join the meeting room. Please try again."
-4. The use case ends.
-Primary Actors
-Chair, Secretary, Participant, Guest
-Secondary Actors
-None
-Description
-Allows a connected user to leave the online meeting room without ending the Meeting or any Meeting Session.
-Allows a connected user to leave the online meeting room without ending the Meeting or any Meeting Session.
-Allows a connected user to leave the online meeting room without ending the Meeting or any Meeting Session.
-Preconditions
-● PRE-1: The user is currently connected to the selected meeting room.
-● PRE-1: The user is currently connected to the selected meeting room.
-● PRE-1: The user is currently connected to the selected meeting room.
-Postconditions
-● POST-1: The user is no longer connected to the room.
-● POST-2: The user is removed from the current room participant list.
-● POST-3: The Meeting and Meeting Session lifecycle statuses remain unchanged.
-● POST-1: The user is no longer connected to the room.
-● POST-2: The user is removed from the current room participant list.
-● POST-3: The Meeting and Meeting Session lifecycle statuses remain unchanged.
-● POST-1: The user is no longer connected to the room.
-● POST-2: The user is removed from the current room participant list.
-● POST-3: The Meeting and Meeting Session lifecycle statuses remain unchanged.
-Normal Flow
-Leave Meeting Room
-1. The connected user selects Leave Room.
-2. The system disconnects the user from the room.
-3. The system updates the current room participant list.
-4. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-Leave Meeting Room
-1. The connected user selects Leave Room.
-2. The system disconnects the user from the room.
-3. The system updates the current room participant list.
-4. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-Leave Meeting Room
-1. The connected user selects Leave Room.
-2. The system disconnects the user from the room.
-3. The system updates the current room participant list.
-4. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-N/A
-N/A
-N/A
-Primary Actors
-Chair, Secretary, Participant, Guest
-Secondary Actors
-None
-Description
-Allows a user connected to the meeting room to enable or disable their own microphone.
-Allows a user connected to the meeting room to enable or disable their own microphone.
-Allows a user connected to the meeting room to enable or disable their own microphone.
-Preconditions
-● PRE-1: The user is currently connected to the online meeting room.
-● PRE-1: The user is currently connected to the online meeting room.
-● PRE-1: The user is currently connected to the online meeting room.
-Postconditions
-● POST-1: The user’s microphone state reflects the requested enabled or disabled state when the device/permission is available.
-● POST-2: No Meeting or Meeting Session lifecycle state is changed.
-● POST-1: The user’s microphone state reflects the requested enabled or disabled state when the device/permission is available.
-● POST-2: No Meeting or Meeting Session lifecycle state is changed.
-● POST-1: The user’s microphone state reflects the requested enabled or disabled state when the device/permission is available.
-● POST-2: No Meeting or Meeting Session lifecycle state is changed.
-Normal Flow
-Manage Microphone
-1. The user selects the microphone control.
-2. The system attempts to apply the requested microphone state to the user’s own audio.
-3. The room interface displays the resulting microphone state. (BR-141, BR-144)
-Manage Microphone
-1. The user selects the microphone control.
-2. The system attempts to apply the requested microphone state to the user’s own audio.
-3. The room interface displays the resulting microphone state. (BR-141, BR-144)
-Manage Microphone
-1. The user selects the microphone control.
-2. The system attempts to apply the requested microphone state to the user’s own audio.
-3. The room interface displays the resulting microphone state. (BR-141, BR-144)
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Microphone Is Unavailable
-1. At Step 2, microphone access is unavailable because permission is denied, no usable device is available, or the device cannot be used.
-2. The user remains in the room with the microphone disabled.
-3. The system displays MSG119 – "Microphone access is unavailable. Check your browser or device permissions."
-4. The use case ends.
-EX-1 – Microphone Is Unavailable
-1. At Step 2, microphone access is unavailable because permission is denied, no usable device is available, or the device cannot be used.
-2. The user remains in the room with the microphone disabled.
-3. The system displays MSG119 – "Microphone access is unavailable. Check your browser or device permissions."
-4. The use case ends.
-EX-1 – Microphone Is Unavailable
-1. At Step 2, microphone access is unavailable because permission is denied, no usable device is available, or the device cannot be used.
-2. The user remains in the room with the microphone disabled.
-3. The system displays MSG119 – "Microphone access is unavailable. Check your browser or device permissions."
-4. The use case ends.
-Primary Actors
-Chair, Secretary, Participant, Guest
-Secondary Actors
-None
-Description
-Allows a user connected to the meeting room to enable or disable their own camera.
-Allows a user connected to the meeting room to enable or disable their own camera.
-Allows a user connected to the meeting room to enable or disable their own camera.
-Preconditions
-● PRE-1: The user is currently connected to the online meeting room.
-● PRE-1: The user is currently connected to the online meeting room.
-● PRE-1: The user is currently connected to the online meeting room.
-Postconditions
-● POST-1: The user’s camera state reflects the requested enabled or disabled state when the device/permission is available.
-● POST-2: No Meeting or Meeting Session lifecycle state is changed.
-● POST-1: The user’s camera state reflects the requested enabled or disabled state when the device/permission is available.
-● POST-2: No Meeting or Meeting Session lifecycle state is changed.
-● POST-1: The user’s camera state reflects the requested enabled or disabled state when the device/permission is available.
-● POST-2: No Meeting or Meeting Session lifecycle state is changed.
-Normal Flow
-Manage Camera
-1. The user selects the camera control.
-2. The system attempts to apply the requested camera state to the user’s own video.
-3. The room interface displays the resulting camera state. (BR-141, BR-144)
-Manage Camera
-1. The user selects the camera control.
-2. The system attempts to apply the requested camera state to the user’s own video.
-3. The room interface displays the resulting camera state. (BR-141, BR-144)
-Manage Camera
-1. The user selects the camera control.
-2. The system attempts to apply the requested camera state to the user’s own video.
-3. The room interface displays the resulting camera state. (BR-141, BR-144)
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Camera Is Unavailable
-1. At Step 2, camera access is unavailable because permission is denied, no usable device is available, or the device cannot be used.
-2. The user remains in the room with the camera disabled.
-3. The system displays MSG120 – "Camera access is unavailable. Check your browser or device permissions."
-4. The use case ends.
-EX-1 – Camera Is Unavailable
-1. At Step 2, camera access is unavailable because permission is denied, no usable device is available, or the device cannot be used.
-2. The user remains in the room with the camera disabled.
-3. The system displays MSG120 – "Camera access is unavailable. Check your browser or device permissions."
-4. The use case ends.
-EX-1 – Camera Is Unavailable
-1. At Step 2, camera access is unavailable because permission is denied, no usable device is available, or the device cannot be used.
-2. The user remains in the room with the camera disabled.
-3. The system displays MSG120 – "Camera access is unavailable. Check your browser or device permissions."
-4. The use case ends.
-Primary Actors
-Chair, Secretary, Participant, Guest
-Secondary Actors
-None
-Description
-Allows a connected user to start or stop sharing their screen with other users in the meeting room.
-Allows a connected user to start or stop sharing their screen with other users in the meeting room.
-Allows a connected user to start or stop sharing their screen with other users in the meeting room.
-Preconditions
-● PRE-1: The user is currently connected to the online meeting room.
-● PRE-1: The user is currently connected to the online meeting room.
-● PRE-1: The user is currently connected to the online meeting room.
-Postconditions
-● POST-1: The user is either actively sharing the selected screen content or has stopped sharing.
-● POST-2: At most one active screen share remains in the room.
-● POST-3: No Meeting or Meeting Session lifecycle state is changed.
-● POST-1: The user is either actively sharing the selected screen content or has stopped sharing.
-● POST-2: At most one active screen share remains in the room.
-● POST-3: No Meeting or Meeting Session lifecycle state is changed.
-● POST-1: The user is either actively sharing the selected screen content or has stopped sharing.
-● POST-2: At most one active screen share remains in the room.
-● POST-3: No Meeting or Meeting Session lifecycle state is changed.
-Normal Flow
-Start Screen Sharing
-1. The user selects Share Screen.
-2. The system asks the user to choose shareable content using the available device/browser mechanism.
-3. The user selects the content to share.
-4. The system verifies whether another screen share is active.
-5. If another share is active, the previous share is stopped before the new share becomes active. (BR-145)
-6. The system displays the active shared content to users in the room.
-7. Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-Start Screen Sharing
-1. The user selects Share Screen.
-2. The system asks the user to choose shareable content using the available device/browser mechanism.
-3. The user selects the content to share.
-4. The system verifies whether another screen share is active.
-5. If another share is active, the previous share is stopped before the new share becomes active. (BR-145)
-6. The system displays the active shared content to users in the room.
-7. Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-Start Screen Sharing
-1. The user selects Share Screen.
-2. The system asks the user to choose shareable content using the available device/browser mechanism.
-3. The user selects the content to share.
-4. The system verifies whether another screen share is active.
-5. If another share is active, the previous share is stopped before the new share becomes active. (BR-145)
-6. The system displays the active shared content to users in the room.
-7. Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-Alternative Flows
-AF-1 – Stop Screen Sharing
-Entry Point: Step 1 of the Main Flow.
-1. If the user is already sharing, the user selects Stop Sharing.
-2. The system stops that user’s active share.
-3. The room returns to its normal non-sharing layout.
-4. The use case ends successfully.
-AF-1 – Stop Screen Sharing
-Entry Point: Step 1 of the Main Flow.
-1. If the user is already sharing, the user selects Stop Sharing.
-2. The system stops that user’s active share.
-3. The room returns to its normal non-sharing layout.
-4. The use case ends successfully.
-AF-1 – Stop Screen Sharing
-Entry Point: Step 1 of the Main Flow.
-1. If the user is already sharing, the user selects Stop Sharing.
-2. The system stops that user’s active share.
-3. The room returns to its normal non-sharing layout.
-4. The use case ends successfully.
-Exception Flows
-EX-1 – Screen Sharing Cannot Be Started
-1. At Step 2 or Step 3, the user cancels the share selection or the system cannot start the share.
-2. No new screen share becomes active.
-3. If the failure is not a user cancellation, the system displays MSG121 – "Unable to share your screen."
-4. The use case ends.
-EX-1 – Screen Sharing Cannot Be Started
-1. At Step 2 or Step 3, the user cancels the share selection or the system cannot start the share.
-2. No new screen share becomes active.
-3. If the failure is not a user cancellation, the system displays MSG121 – "Unable to share your screen."
-4. The use case ends.
-EX-1 – Screen Sharing Cannot Be Started
-1. At Step 2 or Step 3, the user cancels the share selection or the system cannot start the share.
-2. No new screen share becomes active.
-3. If the failure is not a user cancellation, the system displays MSG121 – "Unable to share your screen."
-4. The use case ends.
-Primary Actors
-Chair, Secretary, Participant, Guest
-Secondary Actors
-None
-Description
-Allows a connected user to view the users who are currently connected to the online meeting room.
-Allows a connected user to view the users who are currently connected to the online meeting room.
-Allows a connected user to view the users who are currently connected to the online meeting room.
-Preconditions
-● PRE-1: The user is currently connected to the online meeting room.
-● PRE-1: The user is currently connected to the online meeting room.
-● PRE-1: The user is currently connected to the online meeting room.
-Postconditions
-● POST-1: The current room participant list is displayed.
-● POST-2: The Meeting participant roster and Meeting Session data are not modified.
-● POST-1: The current room participant list is displayed.
-● POST-2: The Meeting participant roster and Meeting Session data are not modified.
-● POST-1: The current room participant list is displayed.
-● POST-2: The Meeting participant roster and Meeting Session data are not modified.
-Normal Flow
-View Meeting Room Participants
-1. The user opens the room participant panel.
-2. The system retrieves the users currently connected to the room.
-3. The system displays the connected users and available room presence information, such as active-speaker indication. (BR-146)
-4. The user reviews the current room participant list.
-View Meeting Room Participants
-1. The user opens the room participant panel.
-2. The system retrieves the users currently connected to the room.
-3. The system displays the connected users and available room presence information, such as active-speaker indication. (BR-146)
-4. The user reviews the current room participant list.
-View Meeting Room Participants
-1. The user opens the room participant panel.
-2. The system retrieves the users currently connected to the room.
-3. The system displays the connected users and available room presence information, such as active-speaker indication. (BR-146)
-4. The user reviews the current room participant list.
-Alternative Flows
-AF-1 – No Other User Is Connected
-1. At Step 2, no other user is currently connected.
-2. The system displays only the current user in the room participant list.
-3. The use case ends successfully.
-AF-1 – No Other User Is Connected
-1. At Step 2, no other user is currently connected.
-2. The system displays only the current user in the room participant list.
-3. The use case ends successfully.
-AF-1 – No Other User Is Connected
-1. At Step 2, no other user is currently connected.
-2. The system displays only the current user in the room participant list.
-3. The use case ends successfully.
-Exception Flows
-EX-1 – Room Participants Cannot Be Retrieved
-1. At Step 2, the system cannot retrieve the current room participant state.
-2. The system displays MSG122 – "Unable to load meeting room participants. Please try again."
-3. The use case ends.
-EX-1 – Room Participants Cannot Be Retrieved
-1. At Step 2, the system cannot retrieve the current room participant state.
-2. The system displays MSG122 – "Unable to load meeting room participants. Please try again."
-3. The use case ends.
-EX-1 – Room Participants Cannot Be Retrieved
-1. At Step 2, the system cannot retrieve the current room participant state.
-2. The system displays MSG122 – "Unable to load meeting room participants. Please try again."
-3. The use case ends.
-Primary Actors
-Chair
-Secondary Actors
-None
-Description
-Allows the Chair assigned to the meeting to perform permitted moderation actions on users currently connected to the online meeting room without changing their Meeting Participant assignment.
-Allows the Chair assigned to the meeting to perform permitted moderation actions on users currently connected to the online meeting room without changing their Meeting Participant assignment.
-Allows the Chair assigned to the meeting to perform permitted moderation actions on users currently connected to the online meeting room without changing their Meeting Participant assignment.
-Preconditions
-● PRE-1: The Chair is authenticated, assigned to the selected meeting, and currently connected to its room.
-● PRE-2: The target user is currently connected to the same room.
-● PRE-1: The Chair is authenticated, assigned to the selected meeting, and currently connected to its room.
-● PRE-2: The target user is currently connected to the same room.
-● PRE-1: The Chair is authenticated, assigned to the selected meeting, and currently connected to its room.
-● PRE-2: The target user is currently connected to the same room.
-Postconditions
-● POST-1: The selected moderation action is applied to the target user.
-● POST-2: The target user’s Meeting Participant assignment and Meeting Role remain unchanged.
-● POST-3: The Meeting and Meeting Session lifecycles remain unchanged.
-● POST-1: The selected moderation action is applied to the target user.
-● POST-2: The target user’s Meeting Participant assignment and Meeting Role remain unchanged.
-● POST-3: The Meeting and Meeting Session lifecycles remain unchanged.
-● POST-1: The selected moderation action is applied to the target user.
-● POST-2: The target user’s Meeting Participant assignment and Meeting Role remain unchanged.
-● POST-3: The Meeting and Meeting Session lifecycles remain unchanged.
-Normal Flow
-Mute a Room Participant
-1. The Chair opens the room participant panel and selects a connected user.
-2. The Chair selects Mute.
-3. The system verifies that the current user is still an assigned Chair and that the target is still connected. (BR-144)
-4. The system disables the target user’s microphone.
-5. The system makes the updated room state visible to affected users.
-6. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-Mute a Room Participant
-1. The Chair opens the room participant panel and selects a connected user.
-2. The Chair selects Mute.
-3. The system verifies that the current user is still an assigned Chair and that the target is still connected. (BR-144)
-4. The system disables the target user’s microphone.
-5. The system makes the updated room state visible to affected users.
-6. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-Mute a Room Participant
-1. The Chair opens the room participant panel and selects a connected user.
-2. The Chair selects Mute.
-3. The system verifies that the current user is still an assigned Chair and that the target is still connected. (BR-144)
-4. The system disables the target user’s microphone.
-5. The system makes the updated room state visible to affected users.
-6. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-Alternative Flows
-AF-1 – Remove User from Current Room
-Entry Point: Step 2 of the Main Flow.
-1. The Chair selects Remove from Room.
-2. The system verifies the Chair authorization and target connection.
-3. The system disconnects the target user from the current room only.
-4. The target user’s Meeting Participant assignment remains unchanged; future re-entry still follows the normal room-access rules.
-5. The use case ends successfully.
-AF-1 – Remove User from Current Room
-Entry Point: Step 2 of the Main Flow.
-1. The Chair selects Remove from Room.
-2. The system verifies the Chair authorization and target connection.
-3. The system disconnects the target user from the current room only.
-4. The target user’s Meeting Participant assignment remains unchanged; future re-entry still follows the normal room-access rules.
-5. The use case ends successfully.
-AF-1 – Remove User from Current Room
-Entry Point: Step 2 of the Main Flow.
-1. The Chair selects Remove from Room.
-2. The system verifies the Chair authorization and target connection.
-3. The system disconnects the target user from the current room only.
-4. The target user’s Meeting Participant assignment remains unchanged; future re-entry still follows the normal room-access rules.
-5. The use case ends successfully.
-Exception Flows
-EX-1 – User Is Not Allowed to Moderate
-1. At Step 3 of the Main Flow or AF-1 Step 2, the current user is no longer an assigned Chair.
-2. No moderation action is applied.
-3. The system displays MSG123 – "You are not allowed to moderate this meeting room."
-4. The use case ends.
-EX-2 – Moderation Action Cannot Be Applied
-1. After authorization succeeds, the target is no longer connected or the moderation operation cannot be completed.
-2. The system displays MSG124 – "Unable to apply the room moderation action."
-3. The use case ends.
-EX-1 – User Is Not Allowed to Moderate
-1. At Step 3 of the Main Flow or AF-1 Step 2, the current user is no longer an assigned Chair.
-2. No moderation action is applied.
-3. The system displays MSG123 – "You are not allowed to moderate this meeting room."
-4. The use case ends.
-EX-2 – Moderation Action Cannot Be Applied
-1. After authorization succeeds, the target is no longer connected or the moderation operation cannot be completed.
-2. The system displays MSG124 – "Unable to apply the room moderation action."
-3. The use case ends.
-EX-1 – User Is Not Allowed to Moderate
-1. At Step 3 of the Main Flow or AF-1 Step 2, the current user is no longer an assigned Chair.
-2. No moderation action is applied.
-3. The system displays MSG123 – "You are not allowed to moderate this meeting room."
-4. The use case ends.
-EX-2 – Moderation Action Cannot Be Applied
-1. After authorization succeeds, the target is no longer connected or the moderation operation cannot be completed.
-2. The system displays MSG124 – "Unable to apply the room moderation action."
-3. The use case ends.
-Primary Actors
-Chair, Secretary, Participant, Guest
-Secondary Actors
-None
-Description
-Allows an authorized user currently connected to the online meeting room to exchange text messages within that room.
-Allows an authorized user currently connected to the online meeting room to exchange text messages within that room.
-Allows an authorized user currently connected to the online meeting room to exchange text messages within that room.
-Preconditions
-● PRE-1: The user is currently connected to the online meeting room.
-● PRE-1: The user is currently connected to the online meeting room.
-● PRE-1: The user is currently connected to the online meeting room.
-Postconditions
-● POST-1: A valid submitted message is made available to authorized users currently connected to the same room.
-● POST-2: The Meeting and Meeting Session lifecycles remain unchanged.
-● POST-1: A valid submitted message is made available to authorized users currently connected to the same room.
-● POST-2: The Meeting and Meeting Session lifecycles remain unchanged.
-● POST-1: A valid submitted message is made available to authorized users currently connected to the same room.
-● POST-2: The Meeting and Meeting Session lifecycles remain unchanged.
-Normal Flow
-Use In-room Chat
-1. The user enters a text message in the room chat panel.
-2. The user sends the message.
-3. The system validates that the user is still connected to the room and that the message is not empty.
-4. The system makes the message available to authorized users currently connected to the same room. (BR-147)
-5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-Use In-room Chat
-1. The user enters a text message in the room chat panel.
-2. The user sends the message.
-3. The system validates that the user is still connected to the room and that the message is not empty.
-4. The system makes the message available to authorized users currently connected to the same room. (BR-147)
-5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-Use In-room Chat
-1. The user enters a text message in the room chat panel.
-2. The user sends the message.
-3. The system validates that the user is still connected to the room and that the message is not empty.
-4. The system makes the message available to authorized users currently connected to the same room. (BR-147)
-5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1 – Chat Message Cannot Be Sent
-1. At Step 3 or Step 4, the user is no longer connected, the message is empty, or the system cannot deliver the room message.
-2. The message is not treated as successfully sent.
-3. The system displays MSG125 – "Unable to send the room message. Please try again."
-4. The use case ends.
-EX-1 – Chat Message Cannot Be Sent
-1. At Step 3 or Step 4, the user is no longer connected, the message is empty, or the system cannot deliver the room message.
-2. The message is not treated as successfully sent.
-3. The system displays MSG125 – "Unable to send the room message. Please try again."
-4. The use case ends.
-EX-1 – Chat Message Cannot Be Sent
-1. At Step 3 or Step 4, the user is no longer connected, the message is empty, or the system cannot deliver the room message.
-2. The message is not treated as successfully sent.
-3. The system displays MSG125 – "Unable to send the room message. Please try again."
-4. The use case ends.
-Primary Actors
-Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant
-Secondary Actors
-None
-Description
-Allows an authenticated user to view their list of in-app notifications and check the unread notification count.
-Allows an authenticated user to view their list of in-app notifications and check the unread notification count.
-Allows an authenticated user to view their list of in-app notifications and check the unread notification count.
-Preconditions
-● PRE-1: The user is authenticated in the system.
-● PRE-1: The user is authenticated in the system.
-● PRE-1: The user is authenticated in the system.
-Postconditions
-● POST-1: The system displays the user's notifications and unread badge count.
-● POST-2: Opening the notification list does not change any notification’s read status.
-● POST-1: The system displays the user's notifications and unread badge count.
-● POST-2: Opening the notification list does not change any notification’s read status.
-● POST-1: The system displays the user's notifications and unread badge count.
-● POST-2: Opening the notification list does not change any notification’s read status.
-Normal Flow
-View Notifications
-1. The user selects the notification bell from the navigation header.
-2. The system retrieves the notifications and unread badge count for the user's account.
-3. The system displays the user's notifications, indicates which ones are unread, and shows the unread count. (BR-48, BR-49)
-View Notifications
-1. The user selects the notification bell from the navigation header.
-2. The system retrieves the notifications and unread badge count for the user's account.
-3. The system displays the user's notifications, indicates which ones are unread, and shows the unread count. (BR-48, BR-49)
-View Notifications
-1. The user selects the notification bell from the navigation header.
-2. The system retrieves the notifications and unread badge count for the user's account.
-3. The system displays the user's notifications, indicates which ones are unread, and shows the unread count. (BR-48, BR-49)
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-EX-1: Notifications Cannot Be Retrieved
-1. At Step 2 of the Main Flow, the system cannot load notification records.
-2. The system displays MSG40 – "Unable to load notifications. Please try again."
-3. The use case ends unsuccessfully.
-EX-2: Requested Notification Page Is Unavailable
-1. At Step 2 of the Main Flow, the system cannot display the requested portion of the notification list.
-2. The system displays MSG39 – "The requested notification page is unavailable."
-3. The use case ends unsuccessfully.
-EX-1: Notifications Cannot Be Retrieved
-1. At Step 2 of the Main Flow, the system cannot load notification records.
-2. The system displays MSG40 – "Unable to load notifications. Please try again."
-3. The use case ends unsuccessfully.
-EX-2: Requested Notification Page Is Unavailable
-1. At Step 2 of the Main Flow, the system cannot display the requested portion of the notification list.
-2. The system displays MSG39 – "The requested notification page is unavailable."
-3. The use case ends unsuccessfully.
-EX-1: Notifications Cannot Be Retrieved
-1. At Step 2 of the Main Flow, the system cannot load notification records.
-2. The system displays MSG40 – "Unable to load notifications. Please try again."
-3. The use case ends unsuccessfully.
-EX-2: Requested Notification Page Is Unavailable
-1. At Step 2 of the Main Flow, the system cannot display the requested portion of the notification list.
-2. The system displays MSG39 – "The requested notification page is unavailable."
-3. The use case ends unsuccessfully.
-Primary Actors
-Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant
-Secondary Actors
-None
-Description
-Allows an authenticated user to mark a specific unread notification as read, updating its status.
-Allows an authenticated user to mark a specific unread notification as read, updating its status.
-Allows an authenticated user to mark a specific unread notification as read, updating its status.
-Preconditions
-● PRE-1: The user is authenticated in the system.
-● PRE-2: The user has at least one unread notification.
-● PRE-1: The user is authenticated in the system.
-● PRE-2: The user has at least one unread notification.
-● PRE-1: The user is authenticated in the system.
-● PRE-2: The user has at least one unread notification.
-Postconditions
-● POST-1: The selected notification status is changed to Read.
-● POST-2: The unread count reflects the latest saved notification statuses.
-● POST-1: The selected notification status is changed to Read.
-● POST-2: The unread count reflects the latest saved notification statuses.
-● POST-1: The selected notification status is changed to Read.
-● POST-2: The unread count reflects the latest saved notification statuses.
-Normal Flow
-Mark Notification as Read
-1. The user views their notification list.
-2. The user selects "Mark as Read" for a notification.
-3. The system verifies that the notification belongs to the user's account. (BR-47)
-4. The system marks the notification as read.
-5. The system displays the notification as read and shows the updated unread count.
-Mark Notification as Read
-1. The user views their notification list.
-2. The user selects "Mark as Read" for a notification.
-3. The system verifies that the notification belongs to the user's account. (BR-47)
-4. The system marks the notification as read.
-5. The system displays the notification as read and shows the updated unread count.
-Mark Notification as Read
-1. The user views their notification list.
-2. The user selects "Mark as Read" for a notification.
-3. The system verifies that the notification belongs to the user's account. (BR-47)
-4. The system marks the notification as read.
-5. The system displays the notification as read and shows the updated unread count.
-Alternative Flows
-N/A
-N/A
-N/A
-Exception Flows
-N/A
-N/A
-N/A
-Primary Actors
-Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant
-Secondary Actors
-None
-Description
-Allows a user to mark all of their unread notifications as read.
-Allows a user to mark all of their unread notifications as read.
-Allows a user to mark all of their unread notifications as read.
-Preconditions
-● PRE-1: The user is signed in.
-● PRE-1: The user is signed in.
-● PRE-1: The user is signed in.
-Postconditions
-● POST-1: All notifications belonging to the user's account that were unread when the request was processed are marked as read.
-● POST-2: The displayed unread count reflects the latest saved state.
-● POST-1: All notifications belonging to the user's account that were unread when the request was processed are marked as read.
-● POST-2: The displayed unread count reflects the latest saved state.
-● POST-1: All notifications belonging to the user's account that were unread when the request was processed are marked as read.
-● POST-2: The displayed unread count reflects the latest saved state.
-Normal Flow
-Mark All Notifications as Read
-1. The user selects the notification bell and opens the notification list.
-2. The user selects "Mark All as Read".
-3. The system marks all unread notifications belonging to the user's account as read, including those not currently displayed. (BR-47, BR-51)
-4. The system refreshes the displayed read statuses and unread count. (BR-48)
-Mark All Notifications as Read
-1. The user selects the notification bell and opens the notification list.
-2. The user selects "Mark All as Read".
-3. The system marks all unread notifications belonging to the user's account as read, including those not currently displayed. (BR-47, BR-51)
-4. The system refreshes the displayed read statuses and unread count. (BR-48)
-Mark All Notifications as Read
-1. The user selects the notification bell and opens the notification list.
-2. The user selects "Mark All as Read".
-3. The system marks all unread notifications belonging to the user's account as read, including those not currently displayed. (BR-47, BR-51)
-4. The system refreshes the displayed read statuses and unread count. (BR-48)
-Alternative Flows
-AF-1 – No Unread Notifications
-Entry Point: Step 3 of the Main Flow.
-1. The system finds no unread notifications belonging to the user's account.
-2. The system displays the current list and an unread count of zero.
-3. The use case ends successfully.
-AF-1 – No Unread Notifications
-Entry Point: Step 3 of the Main Flow.
-1. The system finds no unread notifications belonging to the user's account.
-2. The system displays the current list and an unread count of zero.
-3. The use case ends successfully.
-AF-1 – No Unread Notifications
-Entry Point: Step 3 of the Main Flow.
-1. The system finds no unread notifications belonging to the user's account.
-2. The system displays the current list and an unread count of zero.
-3. The use case ends successfully.
-Exception Flows
-N/A
-N/A
-N/A
-Primary Actors
-Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant
-Secondary Actors
-None
-Description
-Allows a user to open the meeting linked to one of their notifications.
-Allows a user to open the meeting linked to one of their notifications.
-Allows a user to open the meeting linked to one of their notifications.
-Preconditions
-● PRE-1: The user is signed in.
-● PRE-1: The user is signed in.
-● PRE-1: The user is signed in.
-Postconditions
-● POST-1: The user sees the linked meeting.
-● POST-2: The selected notification is marked as read if successfully saved.
-● POST-1: The user sees the linked meeting.
-● POST-2: The selected notification is marked as read if successfully saved.
-● POST-1: The user sees the linked meeting.
-● POST-2: The selected notification is marked as read if successfully saved.
-Normal Flow
-Open Notification Target
-1. The user selects the notification bell and clicks on a specific notification.
-2. The system checks that the notification belongs to the user's account and identifies its linked meeting. (BR-47, BR-52)
-3. The system marks the notification as read if needed and updates the unread count. (BR-48, BR-50, BR-53)
-4. The system checks whether the user currently has permission to view the linked meeting. (BR-29, BR-52)
-5. The system opens the meeting.
-Open Notification Target
-1. The user selects the notification bell and clicks on a specific notification.
-2. The system checks that the notification belongs to the user's account and identifies its linked meeting. (BR-47, BR-52)
-3. The system marks the notification as read if needed and updates the unread count. (BR-48, BR-50, BR-53)
-4. The system checks whether the user currently has permission to view the linked meeting. (BR-29, BR-52)
-5. The system opens the meeting.
-Open Notification Target
-1. The user selects the notification bell and clicks on a specific notification.
-2. The system checks that the notification belongs to the user's account and identifies its linked meeting. (BR-47, BR-52)
-3. The system marks the notification as read if needed and updates the unread count. (BR-48, BR-50, BR-53)
-4. The system checks whether the user currently has permission to view the linked meeting. (BR-29, BR-52)
-5. The system opens the meeting.
-Alternative Flows
-AF-1 – Notification Is Already Read
-Entry Point: Step 3 of the Main Flow.
-1. The notification is already read, so its status and the unread count remain unchanged. (BR-50)
-2. The flow resumes at Step 4 of the Main Flow.
-AF-1 – Notification Is Already Read
-Entry Point: Step 3 of the Main Flow.
-1. The notification is already read, so its status and the unread count remain unchanged. (BR-50)
-2. The flow resumes at Step 4 of the Main Flow.
-AF-1 – Notification Is Already Read
-Entry Point: Step 3 of the Main Flow.
-1. The notification is already read, so its status and the unread count remain unchanged. (BR-50)
-2. The flow resumes at Step 4 of the Main Flow.
-Exception Flows
-N/A
-N/A
-N/A
-Field Name
-Description
-Field Name1
-Field description: data type min/max length or value, initial data, etc.
-Field Name2
-…
-Field Group-Name1
-Field Group-Name1
-Field Name3
-…
-Field Name4
-…
-Field Group-Name2
-Field Group-Name2
-…
-…
-Field Name
-Description
-(1)
-Initial values: all the active setting names with null or blank type
-Hover the mouse to show the field name: “Setting Type”
-(2)
-Initial values: All Statuses, Active, Inactive (default value “All Status”)
-Hover the mouse to show the field name: “Setting Status”
-(3)
-The change-status action is Activate or Deactivate depending on the current status of the relevant setting (Inactive or Active, respectively).
-Field Name
-Description
-Name
-Data type: non-digit string, max length of 20 characters
-Type
-Initial data values: all active setting names (with null or blank type)
-Value
-Data type: any string, max length of 100 characters
-Priority
-Data type: a positive integer
-Description
-Data type: any string, max length of 200 characters
-Scenario
-System behavior
-Database unreachable
-Job retries up to 3 times with 30-second intervals. If still failing, logs a critical error. Accounts remain locked until the next successful run.
-No locked accounts found
-Job completes immediately with no action — this is normal and expected.
-Scenario
-System behavior
-Database timeout during delete
-Current batch rolled back. Job logs a warning. Tries again at the next scheduled time. No data corruption.
-Retention period not configured
-Job uses default of 90 days and logs a warning that the setting was not found.
-URL
-HTTP method: URL pattern
-Purpose
-Purpose in one plain-language sentence
-Caller
-Who the caller is (which external system)
-Auth
-Authentication requirement (yes/no + type)
-URL
-POST: /api/v1/commerce/payment/webhook/vnpay
-Purpose
-Receives payment confirmation (IPN) from VNPay; triggers access grant creation
-Caller
-VNPay payment gateway
-Auth
-HMAC-SHA512 signature validation
-URL
-POST: /api/v1/commerce/payment/webhook/sepay
-Purpose
-Receives payment confirmation from SePay; triggers access grant creation
-Caller
-SePay payment gateway
-Auth
-HMAC signature validation
-Requirement
-Target
-Condition
-Page load time
-Any page loads within 2 seconds
-Up to 100 users active simultaneously
-Form submission response
-System acknowledges within 2 seconds
-Up to 100 users active simultaneously
-Maximum simultaneous users
-System remains fully functional for up to 100 users
-Single server deployment
-Requirement
-Description
-Authentication required
-Every page and action other than the sign-in page, registration page, and public job listings requires the user to be signed in.
-Password protection
-Passwords must never be stored in a form that a person or program can read.
-Account lockout
-After a defined number of consecutive failed sign-in attempts, the account is temporarily locked. Threshold and duration defined in TDS §4.
-CV file access
-CV files may only be accessed by users with permission to view the associated Application. The system verifies permission on every access.
-BR-ID
-Rule Statement
-Applies To
-Rationale
-Enforced By
-BR-01
-Passwords must never be stored in plain text. Password-based credentials must be protected using a secure salted password-hashing mechanism.
-UC-01, UC-08
-BR-02
-Authentication failure messages must not reveal whether a specific username or email exists in the system.
-UC-01
-BR-03
-A deactivated user account must not be allowed to sign in or access authenticated system functions.
-UC-01, UC-02, UC-07, UC-08
-BR-04
-A user without active system access or the required active role/permission must not be allowed to access the system.
-UC-01, UC-02
-BR-05
-Identity information returned by Google must be successfully verified before it can be used for authentication.
-UC-02
-BR-06
-A Google-authenticated email may be used to sign in only when it is linked to an existing internal user account.
-UC-02
-BR-07
-Signing in with Google must not automatically create a new internal user account.
-BR-08
-User permissions are determined by the system and must not be selected manually during the sign-in process.
-BR-09
-After a successful sign-out, the current authentication state must no longer grant access to protected system functions. The user must authenticate again before protected functions can be accessed.
-UC-03
-BR-10
-Sensitive authentication information, including passwords, password hashes, reset credentials, and authentication tokens, must not be displayed in User Management.
-UC-08
-BR-11
-List views must support pagination when the number of records exceeds the configured page size.
-BR-12
-When a search or filter returns no matching records, the system must display an appropriate no-results message instead of treating the result as a system error.
-UC-04
-BR-13
-Username and email must each be unique across user accounts.
-UC-05
-BR-14
-All mandatory user-account information must be provided and valid before an account can be created or updated.
-UC-05, UC-06
-BR-15
-A newly created user account must have Active status by default.
-UC-05
-BR-16
-Successful administrative changes to user accounts or role-permission configuration must be recorded in the audit log.
-UC-05, UC-06, UC-07, UC-08, UC-11, UC-12, UC-13, UC-14
-BR-17
-General user-account updates may modify Full Name, Job Title, and Contact Information. Email, System Role, and password credentials must be managed separately.
-UC-06
-BR-18
-When a user account is deactivated, all active authenticated sessions for that account must be terminated.
-UC-07
-BR-19
-Deactivating a user account must not delete historical records associated with that user.
-BR-20
-A password-reset link must have a limited validity period and must not be reusable after a successful password reset.
-UC-08
-BR-21
-An administrator must not be able to view a user's existing password.
-UC-08
-BR-22
-Password reset may only be initiated for an account that is eligible to use password-based authentication.
-UC-08
-BR-23
-A role-permission configuration may contain only permissions defined by the system and must satisfy the system's permission-configuration rules before it can be applied.
-UC-11
-BR-24
-All required meeting information must be provided before a meeting can be created.
-UC-15
-BR-25
-Planned Start Time and Planned End Time are not stored as meeting-level schedule fields. A meeting's planned schedule is defined by its Meeting Sessions.
-UC-15, UC-16, UC-17, UC-18, UC-26, UC-27, UC-53
-BR-26
-A newly created meeting must have Draft status.
-UC-15
-BR-27
-Meeting information may be edited only while the meeting is in Draft or Rejected status.
-UC-16
-BR-28
-Updating meeting information must not implicitly change the meeting lifecycle status.
-UC-16
-BR-29
-A user may access a meeting only when the user has an authorized relationship with that meeting as its Meeting Organizer, assigned Meeting Approver, Chair, Secretary, or Participant. Authentication alone does not grant access to a meeting.
-UC-17, UC-25, UC-53, UC-54
-BR-30
-The meeting list may be searched by Meeting Name and filtered by Meeting Status, Confidentiality Level, and Time Range. A meeting matches a Time Range when at least one non-cancelled Meeting Session has a planned schedule that overlaps the selected range; meetings without a scheduled Meeting Session do not match a Time Range filter.
-UC-18
-BR-31
-When multiple search or filter criteria are applied, a record must satisfy all applicable criteria to appear in the result.
-BR-32
-The meeting list must support sorting, and the current search, filter, and sorting criteria must be preserved when navigating between pages.
-BR-33
-A meeting may be submitted or resubmitted for approval only when all mandatory meeting-level information is complete and the meeting is in Draft or Rejected status. Meeting Sessions are not required for approval submission.
-UC-19
-BR-34
-Submitting a Draft or Rejected meeting for approval changes its status to WaitingApproval. A meeting in WaitingApproval status cannot be edited until an approval decision is made.
-UC-19
-BR-35
-For each approval cycle, a Meeting Approver must be assigned. Only the Meeting Approver currently assigned to that approval cycle and holding the meeting_approver permission may approve or reject the meeting.
-UC-20
-BR-36
-Approving a meeting changes its status from WaitingApproval to Approved. Rejecting a meeting changes its status from WaitingApproval to Rejected. A rejection reason is mandatory.
-UC-20
-BR-37
-Only an authorized Meeting Organizer may publish a meeting that is in Approved status and satisfies the publication readiness requirements. Publishing changes the meeting status from Approved to Published and initiates participant invitations.
-UC-21
-BR-38
-Every meeting lifecycle transition must create a history record containing at least the acting user, timestamp, action, and resulting status. A rejection history record must also contain the rejection reason. Meeting lifecycle history records are immutable and must not be updated or deleted.
-UC-21
-BR-39
-Invitation delivery must be executed asynchronously via a background task queue to prevent blocking the user publication flow.
-UC-21
-BR-40
-Failure of an asynchronous invitation delivery task must trigger retry logic without reverting the Published state of the meeting.
-UC-21
-BR-41
-Meeting publication scope is strictly limited to meetings in Approved status and cannot be bypassed by direct state manipulation.
-BR-42
-All participant invitation notifications must include a direct link to the published meeting details and attached materials.
-BR-43
-System logging must track the queuing and delivery status of all asynchronous invitation messages for auditability.
-BR-44
-Re-publishing or updating invitation delivery for an already published meeting requires explicit organizer action and creates a distinct lifecycle record.
-BR-45
-The system creates an in-app notification for the intended recipient when they are invited to a meeting, when a meeting they are involved in is approaching its start time.
-BR-46
-Notifications are saved for later viewing. If the recipient is connected, a new notification and the unread count are updated in real time without a page reload.
-BR-47
-A user may retrieve, open, or change the read status of only notifications belonging to that user's account.
-UC-23, UC-24, UC-25
-BR-48
-The notification bell shows how many of the current user's notifications are unread.
-UC-22, UC-24, UC-25
-BR-49
-Opening the notification list does not mark any notification as read.
-UC-22
-BR-50
-Marking an already-read notification as read leaves its status unchanged and does not reduce the unread count again.
-UC-25
-BR-51
-Mark All as Read applies to all notifications belonging to the current recipient that are unread when the request is processed, including notifications not displayed on the current page.
-UC-24
-BR-52
-A meeting notification links to its corresponding target. Opening the link must check the recipient’s current access permission and must not reveal protected content when access is denied.
-UC-25
-BR-53
-Selecting a notification to open its target attempts to mark the notification as read. Failure to save the read status does not block opening an authorized target.
-UC-25
-BR-54
-Meeting Sessions may be created, updated, or cancelled only by the Secretary assigned to the parent meeting. The selected or newly created session must be Planned, and the parent meeting must be Draft, Rejected, Approved, Published, or InProgress. Session planning is not allowed while the meeting is WaitingApproval or after it is Ended.
-UC-26, UC-27, UC-28
-BR-55
-A meeting does not need a Meeting Session in order to be submitted or resubmitted for approval.
-UC-19
-BR-56
-Meeting Sessions are optional for publication. An Approved meeting may be published with zero Meeting Sessions when all other publication requirements are satisfied.
-UC-21, UC-43
-BR-57
-Meeting Sessions are not permanently deleted. A Planned Meeting Session that will no longer take place is changed to Cancelled and retained for traceability. An InProgress, Completed, or Cancelled Meeting Session cannot be updated or cancelled.
-UC-27, UC-28
-BR-58
-UC-28, UC-29, UC-30
-BR-59
-Only one Meeting Session of the same meeting may be InProgress at a time.
-UC-29
-BR-60
-A Planned Meeting Session may be started only while its parent Meeting is InProgress. Starting or ending a Meeting Session does not change the parent Meeting lifecycle status.
-UC-29, UC-30
-BR-61
-Completing or cancelling the last unfinished Meeting Session does not automatically end the parent Meeting. Ending the Meeting is an explicit Chair action defined by UC-44.
-UC-28, UC-30, UC-44
-BR-62
-A Meeting Session's Planned End Time must be later than its Planned Start Time.
-UC-26, UC-27
-BR-63
-Only the Chair assigned to a meeting may start or end a Meeting Session of that meeting.
-UC-29, UC-30
-BR-64
-Each Agenda Item belongs to exactly one Meeting Session. Reordering changes the order only within that Meeting Session and does not move an Agenda Item to another session.
-UC-31, UC-34, UC-35, UC-36, UC-54
-BR-65
-Only the Secretary assigned to the parent meeting may create, update, delete, or reorder Agenda Items, and only while the selected Meeting Session is Planned.
-UC-31, UC-32, UC-33, UC-34
-BR-66
-An Agenda Item must have a Title and a Planned Duration greater than zero. Presenter and Description may be provided. Any attached documents must be available to the parent meeting.
-UC-31, UC-32
-BR-67
-A newly created Agenda Item starts in Pending status and is assigned an explicit order within its Meeting Session. The Secretary may change that order while the session remains Planned.
-UC-31, UC-34
-BR-68
-After a Meeting Session leaves Planned status, its agenda structure cannot be created, updated, deleted, or reordered. Only agenda execution state may change during the active session.
-UC-31, UC-32, UC-33, UC-34
-BR-69
-Only the Chair assigned to the parent meeting may set or complete the current Agenda Item while the Meeting Session is InProgress.
-UC-35, UC-36
-BR-70
-For the agenda execution covered by these use cases, setting a Pending Agenda Item as current changes it to InProgress; completing the current Agenda Item changes it from InProgress to Done.
-UC-35, UC-36
-BR-71
-Only one Agenda Item of the same Meeting Session may be InProgress at a time. The current Agenda Item must be completed before another Agenda Item can be set as current.
-UC-35
-BR-72
-Setting an Agenda Item as current records its actual start time. Completing it records its actual end time and actual time used. Completing an Agenda Item does not automatically end the Meeting Session.
-UC-35, UC-36
-BR-73
-Changes to the current or completed Agenda Item must be reflected in real time for authorized users viewing the same Meeting Session.
-UC-35, UC-36
-BR-74
-Agenda planning for a Meeting Session remains available while that Meeting Session is Planned, including while the parent meeting is Published or InProgress. Agenda planning ends when the Meeting Session starts or is cancelled.
-UC-31, UC-32, UC-33, UC-34
-BR-75
-When the parent meeting is Published or InProgress, a newly created or rescheduled Planned Meeting Session must have a Planned Start Time later than the current time. This prevents retroactive session scheduling after publication.
-UC-26, UC-27
-BR-76
-Creating, rescheduling, or cancelling a Meeting Session after the parent meeting has been Published must notify affected participants of the schedule change.
-UC-26, UC-27, UC-28
-BR-77
-A Published or InProgress meeting may have zero Planned Meeting Sessions. Cancelling the last Planned Meeting Session is allowed and does not change the parent Meeting lifecycle status.
-UC-28
-BR-78
-When a meeting has no Secretary, only the Meeting Organizer may add the first internal participant, and that participant must be assigned the Secretary Meeting Role.
-UC-38
-BR-79
-After the first Secretary has been assigned, only an assigned Secretary may manage the meeting roster.
-UC-38, UC-39, UC-40
-BR-80
-Participant management is allowed only while the Meeting is Draft, Rejected, Approved, Published, or InProgress.
-UC-38, UC-39, UC-40
-BR-81
-An internal participant must reference an active internal user account.
-UC-38
-BR-82
-An internal user may appear at most once as a current participant in the same Meeting.
-UC-37, UC-38
-BR-83
-Internal participants are added individually; organisational-unit invitations are not supported.
-UC-38
-BR-84
-External Guests are represented by meeting-specific Guest invitations rather than internal Meeting Participant records.
-UC-37, UC-38, UC-40
-BR-85
-Each current internal participant has exactly one Meeting Role: Chair, Secretary, or Member.
-UC-38, UC-39
-BR-86
-A participant's Meeting Role is independent of the user's system Role.
-UC-38, UC-39
-BR-87
-An external Guest cannot satisfy a required Chair or Secretary role.
-UC-21, UC-29, UC-43
-BR-88
-A newly added internal participant or external Guest invitation starts with Pending Invitation Response and no response time.
-UC-38
-BR-89
-Delegation is available only to current internal participants.
-UC-41
-BR-90
-When an internal participant is added to a Published or InProgress Meeting, the participant is notified through the applicable invitation channels.
-UC-38
-BR-91
-When an external Guest is invited to a Published or InProgress Meeting, the invitation is delivered by email.
-UC-38
-BR-92
-Changing an internal participant's Meeting Role while the Meeting is Published or InProgress notifies that participant.
-UC-39
-BR-93
-Removing an internal participant or revoking a Guest invitation from a Published or InProgress Meeting notifies the affected invitee through the applicable channel.
-UC-40
-BR-94
-Failure to deliver a participant or Guest notification does not undo an otherwise successful roster change.
-UC-38, UC-39, UC-40
-BR-95
-A participant-removal or Guest-revocation notification must not contain a protected meeting-access link.
-UC-40
-BR-96
-Changing a Meeting Role does not change the participant's Invitation Response.
-UC-39
-BR-97
-Removing a current internal participant revokes access granted by that participant assignment.
-UC-40, UC-45
-BR-98
-Removing a current internal participant ends any outgoing delegation created by that participant.
-UC-40, UC-41
-BR-99
-Removing a participant's own assignment does not invalidate an independent incoming delegation granted to that user.
-UC-40, UC-41
-BR-100
-Revoking an external Guest invitation revokes access granted by that Guest relationship.
-UC-40, UC-45
-BR-101
-After a roster, delegation, or Guest-access relationship changes, room-entry eligibility must be re-evaluated; a connected user is disconnected only when no valid room-entry relationship remains.
-UC-40, UC-41, UC-45
-BR-102
-Removing or revoking a roster entry after publication preserves its Invitation Response and Attendance evidence as historical data.
-UC-37, UC-40, UC-42
-BR-103
-Historical or revoked roster records are excluded from the current roster, current access checks, and required-role counts.
-UC-37, UC-40, UC-42
-BR-104
-Only the owner of a current invitation may respond to that invitation.
-UC-41
-BR-105
-An internal participant may respond Accepted, Declined, or Delegated; an external Guest may respond only Accepted or Declined.
-UC-41
-BR-106
-Invitation Responses may be changed while the Meeting is Published or InProgress.
-UC-41
-BR-107
-A delegation target must be another active internal user.
-UC-41
-BR-108
-A participant cannot delegate their invitation to themself.
-UC-41
-BR-109
-Delegation does not create another Meeting Participant record or transfer the original participant's Meeting Role.
-UC-41
-BR-110
-While delegation is effective, the original participant retains meeting-read access, but the original participant's own assignment does not grant room-entry access.
-UC-41, UC-45
-BR-111
-An effective delegate receives meeting-read and room-entry access granted by the delegation.
-UC-41, UC-45
-BR-112
-If the selected delegate is already a Meeting Participant, the delegate keeps their existing Meeting Role.
-UC-41
-BR-113
-A user may represent at most one other participant through delegation in the same Meeting.
-UC-41
-BR-114
-Replacing or withdrawing a delegation revokes access granted solely by the previous delegation.
-UC-41, UC-45
-BR-115
-The latest Invitation Response and its response time are recorded for each current invitation.
-UC-41, UC-42
-BR-116
-Invitation Response and Attendance are independent; Accepted does not mean the invitee attended the Meeting.
-UC-41, UC-42, UC-88
-BR-117
-Roster and invitation-response information is accessible only to users whose relationship with the Meeting permits that information.
-UC-17, UC-37, UC-41, UC-42
-BR-118
-An active assigned Secretary may read the Meeting before publication; WaitingApproval is read-only for roster management.
-UC-17, UC-37, UC-38, UC-39, UC-40
-BR-119
-A Chair or Member assignment alone does not grant meeting-read access before the Meeting is Published.
-UC-17, UC-18
-BR-120
-An external Guest receives access only to the Meeting to which that Guest was invited.
-UC-41, UC-45
-BR-121
-A user who is not authorized to access a Meeting must not receive its roster or invitation-response information.
-UC-37, UC-42
-BR-122
-After the first Secretary has been assigned, a Meeting must retain at least one current internal participant assigned as Secretary.
-UC-38, UC-39, UC-40
-BR-123
-A Meeting may have at most one current Chair at a time.
-UC-38, UC-39
-BR-124
-Publishing a Meeting requires exactly one current Chair whose internal account is active.
-UC-21
-BR-125
-Publishing a Meeting requires at least one current Secretary whose internal account is active.
-UC-21
-BR-126
-A Published or InProgress Meeting must not lose its current Chair unless a valid replacement is assigned.
-UC-39, UC-40
-BR-127
-Starting a Meeting requires exactly one current Chair and at least one current Secretary whose internal accounts are active.
-UC-43
-BR-128
-Starting a Meeting Session requires exactly one current Chair and at least one current Secretary whose internal accounts are active.
-UC-29
-BR-129
-Invitation Response does not affect Chair or Secretary readiness checks.
-UC-21, UC-29, UC-43
-BR-130
-Only an active current Chair assigned to the Meeting may explicitly start or end that Meeting.
-UC-43, UC-44
-BR-131
-A Meeting may be started only while it is Published.
-UC-43
-BR-132
-A Meeting may be ended only while it is InProgress.
-UC-44
-BR-133
-A Meeting may start with zero Meeting Sessions.
-UC-43
-BR-134
-A Meeting may end only when no Meeting Session remains Planned or InProgress; a Meeting with zero sessions satisfies this condition.
-UC-44
-BR-135
-Changing the Meeting lifecycle does not change any Meeting Session status.
-UC-43, UC-44
-BR-136
-Changing a Meeting Session lifecycle does not change the parent Meeting status.
-UC-28, UC-29, UC-30
-BR-137
-The Online Meeting Room belongs to the Meeting rather than to a Meeting Session.
-UC-45, UC-46, UC-47, UC-48, UC-49, UC-50, UC-51, UC-52
-BR-138
-A Meeting Session is not required to use the Online Meeting Room.
-UC-45, UC-46, UC-47, UC-48, UC-49, UC-50, UC-51, UC-52
-BR-139
-The Online Meeting Room is available only for Online or Hybrid Meetings whose lifecycle status is Published or InProgress.
-UC-45
-BR-140
-Room entry requires a valid current internal participant relationship, effective delegation, or verified current external Guest relationship.
-UC-45
-BR-141
-Joining, leaving, microphone/camera control, screen sharing, room moderation, and in-room chat do not change the Meeting or Meeting Session lifecycle.
-UC-45, UC-46, UC-47, UC-48, UC-49, UC-51, UC-52
-BR-142
-The same Online Meeting Room may remain available across multiple Meeting Sessions of the same Meeting.
-UC-45, UC-46, UC-47, UC-48, UC-49, UC-50, UC-51, UC-52
-BR-143
-When a Meeting becomes Ended, its Online Meeting Room stops accepting joins and disconnects currently connected users.
-UC-44, UC-45
-BR-144
-A room user may control only their own microphone and camera; the assigned Chair may mute or remove another connected user but may not enable another user's microphone or camera.
-UC-47, UC-48, UC-51
-BR-145
-At most one screen share may be active in the same Meeting Room at a time; starting a new share stops the previous active share.
-UC-49
-BR-146
-Meeting Room presence represents users currently connected to the room and is distinct from the Meeting Participant roster.
-UC-50
-BR-147
-In-room chat is scoped to the selected Meeting Room and is available only to authorized users currently connected to that room.
-UC-52
-BR-148
-An external Guest is identified by Guest Name and Email and does not require an internal user account.
-UC-37, UC-38, UC-41
-BR-149
-Within one Meeting, a Guest email may have at most one current Guest invitation.
-UC-38
-BR-150
-An external Guest has fixed Guest access and receives no system Role or privileged Meeting Role.
-UC-38, UC-45
-BR-151
-A Guest invitation must not be created when the same email is already represented by a current internal participant of that Meeting.
-UC-38
-BR-152
-External Guest access requires a secure, meeting-specific invitation.
-UC-21, UC-38, UC-41, UC-45
-BR-153
-An external Guest must verify control of the invited email before Guest access is established.
-UC-41, UC-45
-BR-154
-External Guest access is scoped only to the invited Meeting.
-UC-41, UC-45
-BR-155
-External Guest access expires according to the configured validity period.
-UC-41, UC-45
-BR-156
-External Guest access does not require an internal account login.
-UC-38, UC-41, UC-45
-BR-157
-Revoking an external Guest invitation immediately invalidates access granted by that invitation.
-UC-40, UC-41, UC-45
-#
-Message code
-Message Type
-Context
-Content
-1
-MSG01
-Form error
-UC-01 – Sign in with Email and Password / Exception Flows
-Invalid email or password.
-2
-MSG02
-Form error
-UC-01 – Sign in with Email and Password / Exception Flows
-Your account is currently unavailable. Please contact your administrator for assistance.
-3
-MSG03
-Form error
-UC-02 – Sign in with Google / Exception Flows
-Google sign-in was unsuccessful.
-4
-MSG04
-Form error
-UC-02 – Sign in with Google / Exception Flows
-Unable to verify your Google account. Please try again.
-5
-MSG05
-Form error
-UC-02 – Sign in with Google / Exception Flows
-This Google account has not been granted access to the system.
-6
-MSG02
-Form error
-UC-02 – Sign in with Google / Exception Flows
-Your account is currently unavailable. Please contact your administrator for assistance.
-7
-MSG06
-Dialog / Toast
-UC-03 – Sign Out / Exception Flows
-Unable to sign out. Please try again.
-8
-MSG01
-Redirect to sign-in
-Common – Session Renewal
-Your session has expired. Please sign in again.
-9
-MSG02
-Redirect to sign-in
-Common – Session Renewal
-Your account is currently unavailable. Please contact your administrator for assistance.
-10
-MSG07
-Toast
-UC-05 – Create User Account / Main Flow
-User account created successfully.
-11
-MSG08
-Field error
-UC-05 – Create User Account / Exception Flows
-Email is already in use.
-12
-MSG09
-Field error / Form error
-UC-05 – Create User Account / Exception Flows
-Invalid account information.
-Field errors:
-- fullName: Full name is required. / Full name must not exceed 200 characters.
-- email: Email is required. / Email is invalid.
-- password: Password must be at least 12 characters.
-- roleId: The role does not exist.
-13
-MSG10
-Toast
-UC-06 – Update User Account / Main Flow
-User account updated successfully.
-14
-MSG08
-Field error
-UC-06 – Update User Account / Exception Flows
-Email is already in use.
-15
-MSG09
-Field error / Form error
-UC-06 – Update User Account / Exception Flows
-Invalid account information.
-Field errors:
-- fullName: Full name is required. / Full name must not exceed 200 characters.
-- email: Email is required. / Email is invalid.
-- password: Password must be at least 12 characters.
-- roleId: The role does not exist.
-16
-MSG11
-Toast
-UC-07 – Deactivate / Reactivate User Account / Main Flow
-User account status changed successfully.
-17
-MSG09
-Form error
-UC-07 – Deactivate / Reactivate User Account / Exception Flows
-Invalid account information.
-Field errors:
-- isActive: The status to set for the account is missing.
-18
-MSG12
-Dialog
-UC-07 – Deactivate / Reactivate User Account / Exception Flows
-Unable to change the status of this user account.
-19
-MSG13
-Toast
-UC-08 – Reset User Password / Main Flow
-Password reset email sent successfully.
-20
-MSG92
-Toast
-UC-08 – Reset User Password / Main Flow
-Password reset successfully. Please sign in with your new password.
-21
-MSG06
-Toast
-UC-08 – Reset User Password / Alternative Flows
-Unable to sign out. Please try again.
-22
-MSG14
-Form error
-UC-08 – Reset User Password / Exception Flows
-Password reset is not available for this account.
-23
-MSG15
-Toast
-UC-08 – Reset User Password / Exception Flows
-Unable to send the password reset email. Please try again.
-24
-MSG93
-Page
-UC-08 – Reset User Password / Exception Flows
-The password reset link is invalid or has expired. Please contact an administrator.
-25
-MSG94
-Field error
-UC-08 – Reset User Password / Exception Flows
-Invalid new password.
-Field errors:
-- newPassword: Password must be at least 12 characters.
-26
-MSG129
-Page
-UC-08 – Reset User Password / Exception Flows
-No password reset code was found. Please open the link in the email again.
-27
-MSG10
-Toast
-UC-09 – Assign System Role to User / Main Flow, Alternative Flows
-User account updated successfully.
-28
-MSG09
-Field error / Form error
-UC-09 – Assign System Role to User / Exception Flows
-Invalid account information.
-Field errors:
-- roleId: The role does not exist.
-29
-MSG12
-Form error
-UC-09 – Assign System Role to User / Exception Flows
-Unable to change the status of this user account.
-30
-MSG16
-Toast
-UC-11 – Configure Role Permissions / Main Flow
-Role permissions updated successfully.
-31
-MSG17
-Inline error (under role row)
-UC-11 – Configure Role Permissions / Exception Flows
-Invalid permission configuration.
-Field errors:
-- roleId: Invalid role.
-- capabilities: The list of permissions to set for the role is missing. / Invalid permissions: {permission codes}. / The permission list contains invalid values.
-- adminUsers: Cannot save this configuration: after saving, no active account would hold the user administration permission, so no one could access the permission screen.
-32
-MSG18
-Inline error (under role row)
-UC-11 – Configure Role Permissions / Exception Flows
-Unable to update role permissions. Please try again.
-33
-MSG19
-Toast
-UC-12 – Create Role / Main Flow
-Role created successfully.
-34
-MSG20
-Field error / Form error
-UC-12 – Create Role / Exception Flows
-Invalid role information.
-Field errors:
-- name: Role name is required. / Role name must not exceed 64 characters.
-- description: Description must not exceed 256 characters.
-- capabilities: Invalid permissions: {permission codes}.
-35
-MSG21
-Field error
-UC-12 – Create Role / Exception Flows
-A role with this name already exists. Please choose a different name.
-36
-MSG26
-Form error
-UC-12 – Create Role / Exception Flows
-Unable to create the role. Please try again.
-37
-MSG22
-Toast
-UC-13 – Update Role / Main Flow
-Role updated successfully.
-38
-MSG22
-Toast
-UC-13 – Update Role / Alternative Flows
-Role updated successfully.
-39
-MSG24
-Form error
-UC-13 – Update Role / Exception Flows
-This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions.
-40
-MSG20
-Field error / Form error
-UC-13 – Update Role / Exception Flows
-Invalid role information.
-Field errors:
-- name: Role name is required. / Role name must not exceed 64 characters.
-- description: Description must not exceed 256 characters.
-- capabilities: Invalid permissions: {permission codes}.
-41
-MSG21
-Field error
-UC-13 – Update Role / Exception Flows
-A role with this name already exists. Please choose a different name.
-42
-MSG27
-Form error
-UC-13 – Update Role / Exception Flows
-Unable to update the role. Please try again.
-43
-MSG23
-Toast
-UC-14 – Delete Role / Main Flow
-Role deleted successfully.
-44
-MSG24
-Dialog
-UC-14 – Delete Role / Exception Flows
-This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions.
-45
-MSG25
-Dialog
-UC-14 – Delete Role / Exception Flows
-This role is still held by {n} user account(s). Reassign them to another role before deleting.
-46
-MSG28
-Dialog
-UC-14 – Delete Role / Exception Flows
-Unable to delete the role. Please try again.
-47
-MSG29
-Toast
-UC-15 – Create Meeting / Main Flow
-Meeting created successfully.
-48
-MSG31
-Field error / Form error
-UC-15 – Create Meeting / Exception Flows
-Invalid meeting information.
-Field errors:
-- title: Meeting title is required. / Meeting title must not exceed 300 characters.
-- location: Location must not exceed 300 characters.
-- description: Description must not exceed 4000 characters.
-- mode: Invalid meeting mode.
-- sensitivity: Invalid sensitivity level.
-49
-MSG35
-Form error
-UC-15 – Create Meeting / Exception Flows
-Unable to create the meeting. Please try again.
-50
-MSG30
-Toast
-UC-16 – Update Meeting / Main Flow
-Meeting updated successfully.
-51
-MSG31
-Field error / Form error
-UC-16 – Update Meeting / Exception Flows
-Invalid meeting information.
-Field errors:
-- title: Meeting title is required. / Meeting title must not exceed 300 characters.
-- location: Location must not exceed 300 characters.
-- description: Description must not exceed 4000 characters.
-- mode: Invalid meeting mode.
-- sensitivity: Invalid sensitivity level.
-52
-MSG31
-Form error
-UC-16 – Update Meeting / Exception Flows
-Invalid JSON content.
-53
-MSG34
-API error
-Technical API response – outside UC-16 business flow
-Content-Type must be application/json.
-54
-MSG33
-Dialog
-UC-16 – Update Meeting / Exception Flows
-This meeting can no longer be edited.
-55
-MSG36
-Form error
-UC-16 – Update Meeting / Exception Flows
-Unable to update the meeting. Please try again.
-56
-—
-(HTTP 404)
-Page
-UC-17 – View Meeting Details / Exception Flows
-Meeting not found.
-57
-MSG37
-Page
-UC-17 – View Meeting Details / Exception Flows
-Unable to load meeting details. Please try again.
-58
-—
-Table message
-UC-18 – View Meeting List / Alternative Flows
-No meetings match the filter.
-59
-MSG38
-Table message
-UC-18 – View Meeting List / Exception Flows
-Unable to load meetings. Please try again.
-60
-MSG32
-Table message
-UC-18 – View Meeting List / Exception Flows
-The meeting list criteria are invalid.
-61
-MSG41
-Dialog
-UC-19 – Submit Meeting for Approval / Exception Flows
-This meeting can no longer be submitted for approval.
-62
-MSG42
-Toast
-UC-19 – Submit Meeting for Approval / Exception Flows
-Unable to submit the meeting for approval. Please try again.
-63
-MSG43
-Toast
-UC-20 – Review Meeting Approval / Main Flow
-Meeting approved successfully.
-64
-MSG44
-Toast
-UC-20 – Review Meeting Approval / Alternative Flows
-Meeting rejected successfully.
-65
-MSG45
-Toast
-UC-21 – Publish Meeting / Main Flow
-Meeting published successfully.
-66
-MSG46
-Dialog
-UC-21 – Publish Meeting / Exception Flows
-This meeting can no longer be published.
-67
-MSG47
-Toast
-UC-21 – Publish Meeting / Exception Flows
-Unable to publish the meeting. Please try again.
-68
-MSG39
-List message
-UC-22 – View Notifications / Exception Flows
-The requested notification page is unavailable.
-69
-MSG40
-List message
-UC-22 – View Notifications / Exception Flows
-Unable to load notifications. Please try again.
-70
-MSG48
-Toast
-UC-26 – Create Meeting Session / Main Flow
-Meeting session created successfully.
-71
-MSG49
-Toast
-UC-27 – Update Meeting Session / Main Flow
-Meeting session updated successfully.
-72
-MSG50
-Toast
-UC-28 – Cancel Meeting Session / Main Flow
-Meeting session cancelled successfully.
-73
-MSG51
-Toast
-UC-29 – Start Meeting Session / Main Flow
-Meeting session started successfully.
-74
-MSG52
-Toast
-UC-30 – End Meeting Session / Main Flow
-Meeting session ended successfully.
-75
-MSG53
-Field error / Form error
-UC-26 – Create Meeting Session / Exception Flows; UC-27 – Update Meeting Session / Exception Flows
-Invalid meeting session information.
-Field errors:
-- title: Meeting session title is required.
-- plannedStartTime: Invalid planned start time. / Planned start time must be in the future when the meeting is Published or InProgress.
-- plannedEndTime: Invalid planned end time. / Planned end time must be after planned start time.
-76
-MSG54
-Dialog
-UC-26 – Create Meeting Session / Exception Flows
-Meeting sessions can no longer be added to this meeting.
-77
-MSG55
-Dialog
-UC-27 – Update Meeting Session / Exception Flows
-This meeting session can no longer be edited.
-78
-MSG56
-Dialog
-UC-28 – Cancel Meeting Session / Exception Flows
-This meeting session can no longer be cancelled.
-79
-MSG57
-Dialog
-UC-29 – Start Meeting Session / Exception Flows
-Another meeting session is already in progress. End it before starting another session.
-80
-MSG58
-Dialog
-UC-29 – Start Meeting Session / Exception Flows
-This meeting session cannot be started.
-81
-MSG59
-Dialog
-UC-30 – End Meeting Session / Exception Flows
-This meeting session cannot be ended.
-82
-MSG60
-Toast
-UC-31 – Create Agenda Item / Main Flow
-Agenda item created successfully.
-83
-MSG61
-Toast
-UC-32 – Update Agenda Item / Main Flow
-Agenda item updated successfully.
-84
-MSG62
-Toast
-UC-33 – Delete Agenda Item / Main Flow
-Agenda item deleted successfully.
-85
-MSG63
-Toast
-UC-34 – Reorder Agenda Items / Main Flow
-Agenda order updated successfully.
-86
-MSG64
-Toast
-UC-35 – Set Current Agenda Item / Main Flow
-Current agenda item updated successfully.
-87
-MSG65
-Toast
-UC-36 – Complete Agenda Item / Main Flow
-Agenda item completed successfully.
-88
-MSG66
-Field error / Form error
-UC-31 – Create Agenda Item / Exception Flows; UC-32 – Update Agenda Item / Exception Flows
-Invalid agenda item information.
-Field errors:
-- title: Agenda item title is required.
-- plannedDurationMinutes: Planned duration must be greater than 0.
-- documents: One or more selected documents are not available to this meeting.
-89
-MSG67
-Dialog
-UC-31 – UC-34 / Exception Flows
-The agenda for this meeting session can no longer be modified.
-90
-MSG68
-Toast
-UC-31 – Create Agenda Item / Exception Flows
-Unable to create the agenda item. Please try again.
-91
-MSG69
-Toast
-UC-32 – Update Agenda Item / Exception Flows
-Unable to update the agenda item. Please try again.
-92
-MSG70
-Dialog / Toast
-UC-33 – Delete Agenda Item / Exception Flows
-Unable to delete the agenda item. Please try again.
-93
-MSG71
-Toast
-UC-34 – Reorder Agenda Items / Exception Flows
-Unable to update the agenda order. Please try again.
-94
-MSG72
-Dialog
-UC-35 – Set Current Agenda Item / Exception Flows
-Another agenda item is already in progress. Complete it before starting another agenda item.
-95
-MSG73
-Dialog
-UC-35 – Set Current Agenda Item / Exception Flows
-This agenda item cannot be set as current.
-96
-MSG74
-Dialog
-UC-36 – Complete Agenda Item / Exception Flows
-This agenda item cannot be completed.
-97
-MSG75
-Toast
-UC-35 – Set Current Agenda Item / Exception Flows
-Unable to set the current agenda item. Please try again.
-98
-MSG76
-Toast
-UC-36 – Complete Agenda Item / Exception Flows
-Unable to complete the agenda item. Please try again.
-99
-MSG83
-Field error
-UC-20 – Review Meeting Approval / Exception Flows
-Rejection reason is required.
-100
-MSG84
-Field error
-UC-20 – Review Meeting Approval / Exception Flows
-Rejection reason must not exceed 1000 characters.
-101
-MSG95
-Page / Table message
-UC-37 – View Meeting Participants / Exception Flows; UC-42 – View Participant Response Status / Exception Flows
-Unable to load meeting participants. Please try again.
-102
-MSG96
-Toast
-UC-38 – Add Meeting Participant / Main Flow
-Meeting participant added successfully.
-103
-MSG97
-Field error / Form error
-UC-38 – Add Meeting Participant / Exception Flows
-Invalid meeting participant information.
-Field messages:
-- The selected user is not available.
-- This user is already a meeting participant.
-- A valid meeting role is required.
-- The Meeting Organizer must assign a Secretary as the first meeting participant.
-- Guest name and email are required.
-- Guest email is invalid.
-- This guest email is already invited to the meeting.
-- This email is already represented by an internal meeting participant.
-104
-MSG98
-Dialog
-UC-38, UC-39, UC-40 / Exception Flows
-The meeting participant list cannot be modified in its current status.
-105
-MSG99
-Toast
-UC-38 – Add Meeting Participant / Exception Flows
-Unable to add the meeting participant. Please try again.
-106
-MSG100
-Toast
-UC-39 – Assign / Change Meeting Role / Main Flow; Alternative Flows
-Meeting role updated successfully.
-107
-MSG101
-Field error
-UC-39 – Assign / Change Meeting Role / Exception Flows
-A valid meeting role is required.
-108
-MSG102
-Toast
-UC-39 – Assign / Change Meeting Role / Exception Flows
-Unable to update the meeting role. Please try again.
-109
-MSG103
-Toast
-UC-40 – Remove Meeting Participant / Main Flow
-Meeting participant removed successfully.
-110
-MSG104
-Toast
-UC-40 – Remove Meeting Participant / Exception Flows
-Unable to remove the meeting participant. Please try again.
-111
-MSG105
-Toast
-UC-41 – Respond to Meeting Invitation / Main Flow
-Meeting invitation response recorded successfully.
-112
-MSG106
-Field error / Form error
-UC-41 – Respond to Meeting Invitation / Exception Flows
-Invalid meeting invitation response.
-113
-MSG107
-Dialog
-UC-41 – Respond to Meeting Invitation / Exception Flows
-This meeting invitation can no longer be answered.
-114
-MSG108
-Toast
-UC-41 – Respond to Meeting Invitation / Exception Flows
-Unable to save the meeting invitation response. Please try again.
-115
-MSG109
-Dialog
-UC-39 – Assign / Change Meeting Role / Exception Flows; UC-40 – Remove Meeting Participant / Exception Flows
-The meeting must retain its required Chair and Secretary. Assign a replacement first.
-116
-MSG110
-Toast
-UC-43 – Start Meeting / Main Flow
-Meeting started successfully.
-117
-MSG111
-Toast
-UC-44 – End Meeting / Main Flow
-Meeting ended successfully.
-118
-MSG112
-Dialog
-UC-43 – Start Meeting / Exception Flows
-This meeting cannot be started.
-119
-MSG113
-Dialog
-UC-44 – End Meeting / Exception Flows
-Complete or cancel all unfinished meeting sessions before ending the meeting.
-120
-MSG114
-Dialog
-UC-44 – End Meeting / Exception Flows
-This meeting cannot be ended.
-121
-MSG115
-Toast
-UC-43 – Start Meeting / Exception Flows
-Unable to start the meeting. Please try again.
-122
-MSG116
-Toast
-UC-44 – End Meeting / Exception Flows
-Unable to end the meeting. Please try again.
-123
-MSG117
-Dialog
-UC-45 – Join Meeting Room / Exception Flows
-The online meeting room is not available.
-124
-MSG118
-Toast
-UC-45 – Join Meeting Room / Exception Flows
-Unable to join the meeting room. Please try again.
-125
-MSG119
-Inline / Dialog
-UC-47 – Manage Microphone / Exception Flows
-Microphone access is unavailable. Check your browser or device permissions.
-126
-MSG120
-Inline / Dialog
-UC-48 – Manage Camera / Exception Flows
-Camera access is unavailable. Check your browser or device permissions.
-127
-MSG121
-Toast
-UC-49 – Manage Screen Sharing / Exception Flows
-Unable to share your screen.
-128
-MSG122
-Page / Panel message
-UC-50 – View Meeting Room Participants / Exception Flows
-Unable to load meeting room participants. Please try again.
-129
-MSG123
-Dialog
-UC-51 – Moderate Meeting Room / Exception Flows
-You are not allowed to moderate this meeting room.
-130
-MSG124
-Toast
-UC-51 – Moderate Meeting Room / Exception Flows
-Unable to apply the room moderation action.
-131
-MSG125
-Toast
-UC-52 – Use In-room Chat / Exception Flows
-Unable to send the room message. Please try again.
-132
-MSG126
-Inline / Form error
-UC-41 – Respond to Meeting Invitation / Exception Flows
-Unable to verify the guest invitation. Check the code and try again.
-133
-MSG127
-Page / Panel message
-UC-53 – View Meeting Sessions / Exception Flows
-Unable to load meeting sessions. Please try again.
-134
-MSG128
-Page / Panel message
-UC-54 – View Meeting Agenda / Exception Flows
-Unable to load the meeting agenda. Please try again.
