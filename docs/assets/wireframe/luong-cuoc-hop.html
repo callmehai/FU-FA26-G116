@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframe luồng cuộc họp TrustCabinet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: sticky index on the left, screens stacked in flow order; each screen is a fixed-width app frame
+   (ADR-0012 shell: one blue vertical sidebar, no app bar). Light only, like the product. */
+:root {
+  --ink: #1a2433; --ink-soft: #34404f; --muted: #4b5563; --label: #5b6472; --faint: #646d7b;
+  --paper: #f3f5f8; --surface: #ffffff; --surface-alt: #f1f3f6; --surface-head: #f8f9fb;
+  --line: #d9dee6; --line-soft: #e3e7ed; --control: #c5ccd6;
+  --brand: #2a4d94; --brand-ink: #1d3b78; --brand-wash: #e8f0fa; --brand-wash-line: #bbd0ea;
+  --gold: #c99a2e; --danger: #b4232a; --focus: #2f6feb;
+  --side-a: #3f63b3; --side-b: #375aa6; --side-c: #304f97; --side-ink: #e1eaf6;
+  --chip-slate-bg: #f1f3f6; --chip-slate-fg: #4b5563;
+  --chip-amber-bg: #fff6e0; --chip-amber-fg: #8a5300;
+  --chip-red-bg: #fdeeee; --chip-red-fg: #9a1c22;
+  --chip-green-bg: #e3f4ea; --chip-green-fg: #0e6b44;
+  --chip-blue-bg: #e8effc; --chip-blue-fg: #1f4fa8;
+  --chip-violet-bg: #efeafb; --chip-violet-fg: #5b3aa6;
+  --note-bg: #fffbea; --note-line: #ecd9a0; --note-ink: #6b4e00;
+  --font: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --r: 6px; color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font); font-size: 14px; line-height: 1.5; }
+.page { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 28px; padding-inline: 24px; padding-block: 24px 64px; max-width: 1560px; margin: 0 auto; }
+@media (max-width: 960px) { .page { grid-template-columns: minmax(0, 1fr); padding-inline: 16px; } .index { position: static !important; max-height: none !important; } }
+
+/* ---------- index */
+.index { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); align-self: start; max-height: calc(100vh - 32px); overflow: auto; display: flex; flex-direction: column; gap: 14px; }
+.index h1 { font-size: 18px; margin: 0; line-height: 1.3; text-wrap: balance; }
+.index p { margin: 0; color: var(--muted); font-size: 12.5px; }
+.index nav { display: flex; flex-direction: column; gap: 12px; }
+.index .grp { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--label); font-weight: 600; margin-bottom: 4px; }
+.index a { display: flex; gap: 8px; text-decoration: none; color: var(--ink-soft); font-size: 13px; padding: 3px 6px; border-radius: 4px; }
+.index a:hover, .index a:focus-visible { background: var(--brand-wash); color: var(--brand-ink); outline: none; }
+.index a span { color: var(--faint); font-size: 12px; min-width: 28px; font-variant-numeric: tabular-nums; }
+
+/* ---------- intro + lifecycle */
+main { min-width: 0; display: flex; flex-direction: column; gap: 40px; }
+.intro { display: flex; flex-direction: column; gap: 14px; max-width: 900px; }
+.intro h2 { font-size: 24px; margin: 0; text-wrap: balance; }
+.intro p { margin: 0; color: var(--ink-soft); max-width: 68ch; }
+.rules { margin: 0; padding-left: 18px; color: var(--ink-soft); max-width: 75ch; display: flex; flex-direction: column; gap: 4px; }
+.life { margin: 0; color: var(--ink-soft); }
+
+/* ---------- screen block */
+.screen { display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 16px; }
+.screen-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.screen-head .no { color: var(--label); font-weight: 600; font-size: 13px; font-variant-numeric: tabular-nums; }
+.screen-head h3 { margin: 0; font-size: 17px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: 12px; padding: 2px 8px; border-radius: 4px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); }
+.tag.bf { color: var(--ink-soft); }
+.notes { margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 13px; max-width: 110ch; display: flex; flex-direction: column; gap: 2px; }
+.scroll { overflow-x: auto; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); }
+
+/* ---------- app frame (product look) */
+.app { width: 100%; min-width: 1080px; min-height: 560px; display: grid; grid-template-columns: 216px 1fr; background: var(--paper); }
+.side { background-color: var(--side-b); background-image: linear-gradient(180deg, var(--side-a), var(--side-b) 55%, var(--side-c)); color: var(--side-ink); display: flex; flex-direction: column; gap: 4px; padding: 14px 10px; }
+.brand { color: #fff; font-weight: 700; font-size: 15px; padding: 4px 10px 14px; border-bottom: 1px solid rgb(255 255 255 / 16%); margin-bottom: 8px; }
+.nav { height: 40px; padding: 0 12px; border-radius: 6px; font-size: 14px; display: flex; align-items: center; color: rgb(255 255 255 / 92%); }
+.nav.on { background: rgb(255 255 255 / 22%); color: #fff; font-weight: 600; }
+.side .who { margin-top: auto; font-size: 12px; padding: 10px 8px 0; border-top: 1px solid rgb(255 255 255 / 16%); }
+.content { padding: 18px 22px; display: flex; flex-direction: column; gap: 14px; min-width: 0; position: relative; }
+.crumb { font-size: 12px; color: var(--label); }
+.phead { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.phead h4 { margin: 0; font-size: 20px; line-height: 1.3; }
+.phead .sub { color: var(--muted); font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 4px; }
+.acts { display: flex; gap: 8px; flex-shrink: 0; }
+.btn { height: 40px; padding: 0 14px; border-radius: var(--r); border: 1px solid var(--control); background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.btn.big { height: 44px; padding: 0 18px; }
+.btn.pri { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn.dan { border-color: transparent; background: var(--chip-red-bg); color: var(--chip-red-fg); }
+.btn.sm { height: 32px; padding: 0 10px; font-size: 12.5px; }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--brand); }
+.btn.dis { opacity: .45; }
+.chip { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.c-slate { background: var(--chip-slate-bg); color: var(--chip-slate-fg); }
+.c-amber { background: var(--chip-amber-bg); color: var(--chip-amber-fg); }
+.c-red { background: var(--chip-red-bg); color: var(--chip-red-fg); }
+.c-green { background: var(--chip-green-bg); color: var(--chip-green-fg); }
+.c-blue { background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
+.c-violet { background: var(--chip-violet-bg); color: var(--chip-violet-fg); }
+.sens { display: inline-flex; align-items: center; height: 22px; font-size: 12px; font-weight: 600; padding: 0 8px; border-radius: 3px; border: 1px solid var(--control); color: var(--muted); }
+.sens.secret { border-color: var(--danger); color: var(--danger); }
+.role { font-size: 13px; color: var(--ink-soft); }
+.role.g { color: var(--muted); }
+
+.steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; font-size: 12.5px; }
+.steps .s { border-top: 3px solid var(--line); padding-top: 6px; color: var(--faint); white-space: nowrap; }
+.steps .s.done { border-top-color: var(--brand-wash-line); color: var(--muted); }
+.steps .s.cur { border-top-color: var(--brand); color: var(--brand-ink); font-weight: 600; }
+.steps .ln { display: none; }
+
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); }
+.tab { padding: 8px 12px; font-size: 13px; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tab.on { color: var(--brand-ink); border-bottom-color: var(--brand); font-weight: 600; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.panel-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line-soft); }
+.panel-h b { font-size: 14px; }
+.panel-b { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.toolbar { display: flex; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line-soft); align-items: center; }
+.input { height: 40px; border: 1px solid var(--control); border-radius: var(--r); background: var(--surface); padding: 0 10px; display: flex; align-items: center; color: var(--faint); font-size: 13px; min-width: 0; }
+.input.val { color: var(--ink); }
+.input.lock { background: var(--surface-alt); color: var(--label); }
+.input.area { height: 64px; align-items: flex-start; padding-top: 8px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-weight: 600; font-size: 12px; color: var(--label); background: var(--surface-head); padding: 8px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 14px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+td .t { font-weight: 600; } td .s2 { color: var(--muted); font-size: 12px; }
+.paging { display: flex; justify-content: space-between; padding: 8px 14px; font-size: 12px; color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px 16px; }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field label { font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
+.field label em { color: var(--danger); font-style: normal; }
+.field small { color: var(--label); font-size: 12px; }
+.seg { display: flex; border: 1px solid var(--control); border-radius: var(--r); overflow: hidden; height: 40px; }
+.seg span { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--muted); border-right: 1px solid var(--control); }
+.seg span:last-child { border-right: 0; }
+.seg .on { background: var(--brand-wash); color: var(--brand-ink); font-weight: 600; }
+.kv { display: grid; grid-template-columns: 150px 1fr; gap: 8px 12px; font-size: 13px; }
+.kv dt { color: var(--label); } .kv dd { margin: 0; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 14px; }
+.check { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; font-size: 13px; }
+.check b { font-size: 12px; font-weight: 600; }
+.check.ok b { color: var(--chip-green-fg); } .check.no b { color: var(--chip-amber-fg); }
+.list { display: flex; flex-direction: column; }
+.ag { display: grid; grid-template-columns: 30px minmax(0, 1fr) 170px 80px 110px; gap: 10px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13px; }
+.ag .n { color: var(--label); font-variant-numeric: tabular-nums; }
+.ag.cur { background: var(--brand-wash); }
+.drop { border: 1px dashed var(--control); border-radius: var(--r); padding: 22px; text-align: center; color: var(--muted); display: flex; flex-direction: column; gap: 6px; align-items: center; background: var(--surface-head); }
+.empty { padding: 26px; text-align: center; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.callout { color: var(--muted); font-size: 13px; }
+.callout.warn { color: var(--note-ink); }
+.callout.err { color: var(--chip-red-fg); }
+.secret-bar { background: var(--chip-red-bg); color: var(--danger); font-size: 12.5px; padding: 6px 12px; border-radius: var(--r); font-weight: 600; }
+.bar { height: 8px; background: var(--surface-alt); border-radius: 999px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--brand); }
+.vote-opt { display: grid; grid-template-columns: 140px minmax(0, 1fr) 70px; gap: 10px; align-items: center; font-size: 13px; }
+.seg-t { display: grid; grid-template-columns: 80px 150px minmax(0, 1fr); gap: 12px; padding: 9px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13px; }
+.seg-t .tm { font-family: var(--mono); color: var(--label); font-size: 12px; padding-top: 2px; }
+.spk { display: inline-flex; height: 28px; align-items: center; border: 1px solid var(--control); border-radius: 4px; padding: 0 8px; font-size: 12px; background: var(--surface); }
+.doc { font-size: 13px; line-height: 1.65; color: var(--ink-soft); display: flex; flex-direction: column; gap: 8px; }
+.doc h5 { margin: 0; text-align: center; font-size: 14px; letter-spacing: .02em; color: var(--ink); }
+.doc .center { text-align: center; color: var(--muted); font-size: 12px; }
+.sig { display: grid; grid-template-columns: minmax(0, 1fr) 150px 150px; gap: 10px; align-items: center; padding: 9px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13px; }
+
+/* modal + scrim inside a frame */
+.scrim { position: absolute; inset: 0; background: #101e3452; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal { width: 520px; max-width: 100%; background: var(--surface); border-radius: 8px; box-shadow: 0 1px 2px #1a24330f, 0 8px 24px #1a24331a; display: flex; flex-direction: column; }
+.modal-h { padding: 16px 20px 4px; font-weight: 600; font-size: 16px; }
+.modal-b { padding: 12px 20px 16px; display: flex; flex-direction: column; gap: 12px; }
+.modal-f { padding: 0 20px 18px; display: flex; justify-content: flex-end; gap: 8px; }
+.ghosted { filter: saturate(.7); }
+
+/* two small frames side by side */
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; min-width: 1080px; padding: 14px; background: var(--paper); }
+.mini { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; }
+.mini-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line-soft); font-size: 12px; color: var(--label); }
+.mini-b { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.mini h4 { margin: 0; font-size: 17px; }
+.label-cap { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--label); font-weight: 600; }
+.otp { display: flex; gap: 8px; } .otp span { width: 40px; height: 44px; border: 1px solid var(--control); border-radius: var(--r); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 18px; }
+.room { background: #15233d; color: #e1eaf6; border-radius: var(--r); display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 6px; height: 150px; }
+.room div { background: #22355a; color: #e1eaf6; border-radius: 4px; display: flex; align-items: flex-end; padding: 6px; font-size: 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+html { scroll-behavior: smooth; }
+</style>
+
+</head>
+<body>
+<div class="page">
+  <aside class="index">
+    <div>
+      <h1>Wireframe luồng cuộc họp</h1>
+      <p>Bám theo BF-02/03/04 ngày 09/10/2026. Một cuộc họp là một buổi họp, không có Phiên họp.</p>
+    </div>
+    <nav aria-label="Danh sách màn hình">
+      <div>
+        <div class="grp">BF-02 · Chuẩn bị &amp; duyệt</div>
+        <a href="#s01"><span>S01</span>Danh sách cuộc họp</a>
+        <a href="#s02"><span>S02</span>Tạo cuộc họp</a>
+        <a href="#s03"><span>S03</span>Chi tiết · Thông tin chung</a>
+        <a href="#s04"><span>S04</span>Thành phần tham dự</a>
+        <a href="#s05"><span>S05</span>Nội dung cuộc họp</a>
+        <a href="#s06"><span>S06</span>Tài liệu</a>
+        <a href="#s07"><span>S07</span>Gửi duyệt</a>
+        <a href="#s08"><span>S08</span>Duyệt / Từ chối</a>
+        <a href="#s09"><span>S09</span>Công bố</a>
+        <a href="#s10"><span>S10</span>Phản hồi lời mời</a>
+        <a href="#s11"><span>S11</span>Dời lịch</a>
+      </div>
+      <div>
+        <div class="grp">BF-03 · Diễn ra cuộc họp</div>
+        <a href="#s12"><span>S12</span>Điều hành cuộc họp</a>
+        <a href="#s13"><span>S13</span>Điểm danh</a>
+        <a href="#s14"><span>S14</span>Biểu quyết</a>
+      </div>
+      <div>
+        <div class="grp">BF-04 · Sau cuộc họp</div>
+        <a href="#s15"><span>S15</span>Bản ghi &amp; transcript</a>
+        <a href="#s16"><span>S16</span>Tóm tắt</a>
+        <a href="#s17"><span>S17</span>Biên bản &amp; ký</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <section class="intro">
+      <h2>Màn hình cho luồng cuộc họp, theo đúng thứ tự BF</h2>
+      <p>Mỗi màn ghi rõ bước BF, actor và UC tương ứng để dựng lại Figma. Dữ liệu là ví dụ. Chữ trên màn hình là tiếng Việt như sản phẩm thật; giao diện theo ADR-0012: một sidebar xanh dọc, nút 40px, nút chính trên đầu trang 44px, bo góc 6px.</p>
+      <ul class="rules">
+        <li>Không còn tab “Phiên họp”. Lịch họp (ngày, giờ bắt đầu, giờ kết thúc, hình thức, địa điểm, link) nhập ngay khi tạo cuộc họp.</li>
+        <li>“Nội dung cuộc họp” là chương trình nghị sự, thuộc thẳng cuộc họp.</li>
+        <li>Biểu quyết chỉ diễn ra khi đang họp, không có phiếu trước hay sau họp, không tính quorum. Chủ trì ghi kết luận sau khi đóng phiếu.</li>
+        <li>Thư ký là người upload audio sau họp.</li>
+      </ul>
+      <p class="life">Vòng đời: Nháp → Chờ duyệt → Đã duyệt → Đã công bố → Đang họp → Đã kết thúc. Bị từ chối thì sửa rồi gửi duyệt lại.</p>
+    </section>
+
+    <!-- =============================================================== S01 -->
+    <section class="screen" id="s01">
+      <div class="screen-head"><span class="no">S01</span><h3>Danh sách cuộc họp</h3>
+        <div class="meta"><span class="tag bf">BF-02 · Create Meeting (vào từ đây)</span><span class="tag">Mọi người dùng</span><span class="tag">UC-18, UC-15</span></div></div>
+      <ul class="notes">
+        <li>Cột “Thời gian” lấy từ chính cuộc họp; không còn cột số phiên họp.</li>
+        <li>Danh sách chỉ trả về cuộc họp người dùng được xem (lọc phía server). Nút “Tạo cuộc họp” chỉ hiện với người có quyền tổ chức.</li>
+      </ul>
+      <div class="scroll"><div class="app">
+        <div class="side"><div class="brand">TrustCabinet</div>
+          <div class="nav on">Cuộc họp</div><div class="nav">Lịch làm việc</div><div class="nav">Kho tài liệu</div><div class="nav">Người dùng &amp; Quyền</div><div class="nav">Vai trò</div>
+          <div class="who">Nguyễn Minh Anh<br>Người tổ chức</div></div>
+        <div class="content">
+          <div class="phead"><div><h4>Cuộc họp</h4><div class="sub">Các cuộc họp bạn tổ chức, được mời hoặc cần duyệt</div></div>
+            <div class="acts"><span class="btn big pri">Tạo cuộc họp</span></div></div>
+          <div class="panel">
+            <div class="toolbar"><div class="input" style="width:320px">Tìm theo tên cuộc họp</div><div class="input sel" style="width:170px">Tất cả trạng thái</div><div class="input sel" style="width:160px">Tháng 10/2026</div></div>
+            <table>
+              <thead><tr><th>Tên cuộc họp</th><th>Thời gian</th><th>Hình thức · Địa điểm</th><th>Mức độ</th><th>Trạng thái</th></tr></thead>
+              <tbody>
+                <tr><td><div class="t">Giao ban kỹ thuật tuần 41</div><div class="s2">Chủ trì: Trần Quốc Bảo</div></td><td>09:00–10:30<div class="s2">Thứ Hai, 12/10/2026</div></td><td>Kết hợp · Phòng 3.2</td><td><span class="sens">Nội bộ</span></td><td><span class="chip c-violet">Đã công bố</span></td></tr>
+                <tr><td><div class="t">Duyệt kiến trúc phòng họp trực tuyến</div><div class="s2">Chủ trì: Lê Thu Hà</div></td><td>14:00–16:00<div class="s2">Thứ Ba, 13/10/2026</div></td><td>Trực tuyến</td><td><span class="sens">Hạn chế</span></td><td><span class="chip c-amber">Chờ duyệt</span></td></tr>
+                <tr><td><div class="t">Họp kế hoạch Sprint 6</div><div class="s2">Chưa có chủ trì</div></td><td>08:30–09:30<div class="s2">Thứ Năm, 15/10/2026</div></td><td>Trực tiếp · Phòng 2.1</td><td><span class="sens">Thường</span></td><td><span class="chip c-slate">Nháp</span></td></tr>
+                <tr><td><div class="t">Rà soát ngân sách quý IV</div><div class="s2">Chủ trì: Phạm Đức Long</div></td><td>15:00–16:00<div class="s2">Thứ Sáu, 09/10/2026</div></td><td>Trực tiếp · Phòng họp lớn</td><td><span class="sens secret">Mật</span></td><td><span class="chip c-green">Đang họp</span></td></tr>
+                <tr><td><div class="t">Tổng kết dự án SEP490</div><div class="s2">Chủ trì: Trần Quốc Bảo</div></td><td>09:00–11:00<div class="s2">Thứ Hai, 05/10/2026</div></td><td>Kết hợp · Phòng 3.2</td><td><span class="sens">Nội bộ</span></td><td><span class="chip c-slate">Đã kết thúc</span></td></tr>
+                <tr><td><div class="t">Đề xuất mua thiết bị phòng họp</div><div class="s2">Lý do từ chối: thiếu tài liệu báo giá</div></td><td>10:00–11:00<div class="s2">Thứ Tư, 14/10/2026</div></td><td>Trực tiếp · Phòng 2.1</td><td><span class="sens">Thường</span></td><td><span class="chip c-red">Bị từ chối</span></td></tr>
+              </tbody>
+            </table>
+            <div class="paging"><span>1–6 trong 23 cuộc họp</span><span>Trang 1 / 4 · <u>Trang sau</u></span></div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S02 -->
+    <section class="screen" id="s02">
+      <div class="screen-head"><span class="no">S02</span><h3>Tạo cuộc họp</h3>
+        <div class="meta"><span class="tag bf">BF-02 · Create Meeting → Save as Draft</span><span class="tag">Meeting Organizer</span><span class="tag">UC-15</span></div></div>
+      <ul class="notes">
+        <li>Lịch nằm ngay trong form (thay cho “Tạo phiên họp” UC-26 cũ). Kết thúc phải sau bắt đầu.</li>
+        <li>Địa điểm và link đổi theo hình thức: Trực tiếp cần địa điểm, Trực tuyến cần link, Kết hợp cần cả hai.</li>
+        <li>Lưu xong là cuộc họp ở trạng thái Nháp và chuyển sang tab Thành phần tham dự để thêm Thư ký đầu tiên.</li>
+      </ul>
+      <div class="scroll"><div class="app">
+        <div class="side"><div class="brand">TrustCabinet</div>
+          <div class="nav on">Cuộc họp</div><div class="nav">Lịch làm việc</div><div class="nav">Kho tài liệu</div>
+          <div class="who">Nguyễn Minh Anh<br>Người tổ chức</div></div>
+        <div class="content">
+          <div class="crumb">Cuộc họp / Tạo cuộc họp</div>
+          <div class="phead"><div><h4>Tạo cuộc họp</h4><div class="sub">Cuộc họp được lưu ở trạng thái Nháp, chỉ bạn nhìn thấy cho tới khi gửi duyệt</div></div></div>
+          <div class="panel"><div class="panel-b">
+            <div class="field"><label>Tên cuộc họp <em>*</em></label><div class="input val">Họp kế hoạch Sprint 6</div></div>
+            <div class="field"><label>Mô tả</label><div class="input area val">Chốt phạm vi Sprint 6: biểu quyết, biên bản, ký số.</div></div>
+            <div class="grid3">
+              <div class="field"><label>Ngày họp <em>*</em></label><div class="input val sel">15/10/2026</div></div>
+              <div class="field"><label>Bắt đầu <em>*</em></label><div class="input val sel">08:30</div></div>
+              <div class="field"><label>Kết thúc <em>*</em></label><div class="input val sel">09:30</div></div>
+            </div>
+            <div class="grid2">
+              <div class="field"><label>Hình thức <em>*</em></label><div class="seg"><span>Trực tiếp</span><span>Trực tuyến</span><span class="on">Kết hợp</span></div></div>
+              <div class="field"><label>Mức độ <em>*</em></label><div class="input val sel">Thường</div><small>Mức Mật hiển thị cảnh báo và chặn tải tài liệu</small></div>
+              <div class="field"><label>Địa điểm <em>*</em></label><div class="input val">Phòng 2.1, tầng 2</div></div>
+              <div class="field"><label>Link họp trực tuyến</label><div class="input val">Phòng họp trực tuyến TrustCabinet (tạo tự động)</div></div>
+            </div>
+          </div></div>
+          <div style="display:flex;justify-content:flex-end;gap:8px"><span class="btn">Hủy</span><span class="btn pri">Lưu nháp</span></div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S03 -->
+    <section class="screen" id="s03">
+      <div class="screen-head"><span class="no">S03</span><h3>Chi tiết cuộc họp · Thông tin chung (Nháp)</h3>
+        <div class="meta"><span class="tag bf">BF-02 · chuẩn bị trước khi gửi duyệt</span><span class="tag">Organizer, Secretary</span><span class="tag">UC-17, UC-16</span></div></div>
+      <ul class="notes">
+        <li>Bộ tab mới: Thông tin chung · Thành phần tham dự · Nội dung cuộc họp · Tài liệu · Biểu quyết · Bản ghi · Tóm tắt · Biên bản. Tab “Phiên họp” bị bỏ.</li>
+        <li>Thanh vòng đời luôn ở đầu trang. Nút hành động đổi theo trạng thái và vai trò (Nháp: Gửi duyệt; Đã duyệt: Công bố; Đã công bố: Bắt đầu cuộc họp, Dời lịch; Đang họp: Kết thúc cuộc họp).</li>
+        <li>Ô “Sẵn sàng gửi duyệt” liệt kê điều kiện còn thiếu thay vì để nút bị khoá không lý do.</li>
+      </ul>
+      <div class="scroll"><div class="app">
+        <div class="side"><div class="brand">TrustCabinet</div>
+          <div class="nav on">Cuộc họp</div><div class="nav">Lịch làm việc</div><div class="nav">Kho tài liệu</div>
+          <div class="who">Nguyễn Minh Anh<br>Người tổ chức</div></div>
+        <div class="content">
+          <div class="crumb">Cuộc họp / Họp kế hoạch Sprint 6</div>
+          <div class="phead"><div><h4>Họp kế hoạch Sprint 6 <span class="chip c-slate" style="vertical-align:middle">Nháp</span></h4>
+            <div class="sub"><span>Thứ Năm, 15/10/2026 · 08:30–09:30</span><span>Kết hợp · Phòng 2.1</span><span class="sens">Thường</span></div></div>
+            <div class="acts"><span class="btn big">Sửa thông tin</span><span class="btn big pri">Gửi duyệt</span></div></div>
+          <div class="steps"><span class="s cur">Nháp</span><span class="s">Chờ duyệt</span><span class="s">Đã duyệt</span><span class="s">Đã công bố</span><span class="s">Đang họp</span><span class="s">Đã kết thúc</span></div>
+          <div class="tabs"><span class="tab on">Thông tin chung</span><span class="tab">Thành phần tham dự</span><span class="tab">Nội dung cuộc họp</span><span class="tab">Tài liệu</span><span class="tab">Biểu quyết</span><span class="tab">Bản ghi</span><span class="tab">Tóm tắt</span><span class="tab">Biên bản</span></div>
+          <div class="split">
+            <div class="panel"><div class="panel-h"><b>Thông tin cuộc họp</b></div><div class="panel-b">
+              <dl class="kv">
+                <dt>Thời gian</dt><dd>Thứ Năm, 15/10/2026 · 08:30–09:30</dd>
+                <dt>Hình thức</dt><dd>Kết hợp</dd>
+                <dt>Địa điểm</dt><dd>Phòng 2.1, tầng 2</dd>
+                <dt>Link trực tuyến</dt><dd>Phòng họp trực tuyến TrustCabinet</dd>
+                <dt>Mức độ</dt><dd><span class="sens">Thường</span></dd>
+                <dt>Người tổ chức</dt><dd>Nguyễn Minh Anh</dd>
+                <dt>Người duyệt</dt><dd style="color:var(--label)">Chọn khi gửi duyệt</dd>
+                <dt>Mô tả</dt><dd>Chốt phạm vi Sprint 6: biểu quyết, biên bản, ký số.</dd>
+              </dl>
+            </div></div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div class="panel"><div class="panel-h"><b>Sẵn sàng gửi duyệt</b></div><div class="panel-b">
+                <div class="check ok"><b>Đủ</b>Đã có thời gian, hình thức, địa điểm</div>
+                <div class="check ok"><b>Đủ</b>Đã có Thư ký: Đỗ Hải Yến</div>
+                <div class="check no"><b>Thiếu</b>Chưa có Chủ trì. Thư ký gán ở tab Thành phần tham dự</div>
+                <div class="check ok"><b>Đủ</b>Có 4 mục trong nội dung cuộc họp</div>
+              </div></div>
+              <div class="panel"><div class="panel-h"><b>Lịch sử</b></div><div class="panel-b" style="font-size:12.5px">
+                <div><b>Đã tạo nháp</b><div class="s2" style="color:var(--muted)">Nguyễn Minh Anh · 09/10 15:02</div></div>
+              </div></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S04 -->
+    <section class="screen" id="s04">
+      <div class="screen-head"><span class="no">S04</span><h3>Thành phần tham dự</h3>
+        <div class="meta"><span class="tag bf">BF-02 · Assign First Secretary → Manage Participants → Assign Roles</span><span class="tag">Organizer (Thư ký đầu tiên), Secretary</span><span class="tag">UC-37, 38, 39, 40, 42, 88</span></div></div>
+      <ul class="notes">
+        <li>Khi chưa có Thư ký, Organizer chỉ thấy một nút “Thêm Thư ký”. Có Thư ký rồi thì Thư ký quản lý danh sách và gán vai trò.</li>
+        <li>Khách mời ngoài chỉ có tên và email; không có tài khoản, không có vai trò hệ thống.</li>
+        <li>Lúc còn Nháp chưa có cột Phản hồi và Điểm danh. Phản hồi hiện sau khi công bố; điểm danh mở khi Đang họp (S13).</li>
+      </ul>
+      <div class="scroll"><div class="app">
+        <div class="side"><div class="brand">TrustCabinet</div>
+          <div class="nav on">Cuộc họp</div><div class="nav">Lịch làm việc</div><div class="nav">Kho tài liệu</div>
+          <div class="who">Đỗ Hải Yến<br>Thư ký cuộc họp</div></div>
+        <div class="content">
+          <div class="crumb">Cuộc họp / Họp kế hoạch Sprint 6</div>
+          <div class="phead"><div><h4>Họp kế hoạch Sprint 6 <span class="chip c-slate" style="vertical-align:middle">Nháp</span></h4><div class="sub"><span>Thứ Năm, 15/10/2026 · 08:30–09:30</span></div></div></div>
+          <div class="tabs"><span class="tab">Thông tin chung</span><span class="tab on">Thành phần tham dự</span><span class="tab">Nội dung cuộc họp</span><span class="tab">Tài liệu</span><span class="tab">Biểu quyết</span><span class="tab">Bản ghi</span><span class="tab">Tóm tắt</span><span class="tab">Biên bản</span></div>
+          <div class="panel">
+            <div class="toolbar"><div class="input" style="width:280px">Tìm người tham dự</div><span style="flex:1"></span><span class="btn">Mời khách ngoài</span><span class="btn pri">Thêm thành phần</span></div>
+            <table>
+              <thead><tr><th>Người tham dự</th><th>Vai trò trong cuộc họp</th><th></th></tr></thead>
+              <tbody>
+                <tr><td><div class="t">Đỗ Hải Yến</div><div class="s2">yen.dh@trustsoft.vn</div></td><td><span class="role">Thư ký</span></td><td style="text-align:right"><span class="btn sm ghost">Đổi vai trò</span></td></tr>
+                <tr><td><div class="t">Trần Quốc Bảo</div><div class="s2">bao.tq@trustsoft.vn</div></td><td><span class="input val" style="height:32px;width:150px;display:inline-flex">Chủ trì</span></td><td style="text-align:right"><span class="btn sm ghost">Xoá</span></td></tr>
+                <tr><td><div class="t">Lê Thu Hà</div><div class="s2">ha.lt@trustsoft.vn</div></td><td><span class="role">Thành viên</span></td><td style="text-align:right"><span class="btn sm ghost">Đổi vai trò</span></td></tr>
+                <tr><td><div class="t">Phạm Đức Long</div><div class="s2">long.pd@trustsoft.vn</div></td><td><span class="role">Thành viên</span></td><td style="text-align:right"><span class="btn sm ghost">Đổi vai trò</span></td></tr>
+                <tr><td><div class="t">Ngô Thanh Vân</div><div class="s2">van.ngo@doitac.vn · khách ngoài</div></td><td><span class="role g">Khách</span></td><td style="text-align:right"><span class="btn sm ghost">Thu hồi lời mời</span></td></tr>
+              </tbody>
+            </table>
+            <div class="paging"><span>5 người · 1 khách ngoài</span><span>Lời mời gửi khi công bố</span></div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S05 -->
+    <section class="screen" id="s05">
+      <div class="screen-head"><span class="no">S05</span><h3>Nội dung cuộc họp (chương trình nghị sự)</h3>
+        <div class="meta"><span class="tag bf">BF-02 · Prepare Agenda Items</span><span class="tag">Secretary</span><span class="tag">UC-54, 31, 32, 33, 34</span></div></div>
+      <ul class="notes">
+        <li>Mục nghị sự thuộc thẳng cuộc họp. Kéo thả để đổi thứ tự; giờ dự kiến tự cộng dồn từ giờ bắt đầu cuộc họp.</li>
+        <li>Tổng thời lượng vượt khung giờ cuộc họp thì báo cảnh báo, không chặn lưu.</li>
+        <li>Chỉ sửa được khi Nháp hoặc Bị từ chối. Khi Đang họp, tab này thành màn điều hành (S12).</li>
+      </ul>
+      <div class="scroll"><div class="app">
+        <div class="side"><div class="brand">TrustCabinet</div>
+          <div class="nav on">Cuộc họp</div><div class="nav">Lịch làm việc</div><div class="nav">Kho tài liệu</div>
+          <div class="who">Đỗ Hải Yến<br>Thư ký cuộc họp</div></div>
+        <div class="content">
+          <div class="crumb">Cuộc họp / Họp kế hoạch Sprint 6</div>
+          <div class="phead"><div><h4>Họp kế hoạch Sprint 6 <span class="chip c-slate" style="vertical-align:middle">Nháp</span></h4><div class="sub"><span>Thứ Năm, 15/10/2026 · 08:30–09:30</span></div></div></div>
+          <div class="tabs"><span class="tab">Thông tin chung</span><span class="tab">Thành phần tham dự</span><span class="tab on">Nội dung cuộc họp</span><span class="tab">Tài liệu</span><span class="tab">Biểu quyết</span><span class="tab">Bản ghi</span><span class="tab">Tóm tắt</span><span class="tab">Biên bản</span></div>
+          <div class="panel">
+            <div class="panel-h"><b>4 mục · 60 phút / khung 60 phút</b><span class="btn pri sm">Thêm mục</span></div>
+            <div class="list">
+              <div class="ag" style="font-size:12px;color:var(--label);font-weight:600;background:var(--surface-head)"><span>#</span><span>Nội dung</span><span>Người trình bày</span><span>Thời lượng</span><span>Giờ dự kiến</span></div>
+              <div class="ag"><span class="n">1</span><span><b>Báo cáo kết quả Sprint 5</b><div class="s2" style="color:var(--muted);font-size:12px">1 tài liệu</div></span><span>Trần Quốc Bảo</span><span>10 phút</span><span>08:30–08:40</span></div>
+              <div class="ag"><span class="n">2</span><span><b>Phạm vi biểu quyết trong họp</b><div class="s2" style="color:var(--muted);font-size:12px">2 tài liệu · cần biểu quyết</div></span><span>Lê Thu Hà</span><span>20 phút</span><span>08:40–09:00</span></div>
+              <div class="ag"><span class="n">3</span><span><b>Quy trình ký và niêm phong biên bản</b><div class="s2" style="color:var(--muted);font-size:12px">Chưa có tài liệu</div></span><span>Ngô Thanh Vân (khách)</span><span>20 phút</span><span>09:00–09:20</span></div>
+              <div class="ag"><span class="n">4</span><span><b>Phân công và chốt lịch demo</b></span><span>Phạm Đức Long</span><span>10 phút</span><span>09:20–09:30</span></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S06 -->
+    <section class="screen" id="s06">
+      <div class="screen-head"><span class="no">S06</span><h3>Tài liệu cuộc họp</h3>
+        <div class="meta"><span class="tag bf">BF-02 · Add Meeting Documents</span><span class="tag">Organizer, Secretary</span><span class="tag">UC-56, 57, 58, 59, 60, 91</span></div></div>
+      <ul class="notes">
+        <li>Thêm tài liệu từ máy tính hoặc chọn từ Kho tài liệu cá nhân. Mỗi lần thêm ghim đúng một phiên bản.</li>
+        <li>Có thể gắn tài liệu với một mục nghị sự; không gắn thì là tài liệu chung.</li>
+      </ul>
+      <div class="scroll"><div class="app">
+        <div class="side"><div class="brand">TrustCabinet</div>
+          <div class="nav on">Cuộc họp</div><div class="nav">Lịch làm việc</div><div class="nav">Kho tài liệu</div>
+          <div class="who">Đỗ Hải Yến<br>Thư ký cuộc họp</div></div>
+        <div class="content">
+          <div class="crumb">Cuộc họp / Họp kế hoạch Sprint 6</div>
+          <div class="phead"><div><h4>Họp kế hoạch Sprint 6 <span class="chip c-slate" style="vertical-align:middle">Nháp</span></h4></div></div>
+          <div class="tabs"><span class="tab">Thông tin chung</span><span class="tab">Thành phần tham dự</span><span class="tab">Nội dung cuộc họp</span><span class="tab on">Tài liệu</span><span class="tab">Biểu quyết</span><span class="tab">Bản ghi</span><span class="tab">Tóm tắt</span><span class="tab">Biên bản</span></div>
+          <div class="panel">
+            <div class="toolbar"><div class="input sel" style="width:220px">Tất cả mục nghị sự</div><span style="flex:1"></span><span class="btn">Chọn từ Kho tài liệu</span><span class="btn pri">Tải lên từ máy</span></div>
+            <table>
+              <thead><tr><th>Tài liệu</th><th>Gắn với mục</th><th>Phiên bản</th><th>Người thêm</th><th>Góp ý</th></tr></thead>
+              <tbody>
+                <tr><td><div class="t">Bao-cao-Sprint5.pdf</div><div class="s2">2,4 MB</div></td><td>1. Báo cáo kết quả Sprint 5</td><td>v2</td><td>Trần Quốc Bảo</td><td>3</td></tr>
+                <tr><td><div class="t">De-xuat-bieu-quyet.docx</div><div class="s2">310 KB</div></td><td>2. Phạm vi biểu quyết trong họp</td><td>v1</td><td>Lê Thu Hà</td><td>0</td></tr>
+                <tr><td><div class="t">So-sanh-eCabinet.xlsx</div><div class="s2">88 KB</div></td><td>2. Phạm vi biểu quyết trong họp</td><td>v1</td><td>Đỗ Hải Yến</td><td>1</td></tr>
+                <tr><td><div class="t">Quy-che-hop.pdf</div><div class="s2">1,1 MB</div></td><td style="color:var(--label)">Tài liệu chung</td><td>v4</td><td>Nguyễn Minh Anh</td><td>0</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S07 -->
+    <section class="screen" id="s07">
+      <div class="screen-head"><span class="no">S07</span><h3>Gửi duyệt</h3>
+        <div class="meta"><span class="tag bf">BF-02 · Select Meeting Approver → Submit for Approval</span><span class="tag">Meeting Organizer</span><span class="tag">UC-19</span></div></div>
+      <ul class="notes">
+        <li>Chỉ liệt kê tài khoản đang hoạt động có quyền duyệt; không được chọn chính mình.</li>
+        <li>Gửi xong: trạng thái Chờ duyệt, người duyệt nhận thông báo, nội dung bị khoá sửa.</li>
+      </ul>
+      <div class="scroll"><div class="app ghosted">
+        <div class="side"><div class="brand">TrustCabinet</div><div class="nav on">Cuộc họp</div><div class="nav">Lịch làm việc</div><div class="nav">Kho tài liệu</div><div class="who">Nguyễn Minh Anh<br>Người tổ chức</div></div>
+        <div class="content">
+          <div class="crumb">Cuộc họp / Họp kế hoạch Sprint 6</div>
+          <div class="phead"><div><h4>Họp kế hoạch Sprint 6</h4></div><div class="acts"><span class="btn big pri">Gửi duyệt</span></div></div>
+          <div class="panel" style="height:340px"></div>
+          <div class="scrim"><div class="modal">
+            <div class="modal-h">Gửi cuộc họp để duyệt</div>
+            <div class="modal-b">
+              <div class="field"><label>Người duyệt <em>*</em></label><div class="input sel val">Võ Thị Lan · Trưởng phòng Kỹ thuật</div><small>Chỉ hiện người có quyền duyệt cuộc họp, không gồm bạn</small></div>
+              <div class="field"><label>Lời nhắn cho người duyệt</label><div class="input area">Không bắt buộc</div></div>
+              <div class="callout">Sau khi gửi, bạn không sửa được nội dung cho tới khi cuộc họp được duyệt hoặc bị từ chối.</div>
+            </div>
+            <div class="modal-f"><span class="btn">Hủy</span><span class="btn pri">Gửi duyệt</span></div>
+          </div></div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S08 -->
+    <section class="screen" id="s08">
+      <div class="screen-head"><span class="no">S08</span><h3>Duyệt hoặc từ chối</h3>
+        <div class="meta"><span class="tag bf">BF-02 · Review Meeting → Approve Meeting?</span><span class="tag">Meeting Approver</span><span class="tag">UC-20</span></div></div>
+      <ul class="notes">
+        <li>Người duyệt xem toàn bộ tab ở chế độ chỉ đọc. Từ chối bắt buộc nhập lý do; lý do hiện cho người tổ chức và lưu vào lịch sử.</li>
+        <li>Duyệt không tự công bố. Bị từ chối thì người tổ chức sửa rồi gửi duyệt lại (vòng lặp BF-02).</li>
+      </ul>
+      <div class="scroll"><div class="app ghosted">
+        <div class="side"><div class="brand">TrustCabinet</div><div class="nav on">Cuộc họp</div><div class="nav">Lịch làm việc</div><div class="nav">Kho tài liệu</div><div class="who">Võ Thị Lan<br>Người duyệt</div></div>
+        <div class="content">
+          <div class="crumb">Cuộc họp / Họp kế hoạch Sprint 6</div>
+          <div class="phead"><div><h4>Họp kế hoạch Sprint 6 <span class="chip c-amber" style="vertical-align:middle">Chờ duyệt</span></h4><div class="sub"><span>Gửi bởi Nguyễn Minh Anh · 09/10 16:10</span></div></div>
+            <div class="acts"><span class="btn big dan">Từ chối</span><span class="btn big pri">Duyệt</span></div></div>
+          <div class="panel" style="height:340px"></div>
+          <div class="scrim"><div class="modal">
+            <div class="modal-h">Từ chối cuộc họp</div>
+            <div class="modal-b">
+              <div class="field"><label>Lý do từ chối <em>*</em></label><div class="input area val">Mục 3 chưa có tài liệu quy trình ký. Bổ sung rồi gửi lại.</div></div>
+              <div class="callout warn">Cuộc họp chuyển sang Bị từ chối. Người tổ chức nhận thông báo kèm lý do.</div>
+            </div>
+            <div class="modal-f"><span class="btn">Hủy</span><span class="btn dan">Từ chối</span></div>
+          </div></div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S09 -->
+    <section class="screen" id="s09">
+      <div class="screen-head"><span class="no">S09</span><h3>Công bố cuộc họp</h3>
+        <div class="meta"><span class="tag bf">BF-02 · Publish → Chair &amp; Secretary Assigned? → Published &amp; Invitations</span><span class="tag">Meeting Organizer</span><span class="tag">UC-21</span></div></div>
+      <ul class="notes">
+        <li>Thiếu Chủ trì hoặc Thư ký đang hoạt động thì không công bố được; hộp thoại chỉ ra người cần bổ sung (Thư ký gán ở S04).</li>
+        <li>Công bố là lúc gửi lời mời: thông báo trong ứng dụng cho người nội bộ, email kèm link xác minh cho khách ngoài.</li>
+      </ul>
+      <div class="scroll"><div class="app ghosted">
+        <div class="side"><div class="brand">TrustCabinet</div><div class="nav on">Cuộc họp</div><div class="nav">Lịch làm việc</div><div class="nav">Kho tài liệu</div><div class="who">Nguyễn Minh Anh<br>Người tổ chức</div></div>
+        <div class="content">
+          <div class="crumb">Cuộc họp / Họp kế hoạch Sprint 6</div>
+          <div class="phead"><div><h4>Họp kế hoạch Sprint 6 <span class="chip c-blue" style="vertical-align:middle">Đã duyệt</span></h4><div class="sub"><span>Duyệt bởi Võ Thị Lan · 10/10 08:15</span></div></div>
+            <div class="acts"><span class="btn big pri">Công bố</span></div></div>
+          <div class="panel" style="height:340px"></div>
+          <div class="scrim"><div class="modal">
+            <div class="modal-h">Công bố cuộc họp</div>
+            <div class="modal-b">
+              <div class="check ok"><b>Đủ</b>Chủ trì: Trần Quốc Bảo</div>
+              <div class="check ok"><b>Đủ</b>Thư ký: Đỗ Hải Yến</div>
+              <div class="callout">Lời mời sẽ gửi tới 4 người nội bộ và 1 khách ngoài. Sau khi công bố chỉ còn dời được thời gian, địa điểm và link.</div>
+            </div>
+            <div class="modal-f"><span class="btn">Hủy</span><span class="btn pri">Công bố và gửi lời mời</span></div>
+          </div></div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S10 -->
+    <section class="screen" id="s10">
+      <div class="screen-head"><span class="no">S10</span><h3>Phản hồi lời mời</h3>
+        <div class="meta"><span class="tag bf">BF-02 · Open Invitation → Accept / Decline</span><span class="tag">Participant, Guest</span><span class="tag">UC-41, UC-87</span></div></div>
+      <ul class="notes">
+        <li>Hai lựa chọn: Tham dự / Không tham dự. Đổi phản hồi được tới khi cuộc họp kết thúc.</li>
+        <li>Khách ngoài mở link trong email, xác minh email bằng mã một lần, rồi mới thấy cuộc họp và trả lời.</li>
+      </ul>
+      <div class="scroll"><div class="pair">
+        <div class="mini">
+          <div class="mini-top"><span>Người nội bộ · thông báo → chi tiết cuộc họp</span><span>Lê Thu Hà</span></div>
+          <div class="mini-b">
+            <span class="label-cap">Lời mời họp</span>
+            <h4>Họp kế hoạch Sprint 6</h4>
+            <dl class="kv"><dt>Thời gian</dt><dd>Thứ Năm, 15/10/2026 · 08:30–09:30</dd><dt>Hình thức</dt><dd>Kết hợp · Phòng 2.1</dd><dt>Vai trò của bạn</dt><dd><span class="role">Thành viên</span></dd><dt>Chủ trì</dt><dd>Trần Quốc Bảo</dd></dl>
+            <div style="display:flex;gap:8px"><span class="btn pri">Tham dự</span><span class="btn">Không tham dự</span></div>
+            <div class="callout">Bạn đã chọn: <b>Tham dự</b> · 10/10 09:02. Có thể đổi lại trước khi cuộc họp kết thúc.</div>
+          </div>
+        </div>
+        <div class="mini">
+          <div class="mini-top"><span>Khách ngoài · trang mở từ email</span><span>van.ngo@doitac.vn</span></div>
+          <div class="mini-b">
+            <span class="label-cap">TrustCabinet mời bạn họp</span>
+            <h4>Họp kế hoạch Sprint 6</h4>
+            <div style="color:var(--muted);font-size:13px">Nhập mã 6 số vừa gửi tới v***@doitac.vn để xem cuộc họp.</div>
+            <div class="otp"><span>4</span><span>8</span><span>1</span><span>0</span><span></span><span></span></div>
+            <div style="display:flex;gap:8px;align-items:center"><span class="btn pri">Xác minh</span><span class="btn ghost">Gửi lại mã</span></div>
+            <div class="callout warn">Cuộc họp có thể được ghi âm để lập biên bản. Thông tin của bạn chỉ dùng cho cuộc họp này.</div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S11 -->
+    <section class="screen" id="s11">
+      <div class="screen-head"><span class="no">S11</span><h3>Dời lịch</h3>
+        <div class="meta"><span class="tag bf">BF-02 · Reschedule Needed? → Reschedule → Notify Invitees</span><span class="tag">Meeting Organizer</span><span class="tag">UC-16 (sau khi công bố)</span></div></div>
+      <ul class="notes">
+        <li>Chỉ khi Đã công bố. Chỉ đổi được thời gian, địa điểm, link; các trường khác khoá và ghi rõ vì sao.</li>
+        <li>Lưu xong gửi thông báo và email cập nhật cho mọi người được mời. Phản hồi cũ giữ nguyên.</li>
+      </ul>
+      <div class="scroll"><div class="app ghosted">
+        <div class="side"><div class="brand">TrustCabinet</div><div class="nav on">Cuộc họp</div><div class="nav">Lịch làm việc</div><div class="nav">Kho tài liệu</div><div class="who">Nguyễn Minh Anh<br>Người tổ chức</div></div>
+        <div class="content">
+          <div class="crumb">Cuộc họp / Họp kế hoạch Sprint 6</div>
+          <div class="phead"><div><h4>Họp kế hoạch Sprint 6 <span class="chip c-violet" style="vertical-align:middle">Đã công bố</span></h4></div><div class="acts"><span class="btn big">Dời lịch</span><span class="btn big pri">Bắt đầu cuộc họp</span></div></div>
+          <div class="panel" style="height:380px"></div>
+          <div class="scrim"><div class="modal" style="width:600px">
+            <div class="modal-h">Dời lịch cuộc họp</div>
+            <div class="modal-b">
+              <div class="grid3">
+                <div class="field"><label>Ngày họp</label><div class="input val sel">16/10/2026</div></div>
+                <div class="field"><label>Bắt đầu</label><div class="input val sel">14:00</div></div>
+                <div class="field"><label>Kết thúc</label><div class="input val sel">15:00</div></div>
+              </div>
+              <div class="grid2">
+                <div class="field"><label>Địa điểm</label><div class="input val">Phòng 3.2, tầng 3</div></div>
+                <div class="field"><label>Link trực tuyến</label><div class="input val">Phòng họp trực tuyến TrustCabinet</div></div>
+                <div class="field"><label>Tên cuộc họp</label><div class="input lock">Họp kế hoạch Sprint 6</div><small>Đã công bố, không đổi được</small></div>
+                <div class="field"><label>Mức độ</label><div class="input lock">Thường</div><small>Đã công bố, không đổi được</small></div>
+              </div>
+              <div class="callout">5 người được mời sẽ nhận thông báo và email lịch mới.</div>
+            </div>
+            <div class="modal-f"><span class="btn">Hủy</span><span class="btn pri">Lưu và thông báo</span></div>
+          </div></div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S12 -->
+    <section class="screen" id="s12">
+      <div class="screen-head"><span class="no">S12</span><h3>Điều hành cuộc họp</h3>
+        <div class="meta"><span class="tag bf">BF-03 · Start Meeting → Set Current → Discuss → Complete → More? → End Meeting</span><span class="tag">Chair</span><span class="tag">UC-43, 35, 36, 44, 45</span></div></div>
+      <ul class="notes">
+        <li>Bấm “Bắt đầu cuộc họp” (S11) thì trạng thái thành Đang họp và mọi người nhận thông báo. Tab Nội dung cuộc họp chuyển sang chế độ điều hành.</li>
+        <li>Chủ trì đặt mục hiện tại, mở biểu quyết cho mục đó nếu cần, rồi hoàn thành mục. Hệ thống ghi thời gian thực tế từng mục.</li>
+        <li>“Kết thúc cuộc họp” không kiểm tra phiên nào nữa; chỉ hỏi xác nhận vì không mở lại được, rồi đóng phòng trực tuyến.</li>
+      </ul>
+      <div class="scroll"><div class="app">
+        <div class="side"><div class="brand">TrustCabinet</div><div class="nav on">Cuộc họp</div><div class="nav">Lịch làm việc</div><div class="nav">Kho tài liệu</div><div class="who">Trần Quốc Bảo<br>Chủ trì</div></div>
+        <div class="content">
+          <div class="crumb">Cuộc họp / Họp kế hoạch Sprint 6</div>
+          <div class="phead"><div><h4>Họp kế hoạch Sprint 6 <span class="chip c-green" style="vertical-align:middle">Đang họp</span></h4><div class="sub"><span>Bắt đầu 08:32 · đã họp 21 phút</span><span>Có mặt 4/5</span></div></div>
+            <div class="acts"><span class="btn big">Vào phòng trực tuyến</span><span class="btn big dan">Kết thúc cuộc họp</span></div></div>
+          <div class="tabs"><span class="tab">Thông tin chung</span><span class="tab">Thành phần tham dự</span><span class="tab on">Nội dung cuộc họp</span><span class="tab">Tài liệu</span><span class="tab">Biểu quyết</span><span class="tab">Bản ghi</span><span class="tab">Tóm tắt</span><span class="tab">Biên bản</span></div>
+          <div class="split">
+            <div class="panel">
+              <div class="list">
+                <div class="ag"><span class="n">1</span><span><b>Báo cáo kết quả Sprint 5</b><div style="color:var(--muted);font-size:12px">08:32–08:44</div></span><span>Trần Quốc Bảo</span><span>10 phút</span><span style="color:var(--muted)">Xong</span></div>
+                <div class="ag cur"><span class="n">2</span><span><b>Phạm vi biểu quyết trong họp</b><div style="color:var(--brand-ink);font-size:12px">Đang thảo luận từ 08:44 · 9 phút</div></span><span>Lê Thu Hà</span><span>20 phút</span><span><span class="chip c-blue">Hiện tại</span></span></div>
+                <div class="ag"><span class="n">3</span><span><b>Quy trình ký và niêm phong biên bản</b></span><span>Ngô Thanh Vân</span><span>20 phút</span><span><span class="btn sm">Đặt hiện tại</span></span></div>
+                <div class="ag"><span class="n">4</span><span><b>Phân công và chốt lịch demo</b></span><span>Phạm Đức Long</span><span>10 phút</span><span><span class="btn sm">Đặt hiện tại</span></span></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div class="panel"><div class="panel-h"><b>Mục hiện tại · 2</b></div><div class="panel-b">
+                <div style="font-weight:600">Phạm vi biểu quyết trong họp</div>
+                <div style="font-size:12.5px;color:var(--muted)">2 tài liệu · De-xuat-bieu-quyet.docx, So-sanh-eCabinet.xlsx</div>
+                <span class="btn">Tạo biểu quyết cho mục này</span>
+                <span class="btn pri">Hoàn thành mục</span>
+              </div></div>
+              <div class="room"><div>Trần Quốc Bảo</div><div>Lê Thu Hà</div><div>Đỗ Hải Yến</div><div>Ngô Thanh Vân</div><div>Phòng 2.1</div><div style="color:#b9c6dd">Chờ vào</div></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S13 -->
+    <section class="screen" id="s13">
+      <div class="screen-head"><span class="no">S13</span><h3>Điểm danh</h3>
+        <div class="meta"><span class="tag bf">BF-03 · Record Official Attendance</span><span class="tag">Secretary</span><span class="tag">UC-88</span></div></div>
+      <ul class="notes">
+        <li>Hệ thống điền sẵn “Có mặt” cho ai đang ở phòng trực tuyến; Thư ký sửa lại theo thực tế, người ngồi ở phòng họp thì Thư ký đánh tay.</li>
+        <li>Điểm danh độc lập với phản hồi lời mời. Sửa được tới hết ngày họp.</li>
+      </ul>
+      <div class="scroll"><div class="app">
+        <div class="side"><div class="brand">TrustCabinet</div><div class="nav on">Cuộc họp</div><div class="nav">Lịch làm việc</div><div class="nav">Kho tài liệu</div><div class="who">Đỗ Hải Yến<br>Thư ký cuộc họp</div></div>
+        <div class="content">
+          <div class="crumb">Cuộc họp / Họp kế hoạch Sprint 6</div>
+          <div class="phead"><div><h4>Họp kế hoạch Sprint 6 <span class="chip c-green" style="vertical-align:middle">Đang họp</span></h4></div></div>
+          <div class="tabs"><span class="tab">Thông tin chung</span><span class="tab on">Thành phần tham dự</span><span class="tab">Nội dung cuộc họp</span><span class="tab">Tài liệu</span><span class="tab">Biểu quyết</span><span class="tab">Bản ghi</span><span class="tab">Tóm tắt</span><span class="tab">Biên bản</span></div>
+          <div class="panel">
+            <div class="toolbar"><b style="font-size:14px">Điểm danh chính thức</b><span style="flex:1"></span><span style="font-size:12.5px;color:var(--muted)">Có mặt 4 · Vắng 0 · Có phép 1</span><span class="btn pri">Lưu điểm danh</span></div>
+            <table>
+              <thead><tr><th>Người tham dự</th><th>Vai trò</th><th>Phản hồi lời mời</th><th>Điểm danh</th></tr></thead>
+              <tbody>
+                <tr><td class="t">Trần Quốc Bảo</td><td><span class="role">Chủ trì</span></td><td>Tham dự</td><td><div class="seg" style="width:260px;height:30px"><span class="on">Có mặt</span><span>Vắng</span><span>Có phép</span></div></td></tr>
+                <tr><td class="t">Đỗ Hải Yến</td><td><span class="role">Thư ký</span></td><td>Tham dự</td><td><div class="seg" style="width:260px;height:30px"><span class="on">Có mặt</span><span>Vắng</span><span>Có phép</span></div></td></tr>
+                <tr><td class="t">Lê Thu Hà</td><td><span class="role">Thành viên</span></td><td>Tham dự</td><td><div class="seg" style="width:260px;height:30px"><span class="on">Có mặt</span><span>Vắng</span><span>Có phép</span></div></td></tr>
+                <tr><td class="t">Phạm Đức Long</td><td><span class="role">Thành viên</span></td><td>Không tham dự</td><td><div class="seg" style="width:260px;height:30px"><span>Có mặt</span><span>Vắng</span><span class="on">Có phép</span></div></td></tr>
+                <tr><td class="t">Ngô Thanh Vân</td><td><span class="role g">Khách</span></td><td>Tham dự</td><td><div class="seg" style="width:260px;height:30px"><span class="on">Có mặt</span><span>Vắng</span><span>Có phép</span></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S14 -->
+    <section class="screen" id="s14">
+      <div class="screen-head"><span class="no">S14</span><h3>Biểu quyết trong cuộc họp</h3>
+        <div class="meta"><span class="tag bf">BF-03 · Create &amp; Open Vote → Cast Vote → Close Vote → Tally → Record Conclusion</span><span class="tag">Chair, Participant</span><span class="tag">UC-70, 71, 72, 73, 74, 75, 76*</span></div></div>
+      <ul class="notes">
+        <li>Chỉ tạo và mở được khi Đang họp; thường gắn với mục hiện tại. Không có hạn chót trước/sau họp, không quorum.</li>
+        <li>Người đủ điều kiện bỏ phiếu một lần. Chủ trì đóng phiếu, hệ thống đếm, Chủ trì ghi kết luận: Thông qua / Không thông qua / Hoãn.</li>
+        <li>*UC-76 chờ PO chốt: đổi thành “Ghi kết luận biểu quyết” hay bỏ.</li>
+      </ul>
+      <div class="scroll"><div class="pair">
+        <div class="mini">
+          <div class="mini-top"><span>Chủ trì · tạo và mở biểu quyết</span><span>Mục 2</span></div>
+          <div class="mini-b">
+            <div class="field"><label>Nội dung biểu quyết <em>*</em></label><div class="input val">Thông qua phạm vi biểu quyết chỉ trong cuộc họp</div></div>
+            <div class="field"><label>Phương án</label>
+              <div class="input val">Đồng ý</div><div class="input val">Không đồng ý</div><div class="input val">Không ý kiến</div><span class="btn ghost sm" style="align-self:flex-start">Thêm phương án</span></div>
+            <div class="grid2">
+              <div class="field"><label>Hình thức</label><div class="seg"><span class="on">Công khai</span><span>Bỏ phiếu kín</span></div></div>
+              <div class="field"><label>Người được bỏ phiếu</label><div class="input sel val">Chủ trì, Thư ký, Thành viên</div></div>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end"><span class="btn">Lưu nháp</span><span class="btn pri">Mở biểu quyết</span></div>
+          </div>
+        </div>
+        <div class="mini">
+          <div class="mini-top"><span>Chủ trì · sau khi đóng phiếu</span><span class="chip c-slate">Đã đóng</span></div>
+          <div class="mini-b">
+            <h4 style="font-size:15px">Thông qua phạm vi biểu quyết chỉ trong cuộc họp</h4>
+            <div style="font-size:12.5px;color:var(--muted)">4/4 người đã bỏ phiếu · công khai · mở 08:51, đóng 08:55</div>
+            <div class="vote-opt"><span>Đồng ý</span><div class="bar"><i style="width:75%"></i></div><span>3 · 75%</span></div>
+            <div class="vote-opt"><span>Không đồng ý</span><div class="bar"><i style="width:0%"></i></div><span>0 · 0%</span></div>
+            <div class="vote-opt"><span>Không ý kiến</span><div class="bar"><i style="width:25%"></i></div><span>1 · 25%</span></div>
+            <div class="field"><label>Kết luận <em>*</em></label><div class="seg"><span class="on">Thông qua</span><span>Không thông qua</span><span>Hoãn</span></div></div>
+            <div class="field"><label>Ghi chú kết luận</label><div class="input val">Áp dụng từ Sprint 6.</div></div>
+            <div style="display:flex;justify-content:flex-end"><span class="btn pri">Ghi kết luận</span></div>
+          </div>
+        </div>
+        <div class="mini" style="grid-column:1 / -1">
+          <div class="mini-top"><span>Thành viên · bỏ phiếu (hiện trong tab Biểu quyết và thông báo khi mở)</span><span>Lê Thu Hà</span></div>
+          <div class="mini-b" style="flex-direction:row;align-items:center;gap:16px;flex-wrap:wrap">
+            <b style="flex:1;min-width:280px">Thông qua phạm vi biểu quyết chỉ trong cuộc họp</b>
+            <div class="seg" style="width:380px"><span class="on">Đồng ý</span><span>Không đồng ý</span><span>Không ý kiến</span></div>
+            <span class="btn pri">Gửi phiếu</span>
+            <span style="font-size:12.5px;color:var(--muted);width:100%">Phiếu đã gửi không sửa được.</span>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S15 -->
+    <section class="screen" id="s15">
+      <div class="screen-head"><span class="no">S15</span><h3>Bản ghi và transcript</h3>
+        <div class="meta"><span class="tag bf">BF-04 · Upload Audio → Valid? → Transcribe → Review &amp; Edit Transcript</span><span class="tag">Secretary, AI provider</span><span class="tag">UC-61, 62, 63, 64, 65</span></div></div>
+      <ul class="notes">
+        <li>Mở sau khi cuộc họp Đã kết thúc; hệ thống nhắc Thư ký upload. Hệ thống không tự ghi âm.</li>
+        <li>File sai định dạng hoặc quá dung lượng: báo lỗi ngay, cho chọn lại. Xử lý lỗi: báo lỗi và nút “Xử lý lại”.</li>
+        <li>Thư ký sửa câu chữ và gán người nói (Người nói 1 → người thật) trước khi tạo tóm tắt.</li>
+      </ul>
+      <div class="scroll"><div class="app">
+        <div class="side"><div class="brand">TrustCabinet</div><div class="nav on">Cuộc họp</div><div class="nav">Lịch làm việc</div><div class="nav">Kho tài liệu</div><div class="who">Đỗ Hải Yến<br>Thư ký cuộc họp</div></div>
+        <div class="content">
+          <div class="crumb">Cuộc họp / Họp kế hoạch Sprint 6</div>
+          <div class="phead"><div><h4>Họp kế hoạch Sprint 6 <span class="chip c-slate" style="vertical-align:middle">Đã kết thúc</span></h4><div class="sub"><span>08:32–09:41 · 15/10/2026</span></div></div></div>
+          <div class="tabs"><span class="tab">Thông tin chung</span><span class="tab">Thành phần tham dự</span><span class="tab">Nội dung cuộc họp</span><span class="tab">Tài liệu</span><span class="tab">Biểu quyết</span><span class="tab on">Bản ghi</span><span class="tab">Tóm tắt</span><span class="tab">Biên bản</span></div>
+          <div class="split">
+            <div class="panel">
+              <div class="panel-h"><b>Transcript · hop-sprint6.m4a</b><span class="chip c-green">Xử lý xong</span></div>
+              <div class="seg-t"><span class="tm">00:00:12</span><span class="spk">Trần Quốc Bảo</span><span>Bắt đầu họp. Mục đầu tiên là báo cáo kết quả Sprint 5.</span></div>
+              <div class="seg-t"><span class="tm">00:01:05</span><span class="spk">Trần Quốc Bảo</span><span>Sprint 5 hoàn thành 18 trên 21 story, ba story chuyển sang Sprint 6.</span></div>
+              <div class="seg-t"><span class="tm">00:12:40</span><span class="spk">Lê Thu Hà</span><span>Đề xuất chỉ biểu quyết trong cuộc họp, bỏ phiếu trước và sau họp.</span></div>
+              <div class="seg-t"><span class="tm">00:14:02</span><span class="spk" style="color:var(--chip-amber-fg)">Người nói 3</span><span>Bên tôi đồng ý, miễn biên bản ghi rõ kết luận.</span></div>
+              <div class="seg-t"><span class="tm">00:15:30</span><span class="spk">Đỗ Hải Yến</span><span>Ghi nhận. Chủ trì mở biểu quyết cho mục 2.</span></div>
+              <div class="paging"><span>Đoạn 1–5 trong 214</span><span>Sửa lần cuối 15/10 10:20</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div class="drop"><b>Kéo thả file audio vào đây</b><span style="font-size:12px">MP3, M4A, WAV · tối đa 500 MB</span><span class="btn sm">Chọn file</span></div>
+              <div class="panel"><div class="panel-h"><b>File đã tải lên</b></div><div class="panel-b" style="font-size:13px">
+                <div><b>hop-sprint6.m4a</b><div style="color:var(--muted);font-size:12px">1 giờ 09 phút · 64 MB · Đỗ Hải Yến</div></div>
+                <div class="callout err">ghi-am-phong.wma: định dạng không hỗ trợ. Chọn file MP3, M4A hoặc WAV.</div>
+              </div></div>
+              <span class="btn pri">Tạo tóm tắt từ transcript</span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S16 -->
+    <section class="screen" id="s16">
+      <div class="screen-head"><span class="no">S16</span><h3>Tóm tắt cuộc họp</h3>
+        <div class="meta"><span class="tag bf">BF-04 · Generate Summary → Review &amp; Approve → Publish</span><span class="tag">Secretary, AI provider</span><span class="tag">UC-90, 66, 67, 68, 69</span></div></div>
+      <ul class="notes">
+        <li>Ba trạng thái: Bản nháp → Đã duyệt → Đã công bố. Duyệt và công bố là hai nút riêng.</li>
+        <li>Việc cần làm trong tóm tắt chỉ là văn bản, không có người phụ trách hay hạn chót.</li>
+      </ul>
+      <div class="scroll"><div class="app">
+        <div class="side"><div class="brand">TrustCabinet</div><div class="nav on">Cuộc họp</div><div class="nav">Lịch làm việc</div><div class="nav">Kho tài liệu</div><div class="who">Đỗ Hải Yến<br>Thư ký cuộc họp</div></div>
+        <div class="content">
+          <div class="crumb">Cuộc họp / Họp kế hoạch Sprint 6</div>
+          <div class="phead"><div><h4>Họp kế hoạch Sprint 6 <span class="chip c-slate" style="vertical-align:middle">Đã kết thúc</span></h4></div>
+            <div class="acts"><span class="btn big">Tạo lại</span><span class="btn big">Duyệt tóm tắt</span><span class="btn big pri dis">Công bố</span></div></div>
+          <div class="tabs"><span class="tab">Thông tin chung</span><span class="tab">Thành phần tham dự</span><span class="tab">Nội dung cuộc họp</span><span class="tab">Tài liệu</span><span class="tab">Biểu quyết</span><span class="tab">Bản ghi</span><span class="tab on">Tóm tắt</span><span class="tab">Biên bản</span></div>
+          <div class="split">
+            <div class="panel"><div class="panel-h"><b>Bản nháp tóm tắt</b><span class="chip c-amber">Bản nháp</span></div><div class="panel-b doc">
+              <b>Nội dung chính</b>
+              <div>Sprint 5 hoàn thành 18/21 story; ba story chuyển sang Sprint 6. Nhóm thống nhất chỉ biểu quyết trong cuộc họp.</div>
+              <b>Kết luận</b>
+              <div>Mục 2: Thông qua phạm vi biểu quyết chỉ trong cuộc họp (3 đồng ý, 1 không ý kiến).</div>
+              <b>Việc cần làm (văn bản)</b>
+              <div>Cập nhật tài liệu FE-12; chốt lịch demo ngày 22/10.</div>
+            </div></div>
+            <div class="panel"><div class="panel-h"><b>Nguồn</b></div><div class="panel-b" style="font-size:12.5px">
+              <div>Transcript đã sửa · 214 đoạn</div><div>Tạo bởi AI lúc 15/10 10:31</div>
+              <div class="callout">Duyệt xong mới công bố được. Công bố sẽ gửi thông báo cho người tham dự.</div>
+            </div></div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- =============================================================== S17 -->
+    <section class="screen" id="s17">
+      <div class="screen-head"><span class="no">S17</span><h3>Biên bản và ký</h3>
+        <div class="meta"><span class="tag bf">BF-04 · Generate Draft Minutes → Submit for Signing → Acceptable? → Sign / Revise → All Signed? → Seal</span><span class="tag">Secretary, Chair / người ký</span><span class="tag">UC-77, 78, 79, 80, 81, 82, 83, 93</span></div></div>
+      <ul class="notes">
+        <li>Bản nháp lấy từ thông tin cuộc họp, tóm tắt đã công bố và kết luận biểu quyết (không còn “Resolution”).</li>
+        <li>Người ký chọn Ký hoặc Yêu cầu sửa. Thư ký sửa thì mọi chữ ký đã có bị huỷ và gửi ký lại từ đầu.</li>
+        <li>Đủ chữ ký thì Thư ký Niêm phong; biên bản bị khoá và là hồ sơ chính thức.</li>
+      </ul>
+      <div class="scroll"><div class="app">
+        <div class="side"><div class="brand">TrustCabinet</div><div class="nav on">Cuộc họp</div><div class="nav">Lịch làm việc</div><div class="nav">Kho tài liệu</div><div class="who">Trần Quốc Bảo<br>Chủ trì · người ký</div></div>
+        <div class="content">
+          <div class="crumb">Cuộc họp / Họp kế hoạch Sprint 6</div>
+          <div class="phead"><div><h4>Họp kế hoạch Sprint 6 <span class="chip c-slate" style="vertical-align:middle">Đã kết thúc</span></h4></div>
+            <div class="acts"><span class="btn big">Yêu cầu sửa</span><span class="btn big pri">Ký biên bản</span></div></div>
+          <div class="tabs"><span class="tab">Thông tin chung</span><span class="tab">Thành phần tham dự</span><span class="tab">Nội dung cuộc họp</span><span class="tab">Tài liệu</span><span class="tab">Biểu quyết</span><span class="tab">Bản ghi</span><span class="tab">Tóm tắt</span><span class="tab on">Biên bản</span></div>
+          <div class="split">
+            <div class="panel"><div class="panel-h"><b>Biên bản · lần sửa 2</b><span class="chip c-amber">Chờ ký</span></div><div class="panel-b doc">
+              <h5>BIÊN BẢN CUỘC HỌP</h5>
+              <div class="center">Họp kế hoạch Sprint 6 · 15/10/2026 · 08:32–09:41 · Phòng 2.1 và trực tuyến</div>
+              <div><b>Thành phần:</b> Chủ trì Trần Quốc Bảo; Thư ký Đỗ Hải Yến; Lê Thu Hà; khách mời Ngô Thanh Vân. Vắng có phép: Phạm Đức Long.</div>
+              <div><b>Nội dung:</b> theo tóm tắt đã công bố.</div>
+              <div><b>Kết luận biểu quyết:</b> Mục 2 — Thông qua (3 đồng ý, 0 không đồng ý, 1 không ý kiến).</div>
+            </div></div>
+            <div class="panel"><div class="panel-h"><b>Chữ ký · 1/2</b></div>
+              <div class="sig"><span><b>Trần Quốc Bảo</b><div style="color:var(--muted);font-size:12px">Chủ trì</div></span><span style="color:var(--muted)">Chờ ký</span><span></span></div>
+              <div class="sig"><span><b>Đỗ Hải Yến</b><div style="color:var(--muted);font-size:12px">Thư ký</div></span><span style="color:var(--chip-green-fg);font-weight:600">Đã ký</span><span style="font-size:12px;color:var(--muted)">15/10 14:05</span></div>
+              <div class="panel-b"><div class="callout">Thư ký Niêm phong khi đủ 2/2 chữ ký. Lần sửa 1 đã bị huỷ chữ ký do yêu cầu sửa của Chủ trì.</div><span class="btn dis">Niêm phong biên bản</span></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+  </main>
+</div>
+
+</body>
+</html>
