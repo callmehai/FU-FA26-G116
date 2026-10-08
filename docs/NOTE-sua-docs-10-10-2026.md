@@ -68,6 +68,9 @@ phần A/B/C viết "PO-Qx" hoặc "chờ PO" thì thay bằng mặc định ở
 | Q11 | UC-43 Start Meeting có báo cho người tham dự không? | **Có**, thông báo trong ứng dụng | Khớp BF-03 |
 | Q12 | Ai đứng tên dòng Change Log trong Report? | **HaiTV** (PO) | |
 
+Mã thông báo ngừng dùng: **15 mã** `MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127` (Phần A và B chỉ
+liệt kê 14, thiếu `MSG77` của UC-28 — dùng danh sách 15 mã này).
+
 Mã thông báo mới (lấy theo [Mã tiếp theo] của catalogue): **`MSG138`** — dời lịch thành công (UC-16
 Reschedule); **`MSG139`** — không kết thúc được vì còn phiếu đang mở (UC-44, theo Q8). Mã tiếp theo
 sau đợt này: **`MSG140`**.
