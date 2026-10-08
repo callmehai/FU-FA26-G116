@@ -197,9 +197,38 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MSG77` | UC-28 | *The last planned meeting session of a published meeting cannot be cancelled.* |
 | `MSG90` | UC-21 Phát hành cuộc họp | *At least one valid planned Meeting Session is required before publication.* — **Ngừng dùng**; Report 3 source-of-truth xác định Meeting Sessions là tùy chọn. Không tái sử dụng mã. |
 | `MSG91` | SCRUM-19 | Mã từng được giữ cho workflow nhưng không còn tình huống backend — **Ngừng dùng**, không tái sử dụng. |
-| `MSG95`–`MSG109` | UC-37–UC-42 F08 | Mã tải roster, thêm participant, role, removal, response và readiness; xem đặc tả UC. |
-| `MSG110`–`MSG116` | UC-43–UC-44 Start/End Meeting | Mã thành công, điều kiện không hợp lệ và lỗi hệ thống; xem đặc tả UC. |
-| `MSG117`–`MSG126` | UC-45–UC-52 GOF09 Online Meeting Room | Mã trạng thái room, thiết bị, chia sẻ, presence, moderation, chat và xác minh Guest; xem đặc tả UC. |
+| `MSG95` | UC-37 / UC-42 | *Unable to load meeting participants. Please try again.* |
+| `MSG96` | UC-38 Add Meeting Participant | *Meeting participant added successfully.* |
+| `MSG97` | UC-38 | *Invalid meeting participant information.* (Lỗi: *The selected user is not available.*, *This user is already a meeting participant.*, *A valid meeting role is required.*, *The Meeting Organizer must assign a Secretary as the first meeting participant.*, *Guest name and email are required.*, *Guest email is invalid.*, *This guest email is already invited to the meeting.*, *This email is already represented by an internal meeting participant.*) |
+| `MSG98` | UC-38 / UC-39 / UC-40 | *The meeting participant list cannot be modified in its current status.* |
+| `MSG99` | UC-38 | *Unable to add the meeting participant. Please try again.* |
+| `MSG100` | UC-39 Assign / Change Meeting Role | *Meeting role updated successfully.* |
+| `MSG101` | UC-39 | *A valid meeting role is required.* |
+| `MSG102` | UC-39 | *Unable to update the meeting role. Please try again.* |
+| `MSG103` | UC-40 Remove Meeting Participant | *Meeting participant removed successfully.* |
+| `MSG104` | UC-40 | *Unable to remove the meeting participant. Please try again.* |
+| `MSG105` | UC-41 Respond to Meeting Invitation | *Meeting invitation response recorded successfully.* |
+| `MSG106` | UC-41 | *Invalid meeting invitation response.* |
+| `MSG107` | UC-41 | *This meeting invitation can no longer be answered.* |
+| `MSG108` | UC-41 | *Unable to save the meeting invitation response. Please try again.* |
+| `MSG109` | UC-39 / UC-40 | *The meeting must retain its required Chair and Secretary. Assign a replacement first.* |
+| `MSG110` | UC-43 Start Meeting | *Meeting started successfully.* |
+| `MSG111` | UC-44 End Meeting | *Meeting ended successfully.* |
+| `MSG112` | UC-43 | *This meeting cannot be started.* |
+| `MSG113` | UC-44 | *Complete or cancel all unfinished meeting sessions before ending the meeting.* |
+| `MSG114` | UC-44 | *This meeting cannot be ended.* |
+| `MSG115` | UC-43 | *Unable to start the meeting. Please try again.* |
+| `MSG116` | UC-44 | *Unable to end the meeting. Please try again.* |
+| `MSG117` | UC-45 Join Meeting Room | *The online meeting room is not available.* |
+| `MSG118` | UC-45 | *Unable to join the meeting room. Please try again.* |
+| `MSG119` | UC-47 Manage Microphone | *Microphone access is unavailable. Check your browser or device permissions.* |
+| `MSG120` | UC-48 Manage Camera | *Camera access is unavailable. Check your browser or device permissions.* |
+| `MSG121` | UC-49 Manage Screen Sharing | *Unable to share your screen.* |
+| `MSG122` | UC-50 View Meeting Room Participants | *Unable to load meeting room participants. Please try again.* |
+| `MSG123` | UC-51 Moderate Meeting Room | *You are not allowed to moderate this meeting room.* |
+| `MSG124` | UC-51 | *Unable to apply the room moderation action.* |
+| `MSG125` | UC-52 Use In-room Chat | *Unable to send the room message. Please try again.* |
+| `MSG126` | UC-41 | *Unable to verify the guest invitation. Check the code and try again.* |
 | `MSG127` | UC-53 View Meeting Sessions | *Unable to load meeting sessions. Please try again.* |
 | `MSG128` | UC-54 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |
 
