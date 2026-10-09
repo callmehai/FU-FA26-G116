@@ -1,6 +1,8 @@
 # Use Case Diagram theo Actor
 
-Nguồn: [Master Use Case Inventory](../../01-requirements/00-master-use-case-inventory.md), baseline 05/10/2026. Nhãn trong sơ đồ dùng tiếng Anh. Mỗi actor có đúng một sơ đồ và một ảnh duy nhất chứa toàn bộ UC của actor đó; không tách trang theo Feature. Bố cục theo mẫu tham khảo: actor bên ngoài, system boundary bao quanh các UC, quan hệ `<<extend>>` / `<<include>>` nét đứt. PNG và PDF đều là toàn bộ sơ đồ; `.drawio` là bản editable.
+Nguồn: [Master Use Case Inventory](../../01-requirements/00-master-use-case-inventory.md), baseline 05/10/2026. Nhãn trong sơ đồ dùng tiếng Anh. Mỗi actor có đúng một sơ đồ và một ảnh duy nhất chứa toàn bộ UC của actor đó; không tách trang theo Feature. Bố cục theo mẫu tham khảo: actor bên ngoài, system boundary bao quanh các UC, quan hệ `<<extend>>` / `<<include>>` nét đứt. PNG và PDF đều là toàn bộ sơ đồ.
+
+**File Draw.io tổng hợp:** [trustcabinet-use-cases.drawio](trustcabinet-use-cases.drawio) chứa đủ 7 sơ đồ actor dưới dạng 7 trang, giữ nguyên từng sơ đồ. Dùng file này để mở và chỉnh tất cả trang trong cùng một tài liệu. Các file `.drawio` theo từng actor bên dưới vẫn được giữ riêng; thay đổi trong file tổng hợp không tự đồng bộ ngược sang chúng.
 
 | Actor | PDF đầy đủ | Sơ đồ editable | Ảnh đầy đủ (PNG) |
 |---|---|---|

@@ -1,15 +1,18 @@
 """Convert the three downloaded Drive reports to searchable Markdown snapshots.
 
-Download the latest DOCX files from the Drive links below into
-docs/08-reports/source/ as Report-1.docx, Report-2.docx, and Report-3.docx,
-then run: python scripts/sync_reports.py
+Run:
+    python scripts/sync_reports.py             # Converts existing source/ DOCX files (or downloads if missing)
+    python scripts/sync_reports.py --download  # Forces downloading latest DOCX from Google Drive and converts
 """
 
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 import tempfile
+import urllib.error
+import urllib.request
 import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path
@@ -40,6 +43,27 @@ REPORTS = (
 
 W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 NS = {"w": W}
+
+
+def download_reports(force: bool = False) -> None:
+    SOURCE_DIR.mkdir(parents=True, exist_ok=True)
+    for filename, title, source_url, _ in REPORTS:
+        target = SOURCE_DIR / filename
+        if target.is_file() and not force:
+            continue
+        match = re.search(r"/document/d/([a-zA-Z0-9_-]+)", source_url)
+        if not match:
+            continue
+        doc_id = match.group(1)
+        export_url = f"https://docs.google.com/document/d/{doc_id}/export?format=docx"
+        print(f"Downloading {filename} ({title}) from Google Drive...")
+        req = urllib.request.Request(export_url, headers={"User-Agent": "Mozilla/5.0"})
+        try:
+            with urllib.request.urlopen(req) as resp:
+                target.write_bytes(resp.read())
+            print(f"  ✓ Saved {filename}")
+        except urllib.error.URLError as err:
+            print(f"  ✗ Failed to download {filename}: {err}", file=sys.stderr)
 
 
 def paragraph_text(paragraph: ET.Element) -> str:
@@ -125,12 +149,26 @@ def write_atomic(path: Path, content: str) -> None:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Sync Google Drive reports to Markdown snapshots.")
+    parser.add_argument(
+        "--download",
+        "-d",
+        action="store_true",
+        help="Force downloading latest DOCX from Google Drive before converting",
+    )
+    args = parser.parse_args()
+
+    # Check if files need downloading
     missing = [SOURCE_DIR / filename for filename, *_ in REPORTS if not (SOURCE_DIR / filename).is_file()]
-    if missing:
+    if args.download or missing:
+        download_reports(force=args.download)
+
+    still_missing = [SOURCE_DIR / filename for filename, *_ in REPORTS if not (SOURCE_DIR / filename).is_file()]
+    if still_missing:
         names_and_urls = "\n".join(
             f"  - {filename}: {source_url}"
             for filename, _, source_url, _ in REPORTS
-            if SOURCE_DIR / filename in missing
+            if SOURCE_DIR / filename in still_missing
         )
         print(
             "Download the missing DOCX files from Google Drive into "

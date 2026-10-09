@@ -6,130 +6,126 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="boundary" value="TrustCabinet — All Use Cases: Meeting Organizer" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingTop=10;spacingLeft=12;fontStyle=1;fontSize=16;strokeColor=#555555;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="190" y="30" width="2380" height="1502" as="geometry" />
+          <mxGeometry x="190" y="48" width="2320" height="1506" as="geometry" />
         </mxCell>
         <mxCell id="actor" value="Meeting Organizer" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#333333;fontSize=10;" vertex="1" parent="1">
           <mxGeometry x="63.5" y="597.0" width="48" height="62" as="geometry" />
         </mxCell>
-        <mxCell id="uc-1" value="UC-01&lt;br&gt;Sign in with Email and Password" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="70.0" y="91.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-1" value="Sign in with Email and Password" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="265" y="123" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-2" value="UC-02&lt;br&gt;Sign in with Google" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="70.0" y="173.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-2" value="Sign in with Google" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="265" y="205" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-3" value="UC-03&lt;br&gt;Sign Out" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="70.0" y="255.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-3" value="Sign Out" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="265" y="287" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-15" value="UC-15&lt;br&gt;Create Meeting" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="570.0" y="337.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-15" value="Create Meeting" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="765" y="369" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-16" value="UC-16&lt;br&gt;Update Meeting" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1070.0" y="419.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-16" value="Update Meeting" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1265" y="451" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-17" value="UC-17&lt;br&gt;View Meeting Details" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="570.0" y="419.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-17" value="View Meeting Details" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="765" y="451" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-18" value="UC-18&lt;br&gt;View Meeting List" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="70.0" y="337.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-18" value="View Meeting List" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="265" y="369" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-19" value="UC-19&lt;br&gt;Submit Meeting for Approval" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1070.0" y="501.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-19" value="Submit Meeting for Approval" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1265" y="533" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-21" value="UC-21&lt;br&gt;Publish Meeting" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1070.0" y="583.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-21" value="Publish Meeting" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1265" y="615" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-22" value="UC-22&lt;br&gt;View Notifications" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="70.0" y="419.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-22" value="View Notifications" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="265" y="451" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-23" value="UC-23&lt;br&gt;Mark Notification as Read" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="570.0" y="501.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-23" value="Mark Notification as Read" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="765" y="533" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-24" value="UC-24&lt;br&gt;Mark All Notifications as Read" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="570.0" y="583.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-24" value="Mark All Notifications as Read" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="765" y="615" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-25" value="UC-25&lt;br&gt;Open Notification Target" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="570.0" y="665.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-25" value="Open Notification Target" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="765" y="697" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-38" value="UC-38&lt;br&gt;Add Meeting Participant" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1070.0" y="665.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-38" value="Add Meeting Participant" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1265" y="697" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-46" value="UC-46&lt;br&gt;Leave Meeting Room" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="70.0" y="501.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-46" value="Leave Meeting Room" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="265" y="533" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-47" value="UC-47&lt;br&gt;Manage Microphone" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="70.0" y="583.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-47" value="Manage Microphone" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="265" y="615" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-48" value="UC-48&lt;br&gt;Manage Camera" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="70.0" y="665.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-48" value="Manage Camera" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="265" y="697" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-49" value="UC-49&lt;br&gt;Manage Screen Sharing" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="70.0" y="747.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-49" value="Manage Screen Sharing" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="265" y="779" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-50" value="UC-50&lt;br&gt;View Meeting Room Participants" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="70.0" y="829.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-50" value="View Meeting Room Participants" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="265" y="861" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-52" value="UC-52&lt;br&gt;Use In-room Chat" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="70.0" y="911.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-52" value="Use In-room Chat" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="265" y="943" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-53" value="UC-53&lt;br&gt;View Meeting Sessions" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1070.0" y="747.0" width="180" height="48" as="geometry" />
+        
+        <mxCell id="uc-54" value="View Meeting Agenda" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1765" y="779" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-54" value="UC-54&lt;br&gt;View Meeting Agenda" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1570.0" y="747.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-56" value="View Meeting Documents" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1265" y="861" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-56" value="UC-56&lt;br&gt;View Meeting Documents" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1070.0" y="829.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-57" value="Add Document to Meeting" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1765" y="861" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-57" value="UC-57&lt;br&gt;Add Document to Meeting" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1570.0" y="829.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-58" value="Add New Meeting Document Version" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1765" y="943" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-58" value="UC-58&lt;br&gt;Add New Meeting Document Version" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1570.0" y="911.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-59" value="View Document Version History" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1765" y="1025" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-59" value="UC-59&lt;br&gt;View Document Version History" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1570.0" y="993.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-60" value="Preview Meeting Document" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1765" y="1107" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-60" value="UC-60&lt;br&gt;Preview Meeting Document" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1570.0" y="1075.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-61" value="View Media Library" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1265" y="943" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-61" value="UC-61&lt;br&gt;View Media Library" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1070.0" y="911.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-63" value="Play Meeting Audio" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1765" y="1189" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-63" value="UC-63&lt;br&gt;Play Meeting Audio" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1570.0" y="1157.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-70" value="View Meeting Votes" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1265" y="1025" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-70" value="UC-70&lt;br&gt;View Meeting Votes" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1070.0" y="993.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-74" value="View Vote Status" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1765" y="1271" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-74" value="UC-74&lt;br&gt;View Vote Status" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1570.0" y="1239.0" width="180" height="48" as="geometry" />
+        
+        <mxCell id="uc-77" value="View Meeting Minutes" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1265" y="1107" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-76" value="UC-76&lt;br&gt;View Resolution" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1570.0" y="1321.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-82" value="View Signature Status &amp; Audit Trail" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1765" y="1435" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-77" value="UC-77&lt;br&gt;View Meeting Minutes" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1070.0" y="1075.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-84" value="View Personal Dashboard &amp; Meeting Workspace" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="265" y="1025" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-82" value="UC-82&lt;br&gt;View Signature Status &amp; Audit Trail" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="1570.0" y="1403.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-85" value="View Reports &amp; Statistics" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="265" y="1107" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-84" value="UC-84&lt;br&gt;View Personal Dashboard &amp; Meeting Workspace" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="70.0" y="993.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-86" value="Export Report" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="765" y="1107" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-85" value="UC-85&lt;br&gt;View Reports &amp; Statistics" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="70.0" y="1075.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-89" value="View Personal Document Library" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="265" y="1189" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-86" value="UC-86&lt;br&gt;Export Report" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="570.0" y="1075.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-91" value="Comment on Meeting Document" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="2265" y="1107" width="170" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="uc-89" value="UC-89&lt;br&gt;View Personal Document Library" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="70.0" y="1157.0" width="180" height="48" as="geometry" />
-        </mxCell>
-        <mxCell id="uc-91" value="UC-91&lt;br&gt;Comment on Meeting Document" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="2070.0" y="1075.0" width="180" height="48" as="geometry" />
-        </mxCell>
-        <mxCell id="uc-94" value="UC-94&lt;br&gt;Upload Document to Personal Library" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=9;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="boundary">
-          <mxGeometry x="570.0" y="1157.0" width="180" height="48" as="geometry" />
+        <mxCell id="uc-94" value="Upload Document to Personal Library" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="765" y="1189" width="170" height="44" as="geometry" />
         </mxCell>
         <mxCell id="assoc-1" value="" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.06666666666666667;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="actor" target="uc-1">
           <mxGeometry relative="1" as="geometry">
@@ -223,11 +219,8 @@
           <mxGeometry relative="1" as="geometry">
             </mxGeometry>
         </mxCell>
-        <mxCell id="rel-53-17-extend" value="&amp;#171;extend&amp;#187;" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="uc-53" target="uc-17">
-          <mxGeometry relative="1" as="geometry">
-            </mxGeometry>
-        </mxCell>
-        <mxCell id="rel-54-53-extend" value="&amp;#171;extend&amp;#187;" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="uc-54" target="uc-53">
+        
+        <mxCell id="rel-54-17-extend" value="&amp;#171;extend&amp;#187;" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="uc-54" target="uc-17">
           <mxGeometry relative="1" as="geometry">
             </mxGeometry>
         </mxCell>
@@ -267,10 +260,7 @@
           <mxGeometry relative="1" as="geometry">
             </mxGeometry>
         </mxCell>
-        <mxCell id="rel-76-70-extend" value="&amp;#171;extend&amp;#187;" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.6666666666666666;entryDx=0;entryDy=0;" edge="1" parent="1" source="uc-76" target="uc-70">
-          <mxGeometry relative="1" as="geometry">
-            </mxGeometry>
-        </mxCell>
+        
         <mxCell id="rel-77-17-extend" value="&amp;#171;extend&amp;#187;" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.9;entryDx=0;entryDy=0;" edge="1" parent="1" source="uc-77" target="uc-17">
           <mxGeometry relative="1" as="geometry">
             </mxGeometry>
