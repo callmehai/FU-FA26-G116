@@ -1,2662 +1,1091 @@
 # Use Case Specifications · TrustCabinet
 
-Tài liệu đặc tả chi tiết các Use Case (UC Specification) cho hệ thống họp không giấy tờ **TrustCabinet**.
+Đặc tả Use Case của **TrustCabinet**, đồng bộ nguyên văn mục *II. Use Case Specifications* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX ngày 10/10/2026). Nội dung đặc tả giữ tiếng Anh như Report 3.
 
-**Nguồn quy tắc nghiệp vụ:** [Danh mục Business Rules BR-01 → BR-157](06-business-rules.md). UC trong tài liệu này dẫn chiếu mã BR tại các điều kiện/bước liên quan; nội dung định nghĩa BR được quản lý tập trung ở danh mục đó để tránh các bản sao lệch nhau. Mã `BR` là mã quy tắc nghiệp vụ, độc lập với mã thông báo `MSG`.
+- **Phạm vi:** 15 Feature (FE-01 → FE-15), 70 Use Case (UC-01 → UC-70). UC gom nhiều thao tác nhỏ được tách thành UC con có hậu tố chữ (ví dụ `UC-06a`, `UC-06b`, `UC-06c`).
+- **Đổi số:** danh sách UC đã được gom và đánh số lại sau quyết định PO 09/10/2026 (bỏ Meeting Session, biểu quyết chỉ trong cuộc họp). Bảng đổi số cũ → mới nằm ở [Master Use Case Inventory §5](00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới).
+- **Business Rules:** [06-business-rules.md](06-business-rules.md). **Mã thông báo:** chuẩn là [danh mục mã thông báo](../03-api/00-danh-muc-ma-thong-bao.md) — khi mã `MSGnn` trong đặc tả lệch với danh mục, danh mục thắng.
+- UC ghi *Placeholder* là UC đã có trong phạm vi nhưng Report 3 chưa đặc tả chi tiết; BE viết đặc tả cơ bản khi nhận ticket (xem [DEVELOPMENT_WORKFLOW](../DEVELOPMENT_WORKFLOW.md)).
+- Quy ước viết UC Specification ở [README](README.md#2-quy-ước-viết-use-case-specification-business-oriented).
 
----
+## Mục lục
 
-## 1. Danh mục Use Case (Use Case Index)
+### FE-01 — Authentication & Account Security
 
-### 1.1 Quản lý truy cập & Xác thực (Authentication)
-- **UC-01**: Đăng nhập bằng Email/Password (Sign In with Email and Password)
-- **UC-02**: Đăng nhập bằng Google (Sign In with Google)
-- **UC-03**: Đăng xuất (Sign Out)
+- [UC-01 — Sign in with Email and Password](#uc-01--sign-in-with-email-and-password)
+- [UC-02 — Sign in with Google](#uc-02--sign-in-with-google)
+- [UC-03 — Sign Out](#uc-03--sign-out)
+- [UC-04 — Access Meeting via Guest Invitation](#uc-04--access-meeting-via-guest-invitation)
 
-### 1.2 Quản lý người dùng (User Management)
-- **UC-04**: Xem danh sách tài khoản người dùng (View User Accounts)
-- **UC-05**: Tạo tài khoản người dùng (Create User Account)
-- **UC-06**: Cập nhật thông tin người dùng (Update User Account)
-- **UC-07**: Khóa / Mở khóa tài khoản (Deactivate / Reactivate User Account)
-- **UC-08**: Đặt lại mật khẩu người dùng (Reset User Password)
-- **UC-09**: Phân quyền vai trò cho người dùng (Assign System Role to User)
+### FE-02 — User & Profile Management
 
-### 1.3 Quản lý vai trò & Phân quyền (Role Management)
-- **UC-10**: Xem ma trận vai trò & quyền hạn (View Role & Permission Matrix)
-- **UC-11**: Cấu hình phân quyền vai trò (Configure Role Permissions)
-- **UC-12**: Tạo vai trò mới (Create Role)
-- **UC-13**: Cập nhật vai trò (Update Role)
-- **UC-14**: Xóa vai trò (Delete Role)
+- [UC-05 — View User Accounts](#uc-05--view-user-accounts)
+- [UC-06 — Manage User Accounts](#uc-06--manage-user-accounts)
+  - [UC-06a — Create User Account](#uc-06a--create-user-account)
+  - [UC-06b — Update User Account](#uc-06b--update-user-account)
+  - [UC-06c — Deactivate / Reactivate User Account](#uc-06c--deactivate--reactivate-user-account)
+- [UC-07 — Reset User Password](#uc-07--reset-user-password)
+- [UC-08 — Assign System Role to User](#uc-08--assign-system-role-to-user)
+- [UC-09 — Unlock User Account](#uc-09--unlock-user-account)
 
-### 1.4 Quản lý cuộc họp (Meeting Management)
-- **UC-15**: Tạo cuộc họp (Create Meeting)
-- **UC-16**: Cập nhật cuộc họp (Update Meeting)
-- **UC-17**: Xem chi tiết cuộc họp (View Meeting Details)
-- **UC-18**: Xem danh sách cuộc họp (View Meeting List)
-- **UC-19**: Gửi duyệt cuộc họp (Submit Meeting for Approval)
-- **UC-20**: Phê duyệt / Từ chối cuộc họp (Review Meeting Approval)
-- **UC-21**: Phát hành cuộc họp (Publish Meeting)
-- **UC-43**: Bắt đầu cuộc họp (Start Meeting)
-- **UC-44**: Kết thúc cuộc họp (End Meeting)
+### FE-03 — Role-Based Access Control
 
-### 1.5 Quản lý thông báo (Notification Management)
-- **UC-22**: Xem danh sách thông báo (View Notifications)
-- **UC-23**: Đánh dấu đã đọc thông báo (Mark Notification as Read)
-- **UC-24**: Đánh dấu đã đọc tất cả thông báo (Mark All Notifications as Read)
-- **UC-25**: Mở đối tượng liên kết thông báo (Open Notification Target)
+- [UC-10 — View Role & Permission Matrix](#uc-10--view-role--permission-matrix)
+- [UC-11 — Configure Role Permissions](#uc-11--configure-role-permissions)
+- [UC-12 — Manage Roles](#uc-12--manage-roles)
+  - [UC-12a — Create Role](#uc-12a--create-role)
+  - [UC-12b — Update Role](#uc-12b--update-role)
+  - [UC-12c — Delete Role](#uc-12c--delete-role)
+- [UC-13 — View Audit Log](#uc-13--view-audit-log)
 
-### 1.6 Quản lý phiên họp (Meeting Session Management)
-- **UC-26**: Tạo phiên họp (Create Meeting Session)
-- **UC-27**: Cập nhật phiên họp (Update Meeting Session)
-- **UC-28**: Hủy phiên họp (Cancel Meeting Session)
-- **UC-29**: Bắt đầu phiên họp (Start Meeting Session)
-- **UC-30**: Kết thúc phiên họp (End Meeting Session)
-- **UC-53**: Xem danh sách phiên họp (View Meeting Sessions)
+### FE-04 — Meeting Management
 
-### 1.7 Quản lý chương trình nghị sự (Agenda Management)
-- **UC-31**: Tạo mục chương trình nghị sự (Create Agenda Item)
-- **UC-32**: Cập nhật mục chương trình nghị sự (Update Agenda Item)
-- **UC-33**: Xóa mục chương trình nghị sự (Delete Agenda Item)
-- **UC-34**: Sắp xếp lại thứ tự mục chương trình nghị sự (Reorder Agenda Items)
-- **UC-35**: Đặt mục chương trình nghị sự hiện tại (Set Current Agenda Item)
-- **UC-36**: Hoàn thành mục chương trình nghị sự (Complete Agenda Item)
-- **UC-54**: Xem chương trình nghị sự cuộc họp (View Meeting Agenda)
+- [UC-14 — Create Meeting](#uc-14--create-meeting)
+- [UC-15 — Update Meeting](#uc-15--update-meeting)
+- [UC-16 — View Meeting Details](#uc-16--view-meeting-details)
+- [UC-17 — View Meeting List](#uc-17--view-meeting-list)
+- [UC-18 — Submit Meeting for Approval](#uc-18--submit-meeting-for-approval)
+- [UC-19 — Review Meeting Approval](#uc-19--review-meeting-approval)
+- [UC-20 — Publish Meeting](#uc-20--publish-meeting)
+- [UC-21 — Start Meeting](#uc-21--start-meeting)
+- [UC-22 — End Meeting](#uc-22--end-meeting)
 
-### 1.8 Thành phần tham dự & Vai trò trong cuộc họp (Meeting Participants & Meeting Roles)
-- **UC-37**: Xem thành phần tham dự (View Meeting Participants)
-- **UC-38**: Thêm thành phần tham dự (Add Meeting Participant)
-- **UC-39**: Gán / Thay đổi vai trò trong cuộc họp (Assign / Change Meeting Role)
-- **UC-40**: Xóa thành phần tham dự (Remove Meeting Participant)
-- **UC-41**: Phản hồi lời mời họp (Respond to Meeting Invitation)
-- **UC-42**: Xem trạng thái phản hồi của thành phần tham dự (View Participant Response Status)
+### FE-05 — Agenda Management
 
-### 1.9 Quản lý phòng họp trực tuyến (Online Meeting Room Management)
-- **UC-45**: Vào phòng họp trực tuyến (Join Meeting Room)
-- **UC-46**: Rời phòng họp trực tuyến (Leave Meeting Room)
-- **UC-47**: Quản lý micro (Manage Microphone)
-- **UC-48**: Quản lý camera (Manage Camera)
-- **UC-49**: Chia sẻ màn hình (Manage Screen Sharing)
-- **UC-50**: Xem người đang trong phòng (View Meeting Room Participants)
-- **UC-51**: Điều phối phòng họp (Moderate Meeting Room)
-- **UC-52**: Chat trong phòng họp (Use In-room Chat)
+- [UC-23 — Manage Agenda Items](#uc-23--manage-agenda-items)
+  - [UC-23a — Create Agenda Item](#uc-23a--create-agenda-item)
+  - [UC-23b — Update Agenda Item](#uc-23b--update-agenda-item)
+  - [UC-23c — Delete Agenda Item](#uc-23c--delete-agenda-item)
+  - [UC-23d — Reorder Agenda Items](#uc-23d--reorder-agenda-items)
+- [UC-24 — Set Current Agenda Item](#uc-24--set-current-agenda-item)
+- [UC-25 — Complete Agenda Item](#uc-25--complete-agenda-item)
+- [UC-26 — View Meeting Agenda](#uc-26--view-meeting-agenda)
 
+### FE-06 — Meeting Participant Management
 
----
+- [UC-27 — View Meeting Participants](#uc-27--view-meeting-participants)
+- [UC-28 — Manage Meeting Participants](#uc-28--manage-meeting-participants)
+  - [UC-28a — Add Meeting Participant](#uc-28a--add-meeting-participant)
+  - [UC-28b — Assign / Change Meeting Role](#uc-28b--assign--change-meeting-role)
+  - [UC-28c — Remove Meeting Participant](#uc-28c--remove-meeting-participant)
+- [UC-29 — Respond to Meeting Invitation](#uc-29--respond-to-meeting-invitation)
+- [UC-30 — View Participant Response Status](#uc-30--view-participant-response-status)
+- [UC-31 — Record Attendance](#uc-31--record-attendance)
 
-## 2. Đặc tả chi tiết từng Use Case (Template & Specifications)
+### FE-07 — Personal Document Library & Meeting Document Management
 
-<!-- Dưới đây là khung mẫu chi tiết cho từng UC. Bạn có thể sao chép hoặc điền thông tin chi tiết vào từng mục -->
+- [UC-32 — View Meeting Documents](#uc-32--view-meeting-documents)
+  - [UC-32a — View Meeting Documents](#uc-32a--view-meeting-documents)
+  - [UC-32b — View Document Version History](#uc-32b--view-document-version-history)
+  - [UC-32c — Preview Meeting Document](#uc-32c--preview-meeting-document)
+- [UC-33 — Manage Meeting Documents](#uc-33--manage-meeting-documents)
+  - [UC-33a — Add Document to Meeting](#uc-33a--add-document-to-meeting)
+  - [UC-33b — Add New Meeting Document Version](#uc-33b--add-new-meeting-document-version)
+- [UC-34 — View Personal Document Library](#uc-34--view-personal-document-library)
+- [UC-35 — Comment on Meeting Document](#uc-35--comment-on-meeting-document)
+- [UC-36 — Upload Document to Personal Library](#uc-36--upload-document-to-personal-library)
 
-### Mẫu đặc tả Use Case (Template)
+### FE-08 — Online Meeting Room Management
 
-```markdown
-### UC-[XX]: [Tên Use Case]
+- [UC-37 — Join Meeting Room](#uc-37--join-meeting-room)
+- [UC-38 — Leave Meeting Room](#uc-38--leave-meeting-room)
+- [UC-39 — Manage Meeting Room Controls](#uc-39--manage-meeting-room-controls)
+  - [UC-39a — Manage Microphone](#uc-39a--manage-microphone)
+  - [UC-39b — Manage Camera](#uc-39b--manage-camera)
+  - [UC-39c — Manage Screen Sharing](#uc-39c--manage-screen-sharing)
+- [UC-40 — View Meeting Room Participants](#uc-40--view-meeting-room-participants)
+- [UC-41 — Moderate Meeting Room](#uc-41--moderate-meeting-room)
+- [UC-42 — Use In-room Chat](#uc-42--use-in-room-chat)
 
-- **Actor chính**: [Tên actor thực hiện, ví dụ: Meeting Organizer / Admin / ...]
-- **Mô tả**: [Mô tả tóm tắt mục đích của Use Case]
-- **Điều kiện tiên quyết (Preconditions)**:
-  - [Điều kiện 1, ví dụ: Người dùng đã đăng nhập vào hệ thống]
-  - [Điều kiện 2, ví dụ: Có quyền hạn `AdminMeetings`]
-- **Điều kiện sau (Postconditions)**:
-  - [Kết quả sau khi thực hiện thành công]
-- **Sơ đồ liên quan**:
-  - Sequence Diagram: [Tên file Sequence Diagram](file://../06-sequencediagram/...)
+### FE-09 — Meeting Audio Upload & Media Library
 
-#### Luồng sự kiện chính (Main Flow / Basic Flow):
-1. Actor thực hiện hành động A...
-2. Hệ thống kiểm tra và xác thực dữ liệu...
-3. Hệ thống lưu trạng thái mới vào cơ sở dữ liệu...
-4. Hệ thống phản hồi thông báo thành công cho Actor.
+- [UC-43 — View & Play Meeting Audio](#uc-43--view--play-meeting-audio)
+  - [UC-43a — View Media Library](#uc-43a--view-media-library)
+  - [UC-43b — Play Meeting Audio](#uc-43b--play-meeting-audio)
+- [UC-44 — Upload Meeting Audio](#uc-44--upload-meeting-audio)
 
-#### Luồng sự kiện thay thế (Alternative Flows):
-- **AF-1**: [Mô tả luồng thay thế khi có lựa chọn khác]
-  1. ...
+### FE-10 — Speaker-Attributed Transcription & Meeting Summary
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-- **EX-1**: [Mô tả lỗi hoặc điều kiện thất bại, mã MSG tương ứng — lấy mã kế tiếp trong docs/03-api/00-danh-muc-ma-thong-bao.md, không đánh số lại từ MSG01 cho mỗi use case]
-  1. Hệ thống hiển thị thông báo lỗi `[Mã MSG] - [Nội dung thông báo]`.
-  2. Actor quay lại bước ...
+- [UC-45 — View Speaker-Attributed Transcript](#uc-45--view-speaker-attributed-transcript)
+- [UC-46 — Edit Transcript & Speaker Attribution](#uc-46--edit-transcript--speaker-attribution)
+- [UC-47 — Generate / Regenerate Meeting Summary](#uc-47--generate--regenerate-meeting-summary)
+- [UC-48 — View Meeting Summary](#uc-48--view-meeting-summary)
+- [UC-49 — Edit Meeting Summary](#uc-49--edit-meeting-summary)
+- [UC-50 — Approve Meeting Summary](#uc-50--approve-meeting-summary)
+- [UC-51 — Publish Meeting Summary](#uc-51--publish-meeting-summary)
 
-#### Quy tắc nghiệp vụ liên quan (Business Rules):
-- **BR-[XX]**: [Nội dung quy tắc nghiệp vụ áp dụng]
-```
+### FE-11 — Voting Management
 
----
+- [UC-52 — View Meeting Votes](#uc-52--view-meeting-votes)
+  - [UC-52a — View Meeting Votes](#uc-52a--view-meeting-votes)
+  - [UC-52b — View Vote Status](#uc-52b--view-vote-status)
+- [UC-53 — Create / Configure Vote](#uc-53--create--configure-vote)
+- [UC-54 — Open Vote](#uc-54--open-vote)
+- [UC-55 — Cast Vote](#uc-55--cast-vote)
+- [UC-56 — Close Vote](#uc-56--close-vote)
+- [UC-57 — Record Vote Conclusion](#uc-57--record-vote-conclusion)
 
-## 3. Nội dung đặc tả (Detailed Use Case Specifications)
+### FE-12 — Meeting Minutes & Digital Signing
 
-### FEATURE 1: XÁC THỰC & PHIÊN ĐĂNG NHẬP (AUTHENTICATION)
+- [UC-58 — View Meeting Minutes](#uc-58--view-meeting-minutes)
+- [UC-59 — Generate Meeting Minutes](#uc-59--generate-meeting-minutes)
+- [UC-60 — Edit Meeting Minutes](#uc-60--edit-meeting-minutes)
+- [UC-61 — Submit Meeting Minutes for Signing](#uc-61--submit-meeting-minutes-for-signing)
+- [UC-62 — Sign Meeting Minutes](#uc-62--sign-meeting-minutes)
+- [UC-63 — View Signature Status & Audit Trail](#uc-63--view-signature-status--audit-trail)
+- [UC-64 — Finalize Meeting Minutes](#uc-64--finalize-meeting-minutes)
+- [UC-65 — Request Revision of Meeting Minutes](#uc-65--request-revision-of-meeting-minutes)
 
----
+### FE-13 — Email & In-App Notification
 
-### UC-01: Sign in with Email and Password (Đăng nhập bằng Email và Mật khẩu)
+- [UC-66 — View Notifications](#uc-66--view-notifications)
+- [UC-67 — Mark Notifications as Read](#uc-67--mark-notifications-as-read)
+  - [UC-67a — Mark Notification as Read](#uc-67a--mark-notification-as-read)
+  - [UC-67b — Mark All Notifications as Read](#uc-67b--mark-all-notifications-as-read)
+- [UC-68 — Open Notification Target](#uc-68--open-notification-target)
 
-- **Use Case ID**: UC-01
-- **Use Case Name**: Sign in with Email and Password
-- **Primary Actor**: Internal User, System Admin, Workspace Manager, DPO, Auditor
-- **Secondary Actor**: Identity Provider
-- **Mô tả (Description)**: As an Internal User, I want to sign in using my email and password so that I can securely access the system through my internal account.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The user has an existing internal account.
-  - PRE-2: The user's account is active.
-  - PRE-3: The user is currently on the system login page.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The user is authenticated.
-  - POST-2: The system identifies the corresponding internal user.
-  - POST-3: The user is redirected to the appropriate authenticated page.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC01_SignIn.png](../06-sequencediagram/auth/UC01_SignIn.png)
+### FE-14 — Personal Dashboard & Meeting Workspace
 
-#### Luồng sự kiện chính (Main Flow):
-1. The user enters their email and password on the login page.
-2. The user clicks “Sign In”.
-3. The system validates the provided credentials through the authentication service.
-4. The system logs the user in and redirects the user to the appropriate authenticated page.
+- [UC-69 — View Personal Dashboard & Meeting Workspace](#uc-69--view-personal-dashboard--meeting-workspace)
 
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
+### FE-15 — Reporting & Statistics
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-- **EX-1**: System cannot authenticate the user
-  1. The entered email or password is invalid. (BR-01, BR-02)
-  2. The system displays MSG01 – “Invalid email or password.”
-- **EX-2**: The internal account has been deactivated
-  1. The corresponding internal account is inactive or has been deactivated. (BR-03)
-  2. The system displays MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”
----
-
-### UC-02: Sign in with Google (Đăng nhập bằng Google)
-
-- **Use Case ID**: UC-02
-- **Use Case Name**: Sign in with Google
-- **Primary Actor**: Internal User, System Admin, Workspace Manager, DPO, Auditor
-- **Secondary Actor**: Google Identity Provider
-- **Mô tả (Description)**: As an Internal User, I want to sign in using my Google account so that I can securely and quickly access the system through my existing internal account.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The user has an existing internal account.
-  - PRE-2: The user's account is active.
-  - PRE-3: The user is currently on the system login page.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: User is authenticated.
-  - POST-2: A valid server-side session is created.
-  - POST-3: System identifies the corresponding internal user.
-  - POST-4: User is redirected to the appropriate authenticated page.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC02_SignInWithGoogle.png](../06-sequencediagram/auth/UC02_SignInWithGoogle.png)
-
-#### Luồng sự kiện chính (Main Flow):
-1. User selects “Continue with Google” on the login page.
-2. User signs in using their Google account.
-3. System verifies that the Google identity is linked to an active internal user account.
-4. System signs the user in; the user's capabilities determine access to protected functions.
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-- **EX-1**: User can’t authenticate with Google
-  1. The user fails to authenticate with Google or cancels the Google sign-in process.
-  2. System displays message MSG03 – “Google sign-in was unsuccessful. Please try again.”
-- **EX-2**: System can’t verify the Google account
-  1. The system cannot verify the identity information returned by Google. (BR-05)
-  2. System displays message MSG04 – “Unable to verify your Google account. Please try again.”
-- **EX-3**: Google account is not linked to an internal account
-  1. The authenticated Google account is not associated with any existing internal account. (BR-06)
-  2. System displays message MSG05 – “This Google account is not authorized. Please contact your administrator for assistance.”
-- **EX-4**: The internal account has been deactivated
-  1. The internal account associated with the Google account is inactive or has been deactivated. (BR-03)
-  2. System displays message MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”
----
-
-### UC-03: Sign Out (Đăng xuất)
-
-- **Use Case ID**: UC-03
-- **Use Case Name**: Sign Out
-- **Primary Actor**: Internal User, System Admin, Workspace Manager, DPO, Auditor
-- **Secondary Actor**: None
-- **Mô tả (Description)**: As an authenticated user, I want to sign out of the system so that I can securely end my current access to the system.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The user is currently signed in to the system.
-  - PRE-2: The user is currently accessing an authenticated area of the system.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: User is signed out of the system.
-  - POST-2: The user's current authentication state is invalidated.
-  - POST-3: User is redirected to the login page.
-  - POST-4: Protected system functions are no longer accessible until the user signs in again.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC03_SignOut.png](../06-sequencediagram/auth/UC03_SignOut.png)
-
-#### Luồng sự kiện chính (Main Flow):
-1. User selects “Sign Out”.
-2. System displays a confirmation message.
-3. User confirms the sign-out action.
-4. System signs the user out.
-5. System redirects the user to the login page.
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-- **EX-1**: System can’t complete the sign-out action
-  1. The system cannot complete the sign-out operation. (BR-09)
-  2. System displays message MSG06 – “Unable to sign out. Please try again.”
+- [UC-70 — View & Export Reports](#uc-70--view--export-reports)
+  - [UC-70a — View Reports & Statistics](#uc-70a--view-reports--statistics)
+  - [UC-70b — Export Report](#uc-70b--export-report)
 
 ---
 
-### FEATURE 2: QUẢN LÝ NGƯỜI DÙNG (USER MANAGEMENT)
+## FE-01 — Authentication & Account Security
+
+### UC-01 – Sign in with Email and Password
+
+Sequence Diagram: [UC01_SignIn.txt](../06-sequencediagram/auth/UC01_SignIn.txt)
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant |
+| **Secondary Actors** | None |
+| **Description** | As an internal system user, I want to sign in using my email and password so that I can securely access the system through my internal account. |
+| **Preconditions** | ● PRE-1: The user has an existing internal account.<br>● PRE-2: The user's account is active.<br>● PRE-3: The user is currently on the system login page. |
+| **Postconditions** | ● POST-1: The user is authenticated.<br>● POST-2: The system identifies the corresponding internal user.<br>● POST-3: The user is redirected to the appropriate authenticated page. |
+| **Normal Flow** | Sign in with Email and Password<br>1. The user enters their email and password on the login page.<br>2. The user clicks “Sign In”.<br>3. The system validates the provided credentials through the authentication service.<br>4. The system logs the user in and redirects the user to the appropriate authenticated page. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1: System cannot authenticate the user<br>1. The entered email or password is invalid. (BR-01, BR-02)<br>2. The system displays MSG01 – “Invalid email or password.”<br>EX-2: The internal account has been deactivated<br>1. The corresponding internal account is inactive or has been deactivated. (BR-03)<br>2. The system displays MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.” |
+
+### UC-02 – Sign in with Google
+
+Sequence Diagram: [UC02_SignInWithGoogle.txt](../06-sequencediagram/auth/UC02_SignInWithGoogle.txt)
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant |
+| **Secondary Actors** | Google Identity Provider |
+| **Description** | As an internal system user, I want to sign in using my Google account so that I can securely and quickly access the system through my existing internal account. |
+| **Preconditions** | ● PRE-1: The user has an existing internal account.<br>● PRE-2: The user's account is active.<br>● PRE-3: The user is currently on the system login page. |
+| **Postconditions** | ● POST-1: User is authenticated.<br>● POST-2: A valid server-side session is created.<br>● POST-3: System identifies the corresponding internal user.<br>● POST-4: User is redirected to the appropriate authenticated page. |
+| **Normal Flow** | Sign in with Google<br>1. User selects “Continue with Google” on the login page.<br>2. User signs in using their Google account.<br>3. System verifies that the Google account is associated with an authorized internal user.<br>4. System signs the user in and grants access according to the user's assigned role. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1: User can’t authenticate with Google<br>1. The user fails to authenticate with Google or cancels the Google sign-in process. (BR-04)<br>2. System displays message MSG03 – “Google sign-in was unsuccessful.”<br>EX-2: System can’t verify the Google account<br>1. The system cannot verify the identity information returned by Google. (BR-05)<br>2. System displays message MSG04 – “Unable to verify your Google account. Please try again.”<br>EX-3: Google account is not linked to an internal account<br>1. The authenticated Google account is not associated with any existing internal account. (BR-06)<br>2. System displays message MSG05 – “This Google account has not been granted access to the system.”<br>EX-4: The internal account has been deactivated<br>1. The internal account associated with the Google account is inactive or has been deactivated. (BR-03)<br>2. System displays message MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.” |
+
+### UC-03 – Sign Out
+
+Sequence Diagram: [UC03_SignOut.txt](../06-sequencediagram/auth/UC03_SignOut.txt)
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant |
+| **Secondary Actors** | None |
+| **Description** | As an authenticated user, I want to sign out of the system so that I can securely end my current access to the system. |
+| **Preconditions** | ● PRE-1: The user is currently signed in to the system.<br>● PRE-2: The user is currently accessing an authenticated area of the system. |
+| **Postconditions** | ● POST-1: User is signed out of the system.<br>● POST-2: The user's current authentication state is invalidated.<br>● POST-3: User is redirected to the login page.<br>● POST-4: Protected system functions are no longer accessible until the user signs in again. |
+| **Normal Flow** | Sign Out<br>1. User selects “Sign Out”.<br>2. System displays a confirmation message.<br>3. User confirms the sign-out action.<br>4. System signs the user out.<br>5. System redirects the user to the login page. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1: System can’t complete the sign-out action<br>1. The system cannot complete the sign-out operation. (BR-09)<br>2. System displays message MSG06 – “Unable to sign out. Please try again.” |
+
+### UC-04 – Access Meeting via Guest Invitation
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Guest |
+| **Secondary Actors** | Email / SMTP Service |
+| **Description** | As an invited Guest, I want to verify my meeting invitation so that I can access only the meeting for which I was invited. |
+| **Preconditions** | ● PRE-1: The Guest has received a valid invitation for a meeting.<br>● PRE-2: The invitation has not been revoked or expired. |
+| **Postconditions** | ● POST-1: A meeting-scoped Guest session is established after successful verification.<br>● POST-2: The Guest can continue to permitted invitation, document, and room actions for that meeting. |
+| **Normal Flow** | Access Meeting via Guest Invitation<br>1. The Guest opens the invitation link.<br>2. The system identifies the invitation and requests the one-time verification code sent to the invited email address.<br>3. The Guest enters the code.<br>4. The system validates the code, invitation status, and meeting scope.<br>5. The system establishes a Guest session and displays the invited meeting. |
+| **Alternative Flows** | ALT-1: If the Guest reopens a valid link during an active verified session, the system opens the same invited meeting without requesting another code. |
+| **Exception Flows** | EX-1: The invitation is missing, expired, or revoked: the system denies access and explains that the invitation is no longer valid.<br>EX-2: The code is incorrect, expired, or already used: the system denies verification and allows the Guest to request or enter a valid code.<br>EX-3: The verification service is unavailable: the system reports that verification could not be completed and does not establish a session. |
 
 ---
 
-### UC-04: View User Accounts (Xem danh sách tài khoản người dùng)
+## FE-02 — User & Profile Management
 
-- **Use Case ID**: UC-04
-- **Use Case Name**: View User Accounts
-- **Primary Actor**: System Admin
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the System Admin to view, search, filter, and browse user accounts in the system.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The System Admin is authenticated in the system.
-  - PRE-2: The System Admin has permission to view user accounts.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The user account list is displayed.
-  - POST-2: No user account information is modified.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC04_ViewUserAccount.png](../06-sequencediagram/user-management/UC04_ViewUserAccount.png)
+### UC-05 – View User Accounts
 
-#### Luồng sự kiện chính (Main Flow – View User Accounts):
-1. The System Admin selects User Accounts from the navigation menu.
-2. The system retrieves the user accounts.
-3. The system sorts the user accounts according to the default sorting rule.
-4. The system displays the user account list showing Full Name, Username/Email, System Role, and Account Status.
-5. The System Admin browses the user account list using pagination controls.
+Sequence Diagram: [UC05_ViewUserAccount.txt](../06-sequencediagram/user-management/UC05_ViewUserAccount.txt)
 
-#### Luồng sự kiện thay thế (Alternative Flows):
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | None |
+| **Description** | Allows the System Admin to view, search, filter, and browse user accounts in the system. |
+| **Preconditions** | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin has permission to view user accounts. |
+| **Postconditions** | ● POST-1: The user account list is displayed.<br>● POST-2: No user account information is modified. |
+| **Normal Flow** | View User Accounts<br>1. The System Admin selects User Accounts from the navigation menu.<br>2. The system retrieves the user accounts.<br>3. The system sorts the user accounts according to the default sorting rule (BR-167).<br>4. The system displays the user account list showing Full Name, Username/Email, System Role, and Account Status.<br>5. The System Admin browses the user account list using pagination controls. |
+| **Alternative Flows** | AF-1: Search User Accounts<br>1. At Step 4 of the Main Flow, the System Admin enters a Name, Username, or Email into the search field.<br>2. The system searches for user accounts matching the entered criteria.<br>3. The system displays the matching user accounts.<br>4. The flow resumes at Step 5 of the Main Flow.<br>AF-2: Filter User Accounts<br>1. At Step 4 of the Main Flow, the System Admin selects one or more filter criteria, such as Account Status or System Role.<br>2. The system filters the user accounts according to the selected criteria.<br>3. The system displays the matching user accounts.<br>4. The flow resumes at Step 5 of the Main Flow.<br>AF-3: No User Accounts Match the Current Criteria<br>1. The applied search or filter criteria produce no matching user accounts.<br>2. The system displays an empty list and a no-results message according to BR-12.<br>3. The System Admin may clear or adjust the search/filter parameters.<br>4. The flow resumes at Step 5 of the Main Flow.<br>5. At Step 4 of the Main Flow, the System Admin enters a Name, Username, or Email into the search field.<br>6. The system searches for user accounts matching the entered criteria.<br>7. The system displays the matching user accounts.<br>8. The flow resumes at Step 5 of the Main Flow.<br>AF-2: Filter User Accounts<br>1. At Step 4 of the Main Flow, the System Admin selects one or more filter criteria, such as Account Status or System Role.<br>2. The system filters the user accounts according to the selected criteria.<br>3. The system displays the matching user accounts.<br>4. The flow resumes at Step 5 of the Main Flow. |
+| **Exception Flows** | N/A |
 
-- **AF-1: Search User Accounts**
-  1. At Step 4 of the Main Flow, the System Admin enters a Name, Username, or Email into the search field.
-  2. The system searches for user accounts matching the entered criteria.
-  3. The system displays the matching user accounts.
-  4. The flow resumes at Step 5 of the Main Flow.
+### UC-06 – Manage User Accounts
 
-- **AF-2: Filter User Accounts**
-  1. At Step 4 of the Main Flow, the System Admin selects one or more filter criteria, such as Account Status or System Role.
-  2. The system filters the user accounts according to the selected criteria.
-  3. The system displays the matching user accounts.
-  4. The flow resumes at Step 5 of the Main Flow.
+_UC gom — đặc tả nằm ở các UC con UC-06a, UC-06b… bên dưới._
 
-- **AF-3: No User Accounts Match the Current Criteria**
-  1. The applied search or filter criteria produce no matching user accounts.
-  2. The system displays an empty list and a no-results message according to BR-12.
-  3. The System Admin may clear or adjust the search/filter parameters.
-  4. The flow resumes at Step 5 of the Main Flow.
+#### UC-06a – Create User Account
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-- N/A
+Sequence Diagram: [UC06a_CreateUserAccount.txt](../06-sequencediagram/user-management/UC06a_CreateUserAccount.txt)
 
----
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | None |
+| **Description** | Allows the System Admin to create a new user account by providing the required account information. |
+| **Preconditions** | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin has permission to create user accounts. |
+| **Postconditions** | ● POST-1: A new user account is created successfully.<br>● POST-2: The new user account appears in User Management.<br>● POST-3: The account creation is recorded in the audit log. |
+| **Normal Flow** | Create User Account<br>1. The System Admin selects Create User from the User Accounts screen.<br>2. The system displays the Create User form.<br>3. The System Admin enters the required user information.<br>4. The System Admin submits the user information.<br>5. The system validates the submitted information, including required fields and Username/Email validity and uniqueness (BR-13, BR-14).<br>6. The system creates the new user account with Active status (BR-15).<br>7. The system records the account creation in the audit log (BR-16).<br>8. The system displays MSG07 – "User account created successfully." and returns to the User Accounts list. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1: Invalid User Information<br>1. At Step 5 of the Main Flow, the system determines that one or more submitted values are missing or invalid.<br>2. The system displays MSG09 – "Invalid account information." and the corresponding validation messages for the invalid fields.<br>3. The System Admin corrects the information and resubmits the form.<br>4. The flow resumes at Step 5 of the Main Flow.<br>EX-2: Duplicate User Account<br>1. At Step 5 of the Main Flow, the system determines that the Email is already associated with another account.<br>2. The system displays MSG08 – "Email is already in use."<br>3. The System Admin changes the conflicting information and resubmits the form.<br>4. The flow resumes at Step 5 of the Main Flow. |
 
-### UC-05: Create User Account (Tạo tài khoản người dùng)
+#### UC-06b – Update User Account
 
-- **Use Case ID**: UC-05
-- **Use Case Name**: Create User Account
-- **Primary Actor**: System Admin
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the System Admin to create a new user account by providing the required account information.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The System Admin is authenticated in the system.
-  - PRE-2: The System Admin has permission to create user accounts.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: A new user account is created successfully.
-  - POST-2: The new user account appears in User Management.
-  - POST-3: The account creation is recorded in the audit log.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC05_CreateUserAccount.png](../06-sequencediagram/user-management/UC05_CreateUserAccount.png)
+Sequence Diagram: [UC06b_UpdateUserAccount.txt](../06-sequencediagram/user-management/UC06b_UpdateUserAccount.txt)
 
-#### Luồng sự kiện chính (Main Flow – Create User Account):
-1. The System Admin selects Create User from the User Accounts screen.
-2. The system displays the Create User form.
-3. The System Admin enters the required user information.
-4. The System Admin submits the user information.
-5. The system validates the submitted information, including required fields and Username/Email validity and uniqueness (BR-13, BR-14).
-6. The system creates the new user account with Active status (BR-15).
-7. The system records the account creation in the audit log (BR-16).
-8. The system displays MSG07 – "User account created successfully." and returns to the User Accounts list.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | None |
+| **Description** | Allows the System Admin to update editable information of an existing user account within their permitted management scope. |
+| **Preconditions** | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to update the selected user account.<br>● PRE-3: The selected user account exists. |
+| **Postconditions** | ● POST-1: The selected user account information is updated successfully.<br>● POST-2: The update action is recorded in the audit log. |
+| **Normal Flow** | Update User Account<br>1. The System Admin selects a user account from the User Accounts list and selects Edit Account.<br>2. The system displays the current user account information.<br>3. The System Admin modifies the editable information, such as Full Name, Job Title, or Contact Information.<br>4. The System Admin submits the updated information.<br>5. The system validates the submitted information, including required fields and data format (BR-14, BR-17).<br>6. The system updates the user account information.<br>7. The system records the update in the audit log (BR-16).<br>8. The system displays MSG10 – "User account updated successfully." and returns to the User Accounts list. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1: Invalid User Information<br>1. At Step 5 of the Main Flow, one or more submitted values are missing or invalid.<br>2. The system displays MSG09 – "Invalid account information." and the corresponding validation messages for the invalid fields.<br>3. The System Admin corrects the information and resubmits it.<br>4. The flow resumes at Step 5 of the Main Flow.<br>EX-2: Email Already in Use<br>1. At Step 5 of the Main Flow, the system determines that the Email is already associated with another account.<br>2. The system displays MSG08 – "Email is already in use."<br>3. The System Admin changes the Email and resubmits the information.<br>4. The flow resumes at Step 5 of the Main Flow. |
 
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
+#### UC-06c – Deactivate / Reactivate User Account
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+Sequence Diagram: [UC06c_DeactivateReactivateUserAccount.txt](../06-sequencediagram/user-management/UC06c_DeactivateReactivateUserAccount.txt)
 
-- **EX-1: Invalid User Information**
-  1. At Step 5 of the Main Flow, the system determines that one or more submitted values are missing or invalid.
-  2. The system displays MSG09 – "Invalid account information." and the corresponding validation messages for the invalid fields.
-  3. The System Admin corrects the information and resubmits the form.
-  4. The flow resumes at Step 5 of the Main Flow.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | None |
+| **Description** | Allows the System Admin to deactivate or reactivate a user account while preserving the user's historical records. |
+| **Preconditions** | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to manage user account status.<br>● PRE-3: The selected user account exists. |
+| **Postconditions** | ● POST-1: The user account status is changed to Inactive when deactivated or Active when reactivated.<br>● POST-2: A deactivated user can no longer access authenticated system functions.<br>● POST-3: The status change is recorded in the audit log. |
+| **Normal Flow** | Deactivate / Reactivate User Account<br>1. The System Admin selects a user account from the User Accounts list.<br>2. The System Admin selects Deactivate Account or Reactivate Account.<br>3. The system requests confirmation of the account status change.<br>4. The System Admin confirms the action.<br>5. The system verifies that the requested status change is allowed (BR-03).<br>6. The system updates the user account status.<br>7. If the account is deactivated, the system ends the user's active sessions (BR-18).<br>8. The system records the status change in the audit log (BR-16).<br>9. The system displays MSG11 – “User account status changed successfully.” |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1: Status Change Is Not Allowed<br>1. At Step 5 of the Main Flow, the system determines that the requested account status change is not allowed.<br>2. The system displays MSG12 – “Unable to change the status of this user account.”<br>3. The account status remains unchanged.<br>EX-2: Invalid Status Request<br>1. At Step 5 of the Main Flow, the system determines that the request does not specify the account status to set.<br>2. The account status remains unchanged.<br>3. The system displays MSG09 – “Invalid account information.”<br>4. The use case ends unsuccessfully. |
 
-- **EX-2: Duplicate User Account**
-  1. At Step 5 of the Main Flow, the system determines that the Email is already associated with another account.
-  2. The system displays MSG08 – "Email is already in use."
-  3. The System Admin changes the conflicting information and resubmits the form.
-  4. The flow resumes at Step 5 of the Main Flow.
+### UC-07 – Reset User Password
 
----
+Sequence Diagram: [UC07_ResetUserPassword.txt](../06-sequencediagram/user-management/UC07_ResetUserPassword.txt)
 
-### UC-06: Update User Account (Cập nhật thông tin người dùng)
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | User (the owner of the selected account), who completes the reset from the email |
+| **Description** | Allows the System Admin to send the owner of an eligible user account a secure, single-use password reset link by email. The account owner then opens the link and sets a new password without signing in. The current password keeps working until the new one is set. |
+| **Preconditions** | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to reset user passwords.<br>● PRE-3: The selected user account exists. |
+| **Postconditions** | ● POST-1: A password reset link valid for 60 minutes is created for the selected user, and any link sent to that user earlier stops working (BR-20).<br>● POST-2: A password reset email containing the link is sent to the user's registered email address.<br>● POST-3: The password reset request is recorded in the audit log (BR-16).<br>● POST-4: Until the link is used, the user's current password and active sessions remain unchanged.<br>● POST-5: When the account owner completes the reset, the password is replaced, every active session of that account is ended, the link can no longer be used, and the reset is recorded in the audit log (BR-01, BR-16, BR-20). |
+| **Normal Flow** | Reset User Password<br>1. The System Admin selects a user account and selects Reset Password.<br>2. The system requests confirmation, showing the email address the link will be sent to.<br>3. The System Admin confirms the password reset.<br>4. The system verifies that the selected account is eligible for password reset: it is active and it signs in with a password (BR-22).<br>5. The system creates a secure password reset request for the selected user (BR-20).<br>6. The system sends a password reset email containing the link to the user's registered email address.<br>7. The system makes the new link usable; any link sent to the user earlier stops working (BR-20).<br>8. The system records the password reset request in the audit log (BR-16).<br>9. The system displays MSG13 – “Password reset email sent successfully.”<br>Complete Password Reset<br>The account owner continues the use case from the email. No sign-in is required: the link is the proof of identity.<br>10. The user opens the password reset link from the email.<br>11. The system displays the new password form.<br>12. The user enters the new password and its confirmation and submits them.<br>13. The system verifies that the link is valid: it exists, it has not expired, it has not been used, and no newer link has replaced it (BR-20).<br>14. The system validates the new password: it must follow the same password rule as account creation (UC-06) and match its confirmation.<br>15. The system marks the link as used, so it cannot be used again (BR-20).<br>16. The system verifies that the account is still eligible: it is active and it signs in with a password (BR-03, BR-22).<br>17. The system replaces the password with the new one (BR-01) and ends every active session of the account (BR-20).<br>18. The system records the completed password reset in the audit log, with the account owner as the actor (BR-16).<br>19. The system displays MSG92 – “Password reset successfully. Please sign in with your new password.” and takes the user to the sign-in page. The user is not signed in automatically. |
+| **Alternative Flows** | AF-1: The Browser Is Already Signed In<br>1. At Step 19, the browser used to complete the reset still has a signed-in session (of this or another account).<br>2. The system signs that session out before showing the sign-in page.<br>3. If the sign-out succeeds, the flow resumes at Step 19.<br>4. If the sign-out cannot be completed, the system still displays MSG92 – “Password reset successfully. Please sign in with your new password.” and also displays MSG06 – “Unable to sign out. Please try again.” The browser's session remains signed in, and the new password is already in effect.<br>5. The use case ends. |
+| **Exception Flows** | EX-1: User Account Is Not Eligible for Password Reset<br>1. At Step 4 of the Main Flow, the system determines that the selected account is deactivated, or that it has no password because it only signs in with Google (BR-22). The User Accounts list already makes Reset Password unavailable for such accounts, so this happens when the list is out of date.<br>2. No password reset link is created and no email is sent.<br>3. The system displays MSG14 – “Password reset is not available for this account.” When the system can tell which reason applies, it updates the account in the list and states the reason instead (the account is deactivated, or it signs in with Google only).<br>4. The use case ends.<br>EX-2: Password Reset Email Cannot Be Sent<br>1. At Step 6 of the Main Flow, the system cannot send the password reset email.<br>2. The new link is never made usable. A link sent to the user earlier, if any, keeps working.<br>3. The system displays MSG15 – “Unable to send the password reset email. Please try again.”<br>4. The use case ends.<br>EX-3: User Account No Longer Exists<br>1. At Step 4 of the Main Flow, the system cannot find the selected account.<br>2. No password reset link is created and no email is sent.<br>3. The system informs the System Admin that the account no longer exists and refreshes the User Accounts list. This situation has no message code.<br>4. The use case ends.<br>EX-4: Password Reset Link Is Not Valid<br>1. At Step 13, 15 or 16, the system determines that the link is unknown, has expired, has already been used (including by a simultaneous submission), has been replaced by a newer link, or belongs to an account that is now deactivated or has no password (BR-20, BR-22).<br>2. The password is not changed. A link that reached Step 15 is used up.<br>3. The system hides the new password form and displays MSG93 – “The password reset link is invalid or has expired. Please contact an administrator.” It does not say which of these reasons applies.<br>4. The use case ends.<br>EX-5: New Password Is Invalid<br>1. At Step 14, the new password does not satisfy the password rule, or the confirmation does not match it.<br>2. The password is not changed and the link remains usable.<br>3. The system shows the reason next to the field concerned. A password that breaks the password rule is MSG94 – “Invalid new password.”, shown through its field reason (at least 12 characters); a confirmation that does not match is reported before the link is checked.<br>4. The user corrects the new password and resubmits it.<br>5. The flow resumes at Step 13.<br>EX-6: Password Reset Page Opened Without a Reset Code<br>1. At Step 11, the page has no reset code. This happens when the link is incomplete, or when the page is reloaded or restored after the code was removed from the address bar.<br>2. The system does not check the link and does not say that it has expired, because the link itself may still be usable.<br>3. The system displays MSG129 – “No password reset code was found. Please open the link in the email again.” with a hint that the link still works if it has not been used, is less than 60 minutes old and has not been replaced by a newer link.<br>4. The use case ends. Opening the link from the email again starts a new execution at Step 10. |
 
-- **Use Case ID**: UC-06
-- **Use Case Name**: Update User Account
-- **Primary Actor**: System Admin, Workspace Manager
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the System Admin or Workspace Manager to update editable information of an existing user account within their permitted management scope.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The System Admin or Workspace Manager is authenticated in the system.
-  - PRE-2: The System Admin or Workspace Manager is authorized to update the selected user account.
-  - PRE-3: The selected user account exists.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The selected user account information is updated successfully.
-  - POST-2: The update action is recorded in the audit log.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC06_UpdateUserAccount.png](../06-sequencediagram/user-management/UC06_UpdateUserAccount.png)
+### UC-08 – Assign System Role to User
 
-#### Luồng sự kiện chính (Main Flow – Update User Account):
-1. The System Admin or Workspace Manager selects a user account from the User Accounts list and selects Edit Account.
-2. The system displays the current user account information.
-3. The System Admin or Workspace Manager modifies the editable information, such as Full Name, Job Title, or Contact Information.
-4. The System Admin or Workspace Manager submits the updated information.
-5. The system validates the submitted information, including required fields and data format (BR-14, BR-17).
-6. The system updates the user account information.
-7. The system records the update in the audit log (BR-16).
-8. The system displays MSG10 – "User account updated successfully." and returns to the User Accounts list.
+Sequence Diagram: [UC08_AssignSystemRoleToUser.txt](../06-sequencediagram/user-management/UC08_AssignSystemRoleToUser.txt)
 
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | None |
+| **Description** | Allows the System Admin to assign a system role to a user account or change the user’s existing system role. |
+| **Preconditions** | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to assign system roles.<br>● PRE-3: The selected user account exists.<br>● PRE-4: At least one system role is available for assignment. |
+| **Postconditions** | ● POST-1: The selected user is associated with the selected system role.<br>● POST-2: The user receives the capabilities associated with the selected system role.<br>● POST-3: The role assignment or change is recorded in the audit log. |
+| **Normal Flow** | Assign System Role to User<br>1. The System Admin opens User Management.<br>2. The System Admin selects a user account.<br>3. The system displays the user information and the current system role, if any.<br>4. The System Admin selects Assign System Role.<br>5. The system displays the available system roles.<br>6. The System Admin selects a role and confirms the assignment.<br>7. The system assigns the selected role to the user.<br>8. The system records the role assignment in the audit log.<br>9. The system displays MSG10 – “User account updated successfully.” |
+| **Alternative Flows** | AF-1: Change Existing System Role<br>1. At Step 4 of the Main Flow, if the user already has a system role, the System Admin selects Change System Role.<br>2. The System Admin selects a different role.<br>3. The System Admin confirms the change.<br>4. The system replaces the current role with the selected role.<br>5. The system records the role change in the audit log.<br>6. The system displays MSG10 – “User account updated successfully.” |
+| **Exception Flows** | EX-1: Selected Role Is Not Available<br>1. The selected role is no longer available for assignment.<br>2. The system displays MSG09 – “Invalid account information.” with the field error “The role does not exist.”<br>3. No role assignment is changed. The use case ends.<br>EX-2: Last Administrator Cannot Be Demoted<br>1. At Step 7 of the Main Flow or Step 4 of AF-1, the system determines that, after the change, no active account would hold the user administration permission.<br>2. The user keeps the previous role.<br>3. The system displays MSG12 – “Unable to change the status of this user account.”<br>4. The use case ends unsuccessfully. |
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+### UC-09 – Unlock User Account
 
-- **EX-1: Invalid User Information**
-  1. At Step 5 of the Main Flow, one or more submitted values are missing or invalid.
-  2. The system displays MSG09 – "Invalid account information." and the corresponding validation messages for the invalid fields.
-  3. The System Admin or Workspace Manager corrects the information and resubmits it.
-  4. The flow resumes at Step 5 of the Main Flow.
-
-- **EX-2: Email Already in Use**
-  1. At Step 5 of the Main Flow, the system determines that the Email is already associated with another account.
-  2. The system displays MSG08 – "Email is already in use."
-  3. The System Admin or Workspace Manager changes the Email and resubmits the information.
-  4. The flow resumes at Step 5 of the Main Flow.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | None |
+| **Description** | Allows the System Admin to unlock a user account that has been locked by the authentication security controls. |
+| **Preconditions** | ● PRE-1: The System Admin is authenticated and authorized to manage user accounts.<br>● PRE-2: The selected user account exists and is currently locked. |
+| **Postconditions** | ● POST-1: The account lock is cleared and the user can attempt to sign in, subject to account status and credentials.<br>● POST-2: The unlock action is recorded in the audit log. |
+| **Normal Flow** | Unlock User Account<br>1. The System Admin opens User Accounts and selects the locked account.<br>2. The system displays the account status and available account actions.<br>3. The System Admin selects Unlock Account and confirms the action.<br>4. The system clears the lock state and resets the failed-attempt lock counter.<br>5. The system confirms the unlock and records the action. |
+| **Alternative Flows** | ALT-1: If the account is already unlocked when the request is processed, the system leaves it unchanged and refreshes the displayed status. |
+| **Exception Flows** | EX-1: The account does not exist or is outside the Admin's scope: the system denies the action.<br>EX-2: The account is inactive: the system does not make it sign-in eligible and explains that reactivation is required.<br>EX-3: The update fails: the system retains the existing lock state and reports that the account could not be unlocked. |
 
 ---
 
-### UC-07: Deactivate / Reactivate User Account (Khóa / Mở khóa tài khoản)
+## FE-03 — Role-Based Access Control
 
-- **Use Case ID**: UC-07
-- **Use Case Name**: Deactivate / Reactivate User Account
-- **Primary Actor**: System Admin
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the System Admin to deactivate or reactivate a user account while preserving the user's historical records.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The System Admin is authenticated in the system.
-  - PRE-2: The System Admin is authorized to manage user account status.
-  - PRE-3: The selected user account exists.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The user account status is changed to Inactive when deactivated or Active when reactivated.
-  - POST-2: A deactivated user can no longer access authenticated system functions.
-  - POST-3: The status change is recorded in the audit log.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC07_DeactivateReactivateUserAccount.png](../06-sequencediagram/user-management/UC07_DeactivateReactivateUserAccount.png)
+### UC-10 – View Role & Permission Matrix
 
-#### Luồng sự kiện chính (Main Flow – Deactivate / Reactivate User Account):
-1. The System Admin selects a user account from the User Accounts list.
-2. The System Admin selects Deactivate Account or Reactivate Account.
-3. The system requests confirmation of the account status change.
-4. The System Admin confirms the action.
-5. The system verifies that the requested status change is allowed (BR-03).
-6. The system updates the user account status.
-7. If the account is deactivated, the system ends the user's active sessions (BR-18).
-8. The system records the status change in the audit log (BR-16).
-9. The system displays MSG11 – "User account status changed successfully."
+Sequence Diagram: [UC10_ViewRolePermissionMatrix.txt](../06-sequencediagram/role-management/UC10_ViewRolePermissionMatrix.txt)
 
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | None |
+| **Description** | Allows the System Admin to view the predefined roles and their default permissions. |
+| **Preconditions** | ● PRE-1: The System Admin is authenticated. |
+| **Postconditions** | ● POST-1: No system data is modified. |
+| **Normal Flow** | View Role & Permission Matrix<br>1. The System Admin accesses Role & Permission Management.<br>2. The system displays the role and permission matrix. |
+| **Alternative Flows** | None. |
+| **Exception Flows** | E1 — Role and permission information cannot be retrieved<br>1. The system cannot retrieve the role and permission information.<br>2. The system displays an error message.<br>3. The use case ends unsuccessfully. |
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+### UC-11 – Configure Role Permissions
 
-- **EX-1: Status Change Is Not Allowed**
-  1. At Step 5 of the Main Flow, the system determines that the requested account status change is not allowed.
-  2. The system displays MSG12 – "Unable to change the status of this user account."
-  3. The account status remains unchanged.
+Sequence Diagram: [UC11_ConfigureRolePermissions.txt](../06-sequencediagram/role-management/UC11_ConfigureRolePermissions.txt)
 
-- **EX-2: Invalid Status Request**
-  1. At Step 5 of the Main Flow, the system determines that the request does not specify the account status to set.
-  2. The account status remains unchanged.
-  3. The system displays MSG09 – "Invalid account information."
-  4. The use case ends unsuccessfully.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | None |
+| **Description** | Allows the System Admin to configure the default permissions assigned to a predefined system role. |
+| **Preconditions** | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to manage role permissions. |
+| **Postconditions** | ● POST-1: The selected role is associated with the updated set of default permissions.<br>● POST-2: The permission configuration change is recorded in the audit log. |
+| **Normal Flow** | Configure Role Permissions<br>1. The System Admin accesses Role & Permission Management.<br>2. The system displays the Role & Permission Matrix.<br>3. The System Admin configures the permissions assigned to a predefined role.<br>4. The system validates and saves the updated permission configuration (BR-23).<br>5. The system records the configuration change in the audit log (BR-16).<br>6. The system displays MSG16 – “Role permissions updated successfully.” |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1: Invalid Permission Configuration<br>1. At Step 4 of the Main Flow, the system determines that the updated permission configuration violates a permission rule.<br>2. The system does not save the changes.<br>3. The system displays MSG17 – “Invalid permission configuration.”<br>4. The use case ends unsuccessfully.<br>EX-2: Permission Configuration Cannot Be Saved<br>1. At Step 4 of the Main Flow, the system cannot save the updated permission configuration.<br>2. The existing role permissions remain unchanged.<br>3. The system displays MSG18 – “Unable to update role permissions. Please try again.”<br>4. The use case ends unsuccessfully. |
 
----
+### UC-12 – Manage Roles
 
-### UC-08: Reset User Password (Đặt lại mật khẩu người dùng)
+_UC gom — đặc tả nằm ở các UC con UC-12a, UC-12b… bên dưới._
 
-- **Use Case ID**: UC-08
-- **Use Case Name**: Reset User Password
-- **Primary Actor**: System Admin
-- **Secondary Actor**: User (the owner of the selected account), who completes the reset from the email
-- **Mô tả (Description)**: Allows the System Admin to send the owner of an eligible user account a secure, single-use password reset link by email. The account owner then opens the link and sets a new password without signing in. The current password keeps working until the new one is set.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The System Admin is authenticated in the system.
-  - PRE-2: The System Admin is authorized to reset user passwords.
-  - PRE-3: The selected user account exists.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: A password reset link valid for 60 minutes is created for the selected user, and any link sent to that user earlier stops working (BR-20).
-  - POST-2: A password reset email containing the link is sent to the user's registered email address.
-  - POST-3: The password reset request is recorded in the audit log (BR-16).
-  - POST-4: Until the link is used, the user's current password and active sessions remain unchanged.
-  - POST-5: When the account owner completes the reset, the password is replaced, every active session of that account is ended, the link can no longer be used, and the reset is recorded in the audit log (BR-01, BR-16, BR-20).
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC08_ResetUserPassword.png](../06-sequencediagram/user-management/UC08_ResetUserPassword.png)
-  - Class Diagram: [feature-02b-password-reset-class-diagram.drawio.png](../07-classdiagram/feature-02b-password-reset-class-diagram.drawio.png)
+#### UC-12a – Create Role
 
-#### Luồng sự kiện chính (Main Flow – Reset User Password):
-1. The System Admin selects a user account and selects Reset Password.
-2. The system requests confirmation, showing the email address the link will be sent to.
-3. The System Admin confirms the password reset.
-4. The system verifies that the selected account is eligible for password reset: it is active and it signs in with a password (BR-22).
-5. The system creates a secure password reset request for the selected user (BR-20).
-6. The system sends a password reset email containing the link to the user's registered email address.
-7. The system makes the new link usable; any link sent to the user earlier stops working (BR-20).
-8. The system records the password reset request in the audit log (BR-16).
-9. The system displays MSG13 – "Password reset email sent successfully."
+Sequence Diagram: [UC12a_CreateRole.txt](../06-sequencediagram/role-management/UC12a_CreateRole.txt)
 
-#### Luồng hoàn tất (Main Flow – Complete Password Reset):
-The account owner continues the use case from the email. No sign-in is required: the link is the proof of identity.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | None |
+| **Description** | Allows the System Admin to create a new custom role with a name, an optional description and an optional initial set of permissions, without changing code or redeploying the system. |
+| **Preconditions** | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to manage roles. |
+| **Postconditions** | ● POST-1: A new custom role is created and appears in the role list and in the Role & Permission Matrix.<br>● POST-2: The new role is associated with the selected permissions (the set may be empty).<br>● POST-3: The role creation is recorded in the audit log. |
+| **Normal Flow** | Create Role<br>1. The System Admin accesses Role & Permission Management.<br>2. The System Admin selects “Create Role”.<br>3. The system displays the role creation form.<br>4. The System Admin enters the role name and an optional description, selects the permissions to grant to the role, and submits the form.<br>5. The system validates the role information: the name is required and has at most 64 characters after trimming, the description has at most 256 characters, and every selected permission exists in the permission catalog.<br>6. The system checks that no existing role, including the predefined roles, has the same name (case-insensitive).<br>7. The system saves the new role together with its permissions.<br>8. The system records the role creation in the audit log (BR-16).<br>9. The system displays MSG19 – “Role created successfully.” |
+| **Alternative Flows** | AF-1: Role Created Without Permissions<br>1. At Step 4 of the Main Flow, the System Admin does not select any permission.<br>2. The system accepts an empty permission set; user accounts assigned to this role have the same access as a Member.<br>3. The use case continues at Step 5 of the Main Flow. |
+| **Exception Flows** | EX-1: Invalid Role Information<br>1. At Step 5 of the Main Flow, the system determines that the name is empty or longer than 64 characters, the description is longer than 256 characters, or a selected permission does not exist.<br>2. The system does not save the role.<br>3. The system displays MSG20 – “Invalid role information.” and highlights the invalid fields.<br>4. The System Admin may correct the information and resubmit; otherwise the use case ends unsuccessfully.<br>EX-2: Duplicate Role Name<br>1. At Step 6 or Step 7 of the Main Flow, the system determines that another role already uses the same name (case-insensitive).<br>2. The system does not save the role.<br>3. The system displays MSG21 – “A role with this name already exists. Please choose a different name.”<br>4. The System Admin may enter a different name and resubmit; otherwise the use case ends unsuccessfully.<br>EX-3: Role Cannot Be Saved<br>1. At Step 7 of the Main Flow, the system cannot save the new role.<br>2. No role is created.<br>3. The system displays MSG26 – “Unable to create the role. Please try again.”<br>4. The use case ends unsuccessfully. |
 
-10. The user opens the password reset link from the email.
-11. The system displays the new password form.
-12. The user enters the new password and its confirmation and submits them.
-13. The system verifies that the link is valid: it exists, it has not expired, it has not been used, and no newer link has replaced it (BR-20).
-14. The system validates the new password: it must follow the same password rule as account creation (UC-05) and match its confirmation.
-15. The system marks the link as used, so it cannot be used again (BR-20).
-16. The system verifies that the account is still eligible: it is active and it signs in with a password (BR-03, BR-22).
-17. The system replaces the password with the new one (BR-01) and ends every active session of the account (BR-20).
-18. The system records the completed password reset in the audit log, with the account owner as the actor (BR-16).
-19. The system displays MSG92 – "Password reset successfully. Please sign in with your new password." and takes the user to the sign-in page. The user is not signed in automatically.
+#### UC-12b – Update Role
 
-#### Luồng sự kiện thay thế (Alternative Flows):
+Sequence Diagram: [UC12b_UpdateRole.txt](../06-sequencediagram/role-management/UC12b_UpdateRole.txt)
 
-- **AF-1: The Browser Is Already Signed In**
-  1. At Step 19, the browser used to complete the reset still has a signed-in session (of this or another account).
-  2. The system signs that session out before showing the sign-in page.
-  3. If the sign-out succeeds, the flow resumes at Step 19.
-  4. If the sign-out cannot be completed, the system still displays MSG92 – "Password reset successfully. Please sign in with your new password." and also displays MSG06 – "Unable to sign out. Please try again." The browser's session remains signed in, and the new password is already in effect.
-  5. The use case ends.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | None |
+| **Description** | Allows the System Admin to change the name and description of a custom role. Predefined roles cannot be renamed; the permissions of any role are configured through UC-11. |
+| **Preconditions** | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to manage roles.<br>● PRE-3: At least one custom role exists in the system. |
+| **Postconditions** | ● POST-1: The name and/or description of the selected role are updated; its permissions and the user accounts holding it remain unchanged.<br>● POST-2: The change is recorded in the audit log with the values before and after the update.<br>● POST-3: No user session is terminated; users holding the role see the new name the next time their information is loaded. |
+| **Normal Flow** | Update Role<br>1. The System Admin accesses Role & Permission Management.<br>2. The system displays the list of roles.<br>3. The System Admin selects “Edit” on a custom role.<br>4. The system displays the edit form pre-filled with the current name and description.<br>5. The System Admin modifies the name and/or description and submits the form.<br>6. The system verifies that the selected role exists and is a custom role.<br>7. The system validates the role information using the same rules as UC-12 (name required, at most 64 characters after trimming; description at most 256 characters).<br>8. The system checks that no other role has the same name (case-insensitive). Changing only the letter case of the role’s own name is allowed.<br>9. The system saves the updated role.<br>10. The system records the change in the audit log (BR-16).<br>11. The system displays MSG22 – “Role updated successfully.” |
+| **Alternative Flows** | AF-1: No Changes Submitted<br>1. At Step 7 of the Main Flow, the system determines that the submitted name and description are identical to the current values.<br>2. The system does not modify any data and does not record an audit log entry.<br>3. The system displays MSG22 – “Role updated successfully.”<br>4. The use case ends. |
+| **Exception Flows** | EX-1: Predefined Role<br>1. At Step 6 of the Main Flow, the system determines that the selected role is a predefined system role.<br>2. The system does not save the changes.<br>3. The system displays MSG24 – “This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions.”<br>4. The use case ends unsuccessfully.<br>EX-2: Invalid Role Information<br>1. At Step 7 of the Main Flow, the system determines that the role information is invalid.<br>2. The system does not save the changes.<br>3. The system displays MSG20 – “Invalid role information.” and highlights the invalid fields.<br>4. The System Admin may correct the information and resubmit; otherwise the use case ends unsuccessfully.<br>EX-3: Duplicate Role Name<br>1. At Step 8 or Step 9 of the Main Flow, the system determines that another role already uses the same name (case-insensitive).<br>2. The system does not save the changes.<br>3. The system displays MSG21 – “A role with this name already exists. Please choose a different name.”<br>4. The System Admin may enter a different name and resubmit; otherwise the use case ends unsuccessfully.<br>EX-4: Role Cannot Be Saved<br>1. At Step 9 of the Main Flow, the system cannot save the updated role.<br>2. The existing role information remains unchanged.<br>3. The system displays MSG27 – “Unable to update the role. Please try again.”<br>4. The use case ends unsuccessfully. |
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+#### UC-12c – Delete Role
 
-- **EX-1: User Account Is Not Eligible for Password Reset**
-  1. At Step 4 of the Main Flow, the system determines that the selected account is deactivated, or that it has no password because it only signs in with Google (BR-22). The User Accounts list already makes Reset Password unavailable for such accounts, so this happens when the list is out of date.
-  2. No password reset link is created and no email is sent.
-  3. The system displays MSG14 – "Password reset is not available for this account." When the system can tell which reason applies, it updates the account in the list and states the reason instead (the account is deactivated, or it signs in with Google only).
-  4. The use case ends.
+Sequence Diagram: [UC12c_DeleteRole.txt](../06-sequencediagram/role-management/UC12c_DeleteRole.txt)
 
-- **EX-2: Password Reset Email Cannot Be Sent**
-  1. At Step 6 of the Main Flow, the system cannot send the password reset email.
-  2. The new link is never made usable. A link sent to the user earlier, if any, keeps working.
-  3. The system displays MSG15 – "Unable to send the password reset email. Please try again."
-  4. The use case ends.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | None |
+| **Description** | Allows the System Admin to delete a custom role that is no longer held by any user account. Predefined roles cannot be deleted. |
+| **Preconditions** | ● PRE-1: The System Admin is authenticated in the system.<br>● PRE-2: The System Admin is authorized to manage roles.<br>● PRE-3: At least one custom role exists in the system. |
+| **Postconditions** | ● POST-1: The selected role and its permission assignments are removed from the system.<br>● POST-2: The deletion, including the role name and the permissions it held, is recorded in the audit log.<br>● POST-3: No user account and no user session is affected. |
+| **Normal Flow** | Delete Role<br>1. The System Admin accesses Role & Permission Management.<br>2. The system displays the list of roles with the number of user accounts holding each role.<br>3. The System Admin selects “Delete” on a custom role.<br>4. The system displays a confirmation dialog.<br>5. The System Admin confirms the deletion.<br>6. The system verifies that the selected role exists, is a custom role, and is not held by any user account, including deactivated accounts.<br>7. The system deletes the role together with its permission assignments.<br>8. The system records the role deletion in the audit log (BR-16).<br>9. The system displays MSG23 – “Role deleted successfully.” |
+| **Alternative Flows** | AF-1: Deletion Cancelled<br>1. At Step 5 of the Main Flow, the System Admin cancels the deletion.<br>2. The system closes the confirmation dialog without changing any data.<br>3. The use case ends. |
+| **Exception Flows** | EX-1: Predefined Role<br>1. At Step 6 of the Main Flow, the system determines that the selected role is a predefined system role.<br>2. The system does not delete the role.<br>3. The system displays MSG24 – “This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions.”<br>4. The use case ends unsuccessfully.<br>EX-2: Role Still Held by User Accounts<br>1. At Step 6 or Step 7 of the Main Flow, the system determines that one or more user accounts (active or deactivated) still hold the role, including an account assigned to the role while the deletion was in progress.<br>2. The system does not delete the role.<br>3. The system displays MSG25 – “This role is still held by {n} user account(s). Reassign them to another role before deleting.” in the confirmation dialog, where {n} is the number of user accounts holding the role.<br>4. The use case ends unsuccessfully.<br>EX-3: Role Cannot Be Deleted<br>1. At Step 7 of the Main Flow, the system cannot delete the role.<br>2. The role and its permission assignments remain unchanged.<br>3. The system displays MSG28 – “Unable to delete the role. Please try again.”<br>4. The use case ends unsuccessfully. |
 
-- **EX-3: User Account No Longer Exists**
-  1. At Step 4 of the Main Flow, the system cannot find the selected account.
-  2. No password reset link is created and no email is sent.
-  3. The system informs the System Admin that the account no longer exists and refreshes the User Accounts list. This situation has no message code.
-  4. The use case ends.
+### UC-13 – View Audit Log
 
-- **EX-4: Password Reset Link Is Not Valid**
-  1. At Step 13, 15 or 16, the system determines that the link is unknown, has expired, has already been used (including by a simultaneous submission), has been replaced by a newer link, or belongs to an account that is now deactivated or has no password (BR-20, BR-22).
-  2. The password is not changed. A link that reached Step 15 is used up.
-  3. The system hides the new password form and displays MSG93 – "The password reset link is invalid or has expired. Please contact an administrator." It does not say which of these reasons applies.
-  4. The use case ends.
-
-- **EX-5: New Password Is Invalid**
-  1. At Step 14, the new password does not satisfy the password rule, or the confirmation does not match it.
-  2. The password is not changed and the link remains usable.
-  3. The system shows the reason next to the field concerned. A password that breaks the password rule is MSG94 – "Invalid new password.", shown through its field reason (at least 12 characters); a confirmation that does not match is reported before the link is checked.
-  4. The user corrects the new password and resubmits it.
-  5. The flow resumes at Step 13.
-
-- **EX-6: Password Reset Page Opened Without a Reset Code**
-  1. At Step 11, the page has no reset code. This happens when the link is incomplete, or when the page is reloaded or restored after the code was removed from the address bar.
-  2. The system does not check the link and does not say that it has expired, because the link itself may still be usable.
-  3. The system displays MSG129 – "No password reset code was found. Please open the link in the email again." with a hint that the link still works if it has not been used, is less than 60 minutes old and has not been replaced by a newer link.
-  4. The use case ends. Opening the link from the email again starts a new execution at Step 10.
-
-#### Quy tắc nghiệp vụ liên quan (Business Rules):
-- **BR-01**: The new password is stored only as a secure salted hash.
-- **BR-03**: A deactivated account cannot complete a password reset.
-- **BR-10, BR-21**: The reset link and the existing password are never displayed in User Management.
-- **BR-16**: Both the reset request (actor: System Admin) and the completed reset (actor: account owner) are recorded in the audit log.
-- **BR-20**: How the link is limited (validity, single use, one usable link per account, revocation, ending sessions) is detailed under *Quy tắc TrustCabinet đã được BA xác nhận — UC-08* in [06-business-rules.md](06-business-rules.md).
-- **BR-22**: Eligibility means the account is active and signs in with a password. See the same section.
-- **Password rule**: the new password follows the same rule as account creation (UC-05), recorded in the same section.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin |
+| **Secondary Actors** | None |
+| **Description** | Allows the System Admin to review recorded system events for security, accountability, and operational investigation. |
+| **Preconditions** | ● PRE-1: The System Admin is authenticated and has permission to view the audit log. |
+| **Postconditions** | ● POST-1: The requested audit entries are displayed read-only.<br>● POST-2: No audit entry is changed by viewing or filtering the log. |
+| **Normal Flow** | View Audit Log<br>1. The System Admin opens Audit Log.<br>2. The system retrieves audit entries within the Admin's requested date range and filters.<br>3. The system displays entries in reverse chronological order with actor, event, target, time, and outcome where recorded.<br>4. The System Admin opens an entry or changes filters/pages the results.<br>5. The system displays the matching entries and preserves the read-only state. |
+| **Alternative Flows** | ALT-1: If no entries match the filters, the system displays an empty-result message and permits the Admin to revise the filters. |
+| **Exception Flows** | EX-1: Invalid filter or date-range values: the system identifies the invalid criteria and does not apply them.<br>EX-2: The audit log cannot be loaded: the system reports the failure and provides a retry action. |
 
 ---
 
-### UC-09: Assign System Role to User (Phân quyền vai trò hệ thống cho người dùng)
+## FE-04 — Meeting Management
 
-- **Use Case ID**: UC-09
-- **Use Case Name**: Assign System Role to User
-- **Primary Actor**: System Admin
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the System Admin to assign a system role to a user account or change the user's existing system role.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The System Admin is authenticated in the system.
-  - PRE-2: The System Admin is authorized to assign system roles.
-  - PRE-3: The selected user account exists.
-  - PRE-4: At least one system role is available for assignment.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The selected user is associated with the selected system role.
-  - POST-2: The user receives the capabilities associated with the selected system role.
-  - POST-3: The role assignment or change is recorded in the audit log.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram source: [UC09_AssignSystemRoleToUser.txt](../06-sequencediagram/user-management/UC09_AssignSystemRoleToUser.txt)
+### UC-14 – Create Meeting
 
-#### Luồng sự kiện chính (Main Flow – Assign System Role to User):
-1. The System Admin opens User Management.
-2. The System Admin selects a user account.
-3. The system displays the user information and the current system role, if any.
-4. The System Admin selects Assign System Role.
-5. The system displays the available system roles.
-6. The System Admin selects a role and confirms the assignment.
-7. The system assigns the selected role to the user.
-8. The system records the role assignment in the audit log.
-9. The system displays MSG10 – "User account updated successfully."
+Sequence Diagram: [UC14_CreateMeeting.txt](../06-sequencediagram/meeting-management/UC14_CreateMeeting.txt)
 
-#### Luồng sự kiện thay thế (Alternative Flows):
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Meeting Organizer |
+| **Secondary Actors** | None |
+| **Description** | Allows an authorized Meeting Organizer to create one independent Meeting as a Draft, including its planned schedule, mode, location, confidentiality and optional Online Link. |
+| **Preconditions** | ● PRE-1: The Meeting Organizer is authenticated.<br>● PRE-2: The Meeting Organizer is authorized to create meetings. |
+| **Postconditions** | ● POST-1: A new Meeting exists in Draft status with its planned start and end times.<br>● POST-2: The creator is recorded as Meeting Organizer.<br>● POST-3: The Meeting may subsequently be assigned participants, prepared and submitted for approval. |
+| **Normal Flow** | Create Meeting<br>1. The Meeting Organizer selects Create Meeting.<br>2. The system displays the new Meeting form.<br>3. The Organizer enters Meeting Name, Planned Start Time, Planned End Time, Meeting Mode, Location, Confidentiality Level, optional Description and optional Online Link (maximum 1,000 characters).<br>4. The Organizer submits the form.<br>5. The system checks the required values, confirms Planned Start Time is later than the current time and Planned End Time is later than Planned Start Time, and validates the optional Online Link length. (BR-24, BR-25, BR-62, BR-162, BR-163)<br>6. The system creates exactly one Meeting in Draft status and records the creator. (BR-26)<br>7. The system displays MSG29 – "Meeting created successfully." |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Invalid Meeting Information<br>1. At Step 5, a required value is missing/invalid, the planned start is not in the future, the planned end does not follow the start, or Online Link exceeds 1,000 characters. (BR-24, BR-62, BR-162, BR-163)<br>2. The system displays MSG31 – "Invalid meeting information." and highlights the affected fields.<br>3. No Meeting is created. The Organizer may correct the inputs and resubmit at Step 4.<br>EX-2 – Meeting Cannot Be Created<br>1. At Step 6, the system cannot save the Meeting.<br>2. The system displays MSG35 – "Unable to create the meeting. Please try again."<br>3. No Meeting is created; the use case ends unsuccessfully. |
 
-- **AF-1: Change Existing System Role**
-  1. At Step 4 of the Main Flow, if the user already has a system role, the System Admin selects Change System Role.
-  2. The System Admin selects a different role.
-  3. The System Admin confirms the change.
-  4. The system replaces the current role with the selected role.
-  5. The system records the role change in the audit log.
-  6. The system displays MSG10 – "User account updated successfully."
+### UC-15 – Update Meeting
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+Sequence Diagram: [UC15_UpdateMeeting.txt](../06-sequencediagram/meeting-management/UC15_UpdateMeeting.txt)
 
-- **EX-1: Selected Role Is Not Available**
-  1. The selected role is no longer available for assignment.
-  2. The system displays MSG09 – "Invalid account information." with the field error "The role does not exist."
-  3. No role assignment is changed.
-  4. The use case ends.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Meeting Organizer |
+| **Secondary Actors** | None |
+| **Description** | Allows the Meeting Organizer to update Draft/Rejected Meeting information, or to reschedule only the planned times, location or optional Online Link when the Meeting is Published. |
+| **Preconditions** | ● PRE-1: The Meeting exists and the Meeting Organizer is authenticated and authorized.<br>● PRE-2: Full Meeting editing is available only in Draft or Rejected. (BR-27)<br>● PRE-3: If the Meeting is Published, only the Meeting Organizer may invoke Reschedule to change planned times, location or optional Online Link. The Meeting must not have started. (BR-27, BR-158) |
+| **Postconditions** | ● POST-1: Authorized updates are saved to the Meeting.<br>● POST-2: Meeting lifecycle and assigned approver are unchanged.<br>● POST-3: When the schedule of a Published Meeting changes, affected participants are notified and the change is recorded. (BR-76) |
+| **Normal Flow** | Update Meeting<br>1. The Meeting Organizer opens a Draft or Rejected Meeting and selects Edit.<br>2. The system displays the editable Meeting fields, including the optional Online Link.<br>3. The Organizer changes the fields and submits.<br>4. The system verifies current Meeting status, permissions, required information, Planned End Time after Planned Start Time, and Online Link length at most 1,000 characters. (BR-24, BR-27, BR-62, BR-163)<br>5. The system saves the updates without changing Meeting status and shows the success message. |
+| **Alternative Flows** | AF-1 – Reschedule Published Meeting<br>Entry point: Step 1 of the Main Flow.<br>1. The Meeting Organizer selects Reschedule for a Meeting that is Published and has not started.<br>2. The system allows changes only to Planned Start Time, Planned End Time, Location and optional Online Link. All other fields are read-only. (BR-27, BR-158)<br>3. The Organizer enters the changes and submits.<br>4. The system validates that the new start is in the future, the end follows the start, and Online Link is at most 1,000 characters. (BR-62, BR-75, BR-163)<br>5. The system saves the new schedule, retains Published status, records the change and queues notifications to affected invitees. Delivery failure does not roll back the saved change. (BR-38, BR-76, BR-158)<br>6. The system displays MSG138 – "Meeting rescheduled successfully. Invitees will be notified." The use case succeeds. |
+| **Exception Flows** | EX-1 – Invalid or Unauthorized Update<br>1. The system determines that meeting information is invalid, Online Link exceeds 1,000 characters, the Organizer is no longer authorized, or the Meeting status does not permit this edit. (BR-27, BR-62, BR-163)<br>2. The system does not save any changes and displays the applicable existing validation/error message.<br>3. The use case ends unsuccessfully or the Organizer corrects input and retries.<br>EX-2 – Reschedule Not Permitted<br>1. During AF-1 the Meeting is not Published, has already started, its planned start is not in the future, or a field outside the allowed Reschedule set was modified. (BR-27, BR-75, BR-158)<br>2. The system rejects the update; the existing schedule remains unchanged.<br>3. The system displays the relevant existing meeting-update error message. The use case ends.<br>EX-3 – Update Cannot Be Saved<br>1. At Main Step 5 or AF-1 Step 5 a persistence error occurs.<br>2. Existing Meeting data/status remain unchanged and no schedule-update notification is sent.<br>3. The system displays the existing update-failure message. The use case ends. |
 
-- **EX-2: Last Administrator Cannot Be Demoted**
-  1. At Step 7 of the Main Flow or Step 4 of AF-1, the system determines that, after the change, no active account would hold the user administration permission.
-  2. The user keeps the previous role.
-  3. The system displays MSG12 – "Unable to change the status of this user account."
-  4. The use case ends unsuccessfully.
+### UC-16 – View Meeting Details
 
----
+Sequence Diagram: [UC16_ViewMeetingDetails.txt](../06-sequencediagram/meeting-management/UC16_ViewMeetingDetails.txt)
 
-### FEATURE 3: QUẢN LÝ VAI TRÒ & PHÂN QUYỀN (ROLE MANAGEMENT)
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Meeting Organizer, Meeting Approver, Chair, Secretary, Participant |
+| **Secondary Actors** | None |
+| **Description** | Allows authorized users to view the details of one Meeting, including planned schedule, actual start/end times when available, and meeting-level status. Agenda and other records remain accessible through their corresponding views. |
+| **Preconditions** | ● PRE-1: The user is authenticated.<br>● PRE-2: A meeting has been selected or identified. |
+| **Postconditions** | ● POST-1: The Meeting Name, planned time range, actual times where available, mode, location, confidentiality, description and lifecycle status are displayed read-only.<br>● POST-2: The Meeting is not modified. |
+| **Normal Flow** | View Meeting Details<br>1. The user requests the selected Meeting.<br>2. The system verifies that the Meeting exists and the user has access. (BR-29)<br>3. The system retrieves the Meeting information and planned/actual time fields.<br>4. The system displays Meeting Name, planned start/end time, actual start/end time when available, Meeting Mode, Location, Confidentiality Level, Description, and Status.<br>5. The user reviews the Meeting details. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Meeting Does Not Exist or Is Not Accessible<br>1. At Step 2, the system cannot find the selected meeting or the user is not authorized to view it.<br>2. The system does not disclose whether the meeting exists.<br>3. The use case ends.<br>EX-2 – Meeting Details Cannot Be Retrieved<br>1. At Step 3, the meeting exists and is accessible, but the system cannot retrieve its meeting-level information.<br>2. The system displays MSG37 – "Unable to load meeting details. Please try again."<br>3. The use case ends. |
 
----
+### UC-17 – View Meeting List
 
-### UC-10: View Role & Permission Matrix (Xem ma trận vai trò & quyền hạn)
+Sequence Diagram: [UC17_ViewMeetingList.txt](../06-sequencediagram/meeting-management/UC17_ViewMeetingList.txt)
 
-- **Use Case ID**: UC-10
-- **Use Case Name**: View Role & Permission Matrix
-- **Primary Actor**: System Admin
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the System Admin to view the predefined roles and their default permissions.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The System Admin is authenticated.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: No system data is modified.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC10_ViewRolePermissionMatrix.png](../06-sequencediagram/role-management/UC10_ViewRolePermissionMatrix.png)
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Meeting Organizer, Meeting Approver, Chair, Secretary, Participant |
+| **Secondary Actors** | None |
+| **Description** | Allows an authorized user to view and browse only the meetings to which the user has an authorized relationship or assignment. The assigned Secretary can view the Meeting before publication under BR-118. External Guests do not use the internal Meeting list. |
+| **Preconditions** | ● PRE-1: The user is authenticated. |
+| **Postconditions** | ● POST-1: The system displays the list of meetings that the user is authorized to view.<br>● POST-2: No meeting information is modified. |
+| **Normal Flow** | View Meeting List<br>1. The user selects Meetings from the navigation menu.<br>2. The system identifies only meetings the user may view under BR-29: meetings created by the user at any status; meetings assigned to the user as Meeting Approver from WaitingApproval onward; and meetings assigned to the user as an active Secretary at any status, including before publication (BR-118); and meetings where the user is assigned as Chair or Member from Published onward. External Guests access only their invited Meeting through UC-04 and do not use this internal list.<br>3. The system sorts and displays only those authorized meetings.<br>4. The user browses the displayed meetings. |
+| **Alternative Flows** | AF-1 – Search Meetings<br>1. At Step 4 of the Main Flow, the user enters a meeting name in the search field.<br>2. The system finds meetings matching the entered search criteria within the meetings available to the user.<br>3. The system displays the matching meetings.<br>4. The flow resumes at Step 4 of the Main Flow.<br>AF-2 – Filter Meetings<br>1. At Step 4 of the Main Flow, the user selects one or more filter criteria, such as Meeting Status, Confidentiality Level, or Time Range.<br>2. The system applies the selected criteria to the meetings available to the user. For Time Range, a Meeting matches when its own planned start/end time overlaps the selected time range. (BR-30)<br>3. The system displays the matching meetings.<br>4. The flow resumes at Step 4 of the Main Flow.<br>AF-3 – No Matching Meetings<br>1. The applied search or filter criteria produce no matching meetings within the meetings available to the user.<br>2. The system displays an empty meeting list and the message "No meetings match the filter."<br>3. The user may change or clear the current search/filter criteria.<br>4. The flow resumes at Step 4 of the Main Flow. |
+| **Exception Flows** | EX-1 – Meeting List Cannot Be Retrieved<br>1. At Step 2 or Step 3 of the Main Flow, the system cannot retrieve the meeting list.<br>2. The system displays MSG38 – "Unable to load meetings. Please try again."<br>3. The use case ends.<br>EX-2 – Invalid Meeting List Criteria<br>1. The system determines that the selected search, filter, sort, or display criteria are invalid.<br>2. The system displays MSG32 – "Tiêu chí danh sách cuộc họp không hợp lệ."<br>3. The user may clear or adjust the search/filter criteria.<br>4. The use case ends. |
 
-#### Luồng sự kiện chính (Main Flow — View Role & Permission Matrix):
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the Role & Permission Matrix.
+### UC-18 – Submit Meeting for Approval
 
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
+Sequence Diagram: [UC18_SubmitMeetingForApproval.txt](../06-sequencediagram/meeting-management/UC18_SubmitMeetingForApproval.txt)
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Meeting Organizer |
+| **Secondary Actors** | None |
+| **Description** | Allows the Meeting Organizer to submit a Draft meeting or resubmit a previously Rejected meeting for review by an assigned Meeting Approver based on the Meeting information and planned schedule. |
+| **Preconditions** | ● PRE-1: The Meeting Organizer is authenticated.<br>● PRE-2: The selected meeting exists.<br>● PRE-3: The Meeting Organizer is authorized to submit the selected meeting for approval.<br>● PRE-4: The meeting is in Draft or Rejected status. |
+| **Postconditions** | ● POST-1: The meeting status is WaitingApproval.<br>● POST-2: A valid Meeting Approver is assigned to the current approval cycle.<br>● POST-3: The assigned Meeting Approver is granted access to the meeting for approval purposes.<br>● POST-4: The submission is recorded in the meeting lifecycle history.<br>● POST-5: The assigned Meeting Approver is notified of the pending approval request. |
+| **Normal Flow** | Submit Meeting for Approval<br>1. The Meeting Organizer selects a Draft meeting and chooses Submit for Approval.<br>2. The system verifies that all required Meeting information and planned schedule are complete and valid for approval submission. (BR-25, BR-33, BR-62)<br>3. The system identifies users who are eligible to act as Meeting Approvers.<br>4. The system displays the eligible Meeting Approvers.<br>5. The Meeting Organizer selects a Meeting Approver.<br>6. The system verifies that the selected user is eligible to review the meeting and is not the Meeting Organizer.<br>7. The system verifies that the meeting is still in Draft or Rejected status.<br>8. The system assigns the selected Meeting Approver to the current approval cycle.<br>9. The system changes the meeting status to WaitingApproval.<br>10. The system records the submission and assigned approver in the meeting lifecycle history.<br>11. The system notifies the assigned Meeting Approver.<br>12. The system displays the submission success message. |
+| **Alternative Flows** | AF-1 – Resubmit a Rejected Meeting<br>Entry Point: Step 1 of the Main Flow.<br>1. The Meeting Organizer selects a meeting in Rejected status.<br>2. The Meeting Organizer chooses Resubmit for Approval.<br>3. The flow resumes at Step 2 of the Main Flow and completes successfully when the submission requirements are satisfied. |
+| **Exception Flows** | EX-1 – Incomplete Meeting-Level Information<br>1. At Step 2, the system determines that mandatory Meeting information and planned schedule is incomplete.<br>2. The system identifies the missing or invalid information.<br>3. The meeting remains Draft or Rejected and the use case ends.<br>EX-2 – Meeting Status Not Eligible for Submission<br>1. At Step 7, the system determines that the meeting is not in Draft or Rejected status.<br>2. The system displays MSG41 – "This meeting can no longer be submitted for approval."<br>3. The use case ends.<br>EX-3 – No Valid Meeting Approver<br>1. At Step 6, the system determines that the selected user is not eligible to review the meeting or is the Meeting Organizer.<br>2. The meeting remains Draft or Rejected and no approval assignment is created.<br>3. The flow resumes at Step 5 of the Main Flow so the Meeting Organizer selects another eligible approver.<br>EX-4 – Submission Cannot Be Completed<br>1. At Step 8 or Step 9, the approval assignment or status change cannot be completed.<br>2. The meeting remains in its previous status and no approval notification is sent.<br>3. The system displays MSG42 – "Unable to submit the meeting for approval. Please try again."<br>4. The use case ends. |
 
-- **EX-1: Role and permission information cannot be retrieved**
-  1. The system cannot retrieve the role and permission information.
-  2. The system displays an error message.
-  3. The use case ends unsuccessfully.
+### UC-19 – Review Meeting Approval
 
----
+Sequence Diagram: [UC19_ReviewMeetingApproval.txt](../06-sequencediagram/meeting-management/UC19_ReviewMeetingApproval.txt)
 
-### UC-11: Configure Role Permissions (Cấu hình phân quyền vai trò)
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Meeting Approver |
+| **Secondary Actors** | None |
+| **Description** | Allows the Meeting Approver assigned to a meeting approval cycle to review the meeting and decide whether to approve or reject it. |
+| **Preconditions** | ● PRE-1: The Meeting Approver is authenticated.<br>● PRE-2: The selected meeting exists.<br>● PRE-3: The Meeting Approver is currently assigned to review the selected meeting and is not its Meeting Organizer.<br>● PRE-4: The meeting is in WaitingApproval status. |
+| **Postconditions** | ● POST-1: The Meeting Approver's decision is recorded.<br>● POST-2: If approved, the meeting status is Approved.<br>● POST-3: If rejected, the meeting status is Rejected.<br>● POST-4: If rejected, the rejection reason is recorded and available to the Meeting Organizer and assigned Secretary so the Organizer can correct and resubmit the Meeting.<br>● POST-5: The approval or rejection is recorded in the meeting lifecycle history. |
+| **Normal Flow** | Review Meeting Approval<br>1. The Meeting Approver selects a meeting assigned to them that is awaiting approval.<br>2. The system verifies that the current user is the assigned Meeting Approver.<br>3. The system displays the meeting information for review.<br>4. The Meeting Approver selects Approve.<br>5. The system re-verifies that:<br>- the Meeting Approver is still authorized to approve the selected meeting; and<br>- the meeting is still in WaitingApproval status.<br>6. The system changes the meeting status from WaitingApproval to Approved.<br>7. The system records the approval decision, acting user, and timestamp in the meeting lifecycle history.<br>8. The system displays MSG43 – "Meeting approved successfully." |
+| **Alternative Flows** | AF-1 – Reject Meeting<br>1. At Step 4 of the Main Flow, the Meeting Approver selects Reject.<br>2. The system requests a rejection reason.<br>3. The Meeting Approver enters the rejection reason.<br>4. The system trims the rejection reason and validates that it is not empty and does not exceed 1000 characters.<br>5. The system re-verifies that:<br>- the Meeting Approver is still authorized to reject the selected meeting; and<br>- the meeting is still in WaitingApproval status.<br>6. The system changes the meeting status to Rejected.<br>7. The system records the rejection decision, rejection reason, acting user, and timestamp.<br>8. The rejection reason becomes available to the Meeting Organizer and assigned Secretary so the Organizer can correct and resubmit the Meeting.<br>9. The system displays MSG44 – "Meeting rejected successfully." |
+| **Exception Flows** | EX-1 – Rejection Reason Is Missing<br>1. At Step 4 of AF-1, the system determines that the trimmed rejection reason is empty. (BR-36)<br>2. The system displays MSG83 – "Rejection reason is required."<br>3. The meeting remains in WaitingApproval status.<br>4. The Meeting Approver enters a valid rejection reason.<br>5. The flow resumes at Step 4 of AF-1.<br>EX-2 – Meeting Is No Longer Awaiting Approval<br>1. At Step 5 of the Main Flow or Step 5 of AF-1, the system determines that the meeting is no longer in WaitingApproval status.<br>2. No approval or rejection decision is applied.<br>3. The meeting remains in its current status.<br>4. The system displays "This meeting is no longer awaiting approval."<br>5. The use case ends.<br>EX-3 – Approval Decision Cannot Be Completed<br>1. At Step 6 of the Main Flow or Step 6 of AF-1, the system cannot complete the requested approval or rejection decision.<br>2. The requested status transition is not applied.<br>3. No successful approval or rejection decision is recorded in the meeting lifecycle history.<br>4. The system displays "Unable to complete the approval decision. Please try again."<br>5. The use case ends.<br>EX-4 – User Is No Longer Authorized to Review the Meeting<br>1. At Step 5 of the Main Flow or Step 5 of AF-1, the system determines that the Meeting Approver is no longer authorized to approve or reject the selected meeting. (BR-35)<br>2. No approval or rejection decision is applied.<br>3. The meeting status remains unchanged.<br>4. The system informs the Meeting Approver that they are no longer authorized to review the meeting.<br>5. The use case ends.<br>EX-5 – Rejection Reason Is Too Long<br>1. At Step 4 of AF-1, the trimmed rejection reason exceeds 1000 characters.<br>2. The system displays MSG84 – "Rejection reason must not exceed 1000 characters."<br>3. The meeting remains in WaitingApproval status.<br>4. The Meeting Approver enters a valid rejection reason and the flow resumes at Step 4 of AF-1. |
 
-- **Use Case ID**: UC-11
-- **Use Case Name**: Configure Role Permissions
-- **Primary Actor**: System Admin
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the System Admin to configure the default permissions assigned to a predefined system role.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The System Admin is authenticated in the system.
-  - PRE-2: The System Admin is authorized to manage role permissions.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The selected role is associated with the updated set of default permissions.
-  - POST-2: The permission configuration change is recorded in the audit log.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC11_ConfigureRolePermissions.png](../06-sequencediagram/role-management/UC11_ConfigureRolePermissions.png)
+### UC-20 – Publish Meeting
 
-#### Luồng sự kiện chính (Main Flow — Configure Role Permissions):
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the Role & Permission Matrix.
-3. The System Admin configures the permissions assigned to a predefined role.
-4. The system validates and saves the updated permission configuration (BR-23).
-5. The system records the configuration change in the audit log (BR-16).
-6. The system displays MSG16 – "Role permissions updated successfully."
+Sequence Diagram: [UC20_PublishMeeting.txt](../06-sequencediagram/meeting-management/UC20_PublishMeeting.txt)
 
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Meeting Organizer |
+| **Secondary Actors** | None |
+| **Description** | Allows the Meeting Organizer to publish an Approved meeting and initiate invitation delivery to current internal participants and external Guests. |
+| **Preconditions** | ● PRE-1: The Meeting Organizer is authenticated.<br>● PRE-2: The selected meeting exists.<br>● PRE-3: The Meeting Organizer is authorized to publish the selected meeting.<br>● PRE-4: The meeting is in Approved status.<br>● PRE-5: The meeting has exactly one current Chair and at least one current Secretary with active accounts. Invitation responses are not publication prerequisites. (BR-124, BR-125, BR-129) |
+| **Postconditions** | ● POST-1: The meeting status is Published.<br>● POST-2: The publication is recorded in the meeting lifecycle history.<br>● POST-3: The system attempts to initiate invitation delivery for current internal participants and active external Guest invitations when delivery is available. Internal participants may receive in-app and email delivery; external Guests receive email guest-access invitations. (BR-39, BR-40, BR-90, BR-91, BR-152) |
+| **Normal Flow** | Publish Meeting<br>1. The Meeting Organizer selects an Approved meeting.<br>2. The Meeting Organizer selects Publish Meeting.<br>3. The system verifies that the Meeting Organizer remains authorized, the meeting is still Approved with a valid planned schedule, exactly one current Chair has an active account, and at least one current Secretary has an active account.  (BR-37, BR-124, BR-125, BR-129)<br>4. The system changes the meeting status from Approved to Published. (BR-37)<br>5. The system records the publication action, acting user, and timestamp in the meeting lifecycle history. (BR-38)<br>6. The system initiates asynchronous invitation delivery for current internal participants and active external Guest invitations. External Guest emails contain a secure meeting-specific guest invitation used for later email verification and guest access. The meeting remains Published if delivery is unavailable. (BR-39, BR-40, BR-90, BR-91, BR-94, BR-152, BR-153, BR-156)<br>7. The system displays MSG45 – "Meeting published successfully." |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Meeting Is No Longer Eligible for Publication<br>1. At Step 3 of the Main Flow, the system determines that the meeting is no longer Approved, the Meeting Organizer is no longer authorized to publish it, there is not exactly one active current Chair, or there is no active current Secretary. (BR-37, BR-124, BR-125)<br>2. The meeting remains unchanged.<br>3. Invitation delivery is not initiated.<br>4. The system displays MSG46 – "This meeting can no longer be published."<br>5. The use case ends.<br>EX-2 – Meeting Cannot Be Published<br>1. At Step 4 of the Main Flow, the system cannot complete the publication.<br>2. The meeting remains Approved.<br>3. Invitation delivery is not initiated.<br>4. The system displays MSG47 – "Unable to publish the meeting. Please try again."<br>5. The use case ends. |
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+### UC-21 – Start Meeting
 
-- **EX-1: Invalid Permission Configuration**
-  1. At Step 4 of the Main Flow, the system determines that the updated permission configuration violates a permission rule.
-  2. The system does not save the changes.
-  3. The system displays MSG17 – "Invalid permission configuration."
-  4. The use case ends unsuccessfully.
+Sequence Diagram: [UC21_StartMeeting.txt](../06-sequencediagram/meeting-management/UC21_StartMeeting.txt)
 
-- **EX-2: Permission Configuration Cannot Be Saved**
-  1. At Step 4 of the Main Flow, the system cannot save the updated permission configuration.
-  2. The existing role permissions remain unchanged.
-  3. The system displays MSG18 – "Unable to update role permissions. Please try again."
-  4. The use case ends unsuccessfully.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Chair |
+| **Secondary Actors** | None |
+| **Description** | Allows the assigned Chair to start one Published Meeting, set the Meeting lifecycle to InProgress and record its actual start time. The Meeting has no subordinate scheduling objects. |
+| **Preconditions** | ● PRE-1: The Chair is authenticated and assigned to the selected meeting.<br>● PRE-2: The selected meeting exists.<br>● PRE-3: The meeting is Published.<br>● PRE-4: The meeting has exactly one current Chair and at least one current Secretary with active accounts.  (BR-127) |
+| **Postconditions** | ● POST-1: Meeting status is InProgress.<br>● POST-2: Actual Start Time, acting Chair and immutable lifecycle event timestamp are recorded. (BR-38)<br>● POST-3: In-app Meeting-start notifications are created for currently invited internal participants. (BR-164)<br>● POST-4: Online Meeting Room access is governed by the Meeting mode and current status. |
+| **Normal Flow** | Start Meeting<br>1. The assigned Chair selects Start Meeting for the Published Meeting.<br>2. The system verifies the Chair is active/current, one active current Chair and at least one active Secretary exist, and the Meeting remains Published. (BR-127, BR-130, BR-131)<br>3. The system changes status to InProgress, saves Actual Start Time and records the lifecycle event. (BR-38, BR-131)<br>4. The system creates in-app notifications for current invited internal participants; a notification delivery problem does not undo a successfully started Meeting. (BR-164)<br>5. The system displays MSG110 – "Meeting started successfully." |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Meeting Cannot Be Started<br>1. At Step 2, the meeting is no longer Published, the Chair is no longer assigned or active, or the required active Chair/Secretary assignments are no longer valid. (BR-127, BR-130, BR-131)<br>2. The meeting remains unchanged.<br>3. The system displays MSG112 – "This meeting cannot be started."<br>4. The use case ends.<br>EX-2 – Start Cannot Be Completed<br>1. At Step 3, the system cannot complete the lifecycle transition.<br>2. The meeting remains Published.<br>3. The system displays MSG115 – "Unable to start the meeting. Please try again."<br>4. The use case ends. |
 
----
+### UC-22 – End Meeting
 
-### UC-12: Create Role (Tạo vai trò mới)
+Sequence Diagram: [UC22_EndMeeting.txt](../06-sequencediagram/meeting-management/UC22_EndMeeting.txt)
 
-- **Use Case ID**: UC-12
-- **Use Case Name**: Create Role
-- **Primary Actor**: System Admin
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the System Admin to create a new custom role with a name, an optional description and an optional initial set of permissions, without changing code or redeploying the system.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The System Admin is authenticated in the system.
-  - PRE-2: The System Admin is authorized to manage roles.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: A new custom role is created and appears in the role list and in the Role & Permission Matrix.
-  - POST-2: The new role is associated with the selected permissions; the set may be empty.
-  - POST-3: The role creation is recorded in the audit log.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC12_CreateRole.png](../06-sequencediagram/role-management/UC12_CreateRole.png)
-
-#### Luồng sự kiện chính (Main Flow — Create Role):
-1. The System Admin accesses Role & Permission Management.
-2. The System Admin selects "Create Role".
-3. The system displays the role creation form.
-4. The System Admin enters the role name and an optional description, selects the permissions to grant to the role, and submits the form.
-5. The system validates the role information: the name is required and has at most 64 characters after trimming, the description has at most 256 characters, and every selected permission exists in the permission catalog.
-6. The system checks that no existing role, including the predefined roles, has the same name (case-insensitive).
-7. The system saves the new role together with its permissions.
-8. The system records the role creation in the audit log (BR-16).
-9. The system displays MSG19 – "Role created successfully."
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-
-- **AF-1: Role Created Without Permissions**
-  1. At Step 4 of the Main Flow, the System Admin does not select any permission.
-  2. The system accepts an empty permission set; user accounts assigned to this role have the same access as a Member.
-  3. The flow continues at Step 5 of the Main Flow.
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Invalid Role Information**
-  1. At Step 5 of the Main Flow, the system determines that the name is empty or longer than 64 characters, the description is longer than 256 characters, or a selected permission does not exist.
-  2. The system does not save the role.
-  3. The system displays MSG20 – "Invalid role information." and highlights the invalid fields.
-  4. The System Admin may correct the information and resubmit; otherwise the use case ends unsuccessfully.
-
-- **EX-2: Duplicate Role Name**
-  1. At Step 6 or Step 7 of the Main Flow, the system determines that another role already uses the same name (case-insensitive).
-  2. The system does not save the role.
-  3. The system displays MSG21 – "A role with this name already exists. Please choose a different name."
-  4. The System Admin may enter a different name and resubmit; otherwise the use case ends unsuccessfully.
-
-- **EX-3: Role Cannot Be Saved**
-  1. At Step 7 of the Main Flow, the system cannot save the new role.
-  2. No role is created.
-  3. The system displays MSG26 – "Unable to create the role. Please try again."
-  4. The use case ends unsuccessfully.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Chair |
+| **Secondary Actors** | None |
+| **Description** | Allows the assigned Chair to end an InProgress Meeting, record Actual End Time and close access to its Online Meeting Room. |
+| **Preconditions** | ● PRE-1: The Chair is authenticated, active and assigned to the selected Meeting.<br>● PRE-2: The Meeting is InProgress. (BR-132)<br>Note: An Open Vote is checked at runtime in Step 3 and handled by EX-3; it is not treated as a precondition. |
+| **Postconditions** | ● POST-1: Meeting status becomes Ended.<br>● POST-2: Actual End Time, acting Chair and event timestamp are recorded.<br>● POST-3: Any InProgress Agenda Item becomes Done with its actual end time and duration. This update and the Meeting end are saved atomically; failure preserves both previous states. (BR-159)<br>● POST-4: The Online Meeting Room stops accepting joins and connected users are disconnected. (BR-143) |
+| **Normal Flow** | End Meeting<br>1. The assigned Chair selects End Meeting.<br>2. The system checks current Chair assignment and Meeting InProgress status. (BR-130, BR-132)<br>3. The system checks that no Vote is Open; otherwise execute EX-3. (BR-159)<br>4. The system prepares completion of any InProgress Agenda Item, including actual end time and duration. (BR-159)<br>5. The system atomically saves the Agenda Item completion, Meeting Actual End Time, Ended status and immutable lifecycle event. If any save fails, all changes are rolled back and EX-2 applies. (BR-38, BR-132, BR-159)<br>6. The Online Meeting Room stops accepting entries and connected users are disconnected. (BR-143)<br>7. The system displays MSG111 – "Meeting ended successfully." |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Meeting Cannot Be Ended<br>1. The Meeting is not InProgress, or the Chair is no longer assigned/active. (BR-130, BR-132)<br>2. The Meeting remains unchanged and the system displays MSG114 – "This meeting cannot be ended." The use case ends.<br>EX-2 – End Cannot Be Completed<br>1. At Step 5, the system cannot save the Meeting end, Agenda Item completion or lifecycle event atomically.<br>2. All changes are rolled back: the Meeting remains InProgress and the Agenda Item retains its previous status and timestamps. No successful end event is recorded and room closure is not triggered.<br>3. The system displays MSG116 – "Unable to end the meeting. Please try again." The use case ends.<br>EX-3 – Open Vote Exists<br>1. At Step 3, a Vote is Open.<br>2. The system displays MSG139 – Close all open votes before ending the meeting.<br>3. Meeting remains InProgress; the use case ends unsuccessfully. (BR-159) |
 
 ---
 
-### UC-13: Update Role (Cập nhật vai trò)
+## FE-05 — Agenda Management
 
-- **Use Case ID**: UC-13
-- **Use Case Name**: Update Role
-- **Primary Actor**: System Admin
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the System Admin to change the name and description of a custom role. Predefined roles cannot be renamed; the permissions of any role are configured through UC-11.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The System Admin is authenticated in the system.
-  - PRE-2: The System Admin is authorized to manage roles.
-  - PRE-3: At least one custom role exists in the system.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The name and/or description of the selected role are updated; its permissions and the user accounts holding it remain unchanged.
-  - POST-2: The change is recorded in the audit log with the values before and after the update.
-  - POST-3: No user session is terminated; users holding the role see the new name the next time their information is loaded.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC13_UpdateRole.png](../06-sequencediagram/role-management/UC13_UpdateRole.png)
+### UC-23 – Manage Agenda Items
 
-#### Luồng sự kiện chính (Main Flow — Update Role):
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the list of roles.
-3. The System Admin selects "Edit" on a custom role.
-4. The system displays the edit form pre-filled with the current name and description.
-5. The System Admin modifies the name and/or description and submits the form.
-6. The system verifies that the selected role exists and is a custom role.
-7. The system validates the role information using the same rules as UC-12: the name is required and has at most 64 characters after trimming; the description has at most 256 characters.
-8. The system checks that no other role has the same name (case-insensitive). Changing only the letter case of the role's own name is allowed.
-9. The system saves the updated role.
-10. The system records the change in the audit log (BR-16).
-11. The system displays MSG22 – "Role updated successfully."
+_UC gom — đặc tả nằm ở các UC con UC-23a, UC-23b… bên dưới._
 
-#### Luồng sự kiện thay thế (Alternative Flows):
+#### UC-23a – Create Agenda Item
 
-- **AF-1: No Changes Submitted**
-  1. At Step 7 of the Main Flow, the system determines that the submitted name and description are identical to the current values.
-  2. The system does not modify any data and does not record an audit log entry.
-  3. The system displays MSG22 – "Role updated successfully."
-  4. The use case ends.
+Sequence Diagram: [UC23a_CreateAgendaItem.txt](../06-sequencediagram/agenda-management/UC23a_CreateAgendaItem.txt)
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the assigned Secretary to create a new Agenda Item directly under a Meeting while agenda planning is permitted while Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. |
+| **Preconditions** | ● PRE-1: The Secretary is authenticated and assigned to the Meeting.<br>● PRE-2: The Meeting exists, is in Draft, WaitingApproval, Rejected, Approved, Published or InProgress status and is eligible for agenda planning. (BR-65, BR-74) |
+| **Postconditions** | ● POST-1: A Pending Agenda Item is created under the Meeting.<br>● POST-2: The Agenda Item is ordered within that Meeting and any selected documents belong to the same Meeting. |
+| **Normal Flow** | Create Agenda Item<br>1. The Secretary opens the selected Meeting’s Agenda view and selects Add Agenda Item.<br>2. The Secretary enters Title, Planned Duration, optional Presenter and Description, and selects available Meeting documents.<br>3. The system checks the Secretary assignment, Meeting status (Draft, WaitingApproval, Rejected, Approved, Published or InProgress), required values and document access. (BR-64, BR-65, BR-66, BR-74)<br>4. The system creates the Pending Agenda Item at the end of the Meeting agenda. (BR-67)<br>5. The system shows the updated Meeting agenda. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Invalid Agenda Item Information<br>1. Required information or selected documents are invalid. The system identifies the issue and no Agenda Item is created.<br>EX-2 – Meeting Not Open for Agenda Planning<br>1. The Meeting is not Draft, WaitingApproval, Rejected, Approved, Published or InProgress or the user is no longer its Secretary. (BR-65, BR-68)<br>2. No Agenda Item is created. The use case ends.<br>EX-3 – Create Cannot Be Saved<br>1. The system cannot persist the requested Agenda change.<br>2. The last saved Agenda data and order remain unchanged.<br>3. The system displays MSG68 and the use case ends without satisfying its change postcondition. |
 
-- **EX-1: Predefined Role**
-  1. At Step 6 of the Main Flow, the system determines that the selected role is a predefined system role.
-  2. The system does not save the changes.
-  3. The system displays MSG24 – "This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions."
-  4. The use case ends unsuccessfully.
+#### UC-23b – Update Agenda Item
 
-- **EX-2: Invalid Role Information**
-  1. At Step 7 of the Main Flow, the system determines that the role information is invalid.
-  2. The system does not save the changes.
-  3. The system displays MSG20 – "Invalid role information." and highlights the invalid fields.
-  4. The System Admin may correct the information and resubmit; otherwise the use case ends unsuccessfully.
+Sequence Diagram: [UC23b_UpdateAgendaItem.txt](../06-sequencediagram/agenda-management/UC23b_UpdateAgendaItem.txt)
 
-- **EX-3: Duplicate Role Name**
-  1. At Step 8 or Step 9 of the Main Flow, the system determines that another role already uses the same name (case-insensitive).
-  2. The system does not save the changes.
-  3. The system displays MSG21 – "A role with this name already exists. Please choose a different name."
-  4. The System Admin may enter a different name and resubmit; otherwise the use case ends unsuccessfully.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the assigned Secretary to update an existing Agenda Item belonging directly to a Meeting while that Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. |
+| **Preconditions** | ● PRE-1: The Secretary is authenticated and assigned to the Meeting.<br>● PRE-2: The Agenda Item belongs to the Meeting and the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. (BR-65, BR-68) |
+| **Postconditions** | ● POST-1: The Agenda Item is updated without changing the Meeting lifecycle.<br>● POST-2: The Agenda Item remains associated with the same Meeting. |
+| **Normal Flow** | Update Agenda Item<br>1. The Secretary selects an Agenda Item in the Meeting Agenda and chooses Edit.<br>2. The Secretary changes descriptive/planning fields and submits the update; this operation does not set or complete the current Item or change its execution status and actual timestamps.<br>3. The system verifies assignment, Meeting status (Draft, WaitingApproval, Rejected, Approved, Published or InProgress), required values and any attached Meeting documents. (BR-65, BR-66, BR-68)<br>4. The system saves the updated Agenda Item and displays it within the Meeting agenda. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Invalid Agenda Item<br>1. The edited fields are invalid; the Agenda Item remains unchanged.<br>EX-2 – Editing No Longer Permitted<br>1. The Meeting is not Draft, WaitingApproval, Rejected, Approved, Published or InProgress or the actor is not its assigned Secretary. (BR-65, BR-68)<br>2. The Agenda Item remains unchanged. The use case ends.<br>EX-3 – Update Cannot Be Saved<br>1. The system cannot persist the requested Agenda change.<br>2. The last saved Agenda data and order remain unchanged.<br>3. The system displays MSG69 and the use case ends without satisfying its change postcondition. |
 
-- **EX-4: Role Cannot Be Saved**
-  1. At Step 9 of the Main Flow, the system cannot save the updated role.
-  2. The existing role information remains unchanged.
-  3. The system displays MSG27 – "Unable to update the role. Please try again."
-  4. The use case ends unsuccessfully.
+#### UC-23c – Delete Agenda Item
 
----
+Sequence Diagram: [UC23c_DeleteAgendaItem.txt](../06-sequencediagram/agenda-management/UC23c_DeleteAgendaItem.txt)
 
-### UC-14: Delete Role (Xóa vai trò)
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the assigned Secretary to remove a planned Agenda Item from a Meeting while that Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. |
+| **Preconditions** | ● PRE-1: The user is the assigned Secretary.<br>● PRE-2: The Agenda Item belongs to a Meeting that is in Draft, WaitingApproval, Rejected, Approved, Published or InProgress status. (BR-65, BR-68) |
+| **Postconditions** | ● POST-1: The Agenda Item is removed from the selected Meeting agenda.<br>● POST-2: The Meeting lifecycle is unchanged. |
+| **Normal Flow** | Delete Agenda Item<br>1. The Secretary selects the Agenda Item within the Meeting and confirms Delete.<br>2. The system verifies ownership and that the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. (BR-65, BR-68)<br>3. The system removes the Agenda Item from the Meeting agenda and displays the updated list. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Agenda Item Cannot Be Deleted<br>1. The Meeting is not Draft, WaitingApproval, Rejected, Approved, Published or InProgress or the user lacks permission.<br>2. The Agenda Item remains unchanged. The use case ends.<br>EX-3 – Deletion Cannot Be Saved<br>1. The system cannot persist the requested Agenda change.<br>2. The last saved Agenda data and order remain unchanged.<br>3. The system displays MSG70 and the use case ends without satisfying its change postcondition. |
 
-- **Use Case ID**: UC-14
-- **Use Case Name**: Delete Role
-- **Primary Actor**: System Admin
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the System Admin to delete a custom role that is no longer held by any user account. Predefined roles cannot be deleted.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The System Admin is authenticated in the system.
-  - PRE-2: The System Admin is authorized to manage roles.
-  - PRE-3: At least one custom role exists in the system.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The selected role and its permission assignments are removed from the system.
-  - POST-2: The deletion, including the role name and the permissions it held, is recorded in the audit log.
-  - POST-3: No user account and no user session is affected.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC14_DeleteRole.png](../06-sequencediagram/role-management/UC14_DeleteRole.png)
+#### UC-23d – Reorder Agenda Items
 
-#### Luồng sự kiện chính (Main Flow — Delete Role):
-1. The System Admin accesses Role & Permission Management.
-2. The system displays the list of roles with the number of user accounts holding each role.
-3. The System Admin selects "Delete" on a custom role.
-4. The system displays a confirmation dialog.
-5. The System Admin confirms the deletion.
-6. The system verifies that the selected role exists, is a custom role, and is not held by any user account, including deactivated accounts.
-7. The system deletes the role together with its permission assignments.
-8. The system records the role deletion in the audit log (BR-16).
-9. The system displays MSG23 – "Role deleted successfully."
+Sequence Diagram: [UC23d_ReorderAgendaItems.txt](../06-sequencediagram/agenda-management/UC23d_ReorderAgendaItems.txt)
 
-#### Luồng sự kiện thay thế (Alternative Flows):
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the assigned Secretary to reorder Agenda Items within the same Meeting while it is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. |
+| **Preconditions** | ● PRE-1: The user is the assigned Secretary.<br>● PRE-2: The Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress and contains Agenda Items eligible for reordering. (BR-65, BR-68) |
+| **Postconditions** | ● POST-1: Agenda Item order is updated within the selected Meeting.<br>● POST-2: Agenda Items remain associated with the same Meeting. |
+| **Normal Flow** | Reorder Agenda Items<br>1. The Secretary changes the Agenda Item order in the Meeting Agenda.<br>2. The system validates that the actor is still its assigned Secretary, the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress and that all Items belong to that Meeting. (BR-64, BR-65, BR-68)<br>3. The system saves and displays the new order. (BR-67) |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Reordering No Longer Permitted<br>1. The Meeting is not Draft, WaitingApproval, Rejected, Approved, Published or InProgress or the Secretary is no longer assigned.<br>2. Original Agenda order remains unchanged. The use case ends.<br>EX-3 – Order Cannot Be Saved<br>1. The system cannot persist the requested Agenda change.<br>2. The last saved Agenda data and order remain unchanged.<br>3. The system displays MSG71 and the use case ends without satisfying its change postcondition. |
 
-- **AF-1: Deletion Cancelled**
-  1. At Step 5 of the Main Flow, the System Admin cancels the deletion.
-  2. The system closes the confirmation dialog without changing any data.
-  3. The use case ends.
+### UC-24 – Set Current Agenda Item
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+Sequence Diagram: [UC24_SetCurrentAgendaItem.txt](../06-sequencediagram/agenda-management/UC24_SetCurrentAgendaItem.txt)
 
-- **EX-1: Predefined Role**
-  1. At Step 6 of the Main Flow, the system determines that the selected role is a predefined system role.
-  2. The system does not delete the role.
-  3. The system displays MSG24 – "This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions."
-  4. The use case ends unsuccessfully.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Chair |
+| **Secondary Actors** | None |
+| **Description** | Allows the assigned Chair to set the current Agenda Item during an InProgress Meeting. |
+| **Preconditions** | ● PRE-1: The Chair is assigned and active for the Meeting.<br>● PRE-2: The Meeting is InProgress and the selected Agenda Item is Pending.<br>● PRE-3: No other Agenda Item of the same Meeting is InProgress. (BR-69, BR-71) |
+| **Postconditions** | ● POST-1: The Agenda Item becomes InProgress and the current item for that Meeting.<br>● POST-2: Its actual start time is recorded. |
+| **Normal Flow** | Set Current Agenda Item<br>1. The Chair selects a Pending Agenda Item in the active Meeting and chooses Set as Current.<br>2. The system verifies Meeting status, Chair assignment, Agenda Item membership and that no other Item is InProgress. (BR-64, BR-69, BR-71)<br>3. The system marks the Item InProgress and records its actual start time. (BR-70, BR-72)<br>4. The system shows the updated current Agenda Item to authorized Meeting users. (BR-73) |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Agenda Item Cannot Become Current<br>1. The Meeting is not InProgress, the actor lacks authorization, or another Item is currently InProgress.<br>2. The Item remains unchanged. The use case ends.<br>EX-2 – Current Agenda Item Cannot Be Saved<br>Entry Point: Step 3 of the Main Flow.<br>1. The system cannot save the Item status or actual start time.<br>2. The Item remains Pending with unchanged timestamps; the current Item reference and all other Items remain unchanged.<br>3. The system displays MSG75 – "Unable to set the current agenda item. Please try again."<br>4. The use case ends without satisfying its postconditions. |
 
-- **EX-2: Role Still Held by User Accounts**
-  1. At Step 6 or Step 7 of the Main Flow, the system determines that one or more user accounts, active or deactivated, still hold the role, including an account assigned to the role while the deletion was in progress.
-  2. The system does not delete the role.
-  3. The system displays MSG25 – "This role is still held by {n} user account(s). Reassign them to another role before deleting." in the confirmation dialog, where `{n}` is the number of user accounts holding the role.
-  4. The use case ends unsuccessfully.
+### UC-25 – Complete Agenda Item
 
-- **EX-3: Role Cannot Be Deleted**
-  1. At Step 7 of the Main Flow, the system cannot delete the role.
-  2. The role and its permission assignments remain unchanged.
-  3. The system displays MSG28 – "Unable to delete the role. Please try again."
-  4. The use case ends unsuccessfully.
+Sequence Diagram: [UC25_CompleteAgendaItem.txt](../06-sequencediagram/agenda-management/UC25_CompleteAgendaItem.txt)
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Chair |
+| **Secondary Actors** | None |
+| **Description** | Allows the assigned Chair to complete the current Agenda Item of an InProgress Meeting, recording the actual time used. |
+| **Preconditions** | ● PRE-1: The Chair is active and assigned to the Meeting.<br>● PRE-2: The Meeting is InProgress and the selected Agenda Item is currently InProgress. |
+| **Postconditions** | ● POST-1: The Agenda Item becomes Done with actual end time and duration.<br>● POST-2: Completing the Item does not automatically end the Meeting. (BR-72) |
+| **Normal Flow** | Complete Agenda Item<br>1. The Chair selects Complete for the current Agenda Item.<br>2. The system checks Chair assignment, Meeting status and Agenda Item status. (BR-69, BR-70)<br>3. The system records actual end time and duration, marks the Item Done and updates the Meeting agenda. (BR-70, BR-72, BR-73) |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Agenda Item Cannot Be Completed<br>1. The Item is not current or the Meeting is not InProgress.<br>2. The item remains unchanged. The use case ends.<br>EX-2 – Agenda Item Completion Cannot Be Saved<br>Entry Point: Step 3 of the Main Flow.<br>1. The system cannot save completion, actual end time or duration.<br>2. The Item remains InProgress and its timestamps remain unchanged. The Meeting remains InProgress.<br>3. The system displays MSG76 – "Unable to complete the agenda item. Please try again."<br>4. The use case ends without satisfying its completion postcondition. |
+
+### UC-26 – View Meeting Agenda
+
+Sequence Diagram: [UC26_ViewMeetingAgenda.txt](../06-sequencediagram/agenda-management/UC26_ViewMeetingAgenda.txt)
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Meeting Organizer, Meeting Approver, Chair, Secretary, Participant |
+| **Secondary Actors** | None |
+| **Description** | Allows an authorized user to view the Agenda Items that belong directly to the selected Meeting. |
+| **Preconditions** | ● PRE-1: The user may view the selected Meeting. (BR-29) |
+| **Postconditions** | ● POST-1: The Meeting Agenda Items, ordering and current execution status are shown read-only. |
+| **Normal Flow** | View Meeting Agenda<br>1. The user opens the selected Meeting’s Agenda tab.<br>2. The system verifies Meeting access and retrieves Agenda Items belonging to the Meeting. (BR-29, BR-64)<br>3. The system shows Agenda Item title, presenter, planned duration, status, ordering and actual times where recorded. |
+| **Alternative Flows** | AF-1 – Empty Meeting Agenda<br>1. No Agenda Items exist for the selected Meeting.<br>2. The system displays an empty Agenda state and the use case ends successfully. |
+| **Exception Flows** | EX-1 – Meeting Not Accessible<br>1. The Meeting does not exist or the user lacks access.<br>2. No Agenda data is disclosed. The use case ends.<br>EX-2 – Meeting Agenda Cannot Be Retrieved<br>Entry Point: Step 2 of the Main Flow.<br>1. The system cannot retrieve Agenda data.<br>2. The system displays MSG128 – "Unable to load the meeting agenda. Please try again."; a retrieval failure is not displayed as an empty Agenda.<br>3. No data is modified and the use case ends. |
 
 ---
 
-### FEATURE 4: QUẢN LÝ CUỘC HỌP (MEETING MANAGEMENT)
+## FE-06 — Meeting Participant Management
+
+### UC-27 – View Meeting Participants
+
+Sequence Diagram: [UC27_ViewMeetingParticipants.txt](../06-sequencediagram/meeting-participant-management/UC27_ViewMeetingParticipants.txt)
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the Secretary assigned to a meeting to view the current internal participants and external Guests associated with that meeting, together with each internal participant’s Meeting Role or the Guest access type. |
+| **Preconditions** | ● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.<br>● PRE-2: The selected meeting exists. |
+| **Postconditions** | ● POST-1: The current internal participant and external Guest list is displayed.<br>● POST-2: No participant or guest information is modified. |
+| **Normal Flow** | View Meeting Participants<br>1. The Secretary opens the selected meeting.<br>2. The Secretary selects the Meeting Participants tab.<br>3. The system verifies that the Secretary is still assigned to the meeting.<br>4. The system retrieves the current internal participants and current external Guest invitations of the selected meeting; records retained only as historical evidence are excluded. (BR-84, BR-103, BR-117, BR-148)<br>5. The system displays Full Name, Email, participant type, and Meeting Role or Guest access type.<br>6. The Secretary reviews the participant list. |
+| **Alternative Flows** | AF-1 – No Additional Participants or Guests<br>Entry Point: Step 4 of the Main Flow.<br>1. The current roster contains only the assigned Secretary or Secretaries and no other participants or Guest invitations.<br>2. The system displays the assigned Secretary entries; it does not show an empty roster.<br>Resume Step: Step 6 of the Main Flow. |
+| **Exception Flows** | EX-1 – Meeting Is Not Accessible<br>1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.<br>2. The system displays the same not-found result used for an unknown meeting and does not disclose participant data. (BR-121)<br>3. The use case ends.<br>EX-2 – Participant List Cannot Be Retrieved<br>1. At Step 4, the system cannot retrieve the participant list.<br>2. The system displays MSG95 – "Unable to load meeting participants. Please try again."<br>3. The use case ends. |
+
+### UC-28 – Manage Meeting Participants
+
+_UC gom — đặc tả nằm ở các UC con UC-28a, UC-28b… bên dưới._
+
+#### UC-28a – Add Meeting Participant
+
+Sequence Diagram: [UC28a_AddMeetingParticipant.txt](../06-sequencediagram/meeting-participant-management/UC28a_AddMeetingParticipant.txt)
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Meeting Organizer, Secretary |
+| **Secondary Actors** | Email / SMTP Service |
+| **Description** | Allows the Meeting Organizer to add and assign the first Secretary when the meeting does not yet have one. After the first Secretary has been assigned, the Secretary manages the meeting roster by adding active internal users or inviting external Guests by name and email. Internal users are selected individually; organisational-unit invitation is not supported. |
+| **Preconditions** | ● PRE-1: The actor is authenticated and is either the Meeting Organizer creating the initial Secretary assignment or a Secretary already assigned to the selected meeting.<br>● PRE-2: The selected meeting exists and is in Draft, Rejected, Approved, Published, or InProgress status.<br>● PRE-3: For an internal participant, the selected user has an active internal account and is not already a current participant. For an external Guest, the Guest name and email are valid and that email does not already have a current Guest invitation for the meeting. (BR-81, BR-82, BR-149) |
+| **Postconditions** | ● POST-1: The selected internal user is added once, or one current external Guest invitation is created for the supplied email.<br>● POST-2: The invitation response starts as Pending with no response time.<br>● POST-3: An internal participant is assigned exactly one Meeting Role: Chair, Secretary, or Member. An external Guest has fixed Guest access and receives no system role or privileged Meeting Role. (BR-85, BR-150)<br>● POST-4: If the meeting is Published or InProgress, invitation delivery is queued. Internal participants may receive in-app and email notification; external Guests receive a secure guest invitation by email. (BR-90, BR-91, BR-152) |
+| **Normal Flow** | Add Internal Meeting Participant<br>1. The authorized actor opens the Meeting Participants tab of the selected meeting.<br>2. The actor selects Add Participant.<br>3. The system displays active internal users who are not already current participants of the meeting. (BR-81, BR-82)<br>4. The actor selects one user and assigns one Meeting Role: Chair, Secretary, or Member.<br>5. The actor submits the participant information.<br>6. The system verifies that: when the meeting has no Secretary, the actor is its Meeting Organizer and the selected Meeting Role is Secretary; when the meeting already has a Secretary, the actor is an assigned Secretary; the meeting still permits participant management; the selected user is active and not already invited; the selected Meeting Role is valid; and assigning Chair would not create a second current Chair. (BR-78, BR-79, BR-80, BR-81, BR-82, BR-85, BR-123)<br>7. The system adds the selected internal user with Pending response status and records the selected Meeting Role. (BR-85, BR-88)<br>8. If the meeting is Published or InProgress, the system queues the applicable in-app notification and invitation email for asynchronous delivery. (BR-39, BR-40, BR-45, BR-90)<br>9. The system displays MSG96 – "Meeting participant added successfully." |
+| **Alternative Flows** | AF-1 – Add External Guest by Email<br>Entry Point: Step 3 of the Main Flow.<br>1. The Secretary selects Add External Guest.<br>2. The system displays fields for Guest Name and Email.<br>3. The Secretary enters the Guest Name and Email and submits the invitation.<br>4. The system verifies that the Secretary is still assigned, the meeting still permits participant management, the email format is valid, the email does not already have a current Guest invitation for this meeting, and the email is not already represented by a current internal participant. (BR-79, BR-80, BR-149, BR-151)<br>5. The system creates a current external Guest invitation with Pending response status and fixed Guest access. No internal user account or system role is created. (BR-84, BR-88, BR-148, BR-150, BR-156)<br>6. If the meeting is Published or InProgress, the system generates a secure meeting-specific guest invitation and queues the invitation email. The Guest will later verify access using the invitation and an email one-time code; no internal account login is required. (BR-91, BR-152, BR-153, BR-156)<br>7. The flow resumes at Step 9 of the Main Flow.<br>AF-2 – Invitation Notification Delivery Is Unavailable<br>1. At Step 8 of the Main Flow or Step 6 of AF-1, the meeting is Published or InProgress but the applicable invitation delivery is unavailable.<br>2. The internal participant or external Guest invitation remains successfully added with Pending response status. (BR-40, BR-94)<br>3. The system records the delivery failure for retry.<br>4. The flow resumes at Step 9 of the Main Flow. |
+| **Exception Flows** | EX-1 – Invalid Participant or Guest Information<br>1. At Step 6 of the Main Flow or Step 4 of AF-1, the submitted information is invalid. For an internal participant, the user is inactive, already a current participant, the Meeting Role is invalid, or assigning Chair would create a second current Chair. For an external Guest, the name/email is missing or invalid, the email is already invited as a current Guest, or the email is already represented by a current internal participant. (BR-81, BR-82, BR-85, BR-123, BR-148, BR-149, BR-151)<br>2. No participant or Guest invitation is added.<br>3. The system displays MSG97 – "Invalid meeting participant information." with the applicable field message(s), including: "The selected user is not available."; "This user is already a meeting participant."; "A valid meeting role is required."; "The Meeting Organizer must assign a Secretary as the first meeting participant."; "Guest name and email are required."; "Guest email is invalid."; "This guest email is already invited to the meeting."; "This email is already represented by an internal meeting participant."<br>4. The actor corrects the information.<br>5. For an internal participant, the flow resumes at Step 6 of the Main Flow. For an external Guest, the flow resumes at Step 4 of AF-1.<br>EX-2 – Participant List Cannot Be Modified in the Current Status<br>1. At Step 6 of the Main Flow or Step 4 of AF-1, the Meeting is outside Draft, Rejected, Approved, Published or InProgress (including WaitingApproval, Ended and subsequent lifecycle states). (BR-80)<br>2. No participant or Guest invitation is added.<br>3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."<br>4. The use case ends.<br>EX-3 – Participant or Guest Cannot Be Added<br>1. At Step 7 of the Main Flow or Step 5 of AF-1, the system cannot save the new internal participant or external Guest invitation.<br>2. No new participant or Guest access is created and no invitation is sent.<br>3. The system displays MSG99 – "Unable to add the meeting participant. Please try again."<br>4. The use case ends. |
+
+#### UC-28b – Assign / Change Meeting Role
+
+Sequence Diagram: [UC28b_AssignChangeMeetingRole.txt](../06-sequencediagram/meeting-participant-management/UC28b_AssignChangeMeetingRole.txt)
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the Secretary to assign or change an existing internal participant's Meeting Role within one meeting without changing that user's system role. External Guests have fixed Guest access and are not managed through this use case. |
+| **Preconditions** | ● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.<br>● PRE-2: The selected meeting is in Draft, Rejected, Approved, Published, or InProgress status.<br>● PRE-3: The selected participant is a current internal participant of the selected meeting. |
+| **Postconditions** | ● POST-1: When a different valid role is selected, the participant's Meeting Role is updated for the selected meeting only. AF-1 is a no-change outcome and does not satisfy the role-update postcondition.<br>● POST-2: The participant's system role and invitation response remain unchanged.<br>● POST-3: If the role actually changes and the meeting is Published or InProgress, an in-app notification and an email describing the new Meeting Role are queued for the affected participant. |
+| **Normal Flow** | Assign / Change Meeting Role<br>1. The Secretary opens the Meeting Participants tab of the selected meeting.<br>2. The Secretary selects Change Role for a current internal participant.<br>3. The system displays the participant's current Meeting Role.<br>4. The Secretary selects Chair, Secretary, or Member.<br>5. The Secretary submits the selected Meeting Role.<br>6. The system verifies that the Secretary is still assigned to the meeting, the meeting still permits participant management, the internal participant still belongs to the meeting, the selected Meeting Role is valid, the change would not remove a required Secretary or Chair, and assigning Chair would not create a second current Chair. (BR-79, BR-80, BR-85, BR-122, BR-123, BR-126)<br>7. The system updates only the participant's Meeting Role for the selected meeting. The user's system Role and Invitation Response remain unchanged. (BR-85, BR-86, BR-96)<br>8. If the meeting is Published or InProgress, the system queues an in-app notification and an email describing the new Meeting Role for asynchronous delivery to the participant. (BR-92)<br>9. The system displays MSG100 – "Meeting role updated successfully." |
+| **Alternative Flows** | AF-1 – Selected Role Is Unchanged<br>1. At Step 5, the selected Meeting Role is the participant's current role.<br>2. The system leaves the participant unchanged.<br>3. No update is saved, no role-change notification is queued and MSG100 is not displayed.<br>4. The use case ends with a no-change outcome; the role-update postcondition is not satisfied.<br>AF-2 – Role Change Notification Delivery Is Unavailable<br>1. At Step 8, the Meeting Role has been updated but notification delivery is unavailable.<br>2. The Meeting Role change remains successful. (BR-94)<br>3. The system records the delivery failure for retry.<br>4. The flow resumes at Step 9 of the Main Flow. |
+| **Exception Flows** | EX-1 – Invalid Meeting Role<br>1. At Step 6, the submitted Meeting Role is not Chair, Secretary, or Member. (BR-85)<br>2. The participant's Meeting Role remains unchanged.<br>3. The system displays MSG101 – "A valid meeting role is required."<br>4. The Secretary selects a valid Meeting Role.<br>5. The flow resumes at Step 6 of the Main Flow.<br>EX-2 – Required Meeting Role Would Be Removed<br>1. At Step 6, the change would remove the last assigned Secretary, remove the current Chair while the meeting is Published or InProgress, or create a second current Chair. (BR-122, BR-123, BR-126)<br>2. The participant's Meeting Role remains unchanged.<br>3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."<br>4. The use case ends.<br>EX-3 – Participant List Cannot Be Modified in the Current Status<br>1. At Step 6, the Meeting is outside Draft, Rejected, Approved, Published or InProgress (including WaitingApproval, Ended and subsequent lifecycle states). (BR-80)<br>2. The participant's Meeting Role remains unchanged.<br>3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."<br>4. The use case ends.<br>EX-4 – Meeting Role Cannot Be Updated<br>1. At Step 7, the system cannot save the Meeting Role change.<br>2. The participant's Meeting Role remains unchanged.<br>3. The system displays MSG102 – "Unable to update the meeting role. Please try again."<br>4. The use case ends. |
+
+#### UC-28c – Remove Meeting Participant
+
+Sequence Diagram: [UC28c_RemoveMeetingParticipant.txt](../06-sequencediagram/meeting-participant-management/UC28c_RemoveMeetingParticipant.txt)
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the Secretary to remove a current internal participant or revoke a current external Guest invitation while the meeting has not yet ended. |
+| **Preconditions** | ● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.<br>● PRE-2: The selected meeting is in Draft, Rejected, Approved, Published, or InProgress status.<br>● PRE-3: The selected target is a current internal participant or a current external Guest invitation of the selected meeting. |
+| **Postconditions** | ● POST-1: The selected internal user is no longer a current participant, or the selected external Guest invitation is revoked.<br>● POST-2: Access granted by the removed internal participant assignment or external Guest invitation is revoked. Access independently granted through another valid relationship remains effective.<br>● POST-3: If the meeting is Published or InProgress, the affected internal user receives the applicable in-app/email removal notice; an external Guest may receive an email revocation notice. No removal notification contains a protected meeting link.<br>● POST-4: If an affected user is currently in the online meeting room and no other room-entry access remains, the system disconnects that user. (BR-101) |
+| **Normal Flow** | Remove Meeting Participant or Guest<br>1. The Secretary opens the Meeting Participants tab of the selected meeting.<br>2. The Secretary selects Remove for the target internal participant or external Guest.<br>3. The system requests confirmation.<br>4. The Secretary confirms the removal.<br>5. The system verifies that the Secretary is still assigned to the meeting, the meeting still permits participant management, the target still belongs to the meeting roster, and—when the target is an internal participant—the removal would not remove a required Secretary or Chair. (BR-79, BR-80, BR-122, BR-126)<br>6. If the target is an internal participant, the system removes the current participant assignment. If the target is an external Guest, the system revokes the Guest invitation and invalidates access granted by that invitation. For a Published or InProgress meeting, response and attendance evidence is preserved as historical data rather than physically deleted. (BR-97, BR-102, BR-157)<br>7. The system re-evaluates room-entry access for every affected user and disconnects any currently connected user who no longer has access through another valid relationship. (BR-101)<br>8. If the meeting is Published or InProgress, the system queues the applicable removal/revocation notification for asynchronous delivery. Internal participants may receive in-app and email delivery; external Guests receive email only. (BR-93)<br>9. The system displays MSG103 – "Meeting participant removed successfully." |
+| **Alternative Flows** | AF-1 – Removal Notification Delivery Is Unavailable<br>1. At Step 8, the participant or Guest access has already been removed/revoked but the applicable notification delivery is unavailable.<br>2. The removal and access revocation remain successful. (BR-94)<br>3. The system records the delivery failure for retry.<br>4. The flow resumes at Step 9 of the Main Flow. |
+| **Exception Flows** | EX-1 – Removal Cancelled<br>1. At Step 3, the Secretary does not confirm the removal.<br>2. The target remains unchanged.<br>3. The use case ends without satisfying the removal postcondition.<br>EX-2 – Required Meeting Role Would Be Removed<br>1. At Step 5, an internal participant removal would remove the last assigned Secretary, or would remove the current Chair while the meeting is Published or InProgress. (BR-122, BR-126)<br>2. The participant is not removed.<br>3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."<br>4. The use case ends.<br>EX-3 – Participant List Cannot Be Modified in the Current Status<br>1. At Step 5, the Meeting is outside Draft, Rejected, Approved, Published or InProgress (including WaitingApproval, Ended and subsequent lifecycle states). (BR-80)<br>2. The target is not removed or revoked.<br>3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."<br>4. The use case ends.<br>EX-4 – Participant or Guest Cannot Be Removed<br>1. At Step 6, the system cannot remove the internal participant or revoke the external Guest invitation.<br>2. The target remains current and retains existing access.<br>3. The system displays MSG104 – "Unable to remove the meeting participant. Please try again."<br>4. The use case ends. |
+
+### UC-29 – Respond to Meeting Invitation
+
+Sequence Diagram: [UC29_RespondToMeetingInvitation.txt](../06-sequencediagram/meeting-participant-management/UC29_RespondToMeetingInvitation.txt)
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Chair, Secretary, Participant, Guest |
+| **Secondary Actors** | Email / SMTP Service |
+| **Description** | Allows an invited internal participant or external Guest to respond to their own Meeting invitation by selecting Accepted or Declined while responses are allowed. The invitee may change a previous response between these two values. An external Guest responds through a verified meeting-scoped Guest invitation without signing in to an internal account. |
+| **Preconditions** | ● PRE-1: For an internal invitee, the user is authenticated, has an active account, and is a current internal participant. For an external Guest, a current Guest invitation exists and the Guest can verify access through the invited email; no internal account login is required. (BR-148, BR-153, BR-156)<br>● PRE-2: The invitee currently owns the selected invitation.<br>● PRE-3: The selected meeting is Published or InProgress. |
+| **Postconditions** | ● POST-1: The invitee's latest Invitation Response is Accepted or Declined.<br>● POST-2: The response time is recorded.<br>● POST-3: Responding does not transfer or change any Meeting Role.<br>● POST-4: External Guest access remains scoped to the invited Meeting and does not create an internal user account or system role. (BR-148, BR-150, BR-154, BR-156) |
+| **Normal Flow** | Respond to Meeting Invitation<br>1. The invitee opens the invitation or published meeting details. An internal invitee uses the authenticated system; an external Guest opens the secure guest invitation link.<br>2. The system identifies the invitation owner. For an internal invitee, it uses the authenticated account. For an external Guest, it validates the guest invitation and requires a one-time verification code sent to the invited email; successful verification establishes a limited meeting-scoped guest session. (BR-104, BR-152, BR-153, BR-154, BR-155, BR-156)<br>3. The system displays the current Invitation Response.<br>4. The invitee selects Accepted or Declined and submits the response.<br>5. The system verifies that the selected response is allowed, the invitee still owns a current invitation, and the meeting is still Published or InProgress. (BR-104, BR-105, BR-106)<br>6. The system records the selected Invitation Response and response time. Meeting Role and access relationships remain unchanged. (BR-115)<br>7. The system displays MSG105 – "Meeting invitation response recorded successfully." |
+| **Alternative Flows** | AF-1 – Change a Previous Response<br>Entry Point: Step 3 of the Main Flow.<br>1. The invitee has already responded Accepted or Declined.<br>2. The invitee selects the other response and submits it.<br>Resume Step: Step 5 of the Main Flow; the system revalidates invitation ownership, Meeting status and Guest access when applicable before saving the new response. (BR-104, BR-105, BR-106) |
+| **Exception Flows** | EX-1 – Invalid Invitation Response<br>1. At Step 5 of the Main Flow, the submitted response is neither Accepted nor Declined. (BR-105)<br>2. The previous Invitation Response remains unchanged.<br>3. The system displays MSG106 – "Invalid meeting invitation response." with the applicable validation message.<br>4. The invitee corrects the response.<br>5. The flow resumes at Step 4 of the Main Flow.<br>EX-2 – Invitation Can No Longer Be Answered<br>1. At Step 2 or Step 5, the Meeting is no longer Published or InProgress, the invitation is no longer current, or an external Guest invitation has expired or been revoked. (BR-104, BR-106, BR-155, BR-157)<br>2. The previous Invitation Response remains unchanged.<br>3. The system displays MSG107 – "This meeting invitation can no longer be answered."<br>4. The use case ends.<br>EX-3 – Guest Verification Fails<br>1. At Step 2, an external Guest provides an invalid or expired one-time verification code. (BR-153)<br>2. No Guest session is established and the Invitation Response remains unchanged.<br>3. The system displays MSG126 – "Unable to verify the guest invitation. Check the code and try again."<br>4. The Guest may retry verification while the Guest invitation remains valid.<br>EX-4 – Invitation Response Cannot Be Saved<br>1. At Step 6 of the Main Flow, the system cannot save the Invitation Response and response time.<br>2. The previous Invitation Response, response time and access remain unchanged.<br>3. The system displays MSG108 – "Unable to save the meeting invitation response. Please try again."<br>4. The use case ends. |
+
+### UC-30 – View Participant Response Status
+
+Sequence Diagram: [UC30_ViewParticipantResponseStatus.txt](../06-sequencediagram/meeting-participant-management/UC30_ViewParticipantResponseStatus.txt)
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the Secretary assigned to a meeting to review the latest invitation response of every current internal participant and external Guest, together with a summary by response status. |
+| **Preconditions** | ● PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.<br>● PRE-2: The selected meeting exists. |
+| **Postconditions** | ● POST-1: The latest response status of every current internal participant and external Guest is displayed.<br>● POST-2: The number of Pending, Accepted, and Declined responses is displayed.<br>● POST-3: Invitation Response data is not modified. |
+| **Normal Flow** | View Participant Response Status<br>1. The Secretary opens the Meeting Participants tab of the selected meeting.<br>2. The Secretary selects Participant Response Status.<br>3. The system verifies that the Secretary is still assigned to the meeting.<br>4. The system retrieves all current internal participants and current external Guest invitations with their latest Invitation Response; records retained only as historical evidence are excluded. (BR-103, BR-115, BR-117, BR-148)<br>5. The system displays each invitee's Full Name, Email, participant type, Meeting Role or Guest access type, Invitation Response, response time.<br>6. The system displays the total number of Pending, Accepted, and Declined responses. (BR-115)<br>7. The Secretary reviews the response status summary. |
+| **Alternative Flows** | AF-1 – No Invitee Has Responded<br>1. At Step 4, every current internal participant and external Guest has Pending response status.<br>2. The system displays all invitees as Pending and shows zero for Accepted and Declined.<br>3. The use case ends successfully. |
+| **Exception Flows** | EX-1 – Meeting Is Not Accessible<br>1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.<br>2. The system displays the same not-found result used for an unknown meeting and does not disclose participant response data. (BR-121)<br>3. The use case ends.<br>EX-2 – Participant Response Status Cannot Be Retrieved<br>1. At Step 4, the system cannot retrieve the participant response data.<br>2. The system displays MSG95 – "Unable to load meeting participants. Please try again."<br>3. The use case ends. |
+
+### UC-31 – Record Attendance
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the assigned Secretary to record official meeting attendance independently of invitation responses and online-room presence. |
+| **Preconditions** | ● PRE-1: The Secretary is authenticated, active and assigned to the selected Meeting.<br>● PRE-2: The target is a current participant or Guest invitation of that Meeting.<br>● PRE-3: The Meeting is InProgress. Attendance may be recorded or corrected only in this state; it is locked in Draft, WaitingApproval, Rejected, Approved, Published, Ended and subsequent states. |
+| **Postconditions** | ● POST-1: The selected participant's attendance status and, when available, attendance time are saved.<br>● POST-2: The invitation response remains unchanged. |
+| **Normal Flow** | Record Attendance<br>1. The Secretary opens the meeting's Participants or Attendance view.<br>2. The system displays current participants and their recorded attendance status.<br>3. The user selects a participant and sets the observed attendance status.<br>4. The system revalidates the active assigned Secretary, current target membership and Meeting InProgress status, then saves the attendance record. Invitation Response is unchanged.<br>5. The system refreshes the attendance view and confirms the update. |
+| **Alternative Flows** | AF-1 – Revise Recorded Attendance<br>Entry Point: Step 3 of the Main Flow.<br>1. The Secretary selects a participant or Guest with an existing attendance record.<br>2. While the Meeting remains InProgress, the Secretary corrects the observed attendance status and submits it.<br>Resume Step: Step 4 of the Main Flow; the system revalidates authorization and Meeting state before saving. |
+| **Exception Flows** | EX-1: The meeting or participant is unavailable, or the user lacks the required meeting role: the system denies the update.<br>EX-2: At Step 4, the Meeting is no longer InProgress: the system retains the previous record and explains the restriction.<br>EX-3: The save fails: the system keeps the last successfully saved status and reports the failure. |
 
 ---
 
-### UC-15: Create Meeting (Tạo cuộc họp)
+## FE-07 — Personal Document Library & Meeting Document Management
 
-- **Use Case ID**: UC-15
-- **Use Case Name**: Create Meeting
-- **Primary Actor**: Meeting Organizer
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Meeting Organizer to create a new meeting using the required meeting-level information. Meeting Sessions are planned separately and are not required when the meeting is first created.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Meeting Organizer is authenticated.
-  - PRE-2: The Meeting Organizer is authorized to create meetings.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: A new meeting is created successfully.
-  - POST-2: The meeting is created with Draft status.
-  - POST-3: The Meeting Organizer is recorded as the creator of the meeting.
-  - POST-4: Meeting Sessions may be planned separately when their schedule becomes known.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC15_CreateMeeting.png](../06-sequencediagram/meeting-management/UC15_CreateMeeting.png)
+### UC-32 – View Meeting Documents
 
-#### Luồng sự kiện chính (Main Flow — Create Meeting):
-1. The Meeting Organizer selects Create Meeting.
-2. The system displays the meeting creation form.
-3. The Meeting Organizer enters the meeting information, including:
-   - Meeting Name
-   - Meeting Mode
-   - Location
-   - Confidentiality Level
-   - Description
-4. The Meeting Organizer submits the meeting information.
-5. The system validates the entered meeting-level information (BR-24).
-6. The system creates the meeting with Draft status (BR-26).
-7. The system displays MSG29 – "Meeting created successfully."
+_UC gom — đặc tả nằm ở các UC con UC-32a, UC-32b… bên dưới._
 
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
+#### UC-32a – View Meeting Documents
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+Placeholder only – detailed Use Case Specification will be added later.
 
-- **EX-1: Invalid Meeting Information**
-  1. At Step 5, one or more entered values are missing or invalid.
-  2. The system identifies the invalid information.
-  3. The system displays MSG31 – "Invalid meeting information." and the corresponding validation messages.
-  4. The Meeting Organizer corrects the information and resubmits the form.
-  5. The flow resumes at Step 5 of the Main Flow.
+#### UC-32b – View Document Version History
 
-- **EX-2: Meeting Cannot Be Created**
-  1. At Step 6, the system cannot complete the meeting creation.
-  2. The system displays MSG35 – "Unable to create the meeting. Please try again."
-  3. No meeting is created.
-  4. The use case ends.
+Placeholder only – detailed Use Case Specification will be added later.
+
+#### UC-32c – Preview Meeting Document
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-33 – Manage Meeting Documents
+
+_UC gom — đặc tả nằm ở các UC con UC-33a, UC-33b… bên dưới._
+
+#### UC-33a – Add Document to Meeting
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+#### UC-33b – Add New Meeting Document Version
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-34 – View Personal Document Library
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-35 – Comment on Meeting Document
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-36 – Upload Document to Personal Library
+
+Placeholder only – detailed Use Case Specification will be added later.
 
 ---
 
-### UC-16: Update Meeting (Cập nhật thông tin cuộc họp)
+## FE-08 — Online Meeting Room Management
 
-- **Use Case ID**: UC-16
-- **Use Case Name**: Update Meeting
-- **Primary Actor**: Meeting Organizer
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Meeting Organizer to modify the meeting-level information of an existing meeting while the meeting is still editable. Meeting Session planning is handled separately.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Meeting Organizer is authenticated.
-  - PRE-2: The selected meeting exists.
-  - PRE-3: The Meeting Organizer is authorized to update the selected meeting.
-  - PRE-4: At the time the edit action is initiated, the meeting is in Draft or Rejected status.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The meeting information is updated successfully.
-  - POST-2: The updated information is available when the meeting is viewed again.
-  - POST-3: The meeting lifecycle status and current Meeting Approver assignment remain unchanged.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC16_UpdateMeeting.png](../06-sequencediagram/meeting-management/UC16_UpdateMeeting.png)
+### UC-37 – Join Meeting Room
 
-#### Luồng sự kiện chính (Main Flow — Update Meeting):
-1. The Meeting Organizer selects a meeting and chooses Edit Meeting.
-2. The system displays the current meeting information.
-3. The Meeting Organizer submits the updated information.
-4. The system validates the submitted meeting-level information (BR-27).
-5. The system updates the meeting (BR-28).
-6. The system displays MSG30 – "Meeting updated successfully."
+Placeholder only – detailed Use Case Specification will be added later.
 
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
+### UC-38 – Leave Meeting Room
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+Placeholder only – detailed Use Case Specification will be added later.
 
-- **EX-1: Invalid Meeting Information**
-  1. At Step 4, the submitted information is invalid.
-  2. The system displays MSG31 – "Invalid meeting information." and validation messages for the invalid fields.
-  3. The Meeting Organizer corrects the information.
-  4. The flow resumes at Step 4 of the Main Flow.
+### UC-39 – Manage Meeting Room Controls
 
-- **EX-2: Meeting Is No Longer Editable**
-  1. At Step 4, the system determines that the meeting status has changed and the meeting is no longer Draft or Rejected.
-  2. The system displays MSG33 – "This meeting can no longer be edited."
-  3. The meeting remains unchanged.
-  4. The use case ends.
+_UC gom — đặc tả nằm ở các UC con UC-39a, UC-39b… bên dưới._
 
-- **EX-3: Meeting Cannot Be Updated**
-  1. At Step 5, the system cannot complete the update.
-  2. The previous meeting information remains unchanged.
-  3. The system displays MSG36 – "Unable to update the meeting. Please try again."
-  4. The use case ends.
+#### UC-39a – Manage Microphone
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+#### UC-39b – Manage Camera
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+#### UC-39c – Manage Screen Sharing
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-40 – View Meeting Room Participants
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-41 – Moderate Meeting Room
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-42 – Use In-room Chat
+
+Placeholder only – detailed Use Case Specification will be added later.
 
 ---
 
-### UC-17: View Meeting Details (Xem chi tiết cuộc họp)
+## FE-09 — Meeting Audio Upload & Media Library
 
-- **Use Case ID**: UC-17
-- **Use Case Name**: View Meeting Details
-- **Primary Actor**: Meeting Organizer, Meeting Approver, Chair, Secretary, Participant
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows an authorized user to view meeting-level details. Meeting Sessions and agenda are handled by UC-53 and UC-54.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The user is authenticated.
-  - PRE-2: A meeting has been selected or identified.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: Only meeting-level details are displayed.
-  - POST-2: No Meeting, Meeting Session, or Agenda Item is modified.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC17_ViewMeetingDetails.png](../06-sequencediagram/meeting-management/UC17_ViewMeetingDetails.png)
+### UC-43 – View & Play Meeting Audio
 
-#### Luồng sự kiện chính (Main Flow — View Meeting Details):
-1. The user requests to view a meeting.
-2. The system verifies that the meeting exists and that the user may view it under BR-29. The system does not reveal which check failed.
-3. The system retrieves only the meeting-level information.
-4. The system displays Meeting Name, Meeting Mode, Location, Confidentiality Level, Description, and Meeting Status. Meeting Sessions and Agenda Items are not loaded by this use case.
-5. The user reviews the meeting information.
+_UC gom — đặc tả nằm ở các UC con UC-43a, UC-43b… bên dưới._
 
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
+#### UC-43a – View Media Library
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+Placeholder only – detailed Use Case Specification will be added later.
 
-- **EX-1: Meeting Does Not Exist or Is Not Accessible**
-  1. At Step 2, the system cannot find the selected meeting or the user is not authorized to view it.
-  2. The system does not disclose whether the meeting exists.
-  3. The use case ends.
+#### UC-43b – Play Meeting Audio
 
-- **EX-2: Meeting Details Cannot Be Retrieved**
-  1. At Step 3, the meeting exists and is accessible, but the system cannot retrieve its information.
-  2. The system displays MSG37 – "Unable to load meeting details. Please try again."
-  3. The use case ends.
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-44 – Upload Meeting Audio
+
+Placeholder only – detailed Use Case Specification will be added later.
 
 ---
 
-### UC-18: View Meeting List (Xem danh sách cuộc họp)
+## FE-10 — Speaker-Attributed Transcription & Meeting Summary
 
-- **Use Case ID**: UC-18
-- **Use Case Name**: View Meeting List
-- **Primary Actor**: Meeting Organizer, Meeting Approver, Chair, Secretary, Participant
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows an authorized user to view and browse only the meetings to which the user has an authorized relationship or assignment.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The user is authenticated.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The system displays the list of meetings that the user is authorized to view.
-  - POST-2: No meeting information is modified.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC18_ViewMeetingList.png](../06-sequencediagram/meeting-management/UC18_ViewMeetingList.png)
+### UC-45 – View Speaker-Attributed Transcript
 
-#### Luồng sự kiện chính (Main Flow — View Meeting List):
-1. The user selects Meetings from the navigation menu.
-2. The system identifies only meetings the user may view under BR-29: meetings created by the user at any status; meetings assigned to the user as Meeting Approver from WaitingApproval onward; and meetings where the user is assigned as Chair, Secretary, Member, or Guest from Published onward.
-3. The system sorts and displays only those authorized meetings.
-4. The user browses the displayed meetings.
+Placeholder only – detailed Use Case Specification will be added later.
 
-#### Luồng sự kiện thay thế (Alternative Flows):
+### UC-46 – Edit Transcript & Speaker Attribution
 
-- **AF-1: Search Meetings**
-  1. At Step 4 of the Main Flow, the user enters a meeting name in the search field.
-  2. The system finds meetings matching the entered search criteria within the meetings available to the user.
-  3. The system displays the matching meetings.
-  4. The flow resumes at Step 4 of the Main Flow.
+Placeholder only – detailed Use Case Specification will be added later.
 
-- **AF-2: Filter Meetings**
-  1. At Step 4 of the Main Flow, the user selects one or more filter criteria, such as Meeting Status, Confidentiality Level, or Time Range.
-  2. The system applies the selected criteria to the meetings available to the user.
-   For Time Range, a meeting matches only when at least one non-cancelled Meeting Session has a planned schedule overlapping the selected range; meetings without a scheduled Meeting Session do not match. (BR-30)
-  3. The system displays the matching meetings.
-  4. The flow resumes at Step 4 of the Main Flow.
+### UC-47 – Generate / Regenerate Meeting Summary
 
-- **AF-3: No Matching Meetings**
-  1. The applied search or filter criteria produce no matching meetings within the meetings available to the user.
-  2. The system displays an empty meeting list and the message "No meetings match the filter."
-  3. The user may change or clear the current search/filter criteria.
-  4. The flow resumes at Step 4 of the Main Flow.
+Placeholder only – detailed Use Case Specification will be added later.
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+### UC-48 – View Meeting Summary
 
-- **EX-1: Meeting List Cannot Be Retrieved**
-  1. At Step 2 or Step 3 of the Main Flow, the system cannot retrieve the meeting list.
-  2. The system displays MSG38 – "Unable to load meetings. Please try again."
-  3. The use case ends.
+Placeholder only – detailed Use Case Specification will be added later.
 
-- **EX-2: Invalid Meeting List Criteria**
-  1. The system determines that the selected search, filter, sort, or display criteria are invalid.
-  2. The system displays MSG32 – "Tiêu chí danh sách cuộc họp không hợp lệ."
-  3. The user may clear or adjust the search/filter criteria.
-  4. The use case ends.
+### UC-49 – Edit Meeting Summary
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-50 – Approve Meeting Summary
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-51 – Publish Meeting Summary
+
+Placeholder only – detailed Use Case Specification will be added later.
 
 ---
 
-### UC-19: Submit Meeting for Approval (Gửi duyệt cuộc họp)
+## FE-11 — Voting Management
+Scope: Votes are created, opened, cast and closed only while a Meeting is InProgress. No time-boxed or pre/post-meeting voting, quorum or separate Resolution. The Chair records Passed, NotPassed or Deferred after closing the Vote.
 
-- **Use Case ID**: UC-19
-- **Use Case Name**: Submit Meeting for Approval
-- **Primary Actor**: Meeting Organizer
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Meeting Organizer to submit a Draft meeting or resubmit a previously Rejected meeting for review by an assigned Meeting Approver based on the meeting-level information.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Meeting Organizer is authenticated.
-  - PRE-2: The selected meeting exists.
-  - PRE-3: The Meeting Organizer is authorized to submit the selected meeting for approval.
-  - PRE-4: The meeting is in Draft or Rejected status.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The meeting status is WaitingApproval.
-  - POST-2: A valid Meeting Approver is assigned to the current approval cycle.
-  - POST-3: The assigned Meeting Approver is granted access to the meeting for approval purposes.
-  - POST-4: The submission is recorded in the meeting lifecycle history.
-  - POST-5: The assigned Meeting Approver is notified of the pending approval request.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC19_SubmitMeetingForApproval.png](../06-sequencediagram/meeting-management/UC19_SubmitMeetingForApproval.png)
+### UC-52 – View Meeting Votes
 
-#### Luồng sự kiện chính (Main Flow — Submit Meeting for Approval):
-1. The Meeting Organizer selects a Draft meeting and chooses Submit for Approval.
-2. The system verifies that all mandatory meeting-level information is complete. Meeting Sessions are not required for approval submission. (BR-33, BR-55)
-3. The system identifies users who are eligible to act as Meeting Approvers.
-4. The system displays the eligible Meeting Approvers.
-5. The Meeting Organizer selects a Meeting Approver.
-6. The system verifies that the selected user is eligible to review the meeting and is not the Meeting Organizer.
-7. The system verifies that the meeting is still in Draft or Rejected status.
-8. The system assigns the selected Meeting Approver to the current approval cycle.
-9. The system changes the meeting status to WaitingApproval.
-10. The system records the submission and assigned approver in the meeting lifecycle history.
-11. The system notifies the assigned Meeting Approver.
-12. The system displays the submission success message.
+_UC gom — đặc tả nằm ở các UC con UC-52a, UC-52b… bên dưới._
 
-#### Luồng sự kiện thay thế (Alternative Flows):
+#### UC-52a – View Meeting Votes
 
-- **AF-1: Resubmit a Rejected Meeting**
-  1. At Step 1 of the Main Flow, the Meeting Organizer selects a meeting in Rejected status.
-  2. The Meeting Organizer chooses Resubmit for Approval.
-  3. The flow resumes at Step 2 of the Main Flow and completes successfully when the submission requirements are satisfied.
+Placeholder only – detailed Use Case Specification will be added later.
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+#### UC-52b – View Vote Status
 
-- **EX-1: Incomplete Meeting-Level Information**
-  1. At Step 2, the system determines that mandatory meeting-level information is incomplete.
-  2. The system identifies the missing or invalid information.
-  3. The meeting remains Draft or Rejected and the use case ends.
+Placeholder only – detailed Use Case Specification will be added later.
 
-- **EX-2: Meeting Status Not Eligible for Submission**
-  1. At Step 7, the system determines that the meeting is not in Draft or Rejected status.
-  2. The system displays MSG41 – "This meeting can no longer be submitted for approval."
-  3. The use case ends.
+### UC-53 – Create / Configure Vote
 
-- **EX-3: No Valid Meeting Approver**
-  1. At Step 6, the system determines that the selected user is not eligible to review the meeting or is the Meeting Organizer.
-  2. The meeting remains Draft or Rejected and no approval assignment is created.
-  3. The Meeting Organizer selects another eligible approver.
+Placeholder only – detailed Use Case Specification will be added later.
 
-- **EX-4: Submission Cannot Be Completed**
-  1. At Step 8 or Step 9, the approval assignment or status change cannot be completed.
-  2. The meeting remains in its previous status and no approval notification is sent.
-  3. The system displays MSG42 – "Unable to submit the meeting for approval. Please try again."
-  4. The use case ends.
+### UC-54 – Open Vote
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-55 – Cast Vote
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-56 – Close Vote
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-57 – Record Vote Conclusion
+
+[Placeholder] Detailed Use Case Specification will be added later. Chair records Passed, NotPassed or Deferred after Vote closes.
+
+Placeholder only – detailed Use Case Specification will be added later.
 
 ---
 
-### UC-20: Review Meeting Approval (Phê duyệt / Từ chối cuộc họp)
+## FE-12 — Meeting Minutes & Digital Signing
 
-- **Use Case ID**: UC-20
-- **Use Case Name**: Review Meeting Approval
-- **Primary Actor**: Meeting Approver
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Meeting Approver assigned to a meeting approval cycle to review the meeting and decide whether to approve or reject it.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Meeting Approver is authenticated.
-  - PRE-2: The selected meeting exists.
-  - PRE-3: The Meeting Approver is currently assigned to review the selected meeting and is not its Meeting Organizer.
-  - PRE-4: The meeting is in WaitingApproval status.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The Meeting Approver's decision is recorded.
-  - POST-2: If approved, the meeting status is Approved.
-  - POST-3: If rejected, the meeting status is Rejected.
-  - POST-4: If rejected, the rejection reason is recorded and available to the Secretary.
-  - POST-5: The approval or rejection is recorded in the meeting lifecycle history.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC20_ReviewMeetingApproval.png](../06-sequencediagram/meeting-management/UC20_ReviewMeetingApproval.png)
+### UC-58 – View Meeting Minutes
 
-#### Luồng sự kiện chính (Main Flow — Review Meeting Approval):
-1. The Meeting Approver selects a meeting assigned to them that is awaiting approval.
-2. The system verifies that the current user is the assigned Meeting Approver.
-3. The system displays the meeting information for review.
-4. The Meeting Approver selects Approve.
-5. The system re-verifies that:
-   - the Meeting Approver is still authorized to approve the selected meeting; and
-   - the meeting is still in WaitingApproval status.
-6. The system changes the meeting status from WaitingApproval to Approved.
-7. The system records the approval decision, acting user, and timestamp in the meeting lifecycle history.
-8. The system displays MSG43 – "Meeting approved successfully."
+Placeholder only – detailed Use Case Specification will be added later.
 
-#### Luồng sự kiện thay thế (Alternative Flows):
+### UC-59 – Generate Meeting Minutes
 
-- **AF-1: Reject Meeting**
-  1. At Step 4 of the Main Flow, the Meeting Approver selects Reject.
-  2. The system requests a rejection reason.
-  3. The Meeting Approver enters the rejection reason.
-  4. The system trims the rejection reason and validates that it is not empty and does not exceed 1000 characters.
-  5. The system re-verifies that:
-     - the Meeting Approver is still authorized to reject the selected meeting; and
-     - the meeting is still in WaitingApproval status.
-  6. The system changes the meeting status to Rejected.
-  7. The system records the rejection decision, rejection reason, acting user, and timestamp.
-  8. The rejection reason becomes available to the Secretary.
-  9. The system displays MSG44 – "Meeting rejected successfully."
+Placeholder only – detailed Use Case Specification will be added later.
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+### UC-60 – Edit Meeting Minutes
 
-- **EX-1: Rejection Reason Is Missing**
-  1. At Step 4 of AF-1, the system determines that the trimmed rejection reason is empty. (BR-36)
-  2. The system displays MSG83 – "Rejection reason is required."
-  3. The meeting remains in WaitingApproval status.
-  4. The Meeting Approver enters a valid rejection reason.
-  5. The flow resumes at Step 4 of AF-1.
+Placeholder only – detailed Use Case Specification will be added later.
 
-- **EX-5: Rejection Reason Is Too Long**
-  1. At Step 4 of AF-1, the trimmed rejection reason exceeds 1000 characters.
-  2. The system displays MSG84 – "Rejection reason must not exceed 1000 characters."
-  3. The meeting remains in WaitingApproval status.
-  4. The Meeting Approver enters a valid rejection reason and the flow resumes at Step 4 of AF-1.
+### UC-61 – Submit Meeting Minutes for Signing
 
-- **EX-2: Meeting Is No Longer Awaiting Approval**
-  1. At Step 5 of the Main Flow or Step 5 of AF-1, the system determines that the meeting is no longer in WaitingApproval status.
-  2. No approval or rejection decision is applied.
-  3. The meeting remains in its current status.
-  4. The system displays "This meeting is no longer awaiting approval."
-  5. The use case ends.
+Placeholder only – detailed Use Case Specification will be added later.
 
-- **EX-3: Approval Decision Cannot Be Completed**
-  1. At Step 6 of the Main Flow or Step 6 of AF-1, the system cannot complete the requested approval or rejection decision.
-  2. The requested status transition is not applied.
-  3. No successful approval or rejection decision is recorded in the meeting lifecycle history.
-  4. The system displays "Unable to complete the approval decision. Please try again."
-  5. The use case ends.
+### UC-62 – Sign Meeting Minutes
 
-- **EX-4: User Is No Longer Authorized to Review the Meeting**
-  1. At Step 5 of the Main Flow or Step 5 of AF-1, the system determines that the Meeting Approver is no longer authorized to approve or reject the selected meeting. (BR-35)
-  2. No approval or rejection decision is applied.
-  3. The meeting status remains unchanged.
-  4. The system informs the Meeting Approver that they are no longer authorized to review the meeting.
-  5. The use case ends.
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-63 – View Signature Status & Audit Trail
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-64 – Finalize Meeting Minutes
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-65 – Request Revision of Meeting Minutes
+
+Placeholder only – detailed Use Case Specification will be added later.
 
 ---
 
-### UC-21: Publish Meeting (Phát hành cuộc họp)
+## FE-13 — Email & In-App Notification
 
-- **Use Case ID**: UC-21
-- **Use Case Name**: Publish Meeting
-- **Primary Actor**: Meeting Organizer
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Meeting Organizer to publish an Approved meeting and initiate invitation delivery to current internal participants and external Guests. Meeting Sessions are optional.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Meeting Organizer is authenticated.
-  - PRE-2: The selected meeting exists.
-  - PRE-3: The Meeting Organizer is authorized to publish the selected meeting.
-  - PRE-4: The meeting is in Approved status.
-  - PRE-5: Meeting Sessions are optional and are not a publication prerequisite. (BR-56)
-  - PRE-6: The meeting has at least one current Chair and one current Secretary with active accounts. Invitation Response is not a publication prerequisite. (BR-89, F08)
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The meeting status is Published.
-  - POST-2: The publication is recorded in the meeting lifecycle history.
-  - POST-3: The system attempts to initiate email invitation delivery for active participants when delivery is available (BR-39, BR-40).
-  - POST-4: Publishing does not create or modify Meeting Sessions; a meeting may be published with no sessions. (BR-56)
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC21_PublishMeeting.png](../06-sequencediagram/meeting-management/UC21_PublishMeeting.png)
+### UC-66 – View Notifications
 
-#### Luồng sự kiện chính (Main Flow — Publish Meeting):
-1. The Meeting Organizer selects an Approved meeting.
-2. The Meeting Organizer selects Publish Meeting.
-3. The system verifies that the Meeting Organizer remains authorized for the selected meeting, that the meeting is still Approved, and that at least one current Chair and one current Secretary have active accounts. Meeting Sessions are not required. (BR-37, BR-56, BR-89)
-4. The system changes the meeting status from Approved to Published. (BR-37)
-5. The system records the publication action, acting user, and timestamp in the meeting lifecycle history. (BR-38)
-6. The system queues invitation delivery for current internal participants and external Guests according to their invitation type. The meeting remains Published if delivery is unavailable. (BR-39, BR-40, BR-82, BR-102)
-7. The system displays MSG45 – "Meeting published successfully."
+Sequence Diagram: [UC66_ViewNotifications.txt](../06-sequencediagram/notification-management/UC66_ViewNotifications.txt)
 
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant |
+| **Secondary Actors** | None |
+| **Description** | Allows an authenticated user to view their list of in-app notifications and check the unread notification count. |
+| **Preconditions** | ● PRE-1: The user is authenticated in the system. |
+| **Postconditions** | ● POST-1: The system displays the user's notifications and unread badge count.<br>● POST-2: Opening the notification list does not change any notification’s read status. |
+| **Normal Flow** | View Notifications<br>1. The user selects the notification bell from the navigation header.<br>2. The system retrieves the notifications and unread badge count for the user's account.<br>3. The system displays the user's notifications, indicates which ones are unread, and shows the unread count. (BR-48, BR-49) |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1: Notifications Cannot Be Retrieved<br>1. At Step 2 of the Main Flow, the system cannot load notification records.<br>2. The system displays MSG40 – "Unable to load notifications. Please try again."<br>3. The use case ends unsuccessfully.<br>EX-2: Requested Notification Page Is Unavailable<br>1. At Step 2 of the Main Flow, the system cannot display the requested portion of the notification list.<br>2. The system displays MSG39 – "The requested notification page is unavailable."<br>3. The use case ends unsuccessfully. |
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
+### UC-67 – Mark Notifications as Read
 
-- **EX-1: Meeting Is No Longer Eligible for Publication**
-  1. At Step 3 of the Main Flow, the system determines that the meeting is no longer Approved, the Meeting Organizer is no longer authorized to publish it, or no current Chair or Secretary has an active account. (BR-37, BR-89)
-  2. The meeting remains unchanged.
-  3. Invitation delivery is not initiated.
-  4. The system displays MSG46 – "This meeting can no longer be published."
-  5. The use case ends.
+_UC gom — đặc tả nằm ở các UC con UC-67a, UC-67b… bên dưới._
 
-- **EX-2: Meeting Cannot Be Published**
-  1. At Step 4 of the Main Flow, the system cannot complete the publication.
-  2. The meeting remains Approved.
-  3. Invitation delivery is not initiated.
-  4. The system displays MSG47 – "Unable to publish the meeting. Please try again."
-  5. The use case ends.
+#### UC-67a – Mark Notification as Read
 
----
+Sequence Diagram: [UC67a_MarkNotificationAsRead.txt](../06-sequencediagram/notification-management/UC67a_MarkNotificationAsRead.txt)
 
-### FEATURE 5: QUẢN LÝ THÔNG BÁO (NOTIFICATION MANAGEMENT)
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant |
+| **Secondary Actors** | None |
+| **Description** | Allows an authenticated user to mark a specific unread notification as read, updating its status. |
+| **Preconditions** | ● PRE-1: The user is authenticated in the system.<br>● PRE-2: The user has at least one unread notification. |
+| **Postconditions** | ● POST-1: The selected notification status is changed to Read.<br>● POST-2: The unread count reflects the latest saved notification statuses. |
+| **Normal Flow** | Mark Notification as Read<br>1. The user views their notification list.<br>2. The user selects "Mark as Read" for a notification.<br>3. The system verifies that the notification belongs to the user's account. (BR-47)<br>4. The system marks the notification as read.<br>5. The system displays the notification as read and shows the updated unread count. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | N/A |
 
----
+#### UC-67b – Mark All Notifications as Read
 
-### UC-22: View Notifications (Xem danh sách thông báo)
+Sequence Diagram: [UC67b_MarkAllNotificationsAsRead.txt](../06-sequencediagram/notification-management/UC67b_MarkAllNotificationsAsRead.txt)
 
-- **Use Case ID**: UC-22
-- **Use Case Name**: View Notifications
-- **Primary Actor**: Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows an authenticated user to view their list of in-app notifications and check the unread notification count.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The user is authenticated in the system.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The system displays the user's notifications and unread badge count.
-  - POST-2: Opening the notification list does not change any notification's read status.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC22_ViewNotifications.png](../06-sequencediagram/notification-management/UC22_ViewNotifications.png)
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant |
+| **Secondary Actors** | None |
+| **Description** | Allows a user to mark all of their unread notifications as read. |
+| **Preconditions** | ● PRE-1: The user is signed in. |
+| **Postconditions** | ● POST-1: All notifications belonging to the user's account that were unread when the request was processed are marked as read.<br>● POST-2: The displayed unread count reflects the latest saved state. |
+| **Normal Flow** | Mark All Notifications as Read<br>1. The user selects the notification bell and opens the notification list.<br>2. The user selects "Mark All as Read".<br>3. The system marks all unread notifications belonging to the user's account as read, including those not currently displayed. (BR-47, BR-51)<br>4. The system refreshes the displayed read statuses and unread count. (BR-48) |
+| **Alternative Flows** | AF-1 – No Unread Notifications<br>Entry Point: Step 3 of the Main Flow.<br>1. The system finds no unread notifications belonging to the user's account.<br>2. The system displays the current list and an unread count of zero.<br>3. The use case ends successfully. |
+| **Exception Flows** | N/A |
 
-#### Luồng sự kiện chính (Main Flow — View Notifications):
-1. The user selects the notification bell from the navigation header.
-2. The system retrieves the notifications and unread badge count for the user's account.
-3. The system displays the user's notifications, indicates which ones are unread, and shows the unread count. (BR-48, BR-49)
+### UC-68 – Open Notification Target
 
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
+Sequence Diagram: [UC68_OpenNotificationTarget.txt](../06-sequencediagram/notification-management/UC68_OpenNotificationTarget.txt)
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Notifications Cannot Be Retrieved**
-  1. At Step 2 of the Main Flow, the system cannot load notification records.
-  2. The system displays MSG40 – "Unable to load notifications. Please try again."
-  3. The use case ends unsuccessfully.
-
-- **EX-2: Requested Notification Page Is Unavailable**
-  1. At Step 2 of the Main Flow, the system cannot display the requested portion of the notification list.
-  2. The system displays MSG39 – "The requested notification page is unavailable."
-  3. The use case ends unsuccessfully.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant |
+| **Secondary Actors** | None |
+| **Description** | Allows a user to open the meeting linked to one of their notifications. |
+| **Preconditions** | ● PRE-1: The user is signed in. |
+| **Postconditions** | ● POST-1: The user sees the linked meeting.<br>● POST-2: The selected notification is marked as read if successfully saved. |
+| **Normal Flow** | Open Notification Target<br>1. The user selects the notification bell and clicks on a specific notification.<br>2. The system checks that the notification belongs to the user's account and identifies its linked meeting. (BR-47, BR-52)<br>3. The system marks the notification as read if needed and updates the unread count. (BR-48, BR-50, BR-53)<br>4. The system checks whether the user currently has permission to view the linked meeting. (BR-29, BR-52)<br>5. The system opens the meeting. |
+| **Alternative Flows** | AF-1 – Notification Is Already Read<br>Entry Point: Step 3 of the Main Flow.<br>1. The notification is already read, so its status and the unread count remain unchanged. (BR-50)<br>2. The flow resumes at Step 4 of the Main Flow. |
+| **Exception Flows** | N/A |
 
 ---
 
-### UC-23: Mark Notification as Read (Đánh dấu đã đọc thông báo)
+## FE-14 — Personal Dashboard & Meeting Workspace
 
-- **Use Case ID**: UC-23
-- **Use Case Name**: Mark Notification as Read
-- **Primary Actor**: Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows an authenticated user to mark a specific unread notification as read, updating its status.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The user is authenticated in the system.
-  - PRE-2: The user has at least one unread notification.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The selected notification status is changed to Read.
-  - POST-2: The unread count reflects the latest saved notification statuses.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC23_MarkNotificationAsRead.png](../06-sequencediagram/notification-management/UC23_MarkNotificationAsRead.png)
+### UC-69 – View Personal Dashboard & Meeting Workspace
 
-#### Luồng sự kiện chính (Main Flow — Mark Notification as Read):
-1. The user views their notification list.
-2. The user selects "Mark as Read" for a notification.
-3. The system verifies that the notification belongs to the user's account. (BR-47)
-4. The system marks the notification as read.
-5. The system displays the notification as read and shows the updated unread count.
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-- N/A
+Placeholder only – detailed Use Case Specification will be added later.
 
 ---
 
-### UC-24: Mark All Notifications as Read (Đánh dấu đã đọc tất cả thông báo)
+## FE-15 — Reporting & Statistics
 
-- **Use Case ID**: UC-24
-- **Use Case Name**: Mark All Notifications as Read
-- **Primary Actor**: Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows a user to mark all of their unread notifications as read.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The user is signed in.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: All notifications belonging to the user's account that were unread when the request was processed are marked as read.
-  - POST-2: The displayed unread count reflects the latest saved state.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC24_MarkAllNotificationsAsRead.png](../06-sequencediagram/notification-management/UC24_MarkAllNotificationsAsRead.png)
+### UC-70 – View & Export Reports
 
-#### Luồng sự kiện chính (Main Flow — Mark All Notifications as Read):
-1. The user selects the notification bell and opens the notification list.
-2. The user selects "Mark All as Read".
-3. The system marks all unread notifications belonging to the user's account as read, including those not currently displayed. (BR-47, BR-51)
-4. The system refreshes the displayed read statuses and unread count. (BR-48)
+_UC gom — đặc tả nằm ở các UC con UC-70a, UC-70b… bên dưới._
 
-#### Luồng sự kiện thay thế (Alternative Flows):
+#### UC-70a – View Reports & Statistics
 
-- **AF-1: No Unread Notifications**
-  1. At Step 3 of the Main Flow, the system finds no unread notifications belonging to the user's account.
-  2. The system displays the current list and an unread count of zero.
-  3. The use case ends successfully.
+Placeholder only – detailed Use Case Specification will be added later.
 
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-- N/A
+#### UC-70b – Export Report
 
----
+Placeholder only – detailed Use Case Specification will be added later.
 
-### UC-25: Open Notification Target (Mở đối tượng liên kết thông báo)
-
-- **Use Case ID**: UC-25
-- **Use Case Name**: Open Notification Target
-- **Primary Actor**: Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows a user to open the meeting linked to one of their notifications.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The user is signed in.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The user sees the linked meeting.
-  - POST-2: The selected notification is marked as read if successfully saved.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC25_OpenNotificationTarget.png](../06-sequencediagram/notification-management/UC25_OpenNotificationTarget.png)
-
-#### Luồng sự kiện chính (Main Flow — Open Notification Target):
-1. The user selects the notification bell and clicks on a specific notification.
-2. The system checks that the notification belongs to the user's account and identifies its linked meeting. (BR-47, BR-52)
-3. The system marks the notification as read if needed and updates the unread count. (BR-48, BR-50, BR-53)
-4. The system checks whether the user currently has permission to view the linked meeting. (BR-29, BR-52)
-5. The system opens the meeting.
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-
-- **AF-1: Notification Is Already Read**
-  1. At Step 3 of the Main Flow, the notification is already read, so its status and the unread count remain unchanged. (BR-50)
-  2. The flow resumes at Step 4 of the Main Flow.
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-- N/A
-
----
-
-### FEATURE 6: QUẢN LÝ PHIÊN HỌP (MEETING SESSION MANAGEMENT)
-
-#### UC-53: View Meeting Sessions (Xem danh sách phiên họp)
-
-- **Use Case ID**: UC-53
-- **Use Case Name**: View Meeting Sessions
-- **Primary Actor**: Secretary, Chair, Meeting Organizer, Meeting Approver, authorized Meeting Participant
-- **Description**: Allows an authorized user to view the Meeting Sessions belonging to a meeting, including schedule and lifecycle status.
-- **Related Diagram source**: [UC53_ViewMeetingSessions.txt](../06-sequencediagram/meeting-session-management/UC53_ViewMeetingSessions.txt)
-- **Preconditions**: The user is authenticated and currently authorized to view the selected meeting; the meeting exists.
-- **Postconditions**: The authorized Meeting Session list is displayed; no meeting or session data is changed.
-- **Main Flow**:
-  1. The user opens an authorized meeting and selects Meeting Sessions.
-  2. The system verifies access to the meeting and retrieves its Meeting Sessions in schedule order.
-  3. The system displays the session title, planned start/end time, and lifecycle status.
-- **Alternative Flow — No Sessions**: If no Meeting Sessions exist, display an empty session list. The use case ends successfully.
-- **Exception Flows**: If the meeting is not accessible, return the same not-found result as for an unknown meeting and disclose no session data. (BR-29) If the sessions cannot be loaded, display MSG127.
-
----
-
-### UC-26: Create Meeting Session (Tạo phiên họp)
-
-- **Use Case ID**: UC-26
-- **Use Case Name**: Create Meeting Session
-- **Primary Actor**: Secretary
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Secretary to create a Planned Meeting Session for a meeting, including an additional future session after publication when operationally required.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Secretary is authenticated.
-  - PRE-2: The selected meeting exists and the Secretary is assigned to it.
-  - PRE-3: The meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: A new Meeting Session is associated with the selected meeting.
-  - POST-2: The Meeting Session is in Planned status.
-  - POST-3: The meeting lifecycle status remains unchanged.
-  - POST-4: If the meeting is Published or InProgress, affected participants are notified of the session schedule change.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC26_CreateMeetingSession.png](../06-sequencediagram/meeting-session-management/UC26_CreateMeetingSession.png)
-
-#### Luồng sự kiện chính (Main Flow — Create Meeting Session):
-1. The Secretary opens the selected meeting.
-2. The Secretary selects Add Session.
-3. The system displays the Meeting Session information form.
-4. The Secretary enters the session title, planned start time, and planned end time.
-5. The Secretary submits the session information.
-6. The system validates the session information and planned time rules. (BR-62, BR-75)
-7. The system verifies that the Secretary is still assigned to the meeting and that the meeting is open for session planning. (BR-54)
-8. The system creates the Meeting Session in Planned status. (BR-58)
-9. If the meeting is Published or InProgress, the system notifies affected participants of the schedule change. (BR-76)
-10. The system displays MSG48 – "Meeting session created successfully." and shows the new Meeting Session in the meeting schedule.
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Invalid Session Information**
-  1. At Step 6, required information is missing or invalid, the planned end time is not later than the planned start time, or a Published/InProgress meeting is given a session start time that is not in the future. (BR-62, BR-75)
-  2. The system displays MSG53 – "Invalid meeting session information." and identifies the invalid information.
-  3. The Secretary corrects the information and resubmits it.
-  4. The flow resumes at Step 6 of the Main Flow.
-
-- **EX-2: Meeting Is Not Open for Session Planning**
-  1. At Step 7, the parent meeting is in WaitingApproval or Ended status, or the Secretary is no longer assigned to the meeting. (BR-54)
-  2. No Meeting Session is created.
-  3. The system displays MSG54 – "Meeting sessions can no longer be added to this meeting."
-  4. The use case ends.
-
----
-
-### UC-27: Update Meeting Session (Cập nhật phiên họp)
-
-- **Use Case ID**: UC-27
-- **Use Case Name**: Update Meeting Session
-- **Primary Actor**: Secretary
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Secretary to update or reschedule a Planned Meeting Session while that session is still eligible for planning, including after the meeting has been published.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Secretary is authenticated.
-  - PRE-2: The selected Meeting Session exists and belongs to a meeting to which the Secretary is assigned.
-  - PRE-3: The parent meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-  - PRE-4: The Meeting Session is in Planned status.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The selected Meeting Session contains the updated information.
-  - POST-2: The Meeting Session remains Planned.
-  - POST-3: Other Meeting Sessions remain unchanged.
-  - POST-4: If the meeting is Published or InProgress, affected participants are notified of the session schedule change.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC27_UpdateMeetingSession.png](../06-sequencediagram/meeting-session-management/UC27_UpdateMeetingSession.png)
-
-#### Luồng sự kiện chính (Main Flow — Update Meeting Session):
-1. The Secretary opens the meeting session schedule.
-2. The Secretary selects a Planned Meeting Session and chooses Edit.
-3. The system displays the current session information.
-4. The Secretary modifies the session information.
-5. The Secretary submits the changes.
-6. The system validates the updated session information and planned time rules. (BR-62, BR-75)
-7. The system verifies that the Secretary is still assigned, the parent meeting remains open for session planning, and the Meeting Session is still Planned. (BR-54, BR-57, BR-58)
-8. The system updates the Meeting Session while keeping it in Planned status.
-9. If the meeting is Published or InProgress, the system notifies affected participants of the schedule change. (BR-76)
-10. The system displays MSG49 – "Meeting session updated successfully." and shows the updated session information.
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Invalid Session Information**
-  1. At Step 6, the updated information is incomplete or invalid, or a Published/InProgress meeting is given a session start time that is not in the future. (BR-62, BR-75)
-  2. The system displays MSG53 – "Invalid meeting session information." and identifies the invalid information.
-  3. The Secretary corrects the information and resubmits it.
-  4. The flow resumes at Step 6 of the Main Flow.
-
-- **EX-2: Session Can No Longer Be Updated**
-  1. At Step 7, the parent meeting is in WaitingApproval or Ended status, the Secretary is no longer assigned to the meeting, or the selected Meeting Session is no longer Planned. (BR-54, BR-57, BR-58)
-  2. The existing Meeting Session remains unchanged.
-  3. The system displays MSG55 – "This meeting session can no longer be edited."
-  4. The use case ends.
-
----
-
-### UC-28: Cancel Meeting Session (Hủy phiên họp)
-
-- **Use Case ID**: UC-28
-- **Use Case Name**: Cancel Meeting Session
-- **Primary Actor**: Secretary
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Secretary to cancel a Planned Meeting Session that will no longer take place while preserving the session record for traceability.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Secretary is authenticated.
-  - PRE-2: The selected Meeting Session exists and belongs to a meeting to which the Secretary is assigned.
-  - PRE-3: The parent meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-  - PRE-4: The Meeting Session is in Planned status.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The selected Meeting Session is in Cancelled status and remains associated with the meeting for traceability.
-  - POST-2: Other Meeting Sessions remain unchanged.
-  - POST-3: The Meeting Session status changes only; parent Meeting status does not change. Ending the Meeting is performed explicitly through UC-44. (BR-60, BR-92)
-  - POST-4: If the meeting is Published or InProgress, affected participants are notified of the cancellation.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC28_CancelMeetingSession.png](../06-sequencediagram/meeting-session-management/UC28_CancelMeetingSession.png)
-
-#### Luồng sự kiện chính (Main Flow — Cancel Meeting Session):
-1. The Secretary selects a Planned Meeting Session.
-2. The Secretary chooses Cancel Session.
-3. The system requests confirmation.
-4. The Secretary confirms the cancellation.
-5. The system verifies that the Secretary is still assigned, the parent meeting is open for session planning, and the selected Meeting Session is still Planned. (BR-54, BR-57, BR-58)
-6. The system does not require another Planned Meeting Session to remain; sessions are optional. (BR-77)
-7. The system changes the Meeting Session status from Planned to Cancelled and retains the session record. (BR-57, BR-58)
-8. Meeting status is unchanged. If no Planned or InProgress session remains, the Chair may explicitly end the Meeting through UC-44. (BR-60, BR-61, BR-92)
-9. If the meeting is Published or InProgress, the system notifies affected participants of the cancellation. (BR-76)
-10. The system displays MSG50 – "Meeting session cancelled successfully." and shows the updated meeting schedule.
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Session Can No Longer Be Cancelled**
-  1. At Step 5, the parent meeting is in WaitingApproval or Ended status, the Secretary is no longer assigned to the meeting, or the selected Meeting Session is no longer Planned. (BR-54, BR-57, BR-58)
-  2. The Meeting Session remains unchanged.
-  3. The system displays MSG56 – "This meeting session can no longer be cancelled."
-  4. The use case ends.
-
----
-
-### UC-29: Start Meeting Session (Bắt đầu phiên họp)
-
-- **Use Case ID**: UC-29
-- **Use Case Name**: Start Meeting Session
-- **Primary Actor**: Chair
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Chair to start a planned Meeting Session so that the activities scheduled for that session can begin.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Chair is authenticated and assigned to the selected meeting.
-  - PRE-2: The meeting is Published or InProgress.
-  - PRE-3: The selected Meeting Session is Planned.
-  - PRE-4: No other Meeting Session of the same meeting is currently InProgress.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The selected Meeting Session is InProgress.
-  - POST-2: The actual start time is recorded.
-  - POST-3: The parent Meeting status is unchanged. The Chair may explicitly start it through UC-43. (BR-60, BR-89, BR-92)
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC29_StartMeetingSession.png](../06-sequencediagram/meeting-session-management/UC29_StartMeetingSession.png)
-
-#### Luồng sự kiện chính (Main Flow — Start Meeting Session):
-1. The Chair opens the selected Meeting Session.
-2. The Chair selects Start Session.
-3. The system verifies that the Chair is still assigned to the meeting, the Chair and Secretary assignments are active, the Meeting Session can be started, and no other Meeting Session of the same meeting is InProgress. (BR-58, BR-59, BR-63, BR-89)
-4. The system changes the Meeting Session status to InProgress. (BR-58)
-5. The system records the actual start time.
-6. The system leaves the parent Meeting status unchanged. (BR-60, BR-92)
-7. The system displays MSG51 – "Meeting session started successfully." and shows the selected Meeting Session as the current active session.
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Another Session Is In Progress**
-  1. At Step 3, another Meeting Session of the same meeting is already InProgress. (BR-59)
-  2. The selected Meeting Session remains Planned.
-  3. The system displays MSG57 – "Another meeting session is already in progress. End it before starting another session."
-  4. The use case ends.
-
-- **EX-2: Session Cannot Be Started**
-  1. At Step 3, the meeting or selected Meeting Session no longer satisfies the start conditions, or the Chair is no longer assigned to the meeting. (BR-58, BR-63)
-  2. The Meeting Session remains unchanged.
-  3. The system displays MSG58 – "This meeting session cannot be started."
-  4. The use case ends.
-
----
-
-### UC-30: End Meeting Session (Kết thúc phiên họp)
-
-- **Use Case ID**: UC-30
-- **Use Case Name**: End Meeting Session
-- **Primary Actor**: Chair
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Chair to end the current Meeting Session so that its completion is recorded and the meeting can continue with another session or conclude.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Chair is authenticated and assigned to the selected meeting.
-  - PRE-2: The selected Meeting Session is InProgress.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The selected Meeting Session is Completed.
-  - POST-2: The actual end time is recorded.
-  - POST-3: The parent Meeting status is unchanged. The Chair may explicitly end it through UC-44 when no unfinished session remains. (BR-61, BR-92)
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC30_EndMeetingSession.png](../06-sequencediagram/meeting-session-management/UC30_EndMeetingSession.png)
-
-#### Luồng sự kiện chính (Main Flow — End Meeting Session):
-1. The Chair selects End Session for the current Meeting Session.
-2. The system requests confirmation.
-3. The Chair confirms the action.
-4. The system verifies that the Chair is still assigned to the meeting and that the selected Meeting Session is still InProgress. (BR-58, BR-63)
-5. The system changes the Meeting Session status to Completed and records the actual end time. (BR-58)
-6. The system checks whether any Meeting Session remains Planned or InProgress.
-7. The system leaves the parent Meeting status unchanged. If no Planned or InProgress session remains, the Chair may explicitly end the Meeting through UC-44. (BR-61, BR-92)
-8. The system displays MSG52 – "Meeting session ended successfully." and shows the updated Meeting Session status.
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-
-- **AF-1: Other Meeting Sessions Remain**
-  1. At Step 6 of the Main Flow, one or more Meeting Sessions remain Planned or InProgress.
-  2. The parent Meeting lifecycle remains unchanged.
-  3. The current Meeting Session remains successfully Completed.
-  4. The use case ends successfully.
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Session Cannot Be Ended**
-  1. At Step 4, the selected Meeting Session is no longer InProgress or the Chair is no longer assigned to the meeting. (BR-58, BR-63)
-  2. The Meeting Session remains unchanged.
-  3. The system displays MSG59 – "This meeting session cannot be ended."
-  4. The use case ends.
-
----
-
-### FEATURE 7: QUẢN LÝ CHƯƠNG TRÌNH NGHỊ SỰ (AGENDA MANAGEMENT)
-
----
-
-#### UC-54: View Meeting Agenda (Xem chương trình nghị sự cuộc họp)
-
-- **Use Case ID**: UC-54
-- **Use Case Name**: View Meeting Agenda
-- **Primary Actor**: Secretary, Chair, Meeting Organizer, Meeting Approver, authorized Meeting Participant
-- **Description**: Allows an authorized user to view the Agenda Items associated with a meeting's session, including agenda order and execution status where available.
-- **Related Diagram source**: [UC54_ViewMeetingAgenda.txt](../06-sequencediagram/agenda-management/UC54_ViewMeetingAgenda.txt)
-- **Preconditions**: The user is authenticated and currently authorized to view the selected meeting and session.
-- **Postconditions**: The authorized agenda is displayed; no agenda or lifecycle data is changed.
-- **Main Flow**:
-  1. The user opens an authorized Meeting Session and selects its Agenda.
-  2. The system verifies access to the meeting and session and retrieves the Agenda Items in their defined order.
-  3. The system displays the agenda and current execution status where available.
-- **Alternative Flow — No Agenda Items**: If the session has no Agenda Items, display an empty agenda. The use case ends successfully.
-- **Exception Flows**: If the meeting or session is not accessible, return the same not-found result as for an unknown resource and disclose no agenda data. (BR-29) If the agenda cannot be loaded, display MSG128.
-
-### UC-31: Create Agenda Item (Tạo mục chương trình nghị sự)
-
-- **Use Case ID**: UC-31
-- **Use Case Name**: Create Agenda Item
-- **Primary Actor**: Secretary
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Secretary to add a new Agenda Item to a planned Meeting Session, specifying title, planned duration, optional presenter, optional description, and attached meeting documents.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-  - PRE-2: Selected Meeting Session exists and belongs to the selected meeting.
-  - PRE-3: Selected Meeting Session is Planned.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The new Agenda Item belongs to the selected Meeting Session.
-  - POST-2: The new Agenda Item starts in Pending.
-  - POST-3: The new Agenda Item appears at the end of that Meeting Session agenda.
-  - POST-4: Selected meeting documents are associated with the Agenda Item.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC31_CreateAgendaItem.png](../06-sequencediagram/agenda-management/UC31_CreateAgendaItem.png)
-
-#### Luồng sự kiện chính (Main Flow — Create Agenda Item):
-1. The Secretary opens the agenda of a selected Meeting Session.
-2. The Secretary selects Add Agenda Item.
-3. The system displays the Agenda Item information form.
-4. The Secretary enters the agenda information, including:
-   - Title
-   - Planned Duration
-   - optional Presenter
-   - optional Description
-   - any meeting documents to be attached
-5. The Secretary submits the Agenda Item information.
-6. The system validates the submitted information and selected documents. (BR-65, BR-66, BR-74)
-7. The system creates the Agenda Item in Pending status, associates it with the selected Meeting Session, and places it at the end of the session agenda. (BR-64, BR-67)
-8. The system displays MSG60 – "Agenda item created successfully."
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Invalid Agenda Item Information**
-  1. At Step 6, the submitted Agenda Item information violates BR-66.
-  2. The system displays MSG66 – "Invalid agenda item information." with the applicable field message(s):
-     - "Agenda item title is required."
-     - "Planned duration must be greater than 0."
-     - "One or more selected documents are not available to this meeting."
-  3. The Secretary corrects the invalid information.
-  4. The flow resumes at Step 6 of the Main Flow.
-
-- **EX-2: Agenda Can No Longer Be Modified**
-  1. At Step 6, the Meeting Session is no longer Planned or the parent meeting no longer permits agenda planning. (BR-65, BR-68, BR-74)
-  2. The Agenda Item is not created.
-  3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-  4. The use case ends.
-
-- **EX-3: Agenda Item Cannot Be Created**
-  1. At Step 7, the system cannot create the Agenda Item.
-  2. The Agenda Item is not created.
-  3. The system displays MSG68 – "Unable to create the agenda item. Please try again."
-  4. The use case ends.
-
----
-
-### UC-32: Update Agenda Item (Cập nhật mục chương trình nghị sự)
-
-- **Use Case ID**: UC-32
-- **Use Case Name**: Update Agenda Item
-- **Primary Actor**: Secretary
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Secretary to update the information and attached documents of an existing Agenda Item in a planned Meeting Session.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-  - PRE-2: Selected Meeting Session belongs to the selected meeting and is Planned.
-  - PRE-3: Selected Agenda Item exists, belongs to the Meeting Session, and is Pending.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The Agenda Item information and attached documents are updated.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC32_UpdateAgendaItem.png](../06-sequencediagram/agenda-management/UC32_UpdateAgendaItem.png)
-
-#### Luồng sự kiện chính (Main Flow — Update Agenda Item):
-1. The Secretary opens the agenda of a selected Meeting Session.
-2. The Secretary selects Edit for the target Agenda Item.
-3. The system displays the Agenda Item edit form with current information (Title, Planned Duration, Presenter, Description, attached documents).
-4. The Secretary modifies the information (Title, Planned Duration, optional Presenter, optional Description, attached meeting documents).
-5. The Secretary submits the updated Agenda Item information.
-6. The system validates the updated information and attached documents. (BR-65, BR-66, BR-74)
-7. The system saves the updated Agenda Item information. (BR-68)
-8. The system displays MSG61 – "Agenda item updated successfully."
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Invalid Agenda Item Information**
-  1. At Step 6, the updated Agenda Item information violates BR-66.
-  2. The system displays MSG66 – "Invalid agenda item information." with the applicable field message(s):
-     - "Agenda item title is required."
-     - "Planned duration must be greater than 0."
-     - "One or more selected documents are not available to this meeting."
-  3. The Secretary corrects the invalid information.
-  4. The flow resumes at Step 6 of the Main Flow.
-
-- **EX-2: Agenda Item Can No Longer Be Updated**
-  1. At Step 6, the Meeting Session is no longer Planned or the parent meeting no longer permits agenda planning. (BR-65, BR-68, BR-74)
-  2. The Agenda Item remains unchanged.
-  3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-  4. The use case ends.
-
-- **EX-3: Agenda Item Cannot Be Updated**
-  1. At Step 7, the system cannot update the Agenda Item.
-  2. The Agenda Item remains unchanged.
-  3. The system displays MSG69 – "Unable to update the agenda item. Please try again."
-  4. The use case ends.
-
----
-
-### UC-33: Delete Agenda Item (Xóa mục chương trình nghị sự)
-
-- **Use Case ID**: UC-33
-- **Use Case Name**: Delete Agenda Item
-- **Primary Actor**: Secretary
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Secretary to remove an Agenda Item from a planned Meeting Session.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-  - PRE-2: Selected Meeting Session belongs to the selected meeting and is Planned.
-  - PRE-3: Selected Agenda Item exists, belongs to the Meeting Session, and is Pending.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The Agenda Item is removed from the Meeting Session agenda.
-  - POST-2: Remaining Agenda Items in the session retain contiguous explicit ordering.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC33_DeleteAgendaItem.png](../06-sequencediagram/agenda-management/UC33_DeleteAgendaItem.png)
-
-#### Luồng sự kiện chính (Main Flow — Delete Agenda Item):
-1. The Secretary opens the agenda of a selected Meeting Session.
-2. The Secretary selects Delete for the target Agenda Item.
-3. The system requests confirmation.
-4. The Secretary confirms the deletion.
-5. The system verifies that the Secretary is assigned to the meeting, the Meeting Session is Planned, and the Agenda Item is Pending. (BR-65, BR-68, BR-74)
-6. The system removes the Agenda Item and re-indexes remaining items to preserve explicit contiguous ordering.
-7. The system displays MSG62 – "Agenda item deleted successfully."
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Agenda Item Can No Longer Be Deleted**
-  1. At Step 5, the Meeting Session is no longer Planned or the parent meeting no longer permits agenda modification. (BR-65, BR-68, BR-74)
-  2. The Agenda Item is not deleted.
-  3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-  4. The use case ends.
-
-- **EX-2: Agenda Item Cannot Be Deleted**
-  1. At Step 6, the system cannot delete the Agenda Item.
-  2. The Agenda Item remains unchanged.
-  3. The system displays MSG70 – "Unable to delete the agenda item. Please try again."
-  4. The use case ends.
-
----
-
-### UC-34: Reorder Agenda Items (Sắp xếp lại thứ tự mục chương trình nghị sự)
-
-- **Use Case ID**: UC-34
-- **Use Case Name**: Reorder Agenda Items
-- **Primary Actor**: Secretary
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Secretary to reorder Agenda Items within a planned Meeting Session.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Secretary is authenticated and assigned to the selected meeting.
-  - PRE-2: Selected Meeting Session belongs to the selected meeting and is Planned.
-  - PRE-3: Selected Meeting Session contains two or more Agenda Items.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The new explicit order of Agenda Items is saved within the Meeting Session.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC34_ReorderAgendaItems.png](../06-sequencediagram/agenda-management/UC34_ReorderAgendaItems.png)
-
-#### Luồng sự kiện chính (Main Flow — Reorder Agenda Items):
-1. The Secretary opens the agenda of a selected Meeting Session.
-2. The Secretary reorders the Agenda Items.
-3. The Secretary submits the new agenda order.
-4. The system validates that all reordered items belong to the same Meeting Session, the Secretary is assigned to the meeting, and the Meeting Session is Planned. (BR-64, BR-65, BR-67, BR-74)
-5. The system saves the updated explicit order of the Agenda Items. (BR-67, BR-68)
-6. The system displays MSG63 – "Agenda order updated successfully."
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Agenda Order Can No Longer Be Modified**
-  1. At Step 4, the Meeting Session is no longer Planned or the parent meeting no longer permits agenda modification. (BR-65, BR-68, BR-74)
-  2. The agenda order remains unchanged.
-  3. The system displays MSG67 – "The agenda for this meeting session can no longer be modified."
-  4. The use case ends.
-
-- **EX-2: Agenda Order Cannot Be Updated**
-  1. At Step 5, the system cannot update the agenda order.
-  2. The agenda order remains unchanged.
-  3. The system displays MSG71 – "Unable to update the agenda order. Please try again."
-  4. The use case ends.
-
----
-
-### UC-35: Set Current Agenda Item (Đặt mục chương trình nghị sự hiện tại)
-
-- **Use Case ID**: UC-35
-- **Use Case Name**: Set Current Agenda Item
-- **Primary Actor**: Chair
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Chair to set a Pending Agenda Item as the active/current item of an in-progress Meeting Session, recording its actual start time.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Chair is authenticated and assigned to the selected meeting.
-  - PRE-2: Selected Meeting Session is InProgress.
-  - PRE-3: Selected Agenda Item belongs to the Meeting Session and is Pending.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The selected Agenda Item is InProgress and becomes the current Agenda Item of the Meeting Session.
-  - POST-2: The actual start time of the Agenda Item is recorded.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC35_SetCurrentAgendaItem.png](../06-sequencediagram/agenda-management/UC35_SetCurrentAgendaItem.png)
-
-#### Luồng sự kiện chính (Main Flow — Set Current Agenda Item):
-1. The Chair opens the in-progress Meeting Session agenda.
-2. The Chair selects Start / Set as Current for a Pending Agenda Item.
-3. The system verifies that:
-   - the Chair is still assigned to the meeting;
-   - the Meeting Session is InProgress;
-   - the selected Agenda Item belongs to that Meeting Session;
-   - the selected Agenda Item is Pending; and
-   - no other Agenda Item of the same Meeting Session is InProgress.
-   (BR-64, BR-69, BR-70, BR-71)
-4. The system changes the selected Agenda Item status to InProgress and records its actual start time. (BR-70, BR-72)
-5. The system makes the new current Agenda Item available in real time to authorized users viewing the same Meeting Session. (BR-73)
-6. The system displays MSG64 – "Current agenda item updated successfully."
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Another Agenda Item Is In Progress**
-  1. At Step 3, another Agenda Item of the same Meeting Session is already InProgress. (BR-71)
-  2. The selected Agenda Item remains Pending.
-  3. The system displays MSG72 – "Another agenda item is already in progress. Complete it before starting another agenda item."
-  4. The use case ends.
-
-- **EX-2: Agenda Item Cannot Be Set as Current**
-  1. At Step 3:
-     - the selected Agenda Item does not belong to the Meeting Session; or
-     - the Meeting Session is no longer InProgress; or
-     - the selected Agenda Item is no longer Pending; or
-     - the Chair is no longer assigned to the meeting.
-     (BR-64, BR-69, BR-70)
-  2. The Agenda Item remains unchanged.
-  3. The system displays MSG73 – "This agenda item cannot be set as current."
-  4. The use case ends.
-
-- **EX-3: Agenda Item Cannot Be Set as Current Due to System Error**
-  1. At Step 4, the system cannot set the current Agenda Item.
-  2. The Agenda Item remains unchanged.
-  3. The system displays MSG75 – "Unable to set the current agenda item. Please try again."
-  4. The use case ends.
-
----
-
-### UC-36: Complete Agenda Item (Hoàn thành mục chương trình nghị sự)
-
-- **Use Case ID**: UC-36
-- **Use Case Name**: Complete Agenda Item
-- **Primary Actor**: Chair
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Chair to mark the currently active Agenda Item as Done, recording its actual end time and duration used.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Chair is authenticated and assigned to the selected meeting.
-  - PRE-2: Selected Meeting Session is InProgress.
-  - PRE-3: Selected Agenda Item belongs to the Meeting Session and is InProgress.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The selected Agenda Item is Done.
-  - POST-2: The actual end time and actual time used for the Agenda Item are recorded.
-  - POST-3: The Meeting Session has no current Agenda Item until the Chair starts another Agenda Item.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC36_CompleteAgendaItem.png](../06-sequencediagram/agenda-management/UC36_CompleteAgendaItem.png)
-
-#### Luồng sự kiện chính (Main Flow — Complete Agenda Item):
-1. The Chair views the current in-progress Agenda Item in the active Meeting Session.
-2. The Chair selects Complete Agenda Item.
-3. The system verifies that:
-   - the Chair is still assigned to the meeting;
-   - the Meeting Session is InProgress; and
-   - the selected Agenda Item belongs to that Meeting Session and is currently InProgress.
-   (BR-64, BR-69, BR-70)
-4. The system changes the Agenda Item status to Done.
-5. The system records the actual end time and the actual time used for the Agenda Item. (BR-72)
-6. The system makes the completed Agenda Item state available in real time to authorized users viewing the same Meeting Session. (BR-73)
-7. The system displays MSG65 – "Agenda item completed successfully."
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-- N/A
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Agenda Item Cannot Be Completed**
-  1. At Step 3:
-     - the selected Agenda Item does not belong to the Meeting Session; or
-     - the Meeting Session is no longer InProgress; or
-     - the selected Agenda Item is no longer InProgress; or
-     - the Chair is no longer assigned to the meeting.
-     (BR-64, BR-69, BR-70)
-  2. The Agenda Item remains unchanged.
-  3. The system displays MSG74 – "This agenda item cannot be completed."
-  4. The use case ends.
-
-- **EX-2: Agenda Item Cannot Be Completed Due to System Error**
-  1. At Step 4 or Step 5, the system cannot complete the Agenda Item.
-  2. The Agenda Item remains unchanged.
-  3. The system displays MSG76 – "Unable to complete the agenda item. Please try again."
-  4. The use case ends.
-
----
-
-### FEATURE 7: THÀNH PHẦN THAM DỰ & VAI TRÒ TRONG CUỘC HỌP (MEETING PARTICIPANTS & MEETING ROLES — FE-07)
-
-> Đồng bộ FE-07 và FE-09 từ tài liệu Report 3 source-of-truth. Các UC và Business
-> Rules trong phần này mô tả yêu cầu đích; danh mục Business Rules đầy đủ xem tại [06-business-rules.md](06-business-rules.md).
-
-#### Vòng đời quản lý thành phần tham dự đã chốt
-
-Việc **gán participant và Meeting Role** diễn ra trước khi công bố; việc **gửi lời mời và phản hồi**
-bắt đầu từ khi công bố. `Pending` trước công bố chỉ là trạng thái khởi tạo, không có nghĩa lời mời đã được gửi.
-
-| Trạng thái meeting | Người chịu trách nhiệm | Quản lý thành phần tham dự | Lời mời và phản hồi |
-|---|---|---|---|
-| `Draft` | Organizer tạo meeting và gán Secretary đầu tiên; sau đó Secretary chuẩn bị danh sách, gán Chair và các role còn lại. Organizer gửi duyệt theo UC-19. | Được thêm, đổi role, xóa theo UC-38–40. | Chưa gửi lời mời; chưa được phản hồi. |
-| `WaitingApproval` | Approver xét duyệt theo UC-20; Secretary được xem danh sách để theo dõi. | **Chỉ đọc**, không được thêm, đổi role hoặc xóa, kể cả khởi tạo Secretary. | Chưa gửi lời mời; chưa được phản hồi. |
-| `Rejected` | Organizer sửa thông tin và gửi duyệt lại; Secretary sửa danh sách nếu cần. | Được thêm, đổi role, xóa. | Chưa gửi lời mời; chưa được phản hồi. |
-| `Approved` | Secretary hoàn thiện danh sách; Organizer công bố theo UC-21 khi đủ điều kiện. Meeting Sessions là tùy chọn. | Được thêm, đổi role, xóa. | Chưa gửi lời mời; chưa được phản hồi. |
-| `Published` | Organizer đã công bố; Secretary tiếp tục quản lý danh sách. | Được thêm, đổi role, xóa. | Hệ thống gửi lời mời cho participant hiện hành có tài khoản hoạt động khi công bố. Người được thêm sau công bố cũng nhận lời mời; participant được phản hồi và đổi phản hồi. |
-| `InProgress` | Secretary tiếp tục quản lý thành phần tham dự. | Được thêm, đổi role, xóa, bảo vệ role bắt buộc và bằng chứng lịch sử. | Người được thêm nhận lời mời; participant vẫn được phản hồi và đổi phản hồi. |
-| `Ended`, `MinutesIssued`, `Archived` | Lưu hồ sơ cuộc họp. | **Chỉ đọc**, không sửa trực tiếp. | Không được phản hồi hoặc đổi phản hồi. |
-
-- Organizer được xác định bằng `Meeting.CreatedById`, chỉ khởi tạo Secretary đầu tiên; sau đó
-  quyền quản lý danh sách thuộc Secretary được gán. Organizer chỉ tiếp tục quản lý danh sách nếu
-  chính họ cũng được gán Meeting Role `Secretary`.
-- Secretary hiện hành có tài khoản hoạt động được xem meeting và tab thành phần tham dự từ
-  `Draft`, kể cả `WaitingApproval`, để thực hiện trách nhiệm chuẩn bị và theo dõi. Participant
-  chỉ mang role `Chair`, `Member` hoặc `Guest` không được cấp quyền đọc trước `Published` chỉ vì
-  đã được gán vào danh sách. Quyền độc lập của Organizer/Approver vẫn áp dụng theo BR-29.
-- Chỉ Organizer có quyền công bố được chuyển meeting **`Approved → Published`**. Meeting Session
-  không bắt buộc. Tại thời điểm công bố, meeting phải có đúng một Chair và ít nhất một Secretary hiện hành
-  có tài khoản hoạt động (BR-124, BR-125). Không yêu cầu participant xác nhận
-  trước công bố, vì lúc này chưa gửi lời mời.
-- Khi bắt đầu gửi duyệt, danh sách bị khóa theo trạng thái hiện tại. Nếu màn hình đã mở trước đó
-  nhưng meeting vừa chuyển sang `WaitingApproval`, thao tác thêm/đổi role/xóa bị từ chối và dữ
-  liệu giữ nguyên. Sau khi duyệt hoặc từ chối, danh sách được mở lại theo bảng trên.
-
----
-
-### UC-37: View Meeting Participants (Xem thành phần tham dự)
-
-- **Use Case ID**: UC-37
-- **Use Case Name**: View Meeting Participants
-- **Primary Actor**: Secretary
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the assigned Secretary to view current internal participants and external Guest invitations, including each internal Meeting Role or Guest access type.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-  - PRE-2: The selected meeting exists.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The current internal participant and external Guest list is displayed.
-  - POST-2: No participant or Guest information is modified.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC37_ViewMeetingParticipants.png](../06-sequencediagram/meeting-participant-management/UC37_ViewMeetingParticipants.png)
-
-#### Luồng sự kiện chính (Main Flow — View Meeting Participants):
-1. The Secretary opens the selected meeting.
-2. The Secretary selects the Meeting Participants tab.
-3. The system verifies that the Secretary is still assigned to the meeting.
-4. The system retrieves current internal participants and current external Guest invitations; records retained only as historical evidence are excluded. (BR-82, BR-84, BR-102, BR-103, BR-117, BR-118, BR-121, BR-148)
-5. The system displays Full Name, Email, participant type, and Meeting Role or Guest access type.
-6. The Secretary reviews the participant list.
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-
-- **AF-1: No Participants or Guests Have Been Added**
-  1. At Step 4, the meeting has no current internal participants and no current external Guest invitations.
-  2. The system displays an empty participant list.
-  3. The use case ends successfully.
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Meeting Is Not Accessible**
-  1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.
-  2. The system displays the same not-found result used for an unknown meeting and does not disclose participant data. (BR-117, BR-121)
-  3. The use case ends.
-
-- **EX-2: Participant List Cannot Be Retrieved**
-  1. At Step 4, the system cannot retrieve the participant list.
-  2. The system displays MSG95 – "Unable to load meeting participants. Please try again."
-  3. The use case ends.
-
----
-
-### UC-38: Add Meeting Participant (Thêm thành phần tham dự)
-
-- **Use Case ID**: UC-38
-- **Use Case Name**: Add Meeting Participant
-- **Primary Actor**: Meeting Organizer (initial Secretary assignment), Secretary
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Meeting Organizer to assign the first Secretary. Afterwards, the Secretary manages the roster by adding active internal users or inviting external Guests by name and email. Internal users are selected individually; organisational-unit invitations are not supported.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The actor is authenticated and is either the Meeting Organizer creating the initial Secretary assignment or a Secretary already assigned to the selected meeting.
-  - PRE-2: The selected meeting exists and is in Draft, Rejected, Approved, Published, or InProgress status.
-  - PRE-3: For an internal participant, the selected user has an active internal account and is not already current. For a Guest, the name and email are valid and the email has no current Guest invitation for the meeting. (BR-81, BR-82, BR-149, BR-151)
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The internal user is added once, or a current Guest invitation is created for the supplied email.
-  - POST-2: The invitation response starts Pending with no response time.
-  - POST-3: An internal participant has exactly one Meeting Role: Chair, Secretary, or Member. A Guest has fixed Guest access and no system or privileged meeting role. (BR-85, BR-86, BR-87, BR-150)
-  - POST-4: If Published or InProgress, invitation delivery is queued; internal participants may receive in-app/email notifications and Guests receive a secure email invitation. (BR-90, BR-91, BR-152)
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC38_AddMeetingParticipant.png](../06-sequencediagram/meeting-participant-management/UC38_AddMeetingParticipant.png)
-
-#### Luồng sự kiện chính (Main Flow — Add Meeting Participant):
-1. The authorized actor opens the Meeting Participants tab of the selected meeting.
-2. The actor selects Add Participant.
-3. The actor selects Add Internal Participant or Invite External Guest.
-4. For an internal participant, the system displays active internal users who are not already current in the meeting. (BR-81, BR-82)
-5. The actor selects one user and assigns one Meeting Role:
-   - Chair
-   - Secretary
-   - Member
-5. The actor submits the participant information.
-6. The system verifies that:
-   - when the meeting has no Secretary, the actor is its Meeting Organizer and the selected Meeting Role is Secretary;
-   - when the meeting already has a Secretary, the actor is an assigned Secretary;
-   - the meeting still permits participant management;
-   - the selected user is active and not already invited; and
-   - the selected Meeting Role is valid; and
-   - a Guest name/email is valid, not already invited, and not already represented by a current internal participant.
-   (BR-78, BR-79, BR-80, BR-81, BR-82, BR-83, BR-85, BR-86, BR-148, BR-149, BR-151)
-7. The system creates the internal participant with one role or creates the Guest invitation with fixed Guest access; response is Pending. (BR-85, BR-88, BR-148, BR-150)
-8. If Published or InProgress, the system queues the applicable invitation delivery. Guest delivery uses a secure meeting-specific invitation. (BR-39, BR-40, BR-90, BR-91, BR-152)
-9. The system displays MSG96 – "Meeting participant added successfully."
-
-- **AF-1: Invite External Guest**
-  1. At Step 3, the actor selects Invite External Guest.
-  2. The actor enters Guest Name and Email and submits the invitation.
-  3. The system validates the email and ensures there is no current Guest invitation or internal participant represented by that email. (BR-148, BR-149, BR-151)
-  4. The system creates the Guest invitation with fixed Guest access and Pending response.
-  5. If Published or InProgress, the system queues a secure email invitation; delivery failure is retried without undoing the invitation. (BR-91, BR-94, BR-152)
-  6. The flow resumes at Step 9 of the Main Flow.
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-
-- **AF-2: Invitation Delivery Is Unavailable**
-  1. At Step 8, the meeting is Published or InProgress but in-app or email invitation delivery is unavailable.
-  2. The participant remains successfully added with Pending response status. (BR-40, BR-94)
-  3. The system records the delivery failure for retry.
-  4. The flow resumes at Step 9 of the Main Flow.
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Invalid Participant Information**
-  1. At Step 6, the selected user is inactive/already current, the role is invalid, or Guest name/email is missing or invalid, already invited, or represented by an internal participant. (BR-81, BR-82, BR-85, BR-148, BR-149, BR-151)
-  2. The participant is not added.
-  3. The system displays MSG97 – "Invalid meeting participant information." with the applicable field message(s):
-     - "The selected user is not available."
-     - "This user is already a meeting participant."
-     - "A valid meeting role is required."
-     - "The Meeting Organizer must assign a Secretary as the first meeting participant."
-     - "Guest name and email are required."
-     - "Guest email is invalid."
-     - "This guest email is already invited to the meeting."
-     - "This email is already represented by an internal meeting participant."
-  4. The actor corrects the information.
-  5. The flow resumes at Step 6 of the Main Flow.
-
-- **EX-2: Participant List Cannot Be Modified in the Current Status**
-  1. At Step 6, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)
-  2. The participant is not added.
-  3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."
-  4. The use case ends.
-
-- **EX-3: Participant Cannot Be Added**
-  1. At Step 7, the system cannot save the new participant.
-  2. The participant is not added and no invitation is sent.
-  3. The system displays MSG99 – "Unable to add the meeting participant. Please try again."
-  4. The use case ends.
-
----
-
-### UC-39: Assign / Change Meeting Role (Gán / Thay đổi vai trò trong cuộc họp)
-
-- **Use Case ID**: UC-39
-- **Use Case Name**: Assign / Change Meeting Role
-- **Primary Actor**: Secretary
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Secretary to assign/change the Meeting Role of a current internal participant. Guests have fixed Guest access and are not managed by this use case.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-  - PRE-2: The selected meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-  - PRE-3: The selected target is a current internal participant of the meeting.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The participant's Meeting Role is updated for the selected meeting only.
-  - POST-2: The participant's system role and invitation response remain unchanged.
-  - POST-3: If the meeting is Published or InProgress, an in-app notification and an email describing the new Meeting Role are queued for the affected participant.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC39_AssignChangeMeetingRole.png](../06-sequencediagram/meeting-participant-management/UC39_AssignChangeMeetingRole.png)
-
-#### Luồng sự kiện chính (Main Flow — Assign / Change Meeting Role):
-1. The Secretary opens the Meeting Participants tab of the selected meeting.
-2. The Secretary selects Change Role for a participant.
-3. The system displays the participant's current Meeting Role.
-4. The Secretary selects Chair, Secretary, or Member.
-5. The Secretary submits the selected Meeting Role.
-6. The system verifies that the Secretary is still assigned to the meeting, the meeting still permits participant management, the participant still belongs to the meeting, the selected Meeting Role is valid, and the change would not remove a required Chair or Secretary. (BR-79, BR-80, BR-85, BR-122, BR-123, BR-126)
-7. The system updates only the participant's Meeting Role for the selected meeting. (BR-85, BR-86, BR-96)
-8. If the meeting is Published or InProgress, the system queues an in-app notification and an email describing the new Meeting Role for asynchronous delivery to the participant. (BR-92)
-9. The system displays MSG100 – "Meeting role updated successfully."
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-
-- **AF-1: Selected Role Is Unchanged**
-  1. At Step 5, the selected Meeting Role is the participant's current role.
-  2. The system leaves the participant unchanged.
-  3. The system displays MSG100 – "Meeting role updated successfully."
-  4. The use case ends successfully.
-
-- **AF-2: Role Change Notification Delivery Is Unavailable**
-  1. At Step 8, the Meeting Role has been updated but notification delivery is unavailable.
-  2. The Meeting Role change remains successful. (BR-94)
-  3. The system records the delivery failure for retry.
-  4. The flow resumes at Step 9 of the Main Flow.
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Invalid Meeting Role**
-  1. At Step 6, the submitted Meeting Role is not Chair, Secretary, or Member. (BR-85)
-  2. The participant's Meeting Role remains unchanged.
-  3. The system displays MSG101 – "A valid meeting role is required."
-  4. The Secretary selects a valid Meeting Role.
-  5. The flow resumes at Step 6 of the Main Flow.
-
-- **EX-2: Required Meeting Role Would Be Removed**
-  1. At Step 6, the change would remove the last assigned Secretary, or would remove the last assigned Chair while the meeting is Published or InProgress. (BR-122, BR-126)
-  2. The participant's Meeting Role remains unchanged.
-  3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."
-  4. The use case ends.
-
-- **EX-3: Participant List Cannot Be Modified in the Current Status**
-  1. At Step 6, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)
-  2. The participant's Meeting Role remains unchanged.
-  3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."
-  4. The use case ends.
-
-- **EX-4: Meeting Role Cannot Be Updated**
-  1. At Step 7, the system cannot save the Meeting Role change.
-  2. The participant's Meeting Role remains unchanged.
-  3. The system displays MSG102 – "Unable to update the meeting role. Please try again."
-  4. The use case ends.
-
----
-
-### UC-40: Remove Meeting Participant (Xóa thành phần tham dự)
-
-- **Use Case ID**: UC-40
-- **Use Case Name**: Remove Meeting Participant
-- **Primary Actor**: Secretary
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the Secretary to remove a current internal participant or revoke a current external Guest invitation while the meeting has not yet ended.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-  - PRE-2: The selected meeting is in Draft, Rejected, Approved, Published, or InProgress status.
-  - PRE-3: The target is a current internal participant or current external Guest invitation.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The internal user is no longer current, or the Guest invitation is revoked.
-  - POST-2: Access from the removed participant/delegation/Guest relationship is revoked; independent access through another valid relationship remains.
-  - POST-3: If Published or InProgress, the applicable internal in-app/email or Guest email notice is queued without a protected link.
-  - POST-4: Affected connected users without another valid room-entry relationship are disconnected. (BR-97, BR-100, BR-101)
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC40_RemoveMeetingParticipant.png](../06-sequencediagram/meeting-participant-management/UC40_RemoveMeetingParticipant.png)
-
-#### Luồng sự kiện chính (Main Flow — Remove Meeting Participant):
-1. The Secretary opens the Meeting Participants tab of the selected meeting.
-2. The Secretary selects Remove for an internal participant or external Guest.
-3. The system requests confirmation.
-4. The Secretary confirms the removal.
-5. The system verifies Secretary authority, editable status, current roster membership, and—if internal—that removal will retain required Chair/Secretary roles. (BR-79, BR-80, BR-97, BR-100, BR-122, BR-126)
-6. For an internal target, the system removes the current assignment and ends outgoing delegation; for a Guest, it revokes the invitation and Guest access. Published/InProgress response and attendance evidence is retained as history. (BR-97, BR-98, BR-100, BR-102, BR-103)
-7. The system re-evaluates room access for affected users and disconnects only those with no other valid room-entry relationship. (BR-97, BR-100, BR-101)
-8. If Published or InProgress, the system queues the applicable removal/revocation notification; internal users may receive in-app/email, Guests email only. (BR-93, BR-95)
-9. The system displays MSG103 – "Meeting participant removed successfully."
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-
-- **AF-1: Secretary Cancels the Removal**
-  1. At Step 3, the Secretary does not confirm the removal.
-  2. The participant remains unchanged.
-  3. The use case ends successfully.
-
-- **AF-2: Removal Notification Delivery Is Unavailable**
-  1. At Step 8, the participant has been removed but notification delivery is unavailable.
-  2. The removal and applicable access revocation remain successful. (BR-94, BR-97, BR-100)
-  3. The system records the delivery failure for retry.
-  4. The flow resumes at Step 9 of the Main Flow.
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Required Meeting Role Would Be Removed**
-  1. At Step 5, the removal would remove the last assigned Secretary, or would remove the last assigned Chair while the meeting is Published or InProgress. (BR-122, BR-126)
-  2. The participant is not removed.
-  3. The system displays MSG109 – "The meeting must retain its required Chair and Secretary. Assign a replacement first."
-  4. The use case ends.
-
-- **EX-2: Participant List Cannot Be Modified in the Current Status**
-  1. At Step 5, the meeting is WaitingApproval, Ended, MinutesIssued, or Archived. (BR-80)
-  2. The participant is not removed.
-  3. The system displays MSG98 – "The meeting participant list cannot be modified in its current status."
-  4. The use case ends.
-
-- **EX-3: Participant Cannot Be Removed**
-  1. At Step 6, the system cannot remove the participant.
-  2. The participant remains assigned to the meeting and retains existing access.
-  3. The system displays MSG104 – "Unable to remove the meeting participant. Please try again."
-  4. The use case ends.
-
----
-
-### UC-41: Respond to Meeting Invitation (Phản hồi lời mời họp)
-
-- **Use Case ID**: UC-41
-- **Use Case Name**: Respond to Meeting Invitation
-- **Primary Actor**: Meeting Participant
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows an invited internal participant or external Guest to respond to their own invitation while responses are allowed. Internal participants may accept, decline, or delegate; Guests may accept or decline through a verified invitation without internal sign-in.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: For an internal invitee, the user is authenticated, active, and a current participant. For a Guest, a current invitation exists and the Guest can verify the invited email; internal login is not required. (BR-81, BR-89, BR-104, BR-148, BR-153, BR-156)
-  - PRE-2: The invitee owns the selected invitation.
-  - PRE-3: The selected meeting is Published or InProgress.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The invitee's latest response is Accepted or Declined; an internal participant may also respond Delegated.
-  - POST-2: The response time is recorded.
-  - POST-3: For a Delegated response, the selected delegate is recorded on the original participant's response and receives delegated access without automatically receiving a Meeting Role.
-  - POST-4: Guest access remains scoped to the invited meeting and creates no account or system role. (BR-120, BR-150, BR-154, BR-155)
-  - POST-5: Replacing/withdrawing internal delegation revokes access granted only by the previous delegate and triggers room-access re-evaluation. (BR-101, BR-114)
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC41_RespondToMeetingInvitation.png](../06-sequencediagram/meeting-participant-management/UC41_RespondToMeetingInvitation.png)
-
-#### Luồng sự kiện chính (Main Flow — Respond to Meeting Invitation):
-1. The Meeting Participant opens the invitation or the published meeting details.
-2. The system displays the participant's current Invitation Response.
-3. The invitee selects Accepted or Declined. Only internal participants may select Delegated.
-4. The Meeting Participant submits the response.
-5. The system verifies the response type for the invitee, invitation ownership, current relationship, and Published/InProgress status. (BR-89, BR-104, BR-105, BR-106)
-6. In one atomic operation, the system records the selected Invitation Response and response time, clears any previous delegate, and revokes access granted solely by the previous delegation. (BR-105, BR-114, BR-115)
-7. If the meeting is InProgress, the system re-evaluates room-entry access for the previous delegate and removes that user from the room only when the user is connected and has no room-entry access through another current participant assignment or effective delegation. (BR-101, BR-114)
-8. The system displays MSG105 – "Meeting invitation response recorded successfully."
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-
-- **AF-1: Delegate the Invitation**
-  1. At Step 3, the Meeting Participant selects Delegated.
-  2. The system displays active internal users who may be selected as delegate.
-  3. The Meeting Participant selects another active internal user.
-  4. The system verifies that the current user owns the invitation and remains a current participant, the meeting is still Published or InProgress, and the selected delegate is active, is not the responding participant, and is not already representing another participant in the same meeting. (BR-89, BR-107, BR-108, BR-113)
-  5. In one atomic operation, the system records Delegated and `DelegatedToUserId` on the original participant's record, revokes access granted solely to any previous delegate, and grants the selected delegate the applicable access. The system does not automatically create another Meeting Participant row or change an existing participant's Meeting Role. (BR-105, BR-107, BR-109, BR-111, BR-114, BR-115)
-  6. After the atomic update, the original participant's own assignment retains meeting read access but no longer grants room-entry access while the Delegated response remains effective. A separate incoming delegation to that participant remains effective. The selected delegate has meeting read access and room-entry access; Chair and Secretary privileges are not transferred. (BR-109, BR-110, BR-111)
-  7. If the meeting is InProgress, the system re-evaluates room-entry access for the original participant and any previous delegate. It removes each currently connected affected user who has no room-entry access through another current participant assignment or effective delegation. (BR-101, BR-110, BR-114)
-  8. If the selected delegate is already a participant, the system preserves that participant's existing Meeting Role and access. (BR-112)
-  9. The flow resumes at Step 8 of the Main Flow.
-
-- **AF-3: Verify and Respond as External Guest**
-  1. The Guest follows the secure meeting-specific invitation and submits the one-time code sent to the invited email.
-  2. The system verifies the code, invitation validity, and that it has not expired or been revoked. (BR-153, BR-154, BR-155)
-  3. The Guest selects Accepted or Declined; Delegated is not offered.
-  4. The system records the latest response/time and establishes only the limited Guest session for this meeting.
-  5. The flow resumes at Step 8 of the Main Flow.
-
-- **AF-2: Change a Previous Response**
-  1. At Step 2, the Meeting Participant has already responded to the invitation.
-  2. The Meeting Participant selects another response and submits it.
-  3. If the new response is Delegated, the flow continues at Step 2 of AF-1 so that the new delegate is revalidated.
-  4. Otherwise, the flow resumes at Step 5 of the Main Flow so that ownership, current participation, meeting status, and the new response are revalidated before the atomic update. (BR-89, BR-104, BR-105, BR-106, BR-115)
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Invalid Invitation Response**
-  1. At Step 5, the submitted response is not Accepted or Declined; or at AF-1 Step 4, Delegated has no valid delegate, the participant selects themself, or the selected user already represents another participant in the same meeting. (BR-89, BR-105, BR-107, BR-108, BR-113)
-  2. The previous Invitation Response remains unchanged.
-  3. The system displays MSG106 – "Invalid meeting invitation response." with the applicable validation message.
-  4. The Meeting Participant corrects the response.
-  5. For an invalid Accepted or Declined response, the flow resumes at Step 3 of the Main Flow. For an invalid delegate, the flow resumes at Step 2 of AF-1.
-
-- **EX-2: Invitation Can No Longer Be Answered**
-  1. At Step 5 or AF-1 Step 4, the meeting is no longer Published or InProgress, or the current user no longer owns a current participant invitation for the meeting. (BR-104, BR-106)
-  2. The previous Invitation Response remains unchanged.
-  3. The system displays MSG107 – "This meeting invitation can no longer be answered."
-  4. The use case ends.
-
-- **EX-3: Invitation Response Cannot Be Saved**
-  1. At Step 6 of the Main Flow or Step 5 of AF-1, the system cannot save the Invitation Response or apply the corresponding delegated access atomically.
-  2. The previous Invitation Response and access remain unchanged.
-  3. The system displays MSG108 – "Unable to save the meeting invitation response. Please try again."
-  4. The use case ends.
-
-- **EX-4: Guest Invitation Cannot Be Verified**
-  1. The one-time code is invalid, expired, or the invitation is no longer current.
-  2. No Guest session is established and no response is changed.
-  3. The system displays MSG126 – "Unable to verify the guest invitation. Check the code and try again."
-  4. The use case ends.
-
----
-
-### UC-42: View Participant Response Status (Xem trạng thái phản hồi của thành phần tham dự)
-
-- **Use Case ID**: UC-42
-- **Use Case Name**: View Participant Response Status
-- **Primary Actor**: Secretary
-- **Secondary Actor**: None
-- **Mô tả (Description)**: Allows the assigned Secretary to review each current internal participant and Guest invitation response, with a summary by response status.
-- **Điều kiện tiên quyết (Preconditions)**:
-  - PRE-1: The Secretary is authenticated and assigned to the selected meeting with the Secretary meeting role.
-  - PRE-2: The selected meeting exists.
-- **Điều kiện sau (Postconditions)**:
-  - POST-1: The latest response status of every current internal participant and Guest invitation is displayed.
-  - POST-2: The number of Pending, Accepted, Declined, and Delegated responses is displayed; Delegated applies only to internal participants.
-  - POST-3: Invitation Response data is not modified.
-- **Sơ đồ liên quan (Related Diagrams)**:
-  - Sequence Diagram: [UC42_ViewParticipantResponseStatus.png](../06-sequencediagram/meeting-participant-management/UC42_ViewParticipantResponseStatus.png)
-
-#### Luồng sự kiện chính (Main Flow — View Participant Response Status):
-1. The Secretary opens the Meeting Participants tab of the selected meeting.
-2. The Secretary selects Participant Response Status.
-3. The system verifies that the Secretary is still assigned to the meeting.
-4. The system retrieves current internal participants and Guest invitations with their latest response; historical records are excluded. (BR-102, BR-103, BR-115, BR-116, BR-117, BR-121)
-5. The system displays each invitee's Full Name, Email, participant type, Meeting Role or Guest access type, response, response time, and delegate when applicable.
-6. The system displays the total number of Pending, Accepted, Declined, and Delegated responses. (BR-115)
-7. The Secretary reviews the response status summary.
-
-#### Luồng sự kiện thay thế (Alternative Flows):
-
-- **AF-1: No Invitee Has Responded**
-  1. At Step 4, every current internal participant and Guest invitation has Pending response status.
-  2. The system displays all invitees as Pending and shows zero for Accepted, Declined, and Delegated.
-  3. The use case ends successfully.
-
-#### Luồng ngoại lệ / Lỗi (Exception Flows):
-
-- **EX-1: Meeting Is Not Accessible**
-  1. At Step 3, the meeting does not exist or the current user is not its assigned Secretary.
-  2. The system displays the same not-found result used for an unknown meeting and does not disclose participant response data. (BR-117, BR-121)
-  3. The use case ends.
-
-- **EX-2: Participant Response Status Cannot Be Retrieved**
-  1. At Step 4, the system cannot retrieve the participant response data.
-  2. The system displays MSG95 – "Unable to load meeting participants. Please try again."
-  3. The use case ends.
-
----
-
-### UC-43: Start Meeting (Bắt đầu cuộc họp)
-
-- **Primary Actor**: Chair
-- **Description**: Allows an active Chair assigned to a Published meeting to start the meeting. Meeting Sessions are optional and keep their own lifecycle.
-- **Preconditions**: The Chair is authenticated and currently assigned to the meeting; the meeting is Published; at least one current Chair and Secretary have active accounts. Meeting Sessions are optional. (BR-56, BR-87, BR-127, BR-129, BR-130, BR-131, BR-133)
-- **Postconditions**: The meeting changes to InProgress and its lifecycle history is recorded. Meeting Session statuses are unchanged.
-- **Related Diagram source**: [UC43_StartMeeting.txt](../06-sequencediagram/meeting-management/UC43_StartMeeting.txt)
-- **Main Flow**: The Chair selects Start Meeting; the system revalidates Chair assignment, active Chair and Secretary, and Published status; it changes the meeting to InProgress, records the transition, and displays MSG110. (BR-38, BR-56, BR-127, BR-130, BR-131, BR-135)
-- **Exception Flows**: If the meeting is not Published or role readiness fails, display MSG112. If starting fails, display MSG115.
-
-### UC-44: End Meeting (Kết thúc cuộc họp)
-
-- **Primary Actor**: Chair
-- **Description**: Allows an active Chair assigned to an InProgress meeting to end it after all planned sessions have finished or been cancelled.
-- **Preconditions**: The Chair is authenticated and currently assigned to the meeting; the meeting is InProgress.
-- **Postconditions**: The meeting changes to Ended and its lifecycle history is recorded; any associated room closes and connected users are disconnected. Meeting Session statuses are unchanged.
-- **Related Diagram source**: [UC44_EndMeeting.txt](../06-sequencediagram/meeting-management/UC44_EndMeeting.txt)
-- **Main Flow**: The Chair confirms End Meeting; the system revalidates Chair assignment, active Chair, InProgress status, and that no Meeting Session remains Planned or InProgress; it changes the meeting to Ended, records the transition, closes the room, and displays MSG111. (BR-38, BR-61, BR-130, BR-132, BR-134, BR-135, BR-143)
-- **Exception Flows**: If any session remains Planned or InProgress, display MSG113. If meeting/role state is no longer eligible, display MSG114. If ending fails, display MSG116.
-
-### UC-45: Join Meeting Room (Vào phòng họp trực tuyến)
-
-- **Primary Actor**: Chair, Secretary, Participant, Guest
-- **Secondary Actor**: None
-- **Description**: Allows an authorized user to enter the online room associated with a meeting. The room belongs to the Meeting, not to a Meeting Session, so a Meeting Session is not required for room access.
-- **Preconditions**:
-  - PRE-1: The user has room-entry access to the selected meeting through a current internal participant assignment, an effective delegation, or a verified current external Guest invitation. An external Guest may use a limited meeting-scoped guest session established from the invitation and email verification; no internal account login is required. (BR-140, BR-148, BR-152, BR-153, BR-156)
-  - PRE-2: The selected meeting exists and its Meeting Mode is Online or Hybrid.
-  - PRE-3: The meeting is Published or InProgress.
-  - PRE-4: No Meeting Session is required. (BR-137, BR-138)
-- **Postconditions**:
-  - POST-1: The user is connected to the online meeting room.
-  - POST-2: The user appears as currently connected in the room participant list.
-  - POST-3: The Meeting and all Meeting Session lifecycle statuses remain unchanged.
-- **Main Flow — Join Meeting Room**:
-  1. The user selects Join Meeting Room for the selected meeting. An external Guest uses the verified meeting-specific guest session established from the invitation flow.
-  2. The system verifies that the meeting exists, is Online or Hybrid, is Published or InProgress, and that the user currently has room-entry access through an internal participant assignment, effective delegation, or verified current Guest invitation. (BR-137, BR-138, BR-139, BR-140)
-  3. The system admits the user to the meeting room.
-  4. The system records the user as currently connected to the room and displays the room interface.
-  5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-- **Alternative Flows**: N/A
-- **Exception Flows**:
-  - **EX-1: Meeting Room Is Not Available**: At Step 2, if the meeting is not Online/Hybrid or not Published/InProgress, the user is not connected; display MSG117 – "The online meeting room is not available." The use case ends. (BR-139)
-  - **EX-2: User Does Not Have Room Access**: At Step 2, if the internal participant/delegation relationship is no longer effective or the external Guest invitation/session has expired or been revoked, return the same not-found/access result used for an inaccessible meeting and disclose no protected room information. The use case ends. (BR-140, BR-155, BR-157)
-  - **EX-3: Room Join Cannot Be Completed**: After Step 2, if the system cannot connect the user, leave Meeting and Meeting Session lifecycles unchanged, display MSG118 – "Unable to join the meeting room. Please try again." and end the use case.
-
-### UC-46: Leave Meeting Room (Rời phòng họp trực tuyến)
-
-- **Primary Actor**: Chair, Secretary, Participant, Guest
-- **Secondary Actor**: None
-- **Description**: Allows a connected user to leave the online meeting room without ending the Meeting or any Meeting Session.
-- **Preconditions**: PRE-1: The user is currently connected to the selected meeting room.
-- **Postconditions**:
-  - POST-1: The user is no longer connected to the room.
-  - POST-2: The user is removed from the current room participant list.
-  - POST-3: The Meeting and Meeting Session lifecycle statuses remain unchanged.
-- **Main Flow — Leave Meeting Room**:
-  1. The connected user selects Leave Room.
-  2. The system disconnects the user from the room.
-  3. The system updates the current room participant list.
-  4. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-- **Alternative Flows**: N/A
-- **Exception Flows**: N/A
-
-### UC-47: Manage Microphone (Quản lý micro)
-
-- **Primary Actor**: Chair, Secretary, Participant, Guest
-- **Secondary Actor**: None
-- **Description**: Allows a user connected to the meeting room to enable or disable their own microphone.
-- **Preconditions**: PRE-1: The user is currently connected to the online meeting room.
-- **Postconditions**:
-  - POST-1: The user’s microphone state reflects the requested enabled or disabled state when the device/permission is available.
-  - POST-2: No Meeting or Meeting Session lifecycle state is changed.
-- **Main Flow — Manage Microphone**:
-  1. The user selects the microphone control.
-  2. The system attempts to apply the requested microphone state to the user’s own audio.
-  3. The room interface displays the resulting microphone state. (BR-141, BR-144)
-- **Alternative Flows**: N/A
-- **Exception Flows**:
-  - **EX-1: Microphone Is Unavailable**: At Step 2, if permission is denied, no usable device is available, or the device cannot be used, the user remains in the room with the microphone disabled. Display MSG119 – "Microphone access is unavailable. Check your browser or device permissions." The use case ends.
-
-### UC-48: Manage Camera (Quản lý camera)
-
-- **Primary Actor**: Chair, Secretary, Participant, Guest
-- **Secondary Actor**: None
-- **Description**: Allows a user connected to the meeting room to enable or disable their own camera.
-- **Preconditions**: PRE-1: The user is currently connected to the online meeting room.
-- **Postconditions**:
-  - POST-1: The user’s camera state reflects the requested enabled or disabled state when the device/permission is available.
-  - POST-2: No Meeting or Meeting Session lifecycle state is changed.
-- **Main Flow — Manage Camera**:
-  1. The user selects the camera control.
-  2. The system attempts to apply the requested camera state to the user’s own video.
-  3. The room interface displays the resulting camera state. (BR-141, BR-144)
-- **Alternative Flows**: N/A
-- **Exception Flows**:
-  - **EX-1: Camera Is Unavailable**: At Step 2, if permission is denied, no usable device is available, or the device cannot be used, the user remains in the room with the camera disabled. Display MSG120 – "Camera access is unavailable. Check your browser or device permissions." The use case ends.
-
-### UC-49: Manage Screen Sharing (Chia sẻ màn hình)
-
-- **Primary Actor**: Chair, Secretary, Participant, Guest
-- **Secondary Actor**: None
-- **Description**: Allows a connected user to start or stop sharing their screen with other users in the meeting room.
-- **Preconditions**: PRE-1: The user is currently connected to the online meeting room.
-- **Postconditions**:
-  - POST-1: The user is either actively sharing the selected screen content or has stopped sharing.
-  - POST-2: At most one active screen share remains in the room.
-  - POST-3: No Meeting or Meeting Session lifecycle state is changed.
-- **Main Flow — Start Screen Sharing**:
-  1. The user selects Share Screen.
-  2. The system asks the user to choose shareable content using the available device/browser mechanism.
-  3. The user selects the content to share.
-  4. The system verifies whether another screen share is active.
-  5. If another share is active, the previous share is stopped before the new share becomes active. (BR-145)
-  6. The system displays the active shared content to users in the room.
-  7. Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-- **Alternative Flows**:
-  - **AF-1: Stop Screen Sharing** (entry point: Step 1): If the user is already sharing, they select Stop Sharing; the system stops that user’s active share; the room returns to its normal non-sharing layout; the use case ends successfully.
-- **Exception Flows**:
-  - **EX-1: Screen Sharing Cannot Be Started**: At Step 2 or 3, if the user cancels the share selection or the system cannot start the share, no new screen share becomes active. For a failure other than user cancellation, display MSG121 – "Unable to share your screen." The use case ends.
-
-### UC-50: View Meeting Room Participants (Xem người đang trong phòng)
-
-- **Primary Actor**: Chair, Secretary, Participant, Guest
-- **Secondary Actor**: None
-- **Description**: Allows a connected user to view the users who are currently connected to the online meeting room.
-- **Preconditions**: PRE-1: The user is currently connected to the online meeting room.
-- **Postconditions**:
-  - POST-1: The current room participant list is displayed.
-  - POST-2: The Meeting participant roster and Meeting Session data are not modified.
-- **Main Flow — View Meeting Room Participants**:
-  1. The user opens the room participant panel.
-  2. The system retrieves the users currently connected to the room.
-  3. The system displays the connected users and available room presence information, such as active-speaker indication. (BR-146)
-  4. The user reviews the current room participant list.
-- **Alternative Flows**:
-  - **AF-1: No Other User Is Connected**: At Step 2, if no other user is currently connected, the system displays only the current user in the room participant list. The use case ends successfully.
-- **Exception Flows**:
-  - **EX-1: Room Participants Cannot Be Retrieved**: At Step 2, if the system cannot retrieve current room participant state, display MSG122 – "Unable to load meeting room participants. Please try again." The use case ends.
-
-### UC-51: Moderate Meeting Room (Điều phối phòng họp)
-
-- **Primary Actor**: Chair
-- **Secondary Actor**: None
-- **Description**: Allows the Chair assigned to the meeting to perform permitted moderation actions on users currently connected to the online meeting room without changing their Meeting Participant assignment.
-- **Preconditions**:
-  - PRE-1: The Chair is authenticated, assigned to the selected meeting, and currently connected to its room.
-  - PRE-2: The target user is currently connected to the same room.
-- **Postconditions**:
-  - POST-1: The selected moderation action is applied to the target user.
-  - POST-2: The target user’s Meeting Participant assignment and Meeting Role remain unchanged.
-  - POST-3: The Meeting and Meeting Session lifecycles remain unchanged.
-- **Main Flow — Mute a Room Participant**:
-  1. The Chair opens the room participant panel and selects a connected user.
-  2. The Chair selects Mute.
-  3. The system verifies that the current user is still an assigned Chair and that the target is still connected. (BR-144)
-  4. The system disables the target user’s microphone.
-  5. The system makes the updated room state visible to affected users.
-  6. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-- **Alternative Flows**:
-  - **AF-1: Remove User from Current Room** (entry point: Step 2): The Chair selects Remove from Room; the system verifies Chair authorization and target connection; the system disconnects the target user from the current room only; the target’s Meeting Participant assignment remains unchanged and future re-entry follows normal room-access rules. The use case ends successfully.
-- **Exception Flows**:
-  - **EX-1: User Is Not Allowed to Moderate**: At Step 3 of the Main Flow or Step 2 of AF-1, if the current user is no longer an assigned Chair, no moderation action is applied; display MSG123 – "You are not allowed to moderate this meeting room." The use case ends.
-  - **EX-2: Moderation Action Cannot Be Applied**: After authorization succeeds, if the target is no longer connected or the moderation operation cannot be completed, display MSG124 – "Unable to apply the room moderation action." The use case ends.
-
-### UC-52: Use In-room Chat (Chat trong phòng họp)
-
-- **Primary Actor**: Chair, Secretary, Participant, Guest
-- **Secondary Actor**: None
-- **Description**: Allows an authorized user currently connected to the online meeting room to exchange text messages within that room.
-- **Preconditions**: PRE-1: The user is currently connected to the online meeting room.
-- **Postconditions**:
-  - POST-1: A valid submitted message is made available to authorized users currently connected to the same room.
-  - POST-2: The Meeting and Meeting Session lifecycles remain unchanged.
-- **Main Flow — Use In-room Chat**:
-  1. The user enters a text message in the room chat panel.
-  2. The user sends the message.
-  3. The system validates that the user is still connected to the room and that the message is not empty.
-  4. The system makes the message available to authorized users currently connected to the same room. (BR-147)
-  5. The Meeting and Meeting Session lifecycles remain unchanged. (BR-141)
-- **Alternative Flows**: N/A
-- **Exception Flows**:
-  - **EX-1: Chat Message Cannot Be Sent**: At Step 3 or 4, if the user is no longer connected, the message is empty, or the system cannot deliver it, the message is not treated as successfully sent. Display MSG125 – "Unable to send the room message. Please try again." The use case ends.
-
----
-
-## 3. Danh mục Business Rules dẫn chiếu (BR-01 → BR-157)
-
-Toàn bộ nội dung nguyên văn, phạm vi áp dụng (`Applies To`) và các quy tắc cụ thể hóa đã được đồng bộ đầy đủ tại [06-business-rules.md](06-business-rules.md).
-
-#### Các điểm cốt lõi đã chốt từ Report 3:
-
-1. **Khởi tạo Secretary đầu tiên**: Meeting Organizer của UC-15 (`Meeting.CreatedById`) chỉ được dùng UC-38 để thêm participant đầu tiên với Meeting Role `Secretary` (BR-78).
-2. **Chuyển quyền quản lý roster**: Sau khi đã có Secretary, việc thêm participant, đổi Meeting Role và xóa participant do Secretary được gán thực hiện (BR-79); Meeting Organizer không mặc nhiên là Secretary.
-3. **Trạng thái được sửa danh sách**: Được thêm participant, đổi Meeting Role và xóa participant ở `Draft`, `Rejected`, `Approved`, `Published` và `InProgress` (BR-80); `WaitingApproval` chỉ được xem, không được sửa; participant được phản hồi hoặc đổi phản hồi từ `Published` đến hết `InProgress` (BR-106).
-4. **Ủy quyền tham dự**: Người được ủy quyền có quyền đọc meeting và vào room trong phạm vi được ủy quyền, không tự động có Meeting Role (BR-109, BR-111); nếu đã là participant thì giữ role hiện tại (BR-112). Chair/Secretary không được chuyển, một người chỉ đại diện cho tối đa một participant trong cùng meeting (BR-113).
-5. **Thông báo sau khi Published**: Thêm participant, đổi Meeting Role hoặc xóa participant đều gửi thông báo (in-app/email) bất đồng bộ (BR-90, BR-91, BR-92, BR-93). Lỗi gửi không hoàn tác thay đổi và được retry (BR-94). Thông báo xóa không chứa link truy cập (BR-95).
-6. **Phòng họp trực tuyến**: Online Meeting Room thuộc về Meeting, không thuộc Meeting Session (BR-137); không cần session để vào room (BR-138). Room chỉ khả dụng khi mode Online/Hybrid, Meeting Published/InProgress (BR-139). Khi Meeting kết thúc, room đóng và ngắt kết nối người dùng (BR-143).
-7. **Khách mời bên ngoài (Guest)**: Quản lý bằng lời mời riêng theo meeting/email, xác minh email bằng OTP, không tạo tài khoản nội bộ (BR-148, BR-153, BR-156); chỉ có Guest access (BR-150). Thu hồi lời mời lập tức hủy quyền truy cập và quyền vào room (BR-157).
-C-43, UC-44 |
-| `BR-93` | The Online Meeting Room belongs to the Meeting, not a Meeting Session. A session is not required to create, join, remain in, or leave the room. | UC-45–UC-52 |
-| `BR-94` | Room is available only for Online/Hybrid meetings in Published/InProgress. Entry requires a current internal participant relationship, effective delegation, or a successfully verified, current, unexpired, unrevoked Guest invitation. | UC-45 |
-| `BR-95` | Room participation and controls do not change Meeting or Meeting Session lifecycle. The same room may stay available across multiple sessions. | UC-45–UC-52 |
-| `BR-96` | When the Meeting becomes Ended, the room stops accepting joins and disconnects connected users. Leaving a room does not end the Meeting or a Meeting Session. | UC-44–UC-46 |
-| `BR-97` | Users control only their own microphone and camera. Chair may mute or remove another connected user, but cannot enable their microphone or camera. | UC-47, UC-48, UC-51 |
-| `BR-98` | At most one screen share is active per room; a new share stops the previous share first. | UC-49 |
-| `BR-99` | Room presence is the set of currently connected users, distinct from the Meeting roster, and may include active-speaker indication. | UC-50 |
-| `BR-100` | In-room chat is scoped to the room and available only to authorized connected users. Chat does not change either lifecycle. | UC-52 |
-| `BR-101` | A Guest has Guest Name and Email, needs no internal account, and has at most one current invitation per email per meeting. Guests have no system or privileged Meeting Role. Do not invite as Guest an email already represented by a current internal participant. | UC-37, UC-38, UC-40–UC-42, UC-45 |
-| `BR-102` | Guest access uses a secure high-entropy invitation scoped to one meeting and email verification by one-time code. Guest session expires by configured validity, needs no internal login, and cannot access another meeting. | UC-21, UC-38, UC-41, UC-45 |
-| `BR-103` | Revoking a Guest invitation immediately invalidates its sessions/tokens and disconnects a connected Guest if no other valid room-entry relationship exists. Preserve historical response/attendance evidence when required. | UC-37, UC-40–UC-42, UC-45 |
-
-#### Các điểm đã chốt trong source-of-truth F08 / GOF09
-
-1. **Khởi tạo Secretary đầu tiên**: Meeting Organizer của UC-15, được xác định bằng `Meeting.CreatedById`, chỉ được dùng UC-38 để thêm participant đầu tiên với Meeting Role `Secretary`.
-2. **Chuyển quyền quản lý**: Secretary hiện hành có tài khoản hoạt động được xem meeting từ `Draft`, kể cả khi chờ duyệt; sau khi đã có Secretary, việc thêm participant, đổi Meeting Role và xóa participant do Secretary được gán thực hiện; Meeting Organizer không mặc nhiên là Secretary.
-3. **Trạng thái được sửa danh sách**: được thêm participant, đổi Meeting Role và xóa participant ở `Draft`, `Rejected`, `Approved`, `Published` và `InProgress`; `WaitingApproval` chỉ được xem, không được sửa; participant được phản hồi hoặc đổi phản hồi từ `Published` đến hết `InProgress`. Khi meeting chuyển sang `Ended`, `MinutesIssued` hoặc `Archived`, danh sách trở thành hồ sơ chỉ đọc; nếu cần sửa sai phải dùng một luồng đính chính có lưu lịch sử thay vì thay đổi trực tiếp.
-4. **Ủy quyền tham dự**: người được ủy quyền có quyền đọc meeting và vào room trong phạm vi được ủy quyền, không tự động có Meeting Role; nếu đã là participant thì giữ role hiện tại. Chair/Secretary không được chuyển, một người chỉ đại diện cho tối đa một participant trong cùng meeting.
-5. **Thông báo sau khi Published**: thêm participant, đổi Meeting Role hoặc xóa participant đều queue in-app notification và email cho người bị ảnh hưởng để gửi bất đồng bộ. Lỗi gửi không hoàn tác thay đổi và phải được retry. Thông báo xóa không chứa link mở nội dung đã bị thu hồi. Khi xóa làm kết thúc một ủy quyền, quyền vào phòng của cả participant bị xóa và delegate liên quan đều được tính lại; chỉ đưa một người khỏi phòng nếu họ không còn quyền nào khác từ participant hoặc ủy quyền.
-6. **Phòng họp trực tuyến**: room thuộc Meeting, không thuộc Meeting Session; không cần session để mở hoặc vào. Room chỉ available khi mode Online/Hybrid, Meeting Published/InProgress, và caller có quan hệ vào phòng hợp lệ. Khi Meeting kết thúc, room từ chối join mới và disconnect người đang kết nối.
-7. **Guest ngoài hệ thống**: quản lý bằng lời mời riêng theo meeting/email, xác minh email bằng OTP, không tạo internal account; chỉ có Guest access. Thu hồi lời mời phải thu hồi ngay guest session và quyền vào room.

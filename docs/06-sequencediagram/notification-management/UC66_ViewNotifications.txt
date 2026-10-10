@@ -1,0 +1,35 @@
+title UC-17 - View Notifications
+
+actor "Meeting Organizer / Meeting Approver / System Admin / Chair / Secretary / Participant" as User
+boundary "Notification Panel" as NotificationPanel
+control ":Notification Controller" as NotificationController
+control ":Notification Service" as NotificationService
+participant ":Notification Repository" as NotificationRepository
+database ":Database" as Database
+
+User->NotificationPanel: Select notification bell
+NotificationPanel->NotificationController: Request notifications and unread count
+activate NotificationController
+NotificationController->NotificationService: Get notifications for current user
+activate NotificationService
+NotificationService->NotificationRepository: Get notifications and unread count\nwithout changing read status (BR-48, BR-49)
+activate NotificationRepository
+NotificationRepository->Database: Retrieve user notifications\nand unread count
+activate Database
+alt Notifications cannot be retrieved - EX-1
+    Database-->NotificationRepository: Retrieval failed
+    NotificationRepository-->NotificationService: Unable to retrieve notifications
+    NotificationService-->NotificationController: Notifications cannot be loaded
+    NotificationController-->NotificationPanel: Display notification loading error
+    NotificationPanel-->User: Inform notifications cannot be loaded
+else Notifications retrieved successfully
+    Database-->NotificationRepository: Notifications and unread count
+    NotificationRepository-->NotificationService: Notification list and unread count
+    NotificationService-->NotificationController: Notification list and unread count
+    NotificationController-->NotificationPanel: Display notifications and unread badge
+    NotificationPanel-->User: Show notifications, unread indicators and unread count
+end
+deactivate Database
+deactivate NotificationRepository
+deactivate NotificationService
+deactivate NotificationController

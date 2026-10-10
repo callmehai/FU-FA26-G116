@@ -1,14 +1,21 @@
 # 05 · API quản lý cuộc họp
 
-**UC-15 Create Meeting / UC-16 Update Meeting — SCRUM-17; UC-17 View Meeting Details /
-UC-18 View Meeting List — SCRUM-18; UC-19 Submit / UC-20 Review / UC-21 Publish — SCRUM-19.**
+> **Cảnh báo — nghiệp vụ đã đổi (10/10/2026).** File này mô tả **code đang chạy**, vẫn có `MeetingSession`.
+> PO đã bỏ Meeting Session và biểu quyết đặc biệt ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md),
+> [ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md)): lịch dự kiến sẽ chuyển về Meeting
+> (`plannedStartTime`, `plannedEndTime`, `onlineLink`). Phần hợp đồng API dưới đây chỉ đổi **cùng commit với migration**.
+> Số UC đã đổi theo baseline 70 UC ([bảng đổi số](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới));
+> các mã `BR-54` → `BR-61` nhắc trong file là số BR cũ đã ngừng dùng ([danh mục BR](../01-requirements/06-business-rules.md)).
+
+**UC-14 Create Meeting / UC-15 Update Meeting — SCRUM-17; UC-16 View Meeting Details /
+UC-17 View Meeting List — SCRUM-18; UC-18 Submit / UC-19 Review / UC-20 Publish — SCRUM-19.**
 
 ## Phạm vi
 
 Các endpoint cho người tạo khởi tạo cuộc họp nháp và sửa thông tin cấp cuộc họp trước khi gửi duyệt.
 Meeting-level information gồm tên, hình thức, địa điểm, mức độ mật và mô tả; lịch dự kiến thuộc
 Meeting Sessions theo BR-25. Tạo/sửa Meeting không chọn hoặc gán người duyệt; việc chọn và gán người
-duyệt diễn ra trong UC-19. Cập nhật Meeting không làm thay đổi trạng thái vòng đời (BR-28).
+duyệt diễn ra trong UC-18. Cập nhật Meeting không làm thay đổi trạng thái vòng đời (BR-28).
 Người có quan hệ hợp lệ với cuộc họp có thể đọc chi tiết và lấy trang danh sách. `GET /api/meetings`
 được bổ sung trong SCRUM-18. Màn danh sách, tạo, sửa và chi tiết đều gọi API thật: tạo xong thì báo
 thành công và mở trang chi tiết của cuộc họp mới. FE đã bỏ dropdown người duyệt khỏi form tạo/sửa;
@@ -16,7 +23,7 @@ gửi duyệt, duyệt, từ chối và lịch sử trạng thái nằm trên tr
 [Hợp đồng tích hợp FE](#hợp-đồng-tích-hợp-fe).
 
 Meeting creation yêu cầu các thông tin cấp Meeting theo BR-24; không bao gồm Planned Start Time hay
-Planned End Time. Meeting Session được lập lịch riêng theo UC-26/UC-27. Form khởi tạo Hình thức là
+Planned End Time. Meeting Session được lập lịch riêng theo các UC Create/Update Meeting Session cũ (đã bỏ). Form khởi tạo Hình thức là
 `InPerson` và Mức độ mật là `Normal`.
 
 ## Quyền truy cập
@@ -121,16 +128,16 @@ theo tên tham số.
 Bao gồm enum/sort lạ, thời gian thiếu offset, `from > to`, trang hoặc kích thước trang ngoài
 giới hạn. Lỗi truy xuất database, kể cả ở bước kiểm tra tài khoản còn hoạt động, trả `500` với
 `code: MSG38` và thông điệp
-`Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-18.
+`Không thể tải danh sách cuộc họp. Vui lòng thử lại.` như EX-1 của UC-17.
 
-Sequence UC-18 hiện ghi BR-29 và BR-32 ở bước repository; BA cần bổ sung BR-30/31 và nhánh query
+Sequence UC-17 hiện ghi BR-29 và BR-32 ở bước repository; BA cần bổ sung BR-30/31 và nhánh query
 sai `400` vào diagram/spec. Đây là nhánh validation của HTTP, không thay đổi hai nhánh truy xuất
 thành công/thất bại trong diagram hiện tại.
 
 ### GET `/api/meetings/approvers`
 
 Trả danh sách tài khoản đang hoạt động có capability `MeetingApprover`, loại người đang gọi API,
-chỉ gồm `id` và `fullName`; endpoint phục vụ bước chọn người duyệt của UC-19 và kế thừa gate
+chỉ gồm `id` và `fullName`; endpoint phục vụ bước chọn người duyệt của UC-18 và kế thừa gate
 `MeetingCreator`. Danh sách sắp xếp theo tên. Nếu hệ thống không đọc được danh sách do lỗi database
 hoặc timeout, trả `503 Service Unavailable` với `{ "code": "MSG130", "message":
 "Không thể tải danh sách người duyệt. Vui lòng thử lại." }`.
@@ -149,7 +156,7 @@ Request body của POST và PUT có các thông tin cấp Meeting; không có l�
 }
 ```
 
-`title` là bắt buộc theo BR-24. Người duyệt được chọn và gán trong UC-19 trước khi chuyển meeting sang
+`title` là bắt buộc theo BR-24. Người duyệt được chọn và gán trong UC-18 trước khi chuyển meeting sang
 `WaitingApproval`. Nếu `mode` hoặc
 `sensitivity` bị bỏ qua, service dùng giá trị khởi tạo của form (`InPerson`, `Normal`).
 
@@ -309,7 +316,7 @@ agenda, participant, assignment hay history đã thao tác. Không tự tái t�
 ### GET `/api/meetings/{id}/submission-readiness` — SCRUM-19
 
 Đọc readiness từ cùng validator mà SubmitForApproval gọi lại trong transaction. Meeting chỉ ready
-khi thông tin bắt buộc ở cấp meeting đầy đủ (UC-19/BR-33). Không thêm Agenda-required rule vì UC-19
+khi thông tin bắt buộc ở cấp meeting đầy đủ (UC-18/BR-33). Không thêm Agenda-required rule vì UC-18
 chưa yêu cầu; Meeting Session không bắt buộc lúc gửi duyệt theo BR-55. Endpoint chỉ đọc,
 không đổi status/assignment hoặc tạo history/notification. `200 OK`
 trả `{ meetingId, status, ready, errors }`; dữ liệu chưa ready là `ready: false` cùng map lỗi, không
@@ -386,7 +393,7 @@ protocol này bảo vệ snapshot người nhận khi Publish đồng thời.
 Update sau commit không đổi rows đã persist.
 
 Validation agenda thuộc SCRUM-25/BA; SCRUM-19 không dùng agenda để chặn gửi duyệt.
-Model/migration Meeting Session đã có để chuẩn bị cho UC-26–30; API tạo/sửa/hủy/bắt đầu/kết thúc
+Model/migration Meeting Session đã có để chuẩn bị cho các UC Meeting Session cũ (UC-26–30 theo số cũ, đã bỏ); API tạo/sửa/hủy/bắt đầu/kết thúc
 phiên vẫn thuộc phần quản lý phiên họp. Migration SCRUM-70 chỉ backfill một session từ lịch legacy
 khi Meeting chưa có session nào, dùng end fallback `start + 1 giờ`, rồi bỏ `meetings.starts_at`/
 `meetings.ends_at` và index liên quan. Session có sẵn luôn là nguồn lịch chính thức. Publish không
@@ -402,7 +409,7 @@ phụ thuộc vào số lượng phiên theo BR-56.
 | `location` | Tùy chọn; trim; tối đa 300 ký tự |
 | `description` | Tùy chọn; tối đa 4.000 ký tự; giữ xuống dòng |
 
-UC-15/16 không nhận lịch dự kiến. BR-62 (`PlannedEndsAt > PlannedStartsAt`) được áp dụng ở
+UC-14/16 không nhận lịch dự kiến. BR-62 (`PlannedEndsAt > PlannedStartsAt`) được áp dụng ở
 Meeting Session. Không kiểm tra trùng tên vì yêu cầu hiện tại chưa quy định luật này.
 
 Lỗi validation trả `400`:
@@ -450,7 +457,7 @@ của transaction hoặc capability lookup.
 ## Persistence và transaction
 
 Cột `assigned_approver_id` nullable. POST lưu meeting `Draft`, chưa gán người duyệt; assignment được
-thực hiện trong UC-19. Planned Start Time và Planned End Time được quản lý riêng bởi MeetingSession.
+thực hiện trong UC-18. Planned Start Time và Planned End Time được quản lý riêng bởi MeetingSession.
 POST lưu meeting cùng một dòng `MeetingStatusHistory` (`FromStatus = null`, `ToStatus = Draft`, `ActorId = creator`). EF Core
 lưu các thay đổi này trong cùng transaction.
 
@@ -503,7 +510,7 @@ stale content.
 - **Draft và Rejected (Organizer):** gọi readiness mỗi khi meeting đổi (`updatedAt`). Chưa ready thì
   liệt kê các câu lỗi của backend (đã gộp trùng) và khoá nút gửi; không gọi được readiness thì vẫn cho
   gửi vì Submit kiểm tra lại. Ở Rejected, thanh hiện người từ chối, thời điểm, lý do và nút "Gửi duyệt
-  lại" (UC-19 AF-1) — gửi thẳng, không qua `ReturnToDraft`.
+  lại" (UC-18 AF-1) — gửi thẳng, không qua `ReturnToDraft`.
 - **Gửi duyệt / Gửi duyệt lại:** dialog đọc lại `GET /approvers` mỗi lần mở và bắt buộc chọn một
   người; gửi lại được chọn cùng người hoặc người khác. Danh sách
   rỗng thì báo cần quản trị viên phân quyền và khoá nút. `MSG81` hiện danh sách thiếu sót trong
@@ -528,13 +535,13 @@ stale content.
   50 dòng.
 - **Chưa có giao diện:** `TransferOrganizer`. Admin không đọc được meeting và chưa có API liệt kê
   meeting `Approved` có Organizer bị vô hiệu hoá, nên FE chưa có chỗ hợp lý để đặt thao tác này.
-- Readiness chỉ kiểm tra thông tin cấp cuộc họp; agenda và Meeting Session không bắt buộc (UC-19).
+- Readiness chỉ kiểm tra thông tin cấp cuộc họp; agenda và Meeting Session không bắt buộc (UC-18).
 
 ## Checklist BA cần hoàn tất
 
 - Đồng bộ nội dung BR-24–BR-29 chính thức vào tài liệu BA và map từng luật vào validation/lifecycle.
 - Vẽ Class Diagram tạo/đọc/sửa và ghi Controller trong sequence là ASP.NET Minimal API.
-- Người duyệt được chọn trong UC-19; Planned Start Time và Planned End Time thuộc Meeting Session.
+- Người duyệt được chọn trong UC-18; Planned Start Time và Planned End Time thuộc Meeting Session.
 - Ghi rõ quyền GET, ownership và hành vi khi sửa `Rejected`.
 - Bổ sung mã thành công/lỗi chưa có vào sequence/message catalog.
-- Định danh Use Case đã được chuẩn hóa theo danh mục hiện tại: UC-15 → UC-21 cho Meeting Management.
+- Định danh Use Case đã được chuẩn hóa theo danh mục hiện tại: UC-14 → UC-20 cho Meeting Management.

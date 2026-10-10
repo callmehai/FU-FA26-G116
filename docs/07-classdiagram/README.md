@@ -2,12 +2,19 @@
 
 ## Sơ đồ theo feature
 
-- [FE-06 — Agenda Management](feature-06-agenda-management-class-diagram.drawio) ([PNG](feature-06-agenda-management-class-diagram.png)) — UC-31–36, UC-54; mô hình đích theo ERD.
-- [FE-07 — Meeting Participant Management](feature-07-meeting-participant-management-class-diagram.drawio) ([PNG](feature-07-meeting-participant-management-class-diagram.png)) — UC-37–42; mô hình đích theo ERD và business rules F08.
+Tên file theo số Feature mới (FE-01 → FE-15, baseline 10/10/2026). Bản vẽ FE-05 *Meeting Session Management* cũ
+đã bị xoá cùng Meeting Session ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)).
+
+- [FE-04 — Meeting Management](feature-04-meeting-management-class-diagram.drawio.png) — UC-14 → UC-20; PNG có nhúng
+  XML draw.io. Ngày 10/10/2026 đã bỏ `MeetingSession`/`MeetingSessionRepository`, thêm lịch vào `Meeting`, bỏ
+  `MinutesIssued`/`Archived` khỏi `MeetingStatus`.
+- [FE-05 — Agenda Management](feature-05-agenda-management-class-diagram.drawio) ([PNG](feature-05-agenda-management-class-diagram.png)) — UC-23a → UC-23d, UC-24 → UC-26; AgendaItem thuộc thẳng Meeting; mô hình đích theo ERD.
+- [FE-06 — Meeting Participant Management](feature-06-meeting-participant-management-class-diagram.drawio) ([PNG](feature-06-meeting-participant-management-class-diagram.png)) — UC-27 → UC-30; mô hình đích theo ERD và business rules FE-06.
+- [FE-13 — Notification](feature-13-notification-management-class-diagram.drawio.png) — UC-66 → UC-68.
 
 ## Chuẩn trình bày class diagram
 
-Hai cặp file FE-06 và FE-07 ở trên là **mẫu chuẩn** cho class diagram mới và các lần chỉnh sửa
+Hai cặp file FE-05 và FE-06 ở trên là **mẫu chuẩn** cho class diagram mới và các lần chỉnh sửa
 diagram hiện có. Giữ thống nhất các điểm sau:
 
 - Căn giữa stereotype và tên class trong phần đầu; căn trái attributes, operations và các nội dung
@@ -25,9 +32,9 @@ dùng, SCRUM-60 ma trận phân quyền).
 - [`feature-01-auth-class-diagram.drawio.png`](feature-01-auth-class-diagram.drawio.png) — đối
   chiếu tại **21/09/2026**
 - [`feature-02-user-management-class-diagram.drawio.png`](feature-02-user-management-class-diagram.drawio.png)
-  — đối chiếu tại **21/09/2026**; phần UC-08 đã tách sang bản vẽ 02b (**04/10/2026**)
-- [`feature-02b-password-reset-class-diagram.drawio.png`](feature-02b-password-reset-class-diagram.drawio.png)
-  — UC-08 đặt lại mật khẩu, vẽ theo code tại **04/10/2026**, xem [PHẦN D](#phần-d--uc-08-đặt-lại-mật-khẩu-đã-tách-sang-bản-vẽ-02b)
+  — đối chiếu tại **21/09/2026**; phần UC-07 đã tách sang bản vẽ 02b (**04/10/2026**)
+- `feature-02b-password-reset-class-diagram.drawio.png` (*file chưa được commit vào repo*)
+  — UC-07 đặt lại mật khẩu, vẽ theo code tại **04/10/2026**, xem [PHẦN D](#phần-d--uc-07-đặt-lại-mật-khẩu-đã-tách-sang-bản-vẽ-02b)
 - [`feature-03-role-management-class-diagram.png`](feature-03-role-management-class-diagram.png)
   — đối chiếu tại **22/09/2026**, phần `Role` đối chiếu lại **23/09/2026** (`SCRUM-63`), xem [PHẦN F](#phần-f--bản-vẽ-03-ma-trận-phân-quyền-scrum-60)
 
@@ -120,8 +127,8 @@ gọi ở **hai** chỗ:
 
 | Khi nào | Vì sao |
 |---|---|
-| Vô hiệu hoá tài khoản (UC-07) | Một dòng đánh dấu "đã vô hiệu hoá" mà token của người đó **vẫn dùng được** thì không phải là đã vô hiệu hoá. Phải huỷ hết token. |
-| Đổi vai trò (UC-06) | Token cũ vẫn mang quyền cũ. Hạ một người từ Admin xuống Member mà không huỷ token thì họ vẫn admin cho tới khi token hết hạn. |
+| Vô hiệu hoá tài khoản (UC-06c) | Một dòng đánh dấu "đã vô hiệu hoá" mà token của người đó **vẫn dùng được** thì không phải là đã vô hiệu hoá. Phải huỷ hết token. |
+| Đổi vai trò (UC-06b) | Token cũ vẫn mang quyền cũ. Hạ một người từ Admin xuống Member mà không huỷ token thì họ vẫn admin cho tới khi token hết hạn. |
 
 **Cần bổ sung vào bản vẽ 02:**
 
@@ -134,7 +141,7 @@ Mũi tên: `UserService` ---revokes tokens---> `TokenService`.
 
 ### ⚠️ Kèm theo: đổi tên `:Session Service` → `:Token Service`
 
-Sequence diagram UC-07 ở [`docs/06-sequencediagram/`](../06-sequencediagram/) **đã có** participant
+Sequence diagram UC-06c ở [`docs/06-sequencediagram/`](../06-sequencediagram/) **đã có** participant
 này, nhưng đang đặt tên là `:Session Service`. Tên đó gây hiểu nhầm là hệ thống dùng session phía
 server — **không phải**, hệ thống dùng JWT. Lý do đầy đủ ở [phụ lục cuối file](#phụ-lục--có-dùng-jwt-không-mà-sao-lại-có-session-server).
 
@@ -142,16 +149,16 @@ server — **không phải**, hệ thống dùng JWT. Lý do đầy đủ ở [p
 
 | Nơi | Đang là | Đổi thành |
 |---|---|---|
-| Sequence diagram UC-07 | `:Session Service` | `:Token Service` |
+| Sequence diagram UC-06c | `:Session Service` | `:Token Service` |
 | Class diagram 02 (thêm mới) | — | `TokenService` |
 
 > Phía code đã đổi các comment tham chiếu sang `:Token Service` rồi, nên bản vẽ đổi theo là khớp.
 > Tên class trong code vẫn là `IRefreshTokenStore` — bản vẽ không bắt buộc trùng tên code.
 
-> Ghi chú thêm: sequence diagram **UC-06 chưa vẽ** participant này, chỉ UC-07 có. Nhưng code gọi ở
+> Ghi chú thêm: sequence diagram **UC-06b chưa vẽ** participant này, chỉ UC-06c có. Nhưng code gọi ở
 > cả hai. Đây là điểm lệch đã ghi trong
 > [`docs/03-api/02-quan-ly-nguoi-dung.md`](../03-api/02-quan-ly-nguoi-dung.md), mục "Năm chỗ code
-> khác bản vẽ" — nên bổ sung luôn vào UC-06.
+> khác bản vẽ" — nên bổ sung luôn vào UC-06b.
 
 ---
 
@@ -297,7 +304,7 @@ hai giá trị là phức tạp hoá không cần thiết.
 | — | `GoogleSubjectId: string?` | ➕ **thiếu** |
 | — | `CreatedAt: DateTimeOffset` | ➕ **thiếu** |
 
-**`Role` là field thiếu nghiêm trọng nhất.** Toàn bộ UC-06 xoay quanh việc đổi vai trò, và quy tắc
+**`Role` là field thiếu nghiêm trọng nhất.** Toàn bộ UC-06b xoay quanh việc đổi vai trò, và quy tắc
 "quản trị viên cuối cùng" ở B3 cũng dựa vào nó. Bản vẽ hiện không có field này ở đâu cả.
 
 `Role` có 4 giá trị: `Chair`, `Secretary`, `Member`, `Admin`.
@@ -328,7 +335,7 @@ biết gì về hai thứ đó.
 | `recordUserCreation(userId)` | `record(action, objectType, objectId, actorId, details)` |
 | `recordUserUpdate(userId)` | ↑ cùng một method |
 | `recordStatusChange(userId, status)` | ↑ |
-| ~~`recordPasswordReset(userId)`~~ | ↑ — đã bỏ khỏi bản vẽ 02, UC-08 vẽ ở bản vẽ 02b (xem D) |
+| ~~`recordPasswordReset(userId)`~~ | ↑ — đã bỏ khỏi bản vẽ 02, UC-07 vẽ ở bản vẽ 02b (xem D) |
 
 Code có **một** method chung, phân biệt bằng tham số `action` nhận một trong các mã:
 
@@ -336,8 +343,8 @@ Code có **một** method chung, phân biệt bằng tham số `action` nhận m
 - `user.updated`
 - `user.deactivated`
 - `user.reactivated`
-- `user.password_reset_requested` (UC-08, người thực hiện là quản trị viên)
-- `user.password_reset` (UC-08, người thực hiện là chính chủ tài khoản)
+- `user.password_reset_requested` (UC-07, người thực hiện là quản trị viên)
+- `user.password_reset` (UC-07, người thực hiện là chính chủ tài khoản)
 
 Vẽ một method chung sẽ sát thực tế hơn, và cũng thể hiện đúng ý định: audit log là bảng chung cho
 toàn hệ thống, các story sau (họp, tài liệu, biên bản) sẽ ghi vào cùng chỗ với cùng method này.
@@ -365,21 +372,21 @@ Nên thay bằng `+ saveChanges(): void`.
 |---|---|
 | `existsByEmail(email: string): bool` | `emailExists(email: string, exceptId: UUID?): bool` |
 
-Tham số thứ hai cần cho UC-06: khi sửa thông tin mà **giữ nguyên email của chính mình** thì đó
+Tham số thứ hai cần cho UC-06b: khi sửa thông tin mà **giữ nguyên email của chính mình** thì đó
 không phải là trùng email. Thiếu tham số này thì không ai sửa được tên của chính mình.
 
 ---
 
-# PHẦN D — UC-08 (đặt lại mật khẩu): đã tách sang bản vẽ 02b
+# PHẦN D — UC-07 (đặt lại mật khẩu): đã tách sang bản vẽ 02b
 
-**Đã xử lý ngày 04/10/2026, theo Cách 2** của đề xuất cũ: UC-08 đã có code (PR #56, #58, #61), nên
+**Đã xử lý ngày 04/10/2026, theo Cách 2** của đề xuất cũ: UC-07 đã có code (PR #56, #58, #61), nên
 phần đặt lại mật khẩu được vẽ lại theo code ở một bản vẽ riêng,
-[`feature-02b-password-reset-class-diagram.drawio.png`](feature-02b-password-reset-class-diagram.drawio.png).
-Bản vẽ 02 bỏ các thành phần UC-08 cũ.
+`feature-02b-password-reset-class-diagram.drawio.png` (file chưa được commit vào repo).
+Bản vẽ 02 bỏ các thành phần UC-07 cũ.
 
 | Bản vẽ 02 cũ | Bản vẽ 02b (theo code) |
 |---|---|
-| `UserManagementPage.resetUserPassword()` | giữ, thêm boundary thứ hai `ResetPasswordPage.submitNewPassword()` — nửa sau của UC-08, người dùng đặt mật khẩu bằng liên kết |
+| `UserManagementPage.resetUserPassword()` | giữ, thêm boundary thứ hai `ResetPasswordPage.submitNewPassword()` — nửa sau của UC-07, người dùng đặt mật khẩu bằng liên kết |
 | `UserController.resetPassword(userId)` | `UserController.requestPasswordReset(userId)` + `AuthController.resetPassword(resetCode, newPassword)` (ẩn danh) |
 | `UserService.initiatePasswordReset(userId)` | `requestPasswordReset(userId, actorId)` + `resetPassword(resetCode, newPassword)` |
 | `UserService.isPasswordResetEligible(user)` | bỏ — điều kiện "đang hoạt động **và** có mật khẩu" (BR-22) được kiểm thẳng trong `requestPasswordReset` và `resetPassword`, không có method riêng |
@@ -394,7 +401,7 @@ Bản vẽ 02 bỏ các thành phần UC-08 cũ.
 Liên kết chỉ được kích hoạt **sau khi** gửi mail thành công, nên thứ tự này nằm ở `UserService`, không
 nằm trong kho token.
 
-Sequence diagram tương ứng: `UC08_ResetUserPassword` trong
+Sequence diagram tương ứng: `UC07_ResetUserPassword` trong
 [`06-sequencediagram/user-management/`](../06-sequencediagram/user-management/).
 
 ---
@@ -432,7 +439,7 @@ muốn rõ hơn thì đổi tên bản vẽ 02 thành `UserAccountRepository`, n
 
 # PHẦN F — Bản vẽ 03: ma trận phân quyền (SCRUM-60)
 
-Đối chiếu tại **22/09/2026**, sau khi code UC-09 và UC-10.
+Đối chiếu tại **22/09/2026**, sau khi code UC-10 và UC-11.
 
 **Kết luận: phân tầng đúng hoàn toàn.** `Controller` → `Service` → `Repository` → `Database`, cộng
 `AuditService`, khớp 1-1 với code. Tên method cũng khớp gần hết. Chỉ lệch ở **mô hình dữ liệu**:
@@ -486,11 +493,11 @@ thêm vai trò mới mà không deploy. `role_capabilities` lưu **tên enum** �
 
 Bản vẽ có method này ở cả 4 tầng (`Controller`, `Service`, `Repository`, và
 `confirmResetToDefault()` ở `Page`). Nhưng ticket **không có tiêu chí nghiệm thu nào** cho nó, và
-**không có sequence diagram** (chỉ có UC-09 và UC-10).
+**không có sequence diagram** (chỉ có UC-10 và UC-11).
 
 Đã thống nhất không làm trong sprint này.
 
-**Cần sửa — chọn một** (UC-08 ở bản vẽ 02 từng có cùng hai lựa chọn này, xem [PHẦN D](#phần-d--uc-08-đặt-lại-mật-khẩu-đã-tách-sang-bản-vẽ-02b)):
+**Cần sửa — chọn một** (UC-07 ở bản vẽ 02 từng có cùng hai lựa chọn này, xem [PHẦN D](#phần-d--uc-07-đặt-lại-mật-khẩu-đã-tách-sang-bản-vẽ-02b)):
 
 - Bỏ hẳn 4 method đó khỏi bản vẽ, hoặc
 - Thêm ghi chú `<<chưa implement>>` lên từng cái.
@@ -518,7 +525,7 @@ quyền cũng phải huỷ, vì token cũ không chứa quyền mới.
 **Cần bổ sung:** mũi tên `RolePermissionService` ---revokes tokens---> `TokenService` (cùng một
 `TokenService` đã đề nghị thêm ở A3, vẽ một lần dùng chung cả ba bản vẽ).
 
-Sequence diagram UC-10 cũng thiếu participant này — nên bổ sung luôn cho khớp.
+Sequence diagram UC-11 cũng thiếu participant này — nên bổ sung luôn cho khớp.
 
 ## F6. ⚪ Thiếu luật chống tự khoá trên bản vẽ
 
@@ -546,7 +553,7 @@ lý do bảng này tồn tại. Để nó không ở đâu cả mới là không
 
 - [ ] A1 — `findByGoogleEmail` → `findByGoogleSubjectId` (bản vẽ 01)
 - [ ] A2 — `signInWithGoogle(googleEmail)` → `signInWithGoogle(idToken)` + thêm `GoogleTokenVerifier` (bản vẽ 01)
-- [ ] A3 — thêm `TokenService.revokeAllForUser()` (bản vẽ 02) **+ đổi tên `:Session Service` → `:Token Service` ở sequence diagram UC-07**
+- [ ] A3 — thêm `TokenService.revokeAllForUser()` (bản vẽ 02) **+ đổi tên `:Session Service` → `:Token Service` ở sequence diagram UC-06c**
 - [ ] F1 — `<<entity>> Permission` → `<<value object>>`, bỏ `permissionId` (bản vẽ 03) — **mâu thuẫn tiêu chí nghiệm thu**
 - [x] ~~F2 — `<<entity>> Role` → `<<enum>> SystemRole`~~ — rút lại: code đã theo bản vẽ (`SCRUM-63`, ADR-0008)
 
@@ -568,12 +575,12 @@ lý do bảng này tồn tại. Để nó không ở đâu cả mới là không
 - [ ] C6 — `update()` → `saveChanges()`
 - [ ] C7 — `existsByEmail` thêm tham số `exceptId`
 - [ ] F4 — ghi chú `getPermissionCatalog()` đi chung endpoint với `getRolePermissionMatrix()` (bản vẽ 03)
-- [ ] F5 — thêm `TokenService` (bản vẽ 03) **+ bổ sung participant đó vào sequence diagram UC-10**
+- [ ] F5 — thêm `TokenService` (bản vẽ 03) **+ bổ sung participant đó vào sequence diagram UC-11**
 - [ ] F6 — thêm `wouldRemoveTheLastAdminCapability()` (bản vẽ 03)
 
 **Cần quyết (đã xong):**
 
-- [x] D — UC-08: đã tách bản vẽ riêng `feature-02b-password-reset` (04/10/2026)
+- [x] D — UC-07: đã tách bản vẽ riêng `feature-02b-password-reset` (04/10/2026)
 
 ---
 

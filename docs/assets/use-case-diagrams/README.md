@@ -1,16 +1,24 @@
 # Use Case Diagram theo Actor
 
-Nguồn: [Master Use Case Inventory](../../01-requirements/00-master-use-case-inventory.md), baseline 05/10/2026. Nhãn trong sơ đồ dùng tiếng Anh. Mỗi actor có đúng một sơ đồ và một ảnh duy nhất chứa toàn bộ UC của actor đó; không tách trang theo Feature. Bố cục theo mẫu tham khảo: actor bên ngoài, system boundary bao quanh các UC, quan hệ `<<extend>>` / `<<include>>` nét đứt. PNG và PDF đều là toàn bộ sơ đồ; `.drawio` là bản editable.
+Nguồn: [Master Use Case Inventory](../../01-requirements/00-master-use-case-inventory.md), baseline 10/10/2026 (70 UC, đã gom
+UC nhỏ). Đồng bộ từ thư mục `Diagrams/UC diagram` của nhóm — cùng bộ hình dùng trong Report 3 §I.4.3.
 
-| Actor | PDF đầy đủ | Sơ đồ editable | Ảnh đầy đủ (PNG) |
-|---|---|---|
-| System Admin | [PDF](uc-system-admin.pdf) | [uc-system-admin.drawio](uc-system-admin.drawio) | [PNG](uc-system-admin.png) |
-| Meeting Organizer | [PDF](uc-meeting-organizer.pdf) | [uc-meeting-organizer.drawio](uc-meeting-organizer.drawio) | [PNG](uc-meeting-organizer.png) |
-| Meeting Approver | [PDF](uc-meeting-approver.pdf) | [uc-meeting-approver.drawio](uc-meeting-approver.drawio) | [PNG](uc-meeting-approver.png) |
-| Chair | [PDF](uc-chair.pdf) | [uc-chair.drawio](uc-chair.drawio) | [PNG](uc-chair.png) |
-| Secretary | [PDF](uc-secretary.pdf) | [uc-secretary.drawio](uc-secretary.drawio) | [PNG](uc-secretary.png) |
-| Participant | [PDF](uc-participant.pdf) | [uc-participant.drawio](uc-participant.drawio) | [PNG](uc-participant.png) |
-| Guest | [PDF](uc-guest.pdf) | [uc-guest.drawio](uc-guest.drawio) | [PNG](uc-guest.png) |
+[`trustcabinet-use-cases.drawio`](trustcabinet-use-cases.drawio) là file editable duy nhất, mỗi actor một trang
+(System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant, Guest). PNG xuất từ từng trang.
 
-**Quy ước:** quan hệ `<<extend>>` / `<<include>>` đi theo baseline. Actor được nối trực tiếp vào các UC độc lập/base; các UC mở rộng nối với UC nền bằng quan hệ UML. UC có actor mô tả chung như “internal user” hoặc “user có quyền” được ánh xạ theo role/capability. Google Identity Provider được nối vào UC-02; AI / Speech Processing Provider được nối vào UC-90. Master inventory chưa chỉ rõ UC nào gọi Email / SMTP Service, nên actor này chưa được gắn vào sơ đồ.
+| Actor | Ảnh |
+|---|---|
+| System Admin | [uc-system-admin.png](uc-system-admin.png) |
+| Meeting Organizer | [uc-meeting-organizer.png](uc-meeting-organizer.png) |
+| Meeting Approver | [uc-meeting-approver.png](uc-meeting-approver.png) |
+| Chair | [uc-chair.png](uc-chair.png) |
+| Secretary | [uc-secretary.png](uc-secretary.png) |
+| Participant | [uc-participant.png](uc-participant.png) |
+| Guest | [uc-guest.png](uc-guest.png) |
 
+**Quy ước:** nhãn UC trên hình là tên tiếng Anh của UC gom (ví dụ *Manage User Accounts*, *Manage Meeting Room
+Controls*), không ghi số; tra số ở inventory. Quan hệ `<<extend>>` / `<<include>>` theo inventory §1 và §4. Bản
+cũ theo baseline 05/10/2026 (94 UC, file `.drawio` + `.pdf` riêng từng actor) đã được thay thế ngày 10/10/2026.
+
+Xuất lại PNG sau khi sửa: mở `.drawio` bằng draw.io, *File → Export as → PNG* từng trang, hoặc
+`draw.io -x -f png -p <số trang> -o uc-<actor>.png trustcabinet-use-cases.drawio`.

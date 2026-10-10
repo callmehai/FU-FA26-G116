@@ -1,4 +1,4 @@
-title UC-09 - View Role & Permission Matrix
+title UC-08 - View Role & Permission Matrix
 
 actor "System Admin" as Admin
 boundary "Role & Permission Management Page" as RolePage

@@ -1,6 +1,6 @@
 # Mô hình dữ liệu (ERD)
 
-Tài liệu này mô tả **mô hình dữ liệu khái niệm/logic mục tiêu** của TrustCabinet để làm nguồn cho Report 3, không phải bản trích xuất schema hiện tại. Mô hình đích có đúng **30 thực thể nghiệp vụ/dữ liệu**. Hệ thống được triển khai bằng EF Core code-first và PostgreSQL; thay đổi ERD không tự thay đổi entity, cấu hình, schema hay migration.
+Tài liệu này mô tả **mô hình dữ liệu khái niệm/logic mục tiêu** của TrustCabinet để làm nguồn cho Report 3, không phải bản trích xuất schema hiện tại. Mô hình đích có đúng **29 thực thể nghiệp vụ/dữ liệu**, khớp Report 3 §I.3.2 và ERD vẽ ở [assets/erd-muc-tieu/](../assets/erd-muc-tieu/). Hệ thống được triển khai bằng EF Core code-first và PostgreSQL; thay đổi ERD không tự thay đổi entity, cấu hình, schema hay migration.
 
 Hiện thực: EF Core 10 code-first, PostgreSQL qua Npgsql
 ([ADR-0003](../05-decisions/0003-chon-postgresql-thay-cho-sql-server.md)). Entity ở
@@ -10,7 +10,7 @@ Cách chạy: [03-co-so-du-lieu.md](03-co-so-du-lieu.md).
 
 Thứ tự nguồn sự thật khi có khác biệt: **Requirement/Use Case/Business Rules mới nhất → ADR đã chốt và còn phù hợp → code hiện tại để xác định trạng thái triển khai**. Vì vậy code có thể cần migration hoặc tái cấu trúc để đạt mô hình đích. Xung đột giữa mô hình đích và ADR được nêu ở cuối tài liệu; phạm vi này không sửa ADR.
 
-Vòng đời Meeting là `Draft → WaitingApproval → Approved | Rejected → Published → InProgress → Ended → MinutesIssued → Archived`; Meeting bị từ chối có thể được gửi duyệt lại. Lịch dự kiến chỉ thuộc MeetingSession.
+Vòng đời Meeting là `Draft → WaitingApproval → Approved | Rejected → Published → InProgress → Ended`; Meeting bị từ chối có thể được gửi duyệt lại. Trạng thái biên bản nằm ở `MeetingMinutes.Status`. Một Meeting là một buổi họp và tự mang lịch dự kiến; không có MeetingSession ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)). Biểu quyết chỉ diễn ra khi Meeting `InProgress` ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md)).
 
 ## Trạng thái triển khai
 
@@ -21,12 +21,11 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | User | Tài khoản nội bộ | IMPLEMENTED | Giữ. |
 | Role | Vai trò RBAC cấp hệ thống | IMPLEMENTED | Giữ; độc lập với MeetingRole. |
 | RoleCapability | Quyền năng gắn với Role | IMPLEMENTED | Giữ. |
-| Meeting | Hồ sơ và vòng đời cuộc họp | IMPLEMENTED | Không lưu lịch dự kiến; lịch thuộc MeetingSession. |
+| Meeting | Hồ sơ, lịch và vòng đời cuộc họp (một cuộc họp = một buổi họp) | NEED MIGRATION / RESTRUCTURE | Thêm `PlannedStartTime`, `PlannedEndTime`, `ActualStartedAt`, `ActualEndedAt`, `OnlineLink`; bỏ navigation `Sessions`; bỏ trạng thái `MinutesIssued`, `Archived` (ADR-0013). |
 | MeetingStatusHistory | Bằng chứng chuyển trạng thái | NEED MIGRATION / RESTRUCTURE | Giữ append-only; đồng bộ vòng đời đích. |
 | MeetingParticipant | Phân công người tham dự nội bộ | NEED MIGRATION / RESTRUCTURE | Bỏ Guest; hỗ trợ phân công Current/Removed và lưu lịch sử. |
 | MeetingGuestInvitation | Lời mời khách ngoài theo cuộc họp | NOT IMPLEMENTED | Thêm entity riêng; khách không phải User/người tham dự nội bộ. |
-| MeetingSession | Lịch và vòng đời của phiên họp | IMPLEMENTED | Đã có entity/schema và lịch dự kiến; API/lifecycle thuộc SCRUM-68. |
-| AgendaItem | Mục nghị sự của phiên họp | NEED MIGRATION / RESTRUCTURE | Đổi MeetingId thành MeetingSessionId; trạng thái đích Pending/InProgress/Done. |
+| AgendaItem | Mục nghị sự của cuộc họp | NEED MIGRATION / RESTRUCTURE | Giữ MeetingId (không đổi sang MeetingSessionId); trạng thái đích Pending/InProgress/Done. |
 | Notification | Thông báo của User | IMPLEMENTED | Giữ User bắt buộc, Meeting tùy chọn. |
 | Document | Tài liệu trong kho cá nhân | NEED MIGRATION / RESTRUCTURE | Bỏ MeetingId/AgendaItemId; thêm OwnerId. |
 | DocumentVersion | Phiên bản bất biến của tài liệu | IMPLEMENTED | Giữ. |
@@ -34,20 +33,22 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | DocumentComment | Góp ý trong ngữ cảnh tài liệu đính kèm cuộc họp | NEED MIGRATION / RESTRUCTURE | Đổi DocumentId thành MeetingDocumentId. |
 | SpeakingRequest | Yêu cầu/lượt phát biểu | IMPLEMENTED | Giữ. |
 | MeetingNote | Ghi chú thư ký | IMPLEMENTED | Giữ. |
-| VotingSession | Phiên biểu quyết | IMPLEMENTED | Giữ; AgendaItem liên kết tùy chọn. |
+| VotingSession | Một lần biểu quyết trong cuộc họp | NEED MIGRATION / RESTRUCTURE | Bỏ `Kind`, `OpensAt`, `ClosesAt`; thêm `OpenedAt`, `ClosedAt`, `ConclusionNote`, `ConcludedById`; `Conclusion` thành Passed/NotPassed/Deferred; AgendaItem liên kết tùy chọn (ADR-0014). |
 | VotingOption | Phương án | IMPLEMENTED | Giữ. |
 | VoteReceipt | Bằng chứng người bỏ phiếu đã bỏ phiếu | IMPLEMENTED | Giữ tính duy nhất theo session và voter. |
 | VoteChoice | Lựa chọn đã bỏ | IMPLEMENTED | Giữ tách khỏi receipt; voter nullable nếu ẩn danh. |
-| Recording | Bản ghi | IMPLEMENTED | Giữ consent, mục đích, lưu giữ và xóa dữ liệu cá nhân. |
+| Recording | Bản ghi âm do Thư ký upload | NEED MIGRATION / RESTRUCTURE | Thêm `UploadedById`; `Source` chỉ còn `Upload`; giữ consent, mục đích, lưu giữ và xóa dữ liệu cá nhân. |
 | Transcript | Transcript của Recording | IMPLEMENTED | Tối đa một cho mỗi Recording. |
 | TranscriptSegment | Đoạn transcript | IMPLEMENTED | Giữ. |
-| MeetingMinutes | Phiên bản biên bản | IMPLEMENTED | Không ghi đè bản đã ban hành. |
-| MinutesSignature | Chữ ký trên phiên bản biên bản | IMPLEMENTED | Giữ. |
-| MeetingSummary | Tóm tắt AI hiện hành | IMPLEMENTED | Tối đa một bản hiện hành mỗi Meeting. |
+| MeetingMinutes | Phiên bản biên bản | NEED MIGRATION / RESTRUCTURE | Trạng thái Draft/PendingSignature/RevisionRequested/Sealed/Superseded; bỏ `ApprovedById`, `RejectionReason`, `IssuedAt`; thêm `RevisionNote`, `SealedById`, `SealedAt`. Không ghi đè bản đã niêm phong. |
+| MinutesSignature | Chữ ký trên phiên bản biên bản | NEED MIGRATION / RESTRUCTURE | Thêm `InvalidatedAt` (chữ ký cũ mất hiệu lực khi biên bản bị yêu cầu sửa — BR-166). |
+| MeetingSummary | Tóm tắt AI hiện hành | NEED MIGRATION / RESTRUCTURE | Thêm `Status` Draft/Approved/Published, `ApprovedById`, `ApprovedAt`, `PublishedAt` (duyệt và công bố là hai bước); tối đa một bản hiện hành mỗi Meeting. |
 | EmailMessage | Bản ghi gửi email/outbox | IMPLEMENTED | Giữ khóa chống trùng và thông tin thử gửi lại. |
 | AuditLogEntry | Bằng chứng kiểm toán nghiệp vụ | IMPLEMENTED | Chỉ ghi thêm. |
-| CallSession | Lượt gọi hoặc phòng trực tuyến | NEED MIGRATION / RESTRUCTURE | StartedById nullable; phòng gắn với Meeting, không gắn với MeetingSession. |
+| CallSession | Lượt gọi hoặc phòng trực tuyến | NEED MIGRATION / RESTRUCTURE | StartedById nullable; phòng gắn với Meeting. |
 | CallParticipant | Một lượt kết nối của User hoặc khách | NEED MIGRATION / RESTRUCTURE | UserId XOR GuestInvitationId. |
+
+`MeetingSession` (bảng `meeting_sessions`) đang có trong code nhưng **đã bị bỏ khỏi mô hình đích** từ 09/10/2026 ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)). Migration mới chép lịch về `meetings` rồi drop bảng; không sửa migration cũ đã lên `main`.
 
 ## Phạm vi mô hình đích
 
@@ -58,14 +59,14 @@ Các ERD bên dưới mô tả mô hình đích. Bảng trạng thái triển kh
 | Nhóm | Thực thể |
 |---|---|
 | Truy cập | User, Role, RoleCapability |
-| Cuộc họp, thành phần và lịch | Meeting, MeetingStatusHistory, MeetingParticipant, MeetingGuestInvitation, MeetingSession, AgendaItem |
+| Cuộc họp, thành phần và nghị sự | Meeting, MeetingStatusHistory, MeetingParticipant, MeetingGuestInvitation, AgendaItem |
 | Nền tảng và liên lạc | Notification, EmailMessage, AuditLogEntry |
 | Kho tài liệu cá nhân | Document, DocumentVersion, MeetingDocument, DocumentComment |
 | Hoạt động trong cuộc họp | SpeakingRequest, MeetingNote, VotingSession, VotingOption, VoteReceipt, VoteChoice |
 | Bản ghi, biên bản và AI sau họp | Recording, Transcript, TranscriptSegment, MeetingMinutes, MinutesSignature, MeetingSummary |
 | Phòng họp trực tuyến | CallSession, CallParticipant |
 
-Các nhóm trên gồm 30 thực thể; trạng thái triển khai được liệt kê riêng ở trên.
+Các nhóm trên gồm 29 thực thể; trạng thái triển khai được liệt kê riêng ở trên.
 
 ## 1. Truy cập, cuộc họp và thành phần tham dự
 
@@ -101,10 +102,15 @@ erDiagram
     Meeting {
         uuid Id PK
         string Title
-        string Status "9 trạng thái vòng đời"
+        string Status "Draft|WaitingApproval|Rejected|Approved|Published|InProgress|Ended"
         string Sensitivity "Normal|Internal|Confidential|Secret"
         string Mode "InPerson|Online|Hybrid"
         string Location
+        string OnlineLink "nullable, tối đa 1.000 ký tự"
+        timestamptz PlannedStartTime
+        timestamptz PlannedEndTime "sau PlannedStartTime"
+        timestamptz ActualStartedAt "nullable, ghi khi Start Meeting"
+        timestamptz ActualEndedAt "nullable, ghi khi End Meeting"
         string Description
         uuid CreatedById FK
         uuid AssignedApproverId FK "nullable"
@@ -116,7 +122,7 @@ erDiagram
         string MeetingRole "Chair|Secretary|Member"
         string InvitationResponse
         string Attendance "Unknown|Present|Absent|Excused|Delegated"
-        uuid DelegatedToUserId FK
+        uuid DelegatedToUserId FK "người dự thay khi Attendance = Delegated"
         timestamptz RespondedAt
         string AssignmentStatus "Current|Removed"
         timestamptz RemovedAt
@@ -147,17 +153,16 @@ erDiagram
 ```
 
 `InvitationResponse` và `Attendance` là **hai câu hỏi khác nhau**: một là người ta trả lời thư mời thế nào,
-hai là thực tế có mặt hay không. Nhận lời rồi không đến là chuyện bình thường, và số liệu quorum
-tính trên `Attendance`.
+hai là thực tế có mặt hay không. Nhận lời rồi không đến là chuyện bình thường; điểm danh trong biên bản và báo cáo dùng `Attendance`.
+Không có quorum (ADR-0014), và phản hồi lời mời chỉ còn Accepted/Declined — không uỷ quyền phản hồi (BR-105).
 
 Guest không có User account, system Role hoặc internal MeetingRole; quyền Guest cố định và chỉ trong meeting được mời. Email phải được xác minh trước khi thiết lập guest session.
 
-## 2. Phiên họp, nghị sự và tài liệu
+## 2. Nghị sự và tài liệu
 
 ```mermaid
 erDiagram
-    Meeting ||--o{ MeetingSession : "scheduling"
-    MeetingSession ||--o{ AgendaItem : "containing"
+    Meeting ||--o{ AgendaItem : "containing"
     User o|--o{ AgendaItem : "presenting"
     User ||--o{ Document : "owning"
     Meeting ||--o{ MeetingDocument : "receiving"
@@ -168,20 +173,9 @@ erDiagram
     Document ||--o{ DocumentVersion : "versioning"
     DocumentComment ||--o{ DocumentComment : "replying to"
 
-    MeetingSession {
-        uuid Id PK
-        uuid MeetingId FK
-        string Title
-        timestamptz PlannedStartTime
-        timestamptz PlannedEndTime
-        string Status "Planned|InProgress|Completed|Cancelled"
-        timestamptz ActualStartedAt
-        timestamptz ActualEndedAt
-    }
-
     AgendaItem {
         uuid Id PK
-        uuid MeetingSessionId FK
+        uuid MeetingId FK
         int Position
         string Title
         string Description "nullable"
@@ -273,14 +267,16 @@ erDiagram
     VotingSession {
         uuid Id PK
         uuid MeetingId FK
-        uuid AgendaItemId FK
+        uuid AgendaItemId FK "nullable"
         string Title
-        string Kind "Live|Asynchronous"
         bool IsAnonymous
         string Status "Draft|Open|Closed"
-        timestamptz ClosesAt
+        timestamptz OpenedAt "nullable"
+        timestamptz ClosedAt "nullable"
         int EligibleCount "chốt lúc mở phiên"
-        string Conclusion
+        string Conclusion "Passed|NotPassed|Deferred; null tới khi Chair ghi"
+        string ConclusionNote "nullable"
+        uuid ConcludedById FK "nullable"
     }
     VotingOption {
         uuid Id PK
@@ -314,7 +310,7 @@ kín thực sự kín:
   lựa chọn. Ẩn tên trên giao diện là không đủ: liên kết vẫn nằm đó cho bất cứ ai đọc được DB.
 
 **Hệ quả phải biết:** phiên ẩn danh thì **không đổi phiếu được**, vì không có gì xác định phải thay
-dòng nào. `SCRUM-28` yêu cầu đổi phiếu tới khi đóng phiên — hiện chỉ làm được với phiên công khai.
+dòng nào. `SCRUM-28` yêu cầu đổi phiếu tới khi đóng phiên — hiện chỉ làm được với phiên công khai. (Report 3 mới, màn 11.3: một phiếu không đổi được sau khi nộp — nếu giữ quy tắc này thì vấn đề tự hết.)
 Muốn có cả hai thì cần cơ chế token cấp cho từng người bỏ phiếu, và đó là một quyết định thiết kế
 riêng, không phải thứ chắp thêm. **Việc này cần BA chốt trước khi `SCRUM-28` bắt đầu.**
 
@@ -329,11 +325,14 @@ erDiagram
     MeetingMinutes ||--o{ MinutesSignature : "receiving"
     MeetingMinutes ||--o| MeetingMinutes : "superseding"
     Meeting ||--o| MeetingSummary : "generating"
+    User ||--o{ Recording : "uploading"
+    User ||--o{ MinutesSignature : "signing"
 
     Recording {
         uuid Id PK
         uuid MeetingId FK
-        string Source "BrowserCapture|Upload|CallRoom"
+        uuid UploadedById FK "Secretary"
+        string Source "Upload"
         string Status "Pending|Available|Failed|Deleted"
         string StoragePath
         bigint DurationMs
@@ -368,11 +367,11 @@ erDiagram
         int RevisionNumber UK
         uuid SupersedesId FK
         string Content
-        string Status "Draft|WaitingApproval|Rejected|Issued|Superseded"
+        string Status "Draft|PendingSignature|RevisionRequested|Sealed|Superseded"
         uuid CreatedById FK
-        uuid ApprovedById FK
-        string RejectionReason
-        timestamptz IssuedAt "đặt rồi là khoá"
+        string RevisionNote "nullable"
+        uuid SealedById FK "nullable"
+        timestamptz SealedAt "đặt rồi là khoá"
     }
     MinutesSignature {
         uuid Id PK
@@ -382,20 +381,24 @@ erDiagram
         string ContentSha256
         string Signature
         string PublicKey
+        timestamptz InvalidatedAt "nullable"
     }
     MeetingSummary {
         uuid Id PK
         uuid MeetingId FK UK
         string Content
         string Model
+        string Status "Draft|Approved|Published"
         timestamptz GeneratedAt
-        uuid ReviewedById FK "null = chưa ai soát"
+        uuid ApprovedById FK "nullable"
+        timestamptz ApprovedAt "nullable"
+        timestamptz PublishedAt "nullable"
     }
 ```
 
 ## 8. Phòng họp trực tuyến
 
-Phòng trực tuyến thuộc Meeting, không thuộc MeetingSession. MeetingSession và CallSession là hai khái niệm độc lập; việc vào/ra phòng không làm thay đổi lifecycle cuộc họp hoặc session.
+Phòng trực tuyến thuộc Meeting và chỉ mở khi Meeting `InProgress` với hình thức Online/Hybrid. CallSession là một lượt mở phòng, không phải một buổi họp; việc vào/ra phòng không làm thay đổi lifecycle cuộc họp.
 
 ```mermaid
 erDiagram
@@ -441,7 +444,7 @@ tất cả participant trong luồng publish meeting của SCRUM-19, không ph�
 
 `email_messages.deduplication_key` cũng có unique index nhưng định danh một **sự kiện gửi cụ thể**,
 không phải chỉ một cặp meeting/người nhận. Nhờ đó retry transaction của cùng lần công bố không tạo
-thư trùng, còn các sự kiện đổi lịch, hủy họp hoặc phát hành biên bản vẫn có thể gửi thư mới cho cùng
+thư trùng, còn các sự kiện đổi lịch hoặc gửi ký biên bản vẫn có thể gửi thư mới cho cùng
 người nhận.
 
 Notification lưu `target_type` và `target_id`; với thông báo họp, các giá trị là `Meeting` và ID
@@ -498,10 +501,9 @@ erDiagram
 | User | 1 → 0..* | MeetingStatusHistory | Thực hiện hành động |
 | Meeting | 1 → 0..* | MeetingParticipant | Bao gồm thành phần nội bộ |
 | User | 1 → 0..* | MeetingParticipant | Tham gia |
-| MeetingParticipant | 0..1 → 1 | User | Ủy quyền cho |
+| MeetingParticipant | 0..1 → 1 | User | Người dự thay (Attendance = Delegated) |
 | Meeting | 1 → 0..* | MeetingGuestInvitation | Mời khách |
-| Meeting | 1 → 0..* | MeetingSession | Lập lịch |
-| MeetingSession | 1 → 0..* | AgendaItem | Chứa |
+| Meeting | 1 → 0..* | AgendaItem | Chứa |
 | User | 0..* → 0..1 | AgendaItem | Trình bày |
 | User | 1 → 0..* | Document | Sở hữu |
 | Document | 1 → 1..* | DocumentVersion | Quản lý phiên bản |
@@ -520,11 +522,14 @@ erDiagram
 | VotingSession | 1 → 0..* | VoteReceipt | Ghi nhận việc bỏ phiếu |
 | VotingSession | 1 → 0..* | VoteChoice | Ghi nhận lựa chọn |
 | VotingOption | 1 → 0..* | VoteChoice | Được chọn trong |
+| User | 1 → 0..* | VoteReceipt | Bỏ phiếu |
 | Meeting | 1 → 0..* | Recording | Ghi âm |
+| User | 1 → 0..* | Recording | Tải lên (Secretary) |
 | Recording | 1 → 0..1 | Transcript | Chuyển thành văn bản |
 | Transcript | 1 → 0..* | TranscriptSegment | Chứa |
 | Meeting | 1 → 0..* | MeetingMinutes | Ban hành |
 | MeetingMinutes | 1 → 0..* | MinutesSignature | Nhận chữ ký |
+| User | 1 → 0..* | MinutesSignature | Ký |
 | MeetingMinutes | 0..1 → 0..1 | MeetingMinutes | Thay thế phiên bản trước |
 | Meeting | 1 → 0..1 | MeetingSummary | Tạo tóm tắt |
 | User | 1 → 0..* | Notification | Nhận |
@@ -538,43 +543,49 @@ erDiagram
 
 ## Quy tắc nghiệp vụ và ràng buộc dữ liệu không thể hiện trên ERD
 
-1. Lịch dự kiến chỉ thuộc MeetingSession. MeetingSession là tùy chọn; gửi duyệt, công bố và bắt đầu Meeting không yêu cầu phải có session.
-2. Mỗi Meeting có tối đa một MeetingSession ở trạng thái InProgress; vòng đời Meeting và MeetingSession độc lập. Session chuyển từ Planned → InProgress → Completed hoặc Planned → Cancelled; Completed và Cancelled là trạng thái kết thúc.
-3. Mỗi AgendaItem thuộc đúng một MeetingSession; chỉ sắp xếp lại trong session đó; mỗi session có tối đa một AgendaItem InProgress. Trạng thái đích: Pending → InProgress → Done.
+1. Lịch dự kiến thuộc Meeting: `PlannedStartTime` và `PlannedEndTime` bắt buộc, `PlannedEndTime > PlannedStartTime`; khi tạo, giờ bắt đầu phải ở tương lai (BR-62, BR-162). Không có MeetingSession; một Meeting là một buổi họp (ADR-0013).
+2. `ActualStartedAt`/`ActualEndedAt` do hệ thống ghi khi Start Meeting (Published → InProgress) và End Meeting (InProgress → Ended). Sau `Published` chỉ Organizer được dời `PlannedStartTime`, `PlannedEndTime`, `Location`, `OnlineLink`; mỗi lần dời phải thông báo người được mời (BR-75, BR-76, BR-158).
+3. Mỗi AgendaItem thuộc đúng một Meeting; chỉ sắp xếp lại trong Meeting đó; mỗi Meeting có tối đa một AgendaItem InProgress. Trạng thái đích: Pending → InProgress → Done. Kết thúc Meeting tự hoàn tất mục đang chạy trong cùng transaction (BR-159).
 4. Mỗi participant nội bộ có đúng một MeetingRole: Chair, Secretary hoặc Member. MeetingRole độc lập với system Role.
 5. Guest bên ngoài không có User account hay system Role; quyền Guest cố định và chỉ áp dụng trong Meeting được mời. Phải xác minh email trước khi thiết lập guest session.
 6. Mỗi cặp (MeetingId, UserId) có tối đa một phân công Current. Khuyến nghị dùng unique index có điều kiện trên `(meeting_id, user_id)` khi trạng thái phân công là Current. Giữ bằng chứng Removed/lịch sử khi cần truy vết.
 7. Mỗi cặp (MeetingId, GuestEmail) có tối đa một lời mời Guest còn hiệu lực. Không mời email Guest nếu email đó đã thuộc một participant nội bộ hiện hành trong cùng Meeting.
-8. Để công bố hoặc bắt đầu Meeting, phải có ít nhất một Chair và một Secretary đang được phân công hiện hành, đồng thời tài khoản của họ còn hoạt động.
-9. Chỉ participant nội bộ mới được ủy quyền; không được tự ủy quyền, và một User không thể đại diện nhiều hơn một participant trong cùng Meeting. Ủy quyền không tạo participant row và không chuyển MeetingRole. Guest không được ủy quyền.
-10. MeetingDocument ghim một DocumentVersion cụ thể. Nếu có AgendaItemId, AgendaItem đó phải thuộc một MeetingSession của cùng Meeting.
+8. Để công bố hoặc bắt đầu Meeting, phải có đúng một Chair và ít nhất một Secretary đang được phân công hiện hành, đồng thời tài khoản của họ còn hoạt động (BR-124, BR-125, BR-127).
+9. Phản hồi lời mời chỉ là Accepted hoặc Declined; không có uỷ quyền phản hồi (BR-105). `DelegatedToUserId` chỉ dùng khi Thư ký điểm danh `Attendance = Delegated` (người dự thay).
+10. MeetingDocument ghim một DocumentVersion cụ thể. Nếu có AgendaItemId, AgendaItem đó phải thuộc cùng Meeting.
 11. VoteReceipt duy nhất theo (VotingSessionId, VoterId). VoteChoice ẩn danh phải có VoterId null; không gộp receipt với choice.
 12. Mỗi Recording có tối đa một Transcript; mỗi Meeting có tối đa một MeetingSummary hiện hành.
 13. MeetingStatusHistory và AuditLogEntry là bằng chứng chỉ ghi thêm.
-14. Phòng trực tuyến thuộc Meeting, không thuộc MeetingSession. Vào/rời phòng và điều khiển media không làm đổi vòng đời meeting/session; mỗi Meeting có tối đa một CallSession MeetingRoom đang Active.
+14. Phòng trực tuyến thuộc Meeting và chỉ mở khi Meeting `InProgress` với hình thức Online/Hybrid. Vào/rời phòng và điều khiển media không làm đổi vòng đời meeting; mỗi Meeting có tối đa một CallSession MeetingRoom đang Active.
 15. Mỗi CallParticipant tham chiếu đúng một identity: User nội bộ hoặc MeetingGuestInvitation bên ngoài. Mỗi lần kết nối lại tạo một row mới cho lượt kết nối đó.
-16. Trước khi ghi âm phải có consent và lưu mục đích, thời hạn lưu giữ cùng bằng chứng xóa. Guest phải được hiển thị thông báo ghi âm trước khi vào; lưu bằng chứng đã thông báo và thực hiện nghĩa vụ xóa dữ liệu của Guest.
+16. Hệ thống không tự ghi âm; Thư ký upload audio sau khi Meeting `Ended`. Trước khi lưu audio phải có consent và lưu mục đích, thời hạn lưu giữ cùng bằng chứng xóa. Guest phải được hiển thị thông báo ghi âm trước khi vào; lưu bằng chứng đã thông báo và thực hiện nghĩa vụ xóa dữ liệu của Guest.
 17. Lời mời Guest giới hạn trong một Meeting, có hạn dùng, có thể thu hồi và dùng token được bảo vệ (chỉ lưu hash); kiểm tra hiệu lực ở mỗi request.
+18. VotingSession chỉ được tạo và mở khi Meeting `InProgress`; Chair mở và đóng; hệ thống đếm phiếu; Chair ghi `Conclusion` là Passed, NotPassed hoặc Deferred. Chỉ Chair, Secretary, Member hiện hành được bỏ phiếu; Guest không. Không có quorum, không có biểu quyết trước/sau họp, không có entity Resolution ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md)).
+19. Meeting không kết thúc được khi còn VotingSession `Open` (BR-159).
+20. Biên bản bị yêu cầu sửa hoặc sửa sau khi đã có chữ ký: các chữ ký trên phiên bản cũ có `InvalidatedAt`, phiên bản mới cần vòng ký mới; chỉ Secretary niêm phong sau khi đủ chữ ký (BR-166).
 
 ## Khác biệt với implementation hiện tại và ghi chú migration
 
 | Code/schema hiện tại | Mô hình đích | Thay đổi cần thiết |
 |---|---|---|
-| Meeting trước SCRUM-70 có StartsAt/EndsAt. | Meeting không lưu lịch dự kiến. | Đã backfill Meeting chưa có session và bỏ field/index bằng migration SCRUM-70. |
-| AgendaItem hiện có MeetingId. | Bắt buộc có AgendaItem.MeetingSessionId. | Thêm session và gán mỗi agenda item vào một session. |
+| Meeting trước SCRUM-70 có StartsAt/EndsAt; SCRUM-70 chuyển lịch sang `meeting_sessions`. | Meeting mang lịch dự kiến và thời gian thực tế (ADR-0013). | Migration mới: thêm cột vào `meetings`, backfill từ `meeting_sessions` (giờ bắt đầu sớm nhất và giờ kết thúc muộn nhất trong các session không Cancelled), rồi drop `meeting_sessions`. Không sửa migration cũ. |
+| AgendaItem hiện có MeetingId. | Giữ AgendaItem.MeetingId. | Không đổi khoá ngoại; chỉ đồng bộ trạng thái Pending/InProgress/Done. |
 | MeetingRole hiện có Guest. | Chỉ còn Chair/Secretary/Member. | Dùng MeetingGuestInvitation cho khách bên ngoài. |
 | Tính duy nhất participant áp dụng cho mọi row. | Chỉ duy nhất với phân công Current. | Thêm trạng thái/bằng chứng gỡ phân công và unique constraint có điều kiện. |
 | Document hiện có MeetingId và AgendaItemId. | Document cá nhân có OwnerId; MeetingDocument giữ liên kết với cuộc họp. | Bỏ liên kết trực tiếp và thêm entity liên kết. |
 | DocumentComment hiện tham chiếu Document. | DocumentComment tham chiếu MeetingDocument. | Giữ ngữ cảnh góp ý theo từng cuộc họp. |
 | CallParticipant.UserId hiện bắt buộc. | UserId XOR GuestInvitationId. | Cho phép hai cột identity null riêng rẽ và ràng buộc chỉ một cột có giá trị. |
 | CallSession.StartedById hiện bắt buộc. | Có thể null với MeetingRoom. | Cho phép phòng tồn tại mà không cần starter nội bộ. |
-| MeetingGuestInvitation, MeetingDocument chưa có trong domain/schema. | Cả hai là entity đích. | Sẽ triển khai/migration sau; hiện chưa phải bảng trong DB. MeetingSession đã có schema. |
+| MeetingGuestInvitation, MeetingDocument chưa có trong domain/schema. | Cả hai là entity đích. | Sẽ triển khai/migration sau; hiện chưa phải bảng trong DB. |
+| `MeetingStatus` còn `MinutesIssued`, `Archived`. | Vòng đời kết thúc ở `Ended`. | Migration mới bỏ hai giá trị; trạng thái biên bản nằm ở `MeetingMinutes.Status`. |
+| VotingSession có `Kind` (Live/Asynchronous), `OpensAt`, `ClosesAt`, `Conclusion` dạng chuỗi tự do. | Chỉ biểu quyết trong họp; `Conclusion` là Passed/NotPassed/Deferred (ADR-0014). | Migration mới bỏ `kind`, `opens_at`, `closes_at`; thêm `opened_at`, `closed_at`, `conclusion_note`, `concluded_by_id`. |
 
 ### Xung đột yêu cầu cần đối chiếu
 
-- **ADR-0010:** hiện gắn CallSession với MeetingSession; mô hình đích mới xác định phòng ở cấp Meeting và không cho phép quan hệ đó. ERD này theo yêu cầu mới; nhóm cần đối chiếu hoặc thay thế ADR riêng.
+- **ADR-0010:** phần gắn CallSession với MeetingSession đã được [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md) thay thế: phòng ở cấp Meeting, mở khi Meeting `InProgress`.
+- **`CallSession.RecordingId`:** ERD vẫn giữ quan hệ phòng họp → bản ghi, mâu thuẫn với "hệ thống không tự ghi âm" (Recording.Source chỉ còn `Upload`). Giữ nguyên lần này; cần quyết định khi làm FE-08 / FE-09.
 - **ADR-0005:** nêu rằng danh tính khách không được xác minh và mô tả link/mã mời có giới hạn lượt dùng, trong khi mô hình đích yêu cầu xác minh email và lưu TokenHash, hạn dùng, thời điểm xác minh/thu hồi. Cần đối chiếu thay đổi này với ADR. Quyền chỉ nghe, không xem danh sách người dự/tài liệu và bằng chứng thông báo ghi âm vẫn áp dụng nếu chưa có yêu cầu mới thay thế.
-- **Tài liệu vòng đời cuộc họp:** giữ nguyên trục trạng thái; mô hình đích cho phép gửi duyệt lại sau Rejected. Cần chỉnh mũi tên nếu sơ đồ hiện tại bị hiểu là không cho phép gửi lại.
+- **Tài liệu vòng đời cuộc họp:** đã chỉnh sơ đồ — Rejected sửa rồi gửi duyệt lại sang WaitingApproval; bỏ `MinutesIssued`, `Archived`.
 - **ADR-0006:** kho cá nhân, quyền sở hữu, ghim phiên bản và ngữ cảnh comment qua MeetingDocument phù hợp với mô hình đích. Câu hỏi chưa chốt về hạn mức kho và quyền truy cập của người đã rời tổ chức nằm ngoài phạm vi ERD này.
 
 ## Những quyết định cần biết

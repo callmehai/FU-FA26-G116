@@ -1,0 +1,46 @@
+title UC-27 - View Meeting Participants
+
+actor "Secretary" as Secretary
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Participant Controller" as ParticipantController
+control ":Meeting Participant Service" as ParticipantService
+participant ":Meeting Participant Repository" as ParticipantRepository
+database ":Database" as Database
+
+Secretary->MeetingPage: Request Meeting Participant list
+activate MeetingPage
+MeetingPage->ParticipantController: View Meeting Participants
+activate ParticipantController
+ParticipantController->ParticipantService: getMeetingParticipants(meetingId, secretaryId)
+activate ParticipantService
+
+ParticipantService->ParticipantRepository: Get current participants and verify active assigned Secretary at any meeting status\n(BR-78, BR-84, BR-88)
+activate ParticipantRepository
+ParticipantRepository->Database: Retrieve Secretary assignment and current participants;\nexclude historical records
+activate Database
+Database-->ParticipantRepository: Participants / Not accessible / Retrieval failed
+deactivate Database
+ParticipantRepository-->ParticipantService: Participants / Not accessible / Retrieval failed
+deactivate ParticipantRepository
+
+alt Meeting does not exist or is not accessible - EX-1
+    ParticipantService-->ParticipantController: Meeting not found
+    deactivate ParticipantService
+    ParticipantController-->MeetingPage: Meeting not found
+    deactivate ParticipantController
+    MeetingPage-->Secretary: Meeting not found; no participant data disclosed
+else Participant list cannot be retrieved - EX-2
+    ParticipantService-->ParticipantController: Participant retrieval failed
+    deactivate ParticipantService
+    ParticipantController-->MeetingPage: Participant retrieval failed
+    deactivate ParticipantController
+    MeetingPage-->Secretary: MSG95 - Unable to load meeting participants. Please try again.
+else Participant list is retrieved
+    ParticipantService-->ParticipantController: Current participant list, possibly empty
+    deactivate ParticipantService
+    ParticipantController-->MeetingPage: Display Full Name, Email, and Meeting Role
+    deactivate ParticipantController
+    MeetingPage-->Secretary: Current Meeting Participant list
+end
+
+deactivate MeetingPage
