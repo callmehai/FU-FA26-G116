@@ -1,0 +1,93 @@
+title UC-28a - Add Meeting Participant
+
+actor "Meeting Organizer / Secretary" as Actor
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Participant Controller" as ParticipantController
+control ":Meeting Participant Service" as ParticipantService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Participant Repository" as ParticipantRepository
+participant ":User Repository" as UserRepository
+participant ":Notification Service" as NotificationService
+database ":Database" as Database
+
+Actor->MeetingPage: Submit participant information
+activate MeetingPage
+MeetingPage->ParticipantController: Add Meeting Participant
+activate ParticipantController
+ParticipantController->ParticipantService: addMeetingParticipant(meetingId, actorId, userId, meetingRole)
+activate ParticipantService
+
+ParticipantService->MeetingRepository: Get meeting, status, and Meeting Organizer
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting
+activate Database
+Database-->MeetingRepository: Meeting
+deactivate Database
+MeetingRepository-->ParticipantService: Meeting
+deactivate MeetingRepository
+
+ParticipantService->ParticipantRepository: Get current Secretary assignments and check duplicate participant\n(BR-78, BR-79, BR-84)
+activate ParticipantRepository
+ParticipantRepository->Database: Retrieve current participant assignments
+activate Database
+Database-->ParticipantRepository: Secretary assignments and duplicate result
+deactivate Database
+ParticipantRepository-->ParticipantService: Secretary assignments and duplicate result
+deactivate ParticipantRepository
+
+ParticipantService->UserRepository: Verify selected user is active
+activate UserRepository
+UserRepository->Database: Retrieve selected user
+activate Database
+Database-->UserRepository: Active user / Unavailable user
+deactivate Database
+UserRepository-->ParticipantService: User eligibility
+deactivate UserRepository
+
+ParticipantService->ParticipantService: Validate actor, meeting status, user, uniqueness, and Meeting Role;\neditable statuses: Draft, Rejected, Approved, Published, InProgress;\nfirst participant must be a Secretary assigned by the Meeting Organizer\n(BR-78, BR-79, BR-80)
+
+alt Participant information is invalid - EX-1
+    ParticipantService-->ParticipantController: Validation failed
+    deactivate ParticipantService
+    ParticipantController-->MeetingPage: Display participant validation errors
+    deactivate ParticipantController
+    MeetingPage-->Actor: MSG97 - Invalid meeting participant information.\nApplicable field message(s)
+else Meeting is WaitingApproval or Ended - EX-2
+    ParticipantService-->ParticipantController: Participant list is read-only
+    deactivate ParticipantService
+    ParticipantController-->MeetingPage: Modification rejected
+    deactivate ParticipantController
+    MeetingPage-->Actor: MSG98 - The meeting participant list cannot be modified in its current status.
+else Participant can be added
+    ParticipantService->ParticipantRepository: Create participant with selected Meeting Role and Pending response\n(BR-80, BR-81)
+    activate ParticipantRepository
+    ParticipantRepository->Database: Insert Meeting Participant
+    activate Database
+    Database-->ParticipantRepository: Participant created / Save failed
+    deactivate Database
+    ParticipantRepository-->ParticipantService: Created participant / Save failed
+    deactivate ParticipantRepository
+
+    alt Participant cannot be added - EX-3
+        ParticipantService-->ParticipantController: Save failed
+        deactivate ParticipantService
+        ParticipantController-->MeetingPage: Addition failed
+        deactivate ParticipantController
+        MeetingPage-->Actor: MSG99 - Unable to add the meeting participant. Please try again.
+    else Participant is added
+        opt Meeting is Published or InProgress
+            ParticipantService->NotificationService: Queue in-app notification and invitation email;\nrecord delivery failure for retry without rollback (BR-82)
+            activate NotificationService
+            NotificationService-->ParticipantService: Queued / Retry recorded
+            deactivate NotificationService
+        end
+
+        ParticipantService-->ParticipantController: Participant added
+        deactivate ParticipantService
+        ParticipantController-->MeetingPage: Addition successful
+        deactivate ParticipantController
+        MeetingPage-->Actor: MSG96 - Meeting participant added successfully.
+    end
+end
+
+deactivate MeetingPage

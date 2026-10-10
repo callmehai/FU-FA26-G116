@@ -1,6 +1,6 @@
 # ADR-0010: Phòng họp trực tuyến dùng LiveKit (SFU) tự host
 
-- **Trạng thái:** Đã chấp nhận
+- **Trạng thái:** Đã chấp nhận — phần gắn phòng họp với Meeting Session thay thế bởi ADR-0013
 - **Ngày:** 2026-09-30
 - **Người quyết định:** Hải Trần Việt, chờ nhóm SEP490-G116 duyệt qua pull request
 

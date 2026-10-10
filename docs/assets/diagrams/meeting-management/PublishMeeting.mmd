@@ -1,5 +1,5 @@
 sequenceDiagram
-    title UC-21 - Công bố cuộc họp
+    title UC-20 - Công bố cuộc họp
     actor Organizer as Người tổ chức
     actor Admin as Quản trị
     participant Page as Màn quản lý cuộc họp
@@ -38,7 +38,7 @@ sequenceDiagram
     API->>Service: Publish với actor từ phiên đăng nhập
     Service->>DB: BEGIN và khóa meeting
     DB-->>Service: Organizer, trạng thái và participants hiện tại
-    Note over Service,DB: Meeting Session là tùy chọn và không phải điều kiện Publish theo BR-56.
+    Note over Service,DB: Publish chỉ kiểm tra Approved và đủ Chair/Secretary active (BR-124, BR-125); không có Meeting Session (ADR-0013).
 
     alt Meeting không tồn tại hoặc caller không được đọc
         Service->>DB: Kết thúc transaction không ghi dữ liệu
@@ -51,7 +51,7 @@ sequenceDiagram
         Service-->>API: 409 MSG46
         API-->>Page: Tải lại trạng thái hiện tại
     else Được phép công bố
-        Service->>Service: Chọn recipient notification theo BR-54, user active và Response khác Delegated
+        Service->>Service: Chọn recipient notification: user active và Response khác Delegated (code hiện tại)
         Note over Service: DelegatedToUserId riêng không thêm recipient notification.
         Service->>DB: Đổi Published, thêm history và participant notifications
         Service->>DB: SaveChanges khi transaction còn mở

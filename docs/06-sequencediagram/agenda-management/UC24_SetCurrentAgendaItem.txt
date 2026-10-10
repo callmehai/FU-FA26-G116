@@ -1,0 +1,94 @@
+title UC-24 - Set Current Agenda Item
+
+actor "Chair" as Chair
+boundary "Meeting Management Page" as MeetingPage
+control ":Agenda Controller" as AgendaController
+control ":Agenda Service" as AgendaService
+participant ":Meeting Participant Repository" as MeetingParticipantRepository
+participant ":Agenda Item Repository" as AgendaItemRepository
+database ":Database" as Database
+
+Chair->MeetingPage: Set Current Agenda Item
+activate MeetingPage
+
+MeetingPage->AgendaController: Set Current Agenda Item
+activate AgendaController
+
+AgendaController->AgendaService: setCurrentAgendaItem(meetingId, agendaItemId, chairId)
+activate AgendaService
+
+
+AgendaService->MeetingParticipantRepository: Verify Chair assignment to the Meeting (BR-69)
+activate MeetingParticipantRepository
+MeetingParticipantRepository->Database: Find Chair assignment
+activate Database
+Database-->MeetingParticipantRepository: Assignment result
+deactivate Database
+MeetingParticipantRepository-->AgendaService: Assignment result
+deactivate MeetingParticipantRepository
+
+AgendaService->AgendaItemRepository: Get selected Agenda Item
+activate AgendaItemRepository
+AgendaItemRepository->Database: Retrieve selected Agenda Item
+activate Database
+Database-->AgendaItemRepository: Agenda Item
+deactivate Database
+AgendaItemRepository-->AgendaService: Agenda Item
+deactivate AgendaItemRepository
+
+AgendaService->AgendaService: Verify assigned Chair, InProgress Meeting,\nitem belongs to selected session,\nand item is Pending (BR-64, BR-69, BR-70)
+
+alt Agenda Item cannot be set as current - EX-2
+    AgendaService-->AgendaController: MSG73 - This agenda item cannot be set as current.
+    deactivate AgendaService
+    AgendaController-->MeetingPage: MSG73 - This agenda item cannot be set as current.
+    deactivate AgendaController
+    MeetingPage-->Chair: MSG73 - This agenda item cannot be set as current.\nAgenda Item remains unchanged
+
+else Agenda execution conditions are valid
+    AgendaService->AgendaItemRepository: Check for another InProgress Agenda Item\nin the same Meeting (BR-71)
+    activate AgendaItemRepository
+    AgendaItemRepository->Database: Find another InProgress Agenda Item in the same Meeting
+    activate Database
+    Database-->AgendaItemRepository: Another current Agenda Item / None
+    deactivate Database
+    AgendaItemRepository-->AgendaService: Another current Agenda Item / None
+    deactivate AgendaItemRepository
+
+    alt Another Agenda Item is InProgress - EX-1
+        AgendaService-->AgendaController: MSG72 - Another agenda item is already in progress.\nComplete it before starting another agenda item.
+        deactivate AgendaService
+        AgendaController-->MeetingPage: MSG72 - Another agenda item is already in progress.\nComplete it before starting another agenda item.
+        deactivate AgendaController
+        MeetingPage-->Chair: MSG72 - Another agenda item is already in progress.\nComplete it before starting another agenda item.\nSelected Agenda Item remains Pending
+
+    else No other Agenda Item is InProgress
+        AgendaService->AgendaItemRepository: Set Pending Agenda Item to InProgress\nand record actual start time (BR-70, BR-72)
+        activate AgendaItemRepository
+        AgendaItemRepository->Database: Update Agenda Item status and actual start time
+        activate Database
+        Database-->AgendaItemRepository: Change saved / Save failed without changing Agenda Item
+        deactivate Database
+        AgendaItemRepository-->AgendaService: Current Agenda Item / Save failed
+        deactivate AgendaItemRepository
+
+        alt Agenda Item cannot be set as current due to system error - EX-3
+            AgendaService-->AgendaController: MSG75 - Unable to set the current agenda item. Please try again.
+            deactivate AgendaService
+            AgendaController-->MeetingPage: MSG75 - Unable to set the current agenda item. Please try again.
+            deactivate AgendaController
+            MeetingPage-->Chair: MSG75 - Unable to set the current agenda item. Please try again.\nAgenda Item remains unchanged
+
+        else Current Agenda Item is saved
+            AgendaService->AgendaService: Make new current Agenda Item available in real time\nto authorized users viewing the same Meeting (BR-73)
+
+            AgendaService-->AgendaController: Current Agenda Item updated successfully
+            deactivate AgendaService
+            AgendaController-->MeetingPage: MSG64 - Current agenda item updated successfully.\nCurrent Agenda Item and actual start time
+            deactivate AgendaController
+            MeetingPage-->Chair: MSG64 - Current agenda item updated successfully.\nShow current Agenda Item and actual start time
+        end
+    end
+end
+
+deactivate MeetingPage

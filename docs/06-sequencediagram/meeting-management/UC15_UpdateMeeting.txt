@@ -1,0 +1,106 @@
+title UC-15 - Update Meeting
+
+actor "Meeting Organizer" as Organizer
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+Organizer->MeetingPage: Submit updated meeting information
+activate MeetingPage
+
+MeetingPage->MeetingController: Update meeting
+activate MeetingController
+
+MeetingController->MeetingService: Check meeting is owned and editable
+activate MeetingService
+MeetingService->MeetingRepository: Find meeting owned by organizer
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting and status
+activate Database
+Database-->MeetingRepository: Meeting and status
+deactivate Database
+MeetingRepository-->MeetingService: Meeting and status
+deactivate MeetingRepository
+
+alt Meeting not found
+    MeetingService-->MeetingController: Meeting not found
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Return not found
+    deactivate MeetingController
+    MeetingPage-->Organizer: Meeting not found
+
+else Meeting is no longer Draft or Rejected - EX-2
+    MeetingService-->MeetingController: MSG33 - This meeting can no longer be edited
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Return edit restriction
+    deactivate MeetingController
+    MeetingPage-->Organizer: MSG33 - This meeting can no longer be edited
+
+else Meeting is Draft or Rejected
+    MeetingService-->MeetingController: Meeting is editable
+    deactivate MeetingService
+    MeetingController->MeetingService: Update meeting information
+    activate MeetingService
+    MeetingService->MeetingRepository: Recheck owned meeting for update
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve current meeting and status
+    activate Database
+    Database-->MeetingRepository: Current meeting and status
+    deactivate Database
+    MeetingRepository-->MeetingService: Current meeting and status
+    deactivate MeetingRepository
+
+    MeetingService->MeetingService: Recheck Draft or Rejected status
+
+    alt Meeting is no longer editable - EX-2
+        MeetingService-->MeetingController: MSG33 - This meeting can no longer be edited
+        deactivate MeetingService
+        MeetingController-->MeetingPage: Return edit restriction
+        deactivate MeetingController
+        MeetingPage-->Organizer: MSG33 - This meeting can no longer be edited
+
+    else Meeting remains editable
+        MeetingService->MeetingService: Validate submitted meeting-level information\nincluding Planned Start/End Time (BR-27, BR-62, BR-163)
+
+        alt Meeting information is invalid - EX-1
+            MeetingService-->MeetingController: MSG31 - Invalid meeting information
+            deactivate MeetingService
+            MeetingController-->MeetingPage: Return validation errors
+            deactivate MeetingController
+            MeetingPage-->Organizer: MSG31 - Invalid meeting information
+
+        else Meeting information is valid
+            MeetingService->MeetingRepository: Update meeting information;\nkeep lifecycle status and approval assignment unchanged
+            activate MeetingRepository
+            MeetingRepository->Database: Save meeting information
+            activate Database
+
+            alt Meeting cannot be updated - EX-3
+                Database-->MeetingRepository: Update failed
+                deactivate Database
+                MeetingRepository-->MeetingService: Meeting update failed
+                deactivate MeetingRepository
+                MeetingService-->MeetingController: MSG36 - Unable to update the meeting.\nPlease try again
+                deactivate MeetingService
+                MeetingController-->MeetingPage: Return meeting update failure
+                deactivate MeetingController
+                MeetingPage-->Organizer: MSG36 - Unable to update the meeting.\nPlease try again
+
+            else Meeting updated successfully
+                Database-->MeetingRepository: Meeting information saved
+                deactivate Database
+                MeetingRepository-->MeetingService: Updated meeting
+                deactivate MeetingRepository
+                MeetingService-->MeetingController: Meeting updated successfully
+                deactivate MeetingService
+                MeetingController-->MeetingPage: MSG30 - Meeting updated successfully
+                deactivate MeetingController
+                MeetingPage-->Organizer: MSG30 - Meeting updated successfully
+            end
+        end
+    end
+end
+
+deactivate MeetingPage

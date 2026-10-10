@@ -8,31 +8,38 @@ Mã trạng thái giữ nguyên tiếng Anh để dùng trực tiếp trong code
 
 | Mã | Nhãn hiển thị | Ý nghĩa |
 |---|---|---|
-| `Draft` | Nháp | Thư ký đang soạn, chưa ai khác thấy |
-| `WaitingApproval` | Chờ duyệt | Đã gửi, đang đợi người có quyền duyệt |
-| `Rejected` | Bị từ chối | Người duyệt trả lại, quay về sửa |
+| `Draft` | Nháp | Organizer và Thư ký đang soạn; người duyệt, Chair, thành viên chưa thấy |
+| `WaitingApproval` | Chờ duyệt | Đã gửi, đang đợi người duyệt được phân công |
+| `Rejected` | Bị từ chối | Người duyệt trả lại kèm lý do; Organizer sửa rồi gửi lại |
 | `Approved` | Đã duyệt | Được chấp thuận, chưa thông báo cho thành phần tham dự |
-| `Published` | Đã công bố | Đã gửi thư mời, thành phần tham dự nhìn thấy |
-| `InProgress` | Đang diễn ra | Chủ toạ đã bắt đầu phiên họp |
-| `Ended` | Đã kết thúc | Phiên họp đóng, chờ xử lý hậu kỳ (ASR, biên bản) |
-| `MinutesIssued` | Đã ban hành biên bản | Biên bản đã được phê duyệt và chốt |
-| `Archived` | Đã lưu trữ | Hồ sơ đóng, chỉ còn đọc |
+| `Published` | Đã công bố | Đã gửi thư mời; Organizer chỉ còn dời được giờ, địa điểm, link (*Reschedule*) |
+| `InProgress` | Đang diễn ra | Chủ toạ đã bắt đầu cuộc họp; agenda chạy, biểu quyết mở được |
+| `Ended` | Đã kết thúc | Cuộc họp đóng; xử lý hậu kỳ (audio, transcript, tóm tắt, biên bản) |
 
 ```
-Draft ──gửi duyệt──> WaitingApproval ──duyệt──> Approved ──công bố──> Published
-  ^                        │                                              │
-  └────từ chối─────── Rejected                                       bắt đầu họp
-                                                                          v
-        Archived <──lưu trữ── MinutesIssued <──ban hành biên bản── Ended <┘
+Draft ──gửi duyệt──> WaitingApproval ──duyệt──> Approved ──công bố──> Published ──bắt đầu──> InProgress ──kết thúc──> Ended
+  ^                        │                                           │  ^
+  └──sửa, gửi lại── Rejected <──từ chối                                └──┘ dời lịch (Reschedule)
 ```
 
-Khi gửi duyệt theo UC-19, người tổ chức chọn một tài khoản đang hoạt động có capability
+Vòng đời PO chốt kết thúc ở `Ended` (quyết định 09/10/2026). Trạng thái của biên bản nằm ở `MeetingMinutes.Status`
+(`Draft → PendingSignature → RevisionRequested → Sealed`), không phải trạng thái cuộc họp. **Không có Meeting Session**:
+một cuộc họp là một buổi họp, tự mang `PlannedStartTime` / `PlannedEndTime` / `ActualStartedAt` / `ActualEndedAt`
+([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)).
+
+> **Code đang chạy chưa theo kịp:** enum `MeetingStatus` (backend và [types/meeting.ts](../../frontend/src/types/meeting.ts))
+> vẫn còn `MinutesIssued` và `Archived`, và vẫn có entity `MeetingSession`. Gỡ bằng migration mới khi làm ticket liên quan;
+> không dùng hai trạng thái này cho tính năng mới.
+
+Khi gửi duyệt theo UC-18, người tổ chức chọn một tài khoản đang hoạt động có capability
 `MeetingApprover`. Trường `AssignedApproverId` được để trống trong bản nháp cho tới bước này.
 
 ## Vì sao cần ghi lại
 
-- **Phân quyền bám theo trạng thái.** Sửa nội dung chỉ được phép ở `Draft` và `Rejected`. Biểu
-  quyết chỉ mở khi `InProgress`. Biên bản chỉ sinh được sau `Ended`.
+- **Phân quyền bám theo trạng thái.** Sửa thông tin chung chỉ được phép ở `Draft` và `Rejected`;
+  ở `Published` chỉ dời lịch (BR-27, BR-158). Agenda
+  sửa được tới hết `InProgress` (BR-74). Biểu quyết chỉ tạo và mở khi `InProgress` (BR-160). Biên bản chỉ sinh được
+  sau `Ended`. Kết thúc cuộc họp bị chặn khi còn phiếu đang mở (BR-159).
 - **Lịch sử trạng thái là bằng chứng.** Màn chi tiết hiển thị timeline ai chuyển trạng thái, lúc
   nào. Đây là dữ liệu kiểm toán, không phải log kỹ thuật — không được xoá hay sửa.
 - **Nhãn trong timeline khác nhãn trạng thái.** Timeline ghi *việc đã xảy ra* ("Đã gửi duyệt"),

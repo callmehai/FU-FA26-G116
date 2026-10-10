@@ -14,3 +14,9 @@ git diff -- docs/08-reports
 | `Report-3.docx` | [Report 3 – Software Requirement Specification](https://docs.google.com/document/d/1rQuQxHWq4nJPJYMrrMlAZQ3P173PTXJz/edit) | `Report-3_Software_Requirement_Specification.md` |
 
 Script dùng thư viện chuẩn của Python để lấy nội dung đoạn văn và bảng trong DOCX. Hình ảnh và bố cục trang không được xuất sang Markdown. Report 3 được giữ nguyên thành một file tổng; các tài liệu UC/BR/MSG riêng tiếp tục do agent cập nhật khi được giao.
+
+**Lần đồng bộ gần nhất:** 10/10/2026, từ bản DOCX sau đợt gom UC (70 UC, FE-01 → FE-15, bỏ Meeting Session). Các file
+trong [01-requirements/](../01-requirements/README.md) đã trích lại UC, BR theo bản này.
+
+> **Mục "V.2 System Messages" của Report 3 không phải nguồn chuẩn.** Mã thông báo chuẩn duy nhất là
+> [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md); khi hai bên lệch nhau, catalogue thắng.

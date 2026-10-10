@@ -1,0 +1,84 @@
+title UC-23c - Delete Agenda Item
+
+actor "Secretary" as Secretary
+boundary "Meeting Management Page" as MeetingPage
+control ":Agenda Controller" as AgendaController
+control ":Agenda Service" as AgendaService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Participant Repository" as MeetingParticipantRepository
+participant ":Agenda Item Repository" as AgendaItemRepository
+database ":Database" as Database
+
+Secretary->MeetingPage: Confirm Delete Agenda Item
+activate MeetingPage
+
+MeetingPage->AgendaController: Delete Agenda Item
+activate AgendaController
+
+AgendaController->AgendaService: deleteAgendaItem(meetingId, agendaItemId, secretaryId)
+activate AgendaService
+
+
+AgendaService->MeetingRepository: Get selected Meeting
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting
+activate Database
+Database-->MeetingRepository: Meeting
+deactivate Database
+MeetingRepository-->AgendaService: Meeting
+deactivate MeetingRepository
+
+AgendaService->MeetingParticipantRepository: Verify Secretary assignment to the Meeting (BR-65)
+activate MeetingParticipantRepository
+MeetingParticipantRepository->Database: Find Secretary assignment
+activate Database
+Database-->MeetingParticipantRepository: Assignment result
+deactivate Database
+MeetingParticipantRepository-->AgendaService: Assignment result
+deactivate MeetingParticipantRepository
+
+AgendaService->AgendaItemRepository: Get selected Agenda Item
+activate AgendaItemRepository
+AgendaItemRepository->Database: Retrieve selected Agenda Item
+activate Database
+Database-->AgendaItemRepository: Agenda Item
+deactivate Database
+AgendaItemRepository-->AgendaService: Agenda Item
+deactivate AgendaItemRepository
+
+AgendaService->AgendaService: Verify Agenda Item belongs to the Meeting, assigned Secretary\nand Meeting status Draft, WaitingApproval, Rejected, Approved, Published or InProgress;\nPublished or InProgress alone does not block planning (BR-65, BR-68, BR-74)
+
+alt Agenda Item can no longer be deleted - EX-1
+    AgendaService-->AgendaController: MSG67 - The agenda for this meeting can no longer be modified.
+    deactivate AgendaService
+    AgendaController-->MeetingPage: MSG67 - The agenda for this meeting can no longer be modified.
+    deactivate AgendaController
+    MeetingPage-->Secretary: MSG67 - The agenda for this meeting can no longer be modified.\nAgenda Item is not deleted
+
+else Agenda modification is permitted
+    AgendaService->AgendaItemRepository: Remove selected Agenda Item and re-index remaining items\nto preserve contiguous explicit ordering (BR-68)
+    activate AgendaItemRepository
+    AgendaItemRepository->Database: Delete Agenda Item and update remaining positions
+    activate Database
+    Database-->AgendaItemRepository: Change saved / Save failed without changing agenda
+    deactivate Database
+    AgendaItemRepository-->AgendaService: Agenda Item deleted and agenda re-indexed / Save failed
+    deactivate AgendaItemRepository
+
+    alt Agenda Item cannot be deleted - EX-2
+        AgendaService-->AgendaController: MSG70 - Unable to delete the agenda item. Please try again.
+        deactivate AgendaService
+        AgendaController-->MeetingPage: MSG70 - Unable to delete the agenda item. Please try again.
+        deactivate AgendaController
+        MeetingPage-->Secretary: MSG70 - Unable to delete the agenda item. Please try again.\nAgenda Item and agenda order remain unchanged
+
+    else Agenda Item is deleted
+        AgendaService-->AgendaController: Agenda Item deleted successfully
+        deactivate AgendaService
+        AgendaController-->MeetingPage: MSG62 - Agenda item deleted successfully.\nUpdated Meeting agenda
+        deactivate AgendaController
+        MeetingPage-->Secretary: MSG62 - Agenda item deleted successfully.\nShow updated Meeting agenda
+    end
+end
+
+deactivate MeetingPage

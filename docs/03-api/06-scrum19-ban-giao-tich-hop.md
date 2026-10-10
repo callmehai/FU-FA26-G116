@@ -1,5 +1,12 @@
 # SCRUM-19 · Bàn giao FE, Tester và worker
 
+> **Cảnh báo — nghiệp vụ đã đổi (10/10/2026).** File này mô tả **code đang chạy**, vẫn có `MeetingSession`.
+> PO đã bỏ Meeting Session và biểu quyết đặc biệt ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md),
+> [ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md)): lịch dự kiến sẽ chuyển về Meeting
+> (`plannedStartTime`, `plannedEndTime`, `onlineLink`). Phần hợp đồng API dưới đây chỉ đổi **cùng commit với migration**.
+> Số UC đã đổi theo baseline 70 UC ([bảng đổi số](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới));
+> các mã `BR-54` → `BR-61` nhắc trong file là số BR cũ đã ngừng dùng ([danh mục BR](../01-requirements/06-business-rules.md)).
+
 ## Phạm vi backend
 
 Backend cung cấp readiness, transitions, history và notification/email jobs theo
@@ -73,8 +80,8 @@ Cùng migration bổ sung ID Organizer cũ/mới cho history
   positive flow Publish; Tester dùng dữ liệu seed cho đến khi SCRUM-20 được tích hợp.
 - Organizer còn đọc được meeting Approved nhưng mất `MeetingCreator` nhận `403 MSG46`; caller không
   được đọc tài nguyên vẫn nhận `404`.
-- UC17 Session/Agenda detail và API quản lý phiên vẫn thuộc task UC-26–30, nhưng không chặn luồng
-  Publish của UC-21.
+- UC16 Session/Agenda detail và API quản lý phiên vẫn thuộc task Meeting Session cũ (UC-26–30 theo số cũ, đã bỏ), nhưng không chặn luồng
+  Publish của UC-20.
 - BA còn đổi câu `MSG39` của notification pagination thành `Trang thông báo được yêu cầu không khả dụng.`;
   endpoint notification nằm ngoài phạm vi PR meeting này và cần được đồng bộ ở task notification.
 - Kiểm tra rollback khi lưu lỗi và concurrent Publish chỉ tạo một history/batch.
@@ -100,10 +107,10 @@ phần prerequisite này; không gọi việc tách phạm vi là đã hoàn t�
 
 ## Đồng bộ main ngày 02/10/2026
 
-Use Case Meeting Management dùng UC-15–21 theo bộ tài liệu BA đã vào main.
+Use Case Meeting Management dùng UC-14–21 theo bộ tài liệu BA đã vào main.
 Các mã workflow cũ bị trùng chuyển sang MSG78–MSG89 theo
-[bảng đổi mã](00-danh-muc-ma-thong-bao.md#đồng-bộ-với-main-ngày-02102026).
-Giữ MSG48–MSG59/MSG77 cho Meeting Session và MSG65 cho phòng chưa mở (ADR-0010).
+[bảng đổi mã](00-danh-muc-ma-thong-bao.md).
+MSG48–MSG59/MSG77 từng dành cho Meeting Session (nay ngừng dùng). Phòng chưa mở dùng MSG117 theo catalogue (ADR-0010 ghi MSG65 là nhầm).
 FE/Tester dùng API contract sau đồng bộ, gồm MSG89 cho TransferOrganizer thành công.
 
 ## Sửa alignment theo review ngày 02/10/2026
@@ -111,7 +118,7 @@ FE/Tester dùng API contract sau đồng bộ, gồm MSG89 cho TransferOrganizer
 Backend hỗ trợ direct resubmit Rejected, Secretary đọc rejection reason và bỏ Agenda/Meeting Session
 khỏi điều kiện gửi duyệt. Meeting Session cũng không bắt buộc khi Publish theo BR-56. `ReturnToDraft` là tùy chọn
 cho Rejected; recovery WaitingApproval, TransferOrganizer, cấm self-approval và giới hạn reason
-1–1.000 ký tự được ghi thành PRE/AF/EX tại UC-19–21 để BA Final Review đối chiếu.
+1–1.000 ký tự được ghi thành PRE/AF/EX tại UC-18–21 để BA Final Review đối chiếu.
 
 Migration mới `MeetingSessionsForPublication` chỉ thêm bảng `meeting_sessions`: `id`, `meeting_id`,
 `title` (tối đa 300), `planned_starts_at`, `planned_ends_at`, `status` (chuỗi), `created_at`, `updated_at`;
@@ -119,7 +126,7 @@ FK tới meetings và index `(meeting_id, status)`. Không sửa/xóa cột ho�
 phiên từ lịch cấp meeting. Down xóa bảng mới cùng dữ liệu phiên; môi trường có dữ liệu phiên dùng
 migration sửa tiếp, không downgrade để tránh mất lịch. Nâng cấp code và schema cùng nhau.
 
-Model Meeting Session đã có; API lập lịch UC-26–30 thuộc phần quản lý phiên. Meeting chưa có phiên
+Model Meeting Session đã có; API lập lịch Meeting Session cũ (đã bỏ) thuộc phần quản lý phiên. Meeting chưa có phiên
 vẫn Publish được; `MSG90` giữ trạng thái ngừng dùng và không tái cấp. Các mã workflow bổ sung dùng
 `MSG130`–`MSG136` để không trùng dải Agenda, F08/GOF09 và `MSG129` của Reset Password trên main.
 
