@@ -1,15 +1,15 @@
 # Note cho FE — Quản lý người dùng, của Ticket SCRUM-13
 
-Backend của SCRUM-13 đã xong (UC-04 … UC-07), cùng UC-08 (đặt lại mật khẩu) và UC-09 (gán vai trò). File này ghi những gì FE cần biết để thay
+Backend của SCRUM-13 đã xong (UC-05 … UC-06c), cùng UC-07 (đặt lại mật khẩu) và UC-08 (gán vai trò). File này ghi những gì FE cần biết để thay
 placeholder ở [`frontend/src/features/access/UsersPage.tsx`](../../frontend/src/features/access/UsersPage.tsx),
 tập trung vào **những chỗ dễ làm sai mà lỗi lại trông như bug của backend**.
 
 Hợp đồng API đầy đủ: [02-quan-ly-nguoi-dung.md](02-quan-ly-nguoi-dung.md). File này không nhắc
 lại, chỉ nói phần FE.
 
-**UC-08 (đặt lại mật khẩu) đã xong cả BE lẫn FE** — nút trên màn hình này và trang công khai
-`/reset-password`. Xem [mục 8](#8-uc-08--đặt-lại-mật-khẩu). UC-09 không có endpoint mới, xem
-[mục 9](#9-uc-09--gán--đổi-vai-trò).
+**UC-07 (đặt lại mật khẩu) đã xong cả BE lẫn FE** — nút trên màn hình này và trang công khai
+`/reset-password`. Xem [mục 8](#8-uc-07--đặt-lại-mật-khẩu). UC-08 không có endpoint mới, xem
+[mục 9](#9-uc-08--gán--đổi-vai-trò).
 
 ---
 
@@ -91,7 +91,7 @@ Backend trả **tất cả field sai cùng lúc** — đừng chỉ hiện cái 
 
 ## 4. `MSG12` có ba nguyên nhân khác hẳn nhau
 
-Cùng một `code`, nhưng người dùng cần hiểu khác nhau. Backend cố tình không tách mã (đặc tả UC-07
+Cùng một `code`, nhưng người dùng cần hiểu khác nhau. Backend cố tình không tách mã (đặc tả UC-06c
 chỉ có một mã cho nhánh này), nên **FE tự suy ra từ ngữ cảnh** — bạn đã có sẵn dữ liệu để biết:
 
 | Nguyên nhân | FE biết được bằng cách nào | Nên hiển thị |
@@ -167,7 +167,7 @@ khoản không còn được phép.
 Đã **sắp xếp sẵn** theo họ tên (collation tiếng Việt của PostgreSQL — "Đ" đúng chỗ, khác với
 `Array.prototype.sort()` của JS). Sort lại ở FE sẽ làm hỏng thứ tự đó.
 
-Danh sách **bao gồm cả tài khoản đã vô hiệu hoá** — UC-07 kích hoạt lại từ chính danh sách này. FE
+Danh sách **bao gồm cả tài khoản đã vô hiệu hoá** — UC-06c kích hoạt lại từ chính danh sách này. FE
 tự lọc/gắn badge, đừng mong backend ẩn đi.
 
 `hasPassword` / `hasGoogleLink` chỉ cho biết **có tồn tại hay không**, đủ để hiện "cách đăng nhập".
@@ -188,7 +188,7 @@ Backend không bao giờ trả `passwordHash` hay `googleSubjectId` — đừng 
 - **`POST` trả `201`**, không phải `200` — nếu check `res.status === 200` thì sẽ trượt. Header
   `Location` có sẵn đường dẫn tài khoản mới.
 - **Mật khẩu tối thiểu 12 ký tự.** Validate ở FE cho đỡ round trip, nhưng backend vẫn kiểm lại.
-- **`PUT /api/users/{id}` không nhận `password`.** Gửi lên cũng bị bỏ qua. Đổi mật khẩu là UC-08,
+- **`PUT /api/users/{id}` không nhận `password`.** Gửi lên cũng bị bỏ qua. Đổi mật khẩu là UC-07,
   và quản trị viên không bao giờ tự đặt mật khẩu cho người khác — chỉ gửi liên kết (mục 8).
 - **`PUT /api/users/{id}` không nhận `isActive`.** Gửi lên cũng bị bỏ qua — đổi trạng thái phải
   dùng endpoint `/status` riêng. Đây là cố ý, có test chặn.
@@ -200,7 +200,7 @@ Backend không bao giờ trả `passwordHash` hay `googleSubjectId` — đừng 
 
 ---
 
-## 8. UC-08 — Đặt lại mật khẩu
+## 8. UC-07 — Đặt lại mật khẩu
 
 Backend và FE đều đã xong. FE nằm ở
 [`UsersPage.tsx`](../../frontend/src/features/access/UsersPage.tsx) (nút, mục 8.1) và
@@ -219,7 +219,7 @@ mục 8.2). Những chỗ FE làm khác gợi ý bên dưới được ghi trong
 
 | HTTP | `code` | FE nên làm gì |
 |---|---|---|
-| `200` | `MSG13` | Toast thành công. `user` trong body là tài khoản như shape UC-04 — không có gì đổi để cập nhật |
+| `200` | `MSG13` | Toast thành công. `user` trong body là tài khoản như shape UC-05 — không có gì đổi để cập nhật |
 | `409` | `MSG14` | Toast: tài khoản đã bị vô hiệu hoá hoặc chưa có mật khẩu. Refresh lại dòng đó |
 | `503` | `MSG15` | Toast lỗi "thử lại" — đây là lỗi máy chủ mail, không phải lỗi người dùng |
 | `404` | *(không body)* | Refresh danh sách, như các endpoint khác |
@@ -288,13 +288,13 @@ Hai mã `400` khác nhau hoàn toàn về cách xử lý — khớp theo `code`.
 
 ---
 
-## 9. UC-09 — Gán / đổi vai trò
+## 9. UC-08 — Gán / đổi vai trò
 
 **Không có endpoint mới.** Gán hay đổi vai trò là `PUT /api/users/{id}` với `roleId` mới, giữ nguyên
-`fullName` và `email` hiện tại — chính form sửa của UC-06, đã nối API. Nếu muốn có nút "Gán vai trò"
+`fullName` và `email` hiện tại — chính form sửa của UC-06b, đã nối API. Nếu muốn có nút "Gán vai trò"
 riêng như đặc tả mô tả, đó chỉ là một dialog chọn vai trò (`GET /api/roles`) rồi gọi đúng endpoint
 này với hai field kia lấy từ `GET /api/users/{id}`.
 
-Mã trả về giống UC-06: `MSG10` thành công, `MSG09` kèm `errors.roleId` khi vai trò vừa bị xoá, `MSG12`
+Mã trả về giống UC-06b: `MSG10` thành công, `MSG09` kèm `errors.roleId` khi vai trò vừa bị xoá, `MSG12`
 khi đó là quản trị viên cuối cùng (mục 4). Đổi vai trò sẽ đăng xuất người được đổi, và làm chết liên
 kết đặt lại mật khẩu đang chờ của họ (nếu có).

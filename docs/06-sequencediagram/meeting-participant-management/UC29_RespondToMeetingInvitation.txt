@@ -1,0 +1,65 @@
+title UC-29 - Respond to Meeting Invitation
+
+actor "Meeting Participant" as Participant
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Participant Controller" as ParticipantController
+control ":Meeting Participant Service" as ParticipantService
+participant ":Meeting Participant Repository" as ParticipantRepository
+database ":Database" as Database
+
+Participant->MeetingPage: Submit Invitation Response
+activate MeetingPage
+MeetingPage->ParticipantController: Respond to Meeting Invitation
+activate ParticipantController
+ParticipantController->ParticipantService: respondToInvitation(meetingId, responseRequest)
+activate ParticipantService
+
+ParticipantService->ParticipantRepository: Get invitation context and meeting status (BR-104)
+activate ParticipantRepository
+ParticipantRepository->Database: Retrieve meeting and current participant response
+activate Database
+Database-->ParticipantRepository: Response context / Not found / Retrieval failed
+deactivate Database
+ParticipantRepository-->ParticipantService: Response context / Not found / Retrieval failed
+deactivate ParticipantRepository
+
+ParticipantService->ParticipantService: Validate invitation owner, Published or InProgress status,\nand Accepted or Declined response (BR-104, BR-105, BR-106)
+
+alt Invitation can no longer be answered - EX-2
+    ParticipantService-->ParticipantController: Invitation is unavailable
+    deactivate ParticipantService
+    ParticipantController-->MeetingPage: Response rejected
+    deactivate ParticipantController
+    MeetingPage-->Participant: MSG107 - This meeting invitation can no longer be answered.
+else Invitation Response is invalid - EX-1
+    ParticipantService-->ParticipantController: Validation failed
+    deactivate ParticipantService
+    ParticipantController-->MeetingPage: Invalid response
+    deactivate ParticipantController
+    MeetingPage-->Participant: MSG106 - Invalid meeting invitation response.\nApplicable validation message
+else Invitation Response is valid
+    ParticipantService->ParticipantRepository: Save latest response and response time;\nMeeting Role is unchanged (BR-105, BR-115)
+    activate ParticipantRepository
+    ParticipantRepository->Database: Update response
+    activate Database
+    Database-->ParticipantRepository: Saved / Save failed
+    deactivate Database
+    ParticipantRepository-->ParticipantService: Saved response / Save failed
+    deactivate ParticipantRepository
+
+    alt Invitation Response cannot be saved - EX-3
+        ParticipantService-->ParticipantController: Save failed
+        deactivate ParticipantService
+        ParticipantController-->MeetingPage: Response save failed
+        deactivate ParticipantController
+        MeetingPage-->Participant: MSG108 - Unable to save the meeting invitation response. Please try again.
+    else Invitation Response is saved
+        ParticipantService-->ParticipantController: Invitation Response recorded
+        deactivate ParticipantService
+        ParticipantController-->MeetingPage: Response recorded
+        deactivate ParticipantController
+        MeetingPage-->Participant: MSG105 - Meeting invitation response recorded successfully.
+    end
+end
+
+deactivate MeetingPage

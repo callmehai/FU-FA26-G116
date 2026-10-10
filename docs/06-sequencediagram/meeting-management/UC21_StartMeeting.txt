@@ -1,0 +1,114 @@
+title UC-21 - Start Meeting
+
+actor "Chair" as Chair
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Participant Repository" as MeetingParticipantRepository
+participant ":User Repository" as UserRepository
+participant ":Meeting Status History Repository" as MeetingStatusHistoryRepository
+control ":Notification Service" as NotificationService
+database ":Database" as Database
+
+Chair->MeetingPage: Start Meeting
+activate MeetingPage
+MeetingPage->MeetingController: Start Meeting
+activate MeetingController
+MeetingController->MeetingService: startMeeting(meetingId, chairId)
+activate MeetingService
+
+MeetingService->MeetingRepository: Get current meeting
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting and lifecycle status
+activate Database
+Database-->MeetingRepository: Meeting / Meeting not found
+deactivate Database
+MeetingRepository-->MeetingService: Meeting / Meeting not found
+deactivate MeetingRepository
+
+alt Meeting cannot be started - EX-1
+    MeetingService-->MeetingController: MSG112 - This meeting cannot be started
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Return meeting start failure
+    deactivate MeetingController
+    MeetingPage-->Chair: MSG112 - This meeting cannot be started
+
+else Meeting is Published
+    MeetingService->MeetingParticipantRepository: Verify current Chair and Secretary assignments (BR-127, BR-130)
+    activate MeetingParticipantRepository
+    MeetingParticipantRepository->Database: Retrieve current meeting roles
+    activate Database
+    Database-->MeetingParticipantRepository: Current Chair and Secretary assignments
+    deactivate Database
+    MeetingParticipantRepository-->MeetingService: Current Chair and Secretary assignments
+    deactivate MeetingParticipantRepository
+
+    MeetingService->UserRepository: Verify assigned Chair and Secretary accounts are active (BR-127)
+    activate UserRepository
+    UserRepository->Database: Check account status
+    activate Database
+    Database-->UserRepository: Account eligibility
+    deactivate Database
+    UserRepository-->MeetingService: Account eligibility
+    deactivate UserRepository
+
+    MeetingService->MeetingService: Revalidate Chair assignment, Published status,
+exactly one active Chair and at least one active Secretary (BR-127, BR-130, BR-131)
+
+    alt Meeting or role readiness is no longer valid - EX-1
+        MeetingService-->MeetingController: MSG112 - This meeting cannot be started
+        deactivate MeetingService
+        MeetingController-->MeetingPage: Return meeting start failure
+        deactivate MeetingController
+        MeetingPage-->Chair: MSG112 - This meeting cannot be started
+
+    else Meeting can be started
+        MeetingService->MeetingRepository: Change Published to InProgress and record Actual Start Time (BR-131)
+        activate MeetingRepository
+        MeetingRepository->Database: Save meeting lifecycle transition
+        activate Database
+
+        alt Meeting start cannot be completed - EX-2
+            Database-->MeetingRepository: Save failed
+            deactivate Database
+            MeetingRepository-->MeetingService: Meeting start failed
+            deactivate MeetingRepository
+            MeetingService-->MeetingController: MSG115 - Unable to start the meeting. Please try again
+            deactivate MeetingService
+            MeetingController-->MeetingPage: Return meeting start failure
+            deactivate MeetingController
+            MeetingPage-->Chair: MSG115 - Unable to start the meeting. Please try again
+
+        else Meeting status is InProgress
+            Database-->MeetingRepository: Meeting status updated
+            deactivate Database
+            MeetingRepository-->MeetingService: Meeting status updated
+            deactivate MeetingRepository
+
+            MeetingService->MeetingStatusHistoryRepository: Record start action, actor, timestamp, and status (BR-38)
+            activate MeetingStatusHistoryRepository
+            MeetingStatusHistoryRepository->Database: Insert lifecycle history
+            activate Database
+            Database-->MeetingStatusHistoryRepository: History recorded
+            deactivate Database
+            MeetingStatusHistoryRepository-->MeetingService: History recorded
+            deactivate MeetingStatusHistoryRepository
+
+            MeetingService->NotificationService: Notify current invited internal participants
+that the Meeting has started (BR-164)
+            activate NotificationService
+            NotificationService-->MeetingService: Notifications created / delivery failed
+(failure does not undo the start)
+            deactivate NotificationService
+
+            MeetingService-->MeetingController: Meeting started successfully
+            deactivate MeetingService
+            MeetingController-->MeetingPage: MSG110 - Meeting started successfully
+            deactivate MeetingController
+            MeetingPage-->Chair: MSG110 - Meeting started successfully
+        end
+    end
+end
+
+deactivate MeetingPage

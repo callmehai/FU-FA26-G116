@@ -17,19 +17,19 @@ Mỗi Sequence Diagram chỉ có **một mũi tên Actor → Boundary ở đầu
 Ví dụ:
 
 ```text
-Secretary->MeetingPage: Submit session information
+Secretary->MeetingPage: Submit agenda item information
 ```
 
 hoặc:
 
 ```text
-Chair->MeetingPage: Start Meeting Session
+Chair->MeetingPage: Start Meeting
 ```
 
 Với thao tác cần xác nhận, sequence bắt đầu tại action xác nhận cuối cùng:
 
 ```text
-Secretary->MeetingPage: Confirm Delete Session
+Secretary->MeetingPage: Confirm Delete Agenda Item
 ```
 
 Không cần vẽ các bước UI trước đó như mở trang, hiển thị form, nhập dữ liệu, mở dialog xác nhận.
@@ -65,10 +65,10 @@ Ví dụ:
 ```text
 actor "Secretary" as Secretary
 boundary "Meeting Management Page" as MeetingPage
-control ":Meeting Controller" as MeetingController
-control ":Meeting Service" as MeetingService
+control ":Agenda Controller" as AgendaController
+control ":Agenda Service" as AgendaService
 participant ":Meeting Repository" as MeetingRepository
-participant ":Meeting Session Repository" as MeetingSessionRepository
+participant ":Agenda Item Repository" as AgendaItemRepository
 database ":Database" as Database
 ```
 
@@ -117,9 +117,9 @@ database ":Database" as Database
 Dùng mũi tên liền:
 
 ```text
-MeetingPage->MeetingController: Create Meeting Session
-MeetingController->MeetingService: createMeetingSession(meetingId, sessionInfo)
-MeetingService->MeetingRepository: Get selected meeting
+MeetingPage->AgendaController: Create Agenda Item
+AgendaController->AgendaService: createAgendaItem(meetingId, secretaryId, agendaInfo, documentIds)
+AgendaService->MeetingRepository: Get selected Meeting
 MeetingRepository->Database: Retrieve meeting
 ```
 
@@ -129,8 +129,8 @@ Dùng mũi tên nét đứt:
 
 ```text
 Database-->MeetingRepository: Meeting
-MeetingRepository-->MeetingService: Meeting
-MeetingService-->MeetingController: Meeting Session created successfully
+MeetingRepository-->AgendaService: Meeting
+AgendaService-->AgendaController: Agenda Item created successfully
 ```
 
 ### Message hiển thị cho Actor
@@ -140,19 +140,19 @@ Phải ghi rõ **MSG code + full message content**.
 Không dùng:
 
 ```text
-MeetingPage-->Secretary: Show MSG54
+MeetingPage-->Secretary: Show MSG68
 ```
 
 Dùng:
 
 ```text
-MeetingPage-->Secretary: MSG54 - Meeting sessions can no longer\nbe added to this meeting
+MeetingPage-->Secretary: MSG68 - Unable to create the agenda item. Please try again.
 ```
 
 Success message cũng theo cùng convention:
 
 ```text
-MeetingPage-->Secretary: MSG48 - Meeting session created successfully
+MeetingPage-->Secretary: MSG60 - Agenda item created successfully.
 ```
 
 ## 6. Activation bar convention
@@ -203,13 +203,13 @@ deactivate Page
 Ghi BR ngay tại message nơi rule được kiểm tra hoặc áp dụng.
 
 ```text
-MeetingService->MeetingService: Validate session information\nand planned time (BR-62)
+AgendaService->AgendaService: Validate required title, positive planned duration\nand selected documents (BR-66)
 ```
 
 hoặc:
 
 ```text
-MeetingService->MeetingSessionRepository: Create Meeting Session\nwith Planned status (BR-54, BR-58)
+AgendaService->AgendaItemRepository: Create Agenda Item with Pending status\nat the end of the Meeting agenda (BR-64, BR-67)
 ```
 
 Không tạo lifeline riêng cho Business Rule.
@@ -219,9 +219,9 @@ Không tạo lifeline riêng cho Business Rule.
 ### 8.1. Dùng `alt` cho các nhánh kết quả khác nhau
 
 ```text
-alt Session information is invalid - EX-1
+alt Agenda Item information is invalid - EX-1
     ...
-else Session information is valid
+else Agenda Item information is valid
     ...
 end
 ```
@@ -246,9 +246,9 @@ Resubmit là một execution mới.
 Ví dụ:
 
 ```text
-alt Other Meeting Sessions remain - AF-1
+alt Meeting has no Agenda Items - AF-1
     ...
-else No unfinished Meeting Sessions remain
+else Meeting has Agenda Items
     ...
 end
 ```
@@ -260,7 +260,7 @@ Nếu mục tiêu Use Case không đạt thì dùng Exception Flow.
 Service có thể self-call để biểu diễn validation/business decision ngắn gọn:
 
 ```text
-MeetingService->MeetingService: Validate session information\nand planned time (BR-62)
+MeetingService->MeetingService: Validate meeting information\nand planned time (BR-24, BR-62)
 ```
 
 Không lạm dụng self-call để mô tả chi tiết implementation.
@@ -280,14 +280,14 @@ Business Sequence Diagram không tự thêm:
 
 trừ khi chính UC hoặc thiết kế được duyệt yêu cầu participant đó.
 
-`MeetingSession` là business session. `CallSession` là technical LiveKit room run. Không trộn hai khái niệm trong các UC Meeting Session.
+`VotingSession` là một lượt biểu quyết; `CallSession` là một lần chạy phòng họp LiveKit (kỹ thuật). TrustCabinet **không có Meeting Session** — lịch, agenda, biểu quyết thuộc thẳng Meeting ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)). Không vẽ lifeline Meeting Session.
 
 ## 11. Source of truth
 
 Khi vẽ Sequence Diagram, ưu tiên:
 
 1. Use Case Specification trong Report 3
-2. [Danh mục Business Rules BR-01 → BR-77](../01-requirements/06-business-rules.md) được UC tham chiếu
+2. [Danh mục Business Rules](../01-requirements/06-business-rules.md) được UC tham chiếu
 3. System Messages được UC tham chiếu
 4. Thiết kế/domain đã được nhóm chấp nhận
 5. Code hiện tại nếu cần phản ánh cấu trúc lớp
@@ -364,82 +364,114 @@ end
 deactivate FeaturePage
 ```
 
-## 13. Reference — UC-26 Create Meeting Session
+## 13. Reference — UC-23a Create Agenda Item
+
+Source: [UC23a_CreateAgendaItem.txt](agenda-management/UC23a_CreateAgendaItem.txt)
 
 ```text
-title UC-26 - Create Meeting Session
+title UC-23a - Create Agenda Item
 
 actor "Secretary" as Secretary
 boundary "Meeting Management Page" as MeetingPage
-control ":Meeting Controller" as MeetingController
-control ":Meeting Service" as MeetingService
+control ":Agenda Controller" as AgendaController
+control ":Agenda Service" as AgendaService
 participant ":Meeting Repository" as MeetingRepository
-participant ":Meeting Session Repository" as MeetingSessionRepository
+participant ":Meeting Participant Repository" as MeetingParticipantRepository
+participant ":Agenda Item Repository" as AgendaItemRepository
+participant ":Document Repository" as DocumentRepository
 database ":Database" as Database
 
-Secretary->MeetingPage: Submit session information
+Secretary->MeetingPage: Submit agenda item information
 activate MeetingPage
 
-MeetingPage->MeetingController: Create Meeting Session
-activate MeetingController
+MeetingPage->AgendaController: Create Agenda Item
+activate AgendaController
 
-MeetingController->MeetingService: createMeetingSession(meetingId, sessionInfo)
-activate MeetingService
+AgendaController->AgendaService: createAgendaItem(meetingId, secretaryId, agendaInfo, documentIds)
+activate AgendaService
 
-MeetingService->MeetingRepository: Get selected meeting
+
+AgendaService->MeetingRepository: Get selected Meeting
 activate MeetingRepository
-
-MeetingRepository->Database: Retrieve meeting
+MeetingRepository->Database: Retrieve Meeting
 activate Database
-
 Database-->MeetingRepository: Meeting
 deactivate Database
-
-MeetingRepository-->MeetingService: Meeting
+MeetingRepository-->AgendaService: Meeting
 deactivate MeetingRepository
 
-MeetingService->MeetingService: Validate session information\nand planned time (BR-62)
+AgendaService->MeetingParticipantRepository: Verify Secretary assignment to the Meeting (BR-65)
+activate MeetingParticipantRepository
+MeetingParticipantRepository->Database: Find Secretary assignment
+activate Database
+Database-->MeetingParticipantRepository: Assignment result
+deactivate Database
+MeetingParticipantRepository-->AgendaService: Assignment result
+deactivate MeetingParticipantRepository
 
-alt Session information is invalid - EX-1
-    MeetingService-->MeetingController: MSG53 - Invalid meeting session information
-    deactivate MeetingService
+opt Meeting documents are selected
+    AgendaService->DocumentRepository: Get selected documents available to the Meeting (BR-66)
+    activate DocumentRepository
+    DocumentRepository->Database: Retrieve selected meeting documents
+    activate Database
+    Database-->DocumentRepository: Available selected documents
+    deactivate Database
+    DocumentRepository-->AgendaService: Available selected documents
+    deactivate DocumentRepository
+end
 
-    MeetingController-->MeetingPage: Return validation errors
-    deactivate MeetingController
+AgendaService->AgendaService: Validate required title, positive planned duration,\noptional presenter and description, and selected documents (BR-66)
 
-    MeetingPage-->Secretary: MSG53 - Invalid meeting session information
+alt Invalid Agenda Item information - EX-1
+    AgendaService-->AgendaController: MSG66 - Invalid agenda item information.\nApplicable field message(s)
+    deactivate AgendaService
+    AgendaController-->MeetingPage: MSG66 - Invalid agenda item information.\nApplicable field message(s)
+    deactivate AgendaController
+    MeetingPage-->Secretary: MSG66 - Invalid agenda item information.\nApplicable field message(s):\nAgenda item title is required.\nPlanned duration must be greater than 0.\nOne or more selected documents are not available to this meeting.
 
-else Session information is valid
+else Agenda Item information is valid
+    AgendaService->AgendaService: Verify assigned Secretary and Meeting status Draft, WaitingApproval,\nRejected, Approved, Published or InProgress (BR-64, BR-65, BR-68, BR-74)
 
-    alt Meeting is not open for session planning - EX-2
-        MeetingService-->MeetingController: MSG54 - Meeting sessions can no longer\nbe added to this meeting
-        deactivate MeetingService
+    alt Agenda can no longer be modified - EX-2
+        AgendaService-->AgendaController: MSG67 - The agenda for this meeting can no longer be modified.
+        deactivate AgendaService
+        AgendaController-->MeetingPage: MSG67 - The agenda for this meeting can no longer be modified.
+        deactivate AgendaController
+        MeetingPage-->Secretary: MSG67 - The agenda for this meeting can no longer be modified.\nAgenda Item is not created
 
-        MeetingController-->MeetingPage: Return session creation failure
-        deactivate MeetingController
-
-        MeetingPage-->Secretary: MSG54 - Meeting sessions can no longer\nbe added to this meeting
-
-    else Meeting is Draft, Rejected, or Approved
-        MeetingService->MeetingSessionRepository: Create Meeting Session\nwith Planned status (BR-54, BR-58)
-        activate MeetingSessionRepository
-
-        MeetingSessionRepository->Database: Insert Meeting Session
+    else Agenda modification is permitted
+        AgendaService->AgendaItemRepository: Get Agenda Items of selected Meeting
+        activate AgendaItemRepository
+        AgendaItemRepository->Database: Retrieve Meeting agenda in explicit order
         activate Database
-
-        Database-->MeetingSessionRepository: Meeting Session created
+        Database-->AgendaItemRepository: Meeting Agenda Item list
         deactivate Database
+        AgendaItemRepository-->AgendaService: Meeting Agenda Item list
+        deactivate AgendaItemRepository
 
-        MeetingSessionRepository-->MeetingService: Created Meeting Session
-        deactivate MeetingSessionRepository
+        AgendaService->AgendaItemRepository: Create Agenda Item for selected Meeting\nwith Pending status at the end of the agenda\nand associate selected meeting documents (BR-64, BR-67)
+        activate AgendaItemRepository
+        AgendaItemRepository->Database: Insert Agenda Item and document associations
+        activate Database
+        Database-->AgendaItemRepository: Change saved / Save failed without creating Agenda Item
+        deactivate Database
+        AgendaItemRepository-->AgendaService: Created Agenda Item / Save failed
+        deactivate AgendaItemRepository
 
-        MeetingService-->MeetingController: Meeting Session created successfully
-        deactivate MeetingService
+        alt Agenda Item cannot be created - EX-3
+            AgendaService-->AgendaController: MSG68 - Unable to create the agenda item. Please try again.
+            deactivate AgendaService
+            AgendaController-->MeetingPage: MSG68 - Unable to create the agenda item. Please try again.
+            deactivate AgendaController
+            MeetingPage-->Secretary: MSG68 - Unable to create the agenda item. Please try again.\nAgenda Item is not created
 
-        MeetingController-->MeetingPage: MSG48 - Meeting session created successfully
-        deactivate MeetingController
-
-        MeetingPage-->Secretary: MSG48 - Meeting session created successfully
+        else Agenda Item is created
+            AgendaService-->AgendaController: Agenda Item created successfully
+            deactivate AgendaService
+            AgendaController-->MeetingPage: MSG60 - Agenda item created successfully.\nUpdated Meeting agenda
+            deactivate AgendaController
+            MeetingPage-->Secretary: MSG60 - Agenda item created successfully.\nShow updated Meeting agenda
+        end
     end
 end
 
@@ -461,5 +493,27 @@ deactivate MeetingPage
 - [ ] Mọi `MSGxx` hiển thị cho Actor đều có **full message content**.
 - [ ] Success message cũng có mã + nội dung đầy đủ.
 - [ ] Activation/deactivation không bị treo hoặc chồng sai.
-- [ ] Không trộn technical `CallSession` với business `MeetingSession`.
+- [ ] Không có lifeline Meeting Session; không trộn `CallSession` (kỹ thuật) với nghiệp vụ cuộc họp.
 - [ ] Không tự thêm hành vi không có trong Report 3 / BR / MSG / design đã duyệt.
+
+## 15. Tên file và số UC
+
+- Tên file: `UC<số UC>_<TênUseCase>.txt` + `.png` cùng tên, ví dụ `UC23a_CreateAgendaItem.txt`. Dòng `title` ghi `UC-23a - Create Agenda Item`.
+- Số UC theo [Master Use Case Inventory](../01-requirements/00-master-use-case-inventory.md) (UC-01 → UC-70, baseline 10/10/2026).
+  Ngày 10/10/2026 toàn bộ file đã đổi tên theo số mới; bảng đổi số cũ → mới ở §5 của inventory.
+- Thư mục `meeting-session-management/` đã bị xoá cùng Meeting Session (ADR-0013).
+- BR trong các sơ đồ vẽ trước 10/10/2026 có chỗ dùng số BR của bản dự thảo cũ. Khi chạm vào một sơ đồ, đối chiếu lại từng
+  `BR-xx` với [06-business-rules.md](../01-requirements/06-business-rules.md). Các sơ đồ Meeting (UC-20 → UC-22), Agenda
+  (UC-23a → UC-26) và Participant (UC-28a → UC-30) đã được đối chiếu trong đợt 10/10/2026.
+
+| Thư mục | UC |
+|---|---|
+| `auth/` | UC-01 → UC-03 |
+| `user-management/` | UC-05, UC-06a → UC-06c, UC-07, UC-08 |
+| `role-management/` | UC-10, UC-11, UC-12a → UC-12c |
+| `meeting-management/` | UC-14 → UC-22 |
+| `agenda-management/` | UC-23a → UC-23d, UC-24 → UC-26 |
+| `meeting-participant-management/` | UC-27, UC-28a → UC-28c, UC-29, UC-30 |
+| `notification-management/` | UC-66, UC-67a, UC-67b, UC-68 |
+
+Xuất PNG: `node scripts/export-diagrams.js docs/06-sequencediagram/<thư mục hoặc file>` (cần truy cập `sequencediagram.org`).

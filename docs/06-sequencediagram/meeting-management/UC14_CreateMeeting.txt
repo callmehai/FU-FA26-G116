@@ -1,0 +1,59 @@
+title UC-14 - Create Meeting
+
+actor "Meeting Organizer" as Organizer
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+Organizer->MeetingPage: Submit meeting information
+activate MeetingPage
+
+MeetingPage->MeetingController: Create meeting
+activate MeetingController
+
+MeetingController->MeetingService: createMeeting(meetingInfo)
+activate MeetingService
+
+MeetingService->MeetingService: Validate meeting-level information\nincluding Planned Start/End Time in the future (BR-24, BR-62, BR-162, BR-163)
+
+alt Meeting information is invalid - EX-1
+    MeetingService-->MeetingController: MSG31 - Invalid meeting information
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Return validation errors
+    deactivate MeetingController
+    MeetingPage-->Organizer: MSG31 - Invalid meeting information
+
+else Meeting information is valid
+    MeetingService->MeetingRepository: Create meeting with Draft status\n(BR-26)
+    activate MeetingRepository
+
+    MeetingRepository->Database: Insert meeting
+    activate Database
+
+    alt Meeting cannot be created - EX-2
+        Database-->MeetingRepository: Creation failed
+        deactivate Database
+        MeetingRepository-->MeetingService: Meeting creation failed
+        deactivate MeetingRepository
+        MeetingService-->MeetingController: MSG35 - Unable to create the meeting.\nPlease try again
+        deactivate MeetingService
+        MeetingController-->MeetingPage: Return meeting creation failure
+        deactivate MeetingController
+        MeetingPage-->Organizer: MSG35 - Unable to create the meeting.\nPlease try again
+
+    else Meeting created successfully
+        Database-->MeetingRepository: Meeting created
+        deactivate Database
+        MeetingRepository-->MeetingService: Created meeting
+        deactivate MeetingRepository
+        MeetingService-->MeetingController: Meeting created successfully
+        deactivate MeetingService
+        MeetingController-->MeetingPage: MSG29 - Meeting created successfully
+        deactivate MeetingController
+        MeetingPage-->Organizer: MSG29 - Meeting created successfully
+    end
+end
+
+deactivate MeetingPage

@@ -2,21 +2,26 @@
 
 Thư mục lưu trữ tài liệu yêu cầu nghiệp vụ và đặc tả Use Case cho hệ thống họp không giấy tờ **TrustCabinet**.
 
-Đây là **Single Source of Truth** về mặt nghiệp vụ của dự án:
-- Mọi chức năng, luồng nghiệp vụ và quy tắc kiểm thử đều bám sát theo các đặc tả tại đây.
-- Khung phạm vi hiển thị trên landing page ([frontend/src/pages/scopeData.ts](../../frontend/src/pages/scopeData.ts)) phải đồng bộ với tài liệu này.
+Nguồn chuẩn là ba báo cáo DOCX trên Google Drive (Report 1, 2, 3), được đồng bộ sang
+[08-reports/](../08-reports/README.md). Các file ở đây trích và sắp xếp lại nội dung đó để dev và tester tra cứu nhanh:
+
+- Mọi chức năng, luồng nghiệp vụ và quy tắc kiểm thử bám theo các đặc tả tại đây.
+- Khi Report 3 thay đổi, đồng bộ lại thư mục này trong **cùng commit** với file Report 3 đã sync.
 
 ---
 
 ## 1. Cấu trúc tài liệu
 
-- [00-master-use-case-inventory.md](00-master-use-case-inventory.md) — Danh mục tổng thể Master Use Case Inventory (FE-01 → FE-16, UC-01 → UC-94) & Use Case Diagram Baseline làm nguồn sự thật cho quy hoạch UC toàn dự án.
-- [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case chi tiết UC-01 → UC-54; dẫn chiếu hệ thống Business Rules BR-01 → BR-157 từ Report 3.
-- [06-business-rules.md](06-business-rules.md) — Danh mục tập trung BR-01 → BR-157; UC Specification và Sequence Diagram dẫn chiếu mã tại đây.
-- `01-pham-vi.md` — Danh sách phạm vi chức năng theo mô hình MoSCoW.
-- `02-user-stories.md` — Danh sách User Story và Acceptance Criteria (AC).
-- `03-yeu-cau-phi-chuc-nang.md` — Yêu cầu phi chức năng (NFR): hiệu năng, bảo mật, tải người dùng đồng thời.
-- `04-du-lieu-ca-nhan.md` — Dữ liệu cá nhân và cam kết bảo vệ dữ liệu theo Nghị định 13/2023/NĐ-CP (ghi âm, biên bản, danh tính).
+- [00-master-use-case-inventory.md](00-master-use-case-inventory.md) — Danh mục tổng thể: 15 Feature (FE-01 → FE-15),
+  70 Use Case (UC-01 → UC-70), actor, quan hệ `<<extend>>`/`<<include>>`, **bảng đổi số UC cũ → mới** sau đợt gom UC
+  ngày 10/10/2026.
+- [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case đồng bộ từ Report 3 §II (UC đã đặc tả
+  và UC placeholder), có link tới sequence diagram tương ứng.
+- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1 (131 BR đang dùng trong
+  dải BR-01 → BR-167; danh sách BR ngừng dùng ở cuối file).
+- Mã thông báo `MSGnn`: [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md) là nguồn chuẩn duy nhất.
+
+Yêu cầu phi chức năng, phạm vi MoSCoW và dữ liệu cá nhân hiện nằm trong Report 1 và Report 3 §IV; chưa tách file riêng.
 
 ---
 
@@ -66,7 +71,7 @@ Thư mục lưu trữ tài liệu yêu cầu nghiệp vụ và đặc tả Use C
      - Sau khi hệ thống thông báo lỗi, nếu cho phép người dùng điều chỉnh, kết thúc bằng:
        > *"The flow resumes at Step X of the Main Flow."*
   2. **Fatal / Terminated Exception (Dừng luồng / Thất bại)**:
-     - Xảy ra khi điều kiện nghiệp vụ bị từ chối hoàn toàn (ví dụ: Cuộc họp đã bị hủy, không có quyền thực hiện, phiên họp đã kết thúc).
+     - Xảy ra khi điều kiện nghiệp vụ bị từ chối hoàn toàn (ví dụ: cuộc họp không còn ở trạng thái cho phép, không có quyền thực hiện, cuộc họp đã kết thúc).
      - Luôn mô tả **kết quả nghiệp vụ (Business Outcome)** trước (ví dụ: *"No meeting is created."*, *"The meeting status remains unchanged."*), sau đó kết thúc bằng:
        > *"The use case ends."*
 - **Quy tắc thông báo**: Mọi Exception Flow phải dẫn chiếu đúng **Mã thông báo hệ thống (`MSGxx`)** kèm thông điệp đầy đủ theo danh mục [00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md).

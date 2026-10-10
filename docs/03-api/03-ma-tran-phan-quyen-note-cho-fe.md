@@ -1,6 +1,6 @@
 # Note cho FE — Ma trận vai trò – quyền, của Ticket SCRUM-60
 
-Backend của SCRUM-60 đã xong (UC-09, UC-10). File này ghi những gì FE cần biết để làm màn hình
+Backend của SCRUM-60 đã xong (UC-08, UC-10). File này ghi những gì FE cần biết để làm màn hình
 phân quyền, tập trung vào **những chỗ dễ làm sai mà lỗi lại trông như bug của backend**.
 
 Hợp đồng API đầy đủ: [03-ma-tran-phan-quyen.md](03-ma-tran-phan-quyen.md). File này không nhắc

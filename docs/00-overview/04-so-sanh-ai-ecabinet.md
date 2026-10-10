@@ -19,8 +19,11 @@ nhóm nếu cần.
 ## TrustCabinet giữ lại gì
 
 - **Từ vựng nghiệp vụ và vòng đời cuộc họp** — xem [vòng đời](../02-design/01-vong-doi-cuoc-hop.md)
-- **Bố cục giao diện**: hai không gian làm việc dùng chung một khung, sidebar trái, thanh trên có
-  bộ chuyển không gian
+- **Mô hình cuộc họp**: một cuộc họp là một buổi họp, không có cấp phiên họp — chữ "phiên họp" trên UI của
+  AI-eCabinet là mục agenda ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)); biểu quyết ngay trong
+  cuộc họp, chủ trì ghi kết luận Thông qua / Không thông qua / Hoãn ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md))
+- **Bố cục giao diện** ban đầu bám theo AI-eCabinet; nay là một sidebar dọc theo
+  [ADR-0012](../05-decisions/0012-giao-dien-hanh-chinh-sidebar-doc.md)
 - **Cách chia màn chi tiết cuộc họp thành tab** theo giai đoạn nghiệp vụ
 - **Nguyên tắc**: giao diện không phải ranh giới bảo mật — ẩn menu không thay được kiểm tra quyền
   ở phía server; route thiếu quyền trả 404 chứ không phải 403, để không lộ sự tồn tại của màn hình
@@ -31,7 +34,7 @@ nhóm nếu cần.
 |---|---|---|
 | Backend | ASP.NET Core 10 | Yêu cầu môn học, nhóm quen C# |
 | Phân quyền | RBAC đơn giản trong ứng dụng | OpenFGA quá nặng cho một kỳ đồ án |
-| Gọi thoại/video | WebRTC + SignalR, tích hợp sẵn | **Điểm khác biệt chính** — bản gốc không có |
+| Gọi thoại/video | Phòng họp trực tuyến trên LiveKit SFU tự host ([ADR-0010](../05-decisions/0010-phong-hop-truc-tuyen-dung-livekit-sfu.md)) | **Điểm khác biệt chính** — bản gốc không có |
 | AI | Gọi dịch vụ ASR bên ngoài | Không tự vận hành mô hình |
 | Xác thực | Email + mật khẩu, hoặc đăng nhập Google | Không dựng IdP riêng như Zitadel cho một kỳ đồ án |
 | Ký số | Mô phỏng | Không có HSM/USB token thật |

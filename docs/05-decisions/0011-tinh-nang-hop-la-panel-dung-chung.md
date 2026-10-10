@@ -1,6 +1,6 @@
 # ADR-0011: Tính năng dùng trong lúc họp là panel dùng chung cho màn chi tiết và phòng họp
 
-- **Trạng thái:** Đã chấp nhận
+- **Trạng thái:** Đã chấp nhận — phần dữ liệu theo Meeting Session thay thế bởi ADR-0013
 - **Ngày:** 2026-09-30
 - **Người quyết định:** Hải Trần Việt, Gia Khánh Phạm; chờ nhóm SEP490-G116 duyệt qua pull request
 

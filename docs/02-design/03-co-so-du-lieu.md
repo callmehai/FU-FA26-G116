@@ -128,7 +128,7 @@ DB; nó chỉ đụng đúng những dòng mang chuỗi đó, không đè mật 
 
 ## Quy ước đặt tên
 
-Bảng và cột dùng **snake_case** (`meeting_status_history`, `starts_at`), sinh tự động từ
+Bảng và cột dùng **snake_case** (`meeting_status_history`, `created_by_id`), sinh tự động từ
 `UseSnakeCaseNamingConvention()`. Lý do: PostgreSQL hạ chữ thường mọi identifier không đóng ngoặc
 kép, nên để PascalCase thì mọi câu SQL viết tay đều phải gõ `SELECT * FROM "Meetings"`. Trong code
 C# tên vẫn là `Meeting.Title` như bình thường — EF lo phần ánh xạ.
@@ -159,7 +159,7 @@ Duyệt tới bảng: `trustcabinet` → **Schemas** → `public` → **Tables**
 *View Data*, hoặc mở SQL Editor (`Ctrl/Cmd + ]`) rồi chạy:
 
 ```sql
-SELECT title, status, sensitivity, mode, starts_at FROM meetings ORDER BY starts_at;
+SELECT title, status, sensitivity, mode FROM meetings ORDER BY title;
 SELECT full_name, email, role FROM users ORDER BY role;
 SELECT role, capability FROM role_capabilities ORDER BY role;
 SELECT from_status, to_status, occurred_at FROM meeting_status_history ORDER BY occurred_at;

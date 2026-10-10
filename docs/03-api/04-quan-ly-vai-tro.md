@@ -2,8 +2,8 @@
 
 > **Trạng thái: BE đã làm; FE đã cập nhật theo mục 8 và chờ Tester xác minh tích hợp.** Người làm BE:
 > Hoàng Đức Lộc (`SCRUM-63`). Quyết định nền: [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md).
-> Sequence diagram: [UC12_CreateRole](../06-sequencediagram/role-management/UC12_CreateRole.png),
-> [UC13_UpdateRole](../06-sequencediagram/role-management/UC13_UpdateRole.png), [UC14_DeleteRole](../06-sequencediagram/role-management/UC14_DeleteRole.png).
+> Sequence diagram: [UC12a_CreateRole](../06-sequencediagram/role-management/UC12a_CreateRole.png),
+> [UC12b_UpdateRole](../06-sequencediagram/role-management/UC12b_UpdateRole.png), [UC12c_DeleteRole](../06-sequencediagram/role-management/UC12c_DeleteRole.png).
 
 Quản trị viên **tạo vai trò mới, đổi tên, xoá** vai trò tự tạo, không phải chờ deploy. Vai trò là
 bảng `roles` khoá `Guid`; mọi chỗ trước đây dùng enum `SystemRole` giờ dùng `roleId`; bốn vai trò cũ
@@ -112,8 +112,8 @@ phải Guid (`/api/roles/Chair`) không khớp route → `404`.
 |---|---|---|
 | `GET` | `/api/roles` | Liệt kê vai trò |
 | `POST` | `/api/roles` | Tạo vai trò (UC-11) |
-| `PUT` | `/api/roles/{id}` | Đổi tên / mô tả (UC-12) |
-| `DELETE` | `/api/roles/{id}` | Xoá (UC-13) |
+| `PUT` | `/api/roles/{id}` | Đổi tên / mô tả (UC-12a) |
+| `DELETE` | `/api/roles/{id}` | Xoá (UC-12b) |
 
 ### 4.1 `GET /api/roles`
 
@@ -162,7 +162,7 @@ Thành công: `201`, `Location: /api/roles/{id}`:
 { "name": "Phó thư ký", "description": null }
 ```
 
-Thứ tự kiểm theo sequence diagram UC-12:
+Thứ tự kiểm theo sequence diagram UC-12a:
 
 1. Không tồn tại → `404`
 2. Vai trò mặc định → `MSG24` (trước cả validate: không có gì để sửa trong form)
@@ -179,7 +179,7 @@ không chạm quyền, không chạm người.
 
 ### 4.4 `DELETE /api/roles/{id}`
 
-Thứ tự theo UC-13, chạy trong guard:
+Thứ tự theo UC-12b, chạy trong guard:
 
 1. Không tồn tại → `404`
 2. Vai trò mặc định → `MSG24`
@@ -326,7 +326,7 @@ trò thành dữ liệu (ADR-0008) thì:
 - Mọi tài khoản **đang hoạt động** đều đăng nhập được, kể cả vai trò không có quyền nào — vào được như
   `Member`: xem cuộc họp mình được mời, không mở được màn hình quản trị.
 - `/refresh` không còn cắt phiên với lý do "hết quyền"; token mới chỉ đơn giản không mang quyền nào.
-- Chặn một người đăng nhập vẫn làm được bằng **vô hiệu hoá tài khoản** (UC-07; đăng nhập nhận `MSG02`).
+- Chặn một người đăng nhập vẫn làm được bằng **vô hiệu hoá tài khoản** (UC-06c; đăng nhập nhận `MSG02`).
 - Hệ quả BA cần biết: nếu quản trị viên gỡ hết quyền của `Chủ toạ` / `Thư ký` / `Quản trị viên`,
   người mang các vai trò đó **vẫn đăng nhập được** (trước đây bị chặn) — chỉ mất chức năng.
 
