@@ -245,6 +245,8 @@ input, textarea {
 
 textarea { height: auto; min-height: 80px; padding: 8px 12px; resize: vertical; }
 input::placeholder, textarea::placeholder { color: var(--faint-ink); }
+/* A field the user may not change here, e.g. the title of a Published meeting being rescheduled. */
+input:disabled, textarea:disabled { background: var(--surface-alt); color: var(--muted-ink); cursor: not-allowed; }
 
 input:focus-visible, textarea:focus-visible {
   outline: none;
@@ -991,6 +993,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
    actions column out of view at a 1200px window. */
 .data-table td.cell-title { white-space: normal; min-width: 96px; }
 .cell-muted { color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
+.cell-schedule { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .cell-empty { margin: 0; padding: 56px 16px; color: var(--muted-ink); text-align: center; }
 .cell-empty .btn { margin-top: 4px; }
 .cell-error { margin: 0 0 10px; color: var(--danger); }
@@ -1343,6 +1346,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* ---------- Forms ---------- */
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .span-2 { grid-column: 1 / -1; }
+/* Day, start, end of one sitting side by side (ADR-0013). */
+.form-row-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .form-actions { display: flex; justify-content: flex-end; gap: 8px; }
 /* A page-level form and the alerts about it share one readable column, instead of stretching
    across the 1280px content width. flex: none for the same reason as .table-card: inside the
@@ -1351,20 +1356,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .form-card { flex: none; gap: 20px 16px; padding: 24px; }
 /* The actions sit under a divider at the end of the form, where the eye already is. */
 .form-card .form-actions { margin-top: 4px; padding-top: 20px; border-top: 1px solid var(--line); }
-/* A value the user does not type, shown where an input would be and at the same height. */
-.field-static {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: var(--control-height);
-  margin: 0;
-  padding: 0 12px;
-  border-radius: var(--radius);
-  background: var(--surface-alt);
-  color: var(--ink);
-  font-size: 14px;
-}
-.field-static .icon { color: var(--muted-ink); }
 .field-foot { display: flex; justify-content: space-between; gap: 12px; }
 .field-counter { flex: none; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
 /* An inline action inside a line of text ("… Thử lại"). */
@@ -1736,7 +1727,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .summary-icon { display: none; }
   .summary-count { font-size: 24px; }
   .page-header { flex-wrap: wrap; }
-  .field-grid, .form-grid { grid-template-columns: minmax(0, 1fr); }
+  .field-grid, .form-grid, .form-row-3 { grid-template-columns: minmax(0, 1fr); }
   .page-alert { flex-direction: column; align-items: flex-start; }
   .content { padding: 20px 16px; }
   .search { width: 100%; }

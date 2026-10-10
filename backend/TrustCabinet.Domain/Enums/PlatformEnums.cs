@@ -7,6 +7,7 @@ public enum NotificationType
     MeetingInvited,
     MeetingPublished,
     MeetingStartingSoon,
+    MeetingRescheduled,
     MeetingCancelled,
     VotingOpened,
     MinutesWaitingApproval,

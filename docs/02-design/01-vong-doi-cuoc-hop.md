@@ -27,9 +27,9 @@ Vòng đời PO chốt kết thúc ở `Ended` (quyết định 09/10/2026). Tr�
 một cuộc họp là một buổi họp, tự mang `PlannedStartTime` / `PlannedEndTime` / `ActualStartedAt` / `ActualEndedAt`
 ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)).
 
-> **Code đang chạy chưa theo kịp:** enum `MeetingStatus` (backend và [types/meeting.ts](../../frontend/src/types/meeting.ts))
-> vẫn còn `MinutesIssued` và `Archived`, và vẫn có entity `MeetingSession`. Gỡ bằng migration mới khi làm ticket liên quan;
-> không dùng hai trạng thái này cho tính năng mới.
+Code đã khớp: enum `MeetingStatus` (backend và [types/meeting.ts](../../frontend/src/types/meeting.ts)) chỉ còn bảy
+trạng thái trên. Migration `MeetingOwnsScheduleDropSessions` chuyển dữ liệu `MinutesIssued` / `Archived` cũ thành `Ended`
+và drop bảng `meeting_sessions`. Dời lịch sau công bố ghi history `Reschedule` (`Published → Published`).
 
 Khi gửi duyệt theo UC-18, người tổ chức chọn một tài khoản đang hoạt động có capability
 `MeetingApprover`. Trường `AssignedApproverId` được để trống trong bản nháp cho tới bước này.

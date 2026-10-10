@@ -27,7 +27,7 @@ các bước tương ứng, còn sequence thể hiện cùng BR ID và message c
 
 ## Mã tiếp theo
 
-**`MSG138`** — workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; `MSG90`–`MSG91` ngừng dùng, không tái cấp. `MSG48`–`MSG77` và `MSG95`–`MSG128` đã dành cho Meeting Session, Agenda, participant, room và các màn đọc liên quan. Đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG140`** — workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`; `MSG139` dành cho UC-22. `MSG90`–`MSG91` ngừng dùng, không tái cấp. `MSG60`–`MSG76` và `MSG95`–`MSG128` đã dành cho Agenda, participant, room và các màn đọc liên quan; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -157,6 +157,7 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG135` | 409 | POST TransferOrganizer | Meeting không còn Approved hoặc Organizer hiện tại vẫn active | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
 | `MSG136` | 503 | GET readiness, GET history | Không tải được readiness/history | `Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG137` | 409 | POST Publish | Không có đúng một Chair active hoặc không có Secretary active | `Cuộc họp cần có đúng một Chủ tọa đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố.` | BE |
+| `MSG138` | 200 | `PUT /api/meetings/{id}` | Organizer dời lịch cuộc họp `Published` (UC-15 AF-1): thời gian, địa điểm hoặc link đã đổi và người được mời đã có thông báo. PUT không đổi gì vẫn trả `MSG30` | `Đã dời lịch cuộc họp. Người được mời sẽ nhận thông báo.` | BE |
 
 ### Dành sẵn, chưa có code
 
@@ -165,18 +166,18 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 
 | Mã | Use case | Tình huống (theo sơ đồ) |
 |---|---|---|
-| `MSG48` | UC-26 Create Meeting Session | *Meeting session created successfully.* |
-| `MSG49` | UC-27 Update Meeting Session | *Meeting session updated successfully.* |
-| `MSG50` | UC-28 Cancel Meeting Session | *Meeting session cancelled successfully.* |
-| `MSG51` | UC-29 Start Meeting Session | *Meeting session started successfully.* |
-| `MSG52` | UC-30 End Meeting Session | *Meeting session ended successfully.* |
-| `MSG53` | UC-26 / UC-27 | *Invalid meeting session information.* |
-| `MSG54` | UC-26 | *Meeting sessions can no longer be added to this meeting.* |
-| `MSG55` | UC-27 | *This meeting session can no longer be edited.* |
-| `MSG56` | UC-28 | *This meeting session can no longer be cancelled.* |
-| `MSG57` | UC-29 | *Another meeting session is already in progress. End it before starting another session.* |
-| `MSG58` | UC-29 | *This meeting session cannot be started.* |
-| `MSG59` | UC-30 | *This meeting session cannot be ended.* |
+| `MSG48` | UC-26 Create Meeting Session | *Meeting session created successfully.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG49` | UC-27 Update Meeting Session | *Meeting session updated successfully.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG50` | UC-28 Cancel Meeting Session | *Meeting session cancelled successfully.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG51` | UC-29 Start Meeting Session | *Meeting session started successfully.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG52` | UC-30 End Meeting Session | *Meeting session ended successfully.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG53` | UC-26 / UC-27 | *Invalid meeting session information.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG54` | UC-26 | *Meeting sessions can no longer be added to this meeting.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG55` | UC-27 | *This meeting session can no longer be edited.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG56` | UC-28 | *This meeting session can no longer be cancelled.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG57` | UC-29 | *Another meeting session is already in progress. End it before starting another session.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG58` | UC-29 | *This meeting session cannot be started.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG59` | UC-30 | *This meeting session cannot be ended.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
 | `MSG60` | UC-31 Create Agenda Item | *Agenda item created successfully.* |
 | `MSG61` | UC-32 Update Agenda Item | *Agenda item updated successfully.* |
 | `MSG62` | UC-33 Delete Agenda Item | *Agenda item deleted successfully.* |
@@ -194,7 +195,7 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MSG74` | UC-36 | *This agenda item cannot be completed.* |
 | `MSG75` | UC-35 | *Unable to set the current agenda item. Please try again.* |
 | `MSG76` | UC-36 | *Unable to complete the agenda item. Please try again.* |
-| `MSG77` | UC-28 | *The last planned meeting session of a published meeting cannot be cancelled.* |
+| `MSG77` | UC-28 | *The last planned meeting session of a published meeting cannot be cancelled.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
 | `MSG90` | UC-21 Phát hành cuộc họp | *At least one valid planned Meeting Session is required before publication.* — **Ngừng dùng**; Report 3 source-of-truth xác định Meeting Sessions là tùy chọn. Không tái sử dụng mã. |
 | `MSG91` | SCRUM-19 | Mã từng được giữ cho workflow nhưng không còn tình huống backend — **Ngừng dùng**, không tái sử dụng. |
 | `MSG95` | UC-37 / UC-42 | *Unable to load meeting participants. Please try again.* |
@@ -215,7 +216,7 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MSG110` | UC-43 Start Meeting | *Meeting started successfully.* |
 | `MSG111` | UC-44 End Meeting | *Meeting ended successfully.* |
 | `MSG112` | UC-43 | *This meeting cannot be started.* |
-| `MSG113` | UC-44 | *Complete or cancel all unfinished meeting sessions before ending the meeting.* |
+| `MSG113` | UC-44 | *Complete or cancel all unfinished meeting sessions before ending the meeting.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
 | `MSG114` | UC-44 | *This meeting cannot be ended.* |
 | `MSG115` | UC-43 | *Unable to start the meeting. Please try again.* |
 | `MSG116` | UC-44 | *Unable to end the meeting. Please try again.* |
@@ -229,8 +230,9 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MSG124` | UC-51 | *Unable to apply the room moderation action.* |
 | `MSG125` | UC-52 Use In-room Chat | *Unable to send the room message. Please try again.* |
 | `MSG126` | UC-41 | *Unable to verify the guest invitation. Check the code and try again.* |
-| `MSG127` | UC-53 View Meeting Sessions | *Unable to load meeting sessions. Please try again.* |
+| `MSG127` | UC-53 View Meeting Sessions | *Unable to load meeting sessions. Please try again.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
 | `MSG128` | UC-54 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |
+| `MSG139` | UC-22 End Meeting | *Close all open votes before ending the meeting.* |
 
 `MSG83` và `MSG84` đã được workflow SCRUM-19 dùng. `MSG90` và `MSG91` chỉ được giữ để không tái cấp.
 

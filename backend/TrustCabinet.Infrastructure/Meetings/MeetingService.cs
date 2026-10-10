@@ -21,17 +21,20 @@ public sealed class MeetingService(
     public async Task<MeetingResult> CreateAsync(
         MeetingInput input, Guid actorId, CancellationToken ct = default)
     {
-        if (!MeetingRules.TryValidate(input, out var valid, out var errors))
+        var now = UtcNow;
+        if (!MeetingRules.TryValidate(input, startsAfter: now, out var valid, out var errors))
         {
             return MeetingResult.Invalid(errors);
         }
 
-        var now = UtcNow;
         var meeting = new Meeting
         {
             Title = valid!.Title,
+            PlannedStartTime = valid.PlannedStartTime,
+            PlannedEndTime = valid.PlannedEndTime,
             Mode = valid.Mode,
             Location = valid.Location,
+            OnlineLink = valid.OnlineLink,
             Sensitivity = valid.Sensitivity,
             Description = valid.Description,
             Status = MeetingStatus.Draft,
@@ -140,7 +143,7 @@ public sealed class MeetingService(
                 return MeetingResult.Failure(MeetingOutcome.NotFound);
             }
 
-            return MeetingRules.IsEditable(meeting.Status)
+            return MeetingRules.IsEditable(meeting.Status) || MeetingRules.IsReschedulable(meeting.Status)
                 ? MeetingResult.Success(MeetingDetails.From(meeting))
                 : MeetingResult.Failure(MeetingOutcome.NotEditable);
         }
@@ -175,27 +178,29 @@ public sealed class MeetingService(
                     return MeetingResult.Failure(MeetingOutcome.NotFound);
                 }
 
-                // Match UC-16: check the current, locked state before validating submitted fields.
-                if (!MeetingRules.IsEditable(meeting.Status))
+                // Match UC-15: check the current, locked state before validating submitted fields.
+                var reschedules = MeetingRules.IsReschedulable(meeting.Status);
+                if (!reschedules && !MeetingRules.IsEditable(meeting.Status))
                 {
                     return MeetingResult.Failure(MeetingOutcome.NotEditable);
                 }
 
                 var input = await inputFactory(token);
-                if (!MeetingRules.TryValidate(input, out var valid, out var errors))
+                var now = UtcNow;
+                if (!MeetingRules.TryValidate(input, reschedules ? now : null, out var valid, out var errors))
                 {
                     return MeetingResult.Invalid(errors);
                 }
 
                 var normalized = valid!;
+                if (reschedules)
+                {
+                    return await RescheduleAsync(meeting, normalized, actorId, now, token);
+                }
+
                 if (HasChanges(meeting, normalized))
                 {
-                    meeting.Title = normalized.Title;
-                    meeting.Mode = normalized.Mode;
-                    meeting.Location = normalized.Location;
-                    meeting.Sensitivity = normalized.Sensitivity;
-                    meeting.Description = normalized.Description;
-                    meeting.UpdatedAt = UtcNow;
+                    Apply(meeting, normalized, now);
                     await meetings.SaveChangesAsync(token);
                 }
 
@@ -213,10 +218,97 @@ public sealed class MeetingService(
         }
     }
 
+    /// <summary>
+    /// UC-15 AF-1. Only the times, place and link may move (BR-158); the rest must come back as it
+    /// is. The change is written to history and every current invitee is told in-app (BR-76).
+    /// </summary>
+    private async Task<MeetingResult> RescheduleAsync(
+        Meeting meeting, ValidatedMeetingInput input, Guid actorId, DateTimeOffset now, CancellationToken ct)
+    {
+        var locked = new Dictionary<string, string>(StringComparer.Ordinal);
+        const string lockedMessage = "Cuộc họp đã công bố, chỉ được dời thời gian, địa điểm và link họp.";
+        if (!string.Equals(meeting.Title, input.Title, StringComparison.Ordinal))
+        {
+            locked["title"] = lockedMessage;
+        }
+
+        if (meeting.Mode != input.Mode)
+        {
+            locked["mode"] = lockedMessage;
+        }
+
+        if (meeting.Sensitivity != input.Sensitivity)
+        {
+            locked["sensitivity"] = lockedMessage;
+        }
+
+        if (!string.Equals(meeting.Description, input.Description, StringComparison.Ordinal))
+        {
+            locked["description"] = lockedMessage;
+        }
+
+        if (locked.Count > 0)
+        {
+            return MeetingResult.Invalid(locked);
+        }
+
+        if (!HasChanges(meeting, input))
+        {
+            return MeetingResult.Success(MeetingDetails.From(meeting));
+        }
+
+        Apply(meeting, input, now);
+        var history = new MeetingStatusHistory
+        {
+            Id = Guid.CreateVersion7(),
+            MeetingId = meeting.Id,
+            FromStatus = MeetingStatus.Published,
+            ToStatus = MeetingStatus.Published,
+            Action = MeetingHistoryAction.Reschedule,
+            ActorId = actorId,
+            Reason = string.Empty,
+            OccurredAt = now,
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
+        meeting.StatusHistory.Add(history);
+        await meetings.AddHistoryAsync(history, ct);
+        await meetings.AddNotificationsAsync(
+            MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants)
+                .Select(participant => CreateNotification(
+                    participant.UserId,
+                    meeting,
+                    NotificationType.MeetingRescheduled,
+                    "Cuộc họp đã dời lịch",
+                    $"Cuộc họp “{meeting.Title}” đã thay đổi thời gian hoặc địa điểm. Mở cuộc họp để xem lịch mới.",
+                    now,
+                    history.Id))
+                .ToArray(),
+            ct);
+        await meetings.SaveChangesAsync(ct);
+        return MeetingResult.Success(MeetingDetails.From(meeting), rescheduled: true);
+    }
+
+    private static void Apply(Meeting meeting, ValidatedMeetingInput input, DateTimeOffset now)
+    {
+        meeting.Title = input.Title;
+        meeting.PlannedStartTime = input.PlannedStartTime;
+        meeting.PlannedEndTime = input.PlannedEndTime;
+        meeting.Mode = input.Mode;
+        meeting.Location = input.Location;
+        meeting.OnlineLink = input.OnlineLink;
+        meeting.Sensitivity = input.Sensitivity;
+        meeting.Description = input.Description;
+        meeting.UpdatedAt = now;
+    }
+
     private static bool HasChanges(Meeting meeting, ValidatedMeetingInput input)
         => !string.Equals(meeting.Title, input.Title, StringComparison.Ordinal)
+            || meeting.PlannedStartTime != input.PlannedStartTime
+            || meeting.PlannedEndTime != input.PlannedEndTime
             || meeting.Mode != input.Mode
             || !string.Equals(meeting.Location, input.Location, StringComparison.Ordinal)
+            || !string.Equals(meeting.OnlineLink, input.OnlineLink, StringComparison.Ordinal)
             || meeting.Sensitivity != input.Sensitivity
             || !string.Equals(meeting.Description, input.Description, StringComparison.Ordinal);
 

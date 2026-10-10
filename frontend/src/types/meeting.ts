@@ -1,7 +1,7 @@
 /**
  * Meeting lifecycle. The order below is the state machine: a meeting is drafted, submitted for
- * approval, approved (or rejected back to draft), published to attendees, run, ended, then its
- * minutes are issued and the record is archived.
+ * approval, approved (or rejected and resubmitted), published to attendees, run, then ended. The
+ * minutes have their own status (ADR-0013).
  *
  * Kept as a const array so the UI can both type-check a status and iterate the states, e.g. to
  * render a filter dropdown.
@@ -14,8 +14,6 @@ export const MEETING_STATUSES = [
   'Published',
   'InProgress',
   'Ended',
-  'MinutesIssued',
-  'Archived',
 ] as const
 
 export type MeetingStatus = (typeof MEETING_STATUSES)[number]
@@ -28,12 +26,16 @@ export const MEETING_STATUS_LABEL: Record<MeetingStatus, string> = {
   Published: 'Đã công bố',
   InProgress: 'Đang diễn ra',
   Ended: 'Đã kết thúc',
-  MinutesIssued: 'Đã ban hành biên bản',
-  Archived: 'Đã lưu trữ',
 }
 
-/** UC-12: the only states whose information can still be changed. The backend checks again on PUT. */
+/** UC-15: the only states whose information can still be changed. The backend checks again on PUT. */
 export const EDITABLE_STATUSES: readonly MeetingStatus[] = ['Draft', 'Rejected']
+
+/**
+ * UC-15 AF-1: once Published, the organizer may only move the times, place and link (BR-158). The
+ * same PUT carries the whole form; any other field that differs answers MSG31.
+ */
+export const RESCHEDULABLE_STATUSES: readonly MeetingStatus[] = ['Published']
 
 /** How sensitive a meeting's contents are. Drives the access banner and document handling. */
 export const SENSITIVITIES = ['Normal', 'Internal', 'Confidential', 'Secret'] as const
@@ -57,17 +59,26 @@ export const MEETING_MODE_LABEL: Record<MeetingMode, string> = {
 }
 
 /**
- * GET /api/meetings/{id}, and the `meeting` of every create/update response. Meeting-level fields
- * only: the schedule belongs to the meeting's sessions (SCRUM-70). Timestamps are UTC ISO 8601.
+ * GET /api/meetings/{id}, and the `meeting` of every create/update response. One meeting is one
+ * sitting and carries its own schedule (ADR-0013). Timestamps are UTC ISO 8601.
  */
 export interface Meeting {
   id: string
   title: string
   /** Empty string when none was given. */
   description: string
+  plannedStartTime: string
+  /** Always after `plannedStartTime`. */
+  plannedEndTime: string
+  /** Set by the server when the Chair starts the meeting; null until then. */
+  actualStartedAt: string | null
+  /** Set by the server when the Chair ends the meeting; null until then. */
+  actualEndedAt: string | null
   mode: MeetingMode
   /** Empty string when none was given. */
   location: string
+  /** An external link; null means the TrustCabinet online room (BR-163). */
+  onlineLink: string | null
   sensitivity: Sensitivity
   status: MeetingStatus
   /** The organizer: who created the meeting, and who moves it through review and publishing. */
@@ -85,13 +96,17 @@ export interface Meeting {
 export interface MeetingListItem {
   id: string
   title: string
+  plannedStartTime: string
+  plannedEndTime: string
+  mode: MeetingMode
+  location: string
   createdAt: string
   status: MeetingStatus
   sensitivity: Sensitivity
 }
 
 /** The columns GET /api/meetings can sort by. */
-export type MeetingSortBy = 'title' | 'createdAt'
+export type MeetingSortBy = 'title' | 'plannedStartTime' | 'createdAt'
 export type SortDirection = 'asc' | 'desc'
 
 /** GET /api/meetings — one page of the meetings the caller may see, filtered and sorted server-side. */
@@ -110,10 +125,7 @@ export interface MeetingListQuery {
   q?: string
   status?: MeetingStatus
   sensitivity?: Sensitivity
-  /**
-   * UTC ISO; both ends inclusive. A meeting matches when one of its sessions that is not cancelled
-   * overlaps the range, so a meeting without sessions never matches a range.
-   */
+  /** UTC ISO; both ends inclusive. A meeting matches when its planned interval overlaps the range (BR-30). */
   from?: string
   to?: string
   page: number
@@ -123,18 +135,22 @@ export interface MeetingListQuery {
 }
 
 /**
- * Body of POST /api/meetings and PUT /api/meetings/{id}. PUT replaces all five fields. The approver
- * is not part of it: it is chosen when the meeting is sent for approval (SCRUM-19).
+ * Body of POST /api/meetings and PUT /api/meetings/{id}. PUT replaces every field. The approver is
+ * not part of it: it is chosen when the meeting is sent for approval (SCRUM-19). Times are UTC ISO.
  */
 export interface MeetingRequest {
   title: string
+  plannedStartTime: string
+  plannedEndTime: string
   mode: MeetingMode
   location: string
+  /** Null or blank: use the TrustCabinet online room. At most 1,000 characters. */
+  onlineLink: string | null
   sensitivity: Sensitivity
   description: string
 }
 
-/** POST answers MSG29, PUT answers MSG30. */
+/** POST answers MSG29; PUT answers MSG30, or MSG138 when a Published meeting was rescheduled. */
 export interface MeetingMutationResponse {
   code: string
   message: string
@@ -176,6 +192,7 @@ export type MeetingHistoryAction =
   | 'ReturnToDraft'
   | 'Publish'
   | 'TransferOrganizer'
+  | 'Reschedule'
   | 'LegacyTransition'
 
 /** One immutable row of GET /api/meetings/{id}/history. */

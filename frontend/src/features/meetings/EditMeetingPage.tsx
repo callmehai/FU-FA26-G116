@@ -8,15 +8,16 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { useForwardedBackState } from '../../lib/backTarget'
 import { routes } from '../../lib/routes'
-import { EDITABLE_STATUSES, MEETING_STATUS_LABEL } from '../../types/meeting'
+import { EDITABLE_STATUSES, MEETING_STATUS_LABEL, RESCHEDULABLE_STATUSES } from '../../types/meeting'
 import { useAccessLost } from '../auth/useAccessLost'
 import { useAuth } from '../auth/useAuth'
 import { MeetingForm } from './MeetingForm'
 import { useMeeting } from './useMeeting'
 
 /**
- * UC-12 Update Meeting (SCRUM-17). The form is filled from a fresh GET rather than from whatever
- * screen linked here, and only the meeting's creator may edit it, only in Draft or Rejected.
+ * UC-15 Update Meeting. The form is filled from a fresh GET rather than from whatever screen linked
+ * here, and only the meeting's creator may edit it: fully in Draft or Rejected, and in Published
+ * only to reschedule (AF-1).
  */
 export function EditMeetingPage() {
   const { meetingId } = useParams()
@@ -55,7 +56,8 @@ export function EditMeetingPage() {
   // cannot be saved.
   if (meeting.createdById !== user?.id) return <NotFound />
 
-  const editable = EDITABLE_STATUSES.includes(meeting.status)
+  const reschedule = RESCHEDULABLE_STATUSES.includes(meeting.status)
+  const editable = EDITABLE_STATUSES.includes(meeting.status) || reschedule
   const backToMeeting = () => navigate(routes.meeting(meeting.id), { state: forwardBack })
 
   return (
@@ -64,7 +66,7 @@ export function EditMeetingPage() {
         {meeting.title}
       </BackLink>
 
-      <PageHeader title="Chỉnh sửa cuộc họp" description={meeting.title} />
+      <PageHeader title={reschedule ? 'Dời lịch cuộc họp' : 'Chỉnh sửa cuộc họp'} description={meeting.title} />
 
       <div className="form-page">
         {!editable ? (
@@ -72,7 +74,7 @@ export function EditMeetingPage() {
             <p>
               {conflict ?? 'Cuộc họp này không thể chỉnh sửa được nữa.'} Trạng thái hiện tại:{' '}
               <b>{MEETING_STATUS_LABEL[meeting.status]}</b>. Chỉ sửa được khi cuộc họp ở trạng thái Nháp hoặc Bị từ
-              chối.
+              chối; khi Đã công bố chỉ dời được lịch.
             </p>
             <button type="button" className="btn btn-outline btn-sm" onClick={backToMeeting}>
               Về trang cuộc họp
@@ -89,7 +91,7 @@ export function EditMeetingPage() {
 
             <MeetingForm
               meeting={meeting}
-              submitLabel="Lưu thay đổi"
+              submitLabel={reschedule ? 'Lưu và thông báo' : 'Lưu thay đổi'}
               pendingLabel="Đang lưu…"
               onSubmit={(body) => updateMeeting(meeting.id, body)}
               onSaved={(response) => {

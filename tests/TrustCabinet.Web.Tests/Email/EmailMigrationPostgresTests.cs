@@ -341,7 +341,10 @@ public sealed class EmailMigrationPostgresTests : IAsyncLifetime
         Assert.Equal(administrator.Id, persisted.ActorId);
         Assert.Equal(transfer.Reason, persisted.Reason);
         Assert.Equal(now.ToUnixTimeMilliseconds(), persisted.OccurredAt.ToUnixTimeMilliseconds());
-        Assert.Equal(newOrganizer.Id, (await _db.Meetings.AsNoTracking().SingleAsync()).CreatedById);
+        // Read the column directly: the refused rollback already undid later meeting columns.
+        Assert.Equal(newOrganizer.Id, await _db.Database.SqlQuery<Guid>($"""
+            SELECT created_by_id AS "Value" FROM meetings
+            """).SingleAsync());
         Assert.Equal(2, await _db.Database.SqlQuery<int>($"""
             SELECT COUNT(*)::integer AS "Value" FROM information_schema.columns
             WHERE table_schema = 'public' AND table_name = 'meeting_status_history'
