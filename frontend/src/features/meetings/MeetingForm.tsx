@@ -4,6 +4,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { fromDateTimeInput, toDateTimeInput } from '../../lib/dateInput'
 import { errorMessage, isApiError } from '../../lib/errors'
+import { formatDate } from '../../lib/format'
 import {
   MEETING_MODES,
   MEETING_MODE_LABEL,
@@ -57,6 +58,12 @@ interface Values {
   /** `HH:mm` */
   start: string
   end: string
+  /**
+   * Days from `date` to the end's day. 0 for every meeting the form creates; an older meeting (a
+   * migrated multi-session one, or one written through the API) may end on a later day, and the form
+   * keeps that rather than silently moving the end onto the start's day.
+   */
+  endDays: number
   mode: MeetingMode
   sensitivity: Sensitivity
   location: string
@@ -77,6 +84,7 @@ function initialValues(meeting: Meeting | null): Values {
     date: start.slice(0, 10),
     start: start.slice(11),
     end: end.slice(11),
+    endDays: meeting ? daysBetween(start.slice(0, 10), end.slice(0, 10)) : 0,
     mode: meeting?.mode ?? 'InPerson',
     sensitivity: meeting?.sensitivity ?? 'Normal',
     location: meeting?.location ?? '',
@@ -84,8 +92,14 @@ function initialValues(meeting: Meeting | null): Values {
   }
 }
 
+const DAY = 86_400_000
+/** Calendar days between two `YYYY-MM-DD` values; read as UTC so a DST change cannot shave an hour off. */
+const daysBetween = (from: string, to: string) => Math.round((Date.parse(to) - Date.parse(from)) / DAY)
+const addDays = (date: string, days: number) => new Date(Date.parse(date) + days * DAY).toISOString().slice(0, 10)
+
 const startOf = (values: Values) => (values.date && values.start ? fromDateTimeInput(`${values.date}T${values.start}`) : null)
-const endOf = (values: Values) => (values.date && values.end ? fromDateTimeInput(`${values.date}T${values.end}`) : null)
+const endOf = (values: Values) =>
+  values.date && values.end ? fromDateTimeInput(`${addDays(values.date, values.endDays)}T${values.end}`) : null
 
 /** BR-62: checked as soon as both times are known rather than only on submit. */
 function endError(values: Values): string | undefined {
@@ -111,8 +125,14 @@ function validate(values: Values, needsFutureStart: boolean): FieldErrors {
   if (needsFutureStart && start && new Date(start).getTime() <= Date.now()) {
     errors.plannedStartTime = 'Thời gian bắt đầu phải sau thời điểm hiện tại.'
   }
+  if (values.mode !== 'InPerson' && values.onlineLink.trim().length > ONLINE_LINK_MAX) {
+    errors.onlineLink = 'Link họp trực tuyến không được vượt quá 1.000 ký tự.'
+  }
   return errors
 }
+
+/** The end's day for the hint under "Kết thúc", e.g. "16/10/2026". */
+const endDayLabel = (values: Values) => formatDate(`${addDays(values.date, values.endDays)}T12:00:00`)
 
 function toRequest(values: Values): MeetingRequest {
   return {
@@ -184,7 +204,8 @@ export function MeetingForm({
     ),
   )
 
-  function set<K extends keyof Values>(key: K, value: Values[K]) {
+  /** `endDays` is not a field: it only follows from the meeting being edited. */
+  function set<K extends Exclude<keyof Values, 'endDays'>>(key: K, value: Values[K]) {
     const next = { ...values, [key]: value }
     setValues(next)
     setFieldErrors((errors) => {
@@ -281,12 +302,18 @@ export function MeetingForm({
             value={values.description}
             onChange={(e) => set('description', e.target.value)}
             maxLength={DESCRIPTION_MAX}
-            placeholder="Mục đích, nội dung chính dự kiến bàn…"
+            placeholder={reschedule ? undefined : 'Mục đích, nội dung chính dự kiến bàn…'}
             aria-invalid={!!fieldErrors.description}
             disabled={reschedule}
           />
           <span className="field-foot">
-            {fieldErrors.description ? <small className="field-error">{fieldErrors.description}</small> : <span />}
+            {fieldErrors.description ? (
+              <small className="field-error">{fieldErrors.description}</small>
+            ) : reschedule ? (
+              <small className="field-hint">{LOCKED_HINT}</small>
+            ) : (
+              <span />
+            )}
             <small className="field-counter">
               {values.description.length.toLocaleString('vi-VN')}/{DESCRIPTION_MAX.toLocaleString('vi-VN')}
             </small>
@@ -322,11 +349,11 @@ export function MeetingForm({
               type="time"
               name="end"
               value={values.end}
-              min={values.start || undefined}
+              min={values.endDays === 0 ? values.start || undefined : undefined}
               onChange={(e) => set('end', e.target.value)}
               aria-invalid={!!fieldErrors.plannedEndTime}
             />
-            {errorOf('plannedEndTime')}
+            {errorOf('plannedEndTime', values.endDays > 0 && values.date ? `Ngày ${endDayLabel(values)}.` : undefined)}
           </label>
         </div>
 
@@ -377,7 +404,6 @@ export function MeetingForm({
               name="onlineLink"
               value={values.onlineLink}
               onChange={(e) => set('onlineLink', e.target.value)}
-              maxLength={ONLINE_LINK_MAX}
               placeholder="Để trống: phòng họp TrustCabinet"
               aria-invalid={!!fieldErrors.onlineLink}
             />

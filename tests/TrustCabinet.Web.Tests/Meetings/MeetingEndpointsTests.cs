@@ -1964,6 +1964,28 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Empty(_factory.Meetings.Notifications);
     }
 
+    [Fact]
+    public async Task Put_on_a_published_online_meeting_ignores_a_stored_location_the_form_cannot_show()
+    {
+        var creator = GivenCreator();
+        var meeting = PublishedMeetingWithInvitees(creator, out _);
+        meeting.Mode = MeetingMode.Online;
+        meeting.Location = "Trực tuyến";
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+
+        var response = await client.PutAsJsonAsync($"/api/meetings/{meeting.Id}", ValidRequest() with
+        {
+            Mode = "Online",
+            Location = "",
+        });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("MSG30", body.RootElement.GetProperty("code").GetString());
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+    }
+
     [Theory]
     [InlineData("{")]
     [InlineData("{\"title\":42}")]

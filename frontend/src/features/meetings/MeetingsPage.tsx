@@ -7,7 +7,7 @@ import { Pagination } from '../../components/Pagination'
 import { Select } from '../../components/Select'
 import { backState } from '../../lib/backTarget'
 import { errorMessage, isApiError } from '../../lib/errors'
-import { formatClock, formatWeekdayDate } from '../../lib/format'
+import { formatClock, formatDate, formatWeekdayDate } from '../../lib/format'
 import { routes } from '../../lib/routes'
 import {
   MEETING_STATUSES,
@@ -213,9 +213,13 @@ export function MeetingsPage() {
         </td>
         <td className="cell-schedule">
           {formatClock(m.plannedStartTime)}–{formatClock(m.plannedEndTime)}
-          <span className="cell-sub">{formatWeekdayDate(m.plannedStartTime)}</span>
+          <span className="cell-sub">
+            {formatDate(m.plannedStartTime) === formatDate(m.plannedEndTime)
+              ? formatWeekdayDate(m.plannedStartTime)
+              : `${formatDate(m.plannedStartTime)} – ${formatDate(m.plannedEndTime)}`}
+          </span>
         </td>
-        <td className="cell-muted">{placeLabel(m)}</td>
+        <td className="cell-muted cell-place">{placeLabel(m)}</td>
         <td>
           <StatusBadge status={m.status} />
         </td>
@@ -340,7 +344,7 @@ export function MeetingsPage() {
                 <SortHeader column="plannedStartTime" state={state} onSort={sortBy}>
                   Thời gian
                 </SortHeader>
-                <th>Hình thức · Địa điểm</th>
+                <th className="cell-place">Hình thức · Địa điểm</th>
                 <th>Trạng thái</th>
                 <th>Mức độ</th>
                 <th className="col-action">Thao tác</th>

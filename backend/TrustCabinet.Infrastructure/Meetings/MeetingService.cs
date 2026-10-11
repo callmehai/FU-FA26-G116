@@ -307,10 +307,18 @@ public sealed class MeetingService(
             || meeting.PlannedStartTime != input.PlannedStartTime
             || meeting.PlannedEndTime != input.PlannedEndTime
             || meeting.Mode != input.Mode
-            || !string.Equals(meeting.Location, input.Location, StringComparison.Ordinal)
+            || !string.Equals(PlaceOf(meeting.Mode, meeting.Location), PlaceOf(input.Mode, input.Location), StringComparison.Ordinal)
             || !string.Equals(meeting.OnlineLink, input.OnlineLink, StringComparison.Ordinal)
             || meeting.Sensitivity != input.Sensitivity
             || !string.Equals(meeting.Description, input.Description, StringComparison.Ordinal);
+
+    /// <summary>
+    /// An online meeting has no room: the form hides and clears the field, so a location stored on one
+    /// (older rows say "Trực tuyến") must not count as a change, or an untouched reschedule would notify
+    /// every invitee.
+    /// </summary>
+    private static string PlaceOf(MeetingMode mode, string location)
+        => mode == MeetingMode.Online ? string.Empty : location;
 
     private static bool IsPersistenceFailure(Exception exception)
         => exception is DbUpdateException or NpgsqlException or TimeoutException;

@@ -992,6 +992,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* The one cell allowed to wrap: every other cell is nowrap, so without this a long name pushes the
    actions column out of view at a 1200px window. */
 .data-table td.cell-title { white-space: normal; min-width: 96px; }
+/* A room name can be as long as a title, so the place wraps too. */
+.data-table :is(th, td).cell-place { white-space: normal; min-width: 96px; }
 .cell-muted { color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
 .cell-schedule { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .cell-empty { margin: 0; padding: 56px 16px; color: var(--muted-ink); text-align: center; }
