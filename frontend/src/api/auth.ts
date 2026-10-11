@@ -39,7 +39,7 @@ export const getCurrentUser = () => api.get<CurrentUser>('/api/auth/me')
 export const signOut = () => api.post<void>('/api/auth/logout', undefined, { anonymous: true })
 
 /**
- * UC-08, second half: sets a new password with the token from the emailed link — the token is the
+ * UC-07, second half: sets a new password with the token from the emailed link — the token is the
  * proof, so the call is anonymous. Success ends every session of that account and signs no one
  * in. 400 MSG93 when the link is dead (the form cannot help); 400 MSG94 with `errors.newPassword`
  * when only the password is wrong — the link still works.

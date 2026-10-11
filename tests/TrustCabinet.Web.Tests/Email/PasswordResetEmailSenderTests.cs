@@ -6,7 +6,7 @@ using TrustCabinet.Infrastructure.Email;
 namespace TrustCabinet.Web.Tests.Email;
 
 /// <summary>
-/// UC-08's <c>:Email Service</c>: what the email carries, and that every way of failing to send it
+/// UC-07's <c>:Email Service</c>: what the email carries, and that every way of failing to send it
 /// becomes the MSG15 branch rather than an exception.
 /// </summary>
 public sealed class PasswordResetEmailSenderTests

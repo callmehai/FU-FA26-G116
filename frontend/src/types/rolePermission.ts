@@ -1,7 +1,7 @@
 import type { Capability } from './user'
 
 /**
- * The role ↔ capability matrix (SCRUM-60, UC-09 and UC-10).
+ * The role ↔ capability matrix (SCRUM-60, UC-10 and UC-11).
  *
  * These mirror the backend's response shapes exactly. This is the real matrix, read from the
  * database, and an administrator can change it at runtime — do not hardcode a copy of it.
@@ -30,13 +30,13 @@ export interface RolePermissions {
   isBuiltIn: boolean
 }
 
-/** UC-09's answer: the columns and the rows of the grid. */
+/** UC-10's answer: the columns and the rows of the grid. */
 export interface RolePermissionMatrix {
   capabilities: PermissionDescriptor[]
   roles: RolePermissions[]
 }
 
-/** What a successful UC-10 returns — MSG16, plus the matrix as it now stands. */
+/** What a successful UC-11 returns — MSG16, plus the matrix as it now stands. */
 export interface MatrixMutationResponse {
   code: string
   message: string

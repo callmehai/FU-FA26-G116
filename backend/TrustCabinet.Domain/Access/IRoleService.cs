@@ -1,7 +1,7 @@
 namespace TrustCabinet.Domain.Access;
 
 /// <summary>
-/// The <c>:Role Service</c> participant of UC-11, UC-12 and UC-13 (SCRUM-63) — create, rename and
+/// The <c>:Role Service</c> participant of UC-12a, UC-12b and UC-12c (SCRUM-63) — create, rename and
 /// delete roles. Owns every rule about them: what a valid name is, that it is unique, that the
 /// built-in roles stay as they are, that a role somebody holds is not deleted, and what the audit
 /// log records.
@@ -15,30 +15,30 @@ public interface IRoleService
     /// <summary>Every role in display order, with how many accounts hold each.</summary>
     Task<IReadOnlyCollection<RoleSummary>> ListAsync(CancellationToken ct = default);
 
-    /// <summary>UC-11 — MSG19 on success; MSG20 invalid; MSG21 name taken.</summary>
+    /// <summary>UC-12a — MSG19 on success; MSG20 invalid; MSG21 name taken.</summary>
     Task<RoleResult> CreateAsync(NewRole request, Guid actorId, CancellationToken ct = default);
 
     /// <summary>
-    /// UC-12 — name and description only. MSG22 on success, including when nothing changed (then
+    /// UC-12b — name and description only. MSG22 on success, including when nothing changed (then
     /// nothing is written or audited); MSG24 for a built-in role; MSG20 invalid; MSG21 name taken.
     /// </summary>
     Task<RoleResult> UpdateAsync(
         Guid id, RoleEdit request, Guid actorId, CancellationToken ct = default);
 
     /// <summary>
-    /// UC-13 — MSG23 on success; MSG24 for a built-in role; MSG25 while any account holds it,
+    /// UC-12c — MSG23 on success; MSG24 for a built-in role; MSG25 while any account holds it,
     /// deactivated ones included.
     /// </summary>
     Task<RoleResult> DeleteAsync(Guid id, Guid actorId, CancellationToken ct = default);
 }
 
 /// <summary>
-/// What UC-11 collects. Capabilities arrive as the names the client sent, so the service can say
+/// What UC-12a collects. Capabilities arrive as the names the client sent, so the service can say
 /// which one it does not know rather than "something was wrong". Null means none.
 /// </summary>
 public sealed record NewRole(string? Name, string? Description, IReadOnlyCollection<string>? Capabilities);
 
-/// <summary>What UC-12 collects. No capabilities: those change through the matrix (UC-10).</summary>
+/// <summary>What UC-12b collects. No capabilities: those change through the matrix (UC-11).</summary>
 public sealed record RoleEdit(string? Name, string? Description);
 
 /// <summary>One role as the role list shows it.</summary>
@@ -51,7 +51,7 @@ public sealed record RoleSummary(
     Guid Id, string Name, string? Description, bool IsBuiltIn, bool IsDefault, int UserCount);
 
 /// <summary>
-/// Which alt branch of UC-11 … UC-13 happened. The endpoint maps each to a message code and a
+/// Which alt branch of UC-12a … UC-12c happened. The endpoint maps each to a message code and a
 /// status code; the service only decides which one.
 /// </summary>
 public enum RoleOutcome

@@ -4,7 +4,7 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Web.Tests.Access;
 
 /// <summary>
-/// The capability catalogue UC-09 sends to the screen. Small, but it is the one place a capability
+/// The capability catalogue UC-10 sends to the screen. Small, but it is the one place a capability
 /// added to the enum can silently go missing from the administrator's grid.
 /// </summary>
 public class PermissionCatalogTests

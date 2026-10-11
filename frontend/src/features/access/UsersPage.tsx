@@ -39,7 +39,7 @@ const NO_PASSWORD_RESET_MESSAGE =
   'Tài khoản này chỉ đăng nhập bằng Google, không có mật khẩu để đặt lại. Danh sách đã được cập nhật.'
 
 /**
- * Why UC-08 is unavailable for an account, or null when it is not. Only accounts that sign in with a
+ * Why UC-07 is unavailable for an account, or null when it is not. Only accounts that sign in with a
  * password can reset one (BA, SCRUM-13) — the backend answers MSG14 for the others as well.
  */
 function resetUnavailableReason(account: UserAccount) {
@@ -55,8 +55,8 @@ function fold(text: string) {
 }
 
 /**
- * User management (SCRUM-13): list (UC-04), create (UC-05), edit (UC-06), deactivate and
- * reactivate (UC-07), and emailing a password reset link (UC-08). Reaching this screen needs
+ * User management (SCRUM-13): list (UC-05), create (UC-06a), edit (UC-06b), deactivate and
+ * reactivate (UC-06c), and emailing a password reset link (UC-07). Reaching this screen needs
  * `AdminUsers`; the backend checks it again on every request, so a 403 halfway through is handled
  * as lost access rather than as an error.
  */
@@ -149,7 +149,7 @@ export function UsersPage() {
   }
 
   /**
-   * UC-07. MSG12 has three causes and one code; the backend leaves telling them apart to us.
+   * UC-06c. MSG12 has three causes and one code; the backend leaves telling them apart to us.
    * Targeting yourself cannot happen — the button is disabled — so re-read the account: if it is
    * already in the requested state the list was stale, otherwise the change would have left no
    * active administrator.
@@ -193,7 +193,7 @@ export function UsersPage() {
   }
 
   /**
-   * UC-08. Errors stay in the dialog, so the administrator can retry MSG15 from where they are.
+   * UC-07. Errors stay in the dialog, so the administrator can retry MSG15 from where they are.
    * MSG14 means the list was stale — the account was deactivated, or has no password, by now — so
    * re-read it; the dialog's blocker then keeps the confirm button disabled.
    */

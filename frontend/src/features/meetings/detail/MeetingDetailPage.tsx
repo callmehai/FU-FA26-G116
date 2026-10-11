@@ -51,7 +51,7 @@ const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview'>, string> = {
 const REVIEW_STATUSES = ['WaitingApproval', 'Rejected', 'Approved'] as const
 
 /**
- * UC-13 View Meeting Details, reading GET /api/meetings/{id} (SCRUM-17), with the approval
+ * UC-16 View Meeting Details, reading GET /api/meetings/{id} (SCRUM-17), with the approval
  * workflow and the lifecycle history of SCRUM-19. A meeting the caller has no relationship with
  * answers 404 exactly like an unknown id, and renders the same NotFound.
  */

@@ -17,7 +17,7 @@ type Tone = 'slate' | 'amber' | 'red' | 'emerald' | 'warning'
 type OpenDialog = 'submit' | 'approve' | 'reject' | 'returnToDraft' | 'publish' | null
 
 /**
- * The approval workflow of one meeting (SCRUM-19, UC-19 … UC-21), as a bar under the page header:
+ * The approval workflow of one meeting (SCRUM-19, UC-18 … UC-20), as a bar under the page header:
  * where the meeting stands, who it is waiting on, and the next step for the person looking —
  * with that step's button right there. It only appears for the organizer and the current approver,
  * and only until the meeting is published.
@@ -43,7 +43,7 @@ export function MeetingWorkflowBar({
   onOutcome: (outcome: WorkflowOutcome) => void
 }) {
   const [dialog, setDialog] = useState<OpenDialog>(null)
-  // A rejected meeting is resubmitted directly (UC-19 AF-1), so it is checked like a draft.
+  // A rejected meeting is resubmitted directly (UC-18 AF-1), so it is checked like a draft.
   const checkReadiness = role === 'organizer' && (meeting.status === 'Draft' || meeting.status === 'Rejected')
   const { readiness, retry } = useSubmissionReadiness(meeting.id, checkReadiness, meeting.updatedAt)
 

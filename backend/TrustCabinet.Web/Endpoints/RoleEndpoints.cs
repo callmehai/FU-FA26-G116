@@ -5,7 +5,7 @@ using TrustCabinet.Domain.Access;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// UC-11 … UC-13's <c>:Role Controller</c> (SCRUM-63) — turns HTTP into a call on
+/// UC-12a … UC-12c's <c>:Role Controller</c> (SCRUM-63) — turns HTTP into a call on
 /// <see cref="IRoleService"/>, and an outcome into a status code and a message code.
 ///
 /// It holds no rules of its own, exactly like <c>UserEndpoints</c>: which branch applies is the
@@ -14,7 +14,7 @@ namespace TrustCabinet.Web.Endpoints;
 public static class RoleEndpoints
 {
     /// <summary>
-    /// Message codes for UC-11 … UC-13. The code is what the frontend and the tester match on, so
+    /// Message codes for UC-12a … UC-12c. The code is what the frontend and the tester match on, so
     /// rewording the text never breaks either.
     /// </summary>
     private const string Msg19Created = "MSG19";
@@ -52,7 +52,7 @@ public static class RoleEndpoints
     private static async Task<IResult> ListAsync(IRoleService roles, CancellationToken ct)
         => Results.Ok((await roles.ListAsync(ct)).Select(RoleResponse.From));
 
-    /// <summary>UC-11.</summary>
+    /// <summary>UC-12a.</summary>
     private static async Task<IResult> CreateAsync(
         [FromBody] CreateRoleRequest? request,
         ClaimsPrincipal principal,
@@ -77,7 +77,7 @@ public static class RoleEndpoints
                 Msg19Created, "Tạo vai trò thành công.", RoleResponse.From(result.Role)));
     }
 
-    /// <summary>UC-12 — name and description only; capabilities change through UC-10.</summary>
+    /// <summary>UC-12b — name and description only; capabilities change through UC-11.</summary>
     private static async Task<IResult> UpdateAsync(
         Guid id,
         [FromBody] UpdateRoleRequest? request,
@@ -97,7 +97,7 @@ public static class RoleEndpoints
             : Rejected(result, Msg27UpdateFailed, "Không thể cập nhật vai trò. Vui lòng thử lại.");
     }
 
-    /// <summary>UC-13.</summary>
+    /// <summary>UC-12c.</summary>
     private static async Task<IResult> DeleteAsync(
         Guid id,
         ClaimsPrincipal principal,
@@ -153,13 +153,13 @@ public static class RoleEndpoints
 }
 
 /// <summary>
-/// UC-11's form. <paramref name="Capabilities"/> is optional — a role with none works like Member —
+/// UC-12a's form. <paramref name="Capabilities"/> is optional — a role with none works like Member —
 /// and names the capabilities by code, as the matrix does.
 /// </summary>
 public sealed record CreateRoleRequest(
     string? Name, string? Description, IReadOnlyCollection<string>? Capabilities);
 
-/// <summary>UC-12's form. No capabilities: those change through <c>PUT /api/roles/capabilities</c>.</summary>
+/// <summary>UC-12b's form. No capabilities: those change through <c>PUT /api/roles/capabilities</c>.</summary>
 public sealed record UpdateRoleRequest(string? Name, string? Description);
 
 /// <summary>One role as the role list shows it.</summary>

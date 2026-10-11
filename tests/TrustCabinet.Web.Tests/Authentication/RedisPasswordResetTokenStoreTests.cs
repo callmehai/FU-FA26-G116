@@ -4,7 +4,7 @@ using TrustCabinet.Infrastructure.Authentication;
 namespace TrustCabinet.Web.Tests.Authentication;
 
 /// <summary>
-/// UC-08's reset tokens against a real Redis — what the fake cannot prove: that GETDEL makes a
+/// UC-07's reset tokens against a real Redis — what the fake cannot prove: that GETDEL makes a
 /// link single-use, that a newer link really supersedes an older one, that the raw token is not
 /// what gets stored, and that the keys expire.
 ///

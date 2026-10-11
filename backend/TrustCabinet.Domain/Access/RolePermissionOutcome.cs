@@ -1,7 +1,7 @@
 namespace TrustCabinet.Domain.Access;
 
 /// <summary>
-/// Why a UC-10 configuration attempt ended the way it did — the alt branches of its sequence
+/// Why a UC-11 configuration attempt ended the way it did — the alt branches of its sequence
 /// diagram and nothing else. The endpoint maps each to a message code and a status code; the
 /// service only decides which one happened.
 ///

@@ -7,7 +7,7 @@ using TrustCabinet.Domain.Users;
 namespace TrustCabinet.Infrastructure.Email;
 
 /// <summary>
-/// UC-08's <c>:Email Service</c>. Sends straight through SMTP rather than the queue — see
+/// UC-07's <c>:Email Service</c>. Sends straight through SMTP rather than the queue — see
 /// <see cref="IPasswordResetEmailSender"/> for why.
 /// </summary>
 internal sealed class PasswordResetEmailSender(

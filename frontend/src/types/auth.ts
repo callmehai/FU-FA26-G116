@@ -13,7 +13,7 @@ export interface SignInResponse {
   user: CurrentUser
 }
 
-/** POST /api/auth/password-reset — UC-08's second half. `token` comes from the email link's fragment. */
+/** POST /api/auth/password-reset — UC-07's second half. `token` comes from the email link's fragment. */
 export interface PasswordResetRequest {
   token: string
   newPassword: string

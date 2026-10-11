@@ -22,7 +22,7 @@ import { api } from './client'
  */
 
 /**
- * UC-14 — filtering, search, sorting and paging all happen in the database, after the row-visibility
+ * UC-17 — filtering, search, sorting and paging all happen in the database, after the row-visibility
  * rule, so a meeting the caller may not see never reaches the browser and is not counted.
  */
 export function listMeetings(query: MeetingListQuery) {
@@ -36,10 +36,10 @@ export function listMeetings(query: MeetingListQuery) {
 
 export const getMeeting = (id: string) => api.get<Meeting>(`/api/meetings/${id}`)
 
-/** UC-11 — 201 with MSG29. The meeting starts as a draft. */
+/** UC-14 — 201 with MSG29. The meeting starts as a draft. */
 export const createMeeting = (body: MeetingRequest) => api.post<MeetingMutationResponse>('/api/meetings', body)
 
-/** UC-12 — MSG30, or 409 MSG33 once the meeting has left Draft/Rejected. */
+/** UC-15 — MSG30, or 409 MSG33 once the meeting has left Draft/Rejected. */
 export const updateMeeting = (id: string, body: MeetingRequest) =>
   api.put<MeetingMutationResponse>(`/api/meetings/${id}`, body)
 

@@ -1,8 +1,8 @@
 namespace TrustCabinet.Domain.Users;
 
 /// <summary>
-/// Why a user-management operation ended the way it did — the alt branches of UC-05, UC-06 and
-/// UC-07, and nothing else. The endpoint maps each to a message code and a status code; the
+/// Why a user-management operation ended the way it did — the alt branches of UC-06a, UC-06b and
+/// UC-06c, and nothing else. The endpoint maps each to a message code and a status code; the
 /// service only decides which one happened.
 ///
 /// One enum for the three use cases because they share their branches: all three can fail
@@ -15,7 +15,7 @@ public enum UserOutcome
     /// <summary>A field is missing, malformed or too long. Carries the offending fields.</summary>
     InvalidInformation,
 
-    /// <summary>UC-05's second branch — the email is already taken. MSG08.</summary>
+    /// <summary>UC-06a's second branch — the email is already taken. MSG08.</summary>
     DuplicateEmail,
 
     /// <summary>
@@ -26,23 +26,23 @@ public enum UserOutcome
     NotFound,
 
     /// <summary>
-    /// UC-07's "Status change is not allowed". The account is already in the requested state, or
+    /// UC-06c's "Status change is not allowed". The account is already in the requested state, or
     /// the administrator is aiming at their own account — see
     /// <c>IUserService.ChangeStatusAsync</c>.
     /// </summary>
     StatusChangeNotAllowed,
 
     /// <summary>
-    /// UC-08's EX-1 — the account cannot receive a reset link: it is deactivated, or it has no
+    /// UC-07's EX-1 — the account cannot receive a reset link: it is deactivated, or it has no
     /// password to reset (Google sign-in only). MSG14.
     /// </summary>
     PasswordResetNotAvailable,
 
-    /// <summary>UC-08's EX-2 — the reset email could not be sent. MSG15.</summary>
+    /// <summary>UC-07's EX-2 — the reset email could not be sent. MSG15.</summary>
     PasswordResetEmailFailed,
 
     /// <summary>
-    /// Completing UC-08 — the reset link is unknown, expired, already used, superseded by a newer
+    /// Completing UC-07 — the reset link is unknown, expired, already used, superseded by a newer
     /// one, or its account was deactivated since. One outcome for all of them: telling them apart
     /// would only help someone probing links.
     /// </summary>
