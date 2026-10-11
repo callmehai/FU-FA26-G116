@@ -6,7 +6,6 @@ control ":Meeting Controller" as MeetingController
 control ":Meeting Service" as MeetingService
 participant ":Meeting Repository" as MeetingRepository
 participant ":User Repository" as UserRepository
-participant ":Meeting Status History Repository" as MeetingStatusHistoryRepository
 participant ":Notification Service" as NotificationService
 participant ":Notification Repository" as NotificationRepository
 database ":Database" as Database
@@ -66,6 +65,14 @@ Planned Start/End Time (BR-33, BR-62); Agenda is not required
         UserRepository-->MeetingService: Eligible Meeting Approvers
         deactivate UserRepository
 
+        alt No eligible Meeting Approver is available - EX-5
+            MeetingService-->MeetingController: MSG140 - No eligible meeting approver is available. Please contact the administrator.
+            deactivate MeetingService
+            MeetingController-->MeetingPage: Return no eligible approver error; existing status, assignment and history unchanged
+            deactivate MeetingController
+            MeetingPage-->Organizer: MSG140 - No eligible meeting approver is available. Please contact the administrator.
+
+        else At least one eligible Meeting Approver is available
         MeetingService-->MeetingController: Eligible Meeting Approvers
         deactivate MeetingService
         MeetingController-->MeetingPage: Display eligible Meeting Approvers
@@ -112,36 +119,27 @@ Planned Start/End Time (BR-33, BR-62); Agenda is not required
                 MeetingPage-->Organizer: MSG41 - This meeting can no longer be submitted for approval
 
             else Meeting is Draft or Rejected
-                MeetingService->MeetingRepository: Assign approver for this cycle and change status\nto WaitingApproval
+                MeetingService->MeetingRepository: Complete approver assignment, WaitingApproval status\nand submission history together (BR-38)
                 activate MeetingRepository
-                MeetingRepository->Database: Save approver assignment and status transition
+                MeetingRepository->Database: Save assignment, status and submission history as one complete action
                 activate Database
 
                 alt Submission cannot be completed - EX-4
-                    Database-->MeetingRepository: Save failed
+                    Database-->MeetingRepository: Assignment, status or history could not be completed; previous information unchanged
                     deactivate Database
                     MeetingRepository-->MeetingService: Submission failed
                     deactivate MeetingRepository
                     MeetingService-->MeetingController: MSG42 - Unable to submit the meeting for approval. Please try again
                     deactivate MeetingService
-                    MeetingController-->MeetingPage: Return submission failure
+                    MeetingController-->MeetingPage: Return submission failure; no approval notification issued
                     deactivate MeetingController
                     MeetingPage-->Organizer: MSG42 - Unable to submit the meeting for approval. Please try again
 
                 else Meeting moved to WaitingApproval
-                    Database-->MeetingRepository: Approver assignment and status saved
+                    Database-->MeetingRepository: Approver assignment, status and submission history recorded together
                     deactivate Database
                     MeetingRepository-->MeetingService: WaitingApproval state
                     deactivate MeetingRepository
-
-                    MeetingService->MeetingStatusHistoryRepository: Record submission, Organizer, approver, and transition
-                    activate MeetingStatusHistoryRepository
-                    MeetingStatusHistoryRepository->Database: Insert lifecycle history
-                    activate Database
-                    Database-->MeetingStatusHistoryRepository: History recorded
-                    deactivate Database
-                    MeetingStatusHistoryRepository-->MeetingService: Submission recorded
-                    deactivate MeetingStatusHistoryRepository
 
                     MeetingService->NotificationService: Notify assigned Meeting Approver
                     activate NotificationService
@@ -163,6 +161,7 @@ Planned Start/End Time (BR-33, BR-62); Agenda is not required
                     MeetingPage-->Organizer: Meeting submitted for approval
                 end
             end
+        end
         end
     end
 end

@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" version="24.7.17">
+  <diagram id="SM-07_SpeakingRequest" name="Speaking Request State Machine (Draft)">
+    <mxGraphModel dx="1200" dy="1020" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1200" pageHeight="1020" background="#ffffff">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Speaking Request State Machine (Draft)" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=16;text;align=center;fontStyle=1;fontSize=24;">
+          <mxGeometry as="geometry" x="40" y="20" width="1120" height="50" />
+        </mxCell>
+        <mxCell id="initial" value="" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=16;ellipse;fillColor=#1e293b;strokeColor=#1e293b;">
+          <mxGeometry as="geometry" x="580" y="80" width="20" height="20" />
+        </mxCell>
+        <mxCell id="Queued" value="Queued" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=16;rounded=1;arcSize=20;fillColor=#ffffff;strokeColor=#334155;fontColor=#172554;strokeWidth=2;">
+          <mxGeometry as="geometry" x="460" y="160" width="260" height="80" />
+        </mxCell>
+        <mxCell id="Invited" value="Invited" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=16;rounded=1;arcSize=20;fillColor=#ffffff;strokeColor=#334155;fontColor=#172554;strokeWidth=2;">
+          <mxGeometry as="geometry" x="460" y="340" width="260" height="80" />
+        </mxCell>
+        <mxCell id="Speaking" value="Speaking" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=16;rounded=1;arcSize=20;fillColor=#ffffff;strokeColor=#334155;fontColor=#172554;strokeWidth=2;">
+          <mxGeometry as="geometry" x="460" y="520" width="260" height="80" />
+        </mxCell>
+        <mxCell id="Finished" value="Finished" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=16;rounded=1;arcSize=20;fillColor=#ffffff;strokeColor=#334155;fontColor=#172554;strokeWidth=2;">
+          <mxGeometry as="geometry" x="460" y="700" width="260" height="80" />
+        </mxCell>
+        <mxCell id="Cancelled" value="Cancelled" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=16;rounded=1;arcSize=20;fillColor=#ffffff;strokeColor=#334155;fontColor=#172554;strokeWidth=2;">
+          <mxGeometry as="geometry" x="460" y="880" width="260" height="80" />
+        </mxCell>
+        <mxCell id="transition-0" value="Participant requests to speak" edge="1" parent="1" source="initial" target="Queued" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="transition-1" value="Chair invites speaker" edge="1" parent="1" source="Queued" target="Invited" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="transition-2" value="Invitee starts speaking" edge="1" parent="1" source="Invited" target="Speaking" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="transition-3" value="Speaker finishes" edge="1" parent="1" source="Speaking" target="Finished" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="transition-4" value="Participant withdraws request" edge="1" parent="1" source="Queued" target="Cancelled" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0;exitY=0.3;entryX=0;entryY=0.7;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="290" y="184" />
+              <mxPoint x="290" y="936" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="transition-5" value="Cancel invitation" edge="1" parent="1" source="Invited" target="Cancelled" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=1;exitY=0.3;entryX=1;entryY=0.7;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="840" y="364" />
+              <mxPoint x="840" y="936" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

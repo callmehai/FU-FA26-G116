@@ -1,0 +1,816 @@
+[
+  {
+    "id": "SM-01_Meeting",
+    "title": "Meeting State Machine",
+    "states": [
+      "Draft",
+      "WaitingApproval",
+      "Approved",
+      "Published",
+      "InProgress",
+      "Ended",
+      "Rejected"
+    ],
+    "edges": [
+      [
+        "Draft",
+        "WaitingApproval",
+        "Organizer submits\n[eligible approver selected]"
+      ],
+      [
+        "WaitingApproval",
+        "Approved",
+        "Assigned approver approves"
+      ],
+      [
+        "Approved",
+        "Published",
+        "Organizer publishes\n[active Chair and Secretary assigned]"
+      ],
+      [
+        "Published",
+        "InProgress",
+        "Chair starts\n[required participants assigned]"
+      ],
+      [
+        "InProgress",
+        "Ended",
+        "Chair ends\n[no open votes]"
+      ],
+      [
+        "WaitingApproval",
+        "Rejected",
+        "Approver rejects\n[reason provided]"
+      ],
+      [
+        "Rejected",
+        "WaitingApproval",
+        "Organizer resubmits"
+      ],
+      [
+        "WaitingApproval",
+        "Draft",
+        "Approver returns to draft"
+      ],
+      [
+        "Rejected",
+        "Draft",
+        "Approver returns to draft"
+      ],
+      [
+        "Published",
+        "Published",
+        "Organizer reschedules"
+      ]
+    ],
+    "initial": "Organizer creates meeting",
+    "source": "UC14–22; BR35,38–40,124–127,130–132,158–159",
+    "provisional": false,
+    "positions": {
+      "Rejected": [
+        940,
+        400
+      ]
+    },
+    "routes": {
+      "6": {
+        "pins": [
+          1,
+          0.15,
+          0,
+          0.15
+        ],
+        "points": []
+      },
+      "7": {
+        "pins": [
+          0,
+          0.9,
+          1,
+          0.9
+        ],
+        "points": [
+          [
+            840,
+            472
+          ]
+        ]
+      },
+      "8": {
+        "pins": [
+          0,
+          0.3,
+          0,
+          0.7
+        ],
+        "points": [
+          [
+            350,
+            424
+          ],
+          [
+            350,
+            276
+          ]
+        ]
+      },
+      "9": {
+        "pins": [
+          0.5,
+          0,
+          1,
+          0.3
+        ],
+        "points": [
+          [
+            1070,
+            180
+          ],
+          [
+            800,
+            180
+          ],
+          [
+            800,
+            244
+          ]
+        ]
+      },
+      "10": {
+        "pins": [
+          0,
+          0.3,
+          0,
+          0.7
+        ],
+        "points": [
+          [
+            310,
+            784
+          ],
+          [
+            310,
+            816
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "id": "SM-02_Agenda",
+    "title": "Agenda Item State Machine",
+    "states": [
+      "Pending",
+      "InProgress",
+      "Done"
+    ],
+    "edges": [
+      [
+        "Pending",
+        "InProgress",
+        "Chair selects current item\n[meeting InProgress]"
+      ],
+      [
+        "InProgress",
+        "Done",
+        "Chair completes item\nor ends meeting"
+      ]
+    ],
+    "initial": "Secretary adds agenda item",
+    "source": "UC23a–26; BR69–71,159",
+    "provisional": false
+  },
+  {
+    "id": "SM-03_ParticipantAssignment",
+    "title": "Participant Assignment State Machine",
+    "states": [
+      "Current",
+      "Removed"
+    ],
+    "edges": [
+      [
+        "Current",
+        "Removed",
+        "Secretary removes participant\n[required roles retained]"
+      ]
+    ],
+    "initial": "Secretary assigns participant",
+    "source": "UC28a–28c; BR80,97,122–126",
+    "provisional": false
+  },
+  {
+    "id": "SM-04_InvitationResponse",
+    "title": "Invitation Response State Machine",
+    "states": [
+      "Pending",
+      "Accepted",
+      "Declined"
+    ],
+    "edges": [
+      [
+        "Pending",
+        "Accepted",
+        "Invitee accepts"
+      ],
+      [
+        "Pending",
+        "Declined",
+        "Invitee declines"
+      ],
+      [
+        "Accepted",
+        "Declined",
+        "Invitee changes to Declined"
+      ],
+      [
+        "Declined",
+        "Accepted",
+        "Invitee changes to Accepted"
+      ]
+    ],
+    "initial": "Create invitation",
+    "source": "UC29–30; BR104–106,115–116",
+    "provisional": false,
+    "routes": {
+      "4": {
+        "pins": [
+          1,
+          0.3,
+          1,
+          0.7
+        ],
+        "points": [
+          [
+            850,
+            604
+          ],
+          [
+            850,
+            456
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "id": "SM-05_GuestInvitation",
+    "title": "Guest Invitation State Machine",
+    "states": [
+      "Active",
+      "Expired",
+      "Revoked"
+    ],
+    "edges": [
+      [
+        "Active",
+        "Expired",
+        "Invitation expires"
+      ],
+      [
+        "Active",
+        "Revoked",
+        "Secretary revokes invitation"
+      ]
+    ],
+    "initial": "Create guest invitation",
+    "source": "Report 3 Entity7; UC28a,28c,29,37; BR152–157",
+    "provisional": false
+  },
+  {
+    "id": "SM-06_Attendance",
+    "title": "Attendance State Machine",
+    "states": [
+      "Unknown",
+      "Present",
+      "Absent",
+      "Excused",
+      "Delegated"
+    ],
+    "edges": [
+      [
+        "Unknown",
+        "Present",
+        "Secretary records"
+      ],
+      [
+        "Unknown",
+        "Absent",
+        "Secretary records"
+      ],
+      [
+        "Unknown",
+        "Excused",
+        "Secretary records"
+      ],
+      [
+        "Unknown",
+        "Delegated",
+        "Secretary records"
+      ]
+    ],
+    "initial": "Assign participant",
+    "source": "UC31; Report 3 Entity6; AttendanceStatus",
+    "provisional": false,
+    "positions": {
+      "Present": [
+        40,
+        420
+      ],
+      "Absent": [
+        340,
+        420
+      ],
+      "Excused": [
+        640,
+        420
+      ],
+      "Delegated": [
+        940,
+        420
+      ]
+    },
+    "routes": {
+      "1": {
+        "pins": [
+          0.2,
+          1,
+          0.5,
+          0
+        ],
+        "points": [],
+        "style": "edgeStyle=none;"
+      },
+      "2": {
+        "pins": [
+          0.4,
+          1,
+          0.5,
+          0
+        ],
+        "points": [],
+        "style": "edgeStyle=none;"
+      },
+      "3": {
+        "pins": [
+          0.6,
+          1,
+          0.5,
+          0
+        ],
+        "points": [],
+        "style": "edgeStyle=none;"
+      },
+      "4": {
+        "pins": [
+          0.8,
+          1,
+          0.5,
+          0
+        ],
+        "points": [],
+        "style": "edgeStyle=none;"
+      }
+    }
+  },
+  {
+    "id": "SM-07_SpeakingRequest",
+    "title": "Speaking Request State Machine (Draft)",
+    "states": [
+      "Queued",
+      "Invited",
+      "Speaking",
+      "Finished",
+      "Cancelled"
+    ],
+    "edges": [
+      [
+        "Queued",
+        "Invited",
+        "Chair invites speaker"
+      ],
+      [
+        "Invited",
+        "Speaking",
+        "Invitee starts speaking"
+      ],
+      [
+        "Speaking",
+        "Finished",
+        "Speaker finishes"
+      ],
+      [
+        "Queued",
+        "Cancelled",
+        "Participant withdraws request"
+      ],
+      [
+        "Invited",
+        "Cancelled",
+        "Cancel invitation"
+      ]
+    ],
+    "initial": "Participant requests to speak",
+    "source": "Report 3 Entity10; SpeakingRequestStatus",
+    "provisional": true,
+    "routes": {
+      "4": {
+        "pins": [
+          0,
+          0.3,
+          0,
+          0.7
+        ],
+        "points": [
+          [
+            290,
+            244
+          ],
+          [
+            290,
+            996
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "id": "SM-08_Voting",
+    "title": "Voting Session State Machine",
+    "states": [
+      "Draft",
+      "Open",
+      "Closed"
+    ],
+    "edges": [
+      [
+        "Draft",
+        "Open",
+        "Chair opens vote"
+      ],
+      [
+        "Open",
+        "Closed",
+        "Chair closes vote"
+      ]
+    ],
+    "initial": "Chair creates vote\n[meeting InProgress]",
+    "source": "UC53–57; BR160–161,165; ADR0014",
+    "provisional": false
+  },
+  {
+    "id": "SM-09_VoteConclusion",
+    "title": "Vote Conclusion State Machine",
+    "states": [
+      "NotRecorded",
+      "Passed",
+      "NotPassed",
+      "Deferred"
+    ],
+    "edges": [
+      [
+        "NotRecorded",
+        "Passed",
+        "Chair records Passed\n[vote Closed]"
+      ],
+      [
+        "NotRecorded",
+        "NotPassed",
+        "Chair records NotPassed\n[vote Closed]"
+      ],
+      [
+        "NotRecorded",
+        "Deferred",
+        "Chair records Deferred\n[vote Closed]"
+      ]
+    ],
+    "initial": "Close vote",
+    "source": "UC57; BR161,165; Report 3 screen 11.4 and NFR Integrity",
+    "provisional": false
+  },
+  {
+    "id": "SM-10_Recording",
+    "title": "Recording State Machine (Draft)",
+    "states": [
+      "Pending",
+      "Available",
+      "Failed",
+      "Deleted"
+    ],
+    "edges": [
+      [
+        "Pending",
+        "Available",
+        "Upload completes"
+      ],
+      [
+        "Pending",
+        "Failed",
+        "Upload fails"
+      ],
+      [
+        "Available",
+        "Deleted",
+        "Retention expires\nor valid deletion request"
+      ]
+    ],
+    "initial": "Start upload",
+    "source": "Report 3 Entity18; RecordingStatus; NFR Personal data protection",
+    "provisional": true
+  },
+  {
+    "id": "SM-11_Transcript",
+    "title": "Transcript State Machine",
+    "states": [
+      "Pending",
+      "Processing",
+      "Completed",
+      "Failed"
+    ],
+    "edges": [
+      [
+        "Pending",
+        "Processing",
+        "Start transcription"
+      ],
+      [
+        "Processing",
+        "Completed",
+        "Transcription completes"
+      ],
+      [
+        "Processing",
+        "Failed",
+        "Transcription fails"
+      ],
+      [
+        "Failed",
+        "Pending",
+        "Secretary retries"
+      ]
+    ],
+    "initial": "Queue transcription",
+    "source": "Report 3 Entity19; NFR Failure handling / Recoverable AI processing",
+    "provisional": false
+  },
+  {
+    "id": "SM-12_MeetingSummary",
+    "title": "Meeting Summary State Machine",
+    "states": [
+      "Draft",
+      "Approved",
+      "Published"
+    ],
+    "edges": [
+      [
+        "Draft",
+        "Approved",
+        "Secretary approves"
+      ],
+      [
+        "Approved",
+        "Published",
+        "Secretary publishes"
+      ]
+    ],
+    "initial": "Generate summary\n[meeting Ended]",
+    "source": "Report 3 Entity21 and screen 10.3; UC47–51,90",
+    "provisional": false
+  },
+  {
+    "id": "SM-13_Minutes",
+    "title": "Minutes Revision State Machine (Draft)",
+    "states": [
+      "Draft",
+      "PendingSignature",
+      "Sealed",
+      "Superseded",
+      "RevisionRequested"
+    ],
+    "edges": [
+      [
+        "Draft",
+        "PendingSignature",
+        "Secretary submits for signing\n[submission requirements met]"
+      ],
+      [
+        "PendingSignature",
+        "Sealed",
+        "Secretary seals\n[all required signers signed]"
+      ],
+      [
+        "PendingSignature",
+        "RevisionRequested",
+        "Signer requests revision\n/ invalidate prior signatures"
+      ],
+      [
+        "RevisionRequested",
+        "PendingSignature",
+        "Secretary resubmits revision"
+      ],
+      [
+        "Sealed",
+        "Superseded",
+        "Seal replacement revision",
+        "proposal"
+      ]
+    ],
+    "initial": "Secretary creates revision\n[meeting Ended]",
+    "source": "Report 3 Entity22 and screen 12.1–12.4; BR166",
+    "provisional": false
+  },
+  {
+    "id": "SM-14_MinutesSignature",
+    "title": "Minutes Signature State Machine",
+    "states": [
+      "Waiting",
+      "Signed",
+      "Invalidated"
+    ],
+    "edges": [
+      [
+        "Waiting",
+        "Signed",
+        "Signer signs\n[minutes PendingSignature]"
+      ],
+      [
+        "Signed",
+        "Invalidated",
+        "Revision requested or content changed\n[minutes not Sealed]"
+      ]
+    ],
+    "initial": "Start signing cycle",
+    "source": "BR166; Report 3 screen 12.2–12.3; NFR Integrity",
+    "provisional": false
+  },
+  {
+    "id": "SM-15_EmailDelivery",
+    "title": "Email Delivery State Machine",
+    "states": [
+      "Queued",
+      "Processing",
+      "Sent",
+      "Failed"
+    ],
+    "edges": [
+      [
+        "Queued",
+        "Processing",
+        "Claim email\n[delivery due]"
+      ],
+      [
+        "Processing",
+        "Sent",
+        "Delivery succeeds"
+      ],
+      [
+        "Processing",
+        "Queued",
+        "Delivery fails\n[attempts remain] / schedule retry"
+      ],
+      [
+        "Processing",
+        "Failed",
+        "Delivery fails\n[attempts exhausted]"
+      ],
+      [
+        "Processing",
+        "Processing",
+        "Reclaim delivery\n[lease expired]"
+      ]
+    ],
+    "initial": "Queue email",
+    "source": "EmailStatus; EmailQueueProcessor; Report 3 NFR Reliable asynchronous delivery",
+    "provisional": false,
+    "routes": {
+      "3": {
+        "pins": [
+          1,
+          0.2,
+          1,
+          0.7
+        ],
+        "points": [
+          [
+            980,
+            416
+          ],
+          [
+            980,
+            276
+          ]
+        ]
+      },
+      "5": {
+        "pins": [
+          1,
+          0.65,
+          0.85,
+          1
+        ],
+        "points": [
+          [
+            820,
+            452
+          ],
+          [
+            820,
+            510
+          ],
+          [
+            681,
+            510
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "id": "SM-16_Call",
+    "title": "Direct Call State Machine (Draft)",
+    "states": [
+      "Ringing",
+      "Active",
+      "Ended",
+      "Missed"
+    ],
+    "edges": [
+      [
+        "Ringing",
+        "Active",
+        "Callee accepts"
+      ],
+      [
+        "Active",
+        "Ended",
+        "End call"
+      ],
+      [
+        "Ringing",
+        "Missed",
+        "Callee declines or does not answer"
+      ]
+    ],
+    "initial": "Caller initiates call",
+    "source": "CallStatus / CallKind; Report 3 Entity12",
+    "provisional": true
+  },
+  {
+    "id": "SM-17_UserAccount",
+    "title": "User Account State Machine",
+    "states": [
+      "Active",
+      "Deactivated"
+    ],
+    "edges": [
+      [
+        "Active",
+        "Deactivated",
+        "Admin deactivates account"
+      ],
+      [
+        "Deactivated",
+        "Active",
+        "Admin reactivates account"
+      ]
+    ],
+    "initial": "Admin creates account",
+    "source": "UC06a,06c; User.IsActive; BR03,16,18",
+    "provisional": false
+  },
+  {
+    "id": "SM-18_NotificationRead",
+    "title": "Notification Read Status State Machine",
+    "states": [
+      "Unread",
+      "Read"
+    ],
+    "edges": [
+      [
+        "Unread",
+        "Read",
+        "User marks read\nor marks all read"
+      ]
+    ],
+    "initial": "Create notification",
+    "source": "UC66–67; Notification.ReadAt / IsRead",
+    "provisional": false
+  },
+  {
+    "id": "SM-19_DocumentComment",
+    "title": "Document Comment State Machine (Draft)",
+    "states": [
+      "Unresolved",
+      "Resolved"
+    ],
+    "edges": [
+      [
+        "Unresolved",
+        "Resolved",
+        "Secretary resolves comment"
+      ]
+    ],
+    "initial": "Add comment",
+    "source": "DocumentComment.IsResolved and entity description",
+    "provisional": true
+  }
+]

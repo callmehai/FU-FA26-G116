@@ -1,4 +1,4 @@
-"""Convert the three downloaded Drive reports to searchable Markdown snapshots.
+"""Convert local or Google Drive DOCX reports to searchable Markdown snapshots.
 
 Run:
     python scripts/sync_reports.py             # Converts existing source/ DOCX files (or downloads if missing)
@@ -8,11 +8,15 @@ Run:
 from __future__ import annotations
 
 import argparse
+import io
+import json
+import os
 import re
 import sys
 import tempfile
 import urllib.error
 import urllib.request
+import urllib.parse
 import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path
@@ -45,25 +49,95 @@ W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 NS = {"w": W}
 
 
+def report_number(name: str) -> int:
+    match = re.search(r"report[\s_-]*([1-3])(?=[\s_.-]|$)", name, re.IGNORECASE)
+    if not match:
+        raise ValueError(f"Cannot identify Report 1, 2 or 3 from: {name}. Use --report.")
+    return int(match.group(1))
+
+
+def drive_request(url: str) -> bytes:
+    headers = {"User-Agent": "Mozilla/5.0"}
+    token = os.environ.get("GOOGLE_DRIVE_ACCESS_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=60) as response:
+        return response.read()
+
+
+def drive_api(path: str, **params: str) -> bytes:
+    if not os.environ.get("GOOGLE_DRIVE_ACCESS_TOKEN"):
+        raise ValueError("Drive folder/private file requires GOOGLE_DRIVE_ACCESS_TOKEN with Drive read access.")
+    return drive_request(f"https://www.googleapis.com/drive/v3/{path}?{urllib.parse.urlencode(params)}")
+
+
+def download_docx(url: str, target: Path, mime_type: str | None = None) -> None:
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme != "https" or parsed.hostname not in {"drive.google.com", "docs.google.com"}:
+        raise ValueError("Expected an HTTPS Google Drive or Google Docs URL.")
+    match = re.search(r"/d/([\w-]+)", parsed.path)
+    file_id = match.group(1) if match else urllib.parse.parse_qs(parsed.query).get("id", [""])[0]
+    if not re.fullmatch(r"[\w-]+", file_id):
+        raise ValueError(f"Invalid Drive file URL: {url}")
+    if os.environ.get("GOOGLE_DRIVE_ACCESS_TOKEN"):
+        if mime_type is None:
+            metadata = json.loads(drive_api(f"files/{file_id}", fields="mimeType", supportsAllDrives="true"))
+            mime_type = metadata["mimeType"]
+        if mime_type == "application/vnd.google-apps.document":
+            data = drive_api(f"files/{file_id}/export", mimeType="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+        else:
+            data = drive_api(f"files/{file_id}", alt="media", supportsAllDrives="true")
+    else:
+        # Public Docs export and stored DOCX download use different URLs.
+        if parsed.hostname == "docs.google.com":
+            data = drive_request(f"https://docs.google.com/document/d/{file_id}/export?format=docx")
+        else:
+            data = drive_request(f"https://drive.google.com/uc?export=download&id={file_id}")
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as document:
+            ET.fromstring(document.read("word/document.xml"))
+    except (zipfile.BadZipFile, KeyError, ET.ParseError) as error:
+        raise ValueError("Drive did not return a DOCX. Check sharing/access; for private or large files set GOOGLE_DRIVE_ACCESS_TOKEN.") from error
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile("wb", dir=target.parent, delete=False) as temporary:
+        temporary.write(data)
+        temporary_path = Path(temporary.name)
+    temporary_path.replace(target)
+
+
+def folder_reports(url: str) -> list[tuple[str, str, str]]:
+    parsed = urllib.parse.urlparse(url)
+    match = re.fullmatch(r"/drive/(?:u/\d+/)?folders/([\w-]+)/?", parsed.path)
+    if parsed.scheme != "https" or parsed.hostname != "drive.google.com" or not match:
+        raise ValueError("Invalid Google Drive folder URL.")
+    params = {
+        "q": f"'{match.group(1)}' in parents and trashed = false",
+        "fields": "nextPageToken,files(id,name,mimeType)",
+        "pageSize": "100", "supportsAllDrives": "true", "includeItemsFromAllDrives": "true",
+    }
+    files = []
+    while True:
+        page = json.loads(drive_api("files", **params))
+        for item in page.get("files", []):
+            if item["mimeType"] in {
+                "application/vnd.google-apps.document",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            }:
+                files.append((item["name"], f"https://drive.google.com/file/d/{item['id']}/view", item["mimeType"]))
+        if not page.get("nextPageToken"):
+            return files
+        params["pageToken"] = page["nextPageToken"]
+
+
 def download_reports(force: bool = False) -> None:
     SOURCE_DIR.mkdir(parents=True, exist_ok=True)
     for filename, title, source_url, _ in REPORTS:
         target = SOURCE_DIR / filename
         if target.is_file() and not force:
             continue
-        match = re.search(r"/document/d/([a-zA-Z0-9_-]+)", source_url)
-        if not match:
-            continue
-        doc_id = match.group(1)
-        export_url = f"https://docs.google.com/document/d/{doc_id}/export?format=docx"
         print(f"Downloading {filename} ({title}) from Google Drive...")
-        req = urllib.request.Request(export_url, headers={"User-Agent": "Mozilla/5.0"})
-        try:
-            with urllib.request.urlopen(req) as resp:
-                target.write_bytes(resp.read())
-            print(f"  ✓ Saved {filename}")
-        except urllib.error.URLError as err:
-            print(f"  ✗ Failed to download {filename}: {err}", file=sys.stderr)
+        download_docx(source_url, target)
+
 
 
 def paragraph_text(paragraph: ET.Element) -> str:
@@ -149,52 +223,100 @@ def write_atomic(path: Path, content: str) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Sync Google Drive reports to Markdown snapshots.")
-    parser.add_argument(
-        "--download",
-        "-d",
-        action="store_true",
-        help="Force downloading latest DOCX from Google Drive before converting",
-    )
+    parser = argparse.ArgumentParser(description="Sync local or Google Drive DOCX reports to Markdown.")
+    parser.add_argument("--download", "-d", action="store_true", help="Refresh the three configured Drive reports")
+    parser.add_argument("--source", help="Local DOCX/directory (relative to repo root), or Drive file/folder URL")
+    parser.add_argument("--report", type=int, choices=(1, 2, 3), help="Report to sync; required for a single Drive file")
+    parser.add_argument("--report3-source", type=Path, help="Legacy alias for --source LOCAL_DOCX --report 3")
+    parser.add_argument("--output-dir", type=Path, help="Alternative Markdown output directory")
     args = parser.parse_args()
-
-    # Check if files need downloading
-    missing = [SOURCE_DIR / filename for filename, *_ in REPORTS if not (SOURCE_DIR / filename).is_file()]
-    if args.download or missing:
-        download_reports(force=args.download)
-
-    still_missing = [SOURCE_DIR / filename for filename, *_ in REPORTS if not (SOURCE_DIR / filename).is_file()]
-    if still_missing:
-        names_and_urls = "\n".join(
-            f"  - {filename}: {source_url}"
-            for filename, _, source_url, _ in REPORTS
-            if SOURCE_DIR / filename in still_missing
-        )
-        print(
-            "Download the missing DOCX files from Google Drive into "
-            f"{SOURCE_DIR.relative_to(ROOT)}, then run again:\n"
-            + names_and_urls,
-            file=sys.stderr,
-        )
-        return 2
-
+    if args.download and (args.source or args.report3_source):
+        parser.error("--download cannot be combined with an explicit source")
+    if args.report3_source and (args.source or args.report):
+        parser.error("--report3-source cannot be combined with --source or --report")
+    source_arg = str(args.report3_source) if args.report3_source else args.source
+    selected = 3 if args.report3_source else args.report
+    output_dir = args.output_dir
+    if output_dir and not output_dir.is_absolute():
+        output_dir = ROOT / output_dir
     try:
-        converted = []
-        for filename, title, source_url, destination in REPORTS:
-            body = docx_to_markdown(SOURCE_DIR / filename)
-            converted.append(
-                (
-                    destination,
-                    f"# {title}\n\n> Nguồn: [Google Drive]({source_url})\n\n{body}",
-                )
-            )
-    except ValueError as error:
-        print(error, file=sys.stderr)
-        return 1
+        with tempfile.TemporaryDirectory(prefix="sync-reports-") as temporary:
+            sources: dict[int, tuple[Path, str]] = {}
 
-    for destination, content in converted:
-        write_atomic(destination, content)
-        print(f"Synced {destination.relative_to(ROOT)}")
+            def add(number: int, path: Path, origin: str) -> None:
+                if number in sources:
+                    raise ValueError(f"Multiple source files match Report {number}; choose a single file.")
+                sources[number] = (path, origin)
+
+            if source_arg and source_arg.startswith("https://"):
+                if "/folders/" in source_arg:
+                    candidates = folder_reports(source_arg)
+                    matches = []
+                    for name, url, mime in candidates:
+                        try:
+                            number = report_number(name)
+                        except ValueError:
+                            continue
+                        if selected is None or selected == number:
+                            path = Path(temporary) / f"Report-{number}.docx"
+                            add(number, path, url)
+                            matches.append((url, path, mime))
+                    for url, path, mime in matches:
+                        download_docx(url, path, mime)
+                else:
+                    if selected is None:
+                        raise ValueError("A single Drive file requires --report 1, 2 or 3.")
+                    path = Path(temporary) / f"Report-{selected}.docx"
+                    download_docx(source_arg, path)
+                    add(selected, path, source_arg)
+            else:
+                local = Path(source_arg) if source_arg else SOURCE_DIR
+                if not local.is_absolute():
+                    local = ROOT / local
+                local = local.resolve()
+                if source_arg and not local.exists():
+                    raise ValueError(f"Local source does not exist: {local}")
+                if args.download:
+                    download_reports(force=True)
+                    for number, (name, _, url, _) in enumerate(REPORTS, 1):
+                        if selected is None or selected == number:
+                            add(number, SOURCE_DIR / name, url)
+                else:
+                    paths = [local] if local.is_file() else sorted(local.glob("*"))
+                    for path in paths:
+                        if not path.is_file() or path.suffix.lower() != ".docx" or path.name.startswith("~$"):
+                            continue
+                        try:
+                            number = selected if local.is_file() and selected else report_number(path.name)
+                        except ValueError:
+                            continue
+                        if selected is None or selected == number:
+                            origin = path.as_uri()
+                            if path.is_relative_to(ROOT):
+                                origin = "source/" + urllib.parse.quote(path.name) if path.parent == SOURCE_DIR else path.as_uri()
+                            add(number, path, origin)
+                    # Preserve automatic download for missing default reports only.
+                    if not source_arg:
+                        for number, (name, _, url, _) in enumerate(REPORTS, 1):
+                            if number not in sources and (selected is None or selected == number):
+                                path = SOURCE_DIR / name
+                                download_docx(url, path)
+                                add(number, path, url)
+            if not sources:
+                raise ValueError("No matching Report 1/2/3 DOCX files found in the source.")
+            converted = []
+            for number, (path, origin) in sorted(sources.items()):
+                _, title, _, destination = REPORTS[number - 1]
+                if output_dir:
+                    destination = output_dir / destination.name
+                body = docx_to_markdown(path)
+                converted.append((destination, f"# {title}\n\n> Nguồn: [Tài liệu nguồn]({origin})\n\n{body}"))
+            for destination, content in converted:
+                write_atomic(destination, content)
+                print(f"Synced {destination}")
+    except (ValueError, OSError, urllib.error.URLError) as error:
+        print(f"Sync failed: {error}", file=sys.stderr)
+        return 1
     print("Review changes with: git diff -- docs/08-reports")
     return 0
 

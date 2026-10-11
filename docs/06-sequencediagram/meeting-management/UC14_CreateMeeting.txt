@@ -16,7 +16,7 @@ activate MeetingController
 MeetingController->MeetingService: createMeeting(meetingInfo)
 activate MeetingService
 
-MeetingService->MeetingService: Validate meeting-level information\nincluding Planned Start/End Time in the future (BR-24, BR-62, BR-162, BR-163)
+MeetingService->MeetingService: Validate required meeting information, Planned Start Time in the future\nand Planned End Time after Planned Start Time (BR-24, BR-62, BR-162)
 
 alt Meeting information is invalid - EX-1
     MeetingService-->MeetingController: MSG31 - Invalid meeting information
