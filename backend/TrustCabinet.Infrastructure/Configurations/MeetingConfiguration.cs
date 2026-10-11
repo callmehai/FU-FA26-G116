@@ -11,10 +11,15 @@ public class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         builder.Property(m => m.Title).HasMaxLength(300).IsRequired();
         builder.Property(m => m.Description).HasMaxLength(4000);
         builder.Property(m => m.Location).HasMaxLength(300);
+        builder.Property(m => m.OnlineLink).HasMaxLength(1000);
 
         builder.Property(m => m.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(m => m.Sensitivity).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(m => m.Mode).HasConversion<string>().HasMaxLength(32).IsRequired();
+
+        // The list filters by status and sorts by start; the calendar and reminders read by start.
+        builder.HasIndex(m => new { m.Status, m.PlannedStartTime });
+        builder.HasIndex(m => m.PlannedStartTime);
 
         builder.HasOne(m => m.CreatedBy)
             .WithMany()

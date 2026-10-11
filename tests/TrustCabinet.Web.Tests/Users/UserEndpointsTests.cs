@@ -70,7 +70,7 @@ public class UserEndpointsTests : IDisposable
                 services.RemoveAll<IRefreshTokenStore>();
                 services.AddSingleton<IRefreshTokenStore>(RefreshTokens);
 
-                // UC-08: no Redis for the links and no SMTP server for the email.
+                // UC-07: no Redis for the links and no SMTP server for the email.
                 services.RemoveAll<IPasswordResetTokenStore>();
                 services.AddSingleton<IPasswordResetTokenStore>(ResetTokens);
                 services.RemoveAll<IPasswordResetEmailSender>();
@@ -170,7 +170,7 @@ public class UserEndpointsTests : IDisposable
         Assert.Empty(_factory.Audit.Records);
     }
 
-    // ---------------------------------------------------------- UC-04 · GET /api/users
+    // ---------------------------------------------------------- UC-05 · GET /api/users
 
     [Fact]
     public async Task List_returns_the_accounts_sorted_and_without_secrets()
@@ -214,7 +214,7 @@ public class UserEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
     }
 
-    // -------------------------------------------------------- UC-05 · POST /api/users
+    // -------------------------------------------------------- UC-06a · POST /api/users
 
     [Fact]
     public async Task Create_answers_MSG07_with_201_and_a_location()
@@ -347,7 +347,7 @@ public class UserEndpointsTests : IDisposable
         Assert.Equal("Chủ toạ", user.GetProperty("roleName").GetString());
     }
 
-    // --------------------------------------------------------- UC-06 · PUT /api/users/{id}
+    // --------------------------------------------------------- UC-06b · PUT /api/users/{id}
 
     [Fact]
     public async Task Update_answers_MSG10_with_the_updated_account()
@@ -389,7 +389,7 @@ public class UserEndpointsTests : IDisposable
     public async Task Update_cannot_change_the_status()
     {
         // The edit form has no status field, and posting one must not smuggle a deactivation
-        // through UC-06's endpoint, where UC-07's session handling does not run.
+        // through UC-06b's endpoint, where UC-06c's session handling does not run.
         var target = GivenUser(isActive: true);
         var client = AdminClient();
 
@@ -404,7 +404,7 @@ public class UserEndpointsTests : IDisposable
         Assert.True(target.IsActive);
     }
 
-    // -------------------------------------------------- UC-07 · PUT /api/users/{id}/status
+    // -------------------------------------------------- UC-06c · PUT /api/users/{id}/status
 
     [Fact]
     public async Task Deactivate_answers_MSG11_and_ends_the_sessions()
@@ -536,7 +536,7 @@ public class UserEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    // ------------------------------------------------------------------ UC-08 · Reset password
+    // ------------------------------------------------------------------ UC-07 · Reset password
 
     private const string NewPassword = "MotMatKhauMoiRatDai@2026";
 

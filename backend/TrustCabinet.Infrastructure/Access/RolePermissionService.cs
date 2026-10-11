@@ -10,10 +10,10 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Infrastructure.Access;
 
 /// <summary>
-/// UC-09 and UC-10's <c>:Role Permission Service</c> (SCRUM-60). Every rule about the matrix lives
+/// UC-10 and UC-11's <c>:Role Permission Service</c> (SCRUM-60). Every rule about the matrix lives
 /// here: what a valid configuration is, and what the audit log records.
 ///
-/// The order inside the write is the order UC-10's diagram gives: validate, then persist, then
+/// The order inside the write is the order UC-11's diagram gives: validate, then persist, then
 /// audit. Auditing before the write would record changes that did not happen.
 /// </summary>
 public sealed class RolePermissionService(
@@ -190,7 +190,7 @@ public sealed class RolePermissionService(
     }
 
     /// <summary>
-    /// The rules UC-10 enforces. Returns field name → Vietnamese message, empty when the
+    /// The rules UC-11 enforces. Returns field name → Vietnamese message, empty when the
     /// configuration is acceptable.
     /// </summary>
     private async Task<Dictionary<string, string>> ValidateAsync(
@@ -263,7 +263,7 @@ public sealed class RolePermissionService(
     }
 
     /// <summary>
-    /// Turns the stored pairs into what UC-09 shows: every role listed, even one with nothing
+    /// Turns the stored pairs into what UC-10 shows: every role listed, even one with nothing
     /// granted, alongside the catalogue that gives the grid its columns.
     /// </summary>
     private static RolePermissionMatrix Build(

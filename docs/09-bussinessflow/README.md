@@ -1,76 +1,39 @@
 # Business Flow (BF)
 
-Bốn swimlane mô tả luồng nghiệp vụ chính. File `.drawio` là nguồn để sửa; file `.drawio.png` có
-nhúng XML nên mở bằng draw.io vẫn sửa tiếp được.
+Bốn swimlane mô tả luồng nghiệp vụ chính, bản PO đã duyệt ngày 09/10/2026 (nguồn: thư mục `Diagrams/Main flow Swimlane`
+của nhóm, đồng bộ vào repo ngày 10/10/2026). File `.drawio` là nguồn để sửa; file `.drawio.png` có nhúng XML nên mở bằng
+draw.io vẫn sửa tiếp được. Diễn giải chi tiết từng bước, kèm UC và BR, ở
+[02-design/04-luong-nghiep-vu-chinh.md](../02-design/04-luong-nghiep-vu-chinh.md).
 
-| File | Nội dung |
-|---|---|
-| BF-01_System_Access_Administration | Quản trị tài khoản, đăng nhập |
-| BF-02_Meeting_Preparation_Approval | Tạo, chuẩn bị, gửi duyệt, công bố, phản hồi lời mời, dời lịch |
-| BF-03_Meeting_Execution_Decision_Making | Bắt đầu, điểm danh, vòng agenda và biểu quyết, kết thúc |
-| BF-04_Post_Meeting_Processing_Formal_Records | Upload audio, transcript, tóm tắt, biên bản, ký, niêm phong |
+| File | Trigger → Kết thúc | Swimlane | UC chính |
+|---|---|---|---|
+| [BF-01](BF-01_System_Access_Administration.drawio.png) System Access & Administration | Cấp / đổi quyền truy cập → user đăng nhập và dùng được đúng chức năng | System Admin, Internal User, TrustCabinet, Google Identity Provider | UC-01 → UC-03, UC-05 → UC-13 |
+| [BF-02](BF-02_Meeting_Preparation_Approval.drawio.png) Meeting Preparation, Approval & Participant Coordination | Organizer cần tổ chức họp → cuộc họp `Published`, lời mời đã gửi | Meeting Organizer, Secretary, TrustCabinet, Meeting Approver, Participant / Guest, Email Service | UC-04, UC-14 → UC-20, UC-23, UC-27 → UC-30, UC-33 |
+| [BF-03](BF-03_Meeting_Execution_Decision_Making.drawio.png) Meeting Execution & Decision Making | Chair bắt đầu cuộc họp `Published` → cuộc họp `Ended`, kết quả agenda và biểu quyết đã ghi | Participant / Guest, Chair, TrustCabinet, Secretary | UC-21, UC-22, UC-24, UC-25, UC-31, UC-37 → UC-42, UC-53 → UC-57 |
+| [BF-04](BF-04_Post_Meeting_Processing_Formal_Records.drawio.png) Post-Meeting Processing & Formal Records | Cuộc họp `Ended` → biên bản đã ký, niêm phong, tra cứu theo quyền | AI / Speech Processing Provider, TrustCabinet, Secretary, Chair / Designated Signers, Authorized User | UC-43 → UC-51, UC-58 → UC-65 |
 
-## Thay đổi 09/10/2026 — PO chốt, chưa đồng bộ vào docs
+## Điểm chính của bản BF 09/10/2026
 
-BF-02/03/04 đã vẽ lại theo luồng chính của AI-eCabinet. Các tài liệu dưới đây **chưa** sửa theo;
-danh sách này là việc cần làm.
+- **Một cuộc họp = một buổi họp.** Không còn Meeting Session; lịch nhập khi tạo cuộc họp, agenda gắn thẳng vào cuộc họp
+  ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)). Theo AI-eCabinet: chữ "phiên họp" trên UI của họ là agenda item.
+- **BF-01:** đăng nhập sai quá số lần cho phép thì khoá tài khoản; System Admin mở khoá (UC-09). Mọi thay đổi của Admin
+  ghi audit log.
+- **BF-02:** Organizer tạo cuộc họp (tiêu đề, lịch, hình thức, địa điểm, độ mật), gán Thư ký đầu tiên, chọn người duyệt,
+  gửi duyệt. Thư ký chuẩn bị thành phần (kể cả Guest), vai trò, agenda, tài liệu. Bị từ chối thì Organizer sửa và gửi lại.
+  Công bố chỉ khi đã có Chair và Secretary; hệ thống tạo lời mời và gửi email. Sau khi công bố, Organizer chỉ được dời
+  giờ, địa điểm, link (*Reschedule*, BR-158) và hệ thống báo lại người được mời.
+- **BF-03:** Chair bắt đầu họp → hệ thống chuyển `InProgress` và báo người tham dự; Thư ký điểm danh chính thức; với
+  họp Online/Hybrid người tham dự vào phòng họp. Mỗi mục agenda: Chair đặt mục hiện tại → thảo luận → nếu cần thì tạo và mở
+  biểu quyết → bỏ phiếu → Chair đóng → hệ thống kiểm phiếu → Chair ghi kết luận *Passed / Not Passed / Deferred* → hoàn
+  thành mục. Hết mục thì Chair kết thúc họp, hệ thống đóng phòng họp. **Biểu quyết chỉ diễn ra trong cuộc họp**
+  ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md)) — không vote trước / sau họp, không quorum, không Resolution.
+- **BF-04:** Thư ký upload audio (không còn vai trò Audio Uploader) → AI chép lời, nhận diện người nói, sinh tóm tắt →
+  Thư ký sửa transcript, duyệt rồi công bố tóm tắt → sinh bản nháp biên bản (thông tin, tóm tắt, kết quả biểu quyết) →
+  gửi ký. Người ký ký hoặc yêu cầu sửa; sửa thì các chữ ký đã có bị huỷ và gửi ký lại (BR-166). Đủ chữ ký thì Thư ký
+  niêm phong; biên bản bị khoá và tra cứu theo quyền.
 
-### 1. Bỏ Meeting cha, `MeetingSession` đổi thành `Meeting`
+## Lịch sử
 
-AI-eCabinet không có cấp nào trên cuộc họp. Chữ "phiên họp" trên UI của họ là **agenda item**
-(`meeting_agenda_items`), không phải cuộc họp con. Từ nay một cuộc họp = một buổi họp, tự mang lịch,
-vòng đời, agenda, thành phần, tài liệu, biểu quyết và biên bản.
-
-UC bị ảnh hưởng — **FE-05 Meeting Session Management không còn là feature riêng**:
-
-| UC | Xử lý đề xuất |
-|---|---|
-| UC-26 Create Meeting Session | Bỏ — lịch nhập ngay trong UC-15 Create Meeting |
-| UC-27 Update Meeting Session | Bỏ — gộp vào UC-16 Update Meeting; sau Published chỉ được dời giờ/địa điểm/link (Reschedule) |
-| UC-28 Cancel Meeting Session | Bỏ — eCabinet không có hủy cuộc họp. **PO cần chốt** có thêm Cancel Meeting hay không |
-| UC-29 Start Meeting Session | Bỏ — trùng UC-43 Start Meeting |
-| UC-30 End Meeting Session | Bỏ — trùng UC-44 End Meeting |
-| UC-53 View Meeting Sessions | Bỏ |
-| UC-54 View Meeting Agenda | Giữ, đổi quan hệ: `<<extend>>` UC-17 thay vì UC-53 |
-| UC-31 → UC-36 Agenda | Giữ; Agenda Item thuộc Meeting, không thuộc Session |
-
-UC-26 → UC-30 và UC-53 nằm trong dải ID đóng băng (UC-01 → UC-54): đánh dấu "không còn dùng",
-không xoá số, không đánh lại số.
-
-Tài liệu cần sửa: Report 1 (FE-05, FE-06), Report 3, Master UC Inventory, UC Specification,
-Business Rules, ERD (`MeetingSession`, `AgendaItem.MeetingSessionId`), vòng đời cuộc họp,
-`docs/02-design/04-luong-nghiep-vu-chinh.md`, sequence diagram `meeting-session-management/`,
-class diagram FE-05, API `05-quan-ly-cuoc-hop.md`, danh mục mã thông báo (mã của Session đánh dấu
-không còn dùng). Code: `MeetingSession` entity/config/migration, `meetingSessions.ts` ở FE.
-
-### 2. Bỏ biểu quyết đặc biệt (time-boxed, quorum, Resolution bất biến)
-
-eCabinet biểu quyết ngay trong cuộc họp: tạo, mở, bỏ phiếu, đóng, rồi **chủ trì ghi kết luận**
-Thông qua / Không thông qua / Hoãn. Không có phiếu trước họp hay sau họp, không có quorum, không có
-đối tượng "Resolution" riêng. BF đã bỏ "Shared Voting Sub-flow", nhánh vote trước họp (BF-02) và sau
-họp (BF-04).
-
-**Không UC nào bắt buộc phải xoá** — UC-70 → UC-76 vẫn dùng cho biểu quyết trong họp, chỉ sửa nội dung:
-
-| UC | Xử lý đề xuất |
-|---|---|
-| UC-70 View Meeting Votes | Giữ |
-| UC-71 Create / Configure Vote | Giữ; bỏ cấu hình quorum và deadline time-boxed |
-| UC-72 Open / Publish Vote | Đổi tên thành **Open Vote**; chỉ mở khi cuộc họp `InProgress` |
-| UC-73 Cast Vote | Giữ |
-| UC-74 View Vote Status | Giữ; bao gồm xem kết quả đếm phiếu |
-| UC-75 Close Vote | Giữ |
-| UC-76 View Resolution | **PO cần chốt**: đổi thành **Record Vote Conclusion** (Chair ghi Thông qua / Không thông qua / Hoãn — bước có trong eCabinet mà danh mục đang thiếu), hoặc bỏ hẳn vì xem kết quả đã nằm trong UC-74 |
-
-Tài liệu cần sửa: Report 1 (FE-12 bỏ "time-boxed vote… before or after", "quorum rule",
-"cannot be altered"; GAP-05 "immutable record of resolutions"; FE-16 "resolutions"), Report 2
-(iteration voting: "both voting modes", "resolution"), Report 3 §12, Master UC Inventory (FE-12,
-dòng "Resolution là business outcome…", luồng lifecycle "→ Resolution"), FE-13 (biên bản lấy
-"kết quả biểu quyết" thay cho "Resolution"), `04-luong-nghiep-vu-chinh.md` (mục 3.8, 4, 6.5).
-
-### 3. Các thay đổi khác trong BF
-
-- **Audio:** Secretary tự upload (UC-62), không còn vai trò Audio Uploader — khớp Inventory.
-- **Dời lịch sau Published (Reschedule):** Organizer chỉ đổi giờ, địa điểm, link; hệ thống báo lại
-  cho người được mời. Theo eCabinet. **PO cần chốt** người được dời lịch (Organizer hay cả Chair).
-- **Yêu cầu sửa biên bản (UC-93):** Secretary sửa → hệ thống huỷ các chữ ký đã có → gửi ký lại.
+Bản trước ngày 09/10/2026 có cấp Meeting Session, "Shared Voting Sub-flow", biểu quyết trước họp (BF-02) và sau họp
+(BF-04). Danh sách việc cần sửa docs theo bản BF mới đã thực hiện xong trong đợt đồng bộ 10/10/2026 (gom UC, đánh số lại
+UC-01 → UC-70); bảng đổi số ở [Master Use Case Inventory §5](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới).

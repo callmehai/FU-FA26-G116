@@ -9,9 +9,9 @@ import type { WorkflowOutcome } from './workflowOutcome'
 import { workflowFailure } from './workflowOutcome'
 
 /**
- * UC-19 Submit for approval: the organizer picks who reviews this cycle. The approver is chosen
+ * UC-18 Submit for approval: the organizer picks who reviews this cycle. The approver is chosen
  * here, not on the form — a draft has none (SCRUM-19). A rejected meeting goes through the same
- * dialog (UC-19 AF-1) and may pick a different approver. The server re-checks readiness and the
+ * dialog (UC-18 AF-1) and may pick a different approver. The server re-checks readiness and the
  * approver's eligibility in the same transaction, so both can still fail after the list was read.
  */
 export function SubmitForApprovalDialog({

@@ -4,8 +4,9 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Domain.Entities;
 
 /// <summary>
-/// A meeting, from first draft to archived record. <see cref="Status"/> is the spine of the whole
-/// system: it decides who may edit, when voting opens, and when minutes can be issued.
+/// A meeting, from first draft to its end. One meeting is one sitting and carries its own schedule
+/// (ADR-0013). <see cref="Status"/> is the spine of the whole system: it decides who may edit, when
+/// voting opens, and when minutes can be drafted.
 /// </summary>
 public class Meeting : Entity
 {
@@ -30,6 +31,23 @@ public class Meeting : Entity
     /// <summary>Room name, address, or how to join when the meeting is online.</summary>
     public string Location { get; set; } = string.Empty;
 
+    /// <summary>
+    /// An external meeting link. Null means the TrustCabinet online room, which is the default for
+    /// an Online or Hybrid meeting (BR-163).
+    /// </summary>
+    public string? OnlineLink { get; set; }
+
+    public DateTimeOffset PlannedStartTime { get; set; }
+
+    /// <summary>Always after <see cref="PlannedStartTime"/> (BR-62).</summary>
+    public DateTimeOffset PlannedEndTime { get; set; }
+
+    /// <summary>Written by the system when the Chair starts the meeting (UC-21).</summary>
+    public DateTimeOffset? ActualStartedAt { get; set; }
+
+    /// <summary>Written by the system when the Chair ends the meeting (UC-22).</summary>
+    public DateTimeOffset? ActualEndedAt { get; set; }
+
     public Guid CreatedById { get; set; }
     public User CreatedBy { get; set; } = null!;
 
@@ -38,7 +56,6 @@ public class Meeting : Entity
     public User? AssignedApprover { get; set; }
 
     public ICollection<MeetingParticipant> Participants { get; set; } = [];
-    public ICollection<MeetingSession> Sessions { get; set; } = [];
     public ICollection<MeetingStatusHistory> StatusHistory { get; set; } = [];
     public ICollection<AgendaItem> AgendaItems { get; set; } = [];
     public ICollection<Document> Documents { get; set; } = [];

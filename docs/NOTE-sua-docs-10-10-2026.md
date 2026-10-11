@@ -1,5 +1,12 @@
 # Việc sửa docs ngày 10/10/2026 — bỏ Meeting Session, biểu quyết chỉ trong họp
 
+> **Trạng thái 10/10/2026: ĐÃ THỰC HIỆN — chỉ còn giá trị lịch sử.** Đợt đồng bộ docs ngày 10/10/2026 đã áp dụng
+> D1–D3 theo Report 1/2/3 bản DOCX mới. Khác với file này: danh sách UC **đã được gom và đánh số lại** (70 UC,
+> FE-01 → FE-15, không còn "đóng băng UC-01 → UC-54"); số UC, BR, dòng nêu bên dưới là số cũ. Tra số mới ở
+> [Master Use Case Inventory §5](01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới).
+> Phần còn mở: mục `[B]` (API docs + code/migration) và cập nhật `03-api/00-danh-muc-ma-thong-bao.md`.
+
+
 > **Đọc phần 0 → 5 trước khi sửa bất cứ file nào.** Phần A, B, C bên dưới là danh sách sửa
 > chi tiết theo từng file, từng dòng, viết để một AI có giới hạn hoặc một thành viên mới làm
 > theo **không cần tự quyết định**. Số dòng là số dòng tại commit `6e08966` của branch

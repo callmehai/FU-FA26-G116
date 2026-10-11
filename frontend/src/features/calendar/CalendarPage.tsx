@@ -4,8 +4,8 @@ import { Icon } from '../../components/Icon'
 import { Select } from '../../components/Select'
 import { backState } from '../../lib/backTarget'
 import { routes } from '../../lib/routes'
-import { MEETING_MODE_LABEL } from '../../types/meeting'
 import { useAuth } from '../auth/useAuth'
+import { placeLabel } from '../meetings/place'
 import { SensitivityBadge, StatusBadge } from '../meetings/StatusBadge'
 import { STATUS_TONE } from '../meetings/statusTone'
 import { useWeekSchedule, type ScheduleEntry, type WeekSchedule } from './useWeekSchedule'
@@ -14,9 +14,9 @@ import { useWeekSchedule, type ScheduleEntry, type WeekSchedule } from './useWee
 const HOURS_PER_DAY = 24
 const HOUR_HEIGHT = 56
 const GRID_HEIGHT = HOURS_PER_DAY * HOUR_HEIGHT
-/** Where an empty week, or a week whose first session starts early, opens. */
+/** Where an empty week, or a week whose first meeting starts early, opens. */
 const WORKDAY_START_HOUR = 8
-/** A session shorter than this would not fit its own time line. */
+/** A meeting shorter than this would not fit its own time line. */
 const MIN_EVENT_HEIGHT = 30
 
 const WEEKDAYS = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy']
@@ -32,7 +32,7 @@ type Mode = 'calendar' | 'list'
 const DATE = /^\d{4}-\d{2}-\d{2}$/
 
 /**
- * "Lịch làm việc" (ADR-0012): the week's meeting sessions, Monday first, as a time grid or as a
+ * "Lịch làm việc" (ADR-0012): the week's meetings, Monday first, as a time grid or as a
  * list grouped by day. The week, the span and the view live in the URL, so a reload or a shared
  * link opens the same thing.
  */
@@ -121,14 +121,6 @@ export function CalendarPage() {
 
 /** Why the week shows nothing, when it is not simply free. */
 function ScheduleNotice({ schedule, onRetry }: { schedule: WeekSchedule; onRetry: () => void }) {
-  if (schedule.kind === 'unavailable') {
-    return (
-      <p className="alert alert-info calendar-note" role="status">
-        Lịch chưa có dữ liệu: backend chưa có API phiên họp (<code>GET /api/meetings/{'{id}'}/sessions</code>,
-        SCRUM-68). Trong lúc chờ, xem các cuộc họp ở <Link to={routes.meetings}>Danh sách cuộc họp</Link>.
-      </p>
-    )
-  }
   if (schedule.kind === 'error') {
     return (
       <div className="alert alert-error page-alert calendar-note" role="alert">
@@ -150,7 +142,7 @@ function WeekGrid({ days, now, schedule }: { days: Date[]; now: Date; schedule: 
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Open where the eye should land: the current time on this week (a third of the way down, so the
-  // next hours show), otherwise the week's first session or the start of the working day. Once per
+  // next hours show), otherwise the week's first meeting or the start of the working day. Once per
   // week and view — later reloads of the same week leave the user's scroll alone.
   const firstStart = entries.find((e) => days.some((d) => sameDay(e.start, d)))?.start
   const anchorMinutes = showsToday
@@ -198,7 +190,7 @@ function WeekGrid({ days, now, schedule }: { days: Date[]; now: Date; schedule: 
                 style={{ height: GRID_HEIGHT }}
               >
                 {dayEntries.map(({ entry, lane, lanes }) => (
-                  <GridEvent key={entry.session.id} entry={entry} lane={lane} lanes={lanes} />
+                  <GridEvent key={entry.meeting.id} entry={entry} lane={lane} lanes={lanes} />
                 ))}
                 {schedule.kind === 'loaded' && dayEntries.length === 0 && (
                   <span className="calendar-free" style={{ top: (WORKDAY_START_HOUR + 2) * HOUR_HEIGHT }}>
@@ -218,7 +210,7 @@ function WeekGrid({ days, now, schedule }: { days: Date[]; now: Date; schedule: 
 
 function GridEvent({ entry, lane, lanes }: { entry: ScheduleEntry; lane: number; lanes: number }) {
   const top = minutesOfDay(entry.start) * (HOUR_HEIGHT / 60)
-  // A session running past midnight stops at the bottom of its own day.
+  // A meeting running past midnight stops at the bottom of its own day.
   const bottom = sameDay(entry.start, entry.end) ? minutesOfDay(entry.end) * (HOUR_HEIGHT / 60) : GRID_HEIGHT
   const height = Math.max(MIN_EVENT_HEIGHT, bottom - top)
   const { meeting } = entry
@@ -244,7 +236,7 @@ function GridEvent({ entry, lane, lanes }: { entry: ScheduleEntry; lane: number;
         )}
       </span>
       <span className="cal-event-title">{meeting.title}</span>
-      {tall && <span className="cal-event-place">{placeLabel(entry)}</span>}
+      {tall && <span className="cal-event-place">{placeLabel(entry.meeting)}</span>}
     </Link>
   )
 }
@@ -282,7 +274,7 @@ function WeekList({ days, now, schedule }: { days: Date[]; now: Date; schedule: 
                 <p className="agenda-empty">Không có cuộc họp</p>
               </div>
             ) : (
-              dayEntries.map((entry) => <AgendaItem key={entry.session.id} entry={entry} />)
+              dayEntries.map((entry) => <AgendaItem key={entry.meeting.id} entry={entry} />)
             )}
           </section>
         )
@@ -292,7 +284,7 @@ function WeekList({ days, now, schedule }: { days: Date[]; now: Date; schedule: 
 }
 
 function AgendaItem({ entry }: { entry: ScheduleEntry }) {
-  const { meeting, session } = entry
+  const { meeting } = entry
   const tone = STATUS_TONE[meeting.status]
   const back = backState('Lịch làm việc', useLocation())
   return (
@@ -312,15 +304,8 @@ function AgendaItem({ entry }: { entry: ScheduleEntry }) {
           <p className="agenda-facts">
             <span>
               <Icon name={meeting.mode === 'InPerson' ? 'mapPin' : 'video'} size={15} />
-              {placeLabel(entry)}
+              {placeLabel(entry.meeting)}
             </span>
-            {/* Sessions carried over from SCRUM-70 are named after their meeting; do not say it twice. */}
-            {session.title.trim() !== meeting.title.trim() && (
-              <span>
-                <Icon name="clock" size={15} />
-                {session.title}
-              </span>
-            )}
           </p>
           <p className="agenda-chips">
             <StatusBadge status={meeting.status} />
@@ -366,8 +351,8 @@ function Legend() {
 }
 
 /**
- * Side-by-side lanes for sessions that overlap on the same day: each session takes the first lane
- * free at its start, and every session in a cluster of overlaps shares that cluster's lane count.
+ * Side-by-side lanes for meetings that overlap on the same day: each meeting takes the first lane
+ * free at its start, and every meeting in a cluster of overlaps shares that cluster's lane count.
  */
 function laneLayout(entries: ScheduleEntry[]) {
   const out: { entry: ScheduleEntry; lane: number; lanes: number }[] = []
@@ -391,12 +376,6 @@ function laneLayout(entries: ScheduleEntry[]) {
   }
   flush()
   return out
-}
-
-function placeLabel({ meeting }: ScheduleEntry) {
-  if (meeting.mode === 'Online') return 'Trực tuyến'
-  const mode = MEETING_MODE_LABEL[meeting.mode]
-  return meeting.location ? `${mode} · ${meeting.location}` : mode
 }
 
 function timeRange(entry: ScheduleEntry) {

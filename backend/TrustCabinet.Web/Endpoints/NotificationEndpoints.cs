@@ -39,7 +39,7 @@ public static class NotificationEndpoints
             return Results.Json(
                 new NotificationErrorResponse(
                     Msg39InvalidQuery,
-                    "Tham số truy vấn không hợp lệ.",
+                    "Trang thông báo được yêu cầu không khả dụng.",
                     errors),
                 statusCode: StatusCodes.Status400BadRequest);
         }

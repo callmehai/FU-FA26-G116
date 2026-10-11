@@ -10,7 +10,7 @@ using TrustCabinet.Web.Tests.Authentication;
 namespace TrustCabinet.Web.Tests.Users;
 
 /// <summary>
-/// The rules of UC-04 … UC-07, one test per branch of each sequence diagram, plus the cases the
+/// The rules of UC-05 … UC-06c, one test per branch of each sequence diagram, plus the cases the
 /// diagrams leave implicit (a missing account, an administrator aiming at themselves).
 ///
 /// No database and no HTTP: the branches are the part worth pinning down, and they are decided
@@ -57,7 +57,7 @@ public class UserServiceTests
         return user;
     }
 
-    // ---------------------------------------------------------------- UC-04 · View user accounts
+    // ---------------------------------------------------------------- UC-05 · View user accounts
 
     [Fact]
     public async Task List_returns_every_account_sorted_by_name()
@@ -77,7 +77,7 @@ public class UserServiceTests
     public async Task List_includes_deactivated_accounts()
     {
         // Deactivated is a state the administrator manages, not a reason to hide the row —
-        // UC-07 reactivates from this same list, so a hidden account could never come back.
+        // UC-06c reactivates from this same list, so a hidden account could never come back.
         GivenUser(isActive: false);
 
         var accounts = await NewService().ListAsync();
@@ -100,7 +100,7 @@ public class UserServiceTests
             typeof(UserAccount).GetProperties().Select(p => p.Name));
     }
 
-    // -------------------------------------------------------------- UC-05 · Create user account
+    // -------------------------------------------------------------- UC-06a · Create user account
 
     [Fact]
     public async Task Create_stores_an_active_account_and_records_the_audit_entry()
@@ -307,7 +307,7 @@ public class UserServiceTests
         Assert.Empty(_audit.Records);
     }
 
-    // -------------------------------------------------------------- UC-06 · Update user account
+    // -------------------------------------------------------------- UC-06b · Update user account
 
     [Fact]
     public async Task Get_returns_the_current_information_for_the_edit_form()
@@ -625,7 +625,7 @@ public class UserServiceTests
         Assert.Equal(BuiltInRoles.Chair, user.RoleId);
     }
 
-    // ------------------------------------------- UC-07 · Deactivate / reactivate user account
+    // ------------------------------------------- UC-06c · Deactivate / reactivate user account
 
     [Fact]
     public async Task Deactivate_sets_the_status_ends_the_sessions_and_audits()
@@ -825,7 +825,7 @@ public class UserServiceTests
         Assert.Equal(UserOutcome.NotFound, result.Outcome);
     }
 
-    // ---------------------------------------------------------------- UC-08 · Reset user password
+    // ---------------------------------------------------------------- UC-07 · Reset user password
 
     private const string NewPassword = "MotMatKhauMoiRatDai@2026";
 

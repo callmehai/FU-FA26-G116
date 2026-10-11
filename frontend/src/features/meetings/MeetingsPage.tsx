@@ -7,7 +7,7 @@ import { Pagination } from '../../components/Pagination'
 import { Select } from '../../components/Select'
 import { backState } from '../../lib/backTarget'
 import { errorMessage, isApiError } from '../../lib/errors'
-import { formatDateTime } from '../../lib/format'
+import { formatClock, formatDate, formatWeekdayDate } from '../../lib/format'
 import { routes } from '../../lib/routes'
 import {
   MEETING_STATUSES,
@@ -30,6 +30,7 @@ import {
   writeListState,
   type ListState,
 } from './listParams'
+import { placeLabel } from './place'
 import { SensitivityBadge, StatusBadge } from './StatusBadge'
 import { StatusSummary } from './StatusSummary'
 
@@ -46,7 +47,7 @@ const SENSITIVITY_OPTIONS = [
 
 /** Long enough that typing a word sends one request, short enough to feel live. */
 const SEARCH_DELAY_MS = 300
-const COLUMN_COUNT = 6
+const COLUMN_COUNT = 7
 const SKELETON_ROWS = 5
 
 type Load =
@@ -55,7 +56,7 @@ type Load =
   | { kind: 'error'; message: string; invalidQuery: boolean }
 
 /**
- * UC-14 View Meeting List (SCRUM-18). Search, filters, sorting and paging are all done by the server
+ * UC-17 View Meeting List (SCRUM-18). Search, filters, sorting and paging are all done by the server
  * after it has dropped every meeting the caller may not see, so nothing here filters rows itself.
  * The criteria live in the URL (see listParams.ts).
  */
@@ -210,7 +211,15 @@ export function MeetingsPage() {
             {m.title}
           </Link>
         </td>
-        <td className="cell-muted">{formatDateTime(m.createdAt)}</td>
+        <td className="cell-schedule">
+          {formatClock(m.plannedStartTime)}–{formatClock(m.plannedEndTime)}
+          <span className="cell-sub">
+            {formatDate(m.plannedStartTime) === formatDate(m.plannedEndTime)
+              ? formatWeekdayDate(m.plannedStartTime)
+              : `${formatDate(m.plannedStartTime)} – ${formatDate(m.plannedEndTime)}`}
+          </span>
+        </td>
+        <td className="cell-muted cell-place">{placeLabel(m)}</td>
         <td>
           <StatusBadge status={m.status} />
         </td>
@@ -295,8 +304,8 @@ export function MeetingsPage() {
               value={state.from}
               max={state.to || undefined}
               onChange={(e) => update({ from: e.target.value })}
-              aria-label="Có phiên họp diễn ra từ ngày"
-              title="Có phiên họp diễn ra từ ngày"
+              aria-label="Diễn ra từ ngày"
+              title="Diễn ra từ ngày"
             />
             <span aria-hidden="true">–</span>
             <input
@@ -304,8 +313,8 @@ export function MeetingsPage() {
               value={state.to}
               min={state.from || undefined}
               onChange={(e) => update({ to: e.target.value })}
-              aria-label="Có phiên họp diễn ra đến ngày"
-              title="Có phiên họp diễn ra đến ngày"
+              aria-label="Diễn ra đến ngày"
+              title="Diễn ra đến ngày"
               aria-invalid={!!rangeError}
             />
           </fieldset>
@@ -332,9 +341,10 @@ export function MeetingsPage() {
                 <SortHeader column="title" state={state} onSort={sortBy}>
                   Tên cuộc họp
                 </SortHeader>
-                <SortHeader column="createdAt" state={state} onSort={sortBy}>
-                  Tạo lúc
+                <SortHeader column="plannedStartTime" state={state} onSort={sortBy}>
+                  Thời gian
                 </SortHeader>
+                <th className="cell-place">Hình thức · Địa điểm</th>
                 <th>Trạng thái</th>
                 <th>Mức độ</th>
                 <th className="col-action">Thao tác</th>

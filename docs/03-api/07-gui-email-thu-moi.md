@@ -1,5 +1,11 @@
 # Gửi email thư mời cuộc họp — SCRUM-15
 
+> **Một cuộc họp là một buổi họp ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)).** Từ migration
+> `MeetingOwnsScheduleDropSessions`, lịch nằm trên Meeting (`plannedStartTime`, `plannedEndTime`, `onlineLink`) và code
+> không còn `MeetingSession`. Các đoạn lịch sử bên dưới nhắc Meeting Session là mô tả thời điểm viết.
+> Số UC đã đổi theo baseline 70 UC ([bảng đổi số](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới));
+> các mã `BR-54` → `BR-61` nhắc trong file là số BR cũ đã ngừng dùng ([danh mục BR](../01-requirements/06-business-rules.md)).
+
 SCRUM-15 không thêm HTTP endpoint riêng. Luồng công bố của SCRUM-19 gọi
 `IMeetingInvitationQueue.QueueForPublishedMeetingAsync(meetingId)` sau khi transaction đã commit
 meeting sang `Published`. Khi bật SMTP, mỗi thành phần tham dự tạo một dòng
@@ -41,8 +47,10 @@ SMTP được kết nối bằng MailKit và không phụ thuộc Gmail hay mộ
 (thường là 465), hoặc `None` chỉ cho SMTP nội bộ không mã hoá.
 
 Mỗi thư Publish gồm nội dung tiếng Việt, thông tin Meeting, địa điểm/hình thức và đường dẫn trực tiếp
-tới `/mgmt/meetings/{id}`. Thư không ghi Planned Start/End Time và không tạo tệp `.ics`, vì lịch dự
-kiến thuộc từng Meeting Session chứ không thuộc Meeting.
+tới `/mgmt/meetings/{id}`. Thư ghi giờ bắt đầu/kết thúc theo giờ Việt Nam và đính kèm `thu-moi-hop.ics`
+(`DTSTART`/`DTEND` từ `plannedStartTime`/`plannedEndTime`). Họp trực tuyến ghi link, hoặc "Phòng họp trực
+tuyến TrustCabinet" khi không có link. Dời lịch chưa gửi email cập nhật; người được mời nhận thông báo
+trong ứng dụng.
 
 ## Điểm tích hợp với SCRUM-19
 
@@ -53,7 +61,7 @@ khởi tạo queue có ranh giới riêng. Thứ tự bắt buộc:
 2. Chuyển sang `Published`, thêm `MeetingStatusHistory` bất biến.
 3. Tạo notifications, SaveChanges và commit transaction publication.
 4. Gọi `QueueForPublishedMeetingAsync(meetingId)`; producer đọc meeting/participants, render và lưu
-   Subject/Body cùng DeduplicationKey khi SMTP được bật; `CalendarAttachment` là null.
+   Subject/Body/`.ics` cùng DeduplicationKey khi SMTP được bật.
 5. Worker chỉ gửi nội dung đã lưu; không render lại từ meeting/participant hiện tại.
 
 Nếu lưu publication lỗi thì rollback status/history/notification và trả `MSG47`. Nếu bước queue lỗi

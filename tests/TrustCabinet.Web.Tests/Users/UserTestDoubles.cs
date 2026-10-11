@@ -281,7 +281,7 @@ internal sealed class FakeAdministratorInvariantGuard : IAdministratorInvariantG
 }
 
 /// <summary>
-/// UC-08's reset tokens in memory, with the same contract as the Redis store: single-use, one
+/// UC-07's reset tokens in memory, with the same contract as the Redis store: single-use, one
 /// current token per account, expiry against an overridable clock.
 /// </summary>
 internal sealed class FakePasswordResetTokenStore : IPasswordResetTokenStore

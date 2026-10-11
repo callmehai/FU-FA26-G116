@@ -141,16 +141,16 @@ app.UseAuthorization();
 // POST /api/auth/login, /refresh, /logout and GET /api/auth/me — UC-01.
 app.MapAuthEndpoints();
 
-// /api/users — UC-04 … UC-07 (SCRUM-13). Every route requires the AdminUsers capability.
+// /api/users — UC-05 and UC-06 (SCRUM-13). Every route requires the AdminUsers capability.
 app.MapUserEndpoints();
 
-// /api/roles/capabilities — UC-09 and UC-10 (SCRUM-60). Same gate as /api/users.
+// /api/roles/capabilities — UC-10 and UC-11 (SCRUM-60). Same gate as /api/users.
 app.MapRolePermissionEndpoints();
 
-// /api/roles — UC-11 … UC-13, create / rename / delete a role (SCRUM-63). Same gate.
+// /api/roles — UC-12a … UC-12c, create / rename / delete a role (SCRUM-63). Same gate.
 app.MapRoleEndpoints();
 
-// /api/meetings — UC-15/UC-16 mutations (SCRUM-17) and UC-18 list (SCRUM-18).
+// /api/meetings — UC-14/UC-15 mutations (SCRUM-17) and UC-17 list (SCRUM-18).
 app.MapMeetingEndpoints();
 
 // SCRUM-14: user-scoped notification list/read APIs and realtime delivery.

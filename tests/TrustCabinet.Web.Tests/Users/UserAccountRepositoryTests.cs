@@ -83,7 +83,7 @@ public class UserAccountRepositoryTests
             .ToQueryString();
 
         Assert.Contains("email", sql);
-        // Excluding an account has to appear in the SQL; without it, UC-06 would read an account
+        // Excluding an account has to appear in the SQL; without it, UC-06b would read an account
         // keeping its own email as a duplicate.
         Assert.Equal(exclude, sql.Contains("id <>", StringComparison.OrdinalIgnoreCase));
     }

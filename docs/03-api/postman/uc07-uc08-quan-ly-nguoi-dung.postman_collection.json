@@ -1,0 +1,1193 @@
+{
+  "info": {
+    "name": "TrustCabinet · UC-07 Reset User Password & UC-08 Assign System Role",
+    "description": "Chạy trên backend local (Development) với SMTP trỏ vào Mailpit. Xem docs/03-api/postman/README.md.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5225"
+    },
+    {
+      "key": "mailpitUrl",
+      "value": "http://localhost:8025"
+    },
+    {
+      "key": "adminEmail",
+      "value": "quantri@trustcabinet.local"
+    },
+    {
+      "key": "memberEmail",
+      "value": "thanhvien@trustcabinet.local"
+    },
+    {
+      "key": "demoPassword",
+      "value": "TrustCabinet@2026"
+    },
+    {
+      "key": "tempEmail",
+      "value": "uc08-postman@trustcabinet.local"
+    },
+    {
+      "key": "tempPassword",
+      "value": "MatKhauBanDau@2026"
+    },
+    {
+      "key": "newPassword",
+      "value": "MatKhauMoiSauReset@2026"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 · Admin đăng nhập",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{demoPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('adminToken', pm.response.json().accessToken);",
+              "pm.collectionVariables.set('adminId', pm.response.json().user.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 · Thành viên đăng nhập (để thử 403)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{memberEmail}}\",\n  \"password\": \"{{demoPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('memberToken', pm.response.json().accessToken);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 · Lấy danh sách vai trò",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/roles"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "",
+              "const roles = pm.response.json();",
+              "const byName = n => roles.find(r => r.name === n);",
+              "pm.collectionVariables.set('memberRoleId', byName('Thành viên').id);",
+              "pm.collectionVariables.set('secretaryRoleId', byName('Thư ký').id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 · Tạo tài khoản thử (chỉ lần chạy đầu tiên)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Người Thử UC07\",\n  \"email\": \"{{tempEmail}}\",\n  \"password\": \"{{tempPassword}}\",\n  \"roleId\": \"{{memberRoleId}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const auth = { Authorization: 'Bearer ' + pm.collectionVariables.get('adminToken') };",
+              "pm.sendRequest({ url: pm.collectionVariables.get('baseUrl') + '/api/users', header: auth }, (err, res) => {",
+              "    const existing = res.json().find(u => u.email === pm.collectionVariables.get('tempEmail'));",
+              "    pm.collectionVariables.set('tempActive', existing ? String(existing.isActive) : 'true');",
+              "    if (existing) {",
+              "        pm.collectionVariables.set('tempId', existing.id);",
+              "        pm.execution.skipRequest();",
+              "    }",
+              "});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('code = MSG07', () => pm.expect(pm.response.json().code).to.eql('MSG07'));",
+              "pm.collectionVariables.set('tempId', pm.response.json().user.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 · Kích hoạt lại tài khoản thử (lần chạy trước đã khoá nó)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}/status",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"isActive\": true\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.collectionVariables.get('tempActive') === 'true') { pm.execution.skipRequest(); }"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG11', () => pm.expect(pm.response.json().code).to.eql('MSG11'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 · Đưa vai trò về Thành viên",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Người Thử UC07\",\n  \"email\": \"{{tempEmail}}\",\n  \"roleId\": \"{{memberRoleId}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG10', () => pm.expect(pm.response.json().code).to.eql('MSG10'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 · Gửi link để đặt mật khẩu ban đầu",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}/password-reset"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.sendRequest({ url: pm.collectionVariables.get('mailpitUrl') + '/api/v1/messages', method: 'DELETE' }, () => {});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG13', () => pm.expect(pm.response.json().code).to.eql('MSG13'));",
+              "",
+              "const base = pm.collectionVariables.get('mailpitUrl');",
+              "const to = pm.collectionVariables.get('tempEmail');",
+              "pm.sendRequest(base + '/api/v1/search?query=' + encodeURIComponent('to:' + to), (err, res) => {",
+              "    pm.test('Mailpit received the reset email', () => {",
+              "        pm.expect(err).to.eql(null);",
+              "        pm.expect(res.json().messages.length).to.be.above(0);",
+              "    });",
+              "    const id = res.json().messages[0].ID;",
+              "    pm.sendRequest(base + '/api/v1/message/' + id, (err2, msg) => {",
+              "        const text = msg.json().Text;",
+              "        const match = /reset-password#token=([A-Za-z0-9_-]+)/.exec(text);",
+              "        pm.test('the email carries the link with the token in the fragment', () => pm.expect(match).to.not.eql(null));",
+              "        pm.collectionVariables.set('setupToken', match[1]);",
+              "    });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 · Đặt mật khẩu ban đầu bằng chính luồng UC-07",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/password-reset",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{setupToken}}\",\n  \"newPassword\": \"{{tempPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG92', () => pm.expect(pm.response.json().code).to.eql('MSG92'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 · UC-07 · Gửi email đặt lại mật khẩu → MSG13",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}/password-reset"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.sendRequest({ url: pm.collectionVariables.get('mailpitUrl') + '/api/v1/messages', method: 'DELETE' }, () => {});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG13', () => pm.expect(pm.response.json().code).to.eql('MSG13'));",
+              "pm.test('trả về tài khoản', () => pm.expect(pm.response.json().user.id).to.eql(pm.collectionVariables.get('tempId')));",
+              "",
+              "const base = pm.collectionVariables.get('mailpitUrl');",
+              "const to = pm.collectionVariables.get('tempEmail');",
+              "pm.sendRequest(base + '/api/v1/search?query=' + encodeURIComponent('to:' + to), (err, res) => {",
+              "    pm.test('Mailpit received the reset email', () => {",
+              "        pm.expect(err).to.eql(null);",
+              "        pm.expect(res.json().messages.length).to.be.above(0);",
+              "    });",
+              "    const id = res.json().messages[0].ID;",
+              "    pm.sendRequest(base + '/api/v1/message/' + id, (err2, msg) => {",
+              "        const text = msg.json().Text;",
+              "        const match = /reset-password#token=([A-Za-z0-9_-]+)/.exec(text);",
+              "        pm.test('the email carries the link with the token in the fragment', () => pm.expect(match).to.not.eql(null));",
+              "        pm.collectionVariables.set('resetToken', match[1]);",
+              "    });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 · UC-07 · Mật khẩu cũ vẫn đăng nhập được sau khi gửi link",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{tempEmail}}\",\n  \"password\": \"{{tempPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 · UC-07 · Mật khẩu mới quá ngắn → MSG94, link chưa bị tiêu",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/password-reset",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"ngan\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('code = MSG94', () => pm.expect(pm.response.json().code).to.eql('MSG94'));",
+              "pm.test('lỗi theo field newPassword', () => pm.expect(pm.response.json().errors).to.have.property('newPassword'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 · UC-07 · Đặt mật khẩu mới bằng link → MSG92",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/password-reset",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"{{newPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG92', () => pm.expect(pm.response.json().code).to.eql('MSG92'));",
+              "pm.test('không cấp token đăng nhập', () => pm.expect(pm.response.json()).to.not.have.property('accessToken'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 · UC-07 · Dùng lại link lần hai → MSG93",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/password-reset",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"{{newPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('code = MSG93', () => pm.expect(pm.response.json().code).to.eql('MSG93'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 · UC-07 · Đăng nhập bằng mật khẩu mới",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{tempEmail}}\",\n  \"password\": \"{{newPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 · UC-07 · Mật khẩu cũ không còn dùng được → MSG01",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{tempEmail}}\",\n  \"password\": \"{{tempPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+              "pm.test('code = MSG01', () => pm.expect(pm.response.json().code).to.eql('MSG01'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "20 · UC-07 · Gửi link thứ nhất",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}/password-reset"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.sendRequest({ url: pm.collectionVariables.get('mailpitUrl') + '/api/v1/messages', method: 'DELETE' }, () => {});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG13', () => pm.expect(pm.response.json().code).to.eql('MSG13'));",
+              "",
+              "const base = pm.collectionVariables.get('mailpitUrl');",
+              "const to = pm.collectionVariables.get('tempEmail');",
+              "pm.sendRequest(base + '/api/v1/search?query=' + encodeURIComponent('to:' + to), (err, res) => {",
+              "    pm.test('Mailpit received the reset email', () => {",
+              "        pm.expect(err).to.eql(null);",
+              "        pm.expect(res.json().messages.length).to.be.above(0);",
+              "    });",
+              "    const id = res.json().messages[0].ID;",
+              "    pm.sendRequest(base + '/api/v1/message/' + id, (err2, msg) => {",
+              "        const text = msg.json().Text;",
+              "        const match = /reset-password#token=([A-Za-z0-9_-]+)/.exec(text);",
+              "        pm.test('the email carries the link with the token in the fragment', () => pm.expect(match).to.not.eql(null));",
+              "        pm.collectionVariables.set('olderToken', match[1]);",
+              "    });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "21 · UC-07 · Gửi link thứ hai",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}/password-reset"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.sendRequest({ url: pm.collectionVariables.get('mailpitUrl') + '/api/v1/messages', method: 'DELETE' }, () => {});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG13', () => pm.expect(pm.response.json().code).to.eql('MSG13'));",
+              "",
+              "const base = pm.collectionVariables.get('mailpitUrl');",
+              "const to = pm.collectionVariables.get('tempEmail');",
+              "pm.sendRequest(base + '/api/v1/search?query=' + encodeURIComponent('to:' + to), (err, res) => {",
+              "    pm.test('Mailpit received the reset email', () => {",
+              "        pm.expect(err).to.eql(null);",
+              "        pm.expect(res.json().messages.length).to.be.above(0);",
+              "    });",
+              "    const id = res.json().messages[0].ID;",
+              "    pm.sendRequest(base + '/api/v1/message/' + id, (err2, msg) => {",
+              "        const text = msg.json().Text;",
+              "        const match = /reset-password#token=([A-Za-z0-9_-]+)/.exec(text);",
+              "        pm.test('the email carries the link with the token in the fragment', () => pm.expect(match).to.not.eql(null));",
+              "        pm.collectionVariables.set('newerToken', match[1]);",
+              "    });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "22 · UC-07 · Link cũ đã bị link mới thay thế → MSG93",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/password-reset",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{olderToken}}\",\n  \"newPassword\": \"{{newPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('code = MSG93', () => pm.expect(pm.response.json().code).to.eql('MSG93'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "23 · UC-07 · Link mới vẫn dùng được → MSG92",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/password-reset",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{newerToken}}\",\n  \"newPassword\": \"{{newPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG92', () => pm.expect(pm.response.json().code).to.eql('MSG92'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "24 · UC-07 · Link giả → MSG93",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/password-reset",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"khong-phai-token-nao-ca\",\n  \"newPassword\": \"{{newPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('code = MSG93', () => pm.expect(pm.response.json().code).to.eql('MSG93'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "30 · UC-07 · Không có token → 401",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{baseUrl}}/api/users/{{tempId}}/password-reset"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "31 · UC-07 · Thiếu capability AdminUsers → 403",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{memberToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}/password-reset"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "32 · UC-07 · Tài khoản không tồn tại → 404",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/00000000-0000-7000-8000-000000000000/password-reset"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "32b · UC-07 · Gửi link trước khi vô hiệu hoá",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}/password-reset"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.sendRequest({ url: pm.collectionVariables.get('mailpitUrl') + '/api/v1/messages', method: 'DELETE' }, () => {});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG13', () => pm.expect(pm.response.json().code).to.eql('MSG13'));",
+              "",
+              "const base = pm.collectionVariables.get('mailpitUrl');",
+              "const to = pm.collectionVariables.get('tempEmail');",
+              "pm.sendRequest(base + '/api/v1/search?query=' + encodeURIComponent('to:' + to), (err, res) => {",
+              "    pm.test('Mailpit received the reset email', () => {",
+              "        pm.expect(err).to.eql(null);",
+              "        pm.expect(res.json().messages.length).to.be.above(0);",
+              "    });",
+              "    const id = res.json().messages[0].ID;",
+              "    pm.sendRequest(base + '/api/v1/message/' + id, (err2, msg) => {",
+              "        const text = msg.json().Text;",
+              "        const match = /reset-password#token=([A-Za-z0-9_-]+)/.exec(text);",
+              "        pm.test('the email carries the link with the token in the fragment', () => pm.expect(match).to.not.eql(null));",
+              "        pm.collectionVariables.set('deactivatedToken', match[1]);",
+              "    });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "33 · Vô hiệu hoá tài khoản tạm",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}/status",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"isActive\": false\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG11', () => pm.expect(pm.response.json().code).to.eql('MSG11'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "34 · UC-07 EX-1 · Tài khoản bị vô hiệu hoá → MSG14",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}/password-reset"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+              "pm.test('code = MSG14', () => pm.expect(pm.response.json().code).to.eql('MSG14'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "35 · Kích hoạt lại tài khoản tạm",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}/status",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"isActive\": true\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG11', () => pm.expect(pm.response.json().code).to.eql('MSG11'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "36 · UC-07 · Link gửi trước khi vô hiệu hoá không sống lại sau khi kích hoạt lại → MSG93",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/password-reset",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{deactivatedToken}}\",\n  \"newPassword\": \"{{newPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('code = MSG93', () => pm.expect(pm.response.json().code).to.eql('MSG93'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "40 · UC-08 · Xem tài khoản và vai trò hiện tại",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('vai trò hiện tại là Thành viên', () => pm.expect(pm.response.json().roleId).to.eql(pm.collectionVariables.get('memberRoleId')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "41 · UC-08 · Gán vai trò Thư ký → MSG10",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Người Thử UC07\",\n  \"email\": \"{{tempEmail}}\",\n  \"roleId\": \"{{secretaryRoleId}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG10', () => pm.expect(pm.response.json().code).to.eql('MSG10'));",
+              "pm.test('vai trò mới là Thư ký', () => pm.expect(pm.response.json().user.roleName).to.eql('Thư ký'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "42 · UC-08 EX-1 · Vai trò không tồn tại → MSG09",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Người Thử UC07\",\n  \"email\": \"{{tempEmail}}\",\n  \"roleId\": \"00000000-0000-7000-8000-000000000000\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('code = MSG09', () => pm.expect(pm.response.json().code).to.eql('MSG09'));",
+              "pm.test('lỗi ở roleId', () => pm.expect(pm.response.json().errors.roleId).to.eql('Vai trò không tồn tại.'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "43 · UC-08 · Vai trò không đổi sau lỗi",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('vẫn là Thư ký', () => pm.expect(pm.response.json().roleId).to.eql(pm.collectionVariables.get('secretaryRoleId')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "44 · UC-08 EX-2 · Hạ vai trò quản trị viên cuối cùng → MSG12",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{adminId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"{{adminName}}\",\n  \"email\": \"{{adminEmail}}\",\n  \"roleId\": \"{{memberRoleId}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Only meaningful while the signed-in admin is the sole active account holding AdminUsers (through",
+              "// any role) — otherwise this request would really demote them. The server counts by capability, so",
+              "// this check does too: it reads which roles carry AdminUsers, then counts active users in them.",
+              "const base = pm.collectionVariables.get('baseUrl');",
+              "const auth = { Authorization: 'Bearer ' + pm.collectionVariables.get('adminToken') };",
+              "pm.sendRequest({ url: base + '/api/roles/capabilities', header: auth }, (err, matrix) => {",
+              "    const adminRoles = matrix.json().roles",
+              "        .filter(r => r.capabilities.includes('AdminUsers'))",
+              "        .map(r => r.id);",
+              "    pm.sendRequest({ url: base + '/api/users', header: auth }, (err2, res) => {",
+              "        const me = res.json().find(u => u.id === pm.collectionVariables.get('adminId'));",
+              "        pm.collectionVariables.set('adminName', me.fullName);",
+              "        const admins = res.json().filter(u => u.isActive && adminRoles.includes(u.roleId));",
+              "        if (admins.length !== 1 || admins[0].id !== me.id) { pm.execution.skipRequest(); }",
+              "    });",
+              "});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+              "pm.test('code = MSG12', () => pm.expect(pm.response.json().code).to.eql('MSG12'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "90 · Dọn dẹp · Vô hiệu hoá tài khoản tạm",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/{{tempId}}/status",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"isActive\": false\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('code = MSG11', () => pm.expect(pm.response.json().code).to.eql('MSG11'));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

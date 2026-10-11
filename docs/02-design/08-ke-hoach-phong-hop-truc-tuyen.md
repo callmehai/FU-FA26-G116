@@ -32,12 +32,12 @@ quyết.
 | D2 | **TURN dùng bản nhúng sẵn trong LiveKit**, không dựng coturn. Dev không cần TURN (cùng máy); prod cần domain + chứng chỉ TLS. | Đã chốt (thay cho lựa chọn coturn ban đầu) |
 | D3 | **Phòng họp không dùng SignalR.** LiveKit tự lo signalling (SDP/ICE) và trạng thái phòng. SignalR `/hubs/calls` chỉ cần nếu làm gọi 1–1 (§8 PR5). | Đã chốt — ADR-0010 |
 | D4 | **Backend là ranh giới bảo mật:** chỉ backend ký token LiveKit, sau khi kiểm quyền. Tắt mic người khác, luật một người chia sẻ màn hình, đá người mất quyền đều do server làm qua RoomService API. | Đã chốt |
-| D5 | Tên phòng LiveKit = `meeting-{meetingId:D}`, dùng chung cho mọi phiên họp của cuộc họp. Phòng tự tạo khi người đầu tiên vào. `CallSession` (lượt mở phòng — **khác** `MeetingSession`, phiên họp nghiệp vụ) được tạo từ webhook, không tạo lúc cấp token. | Đã chốt — ADR-0010 |
-| D6 | Phòng chỉ mở khi cuộc họp **đang có một Meeting Session `InProgress`** (Report 3) **và** `Mode` là `Online` hoặc `Hybrid`. Chỉ người có dòng `meeting_participants` (trừ `Delegated`) được vào. Meeting Session có thể được thêm/sửa khi còn `Planned`, và có thể `Cancelled`; các thay đổi lịch này không tự mở phòng. SCRUM-19 đã thêm model/bảng `meeting_sessions` tối thiểu cho guard Publish BR-56; API/lifecycle phiên chưa được triển khai nên room code vẫn tạm kiểm `Meeting.Status = InProgress`. Chuyển sang kiểm phiên khi tích hợp UC-26–30; xem ADR-0010, mục Hệ quả. | Đã chốt — ADR-0010 / Report 3 |
-| D7 | **Chat trong phòng là tạm thời:** LiveKit text stream topic `lk.chat`, không lưu database, người vào sau không thấy tin cũ (giống Google Meet). Report 1 FE-07 có chat; Jira chưa có ticket. | Chờ nhóm — đề xuất gộp vào SCRUM-41 |
+| D5 | Tên phòng LiveKit = `meeting-{meetingId:D}`, một phòng cho mỗi cuộc họp. Phòng tự tạo khi người đầu tiên vào. `CallSession` (lượt mở phòng, không phải một buổi họp) được tạo từ webhook, không tạo lúc cấp token. | Đã chốt — ADR-0010 |
+| D6 | Phòng chỉ mở khi cuộc họp **`InProgress`** **và** `Mode` là `Online` hoặc `Hybrid` (UC-37). Chỉ người có phân công hiện hành trong `meeting_participants`, hoặc Guest có guest session hợp lệ (UC-04), được vào. Khi cuộc họp `Ended`, phòng ngừng nhận người và ngắt kết nối mọi người (BR-143). Không còn Meeting Session ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)) nên room code kiểm `Meeting.Status = InProgress` là đúng mô hình đích. | Đã chốt — ADR-0010, ADR-0013 |
+| D7 | **Chat trong phòng là tạm thời:** LiveKit text stream topic `lk.chat`, không lưu database, người vào sau không thấy tin cũ (giống Google Meet). Report 1 FE-08 có chat (UC-42); Jira chưa có ticket. | Chờ nhóm — đề xuất gộp vào SCRUM-41 |
 | D8 | **Gọi 1–1 (SCRUM-40):** Report 1/2 không có; Jira/README để Must. Không làm chat 1–1. | **Chờ nhóm quyết** — plan để thành PR5 tuỳ chọn |
 | D9 | **SCRUM-44 (ghi cuộc gọi)** mâu thuẫn Report 1 LI-01 ("no recording bot joins the meeting room… excluded, not merely deferred"). Không làm Egress. Hướng hợp LI-01: thư ký bấm ghi âm (SCRUM-29) trong phòng, trình duyệt thư ký trộn audio phòng và ghi trên máy mình. | **Chờ nhóm quyết** — ngoài plan này |
-| D10 | **Tính năng họp (vote, nghị sự, phát biểu, tài liệu) nằm trong phòng dưới dạng panel**, mỗi tính năng code một lần, màn chi tiết bên ngoài và phòng họp cùng dùng (§7). Agenda tách planning context (session `Planned`) và live context (session `InProgress`). | Đã chốt — ADR-0011 |
+| D10 | **Tính năng họp (vote, nghị sự, phát biểu, tài liệu) nằm trong phòng dưới dạng panel**, mỗi tính năng code một lần, màn chi tiết bên ngoài và phòng họp cùng dùng (§7). Agenda tách planning context (cuộc họp chưa `InProgress`) và live context (cuộc họp `InProgress`). | Đã chốt — ADR-0011 |
 | D11 | URL LiveKit do backend trả kèm token (`LiveKit:PublicUrl`), không có biến `VITE_*`, không hardcode localhost trong FE. | Đã chốt |
 | D12 | Backend **vẫn khởi động được khi chưa cấu hình LiveKit**; các endpoint gọi trả `503`. Đồng đội làm tính năng khác không phải dựng LiveKit. | Đã chốt |
 | D13 | FE dùng `livekit-client` + **hooks của `@livekit/components-react`**, không dùng gói style của họ; giao diện tự vẽ theo `frontend-ui-design`. | Đề xuất — ghi vào ADR-0010 |
@@ -350,7 +350,7 @@ public sealed record CallWebhookEvent(
 `CallRoomRules.StatusOf(MeetingStatus status, MeetingMode mode)`:
 - `mode == InPerson` → `InPersonOnly` (xét trước);
 - `InProgress` → `Open`;
-- `Ended`, `MinutesIssued`, `Archived` → `Ended`;
+- `Ended` → `Ended`;
 - còn lại → `NotStarted`.
 
 ### 5.3 `ICallRepository`
@@ -360,7 +360,7 @@ public interface ICallRepository
 {
     /// <summary>
     /// The caller's standing in the meeting's room: an invited participant (any response except
-    /// Delegated) of a meeting in a participant-visible status (Published … Archived). Null
+    /// Delegated) of a meeting in a participant-visible status (Published, InProgress, Ended). Null
     /// otherwise, which the endpoints turn into the same 404 as an unknown meeting.
     /// </summary>
     Task<CallRoomAccess?> FindRoomAccessAsync(Guid meetingId, Guid userId, CancellationToken ct = default);
@@ -397,7 +397,7 @@ Chi tiết cài đặt `CallRepository`:
 
 - `FindRoomAccessAsync`: truy vấn từ `db.MeetingParticipants`, không qua `MeetingRepository`:
   `p.MeetingId == meetingId && p.UserId == userId && p.Response != InvitationResponse.Delegated
-  && p.User.IsActive && (status ∈ {Published, InProgress, Ended, MinutesIssued, Archived})`,
+  && p.User.IsActive && (status ∈ {Published, InProgress, Ended})`,
   select `new CallRoomAccess(p.MeetingId, p.Meeting.Status, p.Meeting.Mode, p.Role, p.User.FullName)`.
   Dùng `AsNoTracking()`.
 - `EnsureActiveRoomSessionAsync`: thử đọc → nếu không có thì `Add(new CallSession { Kind = MeetingRoom,
@@ -552,7 +552,7 @@ thứ tự **trong cùng một resource** nhưng có thể mất → janitor bù
 public static class CallEndpoints
 {
     // Codes from docs/03-api/00-danh-muc-ma-thong-bao.md. Take the NEXT FREE numbers at implementation
-    // time: sync main and read the current catalogue. MSG65 stays reserved for RoomNotOpen (ADR-0010).
+    // time: sync main and read the current catalogue. The catalogue gives MSG117 to "room not available" (MSG65 belongs to Complete Agenda Item).
     private const string MsgRoomNotOpen = "MSG__";       // 409
     private const string MsgInPersonMeeting = "MSG__";   // 409
     private const string MsgCallUnavailable = "MSG__";   // 503
@@ -927,7 +927,7 @@ cd frontend && npm run lint && npm run build
 ### PR1 — `feat/scrum-39-livekit-infrastructure` (BE + hạ tầng, ~1,5 ngày)
 
 - [ ] Kiểm PR #41 và catalogue hiện tại: đồng bộ nhánh trước khi lấy mã MSG còn trống;
-      Giữ `MSG65` cho phòng chưa mở theo ADR-0010; báo Quang Huy để tránh cấp trùng giữa các PR.
+      Phòng chưa mở dùng `MSG117` theo catalogue (ADR-0010 ghi `MSG65` là nhầm — `MSG65` thuộc UC-25 Complete Agenda Item); báo Quang Huy để tránh cấp trùng giữa các PR.
 - [ ] `docker/livekit.dev.yaml`, service `livekit` (profile `calls`), `.env.example`; chạy §4.5,
       xác nhận `LIVEKIT_KEYS` hoạt động (**CHƯA KIỂM**), không thì chuyển `LIVEKIT_CONFIG`.
 - [ ] `appsettings*.json` §4.4.
@@ -1108,12 +1108,11 @@ thay vì sửa comment cũ.
 
 **SCRUM-41**
 - Phòng mở khi `InProgress` **và** hình thức `Online`/`Hybrid` (thêm điều kiện hình thức).
-- "Được mời" = có dòng thành phần tham dự, trừ `Delegated`. Người được uỷ quyền chưa vào được —
-  chờ SCRUM-20.
+- "Được mời" = có phân công hiện hành trong thành phần tham dự. Không có uỷ quyền tham dự (BR-105).
 - Chỉ chủ toạ tắt mic người khác, chỉ tắt không bật.
 - Endpoint `POST …/call/participants/{userId}/mute`.
-- Nếu nhóm đồng ý: chat tạm thời không lưu (Report 1 FE-07).
-- Phụ thuộc: vòng đời phiên họp do các UC `Create / Update / Cancel / Start / End Meeting Session` (Report 3) đảm nhiệm. Session tương lai có thể được thêm, sửa hoặc huỷ khi còn `Planned`; chỉ `InProgress` mới mở phòng. Chưa có ticket nên đang dùng dữ liệu seed, và điều kiện mở phòng tạm là `Meeting.Status = InProgress`.
+- Nếu nhóm đồng ý: chat tạm thời không lưu (Report 1 FE-08, UC-42).
+- Phụ thuộc: UC-21 Start Meeting / UC-22 End Meeting. Không còn Meeting Session ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)); điều kiện mở phòng là `Meeting.Status = InProgress`.
 
 **SCRUM-42**
 - Mặc định vào phòng mic bật, cam tắt.
@@ -1133,7 +1132,7 @@ thay vì sửa comment cũ.
 1. Nhóm giữ hay bỏ SCRUM-40 (gọi 1–1)? Đóng hay sửa SCRUM-44 cho khớp LI-01?
 2. Chat trong phòng: thêm ticket riêng hay gộp SCRUM-41? Có cần lưu lại không (hiện đề xuất
    không)?
-3. ~~Ai làm vòng đời Meeting Session?~~ Report 3 đã chốt `Create / Update / Cancel / Start / End Meeting Session`, gồm BR-59: mỗi lúc tối đa một session `InProgress`. Còn thiếu ticket Jira và bảng `meeting_sessions` để implementation.
+3. ~~Ai làm vòng đời Meeting Session?~~ Đã bỏ Meeting Session ngày 09/10/2026 ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)); phòng theo vòng đời cuộc họp.
 4. Môi trường deploy thật (máy nào, domain nào)? Quyết định cấu hình TURN/TLS và `node_ip`.
 5. Giới hạn số người một phòng: tạm 50 (`room.max_participants`).
 6. Thư ký có được tắt mic người khác không? AC chỉ nói chủ toạ.

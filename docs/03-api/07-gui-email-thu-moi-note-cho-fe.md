@@ -1,5 +1,11 @@
 # Note cho FE — email thư mời cuộc họp (SCRUM-15)
 
+> **Một cuộc họp là một buổi họp ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)).** Từ migration
+> `MeetingOwnsScheduleDropSessions`, lịch nằm trên Meeting (`plannedStartTime`, `plannedEndTime`, `onlineLink`) và code
+> không còn `MeetingSession`. Các đoạn lịch sử bên dưới nhắc Meeting Session là mô tả thời điểm viết.
+> Số UC đã đổi theo baseline 70 UC ([bảng đổi số](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới));
+> các mã `BR-54` → `BR-61` nhắc trong file là số BR cũ đã ngừng dùng ([danh mục BR](../01-requirements/06-business-rules.md)).
+
 ## Kết luận nhanh
 
 SCRUM-15 là hạ tầng backend, không thêm HTTP endpoint và không có màn hình riêng cho hàng đợi
@@ -43,8 +49,8 @@ riêng của backend để tạo absolute URL trong email.
 
 ## Thời gian và người nhận
 
-- API Meeting không còn trả Planned Start/End Time; FE lấy lịch từ Meeting Session ở story tương ứng.
-- Email Publish không hiển thị lịch và không đính kèm `.ics`; FE chỉ dùng link chi tiết Meeting.
+- API Meeting trả `plannedStartTime`/`plannedEndTime` (UTC); FE hiển thị theo giờ của người xem.
+- Email Publish ghi giờ họp và đính kèm `.ics`; FE không cần làm gì thêm.
 - Backend tự loại tài khoản đã vô hiệu hóa khỏi danh sách nhận thư. FE không lặp lại luật này như
   một biện pháp bảo mật và không thông báo "đã gửi cho N người" vì response công bố không xác nhận
   từng lần gửi.

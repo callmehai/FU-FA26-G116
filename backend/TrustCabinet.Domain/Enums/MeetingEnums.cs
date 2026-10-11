@@ -1,7 +1,8 @@
 namespace TrustCabinet.Domain.Enums;
 
 /// <summary>
-/// The meeting state machine, in the order a meeting travels through it. Documented in
+/// The meeting state machine, in the order a meeting travels through it. It stops at Ended: the
+/// minutes have their own status (ADR-0013). Documented in
 /// docs/02-design/01-vong-doi-cuoc-hop.md, which is the authority — keep the two in step.
 ///
 /// Stored as a string, not an int, so the database stays readable and inserting a new state
@@ -16,8 +17,6 @@ public enum MeetingStatus
     Published,
     InProgress,
     Ended,
-    MinutesIssued,
-    Archived,
 }
 
 /// <summary>Server-owned lifecycle action written to immutable meeting history.</summary>
@@ -30,6 +29,8 @@ public enum MeetingHistoryAction
     ReturnToDraft,
     Publish,
     TransferOrganizer,
+    /// <summary>The organizer moved a Published meeting's schedule, place or link (UC-15 AF-1).</summary>
+    Reschedule,
     LegacyTransition,
 }
 

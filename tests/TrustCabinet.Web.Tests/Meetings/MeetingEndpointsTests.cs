@@ -108,6 +108,8 @@ public sealed class MeetingEndpointsTests : IDisposable
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.InPerson,
             Location = "Phòng họp A",
+            PlannedStartTime = FutureStart,
+            PlannedEndTime = FutureStart.AddHours(1),
             CreatedById = creator.Id,
             AssignedApproverId = approverId,
         };
@@ -124,23 +126,23 @@ public sealed class MeetingEndpointsTests : IDisposable
         return meeting;
     }
 
+    /// <summary>A week ahead, so BR-162 (start in the future) holds whenever the suite runs.</summary>
+    private static readonly DateTimeOffset FutureStart =
+        new(DateTimeOffset.UtcNow.Date.AddDays(7).AddHours(2), TimeSpan.Zero);
+
+    private static string Iso(DateTimeOffset value)
+        => value.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", System.Globalization.CultureInfo.InvariantCulture);
+
     private static MeetingRequest ValidRequest(string? title = "Giao ban tuần")
         => new(
             title,
+            Iso(FutureStart),
+            Iso(FutureStart.AddHours(1)),
             "InPerson",
             "Phòng họp A",
+            null,
             "Internal",
             "Kế hoạch tuần.");
-
-    private static void AddPlannedSession(Meeting meeting)
-        => meeting.Sessions.Add(new MeetingSession
-        {
-            MeetingId = meeting.Id,
-            Title = "Phiên họp kế hoạch",
-            PlannedStartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
-            PlannedEndsAt = new DateTimeOffset(2026, 10, 1, 3, 0, 0, TimeSpan.Zero),
-            Status = MeetingSessionStatus.Planned,
-        });
 
     private static void AddPublishRoster(Meeting meeting)
     {
@@ -253,8 +255,8 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.DoesNotContain(meeting.Description, responseJson, StringComparison.Ordinal);
         Assert.DoesNotContain(meeting.Location, responseJson, StringComparison.Ordinal);
         Assert.DoesNotContain("\"sensitivity\"", responseJson, StringComparison.Ordinal);
-        Assert.DoesNotContain("\"startsAt\"", responseJson, StringComparison.Ordinal);
-        Assert.DoesNotContain("\"endsAt\"", responseJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"plannedStartTime\"", responseJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"plannedEndTime\"", responseJson, StringComparison.Ordinal);
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}/history")).StatusCode);
     }
@@ -531,7 +533,6 @@ public sealed class MeetingEndpointsTests : IDisposable
             meeting.Status = action == "ReturnToDraft" ? MeetingStatus.Rejected : MeetingStatus.Approved;
             if (action == "Publish")
             {
-                AddPlannedSession(meeting);
                 AddPublishRoster(meeting);
             }
             _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
@@ -617,7 +618,6 @@ public sealed class MeetingEndpointsTests : IDisposable
                 break;
             case "Publish":
                 meeting.Status = MeetingStatus.Approved;
-                AddPlannedSession(meeting);
                 AddPublishRoster(meeting);
                 _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
                 break;
@@ -698,7 +698,6 @@ public sealed class MeetingEndpointsTests : IDisposable
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
         meeting.Status = MeetingStatus.Approved;
-        AddPlannedSession(meeting);
         AddPublishRoster(meeting);
         _factory.Meetings.Meetings.Add(meeting);
         using var client = _factory.ClientFor(creator);
@@ -726,7 +725,6 @@ public sealed class MeetingEndpointsTests : IDisposable
         var creator = GivenCreator();
         var meeting = OwnedMeetingBy(creator);
         meeting.Status = MeetingStatus.Approved;
-        AddPlannedSession(meeting);
         AddPublishRoster(meeting);
         _factory.Meetings.Meetings.Add(meeting);
         _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
@@ -1323,7 +1321,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal("Draft", item.GetProperty("status").GetString());
         Assert.Equal("Internal", item.GetProperty("sensitivity").GetString());
         Assert.Equal(
-            ["id", "title", "createdAt", "status", "sensitivity"],
+            ["id", "title", "plannedStartTime", "plannedEndTime", "mode", "location", "createdAt", "status", "sensitivity"],
             item.EnumerateObject().Select(property => property.Name));
     }
 
@@ -1334,7 +1332,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         _factory.Meetings.Meetings.Add(OwnedMeetingBy(creator));
         using var client = _factory.ClientFor(creator);
 
-        var noMatch = await client.GetAsync("/api/meetings?status=Archived");
+        var noMatch = await client.GetAsync("/api/meetings?status=Ended");
         using var noMatchBody = await JsonOf(noMatch);
         Assert.Equal(HttpStatusCode.OK, noMatch.StatusCode);
         Assert.Empty(noMatchBody.RootElement.GetProperty("items").EnumerateArray());
@@ -1444,13 +1442,60 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Post_uses_meeting_level_defaults_without_schedule_fields()
+    public async Task Post_requires_the_planned_schedule()
+    {
+        using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
+
+        var response = await client.PostAsJsonAsync("/api/meetings", new { title = "Giao ban tuần" });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MSG31", body.RootElement.GetProperty("code").GetString());
+        var errors = body.RootElement.GetProperty("errors");
+        Assert.True(errors.TryGetProperty("plannedStartTime", out _));
+        Assert.True(errors.TryGetProperty("plannedEndTime", out _));
+        Assert.Empty(_factory.Meetings.Meetings);
+    }
+
+    [Fact]
+    public async Task Post_rejects_a_start_in_the_past_and_an_end_not_after_the_start()
+    {
+        using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
+
+        var past = await client.PostAsJsonAsync("/api/meetings", ValidRequest() with
+        {
+            PlannedStartTime = Iso(DateTimeOffset.UtcNow.AddHours(-2)),
+            PlannedEndTime = Iso(DateTimeOffset.UtcNow.AddHours(-1)),
+        });
+        using var pastBody = await JsonOf(past);
+        var backwards = await client.PostAsJsonAsync("/api/meetings", ValidRequest() with
+        {
+            PlannedEndTime = Iso(FutureStart),
+        });
+        using var backwardsBody = await JsonOf(backwards);
+
+        Assert.Equal(HttpStatusCode.BadRequest, past.StatusCode);
+        Assert.Equal(
+            "Thời gian bắt đầu phải sau thời điểm hiện tại.",
+            pastBody.RootElement.GetProperty("errors").GetProperty("plannedStartTime").GetString());
+        Assert.Equal(HttpStatusCode.BadRequest, backwards.StatusCode);
+        Assert.Equal(
+            "Thời gian kết thúc phải sau thời gian bắt đầu.",
+            backwardsBody.RootElement.GetProperty("errors").GetProperty("plannedEndTime").GetString());
+        Assert.Empty(_factory.Meetings.Meetings);
+    }
+
+    [Fact]
+    public async Task Post_returns_the_schedule_and_meeting_level_defaults()
     {
         var creator = GivenCreator();
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
         var request = new
         {
             title = "Giao ban tuần",
+            plannedStartTime = Iso(FutureStart),
+            plannedEndTime = Iso(FutureStart.AddMinutes(90)),
+            onlineLink = "  ",
         };
 
         var response = await client.PostAsJsonAsync("/api/meetings", request);
@@ -1460,9 +1505,27 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.Equal("InPerson", meeting.GetProperty("mode").GetString());
         Assert.Equal("Normal", meeting.GetProperty("sensitivity").GetString());
-        Assert.False(meeting.TryGetProperty("startsAt", out _));
-        Assert.False(meeting.TryGetProperty("endsAt", out _));
+        Assert.Equal(FutureStart, meeting.GetProperty("plannedStartTime").GetDateTimeOffset());
+        Assert.Equal(FutureStart.AddMinutes(90), meeting.GetProperty("plannedEndTime").GetDateTimeOffset());
+        Assert.Equal(JsonValueKind.Null, meeting.GetProperty("actualStartedAt").ValueKind);
+        Assert.Equal(JsonValueKind.Null, meeting.GetProperty("actualEndedAt").ValueKind);
+        Assert.Equal(JsonValueKind.Null, meeting.GetProperty("onlineLink").ValueKind);
         Assert.Equal(JsonValueKind.Null, meeting.GetProperty("assignedApproverId").ValueKind);
+    }
+
+    [Fact]
+    public async Task Post_rejects_an_online_link_over_1000_characters()
+    {
+        using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
+
+        var response = await client.PostAsJsonAsync("/api/meetings", ValidRequest() with
+        {
+            OnlineLink = "https://meet.example.vn/" + new string('a', 1000),
+        });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("onlineLink", out _));
     }
 
     [Fact]
@@ -1474,7 +1537,8 @@ public sealed class MeetingEndpointsTests : IDisposable
         var response = await client.PostAsJsonAsync("/api/meetings", new
         {
             title = "Giao ban tuần",
-            startsAt = "2026-10-01T09:00:00+07:00",
+            plannedStartTime = Iso(FutureStart),
+            plannedEndTime = Iso(FutureStart.AddHours(1)),
             assignedApproverId = Guid.CreateVersion7(),
         });
         using var body = await JsonOf(response);
@@ -1665,9 +1729,7 @@ public sealed class MeetingEndpointsTests : IDisposable
                 approverResponse.StatusCode);
             var participantCanRead = status is MeetingStatus.Published
                 or MeetingStatus.InProgress
-                or MeetingStatus.Ended
-                or MeetingStatus.MinutesIssued
-                or MeetingStatus.Archived;
+                or MeetingStatus.Ended;
             Assert.Equal(
                 participantCanRead ? HttpStatusCode.OK : HttpStatusCode.NotFound,
                 participantResponse.StatusCode);
@@ -1686,8 +1748,8 @@ public sealed class MeetingEndpointsTests : IDisposable
         var update = await client.PutAsJsonAsync($"/api/meetings/{id}", new
         {
             title = "Đã cập nhật",
-            startsAt = "2026-10-01T09:30:00+07:00",
-            endsAt = "2026-10-01T10:30:00+07:00",
+            plannedStartTime = "2026-10-01T09:30:00+07:00",
+            plannedEndTime = "2026-10-01T10:30:00+07:00",
             mode = "Hybrid",
             location = "Phòng họp B",
             sensitivity = "Secret",
@@ -1732,8 +1794,8 @@ public sealed class MeetingEndpointsTests : IDisposable
         var response = await client.PutAsJsonAsync($"/api/meetings/{meeting.Id}", new
         {
             title = "Đã bổ sung số liệu",
-            startsAt = "2026-10-01T09:30:00+07:00",
-            endsAt = "2026-10-01T10:30:00+07:00",
+            plannedStartTime = "2026-10-01T09:30:00+07:00",
+            plannedEndTime = "2026-10-01T10:30:00+07:00",
             mode = "Hybrid",
             location = "Phòng họp B",
             sensitivity = "Secret",
@@ -1759,11 +1821,8 @@ public sealed class MeetingEndpointsTests : IDisposable
     [Theory]
     [InlineData(MeetingStatus.WaitingApproval)]
     [InlineData(MeetingStatus.Approved)]
-    [InlineData(MeetingStatus.Published)]
     [InlineData(MeetingStatus.InProgress)]
     [InlineData(MeetingStatus.Ended)]
-    [InlineData(MeetingStatus.MinutesIssued)]
-    [InlineData(MeetingStatus.Archived)]
     public async Task Put_returns_MSG33_if_the_meeting_is_not_editable(MeetingStatus status)
     {
         var creator = GivenCreator();
@@ -1785,6 +1844,146 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         Assert.Equal("MSG33", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(status.ToString(), meeting.Title);
+    }
+
+    private Meeting PublishedMeetingWithInvitees(User creator, out User[] invitees)
+    {
+        var meeting = OwnedMeetingBy(creator);
+        meeting.Status = MeetingStatus.Published;
+        invitees = [GivenMember("invitee-a@trustcabinet.local"), GivenMember("invitee-b@trustcabinet.local")];
+        foreach (var invitee in invitees)
+        {
+            meeting.Participants.Add(new MeetingParticipant
+            {
+                MeetingId = meeting.Id,
+                UserId = invitee.Id,
+                User = invitee,
+                Role = MeetingRole.Member,
+            });
+        }
+
+        _factory.Meetings.Meetings.Add(meeting);
+        return meeting;
+    }
+
+    [Fact]
+    public async Task Put_reschedules_a_published_meeting_and_notifies_every_invitee()
+    {
+        var creator = GivenCreator();
+        var meeting = PublishedMeetingWithInvitees(creator, out var invitees);
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+        var newStart = FutureStart.AddDays(1);
+
+        var response = await client.PutAsJsonAsync($"/api/meetings/{meeting.Id}", ValidRequest() with
+        {
+            PlannedStartTime = Iso(newStart),
+            PlannedEndTime = Iso(newStart.AddHours(2)),
+            Location = "Phòng họp B",
+            OnlineLink = "https://meet.example.vn/abc",
+        });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("MSG138", body.RootElement.GetProperty("code").GetString());
+        var updated = body.RootElement.GetProperty("meeting");
+        Assert.Equal("Published", updated.GetProperty("status").GetString());
+        Assert.Equal(newStart, updated.GetProperty("plannedStartTime").GetDateTimeOffset());
+        Assert.Equal("https://meet.example.vn/abc", updated.GetProperty("onlineLink").GetString());
+        var history = Assert.Single(meeting.StatusHistory);
+        Assert.Equal(MeetingHistoryAction.Reschedule, history.Action);
+        Assert.Equal(MeetingStatus.Published, history.FromStatus);
+        Assert.Equal(MeetingStatus.Published, history.ToStatus);
+        Assert.Equal(
+            invitees.Select(invitee => invitee.Id).Order(),
+            _factory.Meetings.Notifications.Select(notification => notification.UserId).Order());
+        Assert.All(_factory.Meetings.Notifications, notification =>
+        {
+            Assert.Equal(NotificationType.MeetingRescheduled, notification.Type);
+            Assert.Equal(history.Id, notification.OriginHistoryId);
+        });
+    }
+
+    [Fact]
+    public async Task Put_on_a_published_meeting_rejects_fields_outside_the_schedule()
+    {
+        var creator = GivenCreator();
+        var meeting = PublishedMeetingWithInvitees(creator, out _);
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+
+        var response = await client.PutAsJsonAsync($"/api/meetings/{meeting.Id}", ValidRequest("Tên mới") with
+        {
+            Sensitivity = "Secret",
+            PlannedStartTime = Iso(FutureStart.AddDays(1)),
+            PlannedEndTime = Iso(FutureStart.AddDays(1).AddHours(1)),
+        });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MSG31", body.RootElement.GetProperty("code").GetString());
+        var errors = body.RootElement.GetProperty("errors");
+        Assert.True(errors.TryGetProperty("title", out _));
+        Assert.True(errors.TryGetProperty("sensitivity", out _));
+        Assert.Equal("Giao ban tuần", meeting.Title);
+        Assert.Equal(FutureStart, meeting.PlannedStartTime);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+    }
+
+    [Fact]
+    public async Task Put_on_a_published_meeting_needs_a_start_in_the_future()
+    {
+        var creator = GivenCreator();
+        var meeting = PublishedMeetingWithInvitees(creator, out _);
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+
+        var response = await client.PutAsJsonAsync($"/api/meetings/{meeting.Id}", ValidRequest() with
+        {
+            PlannedStartTime = Iso(DateTimeOffset.UtcNow.AddMinutes(-30)),
+            PlannedEndTime = Iso(DateTimeOffset.UtcNow.AddMinutes(30)),
+        });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("plannedStartTime", out _));
+        Assert.Equal(FutureStart, meeting.PlannedStartTime);
+    }
+
+    [Fact]
+    public async Task Put_on_a_published_meeting_without_changes_notifies_nobody()
+    {
+        var creator = GivenCreator();
+        var meeting = PublishedMeetingWithInvitees(creator, out _);
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+
+        var response = await client.PutAsJsonAsync($"/api/meetings/{meeting.Id}", ValidRequest());
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("MSG30", body.RootElement.GetProperty("code").GetString());
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+    }
+
+    [Fact]
+    public async Task Put_on_a_published_online_meeting_ignores_a_stored_location_the_form_cannot_show()
+    {
+        var creator = GivenCreator();
+        var meeting = PublishedMeetingWithInvitees(creator, out _);
+        meeting.Mode = MeetingMode.Online;
+        meeting.Location = "Trực tuyến";
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+
+        var response = await client.PutAsJsonAsync($"/api/meetings/{meeting.Id}", ValidRequest() with
+        {
+            Mode = "Online",
+            Location = "",
+        });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("MSG30", body.RootElement.GetProperty("code").GetString());
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
     }
 
     [Theory]

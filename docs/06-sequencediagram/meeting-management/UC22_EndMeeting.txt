@@ -1,0 +1,111 @@
+title UC-22 - End Meeting
+
+actor "Chair" as Chair
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Participant Repository" as MeetingParticipantRepository
+participant ":Voting Session Repository" as VotingSessionRepository
+participant ":Agenda Item Repository" as AgendaItemRepository
+participant ":Online Meeting Room" as MeetingRoom
+database ":Database" as Database
+
+Chair->MeetingPage: Confirm End Meeting
+activate MeetingPage
+MeetingPage->MeetingController: End Meeting
+activate MeetingController
+MeetingController->MeetingService: endMeeting(meetingId, chairId)
+activate MeetingService
+
+MeetingService->MeetingRepository: Get current meeting
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting and lifecycle status
+activate Database
+Database-->MeetingRepository: Meeting / Meeting not found
+deactivate Database
+MeetingRepository-->MeetingService: Meeting / Meeting not found
+deactivate MeetingRepository
+
+MeetingService->MeetingParticipantRepository: Verify current active Chair assignment (BR-130)
+activate MeetingParticipantRepository
+MeetingParticipantRepository->Database: Retrieve Chair assignment
+activate Database
+Database-->MeetingParticipantRepository: Assignment / No assignment
+deactivate Database
+MeetingParticipantRepository-->MeetingService: Assignment / No assignment
+deactivate MeetingParticipantRepository
+
+MeetingService->MeetingService: Revalidate active Chair and InProgress status (BR-130, BR-132)
+
+alt Meeting or Chair is no longer eligible - EX-1
+    MeetingService-->MeetingController: MSG114 - This meeting cannot be ended
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Return meeting end failure
+    deactivate MeetingController
+    MeetingPage-->Chair: MSG114 - This meeting cannot be ended
+
+else Meeting and Chair are eligible
+    MeetingService->VotingSessionRepository: Check for an Open Vote in the Meeting (BR-159)
+    activate VotingSessionRepository
+    VotingSessionRepository->Database: Find Open Votes of the Meeting
+    activate Database
+    Database-->VotingSessionRepository: Open Votes / None
+    deactivate Database
+    VotingSessionRepository-->MeetingService: Open Votes / None
+    deactivate VotingSessionRepository
+
+    alt An Open Vote exists - EX-3
+        MeetingService-->MeetingController: MSG139 - Close all open votes before ending the meeting
+        deactivate MeetingService
+        MeetingController-->MeetingPage: Return open vote error
+        deactivate MeetingController
+        MeetingPage-->Chair: MSG139 - Close all open votes before ending the meeting\nMeeting remains InProgress
+
+    else No Vote is Open
+        MeetingService->AgendaItemRepository: Get the InProgress Agenda Item, if any (BR-159)
+        activate AgendaItemRepository
+        AgendaItemRepository->Database: Find InProgress Agenda Item of the Meeting
+        activate Database
+        Database-->AgendaItemRepository: Agenda Item / None
+        deactivate Database
+        AgendaItemRepository-->MeetingService: Agenda Item / None
+        deactivate AgendaItemRepository
+
+        MeetingService->MeetingRepository: In one transaction: complete the InProgress Agenda Item\n(Done, actual end time, duration), set Meeting Ended,\nrecord Actual End Time and lifecycle history (BR-38, BR-132, BR-159)
+        activate MeetingRepository
+        MeetingRepository->Database: Save Agenda Item, Meeting and history atomically
+        activate Database
+
+        alt Meeting end cannot be completed - EX-2
+            Database-->MeetingRepository: Save failed, transaction rolled back
+            deactivate Database
+            MeetingRepository-->MeetingService: Meeting end failed
+            deactivate MeetingRepository
+            MeetingService-->MeetingController: MSG116 - Unable to end the meeting. Please try again
+            deactivate MeetingService
+            MeetingController-->MeetingPage: Return meeting end failure
+            deactivate MeetingController
+            MeetingPage-->Chair: MSG116 - Unable to end the meeting. Please try again\nMeeting and Agenda Item keep their previous state
+
+        else Meeting status is Ended
+            Database-->MeetingRepository: Changes committed
+            deactivate Database
+            MeetingRepository-->MeetingService: Meeting ended
+            deactivate MeetingRepository
+
+            MeetingService->MeetingRoom: Stop accepting joins and disconnect connected users (BR-143)
+            activate MeetingRoom
+            MeetingRoom-->MeetingService: Room closed; connected users disconnected
+            deactivate MeetingRoom
+
+            MeetingService-->MeetingController: Meeting ended successfully
+            deactivate MeetingService
+            MeetingController-->MeetingPage: MSG111 - Meeting ended successfully
+            deactivate MeetingController
+            MeetingPage-->Chair: MSG111 - Meeting ended successfully
+        end
+    end
+end
+
+deactivate MeetingPage

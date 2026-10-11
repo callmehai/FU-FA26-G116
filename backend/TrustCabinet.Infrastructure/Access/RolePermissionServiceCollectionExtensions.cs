@@ -7,8 +7,8 @@ namespace TrustCabinet.Infrastructure.Access;
 public static class RolePermissionServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers the role ↔ capability matrix (SCRUM-60, UC-09 and UC-10) and role management
-    /// (SCRUM-63, UC-11 … UC-13).
+    /// Registers the role ↔ capability matrix (SCRUM-60, UC-10 and UC-11) and role management
+    /// (SCRUM-63, UC-12a … UC-12c).
     ///
     /// Scoped: both depend on the request's DbContext. <c>IAuditService</c> comes from
     /// <c>AddTrustCabinetUserManagement</c> — registered once there rather than twice, since a

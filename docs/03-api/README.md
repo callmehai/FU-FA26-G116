@@ -1,5 +1,7 @@
 # 03 · Hợp đồng API
 
+> Số UC trong các file API theo baseline 70 UC ngày 10/10/2026 — xem [bảng đổi số cũ → mới](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới). Code đã bỏ `MeetingSession` theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md) (migration `MeetingOwnsScheduleDropSessions`). Danh mục mã thông báo vẫn ghi số UC cũ ở cột UC.
+
 FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy song song không phải chờ nhau.
 
 Đã có:
@@ -13,12 +15,12 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`01-xac-thuc-note-cho-fe.md`](01-xac-thuc-note-cho-fe.md) — note cho FE khi làm SCRUM-46: những
   chỗ dễ làm sai mà lỗi lại trông như bug backend (chữ hoa/thường của `role`, hai kiểu 401, refresh
   token dùng một lần, thứ tự gọi khi đăng xuất)
-- [`02-quan-ly-nguoi-dung.md`](02-quan-ly-nguoi-dung.md) — quản lý người dùng (UC-04 … UC-09 /
+- [`02-quan-ly-nguoi-dung.md`](02-quan-ly-nguoi-dung.md) — quản lý người dùng (UC-05 … UC-08 /
   SCRUM-13): `/api/users` xem, tạo, sửa và vô hiệu hoá/kích hoạt lại tài khoản; mã `MSG07`–`MSG12`;
-  vì sao đổi trạng thái là endpoint riêng, và vì sao vô hiệu hoá phải kết thúc phiên. UC-08 đặt lại
+  vì sao đổi trạng thái là endpoint riêng, và vì sao vô hiệu hoá phải kết thúc phiên. UC-07 đặt lại
   mật khẩu qua liên kết email (`POST /api/users/{id}/password-reset`, `POST /api/auth/password-reset`,
-  mã `MSG13`–`MSG15`, `MSG92`–`MSG94`); UC-09 gán vai trò chạy trên `PUT /api/users/{id}`
-- [`postman/`](postman/README.md) — collection Postman kiểm thử API UC-08 và UC-09 trên backend local,
+  mã `MSG13`–`MSG15`, `MSG92`–`MSG94`); UC-08 gán vai trò chạy trên `PUT /api/users/{id}`
+- [`postman/`](postman/README.md) — collection Postman kiểm thử API UC-07 và UC-08 trên backend local,
   kèm cách chạy bằng newman
 - [`02-quan-ly-nguoi-dung-note-cho-fe.md`](02-quan-ly-nguoi-dung-note-cho-fe.md) — note cho FE khi
   làm màn hình quản lý người dùng: `isActive` bắt buộc gửi đúng tên field, ba nguyên nhân khác nhau
@@ -41,7 +43,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   sửa tay giữ dữ liệu cũ, hợp đồng mới `roleId` + `roleName` ở `/api/users`, `/api/auth/*`,
   `/api/roles/capabilities`, mã `MSG19`–`MSG28`, và phần FE cần làm
 - [`05-quan-ly-cuoc-hop.md`](05-quan-ly-cuoc-hop.md) — contract tạo, đọc, sửa và lấy danh sách cuộc
-  họp (`SCRUM-17`/`SCRUM-18`, UC-15–UC-18): quyền theo từng cuộc họp, lọc và phân trang ở
+  họp (`SCRUM-17`/`SCRUM-18`, UC-14–UC-17): quyền theo từng cuộc họp, lọc và phân trang ở
   server, validation baseline và các điểm cần BA bổ sung; mã `MSG29`–`MSG38`
 - [`06-scrum19-ban-giao-tich-hop.md`](06-scrum19-ban-giao-tich-hop.md) — contract FE/Tester và tích hợp producer SCRUM-15 qua `meetingId`, tạo email job khi SMTP bật
 - [`06-thong-bao-trong-ung-dung.md`](06-thong-bao-trong-ung-dung.md) — SCRUM-14: API danh sách,

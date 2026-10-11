@@ -33,7 +33,7 @@ public sealed class MeetingListQueryParserTests
         Assert.Null(query.To);
         Assert.Equal(1, query.Page);
         Assert.Equal(20, query.PageSize);
-        Assert.Equal(MeetingSortBy.CreatedAt, query.SortBy);
+        Assert.Equal(MeetingSortBy.PlannedStartTime, query.SortBy);
         Assert.Equal(MeetingSortDirection.Desc, query.SortDirection);
     }
 
@@ -78,6 +78,7 @@ public sealed class MeetingListQueryParserTests
     [Theory]
     [InlineData("title", MeetingSortBy.Title, MeetingSortDirection.Asc)]
     [InlineData("createdAt", MeetingSortBy.CreatedAt, MeetingSortDirection.Desc)]
+    [InlineData("plannedStartTime", MeetingSortBy.PlannedStartTime, MeetingSortDirection.Desc)]
     public void Sort_field_without_direction_uses_field_default(
         string raw, MeetingSortBy expectedBy, MeetingSortDirection expectedDirection)
     {
@@ -89,12 +90,12 @@ public sealed class MeetingListQueryParserTests
     }
 
     [Fact]
-    public void Direction_without_sort_field_applies_to_created_at()
+    public void Direction_without_sort_field_applies_to_planned_start_time()
     {
         var (query, errors) = Parse("?sortDir=asc");
 
         Assert.Empty(errors);
-        Assert.Equal(MeetingSortBy.CreatedAt, query!.SortBy);
+        Assert.Equal(MeetingSortBy.PlannedStartTime, query!.SortBy);
         Assert.Equal(MeetingSortDirection.Asc, query.SortDirection);
     }
 

@@ -7,7 +7,7 @@ using TrustCabinet.Domain.Authentication;
 namespace TrustCabinet.Infrastructure.Authentication;
 
 /// <summary>
-/// UC-08's reset tokens in Redis, beside the refresh tokens and for the same reasons: they are
+/// UC-07's reset tokens in Redis, beside the refresh tokens and for the same reasons: they are
 /// short-lived and expire on their own, and spending one has to be atomic.
 ///
 /// Two kinds of key, both expiring with the token:

@@ -1,7 +1,13 @@
 # SCRUM-14 · Thông báo trong ứng dụng
 
+> **Một cuộc họp là một buổi họp ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)).** Từ migration
+> `MeetingOwnsScheduleDropSessions`, lịch nằm trên Meeting (`plannedStartTime`, `plannedEndTime`, `onlineLink`) và code
+> không còn `MeetingSession`. Các đoạn lịch sử bên dưới nhắc Meeting Session là mô tả thời điểm viết.
+> Số UC đã đổi theo baseline 70 UC ([bảng đổi số](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới));
+> các mã `BR-54` → `BR-61` nhắc trong file là số BR cũ đã ngừng dùng ([danh mục BR](../01-requirements/06-business-rules.md)).
+
 Backend cung cấp danh sách thông báo theo đúng tài khoản đã đăng nhập, trạng thái đã đọc và
-SignalR. Đây là UC-18–UC-21 trong class diagram Notification Management. Các endpoint yêu cầu
+SignalR. Đây là UC-17–UC-20 trong class diagram Notification Management. Các endpoint yêu cầu
 Bearer token; tài khoản đã bị vô hiệu hóa nhận `403`. ID của người nhận luôn lấy từ token,
 không lấy từ request.
 
@@ -34,21 +40,21 @@ diagram Notification Management và backend hiện tại ngày 28/09/2026. Đây
 BA/BE thống nhất; không được coi hành vi trong UC Description hoặc diagram là đã có
 nếu code chưa thực hiện.
 
-### So với sequence diagram UC-18–UC-21
+### So với sequence diagram UC-17–UC-20
 
 | UC | Sequence diagram | Backend hiện tại | Chênh lệch / cần chốt |
 |---|---|---|---|
-| UC-18 · Xem thông báo | Trả danh sách và số chưa đọc mà không đổi trạng thái đã đọc. | `GET /api/notifications` đúng hành vi này, nhưng service thực hiện ba truy vấn riêng cho danh sách, `unreadCount` và `totalCount`; API dùng `page`/`pageSize` thống nhất với danh sách cuộc họp. | Kết quả nghiệp vụ khớp; phân trang và `totalCount` là phần mở rộng không thể hiện trong diagram. |
-| UC-19 · Đánh dấu đã đọc | Sau khi lưu, repository lấy `unreadCount` mới và controller trả notification cùng số chưa đọc. | `POST /api/notifications/{id}/read` trả riêng `NotificationResponse`; client phải gọi thêm `/unread-count`. Thao tác gọi lặp vẫn giữ `readAt` cũ. | Thiếu `unreadCount` trong response so với diagram. Cần chốt sửa contract hay sửa diagram. |
-| UC-20 · Đánh dấu tất cả đã đọc | Cả nhánh không có dòng chưa đọc và nhánh thành công đều trả danh sách notification mới nhất cùng `unreadCount`. | `POST /api/notifications/read-all` chỉ trả `{ markedCount, unreadCount: 0 }`; không đọc lại hay trả danh sách. | Response gọn hơn diagram và có thêm `markedCount`. Cần chốt FE tự cập nhật danh sách hay backend trả lại toàn bộ page. |
-| UC-21 · Mở đích | Nếu notification chưa đọc thì đánh dấu đã đọc trước, sau đó kiểm tra quyền hiện tại và trả đích meeting hoặc task. | `GET /api/notifications/{id}/target` chỉ kiểm tra và trả đích; không thay đổi `ReadAt`. Backend chỉ hỗ trợ `Meeting`, vì task/action item nằm ngoài phạm vi. | Khác diagram ở bước tự đánh dấu đã đọc. Nếu giữ endpoint `GET` không side effect thì phải sửa diagram; nếu bám diagram thì cần một contract có mutation rõ ràng. |
+| UC-17 · Xem thông báo | Trả danh sách và số chưa đọc mà không đổi trạng thái đã đọc. | `GET /api/notifications` đúng hành vi này, nhưng service thực hiện ba truy vấn riêng cho danh sách, `unreadCount` và `totalCount`; API dùng `page`/`pageSize` thống nhất với danh sách cuộc họp. | Kết quả nghiệp vụ khớp; phân trang và `totalCount` là phần mở rộng không thể hiện trong diagram. |
+| UC-18 · Đánh dấu đã đọc | Sau khi lưu, repository lấy `unreadCount` mới và controller trả notification cùng số chưa đọc. | `POST /api/notifications/{id}/read` trả riêng `NotificationResponse`; client phải gọi thêm `/unread-count`. Thao tác gọi lặp vẫn giữ `readAt` cũ. | Thiếu `unreadCount` trong response so với diagram. Cần chốt sửa contract hay sửa diagram. |
+| UC-19 · Đánh dấu tất cả đã đọc | Cả nhánh không có dòng chưa đọc và nhánh thành công đều trả danh sách notification mới nhất cùng `unreadCount`. | `POST /api/notifications/read-all` chỉ trả `{ markedCount, unreadCount: 0 }`; không đọc lại hay trả danh sách. | Response gọn hơn diagram và có thêm `markedCount`. Cần chốt FE tự cập nhật danh sách hay backend trả lại toàn bộ page. |
+| UC-20 · Mở đích | Nếu notification chưa đọc thì đánh dấu đã đọc trước, sau đó kiểm tra quyền hiện tại và trả đích meeting hoặc task. | `GET /api/notifications/{id}/target` chỉ kiểm tra và trả đích; không thay đổi `ReadAt`. Backend chỉ hỗ trợ `Meeting`, vì task/action item nằm ngoài phạm vi. | Khác diagram ở bước tự đánh dấu đã đọc. Nếu giữ endpoint `GET` không side effect thì phải sửa diagram; nếu bám diagram thì cần một contract có mutation rõ ràng. |
 
 ### So với class diagram Notification Management
 
 | Class diagram | Code hiện tại | Thay đổi / cải tiến |
 |---|---|---|
 | `NotificationController` gọi `NotificationService`. | ASP.NET Minimal API ánh xạ thành `NotificationEndpoints`; mọi route dùng `NotificationService` và lấy `userId` từ claim đã xác thực. | Không có controller instance như UML, nhưng ranh giới Web → Service vẫn được giữ. Caller không thể truyền `recipientUserId` để đọc dữ liệu người khác. |
-| `NotificationService` trả danh sách, số chưa đọc, đánh dấu đã đọc và mở target. | `INotificationService` trả `NotificationPage`, nhận `page`/`pageSize`, trả `markedCount` khi mark-all và tách `GetTargetAsync` khỏi mutation read status. | Bổ sung phân trang và dữ liệu phục vụ FE. Việc tách target thành `GET` không side effect an toàn hơn về HTTP, nhưng chưa khớp UC-21/BR-53. |
+| `NotificationService` trả danh sách, số chưa đọc, đánh dấu đã đọc và mở target. | `INotificationService` trả `NotificationPage`, nhận `page`/`pageSize`, trả `markedCount` khi mark-all và tách `GetTargetAsync` khỏi mutation read status. | Bổ sung phân trang và dữ liệu phục vụ FE. Việc tách target thành `GET` không side effect an toàn hơn về HTTP, nhưng chưa khớp UC-20/BR-53. |
 | `NotificationRepository` có các thao tác theo recipient và notification ID. | Repository luôn ghép `notificationId` với `userId`, có thêm total count, truy vấn reminder, deduplication và hàng đợi realtime. | Bảo vệ ownership ngay trong query, hỗ trợ phân trang, retry an toàn và không tạo trùng notification. `MarkAllUnreadAsReadAsync` trả số dòng đã đổi thay vì `void`. |
 | `Notification` có `notificationId`, `recipientUserId`, `kind`, target, `actionUrl`, `readAt`, `createdAt`. | `Id`, `UserId`, `Type` dùng enum, `TargetType`, `TargetId`, `ReadAt`, `CreatedAt`; có thêm `Body`, `MeetingId`, `UpdatedAt`, `DeduplicationKey`, `PushedAt`. `ActionUrl` chỉ có trong response và `IsRead` là giá trị suy ra. | Không ghim route UI vào database. `ReadAt` là nguồn sự thật duy nhất; gọi lặp `MarkAsRead` không làm mất thời điểm đọc đầu tiên. |
 | `User` có `username`, `email`, `status` và quan hện 1–n với notification. | Domain dùng `FullName`, `Email`, `IsActive`; FK `Notification.UserId` là `Restrict`. | UML đang dùng tên field không khớp domain model đã chốt; quan hệ người nhận vẫn khớp. |
@@ -64,27 +70,27 @@ khử trùng bằng `DeduplicationKey`, timestamp `PushedAt`, index cho truy v�
 
 | Nguồn yêu cầu | Backend hiện tại | Kết quả đối chiếu |
 |---|---|---|
-| UC-18 yêu cầu hiển thị notification của chính user, chỉ báo chưa đọc và không đổi read status khi mở danh sách (BR-47–BR-49). | Query luôn lọc theo `UserId`; `ListAsync` chỉ đọc dữ liệu và trả `unreadCount`. | Khớp yêu cầu chính. EX-1 chưa có mã/message API riêng khi không tải được danh sách. |
-| UC-19 yêu cầu chỉ sửa notification thuộc user, hiển thị trạng thái đã đọc và `unreadCount` mới. EX-1 yêu cầu thông báo “This notification is no longer available”; EX-2 yêu cầu trả trạng thái thực lưu và số chưa đọc khi lưu lỗi. | Ownership và idempotency đã có. Endpoint thành công không trả `unreadCount`; notification không tồn tại/của user khác trả `404` rỗng; lỗi lưu không có response nghiệp vụ. | Mới khớp phần thay đổi read status và bảo vệ ownership; response thành công và hai nhánh lỗi chưa đủ theo UC Description. |
-| UC-20/BR-51 yêu cầu đánh dấu mọi notification chưa đọc của user, kể cả dòng không nằm trên page hiện tại; sau đó hiển thị trạng thái và số chưa đọc thực lưu. | Repository cập nhật tất cả dòng `UserId` có `ReadAt == null`, không phụ thuộc page. Response luôn ghi `unreadCount: 0` và không đọc lại danh sách/trạng thái. | Phạm vi update khớp BR-51. AF-1 và EX-1 chưa trả current list/current saved state như UC Description. |
-| UC-21/BR-53 yêu cầu khi chọn notification thì thử đánh dấu đã đọc; nếu lưu read status thất bại vẫn tiếp tục mở target nếu user có quyền. | `GetTargetAsync` không thử lưu `ReadAt`. FE gọi `POST /{id}/read` (không chờ, bỏ qua lỗi) rồi mới gọi `GET /{id}/target`. | Đáp ứng main flow, POST-2 và EX-3 ở mức hệ thống bằng hai lời gọi; sequence diagram vẫn vẽ một lời gọi có side effect nên cần sửa theo. |
+| UC-17 yêu cầu hiển thị notification của chính user, chỉ báo chưa đọc và không đổi read status khi mở danh sách (BR-47–BR-49). | Query luôn lọc theo `UserId`; `ListAsync` chỉ đọc dữ liệu và trả `unreadCount`. | Khớp yêu cầu chính. EX-1 chưa có mã/message API riêng khi không tải được danh sách. |
+| UC-18 yêu cầu chỉ sửa notification thuộc user, hiển thị trạng thái đã đọc và `unreadCount` mới. EX-1 yêu cầu thông báo “This notification is no longer available”; EX-2 yêu cầu trả trạng thái thực lưu và số chưa đọc khi lưu lỗi. | Ownership và idempotency đã có. Endpoint thành công không trả `unreadCount`; notification không tồn tại/của user khác trả `404` rỗng; lỗi lưu không có response nghiệp vụ. | Mới khớp phần thay đổi read status và bảo vệ ownership; response thành công và hai nhánh lỗi chưa đủ theo UC Description. |
+| UC-19/BR-51 yêu cầu đánh dấu mọi notification chưa đọc của user, kể cả dòng không nằm trên page hiện tại; sau đó hiển thị trạng thái và số chưa đọc thực lưu. | Repository cập nhật tất cả dòng `UserId` có `ReadAt == null`, không phụ thuộc page. Response luôn ghi `unreadCount: 0` và không đọc lại danh sách/trạng thái. | Phạm vi update khớp BR-51. AF-1 và EX-1 chưa trả current list/current saved state như UC Description. |
+| UC-20/BR-53 yêu cầu khi chọn notification thì thử đánh dấu đã đọc; nếu lưu read status thất bại vẫn tiếp tục mở target nếu user có quyền. | `GetTargetAsync` không thử lưu `ReadAt`. FE gọi `POST /{id}/read` (không chờ, bỏ qua lỗi) rồi mới gọi `GET /{id}/target`. | Đáp ứng main flow, POST-2 và EX-3 ở mức hệ thống bằng hai lời gọi; sequence diagram vẫn vẽ một lời gọi có side effect nên cần sửa theo. |
 | BR-45 quy định ba nguồn: được mời họp, meeting sắp bắt đầu, và được giao task. | Nhắc sắp bắt đầu đã chạy qua worker. Nguồn lời mời chờ luồng publish meeting; notification giao task không có. | Mới có một nguồn hoàn chỉnh. Yêu cầu task xung đột với phạm vi repo đã loại task/action item; BA phải chốt nguồn nào ưu tiên. |
-| UC-17 và BR-37–BR-40 quy định sau khi meeting chuyển thành công từ `Approved` sang `Published`, hệ thống xếp invitation delivery bất đồng bộ cho **tất cả** participant; lỗi delivery phải retry và không rollback `Published`. | Backend chưa có UC-17/publish handler nên chưa tạo notification lời mời. Không giữ API tạm theo từng participant vì sai hình dạng nghiệp vụ. | Điểm nối sẽ được triển khai trong luồng **publish meeting** của SCRUM-19. |
+| UC-16 và BR-37–BR-40 quy định sau khi meeting chuyển thành công từ `Approved` sang `Published`, hệ thống xếp invitation delivery bất đồng bộ cho **tất cả** participant; lỗi delivery phải retry và không rollback `Published`. | Backend chưa có UC-16/publish handler nên chưa tạo notification lời mời. Không giữ API tạm theo từng participant vì sai hình dạng nghiệp vụ. | Điểm nối sẽ được triển khai trong luồng **publish meeting** của SCRUM-19. |
 | BR-42 yêu cầu invitation notification có link trực tiếp tới meeting đã publish và tài liệu đính kèm. | Notification có link chi tiết meeting; không có target/link riêng cho tài liệu. | Đã có link meeting; cần BA chốt tài liệu được mở bên trong trang meeting hay cần contract target khác. |
 | BR-43 yêu cầu theo dõi việc xếp hàng và trạng thái delivery của tất cả invitation message cho audit. | Notification chỉ có `PushedAt` và log lỗi chung của worker; không có attempt count, trạng thái pending/failed hay audit record theo lần delivery. | Chưa đủ dữ liệu để đáp ứng BR-43 và retry có kiểm soát của BR-40. |
 | BR-46 yêu cầu lưu notification để xem sau và cập nhật realtime notification cùng unread count khi recipient đang kết nối. | Notification được lưu trước khi worker push `notificationReceived` kèm `unreadCount` qua SignalR. | Khớp yêu cầu; FE nhận sự kiện hub, khử trùng theo `id` và cập nhật badge cùng danh sách. |
 
 `UC list.docx` còn có hai hệ mã song song: danh mục tổng hợp gọi Notification
 Management là `UC-031` (gộp `UC-NOTI-01`, `UC-NOTI-02`, `UC-NOTI-03`, `UC-NOTI-08`), trong
-khi phần đặc tả chi tiết dùng `UC-18`–`UC-21`. Repo hiện dùng hệ mã chi tiết
-`UC-18`–`UC-21` và story `SCRUM-14`; BA cần chốt mapping traceability chính thức.
+khi phần đặc tả chi tiết dùng `UC-17`–`UC-20`. Repo hiện dùng hệ mã chi tiết
+`UC-17`–`UC-20` và story `SCRUM-14`; BA cần chốt mapping traceability chính thức.
 
 Query phân trang sai trả `400` với `code=MSG39` và lỗi database khi kiểm tra
 tài khoản active trả `500` với `code=MSG40`, thống nhất status với API danh sách
 cuộc họp. Các nhánh lỗi lưu trạng thái đọc
 vẫn chưa trả trạng thái đã lưu thực tế hay `unreadCount` như diagram.
 
-Bước “kiểm tra quyền hiện tại” của UC-21 dùng chung
+Bước “kiểm tra quyền hiện tại” của UC-20 dùng chung
 `IMeetingRepository.FindAccessibleAsync` với API chi tiết meeting theo BR-29: creator đọc mọi trạng thái,
 assigned approver đọc từ `WaitingApproval`, và người được gán vai trò `Chair`, `Secretary`, `Member` hoặc
 `Guest` đọc từ `Published`. Trạng thái lời mời không thu hồi quyền xem meeting đã công bố; notification
@@ -92,7 +98,7 @@ không tự cấp quyền. Quyền đọc tài liệu và recording tiếp tục
 
 Những phần backend có thêm ngoài bốn diagram gồm endpoint đếm riêng, phân trang,
 `totalCount`, SignalR, worker nhắc meeting sắp bắt đầu, `deduplicationKey` và trạng thái
-`pushedAt`. Đây là phần mở rộng, không mâu thuẫn với luồng UC-18–UC-21.
+`pushedAt`. Đây là phần mở rộng, không mâu thuẫn với luồng UC-17–UC-20.
 
 ## SignalR
 
@@ -149,8 +155,8 @@ Chuông thông báo nằm trên app bar, dùng chung cho cả hai workspace. Cod
 - **Đánh dấu đã đọc.** Một dòng: cập nhật ngay (optimistic), trả lại trạng thái cũ và báo lỗi nếu
   backend từ chối. Tất cả: mọi dòng đã tải chuyển sang đã đọc, số chưa đọc lấy theo response
   (`unreadCount: 0`) — đúng BR-51, vì backend đánh dấu cả những dòng FE chưa tải.
-- **Mở thông báo** (UC-21): gọi `POST /{id}/read` nhưng không chờ, rồi `GET /{id}/target` và đi tới
-  `url`. `404` hiện toast "Thông báo này không còn khả dụng." (UC-19 EX-1). Thông báo không có
+- **Mở thông báo** (UC-20): gọi `POST /{id}/read` nhưng không chờ, rồi `GET /{id}/target` và đi tới
+  `url`. `404` hiện toast "Thông báo này không còn khả dụng." (UC-18 EX-1). Thông báo không có
   `targetType` chỉ được đánh dấu đã đọc, không gọi `target`. FE chỉ điều hướng tới đường dẫn trong
   app (bắt đầu bằng `/` nhưng không phải `//`), kể cả khi dữ liệu trong database sai.
 - **Realtime.** Sự kiện `notificationReceived` được khử trùng theo `id`. Panel đang đóng: chuông
@@ -172,10 +178,12 @@ Chuông thông báo nằm trên app bar, dùng chung cho cả hai workspace. Cod
 - **Được mời họp:** chưa triển khai trong SCRUM-14. Luồng publish meeting của SCRUM-19 phải tạo
   notification cho tất cả participant sau khi chuyển trạng thái thành công, cùng transaction với
   thay đổi trạng thái.
-- **Sắp bắt đầu:** worker kiểm tra Meeting Session không bị hủy của meeting `Published` hoặc
-  `InProgress` mỗi 5 giây và xếp một thông báo cho mỗi participant còn hoạt động khi còn tối đa
-  **15 phút** trước Planned Start Time. Nội dung nêu cả Meeting và Session; unique key
-  `meeting-session-starting-soon:{sessionId}:{userId}` ngăn xếp lặp theo từng phiên/người nhận.
+- **Sắp bắt đầu:** worker kiểm tra meeting `Published` mỗi 5 giây và xếp một thông báo cho mỗi
+  participant còn hoạt động khi còn tối đa **15 phút** trước `plannedStartTime`. Unique key
+  `meeting-starting-soon:{meetingId}:{plannedStart unix seconds}:{userId}` ngăn xếp lặp; cuộc họp bị
+  dời lịch có giờ mới nên được nhắc lại.
+- **Dời lịch (`MeetingRescheduled`):** PUT dời lịch meeting `Published` (UC-15 AF-1) tạo một thông
+  báo cho mỗi participant active, chưa Delegated, cùng transaction với thay đổi lịch (BR-76).
 - **Được giao nhiệm vụ:** phạm vi đã chốt của TrustCabinet không có task/action item (xem
   [ERD](../02-design/02-erd.md)); vì vậy chưa có nguồn hay URL đích cho loại thông báo này.
   Cần thay đổi phạm vi ở Jira/BA trước khi triển khai.

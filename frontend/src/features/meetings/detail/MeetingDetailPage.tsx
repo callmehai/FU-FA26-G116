@@ -5,10 +5,17 @@ import { Icon } from '../../../components/Icon'
 import { NotFound } from '../../../components/NotFound'
 import { useToast } from '../../../components/toastContext'
 import { isApiError } from '../../../lib/errors'
-import { formatDateTime } from '../../../lib/format'
+import { formatDateTime, formatSchedule } from '../../../lib/format'
 import { useBackTarget, useForwardedBackState, type BackTarget } from '../../../lib/backTarget'
 import { routes } from '../../../lib/routes'
-import { EDITABLE_STATUSES, MEETING_MODE_LABEL, type Meeting, type MeetingApprover } from '../../../types/meeting'
+import {
+  EDITABLE_STATUSES,
+  MEETING_MODE_LABEL,
+  RESCHEDULABLE_STATUSES,
+  type Meeting,
+  type MeetingApprover,
+} from '../../../types/meeting'
+import { placeLabel } from '../place'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
 import { SensitivityBadge, StatusBadge } from '../StatusBadge'
@@ -22,8 +29,6 @@ import type { WorkflowOutcome } from '../workflow/workflowOutcome'
 /** The detail screen is split by lifecycle concern rather than by data table. */
 const TABS = [
   { id: 'overview', label: 'Thông tin chung' },
-  // The schedule lives on the meeting's sessions, not on the meeting (SCRUM-70).
-  { id: 'sessions', label: 'Phiên họp' },
   { id: 'attendees', label: 'Thành phần tham dự' },
   { id: 'agenda', label: 'Nội dung cuộc họp' },
   { id: 'documents', label: 'Tài liệu' },
@@ -35,7 +40,6 @@ type TabId = (typeof TABS)[number]['id']
 
 /** What each tab is waiting on, surfaced in the UI so the backlog is visible while building. */
 const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview'>, string> = {
-  sessions: 'GET /api/meetings/{id}/sessions',
   attendees: 'GET /api/meetings/{id}/attendees',
   agenda: 'GET /api/meetings/{id}/agenda',
   documents: 'GET /api/meetings/{id}/documents',
@@ -47,7 +51,7 @@ const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview'>, string> = {
 const REVIEW_STATUSES = ['WaitingApproval', 'Rejected', 'Approved'] as const
 
 /**
- * UC-13 View Meeting Details, reading GET /api/meetings/{id} (SCRUM-17), with the approval
+ * UC-16 View Meeting Details, reading GET /api/meetings/{id} (SCRUM-17), with the approval
  * workflow and the lifecycle history of SCRUM-19. A meeting the caller has no relationship with
  * answers 404 exactly like an unknown id, and renders the same NotFound.
  */
@@ -117,6 +121,8 @@ function MeetingDetail({
   // Hidden, not disabled, when it does not apply: a greyed-out button for something the user can
   // never do here is noise. The backend re-checks ownership and status on save regardless.
   const canEdit = isOrganizer && EDITABLE_STATUSES.includes(meeting.status)
+  // UC-15 AF-1: after publishing, the organizer may still move the time, place and link.
+  const canReschedule = isOrganizer && RESCHEDULABLE_STATUSES.includes(meeting.status)
 
   /** Display names the page already knows: whoever acted in the history, and the approver list. */
   const names = useMemo(() => {
@@ -174,26 +180,20 @@ function MeetingDetail({
           </div>
           <p className="record-facts">
             <span>
-              <Icon name={meeting.mode === 'InPerson' ? 'meeting' : 'video'} size={16} />
-              {MEETING_MODE_LABEL[meeting.mode]}
-            </span>
-            {meeting.mode !== 'Online' && meeting.location && (
-              <span>
-                <Icon name="mapPin" size={16} />
-                {meeting.location}
-              </span>
-            )}
-            <span>
               <Icon name="clock" size={16} />
-              Tạo lúc {formatDateTime(meeting.createdAt)}
+              {formatSchedule(meeting.plannedStartTime, meeting.plannedEndTime)}
+            </span>
+            <span>
+              <Icon name={meeting.mode === 'InPerson' ? 'mapPin' : 'video'} size={16} />
+              {placeLabel(meeting)}
             </span>
           </p>
         </div>
-        {canEdit && (
+        {(canEdit || canReschedule) && (
           <div className="page-header-actions">
             <Link className="btn btn-outline btn-lg" to={routes.meetingEdit(meeting.id)} state={forwardBack}>
-              <Icon name="pencil" size={16} />
-              Chỉnh sửa
+              <Icon name={canEdit ? 'pencil' : 'calendar'} size={16} />
+              {canEdit ? 'Chỉnh sửa' : 'Dời lịch'}
             </Link>
           </div>
         )}
@@ -285,20 +285,40 @@ function Overview({ meeting, approver }: { meeting: Meeting; approver: { text: s
         <span>Mức độ</span>
         <SensitivityBadge sensitivity={meeting.sensitivity} />
       </div>
+      <div className="field-item span-all">
+        <span>Thời gian</span>
+        <strong>{formatSchedule(meeting.plannedStartTime, meeting.plannedEndTime)}</strong>
+      </div>
+      {meeting.actualStartedAt && (
+        <div className="field-item span-all">
+          <span>Thời gian thực tế</span>
+          <strong>
+            {meeting.actualEndedAt
+              ? formatSchedule(meeting.actualStartedAt, meeting.actualEndedAt)
+              : `Bắt đầu ${formatDateTime(meeting.actualStartedAt)}`}
+          </strong>
+        </div>
+      )}
       <div className="field-item">
         <span>Hình thức</span>
         <strong>{MEETING_MODE_LABEL[meeting.mode]}</strong>
       </div>
-      <div className="field-item">
-        <span>{meeting.mode === 'Hybrid' ? 'Địa điểm họp trực tiếp' : 'Địa điểm'}</span>
-        {meeting.mode === 'Online' ? (
-          <strong>Phòng gọi trực tuyến</strong>
-        ) : meeting.location ? (
-          <strong>{meeting.location}</strong>
-        ) : (
-          <em className="value-empty">Chưa có</em>
-        )}
-      </div>
+      {meeting.mode !== 'Online' && (
+        <div className="field-item">
+          <span>{meeting.mode === 'Hybrid' ? 'Địa điểm họp trực tiếp' : 'Địa điểm'}</span>
+          {meeting.location ? <strong>{meeting.location}</strong> : <em className="value-empty">Chưa có</em>}
+        </div>
+      )}
+      {meeting.mode !== 'InPerson' && (
+        <div className="field-item">
+          <span>Link trực tuyến</span>
+          {meeting.onlineLink ? (
+            <strong className="value-text">{meeting.onlineLink}</strong>
+          ) : (
+            <strong>Phòng họp trực tuyến TrustCabinet</strong>
+          )}
+        </div>
+      )}
       {approver && (
         <div className="field-item">
           <span>Người duyệt</span>

@@ -60,7 +60,7 @@ internal sealed class FakeRolePermissionRepository : IRolePermissionRepository
 
     /// <summary>
     /// Set to make the next save throw, standing in for the database refusing the write —
-    /// UC-10's MSG18 branch.
+    /// UC-11's MSG18 branch.
     /// </summary>
     public Exception? NextSaveThrows { get; set; }
 

@@ -59,9 +59,8 @@ public class NotificationServiceTests
         var inactive = NewUser("inactive@example.com");
         inactive.IsActive = false;
         var meeting = NewMeeting(organizer);
-        var session = Assert.Single(meeting.Sessions);
-        session.PlannedStartsAt = Now.AddMinutes(10);
-        session.PlannedEndsAt = Now.AddHours(1);
+        meeting.PlannedStartTime = Now.AddMinutes(10);
+        meeting.PlannedEndTime = Now.AddHours(1);
         db.Users.AddRange(organizer, active, inactive);
         db.Meetings.Add(meeting);
         db.MeetingParticipants.AddRange(
@@ -76,8 +75,10 @@ public class NotificationServiceTests
         Assert.Equal(active.Id, reminder.UserId);
         Assert.Equal(NotificationType.MeetingStartingSoon, reminder.Type);
         Assert.Equal(meeting.Id, reminder.MeetingId);
-        Assert.Equal($"meeting-session-starting-soon:{session.Id:D}:{active.Id:D}", reminder.DeduplicationKey);
-        Assert.Contains(session.Title, reminder.Body, StringComparison.Ordinal);
+        Assert.Equal(
+            $"meeting-starting-soon:{meeting.Id:D}:{meeting.PlannedStartTime.ToUnixTimeSeconds()}:{active.Id:D}",
+            reminder.DeduplicationKey);
+        Assert.Contains(meeting.Title, reminder.Body, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -200,16 +201,10 @@ public class NotificationServiceTests
             Status = MeetingStatus.Published,
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.Online,
+            PlannedStartTime = Now.AddHours(1),
+            PlannedEndTime = Now.AddHours(2),
             CreatedById = organizer.Id,
         };
-        meeting.Sessions.Add(new MeetingSession
-        {
-            Meeting = meeting,
-            Title = "Phiên giao ban",
-            PlannedStartsAt = Now.AddHours(1),
-            PlannedEndsAt = Now.AddHours(2),
-            Status = MeetingSessionStatus.Planned,
-        });
         return meeting;
     }
 

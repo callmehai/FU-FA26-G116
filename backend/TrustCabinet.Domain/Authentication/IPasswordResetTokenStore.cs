@@ -1,7 +1,7 @@
 namespace TrustCabinet.Domain.Authentication;
 
 /// <summary>
-/// UC-08's "secure password reset request" — the <c>:Authentication Service</c> step "Create
+/// UC-07's "secure password reset request" — the <c>:Authentication Service</c> step "Create
 /// password reset request" in the sequence diagram.
 ///
 /// A reset link is a credential: whoever holds it can choose the account's password. So it gets

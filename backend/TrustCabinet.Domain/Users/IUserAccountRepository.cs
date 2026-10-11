@@ -4,7 +4,7 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Domain.Users;
 
 /// <summary>
-/// The <c>:User Repository</c> participant of UC-04 … UC-07 — the only way
+/// The <c>:User Repository</c> participant of UC-05 … UC-06c — the only way
 /// <see cref="IUserService"/> reaches the database.
 ///
 /// Separate from <c>Authentication.IUserRepository</c> on purpose. That one says of itself that it
@@ -15,7 +15,7 @@ namespace TrustCabinet.Domain.Users;
 public interface IUserAccountRepository
 {
     /// <summary>
-    /// Every account, sorted by name — UC-04's "Sorted user account list". Sorted in the database
+    /// Every account, sorted by name — UC-05's "Sorted user account list". Sorted in the database
     /// rather than in memory, so PostgreSQL's collation decides the order of Vietnamese names
     /// instead of the ordinal comparison .NET would default to.
     /// </summary>
@@ -27,21 +27,21 @@ public interface IUserAccountRepository
 
     /// <summary>
     /// The account's email if it is still active, or null — read from the database as it is now,
-    /// never from an entity this context already tracks. UC-08 asks it after a slow email send, to
+    /// never from an entity this context already tracks. UC-07 asks it after a slow email send, to
     /// see whether another administrator deactivated the account or changed its address meanwhile;
     /// a tracked entity would only answer with what this request loaded before the send.
     /// </summary>
     Task<string?> FindActiveEmailAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
-    /// The role with this id, or null — UC-05 and UC-06 check the chosen role exists, now that a
+    /// The role with this id, or null — UC-06a and UC-06b check the chosen role exists, now that a
     /// role is a row an administrator can delete rather than an enum value (ADR-0008).
     /// </summary>
     Task<Role?> FindRoleAsync(Guid roleId, CancellationToken ct = default);
 
     /// <summary>
     /// Whether any account other than <paramref name="exceptId"/> already uses this email —
-    /// UC-05's "Check Email availability", and the same check on UC-06's edit, where the account
+    /// UC-06a's "Check Email availability", and the same check on UC-06b's edit, where the account
     /// keeping its own email is not a duplicate.
     ///
     /// The unique index is what actually guarantees it; this is the check that produces MSG08

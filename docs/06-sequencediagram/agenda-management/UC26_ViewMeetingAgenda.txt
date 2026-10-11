@@ -1,0 +1,76 @@
+title UC-26 - View Meeting Agenda
+
+actor "Authorized Meeting User" as User
+boundary "Meeting Management Page" as MeetingPage
+control ":Agenda Controller" as AgendaController
+control ":Agenda Service" as AgendaService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Agenda Item Repository" as AgendaItemRepository
+database ":Database" as Database
+
+User->MeetingPage: View Meeting Agenda
+activate MeetingPage
+MeetingPage->AgendaController: Get Meeting Agenda
+activate AgendaController
+AgendaController->AgendaService: getMeetingAgenda(meetingId, userId)
+activate AgendaService
+
+AgendaService->MeetingRepository: Get selected Meeting
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting
+activate Database
+Database-->MeetingRepository: Meeting / Not found
+deactivate Database
+MeetingRepository-->AgendaService: Meeting / Not found
+deactivate MeetingRepository
+
+
+AgendaService->MeetingAccessPolicy: Verify user may view the Meeting (BR-29)
+activate MeetingAccessPolicy
+MeetingAccessPolicy-->AgendaService: Authorized / Not authorized
+deactivate MeetingAccessPolicy
+
+alt Meeting is not accessible - EX-1
+    AgendaService-->AgendaController: Not found; do not disclose agenda information
+    deactivate AgendaService
+    AgendaController-->MeetingPage: Return not found
+    deactivate AgendaController
+    MeetingPage-->User: Meeting agenda not found
+
+else Meeting is accessible
+    AgendaService->AgendaItemRepository: Get Meeting agenda in defined order (BR-64, BR-73)
+    activate AgendaItemRepository
+    AgendaItemRepository->Database: Retrieve Agenda Items and execution state
+    activate Database
+
+    alt Meeting Agenda cannot be retrieved - EX-2
+        Database-->AgendaItemRepository: Retrieval failed
+        deactivate Database
+        AgendaItemRepository-->AgendaService: Retrieval failed
+        deactivate AgendaItemRepository
+        AgendaService-->AgendaController: MSG128 - Unable to load the meeting agenda. Please try again
+        deactivate AgendaService
+        AgendaController-->MeetingPage: Return agenda load failure
+        deactivate AgendaController
+        MeetingPage-->User: MSG128 - Unable to load the meeting agenda. Please try again
+
+    else Meeting Agenda retrieved
+        Database-->AgendaItemRepository: Ordered Agenda Items / Empty agenda
+        deactivate Database
+        AgendaItemRepository-->AgendaService: Ordered Agenda Items / Empty agenda
+        deactivate AgendaItemRepository
+        AgendaService-->AgendaController: Agenda and execution state
+        deactivate AgendaService
+        AgendaController-->MeetingPage: Agenda and execution state
+        deactivate AgendaController
+
+        alt No Agenda Items exist - AF-1
+            MeetingPage-->User: Display empty agenda
+        else Agenda Items exist
+            MeetingPage-->User: Display ordered agenda and current execution state
+        end
+    end
+end
+
+deactivate MeetingPage

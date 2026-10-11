@@ -197,7 +197,7 @@ Ticket yêu cầu *"có hiệu lực ngay với phiên đang đăng nhập, ho�
 Code làm **cả hai**:
 
 1. **Huỷ refresh token của mọi tài khoản đang giữ vai trò đó.** Phiên kết thúc ở lần refresh kế
-   tiếp thay vì chờ hết hạn tự nhiên. Giống hệt cách UC-06 xử lý khi đổi vai trò của một người.
+   tiếp thay vì chờ hết hạn tự nhiên. Giống hệt cách UC-06b xử lý khi đổi vai trò của một người.
    - Huỷ ở **cả hai chiều** — thêm quyền cũng huỷ, không riêng gỡ quyền. Người vừa được cấp thêm
      quyền đang cầm token **không** chứa quyền đó, nên quyền mới cũng chưa dùng được.
    - Tài khoản đã bị vô hiệu hoá thì bỏ qua: họ không có phiên nào dùng được để mà kết thúc.
@@ -335,7 +335,7 @@ Bản vẽ có method này ở cả 4 tầng (`Controller`, `Service`, `Reposito
 
 Đã thống nhất **không làm** trong sprint này.
 
-**→ Đề nghị BA:** bỏ khỏi bản vẽ, hoặc đánh dấu `<<chưa implement>>` như cách đã làm với UC-08 ở
+**→ Đề nghị BA:** bỏ khỏi bản vẽ, hoặc đánh dấu `<<chưa implement>>` như cách đã làm với UC-07 ở
 bản vẽ 02.
 
 ### 3. `Role` không phải entity có `roleId: UUID`
