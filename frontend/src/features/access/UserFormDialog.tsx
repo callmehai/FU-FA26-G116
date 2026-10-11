@@ -19,11 +19,11 @@ type FieldErrors = Partial<Record<Field, string>>
 export type UserFormTarget = { mode: 'create' } | { mode: 'edit'; id: string }
 
 /**
- * UC-05 (create) and UC-06 (edit) in one form.
+ * UC-06a (create) and UC-06b (edit) in one form.
  *
- * Editing starts with GET /api/users/{id} — UC-06's first half — rather than trusting the list
+ * Editing starts with GET /api/users/{id} — UC-06b's first half — rather than trusting the list
  * row, which another administrator may have changed since it loaded. There is no password on the
- * edit form (resetting one is UC-08) and no status (that is UC-07, with its own rules).
+ * edit form (resetting one is UC-07) and no status (that is UC-06c, with its own rules).
  */
 export function UserFormDialog({
   target,

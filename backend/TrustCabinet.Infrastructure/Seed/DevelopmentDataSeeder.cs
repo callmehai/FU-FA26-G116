@@ -88,12 +88,12 @@ public static class DevelopmentDataSeeder
                 MeetingMode.InPerson, "Phòng họp Hội đồng",
                 "2026-09-24T07:00:00Z", "2026-09-24T10:00:00Z", secretary),
             NewMeeting("Rà soát kế hoạch chuyển đổi số", MeetingStatus.InProgress, Sensitivity.Confidential,
-                MeetingMode.Online, "Trực tuyến",
+                MeetingMode.Online, string.Empty,
                 "2026-09-18T01:30:00Z", "2026-09-18T03:00:00Z", secretary),
             NewMeeting("Lấy ý kiến dự thảo quy chế chi tiêu nội bộ", MeetingStatus.Draft, Sensitivity.Normal,
-                MeetingMode.Online, "Trực tuyến",
+                MeetingMode.Online, string.Empty,
                 "2026-09-29T02:00:00Z", "2026-09-29T03:00:00Z", secretary),
-            NewMeeting("Tổng kết công tác quý II", MeetingStatus.MinutesIssued, Sensitivity.Internal,
+            NewMeeting("Tổng kết công tác quý II", MeetingStatus.Ended, Sensitivity.Internal,
                 MeetingMode.InPerson, "Hội trường lớn",
                 "2026-09-08T07:00:00Z", "2026-09-08T09:30:00Z", secretary),
         };
@@ -180,16 +180,10 @@ public static class DevelopmentDataSeeder
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.InPerson,
             Location = "Phòng họp demo SCRUM-19",
+            PlannedStartTime = now.AddDays(1),
+            PlannedEndTime = now.AddDays(1).AddHours(1),
             CreatedBy = organizer,
         };
-        meeting.Sessions.Add(new MeetingSession
-        {
-            Meeting = meeting,
-            Title = meeting.Title,
-            PlannedStartsAt = now.AddDays(1),
-            PlannedEndsAt = now.AddDays(1).AddHours(1),
-            Status = MeetingSessionStatus.Planned,
-        });
         meeting.AgendaItems.Add(new AgendaItem
         {
             Meeting = meeting,
@@ -257,30 +251,21 @@ public static class DevelopmentDataSeeder
         string title, MeetingStatus status, Sensitivity sensitivity, MeetingMode mode,
         string location, string startsAt, string endsAt, User createdBy)
     {
-        var meeting = new Meeting
+        // A meeting that has started or ended carries the times the Chair would have recorded.
+        var started = status is MeetingStatus.InProgress or MeetingStatus.Ended;
+        return new Meeting
         {
             Title = title,
             Status = status,
             Sensitivity = sensitivity,
             Mode = mode,
             Location = location,
+            PlannedStartTime = At(startsAt),
+            PlannedEndTime = At(endsAt),
+            ActualStartedAt = started ? At(startsAt) : null,
+            ActualEndedAt = status == MeetingStatus.Ended ? At(endsAt) : null,
             CreatedBy = createdBy,
         };
-        meeting.Sessions.Add(new MeetingSession
-        {
-            Meeting = meeting,
-            Title = title,
-            PlannedStartsAt = At(startsAt),
-            PlannedEndsAt = At(endsAt),
-            Status = status switch
-            {
-                MeetingStatus.InProgress => MeetingSessionStatus.InProgress,
-                MeetingStatus.Ended or MeetingStatus.MinutesIssued or MeetingStatus.Archived
-                    => MeetingSessionStatus.Completed,
-                _ => MeetingSessionStatus.Planned,
-            },
-        });
-        return meeting;
     }
 
     private static MeetingStatusHistory NewHistory(

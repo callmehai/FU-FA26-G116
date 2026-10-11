@@ -13,6 +13,7 @@ export type NotificationType =
   | 'MeetingWaitingApproval'
   | 'MeetingPublished'
   | 'MeetingStartingSoon'
+  | 'MeetingRescheduled'
   | 'MeetingCancelled'
   | 'VotingOpened'
   | 'MinutesWaitingApproval'

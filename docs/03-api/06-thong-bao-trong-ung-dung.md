@@ -1,9 +1,8 @@
 # SCRUM-14 · Thông báo trong ứng dụng
 
-> **Cảnh báo — nghiệp vụ đã đổi (10/10/2026).** File này mô tả **code đang chạy**, vẫn có `MeetingSession`.
-> PO đã bỏ Meeting Session và biểu quyết đặc biệt ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md),
-> [ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md)): lịch dự kiến sẽ chuyển về Meeting
-> (`plannedStartTime`, `plannedEndTime`, `onlineLink`). Phần hợp đồng API dưới đây chỉ đổi **cùng commit với migration**.
+> **Một cuộc họp là một buổi họp ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)).** Từ migration
+> `MeetingOwnsScheduleDropSessions`, lịch nằm trên Meeting (`plannedStartTime`, `plannedEndTime`, `onlineLink`) và code
+> không còn `MeetingSession`. Các đoạn lịch sử bên dưới nhắc Meeting Session là mô tả thời điểm viết.
 > Số UC đã đổi theo baseline 70 UC ([bảng đổi số](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới));
 > các mã `BR-54` → `BR-61` nhắc trong file là số BR cũ đã ngừng dùng ([danh mục BR](../01-requirements/06-business-rules.md)).
 
@@ -179,10 +178,12 @@ Chuông thông báo nằm trên app bar, dùng chung cho cả hai workspace. Cod
 - **Được mời họp:** chưa triển khai trong SCRUM-14. Luồng publish meeting của SCRUM-19 phải tạo
   notification cho tất cả participant sau khi chuyển trạng thái thành công, cùng transaction với
   thay đổi trạng thái.
-- **Sắp bắt đầu:** worker kiểm tra Meeting Session không bị hủy của meeting `Published` hoặc
-  `InProgress` mỗi 5 giây và xếp một thông báo cho mỗi participant còn hoạt động khi còn tối đa
-  **15 phút** trước Planned Start Time. Nội dung nêu cả Meeting và Session; unique key
-  `meeting-session-starting-soon:{sessionId}:{userId}` ngăn xếp lặp theo từng phiên/người nhận.
+- **Sắp bắt đầu:** worker kiểm tra meeting `Published` mỗi 5 giây và xếp một thông báo cho mỗi
+  participant còn hoạt động khi còn tối đa **15 phút** trước `plannedStartTime`. Unique key
+  `meeting-starting-soon:{meetingId}:{plannedStart unix seconds}:{userId}` ngăn xếp lặp; cuộc họp bị
+  dời lịch có giờ mới nên được nhắc lại.
+- **Dời lịch (`MeetingRescheduled`):** PUT dời lịch meeting `Published` (UC-15 AF-1) tạo một thông
+  báo cho mỗi participant active, chưa Delegated, cùng transaction với thay đổi lịch (BR-76).
 - **Được giao nhiệm vụ:** phạm vi đã chốt của TrustCabinet không có task/action item (xem
   [ERD](../02-design/02-erd.md)); vì vậy chưa có nguồn hay URL đích cho loại thông báo này.
   Cần thay đổi phạm vi ở Jira/BA trước khi triển khai.

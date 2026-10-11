@@ -2,7 +2,7 @@ using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Domain.Meetings;
 
-public enum MeetingSortBy { Title, CreatedAt }
+public enum MeetingSortBy { Title, PlannedStartTime, CreatedAt }
 
 public enum MeetingSortDirection { Asc, Desc }
 
@@ -21,6 +21,10 @@ public sealed record MeetingListQuery(
 public sealed record MeetingListItem(
     Guid Id,
     string Title,
+    DateTimeOffset PlannedStartTime,
+    DateTimeOffset PlannedEndTime,
+    MeetingMode Mode,
+    string Location,
     DateTimeOffset CreatedAt,
     MeetingStatus Status,
     Sensitivity Sensitivity);

@@ -42,7 +42,7 @@ public class DatabaseModelTests
             [
                 "agenda_items", "audit_log", "call_participants", "call_sessions",
                 "document_comments", "document_versions", "documents", "email_messages",
-                "meeting_minutes", "meeting_notes", "meeting_participants", "meeting_sessions",
+                "meeting_minutes", "meeting_notes", "meeting_participants",
                 "meeting_status_history", "meeting_summaries", "meetings", "minutes_signatures",
                 "notifications", "recordings", "role_capabilities", "roles", "speaking_requests",
                 "transcript_segments", "transcripts", "users", "vote_choices",
@@ -54,7 +54,6 @@ public class DatabaseModelTests
     [Theory]
     [InlineData(typeof(Meeting), nameof(Meeting.Status))]
     [InlineData(typeof(Meeting), nameof(Meeting.Sensitivity))]
-    [InlineData(typeof(MeetingSession), nameof(MeetingSession.Status))]
     [InlineData(typeof(RoleCapability), nameof(RoleCapability.Capability))]
     public void Enums_are_stored_as_text(Type entity, string property)
     {
@@ -108,24 +107,22 @@ public class DatabaseModelTests
     }
 
     [Fact]
-    public void Meeting_sessions_store_required_schedule_and_index_the_parent_and_status()
+    public void Meeting_carries_its_own_required_schedule_indexed_for_the_list()
     {
         using var db = NewContext();
-        var session = db.Model.FindEntityType(typeof(MeetingSession))!;
+        var meeting = db.Model.FindEntityType(typeof(Meeting))!;
 
-        Assert.Equal(300, session.FindProperty(nameof(MeetingSession.Title))!.GetMaxLength());
-        Assert.False(session.FindProperty(nameof(MeetingSession.Title))!.IsNullable);
-        Assert.False(session.FindProperty(nameof(MeetingSession.PlannedStartsAt))!.IsNullable);
-        Assert.False(session.FindProperty(nameof(MeetingSession.PlannedEndsAt))!.IsNullable);
-        Assert.False(session.FindProperty(nameof(MeetingSession.Status))!.IsNullable);
-        Assert.Equal(typeof(string), session.FindProperty(nameof(MeetingSession.Status))!.GetProviderClrType());
-        Assert.Contains(session.GetIndexes(), index =>
+        // ADR-0013: one meeting is one sitting, so the schedule lives on the meeting itself.
+        Assert.False(meeting.FindProperty(nameof(Meeting.PlannedStartTime))!.IsNullable);
+        Assert.False(meeting.FindProperty(nameof(Meeting.PlannedEndTime))!.IsNullable);
+        Assert.True(meeting.FindProperty(nameof(Meeting.ActualStartedAt))!.IsNullable);
+        Assert.True(meeting.FindProperty(nameof(Meeting.ActualEndedAt))!.IsNullable);
+        Assert.True(meeting.FindProperty(nameof(Meeting.OnlineLink))!.IsNullable);
+        Assert.Equal(1000, meeting.FindProperty(nameof(Meeting.OnlineLink))!.GetMaxLength());
+        Assert.Contains(meeting.GetIndexes(), index =>
             index.Properties.Select(property => property.Name).SequenceEqual(
-                [nameof(MeetingSession.MeetingId), nameof(MeetingSession.Status)]) && !index.IsUnique);
-        var foreignKey = Assert.Single(session.GetForeignKeys());
-        Assert.Equal(typeof(Meeting), foreignKey.PrincipalEntityType.ClrType);
-        Assert.Equal(nameof(Meeting.Sessions), foreignKey.PrincipalToDependent!.Name);
-        Assert.Equal(DeleteBehavior.Cascade, foreignKey.DeleteBehavior);
+                [nameof(Meeting.Status), nameof(Meeting.PlannedStartTime)]));
+        Assert.Null(db.Model.GetEntityTypes().SingleOrDefault(type => type.ClrType.Name == "MeetingSession"));
     }
 
     [Fact]

@@ -12,7 +12,7 @@ using TrustCabinet.Web.Tests.Users;
 namespace TrustCabinet.Web.Tests.Access;
 
 /// <summary>
-/// The rules of UC-11, UC-12 and UC-13 (SCRUM-63) — one test per alt branch of each sequence
+/// The rules of UC-12a, UC-12b and UC-12c (SCRUM-63) — one test per alt branch of each sequence
 /// diagram, plus the cases the story adds: whitespace and case in names, unknown capability codes,
 /// and the delete that loses a race against an assignment.
 ///
@@ -58,7 +58,7 @@ public class RoleServiceTests
             list.Select(r => r.IsBuiltIn));
     }
 
-    // ----------------------------------------------------------- UC-11 · Create role
+    // ----------------------------------------------------------- UC-12a · Create role
 
     [Fact]
     public async Task Create_saves_the_role_with_its_capabilities_and_answers_with_it()
@@ -330,7 +330,7 @@ public class RoleServiceTests
         Assert.Empty(_audit.Records);
     }
 
-    // ----------------------------------------------------------- UC-12 · Update role
+    // ----------------------------------------------------------- UC-12b · Update role
 
     [Fact]
     public async Task Update_renames_a_custom_role_and_answers_with_it()
@@ -505,7 +505,7 @@ public class RoleServiceTests
         Assert.Empty(_audit.Records);
     }
 
-    // ----------------------------------------------------------- UC-13 · Delete role
+    // ----------------------------------------------------------- UC-12c · Delete role
 
     [Fact]
     public async Task Delete_removes_a_custom_role_nobody_holds_and_its_capabilities()

@@ -8,7 +8,7 @@ import { errorMessage, isApiError } from '../../lib/errors'
 import { routes } from '../../lib/routes'
 import { useAuth } from './useAuth'
 
-/** The backend's own minimum, as for UC-05. Checked here only to save a round trip. */
+/** The backend's own minimum, as for UC-06a. Checked here only to save a round trip. */
 const MIN_PASSWORD_LENGTH = 12
 
 /**
@@ -37,7 +37,7 @@ function stillFailing(shown: FieldErrors, now: FieldErrors): FieldErrors {
 }
 
 /**
- * UC-08, second half: the page the reset email links to. Public — whoever forgot their password has
+ * UC-07, second half: the page the reset email links to. Public — whoever forgot their password has
  * no session; the token is the proof.
  *
  * The token arrives in the fragment (`#token=…`), which the browser never sends to a server, nor

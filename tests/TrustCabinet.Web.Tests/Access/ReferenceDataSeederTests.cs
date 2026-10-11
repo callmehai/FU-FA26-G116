@@ -116,7 +116,7 @@ public class ReferenceDataSeederTests : IAsyncLifetime
     [Fact]
     public async Task An_administrators_configuration_survives_a_reseed()
     {
-        // What an administrator might do through UC-10: move AdminUsers to Secretary and take
+        // What an administrator might do through UC-11: move AdminUsers to Secretary and take
         // MinutesEditor away from them.
         await ReferenceDataSeeder.SeedAsync(_db);
         _db.ChangeTracker.Clear();

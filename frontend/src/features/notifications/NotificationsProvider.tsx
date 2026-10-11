@@ -120,7 +120,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const markAllRead = useCallback(async () => {
-    // UC-20 / BR-51: the backend marks every unread notification of the account, not just the
+    // UC-67b / BR-51: the backend marks every unread notification of the account, not just the
     // loaded page, so every loaded row turns read and the count drops to what the backend reports.
     const result = await notificationsApi.markAllNotificationsRead()
     const readAt = new Date().toISOString()
@@ -130,7 +130,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   const openTarget = useCallback(
     async (notification: AppNotification) => {
-      // UC-21 / BR-53: opening marks it read, but a failed save never blocks the way there.
+      // UC-68 / BR-53: opening marks it read, but a failed save never blocks the way there.
       if (!notification.isRead) void markRead(notification.id).catch(() => undefined)
       // Nothing to open: the target endpoint would 404, which must not read as "no longer available".
       if (!notification.targetType) return null

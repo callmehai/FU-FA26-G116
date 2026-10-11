@@ -27,24 +27,15 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             meetings = meetings.Where(m => m.Sensitivity == sensitivity);
         }
 
-        if (query.From is { } from && query.To is { } to)
+        // BR-30: a meeting matches when its own planned interval overlaps the range.
+        if (query.From is { } from)
         {
-            meetings = meetings.Where(meeting => meeting.Sessions.Any(session =>
-                session.Status != MeetingSessionStatus.Cancelled
-                && session.PlannedEndsAt >= from
-                && session.PlannedStartsAt <= to));
+            meetings = meetings.Where(m => m.PlannedEndTime >= from);
         }
-        else if (query.From is { } onlyFrom)
+
+        if (query.To is { } to)
         {
-            meetings = meetings.Where(meeting => meeting.Sessions.Any(session =>
-                session.Status != MeetingSessionStatus.Cancelled
-                && session.PlannedEndsAt >= onlyFrom));
-        }
-        else if (query.To is { } onlyTo)
-        {
-            meetings = meetings.Where(meeting => meeting.Sessions.Any(session =>
-                session.Status != MeetingSessionStatus.Cancelled
-                && session.PlannedStartsAt <= onlyTo));
+            meetings = meetings.Where(m => m.PlannedStartTime <= to);
         }
 
         if (query.Query is { Length: > 0 } search)
@@ -67,7 +58,9 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             (MeetingSortBy.Title, MeetingSortDirection.Asc) => meetings.OrderBy(m => m.Title),
             (MeetingSortBy.Title, MeetingSortDirection.Desc) => meetings.OrderByDescending(m => m.Title),
             (MeetingSortBy.CreatedAt, MeetingSortDirection.Asc) => meetings.OrderBy(m => m.CreatedAt),
-            _ => meetings.OrderByDescending(m => m.CreatedAt),
+            (MeetingSortBy.CreatedAt, MeetingSortDirection.Desc) => meetings.OrderByDescending(m => m.CreatedAt),
+            (MeetingSortBy.PlannedStartTime, MeetingSortDirection.Asc) => meetings.OrderBy(m => m.PlannedStartTime),
+            _ => meetings.OrderByDescending(m => m.PlannedStartTime),
         };
 
         var items = await ordered
@@ -75,7 +68,8 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             .Skip(checked((int)offset))
             .Take(query.PageSize)
             .Select(m => new MeetingListItem(
-                m.Id, m.Title, m.CreatedAt, m.Status, m.Sensitivity))
+                m.Id, m.Title, m.PlannedStartTime, m.PlannedEndTime, m.Mode, m.Location,
+                m.CreatedAt, m.Status, m.Sensitivity))
             .ToListAsync(ct);
 
         return new MeetingListPage(items, query.Page, query.PageSize, totalCount);
@@ -105,8 +99,12 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             return null;
         }
 
-        return await db.Meetings.SingleOrDefaultAsync(
-            m => m.Id == id && m.CreatedById == creatorId, ct);
+        // Participants are the invitees a reschedule notifies (BR-76).
+        return await db.Meetings
+            .AsSplitQuery()
+            .Include(m => m.Participants)
+            .ThenInclude(participant => participant.User)
+            .SingleOrDefaultAsync(m => m.Id == id && m.CreatedById == creatorId, ct);
     }
 
     public async Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(

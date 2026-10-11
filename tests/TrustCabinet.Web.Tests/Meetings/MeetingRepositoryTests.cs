@@ -158,26 +158,19 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         return new MeetingService(new MeetingRepository(context), NullLogger<MeetingService>.Instance, invitations: invitations);
     }
 
+    private static readonly DateTimeOffset FutureStart =
+        new(DateTimeOffset.UtcNow.Date.AddDays(7).AddHours(2), TimeSpan.Zero);
+
     private MeetingInput Input(string title = "PostgreSQL meeting")
         => new(
             title,
+            FutureStart.ToString("O", System.Globalization.CultureInfo.InvariantCulture),
+            FutureStart.AddHours(1).ToString("O", System.Globalization.CultureInfo.InvariantCulture),
             "Online",
             "Conference link",
+            null,
             "Confidential",
             "Integration test");
-
-    private async Task AddPlannedSessionAsync(Guid meetingId)
-    {
-        _db.MeetingSessions.Add(new MeetingSession
-        {
-            MeetingId = meetingId,
-            Title = "Phiên họp kế hoạch",
-            PlannedStartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
-            PlannedEndsAt = new DateTimeOffset(2026, 10, 1, 3, 0, 0, TimeSpan.Zero),
-            Status = MeetingSessionStatus.Planned,
-        });
-        await _db.SaveChangesAsync();
-    }
 
     private static User NewUser(string fullName, Guid roleId, bool isActive = true) => new()
     {
@@ -223,17 +216,11 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             Mode = MeetingMode.InPerson,
             CreatedAt = createdAt ?? startsAt.AddDays(-1),
             UpdatedAt = createdAt ?? startsAt.AddDays(-1),
+            PlannedStartTime = startsAt,
+            PlannedEndTime = startsAt.AddHours(1),
             CreatedById = _creatorId,
             AssignedApproverId = approverId,
         };
-        meeting.Sessions.Add(new MeetingSession
-        {
-            Meeting = meeting,
-            Title = $"Phiên {title}",
-            PlannedStartsAt = startsAt,
-            PlannedEndsAt = startsAt.AddHours(1),
-            Status = MeetingSessionStatus.Planned,
-        });
         if (participantId is { } id)
         {
             meeting.Participants.Add(new MeetingParticipant
@@ -257,7 +244,6 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal("PostgreSQL meeting", meeting.Title);
         Assert.Equal(MeetingStatus.Draft, meeting.Status);
         Assert.Equal(_creatorId, meeting.CreatedById);
-        Assert.Empty(meeting.Sessions);
 
         var history = await verify.MeetingStatusHistory.SingleAsync(h => h.MeetingId == meeting.Id);
         Assert.Null(history.FromStatus);
@@ -598,7 +584,6 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             Assert.Null(persistedOriginal[index].NewOrganizerId);
         }
 
-        await AddPlannedSessionAsync(meetingId);
         var published = await replacementClient.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions",
             new { action = "Publish" });
         Assert.Equal(HttpStatusCode.OK, published.StatusCode);
@@ -668,7 +653,6 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             meetingId,
             new MeetingTransitionCommand(MeetingTransitionAction.Approve),
             approver.Id);
-        await AddPlannedSessionAsync(meetingId);
         var publish = await service.TransitionAsync(
             meetingId,
             new MeetingTransitionCommand(MeetingTransitionAction.Publish),
@@ -757,7 +741,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Development_workflow_demo_is_ready_and_can_be_published_after_planning_a_session_without_reseeding()
+    public async Task Development_workflow_demo_is_ready_and_can_be_published_without_reseeding()
     {
         // This fixture owns its database; remove its placeholder user to exercise a fresh dev seed.
         await _db.Users.Where(user => user.Id == _creatorId).ExecuteDeleteAsync();
@@ -790,7 +774,6 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var approved = await approverClient.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions",
             new { action = "Approve" });
         Assert.Equal(HttpStatusCode.OK, approved.StatusCode);
-        await AddPlannedSessionAsync(meetingId);
         var published = await organizerClient.PostAsJsonAsync($"/api/meetings/{meetingId}/transitions",
             new { action = "Publish" });
         Assert.Equal(HttpStatusCode.OK, published.StatusCode);
@@ -813,7 +796,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.All(invitations, email =>
         {
             Assert.False(string.IsNullOrWhiteSpace(email.DeduplicationKey));
-            Assert.Null(email.CalendarAttachment);
+            Assert.StartsWith("BEGIN:VCALENDAR", email.CalendarAttachment, StringComparison.Ordinal);
         });
         var expectedAddresses = invitations.Select(email => email.ToAddress).Order().ToArray();
         var expectedBodies = invitations.Select(email => email.Body).Order().ToArray();
@@ -875,7 +858,6 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
                 Response = InvitationResponse.Delegated,
             });
         await _db.SaveChangesAsync();
-        await AddPlannedSessionAsync(meetingId);
         using var app = new PostgreSqlMeetingApiFactory(_connectionString, failInvitationQueue: true);
         using var client = app.CreateClient();
         var user = await _db.Users.AsNoTracking().SingleAsync(item => item.Id == _creatorId);
@@ -986,7 +968,6 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             _creatorId)).Outcome);
         Assert.Equal(MeetingWorkflowOutcome.Success, (await service.TransitionAsync(
             meetingId, new MeetingTransitionCommand(MeetingTransitionAction.Approve), approver.Id)).Outcome);
-        await AddPlannedSessionAsync(meetingId);
         var published = await service.TransitionAsync(
             meetingId, new MeetingTransitionCommand(MeetingTransitionAction.Publish), _creatorId);
 
@@ -1001,7 +982,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.True(email.Subject.Length <= 300);
         Assert.DoesNotContain("\uFFFD", email.Subject);
         Assert.Contains(title, email.Body, StringComparison.Ordinal);
-        Assert.Null(email.CalendarAttachment);
+        Assert.StartsWith("BEGIN:VCALENDAR", email.CalendarAttachment, StringComparison.Ordinal);
         Assert.False(string.IsNullOrWhiteSpace(email.DeduplicationKey));
     }
 
@@ -1205,7 +1186,6 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             new MeetingTransitionCommand(MeetingTransitionAction.Approve),
             approver.Id)).Outcome);
 
-        await AddPlannedSessionAsync(meetingId);
         await using var competingContext = NewContext();
         var competingService = NewService(competingContext);
         var request1 = service.TransitionAsync(
@@ -1350,9 +1330,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
 
             var participantCanRead = meeting.Status is MeetingStatus.Published
                 or MeetingStatus.InProgress
-                or MeetingStatus.Ended
-                or MeetingStatus.MinutesIssued
-                or MeetingStatus.Archived;
+                or MeetingStatus.Ended;
             Assert.Equal(participantCanRead, await repository.FindAccessibleAsync(meeting.Id, participant.Id) is not null);
             Assert.Equal(participantCanRead, await repository.FindAccessibleAsync(meeting.Id, chair.Id) is not null);
             Assert.NotNull(await repository.FindAccessibleAsync(meeting.Id, secretary.Id));
@@ -1392,25 +1370,24 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var secretaryPage = await repository.FindAuthorizedPageAsync(secretary.Id, ListQuery());
         var unrelatedPage = await repository.FindAuthorizedPageAsync(unrelated.Id, ListQuery());
 
-        Assert.Equal(9, creatorPage.TotalCount);
-        Assert.Equal(9, creatorPage.Items.Count);
-        Assert.Equal(8, approverPage.TotalCount);
+        Assert.Equal(7, creatorPage.TotalCount);
+        Assert.Equal(7, creatorPage.Items.Count);
+        Assert.Equal(6, approverPage.TotalCount);
         Assert.DoesNotContain(approverPage.Items, item => item.Status == MeetingStatus.Draft);
-        Assert.Equal(5, participantPage.TotalCount);
+        Assert.Equal(3, participantPage.TotalCount);
         MeetingStatus[] publishedStatuses =
         [
             MeetingStatus.Published, MeetingStatus.InProgress, MeetingStatus.Ended,
-            MeetingStatus.MinutesIssued, MeetingStatus.Archived,
         ];
         Assert.All(participantPage.Items, item => Assert.Contains(item.Status, publishedStatuses));
-        Assert.Equal(5, chairPage.TotalCount);
+        Assert.Equal(3, chairPage.TotalCount);
         Assert.All(chairPage.Items, item => Assert.Contains(item.Status, publishedStatuses));
-        Assert.Equal(9, secretaryPage.TotalCount);
+        Assert.Equal(7, secretaryPage.TotalCount);
         Assert.Equal(0, unrelatedPage.TotalCount);
         Assert.Empty(unrelatedPage.Items);
         var approverFirst = await repository.FindAuthorizedPageAsync(
             approver.Id, ListQuery(pageSize: 2));
-        Assert.Equal(8, approverFirst.TotalCount);
+        Assert.Equal(6, approverFirst.TotalCount);
         Assert.Equal(2, approverFirst.Items.Count);
     }
 
@@ -1455,32 +1432,31 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Authorized_page_time_range_uses_overlapping_non_cancelled_sessions_without_duplicates()
+    public async Task Authorized_page_time_range_matches_meetings_whose_own_schedule_overlaps()
     {
+        // BR-30: [PlannedStartTime, PlannedEndTime] overlaps [from, to], both ends inclusive.
         var from = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero);
         var to = from.AddHours(1);
-        var overlapping = ListMeeting("Overlapping sessions", MeetingStatus.Draft, from.AddMinutes(-30));
-        overlapping.Sessions.Add(new MeetingSession
-        {
-            Meeting = overlapping,
-            Title = "Second overlap",
-            PlannedStartsAt = from.AddMinutes(15),
-            PlannedEndsAt = to.AddMinutes(15),
-            Status = MeetingSessionStatus.Planned,
-        });
-        var cancelledOnly = ListMeeting("Cancelled session", MeetingStatus.Draft, from);
-        Assert.Single(cancelledOnly.Sessions).Status = MeetingSessionStatus.Cancelled;
-        var noSessions = ListMeeting("No sessions", MeetingStatus.Draft, from);
-        noSessions.Sessions.Clear();
-        var outside = ListMeeting("Outside range", MeetingStatus.Draft, to.AddMinutes(1));
-        _db.Meetings.AddRange(overlapping, cancelledOnly, noSessions, outside);
+        var startsBefore = ListMeeting("Starts before", MeetingStatus.Draft, from.AddMinutes(-30));
+        var inside = ListMeeting("Inside", MeetingStatus.Draft, from.AddMinutes(15));
+        var endsAtFrom = ListMeeting("Ends exactly at from", MeetingStatus.Draft, from.AddHours(-1));
+        var spanning = ListMeeting("Spans the range", MeetingStatus.Draft, from.AddHours(-2));
+        spanning.PlannedEndTime = to.AddHours(2);
+        var endsBefore = ListMeeting("Ends before", MeetingStatus.Draft, from.AddHours(-1).AddMinutes(-1));
+        var startsAfter = ListMeeting("Starts after", MeetingStatus.Draft, to.AddMinutes(1));
+        _db.Meetings.AddRange(startsBefore, inside, endsAtFrom, spanning, endsBefore, startsAfter);
         await _db.SaveChangesAsync();
 
         var page = await new MeetingRepository(_db).FindAuthorizedPageAsync(
             _creatorId, ListQuery(from: from, to: to));
 
-        Assert.Equal(1, page.TotalCount);
-        Assert.Equal(overlapping.Id, Assert.Single(page.Items).Id);
+        Assert.Equal(
+            new[] { startsBefore.Id, inside.Id, endsAtFrom.Id, spanning.Id }.Order(),
+            page.Items.Select(item => item.Id).Order());
+        var item = page.Items.Single(row => row.Id == inside.Id);
+        Assert.Equal(from.AddMinutes(15), item.PlannedStartTime);
+        Assert.Equal(from.AddMinutes(75), item.PlannedEndTime);
+        Assert.Equal(MeetingMode.InPerson, item.Mode);
     }
 
     [Fact]
@@ -1505,7 +1481,9 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
                     (MeetingSortBy.Title, MeetingSortDirection.Asc) => all.OrderBy(m => m.Title),
                     (MeetingSortBy.Title, MeetingSortDirection.Desc) => all.OrderByDescending(m => m.Title),
                     (MeetingSortBy.CreatedAt, MeetingSortDirection.Asc) => all.OrderBy(m => m.CreatedAt),
-                    _ => all.OrderByDescending(m => m.CreatedAt),
+                    (MeetingSortBy.CreatedAt, MeetingSortDirection.Desc) => all.OrderByDescending(m => m.CreatedAt),
+                    (MeetingSortBy.PlannedStartTime, MeetingSortDirection.Asc) => all.OrderBy(m => m.PlannedStartTime),
+                    _ => all.OrderByDescending(m => m.PlannedStartTime),
                 };
                 var expected = sorted.ThenBy(m => m.Id).Select(m => m.Id).ToArray();
                 var firstPage = await repository.FindAuthorizedPageAsync(_creatorId,
@@ -1588,9 +1566,7 @@ public sealed class MeetingRepositoryVisibilityTests : IDisposable
                 await repository.FindAccessibleAsync(meeting.Id, approverId) is not null);
             var participantCanRead = meeting.Status is MeetingStatus.Published
                 or MeetingStatus.InProgress
-                or MeetingStatus.Ended
-                or MeetingStatus.MinutesIssued
-                or MeetingStatus.Archived;
+                or MeetingStatus.Ended;
             Assert.Equal(
                 participantCanRead,
                 await repository.FindAccessibleAsync(meeting.Id, participantId) is not null);

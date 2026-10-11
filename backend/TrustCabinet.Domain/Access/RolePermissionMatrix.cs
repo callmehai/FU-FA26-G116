@@ -3,7 +3,7 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Domain.Access;
 
 /// <summary>
-/// The whole role ↔ capability matrix as UC-09 shows it: every role, every capability it carries,
+/// The whole role ↔ capability matrix as UC-10 shows it: every role, every capability it carries,
 /// plus the catalogue of capabilities that exist at all so the screen can draw the columns.
 ///
 /// Both halves are needed because the screen is a grid. Sending only the granted pairs would make

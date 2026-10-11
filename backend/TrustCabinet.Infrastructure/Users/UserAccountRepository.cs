@@ -6,7 +6,7 @@ using TrustCabinet.Domain.Users;
 namespace TrustCabinet.Infrastructure.Users;
 
 /// <summary>
-/// UC-04 … UC-07's <c>:User Repository</c>. Queries only — every rule lives in
+/// UC-05 … UC-06c's <c>:User Repository</c>. Queries only — every rule lives in
 /// <see cref="UserService"/>.
 /// </summary>
 public sealed class UserAccountRepository(TrustCabinetDbContext db) : IUserAccountRepository

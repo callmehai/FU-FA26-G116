@@ -30,9 +30,7 @@ export interface ListState {
 }
 
 export const PAGE_SIZES = [10, 20, 50] as const
-// No `startsAt`: the schedule moved to meeting sessions (SCRUM-70). An old link sorting by it falls
-// back to the default rather than earning a 400.
-const SORT_COLUMNS: readonly MeetingSortBy[] = ['title', 'createdAt']
+const SORT_COLUMNS: readonly MeetingSortBy[] = ['title', 'plannedStartTime', 'createdAt']
 const DATE = /^\d{4}-\d{2}-\d{2}$/
 
 /** A name sorts A→Z first; a time sorts newest first. Same defaults as the backend. */
@@ -48,7 +46,7 @@ export const DEFAULT_STATE: ListState = {
   to: '',
   page: 1,
   pageSize: 20,
-  sortBy: 'createdAt',
+  sortBy: 'plannedStartTime',
   sortDir: 'desc',
 }
 

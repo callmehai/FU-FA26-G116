@@ -34,7 +34,7 @@ public sealed class EmailDeliveryTests
     }
 
     [Fact]
-    public async Task Published_meeting_is_queued_once_per_participant_without_a_calendar_attachment()
+    public async Task Published_meeting_is_queued_once_per_participant_with_its_schedule_and_a_calendar_file()
     {
         await using var db = NewDatabase();
         var meeting = PublishedMeeting();
@@ -58,8 +58,16 @@ public sealed class EmailDeliveryTests
             Assert.True(message.Subject.Length <= 300);
             Assert.Contains("Hình thức: Kết hợp", message.Body, StringComparison.Ordinal);
             Assert.Contains("Địa điểm:", message.Body, StringComparison.Ordinal);
+            Assert.Contains("Bắt đầu: ", message.Body, StringComparison.Ordinal);
+            Assert.Contains("Kết thúc: ", message.Body, StringComparison.Ordinal);
             Assert.Contains($"/mgmt/meetings/{meeting.Id:D}", message.Body, StringComparison.Ordinal);
-            Assert.Null(message.CalendarAttachment);
+            Assert.NotNull(message.CalendarAttachment);
+            Assert.Contains(
+                $"DTSTART:{meeting.PlannedStartTime.UtcDateTime:yyyyMMdd'T'HHmmss'Z'}",
+                message.CalendarAttachment, StringComparison.Ordinal);
+            Assert.Contains(
+                $"DTEND:{meeting.PlannedEndTime.UtcDateTime:yyyyMMdd'T'HHmmss'Z'}",
+                message.CalendarAttachment, StringComparison.Ordinal);
         });
         Assert.Equal(
             ["an@trustcabinet.local", "binh@trustcabinet.local"],
@@ -258,6 +266,8 @@ public sealed class EmailDeliveryTests
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.Hybrid,
             Location = "Phòng A / trực tuyến",
+            PlannedStartTime = Now.AddDays(1),
+            PlannedEndTime = Now.AddDays(1).AddHours(2),
             CreatedBy = creator,
             CreatedById = creator.Id,
         };

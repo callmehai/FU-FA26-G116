@@ -56,7 +56,7 @@ public class UserAccountRepositoryPostgresTests : IAsyncLifetime
     [Fact]
     public async Task The_active_email_is_read_from_the_row_not_from_the_tracked_entity()
     {
-        // UC-08 loads the account, spends up to a minute sending the email, then asks again. If
+        // UC-07 loads the account, spends up to a minute sending the email, then asks again. If
         // another administrator changed the row meanwhile, the answer must be the row's — an
         // entity query would return the instance this context already tracks, old values and all.
         var user = new User

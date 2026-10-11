@@ -1,11 +1,11 @@
 namespace TrustCabinet.Domain.Users;
 
 /// <summary>
-/// UC-08's <c>:Email Service</c> — delivers the reset link to the account's registered address.
+/// UC-07's <c>:Email Service</c> — delivers the reset link to the account's registered address.
 ///
 /// Sends while the administrator waits rather than through the <c>email_messages</c> queue. The
 /// queue stores the body, and this body carries a live credential that would then sit in the
-/// database long after the link expired; and UC-08's MSG15 ("unable to send") has to be answered
+/// database long after the link expired; and UC-07's MSG15 ("unable to send") has to be answered
 /// in the same request, which a queue cannot do.
 /// </summary>
 public interface IPasswordResetEmailSender

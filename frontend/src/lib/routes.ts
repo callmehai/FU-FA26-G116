@@ -9,7 +9,7 @@
  */
 export const routes = {
   login: '/login',
-  // Public: opened from the UC-08 email; the token travels in the fragment, never the query.
+  // Public: opened from the UC-07 email; the token travels in the fragment, never the query.
   resetPassword: '/reset-password',
 
   mgmt: '/mgmt',

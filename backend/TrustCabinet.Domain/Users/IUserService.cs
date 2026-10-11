@@ -1,7 +1,7 @@
 namespace TrustCabinet.Domain.Users;
 
 /// <summary>
-/// The <c>:User Service</c> participant of UC-04 … UC-07. Owns every rule about user accounts:
+/// The <c>:User Service</c> participant of UC-05 … UC-06c. Owns every rule about user accounts:
 /// what makes one valid, whether an email is free, whether a status change is allowed, and what
 /// gets written to the audit log when one goes through.
 ///
@@ -11,20 +11,20 @@ namespace TrustCabinet.Domain.Users;
 public interface IUserService
 {
     /// <summary>
-    /// UC-04 — every account, sorted. Returns all of them: the organisation is one workspace with
+    /// UC-05 — every account, sorted. Returns all of them: the organisation is one workspace with
     /// a countable staff (ADR-0004), so paging would be machinery for a list nobody scrolls.
     /// ponytail: no paging. Add it if this list ever outgrows a screenful in practice.
     /// </summary>
     Task<IReadOnlyCollection<UserAccount>> ListAsync(CancellationToken ct = default);
 
     /// <summary>
-    /// UC-06's first half — the current values, to fill the edit form with.
+    /// UC-06b's first half — the current values, to fill the edit form with.
     /// <see cref="UserOutcome.NotFound"/> when no such account.
     /// </summary>
     Task<UserResult> GetAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
-    /// UC-05 — creates an active account. <paramref name="actorId"/> is the administrator doing
+    /// UC-06a — creates an active account. <paramref name="actorId"/> is the administrator doing
     /// it, recorded in the audit entry.
     ///
     /// The created account signs in with a password. A Google-only account is not created here:
@@ -34,7 +34,7 @@ public interface IUserService
     Task<UserResult> CreateAsync(NewUser request, Guid actorId, CancellationToken ct = default);
 
     /// <summary>
-    /// UC-06's second half — name, email and role. Not the status: that is UC-07, which also has
+    /// UC-06b's second half — name, email and role. Not the status: that is UC-06c, which also has
     /// to end the person's sessions, so mixing the two would make it possible to deactivate
     /// someone while leaving them signed in.
     /// </summary>
@@ -42,7 +42,7 @@ public interface IUserService
         Guid id, UserEdit request, Guid actorId, CancellationToken ct = default);
 
     /// <summary>
-    /// UC-07 — deactivate or reactivate. Deactivating also ends every session the account holds,
+    /// UC-06c — deactivate or reactivate. Deactivating also ends every session the account holds,
     /// because a row marked inactive while its access token still works is not deactivated in any
     /// sense that matters.
     ///
@@ -55,7 +55,7 @@ public interface IUserService
         Guid id, bool isActive, Guid actorId, CancellationToken ct = default);
 
     /// <summary>
-    /// UC-08 — emails the account a single-use link to choose a new password. The current password
+    /// UC-07 — emails the account a single-use link to choose a new password. The current password
     /// keeps working until the link is used: an administrator pressing the button must not be able
     /// to lock someone out.
     ///
@@ -67,7 +67,7 @@ public interface IUserService
         Guid id, Guid actorId, CancellationToken ct = default);
 
     /// <summary>
-    /// The other end of UC-08's link: the person sets a new password with the token from the email.
+    /// The other end of UC-07's link: the person sets a new password with the token from the email.
     /// Spends the token and ends every session of the account. Anonymous — the token is the proof.
     ///
     /// <see cref="UserOutcome.PasswordResetLinkInvalid"/> for a dead link,
@@ -79,14 +79,14 @@ public interface IUserService
 }
 
 /// <summary>
-/// What UC-05 collects. Nullable strings: a missing field is a validation error, not a 400.
+/// What UC-06a collects. Nullable strings: a missing field is a validation error, not a 400.
 /// <paramref name="RoleId"/> is <see cref="Guid.Empty"/> when the caller sent none or an
 /// unreadable one — it matches no role, so it lands on the same "Vai trò không tồn tại." message.
 /// </summary>
 public sealed record NewUser(string? FullName, string? Email, string? Password, Guid RoleId);
 
 /// <summary>
-/// What UC-06 collects. No password: changing someone else's password is UC-08, and no
+/// What UC-06b collects. No password: changing someone else's password is UC-07, and no
 /// administrator screen should be able to set one silently while editing a name.
 /// </summary>
 public sealed record UserEdit(string? FullName, string? Email, Guid RoleId);

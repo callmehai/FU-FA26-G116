@@ -154,7 +154,7 @@ public class RolePermissionEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    // ------------------------------------------------------ UC-09 · View the matrix
+    // ------------------------------------------------------ UC-10 · View the matrix
 
     [Fact]
     public async Task Get_returns_the_matrix_and_the_catalogue()
@@ -206,7 +206,7 @@ public class RolePermissionEndpointsTests : IDisposable
         });
     }
 
-    // --------------------------------------------------- UC-10 · Configure role permissions
+    // --------------------------------------------------- UC-11 · Configure role permissions
 
     [Fact]
     public async Task Put_answers_MSG16_and_returns_the_updated_matrix()
