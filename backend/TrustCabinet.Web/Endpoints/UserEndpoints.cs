@@ -6,7 +6,7 @@ using TrustCabinet.Infrastructure.Authentication;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// UC-04 … UC-08's <c>:User Controller</c> — turns HTTP into a call on <see cref="IUserService"/>,
+/// UC-05 … UC-07's <c>:User Controller</c> — turns HTTP into a call on <see cref="IUserService"/>,
 /// and an outcome into a status code and a message code.
 ///
 /// It holds no rules of its own, exactly like <c>AuthEndpoints</c>: which branch applies is the
@@ -15,7 +15,7 @@ namespace TrustCabinet.Web.Endpoints;
 public static class UserEndpoints
 {
     /// <summary>
-    /// Message codes from the UC-05 … UC-08 specifications. The response carries the code and a
+    /// Message codes from the UC-06a … UC-07 specifications. The response carries the code and a
     /// Vietnamese message: the code is what the frontend and the tester match on, so rewording the
     /// text never breaks either.
     /// </summary>
@@ -47,11 +47,11 @@ public static class UserEndpoints
         users.MapGet("/{id:guid}", GetAsync);
         users.MapPost("/", CreateAsync);
         users.MapPut("/{id:guid}", UpdateAsync);
-        // Status and the profile are separate resources: UC-06 and UC-07 are separate use cases
+        // Status and the profile are separate resources: UC-06b and UC-06c are separate use cases
         // with different rules, and a single PUT would make it possible to deactivate someone as a
         // side effect of renaming them.
         users.MapPut("/{id:guid}/status", ChangeStatusAsync);
-        // UC-08. POST, not PUT: each call issues a new link and sends another email, so it is
+        // UC-07. POST, not PUT: each call issues a new link and sends another email, so it is
         // neither idempotent nor an update of something the caller describes.
         users.MapPost("/{id:guid}/password-reset", RequestPasswordResetAsync);
 
@@ -68,11 +68,11 @@ public static class UserEndpoints
     /// </summary>
     public static string AdminUsersPolicy => AdminCallerRevalidation.AdminUsersPolicy;
 
-    /// <summary>UC-04 — the whole list, sorted, as the service returns it.</summary>
+    /// <summary>UC-05 — the whole list, sorted, as the service returns it.</summary>
     private static async Task<IResult> ListAsync(IUserService users, CancellationToken ct)
         => Results.Ok((await users.ListAsync(ct)).Select(UserResponse.From));
 
-    /// <summary>UC-06's first half — the values the edit form starts from.</summary>
+    /// <summary>UC-06b's first half — the values the edit form starts from.</summary>
     private static async Task<IResult> GetAsync(Guid id, IUserService users, CancellationToken ct)
     {
         var result = await users.GetAsync(id, ct);
@@ -130,7 +130,7 @@ public static class UserEndpoints
     }
 
     /// <summary>
-    /// UC-07 — both directions. One endpoint rather than /deactivate and /reactivate: the two
+    /// UC-06c — both directions. One endpoint rather than /deactivate and /reactivate: the two
     /// branches of the diagram differ only in which value is written and whether sessions end,
     /// and both answer MSG11.
     /// </summary>
@@ -167,7 +167,7 @@ public static class UserEndpoints
     }
 
     /// <summary>
-    /// UC-08 — emails the account a link to set a new password. No body: the administrator only
+    /// UC-07 — emails the account a link to set a new password. No body: the administrator only
     /// confirms, they never see or choose the password.
     /// </summary>
     private static async Task<IResult> RequestPasswordResetAsync(
@@ -249,15 +249,15 @@ public static class UserEndpoints
         => Guid.TryParse(roleId, out var parsed) ? parsed : Guid.Empty;
 }
 
-/// <summary>UC-05's form. Nullable so a missing field is a field-level message, not a 400.</summary>
+/// <summary>UC-06a's form. Nullable so a missing field is a field-level message, not a 400.</summary>
 public sealed record CreateUserRequest(
     string? FullName, string? Email, string? Password, string? RoleId);
 
-/// <summary>UC-06's form. No password — changing one is UC-08.</summary>
+/// <summary>UC-06b's form. No password — changing one is UC-07.</summary>
 public sealed record UpdateUserRequest(string? FullName, string? Email, string? RoleId);
 
 /// <summary>
-/// UC-07's action. True reactivates, false deactivates.
+/// UC-06c's action. True reactivates, false deactivates.
 ///
 /// Nullable, like the other two request records: a non-nullable bool binds a missing or
 /// misspelled field to <c>false</c>, so <c>{}</c> — or <c>{"is_active": true}</c> from a client

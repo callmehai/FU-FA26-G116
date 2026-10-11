@@ -49,6 +49,7 @@ public static class MeetingEndpoints
     private const string Msg134OrganizerInvalid = "MSG134";
     private const string Msg135OrganizerTransferConflict = "MSG135";
     private const string Msg137PublishRosterNotReady = "MSG137";
+    private const string Msg138Rescheduled = "MSG138";
 
     public static IEndpointRouteBuilder MapMeetingEndpoints(this IEndpointRouteBuilder app)
     {
@@ -522,6 +523,10 @@ public static class MeetingEndpoints
 
         return result.Outcome switch
         {
+            MeetingOutcome.Success when result.Rescheduled => Results.Ok(new MeetingMutationResponse(
+                Msg138Rescheduled,
+                "Đã dời lịch cuộc họp. Người được mời sẽ nhận thông báo.",
+                MeetingResponse.From(result.Meeting!))),
             MeetingOutcome.Success => Results.Ok(new MeetingMutationResponse(
                 Msg30Updated, "Cập nhật cuộc họp thành công.", MeetingResponse.From(result.Meeting!))),
             MeetingOutcome.InvalidInformation => Invalid(result),
@@ -603,27 +608,38 @@ public static class MeetingEndpoints
             new MeetingErrorResponse(code, message),
             statusCode: StatusCodes.Status503ServiceUnavailable);
 
-    private static readonly MeetingInput EmptyInput = new(null, null, null, null, null);
+    private static readonly MeetingInput EmptyInput = new(null, null, null, null, null, null, null, null);
 }
 
-/// <summary>The only caller-editable meeting fields. State, identity and timestamps are server-owned.</summary>
+/// <summary>
+/// The only caller-editable meeting fields. State, identity, actual times and audit timestamps are
+/// server-owned. Times are ISO 8601 with an offset.
+/// </summary>
 public sealed record MeetingRequest(
     string? Title,
+    string? PlannedStartTime,
+    string? PlannedEndTime,
     string? Mode,
     string? Location,
+    string? OnlineLink,
     string? Sensitivity,
     string? Description)
 {
     public MeetingInput ToInput() => new(
-        Title, Mode, Location, Sensitivity, Description);
+        Title, PlannedStartTime, PlannedEndTime, Mode, Location, OnlineLink, Sensitivity, Description);
 }
 
 public sealed record MeetingResponse(
     Guid Id,
     string Title,
     string Description,
+    DateTimeOffset PlannedStartTime,
+    DateTimeOffset PlannedEndTime,
+    DateTimeOffset? ActualStartedAt,
+    DateTimeOffset? ActualEndedAt,
     string Mode,
     string Location,
+    string? OnlineLink,
     string Sensitivity,
     string Status,
     Guid CreatedById,
@@ -635,8 +651,13 @@ public sealed record MeetingResponse(
         meeting.Id,
         meeting.Title,
         meeting.Description,
+        meeting.PlannedStartTime,
+        meeting.PlannedEndTime,
+        meeting.ActualStartedAt,
+        meeting.ActualEndedAt,
         meeting.Mode.ToString(),
         meeting.Location,
+        meeting.OnlineLink,
         meeting.Sensitivity.ToString(),
         meeting.Status.ToString(),
         meeting.CreatedById,
@@ -650,13 +671,17 @@ public sealed record MeetingMutationResponse(string Code, string Message, Meetin
 public sealed record MeetingListItemResponse(
     Guid Id,
     string Title,
+    DateTimeOffset PlannedStartTime,
+    DateTimeOffset PlannedEndTime,
+    string Mode,
+    string Location,
     DateTimeOffset CreatedAt,
     string Status,
     string Sensitivity)
 {
     public static MeetingListItemResponse From(MeetingListItem item) => new(
-        item.Id, item.Title, item.CreatedAt,
-        item.Status.ToString(), item.Sensitivity.ToString());
+        item.Id, item.Title, item.PlannedStartTime, item.PlannedEndTime, item.Mode.ToString(), item.Location,
+        item.CreatedAt, item.Status.ToString(), item.Sensitivity.ToString());
 }
 
 public sealed record MeetingListResponse(

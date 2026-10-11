@@ -57,7 +57,7 @@ public static class AuthEndpoints
         auth.MapPost("/refresh", RefreshAsync).AllowAnonymous();
         auth.MapPost("/logout", SignOutAsync).AllowAnonymous();
         auth.MapGet("/me", Me).RequireAuthorization();
-        // UC-08's link lands here. Anonymous: the token in the body is the proof, and someone who
+        // UC-07's link lands here. Anonymous: the token in the body is the proof, and someone who
         // has forgotten their password has no session to send.
         auth.MapPost("/password-reset", ResetPasswordAsync).AllowAnonymous();
 
@@ -163,7 +163,7 @@ public static class AuthEndpoints
     }
 
     /// <summary>
-    /// The second half of UC-08 — the person sets a new password with the token from the email.
+    /// The second half of UC-07 — the person sets a new password with the token from the email.
     /// Not a sign-in: no tokens are issued, so the person signs in afterwards with the password
     /// they just chose, which proves they remember it.
     /// </summary>
@@ -308,7 +308,7 @@ public sealed record GoogleSignInRequest(string? IdToken);
 public sealed record AuthErrorResponse(string Code, string Message);
 
 /// <summary>
-/// UC-08's link: the token from the email's fragment and the new password. Nullable so a missing
+/// UC-07's link: the token from the email's fragment and the new password. Nullable so a missing
 /// field is MSG93 or MSG94, not a 400 from the model binder.
 /// </summary>
 public sealed record ResetPasswordRequest(string? Token, string? NewPassword);

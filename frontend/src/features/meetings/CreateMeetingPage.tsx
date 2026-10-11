@@ -8,8 +8,8 @@ import { useAccessLost } from '../auth/useAccessLost'
 import { MeetingForm } from './MeetingForm'
 
 /**
- * UC-11 Create Meeting (SCRUM-17). The meeting is saved as a draft; attendees, agenda and the
- * request for approval come afterwards, from the detail page.
+ * UC-14 Create Meeting. The meeting is saved as a draft with its own schedule; attendees, agenda and
+ * the request for approval come afterwards, from the detail page.
  */
 export function CreateMeetingPage() {
   const navigate = useNavigate()

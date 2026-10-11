@@ -6,7 +6,7 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// UC-09 and UC-10's <c>:Role Permission Controller</c> (SCRUM-60) — turns HTTP into a call on
+/// UC-10 and UC-11's <c>:Role Permission Controller</c> (SCRUM-60) — turns HTTP into a call on
 /// <see cref="IRolePermissionService"/>, and an outcome into a status code and a message code.
 ///
 /// It holds no rules of its own, exactly like <c>UserEndpoints</c>: which branch applies is the
@@ -15,7 +15,7 @@ namespace TrustCabinet.Web.Endpoints;
 public static class RolePermissionEndpoints
 {
     /// <summary>
-    /// Message codes from the UC-10 specification. The response carries the code and a Vietnamese
+    /// Message codes from the UC-11 specification. The response carries the code and a Vietnamese
     /// message: the code is what the frontend and the tester match on, so rewording the text never
     /// breaks either.
     /// </summary>
@@ -39,13 +39,13 @@ public static class RolePermissionEndpoints
         return app;
     }
 
-    /// <summary>UC-09 — the matrix and the capability catalogue, as the service returns them.</summary>
+    /// <summary>UC-10 — the matrix and the capability catalogue, as the service returns them.</summary>
     private static async Task<IResult> GetMatrixAsync(
         IRolePermissionService roles, CancellationToken ct)
         => Results.Ok(MatrixResponse.From(await roles.GetMatrixAsync(ct)));
 
     /// <summary>
-    /// UC-10 — sets exactly which capabilities one role carries.
+    /// UC-11 — sets exactly which capabilities one role carries.
     ///
     /// PUT of one role's row rather than of the whole matrix: the screen toggles a cell, and a
     /// whole-matrix PUT would make two administrators saving different rows overwrite each other.
@@ -128,7 +128,7 @@ public static class RolePermissionEndpoints
 }
 
 /// <summary>
-/// UC-10's submission: one role, by id, and exactly the capabilities it should end up with.
+/// UC-11's submission: one role, by id, and exactly the capabilities it should end up with.
 ///
 /// <paramref name="RoleId"/> is a string so an unreadable id is a validation message rather than
 /// a 400 from the model binder. <paramref name="Capabilities"/> is nullable so a missing list is a
@@ -137,7 +137,7 @@ public static class RolePermissionEndpoints
 public sealed record UpdateRolePermissionsRequest(string? RoleId, IReadOnlyCollection<string>? Capabilities);
 
 /// <summary>
-/// The matrix on the wire — UC-09's answer, and what a successful UC-10 returns so the screen does
+/// The matrix on the wire — UC-10's answer, and what a successful UC-11 returns so the screen does
 /// not need a second call.
 /// </summary>
 public sealed record MatrixResponse(
@@ -176,7 +176,7 @@ public sealed record RolePermissionsResponse(
         [.. role.Capabilities.Select(c => c.ToString())]);
 }
 
-/// <summary>What a successful UC-10 returns: the message code, and the matrix as it now stands.</summary>
+/// <summary>What a successful UC-11 returns: the message code, and the matrix as it now stands.</summary>
 public sealed record MatrixMutationResponse(string Code, string Message, MatrixResponse Matrix);
 
 /// <summary>

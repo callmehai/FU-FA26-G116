@@ -39,14 +39,28 @@ public class MeetingServiceTests
     private MeetingService NewService()
         => new(_repository, NullLogger<MeetingService>.Instance);
 
+    private static readonly DateTimeOffset FutureStart =
+        new(DateTimeOffset.UtcNow.Date.AddDays(7).AddHours(2), TimeSpan.Zero);
+
+    private static string Iso(DateTimeOffset value)
+        => value.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", System.Globalization.CultureInfo.InvariantCulture);
+
     private static MeetingInput ValidInput(
         string title = "Giao ban tuần",
         string? mode = "InPerson",
         string location = "Phòng họp A",
         string? sensitivity = "Internal",
-        string description = "Nội dung")
+        string description = "Nội dung",
+        DateTimeOffset? start = null)
         => new(
-            title, mode, location, sensitivity, description);
+            title,
+            Iso(start ?? FutureStart),
+            Iso((start ?? FutureStart).AddHours(1)),
+            mode,
+            location,
+            null,
+            sensitivity,
+            description);
 
     private Meeting GivenMeeting(MeetingStatus status = MeetingStatus.Draft, Guid? creatorId = null)
     {
@@ -58,6 +72,8 @@ public class MeetingServiceTests
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.InPerson,
             Location = "Phòng họp A",
+            PlannedStartTime = FutureStart,
+            PlannedEndTime = FutureStart.AddHours(1),
             CreatedById = creatorId ?? _actorId,
         };
         _repository.Meetings.Add(meeting);
@@ -120,7 +136,6 @@ public class MeetingServiceTests
         Assert.Equal("Có\nxuống dòng", meeting.Description);
         Assert.Equal(MeetingStatus.Draft, meeting.Status);
         Assert.Equal(_actorId, meeting.CreatedById);
-        Assert.Empty(meeting.Sessions);
         var history = Assert.Single(meeting.StatusHistory);
         Assert.Null(history.FromStatus);
         Assert.Equal(MeetingStatus.Draft, history.ToStatus);
@@ -154,7 +169,52 @@ public class MeetingServiceTests
         Assert.Equal(300, meeting.Title.Length);
         Assert.Equal(300, meeting.Location.Length);
         Assert.Equal(4000, meeting.Description.Length);
-        Assert.Empty(meeting.Sessions);
+    }
+
+    [Fact]
+    public async Task Create_stores_the_planned_schedule_in_utc()
+    {
+        var input = ValidInput() with
+        {
+            PlannedStartTime = "2099-03-01T09:00:00+07:00",
+            PlannedEndTime = "2099-03-01T10:30:00+07:00",
+            OnlineLink = "  https://meet.example.vn/x  ",
+        };
+
+        var result = await NewService().CreateAsync(input, _actorId);
+
+        Assert.True(result.Succeeded);
+        var meeting = Assert.Single(_repository.Meetings);
+        Assert.Equal(new DateTimeOffset(2099, 3, 1, 2, 0, 0, TimeSpan.Zero), meeting.PlannedStartTime);
+        Assert.Equal(TimeSpan.Zero, meeting.PlannedStartTime.Offset);
+        Assert.Equal(new DateTimeOffset(2099, 3, 1, 3, 30, 0, TimeSpan.Zero), meeting.PlannedEndTime);
+        Assert.Equal("https://meet.example.vn/x", meeting.OnlineLink);
+        Assert.Null(meeting.ActualStartedAt);
+    }
+
+    [Theory]
+    [InlineData("2099-03-01 09:00")]
+    [InlineData("2099-03-01T09:00:00")]
+    [InlineData("not a time")]
+    public async Task Create_rejects_a_time_without_an_offset(string start)
+    {
+        var result = await NewService().CreateAsync(ValidInput() with { PlannedStartTime = start }, _actorId);
+
+        Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
+        Assert.Contains("plannedStartTime", result.Errors!.Keys);
+    }
+
+    [Fact]
+    public async Task Update_of_a_draft_keeps_a_start_that_has_already_passed()
+    {
+        var meeting = GivenMeeting();
+        var past = DateTimeOffset.UtcNow.AddDays(-1);
+
+        var result = await NewService().UpdateAsync(meeting.Id, ValidInput(start: past), _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.False(result.Rescheduled);
+        Assert.Equal(past.ToUnixTimeSeconds(), meeting.PlannedStartTime.ToUnixTimeSeconds());
     }
 
     [Fact]
@@ -162,6 +222,9 @@ public class MeetingServiceTests
     {
         var input = new MeetingInput(
             "Giao ban tuần",
+            Iso(FutureStart),
+            Iso(FutureStart.AddHours(1)),
+            null,
             null,
             null,
             null,
@@ -280,12 +343,9 @@ public class MeetingServiceTests
     [Theory]
     [InlineData(MeetingStatus.WaitingApproval)]
     [InlineData(MeetingStatus.Approved)]
-    [InlineData(MeetingStatus.Published)]
     [InlineData(MeetingStatus.InProgress)]
     [InlineData(MeetingStatus.Ended)]
-    [InlineData(MeetingStatus.MinutesIssued)]
-    [InlineData(MeetingStatus.Archived)]
-    public async Task Update_rejects_a_meeting_outside_draft_or_rejected(MeetingStatus status)
+    public async Task Update_rejects_a_meeting_outside_draft_rejected_or_published(MeetingStatus status)
     {
         var meeting = GivenMeeting(status);
         var oldTitle = meeting.Title;

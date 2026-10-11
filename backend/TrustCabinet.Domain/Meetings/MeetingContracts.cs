@@ -6,16 +6,22 @@ namespace TrustCabinet.Domain.Meetings;
 /// <summary>The fields a meeting creator may set or change through the meeting form.</summary>
 public sealed record MeetingInput(
     string? Title,
+    string? PlannedStartTime,
+    string? PlannedEndTime,
     string? Mode,
     string? Location,
+    string? OnlineLink,
     string? Sensitivity,
     string? Description);
 
 /// <summary>A validated and normalized form value, ready to persist.</summary>
 public sealed record ValidatedMeetingInput(
     string Title,
+    DateTimeOffset PlannedStartTime,
+    DateTimeOffset PlannedEndTime,
     MeetingMode Mode,
     string Location,
+    string? OnlineLink,
     Sensitivity Sensitivity,
     string Description);
 
@@ -37,8 +43,13 @@ public sealed record MeetingDetails(
     Guid Id,
     string Title,
     string Description,
+    DateTimeOffset PlannedStartTime,
+    DateTimeOffset PlannedEndTime,
+    DateTimeOffset? ActualStartedAt,
+    DateTimeOffset? ActualEndedAt,
     MeetingMode Mode,
     string Location,
+    string? OnlineLink,
     Sensitivity Sensitivity,
     MeetingStatus Status,
     Guid CreatedById,
@@ -50,8 +61,13 @@ public sealed record MeetingDetails(
         meeting.Id,
         meeting.Title,
         meeting.Description,
+        meeting.PlannedStartTime,
+        meeting.PlannedEndTime,
+        meeting.ActualStartedAt,
+        meeting.ActualEndedAt,
         meeting.Mode,
         meeting.Location,
+        meeting.OnlineLink,
         meeting.Sensitivity,
         meeting.Status,
         meeting.CreatedById,
@@ -70,14 +86,17 @@ public enum MeetingOutcome
     ReadFailed,
 }
 
+/// <param name="Rescheduled">True when a Published meeting's schedule changed and invitees were notified.</param>
 public sealed record MeetingResult(
     MeetingOutcome Outcome,
     MeetingDetails? Meeting = null,
-    IReadOnlyDictionary<string, string>? Errors = null)
+    IReadOnlyDictionary<string, string>? Errors = null,
+    bool Rescheduled = false)
 {
     public bool Succeeded => Outcome == MeetingOutcome.Success;
 
-    public static MeetingResult Success(MeetingDetails meeting) => new(MeetingOutcome.Success, meeting);
+    public static MeetingResult Success(MeetingDetails meeting, bool rescheduled = false)
+        => new(MeetingOutcome.Success, meeting, Rescheduled: rescheduled);
 
     public static MeetingResult Failure(MeetingOutcome outcome) => new(outcome);
 

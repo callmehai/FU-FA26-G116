@@ -17,9 +17,7 @@ public static class MeetingReadPolicy
                 && (participant.Role == MeetingRole.Secretary
                     || meeting.Status == MeetingStatus.Published
                     || meeting.Status == MeetingStatus.InProgress
-                    || meeting.Status == MeetingStatus.Ended
-                    || meeting.Status == MeetingStatus.MinutesIssued
-                    || meeting.Status == MeetingStatus.Archived));
+                    || meeting.Status == MeetingStatus.Ended));
 
     private static readonly Func<Meeting, Guid, bool> Read = ReadExpression.Compile();
 

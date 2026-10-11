@@ -27,7 +27,7 @@ các bước tương ứng, còn sequence thể hiện cùng BR ID và message c
 
 ## Mã tiếp theo
 
-**`MSG138`** — workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; `MSG90`–`MSG91` ngừng dùng, không tái cấp. `MSG48`–`MSG77` và `MSG95`–`MSG128` đã dành cho Meeting Session, Agenda, participant, room và các màn đọc liên quan. Đặt lại mật khẩu UC-08 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG140`** — workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`; `MSG139` dành cho UC-22. `MSG90`–`MSG91` ngừng dùng, không tái cấp. `MSG60`–`MSG76` và `MSG95`–`MSG128` đã dành cho Agenda, participant, room và các màn đọc liên quan; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -47,7 +47,7 @@ Trạng thái: **BE** = backend trả trong body JSON · **FE** = FE tự hiển
 | `MSG05` | 401 | `POST /google` | Google xác thực OK nhưng không có tài khoản nội bộ nào liên kết/tự liên kết được | `Tài khoản Google này chưa được cấp quyền truy cập hệ thống.` | BE |
 | `MSG06` | — | — (FE, sau `POST /logout`) | `/logout` không tới được server, phiên được giữ nguyên | `Không thể đăng xuất. Vui lòng thử lại.` | FE |
 
-### Đặt lại mật khẩu qua liên kết — nửa sau của UC-08 (`/api/auth/password-reset`)
+### Đặt lại mật khẩu qua liên kết — nửa sau của UC-07 (`/api/auth/password-reset`)
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
@@ -56,14 +56,14 @@ Trạng thái: **BE** = backend trả trong body JSON · **FE** = FE tự hiển
 | `MSG94` | 400 | `POST /api/auth/password-reset` | Mật khẩu mới không hợp lệ — kèm `errors.newPassword` | `Mật khẩu mới không hợp lệ.` | BE |
 | `MSG129` | — | — (FE, trang `/reset-password` không có `#token=`) | Trang không có token: liên kết thiếu token, hoặc tải lại / mở lại thẻ sau khi FE đã xoá token khỏi URL. **Khác `MSG93`**: liên kết có thể vẫn dùng được, nên không gọi API và không bảo "hết hạn" | `Không tìm thấy mã đặt lại mật khẩu. Hãy bấm lại liên kết trong email.` | FE |
 
-Đặc tả UC-08 chỉ có nửa "quản trị viên gửi liên kết"; bốn mã này là của nửa "người dùng mở liên kết",
-đặc tả và sơ đồ chưa vẽ. Ghi lại để BA bổ sung ở `BA Final Review`.
+Bốn mã này là của nửa "người dùng mở liên kết". Đặc tả UC-07 đã có đủ (EX-4 → EX-6); sequence diagram
+vẫn chỉ vẽ nửa "quản trị viên gửi liên kết".
 
 `MSG01` dùng chung cho `/login` và `/refresh` có chủ ý: cùng tình huống "không xác thực được",
 chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã bỏ từ `SCRUM-63`
 ([ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md)) và **không có mã**.
 
-### Quản lý người dùng — UC-04 … UC-08 (`/api/users`)
+### Quản lý người dùng — UC-05 … UC-07 (`/api/users`)
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
@@ -77,7 +77,7 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG14` | 409 | `POST /api/users/{id}/password-reset` | Tài khoản không dùng được chức năng đặt lại mật khẩu (đã bị vô hiệu hoá, hoặc chưa có mật khẩu — chỉ đăng nhập bằng Google) | `Tài khoản này không dùng được chức năng đặt lại mật khẩu.` | BE |
 | `MSG15` | 503 | `POST /api/users/{id}/password-reset` | Không gửi được email đặt lại mật khẩu (SMTP tắt, không kết nối được, hoặc từ chối) | `Không gửi được email đặt lại mật khẩu. Vui lòng thử lại.` | BE |
 
-### Ma trận phân quyền — UC-09, UC-10 (`/api/roles/capabilities`)
+### Ma trận phân quyền — UC-10, UC-11 (`/api/roles/capabilities`)
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
@@ -85,7 +85,7 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG17` | 400 | `PUT /api/roles/capabilities` | Cấu hình không hợp lệ — kèm `errors` (`roleId`, `capabilities`, `adminUsers`) | `Cấu hình phân quyền không hợp lệ.` | BE |
 | `MSG18` | 500 | `PUT /api/roles/capabilities` | Database từ chối ghi | `Không thể cập nhật phân quyền. Vui lòng thử lại.` | BE |
 
-### Quản lý vai trò — UC-12, UC-13, UC-14 (`/api/roles`)
+### Quản lý vai trò — UC-12a, UC-12b, UC-12c (`/api/roles`)
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
@@ -100,7 +100,7 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG27` | 500 | `PUT /api/roles/{id}` | Database từ chối khi sửa | `Không thể cập nhật vai trò. Vui lòng thử lại.` | BE |
 | `MSG28` | 500 | `DELETE /api/roles/{id}` | Database từ chối khi xoá | `Không thể xoá vai trò. Vui lòng thử lại.` | BE |
 
-### Quản lý cuộc họp — UC-15 … UC-18 (`/api/meetings`)
+### Quản lý cuộc họp — UC-14 … UC-17 (`/api/meetings`)
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
@@ -109,7 +109,7 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG31` | 400 | `POST /api/meetings`, `PUT /api/meetings/{id}` | Thông tin không hợp lệ — kèm `errors`; PUT với JSON sai cú pháp thì không có `errors` | `Thông tin cuộc họp không hợp lệ.` / `Nội dung JSON không hợp lệ.` | BE |
 | `MSG32` | 400 | `GET /api/meetings` | Tiêu chí hiển thị danh sách cuộc họp không hợp lệ — kèm `errors` | `Tiêu chí danh sách cuộc họp không hợp lệ.` | BE |
 | `MSG33` | 409 | `PUT /api/meetings/{id}` | Cuộc họp không còn ở trạng thái sửa được | `Cuộc họp này không thể chỉnh sửa được nữa.` | BE |
-| `MSG34` | 415 | `PUT /api/meetings/{id}` | Lỗi kỹ thuật khi request không được gửi dưới dạng JSON — ngoài luồng nghiệp vụ UC-16 | `Content-Type phải là application/json.` | BE — phản hồi API kỹ thuật hiện hành |
+| `MSG34` | 415 | `PUT /api/meetings/{id}` | Lỗi kỹ thuật khi request không được gửi dưới dạng JSON — ngoài luồng nghiệp vụ UC-15 | `Content-Type phải là application/json.` | BE — phản hồi API kỹ thuật hiện hành |
 | `MSG35` | 500 | `POST /api/meetings` | Không lưu được khi tạo | `Không thể tạo cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG36` | 500 | `PUT /api/meetings/{id}` | Không lưu được khi sửa | `Không thể cập nhật cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG37` | 500 | `GET /api/meetings/{id}`, `PUT /api/meetings/{id}` | Không tải được chi tiết cuộc họp. Ở `GET` gồm cả lỗi khi kiểm tra tài khoản đang hoạt động; ở `PUT` chỉ khi bước kiểm tra trạng thái không đọc được cuộc họp | `Không thể tải thông tin cuộc họp. Vui lòng thử lại.` | BE |
@@ -118,14 +118,14 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 "Không tìm thấy cuộc họp" và "không có quyền xem cuộc họp" **không có mã**: API trả `404` không
 body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *403 hay 404*).
 
-### Thông báo trong ứng dụng — UC-22 … UC-25 (`/api/notifications`)
+### Thông báo trong ứng dụng — UC-66 … UC-68 (`/api/notifications`)
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
 | `MSG39` | 400 | `GET /api/notifications` | Không thể hiển thị phần danh sách thông báo được yêu cầu — kèm `errors` | `Trang thông báo được yêu cầu không khả dụng.` | BE |
 | `MSG40` | 500 | mọi endpoint `/api/notifications/*` | Lỗi database khi kiểm tra tài khoản đang hoạt động | `Không thể tải thông báo. Vui lòng thử lại.` | BE |
 
-### Luồng cuộc họp — UC-19, UC-20, UC-21 (`/api/meetings`)
+### Luồng cuộc họp — UC-18, UC-19, UC-20 (`/api/meetings`)
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
@@ -157,80 +157,82 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG135` | 409 | POST TransferOrganizer | Meeting không còn Approved hoặc Organizer hiện tại vẫn active | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
 | `MSG136` | 503 | GET readiness, GET history | Không tải được readiness/history | `Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG137` | 409 | POST Publish | Không có đúng một Chair active hoặc không có Secretary active | `Cuộc họp cần có đúng một Chủ tọa đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố.` | BE |
+| `MSG138` | 200 | `PUT /api/meetings/{id}` | Organizer dời lịch cuộc họp `Published` (UC-15 AF-1): thời gian, địa điểm hoặc link đã đổi và người được mời đã có thông báo. PUT không đổi gì vẫn trả `MSG30` | `Đã dời lịch cuộc họp. Người được mời sẽ nhận thông báo.` | BE |
 
 ### Dành sẵn, chưa có code
 
-Có trong sequence diagram cuộc họp nhưng chưa có endpoint. Người làm các use case này dùng đúng
+Có trong sequence diagram cuộc họp nhưng chưa có endpoint. Cột *Use case* theo danh mục 70 UC (10/10/2026); mã Meeting Session ghi số UC cũ. Người làm các use case này dùng đúng
 các mã dưới đây; `message` tiếng Việt đặt khi code.
 
 | Mã | Use case | Tình huống (theo sơ đồ) |
 |---|---|---|
-| `MSG48` | UC-26 Create Meeting Session | *Meeting session created successfully.* |
-| `MSG49` | UC-27 Update Meeting Session | *Meeting session updated successfully.* |
-| `MSG50` | UC-28 Cancel Meeting Session | *Meeting session cancelled successfully.* |
-| `MSG51` | UC-29 Start Meeting Session | *Meeting session started successfully.* |
-| `MSG52` | UC-30 End Meeting Session | *Meeting session ended successfully.* |
-| `MSG53` | UC-26 / UC-27 | *Invalid meeting session information.* |
-| `MSG54` | UC-26 | *Meeting sessions can no longer be added to this meeting.* |
-| `MSG55` | UC-27 | *This meeting session can no longer be edited.* |
-| `MSG56` | UC-28 | *This meeting session can no longer be cancelled.* |
-| `MSG57` | UC-29 | *Another meeting session is already in progress. End it before starting another session.* |
-| `MSG58` | UC-29 | *This meeting session cannot be started.* |
-| `MSG59` | UC-30 | *This meeting session cannot be ended.* |
-| `MSG60` | UC-31 Create Agenda Item | *Agenda item created successfully.* |
-| `MSG61` | UC-32 Update Agenda Item | *Agenda item updated successfully.* |
-| `MSG62` | UC-33 Delete Agenda Item | *Agenda item deleted successfully.* |
-| `MSG63` | UC-34 Reorder Agenda Items | *Agenda order updated successfully.* |
-| `MSG64` | UC-35 Set Current Agenda Item | *Current agenda item updated successfully.* |
-| `MSG65` | UC-36 Complete Agenda Item | *Agenda item completed successfully.* |
-| `MSG66` | UC-31 / UC-32 | *Invalid agenda item information.* (Các lỗi trường: *Agenda item title is required.*, *Planned duration must be greater than 0.*, *One or more selected documents are not available to this meeting.*) |
-| `MSG67` | UC-31 / UC-32 / UC-33 / UC-34 | *The agenda for this meeting session can no longer be modified.* |
-| `MSG68` | UC-31 | *Unable to create the agenda item. Please try again.* |
-| `MSG69` | UC-32 | *Unable to update the agenda item. Please try again.* |
-| `MSG70` | UC-33 | *Unable to delete the agenda item. Please try again.* |
-| `MSG71` | UC-34 | *Unable to update the agenda order. Please try again.* |
-| `MSG72` | UC-35 | *Another agenda item is already in progress. Complete it before starting another agenda item.* |
-| `MSG73` | UC-35 | *This agenda item cannot be set as current.* |
-| `MSG74` | UC-36 | *This agenda item cannot be completed.* |
-| `MSG75` | UC-35 | *Unable to set the current agenda item. Please try again.* |
-| `MSG76` | UC-36 | *Unable to complete the agenda item. Please try again.* |
-| `MSG77` | UC-28 | *The last planned meeting session of a published meeting cannot be cancelled.* |
-| `MSG90` | UC-21 Phát hành cuộc họp | *At least one valid planned Meeting Session is required before publication.* — **Ngừng dùng**; Report 3 source-of-truth xác định Meeting Sessions là tùy chọn. Không tái sử dụng mã. |
+| `MSG48` | ADR-0013 · Create Meeting Session (UC-26 cũ, đã bỏ) | *Meeting session created successfully.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG49` | ADR-0013 · Update Meeting Session (UC-27 cũ, đã bỏ) | *Meeting session updated successfully.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG50` | ADR-0013 · Cancel Meeting Session (UC-28 cũ, đã bỏ) | *Meeting session cancelled successfully.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG51` | ADR-0013 · Start Meeting Session (UC-29 cũ, đã bỏ) | *Meeting session started successfully.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG52` | ADR-0013 · End Meeting Session (UC-30 cũ, đã bỏ) | *Meeting session ended successfully.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG53` | ADR-0013 · Create / Update Meeting Session (UC-26 / UC-27 cũ, đã bỏ) | *Invalid meeting session information.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG54` | ADR-0013 · Create Meeting Session (UC-26 cũ, đã bỏ) | *Meeting sessions can no longer be added to this meeting.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG55` | ADR-0013 · Update Meeting Session (UC-27 cũ, đã bỏ) | *This meeting session can no longer be edited.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG56` | ADR-0013 · Cancel Meeting Session (UC-28 cũ, đã bỏ) | *This meeting session can no longer be cancelled.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG57` | ADR-0013 · Start Meeting Session (UC-29 cũ, đã bỏ) | *Another meeting session is already in progress. End it before starting another session.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG58` | ADR-0013 · Start Meeting Session (UC-29 cũ, đã bỏ) | *This meeting session cannot be started.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG59` | ADR-0013 · End Meeting Session (UC-30 cũ, đã bỏ) | *This meeting session cannot be ended.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG60` | UC-23a Create Agenda Item | *Agenda item created successfully.* |
+| `MSG61` | UC-23b Update Agenda Item | *Agenda item updated successfully.* |
+| `MSG62` | UC-23c Delete Agenda Item | *Agenda item deleted successfully.* |
+| `MSG63` | UC-23d Reorder Agenda Items | *Agenda order updated successfully.* |
+| `MSG64` | UC-24 Set Current Agenda Item | *Current agenda item updated successfully.* |
+| `MSG65` | UC-25 Complete Agenda Item | *Agenda item completed successfully.* |
+| `MSG66` | UC-23a / UC-23b | *Invalid agenda item information.* (Các lỗi trường: *Agenda item title is required.*, *Planned duration must be greater than 0.*, *One or more selected documents are not available to this meeting.*) |
+| `MSG67` | UC-23a / UC-23b / UC-23c / UC-23d | *The agenda for this meeting can no longer be modified.* |
+| `MSG68` | UC-23a | *Unable to create the agenda item. Please try again.* |
+| `MSG69` | UC-23b | *Unable to update the agenda item. Please try again.* |
+| `MSG70` | UC-23c | *Unable to delete the agenda item. Please try again.* |
+| `MSG71` | UC-23d | *Unable to update the agenda order. Please try again.* |
+| `MSG72` | UC-24 | *Another agenda item is already in progress. Complete it before starting another agenda item.* |
+| `MSG73` | UC-24 | *This agenda item cannot be set as current.* |
+| `MSG74` | UC-25 | *This agenda item cannot be completed.* |
+| `MSG75` | UC-24 | *Unable to set the current agenda item. Please try again.* |
+| `MSG76` | UC-25 | *Unable to complete the agenda item. Please try again.* |
+| `MSG77` | ADR-0013 · Cancel Meeting Session (UC-28 cũ, đã bỏ) | *The last planned meeting session of a published meeting cannot be cancelled.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG90` | UC-20 Công bố cuộc họp | *At least one valid planned Meeting Session is required before publication.* — **Ngừng dùng**; Report 3 source-of-truth xác định Meeting Sessions là tùy chọn. Không tái sử dụng mã. |
 | `MSG91` | SCRUM-19 | Mã từng được giữ cho workflow nhưng không còn tình huống backend — **Ngừng dùng**, không tái sử dụng. |
-| `MSG95` | UC-37 / UC-42 | *Unable to load meeting participants. Please try again.* |
-| `MSG96` | UC-38 Add Meeting Participant | *Meeting participant added successfully.* |
-| `MSG97` | UC-38 | *Invalid meeting participant information.* (Lỗi: *The selected user is not available.*, *This user is already a meeting participant.*, *A valid meeting role is required.*, *The Meeting Organizer must assign a Secretary as the first meeting participant.*, *Guest name and email are required.*, *Guest email is invalid.*, *This guest email is already invited to the meeting.*, *This email is already represented by an internal meeting participant.*) |
-| `MSG98` | UC-38 / UC-39 / UC-40 | *The meeting participant list cannot be modified in its current status.* |
-| `MSG99` | UC-38 | *Unable to add the meeting participant. Please try again.* |
-| `MSG100` | UC-39 Assign / Change Meeting Role | *Meeting role updated successfully.* |
-| `MSG101` | UC-39 | *A valid meeting role is required.* |
-| `MSG102` | UC-39 | *Unable to update the meeting role. Please try again.* |
-| `MSG103` | UC-40 Remove Meeting Participant | *Meeting participant removed successfully.* |
-| `MSG104` | UC-40 | *Unable to remove the meeting participant. Please try again.* |
-| `MSG105` | UC-41 Respond to Meeting Invitation | *Meeting invitation response recorded successfully.* |
-| `MSG106` | UC-41 | *Invalid meeting invitation response.* |
-| `MSG107` | UC-41 | *This meeting invitation can no longer be answered.* |
-| `MSG108` | UC-41 | *Unable to save the meeting invitation response. Please try again.* |
-| `MSG109` | UC-39 / UC-40 | *The meeting must retain its required Chair and Secretary. Assign a replacement first.* |
-| `MSG110` | UC-43 Start Meeting | *Meeting started successfully.* |
-| `MSG111` | UC-44 End Meeting | *Meeting ended successfully.* |
-| `MSG112` | UC-43 | *This meeting cannot be started.* |
-| `MSG113` | UC-44 | *Complete or cancel all unfinished meeting sessions before ending the meeting.* |
-| `MSG114` | UC-44 | *This meeting cannot be ended.* |
-| `MSG115` | UC-43 | *Unable to start the meeting. Please try again.* |
-| `MSG116` | UC-44 | *Unable to end the meeting. Please try again.* |
-| `MSG117` | UC-45 Join Meeting Room | *The online meeting room is not available.* |
-| `MSG118` | UC-45 | *Unable to join the meeting room. Please try again.* |
-| `MSG119` | UC-47 Manage Microphone | *Microphone access is unavailable. Check your browser or device permissions.* |
-| `MSG120` | UC-48 Manage Camera | *Camera access is unavailable. Check your browser or device permissions.* |
-| `MSG121` | UC-49 Manage Screen Sharing | *Unable to share your screen.* |
-| `MSG122` | UC-50 View Meeting Room Participants | *Unable to load meeting room participants. Please try again.* |
-| `MSG123` | UC-51 Moderate Meeting Room | *You are not allowed to moderate this meeting room.* |
-| `MSG124` | UC-51 | *Unable to apply the room moderation action.* |
-| `MSG125` | UC-52 Use In-room Chat | *Unable to send the room message. Please try again.* |
-| `MSG126` | UC-41 | *Unable to verify the guest invitation. Check the code and try again.* |
-| `MSG127` | UC-53 View Meeting Sessions | *Unable to load meeting sessions. Please try again.* |
-| `MSG128` | UC-54 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |
+| `MSG95` | UC-27 / UC-30 | *Unable to load meeting participants. Please try again.* |
+| `MSG96` | UC-28a Add Meeting Participant | *Meeting participant added successfully.* |
+| `MSG97` | UC-28a | *Invalid meeting participant information.* (Lỗi: *The selected user is not available.*, *This user is already a meeting participant.*, *A valid meeting role is required.*, *The Meeting Organizer must assign a Secretary as the first meeting participant.*, *Guest name and email are required.*, *Guest email is invalid.*, *This guest email is already invited to the meeting.*, *This email is already represented by an internal meeting participant.*) |
+| `MSG98` | UC-28a / UC-28b / UC-28c | *The meeting participant list cannot be modified in its current status.* |
+| `MSG99` | UC-28a | *Unable to add the meeting participant. Please try again.* |
+| `MSG100` | UC-28b Assign / Change Meeting Role | *Meeting role updated successfully.* |
+| `MSG101` | UC-28b | *A valid meeting role is required.* |
+| `MSG102` | UC-28b | *Unable to update the meeting role. Please try again.* |
+| `MSG103` | UC-28c Remove Meeting Participant | *Meeting participant removed successfully.* |
+| `MSG104` | UC-28c | *Unable to remove the meeting participant. Please try again.* |
+| `MSG105` | UC-29 Respond to Meeting Invitation | *Meeting invitation response recorded successfully.* |
+| `MSG106` | UC-29 | *Invalid meeting invitation response.* |
+| `MSG107` | UC-29 | *This meeting invitation can no longer be answered.* |
+| `MSG108` | UC-29 | *Unable to save the meeting invitation response. Please try again.* |
+| `MSG109` | UC-28b / UC-28c | *The meeting must retain its required Chair and Secretary. Assign a replacement first.* |
+| `MSG110` | UC-21 Start Meeting | *Meeting started successfully.* |
+| `MSG111` | UC-22 End Meeting | *Meeting ended successfully.* |
+| `MSG112` | UC-21 | *This meeting cannot be started.* |
+| `MSG113` | ADR-0013 · End Meeting khi còn phiên (UC-44 cũ, đã bỏ) | *Complete or cancel all unfinished meeting sessions before ending the meeting.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG114` | UC-22 | *This meeting cannot be ended.* |
+| `MSG115` | UC-21 | *Unable to start the meeting. Please try again.* |
+| `MSG116` | UC-22 | *Unable to end the meeting. Please try again.* |
+| `MSG117` | UC-37 Join Meeting Room | *The online meeting room is not available.* |
+| `MSG118` | UC-37 | *Unable to join the meeting room. Please try again.* |
+| `MSG119` | UC-39a Manage Microphone | *Microphone access is unavailable. Check your browser or device permissions.* |
+| `MSG120` | UC-39b Manage Camera | *Camera access is unavailable. Check your browser or device permissions.* |
+| `MSG121` | UC-39c Manage Screen Sharing | *Unable to share your screen.* |
+| `MSG122` | UC-40 View Meeting Room Participants | *Unable to load meeting room participants. Please try again.* |
+| `MSG123` | UC-41 Moderate Meeting Room | *You are not allowed to moderate this meeting room.* |
+| `MSG124` | UC-41 | *Unable to apply the room moderation action.* |
+| `MSG125` | UC-42 Use In-room Chat | *Unable to send the room message. Please try again.* |
+| `MSG126` | UC-29 | *Unable to verify the guest invitation. Check the code and try again.* |
+| `MSG127` | ADR-0013 · View Meeting Sessions (UC-53 cũ, đã bỏ) | *Unable to load meeting sessions. Please try again.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
+| `MSG128` | UC-26 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |
+| `MSG139` | UC-22 End Meeting | *Close all open votes before ending the meeting.* |
 
 `MSG83` và `MSG84` đã được workflow SCRUM-19 dùng. `MSG90` và `MSG91` chỉ được giữ để không tái cấp.
 
@@ -280,7 +282,7 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 
 Dùng để vẽ lại sơ đồ. Đặc tả UC-01/02/03 trong
 [05-use-case-specifications.md](../01-requirements/05-use-case-specifications.md) đã được sửa theo
-bảng này; **các file PNG trong `docs/06-sequencediagram/` vẫn mang số cũ**.
+bảng này; **các file PNG trong `docs/06-sequencediagram/` vẫn mang số mã và số UC cũ**. Cột đầu ghi số UC mới.
 
 | Sơ đồ / đặc tả | Mã cũ | Tình huống | Mã mới |
 |---|---|---|---|
@@ -294,26 +296,26 @@ bảng này; **các file PNG trong `docs/06-sequencediagram/` vẫn mang số c�
 | UC-02 SignInWithGoogle | `MSG05` | Không có quyền truy cập hệ thống | bỏ, không có mã |
 | UC-03 SignOut | `MSG01` | Không thể đăng xuất | `MSG06` |
 | CreateRole / UpdateRole / DeleteRole | *(không mã)* | Unable to create / update / delete role | `MSG26` / `MSG27` / `MSG28` |
-| UC-15 CreateMeeting | *(không mã)* | Meeting created successfully | `MSG29` |
-| UC-15 CreateMeeting | `MSG01` | Unable to create the meeting | `MSG35` |
-| UC-15, UC-16 | *(không mã)* | Validation errors | `MSG31` |
-| UC-16 UpdateMeeting | `MSG02` | Meeting updated successfully | `MSG30` |
-| UC-16 UpdateMeeting | `MSG03` | This meeting can no longer be edited | `MSG33` |
-| UC-16 UpdateMeeting | `MSG04` | Unable to update the meeting | `MSG36` |
-| UC-17 ViewMeetingDetails | `MSG05` | Meeting not found | không mã — `404` không body |
-| UC-17 ViewMeetingDetails | *(không mã)* | You do not have permission to view this meeting | không mã — `404` không body |
-| UC-17 ViewMeetingDetails | `MSG06` | Unable to load meeting details | `MSG37` |
-| UC-18 ViewMeetingList | `MSG08` | Unable to load meetings | `MSG38` |
-| UC-19 SubmitMeetingForApproval | `MSG11` | This meeting can no longer be submitted | `MSG41` |
-| UC-19 SubmitMeetingForApproval | `MSG12` | Unable to submit the meeting | `MSG42` |
-| UC-20 ReviewMeetingApproval | `MSG13` | Meeting approved successfully | `MSG43` |
-| UC-20 ReviewMeetingApproval | `MSG14` | Meeting rejected successfully | `MSG44` |
-| UC-21 PublishMeeting | `MSG18` | Meeting published successfully | `MSG45` |
-| UC-21 PublishMeeting | `MSG19` | This meeting can no longer be published | `MSG46` |
-| UC-21 PublishMeeting | `MSG20` | Unable to publish the meeting | `MSG47` |
-| UC-22 ViewNotifications | *(không mã)* | Notifications cannot be loaded | `MSG40` — hiện BE chỉ trả mã này khi lỗi ở bước kiểm tra tài khoản; lỗi đọc danh sách vẫn là `500` không body |
+| UC-14 CreateMeeting | *(không mã)* | Meeting created successfully | `MSG29` |
+| UC-14 CreateMeeting | `MSG01` | Unable to create the meeting | `MSG35` |
+| UC-14, UC-15 | *(không mã)* | Validation errors | `MSG31` |
+| UC-15 UpdateMeeting | `MSG02` | Meeting updated successfully | `MSG30` |
+| UC-15 UpdateMeeting | `MSG03` | This meeting can no longer be edited | `MSG33` |
+| UC-15 UpdateMeeting | `MSG04` | Unable to update the meeting | `MSG36` |
+| UC-16 ViewMeetingDetails | `MSG05` | Meeting not found | không mã — `404` không body |
+| UC-16 ViewMeetingDetails | *(không mã)* | You do not have permission to view this meeting | không mã — `404` không body |
+| UC-16 ViewMeetingDetails | `MSG06` | Unable to load meeting details | `MSG37` |
+| UC-17 ViewMeetingList | `MSG08` | Unable to load meetings | `MSG38` |
+| UC-18 SubmitMeetingForApproval | `MSG11` | This meeting can no longer be submitted | `MSG41` |
+| UC-18 SubmitMeetingForApproval | `MSG12` | Unable to submit the meeting | `MSG42` |
+| UC-19 ReviewMeetingApproval | `MSG13` | Meeting approved successfully | `MSG43` |
+| UC-19 ReviewMeetingApproval | `MSG14` | Meeting rejected successfully | `MSG44` |
+| UC-20 PublishMeeting | `MSG18` | Meeting published successfully | `MSG45` |
+| UC-20 PublishMeeting | `MSG19` | This meeting can no longer be published | `MSG46` |
+| UC-20 PublishMeeting | `MSG20` | Unable to publish the meeting | `MSG47` |
+| UC-66 ViewNotifications | *(không mã)* | Notifications cannot be loaded | `MSG40` — hiện BE chỉ trả mã này khi lỗi ở bước kiểm tra tài khoản; lỗi đọc danh sách vẫn là `500` không body |
 
-Sơ đồ thông báo UC-19/20/21 không ghi mã, và các nhánh lỗi lưu "đã đọc" của chúng chưa có mã
+Sơ đồ thông báo UC-67a/67b/68 không ghi mã, và các nhánh lỗi lưu "đã đọc" của chúng chưa có mã
 riêng trong code: mark-read trả `404` không body khi không thấy thông báo.
 
 **ADR đã chấp nhận không được sửa**, nên

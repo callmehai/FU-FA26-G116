@@ -1,6 +1,6 @@
 # 03 · Hợp đồng API
 
-> Số UC trong các file API theo baseline 70 UC ngày 10/10/2026 — xem [bảng đổi số cũ → mới](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới). Code vẫn còn `MeetingSession`; các file mô tả luồng cuộc họp có banner cảnh báo cho tới khi có migration theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Danh mục mã thông báo vẫn ghi số UC cũ ở cột UC.
+> Số UC trong các file API theo baseline 70 UC ngày 10/10/2026 — xem [bảng đổi số cũ → mới](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới). Code đã bỏ `MeetingSession` theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md) (migration `MeetingOwnsScheduleDropSessions`). Danh mục mã thông báo vẫn ghi số UC cũ ở cột UC.
 
 FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy song song không phải chờ nhau.
 

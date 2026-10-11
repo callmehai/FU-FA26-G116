@@ -13,7 +13,6 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<RoleCapability> RoleCapabilities => Set<RoleCapability>();
     public DbSet<Meeting> Meetings => Set<Meeting>();
-    public DbSet<MeetingSession> MeetingSessions => Set<MeetingSession>();
     public DbSet<MeetingParticipant> MeetingParticipants => Set<MeetingParticipant>();
     public DbSet<MeetingStatusHistory> MeetingStatusHistory => Set<MeetingStatusHistory>();
     public DbSet<AgendaItem> AgendaItems => Set<AgendaItem>();

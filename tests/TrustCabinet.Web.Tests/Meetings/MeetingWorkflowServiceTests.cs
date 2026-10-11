@@ -28,12 +28,13 @@ public sealed class MeetingWorkflowServiceTests
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.InPerson,
             Location = "Phòng A",
+            PlannedStartTime = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
+            PlannedEndTime = new DateTimeOffset(2026, 10, 1, 3, 0, 0, TimeSpan.Zero),
             CreatedById = _organizerId,
             AssignedApproverId = status == MeetingStatus.Draft ? null : _approverId,
         };
         if (status == MeetingStatus.Approved)
         {
-            meeting.Sessions.Add(PlannedSession(meeting.Id));
             var chair = Participant(meeting, active: true, InvitationResponse.Delegated);
             chair.Role = MeetingRole.Chair;
             var secretary = Participant(meeting, active: true, InvitationResponse.Delegated);
@@ -63,16 +64,6 @@ public sealed class MeetingWorkflowServiceTests
             Title = "Báo cáo",
             PlannedDurationMinutes = 30,
             PresenterId = Guid.CreateVersion7(),
-        };
-
-    private static MeetingSession PlannedSession(Guid meetingId)
-        => new()
-        {
-            MeetingId = meetingId,
-            Title = "Phiên họp kế hoạch",
-            PlannedStartsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero),
-            PlannedEndsAt = new DateTimeOffset(2026, 10, 1, 3, 0, 0, TimeSpan.Zero),
-            Status = MeetingSessionStatus.Planned,
         };
 
     [Fact]
@@ -850,10 +841,9 @@ public sealed class MeetingWorkflowServiceTests
     }
 
     [Fact]
-    public async Task Publish_does_not_require_a_meeting_session()
+    public async Task Publish_succeeds_with_the_meeting_level_schedule()
     {
         var meeting = GivenMeeting(MeetingStatus.Approved);
-        meeting.Sessions.Clear();
         meeting.Participants.Add(Participant(meeting, active: true, InvitationResponse.Accepted));
 
         var result = await NewService().TransitionAsync(meeting.Id,
@@ -878,7 +868,6 @@ public sealed class MeetingWorkflowServiceTests
     public async Task Publish_requires_exactly_one_active_chair_and_an_active_secretary(string scenario)
     {
         var meeting = GivenMeeting(MeetingStatus.Approved);
-        meeting.Sessions.Clear();
         switch (scenario)
         {
             case "no-participants":

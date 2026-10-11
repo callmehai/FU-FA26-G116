@@ -17,8 +17,6 @@ public sealed class MeetingReadPolicyTests
         { MeetingStatus.Published, true, true },
         { MeetingStatus.InProgress, true, true },
         { MeetingStatus.Ended, true, true },
-        { MeetingStatus.MinutesIssued, true, true },
-        { MeetingStatus.Archived, true, true },
     };
 
     [Theory]

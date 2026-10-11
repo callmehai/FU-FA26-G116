@@ -14,6 +14,9 @@ public sealed class MeetingInvitationQueue(
     TimeProvider time,
     ILogger<MeetingInvitationQueue> logger) : IMeetingInvitationQueue
 {
+    private static readonly TimeZoneInfo VietnamTimeZone =
+        TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+
     public async Task<int> QueueForPublishedMeetingAsync(
         Guid meetingId, CancellationToken ct = default)
     {
@@ -68,7 +71,19 @@ public sealed class MeetingInvitationQueue(
                 ToAddress = item.User.Email,
                 Subject = BuildSubject(meeting.Title),
                 Body = BuildBody(item.User, meeting, meetingUrl),
-                CalendarAttachment = null,
+                CalendarAttachment = CalendarInvitationBuilder.Build(
+                    meeting.Id,
+                    meeting.Title,
+                    meeting.Description,
+                    FormatPlace(meeting),
+                    meeting.PlannedStartTime,
+                    meeting.PlannedEndTime,
+                    item.User.FullName,
+                    item.User.Email,
+                    meetingUrl,
+                    emailOptions.Smtp.FromName,
+                    emailOptions.Smtp.FromAddress,
+                    now),
                 MeetingId = meeting.Id,
                 Status = EmailStatus.Queued,
                 CreatedAt = now,
@@ -138,16 +153,36 @@ public sealed class MeetingInvitationQueue(
 
     private static string BuildBody(User user, Meeting meeting, string meetingUrl)
     {
+        var startsAt = TimeZoneInfo.ConvertTime(meeting.PlannedStartTime, VietnamTimeZone);
+        var endsAt = TimeZoneInfo.ConvertTime(meeting.PlannedEndTime, VietnamTimeZone);
+
         return $"""
             Xin chào {user.FullName},
 
             Bạn được mời tham dự cuộc họp "{meeting.Title}".
 
+            Bắt đầu: {startsAt:dd/MM/yyyy HH:mm zzz}
+            Kết thúc: {endsAt:dd/MM/yyyy HH:mm zzz}
             Hình thức: {FormatMeetingMode(meeting.Mode)}
-            Địa điểm: {meeting.Location}
+            Địa điểm: {FormatPlace(meeting)}
 
             Xem chi tiết và tài liệu cuộc họp: {meetingUrl}
+
+            Tệp lịch .ics được đính kèm để bạn thêm cuộc họp vào Outlook hoặc Google Calendar.
             """;
+    }
+
+    /// <summary>An online meeting has no room: it happens at its link, or in the TrustCabinet room.</summary>
+    private static string FormatPlace(Meeting meeting)
+    {
+        var link = meeting.OnlineLink ?? "Phòng họp trực tuyến TrustCabinet";
+        return meeting.Mode switch
+        {
+            MeetingMode.Online => link,
+            MeetingMode.Hybrid when meeting.Location.Length > 0 => $"{meeting.Location} · {link}",
+            MeetingMode.Hybrid => link,
+            _ => meeting.Location,
+        };
     }
 
     private static string FormatMeetingMode(MeetingMode mode)

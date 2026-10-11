@@ -51,3 +51,24 @@ export function formatRelative(iso: string, now = Date.now()) {
 
   return formatDateTime(iso)
 }
+
+const WEEKDAYS = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy']
+
+/** "09:00" in the viewer's timezone. */
+export function formatClock(iso: string) {
+  return timeOnly.format(new Date(iso))
+}
+
+/** "Thứ Năm, 15/10/2026" */
+export function formatWeekdayDate(iso: string) {
+  return `${WEEKDAYS[new Date(iso).getDay()]}, ${formatDate(iso)}`
+}
+
+/**
+ * A meeting's planned or actual sitting: "Thứ Năm, 15/10/2026 · 08:30–09:30". One that runs past
+ * midnight names both days.
+ */
+export function formatSchedule(startIso: string, endIso: string) {
+  if (formatDate(startIso) !== formatDate(endIso)) return `${formatDateTime(startIso)} – ${formatDateTime(endIso)}`
+  return `${formatWeekdayDate(startIso)} · ${formatClock(startIso)}–${formatClock(endIso)}`
+}

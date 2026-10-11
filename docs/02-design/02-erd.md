@@ -21,7 +21,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | User | Tài khoản nội bộ | IMPLEMENTED | Giữ. |
 | Role | Vai trò RBAC cấp hệ thống | IMPLEMENTED | Giữ; độc lập với MeetingRole. |
 | RoleCapability | Quyền năng gắn với Role | IMPLEMENTED | Giữ. |
-| Meeting | Hồ sơ, lịch và vòng đời cuộc họp (một cuộc họp = một buổi họp) | NEED MIGRATION / RESTRUCTURE | Thêm `PlannedStartTime`, `PlannedEndTime`, `ActualStartedAt`, `ActualEndedAt`, `OnlineLink`; bỏ navigation `Sessions`; bỏ trạng thái `MinutesIssued`, `Archived` (ADR-0013). |
+| Meeting | Hồ sơ, lịch và vòng đời cuộc họp (một cuộc họp = một buổi họp) | IMPLEMENTED | Đã có `PlannedStartTime`, `PlannedEndTime`, `ActualStartedAt`, `ActualEndedAt`, `OnlineLink`; đã bỏ `Sessions`, `MinutesIssued`, `Archived` (migration `MeetingOwnsScheduleDropSessions`, ADR-0013). |
 | MeetingStatusHistory | Bằng chứng chuyển trạng thái | NEED MIGRATION / RESTRUCTURE | Giữ append-only; đồng bộ vòng đời đích. |
 | MeetingParticipant | Phân công người tham dự nội bộ | NEED MIGRATION / RESTRUCTURE | Bỏ Guest; hỗ trợ phân công Current/Removed và lưu lịch sử. |
 | MeetingGuestInvitation | Lời mời khách ngoài theo cuộc họp | NOT IMPLEMENTED | Thêm entity riêng; khách không phải User/người tham dự nội bộ. |
@@ -48,7 +48,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | CallSession | Lượt gọi hoặc phòng trực tuyến | NEED MIGRATION / RESTRUCTURE | StartedById nullable; phòng gắn với Meeting. |
 | CallParticipant | Một lượt kết nối của User hoặc khách | NEED MIGRATION / RESTRUCTURE | UserId XOR GuestInvitationId. |
 
-`MeetingSession` (bảng `meeting_sessions`) đang có trong code nhưng **đã bị bỏ khỏi mô hình đích** từ 09/10/2026 ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)). Migration mới chép lịch về `meetings` rồi drop bảng; không sửa migration cũ đã lên `main`.
+`MeetingSession` (bảng `meeting_sessions`) **đã bị bỏ** từ 09/10/2026 ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)). Migration `MeetingOwnsScheduleDropSessions` chép lịch về `meetings` rồi drop bảng; migration cũ trên `main` giữ nguyên.
 
 ## Phạm vi mô hình đích
 
@@ -568,7 +568,6 @@ erDiagram
 
 | Code/schema hiện tại | Mô hình đích | Thay đổi cần thiết |
 |---|---|---|
-| Meeting trước SCRUM-70 có StartsAt/EndsAt; SCRUM-70 chuyển lịch sang `meeting_sessions`. | Meeting mang lịch dự kiến và thời gian thực tế (ADR-0013). | Migration mới: thêm cột vào `meetings`, backfill từ `meeting_sessions` (giờ bắt đầu sớm nhất và giờ kết thúc muộn nhất trong các session không Cancelled), rồi drop `meeting_sessions`. Không sửa migration cũ. |
 | AgendaItem hiện có MeetingId. | Giữ AgendaItem.MeetingId. | Không đổi khoá ngoại; chỉ đồng bộ trạng thái Pending/InProgress/Done. |
 | MeetingRole hiện có Guest. | Chỉ còn Chair/Secretary/Member. | Dùng MeetingGuestInvitation cho khách bên ngoài. |
 | Tính duy nhất participant áp dụng cho mọi row. | Chỉ duy nhất với phân công Current. | Thêm trạng thái/bằng chứng gỡ phân công và unique constraint có điều kiện. |
@@ -577,7 +576,6 @@ erDiagram
 | CallParticipant.UserId hiện bắt buộc. | UserId XOR GuestInvitationId. | Cho phép hai cột identity null riêng rẽ và ràng buộc chỉ một cột có giá trị. |
 | CallSession.StartedById hiện bắt buộc. | Có thể null với MeetingRoom. | Cho phép phòng tồn tại mà không cần starter nội bộ. |
 | MeetingGuestInvitation, MeetingDocument chưa có trong domain/schema. | Cả hai là entity đích. | Sẽ triển khai/migration sau; hiện chưa phải bảng trong DB. |
-| `MeetingStatus` còn `MinutesIssued`, `Archived`. | Vòng đời kết thúc ở `Ended`. | Migration mới bỏ hai giá trị; trạng thái biên bản nằm ở `MeetingMinutes.Status`. |
 | VotingSession có `Kind` (Live/Asynchronous), `OpensAt`, `ClosesAt`, `Conclusion` dạng chuỗi tự do. | Chỉ biểu quyết trong họp; `Conclusion` là Passed/NotPassed/Deferred (ADR-0014). | Migration mới bỏ `kind`, `opens_at`, `closes_at`; thêm `opened_at`, `closed_at`, `conclusion_note`, `concluded_by_id`. |
 
 ### Xung đột yêu cầu cần đối chiếu

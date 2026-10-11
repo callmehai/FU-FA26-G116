@@ -12,7 +12,7 @@ using TrustCabinet.Domain.Users;
 namespace TrustCabinet.Infrastructure.Users;
 
 /// <summary>
-/// UC-04 … UC-08's <c>:User Service</c>. Every rule about user accounts lives here: validation,
+/// UC-05 … UC-07's <c>:User Service</c>. Every rule about user accounts lives here: validation,
 /// email availability, whether a status change is allowed, and what the audit log records.
 ///
 /// The order inside each write is the order the diagrams give: check, then persist, then audit.
@@ -36,7 +36,7 @@ public sealed partial class UserService(
     private const int MinimumPasswordLength = 12;
 
     /// <summary>
-    /// How long a UC-08 reset link works. Long enough to find the email and act on it, short
+    /// How long a UC-07 reset link works. Long enough to find the email and act on it, short
     /// enough that a link left in an inbox is not a standing way into the account.
     /// </summary>
     internal static readonly TimeSpan PasswordResetLinkLifetime = TimeSpan.FromMinutes(60);
@@ -84,7 +84,7 @@ public sealed partial class UserService(
         }
 
         // Branch 3 — valid. Created active: an administrator filling this form wants a working
-        // account, and UC-07 is where deactivating happens.
+        // account, and UC-06c is where deactivating happens.
         var user = new User
         {
             FullName = fullName,
@@ -163,7 +163,7 @@ public sealed partial class UserService(
             return UserResult.Invalid(errors);
         }
 
-        // Excluding this account: keeping your own email is not a duplicate. UC-06's diagram has
+        // Excluding this account: keeping your own email is not a duplicate. UC-06b's diagram has
         // no duplicate branch, but the unique index does not care what the diagram says — without
         // this, editing someone into an existing email would be a 500 rather than MSG08.
         if (await users.EmailExistsAsync(email, id, ct))
@@ -224,7 +224,7 @@ public sealed partial class UserService(
 
         logger.LogInformation("Account {UserId} updated by {ActorId}.", user.Id, actorId);
 
-        // The <c>:Token Service</c> step again, which the UC-06 diagram does not draw. A role
+        // The <c>:Token Service</c> step again, which the UC-06b diagram does not draw. A role
         // change alters what the account may do, and capabilities travel inside the access token —
         // so until it expires the person keeps the rights they had. Dropping their refresh tokens
         // ends the session instead of waiting for it to lapse.
@@ -314,7 +314,7 @@ public sealed partial class UserService(
             "Account {UserId} {Change} by {ActorId}.",
             user.Id, isActive ? "reactivated" : "deactivated", actorId);
 
-        // The <c>:Token Service</c> step of UC-07, on the deactivate branch only. A row marked
+        // The <c>:Token Service</c> step of UC-06c, on the deactivate branch only. A row marked
         // inactive while its tokens still work is not deactivated in any sense that matters: the
         // access token stays valid until it expires, and dropping the refresh tokens is what stops
         // it being renewed. AuthenticationService.RefreshAsync re-reads IsActive, so the next
@@ -581,7 +581,7 @@ public sealed partial class UserService(
                     userId);
             }
 
-            // An outstanding UC-08 reset link goes too, for every change that ends the sessions:
+            // An outstanding UC-07 reset link goes too, for every change that ends the sessions:
             //   - deactivation: otherwise reactivating within the hour brings the link back;
             //   - email change: otherwise a link sent to a mistyped or compromised address keeps
             //     working after the address is corrected;
@@ -657,7 +657,7 @@ public sealed partial class UserService(
     }
 
     /// <summary>
-    /// The fields UC-05 and UC-06 share. Returns field name → Vietnamese message, empty when
+    /// The fields UC-06a and UC-06b share. Returns field name → Vietnamese message, empty when
     /// everything is acceptable.
     /// </summary>
     private static Dictionary<string, string> Validate(string fullName, string email)

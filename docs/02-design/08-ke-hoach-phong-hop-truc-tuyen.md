@@ -350,7 +350,7 @@ public sealed record CallWebhookEvent(
 `CallRoomRules.StatusOf(MeetingStatus status, MeetingMode mode)`:
 - `mode == InPerson` → `InPersonOnly` (xét trước);
 - `InProgress` → `Open`;
-- `Ended`, `MinutesIssued`, `Archived` → `Ended`;
+- `Ended` → `Ended`;
 - còn lại → `NotStarted`.
 
 ### 5.3 `ICallRepository`
@@ -360,7 +360,7 @@ public interface ICallRepository
 {
     /// <summary>
     /// The caller's standing in the meeting's room: an invited participant (any response except
-    /// Delegated) of a meeting in a participant-visible status (Published … Archived). Null
+    /// Delegated) of a meeting in a participant-visible status (Published, InProgress, Ended). Null
     /// otherwise, which the endpoints turn into the same 404 as an unknown meeting.
     /// </summary>
     Task<CallRoomAccess?> FindRoomAccessAsync(Guid meetingId, Guid userId, CancellationToken ct = default);
@@ -397,7 +397,7 @@ Chi tiết cài đặt `CallRepository`:
 
 - `FindRoomAccessAsync`: truy vấn từ `db.MeetingParticipants`, không qua `MeetingRepository`:
   `p.MeetingId == meetingId && p.UserId == userId && p.Response != InvitationResponse.Delegated
-  && p.User.IsActive && (status ∈ {Published, InProgress, Ended, MinutesIssued, Archived})`,
+  && p.User.IsActive && (status ∈ {Published, InProgress, Ended})`,
   select `new CallRoomAccess(p.MeetingId, p.Meeting.Status, p.Meeting.Mode, p.Role, p.User.FullName)`.
   Dùng `AsNoTracking()`.
 - `EnsureActiveRoomSessionAsync`: thử đọc → nếu không có thì `Add(new CallSession { Kind = MeetingRoom,

@@ -91,7 +91,7 @@ public sealed class NotificationRepositoryPostgresTests : IAsyncLifetime
         var recipient = Assert.Single(recipients);
         Assert.Equal(published.Id, recipient.MeetingId);
         Assert.Equal(published.Title, recipient.MeetingTitle);
-        Assert.Equal(Assert.Single(published.Sessions).Id, recipient.SessionId);
+        Assert.Equal(published.PlannedStartTime, recipient.PlannedStartTime);
         Assert.Equal(included.Id, recipient.UserId);
     }
 
@@ -133,16 +133,10 @@ public sealed class NotificationRepositoryPostgresTests : IAsyncLifetime
             Status = status,
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.Online,
+            PlannedStartTime = startsAt,
+            PlannedEndTime = startsAt.AddHours(1),
             CreatedById = organizerId,
         };
-        meeting.Sessions.Add(new MeetingSession
-        {
-            Meeting = meeting,
-            Title = $"Phiên {title}",
-            PlannedStartsAt = startsAt,
-            PlannedEndsAt = startsAt.AddHours(1),
-            Status = MeetingSessionStatus.Planned,
-        });
         return meeting;
     }
 

@@ -9,12 +9,12 @@ import type { Capability } from '../types/user'
  * screen hiding a control is not what keeps anyone out.
  */
 
-/** UC-09 — the whole matrix plus the capability catalogue that gives the grid its columns. */
+/** UC-10 — the whole matrix plus the capability catalogue that gives the grid its columns. */
 export const getRolePermissionMatrix = () =>
   api.get<RolePermissionMatrix>('/api/roles/capabilities')
 
 /**
- * UC-10 — sets exactly which capabilities a role carries.
+ * UC-11 — sets exactly which capabilities a role carries.
  *
  * `capabilities` is the role's complete end state, not a delta: send every capability it should
  * have after the change, including the ones it already had. An empty array is a valid request and
