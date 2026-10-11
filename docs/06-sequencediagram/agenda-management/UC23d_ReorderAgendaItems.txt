@@ -9,77 +9,74 @@ participant ":Meeting Participant Repository" as MeetingParticipantRepository
 participant ":Agenda Item Repository" as AgendaItemRepository
 database ":Database" as Database
 
-Secretary->MeetingPage: Submit new agenda order
+Secretary->MeetingPage: Reorder Agenda Items
 activate MeetingPage
-
 MeetingPage->AgendaController: Reorder Agenda Items
 activate AgendaController
-
-AgendaController->AgendaService: reorderAgendaItems(meetingId, secretaryId, orderedAgendaItemIds)
+AgendaController->AgendaService: reorderAgendaItems(meetingId, secretaryId, orderedPendingItemIds)
 activate AgendaService
 
-
-AgendaService->MeetingRepository: Get selected Meeting
+AgendaService->MeetingRepository: Get selected Meeting and current status
 activate MeetingRepository
-MeetingRepository->Database: Retrieve Meeting
+MeetingRepository->Database: Get selected Meeting and current status
 activate Database
-Database-->MeetingRepository: Meeting
+Database-->MeetingRepository: Meeting / Not found
 deactivate Database
-MeetingRepository-->AgendaService: Meeting
+MeetingRepository-->AgendaService: Meeting / Not found
 deactivate MeetingRepository
 
-AgendaService->MeetingParticipantRepository: Verify Secretary assignment to the Meeting (BR-65)
+AgendaService->MeetingParticipantRepository: Check active current Secretary assignment
 activate MeetingParticipantRepository
-MeetingParticipantRepository->Database: Find Secretary assignment
+MeetingParticipantRepository->Database: Check active current Secretary assignment
 activate Database
-Database-->MeetingParticipantRepository: Assignment result
+Database-->MeetingParticipantRepository: Active Secretary / Not eligible
 deactivate Database
-MeetingParticipantRepository-->AgendaService: Assignment result
+MeetingParticipantRepository-->AgendaService: Active Secretary / Not eligible
 deactivate MeetingParticipantRepository
 
-AgendaService->AgendaItemRepository: Get Agenda Items of selected Meeting
-activate AgendaItemRepository
-AgendaItemRepository->Database: Retrieve Meeting agenda in explicit order
-activate Database
-Database-->AgendaItemRepository: Meeting Agenda Item list
-deactivate Database
-AgendaItemRepository-->AgendaService: Meeting Agenda Item list
-deactivate AgendaItemRepository
-
-AgendaService->AgendaService: Validate all reordered items belong to the same Meeting\nand retain explicit Meeting ordering (BR-64, BR-67)
-AgendaService->AgendaService: Verify assigned Secretary and Meeting status Draft, WaitingApproval,\nRejected, Approved, Published or InProgress (BR-65, BR-68, BR-74)
-
-alt Agenda order can no longer be modified - EX-1
+AgendaService->AgendaService: Verify Secretary and permitted Meeting status (BR-65, BR-74)
+alt Reordering no longer permitted - EX-1
     AgendaService-->AgendaController: MSG67 - The agenda for this meeting can no longer be modified.
-    deactivate AgendaService
     AgendaController-->MeetingPage: MSG67 - The agenda for this meeting can no longer be modified.
-    deactivate AgendaController
-    MeetingPage-->Secretary: MSG67 - The agenda for this meeting can no longer be modified.\nAgenda order remains unchanged
-
-else Agenda modification is permitted and new order is valid
-    AgendaService->AgendaItemRepository: Save updated explicit order within selected Meeting\nwithout moving items to another Meeting (BR-64, BR-67, BR-68)
+    MeetingPage-->Secretary: MSG67 - The agenda for this meeting can no longer be modified.
+else Reordering permitted
+    AgendaService->AgendaItemRepository: Get complete latest Meeting Agenda, positions and Item statuses
     activate AgendaItemRepository
-    AgendaItemRepository->Database: Update positions of Meeting Agenda Items
+    AgendaItemRepository->Database: Get complete latest Meeting Agenda, positions and Item statuses
     activate Database
-    Database-->AgendaItemRepository: Change saved / Save failed without changing agenda order
+    Database-->AgendaItemRepository: Current ordered Agenda
     deactivate Database
-    AgendaItemRepository-->AgendaService: Updated agenda order / Save failed
+    AgendaItemRepository-->AgendaService: Current ordered Agenda
     deactivate AgendaItemRepository
 
-    alt Agenda order cannot be updated - EX-2
-        AgendaService-->AgendaController: MSG71 - Unable to update the agenda order. Please try again.
-        deactivate AgendaService
-        AgendaController-->MeetingPage: MSG71 - Unable to update the agenda order. Please try again.
-        deactivate AgendaController
-        MeetingPage-->Secretary: MSG71 - Unable to update the agenda order. Please try again.\nAgenda order remains unchanged
+    AgendaService->AgendaService: Validate each current Pending Item appears exactly once;\nexchange only existing Pending positions; no foreign Items;\nkeep InProgress/Done positions fixed (BR-64, BR-67, BR-68)
+    alt Invalid or outdated Pending order - EX-2
+        AgendaService-->AgendaController: MSG143 - Only Pending agenda items can be reordered within their existing positions.\nRefresh the agenda and try again.
+        AgendaController-->MeetingPage: MSG143 - Only Pending agenda items can be reordered within their existing positions.\nRefresh the agenda and try again.
+        MeetingPage-->Secretary: MSG143 - Only Pending agenda items can be reordered within their existing positions.\nRefresh the agenda and try again.
+    else Pending order valid
+        AgendaService->AgendaItemRepository: Recheck latest Agenda and save Pending position exchanges together;\nretain InProgress/Done positions and all execution data (BR-68)
+        activate AgendaItemRepository
+        AgendaItemRepository->Database: Recheck latest Agenda and save Pending position exchanges together;\nretain InProgress/Done positions and all execution data (BR-68)
+        activate Database
+        Database-->AgendaItemRepository: Change saved / Save failed; previous Agenda preserved
+        deactivate Database
+        AgendaItemRepository-->AgendaService: Change saved / Save failed; previous Agenda preserved
+        deactivate AgendaItemRepository
 
-    else Agenda order is updated
-        AgendaService-->AgendaController: Agenda order updated successfully
-        deactivate AgendaService
-        AgendaController-->MeetingPage: MSG63 - Agenda order updated successfully.\nUpdated Meeting agenda
-        deactivate AgendaController
-        MeetingPage-->Secretary: MSG63 - Agenda order updated successfully.\nShow updated Meeting agenda
+        alt Change cannot be saved - EX-3
+            AgendaService-->AgendaController: MSG71 - Unable to update the agenda order. Please try again.
+            AgendaController-->MeetingPage: MSG71 - Unable to update the agenda order. Please try again.
+            MeetingPage-->Secretary: MSG71 - Unable to update the agenda order. Please try again.
+        else Change saved successfully
+            AgendaService->AgendaService: Automatically refresh the complete saved Agenda\nfor currently authorized users viewing this Meeting (BR-73)
+            AgendaService-->AgendaController: MSG63 - Agenda order updated successfully.
+            AgendaController-->MeetingPage: MSG63 - Agenda order updated successfully.
+            MeetingPage-->Secretary: MSG63 - Agenda order updated successfully.
+        end
     end
 end
 
+deactivate AgendaService
+deactivate AgendaController
 deactivate MeetingPage

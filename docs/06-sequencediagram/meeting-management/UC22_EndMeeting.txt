@@ -72,7 +72,7 @@ else Meeting and Chair are eligible
         AgendaItemRepository-->MeetingService: Agenda Item / None
         deactivate AgendaItemRepository
 
-        MeetingService->MeetingRepository: In one transaction: complete the InProgress Agenda Item\n(Done, actual end time, duration), set Meeting Ended,\nrecord Actual End Time and lifecycle history (BR-38, BR-132, BR-159)
+        MeetingService->MeetingRepository: In one transaction: complete the InProgress Agenda Item\n(Done, actual end time, duration); keep remaining Pending Items Pending,\nset Meeting Ended,\nrecord Actual End Time and lifecycle history (BR-38, BR-132, BR-159)
         activate MeetingRepository
         MeetingRepository->Database: Save Agenda Item, Meeting and history atomically
         activate Database
@@ -93,6 +93,8 @@ else Meeting and Chair are eligible
             deactivate Database
             MeetingRepository-->MeetingService: Meeting ended
             deactivate MeetingRepository
+
+            MeetingService->MeetingService: Automatically refresh the complete saved Agenda\nfor authorized users viewing this Meeting (BR-73)
 
             MeetingService->MeetingRoom: Stop accepting joins and disconnect connected users (BR-143)
             activate MeetingRoom
