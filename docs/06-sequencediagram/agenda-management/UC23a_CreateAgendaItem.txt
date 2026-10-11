@@ -10,98 +10,85 @@ participant ":Agenda Item Repository" as AgendaItemRepository
 participant ":Document Repository" as DocumentRepository
 database ":Database" as Database
 
-Secretary->MeetingPage: Submit agenda item information
+Secretary->MeetingPage: Create Agenda Item
 activate MeetingPage
-
 MeetingPage->AgendaController: Create Agenda Item
 activate AgendaController
-
 AgendaController->AgendaService: createAgendaItem(meetingId, secretaryId, agendaInfo, documentIds)
 activate AgendaService
 
-
-AgendaService->MeetingRepository: Get selected Meeting
+AgendaService->MeetingRepository: Get selected Meeting and current status
 activate MeetingRepository
-MeetingRepository->Database: Retrieve Meeting
+MeetingRepository->Database: Get selected Meeting and current status
 activate Database
-Database-->MeetingRepository: Meeting
+Database-->MeetingRepository: Meeting / Not found
 deactivate Database
-MeetingRepository-->AgendaService: Meeting
+MeetingRepository-->AgendaService: Meeting / Not found
 deactivate MeetingRepository
 
-AgendaService->MeetingParticipantRepository: Verify Secretary assignment to the Meeting (BR-65)
+AgendaService->MeetingParticipantRepository: Check active current Secretary assignment
 activate MeetingParticipantRepository
-MeetingParticipantRepository->Database: Find Secretary assignment
+MeetingParticipantRepository->Database: Check active current Secretary assignment
 activate Database
-Database-->MeetingParticipantRepository: Assignment result
+Database-->MeetingParticipantRepository: Active Secretary / Not eligible
 deactivate Database
-MeetingParticipantRepository-->AgendaService: Assignment result
+MeetingParticipantRepository-->AgendaService: Active Secretary / Not eligible
 deactivate MeetingParticipantRepository
 
-opt Meeting documents are selected
-    AgendaService->DocumentRepository: Get selected documents available to the Meeting (BR-66)
-    activate DocumentRepository
-    DocumentRepository->Database: Retrieve selected meeting documents
-    activate Database
-    Database-->DocumentRepository: Available selected documents
-    deactivate Database
-    DocumentRepository-->AgendaService: Available selected documents
-    deactivate DocumentRepository
-end
-
-AgendaService->AgendaService: Validate required title, positive planned duration,\noptional presenter and description, and selected documents (BR-66)
-
-alt Invalid Agenda Item information - EX-1
-    AgendaService-->AgendaController: MSG66 - Invalid agenda item information.\nApplicable field message(s)
-    deactivate AgendaService
-    AgendaController-->MeetingPage: MSG66 - Invalid agenda item information.\nApplicable field message(s)
-    deactivate AgendaController
-    MeetingPage-->Secretary: MSG66 - Invalid agenda item information.\nApplicable field message(s):\nAgenda item title is required.\nPlanned duration must be greater than 0.\nOne or more selected documents are not available to this meeting.
-
-else Agenda Item information is valid
-    AgendaService->AgendaService: Verify assigned Secretary and Meeting status Draft, WaitingApproval,\nRejected, Approved, Published or InProgress (BR-64, BR-65, BR-68, BR-74)
-
-    alt Agenda can no longer be modified - EX-2
-        AgendaService-->AgendaController: MSG67 - The agenda for this meeting can no longer be modified.
-        deactivate AgendaService
-        AgendaController-->MeetingPage: MSG67 - The agenda for this meeting can no longer be modified.
-        deactivate AgendaController
-        MeetingPage-->Secretary: MSG67 - The agenda for this meeting can no longer be modified.\nAgenda Item is not created
-
-    else Agenda modification is permitted
-        AgendaService->AgendaItemRepository: Get Agenda Items of selected Meeting
-        activate AgendaItemRepository
-        AgendaItemRepository->Database: Retrieve Meeting agenda in explicit order
+AgendaService->AgendaService: Verify Secretary and permitted Meeting status\nDraft, WaitingApproval, Rejected, Approved, Published or InProgress (BR-65, BR-74)
+alt Agenda planning no longer permitted - EX-2
+    AgendaService-->AgendaController: MSG67 - The agenda for this meeting can no longer be modified.
+    AgendaController-->MeetingPage: MSG67 - The agenda for this meeting can no longer be modified.
+    MeetingPage-->Secretary: MSG67 - The agenda for this meeting can no longer be modified.
+else Agenda planning permitted
+    opt Meeting documents selected
+        AgendaService->DocumentRepository: Verify selected documents belong to this Meeting
+        activate DocumentRepository
+        DocumentRepository->Database: Verify selected documents belong to this Meeting
         activate Database
-        Database-->AgendaItemRepository: Meeting Agenda Item list
+        Database-->DocumentRepository: Available documents / Invalid selection
         deactivate Database
-        AgendaItemRepository-->AgendaService: Meeting Agenda Item list
+        DocumentRepository-->AgendaService: Available documents / Invalid selection
+        deactivate DocumentRepository
+
+    end
+    AgendaService->AgendaService: Validate Title, positive Planned Duration and selected documents (BR-66)
+    alt Invalid Item information - EX-1
+        AgendaService-->AgendaController: MSG66 - Invalid agenda item information.\nApplicable field messages; no Item created
+        AgendaController-->MeetingPage: MSG66 - Invalid agenda item information.\nApplicable field messages; no Item created
+        MeetingPage-->Secretary: MSG66 - Invalid agenda item information.\nApplicable field messages; no Item created
+    else Item information valid
+        AgendaService->AgendaItemRepository: Get current Meeting Agenda positions
+        activate AgendaItemRepository
+        AgendaItemRepository->Database: Get current Meeting Agenda positions
+        activate Database
+        Database-->AgendaItemRepository: Saved positions / Empty Agenda
+        deactivate Database
+        AgendaItemRepository-->AgendaService: Saved positions / Empty Agenda
         deactivate AgendaItemRepository
 
-        AgendaService->AgendaItemRepository: Create Agenda Item for selected Meeting\nwith Pending status at the end of the agenda\nand associate selected meeting documents (BR-64, BR-67)
+        AgendaService->AgendaItemRepository: Save new Pending Item and document associations together\nafter the last position; preserve existing positions (BR-67)
         activate AgendaItemRepository
-        AgendaItemRepository->Database: Insert Agenda Item and document associations
+        AgendaItemRepository->Database: Save new Pending Item and document associations together\nafter the last position; preserve existing positions (BR-67)
         activate Database
-        Database-->AgendaItemRepository: Change saved / Save failed without creating Agenda Item
+        Database-->AgendaItemRepository: Change saved / Save failed; previous Agenda preserved
         deactivate Database
-        AgendaItemRepository-->AgendaService: Created Agenda Item / Save failed
+        AgendaItemRepository-->AgendaService: Change saved / Save failed; previous Agenda preserved
         deactivate AgendaItemRepository
 
-        alt Agenda Item cannot be created - EX-3
+        alt Change cannot be saved - EX-3
             AgendaService-->AgendaController: MSG68 - Unable to create the agenda item. Please try again.
-            deactivate AgendaService
             AgendaController-->MeetingPage: MSG68 - Unable to create the agenda item. Please try again.
-            deactivate AgendaController
-            MeetingPage-->Secretary: MSG68 - Unable to create the agenda item. Please try again.\nAgenda Item is not created
-
-        else Agenda Item is created
-            AgendaService-->AgendaController: Agenda Item created successfully
-            deactivate AgendaService
-            AgendaController-->MeetingPage: MSG60 - Agenda item created successfully.\nUpdated Meeting agenda
-            deactivate AgendaController
-            MeetingPage-->Secretary: MSG60 - Agenda item created successfully.\nShow updated Meeting agenda
+            MeetingPage-->Secretary: MSG68 - Unable to create the agenda item. Please try again.
+        else Change saved successfully
+            AgendaService->AgendaService: Automatically refresh the complete saved Agenda\nfor currently authorized users viewing this Meeting (BR-73)
+            AgendaService-->AgendaController: MSG60 - Agenda item created successfully.
+            AgendaController-->MeetingPage: MSG60 - Agenda item created successfully.
+            MeetingPage-->Secretary: MSG60 - Agenda item created successfully.
         end
     end
 end
 
+deactivate AgendaService
+deactivate AgendaController
 deactivate MeetingPage

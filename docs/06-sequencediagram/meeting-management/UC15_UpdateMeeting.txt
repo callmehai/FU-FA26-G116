@@ -5,24 +5,27 @@ boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Controller" as MeetingController
 control ":Meeting Service" as MeetingService
 participant ":Meeting Repository" as MeetingRepository
+control ":Notification Service" as NotificationService
 database ":Database" as Database
 
-Organizer->MeetingPage: Submit updated meeting information
+Organizer->MeetingPage: Submit updated meeting information or reschedule
 activate MeetingPage
 
-MeetingPage->MeetingController: Update meeting
+MeetingPage->MeetingController: Update meeting or reschedule
 activate MeetingController
 
 MeetingController->MeetingService: Check meeting is owned and editable
 activate MeetingService
 MeetingService->MeetingRepository: Find meeting owned by organizer
 activate MeetingRepository
-MeetingRepository->Database: Retrieve meeting and status
+MeetingRepository->Database: Retrieve meeting, status and Actual Start Time
 activate Database
 Database-->MeetingRepository: Meeting and status
 deactivate Database
 MeetingRepository-->MeetingService: Meeting and status
 deactivate MeetingRepository
+
+MeetingService->MeetingService: Verify current Organizer authorization (BR-27, BR-158)
 
 alt Meeting not found
     MeetingService-->MeetingController: Meeting not found
@@ -31,12 +34,81 @@ alt Meeting not found
     deactivate MeetingController
     MeetingPage-->Organizer: Meeting not found
 
-else Meeting is no longer Draft or Rejected - EX-2
+else Organizer is no longer authorized - EX-1
+    MeetingService-->MeetingController: Update authorization denied; no changes saved
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Return authorization error
+    deactivate MeetingController
+    MeetingPage-->Organizer: Display applicable existing authorization error
+
+else Meeting is not Draft, Rejected or Published - EX-1 / EX-2
     MeetingService-->MeetingController: MSG33 - This meeting can no longer be edited
     deactivate MeetingService
     MeetingController-->MeetingPage: Return edit restriction
     deactivate MeetingController
     MeetingPage-->Organizer: MSG33 - This meeting can no longer be edited
+
+else Meeting is Published - AF-1
+    MeetingService->MeetingService: Recheck current Organizer permission, Published status and that\nthe Meeting has not started; allow changes only to Planned Start Time,\nPlanned End Time and Location (BR-27, BR-158)
+
+    alt Meeting has started or is no longer Published - EX-2
+        MeetingService-->MeetingController: MSG33 - This meeting can no longer be edited
+        deactivate MeetingService
+        MeetingController-->MeetingPage: Return reschedule restriction; schedule unchanged
+        deactivate MeetingController
+        MeetingPage-->Organizer: MSG33 - This meeting can no longer be edited
+
+    else Reschedule is permitted
+        MeetingService->MeetingService: Validate new start is later than current time\nand end follows start (BR-62, BR-75)
+
+        alt New start is not in the future or a field outside the Reschedule set was modified - EX-2
+            MeetingService-->MeetingController: MSG31 - Invalid meeting information
+            deactivate MeetingService
+            MeetingController-->MeetingPage: Return validation errors; schedule unchanged
+            deactivate MeetingController
+            MeetingPage-->Organizer: MSG31 - Invalid meeting information
+
+        else End time or required schedule information is invalid - EX-1
+            MeetingService-->MeetingController: MSG31 - Invalid meeting information
+            deactivate MeetingService
+            MeetingController-->MeetingPage: Return validation errors; schedule unchanged
+            deactivate MeetingController
+            MeetingPage-->Organizer: MSG31 - Invalid meeting information
+
+        else New schedule is valid
+            MeetingService->MeetingRepository: Save new schedule and record Reschedule history;\nretain Published status and assigned approver (BR-38, BR-76, BR-158)
+            activate MeetingRepository
+            MeetingRepository->Database: Save schedule and lifecycle history atomically
+            activate Database
+
+            alt Reschedule cannot be saved - EX-3
+                Database-->MeetingRepository: Save failed; previous schedule, status and history preserved
+                deactivate Database
+                MeetingRepository-->MeetingService: Reschedule failed
+                deactivate MeetingRepository
+                MeetingService-->MeetingController: MSG36 - Unable to update the meeting.\nPlease try again
+                deactivate MeetingService
+                MeetingController-->MeetingPage: Return update failure; no notification sent
+                deactivate MeetingController
+                MeetingPage-->Organizer: MSG36 - Unable to update the meeting.\nPlease try again
+
+            else New schedule is saved
+                Database-->MeetingRepository: Schedule and Reschedule history saved
+                deactivate Database
+                MeetingRepository-->MeetingService: Rescheduled Meeting
+                deactivate MeetingRepository
+                MeetingService->NotificationService: Queue schedule-update notifications for affected invitees (BR-76)
+                activate NotificationService
+                NotificationService-->MeetingService: Notifications queued / delivery unavailable;\ndelivery failure does not undo the saved change
+                deactivate NotificationService
+                MeetingService-->MeetingController: Reschedule successful
+                deactivate MeetingService
+                MeetingController-->MeetingPage: MSG138 - Meeting rescheduled successfully. Invitees will be notified.
+                deactivate MeetingController
+                MeetingPage-->Organizer: MSG138 - Meeting rescheduled successfully. Invitees will be notified.
+            end
+        end
+    end
 
 else Meeting is Draft or Rejected
     MeetingService-->MeetingController: Meeting is editable
@@ -54,7 +126,7 @@ else Meeting is Draft or Rejected
 
     MeetingService->MeetingService: Recheck Draft or Rejected status
 
-    alt Meeting is no longer editable - EX-2
+    alt Meeting is no longer editable - EX-1
         MeetingService-->MeetingController: MSG33 - This meeting can no longer be edited
         deactivate MeetingService
         MeetingController-->MeetingPage: Return edit restriction
@@ -62,7 +134,7 @@ else Meeting is Draft or Rejected
         MeetingPage-->Organizer: MSG33 - This meeting can no longer be edited
 
     else Meeting remains editable
-        MeetingService->MeetingService: Validate submitted meeting-level information\nincluding Planned Start/End Time (BR-27, BR-62, BR-163)
+        MeetingService->MeetingService: Validate required meeting information and Planned End Time after\nPlanned Start Time (BR-24, BR-27, BR-62)
 
         alt Meeting information is invalid - EX-1
             MeetingService-->MeetingController: MSG31 - Invalid meeting information

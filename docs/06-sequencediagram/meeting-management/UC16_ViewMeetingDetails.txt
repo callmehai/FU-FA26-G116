@@ -31,7 +31,7 @@ alt Meeting does not exist or is not accessible - EX-1
 else Meeting is accessible
     MeetingService->MeetingRepository: Get meeting-level details
     activate MeetingRepository
-    MeetingRepository->Database: Retrieve meeting-level fields only
+    MeetingRepository->Database: Retrieve meeting-level fields, Planned Start/End Time\nand Actual Start/End Time when available
     activate Database
     Database-->MeetingRepository: Meeting details / Retrieval failed
     deactivate Database
@@ -44,13 +44,12 @@ else Meeting is accessible
         deactivate MeetingController
         MeetingPage-->User: MSG37 - Unable to load meeting details. Please try again.
     else Meeting details retrieved successfully
-        MeetingService-->MeetingController: Meeting Name, Mode, Location, Confidentiality Level, Description, Status
+        MeetingService-->MeetingController: Meeting Name, Planned Start/End Time, Actual Start/End Time\nwhen available, Mode, Location, Confidentiality Level, Description, Status
         deactivate MeetingService
-        MeetingController-->MeetingPage: Display meeting-level details
+        MeetingController-->MeetingPage: Return meeting information with planned and available actual times
         deactivate MeetingController
-        MeetingPage-->User: Meeting-level details
+        MeetingPage-->User: Display meeting-level details and planned/actual times read-only
     end
 end
 
-note over MeetingService: This use case does not load Agenda Items (see UC-26).
 deactivate MeetingPage

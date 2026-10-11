@@ -4,74 +4,73 @@ actor "Chair" as Chair
 boundary "Meeting Management Page" as MeetingPage
 control ":Agenda Controller" as AgendaController
 control ":Agenda Service" as AgendaService
+participant ":Meeting Repository" as MeetingRepository
 participant ":Meeting Participant Repository" as MeetingParticipantRepository
 participant ":Agenda Item Repository" as AgendaItemRepository
 database ":Database" as Database
 
 Chair->MeetingPage: Complete Agenda Item
 activate MeetingPage
-
 MeetingPage->AgendaController: Complete Agenda Item
 activate AgendaController
-
 AgendaController->AgendaService: completeAgendaItem(meetingId, agendaItemId, chairId)
 activate AgendaService
 
-
-AgendaService->MeetingParticipantRepository: Verify Chair assignment to the Meeting (BR-69)
-activate MeetingParticipantRepository
-MeetingParticipantRepository->Database: Find Chair assignment
+AgendaService->MeetingRepository: Get selected Meeting and current status
+activate MeetingRepository
+MeetingRepository->Database: Get selected Meeting and current status
 activate Database
-Database-->MeetingParticipantRepository: Assignment result
+Database-->MeetingRepository: Meeting / Not found
 deactivate Database
-MeetingParticipantRepository-->AgendaService: Assignment result
+MeetingRepository-->AgendaService: Meeting / Not found
+deactivate MeetingRepository
+
+AgendaService->MeetingParticipantRepository: Check active current Chair assignment
+activate MeetingParticipantRepository
+MeetingParticipantRepository->Database: Check active current Chair assignment
+activate Database
+Database-->MeetingParticipantRepository: Active Chair / Not eligible
+deactivate Database
+MeetingParticipantRepository-->AgendaService: Active Chair / Not eligible
 deactivate MeetingParticipantRepository
 
-AgendaService->AgendaItemRepository: Get selected Agenda Item
+AgendaService->AgendaItemRepository: Get selected Item, Meeting membership and current status
 activate AgendaItemRepository
-AgendaItemRepository->Database: Retrieve selected Agenda Item
+AgendaItemRepository->Database: Get selected Item, Meeting membership and current status
 activate Database
-Database-->AgendaItemRepository: Agenda Item
+Database-->AgendaItemRepository: Current Item / Not eligible
 deactivate Database
-AgendaItemRepository-->AgendaService: Agenda Item
+AgendaItemRepository-->AgendaService: Current Item / Not eligible
 deactivate AgendaItemRepository
 
-AgendaService->AgendaService: Verify assigned Chair, InProgress Meeting,\nitem belongs to selected session,\nand item is InProgress (BR-64, BR-69, BR-70)
-
-alt Agenda Item cannot be completed - EX-1
+AgendaService->AgendaService: Verify active Chair, Meeting InProgress and\nselected Item belongs to this Meeting and is its current InProgress Item;\nPlanned Duration does not restrict completion (BR-64, BR-69, BR-72)
+alt Item cannot be completed - EX-1
     AgendaService-->AgendaController: MSG74 - This agenda item cannot be completed.
-    deactivate AgendaService
     AgendaController-->MeetingPage: MSG74 - This agenda item cannot be completed.
-    deactivate AgendaController
-    MeetingPage-->Chair: MSG74 - This agenda item cannot be completed.\nAgenda Item remains unchanged
-
-else Agenda execution conditions are valid
-    AgendaService->AgendaItemRepository: Set current Agenda Item to Done,\nrecord actual end time and actual time used (BR-70, BR-72)
+    MeetingPage-->Chair: MSG74 - This agenda item cannot be completed.
+else Completion permitted
+    AgendaService->AgendaItemRepository: Save Done, actual end time and elapsed duration together (BR-70, BR-72)
     activate AgendaItemRepository
-    AgendaItemRepository->Database: Update Agenda Item status and actual timing
+    AgendaItemRepository->Database: Save Done, actual end time and elapsed duration together (BR-70, BR-72)
     activate Database
-    Database-->AgendaItemRepository: Change saved / Save failed without changing Agenda Item
+    Database-->AgendaItemRepository: Completed / Save failed; previous state and times preserved
     deactivate Database
-    AgendaItemRepository-->AgendaService: Completed Agenda Item / Save failed
+    AgendaItemRepository-->AgendaService: Completed / Save failed; previous state and times preserved
     deactivate AgendaItemRepository
 
-    alt Agenda Item cannot be completed due to system error - EX-2
-        AgendaService-->AgendaController: MSG76 - Unable to complete the agenda item. Please try again.
-        deactivate AgendaService
-        AgendaController-->MeetingPage: MSG76 - Unable to complete the agenda item. Please try again.
-        deactivate AgendaController
-        MeetingPage-->Chair: MSG76 - Unable to complete the agenda item. Please try again.\nAgenda Item remains unchanged
-
-    else Agenda Item completion is saved
-        AgendaService->AgendaService: Meeting has no current Agenda Item until Chair starts another;\nMeeting stays InProgress (BR-72)
-        AgendaService->AgendaService: Make completed Agenda Item state available in real time\nto authorized users viewing the same Meeting (BR-73)
-
-        AgendaService-->AgendaController: Agenda Item completed successfully
-        deactivate AgendaService
-        AgendaController-->MeetingPage: MSG65 - Agenda item completed successfully.\nCompleted Agenda Item and actual timing
-        deactivate AgendaController
-        MeetingPage-->Chair: MSG65 - Agenda item completed successfully.\nShow Done status, actual end time and actual time used
+    alt Completion cannot be saved - EX-2
+        AgendaService-->AgendaController: MSG76 - Unable to complete the agenda item. Please try again.\nItem and Meeting remain InProgress
+        AgendaController-->MeetingPage: MSG76 - Unable to complete the agenda item. Please try again.\nItem and Meeting remain InProgress
+        MeetingPage-->Chair: MSG76 - Unable to complete the agenda item. Please try again.\nItem and Meeting remain InProgress
+    else Completion saved
+        AgendaService->AgendaService: Keep Meeting InProgress with no current Item;\ndo not automatically start the next Pending Item (BR-72)
+        AgendaService->AgendaService: Automatically refresh the complete Agenda\nfor currently authorized viewers (BR-73)
+        AgendaService-->AgendaController: MSG65 - Agenda item completed successfully.
+        AgendaController-->MeetingPage: MSG65 - Agenda item completed successfully.
+        MeetingPage-->Chair: MSG65 - Agenda item completed successfully.
     end
 end
 
+deactivate AgendaService
+deactivate AgendaController
 deactivate MeetingPage
