@@ -1,0 +1,63 @@
+title UC-31 - Record Attendance
+
+actor "Secretary" as User
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Participant Controller" as ParticipantController
+control ":Meeting Participant Service" as ParticipantService
+participant ":Meeting Participant Repository" as ParticipantRepository
+database ":Database" as Database
+
+User->MeetingPage: Submit complete Present/Absent attendance list for internal participants and Guests
+activate MeetingPage
+MeetingPage->ParticipantController: Submit complete Present/Absent attendance list for internal participants and Guests
+activate ParticipantController
+ParticipantController->ParticipantService: recordMeetingAttendance(meeting, secretary, displayedRoster, attendanceList)
+activate ParticipantService
+ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,
+actor relationship, roles and additional permissions
+activate ParticipantRepository
+ParticipantRepository->Database: Retrieve current Meeting and roster information
+activate Database
+Database-->ParticipantRepository: Current information / Read failure
+deactivate Database
+ParticipantRepository-->ParticipantService: Current information / Read failure
+deactivate ParticipantRepository
+ParticipantService->ParticipantService: Require active assigned Secretary and InProgress Meeting (BR-170)
+alt Secretary is no longer authorized - EX-4
+ParticipantService-->ParticipantController: Request denied; previous attendance unchanged
+ParticipantController-->MeetingPage: Request denied; previous attendance unchanged
+MeetingPage-->User: Request denied; previous attendance unchanged
+else Meeting is no longer InProgress - EX-2
+ParticipantService-->ParticipantController: MSG149 - Attendance can only be recorded while the meeting is in progress.
+ParticipantController-->MeetingPage: MSG149 - Attendance can only be recorded while the meeting is in progress.
+MeetingPage-->User: MSG149 - Attendance can only be recorded while the meeting is in progress.
+else Current internal/Guest roster differs from displayed list - EX-3
+ParticipantService-->ParticipantController: MSG151 - The meeting participant list has changed. Refresh it and try again.
+ParticipantController-->MeetingPage: MSG151 - The meeting participant list has changed. Refresh it and try again.
+MeetingPage-->User: MSG151 - The meeting participant list has changed. Refresh it and try again.
+else At least one current person lacks a valid Present/Absent choice - EX-1
+ParticipantService-->ParticipantController: MSG148 - Select Present or Absent for every current participant and Guest.
+ParticipantController-->MeetingPage: MSG148 - Select Present or Absent for every current participant and Guest.
+MeetingPage-->User: MSG148 - Select Present or Absent for every current participant and Guest.
+else Complete current list is valid
+ParticipantService->ParticipantRepository: Save or revise all internal and Guest attendance values together,\nrecording the Secretary and save time; no partial changes (BR-172, BR-178)
+activate ParticipantRepository
+ParticipantRepository->Database: Save all requested changes together;\nrecheck Meeting status, authority and roster before saving
+activate Database
+Database-->ParticipantRepository: Complete save / No changes saved
+deactivate Database
+ParticipantRepository-->ParticipantService: Complete save / No changes saved
+deactivate ParticipantRepository
+alt Any attendance save fails - EX-5
+ParticipantService-->ParticipantController: MSG150 - Unable to save attendance. No changes were saved.
+ParticipantController-->MeetingPage: MSG150 - Unable to save attendance. No changes were saved.
+MeetingPage-->User: MSG150 - Unable to save attendance. No changes were saved.
+else Complete list saved
+ParticipantService-->ParticipantController: MSG147 - Meeting attendance saved successfully.
+ParticipantController-->MeetingPage: MSG147 - Meeting attendance saved successfully.
+MeetingPage-->User: MSG147 - Meeting attendance saved successfully.
+end
+end
+deactivate ParticipantService
+deactivate ParticipantController
+deactivate MeetingPage

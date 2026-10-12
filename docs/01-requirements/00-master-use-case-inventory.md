@@ -109,7 +109,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-19 | Duyệt / Từ chối cuộc họp *(Review Meeting Approval)* | Meeting Approver | Đã đặc tả | Độc lập |
 | UC-20 | Công bố cuộc họp *(Publish Meeting)* | Meeting Organizer; Email / SMTP | Đã đặc tả | `<<extend>>` UC-16 |
 | UC-21 | Bắt đầu cuộc họp *(Start Meeting)* | Chair | Đã đặc tả | `<<extend>>` UC-16 |
-| UC-22 | Kết thúc cuộc họp *(End Meeting)* — chặn khi còn phiếu đang mở | Chair | Đã đặc tả | `<<extend>>` UC-16 |
+| UC-22 | Kết thúc cuộc họp *(End Meeting)* — chặn khi còn phiếu mở hoặc chưa ghi nhận đủ điểm danh | Chair | Đã đặc tả | `<<extend>>` UC-16 |
 
 ## FE-05 — Quản lý chương trình nghị sự *(Agenda Management)*
 
@@ -124,11 +124,11 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-27 | Xem thành phần tham dự *(View Meeting Participants)* | Secretary | Đã đặc tả | `<<extend>>` UC-16 |
-| UC-28 | Quản lý thành phần tham dự *(Manage Meeting Participants)* — gồm UC-28a Thêm / mời Guest, UC-28b Gán / đổi vai trò, UC-28c Xoá / thu hồi | Secretary; Meeting Organizer (chỉ thêm Thư ký đầu tiên) | Đã đặc tả | Secretary: `<<extend>>` UC-27; Organizer thêm Thư ký đầu tiên: `<<extend>>` UC-16 |
+| UC-27 | Xem thành phần tham dự *(View Meeting Participants)* | Secretary, Chair, Participant | Đã đặc tả | `<<extend>>` UC-16 |
+| UC-28 | Quản lý thành phần tham dự *(Manage Meeting Participants)* — gồm UC-28a thêm nhiều người nội bộ cùng vai trò/quyền hoặc mời từng Guest, UC-28b Quản lý vai trò & quyền bổ sung, UC-28c Xoá / thu hồi | Meeting Organizer, Secretary | Đã đặc tả | Secretary: `<<extend>>` UC-27; Organizer thêm Thư ký đầu tiên: `<<extend>>` UC-16 |
 | UC-29 | Phản hồi lời mời họp *(Respond to Meeting Invitation)* | Chair, Secretary, Participant, Guest | Đã đặc tả | Độc lập; Guest đi qua UC-04 |
-| UC-30 | Xem trạng thái phản hồi *(View Participant Response Status)* | Secretary | Đã đặc tả | `<<extend>>` UC-27 |
-| UC-31 | Ghi nhận điểm danh *(Record Attendance)* — chỉ khi `InProgress` | Secretary | Đã đặc tả | `<<extend>>` UC-27 |
+| UC-30 | Xem trạng thái phản hồi *(View Participant Response Status)* | Secretary, Chair, Participant | Đã đặc tả | Mở từ cuộc họp có thể truy cập; Member cần quyền xem phản hồi. Thấy danh tính trong dòng phản hồi không cấp quyền xem hoặc tìm trong roster |
+| UC-31 | Ghi nhận điểm danh *(Record Attendance)* — Secretary ghi đủ Present/Absent cho roster hiện tại khi `InProgress` | Secretary | Đã đặc tả | `<<extend>>` UC-27 |
 
 ## FE-07 — Kho tài liệu cá nhân & Tài liệu cuộc họp *(Personal Document Library & Meeting Document Management)*
 

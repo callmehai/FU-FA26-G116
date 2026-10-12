@@ -1,7 +1,7 @@
 # Thành phần tham dự và vai trò trong cuộc họp — FE-06
 
-Các sequence UC-27, UC-28a → UC-28c, UC-29, UC-30 tuân theo [convention chung](../README.md). Đặc tả nằm tại
-[FE-06 trong UC Specification](../../01-requirements/05-use-case-specifications.md#fe-06--meeting-participant-management).
+Các sequence UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31 tuân theo [convention chung](../README.md). Đặc tả của lần chỉnh sửa này nằm tại
+[Report 3, FE-06](../../08-reports/Report-3_Software_Requirement_Specification.md#6-fe-06--meeting-participant-management).
 
 - Organizer khởi tạo Secretary đầu tiên (BR-78). Secretary được gán có quyền xem meeting trước `Published` (BR-118)
   và chuẩn bị danh sách, gán Chair và các participant còn lại.
@@ -33,5 +33,16 @@ node scripts/export-diagrams.js docs/06-sequencediagram/meeting-management/UC20_
 
 Giữ file `.txt` và `.png` đồng bộ. Công cụ cần truy cập `sequencediagram.org`.
 
-Ngày 10/10/2026 source `.txt` đã bỏ nhánh uỷ quyền và đổi số BR theo Report 3 mới; khi PNG lệch với `.txt`,
-`.txt` là bản đúng.
+Ngày 12/10/2026 đã cập nhật và xuất lại đủ 7 sequence `.txt`/`.png` theo Report 3
+bằng script `scripts/export-diagrams.js`, chỉ cho UC-27, UC-28a/b/c, UC-29, UC-30 và UC-31:
+
+- UC-28a thêm nhiều người cùng một vai trò và quyền bổ sung; toàn bộ được thêm hoặc không thêm ai.
+- UC-28b quản lý vai trò và quyền bổ sung, thay Chủ trì bằng một lần lưu cho cả hai người;
+  giữ tên file cũ để các liên kết vẫn dùng được. Không thay đổi thì kết thúc với MSG154, không báo thành công giả.
+- UC-27/UC-30 cho phép Chủ trì hoặc Thành viên hiện hành xem sau công bố khi được cấp đúng quyền xem tương ứng.
+  Hai quyền bổ sung không cho phép quản lý thành phần, điểm danh hoặc thay đổi các quyền nghiệp vụ khác.
+- UC-31 lưu toàn bộ điểm danh Có mặt/Vắng cho thành viên và khách khi `InProgress`;
+  chưa điểm danh thì để trống, danh sách thay đổi hoặc lưu lỗi thì giữ nguyên toàn bộ giá trị cũ.
+- BR-168–BR-178 và MSG145–MSG154 là các mã mới. MSG141–MSG144 đã được dùng cho nghị sự nên được giữ nguyên.
+
+Đây là cập nhật tài liệu; chưa xác nhận API đã triển khai các quy tắc mới và chưa đăng ghi chú lên Jira.

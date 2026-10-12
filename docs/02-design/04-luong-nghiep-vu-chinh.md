@@ -116,7 +116,7 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
    chuyển `InProgress`, ghi giờ bắt đầu thực tế, báo thông báo trong ứng dụng cho người được mời (BR-164).
 2. **Vào phòng họp (UC-37 → UC-42)** nếu cuộc họp Online / Hybrid. Guest vào qua guest session của UC-04. Phòng họp không
    đổi vòng đời cuộc họp.
-3. **Điểm danh (UC-31):** Thư ký ghi *Present / Absent / Excused* cho từng người, độc lập với phản hồi lời mời (BR-116).
+3. **Điểm danh (UC-31):** Trong lúc cuộc họp `InProgress`, Thư ký đánh dấu *Present / Absent* cho toàn bộ người tham dự nội bộ và Guest; người chưa ghi nhận được để trống. Lưu cả danh sách trong một lần để tránh điểm danh thiếu hoặc lưu một phần. Điểm danh độc lập với phản hồi lời mời và trạng thái đang kết nối phòng họp (BR-116, BR-170–BR-172, BR-178).
 4. **Vòng agenda** — lặp cho từng mục:
    1. Chair đặt mục hiện tại (UC-24): mục `Pending` → `InProgress`, ghi giờ bắt đầu; tối đa một mục đang chạy (BR-69 → BR-71).
    2. Thảo luận với tài liệu, chat, chia sẻ màn hình.
@@ -125,9 +125,7 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
       *Passed / NotPassed / Deferred* (UC-57). Áp dụng BR-160, BR-161, BR-165.
    4. Chair hoàn thành mục (UC-25): mục → `Done`, ghi giờ kết thúc và thời lượng thực tế (BR-70, BR-72).
    5. Còn mục → quay lại 4.1.
-5. **Kết thúc (UC-22):** Chair kết thúc; bị chặn nếu còn phiếu đang mở (BR-159). Mục agenda đang chạy (nếu có) được hoàn
-   tất cùng một transaction với việc chuyển `Ended` và ghi giờ kết thúc thực tế. Hệ thống đóng phòng họp và ngắt kết nối
-   (BR-143).
+5. **Kết thúc (UC-22):** Chair kết thúc; chỉ thực hiện khi không còn phiếu đang mở và đã ghi nhận Present/Absent cho toàn bộ thành phần tham dự hiện tại, gồm Guest (BR-159, BR-179). Mục agenda đang chạy (nếu có) được hoàn tất cùng lúc cuộc họp chuyển sang `Ended` và ghi giờ kết thúc thực tế. Các mục còn chờ vẫn giữ nguyên trạng thái; hệ thống đóng quyền vào phòng họp theo quy tắc hiện hành (BR-143, BR-159).
 
 ---
 

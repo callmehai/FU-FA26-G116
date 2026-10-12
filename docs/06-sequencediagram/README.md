@@ -513,7 +513,7 @@ deactivate MeetingPage
 | `role-management/` | UC-10, UC-11, UC-12a → UC-12c |
 | `meeting-management/` | UC-14 → UC-22 |
 | `agenda-management/` | UC-23a → UC-23d, UC-24 → UC-26 |
-| `meeting-participant-management/` | UC-27, UC-28a → UC-28c, UC-29, UC-30 |
+| `meeting-participant-management/` | UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31 |
 | `notification-management/` | UC-66, UC-67a, UC-67b, UC-68 |
 
 Xuất PNG: `node scripts/export-diagrams.js docs/06-sequencediagram/<thư mục hoặc file>` (cần truy cập `sequencediagram.org`).

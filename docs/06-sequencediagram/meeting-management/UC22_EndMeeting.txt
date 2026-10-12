@@ -55,7 +55,7 @@ else Meeting and Chair are eligible
     VotingSessionRepository-->MeetingService: Open Votes / None
     deactivate VotingSessionRepository
 
-    alt An Open Vote exists - EX-3
+    alt An Open Vote exists - EX-2
         MeetingService-->MeetingController: MSG139 - Close all open votes before ending the meeting
         deactivate MeetingService
         MeetingController-->MeetingPage: Return open vote error
@@ -63,6 +63,23 @@ else Meeting and Chair are eligible
         MeetingPage-->Chair: MSG139 - Close all open votes before ending the meeting\nMeeting remains InProgress
 
     else No Vote is Open
+        MeetingService->MeetingParticipantRepository: Check complete Present/Absent attendance for current participants and Guests (BR-179)
+        activate MeetingParticipantRepository
+        MeetingParticipantRepository->Database: Check attendance completeness for the current roster
+        activate Database
+        Database-->MeetingParticipantRepository: Complete / Incomplete
+        deactivate Database
+        MeetingParticipantRepository-->MeetingService: Attendance complete / incomplete
+        deactivate MeetingParticipantRepository
+
+        alt Attendance is incomplete - EX-3
+            MeetingService-->MeetingController: MSG155 - Record Present or Absent for every current participant and Guest before ending the meeting
+            deactivate MeetingService
+            MeetingController-->MeetingPage: Return attendance completion error
+            deactivate MeetingController
+            MeetingPage-->Chair: MSG155 - Record Present or Absent for every current participant and Guest before ending the meeting
+
+        else Attendance is complete
         MeetingService->AgendaItemRepository: Get the InProgress Agenda Item, if any (BR-159)
         activate AgendaItemRepository
         AgendaItemRepository->Database: Find InProgress Agenda Item of the Meeting
@@ -77,7 +94,7 @@ else Meeting and Chair are eligible
         MeetingRepository->Database: Save Agenda Item, Meeting and history atomically
         activate Database
 
-        alt Meeting end cannot be completed - EX-2
+        alt Meeting end cannot be completed - EX-4
             Database-->MeetingRepository: Save failed, transaction rolled back
             deactivate Database
             MeetingRepository-->MeetingService: Meeting end failed
@@ -106,6 +123,7 @@ else Meeting and Chair are eligible
             MeetingController-->MeetingPage: MSG111 - Meeting ended successfully
             deactivate MeetingController
             MeetingPage-->Chair: MSG111 - Meeting ended successfully
+        end
         end
     end
 end
