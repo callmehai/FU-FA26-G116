@@ -1,8 +1,9 @@
 # Server test chung
 
 Một bản TrustCabinet chạy 24/7 để cả nhóm (Tester, BA, giảng viên) mở bằng trình duyệt, không cần
-cài gì. Chạy trên **một máy AWS EC2** bằng Docker Compose: app, PostgreSQL, Redis và Caddy (tự lấy
-chứng chỉ HTTPS). Lý do chọn cách này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-ec2.md).
+cài gì. Chạy trên **một máy AWS Lightsail** bằng Docker Compose: app, PostgreSQL, Redis và Caddy (tự
+lấy chứng chỉ HTTPS). Mỗi lần merge vào `main` và CI xanh, server **tự cập nhật**. Lý do chọn cách
+này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-lightsail.md).
 
 > **Đây là môi trường test, không phải production.** App chạy ở chế độ `Development`: tự migrate,
 > tự seed tài khoản demo với mật khẩu công khai trong repo, và trả stack trace khi lỗi. Ai có URL
@@ -11,7 +12,7 @@ chứng chỉ HTTPS). Lý do chọn cách này: [ADR-0015](../docs/05-decisions/
 
 ## Dành cho người test
 
-Mở <https://52-74-7-204.sslip.io>. Tài khoản, mật khẩu chung `TrustCabinet@2026`:
+Mở <https://trustcabinet.workspace-hub.space>. Tài khoản, mật khẩu chung `TrustCabinet@2026`:
 
 | Email | Vai trò |
 |---|---|
@@ -23,39 +24,62 @@ Mở <https://52-74-7-204.sslip.io>. Tài khoản, mật khẩu chung `TrustCabi
 Cần thử nhiều vai trò cùng lúc thì mở thêm cửa sổ ẩn danh hoặc profile Chrome khác — mỗi cửa sổ
 giữ một phiên đăng nhập.
 
-Server luôn chạy code của nhánh `main` lần deploy gần nhất. Tính năng chưa merge vào `main` thì chưa
-có trên server.
+Server chạy đúng code của `main`. Merge PR xong khoảng 10 phút (CI rồi deploy) là bản mới lên server;
+tính năng chưa merge thì chưa có.
 
-## Dành cho người deploy
+## Tự động deploy
 
-### Cập nhật lên `main` mới nhất
+[.github/workflows/deploy.yml](../.github/workflows/deploy.yml) chạy sau mỗi lần CI trên `main` xanh:
+build image trên runner của GitHub, chép sang server qua SSH, đưa code trên server về đúng commit đó
+rồi khởi động lại container. App tự áp dụng migration mới khi khởi động. Không build trên server: máy
+1 GB tự build mất 15–20 phút và đốt hết CPU burst.
 
-Việc thường làm nhất — sau mỗi lần merge PR mà nhóm muốn test:
+- Xem tiến trình: tab **Actions** của repo → *Deploy server test*.
+- Deploy lại mà không cần push: tab **Actions** → *Deploy server test* → **Run workflow**.
+- CI đỏ thì không deploy; server giữ bản cũ.
 
-```bash
-ssh -i ~/.ssh/trustcabinet-test.pem ubuntu@<SITE_ADDRESS>
-cd TrustCabinet
-git pull
-docker compose -f deploy/docker-compose.yml up -d --build
-docker image prune -f        # dọn image cũ, ổ đĩa chỉ có 20 GB
-```
+**Chỉ `main` được deploy.** Database ở đây áp dụng migration tự động: deploy một nhánh có migration
+chưa merge rồi quay về `main` sẽ để lại schema mà `main` không biết, và chỉ sửa được bằng cách xoá
+database.
 
-Build mất vài phút; trong lúc đó bản cũ vẫn chạy, chỉ gián đoạn vài giây lúc đổi container. Khởi
-động lại, app tự áp dụng migration mới.
+### Thiết lập một lần
 
-**Chỉ deploy `main`.** Database ở đây áp dụng migration tự động: deploy một nhánh có migration chưa
-merge rồi quay về `main` sẽ để lại schema mà `main` không biết, và chỉ sửa được bằng cách xoá database.
+Workflow cần ba secret của repo. Làm trong terminal của server (Lightsail → máy `trustcabinet` →
+**Connect using SSH**) và trang **GitHub → repo → Settings → Secrets and variables → Actions → New
+repository secret**:
+
+1. Tạo SSH key riêng cho GitHub Actions và cho phép nó đăng nhập server:
+   ```bash
+   ssh-keygen -t ed25519 -N "" -C github-actions-deploy -f ~/.ssh/ci_deploy
+   cat ~/.ssh/ci_deploy.pub >> ~/.ssh/authorized_keys
+   cat ~/.ssh/ci_deploy
+   ```
+   Secret **`DEPLOY_SSH_KEY`** = toàn bộ khối vừa in, từ `-----BEGIN` đến hết `-----END ...-----`.
+   Lưu secret xong thì xoá bản trên server: `rm ~/.ssh/ci_deploy`.
+2. Secret **`DEPLOY_HOST`** = IP tĩnh của server.
+3. Secret **`DEPLOY_HOST_KEY`** = kết quả của lệnh dưới (dạng `ssh-ed25519 AAAA...`), để workflow
+   nhận đúng server chứ không tin bất kỳ máy nào trả lời ở IP đó:
+   ```bash
+   awk '{print $1" "$2}' /etc/ssh/ssh_host_ed25519_key.pub
+   ```
+
+Thử bằng **Run workflow**; bước *Kiểm tra* xanh là xong.
+
+## Việc làm tay trên server
+
+Mở terminal: Lightsail → máy `trustcabinet` → **Connect using SSH**, rồi `cd ~/TrustCabinet`.
 
 ### Xem log, kiểm tra
 
 ```bash
 docker compose -f deploy/docker-compose.yml ps
 docker compose -f deploy/docker-compose.yml logs -f app        # Ctrl+C để thoát
-curl https://<SITE_ADDRESS>/api/health
+docker compose -f deploy/docker-compose.yml logs caddy | grep -i certificate
 ```
 
-Dòng `Failed executing DbCommand ... __ef_migrations_history` ở lần chạy đầu tiên là bình thường:
-EF Core hỏi bảng lịch sử migration trước khi tạo nó.
+Ở chế độ Development, app in mọi câu SQL ra log — rối nhưng không phải lỗi; tìm dòng `fail:` hay
+`Exception`. Dòng `Failed executing DbCommand ... __ef_migrations_history` ở lần chạy đầu là bình
+thường: EF Core hỏi bảng lịch sử migration trước khi tạo nó.
 
 ### Xoá sạch dữ liệu, seed lại từ đầu
 
@@ -75,7 +99,8 @@ docker compose -f deploy/docker-compose.yml exec postgres psql -U trustcabinet -
 ```
 
 Từ DBeaver ở máy mình: PostgreSQL không mở ra Internet, chỉ nghe ở `127.0.0.1:5432` của server, nên
-DBeaver đi qua SSH. Tạo kết nối PostgreSQL mới:
+DBeaver đi qua SSH. Tải key SSH của Lightsail: **Account → SSH keys → Default keys → Singapore →
+Download**. Rồi tạo kết nối PostgreSQL mới:
 
 | Tab | Trường | Giá trị |
 |---|---|---|
@@ -83,119 +108,121 @@ DBeaver đi qua SSH. Tạo kết nối PostgreSQL mới:
 | Main | Database / Username | `trustcabinet` / `trustcabinet` |
 | Main | Password | `POSTGRES_PASSWORD` trong `deploy/.env` trên server |
 | SSH | Use SSH Tunnel | bật |
-| SSH | Host / Port / User | Elastic IP / `22` / `ubuntu` |
-| SSH | Authentication | Public Key, chọn file `trustcabinet-test.pem` |
+| SSH | Host / Port / User | IP tĩnh / `22` / `ubuntu` |
+| SSH | Authentication | Public Key, chọn file `.pem` vừa tải |
 
 Nhớ đây là database cả nhóm đang test — sửa tay có thể làm hỏng kịch bản của người khác.
 
 ## Dựng server lần đầu
 
-Chỉ làm một lần. Ước tính chi phí khoảng 20 USD/tháng (EC2 `t4g.small` + 20 GB ổ đĩa + IP tĩnh), nên
-120 USD credit đủ chạy liên tục đến hết tháng 12 với dư. **Không** dùng RDS hay ElastiCache — đắt
-gấp nhiều lần mà một môi trường test không cần.
+Chỉ làm một lần, toàn bộ trên giao diện web của AWS và GitHub. Chi phí khoảng 7 USD/tháng.
 
-### 1. Tạo máy EC2 (AWS Console)
+### 1. Tạo máy
 
-1. Chọn region **Asia Pacific (Singapore) `ap-southeast-1`** — gần Việt Nam nhất.
-2. **EC2 → Launch instance**:
-   - Name: `trustcabinet-test`
-   - AMI: **Ubuntu Server 24.04 LTS**, Architecture **64-bit (Arm)**
-   - Instance type: **`t4g.small`** (2 vCPU, 2 GB RAM)
-   - Key pair: **Create new key pair**, ED25519, `.pem`, đặt tên `trustcabinet-test` — file tải về
-     chỉ có một lần, cất vào `~/.ssh/` và `chmod 400`
-   - Network settings: tick **Allow SSH from My IP**, **Allow HTTPS**, **Allow HTTP** (HTTP để Caddy
-     xin chứng chỉ và chuyển hướng sang HTTPS)
-   - Storage: **20 GiB gp3**
-3. **EC2 → Elastic IPs → Allocate**, rồi **Associate** vào máy vừa tạo. Không có IP tĩnh thì mỗi lần
-   stop/start máy đổi IP, và địa chỉ `sslip.io` bên dưới đổi theo.
-4. **Billing → Budgets → Create budget**: ngưỡng 80 USD, gửi email cảnh báo — để biết trước khi hết
-   credit.
-5. **Billing → Free Tier**: xem ngày hết hạn của Free plan. Tài khoản Free plan bị đóng khi hết hạn
-   (6 tháng) hoặc hết credit — nếu ngày hết hạn rơi trước 31/12 thì phải nâng lên Paid plan; credit
-   còn lại vẫn được dùng tiếp.
+Lightsail → **Create instance**:
 
-### 2. Cài Docker trên server
+- Location: **Singapore**.
+- Platform **Linux operating system**, blueprint **Ubuntu 24.04 LTS**.
+- Plan **General purpose**, network **Dual-stack**, size **$7** (1 GB RAM, 2 vCPU). Tài khoản AWS mới
+  bị Lightsail chặn các gói lớn hơn; muốn lớn hơn thì gửi case *Account and billing* cho AWS Support.
+- Đặt tên `trustcabinet`, bỏ qua snapshot, tag, advanced settings → **Create instance**.
+
+### 2. Mạng
+
+Máy `trustcabinet` → tab **Networking**:
+
+- **Attach static IP** — không có IP tĩnh thì IP đổi khi máy khởi động lại. IP tĩnh không tốn tiền
+  khi đang gắn vào máy, nhưng **tính tiền khi nằm không**: xoá máy thì xoá luôn IP tĩnh.
+- **Firewall rules → Add rule → HTTPS**, nguồn *Any IPv4 or IPv6 address*. SSH (22) và HTTP (80) có
+  sẵn; HTTP cần để Caddy xin chứng chỉ và chuyển hướng sang HTTPS.
+
+### 3. Tên miền
+
+Trỏ một bản ghi **A** về IP tĩnh — hiện là `trustcabinet` → IP tĩnh trong DNS của
+`workspace-hub.space` (Namecheap → Advanced DNS). Chưa có tên miền thì dùng `sslip.io`, dịch vụ DNS
+miễn phí trả về IP nằm ngay trong tên: IP `13.250.1.2` → `13-250-1-2.sslip.io`.
+
+### 4. Cài Docker
+
+Terminal của server (**Connect using SSH**):
 
 ```bash
-ssh -i ~/.ssh/trustcabinet-test.pem ubuntu@<ELASTIC_IP>
-
-# 2 GB swap: build .NET + frontend trên máy 2 GB RAM dễ hết bộ nhớ nếu không có
-sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile
+# 4 GB swap: máy chỉ có 1 GB RAM
+sudo fallocate -l 4G /swapfile && sudo chmod 600 /swapfile
 sudo mkswap /swapfile && sudo swapon /swapfile
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
 curl -fsSL https://get.docker.com | sudo sh
 sudo usermod -aG docker ubuntu
-exit        # đăng nhập lại để nhóm docker có hiệu lực
 ```
 
-### 3. Lấy code, cấu hình, chạy
+Đóng terminal, mở lại để nhóm `docker` có hiệu lực.
+
+### 5. Lấy code
 
 Repo là private, nên server cần một **deploy key**: SSH key riêng của server, chỉ được **đọc** đúng
-repo này — `git pull` được, không push được. Tạo key trên server:
+repo này.
 
 ```bash
-ssh -i ~/.ssh/trustcabinet-test.pem ubuntu@<ELASTIC_IP>
-ssh-keygen -t ed25519 -N "" -C trustcabinet-test-server -f ~/.ssh/github_deploy
+ssh-keygen -t ed25519 -N "" -C lightsail-trustcabinet -f ~/.ssh/github_deploy
 printf "Host github.com\n  IdentityFile ~/.ssh/github_deploy\n  IdentitiesOnly yes\n" > ~/.ssh/config
 ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
 cat ~/.ssh/github_deploy.pub
 ```
 
 Người có quyền admin repo dán dòng vừa in vào **GitHub → repo → Settings → Deploy keys → Add deploy
-key**, để trống ô *Allow write access*. Rồi trên server:
+key**, để trống ô *Allow write access*. Rồi:
 
 ```bash
 git clone git@github.com:callmehai/TrustCabinet.git
 cd TrustCabinet
 ```
 
-Tạo `deploy/.env` — lệnh dưới tự lấy IP public, dựng địa chỉ `sslip.io` và sinh hai secret ngẫu nhiên:
+### 6. Cấu hình và chạy
 
 ```bash
-IP=$(curl -s https://checkip.amazonaws.com)
 cat > deploy/.env <<EOF
-SITE_ADDRESS=${IP//./-}.sslip.io
+SITE_ADDRESS=trustcabinet.workspace-hub.space
 POSTGRES_PASSWORD=$(openssl rand -hex 24)
 SIGNING_KEY=$(openssl rand -hex 32)
 EOF
-cat deploy/.env
+chmod 600 deploy/.env
+docker compose -f deploy/docker-compose.yml up -d --build
 ```
 
-- `SITE_ADDRESS` — `sslip.io` là dịch vụ DNS miễn phí trả về IP nằm ngay trong tên: IP `13.250.1.2`
-  → `13-250-1-2.sslip.io`. Có tên miền riêng thì trỏ bản ghi A về Elastic IP rồi sửa dòng này.
+- `SITE_ADDRESS` — tên miền ở bước 3. Đổi về sau thì sửa dòng này rồi `up -d`.
 - `POSTGRES_PASSWORD`, `SIGNING_KEY` — sinh một lần, đừng đổi: đổi `POSTGRES_PASSWORD` sau khi
   database đã tạo thì app không kết nối được nữa; đổi `SIGNING_KEY` thì mọi người bị đăng xuất.
 
-```bash
-docker compose -f deploy/docker-compose.yml up -d --build
-docker compose -f deploy/docker-compose.yml logs -f caddy app
-```
+Lần đầu build trên server mất 15–20 phút; các lần sau GitHub Actions build hộ. Xong khi `logs caddy`
+có `certificate obtained successfully`. Cuối cùng làm phần **Tự động deploy → Thiết lập một lần**.
 
-Xong khi Caddy báo `certificate obtained successfully` và `curl https://<SITE_ADDRESS>/api/health`
-trả `"status":"ok"`.
-
-### 4. Đăng nhập bằng Google (tuỳ chọn)
+### 7. Đăng nhập bằng Google (tuỳ chọn)
 
 Nút "Đăng nhập bằng Google" chỉ chạy khi origin của server có trong OAuth client. Người quản lý
 OAuth client `1024662324975-…` trên Google Cloud Console thêm `https://<SITE_ADDRESS>` vào
 **Authorized JavaScript origins**. Chưa thêm thì nút Google báo lỗi; đăng nhập email + mật khẩu vẫn
 bình thường.
 
-### 5. Gửi email thật (tuỳ chọn)
+### 8. Gửi email thật (tuỳ chọn)
 
 Mặc định tắt. Điền các biến `SMTP_*` trong `deploy/.env` (xem
 [note SMTP](../docs/03-api/07-gui-email-thu-moi-note-cai-dat-may-moi.md#4-cấu-hình-smtp)), đặt
 `SMTP_ENABLED=true`, rồi `docker compose -f deploy/docker-compose.yml up -d`. Email chỉ đến được
 những người dùng có địa chỉ thật — các tài khoản `@trustcabinet.local` thì không.
 
+## Sau khi bảo vệ xong
+
+Xoá máy `trustcabinet` **và** IP tĩnh trên Lightsail, rồi đóng tài khoản AWS. Tài khoản đang ở Paid
+plan: hết credit là AWS trừ tiền thẻ.
+
 ## Lỗi thường gặp
 
 | Hiện tượng | Kiểm tra |
 |---|---|
-| Trình duyệt báo chứng chỉ không hợp lệ | `logs caddy`: cổng 80/443 phải mở trong Security Group, `SITE_ADDRESS` phải trỏ đúng IP |
+| Trang không mở được, trình duyệt báo hết thời gian | Firewall Lightsail phải có HTTPS (443) |
+| Trình duyệt báo chứng chỉ không hợp lệ | `logs caddy`; bản ghi DNS phải trỏ đúng IP tĩnh, `SITE_ADDRESS` phải khớp tên miền |
 | `502 Bad Gateway` | App đang khởi động hoặc chết — `logs app` |
-| Build bị kill giữa chừng | Thiếu RAM: kiểm tra swap bằng `free -h` |
+| Workflow deploy đỏ ở bước SSH | `DEPLOY_HOST` / `DEPLOY_HOST_KEY` sai, hoặc đã đổi IP tĩnh |
 | Đăng nhập xong bị văng ra ngay | Phải vào bằng `https://`; cookie refresh token chỉ gửi qua HTTPS |
-| Không SSH được nữa | IP mạng nhà đổi — sửa rule SSH "My IP" trong Security Group |
 | Hết ổ đĩa | `docker system prune -f` (không có `-v`, để giữ database) |
