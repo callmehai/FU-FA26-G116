@@ -1,5 +1,5 @@
 # Server test chung của nhóm — app + PostgreSQL + Redis + Caddy (tự lấy chứng chỉ HTTPS).
-# Hướng dẫn: deploy/README.md. Lý do chọn cách này: docs/05-decisions/0015-server-test-tren-ec2.md
+# Hướng dẫn: deploy/README.md. Lý do chọn cách này: docs/05-decisions/0015-server-test-tren-lightsail.md
 #
 #   cp deploy/.env.example deploy/.env   # rồi điền giá trị thật, .env đã bị gitignore
 #   docker compose -f deploy/docker-compose.yml up -d --build
@@ -7,6 +7,9 @@ name: trustcabinet-test
 
 services:
   app:
+    # Tên cố định: .github/workflows/deploy.yml build image trên GitHub rồi nạp vào server dưới
+    # đúng tên này; `up -d --build` trên server vẫn build ra cùng tên nếu cần làm tay.
+    image: trustcabinet-app:latest
     build:
       context: ..
       dockerfile: Dockerfile
