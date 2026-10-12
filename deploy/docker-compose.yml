@@ -1,0 +1,87 @@
+# Server test chung của nhóm — app + PostgreSQL + Redis + Caddy (tự lấy chứng chỉ HTTPS).
+# Hướng dẫn: deploy/README.md. Lý do chọn cách này: docs/05-decisions/0015-server-test-tren-ec2.md
+#
+#   cp deploy/.env.example deploy/.env   # rồi điền giá trị thật, .env đã bị gitignore
+#   docker compose -f deploy/docker-compose.yml up -d --build
+name: trustcabinet-test
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      # Development có chủ đích: app tự migrate và seed 4 tài khoản demo khi khởi động. Ngoài
+      # Development thì không có tài khoản nào để đăng nhập — xem ADR-0015.
+      ASPNETCORE_ENVIRONMENT: Development
+      # App chỉ nhận request qua Caddy (không mở cổng ra ngoài), nên tin X-Forwarded-For từ Caddy
+      # là an toàn — nhật ký kiểm toán ghi IP thật của người dùng thay vì IP của Caddy.
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      ConnectionStrings__TrustCabinet: "Host=postgres;Port=5432;Database=trustcabinet;Username=trustcabinet;Password=${POSTGRES_PASSWORD:?Chua dat POSTGRES_PASSWORD trong deploy/.env};GSS Encryption Mode=Disable"
+      ConnectionStrings__Redis: "redis:6379"
+      Authentication__SigningKey: "${SIGNING_KEY:?Chua dat SIGNING_KEY trong deploy/.env}"
+      Email__ApplicationBaseUrl: "https://${SITE_ADDRESS}"
+      # Tắt mặc định; điền SMTP_* trong deploy/.env để gửi email thật (thư mời, đặt lại mật khẩu).
+      Email__Smtp__Enabled: "${SMTP_ENABLED:-false}"
+      Email__Smtp__Host: "${SMTP_HOST:-}"
+      Email__Smtp__Port: "${SMTP_PORT:-587}"
+      Email__Smtp__Username: "${SMTP_USERNAME:-}"
+      Email__Smtp__Password: "${SMTP_PASSWORD:-}"
+      Email__Smtp__FromAddress: "${SMTP_FROM:-}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: trustcabinet
+      POSTGRES_USER: trustcabinet
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Chua dat POSTGRES_PASSWORD trong deploy/.env}
+    # Chỉ mở trên loopback của server — Internet không vào được. DBeaver ở máy mình kết nối qua
+    # SSH tunnel, xem deploy/README.md.
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trustcabinet -d trustcabinet"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?Chua dat SITE_ADDRESS trong deploy/.env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+
+volumes:
+  pgdata:
+  caddy-data:
+  caddy-config:

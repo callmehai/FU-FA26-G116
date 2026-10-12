@@ -1,0 +1,7 @@
+# Caddy tự xin và gia hạn chứng chỉ Let's Encrypt cho SITE_ADDRESS. Bắt buộc phải có HTTPS: cookie
+# refresh token đặt Secure, và Google Sign-In không chấp nhận origin http (trừ localhost).
+# reverse_proxy tự chuyển tiếp WebSocket, nên SignalR ở /hubs không cần cấu hình thêm.
+{$SITE_ADDRESS} {
+	encode zstd gzip
+	reverse_proxy app:8080
+}
