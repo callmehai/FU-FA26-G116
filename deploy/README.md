@@ -11,7 +11,7 @@ chứng chỉ HTTPS). Lý do chọn cách này: [ADR-0015](../docs/05-decisions/
 
 ## Dành cho người test
 
-Mở `https://<SITE_ADDRESS>` (link ghim trong nhóm). Tài khoản, mật khẩu chung `TrustCabinet@2026`:
+Mở <https://52-74-7-204.sslip.io>. Tài khoản, mật khẩu chung `TrustCabinet@2026`:
 
 | Email | Vai trò |
 |---|---|
@@ -131,9 +131,22 @@ exit        # đăng nhập lại để nhóm docker có hiệu lực
 
 ### 3. Lấy code, cấu hình, chạy
 
+Repo là private, nên server cần một **deploy key**: SSH key riêng của server, chỉ được **đọc** đúng
+repo này — `git pull` được, không push được. Tạo key trên server:
+
 ```bash
 ssh -i ~/.ssh/trustcabinet-test.pem ubuntu@<ELASTIC_IP>
-git clone https://github.com/callmehai/TrustCabinet.git
+ssh-keygen -t ed25519 -N "" -C trustcabinet-test-server -f ~/.ssh/github_deploy
+printf "Host github.com\n  IdentityFile ~/.ssh/github_deploy\n  IdentitiesOnly yes\n" > ~/.ssh/config
+ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+cat ~/.ssh/github_deploy.pub
+```
+
+Người có quyền admin repo dán dòng vừa in vào **GitHub → repo → Settings → Deploy keys → Add deploy
+key**, để trống ô *Allow write access*. Rồi trên server:
+
+```bash
+git clone git@github.com:callmehai/TrustCabinet.git
 cd TrustCabinet
 ```
 
