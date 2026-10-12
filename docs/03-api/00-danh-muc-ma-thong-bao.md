@@ -213,16 +213,16 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MSG107` | UC-29 | *This meeting invitation can no longer be answered.* |
 | `MSG108` | UC-29 | *Unable to save the meeting invitation response. Please try again.* |
 | `MSG109` | UC-28b / UC-28c | *The meeting must retain its required Chair and Secretary. Assign a replacement first.* |
-| `MSG145` | UC-28a / EX-1 · Dành sẵn | *One or more selected participants are invalid. No participants were added.* |
-| `MSG146` | UC-28b / EX-5 · Dành sẵn | *Unable to replace the Chair. Meeting roles remain unchanged.* |
+| `MSG145` | UC-28a / Validation chi tiết · Dành sẵn | *One or more selected participants are invalid. No participants were added.* |
+| `MSG146` | UC-28b / Mã dành sẵn, UC tinh gọn dùng MSG102 | *Unable to replace the Chair. Meeting roles remain unchanged.* |
 | `MSG147` | UC-31 / Main Flow · Dành sẵn | *Meeting attendance saved successfully.* |
 | `MSG148` | UC-31 / EX-1 · Dành sẵn | *Select Present or Absent for every current participant and Guest.* |
 | `MSG149` | UC-31 / EX-2 · Dành sẵn | *Attendance can only be recorded while the meeting is in progress.* |
-| `MSG150` | UC-31 / EX-5 · Dành sẵn | *Unable to save attendance. No changes were saved.* |
-| `MSG151` | UC-31 / EX-3 · Dành sẵn | *The meeting participant list has changed. Refresh it and try again.* |
-| `MSG152` | UC-28a / EX-3; UC-28b / EX-1 · Dành sẵn | *One or more selected meeting permissions are not allowed.* |
+| `MSG150` | UC-31 / EX-3 · Dành sẵn | *Unable to save attendance. No changes were saved.* |
+| `MSG151` | UC-31 / EX-1, BR-172 · Dành sẵn | *The meeting participant list has changed. Refresh it and try again.* |
+| `MSG152` | UC-28a / EX-1; UC-28b / EX-1 · Dành sẵn | *One or more selected meeting permissions are not allowed.* |
 | `MSG153` | UC-28b / Main Flow · Dành sẵn | *Meeting permissions updated successfully.* |
-| `MSG154` | UC-28b / EX-4 · Dành sẵn | *No changes to save.* |
+| `MSG154` | UC-28b / Trạng thái UI không có thay đổi, không có EX riêng | *No changes to save.* |
 | `MSG155` | UC-22 / EX-3 · Dành sẵn | *Record Present or Absent for every current participant and Guest before ending the meeting.* |
 | `MSG110` | UC-21 Start Meeting | *Meeting started successfully.* |
 | `MSG111` | UC-22 End Meeting | *Meeting ended successfully.* |

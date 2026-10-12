@@ -1,6 +1,6 @@
 title UC-26 - View Meeting Agenda
 
-actor "Authorized Meeting User" as User
+actor "Meeting Organizer / Meeting Approver / Chair / Secretary / Participant" as User
 boundary "Meeting Management Page" as MeetingPage
 control ":Agenda Controller" as AgendaController
 control ":Agenda Service" as AgendaService

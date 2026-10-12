@@ -1,6 +1,6 @@
 title UC-27 - View Meeting Participants
 
-actor "Secretary / authorized Chair or Member" as User
+actor "Secretary / Chair / Participant" as User
 boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Participant Controller" as ParticipantController
 control ":Meeting Participant Service" as ParticipantService
@@ -11,10 +11,9 @@ User->MeetingPage: Request View Meeting Participants with optional name/email se
 activate MeetingPage
 MeetingPage->ParticipantController: Request View Meeting Participants with optional name/email search
 activate ParticipantController
-ParticipantController->ParticipantService: viewMeeting27(meeting, user, criteria)
+ParticipantController->ParticipantService: viewMeetingParticipants(meeting, user, criteria)
 activate ParticipantService
-ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,
-actor relationship, roles and additional permissions
+ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,\nactor relationship, roles and additional permissions
 activate ParticipantRepository
 ParticipantRepository->Database: Retrieve current Meeting and roster information
 activate Database
@@ -22,7 +21,7 @@ Database-->ParticipantRepository: Current information / Read failure
 deactivate Database
 ParticipantRepository-->ParticipantService: Current information / Read failure
 deactivate ParticipantRepository
-ParticipantService->ParticipantService: Verify active current membership and View meeting participants;\nChair/Member require publication and an explicit grant (BR-117–BR-121, BR-174, BR-176)
+ParticipantService->ParticipantService: Verify active current assignment; Secretary follows existing roster visibility rules;\nfrom Published onward Chair has default access, Member needs View Meeting Participants (BR-117–BR-121, BR-176)
 alt Meeting does not exist or viewing is not permitted - EX-1
 ParticipantService-->ParticipantController: Meeting not found; no roster or response information disclosed
 ParticipantController-->MeetingPage: Meeting not found; no roster or response information disclosed
@@ -33,7 +32,7 @@ ParticipantController-->MeetingPage: MSG95 - Unable to load meeting participants
 MeetingPage-->User: MSG95 - Unable to load meeting participants. Please try again.
 else Viewing is permitted
 ParticipantService->ParticipantService: Exclude removed/revoked entries from current results and totals (BR-103)
-ParticipantService->ParticipantService: Apply name/email search; without other invitees, keep Secretary entries (AF-1, AF-2)
+ParticipantService->ParticipantService: Apply optional name/email search to the current roster (AF-1)
 ParticipantService-->ParticipantController: Current participant list; no information changed
 ParticipantController-->MeetingPage: Current participant list; no information changed
 MeetingPage-->User: Current participant list; no information changed

@@ -14,8 +14,7 @@ MeetingPage->ParticipantController: Submit selected internal users, shared role 
 activate ParticipantController
 ParticipantController->ParticipantService: addMeetingParticipants(meeting, actor, selection)
 activate ParticipantService
-ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,
-actor relationship, roles and additional permissions
+ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,\nactor relationship, roles and additional permissions
 activate ParticipantRepository
 ParticipantRepository->Database: Retrieve current Meeting and roster information
 activate Database
@@ -25,11 +24,11 @@ ParticipantRepository-->ParticipantService: Current information / Read failure
 deactivate ParticipantRepository
 ParticipantService->ParticipantService: Verify Organizer adds exactly one first Secretary with no extras,\nor actor is a current Secretary (BR-78, BR-79, BR-175)
 ParticipantService->ParticipantService: Require Draft, Rejected, Approved, Published or InProgress;\nvalidate every selected active user, uniqueness, role and permitted extras (BR-80–BR-85, BR-168, BR-174)
-alt Actor is no longer authorized - EX-5
+alt Actor is no longer authorized - EX-2
 ParticipantService-->ParticipantController: Request denied; no participants added
 ParticipantController-->MeetingPage: Request denied; no participants added
 MeetingPage-->User: Request denied; no participants added
-else Meeting status disallows changes - EX-4
+else Meeting status disallows changes - EX-2
 ParticipantService-->ParticipantController: MSG98 - The meeting participant list cannot be modified in its current status.
 ParticipantController-->MeetingPage: MSG98 - The meeting participant list cannot be modified in its current status.
 MeetingPage-->User: MSG98 - The meeting participant list cannot be modified in its current status.
@@ -37,14 +36,11 @@ else Internal selection is invalid - EX-1
 ParticipantService-->ParticipantController: MSG97 - Invalid meeting participant information.
 ParticipantController-->MeetingPage: MSG97 - Invalid meeting participant information.
 MeetingPage-->User: MSG97 - Invalid meeting participant information.
-ParticipantService-->ParticipantController: MSG145 - One or more selected participants are invalid. No participants were added.
-ParticipantController-->MeetingPage: MSG145 - One or more selected participants are invalid. No participants were added.
-MeetingPage-->User: MSG145 - One or more selected participants are invalid. No participants were added.
-else Additional permissions are invalid - EX-3
+else Additional permissions are invalid - EX-1
 ParticipantService-->ParticipantController: MSG152 - One or more selected meeting permissions are not allowed.
 ParticipantController-->MeetingPage: MSG152 - One or more selected meeting permissions are not allowed.
 MeetingPage-->User: MSG152 - One or more selected meeting permissions are not allowed.
-else Guest name/email is invalid or already represented - EX-2
+else Guest name/email is invalid or already represented - EX-1
 ParticipantService-->ParticipantController: MSG97 - Invalid meeting participant information.
 ParticipantController-->MeetingPage: MSG97 - Invalid meeting participant information.
 MeetingPage-->User: MSG97 - Invalid meeting participant information.
@@ -68,7 +64,7 @@ deactivate Database
 ParticipantRepository-->ParticipantService: Complete save / No changes saved
 deactivate ParticipantRepository
 end
-alt Save fails - EX-6
+alt Save fails - EX-3
 ParticipantService-->ParticipantController: MSG99 - Unable to add the meeting participant. Please try again.
 ParticipantController-->MeetingPage: MSG99 - Unable to add the meeting participant. Please try again.
 MeetingPage-->User: MSG99 - Unable to add the meeting participant. Please try again.

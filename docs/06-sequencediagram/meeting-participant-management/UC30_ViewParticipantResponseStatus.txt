@@ -1,6 +1,6 @@
 title UC-30 - View Participant Response Status
 
-actor "Secretary / authorized Chair or Member" as User
+actor "Secretary / Chair / Participant" as User
 boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Participant Controller" as ParticipantController
 control ":Meeting Participant Service" as ParticipantService
@@ -11,10 +11,9 @@ User->MeetingPage: Request View Participant Response Status
 activate MeetingPage
 MeetingPage->ParticipantController: Request View Participant Response Status
 activate ParticipantController
-ParticipantController->ParticipantService: viewMeeting30(meeting, user, criteria)
+ParticipantController->ParticipantService: viewInvitationResponses(meeting, user)
 activate ParticipantService
-ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,
-actor relationship, roles and additional permissions
+ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,\nactor relationship, roles and additional permissions
 activate ParticipantRepository
 ParticipantRepository->Database: Retrieve current Meeting and roster information
 activate Database
@@ -22,7 +21,7 @@ Database-->ParticipantRepository: Current information / Read failure
 deactivate Database
 ParticipantRepository-->ParticipantService: Current information / Read failure
 deactivate ParticipantRepository
-ParticipantService->ParticipantService: Verify active current membership and View invitation responses;\nChair/Member require publication and an explicit grant (BR-117–BR-121, BR-174, BR-176)
+ParticipantService->ParticipantService: Verify active current assignment; from Published onward Secretary and Chair have default access;\nMember needs View Invitation Responses, independently of roster-view permission (BR-117, BR-121, BR-176)
 ParticipantService->ParticipantService: Require Published or a later readable Meeting status (BR-176)
 alt Meeting does not exist or viewing is not permitted - EX-1
 ParticipantService-->ParticipantController: Meeting not found; no roster or response information disclosed
@@ -33,11 +32,12 @@ ParticipantService-->ParticipantController: MSG95 - Unable to load meeting parti
 ParticipantController-->MeetingPage: MSG95 - Unable to load meeting participants. Please try again.
 MeetingPage-->User: MSG95 - Unable to load meeting participants. Please try again.
 else Viewing is permitted
+ParticipantService->ParticipantService: Limit response-view access to response rows; do not grant roster browsing or search (BR-176)
 ParticipantService->ParticipantService: Exclude removed/revoked entries from current results and totals (BR-103)
-ParticipantService->ParticipantService: Show Pending for unanswered invitations;\nif all Pending, Accepted = 0 and Declined = 0 (AF-1, BR-115)
-ParticipantService-->ParticipantController: Current response details and Pending/Accepted/Declined totals; no information changed
-ParticipantController-->MeetingPage: Current response details and Pending/Accepted/Declined totals; no information changed
-MeetingPage-->User: Current response details and Pending/Accepted/Declined totals; no information changed
+ParticipantService->ParticipantService: Show Pending for unanswered invitations;\nif all Pending, Accepted = 0 and Declined = 0 (BR-115)
+ParticipantService-->ParticipantController: Current invitee names, emails, latest responses, response times and status totals; no information changed
+ParticipantController-->MeetingPage: Current invitee names, emails, latest responses, response times and status totals; no information changed
+MeetingPage-->User: Current invitee names, emails, latest responses, response times and status totals; no information changed
 end
 deactivate ParticipantService
 deactivate ParticipantController

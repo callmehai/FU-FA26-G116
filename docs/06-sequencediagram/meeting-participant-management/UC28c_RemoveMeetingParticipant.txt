@@ -14,8 +14,7 @@ MeetingPage->ParticipantController: Confirm removal of an internal participant o
 activate ParticipantController
 ParticipantController->ParticipantService: removeMeetingParticipant(meeting, secretary, selectedPerson)
 activate ParticipantService
-ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,
-actor relationship, roles and additional permissions
+ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,\nactor relationship, roles and additional permissions
 activate ParticipantRepository
 ParticipantRepository->Database: Retrieve current Meeting and roster information
 activate Database
@@ -23,16 +22,16 @@ Database-->ParticipantRepository: Current information / Read failure
 deactivate Database
 ParticipantRepository-->ParticipantService: Current information / Read failure
 deactivate ParticipantRepository
-ParticipantService->ParticipantService: Verify current Secretary, editable Meeting status, current selected person\nand required Secretary/Chair protection (BR-79, BR-80, BR-122, BR-126)
-alt Secretary or selected person is no longer current - EX-4
+ParticipantService->ParticipantService: Verify current Secretary, editable Meeting status, current selected person\nand retain at least one Secretary; protect the current Chair in Published/InProgress (BR-79, BR-80, BR-122, BR-126)
+alt Secretary or selected person is no longer current - EX-1
 ParticipantService-->ParticipantController: Request denied; participation and access unchanged
 ParticipantController-->MeetingPage: Request denied; participation and access unchanged
 MeetingPage-->User: Request denied; participation and access unchanged
-else Required role would be removed - EX-2
+else Required role would be removed - EX-1
 ParticipantService-->ParticipantController: MSG109 - The meeting must retain its required Chair and Secretary. Assign a replacement first.
 ParticipantController-->MeetingPage: MSG109 - The meeting must retain its required Chair and Secretary. Assign a replacement first.
 MeetingPage-->User: MSG109 - The meeting must retain its required Chair and Secretary. Assign a replacement first.
-else Meeting status disallows changes - EX-3
+else Meeting status disallows changes - EX-1
 ParticipantService-->ParticipantController: MSG98 - The meeting participant list cannot be modified in its current status.
 ParticipantController-->MeetingPage: MSG98 - The meeting participant list cannot be modified in its current status.
 MeetingPage-->User: MSG98 - The meeting participant list cannot be modified in its current status.
@@ -45,14 +44,14 @@ Database-->ParticipantRepository: Complete save / No changes saved
 deactivate Database
 ParticipantRepository-->ParticipantService: Complete save / No changes saved
 deactivate ParticipantRepository
-alt Save fails - EX-5
+alt Save fails - EX-2
 ParticipantService-->ParticipantController: MSG104 - Unable to remove the meeting participant. Please try again.
 ParticipantController-->MeetingPage: MSG104 - Unable to remove the meeting participant. Please try again.
 MeetingPage-->User: MSG104 - Unable to remove the meeting participant. Please try again.
 else Removal saved
 ParticipantService->ParticipantService: Re-evaluate room access; disconnect only if no independent valid relationship remains (BR-101)
 opt Meeting is Published or InProgress
-ParticipantService->NotificationService: Arrange notices to every affected invitee;\nGuest delivery is email only (BR-90–BR-94)
+ParticipantService->NotificationService: Arrange notices to every affected invitee;\nGuest delivery is email only; no protected access link (BR-93–BR-95)
 activate NotificationService
 NotificationService-->ParticipantService: Delivery arranged / Failure recorded for retry
 deactivate NotificationService

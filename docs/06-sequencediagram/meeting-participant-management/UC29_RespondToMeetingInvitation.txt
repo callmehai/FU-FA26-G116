@@ -1,6 +1,6 @@
 title UC-29 - Respond to Meeting Invitation
 
-actor "Current internal invitee / verified Guest" as User
+actor "Chair / Secretary / Participant / Guest" as User
 boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Participant Controller" as ParticipantController
 control ":Meeting Participant Service" as ParticipantService
@@ -13,8 +13,7 @@ MeetingPage->ParticipantController: Submit Accepted or Declined for own invitati
 activate ParticipantController
 ParticipantController->ParticipantService: respondToMeetingInvitation(meeting, invitee, response)
 activate ParticipantService
-ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,
-actor relationship, roles and additional permissions
+ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,\nactor relationship, roles and additional permissions
 activate ParticipantRepository
 ParticipantRepository->Database: Retrieve current Meeting and roster information
 activate Database
@@ -23,20 +22,16 @@ deactivate Database
 ParticipantRepository-->ParticipantService: Current information / Read failure
 deactivate ParticipantRepository
 ParticipantService->ParticipantService: Verify invitation ownership, current invitation, Meeting Published/InProgress,\nand valid Guest access established through UC-04 (BR-104–BR-106, BR-153–BR-157)
-alt Response is invalid - EX-1
+alt Response is invalid - EX-2
 ParticipantService-->ParticipantController: MSG106 - Invalid meeting invitation response.
 ParticipantController-->MeetingPage: MSG106 - Invalid meeting invitation response.
 MeetingPage-->User: MSG106 - Invalid meeting invitation response.
-else Meeting or invitation no longer allows a response - EX-2
+else Meeting or invitation no longer allows a response - EX-1
 ParticipantService-->ParticipantController: MSG107 - This meeting invitation can no longer be answered.
 ParticipantController-->MeetingPage: MSG107 - This meeting invitation can no longer be answered.
 MeetingPage-->User: MSG107 - This meeting invitation can no longer be answered.
-else Guest verification through UC-04 is incomplete - EX-3
-ParticipantService-->ParticipantController: MSG126 - Unable to verify the guest invitation. Check the code and try again.
-ParticipantController-->MeetingPage: MSG126 - Unable to verify the guest invitation. Check the code and try again.
-MeetingPage-->User: MSG126 - Unable to verify the guest invitation. Check the code and try again.
 else Response is allowed
-ParticipantService->ParticipantRepository: Save latest Accepted or Declined response and response time;\na previous response may be replaced; attendance, roles and extras unchanged (BR-115, BR-116, BR-173)
+ParticipantService->ParticipantRepository: Save latest Accepted or Declined response and response time;\na previous response may be replaced (AF-1); attendance, roles and extras unchanged (BR-115, BR-116, BR-173)
 activate ParticipantRepository
 ParticipantRepository->Database: Save all requested changes together;\nrecheck Meeting status, authority and roster before saving
 activate Database
@@ -44,7 +39,7 @@ Database-->ParticipantRepository: Complete save / No changes saved
 deactivate Database
 ParticipantRepository-->ParticipantService: Complete save / No changes saved
 deactivate ParticipantRepository
-alt Save fails - EX-4
+alt Save fails - EX-2
 ParticipantService-->ParticipantController: MSG108 - Unable to save the meeting invitation response. Please try again.
 ParticipantController-->MeetingPage: MSG108 - Unable to save the meeting invitation response. Please try again.
 MeetingPage-->User: MSG108 - Unable to save the meeting invitation response. Please try again.

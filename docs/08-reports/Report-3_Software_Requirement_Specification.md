@@ -31,7 +31,7 @@ Table of Contents
 | 09/10/2026 | M, D | KhanhPG | Align SRS with PO decisions: restore FE-04, retire FE-05 and six session UCs; limit voting to in-meeting Vote and Chair conclusion, update rules/messages and preserve placeholders. |
 | 09/10/2026 | M | KhanhPG | Align active UC flows, BR/MSG traceability, screens and embedded BF-02/03/04 with PO-approved single Meeting and in-meeting Voting. Retain retired IDs and intentional UC placeholders. |
 | 12/10/2026 | M | KhanhPG | Revise FE-06 meeting participant management: clarify UC-27–UC-31, support adding multiple internal participants together, replacing the Chair, meeting-specific additional viewing permissions, and complete-list Present/Absent attendance for internal participants and Guests. Align business rules, messages, screen descriptions and sequence diagram sources; preserve all existing images. Primary Actors list actor names only. |
-| 12/10/2026 | M | KhanhPG | Refine FE-06 use cases to business-level flows; align Chair/Secretary/Member viewing access, response identity visibility, bulk participant additions, Chair replacement, complete attendance and End Meeting requirements. Update BR/MSG references, participant screens and UC-22 sequence. Preserve existing diagram images. |
+| 12/10/2026 | M | KhanhPG | Refine FE-06 use cases to business-level flows; align Chair/Secretary/Member viewing access, response identity visibility, bulk participant additions, Chair replacement, complete attendance and End Meeting requirements. Update BR/MSG references, participant screens, and affected Agenda and Participant sequences, including UC-22; align AF/EX references and reserved message contexts. Regenerate only changed sequence images and preserve all existing embedded images. |
 
 *A - Added M - Modified D - Deleted
 
@@ -3740,16 +3740,16 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 137 | MSG142 | Dialog / Form error | UC-23c / EX-2 | Only Pending agenda items can be deleted. |
 | 138 | MSG143 | Dialog / Form error | UC-23d / EX-2 | Only Pending agenda items can be reordered within their existing positions. Refresh the agenda and try again. |
 | 139 | MSG144 | Dialog / Form error | UC-24 / EX-3 | Start the first Pending agenda item in the current order. |
-| 140 | MSG145 | Form error | UC-28a / EX-1 | One or more selected participants are invalid. No participants were added. |
-| 141 | MSG146 | Toast | UC-28b / EX-5 | Unable to replace the Chair. Meeting roles remain unchanged. |
+| 140 | MSG145 | Form error | UC-28a / Detailed selection validation; reserved | One or more selected participants are invalid. No participants were added. |
+| 141 | MSG146 | Toast | UC-28b / Reserved; refined UC uses MSG102 | Unable to replace the Chair. Meeting roles remain unchanged. |
 | 142 | MSG147 | Toast | UC-31 / Main Flow | Meeting attendance saved successfully. |
 | 143 | MSG148 | Field error | UC-31 / EX-1 | Select Present or Absent for every current participant and Guest. |
 | 144 | MSG149 | Dialog | UC-31 / EX-2 | Attendance can only be recorded while the meeting is in progress. |
-| 145 | MSG150 | Toast | UC-31 / EX-5 | Unable to save attendance. No changes were saved. |
-| 146 | MSG151 | Dialog | UC-31 / EX-3 | The meeting participant list has changed. Refresh it and try again. |
-| 147 | MSG152 | Field / Form error | UC-28a / EX-3; UC-28b / EX-1 | One or more selected meeting permissions are not allowed. |
+| 145 | MSG150 | Toast | UC-31 / EX-3 | Unable to save attendance. No changes were saved. |
+| 146 | MSG151 | Dialog | UC-31 / EX-1, BR-172 / Changed current roster | The meeting participant list has changed. Refresh it and try again. |
+| 147 | MSG152 | Field / Form error | UC-28a / EX-1; UC-28b / EX-1 | One or more selected meeting permissions are not allowed. |
 | 148 | MSG153 | Toast | UC-28b / Main Flow | Meeting permissions updated successfully. |
-| 149 | MSG154 | Information | UC-28b / EX-4 | No changes to save. |
+| 149 | MSG154 | Information | UC-28b / Unchanged selection UI; no separate exception flow | No changes to save. |
 | 150 | MSG155 | Form error | UC-22 – End Meeting / EX-3 | Record Present or Absent for every current participant and Guest before ending the meeting. |
 
 ### 3. Other Requirements

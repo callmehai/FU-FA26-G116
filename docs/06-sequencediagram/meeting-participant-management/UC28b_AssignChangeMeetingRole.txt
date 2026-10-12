@@ -14,8 +14,7 @@ MeetingPage->ParticipantController: Submit role/permission changes, including co
 activate ParticipantController
 ParticipantController->ParticipantService: manageMeetingRoleAndPermissions(meeting, secretary, participant, changes, replacementConfirmation)
 activate ParticipantService
-ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,
-actor relationship, roles and additional permissions
+ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,\nactor relationship, roles and additional permissions
 activate ParticipantRepository
 ParticipantRepository->Database: Retrieve current Meeting and roster information
 activate Database
@@ -24,11 +23,11 @@ deactivate Database
 ParticipantRepository-->ParticipantService: Current information / Read failure
 deactivate ParticipantRepository
 ParticipantService->ParticipantService: Verify current Secretary, current internal participant, editable status,\nvalid role and permitted extras (BR-79, BR-80, BR-85, BR-174, BR-175)
-alt Secretary or participant is no longer current - EX-6
+alt Secretary or participant is no longer current - EX-2
 ParticipantService-->ParticipantController: Request denied; all roles and permissions unchanged
 ParticipantController-->MeetingPage: Request denied; all roles and permissions unchanged
 MeetingPage-->User: Request denied; all roles and permissions unchanged
-else Meeting status disallows changes - EX-3
+else Meeting status disallows changes - EX-2
 ParticipantService-->ParticipantController: MSG98 - The meeting participant list cannot be modified in its current status.
 ParticipantController-->MeetingPage: MSG98 - The meeting participant list cannot be modified in its current status.
 MeetingPage-->User: MSG98 - The meeting participant list cannot be modified in its current status.
@@ -40,18 +39,14 @@ else Additional permissions are invalid for the resulting role - EX-1
 ParticipantService-->ParticipantController: MSG152 - One or more selected meeting permissions are not allowed.
 ParticipantController-->MeetingPage: MSG152 - One or more selected meeting permissions are not allowed.
 MeetingPage-->User: MSG152 - One or more selected meeting permissions are not allowed.
-else Required Secretary or Chair would be lost, or a second Chair created - EX-2
+else Last Secretary would be lost, a second Chair created, or Published/InProgress Chair removed - EX-1
 ParticipantService-->ParticipantController: MSG109 - The meeting must retain its required Chair and Secretary. Assign a replacement first.
 ParticipantController-->MeetingPage: MSG109 - The meeting must retain its required Chair and Secretary. Assign a replacement first.
 MeetingPage-->User: MSG109 - The meeting must retain its required Chair and Secretary. Assign a replacement first.
-else Role and extras are unchanged - EX-4
-ParticipantService-->ParticipantController: MSG154 - No changes to save.
-ParticipantController-->MeetingPage: MSG154 - No changes to save.
-MeetingPage-->User: MSG154 - No changes to save.
 else Requested change is valid
 alt Confirmed replacement of the current Chair - AF-1
 ParticipantService->ParticipantService: Recheck outgoing Chair and incoming participant;\nretain at least one Secretary and exactly one Chair (BR-122, BR-123, BR-126, BR-169)
-ParticipantService->ParticipantRepository: Change outgoing Chair to Member and incoming participant to Chair together;\nretain only valid requested extras; preserve system roles and responses (BR-169, BR-177)
+ParticipantService->ParticipantRepository: Change outgoing Chair to Member and incoming participant to Chair together;\npreserve valid requested extras; reject incompatible extras without silently removing them;\npreserve system roles and responses (BR-169, BR-177)
 activate ParticipantRepository
 ParticipantRepository->Database: Save all requested changes together;\nrecheck Meeting status, authority and roster before saving
 activate Database
@@ -69,19 +64,13 @@ deactivate Database
 ParticipantRepository-->ParticipantService: Complete save / No changes saved
 deactivate ParticipantRepository
 end
-alt Save fails - EX-5
-alt Chair replacement
-ParticipantService-->ParticipantController: MSG146 - Unable to replace the Chair. Meeting roles remain unchanged.
-ParticipantController-->MeetingPage: MSG146 - Unable to replace the Chair. Meeting roles remain unchanged.
-MeetingPage-->User: MSG146 - Unable to replace the Chair. Meeting roles remain unchanged.
-else Standard update
+alt Update cannot be completed - EX-3
 ParticipantService-->ParticipantController: MSG102 - Unable to update the meeting role. Please try again.
 ParticipantController-->MeetingPage: MSG102 - Unable to update the meeting role. Please try again.
 MeetingPage-->User: MSG102 - Unable to update the meeting role. Please try again.
-end
 else Complete change saved
 opt Meeting is Published or InProgress
-ParticipantService->NotificationService: Arrange notices to every affected invitee;\nGuest delivery is email only (BR-90–BR-94)
+ParticipantService->NotificationService: Notify affected internal participants; Chair replacement notifies both people (BR-92, BR-94)
 activate NotificationService
 NotificationService-->ParticipantService: Delivery arranged / Failure recorded for retry
 deactivate NotificationService
