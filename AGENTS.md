@@ -66,6 +66,8 @@ frontend/                    React 19 + Vite + TypeScript, split by feature
   src/types/                 shared types, mirroring backend response shapes
   src/styles/global.css      design tokens + all styling
 docs/                        capstone documentation — see docs/README.md
+deploy/                      shared test server on EC2 (Docker Compose + Caddy) — see deploy/README.md
+Dockerfile                   one image: frontend build + backend, used by deploy/
 TrustCabinet.sln
 global.json                  pins .NET SDK 10.0.401
 ```
