@@ -1,93 +1,92 @@
 title UC-28a - Add Meeting Participant
 
-actor "Meeting Organizer / Secretary" as Actor
+actor "Meeting Organizer / Secretary" as User
 boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Participant Controller" as ParticipantController
 control ":Meeting Participant Service" as ParticipantService
-participant ":Meeting Repository" as MeetingRepository
 participant ":Meeting Participant Repository" as ParticipantRepository
-participant ":User Repository" as UserRepository
-participant ":Notification Service" as NotificationService
 database ":Database" as Database
+participant ":Notification Service" as NotificationService
 
-Actor->MeetingPage: Submit participant information
+User->MeetingPage: Submit selected internal users, shared role and additional permissions, or one Guest
 activate MeetingPage
-MeetingPage->ParticipantController: Add Meeting Participant
+MeetingPage->ParticipantController: Submit selected internal users, shared role and additional permissions, or one Guest
 activate ParticipantController
-ParticipantController->ParticipantService: addMeetingParticipant(meetingId, actorId, userId, meetingRole)
+ParticipantController->ParticipantService: addMeetingParticipants(meeting, actor, selection)
 activate ParticipantService
-
-ParticipantService->MeetingRepository: Get meeting, status, and Meeting Organizer
-activate MeetingRepository
-MeetingRepository->Database: Retrieve meeting
-activate Database
-Database-->MeetingRepository: Meeting
-deactivate Database
-MeetingRepository-->ParticipantService: Meeting
-deactivate MeetingRepository
-
-ParticipantService->ParticipantRepository: Get current Secretary assignments and check duplicate participant\n(BR-78, BR-79, BR-84)
+ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,\nactor relationship, roles and additional permissions
 activate ParticipantRepository
-ParticipantRepository->Database: Retrieve current participant assignments
+ParticipantRepository->Database: Retrieve current Meeting and roster information
 activate Database
-Database-->ParticipantRepository: Secretary assignments and duplicate result
+Database-->ParticipantRepository: Current information / Read failure
 deactivate Database
-ParticipantRepository-->ParticipantService: Secretary assignments and duplicate result
+ParticipantRepository-->ParticipantService: Current information / Read failure
 deactivate ParticipantRepository
-
-ParticipantService->UserRepository: Verify selected user is active
-activate UserRepository
-UserRepository->Database: Retrieve selected user
+ParticipantService->ParticipantService: Verify Organizer assigns one Secretary with no extras when none is current in Draft/Rejected/Approved,\nincluding recovery after prior assignment/removal (BR-122),\nor actor is a current Secretary (BR-78, BR-79, BR-175)
+ParticipantService->ParticipantService: Require Draft, Rejected, Approved, Published or InProgress;\nvalidate every selected active user, uniqueness for additions; existing Member recovery changes role without adding a row; permitted extras (BR-80–BR-85, BR-168, BR-174)
+alt Actor is no longer authorized - EX-2
+ParticipantService-->ParticipantController: Request denied; no participants added
+ParticipantController-->MeetingPage: Request denied; no participants added
+MeetingPage-->User: Request denied; no participants added
+else Meeting status disallows changes - EX-2
+ParticipantService-->ParticipantController: MSG98 - The meeting participant list cannot be modified in its current status.
+ParticipantController-->MeetingPage: MSG98 - The meeting participant list cannot be modified in its current status.
+MeetingPage-->User: MSG98 - The meeting participant list cannot be modified in its current status.
+else Internal selection is invalid - EX-1
+ParticipantService-->ParticipantController: MSG97 - Invalid meeting participant information.
+ParticipantController-->MeetingPage: MSG97 - Invalid meeting participant information.
+MeetingPage-->User: MSG97 - Invalid meeting participant information.
+else Additional permissions are invalid - EX-1
+ParticipantService-->ParticipantController: MSG152 - One or more selected meeting permissions are not allowed.
+ParticipantController-->MeetingPage: MSG152 - One or more selected meeting permissions are not allowed.
+MeetingPage-->User: MSG152 - One or more selected meeting permissions are not allowed.
+else Guest name/email is invalid or already represented - EX-1
+ParticipantService-->ParticipantController: MSG97 - Invalid meeting participant information.
+ParticipantController-->MeetingPage: MSG97 - Invalid meeting participant information.
+MeetingPage-->User: MSG97 - Invalid meeting participant information.
+else Selection is valid
+alt Organizer restores Secretary using an existing active Member - AF-2
+ParticipantService->ParticipantRepository: Assign current Member as Secretary; preserve response/attendance and identity;\nno duplicate participant or new optional grant (BR-78, BR-79, BR-122)
+ParticipantRepository->Database: Save recovery role change; recheck no Secretary and preparation status
+Database-->ParticipantRepository: Complete save / No changes saved
+ParticipantRepository-->ParticipantService: Recovery result
+else New internal users selected
+ParticipantService->ParticipantRepository: Add all selected users with the shared role, permitted extras and Pending response;\nif any addition fails, add none (BR-88, BR-168)
+activate ParticipantRepository
+ParticipantRepository->Database: Save all requested changes together;\nrecheck Meeting status, authority and roster before saving
 activate Database
-Database-->UserRepository: Active user / Unavailable user
+Database-->ParticipantRepository: Complete save / No changes saved
 deactivate Database
-UserRepository-->ParticipantService: User eligibility
-deactivate UserRepository
-
-ParticipantService->ParticipantService: Validate actor, meeting status, user, uniqueness, and Meeting Role;\neditable statuses: Draft, Rejected, Approved, Published, InProgress;\nfirst participant must be a Secretary assigned by the Meeting Organizer\n(BR-78, BR-79, BR-80)
-
-alt Participant information is invalid - EX-1
-    ParticipantService-->ParticipantController: Validation failed
-    deactivate ParticipantService
-    ParticipantController-->MeetingPage: Display participant validation errors
-    deactivate ParticipantController
-    MeetingPage-->Actor: MSG97 - Invalid meeting participant information.\nApplicable field message(s)
-else Meeting is WaitingApproval or Ended - EX-2
-    ParticipantService-->ParticipantController: Participant list is read-only
-    deactivate ParticipantService
-    ParticipantController-->MeetingPage: Modification rejected
-    deactivate ParticipantController
-    MeetingPage-->Actor: MSG98 - The meeting participant list cannot be modified in its current status.
-else Participant can be added
-    ParticipantService->ParticipantRepository: Create participant with selected Meeting Role and Pending response\n(BR-80, BR-81)
-    activate ParticipantRepository
-    ParticipantRepository->Database: Insert Meeting Participant
-    activate Database
-    Database-->ParticipantRepository: Participant created / Save failed
-    deactivate Database
-    ParticipantRepository-->ParticipantService: Created participant / Save failed
-    deactivate ParticipantRepository
-
-    alt Participant cannot be added - EX-3
-        ParticipantService-->ParticipantController: Save failed
-        deactivate ParticipantService
-        ParticipantController-->MeetingPage: Addition failed
-        deactivate ParticipantController
-        MeetingPage-->Actor: MSG99 - Unable to add the meeting participant. Please try again.
-    else Participant is added
-        opt Meeting is Published or InProgress
-            ParticipantService->NotificationService: Queue in-app notification and invitation email;\nrecord delivery failure for retry without rollback (BR-82)
-            activate NotificationService
-            NotificationService-->ParticipantService: Queued / Retry recorded
-            deactivate NotificationService
-        end
-
-        ParticipantService-->ParticipantController: Participant added
-        deactivate ParticipantService
-        ParticipantController-->MeetingPage: Addition successful
-        deactivate ParticipantController
-        MeetingPage-->Actor: MSG96 - Meeting participant added successfully.
-    end
+ParticipantRepository-->ParticipantService: Complete save / No changes saved
+deactivate ParticipantRepository
+else One external Guest selected - AF-1
+ParticipantService->ParticipantService: Confidential/Secret form displays inline warning only; no extra confirmation;
+record inviter, sensitivity and time (BR-182)
+ParticipantService->ParticipantRepository: Create one Guest invitation with invited name/email and Pending response and Member participation access and selected additional grants;\nno internal account or internal meeting role; permitted additional Meeting grants from the agreed catalogue; not limited to two views (BR-84, BR-88, BR-148–BR-156)
+activate ParticipantRepository
+ParticipantRepository->Database: Save all requested changes together;\nrecheck Meeting status, authority and roster before saving
+activate Database
+Database-->ParticipantRepository: Complete save / No changes saved
+deactivate Database
+ParticipantRepository-->ParticipantService: Complete save / No changes saved
+deactivate ParticipantRepository
 end
-
+alt Save fails - EX-3
+ParticipantService-->ParticipantController: MSG99 - Unable to add the meeting participant. Please try again.
+ParticipantController-->MeetingPage: MSG99 - Unable to add the meeting participant. Please try again.
+MeetingPage-->User: MSG99 - Unable to add the meeting participant. Please try again.
+else Complete selection saved
+opt Meeting is Published or InProgress
+ParticipantService->NotificationService: Arrange notices to every affected invitee;\nGuest delivery is email only (BR-90–BR-94)
+activate NotificationService
+NotificationService-->ParticipantService: Delivery arranged / Failure recorded for retry
+deactivate NotificationService
+end
+ParticipantService-->ParticipantController: MSG96 for new participants; MSG100 for existing Member Secretary recovery
+ParticipantController-->MeetingPage: MSG96 for new participants; MSG100 for existing Member Secretary recovery
+MeetingPage-->User: MSG96 for new participants; MSG100 for existing Member Secretary recovery
+end
+end
+deactivate ParticipantService
+deactivate ParticipantController
 deactivate MeetingPage

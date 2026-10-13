@@ -45,7 +45,7 @@
 | Actor | Vai trò |
 |---|---|
 | **System Admin** | Quản trị tài khoản, vai trò, quyền và nhật ký kiểm toán |
-| **Meeting Organizer** | Tạo, cập nhật, gửi duyệt, công bố và dời lịch cuộc họp mình tổ chức; thêm Thư ký đầu tiên |
+| **Meeting Organizer** | Tạo, cập nhật, gửi duyệt, công bố và dời lịch cuộc họp mình tổ chức; gán Thư ký khi chưa có hoặc không còn trong giai đoạn chuẩn bị |
 | **Meeting Approver** | Duyệt / từ chối yêu cầu duyệt được phân công cho mình |
 | **Chair** | Chủ toạ: bắt đầu / kết thúc họp, điều khiển agenda, tạo – mở – đóng biểu quyết, ghi kết luận, điều phối phòng họp |
 | **Secretary** | Thư ký: agenda, thành phần, điểm danh, tài liệu, upload audio, transcript, tóm tắt, biên bản |
@@ -76,7 +76,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-01 | Đăng nhập bằng Email và Mật khẩu *(Sign in with Email and Password)* | Internal user | Đã đặc tả | Độc lập |
 | UC-02 | Đăng nhập bằng Google *(Sign in with Google)* | Internal user; Google Identity Provider | Đã đặc tả | Độc lập |
 | UC-03 | Đăng xuất *(Sign Out)* | Internal user | Đã đặc tả | Độc lập |
-| UC-04 | Truy cập cuộc họp qua lời mời Guest *(Access Meeting via Guest Invitation)* | Guest; Email / SMTP | Đã đặc tả | Độc lập — tạo guest session cho UC-29, UC-32, UC-37 |
+| UC-04 | Truy cập cuộc họp qua lời mời Guest *(Access Meeting via Guest Invitation)* | Guest; Email / SMTP | Đã đặc tả | Độc lập — xác minh email + profile tự khai, guest access cho UC-29/32/35/37/55 |
 
 ## FE-02 — Quản lý Người dùng & Hồ sơ *(User & Profile Management)*
 
@@ -109,7 +109,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-19 | Duyệt / Từ chối cuộc họp *(Review Meeting Approval)* | Meeting Approver | Đã đặc tả | Độc lập |
 | UC-20 | Công bố cuộc họp *(Publish Meeting)* | Meeting Organizer; Email / SMTP | Đã đặc tả | `<<extend>>` UC-16 |
 | UC-21 | Bắt đầu cuộc họp *(Start Meeting)* | Chair | Đã đặc tả | `<<extend>>` UC-16 |
-| UC-22 | Kết thúc cuộc họp *(End Meeting)* — chặn khi còn phiếu đang mở | Chair | Đã đặc tả | `<<extend>>` UC-16 |
+| UC-22 | Kết thúc cuộc họp *(End Meeting)* — không phụ thuộc Vote Open hay điểm danh đủ/thiếu | Chair | Đã đặc tả | `<<extend>>` UC-16 |
 
 ## FE-05 — Quản lý chương trình nghị sự *(Agenda Management)*
 
@@ -124,20 +124,20 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-27 | Xem thành phần tham dự *(View Meeting Participants)* | Secretary | Đã đặc tả | `<<extend>>` UC-16 |
-| UC-28 | Quản lý thành phần tham dự *(Manage Meeting Participants)* — gồm UC-28a Thêm / mời Guest, UC-28b Gán / đổi vai trò, UC-28c Xoá / thu hồi | Secretary; Meeting Organizer (chỉ thêm Thư ký đầu tiên) | Đã đặc tả | Secretary: `<<extend>>` UC-27; Organizer thêm Thư ký đầu tiên: `<<extend>>` UC-16 |
+| UC-27 | Xem thành phần tham dự *(View Meeting Participants)* | Secretary, Chair, Participant, Guest | Đã đặc tả | `<<extend>>` UC-16 |
+| UC-28 | Quản lý thành phần tham dự *(Manage Meeting Participants)* — gồm UC-28a thêm nhiều người nội bộ cùng vai trò/quyền hoặc mời từng Guest, UC-28b Quản lý vai trò & quyền bổ sung, UC-28c Xoá / thu hồi | Meeting Organizer, Secretary | Đã đặc tả | Secretary: `<<extend>>` UC-27; Organizer gán Thư ký khi chưa có hoặc không còn trong giai đoạn chuẩn bị: `<<extend>>` UC-16 |
 | UC-29 | Phản hồi lời mời họp *(Respond to Meeting Invitation)* | Chair, Secretary, Participant, Guest | Đã đặc tả | Độc lập; Guest đi qua UC-04 |
-| UC-30 | Xem trạng thái phản hồi *(View Participant Response Status)* | Secretary | Đã đặc tả | `<<extend>>` UC-27 |
-| UC-31 | Ghi nhận điểm danh *(Record Attendance)* — chỉ khi `InProgress` | Secretary | Đã đặc tả | `<<extend>>` UC-27 |
+| UC-30 | Xem trạng thái phản hồi *(View Participant Response Status)* | Secretary, Chair, Participant, Guest | Đã đặc tả | Mở từ cuộc họp có thể truy cập; Member/Guest cần quyền xem phản hồi. Thấy danh tính trong dòng phản hồi không cấp quyền xem hoặc tìm trong roster |
+| UC-31 | Ghi nhận điểm danh *(Record Attendance)* — Secretary lưu Present/Absent cho một/nhiều người được chọn khi `InProgress` | Secretary | Đã đặc tả | `<<extend>>` UC-27 |
 
 ## FE-07 — Kho tài liệu cá nhân & Tài liệu cuộc họp *(Personal Document Library & Meeting Document Management)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-32 | Xem tài liệu cuộc họp *(View Meeting Documents)* — gồm UC-32a Xem danh sách, UC-32b Lịch sử phiên bản, UC-32c Xem trước | User có quyền; Guest với tài liệu được chia sẻ | Placeholder | Internal: `<<extend>>` UC-16; Guest qua UC-04 |
+| UC-32 | Xem tài liệu cuộc họp *(View Meeting Documents)* — gồm UC-32a Xem danh sách, UC-32b Lịch sử phiên bản, UC-32c Xem trước | User có quyền; Guest xác minh email, toàn bộ tài liệu gắn trong cuộc họp | Placeholder | Internal: `<<extend>>` UC-16; Guest qua UC-04 |
 | UC-33 | Quản lý tài liệu cuộc họp *(Manage Meeting Documents)* — gồm UC-33a Thêm tài liệu (từ máy hoặc kho cá nhân), UC-33b Thêm phiên bản mới | Meeting Organizer, Secretary | Placeholder | `<<extend>>` UC-32 |
 | UC-34 | Xem kho tài liệu cá nhân *(View Personal Document Library)* | Internal user | Placeholder | Độc lập |
-| UC-35 | Bình luận tài liệu cuộc họp *(Comment on Meeting Document)* | Organizer, Chair, Secretary, Participant | Placeholder | `<<extend>>` UC-32 |
+| UC-35 | Bình luận tài liệu cuộc họp *(Comment on Meeting Document)* | Organizer, Chair, Secretary, Participant, Guest | Placeholder | `<<extend>>` UC-32 |
 | UC-36 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* | Internal user | Placeholder | `<<extend>>` UC-34 |
 
 ## FE-08 — Phòng họp trực tuyến *(Online Meeting Room Management)*
@@ -177,7 +177,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-52 | Xem biểu quyết *(View Meeting Votes)* — gồm UC-52a Xem danh sách, UC-52b Xem trạng thái / kết quả | User có quyền | Placeholder | `<<extend>>` UC-16 |
 | UC-53 | Tạo / cấu hình biểu quyết *(Create / Configure Vote)* — chỉ khi `InProgress` | Chair | Placeholder | `<<extend>>` UC-52 |
 | UC-54 | Mở biểu quyết *(Open Vote)* | Chair | Placeholder | `<<extend>>` UC-52 |
-| UC-55 | Bỏ phiếu *(Cast Vote)* — Chair, Secretary, Member đang phân công; Guest không bỏ phiếu | Chair, Secretary, Participant | Placeholder | `<<extend>>` UC-52 |
+| UC-55 | Bỏ phiếu *(Cast Vote)* — Chair, Secretary, Member đang phân công; Guest đã xác minh được bỏ phiếu như Member | Chair, Secretary, Participant, Guest | Placeholder | `<<extend>>` UC-52 |
 | UC-56 | Đóng biểu quyết *(Close Vote)* | Chair | Placeholder | `<<extend>>` UC-52 |
 | UC-57 | Ghi kết luận biểu quyết *(Record Vote Conclusion)* — `Passed` / `NotPassed` / `Deferred` | Chair | Placeholder | `<<extend>>` UC-52 |
 
@@ -280,7 +280,7 @@ UC-23a Create → Pending ── UC-24 Set Current → InProgress ── UC-25 C
 UC-23b/c/d sửa, xoá, sắp xếp khi Meeting chưa Ended; UC-22 End tự hoàn tất mục đang chạy
 
 Guest
-UC-28a mời → email → UC-04 xác minh mã → guest session theo cuộc họp → UC-29 / UC-32 / UC-37
+UC-28a mời → email → UC-04 xác minh mã → tự khai tên/chức vụ → quyền Member trong cuộc họp → UC-29 / UC-32 / UC-35 / UC-37–42 / UC-55
 
 Document
 UC-36 Upload vào kho cá nhân → UC-34 → UC-33a chọn từ kho (hoặc upload thẳng từ máy) → UC-33b phiên bản mới
@@ -325,3 +325,7 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
 - Không làm (Report 1): theo dõi task / action item, nhận dạng giọng nói (voiceprint), ký HSM thật, triển khai air-gapped,
   tích hợp eOffice, nhiều tổ chức / đơn vị ([ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md)).
 - Lịch sử trạng thái, lịch tuần / tháng: là màn hình / luồng phụ của UC-16, UC-17, không tách UC.
+
+Guest 13/10/2026: [ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md); UC-27/30 cần quyền xem tương ứng như Member, UC-40 xem người đang kết nối mặc định. BR-122 đã chốt; xem [quyết định mới](../05-decisions/0017-ket-thuc-hop-khong-phu-thuoc-diem-danh-bieu-quyet.md).
+
+Phân phạm vi task: UC-27–UC-30 thuộc roster/lời mời/phản hồi SCRUM-20; UC-31 điểm danh giữ riêng ở SCRUM-26. Xoá/revoke ở SCRUM-20 bảo toàn lịch sử response/attendance. Sequence UC-04 có tại [auth/README](../06-sequencediagram/auth/README.md).

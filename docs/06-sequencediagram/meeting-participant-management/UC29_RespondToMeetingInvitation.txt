@@ -1,65 +1,54 @@
 title UC-29 - Respond to Meeting Invitation
 
-actor "Meeting Participant" as Participant
+actor "Chair / Secretary / Participant / Guest" as User
 boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Participant Controller" as ParticipantController
 control ":Meeting Participant Service" as ParticipantService
 participant ":Meeting Participant Repository" as ParticipantRepository
 database ":Database" as Database
 
-Participant->MeetingPage: Submit Invitation Response
+User->MeetingPage: Submit Accepted or Declined for own invitation
 activate MeetingPage
-MeetingPage->ParticipantController: Respond to Meeting Invitation
+MeetingPage->ParticipantController: Submit Accepted or Declined for own invitation
 activate ParticipantController
-ParticipantController->ParticipantService: respondToInvitation(meetingId, responseRequest)
+ParticipantController->ParticipantService: respondToMeetingInvitation(meeting, invitee, response)
 activate ParticipantService
-
-ParticipantService->ParticipantRepository: Get invitation context and meeting status (BR-104)
+ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,\nactor relationship, roles and additional permissions
 activate ParticipantRepository
-ParticipantRepository->Database: Retrieve meeting and current participant response
+ParticipantRepository->Database: Retrieve current Meeting and roster information
 activate Database
-Database-->ParticipantRepository: Response context / Not found / Retrieval failed
+Database-->ParticipantRepository: Current information / Read failure
 deactivate Database
-ParticipantRepository-->ParticipantService: Response context / Not found / Retrieval failed
+ParticipantRepository-->ParticipantService: Current information / Read failure
 deactivate ParticipantRepository
-
-ParticipantService->ParticipantService: Validate invitation owner, Published or InProgress status,\nand Accepted or Declined response (BR-104, BR-105, BR-106)
-
-alt Invitation can no longer be answered - EX-2
-    ParticipantService-->ParticipantController: Invitation is unavailable
-    deactivate ParticipantService
-    ParticipantController-->MeetingPage: Response rejected
-    deactivate ParticipantController
-    MeetingPage-->Participant: MSG107 - This meeting invitation can no longer be answered.
-else Invitation Response is invalid - EX-1
-    ParticipantService-->ParticipantController: Validation failed
-    deactivate ParticipantService
-    ParticipantController-->MeetingPage: Invalid response
-    deactivate ParticipantController
-    MeetingPage-->Participant: MSG106 - Invalid meeting invitation response.\nApplicable validation message
-else Invitation Response is valid
-    ParticipantService->ParticipantRepository: Save latest response and response time;\nMeeting Role is unchanged (BR-105, BR-115)
-    activate ParticipantRepository
-    ParticipantRepository->Database: Update response
-    activate Database
-    Database-->ParticipantRepository: Saved / Save failed
-    deactivate Database
-    ParticipantRepository-->ParticipantService: Saved response / Save failed
-    deactivate ParticipantRepository
-
-    alt Invitation Response cannot be saved - EX-3
-        ParticipantService-->ParticipantController: Save failed
-        deactivate ParticipantService
-        ParticipantController-->MeetingPage: Response save failed
-        deactivate ParticipantController
-        MeetingPage-->Participant: MSG108 - Unable to save the meeting invitation response. Please try again.
-    else Invitation Response is saved
-        ParticipantService-->ParticipantController: Invitation Response recorded
-        deactivate ParticipantService
-        ParticipantController-->MeetingPage: Response recorded
-        deactivate ParticipantController
-        MeetingPage-->Participant: MSG105 - Meeting invitation response recorded successfully.
-    end
+ParticipantService->ParticipantService: Verify invitation ownership, current invitation, Meeting Published/InProgress,\nand valid Guest access established through UC-04 (BR-104–BR-106, BR-153–BR-157)
+alt Response is invalid - EX-2
+ParticipantService-->ParticipantController: MSG106 - Invalid meeting invitation response.
+ParticipantController-->MeetingPage: MSG106 - Invalid meeting invitation response.
+MeetingPage-->User: MSG106 - Invalid meeting invitation response.
+else Meeting or invitation no longer allows a response - EX-1
+ParticipantService-->ParticipantController: MSG107 - This meeting invitation can no longer be answered.
+ParticipantController-->MeetingPage: MSG107 - This meeting invitation can no longer be answered.
+MeetingPage-->User: MSG107 - This meeting invitation can no longer be answered.
+else Response is allowed
+ParticipantService->ParticipantRepository: Save latest Accepted or Declined response and response time;\na previous response may be replaced (AF-1); attendance, roles and extras unchanged (BR-115, BR-116, BR-173)
+activate ParticipantRepository
+ParticipantRepository->Database: Save all requested changes together;\nrecheck Meeting status, authority and roster before saving
+activate Database
+Database-->ParticipantRepository: Complete save / No changes saved
+deactivate Database
+ParticipantRepository-->ParticipantService: Complete save / No changes saved
+deactivate ParticipantRepository
+alt Save fails - EX-2
+ParticipantService-->ParticipantController: MSG108 - Unable to save the meeting invitation response. Please try again.
+ParticipantController-->MeetingPage: MSG108 - Unable to save the meeting invitation response. Please try again.
+MeetingPage-->User: MSG108 - Unable to save the meeting invitation response. Please try again.
+else Response saved
+ParticipantService-->ParticipantController: MSG105 - Meeting invitation response recorded successfully.
+ParticipantController-->MeetingPage: MSG105 - Meeting invitation response recorded successfully.
+MeetingPage-->User: MSG105 - Meeting invitation response recorded successfully.
 end
-
+end
+deactivate ParticipantService
+deactivate ParticipantController
 deactivate MeetingPage

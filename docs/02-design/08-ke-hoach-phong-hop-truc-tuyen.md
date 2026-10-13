@@ -1136,3 +1136,7 @@ thay vì sửa comment cũ.
 4. Môi trường deploy thật (máy nào, domain nào)? Quyết định cấu hình TURN/TLS và `node_ip`.
 5. Giới hạn số người một phòng: tạm 50 (`room.max_participants`).
 6. Thư ký có được tắt mic người khác không? AC chỉ nói chủ toạ.
+
+## Bổ sung Guest theo PO 13/10/2026
+
+[ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md) là policy đích: Guest xác minh email rồi tự khai tên/chức vụ, có media/chat/screen-share/connected-list như Member; không moderate. Identity room liên kết Guest invitation, không display name; rejoin tạo connection stint mới, không voter mới. UC-40 không đòi grant UC-27/30. Đây là yêu cầu bổ sung cho kế hoạch, chưa xác nhận các đoạn implementation trong tài liệu đã hỗ trợ Guest.
