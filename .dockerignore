@@ -1,0 +1,9 @@
+.git
+.env
+**/bin
+**/obj
+**/node_modules
+backend/TrustCabinet.Web/wwwroot
+docs
+tests
+deploy
