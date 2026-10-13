@@ -24,6 +24,7 @@ builder.Services.AddTrustCabinetUserManagement();
 builder.Services.AddTrustCabinetRolePermissions();
 builder.Services.AddTrustCabinetMeetings();
 builder.Services.AddTrustCabinetAgenda();
+builder.Services.AddSingleton<IAgendaGuestIdentityResolver, UnavailableAgendaGuestIdentityResolver>();
 builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IUserIdProvider, NotificationUserIdProvider>();

@@ -66,16 +66,19 @@ $env:AGENDA_MEETING_ID = '25000000-0000-7000-8000-000000000002'
 node docs/03-api/postman/agenda-realtime.mjs
 ```
 
-## Dependency và ghi chú Jira/BA cần người phụ trách đăng
+## Dependency và ghi chú Jira/BA
 
 - Chỉ hoàn thành Backend; không đánh dấu SCRUM-25 Done trước FE → BA Final Review → Tester → Review.
 - Không needsVote, không cấp Agenda qua system Admin; presenter tên tự nhập không tạo user/guest. Dùng UC/BR/sequence mới thay các dòng Screen Inventory cũ còn nói Draft/Rejected, needsVote hoặc Meeting Session.
 - Document association tạm theo Document.MeetingId/AgendaItemId qua adapter riêng; không migration MeetingDocument trong task này.
 - Reorder thêm token SHA-256 chống ghi đè snapshot cũ; vị trí các mục đã bắt đầu giữ nguyên.
 - SCRUM-20 phải cập nhật MeetingReadPolicy và AgendaRules.CurrentParticipant khi có Current/Removed. Writer participant/document phải dùng cùng meeting lock.
+- ADR-0016: phần đọc Agenda và hub đã nhận invitation/session identity qua adapter, quyền tài liệu như Member và toàn bộ mutation bị chặn. UC-04/SCRUM-20 cần thay adapter mặc định từ chối bằng xác thực/kiểm quyền thật; xem [contract tích hợp, DI và checklist](08-agenda-contract-tich-hop-guest-uc04.md). Không tạo User giả hoặc cấp Secretary/Chair cho Guest. Presenter options vẫn là internal participant hoặc tên tự nhập. Test với fake adapter chưa chứng minh OTP/session production.
 - SCRUM-69 dùng `IAgendaMeetingEnd.PrepareAsync` trong transaction caller đã khóa meeting; helper không SaveChanges/Commit/publish. Sau commit caller phát change trả về qua IAgendaChangePublisher và đóng room. Không có current trả null; nếu vẫn cần báo MeetingEnded, caller tạo event không item. Test helper không phải test endpoint End Meeting.
+- ADR-0017/BR-159: End Meeting không bị chặn bởi Vote Open, điểm danh thiếu hoặc agenda Pending; không tự đóng Vote. Helper Agenda hiện đã không có các gate này; SCRUM-69 giữ nguyên Vote/ballot và Pending item, chỉ complete current cùng Meeting/history.
 - Bản đối chiếu class diagram: Controller = AgendaEndpoints; service/repository theo ba project hiện hữu, reuse IMeetingRepository; không nhân bản repository chỉ để giống tên lifeline.
-- Các ghi chú trên **chưa được đăng Jira**, theo phạm vi người dùng giao.
+- Đã bổ sung các điểm tích hợp và quyết định bàn giao vào [comment SCRUM-25 ngày 13/10/2026](https://sep490g116.atlassian.net/browse/SCRUM-25?focusedCommentId=10155) theo yêu cầu người dùng; không đổi trạng thái ticket.
+- Phần adapter Guest triển khai sau đó đã được ghi trong [comment cập nhật 10210](https://sep490g116.atlassian.net/browse/SCRUM-25?focusedCommentId=10210), kèm phạm vi UC-04 còn cần tích hợp.
 
 ## Rollout
 

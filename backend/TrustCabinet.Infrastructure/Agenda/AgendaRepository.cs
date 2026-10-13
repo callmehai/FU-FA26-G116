@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -64,6 +65,7 @@ public static class AgendaServiceCollectionExtensions
         services.AddScoped<IAgendaDocumentRepository, AgendaDocumentRepository>();
         services.AddScoped<IAgendaService, AgendaService>();
         services.AddScoped<IAgendaMeetingEnd, AgendaMeetingEnd>();
+        services.TryAddScoped<IAgendaGuestAccess, UnavailableAgendaGuestAccess>();
         return services;
     }
 }

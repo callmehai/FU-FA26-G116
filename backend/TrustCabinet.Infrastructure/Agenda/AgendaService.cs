@@ -10,7 +10,7 @@ namespace TrustCabinet.Infrastructure.Agenda;
 
 public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository agenda,
     IAgendaDocumentRepository documents, IAgendaChangePublisher publisher, TimeProvider clock,
-    ILogger<AgendaService> logger) : IAgendaService
+    ILogger<AgendaService> logger, IAgendaGuestAccess guests) : IAgendaService
 {
     private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
     private DateTimeOffset Now => AgendaExecution.UtcMicroseconds(clock.GetUtcNow());
@@ -19,6 +19,24 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
         => ReadAsync(meetingId, actorId, false, ct);
     public Task<AgendaOutcome> EditorOptionsAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
         => ReadAsync(meetingId, actorId, true, ct);
+
+    public async Task<AgendaOutcome> GetForGuestAsync(Guid meetingId, AgendaGuestSession guest, CancellationToken ct = default)
+    {
+        try
+        {
+            if (!guest.IsValid || guest.MeetingId != meetingId || !await guests.CanReadAsync(guest, ct))
+                return new(AgendaFailure.NotFound);
+            var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
+            if (meeting is null || !AgendaRules.GuestCanViewMeeting(meeting.Status))
+                return new(AgendaFailure.NotFound);
+            return await SnapshotAsync(meeting, null, true, false, ct);
+        }
+        catch (Exception ex) when (PersistenceError(ex))
+        {
+            logger.LogError(ex, "Failed to read guest agenda {MeetingId}", meetingId);
+            return new(AgendaFailure.ReadFailed);
+        }
+    }
 
     private async Task<AgendaOutcome> ReadAsync(Guid meetingId, Guid actorId, bool options, CancellationToken ct)
     {
@@ -38,25 +56,31 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
                     .Select(p => new AgendaPresenter(p.UserId, p.User.FullName)).DistinctBy(p => p.Id)
                     .OrderBy(p => p.FullName).ThenBy(p => p.Id).ToArray(), await documents.ListAsync(meetingId, ct)));
             }
-            var items = await agenda.ListAsync(meetingId, false, ct);
-            var canReadDocuments = AgendaRules.CanReadDocuments(meeting, actorId);
-            var linked = canReadDocuments ? await documents.ListAsync(meetingId, ct) : [];
-            var byItem = linked.Where(d => d.AgendaItemId.HasValue).ToLookup(d => d.AgendaItemId!.Value);
-            return new(Data: new AgendaSnapshot(meeting.Id, meeting.Status.ToString(), meeting.PlannedStartTime,
-                meeting.PlannedEndTime, Now, AgendaRules.OrderVersion(items), new(planning, planning),
-                items.Select(i => new AgendaItemView(i.Id, i.Position, i.Title, i.Description,
-                    i.PlannedDurationMinutes, i.PresenterId, i.Presenter?.FullName ?? i.PresenterName, i.Status.ToString(),
-                    i.ActualStartedAt, i.ActualEndedAt,
-                    i.Status == AgendaItemStatus.Done && i.ActualStartedAt is { } start && i.ActualEndedAt is { } end
-                        ? (end - start).TotalSeconds : null,
-                    canReadDocuments, byItem[i.Id].Select(d => new AgendaDocument(d.Id, d.Title)).ToArray(),
-                    AgendaRules.Actions(meeting, actorId, i, items))).ToArray()));
+            return await SnapshotAsync(meeting, actorId, AgendaRules.CanReadDocuments(meeting, actorId), planning, ct);
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
             logger.LogError(ex, "Failed to read agenda {MeetingId}", meetingId);
             return new(AgendaFailure.ReadFailed);
         }
+    }
+
+    private async Task<AgendaOutcome> SnapshotAsync(Meeting meeting, Guid? actorId, bool canReadDocuments,
+        bool planning, CancellationToken ct)
+    {
+        var items = await agenda.ListAsync(meeting.Id, false, ct);
+        var linked = canReadDocuments ? await documents.ListAsync(meeting.Id, ct) : [];
+        var byItem = linked.Where(d => d.AgendaItemId.HasValue).ToLookup(d => d.AgendaItemId!.Value);
+        return new(Data: new AgendaSnapshot(meeting.Id, meeting.Status.ToString(), meeting.PlannedStartTime,
+            meeting.PlannedEndTime, Now, AgendaRules.OrderVersion(items), new(planning, planning),
+            items.Select(i => new AgendaItemView(i.Id, i.Position, i.Title, i.Description,
+                i.PlannedDurationMinutes, i.PresenterId, i.Presenter?.FullName ?? i.PresenterName, i.Status.ToString(),
+                i.ActualStartedAt, i.ActualEndedAt,
+                i.Status == AgendaItemStatus.Done && i.ActualStartedAt is { } start && i.ActualEndedAt is { } end
+                    ? (end - start).TotalSeconds : null,
+                canReadDocuments, byItem[i.Id].Select(d => new AgendaDocument(d.Id, d.Title)).ToArray(),
+                actorId is { } userId ? AgendaRules.Actions(meeting, userId, i, items)
+                    : new(false, false, false, false, false))).ToArray()));
     }
 
     public Task<AgendaOutcome> CreateAsync(Guid meetingId, Guid actorId, AgendaInput input, CancellationToken ct = default)

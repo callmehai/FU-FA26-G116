@@ -24,6 +24,7 @@ public sealed class AgendaFixture : IAsyncLifetime
     internal readonly PostgreSqlTestDatabase Database = new(new Npgsql.NpgsqlConnectionStringBuilder(
         PostgresTestDatabase.ConnectionString("trustcabinet_agenda_tests")) { MaxPoolSize = 20 }.ConnectionString);
     internal readonly TestClock Clock = new();
+    internal readonly AgendaGuestTestAdapter Guests = new();
     internal readonly SaveFailureInterceptor SaveFailure = new();
     internal readonly ConcurrentQueue<AgendaChange> Events = new();
     internal bool FailPush;
@@ -59,6 +60,11 @@ public sealed class AgendaFixture : IAsyncLifetime
                     .AddInterceptors(fixture.SaveFailure, new ReadFailure(fixture)));
                 services.RemoveAll<TimeProvider>();
                 services.AddSingleton<TimeProvider>(fixture.Clock);
+                fixture.Guests.Clock = fixture.Clock;
+                services.RemoveAll<IAgendaGuestAccess>();
+                services.AddSingleton<IAgendaGuestAccess>(fixture.Guests);
+                services.RemoveAll<IAgendaGuestIdentityResolver>();
+                services.AddSingleton<IAgendaGuestIdentityResolver>(fixture.Guests);
                 services.RemoveAll<IAgendaChangePublisher>();
                 services.AddScoped<AgendaChangePublisher>();
                 services.AddScoped<IAgendaChangePublisher>(p => new Push(fixture, p.GetRequiredService<AgendaChangePublisher>()));

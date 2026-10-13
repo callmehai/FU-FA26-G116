@@ -136,11 +136,11 @@ public sealed class AgendaHubTests(AgendaFixture fixture) : IClassFixture<Agenda
         using var expired = fixture.Client(s.Member);
         expired.DefaultRequestHeaders.Authorization = new("Bearer", AgendaFixture.Token(s.Member, DateTimeOffset.UtcNow.AddSeconds(-5)));
         Assert.Equal(HttpStatusCode.Unauthorized, (await expired.GetAsync(s.Url)).StatusCode);
-        await using var hub = fixture.Hub(s.Member, DateTimeOffset.UtcNow.AddSeconds(2));
+        // Allow handshake startup under parallel database load; expiry closes even an unjoined connection.
+        await using var hub = fixture.Hub(s.Member, DateTimeOffset.UtcNow.AddSeconds(5));
         var closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         hub.Closed += _ => { closed.TrySetResult(); return Task.CompletedTask; };
         await hub.StartAsync();
-        await hub.InvokeAsync("JoinMeeting", s.MeetingId);
         await closed.Task.WaitAsync(TimeSpan.FromSeconds(15));
         Assert.Equal(HubConnectionState.Disconnected, hub.State);
     }

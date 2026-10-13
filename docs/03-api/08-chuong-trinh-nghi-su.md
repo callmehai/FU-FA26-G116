@@ -1,6 +1,6 @@
 # Backend chương trình nghị sự — SCRUM-25
 
-Phạm vi UC-23a–d, UC-24, UC-25, UC-26; chỉ Backend. Baseline nghiệp vụ: đặc tả/BR và bảy sequence Agenda ngày 11/10/2026; tài liệu participant ở commit `0de8254` chỉ là tham chiếu, không được đưa vào branch này. Không có `needsVote`, Meeting Session hoặc API Start/End Meeting.
+Phạm vi UC-23a–d, UC-24, UC-25, UC-26; chỉ Backend. Baseline nghiệp vụ: đặc tả/BR và bảy sequence Agenda ngày 11/10/2026, đã đối chiếu cập nhật tài liệu trên `main` tại `729c1e0` ngày 13/10/2026. Không có `needsVote`, Meeting Session hoặc API Start/End Meeting.
 
 ## Contract triển khai
 
@@ -10,7 +10,7 @@ POST/PUT nhận `title` (trim, 1–300), `description` (tối đa 4000, mặc đ
 
 Secretary được planning trong Draft, WaitingApproval, Rejected, Approved, Published, InProgress. Ended chỉ đọc. Item đã bắt đầu chỉ sửa title/description; các trường planning gửi lại không đổi được chấp nhận. Chair chỉ start/complete trong meeting InProgress; chỉ Pending đầu tiên được start và tối đa một current item. Admin, Organizer, Approver, Presenter không tự có quyền Secretary/Chair.
 
-GET trả meetingId, meetingStatus, plannedStartTime, plannedEndTime, serverTime, orderVersion, permissions {canCreate, canReorder}, items[]. Item có id, position, title, description, plannedDurationMinutes, presenterId, presenterName, status, actualStartedAt, actualEndedAt, actualDurationSeconds, canReadDocuments, documents [{id,title}], actions {canEdit,canEditPlanningFields,canDelete,canSetCurrent,canComplete}. Status PascalCase; timestamp UTC. Duration tính từ timestamp; chưa hoàn thành null. Chỉ internal participant hợp lệ nhận metadata tài liệu. Snapshot rỗng là 200/items:[]; lỗi đọc là 500/MSG128.
+GET trả meetingId, meetingStatus, plannedStartTime, plannedEndTime, serverTime, orderVersion, permissions {canCreate, canReorder}, items[]. Item có id, position, title, description, plannedDurationMinutes, presenterId, presenterName, status, actualStartedAt, actualEndedAt, actualDurationSeconds, canReadDocuments, documents [{id,title}], actions {canEdit,canEditPlanningFields,canDelete,canSetCurrent,canComplete}. Status PascalCase; timestamp UTC. Duration tính từ timestamp; chưa hoàn thành null. Internal participant hợp lệ hoặc Guest được adapter UC-04 xác nhận nhận metadata tài liệu; Guest luôn có tất cả cờ mutation false. Snapshot rỗng là 200/items:[]; lỗi đọc là 500/MSG128.
 
 Reorder nhận `{orderVersion,pendingItemIds}`. Token SHA-256 của danh sách `(Id,Position,Status)` sắp Position rồi Id; token cũ trả 409/MSG143. Danh sách phải chứa đúng mỗi Pending item một lần. Chỉ hoán đổi các vị trí Pending; không renumber hoặc đổi actual timestamps. Tạo nối max(Position)+1; xóa giữ gap. Mutation/no-op trả `{code,message,meetingId,agendaItemId?}`, FE GET lại; no-op không đổi UpdatedAt hoặc phát event.
 
@@ -54,9 +54,13 @@ Ví dụ snapshot (các ID minh họa; `orderVersion` luôn lấy nguyên token 
 
 ## Realtime và điểm tích hợp
 
+Theo ADR-0016, Guest đã xác minh và còn quyền theo lời mời đọc tài liệu cuộc họp như Member. SCRUM-25 đã có đường đọc snapshot và hub qua `IAgendaGuestIdentityResolver` / `IAgendaGuestAccess`, group tách theo invitation/session và kiểm quyền lại mỗi request/lần phát. Adapter mặc định từ chối; UC-04/SCRUM-20 cần cung cấp OTP/session/repository thật và thay đăng ký DI theo [contract tích hợp Guest](08-agenda-contract-tich-hop-guest-uc04.md). Không dùng `MeetingRole.Guest` của model User cũ hoặc tên presenter tự nhập làm bằng chứng xác minh. Các test adapter chứng minh phía Agenda, chưa phải nghiệm thu UC-04 end-to-end.
+
 Hub `/hubs/meetings`: `JoinMeeting(meetingId)`, `LeaveMeeting(meetingId)`. Event `agendaChanged`: eventId, meetingId, changeType (Created/Updated/Deleted/Reordered/Started/Completed/MeetingEnded), agendaItemId?, title?, occurredAt. Publisher kiểm lại active user và MeetingReadPolicy trước mỗi lần gửi tới group meeting/user. Sau commit mới gửi; lỗi push không đổi thành công lưu. Không bảo đảm durable delivery: FE phải resync.
 
 SCRUM-69 gọi helper hoàn thành current item trong transaction đã khóa meeting, dùng cùng thời điểm End Meeting; helper không SaveChanges/Commit/publish. Pending giữ nguyên. Endpoint End Meeting và đóng room chưa nằm trong task này.
+
+ADR-0017/BR-159 mới không yêu cầu đóng Vote hoặc điểm danh đủ trước End Meeting. Helper Agenda hiện không có các gate này và không sửa Vote/attendance; SCRUM-69 phải giữ nguyên trạng thái Vote/ballot, hoàn tất current agenda cùng Meeting/history trong một transaction, rồi đóng room sau commit. Không thêm kiểm tra tất cả agenda phải Done.
 
 Publisher nhận cancellation sau 2 giây, nhưng request vẫn chờ task publish kết thúc để scoped DbContext không bị dispose khi task còn dùng. Đây là thời hạn yêu cầu hủy hợp tác, không phải giới hạn cứng thời gian response; provider chậm hoàn tất cancellation có thể làm response chậm hơn. Lỗi publish, kể cả lỗi phát sinh sau thời hạn này, được log và không đổi kết quả mutation đã commit.
 

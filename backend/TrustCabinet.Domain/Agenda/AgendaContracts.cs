@@ -39,6 +39,7 @@ public sealed record AgendaChange(Guid EventId, Guid MeetingId, string ChangeTyp
 public interface IAgendaService
 {
     Task<AgendaOutcome> GetAsync(Guid meetingId, Guid actorId, CancellationToken ct = default);
+    Task<AgendaOutcome> GetForGuestAsync(Guid meetingId, AgendaGuestSession guest, CancellationToken ct = default);
     Task<AgendaOutcome> EditorOptionsAsync(Guid meetingId, Guid actorId, CancellationToken ct = default);
     Task<AgendaOutcome> CreateAsync(Guid meetingId, Guid actorId, AgendaInput input, CancellationToken ct = default);
     Task<AgendaOutcome> UpdateAsync(Guid meetingId, Guid itemId, Guid actorId, AgendaInput input, CancellationToken ct = default);

@@ -4,6 +4,26 @@ Ngày kiểm tra: 13/10/2026 (UTC+7). Branch `codex/scrum25-backend-agenda`, tá
 
 ## Thay đổi thực tế
 
+### Bổ sung điểm tích hợp Guest trong phạm vi SCRUM-25 (13/10/2026)
+
+Theo phạm vi người dùng chốt, chỉ triển khai consumer phía Agenda và [contract bàn giao UC-04](08-agenda-contract-tich-hop-guest-uc04.md), không triển khai OTP, lời mời, session storage hoặc tạo User Guest. Không có migration mới.
+
+- Thêm identity `AgendaGuestSession`, hai adapter `IAgendaGuestIdentityResolver` / `IAgendaGuestAccess` và implementation mặc định từ chối. UC-04 phải thay cả hai bằng resolver và policy thật.
+- GET Agenda dùng đường đọc Guest riêng, đúng meeting và trạng thái như Member, trả metadata tài liệu sau kiểm quyền hiện tại; tất cả cờ mutation false. Options/mutation chặn Guest kể cả subject trùng User ID; quyền User nội bộ vẫn kiểm active và MeetingReadPolicy.
+- Hub kiểm Guest lúc connect/join, group theo meeting/invitation/session; publisher query lại session còn quyền trước mỗi event. Session mất hiệu lực không nhận event nhờ session khác của cùng invitation. Adapter lỗi không fallback broadcast, dữ liệu đã commit vẫn thành công.
+- Thêm **16 case AgendaGuestTests**, dùng JWT test + fake adapter UC-04 + PostgreSQL thật và SignalR LongPolling của TestServer. Bao phủ tài liệu/quyền chỉ đọc, chặn mutation, cách ly meeting/session, revoked/expired/unverified/missing, trạng thái meeting, default deny, lỗi adapter, reconnect và dữ liệu commit. Không tuyên bố đã test OTP/session production.
+- Lượt full đầu: 1.043 pass, 1 fail ở test JWT expiry cũ do token 2 giây hết hạn trước lệnh join dưới tải song song. Sửa test dành 5 giây cho handshake, kiểm connection tự đóng khi hết hạn kể cả chưa join; các test join vẫn được giữ ở nhóm transport riêng.
+- Lượt cuối restore/build Release `-warnaserror` và full suite trên Linux SDK 10.0.401, PostgreSQL 17/Redis 8 riêng: **1.044 pass, 0 fail, 0 skip**, build 0 warning/error. Kết quả tại `tests/TrustCabinet.Web.Tests/TestResults/guest-contract-final/guest-contract-final.trx`; log `%TEMP%/agenda-guest-contract-final.log`. Windows build Release cũng pass. Container/network tạm đã dọn; không chạy lại Frontend hoặc đo lại coverage trong lượt này.
+- Contract có cách thay DI, ràng buộc identity/token/session, quy tắc error/cancellation và sáu bước test thủ công sau khi UC-04 tích hợp. Giữ nguyên index/staged merge có sẵn; thay đổi lần này chưa commit/push.
+
+### Đối chiếu Jira và tài liệu mới merge (13/10/2026)
+
+Đã đọc toàn bộ ba comment hiện có của SCRUM-25, đối chiếu code `c91f318` với cập nhật `main` tại `729c1e0` (PR #83). Phần mới merge chỉ thay đổi tài liệu; UC-26 đổi danh sách actor, không đổi quy tắc đọc. Helper End Meeting không có gate Vote/attendance nên phù hợp phần Agenda của ADR-0017. Chưa cần sửa runtime cho người dùng nội bộ; luồng Guest theo ADR-0016 còn phụ thuộc invitation identity/session/policy của UC-04/SCRUM-20 như ghi rõ trong contract. Không xác nhận Guest hoặc endpoint End Meeting đã hoạt động.
+
+Chỉ cập nhật contract, dependency bàn giao và đoạn mô tả catalogue bị cũ sau merge; không đổi endpoint, DTO, schema hoặc Frontend. Chạy lại restore/build Release `-warnaserror` và full suite từ source hiện tại trên Linux SDK 10.0.401 + PostgreSQL 17/Redis 8 riêng: **1.028 pass, 0 fail, 0 skip**, build 0 warning/error. Kết quả tại `tests/TrustCabinet.Web.Tests/TestResults/merge-review/merge-review.trx`, log `%TEMP%/agenda-merge-review.log`. Không đo lại coverage hoặc chạy lại kiểm tra Frontend trong lượt này. Container/network tạm đã dọn.
+
+Các điểm tích hợp chưa có trong ticket đã được bổ sung vào [comment 10155](https://sep490g116.atlassian.net/browse/SCRUM-25?focusedCommentId=10155). Giữ nguyên index/staged của merge đang dở; các chỉnh sửa tài liệu lần này chưa commit/push.
+
 ### Bổ sung sau review độc lập (13/10/2026)
 
 Trên branch hiện tại `feat/scrum25-backend-agenda`, sửa hai finding P2:

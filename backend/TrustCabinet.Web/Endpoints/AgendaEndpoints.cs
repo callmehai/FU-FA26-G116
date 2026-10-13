@@ -41,9 +41,16 @@ public static class AgendaEndpoints
     public static void MapAgendaEndpoints(this IEndpointRouteBuilder app)
     {
         const string prefix = "/api/meetings/{meetingId:guid}/agenda";
-        var read = app.MapGroup(prefix).RequireActiveUser(Error(500, Msg128ReadFailed, "Không tải được chương trình nghị sự."));
-        read.MapGet("", async (Guid meetingId, HttpContext context, IAgendaService service, CancellationToken ct)
-            => Map(await service.GetAsync(meetingId, CapabilityGate.GatedUserId(context.User), ct), meetingId));
+        app.MapGet(prefix, async (Guid meetingId, HttpContext context, IAgendaService service,
+            IAgendaGuestIdentityResolver identities, CancellationToken ct) =>
+        {
+            if (identities.Resolve(context.User) is { } guest)
+                return Map(await service.GetForGuestAsync(meetingId, guest, ct), meetingId);
+            var actor = CapabilityGate.CurrentUserId(context.User);
+            return actor is { } userId ? Map(await service.GetAsync(meetingId, userId, ct), meetingId) : Results.Forbid();
+        }).RequireAuthorization();
+        var read = app.MapGroup(prefix).RequireActiveUser(Error(500, Msg128ReadFailed, "Không tải được chương trình nghị sự."))
+            .AddEndpointFilter(RejectGuestWrite);
         read.MapGet("/editor-options", async (Guid meetingId, HttpContext context, IAgendaService service, CancellationToken ct)
             => Map(await service.EditorOptionsAsync(meetingId, CapabilityGate.GatedUserId(context.User), ct), meetingId));
 
@@ -57,6 +64,7 @@ public static class AgendaEndpoints
         void Register(AgendaOperation operation, string method, string suffix)
         {
             app.MapGroup(prefix).RequireActiveUser(Map(new(AgendaFailure.SaveFailed), Guid.Empty, operation))
+                .AddEndpointFilter(RejectGuestWrite)
                 .MapMethods(suffix, [method], async (Guid meetingId, HttpContext context, IAgendaService service, CancellationToken ct) =>
                 {
                     var actor = CapabilityGate.GatedUserId(context.User);
@@ -76,6 +84,11 @@ public static class AgendaEndpoints
                 });
         }
     }
+
+    private static ValueTask<object?> RejectGuestWrite(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+        => context.HttpContext.RequestServices.GetRequiredService<IAgendaGuestIdentityResolver>()
+            .Resolve(context.HttpContext.User) is not null
+            ? ValueTask.FromResult<object?>(Results.Forbid()) : next(context);
 
     private sealed record PlanningBody(string? Title, string? Description, int? PlannedDurationMinutes,
         Guid? PresenterId, string? PresenterName, Guid[]? DocumentIds);
