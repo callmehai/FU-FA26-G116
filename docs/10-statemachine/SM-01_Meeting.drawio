@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <mxfile host="app.diagrams.net" version="24.7.17">
   <diagram id="SM-01_Meeting" name="Meeting State Machine">
-    <mxGraphModel dx="1200" dy="1200" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1200" pageHeight="1200" background="#ffffff">
+    <mxGraphModel dx="1200" dy="1290" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1200" pageHeight="1290" background="#ffffff">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -86,6 +86,12 @@
               <mxPoint x="310" y="756" />
             </Array>
           </mxGeometry>
+        </mxCell>
+        <mxCell id="final-Ended" value="" vertex="1" parent="1" style="ellipse;html=1;shape=endState;fillColor=#1e293b;strokeColor=#1e293b;strokeWidth=2;">
+          <mxGeometry as="geometry" x="575" y="1200" width="30" height="30" />
+        </mxCell>
+        <mxCell id="completion-Ended" value="" edge="1" parent="1" source="Ended" target="final-Ended" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry as="geometry" relative="1" />
         </mxCell>
       </root>
     </mxGraphModel>

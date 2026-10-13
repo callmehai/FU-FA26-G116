@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <mxfile host="app.diagrams.net" version="24.7.17">
   <diagram id="SM-12_MeetingSummary" name="Meeting Summary State Machine">
-    <mxGraphModel dx="1200" dy="660" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1200" pageHeight="660" background="#ffffff">
+    <mxGraphModel dx="1200" dy="750" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1200" pageHeight="750" background="#ffffff">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -27,6 +27,12 @@
           <mxGeometry as="geometry" relative="1" />
         </mxCell>
         <mxCell id="transition-2" value="Secretary publishes" edge="1" parent="1" source="Approved" target="Published" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="final-Published" value="" vertex="1" parent="1" style="ellipse;html=1;shape=endState;fillColor=#1e293b;strokeColor=#1e293b;strokeWidth=2;">
+          <mxGeometry as="geometry" x="575" y="660" width="30" height="30" />
+        </mxCell>
+        <mxCell id="completion-Published" value="" edge="1" parent="1" source="Published" target="final-Published" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
           <mxGeometry as="geometry" relative="1" />
         </mxCell>
       </root>

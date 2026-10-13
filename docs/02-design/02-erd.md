@@ -2,6 +2,14 @@
 
 Tài liệu này mô tả **mô hình dữ liệu khái niệm/logic mục tiêu** của TrustCabinet để làm nguồn cho Report 3, không phải bản trích xuất schema hiện tại. Mô hình đích có đúng **29 thực thể nghiệp vụ/dữ liệu**, khớp Report 3 §I.3.2 và ERD vẽ ở [assets/erd-muc-tieu/](../assets/erd-muc-tieu/). Hệ thống được triển khai bằng EF Core code-first và PostgreSQL; thay đổi ERD không tự thay đổi entity, cấu hình, schema hay migration.
 
+**ERD thực thể–quan hệ:** [file drawio chỉnh sửa được](../assets/erd-chen/trustcabinet-erd-chen.drawio),
+[PDF một trang](../assets/erd-chen/trustcabinet-erd-chen.pdf) và
+[ảnh toàn bộ mô hình](../assets/erd-chen/trustcabinet-erd-chen.png). Một ảnh chứa toàn bộ
+29 thực thể hình chữ nhật và 62 quan hệ hình thoi; action trong hình thoi dùng tiếng Anh.
+Bội số thể hiện bằng đầu nối crow’s foot, không ghi số trên đường nối. Sơ đồ bỏ thuộc tính
+để tập trung vào thực thể và quan hệ, bố trí quanh Meeting và User theo DB design hiện có.
+Bản dạng bảng ở `erd-muc-tieu/` được giữ để đối chiếu các thuộc tính và thiết kế dữ liệu.
+
 Hiện thực: EF Core 10 code-first, PostgreSQL qua Npgsql
 ([ADR-0003](../05-decisions/0003-chon-postgresql-thay-cho-sql-server.md)). Entity ở
 [backend/TrustCabinet.Domain/Entities/](../../backend/TrustCabinet.Domain/Entities/), cấu hình bảng

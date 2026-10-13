@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <mxfile host="app.diagrams.net" version="24.7.17">
   <diagram id="SM-19_DocumentComment" name="Document Comment State Machine (Draft)">
-    <mxGraphModel dx="1200" dy="480" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1200" pageHeight="480" background="#ffffff">
+    <mxGraphModel dx="1200" dy="570" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1200" pageHeight="570" background="#ffffff">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -21,6 +21,12 @@
           <mxGeometry as="geometry" relative="1" />
         </mxCell>
         <mxCell id="transition-1" value="Secretary resolves comment" edge="1" parent="1" source="Unresolved" target="Resolved" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="final-Resolved" value="" vertex="1" parent="1" style="ellipse;html=1;shape=endState;fillColor=#1e293b;strokeColor=#1e293b;strokeWidth=2;">
+          <mxGeometry as="geometry" x="575" y="480" width="30" height="30" />
+        </mxCell>
+        <mxCell id="completion-Resolved" value="" edge="1" parent="1" source="Resolved" target="final-Resolved" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
           <mxGeometry as="geometry" relative="1" />
         </mxCell>
       </root>

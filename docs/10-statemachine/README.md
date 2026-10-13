@@ -2,6 +2,54 @@
 
 Editable UML state machines with PNG previews. Draft diagrams contain transitions that still require detailed use-case confirmation.
 
+## Ký hiệu kết thúc UML
+
+Initial pseudostate là chấm tròn đặc. **Final State** là chấm tròn đặc có vòng tròn
+bao ngoài; biểu thị hoàn tất luồng được mô hình hóa, không có nghĩa là xoá dữ liệu.
+Giữ nguyên state nghiệp vụ (`Ended`, `Closed`, …), rồi nối bằng completion transition
+không nhãn tới Final State. Một sơ đồ có thể có nhiều Final State, mỗi nhánh một điểm
+kết thúc. Không dùng ký hiệu dấu X của terminate pseudostate.
+
+Các điểm kết thúc được khai báo tường minh trong `state-machines.json` (`final_states`)
+và được `scripts/generate-state-machines.py` giữ lại khi sinh sơ đồ:
+
+| Sơ đồ | State nối tới Final State |
+|---|---|
+| SM-01 Meeting | Ended |
+| SM-02 Agenda | Done |
+| SM-03 ParticipantAssignment | Removed |
+| SM-05 GuestInvitation | Expired, Revoked |
+| SM-07 SpeakingRequest | Finished, Cancelled |
+| SM-08 Voting | Closed |
+| SM-09 VoteConclusion | Passed, NotPassed, Deferred |
+| SM-10 Recording | Failed, Deleted |
+| SM-11 Transcript | Completed |
+| SM-12 MeetingSummary | Published |
+| SM-13 Minutes | Superseded |
+| SM-14 MinutesSignature | Invalidated |
+| SM-15 EmailDelivery | Sent, Failed |
+| SM-16 Call | Ended, Missed |
+| SM-18 NotificationRead | Read |
+| SM-19 DocumentComment | Resolved |
+
+Không bắt buộc mọi state machine phải có Final State. SM-04 InvitationResponse còn
+cho đổi `Accepted ↔ Declined`; SM-17 UserAccount còn cho kích hoạt lại tài khoản.
+SM-06 Attendance cũng không thêm Final State: UC-31 cho phép sửa điểm danh trong lúc
+họp. Sơ đồ SM-06 hiện còn các giá trị cũ `Excused`, `Delegated` và thiếu luồng sửa;
+việc đối chiếu toàn bộ nghiệp vụ này nằm ngoài chỉnh sửa ký hiệu kết thúc.
+
+`Rejected` của Meeting và `Failed` của Transcript còn đường quay lại; `Sealed` của
+Minutes còn đường tới `Superseded`; `Signed` còn có thể bị `Invalidated`, nên không
+nối completion transition tại các state này. `Failed` của Recording chỉ kết thúc
+lần upload theo sơ đồ draft hiện có; `Failed` của EmailDelivery kết thúc sau khi hết
+số lần thử. Các điểm kết thúc của sơ đồ draft vẫn cần được xác nhận khi hoàn thiện UC.
+
+Recording và transcript là dữ liệu cá nhân: cần đồng ý hợp lệ trước khi thu/xử lý,
+và có cơ chế xoá theo yêu cầu hợp lệ hoặc hết thời hạn lưu giữ. Final State không
+thay thế nghĩa vụ đồng ý và xoá dữ liệu; `Completed` chỉ kết thúc xử lý transcript.
+
+Tham chiếu: [OMG UML — ngữ nghĩa Final State](https://issues.omg.org/issues/UML25-382).
+
 | Diagram | Preview |
 |---|---|
 | [Meeting State Machine](SM-01_Meeting.drawio) | [PNG](SM-01_Meeting.png) |

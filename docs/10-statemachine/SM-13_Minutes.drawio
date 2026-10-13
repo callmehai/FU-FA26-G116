@@ -54,6 +54,12 @@
         <mxCell id="transition-5" value="Seal replacement revision" edge="1" parent="1" source="Sealed" target="Superseded" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
           <mxGeometry as="geometry" relative="1" />
         </mxCell>
+        <mxCell id="final-Superseded" value="" vertex="1" parent="1" style="ellipse;html=1;shape=endState;fillColor=#1e293b;strokeColor=#1e293b;strokeWidth=2;">
+          <mxGeometry as="geometry" x="800" y="725" width="30" height="30" />
+        </mxCell>
+        <mxCell id="completion-Superseded" value="" edge="1" parent="1" source="Superseded" target="final-Superseded" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;exitX=1;exitY=0.5;entryX=0;entryY=0.5;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>

@@ -154,7 +154,10 @@
           ]
         ]
       }
-    }
+    },
+    "final_states": [
+      "Ended"
+    ]
   },
   {
     "id": "SM-02_Agenda",
@@ -178,7 +181,10 @@
     ],
     "initial": "Secretary adds agenda item",
     "source": "UC23a–26; BR69–71,159",
-    "provisional": false
+    "provisional": false,
+    "final_states": [
+      "Done"
+    ]
   },
   {
     "id": "SM-03_ParticipantAssignment",
@@ -196,7 +202,10 @@
     ],
     "initial": "Secretary assigns participant",
     "source": "UC28a–28c; BR80,97,122–126",
-    "provisional": false
+    "provisional": false,
+    "final_states": [
+      "Removed"
+    ]
   },
   {
     "id": "SM-04_InvitationResponse",
@@ -250,7 +259,8 @@
           ]
         ]
       }
-    }
+    },
+    "final_states": []
   },
   {
     "id": "SM-05_GuestInvitation",
@@ -274,7 +284,11 @@
     ],
     "initial": "Create guest invitation",
     "source": "Report 3 Entity7; UC28a,28c,29,37; BR152–157",
-    "provisional": false
+    "provisional": false,
+    "final_states": [
+      "Expired",
+      "Revoked"
+    ]
   },
   {
     "id": "SM-06_Attendance",
@@ -370,7 +384,8 @@
         "points": [],
         "style": "edgeStyle=none;"
       }
-    }
+    },
+    "final_states": []
   },
   {
     "id": "SM-07_SpeakingRequest",
@@ -431,7 +446,11 @@
           ]
         ]
       }
-    }
+    },
+    "final_states": [
+      "Finished",
+      "Cancelled"
+    ]
   },
   {
     "id": "SM-08_Voting",
@@ -455,7 +474,10 @@
     ],
     "initial": "Chair creates vote\n[meeting InProgress]",
     "source": "UC53–57; BR160–161,165; ADR0014",
-    "provisional": false
+    "provisional": false,
+    "final_states": [
+      "Closed"
+    ]
   },
   {
     "id": "SM-09_VoteConclusion",
@@ -485,7 +507,12 @@
     ],
     "initial": "Close vote",
     "source": "UC57; BR161,165; Report 3 screen 11.4 and NFR Integrity",
-    "provisional": false
+    "provisional": false,
+    "final_states": [
+      "Passed",
+      "NotPassed",
+      "Deferred"
+    ]
   },
   {
     "id": "SM-10_Recording",
@@ -515,7 +542,11 @@
     ],
     "initial": "Start upload",
     "source": "Report 3 Entity18; RecordingStatus; NFR Personal data protection",
-    "provisional": true
+    "provisional": true,
+    "final_states": [
+      "Failed",
+      "Deleted"
+    ]
   },
   {
     "id": "SM-11_Transcript",
@@ -550,7 +581,10 @@
     ],
     "initial": "Queue transcription",
     "source": "Report 3 Entity19; NFR Failure handling / Recoverable AI processing",
-    "provisional": false
+    "provisional": false,
+    "final_states": [
+      "Completed"
+    ]
   },
   {
     "id": "SM-12_MeetingSummary",
@@ -574,7 +608,10 @@
     ],
     "initial": "Generate summary\n[meeting Ended]",
     "source": "Report 3 Entity21 and screen 10.3; UC47–51,90",
-    "provisional": false
+    "provisional": false,
+    "final_states": [
+      "Published"
+    ]
   },
   {
     "id": "SM-13_Minutes",
@@ -616,7 +653,10 @@
     ],
     "initial": "Secretary creates revision\n[meeting Ended]",
     "source": "Report 3 Entity22 and screen 12.1–12.4; BR166",
-    "provisional": false
+    "provisional": false,
+    "final_states": [
+      "Superseded"
+    ]
   },
   {
     "id": "SM-14_MinutesSignature",
@@ -640,7 +680,10 @@
     ],
     "initial": "Start signing cycle",
     "source": "BR166; Report 3 screen 12.2–12.3; NFR Integrity",
-    "provisional": false
+    "provisional": false,
+    "final_states": [
+      "Invalidated"
+    ]
   },
   {
     "id": "SM-15_EmailDelivery",
@@ -722,7 +765,11 @@
           ]
         ]
       }
-    }
+    },
+    "final_states": [
+      "Sent",
+      "Failed"
+    ]
   },
   {
     "id": "SM-16_Call",
@@ -752,7 +799,11 @@
     ],
     "initial": "Caller initiates call",
     "source": "CallStatus / CallKind; Report 3 Entity12",
-    "provisional": true
+    "provisional": true,
+    "final_states": [
+      "Ended",
+      "Missed"
+    ]
   },
   {
     "id": "SM-17_UserAccount",
@@ -775,7 +826,8 @@
     ],
     "initial": "Admin creates account",
     "source": "UC06a,06c; User.IsActive; BR03,16,18",
-    "provisional": false
+    "provisional": false,
+    "final_states": []
   },
   {
     "id": "SM-18_NotificationRead",
@@ -793,7 +845,10 @@
     ],
     "initial": "Create notification",
     "source": "UC66–67; Notification.ReadAt / IsRead",
-    "provisional": false
+    "provisional": false,
+    "final_states": [
+      "Read"
+    ]
   },
   {
     "id": "SM-19_DocumentComment",
@@ -811,6 +866,9 @@
     ],
     "initial": "Add comment",
     "source": "DocumentComment.IsResolved and entity description",
-    "provisional": true
+    "provisional": true,
+    "final_states": [
+      "Resolved"
+    ]
   }
 ]
