@@ -52,6 +52,11 @@ cd frontend && npm run build   # xuất vào backend/TrustCabinet.Web/wwwroot/
 dotnet run --project backend/TrustCabinet.Web
 ```
 
+## Server test chung
+
+Nhóm có một bản chạy sẵn trên AWS để test bằng trình duyệt, luôn theo nhánh `main`. Tài khoản test,
+cách cập nhật và cách dựng lại server: [deploy/README.md](deploy/README.md).
+
 ## Kiểm tra trước khi mở PR
 
 ```bash
