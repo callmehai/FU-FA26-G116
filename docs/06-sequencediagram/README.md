@@ -4,7 +4,7 @@
 
 ## 1. Mục tiêu
 
-Sequence Diagram thể hiện **một lần thực thi của một Use Case/business action**, bám theo Use Case Specification trong Report 3.
+Sequence Diagram thường thể hiện **một lần thực thi của một Use Case/business action**, bám theo Use Case Specification trong Report 3. Riêng UC-04 dùng một sequence đầu-cuối để thể hiện các tương tác liên tiếp cần thiết để hoàn thành Guest access.
 
 Không biến Sequence Diagram thành mô tả toàn bộ thao tác UI trước khi người dùng thực hiện action chính.
 
@@ -12,7 +12,7 @@ Không biến Sequence Diagram thành mô tả toàn bộ thao tác UI trước 
 
 ### 2.1. Chỉ có một request từ Actor vào hệ thống
 
-Mỗi Sequence Diagram chỉ có **một mũi tên Actor → Boundary ở đầu luồng**.
+Thông thường, mỗi Sequence Diagram chỉ có **một mũi tên Actor → Boundary ở đầu luồng**. Ngoại lệ UC-04 có nhiều tương tác Guest → Boundary theo Normal Flow.
 
 Ví dụ:
 
@@ -482,7 +482,7 @@ deactivate MeetingPage
 
 - [ ] Title đúng UC ID và Use Case Name.
 - [ ] Actor đúng Primary Actor trong Report 3.
-- [ ] Chỉ có **một Actor → Boundary request** trong toàn diagram.
+- [ ] Chỉ có **một Actor → Boundary request** trong toàn diagram, trừ sequence đầu-cuối UC-04.
 - [ ] Không vẽ form-open / form-display / user-resubmit không cần thiết.
 - [ ] Controller / Service / Repository có dấu `:` ở đầu tên.
 - [ ] Flow đi theo `Boundary → Controller → Service → Repository → Database`.

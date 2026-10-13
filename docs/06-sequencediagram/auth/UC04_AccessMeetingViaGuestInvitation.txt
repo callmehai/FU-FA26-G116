@@ -6,45 +6,97 @@ control ":Guest Access Controller" as Controller
 control ":Guest Access Service" as Service
 participant ":Guest Invitation Repository" as Repository
 database ":Database" as Database
+participant ":Email Service" as Email
 
-note over Guest,Service: Final UC-04 execution after email verification,\nor reopen with an already valid verified Guest session (ALT-1).\nCode issuance/verification are separate executions linked from the UC spec.
-Guest->Page: Continue to invited Meeting with self-declared display information, or reopen valid session
-Page->Controller: Complete or resume invited-Meeting access
-Controller->Service: Complete Guest access for the invitation
-Service->Repository: Read current invitation, invited-email verification and existing Guest access
-Repository->Database: Read invitation, expiry/revocation and verification context
+note over Guest,Service: One end-to-end UC-04 flow: request code, verify invited-email control,\nenter self-declared display information, then access only the invited Meeting.\nAn already verified active session may reopen the Meeting without another code (ALT-1).
+Guest->Page: Open invitation and request access, or reopen the invitation
+Page->Controller: Start or resume access via Guest invitation
+Controller->Service: Check invitation and existing verified Guest access
+Service->Repository: Read current invitation, verification challenge and Guest access
+Repository->Database: Read invitation status/expiry, challenge and access
 Database-->Repository: Current information / Read failure
 Repository-->Service: Current information / Read failure
-Service->Service: Require current invitation and verification bound to its invited email;\nlimit access to this Meeting (BR-153–BR-157)
+Service->Service: Check current invitation and Meeting scope (BR-152–BR-157)
 alt Invitation is missing, expired or revoked - EX-1
-Service-->Controller: Deny access; invalidate access through this invitation
-Controller-->Page: Invitation is no longer valid; no protected Meeting content
+Service-->Controller: Deny access; no protected Meeting content
+Controller-->Page: Invitation is no longer valid
 Page-->Guest: Invitation is no longer valid
-else Invited-email verification is absent or invalid - EX-2
-Service-->Controller: Return to UC-04 email verification; no Guest access
-Controller-->Page: MSG126 - Unable to verify the guest invitation. Check the code and try again.
-Page-->Guest: MSG126 - Unable to verify the guest invitation. Check the code and try again.
 else Verification/access service is unavailable - EX-3
-Service-->Controller: Access could not be completed; no new Guest session
-Controller-->Page: Access unavailable
-Page-->Guest: Access unavailable
-else Access is valid
+Service-->Controller: Verification could not be completed; no Guest session
+Controller-->Page: Verification unavailable
+Page-->Guest: Verification unavailable
+else Invitation is current
 alt Reopen already verified active Guest session - ALT-1
 Service->Service: Reuse access only for this invited Meeting; do not request another code
-else First access after verification
-Service->Repository: Retain self-declared display name/job title for presentation;\nnever change invited email or represent display fields as verified identity (BR-180)
-Repository->Database: Save declared display information
+Service-->Controller: Invited Meeting and allowed Member participation actions
+Controller-->Page: Display invited Meeting; subsequent requests recheck access
+Page-->Guest: Invited Meeting available
+else First access without verified email
+Service->Repository: Prepare one-time code for the invited email only (BR-153)
+Repository->Database: Save verification challenge
 Database-->Repository: Saved / Failure
-Repository-->Service: Display-information result
-end
-Service->Service: Establish or continue Meeting-scoped Guest access if completion succeeds;\nMember participation and additional grants under BR-181;\nno internal account, system role or Chair/Secretary authority
-alt Completion cannot be saved - EX-3
-Service-->Controller: No successful new Guest access reported
+Repository-->Service: Challenge result
+alt Challenge cannot be saved - EX-3
+Service-->Controller: Verification unavailable; no Guest session
+Controller-->Page: Verification unavailable
+Page-->Guest: Verification unavailable
+else Challenge saved
+Service->Email: Send code to the invited email (BR-153)
+Email-->Service: Delivery accepted / Failure
+alt Email delivery cannot be arranged - EX-3
+Service-->Controller: Verification unavailable; no Guest session
+Controller-->Page: Verification unavailable
+Page-->Guest: Verification unavailable
+else Code delivered
+Service-->Controller: Request one-time code entry
+Controller-->Page: Display invited-email code entry
+Page-->Guest: Enter the code sent to the invited email
+Guest->Page: Submit the one-time code
+Page->Controller: Verify code for this invitation
+Controller->Service: Verify code and current invitation
+Service->Service: Check correct, unexpired, unused code and invited-email binding (BR-153)
+alt Code is incorrect, expired or already used - EX-2
+Service-->Controller: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+Controller-->Page: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+Page-->Guest: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+else Code and invitation are valid
+Service->Repository: Consume code and record invited-email verification consistently
+Repository->Database: Save verification; recheck current invitation and unused challenge
+Database-->Repository: Verification saved / Conflict / Failure
+Repository-->Service: Verification result
+alt Code was consumed by a concurrent request - EX-2
+Service-->Controller: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+Controller-->Page: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+Page-->Guest: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+else Verification cannot be saved - EX-3
+Service-->Controller: Verification not completed; no Guest session
+Controller-->Page: Verification could not be completed
+Page-->Guest: Verification could not be completed
+else Invited-email control verified
+Service-->Controller: Continue with self-declared display information
+Controller-->Page: Show display name and job title entry; invited email remains unchanged
+Page-->Guest: Enter display name and optional job title for presentation
+Guest->Page: Submit self-declared display information
+Page->Controller: Complete invited-Meeting access
+Controller->Service: Complete Guest access for this invitation
+Service->Service: Keep display fields self-declared, separate from verified email (BR-180)
+Service->Repository: Save display information and establish Meeting-scoped Guest access
+Repository->Database: Save profile and Guest access
+Database-->Repository: Saved / Failure
+Repository-->Service: Access result
+Service->Service: Apply Guest Member participation and permitted additional grants;\nno internal account, system role or Chair/Secretary authority (BR-181)
+alt Access cannot be completed - EX-3
+Service-->Controller: No successful Guest access
 Controller-->Page: Access could not be completed
 Page-->Guest: Access could not be completed
-else Access completed or existing valid access resumed
+else Guest access is established
 Service-->Controller: Invited Meeting and allowed Member participation actions
 Controller-->Page: Display invited Meeting; subsequent requests recheck access
 Page-->Guest: Invited Meeting available; email verified, display information self-declared
+end
+end
+end
+end
+end
 end
 end

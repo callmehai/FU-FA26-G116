@@ -913,7 +913,7 @@ Notes:
 | Alternative Flows | ALT-1: If the Guest reopens a valid link during an active verified session, the system opens the same invited meeting without requesting another code. |  |  |
 | Exception Flows | EX-1: The invitation is missing, expired, or revoked: the system denies access and explains that the invitation is no longer valid.<br>EX-2: The code is incorrect, expired, or already used: the system denies verification and allows the Guest to request or enter a valid code.<br>EX-3: The verification service is unavailable: the system reports that verification could not be completed and does not establish a session. |  |  |
 
-Sequence sources and PNGs: docs/06-sequencediagram/auth/UC04_RequestGuestVerificationCode, UC04_VerifyGuestInvitation and UC04_AccessMeetingViaGuestInvitation. These are separate executions of the existing UC-04, not additional Use Cases.
+Sequence source and PNG: docs/06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation. This single end-to-end sequence covers code request, invited-email verification, self-declared display information and access to the invited Meeting; these steps remain part of UC-04, not additional Use Cases.
 
 ### 2. FE-02 – User & Profile Management
 

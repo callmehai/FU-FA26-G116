@@ -205,7 +205,7 @@ Sequence Diagram: [UC03_SignOut.txt](../06-sequencediagram/auth/UC03_SignOut.txt
 
 ### UC-04 – Access Meeting via Guest Invitation
 
-Sequence Diagram: [cấp mã](../06-sequencediagram/auth/UC04_RequestGuestVerificationCode.txt), [xác minh](../06-sequencediagram/auth/UC04_VerifyGuestInvitation.txt), [truy cập cuộc họp](../06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation.txt). Source và ảnh PNG: [auth/README](../06-sequencediagram/auth/README.md).
+Sequence Diagram: [Access Meeting via Guest Invitation](../06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation.txt) (một luồng đầu-cuối gồm cấp mã, xác minh email và vào cuộc họp). Source và ảnh PNG: [auth/README](../06-sequencediagram/auth/README.md).
 
 
 
