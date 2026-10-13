@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 using TrustCabinet.Domain.Audit;
+using TrustCabinet.Domain.Agenda;
+using TrustCabinet.Infrastructure.Agenda;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Access;
@@ -21,6 +23,8 @@ builder.Services.AddTrustCabinetAuthentication(builder.Configuration);
 builder.Services.AddTrustCabinetUserManagement();
 builder.Services.AddTrustCabinetRolePermissions();
 builder.Services.AddTrustCabinetMeetings();
+builder.Services.AddTrustCabinetAgenda();
+builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IUserIdProvider, NotificationUserIdProvider>();
 builder.Services.AddTrustCabinetNotifications();
@@ -77,7 +81,8 @@ builder.Services
         {
             OnMessageReceived = context =>
             {
-                if (context.Request.Path.StartsWithSegments("/hubs/notifications")
+                if ((context.Request.Path.StartsWithSegments("/hubs/notifications")
+                    || context.Request.Path.StartsWithSegments("/hubs/meetings"))
                     && context.Request.Query.TryGetValue("access_token", out var token)
                     && token.Count == 1)
                 {
@@ -152,6 +157,8 @@ app.MapRoleEndpoints();
 
 // /api/meetings — UC-14/UC-15 mutations (SCRUM-17) and UC-17 list (SCRUM-18).
 app.MapMeetingEndpoints();
+app.MapAgendaEndpoints();
+app.MapHub<MeetingHub>("/hubs/meetings", options => options.CloseOnAuthenticationExpiration = true);
 
 // SCRUM-14: user-scoped notification list/read APIs and realtime delivery.
 app.MapNotificationEndpoints();
