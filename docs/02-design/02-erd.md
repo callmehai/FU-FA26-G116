@@ -643,6 +643,10 @@ kín; vai trò trong cuộc họp tách khỏi vai trò hệ thống.
 — hệ thống gốc không tự làm phần gọi, TrustCabinet có gọi thoại/video trong ứng dụng nên đó là
 điểm khác biệt chính của đồ án.
 
+## Ràng buộc Agenda sau SCRUM-25
+
+`AgendaItemStatus` chỉ gồm Pending, InProgress, Done. Migration AgendaExecutionInvariants kiểm tra dữ liệu cũ rồi thêm check constraint và unique partial index theo meeting_id khi status='InProgress'. Index (meeting_id, position) vẫn không unique; mọi writer khóa meeting trước khi đổi agenda. Actual duration không có cột riêng: tính ActualEndedAt − ActualStartedAt. Xem [contract Agenda](../03-api/08-chuong-trinh-nghi-su.md).
+
 ## Quyết định quyền bổ sung — PO 13/10/2026
 
 Quyền hiệu lực trong Meeting là quyền mặc định của role cộng quyền được cấp bổ sung cho người đó. PermissionCode là mã từ catalogue quyền của hệ thống; ViewParticipants/ViewResponses là ví dụ, không phải enum chỉ có hai giá trị. Danh sách quyền và ma trận grant theo role chưa chốt; không thêm fields/entities mới trong đợt chỉnh yêu cầu này. Guest nhận quyền bổ sung như Member với các ngoại lệ đã chốt ở ADR-0016.
