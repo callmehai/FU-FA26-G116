@@ -644,3 +644,7 @@ kín; vai trò trong cuộc họp tách khỏi vai trò hệ thống.
 **Thêm so với hệ thống gốc:** `Meeting.Mode` và toàn bộ nhóm `call_sessions` / `call_participants`
 — hệ thống gốc không tự làm phần gọi, TrustCabinet có gọi thoại/video trong ứng dụng nên đó là
 điểm khác biệt chính của đồ án.
+
+## Ràng buộc Agenda sau SCRUM-25
+
+`AgendaItemStatus` chỉ gồm Pending, InProgress, Done. Migration AgendaExecutionInvariants kiểm tra dữ liệu cũ rồi thêm check constraint và unique partial index theo meeting_id khi status='InProgress'. Index (meeting_id, position) vẫn không unique; mọi writer khóa meeting trước khi đổi agenda. Actual duration không có cột riêng: tính ActualEndedAt − ActualStartedAt. Xem [contract Agenda](../03-api/08-chuong-trinh-nghi-su.md).
