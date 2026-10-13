@@ -5,12 +5,16 @@
 Tên file theo số Feature mới (FE-01 → FE-15, baseline 10/10/2026). Bản vẽ FE-05 *Meeting Session Management* cũ
 đã bị xoá cùng Meeting Session ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)).
 
-- [FE-04 — Meeting Management](feature-04-meeting-management-class-diagram.drawio.png) — UC-14 → UC-20; PNG có nhúng
-  XML draw.io. Ngày 10/10/2026 đã bỏ `MeetingSession`/`MeetingSessionRepository`, thêm lịch vào `Meeting`, bỏ
-  `MinutesIssued`/`Archived` khỏi `MeetingStatus`.
-- [FE-05 — Agenda Management](feature-05-agenda-management-class-diagram.drawio) ([PNG](feature-05-agenda-management-class-diagram.png)) — UC-23a → UC-23d, UC-24 → UC-26; AgendaItem thuộc thẳng Meeting; mô hình đích theo ERD.
-- [FE-06 — Meeting Participant Management](feature-06-meeting-participant-management-class-diagram.drawio) ([PNG](feature-06-meeting-participant-management-class-diagram.png)) — UC-27 → UC-30; mô hình đích theo ERD và business rules FE-06.
-- [FE-13 — Notification](feature-13-notification-management-class-diagram.drawio.png) — UC-66 → UC-68.
+- [FE-01 — Authentication](feature-01-auth-class-diagram.drawio) ([PNG](feature-01-auth-class-diagram.drawio.png)) — UC-01 → UC-04; Guest access (UC-04) tách riêng khỏi đăng nhập nội bộ, Google là hệ thống ngoài.
+- [FE-02 — User Management](feature-02-user-management-class-diagram.drawio) ([PNG](feature-02-user-management-class-diagram.drawio.png)) — UC-05 → UC-09, gồm cả UC-07.
+- [FE-03 — Role Management](feature-03-role-management-class-diagram.drawio) ([PNG](feature-03-role-management-class-diagram.drawio.png)) — UC-10 → UC-13; `Role` ◆ `RoleCapability`, `Role`–`User`, `User`–`AuditLogEntry`.
+- [FE-04 — Meeting Management](feature-04-meeting-management-class-diagram.drawio) ([PNG](feature-04-meeting-management-class-diagram.drawio.png)) — UC-14 → UC-22.
+
+FE-01 → FE-04 được vẽ lại ngày 13/10/2026, lấy sequence diagram trong
+[06-sequencediagram](../06-sequencediagram/) làm nguồn chuẩn.
+- [FE-05 — Agenda Management](feature-05-agenda-management-class-diagram.drawio) ([PNG](feature-05-agenda-management-class-diagram.drawio.png)) — UC-23a → UC-23d, UC-24 → UC-26; AgendaItem thuộc thẳng Meeting; mô hình đích theo ERD.
+- [FE-06 — Meeting Participant Management](feature-06-meeting-participant-management-class-diagram.drawio) ([PNG](feature-06-meeting-participant-management-class-diagram.drawio.png)) — UC-27 → UC-30; mô hình đích theo ERD và business rules FE-06.
+- [FE-13 — Notification](feature-13-notification-management-class-diagram.drawio) ([PNG](feature-13-notification-management-class-diagram.drawio.png)) — UC-66 → UC-68.
 
 ## Chuẩn trình bày class diagram
 
@@ -27,15 +31,15 @@ diagram hiện có. Giữ thống nhất các điểm sau:
   nhật diagram, xuất lại PNG tương ứng để hai file luôn đồng bộ.
 
 Đối chiếu các bản vẽ trong thư mục này với code backend (SCRUM-11 xác thực, SCRUM-13 quản lý người
-dùng, SCRUM-60 ma trận phân quyền).
+dùng, SCRUM-60 ma trận phân quyền). Các phần A → F bên dưới mô tả **bản vẽ cũ** trước ngày 13/10/2026.
 
-- [`feature-01-auth-class-diagram.drawio.png`](feature-01-auth-class-diagram.drawio.png) — đối
+- [`feature-01-auth-class-diagram.drawio`](feature-01-auth-class-diagram.drawio) — đối
   chiếu tại **21/09/2026**
-- [`feature-02-user-management-class-diagram.drawio.png`](feature-02-user-management-class-diagram.drawio.png)
-  — đối chiếu tại **21/09/2026**; phần UC-07 đã tách sang bản vẽ 02b (**04/10/2026**)
+- [`feature-02-user-management-class-diagram.drawio`](feature-02-user-management-class-diagram.drawio)
+  — đối chiếu tại **21/09/2026**; phần UC-07 đã tách sang bản vẽ 02b (**04/10/2026**), nay vẽ lại trong bản 02
 - `feature-02b-password-reset-class-diagram.drawio.png` (*file chưa được commit vào repo*)
   — UC-07 đặt lại mật khẩu, vẽ theo code tại **04/10/2026**, xem [PHẦN D](#phần-d--uc-07-đặt-lại-mật-khẩu-đã-tách-sang-bản-vẽ-02b)
-- [`feature-03-role-management-class-diagram.png`](feature-03-role-management-class-diagram.png)
+- [`feature-03-role-management-class-diagram.drawio.png`](feature-03-role-management-class-diagram.drawio.png)
   — đối chiếu tại **22/09/2026**, phần `Role` đối chiếu lại **23/09/2026** (`SCRUM-63`), xem [PHẦN F](#phần-f--bản-vẽ-03-ma-trận-phân-quyền-scrum-60)
 
 **Kết luận: kiến trúc đúng, chi tiết lệch.** Phân tầng boundary → control → service → repository →
@@ -482,7 +486,7 @@ thêm vai trò mới mà không deploy. `role_capabilities` lưu **tên enum** �
 > **Đã giải quyết — BA đừng sửa phần `Role` trên bản vẽ.** ADR-0004 dẫn ở trên không nói gì về vai
 > trò. [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md) (đã chấp nhận, `SCRUM-63`) chuyển vai
 > trò thành bảng `roles` với `id`, `name`, `description`, `isBuiltIn` — **code giờ đã khớp bản vẽ**
-> ([feature-03-role-management-class-diagram.png](feature-03-role-management-class-diagram.png):
+> ([feature-03-role-management-class-diagram.drawio.png](feature-03-role-management-class-diagram.drawio.png):
 > `RoleController`, `RoleService`, `RoleRepository`). Bảng phía trên chỉ còn là lịch sử. Phần
 > `Permission` ở F1 thì vẫn đúng: `Capability` vẫn là enum.
 

@@ -205,7 +205,7 @@ Sequence Diagram: [UC03_SignOut.txt](../06-sequencediagram/auth/UC03_SignOut.txt
 
 ### UC-04 – Access Meeting via Guest Invitation
 
-Sequence Diagram: [cấp mã](../06-sequencediagram/auth/UC04_RequestGuestVerificationCode.txt), [xác minh](../06-sequencediagram/auth/UC04_VerifyGuestInvitation.txt), [truy cập cuộc họp](../06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation.txt). Source và ảnh PNG: [auth/README](../06-sequencediagram/auth/README.md).
+Sequence Diagram: [Access Meeting via Guest Invitation](../06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation.txt) (một luồng đầu-cuối gồm cấp mã, xác minh email và vào cuộc họp). Source và ảnh PNG: [auth/README](../06-sequencediagram/auth/README.md).
 
 
 
@@ -318,6 +318,8 @@ Sequence Diagram: [UC08_AssignSystemRoleToUser.txt](../06-sequencediagram/user-m
 
 ### UC-09 – Unlock User Account
 
+Sequence Diagram: [UC09_UnlockUserAccount.txt](../06-sequencediagram/user-management/UC09_UnlockUserAccount.txt)
+
 | Mục | Nội dung |
 |---|---|
 | **Primary Actors** | System Admin |
@@ -413,6 +415,8 @@ Sequence Diagram: [UC12c_DeleteRole.txt](../06-sequencediagram/role-management/U
 | **Exception Flows** | EX-1: Predefined Role<br>1. At Step 6 of the Main Flow, the system determines that the selected role is a predefined system role.<br>2. The system does not delete the role.<br>3. The system displays MSG24 – “This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions.”<br>4. The use case ends unsuccessfully.<br>EX-2: Role Still Held by User Accounts<br>1. At Step 6 or Step 7 of the Main Flow, the system determines that one or more user accounts (active or deactivated) still hold the role, including an account assigned to the role while the deletion was in progress.<br>2. The system does not delete the role.<br>3. The system displays MSG25 – “This role is still held by {n} user account(s). Reassign them to another role before deleting.” in the confirmation dialog, where {n} is the number of user accounts holding the role.<br>4. The use case ends unsuccessfully.<br>EX-3: Role Cannot Be Deleted<br>1. At Step 7 of the Main Flow, the system cannot delete the role.<br>2. The role and its permission assignments remain unchanged.<br>3. The system displays MSG28 – “Unable to delete the role. Please try again.”<br>4. The use case ends unsuccessfully. |
 
 ### UC-13 – View Audit Log
+
+Sequence Diagram: [UC13_ViewAuditLog.txt](../06-sequencediagram/role-management/UC13_ViewAuditLog.txt)
 
 | Mục | Nội dung |
 |---|---|
