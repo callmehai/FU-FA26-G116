@@ -31,7 +31,19 @@ and checking the change in a real browser before the PR. Claude Code loads them 
 agent reads the two files directly. The third-party [evondev ui-ux skill](.agents/skills/ui-ux/SKILL.md)
 is available as additional guidance; project rules here and `frontend-ui-design` take precedence.
 **Diagram and architecture work** uses [drawio-skill](.agents/skills/drawio-skill/SKILL.md)
-for creating, editing, and validating `.drawio` models (such as the ERD).
+for creating, editing, and validating `.drawio` models (such as the ERD), following
+[DRAWIO_EDITING_RULES.md](DRAWIO_EDITING_RULES.md).
+
+### Draw.io Editing Rules
+
+When editing any `.drawio` or `.dio` file:
+
+- Read and follow [DRAWIO_EDITING_RULES.md](DRAWIO_EDITING_RULES.md).
+- Use the existing [drawio-skill](.agents/skills/drawio-skill/SKILL.md).
+- Preserve graph semantics, IDs, source/target references, UML relationships, and file structure
+  unless the user explicitly requests a semantic change.
+- Make targeted edits; do not regenerate the full diagram unless explicitly requested.
+- Render and inspect the result, fix visual defects, and validate the graph before reporting completion.
 
 ## Language rules
 

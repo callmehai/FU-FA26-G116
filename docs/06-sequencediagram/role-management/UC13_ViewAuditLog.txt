@@ -1,0 +1,50 @@
+title UC-13 - View Audit Log
+
+actor "System Admin" as Admin
+boundary "Audit Log Page" as Page
+control ":Audit Log Controller" as Controller
+control ":Audit Log Query Service" as Service
+participant ":Audit Log Repository" as Repository
+database ":Database" as Database
+
+Admin->Page: Request audit entries with selected date range, filters and page
+activate Page
+Page->Controller: GET /api/audit-log with query criteria
+activate Controller
+Controller->Controller: Authenticate and recheck current audit-view authority
+alt Caller is unauthorized
+Controller-->Page: Deny request; no audit entries disclosed
+Page-->Admin: Audit Log is not accessible
+else Caller is authorized
+Controller->Service: getAuditEntries(criteria, caller)
+activate Service
+Service->Service: Validate date range, filter values and pagination
+alt Invalid criteria - EX-1
+Service-->Controller: Identify invalid criteria; query is not applied
+Controller-->Page: Filter validation errors
+Page-->Admin: Correct the highlighted criteria
+else Criteria are valid
+Service->Repository: findReadOnlyPage(criteria, caller)
+Repository->Database: Apply authorized scope and filters before count/pagination;\norder by OccurredAt descending with stable tie-breaker
+activate Database
+Database-->Repository: Read-only entries and total / Read failure
+deactivate Database
+Repository-->Service: Matching page / Read failure
+alt Audit entries cannot be loaded - EX-2
+Service-->Controller: Load failed
+Controller-->Page: Unable to load audit log; offer retry
+Page-->Admin: Audit Log unavailable; retry is available
+else No entries match - ALT-1
+Service-->Controller: Empty page and total zero
+Controller-->Page: Empty result preserving selected filters
+Page-->Admin: No matching audit entries; filters can be revised
+else Entries match
+Service-->Controller: Entries with actor, event, target, time, IP and recorded details
+Controller-->Page: Requested read-only page
+Page-->Admin: Display audit entries in reverse chronological order
+end
+end
+deactivate Service
+end
+deactivate Controller
+deactivate Page
