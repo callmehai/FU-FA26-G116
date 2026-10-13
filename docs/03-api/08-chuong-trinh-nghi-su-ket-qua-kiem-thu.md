@@ -4,6 +4,18 @@ Ngày kiểm tra: 13/10/2026 (UTC+7). Branch `codex/scrum25-backend-agenda`, tá
 
 ## Thay đổi thực tế
 
+### Bổ sung sau review độc lập (13/10/2026)
+
+Trên branch hiện tại `feat/scrum25-backend-agenda`, sửa hai finding P2:
+
+- Publisher được await trực tiếp sau commit, vẫn nhận cancellation token 2 giây. Request chờ task kết thúc trước khi dispose scoped dependencies; lỗi muộn được catch/log, mutation đã commit vẫn thành công. Mốc 2 giây không phải hard timeout của response.
+- Lỗi giải mã surrogate trong tên thuộc tính JSON được chuyển thành lỗi parse ngay tại bước đọc tên, không catch rộng quanh nghiệp vụ. Create/update trả `400/MSG66`, reorder trả `400/MSG143`, không lưu hoặc phát event.
+- Thêm bốn case regression: publisher hoàn tất thành công/lỗi sau cancellation; high/low surrogate lỗi trên cả create, update, reorder. Test publisher giữ task bằng gate và kiểm tra mutation chưa trả về, dữ liệu đã commit, scoped DbContext vẫn dùng được khi task tiếp tục.
+- Chạy lại restore, build Release `-warnaserror` và full suite từ source trên Linux SDK 10.0.401, PostgreSQL 17/Redis 8 riêng: **1.028 pass, 0 fail, 0 skip**, gồm 76 case Agenda. Build không warning/error; `git diff --check` pass. Container/network kiểm thử tạm đã dọn.
+- Kết quả: `tests/TrustCabinet.Web.Tests/TestResults/review-fixes/review-fixes.trx`; log local `%TEMP%/agenda-review-fixes.log`. Không đo lại coverage; tỷ lệ và kiểm tra Frontend bên dưới thuộc lần nghiệm thu ban đầu. Lần sửa này không thay đổi Frontend hoặc schema.
+
+Các kết quả và mô tả sau đây ghi lại lần triển khai ban đầu:
+
 - Tám endpoint cho bảy UC: đọc snapshot/options, tạo, sửa, xóa, reorder, start và complete. Xem [contract và ví dụ JSON](08-chuong-trinh-nghi-su.md), [bảng MSG](00-danh-muc-ma-thong-bao.md#agenda--contract-backend-scrum-25).
 - Domain chứa hợp đồng, rule và execution; Infrastructure chứa service/repository dùng chung scoped DbContext; Web chịu trách nhiệm parse JSON, mapping HTTP và hub. Không thêm framework hoặc Application project.
 - Mutation dùng transaction ReadCommitted + PostgreSQL meeting-row lock, kiểm lại assignment/status sau lock. Reorder token chống snapshot cũ; giữ gap và vị trí item đã bắt đầu. Document association không xóa metadata/version hoặc chuyển tài liệu từ mục khác.

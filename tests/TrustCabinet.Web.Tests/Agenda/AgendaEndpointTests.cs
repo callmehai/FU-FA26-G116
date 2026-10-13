@@ -104,6 +104,29 @@ public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<A
         Assert.Empty(await db.AgendaItems.Where(i => i.MeetingId == s.MeetingId).ToListAsync());
     }
 
+    [Theory]
+    [InlineData("\\ud800")]
+    [InlineData("\\udc00")]
+    public async Task Malformed_unicode_property_names_return_validation_without_mutation(string name)
+    {
+        var s = await fixture.Seed();
+        using var client = fixture.Client(s.Secretary);
+        var before = await client.GetFromJsonAsync<JsonElement>(s.Url);
+        var events = fixture.Events.Count;
+        foreach (var action in new[] { "create", "update", "order" })
+        {
+            using var content = new StringContent("{\"" + name + "\":1}", Encoding.UTF8, "application/json");
+            using var response = action == "create" ? await client.PostAsync(s.Url, content)
+                : await client.PutAsync(s.Url + (action == "order" ? "/order" : $"/{s.Items[0]}"), content);
+            var body = await AssertCode(response, 400, action == "order" ? "MSG143" : "MSG66");
+            Assert.True(body.GetProperty("errors").TryGetProperty("body", out _));
+        }
+        var after = await client.GetFromJsonAsync<JsonElement>(s.Url);
+        Assert.Equal(before.GetProperty("items").GetRawText(), after.GetProperty("items").GetRawText());
+        Assert.Equal(before.GetProperty("orderVersion").GetString(), after.GetProperty("orderVersion").GetString());
+        Assert.Equal(events, fixture.Events.Count);
+    }
+
     [Fact]
     public async Task Limits_duplicate_ids_presenter_and_document_validation()
     {

@@ -98,7 +98,7 @@ public static class AgendaEndpoints
         {
             using var json = JsonDocument.Parse(buffer.AsMemory(0, count));
             if (json.RootElement.ValueKind != JsonValueKind.Object
-                || json.RootElement.EnumerateObject().Select(p => p.Name).Distinct().Count() != json.RootElement.EnumerateObject().Count())
+                || json.RootElement.EnumerateObject().Select(PropertyName).Distinct().Count() != json.RootElement.EnumerateObject().Count())
                 throw new JsonException();
             if (reorder)
             {
@@ -109,6 +109,16 @@ public static class AgendaEndpoints
             return new(body.Title, body.Description, body.PlannedDurationMinutes, body.PresenterId, body.PresenterName, body.DocumentIds);
         }
         catch (JsonException) { return new(ParseFailure: reorder ? AgendaFailure.InvalidOrder : AgendaFailure.Invalid); }
+    }
+
+    private static string PropertyName(JsonProperty property)
+    {
+        try { return property.Name; }
+        catch (InvalidOperationException ex)
+        {
+            // JsonDocument defers decoding escaped property names until they are accessed.
+            throw new JsonException("Invalid Unicode in JSON property name.", ex);
+        }
     }
 
     private static IResult Map(AgendaOutcome result, Guid meetingId, AgendaOperation? operation = null)

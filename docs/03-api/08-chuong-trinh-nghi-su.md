@@ -58,6 +58,8 @@ Hub `/hubs/meetings`: `JoinMeeting(meetingId)`, `LeaveMeeting(meetingId)`. Event
 
 SCRUM-69 gọi helper hoàn thành current item trong transaction đã khóa meeting, dùng cùng thời điểm End Meeting; helper không SaveChanges/Commit/publish. Pending giữ nguyên. Endpoint End Meeting và đóng room chưa nằm trong task này.
 
+Publisher nhận cancellation sau 2 giây, nhưng request vẫn chờ task publish kết thúc để scoped DbContext không bị dispose khi task còn dùng. Đây là thời hạn yêu cầu hủy hợp tác, không phải giới hạn cứng thời gian response; provider chậm hoàn tất cancellation có thể làm response chậm hơn. Lỗi publish, kể cả lỗi phát sinh sau thời hạn này, được log và không đổi kết quả mutation đã commit.
+
 ## Mapping nghiệm thu
 
 | UC | API | MSG thành công | Nhóm test |

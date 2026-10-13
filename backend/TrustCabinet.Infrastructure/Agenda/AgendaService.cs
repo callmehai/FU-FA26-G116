@@ -195,7 +195,8 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
         if (change is not null)
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-            try { await publisher.PublishAsync(change, timeout.Token).WaitAsync(timeout.Token); }
+            // Cancellation is cooperative: drain the publisher before its scoped dependencies are disposed.
+            try { await publisher.PublishAsync(change, timeout.Token); }
             catch (Exception ex) { logger.LogWarning(ex, "Agenda committed; realtime delivery failed for {MeetingId}", meetingId); }
         }
         return outcome;

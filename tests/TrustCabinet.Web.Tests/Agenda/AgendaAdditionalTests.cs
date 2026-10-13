@@ -15,6 +15,57 @@ namespace TrustCabinet.Web.Tests.Agenda;
 
 public sealed class AgendaAdditionalTests(AgendaFixture fixture) : IClassFixture<AgendaFixture>
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Publish_timeout_drains_scoped_work_and_observes_late_failure(bool failAfterCancellation)
+    {
+        var s = await fixture.Seed(count: 0);
+        await using var scope = fixture.Host.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<TrustCabinet.Infrastructure.TrustCabinetDbContext>();
+        var publisher = new DelayedPublisher(db, failAfterCancellation);
+        var service = ActivatorUtilities.CreateInstance<AgendaService>(scope.ServiceProvider, publisher);
+        var mutation = service.CreateAsync(s.MeetingId, s.Secretary, new("Committed", PlannedDurationMinutes: 20));
+        try
+        {
+            await publisher.CancellationObserved.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await Assert.ThrowsAsync<TimeoutException>(() => mutation.WaitAsync(TimeSpan.FromMilliseconds(200)));
+            Assert.False(mutation.IsCompleted);
+            Assert.False(publisher.Finished);
+            await using var check = fixture.Db();
+            Assert.True(await check.AgendaItems.AnyAsync(i => i.MeetingId == s.MeetingId));
+        }
+        finally
+        {
+            publisher.Release.TrySetResult();
+            await mutation.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        Assert.True(publisher.Finished);
+        Assert.True(publisher.ReadAfterCancellation);
+        Assert.Equal(AgendaFailure.None, (await mutation).Failure);
+    }
+
+    private sealed class DelayedPublisher(TrustCabinet.Infrastructure.TrustCabinetDbContext db, bool fail) : IAgendaChangePublisher
+    {
+        internal readonly TaskCompletionSource CancellationObserved = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal readonly TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal bool Finished;
+        internal bool ReadAfterCancellation;
+
+        public async Task PublishAsync(AgendaChange change, CancellationToken ct)
+        {
+            using var registration = ct.Register(() => CancellationObserved.TrySetResult());
+            try
+            {
+                // Simulate a provider finishing scoped work only after cancellation has been requested.
+                await Release.Task;
+                ReadAfterCancellation = await db.AgendaItems.AnyAsync(i => i.MeetingId == change.MeetingId);
+                if (fail) throw new IOException("Injected late publisher failure.");
+            }
+            finally { Finished = true; }
+        }
+    }
+
     [Fact]
     public async Task Seeder_is_insert_only_and_survives_user_edits_and_deleted_items()
     {
