@@ -48,6 +48,12 @@
             </Array>
           </mxGeometry>
         </mxCell>
+        <mxCell id="final-Completed" value="" vertex="1" parent="1" style="ellipse;html=1;shape=endState;fillColor=#1e293b;strokeColor=#1e293b;strokeWidth=2;">
+          <mxGeometry as="geometry" x="800" y="545" width="30" height="30" />
+        </mxCell>
+        <mxCell id="completion-Completed" value="" edge="1" parent="1" source="Completed" target="final-Completed" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;exitX=1;exitY=0.5;entryX=0;entryY=0.5;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>

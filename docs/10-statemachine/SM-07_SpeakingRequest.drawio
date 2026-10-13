@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <mxfile host="app.diagrams.net" version="24.7.17">
   <diagram id="SM-07_SpeakingRequest" name="Speaking Request State Machine (Draft)">
-    <mxGraphModel dx="1200" dy="1020" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1200" pageHeight="1020" background="#ffffff">
+    <mxGraphModel dx="1200" dy="1110" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1200" pageHeight="1110" background="#ffffff">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -53,6 +53,18 @@
               <mxPoint x="840" y="936" />
             </Array>
           </mxGeometry>
+        </mxCell>
+        <mxCell id="final-Finished" value="" vertex="1" parent="1" style="ellipse;html=1;shape=endState;fillColor=#1e293b;strokeColor=#1e293b;strokeWidth=2;">
+          <mxGeometry as="geometry" x="800" y="725" width="30" height="30" />
+        </mxCell>
+        <mxCell id="completion-Finished" value="" edge="1" parent="1" source="Finished" target="final-Finished" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;exitX=1;exitY=0.5;entryX=0;entryY=0.5;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="final-Cancelled" value="" vertex="1" parent="1" style="ellipse;html=1;shape=endState;fillColor=#1e293b;strokeColor=#1e293b;strokeWidth=2;">
+          <mxGeometry as="geometry" x="575" y="1020" width="30" height="30" />
+        </mxCell>
+        <mxCell id="completion-Cancelled" value="" edge="1" parent="1" source="Cancelled" target="final-Cancelled" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry as="geometry" relative="1" />
         </mxCell>
       </root>
     </mxGraphModel>
