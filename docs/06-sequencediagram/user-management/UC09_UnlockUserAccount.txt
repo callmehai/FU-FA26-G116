@@ -9,7 +9,6 @@ participant ":Account Lock Repository" as Locks
 participant ":Audit Service" as Audit
 database ":Database" as Database
 
-note over Controller,Database: Target design from UC-09. Account lock storage and unlock API are not implemented.\nNo new message code or lock threshold is defined by this diagram.
 Admin->Page: Confirm Unlock Account for the selected user
 activate Page
 Page->Controller: Request account unlock(userId)
@@ -51,7 +50,6 @@ Service-->Controller: Current account status; no change
 Controller-->Page: Refresh account status
 Page-->Admin: Account is already unlocked
 else Account is locked
-note over Service,Database: Lock reset and successful-unlock audit must commit together.\nThe operation rechecks current lock and account status before commit.
 Service->Locks: Clear lock and reset failed-attempt counter in one transaction
 Locks->Database: Begin transaction; recheck account/lock; stage lock reset
 Database-->Locks: Reset staged / State changed / Failure

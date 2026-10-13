@@ -7,7 +7,6 @@ control ":Audit Log Query Service" as Service
 participant ":Audit Log Repository" as Repository
 database ":Database" as Database
 
-note over Controller,Database: Target design for SCRUM-16 / UC-13. AuditLogEntry and append-only AuditService exist;\nthe audit-read endpoint and query components are not implemented.
 Admin->Page: Request audit entries with selected date range, filters and page
 activate Page
 Page->Controller: GET /api/audit-log with query criteria
@@ -49,4 +48,3 @@ deactivate Service
 end
 deactivate Controller
 deactivate Page
-note over Page,Database: Viewing/filtering/paging never updates or deletes audit evidence.\nChanging criteria or retrying is a separate execution of this diagram.
