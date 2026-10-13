@@ -6,7 +6,6 @@ control ":Meeting Controller" as MeetingController
 control ":Meeting Service" as MeetingService
 participant ":Meeting Repository" as MeetingRepository
 participant ":Meeting Participant Repository" as MeetingParticipantRepository
-participant ":Voting Session Repository" as VotingSessionRepository
 participant ":Agenda Item Repository" as AgendaItemRepository
 participant ":Online Meeting Room" as MeetingRoom
 database ":Database" as Database
@@ -46,40 +45,6 @@ alt Meeting or Chair is no longer eligible - EX-1
     MeetingPage-->Chair: MSG114 - This meeting cannot be ended
 
 else Meeting and Chair are eligible
-    MeetingService->VotingSessionRepository: Check for an Open Vote in the Meeting (BR-159)
-    activate VotingSessionRepository
-    VotingSessionRepository->Database: Find Open Votes of the Meeting
-    activate Database
-    Database-->VotingSessionRepository: Open Votes / None
-    deactivate Database
-    VotingSessionRepository-->MeetingService: Open Votes / None
-    deactivate VotingSessionRepository
-
-    alt An Open Vote exists - EX-2
-        MeetingService-->MeetingController: MSG139 - Close all open votes before ending the meeting
-        deactivate MeetingService
-        MeetingController-->MeetingPage: Return open vote error
-        deactivate MeetingController
-        MeetingPage-->Chair: MSG139 - Close all open votes before ending the meeting\nMeeting remains InProgress
-
-    else No Vote is Open
-        MeetingService->MeetingParticipantRepository: Check complete Present/Absent attendance for current participants and Guests (BR-179)
-        activate MeetingParticipantRepository
-        MeetingParticipantRepository->Database: Check attendance completeness for the current roster
-        activate Database
-        Database-->MeetingParticipantRepository: Complete / Incomplete
-        deactivate Database
-        MeetingParticipantRepository-->MeetingService: Attendance complete / incomplete
-        deactivate MeetingParticipantRepository
-
-        alt Attendance is incomplete - EX-3
-            MeetingService-->MeetingController: MSG155 - Record Present or Absent for every current participant and Guest before ending the meeting
-            deactivate MeetingService
-            MeetingController-->MeetingPage: Return attendance completion error
-            deactivate MeetingController
-            MeetingPage-->Chair: MSG155 - Record Present or Absent for every current participant and Guest before ending the meeting
-
-        else Attendance is complete
         MeetingService->AgendaItemRepository: Get the InProgress Agenda Item, if any (BR-159)
         activate AgendaItemRepository
         AgendaItemRepository->Database: Find InProgress Agenda Item of the Meeting
@@ -89,12 +54,12 @@ else Meeting and Chair are eligible
         AgendaItemRepository-->MeetingService: Agenda Item / None
         deactivate AgendaItemRepository
 
-        MeetingService->MeetingRepository: In one transaction: complete the InProgress Agenda Item\n(Done, actual end time, duration); keep remaining Pending Items Pending,\nset Meeting Ended,\nrecord Actual End Time and lifecycle history (BR-38, BR-132, BR-159)
+        MeetingService->MeetingRepository: In one transaction: complete the InProgress Agenda Item\n(Done, actual end time, duration); keep remaining Pending Items Pending,\nset Meeting Ended,\nrecord Actual End Time and lifecycle history; preserve Vote statuses/ballots;\nno attendance or Vote-closure check (BR-38, BR-132, BR-159)
         activate MeetingRepository
         MeetingRepository->Database: Save Agenda Item, Meeting and history atomically
         activate Database
 
-        alt Meeting end cannot be completed - EX-4
+        alt Meeting end cannot be completed - EX-2
             Database-->MeetingRepository: Save failed, transaction rolled back
             deactivate Database
             MeetingRepository-->MeetingService: Meeting end failed
@@ -111,7 +76,7 @@ else Meeting and Chair are eligible
             MeetingRepository-->MeetingService: Meeting ended
             deactivate MeetingRepository
 
-            MeetingService->MeetingService: Automatically refresh the complete saved Agenda\nfor authorized users viewing this Meeting (BR-73)
+            MeetingService->MeetingService: Reject further ballot casting because Meeting is Ended (BR-160);\nChair may subsequently close existing Open Votes;\nAutomatically refresh the complete saved Agenda\nfor authorized users viewing this Meeting (BR-73)
 
             MeetingService->MeetingRoom: Stop accepting joins and disconnect connected users (BR-143)
             activate MeetingRoom
@@ -124,8 +89,6 @@ else Meeting and Chair are eligible
             deactivate MeetingController
             MeetingPage-->Chair: MSG111 - Meeting ended successfully
         end
-        end
-    end
 end
 
 deactivate MeetingPage

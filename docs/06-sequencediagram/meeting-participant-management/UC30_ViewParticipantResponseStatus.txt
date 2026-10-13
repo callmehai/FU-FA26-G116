@@ -1,6 +1,6 @@
 title UC-30 - View Participant Response Status
 
-actor "Secretary / Chair / Participant" as User
+actor "Secretary / Chair / Member / Guest" as User
 boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Participant Controller" as ParticipantController
 control ":Meeting Participant Service" as ParticipantService
@@ -21,7 +21,7 @@ Database-->ParticipantRepository: Current information / Read failure
 deactivate Database
 ParticipantRepository-->ParticipantService: Current information / Read failure
 deactivate ParticipantRepository
-ParticipantService->ParticipantService: Verify active current assignment; from Published onward Secretary and Chair have default access;\nMember needs View Invitation Responses, independently of roster-view permission (BR-117, BR-121, BR-176)
+ParticipantService->ParticipantService: Verify active current assignment or verified current Guest invitation; from Published onward Secretary and Chair have default access;\nMember or Guest needs View Invitation Responses, independently of roster-view permission (BR-117, BR-121, BR-176)
 ParticipantService->ParticipantService: Require Published or a later readable Meeting status (BR-176)
 alt Meeting does not exist or viewing is not permitted - EX-1
 ParticipantService-->ParticipantController: Meeting not found; no roster or response information disclosed

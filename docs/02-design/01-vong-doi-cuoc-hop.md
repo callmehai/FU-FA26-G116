@@ -39,7 +39,7 @@ Khi gửi duyệt theo UC-18, người tổ chức chọn một tài khoản đa
 - **Phân quyền bám theo trạng thái.** Sửa thông tin chung chỉ được phép ở `Draft` và `Rejected`;
   ở `Published` chỉ dời lịch (BR-27, BR-158). Agenda
   sửa được tới hết `InProgress` (BR-74). Biểu quyết chỉ tạo và mở khi `InProgress` (BR-160). Biên bản chỉ sinh được
-  sau `Ended`. Kết thúc cuộc họp bị chặn khi còn phiếu đang mở (BR-159).
+  sau `Ended`. Kết thúc cuộc họp không bị chặn bởi Vote Open hoặc điểm danh thiếu (BR-159); Ended ngừng nhận phiếu, Chair có thể đóng/kiểm phiếu cũ sau họp.
 - **Lịch sử trạng thái là bằng chứng.** Màn chi tiết hiển thị timeline ai chuyển trạng thái, lúc
   nào. Đây là dữ liệu kiểm toán, không phải log kỹ thuật — không được xoá hay sửa.
 - **Nhãn trong timeline khác nhãn trạng thái.** Timeline ghi *việc đã xảy ra* ("Đã gửi duyệt"),

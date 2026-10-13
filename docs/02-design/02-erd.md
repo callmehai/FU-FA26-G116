@@ -121,8 +121,7 @@ erDiagram
         uuid UserId FK
         string MeetingRole "Chair|Secretary|Member"
         string InvitationResponse
-        string Attendance "Unknown|Present|Absent|Excused|Delegated"
-        uuid DelegatedToUserId FK "người dự thay khi Attendance = Delegated"
+        string Attendance "nullable; Present|Absent"
         timestamptz RespondedAt
         string AssignmentStatus "Current|Removed"
         timestamptz RemovedAt
@@ -156,7 +155,7 @@ erDiagram
 hai là thực tế có mặt hay không. Nhận lời rồi không đến là chuyện bình thường; điểm danh trong biên bản và báo cáo dùng `Attendance`.
 Không có quorum (ADR-0014), và phản hồi lời mời chỉ còn Accepted/Declined — không uỷ quyền phản hồi (BR-105).
 
-Guest không có User account, system Role hoặc internal MeetingRole; quyền Guest cố định và chỉ trong meeting được mời. Email phải được xác minh trước khi thiết lập guest session.
+Guest không có User account, system Role hoặc internal MeetingRole; quyền Guest theo Member và có thể được cấp bổ sung trong Meeting và chỉ trong meeting được mời. Email phải được xác minh trước khi thiết lập guest session.
 
 ## 2. Nghị sự và tài liệu
 
@@ -501,7 +500,6 @@ erDiagram
 | User | 1 → 0..* | MeetingStatusHistory | Thực hiện hành động |
 | Meeting | 1 → 0..* | MeetingParticipant | Bao gồm thành phần nội bộ |
 | User | 1 → 0..* | MeetingParticipant | Tham gia |
-| MeetingParticipant | 0..1 → 1 | User | Người dự thay (Attendance = Delegated) |
 | Meeting | 1 → 0..* | MeetingGuestInvitation | Mời khách |
 | Meeting | 1 → 0..* | AgendaItem | Chứa |
 | User | 0..* → 0..1 | AgendaItem | Trình bày |
@@ -547,11 +545,11 @@ erDiagram
 2. `ActualStartedAt`/`ActualEndedAt` do hệ thống ghi khi Start Meeting (Published → InProgress) và End Meeting (InProgress → Ended). Sau `Published` chỉ Organizer được dời `PlannedStartTime`, `PlannedEndTime`, `Location`, `OnlineLink`; mỗi lần dời phải thông báo người được mời (BR-75, BR-76, BR-158).
 3. Mỗi AgendaItem thuộc đúng một Meeting; chỉ sắp xếp lại trong Meeting đó; mỗi Meeting có tối đa một AgendaItem InProgress. Trạng thái đích: Pending → InProgress → Done. Kết thúc Meeting tự hoàn tất mục đang chạy trong cùng transaction (BR-159).
 4. Mỗi participant nội bộ có đúng một MeetingRole: Chair, Secretary hoặc Member. MeetingRole độc lập với system Role.
-5. Guest bên ngoài không có User account hay system Role; quyền Guest cố định và chỉ áp dụng trong Meeting được mời. Phải xác minh email trước khi thiết lập guest session.
+5. Guest bên ngoài không có User account hay system Role; quyền Guest theo Member và có thể được cấp bổ sung trong Meeting và chỉ áp dụng trong Meeting được mời. Phải xác minh email trước khi thiết lập guest session.
 6. Mỗi cặp (MeetingId, UserId) có tối đa một phân công Current. Khuyến nghị dùng unique index có điều kiện trên `(meeting_id, user_id)` khi trạng thái phân công là Current. Giữ bằng chứng Removed/lịch sử khi cần truy vết.
 7. Mỗi cặp (MeetingId, GuestEmail) có tối đa một lời mời Guest còn hiệu lực. Không mời email Guest nếu email đó đã thuộc một participant nội bộ hiện hành trong cùng Meeting.
 8. Để công bố hoặc bắt đầu Meeting, phải có đúng một Chair và ít nhất một Secretary đang được phân công hiện hành, đồng thời tài khoản của họ còn hoạt động (BR-124, BR-125, BR-127).
-9. Phản hồi lời mời chỉ là Accepted hoặc Declined; không có uỷ quyền phản hồi (BR-105). `DelegatedToUserId` chỉ dùng khi Thư ký điểm danh `Attendance = Delegated` (người dự thay).
+9. Phản hồi lời mời chỉ là Accepted hoặc Declined; không có uỷ quyền phản hồi (BR-105). Điểm danh chỉ Present/Absent; chưa ghi nhận giữ null, không coi là Absent.
 10. MeetingDocument ghim một DocumentVersion cụ thể. Nếu có AgendaItemId, AgendaItem đó phải thuộc cùng Meeting.
 11. VoteReceipt duy nhất theo (VotingSessionId, VoterId). VoteChoice ẩn danh phải có VoterId null; không gộp receipt với choice.
 12. Mỗi Recording có tối đa một Transcript; mỗi Meeting có tối đa một MeetingSummary hiện hành.
@@ -560,8 +558,8 @@ erDiagram
 15. Mỗi CallParticipant tham chiếu đúng một identity: User nội bộ hoặc MeetingGuestInvitation bên ngoài. Mỗi lần kết nối lại tạo một row mới cho lượt kết nối đó.
 16. Hệ thống không tự ghi âm; Thư ký upload audio sau khi Meeting `Ended`. Trước khi lưu audio phải có consent và lưu mục đích, thời hạn lưu giữ cùng bằng chứng xóa. Guest phải được hiển thị thông báo ghi âm trước khi vào; lưu bằng chứng đã thông báo và thực hiện nghĩa vụ xóa dữ liệu của Guest.
 17. Lời mời Guest giới hạn trong một Meeting, có hạn dùng, có thể thu hồi và dùng token được bảo vệ (chỉ lưu hash); kiểm tra hiệu lực ở mỗi request.
-18. VotingSession chỉ được tạo và mở khi Meeting `InProgress`; Chair mở và đóng; hệ thống đếm phiếu; Chair ghi `Conclusion` là Passed, NotPassed hoặc Deferred. Chỉ Chair, Secretary, Member hiện hành được bỏ phiếu; Guest không. Không có quorum, không có biểu quyết trước/sau họp, không có entity Resolution ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md)).
-19. Meeting không kết thúc được khi còn VotingSession `Open` (BR-159).
+18. VotingSession chỉ được tạo và mở khi Meeting `InProgress`; Chair mở và đóng; hệ thống đếm phiếu; Chair ghi `Conclusion` là Passed, NotPassed hoặc Deferred. Guest có quyền bỏ phiếu như Member theo quyết định PO 13/10/2026. Không có quorum, không có biểu quyết trước/sau họp, không có entity Resolution ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md)).
+19. Meeting được kết thúc khi Vote còn Open; Ended ngừng nhận phiếu và Chair có thể đóng/kiểm phiếu cũ sau họp (BR-159/160).
 20. Biên bản bị yêu cầu sửa hoặc sửa sau khi đã có chữ ký: các chữ ký trên phiên bản cũ có `InvalidatedAt`, phiên bản mới cần vòng ký mới; chỉ Secretary niêm phong sau khi đủ chữ ký (BR-166).
 
 ## Khác biệt với implementation hiện tại và ghi chú migration
@@ -582,7 +580,7 @@ erDiagram
 
 - **ADR-0010:** phần gắn CallSession với MeetingSession đã được [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md) thay thế: phòng ở cấp Meeting, mở khi Meeting `InProgress`.
 - **`CallSession.RecordingId`:** ERD vẫn giữ quan hệ phòng họp → bản ghi, mâu thuẫn với "hệ thống không tự ghi âm" (Recording.Source chỉ còn `Upload`). Giữ nguyên lần này; cần quyết định khi làm FE-08 / FE-09.
-- **ADR-0005:** nêu rằng danh tính khách không được xác minh và mô tả link/mã mời có giới hạn lượt dùng, trong khi mô hình đích yêu cầu xác minh email và lưu TokenHash, hạn dùng, thời điểm xác minh/thu hồi. Cần đối chiếu thay đổi này với ADR. Quyền chỉ nghe, không xem danh sách người dự/tài liệu và bằng chứng thông báo ghi âm vẫn áp dụng nếu chưa có yêu cầu mới thay thế.
+- **Guest:** quyết định PO 13/10/2026 tại ADR-0016 thay quyền chỉ nghe; ADR-0017 bỏ gate đóng Vote trước End Meeting. Chi tiết schema cho Guest display information, permission grants, comments và votes chưa thiết kế trong đợt này.
 - **Tài liệu vòng đời cuộc họp:** đã chỉnh sơ đồ — Rejected sửa rồi gửi duyệt lại sang WaitingApproval; bỏ `MinutesIssued`, `Archived`.
 - **ADR-0006:** kho cá nhân, quyền sở hữu, ghim phiên bản và ngữ cảnh comment qua MeetingDocument phù hợp với mô hình đích. Câu hỏi chưa chốt về hạn mức kho và quyền truy cập của người đã rời tổ chức nằm ngoài phạm vi ERD này.
 
@@ -644,3 +642,7 @@ kín; vai trò trong cuộc họp tách khỏi vai trò hệ thống.
 **Thêm so với hệ thống gốc:** `Meeting.Mode` và toàn bộ nhóm `call_sessions` / `call_participants`
 — hệ thống gốc không tự làm phần gọi, TrustCabinet có gọi thoại/video trong ứng dụng nên đó là
 điểm khác biệt chính của đồ án.
+
+## Quyết định quyền bổ sung — PO 13/10/2026
+
+Quyền hiệu lực trong Meeting là quyền mặc định của role cộng quyền được cấp bổ sung cho người đó. PermissionCode là mã từ catalogue quyền của hệ thống; ViewParticipants/ViewResponses là ví dụ, không phải enum chỉ có hai giá trị. Danh sách quyền và ma trận grant theo role chưa chốt; không thêm fields/entities mới trong đợt chỉnh yêu cầu này. Guest nhận quyền bổ sung như Member với các ngoại lệ đã chốt ở ADR-0016.

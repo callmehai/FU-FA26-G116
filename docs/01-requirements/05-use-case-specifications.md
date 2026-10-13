@@ -1,6 +1,6 @@
 # Use Case Specifications · TrustCabinet
 
-Đặc tả Use Case của **TrustCabinet**, đồng bộ nguyên văn mục *II. Use Case Specifications* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX ngày 12/10/2026). Nội dung đặc tả giữ tiếng Anh như Report 3.
+Đặc tả Use Case của **TrustCabinet**, đồng bộ nguyên văn mục *II. Use Case Specifications* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX ngày 13/10/2026). Nội dung đặc tả giữ tiếng Anh như Report 3.
 
 - **Phạm vi:** 15 Feature (FE-01 → FE-15), 70 Use Case (UC-01 → UC-70). UC gom nhiều thao tác nhỏ được tách thành UC con có hậu tố chữ (ví dụ `UC-06a`, `UC-06b`, `UC-06c`).
 - **Đổi số:** danh sách UC đã được gom và đánh số lại sau quyết định PO 09/10/2026 (bỏ Meeting Session, biểu quyết chỉ trong cuộc họp). Bảng đổi số cũ → mới nằm ở [Master Use Case Inventory §5](00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới).
@@ -205,18 +205,20 @@ Sequence Diagram: [UC03_SignOut.txt](../06-sequencediagram/auth/UC03_SignOut.txt
 
 ### UC-04 – Access Meeting via Guest Invitation
 
+Sequence Diagram: [cấp mã](../06-sequencediagram/auth/UC04_RequestGuestVerificationCode.txt), [xác minh](../06-sequencediagram/auth/UC04_VerifyGuestInvitation.txt), [truy cập cuộc họp](../06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation.txt). Source và ảnh PNG: [auth/README](../06-sequencediagram/auth/README.md).
+
+
+
 | Mục | Nội dung |
 |---|---|
 | **Primary Actors** | Guest |
 | **Secondary Actors** | Email / SMTP Service |
-| **Description** | As an invited Guest, I want to verify my meeting invitation so that I can access only the meeting for which I was invited. |
+| **Description** | Allows an invited Guest to verify control of the invited email and enter self-declared display information for the invited Meeting. |
 | **Preconditions** | ● PRE-1: The Guest has received a valid invitation for a meeting.<br>● PRE-2: The invitation has not been revoked or expired. |
-| **Postconditions** | ● POST-1: A meeting-scoped Guest session is established after successful verification.<br>● POST-2: The Guest can continue to permitted invitation, document, and room actions for that meeting. |
-| **Normal Flow** | Access Meeting via Guest Invitation<br>1. The Guest opens the invitation link.<br>2. The system identifies the invitation and requests the one-time verification code sent to the invited email address.<br>3. The Guest enters the code.<br>4. The system validates the code, invitation status, and meeting scope.<br>5. The system establishes a Guest session and displays the invited meeting. |
+| **Postconditions** | POST-1: Verified Guest access is limited to the invited Meeting.<br>POST-2: The Guest may use Member participation functions and receive additional Meeting permissions. Email control is verified; display name and job title are self-declared. |
+| **Normal Flow** | Access Meeting via Guest Invitation<br>1. The Guest opens the invitation link.<br>2. The system checks the invitation and requests the one-time code sent to the invited email.<br>3. The Guest enters the code.<br>4. The system validates the code and invitation and verifies control of the invited email. (BR-153)<br>5. The Guest enters the display name and job title for presentation in the Meeting; the system labels this information as self-declared. (BR-180)<br>6. The system establishes Meeting-scoped Guest access and displays the invited Meeting. |
 | **Alternative Flows** | ALT-1: If the Guest reopens a valid link during an active verified session, the system opens the same invited meeting without requesting another code. |
 | **Exception Flows** | EX-1: The invitation is missing, expired, or revoked: the system denies access and explains that the invitation is no longer valid.<br>EX-2: The code is incorrect, expired, or already used: the system denies verification and allows the Guest to request or enter a valid code.<br>EX-3: The verification service is unavailable: the system reports that verification could not be completed and does not establish a session. |
-
----
 
 ## FE-02 — User & Profile Management
 
@@ -551,16 +553,17 @@ Sequence Diagram: [UC21_StartMeeting.txt](../06-sequencediagram/meeting-manageme
 
 Sequence Diagram: [UC22_EndMeeting.txt](../06-sequencediagram/meeting-management/UC22_EndMeeting.txt)
 
-| **Primary Actors** | Chair | **Secondary Actors** | None |
-| --- | --- | --- | --- |
-| **Description** | Allows the assigned Chair to end an InProgress Meeting after all Votes are closed and every current participant and Guest has official attendance recorded. |  |  |
-| **Preconditions** | ● PRE-1: The actor is the current authorized Chair.<br>● PRE-2: The Meeting is InProgress. (BR-130, BR-132) |  |  |
-| **Postconditions** | ● POST-1: The Meeting becomes Ended and its Actual End Time is recorded.<br>● POST-2: Any InProgress Agenda Item is completed; remaining Pending Items stay Pending. (BR-159)<br>● POST-3: Online Meeting Room access is closed under existing lifecycle rules. (BR-143) |  |  |
-| **Normal Flow** | End Meeting<br>1. The Chair selects End Meeting.<br>2. The system checks the Chair’s authority and Meeting status.<br>3. The system confirms no Vote is Open and every current participant and Guest has official attendance recorded. (BR-159, BR-179)<br>4. The system completes the Meeting and any InProgress Agenda Item, recording required end information.<br>5. The system closes Meeting Room access and confirms the Meeting has ended. (MSG111) |  |  |
-| **Alternative Flows** | None. |  |  |
-| **Exception Flows** | EX-1 – Meeting cannot be ended: the actor or Meeting does not meet the required conditions. No end is recorded. (MSG114)<br>EX-2 – Open Vote remains: the Meeting is not ended until all Open Votes are closed. (BR-159, MSG139)<br>EX-3 – Attendance is incomplete: at least one current participant or Guest has no official attendance value. The Meeting remains InProgress; the Chair is asked to have attendance completed. (BR-179, MSG155)<br>EX-4 – End cannot be completed: the previous Meeting and Agenda states are retained. (MSG116) |  |  |
 
----
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Chair |
+| **Secondary Actors** | None |
+| **Description** | Allows the active assigned Chair to end an InProgress Meeting regardless of open Votes, unmarked attendance or remaining Pending Agenda Items. |
+| **Preconditions** | ● PRE-1: The actor is the current authorized Chair.<br>● PRE-2: The Meeting is InProgress. (BR-130, BR-132) |
+| **Postconditions** | ● POST-1: The Meeting becomes Ended and its Actual End Time is recorded.<br>● POST-2: Any InProgress Agenda Item is completed; remaining Pending Items stay Pending. (BR-159)<br>● POST-3: Online Meeting Room access is closed under existing lifecycle rules. (BR-143) |
+| **Normal Flow** | End Meeting<br>1. The Chair selects End Meeting and confirms.<br>2. The system checks current Chair authority and that the Meeting is InProgress. No Vote-closure or attendance-completeness validation is performed. (BR-130, BR-132, BR-159)<br>3. The system completes any InProgress Agenda Item, changes the Meeting to Ended and records Actual End Time and lifecycle history together. Pending Items remain Pending and Votes/ballots remain unchanged.<br>4. The system closes room access and confirms MSG111 – "Meeting ended successfully."<br>5. Voting controls stop accepting ballots because the Meeting is Ended; the Chair may later close outstanding Votes to finalize their tally. |
+| **Alternative Flows** | None. |
+| **Exception Flows** | EX-1 – Actor or Meeting is not eligible: no end is recorded. MSG114 – "This meeting cannot be ended." The use case ends.<br>EX-2 – End cannot be saved: previous Meeting and Agenda states/timestamps remain unchanged and room closure is not triggered. MSG116 – "Unable to end the meeting. Please try again." The Chair may retry. |
 
 ## FE-05 — Agenda Management
 
@@ -681,14 +684,17 @@ Sequence Diagram: [UC26_ViewMeetingAgenda.txt](../06-sequencediagram/agenda-mana
 
 Sequence Diagram: [UC27_ViewMeetingParticipants.txt](../06-sequencediagram/meeting-participant-management/UC27_ViewMeetingParticipants.txt)
 
-| **Primary Actors** | Secretary, Chair, Participant | **Secondary Actors** | None |
-| --- | --- | --- | --- |
-| **Description** | Allows an authorized internal participant to view and search the current Meeting roster, including internal participants and Guests. |  |  |
-| **Preconditions** | ● PRE-1: The actor has an eligible current Meeting assignment.<br>● PRE-2: Secretary access follows existing prepublication rules; from Published onward, the Chair may view by default and a Member needs View Meeting Participants permission. (BR-117–BR-121, BR-176) |  |  |
-| **Postconditions** | ● POST-1: The authorized current roster is displayed.<br>● POST-2: No data is changed. |  |  |
-| **Normal Flow** | View Meeting Participants<br>1. The actor opens the selected Meeting’s Participants view.<br>2. The system confirms that the actor may view the roster. (BR-176)<br>3. The system displays current internal participants and Guests with identifying information and Meeting Role or Guest access; removed or revoked entries are excluded. (BR-103)<br>4. The actor reviews the roster. |  |  |
-| **Alternative Flows** | AF-1 – Search participants: the actor searches by name or email and reviews matching current entries. |  |  |
-| **Exception Flows** | EX-1 – Roster is not accessible: the system does not disclose the roster. (BR-121)<br>EX-2 – Roster cannot be retrieved: the system reports that the roster could not be loaded. (MSG95) |  |  |
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary, Chair, Participant, Guest |
+| **Secondary Actors** | None |
+| **Description** | Allows an authorized internal participant or verified Guest to view and search the current Meeting roster, including internal participants and Guests. |
+| **Preconditions** | PRE-1: The actor has current authorized Meeting participation or verified Guest access.<br>PRE-2: Secretary access follows existing prepublication rules; from Published onward Chair may view by default, while Member or Guest needs View Meeting Participants for this Meeting. (BR-117–BR-121, BR-176) |
+| **Postconditions** | ● POST-1: The authorized current roster is displayed.<br>● POST-2: No data is changed. |
+| **Normal Flow** | View Meeting Participants<br>1. The actor opens the Participants view of an accessible Meeting.<br>2. The system rechecks current Meeting access and roster-view permission. (BR-176)<br>3. The system displays current internal participants and Guests with invitation identity, Meeting Role or Guest participation type; for a Guest with a completed profile show the self-declared display name and optional job title separately from verified email. Removed/revoked entries are excluded. (BR-103, BR-180)<br>4. The actor reviews the roster. |
+| **Alternative Flows** | AF-1 – Search participants: the actor searches by name or email and reviews matching current entries. |
+| **Exception Flows** | EX-1 – Roster is not accessible: the system does not disclose the roster. (BR-121)<br>EX-2 – Roster cannot be retrieved: the system reports that the roster could not be loaded. (MSG95) |
 
 ### UC-28 – Manage Meeting Participants
 
@@ -696,40 +702,49 @@ Sequence Diagram: [UC27_ViewMeetingParticipants.txt](../06-sequencediagram/meeti
 
 Sequence Diagram: [UC28a_AddMeetingParticipant.txt](../06-sequencediagram/meeting-participant-management/UC28a_AddMeetingParticipant.txt)
 
-| **Primary Actors** | Meeting Organizer, Secretary | **Secondary Actors** | Email / SMTP Service |
-| --- | --- | --- | --- |
-| **Description** | Allows the Organizer to assign the first Secretary, or the assigned Secretary to add internal participants together or invite one external Guest. |  |  |
-| **Preconditions** | ● PRE-1: The actor is the eligible Organizer or a current Secretary.<br>● PRE-2: The Meeting permits participant management. (BR-78–BR-80) |  |  |
-| **Postconditions** | ● POST-1: The selected internal participants are all added, or one Guest invitation is created.<br>● POST-2: Invitation Response starts as Pending.<br>● POST-3: Meeting Role and eligible additional permissions apply to this Meeting only; System Roles are unchanged. |  |  |
-| **Normal Flow** | Add Internal Participants<br>1. The actor selects Add Participants for the Meeting.<br>2. The actor selects internal users, one shared Meeting Role and any permitted shared additional permissions. For the first Secretary, the Organizer selects exactly one Secretary without extras.<br>3. The actor confirms the selection.<br>4. The system checks the actor, Meeting, selected users, role and permissions against applicable rules. (BR-78–BR-85, BR-168, BR-174)<br>5. The system adds all selected eligible users together or adds none, with Pending responses. (BR-168)<br>6. For a Published or InProgress Meeting, invitations are arranged under existing notification rules; the system confirms the addition. (BR-90, BR-94, MSG96) |  |  |
-| **Alternative Flows** | AF-1 – Invite a Guest: the Secretary chooses Invite Guest and supplies one Guest’s name and email. The system creates one eligible Guest invitation with Pending response; Guest verification remains in UC-04. (BR-84, BR-148–BR-156) |  |  |
-| **Exception Flows** | EX-1 – Selection is not allowed: no user in an internal batch is added, or no invalid Guest invitation is created. (MSG97 or MSG152)<br>EX-2 – Participant management is not allowed: no addition occurs. (BR-78–BR-80, MSG98)<br>EX-3 – Addition cannot be completed: no partial internal batch is added. (MSG99) |  |  |
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Meeting Organizer, Secretary |
+| **Secondary Actors** | Email / SMTP Service |
+| **Description** | Allows the Organizer to assign a Secretary when none is current in Draft, Rejected or Approved, initially or after removal; current Secretaries add internal participants or invite a Guest. |
+| **Preconditions** | PRE-1: The actor is a current assigned Secretary, or the Organizer restoring/initializing a missing Secretary in Draft, Rejected or Approved.<br>PRE-2: Roster management is permitted. WaitingApproval remains read-only. (BR-78–BR-80, BR-122) |
+| **Postconditions** | POST-1: All selected internal participants or the one Guest invitation are saved.<br>POST-2: Invitation Response starts Pending.<br>POST-3: Eligible additional viewing permissions apply to this Meeting only. Internal Meeting Roles are assigned only to internal participants; Guest receives no internal/system Role. (BR-150, BR-174) |
+| **Normal Flow** | Add Internal Participants<br>1. The actor selects Add Participants.<br>2. A current Secretary selects active internal users, a shared Meeting Role and eligible additional permissions. When no Secretary is current in Draft, Rejected or Approved, the Organizer selects exactly one active internal user as Secretary without extras. This recovery is available even if a Secretary was previously assigned. (BR-78, BR-79, BR-122)<br>3. The actor confirms.<br>4. The system rechecks current authority, status, selected accounts, uniqueness, required roles and permitted grants. (BR-80–BR-85, BR-122, BR-168)<br>5. The system saves all selected participants together, initializes Pending responses and arranges invitations when Published/InProgress.<br>6. The system displays MSG96 – "Meeting participant added successfully." |
+| **Alternative Flows** | AF-1 – Invite external Guest: at Step 2, the Secretary enters an invitation name and email and optional permitted additional Meeting permissions. For Confidential/Secret, the ordinary form displays an inline warning, without another confirmation step. The system validates uniqueness, saves the invitation and requested permissions together, and arranges email delivery when Published or InProgress. The Guest later verifies email and self-declares display information in UC-04. The use case succeeds with MSG96 – "Meeting participant added successfully." (BR-148–BR-157, BR-174, BR-180–BR-182)AF-2 – Restore Secretary from an existing Member: at Step 2, when no current Secretary exists in Draft/Rejected/Approved, the Organizer selects one active current Member. The system validates recovery authority and changes that Member to Secretary without adding a duplicate or resetting invitation response/attendance. No new optional grants are made. The use case succeeds with MSG100 – "Meeting role updated successfully." |
+| **Exception Flows** | EX-1 – Selection is not allowed: no user in an internal batch is added, or no invalid Guest invitation is created. (MSG97 or MSG152)<br>EX-2 – Participant management is not allowed: no addition occurs. (BR-78–BR-80, MSG98)<br>EX-3 – Addition cannot be completed: no partial internal batch is added. (MSG99) |
 
 #### UC-28b – Manage Meeting Role & Additional Permissions
 
 Sequence Diagram: [UC28b_AssignChangeMeetingRole.txt](../06-sequencediagram/meeting-participant-management/UC28b_AssignChangeMeetingRole.txt)
 
-| **Primary Actor** | Secretary | **Secondary Actors** | None |
-| --- | --- | --- | --- |
-| **Description** | Allows the assigned Secretary to change a participant’s Meeting Role or eligible additional permissions, including replacing the current Chair. |  |  |
-| **Preconditions** | ● PRE-1: The actor is a current authorized Secretary.<br>● PRE-2: The Meeting permits participant management and the selected person is a current internal participant. (BR-79, BR-80) |  |  |
-| **Postconditions** | ● POST-1: Approved role or additional-permission changes are saved for this Meeting.<br>● POST-2: Chair replacement changes both affected Meeting Roles together. System Role and Invitation Response remain unchanged. |  |  |
-| **Normal Flow** | Change Role or Permissions<br>1. The Secretary selects a current internal participant.<br>2. The system displays the participant’s current Meeting Role and additional permissions.<br>3. The Secretary selects the desired role or permitted additional permissions and confirms.<br>4. The system checks the selection against Meeting role and permission rules. (BR-122, BR-123, BR-174, BR-177)<br>5. The system saves the approved changes and confirms the update. (MSG100 or MSG153) |  |  |
-| **Alternative Flows** | AF-1 – Replace Chair: the Secretary selects a current internal participant as the new Chair and confirms. The former Chair becomes a Member and the selected participant becomes Chair together. (BR-169, MSG100) |  |  |
-| **Exception Flows** | EX-1 – Role or permissions are not allowed: no changes are saved; the Secretary may revise the selection. (MSG101, MSG109 or MSG152)<br>EX-2 – Meeting or actor is no longer eligible: no changes are applied. (MSG98)<br>EX-3 – Update cannot be completed: existing roles and permissions remain unchanged. (MSG102) |  |  |
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the assigned Secretary to change internal Meeting Roles or eligible additional permissions, including Guest permission-only changes and internal Chair replacement. |
+| **Preconditions** | PRE-1: The actor is a current authorized Secretary.<br>PRE-2: The Meeting permits participant management and the selected target is a current internal participant or current Guest invitation. (BR-79, BR-80) |
+| **Postconditions** | ● POST-1: Approved role or additional-permission changes are saved for this Meeting.<br>● POST-2: Chair replacement changes both affected Meeting Roles together. System Role and Invitation Response remain unchanged. |
+| **Normal Flow** | Change Internal Role or Permissions<br>1. The current Secretary selects a current internal participant.<br>2. The system displays the participant’s role and additional permissions.<br>3. The Secretary selects changes and confirms.<br>4. The system checks current authority/status, at-most-one Chair and permitted grants. Draft/Rejected/Approved may end with no Secretary; Published/InProgress must retain or atomically replace the last Secretary. (BR-122, BR-123, BR-174–BR-177)<br>5. The system saves consistently and confirms MSG100 – "Meeting role updated successfully." or MSG153 – "Meeting permissions updated successfully." |
+| **Alternative Flows** | AF-1 – Replace Chair: at Step 3, the Secretary selects a current internal participant as the new Chair and confirms. The system changes the former Chair to Member and the selected internal participant to Chair together, retaining required Secretary roles. The use case succeeds with MSG100 – "Meeting role updated successfully." (BR-122, BR-169)AF-2 – Change Guest permissions: at Step 1, the Secretary selects a current Guest invitation. The system shows grantable additional Meeting permissions; the additional Meeting permissions are examples; no internal role selector is available. The Secretary edits the grants; the system validates and saves them under BR-174–BR-177 and notifies the Guest by email when Published/InProgress. The use case succeeds with MSG153 – "Meeting permissions updated successfully." |
+| **Exception Flows** | EX-1 – Role or permissions are not allowed: no changes are saved; the Secretary may revise the selection. (MSG101, MSG109 or MSG152)<br>EX-2 – Meeting or actor is no longer eligible: no changes are applied. (MSG98)<br>EX-3 – Update cannot be completed: existing roles and permissions remain unchanged. (MSG102) |
 
 #### UC-28c – Remove Meeting Participant
 
 Sequence Diagram: [UC28c_RemoveMeetingParticipant.txt](../06-sequencediagram/meeting-participant-management/UC28c_RemoveMeetingParticipant.txt)
 
-| **Primary Actor** | Secretary | **Secondary Actors** | None |
-| --- | --- | --- | --- |
-| **Description** | Allows an assigned Secretary to remove a current internal participant or revoke a Guest invitation while preserving required Meeting records. |  |  |
-| **Preconditions** | ● PRE-1: The actor is a current authorized Secretary.<br>● PRE-2: The Meeting permits participant management. (BR-79, BR-80) |  |  |
-| **Postconditions** | ● POST-1: The selected participant is no longer current or the Guest invitation is revoked.<br>● POST-2: Access through the removed relationship ends.<br>● POST-3: Required historical invitation and attendance evidence is retained. (BR-97, BR-100–BR-103) |  |  |
-| **Normal Flow** | Remove Participant<br>1. The Secretary selects a current participant or Guest invitation.<br>2. The Secretary confirms removal or revocation.<br>3. The system checks that the action is allowed and required Meeting roles remain assigned. (BR-122, BR-126)<br>4. The system removes the assignment or revokes Guest access while retaining required history.<br>5. The system confirms the removal. (MSG103) |  |  |
-| **Alternative Flows** | None. |  |  |
-| **Exception Flows** | EX-1 – Removal is not allowed: the actor, Meeting status or required roles prohibit the action. Nothing is removed. (MSG98 or MSG109)<br>EX-2 – Removal cannot be completed: the prior assignment or invitation remains effective. (MSG104) |  |  |
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows an assigned Secretary to remove a current internal participant or revoke a Guest invitation while preserving required Meeting records. |
+| **Preconditions** | ● PRE-1: The actor is a current authorized Secretary.<br>● PRE-2: The Meeting permits participant management. (BR-79, BR-80) |
+| **Postconditions** | ● POST-1: The selected participant is no longer current or the Guest invitation is revoked.<br>● POST-2: Access through the removed relationship ends.<br>● POST-3: Required historical invitation and attendance evidence is retained. (BR-97, BR-100–BR-103) |
+| **Normal Flow** | Remove Participant<br>1. The current Secretary selects an internal participant or Guest invitation and confirms removal/revocation.<br>2. The system rechecks authority and editable status. Draft/Rejected/Approved may temporarily have no Secretary; Published/InProgress must retain a Secretary and the current Chair under their replacement rules. (BR-79, BR-80, BR-122, BR-126)<br>3. The system removes/revokes the selected relationship and its access, retaining historical evidence.<br>4. The system displays MSG103 – "Meeting participant removed successfully." If no Secretary remains in preparation, the Organizer may assign one through UC-28a. |
+| **Alternative Flows** | None. |
+| **Exception Flows** | EX-1 – Removal is not allowed: the actor, Meeting status or required roles prohibit the action. Nothing is removed. (MSG98 or MSG109)<br>EX-2 – Removal cannot be completed: the prior assignment or invitation remains effective. (MSG104) |
 
 ### UC-29 – Respond to Meeting Invitation
 
@@ -748,29 +763,35 @@ Sequence Diagram: [UC29_RespondToMeetingInvitation.txt](../06-sequencediagram/me
 
 Sequence Diagram: [UC30_ViewParticipantResponseStatus.txt](../06-sequencediagram/meeting-participant-management/UC30_ViewParticipantResponseStatus.txt)
 
-| **Primary Actors** | Secretary, Chair, Participant | **Secondary Actors** | None |
-| --- | --- | --- | --- |
-| **Description** | Allows authorized internal participants to view current invitation responses and totals for the Meeting. |  |  |
-| **Preconditions** | ● PRE-1: The Meeting is Published and remains readable under its lifecycle rules.<br>● PRE-2: A current Secretary or Chair may view by default; a Member needs View Invitation Responses permission for this Meeting. (BR-176) |  |  |
-| **Postconditions** | ● POST-1: Latest responses for current invitees and totals by response status are displayed.<br>● POST-2: No data is changed. |  |  |
-| **Normal Flow** | View Participant Response Status<br>1. The actor selects Response Status for an accessible Meeting.<br>2. The system checks that the actor may view responses. (BR-176)<br>3. The system displays each current invitee’s name, email and latest response with totals by status. Response-view permission includes identity in response rows but does not grant roster browsing or search. (BR-103, BR-115, BR-176)<br>4. The actor reviews the summary. |  |  |
-| **Alternative Flows** | None. An all-Pending result is a normal response summary. |  |  |
-| **Exception Flows** | EX-1 – Responses are not accessible: the system does not disclose unauthorized response information. (BR-121)<br>EX-2 – Responses cannot be retrieved: the system reports that the data could not be loaded. (MSG95) |  |  |
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary, Chair, Participant, Guest |
+| **Secondary Actors** | None |
+| **Description** | Allows authorized internal participants and verified Guests to view current invitation responses and totals for the Meeting. |
+| **Preconditions** | PRE-1: The Meeting is Published or a later status that remains readable.<br>PRE-2: Current Secretary or Chair may view by default; Member or verified current Guest needs View Invitation Responses for this Meeting. (BR-176) |
+| **Postconditions** | ● POST-1: Latest responses for current invitees and totals by response status are displayed.<br>● POST-2: No data is changed. |
+| **Normal Flow** | View Participant Response Status<br>1. The actor selects Response Status for an accessible Meeting.<br>2. The system checks that the actor may view responses. (BR-176)<br>3. The system displays each current invitee’s name, email and latest response with totals by status. Response-view permission includes identity in response rows but does not grant roster browsing or search. (BR-103, BR-115, BR-176)<br>4. The actor reviews the summary. |
+| **Alternative Flows** | None. An all-Pending result is a normal response summary. |
+| **Exception Flows** | EX-1 – Responses are not accessible: the system does not disclose unauthorized response information. (BR-121)<br>EX-2 – Responses cannot be retrieved: the system reports that the data could not be loaded. (MSG95) |
 
 ### UC-31 – Record Attendance
 
+Phạm vi implementation: **SCRUM-26**, tách khỏi SCRUM-20. SCRUM-20 vẫn phải giữ lịch sử response/attendance khi xoá/revoke.
+
 Sequence Diagram: [UC31_RecordAttendance.txt](../06-sequencediagram/meeting-participant-management/UC31_RecordAttendance.txt)
 
-| **Primary Actor** | Secretary | **Secondary Actors** | None |
-| --- | --- | --- | --- |
-| **Description** | Allows the assigned Secretary to record or revise official attendance for the full current roster while a Meeting is InProgress. |  |  |
-| **Preconditions** | ● PRE-1: The actor is a current authorized Secretary.<br>● PRE-2: The Meeting is InProgress. (BR-170) |  |  |
-| **Postconditions** | ● POST-1: Each current internal participant and Guest has official attendance recorded as Present or Absent.<br>● POST-2: The complete list is saved together; invitation responses remain unchanged. (BR-116, BR-172) |  |  |
-| **Normal Flow** | Record Attendance<br>1. The Secretary opens Attendance for an InProgress Meeting.<br>2. The system displays the current internal participants and Guests with their recorded values, if any.<br>3. The Secretary selects Present or Absent for every current person and submits the list.<br>4. The system checks that the list is complete and attendance can be recorded. (BR-170–BR-172)<br>5. The system saves the complete attendance list and confirms the result. (MSG147) |  |  |
-| **Alternative Flows** | AF-1 – Revise attendance: the Secretary changes previously recorded values and continues at Step 3 while the Meeting remains InProgress. |  |  |
-| **Exception Flows** | EX-1 – List is incomplete or invalid: no attendance is saved; the Secretary corrects the list. (MSG148)<br>EX-2 – Recording is no longer allowed: no changes are made. (MSG149)<br>EX-3 – Attendance cannot be saved: previously saved attendance remains unchanged. (MSG150) |  |  |
 
----
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the assigned Secretary to record or revise attendance for one or more selected current internal participants or Guests while the Meeting is InProgress. |
+| **Preconditions** | PRE-1: The actor is an active current assigned Secretary.<br>PRE-2: The Meeting is InProgress. (BR-170) |
+| **Postconditions** | POST-1: Submitted people have Present or Absent saved with the recording Secretary and save time.<br>POST-2: Unsubmitted people retain their previous value, including unmarked. Invitation responses remain unchanged.<br>POST-3: All changes in this submission succeed together or none are saved; completeness never gates End Meeting. (BR-116, BR-171, BR-172, BR-178) |
+| **Normal Flow** | Record Attendance<br>1. The Secretary opens Attendance for an InProgress Meeting.<br>2. The system displays current internal participants and Guests with saved attendance; never-recorded people are unmarked.<br>3. The Secretary selects Present or Absent for one or more people and submits only those entries.<br>4. The system rechecks authority, Meeting status, each submitted person’s current membership and valid value. People omitted from the submission are not validation errors. (BR-170–BR-172)<br>5. The system saves the submitted changes together, retains every other person’s saved or unmarked value, and displays MSG147 – "Meeting attendance saved successfully." |
+| **Alternative Flows** | AF-1 – Revise saved attendance: at Step 3, the Secretary changes one or more saved values and continues at Step 4 while the Meeting remains InProgress.<br>AF-2 – Record the full roster: at Step 3, the Secretary selects every current person; the same validation and save rules apply, then the flow resumes at Step 4. |
+| **Exception Flows** | EX-1 – Submitted value or person is invalid: no submitted change is saved. MSG148 – "Select Present or Absent for each submitted participant or Guest." The flow resumes at Step 3.<br>EX-2 – Recording is no longer permitted: authority or Meeting status changed; nothing is saved. For status restriction show MSG149 – "Attendance can only be recorded while the meeting is in progress." The use case ends.<br>EX-3 – Save fails: all previous values remain unchanged. MSG150 – "Unable to save attendance. No changes were saved." The flow resumes at Step 3.<br>EX-4 – A submitted participant changed or was removed/revoked: no submitted change is saved. MSG151 – "The meeting participant list has changed. Refresh it and try again." Refresh the current roster and resume at Step 2. Unrelated new roster entries do not make the submission incomplete. |
 
 ## FE-07 — Personal Document Library & Meeting Document Management
 

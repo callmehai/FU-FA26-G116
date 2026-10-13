@@ -1,6 +1,6 @@
 # Thành phần tham dự và vai trò trong cuộc họp — FE-06
 
-Các sequence UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31 tuân theo [convention chung](../README.md). Đặc tả của lần chỉnh sửa này nằm tại
+Các sequence UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31 tuân theo [convention chung](../README.md). Cùng nằm trong FE-06 không có nghĩa cùng implementation task. Đặc tả của lần chỉnh sửa này nằm tại
 [Report 3, FE-06](../../08-reports/Report-3_Software_Requirement_Specification.md#6-fe-06--meeting-participant-management).
 
 - Organizer khởi tạo Secretary đầu tiên (BR-78). Secretary được gán có quyền xem meeting trước `Published` (BR-118)
@@ -41,8 +41,22 @@ bằng script `scripts/export-diagrams.js`, chỉ cho UC-27, UC-28a/b/c, UC-29, 
   giữ tên file cũ để các liên kết vẫn dùng được. Không thay đổi thì kết thúc với MSG154, không báo thành công giả.
 - UC-27/UC-30 cho phép Chủ trì hoặc Thành viên hiện hành xem sau công bố khi được cấp đúng quyền xem tương ứng.
   Hai quyền bổ sung không cho phép quản lý thành phần, điểm danh hoặc thay đổi các quyền nghiệp vụ khác.
-- UC-31 lưu toàn bộ điểm danh Có mặt/Vắng cho thành viên và khách khi `InProgress`;
-  chưa điểm danh thì để trống, danh sách thay đổi hoặc lưu lỗi thì giữ nguyên toàn bộ giá trị cũ.
+- UC-31 lưu điểm danh Có mặt/Vắng cho một/nhiều người được chọn cho thành viên và khách khi `InProgress`;
+  chưa điểm danh thì để trống, người được gửi thay đổi hoặc lưu lỗi thì giữ nguyên toàn bộ giá trị cũ.
 - BR-168–BR-178 và MSG145–MSG154 là các mã mới. MSG141–MSG144 đã được dùng cho nghị sự nên được giữ nguyên.
 
 Đây là cập nhật tài liệu; chưa xác nhận API đã triển khai các quy tắc mới và chưa đăng ghi chú lên Jira.
+
+## PO 13/10/2026
+
+Guest nhận quyền bổ sung như Member, không giới hạn hai quyền xem (UC-27/30); UC-28a cảnh báo mức mật trong form bình thường, UC-28b sửa Guest permissions nhưng không role. UC-31 không đòi đầy đủ roster. UC-22 bỏ BR-179/MSG155. UC-04 hiện có được sửa theo quyết định OTP và thông tin tự khai; các sequence bổ sung cho UC đang có nằm ở [auth/README.md](../auth/README.md). BR-122 đã chốt theo trạng thái; Organizer phục hồi Thư ký khi không còn ai. [ADR-0016](../../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md).
+
+Phục hồi Thư ký có thể chọn một Member hiện hành đang hoạt động để đổi thành Secretary, không tạo participant trùng hoặc reset response/attendance.
+
+## Phạm vi implementation task — rà ngày 13/10/2026
+
+- **SCRUM-20:** roster, lời mời và phản hồi UC-27–UC-30. Khi xoá internal participant hoặc revoke Guest, giữ lịch sử response/attendance; dữ liệu historical không tính vào current roster, access hay số lượng role. UC-28c source đã mô tả việc bảo toàn này.
+- **SCRUM-26:** UC-31 ghi/sửa điểm danh. Không đưa implementation điểm danh vào plan SCRUM-20 chỉ vì đặc tả/sơ đồ UC-31 cùng thư mục FE-06.
+- Jira live vẫn dùng số UC/BR cũ và có tiêu chí lệch PO: SCRUM-20 còn delegation và giữ Secretary ở mọi trạng thái; SCRUM-26 còn self-attendance, Excused/Delegated và quorum. Khi triển khai phải đối chiếu các quyết định PO/Report 3 hiện tại, không tự khôi phục các ràng buộc đã bỏ.
+
+Đây là ghi nhận phân phạm vi và phần cần đồng bộ Jira; lượt rà này không đăng comment hoặc sửa ticket.

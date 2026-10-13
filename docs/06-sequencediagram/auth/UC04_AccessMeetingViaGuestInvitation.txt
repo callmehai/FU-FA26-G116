@@ -1,0 +1,50 @@
+title UC-04 - Access Meeting via Guest Invitation
+
+actor "Guest" as Guest
+boundary "Guest Invitation Page" as Page
+control ":Guest Access Controller" as Controller
+control ":Guest Access Service" as Service
+participant ":Guest Invitation Repository" as Repository
+database ":Database" as Database
+
+note over Guest,Service: Final UC-04 execution after email verification,\nor reopen with an already valid verified Guest session (ALT-1).\nCode issuance/verification are separate executions linked from the UC spec.
+Guest->Page: Continue to invited Meeting with self-declared display information, or reopen valid session
+Page->Controller: Complete or resume invited-Meeting access
+Controller->Service: Complete Guest access for the invitation
+Service->Repository: Read current invitation, invited-email verification and existing Guest access
+Repository->Database: Read invitation, expiry/revocation and verification context
+Database-->Repository: Current information / Read failure
+Repository-->Service: Current information / Read failure
+Service->Service: Require current invitation and verification bound to its invited email;\nlimit access to this Meeting (BR-153–BR-157)
+alt Invitation is missing, expired or revoked - EX-1
+Service-->Controller: Deny access; invalidate access through this invitation
+Controller-->Page: Invitation is no longer valid; no protected Meeting content
+Page-->Guest: Invitation is no longer valid
+else Invited-email verification is absent or invalid - EX-2
+Service-->Controller: Return to UC-04 email verification; no Guest access
+Controller-->Page: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+Page-->Guest: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+else Verification/access service is unavailable - EX-3
+Service-->Controller: Access could not be completed; no new Guest session
+Controller-->Page: Access unavailable
+Page-->Guest: Access unavailable
+else Access is valid
+alt Reopen already verified active Guest session - ALT-1
+Service->Service: Reuse access only for this invited Meeting; do not request another code
+else First access after verification
+Service->Repository: Retain self-declared display name/job title for presentation;\nnever change invited email or represent display fields as verified identity (BR-180)
+Repository->Database: Save declared display information
+Database-->Repository: Saved / Failure
+Repository-->Service: Display-information result
+end
+Service->Service: Establish or continue Meeting-scoped Guest access if completion succeeds;\nMember participation and additional grants under BR-181;\nno internal account, system role or Chair/Secretary authority
+alt Completion cannot be saved - EX-3
+Service-->Controller: No successful new Guest access reported
+Controller-->Page: Access could not be completed
+Page-->Guest: Access could not be completed
+else Access completed or existing valid access resumed
+Service-->Controller: Invited Meeting and allowed Member participation actions
+Controller-->Page: Display invited Meeting; subsequent requests recheck access
+Page-->Guest: Invited Meeting available; email verified, display information self-declared
+end
+end

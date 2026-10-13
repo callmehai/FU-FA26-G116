@@ -22,8 +22,8 @@ Database-->ParticipantRepository: Current information / Read failure
 deactivate Database
 ParticipantRepository-->ParticipantService: Current information / Read failure
 deactivate ParticipantRepository
-ParticipantService->ParticipantService: Verify Organizer adds exactly one first Secretary with no extras,\nor actor is a current Secretary (BR-78, BR-79, BR-175)
-ParticipantService->ParticipantService: Require Draft, Rejected, Approved, Published or InProgress;\nvalidate every selected active user, uniqueness, role and permitted extras (BR-80–BR-85, BR-168, BR-174)
+ParticipantService->ParticipantService: Verify Organizer assigns one Secretary with no extras when none is current in Draft/Rejected/Approved,\nincluding recovery after prior assignment/removal (BR-122),\nor actor is a current Secretary (BR-78, BR-79, BR-175)
+ParticipantService->ParticipantService: Require Draft, Rejected, Approved, Published or InProgress;\nvalidate every selected active user, uniqueness for additions; existing Member recovery changes role without adding a row; permitted extras (BR-80–BR-85, BR-168, BR-174)
 alt Actor is no longer authorized - EX-2
 ParticipantService-->ParticipantController: Request denied; no participants added
 ParticipantController-->MeetingPage: Request denied; no participants added
@@ -45,7 +45,12 @@ ParticipantService-->ParticipantController: MSG97 - Invalid meeting participant 
 ParticipantController-->MeetingPage: MSG97 - Invalid meeting participant information.
 MeetingPage-->User: MSG97 - Invalid meeting participant information.
 else Selection is valid
-alt Internal users selected
+alt Organizer restores Secretary using an existing active Member - AF-2
+ParticipantService->ParticipantRepository: Assign current Member as Secretary; preserve response/attendance and identity;\nno duplicate participant or new optional grant (BR-78, BR-79, BR-122)
+ParticipantRepository->Database: Save recovery role change; recheck no Secretary and preparation status
+Database-->ParticipantRepository: Complete save / No changes saved
+ParticipantRepository-->ParticipantService: Recovery result
+else New internal users selected
 ParticipantService->ParticipantRepository: Add all selected users with the shared role, permitted extras and Pending response;\nif any addition fails, add none (BR-88, BR-168)
 activate ParticipantRepository
 ParticipantRepository->Database: Save all requested changes together;\nrecheck Meeting status, authority and roster before saving
@@ -55,7 +60,9 @@ deactivate Database
 ParticipantRepository-->ParticipantService: Complete save / No changes saved
 deactivate ParticipantRepository
 else One external Guest selected - AF-1
-ParticipantService->ParticipantRepository: Create one Guest invitation with Pending response and fixed Guest access;\nno internal account, meeting role or extra permissions (BR-84, BR-88, BR-148–BR-156)
+ParticipantService->ParticipantService: Confidential/Secret form displays inline warning only; no extra confirmation;
+record inviter, sensitivity and time (BR-182)
+ParticipantService->ParticipantRepository: Create one Guest invitation with invited name/email and Pending response and Member participation access and selected additional grants;\nno internal account or internal meeting role; permitted additional Meeting grants from the agreed catalogue; not limited to two views (BR-84, BR-88, BR-148–BR-156)
 activate ParticipantRepository
 ParticipantRepository->Database: Save all requested changes together;\nrecheck Meeting status, authority and roster before saving
 activate Database
@@ -75,9 +82,9 @@ activate NotificationService
 NotificationService-->ParticipantService: Delivery arranged / Failure recorded for retry
 deactivate NotificationService
 end
-ParticipantService-->ParticipantController: MSG96 - Meeting participant added successfully.
-ParticipantController-->MeetingPage: MSG96 - Meeting participant added successfully.
-MeetingPage-->User: MSG96 - Meeting participant added successfully.
+ParticipantService-->ParticipantController: MSG96 for new participants; MSG100 for existing Member Secretary recovery
+ParticipantController-->MeetingPage: MSG96 for new participants; MSG100 for existing Member Secretary recovery
+MeetingPage-->User: MSG96 for new participants; MSG100 for existing Member Secretary recovery
 end
 end
 deactivate ParticipantService

@@ -67,7 +67,7 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
 
 | Swimlane | Việc chính |
 |---|---|
-| Meeting Organizer | Tạo cuộc họp, gán Thư ký đầu tiên, chọn người duyệt, gửi duyệt, sửa khi bị từ chối, công bố, dời lịch |
+| Meeting Organizer | Tạo cuộc họp, gán/phục hồi Thư ký khi không có trong giai đoạn chuẩn bị, chọn người duyệt, gửi duyệt, sửa khi bị từ chối, công bố, dời lịch |
 | Secretary | Quản lý thành phần và mời Guest, gán vai trò (Chair, thành viên), chuẩn bị agenda, thêm tài liệu, bổ sung vai trò còn thiếu |
 | TrustCabinet | Lưu nháp; chuyển trạng thái và báo người liên quan; kiểm tra đủ Chair và Secretary; tạo lời mời; lưu phản hồi; lưu lịch mới |
 | Meeting Approver | Xem xét và duyệt / từ chối |
@@ -116,16 +116,16 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
    chuyển `InProgress`, ghi giờ bắt đầu thực tế, báo thông báo trong ứng dụng cho người được mời (BR-164).
 2. **Vào phòng họp (UC-37 → UC-42)** nếu cuộc họp Online / Hybrid. Guest vào qua guest session của UC-04. Phòng họp không
    đổi vòng đời cuộc họp.
-3. **Điểm danh (UC-31):** Trong lúc cuộc họp `InProgress`, Thư ký đánh dấu *Present / Absent* cho toàn bộ người tham dự nội bộ và Guest; người chưa ghi nhận được để trống. Lưu cả danh sách trong một lần để tránh điểm danh thiếu hoặc lưu một phần. Điểm danh độc lập với phản hồi lời mời và trạng thái đang kết nối phòng họp (BR-116, BR-170–BR-172, BR-178).
+3. **Điểm danh (UC-31):** Trong lúc cuộc họp `InProgress`, Thư ký lưu *Present / Absent* cho một/nhiều người được chọn trong roster nội bộ và Guest; người không gửi giữ nguyên giá trị đã lưu hoặc Chưa điểm danh. Một submission lưu nguyên khối; không bắt đủ roster. Điểm danh độc lập với phản hồi lời mời và trạng thái đang kết nối phòng họp (BR-116, BR-170–BR-172, BR-178).
 4. **Vòng agenda** — lặp cho từng mục:
    1. Chair đặt mục hiện tại (UC-24): mục `Pending` → `InProgress`, ghi giờ bắt đầu; tối đa một mục đang chạy (BR-69 → BR-71).
    2. Thảo luận với tài liệu, chat, chia sẻ màn hình.
    3. **Cần biểu quyết?** Có → Chair tạo và mở biểu quyết (UC-53, UC-54) → Chair, Secretary, Member bỏ phiếu (UC-55;
-      Guest không bỏ phiếu) → Chair đóng (UC-56) → hệ thống kiểm phiếu và hiện kết quả (UC-52b) → Chair ghi kết luận
+      Guest đã xác minh được bỏ phiếu như Member) → Chair đóng (UC-56) → hệ thống kiểm phiếu và hiện kết quả (UC-52b) → Chair ghi kết luận
       *Passed / NotPassed / Deferred* (UC-57). Áp dụng BR-160, BR-161, BR-165.
    4. Chair hoàn thành mục (UC-25): mục → `Done`, ghi giờ kết thúc và thời lượng thực tế (BR-70, BR-72).
    5. Còn mục → quay lại 4.1.
-5. **Kết thúc (UC-22):** Chair kết thúc; chỉ thực hiện khi không còn phiếu đang mở và đã ghi nhận Present/Absent cho toàn bộ thành phần tham dự hiện tại, gồm Guest (BR-159, BR-179). Mục agenda đang chạy (nếu có) được hoàn tất cùng lúc cuộc họp chuyển sang `Ended` và ghi giờ kết thúc thực tế. Các mục còn chờ vẫn giữ nguyên trạng thái; hệ thống đóng quyền vào phòng họp theo quy tắc hiện hành (BR-143, BR-159).
+5. **Kết thúc (UC-22):** Chair kết thúc bất cứ lúc nào khi InProgress, không kiểm tra Vote Open hay điểm danh đủ/thiếu (BR-159). Vote giữ trạng thái và phiếu đã lưu; Meeting Ended ngừng nhận phiếu. Mục agenda đang chạy (nếu có) được hoàn tất cùng lúc cuộc họp chuyển sang `Ended` và ghi giờ kết thúc thực tế. Các mục còn chờ vẫn giữ nguyên trạng thái; hệ thống đóng quyền vào phòng họp theo quy tắc hiện hành (BR-143, BR-159).
 
 ---
 
@@ -182,3 +182,7 @@ BF-01 ──(tài khoản, vai trò)──> BF-02 ──(Published, lời mời)
 - Không vẽ Meeting Session, Resolution, quorum, Audio Uploader, uỷ quyền tham dự — đã bỏ khỏi phạm vi.
 - Sửa `.drawio` trong [09-bussinessflow/](../09-bussinessflow/README.md), xuất lại `.drawio.png`, cập nhật file này nếu
   luồng đổi.
+
+## Guest — quyết định PO 13/10/2026
+
+Tên/email do Thư ký mời → UC-04 OTP → Guest tự khai tên hiển thị và chức vụ tùy chọn → Member participation trong đúng Meeting. Toàn bộ tài liệu gắn vào Meeting, comments và biểu quyết áp dụng như Member; quyền bổ sung do Thư ký cấp như Member, không giới hạn hai quyền roster/response. Mời Confidential/Secret hiện cảnh báo trong form bình thường, không thêm xác nhận. [ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md). Chưa điểm danh khác Vắng, không chặn kết thúc và không tự chuyển thành Vắng khi sinh biên bản/báo cáo.
