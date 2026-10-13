@@ -25,41 +25,6 @@ các bước tương ứng, còn sequence thể hiện cùng BR ID và message c
 7. Trong code BE, khai báo mã thành hằng số có tên theo mẫu `Msg29Created = "MSG29"` ở đầu file
    endpoint, không rải chuỗi `"MSGnn"` trong thân hàm.
 
-## Agenda — contract Backend SCRUM-25
-
-Các dòng nguồn UC trong bảng phía dưới được giữ để đối chiếu phân bổ, nhưng MSG60–76, MSG128, MSG141–144 **đã triển khai**, không còn dành sẵn. Endpoint và câu phản hồi hiện hành:
-
-| Mã | HTTP | Endpoint / tình huống | Thông báo |
-|---|---|---|---|
-| `MSG60` | 201 | POST agenda | Tạo mục nghị sự thành công. |
-| `MSG61` | 200 | PUT item | Cập nhật mục nghị sự thành công. |
-| `MSG62` | 200 | DELETE item | Xóa mục nghị sự thành công. |
-| `MSG63` | 200 | PUT order | Sắp xếp mục nghị sự thành công. |
-| `MSG64` | 200 | POST current | Bắt đầu mục nghị sự thành công. |
-| `MSG65` | 200 | POST complete | Hoàn thành mục nghị sự thành công. |
-| `MSG66` | 400 | POST/PUT item; errors theo trường hoặc body | Thông tin mục nghị sự không hợp lệ. |
-| `MSG67` | 403 | Planning/options: thiếu Secretary | Bạn không có quyền thực hiện thao tác này. |
-| `MSG67` | 409 | Planning/options: meeting đã khóa | Trạng thái cuộc họp không cho phép thao tác này. |
-| `MSG68` | 503 | Lưu tạo thất bại | Không lưu được thao tác nghị sự. Vui lòng thử lại. |
-| `MSG69` | 503 | Lưu sửa thất bại | Không lưu được thao tác nghị sự. Vui lòng thử lại. |
-| `MSG70` | 503 | Lưu xóa thất bại | Không lưu được thao tác nghị sự. Vui lòng thử lại. |
-| `MSG71` | 503 | Lưu reorder thất bại | Không lưu được thao tác nghị sự. Vui lòng thử lại. |
-| `MSG72` | 409 | Start: đã có current | Đã có mục nghị sự đang diễn ra. |
-| `MSG73` | 403 | Start: thiếu Chair | Bạn không có quyền thực hiện thao tác này. |
-| `MSG73` | 409 | Start: trạng thái meeting/item không hợp lệ | Trạng thái cuộc họp không cho phép thao tác này. / Mục nghị sự không còn ở trạng thái chờ. |
-| `MSG74` | 403 | Complete: thiếu Chair | Bạn không có quyền thực hiện thao tác này. |
-| `MSG74` | 409 | Complete: trạng thái meeting/item không hợp lệ | Trạng thái cuộc họp không cho phép thao tác này. / Chỉ được hoàn thành mục nghị sự đang diễn ra. |
-| `MSG75` | 503 | Lưu start thất bại | Không lưu được thao tác nghị sự. Vui lòng thử lại. |
-| `MSG76` | 503 | Lưu complete thất bại hoặc actual time không hợp lệ | Không lưu được thao tác nghị sự. Vui lòng thử lại. |
-| `MSG128` | 500 | GET agenda/options thất bại | Không tải được chương trình nghị sự. |
-| `MSG141` | 409 | Sửa field bị khóa | Chỉ được sửa tiêu đề và mô tả sau khi mục đã bắt đầu. |
-| `MSG142` | 409 | Xóa item đã bắt đầu | Chỉ được xóa mục nghị sự chưa bắt đầu. |
-| `MSG143` | 400 | Reorder: body hoặc tập Pending ID không hợp lệ | Danh sách sắp xếp phải chứa đúng mỗi mục chưa bắt đầu một lần. |
-| `MSG143` | 409 | Reorder: orderVersion cũ | Chương trình nghị sự đã thay đổi. Vui lòng tải lại. |
-| `MSG144` | 409 | Start: không phải Pending đầu tiên | Phải bắt đầu mục nghị sự chờ đầu tiên. |
-| `MSG34` | 415 | Agenda POST/PUT có body không phải JSON | Yêu cầu phải dùng Content-Type application/json. |
-| `MSG87` | 413 | Agenda POST/PUT có body vượt 64 KiB | Nội dung yêu cầu vượt quá 64 KiB. |
-
 ## Mã tiếp theo
 
 **`MSG145`** — `MSG140` dành cho UC-18 EX-5 khi không có người duyệt đủ điều kiện; `MSG141`–`MSG144` dành cho các giới hạn Agenda Management đã chốt. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`; `MSG139` dành cho UC-22. `MSG90`–`MSG91` ngừng dùng, không tái cấp. `MSG60`–`MSG76` và `MSG95`–`MSG128` đã dành cho Agenda, participant, room và các màn đọc liên quan; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
@@ -196,7 +161,8 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 
 ### Dành sẵn, chưa có code
 
-Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpoint và contract tiếng Việt ở mục Agenda phía trên; các mã còn lại chưa triển khai hoặc đã ngừng dùng như ghi chú từng dòng. Cột *Use case* theo danh mục 70 UC (10/10/2026); mã Meeting Session ghi số UC cũ. Người làm các use case còn lại dùng đúng các mã dưới đây.
+Có trong sequence diagram cuộc họp nhưng chưa có endpoint. Cột *Use case* theo danh mục 70 UC (10/10/2026); mã Meeting Session ghi số UC cũ. Người làm các use case này dùng đúng
+các mã dưới đây; `message` tiếng Việt đặt khi code.
 
 | Mã | Use case | Tình huống (theo sơ đồ) |
 |---|---|---|
@@ -268,10 +234,10 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG128` | UC-26 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |
 | `MSG139` | UC-22 End Meeting | *Close all open votes before ending the meeting.* |
 | `MSG140` | UC-18 Submit Meeting for Approval · EX-5 — Dành sẵn | *No eligible meeting approver is available. Please contact the administrator.* — `Chưa có người duyệt đủ điều kiện. Vui lòng liên hệ quản trị viên.` |
-| `MSG141` | UC-23b / EX-4 · Đã triển khai SCRUM-25 | *Only Title and Description can be changed after an agenda item has started.* — Chỉ được sửa tiêu đề và mô tả sau khi mục nghị sự đã bắt đầu. |
-| `MSG142` | UC-23c / EX-2 · Đã triển khai SCRUM-25 | *Only Pending agenda items can be deleted.* — Chỉ được xóa mục nghị sự chưa bắt đầu. |
-| `MSG143` | UC-23d / EX-2 · Đã triển khai SCRUM-25 | *Only Pending agenda items can be reordered within their existing positions. Refresh the agenda and try again.* — Chỉ được sắp xếp các mục chưa bắt đầu trong những vị trí hiện có của chúng. Vui lòng tải lại agenda và thử lại. |
-| `MSG144` | UC-24 / EX-3 · Đã triển khai SCRUM-25 | *Start the first Pending agenda item in the current order.* — Vui lòng bắt đầu mục nghị sự chưa thực hiện đầu tiên theo thứ tự hiện tại. |
+| `MSG141` | UC-23b / EX-4 · Dành sẵn | *Only Title and Description can be changed after an agenda item has started.* — Chỉ được sửa tiêu đề và mô tả sau khi mục nghị sự đã bắt đầu. |
+| `MSG142` | UC-23c / EX-2 · Dành sẵn | *Only Pending agenda items can be deleted.* — Chỉ được xóa mục nghị sự chưa bắt đầu. |
+| `MSG143` | UC-23d / EX-2 · Dành sẵn | *Only Pending agenda items can be reordered within their existing positions. Refresh the agenda and try again.* — Chỉ được sắp xếp các mục chưa bắt đầu trong những vị trí hiện có của chúng. Vui lòng tải lại agenda và thử lại. |
+| `MSG144` | UC-24 / EX-3 · Dành sẵn | *Start the first Pending agenda item in the current order.* — Vui lòng bắt đầu mục nghị sự chưa thực hiện đầu tiên theo thứ tự hiện tại. |
 
 `MSG83` và `MSG84` đã được workflow SCRUM-19 dùng. `MSG90` và `MSG91` chỉ được giữ để không tái cấp.
 

@@ -17,10 +17,6 @@ public class AgendaItemConfiguration : IEntityTypeConfiguration<AgendaItem>
         // and a unique index would reject the intermediate state where two items briefly share a
         // number unless every reorder were written as a careful multi-step dance.
         builder.HasIndex(a => new { a.MeetingId, a.Position });
-        builder.HasIndex(a => a.MeetingId, "ix_agenda_items_one_current")
-            .IsUnique().HasFilter("status = 'InProgress'");
-        builder.ToTable(t => t.HasCheckConstraint("ck_agenda_items_status",
-            "status IN ('Pending', 'InProgress', 'Done')"));
 
         builder.HasOne(a => a.Meeting)
             .WithMany(m => m.AgendaItems)

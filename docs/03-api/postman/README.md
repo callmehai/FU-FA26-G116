@@ -2,7 +2,6 @@
 
 | Collection | Phạm vi |
 |---|---|
-| [`SCRUM-25-Agenda.postman_collection.json`](SCRUM-25-Agenda.postman_collection.json) | UC-23a–d/24/25/26; chạy thủ công theo [hướng dẫn Agenda](../08-chuong-trinh-nghi-su-ban-giao.md), không áp dụng quy trình UC-07/08 bên dưới |
 | [`uc07-uc08-quan-ly-nguoi-dung.postman_collection.json`](uc07-uc08-quan-ly-nguoi-dung.postman_collection.json) | UC-07 đặt lại mật khẩu (cả hai nửa) và UC-08 gán vai trò — 35 bước (51 request kể cả request phụ trong script), 73 assertion |
 
 Collection chạy **theo thứ tự** trên backend local, trên **một tài khoản thử cố định**

@@ -6,6 +6,8 @@ public enum AgendaItemStatus
     Pending,
     InProgress,
     Done,
+    /// <summary>Reached but deliberately deferred to a later meeting.</summary>
+    Postponed,
 }
 
 /// <summary>

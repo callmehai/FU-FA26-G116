@@ -53,7 +53,6 @@ public static class DependencyInjection
         await db.Database.MigrateAsync();
         await ReferenceDataSeeder.SeedAsync(db);
         await DevelopmentDataSeeder.SeedAsync(db);
-        await AgendaDevelopmentDataSeeder.SeedAsync(db);
     }
 
     /// <summary>

@@ -95,15 +95,7 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasIndex("MeetingId", "Position")
                         .HasDatabaseName("ix_agenda_items_meeting_id_position");
 
-                    b.HasIndex(new[] { "MeetingId" }, "ix_agenda_items_one_current")
-                        .IsUnique()
-                        .HasDatabaseName("ix_agenda_items_meeting_id")
-                        .HasFilter("status = 'InProgress'");
-
-                    b.ToTable("agenda_items", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_agenda_items_status", "status IN ('Pending', 'InProgress', 'Done')");
-                        });
+                    b.ToTable("agenda_items", (string)null);
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.AuditLogEntry", b =>
