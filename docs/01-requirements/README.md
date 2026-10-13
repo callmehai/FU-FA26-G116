@@ -17,8 +17,8 @@ Nguồn chuẩn là ba báo cáo DOCX trên Google Drive (Report 1, 2, 3), đư�
   ngày 10/10/2026.
 - [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case đồng bộ từ Report 3 §II (UC đã đặc tả
   và UC placeholder), có link tới sequence diagram tương ứng.
-- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1 (131 BR đang dùng trong
-  dải BR-01 → BR-167; danh sách BR ngừng dùng ở cuối file).
+- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1 (146 BR đang dùng trong
+  dải BR-01 → BR-182; danh sách BR ngừng dùng ở cuối file).
 - Mã thông báo `MSGnn`: [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md) là nguồn chuẩn duy nhất.
 
 Yêu cầu phi chức năng, phạm vi MoSCoW và dữ liệu cá nhân hiện nằm trong Report 1 và Report 3 §IV; chưa tách file riêng.
@@ -138,3 +138,5 @@ Yêu cầu phi chức năng, phạm vi MoSCoW và dữ liệu cá nhân hiện n
 - [ ] **Phân định AF vs EX**: Mọi AF đều đạt success postcondition; mọi lỗi/hủy/từ chối đều là EX.
 - [ ] **Mã thông báo (MSG)**: Mọi thông báo lỗi và thành công đều có mã `MSGxx` và thông điệp chuẩn xác từ `docs/03-api/00-danh-muc-ma-thong-bao.md`.
 - [ ] **Quy tắc nghiệp vụ (BR)**: Đánh mã `BR-XX` rõ ràng và được dẫn chiếu tại các bước kiểm tra tương ứng.
+
+- [07-ra-soat-guest-va-diem-danh.md](07-ra-soat-guest-va-diem-danh.md) — quyết định Guest 13/10/2026 và phân tích BR-122 chưa chốt.

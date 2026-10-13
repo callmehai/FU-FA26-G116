@@ -1,0 +1,48 @@
+title UC-04 - Verify Guest Invitation
+
+actor "Guest" as Guest
+boundary "Guest Invitation Page" as Page
+control ":Guest Access Controller" as Controller
+control ":Guest Access Service" as Service
+participant ":Guest Invitation Repository" as Repository
+database ":Database" as Database
+
+Guest->Page: Submit invited-email one-time code
+Page->Controller: Verify invitation code
+Controller->Service: Verify code for this invitation
+Service->Repository: Read current invitation and verification challenge
+Repository->Database: Read invitation, expiry and challenge
+Database-->Repository: Current information / Read failure
+Repository-->Service: Current information / Read failure
+Service->Service: Check current invitation and correct, unexpired, unused code;\nverify control of invited email, not legal identity (BR-153, BR-180)
+alt Invitation is missing, expired or revoked - EX-1
+Service-->Controller: Access denied; no Guest session
+Controller-->Page: Invitation is no longer valid
+Page-->Guest: Invitation is no longer valid
+else Code is incorrect, expired or already used - EX-2
+Service-->Controller: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+Controller-->Page: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+Page-->Guest: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+else Verification is unavailable - EX-3
+Service-->Controller: Verification could not be completed; no Guest session
+Controller-->Page: Verification unavailable
+Page-->Guest: Verification unavailable
+else Code and invitation are valid
+Service->Repository: Consume code and record invited-email verification consistently
+Repository->Database: Save verification; recheck current invitation and unused challenge
+Database-->Repository: Verification saved / Conflict / Failure
+Repository-->Service: Verification result
+alt Code was consumed by a concurrent request - EX-2
+Service-->Controller: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+Controller-->Page: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+Page-->Guest: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+else Verification cannot be saved - EX-3
+Service-->Controller: Verification unavailable; no completed Guest access
+Controller-->Page: Verification unavailable
+Page-->Guest: Verification unavailable
+else Email control verified
+Service-->Controller: Continue UC-04 with self-declared display information
+Controller-->Page: Show display name and job title entry; invited email remains unchanged
+Page-->Guest: Email verified; display information is self-declared (BR-180)
+end
+end

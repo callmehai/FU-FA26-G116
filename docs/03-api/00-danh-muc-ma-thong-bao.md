@@ -27,7 +27,7 @@ các bước tương ứng, còn sequence thể hiện cùng BR ID và message c
 
 ## Mã tiếp theo
 
-**`MSG145`** — `MSG140` dành cho UC-18 EX-5 khi không có người duyệt đủ điều kiện; `MSG141`–`MSG144` dành cho các giới hạn Agenda Management đã chốt. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`; `MSG139` dành cho UC-22. `MSG90`–`MSG91` ngừng dùng, không tái cấp. `MSG60`–`MSG76` và `MSG95`–`MSG128` đã dành cho Agenda, participant, room và các màn đọc liên quan; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG156`** — `MSG140` dành cho UC-18 EX-5; `MSG141`–`MSG144` dành cho các giới hạn Agenda Management; `MSG145`–`MSG154` dành cho thay đổi FE-06 trong Report 3. Các mã đó mới ở mức đặc tả và chưa có code. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`; `MSG139` dành cho UC-22. `MSG90`–`MSG91` ngừng dùng, không tái cấp. `MSG60`–`MSG76` và `MSG95`–`MSG128` đã dành cho Agenda, participant, room và các màn đọc liên quan; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -200,10 +200,10 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MSG91` | SCRUM-19 | Mã từng được giữ cho workflow nhưng không còn tình huống backend — **Ngừng dùng**, không tái sử dụng. |
 | `MSG95` | UC-27 / UC-30 | *Unable to load meeting participants. Please try again.* |
 | `MSG96` | UC-28a Add Meeting Participant | *Meeting participant added successfully.* |
-| `MSG97` | UC-28a | *Invalid meeting participant information.* (Lỗi: *The selected user is not available.*, *This user is already a meeting participant.*, *A valid meeting role is required.*, *The Meeting Organizer must assign a Secretary as the first meeting participant.*, *Guest name and email are required.*, *Guest email is invalid.*, *This guest email is already invited to the meeting.*, *This email is already represented by an internal meeting participant.*) |
+| `MSG97` | UC-28a | *Invalid meeting participant information.* (Lỗi: *The selected user is not available.*, *This user is already a meeting participant.*, *A valid meeting role is required.*, *The Meeting Organizer may only assign a missing Secretary during preparation.*, *Guest name and email are required.*, *Guest email is invalid.*, *This guest email is already invited to the meeting.*, *This email is already represented by an internal meeting participant.*) |
 | `MSG98` | UC-28a / UC-28b / UC-28c | *The meeting participant list cannot be modified in its current status.* |
 | `MSG99` | UC-28a | *Unable to add the meeting participant. Please try again.* |
-| `MSG100` | UC-28b Assign / Change Meeting Role | *Meeting role updated successfully.* |
+| `MSG100` | UC-28b Manage Meeting Role & Additional Permissions | *Meeting role updated successfully.* |
 | `MSG101` | UC-28b | *A valid meeting role is required.* |
 | `MSG102` | UC-28b | *Unable to update the meeting role. Please try again.* |
 | `MSG103` | UC-28c Remove Meeting Participant | *Meeting participant removed successfully.* |
@@ -213,6 +213,17 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MSG107` | UC-29 | *This meeting invitation can no longer be answered.* |
 | `MSG108` | UC-29 | *Unable to save the meeting invitation response. Please try again.* |
 | `MSG109` | UC-28b / UC-28c | *The meeting must retain its required Chair and Secretary. Assign a replacement first.* |
+| `MSG145` | UC-28a / Validation chi tiết · Dành sẵn | *One or more selected participants are invalid. No participants were added.* |
+| `MSG146` | UC-28b / Mã dành sẵn, UC tinh gọn dùng MSG102 | *Unable to replace the Chair. Meeting roles remain unchanged.* |
+| `MSG147` | UC-31 / Main Flow · Dành sẵn | *Meeting attendance saved successfully.* |
+| `MSG148` | UC-31 / EX-1 · Dành sẵn | *Select Present or Absent for each submitted participant or Guest.* |
+| `MSG149` | UC-31 / EX-2 · Dành sẵn | *Attendance can only be recorded while the meeting is in progress.* |
+| `MSG150` | UC-31 / EX-3 · Dành sẵn | *Unable to save attendance. No changes were saved.* |
+| `MSG151` | UC-31 / EX-4, BR-172 · Dành sẵn | *The meeting participant list has changed. Refresh it and try again.* |
+| `MSG152` | UC-28a / EX-1; UC-28b / EX-1 · Dành sẵn | *One or more selected meeting permissions are not allowed.* |
+| `MSG153` | UC-28b / Main Flow · Dành sẵn | *Meeting permissions updated successfully.* |
+| `MSG154` | UC-28b / Trạng thái UI không có thay đổi, không có EX riêng | *No changes to save.* |
+| `MSG155` | UC-22 / EX-3 cũ · Ngừng dùng 13/10/2026 | Bỏ điều kiện điểm danh đủ trước khi kết thúc theo quyết định PO; không tái sử dụng mã. |
 | `MSG110` | UC-21 Start Meeting | *Meeting started successfully.* |
 | `MSG111` | UC-22 End Meeting | *Meeting ended successfully.* |
 | `MSG112` | UC-21 | *This meeting cannot be started.* |
@@ -229,10 +240,10 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MSG123` | UC-41 Moderate Meeting Room | *You are not allowed to moderate this meeting room.* |
 | `MSG124` | UC-41 | *Unable to apply the room moderation action.* |
 | `MSG125` | UC-42 Use In-room Chat | *Unable to send the room message. Please try again.* |
-| `MSG126` | UC-29 | *Unable to verify the guest invitation. Check the code and try again.* |
+| `MSG126` | UC-04 / EX-2 | *Unable to verify the guest invitation. Check the code and try again.* |
 | `MSG127` | ADR-0013 · View Meeting Sessions (UC-53 cũ, đã bỏ) | *Unable to load meeting sessions. Please try again.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
 | `MSG128` | UC-26 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |
-| `MSG139` | UC-22 End Meeting | *Close all open votes before ending the meeting.* |
+| `MSG139` | UC-22 cũ · Ngừng dùng 13/10/2026 | Không còn gate đóng Vote trước End Meeting; không tái cấp mã. |
 | `MSG140` | UC-18 Submit Meeting for Approval · EX-5 — Dành sẵn | *No eligible meeting approver is available. Please contact the administrator.* — `Chưa có người duyệt đủ điều kiện. Vui lòng liên hệ quản trị viên.` |
 | `MSG141` | UC-23b / EX-4 · Dành sẵn | *Only Title and Description can be changed after an agenda item has started.* — Chỉ được sửa tiêu đề và mô tả sau khi mục nghị sự đã bắt đầu. |
 | `MSG142` | UC-23c / EX-2 · Dành sẵn | *Only Pending agenda items can be deleted.* — Chỉ được xóa mục nghị sự chưa bắt đầu. |
@@ -240,6 +251,7 @@ các mã dưới đây; `message` tiếng Việt đặt khi code.
 | `MSG144` | UC-24 / EX-3 · Dành sẵn | *Start the first Pending agenda item in the current order.* — Vui lòng bắt đầu mục nghị sự chưa thực hiện đầu tiên theo thứ tự hiện tại. |
 
 `MSG83` và `MSG84` đã được workflow SCRUM-19 dùng. `MSG90` và `MSG91` chỉ được giữ để không tái cấp.
+
 
 ## Bảng đổi mã cũ → mới
 
