@@ -416,9 +416,10 @@ html { scroll-behavior: smooth; }
     <!-- =============================================================== S06 -->
     <section class="screen" id="s06">
       <div class="screen-head"><span class="no">S06</span><h3>Tài liệu cuộc họp</h3>
-        <div class="meta"><span class="tag bf">BF-02 · Add Meeting Documents</span><span class="tag">Organizer, Secretary</span><span class="tag">UC-56, 57, 58, 59, 60, 91</span></div></div>
+        <div class="meta"><span class="tag bf">BF-02 · Add Meeting Documents</span><span class="tag">Chair, Secretary</span><span class="tag">UC-32a, 32c, 33a, 33c, 35</span></div></div>
       <ul class="notes">
-        <li>Thêm tài liệu từ máy tính hoặc chọn từ Kho tài liệu cá nhân. Mỗi lần thêm ghim đúng một phiên bản.</li>
+        <li>Thêm tài liệu từ máy tính hoặc chọn từ Kho tài liệu cá nhân. Tài liệu không có phiên bản: cuộc họp chỉ giữ tham chiếu tới file, muốn đổi thì tải file mới rồi gỡ file cũ (ADR-0018).</li>
+        <li>Chủ toạ hoặc Thư ký gỡ được tài liệu khỏi cuộc họp cho tới khi cuộc họp có biên bản.</li>
         <li>Có thể gắn tài liệu với một mục nghị sự; không gắn thì là tài liệu chung.</li>
       </ul>
       <div class="scroll"><div class="app">
@@ -432,12 +433,12 @@ html { scroll-behavior: smooth; }
           <div class="panel">
             <div class="toolbar"><div class="input sel" style="width:220px">Tất cả mục nghị sự</div><span style="flex:1"></span><span class="btn">Chọn từ Kho tài liệu</span><span class="btn pri">Tải lên từ máy</span></div>
             <table>
-              <thead><tr><th>Tài liệu</th><th>Gắn với mục</th><th>Phiên bản</th><th>Người thêm</th><th>Góp ý</th></tr></thead>
+              <thead><tr><th>Tài liệu</th><th>Gắn với mục</th><th>Người thêm</th><th>Góp ý</th><th></th></tr></thead>
               <tbody>
-                <tr><td><div class="t">Bao-cao-Sprint5.pdf</div><div class="s2">2,4 MB</div></td><td>1. Báo cáo kết quả Sprint 5</td><td>v2</td><td>Trần Quốc Bảo</td><td>3</td></tr>
-                <tr><td><div class="t">De-xuat-bieu-quyet.docx</div><div class="s2">310 KB</div></td><td>2. Phạm vi biểu quyết trong họp</td><td>v1</td><td>Lê Thu Hà</td><td>0</td></tr>
-                <tr><td><div class="t">So-sanh-eCabinet.xlsx</div><div class="s2">88 KB</div></td><td>2. Phạm vi biểu quyết trong họp</td><td>v1</td><td>Đỗ Hải Yến</td><td>1</td></tr>
-                <tr><td><div class="t">Quy-che-hop.pdf</div><div class="s2">1,1 MB</div></td><td style="color:var(--label)">Tài liệu chung</td><td>v4</td><td>Nguyễn Minh Anh</td><td>0</td></tr>
+                <tr><td><div class="t">Bao-cao-Sprint5.pdf</div><div class="s2">2,4 MB</div></td><td>1. Báo cáo kết quả Sprint 5</td><td>Trần Quốc Bảo</td><td>3</td><td><span class="btn">Gỡ</span></td></tr>
+                <tr><td><div class="t">De-xuat-bieu-quyet.docx</div><div class="s2">310 KB</div></td><td>2. Phạm vi biểu quyết trong họp</td><td>Lê Thu Hà</td><td>0</td><td><span class="btn">Gỡ</span></td></tr>
+                <tr><td><div class="t">So-sanh-eCabinet.pdf</div><div class="s2">88 KB</div></td><td>2. Phạm vi biểu quyết trong họp</td><td>Đỗ Hải Yến</td><td>1</td><td><span class="btn">Gỡ</span></td></tr>
+                <tr><td><div class="t">Quy-che-hop.pdf</div><div class="s2">1,1 MB</div></td><td style="color:var(--label)">Tài liệu chung</td><td>Nguyễn Minh Anh</td><td>0</td><td><span class="btn">Gỡ</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -669,11 +670,11 @@ html { scroll-behavior: smooth; }
     <!-- =============================================================== S14 -->
     <section class="screen" id="s14">
       <div class="screen-head"><span class="no">S14</span><h3>Biểu quyết trong cuộc họp</h3>
-        <div class="meta"><span class="tag bf">BF-03 · Create &amp; Open Vote → Cast Vote → Close Vote → Tally → Record Conclusion</span><span class="tag">Chair, Participant</span><span class="tag">UC-70, 71, 72, 73, 74, 75, 76*</span></div></div>
+        <div class="meta"><span class="tag bf">BF-03 · Create &amp; Open Vote → Cast Vote → Close Vote → Tally → Record Conclusion</span><span class="tag">Chair, Secretary, Participant, Guest</span><span class="tag">UC-52a, 52b, 53, 54, 55, 56, 57</span></div></div>
       <ul class="notes">
         <li>Chỉ tạo và mở được khi Đang họp; thường gắn với mục hiện tại. Không có hạn chót trước/sau họp, không quorum.</li>
-        <li>Người đủ điều kiện bỏ phiếu một lần. Chủ trì đóng phiếu, hệ thống đếm, Chủ trì ghi kết luận: Thông qua / Không thông qua / Hoãn.</li>
-        <li>*UC-76 chờ PO chốt: đổi thành “Ghi kết luận biểu quyết” hay bỏ.</li>
+        <li>Chủ trì chọn vai trò được bỏ phiếu (mặc định cả Chủ trì, Thư ký, Thành viên, Khách mời); danh sách chốt lúc mở phiếu, mỗi người bỏ một lần. Chủ trì đóng phiếu (kể cả sau khi kết thúc họp), hệ thống đếm, Chủ trì ghi kết luận: Thông qua / Không thông qua / Hoãn — ghi rồi không sửa.</li>
+        <li>Phiếu nháp sửa hoặc xoá được; phiếu đã mở hay đã đóng thì không.</li>
       </ul>
       <div class="scroll"><div class="pair">
         <div class="mini">
@@ -684,7 +685,7 @@ html { scroll-behavior: smooth; }
               <div class="input val">Đồng ý</div><div class="input val">Không đồng ý</div><div class="input val">Không ý kiến</div><span class="btn ghost sm" style="align-self:flex-start">Thêm phương án</span></div>
             <div class="grid2">
               <div class="field"><label>Hình thức</label><div class="seg"><span class="on">Công khai</span><span>Bỏ phiếu kín</span></div></div>
-              <div class="field"><label>Người được bỏ phiếu</label><div class="input sel val">Chủ trì, Thư ký, Thành viên</div></div>
+              <div class="field"><label>Người được bỏ phiếu</label><div class="input sel val">Chủ trì, Thư ký, Thành viên, Khách mời</div></div>
             </div>
             <div style="display:flex;gap:8px;justify-content:flex-end"><span class="btn">Lưu nháp</span><span class="btn pri">Mở biểu quyết</span></div>
           </div>

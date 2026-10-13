@@ -32,6 +32,7 @@ Table of Contents
 | 09/10/2026 | M | KhanhPG | Align active UC flows, BR/MSG traceability, screens and embedded BF-02/03/04 with PO-approved single Meeting and in-meeting Voting. Retain retired IDs and intentional UC placeholders. |
 | 12/10/2026 | M | KhanhPG | Revise FE-06 meeting participant management: clarify UC-27–UC-31, support adding multiple internal participants together, replacing the Chair, meeting-specific additional viewing permissions, and complete-list Present/Absent attendance for internal participants and Guests. Align business rules, messages, screen descriptions and sequence diagram sources; preserve all existing images. Primary Actors list actor names only. |
 | 12/10/2026 | M | KhanhPG | Refine FE-06 use cases to business-level flows; align Chair/Secretary/Member viewing access, response identity visibility, bulk participant additions, Chair replacement, complete attendance and End Meeting requirements. Update BR/MSG references, participant screens, and affected Agenda and Participant sequences, including UC-22; align AF/EX references and reserved message contexts. Regenerate only changed sequence images and preserve all existing embedded images. |
+| 13/10/2026 | M, D | HaiTV | Apply ADR-0018 (no document versions): library entries and Meeting documents refer to one immutable stored file; drop UC-32b and UC-33b; add UC-33c Remove Document from Meeting, UC-71 Manage Personal Documents and UC-72 Manage Library Folders; previews are rendered in the browser without server conversion; only the Chair and Secretary add or remove Meeting documents; add library folders as in AI-eCabinet, drop the Guest sharing toggle. Align FE-11 screens with Guest voting, Chair-selected eligible voter roles per Vote and deleting a Draft Vote. Add BR-183 to BR-192 and the Folder entity. |
 
 *A - Added M - Modified D - Deleted
 
@@ -314,13 +315,14 @@ One question put to a vote only while its Meeting is InProgress, optionally link
 | 3 | AgendaItemId | uuid | FK | Yes | Agenda item the vote decides (references AgendaItem). Null when the vote is not tied to an item. |
 | 4 | Title | string |  | No | Question or title of the vote. |
 | 5 | IsAnonymous | bool |  | No | True for a secret ballot: no record links a voter to the option chosen. |
-| 6 | Status | enum |  | No | State of the vote. Values: Draft, Open, Closed. |
-| 7 | OpenedAt | timestamptz |  | Yes | Date and time voting opened. |
-| 8 | ClosedAt | timestamptz |  | Yes | Date and time voting closed. |
-| 9 | EligibleCount | int |  | No | Number of eligible voters, fixed when the vote opens so the result stays reproducible. |
-| 10 | Conclusion | enum |  | Yes | Conclusion recorded by the Chair after the vote closes. Values: Passed, NotPassed, Deferred. Null until concluded. |
-| 11 | ConclusionNote | string |  | Yes | Explanatory note for the conclusion. |
-| 12 | ConcludedById | uuid | FK | Yes | Chair who recorded the conclusion (references User). |
+| 6 | EligibleRoles | string[] |  | No | Meeting roles allowed to vote, chosen by the Chair: Chair, Secretary, Member, Guest; at least one (BR-190). |
+| 7 | Status | enum |  | No | State of the vote. Values: Draft, Open, Closed. |
+| 8 | OpenedAt | timestamptz |  | Yes | Date and time voting opened. |
+| 9 | ClosedAt | timestamptz |  | Yes | Date and time voting closed. |
+| 10 | EligibleCount | int |  | No | Number of eligible voters, fixed when the vote opens so the result stays reproducible. |
+| 11 | Conclusion | enum |  | Yes | Conclusion recorded by the Chair after the vote closes. Values: Passed, NotPassed, Deferred. Null until concluded. |
+| 12 | ConclusionNote | string |  | Yes | Explanatory note for the conclusion. |
+| 13 | ConcludedById | uuid | FK | Yes | Chair who recorded the conclusion (references User). |
 
 Entity 15: VotingOption
 
@@ -358,45 +360,49 @@ The option actually chosen in a vote; these rows are counted to produce the resu
 
 Entity 18: Document
 
-Document in a user's personal library. The file content is kept in versions; uploading a replacement adds a new version instead of overwriting.
+Entry in a user's personal library. It refers to one immutable Stored File; documents have no versions, so changing a document means uploading a new file (ADR-0018).
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Id | uuid | PK | No | Unique identifier of the document. |
 | 2 | OwnerId | uuid | FK | No | User who owns the document (references User). |
-| 3 | Title | string |  | No | Title of the document. |
-| 4 | Category | enum |  | No | Category of the document. Values: Material, Draft, Administrative, Other. |
-| 5 | CurrentVersionId | uuid | FK | Yes | Version shown by default (references DocumentVersion). |
+| 3 | FolderId | uuid | FK | Yes | Folder holding the entry (references Folder). Null at the root of the library. |
+| 4 | StoredFileId | uuid | FK | No | Stored file the entry refers to (references StoredFile). |
+| 5 | FileName | string |  | No | File name shown in the library. |
+| 6 | Category | enum |  | No | Category of the document. Values: Material, Draft, Administrative, Other. |
 
-Entity 19: DocumentVersion
+Entity 19: StoredFile
 
-One uploaded file of a document. Versions are never edited or deleted.
+One uploaded file in object storage. It is immutable; personal library entries and Meeting documents only refer to it. A periodic cleanup deletes the object once nothing refers to it (ADR-0018).
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Id | uuid | PK | No | Unique identifier of the version. |
-| 2 | DocumentId | uuid | FK | No | Document the version belongs to (references Document). |
-| 3 | VersionNumber | int | UK | No | Version number, starting at 1; unique within the document. |
-| 4 | FileName | string |  | No | Original file name, shown to users and used when downloading. |
-| 5 | StoragePath | string |  | No | Location of the file in the document store. |
-| 6 | ContentType | string |  | No | File type detected from the file content. |
-| 7 | ByteSize | bigint |  | No | File size in bytes. |
-| 8 | ContentSha256 | string |  | No | SHA-256 hash of the stored file, used to detect changes to the file. |
-| 9 | UploadedById | uuid | FK | No | User who uploaded the version (references User). |
+| 1 | Id | uuid | PK | No | Unique identifier of the stored file. |
+| 2 | StorageKey | string |  | No | Key of the original file in object storage. |
+| 3 | ContentType | string |  | No | File type detected from the file content (PDF or DOCX). The file is stored as uploaded; the browser renders the preview. |
+| 4 | ByteSize | bigint |  | No | File size in bytes. |
+| 5 | ContentSha256 | string |  | No | SHA-256 hash of the stored file, used to detect changes to the file. |
+| 6 | PageCount | int |  | Yes | Number of pages of a PDF; null for a DOCX, which is previewed as one continuous document. |
+| 7 | UploadedById | uuid | FK | No | User who uploaded the file (references User). |
+| 8 | UploadedAt | timestamptz |  | No | Date and time the file was uploaded. |
+| 9 | PurgedAt | timestamptz |  | Yes | Date and time the cleanup deleted the object; null while the file is stored. |
 
 Entity 20: MeetingDocument
 
-Attaches a specific version of a document to a meeting, optionally to one agenda item, so participants see the exact version that was shared.
+Places a stored file in a meeting, optionally under one agenda item. It is a reference, not a copy: deleting the owner's library entry does not affect it (ADR-0018).
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Id | uuid | PK | No | Unique identifier of the meeting document. |
 | 2 | MeetingId | uuid | FK | No | Meeting the document is attached to (references Meeting). |
-| 3 | DocumentId | uuid | FK | No | Document attached (references Document). |
-| 4 | DocumentVersionId | uuid | FK | No | Version of the document pinned to the meeting (references DocumentVersion). |
+| 3 | StoredFileId | uuid | FK | No | Stored file shown in the meeting (references StoredFile). |
+| 4 | DocumentId | uuid | FK | Yes | Library entry the file was added from (references Document). Null once that entry is deleted. |
 | 5 | AgendaItemId | uuid | FK | Yes | Agenda item the document supports (references AgendaItem). Null when it applies to the whole meeting. |
 | 6 | AddedById | uuid | FK | No | User who attached the document (references User). |
 | 7 | AddedAt | timestamptz |  | No | Date and time the document was attached. |
+| 8 | FileName | string |  | No | File name shown in the meeting. |
+| 9 | RemovedAt | timestamptz |  | Yes | Date and time the document was removed from the meeting (UC-33c); null while it is shown. |
+| 10 | RemovedById | uuid | FK | Yes | User who removed the document (references User). |
 
 Entity 21: DocumentComment
 
@@ -534,6 +540,19 @@ Outgoing email kept in a queue so it can be sent in the background, retried on f
 | 5 | RetryCount | int |  | No | Number of send attempts made. |
 | 6 | CreatedAt | timestamptz |  | No | Date and time the message was queued. |
 
+Entity 30: Folder
+
+Folder in a user’s personal library. Folders nest at most five levels; a folder created for a meeting upload keeps a link to that Meeting so later uploads find it after a rename or move (ADR-0018).
+
+| No | Field | Data Type | Key | Nullable | Description |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Id | uuid | PK | No | Unique identifier of the folder. |
+| 2 | OwnerId | uuid | FK | No | User who owns the folder (references User). |
+| 3 | ParentId | uuid | FK | Yes | Folder that contains this folder (references Folder). Null at the root of the library. |
+| 4 | Name | string |  | No | Folder name; must not be empty and need not be unique. |
+| 5 | MeetingId | uuid | FK | Yes | Meeting this folder was created for when a file was uploaded straight into it (references Meeting); null for folders the user created. |
+| 6 | CreatedAt | timestamptz |  | No | Date and time the folder was created. |
+
 #### 3.3 Data Business Rules
 
 | Rule | Description | Enforced On |
@@ -600,8 +619,8 @@ Outgoing email kept in a queue so it can be sent in the background, retried on f
 | UC-29 | Respond to Meeting Invitation | Meeting Participant Management | Allow an invited internal participant or external Guest to accept or decline their own Meeting invitation, and change a previous response while responses are allowed. |
 | UC-30 | View Participant Response Status | Meeting Participant Management | View the latest invitation response of current internal participants and external Guests and a response-status summary. |
 | UC-31 | Record Attendance | Meeting Participant Management | Record or revise Present/Absent attendance for one or more selected current internal participants or external Guests while the Meeting is InProgress. |
-| UC-32 | View Meeting Documents | Personal Document Library & Meeting Document Management | View Meeting Documents, their version history, and document previews; see UC-32a–UC-32c. |
-| UC-33 | Manage Meeting Documents | Personal Document Library & Meeting Document Management | Add a document to a Meeting or add a new Meeting document version; see UC-33a–UC-33b. |
+| UC-32 | View Meeting Documents | Personal Document Library & Meeting Document Management | View the documents of a Meeting and preview them; see UC-32a and UC-32c. |
+| UC-33 | Manage Meeting Documents | Personal Document Library & Meeting Document Management | Add a document to a Meeting or remove it from the Meeting; see UC-33a and UC-33c. |
 | UC-34 | View Personal Document Library | Personal Document Library & Meeting Document Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
 | UC-35 | Comment on Meeting Document | Personal Document Library & Meeting Document Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
 | UC-36 | Upload Document to Personal Library | Personal Document Library & Meeting Document Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
@@ -639,6 +658,8 @@ Outgoing email kept in a queue so it can be sent in the background, retried on f
 | UC-68 | Open Notification Target | Email & In-App Notification | Open the meeting linked to a selected notification. |
 | UC-69 | View Personal Dashboard & Meeting Workspace | Personal Dashboard & Meeting Workspace | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
 | UC-70 | View & Export Reports | Reporting & Statistics | View reporting statistics and export the corresponding report; see UC-70a–UC-70b. |
+| UC-71 | Manage Personal Documents | Personal Document Library & Meeting Document Management | Delete, rename or move documents in the user's own personal library; see UC-71a–UC-71c. Meeting documents that use the same file are not affected. |
+| UC-72 | Manage Library Folders | Personal Document Library & Meeting Document Management | Create, rename, move and delete empty folders in the user's own personal library; see UC-72a–UC-72d. |
 
 #### 4.3 Use Case Diagrams
 
@@ -648,7 +669,7 @@ The System Admin manages user accounts (create, update, deactivate/reactivate, r
 
 ##### 4.3.2 UCs for Meeting Organizer
 
-The Meeting Organizer creates and updates meetings, submits them for approval and publishes approved meetings, adds participants and Guests, and attaches meeting documents and new versions. The Organizer can also view meeting records, comment on documents, use the online room (controls, room participants, in-room chat, leave room), and view reports, notifications and the personal workspace.
+The Meeting Organizer creates and updates meetings, submits them for approval and publishes approved meetings, adds participants and Guests. The Organizer can also view meeting records, comment on documents, use the online room (controls, room participants, in-room chat, leave room), and view reports, notifications and the personal workspace.
 
 ##### 4.3.3 UCs for Meeting Approver
 
@@ -656,7 +677,7 @@ The Meeting Approver reviews assigned meeting approval requests and approves or 
 
 ##### 4.3.4 UCs for Chair
 
-The Chair responds to the invitation, starts and ends the meeting, steers the agenda (set current / complete item), joins and moderates the online room, and creates, opens and closes votes and records each vote's conclusion. The Chair also comments on meeting documents, signs or requests revision of the minutes, and can view all records of the chaired meeting. The current assigned Chair may cast a vote (UC-55) while the Meeting is InProgress and the Vote is Open, under BR-160 and BR-165.
+The Chair responds to the invitation, starts and ends the meeting, steers the agenda (set current / complete item), joins and moderates the online room, and creates, opens and closes votes and records each vote's conclusion. The Chair also adds and removes meeting documents, comments on meeting documents, signs or requests revision of the minutes, and can view all records of the chaired meeting. The current assigned Chair may cast a vote (UC-55) while the Meeting is InProgress and the Vote is Open, under BR-160 and BR-165.
 
 ##### 4.3.5 UCs for Secretary
 
@@ -709,10 +730,10 @@ Full = unrestricted  ·  Restricted = conditions apply (see footnotes)  ·  No =
 | Invitation response | Respond (accept / decline) | No | No | No | Restricted ¹⁰ | Restricted ¹⁰ | Restricted ¹⁰ | Restricted ¹¹ |
 | Attendance | Record | No | No | No | No | Restricted ³ (InProgress only) | No | No |
 | Personal document library | View | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | No |
-| Personal document library | Upload | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | No |
+| Personal document library | Upload / Organize (folders, rename, move, delete) | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | No |
 | Meeting document | View list | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ¹³ |
-| Meeting document | Add document / Add new version | No | Restricted ³ | No | No | Restricted ³ | No | No |
-| Meeting document | Preview / View version history | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ¹¹: Member rules within the invited Meeting |
+| Meeting document | Add / Remove document | No | No | No | Restricted ³ | Restricted ³ | No | No |
+| Meeting document | Preview / Download (no download in a Secret Meeting) | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ¹¹: Member rules within the invited Meeting |
 | Meeting document | Comment | No | Restricted ³ | No | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ¹¹: Member rules within the invited Meeting |
 | Audio recording | View media library / Play | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | No |
 | Audio recording | Upload | No | No | No | No | Restricted ³ | No | No |
@@ -820,10 +841,10 @@ Notes:
 | 6.3 | Attendance Check | FE-06 Meeting Participant Management | Allows the Secretary to record Present or Absent for one or more selected current internal participants or Guests during an InProgress Meeting. |
 | 6.4 | Invitation Response | FE-06 Meeting Participant Management | Allows an invited Chair, Secretary, Participant or verified Guest to view the invitation and accept or decline it, and to change the response until the meeting ends. |
 | 7.1 | Document Library – Current Build | FE-07 Personal Document Library & Meeting Document Management | Shows the Document Library page as currently built: a page header and an empty-state panel explaining that the personal library is not active yet until the backend document API is available. |
-| 7.2 | Personal Document Library | FE-07 Personal Document Library & Meeting Document Management | Allows an internal user to browse, search and filter his/her private documents by folder and file type, create folders, upload files and see where each document is used in meetings. |
-| 7.3 | Meeting Detail – Documents Tab | FE-07 Personal Document Library & Meeting Document Management | Allows users related to a meeting to view its documents, filtered by agenda item, with version, uploader and comment count, and the Meeting Organizer or Secretary to add documents. |
-| 7.4 | Add Document to Meeting Dialog | FE-07 Personal Document Library & Meeting Document Management | Allows the Meeting Organizer or Secretary to attach documents to a meeting from the computer or the personal library, link them to an agenda item and choose whether Guests may view them. |
-| 7.5 | Document Viewer – Preview, Comments & Versions | FE-07 Personal Document Library & Meeting Document Management | Allows users related to a meeting to preview a meeting document page by page, read and add comments and view its version history; the Meeting Organizer or Secretary uploads a new version. |
+| 7.2 | Personal Document Library | FE-07 Personal Document Library & Meeting Document Management | Allows an internal user to browse folders, search and filter his/her private documents by file type, upload files, organise files and folders, delete files and see where each document is used in meetings. |
+| 7.3 | Meeting Detail – Documents Tab | FE-07 Personal Document Library & Meeting Document Management | Allows users related to a meeting to view its documents, filtered by agenda item, with uploader and comment count, and the Chair or Secretary to add documents or remove them from the Meeting. |
+| 7.4 | Add Document to Meeting Dialog | FE-07 Personal Document Library & Meeting Document Management | Allows the Chair or Secretary to attach documents to a meeting from the computer or the personal library and link them to an agenda item. |
+| 7.5 | Document Viewer – Preview & Comments | FE-07 Personal Document Library & Meeting Document Management | Allows users related to a meeting to preview a meeting document page by page, download it unless the Meeting is Secret, and read and add comments. |
 | 8.1 | Meeting Lobby | FE-08 Online Meeting Room Management | Allows the Chair, Secretary, Participant or a verified Guest to preview camera and microphone, choose audio and video devices and enter the online room of an Online or Hybrid meeting. |
 | 8.2 | Online Meeting Room – Video Grid | FE-08 Online Meeting Room Management | Allows users connected to the online room to see participants in a video grid, see who is speaking, turn their own microphone and camera on or off, raise a hand and leave the room. |
 | 8.3 | In-Room Participants & Moderation Panel | FE-08 Online Meeting Room Management | Allows users in the online room to view who is connected and their room presence, and allows the Chair to manage the raise-hand queue, invite speakers, mute participants and remove users from the room. |
@@ -834,8 +855,8 @@ Notes:
 | 10.1 | Speaker-Attributed Transcript | FE-10 Speaker-Attributed Transcription & Meeting Summary | Allows the Secretary to play the uploaded meeting audio, search and correct the transcript text, and assign unknown voices to meeting attendees before generating the meeting summary. |
 | 10.2 | Meeting Summary | FE-10 Speaker-Attributed Transcription & Meeting Summary | Allows the Secretary to review and edit the AI-generated draft summary, regenerate it, approve it and then publish the approved summary to attendees as a separate step. |
 | 11.1 | Meeting Detail – Voting Tab | FE-11 Voting Management | Allows the Chair to view all Votes of an InProgress Meeting with their status and turnout, create, edit and open draft Votes, and close an open Vote; other involved users view read-only. |
-| 11.2 | Create & Open Vote Dialog | FE-11 Voting Management | Allows the Chair to define a Vote for the current Agenda Item of an InProgress Meeting – content, options, ballot type and eligible voters – and save it as a draft or open it immediately. |
-| 11.3 | Cast Vote | FE-11 Voting Management | Allows an eligible Chair, Secretary or Participant to view an open Vote of the InProgress Meeting, choose one option and submit a single ballot that cannot be changed afterwards. |
+| 11.2 | Create & Open Vote Dialog | FE-11 Voting Management | Allows the Chair to define a Vote for the current Agenda Item of an InProgress Meeting – content, options, ballot type and eligible voter roles – and save it as a draft or open it immediately. |
+| 11.3 | Cast Vote | FE-11 Voting Management | Allows an eligible Chair, Secretary, Participant or verified Guest to view an open Vote of the InProgress Meeting, choose one option and submit a single ballot that cannot be changed afterwards. |
 | 11.4 | Vote Result & Conclusion | FE-11 Voting Management | Allows the Chair to view the tallied result of a closed Vote, including public ballots, and record its conclusion – Passed, NotPassed or Deferred – with a note carried into the minutes. |
 | 12.1 | Minutes Editor | FE-12 Meeting Minutes & Digital Signing | Allows the Secretary to generate draft minutes of an Ended Meeting from meeting information, attendance, the published summary and vote conclusions, edit the text, and submit it for signing. |
 | 12.2 | Sign Minutes Dialog | FE-12 Meeting Minutes & Digital Signing | Allows a designated signer to read the minutes pending signature, see who has already signed, and either sign the current revision or request a revision with a reason. |
@@ -1339,11 +1360,7 @@ Delivery scope: UC-31 attendance remains in SCRUM-26, separate from SCRUM-20 ros
 
 Placeholder only – detailed Use Case Specification will be added later.
 
-##### 7.1.2 UC-32b – View Document Version History
-
-Placeholder only – detailed Use Case Specification will be added later.
-
-##### 7.1.3 UC-32c – Preview Meeting Document
+##### 7.1.2 UC-32c – Preview Meeting Document
 
 Placeholder only – detailed Use Case Specification will be added later.
 
@@ -1353,7 +1370,7 @@ Placeholder only – detailed Use Case Specification will be added later.
 
 Placeholder only – detailed Use Case Specification will be added later.
 
-##### 7.2.2 UC-33b – Add New Meeting Document Version
+##### 7.2.2 UC-33c – Remove Document from Meeting
 
 Placeholder only – detailed Use Case Specification will be added later.
 
@@ -1366,6 +1383,38 @@ Placeholder only – detailed Use Case Specification will be added later.
 Placeholder only – detailed Use Case Specification will be added later.
 
 #### 7.5 UC-36 – Upload Document to Personal Library
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+#### 7.6 UC-71 – Manage Personal Documents
+
+##### 7.6.1 UC-71a – Delete Document from Personal Library
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+##### 7.6.2 UC-71b – Rename Document
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+##### 7.6.3 UC-71c – Move Document to Folder
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+#### 7.7 UC-72 – Manage Library Folders
+
+##### 7.7.1 UC-72a – Create Folder
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+##### 7.7.2 UC-72b – Rename Folder
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+##### 7.7.3 UC-72c – Move Folder
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+##### 7.7.4 UC-72d – Delete Folder
 
 Placeholder only – detailed Use Case Specification will be added later.
 
@@ -1482,8 +1531,6 @@ Placeholder only – detailed Use Case Specification will be added later.
 Placeholder only – detailed Use Case Specification will be added later.
 
 #### 11.6 UC-57 – Record Vote Conclusion
-
-[Placeholder] Detailed Use Case Specification will be added later. Chair records Passed, NotPassed or Deferred after Vote closes.
 
 Placeholder only – detailed Use Case Specification will be added later.
 
@@ -2465,21 +2512,23 @@ Field Description
 
 #### 7.2 Personal Document Library
 
-The Personal Document Library is the proposed Document Library page that replaces the current placeholder (7.1) once the document API is available. Each internal user has a private library: folders on the left and the file table on the right, with version, size, last update and the number of meetings that use each file. Uploading a file to the library does not attach it to a meeting; files are attached through the Add Document to Meeting Dialog (7.4). External Guests have no personal library (UC-34, UC-36).
+The Personal Document Library is the proposed Document Library page that replaces the current placeholder (7.1) once the document API is available. Each internal user has a private library: folders on the left and the file table on the right, with size, upload date and the number of meetings that use each file. Files have no versions; to change a document the user uploads a new file. Uploading a file to the library does not attach it to a meeting; files are attached through the Add Document to Meeting Dialog (7.4). A file uploaded straight into a meeting lands in a folder named after that meeting. External Guests have no personal library (UC-34, UC-36, UC-71, UC-72).
 
 This screen allows any signed-in internal user (Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant) to:
 
-- View Personal Document Library: view his/her own documents with file name, version, size, last update and meeting usage (UC-34).
+- View Personal Document Library: view his/her own documents with file name, size, upload date and meeting usage (UC-34).
 
-- Browse Folders: select All documents or a folder in the left panel to list the files it contains (UC-34).
+- Browse Folders: select All documents or a folder in the left panel to list the files and sub-folders it contains (UC-34).
 
 - Search and Filter Documents: search by file name and filter by file type (UC-34).
 
-- Upload Document: click “Upload” and choose a file from the computer to store it in the library (UC-36).
+- Upload Document: click “Upload” and choose a file from the computer to store it in the selected folder (UC-36).
+
+- Organise Documents: rename a file, move it to another folder or delete it from the library; meetings that already use the file keep it (UC-71).
+
+- Manage Folders: click “New folder” to create a folder, and rename, move or delete an empty folder from its menu; folders nest at most five levels (UC-72).
 
 On the screen, s/he can also:
-
-- Create Folder: click “New folder” to add a folder for organising documents.
 
 - Use Row Actions: use the icon buttons of a row to work with that file.
 
@@ -2488,33 +2537,34 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Page header | Read-only title “Document Library” [Kho tài liệu] with the subtitle “Your private documents — only you can see and manage what is here.” Only the owner’s own documents are listed. |
-| New folder [Thư mục mới] | Secondary button; creates a new folder in the left panel. |
-| Upload [Tải lên] | Primary button; opens the file picker and uploads the chosen file as version v1 into the selected folder (UC-36). A file that cannot be stored (e.g. type or size not allowed) is rejected with an error and nothing is saved. |
-| Folder panel | List of All documents [Tất cả tài liệu] (default, selected) and the user’s folders (e.g. “Board Q4” [HĐQT quý IV], “Budget 2027” [Ngân sách 2027], “Administration” [Hành chính]), each with the number of files. |
+| New folder [Thư mục mới] | Secondary button; creates a folder inside the selected folder, or at the root when All documents is selected. Nesting is limited to five levels (UC-72a, BR-191). |
+| Upload [Tải lên] | Primary button; opens the file picker and uploads the chosen file into the selected folder (UC-36). Only PDF and DOCX files up to 50 MB are accepted (BR-187); a file that cannot be stored is rejected with an error and nothing is saved. |
+| Folder panel | Tree of All documents [Tất cả tài liệu] (default, selected) and the user’s folders, each with the number of files. A folder named after a meeting (e.g. “Họp kế hoạch Sprint 6 - 15/10/2026”) holds files uploaded straight into that meeting. Each folder has a menu: Rename, Move, Delete (only when empty) (UC-72, BR-191, BR-192). |
 | Search [Tìm theo tên tệp…] | Text input, optional, empty by default; matches the file name within the selected folder. |
-| File type filter [Mọi loại tệp] | Dropdown. Values: All file types (default) and each supported type, e.g. PDF, Word, Excel. |
+| File type filter [Mọi loại tệp] | Dropdown. Values: All file types (default), PDF and Word (DOCX). |
 | File name [Tên tệp] | Column: file icon and file name, e.g. “Ke-hoach-kinh-doanh-2027.docx”. |
-| Version [Phiên bản] | Column chip with the latest version of the file, e.g. v3. |
 | Size [Dung lượng] | Column: file size, e.g. 1,2 MB / 640 KB. |
-| Updated [Cập nhật] | Column: date of the latest version, format dd/mm/yyyy. |
+| Uploaded [Ngày tải lên] | Column: upload date, format dd/mm/yyyy. |
 | Used in [Đang dùng trong] | Column: number of meetings the file has been attached to, e.g. “2 meetings” [2 cuộc họp], or “Not used” [Chưa dùng] in italics. A file not attached to any meeting can be read only by its owner. |
-| Actions [Thao tác] | Two icon buttons per row giving the actions for that file (e.g. open preview, further options). |
+| Actions [Thao tác] | Icon buttons per row: open preview, download, rename, move to another folder and delete from the library (UC-71). Delete asks for confirmation and states that meetings using the file keep it (BR-186). |
 
 #### 7.3 Meeting Detail – Documents Tab
 
-The Meeting Detail – Documents tab lists the documents attached to the selected Meeting. Each document is either linked to one agenda item or is a general document of the Meeting, and the Meeting keeps exactly the version that was added. Users related to the meeting view the list and open a document in the Document Viewer (7.5); the Meeting Organizer and the Secretary add documents from the computer or from their personal library through the Add Document to Meeting Dialog (7.4) (UC-32a, UC-32c, UC-33a).
+The Meeting Detail – Documents tab lists the documents attached to the selected Meeting. Each document is either linked to one agenda item or is a general document of the Meeting. The Meeting keeps its own reference to each file, so deleting the file from a personal library does not remove it from the Meeting. Users related to the meeting view the list and open a document in the Document Viewer (7.5); the Chair and the Secretary add documents from the computer or from their personal library through the Add Document to Meeting Dialog (7.4) and remove documents from the Meeting (UC-32a, UC-32c, UC-33a, UC-33c).
 
 This screen allows users related to the meeting (Meeting Organizer, Meeting Approver, Chair, Secretary, Participant) to:
 
-- View Meeting Documents: view the documents of the Meeting with file name, size, linked agenda item, version, the person who added it and the number of comments (UC-32a).
+- View Meeting Documents: view the documents of the Meeting with file name, size, linked agenda item, the person who added it and the number of comments (UC-32a).
 
 - Filter by Agenda Item: choose an agenda item, or general documents, to show only the related documents (UC-32a).
 
-- Open Document: click a document to open it in the Document Viewer with preview, comments and versions (UC-32c).
+- Open Document: click a document to open it in the Document Viewer with preview and comments (UC-32c).
 
-- Add Document from Library: (Meeting Organizer, Secretary) click “Choose from Document Library” to attach files from the personal library (UC-33a).
+- Add Document from Library: (Chair, Secretary) click “Choose from Document Library” to attach files from the personal library (UC-33a).
 
-- Upload Document from Computer: (Meeting Organizer, Secretary) click “Upload from computer” to attach a file from the device (UC-33a).
+- Upload Document from Computer: (Chair, Secretary) click “Upload from computer” to attach a file from the device (UC-33a).
+
+- Remove Document: (Chair, Secretary) click “Remove” on a row to remove the document from the Meeting; not allowed once the Meeting has minutes (UC-33c).
 
 Field Description
 
@@ -2523,28 +2573,26 @@ Field Description
 | Meeting header | Read-only: back link “‹ Meetings” [‹ Cuộc họp], meeting title with status chip (e.g. Draft [Nháp], In Progress [Đang họp]) and confidentiality chip (e.g. Normal [Thường]); second line: planned date and time and mode · location (e.g. “Thursday, 15/10/2026 · 08:30–09:30 · Hybrid · Room 2.1, floor 2”). |
 | Tabs | Documents [Tài liệu] is selected. Other tabs: General Information, Participants, Meeting Content, Voting, Recordings, Summary, Minutes. |
 | Agenda item filter [Tất cả mục nghị sự] | Dropdown. Values: All agenda items (default), each agenda item of the Meeting by order and title, and General documents [Tài liệu chung]. |
-| Choose from Document Library [Chọn từ Kho tài liệu] | Secondary button; opens the Add Document to Meeting Dialog on the “From my library” tab. Visible only to the Meeting Organizer and the Secretary of the Meeting. |
-| Upload from computer [Tải lên từ máy] | Primary button; opens the Add Document to Meeting Dialog on the “From computer” tab. Visible only to the Meeting Organizer and the Secretary. |
+| Choose from Document Library [Chọn từ Kho tài liệu] | Secondary button; opens the Add Document to Meeting Dialog on the “From my library” tab. Visible only to the Chair and the Secretary of the Meeting. |
+| Upload from computer [Tải lên từ máy] | Primary button; opens the Add Document to Meeting Dialog on the “From computer” tab. Visible only to the Chair and the Secretary. |
 | Document [Tài liệu] | Column: file thumbnail, file name and size, e.g. “Bao-cao-Sprint5.pdf · 2,4 MB”. Clicking the row opens the Document Viewer (7.5). |
 | Linked item [Gắn với mục] | Column: the agenda item the document belongs to (e.g. “1. Sprint 5 results report”), or “General document” [Tài liệu chung] in grey when no item is linked. |
-| Version [Phiên bản] | Column chip with the version pinned to the Meeting, e.g. v2. Later changes in the owner’s personal library do not change it; a new version is added from the Document Viewer (UC-33b). |
+| Remove [Gỡ khỏi cuộc họp] | Icon button on each row, visible only to the Chair and the Secretary. Asks for confirmation, then removes the document from the Meeting; its comments are kept as history but no longer listed. Not allowed once Meeting Minutes exist (UC-33c, BR-185). |
 | Added by [Người thêm] | Column: full name of the user who added the document to the Meeting. |
 | Comments [Góp ý] | Column: number of comments on the document, e.g. 3 (UC-35). |
 | Access rules | Only users related to the Meeting see this tab (BR-29). An external Guest, within a verified Guest session, sees only all attached Meeting documents under Member read rules (BR-120, BR-154). |
 
 #### 7.4 Add Document to Meeting Dialog
 
-The Add Document to Meeting Dialog opens from the Documents tab with “Choose from Document Library” or “Upload from computer”. The Meeting Organizer or the Secretary selects files from his/her personal library or uploads a file from the computer, optionally links them to one agenda item and chooses whether external Guests may view them. Each addition pins exactly one version of the file to the Meeting (UC-33a).
+The Add Document to Meeting Dialog opens from the Documents tab with “Choose from Document Library” or “Upload from computer”. The Chair or the Secretary selects files from his/her personal library or uploads a file from the computer, and optionally links them to one agenda item. Adding does not copy the file: the Meeting keeps a reference to it, and a file uploaded from the computer is also stored in the uploader’s personal library, in the folder named after the meeting (UC-33a, BR-184, BR-192).
 
-This screen allows the Meeting Organizer or the Secretary to:
+This screen allows the Chair or the Secretary to:
 
 - Select Documents from Library: on the “From my library” tab tick one or more files of his/her personal library (UC-33a).
 
 - Upload from Computer: on the “From computer” tab choose a file from the device to add to the Meeting (UC-33a).
 
 - Link to Agenda Item: choose the agenda item the documents belong to, or leave it empty for a general document (UC-33a).
-
-- Share with Guests: switch on “Allow guests to view” so that external Guests of the Meeting can see the documents (UC-33a).
 
 - Add Documents: click “Add <n> documents” to attach the selected files to the Meeting (UC-33a).
 
@@ -2558,28 +2606,25 @@ Field Description
 | --- | --- |
 | Dialog title | “Add documents” [Thêm tài liệu]. |
 | Tabs | From computer [Từ máy tính] / From my library [Từ kho của tôi]; the tab is preselected by the button used on the Documents tab. |
-| Library file list | From my library tab. Rows with checkbox, file icon, file name and “version · date” of the latest version (e.g. “v1 · 09/10”). Only the user’s own library files are listed. At least one file must be selected. |
+| Library file list | From my library tab. Rows with checkbox, file icon, file name and upload date (e.g. “09/10”). Only the user’s own library files are listed. At least one file must be selected. |
 | Link to agenda item [Gắn với mục nghị sự] | Dropdown, optional. Lists the agenda items of the Meeting by order and title (e.g. “3. Minutes signing and sealing procedure”). Hint: “Leave empty for a general document.” [Để trống thì là tài liệu chung.] |
-| Guests [Khách mời] – Allow guests to view [Cho khách mời xem] | Toggle switch. When on, external Guests of the Meeting can view the documents in their verified Guest session; when off, only internal users related to the Meeting can see them (BR-120, BR-154). |
-| Version notice | Info box: “The meeting keeps exactly version v1. Editing the file in the library later does not change the meeting document.” [Cuộc họp giữ đúng phiên bản v1 …] |
+| Access notice | Info box: “Everyone in the Meeting, including verified Guests, can read the added documents.” [Mọi người trong cuộc họp, kể cả khách mời đã xác minh, đều đọc được tài liệu đã thêm.] (BR-181) |
 | Cancel [Huỷ] | Text button; closes the dialog. |
-| Add <n> documents [Thêm <n> tài liệu] | Primary button showing the number of selected files (e.g. “Add 1 document”). Attaches each file with its pinned version, linked item and guest visibility, records the user as “Added by” and refreshes the Documents tab. If the file cannot be added, an error is shown and nothing is attached. |
+| Add <n> documents [Thêm <n> tài liệu] | Primary button showing the number of selected files (e.g. “Add 1 document”). Adds each file with its linked item, records the user as “Added by” and refreshes the Documents tab. If the file cannot be added, an error is shown and nothing is attached. |
 
-#### 7.5 Document Viewer – Preview, Comments & Versions
+#### 7.5 Document Viewer – Preview & Comments
 
-The Document Viewer opens when a user clicks a document on the Documents tab, on an agenda item or in the current item card. It shows the selected version of the document in a page-by-page preview with zoom, and a side panel with the Comments and Versions tabs. Users related to the meeting preview the document and view its versions; they add comments that refer to a page; the Meeting Organizer and the Secretary can add a new version of the meeting document (UC-32b, UC-32c, UC-33b, UC-35).
+The Document Viewer opens when a user clicks a document on the Documents tab, on an agenda item or in the current item card. It renders the document in the browser – a PDF page by page, a DOCX as one continuous document – with zoom, and a side panel with its comments. Users related to the meeting preview the document, download it unless the Meeting is Secret, and add comments, which refer to a page in a PDF (UC-32c, UC-35).
 
 This screen allows users related to the meeting (Meeting Organizer, Meeting Approver, Chair, Secretary, Participant) to:
 
-- Preview Meeting Document: read the document page by page and zoom in or out (UC-32c).
+- Preview Meeting Document: read the document (a PDF page by page) and zoom in or out (UC-32c).
 
 - View Comments: read the comments on the document with author, page and time (UC-35).
 
 - Comment on Document: (Meeting Organizer, Chair, Secretary, Participant, verified Guest) type a comment and click “Send” (UC-35).
 
-- View Version History: open the Versions tab to see every version with uploader and time and open an earlier version (UC-32b).
-
-- Add New Version: (Meeting Organizer, Secretary) click “Upload new version” to add a new version of the meeting document (UC-33b).
+- Download Document: click “Download” to save the original file; not available in a Secret Meeting, where documents can only be viewed online (UC-32c).
 
 On the screen, s/he can also:
 
@@ -2590,15 +2635,14 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Back link [‹ Tài liệu] | Returns to the Documents tab of the Meeting. |
-| Document header | Read-only: file name (e.g. “Du-thao-nghi-quyet-HDQT.docx”), chip of the version being viewed (e.g. v2) and confidentiality chip of the Meeting (e.g. Secret [Mật] in red). |
-| Page indicator [Trang 2 / 6] | Read-only current page and total number of pages; updates while scrolling. |
+| Document header | Read-only: file name (e.g. “Du-thao-nghi-quyet-HDQT.docx”) and confidentiality chip of the Meeting (e.g. Secret [Mật] in red). |
+| Page indicator [Trang 2 / 6] | Read-only current page and total number of pages; updates while scrolling. Shown for PDF documents only. |
 | Zoom − / + | Two square buttons that decrease or increase the zoom level of the preview. |
-| Upload new version [Tải phiên bản mới] | Secondary button; visible only to the Meeting Organizer and the Secretary. Uploads a file as the next version (e.g. v3); earlier versions are kept in the Versions tab. |
-| Preview pane | Read-only rendering of the document pages; a highlighted passage marks the area a comment refers to. For a Secret document the viewer’s name is proposed as a watermark on every page. |
+| Download [Tải về] | Secondary button; downloads the original file. Hidden in a Secret Meeting, where documents can only be viewed online (BR-188). |
+| Preview pane | Read-only rendering made in the browser with no server conversion – PDF pages, or a DOCX as one continuous document (BR-187); a highlighted passage marks the area a comment refers to. For a Secret document the viewer’s name is proposed as a watermark on every page. |
 | Comments tab [Bình luận 4] | Tab with the number of comments; selected by default. Each comment shows avatar initials, author, page and relative time (e.g. “Page 2 · 2 hours ago”) and the comment text. |
-| Comment box [Viết bình luận…] | Textarea, required to send, empty by default; the comment is linked to the page being viewed. Hidden for users who may not comment (Meeting Approver). Verified current Guests may comment as Members. |
+| Comment box [Viết bình luận…] | Textarea, required to send, empty by default; for a PDF the comment is linked to the page being viewed; a DOCX comment has no page. Hidden for users who may not comment (Meeting Approver). Verified current Guests may comment as Members. |
 | Send [Gửi] | Primary button; posts the comment, which appears at the top of the list and increases the comment count on the Documents tab (UC-35). |
-| Versions tab [Phiên bản 2] | Tab with the number of versions; lists v1, v2 … with uploader and upload time. Selecting a version opens it in the preview (UC-32b). |
 
 ### 8. FE-08 – Online Meeting Room Management
 
@@ -2914,6 +2958,8 @@ This screen allows the Chair to:
 
 - Edit Draft Vote: click “Edit” on a Draft Vote to change its content, options or ballot type in the Create & Open Vote Dialog (UC-53).
 
+- Delete Draft Vote: click “Delete” on a Draft Vote to remove it; an open or closed Vote cannot be deleted (UC-53).
+
 - Open Vote: click “Open vote” on a Draft Vote so that eligible people can cast their ballots (UC-54).
 
 - Close Vote: click “Close voting” on an open Vote to stop balloting; the system tallies the result and the Vote moves to Vote Result & Conclusion (UC-56).
@@ -2934,9 +2980,10 @@ Field Description
 | Vote content | Bold text of the motion, e.g. “Thông qua phạm vi biểu quyết chỉ trong cuộc họp”. |
 | Vote meta | Read-only: linked Agenda Item (“Mục 2”), ballot type public [công khai] or secret [bỏ phiếu kín] and opening time (“mở 08:51”). |
 | Turnout bar [Đã bỏ phiếu] | Progress bar with “cast / eligible” count (e.g. 3/4), shown for an open Vote and updated as ballots arrive. Individual choices are not shown while the Vote is open. |
-| Eligibility note | Read-only text, e.g. “4 người đủ điều kiện: Chủ trì, Thư ký, Thành viên có mặt. Khách không bỏ phiếu.” Only the current Chair, Secretary and Participants [Thành viên] may vote; Guests never vote (BR-160, BR-165). |
+| Eligibility note | Read-only text, e.g. “5 người đủ điều kiện: Chủ trì, Thư ký, Thành viên, Khách mời.” Counts the current holders of the roles selected for this Vote; the list is fixed when the Vote opens, and attendance does not decide eligibility (BR-160, BR-181, BR-190). |
 | Close voting [Đóng phiếu] | Chair only; close and tally an existing Open Vote while Meeting is InProgress or Ended. End Meeting is independently available and never requires this action. After Meeting Ended no new ballot is accepted, even if Vote remains Open. (BR-159–BR-161, BR-165) |
 | Edit [Sửa] | Button on a Draft Vote, Chair only; opens the dialog pre-filled. An open or closed Vote can no longer be edited. |
+| Delete [Xoá] | Button on a Draft Vote, Chair only; asks for confirmation and deletes the Draft Vote. An open or closed Vote cannot be deleted (UC-53, BR-189). |
 | Open vote [Mở biểu quyết] | Primary button on a Draft Vote, Chair only, enabled while the Meeting is InProgress (BR-165). Eligible voters see the Vote immediately in Cast Vote. |
 
 #### 11.2 Create & Open Vote Dialog
@@ -2945,7 +2992,7 @@ The Create & Open Vote Dialog opens over the Voting tab when the Chair clicks �
 
 This screen allows the Chair to:
 
-- Create / Configure Vote: enter the motion, define and order the voting options, choose public or secret ballot and the eligible voter group (UC-53).
+- Create / Configure Vote: enter the motion, define and order the voting options, choose public or secret ballot and the meeting roles allowed to vote (UC-53).
 
 - Save as Draft: click “Save draft” to keep the Vote in Draft status on the Voting tab for opening later (UC-53).
 
@@ -2966,7 +3013,7 @@ Field Description
 | Remove option | Icon at the right of each option; removes that option (not allowed below two options). |
 | Add option [+ Thêm phương án] | Link button; appends an empty option row. |
 | Ballot type [Hình thức] | Segmented control: Public [Công khai] (default) – each voter’s choice is shown with the result; Secret ballot [Bỏ phiếu kín] – only totals are shown. |
-| Eligible voters [Người được bỏ phiếu] | Eligible voters include current Chair, Secretary, Members and verified current Guests under the same eligibility rules. Guest selection/participation is not excluded. A Guest uses the invitation identity, not the display name or room connection. (BR-160, BR-165, BR-181) |
+| Eligible voters [Người được bỏ phiếu] | Multi-select of meeting roles: Chair [Chủ trì], Secretary [Thư ký], Member [Thành viên], Guest [Khách mời]; all selected by default and at least one required. Eligible voters are the current holders of the selected roles when the Vote opens; the list and its count are then fixed. A Guest votes with the invitation identity, not the display name or room connection. (BR-160, BR-181, BR-190) |
 | Cancel [Huỷ] | Link button; closes the dialog, nothing is saved. |
 | Save draft [Lưu nháp] | Button; saves the Vote with status Draft. Allowed only while the Meeting is InProgress and the user is its current Chair (BR-165). |
 | Open vote [Mở biểu quyết] | Primary button; saves and opens the Vote (status Open, opening time recorded). If the Meeting is no longer InProgress the Vote is not created and the reason is shown (BR-160). |
@@ -2975,7 +3022,7 @@ Field Description
 
 The Cast Vote screen (shown here in its compact/mobile layout) is opened by an eligible voter from the open Vote card, the Meeting Workspace, the Personal Dashboard or the in-room meeting panel. It shows one open Vote of the InProgress Meeting and lets the voter submit exactly one ballot (UC-55).
 
-This screen allows the Chair, Secretary and Participant (eligible voters) to:
+This screen allows the Chair, Secretary, Participant and verified Guest (eligible voters) to:
 
 - View Open Vote: view the motion, the Meeting and Agenda Item it belongs to, the ballot type and the opening time (UC-52b).
 
@@ -2990,7 +3037,7 @@ Field Description
 | Vote content | Read-only bold text of the motion. |
 | Vote context | Read-only: Meeting title · Agenda Item · ballot type, e.g. “Họp kế hoạch Sprint 6 · Mục 2 · công khai”. |
 | Options | Radio group, required, one choice only; values are the options defined by the Chair (e.g. Agree [Đồng ý], Disagree [Không đồng ý], Abstain [Không ý kiến]). The selected option is highlighted. |
-| Submit ballot [Gửi phiếu] | Primary button, enabled when an option is selected. Accepted only while the Meeting is InProgress, the Vote is Open and the user is a current Chair, Secretary or Participant who has not voted yet; Guests are not eligible (BR-160, BR-165). After submission the screen shows the recorded choice and the turnout. |
+| Submit ballot [Gửi phiếu] | Primary button, enabled when an option is selected. Accepted only while the Meeting is InProgress, the Vote is Open and the user is on the eligible list fixed when the Vote opened – a current Chair, Secretary, Participant or verified Guest in a selected role – and has not voted yet (BR-160, BR-165, BR-190). After submission the screen shows the recorded choice and the turnout. |
 | Immutability note [Phiếu đã gửi không sửa được.] | Read-only hint: a submitted ballot cannot be changed or withdrawn. |
 
 #### 11.4 Vote Result & Conclusion
@@ -3254,7 +3301,7 @@ Field Description
 | Live banner | Status chip InProgress with “Bắt đầu 13:02 · đã họp 45 phút” (actual start and elapsed time, updated live). |
 | Join meeting room [Vào phòng họp] | Primary button; opens the Meeting Lobby (8.1). Available only for an Online or Hybrid Meeting the user is invited to (UC-37). |
 | Current item [Mục đang thảo luận] | Read-only: order and title of the current Agenda Item set by the Chair, presenter, planned duration and actual start (“Phạm Thị Lan · 40 phút · bắt đầu 13:12”). |
-| Item documents | Chips with file name and pinned version (e.g. “Ke-hoach-kinh-doanh-2027.docx · v3”); click opens the Document Viewer – Preview, Comments & Versions. |
+| Item documents | Chips with file name (e.g. “Ke-hoach-kinh-doanh-2027.docx”); click opens the Document Viewer – Preview & Comments. |
 | Next [Tiếp theo] | Read-only: order, title and presenter of the next Agenda Item. |
 | Open vote card [Biểu quyết] | Shown only while a Vote is Open: chip Open [Đang mở] and the motion text. |
 | Vote [Bỏ phiếu] | Primary button, shown only to eligible users (current Chair, Secretary, Participants) who have not voted; opens Cast Vote (11.3). verified current Guests see it under the same eligibility rules (BR-160, BR-165). |
@@ -3406,8 +3453,8 @@ The quality attributes below are stated as measurable targets for a single-organ
 | --- | --- | --- |
 | Page load time | Initial load of the application ≤ 3 s; navigation between screens and display of a screen's data ≤ 2 s for 95% of requests | Internal network ≥ 10 Mbps, up to 100 users active simultaneously |
 | Server response time | 95% of API requests (view, create, update, approve, respond, vote) complete within 1 s; no ordinary form submission takes longer than 3 s | Up to 100 users active simultaneously, excluding file transfer time and AI processing |
-| Search and list views | Paginated meeting, document, user, notification and audit-log lists, including search, filter and sort, return the first page within 2 s for 95% of requests | Data volume up to 10,000 meetings, 50,000 document versions and 1,000,000 audit-log entries |
-| Document upload and preview | Documents up to 50 MB per file are accepted; after the transfer completes the new version is stored and listed within 5 s; in-browser preview of a document up to 10 MB opens within 3 s | Up to 10 simultaneous uploads; transfer time depends on the user's network |
+| Search and list views | Paginated meeting, document, user, notification and audit-log lists, including search, filter and sort, return the first page within 2 s for 95% of requests | Data volume up to 10,000 meetings, 50,000 documents and 1,000,000 audit-log entries |
+| Document upload and preview | Documents up to 50 MB per file are accepted; after the transfer completes the file is stored and listed within 5 s; in-browser preview of a document up to 10 MB opens within 3 s | Up to 10 simultaneous uploads; transfer time depends on the user's network |
 | Meeting audio upload and AI processing | Audio files up to 500 MB and up to 4 hours long are accepted. The upload is acknowledged and the file queued within 5 s after transfer. The speaker-attributed transcript is ready within 1.5 x the audio duration (e.g. a 60-minute recording within 90 minutes) after processing starts, and a summary is generated within 5 minutes of the Secretary's request | One recording processed at a time per processing worker; targets apply whichever processing environment (self-hosted or external) is selected; queued jobs wait their turn without blocking other functions |
 | Notification and real-time update latency | In-app notifications and the unread count reach a connected recipient within 10 s of the triggering event; current-agenda and vote-status changes are visible to other users in the same session within 2 s (BR-73); an email is handed to the SMTP server within 2 minutes; 'starting soon' reminders are sent 15 minutes (± 1 minute) before a session starts | Normal operation, mail server reachable; email retries do not delay in-app delivery |
 | Concurrent users | The system remains fully functional with 200 signed-in users, of whom up to 100 perform operations at the same time, without errors or time-outs and within the response-time targets above | Single-server Docker deployment with the recommended baseline hardware |
@@ -3429,7 +3476,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | Protection of stored data and backups | Uploaded documents and meeting audio are stored only on TrustSoft's own infrastructure and are reachable only through the application's access checks, never through a public or guessable URL. Secrets (signing keys, database, Redis and SMTP credentials) are kept out of the source code and configuration repository. The database and file storage are backed up at least daily; backups are stored separately from the production host with access restricted to authorised administrators. |
 | Audit logging | The system records security and governance events - sign-in success/failure, lockout and unlock, password reset, Google account linking, user and role changes, meeting lifecycle transitions, access to Restricted/Secret documents, audio upload and deletion, summary approval, vote closing, minutes signing and sealing - with actor, time, action, target object and source IP address (BR-16, BR-38). Audit entries cannot be modified or deleted through the application; only the System Admin can view and search them (UC-92). Passwords, tokens and verification codes are never written to any log. |
 | Personal data protection and audio consent (Decree 13/2023/ND-CP) | Personal data (account details, Guest name and email, voices in meeting audio, attendance) is processed only for the stated meeting-management purpose. A meeting audio file can be uploaded only after the Secretary confirms that participants were informed and consented and states the purpose; each recording has a retention date, after which (or on a justified request) it is erased and the erasure is recorded. The online meeting room stores only join/leave times, never media or chat content. If an external speech/AI provider is selected, audio and transcripts are sent only to that provider, only for processing, and must not be retained or used by it for other purposes. |
-| Integrity of signed minutes, vote conclusions and document versions | Once a Vote Conclusion is recorded or minutes are sealed, their content cannot be changed by anyone, including administrators; any change to minutes before sealing invalidates signatures collected for the previous content version. Each signature is bound to the exact content version signed so that later tampering is detectable, and each stored document version can be verified against the fingerprint taken at upload. Because v1 uses internal electronic signatures without a certification authority (Report 1, LI-06), the user interface must state that the signature has no legal weight outside TrustCabinet. |
+| Integrity of signed minutes, vote conclusions and stored documents | Once a Vote Conclusion is recorded or minutes are sealed, their content cannot be changed by anyone, including administrators; any change to minutes before sealing invalidates signatures collected for the previous content version. Each signature is bound to the exact content version signed so that later tampering is detectable, and each stored document version can be verified against the fingerprint taken at upload. Because v1 uses internal electronic signatures without a certification authority (Report 1, LI-06), the user interface must state that the signature has no legal weight outside TrustCabinet. |
 | Upload safety | Uploaded files are accepted only within the allowed size limits and file types; the file type is determined from the file content, not from its name. Files are never executed by the server, and audio uploads accept audio formats only (no video, Report 1, LI-03). |
 
 #### 2.4 Reliability
@@ -3604,7 +3651,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-157 | Revoking an external Guest invitation immediately invalidates access granted by that invitation. | UC-28c, UC-29, UC-37 |  |  |
 | BR-158 | Only the Meeting Organizer may reschedule a Published Meeting; only planned times or location may change. | UC-15 | PO 09/10/2026 | Meeting / Voting Management |
 | BR-159 | The Chair may end an InProgress Meeting regardless of open Votes or incomplete attendance; End Meeting neither requires nor automatically closes Votes. Completing any InProgress Agenda Item, changing Meeting status to Ended, recording Actual End Time and append-only lifecycle history succeed together. If saving fails, previous Meeting and Agenda states/timestamps remain and room closure is not triggered. Remaining Pending Agenda Items remain Pending. Existing ballots and Vote status are preserved; Ended Meetings accept no further ballots. The Chair may subsequently close and tally outstanding Open Votes under BR-160. | UC-22 | PO 13/10/2026 — follow-up | Meeting / Voting Management |
-| BR-160 | Votes may be created, opened and cast only while the associated Meeting is InProgress. Current Chair, Secretary and Members and verified current Guests with valid access may cast one eligible ballot while its Vote is Open. Ending the Meeting does not require closing any Vote. The active current Chair may close and tally an existing Open Vote while Meeting is InProgress or Ended, without accepting new ballots after Ended. No time-boxed voting, quorum or separate Resolution exists. (BR-159, BR-165, BR-181) | UC-52a, UC-52b, UC-53, UC-54, UC-55, UC-56 | PO 13/10/2026 — follow-up | Meeting / Voting Management |
+| BR-160 | Votes may be created, opened and cast only while the associated Meeting is InProgress. Current Chair, Secretary and Members and verified current Guests with valid access may cast one eligible ballot while its Vote is Open. Ending the Meeting does not require closing any Vote. The active current Chair may close and tally an existing Open Vote while Meeting is InProgress or Ended, without accepting new ballots after Ended. Only holders of the meeting roles selected for a Vote are eligible (BR-190). No time-boxed voting, quorum or separate Resolution exists. (BR-159, BR-165, BR-181) | UC-52a, UC-52b, UC-53, UC-54, UC-55, UC-56 | PO 13/10/2026 — follow-up | Meeting / Voting Management |
 | BR-161 | After a Vote is closed and tallied, the Chair records the conclusion Passed, NotPassed or Deferred on that Meeting Vote. The tally and Chair conclusion are included in Meeting Minutes, not in a separate Resolution entity. | UC-52b, UC-56, UC-57, UC-59 | PO 09/10/2026 | Meeting / Voting Management |
 | BR-162 | When a new Meeting is created, Planned Start Time must be later than the current time. | UC-14 | PO Q7 / BF-02 | Meeting / Voting / Minutes services |
 | BR-163 | Online/Hybrid Meetings use the internal TrustCabinet Online Meeting Room. Online Link is managed by the system as part of Online Meeting Room functionality and may be empty until generated. Users cannot enter or modify it during Meeting creation, editing or rescheduling. Link generation is outside Create Meeting and Update Meeting. | UC-14, UC-15 | PO Q4 / BF-02 | Meeting / Voting / Minutes services |
@@ -3625,8 +3672,18 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-178 | Official attendance must be recordable and retrievable for both current internal Meeting Participant records and current external Guest invitations. An attendance record includes the saved status, the responsible Secretary and the save time; historical evidence is retained when a published Meeting's participant or Guest is removed/revoked. | UC-28c, UC-31 | FE-06 revision, 12/10/2026 | Meeting Participant Management |
 | BR-179 | Retired on 13/10/2026 by PO decision. Attendance completeness is not a prerequisite for ending a Meeting. This ID must not be reused. | Retired; formerly UC-22, UC-31 | PO 13/10/2026 | Meeting Participant Management |
 | BR-180 | After verifying the invited email, a Guest provides a display name and job title for presentation in the Meeting. These are self-declared information; only control of the invited email is verified. Changing display information does not change the invitation identity or the invited email. Required-field rules and detailed profile validation are not finalized here. | UC-04, UC-27, UC-37, UC-40 | PO 13/10/2026 | Guest participation / Meeting Participant Management |
-| BR-181 | A current verified Guest participates like a Member in the invited Meeting: room media, screen sharing, chat, connected-room list, all attached documents under Member rules, comments, invitation response, attendance inclusion and voting. A Secretary may grant additional Meeting permissions like those of an internal participant; these are not limited to additional Meeting permissions. Guest cannot be Chair/Secretary, receive delegated authority, moderate the room or use a personal library. No separate Guest-document sharing mechanism exists. Detailed permission catalogue and grant matrix remain to be specified. | UC-04, UC-27, UC-28a, UC-28b, UC-29, UC-30, UC-31, UC-32a, UC-32b, UC-32c, UC-35, UC-37–UC-42, UC-52a, UC-52b, UC-55 | PO 13/10/2026 | Guest participation / Meeting Participant Management |
+| BR-181 | A current verified Guest participates like a Member in the invited Meeting: room media, screen sharing, chat, connected-room list, all attached documents under Member rules, comments, invitation response, attendance inclusion and voting. A Secretary may grant additional Meeting permissions like those of an internal participant; these are not limited to additional Meeting permissions. Guest cannot be Chair/Secretary, receive delegated authority, moderate the room or use a personal library. No separate Guest-document sharing mechanism exists. Detailed permission catalogue and grant matrix remain to be specified. | UC-04, UC-27, UC-28a, UC-28b, UC-29, UC-30, UC-31, UC-32a, UC-32c, UC-35, UC-37–UC-42, UC-52a, UC-52b, UC-55 | PO 13/10/2026 | Guest participation / Meeting Participant Management |
 | BR-182 | Inviting a Guest into a Confidential or Secret Meeting displays a clear inline warning that the Guest will receive Member participation and Meeting-document access. Invitation creation uses the ordinary invite flow; no extra confirmation or separate sensitivity approval flow is required. Record the inviting Secretary, Meeting sensitivity and invitation time for accountability. | UC-28a | PO 13/10/2026 | Guest participation / Meeting Participant Management |
+| BR-183 | A stored document file is immutable and has no versions. Personal library entries and Meeting documents only refer to a stored file; adding a file to a Meeting does not copy it. To change a document, a user uploads a new file, adds it to the Meeting and removes the old one. | UC-32a, UC-32c, UC-33a, UC-33c, UC-34, UC-36, UC-71 | PO 13/10/2026 (ADR-0018) | Document Management |
+| BR-184 | Only the current Chair or Secretary of a Meeting may add documents to or remove documents from that Meeting. Only files from the actor’s own personal library, or uploaded from the actor’s computer, may be added; a file uploaded from the computer is also stored in the uploader’s personal library. | UC-33a, UC-33c | PO 13/10/2026 (ADR-0018) | Document Management |
+| BR-185 | A document cannot be removed from a Meeting once Meeting Minutes exist for that Meeting. Removing a document keeps its comments as history, but the document is no longer listed. | UC-33c | PO 13/10/2026 (ADR-0018) | Document Management |
+| BR-186 | Deleting a document from a personal library removes only that library entry; Meeting documents that refer to the same file remain readable. A stored file that no library entry or current Meeting document refers to is deleted from storage by a periodic cleanup. | UC-33c, UC-71a | PO 13/10/2026 (ADR-0018) | Document Management |
+| BR-187 | Only PDF and DOCX files of at most 50 MB are accepted, with the type determined from the file content. Files are stored as uploaded and the server performs no conversion; the browser renders the preview – a PDF page by page, a DOCX as one continuous document. | UC-33a, UC-36 | PO 13/10/2026 (ADR-0018) | Document Management |
+| BR-188 | Documents of a Secret Meeting can be previewed online but cannot be downloaded. | UC-32c | ADR-0006 | Document Management |
+| BR-189 | The current Chair may delete a Draft Vote while the Meeting is InProgress. An Open or Closed Vote cannot be deleted. | UC-53 | PO 13/10/2026 | Meeting / Voting Management |
+| BR-190 | When creating or editing a Draft Vote, the Chair selects the meeting roles allowed to vote – Chair, Secretary, Member and Guest; all are selected by default and at least one is required. The eligible voters are the current holders of the selected roles when the Vote opens; the list and EligibleCount are fixed at that moment. | UC-53, UC-54, UC-55 | PO 13/10/2026 (as AI-eCabinet) | Meeting / Voting Management |
+| BR-191 | A personal library may contain folders owned by the same user, nested at most five levels deep. A folder name must not be empty and need not be unique. A folder cannot be moved into itself or one of its sub-folders, and only an empty folder can be deleted. Documents can be renamed and moved between the owner’s folders. | UC-34, UC-36, UC-71b, UC-71c, UC-72a, UC-72b, UC-72c, UC-72d | PO 13/10/2026 (ADR-0018) | Document Management |
+| BR-192 | A file uploaded straight into a Meeting is also placed in the uploader’s personal library, in a folder named “<Meeting title> - dd/mm/yyyy”. The system creates that folder once per user and Meeting and keeps using it after it is renamed or moved. | UC-33a | PO 13/10/2026 (ADR-0018) | Document Management |
 
 ### 2. System Messages
 

@@ -13,12 +13,12 @@ Nguồn chuẩn là ba báo cáo DOCX trên Google Drive (Report 1, 2, 3), đư�
 ## 1. Cấu trúc tài liệu
 
 - [00-master-use-case-inventory.md](00-master-use-case-inventory.md) — Danh mục tổng thể: 15 Feature (FE-01 → FE-15),
-  70 Use Case (UC-01 → UC-70), actor, quan hệ `<<extend>>`/`<<include>>`, **bảng đổi số UC cũ → mới** sau đợt gom UC
+  72 Use Case (UC-01 → UC-72), actor, quan hệ `<<extend>>`/`<<include>>`, **bảng đổi số UC cũ → mới** sau đợt gom UC
   ngày 10/10/2026.
 - [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case đồng bộ từ Report 3 §II (UC đã đặc tả
   và UC placeholder), có link tới sequence diagram tương ứng.
-- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1 (146 BR đang dùng trong
-  dải BR-01 → BR-182; danh sách BR ngừng dùng ở cuối file).
+- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1 (156 BR đang dùng trong
+  dải BR-01 → BR-192; danh sách BR ngừng dùng ở cuối file).
 - Mã thông báo `MSGnn`: [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md) là nguồn chuẩn duy nhất.
 
 Yêu cầu phi chức năng, phạm vi MoSCoW và dữ liệu cá nhân hiện nằm trong Report 1 và Report 3 §IV; chưa tách file riêng.
