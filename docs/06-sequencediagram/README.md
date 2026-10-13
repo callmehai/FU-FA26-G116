@@ -508,12 +508,14 @@ deactivate MeetingPage
 
 | Thư mục | UC |
 |---|---|
-| `auth/` | UC-01 → UC-03 |
-| `user-management/` | UC-05, UC-06a → UC-06c, UC-07, UC-08 |
-| `role-management/` | UC-10, UC-11, UC-12a → UC-12c |
+| `auth/` | UC-01 → UC-04 |
+| `user-management/` | UC-05, UC-06a → UC-06c, UC-07, UC-08, UC-09 |
+| `role-management/` | UC-10, UC-11, UC-12a → UC-12c, UC-13 |
 | `meeting-management/` | UC-14 → UC-22 |
 | `agenda-management/` | UC-23a → UC-23d, UC-24 → UC-26 |
 | `meeting-participant-management/` | UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31 |
 | `notification-management/` | UC-66, UC-67a, UC-67b, UC-68 |
 
 Xuất PNG: `node scripts/export-diagrams.js docs/06-sequencediagram/<thư mục hoặc file>` (cần truy cập `sequencediagram.org`).
+
+UC09 và UC13 bổ sung ngày 13/10/2026: source + PNG theo đặc tả hiện hành. Đây là thiết kế đích; unlock/lock store và audit-read endpoint chưa có code. Không tự cấp message codes mới. Quy tắc lưu lock/audit nguyên tử trong UC09 là đề xuất kỹ thuật để giữ audit evidence nhất quán khi update thất bại.

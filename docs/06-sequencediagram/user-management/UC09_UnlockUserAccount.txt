@@ -1,0 +1,89 @@
+title UC-09 - Unlock User Account
+
+actor "System Admin" as Admin
+boundary "User Management Page" as Page
+control ":User Controller" as Controller
+control ":User Service" as Service
+participant ":User Account Repository" as Users
+participant ":Account Lock Repository" as Locks
+participant ":Audit Service" as Audit
+database ":Database" as Database
+
+note over Controller,Database: Target design from UC-09. Account lock storage and unlock API are not implemented.\nNo new message code or lock threshold is defined by this diagram.
+Admin->Page: Confirm Unlock Account for the selected user
+activate Page
+Page->Controller: Request account unlock(userId)
+activate Controller
+Controller->Controller: Authenticate and recheck current user-administration authority
+alt Caller is not authorized - EX-1
+Controller-->Page: Deny action without changing account lock
+Page-->Admin: Action is not permitted
+else Caller is authorized
+Controller->Service: unlockUserAccount(userId, actorId)
+activate Service
+Service->Users: findById(userId)
+Users->Database: Read selected account within authorized scope
+Database-->Users: Account / Not found / Read failure
+Users-->Service: Account / Not found / Read failure
+alt Account does not exist or is outside scope - EX-1
+Service-->Controller: Deny action; no account state changed
+Controller-->Page: Selected account is unavailable
+Page-->Admin: Selected account is unavailable
+else Account is inactive - EX-2
+Service-->Controller: Do not reactivate account through unlock
+Controller-->Page: Reactivation is required before sign-in is eligible
+Page-->Admin: Account remains inactive; use Reactivate Account separately
+else Read fails - EX-3
+Service-->Controller: Unlock could not be completed; no changes
+Controller-->Page: Unable to unlock the account
+Page-->Admin: Unable to unlock the account; retry is available
+else Account is active
+Service->Locks: Read current lock and failed-attempt counter
+Locks->Database: Read current security lock state
+Database-->Locks: Locked / Already unlocked / Read failure
+Locks-->Service: Current lock state / Read failure
+alt Lock cannot be read - EX-3
+Service-->Controller: No changes made
+Controller-->Page: Unable to unlock the account
+Page-->Admin: Unable to unlock the account; retry is available
+else Account is already unlocked - ALT-1
+Service-->Controller: Current account status; no change
+Controller-->Page: Refresh account status
+Page-->Admin: Account is already unlocked
+else Account is locked
+note over Service,Database: Lock reset and successful-unlock audit must commit together.\nThe operation rechecks current lock and account status before commit.
+Service->Locks: Clear lock and reset failed-attempt counter in one transaction
+Locks->Database: Begin transaction; recheck account/lock; stage lock reset
+Database-->Locks: Reset staged / State changed / Failure
+Locks-->Service: Staged result
+Service->Audit: Stage unlock audit with actor, target and time if reset is valid
+Audit->Database: Stage audit evidence in the same transaction
+Database-->Audit: Audit staged / Failure
+Audit-->Service: Audit result
+Service->Locks: Commit only if reset and audit succeeded; otherwise rollback
+Locks->Database: Commit all changes or rollback
+Database-->Locks: Committed / Already unlocked / Inactive / Failure
+Locks-->Service: Final result
+alt Reset and audit committed
+Service-->Controller: Account unlocked; credentials and active status still required
+Controller-->Page: Confirm unlock and refresh displayed account status
+Page-->Admin: Account unlocked successfully
+else Concurrent unlock - ALT-1
+Service-->Controller: Already unlocked; no duplicate change
+Controller-->Page: Refresh current status
+Page-->Admin: Account is already unlocked
+else Account became inactive - EX-2
+Service-->Controller: Unlock not applied; account remains inactive
+Controller-->Page: Reactivation required
+Page-->Admin: Account must be reactivated separately
+else Update or audit failed - EX-3
+Service-->Controller: Rollback; previous lock state retained
+Controller-->Page: Unable to unlock the account
+Page-->Admin: Unable to unlock the account; previous lock state retained
+end
+end
+end
+deactivate Service
+end
+deactivate Controller
+deactivate Page
