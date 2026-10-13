@@ -5,7 +5,7 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="boundary" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingTop=10;spacingLeft=12;fontStyle=1;fontSize=16;strokeColor=#555555;fillColor=none;" value="TrustCabinet — All Use Cases: System Admin" vertex="1">
-          <mxGeometry height="1235.69" width="1039.76" x="60" y="96" as="geometry" />
+          <mxGeometry height="1375.28" width="1039.76" x="60" y="96" as="geometry" />
         </mxCell>
         <mxCell id="rel-23-22-extend" edge="1" parent="1" source="uc-23" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.917;entryY=0.224;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-22" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
@@ -14,6 +14,12 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="rel-94-89-extend" edge="1" parent="1" source="uc-94" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1.000;entryY=0.500;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-manage-docs-89-extend" edge="1" parent="1" source="uc-manage-personal-docs" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.917;entryY=0.776;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-manage-folders-89-extend" edge="1" parent="1" source="uc-manage-library-folders" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0.933;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="rel-82-77-extend" edge="1" parent="1" source="uc-82" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1.000;entryY=0.500;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
@@ -57,6 +63,12 @@
         </mxCell>
         <mxCell id="uc-94" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Upload Document to Personal Library" vertex="1">
           <mxGeometry height="52.64" width="195.91" x="428" y="1247" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-manage-personal-docs" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Personal Documents" vertex="1">
+          <mxGeometry height="52.64" width="195.91" x="428" y="1318" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-manage-library-folders" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Library Folders" vertex="1">
+          <mxGeometry height="52.64" width="195.91" x="428" y="1388.64" as="geometry" />
         </mxCell>
         <mxCell id="uc-25" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Open Notification Target" vertex="1">
           <mxGeometry height="44" width="170" x="422" y="1108.933" as="geometry" />
@@ -190,7 +202,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="boundary" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingTop=10;spacingLeft=12;fontStyle=1;fontSize=16;strokeColor=#555555;fillColor=none;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="TrustCabinet — All Use Cases: Meeting Organizer" vertex="1">
-          <mxGeometry height="1324" width="1133" x="251" y="35" as="geometry" />
+          <mxGeometry height="1491" width="1133" x="251" y="35" as="geometry" />
         </mxCell>
         <mxCell id="uc-1" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Sign in with Email and Password" vertex="1">
           <mxGeometry height="44" width="170" x="345" y="110" as="geometry" />
@@ -240,9 +252,6 @@
         <mxCell id="uc-56" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Documents" vertex="1">
           <mxGeometry height="44" width="170" x="847" y="800" as="geometry" />
         </mxCell>
-        <mxCell id="uc-57" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Meeting Documents" vertex="1">
-          <mxGeometry height="44" width="170" x="1108" y="718" as="geometry" />
-        </mxCell>
         <mxCell id="uc-61" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View &amp; Play Meeting Audio" vertex="1">
           <mxGeometry height="44" width="170" x="892" y="911" as="geometry" />
         </mxCell>
@@ -279,7 +288,19 @@
         <mxCell id="uc-94" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Upload Document to Personal Library" vertex="1">
           <mxGeometry height="69" width="181" x="566" y="1248" as="geometry" />
         </mxCell>
+        <mxCell id="uc-manage-personal-docs" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Personal Documents" vertex="1">
+          <mxGeometry height="69" width="181" x="566" y="1340" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-manage-library-folders" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Library Folders" vertex="1">
+          <mxGeometry height="69" width="181" x="566" y="1427" as="geometry" />
+        </mxCell>
         <mxCell id="rel-94-89-extend" edge="1" parent="1" source="uc-94" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1.000;entryY=0.500;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-manage-docs-89-extend" edge="1" parent="1" source="uc-manage-personal-docs" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.917;entryY=0.776;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-manage-folders-89-extend" edge="1" parent="1" source="uc-manage-library-folders" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0.933;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="uc-89" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Personal Document Library" vertex="1">
@@ -339,9 +360,6 @@
         <mxCell id="rel-56-17-extend" edge="1" parent="1" source="uc-56" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.994;entryY=0.579;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-17" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="rel-57-56-extend" edge="1" parent="1" source="uc-57" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.855;entryY=0.148;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-56" value="&amp;#171;extend&amp;#187;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
         <mxCell id="rel-61-17-extend" edge="1" parent="1" source="uc-61" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.794;entryY=0.905;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-17" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
@@ -393,7 +411,7 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="boundary" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingTop=10;spacingLeft=12;fontStyle=1;fontSize=16;strokeColor=#555555;fillColor=none;" value="TrustCabinet — All Use Cases: Meeting Approver" vertex="1">
-          <mxGeometry height="1070" width="839" x="261" y="43" as="geometry" />
+          <mxGeometry height="1155" width="839" x="261" y="43" as="geometry" />
         </mxCell>
         <mxCell id="uc-1" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Sign in with Email and Password" vertex="1">
           <mxGeometry height="44" width="170" x="316" y="96" as="geometry" />
@@ -464,6 +482,12 @@
         <mxCell id="uc-94" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Upload Document to Personal Library" vertex="1">
           <mxGeometry height="55" width="186" x="608" y="924" as="geometry" />
         </mxCell>
+        <mxCell id="uc-manage-personal-docs" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Personal Documents" vertex="1">
+          <mxGeometry height="55" width="186" x="608" y="1040" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-manage-library-folders" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Library Folders" vertex="1">
+          <mxGeometry height="55" width="186" x="608" y="1113" as="geometry" />
+        </mxCell>
         <mxCell id="actor" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#333333;fontSize=10;" value="Meeting Approver" vertex="1">
           <mxGeometry height="62" width="32" x="198" y="596" as="geometry" />
         </mxCell>
@@ -533,6 +557,12 @@
         <mxCell id="rel-94-89-extend" edge="1" parent="1" source="uc-94" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1.000;entryY=0.500;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="rel-manage-docs-89-extend" edge="1" parent="1" source="uc-manage-personal-docs" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.917;entryY=0.776;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-manage-folders-89-extend" edge="1" parent="1" source="uc-manage-library-folders" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0.933;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
         <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Google Identity Provider" vertex="1">
           <mxGeometry height="62" width="32" x="1155" y="122" as="geometry" />
         </mxCell>
@@ -556,8 +586,11 @@
         <mxCell id="rel-91-56-extend" edge="1" parent="1" source="uc-91" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1.000;entryY=0.500;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-56" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="rel-57-56-extend" edge="1" parent="1" source="uc-57" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.855;entryY=0.148;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-56" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
         <mxCell id="boundary" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingTop=10;spacingLeft=12;fontStyle=1;fontSize=16;strokeColor=#555555;fillColor=none;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="TrustCabinet — All Use Cases: Chair" vertex="1">
-          <mxGeometry height="1301" width="1274" x="270" y="39" as="geometry" />
+          <mxGeometry height="1368" width="1274" x="270" y="39" as="geometry" />
         </mxCell>
         <mxCell id="uc-1" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Sign in with Email and Password" vertex="1">
           <mxGeometry height="44" width="170" x="345" y="114" as="geometry" />
@@ -578,7 +611,7 @@
           <mxGeometry height="44" width="170" x="1166" y="658" as="geometry" />
         </mxCell>
         <mxCell id="uc-36" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Complete Agenda Item" vertex="1">
-          <mxGeometry height="44" width="170" x="1236" y="732" as="geometry" />
+          <mxGeometry height="44" width="170" x="1236" y="722" as="geometry" />
         </mxCell>
         <mxCell id="uc-41" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Respond to Meeting Invitation" vertex="1">
           <mxGeometry height="44" width="170" x="345" y="330" as="geometry" />
@@ -613,6 +646,9 @@
         <mxCell id="uc-56" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Documents" vertex="1">
           <mxGeometry height="44" width="170" x="919" y="798" as="geometry" />
         </mxCell>
+        <mxCell id="uc-57" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Meeting Documents" vertex="1">
+          <mxGeometry height="44" width="170" x="1190" y="790" as="geometry" />
+        </mxCell>
         <mxCell id="uc-61" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View &amp; Play Meeting Audio" vertex="1">
           <mxGeometry height="44" width="170" x="890" y="866" as="geometry" />
         </mxCell>
@@ -644,7 +680,7 @@
           <mxGeometry height="62" width="176" x="351" y="848" as="geometry" />
         </mxCell>
         <mxCell id="uc-91" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Comment on Meeting Document" vertex="1">
-          <mxGeometry height="44" width="170" x="1201" y="806" as="geometry" />
+          <mxGeometry height="44" width="170" x="1201" y="852" as="geometry" />
         </mxCell>
         <mxCell id="uc-93" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Request Revision of Meeting Minutes" vertex="1">
           <mxGeometry height="66" width="180" x="905" y="1231" as="geometry" />
@@ -670,10 +706,22 @@
         <mxCell id="uc-94" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Upload Document to Personal Library" vertex="1">
           <mxGeometry height="72" width="185" x="547" y="1120" as="geometry" />
         </mxCell>
+        <mxCell id="uc-manage-personal-docs" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Personal Documents" vertex="1">
+          <mxGeometry height="72" width="185" x="520" y="1215" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-manage-library-folders" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Library Folders" vertex="1">
+          <mxGeometry height="72" width="185" x="520" y="1305" as="geometry" />
+        </mxCell>
         <mxCell id="uc-89" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Personal Document Library" vertex="1">
           <mxGeometry height="44" width="170" x="311" y="1126" as="geometry" />
         </mxCell>
         <mxCell id="rel-94-89-extend" edge="1" parent="1" source="uc-94" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1.000;entryY=0.500;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-manage-docs-89-extend" edge="1" parent="1" source="uc-manage-personal-docs" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.917;entryY=0.776;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-manage-folders-89-extend" edge="1" parent="1" source="uc-manage-library-folders" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0.933;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="actor" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#333333;fontSize=10;" value="Chair" vertex="1">
@@ -932,7 +980,19 @@
         <mxCell id="uc-94" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Upload Document to Personal Library" vertex="1">
           <mxGeometry height="50" width="183" x="623" y="1574" as="geometry" />
         </mxCell>
+        <mxCell id="uc-manage-personal-docs" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Personal Documents" vertex="1">
+          <mxGeometry height="50" width="183" x="623" y="1650" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-manage-library-folders" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Library Folders" vertex="1">
+          <mxGeometry height="50" width="183" x="623" y="1718" as="geometry" />
+        </mxCell>
         <mxCell id="rel-94-89-extend" edge="1" parent="1" source="uc-94" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1.000;entryY=0.500;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-manage-docs-89-extend" edge="1" parent="1" source="uc-manage-personal-docs" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.917;entryY=0.776;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-manage-folders-89-extend" edge="1" parent="1" source="uc-manage-library-folders" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0.933;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="uc-85" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View &amp; Export Reports" vertex="1">
@@ -1097,7 +1157,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="boundary" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingTop=10;spacingLeft=12;fontStyle=1;fontSize=16;strokeColor=#555555;fillColor=none;" value="TrustCabinet — All Use Cases: Participant" vertex="1">
-          <mxGeometry height="1103" width="1096" x="270" y="35" as="geometry" />
+          <mxGeometry height="1242" width="1096" x="270" y="35" as="geometry" />
         </mxCell>
         <mxCell id="uc-1" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Sign in with Email and Password" vertex="1">
           <mxGeometry height="44" width="170" x="345" y="110" as="geometry" />
@@ -1182,6 +1242,12 @@
         </mxCell>
         <mxCell id="uc-94" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Upload Document to Personal Library" vertex="1">
           <mxGeometry height="62" width="178" x="579" y="1028" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-manage-personal-docs" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Personal Documents" vertex="1">
+          <mxGeometry height="62" width="178" x="579" y="1105" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-manage-library-folders" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Library Folders" vertex="1">
+          <mxGeometry height="62" width="178" x="579" y="1185" as="geometry" />
         </mxCell>
         <mxCell id="actor" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#333333;fontSize=10;" value="Participant" vertex="1">
           <mxGeometry height="62" width="32" x="72" y="737" as="geometry" />
@@ -1269,6 +1335,12 @@
         <mxCell id="rel-94-89-extend" edge="1" parent="1" source="uc-94" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1.000;entryY=0.500;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="rel-manage-docs-89-extend" edge="1" parent="1" source="uc-manage-personal-docs" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.917;entryY=0.776;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-manage-folders-89-extend" edge="1" parent="1" source="uc-manage-library-folders" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0.933;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
         <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Google Identity Provider" vertex="1">
           <mxGeometry height="62" width="32" x="1408" y="173" as="geometry" />
         </mxCell>
@@ -1284,7 +1356,7 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="boundary" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingTop=10;spacingLeft=12;fontStyle=1;fontSize=16;strokeColor=#555555;fillColor=none;" value="TrustCabinet — All Use Cases: Guest" vertex="1">
-          <mxGeometry height="656" width="320" x="460" y="35" as="geometry" />
+          <mxGeometry height="724" width="560" x="460" y="35" as="geometry" />
         </mxCell>
         <mxCell id="uc-41" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Respond to Meeting Invitation" vertex="1">
           <mxGeometry height="44" width="170" x="521" y="99" as="geometry" />
@@ -1309,6 +1381,15 @@
         </mxCell>
         <mxCell id="uc-87" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Access Meeting via Guest Invitation" vertex="1">
           <mxGeometry height="44" width="170" x="525" y="622" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-70" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Votes" vertex="1">
+          <mxGeometry height="44" width="170" x="538" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-91" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Comment on Meeting Document" vertex="1">
+          <mxGeometry height="44" width="170" x="790" y="554" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-73" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Cast Vote" vertex="1">
+          <mxGeometry height="44" width="170" x="790" y="690" as="geometry" />
         </mxCell>
         <mxCell id="actor" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#333333;fontSize=10;" value="Guest" vertex="1">
           <mxGeometry height="62" width="48" x="56" y="413" as="geometry" />
@@ -1336,6 +1417,16 @@
         </mxCell>
         <mxCell id="assoc-87" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-87" value="">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-70" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-70" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-91-56-extend" edge="1" parent="1" source="uc-91" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-56" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-73-70-extend" edge="1" parent="1" source="uc-73" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-70" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry">
+            </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

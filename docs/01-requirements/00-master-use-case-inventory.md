@@ -11,7 +11,7 @@
 > [Report 2](../08-reports/Report-2_Project_Management_Plan.md) (kế hoạch),
 > [Report 3](../08-reports/Report-3_Software_Requirement_Specification.md) (UC, BR, quyền).
 
-**Baseline hiện tại: 15 Feature, 70 Use Case (UC-01 → UC-70).**
+**Baseline hiện tại: 15 Feature, 72 Use Case (UC-01 → UC-72).** UC-32b và UC-33b đã bỏ ngày 13/10/2026 ([ADR-0018](../05-decisions/0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md)).
 
 ## Các quyết định đã áp dụng
 
@@ -22,6 +22,7 @@
 | D3 | **Secretary tự upload audio.** Không có vai trò Audio Uploader | UC-44 chỉ có actor Secretary |
 | D4 | **Bỏ uỷ quyền tham dự (delegation).** Phản hồi lời mời chỉ còn `Accepted` / `Declined` (BR-105) | UC-29 không còn nhánh Delegated |
 | D5 | **Gom UC nhỏ.** Các thao tác CRUD cùng một màn hình được gom thành một UC, tách thành UC con có hậu tố chữ (`UC-06a`, `UC-06b`…) | Danh mục từ 94 UC (88 đang dùng) xuống **70 UC**; toàn bộ UC được đánh số lại liền mạch theo Feature |
+| D6 | **Tài liệu không có phiên bản** (PO 13/10/2026). Kho cá nhân và cuộc họp chỉ giữ tham chiếu tới một file bất biến; một job dọn file không còn ai tham chiếu ([ADR-0018](../05-decisions/0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md)) | Bỏ UC-32b, UC-33b (không tái cấp). Thêm UC-33c *Remove Document from Meeting*, UC-71 *Manage Personal Documents*, UC-72 *Manage Library Folders* (thư mục như AI-eCabinet). Chỉ Chủ toạ và Thư ký thêm / gỡ tài liệu cuộc họp. Xem trước dựng trên trình duyệt, server không chuyển đổi |
 
 > **Quy ước số:** từ baseline này **UC-01 → UC-70 đóng băng số**. Thêm UC mới thì lấy `UC-71` trở đi; thêm thao tác vào
 > một UC gom thì lấy hậu tố chữ kế tiếp. Số UC cũ (trước 10/10/2026) chỉ còn dùng để tra lịch sử — xem [§5](#5-bảng-đổi-số-uc-cũ--mới).
@@ -134,11 +135,13 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-32 | Xem tài liệu cuộc họp *(View Meeting Documents)* — gồm UC-32a Xem danh sách, UC-32b Lịch sử phiên bản, UC-32c Xem trước | User có quyền; Guest xác minh email, toàn bộ tài liệu gắn trong cuộc họp | Placeholder | Internal: `<<extend>>` UC-16; Guest qua UC-04 |
-| UC-33 | Quản lý tài liệu cuộc họp *(Manage Meeting Documents)* — gồm UC-33a Thêm tài liệu (từ máy hoặc kho cá nhân), UC-33b Thêm phiên bản mới | Meeting Organizer, Secretary | Placeholder | `<<extend>>` UC-32 |
+| UC-32 | Xem tài liệu cuộc họp *(View Meeting Documents)* — gồm UC-32a Xem danh sách, UC-32c Xem trước / tải về (cuộc họp `Secret` không tải về được). *UC-32b Lịch sử phiên bản: bỏ 13/10/2026* | User có quyền; Guest xác minh email, toàn bộ tài liệu gắn trong cuộc họp | Placeholder | Internal: `<<extend>>` UC-16; Guest qua UC-04 |
+| UC-33 | Quản lý tài liệu cuộc họp *(Manage Meeting Documents)* — gồm UC-33a Thêm tài liệu (từ máy hoặc kho cá nhân), UC-33c Gỡ tài liệu khỏi cuộc họp (chặn khi cuộc họp đã có biên bản). *UC-33b Thêm phiên bản mới: bỏ 13/10/2026* | Chair, Secretary | Placeholder | `<<extend>>` UC-32 |
 | UC-34 | Xem kho tài liệu cá nhân *(View Personal Document Library)* | Internal user | Placeholder | Độc lập |
 | UC-35 | Bình luận tài liệu cuộc họp *(Comment on Meeting Document)* | Organizer, Chair, Secretary, Participant, Guest | Placeholder | `<<extend>>` UC-32 |
-| UC-36 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* | Internal user | Placeholder | `<<extend>>` UC-34 |
+| UC-36 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* — PDF, DOCX tối đa 50 MB, vào thư mục đang chọn | Internal user | Placeholder | `<<extend>>` UC-34 |
+| UC-71 | Quản lý tài liệu trong kho *(Manage Personal Documents)* — gồm UC-71a Xoá khỏi kho (tài liệu đã gắn vào cuộc họp vẫn giữ nguyên), UC-71b Đổi tên, UC-71c Chuyển thư mục | Internal user | Placeholder | `<<extend>>` UC-34 |
+| UC-72 | Quản lý thư mục kho *(Manage Library Folders)* — gồm UC-72a Tạo, UC-72b Đổi tên, UC-72c Chuyển, UC-72d Xoá thư mục rỗng; lồng tối đa 5 cấp | Internal user | Placeholder | `<<extend>>` UC-34 |
 
 ## FE-08 — Phòng họp trực tuyến *(Online Meeting Room Management)*
 
@@ -174,12 +177,12 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-52 | Xem biểu quyết *(View Meeting Votes)* — gồm UC-52a Xem danh sách, UC-52b Xem trạng thái / kết quả | User có quyền | Placeholder | `<<extend>>` UC-16 |
-| UC-53 | Tạo / cấu hình biểu quyết *(Create / Configure Vote)* — chỉ khi `InProgress` | Chair | Placeholder | `<<extend>>` UC-52 |
+| UC-52 | Xem biểu quyết *(View Meeting Votes)* — gồm UC-52a Xem danh sách, UC-52b Xem trạng thái / kết quả (xem được cả sau khi `Ended`) | User có quyền | Placeholder | `<<extend>>` UC-16 |
+| UC-53 | Tạo / cấu hình biểu quyết *(Create / Configure Vote)* — chỉ khi `InProgress`; sửa và xoá phiếu `Draft`; Chair chọn vai trò được bỏ phiếu (Chủ toạ / Thư ký / Thành viên / Khách mời) | Chair | Placeholder | `<<extend>>` UC-52 |
 | UC-54 | Mở biểu quyết *(Open Vote)* | Chair | Placeholder | `<<extend>>` UC-52 |
 | UC-55 | Bỏ phiếu *(Cast Vote)* — Chair, Secretary, Member đang phân công; Guest đã xác minh được bỏ phiếu như Member | Chair, Secretary, Participant, Guest | Placeholder | `<<extend>>` UC-52 |
-| UC-56 | Đóng biểu quyết *(Close Vote)* | Chair | Placeholder | `<<extend>>` UC-52 |
-| UC-57 | Ghi kết luận biểu quyết *(Record Vote Conclusion)* — `Passed` / `NotPassed` / `Deferred` | Chair | Placeholder | `<<extend>>` UC-52 |
+| UC-56 | Đóng biểu quyết *(Close Vote)* — khi `InProgress` hoặc sau `Ended` | Chair | Placeholder | `<<extend>>` UC-52 |
+| UC-57 | Ghi kết luận biểu quyết *(Record Vote Conclusion)* — `Passed` / `NotPassed` / `Deferred`; ghi rồi không sửa | Chair | Placeholder | `<<extend>>` UC-52 |
 
 ## FE-12 — Biên bản & Ký điện tử *(Meeting Minutes & Digital Signing)*
 
@@ -247,8 +250,8 @@ Số cũ là số trong danh mục 94 UC (baseline 05/10/2026), dùng trong comm
 | UC-23 | UC-67a | | UC-55 | UC-09 | | UC-87 | UC-04 |
 | UC-24 | UC-67b | | UC-56 | UC-32a | | UC-88 | UC-31 |
 | UC-25 | UC-68 | | UC-57 | UC-33a | | UC-89 | UC-34 |
-| UC-26 | *bỏ* (Create Meeting Session → nhập lịch trong UC-14) | | UC-58 | UC-33b | | UC-90 | UC-47 |
-| UC-27 | *bỏ* (Update Meeting Session → *Reschedule* trong UC-15) | | UC-59 | UC-32b | | UC-91 | UC-35 |
+| UC-26 | *bỏ* (Create Meeting Session → nhập lịch trong UC-14) | | UC-58 | UC-33b *(bỏ 13/10/2026)* | | UC-90 | UC-47 |
+| UC-27 | *bỏ* (Update Meeting Session → *Reschedule* trong UC-15) | | UC-59 | UC-32b *(bỏ 13/10/2026)* | | UC-91 | UC-35 |
 | UC-28 | *bỏ* (Cancel Meeting Session) | | UC-60 | UC-32c | | UC-92 | UC-13 |
 | UC-29 | *bỏ* (Start Meeting Session → UC-21) | | UC-61 | UC-43a | | UC-93 | UC-65 |
 | UC-30 | *bỏ* (End Meeting Session → UC-22) | | UC-62 | UC-44 | | UC-94 | UC-36 |
@@ -257,6 +260,8 @@ Số cũ là số trong danh mục 94 UC (baseline 05/10/2026), dùng trong comm
 
 Feature cũ → mới: FE-01 → FE-04 giữ số; **FE-05 Meeting Session Management bị bỏ**; FE-06 → FE-05, FE-07 → FE-06, FE-08 → FE-07,
 FE-09 → FE-08, FE-10 → FE-09, FE-11 → FE-10, FE-12 → FE-11, FE-13 → FE-12, FE-14 → FE-13, FE-15 → FE-14, FE-16 → FE-15.
+
+Cột *mới* là số sau ngày 10/10/2026. `UC-71`, `UC-72` mới (thêm 13/10/2026, kho tài liệu) không liên quan `UC-71`, `UC-72` cũ ở cột trái.
 
 > Bảng `00-danh-muc-ma-thong-bao.md` vẫn ghi số UC cũ ở cột UC; tra bảng này khi đọc.
 
@@ -273,7 +278,7 @@ UC-14 Create → Draft ──UC-18 Submit──> WaitingApproval ──UC-19─�
    ↑ UC-15 Update (Draft, Rejected)                                   │          └─ UC-15 sửa → UC-18 gửi lại
                                                                        └─UC-20 Publish──> Published
                                     UC-15 Reschedule (giờ, địa điểm, link; báo lại người được mời) ─┘
-Published ──UC-21 Start──> InProgress ──UC-22 End (không còn phiếu đang mở)──> Ended
+Published ──UC-21 Start──> InProgress ──UC-22 End (không phụ thuộc phiếu đang mở)──> Ended
 
 Agenda Item (thuộc trực tiếp Meeting)
 UC-23a Create → Pending ── UC-24 Set Current → InProgress ── UC-25 Complete → Done
@@ -283,7 +288,9 @@ Guest
 UC-28a mời → email → UC-04 xác minh mã → tự khai tên/chức vụ → quyền Member trong cuộc họp → UC-29 / UC-32 / UC-35 / UC-37–42 / UC-55
 
 Document
-UC-36 Upload vào kho cá nhân → UC-34 → UC-33a chọn từ kho (hoặc upload thẳng từ máy) → UC-33b phiên bản mới
+UC-36 Upload vào kho cá nhân → UC-34 → UC-33a chọn từ kho (hoặc upload thẳng từ máy) → UC-33c gỡ khi cần đổi file
+UC-72 thư mục, UC-71 đổi tên / chuyển / xoá trong kho. Xoá khỏi kho: cuộc họp vẫn giữ tham chiếu riêng; file không còn ai tham chiếu thì job nền dọn.
+Tải thẳng từ máy vào cuộc họp: dòng kho vào thư mục `<tên cuộc họp> - dd/mm/yyyy` của người tải
 
 Audio → Tóm tắt (sau khi Ended)
 UC-44 Secretary upload audio → AI transcript có speaker → UC-45 Xem → UC-46 Sửa → UC-47 Sinh tóm tắt
@@ -291,6 +298,7 @@ UC-44 Secretary upload audio → AI transcript có speaker → UC-45 Xem → UC-
 
 Biểu quyết (chỉ khi InProgress)
 UC-53 Tạo → UC-54 Mở → UC-55 Bỏ phiếu → UC-56 Đóng → hệ thống kiểm phiếu → UC-57 Chair ghi kết luận
+Sau Ended: không nhận phiếu mới; Chair vẫn UC-56 đóng phiếu còn mở và UC-57 ghi kết luận (ADR-0017). Phiếu Draft xoá được trong UC-53
 
 Biên bản
 UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu cầu sửa (chữ ký cũ mất hiệu lực, vòng ký mới)
@@ -307,7 +315,7 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
 | FE-04 | Meeting Management | 9 | — |
 | FE-05 | Agenda Management | 4 | 4 |
 | FE-06 | Meeting Participant Management | 5 | 3 |
-| FE-07 | Personal Document Library & Meeting Document Management | 5 | 5 |
+| FE-07 | Personal Document Library & Meeting Document Management | 7 | 11 |
 | FE-08 | Online Meeting Room Management | 6 | 3 |
 | FE-09 | Meeting Audio Upload & Media Library | 2 | 2 |
 | FE-10 | Speaker-Attributed Transcription & Meeting Summary | 7 | — |
@@ -316,7 +324,7 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
 | FE-13 | Email & In-App Notification | 3 | 2 |
 | FE-14 | Personal Dashboard & Meeting Workspace | 1 | — |
 | FE-15 | Reporting & Statistics | 1 | 2 |
-| **Tổng** | | **70** | **29** |
+| **Tổng** | | **72** | **35** |
 
 # 8. Ngoài phạm vi UC
 

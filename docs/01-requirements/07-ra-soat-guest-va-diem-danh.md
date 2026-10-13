@@ -18,7 +18,7 @@ Quyền bổ sung có thể mở rộng ngoài quyền role cho người nội b
 
 ## 3. Tài liệu
 
-Guest đã xác minh và còn quyền vào cuộc họp đọc toàn bộ tài liệu đã gắn vào cuộc họp theo Member; không tồn tại cờ “chia sẻ riêng cho Guest”. Quyền xem phiên bản chỉ trong phạm vi được cung cấp qua cuộc họp, không mở kho của người tải lên. Guest bình luận bằng invitation identity và tên tự khai. Giữ quy tắc mức mật về tải xuống, ghi audit và phiên bản ghim như Member.
+Guest đã xác minh và còn quyền vào cuộc họp đọc toàn bộ tài liệu đã gắn vào cuộc họp theo Member; không tồn tại cờ “chia sẻ riêng cho Guest”. Guest chỉ đọc file qua tài liệu của cuộc họp, không mở kho của người tải lên. Guest bình luận bằng invitation identity và tên tự khai. Giữ quy tắc mức mật về tải xuống và ghi audit như Member. Tài liệu không có phiên bản ([ADR-0018](../05-decisions/0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md)).
 
 **Đồng bộ:** UC-32a/b/c, UC-35, BR-181; màn tài liệu/preview/comments; ERD author identity cho Guest. Thay phần loại Guest khỏi quyền đọc ở ADR-0006 bằng ADR-0016.
 

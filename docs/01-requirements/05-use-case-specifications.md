@@ -1,8 +1,8 @@
 # Use Case Specifications · TrustCabinet
 
-Đặc tả Use Case của **TrustCabinet**, đồng bộ nguyên văn mục *II. Use Case Specifications* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX ngày 13/10/2026). Nội dung đặc tả giữ tiếng Anh như Report 3.
+Đặc tả Use Case của **TrustCabinet**, đồng bộ nguyên văn mục *II. Use Case Specifications* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX ngày 13/10/2026, cập nhật ADR-0018). Nội dung đặc tả giữ tiếng Anh như Report 3.
 
-- **Phạm vi:** 15 Feature (FE-01 → FE-15), 70 Use Case (UC-01 → UC-70). UC gom nhiều thao tác nhỏ được tách thành UC con có hậu tố chữ (ví dụ `UC-06a`, `UC-06b`, `UC-06c`).
+- **Phạm vi:** 15 Feature (FE-01 → FE-15), 72 Use Case (UC-01 → UC-72; UC-32b và UC-33b đã bỏ). UC gom nhiều thao tác nhỏ được tách thành UC con có hậu tố chữ (ví dụ `UC-06a`, `UC-06b`, `UC-06c`).
 - **Đổi số:** danh sách UC đã được gom và đánh số lại sau quyết định PO 09/10/2026 (bỏ Meeting Session, biểu quyết chỉ trong cuộc họp). Bảng đổi số cũ → mới nằm ở [Master Use Case Inventory §5](00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới).
 - **Business Rules:** [06-business-rules.md](06-business-rules.md). **Mã thông báo:** chuẩn là [danh mục mã thông báo](../03-api/00-danh-muc-ma-thong-bao.md) — khi mã `MSGnn` trong đặc tả lệch với danh mục, danh mục thắng.
 - UC ghi *Placeholder* là UC đã có trong phạm vi nhưng Report 3 chưa đặc tả chi tiết; BE viết đặc tả cơ bản khi nhận ticket (xem [DEVELOPMENT_WORKFLOW](../DEVELOPMENT_WORKFLOW.md)).
@@ -76,14 +76,22 @@
 
 - [UC-32 — View Meeting Documents](#uc-32--view-meeting-documents)
   - [UC-32a — View Meeting Documents](#uc-32a--view-meeting-documents)
-  - [UC-32b — View Document Version History](#uc-32b--view-document-version-history)
   - [UC-32c — Preview Meeting Document](#uc-32c--preview-meeting-document)
 - [UC-33 — Manage Meeting Documents](#uc-33--manage-meeting-documents)
   - [UC-33a — Add Document to Meeting](#uc-33a--add-document-to-meeting)
-  - [UC-33b — Add New Meeting Document Version](#uc-33b--add-new-meeting-document-version)
+  - [UC-33c — Remove Document from Meeting](#uc-33c--remove-document-from-meeting)
 - [UC-34 — View Personal Document Library](#uc-34--view-personal-document-library)
 - [UC-35 — Comment on Meeting Document](#uc-35--comment-on-meeting-document)
 - [UC-36 — Upload Document to Personal Library](#uc-36--upload-document-to-personal-library)
+- [UC-71 — Manage Personal Documents](#uc-71--manage-personal-documents)
+  - [UC-71a — Delete Document from Personal Library](#uc-71a--delete-document-from-personal-library)
+  - [UC-71b — Rename Document](#uc-71b--rename-document)
+  - [UC-71c — Move Document to Folder](#uc-71c--move-document-to-folder)
+- [UC-72 — Manage Library Folders](#uc-72--manage-library-folders)
+  - [UC-72a — Create Folder](#uc-72a--create-folder)
+  - [UC-72b — Rename Folder](#uc-72b--rename-folder)
+  - [UC-72c — Move Folder](#uc-72c--move-folder)
+  - [UC-72d — Delete Folder](#uc-72d--delete-folder)
 
 ### FE-08 — Online Meeting Room Management
 
@@ -801,13 +809,9 @@ Sequence Diagram: [UC31_RecordAttendance.txt](../06-sequencediagram/meeting-part
 
 ### UC-32 – View Meeting Documents
 
-_UC gom — đặc tả nằm ở các UC con UC-32a, UC-32b… bên dưới._
+_UC gom — đặc tả nằm ở các UC con UC-32a, UC-32c bên dưới. UC-32b (View Document Version History) đã bỏ ngày 13/10/2026 theo [ADR-0018](../05-decisions/0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md); số không tái cấp._
 
 #### UC-32a – View Meeting Documents
-
-Placeholder only – detailed Use Case Specification will be added later.
-
-#### UC-32b – View Document Version History
 
 Placeholder only – detailed Use Case Specification will be added later.
 
@@ -817,13 +821,13 @@ Placeholder only – detailed Use Case Specification will be added later.
 
 ### UC-33 – Manage Meeting Documents
 
-_UC gom — đặc tả nằm ở các UC con UC-33a, UC-33b… bên dưới._
+_UC gom — đặc tả nằm ở các UC con UC-33a, UC-33c bên dưới. UC-33b (Add New Meeting Document Version) đã bỏ ngày 13/10/2026 theo [ADR-0018](../05-decisions/0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md); số không tái cấp._
 
 #### UC-33a – Add Document to Meeting
 
 Placeholder only – detailed Use Case Specification will be added later.
 
-#### UC-33b – Add New Meeting Document Version
+#### UC-33c – Remove Document from Meeting
 
 Placeholder only – detailed Use Case Specification will be added later.
 
@@ -836,6 +840,42 @@ Placeholder only – detailed Use Case Specification will be added later.
 Placeholder only – detailed Use Case Specification will be added later.
 
 ### UC-36 – Upload Document to Personal Library
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-71 – Manage Personal Documents
+
+_UC gom — đặc tả nằm ở các UC con UC-71a, UC-71b, UC-71c bên dưới._
+
+#### UC-71a – Delete Document from Personal Library
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+#### UC-71b – Rename Document
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+#### UC-71c – Move Document to Folder
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-72 – Manage Library Folders
+
+_UC gom — đặc tả nằm ở các UC con UC-72a → UC-72d bên dưới._
+
+#### UC-72a – Create Folder
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+#### UC-72b – Rename Folder
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+#### UC-72c – Move Folder
+
+Placeholder only – detailed Use Case Specification will be added later.
+
+#### UC-72d – Delete Folder
 
 Placeholder only – detailed Use Case Specification will be added later.
 
@@ -934,7 +974,7 @@ Placeholder only – detailed Use Case Specification will be added later.
 ---
 
 ## FE-11 — Voting Management
-Scope: Votes are created, opened, cast and closed only while a Meeting is InProgress. No time-boxed or pre/post-meeting voting, quorum or separate Resolution. The Chair records Passed, NotPassed or Deferred after closing the Vote.
+Scope: create/open/cast only while Meeting is InProgress. End Meeting is independent of Vote closure. Chair can close and tally existing Open Votes in InProgress or Ended, then record the conclusion. No post-meeting ballot casting, time-boxed voting or quorum. (BR-159, BR-160, BR-165)
 
 ### UC-52 – View Meeting Votes
 
@@ -965,8 +1005,6 @@ Placeholder only – detailed Use Case Specification will be added later.
 Placeholder only – detailed Use Case Specification will be added later.
 
 ### UC-57 – Record Vote Conclusion
-
-[Placeholder] Detailed Use Case Specification will be added later. Chair records Passed, NotPassed or Deferred after Vote closes.
 
 Placeholder only – detailed Use Case Specification will be added later.
 

@@ -2,7 +2,7 @@ import { Icon } from '../../components/Icon'
 import { PageHeader } from '../../components/PageHeader'
 
 /**
- * Each user's own document library (ADR-0006). Nothing reads or writes documents yet, so the page
+ * Each user's own document library (ADR-0006, ADR-0018). Nothing reads or writes documents yet, so the page
  * says what it will hold and what it waits on instead of showing upload buttons that cannot work.
  */
 export function DocumentsPage() {
