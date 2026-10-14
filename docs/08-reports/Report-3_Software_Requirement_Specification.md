@@ -34,6 +34,7 @@ Table of Contents
 | 12/10/2026 | M | KhanhPG | Refine FE-06 use cases to business-level flows; align Chair/Secretary/Member viewing access, response identity visibility, bulk participant additions, Chair replacement, complete attendance and End Meeting requirements. Update BR/MSG references, participant screens, and affected Agenda and Participant sequences, including UC-22; align AF/EX references and reserved message contexts. Regenerate only changed sequence images and preserve all existing embedded images. |
 | 13/10/2026 | M, D | HaiTV | Apply ADR-0018 (no document versions): library entries and Meeting documents refer to one immutable stored file; drop UC-32b and UC-33b; add UC-33c Remove Document from Meeting, UC-71 Manage Personal Documents and UC-72 Manage Library Folders; previews are rendered in the browser without server conversion; only the Chair and Secretary add or remove Meeting documents; add library folders as in AI-eCabinet, drop the Guest sharing toggle. Align FE-11 screens with Guest voting, Chair-selected eligible voter roles per Vote and deleting a Draft Vote. Add BR-183 to BR-192 and the Folder entity. |
 | 14/10/2026 | M | LocHD | Update screen images to wireframe v4 (ADR-0018, Chair-selected eligible voter roles); rewrite 7.1 as the empty Document Library state; correct examples in 5.3, 7.5, 11.1 and 11.4; align the 14.2 Vote button and the 7.5 watermark with the wireframe. |
+| 14/10/2026 | M | LocHD | Align 8.5, footnote 14 and BR-165 with Chair-selected eligible voter roles (Guests vote when selected); retire MSG113 (ADR-0013); describe the two implemented background jobs in 16.1–16.2 and I.5.3; drop implementation status from API-04/API-05; update the screen flow for the 7.1 and 7.5 names; fix bold bullets in 7.5 and 11.1. |
 
 *A - Added M - Modified D - Deleted
 
@@ -794,7 +795,7 @@ Notes:
 
 ¹³ Only all attached documents of the invited meeting under Member read rules, within a verified Guest session.
 
-¹⁴ Only the current assigned Chair, Secretary and Members, and only while their Meeting is InProgress and its Vote is Open (BR-160, BR-165). Verified current Guests are eligible under the same voting rules.
+¹⁴ Only users on the eligible list fixed when the Vote opens – current holders of the meeting roles the Chair selected for that Vote among Chair, Secretary, Member and verified Guest – and only while their Meeting is InProgress and its Vote is Open (BR-160, BR-165, BR-190).
 
 ¹⁵ Only in the assigned meeting while the minutes are in Draft or Revision Requested status.
 
@@ -850,7 +851,7 @@ Notes:
 | 8.2 | Online Meeting Room – Video Grid | FE-08 Online Meeting Room Management | Allows users connected to the online room to see participants in a video grid, see who is speaking, turn their own microphone and camera on or off, raise a hand and leave the room. |
 | 8.3 | In-Room Participants & Moderation Panel | FE-08 Online Meeting Room Management | Allows users in the online room to view who is connected and their room presence, and allows the Chair to manage the raise-hand queue, invite speakers, mute participants and remove users from the room. |
 | 8.4 | Screen Sharing & Chat | FE-08 Online Meeting Room Management | Allows users connected to the online room to share their screen on the main stage, follow a shared screen and exchange text chat messages with everyone currently in the room. |
-| 8.5 | In-Room Meeting Panel | FE-08 Online Meeting Room Management | Allows users in the online room to follow the meeting agenda, open meeting documents and, for eligible Chair, Secretary and Participants, cast their vote on an open Vote without leaving the room. |
+| 8.5 | In-Room Meeting Panel | FE-08 Online Meeting Room Management | Allows users in the online room to follow the meeting agenda, open meeting documents and, for eligible voters (holders of the meeting roles the Chair selected for the Vote, verified Guests included), cast their vote on an open Vote without leaving the room. |
 | 9.1 | Meeting Detail – Recordings Tab | FE-09 Meeting Audio Upload & Media Library | Allows the Secretary to upload the meeting audio after the meeting has ended, see processing status and uploaded files, review the speaker-attributed transcript and start generating the AI summary. |
 | 9.2 | Upload Audio Dialog | FE-09 Meeting Audio Upload & Media Library | Allows the Secretary to select or drag an MP3, M4A or WAV audio file of up to 500 MB, confirm recording consent and upload it to an Ended meeting for transcription. |
 | 10.1 | Speaker-Attributed Transcript | FE-10 Speaker-Attributed Transcription & Meeting Summary | Allows the Secretary to play the uploaded meeting audio, search and correct the transcript text, and assign unknown voices to meeting attendees before generating the meeting summary. |
@@ -884,8 +885,8 @@ Notes:
 
 | # | Job Name | Group | Description |
 | --- | --- | --- | --- |
-| 1 | Process notifications | Scheduled worker | Mỗi 5 giây, kiểm tra nhắc lịch đến hạn và gửi thông báo mới đến người dùng đang kết nối. |
-| 2 | Deliver meeting invitation emails | Queue worker | Khi SMTP được bật, xử lý hàng đợi email mời họp và thử gửi lại email lỗi theo chính sách retry. |
+| 1 | Process notifications | Scheduled worker | Every 5 seconds, creates due meeting reminders and pushes new in-app notifications to connected users. |
+| 2 | Deliver meeting invitation emails | Queue worker | When SMTP is enabled, processes the meeting invitation email queue and retries failed emails under the retry policy. |
 
 ## II. Use Case Specifications
 
@@ -2794,7 +2795,7 @@ This screen allows users connected to the room (Chair, Secretary, Participant, G
 
 - View Meeting Votes: see the open Vote, the agenda item it belongs to and how many eligible voters have voted (UC-52).
 
-- Cast Vote: choose one option of the open Vote and submit the ballot once; available only to the current Chair, Secretary and Participants, not to Guests (UC-55).
+- Cast Vote: choose one option of the open Vote and submit the ballot once; available only to users on the eligible list fixed when the Vote opened, i.e. current holders of the meeting roles the Chair selected, verified Guests included when Guest is selected (UC-55, BR-190).
 
 - View Meeting Documents: open the documents attached to the meeting; a Guest sees all attached Meeting documents (UC-32a).
 
@@ -2807,7 +2808,7 @@ Field Description
 | Vote status line | Status chip “Đang mở” [Open] (green) followed by “Mở lúc 13:58 · Mục 2” [Opened at 13:58 · Item 2]: opening time and related Agenda Item. |
 | Vote question | Read-only bold text, e.g. “Thông qua kế hoạch kinh doanh năm 2027”. |
 | Vote options | Radio cards, exactly one may be selected: Đồng ý [Agree], Không đồng ý [Disagree], Không ý kiến [Abstain]. No option is selected by default. |
-| Gửi phiếu [Submit vote] | Primary button, enabled after an option is selected. Records the ballot once for the voter; voting is possible only while the meeting is In Progress and the Vote is Open, and only for the current Chair, Secretary and Participants – verified current Guests see the button under the same eligibility rules (BR-160, BR-165). After submission the options become read-only with the user’s choice shown. |
+| Gửi phiếu [Submit vote] | Primary button, enabled after an option is selected. Records the ballot once for the voter; voting is possible only while the meeting is In Progress and the Vote is Open, and only for users on the eligible list fixed when the Vote opened – current holders of the meeting roles the Chair selected, verified Guests included when Guest is selected (BR-160, BR-165, BR-190). After submission the options become read-only with the user’s choice shown. |
 | Ballot progress | Read-only text “Đã bỏ phiếu 7/11 · phiếu kín” [Voted 7/11 · secret ballot]: number of ballots cast out of eligible voters; for a secret ballot individual choices are not shown. |
 | Agenda tab | Read-only list of Agenda Items in order with presenter, planned duration and status (Pending / In Progress / Done); the current item is highlighted and updated in real time (BR-64, BR-73). |
 | Documents tab | List of meeting documents; clicking a document opens the Document Viewer. A Guest sees all attached Meeting documents (UC-32a). |
@@ -3346,13 +3347,13 @@ Field Description
 
 ### 16. Background Job Inventory
 
-#### 16.1 Unlock Expired Locked Accounts (JOB-01)
+#### 16.1 Process Notifications (JOB-01)
 
-placeholder
+Runs inside the backend every 5 seconds. Each cycle creates the “meeting starting soon” reminder, once per recipient, for Meetings that start within the next 15 minutes, then pushes up to 100 pending in-app notifications to their recipients over the notification hub and marks them as pushed; deactivated users receive no push. A missed push is not lost, because the notification list is read from the database (UC-66). A failed cycle is logged and retried on the next tick.
 
-#### 16.2 Clean Up Old Audit Log Entries (JOB-02)
+#### 16.2 Deliver Meeting Invitation Emails (JOB-02)
 
-placeholder
+Runs inside the backend only when Email:Smtp:Enabled is true. It queues the invitation emails of Published Meetings that have not been queued yet, then sends queued emails one at a time from the email outbox, and waits Email:PollingIntervalSeconds before polling again when the queue is empty. A failed email is retried with exponential back-off up to Email:MaxAttempts times (8 by default) and then marked permanently failed (API-03, 17.3).
 
 ### 17. External API Inventory
 
@@ -3398,7 +3399,7 @@ placeholder
 | Auth | LiveKit API key/secret; backend signs HS256 JWT access tokens (identity = userId, room = meeting-{meetingId}, ~10-minute lifetime); secret only in user-secrets/environment. |
 | Failure handling | Planned: backend still starts without LiveKit config, call endpoints return 503; LiveKit errors/timeouts (HTTP client timeout 5 s) return 502; a 30-second CallRoomJanitor reconciles room state. |
 | Configuration | LiveKit:{PublicUrl, ApiUrl, ApiKey, ApiSecret, TokenTtlMinutes, EnforceRoster} (planned; docker compose profile 'calls'). |
-| Status | Accepted design (ADR-0010, docs/02-design/08-ke-hoach-phong-hop-truc-tuyen.md); not yet implemented in the main branch. |
+| Status | Accepted design, planned (ADR-0010, docs/02-design/08-ke-hoach-phong-hop-truc-tuyen.md). |
 
 #### 17.5 POST: /api/livekit/webhook – LiveKit webhook (API-05) – planned
 
@@ -3409,7 +3410,7 @@ placeholder
 | Auth | Anonymous route verified by signature: Authorization header carries a raw HS256 JWT (iss = API key) signed with the LiveKit API secret, containing a sha256 claim of the request body. |
 | Request / Response | Events: participant_joined, participant_left, participant_connection_aborted, room_finished, track_published (SCREEN_SHARE). 200 OK; 401 bad signature; 503 not configured; 500 on database error so LiveKit retries. |
 | Failure handling | Handlers are idempotent; timestamps taken from the payload; lost webhooks are compensated by the 30-second janitor reconciliation. |
-| Status | Planned (ADR-0010); not yet implemented. |
+| Status | Accepted design, planned (ADR-0010). |
 
 #### 17.6 AI / Speech Processing Provider – transcription, diarization and summary (API-06) – planned
 
@@ -3663,7 +3664,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-162 | When a new Meeting is created, Planned Start Time must be later than the current time. | UC-14 | PO Q7 / BF-02 | Meeting / Voting / Minutes services |
 | BR-163 | Online/Hybrid Meetings use the internal TrustCabinet Online Meeting Room. Online Link is managed by the system as part of Online Meeting Room functionality and may be empty until generated. Users cannot enter or modify it during Meeting creation, editing or rescheduling. Link generation is outside Create Meeting and Update Meeting. | UC-14, UC-15 | PO Q4 / BF-02 | Meeting / Voting / Minutes services |
 | BR-164 | Starting a Meeting creates an in-app notification for its currently invited internal participants; notification failure does not roll back the successful Meeting start. | UC-21 | PO Q11 / BF-03 | Meeting / Voting / Minutes services |
-| BR-165 | A Vote may be created/opened only in an InProgress Meeting. Current internal participants and verified current Guests may cast one eligible ballot only while Meeting is InProgress and Vote is Open; Guest voter identity is its invitation. The Chair may close an existing Open Vote and tally saved ballots in InProgress or Ended, then record Passed, NotPassed or Deferred. Closing is required for that Vote conclusion, not for End Meeting. Revocation prevents new ballots without erasing evidence; secret ballots have no voter-choice link. | UC-53, UC-54, UC-55, UC-56, UC-57 | PO 13/10/2026 — follow-up | Meeting / Voting / Minutes services |
+| BR-165 | A Vote may be created/opened only in an InProgress Meeting. Current internal participants and verified current Guests who hold a meeting role selected for that Vote (BR-190) may cast one eligible ballot only while Meeting is InProgress and Vote is Open; Guest voter identity is its invitation. The Chair may close an existing Open Vote and tally saved ballots in InProgress or Ended, then record Passed, NotPassed or Deferred. Closing is required for that Vote conclusion, not for End Meeting. Revocation prevents new ballots without erasing evidence; secret ballots have no voter-choice link. | UC-53, UC-54, UC-55, UC-56, UC-57 | PO 13/10/2026 — follow-up | Meeting / Voting / Minutes services |
 | BR-166 | When designated minutes signers request revision or minutes content changes after signing begins, previous signatures on the earlier content version are invalidated and the revised version requires a new signing cycle. Only the assigned Secretary may finalize and seal the completed minutes after all designated signers sign. | UC-60, UC-61, UC-62, UC-64, UC-65 | PO / BF-04 | Meeting / Voting / Minutes services |
 | BR-167 | User account list sorting must use an allowed sort field/order, and current search/filter/sort criteria are preserved across pages. | UC-05 | UC-05 user-list acceptance criteria | User Management |
 | BR-168 | A submission adding multiple internal Meeting Participants must be saved as one indivisible roster change. If any selected account, assigned Meeting Role or additional Meeting Permission is invalid, no account in the submitted batch may be added. Invitation dispatch occurs only after a successful roster save; delivery errors follow BR-94. | UC-28a | FE-06 revision, 12/10/2026 | Meeting Participant Management |
@@ -3802,7 +3803,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 116 | MSG110 | Toast | UC-21 – Start Meeting / Main Flow | Meeting started successfully. |
 | 117 | MSG111 | Toast | UC-22 – End Meeting / Main Flow | Meeting ended successfully. |
 | 118 | MSG112 | Dialog | UC-21 – Start Meeting / Exception Flows | This meeting cannot be started. |
-| 119 | MSG113 | Dialog | UC-44 – End Meeting / Exception Flows | Complete or cancel all unfinished meetings before ending the meeting. |
+| 119 | MSG113 | Dialog | Retired; formerly UC-44 (Meeting Session) / End Meeting gate | Retired with Meeting Sessions (ADR-0013); formerly “Complete or cancel all unfinished meeting sessions before ending the meeting.” This code must not be reused. |
 | 120 | MSG114 | Dialog | UC-22 – End Meeting / Exception Flows | This meeting cannot be ended. |
 | 121 | MSG115 | Toast | UC-21 – Start Meeting / Exception Flows | Unable to start the meeting. Please try again. |
 | 122 | MSG116 | Toast | UC-22 – End Meeting / Exception Flows | Unable to end the meeting. Please try again. |
