@@ -33,6 +33,8 @@ Table of Contents
 | 12/10/2026 | M | KhanhPG | Revise FE-06 meeting participant management: clarify UC-27–UC-31, support adding multiple internal participants together, replacing the Chair, meeting-specific additional viewing permissions, and complete-list Present/Absent attendance for internal participants and Guests. Align business rules, messages, screen descriptions and sequence diagram sources; preserve all existing images. Primary Actors list actor names only. |
 | 12/10/2026 | M | KhanhPG | Refine FE-06 use cases to business-level flows; align Chair/Secretary/Member viewing access, response identity visibility, bulk participant additions, Chair replacement, complete attendance and End Meeting requirements. Update BR/MSG references, participant screens, and affected Agenda and Participant sequences, including UC-22; align AF/EX references and reserved message contexts. Regenerate only changed sequence images and preserve all existing embedded images. |
 | 13/10/2026 | M, D | HaiTV | Apply ADR-0018 (no document versions): library entries and Meeting documents refer to one immutable stored file; drop UC-32b and UC-33b; add UC-33c Remove Document from Meeting, UC-71 Manage Personal Documents and UC-72 Manage Library Folders; previews are rendered in the browser without server conversion; only the Chair and Secretary add or remove Meeting documents; add library folders as in AI-eCabinet, drop the Guest sharing toggle. Align FE-11 screens with Guest voting, Chair-selected eligible voter roles per Vote and deleting a Draft Vote. Add BR-183 to BR-192 and the Folder entity. |
+| 14/10/2026 | M | LocHD | Update screen images to wireframe v4 (ADR-0018, Chair-selected eligible voter roles); rewrite 7.1 as the empty Document Library state; correct examples in 5.3, 7.5, 11.1 and 11.4; align the 14.2 Vote button and the 7.5 watermark with the wireframe. |
+| 14/10/2026 | M | LocHD | Align 8.5, footnote 14 and BR-165 with Chair-selected eligible voter roles (Guests vote when selected); retire MSG113 (ADR-0013); describe the two implemented background jobs in 16.1–16.2 and I.5.3; drop implementation status from API-04/API-05; update the screen flow for the 7.1 and 7.5 names; fix bold bullets in 7.5 and 11.1. |
 
 *A - Added M - Modified D - Deleted
 
@@ -793,7 +795,7 @@ Notes:
 
 ¹³ Only all attached documents of the invited meeting under Member read rules, within a verified Guest session.
 
-¹⁴ Only the current assigned Chair, Secretary and Members, and only while their Meeting is InProgress and its Vote is Open (BR-160, BR-165). Verified current Guests are eligible under the same voting rules.
+¹⁴ Only users on the eligible list fixed when the Vote opens – current holders of the meeting roles the Chair selected for that Vote among Chair, Secretary, Member and verified Guest – and only while their Meeting is InProgress and its Vote is Open (BR-160, BR-165, BR-190).
 
 ¹⁵ Only in the assigned meeting while the minutes are in Draft or Revision Requested status.
 
@@ -840,7 +842,7 @@ Notes:
 | 6.2 | Add Participant Dialog | FE-06 Meeting Participant Management | Allows the Secretary to add internal participants together with a shared Meeting Role and optional permissions, or invite one Guest; the Organizer may assign the missing Secretary. |
 | 6.3 | Attendance Check | FE-06 Meeting Participant Management | Allows the Secretary to record Present or Absent for one or more selected current internal participants or Guests during an InProgress Meeting. |
 | 6.4 | Invitation Response | FE-06 Meeting Participant Management | Allows an invited Chair, Secretary, Participant or verified Guest to view the invitation and accept or decline it, and to change the response until the meeting ends. |
-| 7.1 | Document Library – Current Build | FE-07 Personal Document Library & Meeting Document Management | Shows the Document Library page as currently built: a page header and an empty-state panel explaining that the personal library is not active yet until the backend document API is available. |
+| 7.1 | Document Library – Empty State | FE-07 Personal Document Library & Meeting Document Management | Shows the Document Library of a user who has no folders or files yet: an empty-state panel explaining how the library is used and the accepted file types, with New folder and Upload buttons at the top of the page and inside the panel. |
 | 7.2 | Personal Document Library | FE-07 Personal Document Library & Meeting Document Management | Allows an internal user to browse folders, search and filter his/her private documents by file type, upload files, organise files and folders, delete files and see where each document is used in meetings. |
 | 7.3 | Meeting Detail – Documents Tab | FE-07 Personal Document Library & Meeting Document Management | Allows users related to a meeting to view its documents, filtered by agenda item, with uploader and comment count, and the Chair or Secretary to add documents or remove them from the Meeting. |
 | 7.4 | Add Document to Meeting Dialog | FE-07 Personal Document Library & Meeting Document Management | Allows the Chair or Secretary to attach documents to a meeting from the computer or the personal library and link them to an agenda item. |
@@ -849,12 +851,12 @@ Notes:
 | 8.2 | Online Meeting Room – Video Grid | FE-08 Online Meeting Room Management | Allows users connected to the online room to see participants in a video grid, see who is speaking, turn their own microphone and camera on or off, raise a hand and leave the room. |
 | 8.3 | In-Room Participants & Moderation Panel | FE-08 Online Meeting Room Management | Allows users in the online room to view who is connected and their room presence, and allows the Chair to manage the raise-hand queue, invite speakers, mute participants and remove users from the room. |
 | 8.4 | Screen Sharing & Chat | FE-08 Online Meeting Room Management | Allows users connected to the online room to share their screen on the main stage, follow a shared screen and exchange text chat messages with everyone currently in the room. |
-| 8.5 | In-Room Meeting Panel | FE-08 Online Meeting Room Management | Allows users in the online room to follow the meeting agenda, open meeting documents and, for eligible Chair, Secretary and Participants, cast their vote on an open Vote without leaving the room. |
+| 8.5 | In-Room Meeting Panel | FE-08 Online Meeting Room Management | Allows users in the online room to follow the meeting agenda, open meeting documents and, for eligible voters (holders of the meeting roles the Chair selected for the Vote, verified Guests included), cast their vote on an open Vote without leaving the room. |
 | 9.1 | Meeting Detail – Recordings Tab | FE-09 Meeting Audio Upload & Media Library | Allows the Secretary to upload the meeting audio after the meeting has ended, see processing status and uploaded files, review the speaker-attributed transcript and start generating the AI summary. |
 | 9.2 | Upload Audio Dialog | FE-09 Meeting Audio Upload & Media Library | Allows the Secretary to select or drag an MP3, M4A or WAV audio file of up to 500 MB, confirm recording consent and upload it to an Ended meeting for transcription. |
 | 10.1 | Speaker-Attributed Transcript | FE-10 Speaker-Attributed Transcription & Meeting Summary | Allows the Secretary to play the uploaded meeting audio, search and correct the transcript text, and assign unknown voices to meeting attendees before generating the meeting summary. |
 | 10.2 | Meeting Summary | FE-10 Speaker-Attributed Transcription & Meeting Summary | Allows the Secretary to review and edit the AI-generated draft summary, regenerate it, approve it and then publish the approved summary to attendees as a separate step. |
-| 11.1 | Meeting Detail – Voting Tab | FE-11 Voting Management | Allows the Chair to view all Votes of an InProgress Meeting with their status and turnout, create, edit and open draft Votes, and close an open Vote; other involved users view read-only. |
+| 11.1 | Meeting Detail – Voting Tab | FE-11 Voting Management | Allows the Chair to view all Votes of an InProgress Meeting with their status and turnout, create, edit, delete and open Draft Votes, and close an open Vote; other involved users view read-only. |
 | 11.2 | Create & Open Vote Dialog | FE-11 Voting Management | Allows the Chair to define a Vote for the current Agenda Item of an InProgress Meeting – content, options, ballot type and eligible voter roles – and save it as a draft or open it immediately. |
 | 11.3 | Cast Vote | FE-11 Voting Management | Allows an eligible Chair, Secretary, Participant or verified Guest to view an open Vote of the InProgress Meeting, choose one option and submit a single ballot that cannot be changed afterwards. |
 | 11.4 | Vote Result & Conclusion | FE-11 Voting Management | Allows the Chair to view the tallied result of a closed Vote, including public ballots, and record its conclusion – Passed, NotPassed or Deferred – with a note carried into the minutes. |
@@ -883,8 +885,8 @@ Notes:
 
 | # | Job Name | Group | Description |
 | --- | --- | --- | --- |
-| 1 | Process notifications | Scheduled worker | Mỗi 5 giây, kiểm tra nhắc lịch đến hạn và gửi thông báo mới đến người dùng đang kết nối. |
-| 2 | Deliver meeting invitation emails | Queue worker | Khi SMTP được bật, xử lý hàng đợi email mời họp và thử gửi lại email lỗi theo chính sách retry. |
+| 1 | Process notifications | Scheduled worker | Every 5 seconds, creates due meeting reminders and pushes new in-app notifications to connected users. |
+| 2 | Deliver meeting invitation emails | Queue worker | When SMTP is enabled, processes the meeting invitation email queue and retries failed emails under the retry policy. |
 
 ## II. Use Case Specifications
 
@@ -2346,7 +2348,7 @@ Field Description
 | Agenda list | One row per agenda item: order number, title, presenter, planned duration and a status/action cell. A Done item shows its actual time range (e.g. 08:32–08:44); the current item is highlighted and shows “In discussion since 08:44 · 9 minutes” [Đang thảo luận từ … · … phút]. |
 | Item status | Done or InProgress status is shown read-only. Only the first Pending Item offers Set as Current to the active assigned Chair when no Item is InProgress. |
 | Set as current [Đặt hiện tại] | Chair only, while Meeting is InProgress. Starts only the first Pending Item in the current order and records actual start time. MSG72 reports another current Item; MSG144 reports selecting a later Pending Item; MSG73 reports other ineligible conditions; MSG75 reports save failure; MSG64 confirms success. (BR-69, BR-70, BR-71) |
-| Current item card [Mục hiện tại · 2] | Read-only: order number and title of the current item and its attached documents (e.g. “2 documents · De-xuat-bieu-quyet.docx, So-sanh-eCabinet.xlsx”); file names open the Document Viewer (7.5). |
+| Current item card [Mục hiện tại · 2] | Read-only: order number and title of the current item and its attached documents (e.g. “2 documents · De-xuat-bieu-quyet.docx, So-sanh-eCabinet.pdf”); file names open the Document Viewer (7.5). |
 | Create a vote for this item [Tạo biểu quyết cho mục này] | Secondary button in the current item card; Chair only, while the Meeting is InProgress (BR-160, BR-165); opens the Create & Open Vote Dialog (11.2) linked to the current item. |
 | Complete item [Hoàn thành mục] | Chair only, for the current InProgress Item. Completion is allowed regardless of Planned Duration and records actual end time and elapsed duration. The Meeting stays InProgress and the next Item does not start automatically. MSG65 confirms success; MSG74 reports ineligible conditions; MSG76 reports save failure. (BR-72) |
 | Online room preview | Read-only grid of tiles with the names of users connected to the online room; a tile such as “Room 2.1” [Phòng 2.1] shows the in-person room of a Hybrid Meeting, and “Waiting to join” [Chờ vào] marks an empty slot. |
@@ -2488,15 +2490,19 @@ Field Description
 
 ### 7. FE-07 – Personal Document Library & Meeting Document Management
 
-#### 7.1 Document Library – Current Build
+#### 7.1 Document Library – Empty State
 
-The Document Library – Current Build screen is what the application displays today when a signed-in internal user opens Document Library [Kho tài liệu] from the sidebar. The personal document library is not yet connected to the backend, so the page shows only its header and an empty-state panel explaining how the library will work; no sample data is displayed. It will be replaced by the Personal Document Library (7.2) once the document API is available (UC-34).
+The Document Library – Empty State screen is what a signed-in internal user sees on opening Document Library [Kho tài liệu] from the sidebar before he/she has created any folder or uploaded any file. The folder panel holds only All documents with 0 files, and the file area shows an empty-state panel explaining how the library is used. The New folder and Upload buttons inside the panel do the same as those at the top of the page; a file uploaded while All documents is selected is stored at the root of the library. Once the library holds folders or files, the page is the Personal Document Library (7.2). External Guests have no personal library (UC-34, UC-36, UC-72a).
 
 This screen allows any signed-in internal user (Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant) to:
 
 - Open Document Library: click Document Library [Kho tài liệu] in the sidebar to open his/her own library page (UC-34).
 
-- View Library Status: see that the library is not active yet and read how it will be used (UC-34).
+- View Empty Library: see that his/her library has no folders or files yet and read how it is used (UC-34).
+
+- Upload Document: click “Upload” at the top of the page or in the empty-state panel to store a file at the root of the library (UC-36).
+
+- Create Folder: click “New folder” at the top of the page or in the empty-state panel to create a folder at the root of the library (UC-72a).
 
 Field Description
 
@@ -2505,14 +2511,16 @@ Field Description
 | Sidebar item [Kho tài liệu] | Navigation item in the Business [Nghiệp vụ] group; highlighted when this page is open. |
 | Page title | Read-only “Document Library” [Kho tài liệu]. |
 | Page subtitle | Read-only: “Your private documents — only you can see and manage what is here.” [Tài liệu riêng của bạn — chỉ bạn thấy và quản lý được những gì ở đây.] |
-| Empty-state panel | Dashed panel with a document icon; no table or buttons are shown. |
-| Empty-state title | Read-only: “The document library is not active yet” [Kho tài liệu chưa hoạt động]. |
-| Explanation text | Read-only: you will upload documents, put them into folders and attach them to meetings where you are Secretary or Chair; a document not attached to any meeting can be read only by you. |
-| Implementation note | Read-only small text: “Will be implemented when the backend provides GET /api/documents.” [Sẽ hiện thực khi backend có GET /api/documents.] |
+| New folder [Thư mục mới] / Upload [Tải lên] | Shown both in the page header and inside the empty-state panel; both pairs do the same. New folder creates a folder at the root of the library (UC-72a); Upload opens the file picker and stores the chosen file at the root of the library (UC-36, BR-187). |
+| Folder panel | Shows only All documents [Tất cả tài liệu] with the count 0, selected; no folder exists yet. |
+| Empty-state panel | Dashed panel with a document icon in the file area, holding the title, explanation text, file hint and the New folder and Upload buttons. |
+| Empty-state title | Read-only: “No documents yet” [Chưa có tài liệu nào]. |
+| Explanation text | Read-only: “Upload documents to the library, put them into folders, then attach them to meetings where you are Chair or Secretary. A document not attached to any meeting can be read only by you.” [Tải tài liệu lên kho, xếp vào thư mục, rồi gắn vào cuộc họp mà bạn làm Chủ trì hoặc Thư ký. Tài liệu chưa gắn cuộc họp nào chỉ mình bạn đọc được.] |
+| File hint | Read-only small text: “Accepts PDF and DOCX, up to 50 MB per file.” [Nhận PDF và DOCX, tối đa 50 MB mỗi tệp.] (BR-187) |
 
 #### 7.2 Personal Document Library
 
-The Personal Document Library is the proposed Document Library page that replaces the current placeholder (7.1) once the document API is available. Each internal user has a private library: folders on the left and the file table on the right, with size, upload date and the number of meetings that use each file. Files have no versions; to change a document the user uploads a new file. Uploading a file to the library does not attach it to a meeting; files are attached through the Add Document to Meeting Dialog (7.4). A file uploaded straight into a meeting lands in a folder named after that meeting. External Guests have no personal library (UC-34, UC-36, UC-71, UC-72).
+The Personal Document Library is the Document Library page once the user’s library holds folders or files; an empty library shows the empty state (7.1). Each internal user has a private library: folders on the left and the file table on the right, with size, upload date and the number of meetings that use each file. Files have no versions; to change a document the user uploads a new file. Uploading a file to the library does not attach it to a meeting; files are attached through the Add Document to Meeting Dialog (7.4). A file uploaded straight into a meeting lands in a folder named after that meeting. External Guests have no personal library (UC-34, UC-36, UC-71, UC-72).
 
 This screen allows any signed-in internal user (Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant) to:
 
@@ -2635,11 +2643,11 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Back link [‹ Tài liệu] | Returns to the Documents tab of the Meeting. |
-| Document header | Read-only: file name (e.g. “Du-thao-nghi-quyet-HDQT.docx”) and confidentiality chip of the Meeting (e.g. Secret [Mật] in red). |
+| Document header | Read-only: file name (e.g. “Du-thao-nghi-quyet-HDQT.pdf”) and confidentiality chip of the Meeting (e.g. Secret [Mật] in red). |
 | Page indicator [Trang 2 / 6] | Read-only current page and total number of pages; updates while scrolling. Shown for PDF documents only. |
 | Zoom − / + | Two square buttons that decrease or increase the zoom level of the preview. |
 | Download [Tải về] | Secondary button; downloads the original file. Hidden in a Secret Meeting, where documents can only be viewed online (BR-188). |
-| Preview pane | Read-only rendering made in the browser with no server conversion – PDF pages, or a DOCX as one continuous document (BR-187); a highlighted passage marks the area a comment refers to. For a Secret document the viewer’s name is proposed as a watermark on every page. |
+| Preview pane | Read-only rendering made in the browser with no server conversion – PDF pages, or a DOCX as one continuous document (BR-187); a highlighted passage marks the area a comment refers to. For a Secret document the viewer’s name and viewing time are printed as a watermark on every page. |
 | Comments tab [Bình luận 4] | Tab with the number of comments; selected by default. Each comment shows avatar initials, author, page and relative time (e.g. “Page 2 · 2 hours ago”) and the comment text. |
 | Comment box [Viết bình luận…] | Textarea, required to send, empty by default; for a PDF the comment is linked to the page being viewed; a DOCX comment has no page. Hidden for users who may not comment (Meeting Approver). Verified current Guests may comment as Members. |
 | Send [Gửi] | Primary button; posts the comment, which appears at the top of the list and increases the comment count on the Documents tab (UC-35). |
@@ -2787,7 +2795,7 @@ This screen allows users connected to the room (Chair, Secretary, Participant, G
 
 - View Meeting Votes: see the open Vote, the agenda item it belongs to and how many eligible voters have voted (UC-52).
 
-- Cast Vote: choose one option of the open Vote and submit the ballot once; available only to the current Chair, Secretary and Participants, not to Guests (UC-55).
+- Cast Vote: choose one option of the open Vote and submit the ballot once; available only to users on the eligible list fixed when the Vote opened, i.e. current holders of the meeting roles the Chair selected, verified Guests included when Guest is selected (UC-55, BR-190).
 
 - View Meeting Documents: open the documents attached to the meeting; a Guest sees all attached Meeting documents (UC-32a).
 
@@ -2800,7 +2808,7 @@ Field Description
 | Vote status line | Status chip “Đang mở” [Open] (green) followed by “Mở lúc 13:58 · Mục 2” [Opened at 13:58 · Item 2]: opening time and related Agenda Item. |
 | Vote question | Read-only bold text, e.g. “Thông qua kế hoạch kinh doanh năm 2027”. |
 | Vote options | Radio cards, exactly one may be selected: Đồng ý [Agree], Không đồng ý [Disagree], Không ý kiến [Abstain]. No option is selected by default. |
-| Gửi phiếu [Submit vote] | Primary button, enabled after an option is selected. Records the ballot once for the voter; voting is possible only while the meeting is In Progress and the Vote is Open, and only for the current Chair, Secretary and Participants – verified current Guests see the button under the same eligibility rules (BR-160, BR-165). After submission the options become read-only with the user’s choice shown. |
+| Gửi phiếu [Submit vote] | Primary button, enabled after an option is selected. Records the ballot once for the voter; voting is possible only while the meeting is In Progress and the Vote is Open, and only for users on the eligible list fixed when the Vote opened – current holders of the meeting roles the Chair selected, verified Guests included when Guest is selected (BR-160, BR-165, BR-190). After submission the options become read-only with the user’s choice shown. |
 | Ballot progress | Read-only text “Đã bỏ phiếu 7/11 · phiếu kín” [Voted 7/11 · secret ballot]: number of ballots cast out of eligible voters; for a secret ballot individual choices are not shown. |
 | Agenda tab | Read-only list of Agenda Items in order with presenter, planned duration and status (Pending / In Progress / Done); the current item is highlighted and updated in real time (BR-64, BR-73). |
 | Documents tab | List of meeting documents; clicking a document opens the Document Viewer. A Guest sees all attached Meeting documents (UC-32a). |
@@ -2979,7 +2987,7 @@ Field Description
 | Vote status chip | Draft [Nháp] (dashed card), Open [Đang mở], Closed [Đã đóng]; after the Chair records a conclusion the Vote shows its conclusion. Lifecycle: Draft → Open → Closed → Concluded. |
 | Vote content | Bold text of the motion, e.g. “Thông qua phạm vi biểu quyết chỉ trong cuộc họp”. |
 | Vote meta | Read-only: linked Agenda Item (“Mục 2”), ballot type public [công khai] or secret [bỏ phiếu kín] and opening time (“mở 08:51”). |
-| Turnout bar [Đã bỏ phiếu] | Progress bar with “cast / eligible” count (e.g. 3/4), shown for an open Vote and updated as ballots arrive. Individual choices are not shown while the Vote is open. |
+| Turnout bar [Đã bỏ phiếu] | Progress bar with “cast / eligible” count (e.g. 3/5), shown for an open Vote and updated as ballots arrive. Individual choices are not shown while the Vote is open. |
 | Eligibility note | Read-only text, e.g. “5 người đủ điều kiện: Chủ trì, Thư ký, Thành viên, Khách mời.” Counts the current holders of the roles selected for this Vote; the list is fixed when the Vote opens, and attendance does not decide eligibility (BR-160, BR-181, BR-190). |
 | Close voting [Đóng phiếu] | Chair only; close and tally an existing Open Vote while Meeting is InProgress or Ended. End Meeting is independently available and never requires this action. After Meeting Ended no new ballot is accepted, even if Vote remains Open. (BR-159–BR-161, BR-165) |
 | Edit [Sửa] | Button on a Draft Vote, Chair only; opens the dialog pre-filled. An open or closed Vote can no longer be edited. |
@@ -3058,12 +3066,12 @@ Field Description
 | --- | --- |
 | Vote content | Read-only bold text of the motion. |
 | Status chip | Closed [Đã đóng]; after the conclusion is saved the chip shows the conclusion. |
-| Result summary | Read-only, e.g. “4/4 người đã bỏ phiếu · công khai · mở 08:51, đóng 08:55”: voters / eligible, ballot type, opening and closing time. |
-| Option result rows | One row per option: option label, bar and “count · percentage”, e.g. Agree 3 · 75%, Disagree 0 · 0%, Abstain 1 · 25%. Calculated by the system when the Vote is closed (BR-161). |
+| Result summary | Read-only, e.g. “4/5 người đã bỏ phiếu · công khai · mở 08:51, đóng 08:55”: voters / eligible, ballot type, opening and closing time. |
+| Option result rows | One row per option: option label, bar and “count · percentage”, e.g. Agree 3 · 75%, Disagree 0 · 0%, Abstain 1 · 25%; percentages are calculated on ballots cast. Calculated by the system when the Vote is closed (BR-161). |
 | Conclusion [Kết luận] * | Segmented control, required: Passed [Thông qua], NotPassed [Không thông qua], Deferred [Hoãn]. Enabled only for the current Chair and only after the Vote is closed (BR-161, BR-165). |
 | Conclusion note [Ghi chú kết luận] | Text input, optional, e.g. “Áp dụng từ Sprint 6.”; included with the conclusion in the minutes. |
 | Record conclusion [Ghi kết luận] | Primary button, Chair only; saves the conclusion on the Vote. Other users see the conclusion read-only. |
-| Public ballots [Phiếu công khai] | For a public Vote, show each eligible internal or Guest voter, saved choice if cast, or Did not vote. Guest uses the self-declared display profile without exposing a legal identity claim. Attendance is reference only. A secret Vote hides all voter-choice links. (BR-160, BR-165, BR-181) |
+| Public ballots [Phiếu công khai] | For a public Vote, list every person on the eligible list, internal or Guest, with the saved choice, or “Không bỏ phiếu” [Did not vote] for someone who cast no ballot (e.g. Phạm Đức Long · Thành viên – Không bỏ phiếu). Guest uses the self-declared display profile without exposing a legal identity claim. Attendance is reference only. A secret Vote hides all voter-choice links. (BR-160, BR-165, BR-181) |
 | Minutes note [Kết luận đưa vào biên bản (FE-12).] | Read-only hint: the tally and the recorded conclusion are included in the Meeting Minutes; no separate resolution is created (BR-161). |
 
 ### 12. FE-12 – Meeting Minutes & Digital Signing
@@ -3304,7 +3312,7 @@ Field Description
 | Item documents | Chips with file name (e.g. “Ke-hoach-kinh-doanh-2027.docx”); click opens the Document Viewer – Preview & Comments. |
 | Next [Tiếp theo] | Read-only: order, title and presenter of the next Agenda Item. |
 | Open vote card [Biểu quyết] | Shown only while a Vote is Open: chip Open [Đang mở] and the motion text. |
-| Vote [Bỏ phiếu] | Primary button, shown only to eligible users (current Chair, Secretary, Participants) who have not voted; opens Cast Vote (11.3). verified current Guests see it under the same eligibility rules (BR-160, BR-165). |
+| Vote [Bỏ phiếu] | Primary button, shown only to users on the eligible list fixed when the Vote opened (current holders of the meeting roles the Chair selected, verified Guests included when Guest is selected) who have not voted yet; opens Cast Vote (11.3) (BR-160, BR-165, BR-190). |
 | My notes [Ghi chú của tôi] | Multi-line text input, optional, saved automatically; hint “Chỉ mình bạn thấy.” – visible only to the author and not part of the minutes. |
 
 ### 15. FE-15 – Reporting & Statistics
@@ -3339,13 +3347,13 @@ Field Description
 
 ### 16. Background Job Inventory
 
-#### 16.1 Unlock Expired Locked Accounts (JOB-01)
+#### 16.1 Process Notifications (JOB-01)
 
-placeholder
+Runs inside the backend every 5 seconds. Each cycle creates the “meeting starting soon” reminder, once per recipient, for Meetings that start within the next 15 minutes, then pushes up to 100 pending in-app notifications to their recipients over the notification hub and marks them as pushed; deactivated users receive no push. A missed push is not lost, because the notification list is read from the database (UC-66). A failed cycle is logged and retried on the next tick.
 
-#### 16.2 Clean Up Old Audit Log Entries (JOB-02)
+#### 16.2 Deliver Meeting Invitation Emails (JOB-02)
 
-placeholder
+Runs inside the backend only when Email:Smtp:Enabled is true. It queues the invitation emails of Published Meetings that have not been queued yet, then sends queued emails one at a time from the email outbox, and waits Email:PollingIntervalSeconds before polling again when the queue is empty. A failed email is retried with exponential back-off up to Email:MaxAttempts times (8 by default) and then marked permanently failed (API-03, 17.3).
 
 ### 17. External API Inventory
 
@@ -3391,7 +3399,7 @@ placeholder
 | Auth | LiveKit API key/secret; backend signs HS256 JWT access tokens (identity = userId, room = meeting-{meetingId}, ~10-minute lifetime); secret only in user-secrets/environment. |
 | Failure handling | Planned: backend still starts without LiveKit config, call endpoints return 503; LiveKit errors/timeouts (HTTP client timeout 5 s) return 502; a 30-second CallRoomJanitor reconciles room state. |
 | Configuration | LiveKit:{PublicUrl, ApiUrl, ApiKey, ApiSecret, TokenTtlMinutes, EnforceRoster} (planned; docker compose profile 'calls'). |
-| Status | Accepted design (ADR-0010, docs/02-design/08-ke-hoach-phong-hop-truc-tuyen.md); not yet implemented in the main branch. |
+| Status | Accepted design, planned (ADR-0010, docs/02-design/08-ke-hoach-phong-hop-truc-tuyen.md). |
 
 #### 17.5 POST: /api/livekit/webhook – LiveKit webhook (API-05) – planned
 
@@ -3402,7 +3410,7 @@ placeholder
 | Auth | Anonymous route verified by signature: Authorization header carries a raw HS256 JWT (iss = API key) signed with the LiveKit API secret, containing a sha256 claim of the request body. |
 | Request / Response | Events: participant_joined, participant_left, participant_connection_aborted, room_finished, track_published (SCREEN_SHARE). 200 OK; 401 bad signature; 503 not configured; 500 on database error so LiveKit retries. |
 | Failure handling | Handlers are idempotent; timestamps taken from the payload; lost webhooks are compensated by the 30-second janitor reconciliation. |
-| Status | Planned (ADR-0010); not yet implemented. |
+| Status | Accepted design, planned (ADR-0010). |
 
 #### 17.6 AI / Speech Processing Provider – transcription, diarization and summary (API-06) – planned
 
@@ -3656,7 +3664,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-162 | When a new Meeting is created, Planned Start Time must be later than the current time. | UC-14 | PO Q7 / BF-02 | Meeting / Voting / Minutes services |
 | BR-163 | Online/Hybrid Meetings use the internal TrustCabinet Online Meeting Room. Online Link is managed by the system as part of Online Meeting Room functionality and may be empty until generated. Users cannot enter or modify it during Meeting creation, editing or rescheduling. Link generation is outside Create Meeting and Update Meeting. | UC-14, UC-15 | PO Q4 / BF-02 | Meeting / Voting / Minutes services |
 | BR-164 | Starting a Meeting creates an in-app notification for its currently invited internal participants; notification failure does not roll back the successful Meeting start. | UC-21 | PO Q11 / BF-03 | Meeting / Voting / Minutes services |
-| BR-165 | A Vote may be created/opened only in an InProgress Meeting. Current internal participants and verified current Guests may cast one eligible ballot only while Meeting is InProgress and Vote is Open; Guest voter identity is its invitation. The Chair may close an existing Open Vote and tally saved ballots in InProgress or Ended, then record Passed, NotPassed or Deferred. Closing is required for that Vote conclusion, not for End Meeting. Revocation prevents new ballots without erasing evidence; secret ballots have no voter-choice link. | UC-53, UC-54, UC-55, UC-56, UC-57 | PO 13/10/2026 — follow-up | Meeting / Voting / Minutes services |
+| BR-165 | A Vote may be created/opened only in an InProgress Meeting. Current internal participants and verified current Guests who hold a meeting role selected for that Vote (BR-190) may cast one eligible ballot only while Meeting is InProgress and Vote is Open; Guest voter identity is its invitation. The Chair may close an existing Open Vote and tally saved ballots in InProgress or Ended, then record Passed, NotPassed or Deferred. Closing is required for that Vote conclusion, not for End Meeting. Revocation prevents new ballots without erasing evidence; secret ballots have no voter-choice link. | UC-53, UC-54, UC-55, UC-56, UC-57 | PO 13/10/2026 — follow-up | Meeting / Voting / Minutes services |
 | BR-166 | When designated minutes signers request revision or minutes content changes after signing begins, previous signatures on the earlier content version are invalidated and the revised version requires a new signing cycle. Only the assigned Secretary may finalize and seal the completed minutes after all designated signers sign. | UC-60, UC-61, UC-62, UC-64, UC-65 | PO / BF-04 | Meeting / Voting / Minutes services |
 | BR-167 | User account list sorting must use an allowed sort field/order, and current search/filter/sort criteria are preserved across pages. | UC-05 | UC-05 user-list acceptance criteria | User Management |
 | BR-168 | A submission adding multiple internal Meeting Participants must be saved as one indivisible roster change. If any selected account, assigned Meeting Role or additional Meeting Permission is invalid, no account in the submitted batch may be added. Invitation dispatch occurs only after a successful roster save; delivery errors follow BR-94. | UC-28a | FE-06 revision, 12/10/2026 | Meeting Participant Management |
@@ -3795,7 +3803,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 116 | MSG110 | Toast | UC-21 – Start Meeting / Main Flow | Meeting started successfully. |
 | 117 | MSG111 | Toast | UC-22 – End Meeting / Main Flow | Meeting ended successfully. |
 | 118 | MSG112 | Dialog | UC-21 – Start Meeting / Exception Flows | This meeting cannot be started. |
-| 119 | MSG113 | Dialog | UC-44 – End Meeting / Exception Flows | Complete or cancel all unfinished meetings before ending the meeting. |
+| 119 | MSG113 | Dialog | Retired; formerly UC-44 (Meeting Session) / End Meeting gate | Retired with Meeting Sessions (ADR-0013); formerly “Complete or cancel all unfinished meeting sessions before ending the meeting.” This code must not be reused. |
 | 120 | MSG114 | Dialog | UC-22 – End Meeting / Exception Flows | This meeting cannot be ended. |
 | 121 | MSG115 | Toast | UC-21 – Start Meeting / Exception Flows | Unable to start the meeting. Please try again. |
 | 122 | MSG116 | Toast | UC-22 – End Meeting / Exception Flows | Unable to end the meeting. Please try again. |
