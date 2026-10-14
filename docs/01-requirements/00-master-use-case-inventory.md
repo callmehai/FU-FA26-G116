@@ -177,12 +177,12 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-52 | Xem biểu quyết *(View Meeting Votes)* — gồm UC-52a Xem danh sách, UC-52b Xem trạng thái / kết quả (xem được cả sau khi `Ended`) | User có quyền | Placeholder | `<<extend>>` UC-16 |
-| UC-53 | Tạo / cấu hình biểu quyết *(Create / Configure Vote)* — chỉ khi `InProgress`; sửa và xoá phiếu `Draft`; Chair chọn vai trò được bỏ phiếu (Chủ toạ / Thư ký / Thành viên / Khách mời) | Chair | Placeholder | `<<extend>>` UC-52 |
-| UC-54 | Mở biểu quyết *(Open Vote)* | Chair | Placeholder | `<<extend>>` UC-52 |
-| UC-55 | Bỏ phiếu *(Cast Vote)* — Chair, Secretary, Member đang phân công; Guest đã xác minh được bỏ phiếu như Member | Chair, Secretary, Participant, Guest | Placeholder | `<<extend>>` UC-52 |
-| UC-56 | Đóng biểu quyết *(Close Vote)* — khi `InProgress` hoặc sau `Ended` | Chair | Placeholder | `<<extend>>` UC-52 |
-| UC-57 | Ghi kết luận biểu quyết *(Record Vote Conclusion)* — `Passed` / `NotPassed` / `Deferred`; ghi rồi không sửa | Chair | Placeholder | `<<extend>>` UC-52 |
+| UC-52 | Xem biểu quyết *(View Meeting Votes)* — gồm UC-52a Xem danh sách, UC-52b Xem trạng thái / kết quả (xem được cả sau khi `Ended`); nháp chỉ Chair hiện hành thấy | User có quyền | Đã đặc tả các UC con | `<<extend>>` UC-16 |
+| UC-53 | Tạo / cấu hình biểu quyết *(Create / Configure Vote)* — tạo, sửa và xoá nháp khi `Approved`, `Published`, `InProgress`; Chair chọn vai trò được bỏ phiếu | Chair | Đã đặc tả | `<<extend>>` UC-52 |
+| UC-54 | Mở biểu quyết *(Open Vote)* — chỉ `InProgress`, tối đa một Vote Open mỗi Meeting, ít nhất một người đủ điều kiện | Chair | Đã đặc tả | `<<extend>>` UC-52 |
+| UC-55 | Bỏ phiếu *(Cast Vote)* — người trong danh sách chốt lúc mở và còn quyền truy cập; Guest xác minh qua lời mời | Chair, Secretary, Participant, Guest | Đã đặc tả | `<<extend>>` UC-52 |
+| UC-56 | Đóng biểu quyết *(Close Vote)* — khi `InProgress` hoặc sau `Ended` | Chair | Đã đặc tả | `<<extend>>` UC-52 |
+| UC-57 | Ghi kết luận biểu quyết *(Record Vote Conclusion)* — Chair chọn `Passed` / `NotPassed` / `Deferred`; ghi rồi không sửa | Chair | Đã đặc tả | `<<extend>>` UC-52 |
 
 ## FE-12 — Biên bản & Ký điện tử *(Meeting Minutes & Digital Signing)*
 
@@ -296,8 +296,9 @@ Audio → Tóm tắt (sau khi Ended)
 UC-44 Secretary upload audio → AI transcript có speaker → UC-45 Xem → UC-46 Sửa → UC-47 Sinh tóm tắt
 → UC-48 Xem → UC-49 Sửa → UC-50 Duyệt → UC-51 Công bố
 
-Biểu quyết (chỉ khi InProgress)
-UC-53 Tạo → UC-54 Mở → UC-55 Bỏ phiếu → UC-56 Đóng → hệ thống kiểm phiếu → UC-57 Chair ghi kết luận
+Biểu quyết (ADR-0019: chuẩn bị nháp trước khi họp)
+UC-53 Tạo/cấu hình nháp khi Approved / Published / InProgress
+→ UC-54 Mở khi InProgress → UC-55 Bỏ phiếu khi InProgress → UC-56 Đóng → hệ thống kiểm phiếu → UC-57 Chair ghi kết luận
 Sau Ended: không nhận phiếu mới; Chair vẫn UC-56 đóng phiếu còn mở và UC-57 ghi kết luận (ADR-0017). Phiếu Draft xoá được trong UC-53
 
 Biên bản
