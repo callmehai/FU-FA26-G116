@@ -89,6 +89,34 @@ Yêu cầu phi chức năng, phạm vi MoSCoW và dữ liệu cá nhân hiện n
 
 ---
 
+### 2.6. Quy tắc viết Business Rule (BR)
+
+- Một BR chỉ diễn đạt **một nguyên tắc nghiệp vụ độc lập**. Tách các điều kiện, quyền, giới hạn và kết quả có thể áp dụng riêng thành các BR riêng.
+- Viết ngắn, trực tiếp và dễ kiểm tra: nêu đối tượng, điều kiện nếu có và điều được phép, bắt buộc hoặc bị cấm. Không kể lại toàn bộ flow.
+- Nội dung Rule Statement không chứa mã BR khác, mã feature, mã MSG, tên bảng dữ liệu hoặc chi tiết triển khai. Phạm vi UC, nguồn quyết định và liên hệ giữa các quy tắc nằm ở cột riêng hoặc tại bước áp dụng trong UC.
+- Tra danh mục trước khi thêm: dùng lại quy tắc cùng nghĩa, không tạo BR trùng. Khi tách BR lớn, giữ mã cũ cho nguyên tắc chính và cấp mã mới cho các nguyên tắc được tách; không renumber hoặc tái cấp mã đã dùng.
+- Quy tắc từ ADR đã được chấp nhận cần được diễn đạt thành BR nghiệp vụ; ghi ADR tại cột nguồn, không đưa nội dung kỹ thuật của ADR vào Rule Statement.
+- Phân biệt quy tắc đã chốt và quy tắc đề xuất. Không biến giả định, giá trị giới hạn chưa rõ hoặc quyết định còn thiếu thành quy tắc đã được PO thông qua.
+- Dùng tên actor chuẩn: `Guest`, không dùng `verified Guest` hoặc `external Guest` làm tên actor. Xác minh email và hiệu lực lời mời là điều kiện nghiệp vụ. `Participant` không có nghĩa là người đó đã tham dự hoặc được ghi nhận có mặt.
+
+Ví dụ Rule Statement: **“Only an empty folder can be deleted.”** Phạm vi `UC-72d` và nguồn quyết định được ghi ở cột riêng.
+
+### 2.7. Quy tắc viết System Message (MSG)
+
+- Thông điệp trong UC Specification và danh mục phục vụ đặc tả được viết bằng **tiếng Anh**. Chỉ đổi ngôn ngữ khi có yêu cầu; thay đổi đặc tả không tự động thay đổi chuỗi UI/API đã triển khai.
+- Một mã MSG diễn đạt một tình huống. Dùng chung mã khi cùng tình huống xuất hiện ở nhiều UC; không dùng cùng mã cho lỗi có nghĩa khác nhau chỉ vì câu chữ gần giống.
+- Viết ngắn và cụ thể: nói kết quả hoặc vấn đề người dùng cần hiểu; thêm cách sửa/thử lại khi có ích. Không đưa tên exception, endpoint, trạng thái HTTP hoặc chi tiết lưu trữ vào thông điệp.
+- Thông điệp thất bại phải đúng với kết quả dữ liệu: không báo thành công khi chỉ hoàn tất một phần; nếu không có thay đổi nào được lưu, nói rõ khi người dùng cần biết.
+- Không tiết lộ sự tồn tại của tài nguyên mà người dùng không được truy cập. Phân biệt lỗi mất quyền với tài nguyên không khả dụng chỉ khi việc phân biệt không làm lộ dữ liệu.
+- Tra [danh mục MSG](../03-api/00-danh-muc-ma-thong-bao.md) trước khi cấp mã. Dùng dải `MSGnn` chung cho dự án, cập nhật “Mã tiếp theo”, không renumber hoặc tái dùng mã đã nghỉ.
+- Trong UC, ghi đủ **mã và nguyên văn thông điệp** tại đúng bước thành công hoặc lỗi. Không để mã tạm hoặc dùng câu chữ khác với danh mục.
+- Mã mới cho đặc tả phải ghi trạng thái **Dành sẵn, chưa triển khai**. Đồng bộ danh mục MSG, phụ lục Report 3 và các UC dùng mã đó trong cùng đợt sửa.
+- Không tạo MSG cho thao tác đóng/hủy giao diện không được đặc tả, hoặc cho mỗi bước nhỏ không cần phản hồi riêng.
+
+Ví dụ: **`MSGnn – “Only an empty folder can be deleted.”`** Mã thực tế phải được cấp từ danh mục chung.
+
+---
+
 ## 3. Khung mẫu đặc tả Use Case (Template chuẩn)
 
 ```markdown

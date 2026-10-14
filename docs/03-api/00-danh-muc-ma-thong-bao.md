@@ -62,7 +62,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 
 ## Mã tiếp theo
 
-**`MSG156`** — `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG154` dành cho thay đổi FE-06 trong Report 3, chưa có code. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG205`** — `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai.  `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG154` dành cho thay đổi FE-06 trong Report 3, chưa có code. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -373,6 +373,63 @@ riêng trong code: mark-read trả `404` không body khi không thấy thông b�
 [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md) và
 [ADR-0009](../05-decisions/0009-tu-lien-ket-google-lan-dau-theo-email.md) vẫn ghi số cũ
 (`MSG03`/`MSG04`/`MSG05` của UC-01, UC-02) — tra bảng trên khi đọc.
+
+### Tài liệu — FE-07 (UC-32, UC-33, UC-34, UC-35, UC-36, UC-71, UC-72)
+
+Các mã dưới đây **dành sẵn** cho đặc tả ngày 14/10/2026, chưa phải contract đã triển khai.
+
+| Mã | Tình huống / trạng thái | Thông điệp |
+|---|---|---|
+| `MSG156` | UC-32a / EX-1; UC-32c / EX-1; UC-35 / EX-2 · Dành sẵn | Meeting documents are not accessible. |
+| `MSG157` | UC-32a / EX-2 · Dành sẵn | Unable to load the document list. Please try again. |
+| `MSG158` | UC-32c / EX-2 · Dành sẵn | Unable to display the document. Please try again. |
+| `MSG159` | UC-32c / EX-3 · Dành sẵn | Secret Meeting documents can only be viewed online and cannot be downloaded. |
+| `MSG160` | UC-32c / EX-4 · Dành sẵn | Unable to download the document. Please try again. |
+| `MSG161` | UC-33a / Normal Flow · Dành sẵn | Document added to the Meeting successfully. |
+| `MSG162` | UC-33a / EX-1 · Dành sẵn | You no longer have permission to add documents to this Meeting. |
+| `MSG163` | UC-33a / EX-2 · Dành sẵn | Select your own available document and, if applicable, an available Agenda Item in this Meeting. |
+| `MSG164` | UC-33a / EX-3; UC-36 / EX-1 · Dành sẵn | Select a valid PDF or DOCX file no larger than 50 MB. |
+| `MSG165` | UC-33a / EX-4 · Dành sẵn | This document is already attached to the Meeting. |
+| `MSG166` | UC-33a / EX-5 · Dành sẵn | Unable to add the document. No document was added. Please try again. |
+| `MSG167` | UC-33c / Normal Flow · Dành sẵn | Document removed from the Meeting successfully. |
+| `MSG168` | UC-33c / EX-1 · Dành sẵn | The document cannot be removed because Meeting Minutes already exist. |
+| `MSG169` | UC-33c / EX-2 · Dành sẵn | You no longer have permission to remove documents from this Meeting. |
+| `MSG170` | UC-33c / EX-3 · Dành sẵn | This document is no longer attached to the Meeting. Refresh the document list. |
+| `MSG171` | UC-33c / EX-4 · Dành sẵn | Unable to remove the document. It remains attached to the Meeting. Please try again. |
+| `MSG172` | UC-33a / EX-6 · Dành sẵn | Documents cannot be added after the Meeting has ended. |
+| `MSG173` | UC-33a / EX-7; UC-33c / EX-5 · Dành sẵn | Documents cannot be added to or removed from a completed Agenda Item. |
+| `MSG174` | UC-33a / EX-8; UC-33c / EX-6 · Dành sẵn | This Meeting is not accessible. |
+| `MSG175` | UC-34 / EX-2; UC-71a / EX-1; UC-71b / EX-1; UC-71c / EX-1; UC-72b / EX-1; UC-72c / EX-1; UC-72d / EX-1 · Dành sẵn | This personal-library item is not available. |
+| `MSG176` | UC-34 / EX-1 · Dành sẵn | Unable to load your personal document library. Please try again. |
+| `MSG177` | UC-36 / Normal Flow · Dành sẵn | Document uploaded to your personal library successfully. |
+| `MSG178` | UC-36 / EX-3 · Dành sẵn | Unable to upload the document. No document was added. Please try again. |
+| `MSG179` | UC-36 / EX-2; UC-71c / EX-2; UC-72a / EX-2; UC-72c / EX-2 · Dành sẵn | The selected destination folder is not available in your personal library. |
+| `MSG180` | UC-71a / Normal Flow · Dành sẵn | Document deleted from your personal library successfully. |
+| `MSG181` | UC-71a / EX-2 · Dành sẵn | Unable to delete the document. Your personal library remains unchanged. |
+| `MSG182` | Retired — document-name constraint removed with BR-243 · Ngừng dùng | Retired: no document-name validation is specified under this code. Do not reuse. |
+| `MSG183` | UC-71b / Normal Flow · Dành sẵn | Document renamed successfully. |
+| `MSG184` | UC-71b / EX-2 · Dành sẵn | Unable to rename the document. Its name remains unchanged. |
+| `MSG185` | UC-71c / Normal Flow · Dành sẵn | Document moved successfully. |
+| `MSG186` | UC-71c / EX-3 · Dành sẵn | Unable to move the document. Its location remains unchanged. |
+| `MSG187` | UC-72a / Normal Flow · Dành sẵn | Folder created successfully. |
+| `MSG188` | UC-72a / EX-1; UC-72b / EX-2 · Dành sẵn | Enter a folder name. |
+| `MSG189` | UC-72a / EX-3; UC-72c / EX-4 · Dành sẵn | Folders cannot be nested more than five levels deep. |
+| `MSG190` | UC-72a / EX-4 · Dành sẵn | Unable to create the folder. No folder was created. |
+| `MSG191` | UC-72b / Normal Flow · Dành sẵn | Folder renamed successfully. |
+| `MSG192` | UC-72b / EX-3 · Dành sẵn | Unable to rename the folder. Its name remains unchanged. |
+| `MSG193` | UC-72c / EX-3 · Dành sẵn | A folder cannot be moved into itself or one of its descendants. |
+| `MSG194` | UC-72c / Normal Flow · Dành sẵn | Folder moved successfully. |
+| `MSG195` | UC-72c / EX-5 · Dành sẵn | Unable to move the folder. Its location remains unchanged. |
+| `MSG196` | UC-72d / EX-2 · Dành sẵn | Only an empty folder can be deleted. |
+| `MSG197` | UC-72d / Normal Flow · Dành sẵn | Folder deleted successfully. |
+| `MSG198` | UC-72d / EX-3 · Dành sẵn | Unable to delete the folder. The folder remains unchanged. |
+| `MSG199` | UC-35 / Normal Flow · Dành sẵn | Comment added successfully. |
+| `MSG200` | UC-35 / EX-1 · Dành sẵn | Enter a comment. |
+| `MSG201` | Retired — no separate commenting permission · Ngừng dùng | Retired: document-viewing access also permits commenting. Do not reuse. |
+| `MSG202` | UC-35 / EX-3 · Dành sẵn | Unable to add the comment. No comment was saved. Please try again. |
+| `MSG203` | Retired — mandatory PDF page reference removed · Ngừng dùng | Retired: a PDF comment does not require a page reference. Do not reuse. |
+| `MSG204` | UC-35 / EX-4 · Dành sẵn | Unable to load the document comments. Please try again. |
+
 
 ## Ghi chú: mã dùng chung có chủ ý
 
