@@ -44,6 +44,14 @@ Report 5 còn có các workbook kiểm thử riêng (Unit Test, Integration Test
 
 Thư mục Drive chứa các report: [SEP490-G116 Reports](https://drive.google.com/drive/folders/19wdKDAYViFGn4nlrmCnyNJkDQ0IOw-Z7?usp=drive_link).
 
-**Lần đồng bộ Markdown gần nhất:** 10/10/2026, từ bản DOCX sau đợt gom UC (70 UC, FE-01 → FE-15, bỏ Meeting Session). Các file trong [01-requirements/](../01-requirements/README.md) đã trích lại UC, BR theo bản này.
+**Report 3 đồng bộ Markdown gần nhất:** 14/10/2026, từ DOCX local sau khi bổ sung đầy đủ đặc tả
+FE-11 (UC-52a, UC-52b, UC-53–UC-57) và BR biểu quyết theo
+[ADR-0019](../05-decisions/0019-chuan-bi-bieu-quyet-truoc-khi-hop.md). Bản trích UC/BR trong
+[01-requirements/](../01-requirements/README.md) được cập nhật cùng nguồn. Lần này không đồng bộ
+Report 1/2 hoặc thay nội dung trên Drive.
+
+**Bàn giao đặc tả màn hình:** giữ nguyên các phần màn hình hiện có trong DOCX. Người phụ trách
+màn hình xem [note cập nhật FE-11](../notes/NOTE-cap-nhat-man-hinh-fe11.md) để đối chiếu với UC Spec mới.
+Changelog 14/10/2026 của **KhanhPG** ghi chung cập nhật UC Spec FE-07 và FE-11.
 
 > **Mục "V.2 System Messages" của Report 3 không phải nguồn chuẩn.** Mã thông báo chuẩn duy nhất là [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md); khi hai bên lệch nhau, catalogue thắng.

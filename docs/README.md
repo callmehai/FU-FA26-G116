@@ -27,6 +27,7 @@ BE → FE → BA chốt tài liệu → Tester, Definition of Done. Đọc trư�
 | [09-bussinessflow/](09-bussinessflow/) | Swimlane 4 luồng nghiệp vụ chính BF-01 → BF-04 |
 | [10-statemachine/](10-statemachine/) | Sơ đồ trạng thái nghiệp vụ và các trạng thái liên quan |
 | [11-contextdiagram/](11-contextdiagram/) | Context diagram của hệ thống và file ảnh xuất |
+| [notes/](notes/) | Ghi chú rà soát và bàn giao cập nhật tài liệu cho người phụ trách |
 | [assets/](assets/) | Ảnh, sơ đồ, file nguồn (`.drawio`, `.excalidraw`) được các tài liệu trên nhúng |
 
 Mỗi thư mục trong `docs/` có một `README.md` riêng ghi phạm vi, nguồn chuẩn và quan hệ giữa source với

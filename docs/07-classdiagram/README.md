@@ -1,655 +1,277 @@
-# 07 · Class diagram — các điểm cần sửa cho khớp code
+# 07 · Class diagram
 
-## Sơ đồ theo feature
+Một đầu mối cho **mục lục, quy ước Design Class Diagram (DCD) và kết quả rà soát**. Đọc file này
+trước khi tạo, sửa hoặc review class diagram. Tên UML, stereotype, attribute và operation dùng
+English; phần giải thích dùng tiếng Việt.
 
-Tên file theo số Feature mới (FE-01 → FE-15, baseline 10/10/2026). Bản vẽ FE-05 *Meeting Session Management* cũ
-đã bị xoá cùng Meeting Session ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)).
+## 1. Mục lục và phạm vi
 
-- [FE-01 — Authentication](feature-01-auth-class-diagram.drawio) ([PNG](feature-01-auth-class-diagram.drawio.png)) — UC-01 → UC-04; Guest access (UC-04) tách riêng khỏi đăng nhập nội bộ, Google là hệ thống ngoài.
-- [FE-02 — User Management](feature-02-user-management-class-diagram.drawio) ([PNG](feature-02-user-management-class-diagram.drawio.png)) — UC-05 → UC-09, gồm cả UC-07.
-- [FE-03 — Role Management](feature-03-role-management-class-diagram.drawio) ([PNG](feature-03-role-management-class-diagram.drawio.png)) — UC-10 → UC-13; `Role` ◆ `RoleCapability`, `Role`–`User`, `User`–`AuditLogEntry`.
-- [FE-04 — Meeting Management](feature-04-meeting-management-class-diagram.drawio) ([PNG](feature-04-meeting-management-class-diagram.drawio.png)) — UC-14 → UC-22.
+Mỗi feature có một source `.drawio` và một ảnh `.drawio.png` cùng tên. Source là bản editable;
+PNG phải xuất từ đúng source đó. Các bản hiện có là **thiết kế theo feature**, không phải bản
+trích xuất nguyên trạng các class C# đã triển khai.
 
-FE-01 → FE-04 được vẽ lại ngày 13/10/2026, lấy sequence diagram trong
-[06-sequencediagram](../06-sequencediagram/) làm nguồn chuẩn.
-- [FE-05 — Agenda Management](feature-05-agenda-management-class-diagram.drawio) ([PNG](feature-05-agenda-management-class-diagram.drawio.png)) — UC-23a → UC-23d, UC-24 → UC-26; AgendaItem thuộc thẳng Meeting; mô hình đích theo ERD.
-- [FE-06 — Meeting Participant Management](feature-06-meeting-participant-management-class-diagram.drawio) ([PNG](feature-06-meeting-participant-management-class-diagram.drawio.png)) — UC-27 → UC-30; mô hình đích theo ERD và business rules FE-06.
-- [FE-13 — Notification](feature-13-notification-management-class-diagram.drawio) ([PNG](feature-13-notification-management-class-diagram.drawio.png)) — UC-66 → UC-68.
-
-## Chuẩn trình bày class diagram
-
-Hai cặp file FE-05 và FE-06 ở trên là **mẫu chuẩn** cho class diagram mới và các lần chỉnh sửa
-diagram hiện có. Giữ thống nhất các điểm sau:
-
-- Căn giữa stereotype và tên class trong phần đầu; căn trái attributes, operations và các nội dung
-  còn lại bên dưới.
-- Đặt chiều ngang class vừa sát dòng dài nhất trong nội dung, chừa một lề nhỏ để chữ không chạm
-  viền; tránh để khoảng trống ngang dư thừa.
-- Giữ màu theo stereotype/layer, đường phân cách phần tên với nội dung, kiểu đường quan hệ và cách
-  sắp xếp các layer như trong hai mẫu.
-- Mỗi diagram có cả file `.drawio` để tiếp tục chỉnh sửa và PNG được xuất từ chính file đó. Khi cập
-  nhật diagram, xuất lại PNG tương ứng để hai file luôn đồng bộ.
-
-Đối chiếu các bản vẽ trong thư mục này với code backend (SCRUM-11 xác thực, SCRUM-13 quản lý người
-dùng, SCRUM-60 ma trận phân quyền). Các phần A → F bên dưới mô tả **bản vẽ cũ** trước ngày 13/10/2026.
-
-- [`feature-01-auth-class-diagram.drawio`](feature-01-auth-class-diagram.drawio) — đối
-  chiếu tại **21/09/2026**
-- [`feature-02-user-management-class-diagram.drawio`](feature-02-user-management-class-diagram.drawio)
-  — đối chiếu tại **21/09/2026**; phần UC-07 đã tách sang bản vẽ 02b (**04/10/2026**), nay vẽ lại trong bản 02
-- `feature-02b-password-reset-class-diagram.drawio.png` (*file chưa được commit vào repo*)
-  — UC-07 đặt lại mật khẩu, vẽ theo code tại **04/10/2026**, xem [PHẦN D](#phần-d--uc-07-đặt-lại-mật-khẩu-đã-tách-sang-bản-vẽ-02b)
-- [`feature-03-role-management-class-diagram.drawio.png`](feature-03-role-management-class-diagram.drawio.png)
-  — đối chiếu tại **22/09/2026**, phần `Role` đối chiếu lại **23/09/2026** (`SCRUM-63`), xem [PHẦN F](#phần-f--bản-vẽ-03-ma-trận-phân-quyền-scrum-60)
-
-**Kết luận: kiến trúc đúng, chi tiết lệch.** Phân tầng boundary → control → service → repository →
-entity khớp đúng với code. Nhưng tên field, tên method và một số quan hệ thì khác, và có **ba chỗ
-lệch về bảo mật** — nếu ai đó implement theo bản vẽ thì sẽ tạo ra lỗ hổng thật.
-
-File này liệt kê từng điểm để sửa. Sắp theo mức ưu tiên, không theo thứ tự bản vẽ.
-
----
-
-## Cách đọc file này
-
-| Ký hiệu | Nghĩa |
-|---|---|
-| 🔴 | **Phải sửa** — bản vẽ đang mô tả một thiết kế không an toàn hoặc mâu thuẫn |
-| 🟡 | **Nên sửa** — bản vẽ thiếu thành phần có thật, người đọc sẽ hiểu sót luồng |
-| ⚪ | **Sửa nếu có thời gian** — khác tên gọi, không gây hiểu sai |
-
-Cột "Code" ghi tên thật trong source để BA copy sang bản vẽ cho chính xác.
-
----
-
-# PHẦN A — 🔴 Ba chỗ phải sửa
-
-## A1. `findByGoogleEmail(email)` → `findByGoogleSubjectId(subject)`
-
-**Bản vẽ 01**, class `UserRepository`.
-
-| Bản vẽ đang ghi | Code thật |
-|---|---|
-| `+ findByGoogleEmail(email: string): User` | `FindByGoogleSubjectIdAsync(googleSubjectId: string): User?` |
-
-**Vì sao phải sửa, không phải chuyện đặt tên:**
-
-Đăng nhập Google bằng cách tra theo **email** là một lỗ hổng chiếm tài khoản. Email của một tài
-khoản Google **đổi được**, và trên Google Workspace thì sau khi một nhân viên nghỉ việc, địa chỉ
-đó **cấp lại được cho người mới**. Tra theo email nghĩa là: người mới đăng nhập Google → hệ thống
-tìm thấy tài khoản của người cũ → trao toàn bộ quyền của người cũ cho người mới.
-
-Code tra theo `sub` — mã định danh Google cam kết là duy nhất và **không bao giờ đổi** trong suốt
-vòng đời tài khoản. Trong bản vẽ nên ghi là `googleSubjectId` hoặc `googleSub`.
-
-**Cần sửa ở 3 chỗ trên bản vẽ 01:**
-
-1. `UserRepository.findByGoogleEmail(email: string)` → `findByGoogleSubjectId(googleSubjectId: string)`
-2. `AuthenticationService.signInWithGoogle(googleEmail: string)` → xem A2
-3. `AuthController.signInWithGoogle(googleEmail: string)` → xem A2
-
----
-
-## A2. `signInWithGoogle(googleEmail)` → `signInWithGoogle(idToken)`
-
-**Bản vẽ 01**, class `AuthController` và `AuthenticationService`.
-
-| Bản vẽ đang ghi | Code thật |
-|---|---|
-| `+ signInWithGoogle(googleEmail: string): User` | `SignInWithGoogleAsync(idToken: string): GoogleSignInResult` |
-
-**Vì sao phải sửa:**
-
-Bản vẽ cho backend nhận **email trần** từ client. Nghĩa là bất kỳ ai cũng gửi được
-`{"googleEmail": "giamdoc@congty.vn"}` và đăng nhập thành giám đốc. Không có gì chứng minh người
-gửi thật sự sở hữu địa chỉ đó.
-
-Code nhận **ID token** — một chuỗi có chữ ký số của Google. Backend verify chữ ký đó trước, rồi mới
-lấy `sub` và `email` từ bên trong token ra dùng. Client không tự chế được token hợp lệ.
-
-**Cần bổ sung vào bản vẽ 01 một collaborator đang thiếu:**
-
-```
-<<service>> GoogleTokenVerifier
-+ verify(idToken: string): GoogleIdentity
-```
-
-với `GoogleIdentity` là một value object `{ subject: string, email: string }`. Mũi tên:
-`AuthenticationService` ---uses---> `GoogleTokenVerifier`.
-
-Luồng đúng để vẽ: `AuthenticationService.signInWithGoogle(idToken)` → gọi `GoogleTokenVerifier.verify()`
-→ nhận `GoogleIdentity` → gọi `UserRepository.findByGoogleSubjectId(identity.subject)`.
-
----
-
-## A3. Bản vẽ 02 thiếu hẳn `TokenService` — thiếu một quy tắc bảo mật
-
-**Bản vẽ 02**, class `UserService`.
-
-Bản vẽ không có mũi tên nào từ `UserService` sang thành phần quản lý token đăng nhập. Code có, và
-gọi ở **hai** chỗ:
-
-| Khi nào | Vì sao |
-|---|---|
-| Vô hiệu hoá tài khoản (UC-06c) | Một dòng đánh dấu "đã vô hiệu hoá" mà token của người đó **vẫn dùng được** thì không phải là đã vô hiệu hoá. Phải huỷ hết token. |
-| Đổi vai trò (UC-06b) | Token cũ vẫn mang quyền cũ. Hạ một người từ Admin xuống Member mà không huỷ token thì họ vẫn admin cho tới khi token hết hạn. |
-
-**Cần bổ sung vào bản vẽ 02:**
-
-```
-<<service>> TokenService
-+ revokeAllForUser(userId: UUID): void
-```
-
-Mũi tên: `UserService` ---revokes tokens---> `TokenService`.
-
-### ⚠️ Kèm theo: đổi tên `:Session Service` → `:Token Service`
-
-Sequence diagram UC-06c ở [`docs/06-sequencediagram/`](../06-sequencediagram/) **đã có** participant
-này, nhưng đang đặt tên là `:Session Service`. Tên đó gây hiểu nhầm là hệ thống dùng session phía
-server — **không phải**, hệ thống dùng JWT. Lý do đầy đủ ở [phụ lục cuối file](#phụ-lục--có-dùng-jwt-không-mà-sao-lại-có-session-server).
-
-Đề nghị đổi tên ở **cả hai loại bản vẽ** cho thống nhất:
-
-| Nơi | Đang là | Đổi thành |
+| Feature | Source / PNG | UC trong phạm vi |
 |---|---|---|
-| Sequence diagram UC-06c | `:Session Service` | `:Token Service` |
-| Class diagram 02 (thêm mới) | — | `TokenService` |
+| FE-01 Authentication | [drawio](feature-01-auth-class-diagram.drawio) · [PNG](feature-01-auth-class-diagram.drawio.png) | UC-01–UC-04 |
+| FE-02 User Management | [drawio](feature-02-user-management-class-diagram.drawio) · [PNG](feature-02-user-management-class-diagram.drawio.png) | UC-05, UC-06a/b/c, UC-07–UC-09 |
+| FE-03 Role Management | [drawio](feature-03-role-management-class-diagram.drawio) · [PNG](feature-03-role-management-class-diagram.drawio.png) | UC-10, UC-11, UC-12a/b/c, UC-13 |
+| FE-04 Meeting Management | [drawio](feature-04-meeting-management-class-diagram.drawio) · [PNG](feature-04-meeting-management-class-diagram.drawio.png) | UC-14–UC-22 |
+| FE-05 Agenda Management | [drawio](feature-05-agenda-management-class-diagram.drawio) · [PNG](feature-05-agenda-management-class-diagram.drawio.png) | UC-23a/b/c/d, UC-24–UC-26 |
+| FE-06 Meeting Participant Management | [drawio](feature-06-meeting-participant-management-class-diagram.drawio) · [PNG](feature-06-meeting-participant-management-class-diagram.drawio.png) | UC-27, UC-28a/b/c, UC-29–UC-31 |
+| FE-13 Notification | [drawio](feature-13-notification-management-class-diagram.drawio) · [PNG](feature-13-notification-management-class-diagram.drawio.png) | UC-66, UC-67a/b, UC-68 |
 
-> Phía code đã đổi các comment tham chiếu sang `:Token Service` rồi, nên bản vẽ đổi theo là khớp.
-> Tên class trong code vẫn là `IRefreshTokenStore` — bản vẽ không bắt buộc trùng tên code.
+FE-07–FE-12, FE-14 và FE-15 chưa có class diagram trong thư mục này. FE-05 Meeting Session cũ
+đã bị bỏ theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md); FE-05 hiện tại là Agenda.
+UC-07 hiện nằm trong FE-02, không còn một bản 02b độc lập.
 
-> Ghi chú thêm: sequence diagram **UC-06b chưa vẽ** participant này, chỉ UC-06c có. Nhưng code gọi ở
-> cả hai. Đây là điểm lệch đã ghi trong
-> [`docs/03-api/02-quan-ly-nguoi-dung.md`](../03-api/02-quan-ly-nguoi-dung.md), mục "Năm chỗ code
-> khác bản vẽ" — nên bổ sung luôn vào UC-06b.
+## 2. Nguồn và cách xử lý khác biệt
 
----
+1. **Yêu cầu mới nhất đã chốt:** Jira và ghi chú thay đổi; đối chiếu UC/BR trong
+   [Report 3](../08-reports/Report-3_Software_Requirement_Specification.md),
+   [UC inventory](../01-requirements/00-master-use-case-inventory.md),
+   [UC Specification](../01-requirements/05-use-case-specifications.md) và
+   [Business Rules](../01-requirements/06-business-rules.md). Kiểm tra phiên bản/ngày và tên UC;
+   không suy ra UC hiện hành từ số cũ trong tiêu đề sequence.
+2. **Sequence cùng phạm vi:** đọc toàn bộ source `.txt` của feature trong
+   [06-sequencediagram](../06-sequencediagram/README.md), kiểm tra trạng thái phê duyệt và lập
+   traceability. Sequence là bằng chứng về tương tác; mâu thuẫn với UC/BR phải được ghi riêng.
+3. **Entity và kiến trúc:** dùng Entity Descriptions của Report 3,
+   [ERD mục tiêu](../02-design/02-erd.md) và ADR đã chấp nhận còn phù hợp. ERD mục tiêu khác schema
+   hiện tại; không tự đổi entity, enum, quyền hay lifecycle chỉ để khớp code.
+4. **Code hiện tại:** dùng để kiểm tra trạng thái triển khai; chỉ lấy chữ ký C# làm chuẩn bắt buộc
+   khi diagram được tuyên bố là **as-built**. Ghi rõ khác biệt design/code.
+5. **Message:** nguồn chuẩn duy nhất là
+   [catalogue MSG](../03-api/00-danh-muc-ma-thong-bao.md), kể cả khi Report 3 ghi khác.
 
-# PHẦN B — 🟡 Thành phần có thật nhưng thiếu trên bản vẽ
+Theo [development workflow](../DEVELOPMENT_WORKFLOW.md#21-changing-a-requirement-during-implementation),
+BE/FE được điều chỉnh yêu cầu trong phạm vi UC và ghi vào Jira; BA chốt UC/diagram/BR sau tích hợp.
+Không coi tài liệu chậm cập nhật là lý do tự động chặn implementation. Khi nguồn mâu thuẫn hoặc
+chưa xác nhận, ghi `SOURCE_CONFLICT` / `NEEDS REVIEW`; class/DTO/interface mới chưa có bằng chứng
+phải ghi `PROPOSED / NEEDS APPROVAL`, không trình bày như thiết kế đã chốt.
 
-## B1. Bản vẽ 01 thiếu 4 collaborator và 2 use case
+## 3. Quy trình tạo và sửa DCD
 
-### Bốn interface không được vẽ
+Luồng mặc định: **UC + BR → Sequence → Class → đối chiếu hai chiều**; có thể quay lại sửa artifact
+trước khi thiết kế phát hiện mâu thuẫn. Duy trì một định nghĩa canonical cho mỗi logical type
+trong feature, gộp operation từ tất cả UC. Domain diagram chỉ mô tả entity/value object; DCD theo
+feature có thể gồm Boundary, Controller, Service, Repository và các type liên quan.
 
-Đây không phải chi tiết implement — mỗi cái là một quyết định thiết kế có ADR hoặc có lý do bảo mật.
-
-| Class cần thêm | Method | Việc nó làm |
+| Bước | Việc cần làm | Bằng chứng cần giữ |
 |---|---|---|
-| `<<service>> PasswordHasher` | `hash(password): string`<br>`verify(passwordHash, providedPassword): bool` | Băm mật khẩu. Không bao giờ lưu mật khẩu thật. |
-| `<<service>> TokenIssuer` | `createAccessToken(user, capabilities): string`<br>`createRefreshToken(): string` | Phát JWT và refresh token |
-| `<<service>> TokenService` | `store(token, userId, lifetime)`<br>`consume(token): UUID?`<br>`revoke(token)`<br>`revokeAllForUser(userId)` | Lưu refresh token phía server (Redis). **Cùng một thành phần với `TokenService` ở mục A3** — vẽ một lần, dùng ở cả hai bản vẽ. |
-| `<<service>> GoogleTokenVerifier` | `verify(idToken): GoogleIdentity` | Đã nói ở A2 |
+| P0 · Phạm vi | Chốt feature, UC, phiên bản SRS, source diagram, sequence thiếu/chưa duyệt | Danh sách source và giới hạn review |
+| P1 · Yêu cầu | Đọc actor, pre/postcondition, main/alternative/exception flow, BR và side effect | UC → hành vi/BR; audit, email, notification, kết thúc phiên nếu có |
+| P2 · Lifeline | Chuẩn hóa alias thành type, phân loại và gộp instance trùng type | Lifeline → class/interface hoặc lý do loại |
+| P3 · Operation | Ánh xạ lời gọi có ý nghĩa vào đúng class nhận message | Sequence/message → receiver → operation; chữ ký chưa biết phải ghi rõ |
+| P4 · Cấu trúc | Bổ sung field/type/quan hệ từ domain, BR, kiến trúc hoặc code có căn cứ | Catalogue type và nguồn cho từng bổ sung |
+| P5 · Vẽ | Sửa cục bộ, giữ ID, nội dung không liên quan và bố cục thủ công | Source editable và PNG đồng bộ |
+| P6 · Đối chiếu | Chạy Gates A–F, ghi mâu thuẫn và kết luận có giới hạn | Traceability, discrepancy log, trạng thái review |
 
-Tất cả đều là mũi tên `AuthenticationService` ---uses---> ...
+### Ánh xạ lifeline và message
 
-### Hai use case không được vẽ
+- `:UserService` là ký hiệu instance ở sequence; tên class là `UserService`, bỏ dấu `:`.
+  Hai instance `a:User`, `b:User` vẫn chỉ cho một type `User`.
+- Actor là vai trò bên ngoài; Database là lifeline hạ tầng. Không tự tạo class `Admin`, `Database`
+  hay kế thừa `Admin extends User`. Google là external system; gateway/interface chỉ thêm khi có
+  căn cứ kiến trúc. DTO/enum/entity có thể cần trong DCD dù không là lifeline.
+- Với `Controller -> Service: createUser(...)`, operation thuộc **Service**. Không sao chép cùng
+  một method vào mọi tầng. Thông điệp ngôn ngữ tự nhiên chỉ chứng minh trách nhiệm, chưa chứng minh
+  tên method, kiểu tham số hay kiểu trả về.
+- Return, SQL I/O, activation, `alt`/`loop` và note không tự sinh operation. Self-call chỉ thành
+  private operation khi cần thể hiện trách nhiệm nội bộ; thao tác UI có thể được ghi là UI event.
+- Không suy ra `bool`/`void`, DTO, interface, field, FK, enum hay business rule từ tên action.
+  Được ẩn getter/setter và chi tiết framework; không ẩn operation nghiệp vụ cần để hiểu sequence.
 
-`AuthenticationService` trên bản vẽ có 2 method. Code có **4**:
+### Tên, chữ ký và trình bày
 
-| Bản vẽ | Code | Ghi chú |
+- Type dùng `PascalCase`; field/operation dùng `camelCase`. Chữ ký:
+  `+ getUser(userId: UUID): User?`. `+` public, `-` private, `#` protected, `~` package.
+  Attribute OO mặc định `- name: Type`; enum ghi literal đã có nguồn. Thống nhất type và nullability.
+- Stereotype dùng `<<boundary>>`, `<<control>>`, `<<service>>`, `<<repository>>`, `<<entity>>`,
+  `<<interface>>`, `<<enumeration>>`; đây là legend của dự án, không thay thế ngữ nghĩa UML.
+- Căn giữa stereotype/tên, căn trái member; tách rõ name/attribute/operation compartment. Chiều
+  ngang vừa dòng dài nhất với lề nhỏ; không cắt chữ, chồng class/label hay để cạnh xuyên class.
+- Giữ style hiện có; FE-05/06 là mẫu bố cục và typography, **không phải bảo chứng đúng toàn bộ
+  member/ngữ nghĩa**. Đường nối rõ đầu cuối, layer có khoảng cách; không thêm màu hoặc package dư.
+- Controller có thể biểu diễn vai trò của Minimal API endpoint, không bắt buộc class kế thừa
+  `ControllerBase`. Có thể bỏ hậu tố `Async`/`Task` khi diagram là design; không tạo interface chỉ
+  vì một framework thường dùng interface. Repository xác thực và quản trị là các abstraction
+  khác phạm vi, không gộp chỉ vì tên gần giống.
+
+## 4. Quan hệ UML
+
+| Quan hệ | Ký hiệu và hướng | Điều kiện sử dụng |
 |---|---|---|
-| `signIn` | `SignInAsync` | ✅ |
-| `signInWithGoogle` | `SignInWithGoogleAsync` | ✅ (sửa tham số, xem A2) |
-| — | `RefreshAsync(refreshToken)` | ❌ **thiếu** — UC-03 |
-| — | `SignOutAsync(refreshToken)` | ❌ **thiếu** — đăng xuất |
+| Association | Nét liền; navigability nếu cần | Tham chiếu/cấu trúc giữa instance |
+| Dependency | Nét đứt, đầu mũi tên mở; client → supplier | Sự phụ thuộc đáng thể hiện; không vẽ mọi call tạm thời |
+| Generalization | Nét liền, tam giác rỗng trỏ về parent | Quan hệ subtype thực sự |
+| Interface Realization | Nét đứt, tam giác rỗng trỏ về interface | Implementation của interface đã có căn cứ |
+| Aggregation | Nét liền, hình thoi rỗng ở whole | Whole–part chia sẻ có căn cứ; chưa rõ thì dùng association |
+| Composition | Nét liền, hình thoi đặc ở owner | Sở hữu part với ràng buộc lifetime; không dùng cho “gọi service” |
 
-Vòng đời refresh token (access token 15 phút, refresh token xoay vòng dùng-một-lần) là phần lớn
-nhất của SCRUM-11 mà bản vẽ hiện không mô tả gì.
+Multiplicity (`1`, `0..1`, `0..*`, `1..*`, `m..n`) đặt **gần đầu association tương ứng**:
+số tại đầu đó đếm instance tại đầu đó với một instance ở đầu đối diện. Không đặt multiplicity
+trên dependency để diễn tả tần suất gọi. Nhãn `uses`/`manages` không thay thế ký hiệu quan hệ.
+Không đưa activation bar, return message hay khung điều khiển sequence vào DCD.
 
-Tương ứng, `AuthController` cũng cần thêm `refresh()` và `signOut()`.
+Nguồn chuẩn notation: [OMG UML 2.5.1](https://www.omg.org/spec/UML/2.5.1/).
+Hướng dẫn thiết kế bổ trợ: [Larman §16.21](https://www.informit.com/articles/article.aspx?p=1398623&seqNum=22),
+[Operations and Methods §16.6](https://www.informit.com/articles/article.aspx?p=1398623&seqNum=7) và
+[Fowler: Dependency and Association](https://martinfowler.com/bliki/DependencyAndAssociation.html).
+Quy trình, traceability và style ở đây là quy ước TrustCabinet, không phải tất cả đều do OMG bắt buộc.
 
----
+## 5. Kiểm tra trước khi bàn giao
 
-## B2. Bản vẽ 02 thiếu 3 method của `UserRepository`
-
-| Method cần thêm | Việc nó làm |
+| Gate | Điều kiện |
 |---|---|
-| `getCapabilities(role): List<Capability>` | Đọc quyền từ bảng `role_capabilities` |
-| `countActiveWithCapability(capability, exceptId): int` | **Quan trọng** — xem B3 |
-| `discardChanges(user): void` | Vứt bỏ thay đổi trong bộ nhớ sau khi database từ chối lưu |
+| A · Yêu cầu | Đúng UC/phiên bản; có sequence hoặc `MISSING_SEQUENCE`; đủ hành vi và side effect; không bịa yêu cầu |
+| B · Traceability | Mọi lifeline nội bộ có mapping hoặc lý do loại; call quan trọng có receiver operation; không copy return/SQL thành method; type canonical thống nhất |
+| C · Domain/type | Field, enum, ID, nullability, tham số/return và quyền khớp nguồn; proposed type và nguồn mâu thuẫn được ghi rõ |
+| D · UML | Đúng kiểu/hướng arrow, ownership, stereotype; multiplicity có căn cứ và đặt đúng đầu; không nhầm actor role với class inheritance |
+| E · Source/ảnh | XML hợp lệ, ID duy nhất, reference tồn tại; render và xem ảnh; không cắt/chồng chữ; PNG mở được, model nhúng khớp source |
+| F · Đối chiếu cuối | Class ↔ Sequence ↔ UC/BR ↔ ERD; code nếu as-built; log nguồn mâu thuẫn và giới hạn kiểm tra |
 
----
+Kết quả chỉ là `PASS` khi đủ bằng chứng cho tất cả gate; `NEEDS REVIEW` khi nguồn/chữ ký/phê duyệt
+chưa đủ; `FAIL` khi xác định sai hành vi hoặc notation. Báo cáo phải có feature/UC, phiên bản SRS,
+sequence đã đọc, mapping lớp/operation và lý do loại, quan hệ đã kiểm tra, discrepancy, file thay đổi
+và kết luận. Không ghi “fully verified” khi chưa đọc đủ source.
 
-## B3. Bản vẽ 02 thiếu quy tắc "không được xoá quản trị viên cuối cùng"
+Khi sửa `.drawio`, dùng [drawio-skill](../../.agents/skills/drawio-skill/SKILL.md) và
+[DRAWIO_EDITING_RULES.md](../../DRAWIO_EDITING_RULES.md). Chạy validator của skill và `git diff --check`;
+render draft không nhúng XML để xem, rồi xuất PNG editable. Với draw.io 29.6.1 trên máy hiện tại,
+`-e` có thể sinh PNG thiếu IEND và metadata zTXt dùng raw DEFLATE/CRC sai: phải sửa container,
+kiểm tra giải mã PNG **và mở lại model bằng draw.io** trước khi bàn giao. Dạng nhúng đã kiểm tra
+được là chunk `tEXt`, keyword `mxfile`, nội dung XML qua `encodeURIComponent`, theo
+[file format của draw.io](https://github.com/jgraph/drawio/wiki/File-Format).
 
-Đây là một quy tắc nghiệp vụ, không phải chi tiết kỹ thuật, nên đáng được thể hiện trên bản vẽ.
+## 6. Rà soát hiện trạng · 14/10/2026
 
-**Vấn đề:** nếu vô hiệu hoá (hoặc hạ vai trò) người quản trị viên cuối cùng còn hoạt động, thì
-**không còn ai vào được màn hình quản lý người dùng nữa** — kể cả để sửa lại. Hệ thống tự khoá
-chính nó, và cách duy nhất để cứu là can thiệp thẳng vào database.
+Đã đọc 7 source DCD, 44 sequence `.txt` theo feature, các README tương ứng, UC/BR/Entity Descriptions
+trong snapshot Report 3 local và các điểm implementation được dẫn trong log bên dưới. Snapshot
+Report 3 và một số tài liệu yêu cầu đang có thay đổi chưa commit; lần rà soát này không xác nhận
+phê duyệt trên Jira và không đóng dấu BA Final Review.
 
-Đây là lỗ hổng đã được phát hiện khi review PR #9 và đã sửa.
+- Cả 7 source XML có ID duy nhất, không có edge reference hỏng; validator báo **0 lỗi, 0 cảnh báo**.
+  103 quan hệ được kiểm tra kiểu arrow; không thấy dùng inheritance/realization sai ký hiệu.
+- Lifeline nội bộ của cả 44 sequence đều có type tương ứng sau chuẩn hóa alias. Actor/Database
+  được loại khỏi mapping class; Google vẫn là external system. Không tìm thấy duplicate class
+  trong một feature; field khác nhau giữa các view được ghi ở DCD-02.
+- Có 33 call ghi rõ tên operation, 24 call trùng tên operation của receiver. 9 call còn lại thuộc
+  FE-05/06 ở DCD-06/07. Các message ngôn ngữ tự nhiên được đối chiếu trách nhiệm, chưa chứng minh
+  toàn bộ chữ ký hay tất cả guard nghiệp vụ; bảng dưới ghi operation chính của từng UC.
+- Đã render mới và xem cả 7 diagram: chưa thấy cắt chữ, chồng class hoặc cạnh xuyên class.
+  Multiplicity ở FE-05/06 cần chỉnh cách ghi theo DCD-09; validator hình học không xác minh được
+  ý nghĩa này. Các kiểu dependency/association/composition hiện dùng có hình dạng phù hợp.
+- **6/7 PNG cũ không giải mã được**; đã xuất lại FE-01/02/03/04/06/13 từ source không đổi.
+  FE-05 hiển thị được nhưng draw.io không đọc được model nhúng, nên sửa riêng metadata và giữ
+  nguyên pixel. Cả 7 PNG được chuẩn hóa metadata theo định dạng editable của draw.io.
+  Sau sửa: 7/7 ảnh giải mã đầy đủ, XML nhúng khớp source. Đã dùng draw.io mở từng PNG và xuất lại
+  XML: ID, member, style, source/target và geometry đều khớp source, chỉ khác cách viết số tương
+  đương như `505.0`/`505` và thứ tự attribute/whitespace của XML.
 
-**Cần thêm vào `UserService` trên bản vẽ 02:**
+| Feature | Sequence đã đối chiếu | Kết luận thiết kế | Điểm cần xử lý |
+|---|---|---|---|
+| FE-01 | 4 | NEEDS REVIEW | DCD-02/03/04 |
+| FE-02 | 7 | NEEDS REVIEW | DCD-02/05 |
+| FE-03 | 6 | NEEDS REVIEW | DCD-08/10 |
+| FE-04 | 9 | NEEDS REVIEW | DCD-11 |
+| FE-05 | 7 | NEEDS REVIEW | DCD-06/09 |
+| FE-06 | 7 | NEEDS REVIEW | DCD-07/09/12 |
+| FE-13 | 4 | NEEDS REVIEW | DCD-02/10/13 |
 
-```
-- wouldRemoveTheLastAdministrator(user: User, newRoleId: UUID): bool
-```
+Kết quả Gates A–F: **A NEEDS REVIEW** (số UC/phê duyệt nguồn), **B NEEDS REVIEW** (operation gộp
+và chữ ký chưa đủ), **C NEEDS REVIEW** (field/nullability/domain), **D NEEDS REVIEW** (multiplicity
+FE-05/06; các kiểu arrow đã kiểm tra phù hợp), **E PASS** (source, render, PNG và native roundtrip),
+**F NEEDS REVIEW** (các xung đột dưới đây còn mở). Đây là kết quả review tài liệu, không phải kết
+luận implementation đã vi phạm yêu cầu hay yêu cầu BA sửa trước khi BE/FE hoàn thành.
 
-(để `-` vì là private, nhưng nên hiện ra để người đọc biết quy tắc này tồn tại)
+### Discrepancy log
 
-Method này gọi `UserRepository.countActiveWithCapability(AdminUsers, exceptId)` ở B2.
-
-**Lưu ý cho BA khi mô tả quy tắc:** đếm theo **capability `AdminUsers`**, không đếm theo tên vai
-trò `"Admin"`. Bảng `role_capabilities` là thứ quyết định ai được làm gì, và nó được thiết kế để
-đổi được mà không cần deploy lại — nếu sau này cấp `AdminUsers` cho vai trò `Secretary` thì cách
-đếm theo tên `"Admin"` sẽ âm thầm sai.
-
----
-
-## B4. Bản vẽ 02 thiếu `CallerContext`
-
-`AuditService` cần biết **địa chỉ IP** của người thực hiện hành động để ghi vào bằng chứng. IP đó
-lấy từ tầng HTTP.
-
-```
-<<service>> CallerContext
-+ ipAddress: string
-```
-
-Mũi tên: `AuditService` ---uses---> `CallerContext`.
-
----
-
-# PHẦN C — ⚪ Sai tên, sai kiểu dữ liệu
-
-## C1. `username` không tồn tại trong hệ thống
-
-Xuất hiện **6 chỗ** trên hai bản vẽ. Hệ thống đăng nhập bằng **email**, không có khái niệm
-username (ADR-0004: đăng nhập là email + mật khẩu, hoặc Google; không có IdP riêng).
-
-| Bản vẽ | Chỗ | Sửa thành |
+| ID | Bằng chứng và ảnh hưởng | Hướng xử lý / trạng thái |
 |---|---|---|
-| 01 | `LoginPage.username: string` | `email: string` |
-| 01 | `LoginPage.signIn(username, password)` | `signIn(email, password)` |
-| 01 | `AuthController.signIn(username, password)` | `signIn(email, password)` |
-| 01 | `UserRepository.findByUsername(username)` | `findByEmail(email)` |
-| 01 | `User.username: string` | bỏ hẳn (đã có `email`) |
-| 02 | `UserRepository.existsByUsername(username)` | bỏ hẳn (đã có `existsByEmail`) |
-
----
-
-## C2. `AccountStatus` không tồn tại — và hai bản vẽ mâu thuẫn nhau
-
-Bản vẽ 02 dùng kiểu `AccountStatus` ở **ba** chỗ. Bản vẽ 01 lại ghi cùng field đó là `status: string`.
-Code thì dùng `isActive: bool`.
-
-Ba bên đang nói ba kiểu khác nhau cho cùng một thứ.
-
-| Bản vẽ | Chỗ | Sửa thành |
-|---|---|---|
-| 02 | `User.status: AccountStatus` | `isActive: bool` |
-| 02 | `UserService.changeStatus(userId, status: AccountStatus)` | `changeStatus(userId, isActive: bool)` |
-| 02 | `UserController.changeStatus(userId, status: AccountStatus)` | `changeStatus(userId, isActive: bool)` |
-| 02 | `AuditService.recordStatusChange(userId, status: AccountStatus)` | xem C5 |
-| 01 | `User.status: string` | `isActive: bool` |
-
-Không cần tạo enum `AccountStatus`. Tài khoản chỉ có hai trạng thái, `bool` là đủ — thêm enum cho
-hai giá trị là phức tạp hoá không cần thiết.
-
----
-
-## C3. Entity `User` — sai 5 field, thiếu 4 field
-
-Đây là chỗ lệch nhiều nhất. Bảng đối chiếu đầy đủ:
-
-| Bản vẽ 02 đang ghi | Code thật | Xử lý |
-|---|---|---|
-| `userId: UUID` | `Id: Guid` | ⚪ đổi tên cho khớp |
-| `username: string` | — | ❌ **bỏ** (C1) |
-| `email: string` | `Email: string` | ✅ giữ |
-| `fullName: string` | `FullName: string` | ✅ giữ |
-| `jobTitle: string` | — | ❌ **bỏ** — không có trong ERD |
-| `phone: string` | — | ❌ **bỏ** — không có trong ERD |
-| `status: AccountStatus` | `IsActive: bool` | ❌ **sửa** (C2) |
-| — | `RoleId: Guid` (+ navigation `Role`) | ➕ **thiếu** — xem bên dưới |
-| — | `PasswordHash: string?` | ➕ **thiếu** |
-| — | `GoogleSubjectId: string?` | ➕ **thiếu** |
-| — | `CreatedAt: DateTimeOffset` | ➕ **thiếu** |
-
-**`Role` là field thiếu nghiêm trọng nhất.** Toàn bộ UC-06b xoay quanh việc đổi vai trò, và quy tắc
-"quản trị viên cuối cùng" ở B3 cũng dựa vào nó. Bản vẽ hiện không có field này ở đâu cả.
-
-`Role` có 4 giá trị: `Chair`, `Secretary`, `Member`, `Admin`.
-
-**`PasswordHash` và `GoogleSubjectId` đều cho phép null**, và một tài khoản phải có ít nhất một
-trong hai (ràng buộc ở database). Một tài khoản chỉ đăng nhập bằng Google thì không có mật khẩu —
-đó là lý do hai field này nullable chứ không phải thiếu sót.
-
----
-
-## C4. Entity `User` — bỏ 3 method
-
-Bản vẽ 02 vẽ `activate()`, `deactivate()`, `isActive()` trên entity. Bản vẽ 01 vẽ `isActive()` và
-`hasSystemAccess()`.
-
-Code để entity **thuần dữ liệu** — không có method nghiệp vụ nào. Mọi quy tắc nằm ở service, vì
-việc vô hiệu hoá một tài khoản còn phải huỷ phiên đăng nhập và ghi audit log, mà entity thì không
-biết gì về hai thứ đó.
-
-Đề nghị: bỏ hết phần method của `User` ở cả hai bản vẽ.
-
----
-
-## C5. `AuditService` — gộp 4 method thành 1
-
-| Bản vẽ 02 | Code thật |
-|---|---|
-| `recordUserCreation(userId)` | `record(action, objectType, objectId, actorId, details)` |
-| `recordUserUpdate(userId)` | ↑ cùng một method |
-| `recordStatusChange(userId, status)` | ↑ |
-| ~~`recordPasswordReset(userId)`~~ | ↑ — đã bỏ khỏi bản vẽ 02, UC-07 vẽ ở bản vẽ 02b (xem D) |
-
-Code có **một** method chung, phân biệt bằng tham số `action` nhận một trong các mã:
-
-- `user.created`
-- `user.updated`
-- `user.deactivated`
-- `user.reactivated`
-- `user.password_reset_requested` (UC-07, người thực hiện là quản trị viên)
-- `user.password_reset` (UC-07, người thực hiện là chính chủ tài khoản)
-
-Vẽ một method chung sẽ sát thực tế hơn, và cũng thể hiện đúng ý định: audit log là bảng chung cho
-toàn hệ thống, các story sau (họp, tài liệu, biên bản) sẽ ghi vào cùng chỗ với cùng method này.
-
-**Một tham số đáng nhắc trên bản vẽ:** `actorId` — **ai** là người thực hiện. Bản vẽ hiện chỉ có
-`userId` (người *bị* tác động), thiếu mất người *gây ra* tác động. Audit log không trả lời được
-"ai làm" thì mất phần lớn giá trị.
-
----
-
-## C6. `UserRepository.update()` — bỏ
-
-Bản vẽ 02 có `+ update(user: User): User`. Code không có.
-
-Lý do: entity đã được ORM theo dõi sẵn, nên sửa giá trị rồi gọi `saveChanges()` là đủ. Thêm
-`update()` sẽ khiến người đọc tưởng phải gọi tường minh.
-
-Nên thay bằng `+ saveChanges(): void`.
-
----
-
-## C7. `existsByEmail` thiếu tham số
-
-| Bản vẽ 02 | Code thật |
-|---|---|
-| `existsByEmail(email: string): bool` | `emailExists(email: string, exceptId: UUID?): bool` |
-
-Tham số thứ hai cần cho UC-06b: khi sửa thông tin mà **giữ nguyên email của chính mình** thì đó
-không phải là trùng email. Thiếu tham số này thì không ai sửa được tên của chính mình.
-
----
-
-# PHẦN D — UC-07 (đặt lại mật khẩu): đã tách sang bản vẽ 02b
-
-**Đã xử lý ngày 04/10/2026, theo Cách 2** của đề xuất cũ: UC-07 đã có code (PR #56, #58, #61), nên
-phần đặt lại mật khẩu được vẽ lại theo code ở một bản vẽ riêng,
-`feature-02b-password-reset-class-diagram.drawio.png` (file chưa được commit vào repo).
-Bản vẽ 02 bỏ các thành phần UC-07 cũ.
-
-| Bản vẽ 02 cũ | Bản vẽ 02b (theo code) |
-|---|---|
-| `UserManagementPage.resetUserPassword()` | giữ, thêm boundary thứ hai `ResetPasswordPage.submitNewPassword()` — nửa sau của UC-07, người dùng đặt mật khẩu bằng liên kết |
-| `UserController.resetPassword(userId)` | `UserController.requestPasswordReset(userId)` + `AuthController.resetPassword(resetCode, newPassword)` (ẩn danh) |
-| `UserService.initiatePasswordReset(userId)` | `requestPasswordReset(userId, actorId)` + `resetPassword(resetCode, newPassword)` |
-| `UserService.isPasswordResetEligible(user)` | bỏ — điều kiện "đang hoạt động **và** có mật khẩu" (BR-22) được kiểm thẳng trong `requestPasswordReset` và `resetPassword`, không có method riêng |
-| `AuthenticationService.createPasswordResetRequest(userId)` | `PasswordResetTokenStore` — `create` / `activate` / `peek` / `consume` / `revoke` |
-| `EmailService.sendPasswordResetEmail(user)` | `PasswordResetEmailSender.send(...)`: bool — gửi hỏng là một nhánh nghiệp vụ (MSG15), không phải exception |
-| `AuditService.recordPasswordReset(userId)` | `AuditService.record(action, objectType, objectId, actorId, details)` |
-| — | thêm `<<service>> TokenService.revokeAllForUser()` (kết thúc phiên khi đặt lại xong), `PasswordHasher.hash()` và `AuthController.signOut()` (AF-1: trình duyệt đang đăng nhập) |
-
-**Mâu thuẫn "hai đường cho cùng một việc"** (`UserService` vừa gọi `EmailService` vừa gọi
-`AuthenticationService`) được giải theo code: `UserService` điều phối, gọi riêng
-`PasswordResetTokenStore` (tạo / kích hoạt / tiêu liên kết) và `PasswordResetEmailSender` (gửi mail).
-Liên kết chỉ được kích hoạt **sau khi** gửi mail thành công, nên thứ tự này nằm ở `UserService`, không
-nằm trong kho token.
-
-Sequence diagram tương ứng: `UC07_ResetUserPassword` trong
-[`06-sequencediagram/user-management/`](../06-sequencediagram/user-management/).
-
----
-
-# PHẦN E — Ghi chú chung, không cần sửa
-
-Mấy điểm sau **không phải lỗi**, ghi ra để BA khỏi mất công "sửa" nhầm:
-
-**`Controller` trong code là Minimal API, không phải class `Controller`.** Code dùng
-`UserEndpoints` / `AuthEndpoints` — tập hợp các hàm khai báo route, không phải class kế thừa
-`ControllerBase`. Về vai trò thì giống hệt `<<control>>` trên bản vẽ, nên **cứ vẽ là Controller**,
-người đọc hiểu đúng. Đây là lựa chọn framework, không phải lệch thiết kế.
-
-**Tên method trong code có hậu tố `Async` và trả về `Task<...>`.** `ListAsync`, `CreateAsync`…
-Đây là quy ước bắt buộc của C# cho hàm bất đồng bộ. Bản vẽ **không cần** ghi `Async` — sẽ làm rối
-mà không thêm thông tin.
-
-**Code tách `IUserService` (interface) và `UserService` (implementation).** Bản vẽ vẽ một class là
-đủ.
-
-**Có hai `UserRepository` khác nhau trong code**, cố ý tách:
-
-| Code | Dùng cho | Ghi chú |
-|---|---|---|
-| `Authentication.IUserRepository` | Đăng nhập | Chỉ đọc. Không có method ghi nào. |
-| `Users.IUserAccountRepository` | Quản lý người dùng | Đọc + ghi |
-
-Tách để đường đăng nhập không đụng được vào method ghi — không có code nào trên luồng sign-in tạo
-hay sửa được tài khoản.
-
-Hai bản vẽ đang mỗi bên vẽ một `UserRepository` với method khác nhau, **tình cờ lại đúng**. Nếu
-muốn rõ hơn thì đổi tên bản vẽ 02 thành `UserAccountRepository`, nhưng không bắt buộc.
-
----
-
-# PHẦN F — Bản vẽ 03: ma trận phân quyền (SCRUM-60)
-
-Đối chiếu tại **22/09/2026**, sau khi code UC-10 và UC-11.
-
-**Kết luận: phân tầng đúng hoàn toàn.** `Controller` → `Service` → `Repository` → `Database`, cộng
-`AuditService`, khớp 1-1 với code. Tên method cũng khớp gần hết. Chỉ lệch ở **mô hình dữ liệu**:
-bản vẽ mô tả `Role` và `Permission` là hai bảng, code thì cả hai là enum.
-
-Chi tiết đầy đủ ở [`docs/03-api/03-ma-tran-phan-quyen.md`](../03-api/03-ma-tran-phan-quyen.md),
-mục "Những chỗ code khác bản vẽ". Tóm tắt phần cần sửa trên bản vẽ:
-
-## F1. 🔴 `Permission` không phải entity — mâu thuẫn với tiêu chí nghiệm thu
-
-| Bản vẽ 03 đang ghi | Code thật |
-|---|---|
-| `<<entity>> Permission` với `permissionId: UUID`, `code`, `name`, `description`, `functionalGroup` | `enum Capability` (4 giá trị) + value object `PermissionDescriptor` đọc từ enum |
-
-**Vì sao phải sửa:** tiêu chí nghiệm thu của chính `SCRUM-60` ghi *"Không tạo được quyền mới:
-`Capability` là enum trong code. Admin sửa mapping, không thêm capability. Màn hình không được có
-nút Tạo quyền mới."* Bản vẽ đang vẽ một bảng `permissions` — tức đúng cái thứ tiêu chí nghiệm thu
-cấm.
-
-Không phải chuyện ngại làm bảng: một quyền chỉ có ý nghĩa vì **có code kiểm nó**. Dòng quyền do
-quản trị viên tự thêm sẽ không gác cửa cái gì cả — trông như bảo mật mà không phải bảo mật.
-
-**Cần sửa:** đổi `<<entity>> Permission` → `<<value object>> Permission`, **bỏ `permissionId`**,
-ghi chú "đọc từ enum `Capability`, không có bảng".
-
-## F2. ✅ ~~`Role` không phải entity, không có bảng `roles`~~ — đã giải quyết bằng `SCRUM-63`
-
-| Bản vẽ 03 đang ghi | Code thật |
-|---|---|
-| `<<entity>> Role` với `roleId: UUID`, `roleName`, `description`, `isBuiltIn` | `enum SystemRole` — `Chair`, `Secretary`, `Member`, `Admin` |
-
-Theo [ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md): không có bảng `roles`, không
-thêm vai trò mới mà không deploy. `role_capabilities` lưu **tên enum** ở cả hai cột.
-
-`isBuiltIn` vẫn giữ trên API (luôn `true`) vì màn hình cần lý do để hiện tên vai trò dạng chữ cố
-định thay vì ô sửa được — nhưng nó là thuộc tính của response, không phải cột trong bảng.
-
-**Cần sửa:** đổi `<<entity>> Role` → `<<enum>> SystemRole`, bỏ `roleId` và `description`.
-
-> **Đã giải quyết — BA đừng sửa phần `Role` trên bản vẽ.** ADR-0004 dẫn ở trên không nói gì về vai
-> trò. [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md) (đã chấp nhận, `SCRUM-63`) chuyển vai
-> trò thành bảng `roles` với `id`, `name`, `description`, `isBuiltIn` — **code giờ đã khớp bản vẽ**
-> ([feature-03-role-management-class-diagram.drawio.png](feature-03-role-management-class-diagram.drawio.png):
-> `RoleController`, `RoleService`, `RoleRepository`). Bảng phía trên chỉ còn là lịch sử. Phần
-> `Permission` ở F1 thì vẫn đúng: `Capability` vẫn là enum.
-
-> Kèm theo: quan hệ `Role 0..* --grants--> Permission 0..*` trên bản vẽ nên ghi rõ là bảng
-> `role_capabilities` — đó là bảng **duy nhất** thật sự tồn tại trong cụm này.
-
-## F3. 🟡 `resetRolePermissionsToDefault()` — chưa làm, cần đánh dấu
-
-Bản vẽ có method này ở cả 4 tầng (`Controller`, `Service`, `Repository`, và
-`confirmResetToDefault()` ở `Page`). Nhưng ticket **không có tiêu chí nghiệm thu nào** cho nó, và
-**không có sequence diagram** (chỉ có UC-10 và UC-11).
-
-Đã thống nhất không làm trong sprint này.
-
-**Cần sửa — chọn một** (UC-07 ở bản vẽ 02 từng có cùng hai lựa chọn này, xem [PHẦN D](#phần-d--uc-07-đặt-lại-mật-khẩu-đã-tách-sang-bản-vẽ-02b)):
-
-- Bỏ hẳn 4 method đó khỏi bản vẽ, hoặc
-- Thêm ghi chú `<<chưa implement>>` lên từng cái.
-
-## F4. ⚪ `getPermissionCatalog()` gộp chung vào một endpoint
-
-Bản vẽ tách `getRolePermissionMatrix()` và `getPermissionCatalog()` thành hai method ở
-`Controller`. Code trả cả hai trong **một** response của `GET /api/roles/capabilities`.
-
-Màn hình luôn cần cả hai cùng lúc để vẽ lưới. Tách thành hai request chỉ thêm một round trip và
-một khoảng thời gian hai nửa dữ liệu lệch nhau.
-
-Ở tầng `Service` thì code **vẫn có hai đường đọc riêng**, nên về phân tầng bản vẽ không sai. Sửa
-hay không tuỳ BA; nếu giữ thì nên ghi chú rằng hai method này đi chung một endpoint.
-
-## F5. ⚪ Thiếu `:Token Service` — cùng vấn đề với A3 của bản vẽ 02
-
-Bản vẽ 03 không có mũi tên nào sang thành phần quản lý token, nhưng code **có gọi**: đổi ma trận
-xong thì huỷ refresh token của mọi tài khoản đang giữ vai trò đó.
-
-Lý do giống hệt A3: capability nằm **bên trong access token**, nên không huỷ thì người giữ vai trò
-đó vẫn dùng bộ quyền cũ tới khi token hết hạn (tối đa 15 phút). Huỷ ở **cả hai chiều** — thêm
-quyền cũng phải huỷ, vì token cũ không chứa quyền mới.
-
-**Cần bổ sung:** mũi tên `RolePermissionService` ---revokes tokens---> `TokenService` (cùng một
-`TokenService` đã đề nghị thêm ở A3, vẽ một lần dùng chung cả ba bản vẽ).
-
-Sequence diagram UC-11 cũng thiếu participant này — nên bổ sung luôn cho khớp.
-
-## F6. ⚪ Thiếu luật chống tự khoá trên bản vẽ
-
-`RolePermissionService` trên bản vẽ có `validatePermissionConfiguration(permissionIds): bool`, đúng
-về vai trò. Nhưng luật quan trọng nhất nó thực thi thì không thể hiện ra:
-
-**không được gỡ `AdminUsers` khỏi vai trò cuối cùng còn giữ nó** — vì `AdminUsers` chính là quyền
-mở màn hình này, nên một ma trận không ai giữ nó thì chỉ sửa lại được bằng cách vào thẳng database.
-
-Giống B3 ở bản vẽ 02, đây là **quy tắc nghiệp vụ**, đáng hiện lên bản vẽ:
-
-```
-- wouldRemoveTheLastAdminCapability(role, newCapabilities): bool
-```
-
-**Lưu ý cho BA khi mô tả:** kiểm trên **toàn ma trận**, không phải "Admin luôn phải giữ
-AdminUsers". Chuyển `AdminUsers` sang `Secretary` rồi gỡ khỏi `Admin` là **hợp lệ** — đó chính là
-lý do bảng này tồn tại. Để nó không ở đâu cả mới là không hợp lệ.
-
----
-
-# Tóm tắt checklist
-
-**🔴 Phải sửa (4 — F2 đã rút lại):**
-
-- [ ] A1 — `findByGoogleEmail` → `findByGoogleSubjectId` (bản vẽ 01)
-- [ ] A2 — `signInWithGoogle(googleEmail)` → `signInWithGoogle(idToken)` + thêm `GoogleTokenVerifier` (bản vẽ 01)
-- [ ] A3 — thêm `TokenService.revokeAllForUser()` (bản vẽ 02) **+ đổi tên `:Session Service` → `:Token Service` ở sequence diagram UC-06c**
-- [ ] F1 — `<<entity>> Permission` → `<<value object>>`, bỏ `permissionId` (bản vẽ 03) — **mâu thuẫn tiêu chí nghiệm thu**
-- [x] ~~F2 — `<<entity>> Role` → `<<enum>> SystemRole`~~ — rút lại: code đã theo bản vẽ (`SCRUM-63`, ADR-0008)
-
-**🟡 Nên sửa (5):**
-
-- [ ] B1 — thêm `PasswordHasher`, `TokenIssuer`, `TokenService`, `GoogleTokenVerifier` + 2 method `refresh` / `signOut` (bản vẽ 01)
-- [ ] B2 — thêm 3 method cho `UserRepository` (bản vẽ 02)
-- [ ] B3 — thêm `wouldRemoveTheLastAdministrator()` (bản vẽ 02)
-- [ ] B4 — thêm `CallerContext` (bản vẽ 02)
-- [ ] F3 — `resetRolePermissionsToDefault()`: bỏ hẳn hoặc đánh dấu `<<chưa implement>>` (bản vẽ 03)
-
-**⚪ Sửa nếu có thời gian (10):**
-
-- [ ] C1 — bỏ `username` ở 6 chỗ
-- [ ] C2 — `AccountStatus` → `isActive: bool` ở 5 chỗ
-- [ ] C3 — entity `User`: bỏ 3 field, thêm 4 field
-- [ ] C4 — bỏ method trên entity `User`
-- [ ] C5 — gộp 4 method của `AuditService` thành 1, thêm `actorId`
-- [ ] C6 — `update()` → `saveChanges()`
-- [ ] C7 — `existsByEmail` thêm tham số `exceptId`
-- [ ] F4 — ghi chú `getPermissionCatalog()` đi chung endpoint với `getRolePermissionMatrix()` (bản vẽ 03)
-- [ ] F5 — thêm `TokenService` (bản vẽ 03) **+ bổ sung participant đó vào sequence diagram UC-11**
-- [ ] F6 — thêm `wouldRemoveTheLastAdminCapability()` (bản vẽ 03)
-
-**Cần quyết (đã xong):**
-
-- [x] D — UC-07: đã tách bản vẽ riêng `feature-02b-password-reset` (04/10/2026)
-
----
-
-Có gì chưa rõ thì hỏi lại BE, đặc biệt là phần A — ba điểm đó nên thống nhất trước khi FE bắt đầu
-làm màn hình theo bản vẽ.
-
----
-
-# Phụ lục — "Có dùng JWT không mà sao lại có session server?"
-
-Câu hỏi đã được nêu khi đọc bản nháp trước của file này. Ghi lại ở đây để lần sau khỏi hỏi lại.
-
-**Có dùng JWT.** Và thành phần bị gọi nhầm là "session server" thực ra là **kho refresh token** —
-không phải session truyền thống. Đó chính là lý do file này đề nghị đổi tên thành `TokenService`.
-
-## Hệ thống phát hai loại token khi đăng nhập
-
-| | Access token | Refresh token |
-|---|---|---|
-| Là gì | **JWT** — tự chứa thông tin | Chuỗi ngẫu nhiên, vô nghĩa nếu đứng một mình |
-| Sống bao lâu | **15 phút** | **7 ngày** |
-| Lưu ở đâu | Chỉ ở trình duyệt | Trình duyệt **+ server (Redis)** |
-| Dùng làm gì | Gửi kèm mọi request | Chỉ để xin access token mới |
-| **Huỷ được không** | **Không** | **Có, ngay lập tức** |
-
-## Vì sao không dùng mỗi JWT?
-
-**JWT không huỷ được** — đó là bản chất, không phải thiếu sót. Server ký một lần rồi thôi; sau đó
-chỉ kiểm chữ ký chứ không hỏi lại database. Nhanh, nhưng đánh đổi là: đã phát ra thì còn giá trị
-đến khi hết hạn, không rút lại được.
-
-Nếu chỉ có JWT thì ba việc sau **không làm được**:
-
-| Tình huống | Nếu chỉ có JWT |
-|---|---|
-| Admin vô hiệu hoá tài khoản người vừa nghỉ việc | Người đó **vẫn dùng hệ thống bình thường** tới khi token hết hạn |
-| Người dùng bấm "Đăng xuất" | Chỉ xoá token khỏi trình duyệt. Ai copy được token trước đó **vẫn dùng tiếp** |
-| Hạ một người từ Admin xuống Member | Token cũ **vẫn mang quyền Admin** |
-
-Tức là "đăng xuất" và "vô hiệu hoá" sẽ chỉ là hình thức.
-
-## Vì sao không dùng mỗi session server?
-
-Thì mỗi request đều phải tra database/Redis để biết người gọi là ai. Chậm, và tạo một điểm phụ
-thuộc cho toàn hệ thống.
-
-## Cách kết hợp
-
-- **Access token (JWT, 15 phút)** — kiểm nhanh, không chạm database. Dùng cho hầu hết request.
-- **Refresh token (7 ngày, lưu server)** — khi access token hết hạn, trình duyệt tự đổi lấy cái
-  mới. **Lúc này server đọc lại tài khoản từ database**: đã bị vô hiệu hoá hoặc đổi vai trò thì
-  không cấp nữa.
-
-Con số **15 phút** chính là cái giá của việc dùng JWT: đó là khoảng thời gian tối đa mà một tài
-khoản vừa bị vô hiệu hoá vẫn còn dùng được. Ngắn để thu hẹp khoảng trống đó, nhưng không quá ngắn
-để khỏi phải làm mới liên tục.
-
-Thêm: refresh token là **dùng một lần** — mỗi lần làm mới sẽ cấp cái mới và huỷ cái cũ. Nên nếu ai
-lấy trộm được, nó sẽ hết tác dụng ngay khi người dùng thật làm mới lần kế tiếp.
-
-## Riêng màn hình quản lý người dùng thì chặt hơn
-
-Vì 15 phút vẫn là quá lâu cho một màn hình có quyền tạo/vô hiệu hoá tài khoản, nên mọi endpoint
-`/api/users` **đọc lại quyền từ database ở từng request**, không tin vào token. Ai vừa bị hạ quyền
-sẽ nhận `403` **ngay lập tức**, không chờ 15 phút.
-
-Đây cũng là lý do mục B3 (quy tắc "không được vô hiệu hoá quản trị viên cuối cùng") đáng được thể
-hiện trên bản vẽ: hai lớp bảo vệ đó cùng chặn một kịch bản — hệ thống tự khoá chính nó.
+| DCD-01 | PNG FE-01/02/03/04/06/13 lỗi metadata/container, bộ đọc PNG không mở được. FE-05 hiển thị được nhưng không mở lại model bằng draw.io. | **FIXED:** xuất lại 6 ảnh, sửa metadata cả 7 ảnh và kiểm tra PNG → XML bằng draw.io; source DCD không đổi. |
+| DCD-02 | `User` ở FE-01 (`user`), FE-02 (`user`), FE-13 (`c7`) có `username`, `status`/`AccountStatus`; FE-04/06 dùng `isActive`. Report 3 §I.3.2 Entity 1 và `Domain/Entities/User.cs` dùng Email, GoogleSubjectId, IsActive; PasswordHash/GoogleSubjectId nullable. Các projection được phép bỏ field, nhưng không được tự thay biểu diễn trạng thái. UC-01 mới dùng email; sequence UC01 và DCD vẫn dùng username. | **SOURCE_CONFLICT:** thống nhất conceptual model và tên đăng nhập giữa UC, sequence, DCD; phân biệt alias với field thật. Chưa sửa ngữ nghĩa nguồn. |
+| DCD-03 | FE-01 `authController`/`authService` nhận `googleAccount: string`, `userRepository.findByGoogleAccount`; UC02 sequence cũng dùng tên chung này. Code `AuthenticationService.SignInWithGoogleAsync` xác minh `idToken` qua `googleTokenVerifier.VerifyAsync`, rồi tra subject. Diagram chưa giải thích được bước xác minh/định danh. | **NEEDS REVIEW:** làm rõ token/gateway và subject theo thiết kế được chốt; không kết luận diagram đã chứng minh an toàn chỉ từ tên `googleAccount`. |
+| DCD-04 | UC03 sequence và FE-01 `authenticatedPage` chỉ thể hiện xóa JWT ở client. `Web/Endpoints/AuthEndpoints.cs.SignOutAsync` gọi `AuthenticationService.SignOutAsync` để xử lý refresh token phía server. | **DESIGN/CODE DIVERGENCE:** ghi rõ scope sign-out; đồng bộ UC/sequence trước khi bổ sung collaborator vào DCD. |
+| DCD-05 | FE-02 có `SessionService.endActiveSessions` và UC06c đã gọi collaborator này: ghi chú cũ “thiếu hoàn toàn TokenService” không còn đúng với source hiện tại. Code `Users/UserService.cs` có các lần `refreshTokens.RevokeAllForUserAsync`. | **NEEDS REVIEW:** phân biệt trách nhiệm kết thúc phiên với tên implementation; rà soát trigger UC06b/06c/08 theo yêu cầu, không đổi tên máy móc. Xem phụ lục token bên dưới. |
+| DCD-06 | FE-05 `service` chỉ ghi `create / update / delete agenda item`; UC23a/b/c gọi `createAgendaItem`, `updateAgendaItem`, `deleteAgendaItem` riêng. Repository còn dòng `saveOrder / saveExecutionState`; nhiều chữ ký thiếu type/return. `AgendaItem.elapsedDuration` chưa đánh dấu derived. | **NEEDS REVIEW:** khai báo từng operation theo receiver và chữ ký có căn cứ; elapsed duration là giá trị tính từ thời điểm, không ngầm thành cột persisted. |
+| DCD-07 | FE-06 `service`: UC27 gọi `viewMeetingParticipants`, UC28a `addMeetingParticipants`, UC28b `manageMeetingRoleAndPermissions`, UC28c `removeMeetingParticipant`, UC29 `respondToMeetingInvitation`, UC30 `viewInvitationResponses`; DCD dùng alias hoặc câu gộp. Chỉ UC31 `recordMeetingAttendance` trùng tên. | **NEEDS REVIEW:** thống nhất operation canonical với 7 sequence; ghi rõ bulk input, kiểu trả về và atomic-save thay vì suy đoán từ câu gộp. |
+| DCD-08 | FE-03 `rolePermissionController`/`rolePermissionService`/`rolePermissionRepository` có `resetRolePermissionsToDefault`, boundary có `confirmResetToDefault`. UC-11 Report 3 không có alternative reset; sequence UC11 cũng không gọi reset. | **UNTRACED OPERATION:** cần nguồn quyết định/UC hỗ trợ hoặc đánh dấu proposed/loại bỏ sau khi chốt; không coi operation đã được duyệt. |
+| DCD-09 | FE-05 `a15/a16` và FE-06 `p12/p13` gộp multiplicity vào label giữa cạnh (`1 contains 0..*`, `0..1 linked agenda item`...). Hình thoi composition đặt phía Meeting, nhưng nhãn giữa cạnh không xác định rõ từng association end. | **NEEDS REVIEW:** chuyển số ra đúng đầu association, xác nhận cardinality với data model; không tự đoán số còn thiếu. |
+| DCD-10 | Role sequence: UC10 có title UC-08, UC11 title UC-10, UC12a title UC-11, UC12b title UC-12a, UC12c title UC-12b. Notification UC66/67a/67b/68 có title UC-17/18/19/20. File và inventory đã theo số mới. | **SOURCE_CONFLICT:** sửa title trong nguồn sequence và đồng bộ ảnh/tab trong task sequence; lần này không sửa các source đó. |
+| DCD-11 | FE-04 `meeting.actualStartTime/actualEndTime: DateTime` là non-null; Report 3 Entity 4 và `Domain/Entities/Meeting.cs` dùng ActualStartedAt/ActualEndedAt nullable. Method dùng AgendaItem nhưng không có định nghĩa type trong view. | **NEEDS REVIEW:** thống nhất alias/nullability; dẫn nguồn cho type được lược khỏi view. Không đưa MeetingSession trở lại. |
+| DCD-12 | FE-06 `guest` chưa có Attendance, AttendanceRecordedById/At; `participant` cũng thiếu recorder/time. Report 3 Entity 7/8 và UC31 yêu cầu lưu attendance cho cả internal/Guest kèm Secretary và thời điểm. Entity 7a MeetingParticipantPermission đã có trong snapshot nhưng DCD chưa mô tả type hay nơi lưu grant bổ sung. | **NEEDS REVIEW:** làm rõ projection và persistence responsibility cho attendance/grants. Ma trận PermissionCode chưa chốt nên không tự thiết kế enum/schema mới. |
+| DCD-13 | FE-13 `c6` có recipientUserId/kind/actionUrl; Entity 28 Report 3 dùng UserId/MeetingId/TargetType/TargetId/ReadAt; `Domain/Entities/Notification.cs` có Type, Title, Body, TargetId nullable và không có ActionUrl persisted. UC68 sequence còn “linked meeting or task”, trái ranh giới scope. | **SOURCE_CONFLICT:** phân biệt domain field với response/computed URL; loại task tracking khi chỉnh sequence theo nguồn đã chốt. |
+
+### UC → Sequence → Class → Operation
+
+Các đường dẫn là source đã đọc. Cột operation ghi **operation chính hiện có trong DCD**; dấu `≈`
+là mapping trách nhiệm từ message tự nhiên/alias, không phải chứng minh trùng chữ ký. `Thiếu`
+ghĩa là source sequence có call nhưng DCD chưa khai báo riêng. Các collaborator persistence,
+audit/email/session và các mâu thuẫn còn lại được ghi ở log; bảng này không thay thế trace từng
+message khi sửa thiết kế. Tất cả feature còn `NEEDS REVIEW` theo bảng kết luận phía trên.
+
+| UC / feature | Sequence | Class → operation chính | Đối chiếu |
+|---|---|---|---|
+| UC-01 / FE-01 | [UC01_SignIn.txt](../06-sequencediagram/auth/UC01_SignIn.txt) | `AuthenticationService → signIn` | Trùng tên; DCD-02 |
+| UC-02 / FE-01 | [UC02_SignInWithGoogle.txt](../06-sequencediagram/auth/UC02_SignInWithGoogle.txt) | `AuthenticationService → signInWithGoogle` | Trùng tên; DCD-03 |
+| UC-03 / FE-01 | [UC03_SignOut.txt](../06-sequencediagram/auth/UC03_SignOut.txt) | `AuthenticatedPage → signOut / removeJwtToken` | ≈ UI event; DCD-04 |
+| UC-04 / FE-01 | [UC04_AccessMeetingViaGuestInvitation.txt](../06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation.txt) | `GuestAccessService → checkInvitationAndAccess / verifyCode / completeGuestAccess` | ≈ luồng truy cập Guest |
+| UC-05 / FE-02 | [UC05_ViewUserAccount.txt](../06-sequencediagram/user-management/UC05_ViewUserAccount.txt) | `UserService → getUserAccounts / getUser` | ≈ đọc tài khoản; DCD-02 |
+| UC-06a / FE-02 | [UC06a_CreateUserAccount.txt](../06-sequencediagram/user-management/UC06a_CreateUserAccount.txt) | `UserService → createUser` | ≈ tạo; audit |
+| UC-06b / FE-02 | [UC06b_UpdateUserAccount.txt](../06-sequencediagram/user-management/UC06b_UpdateUserAccount.txt) | `UserService → updateUser` | ≈ sửa; DCD-05 |
+| UC-06c / FE-02 | [UC06c_DeactivateReactivateUserAccount.txt](../06-sequencediagram/user-management/UC06c_DeactivateReactivateUserAccount.txt) | `UserService → changeStatus; SessionService → endActiveSessions` | ≈ đổi trạng thái; DCD-02/05 |
+| UC-07 / FE-02 | [UC07_ResetUserPassword.txt](../06-sequencediagram/user-management/UC07_ResetUserPassword.txt) | `UserService → requestPasswordReset` | Trùng tên; token store/email/audit có collaborator |
+| UC-08 / FE-02 | [UC08_AssignSystemRoleToUser.txt](../06-sequencediagram/user-management/UC08_AssignSystemRoleToUser.txt) | `UserService → assignSystemRole` | Trùng tên; DCD-05 |
+| UC-09 / FE-02 | [UC09_UnlockUserAccount.txt](../06-sequencediagram/user-management/UC09_UnlockUserAccount.txt) | `UserService → unlockUserAccount; UserAccountRepository → findById` | Trùng tên; lock/audit có collaborator |
+| UC-10 / FE-03 | [UC10_ViewRolePermissionMatrix.txt](../06-sequencediagram/role-management/UC10_ViewRolePermissionMatrix.txt) | `RolePermissionService → getRolePermissionMatrix` | ≈ đọc; DCD-10 |
+| UC-11 / FE-03 | [UC11_ConfigureRolePermissions.txt](../06-sequencediagram/role-management/UC11_ConfigureRolePermissions.txt) | `RolePermissionService → updateRolePermissions` | ≈ sửa; DCD-08/10 |
+| UC-12a / FE-03 | [UC12a_CreateRole.txt](../06-sequencediagram/role-management/UC12a_CreateRole.txt) | `RoleService → createRole` | ≈ tạo; DCD-10 |
+| UC-12b / FE-03 | [UC12b_UpdateRole.txt](../06-sequencediagram/role-management/UC12b_UpdateRole.txt) | `RoleService → updateRole` | ≈ sửa; DCD-10 |
+| UC-12c / FE-03 | [UC12c_DeleteRole.txt](../06-sequencediagram/role-management/UC12c_DeleteRole.txt) | `RoleService → deleteRole` | ≈ xóa; DCD-10 |
+| UC-13 / FE-03 | [UC13_ViewAuditLog.txt](../06-sequencediagram/role-management/UC13_ViewAuditLog.txt) | `AuditLogQueryService → getAuditEntries; AuditLogRepository → findReadOnlyPage` | Trùng tên |
+| UC-14 / FE-04 | [UC14_CreateMeeting.txt](../06-sequencediagram/meeting-management/UC14_CreateMeeting.txt) | `MeetingService → createMeeting` | ≈ tạo |
+| UC-15 / FE-04 | [UC15_UpdateMeeting.txt](../06-sequencediagram/meeting-management/UC15_UpdateMeeting.txt) | `MeetingService → updateMeeting / rescheduleMeeting` | ≈ cập nhật lịch |
+| UC-16 / FE-04 | [UC16_ViewMeetingDetails.txt](../06-sequencediagram/meeting-management/UC16_ViewMeetingDetails.txt) | `MeetingService → getMeetingDetails` | Trùng tên |
+| UC-17 / FE-04 | [UC17_ViewMeetingList.txt](../06-sequencediagram/meeting-management/UC17_ViewMeetingList.txt) | `MeetingService → getMeetingList` | Trùng tên |
+| UC-18 / FE-04 | [UC18_SubmitMeetingForApproval.txt](../06-sequencediagram/meeting-management/UC18_SubmitMeetingForApproval.txt) | `MeetingService → prepareMeetingSubmission / submitMeetingForApproval` | Trùng tên |
+| UC-19 / FE-04 | [UC19_ReviewMeetingApproval.txt](../06-sequencediagram/meeting-management/UC19_ReviewMeetingApproval.txt) | `MeetingService → reviewMeetingApproval` | Trùng tên |
+| UC-20 / FE-04 | [UC20_PublishMeeting.txt](../06-sequencediagram/meeting-management/UC20_PublishMeeting.txt) | `MeetingService → publishMeeting` | Trùng tên; notification/invitation có collaborator |
+| UC-21 / FE-04 | [UC21_StartMeeting.txt](../06-sequencediagram/meeting-management/UC21_StartMeeting.txt) | `MeetingService → startMeeting` | Trùng tên |
+| UC-22 / FE-04 | [UC22_EndMeeting.txt](../06-sequencediagram/meeting-management/UC22_EndMeeting.txt) | `MeetingService → endMeeting` | Trùng tên; room/repository có collaborator |
+| UC-23a / FE-05 | [UC23a_CreateAgendaItem.txt](../06-sequencediagram/agenda-management/UC23a_CreateAgendaItem.txt) | `AgendaService → create / update / delete agenda item` | Thiếu createAgendaItem; DCD-06 |
+| UC-23b / FE-05 | [UC23b_UpdateAgendaItem.txt](../06-sequencediagram/agenda-management/UC23b_UpdateAgendaItem.txt) | `AgendaService → create / update / delete agenda item` | Thiếu updateAgendaItem; DCD-06 |
+| UC-23c / FE-05 | [UC23c_DeleteAgendaItem.txt](../06-sequencediagram/agenda-management/UC23c_DeleteAgendaItem.txt) | `AgendaService → create / update / delete agenda item` | Thiếu deleteAgendaItem; DCD-06 |
+| UC-23d / FE-05 | [UC23d_ReorderAgendaItems.txt](../06-sequencediagram/agenda-management/UC23d_ReorderAgendaItems.txt) | `AgendaService → reorderAgendaItems` | Trùng tên; chữ ký thiếu type |
+| UC-24 / FE-05 | [UC24_SetCurrentAgendaItem.txt](../06-sequencediagram/agenda-management/UC24_SetCurrentAgendaItem.txt) | `AgendaService → setCurrentAgendaItem` | Trùng tên; chữ ký thiếu type |
+| UC-25 / FE-05 | [UC25_CompleteAgendaItem.txt](../06-sequencediagram/agenda-management/UC25_CompleteAgendaItem.txt) | `AgendaService → completeAgendaItem` | Trùng tên; chữ ký thiếu type |
+| UC-26 / FE-05 | [UC26_ViewMeetingAgenda.txt](../06-sequencediagram/agenda-management/UC26_ViewMeetingAgenda.txt) | `AgendaService → getMeetingAgenda; MeetingAccessPolicy → canViewMeeting` | Trùng tên service; ≈ policy; DCD-06 |
+| UC-27 / FE-06 | [UC27_ViewMeetingParticipants.txt](../06-sequencediagram/meeting-participant-management/UC27_ViewMeetingParticipants.txt) | `MeetingParticipantService → listParticipants` | ≈ viewMeetingParticipants; DCD-07 |
+| UC-28a / FE-06 | [UC28a_AddMeetingParticipant.txt](../06-sequencediagram/meeting-participant-management/UC28a_AddMeetingParticipant.txt) | `MeetingParticipantService → add / manageRoleAndPermissions / remove participant` | Thiếu addMeetingParticipants riêng; DCD-07 |
+| UC-28b / FE-06 | [UC28b_AssignChangeMeetingRole.txt](../06-sequencediagram/meeting-participant-management/UC28b_AssignChangeMeetingRole.txt) | `MeetingParticipantService → add / manageRoleAndPermissions / remove participant` | ≈ manageMeetingRoleAndPermissions; DCD-07 |
+| UC-28c / FE-06 | [UC28c_RemoveMeetingParticipant.txt](../06-sequencediagram/meeting-participant-management/UC28c_RemoveMeetingParticipant.txt) | `MeetingParticipantService → add / manageRoleAndPermissions / remove participant` | Thiếu removeMeetingParticipant riêng; DCD-07 |
+| UC-29 / FE-06 | [UC29_RespondToMeetingInvitation.txt](../06-sequencediagram/meeting-participant-management/UC29_RespondToMeetingInvitation.txt) | `MeetingParticipantService → respondToInvitation` | ≈ respondToMeetingInvitation; DCD-07 |
+| UC-30 / FE-06 | [UC30_ViewParticipantResponseStatus.txt](../06-sequencediagram/meeting-participant-management/UC30_ViewParticipantResponseStatus.txt) | `MeetingParticipantService → getResponseStatus` | ≈ viewInvitationResponses; DCD-07 |
+| UC-31 / FE-06 | [UC31_RecordAttendance.txt](../06-sequencediagram/meeting-participant-management/UC31_RecordAttendance.txt) | `MeetingParticipantService → recordMeetingAttendance` | Trùng tên; DCD-12 |
+| UC-66 / FE-13 | [UC66_ViewNotifications.txt](../06-sequencediagram/notification-management/UC66_ViewNotifications.txt) | `NotificationService → getNotifications / getUnreadCount` | ≈ đọc; DCD-10/13 |
+| UC-67a / FE-13 | [UC67a_MarkNotificationAsRead.txt](../06-sequencediagram/notification-management/UC67a_MarkNotificationAsRead.txt) | `NotificationService → markAsRead` | ≈ đánh dấu đã đọc; DCD-10 |
+| UC-67b / FE-13 | [UC67b_MarkAllNotificationsAsRead.txt](../06-sequencediagram/notification-management/UC67b_MarkAllNotificationsAsRead.txt) | `NotificationService → markAllAsRead` | ≈ đánh dấu tất cả; DCD-10 |
+| UC-68 / FE-13 | [UC68_OpenNotificationTarget.txt](../06-sequencediagram/notification-management/UC68_OpenNotificationTarget.txt) | `NotificationService → openTarget` | ≈ điều hướng; DCD-10/13 |
+
+<a id="phụ-lục--có-dùng-jwt-không-mà-sao-lại-có-session-server"></a>
+
+## 7. Ghi chú tương thích với các tài liệu cũ
+
+Các ghi chú A–F của README trước đây mô tả bản vẽ tháng 9/đầu tháng 10, không còn là checklist lỗi
+hiện hành của bản vẽ ngày 13/10. Nội dung hữu ích đã được gộp vào quy ước và log phía trên; lịch sử
+tracked README vẫn tra được bằng Git. Hai bản nháp `CLASS-DIAGRAM-CONVENTION.md` và
+`README-CLASS-SECTION.md` đã được hợp nhất vào README này.
+
+**Role và capability:** [ADR-0008](../05-decisions/0008-vai-tro-la-du-lieu.md) chốt Role là dữ liệu,
+RoleCapability là mapping; không đổi Role trở lại enum theo đoạn review cũ. Capability không phải
+bảng quyền cho admin tự tạo. Vấn đề reset quyền được giữ tại DCD-08, không coi là chức năng đã có.
+
+**JWT và “SessionService”:** service trong diagram có thể diễn tả trách nhiệm kết thúc phiên.
+Implementation hiện tại dùng access JWT và refresh token store phía server; hủy refresh token và
+xóa JWT ở trình duyệt là hai việc khác nhau. Đọc `Domain/Authentication/IRefreshTokenStore.cs`,
+`Infrastructure/Authentication/AuthenticationService.cs` và `Infrastructure/Users/UserService.cs`
+trước khi đổi collaborator. Không suy ra có session server truyền thống từ tên class thiết kế.

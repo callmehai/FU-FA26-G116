@@ -1,6 +1,6 @@
 # Danh mục Quy tắc Nghiệp vụ (Business Rules) — TrustCabinet
 
-Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX cập nhật 14/10/2026, ADR-0018 và quyết định PO về FE-07). Có **208 BR đang dùng** trong dải `BR-01` → `BR-251`; mã `BR` độc lập với mã thông báo `MSG`.
+Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX cập nhật 14/10/2026, ADR-0018, ADR-0019 và quyết định PO về FE-07/FE-11). Có **230 BR đang dùng** trong dải `BR-01` → `BR-274`; mã `BR` độc lập với mã thông báo `MSG`.
 
 ## Quy ước đồng bộ
 
@@ -137,13 +137,13 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-156` | External Guest access does not require an internal account login. | UC-28a, UC-29, UC-37 |  |  |
 | `BR-157` | Revoking an external Guest invitation immediately invalidates access granted by that invitation. | UC-28c, UC-29, UC-37 |  |  |
 | `BR-158` | Only the Meeting Organizer may reschedule a Published Meeting; only planned times or location may change. | UC-15 | PO 09/10/2026 | Meeting / Voting Management |
-| `BR-159` | The Chair may end an InProgress Meeting regardless of open Votes or incomplete attendance; End Meeting neither requires nor automatically closes Votes. Completing any InProgress Agenda Item, changing Meeting status to Ended, recording Actual End Time and append-only lifecycle history succeed together. If saving fails, previous Meeting and Agenda states/timestamps remain and room closure is not triggered. Remaining Pending Agenda Items remain Pending. Existing ballots and Vote status are preserved; Ended Meetings accept no further ballots. The Chair may subsequently close and tally outstanding Open Votes under BR-160. | UC-22 | PO 13/10/2026 — follow-up | Meeting / Voting Management |
-| `BR-160` | Votes may be created, opened and cast only while the associated Meeting is InProgress. Current Chair, Secretary and Members and verified current Guests with valid access may cast one eligible ballot while its Vote is Open. Ending the Meeting does not require closing any Vote. The active current Chair may close and tally an existing Open Vote while Meeting is InProgress or Ended, without accepting new ballots after Ended. Only holders of the meeting roles selected for a Vote are eligible (BR-190). No time-boxed voting, quorum or separate Resolution exists. (BR-159, BR-165, BR-181) | UC-52a, UC-52b, UC-53, UC-54, UC-55, UC-56 | PO 13/10/2026 — follow-up | Meeting / Voting Management |
-| `BR-161` | After a Vote is closed and tallied, the Chair records the conclusion Passed, NotPassed or Deferred on that Meeting Vote. The tally and Chair conclusion are included in Meeting Minutes, not in a separate Resolution entity. | UC-52b, UC-56, UC-57, UC-59 | PO 09/10/2026 | Meeting / Voting Management |
+| `BR-159` | The Chair may end an InProgress Meeting regardless of open Votes or incomplete attendance; End Meeting neither requires nor automatically closes Votes. Completing any InProgress Agenda Item, changing Meeting status to Ended, recording Actual End Time and append-only lifecycle history succeed together. If saving fails, previous Meeting and Agenda states/timestamps remain and room closure is not triggered. Remaining Pending Agenda Items remain Pending. Existing ballots and Vote status are preserved; Ended Meetings accept no further ballots. The Chair may subsequently close and tally outstanding Open Votes under BR-270. | UC-22 | PO 13/10/2026 — follow-up | Meeting / Voting Management |
+| `BR-160` | Only the current Chair may open a Draft Vote, and only while its Meeting is InProgress. | UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-161` | The current Chair may record Passed, NotPassed or Deferred, with an optional note, for a Closed and tallied Vote while its Meeting is InProgress or Ended. | UC-52b, UC-57 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 | `BR-162` | When a new Meeting is created, Planned Start Time must be later than the current time. | UC-14 | PO Q7 / BF-02 | Meeting / Voting / Minutes services |
 | `BR-163` | Online/Hybrid Meetings use the internal TrustCabinet Online Meeting Room. Online Link is managed by the system as part of Online Meeting Room functionality and may be empty until generated. Users cannot enter or modify it during Meeting creation, editing or rescheduling. Link generation is outside Create Meeting and Update Meeting. | UC-14, UC-15 | PO Q4 / BF-02 | Meeting / Voting / Minutes services |
 | `BR-164` | Starting a Meeting creates an in-app notification for its currently invited internal participants; notification failure does not roll back the successful Meeting start. | UC-21 | PO Q11 / BF-03 | Meeting / Voting / Minutes services |
-| `BR-165` | A Vote may be created/opened only in an InProgress Meeting. Current internal participants and verified current Guests may cast one eligible ballot only while Meeting is InProgress and Vote is Open; Guest voter identity is its invitation. The Chair may close an existing Open Vote and tally saved ballots in InProgress or Ended, then record Passed, NotPassed or Deferred. Closing is required for that Vote conclusion, not for End Meeting. Revocation prevents new ballots without erasing evidence; secret ballots have no voter-choice link. | UC-53, UC-54, UC-55, UC-56, UC-57 | PO 13/10/2026 — follow-up | Meeting / Voting / Minutes services |
+| `BR-165` | A ballot may be cast only while the Meeting is InProgress, the Vote is Open and the voter retains current Meeting access. | UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 | `BR-166` | When designated minutes signers request revision or minutes content changes after signing begins, previous signatures on the earlier content version are invalidated and the revised version requires a new signing cycle. Only the assigned Secretary may finalize and seal the completed minutes after all designated signers sign. | UC-60, UC-61, UC-62, UC-64, UC-65 | PO / BF-04 | Meeting / Voting / Minutes services |
 | `BR-167` | User account list sorting must use an allowed sort field/order, and current search/filter/sort criteria are preserved across pages. | UC-05 | UC-05 user-list acceptance criteria | User Management |
 | `BR-168` | A submission adding multiple internal Meeting Participants must be saved as one indivisible roster change. If any selected account, assigned Meeting Role or additional Meeting Permission is invalid, no account in the submitted batch may be added. Invitation dispatch occurs only after a successful roster save; delivery errors follow BR-94. | UC-28a | FE-06 revision, 12/10/2026 | Meeting Participant Management |
@@ -166,18 +166,16 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-186` | Deleting a personal-library document does not remove the document from Meetings. | UC-33c, UC-71a | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-187` | Only PDF and DOCX documents may be uploaded. | UC-33a, UC-36 | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-188` | Documents of a Secret Meeting may be read online but not downloaded. | UC-32c | PO 14/10/2026 — atomic rule review | Document Management |
-| `BR-189` | The current Chair may delete a Draft Vote while the Meeting is InProgress. An Open or Closed Vote cannot be deleted. | UC-53 | PO 13/10/2026 | Meeting / Voting Management |
-| `BR-190` | When creating or editing a Draft Vote, the Chair selects the meeting roles allowed to vote – Chair, Secretary, Member and Guest; all are selected by default and at least one is required. The eligible voters are the current holders of the selected roles when the Vote opens; the list and EligibleCount are fixed at that moment. | UC-53, UC-54, UC-55 | PO 13/10/2026 (as AI-eCabinet) | Meeting / Voting Management |
+| `BR-189` | The current Chair may delete a Draft Vote while its Meeting is Approved, Published or InProgress. An Open or Closed Vote cannot be deleted. | UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-190` | The eligible voters are the current holders of the selected meeting roles with valid Meeting access when the Vote opens; the list and EligibleCount are fixed at that moment. Attendance does not determine eligibility. | UC-54, UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 | `BR-191` | Personal-library folders may be nested at most five levels deep. | UC-34, UC-36, UC-71b, UC-71c, UC-72a, UC-72b, UC-72c, UC-72d | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-192` | An automatically created Meeting folder is named “<Meeting title> - dd/mm/yyyy”, using the upload date in Vietnam time. | UC-33a | PO 14/10/2026 — atomic rule review | Document Management |
-
 | `BR-193` | The same uploaded file may have only one active attachment in a Meeting. | UC-33a, UC-33c | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-194` | A direct upload creates both the Meeting document and the personal-library document, or creates neither. | UC-33a | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-195` | Documents may be added in any Meeting state before the Meeting ends. | UC-33a | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-196` | Documents cannot be added to or removed from a completed Agenda Item. | UC-33a, UC-33c | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-197` | Each Meeting-document addition or removal records who performed it and when. | UC-33a, UC-33c | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-198` | Before publication, only the Meeting Organizer and the current Chair or Secretary may read Meeting documents. | UC-32a, UC-32c | PO 14/10/2026 — atomic rule review | Document Management |
-
 | `BR-199` | A Secretary may grant a Guest the additional Meeting permissions available to an internal Participant. | UC-28b, UC-32a, UC-32c | ADR-0016 / PO 13/10/2026 — cross-review 14/10/2026 | Document / Guest access |
 | `BR-200` | Additional permissions cannot override Guest restrictions or the prohibition on downloading Secret Meeting documents. | UC-28b, UC-32a, UC-32c | ADR-0016 / PO 13/10/2026 — cross-review 14/10/2026 | Document / Guest access |
 | `BR-201` | A Guest receives no system Role. | UC-04, UC-28a | ADR-0016 / PO 13/10/2026 — cross-review 14/10/2026 | Document / Guest access |
@@ -211,14 +209,12 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-233` | A current Participant or Guest may read Meeting documents only after the Meeting is published. | UC-32a, UC-32c | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
 | `BR-234` | Meeting Approver status alone grants no document-reading access. | UC-32a, UC-32c | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
 | `BR-235` | Declining a Meeting invitation does not revoke document-reading access. | UC-32a, UC-32c | ADR-0006 — cross-review 14/10/2026 | Document / Guest access |
-
 | `BR-236` | All planning fields of a Pending Agenda Item may be edited. | UC-23b | Split from former BR-68 — no change to agenda field restrictions | Agenda Management |
 | `BR-237` | Only Pending Agenda Items may be deleted. | UC-23c | Split from former BR-68 — no change to agenda field restrictions | Agenda Management |
 | `BR-238` | Only Pending Agenda Items may be reordered. | UC-23d | Split from former BR-68 — no change to agenda field restrictions | Agenda Management |
 | `BR-239` | Deleting an Agenda Item preserves the positions of the remaining Items. | UC-23c | Split from former BR-68 — no change to agenda field restrictions | Agenda Management |
 | `BR-240` | Reordering exchanges only the existing positions of Pending Agenda Items. | UC-23d | Split from former BR-68 — no change to agenda field restrictions | Agenda Management |
 | `BR-241` | Agenda planning changes preserve execution status, actual timestamps and the Meeting lifecycle. | UC-23b, UC-23c, UC-23d | Split from former BR-68 — no change to agenda field restrictions | Agenda Management |
-
 | `BR-242` | A user may access only their own personal-library documents and folders. | UC-34, UC-36, UC-71a–UC-71c, UC-72a–UC-72d | ADR-0006 / ADR-0018 | Document Management |
 | `BR-245` | Moving a personal-library document does not change its Meeting attachments. | UC-71c | ADR-0018 | Document Management |
 | `BR-246` | A comment must contain non-whitespace characters. | UC-35 | Report 3 screen 7.5 — required comment text | Document Management |
@@ -226,6 +222,29 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-249` | Anyone who can view a Meeting document may comment on it. | UC-35 | PO decision — no separate commenting permission | Document Management |
 | `BR-250` | Each comment records its author and posting time. | UC-35 | Report 3 screen 7.5 | Document Management |
 | `BR-251` | Personal-library usage details show only Meetings the user may access. | UC-34 | Existing resource confidentiality rule | Document Management |
+| `BR-252` | Only the current Chair may create or configure a Draft Vote while its Meeting is Approved, Published or InProgress. | UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-253` | Only the current Chair may view Draft Votes in the Meeting. | UC-52a, UC-52b, UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-254` | The content, options, ballot type and selected roles of an Open or Closed Vote cannot be edited. | UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-255` | Vote content must contain non-whitespace characters. | UC-53, UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-256` | A Vote must have at least two distinct, non-empty options. | UC-53, UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-257` | The Chair selects one or more eligible meeting roles from Chair, Secretary, Member and Guest; all four roles are selected by default. | UC-53, UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-258` | Each eligible voter may cast at most one ballot in a Vote. | UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-259` | A secret Vote records participation without linking a voter to a chosen option; only aggregate results may be disclosed. | UC-52b, UC-55, UC-56 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-260` | The status view of an Open Vote shows turnout, without disclosing individual choices or results per option. | UC-52b | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-261` | Closing a Vote tallies all recorded ballots per option; each percentage uses ballots cast as its denominator. With no ballots, option counts are zero and percentages are not shown. | UC-52b, UC-56 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-262` | A recorded Vote conclusion and its note cannot be changed or replaced. | UC-57 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-263` | The Chair determines a Vote conclusion; the system does not infer it from the tally. | UC-56, UC-57 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-264` | Meeting Minutes include the Vote tally and the conclusion recorded by the Chair. | UC-57, UC-59 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-265` | A recorded ballot cannot be changed or withdrawn. | UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-266` | A Meeting may have at most one Open Vote at a time. | UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-267` | A Vote cannot be opened if no eligible voters are available. | UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-268` | Changing a voter's meeting role after opening does not change the fixed eligible-voter list or count. | UC-54, UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-269` | Loss of Meeting access prevents new ballots without deleting previously recorded ballots. | UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-270` | The current Chair may close and tally an existing Open Vote while its Meeting is InProgress or Ended. | UC-56 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-271` | A ballot selects exactly one option belonging to its Vote. | UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-272` | Each Vote uses either a Public or Secret ballot type. | UC-53, UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-273` | After a Public Vote closes, its result shows each eligible voter's recorded choice or that the voter did not vote. | UC-52b | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-274` | The current Chair may access Vote draft preparation in an Approved Meeting; this does not grant access to other restricted Meeting records. | UC-52a, UC-52b, UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 
 ## BR đã ngừng dùng
 

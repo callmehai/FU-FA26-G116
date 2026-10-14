@@ -62,7 +62,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 
 ## Mã tiếp theo
 
-**`MSG205`** — `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai.  `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG154` dành cho thay đổi FE-06 trong Report 3, chưa có code. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG238`** — `MSG205`–`MSG237` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai.  `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai.  `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG154` dành cho thay đổi FE-06 trong Report 3, chưa có code. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -430,6 +430,46 @@ Các mã dưới đây **dành sẵn** cho đặc tả ngày 14/10/2026, chưa p
 | `MSG203` | Retired — mandatory PDF page reference removed · Ngừng dùng | Retired: a PDF comment does not require a page reference. Do not reuse. |
 | `MSG204` | UC-35 / EX-4 · Dành sẵn | Unable to load the document comments. Please try again. |
 
+
+### Biểu quyết — FE-11 (UC-52a, UC-52b, UC-53–UC-57)
+
+Các mã dưới đây được dành sẵn cho đặc tả nghiệp vụ trong Report 3 ngày 14/10/2026; chưa xác nhận endpoint runtime đã triển khai.
+
+| Mã | Nguồn / tình huống | Thông báo chuẩn |
+|---|---|---|
+| `MSG205` | UC-52a, UC-52b / EX-1 · Dành sẵn | Meeting votes are not accessible. |
+| `MSG206` | UC-52a / EX-2 · Dành sẵn | Unable to load the meeting votes. Please try again. |
+| `MSG207` | UC-52a / AF-1 · Dành sẵn | No votes to display. |
+| `MSG208` | UC-52b / EX-2 · Dành sẵn | Unable to load the vote status or result. Please try again. |
+| `MSG209` | UC-53, UC-54 / Invalid configuration · Dành sẵn | Invalid vote information. Check the highlighted fields. |
+| `MSG210` | UC-53 / Normal Flow · Dành sẵn | Vote draft created successfully. |
+| `MSG211` | UC-53 / AF-1 · Dành sẵn | Vote draft updated successfully. |
+| `MSG212` | UC-53 / AF-2 · Dành sẵn | Vote draft deleted successfully. |
+| `MSG213` | UC-53 / EX-2 · Dành sẵn | Only Draft votes may be managed by the current Chair while the meeting is Approved, Published or InProgress. |
+| `MSG214` | UC-53 / EX-3 · Dành sẵn | Unable to create the vote draft. No draft was created. Please try again. |
+| `MSG215` | UC-53 / EX-4 · Dành sẵn | Unable to update the vote draft. The draft remains unchanged. Please try again. |
+| `MSG216` | UC-53 / EX-5 · Dành sẵn | Unable to delete the vote draft. The draft remains unchanged. Please try again. |
+| `MSG217` | UC-54 / Normal Flow · Dành sẵn | Voting opened successfully. |
+| `MSG218` | UC-54 / EX-2 · Dành sẵn | Only the current Chair can open a Draft vote while the meeting is InProgress. |
+| `MSG219` | UC-54 / EX-3 · Dành sẵn | Another vote is already open in this meeting. Close it before opening this vote. |
+| `MSG220` | UC-54 / EX-4 · Dành sẵn | No eligible voters are available for the selected roles. Voting was not opened. |
+| `MSG221` | UC-54 / EX-5 · Dành sẵn | Unable to open voting. Voting was not opened. Please try again. |
+| `MSG222` | UC-55 / EX-1 · Dành sẵn | Select one option before submitting your ballot. |
+| `MSG223` | UC-55 / EX-2 · Dành sẵn | The selected option is not available for this vote. |
+| `MSG224` | UC-55 / EX-3 · Dành sẵn | You are not eligible to cast a ballot in this vote. |
+| `MSG225` | UC-55 / EX-4 · Dành sẵn | This vote is no longer accepting ballots. |
+| `MSG226` | UC-55 / EX-5 · Dành sẵn | Your ballot has already been recorded. It cannot be changed or withdrawn. |
+| `MSG227` | UC-55 / Normal Flow · Dành sẵn | Your ballot has been recorded. |
+| `MSG228` | UC-55 / EX-6 · Dành sẵn | Unable to record your ballot. No ballot was recorded. Please try again. |
+| `MSG229` | UC-56 / Normal Flow · Dành sẵn | Voting closed. The result is available. |
+| `MSG230` | UC-56 / EX-1 · Dành sẵn | Only the current Chair can close an Open vote while the meeting is InProgress or Ended. |
+| `MSG231` | UC-56 / EX-2 · Dành sẵn | Unable to close voting. The vote and saved ballots remain unchanged. Please try again. |
+| `MSG232` | UC-57 / EX-1 · Dành sẵn | Select Passed, NotPassed or Deferred. |
+| `MSG233` | UC-57 / EX-2 · Dành sẵn | The vote conclusion has already been recorded and cannot be changed. |
+| `MSG234` | UC-57 / EX-3 · Dành sẵn | Only the current Chair can record a conclusion for a Closed vote while the meeting is InProgress or Ended. |
+| `MSG235` | UC-57 / Normal Flow · Dành sẵn | Vote conclusion recorded successfully. |
+| `MSG236` | UC-57 / EX-4 · Dành sẵn | Unable to record the vote conclusion. No conclusion was recorded. Please try again. |
+| `MSG237` | UC-53, UC-54, UC-55, UC-56, UC-57 / Cancellation · Dành sẵn | Action cancelled. No changes were made. |
 
 ## Ghi chú: mã dùng chung có chủ ý
 
