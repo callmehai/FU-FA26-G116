@@ -25,6 +25,7 @@ Controller-->Page: Filter validation errors
 Page-->Admin: Correct the highlighted criteria
 else Criteria are valid
 Service->Repository: findReadOnlyPage(criteria, caller)
+activate Repository
 Repository->Database: Apply authorized scope and filters before count/pagination;\norder by OccurredAt descending with stable tie-breaker
 activate Database
 Database-->Repository: Read-only entries and total / Read failure
@@ -43,6 +44,7 @@ Service-->Controller: Entries with actor, event, target, time, IP and recorded d
 Controller-->Page: Requested read-only page
 Page-->Admin: Display audit entries in reverse chronological order
 end
+    deactivate Repository
 end
 deactivate Service
 end

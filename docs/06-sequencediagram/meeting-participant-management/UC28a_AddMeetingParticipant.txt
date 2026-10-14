@@ -47,9 +47,13 @@ MeetingPage-->User: MSG97 - Invalid meeting participant information.
 else Selection is valid
 alt Organizer restores Secretary using an existing active Member - AF-2
 ParticipantService->ParticipantRepository: Assign current Member as Secretary; preserve response/attendance and identity;\nno duplicate participant or new optional grant (BR-78, BR-79, BR-122)
+activate ParticipantRepository
 ParticipantRepository->Database: Save recovery role change; recheck no Secretary and preparation status
+activate Database
 Database-->ParticipantRepository: Complete save / No changes saved
 ParticipantRepository-->ParticipantService: Recovery result
+    deactivate Database
+    deactivate ParticipantRepository
 else New internal users selected
 ParticipantService->ParticipantRepository: Add all selected users with the shared role, permitted extras and Pending response;\nif any addition fails, add none (BR-88, BR-168)
 activate ParticipantRepository

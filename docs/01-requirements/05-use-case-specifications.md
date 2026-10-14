@@ -807,79 +807,197 @@ Sequence Diagram: [UC31_RecordAttendance.txt](../06-sequencediagram/meeting-part
 
 ## FE-07 — Personal Document Library & Meeting Document Management
 
-### UC-32 – View Meeting Documents
+Review draft — 14/10/2026: All fourteen detailed Document use cases are specified for review. BR statements are atomic and active MSG wording is English. The document-name constraint is removed. Anyone who can view a Meeting document may comment, without a separate commenting permission. MSG182 and MSG201 are retired. Commenting lifecycle limits, text/name length limits and personal-library quotas are not newly decided here. Guest additional-permission catalogue and grant matrix remain outside these Document specifications. Cancel actions are omitted.
 
-_UC gom — đặc tả nằm ở các UC con UC-32a, UC-32c bên dưới. UC-32b (View Document Version History) đã bỏ ngày 13/10/2026 theo [ADR-0018](../05-decisions/0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md); số không tái cấp._
+### UC-32 – View Meeting Documents
 
 #### UC-32a – View Meeting Documents
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Meeting Organizer, Chair, Secretary, Participant, Guest |
+| **Secondary Actors** | None |
+| **Description** | Allows an authorized user to browse the documents currently attached to one Meeting. Guest document access follows Participant rules. (BR-181, BR-205) |
+| **Preconditions** | ● PRE-1: The internal user is signed in, or the Guest has a valid verified invitation for this Meeting.<br>● PRE-2: The selected Meeting exists and the user is currently entitled to read its documents. (BR-181, BR-198, BR-233, BR-234, BR-153, BR-155, BR-157) |
+| **Postconditions** | ● POST-1: Only currently attached documents available to the user are displayed.<br>● POST-2: Meeting documents, personal libraries and Meeting status remain unchanged. |
+| **Normal Flow** | View Meeting Documents<br>1. The user opens the Documents tab of the selected Meeting.<br>2. The system checks the user's current Meeting-document access, including the current invitation for a Guest. Organizer, Chair and Secretary access is available before publication; Participant and Guest access starts with publication. Approver status alone grants no document-reading access. (BR-181, BR-198, BR-233, BR-234, BR-200)<br>3. The system displays currently attached documents with their names, file types, associated Agenda Items where present, the people who added them and comment counts. Removed documents are excluded. (BR-211)<br>4. The user reviews the displayed list or empty result, and may adjust the Agenda Item filter or finish viewing. Selecting a document opens UC-32c. |
+| **Alternative Flows** | AF-1 – Filter by Agenda Item<br>1. At Step 4, the user selects an Agenda Item.<br>2. The system displays only available documents associated with that item.<br>3. The flow resumes at Step 4 of the Main Flow.<br>AF-2 – No documents to display<br>1. At Step 3, the Meeting has no currently attached documents, or the filter in AF-1 has no matches.<br>2. The system displays an empty list and explains that no documents are available for the current selection.<br>3. The user may clear the filter. The flow resumes at Step 4 of the Main Flow. |
+| **Exception Flows** | EX-1 – Meeting documents are not accessible<br>1. At Step 2, the Meeting is unavailable or the user's document-reading access has ended, including removal of a participant or revocation or expiry of a Guest invitation.<br>2. No document names or contents are disclosed. No Meeting information is changed. The system displays MSG156 – “Meeting documents are not accessible.”<br>3. The use case ends.<br>EX-2 – Document list cannot be loaded<br>1. At Step 3, the system cannot retrieve the available document list.<br>2. No Meeting information is changed. The system displays MSG157 – “Unable to load the document list. Please try again.”; the failed load is not presented as an empty list.<br>3. The use case ends. |
 
 #### UC-32c – Preview Meeting Document
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Meeting Organizer, Chair, Secretary, Participant, Guest |
+| **Secondary Actors** | None |
+| **Description** | Allows an authorized user to read a Meeting document online and download the same file when permitted. Comments are covered separately in UC-35. (BR-181, BR-188) |
+| **Preconditions** | ● PRE-1: The internal user is signed in, or the Guest has a valid verified invitation for this Meeting.<br>● PRE-2: The selected document is currently attached to the Meeting and the user has current document-reading access. (BR-181, BR-211, BR-198, BR-233, BR-234, BR-153, BR-155, BR-157) |
+| **Postconditions** | ● POST-1: The selected document is displayed for online reading; in AF-1, the user also receives the permitted download.<br>● POST-2: The file content, its Meeting association and its comments remain unchanged. |
+| **Normal Flow** | Preview Meeting Document<br>1. The user selects a document in the Meeting Documents tab or the documents of an Agenda Item.<br>2. The system checks current document-reading access and that the document is still attached to this Meeting. Organizer, Chair and Secretary may read before publication; Participant and Guest may read from publication onward; Approver status alone grants no reading access. (BR-181, BR-211, BR-198, BR-233, BR-234, BR-200)<br>3. The system opens the document viewer and displays the file name, its content and the Meeting sensitivity. A PDF is shown page by page and a DOCX as a continuous scrollable document. <br>4. The user reads the document. The system offers downloading only when the Meeting is not Secret. (BR-188) |
+| **Alternative Flows** | AF-1 – Download the document<br>1. At Step 4, the user chooses Download for a Meeting that is not Secret.<br>2. The system rechecks current access, that the document remains attached and the current Meeting sensitivity. (BR-181, BR-211, BR-188, BR-198, BR-233, BR-200)<br>3. The system provides the same uploaded file to the user. (BR-183, BR-216)<br>4. The flow resumes at Step 4 of the Main Flow. |
+| **Exception Flows** | EX-1 – Document is no longer accessible<br>1. At Step 2, or during the access check in AF-1, the document was removed or the user's Meeting-document access is no longer valid.<br>2. No further document content or download is provided. The file and Meeting remain unchanged. The system displays MSG156 – “Meeting documents are not accessible.”<br>3. The use case ends.<br>EX-2 – Preview cannot be displayed<br>1. At Step 3, the system cannot display the selected file.<br>2. The document remains attached and its content is unchanged. The system displays MSG158 – “Unable to display the document. Please try again.”<br>3. The use case ends.<br>EX-3 – Download is prohibited<br>1. During Step 2 of AF-1, the Meeting is Secret, including when its sensitivity changed after the viewer opened.<br>2. No download is provided. The document remains unchanged. The system displays MSG159 – “Secret Meeting documents can only be viewed online and cannot be downloaded.” (BR-188)<br>3. The flow resumes at Step 4 of the Main Flow for online reading.<br>EX-4 – Download cannot be provided<br>1. At Step 3 of AF-1, the system cannot provide the file.<br>2. The file and its Meeting association remain unchanged. The system displays MSG160 – “Unable to download the document. Please try again.”<br>3. The flow resumes at Step 4 of the Main Flow. |
 
 ### UC-33 – Manage Meeting Documents
 
-_UC gom — đặc tả nằm ở các UC con UC-33a, UC-33c bên dưới. UC-33b (Add New Meeting Document Version) đã bỏ ngày 13/10/2026 theo [ADR-0018](../05-decisions/0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md); số không tái cấp._
-
 #### UC-33a – Add Document to Meeting
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Chair, Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the current Chair or Secretary to add a document from their own personal library or computer to a Meeting, optionally associating it with an Agenda Item. A file is not revised in place: replacing content requires adding a new file and removing the old document through UC-33c. (BR-184, BR-206, BR-208) |
+| **Preconditions** | ● PRE-1: The actor is signed in and is the current Chair or Secretary of the selected Meeting.<br>● PRE-2: The Meeting exists. (BR-184)<br>● PRE-3: The Meeting has not ended; any selected Agenda Item is Pending or InProgress. (BR-195, BR-196) |
+| **Postconditions** | ● POST-1: The selected document appears in the Meeting Documents list with its optional Agenda Item, the actor and addition time.<br>● POST-2: A file selected from the personal library stays there unchanged; a file uploaded from the computer is also available in the actor's personal library. (BR-183, BR-210, BR-192, BR-194)<br>● POST-3: Meeting lifecycle status is unchanged. |
+| **Normal Flow** | Add Document from Personal Library<br>1. The Chair or Secretary opens Meeting Documents and chooses Add Document.<br>2. The system offers selection from the actor's personal library or upload from the computer.<br>3. The actor selects a document from their own library, optionally selects an Agenda Item of this Meeting and submits the addition.<br>4. The system rechecks the current Chair or Secretary assignment, ownership and availability of the selected document, that the Meeting has not ended, and that any selected Agenda Item is currently Pending or InProgress. A file already attached to this Meeting is not added a second time. (BR-184, BR-209, BR-193, BR-195, BR-196)<br>5. The system adds the document to the Meeting without changing the file or removing it from the personal library, and records the actor and addition time. (BR-183, BR-197)<br>6. The system updates the Meeting Documents list and displays MSG161 – “Document added to the Meeting successfully.” |
+| **Alternative Flows** | AF-1 – Upload from the computer<br>1. At Step 3, the actor chooses a file from the computer, optionally selects an Agenda Item and submits the addition.<br>2. The system checks that the actual file is PDF or DOCX and does not exceed 50 MB. (BR-187, BR-214, BR-215)<br>3. The system performs the current-authority, Meeting lifecycle and Agenda Item checks in Step 4. (BR-184, BR-195, BR-196)<br>4. The system adds the document to the Meeting and places it in the uploader's personal library, in the folder “<Meeting title> - dd/mm/yyyy” The date is the upload date in Vietnam time. The existing folder for that user and Meeting is reused even if renamed or moved. If it was deleted, a new folder is created at the library root using this upload date. Later uploads do not rename an existing folder. (BR-210, BR-192, BR-226, BR-227, BR-228)<br>5. Both additions must complete together; otherwise EX-5 applies. (BR-194) The flow resumes at Step 6 of the Main Flow. |
+| **Exception Flows** | EX-1 – Actor is no longer authorized<br>1. At Step 4, or the corresponding check in AF-1, the actor is no longer the current Chair or Secretary.<br>2. No document is added to the Meeting or personal library. Existing documents remain unchanged. The system displays MSG162 – “You no longer have permission to add documents to this Meeting.”<br>3. The use case ends.<br>EX-2 – Selection is missing or no longer available<br>1. At Step 4, no document was selected, the library document is unavailable or does not belong to the actor, or the selected Agenda Item is unavailable in this Meeting.<br>2. No document is added. The system identifies the invalid selection and displays MSG163 – “Select your own available document and, if applicable, an available Agenda Item in this Meeting.”<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-3 – Uploaded file is invalid<br>1. At Step 2 of AF-1, no file was selected, the actual file is not a valid PDF or DOCX, or it exceeds 50 MB. (BR-187, BR-214, BR-215)<br>2. No document is added to the Meeting or personal library. The system displays MSG164 – “Select a valid PDF or DOCX file no larger than 50 MB.”<br>3. The flow resumes at Step 1 of AF-1.<br>EX-4 – Document is already attached<br>1. At Step 4, the same previously uploaded file is already attached to this Meeting. A matching name or identical content in a separate upload is not a duplicate. (BR-193, BR-229)<br>2. No duplicate is added and existing documents remain unchanged. The system displays MSG165 – “This document is already attached to the Meeting.”<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-5 – Addition cannot be completed<br>1. At Step 5 or Step 4 of AF-1, the system cannot complete the addition.<br>2. No new Meeting document or personal-library entry is recorded (BR-194); existing documents remain unchanged. The system displays MSG166 – “Unable to add the document. No document was added. Please try again.”<br>3. The use case ends.<br>EX-6 – Meeting has ended<br>1. At Step 4, or the corresponding check in AF-1, the Meeting is Ended or in a subsequent lifecycle state, including when it ended after the Add Document dialog opened. (BR-195)<br>2. No document is added to the Meeting or personal library. Existing documents remain unchanged. The system displays MSG172 – “Documents cannot be added after the Meeting has ended.”<br>3. The use case ends.<br>EX-7 – Agenda Item is completed<br>1. At Step 4, or the corresponding check in AF-1, the selected Agenda Item is Done, including when it completed after selection. (BR-196)<br>2. No document is added to the Meeting or personal library. The system displays MSG173 – “Documents cannot be added to or removed from a completed Agenda Item.”<br>3. The actor may select a Pending or InProgress Item or omit the optional association. The flow resumes at Step 3 of the Main Flow, or Step 1 of AF-1 for a computer upload.<br>EX-8 – Meeting is unavailable<br>1. Before displaying or completing the addition, the selected Meeting cannot be accessed.<br>2. No document is added to the Meeting or personal library. The system displays MSG174 – “This Meeting is not accessible.” without disclosing whether the Meeting exists.<br>3. The use case ends. |
 
 #### UC-33c – Remove Document from Meeting
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Chair, Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the current Chair or Secretary to remove a Meeting document when no Minutes exist and the document is not associated with a completed Agenda Item. (BR-184, BR-185, BR-196) |
+| **Preconditions** | ● PRE-1: The actor is signed in and is the current Chair or Secretary of the Meeting. (BR-184)<br>● PRE-2: The selected document is currently attached to this Meeting.<br>● PRE-3: No Meeting Minutes exist for this Meeting. (BR-185)<br>● PRE-4: The document is not associated with a Done Agenda Item. (BR-196) |
+| **Postconditions** | ● POST-1: The document no longer appears in this Meeting's current document list and is no longer available through this attachment.<br>● POST-2: Its comments remain as history; personal-library entries and attachments in other Meetings remain unchanged. (BR-212, BR-231, BR-197)<br>● POST-3: The actor and removal time are recorded. Meeting lifecycle status is unchanged. |
+| **Normal Flow** | Remove Document from Meeting<br>1. The Chair or Secretary selects an attached document and chooses Remove from Meeting.<br>2. The system displays a confirmation naming the document and explaining that it will leave this Meeting's list, while its comments remain as history and personal-library documents and other Meetings are unaffected.<br>3. The actor confirms removal.<br>4. The system rechecks the current Chair or Secretary assignment, that the document is still attached, that no Meeting Minutes exist, and that the document is not associated with a Done Agenda Item. Pending and InProgress Items do not block removal. (BR-184, BR-185, BR-196)<br>5. The system removes the document from this Meeting's current list, preserves its comments as history and records the actor and removal time. (BR-211, BR-212, BR-231, BR-197)<br>6. The system displays MSG167 – “Document removed from the Meeting successfully.” |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Meeting Minutes already exist<br>1. At Step 4, Meeting Minutes exist, including Minutes created after the confirmation was displayed. (BR-185)<br>2. The document remains attached and its comments remain unchanged. The system displays MSG168 – “The document cannot be removed because Meeting Minutes already exist.”<br>3. The use case ends.<br>EX-2 – Actor is no longer authorized<br>1. At Step 4, the actor is no longer the current Chair or Secretary. (BR-184)<br>2. No document is removed and comments remain unchanged. The system displays MSG169 – “You no longer have permission to remove documents from this Meeting.”<br>3. The use case ends.<br>EX-3 – Document is no longer attached<br>1. At Step 4, the selected document is no longer currently attached to this Meeting.<br>2. No further removal or comment change is made. The system displays MSG170 – “This document is no longer attached to the Meeting. Refresh the document list.”<br>3. The use case ends; the actor may refresh the list through UC-32a.<br>EX-4 – Removal cannot be completed<br>1. At Step 5, the system cannot complete the removal.<br>2. The document remains attached and its comments remain unchanged; no successful removal is recorded. The system displays MSG171 – “Unable to remove the document. It remains attached to the Meeting. Please try again.”<br>3. The use case ends.<br>EX-5 – Agenda Item is completed<br>1. At Step 4, the document is associated with a Done Agenda Item, including when the Item completed after the confirmation was displayed. (BR-196)<br>2. The document remains attached and its comments remain unchanged. The system displays MSG173 – “Documents cannot be added to or removed from a completed Agenda Item.”<br>3. The use case ends.<br>EX-6 – Meeting is unavailable<br>1. Before displaying or completing the removal, the selected Meeting cannot be accessed.<br>2. No document is removed and comments remain unchanged. The system displays MSG174 – “This Meeting is not accessible.” without disclosing whether the Meeting exists.<br>3. The use case ends. |
 
 ### UC-34 – View Personal Document Library
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Internal user |
+| **Secondary Actors** | None |
+| **Description** | Allows an internal user to browse their own folders and documents and see permitted Meeting-usage details. |
+| **Preconditions** | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242) |
+| **Postconditions** | ● POST-1: The user sees only their own library items and permitted Meeting-usage details.<br>● POST-2: Documents, folders and Meeting attachments remain unchanged. |
+| **Normal Flow** | View Personal Document Library<br>1. The user opens Personal Document Library.<br>2. The system checks personal-library access. (BR-204, BR-242)<br>3. The system displays the user's folders and documents with names, file types and permitted Meeting-usage details. Other users' items and unauthorized Meeting details are excluded. (BR-219, BR-242, BR-251)<br>4. The user selects a folder or the library root.<br>5. The system displays the documents at that location. The user may browse the list or empty result, change the location or finish viewing. |
+| **Alternative Flows** | AF-1 – Search or filter documents<br>1. At Step 5, the user enters a document-name search or selects a file-type filter.<br>2. The system applies the criteria within the user's own displayed library location.<br>3. The flow resumes at Step 5 of the Main Flow.<br>AF-2 – Empty library or no matching documents<br>1. At Step 3 or Step 5, no documents match the location and criteria.<br>2. The system displays an empty result without treating it as a loading failure.<br>3. The flow resumes at Step 5 of the Main Flow. |
+| **Exception Flows** | EX-1 – Library cannot be loaded<br>1. At Step 2, Step 3 or Step 5, the system cannot retrieve the library.<br>2. No library or Meeting information changes. The system displays MSG176 – “Unable to load your personal document library. Please try again.”.<br>3. The use case ends.<br>EX-2 – Selected folder is unavailable<br>1. At Step 4, the folder was deleted or is no longer available in the user's library.<br>2. No information changes. The system displays MSG175 – “This personal-library item is not available.”.<br>3. The user returns to the library root. The flow resumes at Step 4 of the Main Flow. |
 
 ### UC-35 – Comment on Meeting Document
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Meeting Organizer, Chair, Secretary, Participant, Guest |
+| **Secondary Actors** | None |
+| **Description** | Allows anyone who can view a Meeting document to read and add comments. No separate commenting permission is required. PDF comments may include a page reference; DOCX comments have no page reference. |
+| **Preconditions** | ● PRE-1: The internal user is signed in, or the Guest has verified the invited email and has a current valid invitation. (BR-153, BR-155, BR-157)<br>● PRE-2: The document is currently attached and the user has current read access. The same document-viewing access permits commenting; no separate commenting permission is required. (BR-198, BR-233, BR-234, BR-249) |
+| **Postconditions** | ● POST-1: A comment is recorded with its author and posting time; a PDF comment may include a page reference and a DOCX comment has no page reference. (BR-248, BR-250)<br>● POST-2: The comment list and count are refreshed. Document content and Meeting status remain unchanged. |
+| **Normal Flow** | Comment on Meeting Document<br>1. The user opens the Meeting document viewer and its comments.<br>2. The system checks current document access and displays existing comments with author and posting time. (BR-249, BR-250)<br>3. The user enters a comment and chooses Send.<br>4. The system rechecks current read access, that the document remains attached, that the comment is not blank. (BR-246, BR-249)<br>5. The system saves the comment, author and posting time, with an optional page reference for PDF and no page reference for DOCX. (BR-248, BR-250)<br>6. The system refreshes the comments and count and displays MSG199 – “Comment added successfully.”. |
+| **Alternative Flows** | AF-1 – Include a PDF page reference<br>1. At Step 3, the user comments on a page being viewed in a PDF.<br>2. The comment includes that page reference; a page reference is not required for a document-wide comment.<br>3. The flow resumes at Step 4 of the Main Flow. |
+| **Exception Flows** | EX-1 – Comment is empty<br>1. At Step 4, the text is blank or contains only whitespace. (BR-246)<br>2. No comment is saved. The system displays MSG200 – “Enter a comment.”.<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-2 – Document is no longer available<br>1. At Step 2 or Step 4, the document is no longer attached, or the user can no longer view it, including after Guest invitation revocation or expiry.<br>2. No comment is saved. The system displays MSG156 – “Meeting documents are not accessible.”.<br>3. The use case ends.<br>EX-3 – Operation cannot be completed<br>1. At Step 5, the system cannot complete the operation.<br>2. No new comment is saved; existing comments remain unchanged. The system displays MSG202 – “Unable to add the comment. No comment was saved. Please try again.”.<br>3. The use case ends.<br>EX-4 – Comments cannot be loaded<br>1. At Step 2, current document access is valid but the system cannot retrieve comments.<br>2. No comment or document changes. The system displays MSG204 – “Unable to load the document comments. Please try again.”.<br>3. The use case ends. |
 
 ### UC-36 – Upload Document to Personal Library
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Internal user |
+| **Secondary Actors** | None |
+| **Description** | Allows an internal user to upload one PDF or DOCX to the selected location in their personal library. Uploading does not attach it to a Meeting. |
+| **Preconditions** | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242) |
+| **Postconditions** | ● POST-1: A new personal-library document is available at the selected location.<br>● POST-2: The uploaded file retains its content and format; existing documents and Meeting attachments remain unchanged. (BR-183, BR-216, BR-229) |
+| **Normal Flow** | Upload Document to Personal Library<br>1. The user opens their library root or a folder and chooses Upload.<br>2. The user selects one file from the computer and submits it.<br>3. The system checks library access, the destination ownership and availability, and that the actual file is PDF or DOCX and no larger than 50 MB. (BR-187, BR-214, BR-215, BR-242)<br>4. The system adds a new document at the selected location with the file's name and original content. Separate uploads remain separate documents. (BR-183, BR-216, BR-229)<br>5. The system refreshes the library and displays MSG177 – “Document uploaded to your personal library successfully.”. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – File is invalid<br>1. At Step 3, no file is selected, the actual content is not a valid PDF or DOCX, or the file exceeds 50 MB. (BR-187, BR-214, BR-215)<br>2. No library document is created. The system displays MSG164 – “Select a valid PDF or DOCX file no larger than 50 MB.”.<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-2 – Destination is unavailable<br>1. At Step 3, the selected folder was deleted or does not belong to the user. (BR-242)<br>2. No library document is created. The system displays MSG179 – “The selected destination folder is not available in your personal library.”.<br>3. The user selects an available folder or the library root. The flow resumes at Step 1 of the Main Flow.<br>EX-3 – Operation cannot be completed<br>1. At Step 4, the system cannot complete the operation.<br>2. No new library document is created; existing documents and Meeting attachments remain unchanged. The system displays MSG178 – “Unable to upload the document. No document was added. Please try again.”.<br>3. The use case ends. |
 
 ### UC-71 – Manage Personal Documents
 
-_UC gom — đặc tả nằm ở các UC con UC-71a, UC-71b, UC-71c bên dưới._
-
 #### UC-71a – Delete Document from Personal Library
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Internal user |
+| **Secondary Actors** | None |
+| **Description** | Allows an internal user to delete a document from their personal library without removing documents already attached to Meetings. |
+| **Preconditions** | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The selected document is in the user's library. |
+| **Postconditions** | ● POST-1: The document no longer appears in the personal library.<br>● POST-2: Existing Meeting attachments remain readable; eventual cleanup applies only when no active use remains. Historical metadata and comments are retained. (BR-186, BR-213, BR-232) |
+| **Normal Flow** | Delete Document from Personal Library<br>1. The user selects a personal-library document and chooses Delete.<br>2. The system requests confirmation, naming the document and explaining that deletion affects the personal library only.<br>3. The user confirms deletion.<br>4. The system rechecks ownership and that the library document still exists. (BR-242)<br>5. The system deletes the personal-library document without removing Meeting attachments. (BR-186)<br>6. The system refreshes the library and displays MSG180 – “Document deleted from your personal library successfully.”. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Document is unavailable<br>1. At Step 4, the selected document is missing or no longer belongs to the user.<br>2. No library document is deleted; Meeting documents remain unchanged. The system displays MSG175 – “This personal-library item is not available.”.<br>3. The use case ends.<br>EX-2 – Operation cannot be completed<br>1. At Step 5, the system cannot complete the operation.<br>2. The library document remains available and Meeting documents remain unchanged. The system displays MSG181 – “Unable to delete the document. Your personal library remains unchanged.”.<br>3. The use case ends. |
 
 #### UC-71b – Rename Document
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Internal user |
+| **Secondary Actors** | None |
+| **Description** | Allows the owner to rename a personal-library document without changing its file content. |
+| **Preconditions** | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The document exists in the user's library. |
+| **Postconditions** | ● POST-1: The document is displayed under the new name in the personal library.<br>● POST-2: File content and library location remain unchanged. (BR-183) |
+| **Normal Flow** | Rename Document<br>1. The user chooses Rename for a personal-library document.<br>2. The system displays its current name.<br>3. The user enters a new name and submits it.<br>4. The system rechecks ownership and document availability. (BR-242)<br>5. The system saves the new personal-library document name. File content remains unchanged. (BR-183, BR-224)<br>6. The system refreshes the displayed name and displays MSG183 – “Document renamed successfully.”. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Document is unavailable<br>1. At Step 4, the selected document is missing or no longer belongs to the user.<br>2. No document name changes. The system displays MSG175 – “This personal-library item is not available.”.<br>3. The use case ends.<br>EX-2 – Operation cannot be completed<br>1. At Step 5, the system cannot complete the operation.<br>2. The previous name, content and Meeting attachments remain unchanged. The system displays MSG184 – “Unable to rename the document. Its name remains unchanged.”.<br>3. The use case ends. |
 
 #### UC-71c – Move Document to Folder
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Internal user |
+| **Secondary Actors** | None |
+| **Description** | Allows the owner to move a personal-library document to another owned folder or the library root. |
+| **Preconditions** | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The document exists in the user's library. |
+| **Postconditions** | ● POST-1: The document is available at the selected library location.<br>● POST-2: Document name, file content and Meeting attachments remain unchanged. (BR-225, BR-245) |
+| **Normal Flow** | Move Document to Folder<br>1. The user chooses Move for a personal-library document.<br>2. The system displays destinations within the user's library.<br>3. The user selects an owned destination folder and confirms.<br>4. The system rechecks document ownership and availability and destination ownership and availability. (BR-225, BR-242)<br>5. The system moves only the library document to that location. (BR-245)<br>6. The system refreshes the library and displays MSG185 – “Document moved successfully.”. |
+| **Alternative Flows** | AF-1 – Move to the library root<br>1. At Step 3, the user selects the library root instead of a folder.<br>2. The move has no destination folder. (BR-225)<br>3. The flow resumes at Step 4 of the Main Flow. |
+| **Exception Flows** | EX-1 – Document is unavailable<br>1. At Step 4, the selected document is missing or no longer belongs to the user.<br>2. The document remains at its previous location. The system displays MSG175 – “This personal-library item is not available.”.<br>3. The use case ends.<br>EX-2 – Destination is unavailable<br>1. At Step 4, the destination was deleted or does not belong to the user. (BR-225, BR-242)<br>2. The document stays at its previous location. The system displays MSG179 – “The selected destination folder is not available in your personal library.”.<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-3 – Operation cannot be completed<br>1. At Step 5, the system cannot complete the operation.<br>2. The document stays at its previous location and its Meeting attachments are unchanged. The system displays MSG186 – “Unable to move the document. Its location remains unchanged.”.<br>3. The use case ends. |
 
 ### UC-72 – Manage Library Folders
 
-_UC gom — đặc tả nằm ở các UC con UC-72a → UC-72d bên dưới._
-
 #### UC-72a – Create Folder
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Internal user |
+| **Secondary Actors** | None |
+| **Description** | Allows an internal user to create a folder at the library root or inside an owned folder. |
+| **Preconditions** | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242) |
+| **Postconditions** | ● POST-1: A new owned folder is available at the selected location.<br>● POST-2: Existing folders, documents and Meeting attachments remain unchanged. |
+| **Normal Flow** | Create Folder<br>1. The user selects the library root or an owned parent folder and chooses New Folder.<br>2. The user enters a folder name and submits it.<br>3. The system checks ownership, parent availability, a nonblank name and a resulting depth of at most five levels. Duplicate folder names are permitted. (BR-191, BR-219, BR-220, BR-221, BR-242)<br>4. The system creates the folder at that location.<br>5. The system refreshes the folder list and displays MSG187 – “Folder created successfully.”. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Folder name is blank<br>1. At Step 3, the name is empty or contains only whitespace. (BR-220)<br>2. No folder is created. The system displays MSG188 – “Enter a folder name.”.<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-2 – Parent is unavailable<br>1. At Step 3, the selected parent was deleted or does not belong to the user. (BR-219, BR-242)<br>2. No folder is created. The system displays MSG179 – “The selected destination folder is not available in your personal library.”.<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-3 – Folder depth exceeds the limit<br>1. At Step 3, the new folder would be deeper than level five. (BR-191)<br>2. No folder is created. The system displays MSG189 – “Folders cannot be nested more than five levels deep.”.<br>3. The user selects a shallower parent. The flow resumes at Step 1 of the Main Flow.<br>EX-4 – Operation cannot be completed<br>1. At Step 4, the system cannot complete the operation.<br>2. No folder is created; existing library items remain unchanged. The system displays MSG190 – “Unable to create the folder. No folder was created.”.<br>3. The use case ends. |
 
 #### UC-72b – Rename Folder
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Internal user |
+| **Secondary Actors** | None |
+| **Description** | Allows the owner to rename a folder without moving it or changing its contents. |
+| **Preconditions** | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The folder exists in the user's library. |
+| **Postconditions** | ● POST-1: The folder displays the new name.<br>● POST-2: Its location and contents remain unchanged; an automatic Meeting folder remains reusable. (BR-227) |
+| **Normal Flow** | Rename Folder<br>1. The user chooses Rename for an owned folder.<br>2. The system displays the current folder name.<br>3. The user enters a new name and submits it.<br>4. The system rechecks ownership, availability and a nonblank name; duplicate names are permitted. (BR-219, BR-220, BR-221, BR-242)<br>5. The system saves the new folder name without changing its contents or location.<br>6. The system refreshes the folder name and displays MSG191 – “Folder renamed successfully.”. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Folder is unavailable<br>1. At Step 4, the selected folder is missing or no longer belongs to the user.<br>2. No folder name changes. The system displays MSG175 – “This personal-library item is not available.”.<br>3. The use case ends.<br>EX-2 – Folder name is blank<br>1. At Step 4, the name is empty or contains only whitespace. (BR-220)<br>2. The previous name remains. The system displays MSG188 – “Enter a folder name.”.<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-3 – Operation cannot be completed<br>1. At Step 5, the system cannot complete the operation.<br>2. The folder name, location and contents remain unchanged. The system displays MSG192 – “Unable to rename the folder. Its name remains unchanged.”.<br>3. The use case ends. |
 
 #### UC-72c – Move Folder
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Internal user |
+| **Secondary Actors** | None |
+| **Description** | Allows the owner to move a folder with its contents to another owned folder or the library root. |
+| **Preconditions** | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The folder exists in the user's library. |
+| **Postconditions** | ● POST-1: The folder and its contents are available at the selected location, within five levels.<br>● POST-2: Folder and document names, file content and Meeting attachments remain unchanged. An automatic Meeting folder remains reusable. (BR-191, BR-227) |
+| **Normal Flow** | Move Folder<br>1. The user chooses Move for an owned folder.<br>2. The system displays destinations within the user's library.<br>3. The user selects an owned destination folder and confirms.<br>4. The system rechecks source and destination ownership and availability. The destination cannot be the source or its descendant, and the moved folder and every descendant must remain within five levels. (BR-191, BR-219, BR-222, BR-242)<br>5. The system moves the folder with its documents and subfolders, without changing their names or Meeting attachments.<br>6. The system refreshes the folder tree and displays MSG194 – “Folder moved successfully.”. |
+| **Alternative Flows** | AF-1 – Move to the library root<br>1. At Step 3, the user selects the library root instead of another folder.<br>2. The moved folder becomes a first-level folder; its descendants remain subject to the depth limit. (BR-191)<br>3. The flow resumes at Step 4 of the Main Flow. |
+| **Exception Flows** | EX-1 – Folder is unavailable<br>1. At Step 4, the selected folder is missing or no longer belongs to the user.<br>2. No folder or contained item moves. The system displays MSG175 – “This personal-library item is not available.”.<br>3. The use case ends.<br>EX-2 – Destination is unavailable<br>1. At Step 4, the destination was deleted or does not belong to the user. (BR-219, BR-242)<br>2. No folder or contained item moves. The system displays MSG179 – “The selected destination folder is not available in your personal library.”.<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-3 – Destination creates a cycle<br>1. At Step 4, the destination is the folder itself or one of its descendants. (BR-222)<br>2. No folder or contained item moves. The system displays MSG193 – “A folder cannot be moved into itself or one of its descendants.”.<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-4 – Resulting depth exceeds the limit<br>1. At Step 4, the moved folder or any descendant would be deeper than level five. (BR-191)<br>2. No folder or contained item moves. The system displays MSG189 – “Folders cannot be nested more than five levels deep.”.<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-5 – Operation cannot be completed<br>1. At Step 5, the system cannot complete the operation.<br>2. The folder and all contained items remain at their previous locations. The system displays MSG195 – “Unable to move the folder. Its location remains unchanged.”.<br>3. The use case ends. |
 
 #### UC-72d – Delete Folder
 
-Placeholder only – detailed Use Case Specification will be added later.
-
----
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Internal user |
+| **Secondary Actors** | None |
+| **Description** | Allows the owner to delete an empty personal-library folder. If an automatic Meeting folder is deleted, a later direct Meeting upload recreates it. |
+| **Preconditions** | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The folder exists and contains no documents or subfolders. (BR-223) |
+| **Postconditions** | ● POST-1: The empty folder no longer appears in the library.<br>● POST-2: Other folders, documents and Meeting attachments remain unchanged. Future recreation of an automatic Meeting folder follows its naming and location rules. (BR-192, BR-228) |
+| **Normal Flow** | Delete Folder<br>1. The user chooses Delete for an owned folder.<br>2. The system asks for confirmation and names the folder.<br>3. The user confirms deletion.<br>4. The system rechecks current ownership and availability and that the folder contains neither documents nor subfolders. (BR-219, BR-223, BR-242)<br>5. The system deletes only the empty folder.<br>6. The system refreshes the folder tree and displays MSG197 – “Folder deleted successfully.”. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Folder is unavailable<br>1. At Step 4, the selected folder is missing or no longer belongs to the user.<br>2. No folder is deleted. The system displays MSG175 – “This personal-library item is not available.”.<br>3. The use case ends.<br>EX-2 – Folder is no longer empty<br>1. At Step 4, the folder contains a document or subfolder, including an item added after confirmation was displayed. (BR-223)<br>2. The folder and its contents remain unchanged. The system displays MSG196 – “Only an empty folder can be deleted.”.<br>3. The use case ends.<br>EX-3 – Operation cannot be completed<br>1. At Step 5, the system cannot complete the operation.<br>2. The folder and all other library items remain unchanged. The system displays MSG198 – “Unable to delete the folder. The folder remains unchanged.”.<br>3. The use case ends. |
 
 ## FE-08 — Online Meeting Room Management
 

@@ -220,6 +220,23 @@ mode.
 
 ## Documentation
 
+### Nạp context khi làm tài liệu
+
+`AGENTS.md` được nạp khi bắt đầu task trong repository. Nếu yêu cầu có thể tạo, sửa hoặc rà soát file
+trong `docs/`, hãy nạp context theo thứ tự này trước khi quyết định phạm vi:
+
+1. Đọc [docs/README.md](docs/README.md).
+2. Với mỗi file đích, đọc `README.md` từ `docs/` qua từng thư mục cha tới thư mục chứa file. Nếu một
+   thư mục `docs/` chưa có README, tạo README ngắn, đúng phạm vi cùng task đó.
+3. Đọc `AGENTS.md` áp dụng trong các thư mục đích và những tài liệu nguồn/chuẩn được README liên
+   quan dẫn tới. Khi task chạm nhiều khu vực, nạp đủ từng nhánh README; không cần đọc README của
+   khu vực không liên quan.
+4. README của thư mục là bản đồ phạm vi, nguồn chuẩn, quan hệ giữa file nguồn và file xuất; không
+   chép lại nội dung của các tài liệu chuẩn.
+
+Mỗi thư mục trong `docs/` phải có một `README.md`. Quy tắc này giúp agent bắt đầu task tài liệu bằng
+context của repo và đọc đủ context theo đúng đường dẫn thay vì đoán từ tên file.
+
 When a change affects the API contract, a technical decision or the scope, update `docs/` in the
 **same commit** as the code.
 

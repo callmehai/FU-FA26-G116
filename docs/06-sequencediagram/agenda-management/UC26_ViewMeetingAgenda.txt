@@ -26,6 +26,7 @@ MeetingRepository-->AgendaService: Meeting / Not found
 deactivate MeetingRepository
 
 AgendaService->MeetingAccessPolicy: Verify current Meeting access (BR-29)
+activate MeetingAccessPolicy
 MeetingAccessPolicy-->AgendaService: Authorized / Not authorized
 alt Meeting not accessible - EX-1
     AgendaService-->AgendaController: Not found; disclose no Agenda data
@@ -69,3 +70,4 @@ end
 deactivate AgendaService
 deactivate AgendaController
 deactivate MeetingPage
+deactivate MeetingAccessPolicy

@@ -8,6 +8,7 @@ participant ":Role Permission Repository" as RoleRepository
 database ":Database" as Database
 
 Admin->RolePage: Access Role & Permission Management
+activate RolePage
 RolePage->RoleController: Request role and permission matrix
 activate RoleController
 RoleController->RoleService: Get role and permission matrix
@@ -25,3 +26,4 @@ deactivate Database
 deactivate RoleRepository
 deactivate RoleService
 deactivate RoleController
+deactivate RolePage

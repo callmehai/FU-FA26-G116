@@ -56,6 +56,8 @@ alt Meeting is not Approved, Organizer is ineligible, or required active Chair/S
     MeetingPage-->Organizer: MSG46 - This meeting can no longer be published
 
 else Organizer is eligible, meeting is Approved, and required active roles exist
+    activate MeetingController
+    activate MeetingService
     MeetingService->MeetingRepository: Revalidate publication readiness; record Published status\nand publication history together (BR-37, BR-38, BR-41, BR-124, BR-125)
     activate MeetingRepository
     MeetingRepository->Database: Save Published status and publication history as one complete action
@@ -73,6 +75,10 @@ else Organizer is eligible, meeting is Approved, and required active roles exist
             MeetingPage-->Organizer: MSG47 - Unable to publish the meeting. Please try again
 
         else Meeting published
+            activate Database
+            activate MeetingController
+            activate MeetingRepository
+            activate MeetingService
             Database-->MeetingRepository: Published status and publication history recorded together
             deactivate Database
             MeetingRepository-->MeetingService: Published meeting

@@ -35,6 +35,8 @@ alt Meeting not found
     MeetingPage-->Organizer: Meeting not found
 
 else Organizer is no longer authorized - EX-1
+    activate MeetingController
+    activate MeetingService
     MeetingService-->MeetingController: Update authorization denied; no changes saved
     deactivate MeetingService
     MeetingController-->MeetingPage: Return authorization error
@@ -42,6 +44,8 @@ else Organizer is no longer authorized - EX-1
     MeetingPage-->Organizer: Display applicable existing authorization error
 
 else Meeting is not Draft, Rejected or Published - EX-1 / EX-2
+    activate MeetingController
+    activate MeetingService
     MeetingService-->MeetingController: MSG33 - This meeting can no longer be edited
     deactivate MeetingService
     MeetingController-->MeetingPage: Return edit restriction
@@ -49,6 +53,8 @@ else Meeting is not Draft, Rejected or Published - EX-1 / EX-2
     MeetingPage-->Organizer: MSG33 - This meeting can no longer be edited
 
 else Meeting is Published - AF-1
+    activate MeetingController
+    activate MeetingService
     MeetingService->MeetingService: Recheck current Organizer permission, Published status and that\nthe Meeting has not started; allow changes only to Planned Start Time,\nPlanned End Time and Location (BR-27, BR-158)
 
     alt Meeting has started or is no longer Published - EX-2
@@ -59,6 +65,8 @@ else Meeting is Published - AF-1
         MeetingPage-->Organizer: MSG33 - This meeting can no longer be edited
 
     else Reschedule is permitted
+        activate MeetingController
+        activate MeetingService
         MeetingService->MeetingService: Validate new start is later than current time\nand end follows start (BR-62, BR-75)
 
         alt New start is not in the future or a field outside the Reschedule set was modified - EX-2
@@ -69,6 +77,8 @@ else Meeting is Published - AF-1
             MeetingPage-->Organizer: MSG31 - Invalid meeting information
 
         else End time or required schedule information is invalid - EX-1
+            activate MeetingController
+            activate MeetingService
             MeetingService-->MeetingController: MSG31 - Invalid meeting information
             deactivate MeetingService
             MeetingController-->MeetingPage: Return validation errors; schedule unchanged
@@ -76,6 +86,8 @@ else Meeting is Published - AF-1
             MeetingPage-->Organizer: MSG31 - Invalid meeting information
 
         else New schedule is valid
+            activate MeetingController
+            activate MeetingService
             MeetingService->MeetingRepository: Save new schedule and record Reschedule history;\nretain Published status and assigned approver (BR-38, BR-76, BR-158)
             activate MeetingRepository
             MeetingRepository->Database: Save schedule and lifecycle history atomically
@@ -93,6 +105,10 @@ else Meeting is Published - AF-1
                 MeetingPage-->Organizer: MSG36 - Unable to update the meeting.\nPlease try again
 
             else New schedule is saved
+                activate Database
+                activate MeetingController
+                activate MeetingRepository
+                activate MeetingService
                 Database-->MeetingRepository: Schedule and Reschedule history saved
                 deactivate Database
                 MeetingRepository-->MeetingService: Rescheduled Meeting
@@ -111,6 +127,8 @@ else Meeting is Published - AF-1
     end
 
 else Meeting is Draft or Rejected
+    activate MeetingController
+    activate MeetingService
     MeetingService-->MeetingController: Meeting is editable
     deactivate MeetingService
     MeetingController->MeetingService: Update meeting information
@@ -134,6 +152,8 @@ else Meeting is Draft or Rejected
         MeetingPage-->Organizer: MSG33 - This meeting can no longer be edited
 
     else Meeting remains editable
+        activate MeetingController
+        activate MeetingService
         MeetingService->MeetingService: Validate required meeting information and Planned End Time after\nPlanned Start Time (BR-24, BR-27, BR-62)
 
         alt Meeting information is invalid - EX-1
@@ -144,6 +164,8 @@ else Meeting is Draft or Rejected
             MeetingPage-->Organizer: MSG31 - Invalid meeting information
 
         else Meeting information is valid
+            activate MeetingController
+            activate MeetingService
             MeetingService->MeetingRepository: Update meeting information;\nkeep lifecycle status and approval assignment unchanged
             activate MeetingRepository
             MeetingRepository->Database: Save meeting information
@@ -161,6 +183,10 @@ else Meeting is Draft or Rejected
                 MeetingPage-->Organizer: MSG36 - Unable to update the meeting.\nPlease try again
 
             else Meeting updated successfully
+                activate Database
+                activate MeetingController
+                activate MeetingRepository
+                activate MeetingService
                 Database-->MeetingRepository: Meeting information saved
                 deactivate Database
                 MeetingRepository-->MeetingService: Updated meeting

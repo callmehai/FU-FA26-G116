@@ -21,11 +21,13 @@ alt Query criteria are invalid - EX-2
     MeetingPage-->User: MSG32 - Invalid query parameters
 
 else Query criteria are valid
+    activate MeetingController
     MeetingController->MeetingService: getMeetingList(userId, criteria)
     activate MeetingService
     MeetingService->MeetingRepository: Find authorized meetings with criteria\n(BR-29, BR-30, BR-31, BR-32)
     activate MeetingRepository
     MeetingRepository->Database: Filter Time Range by overlapping Meeting
+    activate Database
 Planned Start/End Time (BR-30)
     activate Database
 
@@ -41,6 +43,10 @@ Planned Start/End Time (BR-30)
         MeetingPage-->User: MSG38 - Unable to load meetings.\nPlease try again
 
     else Meeting list retrieved successfully
+        activate Database
+        activate MeetingController
+        activate MeetingRepository
+        activate MeetingService
         Database-->MeetingRepository: Authorized meeting page
         deactivate Database
         MeetingRepository-->MeetingService: Meeting list or empty list
@@ -51,6 +57,7 @@ Planned Start/End Time (BR-30)
         deactivate MeetingController
         MeetingPage-->User: Meeting list or no matching meetings
     end
+    deactivate Database
 end
 
 deactivate MeetingPage

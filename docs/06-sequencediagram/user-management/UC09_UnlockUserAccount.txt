@@ -21,7 +21,9 @@ else Caller is authorized
 Controller->Service: unlockUserAccount(userId, actorId)
 activate Service
 Service->Users: findById(userId)
+activate Users
 Users->Database: Read selected account within authorized scope
+activate Database
 Database-->Users: Account / Not found / Read failure
 Users-->Service: Account / Not found / Read failure
 alt Account does not exist or is outside scope - EX-1
@@ -38,6 +40,7 @@ Controller-->Page: Unable to unlock the account
 Page-->Admin: Unable to unlock the account; retry is available
 else Account is active
 Service->Locks: Read current lock and failed-attempt counter
+activate Locks
 Locks->Database: Read current security lock state
 Database-->Locks: Locked / Already unlocked / Read failure
 Locks-->Service: Current lock state / Read failure
@@ -55,6 +58,7 @@ Locks->Database: Begin transaction; recheck account/lock; stage lock reset
 Database-->Locks: Reset staged / State changed / Failure
 Locks-->Service: Staged result
 Service->Audit: Stage unlock audit with actor, target and time if reset is valid
+activate Audit
 Audit->Database: Stage audit evidence in the same transaction
 Database-->Audit: Audit staged / Failure
 Audit-->Service: Audit result
@@ -79,9 +83,13 @@ Service-->Controller: Rollback; previous lock state retained
 Controller-->Page: Unable to unlock the account
 Page-->Admin: Unable to unlock the account; previous lock state retained
 end
+    deactivate Audit
 end
+    deactivate Locks
 end
 deactivate Service
+    deactivate Database
+    deactivate Users
 end
 deactivate Controller
 deactivate Page
