@@ -9,6 +9,7 @@ control ":Audit Service" as AuditService
 database ":Database" as Database
 
 Admin->RolePage: Configure permissions for role
+activate RolePage
 RolePage->RoleController: Submit updated role permissions
 activate RoleController
 RoleController->RoleService: Update role permissions
@@ -47,3 +48,4 @@ else Valid permission configuration
 end
 deactivate RoleService
 deactivate RoleController
+deactivate RolePage

@@ -43,6 +43,8 @@ alt Selected role is not available - EX-1
     UserPage-->Admin: MSG09 - Invalid account information.\nThe role does not exist
 
 else Selected role is available
+    activate UserController
+    activate UserService
     UserService->UserRepository: Verify active account retains user administration permission
     activate UserRepository
     UserRepository->Database: Check active holders of user administration permission
@@ -60,6 +62,8 @@ else Selected role is available
         UserPage-->Admin: MSG12 - Unable to change the status of this user account
 
     else Assignment is permitted
+        activate UserController
+        activate UserService
         UserService->UserRepository: Assign selected system role to user
         activate UserRepository
         UserRepository->Database: Save user role assignment

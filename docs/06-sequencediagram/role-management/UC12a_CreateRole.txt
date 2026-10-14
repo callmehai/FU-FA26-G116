@@ -9,6 +9,7 @@ control ":Audit Service" as AuditService
 database ":Database" as Database
 
 Admin->RolePage: Submit new role (name, description, permissions)
+activate RolePage
 RolePage->RoleController: Create role
 activate RoleController
 RoleController->RoleService: Create role
@@ -55,3 +56,4 @@ else Valid role information
 end
 deactivate RoleService
 deactivate RoleController
+deactivate RolePage

@@ -2,6 +2,28 @@
 
 > Áp dụng cho các Sequence Diagram viết bằng cú pháp của **sequencediagram.org** trong dự án TrustCabinet.
 
+## Cấu trúc file và cách đồng bộ
+
+- Mỗi Use Case có source `.txt` và ảnh `.png` cùng tên trong thư mục theo Feature. Nội dung `.txt` là
+  bản cần sửa; sau khi sửa, xuất lại PNG tương ứng bằng `node scripts/export-diagrams.js <đường-dẫn-file-hoặc-thư-mục>`.
+- [`TrustCabinet_Sequence_Diagrams.drawio`](TrustCabinet_Sequence_Diagrams.drawio) là file draw.io gộp
+  các sequence thành từng tab, dùng để duyệt và chỉnh sửa sơ đồ native. Khi thay đổi một source, cập
+  nhật đúng PNG và tab UC tương ứng trong file gộp; giữ nguyên các tab khác. Ảnh xuất từ các tab UC
+  của file gộp được đồng bộ riêng trong [`drawio-png/`](drawio-png/README.md).
+- Đọc README của thư mục Feature trước khi sửa diagram: ở đó có danh sách UC và các lưu ý riêng của
+  nhóm đó. Bảng UC ở cuối trang là mục lục tổng thể.
+- Quy tắc nghiệp vụ và cách vẽ nằm ở các phần bên dưới. Khi thay đổi `.drawio`, tuân theo
+  [DRAWIO_EDITING_RULES.md](../../DRAWIO_EDITING_RULES.md) và render kiểm tra trước khi bàn giao.
+
+### Style chung của file draw.io gộp
+
+- Dùng actor và database đúng loại participant; căn giữa tiêu đề UC.
+- Giữ palette mặc định, message và self-message dùng Trebuchet MS, Verdana, Arial, sans-serif ở cỡ
+  13px. Nhãn `alt`, `opt`, `loop` và guard cũng dùng cùng font/cỡ.
+- Nhãn message có nền sáng để connector không đè lên chữ; không mirror participant ở cuối diagram.
+- Guard trong khung `alt`/`opt` căn trái và bắt đầu ngay sau marker; không căn giữa theo chiều rộng khung.
+- Biểu tượng actor dùng nét mảnh; participant khác giữ shape và style mặc định của loại tương ứng.
+
 ## 1. Mục tiêu
 
 Sequence Diagram thường thể hiện **một lần thực thi của một Use Case/business action**, bám theo Use Case Specification trong Report 3. Riêng UC-04 dùng một sequence đầu-cuối để thể hiện các tương tác liên tiếp cần thiết để hoàn thành Guest access.
@@ -508,14 +530,17 @@ deactivate MeetingPage
 
 | Thư mục | UC |
 |---|---|
-| `auth/` | UC-01 → UC-04 |
-| `user-management/` | UC-05, UC-06a → UC-06c, UC-07, UC-08, UC-09 |
-| `role-management/` | UC-10, UC-11, UC-12a → UC-12c, UC-13 |
-| `meeting-management/` | UC-14 → UC-22 |
-| `agenda-management/` | UC-23a → UC-23d, UC-24 → UC-26 |
-| `meeting-participant-management/` | UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31 |
-| `notification-management/` | UC-66, UC-67a, UC-67b, UC-68 |
+| [auth/](auth/README.md) | UC-01 → UC-04 |
+| [user-management/](user-management/README.md) | UC-05, UC-06a → UC-06c, UC-07, UC-08, UC-09 |
+| [role-management/](role-management/README.md) | UC-10, UC-11, UC-12a → UC-12c, UC-13 |
+| [meeting-management/](meeting-management/README.md) | UC-14 → UC-22 |
+| [agenda-management/](agenda-management/README.md) | UC-23a → UC-23d, UC-24 → UC-26 |
+| [meeting-participant-management/](meeting-participant-management/README.md) | UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31 |
+| [notification-management/](notification-management/README.md) | UC-66, UC-67a, UC-67b, UC-68 |
 
 Xuất PNG: `node scripts/export-diagrams.js docs/06-sequencediagram/<thư mục hoặc file>` (cần truy cập `sequencediagram.org`).
+
+Đồng bộ ảnh `.drawio.png` từ 44 tab UC của file draw.io gộp (bỏ qua tab index):
+`python scripts/sync_sequence_drawio_png.py` (cần cài Draw.io; có thể đặt `DRAWIO_EXECUTABLE` nếu CLI chưa có trong PATH).
 
 UC09 và UC13 bổ sung ngày 13/10/2026: source + PNG theo đặc tả hiện hành. Đây là thiết kế đích; unlock/lock store và audit-read endpoint chưa có code. Không tự cấp message codes mới. Quy tắc lưu lock/audit nguyên tử trong UC09 là đề xuất kỹ thuật để giữ audit evidence nhất quán khi update thất bại.

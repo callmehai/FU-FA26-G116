@@ -4,6 +4,7 @@ actor "User" as User
 boundary "Authenticated Page" as AuthenticatedPage
 
 User->AuthenticatedPage: Select "Sign Out"
+activate AuthenticatedPage
 AuthenticatedPage-->User: Display confirmation message
 User->AuthenticatedPage: Confirm sign out
 AuthenticatedPage->AuthenticatedPage: Remove JWT authentication token
@@ -12,3 +13,4 @@ alt JWT cannot be cleared
 else JWT removed successfully
     AuthenticatedPage-->User: Redirect to login page
 end
+deactivate AuthenticatedPage

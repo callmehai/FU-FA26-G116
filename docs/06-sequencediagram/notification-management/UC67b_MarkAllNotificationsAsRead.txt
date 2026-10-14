@@ -8,6 +8,7 @@ participant ":Notification Repository" as NotificationRepository
 database ":Database" as Database
 
 User->NotificationPanel: Select "Mark All as Read"
+activate NotificationPanel
 NotificationPanel->NotificationController: Mark all notifications as read
 activate NotificationController
 NotificationController->NotificationService: Mark all unread notifications as read
@@ -43,3 +44,4 @@ deactivate Database
 deactivate NotificationRepository
 deactivate NotificationService
 deactivate NotificationController
+deactivate NotificationPanel

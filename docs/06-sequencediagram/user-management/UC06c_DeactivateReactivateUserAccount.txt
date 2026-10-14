@@ -10,7 +10,9 @@ control ":Audit Service" as AuditService
 database ":Database" as Database
 
 Admin->UserPage: Select user account and status action
+activate UserPage
 UserPage->UserController: Change user account status
+activate UserController
 UserController->UserService: Change user account status
 activate UserService
 UserService->UserRepository: Get current account status
@@ -62,3 +64,4 @@ deactivate Database
 deactivate UserRepository
 deactivate UserService
 deactivate UserController
+deactivate UserPage

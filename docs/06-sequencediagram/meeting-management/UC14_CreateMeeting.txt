@@ -26,6 +26,8 @@ alt Meeting information is invalid - EX-1
     MeetingPage-->Organizer: MSG31 - Invalid meeting information
 
 else Meeting information is valid
+    activate MeetingController
+    activate MeetingService
     MeetingService->MeetingRepository: Create meeting with Draft status\n(BR-26)
     activate MeetingRepository
 
@@ -44,6 +46,10 @@ else Meeting information is valid
         MeetingPage-->Organizer: MSG35 - Unable to create the meeting.\nPlease try again
 
     else Meeting created successfully
+        activate Database
+        activate MeetingController
+        activate MeetingRepository
+        activate MeetingService
         Database-->MeetingRepository: Meeting created
         deactivate Database
         MeetingRepository-->MeetingService: Created meeting

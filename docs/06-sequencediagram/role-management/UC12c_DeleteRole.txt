@@ -9,6 +9,7 @@ control ":Audit Service" as AuditService
 database ":Database" as Database
 
 Admin->RolePage: Select Delete on a role
+activate RolePage
 RolePage-->Admin: Show delete confirmation dialog
 Admin->RolePage: Confirm deletion
 RolePage->RoleController: Delete role
@@ -62,3 +63,4 @@ deactivate Database
 deactivate RoleRepository
 deactivate RoleService
 deactivate RoleController
+deactivate RolePage

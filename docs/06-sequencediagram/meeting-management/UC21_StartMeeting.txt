@@ -35,6 +35,8 @@ alt Meeting cannot be started - EX-1
     MeetingPage-->Chair: MSG112 - This meeting cannot be started
 
 else Meeting is Published
+    activate MeetingController
+    activate MeetingService
     MeetingService->MeetingParticipantRepository: Verify current Chair and Secretary assignments (BR-127, BR-130)
     activate MeetingParticipantRepository
     MeetingParticipantRepository->Database: Retrieve current meeting roles
@@ -64,6 +66,8 @@ exactly one active Chair and at least one active Secretary (BR-127, BR-130, BR-1
         MeetingPage-->Chair: MSG112 - This meeting cannot be started
 
     else Meeting can be started
+        activate MeetingController
+        activate MeetingService
         MeetingService->MeetingRepository: Change Published to InProgress and record Actual Start Time (BR-131)
         activate MeetingRepository
         MeetingRepository->Database: Save meeting lifecycle transition
@@ -81,6 +85,10 @@ exactly one active Chair and at least one active Secretary (BR-127, BR-130, BR-1
             MeetingPage-->Chair: MSG115 - Unable to start the meeting. Please try again
 
         else Meeting status is InProgress
+            activate Database
+            activate MeetingController
+            activate MeetingRepository
+            activate MeetingService
             Database-->MeetingRepository: Meeting status updated
             deactivate Database
             MeetingRepository-->MeetingService: Meeting status updated
@@ -96,6 +104,7 @@ exactly one active Chair and at least one active Secretary (BR-127, BR-130, BR-1
             deactivate MeetingStatusHistoryRepository
 
             MeetingService->NotificationService: Notify current invited internal participants
+            activate NotificationService
 that the Meeting has started (BR-164)
             activate NotificationService
             NotificationService-->MeetingService: Notifications created / delivery failed
@@ -107,6 +116,7 @@ that the Meeting has started (BR-164)
             MeetingController-->MeetingPage: MSG110 - Meeting started successfully
             deactivate MeetingController
             MeetingPage-->Chair: MSG110 - Meeting started successfully
+            deactivate NotificationService
         end
     end
 end

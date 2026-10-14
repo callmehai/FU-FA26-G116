@@ -8,12 +8,16 @@ participant ":Guest Invitation Repository" as Repository
 database ":Database" as Database
 participant ":Email Service" as Email
 
-note over Guest,Service: One end-to-end UC-04 flow: request code, verify invited-email control,\nenter self-declared display information, then access only the invited Meeting.\nAn already verified active session may reopen the Meeting without another code (ALT-1).
 Guest->Page: Open invitation and request access, or reopen the invitation
+activate Page
 Page->Controller: Start or resume access via Guest invitation
+activate Controller
 Controller->Service: Check invitation and existing verified Guest access
+activate Service
 Service->Repository: Read current invitation, verification challenge and Guest access
+activate Repository
 Repository->Database: Read invitation status/expiry, challenge and access
+activate Database
 Database-->Repository: Current information / Read failure
 Repository-->Service: Current information / Read failure
 Service->Service: Check current invitation and Meeting scope (BR-152–BR-157)
@@ -42,6 +46,7 @@ Controller-->Page: Verification unavailable
 Page-->Guest: Verification unavailable
 else Challenge saved
 Service->Email: Send code to the invited email (BR-153)
+activate Email
 Email-->Service: Delivery accepted / Failure
 alt Email delivery cannot be arranged - EX-3
 Service-->Controller: Verification unavailable; no Guest session
@@ -97,6 +102,12 @@ end
 end
 end
 end
+    deactivate Email
 end
 end
 end
+deactivate Database
+deactivate Repository
+deactivate Service
+deactivate Controller
+deactivate Page

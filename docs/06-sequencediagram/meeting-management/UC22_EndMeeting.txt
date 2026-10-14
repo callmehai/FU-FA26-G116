@@ -45,6 +45,8 @@ alt Meeting or Chair is no longer eligible - EX-1
     MeetingPage-->Chair: MSG114 - This meeting cannot be ended
 
 else Meeting and Chair are eligible
+    activate MeetingController
+    activate MeetingService
         MeetingService->AgendaItemRepository: Get the InProgress Agenda Item, if any (BR-159)
         activate AgendaItemRepository
         AgendaItemRepository->Database: Find InProgress Agenda Item of the Meeting
@@ -71,6 +73,10 @@ else Meeting and Chair are eligible
             MeetingPage-->Chair: MSG116 - Unable to end the meeting. Please try again\nMeeting and Agenda Item keep their previous state
 
         else Meeting status is Ended
+            activate Database
+            activate MeetingController
+            activate MeetingRepository
+            activate MeetingService
             Database-->MeetingRepository: Changes committed
             deactivate Database
             MeetingRepository-->MeetingService: Meeting ended

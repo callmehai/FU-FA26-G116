@@ -9,6 +9,7 @@ control ":Audit Service" as AuditService
 database ":Database" as Database
 
 Admin->UserPage: Submit user information
+activate UserPage
 UserPage->UserController: Create user account
 activate UserController
 UserController->UserService: Create user account
@@ -46,3 +47,4 @@ deactivate Database
 deactivate UserRepository
 deactivate UserService
 deactivate UserController
+deactivate UserPage

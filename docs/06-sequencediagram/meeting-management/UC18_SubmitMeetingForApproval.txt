@@ -45,6 +45,8 @@ alt Organizer is inactive or lacks MeetingCreator
     MeetingPage-->Organizer: Submission is not authorized
 
 else Organizer is active and authorized
+    activate MeetingController
+    activate MeetingService
     MeetingService->MeetingService: Validate mandatory meeting information including
 Planned Start/End Time (BR-33, BR-62); Agenda is not required
 
@@ -56,6 +58,8 @@ Planned Start/End Time (BR-33, BR-62); Agenda is not required
         MeetingPage-->Organizer: Required meeting information is incomplete
 
     else Meeting-level information is complete
+        activate MeetingController
+        activate MeetingService
         MeetingService->UserRepository: Find active users with MeetingApprover\nexcluding the Organizer
         activate UserRepository
         UserRepository->Database: Retrieve eligible Meeting Approvers
@@ -73,6 +77,8 @@ Planned Start/End Time (BR-33, BR-62); Agenda is not required
             MeetingPage-->Organizer: MSG140 - No eligible meeting approver is available. Please contact the administrator.
 
         else At least one eligible Meeting Approver is available
+            activate MeetingController
+            activate MeetingService
         MeetingService-->MeetingController: Eligible Meeting Approvers
         deactivate MeetingService
         MeetingController-->MeetingPage: Display eligible Meeting Approvers
@@ -102,6 +108,8 @@ Planned Start/End Time (BR-33, BR-62); Agenda is not required
             MeetingPage-->Organizer: Select another eligible Meeting Approver
 
         else Selected approver is eligible
+            activate MeetingController
+            activate MeetingService
             MeetingService->MeetingRepository: Revalidate meeting status during submission
             activate MeetingRepository
             MeetingRepository->Database: Retrieve current meeting state for update
@@ -119,6 +127,8 @@ Planned Start/End Time (BR-33, BR-62); Agenda is not required
                 MeetingPage-->Organizer: MSG41 - This meeting can no longer be submitted for approval
 
             else Meeting is Draft or Rejected
+                activate MeetingController
+                activate MeetingService
                 MeetingService->MeetingRepository: Complete approver assignment, WaitingApproval status\nand submission history together (BR-38)
                 activate MeetingRepository
                 MeetingRepository->Database: Save assignment, status and submission history as one complete action
@@ -136,6 +146,10 @@ Planned Start/End Time (BR-33, BR-62); Agenda is not required
                     MeetingPage-->Organizer: MSG42 - Unable to submit the meeting for approval. Please try again
 
                 else Meeting moved to WaitingApproval
+                    activate Database
+                    activate MeetingController
+                    activate MeetingRepository
+                    activate MeetingService
                     Database-->MeetingRepository: Approver assignment, status and submission history recorded together
                     deactivate Database
                     MeetingRepository-->MeetingService: WaitingApproval state
