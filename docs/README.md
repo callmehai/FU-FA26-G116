@@ -29,6 +29,7 @@ BE → FE → BA chốt tài liệu → Tester, Definition of Done. Đọc trư�
 | [11-contextdiagram/](11-contextdiagram/) | Context diagram của hệ thống và file ảnh xuất |
 | [notes/](notes/) | Ghi chú rà soát và bàn giao cập nhật tài liệu cho người phụ trách |
 | [assets/](assets/) | Ảnh, sơ đồ, file nguồn (`.drawio`, `.excalidraw`) được các tài liệu trên nhúng |
+| [wireframe/](wireframe/) | Wireframe màn hình theo phiên bản: HTML, plugin Figma và ảnh cho report. Quy tắc bàn giao ở [wireframe/README.md](wireframe/README.md) |
 
 Mỗi thư mục trong `docs/` có một `README.md` riêng ghi phạm vi, nguồn chuẩn và quan hệ giữa source với
 các file xuất. Khi bắt đầu task tài liệu, agent đọc file này rồi lần theo README của từng thư mục cha
