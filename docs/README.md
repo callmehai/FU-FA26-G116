@@ -23,12 +23,13 @@ BE → FE → BA chốt tài liệu → Tester, Definition of Done. Đọc trư�
 | [05-decisions/](05-decisions/) | ADR — mỗi quyết định kỹ thuật một file, kèm lý do và phương án đã loại |
 | [06-sequencediagram/](06-sequencediagram/) | Sơ đồ tuần tự theo từng UC; source `.txt`, ảnh `.png`, file draw.io nhiều tab và ảnh `.drawio.png` trong [drawio-png/](06-sequencediagram/drawio-png/README.md) |
 | [07-classdiagram/](07-classdiagram/) | Sơ đồ lớp chi tiết của hệ thống |
-| [08-reports/](08-reports/) | Bản Markdown của Report 1, 2, 3; đồng bộ từ DOCX local trong [source/](08-reports/source/README.md) bằng `scripts/sync_reports.py` |
+| [08-reports/](08-reports/) | Bản Markdown của Report 1–7. Không sửa thẳng các snapshot này; quy tắc sửa DOCX và sync nằm ở [08-reports/README.md](08-reports/README.md) |
 | [09-bussinessflow/](09-bussinessflow/) | Swimlane 4 luồng nghiệp vụ chính BF-01 → BF-04 |
 | [10-statemachine/](10-statemachine/) | Sơ đồ trạng thái nghiệp vụ và các trạng thái liên quan |
 | [11-contextdiagram/](11-contextdiagram/) | Context diagram của hệ thống và file ảnh xuất |
 | [notes/](notes/) | Ghi chú rà soát và bàn giao cập nhật tài liệu cho người phụ trách |
 | [assets/](assets/) | Ảnh, sơ đồ, file nguồn (`.drawio`, `.excalidraw`) được các tài liệu trên nhúng |
+| [wireframe/](wireframe/) | Wireframe màn hình theo phiên bản: HTML, plugin Figma và ảnh cho report. Quy tắc bàn giao ở [wireframe/README.md](wireframe/README.md) |
 
 Mỗi thư mục trong `docs/` có một `README.md` riêng ghi phạm vi, nguồn chuẩn và quan hệ giữa source với
 các file xuất. Khi bắt đầu task tài liệu, agent đọc file này rồi lần theo README của từng thư mục cha

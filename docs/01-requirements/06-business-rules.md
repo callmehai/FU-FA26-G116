@@ -1,6 +1,6 @@
 # Danh mục Quy tắc Nghiệp vụ (Business Rules) — TrustCabinet
 
-Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX cập nhật 14/10/2026, ADR-0018, ADR-0019 và quyết định PO về FE-07/FE-11). Có **230 BR đang dùng** trong dải `BR-01` → `BR-274`; mã `BR` độc lập với mã thông báo `MSG`.
+Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX cập nhật 15/10/2026, bao gồm ADR-0020). Có **238 BR đang dùng** trong dải `BR-01` → `BR-286`; mã `BR` độc lập với mã thông báo `MSG`.
 
 ## Quy ước đồng bộ
 
@@ -137,7 +137,7 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-156` | External Guest access does not require an internal account login. | UC-28a, UC-29, UC-37 |  |  |
 | `BR-157` | Revoking an external Guest invitation immediately invalidates access granted by that invitation. | UC-28c, UC-29, UC-37 |  |  |
 | `BR-158` | Only the Meeting Organizer may reschedule a Published Meeting; only planned times or location may change. | UC-15 | PO 09/10/2026 | Meeting / Voting Management |
-| `BR-159` | The Chair may end an InProgress Meeting regardless of open Votes or incomplete attendance; End Meeting neither requires nor automatically closes Votes. Completing any InProgress Agenda Item, changing Meeting status to Ended, recording Actual End Time and append-only lifecycle history succeed together. If saving fails, previous Meeting and Agenda states/timestamps remain and room closure is not triggered. Remaining Pending Agenda Items remain Pending. Existing ballots and Vote status are preserved; Ended Meetings accept no further ballots. The Chair may subsequently close and tally outstanding Open Votes under BR-270. | UC-22 | PO 13/10/2026 — follow-up | Meeting / Voting Management |
+| `BR-159` | Ending a Meeting neither requires nor automatically closes its Votes and preserves previously recorded ballots. | UC-22 | PO 13/10/2026 — follow-up | Meeting / Voting Management |
 | `BR-160` | Only the current Chair may open a Draft Vote, and only while its Meeting is InProgress. | UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 | `BR-161` | The current Chair may record Passed, NotPassed or Deferred, with an optional note, for a Closed and tallied Vote while its Meeting is InProgress or Ended. | UC-52b, UC-57 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 | `BR-162` | When a new Meeting is created, Planned Start Time must be later than the current time. | UC-14 | PO Q7 / BF-02 | Meeting / Voting / Minutes services |
@@ -161,21 +161,19 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-181` | A Guest has the same participation rights as a Participant within the invited Meeting. | UC-04, UC-27, UC-28a, UC-28b, UC-29, UC-30, UC-31, UC-32a, UC-32c, UC-35, UC-37–UC-42, UC-52a, UC-52b, UC-55 | PO 14/10/2026 — atomic rule review | Guest participation / Meeting Participant Management |
 | `BR-182` | Inviting a Guest into a Confidential or Secret Meeting displays a clear inline warning that the Guest will receive Member participation and Meeting-document access. Invitation creation uses the ordinary invite flow; no extra confirmation or separate sensitivity approval flow is required. Record the inviting Secretary, Meeting sensitivity and invitation time for accountability. | UC-28a | PO 13/10/2026 | Guest participation / Meeting Participant Management |
 | `BR-183` | An uploaded file's content cannot be changed. | UC-32a, UC-32c, UC-33a, UC-33c, UC-34, UC-36, UC-71 | PO 14/10/2026 — atomic rule review | Document Management |
-| `BR-184` | Only the current Chair or Secretary may add or remove documents in their Meeting. | UC-33a, UC-33c | PO 14/10/2026 — atomic rule review | Document Management |
-| `BR-185` | A Meeting document cannot be removed once Meeting Minutes exist. | UC-33c | PO 14/10/2026 — atomic rule review | Document Management |
+| `BR-184` | Only the current Chair or Secretary may add or remove Meeting documents or their Agenda Item links. | UC-33a, UC-33b, UC-33c, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
+| `BR-185` | Meeting documents and their Agenda Item links cannot be added or removed after the Meeting ends. | UC-23b, UC-33a, UC-33b, UC-33c, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
 | `BR-186` | Deleting a personal-library document does not remove the document from Meetings. | UC-33c, UC-71a | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-187` | Only PDF and DOCX documents may be uploaded. | UC-33a, UC-36 | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-188` | Documents of a Secret Meeting may be read online but not downloaded. | UC-32c | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-189` | The current Chair may delete a Draft Vote while its Meeting is Approved, Published or InProgress. An Open or Closed Vote cannot be deleted. | UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
-| `BR-190` | The eligible voters are the current holders of the selected meeting roles with valid Meeting access when the Vote opens; the list and EligibleCount are fixed at that moment. Attendance does not determine eligibility. | UC-54, UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-190` | The eligible-voter list and count are fixed when the Vote opens, using the selected meeting roles and valid Meeting access. Attendance does not determine eligibility. | UC-54, UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 | `BR-191` | Personal-library folders may be nested at most five levels deep. | UC-34, UC-36, UC-71b, UC-71c, UC-72a, UC-72b, UC-72c, UC-72d | PO 14/10/2026 — atomic rule review | Document Management |
-| `BR-192` | An automatically created Meeting folder is named “<Meeting title> - dd/mm/yyyy”, using the upload date in Vietnam time. | UC-33a | PO 14/10/2026 — atomic rule review | Document Management |
+| `BR-192` | An automatically created Meeting folder is named “<Meeting title> – dd/mm/yyyy”, using the Meeting planned start date in Vietnam time. | UC-33a | ADR-0020 / PO 15/10/2026 | Document Management |
 | `BR-193` | The same uploaded file may have only one active attachment in a Meeting. | UC-33a, UC-33c | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-194` | A direct upload creates both the Meeting document and the personal-library document, or creates neither. | UC-33a | PO 14/10/2026 — atomic rule review | Document Management |
-| `BR-195` | Documents may be added in any Meeting state before the Meeting ends. | UC-33a | PO 14/10/2026 — atomic rule review | Document Management |
-| `BR-196` | Documents cannot be added to or removed from a completed Agenda Item. | UC-33a, UC-33c | PO 14/10/2026 — atomic rule review | Document Management |
+| `BR-195` | The current Chair or Secretary may add documents from the time they can view the Meeting until it ends. | UC-33a | ADR-0020 / PO 15/10/2026 | Document Management |
 | `BR-197` | Each Meeting-document addition or removal records who performed it and when. | UC-33a, UC-33c | PO 14/10/2026 — atomic rule review | Document Management |
-| `BR-198` | Before publication, only the Meeting Organizer and the current Chair or Secretary may read Meeting documents. | UC-32a, UC-32c | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-199` | A Secretary may grant a Guest the additional Meeting permissions available to an internal Participant. | UC-28b, UC-32a, UC-32c | ADR-0016 / PO 13/10/2026 — cross-review 14/10/2026 | Document / Guest access |
 | `BR-200` | Additional permissions cannot override Guest restrictions or the prohibition on downloading Secret Meeting documents. | UC-28b, UC-32a, UC-32c | ADR-0016 / PO 13/10/2026 — cross-review 14/10/2026 | Document / Guest access |
 | `BR-201` | A Guest receives no system Role. | UC-04, UC-28a | ADR-0016 / PO 13/10/2026 — cross-review 14/10/2026 | Document / Guest access |
@@ -202,12 +200,10 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-225` | A user may move personal-library documents only between their own folders or the library root. | UC-71c | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
 | `BR-226` | The first direct upload creates a personal-library folder for that user and Meeting. | UC-33a | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
 | `BR-227` | Later uploads to the same Meeting reuse its existing personal-library folder, even after it is renamed or moved. | UC-33a | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
-| `BR-228` | If the Meeting's personal-library folder was deleted, the next direct upload creates a new folder at the library root. | UC-33a | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| `BR-228` | If the Meeting's personal-library folder was deleted, the next direct upload recreates it at the library root, named with the Meeting title and planned start date in Vietnam time. | UC-33a | ADR-0020 / PO 15/10/2026 | Document Management |
 | `BR-229` | Separate uploads are different documents, even when their names or contents match. | UC-33a, UC-36 | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
 | `BR-231` | Removing a Meeting document does not remove it from personal libraries or other Meetings. | UC-33c | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
-| `BR-232` | File cleanup preserves document metadata and comments, but does not retain the file content for historical reading. | UC-33c, UC-71a | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
-| `BR-233` | A current Participant or Guest may read Meeting documents only after the Meeting is published. | UC-32a, UC-32c | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
-| `BR-234` | Meeting Approver status alone grants no document-reading access. | UC-32a, UC-32c | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| `BR-232` | Deleting an unused file preserves its history and comments, but its content is no longer available. | UC-33c, UC-71a | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
 | `BR-235` | Declining a Meeting invitation does not revoke document-reading access. | UC-32a, UC-32c | ADR-0006 — cross-review 14/10/2026 | Document / Guest access |
 | `BR-236` | All planning fields of a Pending Agenda Item may be edited. | UC-23b | Split from former BR-68 — no change to agenda field restrictions | Agenda Management |
 | `BR-237` | Only Pending Agenda Items may be deleted. | UC-23c | Split from former BR-68 — no change to agenda field restrictions | Agenda Management |
@@ -217,15 +213,15 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-241` | Agenda planning changes preserve execution status, actual timestamps and the Meeting lifecycle. | UC-23b, UC-23c, UC-23d | Split from former BR-68 — no change to agenda field restrictions | Agenda Management |
 | `BR-242` | A user may access only their own personal-library documents and folders. | UC-34, UC-36, UC-71a–UC-71c, UC-72a–UC-72d | ADR-0006 / ADR-0018 | Document Management |
 | `BR-245` | Moving a personal-library document does not change its Meeting attachments. | UC-71c | ADR-0018 | Document Management |
-| `BR-246` | A comment must contain non-whitespace characters. | UC-35 | Report 3 screen 7.5 — required comment text | Document Management |
+| `BR-246` | A comment must not be blank. | UC-35 | Report 3 screen 7.5 — required comment text | Document Management |
 | `BR-248` | A DOCX comment has no page reference. | UC-35 | ADR-0018 | Document Management |
-| `BR-249` | Anyone who can view a Meeting document may comment on it. | UC-35 | PO decision — no separate commenting permission | Document Management |
+| `BR-249` | Anyone who can view a Meeting document may comment on it before the Meeting ends. | UC-35 | PO 15/10/2026 — read-only after Meeting end | Document Management |
 | `BR-250` | Each comment records its author and posting time. | UC-35 | Report 3 screen 7.5 | Document Management |
 | `BR-251` | Personal-library usage details show only Meetings the user may access. | UC-34 | Existing resource confidentiality rule | Document Management |
 | `BR-252` | Only the current Chair may create or configure a Draft Vote while its Meeting is Approved, Published or InProgress. | UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 | `BR-253` | Only the current Chair may view Draft Votes in the Meeting. | UC-52a, UC-52b, UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 | `BR-254` | The content, options, ballot type and selected roles of an Open or Closed Vote cannot be edited. | UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
-| `BR-255` | Vote content must contain non-whitespace characters. | UC-53, UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-255` | Vote content must not be blank. | UC-53, UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 | `BR-256` | A Vote must have at least two distinct, non-empty options. | UC-53, UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 | `BR-257` | The Chair selects one or more eligible meeting roles from Chair, Secretary, Member and Guest; all four roles are selected by default. | UC-53, UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 | `BR-258` | Each eligible voter may cast at most one ballot in a Vote. | UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
@@ -245,6 +241,18 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-272` | Each Vote uses either a Public or Secret ballot type. | UC-53, UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 | `BR-273` | After a Public Vote closes, its result shows each eligible voter's recorded choice or that the voter did not vote. | UC-52b | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 | `BR-274` | The current Chair may access Vote draft preparation in an Approved Meeting; this does not grant access to other restricted Meeting records. | UC-52a, UC-52b, UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| `BR-275` | Anyone who can view a Meeting can read its documents. | UC-32a, UC-32c, UC-35 | ADR-0020 / PO 15/10/2026 | Document Management |
+| `BR-276` | A Meeting document keeps the name copied when it was added to the Meeting; later personal-library renaming does not change that name. | UC-33a, UC-71b | ADR-0020 / PO 15/10/2026 | Document Management |
+| `BR-277` | One Meeting document may be linked to multiple Agenda Items. | UC-23b, UC-33b | ADR-0020 / PO 15/10/2026 | Document Management |
+| `BR-278` | A document may be linked only to Agenda Items of the same Meeting. | UC-23a, UC-23b, UC-33b, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
+| `BR-279` | Pending, InProgress and Done Agenda Items all permit document-link additions and removals until the Meeting ends. | UC-23b, UC-33b, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
+| `BR-280` | Removing one Agenda Item link keeps the document in the Meeting and preserves its other Item links; with no links left, it is a general Meeting document. | UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
+| `BR-281` | Removing a document from a Meeting removes it from every Agenda Item of that Meeting. | UC-33c | ADR-0020 / PO 15/10/2026 | Document Management |
+| `BR-282` | Meeting documents and comments are read-only after the Meeting ends. | UC-32a, UC-32c, UC-33a, UC-33b, UC-33c, UC-33d, UC-35 | PO 15/10/2026 — document follow-up | Document Management |
+| `BR-283` | Deleting an Agenda Item removes its document links but keeps the documents in the Meeting. | UC-23c, UC-32a, UC-33b, UC-33d | PO 15/10/2026 — document follow-up | Document Management |
+| `BR-284` | Readding a removed Meeting document starts a new addition without its previous comments. | UC-33a, UC-33c, UC-35 | PO 15/10/2026 — document follow-up | Document Management |
+| `BR-285` | Each Vote belongs to one Meeting and is not linked to an Agenda Item. | UC-52a, UC-52b, UC-53, UC-54, UC-55, UC-56, UC-57 | ADR-0019 / ADR-0020 | Voting Management |
+| `BR-286` | All documents submitted together are added together, or none are added. | UC-33a, UC-36 | User confirmation 15/10/2026 — multiple-file upload; existing screen 7.4 all-or-none outcome | Document Management |
 
 ## BR đã ngừng dùng
 
@@ -262,3 +270,5 @@ Các mã dưới đây không còn trong Report 3 — phần lớn thuộc Meeti
 `BR-207`: chuyển về ADR-0018/design. `BR-217`, `BR-218`: chuyển thành UI behavior. Các mã này ngừng dùng, không tái cấp.
 
 `BR-230`: ngừng dùng theo yêu cầu PO; không tái cấp mã.
+
+`BR-196`, `BR-198`, `BR-233`, `BR-234`: ngừng dùng theo ADR-0020 ngày 15/10/2026; thay quyền đọc bằng BR-275 và bỏ khoá liên kết theo trạng thái mục nghị sự. Không tái cấp.
