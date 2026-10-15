@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Domain.Meetings;
 
@@ -12,6 +13,8 @@ public static class MeetingReadPolicy
             || (meeting.Status != MeetingStatus.Draft && meeting.AssignedApproverId == userId)
             || meeting.Participants.Any(participant => participant.MeetingId == meeting.Id
                 && participant.UserId == userId
+                && participant.AssignmentStatus == AssignmentStatus.Current
+                && participant.Role != MeetingRole.Guest
                 && participant.Response != InvitationResponse.Delegated
                 && participant.DelegatedToUserId == null
                 && (participant.Role == MeetingRole.Secretary
@@ -45,6 +48,7 @@ public static class MeetingReadPolicy
     private static bool IsAssignedSecretary(Meeting meeting, Guid userId)
         => meeting.Participants.Any(participant => participant.MeetingId == meeting.Id
             && participant.UserId == userId
+            && participant.AssignmentStatus == AssignmentStatus.Current
             && participant.Role == MeetingRole.Secretary
             && participant.Response != InvitationResponse.Delegated
             && participant.DelegatedToUserId is null

@@ -38,6 +38,12 @@ public interface IMeetingRepository
 
     Task SaveChangesAsync(CancellationToken ct = default);
 
+    Task StagePublicationInvitationsAsync(Meeting meeting, DateTimeOffset now, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, DateTimeOffset now, CancellationToken ct = default)
+        => Task.CompletedTask;
+
     Task<T> InTransactionAsync<T>(
         Func<CancellationToken, Task<T>> operation, CancellationToken ct = default);
 }

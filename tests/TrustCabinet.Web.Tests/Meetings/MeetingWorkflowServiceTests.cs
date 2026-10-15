@@ -35,9 +35,9 @@ public sealed class MeetingWorkflowServiceTests
         };
         if (status == MeetingStatus.Approved)
         {
-            var chair = Participant(meeting, active: true, InvitationResponse.Delegated);
+            var chair = Participant(meeting, active: true, InvitationResponse.Pending);
             chair.Role = MeetingRole.Chair;
-            var secretary = Participant(meeting, active: true, InvitationResponse.Delegated);
+            var secretary = Participant(meeting, active: true, InvitationResponse.Pending);
             secretary.Role = MeetingRole.Secretary;
             meeting.Participants.Add(chair);
             meeting.Participants.Add(secretary);
@@ -265,10 +265,14 @@ public sealed class MeetingWorkflowServiceTests
 
         Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
         Assert.Equal(MeetingStatus.Published, meeting.Status);
-        var notification = Assert.Single(_repository.Notifications);
-        Assert.Equal(active.UserId, notification.UserId);
-        Assert.Equal(NotificationType.MeetingInvited, notification.Type);
-        Assert.Equal(meeting.StatusHistory.Single().Id, notification.OriginHistoryId);
+        Assert.Equal(3, _repository.Notifications.Count);
+        Assert.Contains(_repository.Notifications, n => n.UserId == active.UserId);
+        Assert.DoesNotContain(_repository.Notifications, n => n.UserId == inactive.UserId || n.UserId == delegated.UserId);
+        Assert.All(_repository.Notifications, n =>
+        {
+            Assert.Equal(NotificationType.MeetingInvited, n.Type);
+            Assert.Equal(meeting.StatusHistory.Single().Id, n.OriginHistoryId);
+        });
         Assert.Equal(meeting.Id, Assert.Single(_invitations.MeetingIds));
         Assert.Equal(MeetingHistoryAction.Publish, meeting.StatusHistory.Single().Action);
     }
@@ -461,7 +465,7 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
         Assert.Equal(MeetingStatus.Published, Assert.Single(_repository.Meetings).Status);
         Assert.Equal(MeetingHistoryAction.Publish, Assert.Single(meeting.StatusHistory).Action);
-        Assert.Single(_repository.Notifications);
+        Assert.Equal(3, _repository.Notifications.Count);
         Assert.Empty(_invitations.MeetingIds);
 
         await _invitations.QueueForPublishedMeetingAsync(meeting.Id);
@@ -852,7 +856,7 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
         Assert.Equal(MeetingStatus.Published, meeting.Status);
         Assert.Equal(MeetingHistoryAction.Publish, Assert.Single(meeting.StatusHistory).Action);
-        Assert.Single(_repository.Notifications);
+        Assert.Equal(3, _repository.Notifications.Count);
         Assert.Equal(meeting.Id, Assert.Single(_invitations.MeetingIds));
         Assert.Equal(1, _repository.SaveCount);
         Assert.True(_repository.LastWorkflowForUpdate);

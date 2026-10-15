@@ -131,3 +131,6 @@ PR41 đã merge vào `codex/role-postgres-isolation` ở commit `e27e003`, khôn
 Patch alignment được kiểm chứng ở working tree này; CI của head cũ không xác nhận patch chưa push.
 Người dùng đưa commit sửa cùng prerequisite vào integration/main rồi chạy CI/reviewer. FE integration,
 BA Final Review và Tester sign-off tiếp tục theo pipeline; bàn giao backend không đánh dấu Done.
+## Cập nhật tích hợp SCRUM-20 — 14/10/2026
+
+Publish hiện ghi durable `MeetingInvitationDispatch` cùng transaction status/history/notification, kể cả SMTP disabled. Worker materialize EmailMessage sau commit khi enabled, kiểm current recipients; mỗi recipient có dedup key, Guest chờ UC-04 verification link. Queue cũ chỉ reconcile legacy recipients còn thiếu ở Published/InProgress. HTTP thành công vẫn không bảo đảm mail đã giao. Xem [contract SCRUM-20](09-thanh-phan-tham-du.md#5-transaction-và-delivery); mô tả producer chỉ tạo job khi SMTP bật trong tài liệu gốc bên trên không còn mô tả đầy đủ transaction mới.

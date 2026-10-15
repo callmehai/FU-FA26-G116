@@ -5,6 +5,7 @@ using System.Text;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Notifications;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Infrastructure.Email;
 
@@ -19,6 +20,16 @@ public sealed class MeetingInvitationQueue(
 
     public async Task<int> QueueForPublishedMeetingAsync(
         Guid meetingId, CancellationToken ct = default)
+    {
+        if (!db.Database.IsRelational()) return await QueueLegacyRecipientsAsync(meetingId, ct);
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        await db.Meetings.FromSqlInterpolated($"SELECT * FROM meetings WHERE id = {meetingId} FOR UPDATE").AsNoTracking().ToArrayAsync(ct);
+        var count = await QueueLegacyRecipientsAsync(meetingId, ct);
+        await tx.CommitAsync(ct);
+        return count;
+    }
+
+    private async Task<int> QueueLegacyRecipientsAsync(Guid meetingId, CancellationToken ct)
     {
         var emailOptions = options.Value;
         if (!emailOptions.Smtp.Enabled)
@@ -39,7 +50,7 @@ public sealed class MeetingInvitationQueue(
             throw new InvalidOperationException($"Meeting {meetingId} does not exist.");
         }
 
-        if (meeting.Status != MeetingStatus.Published)
+        if (meeting.Status is not (MeetingStatus.Published or MeetingStatus.InProgress))
         {
             throw new InvalidOperationException(
                 $"Meeting {meetingId} is {meeting.Status}, so its invitations cannot be queued.");
@@ -48,12 +59,11 @@ public sealed class MeetingInvitationQueue(
         var meetingUrl = BuildMeetingUrl(emailOptions.ApplicationBaseUrl, meeting.Id);
         var now = time.GetUtcNow();
         var recipients = meeting.Participants
-            .Select(participant => participant.User)
-            .Where(user => user.IsActive)
-            .Select(user => new
+            .Where(ParticipantRules.Active)
+            .Select(participant => new
             {
-                User = user,
-                DeduplicationKey = InvitationDeduplicationKey(meeting.Id, user.Id),
+                User = participant.User,
+                DeduplicationKey = MeetingInvitationEvents.InitialKey(participant),
             })
             .ToArray();
         var candidateKeys = recipients.Select(item => item.DeduplicationKey).ToArray();
@@ -63,6 +73,9 @@ public sealed class MeetingInvitationQueue(
                 .Select(item => item.DeduplicationKey)
                 .ToListAsync(ct),
             StringComparer.Ordinal);
+        // New producers own their durable dispatch. Only materialize legacy recipients here.
+        existingKeys.UnionWith(await db.MeetingInvitationDispatches.Where(d => candidateKeys.Contains(d.DeduplicationKey))
+            .Select(d => d.DeduplicationKey).ToArrayAsync(ct));
         var messages = recipients
             .Where(item => !existingKeys.Contains(item.DeduplicationKey))
             .Select(item => new EmailMessage
@@ -118,9 +131,11 @@ public sealed class MeetingInvitationQueue(
         }
 
         var meetingId = await db.Meetings
-            .Where(meeting => meeting.Status == MeetingStatus.Published)
-            .Where(meeting => meeting.Participants.Any(participant => participant.User.IsActive))
-            .Where(meeting => !db.EmailMessages.Any(message => message.MeetingId == meeting.Id))
+            .Where(meeting => meeting.Status == MeetingStatus.Published || meeting.Status == MeetingStatus.InProgress)
+            .Where(meeting => meeting.Participants.Any(p => p.User.IsActive && p.AssignmentStatus == AssignmentStatus.Current
+                && p.Role != MeetingRole.Guest && p.Response != InvitationResponse.Delegated && p.DelegatedToUserId == null
+                && !db.EmailMessages.Any(e => e.DeduplicationKey == (p.InitialInvitationDeliveryKey ?? "meeting:" + meeting.Id.ToString() + ":published:" + p.UserId.ToString()))
+                && !db.MeetingInvitationDispatches.Any(d => d.DeduplicationKey == (p.InitialInvitationDeliveryKey ?? "meeting:" + meeting.Id.ToString() + ":published:" + p.UserId.ToString()))))
             .OrderBy(meeting => meeting.CreatedAt)
             .ThenBy(meeting => meeting.Id)
             .Select(meeting => (Guid?)meeting.Id)

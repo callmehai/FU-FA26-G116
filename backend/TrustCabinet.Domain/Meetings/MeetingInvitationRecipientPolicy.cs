@@ -15,6 +15,8 @@ public static class MeetingInvitationRecipientPolicy
         IEnumerable<MeetingParticipant> participants)
         => participants
             .Where(participant => participant.User is { IsActive: true }
+                && participant.AssignmentStatus == Participants.AssignmentStatus.Current
+                && participant.Role != MeetingRole.Guest && participant.DelegatedToUserId == null
                 && participant.Response != InvitationResponse.Delegated)
             .DistinctBy(participant => participant.UserId)
             .ToArray();

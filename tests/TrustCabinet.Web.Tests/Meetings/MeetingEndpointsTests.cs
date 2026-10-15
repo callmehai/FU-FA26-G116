@@ -159,8 +159,9 @@ public sealed class MeetingEndpointsTests : IDisposable
             {
                 Meeting = meeting,
                 User = user,
+                UserId = user.Id,
                 Role = role,
-                Response = InvitationResponse.Delegated,
+                Response = InvitationResponse.Pending,
             });
         }
     }
@@ -741,7 +742,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(
             MeetingHistoryAction.Publish,
             Assert.Single(_factory.Meetings.Meetings.Single().StatusHistory).Action);
-        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Equal(2, _factory.Meetings.Notifications.Count);
         Assert.Empty(_factory.Invitations.MeetingIds);
     }
 
@@ -1014,7 +1015,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal("MSG45", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(MeetingStatus.Published, meeting.Status);
         Assert.Equal(MeetingHistoryAction.Publish, Assert.Single(meeting.StatusHistory).Action);
-        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Equal(2, _factory.Meetings.Notifications.Count);
         Assert.Empty(_factory.Meetings.EmailMessages);
         Assert.Equal(meeting.Id, Assert.Single(_factory.Invitations.MeetingIds));
         Assert.Equal(1, _factory.Meetings.SaveCount);

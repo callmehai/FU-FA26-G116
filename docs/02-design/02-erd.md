@@ -1,5 +1,7 @@
 # Mô hình dữ liệu (ERD)
 
+**Hiện thực Backend SCRUM-20 (14/10/2026):** thêm `MeetingParticipant.AssignmentStatus/RemovedAt/RemovedById/InitialInvitationDeliveryKey`, `Meeting.ParticipantsRevision`, ba bảng `MeetingGuestInvitation`, `MeetingParticipantPermission`, `MeetingInvitationDispatch`. Grant XOR assignment/Guest, unique current assignment/Guest email/Chair; Guest credential/profile/session production thuộc UC-04, chưa được tạo ở migration này. Dispatch là bảng kỹ thuật, không tự tăng số thực thể nghiệp vụ trong mô hình mục tiêu bên dưới. Chi tiết và preflight legacy: [API §6](../03-api/09-thanh-phan-tham-du.md#6-migration), [ADR-0019](../05-decisions/0019-vong-doi-thanh-phan-va-y-dinh-gui-thu.md). Các hình mục tiêu chưa được coi là snapshot schema hiện thực.
+
 Tài liệu này mô tả **mô hình dữ liệu khái niệm/logic mục tiêu** của TrustCabinet để làm nguồn cho Report 3, không phải bản trích xuất schema hiện tại. Mô hình đích có đúng **30 thực thể nghiệp vụ/dữ liệu** (thêm `Folder` ngày 13/10/2026, ADR-0018), khớp Report 3 §I.3.2 và ERD vẽ ở [assets/erd-muc-tieu/](../assets/erd-muc-tieu/). Hệ thống được triển khai bằng EF Core code-first và PostgreSQL; thay đổi ERD không tự thay đổi entity, cấu hình, schema hay migration.
 
 **ERD thực thể–quan hệ:** [file drawio chỉnh sửa được](../assets/erd-chen/trustcabinet-erd-chen.drawio),

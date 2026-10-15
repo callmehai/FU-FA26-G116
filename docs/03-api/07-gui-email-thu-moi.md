@@ -1,5 +1,7 @@
 # Gửi email thư mời cuộc họp — SCRUM-15
 
+**Cập nhật SCRUM-20:** Publish và roster mutations ghi `MeetingInvitationDispatch` cùng domain transaction, kể cả SMTP disabled. Worker materialize sau commit khi enabled, rồi EmailQueueProcessor hiện có gửi SMTP. Current active internal và Guest invitation hợp lệ là recipients; legacy Guest/Delegated không còn là current assignment. Gỡ mềm/re-add dùng key theo assignment mới; migration giữ key cũ để không gửi lại. Legacy reconciliation kiểm từng recipient, không bỏ qua cả meeting chỉ vì có một EmailMessage. [Contract mới](09-thanh-phan-tham-du.md#5-transaction-và-delivery) và [UC-04 dependency](09-thanh-phan-tham-du-guest-uc04.md) thay mô tả producer trực tiếp trong các đoạn lịch sử bên dưới.
+
 > **Một cuộc họp là một buổi họp ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)).** Từ migration
 > `MeetingOwnsScheduleDropSessions`, lịch nằm trên Meeting (`plannedStartTime`, `plannedEndTime`, `onlineLink`) và code
 > không còn `MeetingSession`. Các đoạn lịch sử bên dưới nhắc Meeting Session là mô tả thời điểm viết.

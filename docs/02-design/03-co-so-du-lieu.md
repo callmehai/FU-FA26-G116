@@ -1,5 +1,7 @@
 # Cơ sở dữ liệu — cài đặt và migration
 
+**Migration SCRUM-20:** `20261014114845_MeetingParticipantLifecycleAndGuestInvitations` có preflight dừng khi legacy Guest/delegation hoặc nhiều Chair; không tự xóa/mapping dữ liệu. Downgrade bị chặn nếu đã phát sinh Guest/grants/dispatch/removed history. Chuẩn bị backup và forward fix/mapping được review trước khi áp dụng lên database dùng chung; chi tiết [API §6](../03-api/09-thanh-phan-tham-du.md#6-migration). Test migration chạy trên database PostgreSQL riêng, không sửa schema thủ công của dự án.
+
 PostgreSQL + EF Core 10 (Npgsql), **code-first**: mô hình nằm trong code C#, schema sinh ra từ
 migration. Không sửa database bằng tay — sửa entity rồi tạo migration.
 

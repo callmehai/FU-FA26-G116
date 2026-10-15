@@ -139,6 +139,9 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             {
                 return null;
             }
+            // Publication readiness must not race account deactivation after the meeting lock.
+            await db.Users.FromSqlInterpolated($"SELECT * FROM users WHERE id IN (SELECT user_id FROM meeting_participants WHERE meeting_id = {id}) ORDER BY id FOR SHARE")
+                .AsNoTracking().ToArrayAsync(ct);
         }
 
         IQueryable<Meeting> query = db.Meetings
@@ -233,6 +236,25 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
     }
 
     public Task SaveChangesAsync(CancellationToken ct = default) => db.SaveChangesAsync(ct);
+
+    public async Task StagePublicationInvitationsAsync(Meeting meeting, DateTimeOffset now, CancellationToken ct = default)
+    {
+        await db.MeetingParticipantPermissions.Where(g =>
+            g.MeetingParticipantId != null && db.MeetingParticipants.Any(p => p.Id == g.MeetingParticipantId && p.MeetingId == meeting.Id)
+            || g.GuestInvitationId != null && db.MeetingGuestInvitations.Any(i => i.Id == g.GuestInvitationId && i.MeetingId == meeting.Id)).LoadAsync(ct);
+        foreach (var participant in MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants))
+            Email.MeetingInvitationEvents.Stage(db, meeting, participant, null, InvitationEventKind.Invitation, now, notify: false);
+        foreach (var guest in await db.MeetingGuestInvitations.Where(g => g.MeetingId == meeting.Id && g.RevokedAt == null).ToArrayAsync(ct))
+            Email.MeetingInvitationEvents.Stage(db, meeting, null, guest, InvitationEventKind.Invitation, now, notify: false);
+    }
+
+    public async Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, DateTimeOffset now, CancellationToken ct = default)
+    {
+        await db.MeetingParticipantPermissions.Where(p => p.GuestInvitationId != null
+            && db.MeetingGuestInvitations.Any(g => g.Id == p.GuestInvitationId && g.MeetingId == meeting.Id && g.RevokedAt == null)).LoadAsync(ct);
+        foreach (var guest in await db.MeetingGuestInvitations.Where(g => g.MeetingId == meeting.Id && g.RevokedAt == null).ToArrayAsync(ct))
+            Email.MeetingInvitationEvents.Stage(db, meeting, null, guest, InvitationEventKind.Rescheduled, now, notify: false, historyId);
+    }
 
     public async Task<T> InTransactionAsync<T>(
         Func<CancellationToken, Task<T>> operation, CancellationToken ct = default)

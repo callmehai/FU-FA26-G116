@@ -29,3 +29,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0016](0016-khach-tham-gia-nhu-thanh-vien.md) | Guest xác minh email tham gia như Member; điểm danh theo người được chọn | Đã chấp nhận — PO 13/10/2026; phần giữ BR-122/159 tại mục 6 được thay thế bởi ADR-0017 |
 | [0017](0017-ket-thuc-hop-khong-phu-thuoc-diem-danh-bieu-quyet.md) | End Meeting độc lập với Vote/điểm danh; phục hồi Thư ký theo trạng thái | Đã chấp nhận — PO 13/10/2026 |
 | [0018](0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md) | Tài liệu không có phiên bản — kho cá nhân và cuộc họp chỉ giữ tham chiếu tới file | Đã chấp nhận — PO 13/10/2026 |
+| [0019](0019-vong-doi-thanh-phan-va-y-dinh-gui-thu.md) | Lịch sử thành phần và ý định gửi thư cùng transaction | Đề xuất — implementation SCRUM-20 |

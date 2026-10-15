@@ -83,6 +83,9 @@ public sealed class NotificationRepository(TrustCabinetDbContext db) : INotifica
         DateTimeOffset now, DateTimeOffset cutoff, CancellationToken ct = default)
         => db.MeetingParticipants.AsNoTracking()
             .Where(participant => participant.Meeting.Status == MeetingStatus.Published
+                && participant.AssignmentStatus == Domain.Participants.AssignmentStatus.Current
+                && participant.Role != MeetingRole.Guest && participant.Response != InvitationResponse.Delegated
+                && participant.DelegatedToUserId == null
                 && participant.Meeting.PlannedStartTime > now
                 && participant.Meeting.PlannedStartTime <= cutoff
                 && participant.User.IsActive)
