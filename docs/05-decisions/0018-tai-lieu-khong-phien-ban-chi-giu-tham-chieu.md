@@ -1,6 +1,6 @@
 # ADR-0018: Tài liệu không có phiên bản — kho cá nhân và cuộc họp chỉ giữ tham chiếu tới file
 
-- **Trạng thái:** Đã chấp nhận
+- **Trạng thái:** Đã chấp nhận — phần khoá gỡ khi đã có biên bản, một AgendaItemId trên dòng gắn cuộc họp, và “không tái cấp UC-33b” thay thế bởi ADR-0020. UC-32b vẫn bỏ.
 - **Ngày:** 2026-10-13
 - **Người quyết định:** PO (HaiTV)
 - **Thay thế:** phần *phiên bản* và *ghim phiên bản khi gắn* của [ADR-0006](0006-kho-tai-lieu-ca-nhan-va-quyen-doc.md).

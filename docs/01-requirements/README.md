@@ -6,7 +6,7 @@ Nguồn chuẩn là ba báo cáo DOCX trên Google Drive (Report 1, 2, 3), đư�
 [08-reports/](../08-reports/README.md). Các file ở đây trích và sắp xếp lại nội dung đó để dev và tester tra cứu nhanh:
 
 - Mọi chức năng, luồng nghiệp vụ và quy tắc kiểm thử bám theo các đặc tả tại đây.
-- Khi Report 3 thay đổi, đồng bộ lại thư mục này trong **cùng commit** với file Report 3 đã sync.
+- Khi Report 3 thay đổi, sửa DOCX local trước, sinh snapshot bằng `scripts/sync_reports.py`, rồi đồng bộ lại thư mục này trong **cùng commit**. Quy tắc snapshot Report 1–7 nằm ở [08-reports/README.md](../08-reports/README.md).
 
 ---
 
@@ -18,8 +18,9 @@ Nguồn chuẩn là ba báo cáo DOCX trên Google Drive (Report 1, 2, 3), đư�
 - [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case đồng bộ từ Report 3 §II (UC đã đặc tả
   và UC placeholder), có link tới sequence diagram tương ứng. FE-11 đã có đặc tả UC-52a, UC-52b,
   UC-53–UC-57 theo quyết định 14/10/2026; các sequence của FE-11 chưa được tạo trong đợt đặc tả này.
-- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1 (230 BR đang dùng trong
-  dải BR-01 → BR-274; danh sách BR ngừng dùng ở cuối file).
+- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1 (238 BR đang dùng trong
+  dải BR-01 → BR-286; danh sách BR ngừng dùng ở cuối file). FE-07/FE-11 đã đồng bộ ngày 15/10/2026,
+  gồm UC-33b/33d theo ADR-0020; các phần màn hình chờ cập nhật theo [note bàn giao](../notes/README.md).
 - Mã thông báo `MSGnn`: [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md) là nguồn chuẩn duy nhất.
 
 Yêu cầu phi chức năng, phạm vi MoSCoW và dữ liệu cá nhân hiện nằm trong Report 1 và Report 3 §IV; chưa tách file riêng.

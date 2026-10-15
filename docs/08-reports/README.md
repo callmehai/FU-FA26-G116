@@ -1,12 +1,57 @@
 # Đồng bộ báo cáo
 
-## Quy tắc nguồn và đích
+File này là chỉ dẫn duy nhất cho `docs/08-reports/`. Áp dụng cho mọi DOCX trong `source/` và
+Markdown snapshot của Report 1–7.
 
-- DOCX trong `source/` là bản local chuẩn để đồng bộ Report 1–3 ra Markdown.
-- Markdown chỉ được sinh từ DOCX local bằng `scripts/sync_reports.py`. Không tải DOCX từ Drive để tạo hoặc cập nhật Markdown.
-- Khi được yêu cầu đưa report lên Drive, dùng DOCX local tương ứng để **thay nội dung file Drive hiện có tại chỗ**. Không tạo bản sao, không xóa/tạo lại file và không đổi tên hoặc di chuyển file; phải giữ nguyên Drive file ID và link.
-- Chỉ thay file đúng theo bảng link chuẩn bên dưới. Trước khi ghi, xác nhận tên file và ID từ Drive khớp với bảng; sau khi ghi, kiểm tra cùng ID/link vẫn mở được và kích thước/thời gian cập nhật phản ánh bản mới.
+## Phạm vi trước khi sửa
+
+- Trước khi ghi, nêu rõ đường dẫn tuyệt đối của DOCX đích, report/UC/table hoặc trang cần sửa, và
+  các đầu ra liên quan (Markdown, Drive). Nếu người dùng đã chỉ rõ chính xác, nhắc lại phạm vi rồi
+  tiếp tục. Nếu có nhiều bản có thể là nguồn chuẩn hoặc vị trí còn mơ hồ, hỏi và chờ xác nhận.
+- Kiểm tra `git status` và diff hiện tại trước khi sửa. Giữ nguyên thay đổi có sẵn của người dùng.
+  Không khôi phục, thay thế hoặc đồng bộ từ Drive khi chưa được yêu cầu.
+- Chỉ sửa vùng đã xác nhận. Không tiện tay chuẩn hóa nội dung, style, bảng, ảnh hoặc các UC khác.
+
+## Nguồn và snapshot
+
+- DOCX trong `source/` là bản local chuẩn để đồng bộ Report 1–7 ra Markdown.
+- Không sửa thẳng Markdown snapshot của Report 1–7. Sửa DOCX local, rồi sinh Markdown bằng
+  `scripts/sync_reports.py`. Không tải DOCX từ Drive để tạo hoặc cập nhật Markdown. Script hiện xuất
+  Report 1–3; Report 4–7 dùng cùng quy tắc, không viết snapshot bằng tay khi script chưa xuất report
+  đó.
+- Khi được yêu cầu đưa report lên Drive, dùng DOCX local tương ứng để **thay nội dung file Drive
+  hiện có tại chỗ**. Không tạo bản sao, không xóa/tạo lại file và không đổi tên hoặc di chuyển file.
+  Giữ nguyên Drive file ID và link.
+- Chỉ thay file đúng theo bảng link chuẩn bên dưới. Trước khi ghi, xác nhận tên file và ID từ Drive
+  khớp với bảng. Sau khi ghi, kiểm tra cùng ID/link vẫn mở được và kích thước/thời gian cập nhật
+  phản ánh bản mới.
 - Việc thay DOCX trên Drive không cập nhật Markdown. Việc tạo Markdown không đọc hay ghi Drive.
+
+## Style UC Specification
+
+- Với UC trong Report 3, dùng UC-23a thuộc FE-05 làm mẫu: giữ bố cục bảng hiện tại; các nhãn
+  trường/mục và tiêu đề AF/EX theo đúng cách in đậm của mẫu; nội dung flow giữ regular. Chỉ dùng
+  italic khi mẫu UC tương ứng có dùng; không tự thêm nhấn mạnh.
+- Report 3 dùng Times New Roman xuyên suốt tài liệu. Khi chỉ sửa một UC, giữ nguyên các định dạng
+  khác; chỉ chuẩn hóa font toàn file khi yêu cầu phạm vi toàn file.
+- Alternative Flow có nội dung thì đặc tả các bước như mẫu; không có Alternative Flow thì ghi `N/A`.
+  Exception Flow phải mô tả điều kiện phát sinh, kết quả dữ liệu/trạng thái, phản hồi hệ thống và
+  cách kết thúc hoặc tiếp tục use case.
+- Với report khác Report 3, giữ style sẵn có của report đó. Không áp style UC-23a hoặc Times New
+  Roman sang tài liệu khác nếu chưa được yêu cầu.
+
+## Bảo toàn DOCX
+
+- Trước khi sửa, lập mốc kiểm tra cho nội dung ngoài phạm vi và cấu trúc file: văn bản, số lượng
+  bảng/đoạn, section, header/footer, hình/shape, media và relationship. Tạo bản sao tạm ngoài thư
+  mục report để có thể đối chiếu hoặc khôi phục.
+- Dùng cách chỉnh sửa giữ nguyên các phần DOCX không liên quan. Không lưu lại toàn bộ DOCX bằng thư
+  viện chưa kiểm chứng khả năng giữ ảnh, shape, header/footer, field, comment và các thành phần
+  OOXML khác.
+- Sau khi sửa, so sánh nội dung ngoài phạm vi với mốc ban đầu. Xác minh cấu trúc, relationship và
+  media không đổi trừ phần được yêu cầu. Kiểm tra DOCX mở được và các ảnh vẫn hiện diện. Nếu phát
+  hiện mất hoặc thay đổi ngoài dự kiến, khôi phục từ bản tạm, chọn cách sửa khác và kiểm tra lại
+  trước khi báo hoàn tất.
 
 ## Đồng bộ Markdown từ DOCX local
 
@@ -24,11 +69,19 @@ python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software
 git diff -- docs/08-reports/Report-3_Software_Requirement_Specification.md
 ```
 
-Script nhận tên `Report-1.docx` và `Report_1_Project_Introduction.docx` (tương tự Report 2, 3), chỉ đọc file DOCX trực tiếp trong thư mục nguồn, và báo lỗi nếu có nhiều file cùng số report. Có thể dùng `--output-dir <thư-mục>` để xem thử Markdown ở nơi khác. Script chuyển đổi văn bản, tiêu đề, danh sách và bảng; ảnh, định dạng ký tự và bố cục trang không được thể hiện đầy đủ trong Markdown. Report 3 được giữ trong một snapshot Markdown tổng.
+Script nhận tên `Report-1.docx` và `Report_1_Project_Introduction.docx` (cùng kiểu với các report
+khác), chỉ đọc file DOCX trực tiếp trong thư mục nguồn, và báo lỗi nếu có nhiều file cùng số report.
+Có thể dùng `--output-dir <thư-mục>` để xem thử Markdown ở nơi khác. Script chuyển đổi văn bản, tiêu
+đề, danh sách và bảng; ảnh, định dạng ký tự và bố cục trang không được thể hiện đầy đủ trong
+Markdown. Mỗi report được giữ trong một snapshot Markdown. `--report` hiện nhận 1, 2 hoặc 3.
+
+Cập nhật snapshot chỉ bằng script với đúng DOCX và số report. Không vá snapshot bằng tay, kể cả khi
+diff của script lớn hơn vùng vừa sửa trong DOCX. Rà diff để chắc chỉ report được yêu cầu thay đổi.
 
 ## Link Drive chuẩn Report 1–7
 
-Các link dưới đây là đích cố định. Khi cập nhật report trên Drive, thay nội dung đúng file ở link tương ứng, giữ nguyên file ID và URL.
+Các link dưới đây là đích cố định. Khi cập nhật report trên Drive, thay nội dung đúng file ở link
+tương ứng, giữ nguyên file ID và URL.
 
 | Report | Tên file trên Drive | Link Drive |
 |---|---|---|
@@ -40,18 +93,26 @@ Các link dưới đây là đích cố định. Khi cập nhật report trên D
 | 6 | `Report-6_Software User Guides.docx` | [Report 6 – Software User Guides](https://docs.google.com/document/d/1d_z9XEz_rOqqop6W0Et_Q0kywj492EHG/edit) |
 | 7 | `Report-7_Final Project Document.docx` | [Report 7 – Final Project Document](https://docs.google.com/document/d/1jXB0xKyxTkIQ7X_qodNX7H0MWYnGo8Fi/edit) |
 
-Report 5 còn có các workbook kiểm thử riêng (Unit Test, Integration Test, System Test và Acceptance Test); chúng không phải file đích của DOCX Report 5.0.
+Report 5 còn có các workbook kiểm thử riêng (Unit Test, Integration Test, System Test và Acceptance
+Test); chúng không phải file đích của DOCX Report 5.0.
 
 Thư mục Drive chứa các report: [SEP490-G116 Reports](https://drive.google.com/drive/folders/19wdKDAYViFGn4nlrmCnyNJkDQ0IOw-Z7?usp=drive_link).
 
-**Report 3 đồng bộ Markdown gần nhất:** 14/10/2026, từ DOCX local sau khi bổ sung đầy đủ đặc tả
-FE-11 (UC-52a, UC-52b, UC-53–UC-57) và BR biểu quyết theo
-[ADR-0019](../05-decisions/0019-chuan-bi-bieu-quyet-truoc-khi-hop.md). Bản trích UC/BR trong
+**Report 3 đồng bộ Markdown gần nhất:** 15/10/2026, từ DOCX local sau khi đồng bộ FE-07/FE-11:
+UC/BR/MSG, actor, danh mục UC và mô tả dữ liệu đích cho Guest, danh sách người đủ điều kiện chốt lúc
+mở Vote và tài liệu gắn nhiều mục nghị sự, theo ADR-0016/0017/0019/0020. Bản trích UC/BR trong
 [01-requirements/](../01-requirements/README.md) được cập nhật cùng nguồn. Lần này không đồng bộ
 Report 1/2 hoặc thay nội dung trên Drive.
 
 **Bàn giao đặc tả màn hình:** giữ nguyên các phần màn hình hiện có trong DOCX. Người phụ trách
-màn hình xem [note cập nhật FE-11](../notes/NOTE-cap-nhat-man-hinh-fe11.md) để đối chiếu với UC Spec mới.
-Changelog 14/10/2026 của **KhanhPG** ghi chung cập nhật UC Spec FE-07 và FE-11.
+màn hình xem [note FE-07](../notes/NOTE-cap-nhat-man-hinh-adr0020.md) và
+[note FE-11](../notes/NOTE-cap-nhat-man-hinh-fe11.md) để đối chiếu với UC Spec mới.
+Changelog 15/10/2026 của **KhanhPG** ghi chung các cập nhật; mô tả dữ liệu đích chưa đồng nghĩa code,
+migration, ERD hoặc class diagram đã được cập nhật.
 
 > **Mục "V.2 System Messages" của Report 3 không phải nguồn chuẩn.** Mã thông báo chuẩn duy nhất là [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md); khi hai bên lệch nhau, catalogue thắng.
+
+## Báo cáo hoàn tất
+
+Nêu file và vùng đã sửa, các kiểm tra bảo toàn nội dung/ảnh đã chạy, kết quả đồng bộ Markdown/Drive
+(nếu được yêu cầu), và giới hạn kiểm tra hiển thị nếu không mở hoặc render DOCX thực tế.

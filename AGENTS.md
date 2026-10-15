@@ -220,22 +220,23 @@ mode.
 
 ## Documentation
 
-### Nạp context khi làm tài liệu
+### Load context before editing docs
 
-`AGENTS.md` được nạp khi bắt đầu task trong repository. Nếu yêu cầu có thể tạo, sửa hoặc rà soát file
-trong `docs/`, hãy nạp context theo thứ tự này trước khi quyết định phạm vi:
+`AGENTS.md` is loaded at the start of a task in this repository. When a request may create, edit, or
+review files under `docs/`, load context in this order before deciding the scope:
 
-1. Đọc [docs/README.md](docs/README.md).
-2. Với mỗi file đích, đọc `README.md` từ `docs/` qua từng thư mục cha tới thư mục chứa file. Nếu một
-   thư mục `docs/` chưa có README, tạo README ngắn, đúng phạm vi cùng task đó.
-3. Đọc `AGENTS.md` áp dụng trong các thư mục đích và những tài liệu nguồn/chuẩn được README liên
-   quan dẫn tới. Khi task chạm nhiều khu vực, nạp đủ từng nhánh README; không cần đọc README của
-   khu vực không liên quan.
-4. README của thư mục là bản đồ phạm vi, nguồn chuẩn, quan hệ giữa file nguồn và file xuất; không
-   chép lại nội dung của các tài liệu chuẩn.
+1. Read [docs/README.md](docs/README.md).
+2. For each target file, read `README.md` from `docs/` through each parent directory down to the
+   directory that contains the file. If a `docs/` directory has no README, add a short one, scoped
+   to that directory, in the same task.
+3. Read any `AGENTS.md` that applies in the target directories, and the source or standard documents
+   the related READMEs point to. When a task touches several areas, load each relevant branch. Skip
+   READMEs for areas the task does not touch.
+4. A directory README is a map of scope, the canonical source, and how source files relate to
+   exported files. Do not copy the content of those standards into the README.
 
-Mỗi thư mục trong `docs/` phải có một `README.md`. Quy tắc này giúp agent bắt đầu task tài liệu bằng
-context của repo và đọc đủ context theo đúng đường dẫn thay vì đoán từ tên file.
+Every directory under `docs/` must have a `README.md`. This lets an agent start from the repository
+context and follow the path to the files it will change.
 
 When a change affects the API contract, a technical decision or the scope, update `docs/` in the
 **same commit** as the code.
