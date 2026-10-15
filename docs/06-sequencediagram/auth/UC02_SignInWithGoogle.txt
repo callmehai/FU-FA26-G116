@@ -9,6 +9,7 @@ participant ":UserRepository" as UserRepository
 database ":Database" as Database
 
 User->LoginPage: Click "Continue with Google"
+activate LoginPage
 LoginPage->Google: Open Google sign-in
 activate Google
 User->Google: Select Google account and sign in
@@ -50,3 +51,4 @@ else Google authentication successful
     deactivate AuthController
 end
 deactivate Google
+deactivate LoginPage

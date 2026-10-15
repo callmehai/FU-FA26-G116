@@ -35,6 +35,8 @@ Table of Contents
 | 13/10/2026 | M, D | HaiTV | Apply ADR-0018 (no document versions): library entries and Meeting documents refer to one immutable stored file; drop UC-32b and UC-33b; add UC-33c Remove Document from Meeting, UC-71 Manage Personal Documents and UC-72 Manage Library Folders; previews are rendered in the browser without server conversion; only the Chair and Secretary add or remove Meeting documents; add library folders as in AI-eCabinet, drop the Guest sharing toggle. Align FE-11 screens with Guest voting, Chair-selected eligible voter roles per Vote and deleting a Draft Vote. Add BR-183 to BR-192 and the Folder entity. |
 | 14/10/2026 | M | LocHD | Update screen images to wireframe v4 (ADR-0018, Chair-selected eligible voter roles); rewrite 7.1 as the empty Document Library state; correct examples in 5.3, 7.5, 11.1 and 11.4; align the 14.2 Vote button and the 7.5 watermark with the wireframe. |
 | 14/10/2026 | M | LocHD | Align 8.5, footnote 14 and BR-165 with Chair-selected eligible voter roles (Guests vote when selected); retire MSG113 (ADR-0013); describe the two implemented background jobs in 16.1–16.2 and I.5.3; drop implementation status from API-04/API-05; update the screen flow for the 7.1 and 7.5 names; fix bold bullets in 7.5 and 11.1. |
+| 14/10/2026 | M | KhanhPG | Complete business-level Use Case Specifications for FE-07 Personal Document Library & Meeting Document Management and FE-11 Voting Management (UC-52a, UC-52b, UC-53–UC-57); align related Business Rules and System Messages. Clarify Vote draft preparation in Approved, Published and InProgress, one Open Vote per Meeting, rejection when no voters are eligible, and fixed eligibility with current access checks. Preserve existing screen specifications; leave screen updates to their responsible author. |
+| 15/10/2026 | M | KhanhPG | Align UC Specifications, Business Rules and System Messages with ADR-0020; add UC-33b and UC-33d, Meeting-based document reading, Meeting-end document/link locks, multiple Agenda Item links, Meeting-start folder dates and independent Meeting document names. Screen and data descriptions are handed over in a separate note. Record PO follow-up: read-only documents/comments after Meeting end, preserve Meeting documents when deleting an Agenda Item, and start a new addition without previous comments when readding a removed document. Review all sixteen FE-07 UC Specifications for business wording. Review FE-11 against ADR-0016/0017/0019/0020: clarify Meeting-owned Votes, draft versus immediate opening, voting checks, secret-ballot completion and inaccessible-resource flows; retire cancellation MSG237. Hand over UI action/state alignment in the FE-11 screen note. Clarify BR-192/228 and UC-33a under ADR-0020: automatic Meeting folders use the planned Meeting start date in Vietnam time, including recreation after deletion. Synchronize the non-screen FE-07/FE-11 handover: actor lists, message contexts, UC inventory and target data relationships for Guest identities, fixed voter eligibility and multiple document-Item links; simplify BR-159. Screen specifications and illustrations remain pending in the handover notes. Support one or more files per UC-33a/36 submission under BR-286: validate each file, add the whole selection or none, and identify invalid selections. Align the reserved message wording with multiple-file outcomes. |
 
 *A - Added M - Modified D - Deleted
 
@@ -234,7 +236,7 @@ Invitation that lets an external Guest without an internal account join a meetin
 
 Entity 9: AgendaItem
 
-One item on the agenda of a meeting. The Chair runs the meeting item by item; documents, votes, notes and speaking requests may refer to an agenda item.
+One item on the agenda of a Meeting. Documents may be linked to multiple Items of the same Meeting through MeetingDocumentAgendaItem; notes and speaking requests may refer to an Item. Votes belong only to the Meeting.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -308,23 +310,33 @@ One connection of a user or guest to a call. Leaving and rejoining creates a new
 
 Entity 14: VotingSession
 
-One question put to a vote only while its Meeting is InProgress, optionally linked to an Agenda Item. No time-boxed voting or quorum exists.
+A Vote belongs to one Meeting and is not linked to an Agenda Item. The current Chair prepares Draft Votes in Approved, Published or InProgress; opening and balloting require InProgress. Closing and recording a conclusion may finish in Ended. The fixed eligible-voter list is represented by VotingEligibleVoter; it is not reconstructed from current roles. No time-boxed voting or quorum exists.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Id | uuid | PK | No | Unique identifier of the voting session. |
 | 2 | MeetingId | uuid | FK | No | Meeting the vote belongs to (references Meeting). |
-| 3 | AgendaItemId | uuid | FK | Yes | Agenda item the vote decides (references AgendaItem). Null when the vote is not tied to an item. |
-| 4 | Title | string |  | No | Question or title of the vote. |
-| 5 | IsAnonymous | bool |  | No | True for a secret ballot: no record links a voter to the option chosen. |
-| 6 | EligibleRoles | string[] |  | No | Meeting roles allowed to vote, chosen by the Chair: Chair, Secretary, Member, Guest; at least one (BR-190). |
-| 7 | Status | enum |  | No | State of the vote. Values: Draft, Open, Closed. |
-| 8 | OpenedAt | timestamptz |  | Yes | Date and time voting opened. |
-| 9 | ClosedAt | timestamptz |  | Yes | Date and time voting closed. |
-| 10 | EligibleCount | int |  | No | Number of eligible voters, fixed when the vote opens so the result stays reproducible. |
-| 11 | Conclusion | enum |  | Yes | Conclusion recorded by the Chair after the vote closes. Values: Passed, NotPassed, Deferred. Null until concluded. |
-| 12 | ConclusionNote | string |  | Yes | Explanatory note for the conclusion. |
-| 13 | ConcludedById | uuid | FK | Yes | Chair who recorded the conclusion (references User). |
+| 3 | Title | string |  | No | Question or title of the vote. |
+| 4 | IsAnonymous | bool |  | No | True for a secret ballot: no record links a voter to the option chosen. |
+| 5 | EligibleRoles | string[] |  | No | Meeting roles selected by the Chair: Chair, Secretary, Member and Guest; at least one. Used to establish the eligible-voter list when opening, not to recalculate that list later. |
+| 6 | Status | enum |  | No | State of the vote. Values: Draft, Open, Closed. |
+| 7 | OpenedAt | timestamptz |  | Yes | Date and time voting opened. |
+| 8 | ClosedAt | timestamptz |  | Yes | Date and time voting closed. |
+| 9 | EligibleCount | int |  | No | Number of VotingEligibleVoter entries fixed when opening succeeds. It does not change when roles, attendance or access later change. |
+| 10 | Conclusion | enum |  | Yes | Conclusion recorded by the Chair after the vote closes. Values: Passed, NotPassed, Deferred. Null until concluded. |
+| 11 | ConclusionNote | string |  | Yes | Explanatory note for the conclusion. |
+| 12 | ConcludedById | uuid | FK | Yes | Chair who recorded the conclusion (references User). |
+
+Entity 14a: VotingEligibleVoter
+
+Fixed eligibility for one person in one Vote, created only when opening succeeds. Exactly one of VoterId and GuestInvitationId is set; each identity appears at most once per Vote. The Guest invitation must belong to the same Meeting. Entries remain unchanged after role changes, removal, expiry or revocation; current access is checked separately before accepting a ballot. This is the target logical relationship for the class diagram, not a claim that migrations already exist.
+
+| No | Field | Data Type | Key | Nullable | Description |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Id | uuid | PK | No | Unique identifier of this eligible-voter entry. |
+| 2 | VotingSessionId | uuid | FK | No | Vote whose eligible-voter list contains this identity (references VotingSession). |
+| 3 | VoterId | uuid | FK | Yes | Eligible internal User, if applicable; unique within this Vote. |
+| 4 | GuestInvitationId | uuid | FK | Yes | Eligible Guest invitation identity, if applicable (references MeetingGuestInvitation); unique within this Vote. |
 
 Entity 15: VotingOption
 
@@ -339,26 +351,28 @@ One answer that voters can choose in a voting session.
 
 Entity 16: VoteReceipt
 
-Records that an internal User or Guest invitation identity has cast a ballot, never what they chose. Enforces one receipt per eligible identity and Vote.
+Records that one eligible internal User or Guest invitation identity has voted, never their chosen option. Exactly one of VoterId and GuestInvitationId is set. The identity must belong to the fixed eligible-voter list for this Vote, and may have only one receipt in it. Rejoining does not create another identity or ballot.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Id | uuid | PK | No | Unique identifier of the receipt. |
 | 2 | VotingSessionId | uuid | FK | No | Voting session voted in (references VotingSession). |
-| 3 | VoterId | uuid | FK | No | User who voted (references User); unique together with VotingSessionId. |
+| 3 | VoterId | uuid | FK | Yes | Internal User who voted. Set only for an internal voter; exactly one of VoterId and GuestInvitationId is set. Unique per VotingSessionId and internal voter. |
 | 4 | CastAt | timestamptz |  | No | Date and time the vote was cast. |
+| 5 | GuestInvitationId | uuid | FK | Yes | Guest identity who voted (references MeetingGuestInvitation in the same Meeting). Set only for a Guest; unique per VotingSessionId and invitation. Retained after revocation or expiry. |
 
 Entity 17: VoteChoice
 
-The option actually chosen in a vote; these rows are counted to produce the result.
+The option chosen in a Vote. For a Public Vote, exactly one of VoterId and GuestInvitationId identifies the voter. For a Secret Vote, both are empty and no receipt or eligible-voter reference is stored with the choice. All recorded choices contribute to the tally.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Id | uuid | PK | No | Unique identifier of the choice. |
 | 2 | VotingSessionId | uuid | FK | No | Voting session the choice belongs to (references VotingSession). |
 | 3 | VotingOptionId | uuid | FK | No | Option chosen (references VotingOption). |
-| 4 | VoterId | uuid | FK | Yes | User who made the choice (references User). Always null in an anonymous voting session. |
+| 4 | VoterId | uuid | FK | Yes | For a Public Vote, the internal User who chose this option, if applicable. Empty for every Secret Vote and for a Guest choice. |
 | 5 | CastAt | timestamptz |  | No | Date and time the choice was cast. |
+| 6 | GuestInvitationId | uuid | FK | Yes | For a Public Vote, the Guest invitation identity who chose this option (references MeetingGuestInvitation in the same Meeting), if applicable. Empty for every Secret Vote and for an internal choice. |
 
 Entity 18: Document
 
@@ -391,7 +405,7 @@ One uploaded file in object storage. It is immutable; personal library entries a
 
 Entity 20: MeetingDocument
 
-Places a stored file in a meeting, optionally under one agenda item. It is a reference, not a copy: deleting the owner's library entry does not affect it (ADR-0018).
+One addition of a stored file to a Meeting. A document may be linked to several Agenda Items through MeetingDocumentAgendaItem; with no links, it is a general Meeting document. Removing it clears its current Item links but preserves this addition and its comments as history. Readding the same file creates a new addition and does not restore the old comments. Deleting the personal-library entry does not remove this Meeting document.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -399,26 +413,35 @@ Places a stored file in a meeting, optionally under one agenda item. It is a ref
 | 2 | MeetingId | uuid | FK | No | Meeting the document is attached to (references Meeting). |
 | 3 | StoredFileId | uuid | FK | No | Stored file shown in the meeting (references StoredFile). |
 | 4 | DocumentId | uuid | FK | Yes | Library entry the file was added from (references Document). Null once that entry is deleted. |
-| 5 | AgendaItemId | uuid | FK | Yes | Agenda item the document supports (references AgendaItem). Null when it applies to the whole meeting. |
-| 6 | AddedById | uuid | FK | No | User who attached the document (references User). |
-| 7 | AddedAt | timestamptz |  | No | Date and time the document was attached. |
-| 8 | FileName | string |  | No | File name shown in the meeting. |
-| 9 | RemovedAt | timestamptz |  | Yes | Date and time the document was removed from the meeting (UC-33c); null while it is shown. |
-| 10 | RemovedById | uuid | FK | Yes | User who removed the document (references User). |
+| 5 | AddedById | uuid | FK | No | User who attached the document (references User). |
+| 6 | AddedAt | timestamptz |  | No | Date and time the document was attached. |
+| 7 | FileName | string |  | No | Document name copied when this addition is created. Later renaming in the personal library does not change it. |
+| 8 | RemovedAt | timestamptz |  | Yes | Date and time the document was removed from the meeting (UC-33c); null while it is shown. |
+| 9 | RemovedById | uuid | FK | Yes | User who removed the document (references User). |
+
+Entity 20a: MeetingDocumentAgendaItem
+
+Links an active MeetingDocument addition to one Agenda Item of the same Meeting. The pair is unique. A document may have several links. Removing one link or deleting its Item preserves the document and its other links. Removing the document from the Meeting clears all its current links. This is the target logical relationship for the class diagram.
+
+| No | Field | Data Type | Key | Nullable | Description |
+| --- | --- | --- | --- | --- | --- |
+| 1 | MeetingDocumentId | uuid | PK, FK | No | Meeting document addition (references MeetingDocument). |
+| 2 | AgendaItemId | uuid | PK, FK | No | Linked Item (references AgendaItem); its Meeting must match the Meeting document. |
 
 Entity 21: DocumentComment
 
-Comment left by a participant on a meeting document. Comments are threaded: a reply refers to its parent comment.
+Comment on one MeetingDocument addition, by an internal User or Guest invitation identity. Exactly one of AuthorId and GuestInvitationId is set. Comments are read-only after the Meeting ends. Removed additions retain their comments as history; a new addition of the same file does not inherit them. Existing reply references remain within the same addition.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Id | uuid | PK | No | Unique identifier of the comment. |
 | 2 | MeetingDocumentId | uuid | FK | No | Meeting document commented on (references MeetingDocument). |
 | 3 | ParentCommentId | uuid | FK | Yes | Comment being replied to (references DocumentComment). Null for a top-level comment. |
-| 4 | AuthorId | uuid | FK | No | User who wrote the comment (references User). |
+| 4 | AuthorId | uuid | FK | Yes | Internal User who wrote the comment, if applicable. Exactly one of AuthorId and GuestInvitationId is set. |
 | 5 | PageNumber | int |  | Yes | Page of the document the comment refers to, when known. |
 | 6 | Body | string |  | No | Content of the comment. |
 | 7 | IsResolved | bool |  | No | True when the comment has been resolved. |
+| 8 | GuestInvitationId | uuid | FK | Yes | Guest author (references MeetingGuestInvitation for the same Meeting). Set only for Guest comments. Historical authorship is retained after expiry or revocation. |
 
 Entity 22: Recording
 
@@ -564,7 +587,7 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | Meeting schedule | Each Meeting has planned start and end times; planned end follows planned start. | Meeting creation/update |
 | Single meeting lifecycle | A Meeting has exactly one lifecycle. No Meeting Session entity or nested session lifecycle exists. | Meeting lifecycle |
 | Agenda ownership | Each Agenda Item belongs to exactly one Meeting. Reordering is within that Meeting. | Agenda management |
-| Vote ownership | Each Vote belongs directly to one Meeting and does not require an Agenda Item. | Voting management |
+| Vote ownership | Each Vote belongs to one Meeting and is not linked to an Agenda Item. | Voting management |
 | Vote conclusion ownership | A Vote belongs to one Meeting, whose Minutes incorporate vote tallies and the Chair’s conclusions. | Vote Conclusion creation |
 | Minutes scope | Each Meeting has its own Minutes process with versioned signing and revision history. | Minutes governance |
 | Meeting audit trail | Meeting lifecycle, approval, publication and permitted schedule changes remain traceable. | Meeting audit |
@@ -584,7 +607,7 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | 7 | Participant | An internal user assigned to participate in a specific meeting. A Participant may perform authorized meeting activities such as joining the online meeting room, viewing or commenting on meeting documents, responding to invitations, and voting. Chair and Secretary are meeting-specific roles with additional responsibilities. |
 | 8 | Google Identity Provider | An external identity provider used for Google-based authentication and verified identity data exchange. It participates primarily in UC-02 Sign in with Google and supports the authentication flow shown in the context diagram. |
 | 9 | AI / Speech Processing Provider | An external processing provider that receives approved Meeting audio and returns speaker-attributed transcript data and draft summaries. It supports transcript and summary processing such as UC-62 Upload Meeting Audio, UC-64 View Speaker-Attributed Transcript, UC-65 Edit Transcript & Speaker Attribution, and UC-90 Generate / Regenerate Meeting Summary. |
-| 10 | Email / SMTP Service | An external outbound email service used to deliver password-reset messages, meeting invitations, guest-access emails, notifications, and minutes-signing related emails. It supports flows such as UC-04 Reset Password, UC-21 Publish Meeting, UC-80 Submit Meeting Minutes for Signing, and notification delivery under FE-13. |
+| 10 | Email / SMTP Service | An external outbound email service used to deliver password-reset messages, meeting invitations, guest-access emails, notifications, and minutes-signing related emails. It supports flows such as UC-07 Reset Password, UC-21 Publish Meeting, UC-80 Submit Meeting Minutes for Signing, and notification delivery under FE-13. |
 
 #### 4.2 Use Cases (UC)
 
@@ -593,7 +616,7 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | UC-01 | Sign in with Email and Password | Authentication & Account Security | Authenticate users using their registered email and password. |
 | UC-02 | Sign in with Google | Authentication & Account Security | Authenticate users using their authorized Google account. |
 | UC-03 | Sign Out | Authentication & Account Security | End the user's current authenticated session. |
-| UC-04 | Access Meeting via Guest Invitation | Authentication & Account Security | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-04 | Access Meeting via Guest Invitation | Authentication & Account Security | Allows an invited Guest to verify control of the invited email and enter self-declared display information for the invited Meeting. |
 | UC-05 | View User Accounts | User & Profile Management | View, search, and filter user accounts in the system. |
 | UC-06 | Manage User Accounts | User & Profile Management | Create, update, deactivate, or reactivate user accounts; the operation is specified in UC-06a–UC-06c. |
 | UC-07 | Reset User Password | User & Profile Management | Initiate a password reset for an eligible user account. |
@@ -621,11 +644,11 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | UC-29 | Respond to Meeting Invitation | Meeting Participant Management | Allow an invited internal participant or external Guest to accept or decline their own Meeting invitation, and change a previous response while responses are allowed. |
 | UC-30 | View Participant Response Status | Meeting Participant Management | View the latest invitation response of current internal participants and external Guests and a response-status summary. |
 | UC-31 | Record Attendance | Meeting Participant Management | Record or revise Present/Absent attendance for one or more selected current internal participants or external Guests while the Meeting is InProgress. |
-| UC-32 | View Meeting Documents | Personal Document Library & Meeting Document Management | View the documents of a Meeting and preview them; see UC-32a and UC-32c. |
-| UC-33 | Manage Meeting Documents | Personal Document Library & Meeting Document Management | Add a document to a Meeting or remove it from the Meeting; see UC-33a and UC-33c. |
-| UC-34 | View Personal Document Library | Personal Document Library & Meeting Document Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
-| UC-35 | Comment on Meeting Document | Personal Document Library & Meeting Document Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
-| UC-36 | Upload Document to Personal Library | Personal Document Library & Meeting Document Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-32 | View Meeting Documents | Personal Document Library & Meeting Document Management | View Meeting documents through UC-32a and preview or download through UC-32c. Anyone who can view the Meeting can read its documents; Secret Meeting documents cannot be downloaded. UC-32b remains retired. |
+| UC-33 | Manage Meeting Documents | Personal Document Library & Meeting Document Management | Manage Meeting documents through UC-33a Add one or more documents, UC-33b Link to an Agenda Item, UC-33c Remove from Meeting and UC-33d Unlink one Item. Current Chair or Secretary acts before Meeting end; a multiple-document addition succeeds as a whole or adds none. Item status does not lock links. |
+| UC-34 | View Personal Document Library | Personal Document Library & Meeting Document Management | Browse the user's personal document library, search or filter documents and view permitted Meeting-usage details. |
+| UC-35 | Comment on Meeting Document | Personal Document Library & Meeting Document Management | Read and add Meeting-document comments with the same viewing access, before Meeting end. After end, documents and comments are read-only. |
+| UC-36 | Upload Document to Personal Library | Personal Document Library & Meeting Document Management | Upload one or more PDF or DOCX files together to the user's personal library, each at most 50 MB. The whole submission succeeds or no documents are added. |
 | UC-37 | Join Meeting Room | Online Meeting Room Management | Join the online room of an authorized Online or Hybrid meeting; an external Guest may join through a verified meeting-specific guest invitation without an internal account login. |
 | UC-38 | Leave Meeting Room | Online Meeting Room Management | Leave the online meeting room without changing the Meeting lifecycle. |
 | UC-39 | Manage Meeting Room Controls | Online Meeting Room Management | Control microphone, camera, and screen sharing within the Meeting Room; see UC-39a–UC-39c. |
@@ -641,12 +664,12 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | UC-49 | Edit Meeting Summary | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
 | UC-50 | Approve Meeting Summary | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
 | UC-51 | Publish Meeting Summary | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
-| UC-52 | View Meeting Votes | Voting Management | View Meeting votes and their current status/results; see UC-52a–UC-52b. |
-| UC-53 | Create / Configure Vote | Voting Management | Allow the Chair to create and configure a Vote directly under a Meeting while it is InProgress, without vote tally or deadline. |
-| UC-54 | Open Vote | Voting Management | Allow the Chair to open a configured vote while the Meeting is InProgress. |
-| UC-55 | Cast Vote | Voting Management | Cast an eligible vote for a Vote belonging to the Meeting. |
-| UC-56 | Close Vote | Voting Management | Close an open Vote belonging to the Meeting. |
-| UC-57 | Record Vote Conclusion | Voting Management | Allow the Chair to record Passed, NotPassed or Deferred after a Vote closes. |
+| UC-52 | View Meeting Votes | Voting Management | View visible Meeting Votes and their status or result through UC-52a and UC-52b. |
+| UC-53 | Create / Configure Vote | Voting Management | Allows the current Chair to prepare a Vote draft, configure or delete an existing draft, or proceed to opening a Vote during the Meeting. Draft preparation is allowed before the Meeting starts, while it is Approved or Published, and during InProgress. Each Vote belongs directly to the Meeting. |
+| UC-54 | Open Vote | Voting Management | Allows the current Chair to open a valid Vote during an InProgress Meeting. Opening fixes the eligible-voter list and count. Only one Vote may be Open in a Meeting at a time. |
+| UC-55 | Cast Vote | Voting Management | Allows an eligible person to submit one choice in an Open Vote during the Meeting. Eligibility comes from the list fixed at opening and requires current Meeting access. Attendance is not a condition. A saved ballot cannot be changed or withdrawn. |
+| UC-56 | Close Vote | Voting Management | Allows the current Chair to close an existing Open Vote and obtain its tally while the Meeting is InProgress or Ended. Closing a Vote does not end the Meeting and does not determine the Chair's conclusion. |
+| UC-57 | Record Vote Conclusion | Voting Management | Allows the current Chair to record the business conclusion of a Closed and tallied Vote as Passed, NotPassed or Deferred, with an optional note. The Chair decides the conclusion; the system records it rather than inferring it from a majority. |
 | UC-58 | View Meeting Minutes | Meeting Minutes & Digital Signing | View the current Meeting Minutes and permitted signing status. |
 | UC-59 | Generate Meeting Minutes | Meeting Minutes & Digital Signing | Generate draft Meeting Minutes from the approved summary, attendance, agenda and vote results with conclusions recorded by the Chair. |
 | UC-60 | Edit Meeting Minutes | Meeting Minutes & Digital Signing | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
@@ -660,8 +683,8 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | UC-68 | Open Notification Target | Email & In-App Notification | Open the meeting linked to a selected notification. |
 | UC-69 | View Personal Dashboard & Meeting Workspace | Personal Dashboard & Meeting Workspace | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
 | UC-70 | View & Export Reports | Reporting & Statistics | View reporting statistics and export the corresponding report; see UC-70a–UC-70b. |
-| UC-71 | Manage Personal Documents | Personal Document Library & Meeting Document Management | Delete, rename or move documents in the user's own personal library; see UC-71a–UC-71c. Meeting documents that use the same file are not affected. |
-| UC-72 | Manage Library Folders | Personal Document Library & Meeting Document Management | Create, rename, move and delete empty folders in the user's own personal library; see UC-72a–UC-72d. |
+| UC-71 | Manage Personal Documents | Personal Document Library & Meeting Document Management | Delete, rename or move personal-library documents through UC-71a, UC-71b and UC-71c, preserving Meeting documents already added. |
+| UC-72 | Manage Library Folders | Personal Document Library & Meeting Document Management | Create, rename, move or delete personal-library folders through UC-72a to UC-72d; only empty folders may be deleted. |
 
 #### 4.3 Use Case Diagrams
 
@@ -734,20 +757,20 @@ Full = unrestricted  ·  Restricted = conditions apply (see footnotes)  ·  No =
 | Personal document library | View | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | No |
 | Personal document library | Upload / Organize (folders, rename, move, delete) | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | No |
 | Meeting document | View list | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ¹³ |
-| Meeting document | Add / Remove document | No | No | No | Restricted ³ | Restricted ³ | No | No |
+| Meeting document | Add / Remove document; Link / Unlink Agenda Item | No | No | No | Restricted ³: current Chair, before Meeting end | Restricted ³: current Secretary, before Meeting end | No | No |
 | Meeting document | Preview / Download (no download in a Secret Meeting) | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ¹¹: Member rules within the invited Meeting |
-| Meeting document | Comment | No | Restricted ³ | No | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ¹¹: Member rules within the invited Meeting |
+| Meeting document | Comment before Meeting end | Full: only when the document is readable | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ¹¹: Member rules within the invited Meeting |
 | Audio recording | View media library / Play | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | No |
 | Audio recording | Upload | No | No | No | No | Restricted ³ | No | No |
 | Transcript | View / Edit (speaker attribution) | No | No | No | No | Restricted ³ | No | No |
 | Summary | Generate / Regenerate | No | No | No | No | Restricted ³ | No | No |
 | Summary | View / Edit | No | No | No | No | Restricted ³ | No | No |
 | Summary | Approve / Publish | No | No | No | No | Restricted ³ | No | No |
-| Vote | Create / Configure | No | No | No | Restricted ³ | No | No | No |
-| Vote | Open / Close | No | No | No | Restricted ³ | No | No | No |
+| Vote | Create / Configure / Delete Draft | No | No | No | Restricted: current Chair; Approved, Published or InProgress | No | No | No |
+| Vote | Open / Close | No | No | No | Restricted: current Chair; open in InProgress, close in InProgress or Ended | No | No | No |
 | Vote | Cast (in-meeting) | No | No | No | Restricted ¹⁴ | Restricted ¹⁴ | Restricted ¹⁴ | Restricted ¹⁴: verified current Guest |
-| Vote | View votes / status | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ¹¹: Member rules within the invited Meeting |
-| Vote | Record vote conclusion | No | No | No | Restricted ³ | No | No | No |
+| Vote | View votes / status | Full: Open/Closed only | Restricted ³: Open/Closed only | Restricted ³: Open/Closed only | Restricted ³; current Chair may also view Drafts in Approved | Restricted ³: Open/Closed only | Restricted ³: Open/Closed only | Restricted ¹¹: Open/Closed only |
+| Vote | Record vote conclusion | No | No | No | Restricted: current Chair; InProgress or Ended; Closed Vote without a conclusion | No | No | No |
 | Vote | View vote conclusion | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ¹¹: Member rules within the invited Meeting |
 | Minutes | View | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | No |
 | Minutes | Generate / Edit | No | No | No | No | Restricted ¹⁵ | No | No |
@@ -793,9 +816,9 @@ Notes:
 
 ¹² Only the user's own items (own notifications, own personal documents, own dashboard).
 
-¹³ Only all attached documents of the invited meeting under Member read rules, within a verified Guest session.
+¹³ Anyone who can view a Meeting can read all its current documents; there is no separate document-reading permission or publication gate. Guests still require a valid verified invitation for that Meeting. Secret Meeting documents cannot be downloaded.
 
-¹⁴ Only users on the eligible list fixed when the Vote opens – current holders of the meeting roles the Chair selected for that Vote among Chair, Secretary, Member and verified Guest – and only while their Meeting is InProgress and its Vote is Open (BR-160, BR-165, BR-190).
+¹⁴ Only people on the eligible list fixed when the Vote opens and retaining current Meeting access may cast a ballot, and only while the Meeting is InProgress and the Vote is Open. A role change does not change that list. Guest email verification and invitation validity are required. (BR-165, BR-190, BR-268, BR-269)
 
 ¹⁵ Only in the assigned meeting while the minutes are in Draft or Revision Requested status.
 
@@ -1209,12 +1232,12 @@ Sequence source and PNG: docs/06-sequencediagram/auth/UC04_AccessMeetingViaGuest
 
 | Primary Actors | Secretary | Secondary Actors | None |
 | --- | --- | --- | --- |
-| Description | Allows the active assigned Secretary to update a Pending Agenda Item, or update only Title and Description after the Item has started. |  |  |
-| Preconditions | ● PRE-1: The Secretary is authenticated, active and assigned to the Meeting.<br>● PRE-2: The Item belongs to the Meeting and the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. (BR-65, BR-68)<br>● PRE-3: A Pending Item permits changes to its planning fields; an InProgress or Done Item permits only Title and Description changes. (BR-68) |  |  |
+| Description | Allows the active assigned Secretary to update a Pending Agenda Item, or update Title, Description and document associations after the Item has started. |  |  |
+| Preconditions | ● PRE-1: The Secretary is authenticated, active and assigned to the Meeting.<br>● PRE-2: The Item belongs to the Meeting and the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. (BR-65, BR-68)<br>● PRE-3: A Pending Item permits changes to its planning fields; an InProgress or Done Item permits Title, Description and document-association changes. Planned Duration and Presenter remain locked. (BR-68, BR-279) |  |  |
 | Postconditions | ● POST-1: The permitted Item information is updated.<br>● POST-2: Meeting membership, Item execution status, actual timestamps and Meeting lifecycle remain unchanged.<br>● POST-3: Authorized users currently viewing the Agenda automatically see the complete updated Agenda. (BR-73) |  |  |
-| Normal Flow | Update Agenda Item<br>1. The Secretary selects an Item and chooses Edit.<br>2. For Pending, the system permits changes to Title, Planned Duration, optional Presenter, Description and document associations. For InProgress or Done, only Title and Description are editable. (BR-68)<br>3. The Secretary enters permitted changes and submits.<br>4. The system rechecks the active Secretary assignment, Meeting status (Draft, WaitingApproval, Rejected, Approved, Published or InProgress), current Item status, permitted fields, required values and any selected Meeting documents. (BR-65, BR-66, BR-68, BR-74)<br>5. The system saves the permitted changes together, preserving execution status and actual timestamps.<br>6. The system displays MSG61 – "Agenda item updated successfully." and automatically refreshes the complete Agenda for authorized viewers. (BR-73) |  |  |
+| Normal Flow | Update Agenda Item<br>1. The Secretary selects an Item and chooses Edit.<br>2. For Pending, the system permits changes to Title, Planned Duration, optional Presenter, Description and document associations. For InProgress or Done, Title, Description and document associations are editable; Planned Duration and Presenter remain locked. Document links may be added or removed until the Meeting ends through UC-33b and UC-33d. (BR-68, BR-185, BR-277, BR-278, BR-279)<br>3. The Secretary enters permitted changes and submits.<br>4. The system rechecks the active Secretary assignment, Meeting status (Draft, WaitingApproval, Rejected, Approved, Published or InProgress), current Item status, permitted fields, required values and any selected Meeting documents. (BR-65, BR-66, BR-68, BR-74)<br>5. The system saves the permitted changes together, preserving execution status and actual timestamps.<br>6. The system displays MSG61 – "Agenda item updated successfully." and automatically refreshes the complete Agenda for authorized viewers. (BR-73) |  |  |
 | Alternative Flows | N/A |  |  |
-| Exception Flows | EX-1 – Invalid Agenda Item Information<br>1. At Step 4, the submitted values or documents are invalid.<br>2. The Item remains unchanged. The system displays MSG66 with the applicable field messages.<br>EX-2 – Editing No Longer Permitted<br>1. At Step 4, the Meeting no longer permits Agenda planning or the actor is no longer its active assigned Secretary.<br>2. The Item remains unchanged. The system displays MSG67.<br>EX-3 – Update Cannot Be Saved<br>1. At Step 5, the system cannot save the permitted changes.<br>2. Item information, document associations, execution status, actual timestamps and order remain unchanged. No successful change is announced to viewers.<br>3. The system displays MSG69 – "Unable to update the agenda item. Please try again." The use case ends unsuccessfully.<br>EX-4 – Changes Not Permitted for the Current Item Status<br>1. At Step 4, the Item is InProgress or Done and the request changes a field other than Title or Description, including when the Item started after the edit form was opened.<br>2. No changes are saved. The system displays MSG141 – "Only Title and Description can be changed after an agenda item has started."<br>3. The system refreshes the permitted fields. The Secretary may revise the request and continue from Step 3. |  |  |
+| Exception Flows | EX-1 – Invalid Agenda Item Information<br>1. At Step 4, the submitted values or documents are invalid.<br>2. The Item remains unchanged. The system displays MSG66 with the applicable field messages.<br>EX-2 – Editing No Longer Permitted<br>1. At Step 4, the Meeting no longer permits Agenda planning or the actor is no longer its active assigned Secretary.<br>2. The Item remains unchanged. The system displays MSG67.<br>EX-3 – Update Cannot Be Saved<br>1. At Step 5, the system cannot save the permitted changes.<br>2. Item information, document associations, execution status, actual timestamps and order remain unchanged. No successful change is announced to viewers.<br>3. The system displays MSG69 – "Unable to update the agenda item. Please try again." The use case ends unsuccessfully.<br>EX-4 – Changes Not Permitted for the Current Item Status<br>1. At Step 4, the Item is InProgress or Done and the request changes Planned Duration or Presenter, including when the Item started after the edit form was opened.<br>2. No changes are saved. The system displays MSG250 – “Planned Duration and Presenter cannot be changed after an agenda item has started.”<br>3. The system refreshes the permitted fields. The Secretary may revise the request and continue from Step 3. |  |  |
 
 ##### 5.1.3 UC-23c – Delete Agenda Item
 
@@ -1222,8 +1245,8 @@ Sequence source and PNG: docs/06-sequencediagram/auth/UC04_AccessMeetingViaGuest
 | --- | --- | --- | --- |
 | Description | Allows the active assigned Secretary to delete only a Pending Agenda Item from the Meeting. |  |  |
 | Preconditions | ● PRE-1: The Secretary is authenticated, active and assigned to the Meeting.<br>● PRE-2: The Item belongs to a Meeting in Draft, WaitingApproval, Rejected, Approved, Published or InProgress. (BR-65, BR-68)<br>● PRE-3: The Item is Pending. InProgress and Done Items cannot be deleted. (BR-68) |  |  |
-| Postconditions | ● POST-1: The selected Pending Item is removed.<br>● POST-2: Remaining Item positions and execution data, and the Meeting lifecycle, are unchanged.<br>● POST-3: Authorized viewers automatically see the complete updated Agenda. (BR-73) |  |  |
-| Normal Flow | Delete Agenda Item<br>1. The Secretary selects a Pending Item, chooses Delete and confirms.<br>2. The system verifies the active Secretary assignment, permitted Meeting status, Item membership and that the Item is still Pending. (BR-64, BR-65, BR-68)<br>3. The system removes the Item while retaining every remaining Item position.<br>4. The system displays MSG62 – "Agenda item deleted successfully." and automatically refreshes the complete Agenda for authorized viewers. (BR-73) |  |  |
+| Postconditions | ● POST-1: The selected Pending Item and its document links are removed. The documents stay in the Meeting and keep links to other Items; a document with no remaining links becomes a general Meeting document. (BR-280, BR-283)<br>● POST-2: Remaining Item positions and execution data, and the Meeting lifecycle, are unchanged.<br>● POST-3: Authorized viewers automatically see the complete updated Agenda. (BR-73) |  |  |
+| Normal Flow | Delete Agenda Item<br>1. The Secretary selects a Pending Item, chooses Delete and confirms.<br>2. The system verifies the active Secretary assignment, permitted Meeting status, Item membership and that the Item is still Pending. (BR-64, BR-65, BR-68)<br>3. The system removes the Item and its document links, keeps the documents in the Meeting and preserves the remaining Item positions. (BR-283)<br>4. The system displays MSG62 – "Agenda item deleted successfully." and automatically refreshes the complete Agenda for authorized viewers. (BR-73) |  |  |
 | Alternative Flows | N/A |  |  |
 | Exception Flows | EX-1 – Agenda Planning No Longer Permitted<br>1. At Step 2, the Meeting no longer permits Agenda planning or the actor is no longer its active assigned Secretary.<br>2. Nothing is deleted. The system displays MSG67.<br>EX-2 – Agenda Item Has Already Started<br>1. At Step 2, the Item is InProgress or Done.<br>2. The Item and Agenda order remain unchanged. The system displays MSG142 – "Only Pending agenda items can be deleted."<br>EX-3 – Deletion Cannot Be Saved<br>1. At Step 3, the system cannot complete deletion.<br>2. The Item and the saved Agenda order remain unchanged. No successful change is announced to viewers.<br>3. The system displays MSG70 – "Unable to delete the agenda item. Please try again." The use case ends unsuccessfully. |  |  |
 
@@ -1356,69 +1379,191 @@ Delivery scope: UC-31 attendance remains in SCRUM-26, separate from SCRUM-20 ros
 
 ### 7. FE-07 – Personal Document Library & Meeting Document Management
 
+ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassigned to linking an existing Meeting document to an Agenda Item; UC-33d removes only one Item link. UC-32b remains retired. Meeting-document reading follows Meeting viewing access. Document additions, removals and Item-link changes stop when the Meeting ends; Agenda Item status does not lock document links. PO follow-up: Meeting documents and comments are read-only after the Meeting ends. Deleting an Agenda Item keeps its documents in the Meeting. Readding a removed document does not restore previous comments. Personal-library quotas remain undecided.
+
 #### 7.1 UC-32 – View Meeting Documents
 
 ##### 7.1.1 UC-32a – View Meeting Documents
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant, Guest | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an authorized user to browse the documents currently attached to one Meeting. Guest document access follows Participant rules. (BR-181, BR-205) |  |  |
+| Preconditions | ● PRE-1: The internal user is signed in, or the Guest has a valid verified invitation for this Meeting.<br>● PRE-2: The selected Meeting exists and the user can currently view the Meeting. (BR-181, BR-275, BR-153, BR-155, BR-157) |  |  |
+| Postconditions | ● POST-1: Only currently attached documents available to the user are displayed.<br>● POST-2: Meeting documents, personal libraries and Meeting status remain unchanged. |  |  |
+| Normal Flow | View Meeting Documents<br>1. The user opens the Documents tab of the selected Meeting.<br>2. The system checks the user's current permission to view the Meeting, including the current invitation for a Guest. Anyone who can currently view the Meeting may read its documents; there is no separate document-reading permission. (BR-181, BR-275, BR-200)<br>3. The system displays the Meeting documents with their names, file types, linked Agenda Items, the people who added them and comment counts. Removed documents are excluded. After the Meeting ends, documents and comments are read-only. (BR-211, BR-282)<br>4. The user reviews the displayed list or empty result, and may adjust the Agenda Item filter or finish viewing. Selecting a document opens UC-32c. |  |  |
+| Alternative Flows | AF-1 – Filter by Agenda Item<br>1. At Step 4, the user selects an Agenda Item.<br>2. The system displays only available documents associated with that item.<br>3. The flow resumes at Step 4 of the Main Flow.<br>AF-2 – No documents to display<br>1. At Step 3, the Meeting has no currently attached documents, or the filter in AF-1 has no matches.<br>2. The system displays an empty list and explains that no documents are available for the current selection.<br>3. The user may clear the filter. The flow resumes at Step 4 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Meeting documents are not accessible<br>1. At Step 2, the Meeting is unavailable or the user can no longer view the Meeting, including removal of a participant or revocation or expiry of a Guest invitation.<br>2. No document names or contents are disclosed. No Meeting information is changed. The system displays MSG156 – “Meeting documents are not accessible.”<br>3. The use case ends.<br>EX-2 – Document list cannot be loaded<br>1. At Step 3, the system cannot retrieve the available document list.<br>2. No Meeting information is changed. The system displays MSG157 – “Unable to load the document list. Please try again.”; the failed load is not presented as an empty list.<br>3. The use case ends. |  |  |
 
 ##### 7.1.2 UC-32c – Preview Meeting Document
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant, Guest | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an authorized user to read a Meeting document online and download the same file when permitted. Comments are covered separately in UC-35. (BR-181, BR-188) |  |  |
+| Preconditions | ● PRE-1: The internal user is signed in, or the Guest has a valid verified invitation for this Meeting.<br>● PRE-2: The selected document is currently attached to the Meeting and the user can currently view the Meeting. (BR-181, BR-211, BR-275, BR-153, BR-155, BR-157) |  |  |
+| Postconditions | ● POST-1: The selected document is displayed for online reading; in AF-1, the user also receives the permitted download.<br>● POST-2: The file content, its Meeting association and its comments remain unchanged. |  |  |
+| Normal Flow | Preview Meeting Document<br>1. The user selects a document in the Meeting Documents tab or the documents of an Agenda Item.<br>2. The system checks current permission to view the Meeting and that the document is still attached to this Meeting. Anyone who can currently view the Meeting may read its documents; there is no separate document-reading permission. (BR-181, BR-211, BR-275, BR-200)<br>3. The system opens the document viewer and displays the file name, its content and the Meeting sensitivity.<br>4. The user reads the document. After the Meeting ends, the document and comments are read-only. Downloading remains available when the Meeting is not Secret. (BR-188, BR-282) |  |  |
+| Alternative Flows | AF-1 – Download the document<br>1. At Step 4, the user chooses Download for a Meeting that is not Secret.<br>2. The system rechecks current access, that the document remains attached and the current Meeting sensitivity. (BR-181, BR-211, BR-188, BR-275, BR-200)<br>3. The system provides the same uploaded file to the user. (BR-183, BR-216)<br>4. The flow resumes at Step 4 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Document is no longer accessible<br>1. At Step 2, or during the access check in AF-1, the document was removed or the user can no longer view the Meeting.<br>2. No further document content or download is provided. The file and Meeting remain unchanged. The system displays MSG156 – “Meeting documents are not accessible.”<br>3. The use case ends.<br>EX-2 – Preview cannot be displayed<br>1. At Step 3, the system cannot display the selected file.<br>2. The document remains attached and its content is unchanged. The system displays MSG158 – “Unable to display the document. Please try again.”<br>3. The use case ends.<br>EX-3 – Download is prohibited<br>1. During Step 2 of AF-1, the Meeting is Secret, including when its sensitivity changed after the viewer opened.<br>2. No download is provided. The document remains unchanged. The system displays MSG159 – “Secret Meeting documents can only be viewed online and cannot be downloaded.” (BR-188)<br>3. The flow resumes at Step 4 of the Main Flow for online reading.<br>EX-4 – Download cannot be provided<br>1. At Step 3 of AF-1, the system cannot provide the file.<br>2. The file and its Meeting association remain unchanged. The system displays MSG160 – “Unable to download the document. Please try again.”<br>3. The flow resumes at Step 4 of the Main Flow. |  |  |
 
 #### 7.2 UC-33 – Manage Meeting Documents
 
 ##### 7.2.1 UC-33a – Add Document to Meeting
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Chair, Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Chair or Secretary to add one or more documents from their own personal library or computer to a Meeting in one submission. Linking documents to Agenda Items is handled separately in UC-33b. (BR-184, BR-209, BR-286) |  |  |
+| Preconditions | ● PRE-1: The actor is signed in and is the current Chair or Secretary of the selected Meeting.<br>● PRE-2: The actor can currently view the Meeting. (BR-184, BR-195)<br>● PRE-3: The Meeting has not ended. (BR-185, BR-195) |  |  |
+| Postconditions | ● POST-1: All submitted documents appear in the Meeting as general documents, with their names copied at addition and the actor and addition time recorded. (BR-197, BR-276, BR-286)<br>● POST-2: Selected personal-library documents stay unchanged. Files uploaded from the computer are also available in the uploader's personal library. (BR-194, BR-210)<br>● POST-3: A removed document added again is a new addition without its previous comments. (BR-212, BR-276, BR-284)<br>● POST-4: If any document cannot be added, none of the documents in the submission are added to the Meeting or newly added to the personal library. Existing documents and Meeting status remain unchanged. (BR-286) |  |  |
+| Normal Flow | Add Documents from Personal Library<br>1. The Chair or Secretary opens Meeting Documents and chooses Add Documents.<br>2. The system offers selection from the actor's personal library or upload from the computer.<br>3. The actor selects one or more documents from their own library and submits them together.<br>4. The system checks the current Chair or Secretary, Meeting access and status, and ownership and availability of every selected document. It checks that none is already attached to this Meeting. (BR-184, BR-193, BR-195, BR-209)<br>5. The system adds all selected documents to the Meeting under their current names and records who added them and when. Personal-library documents stay unchanged; readded documents do not recover old comments. If any addition fails, none of the submitted additions are saved. (BR-197, BR-276, BR-284, BR-286)<br>6. The system refreshes the document list, shows the number added and displays MSG161 – “Documents added to the Meeting successfully.”. |  |  |
+| Alternative Flows | AF-1 – Upload files from the computer<br>1. At Step 3, the actor selects one or more files from the computer and submits them together.<br>2. The system checks every file is a valid PDF or DOCX and each file is no larger than 50 MB. It identifies any file that fails validation. (BR-187, BR-214, BR-215)<br>3. The system performs the authority, Meeting access and status checks from Step 4 of the Main Flow. (BR-184, BR-195)<br>4. The system adds all submitted files to the Meeting and the uploader's personal library together. A newly created or recreated Meeting folder uses the Meeting title and planned start date in Vietnam time; an existing folder is reused. (BR-192, BR-194, BR-210, BR-226, BR-227, BR-228, BR-286)<br>5. If any file cannot be added, no document from this submission is added to either place; EX-5 applies. Otherwise, the flow resumes at Step 6 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Actor is no longer authorized<br>1. At Step 4, or the corresponding check in AF-1, the actor is no longer the current Chair or Secretary.<br>2. None of the submitted documents are added. The system displays MSG162 – “You no longer have permission to add documents to this Meeting.”<br>3. The use case ends.<br>EX-2 – Library selection is missing or unavailable<br>1. At Step 4, no document was selected, or any selected document is unavailable or does not belong to the actor.<br>2. None are added. The system identifies the unavailable selections within the actor's library and displays MSG249 – “Select one or more available documents from your personal library.”.<br>3. The actor revises the selection. The flow resumes at Step 3 of the Main Flow.<br>EX-3 – Uploaded file is invalid<br>1. At Step 2 of AF-1, no file was selected or one or more files are not valid PDF/DOCX files or exceed 50 MB each. (BR-187, BR-214, BR-215)<br>2. None of the submitted documents are added to the Meeting or personal library. The system identifies the invalid files and displays MSG164 – “Select valid PDF or DOCX files, each no larger than 50 MB.”.<br>3. The actor removes or replaces those files. The flow resumes at Step 1 of AF-1.<br>EX-4 – Document is already attached<br>1. At Step 4, one or more selected library documents are already attached to this Meeting. Separate uploads with the same name or content remain different documents. (BR-193, BR-229)<br>2. None of the submitted additions are saved. The system identifies the already attached documents and displays MSG165 – “One or more selected documents are already attached to the Meeting.”.<br>3. The actor revises the selection. The flow resumes at Step 3 of the Main Flow.<br>EX-5 – Addition cannot be completed<br>1. At Step 5 or Step 4 of AF-1, the system cannot complete one or more additions.<br>2. No document from this submission is added to the Meeting or newly added to the personal library. Existing documents remain unchanged. The system displays MSG166 – “Unable to add the documents. No documents were added. Please try again.”. (BR-194, BR-286)<br>3. The use case ends.<br>EX-6 – Meeting has ended<br>1. At Step 4, or the corresponding check in AF-1, the Meeting has ended, including while the actor was selecting files. (BR-195)<br>2. None of the submitted documents are added. The system displays MSG172 – “Documents cannot be added after the Meeting has ended.”<br>3. The use case ends.<br>EX-7 – Meeting is unavailable<br>1. Before displaying or completing the addition, the Meeting cannot be accessed.<br>2. No Meeting information is disclosed and no submitted documents are added. The system displays MSG174 – “This Meeting is not accessible.”<br>3. The use case ends. |  |  |
 
-##### 7.2.2 UC-33c – Remove Document from Meeting
+##### 7.2.2 UC-33b – Link Meeting Document to Agenda Item
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Chair, Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Chair or Secretary to link an existing Meeting document to one Agenda Item of the same Meeting before the Meeting ends. |  |  |
+| Preconditions | ● PRE-1: The actor is signed in, can currently view the Meeting and is its current Chair or Secretary. (BR-184)<br>● PRE-2: The document is currently attached to the Meeting and the selected Agenda Item belongs to that same Meeting. (BR-278)<br>● PRE-3: The Meeting has not ended. Pending, InProgress and Done Agenda Items are all eligible. (BR-185, BR-279) |  |  |
+| Postconditions | ● POST-1: The document is linked to the selected Agenda Item; links to other Items remain unchanged. (BR-277)<br>● POST-2: The document, its comments and its other Agenda Item links remain unchanged. |  |  |
+| Normal Flow | Link Meeting Document to Agenda Item<br>1. The Chair or Secretary selects an existing Meeting document and chooses Link to Agenda Item.<br>2. The system displays available Agenda Items of this Meeting, including Pending, InProgress and Done Items.<br>3. The actor selects one Agenda Item and confirms.<br>4. The system rechecks current Meeting access, Chair or Secretary assignment, that the Meeting has not ended, document attachment, and that the Item belongs to the same Meeting. It also checks that the link does not already exist. (BR-184, BR-185, BR-277, BR-278, BR-279)<br>5. The system links the document to the selected Agenda Item and keeps its other Item links. (BR-277)<br>6. The system refreshes the document list and Item links and displays MSG238 – “Document linked to the Agenda Item successfully.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Actor is no longer authorized<br>1. At Step 4, the actor is no longer the current Chair or Secretary.<br>2. No links are changed. The system displays MSG240 – “You no longer have permission to link documents in this Meeting.”<br>3. The use case ends.<br>EX-2 – Document is no longer attached<br>1. At Step 4, the document is no longer attached to this Meeting.<br>2. No links are changed. The system displays MSG170 – “This document is no longer attached to the Meeting. Refresh the document list.”<br>3. The use case ends.<br>EX-3 – Agenda Item is unavailable<br>1. At Step 4, no Item was selected, or it is unavailable in this Meeting. (BR-278)<br>2. No links are changed. The system displays MSG242 – “Select an available Agenda Item in this Meeting.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-4 – Link already exists<br>1. At Step 4, the document is already linked to the selected Item, including a link added after selection.<br>2. No duplicate link is created. Other links remain unchanged. The system displays MSG243 – “This document is already linked to the selected Agenda Item.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-5 – Change cannot be saved<br>1. At Step 5, the system cannot complete the change.<br>2. All links, the Meeting document and its comments remain unchanged. The system displays MSG244 – “Unable to link the document. No links were changed. Please try again.”<br>3. The use case ends.<br>EX-6 – Meeting has ended<br>1. At Step 4, the Meeting has ended, including when it ended after selection. (BR-185)<br>2. No links are changed. The system displays MSG247 – “Document links cannot be changed after the Meeting has ended.”<br>3. The use case ends.<br>EX-7 – Meeting is unavailable<br>1. Before displaying or saving links, the Meeting cannot be accessed.<br>2. No document or Item information is disclosed and no links are changed. The system displays MSG174 – “This Meeting is not accessible.”<br>3. The use case ends. |  |  |
+
+##### 7.2.3 UC-33c – Remove Document from Meeting
+
+| Primary Actors | Chair, Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Chair or Secretary to remove a Meeting document before the Meeting ends, regardless of Minutes existence or Agenda Item status. Removal affects every Agenda Item link in this Meeting. (BR-184, BR-185, BR-279, BR-281) |  |  |
+| Preconditions | ● PRE-1: The actor is signed in and is the current Chair or Secretary of the Meeting. (BR-184)<br>● PRE-2: The selected document is currently attached to this Meeting.<br>● PRE-3: The actor can currently view the Meeting and the Meeting has not ended. (BR-184, BR-185) |  |  |
+| Postconditions | ● POST-1: The document no longer appears in this Meeting's current document list or any of its Agenda Items and is no longer available through this attachment. (BR-281)<br>● POST-2: Its comments remain in the removal history and do not return if the document is added again; personal-library documents and documents in other Meetings remain unchanged. (BR-212, BR-231, BR-197, BR-281, BR-284)<br>● POST-3: The actor and removal time are recorded. Meeting lifecycle status is unchanged. |  |  |
+| Normal Flow | Remove Document from Meeting<br>1. The Chair or Secretary selects an attached document and chooses Remove from Meeting.<br>2. The system displays a confirmation naming the document and explaining that it will leave this Meeting's list, while its comments remain as history and personal-library documents and other Meetings are unaffected.<br>3. The actor confirms removal.<br>4. The system rechecks the current Chair or Secretary assignment, that the document is still attached, that the actor can currently view the Meeting and that the Meeting has not ended. Minutes existence and Agenda Item status do not block removal. (BR-184, BR-185, BR-279)<br>5. The system removes the document from this Meeting's current list and every Agenda Item in this Meeting, preserves its comments as history and records the actor and removal time. (BR-211, BR-212, BR-231, BR-197, BR-281, BR-284)<br>6. The system displays MSG167 – “Document removed from the Meeting successfully.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Meeting has ended<br>1. At Step 4, the Meeting has ended, including when it ended after the confirmation was displayed. (BR-185)<br>2. The document remains attached and its comments remain unchanged. The system displays MSG248 – “Documents cannot be removed after the Meeting has ended.”<br>3. The use case ends.<br>EX-2 – Actor is no longer authorized<br>1. At Step 4, the actor is no longer the current Chair or Secretary. (BR-184)<br>2. No document is removed and comments remain unchanged. The system displays MSG169 – “You no longer have permission to remove documents from this Meeting.”<br>3. The use case ends.<br>EX-3 – Document is no longer attached<br>1. At Step 4, the selected document is no longer currently attached to this Meeting.<br>2. No further removal or comment change is made. The system displays MSG170 – “This document is no longer attached to the Meeting. Refresh the document list.”<br>3. The use case ends; the actor may refresh the list through UC-32a.<br>EX-4 – Removal cannot be completed<br>1. At Step 5, the system cannot complete the removal.<br>2. The document remains attached and its comments remain unchanged; no successful removal is recorded. The system displays MSG171 – “Unable to remove the document. It remains attached to the Meeting. Please try again.”<br>3. The use case ends.<br>EX-5 – Meeting is unavailable<br>1. Before displaying or completing the removal, the selected Meeting cannot be accessed.<br>2. No document is removed and comments remain unchanged. The system displays MSG174 – “This Meeting is not accessible.” without disclosing whether the Meeting exists.<br>3. The use case ends. |  |  |
+
+##### 7.2.4 UC-33d – Unlink Meeting Document from Agenda Item
+
+| Primary Actors | Chair, Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Chair or Secretary to unlink an existing Meeting document from one Agenda Item of the same Meeting before the Meeting ends. |  |  |
+| Preconditions | ● PRE-1: The actor is signed in, can currently view the Meeting and is its current Chair or Secretary. (BR-184)<br>● PRE-2: The document is currently attached to the Meeting and the selected Agenda Item belongs to that same Meeting. (BR-278)<br>● PRE-3: The Meeting has not ended. Pending, InProgress and Done Agenda Items are all eligible. (BR-185, BR-279) |  |  |
+| Postconditions | ● POST-1: Only the selected link is removed; the document remains in the Meeting and any other Agenda Item links remain unchanged. With no links left, it is a general Meeting document. (BR-280)<br>● POST-2: The document, its comments and its other Agenda Item links remain unchanged. |  |  |
+| Normal Flow | Unlink Meeting Document from Agenda Item<br>1. The Chair or Secretary selects an existing Meeting document and chooses Unlink from Agenda Item.<br>2. The system displays the Agenda Items currently linked to that document.<br>3. The actor selects one Agenda Item and confirms.<br>4. The system rechecks current Meeting access, Chair or Secretary assignment, that the Meeting has not ended, document attachment, and that the Item belongs to the same Meeting. It also checks that the link still exists. (BR-184, BR-185, BR-277, BR-278, BR-279)<br>5. The system removes only the selected Agenda Item link; the document stays in the Meeting, with other links unchanged, or becomes a general Meeting document when no links remain. (BR-280)<br>6. The system refreshes the document list and Item links and displays MSG239 – “Document unlinked from the Agenda Item successfully.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Actor is no longer authorized<br>1. At Step 4, the actor is no longer the current Chair or Secretary.<br>2. No links are changed. The system displays MSG241 – “You no longer have permission to unlink documents in this Meeting.”<br>3. The use case ends.<br>EX-2 – Document is no longer attached<br>1. At Step 4, the document is no longer attached to this Meeting.<br>2. No links are changed. The system displays MSG170 – “This document is no longer attached to the Meeting. Refresh the document list.”<br>3. The use case ends.<br>EX-3 – Agenda Item is unavailable<br>1. At Step 4, no Item was selected, or it is unavailable in this Meeting. (BR-278)<br>2. No links are changed. The system displays MSG242 – “Select an available Agenda Item in this Meeting.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-4 – Link no longer exists<br>1. At Step 4, the selected link has already been removed.<br>2. No further links are changed and the document remains in the Meeting. The system displays MSG246 – “This document is no longer linked to the selected Agenda Item. Refresh the document list.”<br>3. The use case ends.<br>EX-5 – Change cannot be saved<br>1. At Step 5, the system cannot complete the change.<br>2. All links, the Meeting document and its comments remain unchanged. The system displays MSG245 – “Unable to unlink the document. No links were changed. Please try again.”<br>3. The use case ends.<br>EX-6 – Meeting has ended<br>1. At Step 4, the Meeting has ended, including when it ended after selection. (BR-185)<br>2. No links are changed. The system displays MSG247 – “Document links cannot be changed after the Meeting has ended.”<br>3. The use case ends.<br>EX-7 – Meeting is unavailable<br>1. Before displaying or saving links, the Meeting cannot be accessed.<br>2. No document or Item information is disclosed and no links are changed. The system displays MSG174 – “This Meeting is not accessible.”<br>3. The use case ends. |  |  |
 
 #### 7.3 UC-34 – View Personal Document Library
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Internal user | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an internal user to browse their own folders and documents and see permitted Meeting-usage details. |  |  |
+| Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242) |  |  |
+| Postconditions | ● POST-1: The user sees only their own library items and permitted Meeting-usage details.<br>● POST-2: Documents, folders and Meeting attachments remain unchanged. |  |  |
+| Normal Flow | View Personal Document Library<br>1. The user opens Personal Document Library.<br>2. The system checks personal-library access. (BR-204, BR-242)<br>3. The system displays the user's folders and documents with names, file types and permitted Meeting-usage details. Other users' items and unauthorized Meeting details are excluded. (BR-219, BR-242, BR-251)<br>4. The user selects a folder or the library root.<br>5. The system displays the documents at that location. The user may browse the list or empty result, change the location or finish viewing. |  |  |
+| Alternative Flows | AF-1 – Search or filter documents<br>1. At Step 5, the user enters a document-name search or selects a file-type filter.<br>2. The system applies the criteria within the user's own displayed library location.<br>3. The flow resumes at Step 5 of the Main Flow.<br>AF-2 – Empty library or no matching documents<br>1. At Step 3 or Step 5, no documents match the location and criteria.<br>2. The system displays an empty result without treating it as a loading failure.<br>3. The flow resumes at Step 5 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Library cannot be loaded<br>1. At Step 2, Step 3 or Step 5, the system cannot retrieve the library.<br>2. No library or Meeting information changes. The system displays MSG176 – “Unable to load your personal document library. Please try again.”<br>3. The use case ends.<br>EX-2 – Selected folder is unavailable<br>1. At Step 4, the folder was deleted or is no longer available in the user's library.<br>2. No information changes. The system displays MSG175 – “This personal-library item is not available.”<br>3. The user returns to the library root. The flow resumes at Step 4 of the Main Flow. |  |  |
 
 #### 7.4 UC-35 – Comment on Meeting Document
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant, Guest | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows a user who can view a Meeting document to read its comments and add a comment before the Meeting ends. After the Meeting ends, the document and comments are read-only. (BR-249, BR-282) |  |  |
+| Preconditions | ● PRE-1: The internal user is signed in, or the Guest has verified the invited email and has a current valid invitation. (BR-153, BR-155, BR-157)<br>● PRE-2: The document is currently in the Meeting and the user can view that Meeting. (BR-275)<br>● PRE-3: The Meeting has not ended. (BR-282) |  |  |
+| Postconditions | ● POST-1: The new comment is displayed with its author and posting time, and the comment count is updated. (BR-250)<br>● POST-2: Existing comments and the document remain unchanged. |  |  |
+| Normal Flow | Comment on Meeting Document<br>1. The user opens a Meeting document and its comments.<br>2. The system checks viewing access and displays the existing comments. (BR-275)<br>3. The user enters a comment and chooses Send.<br>4. The system checks that the user may still view the document, the Meeting has not ended, and the comment is not blank. (BR-246, BR-249, BR-282)<br>5. The system records the comment with its author and posting time. A PDF comment may refer to a page; a DOCX comment has no page reference. (BR-248, BR-250)<br>6. The system displays the new comment, updates the comment count and displays MSG199 – “Comment added successfully.” |  |  |
+| Alternative Flows | AF-1 – Include a PDF page reference<br>1. At Step 3, the user comments on a page being viewed in a PDF.<br>2. The comment includes that page reference; a page reference is not required for a document-wide comment.<br>3. The flow resumes at Step 4 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Comment is empty<br>1. At Step 4, the text is blank or contains only whitespace. (BR-246)<br>2. No comment is saved. The system displays MSG200 – “Enter a comment.”<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-2 – Document is no longer available<br>1. At Step 2 or Step 4, the document is no longer attached, or the user can no longer view it, including after Guest invitation revocation or expiry.<br>2. No comment is saved. The system displays MSG156 – “Meeting documents are not accessible.”<br>3. The use case ends.<br>EX-3 – Operation cannot be completed<br>1. At Step 5, the system cannot complete the operation.<br>2. No new comment is saved; existing comments remain unchanged. The system displays MSG202 – “Unable to add the comment. No comment was saved. Please try again.”<br>3. The use case ends.<br>EX-4 – Comments cannot be loaded<br>1. At Step 2, current document access is valid but the system cannot retrieve comments.<br>2. No comment or document changes. The system displays MSG204 – “Unable to load the document comments. Please try again.”<br>3. The use case ends.<br>EX-5 – Meeting has ended<br>1. At Step 2 or Step 4, the Meeting has ended, including when it ended while the user was writing. (BR-282)<br>2. No comment is added. Existing comments remain available for reading. The system displays MSG251 – “Comments are read-only after the Meeting has ended.”<br>3. The use case ends. |  |  |
 
 #### 7.5 UC-36 – Upload Document to Personal Library
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Internal user | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an internal user to upload one or more PDF or DOCX files together to the selected location in their personal library. Uploading to the library does not add them to a Meeting. (BR-286) |  |  |
+| Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242) |  |  |
+| Postconditions | ● POST-1: All submitted files are available as separate documents at the selected library location. (BR-229, BR-286)<br>● POST-2: If any file cannot be added, none of the documents in this submission are added. Existing library documents and Meeting documents remain unchanged. (BR-286) |  |  |
+| Normal Flow | Upload Documents to Personal Library<br>1. The user opens their library root or a folder and chooses Upload.<br>2. The user selects one or more files from the computer and submits them together.<br>3. The system checks library access, the selected destination, and every file. Each file must be a valid PDF or DOCX and no larger than 50 MB. (BR-187, BR-214, BR-215, BR-242)<br>4. The system adds all submitted files as separate documents at that location with their original names and content. If any addition fails, none of the submitted documents are added. (BR-183, BR-216, BR-229, BR-286)<br>5. The system refreshes the library, shows the number added and displays MSG177 – “Documents uploaded to your personal library successfully.”. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – File selection is invalid<br>1. At Step 3, no file was selected, or one or more files are not valid PDF/DOCX files or exceed 50 MB each. (BR-187, BR-214, BR-215)<br>2. None of the submitted documents are added. The system identifies the invalid files and displays MSG164 – “Select valid PDF or DOCX files, each no larger than 50 MB.”.<br>3. The actor revises the selection. The flow resumes at Step 2 of the Main Flow.<br>EX-2 – Destination is unavailable<br>1. At Step 3, the selected folder was deleted or does not belong to the user. (BR-242)<br>2. None of the submitted documents are added. The system displays MSG179 – “The selected destination folder is not available in your personal library.”<br>3. The user selects an available destination. The flow resumes at Step 1 of the Main Flow.<br>EX-3 – Upload cannot be completed<br>1. At Step 4, the system cannot add one or more submitted files.<br>2. None of the submitted documents are added. Existing library and Meeting documents remain unchanged. The system displays MSG178 – “Unable to upload the files. No documents were added. Please try again.”. (BR-286)<br>3. The use case ends. |  |  |
 
 #### 7.6 UC-71 – Manage Personal Documents
 
 ##### 7.6.1 UC-71a – Delete Document from Personal Library
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Internal user | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an internal user to delete a document from their personal library without removing documents already attached to Meetings. |  |  |
+| Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The selected document is in the user's library. |  |  |
+| Postconditions | ● POST-1: The document no longer appears in the personal library.<br>● POST-2: Documents already added to Meetings remain available to their authorized readers. Their history and comments are preserved. (BR-186, BR-232) |  |  |
+| Normal Flow | Delete Document from Personal Library<br>1. The user selects a personal-library document and chooses Delete.<br>2. The system requests confirmation, naming the document and explaining that deletion affects the personal library only.<br>3. The user confirms deletion.<br>4. The system rechecks ownership and that the library document still exists. (BR-242)<br>5. The system deletes the personal-library document without removing Meeting attachments. (BR-186)<br>6. The system refreshes the library and displays MSG180 – “Document deleted from your personal library successfully.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Document is unavailable<br>1. At Step 4, the selected document is missing or no longer belongs to the user.<br>2. No library document is deleted; Meeting documents remain unchanged. The system displays MSG175 – “This personal-library item is not available.”<br>3. The use case ends.<br>EX-2 – Operation cannot be completed<br>1. At Step 5, the system cannot complete the operation.<br>2. The library document remains available and Meeting documents remain unchanged. The system displays MSG181 – “Unable to delete the document. Your personal library remains unchanged.”<br>3. The use case ends. |  |  |
 
 ##### 7.6.2 UC-71b – Rename Document
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Internal user | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the owner to rename a personal-library document without changing its file content. |  |  |
+| Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The document exists in the user's library. |  |  |
+| Postconditions | ● POST-1: The document is displayed under the new name in the personal library.<br>● POST-2: File content and library location remain unchanged. Names already copied into Meetings remain unchanged. (BR-183, BR-276) |  |  |
+| Normal Flow | Rename Document<br>1. The user chooses Rename for a personal-library document.<br>2. The system displays its current name.<br>3. The user enters a new name and submits it.<br>4. The system rechecks ownership and document availability. (BR-242)<br>5. The system saves the new personal-library document name. File content and names already copied into Meetings remain unchanged. (BR-183, BR-224, BR-276)<br>6. The system refreshes the displayed name and displays MSG183 – “Document renamed successfully.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Document is unavailable<br>1. At Step 4, the selected document is missing or no longer belongs to the user.<br>2. No document name changes. The system displays MSG175 – “This personal-library item is not available.”<br>3. The use case ends.<br>EX-2 – Operation cannot be completed<br>1. At Step 5, the system cannot complete the operation.<br>2. The previous name, content and Meeting attachments remain unchanged. The system displays MSG184 – “Unable to rename the document. Its name remains unchanged.”<br>3. The use case ends. |  |  |
 
 ##### 7.6.3 UC-71c – Move Document to Folder
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Internal user | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the owner to move a personal-library document to another owned folder or the library root. |  |  |
+| Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The document exists in the user's library. |  |  |
+| Postconditions | ● POST-1: The document is available at the selected library location.<br>● POST-2: Document name, file content and Meeting attachments remain unchanged. (BR-225, BR-245) |  |  |
+| Normal Flow | Move Document to Folder<br>1. The user chooses Move for a personal-library document.<br>2. The system displays destinations within the user's library.<br>3. The user selects an owned destination folder and confirms.<br>4. The system rechecks document ownership and availability and destination ownership and availability. (BR-225, BR-242)<br>5. The system moves only the library document to that location. (BR-245)<br>6. The system refreshes the library and displays MSG185 – “Document moved successfully.” |  |  |
+| Alternative Flows | AF-1 – Move to the library root<br>1. At Step 3, the user selects the library root instead of a folder.<br>2. The document is moved outside all folders. (BR-225)<br>3. The flow resumes at Step 4 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Document is unavailable<br>1. At Step 4, the selected document is missing or no longer belongs to the user.<br>2. The document remains at its previous location. The system displays MSG175 – “This personal-library item is not available.”<br>3. The use case ends.<br>EX-2 – Destination is unavailable<br>1. At Step 4, the destination was deleted or does not belong to the user. (BR-225, BR-242)<br>2. The document stays at its previous location. The system displays MSG179 – “The selected destination folder is not available in your personal library.”<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-3 – Operation cannot be completed<br>1. At Step 5, the system cannot complete the operation.<br>2. The document stays at its previous location and its Meeting attachments are unchanged. The system displays MSG186 – “Unable to move the document. Its location remains unchanged.”<br>3. The use case ends. |  |  |
 
 #### 7.7 UC-72 – Manage Library Folders
 
 ##### 7.7.1 UC-72a – Create Folder
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Internal user | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an internal user to create a folder at the library root or inside an owned folder. |  |  |
+| Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242) |  |  |
+| Postconditions | ● POST-1: A new owned folder is available at the selected location.<br>● POST-2: Existing folders, documents and Meeting attachments remain unchanged. |  |  |
+| Normal Flow | Create Folder<br>1. The user selects the library root or an owned parent folder and chooses New Folder.<br>2. The user enters a folder name and submits it.<br>3. The system checks ownership, parent availability, a nonblank name and a resulting depth of at most five levels. Duplicate folder names are permitted. (BR-191, BR-219, BR-220, BR-221, BR-242)<br>4. The system creates the folder at that location.<br>5. The system refreshes the folder list and displays MSG187 – “Folder created successfully.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Folder name is blank<br>1. At Step 3, the name is empty or contains only whitespace. (BR-220)<br>2. No folder is created. The system displays MSG188 – “Enter a folder name.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-2 – Parent is unavailable<br>1. At Step 3, the selected parent was deleted or does not belong to the user. (BR-219, BR-242)<br>2. No folder is created. The system displays MSG179 – “The selected destination folder is not available in your personal library.”<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-3 – Folder depth exceeds the limit<br>1. At Step 3, the new folder would be deeper than level five. (BR-191)<br>2. No folder is created. The system displays MSG189 – “Folders cannot be nested more than five levels deep.”<br>3. The user selects a shallower parent. The flow resumes at Step 1 of the Main Flow.<br>EX-4 – Operation cannot be completed<br>1. At Step 4, the system cannot complete the operation.<br>2. No folder is created; existing library items remain unchanged. The system displays MSG190 – “Unable to create the folder. No folder was created.”<br>3. The use case ends. |  |  |
 
 ##### 7.7.2 UC-72b – Rename Folder
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Internal user | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the owner to rename a folder without moving it or changing its contents. |  |  |
+| Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The folder exists in the user's library. |  |  |
+| Postconditions | ● POST-1: The folder displays the new name.<br>● POST-2: Its location and contents remain unchanged; an automatic Meeting folder remains reusable. (BR-227) |  |  |
+| Normal Flow | Rename Folder<br>1. The user chooses Rename for an owned folder.<br>2. The system displays the current folder name.<br>3. The user enters a new name and submits it.<br>4. The system rechecks ownership, availability and a nonblank name; duplicate names are permitted. (BR-219, BR-220, BR-221, BR-242)<br>5. The system saves the new folder name without changing its contents or location.<br>6. The system refreshes the folder name and displays MSG191 – “Folder renamed successfully.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Folder is unavailable<br>1. At Step 4, the selected folder is missing or no longer belongs to the user.<br>2. No folder name changes. The system displays MSG175 – “This personal-library item is not available.”<br>3. The use case ends.<br>EX-2 – Folder name is blank<br>1. At Step 4, the name is empty or contains only whitespace. (BR-220)<br>2. The previous name remains. The system displays MSG188 – “Enter a folder name.”<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-3 – Operation cannot be completed<br>1. At Step 5, the system cannot complete the operation.<br>2. The folder name, location and contents remain unchanged. The system displays MSG192 – “Unable to rename the folder. Its name remains unchanged.”<br>3. The use case ends. |  |  |
 
 ##### 7.7.3 UC-72c – Move Folder
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Internal user | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the owner to move a folder with its contents to another owned folder or the library root. |  |  |
+| Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The folder exists in the user's library. |  |  |
+| Postconditions | ● POST-1: The folder and its contents are available at the selected location, within five levels.<br>● POST-2: Folder and document names, file content and Meeting attachments remain unchanged. An automatic Meeting folder remains reusable. (BR-191, BR-227) |  |  |
+| Normal Flow | Move Folder<br>1. The user chooses Move for an owned folder.<br>2. The system displays destinations within the user's library.<br>3. The user selects an owned destination folder and confirms.<br>4. The system checks that the user owns the selected folder and destination and that both are available. The destination cannot be the selected folder or one of its subfolders, and the moved folder and its subfolders must remain within five levels. (BR-191, BR-219, BR-222, BR-242)<br>5. The system moves the folder with its documents and subfolders, without changing their names or Meeting attachments.<br>6. The system refreshes the folder tree and displays MSG194 – “Folder moved successfully.” |  |  |
+| Alternative Flows | AF-1 – Move to the library root<br>1. At Step 3, the user selects the library root instead of another folder.<br>2. The moved folder becomes a first-level folder; its subfolders remain subject to the depth limit. (BR-191)<br>3. The flow resumes at Step 4 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Folder is unavailable<br>1. At Step 4, the selected folder is missing or no longer belongs to the user.<br>2. No folder or contained item moves. The system displays MSG175 – “This personal-library item is not available.”<br>3. The use case ends.<br>EX-2 – Destination is unavailable<br>1. At Step 4, the destination was deleted or does not belong to the user. (BR-219, BR-242)<br>2. No folder or contained item moves. The system displays MSG179 – “The selected destination folder is not available in your personal library.”<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-3 – Destination is the same folder or one of its subfolders<br>1. At Step 4, the destination is the folder itself or one of its subfolders. (BR-222)<br>2. No folder or contained item moves. The system displays MSG193 – “A folder cannot be moved into itself or one of its descendants.”<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-4 – Resulting depth exceeds the limit<br>1. At Step 4, the moved folder or one of its subfolders would be deeper than level five. (BR-191)<br>2. No folder or contained item moves. The system displays MSG189 – “Folders cannot be nested more than five levels deep.”<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-5 – Operation cannot be completed<br>1. At Step 5, the system cannot complete the operation.<br>2. The folder and all contained items remain at their previous locations. The system displays MSG195 – “Unable to move the folder. Its location remains unchanged.”<br>3. The use case ends. |  |  |
 
 ##### 7.7.4 UC-72d – Delete Folder
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Internal user | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the owner to delete an empty personal-library folder. If an automatic Meeting folder is deleted, a later direct Meeting upload recreates it. |  |  |
+| Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The folder exists and contains no documents or subfolders. (BR-223) |  |  |
+| Postconditions | ● POST-1: The empty folder no longer appears in the library.<br>● POST-2: Other folders, documents and Meeting attachments remain unchanged. Future recreation of an automatic Meeting folder follows its naming and location rules. (BR-192, BR-228) |  |  |
+| Normal Flow | Delete Folder<br>1. The user chooses Delete for an owned folder.<br>2. The system asks for confirmation and names the folder.<br>3. The user confirms deletion.<br>4. The system rechecks current ownership and availability and that the folder contains neither documents nor subfolders. (BR-219, BR-223, BR-242)<br>5. The system deletes only the empty folder.<br>6. The system refreshes the folder tree and displays MSG197 – “Folder deleted successfully.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Folder is unavailable<br>1. At Step 4, the selected folder is missing or no longer belongs to the user.<br>2. No folder is deleted. The system displays MSG175 – “This personal-library item is not available.”<br>3. The use case ends.<br>EX-2 – Folder is no longer empty<br>1. At Step 4, the folder contains a document or subfolder, including an item added after confirmation was displayed. (BR-223)<br>2. The folder and its contents remain unchanged. The system displays MSG196 – “Only an empty folder can be deleted.”<br>3. The use case ends.<br>EX-3 – Operation cannot be completed<br>1. At Step 5, the system cannot complete the operation.<br>2. The folder and all other library items remain unchanged. The system displays MSG198 – “Unable to delete the folder. The folder remains unchanged.”<br>3. The use case ends. |  |  |
 
 ### 8. FE-08 – Online Meeting Room Management
 
@@ -1504,37 +1649,86 @@ Placeholder only – detailed Use Case Specification will be added later.
 
 ### 11. FE-11 – Voting Management
 
-Scope: create/open/cast only while Meeting is InProgress. End Meeting is independent of Vote closure. Chair can close and tally existing Open Votes in InProgress or Ended, then record the conclusion. No post-meeting ballot casting, time-boxed voting or quorum. (BR-159, BR-160, BR-165)
+Scope: the current Chair may prepare Vote drafts while the Meeting is Approved, Published or InProgress. Opening and casting require InProgress. Each Meeting permits at most one Open Vote, and opening requires at least one eligible voter. End Meeting is independent of Vote closure; the Chair may close and tally an existing Open Vote and record its conclusion in InProgress or Ended. Each Vote belongs directly to its Meeting. No post-meeting ballot casting, time-boxed voting, quorum or separate Resolution is provided. (BR-159, BR-160, BR-165, BR-252, BR-266, BR-267, BR-270)
 
 #### 11.1 UC-52 – View Meeting Votes
 
 ##### 11.1.1 UC-52a – View Meeting Votes
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant, Guest | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an authorized user to browse the Votes of a Meeting. Draft Votes are visible only to the current Chair. Open and Closed Votes remain viewable by users with Meeting viewing permission, including after the Meeting ends. |  |  |
+| Preconditions | ● PRE-1: The internal user is signed in, or the Guest has verified the invited email and has a valid invitation.<br>● PRE-2: The actor has current permission to view the Meeting's Votes. The current Chair may access Vote preparation in Approved; other Meeting records follow their own access rules. (BR-29, BR-181, BR-274) |  |  |
+| Postconditions | ● POST-1: The actor sees only Votes that the actor is authorized to view.<br>● POST-2: No Vote, ballot or conclusion is changed. |  |  |
+| Normal Flow | View Meeting Votes<br>1. The actor opens the Voting area of a Meeting.<br>2. The system checks current viewing permission; the current Chair may access Vote preparation in Approved without gaining access to other restricted Meeting records. (BR-29, BR-181, BR-274)<br>3. The system lists the Votes belonging to this Meeting and excludes Draft Votes unless the actor is its current Chair. Displayed counts include only visible Votes. (BR-253, BR-285)<br>4. The system displays each visible Vote with its content, ballot type and status. Open Votes show turnout; Closed Votes offer View result and show any recorded conclusion. No Agenda Item is selected or displayed as Vote ownership. (BR-260, BR-285)<br>5. The actor browses the Votes. Selecting a Vote continues to UC-52b – View Vote Status. |  |  |
+| Alternative Flows | AF-1 – No visible Votes<br>1. At Step 3, no Vote is visible to the actor, including when only Chair-only Draft Votes exist.<br>2. The system displays MSG207 – "No votes to display." without revealing hidden Draft Votes.<br>3. No data changes. The use case ends successfully. |  |  |
+| Exception Flows | EX-1 – Meeting votes are not accessible<br>1. At Step 2, the Meeting is unavailable or the actor no longer has permission to view its Votes, including after Guest invitation expiry or revocation.<br>2. The system displays MSG205 – "Meeting votes are not accessible." and does not reveal Vote information.<br>3. No data changes. The use case ends.<br>EX-2 – Votes cannot be loaded<br>1. At Step 3, current access is valid but the system cannot retrieve the Votes.<br>2. The system displays MSG206 – "Unable to load the meeting votes. Please try again."<br>3. No data changes. The use case ends. |  |  |
 
 ##### 11.1.2 UC-52b – View Vote Status
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant, Guest | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an authorized user to view the configuration of a visible Draft Vote, the turnout of an Open Vote, or the tally and any Chair conclusion of a Closed Vote. Viewing a result does not change that result. |  |  |
+| Preconditions | ● PRE-1: The internal user is signed in, or the Guest has verified the invited email and has a valid invitation.<br>● PRE-2: The actor has current permission to view the Meeting's Votes. The current Chair may access Vote preparation in Approved; other Meeting records follow their own access rules. (BR-29, BR-181, BR-274)<br>● PRE-3: The selected Vote belongs to that Meeting and is visible to the actor. Draft visibility is restricted to the current Chair. (BR-253) |  |  |
+| Postconditions | ● POST-1: The current Vote status and the information allowed for its ballot type are displayed.<br>● POST-2: No Vote, ballot or conclusion is changed. |  |  |
+| Normal Flow | View Open Vote Status<br>1. The actor selects an Open Vote from the Meeting Voting area.<br>2. The system verifies current Vote viewing permission and that the Vote is visible to the actor. (BR-29, BR-181, BR-253, BR-274)<br>3. The system displays its Meeting, content, options, public or secret ballot type, selected roles, opening time and the fixed eligible-voter count. (BR-190, BR-285)<br>4. The system displays the number of ballots recorded against that fixed count. While the Vote is Open, individual choices and results per option are not displayed. (BR-260)<br>5. The system updates turnout as ballots are recorded. For a secret Vote, the update does not identify the person who just voted or link that person to a choice. (BR-259)<br>6. If the Meeting has ended while the Vote remains Open, the system shows that no further ballots are accepted; the recorded turnout remains viewable. (BR-165) |  |  |
+| Alternative Flows | AF-1 – View a Draft Vote<br>1. At Step 1, the current Chair selects a Draft Vote.<br>2. The system applies Step 2, then displays its saved content, options, ballot type and selected roles. No eligible-voter list has been fixed and no ballots exist yet. (BR-190, BR-253)<br>3. The use case ends successfully without changing the Draft Vote.<br>AF-2 – View a Closed Vote<br>1. At Step 1, the actor selects View result for a Closed Vote, including a Vote with a recorded conclusion.<br>2. The system applies Step 2, then displays opening and closing times, the fixed eligible count, recorded-ballot count and tally per option. Percentages use the ballots cast; with no ballots, counts are zero and no percentage is shown. (BR-261)<br>3. For a public Vote, the system also displays each eligible voter's choice or that the person did not vote. For a secret Vote, it displays only totals and no voter-choice links. (BR-259, BR-273)<br>4. The system displays any saved Chair conclusion and optional note, or states that a conclusion has not yet been recorded. The system does not determine the conclusion from the tally. (BR-161, BR-263)<br>5. The use case ends successfully without changing the result. |  |  |
+| Exception Flows | EX-1 – Vote is not accessible<br>1. At Step 2, the Meeting or Vote is unavailable, access has been lost, or the actor attempts to view a Draft Vote without being the current Chair.<br>2. The system displays MSG205 – "Meeting votes are not accessible." without revealing the Vote.<br>3. No data changes. The use case ends.<br>EX-2 – Status or result cannot be loaded<br>1. At Step 3 or in AF-1/AF-2, current access is valid but the system cannot retrieve the status or result.<br>2. The system displays MSG208 – "Unable to load the vote status or result. Please try again."<br>3. The Vote, ballots and conclusion remain unchanged. The use case ends. |  |  |
 
 #### 11.2 UC-53 – Create / Configure Vote
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Chair | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Chair to prepare a Vote draft, configure or delete an existing draft, or proceed to opening a Vote during the Meeting. Draft preparation is allowed before the Meeting starts, while it is Approved or Published, and during InProgress. Each Vote belongs to the Meeting and is not linked to an Agenda Item. (BR-285) |  |  |
+| Preconditions | ● PRE-1: The actor is signed in and is the current authorized Chair of the Meeting.<br>● PRE-2: The Meeting is Approved, Published or InProgress. (BR-252)<br>● PRE-3: For editing or deletion, the selected Vote is Draft and belongs to this Meeting. (BR-254, BR-189) |  |  |
+| Postconditions | ● POST-1: Saving a draft creates or updates a Draft Vote; deleting removes only the selected Draft Vote.<br>● POST-2: Opening through UC-54 instead creates or updates an Open Vote and fixes its eligible-voter list. It does not also produce a separate saved draft.<br>● POST-3: Other Votes, previously recorded ballots and conclusions remain unchanged. |  |  |
+| Normal Flow | Create Vote Draft<br>1. The Chair selects Create Vote in the Meeting Voting area.<br>2. The system checks the current Chair and permitted Meeting status, then displays a form for content, options, public or secret ballot type and eligible meeting roles. No Agenda Item is requested. (BR-252, BR-285) It defaults to Public, the options Agree / Disagree / Abstain and all four roles selected. (BR-257)<br>3. The Chair enters the content, defines and orders the options, chooses the ballot type and selects one or more eligible roles.<br>4. The Chair selects Save draft.<br>5. The system verifies the current Chair and Meeting status, required content, at least two distinct non-empty options, a valid ballot type and at least one role. (BR-252, BR-255, BR-256, BR-257, BR-272)<br>6. The system saves the Vote as Draft under the Meeting. It does not open voting or fix the eligible-voter list. (BR-190, BR-253)<br>7. The system displays MSG210 – "Vote draft created successfully." and the saved Draft Vote. |  |  |
+| Alternative Flows | AF-1 – Configure an existing Draft Vote<br>1. At Step 1, the Chair selects Edit on a Draft Vote.<br>2. The system checks current access, the Chair and permitted Meeting status and that the Vote is still Draft, then displays its saved content, options, ballot type and roles. The Chair changes them and selects Save draft. (BR-252, BR-253, BR-254)<br>3. The system performs Step 5 and verifies that the Vote is still Draft. (BR-254)<br>4. The system updates that draft and displays MSG211 – "Vote draft updated successfully." No voting is opened. The use case ends successfully.<br>AF-2 – Delete a Draft Vote<br>1. At Step 1, the Chair selects Delete on a Draft Vote and confirms.<br>2. The system verifies the current Chair, the permitted Meeting status and that the Vote is still Draft. (BR-189)<br>3. The system removes only that Draft Vote and displays MSG212 – "Vote draft deleted successfully."<br>4. No other Vote, ballot or conclusion changes. The use case ends successfully.<br>AF-3 – Open immediately<br>1. At Step 4 or in the edit form in AF-1, the Chair selects Open vote while the Meeting is InProgress instead of Save draft.<br>2. The content and choices are already shown in that form; selecting Open vote confirms opening. The system continues with UC-54 AF-1 without a separate draft-save step or another confirmation.<br>3. The use case ends with the UC-54 outcome. On failure, the entered information stays in the form for correction; no new draft or draft changes are saved. |  |  |
+| Exception Flows | EX-1 – Invalid Vote information<br>1. At Step 5 or during validation in AF-1, content, options, ballot type or roles are invalid. (BR-255, BR-256, BR-257, BR-272)<br>2. The system displays MSG209 – "Invalid vote information. Check the highlighted fields." with the invalid fields identified. No new draft or configuration changes are saved.<br>3. The Chair corrects the information. The flow resumes at Step 3 of the Main Flow, or the editing step of AF-1.<br>EX-2 – Draft operation is no longer allowed<br>1. At Step 2 or Step 5, AF-1 or AF-2, the actor is no longer the current Chair, the Meeting is not Approved, Published or InProgress, or the selected Vote is no longer Draft. (BR-252, BR-254, BR-189)<br>2. The system displays MSG213 – "Only Draft votes may be managed by the current Chair while the meeting is Approved, Published or InProgress." The draft is not created, changed or deleted.<br>3. The use case ends.<br>EX-3 – Draft creation cannot be completed<br>1. At Step 6, the system cannot save the new draft.<br>2. No draft is created. The system displays MSG214 – "Unable to create the vote draft. No draft was created. Please try again."<br>3. The use case ends.<br>EX-4 – Draft update cannot be completed<br>1. During AF-1, the system cannot save the configured changes.<br>2. The previously saved draft remains unchanged. The system displays MSG215 – "Unable to update the vote draft. The draft remains unchanged. Please try again."<br>3. The use case ends.<br>EX-5 – Draft deletion cannot be completed<br>1. During AF-2, the system cannot complete deletion.<br>2. The Draft Vote remains unchanged. The system displays MSG216 – "Unable to delete the vote draft. The draft remains unchanged. Please try again."<br>3. The use case ends.<br>EX-6 – Meeting or Vote is not accessible<br>1. Before displaying Vote information or completing the action, the Meeting or Vote is unavailable or the actor no longer has access. A Draft Vote is not disclosed to anyone other than the current Chair. (BR-253)<br>2. The system displays MSG205 – "Meeting votes are not accessible." without revealing hidden Vote information. No Vote, ballot or conclusion is changed.<br>3. The use case ends. |  |  |
 
 #### 11.3 UC-54 – Open Vote
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Chair | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Chair to open a valid Vote during an InProgress Meeting. Opening fixes the eligible-voter list and count. Only one Vote may be Open in a Meeting at a time. |  |  |
+| Preconditions | ● PRE-1: The actor is signed in and is the current authorized Chair of the Meeting.<br>● PRE-2: The Meeting is InProgress. (BR-160)<br>● PRE-3: The selected Vote belongs to this Meeting and is Draft, or the Chair is opening a new Vote from the form in UC-53. (BR-285)<br>● PRE-4: No other Vote in the Meeting is Open. (BR-266) |  |  |
+| Postconditions | ● POST-1: The Vote is Open with its opening time recorded.<br>● POST-2: Its eligible-voter list and count are fixed from the selected roles at opening. (BR-190)<br>● POST-3: Eligible voters can submit one ballot while the Meeting remains InProgress and the Vote remains Open. |  |  |
+| Normal Flow | Open Vote<br>1. The Chair selects Open on a Draft Vote.<br>2. The system checks current access to the Vote, then displays its content, ballot type, options and selected roles for confirmation.<br>3. The Chair confirms opening.<br>4. The system checks the current Chair, Meeting InProgress and valid Vote information. An existing Vote must belong to this Meeting and still be Draft. No other Vote in the Meeting may be Open. (BR-160, BR-255, BR-256, BR-257, BR-266, BR-272, BR-285)<br>5. The system identifies the current holders of the selected meeting roles who have valid Meeting access. A Guest must have verified the invited email and retain a valid invitation. At least one eligible voter must exist. Attendance does not determine eligibility. (BR-190, BR-267)<br>6. The system opens the Vote with the confirmed information, records the opening time and fixes its eligible-voter list and count. (BR-190)<br>7. The system displays MSG217 – "Voting opened successfully." and makes the Open Vote available to authorized Meeting users. |  |  |
+| Alternative Flows | AF-1 – Open from the create or edit form<br>1. At Step 1, the Chair selects Open vote on the form in UC-53. The form already shows the Vote information and this action confirms opening; Steps 2–3 are not repeated.<br>2. The system uses the entered information and performs Steps 4–5. If editing, it also checks that the existing Vote belongs to the Meeting and is still Draft. (BR-254, BR-285)<br>3. The new Vote information or existing draft changes are recorded only as part of successful opening at Step 6. On failure, no new Vote or changes to the saved draft are recorded.<br>4. The flow resumes at Step 6 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Configuration is invalid<br>1. At Step 4, the configuration does not satisfy required content, options, ballot type or selected roles. (BR-255, BR-256, BR-257, BR-272)<br>2. The system displays MSG209 – "Invalid vote information. Check the highlighted fields." Voting is not opened; any saved draft remains unchanged.<br>3. The Chair returns to UC-53 to correct the draft or entered configuration. The use case ends.<br>EX-2 – Opening is no longer allowed<br>1. At Step 4, the actor is no longer the current Chair, the Meeting is not InProgress or an existing Vote is no longer Draft. (BR-160)<br>2. The system displays MSG218 – "Only the current Chair can open a Draft vote while the meeting is InProgress." No Vote is opened and existing Vote data remains unchanged.<br>3. The use case ends.<br>EX-3 – Another Vote is Open<br>1. At Step 4, another Vote in this Meeting is Open. (BR-266)<br>2. The system displays MSG219 – "Another vote is already open in this meeting. Close it before opening this vote." The selected Vote is not opened and the other Vote is unchanged.<br>3. The use case ends.<br>EX-4 – No eligible voters<br>1. At Step 5, no current person with valid access holds a selected role. (BR-267)<br>2. The system displays MSG220 – "No eligible voters are available for the selected roles. Voting was not opened." Voting is not opened and any saved draft remains unchanged.<br>3. The use case ends.<br>EX-5 – Opening cannot be completed<br>1. At Step 6, the system cannot complete opening the Vote.<br>2. No opening time or eligible list is recorded; no new Vote is created or draft configuration changed. The system displays MSG221 – "Unable to open voting. Voting was not opened. Please try again."<br>3. The use case ends.<br>EX-6 – Meeting or Vote is not accessible<br>1. Before displaying Vote information or completing the action, the Meeting or Vote is unavailable or the actor no longer has access. A Draft Vote is not disclosed to anyone other than the current Chair. (BR-253)<br>2. The system displays MSG205 – "Meeting votes are not accessible." without revealing hidden Vote information. No Vote, ballot or conclusion is changed.<br>3. The use case ends. |  |  |
 
 #### 11.4 UC-55 – Cast Vote
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Chair, Secretary, Participant, Guest | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an eligible person to submit one choice in an Open Vote during the Meeting. Eligibility comes from the list fixed at opening and requires current Meeting access. Attendance is not a condition. A saved ballot cannot be changed or withdrawn. |  |  |
+| Preconditions | ● PRE-1: The internal actor is signed in, or the Guest has verified the invited email and has a valid invitation.<br>● PRE-2: The actor retains current Meeting access and is on the Vote's fixed eligible-voter list. (BR-165, BR-190, BR-268, BR-269)<br>● PRE-3: The Meeting is InProgress and the Vote is Open. (BR-165)<br>● PRE-4: The actor has not already cast a ballot in this Vote. (BR-258) |  |  |
+| Postconditions | ● POST-1: One ballot for one option is accepted, and the actor is marked as having voted.<br>● POST-2: Turnout increases by one, and the ballot cannot be changed or withdrawn.<br>● POST-3: A secret ballot does not associate the voter with the chosen option. (BR-259) |  |  |
+| Normal Flow | Cast Vote<br>1. The actor opens an Open Vote.<br>2. The system checks current Vote access, eligibility, Meeting and Vote status, and whether the actor has already voted. If voting is permitted, it displays the content, options, ballot type and the notice that a submitted ballot cannot be changed or withdrawn. (BR-165, BR-258, BR-265, BR-268, BR-269)<br>3. The actor selects one option and selects Submit ballot.<br>4. The system checks again that the actor can access the Vote, the option belongs to this Vote, the Meeting is InProgress, the Vote is Open, the actor is on the fixed eligible list, current access remains valid and no ballot has already been recorded for that actor. (BR-165, BR-258, BR-268, BR-269, BR-271)<br>5. The system accepts the ballot, marks the actor as having voted and updates turnout. For a secret Vote, it does not associate the actor with the chosen option. (BR-258, BR-259)<br>6. The system displays MSG227 – "Your ballot has been recorded." and the current turnout. The actor can no longer submit another ballot. For a secret Vote, the completion state shows that a ballot was submitted without displaying a saved choice. (BR-259, BR-265) |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – No option selected<br>1. At Step 3, the actor attempts to submit without selecting exactly one option. (BR-271)<br>2. No ballot is recorded. The system displays MSG222 – "Select one option before submitting your ballot."<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-2 – Option is not valid<br>1. At Step 4, the selected option does not belong to this Vote. (BR-271)<br>2. No ballot is recorded and turnout is unchanged. The system displays MSG223 – "The selected option is not available for this vote."<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-3 – Actor is no longer eligible<br>1. At Step 2 or Step 4, the actor can view the Vote but is not on its fixed eligible list. A role change alone does not remove a person from that list; a person added after opening is not added to the list. (BR-268, BR-269)<br>2. No new ballot is recorded and previously saved ballots remain unchanged. The system displays MSG224 – "You are not eligible to cast a ballot in this vote."<br>3. The use case ends.<br>EX-4 – Balloting has ended<br>1. At Step 2 or Step 4, the Vote is no longer Open or the Meeting is no longer InProgress, even if the Vote still appears Open. (BR-165)<br>2. No ballot is recorded and turnout is unchanged. The system displays MSG225 – "This vote is no longer accepting ballots."<br>3. The use case ends.<br>EX-5 – Ballot already recorded<br>1. At Step 2 or Step 4, the actor has already voted, including after reopening the screen or rejoining the Meeting.<br>2. The existing ballot remains unchanged and no additional ballot is counted. The system displays MSG226 – "Your ballot has already been recorded. It cannot be changed or withdrawn."<br>3. For a secret Vote, only submission confirmation is shown; the saved choice is not disclosed through the voter's identity. (BR-259)<br>4. The use case ends.<br>EX-6 – Ballot cannot be recorded<br>1. At Step 5, the system cannot complete recording the ballot.<br>2. No ballot is accepted, the actor is not marked as having voted and turnout is unchanged. The system displays MSG228 – "Unable to record your ballot. No ballot was recorded. Please try again."<br>3. The use case ends.<br>EX-7 – Meeting or Vote is not accessible<br>1. Before displaying Vote information or completing the action, the Meeting or Vote is unavailable or the actor no longer has access. A Draft Vote is not disclosed to anyone other than the current Chair. (BR-253)<br>2. The system displays MSG205 – "Meeting votes are not accessible." without revealing hidden Vote information. No Vote, ballot or conclusion is changed.<br>3. The use case ends. |  |  |
 
 #### 11.5 UC-56 – Close Vote
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Chair | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Chair to close an existing Open Vote and obtain its tally while the Meeting is InProgress or Ended. Closing a Vote does not end the Meeting and does not determine the Chair's conclusion. |  |  |
+| Preconditions | ● PRE-1: The actor is signed in and is the current authorized Chair of the Meeting.<br>● PRE-2: The Meeting is InProgress or Ended. (BR-270)<br>● PRE-3: The Vote belongs to the Meeting and is Open. |  |  |
+| Postconditions | ● POST-1: The Vote is Closed and its closing time and tally are recorded.<br>● POST-2: No further ballots are accepted and all previously recorded ballots are preserved.<br>● POST-3: No Passed, NotPassed or Deferred conclusion is automatically recorded. (BR-263) |  |  |
+| Normal Flow | Close Vote<br>1. The Chair selects Close voting on an Open Vote.<br>2. The system checks current access to the Vote, displays its current turnout and asks for confirmation.<br>3. The Chair confirms closing.<br>4. The system verifies the current Chair, Meeting InProgress or Ended and Vote Open. (BR-270)<br>5. The system stops accepting ballots, records the closing time and tallies all successfully recorded ballots per option. Percentages are based on ballots cast, not eligible voters; with no ballots, counts are zero and percentages are not shown. (BR-261)<br>6. The system records the Closed status and result together, preserving every recorded ballot and secret-ballot confidentiality. (BR-259, BR-270)<br>7. The system displays MSG229 – "Voting closed. The result is available." and the result under UC-52b. The Chair may proceed to UC-57 to record a conclusion. |  |  |
+| Alternative Flows | AF-1 – Close an outstanding Vote after Meeting end<br>1. At Step 1, the Meeting is Ended and this Vote is still Open.<br>2. No ballots have been accepted since the Meeting ended. End Meeting did not close the Vote or alter its ballots. (BR-159, BR-165)<br>3. The flow resumes at Step 2 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Closing is no longer allowed<br>1. At Step 4, the actor is no longer the current Chair, the Meeting is not InProgress or Ended, or the Vote is not Open. (BR-270)<br>2. The system displays MSG230 – "Only the current Chair can close an Open vote while the meeting is InProgress or Ended." The Vote, ballots and any existing result remain unchanged.<br>3. The use case ends.<br>EX-2 – Closing cannot be completed<br>1. At Steps 5–6, the system cannot complete closing and tallying.<br>2. The Vote remains Open with no new closing time or tally recorded; all saved ballots remain unchanged. The system displays MSG231 – "Unable to close voting. The vote and saved ballots remain unchanged. Please try again."<br>3. If the Meeting is Ended, new ballots remain disallowed despite the Vote remaining Open. The use case ends.<br>EX-3 – Meeting or Vote is not accessible<br>1. Before displaying Vote information or completing the action, the Meeting or Vote is unavailable or the actor no longer has access. A Draft Vote is not disclosed to anyone other than the current Chair. (BR-253)<br>2. The system displays MSG205 – "Meeting votes are not accessible." without revealing hidden Vote information. No Vote, ballot or conclusion is changed.<br>3. The use case ends. |  |  |
 
 #### 11.6 UC-57 – Record Vote Conclusion
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Chair | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Chair to record the business conclusion of a Closed and tallied Vote as Passed, NotPassed or Deferred, with an optional note. The Chair decides the conclusion; the system records it rather than inferring it from a majority. |  |  |
+| Preconditions | ● PRE-1: The actor is signed in and is the current authorized Chair of the Meeting.<br>● PRE-2: The Meeting is InProgress or Ended.<br>● PRE-3: The Vote is Closed and its tally is available. (BR-161)<br>● PRE-4: No conclusion has been recorded for this Vote. (BR-262) |  |  |
+| Postconditions | ● POST-1: The selected conclusion, optional note, recording Chair and recording time are saved.<br>● POST-2: The conclusion and note cannot subsequently be edited or replaced.<br>● POST-3: The tally and conclusion are available for Meeting Minutes; the saved ballots and tally remain unchanged. (BR-264) |  |  |
+| Normal Flow | Record Vote Conclusion<br>1. The Chair opens the result of a Closed Vote and reviews the tally.<br>2. The system checks current access, that the actor is the current Chair, and that the Vote is Closed without a conclusion. It then offers Passed, NotPassed and Deferred and an optional conclusion note. (BR-161, BR-262)<br>3. The Chair selects one conclusion, optionally enters a note and confirms recording.<br>4. The system verifies the current Chair, Meeting InProgress or Ended, the Closed and tallied Vote, an allowed conclusion and that no conclusion has already been recorded. (BR-161, BR-262)<br>5. The system records the conclusion and optional note together with the Chair and recording time. It does not change ballots or the tally. (BR-262, BR-263)<br>6. The system displays MSG235 – "Vote conclusion recorded successfully." and makes the conclusion read-only. The tally and conclusion are available for Meeting Minutes. (BR-264) |  |  |
+| Alternative Flows | AF-1 – Record after Meeting end<br>1. At Step 1, the Meeting is Ended and the Vote has been Closed and tallied, including a Vote closed after Meeting end.<br>2. The Chair records the outcome of that existing Vote. No new voting is opened or ballot accepted.<br>3. The flow resumes at Step 2 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Conclusion is invalid<br>1. At Step 4, no conclusion is selected or the selection is not Passed, NotPassed or Deferred. (BR-161)<br>2. No conclusion is recorded. The system displays MSG232 – "Select Passed, NotPassed or Deferred."<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-2 – Conclusion already recorded<br>1. At Step 2 or Step 4, the Vote already has a saved conclusion. (BR-262)<br>2. The existing conclusion, note and tally remain unchanged. The system displays MSG233 – "The vote conclusion has already been recorded and cannot be changed."<br>3. The use case ends.<br>EX-3 – Recording is no longer allowed<br>1. At Step 2 or Step 4, the actor is no longer the current Chair, the Meeting is not InProgress or Ended, or the Vote is not Closed with a tally available. (BR-161)<br>2. No conclusion is recorded and existing Vote data remains unchanged. The system displays MSG234 – "Only the current Chair can record a conclusion for a Closed vote while the meeting is InProgress or Ended."<br>3. The use case ends.<br>EX-4 – Conclusion cannot be recorded<br>1. At Step 5, the system cannot complete recording.<br>2. No conclusion, note, recording Chair or recording time is added; ballots and tally remain unchanged. The system displays MSG236 – "Unable to record the vote conclusion. No conclusion was recorded. Please try again."<br>3. The use case ends.<br>EX-5 – Meeting or Vote is not accessible<br>1. Before displaying Vote information or completing the action, the Meeting or Vote is unavailable or the actor no longer has access. A Draft Vote is not disclosed to anyone other than the current Chair. (BR-253)<br>2. The system displays MSG205 – "Meeting votes are not accessible." without revealing hidden Vote information. No Vote, ballot or conclusion is changed.<br>3. The use case ends. |  |  |
 
 ### 12. FE-12 – Meeting Minutes & Digital Signing
 
@@ -2592,7 +2786,7 @@ Field Description
 
 #### 7.4 Add Document to Meeting Dialog
 
-The Add Document to Meeting Dialog opens from the Documents tab with “Choose from Document Library” or “Upload from computer”. The Chair or the Secretary selects files from his/her personal library or uploads a file from the computer, and optionally links them to one agenda item. Adding does not copy the file: the Meeting keeps a reference to it, and a file uploaded from the computer is also stored in the uploader’s personal library, in the folder named after the meeting (UC-33a, BR-184, BR-192).
+The Add Document to Meeting Dialog opens from the Documents tab with “Choose from Document Library” or “Upload from computer”. The Chair or the Secretary selects files from his/her personal library or uploads a file from the computer, and optionally links them to one agenda item. A document selected from the personal library remains in that library. A file uploaded from the computer is also stored in the uploader’s personal library, in the folder named after the meeting (UC-33a, BR-184, BR-192).
 
 This screen allows the Chair or the Secretary to:
 
@@ -2622,7 +2816,7 @@ Field Description
 
 #### 7.5 Document Viewer – Preview & Comments
 
-The Document Viewer opens when a user clicks a document on the Documents tab, on an agenda item or in the current item card. It renders the document in the browser – a PDF page by page, a DOCX as one continuous document – with zoom, and a side panel with its comments. Users related to the meeting preview the document, download it unless the Meeting is Secret, and add comments, which refer to a page in a PDF (UC-32c, UC-35).
+The Document Viewer opens when a user clicks a document on the Documents tab, on an agenda item or in the current item card. It renders the document in the browser – a PDF page by page, a DOCX as one continuous scrollable document – with zoom, and a side panel with its comments. Users related to the meeting preview the document, download it unless the Meeting is Secret, and add comments, which refer to a page in a PDF (UC-32c, UC-35).
 
 This screen allows users related to the meeting (Meeting Organizer, Meeting Approver, Chair, Secretary, Participant) to:
 
@@ -2647,7 +2841,7 @@ Field Description
 | Page indicator [Trang 2 / 6] | Read-only current page and total number of pages; updates while scrolling. Shown for PDF documents only. |
 | Zoom − / + | Two square buttons that decrease or increase the zoom level of the preview. |
 | Download [Tải về] | Secondary button; downloads the original file. Hidden in a Secret Meeting, where documents can only be viewed online (BR-188). |
-| Preview pane | Read-only rendering made in the browser with no server conversion – PDF pages, or a DOCX as one continuous document (BR-187); a highlighted passage marks the area a comment refers to. For a Secret document the viewer’s name and viewing time are printed as a watermark on every page. |
+| Preview pane | UI behavior: Read-only rendering made in the browser with no server conversion – PDF pages, or a DOCX as one continuous scrollable document; a highlighted passage marks the area a comment refers to. For a Secret document the viewer’s name and viewing time are printed as a watermark on every page. |
 | Comments tab [Bình luận 4] | Tab with the number of comments; selected by default. Each comment shows avatar initials, author, page and relative time (e.g. “Page 2 · 2 hours ago”) and the comment text. |
 | Comment box [Viết bình luận…] | Textarea, required to send, empty by default; for a PDF the comment is linked to the page being viewed; a DOCX comment has no page. Hidden for users who may not comment (Meeting Approver). Verified current Guests may comment as Members. |
 | Send [Gửi] | Primary button; posts the comment, which appears at the top of the list and increases the comment count on the Documents tab (UC-35). |
@@ -3594,7 +3788,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-65 | Only the active assigned Secretary may create, update, delete or reorder Agenda Items while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. Chair-only execution actions remain governed by BR-69. | UC-23a, UC-23b, UC-23c, UC-23d |  |  |
 | BR-66 | An Agenda Item requires Title and Planned Duration greater than zero. Presenter and Description are optional; attached documents must belong to the Meeting. | UC-23a, UC-23b |  |  |
 | BR-67 | A new Agenda Item is always Pending and is appended after the last existing position, including while the Meeting is InProgress. Existing Item positions are not changed. Reordering exchanges only current Pending Items within the same Meeting. | UC-23a, UC-23d |  |  |
-| BR-68 | While Agenda planning is permitted, the active assigned Secretary may edit all planning fields of a Pending Item. After an Item becomes InProgress or Done, only Title and Description may change; Presenter, Planned Duration, document associations and other planning fields are fixed. Only Pending Items may be deleted or reordered. Deletion preserves remaining Item positions. Reordering exchanges Pending Items only within their existing positions; InProgress and Done positions stay fixed. Planning changes never alter execution status, actual timestamps or the Meeting lifecycle. No Agenda changes are permitted after the Meeting is Ended. | UC-23a, UC-23b, UC-23c, UC-23d |  |  |
+| BR-68 | For an InProgress or Done Agenda Item, only Title and Description may be edited as planning fields. | UC-23a, UC-23b, UC-23c, UC-23d | PO 14/10/2026 — atomic rule review |  |
 | BR-69 | Only the current Chair may set or complete the current Agenda Item while Meeting is InProgress. | UC-24, UC-25 |  |  |
 | BR-70 | Only the first Pending Agenda Item in the current Meeting order may be started. Starting it changes Pending to InProgress; completing the current Item changes InProgress to Done. The order and Item status must be checked again when the change is saved. | UC-24, UC-25 |  |  |
 | BR-71 | At most one Agenda Item of a Meeting may be InProgress at a time. Concurrent requests must not start two Items; an unsuccessful request leaves the Agenda unchanged. | UC-24 |  |  |
@@ -3649,7 +3843,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-143 | When a Meeting becomes Ended, its Online Meeting Room stops accepting joins and disconnects currently connected users. | UC-22, UC-37 |  |  |
 | BR-148 | An external Guest is invited using a name and email without an internal account. After email verification, the Guest provides a self-declared display name and optional job title for this Meeting. The invited name remains invitation evidence; only control of the email is verified. (BR-180) | UC-27, UC-28a, UC-29 | PO 13/10/2026 |  |
 | BR-149 | Within one Meeting, a Guest email may have at most one current Guest invitation. | UC-28a |  |  |
-| BR-150 | An external Guest receives Member participation rights and eligible additional viewing permissions within the invited Meeting, but receives no system Role or internal Meeting Role. A Guest cannot act as Chair or Secretary, receive delegated authority, moderate the room or use a personal document library. (BR-181) | UC-28a, UC-37 | PO 13/10/2026 |  |
+| BR-150 | A Guest cannot hold an internal Meeting Role, including Chair or Secretary. | UC-28a, UC-37 | PO 14/10/2026 — atomic rule review |  |
 | BR-151 | A Guest invitation must not be created when the same email is already represented by a current internal participant of that Meeting. | UC-28a |  |  |
 | BR-152 | External Guest access requires a secure, meeting-specific invitation. | UC-20, UC-28a, UC-29, UC-37 |  |  |
 | BR-153 | An external Guest must verify control of the invited email before Guest access is established. | UC-29, UC-37 |  |  |
@@ -3658,13 +3852,13 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-156 | External Guest access does not require an internal account login. | UC-28a, UC-29, UC-37 |  |  |
 | BR-157 | Revoking an external Guest invitation immediately invalidates access granted by that invitation. | UC-28c, UC-29, UC-37 |  |  |
 | BR-158 | Only the Meeting Organizer may reschedule a Published Meeting; only planned times or location may change. | UC-15 | PO 09/10/2026 | Meeting / Voting Management |
-| BR-159 | The Chair may end an InProgress Meeting regardless of open Votes or incomplete attendance; End Meeting neither requires nor automatically closes Votes. Completing any InProgress Agenda Item, changing Meeting status to Ended, recording Actual End Time and append-only lifecycle history succeed together. If saving fails, previous Meeting and Agenda states/timestamps remain and room closure is not triggered. Remaining Pending Agenda Items remain Pending. Existing ballots and Vote status are preserved; Ended Meetings accept no further ballots. The Chair may subsequently close and tally outstanding Open Votes under BR-160. | UC-22 | PO 13/10/2026 — follow-up | Meeting / Voting Management |
-| BR-160 | Votes may be created, opened and cast only while the associated Meeting is InProgress. Current Chair, Secretary and Members and verified current Guests with valid access may cast one eligible ballot while its Vote is Open. Ending the Meeting does not require closing any Vote. The active current Chair may close and tally an existing Open Vote while Meeting is InProgress or Ended, without accepting new ballots after Ended. Only holders of the meeting roles selected for a Vote are eligible (BR-190). No time-boxed voting, quorum or separate Resolution exists. (BR-159, BR-165, BR-181) | UC-52a, UC-52b, UC-53, UC-54, UC-55, UC-56 | PO 13/10/2026 — follow-up | Meeting / Voting Management |
-| BR-161 | After a Vote is closed and tallied, the Chair records the conclusion Passed, NotPassed or Deferred on that Meeting Vote. The tally and Chair conclusion are included in Meeting Minutes, not in a separate Resolution entity. | UC-52b, UC-56, UC-57, UC-59 | PO 09/10/2026 | Meeting / Voting Management |
+| BR-159 | Ending a Meeting neither requires nor automatically closes its Votes and preserves previously recorded ballots. | UC-22 | PO 13/10/2026 — follow-up | Meeting / Voting Management |
+| BR-160 | Only the current Chair may open a Draft Vote, and only while its Meeting is InProgress. | UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-161 | The current Chair may record Passed, NotPassed or Deferred, with an optional note, for a Closed and tallied Vote while its Meeting is InProgress or Ended. | UC-52b, UC-57 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 | BR-162 | When a new Meeting is created, Planned Start Time must be later than the current time. | UC-14 | PO Q7 / BF-02 | Meeting / Voting / Minutes services |
 | BR-163 | Online/Hybrid Meetings use the internal TrustCabinet Online Meeting Room. Online Link is managed by the system as part of Online Meeting Room functionality and may be empty until generated. Users cannot enter or modify it during Meeting creation, editing or rescheduling. Link generation is outside Create Meeting and Update Meeting. | UC-14, UC-15 | PO Q4 / BF-02 | Meeting / Voting / Minutes services |
 | BR-164 | Starting a Meeting creates an in-app notification for its currently invited internal participants; notification failure does not roll back the successful Meeting start. | UC-21 | PO Q11 / BF-03 | Meeting / Voting / Minutes services |
-| BR-165 | A Vote may be created/opened only in an InProgress Meeting. Current internal participants and verified current Guests who hold a meeting role selected for that Vote (BR-190) may cast one eligible ballot only while Meeting is InProgress and Vote is Open; Guest voter identity is its invitation. The Chair may close an existing Open Vote and tally saved ballots in InProgress or Ended, then record Passed, NotPassed or Deferred. Closing is required for that Vote conclusion, not for End Meeting. Revocation prevents new ballots without erasing evidence; secret ballots have no voter-choice link. | UC-53, UC-54, UC-55, UC-56, UC-57 | PO 13/10/2026 — follow-up | Meeting / Voting / Minutes services |
+| BR-165 | A ballot may be cast only while the Meeting is InProgress, the Vote is Open and the voter retains current Meeting access. | UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
 | BR-166 | When designated minutes signers request revision or minutes content changes after signing begins, previous signatures on the earlier content version are invalidated and the revised version requires a new signing cycle. Only the assigned Secretary may finalize and seal the completed minutes after all designated signers sign. | UC-60, UC-61, UC-62, UC-64, UC-65 | PO / BF-04 | Meeting / Voting / Minutes services |
 | BR-167 | User account list sorting must use an allowed sort field/order, and current search/filter/sort criteria are preserved across pages. | UC-05 | UC-05 user-list acceptance criteria | User Management |
 | BR-168 | A submission adding multiple internal Meeting Participants must be saved as one indivisible roster change. If any selected account, assigned Meeting Role or additional Meeting Permission is invalid, no account in the submitted batch may be added. Invitation dispatch occurs only after a successful roster save; delivery errors follow BR-94. | UC-28a | FE-06 revision, 12/10/2026 | Meeting Participant Management |
@@ -3680,18 +3874,101 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-178 | Official attendance must be recordable and retrievable for both current internal Meeting Participant records and current external Guest invitations. An attendance record includes the saved status, the responsible Secretary and the save time; historical evidence is retained when a published Meeting's participant or Guest is removed/revoked. | UC-28c, UC-31 | FE-06 revision, 12/10/2026 | Meeting Participant Management |
 | BR-179 | Retired on 13/10/2026 by PO decision. Attendance completeness is not a prerequisite for ending a Meeting. This ID must not be reused. | Retired; formerly UC-22, UC-31 | PO 13/10/2026 | Meeting Participant Management |
 | BR-180 | After verifying the invited email, a Guest provides a display name and job title for presentation in the Meeting. These are self-declared information; only control of the invited email is verified. Changing display information does not change the invitation identity or the invited email. Required-field rules and detailed profile validation are not finalized here. | UC-04, UC-27, UC-37, UC-40 | PO 13/10/2026 | Guest participation / Meeting Participant Management |
-| BR-181 | A current verified Guest participates like a Member in the invited Meeting: room media, screen sharing, chat, connected-room list, all attached documents under Member rules, comments, invitation response, attendance inclusion and voting. A Secretary may grant additional Meeting permissions like those of an internal participant; these are not limited to additional Meeting permissions. Guest cannot be Chair/Secretary, receive delegated authority, moderate the room or use a personal library. No separate Guest-document sharing mechanism exists. Detailed permission catalogue and grant matrix remain to be specified. | UC-04, UC-27, UC-28a, UC-28b, UC-29, UC-30, UC-31, UC-32a, UC-32c, UC-35, UC-37–UC-42, UC-52a, UC-52b, UC-55 | PO 13/10/2026 | Guest participation / Meeting Participant Management |
+| BR-181 | A Guest has the same participation rights as a Participant within the invited Meeting. | UC-04, UC-27, UC-28a, UC-28b, UC-29, UC-30, UC-31, UC-32a, UC-32c, UC-35, UC-37–UC-42, UC-52a, UC-52b, UC-55 | PO 14/10/2026 — atomic rule review | Guest participation / Meeting Participant Management |
 | BR-182 | Inviting a Guest into a Confidential or Secret Meeting displays a clear inline warning that the Guest will receive Member participation and Meeting-document access. Invitation creation uses the ordinary invite flow; no extra confirmation or separate sensitivity approval flow is required. Record the inviting Secretary, Meeting sensitivity and invitation time for accountability. | UC-28a | PO 13/10/2026 | Guest participation / Meeting Participant Management |
-| BR-183 | A stored document file is immutable and has no versions. Personal library entries and Meeting documents only refer to a stored file; adding a file to a Meeting does not copy it. To change a document, a user uploads a new file, adds it to the Meeting and removes the old one. | UC-32a, UC-32c, UC-33a, UC-33c, UC-34, UC-36, UC-71 | PO 13/10/2026 (ADR-0018) | Document Management |
-| BR-184 | Only the current Chair or Secretary of a Meeting may add documents to or remove documents from that Meeting. Only files from the actor’s own personal library, or uploaded from the actor’s computer, may be added; a file uploaded from the computer is also stored in the uploader’s personal library. | UC-33a, UC-33c | PO 13/10/2026 (ADR-0018) | Document Management |
-| BR-185 | A document cannot be removed from a Meeting once Meeting Minutes exist for that Meeting. Removing a document keeps its comments as history, but the document is no longer listed. | UC-33c | PO 13/10/2026 (ADR-0018) | Document Management |
-| BR-186 | Deleting a document from a personal library removes only that library entry; Meeting documents that refer to the same file remain readable. A stored file that no library entry or current Meeting document refers to is deleted from storage by a periodic cleanup. | UC-33c, UC-71a | PO 13/10/2026 (ADR-0018) | Document Management |
-| BR-187 | Only PDF and DOCX files of at most 50 MB are accepted, with the type determined from the file content. Files are stored as uploaded and the server performs no conversion; the browser renders the preview – a PDF page by page, a DOCX as one continuous document. | UC-33a, UC-36 | PO 13/10/2026 (ADR-0018) | Document Management |
-| BR-188 | Documents of a Secret Meeting can be previewed online but cannot be downloaded. | UC-32c | ADR-0006 | Document Management |
-| BR-189 | The current Chair may delete a Draft Vote while the Meeting is InProgress. An Open or Closed Vote cannot be deleted. | UC-53 | PO 13/10/2026 | Meeting / Voting Management |
-| BR-190 | When creating or editing a Draft Vote, the Chair selects the meeting roles allowed to vote – Chair, Secretary, Member and Guest; all are selected by default and at least one is required. The eligible voters are the current holders of the selected roles when the Vote opens; the list and EligibleCount are fixed at that moment. | UC-53, UC-54, UC-55 | PO 13/10/2026 (as AI-eCabinet) | Meeting / Voting Management |
-| BR-191 | A personal library may contain folders owned by the same user, nested at most five levels deep. A folder name must not be empty and need not be unique. A folder cannot be moved into itself or one of its sub-folders, and only an empty folder can be deleted. Documents can be renamed and moved between the owner’s folders. | UC-34, UC-36, UC-71b, UC-71c, UC-72a, UC-72b, UC-72c, UC-72d | PO 13/10/2026 (ADR-0018) | Document Management |
-| BR-192 | A file uploaded straight into a Meeting is also placed in the uploader’s personal library, in a folder named “<Meeting title> - dd/mm/yyyy”. The system creates that folder once per user and Meeting and keeps using it after it is renamed or moved. | UC-33a | PO 13/10/2026 (ADR-0018) | Document Management |
+| BR-183 | An uploaded file's content cannot be changed. | UC-32a, UC-32c, UC-33a, UC-33c, UC-34, UC-36, UC-71 | PO 14/10/2026 — atomic rule review | Document Management |
+| BR-184 | Only the current Chair or Secretary may add or remove Meeting documents or their Agenda Item links. | UC-33a, UC-33b, UC-33c, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
+| BR-185 | Meeting documents and their Agenda Item links cannot be added or removed after the Meeting ends. | UC-23b, UC-33a, UC-33b, UC-33c, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
+| BR-186 | Deleting a personal-library document does not remove the document from Meetings. | UC-33c, UC-71a | PO 14/10/2026 — atomic rule review | Document Management |
+| BR-187 | Only PDF and DOCX documents may be uploaded. | UC-33a, UC-36 | PO 14/10/2026 — atomic rule review | Document Management |
+| BR-188 | Documents of a Secret Meeting may be read online but not downloaded. | UC-32c | PO 14/10/2026 — atomic rule review | Document Management |
+| BR-189 | The current Chair may delete a Draft Vote while its Meeting is Approved, Published or InProgress. An Open or Closed Vote cannot be deleted. | UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-190 | The eligible-voter list and count are fixed when the Vote opens, using the selected meeting roles and valid Meeting access. Attendance does not determine eligibility. | UC-54, UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-191 | Personal-library folders may be nested at most five levels deep. | UC-34, UC-36, UC-71b, UC-71c, UC-72a, UC-72b, UC-72c, UC-72d | PO 14/10/2026 — atomic rule review | Document Management |
+| BR-192 | An automatically created Meeting folder is named “<Meeting title> – dd/mm/yyyy”, using the Meeting planned start date in Vietnam time. | UC-33a | ADR-0020 / PO 15/10/2026 | Document Management |
+| BR-193 | The same uploaded file may have only one active attachment in a Meeting. | UC-33a, UC-33c | PO 14/10/2026 — atomic rule review | Document Management |
+| BR-194 | A direct upload creates both the Meeting document and the personal-library document, or creates neither. | UC-33a | PO 14/10/2026 — atomic rule review | Document Management |
+| BR-195 | The current Chair or Secretary may add documents from the time they can view the Meeting until it ends. | UC-33a | ADR-0020 / PO 15/10/2026 | Document Management |
+| BR-197 | Each Meeting-document addition or removal records who performed it and when. | UC-33a, UC-33c | PO 14/10/2026 — atomic rule review | Document Management |
+| BR-199 | A Secretary may grant a Guest the additional Meeting permissions available to an internal Participant. | UC-28b, UC-32a, UC-32c | ADR-0016 / PO 13/10/2026 — cross-review 14/10/2026 | Document / Guest access |
+| BR-200 | Additional permissions cannot override Guest restrictions or the prohibition on downloading Secret Meeting documents. | UC-28b, UC-32a, UC-32c | ADR-0016 / PO 13/10/2026 — cross-review 14/10/2026 | Document / Guest access |
+| BR-201 | A Guest receives no system Role. | UC-04, UC-28a | ADR-0016 / PO 13/10/2026 — cross-review 14/10/2026 | Document / Guest access |
+| BR-202 | A Guest cannot receive delegated authority. | UC-28b | ADR-0016 / PO 13/10/2026 — cross-review 14/10/2026 | Document / Guest access |
+| BR-203 | A Guest cannot moderate a Meeting room. | UC-41 | ADR-0016 / PO 13/10/2026 — cross-review 14/10/2026 | Document / Guest access |
+| BR-204 | A Guest cannot use a personal document library. | UC-34, UC-36, UC-71, UC-72 | ADR-0016 / PO 13/10/2026 — cross-review 14/10/2026 | Document / Guest access |
+| BR-205 | Meeting documents have no separate sharing option for Guests. | UC-32a, UC-32c, UC-33a | ADR-0016 / PO 13/10/2026 — cross-review 14/10/2026 | Document / Guest access |
+| BR-206 | Uploaded documents have no versions. | UC-32a, UC-32c, UC-33a, UC-33c, UC-36 | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-208 | Changing document content requires uploading a new file and replacing the old Meeting document. | UC-33a, UC-33c, UC-36 | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-209 | A Meeting document must come from the actor's own personal library or computer. | UC-33a | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-210 | A file uploaded directly into a Meeting is also added to the uploader's personal library. | UC-33a | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-211 | A removed document is excluded from the Meeting's current document list. | UC-32a, UC-33c | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-212 | Removing a Meeting document preserves its comments as history. | UC-33c | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-213 | A file is deleted by periodic cleanup when no personal-library document or active Meeting document uses it. | UC-33c, UC-71a | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-214 | An uploaded document must not exceed 50 MB. | UC-33a, UC-36 | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-215 | An uploaded document's type is determined from its actual content. | UC-33a, UC-36 | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-216 | Uploaded files retain their original format and content. | UC-33a, UC-36 | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-219 | A personal-library folder belongs to one user. | UC-34, UC-72 | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-220 | A folder name must not be empty. | UC-72a, UC-72b | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-221 | Folder names need not be unique. | UC-72a, UC-72b | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-222 | A folder cannot be moved into itself or one of its descendants. | UC-72c | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-223 | Only an empty folder can be deleted. | UC-72d | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-224 | A user may rename documents in their own personal library. | UC-71b | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-225 | A user may move personal-library documents only between their own folders or the library root. | UC-71c | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-226 | The first direct upload creates a personal-library folder for that user and Meeting. | UC-33a | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-227 | Later uploads to the same Meeting reuse its existing personal-library folder, even after it is renamed or moved. | UC-33a | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-228 | If the Meeting's personal-library folder was deleted, the next direct upload recreates it at the library root, named with the Meeting title and planned start date in Vietnam time. | UC-33a | ADR-0020 / PO 15/10/2026 | Document Management |
+| BR-229 | Separate uploads are different documents, even when their names or contents match. | UC-33a, UC-36 | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-231 | Removing a Meeting document does not remove it from personal libraries or other Meetings. | UC-33c | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-232 | Deleting an unused file preserves its history and comments, but its content is no longer available. | UC-33c, UC-71a | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| BR-235 | Declining a Meeting invitation does not revoke document-reading access. | UC-32a, UC-32c | ADR-0006 — cross-review 14/10/2026 | Document / Guest access |
+| BR-236 | All planning fields of a Pending Agenda Item may be edited. | UC-23b | Split from former BR-68 — no change to agenda field restrictions | Agenda Management |
+| BR-237 | Only Pending Agenda Items may be deleted. | UC-23c | Split from former BR-68 — no change to agenda field restrictions | Agenda Management |
+| BR-238 | Only Pending Agenda Items may be reordered. | UC-23d | Split from former BR-68 — no change to agenda field restrictions | Agenda Management |
+| BR-239 | Deleting an Agenda Item preserves the positions of the remaining Items. | UC-23c | Split from former BR-68 — no change to agenda field restrictions | Agenda Management |
+| BR-240 | Reordering exchanges only the existing positions of Pending Agenda Items. | UC-23d | Split from former BR-68 — no change to agenda field restrictions | Agenda Management |
+| BR-241 | Agenda planning changes preserve execution status, actual timestamps and the Meeting lifecycle. | UC-23b, UC-23c, UC-23d | Split from former BR-68 — no change to agenda field restrictions | Agenda Management |
+| BR-242 | A user may access only their own personal-library documents and folders. | UC-34, UC-36, UC-71a–UC-71c, UC-72a–UC-72d | ADR-0006 / ADR-0018 | Document Management |
+| BR-245 | Moving a personal-library document does not change its Meeting attachments. | UC-71c | ADR-0018 | Document Management |
+| BR-246 | A comment must not be blank. | UC-35 | Report 3 screen 7.5 — required comment text | Document Management |
+| BR-248 | A DOCX comment has no page reference. | UC-35 | ADR-0018 | Document Management |
+| BR-249 | Anyone who can view a Meeting document may comment on it before the Meeting ends. | UC-35 | PO 15/10/2026 — read-only after Meeting end | Document Management |
+| BR-250 | Each comment records its author and posting time. | UC-35 | Report 3 screen 7.5 | Document Management |
+| BR-251 | Personal-library usage details show only Meetings the user may access. | UC-34 | Existing resource confidentiality rule | Document Management |
+| BR-252 | Only the current Chair may create or configure a Draft Vote while its Meeting is Approved, Published or InProgress. | UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-253 | Only the current Chair may view Draft Votes in the Meeting. | UC-52a, UC-52b, UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-254 | The content, options, ballot type and selected roles of an Open or Closed Vote cannot be edited. | UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-255 | Vote content must not be blank. | UC-53, UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-256 | A Vote must have at least two distinct, non-empty options. | UC-53, UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-257 | The Chair selects one or more eligible meeting roles from Chair, Secretary, Member and Guest; all four roles are selected by default. | UC-53, UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-258 | Each eligible voter may cast at most one ballot in a Vote. | UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-259 | A secret Vote records participation without linking a voter to a chosen option; only aggregate results may be disclosed. | UC-52b, UC-55, UC-56 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-260 | The status view of an Open Vote shows turnout, without disclosing individual choices or results per option. | UC-52b | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-261 | Closing a Vote tallies all recorded ballots per option; each percentage uses ballots cast as its denominator. With no ballots, option counts are zero and percentages are not shown. | UC-52b, UC-56 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-262 | A recorded Vote conclusion and its note cannot be changed or replaced. | UC-57 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-263 | The Chair determines a Vote conclusion; the system does not infer it from the tally. | UC-56, UC-57 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-264 | Meeting Minutes include the Vote tally and the conclusion recorded by the Chair. | UC-57, UC-59 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-265 | A recorded ballot cannot be changed or withdrawn. | UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-266 | A Meeting may have at most one Open Vote at a time. | UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-267 | A Vote cannot be opened if no eligible voters are available. | UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-268 | Changing a voter's meeting role after opening does not change the fixed eligible-voter list or count. | UC-54, UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-269 | Loss of Meeting access prevents new ballots without deleting previously recorded ballots. | UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-270 | The current Chair may close and tally an existing Open Vote while its Meeting is InProgress or Ended. | UC-56 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-271 | A ballot selects exactly one option belonging to its Vote. | UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-272 | Each Vote uses either a Public or Secret ballot type. | UC-53, UC-54 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-273 | After a Public Vote closes, its result shows each eligible voter's recorded choice or that the voter did not vote. | UC-52b | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-274 | The current Chair may access Vote draft preparation in an Approved Meeting; this does not grant access to other restricted Meeting records. | UC-52a, UC-52b, UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
+| BR-275 | Anyone who can view a Meeting can read its documents. | UC-32a, UC-32c, UC-35 | ADR-0020 / PO 15/10/2026 | Document Management |
+| BR-276 | A Meeting document keeps the name copied when it was added to the Meeting; later personal-library renaming does not change that name. | UC-33a, UC-71b | ADR-0020 / PO 15/10/2026 | Document Management |
+| BR-277 | One Meeting document may be linked to multiple Agenda Items. | UC-23b, UC-33b | ADR-0020 / PO 15/10/2026 | Document Management |
+| BR-278 | A document may be linked only to Agenda Items of the same Meeting. | UC-23a, UC-23b, UC-33b, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
+| BR-279 | Pending, InProgress and Done Agenda Items all permit document-link additions and removals until the Meeting ends. | UC-23b, UC-33b, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
+| BR-280 | Removing one Agenda Item link keeps the document in the Meeting and preserves its other Item links; with no links left, it is a general Meeting document. | UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
+| BR-281 | Removing a document from a Meeting removes it from every Agenda Item of that Meeting. | UC-33c | ADR-0020 / PO 15/10/2026 | Document Management |
+| BR-282 | Meeting documents and comments are read-only after the Meeting ends. | UC-32a, UC-32c, UC-33a, UC-33b, UC-33c, UC-33d, UC-35 | PO 15/10/2026 — document follow-up | Document Management |
+| BR-283 | Deleting an Agenda Item removes its document links but keeps the documents in the Meeting. | UC-23c, UC-32a, UC-33b, UC-33d | PO 15/10/2026 — document follow-up | Document Management |
+| BR-284 | Readding a removed Meeting document starts a new addition without its previous comments. | UC-33a, UC-33c, UC-35 | PO 15/10/2026 — document follow-up | Document Management |
+| BR-285 | Each Vote belongs to one Meeting and is not linked to an Agenda Item. | UC-52a, UC-52b, UC-53, UC-54, UC-55, UC-56, UC-57 | ADR-0019 / ADR-0020 | Voting Management |
+| BR-286 | All documents submitted together are added together, or none are added. | UC-33a, UC-36 | User confirmation 15/10/2026 — multiple-file upload; existing screen 7.4 all-or-none outcome | Document Management |
 
 ### 2. System Messages
 
@@ -3827,6 +4104,102 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 148 | MSG153 | Toast | UC-28b / Main Flow | Meeting permissions updated successfully. |
 | 149 | MSG154 | Information | UC-28b / Unchanged selection UI; no separate exception flow | No changes to save. |
 | 150 | MSG155 | Form error | Retired on 13/10/2026; formerly UC-22 / EX-3 | Retired: attendance incompleteness must not block End Meeting. This code must not be reused. |
+| 151 | MSG156 | Form error | UC-32a / EX-1; UC-32c / EX-1; UC-35 / EX-2 | Meeting documents are not accessible. |
+| 152 | MSG157 | Form error | UC-32a / EX-2 | Unable to load the document list. Please try again. |
+| 153 | MSG158 | Form error | UC-32c / EX-2 | Unable to display the document. Please try again. |
+| 154 | MSG159 | Form error | UC-32c / EX-3 | Secret Meeting documents can only be viewed online and cannot be downloaded. |
+| 155 | MSG160 | Form error | UC-32c / EX-4 | Unable to download the document. Please try again. |
+| 156 | MSG161 | Toast | UC-33a / Normal Flow | Documents added to the Meeting successfully. |
+| 157 | MSG162 | Form error | UC-33a / EX-1 | You no longer have permission to add documents to this Meeting. |
+| 158 | MSG163 | Retired | ADR-0020 | Retired: document addition and Agenda Item linking are separate operations under ADR-0020. Do not reuse. |
+| 159 | MSG164 | Field error / Form error | UC-33a / EX-3; UC-36 / EX-1 | Select valid PDF or DOCX files, each no larger than 50 MB. |
+| 160 | MSG165 | Form error | UC-33a / EX-4 | One or more selected documents are already attached to the Meeting. |
+| 161 | MSG166 | Form error | UC-33a / EX-5 | Unable to add the documents. No documents were added. Please try again. |
+| 162 | MSG167 | Toast | UC-33c / Normal Flow | Document removed from the Meeting successfully. |
+| 163 | MSG168 | Retired | ADR-0020 | Retired: Meeting Minutes no longer lock document removal under ADR-0020. Do not reuse. |
+| 164 | MSG169 | Form error | UC-33c / EX-2 | You no longer have permission to remove documents from this Meeting. |
+| 165 | MSG170 | Form error | UC-33b, UC-33d / EX-2; UC-33c / EX-3 | This document is no longer attached to the Meeting. Refresh the document list. |
+| 166 | MSG171 | Form error | UC-33c / EX-4 | Unable to remove the document. It remains attached to the Meeting. Please try again. |
+| 167 | MSG172 | Form error | UC-33a / EX-6 | Documents cannot be added after the Meeting has ended. |
+| 168 | MSG173 | Retired | ADR-0020 | Retired: Agenda Item status no longer locks document links under ADR-0020. Do not reuse. |
+| 169 | MSG174 | Form error | UC-33a / EX-7; UC-33b / EX-7; UC-33c / EX-5; UC-33d / EX-7 | This Meeting is not accessible. |
+| 170 | MSG175 | Form error | UC-34 / EX-2; UC-71a / EX-1; UC-71b / EX-1; UC-71c / EX-1; UC-72b / EX-1; UC-72c / EX-1; UC-72d / EX-1 | This personal-library item is not available. |
+| 171 | MSG176 | Form error | UC-34 / EX-1 | Unable to load your personal document library. Please try again. |
+| 172 | MSG177 | Toast | UC-36 / Normal Flow | Documents uploaded to your personal library successfully. |
+| 173 | MSG178 | Form error | UC-36 / EX-3 | Unable to upload the files. No documents were added. Please try again. |
+| 174 | MSG179 | Form error | UC-36 / EX-2; UC-71c / EX-2; UC-72a / EX-2; UC-72c / EX-2 | The selected destination folder is not available in your personal library. |
+| 175 | MSG180 | Toast | UC-71a / Normal Flow | Document deleted from your personal library successfully. |
+| 176 | MSG181 | Form error | UC-71a / EX-2 | Unable to delete the document. Your personal library remains unchanged. |
+| 177 | MSG182 | Form error | Retired — document-name constraint removed with BR-243 | Retired: no document-name validation is specified under this code. Do not reuse. |
+| 178 | MSG183 | Toast | UC-71b / Normal Flow | Document renamed successfully. |
+| 179 | MSG184 | Form error | UC-71b / EX-2 | Unable to rename the document. Its name remains unchanged. |
+| 180 | MSG185 | Toast | UC-71c / Normal Flow | Document moved successfully. |
+| 181 | MSG186 | Form error | UC-71c / EX-3 | Unable to move the document. Its location remains unchanged. |
+| 182 | MSG187 | Toast | UC-72a / Normal Flow | Folder created successfully. |
+| 183 | MSG188 | Form error | UC-72a / EX-1; UC-72b / EX-2 | Enter a folder name. |
+| 184 | MSG189 | Form error | UC-72a / EX-3; UC-72c / EX-4 | Folders cannot be nested more than five levels deep. |
+| 185 | MSG190 | Form error | UC-72a / EX-4 | Unable to create the folder. No folder was created. |
+| 186 | MSG191 | Toast | UC-72b / Normal Flow | Folder renamed successfully. |
+| 187 | MSG192 | Form error | UC-72b / EX-3 | Unable to rename the folder. Its name remains unchanged. |
+| 188 | MSG193 | Form error | UC-72c / EX-3 | A folder cannot be moved into itself or one of its descendants. |
+| 189 | MSG194 | Toast | UC-72c / Normal Flow | Folder moved successfully. |
+| 190 | MSG195 | Form error | UC-72c / EX-5 | Unable to move the folder. Its location remains unchanged. |
+| 191 | MSG196 | Form error | UC-72d / EX-2 | Only an empty folder can be deleted. |
+| 192 | MSG197 | Toast | UC-72d / Normal Flow | Folder deleted successfully. |
+| 193 | MSG198 | Form error | UC-72d / EX-3 | Unable to delete the folder. The folder remains unchanged. |
+| 194 | MSG199 | Toast | UC-35 / Normal Flow | Comment added successfully. |
+| 195 | MSG200 | Form error | UC-35 / EX-1 | Enter a comment. |
+| 196 | MSG201 | Form error | Retired — no separate commenting permission | Retired: document-viewing access also permits commenting. Do not reuse. |
+| 197 | MSG202 | Form error | UC-35 / EX-3 | Unable to add the comment. No comment was saved. Please try again. |
+| 198 | MSG203 | Form error | Retired — mandatory PDF page reference removed | Retired: a PDF comment does not require a page reference. Do not reuse. |
+| 199 | MSG204 | Form error | UC-35 / EX-4 | Unable to load the document comments. Please try again. |
+| 200 | MSG205 | Form error | UC-52a, UC-52b / EX-1; UC-53, UC-54 / EX-6; UC-55 / EX-7; UC-56 / EX-3; UC-57 / EX-5 | Meeting votes are not accessible. |
+| 201 | MSG206 | Form error | UC-52a / EX-2 | Unable to load the meeting votes. Please try again. |
+| 202 | MSG207 | Notification | UC-52a / AF-1 | No votes to display. |
+| 203 | MSG208 | Form error | UC-52b / EX-2 | Unable to load the vote status or result. Please try again. |
+| 204 | MSG209 | Form error | UC-53, UC-54 / Invalid configuration | Invalid vote information. Check the highlighted fields. |
+| 205 | MSG210 | Notification | UC-53 / Normal Flow | Vote draft created successfully. |
+| 206 | MSG211 | Notification | UC-53 / AF-1 | Vote draft updated successfully. |
+| 207 | MSG212 | Notification | UC-53 / AF-2 | Vote draft deleted successfully. |
+| 208 | MSG213 | Form error | UC-53 / EX-2 | Only Draft votes may be managed by the current Chair while the meeting is Approved, Published or InProgress. |
+| 209 | MSG214 | Form error | UC-53 / EX-3 | Unable to create the vote draft. No draft was created. Please try again. |
+| 210 | MSG215 | Form error | UC-53 / EX-4 | Unable to update the vote draft. The draft remains unchanged. Please try again. |
+| 211 | MSG216 | Form error | UC-53 / EX-5 | Unable to delete the vote draft. The draft remains unchanged. Please try again. |
+| 212 | MSG217 | Notification | UC-54 / Normal Flow | Voting opened successfully. |
+| 213 | MSG218 | Form error | UC-54 / EX-2 | Only the current Chair can open a Draft vote while the meeting is InProgress. |
+| 214 | MSG219 | Form error | UC-54 / EX-3 | Another vote is already open in this meeting. Close it before opening this vote. |
+| 215 | MSG220 | Form error | UC-54 / EX-4 | No eligible voters are available for the selected roles. Voting was not opened. |
+| 216 | MSG221 | Form error | UC-54 / EX-5 | Unable to open voting. Voting was not opened. Please try again. |
+| 217 | MSG222 | Form error | UC-55 / EX-1 | Select one option before submitting your ballot. |
+| 218 | MSG223 | Form error | UC-55 / EX-2 | The selected option is not available for this vote. |
+| 219 | MSG224 | Form error | UC-55 / EX-3 | You are not eligible to cast a ballot in this vote. |
+| 220 | MSG225 | Form error | UC-55 / EX-4 | This vote is no longer accepting ballots. |
+| 221 | MSG226 | Form error | UC-55 / EX-5 | Your ballot has already been recorded. It cannot be changed or withdrawn. |
+| 222 | MSG227 | Notification | UC-55 / Normal Flow | Your ballot has been recorded. |
+| 223 | MSG228 | Form error | UC-55 / EX-6 | Unable to record your ballot. No ballot was recorded. Please try again. |
+| 224 | MSG229 | Notification | UC-56 / Normal Flow | Voting closed. The result is available. |
+| 225 | MSG230 | Form error | UC-56 / EX-1 | Only the current Chair can close an Open vote while the meeting is InProgress or Ended. |
+| 226 | MSG231 | Form error | UC-56 / EX-2 | Unable to close voting. The vote and saved ballots remain unchanged. Please try again. |
+| 227 | MSG232 | Form error | UC-57 / EX-1 | Select Passed, NotPassed or Deferred. |
+| 228 | MSG233 | Form error | UC-57 / EX-2 | The vote conclusion has already been recorded and cannot be changed. |
+| 229 | MSG234 | Form error | UC-57 / EX-3 | Only the current Chair can record a conclusion for a Closed vote while the meeting is InProgress or Ended. |
+| 230 | MSG235 | Notification | UC-57 / Normal Flow | Vote conclusion recorded successfully. |
+| 231 | MSG236 | Form error | UC-57 / EX-4 | Unable to record the vote conclusion. No conclusion was recorded. Please try again. |
+| 232 | MSG237 | Retired | FE-11 | Retired: closing or cancelling the UI does not require a system message. Do not reuse. |
+| 213 | MSG238 | Dành sẵn, chưa triển khai | UC-33b / Normal Flow | Document linked to the Agenda Item successfully. |
+| 214 | MSG239 | Dành sẵn, chưa triển khai | UC-33d / Normal Flow | Document unlinked from the Agenda Item successfully. |
+| 215 | MSG240 | Dành sẵn, chưa triển khai | UC-33b / EX-1 | You no longer have permission to link documents in this Meeting. |
+| 216 | MSG241 | Dành sẵn, chưa triển khai | UC-33d / EX-1 | You no longer have permission to unlink documents in this Meeting. |
+| 217 | MSG242 | Dành sẵn, chưa triển khai | UC-33b, UC-33d / EX-3 | Select an available Agenda Item in this Meeting. |
+| 218 | MSG243 | Dành sẵn, chưa triển khai | UC-33b / EX-4 | This document is already linked to the selected Agenda Item. |
+| 219 | MSG244 | Dành sẵn, chưa triển khai | UC-33b / EX-5 | Unable to link the document. No links were changed. Please try again. |
+| 220 | MSG245 | Dành sẵn, chưa triển khai | UC-33d / EX-5 | Unable to unlink the document. No links were changed. Please try again. |
+| 221 | MSG246 | Dành sẵn, chưa triển khai | UC-33d / EX-4 | This document is no longer linked to the selected Agenda Item. Refresh the document list. |
+| 222 | MSG247 | Dành sẵn, chưa triển khai | UC-33b, UC-33d / EX-6 | Document links cannot be changed after the Meeting has ended. |
+| 223 | MSG248 | Dành sẵn, chưa triển khai | UC-33c / EX-1 | Documents cannot be removed after the Meeting has ended. |
+| 224 | MSG249 | Dành sẵn, chưa triển khai | UC-33a / EX-2 | Select one or more available documents from your personal library. |
+| 225 | MSG250 | Dành sẵn, chưa triển khai | UC-23b / EX-4 | Planned Duration and Presenter cannot be changed after an agenda item has started. |
+| 226 | MSG251 | Dành sẵn, chưa triển khai | UC-35 / EX-5 | Comments are read-only after the Meeting has ended. |
 
 ### 3. Other Requirements
 

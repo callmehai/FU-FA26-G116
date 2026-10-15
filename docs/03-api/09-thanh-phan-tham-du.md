@@ -41,7 +41,7 @@ Query phân trang mặc định `page=1`, `pageSize=20`, pageSize tối đa100, 
 
 GET context/roster/options và mutation roster thành công trả `ETag: "participants-0"` (tăng sau mỗi thay đổi thật). **Mọi mutation roster**, kể cả recovery và DELETE, bắt buộc gửi `If-Match` bằng ETag vừa đọc. Riêng PUT own response không yêu cầu If-Match và không tăng roster revision.
 
-`revision` trong JSON là chuỗi số thập phân; không chuyển sang JavaScript Number vì DB dùng bigint. Header là strong ETag, không chấp nhận wildcard, weak tag hoặc nhiều giá trị. Thiếu/sai → 400/MSG239; revision cũ → 409/MSG238. Reload rồi để người dùng xác nhận lại, không tự replay thao tác cũ.
+`revision` trong JSON là chuỗi số thập phân; không chuyển sang JavaScript Number vì DB dùng bigint. Header là strong ETag, không chấp nhận wildcard, weak tag hoặc nhiều giá trị. Thiếu/sai → 400/MSG253; revision cũ → 409/MSG252. Reload rồi để người dùng xác nhận lại, không tự replay thao tác cũ.
 
 JSON tối đa64KiB kể cả chunked. Chỉ `application/json`/JSON media type; không chấp nhận property lạ, duplicate ở mọi cấp, sai casing, null (ngoại trừ `chairReplacement: null`), item null hoặc enum dạng số. IDs phải non-empty; role chỉ Chair/Secretary/Member. Email Guest trim, tối đa256; invitedName trim, 1–200 ký tự. Email trùng current Guest hoặc email current internal bị từ chối không phân biệt hoa thường. Một user invalid làm cả batch thất bại.
 
@@ -103,8 +103,8 @@ Lỗi có mã: `{code,message,errors}`; errors là dictionary field → string[]
 | 503 | MSG108 | Không lưu được phản hồi |
 | 409 | MSG109 | Vi phạm Chair/Secretary bắt buộc |
 | 400 | MSG152 | Grant sai/không được cấp |
-| 409 | MSG238 | Revision cũ |
-| 400 | MSG239 | Query/If-Match sai |
+| 409 | MSG252 | Revision cũ |
+| 400 | MSG253 | Query/If-Match sai |
 | 415 / 413 | MSG34 / MSG87 | Media type / payload size |
 
 ## 5. Transaction và delivery
@@ -125,4 +125,4 @@ SMTP là at-least-once: crash sau mail server nhận nhưng trước ghi Sent c�
 
 Preflight **dừng** nếu có legacy Guest trong MeetingParticipant, Delegated/delegated_to hoặc nhiều Chair. Không xóa/chuyển dữ liệu ngầm. Cần người sở hữu dữ liệu quyết định mapping trước upgrade. Down bị chặn khi đã có Guest/grant/dispatch/removed history; dùng forward fix hoặc restore đã chuẩn bị. Không sửa migration đã lên main.
 
-Tài liệu liên quan: [FE/manual](09-thanh-phan-tham-du-ban-giao.md), [UC-04](09-thanh-phan-tham-du-guest-uc04.md), [kết quả test](09-thanh-phan-tham-du-ket-qua-kiem-thu.md), [ADR-0019](../05-decisions/0019-vong-doi-thanh-phan-va-y-dinh-gui-thu.md).
+Tài liệu liên quan: [FE/manual](09-thanh-phan-tham-du-ban-giao.md), [UC-04](09-thanh-phan-tham-du-guest-uc04.md), [kết quả test](09-thanh-phan-tham-du-ket-qua-kiem-thu.md), [ADR-0021](../05-decisions/0021-vong-doi-thanh-phan-va-y-dinh-gui-thu.md).

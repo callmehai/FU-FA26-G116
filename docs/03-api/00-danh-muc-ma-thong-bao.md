@@ -49,8 +49,8 @@ Các mã UC-27–30 dưới đây đã có Backend. OTP/session production thu�
 | `MSG152` | 400 | Grant không được phép | Quyền bổ sung đã chọn không được phép. |
 | `MSG153` | 200 | Chỉ đổi optional grants | Cập nhật quyền cuộc họp thành công. |
 | `MSG154` | 200 | Role/grants/response không có thay đổi | Không có thay đổi cần lưu. |
-| `MSG238` | 409 | Revision roster stale | Danh sách thành phần đã thay đổi. Vui lòng tải lại và thử lại. |
-| `MSG239` | 400 | Query hoặc If-Match thiếu/sai | Query hoặc If-Match không hợp lệ. Vui lòng tải lại dữ liệu. |
+| `MSG252` | 409 | Revision roster stale | Danh sách thành phần đã thay đổi. Vui lòng tải lại và thử lại. |
+| `MSG253` | 400 | Query hoặc If-Match thiếu/sai | Query hoặc If-Match không hợp lệ. Vui lòng tải lại dữ liệu. |
 
 Endpoint Participants dùng lại `415/MSG34` cho content-type và `413/MSG87` cho giới hạn 64 KiB. 401 authentication; 403/404 body rỗng theo quyền và khả năng tiết lộ tài nguyên.
 
@@ -91,7 +91,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 
 ## Mã tiếp theo
 
-**`MSG240`** — SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG152`–`MSG154`, `MSG238`–`MSG239` theo bảng contract Participants. `MSG205`–`MSG237` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai.  `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai.  `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG151` dành sẵn cho thay đổi FE-06 trong Report 3; `MSG152`–`MSG154` đã triển khai trong SCRUM-20. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG254`** — SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG152`–`MSG154`, `MSG252`–`MSG253` theo bảng contract Participants. `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020. Giữ nguyên MSG141 đã triển khai; đặc tả UC-23b dùng MSG250 cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai.  `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai.  `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG151` dành sẵn cho thay đổi FE-06 trong Report 3; `MSG152`–`MSG154` đã triển khai trong SCRUM-20. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -414,24 +414,24 @@ Các mã dưới đây **dành sẵn** cho đặc tả ngày 14/10/2026, chưa p
 | `MSG158` | UC-32c / EX-2 · Dành sẵn | Unable to display the document. Please try again. |
 | `MSG159` | UC-32c / EX-3 · Dành sẵn | Secret Meeting documents can only be viewed online and cannot be downloaded. |
 | `MSG160` | UC-32c / EX-4 · Dành sẵn | Unable to download the document. Please try again. |
-| `MSG161` | UC-33a / Normal Flow · Dành sẵn | Document added to the Meeting successfully. |
+| `MSG161` | UC-33a / Normal Flow · Dành sẵn | Documents added to the Meeting successfully. |
 | `MSG162` | UC-33a / EX-1 · Dành sẵn | You no longer have permission to add documents to this Meeting. |
-| `MSG163` | UC-33a / EX-2 · Dành sẵn | Select your own available document and, if applicable, an available Agenda Item in this Meeting. |
-| `MSG164` | UC-33a / EX-3; UC-36 / EX-1 · Dành sẵn | Select a valid PDF or DOCX file no larger than 50 MB. |
-| `MSG165` | UC-33a / EX-4 · Dành sẵn | This document is already attached to the Meeting. |
-| `MSG166` | UC-33a / EX-5 · Dành sẵn | Unable to add the document. No document was added. Please try again. |
+| `MSG163` | ADR-0020 · Ngừng dùng | Retired: document addition and Agenda Item linking are separate operations under ADR-0020. Do not reuse. |
+| `MSG164` | UC-33a / EX-3; UC-36 / EX-1 · Dành sẵn | Select valid PDF or DOCX files, each no larger than 50 MB. |
+| `MSG165` | UC-33a / EX-4 · Dành sẵn | One or more selected documents are already attached to the Meeting. |
+| `MSG166` | UC-33a / EX-5 · Dành sẵn | Unable to add the documents. No documents were added. Please try again. |
 | `MSG167` | UC-33c / Normal Flow · Dành sẵn | Document removed from the Meeting successfully. |
-| `MSG168` | UC-33c / EX-1 · Dành sẵn | The document cannot be removed because Meeting Minutes already exist. |
+| `MSG168` | ADR-0020 · Ngừng dùng | Retired: Meeting Minutes no longer lock document removal under ADR-0020. Do not reuse. |
 | `MSG169` | UC-33c / EX-2 · Dành sẵn | You no longer have permission to remove documents from this Meeting. |
-| `MSG170` | UC-33c / EX-3 · Dành sẵn | This document is no longer attached to the Meeting. Refresh the document list. |
+| `MSG170` | UC-33b, UC-33d / EX-2; UC-33c / EX-3 · Dành sẵn | This document is no longer attached to the Meeting. Refresh the document list. |
 | `MSG171` | UC-33c / EX-4 · Dành sẵn | Unable to remove the document. It remains attached to the Meeting. Please try again. |
 | `MSG172` | UC-33a / EX-6 · Dành sẵn | Documents cannot be added after the Meeting has ended. |
-| `MSG173` | UC-33a / EX-7; UC-33c / EX-5 · Dành sẵn | Documents cannot be added to or removed from a completed Agenda Item. |
-| `MSG174` | UC-33a / EX-8; UC-33c / EX-6 · Dành sẵn | This Meeting is not accessible. |
+| `MSG173` | ADR-0020 · Ngừng dùng | Retired: Agenda Item status no longer locks document links under ADR-0020. Do not reuse. |
+| `MSG174` | UC-33a / EX-7; UC-33b / EX-7; UC-33c / EX-5; UC-33d / EX-7 · Dành sẵn | This Meeting is not accessible. |
 | `MSG175` | UC-34 / EX-2; UC-71a / EX-1; UC-71b / EX-1; UC-71c / EX-1; UC-72b / EX-1; UC-72c / EX-1; UC-72d / EX-1 · Dành sẵn | This personal-library item is not available. |
 | `MSG176` | UC-34 / EX-1 · Dành sẵn | Unable to load your personal document library. Please try again. |
-| `MSG177` | UC-36 / Normal Flow · Dành sẵn | Document uploaded to your personal library successfully. |
-| `MSG178` | UC-36 / EX-3 · Dành sẵn | Unable to upload the document. No document was added. Please try again. |
+| `MSG177` | UC-36 / Normal Flow · Dành sẵn | Documents uploaded to your personal library successfully. |
+| `MSG178` | UC-36 / EX-3 · Dành sẵn | Unable to upload the files. No documents were added. Please try again. |
 | `MSG179` | UC-36 / EX-2; UC-71c / EX-2; UC-72a / EX-2; UC-72c / EX-2 · Dành sẵn | The selected destination folder is not available in your personal library. |
 | `MSG180` | UC-71a / Normal Flow · Dành sẵn | Document deleted from your personal library successfully. |
 | `MSG181` | UC-71a / EX-2 · Dành sẵn | Unable to delete the document. Your personal library remains unchanged. |
@@ -466,7 +466,7 @@ Các mã dưới đây được dành sẵn cho đặc tả nghiệp vụ trong 
 
 | Mã | Nguồn / tình huống | Thông báo chuẩn |
 |---|---|---|
-| `MSG205` | UC-52a, UC-52b / EX-1 · Dành sẵn | Meeting votes are not accessible. |
+| `MSG205` | UC-52a, UC-52b / EX-1; UC-53, UC-54 / EX-6; UC-55 / EX-7; UC-56 / EX-3; UC-57 / EX-5 · Dành sẵn | Meeting votes are not accessible. |
 | `MSG206` | UC-52a / EX-2 · Dành sẵn | Unable to load the meeting votes. Please try again. |
 | `MSG207` | UC-52a / AF-1 · Dành sẵn | No votes to display. |
 | `MSG208` | UC-52b / EX-2 · Dành sẵn | Unable to load the vote status or result. Please try again. |
@@ -498,7 +498,28 @@ Các mã dưới đây được dành sẵn cho đặc tả nghiệp vụ trong 
 | `MSG234` | UC-57 / EX-3 · Dành sẵn | Only the current Chair can record a conclusion for a Closed vote while the meeting is InProgress or Ended. |
 | `MSG235` | UC-57 / Normal Flow · Dành sẵn | Vote conclusion recorded successfully. |
 | `MSG236` | UC-57 / EX-4 · Dành sẵn | Unable to record the vote conclusion. No conclusion was recorded. Please try again. |
-| `MSG237` | UC-53, UC-54, UC-55, UC-56, UC-57 / Cancellation · Dành sẵn | Action cancelled. No changes were made. |
+| `MSG237` | FE-11 · Ngừng dùng | Retired: closing or cancelling the UI does not require a system message. Do not reuse. |
+
+### Tài liệu và liên kết mục nghị sự — ADR-0020 (15/10/2026)
+
+Các mã sau **Dành sẵn, chưa triển khai**; thông điệp đặc tả bằng tiếng Anh.
+
+| Mã | Nguồn / tình huống | Thông báo chuẩn |
+|---|---|---|
+| `MSG238` | UC-33b / Normal Flow · Dành sẵn, chưa triển khai | Document linked to the Agenda Item successfully. |
+| `MSG239` | UC-33d / Normal Flow · Dành sẵn, chưa triển khai | Document unlinked from the Agenda Item successfully. |
+| `MSG240` | UC-33b / EX-1 · Dành sẵn, chưa triển khai | You no longer have permission to link documents in this Meeting. |
+| `MSG241` | UC-33d / EX-1 · Dành sẵn, chưa triển khai | You no longer have permission to unlink documents in this Meeting. |
+| `MSG242` | UC-33b, UC-33d / EX-3 · Dành sẵn, chưa triển khai | Select an available Agenda Item in this Meeting. |
+| `MSG243` | UC-33b / EX-4 · Dành sẵn, chưa triển khai | This document is already linked to the selected Agenda Item. |
+| `MSG244` | UC-33b / EX-5 · Dành sẵn, chưa triển khai | Unable to link the document. No links were changed. Please try again. |
+| `MSG245` | UC-33d / EX-5 · Dành sẵn, chưa triển khai | Unable to unlink the document. No links were changed. Please try again. |
+| `MSG246` | UC-33d / EX-4 · Dành sẵn, chưa triển khai | This document is no longer linked to the selected Agenda Item. Refresh the document list. |
+| `MSG247` | UC-33b, UC-33d / EX-6 · Dành sẵn, chưa triển khai | Document links cannot be changed after the Meeting has ended. |
+| `MSG248` | UC-33c / EX-1 · Dành sẵn, chưa triển khai | Documents cannot be removed after the Meeting has ended. |
+| `MSG249` | UC-33a / EX-2 · Dành sẵn, chưa triển khai | Select one or more available documents from your personal library. |
+| `MSG250` | UC-23b / EX-4 · Dành sẵn, chưa triển khai | Planned Duration and Presenter cannot be changed after an agenda item has started. |
+| `MSG251` | UC-35 / EX-5 · Dành sẵn, chưa triển khai | Comments are read-only after the Meeting has ended. |
 
 ## Ghi chú: mã dùng chung có chủ ý
 

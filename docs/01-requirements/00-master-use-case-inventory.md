@@ -11,18 +11,21 @@
 > [Report 2](../08-reports/Report-2_Project_Management_Plan.md) (kế hoạch),
 > [Report 3](../08-reports/Report-3_Software_Requirement_Specification.md) (UC, BR, quyền).
 
-**Baseline hiện tại: 15 Feature, 72 Use Case (UC-01 → UC-72).** UC-32b và UC-33b đã bỏ ngày 13/10/2026 ([ADR-0018](../05-decisions/0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md)).
+**Baseline hiện tại: 15 Feature, 72 Use Case (UC-01 → UC-72).** Cập nhật FE-07/FE-11 ngày 15/10/2026:
+UC-32b vẫn bỏ; UC-33b được tái cấp cho gắn tài liệu vào mục nghị sự, bổ sung UC-33d để bỏ gắn một mục
+theo [ADR-0020](../05-decisions/0020-tai-lieu-theo-quyen-xem-cuoc-hop.md). FE-07 có 16 UC chi tiết;
+FE-11 có 7 UC chi tiết. Số UC gom giữ nguyên.
 
 ## Các quyết định đã áp dụng
 
 | # | Quyết định | Hệ quả trên danh mục UC |
 |---|---|---|
 | D1 | **Bỏ Meeting Session.** Một cuộc họp = một buổi họp; lịch (`PlannedStartTime`, `PlannedEndTime`), agenda, biểu quyết, ghi âm, biên bản gắn thẳng vào Meeting ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)) | Feature *Meeting Session Management* bị xoá; 6 UC phiên họp không còn. Lịch nhập khi tạo cuộc họp (UC-14); sau `Published` chỉ dời được giờ, địa điểm, link (UC-15 — *Reschedule*) |
-| D2 | **Biểu quyết chỉ trong cuộc họp.** Không có vote time-boxed / trước / sau họp, không quorum, không đối tượng Resolution ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md)) | FE-11 đổi tên *Voting Management*; UC-57 *Record Vote Conclusion*: Chair ghi `Passed` / `NotPassed` / `Deferred` |
+| D2 | **Chỉ mở và gửi phiếu trong cuộc họp.** Chair chuẩn bị nháp ở Approved/Published/InProgress; sau Ended vẫn đóng/kiểm phiếu cũ và ghi kết luận. Không time-boxed, quorum hoặc Resolution ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md), [ADR-0017](../05-decisions/0017-ket-thuc-hop-khong-phu-thuoc-diem-danh-bieu-quyet.md), [ADR-0019](../05-decisions/0019-chuan-bi-bieu-quyet-truoc-khi-hop.md)) | FE-11 *Voting Management*; Vote thuộc Meeting, không gắn mục nghị sự. UC-57: Chair ghi `Passed` / `NotPassed` / `Deferred`, ghi rồi không sửa |
 | D3 | **Secretary tự upload audio.** Không có vai trò Audio Uploader | UC-44 chỉ có actor Secretary |
 | D4 | **Bỏ uỷ quyền tham dự (delegation).** Phản hồi lời mời chỉ còn `Accepted` / `Declined` (BR-105) | UC-29 không còn nhánh Delegated |
 | D5 | **Gom UC nhỏ.** Các thao tác CRUD cùng một màn hình được gom thành một UC, tách thành UC con có hậu tố chữ (`UC-06a`, `UC-06b`…) | Danh mục từ 94 UC (88 đang dùng) xuống **70 UC**; toàn bộ UC được đánh số lại liền mạch theo Feature |
-| D6 | **Tài liệu không có phiên bản** (PO 13/10/2026). Kho cá nhân và cuộc họp chỉ giữ tham chiếu tới một file bất biến; một job dọn file không còn ai tham chiếu ([ADR-0018](../05-decisions/0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md)) | Bỏ UC-32b, UC-33b (không tái cấp). Thêm UC-33c *Remove Document from Meeting*, UC-71 *Manage Personal Documents*, UC-72 *Manage Library Folders* (thư mục như AI-eCabinet). Chỉ Chủ toạ và Thư ký thêm / gỡ tài liệu cuộc họp. Xem trước dựng trên trình duyệt, server không chuyển đổi |
+| D6 | **Tài liệu không có phiên bản** (ADR-0018), cập nhật quyền đọc và liên kết theo [ADR-0020](../05-decisions/0020-tai-lieu-theo-quyen-xem-cuoc-hop.md) | UC-32b vẫn bỏ; UC-33b tái cấp cho gắn mục, UC-33d bỏ gắn một mục. Ai xem được Meeting thì đọc được tài liệu. Chair/Secretary thêm, gỡ và sửa liên kết trước khi kết thúc; một tài liệu gắn nhiều mục. Sau Ended tài liệu và bình luận chỉ đọc. Thư mục tự tạo dùng ngày bắt đầu dự kiến, giờ Việt Nam |
 
 > **Quy ước số:** từ baseline này **UC-01 → UC-70 đóng băng số**. Thêm UC mới thì lấy `UC-71` trở đi; thêm thao tác vào
 > một UC gom thì lấy hậu tố chữ kế tiếp. Số UC cũ (trước 10/10/2026) chỉ còn dùng để tra lịch sử — xem [§5](#5-bảng-đổi-số-uc-cũ--mới).
@@ -135,13 +138,13 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-32 | Xem tài liệu cuộc họp *(View Meeting Documents)* — gồm UC-32a Xem danh sách, UC-32c Xem trước / tải về (cuộc họp `Secret` không tải về được). *UC-32b Lịch sử phiên bản: bỏ 13/10/2026* | User có quyền; Guest xác minh email, toàn bộ tài liệu gắn trong cuộc họp | Placeholder | Internal: `<<extend>>` UC-16; Guest qua UC-04 |
-| UC-33 | Quản lý tài liệu cuộc họp *(Manage Meeting Documents)* — gồm UC-33a Thêm tài liệu (từ máy hoặc kho cá nhân), UC-33c Gỡ tài liệu khỏi cuộc họp (chặn khi cuộc họp đã có biên bản). *UC-33b Thêm phiên bản mới: bỏ 13/10/2026* | Chair, Secretary | Placeholder | `<<extend>>` UC-32 |
-| UC-34 | Xem kho tài liệu cá nhân *(View Personal Document Library)* | Internal user | Placeholder | Độc lập |
-| UC-35 | Bình luận tài liệu cuộc họp *(Comment on Meeting Document)* | Organizer, Chair, Secretary, Participant, Guest | Placeholder | `<<extend>>` UC-32 |
-| UC-36 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* — PDF, DOCX tối đa 50 MB, vào thư mục đang chọn | Internal user | Placeholder | `<<extend>>` UC-34 |
-| UC-71 | Quản lý tài liệu trong kho *(Manage Personal Documents)* — gồm UC-71a Xoá khỏi kho (tài liệu đã gắn vào cuộc họp vẫn giữ nguyên), UC-71b Đổi tên, UC-71c Chuyển thư mục | Internal user | Placeholder | `<<extend>>` UC-34 |
-| UC-72 | Quản lý thư mục kho *(Manage Library Folders)* — gồm UC-72a Tạo, UC-72b Đổi tên, UC-72c Chuyển, UC-72d Xoá thư mục rỗng; lồng tối đa 5 cấp | Internal user | Placeholder | `<<extend>>` UC-34 |
+| UC-32 | Xem tài liệu cuộc họp *(View Meeting Documents)* — UC-32a Xem danh sách, UC-32c Xem trước/tải về; quyền đọc theo quyền xem Meeting. `Secret` không tải về; UC-32b vẫn bỏ | Người có quyền xem Meeting, gồm Guest có lời mời đã xác minh còn hiệu lực | Đã đặc tả các UC con | Internal: `<<extend>>` UC-16; Guest qua UC-04 |
+| UC-33 | Quản lý tài liệu cuộc họp *(Manage Meeting Documents)* — UC-33a Thêm một hoặc nhiều tài liệu cùng lần, UC-33b Gắn vào mục (tái cấp theo ADR-0020), UC-33c Gỡ khỏi cuộc họp, UC-33d Bỏ gắn một mục; khoá khi Meeting kết thúc. Nhóm tài liệu thêm cùng lần thành công toàn bộ hoặc không thêm tài liệu nào | Chair, Secretary hiện hành có quyền xem Meeting | Đã đặc tả bốn UC con | `<<extend>>` UC-32 |
+| UC-34 | Xem kho tài liệu cá nhân *(View Personal Document Library)* | Internal user | Đã đặc tả | Độc lập |
+| UC-35 | Bình luận tài liệu cuộc họp *(Comment on Meeting Document)* — người có quyền đọc được bình luận trước khi Meeting kết thúc; sau đó chỉ đọc | System Admin, Organizer, Approver, Chair, Secretary, Participant, Guest có quyền xem Meeting | Đã đặc tả | `<<extend>>` UC-32 |
+| UC-36 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* — một hoặc nhiều PDF/DOCX cùng lần, tối đa 50 MB mỗi file, vào thư mục đang chọn; cả nhóm thành công hoặc không thêm tài liệu nào | Internal user | Đã đặc tả | `<<extend>>` UC-34 |
+| UC-71 | Quản lý tài liệu trong kho *(Manage Personal Documents)* — gồm UC-71a Xoá khỏi kho (tài liệu đã gắn vào cuộc họp vẫn giữ nguyên), UC-71b Đổi tên, UC-71c Chuyển thư mục | Internal user | Đã đặc tả các UC con | `<<extend>>` UC-34 |
+| UC-72 | Quản lý thư mục kho *(Manage Library Folders)* — gồm UC-72a Tạo, UC-72b Đổi tên, UC-72c Chuyển, UC-72d Xoá thư mục rỗng; lồng tối đa 5 cấp | Internal user | Đã đặc tả các UC con | `<<extend>>` UC-34 |
 
 ## FE-08 — Phòng họp trực tuyến *(Online Meeting Room Management)*
 
@@ -177,12 +180,12 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-52 | Xem biểu quyết *(View Meeting Votes)* — gồm UC-52a Xem danh sách, UC-52b Xem trạng thái / kết quả (xem được cả sau khi `Ended`) | User có quyền | Placeholder | `<<extend>>` UC-16 |
-| UC-53 | Tạo / cấu hình biểu quyết *(Create / Configure Vote)* — chỉ khi `InProgress`; sửa và xoá phiếu `Draft`; Chair chọn vai trò được bỏ phiếu (Chủ toạ / Thư ký / Thành viên / Khách mời) | Chair | Placeholder | `<<extend>>` UC-52 |
-| UC-54 | Mở biểu quyết *(Open Vote)* | Chair | Placeholder | `<<extend>>` UC-52 |
-| UC-55 | Bỏ phiếu *(Cast Vote)* — Chair, Secretary, Member đang phân công; Guest đã xác minh được bỏ phiếu như Member | Chair, Secretary, Participant, Guest | Placeholder | `<<extend>>` UC-52 |
-| UC-56 | Đóng biểu quyết *(Close Vote)* — khi `InProgress` hoặc sau `Ended` | Chair | Placeholder | `<<extend>>` UC-52 |
-| UC-57 | Ghi kết luận biểu quyết *(Record Vote Conclusion)* — `Passed` / `NotPassed` / `Deferred`; ghi rồi không sửa | Chair | Placeholder | `<<extend>>` UC-52 |
+| UC-52 | Xem biểu quyết *(View Meeting Votes)* — gồm UC-52a Xem danh sách, UC-52b Xem trạng thái / kết quả (xem được cả sau khi `Ended`); nháp chỉ Chair hiện hành thấy | User có quyền | Đã đặc tả các UC con | `<<extend>>` UC-16 |
+| UC-53 | Tạo / cấu hình biểu quyết *(Create / Configure Vote)* — tạo, sửa và xoá nháp khi `Approved`, `Published`, `InProgress`; Chair chọn vai trò được bỏ phiếu | Chair | Đã đặc tả | `<<extend>>` UC-52 |
+| UC-54 | Mở biểu quyết *(Open Vote)* — chỉ `InProgress`, tối đa một Vote Open mỗi Meeting, ít nhất một người đủ điều kiện | Chair | Đã đặc tả | `<<extend>>` UC-52 |
+| UC-55 | Bỏ phiếu *(Cast Vote)* — người trong danh sách chốt lúc mở và còn quyền truy cập; Guest xác minh qua lời mời | Chair, Secretary, Participant, Guest | Đã đặc tả | `<<extend>>` UC-52 |
+| UC-56 | Đóng biểu quyết *(Close Vote)* — khi `InProgress` hoặc sau `Ended` | Chair | Đã đặc tả | `<<extend>>` UC-52 |
+| UC-57 | Ghi kết luận biểu quyết *(Record Vote Conclusion)* — Chair chọn `Passed` / `NotPassed` / `Deferred`; ghi rồi không sửa | Chair | Đã đặc tả | `<<extend>>` UC-52 |
 
 ## FE-12 — Biên bản & Ký điện tử *(Meeting Minutes & Digital Signing)*
 
@@ -296,8 +299,9 @@ Audio → Tóm tắt (sau khi Ended)
 UC-44 Secretary upload audio → AI transcript có speaker → UC-45 Xem → UC-46 Sửa → UC-47 Sinh tóm tắt
 → UC-48 Xem → UC-49 Sửa → UC-50 Duyệt → UC-51 Công bố
 
-Biểu quyết (chỉ khi InProgress)
-UC-53 Tạo → UC-54 Mở → UC-55 Bỏ phiếu → UC-56 Đóng → hệ thống kiểm phiếu → UC-57 Chair ghi kết luận
+Biểu quyết (ADR-0019: chuẩn bị nháp trước khi họp)
+UC-53 Tạo/cấu hình nháp khi Approved / Published / InProgress
+→ UC-54 Mở khi InProgress → UC-55 Bỏ phiếu khi InProgress → UC-56 Đóng → hệ thống kiểm phiếu → UC-57 Chair ghi kết luận
 Sau Ended: không nhận phiếu mới; Chair vẫn UC-56 đóng phiếu còn mở và UC-57 ghi kết luận (ADR-0017). Phiếu Draft xoá được trong UC-53
 
 Biên bản

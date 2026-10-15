@@ -6,7 +6,7 @@ Nguồn chuẩn là ba báo cáo DOCX trên Google Drive (Report 1, 2, 3), đư�
 [08-reports/](../08-reports/README.md). Các file ở đây trích và sắp xếp lại nội dung đó để dev và tester tra cứu nhanh:
 
 - Mọi chức năng, luồng nghiệp vụ và quy tắc kiểm thử bám theo các đặc tả tại đây.
-- Khi Report 3 thay đổi, đồng bộ lại thư mục này trong **cùng commit** với file Report 3 đã sync.
+- Khi Report 3 thay đổi, sửa DOCX local trước, sinh snapshot bằng `scripts/sync_reports.py`, rồi đồng bộ lại thư mục này trong **cùng commit**. Quy tắc snapshot Report 1–7 nằm ở [08-reports/README.md](../08-reports/README.md).
 
 ---
 
@@ -16,9 +16,11 @@ Nguồn chuẩn là ba báo cáo DOCX trên Google Drive (Report 1, 2, 3), đư�
   72 Use Case (UC-01 → UC-72), actor, quan hệ `<<extend>>`/`<<include>>`, **bảng đổi số UC cũ → mới** sau đợt gom UC
   ngày 10/10/2026.
 - [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case đồng bộ từ Report 3 §II (UC đã đặc tả
-  và UC placeholder), có link tới sequence diagram tương ứng.
-- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1 (156 BR đang dùng trong
-  dải BR-01 → BR-192; danh sách BR ngừng dùng ở cuối file).
+  và UC placeholder), có link tới sequence diagram tương ứng. FE-11 đã có đặc tả UC-52a, UC-52b,
+  UC-53–UC-57 theo quyết định 14/10/2026; các sequence của FE-11 chưa được tạo trong đợt đặc tả này.
+- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1 (238 BR đang dùng trong
+  dải BR-01 → BR-286; danh sách BR ngừng dùng ở cuối file). FE-07/FE-11 đã đồng bộ ngày 15/10/2026,
+  gồm UC-33b/33d theo ADR-0020; các phần màn hình chờ cập nhật theo [note bàn giao](../notes/README.md).
 - Mã thông báo `MSGnn`: [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md) là nguồn chuẩn duy nhất.
 
 Yêu cầu phi chức năng, phạm vi MoSCoW và dữ liệu cá nhân hiện nằm trong Report 1 và Report 3 §IV; chưa tách file riêng.
@@ -86,6 +88,34 @@ Yêu cầu phi chức năng, phạm vi MoSCoW và dữ liệu cá nhân hiện n
 | Nhánh rẽ **không đạt** mục tiêu vì dữ liệu không hợp lệ (người dùng sửa lại được) | **Exception Flow (EX - Recoverable)** | *"The flow resumes at Step X of the Main Flow."* |
 | Nhánh rẽ **không đạt** mục tiêu vì vi phạm quy tắc / điều kiện tiên quyết | **Exception Flow (EX - Terminated)** | *"[Business outcome]. The use case ends."* |
 | Thao tác UI thuần túy (Sort, Next page, Resize...) | **Business Rule / UI behavior** | Không tách thành flow riêng |
+
+---
+
+### 2.6. Quy tắc viết Business Rule (BR)
+
+- Một BR chỉ diễn đạt **một nguyên tắc nghiệp vụ độc lập**. Tách các điều kiện, quyền, giới hạn và kết quả có thể áp dụng riêng thành các BR riêng.
+- Viết ngắn, trực tiếp và dễ kiểm tra: nêu đối tượng, điều kiện nếu có và điều được phép, bắt buộc hoặc bị cấm. Không kể lại toàn bộ flow.
+- Nội dung Rule Statement không chứa mã BR khác, mã feature, mã MSG, tên bảng dữ liệu hoặc chi tiết triển khai. Phạm vi UC, nguồn quyết định và liên hệ giữa các quy tắc nằm ở cột riêng hoặc tại bước áp dụng trong UC.
+- Tra danh mục trước khi thêm: dùng lại quy tắc cùng nghĩa, không tạo BR trùng. Khi tách BR lớn, giữ mã cũ cho nguyên tắc chính và cấp mã mới cho các nguyên tắc được tách; không renumber hoặc tái cấp mã đã dùng.
+- Quy tắc từ ADR đã được chấp nhận cần được diễn đạt thành BR nghiệp vụ; ghi ADR tại cột nguồn, không đưa nội dung kỹ thuật của ADR vào Rule Statement.
+- Phân biệt quy tắc đã chốt và quy tắc đề xuất. Không biến giả định, giá trị giới hạn chưa rõ hoặc quyết định còn thiếu thành quy tắc đã được PO thông qua.
+- Dùng tên actor chuẩn: `Guest`, không dùng `verified Guest` hoặc `external Guest` làm tên actor. Xác minh email và hiệu lực lời mời là điều kiện nghiệp vụ. `Participant` không có nghĩa là người đó đã tham dự hoặc được ghi nhận có mặt.
+
+Ví dụ Rule Statement: **“Only an empty folder can be deleted.”** Phạm vi `UC-72d` và nguồn quyết định được ghi ở cột riêng.
+
+### 2.7. Quy tắc viết System Message (MSG)
+
+- Thông điệp trong UC Specification và danh mục phục vụ đặc tả được viết bằng **tiếng Anh**. Chỉ đổi ngôn ngữ khi có yêu cầu; thay đổi đặc tả không tự động thay đổi chuỗi UI/API đã triển khai.
+- Một mã MSG diễn đạt một tình huống. Dùng chung mã khi cùng tình huống xuất hiện ở nhiều UC; không dùng cùng mã cho lỗi có nghĩa khác nhau chỉ vì câu chữ gần giống.
+- Viết ngắn và cụ thể: nói kết quả hoặc vấn đề người dùng cần hiểu; thêm cách sửa/thử lại khi có ích. Không đưa tên exception, endpoint, trạng thái HTTP hoặc chi tiết lưu trữ vào thông điệp.
+- Thông điệp thất bại phải đúng với kết quả dữ liệu: không báo thành công khi chỉ hoàn tất một phần; nếu không có thay đổi nào được lưu, nói rõ khi người dùng cần biết.
+- Không tiết lộ sự tồn tại của tài nguyên mà người dùng không được truy cập. Phân biệt lỗi mất quyền với tài nguyên không khả dụng chỉ khi việc phân biệt không làm lộ dữ liệu.
+- Tra [danh mục MSG](../03-api/00-danh-muc-ma-thong-bao.md) trước khi cấp mã. Dùng dải `MSGnn` chung cho dự án, cập nhật “Mã tiếp theo”, không renumber hoặc tái dùng mã đã nghỉ.
+- Trong UC, ghi đủ **mã và nguyên văn thông điệp** tại đúng bước thành công hoặc lỗi. Không để mã tạm hoặc dùng câu chữ khác với danh mục.
+- Mã mới cho đặc tả phải ghi trạng thái **Dành sẵn, chưa triển khai**. Đồng bộ danh mục MSG, phụ lục Report 3 và các UC dùng mã đó trong cùng đợt sửa.
+- Không tạo MSG cho thao tác đóng/hủy giao diện không được đặc tả, hoặc cho mỗi bước nhỏ không cần phản hồi riêng.
+
+Ví dụ: **`MSGnn – “Only an empty folder can be deleted.”`** Mã thực tế phải được cấp từ danh mục chung.
 
 ---
 

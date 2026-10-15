@@ -185,6 +185,21 @@ public sealed partial class MessageCodeCatalogueTests
     }
 
     [Theory]
+    [InlineData("MSG238", "UC-33b / Normal Flow")]
+    [InlineData("MSG239", "UC-33d / Normal Flow")]
+    public void Participants_preserve_main_document_link_code_reservations(string code, string source)
+    {
+        var endpoint = File.ReadAllText(Path.Combine(
+            RepoRoot, "backend", "TrustCabinet.Web", "Endpoints", "ParticipantEndpoints.cs"));
+        Assert.DoesNotContain(code, BackendConstant().Matches(endpoint)
+            .Select(match => match.Groups[1].Value));
+        var row = Assert.Single(Regex.Matches(File.ReadAllText(CataloguePath),
+            @"^\|\s*`(MSG\d+)`\s*\|([^\r\n]+)", RegexOptions.Multiline),
+            match => match.Groups[1].Value == code);
+        Assert.Contains(source, row.Groups[2].Value, StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("Msg78Submitted", "MSG78")]
     [InlineData("Msg79ReturnedToDraft", "MSG79")]
     [InlineData("Msg80InvalidTransition", "MSG80")]

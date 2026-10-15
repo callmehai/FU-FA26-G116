@@ -2,6 +2,10 @@
 
 Chốt ngày **15/10/2026 (Asia/Saigon)**. Branch `feat/scrum20-Backend-Invite-participants-and-acept`, base HEAD `6a4a7fe`, thay đổi chưa commit. Backend-only; không sửa source/lockfile Frontend, đã gửi change note Jira theo yêu cầu sửa review, không merge/deploy.
 
+**Cập nhật khi giải quyết merge ngày 15/10/2026:** main `e754010` đã dành MSG238/MSG239 cho ADR-0020 và dùng ADR-0019 cho biểu quyết. Participants chuyển sang MSG252/MSG253, mã tiếp theo MSG254; ADR của Participants chuyển sang ADR-0021. Các kết quả kiểm thử bên dưới là evidence trước merge, với phân bổ mã tại thời điểm đó.
+
+**Kiểm tra bản giải quyết merge:** Release build `-warnaserror` có 0 warning/error; frontend lint/build pass. Full suite có 1.063 passed, 25 failed do Redis localhost6379; chạy lại riêng 25 test đó trên Redis8 tạm tại127.0.0.1:6389 có 25/25 passed. Tổng 1.088 test được xác minh qua hai lượt, 0 skipped; gồm hai regression bảo toàn MSG238/MSG239 cho tài liệu. Container test tạm đã dừng. Postman JSON, số ADR duy nhất và `git diff --check` pass.
+
 ## Sửa review ngày 15/10/2026
 
 - **P2 — Chair inactive:** chỉ cho phép Chair cũ inactive xuống Member trong batch thay Chair có confirmation đúng; incoming phải active, vẫn giữ required Secretary và rollback atomic. Regression chạy cả Published/InProgress, thiếu confirmation, incoming inactive và lỗi SaveChanges sau demote.
@@ -18,7 +22,7 @@ Artifacts lượt sửa review: `%TEMP%/scrum20-review-fixes/review-regressions-
 - API roster/context/options, recovery Secretary, thêm internal/Guest, grants độc lập, Chair swap atomic, gỡ mềm/revoke, phản hồi của chính actor và summary. ETag/revision chống stale write; strict JSON và giới hạn batch/payload.
 - Migration lifecycle/Guest/grants/dispatch, giữ evidence, preflight dữ liệu legacy và guard downgrade. Shared access Meeting/Agenda/reminder và realtime nội bộ loại assignment Removed.
 - Dispatch cùng transaction domain/audit/notification; worker materialize idempotent trước SMTP queue hiện có. Guest default deny/unavailable, production OTP/session chờ UC-04.
-- Fixture Development insert-only cho bảy trạng thái; API contract, FE/manual/Postman, UC-04 handoff và ADR-0019.
+- Fixture Development insert-only cho bảy trạng thái; API contract, FE/manual/Postman, UC-04 handoff và ADR-0021.
 
 ## Môi trường và kết quả
 

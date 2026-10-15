@@ -1,6 +1,6 @@
 # ADR-0006: Kho tài liệu cá nhân và quy tắc đọc tài liệu
 
-- **Trạng thái:** Đã chấp nhận — phần loại Guest thay thế bởi ADR-0016; phần phiên bản và ghim phiên bản thay thế bởi ADR-0018
+- **Trạng thái:** Đã chấp nhận — phần loại Guest thay thế bởi ADR-0016; phần phiên bản và ghim phiên bản thay thế bởi ADR-0018; quy tắc đọc tài liệu cuộc họp thay thế bởi ADR-0020
 - **Ngày:** 2026-09-20
 - **Người quyết định:** Nhóm SEP490-G116
 

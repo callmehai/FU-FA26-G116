@@ -1,4 +1,4 @@
-# ADR-0019 — Lịch sử thành phần và ý định gửi thư cùng transaction
+# ADR-0021 — Lịch sử thành phần và ý định gửi thư cùng transaction
 
 - Ngày: 14/10/2026
 - Trạng thái: Đề xuất, đã hiện thực trên branch SCRUM-20; chờ team review

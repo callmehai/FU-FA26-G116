@@ -8,6 +8,7 @@ participant ":Notification Repository" as NotificationRepository
 database ":Database" as Database
 
 User->NotificationPanel: Select a notification
+activate NotificationPanel
 NotificationPanel->NotificationController: Open notification target
 activate NotificationController
 NotificationController->NotificationService: Open notification target
@@ -53,3 +54,4 @@ deactivate Database
 deactivate NotificationRepository
 deactivate NotificationService
 deactivate NotificationController
+deactivate NotificationPanel

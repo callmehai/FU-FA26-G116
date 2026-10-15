@@ -8,6 +8,7 @@ participant ":User Repository" as UserRepository
 database "Database" as Database
 
 User->LoginPage: Enter email and password
+activate LoginPage
 User->LoginPage: Click "Sign In"
 LoginPage->AuthController: signIn(username, password)
 activate AuthController
@@ -40,3 +41,4 @@ deactivate Database
 deactivate UserRepository
 deactivate AuthService
 deactivate AuthController
+deactivate LoginPage

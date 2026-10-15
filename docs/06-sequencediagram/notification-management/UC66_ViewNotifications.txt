@@ -8,6 +8,7 @@ participant ":Notification Repository" as NotificationRepository
 database ":Database" as Database
 
 User->NotificationPanel: Select notification bell
+activate NotificationPanel
 NotificationPanel->NotificationController: Request notifications and unread count
 activate NotificationController
 NotificationController->NotificationService: Get notifications for current user
@@ -33,3 +34,4 @@ deactivate Database
 deactivate NotificationRepository
 deactivate NotificationService
 deactivate NotificationController
+deactivate NotificationPanel

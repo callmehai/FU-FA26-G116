@@ -43,6 +43,8 @@ alt Actor is not the active, authorized current approver - EX-4
     MeetingPage-->Approver: You are no longer authorized to review this meeting
 
 else Actor is the active, authorized current approver
+    activate MeetingController
+    activate MeetingService
     MeetingService->MeetingService: Verify meeting is WaitingApproval
 
     alt Meeting is no longer WaitingApproval - EX-2
@@ -53,6 +55,8 @@ else Actor is the active, authorized current approver
         MeetingPage-->Approver: This meeting is no longer awaiting approval
 
     else Meeting is WaitingApproval
+        activate MeetingController
+        activate MeetingService
         alt Decision is Approve
             MeetingService->MeetingRepository: Revalidate actor and status; record Approved status,\napproval decision and history together (BR-38)
             activate MeetingRepository
@@ -71,6 +75,10 @@ else Actor is the active, authorized current approver
                 MeetingPage-->Approver: Unable to complete the approval decision. Please try again
 
             else Meeting approved
+                activate Database
+                activate MeetingController
+                activate MeetingRepository
+                activate MeetingService
                 Database-->MeetingRepository: Approved status, decision and history recorded together
                 deactivate Database
                 MeetingRepository-->MeetingService: Approval applied
@@ -83,6 +91,8 @@ else Actor is the active, authorized current approver
             end
 
         else Decision is Reject
+            activate MeetingController
+            activate MeetingService
             MeetingService->MeetingService: Trim rejection reason
 
             alt Trimmed reason is empty - EX-1
@@ -93,6 +103,8 @@ else Actor is the active, authorized current approver
                 MeetingPage-->Approver: MSG83 - Rejection reason is required
 
             else Trimmed reason exceeds 1000 characters - EX-5
+                activate MeetingController
+                activate MeetingService
                 MeetingService-->MeetingController: MSG84 - Rejection reason must not exceed 1000 characters
                 deactivate MeetingService
                 MeetingController-->MeetingPage: Return rejection reason validation
@@ -100,6 +112,8 @@ else Actor is the active, authorized current approver
                 MeetingPage-->Approver: MSG84 - Rejection reason must not exceed 1000 characters
 
             else Rejection reason is valid
+                activate MeetingController
+                activate MeetingService
                 MeetingService->MeetingRepository: Revalidate actor and status; record Rejected status,\nrejection reason, decision and history together (BR-38)
                 activate MeetingRepository
                 MeetingRepository->Database: Save rejection decision, reason, status and history as one complete action
@@ -117,6 +131,10 @@ else Actor is the active, authorized current approver
                     MeetingPage-->Approver: Unable to complete the approval decision. Please try again
 
                 else Meeting rejected
+                    activate Database
+                    activate MeetingController
+                    activate MeetingRepository
+                    activate MeetingService
                     Database-->MeetingRepository: Rejected status, reason, decision and history recorded together
                     deactivate Database
                     MeetingRepository-->MeetingService: Rejection applied

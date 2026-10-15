@@ -9,6 +9,7 @@ control ":Audit Service" as AuditService
 database ":Database" as Database
 
 Admin->UserPage: Select Edit Account
+activate UserPage
 UserPage->UserController: Request user account information
 activate UserController
 UserController->UserService: Get user account information
@@ -48,3 +49,4 @@ deactivate Database
 deactivate UserRepository
 deactivate UserService
 deactivate UserController
+deactivate UserPage
