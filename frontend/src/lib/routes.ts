@@ -23,3 +23,10 @@ export const routes = {
   documents: '/mgmt/documents',
   calendar: '/calendar',
 } as const
+
+/**
+ * Location-state key the login page sets on its redirect to the page the user came from. That page
+ * may have belonged to the account signed in before, so NotFound sends this one to the meeting list
+ * rather than showing a 404 (SCRUM-66).
+ */
+export const JUST_SIGNED_IN = 'justSignedIn'
