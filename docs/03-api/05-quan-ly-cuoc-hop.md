@@ -269,9 +269,11 @@ Secretary active trong transaction trước khi ghi bất kỳ thay đổi nào.
 
 Publish tạo notification theo BR-54: chỉ participant có user active và `Response != Delegated`;
 không tự thêm người được ủy quyền chỉ từ `DelegatedToUserId`. Delegate cần participant row riêng
-hợp lệ để nhận notification. Email dùng producer SCRUM-15: gọi
+hợp lệ để nhận notification. Người thực hiện Publish không nhận notification in-app, kể cả khi họ
+là participant. Email dùng producer SCRUM-15: gọi
 `QueueForPublishedMeetingAsync(meetingId)` sau khi transaction công bố đã commit; producer đọc
-meeting đã Published và chọn các participant có user active, không lọc `Response`.
+meeting đã Published và chọn **toàn bộ** participant có user active, không lọc `Response` và không
+loại người Publish (người tạo là participant thì vẫn nhận email).
 Producer lưu `ToAddress`, `Subject`, `Body` (có giờ bắt đầu/kết thúc theo giờ Việt Nam) và tệp
 `.ics` (`DTSTART`/`DTEND` từ lịch dự kiến) khi tạo job. Thay đổi dữ liệu sau commit không sửa nội
 dung job đã lưu. Khi SMTP được bật, job mới có trạng thái `Queued`;

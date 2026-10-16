@@ -24,9 +24,10 @@ Publish ghi status, history và notifications theo BR-54 trong cùng transaction
 service commit publication trước rồi gọi `QueueForPublishedMeetingAsync(meetingId)` bằng cùng scoped DbContext.
 Producer SCRUM-15 đọc meeting Published cùng participants, render và lưu nội dung job một lần.
 
-- Notification chỉ chọn participant có user active và `Response != Delegated`; delegate cần
-  participant row riêng hợp lệ. Email chọn participant có user active theo producer SCRUM-15,
-  không lọc `Response` và không tự thêm `DelegatedToUserId`.
+- Notification chỉ chọn participant có user active và `Response != Delegated`, trừ chính người
+  Publish; delegate cần participant row riêng hợp lệ. Email chọn toàn bộ participant có user active
+  theo producer SCRUM-15, gồm cả người Publish, không lọc `Response` và không tự thêm
+  `DelegatedToUserId`.
 - `DeduplicationKey` là `meeting:{meetingId}:published:{userId}`.
 - Jobs Publish lưu `ToAddress`, `Subject`, `Body` (có giờ họp) và `CalendarAttachment` (`.ics` theo lịch dự kiến).
   Bốn cột email không dùng `OriginHistoryId`, `RecipientUserId`, `MessageType`, `PayloadSnapshot`

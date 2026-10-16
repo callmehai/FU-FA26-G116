@@ -557,7 +557,10 @@ public sealed class MeetingService(
                 }
                 else if (command.Action == MeetingTransitionAction.Publish)
                 {
-                    var recipients = MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants);
+                    // The publisher just acted, so no in-app invitation for them; email still goes
+                    // to every active participant, the publisher included (SCRUM-15 producer).
+                    var recipients = MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants)
+                        .Where(participant => participant.UserId != actorId);
 
                     var notifications = recipients.Select(participant => CreateNotification(
                         participant.UserId,

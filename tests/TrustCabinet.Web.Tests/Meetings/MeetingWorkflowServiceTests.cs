@@ -274,6 +274,25 @@ public sealed class MeetingWorkflowServiceTests
     }
 
     [Fact]
+    public async Task Publish_does_not_notify_the_publisher_in_app_even_when_they_are_a_participant()
+    {
+        var meeting = GivenMeeting(MeetingStatus.Approved);
+        var publisher = Participant(meeting, active: true, InvitationResponse.Accepted);
+        publisher.User.Id = _organizerId;
+        publisher.UserId = _organizerId;
+        var member = Participant(meeting, active: true, InvitationResponse.Pending);
+        meeting.Participants.Add(publisher);
+        meeting.Participants.Add(member);
+
+        var result = await NewService().TransitionAsync(
+            meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Publish), _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        Assert.Equal(member.UserId, Assert.Single(_repository.Notifications).UserId);
+        Assert.Equal(meeting.Id, Assert.Single(_invitations.MeetingIds));
+    }
+
+    [Fact]
     public async Task Publish_keeps_the_full_unicode_title_available_to_the_email_owner()
     {
         var meeting = GivenMeeting(MeetingStatus.Approved);

@@ -617,11 +617,13 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
 
         var inactive = NewUser("Inactive recipient", _approverRoleId, isActive: false);
         var delegated = NewUser("Delegated recipient", _approverRoleId);
-        _db.Users.AddRange(inactive, delegated);
+        var member = NewUser("Member recipient", _approverRoleId);
+        _db.Users.AddRange(inactive, delegated, member);
         await _db.SaveChangesAsync();
         _db.MeetingParticipants.AddRange(
             new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId, Role = MeetingRole.Chair },
             new MeetingParticipant { MeetingId = meetingId, UserId = inactive.Id },
+            new MeetingParticipant { MeetingId = meetingId, UserId = member.Id },
             new MeetingParticipant
             {
                 MeetingId = meetingId,
@@ -685,10 +687,16 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             Assert.Equal(approver.Id, item.AssignedApproverId));
 
         var invitations = await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync();
-        Assert.Equal(smtpEnabled ? 2 : 0, invitations.Count);
+        // Email reaches every active participant, the publishing creator and the delegated one included.
+        Assert.Equal(smtpEnabled ? 3 : 0, invitations.Count);
         Assert.Equal(
             (smtpEnabled
-                ? new[] { $"meeting:{meetingId:D}:published:{_creatorId:D}", $"meeting:{meetingId:D}:published:{delegated.Id:D}" }
+                ? new[]
+                {
+                    $"meeting:{meetingId:D}:published:{_creatorId:D}",
+                    $"meeting:{meetingId:D}:published:{delegated.Id:D}",
+                    $"meeting:{meetingId:D}:published:{member.Id:D}",
+                }
                 : Array.Empty<string>()).Order(),
             invitations.Select(item => item.DeduplicationKey).Order());
         Assert.All(invitations, invitation =>
@@ -697,7 +705,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var publishNotifications = await verify.Notifications
             .Where(item => item.MeetingId == meetingId && item.Type == NotificationType.MeetingInvited)
             .ToListAsync();
-        Assert.Equal(_creatorId, Assert.Single(publishNotifications).UserId);
+        // In-app skips the publisher (the creator here) and the delegated participant.
+        Assert.Equal(member.Id, Assert.Single(publishNotifications).UserId);
         Assert.Equal(history[^1].Id, publishNotifications[0].OriginHistoryId);
     }
 
@@ -850,13 +859,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         _db.Users.Add(secretary);
         _db.MeetingParticipants.AddRange(
             new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId, Role = MeetingRole.Chair },
-            new MeetingParticipant
-            {
-                MeetingId = meetingId,
-                User = secretary,
-                Role = MeetingRole.Secretary,
-                Response = InvitationResponse.Delegated,
-            });
+            new MeetingParticipant { MeetingId = meetingId, User = secretary, Role = MeetingRole.Secretary });
         await _db.SaveChangesAsync();
         using var app = new PostgreSqlMeetingApiFactory(_connectionString, failInvitationQueue: true);
         using var client = app.CreateClient();
@@ -879,6 +882,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var notification = Assert.Single(
             await verify.Notifications.Where(item => item.MeetingId == meetingId).ToListAsync());
         Assert.Equal(NotificationType.MeetingInvited, notification.Type);
+        Assert.Equal(secretary.Id, notification.UserId);
         Assert.Equal(publicationHistory.Id, notification.OriginHistoryId);
         Assert.Empty(await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync());
     }
