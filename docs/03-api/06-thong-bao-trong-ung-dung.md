@@ -75,7 +75,7 @@ khử trùng bằng `DeduplicationKey`, timestamp `PushedAt`, index cho truy v�
 | UC-19/BR-51 yêu cầu đánh dấu mọi notification chưa đọc của user, kể cả dòng không nằm trên page hiện tại; sau đó hiển thị trạng thái và số chưa đọc thực lưu. | Repository cập nhật tất cả dòng `UserId` có `ReadAt == null`, không phụ thuộc page. Response luôn ghi `unreadCount: 0` và không đọc lại danh sách/trạng thái. | Phạm vi update khớp BR-51. AF-1 và EX-1 chưa trả current list/current saved state như UC Description. |
 | UC-20/BR-53 yêu cầu khi chọn notification thì thử đánh dấu đã đọc; nếu lưu read status thất bại vẫn tiếp tục mở target nếu user có quyền. | `GetTargetAsync` không thử lưu `ReadAt`. FE gọi `POST /{id}/read` (không chờ, bỏ qua lỗi) rồi mới gọi `GET /{id}/target`. | Đáp ứng main flow, POST-2 và EX-3 ở mức hệ thống bằng hai lời gọi; sequence diagram vẫn vẽ một lời gọi có side effect nên cần sửa theo. |
 | BR-45 quy định ba nguồn: được mời họp, meeting sắp bắt đầu, và được giao task. | Nhắc sắp bắt đầu đã chạy qua worker. Nguồn lời mời chờ luồng publish meeting; notification giao task không có. | Mới có một nguồn hoàn chỉnh. Yêu cầu task xung đột với phạm vi repo đã loại task/action item; BA phải chốt nguồn nào ưu tiên. |
-| UC-16 và BR-37–BR-40 quy định sau khi meeting chuyển thành công từ `Approved` sang `Published`, hệ thống xếp invitation delivery bất đồng bộ cho **tất cả** participant; lỗi delivery phải retry và không rollback `Published`. | Backend chưa có UC-16/publish handler nên chưa tạo notification lời mời. Không giữ API tạm theo từng participant vì sai hình dạng nghiệp vụ. | Điểm nối sẽ được triển khai trong luồng **publish meeting** của SCRUM-19. |
+| UC-16 và BR-37–BR-40 quy định sau khi meeting chuyển thành công từ `Approved` sang `Published`, hệ thống xếp invitation delivery bất đồng bộ cho **tất cả** participant; lỗi delivery phải retry và không rollback `Published`. | Publish (SCRUM-19) tạo notification lời mời cho participant active, chưa Delegated, trừ người Publish, cùng transaction; email thư mời xếp hàng sau commit, retry và không rollback `Published`. | Đã nối. Lệch spec: người Publish không nhận notification in-app (quyết định team 16/10/2026), BA chốt ở BA Final Review. |
 | BR-42 yêu cầu invitation notification có link trực tiếp tới meeting đã publish và tài liệu đính kèm. | Notification có link chi tiết meeting; không có target/link riêng cho tài liệu. | Đã có link meeting; cần BA chốt tài liệu được mở bên trong trang meeting hay cần contract target khác. |
 | BR-43 yêu cầu theo dõi việc xếp hàng và trạng thái delivery của tất cả invitation message cho audit. | Notification chỉ có `PushedAt` và log lỗi chung của worker; không có attempt count, trạng thái pending/failed hay audit record theo lần delivery. | Chưa đủ dữ liệu để đáp ứng BR-43 và retry có kiểm soát của BR-40. |
 | BR-46 yêu cầu lưu notification để xem sau và cập nhật realtime notification cùng unread count khi recipient đang kết nối. | Notification được lưu trước khi worker push `notificationReceived` kèm `unreadCount` qua SignalR. | Khớp yêu cầu; FE nhận sự kiện hub, khử trùng theo `id` và cập nhật badge cùng danh sách. |
@@ -175,9 +175,9 @@ Chuông thông báo nằm trên app bar, dùng chung cho cả hai workspace. Cod
 
 ## Nguồn tạo thông báo
 
-- **Được mời họp:** chưa triển khai trong SCRUM-14. Luồng publish meeting của SCRUM-19 phải tạo
-  notification cho tất cả participant sau khi chuyển trạng thái thành công, cùng transaction với
-  thay đổi trạng thái.
+- **Được mời họp (`MeetingInvited`):** luồng Publish của SCRUM-19 tạo một thông báo cho mỗi
+  participant active, chưa Delegated, **trừ chính người Publish**, cùng transaction với thay đổi
+  trạng thái. Email thư mời (SCRUM-15) vẫn gửi cho mọi participant active, kể cả người Publish.
 - **Sắp bắt đầu:** worker kiểm tra meeting `Published` mỗi 5 giây và xếp một thông báo cho mỗi
   participant còn hoạt động khi còn tối đa **15 phút** trước `plannedStartTime`. Unique key
   `meeting-starting-soon:{meetingId}:{plannedStart unix seconds}:{userId}` ngăn xếp lặp; cuộc họp bị
