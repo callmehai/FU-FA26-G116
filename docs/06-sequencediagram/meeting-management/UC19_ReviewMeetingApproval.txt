@@ -58,13 +58,13 @@ else Actor is the active, authorized current approver
         activate MeetingController
         activate MeetingService
         alt Decision is Approve
-            MeetingService->MeetingRepository: Revalidate actor and status; record Approved status,\napproval decision and history together (BR-38)
+            MeetingService->MeetingRepository: Revalidate actor and status; record Approved status, approval\ndecision, history and Organizer notification together (BR-38)
             activate MeetingRepository
-            MeetingRepository->Database: Save approval decision, status and history as one complete action
+            MeetingRepository->Database: Save approval decision, status, history and notification as one complete action
             activate Database
 
             alt Approval cannot be completed - EX-3
-                Database-->MeetingRepository: Decision, status or history could not be completed; previous information unchanged
+                Database-->MeetingRepository: Decision, status, history or notification could not be completed; previous information unchanged
                 deactivate Database
                 MeetingRepository-->MeetingService: Approval failed
                 deactivate MeetingRepository
@@ -79,7 +79,7 @@ else Actor is the active, authorized current approver
                 activate MeetingController
                 activate MeetingRepository
                 activate MeetingService
-                Database-->MeetingRepository: Approved status, decision and history recorded together
+                Database-->MeetingRepository: Approved status, decision, history and Organizer notification recorded together
                 deactivate Database
                 MeetingRepository-->MeetingService: Approval applied
                 deactivate MeetingRepository
@@ -114,13 +114,13 @@ else Actor is the active, authorized current approver
             else Rejection reason is valid
                 activate MeetingController
                 activate MeetingService
-                MeetingService->MeetingRepository: Revalidate actor and status; record Rejected status,\nrejection reason, decision and history together (BR-38)
+                MeetingService->MeetingRepository: Revalidate actor and status; record Rejected status, rejection reason,\ndecision, history and Organizer notification with the reason together (BR-38)
                 activate MeetingRepository
-                MeetingRepository->Database: Save rejection decision, reason, status and history as one complete action
+                MeetingRepository->Database: Save rejection decision, reason, status, history and notification as one complete action
                 activate Database
 
                 alt Rejection cannot be completed - EX-3
-                    Database-->MeetingRepository: Decision, status or history could not be completed; previous information unchanged
+                    Database-->MeetingRepository: Decision, status, history or notification could not be completed; previous information unchanged
                     deactivate Database
                     MeetingRepository-->MeetingService: Rejection failed
                     deactivate MeetingRepository
@@ -135,7 +135,7 @@ else Actor is the active, authorized current approver
                     activate MeetingController
                     activate MeetingRepository
                     activate MeetingService
-                    Database-->MeetingRepository: Rejected status, reason, decision and history recorded together
+                    Database-->MeetingRepository: Rejected status, reason, decision, history and Organizer notification recorded together
                     deactivate Database
                     MeetingRepository-->MeetingService: Rejection applied
                     deactivate MeetingRepository

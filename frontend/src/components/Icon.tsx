@@ -12,6 +12,7 @@ import {
   ChevronRight,
   ChevronsUpDown,
   CircleCheck,
+  CircleX,
   Clock,
   Copy,
   Ellipsis,
@@ -66,6 +67,7 @@ const ICONS = {
   // Notification kinds (SCRUM-14): what each one is about, at a glance.
   clock: Clock,
   checkCircle: CircleCheck,
+  xCircle: CircleX,
   checkCheck: CheckCheck,
   send: Send,
   calendarX: CalendarX,

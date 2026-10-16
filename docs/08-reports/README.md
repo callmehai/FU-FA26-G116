@@ -98,7 +98,12 @@ Test); chúng không phải file đích của DOCX Report 5.0.
 
 Thư mục Drive chứa các report: [SEP490-G116 Reports](https://drive.google.com/drive/folders/19wdKDAYViFGn4nlrmCnyNJkDQ0IOw-Z7?usp=drive_link).
 
-**Report 3 đồng bộ Markdown gần nhất:** 15/10/2026, từ DOCX local sau khi đồng bộ FE-07/FE-11:
+**Report 3 đồng bộ Markdown gần nhất:** 16/10/2026, từ DOCX local sau khi sửa UC-19, UC-20 và BR-39
+theo quyết định SCRUM-19 ngày 16/10/2026: người tổ chức nhận thông báo trong ứng dụng khi cuộc họp được
+duyệt hoặc bị từ chối; khi công bố, người công bố không nhận thông báo lời mời trong ứng dụng nhưng vẫn
+nhận email. Sequence diagram UC-19/UC-20 (source, PNG, tab draw.io) cập nhật cùng đợt.
+
+Lần đồng bộ trước: 15/10/2026, từ DOCX local sau khi đồng bộ FE-07/FE-11:
 UC/BR/MSG, actor, danh mục UC và mô tả dữ liệu đích cho Guest, danh sách người đủ điều kiện chốt lúc
 mở Vote và tài liệu gắn nhiều mục nghị sự, theo ADR-0016/0017/0019/0020. Bản trích UC/BR trong
 [01-requirements/](../01-requirements/README.md) được cập nhật cùng nguồn. Lần này không đồng bộ
