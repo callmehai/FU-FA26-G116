@@ -153,9 +153,6 @@ public sealed class MeetingInvitationQueue(
     private static string BuildMeetingUrl(string applicationBaseUrl, Guid meetingId)
         => $"{applicationBaseUrl.Trim().TrimEnd('/')}/mgmt/meetings/{meetingId:D}";
 
-    private static string InvitationDeduplicationKey(Guid meetingId, Guid recipientId)
-        => $"meeting:{meetingId:D}:published:{recipientId:D}";
-
     private static string BuildSubject(string title)
     {
         const string prefix = "Thư mời họp: ";
