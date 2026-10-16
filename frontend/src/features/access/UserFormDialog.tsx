@@ -101,11 +101,16 @@ export function UserFormDialog({
     getUser(editing).then(fill, fail)
   }
 
+  /** A field's error, the server's included (MSG08, MSG09), goes as soon as that field is edited. */
+  function clearError(field: Field) {
+    setFieldErrors(({ [field]: _cleared, ...rest }) => rest)
+  }
+
   /** Shown straight away: the administrator has to pass it on, so they need to read it. */
   function fillGeneratedPassword() {
     setPassword(generatePassword())
     setShowPassword(true)
-    setFieldErrors(({ password: _password, ...rest }) => rest)
+    clearError('password')
   }
 
   async function copyPassword() {
@@ -228,7 +233,10 @@ export function UserFormDialog({
             <span className="field-required">Họ tên</span>
             <input
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={(e) => {
+                setFullName(e.target.value)
+                clearError('fullName')
+              }}
               aria-invalid={!!fieldErrors.fullName}
               autoFocus
             />
@@ -240,7 +248,10 @@ export function UserFormDialog({
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                clearError('email')
+              }}
               aria-invalid={!!fieldErrors.email}
               autoComplete="off"
             />
@@ -257,7 +268,10 @@ export function UserFormDialog({
                   id="user-form-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    clearError('password')
+                  }}
                   aria-invalid={!!fieldErrors.password}
                   autoComplete="new-password"
                   spellCheck={false}
@@ -302,7 +316,10 @@ export function UserFormDialog({
             <Select
               value={roleId}
               options={roles.map(({ id, name }) => ({ value: id, label: name }))}
-              onChange={setRoleId}
+              onChange={(value) => {
+                setRoleId(value)
+                clearError('roleId')
+              }}
               label="Vai trò"
             />
             {fieldErrors.roleId && <small className="field-error">{fieldErrors.roleId}</small>}
