@@ -242,6 +242,11 @@ Organizer được sửa thông tin rồi submit trực tiếp từ Rejected. Su
 `Rejected → WaitingApproval`, thay assignment hiện tại bằng người duyệt được chọn, giữ nguyên
 mọi history/lý do từ chối cũ. Cycle mới có thể chọn một current Assigned Approver khác.
 
+Notification in-app theo action, ghi cùng transaction với history (`OriginHistoryId` = history đó):
+`SubmitForApproval` → `MeetingWaitingApproval` cho người duyệt được chọn; `Approve` →
+`MeetingApproved` cho Organizer (`CreatedById`); `Reject` → `MeetingRejected` cho Organizer, body
+kèm lý do từ chối (Organizer vốn được đọc lý do). Các action này không tạo email.
+
 Không cho Organizer tự duyệt ở mọi mức độ mật: `assignedApproverId == CreatedById` khi submit trả
 `400 MSG82`, kể cả Organizer là Chair và có cả hai capability. Assignment cũ trỏ về Organizer cũng
 không được Approve/Reject (`403 MSG85`); không tự sửa dữ liệu/ghi thêm history khi từ chối action.

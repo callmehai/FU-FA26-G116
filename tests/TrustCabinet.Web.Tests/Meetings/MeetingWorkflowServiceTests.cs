@@ -92,6 +92,40 @@ public sealed class MeetingWorkflowServiceTests
     }
 
     [Fact]
+    public async Task Approve_notifies_the_organizer()
+    {
+        var meeting = GivenMeeting(MeetingStatus.WaitingApproval);
+
+        var result = await NewService().TransitionAsync(
+            meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Approve), _approverId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        var notification = Assert.Single(_repository.Notifications);
+        Assert.Equal(_organizerId, notification.UserId);
+        Assert.Equal(NotificationType.MeetingApproved, notification.Type);
+        Assert.Equal(meeting.Id, notification.TargetId);
+        Assert.Equal(meeting.StatusHistory.Single().Id, notification.OriginHistoryId);
+    }
+
+    [Fact]
+    public async Task Reject_notifies_the_organizer_with_the_reason()
+    {
+        var meeting = GivenMeeting(MeetingStatus.WaitingApproval);
+
+        var result = await NewService().TransitionAsync(
+            meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.Reject, Reason: "Thiếu số liệu quý 3"),
+            _approverId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        var notification = Assert.Single(_repository.Notifications);
+        Assert.Equal(_organizerId, notification.UserId);
+        Assert.Equal(NotificationType.MeetingRejected, notification.Type);
+        Assert.Contains("Thiếu số liệu quý 3", notification.Body);
+        Assert.Equal(meeting.StatusHistory.Single().Id, notification.OriginHistoryId);
+    }
+
+    [Fact]
     public async Task Rejected_meeting_returns_to_draft_with_a_new_history_without_losing_reason()
     {
         var meeting = GivenMeeting(MeetingStatus.Rejected);

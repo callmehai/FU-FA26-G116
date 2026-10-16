@@ -175,6 +175,9 @@ Chuông thông báo nằm trên app bar, dùng chung cho cả hai workspace. Cod
 
 ## Nguồn tạo thông báo
 
+- **Luồng duyệt (SCRUM-19):** gửi duyệt tạo `MeetingWaitingApproval` cho người duyệt; duyệt tạo
+  `MeetingApproved`, từ chối tạo `MeetingRejected` (body kèm lý do) cho người tổ chức. FE chưa có
+  icon riêng cho hai loại mới nên đang hiện icon chuông mặc định.
 - **Được mời họp (`MeetingInvited`):** luồng Publish của SCRUM-19 tạo một thông báo cho mỗi
   participant active, chưa Delegated, **trừ chính người Publish**, cùng transaction với thay đổi
   trạng thái. Email thư mời (SCRUM-15) vẫn gửi cho mọi participant active, kể cả người Publish.

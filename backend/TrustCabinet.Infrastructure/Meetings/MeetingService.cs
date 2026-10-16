@@ -555,6 +555,31 @@ public sealed class MeetingService(
                         now,
                         history.Id)], token);
                 }
+                else if (command.Action == MeetingTransitionAction.Approve)
+                {
+                    await meetings.AddNotificationsAsync(
+                    [CreateNotification(
+                        meeting.CreatedById,
+                        meeting,
+                        NotificationType.MeetingApproved,
+                        "Cuộc họp đã được duyệt",
+                        $"Cuộc họp “{meeting.Title}” đã được duyệt. Bạn có thể công bố cuộc họp.",
+                        now,
+                        history.Id)], token);
+                }
+                else if (command.Action == MeetingTransitionAction.Reject)
+                {
+                    // Only the organizer receives this, and they may read the rejection reason.
+                    await meetings.AddNotificationsAsync(
+                    [CreateNotification(
+                        meeting.CreatedById,
+                        meeting,
+                        NotificationType.MeetingRejected,
+                        "Cuộc họp bị từ chối",
+                        $"Cuộc họp “{meeting.Title}” bị từ chối. Lý do: {command.Reason}",
+                        now,
+                        history.Id)], token);
+                }
                 else if (command.Action == MeetingTransitionAction.Publish)
                 {
                     // The publisher just acted, so no in-app invitation for them; email still goes

@@ -557,7 +557,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(_creatorId, transfer.PreviousOrganizerId);
         Assert.Equal(replacement.Id, transfer.NewOrganizerId);
         Assert.Equal(4, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
-        Assert.Equal(1, await verify.Notifications.CountAsync(item => item.MeetingId == meetingId));
+        // Submit → approver, Approve → organizer; the transfer itself notifies no one.
+        Assert.Equal(2, await verify.Notifications.CountAsync(item => item.MeetingId == meetingId));
         Assert.False(await verify.EmailMessages.AnyAsync(item => item.MeetingId == meetingId));
         Assert.Equal(HttpStatusCode.NotFound,
             (await administratorClient.GetAsync($"/api/meetings/{meetingId}")).StatusCode);
@@ -707,6 +708,13 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             .ToListAsync();
         // In-app skips the publisher (the creator here) and the delegated participant.
         Assert.Equal(member.Id, Assert.Single(publishNotifications).UserId);
+        var organizerNotices = await verify.Notifications
+            .Where(item => item.MeetingId == meetingId && item.UserId == _creatorId)
+            .Select(item => item.Type)
+            .ToListAsync();
+        Assert.Equal(
+            new[] { NotificationType.MeetingApproved, NotificationType.MeetingRejected }.Order(),
+            organizerNotices.Order());
         Assert.Equal(history[^1].Id, publishNotifications[0].OriginHistoryId);
     }
 
@@ -1029,7 +1037,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(rejection.Reason, persistedRejection.Reason);
         Assert.Equal(rejection.ActorId, persistedRejection.ActorId);
         Assert.Equal(rejection.OccurredAt, persistedRejection.OccurredAt);
-        Assert.Equal(2, await verify.Notifications.CountAsync(item => item.MeetingId == meetingId));
+        // Two submissions to approvers plus the rejection notice to the organizer.
+        Assert.Equal(3, await verify.Notifications.CountAsync(item => item.MeetingId == meetingId));
         Assert.False(await verify.EmailMessages.AnyAsync(item => item.MeetingId == meetingId));
     }
 
