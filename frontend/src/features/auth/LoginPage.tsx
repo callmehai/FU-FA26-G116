@@ -4,6 +4,7 @@ import { BrandMark } from '../../components/BrandMark'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { routes } from '../../lib/routes'
 import { GoogleSignInButton } from './GoogleSignInButton'
+import { JUST_SIGNED_IN } from './RequireCapability'
 import { useAuth } from './useAuth'
 
 interface LoginError {
@@ -55,9 +56,17 @@ export function LoginPage() {
 
   if (status === 'loading') return <div className="route-fallback">Đang khôi phục phiên đăng nhập…</div>
 
-  // Signed in — including right after a successful submit — go where the user was headed.
+  // Signed in — including right after a successful submit — go where the user was headed. `from` may
+  // be the previous account's page, so the flag lets RequireCapability send this one to the meeting
+  // list instead of a 404 when it cannot open it (SCRUM-66).
   if (status === 'authenticated') {
-    return <Navigate to={from ? `${from.pathname}${from.search ?? ''}` : routes.meetings} replace />
+    return (
+      <Navigate
+        to={from ? `${from.pathname}${from.search ?? ''}` : routes.meetings}
+        replace
+        state={{ [JUST_SIGNED_IN]: true }}
+      />
+    )
   }
 
   async function handleSubmit(event: FormEvent) {
