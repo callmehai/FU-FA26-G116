@@ -279,7 +279,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="XrI3U0wopgR4zhom4ko2-2" connectable="0" parent="E09-in" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 56px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Speaker-attributed transcript&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Draft meeting summary&lt;/span&gt;&lt;/font&gt;" vertex="1">
+        <mxCell id="XrI3U0wopgR4zhom4ko2-2" connectable="0" parent="E09-in" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 56px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Draft meeting summary&lt;/span&gt;&lt;/font&gt;" vertex="1">
           <mxGeometry relative="1" x="0.2567" y="-2" as="geometry">
             <mxPoint x="119" y="-8" as="offset" />
           </mxGeometry>
@@ -293,9 +293,9 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="XrI3U0wopgR4zhom4ko2-3" connectable="0" parent="E09-out" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 56px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting audio&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Reviewed transcript&lt;/span&gt;&lt;/font&gt;" vertex="1">
+        <mxCell id="XrI3U0wopgR4zhom4ko2-3" connectable="0" parent="E09-out" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 56px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Reviewed transcript&lt;/span&gt;&lt;/font&gt;" vertex="1">
           <mxGeometry relative="1" x="-0.2858" as="geometry">
-            <mxPoint x="176" y="30" as="offset" />
+            <mxPoint x="164" y="-3" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="E10-in" data-flow-ids="M02" edge="1" parent="1" source="E10" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;entryX=0.7836367871;entryY=0.9117647059;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
