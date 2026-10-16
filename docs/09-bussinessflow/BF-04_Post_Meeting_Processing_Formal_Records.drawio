@@ -87,14 +87,14 @@
         <mxCell id="s9" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Finalize &amp; Seal Minutes" vertex="1">
           <mxGeometry height="50" width="170" x="35" y="2008" as="geometry" />
         </mxCell>
-        <mxCell id="g3" parent="sec" style="rhombus;spacingLeft=16;spacingRight=16;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=11;" value="Minutes Acceptable?" vertex="1">
-          <mxGeometry height="76" width="160" x="480" y="1635" as="geometry" />
+        <mxCell id="g3" parent="sgn" style="rhombus;spacingLeft=16;spacingRight=16;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=11;" value="Minutes Acceptable?" vertex="1">
+          <mxGeometry height="76" width="160" x="40" y="1635" as="geometry" />
         </mxCell>
-        <mxCell id="g4" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Sign Minutes" vertex="1">
-          <mxGeometry height="50" width="170" x="675" y="1648" as="geometry" />
+        <mxCell id="g4" parent="sgn" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Sign Minutes" vertex="1">
+          <mxGeometry height="50" width="170" x="235" y="1648" as="geometry" />
         </mxCell>
-        <mxCell id="u1" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Access Meeting Records" vertex="1">
-          <mxGeometry height="50" width="170" x="915" y="2188" as="geometry" />
+        <mxCell id="u1" parent="au" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Access Meeting Records" vertex="1">
+          <mxGeometry height="50" width="170" x="35" y="2188" as="geometry" />
         </mxCell>
         <mxCell id="e21" edge="1" parent="sec" source="g3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="g4" value="Yes">
           <mxGeometry relative="1" as="geometry" />

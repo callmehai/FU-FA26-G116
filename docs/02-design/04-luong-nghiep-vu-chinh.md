@@ -136,10 +136,10 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
 
 | Swimlane | Việc chính |
 |---|---|
-| TrustCabinet | Nhắc Thư ký upload audio; kiểm tra file; lưu vào thư viện media và xếp hàng xử lý; công bố tóm tắt; tổng hợp bản nháp biên bản; gửi yêu cầu ký; huỷ chữ ký cũ khi sửa; lưu chữ ký và lịch sử; khoá và lưu biên bản chính thức |
-| AI / Speech Processing Provider | Chép lời và nhận diện người nói; sinh tóm tắt |
-| Secretary | Upload audio, sửa transcript và người nói, sinh – duyệt – công bố tóm tắt, sinh và gửi ký biên bản, sửa biên bản, niêm phong |
-| Chair / Designated Signers | Xem biên bản, ký hoặc yêu cầu sửa |
+| TrustCabinet | Nhắc Thư ký upload audio; kiểm tra file; lưu vào thư viện media và xếp hàng xử lý; chép lời; lưu chữ ký và lịch sử; khoá và lưu biên bản chính thức |
+| AI Provider | Sinh tóm tắt; sinh biên bản |
+| Secretary | Upload audio, sửa transcript, yêu cầu sinh và sửa tóm tắt, yêu cầu sinh và sửa biên bản, gửi ký, niêm phong |
+| Chair / Designated Signers | Người ký duy nhất của biên bản: xem, ký hoặc trả lại để sửa |
 | Authorized User | Tra cứu hồ sơ cuộc họp |
 
 **Luồng:**
@@ -148,17 +148,17 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
    File không hợp lệ → báo lỗi. Hợp lệ → lưu vào thư viện media (UC-43) và xếp hàng xử lý.
    *Dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP:* lưu căn cứ đồng ý, mục đích và hạn lưu (`Recording.ConsentObtainedAt`,
    `ConsentPurpose`, `RetainUntil`); xoá theo hạn lưu.
-2. **Xử lý giọng nói:** AI chép lời và gán người nói. Lỗi → báo lỗi và cho thử lại.
-3. **Rà transcript (UC-45, UC-46):** Thư ký sửa lời và gán người nói chưa xác định.
-4. **Tóm tắt (UC-47 → UC-51):** Thư ký sinh / sinh lại tóm tắt, sửa, duyệt, rồi **công bố là bước riêng**; hệ thống báo
-   người tham dự.
-5. **Biên bản (UC-59, UC-60):** hệ thống tổng hợp bản nháp từ thông tin cuộc họp, điểm danh, tóm tắt đã duyệt, kết quả và
-   kết luận biểu quyết (BR-161). Thư ký rà và sửa.
-6. **Ký (UC-61 → UC-63, UC-65):** Thư ký gửi ký; hệ thống gửi yêu cầu tới người ký được chỉ định.
-   - Biên bản chấp nhận được → ký; hệ thống lưu chữ ký và lịch sử.
-   - Không chấp nhận → yêu cầu sửa; Thư ký sửa, hệ thống **huỷ các chữ ký đã có** trên phiên bản cũ và gửi ký lại (BR-166).
-7. **Niêm phong (UC-64):** đủ chữ ký → Thư ký hoàn tất; hệ thống khoá và lưu biên bản chính thức. Chỉ Thư ký được niêm
-   phong (BR-166).
+2. **Chép lời:** hệ thống chép lời từ audio. Lỗi → báo lỗi và cho thử lại.
+3. **Rà transcript (UC-45, UC-46):** Thư ký sửa transcript.
+4. **Tóm tắt (UC-47 → UC-49):** Thư ký yêu cầu sinh tóm tắt; AI sinh; Thư ký rà và sửa. Không có bước duyệt hay công
+   bố tóm tắt riêng — tóm tắt đi thẳng vào biên bản.
+5. **Biên bản (UC-59, UC-60):** Thư ký yêu cầu sinh biên bản; AI sinh bản nháp từ thông tin cuộc họp, tóm tắt và kết quả
+   biểu quyết. Thư ký rà và sửa.
+6. **Ký (UC-61 → UC-63, UC-65):** Thư ký gửi ký. Biên bản **chỉ có một người ký**.
+   - Chấp nhận → ký; hệ thống lưu chữ ký và lịch sử.
+   - Không chấp nhận → trả về Thư ký sửa rồi gửi ký lại. Lúc này chưa có chữ ký nào, nên không có bước huỷ chữ ký.
+7. **Niêm phong (UC-64):** người ký đã ký → Thư ký hoàn tất; hệ thống khoá và lưu biên bản chính thức. Chỉ Thư ký được
+   niêm phong.
 8. **Tra cứu (UC-58, UC-63, UC-70):** người có quyền xem hồ sơ cuộc họp, lịch sử ký, báo cáo thống kê.
 
 ---
@@ -173,7 +173,7 @@ BF-01 ──(tài khoản, vai trò)──> BF-02 ──(Published, lời mời)
 
 - BF-02 có vòng duyệt lặp tới khi `Approved`, và nhánh dời lịch sau khi `Published`.
 - BF-03 lặp theo từng mục agenda; biểu quyết là nhánh tuỳ chọn trong vòng lặp.
-- BF-04 có hai vòng lặp: xử lý audio lỗi → thử lại; biên bản bị yêu cầu sửa → vòng ký mới.
+- BF-04 có hai vòng lặp: chép lời lỗi → thử lại; người ký trả biên bản → Thư ký sửa → gửi ký lại.
 
 # 7. Quy tắc khi vẽ / sửa swimlane
 
