@@ -85,9 +85,9 @@ else Organizer is eligible, meeting is Approved, and required active roles exist
             deactivate MeetingRepository
 
 
-            MeetingService->NotificationService: Notify current internal participants in the application (BR-39)
+            MeetingService->NotificationService: Notify current internal participants except the publishing Organizer (BR-39)
             activate NotificationService
-            NotificationService->NotificationRepository: Create internal participant invitation notifications
+            NotificationService->NotificationRepository: Create invitation notifications, excluding the publishing Organizer
             activate NotificationRepository
             NotificationRepository->Database: Record internal participant notifications
             activate Database
@@ -98,7 +98,7 @@ else Organizer is eligible, meeting is Approved, and required active roles exist
             NotificationService-->MeetingService: Notifications issued / retry delivery; Meeting remains Published (BR-40)
             deactivate NotificationService
 
-            MeetingService->InvitationQueue: Send invitation emails to current internal participants (BR-39)
+            MeetingService->InvitationQueue: Send invitation emails to all current internal participants,\nincluding the publishing Organizer (BR-39)
             activate InvitationQueue
             InvitationQueue-->MeetingService: Email delivery arranged / retry delivery; Meeting remains Published (BR-40)
             deactivate InvitationQueue

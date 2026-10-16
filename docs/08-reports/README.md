@@ -101,7 +101,7 @@ Thư mục Drive chứa các report: [SEP490-G116 Reports](https://drive.google.
 **Report 3 đồng bộ Markdown gần nhất:** 16/10/2026, từ DOCX local sau khi sửa UC-19, UC-20 và BR-39
 theo quyết định SCRUM-19 ngày 16/10/2026: người tổ chức nhận thông báo trong ứng dụng khi cuộc họp được
 duyệt hoặc bị từ chối; khi công bố, người công bố không nhận thông báo lời mời trong ứng dụng nhưng vẫn
-nhận email. Sequence diagram UC-19/UC-20 chưa cập nhật theo thay đổi này.
+nhận email. Sequence diagram UC-19/UC-20 (source, PNG, tab draw.io) cập nhật cùng đợt.
 
 Lần đồng bộ trước: 15/10/2026, từ DOCX local sau khi đồng bộ FE-07/FE-11:
 UC/BR/MSG, actor, danh mục UC và mô tả dữ liệu đích cho Guest, danh sách người đủ điều kiện chốt lúc
