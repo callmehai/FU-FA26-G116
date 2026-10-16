@@ -1,6 +1,6 @@
 # Danh mục Quy tắc Nghiệp vụ (Business Rules) — TrustCabinet
 
-Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX cập nhật 15/10/2026, bao gồm ADR-0020). Có **238 BR đang dùng** trong dải `BR-01` → `BR-286`; mã `BR` độc lập với mã thông báo `MSG`.
+Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX cập nhật 16/10/2026, bao gồm ADR-0020 và quyết định SCRUM-19 ngày 16/10/2026 về người nhận thông báo). Có **238 BR đang dùng** trong dải `BR-01` → `BR-286`; mã `BR` độc lập với mã thông báo `MSG`.
 
 ## Quy ước đồng bộ
 
@@ -53,7 +53,7 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-36` | Approving a meeting changes its status from WaitingApproval to Approved. Rejecting a meeting changes its status from WaitingApproval to Rejected. A rejection reason is mandatory. | UC-19 |  |  |
 | `BR-37` | Only an authorized Meeting Organizer may publish a meeting that is in Approved status and satisfies the publication readiness requirements. Publishing changes the meeting status from Approved to Published and initiates participant invitations. | UC-20 |  |  |
 | `BR-38` | Every meeting lifecycle transition must have a history record containing at least the acting user, timestamp, action and resulting status; a rejection also includes its reason. For submission, approval, rejection and publication, the corresponding assignment, decision, status and history must be completed together. If any part cannot be completed, all previous Meeting information and history remain unchanged, no new notification or invitation is issued, and the action is not reported as successful. Existing history must never be changed or removed. | UC-18, UC-19, UC-20, UC-21, UC-22 |  |  |
-| `BR-39` | After successful publication, current internal participants must be notified in the application and sent invitation emails. Each external Guest with a current invitation must receive a separate email invitation to verify their invited email address and access only that Meeting. Invitation delivery must not delay confirmation of publication. | UC-20 |  |  |
+| `BR-39` | After successful publication, current internal participants other than the user who published the Meeting must be notified in the application, and all current internal participants must be sent invitation emails. Each external Guest with a current invitation must receive a separate email invitation to verify their invited email address and access only that Meeting. Invitation delivery must not delay confirmation of publication. | UC-20 |  |  |
 | `BR-40` | If an invitation notification or email cannot be delivered, the system must retry delivery. The Meeting remains Published; delivery failure does not undo successful publication. | UC-20 |  |  |
 | `BR-41` | Meeting publication scope is strictly limited to meetings in Approved status and cannot be bypassed by direct state manipulation. | UC-20 |  |  |
 | `BR-42` | All participant invitation notifications must include a direct link to the published meeting details and attached materials. | UC-20, UC-28a |  |  |
