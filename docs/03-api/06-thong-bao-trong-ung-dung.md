@@ -158,7 +158,9 @@ Chuông thông báo nằm trên app bar, dùng chung cho cả hai workspace. Cod
 - **Mở thông báo** (UC-20): gọi `POST /{id}/read` nhưng không chờ, rồi `GET /{id}/target` và đi tới
   `url`. `404` hiện toast "Thông báo này không còn khả dụng." (UC-18 EX-1). Thông báo không có
   `targetType` chỉ được đánh dấu đã đọc, không gọi `target`. FE chỉ điều hướng tới đường dẫn trong
-  app (bắt đầu bằng `/` nhưng không phải `//`), kể cả khi dữ liệu trong database sai.
+  app (bắt đầu bằng `/` nhưng không phải `//`), kể cả khi dữ liệu trong database sai. Đang ở đúng
+  trang chi tiết của cuộc họp đó thì trang không mount lại, nên FE đọc lại cuộc họp và lịch sử trạng
+  thái, không làm trống màn hình.
 - **Realtime.** Sự kiện `notificationReceived` được khử trùng theo `id`. Panel đang đóng: chuông
   rung và hiện toast tiêu đề kèm nội dung. Panel đang mở: dòng mới hiện ở đầu danh sách. Sự kiện
   phát trong lúc mất kết nối không được gửi lại, nên mỗi lần kết nối lại, khi tab hiện lại và khi
@@ -176,8 +178,7 @@ Chuông thông báo nằm trên app bar, dùng chung cho cả hai workspace. Cod
 ## Nguồn tạo thông báo
 
 - **Luồng duyệt (SCRUM-19):** gửi duyệt tạo `MeetingWaitingApproval` cho người duyệt; duyệt tạo
-  `MeetingApproved`, từ chối tạo `MeetingRejected` (body kèm lý do) cho người tổ chức. FE chưa có
-  icon riêng cho hai loại mới nên đang hiện icon chuông mặc định.
+  `MeetingApproved`, từ chối tạo `MeetingRejected` (body kèm lý do) cho người tổ chức.
 - **Được mời họp (`MeetingInvited`):** luồng Publish của SCRUM-19 tạo một thông báo cho mỗi
   participant active, chưa Delegated, **trừ chính người Publish**, cùng transaction với thay đổi
   trạng thái. Email thư mời (SCRUM-15) vẫn gửi cho mọi participant active, kể cả người Publish.

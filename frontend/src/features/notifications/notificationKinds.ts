@@ -16,6 +16,8 @@ interface Kind {
 const KINDS: Record<NotificationType, Kind> = {
   MeetingInvited: { icon: 'calendar', tone: 'blue' },
   MeetingWaitingApproval: { icon: 'checkCircle', tone: 'violet' },
+  MeetingApproved: { icon: 'checkCircle', tone: 'emerald' },
+  MeetingRejected: { icon: 'xCircle', tone: 'red' },
   MeetingPublished: { icon: 'send', tone: 'emerald' },
   MeetingStartingSoon: { icon: 'clock', tone: 'amber' },
   MeetingRescheduled: { icon: 'calendar', tone: 'amber' },
