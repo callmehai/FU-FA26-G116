@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { listRoles } from '../../api/roles'
 import { changeUserStatus, getUser, listUsers, requestPasswordReset } from '../../api/users'
 import { Badge } from '../../components/Badge'
@@ -10,6 +11,7 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { avatarColors, initials } from '../../lib/avatar'
 import { formatDate } from '../../lib/format'
+import { useSearchBox } from '../../lib/useSearchBox'
 import type { RoleRecord } from '../../types/role'
 import type { UserAccount, UserMutationResponse } from '../../types/user'
 import { useAccessLost } from '../auth/useAccessLost'
@@ -18,6 +20,7 @@ import { UserFormDialog, type UserFormTarget } from './UserFormDialog'
 
 type RoleFilter = string | 'all'
 type StatusFilter = 'all' | 'active' | 'inactive'
+type FilterKey = 'q' | 'role' | 'status'
 
 const STATUS_FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: 'all', label: 'Mọi trạng thái' },
@@ -69,9 +72,32 @@ export function UsersPage() {
   const [roles, setRoles] = useState<RoleRecord[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
 
-  const [query, setQuery] = useState('')
-  const [roleFilter, setRoleFilter] = useState<RoleFilter>('all')
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  // The search and filters live in the URL (as on the meeting list), so a reload, Back or a shared
+  // link keeps them. A value that matches nothing — a hand-edited or outdated link — means "all".
+  const [searchParams, setSearchParams] = useSearchParams()
+  const query = searchParams.get('q') ?? ''
+  const roleParam = searchParams.get('role')
+  const roleFilter: RoleFilter = roleParam && roles?.some((role) => role.id === roleParam) ? roleParam : 'all'
+  const statusParam = searchParams.get('status')
+  const statusFilter: StatusFilter = statusParam === 'active' || statusParam === 'inactive' ? statusParam : 'all'
+
+  // Replace rather than push: typing a search should not leave a Back step per keystroke.
+  const setFilter = useCallback(
+    (key: FilterKey, value: string) =>
+      setSearchParams(
+        (current) => {
+          const next = new URLSearchParams(current)
+          if (value && value !== 'all') next.set(key, value)
+          else next.delete(key)
+          return next
+        },
+        { replace: true },
+      ),
+    [setSearchParams],
+  )
+
+  // The list filters on what is typed straight away; the URL catches up after a pause.
+  const [search, setSearch] = useSearchBox(query, (q) => setFilter('q', q.trim()))
 
   const [formTarget, setFormTarget] = useState<UserFormTarget | null>(null)
   const [statusTarget, setStatusTarget] = useState<UserAccount | null>(null)
@@ -114,7 +140,7 @@ export function UsersPage() {
   )
 
   const visible = useMemo(() => {
-    const needle = fold(query.trim())
+    const needle = fold(search.trim())
     // Filter only — the backend already sorted with PostgreSQL's Vietnamese collation, which a
     // JavaScript sort would undo ("Đ" would land after "Z").
     return (users ?? []).filter(
@@ -123,7 +149,7 @@ export function UsersPage() {
         (statusFilter === 'all' || u.isActive === (statusFilter === 'active')) &&
         (!needle || fold(u.fullName).includes(needle) || fold(u.email).includes(needle)),
     )
-  }, [users, query, roleFilter, statusFilter])
+  }, [users, search, roleFilter, statusFilter])
 
   const handleGone = useCallback(() => {
     setFormTarget(null)
@@ -263,16 +289,21 @@ export function UsersPage() {
             <input
               type="search"
               placeholder="Tìm theo tên hoặc email…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               aria-label="Tìm theo họ tên hoặc email"
             />
           </label>
-          <Select value={roleFilter} options={roleFilterOptions} onChange={setRoleFilter} label="Lọc theo vai trò" />
+          <Select
+            value={roleFilter}
+            options={roleFilterOptions}
+            onChange={(value) => setFilter('role', value)}
+            label="Lọc theo vai trò"
+          />
           <Select
             value={statusFilter}
             options={STATUS_FILTER_OPTIONS}
-            onChange={setStatusFilter}
+            onChange={(value) => setFilter('status', value)}
             label="Lọc theo trạng thái"
           />
         </div>
