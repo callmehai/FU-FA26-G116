@@ -6,6 +6,12 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 
 ## Danh sách
 
+- [Bàn giao cập nhật màn hình theo Report 3 ngày 18/10/2026](NOTE-cap-nhat-man-hinh-18-10-2026.md) — màn 4.x, 5.x,
+  6.1, 7.5, 8.3, 11.x cần sửa theo UC/BR mới (agenda, vote gắn tài liệu, giao chủ toạ, huỷ cuộc họp); SCRUM-100.
+- [Thay đổi để dành cho UC chưa đặc tả](NOTE-uc-chua-dac-ta-cho-sua.md) — 18/10/2026; phần ý PO/hội đồng chạm UC
+  placeholder (FE-08, FE-09, FE-10, FE-12) và các vùng Report 3 chưa sửa trong đợt này.
+- [Góp ý của hội đồng — lần review 1](NOTE-gop-y-hoi-dong-lan-1.md) — ghi nhận 18/10/2026; xác định người nói,
+  chi phí AI, huỷ/quá hạn cuộc họp, người ký và ban hành biên bản, uỷ quyền, nhắc lịch, NĐ 13/2023, chữ ký số. Đã áp dụng một phần vào Report 3 18/10/2026.
 - [Hồ sơ theo dõi và review UC, BR, MSG của FE-11](NOTE-review-fe11-uc-br-msg.md) — bản tiếng Việt dễ đọc của UC-52a/52b, UC-53–57, BR liên quan và MSG205–236; có liên kết đến các danh mục chuẩn để đối chiếu.
 - [Bàn giao cập nhật đặc tả màn hình FE-11](NOTE-cap-nhat-man-hinh-fe11.md) — cập nhật 15/10/2026,
   có bảng nút → UC → MSG và quyền theo trạng thái; đặc tả màn hình/ảnh chờ người phụ trách cập nhật.
