@@ -10,7 +10,7 @@ draw.io vẫn sửa tiếp được. Diễn giải chi tiết từng bước, k�
 | [BF-01](BF-01_System_Access_Administration.drawio.png) System Access & Administration | Cấp / đổi quyền truy cập → user đăng nhập và dùng được đúng chức năng | System Admin, Internal User, TrustCabinet, Google Identity Provider | UC-01 → UC-03, UC-05 → UC-13 |
 | [BF-02](BF-02_Meeting_Preparation_Approval.drawio.png) Meeting Preparation, Approval & Participant Coordination | Organizer cần tổ chức họp → cuộc họp `Published`, lời mời đã gửi | Meeting Organizer, Secretary, TrustCabinet, Meeting Approver, Participant / Guest, Email Service | UC-04, UC-14 → UC-20, UC-23, UC-27 → UC-30, UC-33 |
 | [BF-03](BF-03_Meeting_Execution_Decision_Making.drawio.png) Meeting Execution & Decision Making | Chair bắt đầu cuộc họp `Published` → cuộc họp `Ended`, kết quả agenda và biểu quyết đã ghi | Participant / Guest, Chair, TrustCabinet, Secretary | UC-21, UC-22, UC-24, UC-25, UC-31, UC-37 → UC-42, UC-53 → UC-57 |
-| [BF-04](BF-04_Post_Meeting_Processing_Formal_Records.drawio.png) Post-Meeting Processing & Formal Records | Cuộc họp `Ended` → biên bản đã ký, niêm phong, tra cứu theo quyền | AI / Speech Processing Provider, TrustCabinet, Secretary, Chair / Designated Signers, Authorized User | UC-43 → UC-51, UC-58 → UC-65 |
+| [BF-04](BF-04_Post_Meeting_Processing_Formal_Records.drawio.png) Post-Meeting Processing & Formal Records | Cuộc họp `Ended` → biên bản đã ký, niêm phong, tra cứu theo quyền | AI Provider, TrustCabinet, Secretary, Chair / Designated Signers, Authorized User | UC-43 → UC-49, UC-58 → UC-65 |
 
 ## Điểm chính của bản BF 09/10/2026
 
@@ -27,10 +27,10 @@ draw.io vẫn sửa tiếp được. Diễn giải chi tiết từng bước, k�
   biểu quyết → bỏ phiếu → Chair đóng → hệ thống kiểm phiếu → Chair ghi kết luận *Passed / Not Passed / Deferred* → hoàn
   thành mục. Hết mục thì Chair kết thúc họp, hệ thống đóng phòng họp. **Biểu quyết chỉ diễn ra trong cuộc họp**
   ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md)) — không vote trước / sau họp, không quorum, không Resolution.
-- **BF-04:** Thư ký upload audio (không còn vai trò Audio Uploader) → AI chép lời, nhận diện người nói, sinh tóm tắt →
-  Thư ký sửa transcript, duyệt rồi công bố tóm tắt → sinh bản nháp biên bản (thông tin, tóm tắt, kết quả biểu quyết) →
-  gửi ký. Người ký ký hoặc yêu cầu sửa; sửa thì các chữ ký đã có bị huỷ và gửi ký lại (BR-166). Đủ chữ ký thì Thư ký
-  niêm phong; biên bản bị khoá và tra cứu theo quyền.
+- **BF-04:** Thư ký upload audio (không còn vai trò Audio Uploader) → hệ thống chép lời → Thư ký sửa transcript → AI
+  sinh tóm tắt, Thư ký sửa (không có bước duyệt hay công bố tóm tắt) → AI sinh biên bản, Thư ký sửa rồi gửi ký.
+  Biên bản **chỉ có một người ký**: chấp nhận thì ký, không thì trả Thư ký sửa và gửi ký lại — chưa có chữ ký nào nên
+  không có bước huỷ chữ ký. Ký xong thì Thư ký niêm phong; biên bản bị khoá và tra cứu theo quyền.
 
 ## Lịch sử
 
