@@ -1,5 +1,18 @@
 # SCRUM-20 — kết quả kiểm thử Backend
 
+## Sửa review 19/10/2026 — bản tích hợp local chưa commit
+
+Ghi chú do AI hỗ trợ soạn. Kiểm thử working tree trên HEAD `169fd3c`, MERGE_HEAD `3790928`; không tạo commit/push hoặc kết thúc merge. 64 file staged có sẵn được giữ nguyên; các sửa mới nằm ở working tree.
+
+- Sửa test `Publish_does_not_notify_the_publisher_in_app_even_when_they_are_a_participant`: assert đúng tập Chair, Secretary, Member, không thiếu/trùng recipient; assert publisher bị loại. Không sửa production notification policy.
+- Giữ mapping Participants MSG275/MSG276 đã giải quyết merge; API/handoff nêu rõ SCRUM-97 sẽ thay hành vi Secretary đổi Chair sau Published và bổ sung UC-73. Chưa triển khai yêu cầu đó trong SCRUM-20.
+- Release build `-warnaserror`: **0 warning/error**. Full suite trên PostgreSQL 17 và Redis 8 riêng: **1093 passed, 0 failed, 0 skipped**, khoảng 2m25s; bao gồm test vừa sửa và nhóm Participants.
+- Frontend lint/build, `git diff --check HEAD`, parse Postman JSON đều pass. EF không có model changes chưa migration.
+- Evidence local: `%TEMP%/scrum20-review19/review19.trx`, `%TEMP%/scrum20-review19-build.log`, `%TEMP%/scrum20-review19-tests.log`, `%TEMP%/scrum20-review19-fe-lint.log`, `%TEMP%/scrum20-review19-fe-build.log`. Các container test tạm được dừng sau test.
+- Đây **không phải CI của commit cuối trên PR**: cần commit/push bản tích hợp và chạy CI sau đó. Backup/restore/preflight và image cũ của server test chưa xác minh; không merge/deploy. SMTP thật và Guest/room E2E vẫn chưa kiểm chứng.
+
+Các phần bên dưới giữ nguyên để truy vết các lượt kiểm thử trước đó.
+
 Chốt ngày **15/10/2026 (Asia/Saigon)**. Branch `feat/scrum20-Backend-Invite-participants-and-acept`, base HEAD `6a4a7fe`, thay đổi chưa commit. Backend-only; không sửa source/lockfile Frontend, đã gửi change note Jira theo yêu cầu sửa review, không merge/deploy.
 
 **Cập nhật khi giải quyết merge ngày 15/10/2026:** main `e754010` đã dành MSG238/MSG239 cho ADR-0020 và dùng ADR-0019 cho biểu quyết. Participants chuyển sang MSG252/MSG253, mã tiếp theo MSG254; ADR của Participants chuyển sang ADR-0021. Các kết quả kiểm thử bên dưới là evidence trước merge, với phân bổ mã tại thời điểm đó.

@@ -2,6 +2,12 @@
 
 Backend theo [kế hoạch đã duyệt](../02-design/09-scrum20-ke-hoach-backend.md), baseline PO 13/10/2026, UC-27/28a/28b/28c/29/30. Frontend và UC-04 production triển khai riêng. Các request dưới đây dùng relative path, Bearer authentication hiện có, JSON camelCase; enum PascalCase. Mọi response của nhóm endpoint có `Cache-Control: no-store`.
 
+## Baseline bàn giao và thay đổi PO chưa tích hợp
+
+Ghi chú do AI hỗ trợ cập nhật ngày 19/10/2026: contract này mô tả implementation SCRUM-20 theo PO 13/10, **chưa phải toàn bộ yêu cầu PO 16/10**. [SCRUM-97](https://sep490g116.atlassian.net/browse/SCRUM-97) sở hữu UC-73 và việc chặn Secretary/Organizer thay Chair sau Published bằng MSG256. Hiện Secretary vẫn có thể thay Chair trong Published/InProgress bằng batch confirmed hợp lệ; chưa có endpoint Chair tự bàn giao, chưa áp dụng điều kiện người nhận UC-73 không được là Secretary. Nếu phát hành phải đáp ứng ngay PO mới, cần tích hợp SCRUM-97 trước phát hành.
+
+MSG275/MSG276 là mapping của bản tích hợp local với main; không dùng MSG252/MSG253 dành cho SCRUM-96. SCRUM-98 sở hữu thay đổi agenda, SCRUM-99 sở hữu hủy cuộc họp và tích hợp participant/dispatch cho trạng thái mới. Guest OTP/session thuộc SCRUM-59; cảnh báo inline Confidential/Secret ở contract này cần thống nhất với yêu cầu confirmation của SCRUM-59 khi tích hợp, không tự thêm dialog trong SCRUM-20.
+
 ## 1. Quyền và trạng thái
 
 - Quyền quản lý thuộc **User active đang được phân công Secretary** trong cuộc họp; không suy từ system role, capability claim hoặc body.

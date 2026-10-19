@@ -1,5 +1,11 @@
 # SCRUM-20 — bàn giao Frontend và test thủ công
 
+## Ranh giới bàn giao sau review 19/10/2026
+
+Ghi chú do AI hỗ trợ soạn. Backend hiện vẫn cho Secretary thay Chair bằng batch confirmed ở Published/InProgress theo baseline PO 13/10. [SCRUM-97](https://sep490g116.atlassian.net/browse/SCRUM-97) sẽ chặn thao tác này bằng MSG256 và thêm UC-73 cho Chair tự bàn giao; người nhận UC-73 không được là Secretary. Không coi luồng cũ là đã đáp ứng PO 16/10. Nếu release yêu cầu baseline mới, tích hợp SCRUM-97 trước release. Xem [API baseline](09-thanh-phan-tham-du.md#baseline-bàn-giao-và-thay-đổi-po-chưa-tích-hợp).
+
+Mapping sau tích hợp main: **409/MSG275** stale revision, **400/MSG276** query/If-Match sai. MSG252/MSG253 thuộc SCRUM-96. Guest confirmation Confidential/Secret cần thống nhất với SCRUM-59 khi tích hợp; không tự thêm bước xác nhận ngoài baseline của SCRUM-20. Hủy cuộc họp và hành vi participant/dispatch mới thuộc SCRUM-99.
+
 ## Phần Backend đã có
 
 Đọc [API contract](09-thanh-phan-tham-du.md) trước khi nối UI. Thực hiện types/API wrappers trong frontend, dùng client hiện có và relative URL. Backend task này không sửa source Frontend. Guest OTP/session production chưa có; xem [UC-04](09-thanh-phan-tham-du-guest-uc04.md).

@@ -326,7 +326,11 @@ public sealed class MeetingWorkflowServiceTests
             meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Publish), _organizerId);
 
         Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
-        Assert.Equal(member.UserId, Assert.Single(_repository.Notifications).UserId);
+        var chair = Assert.Single(meeting.Participants, p => p.Role == MeetingRole.Chair);
+        var secretary = Assert.Single(meeting.Participants, p => p.Role == MeetingRole.Secretary);
+        Assert.Equal(new[] { chair.UserId, secretary.UserId, member.UserId }.Order(),
+            _repository.Notifications.Select(n => n.UserId).Order());
+        Assert.DoesNotContain(_repository.Notifications, n => n.UserId == _organizerId);
         Assert.Equal(meeting.Id, Assert.Single(_invitations.MeetingIds));
     }
 
