@@ -6,9 +6,29 @@ import { backState } from '../../lib/backTarget'
 import { routes } from '../../lib/routes'
 import { useAuth } from '../auth/useAuth'
 import { placeLabel } from '../meetings/place'
+import { MEETING_STATUS_LABEL } from '../../types/meeting'
 import { SensitivityBadge, StatusBadge } from '../meetings/StatusBadge'
 import { STATUS_TONE } from '../meetings/statusTone'
-import { useWeekSchedule, type ScheduleEntry, type WeekSchedule } from './useWeekSchedule'
+import { CalendarFilter } from './CalendarFilter'
+import { DatePicker } from './DatePicker'
+import { NO_FILTER, activeGroups, matchesFilter, readFilter, writeFilter, type CalendarFilterValue } from './filter'
+import { useSchedule, type Schedule, type ScheduleEntry } from './useSchedule'
+import {
+  WEEKDAYS,
+  startOfWeek,
+  addDays,
+  startOfMonth,
+  addMonths,
+  daysInMonth,
+  monthGridDays,
+  sameMonth,
+  endOfDay,
+  sameDay,
+  toMonthInput,
+  toDateInput,
+  formatDay,
+  dayLabel,
+} from './dates'
 
 /** The grid covers the whole day; it opens scrolled to the part that matters (see WeekGrid). */
 const HOURS_PER_DAY = 24
@@ -19,86 +39,173 @@ const WORKDAY_START_HOUR = 8
 /** A meeting shorter than this would not fit its own time line. */
 const MIN_EVENT_HEIGHT = 30
 
-const WEEKDAYS = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy']
+/** One meeting line on the month grid plus the gap above it (global.css: .month-event, .month-cell). */
+const MONTH_EVENT_ROW = 27
+/** What a month cell spends before its first meeting: padding and the day-number line. */
+const MONTH_CELL_CHROME = 40
 
-type Span = 'work' | 'full'
+type Span = 'work' | 'full' | 'month'
 const SPAN_OPTIONS: { value: Span; label: string }[] = [
   { value: 'work', label: 'Tuần làm việc' },
   { value: 'full', label: 'Cả tuần' },
+  { value: 'month', label: 'Tháng' },
 ]
 
 type Mode = 'calendar' | 'list'
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/
+const MONTH = /^\d{4}-\d{2}$/
 
 /**
- * "Lịch làm việc" (ADR-0012): the week's meetings, Monday first, as a time grid or as a
- * list grouped by day. The week, the span and the view live in the URL, so a reload or a shared
- * link opens the same thing.
+ * "Lịch làm việc" (ADR-0012, SCRUM-47): the meetings of a week or a month, Monday first, as a time
+ * grid, a month grid or a list grouped by day, narrowed by the filter. The range, the span, the view
+ * and the filter live in the URL, so a reload or a shared link opens the same thing.
  */
 export function CalendarPage() {
   const { can } = useAuth()
   const [params, setParams] = useSearchParams()
   const now = useNow()
   const [attempt, setAttempt] = useState(0)
-  const monday = readMonday(params.get('week'), now)
-  const span: Span = params.get('span') === 'full' ? 'full' : 'work'
+  const spanParam = params.get('span')
+  const span: Span = spanParam === 'full' || spanParam === 'month' ? spanParam : 'work'
   const mode: Mode = params.get('mode') === 'list' ? 'list' : 'calendar'
-  const days = Array.from({ length: span === 'full' ? 7 : 5 }, (_, i) => addDays(monday, i))
-  const schedule = useWeekSchedule(days[0], endOfDay(days[days.length - 1]), attempt)
+  const monday = readMonday(params.get('week'), now)
+  const month = readMonth(params.get('month'), now)
+  const filter = readFilter(params)
+  const byMonth = span === 'month'
+  // The month grid runs from the Monday before the 1st to the Sunday after the last day; the list
+  // shows the month's own days. Both read the grid's range, so switching view does not reload.
+  const days = byMonth
+    ? Array.from({ length: daysInMonth(month) }, (_, i) => addDays(month, i))
+    : Array.from({ length: span === 'full' ? 7 : 5 }, (_, i) => addDays(monday, i))
+  const gridDays = byMonth ? monthGridDays(month) : days
+  const schedule = useSchedule(gridDays[0], endOfDay(gridDays[gridDays.length - 1]), attempt)
+  // What this view draws: a meeting sits on its start day, so one that only runs into the range, or
+  // one on the grid's padding days in the month list, is not on screen and must not be counted.
+  const shownDays = new Set((mode === 'list' ? days : gridDays).map(toDateInput))
+  const inView = schedule.kind === 'loaded' ? schedule.entries.filter((e) => shownDays.has(toDateInput(e.start))) : null
+  const visible: Schedule = inView
+    ? { kind: 'loaded', entries: inView.filter((e) => matchesFilter(e, filter)) }
+    : schedule
 
-  function go(next: { week?: Date; span?: Span; mode?: Mode }) {
+  /** `push` keeps the current view in history: Back from a week opened on the month grid returns to it. */
+  function go(
+    next: { week?: Date; month?: Date; span?: Span; mode?: Mode; filter?: CalendarFilterValue },
+    push = false,
+  ) {
     const out = new URLSearchParams(params)
-    const week = next.week ?? monday
-    if (sameDay(week, startOfWeek(now))) out.delete('week')
-    else out.set('week', toDateInput(week))
     const nextSpan = next.span ?? span
+    out.delete('week')
+    out.delete('month')
+    if (nextSpan === 'month') {
+      const nextMonth = next.month ?? month
+      if (!sameMonth(nextMonth, now)) out.set('month', toMonthInput(nextMonth))
+    } else {
+      const week = next.week ?? monday
+      if (!sameDay(week, startOfWeek(now))) out.set('week', toDateInput(week))
+    }
     if (nextSpan === 'work') out.delete('span')
     else out.set('span', nextSpan)
     const nextMode = next.mode ?? mode
     if (nextMode === 'calendar') out.delete('mode')
     else out.set('mode', nextMode)
-    setParams(out, { replace: true })
+    // Rewritten on every move, so unreadable values in a hand-edited link do not linger.
+    writeFilter(out, next.filter ?? filter)
+    setParams(out, { replace: !push })
   }
+
+  function changeSpan(next: Span) {
+    if (next === 'month') {
+      // The month holding most of the week on screen: the one its Thursday falls in.
+      go({ span: next, month: byMonth ? month : startOfMonth(addDays(monday, 3)) })
+    } else {
+      // This week if the month is the current one, else its first week by the same Thursday rule —
+      // the week holding the 4th — so month → week → month comes back to the same month.
+      go({ span: next, week: byMonth ? startOfWeek(sameMonth(month, now) ? now : addDays(month, 3)) : monday })
+    }
+  }
+
+  /** From the month grid: the week holding `day`, all seven days when `day` is a weekend. */
+  function openWeek(day: Date) {
+    const weekend = day.getDay() === 0 || day.getDay() === 6
+    go({ span: weekend ? 'full' : 'work', week: startOfWeek(day), mode: 'calendar' }, true)
+  }
+
+  const unit = byMonth ? 'Tháng' : 'Tuần'
+  const step = (n: number) => (byMonth ? go({ month: addMonths(month, n) }) : go({ week: addDays(monday, 7 * n) }))
 
   return (
     <>
       <div className="calendar-toolbar">
-        <button type="button" className="btn btn-outline" onClick={() => go({ week: startOfWeek(now) })}>
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={() => (byMonth ? go({ month: startOfMonth(now) }) : go({ week: startOfWeek(now) }))}
+        >
           Hôm nay
         </button>
         <div className="button-pair">
           <button
             type="button"
             className="btn btn-outline"
-            onClick={() => go({ week: addDays(monday, -7) })}
-            aria-label="Tuần trước"
-            title="Tuần trước"
+            onClick={() => step(-1)}
+            aria-label={`${unit} trước`}
+            title={`${unit} trước`}
           >
             <Icon name="chevronLeft" size={18} />
           </button>
           <button
             type="button"
             className="btn btn-outline"
-            onClick={() => go({ week: addDays(monday, 7) })}
-            aria-label="Tuần sau"
-            title="Tuần sau"
+            onClick={() => step(1)}
+            aria-label={`${unit} sau`}
+            title={`${unit} sau`}
           >
             <Icon name="chevronRight" size={18} />
           </button>
         </div>
-        <h1 className="calendar-range">{rangeLabel(days[0], days[days.length - 1])}</h1>
+        <DatePicker
+          label={
+            byMonth
+              ? `Tháng ${month.getMonth() + 1}/${month.getFullYear()}`
+              : rangeLabel(days[0], days[days.length - 1])
+          }
+          now={now}
+          anchor={byMonth ? month : addDays(monday, 3)}
+          viewed={byMonth ? [] : days}
+          onPick={(day) => (byMonth ? go({ month: startOfMonth(day) }) : go({ week: startOfWeek(day) }))}
+        />
 
         <div className="calendar-toolbar-end">
           <div className="view-toggle" role="group" aria-label="Chế độ xem">
-            <button type="button" aria-pressed={mode === 'calendar'} onClick={() => go({ mode: 'calendar' })}>
-              Lịch
+            {/* Below 1400px each button shows only its icon (global.css); the name stays on aria-label. */}
+            <button
+              type="button"
+              aria-pressed={mode === 'calendar'}
+              aria-label="Lịch"
+              title="Lịch"
+              onClick={() => go({ mode: 'calendar' })}
+            >
+              <span className="view-toggle-icon">
+                <Icon name="calendar" size={18} />
+              </span>
+              <span className="view-toggle-label">Lịch</span>
             </button>
-            <button type="button" aria-pressed={mode === 'list'} onClick={() => go({ mode: 'list' })}>
-              Danh sách
+            <button
+              type="button"
+              aria-pressed={mode === 'list'}
+              aria-label="Danh sách"
+              title="Danh sách"
+              onClick={() => go({ mode: 'list' })}
+            >
+              <span className="view-toggle-icon">
+                <Icon name="list" size={18} />
+              </span>
+              <span className="view-toggle-label">Danh sách</span>
             </button>
           </div>
-          <Select value={span} options={SPAN_OPTIONS} onChange={(s) => go({ span: s })} label="Số ngày hiển thị" />
+          <Select value={span} options={SPAN_OPTIONS} onChange={changeSpan} label="Kiểu lịch" />
+          <CalendarFilter value={filter} entries={inView} onChange={(next) => go({ filter: next })} />
           {can('MeetingCreator') && (
             <Link className="btn btn-primary" to={routes.meetingNew}>
               <Icon name="plus" size={18} />
@@ -108,19 +215,39 @@ export function CalendarPage() {
         </div>
       </div>
 
-      <ScheduleNotice schedule={schedule} onRetry={() => setAttempt((n) => n + 1)} />
+      <ScheduleNotice
+        schedule={schedule}
+        filteredOut={
+          activeGroups(filter) > 0 && !!inView?.length && visible.kind === 'loaded' && visible.entries.length === 0
+        }
+        onRetry={() => setAttempt((n) => n + 1)}
+        onClearFilter={() => go({ filter: NO_FILTER })}
+      />
 
-      {mode === 'calendar' ? (
-        <WeekGrid days={days} now={now} schedule={schedule} />
+      {mode === 'list' ? (
+        <DayList days={days} now={now} schedule={visible} />
+      ) : byMonth ? (
+        <MonthGrid month={month} days={gridDays} now={now} schedule={visible} onOpenWeek={openWeek} />
       ) : (
-        <WeekList days={days} now={now} schedule={schedule} />
+        <WeekGrid days={days} now={now} schedule={visible} />
       )}
     </>
   )
 }
 
-/** Why the week shows nothing, when it is not simply free. */
-function ScheduleNotice({ schedule, onRetry }: { schedule: WeekSchedule; onRetry: () => void }) {
+/** Why the range shows nothing, when it is not simply free. */
+function ScheduleNotice({
+  schedule,
+  filteredOut,
+  onRetry,
+  onClearFilter,
+}: {
+  schedule: Schedule
+  /** The filter hides every meeting in the range. */
+  filteredOut: boolean
+  onRetry: () => void
+  onClearFilter: () => void
+}) {
   if (schedule.kind === 'error') {
     return (
       <div className="alert alert-error page-alert calendar-note" role="alert">
@@ -131,10 +258,20 @@ function ScheduleNotice({ schedule, onRetry }: { schedule: WeekSchedule; onRetry
       </div>
     )
   }
+  if (filteredOut) {
+    return (
+      <div className="alert alert-info page-alert calendar-note" role="status">
+        <p>Không có cuộc họp nào khớp bộ lọc trong khoảng này.</p>
+        <button type="button" className="btn btn-outline btn-sm" onClick={onClearFilter}>
+          Bỏ lọc
+        </button>
+      </div>
+    )
+  }
   return null
 }
 
-function WeekGrid({ days, now, schedule }: { days: Date[]; now: Date; schedule: WeekSchedule }) {
+function WeekGrid({ days, now, schedule }: { days: Date[]; now: Date; schedule: Schedule }) {
   const entries = schedule.kind === 'loaded' ? schedule.entries : []
   const nowTop = minutesOfDay(now) * (HOUR_HEIGHT / 60)
   const showsToday = days.some((d) => sameDay(d, now))
@@ -241,7 +378,135 @@ function GridEvent({ entry, lane, lanes }: { entry: ScheduleEntry; lane: number;
   )
 }
 
-function WeekList({ days, now, schedule }: { days: Date[]; now: Date; schedule: WeekSchedule }) {
+/**
+ * The month grid (SCRUM-47): seven columns Monday first, one row per week. Each day lists its first
+ * meetings by start time; the day number and "+N cuộc họp" open that week on the time grid.
+ */
+function MonthGrid({
+  month,
+  days,
+  now,
+  schedule,
+  onOpenWeek,
+}: {
+  month: Date
+  days: Date[]
+  now: Date
+  schedule: Schedule
+  onOpenWeek: (day: Date) => void
+}) {
+  const entries = schedule.kind === 'loaded' ? schedule.entries : []
+  // The weeks share the frame's height, five or six alike, so the grid never scrolls; each cell
+  // lists as many meetings as its height holds and folds the rest into "+N".
+  const gridRef = useRef<HTMLDivElement>(null)
+  const [fit, setFit] = useState(3)
+  useLayoutEffect(() => {
+    const grid = gridRef.current
+    if (!grid) return
+    const measure = () => {
+      const cell = grid.querySelector<HTMLElement>('.month-cell')
+      if (cell) setFit(Math.max(1, Math.floor((cell.clientHeight - MONTH_CELL_CHROME) / MONTH_EVENT_ROW)))
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(grid)
+    return () => observer.disconnect()
+  }, [days.length])
+
+  return (
+    <div className="calendar" aria-busy={schedule.kind === 'loading'}>
+      <div className="calendar-scroll month-scroll">
+        <div
+          ref={gridRef}
+          className="month"
+          style={{ gridTemplateRows: `auto repeat(${days.length / 7}, minmax(0, 1fr))` }}
+        >
+          {days.slice(0, 7).map((day) => (
+            <div key={day.getDay()} className="month-weekday">
+              {WEEKDAYS[day.getDay()]}
+            </div>
+          ))}
+          {days.map((day) => {
+            const today = sameDay(day, now)
+            const weekday = day.getDay()
+            const dayEntries = entries.filter((e) => sameDay(e.start, day))
+            const shown = dayEntries.slice(0, fit)
+            const hidden = dayEntries.length - shown.length
+            const cls = [
+              'month-cell',
+              weekday === 0 || weekday === 6 ? 'month-weekend' : '',
+              day.getMonth() !== month.getMonth() ? 'month-outside' : '',
+              today ? 'month-today' : '',
+            ]
+            return (
+              <div
+                key={day.toISOString()}
+                className={cls.filter(Boolean).join(' ')}
+                role="group"
+                aria-label={dayLabel(day)}
+              >
+                {/* "+N shares the day number's line, so a busy day is no taller than a full one. */}
+                <div className="month-cell-head">
+                  <button
+                    type="button"
+                    className="month-day"
+                    onClick={() => onOpenWeek(day)}
+                    title="Xem tuần này"
+                    aria-label={`${dayLabel(day)}${today ? ', hôm nay' : ''}: xem tuần`}
+                    aria-current={today ? 'date' : undefined}
+                  >
+                    {day.getDate()}
+                  </button>
+                  {hidden > 0 && (
+                    <button
+                      type="button"
+                      className="month-more"
+                      onClick={() => onOpenWeek(day)}
+                      aria-label={`${hidden} cuộc họp nữa ngày ${formatDay(day)}: xem tuần`}
+                      title={`${hidden} cuộc họp nữa`}
+                    >
+                      +{hidden}
+                      <span className="month-more-word"> cuộc họp</span>
+                    </button>
+                  )}
+                </div>
+                {shown.map((entry) => (
+                  <MonthEvent key={entry.meeting.id} entry={entry} />
+                ))}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+      <Legend />
+    </div>
+  )
+}
+
+function MonthEvent({ entry }: { entry: ScheduleEntry }) {
+  const { meeting } = entry
+  // Back from the meeting lands on this month, in this view.
+  const back = backState('Lịch làm việc', useLocation())
+  return (
+    <Link
+      to={routes.meeting(meeting.id)}
+      state={back}
+      className={`month-event cal-event-${STATUS_TONE[meeting.status]}`}
+      title={`${meeting.title} · ${timeRange(entry)} · ${MEETING_STATUS_LABEL[meeting.status]}`}
+    >
+      <span className="month-event-time">{formatClock(entry.start)}</span>
+      <span className="month-event-title">{meeting.title}</span>
+      {meeting.sensitivity === 'Secret' && (
+        <span className="cal-event-secret">
+          <Icon name="lock" size={11} />
+          Mật
+        </span>
+      )}
+    </Link>
+  )
+}
+
+function DayList({ days, now, schedule }: { days: Date[]; now: Date; schedule: Schedule }) {
   const entries = schedule.kind === 'loaded' ? schedule.entries : []
 
   return (
@@ -396,47 +661,26 @@ function useNow() {
   return now
 }
 
+/** The 1st of the month in `?month=`, or of this month when it is missing or unreadable. */
+function readMonth(value: string | null, now: Date) {
+  if (value && MONTH.test(value)) {
+    const [y, m] = value.split('-').map(Number)
+    const date = new Date(y, m - 1, 1)
+    // Rejects month 13 and two-digit years, which Date would roll over or map to 19xx.
+    if (date.getFullYear() === y && date.getMonth() === m - 1) return date
+  }
+  return startOfMonth(now)
+}
+
 /** The Monday of the week in `?week=`, or of this week when it is missing or unreadable. */
 function readMonday(value: string | null, now: Date) {
   if (value && DATE.test(value)) {
     const [y, m, d] = value.split('-').map(Number)
     const date = new Date(y, m - 1, d)
-    if (!Number.isNaN(date.getTime())) return startOfWeek(date)
+    // Rejects 31/02 and two-digit years, which Date would roll over or map to 19xx.
+    if (date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d) return startOfWeek(date)
   }
   return startOfWeek(now)
-}
-
-function startOfWeek(date: Date) {
-  const day = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-  // getDay(): Sunday is 0. The Vietnamese week starts on Monday.
-  return addDays(day, -((day.getDay() + 6) % 7))
-}
-
-function addDays(date: Date, n: number) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + n)
-}
-
-function endOfDay(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999)
-}
-
-function sameDay(a: Date, b: Date) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
-}
-
-function toDateInput(date: Date) {
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${date.getFullYear()}-${m}-${d}`
-}
-
-/** "06/10/2026" */
-function formatDay(date: Date) {
-  return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`
-}
-
-function dayLabel(date: Date) {
-  return `${WEEKDAYS[date.getDay()]}, ${formatDay(date)}`
 }
 
 /** "28/9 – 2/10/2026"; the year only once unless the week straddles New Year. */
