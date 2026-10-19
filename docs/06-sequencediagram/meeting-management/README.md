@@ -1,6 +1,6 @@
 # Sequence Diagram — Quản lý cuộc họp (FE-04)
 
-Thư mục chứa source SequenceDiagram.org (`.txt`) và ảnh PNG cùng tên cho các UC-14 → UC-22.
+Thư mục chứa source SequenceDiagram.org (`.txt`) và ảnh PNG cùng tên cho các UC-14 → UC-22 và UC-75.
 
 | Use Case | Source |
 |---|---|
@@ -13,6 +13,7 @@ Thư mục chứa source SequenceDiagram.org (`.txt`) và ảnh PNG cùng tên c
 | UC-20 Publish Meeting | [UC20_PublishMeeting.txt](UC20_PublishMeeting.txt) |
 | UC-21 Start Meeting | [UC21_StartMeeting.txt](UC21_StartMeeting.txt) |
 | UC-22 End Meeting | [UC22_EndMeeting.txt](UC22_EndMeeting.txt) |
+| UC-75 Cancel Meeting | [UC75_CancelMeeting.txt](UC75_CancelMeeting.txt) |
 
 Đọc [convention sequence chung](../README.md), [đặc tả Use Case](../../01-requirements/05-use-case-specifications.md),
 [Business Rules](../../01-requirements/06-business-rules.md) và các ADR liên quan trước khi sửa. Luồng

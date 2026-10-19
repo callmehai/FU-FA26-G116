@@ -1,0 +1,69 @@
+title UC-76b - Detach Document from Vote
+
+actor "Chair / Secretary" as Actor
+boundary "Meeting Management Page" as MeetingPage
+control ":Vote Controller" as VoteController
+control ":Vote Service" as VoteService
+participant ":Meeting Participant Repository" as ParticipantRepository
+participant ":Vote Repository" as VoteRepository
+database ":Database" as Database
+
+Actor->MeetingPage: Confirm Detach document from a Draft Vote
+activate MeetingPage
+MeetingPage->VoteController: Detach document from Vote
+activate VoteController
+VoteController->VoteService: detachVoteDocument(meetingId, voteId, meetingDocumentId, actorId)
+activate VoteService
+
+VoteService->VoteRepository: Get Vote, its Meeting and Vote document link
+activate VoteRepository
+VoteRepository->Database: Get Vote, its Meeting and Vote document link
+activate Database
+Database-->VoteRepository: Vote, Meeting and link / Not found
+deactivate Database
+VoteRepository-->VoteService: Vote, Meeting and link / Not found
+deactivate VoteRepository
+
+VoteService->ParticipantRepository: Check current Chair or Secretary assignment
+activate ParticipantRepository
+ParticipantRepository->Database: Check current Chair or Secretary assignment
+activate Database
+Database-->ParticipantRepository: Current Chair or Secretary / Not eligible
+deactivate Database
+ParticipantRepository-->VoteService: Current Chair or Secretary / Not eligible
+deactivate ParticipantRepository
+
+alt Meeting or Vote not accessible - EX-4
+    VoteService-->VoteController: MSG205 - Meeting votes are not accessible.
+    VoteController-->MeetingPage: MSG205 - Meeting votes are not accessible.
+    MeetingPage-->Actor: MSG205 - Meeting votes are not accessible.
+else Vote documents can no longer be changed - EX-1
+    VoteService-->VoteController: MSG213 - Only Draft votes may be managed by the current Chair or Secretary\nwhile the meeting is Approved, Published or InProgress.
+    VoteController-->MeetingPage: MSG213 - Only Draft votes may be managed by the current Chair or Secretary\nwhile the meeting is Approved, Published or InProgress.
+    MeetingPage-->Actor: MSG213 - Only Draft votes may be managed by the current Chair or Secretary\nwhile the meeting is Approved, Published or InProgress.
+else Document no longer attached to the Vote - EX-2
+    VoteService-->VoteController: MSG269 - This document is no longer attached to the vote. Refresh the list.
+    VoteController-->MeetingPage: MSG269 - This document is no longer attached to the vote. Refresh the list.
+    MeetingPage-->Actor: MSG269 - This document is no longer attached to the vote. Refresh the list.
+else Draft Vote and document still attached (BR-252, BR-288)
+    VoteService->VoteRepository: Recheck Vote is Draft and remove only this Vote document link;\nkeep the document in the Meeting with its Agenda Item links,\ncomments and read confirmations (BR-305)
+    activate VoteRepository
+    VoteRepository->Database: Remove only this Vote document link
+    activate Database
+    Database-->VoteRepository: Detached / Save failed
+    deactivate Database
+    VoteRepository-->VoteService: Detached / Save failed
+    deactivate VoteRepository
+    alt Change cannot be saved - EX-3
+        VoteService-->VoteController: MSG270 - Unable to detach the document. No changes were made. Please try again.
+        VoteController-->MeetingPage: MSG270 - Unable to detach the document. No changes were made. Please try again.
+        MeetingPage-->Actor: MSG270 - Unable to detach the document. No changes were made. Please try again.
+    else Document detached
+        VoteService-->VoteController: MSG268 - Document detached from the vote successfully.
+        VoteController-->MeetingPage: MSG268 - Document detached from the vote successfully.
+        MeetingPage-->Actor: MSG268 - Document detached from the vote successfully.
+    end
+end
+deactivate VoteService
+deactivate VoteController
+deactivate MeetingPage

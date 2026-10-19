@@ -15,7 +15,7 @@ và được `scripts/generate-state-machines.py` giữ lại khi sinh sơ đồ
 
 | Sơ đồ | State nối tới Final State |
 |---|---|
-| SM-01 Meeting | Ended |
+| SM-01 Meeting | Ended, Cancelled |
 | SM-02 Agenda | Done |
 | SM-03 ParticipantAssignment | Removed |
 | SM-05 GuestInvitation | Expired, Revoked |

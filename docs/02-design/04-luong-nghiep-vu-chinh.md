@@ -67,7 +67,7 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
 
 | Swimlane | Việc chính |
 |---|---|
-| Meeting Organizer | Tạo cuộc họp, gán/phục hồi Thư ký khi không có trong giai đoạn chuẩn bị, chọn người duyệt, gửi duyệt, sửa khi bị từ chối, công bố, dời lịch |
+| Meeting Organizer | Tạo cuộc họp, gán/phục hồi Thư ký khi không có trong giai đoạn chuẩn bị, chọn người duyệt, gửi duyệt, sửa khi bị từ chối, công bố, dời lịch, huỷ cuộc họp |
 | Secretary | Quản lý thành phần và mời Guest, gán vai trò (Chair, thành viên), chuẩn bị agenda, thêm tài liệu, bổ sung vai trò còn thiếu |
 | TrustCabinet | Lưu nháp; chuyển trạng thái và báo người liên quan; kiểm tra đủ Chair và Secretary; tạo lời mời; lưu phản hồi; lưu lịch mới |
 | Meeting Approver | Xem xét và duyệt / từ chối |
@@ -81,7 +81,9 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
 2. **Gán Thư ký đầu tiên (UC-28a):** khi cuộc họp chưa có Thư ký, chỉ Organizer được thêm người đầu tiên và người đó phải là
    Secretary (BR-78). Từ đó Thư ký quản lý danh sách (BR-79).
 3. **Thư ký chuẩn bị:** thêm thành viên nội bộ và mời Guest theo tên + email (UC-28a, BR-81 → BR-88, BR-148 → BR-151),
-   gán vai trò Chair / Member (UC-28b, tối đa một Chair — BR-123), soạn agenda (UC-23, BR-64 → BR-68), thêm tài liệu (UC-33).
+   gán vai trò Chair / Member (UC-28b, tối đa một Chair — BR-123; Thư ký chỉ thay Chair trước khi công bố — BR-294),
+   soạn agenda (UC-23, BR-64 → BR-68, BR-306), thêm tài liệu (UC-33), chuẩn bị nháp biểu quyết và tài liệu của nó
+   khi cuộc họp `Approved` / `Published` (UC-53, UC-76, BR-252).
 4. **Gửi duyệt (UC-18):** Organizer chọn người duyệt và gửi; cuộc họp chuyển `WaitingApproval`, người duyệt được báo
    (BR-33 → BR-35). Thông tin chung bị khoá; danh sách thành phần chỉ đọc; agenda vẫn sửa được (BR-34, BR-74).
 5. **Duyệt (UC-19):** người duyệt được phân công xem cuộc họp.
@@ -95,6 +97,9 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
    cuộc họp kết thúc.
 8. **Dời lịch sau công bố (UC-15 — *Reschedule*):** Organizer chỉ đổi giờ, địa điểm, link (BR-158), giờ bắt đầu mới phải
    ở tương lai (BR-75). Hệ thống lưu lịch mới và báo lại toàn bộ người được mời; lỗi gửi không huỷ thay đổi (BR-76).
+9. **Huỷ cuộc họp (UC-75):** bất cứ lúc nào trước khi bắt đầu (`Draft` → `Published`), Organizer huỷ với lý do bắt buộc;
+   cuộc họp thành `Cancelled`, chỉ đọc. Nếu đã công bố, người được mời được báo kèm lý do (BR-297 → BR-300). Cuộc họp
+   `Published` chưa bắt đầu 24 giờ sau giờ kết thúc dự kiến thì hệ thống tự huỷ (BR-301).
 
 ---
 
@@ -105,9 +110,9 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
 
 | Swimlane | Việc chính |
 |---|---|
-| Chair | Bắt đầu họp, đặt mục agenda hiện tại, tạo – mở – đóng biểu quyết, ghi kết luận, hoàn thành mục, kết thúc họp |
-| Participant / Guest | Vào phòng họp trực tuyến (Online / Hybrid), thảo luận (tài liệu, chat, chia sẻ màn hình), bỏ phiếu |
-| Secretary | Ghi điểm danh chính thức |
+| Chair | Bắt đầu họp, bắt đầu một mục agenda bất kỳ đang chờ, mở – đóng biểu quyết, ghi kết luận biểu quyết và kết luận của mục, hoàn thành mục, giao chủ toạ, kết thúc họp |
+| Participant / Guest | Vào phòng họp trực tuyến (Online / Hybrid), thảo luận (tài liệu, chat, chia sẻ màn hình), xác nhận đã đọc tài liệu biểu quyết, bỏ phiếu |
+| Secretary | Ghi điểm danh chính thức, chuẩn bị nháp biểu quyết, ghi kết luận của mục |
 | TrustCabinet | Chuyển `InProgress` và báo người tham dự; kiểm phiếu; lưu trạng thái và thời gian thực tế của mục agenda; chuyển `Ended` và đóng phòng họp |
 
 **Luồng:**
@@ -118,13 +123,18 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
    đổi vòng đời cuộc họp.
 3. **Điểm danh (UC-31):** Trong lúc cuộc họp `InProgress`, Thư ký lưu *Present / Absent* cho một/nhiều người được chọn trong roster nội bộ và Guest; người không gửi giữ nguyên giá trị đã lưu hoặc Chưa điểm danh. Một submission lưu nguyên khối; không bắt đủ roster. Điểm danh độc lập với phản hồi lời mời và trạng thái đang kết nối phòng họp (BR-116, BR-170–BR-172, BR-178).
 4. **Vòng agenda** — lặp cho từng mục:
-   1. Chair đặt mục hiện tại (UC-24): mục `Pending` → `InProgress`, ghi giờ bắt đầu; tối đa một mục đang chạy (BR-69 → BR-71).
+   1. Chair bắt đầu một mục `Pending` **bất kỳ**, không cần theo thứ tự (UC-24): mục → `InProgress`, ghi giờ bắt đầu;
+      tối đa một mục đang chạy (BR-69 → BR-71).
    2. Thảo luận với tài liệu, chat, chia sẻ màn hình.
-   3. **Cần biểu quyết?** Có → Chair tạo và mở biểu quyết (UC-53, UC-54) → Chair, Secretary, Member bỏ phiếu (UC-55;
+   3. **Cần biểu quyết?** Có → Chair mở biểu quyết từ nháp Chair hoặc Thư ký đã chuẩn bị (UC-53, UC-54; danh sách tài liệu
+      chốt khi mở — BR-288) → người được bỏ phiếu xác nhận đã đọc từng tài liệu của biểu quyết (UC-74) rồi bỏ phiếu (UC-55;
       Guest đã xác minh được bỏ phiếu như Member) → Chair đóng (UC-56) → hệ thống kiểm phiếu và hiện kết quả (UC-52b) → Chair ghi kết luận
       *Passed / NotPassed / Deferred* (UC-57). Áp dụng BR-160, BR-161, BR-165.
-   4. Chair hoàn thành mục (UC-25): mục → `Done`, ghi giờ kết thúc và thời lượng thực tế (BR-70, BR-72).
-   5. Còn mục → quay lại 4.1.
+   4. Chair hoặc Thư ký ghi kết luận của mục (UC-77, BR-309 → BR-311); sửa được tới khi sinh nháp biên bản.
+   5. Chair hoàn thành mục (UC-25): mục → `Done`, ghi giờ kết thúc (BR-70, BR-72).
+   6. Còn mục → quay lại 4.1.
+   - Bất cứ lúc nào khi `Published` / `InProgress`, Chair có thể giao chủ toạ cho thành phần tham dự nội bộ khác (UC-73);
+     Chair cũ thành Member (BR-295, BR-296).
 5. **Kết thúc (UC-22):** Chair kết thúc bất cứ lúc nào khi InProgress, không kiểm tra Vote Open hay điểm danh đủ/thiếu (BR-159). Vote giữ trạng thái và phiếu đã lưu; Meeting Ended ngừng nhận phiếu. Mục agenda đang chạy (nếu có) được hoàn tất cùng lúc cuộc họp chuyển sang `Ended` và ghi giờ kết thúc thực tế. Các mục còn chờ vẫn giữ nguyên trạng thái; hệ thống đóng quyền vào phòng họp theo quy tắc hiện hành (BR-143, BR-159).
 
 ---

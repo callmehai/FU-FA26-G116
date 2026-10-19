@@ -32,6 +32,9 @@
         <mxCell id="Rejected" value="Rejected" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=16;rounded=1;arcSize=20;fillColor=#ffffff;strokeColor=#334155;fontColor=#172554;strokeWidth=2;">
           <mxGeometry as="geometry" x="940" y="340" width="260" height="80" />
         </mxCell>
+        <mxCell id="Cancelled" value="Cancelled" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=16;rounded=1;arcSize=20;fillColor=#ffffff;strokeColor=#334155;fontColor=#172554;strokeWidth=2;">
+          <mxGeometry as="geometry" x="940" y="700" width="260" height="80" />
+        </mxCell>
         <mxCell id="transition-0" value="Organizer creates meeting" edge="1" parent="1" source="initial" target="Draft" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
           <mxGeometry as="geometry" relative="1" />
         </mxCell>
@@ -47,7 +50,7 @@
         <mxCell id="transition-4" value="Chair starts&#10;[required participants assigned]" edge="1" parent="1" source="Published" target="InProgress" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
           <mxGeometry as="geometry" relative="1" />
         </mxCell>
-        <mxCell id="transition-5" value="Chair ends&#10;[no open votes]" edge="1" parent="1" source="InProgress" target="Ended" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+        <mxCell id="transition-5" value="Chair ends&#10;or System ends&#10;[4h after planned end]" edge="1" parent="1" source="InProgress" target="Ended" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
           <mxGeometry as="geometry" relative="1" />
         </mxCell>
         <mxCell id="transition-6" value="Approver rejects&#10;[reason provided]" edge="1" parent="1" source="WaitingApproval" target="Rejected" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=1;exitY=0.15;entryX=0;entryY=0.15;">
@@ -87,10 +90,51 @@
             </Array>
           </mxGeometry>
         </mxCell>
+        <mxCell id="transition-11" value="Organizer cancels&#10;[reason provided]" edge="1" parent="1" source="Draft" target="Cancelled" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.95;exitY=0;entryX=0.9;entryY=0;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="707" y="90" />
+              <mxPoint x="1240" y="90" />
+              <mxPoint x="1240" y="680" />
+              <mxPoint x="1174" y="680" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="transition-12" value="Organizer cancels&#10;[reason provided]" edge="1" parent="1" source="WaitingApproval" target="Cancelled" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.95;exitY=1;entryX=0.3;entryY=0;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="707" y="500" />
+              <mxPoint x="1018" y="500" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="transition-13" value="Organizer cancels&#10;[reason provided]" edge="1" parent="1" source="Rejected" target="Cancelled" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="transition-14" value="Organizer cancels&#10;[reason provided]" edge="1" parent="1" source="Approved" target="Cancelled" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;entryX=0.1;entryY=0;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="966" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="transition-15" value="Organizer cancels [reason]&#10;or System cancels&#10;[24h after planned end]" edge="1" parent="1" source="Published" target="Cancelled" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;entryX=0;entryY=0.5;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
         <mxCell id="final-Ended" value="" vertex="1" parent="1" style="ellipse;html=1;shape=endState;fillColor=#1e293b;strokeColor=#1e293b;strokeWidth=2;">
           <mxGeometry as="geometry" x="575" y="1200" width="30" height="30" />
         </mxCell>
         <mxCell id="completion-Ended" value="" edge="1" parent="1" source="Ended" target="final-Ended" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="final-Cancelled" value="" vertex="1" parent="1" style="ellipse;html=1;shape=endState;fillColor=#1e293b;strokeColor=#1e293b;strokeWidth=2;">
+          <mxGeometry as="geometry" x="1280" y="725" width="30" height="30" />
+        </mxCell>
+        <mxCell id="completion-Cancelled" value="" edge="1" parent="1" source="Cancelled" target="final-Cancelled" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;exitX=1;exitY=0.5;entryX=0;entryY=0.5;">
           <mxGeometry as="geometry" relative="1" />
         </mxCell>
       </root>
