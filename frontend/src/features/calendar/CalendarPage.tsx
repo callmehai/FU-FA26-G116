@@ -10,8 +10,25 @@ import { MEETING_STATUS_LABEL } from '../../types/meeting'
 import { SensitivityBadge, StatusBadge } from '../meetings/StatusBadge'
 import { STATUS_TONE } from '../meetings/statusTone'
 import { CalendarFilter } from './CalendarFilter'
+import { DatePicker } from './DatePicker'
 import { NO_FILTER, activeGroups, matchesFilter, readFilter, writeFilter, type CalendarFilterValue } from './filter'
 import { useSchedule, type Schedule, type ScheduleEntry } from './useSchedule'
+import {
+  WEEKDAYS,
+  startOfWeek,
+  addDays,
+  startOfMonth,
+  addMonths,
+  daysInMonth,
+  monthGridDays,
+  sameMonth,
+  endOfDay,
+  sameDay,
+  toMonthInput,
+  toDateInput,
+  formatDay,
+  dayLabel,
+} from './dates'
 
 /** The grid covers the whole day; it opens scrolled to the part that matters (see WeekGrid). */
 const HOURS_PER_DAY = 24
@@ -22,10 +39,10 @@ const WORKDAY_START_HOUR = 8
 /** A meeting shorter than this would not fit its own time line. */
 const MIN_EVENT_HEIGHT = 30
 
-/** A month cell lists this many meetings; the rest fold into "+N cuộc họp". */
-const MONTH_CELL_EVENTS = 3
-
-const WEEKDAYS = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy']
+/** One meeting line on the month grid plus the gap above it (global.css: .month-event, .month-cell). */
+const MONTH_EVENT_ROW = 27
+/** What a month cell spends before its first meeting: padding and the day-number line. */
+const MONTH_CELL_CHROME = 40
 
 type Span = 'work' | 'full' | 'month'
 const SPAN_OPTIONS: { value: Span; label: string }[] = [
@@ -147,11 +164,17 @@ export function CalendarPage() {
             <Icon name="chevronRight" size={18} />
           </button>
         </div>
-        <h1 className="calendar-range">
-          {byMonth
-            ? `Tháng ${month.getMonth() + 1}/${month.getFullYear()}`
-            : rangeLabel(days[0], days[days.length - 1])}
-        </h1>
+        <DatePicker
+          label={
+            byMonth
+              ? `Tháng ${month.getMonth() + 1}/${month.getFullYear()}`
+              : rangeLabel(days[0], days[days.length - 1])
+          }
+          now={now}
+          anchor={byMonth ? month : addDays(monday, 3)}
+          viewed={byMonth ? [] : days}
+          onPick={(day) => (byMonth ? go({ month: startOfMonth(day) }) : go({ week: startOfWeek(day) }))}
+        />
 
         <div className="calendar-toolbar-end">
           <div className="view-toggle" role="group" aria-label="Chế độ xem">
@@ -373,11 +396,31 @@ function MonthGrid({
   onOpenWeek: (day: Date) => void
 }) {
   const entries = schedule.kind === 'loaded' ? schedule.entries : []
+  // The weeks share the frame's height, five or six alike, so the grid never scrolls; each cell
+  // lists as many meetings as its height holds and folds the rest into "+N".
+  const gridRef = useRef<HTMLDivElement>(null)
+  const [fit, setFit] = useState(3)
+  useLayoutEffect(() => {
+    const grid = gridRef.current
+    if (!grid) return
+    const measure = () => {
+      const cell = grid.querySelector<HTMLElement>('.month-cell')
+      if (cell) setFit(Math.max(1, Math.floor((cell.clientHeight - MONTH_CELL_CHROME) / MONTH_EVENT_ROW)))
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(grid)
+    return () => observer.disconnect()
+  }, [days.length])
 
   return (
     <div className="calendar" aria-busy={schedule.kind === 'loading'}>
       <div className="calendar-scroll month-scroll">
-        <div className="month" style={{ gridTemplateRows: `auto repeat(${days.length / 7}, minmax(120px, 1fr))` }}>
+        <div
+          ref={gridRef}
+          className="month"
+          style={{ gridTemplateRows: `auto repeat(${days.length / 7}, minmax(0, 1fr))` }}
+        >
           {days.slice(0, 7).map((day) => (
             <div key={day.getDay()} className="month-weekday">
               {WEEKDAYS[day.getDay()]}
@@ -387,7 +430,7 @@ function MonthGrid({
             const today = sameDay(day, now)
             const weekday = day.getDay()
             const dayEntries = entries.filter((e) => sameDay(e.start, day))
-            const shown = dayEntries.slice(0, MONTH_CELL_EVENTS)
+            const shown = dayEntries.slice(0, fit)
             const hidden = dayEntries.length - shown.length
             const cls = [
               'month-cell',
@@ -638,66 +681,6 @@ function readMonday(value: string | null, now: Date) {
     if (date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d) return startOfWeek(date)
   }
   return startOfWeek(now)
-}
-
-function startOfWeek(date: Date) {
-  const day = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-  // getDay(): Sunday is 0. The Vietnamese week starts on Monday.
-  return addDays(day, -((day.getDay() + 6) % 7))
-}
-
-function addDays(date: Date, n: number) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + n)
-}
-
-function startOfMonth(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), 1)
-}
-
-function addMonths(month: Date, n: number) {
-  return new Date(month.getFullYear(), month.getMonth() + n, 1)
-}
-
-function daysInMonth(month: Date) {
-  return new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate()
-}
-
-/** Whole weeks, Monday to Sunday, covering the month: five or six rows, four for a February starting on Monday. */
-function monthGridDays(month: Date) {
-  const first = startOfWeek(month)
-  const weeks = Math.ceil((daysInMonth(month) + ((month.getDay() + 6) % 7)) / 7)
-  return Array.from({ length: weeks * 7 }, (_, i) => addDays(first, i))
-}
-
-function sameMonth(a: Date, b: Date) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth()
-}
-
-function endOfDay(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999)
-}
-
-function sameDay(a: Date, b: Date) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
-}
-
-function toMonthInput(date: Date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-}
-
-function toDateInput(date: Date) {
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${date.getFullYear()}-${m}-${d}`
-}
-
-/** "06/10/2026" */
-function formatDay(date: Date) {
-  return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`
-}
-
-function dayLabel(date: Date) {
-  return `${WEEKDAYS[date.getDay()]}, ${formatDay(date)}`
 }
 
 /** "28/9 – 2/10/2026"; the year only once unless the week straddles New Year. */

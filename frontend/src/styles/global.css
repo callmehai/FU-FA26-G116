@@ -1520,7 +1520,60 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 /* ---------- Calendar (features/calendar) ---------- */
 .calendar-toolbar { display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; }
-.calendar-range { margin-left: 4px; font-size: 18px; white-space: nowrap; }
+.calendar-range { margin: 0; font-size: 18px; white-space: nowrap; }
+
+/* "Chọn ngày nhanh" (SCRUM-47): the range title is a button that opens a month calendar under it. */
+.date-pick { position: relative; }
+.calendar-range-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 40px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.calendar-range-button:hover, .calendar-range-button[aria-expanded='true'] { background: var(--brand-wash); color: var(--brand); }
+.calendar-range-button .icon { transition: transform .15s; }
+.calendar-range-button[aria-expanded='true'] .icon { transform: rotate(180deg); }
+.date-pick-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  width: 340px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 12px 32px #1a243326;
+}
+.date-pick-title { margin: 0 0 10px; color: var(--label-ink); font-size: 13px; font-weight: 600; }
+.date-pick-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.date-pick-head .select:first-child { width: 120px; }
+.date-pick-head .select:nth-child(2) { width: 96px; }
+.date-pick-head .select-trigger { min-width: 0; }
+.date-pick-head .icon-button:nth-child(3) { margin-left: auto; }
+.date-pick-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); row-gap: 4px; }
+.date-pick-weekday { padding: 6px 0; color: var(--label-ink); font-size: 12px; font-weight: 600; text-align: center; }
+.date-pick-day { display: grid; place-items: center; height: 36px; padding: 0; border: 0; background: none; color: var(--ink); font: inherit; cursor: pointer; }
+.date-pick-num { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; }
+.date-pick-day:hover .date-pick-num { background: var(--surface-alt); }
+.date-pick-outside { color: var(--faint-ink); }
+.date-pick-viewed { background: var(--brand-wash); color: var(--brand); font-weight: 600; }
+.date-pick-start { border-radius: 18px 0 0 18px; }
+.date-pick-end { border-radius: 0 18px 18px 0; }
+.date-pick-start.date-pick-end { border-radius: 18px; }
+.date-pick-today .date-pick-num { box-shadow: inset 0 0 0 2px var(--gold); font-weight: 700; }
+.date-pick-legend { display: flex; gap: 18px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-soft); color: var(--muted-ink); font-size: 12px; }
+.date-pick-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.date-pick-legend i { width: 12px; height: 12px; border-radius: 50%; }
+.date-pick-swatch-today { box-shadow: inset 0 0 0 2px var(--gold); }
+.date-pick-swatch-viewed { border-radius: 3px; background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--edge-blue); }
 .calendar-toolbar-end { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }
 .calendar-toolbar-end .select { width: 140px; }
 .calendar-note { flex: none; margin-bottom: 16px; }
@@ -1640,8 +1693,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* The month grid (SCRUM-47): seven columns Monday first, its weeks sharing the frame's height.
    A meeting is one line in the colours and edges of its week-grid block. */
 .month-scroll { display: flex; flex-direction: column; }
-/* Grown as a flex item, so its height is definite and the 1fr weeks split the frame. */
-.month { display: grid; flex: 1 0 auto; grid-template-columns: repeat(7, minmax(0, 1fr)); min-width: 760px; }
+/* Exactly the frame's height (flex: 1 1 0), so the 1fr weeks split it and nothing scrolls. */
+.month { display: grid; flex: 1 1 0; min-height: 0; grid-template-columns: repeat(7, minmax(0, 1fr)); min-width: 760px; }
 .month-weekday {
   position: sticky;
   top: 0;
@@ -1654,7 +1707,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   font-size: 12px;
   font-weight: 600;
 }
-.month-cell { display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 5px 8px 7px; border-bottom: 1px solid var(--line-soft); border-left: 1px solid var(--line-soft); }
+.month-cell { display: flex; flex-direction: column; gap: 3px; min-width: 0; min-height: 0; overflow: hidden; padding: 5px 8px 7px; border-bottom: 1px solid var(--line-soft); border-left: 1px solid var(--line-soft); }
 .month-weekday:nth-child(7n + 1), .month-cell:nth-child(7n + 1) { border-left: 0; }
 .month-weekend { background: #fafbfc; }
 .month-cell-head { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
