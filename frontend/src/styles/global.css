@@ -1692,7 +1692,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .month-event:hover { box-shadow: 0 2px 8px #1a243326; }
 .month-event-time { flex: none; font-weight: 700; }
 .month-event-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.month-event .cal-event-secret { flex: none; }
+.month-event .cal-event-secret { flex: none; font-size: 12px; }
 .cal-event-blue .month-event-time { color: var(--chip-blue-fg); }
 .cal-event-amber .month-event-time { color: var(--chip-amber-fg); }
 .cal-event-red .month-event-title { text-decoration: line-through; }

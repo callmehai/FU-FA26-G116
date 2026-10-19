@@ -91,7 +91,7 @@ export function CalendarFilter({
       </button>
 
       {open && (
-        <div className="cal-filter-panel" id={PANEL_ID} role="dialog" aria-label="Bộ lọc lịch">
+        <div className="cal-filter-panel" id={PANEL_ID} role="group" aria-label="Bộ lọc lịch">
           <fieldset className="cal-filter-group">
             <legend>Trạng thái</legend>
             <div className="cal-filter-chips">

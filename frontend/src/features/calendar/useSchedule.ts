@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { listMeetings } from '../../api/meetings'
 import { errorMessage } from '../../lib/errors'
 import type { MeetingListItem } from '../../types/meeting'
@@ -26,6 +26,8 @@ const PAGE_SIZE = 100
 export function useSchedule(from: Date, to: Date, attempt: number): Schedule {
   const handleAccessLost = useAccessLost()
   const [state, setState] = useState<Schedule>({ kind: 'loading' })
+  /** The range `state` holds when it is loaded. */
+  const loadedRange = useRef('')
   const fromIso = from.toISOString()
   const toIso = to.toISOString()
 
@@ -33,7 +35,9 @@ export function useSchedule(from: Date, to: Date, attempt: number): Schedule {
     let cancelled = false
     void Promise.resolve().then(async () => {
       if (cancelled) return
-      setState((s) => (s.kind === 'loaded' ? s : { kind: 'loading' }))
+      // A retry keeps the range on screen; a new range shows as loading, not as the old one's data.
+      const range = `${fromIso}/${toIso}`
+      setState((s) => (s.kind === 'loaded' && loadedRange.current === range ? s : { kind: 'loading' }))
       try {
         // Keyed by id: a meeting created while the pages load can shift a row onto the next page.
         const byId = new Map<string, MeetingListItem>()
@@ -55,6 +59,7 @@ export function useSchedule(from: Date, to: Date, attempt: number): Schedule {
           start: new Date(meeting.plannedStartTime),
           end: new Date(meeting.plannedEndTime),
         }))
+        loadedRange.current = range
         setState({ kind: 'loaded', entries })
       } catch (err) {
         if (cancelled || handleAccessLost(err)) return

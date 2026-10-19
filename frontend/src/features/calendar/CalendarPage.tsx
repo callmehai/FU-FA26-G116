@@ -63,10 +63,13 @@ export function CalendarPage() {
     : Array.from({ length: span === 'full' ? 7 : 5 }, (_, i) => addDays(monday, i))
   const gridDays = byMonth ? monthGridDays(month) : days
   const schedule = useSchedule(gridDays[0], endOfDay(gridDays[gridDays.length - 1]), attempt)
-  const visible: Schedule =
-    schedule.kind === 'loaded'
-      ? { kind: 'loaded', entries: schedule.entries.filter((e) => matchesFilter(e, filter)) }
-      : schedule
+  // What this view draws: a meeting sits on its start day, so one that only runs into the range, or
+  // one on the grid's padding days in the month list, is not on screen and must not be counted.
+  const shownDays = new Set((mode === 'list' ? days : gridDays).map(toDateInput))
+  const inView = schedule.kind === 'loaded' ? schedule.entries.filter((e) => shownDays.has(toDateInput(e.start))) : null
+  const visible: Schedule = inView
+    ? { kind: 'loaded', entries: inView.filter((e) => matchesFilter(e, filter)) }
+    : schedule
 
   /** `push` keeps the current view in history: Back from a week opened on the month grid returns to it. */
   function go(
@@ -99,7 +102,9 @@ export function CalendarPage() {
       // The month holding most of the week on screen: the one its Thursday falls in.
       go({ span: next, month: byMonth ? month : startOfMonth(addDays(monday, 3)) })
     } else {
-      go({ span: next, week: byMonth ? startOfWeek(sameMonth(month, now) ? now : month) : monday })
+      // This week if the month is the current one, else its first week by the same Thursday rule —
+      // the week holding the 4th — so month → week → month comes back to the same month.
+      go({ span: next, week: byMonth ? startOfWeek(sameMonth(month, now) ? now : addDays(month, 3)) : monday })
     }
   }
 
@@ -177,11 +182,7 @@ export function CalendarPage() {
             </button>
           </div>
           <Select value={span} options={SPAN_OPTIONS} onChange={changeSpan} label="Kiểu lịch" />
-          <CalendarFilter
-            value={filter}
-            entries={schedule.kind === 'loaded' ? schedule.entries : null}
-            onChange={(next) => go({ filter: next })}
-          />
+          <CalendarFilter value={filter} entries={inView} onChange={(next) => go({ filter: next })} />
           {can('MeetingCreator') && (
             <Link className="btn btn-primary" to={routes.meetingNew}>
               <Icon name="plus" size={18} />
@@ -193,7 +194,9 @@ export function CalendarPage() {
 
       <ScheduleNotice
         schedule={schedule}
-        filteredOut={activeGroups(filter) > 0 && visible.kind === 'loaded' && visible.entries.length === 0}
+        filteredOut={
+          activeGroups(filter) > 0 && !!inView?.length && visible.kind === 'loaded' && visible.entries.length === 0
+        }
         onRetry={() => setAttempt((n) => n + 1)}
         onClearFilter={() => go({ filter: NO_FILTER })}
       />
@@ -393,8 +396,13 @@ function MonthGrid({
               today ? 'month-today' : '',
             ]
             return (
-              <section key={day.toISOString()} className={cls.filter(Boolean).join(' ')} aria-label={dayLabel(day)}>
-                {/* "+N" shares the day number's line, so a busy day is no taller than a full one. */}
+              <div
+                key={day.toISOString()}
+                className={cls.filter(Boolean).join(' ')}
+                role="group"
+                aria-label={dayLabel(day)}
+              >
+                {/* "+N shares the day number's line, so a busy day is no taller than a full one. */}
                 <div className="month-cell-head">
                   <button
                     type="button"
@@ -411,7 +419,7 @@ function MonthGrid({
                       type="button"
                       className="month-more"
                       onClick={() => onOpenWeek(day)}
-                      aria-label={`${hidden} cuộc họp nữa: xem tuần`}
+                      aria-label={`${hidden} cuộc họp nữa ngày ${formatDay(day)}: xem tuần`}
                       title={`${hidden} cuộc họp nữa`}
                     >
                       +{hidden}
@@ -422,7 +430,7 @@ function MonthGrid({
                 {shown.map((entry) => (
                   <MonthEvent key={entry.meeting.id} entry={entry} />
                 ))}
-              </section>
+              </div>
             )
           })}
         </div>
@@ -614,7 +622,9 @@ function useNow() {
 function readMonth(value: string | null, now: Date) {
   if (value && MONTH.test(value)) {
     const [y, m] = value.split('-').map(Number)
-    if (m >= 1 && m <= 12) return new Date(y, m - 1, 1)
+    const date = new Date(y, m - 1, 1)
+    // Rejects month 13 and two-digit years, which Date would roll over or map to 19xx.
+    if (date.getFullYear() === y && date.getMonth() === m - 1) return date
   }
   return startOfMonth(now)
 }
@@ -624,7 +634,8 @@ function readMonday(value: string | null, now: Date) {
   if (value && DATE.test(value)) {
     const [y, m, d] = value.split('-').map(Number)
     const date = new Date(y, m - 1, d)
-    if (!Number.isNaN(date.getTime())) return startOfWeek(date)
+    // Rejects 31/02 and two-digit years, which Date would roll over or map to 19xx.
+    if (date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d) return startOfWeek(date)
   }
   return startOfWeek(now)
 }
