@@ -49,8 +49,8 @@ Các mã UC-27–30 dưới đây đã có Backend. OTP/session production thu�
 | `MSG152` | 400 | Grant không được phép | Quyền bổ sung đã chọn không được phép. |
 | `MSG153` | 200 | Chỉ đổi optional grants | Cập nhật quyền cuộc họp thành công. |
 | `MSG154` | 200 | Role/grants/response không có thay đổi | Không có thay đổi cần lưu. |
-| `MSG252` | 409 | Revision roster stale | Danh sách thành phần đã thay đổi. Vui lòng tải lại và thử lại. |
-| `MSG253` | 400 | Query hoặc If-Match thiếu/sai | Query hoặc If-Match không hợp lệ. Vui lòng tải lại dữ liệu. |
+| `MSG275` | 409 | Revision roster stale | Danh sách thành phần đã thay đổi. Vui lòng tải lại và thử lại. |
+| `MSG276` | 400 | Query hoặc If-Match thiếu/sai | Query hoặc If-Match không hợp lệ. Vui lòng tải lại dữ liệu. |
 
 Endpoint Participants dùng lại `415/MSG34` cho content-type và `413/MSG87` cho giới hạn 64 KiB. 401 authentication; 403/404 body rỗng theo quyền và khả năng tiết lộ tài nguyên.
 
@@ -91,7 +91,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 
 ## Mã tiếp theo
 
-**`MSG254`** — SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG152`–`MSG154`, `MSG252`–`MSG253` theo bảng contract Participants. `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020. Giữ nguyên MSG141 đã triển khai; đặc tả UC-23b dùng MSG250 cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai.  `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai.  `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG151` dành sẵn cho thay đổi FE-06 trong Report 3; `MSG152`–`MSG154` đã triển khai trong SCRUM-20. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG277`** — `MSG252`–`MSG274` dành sẵn, chưa triển khai, cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG152`–`MSG154`, `MSG275`–`MSG276` theo bảng contract Participants. `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020. Giữ nguyên MSG141 đã triển khai; đặc tả UC-23b dùng MSG250 cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG151` dành cho thay đổi FE-06 trong Report 3; `MSG152`–`MSG154` đã triển khai trong SCRUM-20. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -268,7 +268,7 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG99` | UC-28a | *Unable to add the meeting participant. Please try again.* |
 | `MSG100` | UC-28b Manage Meeting Role & Additional Permissions | *Meeting role updated successfully.* |
 | `MSG101` | UC-28b | *A valid meeting role is required.* |
-| `MSG102` | UC-28b | *Unable to update the meeting role. Please try again.* |
+| `MSG102` | UC-28b, UC-73 / EX-3 | *Unable to update the meeting role. Please try again.* |
 | `MSG103` | UC-28c Remove Meeting Participant | *Meeting participant removed successfully.* |
 | `MSG104` | UC-28c | *Unable to remove the meeting participant. Please try again.* |
 | `MSG105` | UC-29 Respond to Meeting Invitation | *Meeting invitation response recorded successfully.* |
@@ -308,10 +308,10 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG128` | UC-26 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |
 | `MSG139` | UC-22 cũ · Ngừng dùng 13/10/2026 | Không còn gate đóng Vote trước End Meeting; không tái cấp mã. |
 | `MSG140` | UC-18 Submit Meeting for Approval · EX-5 — Dành sẵn | *No eligible meeting approver is available. Please contact the administrator.* — `Chưa có người duyệt đủ điều kiện. Vui lòng liên hệ quản trị viên.` |
-| `MSG141` | UC-23b / EX-4 · Đã triển khai SCRUM-25 | *Only Title and Description can be changed after an agenda item has started.* — Chỉ được sửa tiêu đề và mô tả sau khi mục nghị sự đã bắt đầu. |
+| `MSG141` | UC-23b / EX-4 · Đã triển khai SCRUM-25 | *Only Title and Description can be changed after an agenda item has started.* — Chỉ được sửa tiêu đề và mô tả sau khi mục nghị sự đã bắt đầu. **Đặc tả đã bỏ 18/10/2026** (PO 16/10/2026: sửa được mọi trường ở mọi trạng thái); BE còn trả cho tới khi SCRUM-25 sửa theo, sau đó chuyển *Ngừng dùng*. |
 | `MSG142` | UC-23c / EX-2 · Đã triển khai SCRUM-25 | *Only Pending agenda items can be deleted.* — Chỉ được xóa mục nghị sự chưa bắt đầu. |
-| `MSG143` | UC-23d / EX-2 · Đã triển khai SCRUM-25 | *Only Pending agenda items can be reordered within their existing positions. Refresh the agenda and try again.* — Chỉ được sắp xếp các mục chưa bắt đầu trong những vị trí hiện có của chúng. Vui lòng tải lại agenda và thử lại. |
-| `MSG144` | UC-24 / EX-3 · Đã triển khai SCRUM-25 | *Start the first Pending agenda item in the current order.* — Vui lòng bắt đầu mục nghị sự chưa thực hiện đầu tiên theo thứ tự hiện tại. |
+| `MSG143` | UC-23d / EX-2 · Đã triển khai SCRUM-25 | *The agenda order is invalid or out of date. Refresh the agenda and try again.* — Thứ tự chương trình nghị sự không hợp lệ hoặc đã cũ. Vui lòng tải lại và thử lại. Câu chữ đổi 18/10/2026 (PO 16/10/2026: sắp xếp mục ở mọi trạng thái); cùng tình huống, giữ mã. |
+| `MSG144` | UC-24 / EX-3 · Đã triển khai SCRUM-25 | *Start the first Pending agenda item in the current order.* — Vui lòng bắt đầu mục nghị sự chưa thực hiện đầu tiên theo thứ tự hiện tại. **Đặc tả đã bỏ 18/10/2026** (PO 16/10/2026: bắt đầu được mục Pending bất kỳ); BE còn trả cho tới khi SCRUM-25 sửa theo, sau đó chuyển *Ngừng dùng*. |
 
 `MSG83` và `MSG84` đã được workflow SCRUM-19 dùng. `MSG90` và `MSG91` chỉ được giữ để không tái cấp.
 
@@ -474,7 +474,7 @@ Các mã dưới đây được dành sẵn cho đặc tả nghiệp vụ trong 
 | `MSG210` | UC-53 / Normal Flow · Dành sẵn | Vote draft created successfully. |
 | `MSG211` | UC-53 / AF-1 · Dành sẵn | Vote draft updated successfully. |
 | `MSG212` | UC-53 / AF-2 · Dành sẵn | Vote draft deleted successfully. |
-| `MSG213` | UC-53 / EX-2 · Dành sẵn | Only Draft votes may be managed by the current Chair while the meeting is Approved, Published or InProgress. |
+| `MSG213` | UC-53 / EX-2; UC-76a, UC-76b / EX-1 · Dành sẵn | Only Draft votes may be managed by the current Chair or Secretary while the meeting is Approved, Published or InProgress. |
 | `MSG214` | UC-53 / EX-3 · Dành sẵn | Unable to create the vote draft. No draft was created. Please try again. |
 | `MSG215` | UC-53 / EX-4 · Dành sẵn | Unable to update the vote draft. The draft remains unchanged. Please try again. |
 | `MSG216` | UC-53 / EX-5 · Dành sẵn | Unable to delete the vote draft. The draft remains unchanged. Please try again. |
@@ -506,20 +506,43 @@ Các mã sau **Dành sẵn, chưa triển khai**; thông điệp đặc tả b�
 
 | Mã | Nguồn / tình huống | Thông báo chuẩn |
 |---|---|---|
-| `MSG238` | UC-33b / Normal Flow · Dành sẵn, chưa triển khai | Document linked to the Agenda Item successfully. |
-| `MSG239` | UC-33d / Normal Flow · Dành sẵn, chưa triển khai | Document unlinked from the Agenda Item successfully. |
+| `MSG238` | UC-33b / Normal Flow · Dành sẵn, chưa triển khai | Documents attached to the Agenda Item successfully. |
+| `MSG239` | UC-33d / Normal Flow · Dành sẵn, chưa triển khai | Document detached from the Agenda Item successfully. |
 | `MSG240` | UC-33b / EX-1 · Dành sẵn, chưa triển khai | You no longer have permission to link documents in this Meeting. |
 | `MSG241` | UC-33d / EX-1 · Dành sẵn, chưa triển khai | You no longer have permission to unlink documents in this Meeting. |
 | `MSG242` | UC-33b, UC-33d / EX-3 · Dành sẵn, chưa triển khai | Select an available Agenda Item in this Meeting. |
-| `MSG243` | UC-33b / EX-4 · Dành sẵn, chưa triển khai | This document is already linked to the selected Agenda Item. |
+| `MSG243` | UC-33b / EX-4 · Dành sẵn, chưa triển khai | One or more selected documents are already attached to the Agenda Item. |
 | `MSG244` | UC-33b / EX-5 · Dành sẵn, chưa triển khai | Unable to link the document. No links were changed. Please try again. |
 | `MSG245` | UC-33d / EX-5 · Dành sẵn, chưa triển khai | Unable to unlink the document. No links were changed. Please try again. |
 | `MSG246` | UC-33d / EX-4 · Dành sẵn, chưa triển khai | This document is no longer linked to the selected Agenda Item. Refresh the document list. |
 | `MSG247` | UC-33b, UC-33d / EX-6 · Dành sẵn, chưa triển khai | Document links cannot be changed after the Meeting has ended. |
 | `MSG248` | UC-33c / EX-1 · Dành sẵn, chưa triển khai | Documents cannot be removed after the Meeting has ended. |
 | `MSG249` | UC-33a / EX-2 · Dành sẵn, chưa triển khai | Select one or more available documents from your personal library. |
-| `MSG250` | UC-23b / EX-4 · Dành sẵn, chưa triển khai | Planned Duration and Presenter cannot be changed after an agenda item has started. |
+| `MSG250` | UC-23b / EX-4 (cũ) · **Ngừng dùng** 18/10/2026 | *Planned Duration and Presenter cannot be changed after an agenda item has started.* — Ngừng dùng theo PO 16/10/2026: mục nghị sự không còn Planned Duration. Không tái sử dụng mã. |
 | `MSG251` | UC-35 / EX-5 · Dành sẵn, chưa triển khai | Comments are read-only after the Meeting has ended. |
+| `MSG252` | UC-55 / EX-8 · Dành sẵn, chưa triển khai | Confirm that you have read all vote documents before casting your ballot. |
+| `MSG253` | UC-74 / Main Flow · Dành sẵn, chưa triển khai | Document read confirmed. |
+| `MSG254` | UC-74 / EX-1 · Dành sẵn, chưa triển khai | Scroll to the last page of the document before confirming that you have read it. |
+| `MSG255` | UC-74 / EX-3 · Dành sẵn, chưa triển khai | Unable to confirm document reading. Please try again. |
+| `MSG256` | UC-28b / EX-5 · Dành sẵn, chưa triển khai | From publication onward, only the current Chair can hand over the Chair role. |
+| `MSG257` | UC-73 / Main Flow · Dành sẵn, chưa triển khai | Chair role handed over successfully. |
+| `MSG258` | UC-73 / AF-1 · Dành sẵn, chưa triển khai | No participant can receive the Chair role. Add an internal participant first. |
+| `MSG259` | UC-73 / EX-1 · Dành sẵn, chưa triển khai | The selected participant can no longer receive the Chair role. Select another participant. |
+| `MSG260` | UC-73 / EX-2 · Dành sẵn, chưa triển khai | You can no longer hand over the Chair role for this meeting. |
+| `MSG261` | UC-75 / Main Flow · Dành sẵn, chưa triển khai | Meeting cancelled successfully. |
+| `MSG262` | UC-75 / EX-1 · Dành sẵn, chưa triển khai | Enter a reason for cancelling the meeting. |
+| `MSG263` | UC-75 / EX-2 · Dành sẵn, chưa triển khai | This meeting can no longer be cancelled. |
+| `MSG264` | UC-75 / EX-3 · Dành sẵn, chưa triển khai | Unable to cancel the meeting. Please try again. |
+| `MSG265` | UC-76a / Main Flow · Dành sẵn, chưa triển khai | Documents attached to the vote successfully. |
+| `MSG266` | UC-76a / EX-3 · Dành sẵn, chưa triển khai | One or more selected documents are already attached to the vote. |
+| `MSG267` | UC-76a / EX-4 · Dành sẵn, chưa triển khai | Unable to attach the documents. No documents were attached. Please try again. |
+| `MSG268` | UC-76b / Main Flow · Dành sẵn, chưa triển khai | Document detached from the vote successfully. |
+| `MSG269` | UC-76b / EX-2 · Dành sẵn, chưa triển khai | This document is no longer attached to the vote. Refresh the list. |
+| `MSG270` | UC-76b / EX-3 · Dành sẵn, chưa triển khai | Unable to detach the document. No changes were made. Please try again. |
+| `MSG271` | UC-77 / Main Flow · Dành sẵn, chưa triển khai | Agenda item conclusion saved. |
+| `MSG272` | UC-77 / EX-1 · Dành sẵn, chưa triển khai | Enter a conclusion of up to 2,000 characters. |
+| `MSG273` | UC-77 / EX-2 · Dành sẵn, chưa triển khai | The conclusion of this agenda item can no longer be changed. |
+| `MSG274` | UC-77 / EX-3 · Dành sẵn, chưa triển khai | Unable to save the agenda item conclusion. Please try again. |
 
 ## Ghi chú: mã dùng chung có chủ ý
 

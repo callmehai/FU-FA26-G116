@@ -43,7 +43,7 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
         var summary = await member.GetFromJsonAsync<JsonElement>(s.Url + "/invitation-responses");
         Assert.Equal(3, summary.GetProperty("totals").GetProperty("pending").GetInt32());
         Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync(s.Url + "/participants")).StatusCode);
-        await Code(await member.GetAsync(s.Url + "/invitation-responses?q=User"), 400, "MSG253");
+        await Code(await member.GetAsync(s.Url + "/invitation-responses?q=User"), 400, "MSG276");
         await Code(await Write(member, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Accepted" }), 200, "MSG105");
         await Code(await Write(member, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Accepted" }), 200, "MSG154");
         await Code(await Write(member, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Delegated" }), 400, "MSG106");
@@ -192,7 +192,7 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
         var body = new { userIds = new[] { s.Outsider }, role = "Member" };
         var results = await Task.WhenAll(Write(a, s.Url + "/participants", HttpMethod.Post, body), Write(b, s.Url + "/participants", HttpMethod.Post, body));
         await Code(results.Single(r => r.StatusCode == HttpStatusCode.Created), 201, "MSG96");
-        await Code(results.Single(r => r.StatusCode == HttpStatusCode.Conflict), 409, "MSG252");
+        await Code(results.Single(r => r.StatusCode == HttpStatusCode.Conflict), 409, "MSG275");
         await using var db = f.Db(); Assert.Equal(1, await db.MeetingParticipants.CountAsync(p => p.MeetingId == s.MeetingId && p.UserId == s.Outsider));
         Assert.Equal(1, await db.MeetingInvitationDispatches.CountAsync(d => d.MeetingId == s.MeetingId));
     }
@@ -251,7 +251,7 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
         f.Guests.FailProfiles = true;
         try { await Code(await client.GetAsync(s.Url + "/participants"), 500, "MSG95"); }
         finally { f.Guests.FailProfiles = false; }
-        await Code(await Write(client, s.Url + "/participants", HttpMethod.Post, new { userIds = new[] { s.Outsider }, role = "Member" }, etag: null), 400, "MSG253");
+        await Code(await Write(client, s.Url + "/participants", HttpMethod.Post, new { userIds = new[] { s.Outsider }, role = "Member" }, etag: null), 400, "MSG276");
         await Code(await client.PutAsync(s.Url + "/invitation-response", new StringContent(new string('x', 65537), Encoding.UTF8, "application/json")), 413, "MSG87");
         foreach (var (op, body, method, code) in new[] {
             ("/participants", (object)new { userIds = new[] { s.Outsider }, role = "Member" }, HttpMethod.Post, "MSG99"),

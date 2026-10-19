@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { BackLink } from '../../../components/BackLink'
 import { Icon } from '../../../components/Icon'
 import { NotFound } from '../../../components/NotFound'
@@ -159,6 +159,19 @@ function MeetingDetail({
     },
     [toast, replace, appendHistory, reloadSession, reload, reloadHistory, handleAccessLost],
   )
+
+  // Opening a notification about this same meeting navigates to the URL already on screen, which
+  // does not remount the page: re-read what the notification says has changed. A different meeting
+  // in the URL remounts this component anyway, so leave that one to the new mount.
+  const { key: locationKey } = useLocation()
+  const { meetingId } = useParams()
+  const shownKey = useRef(locationKey)
+  useEffect(() => {
+    if (shownKey.current === locationKey || meetingId?.toLowerCase() !== meeting.id.toLowerCase()) return
+    shownKey.current = locationKey
+    void reload()
+    void reloadHistory()
+  }, [locationKey, meetingId, meeting.id, reload, reloadHistory])
 
   // The history is read separately; it can be the first to learn the meeting is gone.
   const historyFailure = history.failure

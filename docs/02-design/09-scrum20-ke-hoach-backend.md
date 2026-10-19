@@ -214,7 +214,7 @@ Base: `/api/meetings/{meetingId}`. GUID route. String enum đúng PascalCase; t�
 - GET nhạy cảm trả `Cache-Control: no-store`. Không trả entity trực tiếp, password/hash, token/session secret, audit payload hoặc navigation.
 - Query page mặc định 1, pageSize 20, tối đa 100. q trim tối đa 200; escape wildcard `%`, `_` khi muốn tìm literal bằng ILIKE; parameterized query. Sort cố định theo tên chuẩn hóa rồi kind rồi ID để phân trang ổn định.
 - Roster/options dùng q. Responses chỉ page/pageSize, **không q hoặc search theo tên/email**; từ chối query search thay vì vô tình expose search qua quyền responses.
-- GET context và roster trả `ETag: "participants-<revision>"`; mọi roster mutation gửi `If-Match` giá trị đã đọc. Thiếu/sai định dạng → 400/MSG253 (request metadata không hợp lệ); stale → 409/MSG252 (mã mới dự kiến). Chỉ nhận một strong ETag đúng định dạng; reject `*`, weak ETag hoặc danh sách nhiều tag. Đọc lại authority/state trước khi trả stale; không lộ revision cho người mất quyền.
+- GET context và roster trả `ETag: "participants-<revision>"`; mọi roster mutation gửi `If-Match` giá trị đã đọc. Thiếu/sai định dạng → 400/MSG276 (request metadata không hợp lệ); stale → 409/MSG275 (mã mới dự kiến). Chỉ nhận một strong ETag đúng định dạng; reject `*`, weak ETag hoặc danh sách nhiều tag. Đọc lại authority/state trước khi trả stale; không lộ revision cho người mất quyền.
 - Không dùng revision cho UC-29: response dùng serialization theo meeting lock và giá trị mới nhất. Role/grant mutation không được đè response vừa lưu.
 - Strict JSON theo `AgendaEndpoints`: tối đa 64 KiB kể cả chunked, đúng content-type, reject unknown/duplicate property, wrong casing/type, enum numeric, null bắt buộc. Không dùng model binding trả lỗi business trước authorization. Parse thành result rồi service quyết định thứ tự thông báo.
 - Technical limits: batch add tối đa 100 user IDs; changes tối đa 100 current assignments; name/email giới hạn ở §5. Đây là giới hạn request đề xuất, không phải luật cap tổng số người của meeting; FE có thể chia batch.
@@ -325,11 +325,11 @@ Return `200 {code,message,revision}` và ETag mới: MSG100 nếu có role chang
 | Persistence response thất bại | 503/MSG108 |
 | Final roster vi phạm required roles/Chair invariant | 409/MSG109 |
 | Grant không hợp lệ | 400/MSG152 |
-| Stale roster revision | 409/MSG252, dự kiến: “Danh sách thành phần đã thay đổi. Vui lòng tải lại và thử lại.” |
-| Query/header request sai, pagination sai, thiếu/sai If-Match | 400/MSG253, dự kiến: “Yêu cầu thành phần cuộc họp không hợp lệ.”; errors chỉ rõ field/header |
+| Stale roster revision | 409/MSG275, dự kiến: “Danh sách thành phần đã thay đổi. Vui lòng tải lại và thử lại.” |
+| Query/header request sai, pagination sai, thiếu/sai If-Match | 400/MSG276, dự kiến: “Yêu cầu thành phần cuộc họp không hợp lệ.”; errors chỉ rõ field/header |
 | Payload quá lớn / content type không hỗ trợ | 413/MSG87; 415/MSG34, dùng đúng catalogue hiện có |
 
-Khi giải quyết merge với main `e754010` ngày 15/10/2026, MSG156–MSG251 đã được phân bổ hoặc ngừng dùng. SCRUM-20 dùng MSG252 (stale revision), MSG253 (query/If-Match sai), mã tiếp theo MSG254. MSG238/MSG239 giữ cho liên kết tài liệu theo ADR-0020; catalogue giữ nguyên phân bổ FE-07/FE-11.
+Khi giải quyết merge với main `3790928` ngày 19/10/2026, MSG252–MSG274 đã được dành cho thay đổi Report 3; MSG238/MSG239 giữ cho liên kết tài liệu theo ADR-0020. SCRUM-20 dùng MSG275 (stale revision), MSG276 (query/If-Match sai), mã tiếp theo MSG277. Catalogue giữ nguyên phân bổ FE-07/FE-11.
 
 401 token thiếu/sai/hết hạn; active-user gate theo convention hiện có. 404 body rỗng khi meeting/assignment/invitation không tồn tại, không thuộc meeting, không có quyền đọc dữ liệu cụ thể, Guest expired/revoked/unverified. Chỉ dùng 403 body rỗng cho caller đã được phép đọc meeting nhưng không có quyền thực hiện hành động quản lý đó; không để 403 tiết lộ meeting mà caller chưa biết. Không trả MSG107 kèm tên/email cho Guest session đã mất hiệu lực.
 

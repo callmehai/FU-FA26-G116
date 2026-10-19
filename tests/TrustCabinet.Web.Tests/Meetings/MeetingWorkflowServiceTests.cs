@@ -92,6 +92,40 @@ public sealed class MeetingWorkflowServiceTests
     }
 
     [Fact]
+    public async Task Approve_notifies_the_organizer()
+    {
+        var meeting = GivenMeeting(MeetingStatus.WaitingApproval);
+
+        var result = await NewService().TransitionAsync(
+            meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Approve), _approverId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        var notification = Assert.Single(_repository.Notifications);
+        Assert.Equal(_organizerId, notification.UserId);
+        Assert.Equal(NotificationType.MeetingApproved, notification.Type);
+        Assert.Equal(meeting.Id, notification.TargetId);
+        Assert.Equal(meeting.StatusHistory.Single().Id, notification.OriginHistoryId);
+    }
+
+    [Fact]
+    public async Task Reject_notifies_the_organizer_with_the_reason()
+    {
+        var meeting = GivenMeeting(MeetingStatus.WaitingApproval);
+
+        var result = await NewService().TransitionAsync(
+            meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.Reject, Reason: "Thiếu số liệu quý 3"),
+            _approverId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        var notification = Assert.Single(_repository.Notifications);
+        Assert.Equal(_organizerId, notification.UserId);
+        Assert.Equal(NotificationType.MeetingRejected, notification.Type);
+        Assert.Contains("Thiếu số liệu quý 3", notification.Body);
+        Assert.Equal(meeting.StatusHistory.Single().Id, notification.OriginHistoryId);
+    }
+
+    [Fact]
     public async Task Rejected_meeting_returns_to_draft_with_a_new_history_without_losing_reason()
     {
         var meeting = GivenMeeting(MeetingStatus.Rejected);
@@ -275,6 +309,25 @@ public sealed class MeetingWorkflowServiceTests
         });
         Assert.Equal(meeting.Id, Assert.Single(_invitations.MeetingIds));
         Assert.Equal(MeetingHistoryAction.Publish, meeting.StatusHistory.Single().Action);
+    }
+
+    [Fact]
+    public async Task Publish_does_not_notify_the_publisher_in_app_even_when_they_are_a_participant()
+    {
+        var meeting = GivenMeeting(MeetingStatus.Approved);
+        var publisher = Participant(meeting, active: true, InvitationResponse.Accepted);
+        publisher.User.Id = _organizerId;
+        publisher.UserId = _organizerId;
+        var member = Participant(meeting, active: true, InvitationResponse.Pending);
+        meeting.Participants.Add(publisher);
+        meeting.Participants.Add(member);
+
+        var result = await NewService().TransitionAsync(
+            meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Publish), _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        Assert.Equal(member.UserId, Assert.Single(_repository.Notifications).UserId);
+        Assert.Equal(meeting.Id, Assert.Single(_invitations.MeetingIds));
     }
 
     [Fact]

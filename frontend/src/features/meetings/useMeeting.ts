@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { getMeeting } from '../../api/meetings'
 import { errorMessage, isApiError } from '../../lib/errors'
 import type { Meeting } from '../../types/meeting'
@@ -19,39 +19,44 @@ export type MeetingState =
 export function useMeeting(id: string | undefined) {
   const handleAccessLost = useAccessLost()
   const [state, setState] = useState<MeetingState>({ kind: 'loading' })
+  /**
+   * Bumped by every load, by `replace` and by a change of meeting, so only the newest answer is
+   * shown: a reload still in flight for the meeting just left never overwrites the one opened next.
+   */
+  const generation = useRef(0)
 
-  const load = useCallback(
-    async (signal: { cancelled: boolean }) => {
-      if (!id) return setState({ kind: 'notFound' })
-      try {
-        const meeting = await getMeeting(id)
-        if (!signal.cancelled) setState({ kind: 'loaded', meeting })
-      } catch (err) {
-        if (signal.cancelled || handleAccessLost(err)) return
-        // A path segment that is not a GUID never matches the route on the backend: same 404.
-        setState(isApiError(err, 404) ? { kind: 'notFound' } : { kind: 'error', message: errorMessage(err) })
-      }
-    },
-    [id, handleAccessLost],
-  )
+  const load = useCallback(async () => {
+    const current = ++generation.current
+    if (!id) return setState({ kind: 'notFound' })
+    try {
+      const meeting = await getMeeting(id)
+      if (current === generation.current) setState({ kind: 'loaded', meeting })
+    } catch (err) {
+      if (current !== generation.current || handleAccessLost(err)) return
+      // A path segment that is not a GUID never matches the route on the backend: same 404.
+      setState(isApiError(err, 404) ? { kind: 'notFound' } : { kind: 'error', message: errorMessage(err) })
+    }
+  }, [id, handleAccessLost])
 
   useEffect(() => {
-    const signal = { cancelled: false }
+    const loads = generation
     // Defer past the effect's synchronous phase, as the other pages do.
-    void Promise.resolve().then(() => load(signal))
-    // StrictMode runs effects twice in dev; only the surviving run may write state.
+    void Promise.resolve().then(load)
+    // StrictMode runs effects twice in dev, and a new id makes every answer in flight stale.
     return () => {
-      signal.cancelled = true
+      loads.current++
     }
   }, [load])
 
-  const reload = useCallback(() => load({ cancelled: false }), [load])
   const retry = useCallback(() => {
     setState({ kind: 'loading' })
-    void load({ cancelled: false })
+    void load()
   }, [load])
 
-  const replace = useCallback((meeting: Meeting) => setState({ kind: 'loaded', meeting }), [])
+  const replace = useCallback((meeting: Meeting) => {
+    generation.current++
+    setState({ kind: 'loaded', meeting })
+  }, [])
 
-  return { state, reload, retry, replace }
+  return { state, reload: load, retry, replace }
 }

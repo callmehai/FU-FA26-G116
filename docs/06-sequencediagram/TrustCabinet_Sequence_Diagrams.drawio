@@ -11773,12 +11773,12 @@ else Meeting is WaitingApproval
 activate MeetingController
 activate MeetingService
 alt Decision is Approve
-MeetingService-&amp;gt;&amp;gt;MeetingRepository: Revalidate actor and status; record Approved status,&amp;lt;br/&amp;gt;approval decision and history together (BR-38)
+MeetingService-&amp;gt;&amp;gt;MeetingRepository: Revalidate actor and status; record Approved status, approval&amp;lt;br/&amp;gt;decision, history and Organizer notification together (BR-38)
 activate MeetingRepository
-MeetingRepository-&amp;gt;&amp;gt;Database: Save approval decision, status and history as one complete action
+MeetingRepository-&amp;gt;&amp;gt;Database: Save approval decision, status, history and notification as one complete action
 activate Database
 alt Approval cannot be completed - EX-3
-Database--&amp;gt;&amp;gt;MeetingRepository: Decision, status or history could not be completed; previous information unchanged
+Database--&amp;gt;&amp;gt;MeetingRepository: Decision, status, history or notification could not be completed; previous information unchanged
 deactivate Database
 MeetingRepository--&amp;gt;&amp;gt;MeetingService: Approval failed
 deactivate MeetingRepository
@@ -11792,7 +11792,7 @@ activate Database
 activate MeetingController
 activate MeetingRepository
 activate MeetingService
-Database--&amp;gt;&amp;gt;MeetingRepository: Approved status, decision and history recorded together
+Database--&amp;gt;&amp;gt;MeetingRepository: Approved status, decision, history and Organizer notification recorded together
 deactivate Database
 MeetingRepository--&amp;gt;&amp;gt;MeetingService: Approval applied
 deactivate MeetingRepository
@@ -11823,12 +11823,12 @@ MeetingPage--&amp;gt;&amp;gt;Approver: MSG84 - Rejection reason must not exceed 
 else Rejection reason is valid
 activate MeetingController
 activate MeetingService
-MeetingService-&amp;gt;&amp;gt;MeetingRepository: Revalidate actor and status; record Rejected status,&amp;lt;br/&amp;gt;rejection reason, decision and history together (BR-38)
+MeetingService-&amp;gt;&amp;gt;MeetingRepository: Revalidate actor and status; record Rejected status, rejection reason,&amp;lt;br/&amp;gt;decision, history and Organizer notification with the reason together (BR-38)
 activate MeetingRepository
-MeetingRepository-&amp;gt;&amp;gt;Database: Save rejection decision, reason, status and history as one complete action
+MeetingRepository-&amp;gt;&amp;gt;Database: Save rejection decision, reason, status, history and notification as one complete action
 activate Database
 alt Rejection cannot be completed - EX-3
-Database--&amp;gt;&amp;gt;MeetingRepository: Decision, status or history could not be completed; previous information unchanged
+Database--&amp;gt;&amp;gt;MeetingRepository: Decision, status, history or notification could not be completed; previous information unchanged
 deactivate Database
 MeetingRepository--&amp;gt;&amp;gt;MeetingService: Rejection failed
 deactivate MeetingRepository
@@ -11842,7 +11842,7 @@ activate Database
 activate MeetingController
 activate MeetingRepository
 activate MeetingService
-Database--&amp;gt;&amp;gt;MeetingRepository: Rejected status, reason, decision and history recorded together
+Database--&amp;gt;&amp;gt;MeetingRepository: Rejected status, reason, decision, history and Organizer notification recorded together
 deactivate Database
 MeetingRepository--&amp;gt;&amp;gt;MeetingService: Rejection applied
 deactivate MeetingRepository
@@ -12242,7 +12242,7 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Revalidate actor and status; record Approved status,&#xa;approval decision and history together (BR-38)" mermaidId="e:MeetingService-&gt;MeetingRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Revalidate actor and status; record Approved status,&#xa;approval decision and history together (BR-38)" id="67">
+        <UserObject label="Revalidate actor and status; record Approved status, approval&#xa;decision, history and Organizer notification together (BR-38)" mermaidId="e:MeetingService-&gt;MeetingRepository#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Revalidate actor and status; record Approved status, approval&#xa;decision, history and Organizer notification together (BR-38)" id="67">
           <mxCell edge="1" parent="mermaid-uc19_reviewmeetingapproval" source="107" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="42">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -12253,7 +12253,7 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Save approval decision, status and history as one complete action" mermaidId="e:MeetingRepository-&gt;Database#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save approval decision, status and history as one complete action" id="68">
+        <UserObject label="Save approval decision, status, history and notification as one complete action" mermaidId="e:MeetingRepository-&gt;Database#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save approval decision, status, history and notification as one complete action" id="68">
           <mxCell edge="1" parent="mermaid-uc19_reviewmeetingapproval" source="42" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="41">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -12264,7 +12264,7 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Decision, status or history could not be completed; previous information unchanged" mermaidId="e:Database-&gt;MeetingRepository#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Decision, status or history could not be completed; previous information unchanged" id="69">
+        <UserObject label="Decision, status, history or notification could not be completed; previous information unchanged" mermaidId="e:Database-&gt;MeetingRepository#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Decision, status, history or notification could not be completed; previous information unchanged" id="69">
           <mxCell edge="1" parent="mermaid-uc19_reviewmeetingapproval" source="41" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="42">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -12319,7 +12319,7 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Approved status, decision and history recorded together" mermaidId="e:Database-&gt;MeetingRepository#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Approved status, decision and history recorded together" id="74">
+        <UserObject label="Approved status, decision, history and Organizer notification recorded together" mermaidId="e:Database-&gt;MeetingRepository#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Approved status, decision, history and Organizer notification recorded together" id="74">
           <mxCell edge="1" parent="mermaid-uc19_reviewmeetingapproval" source="43" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="44">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -12456,7 +12456,7 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Revalidate actor and status; record Rejected status,&#xa;rejection reason, decision and history together (BR-38)" mermaidId="e:MeetingService-&gt;MeetingRepository#2" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Revalidate actor and status; record Rejected status,&#xa;rejection reason, decision and history together (BR-38)" id="87">
+        <UserObject label="Revalidate actor and status; record Rejected status, rejection reason,&#xa;decision, history and Organizer notification with the reason together (BR-38)" mermaidId="e:MeetingService-&gt;MeetingRepository#2" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Revalidate actor and status; record Rejected status, rejection reason,&#xa;decision, history and Organizer notification with the reason together (BR-38)" id="87">
           <mxCell edge="1" parent="mermaid-uc19_reviewmeetingapproval" source="111" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="113">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -12467,7 +12467,7 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Save rejection decision, reason, status and history as one complete action" mermaidId="e:MeetingRepository-&gt;Database#2" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save rejection decision, reason, status and history as one complete action" id="88">
+        <UserObject label="Save rejection decision, reason, status, history and notification as one complete action" mermaidId="e:MeetingRepository-&gt;Database#2" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save rejection decision, reason, status, history and notification as one complete action" id="88">
           <mxCell edge="1" parent="mermaid-uc19_reviewmeetingapproval" source="113" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="115">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -12478,7 +12478,7 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Decision, status or history could not be completed; previous information unchanged" mermaidId="e:Database-&gt;MeetingRepository#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Decision, status or history could not be completed; previous information unchanged" id="89">
+        <UserObject label="Decision, status, history or notification could not be completed; previous information unchanged" mermaidId="e:Database-&gt;MeetingRepository#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Decision, status, history or notification could not be completed; previous information unchanged" id="89">
           <mxCell edge="1" parent="mermaid-uc19_reviewmeetingapproval" source="115" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="113">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -12533,7 +12533,7 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Rejected status, reason, decision and history recorded together" mermaidId="e:Database-&gt;MeetingRepository#4" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Rejected status, reason, decision and history recorded together" id="94">
+        <UserObject label="Rejected status, reason, decision, history and Organizer notification recorded together" mermaidId="e:Database-&gt;MeetingRepository#4" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Rejected status, reason, decision, history and Organizer notification recorded together" id="94">
           <mxCell edge="1" parent="mermaid-uc19_reviewmeetingapproval" source="116" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="114">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -12690,9 +12690,9 @@ Database--&amp;gt;&amp;gt;MeetingRepository: Published status and publication hi
 deactivate Database
 MeetingRepository--&amp;gt;&amp;gt;MeetingService: Published meeting
 deactivate MeetingRepository
-MeetingService-&amp;gt;&amp;gt;NotificationService: Notify current internal participants in the application (BR-39)
+MeetingService-&amp;gt;&amp;gt;NotificationService: Notify current internal participants except the publishing Organizer (BR-39)
 activate NotificationService
-NotificationService-&amp;gt;&amp;gt;NotificationRepository: Create internal participant invitation notifications
+NotificationService-&amp;gt;&amp;gt;NotificationRepository: Create invitation notifications, excluding the publishing Organizer
 activate NotificationRepository
 NotificationRepository-&amp;gt;&amp;gt;Database: Record internal participant notifications
 activate Database
@@ -12702,7 +12702,7 @@ NotificationRepository--&amp;gt;&amp;gt;NotificationService: Notification result
 deactivate NotificationRepository
 NotificationService--&amp;gt;&amp;gt;MeetingService: Notifications issued / retry delivery; Meeting remains Published (BR-40)
 deactivate NotificationService
-MeetingService-&amp;gt;&amp;gt;InvitationQueue: Send invitation emails to current internal participants (BR-39)
+MeetingService-&amp;gt;&amp;gt;InvitationQueue: Send invitation emails to all current internal participants,&amp;lt;br/&amp;gt;including the publishing Organizer (BR-39)
 activate InvitationQueue
 InvitationQueue--&amp;gt;&amp;gt;MeetingService: Email delivery arranged / retry delivery; Meeting remains Published (BR-40)
 deactivate InvitationQueue
@@ -13170,7 +13170,7 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Notify current internal participants in the application (BR-39)" mermaidId="e:MeetingService-&gt;NotificationService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Notify current internal participants in the application (BR-39)" id="66">
+        <UserObject label="Notify current internal participants except the publishing Organizer (BR-39)" mermaidId="e:MeetingService-&gt;NotificationService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Notify current internal participants except the publishing Organizer (BR-39)" id="66">
           <mxCell edge="1" parent="mermaid-uc20_publishmeeting" source="82" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="33">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -13181,7 +13181,7 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Create internal participant invitation notifications" mermaidId="e:NotificationService-&gt;NotificationRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Create internal participant invitation notifications" id="67">
+        <UserObject label="Create invitation notifications, excluding the publishing Organizer" mermaidId="e:NotificationService-&gt;NotificationRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Create invitation notifications, excluding the publishing Organizer" id="67">
           <mxCell edge="1" parent="mermaid-uc20_publishmeeting" source="33" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="32">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -13236,7 +13236,7 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Send invitation emails to current internal participants (BR-39)" mermaidId="e:MeetingService-&gt;InvitationQueue#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Send invitation emails to current internal participants (BR-39)" id="72">
+        <UserObject label="Send invitation emails to all current internal participants,&#xa;including the publishing Organizer (BR-39)" mermaidId="e:MeetingService-&gt;InvitationQueue#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Send invitation emails to all current internal participants,&#xa;including the publishing Organizer (BR-39)" id="72">
           <mxCell edge="1" parent="mermaid-uc20_publishmeeting" source="82" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="34">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">

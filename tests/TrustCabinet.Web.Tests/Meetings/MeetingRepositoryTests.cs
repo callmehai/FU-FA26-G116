@@ -571,7 +571,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(_creatorId, transfer.PreviousOrganizerId);
         Assert.Equal(replacement.Id, transfer.NewOrganizerId);
         Assert.Equal(4, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
-        Assert.Equal(1, await verify.Notifications.CountAsync(item => item.MeetingId == meetingId));
+        // Submit → approver, Approve → organizer; the transfer itself notifies no one.
+        Assert.Equal(2, await verify.Notifications.CountAsync(item => item.MeetingId == meetingId));
         Assert.False(await verify.EmailMessages.AnyAsync(item => item.MeetingId == meetingId));
         Assert.Equal(HttpStatusCode.NotFound,
             (await administratorClient.GetAsync($"/api/meetings/{meetingId}")).StatusCode);
@@ -632,17 +633,20 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
 
         var inactive = NewUser("Inactive recipient", _approverRoleId, isActive: false);
         var delegated = NewUser("Delegated recipient", _approverRoleId);
-        _db.Users.AddRange(inactive, delegated);
+        var member = NewUser("Member recipient", _approverRoleId);
+        _db.Users.AddRange(inactive, delegated, member);
         await _db.SaveChangesAsync();
         _db.MeetingParticipants.AddRange(
             new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId, Role = MeetingRole.Chair },
             new MeetingParticipant { MeetingId = meetingId, UserId = inactive.Id },
+            new MeetingParticipant { MeetingId = meetingId, UserId = member.Id, Role = MeetingRole.Secretary },
             new MeetingParticipant
             {
                 MeetingId = meetingId,
                 UserId = delegated.Id,
-                Role = MeetingRole.Secretary,
-                Response = InvitationResponse.Pending,
+                Role = MeetingRole.Member,
+                Response = InvitationResponse.Delegated,
+                DelegatedToUserId = member.Id,
             });
         await _db.SaveChangesAsync();
 
@@ -700,10 +704,15 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
 
         await MaterializeInvitations(meetingId, smtpEnabled);
         var invitations = await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync();
+        // Email reaches active non-delegated participants, including the publishing creator.
         Assert.Equal(smtpEnabled ? 2 : 0, invitations.Count);
         Assert.Equal(
             (smtpEnabled
-                ? new[] { $"meeting:{meetingId:D}:published:{_creatorId:D}", $"meeting:{meetingId:D}:published:{delegated.Id:D}" }
+                ? new[]
+                {
+                    $"meeting:{meetingId:D}:published:{_creatorId:D}",
+                    $"meeting:{meetingId:D}:published:{member.Id:D}",
+                }
                 : Array.Empty<string>()).Order(),
             invitations.Select(item => item.DeduplicationKey).Order());
         Assert.All(invitations, invitation =>
@@ -712,8 +721,15 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var publishNotifications = await verify.Notifications
             .Where(item => item.MeetingId == meetingId && item.Type == NotificationType.MeetingInvited)
             .ToListAsync();
-        Assert.Equal(2, publishNotifications.Count);
-        Assert.Contains(publishNotifications, n => n.UserId == _creatorId);
+        // In-app skips the publisher (the creator here) and the delegated participant.
+        Assert.Equal(member.Id, Assert.Single(publishNotifications).UserId);
+        var organizerNotices = await verify.Notifications
+            .Where(item => item.MeetingId == meetingId && item.UserId == _creatorId)
+            .Select(item => item.Type)
+            .ToListAsync();
+        Assert.Equal(
+            new[] { NotificationType.MeetingApproved, NotificationType.MeetingRejected }.Order(),
+            organizerNotices.Order());
         Assert.Equal(history[^1].Id, publishNotifications[0].OriginHistoryId);
     }
 
@@ -893,10 +909,10 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(2, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
         var publicationHistory = await verify.MeetingStatusHistory.SingleAsync(item =>
             item.MeetingId == meetingId && item.Action == MeetingHistoryAction.Publish);
-        var notifications = await verify.Notifications.Where(item => item.MeetingId == meetingId).ToListAsync();
-        Assert.Equal(2, notifications.Count);
-        var notification = notifications[0];
+        var notification = Assert.Single(
+            await verify.Notifications.Where(item => item.MeetingId == meetingId).ToListAsync());
         Assert.Equal(NotificationType.MeetingInvited, notification.Type);
+        Assert.Equal(secretary.Id, notification.UserId);
         Assert.Equal(publicationHistory.Id, notification.OriginHistoryId);
         Assert.Empty(await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync());
         Assert.Equal(2, await verify.MeetingInvitationDispatches.CountAsync(d => d.MeetingId == meetingId));
@@ -1045,7 +1061,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(rejection.Reason, persistedRejection.Reason);
         Assert.Equal(rejection.ActorId, persistedRejection.ActorId);
         Assert.Equal(rejection.OccurredAt, persistedRejection.OccurredAt);
-        Assert.Equal(2, await verify.Notifications.CountAsync(item => item.MeetingId == meetingId));
+        // Two submissions to approvers plus the rejection notice to the organizer.
+        Assert.Equal(3, await verify.Notifications.CountAsync(item => item.MeetingId == meetingId));
         Assert.False(await verify.EmailMessages.AnyAsync(item => item.MeetingId == meetingId));
     }
 

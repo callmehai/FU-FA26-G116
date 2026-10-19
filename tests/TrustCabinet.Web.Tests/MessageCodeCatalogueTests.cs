@@ -187,7 +187,9 @@ public sealed partial class MessageCodeCatalogueTests
     [Theory]
     [InlineData("MSG238", "UC-33b / Normal Flow")]
     [InlineData("MSG239", "UC-33d / Normal Flow")]
-    public void Participants_preserve_main_document_link_code_reservations(string code, string source)
+    [InlineData("MSG252", "UC-55 / EX-8")]
+    [InlineData("MSG253", "UC-74 / Main Flow")]
+    public void Participants_preserve_main_code_reservations(string code, string source)
     {
         var endpoint = File.ReadAllText(Path.Combine(
             RepoRoot, "backend", "TrustCabinet.Web", "Endpoints", "ParticipantEndpoints.cs"));

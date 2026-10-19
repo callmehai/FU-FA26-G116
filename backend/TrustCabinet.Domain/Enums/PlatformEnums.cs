@@ -4,6 +4,8 @@ namespace TrustCabinet.Domain.Enums;
 public enum NotificationType
 {
     MeetingWaitingApproval,
+    MeetingApproved,
+    MeetingRejected,
     MeetingInvited,
     MeetingPublished,
     MeetingStartingSoon,

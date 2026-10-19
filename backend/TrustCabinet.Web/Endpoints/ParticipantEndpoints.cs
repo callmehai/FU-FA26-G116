@@ -25,8 +25,8 @@ public static class ParticipantEndpoints
     private const string Msg152InvalidPermission = "MSG152";
     private const string Msg153PermissionsChanged = "MSG153";
     private const string Msg154NoChanges = "MSG154";
-    private const string Msg252Stale = "MSG252";
-    private const string Msg253InvalidRequest = "MSG253";
+    private const string Msg275Stale = "MSG275";
+    private const string Msg276InvalidRequest = "MSG276";
     private const string Msg34UnsupportedMedia = "MSG34";
     private const string Msg87TooLarge = "MSG87";
     private const int MaxBytes = 64 * 1024;
@@ -167,8 +167,8 @@ public static class ParticipantEndpoints
                 ParticipantFailure.InvalidRole => (400, Msg101InvalidRole, "Vai trò cuộc họp hoặc yêu cầu thay vai trò không hợp lệ."),
                 ParticipantFailure.InvalidPermission => (400, Msg152InvalidPermission, "Quyền bổ sung đã chọn không được phép."),
                 ParticipantFailure.RequiredRoles => (409, Msg109RequiredRoles, "Cuộc họp phải giữ Chủ tọa và Thư ký theo quy định. Hãy phân công người thay thế."),
-                ParticipantFailure.Stale => (409, Msg252Stale, "Danh sách thành phần đã thay đổi. Vui lòng tải lại và thử lại."),
-                ParticipantFailure.InvalidRequest => (400, Msg253InvalidRequest, "Query hoặc If-Match không hợp lệ. Vui lòng tải lại dữ liệu."),
+                ParticipantFailure.Stale => (409, Msg275Stale, "Danh sách thành phần đã thay đổi. Vui lòng tải lại và thử lại."),
+                ParticipantFailure.InvalidRequest => (400, Msg276InvalidRequest, "Query hoặc If-Match không hợp lệ. Vui lòng tải lại dữ liệu."),
                 ParticipantFailure.CannotRespond => (409, Msg107CannotRespond, "Lời mời này không còn cho phép phản hồi."),
                 ParticipantFailure.UnsupportedMedia => (415, Msg34UnsupportedMedia, "Yêu cầu phải dùng Content-Type application/json."),
                 ParticipantFailure.TooLarge => (413, Msg87TooLarge, "Nội dung yêu cầu vượt quá 64 KiB."),

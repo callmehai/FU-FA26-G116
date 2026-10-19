@@ -1,59 +1,59 @@
 <mxfile host="Electron" agent="Codex" scale="1" border="0">
   <diagram id="trustcabinet-context" name="Context Diagram">
-    <mxGraphModel dx="10600" dy="3245" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="4800" pageHeight="4050" background="#ffffff" math="0" shadow="0">
+    <mxGraphModel dx="8151" dy="1891" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="4800" pageHeight="4050" background="#ffffff" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontFamily=Arial;fontSize=42;fontStyle=1;" value="TrustCabinet — Context Diagram" vertex="1">
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontFamily=Arial;fontSize=48;fontStyle=1;" value="TrustCabinet — Context Diagram" vertex="1">
           <mxGeometry height="70" width="2600" x="2130" y="3850" as="geometry" />
         </mxCell>
-        <mxCell id="TC" parent="1" style="ellipse;aspect=fixed;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=3;fontColor=#111111;fontFamily=Arial;fontSize=50;align=center;" value="&lt;b&gt;&lt;br&gt;TrustCabinet&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;div&gt;Internal Meeting and&lt;/div&gt;&lt;div&gt;Document Management&lt;/div&gt;&lt;div&gt;System&lt;/div&gt;" vertex="1">
-          <mxGeometry height="1000" width="1000" x="1900" y="1350" as="geometry" />
+        <mxCell id="TC" parent="1" style="ellipse;aspect=fixed;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=3;fontColor=#111111;fontFamily=Arial;fontSize=58;align=center;" value="&lt;b&gt;&lt;br&gt;TrustCabinet&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;div&gt;Internal Meeting and&lt;/div&gt;&lt;div&gt;Document Management&lt;/div&gt;&lt;div&gt;System&lt;/div&gt;" vertex="1">
+          <mxGeometry height="850" width="850" x="1975" y="1425" as="geometry" />
         </mxCell>
-        <mxCell id="E01" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=34;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="System Admin" vertex="1">
+        <mxCell id="E01" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="System Admin" vertex="1">
           <mxGeometry height="140" width="400" x="2750" y="140" as="geometry" />
         </mxCell>
-        <mxCell id="E02" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=34;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Meeting Organizer" vertex="1">
+        <mxCell id="E02" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Meeting Organizer" vertex="1">
           <mxGeometry height="140" width="400" x="1650" y="140" as="geometry" />
         </mxCell>
-        <mxCell id="E03" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=34;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Meeting Approver" vertex="1">
+        <mxCell id="E03" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Meeting Approver" vertex="1">
           <mxGeometry height="140" width="400" x="90" y="920" as="geometry" />
         </mxCell>
-        <mxCell id="E04" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=34;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Chair" vertex="1">
+        <mxCell id="E04" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Chair" vertex="1">
           <mxGeometry height="140" width="400" x="-70" y="1640" as="geometry" />
         </mxCell>
-        <mxCell id="E05" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=34;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Secretary" vertex="1">
+        <mxCell id="E05" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Secretary" vertex="1">
           <mxGeometry height="140" width="400" x="-200" y="2480" as="geometry" />
         </mxCell>
-        <mxCell id="E06" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=34;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Participant" vertex="1">
+        <mxCell id="E06" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Participant" vertex="1">
           <mxGeometry height="140" width="400" x="1650" y="3600" as="geometry" />
         </mxCell>
-        <mxCell id="E07" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=34;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Guest" vertex="1">
+        <mxCell id="E07" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Guest" vertex="1">
           <mxGeometry height="140" width="400" x="2750" y="3600" as="geometry" />
         </mxCell>
-        <mxCell id="E08" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=34;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Google Identity Provider" vertex="1">
-          <mxGeometry height="140" width="400" x="4310" y="920" as="geometry" />
+        <mxCell id="E08" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Google Identity Provider" vertex="1">
+          <mxGeometry height="140" width="400" x="4340" y="1220" as="geometry" />
         </mxCell>
-        <mxCell id="E09" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=34;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="AI / Speech Processing Provider" vertex="1">
+        <mxCell id="E09" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="AI Provider" vertex="1">
           <mxGeometry height="140" width="400" x="4330" y="1720" as="geometry" />
         </mxCell>
-        <mxCell id="E10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=34;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Email / SMTP Service" vertex="1">
-          <mxGeometry height="140" width="400" x="4310" y="2480" as="geometry" />
+        <mxCell id="E10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Email / SMTP Service" vertex="1">
+          <mxGeometry height="140" width="400" x="4310" y="2500" as="geometry" />
         </mxCell>
-        <mxCell id="E01-in" data-flow-ids="A01 A02 A03 C01 C03 K02" edge="1" parent="1" source="E01" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.6000000000;exitY=1.0000000000;exitPerimeter=0;entryX=0.7113091309;entryY=0.0468461065;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;font style=&quot;font-size: 36px;&quot;&gt;Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;User, role &amp;amp; permission data&lt;br&gt;Audit search criteria&lt;/font&gt;&lt;/div&gt;">
-          <mxGeometry relative="1" x="-0.6255" y="-50" as="geometry">
-            <mxPoint as="offset" />
+        <mxCell id="E01-in" data-flow-ids="A01 A02 A03 C01 C03 K02" edge="1" parent="1" source="E01" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.6000000000;exitY=1.0000000000;exitPerimeter=0;entryX=0.7485989775;entryY=0.0661814338;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;font style=&quot;font-size: 42px;&quot;&gt;Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;User, role &amp;amp; permission data&lt;br&gt;Audit search criteria&lt;/font&gt;&lt;/div&gt;">
+          <mxGeometry relative="1" x="-0.512" y="-62" as="geometry">
+            <mxPoint y="-1" as="offset" />
             <Array as="points">
               <mxPoint x="2990" y="330" />
-              <mxPoint x="3070" y="330" />
-              <mxPoint x="3070" y="1150" />
+              <mxPoint x="3300" y="330" />
+              <mxPoint x="3300" y="1150" />
               <mxPoint x="2611.3091309" y="1150" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="E01-out" data-flow-ids="A04 A05 C02 C04 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.5868240888;exitY=0.0075961235;exitPerimeter=0;entryX=0.4000000000;entryY=1.0000000000;entryPerimeter=0;" target="E01" value="&lt;div style=&quot;width:460px;text-align:left;line-height:1.22;&quot;&gt;&lt;font style=&quot;font-size: 34px;&quot;&gt;Account &amp;amp; access information&lt;br&gt;Workspace, notifications &amp;amp; meeting information&lt;br&gt;Account &amp;amp; permission information&lt;br&gt;Audit logs&lt;/font&gt;&lt;/div&gt;">
-          <mxGeometry relative="1" x="-0.0661" y="190" as="geometry">
-            <mxPoint y="-1" as="offset" />
+        <mxCell id="E01-out" data-flow-ids="A04 A05 C02 C04 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.6021459868;exitY=0.0105449996;exitPerimeter=0;entryX=0.4000000000;entryY=1.0000000000;entryPerimeter=0;" target="E01" value="&lt;div style=&quot;width:537px;text-align:left;line-height:1.22;&quot;&gt;&lt;font style=&quot;font-size: 40px;&quot;&gt;Account &amp;amp; access information&lt;br&gt;Workspace, notifications &amp;amp; meeting information&lt;br&gt;Account &amp;amp; permission information&lt;br&gt;Audit logs&lt;/font&gt;&lt;/div&gt;">
+          <mxGeometry relative="1" x="-0.0399" y="110" as="geometry">
+            <mxPoint as="offset" />
             <Array as="points">
               <mxPoint x="2486.8240888" y="1100" />
               <mxPoint x="2520" y="1100" />
@@ -62,7 +62,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="E02-in" data-flow-ids="O01 O02 O03 C01 C03 K02" edge="1" parent="1" source="E02" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.4000000000;exitY=1.0000000000;exitPerimeter=0;entryX=0.2886908691;entryY=0.0468461065;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;font style=&quot;font-size: 36px;&quot;&gt;Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Meeting setup &amp;amp; approval data&lt;br&gt;Meeting documents &amp;amp; version data&lt;/font&gt;&lt;/div&gt;">
+        <mxCell id="E02-in" data-flow-ids="O01 O02 O03 C01 C03 K02" edge="1" parent="1" source="E02" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.4000000000;exitY=1.0000000000;exitPerimeter=0;entryX=0.2514010225;entryY=0.0661814338;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;font style=&quot;font-size: 42px;&quot;&gt;Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Meeting setup &amp;amp; approval data&lt;br&gt;Meeting documents &amp;amp; version data&lt;/font&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="-0.6849" y="-230" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
@@ -73,7 +73,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="E02-out" data-flow-ids="O04 C02 C04 K01" edge="1" parent="1" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;entryX=0.6000000000;entryY=1.0000000000;entryPerimeter=0;" target="E02" value="&lt;div style=&quot;width:460px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
+        <mxCell id="E02-out" data-flow-ids="O04 C02 C04 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;entryX=0.6000000000;entryY=1.0000000000;entryPerimeter=0;exitX=0.3588235294;exitY=0.0203447028;exitPerimeter=0;" target="E02" value="&lt;div style=&quot;width:537px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="-0.3557" y="480" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
@@ -81,15 +81,15 @@
               <mxPoint x="2280" y="300" />
               <mxPoint x="1890" y="300" />
             </Array>
-            <mxPoint x="2280" y="1380" as="sourcePoint" />
+            <mxPoint x="2280" y="1442.2929973621" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="pspfmZYO1fptyt41NOWa-5" connectable="0" parent="E02-out" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; font-size: 34px;&quot;&gt;Account &amp;amp; access information&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial; font-size: 34px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; font-size: 34px;&quot;&gt;Workspace, notifications, meeting information&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial; font-size: 34px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; font-size: 34px;&quot;&gt;Meeting status &amp;amp; approval results&lt;/span&gt;" vertex="1">
+        <mxCell id="pspfmZYO1fptyt41NOWa-5" connectable="0" parent="E02-out" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; font-size: 40px;&quot;&gt;Account &amp;amp; access information&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial; font-size: 40px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; font-size: 40px;&quot;&gt;Workspace, notifications, meeting information&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial; font-size: 40px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; font-size: 40px;&quot;&gt;Meeting status &amp;amp; approval results&lt;/span&gt;" vertex="1">
           <mxGeometry relative="1" x="-0.2009" y="7" as="geometry">
             <mxPoint x="-483" y="96" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="E03-out" data-flow-ids="P01 C02 C04 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.1464466094;exitY=0.1464466094;exitPerimeter=0;entryX=1.0000000000;entryY=0.2857142857;entryPerimeter=0;" target="E03" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
+        <mxCell id="E03-out" data-flow-ids="P01 C02 C04 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.2225299667;exitY=0.0840548346;exitPerimeter=0;entryX=1.0000000000;entryY=0.2857142857;entryPerimeter=0;" target="E03" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="0.9524" y="270" as="geometry">
             <mxPoint y="1" as="offset" />
             <Array as="points">
@@ -100,7 +100,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="E03-in" data-flow-ids="P02 C01 C03 K02" edge="1" parent="1" source="E03" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=1.0000000000;exitY=0.7142857143;exitPerimeter=0;entryX=0.1169777784;entryY=0.1786061952;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
+        <mxCell id="E03-in" data-flow-ids="P02 C01 C03 K02" edge="1" parent="1" source="E03" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=1.0000000000;exitY=0.7142857143;exitPerimeter=0;entryX=0.1728416947;entryY=0.1218896414;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="-0.1649" y="400" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
@@ -111,17 +111,17 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="XrI3U0wopgR4zhom4ko2-13" connectable="0" parent="E03-in" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 36px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Account &amp;amp; access information&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Workspace, notifications &amp;amp; meeting i&lt;/span&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;nformation&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting approval request &amp;amp; details&lt;/span&gt;&lt;/font&gt;" vertex="1">
+        <mxCell id="XrI3U0wopgR4zhom4ko2-13" connectable="0" parent="E03-in" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 42px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Account &amp;amp; access information&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Workspace, notifications &amp;amp; meeting i&lt;/span&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;nformation&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting approval request &amp;amp; details&lt;/span&gt;&lt;/font&gt;" vertex="1">
           <mxGeometry relative="1" x="0.263" y="4" as="geometry">
-            <mxPoint x="-775" y="-676" as="offset" />
+            <mxPoint x="-895" y="-676" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="pspfmZYO1fptyt41NOWa-7" connectable="0" parent="E03-in" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Account &amp;amp; personal workspace data&lt;/span&gt;&lt;br style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting participation &amp;amp; search data&lt;/span&gt;&lt;br style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Approval decision &amp;amp; rationale&lt;/span&gt;" vertex="1">
+        <mxCell id="pspfmZYO1fptyt41NOWa-7" connectable="0" parent="E03-in" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;font-size: 42px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Account &amp;amp; personal workspace data&lt;/span&gt;&lt;br style=&quot;font-size: 42px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 42px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting participation &amp;amp; search data&lt;/span&gt;&lt;br style=&quot;font-size: 42px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 42px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Approval decision &amp;amp; rationale&lt;/span&gt;" vertex="1">
           <mxGeometry relative="1" x="0.2969" y="-2" as="geometry">
             <mxPoint x="-770" y="-42" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="E04-in" data-flow-ids="H01 H02 H03 C01 C03 R01 K02" edge="1" parent="1" source="E04" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=1.0000000000;exitY=0.7142857143;exitPerimeter=0;entryX=0.0075961235;entryY=0.5868240888;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
+        <mxCell id="E04-in" data-flow-ids="H01 H02 H03 C01 C03 R01 K02" edge="1" parent="1" source="E04" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=1.0000000000;exitY=0.7142857143;exitPerimeter=0;entryX=0.0105449996;entryY=0.6021459868;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="-0.8051" y="241" as="geometry">
             <mxPoint x="-1" y="-20" as="offset" />
             <Array as="points">
@@ -132,7 +132,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="E04-out" data-flow-ids="H04 H05 C02 C04 R02 K01" edge="1" parent="1" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;entryX=1.0000000000;entryY=0.2857142857;entryPerimeter=0;" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
+        <mxCell id="E04-out" data-flow-ids="H04 H05 C02 C04 R02 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;entryX=1.0000000000;entryY=0.2857142857;entryPerimeter=0;exitX=0.0113396606;exitY=0.3941176471;exitPerimeter=0;" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="0.0867" y="370" as="geometry">
             <mxPoint x="-2" as="offset" />
             <Array as="points">
@@ -142,21 +142,21 @@
               <mxPoint x="520" y="1480" />
               <mxPoint x="520" y="1700" />
             </Array>
-            <mxPoint x="1920" y="1757" as="sourcePoint" />
+            <mxPoint x="1984.6387114812" y="1760" as="sourcePoint" />
             <mxPoint x="320" y="1699.999999998" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="XrI3U0wopgR4zhom4ko2-12" connectable="0" parent="E04-out" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 34px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Account &amp;amp; personal workspace data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting participation &amp;amp; search data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting &amp;amp; agenda data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Voting setup &amp;amp; moderation data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Room interaction data&lt;/span&gt;&lt;/font&gt;" vertex="1">
+        <mxCell id="XrI3U0wopgR4zhom4ko2-12" connectable="0" parent="E04-out" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 40px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Account &amp;amp; personal workspace data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting participation &amp;amp; search data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting &amp;amp; agenda data&lt;br&gt;Chair handover &amp;amp; exit data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Vote creation &amp;amp; moderation data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Room interaction data&lt;/span&gt;&lt;/font&gt;" vertex="1">
           <mxGeometry relative="1" x="0.2569" y="-4" as="geometry">
             <mxPoint x="-165" y="507" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="pspfmZYO1fptyt41NOWa-10" connectable="0" parent="E04-out" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;font-size: 34px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Account &amp;amp; access information&lt;/span&gt;&lt;br style=&quot;font-size: 34px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 34px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Workspace, notifications &amp;amp; meeting i&lt;/span&gt;&lt;span style=&quot;font-size: 34px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;nformation&lt;/span&gt;&lt;br style=&quot;font-size: 34px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 34px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting &amp;amp; agenda information&lt;/span&gt;&lt;br style=&quot;font-size: 34px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 34px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Voting results &amp;amp; resolutions&lt;/span&gt;&lt;br style=&quot;font-size: 34px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 34px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Room information &amp;amp; media&lt;/span&gt;" vertex="1">
+        <mxCell id="pspfmZYO1fptyt41NOWa-10" connectable="0" parent="E04-out" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;font-size: 40px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Account &amp;amp; access information&lt;/span&gt;&lt;br style=&quot;font-size: 40px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 40px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Workspace, notifications &amp;amp; meeting i&lt;/span&gt;&lt;span style=&quot;font-size: 40px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;nformation&lt;/span&gt;&lt;br style=&quot;font-size: 40px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 40px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting &amp;amp; agenda information&lt;br&gt;Chair handover &amp;amp; exit status&lt;/span&gt;&lt;br style=&quot;font-size: 40px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 40px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Voting results &amp;amp; resolutions&lt;/span&gt;&lt;br style=&quot;font-size: 40px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 40px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Room information &amp;amp; media&lt;/span&gt;" vertex="1">
           <mxGeometry relative="1" x="-0.3129" y="-6" as="geometry">
             <mxPoint x="-845" y="95" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="E05-in" data-flow-ids="S01 S02 S03 S04 S05 S06 C01 C03 R01 K02" edge="1" parent="1" source="E05" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=1.0000000000;exitY=0.7142857143;exitPerimeter=0;entryX=0.235;entryY=0.922;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
+        <mxCell id="E05-in" data-flow-ids="S01 S02 S03 S04 S05 S06 C01 C03 R01 K02" edge="1" parent="1" source="E05" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=1.0000000000;exitY=0.7142857143;exitPerimeter=0;entryX=0.2342504236;entryY=0.9235294118;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="-0.7359" y="220" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
@@ -164,10 +164,12 @@
               <mxPoint x="510" y="2900" />
               <mxPoint x="1690" y="2900" />
               <mxPoint x="1690" y="2280" />
+              <mxPoint x="2100" y="2280" />
+              <mxPoint x="2100" y="2210" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="E05-out" data-flow-ids="S07 S08 S09 S10 C02 C04 R02 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.1169777784;exitY=0.8213938048;exitPerimeter=0;entryX=1.0000000000;entryY=0.2857142857;entryPerimeter=0;" target="E05" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
+        <mxCell id="E05-out" data-flow-ids="S07 S08 S09 S10 C02 C04 R02 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.1728416947;exitY=0.8781103586;exitPerimeter=0;entryX=1.0000000000;entryY=0.2857142857;entryPerimeter=0;" target="E05" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="0.0798" y="414" as="geometry">
             <mxPoint x="-1" as="offset" />
             <Array as="points">
@@ -178,17 +180,17 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="XrI3U0wopgR4zhom4ko2-10" connectable="0" parent="E05-out" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 34px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Account &amp;amp; personal workspace data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting participation &amp;amp; search data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting preparation &amp;amp; attendance data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting audio, transcript &amp;amp; summary data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting minutes &amp;amp; signing data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Room interaction data&lt;/span&gt;&lt;/font&gt;" vertex="1">
+        <mxCell id="XrI3U0wopgR4zhom4ko2-10" connectable="0" parent="E05-out" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 40px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Account &amp;amp; personal workspace data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting participation &amp;amp; search data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting preparation &amp;amp; attendance data&lt;br&gt;&lt;/span&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17);&quot;&gt;Vote creation &amp;amp; moderation data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17);&quot;&gt;Meeting audio, transcript &amp;amp; summary data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting minutes &amp;amp; signing data&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Room interaction data&lt;/span&gt;&lt;/font&gt;" vertex="1">
           <mxGeometry relative="1" x="0.3327" as="geometry">
             <mxPoint x="-21" y="762" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="pspfmZYO1fptyt41NOWa-12" connectable="0" parent="E05-out" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Account &amp;amp; access information&lt;/span&gt;&lt;br style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Workspace, notifications &amp;amp; meeting information&lt;/span&gt;&lt;br style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting preparation &amp;amp; attendance information&lt;/span&gt;&lt;br style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Transcript &amp;amp; draft summary&lt;/span&gt;&lt;br style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting minutes &amp;amp; signature status&lt;/span&gt;&lt;br style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 36px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Room information &amp;amp; media&lt;/span&gt;" vertex="1">
+        <mxCell id="pspfmZYO1fptyt41NOWa-12" connectable="0" parent="E05-out" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;font-size: 42px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Account &amp;amp; access information&lt;/span&gt;&lt;br style=&quot;font-size: 42px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 42px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Workspace, notifications &amp;amp; meeting information&lt;/span&gt;&lt;br style=&quot;font-size: 42px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 42px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting preparation &amp;amp; attendance information&lt;br&gt;&lt;/span&gt;&lt;span style=&quot;font-size: 42px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 40px; color: rgb(17, 17, 17);&quot;&gt;Voting results &amp;amp; resolutions&lt;/span&gt;&lt;br style=&quot;font-size: 40px; color: rgb(17, 17, 17);&quot;&gt;Transcript &amp;amp; draft summary&lt;/span&gt;&lt;br style=&quot;font-size: 42px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 42px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting minutes &amp;amp; signature status&lt;/span&gt;&lt;br style=&quot;font-size: 42px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;font-size: 42px; color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Room information &amp;amp; media&lt;/span&gt;" vertex="1">
           <mxGeometry relative="1" x="-0.0484" as="geometry">
             <mxPoint x="-511" y="125" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="E06-in" data-flow-ids="T01 T02 C01 C03 R01 K02" edge="1" parent="1" source="E06" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.6000000000;exitY=0.0000000000;exitPerimeter=0;entryX=0.4131759112;entryY=0.9924038765;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:460px;text-align:left;line-height:1.22;&quot;&gt;&lt;font style=&quot;font-size: 36px;&quot;&gt;Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Invitation, comment &amp;amp; ballot data&lt;br&gt;Room interaction data&lt;/font&gt;&lt;/div&gt;">
+        <mxCell id="E06-in" data-flow-ids="T01 T02 C01 C03 R01 K02" edge="1" parent="1" source="E06" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.6000000000;exitY=0.0000000000;exitPerimeter=0;entryX=0.3978540132;entryY=0.9894550004;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:537px;text-align:left;line-height:1.22;&quot;&gt;&lt;font style=&quot;font-size: 42px;&quot;&gt;Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Invitation, comment &amp;amp; ballot data&lt;br&gt;Room interaction data&lt;/font&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="-0.9524" y="160" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
@@ -199,7 +201,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="E06-out" data-flow-ids="T03 C02 C04 R02 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.2886908691;exitY=0.9531538935;exitPerimeter=0;entryX=0.4000000000;entryY=0.0000000000;entryPerimeter=0;" target="E06" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;font style=&quot;font-size: 36px;&quot;&gt;Account &amp;amp; access information&lt;br&gt;Workspace, notifications &amp;amp; meeting information&lt;br&gt;Authorized meeting information&lt;br&gt;Room information &amp;amp; media&lt;/font&gt;&lt;/div&gt;">
+        <mxCell id="E06-out" data-flow-ids="T03 C02 C04 R02 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.2514010225;exitY=0.9338185662;exitPerimeter=0;entryX=0.4000000000;entryY=0.0000000000;entryPerimeter=0;" target="E06" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;font style=&quot;font-size: 42px;&quot;&gt;Account &amp;amp; access information&lt;br&gt;Workspace, notifications &amp;amp; meeting information&lt;br&gt;Authorized meeting information&lt;br&gt;Room information &amp;amp; media&lt;/font&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="0.4671" y="-430" as="geometry">
             <mxPoint y="1" as="offset" />
             <Array as="points">
@@ -215,7 +217,7 @@
             <mxPoint y="1" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="E07-in" data-flow-ids="G01 G02 R01" edge="1" parent="1" source="E07" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.4000000000;exitY=0.0000000000;exitPerimeter=0;entryX=0.5868240888;entryY=0.9924038765;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:460px;text-align:left;line-height:1.22;&quot;&gt;&lt;font style=&quot;font-size: 48px;&quot;&gt;Guest invitation &amp;amp; verification data&lt;br&gt;Room interaction data&lt;/font&gt;&lt;/div&gt;">
+        <mxCell id="E07-in" data-flow-ids="G01 G02 R01" edge="1" parent="1" source="E07" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.4000000000;exitY=0.0000000000;exitPerimeter=0;entryX=0.6021459868;entryY=0.9894550004;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:537px;text-align:left;line-height:1.22;&quot;&gt;&lt;font style=&quot;font-size: 56px;&quot;&gt;Guest invitation &amp;amp; verification data&lt;br&gt;Room interaction data&lt;/font&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="0.0233" y="40" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
@@ -226,7 +228,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="E07-out" data-flow-ids="G03 G04 R02" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.7113091309;exitY=0.9531538935;exitPerimeter=0;entryX=0.6000000000;entryY=0.0000000000;entryPerimeter=0;" target="E07" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;font style=&quot;font-size: 48px;&quot;&gt;Guest access &amp;amp; meeting information&lt;br&gt;Authorized meeting documents&lt;br&gt;Room information &amp;amp; media&lt;/font&gt;&lt;/div&gt;">
+        <mxCell id="E07-out" data-flow-ids="G03 G04 R02" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.7482352941;exitY=0.9340267719;exitPerimeter=0;entryX=0.6000000000;entryY=0.0000000000;entryPerimeter=0;" target="E07" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;font style=&quot;font-size: 56px;&quot;&gt;Guest access &amp;amp; meeting information&lt;br&gt;Authorized meeting documents&lt;br&gt;Room information &amp;amp; media&lt;/font&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="0.444" y="-50" as="geometry">
             <mxPoint y="1" as="offset" />
             <Array as="points">
@@ -237,37 +239,36 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="E08-in" data-flow-ids="I02" edge="1" parent="1" source="E08" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.0000000000;exitY=0.7142857143;exitPerimeter=0;entryX=0.8830222216;entryY=0.1786061952;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
+        <mxCell id="E08-in" data-flow-ids="I02" edge="1" parent="1" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;entryX=0.8271583053;entryY=0.1218896414;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="0.2169" y="-170" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
-              <mxPoint x="4290" y="1020" />
-              <mxPoint x="4290" y="1529" />
+              <mxPoint x="4520" y="1529" />
               <mxPoint x="3110" y="1528.6061952" />
             </Array>
+            <mxPoint x="4520" y="1350" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="XrI3U0wopgR4zhom4ko2-5" connectable="0" parent="E08-in" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; text-align: left;&quot;&gt;&lt;font style=&quot;font-size: 48px;&quot;&gt;Google authentication result &amp;amp; identity data&lt;/font&gt;&lt;/span&gt;" vertex="1">
+        <mxCell id="XrI3U0wopgR4zhom4ko2-5" connectable="0" parent="E08-in" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; text-align: left;&quot;&gt;&lt;font style=&quot;font-size: 56px;&quot;&gt;Google authentication result &amp;amp; identity data&lt;/font&gt;&lt;/span&gt;" vertex="1">
           <mxGeometry relative="1" x="0.1731" y="8" as="geometry">
-            <mxPoint x="36" y="-27" as="offset" />
+            <mxPoint x="228" y="-7" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="E08-out" data-flow-ids="I01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;entryX=0.0000000000;entryY=0.2857142857;entryPerimeter=0;exitX=0.82;exitY=0.11;exitDx=0;exitDy=0;exitPerimeter=0;" target="E08" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
-          <mxGeometry relative="1" x="0.1511" y="-260" as="geometry">
-            <mxPoint x="1" as="offset" />
+        <mxCell id="E08-out" data-flow-ids="I01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;entryX=0.0000000000;entryY=0.2857142857;entryPerimeter=0;exitX=0.7774700333;exitY=0.0840548346;exitDx=0;exitDy=0;exitPerimeter=0;" target="E08" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
+          <mxGeometry relative="1" x="1" y="600" as="geometry">
+            <mxPoint x="21" as="offset" />
             <Array as="points">
-              <mxPoint x="3100" y="1460" />
-              <mxPoint x="3100" y="960" />
-              <mxPoint x="4270" y="960" />
+              <mxPoint x="3100" y="1496.4466094" />
+              <mxPoint x="3100" y="1260" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="XrI3U0wopgR4zhom4ko2-4" connectable="0" parent="E08-out" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; text-align: left;&quot;&gt;&lt;font style=&quot;font-size: 48px;&quot;&gt;Google authentication request&lt;/font&gt;&lt;/span&gt;" vertex="1">
+        <mxCell id="XrI3U0wopgR4zhom4ko2-4" connectable="0" parent="E08-out" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; text-align: left;&quot;&gt;&lt;font style=&quot;font-size: 56px;&quot;&gt;Google authentication request&lt;/font&gt;&lt;/span&gt;" vertex="1">
           <mxGeometry relative="1" x="0.205" y="8" as="geometry">
             <mxPoint x="150" y="-2" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="E09-in" data-flow-ids="X02 X04" edge="1" parent="1" source="E09" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.0000000000;exitY=0.7142857143;exitPerimeter=0;entryX=0.9924038765;entryY=0.5868240888;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
+        <mxCell id="E09-in" data-flow-ids="X02 X04" edge="1" parent="1" source="E09" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.0000000000;exitY=0.7142857143;exitPerimeter=0;entryX=0.9894550004;entryY=0.6021459868;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="0.1618" y="-190" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
@@ -278,12 +279,12 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="XrI3U0wopgR4zhom4ko2-2" connectable="0" parent="E09-in" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 48px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Speaker-attributed transcript&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Draft meeting summary&lt;/span&gt;&lt;/font&gt;" vertex="1">
+        <mxCell id="XrI3U0wopgR4zhom4ko2-2" connectable="0" parent="E09-in" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 56px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Draft meeting summary&lt;/span&gt;&lt;/font&gt;" vertex="1">
           <mxGeometry relative="1" x="0.2567" y="-2" as="geometry">
             <mxPoint x="119" y="-8" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="E09-out" data-flow-ids="X01 X03" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.9924038765;exitY=0.4131759112;exitPerimeter=0;entryX=0.0000000000;entryY=0.2857142857;entryPerimeter=0;" target="E09" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
+        <mxCell id="E09-out" data-flow-ids="X01 X03" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.9894117647;exitY=0.3976470588;exitPerimeter=0;entryX=0.0000000000;entryY=0.2857142857;entryPerimeter=0;" target="E09" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="-0.2564" y="-190" as="geometry">
             <mxPoint x="1" as="offset" />
             <Array as="points">
@@ -292,12 +293,12 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="XrI3U0wopgR4zhom4ko2-3" connectable="0" parent="E09-out" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 48px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Meeting audio&lt;/span&gt;&lt;br style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Reviewed transcript&lt;/span&gt;&lt;/font&gt;" vertex="1">
+        <mxCell id="XrI3U0wopgR4zhom4ko2-3" connectable="0" parent="E09-out" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 56px;&quot;&gt;&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial;&quot;&gt;Reviewed transcript&lt;/span&gt;&lt;/font&gt;" vertex="1">
           <mxGeometry relative="1" x="-0.2858" as="geometry">
-            <mxPoint x="176" y="30" as="offset" />
+            <mxPoint x="164" y="-3" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="E10-in" data-flow-ids="M02" edge="1" parent="1" source="E10" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.0000000000;exitY=0.7142857143;exitPerimeter=0;entryX=0.8535533906;entryY=0.8535533906;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
+        <mxCell id="E10-in" data-flow-ids="M02" edge="1" parent="1" source="E10" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;entryX=0.7836367871;entryY=0.9117647059;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="-0.3507" y="-214" as="geometry">
             <mxPoint x="1" as="offset" />
             <Array as="points">
@@ -305,27 +306,28 @@
               <mxPoint x="2930" y="2580" />
               <mxPoint x="2930" y="2200" />
             </Array>
+            <mxPoint x="4330" y="2570" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="XrI3U0wopgR4zhom4ko2-8" connectable="0" parent="E10-in" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; text-align: left;&quot;&gt;&lt;font style=&quot;font-size: 48px;&quot;&gt;Email submission status&lt;/font&gt;&lt;/span&gt;" vertex="1">
+        <mxCell id="XrI3U0wopgR4zhom4ko2-8" connectable="0" parent="E10-in" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; text-align: left;&quot;&gt;&lt;font style=&quot;font-size: 56px;&quot;&gt;Email submission status&lt;/font&gt;&lt;/span&gt;" vertex="1">
           <mxGeometry relative="1" x="-0.0935" as="geometry">
             <mxPoint x="70" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="E10-out" data-flow-ids="M01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=22;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.8830222216;exitY=0.8213938048;exitPerimeter=0;entryX=0.0000000000;entryY=0.2857142857;entryPerimeter=0;" target="E10" value="&lt;div style=&quot;width:540px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
+        <mxCell id="E10-out" data-flow-ids="M01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.882;exitY=0.818;exitPerimeter=0;entryX=0.0000000000;entryY=0.2857142857;entryPerimeter=0;exitDx=0;exitDy=0;" target="E10" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;br&gt;&lt;/div&gt;">
           <mxGeometry relative="1" x="-0.289" y="-210" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
-              <mxPoint x="3080" y="2171.3938048" />
+              <mxPoint x="3080" y="2120" />
               <mxPoint x="3080" y="2200" />
               <mxPoint x="4270" y="2200" />
-              <mxPoint x="4270" y="2520" />
+              <mxPoint x="4270" y="2540" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="XrI3U0wopgR4zhom4ko2-6" connectable="0" parent="E10-out" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; text-align: left;&quot;&gt;&lt;font style=&quot;font-size: 48px;&quot;&gt;Email delivery data&lt;/font&gt;&lt;/span&gt;" vertex="1">
+        <mxCell id="XrI3U0wopgR4zhom4ko2-6" connectable="0" parent="E10-out" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; text-align: left;&quot;&gt;&lt;font style=&quot;font-size: 56px;&quot;&gt;Email delivery data&lt;/font&gt;&lt;/span&gt;" vertex="1">
           <mxGeometry relative="1" x="-0.2823" y="8" as="geometry">
-            <mxPoint x="-49" y="8" as="offset" />
+            <mxPoint x="-25" y="-2" as="offset" />
           </mxGeometry>
         </mxCell>
       </root>

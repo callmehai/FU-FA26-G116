@@ -10,7 +10,7 @@ FE cần xử lý:
 2. Recovery cho Organizer có thể hiện dù roster bị404. Options mode RecoverSecretary chỉ chọn một user active. Reload context sau recovery.
 3. Internal add nhiều user/shared role và Guest form riêng. Guest không có role dropdown; Confidential/Secret cảnh báo inline theo UC, không thêm dialog ngoài baseline.
 4. Chair swap có confirmation outgoing/incoming, gửi atomic batch. Nếu mất Secretary cuối thì bổ sung replacement cùng batch. Không demote rồi promote bằng hai HTTP request.
-5. Lưu ETag và If-Match ở wrapper. 409/MSG252 tải lại, để người dùng xác nhận; không tự resend payload cũ. Revision giữ dạng string.
+5. Lưu ETag và If-Match ở wrapper. 409/MSG275 tải lại, để người dùng xác nhận; không tự resend payload cũ. Revision giữ dạng string.
 6. Grant omit = giữ, [] = xóa, array = tập cuối. Hiện chỉ hai grant trong catalogue, đừng hardcode giới hạn vĩnh viễn.
 7. Save thành công chỉ xác nhận dữ liệu đã lưu. Không báo “đã gửi email”. Sau mutation tải lại context vì người thao tác có thể tự mất quyền. Xóa cache PII khi401/403/404.
 8. Accepted/Declined là phản hồi, không phải điểm danh. Chưa làm attendance, delegation, room SDK hoặc UI Guest giả.
@@ -51,18 +51,18 @@ Organizer là tài khoản thuky. Fixture seed không tạo Guest, credential, n
 | 4 | Add internal user chưa current; thử ID trùng/inactive/unknown trong batch | Batch hợp lệ201; batch lỗi400/MSG97 không thêm một phần |
 | 5 | Add Guest tên/email; thử email hoa thường trùng internal/Guest | Lần đầu201; trùng400/MSG97; không tạo User |
 | 6 | Published, Member không grants đọc roster và summary | Cả hai404; own response200 |
-| 7 | Secretary cấp riêng ViewInvitationResponses cho Member | Summary200, roster404; thêm q vào summary400/MSG253 |
+| 7 | Secretary cấp riêng ViewInvitationResponses cho Member | Summary200, roster404; thêm q vào summary400/MSG276 |
 | 8 | Thay grant bằng ViewMeetingParticipants | Roster200, summary404; roster không lộ attendance/response/grants của người khác |
 | 9 | Member Accepted → Accepted → Declined | MSG105 → MSG154 → MSG105; no-op giữ respondedAt; attendance Unknown không đổi |
 | 10 | Thử response Pending/Delegated, role trong body, sai casing/duplicate JSON | 400; không đổi persisted response |
 | 11 | Chair replacement outgoing Chair → Member, incoming Member → Chair | Thiếu confirmation400/MSG101; đủ confirmation200/MSG100; chỉ một Chair |
 | 12 | Remove Chair hoặc Secretary cuối ở Published | 409/MSG109; dùng atomic role batch để thay Secretary |
-| 13 | Hai tab giữ cùng ETag rồi save lần lượt | Lần hai409/MSG252; không ghi đè |
+| 13 | Hai tab giữ cùng ETag rồi save lần lượt | Lần hai409/MSG275; không ghi đè |
 | 14 | Gỡ Member đang Accepted và có grant | MSG103; Member mất Meeting/Agenda/roster/response/notification-target qua assignment; removal notification không link |
 | 15 | Mời lại cùng Member | Assignment ID mới, Pending, grants rỗng; history cũ giữ phản hồi/điểm danh |
 | 16 | Thử quản lý ở WaitingApproval/Ended, respond ở Ended | Quản lý409/MSG98; respond409/MSG107; view có quyền vẫn đọc Ended |
 | 17 | Caller không liên quan / token hết hạn / account inactive | 404 / 401 / 403; không lộ roster/options |
-| 18 | Bỏ If-Match; query lạ; text/plain; JSON >64KiB | 400/MSG253; 400/MSG253; 415/MSG34; 413/MSG87 |
+| 18 | Bỏ If-Match; query lạ; text/plain; JSON >64KiB | 400/MSG276; 400/MSG276; 415/MSG34; 413/MSG87 |
 | 19 | SMTP disabled, add vào Published; sau đó bật sandbox/worker | Domain lưu thành công; intent Pending rồi Materialized + EmailMessage; không gửi lại toàn roster |
 | 20 | Revoke Guest trước materialize | Initial dispatch Suppressed, removal mail không link; Guest consumer mất quyền. OTP/session E2E chờ UC-04 |
 | 21 | Deactivate Chair hiện tại của Published/InProgress; Secretary thay Chair bằng Member active, có confirmation | 200/MSG100; Chair cũ thành Member, giữ Secretary. Thiếu confirmation hoặc incoming inactive → 400/MSG101 và không đổi role |
@@ -74,4 +74,4 @@ Role/permission/revoke rollback, concurrent writers và migration preflight đư
 
 Theo yêu cầu sửa review, đã gửi [comment 10221 trong SCRUM-20](https://sep490g116.atlassian.net/browse/SCRUM-20?focusedCommentId=10221) ngày 15/10/2026: scope iteration hai grant, tách UC-04, adapters và điều kiện nghiệm thu Guest production. Ticket Guest verification/session hiện có là [SCRUM-59](https://sep490g116.atlassian.net/browse/SCRUM-59), assignee khi kiểm tra là Nguyễn Quang Huy; chi tiết profile tự khai cần owner chốt khi tích hợp. Không đổi status/assignee Jira.
 
-FE dùng **MSG252** cho stale revision và **MSG253** cho query/If-Match sai. MSG156/MSG157 và MSG238/MSG239 đã được dành cho tài liệu trên main; không dùng chúng cho Participants. Khi giải quyết merge ngày 15/10/2026, constants, tests, API, plan, handoff và Postman được chuyển từ MSG238/MSG239 sang MSG252/MSG253; mã tiếp theo MSG254.
+FE dùng **MSG275** cho stale revision và **MSG276** cho query/If-Match sai. MSG156/MSG157 và MSG238/MSG239 đã được dành cho tài liệu trên main; MSG252–MSG274 được dành cho Report 3. Khi giải quyết merge hiện tại, constants, tests, API, plan, handoff và Postman dùng MSG275/MSG276; mã tiếp theo MSG277.

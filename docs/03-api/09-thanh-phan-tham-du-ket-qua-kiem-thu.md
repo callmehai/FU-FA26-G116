@@ -4,6 +4,8 @@ Chốt ngày **15/10/2026 (Asia/Saigon)**. Branch `feat/scrum20-Backend-Invite-p
 
 **Cập nhật khi giải quyết merge ngày 15/10/2026:** main `e754010` đã dành MSG238/MSG239 cho ADR-0020 và dùng ADR-0019 cho biểu quyết. Participants chuyển sang MSG252/MSG253, mã tiếp theo MSG254; ADR của Participants chuyển sang ADR-0021. Các kết quả kiểm thử bên dưới là evidence trước merge, với phân bổ mã tại thời điểm đó.
 
+**Cập nhật khi merge main `3790928` ngày 19/10/2026:** main đã dành MSG252–MSG274 cho thay đổi Report 3; Participants hiện dùng MSG275 (stale revision) và MSG276 (query/If-Match không hợp lệ), mã tiếp theo MSG277. Dòng và kết quả kiểm thử phía dưới giữ nguyên như evidence lịch sử.
+
 **Kiểm tra bản giải quyết merge:** Release build `-warnaserror` có 0 warning/error; frontend lint/build pass. Full suite có 1.063 passed, 25 failed do Redis localhost6379; chạy lại riêng 25 test đó trên Redis8 tạm tại127.0.0.1:6389 có 25/25 passed. Tổng 1.088 test được xác minh qua hai lượt, 0 skipped; gồm hai regression bảo toàn MSG238/MSG239 cho tài liệu. Container test tạm đã dừng. Postman JSON, số ADR duy nhất và `git diff --check` pass.
 
 ## Sửa review ngày 15/10/2026

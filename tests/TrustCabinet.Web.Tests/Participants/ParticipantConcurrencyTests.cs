@@ -26,7 +26,7 @@ public sealed class ParticipantConcurrencyTests(ParticipantFixture f, ITestOutpu
         var results = await Task.WhenAll(Write(secretary, s.Url + "/participants/assignments", HttpMethod.Put, body),
             Write(secretary, s.Url + "/participants/assignments", HttpMethod.Put, body));
         Assert.Single(results, r => r.StatusCode == HttpStatusCode.OK);
-        await Code(Assert.Single(results, r => r.StatusCode == HttpStatusCode.Conflict), 409, "MSG252");
+        await Code(Assert.Single(results, r => r.StatusCode == HttpStatusCode.Conflict), 409, "MSG275");
         await using var db = f.Db();
         Assert.Equal(1, await db.MeetingParticipants.CountAsync(p => p.MeetingId == s.MeetingId && p.Role == MeetingRole.Chair));
         Assert.Equal(1, await db.MeetingParticipants.CountAsync(p => p.MeetingId == s.MeetingId && p.Role == MeetingRole.Secretary));

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { listMeetings } from '../../api/meetings'
 import { Icon } from '../../components/Icon'
@@ -9,6 +9,7 @@ import { backState } from '../../lib/backTarget'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatClock, formatDate, formatWeekdayDate } from '../../lib/format'
 import { routes } from '../../lib/routes'
+import { useSearchBox } from '../../lib/useSearchBox'
 import {
   MEETING_STATUSES,
   MEETING_STATUS_LABEL,
@@ -45,8 +46,6 @@ const SENSITIVITY_OPTIONS = [
   ...SENSITIVITIES.map((s) => ({ value: s, label: SENSITIVITY_LABEL[s] })),
 ]
 
-/** Long enough that typing a word sends one request, short enough to feel live. */
-const SEARCH_DELAY_MS = 300
 const COLUMN_COUNT = 7
 const SKELETON_ROWS = 5
 
@@ -411,37 +410,4 @@ function SortHeader({
       </button>
     </th>
   )
-}
-
-/**
- * The search box keeps what is typed locally and hands it on after a pause. When the URL changes
- * from elsewhere — Back, "Xoá bộ lọc" — the box follows it.
- */
-function useSearchBox(committed: string, commit: (value: string) => void) {
-  const [value, setValue] = useState(committed)
-  const commitRef = useRef(commit)
-  const lastCommitted = useRef(committed)
-
-  useEffect(() => {
-    commitRef.current = commit
-  })
-
-  // Follow the URL when it changes without the box being the cause.
-  useEffect(() => {
-    if (committed !== lastCommitted.current) {
-      lastCommitted.current = committed
-      setValue(committed)
-    }
-  }, [committed])
-
-  useEffect(() => {
-    if (value.trim() === lastCommitted.current.trim()) return
-    const timer = setTimeout(() => {
-      lastCommitted.current = value.trim()
-      commitRef.current(value)
-    }, SEARCH_DELAY_MS)
-    return () => clearTimeout(timer)
-  }, [value])
-
-  return [value, setValue] as const
 }

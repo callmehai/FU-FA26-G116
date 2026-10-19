@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "TrustCabinet SCRUM-20 Backend",
-    "description": "Chỉ dùng database test. Chọn token đúng actor; chạy Context để lấy ETag trước mỗi mutation. Stale revision: 409/MSG252; query hoặc If-Match sai/thiếu: 400/MSG253. Không dùng MSG156/MSG157 của tài liệu cho Participants. Xem docs/03-api/09-thanh-phan-tham-du-ban-giao.md. Không lưu credentials trong export.",
+    "description": "Chỉ dùng database test. Chọn token đúng actor; chạy Context để lấy ETag trước mỗi mutation. Stale revision: 409/MSG275; query hoặc If-Match sai/thiếu: 400/MSG276. Không dùng MSG156/MSG157 của tài liệu cho Participants. Xem docs/03-api/09-thanh-phan-tham-du-ban-giao.md. Không lưu credentials trong export.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {

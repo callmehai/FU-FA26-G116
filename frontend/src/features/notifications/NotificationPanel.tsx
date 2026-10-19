@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
@@ -19,6 +19,7 @@ const CLOCK_TICK_MS = 30_000
 export function NotificationPanel({ id, onClose }: { id: string; onClose: () => void }) {
   const { unreadCount, feed, loadFirstPage, loadMore, markRead, markAllRead, openTarget } = useNotifications()
   const navigate = useNavigate()
+  const location = useLocation()
   const toast = useToast()
   const now = useNow(CLOCK_TICK_MS)
   const [markingAll, setMarkingAll] = useState(false)
@@ -35,7 +36,9 @@ export function NotificationPanel({ id, onClose }: { id: string; onClose: () => 
       // A notification with no target is only read; the panel stays where the user is.
       if (url === null) return
       onClose()
-      navigate(url)
+      // Already on that page: replace rather than stack a duplicate entry Back would have to undo.
+      // The new location key still tells the page to re-read what it shows.
+      navigate(url, { replace: url === location.pathname + location.search })
     } catch (error) {
       // UC-68: the meeting was deleted, or the user may no longer read it.
       toast.show(isApiError(error, 404) ? 'Thông báo này không còn khả dụng.' : errorMessage(error), 'error')
