@@ -1522,7 +1522,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .calendar-toolbar { display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; }
 .calendar-range { margin-left: 4px; font-size: 18px; white-space: nowrap; }
 .calendar-toolbar-end { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }
-.calendar-toolbar-end .select { width: 168px; }
+.calendar-toolbar-end .select { width: 140px; }
 .calendar-note { flex: none; margin-bottom: 16px; }
 .calendar-note a { font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 
@@ -1538,6 +1538,13 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .view-toggle button + button { border-left: 1px solid var(--control-line); }
 .view-toggle button:hover { background: var(--surface-alt); }
 .view-toggle button[aria-pressed='true'] { background: var(--brand); color: #fff; font-weight: 700; }
+.view-toggle-icon { display: none; }
+/* Below 1400px the calendar toolbar needs the room: the view buttons keep their icon and tooltip. */
+@media (max-width: 1400px) {
+  .view-toggle button { display: inline-grid; place-items: center; width: 44px; padding: 0; }
+  .view-toggle-icon { display: inline-flex; }
+  .view-toggle-label { display: none; }
+}
 
 .calendar {
   display: flex;
@@ -1629,6 +1636,120 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .legend-amber::before { border: 1.5px dashed var(--accent-amber); background: var(--chip-amber-bg); }
 .legend-slate::before, .legend-ended::before { background: var(--chip-slate-bg); box-shadow: inset 0 0 0 1.5px var(--faint-ink); }
 .legend-red::before { background: var(--chip-red-bg); box-shadow: inset 0 0 0 1.5px var(--danger); }
+
+/* The month grid (SCRUM-47): seven columns Monday first, its weeks sharing the frame's height.
+   A meeting is one line in the colours and edges of its week-grid block. */
+.month-scroll { display: flex; flex-direction: column; }
+/* Grown as a flex item, so its height is definite and the 1fr weeks split the frame. */
+.month { display: grid; flex: 1 0 auto; grid-template-columns: repeat(7, minmax(0, 1fr)); min-width: 760px; }
+.month-weekday {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  border-left: 1px solid var(--line-soft);
+  background: var(--surface-head);
+  color: var(--label-ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+.month-cell { display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 5px 8px 7px; border-bottom: 1px solid var(--line-soft); border-left: 1px solid var(--line-soft); }
+.month-weekday:nth-child(7n + 1), .month-cell:nth-child(7n + 1) { border-left: 0; }
+.month-weekend { background: #fafbfc; }
+.month-cell-head { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+.month-outside { background: #f6f7f9; }
+.month-outside .month-day { color: var(--faint-ink); }
+.month-outside .month-event { opacity: .75; }
+.month-today { background: #f7fafe; }
+.month-day {
+  align-self: flex-start;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.month-day:hover { background: var(--surface-alt); }
+.month-today .month-day, .month-today .month-day:hover { background: var(--brand); color: #fff; }
+.month-event {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+/* The neutral look, at zero specificity so the .cal-event-<tone> colours above always win. */
+:where(.month-event) { border: 1px solid var(--line); background: var(--chip-slate-bg); color: var(--ink-soft); }
+.month-event:hover { box-shadow: 0 2px 8px #1a243326; }
+.month-event-time { flex: none; font-weight: 700; }
+.month-event-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.month-event .cal-event-secret { flex: none; }
+.cal-event-blue .month-event-time { color: var(--chip-blue-fg); }
+.cal-event-amber .month-event-time { color: var(--chip-amber-fg); }
+.cal-event-red .month-event-title { text-decoration: line-through; }
+.month-more { flex: none; white-space: nowrap; padding: 2px 6px; border: 0; border-radius: 4px; background: none; color: var(--brand); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.month-more:hover { background: var(--brand-wash); }
+/* A narrow column keeps the count only; the tooltip and aria-label still say what it is. */
+@media (max-width: 1400px) { .month-more-word { display: none; } }
+
+/* "Bộ lọc" (SCRUM-47): a non-modal panel under its button, chips that toggle at once. */
+.cal-filter { position: relative; }
+.cal-filter-on { border-color: var(--brand); background: var(--brand-wash); color: var(--brand); }
+/* Below 1400px the toolbar needs the room: the button keeps its icon, badge and tooltip. */
+@media (max-width: 1400px) { .cal-filter-label { display: none; } }
+.cal-filter-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--brand); color: #fff; font-size: 12px; font-weight: 700; }
+.cal-filter-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(540px, calc(100vw - 32px));
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 12px 32px #1a243326;
+}
+.cal-filter-group { min-width: 0; margin: 0; padding: 0; border: 0; }
+.cal-filter-group legend { margin-bottom: 8px; padding: 0; color: var(--label-ink); font-size: 13px; font-weight: 600; }
+.cal-filter-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.cal-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--control-line);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cal-pick:hover { background: var(--surface-alt); }
+.cal-pick[aria-pressed='true'] { border-color: var(--brand); background: var(--brand-wash); color: var(--brand); font-weight: 600; }
+.cal-pick-count { color: var(--muted-ink); font-weight: 500; }
+.cal-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot-slate); }
+.cal-dot-amber { background: var(--dot-amber); }
+.cal-dot-red { background: var(--dot-red); }
+.cal-dot-emerald { background: var(--dot-emerald); }
+.cal-dot-blue { background: var(--dot-blue); }
+.cal-dot-live { background: var(--live); }
+.cal-filter-hint { margin: 8px 0 0; color: var(--muted-ink); font-size: 12px; }
+.cal-filter-foot { display: flex; justify-content: space-between; margin: 0 -16px; padding: 12px 16px 0; border-top: 1px solid var(--line-soft); }
 
 /* ---------- Calendar list view ----------
    One section per day: a heading line, then each session as a time column, a dot on the day's

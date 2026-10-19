@@ -524,7 +524,14 @@ stale content.
   gửi UTC ISO); Địa điểm hiện với Trực tiếp/Kết hợp, Link họp trực tuyến hiện với Trực tuyến/Kết hợp,
   phần bị ẩn không được gửi. Danh sách có cột "Thời gian" (sắp xếp được, mặc định
   `plannedStartTime desc`) và "Hình thức · Địa điểm". Trang chi tiết hiện lịch dự kiến, giờ thực tế khi
-  có, link trực tuyến; tab "Phiên họp" đã bỏ. Lịch làm việc đọc một lần `GET /api/meetings?from&to`.
+  có, link trực tuyến; tab "Phiên họp" đã bỏ.
+- **Lịch làm việc (SCRUM-47):** đọc `GET /api/meetings?from&to` với `pageSize=100`, sắp theo
+  `plannedStartTime asc`, và đọc **đủ mọi trang** của khoảng đang xem (dạng tháng có thể quá 100
+  cuộc họp). Dạng tháng gửi `from` = Thứ Hai đầu lưới, `to` = cuối Chủ Nhật cuối lưới. Bộ lọc
+  trạng thái và mức độ của lịch chọn được nhiều giá trị, nên FE lọc trên tập đã tải (server đã lọc
+  quyền xem theo BR-29) thay vì gửi `status`/`sensitivity` — hai tham số này chỉ nhận một giá trị.
+  URL của lịch: `?span=work|full|month`, `week=YYYY-MM-DD`, `month=YYYY-MM`, `mode=list`,
+  `status=Draft,Approved`, `sensitivity=Secret`.
 
 ### Luồng duyệt trên trang chi tiết (SCRUM-19)
 

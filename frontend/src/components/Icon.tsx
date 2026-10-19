@@ -22,6 +22,7 @@ import {
   FileText,
   Folder,
   FolderPlus,
+  Funnel,
   Globe,
   KeyRound,
   LayoutGrid,
@@ -63,6 +64,7 @@ const ICONS = {
   shield: Shield,
   grid: LayoutGrid,
   list: List,
+  filter: Funnel,
   bell: Bell,
   // Notification kinds (SCRUM-14): what each one is about, at a glance.
   clock: Clock,
