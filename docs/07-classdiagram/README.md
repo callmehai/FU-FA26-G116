@@ -15,9 +15,9 @@ trích xuất nguyên trạng các class C# đã triển khai.
 | FE-01 Authentication | [drawio](feature-01-auth-class-diagram.drawio) · [PNG](feature-01-auth-class-diagram.drawio.png) | UC-01–UC-04 |
 | FE-02 User Management | [drawio](feature-02-user-management-class-diagram.drawio) · [PNG](feature-02-user-management-class-diagram.drawio.png) | UC-05, UC-06a/b/c, UC-07–UC-09 |
 | FE-03 Role Management | [drawio](feature-03-role-management-class-diagram.drawio) · [PNG](feature-03-role-management-class-diagram.drawio.png) | UC-10, UC-11, UC-12a/b/c, UC-13 |
-| FE-04 Meeting Management | [drawio](feature-04-meeting-management-class-diagram.drawio) · [PNG](feature-04-meeting-management-class-diagram.drawio.png) | UC-14–UC-22 |
-| FE-05 Agenda Management | [drawio](feature-05-agenda-management-class-diagram.drawio) · [PNG](feature-05-agenda-management-class-diagram.drawio.png) | UC-23a/b/c/d, UC-24–UC-26 |
-| FE-06 Meeting Participant Management | [drawio](feature-06-meeting-participant-management-class-diagram.drawio) · [PNG](feature-06-meeting-participant-management-class-diagram.drawio.png) | UC-27, UC-28a/b/c, UC-29–UC-31 |
+| FE-04 Meeting Management | [drawio](feature-04-meeting-management-class-diagram.drawio) · [PNG](feature-04-meeting-management-class-diagram.drawio.png) | UC-14–UC-22, UC-75 |
+| FE-05 Agenda Management | [drawio](feature-05-agenda-management-class-diagram.drawio) · [PNG](feature-05-agenda-management-class-diagram.drawio.png) | UC-23a/b/c/d, UC-24–UC-26, UC-77 |
+| FE-06 Meeting Participant Management | [drawio](feature-06-meeting-participant-management-class-diagram.drawio) · [PNG](feature-06-meeting-participant-management-class-diagram.drawio.png) | UC-27, UC-28a/b/c, UC-29–UC-31, UC-73 |
 | FE-13 Notification | [drawio](feature-13-notification-management-class-diagram.drawio) · [PNG](feature-13-notification-management-class-diagram.drawio.png) | UC-66, UC-67a/b, UC-68 |
 
 FE-07–FE-12, FE-14 và FE-15 chưa có class diagram trong thư mục này. FE-05 Meeting Session cũ
@@ -143,7 +143,26 @@ kiểm tra giải mã PNG **và mở lại model bằng draw.io** trước khi b
 được là chunk `tEXt`, keyword `mxfile`, nội dung XML qua `encodeURIComponent`, theo
 [file format của draw.io](https://github.com/jgraph/drawio/wiki/File-Format).
 
-## 6. Rà soát hiện trạng · 14/10/2026
+## 6. Đồng bộ theo Report 3 ngày 18/10/2026
+
+Cập nhật 19/10/2026 theo UC/BR/MSG mới (trao đổi PO 16/10/2026, góp ý hội đồng lần 1). Chỉ sửa cục bộ member, thêm
+class và cạnh cần thiết; giữ ID, bố cục và quan hệ cũ.
+
+- **FE-04:** thêm `cancelMeeting` ở boundary/controller/service (UC-75), `saveCancellation` ở `MeetingRepository`,
+  `notifyMeetingCancelled`, `queueCancellationEmails`; enum `MeetingStatus` thêm `Cancelled`. Lý do, người huỷ và thời
+  điểm nằm ở `MeetingStatusHistory` (BR-298), nên `Meeting` không thêm field.
+- **FE-05:** `AgendaItem` bỏ `plannedDurationMinutes`, `elapsedDuration`; thêm `conclusion`, `conclusionSavedById`,
+  `conclusionSavedAt` (BR-309 → BR-311). Thêm `recordAgendaItemConclusion` (UC-77), `saveConclusion`,
+  `verifyPresenter` (BR-306), class `MinutesRepository` (kiểm tra đã sinh nháp biên bản, BR-310) và `NotificationService`
+  (báo Presenter, BR-307). Field Presenter cho Guest vẫn là `presenterId? / presenterName?` như Entity 9 — **NEEDS REVIEW**
+  khi Report 3 §I.3.2 cập nhật entity.
+- **FE-06:** thêm `handOverChair` (UC-73) ở boundary/controller/service/repository, `notifyChairHandedOver`,
+  `removeAndClearPresenter` (UC-28c, BR-308).
+- **Kiểm tra:** validator 0 lỗi cho cả ba source; đã render và xem ảnh. PNG FE-04/05/06 xuất bằng draw.io 31.7.0, nhúng
+  model ở chunk `zTXt` keyword `mxGraphModel` (khác dạng `tEXt`/`mxfile` ghi ở §5). Đã giải mã chunk và đối chiếu
+  nội dung với source; **chưa** mở lại PNG bằng draw.io để kiểm tra roundtrip.
+
+## 7. Rà soát hiện trạng · 14/10/2026
 
 Đã đọc 7 source DCD, 44 sequence `.txt` theo feature, các README tương ứng, UC/BR/Entity Descriptions
 trong snapshot Report 3 local và các điểm implementation được dẫn trong log bên dưới. Snapshot
@@ -259,7 +278,7 @@ message khi sửa thiết kế. Tất cả feature còn `NEEDS REVIEW` theo bả
 
 <a id="phụ-lục--có-dùng-jwt-không-mà-sao-lại-có-session-server"></a>
 
-## 7. Ghi chú tương thích với các tài liệu cũ
+## 8. Ghi chú tương thích với các tài liệu cũ
 
 Các ghi chú A–F của README trước đây mô tả bản vẽ tháng 9/đầu tháng 10, không còn là checklist lỗi
 hiện hành của bản vẽ ngày 13/10. Nội dung hữu ích đã được gộp vào quy ước và log phía trên; lịch sử

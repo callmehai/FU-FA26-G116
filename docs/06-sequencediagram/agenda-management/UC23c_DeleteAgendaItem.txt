@@ -54,9 +54,9 @@ else Agenda planning permitted
         AgendaController-->MeetingPage: MSG142 - Only Pending agenda items can be deleted.\nItem and order unchanged
         MeetingPage-->Secretary: MSG142 - Only Pending agenda items can be deleted.\nItem and order unchanged
     else Selected Item remains Pending
-        AgendaService->AgendaItemRepository: Delete only the selected Pending Item;\nretain every remaining Item position and execution data (BR-68)
+        AgendaService->AgendaItemRepository: Delete the selected Pending Item and its document links;\nkeep the documents in the Meeting and every remaining Item position (BR-237, BR-239, BR-283)
         activate AgendaItemRepository
-        AgendaItemRepository->Database: Delete only the selected Pending Item;\nretain every remaining Item position and execution data (BR-68)
+        AgendaItemRepository->Database: Delete the selected Pending Item and its document links;\nkeep the documents in the Meeting and every remaining Item position (BR-237, BR-239, BR-283)
         activate Database
         Database-->AgendaItemRepository: Change saved / Save failed; previous Agenda preserved
         deactivate Database

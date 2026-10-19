@@ -36,9 +36,9 @@ ParticipantService-->ParticipantController: MSG98 - The meeting participant list
 ParticipantController-->MeetingPage: MSG98 - The meeting participant list cannot be modified in its current status.
 MeetingPage-->User: MSG98 - The meeting participant list cannot be modified in its current status.
 else Removal is permitted
-ParticipantService->ParticipantRepository: Remove internal assignment or revoke Guest invitation;\nend assignment-specific access and extras, retain response/attendance/comment/ballot history (BR-97, BR-100–BR-103, BR-157, BR-177)
+ParticipantService->ParticipantRepository: Remove internal assignment or revoke Guest invitation;\nend assignment-specific access and extras, retain response/attendance/comment/ballot history;\nAgenda Items this person presents no longer have a Presenter (BR-97, BR-100–BR-103, BR-157, BR-177, BR-308)
 activate ParticipantRepository
-ParticipantRepository->Database: Save all requested changes together;\nrecheck Meeting status, authority and roster before saving
+ParticipantRepository->Database: Save removal and cleared Agenda Item Presenters together;\nrecheck Meeting status, authority and roster before saving
 activate Database
 Database-->ParticipantRepository: Complete save / No changes saved
 deactivate Database

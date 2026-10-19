@@ -43,15 +43,15 @@ deactivate Database
 AgendaItemRepository-->AgendaService: Current Item / Not eligible
 deactivate AgendaItemRepository
 
-AgendaService->AgendaService: Verify active Chair, Meeting InProgress and\nselected Item belongs to this Meeting and is its current InProgress Item;\nPlanned Duration does not restrict completion (BR-64, BR-69, BR-72)
+AgendaService->AgendaService: Verify active Chair, Meeting InProgress and\nselected Item belongs to this Meeting and is its current InProgress Item;\nthe Chair may complete it at any time (BR-64, BR-69, BR-72)
 alt Item cannot be completed - EX-1
     AgendaService-->AgendaController: MSG74 - This agenda item cannot be completed.
     AgendaController-->MeetingPage: MSG74 - This agenda item cannot be completed.
     MeetingPage-->Chair: MSG74 - This agenda item cannot be completed.
 else Completion permitted
-    AgendaService->AgendaItemRepository: Save Done, actual end time and elapsed duration together (BR-70, BR-72)
+    AgendaService->AgendaItemRepository: Save Done and actual end time together (BR-70, BR-72)
     activate AgendaItemRepository
-    AgendaItemRepository->Database: Save Done, actual end time and elapsed duration together (BR-70, BR-72)
+    AgendaItemRepository->Database: Save Done and actual end time together (BR-70, BR-72)
     activate Database
     Database-->AgendaItemRepository: Completed / Save failed; previous state and times preserved
     deactivate Database
@@ -63,7 +63,7 @@ else Completion permitted
         AgendaController-->MeetingPage: MSG76 - Unable to complete the agenda item. Please try again.\nItem and Meeting remain InProgress
         MeetingPage-->Chair: MSG76 - Unable to complete the agenda item. Please try again.\nItem and Meeting remain InProgress
     else Completion saved
-        AgendaService->AgendaService: Keep Meeting InProgress with no current Item;\ndo not automatically start the next Pending Item (BR-72)
+        AgendaService->AgendaService: Keep Meeting InProgress with no current Item;\ndo not automatically start another Item (BR-72)
         AgendaService->AgendaService: Automatically refresh the complete Agenda\nfor currently authorized viewers (BR-73)
         AgendaService-->AgendaController: MSG65 - Agenda item completed successfully.
         AgendaController-->MeetingPage: MSG65 - Agenda item completed successfully.

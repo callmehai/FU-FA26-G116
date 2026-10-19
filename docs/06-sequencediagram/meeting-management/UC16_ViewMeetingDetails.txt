@@ -33,7 +33,7 @@ else Meeting is accessible
     activate MeetingService
     MeetingService->MeetingRepository: Get meeting-level details
     activate MeetingRepository
-    MeetingRepository->Database: Retrieve meeting-level fields, Planned Start/End Time\nand Actual Start/End Time when available
+    MeetingRepository->Database: Retrieve meeting-level fields, Planned Start/End Time, Actual Start/End Time\nwhen available and, for a Cancelled Meeting, its cancellation history entry
     activate Database
     Database-->MeetingRepository: Meeting details / Retrieval failed
     deactivate Database
@@ -48,11 +48,11 @@ else Meeting is accessible
     else Meeting details retrieved successfully
         activate MeetingController
         activate MeetingService
-        MeetingService-->MeetingController: Meeting Name, Planned Start/End Time, Actual Start/End Time\nwhen available, Mode, Location, Confidentiality Level, Description, Status
+        MeetingService-->MeetingController: Meeting Name, Planned Start/End Time, Actual Start/End Time\nwhen available, Mode, Location, Confidentiality Level, Description, Status;\nif Cancelled: cancellation reason, who cancelled it and when (BR-298)
         deactivate MeetingService
         MeetingController-->MeetingPage: Return meeting information with planned and available actual times
         deactivate MeetingController
-        MeetingPage-->User: Display meeting-level details and planned/actual times read-only
+        MeetingPage-->User: Display meeting-level details and planned/actual times read-only;\nfor a Cancelled Meeting also show reason, actor and time
     end
 end
 

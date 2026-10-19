@@ -56,7 +56,7 @@ else Meeting and Chair are eligible
         AgendaItemRepository-->MeetingService: Agenda Item / None
         deactivate AgendaItemRepository
 
-        MeetingService->MeetingRepository: In one transaction: complete the InProgress Agenda Item\n(Done, actual end time, duration); keep remaining Pending Items Pending,\nset Meeting Ended,\nrecord Actual End Time and lifecycle history; preserve Vote statuses/ballots;\nno attendance or Vote-closure check (BR-38, BR-132, BR-159)
+        MeetingService->MeetingRepository: In one transaction: complete the InProgress Agenda Item\n(Done, actual end time); keep remaining Pending Items Pending,\nset Meeting Ended,\nrecord Actual End Time and lifecycle history; preserve Vote statuses/ballots;\nno attendance or Vote-closure check (BR-38, BR-132, BR-159)
         activate MeetingRepository
         MeetingRepository->Database: Save Agenda Item, Meeting and history atomically
         activate Database

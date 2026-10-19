@@ -1,0 +1,62 @@
+title UC-73 - Hand Over Chair to Another Participant
+
+actor "Chair" as Chair
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Participant Controller" as ParticipantController
+control ":Meeting Participant Service" as ParticipantService
+participant ":Meeting Participant Repository" as ParticipantRepository
+database ":Database" as Database
+participant ":Notification Service" as NotificationService
+
+Chair->MeetingPage: Confirm Hand over Chair to the selected participant
+activate MeetingPage
+MeetingPage->ParticipantController: Hand over Chair
+activate ParticipantController
+ParticipantController->ParticipantService: handOverChair(meetingId, chairId, newChairParticipantId)
+activate ParticipantService
+ParticipantService->ParticipantRepository: Read Meeting status, actor's current role\nand the selected participant's role and account status
+activate ParticipantRepository
+ParticipantRepository->Database: Retrieve current Meeting and roster information
+activate Database
+Database-->ParticipantRepository: Current information
+deactivate Database
+ParticipantRepository-->ParticipantService: Current information
+deactivate ParticipantRepository
+ParticipantService->ParticipantService: Verify actor is the current Chair and Meeting is Published or InProgress (BR-126)
+alt Hand-over is no longer permitted - EX-2
+    ParticipantService-->ParticipantController: MSG260 - You can no longer hand over the Chair role for this meeting.
+    ParticipantController-->MeetingPage: MSG260 - You can no longer hand over the Chair role for this meeting.
+    MeetingPage-->Chair: MSG260 - You can no longer hand over the Chair role for this meeting.
+else Hand-over permitted
+    ParticipantService->ParticipantService: Verify selected person is a current active internal participant,\nnot a Guest and not the current Secretary (BR-295)
+    alt Selected participant can no longer receive the Chair role - EX-1
+        ParticipantService-->ParticipantController: MSG259 - The selected participant can no longer receive the Chair role. Select another participant.
+        ParticipantController-->MeetingPage: MSG259 - The selected participant can no longer receive the Chair role. Select another participant.
+        MeetingPage-->Chair: MSG259 - The selected participant can no longer receive the Chair role.\nSelect another participant.
+    else Selected participant eligible
+        ParticipantService->ParticipantRepository: Change selected participant to Chair and former Chair to Member together;\nkeep System Roles, responses, attendance and ballots (BR-126, BR-169, BR-296)
+        activate ParticipantRepository
+        ParticipantRepository->Database: Save both role changes as one change;\nrecheck Meeting status and roster before saving
+        activate Database
+        Database-->ParticipantRepository: Both roles saved / No changes saved
+        deactivate Database
+        ParticipantRepository-->ParticipantService: Both roles saved / No changes saved
+        deactivate ParticipantRepository
+        alt Hand-over cannot be saved - EX-3
+            ParticipantService-->ParticipantController: MSG102 - Unable to update the meeting role. Please try again.
+            ParticipantController-->MeetingPage: MSG102 - Unable to update the meeting role. Please try again.
+            MeetingPage-->Chair: MSG102 - Unable to update the meeting role. Please try again.
+        else Both roles saved
+            ParticipantService->NotificationService: Notify the new Chair and the former Chair (BR-92)
+            activate NotificationService
+            NotificationService-->ParticipantService: Notifications created / delivery failed\n(failure does not undo the change)
+            deactivate NotificationService
+            ParticipantService-->ParticipantController: MSG257 - Chair role handed over successfully.
+            ParticipantController-->MeetingPage: MSG257 - Chair role handed over successfully.
+            MeetingPage-->Chair: MSG257 - Chair role handed over successfully.
+        end
+    end
+end
+deactivate ParticipantService
+deactivate ParticipantController
+deactivate MeetingPage

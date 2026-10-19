@@ -4,6 +4,7 @@ actor "Secretary" as Secretary
 boundary "Meeting Management Page" as MeetingPage
 control ":Agenda Controller" as AgendaController
 control ":Agenda Service" as AgendaService
+control ":Notification Service" as NotificationService
 participant ":Meeting Repository" as MeetingRepository
 participant ":Meeting Participant Repository" as MeetingParticipantRepository
 participant ":Agenda Item Repository" as AgendaItemRepository
@@ -14,7 +15,7 @@ Secretary->MeetingPage: Update Agenda Item
 activate MeetingPage
 MeetingPage->AgendaController: Update Agenda Item
 activate AgendaController
-AgendaController->AgendaService: updateAgendaItem(meetingId, agendaItemId, secretaryId, agendaInfo, documentIds)
+AgendaController->AgendaService: updateAgendaItem(meetingId, agendaItemId, secretaryId, agendaInfo, presenterId, documentIds)
 activate AgendaService
 
 AgendaService->MeetingRepository: Get selected Meeting and current status
@@ -35,13 +36,13 @@ deactivate Database
 MeetingParticipantRepository-->AgendaService: Active Secretary / Not eligible
 deactivate MeetingParticipantRepository
 
-AgendaService->AgendaItemRepository: Get selected Item, Meeting membership and latest execution status
+AgendaService->AgendaItemRepository: Get selected Item and Meeting membership
 activate AgendaItemRepository
-AgendaItemRepository->Database: Get selected Item, Meeting membership and latest execution status
+AgendaItemRepository->Database: Get selected Item and Meeting membership
 activate Database
-Database-->AgendaItemRepository: Item and status / Not found
+Database-->AgendaItemRepository: Item / Not found
 deactivate Database
-AgendaItemRepository-->AgendaService: Item and status / Not found
+AgendaItemRepository-->AgendaService: Item / Not found
 deactivate AgendaItemRepository
 
 AgendaService->AgendaService: Verify Secretary, Item membership and permitted Meeting status\nDraft, WaitingApproval, Rejected, Approved, Published or InProgress (BR-64, BR-65, BR-74)
@@ -50,48 +51,58 @@ alt Editing no longer permitted - EX-2
     AgendaController-->MeetingPage: MSG67 - The agenda for this meeting can no longer be modified.
     MeetingPage-->Secretary: MSG67 - The agenda for this meeting can no longer be modified.
 else Editing permitted
-    AgendaService->AgendaService: Pending: permit planning fields. InProgress/Done: permit only\nTitle and Description; preserve execution status and actual times (BR-68)
-    alt InProgress/Done request changes a restricted field - EX-4
-        AgendaService-->AgendaController: MSG141 - Only Title and Description can be changed after an agenda item has started.\nNo changes saved; refresh permitted fields
-        AgendaController-->MeetingPage: MSG141 - Only Title and Description can be changed after an agenda item has started.\nNo changes saved; refresh permitted fields
-        MeetingPage-->Secretary: MSG141 - Only Title and Description can be changed after an agenda item has started.\nNo changes saved; refresh permitted fields
-    else Requested fields permitted
-        opt Pending Item document associations are changed
-            AgendaService->DocumentRepository: Verify selected documents belong to this Meeting
-            activate DocumentRepository
-            DocumentRepository->Database: Verify selected documents belong to this Meeting
-            activate Database
-            Database-->DocumentRepository: Available documents / Invalid selection
-            deactivate Database
-            DocumentRepository-->AgendaService: Available documents / Invalid selection
-            deactivate DocumentRepository
+    opt Presenter assigned or changed
+        AgendaService->MeetingParticipantRepository: Verify Presenter is a current internal participant\nor current Guest of this Meeting (BR-306)
+        activate MeetingParticipantRepository
+        MeetingParticipantRepository->Database: Verify Presenter is a current internal participant\nor current Guest of this Meeting (BR-306)
+        activate Database
+        Database-->MeetingParticipantRepository: Current participant or Guest / Invalid Presenter
+        deactivate Database
+        MeetingParticipantRepository-->AgendaService: Current participant or Guest / Invalid Presenter
+        deactivate MeetingParticipantRepository
 
-        end
-        AgendaService->AgendaService: Validate permitted changes and required values (BR-66)
-        alt Invalid Item information - EX-1
-            AgendaService-->AgendaController: MSG66 - Invalid agenda item information.\nApplicable field messages; Item unchanged
-            AgendaController-->MeetingPage: MSG66 - Invalid agenda item information.\nApplicable field messages; Item unchanged
-            MeetingPage-->Secretary: MSG66 - Invalid agenda item information.\nApplicable field messages; Item unchanged
-        else Changes valid
-            AgendaService->AgendaItemRepository: Recheck current Item status and save permitted changes together;\nkeep other fields, execution status, actual times and order unchanged (BR-68)
-            activate AgendaItemRepository
-            AgendaItemRepository->Database: Recheck current Item status and save permitted changes together;\nkeep other fields, execution status, actual times and order unchanged (BR-68)
-            activate Database
-            Database-->AgendaItemRepository: Change saved / Save failed; previous Agenda preserved
-            deactivate Database
-            AgendaItemRepository-->AgendaService: Change saved / Save failed; previous Agenda preserved
-            deactivate AgendaItemRepository
+    end
+    opt Document associations are changed
+        AgendaService->DocumentRepository: Verify selected documents belong to this Meeting
+        activate DocumentRepository
+        DocumentRepository->Database: Verify selected documents belong to this Meeting
+        activate Database
+        Database-->DocumentRepository: Available documents / Invalid selection
+        deactivate Database
+        DocumentRepository-->AgendaService: Available documents / Invalid selection
+        deactivate DocumentRepository
 
-            alt Change cannot be saved - EX-3
-                AgendaService-->AgendaController: MSG69 - Unable to update the agenda item. Please try again.
-                AgendaController-->MeetingPage: MSG69 - Unable to update the agenda item. Please try again.
-                MeetingPage-->Secretary: MSG69 - Unable to update the agenda item. Please try again.
-            else Change saved successfully
-                AgendaService->AgendaService: Automatically refresh the complete saved Agenda\nfor currently authorized users viewing this Meeting (BR-73)
-                AgendaService-->AgendaController: MSG61 - Agenda item updated successfully.
-                AgendaController-->MeetingPage: MSG61 - Agenda item updated successfully.
-                MeetingPage-->Secretary: MSG61 - Agenda item updated successfully.
+    end
+    AgendaService->AgendaService: Validate Title, Presenter, Description and documents\nin any execution status (BR-66, BR-68, BR-306)
+    alt Invalid Item information - EX-1
+        AgendaService-->AgendaController: MSG66 - Invalid agenda item information.\nApplicable field messages; Item unchanged
+        AgendaController-->MeetingPage: MSG66 - Invalid agenda item information.\nApplicable field messages; Item unchanged
+        MeetingPage-->Secretary: MSG66 - Invalid agenda item information.\nApplicable field messages; Item unchanged
+    else Changes valid
+        AgendaService->AgendaItemRepository: Save Title, Presenter, Description and document associations together;\nkeep execution status, actual times and position unchanged (BR-68)
+        activate AgendaItemRepository
+        AgendaItemRepository->Database: Save Title, Presenter, Description and document associations together;\nkeep execution status, actual times and position unchanged (BR-68)
+        activate Database
+        Database-->AgendaItemRepository: Change saved / Save failed; previous Agenda preserved
+        deactivate Database
+        AgendaItemRepository-->AgendaService: Change saved / Save failed; previous Agenda preserved
+        deactivate AgendaItemRepository
+
+        alt Change cannot be saved - EX-3
+            AgendaService-->AgendaController: MSG69 - Unable to update the agenda item. Please try again.
+            AgendaController-->MeetingPage: MSG69 - Unable to update the agenda item. Please try again.
+            MeetingPage-->Secretary: MSG69 - Unable to update the agenda item. Please try again.
+        else Change saved successfully
+            opt Presenter assigned or changed while Meeting is Published or InProgress
+                AgendaService->NotificationService: Notify the new Presenter: internal user in the application,\nGuest by email (BR-307)
+                activate NotificationService
+                NotificationService-->AgendaService: Notification created / delivery failed\n(failure does not undo the change)
+                deactivate NotificationService
             end
+            AgendaService->AgendaService: Automatically refresh the complete saved Agenda\nfor currently authorized users viewing this Meeting (BR-73)
+            AgendaService-->AgendaController: MSG61 - Agenda item updated successfully.
+            AgendaController-->MeetingPage: MSG61 - Agenda item updated successfully.
+            MeetingPage-->Secretary: MSG61 - Agenda item updated successfully.
         end
     end
 end

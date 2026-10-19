@@ -1,0 +1,100 @@
+title UC-76a - Attach Documents to Vote
+
+actor "Chair / Secretary" as Actor
+boundary "Meeting Management Page" as MeetingPage
+control ":Vote Controller" as VoteController
+control ":Vote Service" as VoteService
+participant ":Meeting Participant Repository" as ParticipantRepository
+participant ":Vote Repository" as VoteRepository
+participant ":Meeting Document Repository" as MeetingDocumentRepository
+participant ":Personal Document Repository" as PersonalDocumentRepository
+participant ":File Storage" as FileStorage
+database ":Database" as Database
+
+Actor->MeetingPage: Confirm documents to attach to a Draft Vote\n(Meeting documents / Upload from computer / My Documents)
+activate MeetingPage
+MeetingPage->VoteController: Attach documents to Vote
+activate VoteController
+VoteController->VoteService: attachVoteDocuments(meetingId, voteId, actorId, source, documents)
+activate VoteService
+
+VoteService->VoteRepository: Get Vote, its Meeting and current statuses
+activate VoteRepository
+VoteRepository->Database: Get Vote, its Meeting and current statuses
+activate Database
+Database-->VoteRepository: Vote and Meeting / Not found
+deactivate Database
+VoteRepository-->VoteService: Vote and Meeting / Not found
+deactivate VoteRepository
+
+VoteService->ParticipantRepository: Check current Chair or Secretary assignment
+activate ParticipantRepository
+ParticipantRepository->Database: Check current Chair or Secretary assignment
+activate Database
+Database-->ParticipantRepository: Current Chair or Secretary / Not eligible
+deactivate Database
+ParticipantRepository-->VoteService: Current Chair or Secretary / Not eligible
+deactivate ParticipantRepository
+
+alt Meeting or Vote not accessible - EX-5
+    VoteService-->VoteController: MSG205 - Meeting votes are not accessible.
+    VoteController-->MeetingPage: MSG205 - Meeting votes are not accessible.
+    MeetingPage-->Actor: MSG205 - Meeting votes are not accessible.
+else Vote documents can no longer be changed - EX-1
+    VoteService-->VoteController: MSG213 - Only Draft votes may be managed by the current Chair or Secretary\nwhile the meeting is Approved, Published or InProgress.
+    VoteController-->MeetingPage: MSG213 - Only Draft votes may be managed by the current Chair or Secretary\nwhile the meeting is Approved, Published or InProgress.
+    MeetingPage-->Actor: MSG213 - Only Draft votes may be managed by the current Chair or Secretary\nwhile the meeting is Approved, Published or InProgress.
+else Draft Vote, Meeting Approved, Published or InProgress (BR-252, BR-288)
+    alt Source is Meeting documents - Main Flow
+        VoteService->MeetingDocumentRepository: Check each document is still in the Meeting\nand not yet attached to the Vote (BR-287)
+        activate MeetingDocumentRepository
+        MeetingDocumentRepository->Database: Check each document is still in the Meeting\nand not yet attached to the Vote (BR-287)
+        activate Database
+        Database-->MeetingDocumentRepository: Available / Not in Meeting / Already attached
+        deactivate Database
+        MeetingDocumentRepository-->VoteService: Available / Not in Meeting / Already attached
+        deactivate MeetingDocumentRepository
+    else Source is Upload from computer - AF-1
+        VoteService->VoteService: Validate every file is PDF or DOCX, at most 50 MB (BR-187, BR-214, BR-215)
+        VoteService->FileStorage: Store uploaded files
+        activate FileStorage
+        FileStorage-->VoteService: Stored files / Storage failed
+        deactivate FileStorage
+    else Source is My Documents - AF-2
+        VoteService->PersonalDocumentRepository: Check each document belongs to the actor, is available\nand is not already in the Meeting (BR-193, BR-209)
+        activate PersonalDocumentRepository
+        PersonalDocumentRepository->Database: Check each document belongs to the actor, is available\nand is not already in the Meeting (BR-193, BR-209)
+        activate Database
+        Database-->PersonalDocumentRepository: Available / Not available / Already in Meeting
+        deactivate Database
+        PersonalDocumentRepository-->VoteService: Available / Not available / Already in Meeting
+        deactivate PersonalDocumentRepository
+    end
+
+    alt Selection invalid
+        VoteService-->VoteController: MSG170 / MSG266 / MSG164 / MSG249 / MSG165 per failed check
+        VoteController-->MeetingPage: MSG170 / MSG266 / MSG164 / MSG249 / MSG165 per failed check
+        MeetingPage-->Actor: MSG170 / MSG266 / MSG164 / MSG249 / MSG165 per failed check
+    else Selection valid
+        VoteService->VoteRepository: Recheck Vote is Draft; add new documents to the Meeting (and uploads to the\nuploader's library) and attach all to the Vote as one change (BR-194, BR-286, BR-304)
+        activate VoteRepository
+        VoteRepository->Database: Save Meeting documents, library entries and Vote document links as one change
+        activate Database
+        Database-->VoteRepository: Attached / Save failed; nothing added or attached
+        deactivate Database
+        VoteRepository-->VoteService: Attached / Save failed; nothing added or attached
+        deactivate VoteRepository
+        alt Change cannot be saved - EX-4
+            VoteService-->VoteController: MSG267 (Meeting documents) / MSG166 (Upload or My Documents)
+            VoteController-->MeetingPage: MSG267 (Meeting documents) / MSG166 (Upload or My Documents)
+            MeetingPage-->Actor: MSG267 (Meeting documents) / MSG166 (Upload or My Documents)
+        else Documents attached
+            VoteService-->VoteController: MSG265 - Documents attached to the vote successfully.
+            VoteController-->MeetingPage: MSG265 - Documents attached to the vote successfully.
+            MeetingPage-->Actor: MSG265 - Documents attached to the vote successfully.
+        end
+    end
+end
+deactivate VoteService
+deactivate VoteController
+deactivate MeetingPage

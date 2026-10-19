@@ -9,7 +9,8 @@
       "Published",
       "InProgress",
       "Ended",
-      "Rejected"
+      "Rejected",
+      "Cancelled"
     ],
     "edges": [
       [
@@ -35,7 +36,7 @@
       [
         "InProgress",
         "Ended",
-        "Chair ends\n[no open votes]"
+        "Chair ends\nor System ends\n[4h after planned end]"
       ],
       [
         "WaitingApproval",
@@ -61,15 +62,44 @@
         "Published",
         "Published",
         "Organizer reschedules"
+      ],
+      [
+        "Draft",
+        "Cancelled",
+        "Organizer cancels\n[reason provided]"
+      ],
+      [
+        "WaitingApproval",
+        "Cancelled",
+        "Organizer cancels\n[reason provided]"
+      ],
+      [
+        "Rejected",
+        "Cancelled",
+        "Organizer cancels\n[reason provided]"
+      ],
+      [
+        "Approved",
+        "Cancelled",
+        "Organizer cancels\n[reason provided]"
+      ],
+      [
+        "Published",
+        "Cancelled",
+        "Organizer cancels [reason]\nor System cancels\n[24h after planned end]"
       ]
     ],
     "initial": "Organizer creates meeting",
-    "source": "UC14–22; BR35,38–40,124–127,130–132,158–159",
+    "source": "UC14–22; BR35,38–40,124–127,130–132,158–159; UC75; BR297–302",
     "provisional": false,
     "positions": {
       "Rejected": [
         940,
         400
+      ],
+      "Cancelled": [
+        940,
+        760
       ]
     },
     "routes": {
@@ -153,10 +183,87 @@
             816
           ]
         ]
+      },
+      "11": {
+        "pins": [
+          0.95,
+          0,
+          0.9,
+          0
+        ],
+        "points": [
+          [
+            707,
+            150
+          ],
+          [
+            1240,
+            150
+          ],
+          [
+            1240,
+            740
+          ],
+          [
+            1174,
+            740
+          ]
+        ]
+      },
+      "12": {
+        "pins": [
+          0.95,
+          1,
+          0.3,
+          0
+        ],
+        "points": [
+          [
+            707,
+            560
+          ],
+          [
+            1018,
+            560
+          ]
+        ]
+      },
+      "13": {
+        "pins": [
+          0.5,
+          1,
+          0.5,
+          0
+        ],
+        "points": []
+      },
+      "14": {
+        "pins": [
+          1,
+          0.5,
+          0.1,
+          0
+        ],
+        "points": [
+          [
+            966,
+            620
+          ]
+        ]
+      },
+      "15": {
+        "pins": [
+          1,
+          0.5,
+          0,
+          0.5
+        ],
+        "points": []
       }
     },
     "final_states": [
-      "Ended"
+      "Ended",
+      "Cancelled"
     ]
   },
   {
@@ -171,7 +278,7 @@
       [
         "Pending",
         "InProgress",
-        "Chair selects current item\n[meeting InProgress]"
+        "Chair starts any Pending item\n[meeting InProgress,\nno other item InProgress]"
       ],
       [
         "InProgress",
@@ -180,7 +287,7 @@
       ]
     ],
     "initial": "Secretary adds agenda item",
-    "source": "UC23a–26; BR69–71,159",
+    "source": "UC23a–26, UC77; BR69–72, 159, 238",
     "provisional": false,
     "final_states": [
       "Done"
@@ -464,7 +571,7 @@
       [
         "Draft",
         "Open",
-        "Chair opens vote"
+        "Chair opens vote\n[meeting InProgress, no other vote Open]\n/ fix eligible voters and documents"
       ],
       [
         "Open",
@@ -472,8 +579,8 @@
         "Chair closes vote"
       ]
     ],
-    "initial": "Chair creates vote\n[meeting InProgress]",
-    "source": "UC53–57; BR160–161,165; ADR0014",
+    "initial": "Chair or Secretary saves vote draft\n[meeting Approved, Published or InProgress]",
+    "source": "UC53–57, UC76; BR160–161, 165, 252, 266, 288; ADR0014",
     "provisional": false,
     "final_states": [
       "Closed"
