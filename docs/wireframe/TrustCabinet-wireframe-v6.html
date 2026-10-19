@@ -372,7 +372,29 @@ table.t tr.hl td { background: #fbf3f3 }
 .mon .me.done { background: #f3f4f6; border-color: var(--line); border-left-color: #9aa3b0; color: #4b5563 }
 .mon .me.draft { background: #fff; border-color: var(--line); border-left-color: #9aa3b0; color: #4b5563 }
 .mon .mc.out .me { opacity: .6 }
-.mon .more { font-size: 11px; font-weight: 600; color: var(--brand); padding-left: 4px; flex: none }
+.mon .more { font-size: 11px; font-weight: 600; color: var(--brand); padding-right: 2px; flex: none }
+.mon .mc .hd { display: flex; align-items: center; justify-content: space-between; flex: none }
+.rgb { font-size: 19px; margin-left: 2px; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px }
+.rgb.on { background: var(--brand-soft); color: var(--brand) }
+.rgb small { font-size: 12px; color: var(--mute) }
+.dpop { position: absolute; background: var(--sheet); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 12px 32px rgba(26, 36, 51, .18); width: 300px; padding: 14px; display: flex; flex-direction: column; gap: 8px; z-index: 3 }
+.dpop .dt { font-size: 12px; color: var(--mute); font-weight: 600 }
+.dpop .dh { display: flex; align-items: center; gap: 6px }
+.dpop .ib { width: 28px; height: 28px; display: grid; place-items: center; font-size: 16px }
+.dpop .dg { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 3px }
+.dpop .dw { font-size: 11px; font-weight: 600; color: var(--mute); text-align: center; padding: 4px 0 }
+.dpop .dd { height: 30px; display: grid; place-items: center; font-size: 12.5px }
+.dpop .dd i { font-style: normal; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50% }
+.dpop .dd.out { color: #a3abb8 }
+.dpop .dd.vw { background: var(--brand-soft); color: var(--brand); font-weight: 600 }
+.dpop .dd.s { border-radius: 15px 0 0 15px }
+.dpop .dd.e { border-radius: 0 15px 15px 0 }
+.dpop .dd.td i { box-shadow: inset 0 0 0 2px #c99a2e; font-weight: 700 }
+.dpop .dl { display: flex; gap: 14px; font-size: 11.5px; color: var(--mute); border-top: 1px solid var(--line); padding-top: 8px }
+.dpop .dl span { display: flex; align-items: center; gap: 5px }
+.dpop .dl i { width: 10px; height: 10px; border-radius: 50% }
+.dpop .dl i.td { box-shadow: inset 0 0 0 2px #c99a2e }
+.dpop .dl i.vw { background: var(--brand-soft); border-radius: 3px; box-shadow: inset 0 0 0 1px #9fb3dc }
 .fpop { position: absolute; background: var(--sheet); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 12px 32px rgba(26, 36, 51, .18); width: 480px; display: flex; flex-direction: column; z-index: 3 }
 .fpop .fg { padding: 14px 16px 4px; display: flex; flex-direction: column; gap: 8px }
 .fpop .fg > b { font-size: 12px; color: var(--mute); font-weight: 600 }
@@ -393,7 +415,7 @@ table.t tr.hl td { background: #fbf3f3 }
       <p>Phác thảo lo-fi cho toàn bộ 15 nhóm chức năng (FE-01 → FE-15, đánh số theo SRS Report-3; không còn Phiên họp từ 09/10/2026), bám theo danh mục use case trong <code>docs/01-requirements</code>. Mỗi màn ghi số UC mà nó phục vụ và vài dòng chú thích về hành vi.</p>
       <p>Đây là bản thiết kế, không phải ảnh chụp hiện trạng app. v4 (14/10/2026) áp dụng ADR-0018: tài liệu không có phiên bản, kho cá nhân có thư mục, chỉ Chủ trì và Thư ký thêm hoặc gỡ tài liệu cuộc họp; Chủ trì chọn vai trò được bỏ phiếu cho từng biểu quyết, phiếu nháp sửa và xoá được, kết thúc cuộc họp không cần đóng hết phiếu.</p>
       <p>v5 (15/10/2026) cập nhật FE-11 theo đặc tả UC-52a–UC-57 và ADR-0019: Chủ trì chuẩn bị nháp từ khi cuộc họp Đã duyệt, nháp chỉ Chủ trì thấy; biểu quyết thuộc trực tiếp cuộc họp, không gắn mục nghị sự; mỗi cuộc họp chỉ một biểu quyết đang mở; khi đang mở chỉ hiện số người đã bỏ phiếu; phiếu kín chỉ xác nhận đã gửi; cuộc họp kết thúc thì ngừng nhận phiếu nhưng Chủ trì vẫn đóng và ghi kết luận. Đổi 8.5, 11.1–11.4, 14.2; thêm 11.1b, 11.2b, 11.3b, 11.5.</p>
-      <p>v6 (19/10/2026) thêm lịch tháng cho SCRUM-47 (luồng phụ của UC-17), tham khảo màn Lịch làm việc của AI-eCabinet: kiểu lịch chọn Tuần làm việc, Cả tuần hoặc Tháng; nút Bộ lọc theo trạng thái và mức độ dùng chung cho mọi chế độ, không lọc theo đơn vị (ADR-0004). Đổi 4.1, 4.2 (thêm nút Bộ lọc, sửa UC thành UC-17); thêm 4.1b lịch tháng, 4.1c bộ lọc.</p>
+      <p>v6 (19/10/2026) thêm lịch tháng cho SCRUM-47 (luồng phụ của UC-17), tham khảo màn Lịch làm việc của AI-eCabinet: kiểu lịch chọn Tuần làm việc, Cả tuần hoặc Tháng; nút Bộ lọc theo trạng thái và mức độ dùng chung cho mọi chế độ, không lọc theo đơn vị (ADR-0004). Đổi 4.1, 4.2 (thêm nút Bộ lọc, sửa UC thành UC-17); thêm 4.1b lịch tháng, 4.1c bộ lọc, 4.1d chọn ngày nhanh.</p>
       <div class="legend" aria-label="Chú giải">
         <span class="chip st blue" style="font:500 12px var(--font)">Trạng thái: bo tròn, có chấm</span>
         <span class="chip lv" style="font:500 12px var(--font)"><i class="ic"></i>Mức độ: góc vuông, có icon</span>
@@ -406,7 +428,7 @@ table.t tr.hl td { background: #fbf3f3 }
       <ol>
         <li>Bấm <b>Kích thước thật</b> bên dưới: mỗi màn hiện đúng 1280×800 (điện thoại 390×780).</li>
         <li>Figma Desktop → Plugins → Development → Import plugin from manifest… → chọn <code>figma-v6/manifest.json</code>, rồi chạy plugin trên file Wireframe.</li>
-        <li>Plugin dựng lại các màn đã đổi ở v6 (4.1, 4.2), thêm các màn mới (4.1b, 4.1c), giữ nguyên các màn khác (kể cả chỗ bạn đã sửa tay).</li>
+        <li>Plugin dựng lại các màn đã đổi ở v6 (4.1, 4.2), thêm các màn mới (4.1b, 4.1c, 4.1d), giữ nguyên các màn khác (kể cả chỗ bạn đã sửa tay).</li>
       </ol>
       <button class="toggle" id="real-toggle" type="button" aria-pressed="false">Kích thước thật</button>
     </div>
@@ -581,8 +603,8 @@ const CAL = () => {
   return h
 }
 /* v6: kiểu lịch thêm "Tháng"; nút Bộ lọc dùng chung cho mọi chế độ (`filt` = số tiêu chí đang bật). */
-const CALBAR = (mode, span = 'Tuần làm việc', range = '12/10 – 16/10/2026', filt = 0) => `<div class="row">${B('Hôm nay', 'lg')}<span class="seg" style="height:36px"><span style="padding:8px 12px">‹</span><span style="padding:8px 12px">›</span></span>
-  <b style="font-size:19px;margin-left:6px" class="grow">${range}</b>${SEG(['Lịch', 'Danh sách'], mode).replace('class="seg"', 'class="seg vt"')}<div class="in val" style="width:140px;height:36px">${span}<span class="caret"></span></div>${B(`Bộ lọc${filt ? `<span class="cnt">${filt}</span>` : ''}`, filt ? 'lg on' : 'lg', true)}${B('Tạo cuộc họp', 'p lg', true)}</div>`
+const CALBAR = (mode, span = 'Tuần làm việc', range = '12/10 – 16/10/2026', filt = 0, pick = 0) => `<div class="row">${B('Hôm nay', 'lg')}<span class="seg" style="height:36px"><span style="padding:8px 12px">‹</span><span style="padding:8px 12px">›</span></span>
+  <span class="grow"><b class="rgb ${pick ? 'on' : ''}">${range}<small>${pick ? '▴' : '▾'}</small></b></span>${SEG(['Lịch', 'Danh sách'], mode).replace('class="seg"', 'class="seg vt"')}<div class="in val" style="width:140px;height:36px">${span}<span class="caret"></span></div>${B(`Bộ lọc${filt ? `<span class="cnt">${filt}</span>` : ''}`, filt ? 'lg on' : 'lg', true)}${B('Tạo cuộc họp', 'p lg', true)}</div>`
 
 /* v6 – lịch tháng 10/2026 (SCRUM-47). Lưới Thứ Hai 28/09 → Chủ Nhật 01/11; `d` là ô thứ mấy tính từ 28/09.
    Hôm nay 14/10 (ô 16) có bốn cuộc họp để vẽ "+1 cuộc họp". */
@@ -615,7 +637,7 @@ const MONTH = (keep) => {
     const out = d < 3 || d > 33
     const day = evs.filter((e) => e.d === d)
     const cls = ['mc', d % 7 === 0 ? 'c0' : '', d % 7 > 4 ? 'we' : '', out ? 'out' : '', d === 16 ? 'today' : ''].join(' ')
-    h += `<div class="${cls}"><span class="dn">${n}</span>${day.slice(0, 3).map((e) => `<div class="me ${e.k}"><span class="tm">${e.w}</span><span class="nm">${e.t}</span>${e.sec ? '<span class="sec">Mật</span>' : ''}</div>`).join('')}${day.length > 3 ? `<span class="more">+${day.length - 3} cuộc họp</span>` : ''}</div>`
+    h += `<div class="${cls}"><div class="hd"><span class="dn">${n}</span>${day.length > 3 ? `<span class="more">+${day.length - 3} cuộc họp</span>` : ''}</div>${day.slice(0, 3).map((e) => `<div class="me ${e.k}"><span class="tm">${e.w}</span><span class="nm">${e.t}</span>${e.sec ? '<span class="sec">Mật</span>' : ''}</div>`).join('')}</div>`
   }
   h += '</div>'
   h += `<div class="cal-legend">${[['Đang họp', '#0e6b44', '#0e6b44'], ['Đã công bố', '#2f62d0'], ['Đã duyệt', '#1f9a62'], ['Chờ duyệt', '#c98a12'], ['Nháp', '#9aa3b0'], ['Đã kết thúc', '#9aa3b0', '#e2e5ea'], ['Bị từ chối', '#b4232a']].map(([t, c, f]) => `<span><i style="--c:${c};--f:${f || 'transparent'};${t === 'Chờ duyệt' ? 'border-style:dashed' : ''}"></i>${t}</span>`).join('')}</div>`
@@ -630,6 +652,21 @@ const CALFILTER = (keep) => {
     <div class="fg"><b>Trạng thái</b><div class="wrap">${st.map(([k, t, c]) => `<span class="pick ${keep.includes(k) ? 'on' : ''}"><i class="dot" style="--c:${c}"></i>${t}<em>${MON_EVENTS.filter((e) => e.k === k).length}</em></span>`).join('')}</div></div>
     <div class="fg"><b>Mức độ</b><div class="wrap">${lv.map(([t, n]) => `<span class="pick">${t}<em>${n}</em></span>`).join('')}</div><small>Không chọn gì là hiện mọi cuộc họp bạn được xem.</small></div>
     <div class="ff">${B('Bỏ lọc', 'gh')}${B('Xong', 'p')}</div></div>`
+}
+
+/* Bảng "Chọn ngày nhanh" mở dưới tiêu đề khoảng ngày (4.1d). Cùng lưới 28/09 → 01/11 như MONTH; ô 14–18 là
+   tuần 12–16/10 đang xem, ô 16 là hôm nay. */
+const DATEPICK = () => {
+  let cells = ''
+  for (let d = 0; d < 35; d++) {
+    const n = d < 3 ? 28 + d : d < 34 ? d - 2 : 1
+    const cls = ['dd', d < 3 || d > 33 ? 'out' : '', d >= 14 && d <= 18 ? 'vw' : '', d === 14 ? 's' : '', d === 18 ? 'e' : '', d === 16 ? 'td' : ''].join(' ')
+    cells += `<span class="${cls}"><i>${n}</i></span>`
+  }
+  return `<div class="dpop" style="top:64px;left:398px"><b class="dt">Chọn ngày nhanh</b>
+    <div class="dh"><div class="in val" style="width:112px;height:32px">Tháng 10<span class="caret"></span></div><div class="in val" style="width:86px;height:32px">2026<span class="caret"></span></div><span class="grow"></span><span class="ib">‹</span><span class="ib">›</span></div>
+    <div class="dg">${['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((w) => `<span class="dw">${w}</span>`).join('')}${cells}</div>
+    <div class="dl"><span><i class="td"></i>Hôm nay</span><span><i class="vw"></i>Tuần đang xem</span></div></div>`
 }
 
 /* ---------- Luồng cuộc họp (BF-02 → BF-04, PO chốt 09/10/2026) ----------
@@ -936,10 +973,13 @@ const GROUPS = [
     notes: ['Không có tiêu đề trang: thanh công cụ là dòng đầu. Kiểu lịch: Tuần làm việc, Cả tuần hoặc Tháng (4.1b). Bộ lọc ở 4.1c.', 'Lưới phủ 24 giờ, cuộn trong khung; tuần hiện tại tự cuộn tới vạch đỏ giờ hiện tại.', 'Mỗi ô là một cuộc họp, tô màu theo trạng thái; "Bị từ chối" gạch ngang tên. Bấm để mở chi tiết; nút quay lại trả về đúng tuần và chế độ.'] },
   { no: '4.1b', name: 'Lịch làm việc – dạng tháng', ucs: 'UC-17', built: 1,
     html: SH('cal', CALBAR('Lịch', 'Tháng', 'Tháng 10/2026') + MONTH()),
-    notes: ['Chọn "Tháng" trong ô kiểu lịch. Tháng và kiểu lịch nằm trên URL (?span=month&month=2026-10), tải lại hay gửi link vẫn mở đúng tháng.', '‹ › chuyển tháng trước / sau; "Hôm nay" về tháng hiện tại, ngày hôm nay khoanh tròn. Lưới luôn đủ 7 cột Thứ Hai → Chủ Nhật, 4 đến 6 hàng; thứ Bảy, Chủ Nhật nền nhạt.', 'Mỗi cuộc họp một dòng: giờ bắt đầu và tên, màu theo trạng thái như dạng tuần; cuộc họp Mật có nhãn "Mật"; Bị từ chối gạch ngang tên. Bấm vào là mở chi tiết cuộc họp.', 'Mỗi ngày hiện tối đa 3 cuộc họp, còn lại gom thành "+N cuộc họp". Bấm "+N" hoặc số ngày thì chuyển sang dạng tuần chứa ngày đó.', 'Ngày của tháng trước / sau ở đầu và cuối lưới làm mờ nhưng vẫn hiện cuộc họp.', 'Dữ liệu: GET /api/meetings với from = Thứ Hai đầu lưới, to = Chủ Nhật cuối lưới. Server chỉ trả cuộc họp người dùng được xem (BR-29). Một tháng có thể quá 100 cuộc họp (pageSize tối đa) nên phải tải đủ các trang.'] },
+    notes: ['Chọn "Tháng" trong ô kiểu lịch. Tháng và kiểu lịch nằm trên URL (?span=month&month=2026-10), tải lại hay gửi link vẫn mở đúng tháng.', '‹ › chuyển tháng trước / sau; "Hôm nay" về tháng hiện tại, ngày hôm nay khoanh tròn. Lưới luôn đủ 7 cột Thứ Hai → Chủ Nhật, 4 đến 6 hàng; thứ Bảy, Chủ Nhật nền nhạt.', 'Mỗi cuộc họp một dòng: giờ bắt đầu và tên, màu theo trạng thái như dạng tuần; cuộc họp Mật có nhãn "Mật"; Bị từ chối gạch ngang tên. Bấm vào là mở chi tiết cuộc họp.', 'Lưới luôn vừa khung, không có thanh cuộn: các tuần chia đều chiều cao dù tháng có 4, 5 hay 6 tuần. Mỗi ngày hiện số cuộc họp vừa ô (màn thấp ít hơn, màn cao nhiều hơn), còn lại gom thành "+N cuộc họp" cạnh số ngày. Bấm "+N" hoặc số ngày thì chuyển sang dạng tuần chứa ngày đó.', 'Ngày của tháng trước / sau ở đầu và cuối lưới làm mờ nhưng vẫn hiện cuộc họp.', 'Dữ liệu: GET /api/meetings với from = Thứ Hai đầu lưới, to = Chủ Nhật cuối lưới. Server chỉ trả cuộc họp người dùng được xem (BR-29). Một tháng có thể quá 100 cuộc họp (pageSize tối đa) nên phải tải đủ các trang.'] },
   { no: '4.1c', name: 'Lịch làm việc – bộ lọc', ucs: 'UC-17', built: 1,
     html: SH('cal', CALBAR('Lịch', 'Tháng', 'Tháng 10/2026', 1) + MONTH(['wait', 'ok', '', 'live']), CALFILTER(['wait', 'ok', '', 'live'])),
     notes: ['Nút "Bộ lọc" mở bảng nổi; chọn tới đâu lịch lọc tới đó, "Xong" chỉ đóng bảng. Bộ lọc dùng chung cho Tuần làm việc, Cả tuần, Tháng và chế độ Danh sách, lưu trên URL.', 'Trạng thái và Mức độ (Thường, Nội bộ, Hạn chế, Mật): chọn nhiều. Số bên cạnh là số cuộc họp trong khoảng đang xem mà nhóm kia cho qua. Không có lọc theo đơn vị (ADR-0004).', 'Trong một nhóm không chọn gì là không lọc theo nhóm đó. Nút "Bộ lọc" hiện số nhóm đang lọc; "Bỏ lọc" xoá hết.', 'Bộ lọc chỉ thu hẹp trong những cuộc họp server đã cho phép xem; nó không phải ranh giới quyền.'] },
+  { no: '4.1d', name: 'Lịch làm việc – chọn ngày nhanh', ucs: 'UC-17', built: 1,
+    html: SH('cal', CALBAR('Lịch', 'Tuần làm việc', '12/10 – 16/10/2026', 0, 1) + CAL(), DATEPICK()),
+    notes: ['Bấm tiêu đề khoảng ngày ("12/10 – 16/10/2026 ▾" hay "Tháng 10/2026 ▾") mở bảng chọn ngày nhanh, ở mọi kiểu lịch và cả chế độ Danh sách. Tham khảo bảng "Chọn ngày nhanh" của AI-eCabinet.', 'Ô Tháng, ô Năm và ‹ › chỉ đổi tháng trong bảng; lịch phía sau chưa đổi cho tới khi bấm một ngày.', 'Bấm một ngày: dạng tuần mở tuần chứa ngày đó, dạng tháng mở tháng chứa ngày đó; bảng đóng lại. Bấm ra ngoài hoặc Esc thì đóng mà không đổi gì.', 'Hôm nay viền vàng; dải xanh là những ngày đang xem ở dạng tuần (Tuần làm việc 5 ngày, Cả tuần 7 ngày). Dạng tháng không có dải.'] },
   { no: '4.2', name: 'Lịch làm việc – danh sách', ucs: 'UC-17', built: 1,
     html: SH('cal', CALBAR('Danh sách') + `<div class="col" style="gap:14px">
       ${[['Thứ Hai', '12/10/2026', 0, [['08:30', '10:00', 'Họp giao ban tuần 42', 'Trực tiếp · Phòng họp A1', '', 'end', 'n', '#9aa3b0']]],

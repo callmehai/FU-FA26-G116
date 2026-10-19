@@ -341,6 +341,6 @@ LAYOUT = [ { code: 'FE-11', name: 'FE-11 · Biểu quyết',
 |---|---|---|
 | v4 | 14/10/2026 | ADR-0018: tài liệu không phiên bản, kho cá nhân có thư mục; chọn vai trò bỏ phiếu. Dựng lại 1.3, 5.3, 7.x, 11.1, 11.2, 11.4, 14.2 |
 | v5 | 15/10/2026 | FE-11 theo UC-52a–UC-57 và ADR-0019. Sửa 8.5, 11.1–11.4, 14.2; thêm 11.1b, 11.2b, 11.3b, 11.5 |
-| v6 | 19/10/2026 | SCRUM-47: lịch tháng và bộ lọc lịch theo trạng thái, mức độ (luồng phụ UC-17), tham khảo AI-eCabinet. Sửa 4.1, 4.2 (nút Bộ lọc, UC-17); thêm 4.1b, 4.1c |
+| v6 | 19/10/2026 | SCRUM-47: lịch tháng và bộ lọc lịch theo trạng thái, mức độ (luồng phụ UC-17), tham khảo AI-eCabinet. Sửa 4.1, 4.2 (nút Bộ lọc, tiêu đề mở bảng chọn ngày, UC-17); thêm 4.1b, 4.1c, 4.1d |
 
 Ra bản mới thì thêm một dòng vào bảng này.
