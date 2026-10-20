@@ -273,6 +273,7 @@ public sealed class MeetingService(
         };
         meeting.StatusHistory.Add(history);
         await meetings.AddHistoryAsync(history, ct);
+        await meetings.StageGuestRescheduleInvitationsAsync(meeting, history.Id, now, ct);
         await meetings.AddNotificationsAsync(
             MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants)
                 .Select(participant => CreateNotification(
@@ -451,9 +452,9 @@ public sealed class MeetingService(
                 if (command.Action == MeetingTransitionAction.Publish)
                 {
                     var activeChairCount = meeting.Participants.Count(participant =>
-                        participant.Role == MeetingRole.Chair && participant.User.IsActive);
+                        participant.Role == MeetingRole.Chair && Domain.Participants.ParticipantRules.Active(participant));
                     var hasActiveSecretary = meeting.Participants.Any(participant =>
-                        participant.Role == MeetingRole.Secretary && participant.User.IsActive);
+                        participant.Role == MeetingRole.Secretary && Domain.Participants.ParticipantRules.Active(participant));
                     if (activeChairCount != 1 || !hasActiveSecretary)
                     {
                         return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.PublicationRosterNotReady);
@@ -596,6 +597,7 @@ public sealed class MeetingService(
                         now,
                         history.Id)).ToArray();
                     await meetings.AddNotificationsAsync(notifications, token);
+                    await meetings.StagePublicationInvitationsAsync(meeting, now, token);
                 }
 
                 await meetings.SaveChangesAsync(token);

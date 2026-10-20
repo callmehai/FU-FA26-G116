@@ -1,0 +1,527 @@
+{
+  "info": {
+    "name": "TrustCabinet SCRUM-20 Backend",
+    "description": "Chỉ dùng database test. Chọn token đúng actor; chạy Context để lấy ETag trước mỗi mutation. Stale revision: 409/MSG275; query hoặc If-Match sai/thiếu: 400/MSG276. Không dùng MSG156/MSG157 của tài liệu cho Participants. Xem docs/03-api/09-thanh-phan-tham-du-ban-giao.md. Không lưu credentials trong export.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5225",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "meetingId",
+      "value": "20000000-0000-7000-8000-000000000005",
+      "type": "string"
+    },
+    {
+      "key": "etag",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "participantId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "guestInvitationId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "outgoingChairId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "incomingChairId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Context (lưu ETag)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participant-context"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tag = pm.response.headers.get('ETag');",
+              "if (tag && pm.response.code < 300) pm.collectionVariables.set('etag', tag);",
+              "pm.test('Không lỗi server', () => pm.expect(pm.response.code).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Roster",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants?page=1&pageSize=20"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tag = pm.response.headers.get('ETag');",
+              "if (tag && pm.response.code < 300) pm.collectionVariables.set('etag', tag);",
+              "pm.test('Không lỗi server', () => pm.expect(pm.response.code).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Editor options",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/editor-options?page=1&pageSize=20"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tag = pm.response.headers.get('ETag');",
+              "if (tag && pm.response.code < 300) pm.collectionVariables.set('etag', tag);",
+              "pm.test('Không lỗi server', () => pm.expect(pm.response.code).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Own response",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/invitation-response"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tag = pm.response.headers.get('ETag');",
+              "if (tag && pm.response.code < 300) pm.collectionVariables.set('etag', tag);",
+              "pm.test('Không lỗi server', () => pm.expect(pm.response.code).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Summary",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/invitation-responses?page=1&pageSize=20"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tag = pm.response.headers.get('ETag');",
+              "if (tag && pm.response.code < 300) pm.collectionVariables.set('etag', tag);",
+              "pm.test('Không lỗi server', () => pm.expect(pm.response.code).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Recovery Secretary",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/secretary-recovery",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{userId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tag = pm.response.headers.get('ETag');",
+              "if (tag && pm.response.code < 300) pm.collectionVariables.set('etag', tag);",
+              "pm.test('Không lỗi server', () => pm.expect(pm.response.code).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Add internal Member",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userIds\": [\n    \"{{userId}}\"\n  ],\n  \"role\": \"Member\",\n  \"additionalPermissions\": []\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tag = pm.response.headers.get('ETag');",
+              "if (tag && pm.response.code < 300) pm.collectionVariables.set('etag', tag);",
+              "pm.test('Không lỗi server', () => pm.expect(pm.response.code).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Invite Guest",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/guest-invitations",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"invitedName\": \"Khách thử nghiệm\",\n  \"email\": \"guest@example.test\",\n  \"additionalPermissions\": []\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tag = pm.response.headers.get('ETag');",
+              "if (tag && pm.response.code < 300) pm.collectionVariables.set('etag', tag);",
+              "pm.test('Không lỗi server', () => pm.expect(pm.response.code).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Change Member grants",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/assignments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"changes\": [\n    {\n      \"participantId\": \"{{participantId}}\",\n      \"role\": \"Member\",\n      \"additionalPermissions\": [\n        \"ViewInvitationResponses\"\n      ]\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tag = pm.response.headers.get('ETag');",
+              "if (tag && pm.response.code < 300) pm.collectionVariables.set('etag', tag);",
+              "pm.test('Không lỗi server', () => pm.expect(pm.response.code).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Replace Chair (atomic)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/assignments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"changes\": [\n    {\n      \"participantId\": \"{{outgoingChairId}}\",\n      \"role\": \"Member\"\n    },\n    {\n      \"participantId\": \"{{incomingChairId}}\",\n      \"role\": \"Chair\"\n    }\n  ],\n  \"chairReplacement\": {\n    \"outgoingParticipantId\": \"{{outgoingChairId}}\",\n    \"incomingParticipantId\": \"{{incomingChairId}}\",\n    \"confirmed\": true\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tag = pm.response.headers.get('ETag');",
+              "if (tag && pm.response.code < 300) pm.collectionVariables.set('etag', tag);",
+              "pm.test('Không lỗi server', () => pm.expect(pm.response.code).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Change Guest grants",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/guest-invitations/{{guestInvitationId}}/permissions",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"additionalPermissions\": [\n    \"ViewMeetingParticipants\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tag = pm.response.headers.get('ETag');",
+              "if (tag && pm.response.code < 300) pm.collectionVariables.set('etag', tag);",
+              "pm.test('Không lỗi server', () => pm.expect(pm.response.code).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 Remove internal",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/{{participantId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tag = pm.response.headers.get('ETag');",
+              "if (tag && pm.response.code < 300) pm.collectionVariables.set('etag', tag);",
+              "pm.test('Không lỗi server', () => pm.expect(pm.response.code).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 Revoke Guest",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/guest-invitations/{{guestInvitationId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tag = pm.response.headers.get('ETag');",
+              "if (tag && pm.response.code < 300) pm.collectionVariables.set('etag', tag);",
+              "pm.test('Không lỗi server', () => pm.expect(pm.response.code).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 Respond Accepted",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/invitation-response",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"response\": \"Accepted\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tag = pm.response.headers.get('ETag');",
+              "if (tag && pm.response.code < 300) pm.collectionVariables.set('etag', tag);",
+              "pm.test('Không lỗi server', () => pm.expect(pm.response.code).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 Respond Declined",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/invitation-response",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"response\": \"Declined\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tag = pm.response.headers.get('ETag');",
+              "if (tag && pm.response.code < 300) pm.collectionVariables.set('etag', tag);",
+              "pm.test('Không lỗi server', () => pm.expect(pm.response.code).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -25,6 +25,51 @@ các bước tương ứng, còn sequence thể hiện cùng BR ID và message c
 7. Trong code BE, khai báo mã thành hằng số có tên theo mẫu `Msg29Created = "MSG29"` ở đầu file
    endpoint, không rải chuỗi `"MSGnn"` trong thân hàm.
 
+## Attendance — contract Backend SCRUM-26
+
+UC-31 đã có Backend theo [contract điểm danh](10-diem-danh.md). Các dòng nguồn UC phía dưới giữ để truy vết; MSG147–151 không còn chỉ dành sẵn.
+
+| Mã | HTTP | Endpoint / tình huống | Thông báo |
+|---|---|---|---|
+| `MSG147` | 200 | POST attendance, gồm no-op hợp lệ | Lưu điểm danh thành công. |
+| `MSG148` | 400 | Body, entry hoặc định dạng token không hợp lệ | Thông tin điểm danh không hợp lệ. Chọn Có mặt hoặc Vắng cho từng người được gửi. |
+| `MSG149` | 409 | Meeting không còn InProgress | Chỉ được điểm danh khi cuộc họp đang diễn ra. |
+| `MSG150` | 503 | Không lưu được hoặc kết quả commit chưa xác định | Không xác nhận được kết quả lưu điểm danh. Vui lòng tải lại dữ liệu trước khi thử lại. |
+| `MSG151` | 409 | Entry không còn current hoặc version điểm danh stale | Thành phần hoặc dữ liệu điểm danh đã thay đổi. Vui lòng tải lại và kiểm tra trước khi lưu. |
+| `MSG277` | 500 | GET attendance lỗi đọc | Không tải được dữ liệu điểm danh. |
+| `MSG278` | 400 | Query GET attendance không hợp lệ | Tham số phân trang điểm danh không hợp lệ. |
+
+Dùng lại 415/MSG34 và 413/MSG87 cho content-type và body 64 KiB; 401 authentication, 403/404 body rỗng. MSG150 không hứa rollback khi client/server mất kết nối đúng lúc commit. MSG151 bao gồm xung đột điểm danh theo entry, không dùng revision roster.
+
+## Participants — contract Backend SCRUM-20
+
+Các mã UC-27–30 dưới đây đã có Backend. OTP/session production thuộc UC-04 riêng. Mã trong bảng nguồn UC phía dưới giữ để truy vết, không còn là “chưa triển khai” với những mã được liệt kê ở đây.
+
+| Mã | HTTP | Endpoint / tình huống | Thông báo |
+|---|---|---|---|
+| `MSG95` | 500 | GET participant context/roster/options/own-response/summary lỗi đọc | Không tải được danh sách thành phần hoặc phản hồi lời mời. |
+| `MSG96` | 201 | Thêm internal/Guest hoặc recovery thêm Secretary | Thêm thành phần tham dự thành công. |
+| `MSG97` | 400 | Selection/batch/Guest input không hợp lệ | Thông tin gửi lên không hợp lệ. |
+| `MSG98` | 409 | State không cho sửa roster | Không thể sửa thành phần ở trạng thái hiện tại của cuộc họp. |
+| `MSG99` | 503 | Add/recovery không lưu được | Không lưu được thay đổi. Vui lòng thử lại. |
+| `MSG100` | 200 | Đổi role hoặc recovery current Member | Cập nhật vai trò cuộc họp thành công. |
+| `MSG101` | 400 | Role/atomic replacement input sai | Vai trò cuộc họp hoặc yêu cầu thay vai trò không hợp lệ. |
+| `MSG102` | 503 | Role/grants không lưu được | Không lưu được thay đổi. Vui lòng thử lại. |
+| `MSG103` | 200 | Remove/revoke | Gỡ thành phần tham dự thành công. |
+| `MSG104` | 503 | Remove/revoke không lưu được | Không lưu được thay đổi. Vui lòng thử lại. |
+| `MSG105` | 200 | Own invitation response được ghi | Đã ghi nhận phản hồi lời mời. |
+| `MSG106` | 400 | Response/schema sai | Thông tin gửi lên không hợp lệ. |
+| `MSG107` | 409 | Invitation đọc được nhưng không còn answerable | Lời mời này không còn cho phép phản hồi. |
+| `MSG108` | 503 | Response không lưu được | Không lưu được thay đổi. Vui lòng thử lại. |
+| `MSG109` | 409 | Vi phạm required Chair/Secretary | Cuộc họp phải giữ Chủ tọa và Thư ký theo quy định. Hãy phân công người thay thế. |
+| `MSG152` | 400 | Grant không được phép | Quyền bổ sung đã chọn không được phép. |
+| `MSG153` | 200 | Chỉ đổi optional grants | Cập nhật quyền cuộc họp thành công. |
+| `MSG154` | 200 | Role/grants/response không có thay đổi | Không có thay đổi cần lưu. |
+| `MSG275` | 409 | Revision roster stale | Danh sách thành phần đã thay đổi. Vui lòng tải lại và thử lại. |
+| `MSG276` | 400 | Query hoặc If-Match thiếu/sai | Query hoặc If-Match không hợp lệ. Vui lòng tải lại dữ liệu. |
+
+Endpoint Participants dùng lại `415/MSG34` cho content-type và `413/MSG87` cho giới hạn 64 KiB. 401 authentication; 403/404 body rỗng theo quyền và khả năng tiết lộ tài nguyên.
+
 ## Agenda — contract Backend SCRUM-25
 
 Các dòng nguồn UC trong bảng phía dưới được giữ để đối chiếu phân bổ, nhưng MSG60–76, MSG128, MSG141–144 **đã triển khai**, không còn dành sẵn. Endpoint và câu phản hồi hiện hành:
@@ -62,7 +107,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 
 ## Mã tiếp theo
 
-**`MSG275`** — `MSG252`–`MSG274` dành sẵn, chưa triển khai, cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). Cũ: `MSG238`–`MSG250` dành sẵn, chưa triển khai, cho ADR-0020. Giữ nguyên MSG141 đã triển khai; đặc tả UC-23b dùng MSG250 cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai.  `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai.  `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG154` dành cho thay đổi FE-06 trong Report 3, chưa có code. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG279`** — `MSG252`–`MSG274` dành sẵn, chưa triển khai, cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG152`–`MSG154`, `MSG275`–`MSG276` theo bảng contract Participants. `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020. Giữ nguyên MSG141 đã triển khai; đặc tả UC-23b dùng MSG250 cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG151` dành cho thay đổi FE-06 trong Report 3; `MSG152`–`MSG154` đã triển khai trong SCRUM-20. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 

@@ -51,6 +51,13 @@ internal sealed class EmailDeliveryWorker(
     {
         await TryReconcileInvitationJobsAsync(ct);
 
+        await using (var scope = scopeFactory.CreateAsyncScope())
+        {
+            // Optional only for legacy worker test doubles; production registers the processor.
+            var dispatches = scope.ServiceProvider.GetService<MeetingInvitationDispatchProcessor>();
+            if (dispatches is not null) await dispatches.ProcessNextAsync(ct);
+        }
+
         await using var processingScope = scopeFactory.CreateAsyncScope();
         var processor = processingScope.ServiceProvider.GetRequiredService<IEmailQueueProcessor>();
         return await processor.ProcessNextAsync(ct);

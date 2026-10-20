@@ -1,5 +1,6 @@
 using TrustCabinet.Domain.Entities.Common;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Domain.Entities;
 
@@ -13,6 +14,11 @@ public class MeetingParticipant : Entity
 
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
+
+    public AssignmentStatus AssignmentStatus { get; set; }
+    public DateTimeOffset? RemovedAt { get; set; }
+    public Guid? RemovedById { get; set; }
+    public string? InitialInvitationDeliveryKey { get; set; }
 
     /// <summary>Their role in this meeting, which need not match their system role.</summary>
     public MeetingRole Role { get; set; } = MeetingRole.Member;
@@ -28,14 +34,17 @@ public class MeetingParticipant : Entity
     /// <summary>
     /// Whether they actually turned up (SCRUM-26) — a different question from
     /// <see cref="Response"/>, which is only what they said beforehand. Someone can accept and not
-    /// come, and the quorum count depends on this one.
+    /// come. Attendance never gates ending the meeting.
     ///
     /// It lives on this row rather than in its own table because it is one fact about one person
     /// at one meeting, and a separate table would just duplicate the same pair of keys.
     /// </summary>
     public AttendanceStatus Attendance { get; set; } = AttendanceStatus.Unknown;
 
-    /// <summary>Who marked the attendance — the person themselves, or the secretary on their behalf.</summary>
+    /// <summary>Incremented only by the attendance writer when the saved attendance changes.</summary>
+    public long AttendanceVersion { get; set; }
+
+    /// <summary>The assigned secretary who recorded official attendance.</summary>
     public Guid? AttendanceRecordedById { get; set; }
     public User? AttendanceRecordedBy { get; set; }
 

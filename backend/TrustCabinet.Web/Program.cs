@@ -13,6 +13,9 @@ using TrustCabinet.Infrastructure.Email;
 using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Infrastructure.Users;
+using TrustCabinet.Infrastructure.Participants;
+using TrustCabinet.Domain.Attendance;
+using TrustCabinet.Infrastructure.Attendance;
 using TrustCabinet.Web;
 using TrustCabinet.Web.Endpoints;
 
@@ -24,6 +27,11 @@ builder.Services.AddTrustCabinetUserManagement();
 builder.Services.AddTrustCabinetRolePermissions();
 builder.Services.AddTrustCabinetMeetings();
 builder.Services.AddTrustCabinetAgenda();
+builder.Services.AddTrustCabinetParticipants();
+builder.Services.AddScoped<AttendanceRepository>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+builder.Services.AddScoped<IAttendanceChangePublisher, AttendanceChangePublisher>();
+builder.Services.AddSingleton<IParticipantGuestIdentityResolver, UnavailableParticipantGuestIdentityResolver>();
 builder.Services.AddSingleton<IAgendaGuestIdentityResolver, UnavailableAgendaGuestIdentityResolver>();
 builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
 builder.Services.AddSignalR();
@@ -159,6 +167,8 @@ app.MapRoleEndpoints();
 // /api/meetings — UC-14/UC-15 mutations (SCRUM-17) and UC-17 list (SCRUM-18).
 app.MapMeetingEndpoints();
 app.MapAgendaEndpoints();
+app.MapParticipantEndpoints();
+app.MapAttendanceEndpoints();
 app.MapHub<MeetingHub>("/hubs/meetings", options => options.CloseOnAuthenticationExpiration = true);
 
 // SCRUM-14: user-scoped notification list/read APIs and realtime delivery.

@@ -67,6 +67,23 @@ Thử bằng **Run workflow**; bước *Kiểm tra* xanh là xong.
 
 ## Việc làm tay trên server
 
+### SCRUM-20: backup và preflight trước merge PR #92
+
+Hướng dẫn/script do AI hỗ trợ soạn. Trước merge, owner chạy trên server test; không chạy migration của branch trên server. Hai file chuẩn bị ở `deploy/scrum20-backup-preflight.sh` và `deploy/scrum20-preflight.sql` phải được chép từ checkout PR vào cùng thư mục `deploy/` trên server (không cần checkout branch hoặc restart app):
+
+```bash
+cd ~/TrustCabinet
+sh deploy/scrum20-backup-preflight.sh
+```
+
+Script chỉ đọc database, tạo custom-format `pg_dump` trong thư mục riêng `~/trustcabinet-backups/scrum20-*` với quyền riêng tư, kiểm archive bằng `pg_restore --list`, ghi SHA-256, commit server, image ID và migration history. Không in credentials hoặc danh sách người tham dự. Bất kỳ lỗi backup/SQL hoặc preflight nào đều trả exit code khác 0; không merge khi lỗi. Ba counts phải bằng 0: Guest legacy, delegation, nhiều Chair trong cùng meeting. Không xóa dữ liệu để vượt preflight; cần owner duyệt mapping nếu có blocker.
+
+`pg_restore --list` chỉ xác nhận archive đọc được, **không thay thế restore rehearsal**. Owner cần copy backup ra nơi riêng có quyền truy cập hạn chế, kiểm SHA-256 và thử restore vào database PostgreSQL 17 **cô lập**, không dùng database đang phục vụ nhóm. Backup bỏ owner/ACL; khi restore cần role/config phù hợp với Compose. Lưu cả image hiện tại trước deploy: workflow có `docker image prune`, nên chỉ ghi image ID chưa đủ giữ bản app cũ. Không đăng dump lên Git/Jira/PR.
+
+Preflight và dump không khóa ghi toàn ứng dụng. Kết quả là snapshot tại lúc chạy: chạy lại sát thời điểm merge, phối hợp nhóm ngừng thay đổi dữ liệu trong cửa sổ triển khai nếu cần bảo đảm không phát sinh blocker mới. Merge kích hoạt auto-deploy/migration; script này không thực hiện merge hoặc deploy.
+
+Rollback sau khi đã có Guest/grant/dispatch/removed history **không mặc định dùng migration Down**. Ưu tiên forward fix; nếu phải restore, owner cần cửa sổ bảo trì, ngừng writer, khôi phục backup đã thử vào database tách biệt và dùng đúng image/schema cũ. Restore snapshot sẽ bỏ các thay đổi sau thời điểm backup, nên phải thống nhất trước. Script không tự restore hoặc dừng dịch vụ.
+
 Mở terminal: Lightsail → máy `trustcabinet` → **Connect using SSH**, rồi `cd ~/TrustCabinet`.
 
 ### Xem log, kiểm tra
