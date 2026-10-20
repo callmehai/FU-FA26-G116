@@ -2371,32 +2371,29 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .room-split-more.has-level:not(:hover, :focus-visible, [aria-expanded="true"]) svg { opacity: 0; transform: translateY(8px); }
 .room-split-more.has-level:is(:hover, :focus-visible, [aria-expanded="true"]) .room-level { opacity: 0; }
 .room-split-more:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-/* The tray the arrow opens, across the top of the panel and exactly as wide as the buttons, so
-   opening it never widens anything. It rises 16px from behind the buttons and fades in once the
-   panel has made room; closing, it fades at once, then turns hidden. */
+/* The tray the arrow opens: right above the buttons and exactly as wide as them, so opening it never
+   widens anything. The panel's rising edge uncovers it (see useDeviceTray) while it fades in;
+   closing, it fades at once as the edge comes down over it, then turns hidden. Switching trays
+   swaps the pickers at once, as Meet does. */
 .room-tray {
   position: absolute;
-  top: var(--panel-pad);
+  bottom: calc(var(--panel-pad) + var(--row-height, 48px) + var(--tray-gap));
   left: var(--panel-pad);
   right: var(--panel-pad);
   display: flex;
   gap: 8px;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(16px);
-  transition: opacity 0.08s linear, transform 0.36s var(--ease-spring), visibility 0s linear 0.36s;
+  transition: opacity 0.08s linear, visibility 0s linear 0.36s;
 }
 .room-controls-main.is-open .room-tray {
   opacity: 1;
   visibility: visible;
-  transform: none;
-  transition: opacity 0.15s linear 0.08s, transform 0.36s var(--ease-spring), visibility 0s;
+  transition: opacity 0.18s linear 0.04s, visibility 0s;
 }
 /* Pickers share the width equally whatever their device names, so choosing a device moves nothing;
-   a long name is shortened (the full one is in the menu and the picker's title). Switching trays
-   fades the new pickers in. */
-.room-select { position: relative; flex: 1 1 0; min-width: 0; animation: room-picker-in 0.18s linear both; }
-@keyframes room-picker-in { from { opacity: 0; } }
+   a long name is shortened (the full one is in the menu and the picker's title). */
+.room-select { position: relative; flex: 1 1 0; min-width: 0; }
 .room-select-trigger {
   position: relative;
   display: flex;
@@ -2533,8 +2530,10 @@ html:has(.room), body:has(.room) { overflow: hidden; overscroll-behavior: none; 
 .room-panel, .room-chat-list, .room-select-menu { overscroll-behavior: contain; }
 /* Toasts sit above the control bar in the room, not over "Chat" and "Rời phòng". */
 body:has(.room) .toast-stack { bottom: 96px; }
-/* Narrower than this, the right-aligned toasts reach the centre panel: lift them over an open tray. */
-@media (max-width: 1107px) {
+body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
+/* Narrower than this, the right-aligned toasts reach the centre panel (432px with the floating-window
+   button): lift them over an open tray. */
+@media (max-width: 1175px) {
   body:has(.room-controls-main.is-open) .toast-stack { bottom: 140px; }
 }
 
@@ -2559,20 +2558,15 @@ body:has(.room) .toast-stack { bottom: 96px; }
   .room-tray { flex-direction: column; }
   .room-select { flex: none; }
   body:has(.room-controls-main.is-open) .toast-stack { bottom: 180px; }
+  /* No spring for the taller stacked tray: its dip on closing would reach the buttons. */
+  .room-controls-main { transition: height 0.3s var(--ease-emphasized); }
 }
 
 /* A phone: smaller buttons. */
 @media (max-width: 560px) {
   /* Phones have no floating window (Document Picture-in-Picture is desktop-only). */
   .room-control-pip { display: none; }
-  /* No spring here: with a smaller panel its dip on closing would touch the buttons. */
-  .room-controls-main {
-    --panel-pad: 8px;
-    --tray-gap: 8px;
-    margin-bottom: 11px;
-    border-radius: 20px;
-    transition: height 0.3s var(--ease-emphasized);
-  }
+  .room-controls-main { --panel-pad: 8px; --tray-gap: 8px; margin-bottom: 11px; border-radius: 20px; }
   .room-controls-row { gap: 6px; }
   body:has(.room-controls-main.is-open) .toast-stack { bottom: 164px; }
   .room-control, .room-split > .room-control, .room-control-off, .room-control-side { width: 42px; height: 42px; }

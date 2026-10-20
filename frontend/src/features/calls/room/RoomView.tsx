@@ -551,7 +551,7 @@ function ControlButton({
       className={`room-control${side ? ' room-control-side' : ''}${variant} ${className}`.trimEnd()}
       aria-label={label}
       aria-keyshortcuts={shortcut ? shortcut.replace(' + ', '+').replace('⌘', 'Meta') : undefined}
-      aria-pressed={side || icon === 'monitor' ? active : undefined}
+      aria-pressed={side || icon === 'monitor' || icon === 'pictureInPicture' ? active : undefined}
       onClick={onClick}
     >
       <Icon name={icon} size={20} />
@@ -1015,8 +1015,10 @@ function useDeviceTray() {
   )
 
   // As in Meet, the panel keeps its width — that of the buttons — and only grows upwards: its
-  // height is set in pixels so it can spring. While it moves it clips the tray to its rounded edge
-  // (the tray starts behind the buttons); at rest it does not, so menus and tooltips can stand out.
+  // height is set in pixels so it can spring. The tray sits just above the buttons, and while the
+  // panel moves it clips to its rounded edge, so the rising edge uncovers the tray and the falling
+  // one covers it again, never over the buttons. At rest it does not clip, so menus and tooltips
+  // can stand out.
   useLayoutEffect(() => {
     const panel = panelRef.current
     const tray = trayRef.current
@@ -1026,6 +1028,7 @@ function useDeviceTray() {
       const style = getComputedStyle(panel)
       const pad = parseFloat(style.getPropertyValue('--panel-pad')) || 0
       const gap = parseFloat(style.getPropertyValue('--tray-gap')) || 0
+      panel.style.setProperty('--row-height', `${row.offsetHeight}px`)
       const height = `${row.offsetHeight + 2 * pad + (open ? tray.offsetHeight + gap : 0)}px`
       if (height === panel.style.height) return
       if (panel.style.height && parseFloat(style.transitionDuration) > 0) {
@@ -1234,9 +1237,13 @@ function MicLevel({ track }: { track: LocalAudioTrack }) {
 
 type DeviceOption = { id: string; label: string; isDefault: boolean }
 
-/** A picker shows the name without its trailing "(Built-in)" or "(Virtual)"; the menu has it whole. */
+/**
+ * A picker leaves out the suffixes that say nothing about which device it is — "(Built-in)",
+ * "(Virtual)", "(Aggregate)", a USB id like "(1C1C:B782)" — keeping any that tell two apart, such as
+ * "(Jabra Evolve 65)". The menu shows the whole name.
+ */
 function shortDeviceName(label: string) {
-  return label.replace(/\s*\([^()]*\)$/, '') || label
+  return label.replace(/\s*\((?:built-in|virtual|aggregate|[0-9a-f]{4}:[0-9a-f]{4})\)$/i, '') || label
 }
 
 /**
