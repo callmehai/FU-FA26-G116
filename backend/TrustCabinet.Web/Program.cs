@@ -29,6 +29,7 @@ builder.Services.AddTrustCabinetParticipants();
 builder.Services.AddSingleton<IParticipantGuestIdentityResolver, UnavailableParticipantGuestIdentityResolver>();
 builder.Services.AddSingleton<IAgendaGuestIdentityResolver, UnavailableAgendaGuestIdentityResolver>();
 builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
+builder.Services.AddScoped<TrustCabinet.Domain.Participants.IParticipantsChangePublisher, ParticipantsChangePublisher>();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IUserIdProvider, NotificationUserIdProvider>();
 builder.Services.AddTrustCabinetNotifications();

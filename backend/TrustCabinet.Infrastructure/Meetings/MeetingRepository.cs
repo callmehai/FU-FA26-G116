@@ -11,7 +11,7 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
 {
     public Task<Meeting?> FindAccessibleAsync(
         Guid id, Guid actorId, CancellationToken ct = default)
-        => AccessibleTo(actorId).SingleOrDefaultAsync(m => m.Id == id, ct);
+        => AccessibleTo(actorId).Include(m => m.Participants).ThenInclude(p => p.User).SingleOrDefaultAsync(m => m.Id == id, ct);
 
     public async Task<MeetingListPage> FindAuthorizedPageAsync(
         Guid actorId, MeetingListQuery query, CancellationToken ct = default)
@@ -228,6 +228,10 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
         return Task.CompletedTask;
     }
 
+    public async Task<IReadOnlyList<User>> LockParticipantUsersAsync(Guid[] userIds, CancellationToken ct = default)
+        => await db.Users.FromSqlInterpolated($"SELECT * FROM users WHERE id = ANY({userIds.Order().ToArray()}) ORDER BY id FOR SHARE")
+            .ToArrayAsync(ct);
+
     public Task AddAsync(Meeting meeting, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
@@ -239,9 +243,6 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
 
     public async Task StagePublicationInvitationsAsync(Meeting meeting, DateTimeOffset now, CancellationToken ct = default)
     {
-        await db.MeetingParticipantPermissions.Where(g =>
-            g.MeetingParticipantId != null && db.MeetingParticipants.Any(p => p.Id == g.MeetingParticipantId && p.MeetingId == meeting.Id)
-            || g.GuestInvitationId != null && db.MeetingGuestInvitations.Any(i => i.Id == g.GuestInvitationId && i.MeetingId == meeting.Id)).LoadAsync(ct);
         foreach (var participant in MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants))
             Email.MeetingInvitationEvents.Stage(db, meeting, participant, null, InvitationEventKind.Invitation, now, notify: false);
         foreach (var guest in await db.MeetingGuestInvitations.Where(g => g.MeetingId == meeting.Id && g.RevokedAt == null).ToArrayAsync(ct))
@@ -250,8 +251,6 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
 
     public async Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, DateTimeOffset now, CancellationToken ct = default)
     {
-        await db.MeetingParticipantPermissions.Where(p => p.GuestInvitationId != null
-            && db.MeetingGuestInvitations.Any(g => g.Id == p.GuestInvitationId && g.MeetingId == meeting.Id && g.RevokedAt == null)).LoadAsync(ct);
         foreach (var guest in await db.MeetingGuestInvitations.Where(g => g.MeetingId == meeting.Id && g.RevokedAt == null).ToArrayAsync(ct))
             Email.MeetingInvitationEvents.Stage(db, meeting, null, guest, InvitationEventKind.Rescheduled, now, notify: false, historyId);
     }

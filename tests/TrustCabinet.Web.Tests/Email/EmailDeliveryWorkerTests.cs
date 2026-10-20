@@ -9,7 +9,7 @@ namespace TrustCabinet.Web.Tests.Email;
 public sealed class EmailDeliveryWorkerTests
 {
     [Fact]
-    public async Task Reconciliation_failures_are_retried_without_blocking_processing_in_fresh_scopes()
+    public async Task Processing_uses_fresh_scopes_without_legacy_reconciliation()
     {
         var probe = new WorkerProbe();
         using var provider = Services(probe).BuildServiceProvider();
@@ -20,17 +20,16 @@ public sealed class EmailDeliveryWorkerTests
 
         Assert.Equal(EmailProcessingOutcome.NoWork, firstResult.Outcome);
         Assert.Equal(EmailProcessingOutcome.NoWork, secondResult.Outcome);
-        Assert.Equal(2, probe.ReconciliationScopes.Count);
         Assert.Equal(2, probe.ProcessingScopes.Count);
         Assert.Equal(
-            4,
-            probe.ReconciliationScopes.Concat(probe.ProcessingScopes).Distinct().Count());
+            2,
+            probe.ProcessingScopes.Distinct().Count());
     }
 
     [Fact]
-    public async Task Host_cancellation_during_reconciliation_stops_before_processing()
+    public async Task Host_cancellation_stops_processing()
     {
-        var probe = new WorkerProbe { CancelReconciliation = true };
+        var probe = new WorkerProbe();
         using var provider = Services(probe).BuildServiceProvider();
         var worker = Worker(provider);
         using var cancellation = new CancellationTokenSource();
@@ -39,7 +38,6 @@ public sealed class EmailDeliveryWorkerTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
             () => worker.ProcessOnceAsync(cancellation.Token));
 
-        Assert.Equal(1, probe.ReconciliationCalls);
         Assert.Equal(0, probe.ProcessingCalls);
     }
 
@@ -48,7 +46,6 @@ public sealed class EmailDeliveryWorkerTests
         var services = new ServiceCollection();
         services.AddSingleton(probe);
         services.AddScoped<ScopeMarker>();
-        services.AddScoped<IMeetingInvitationQueue, FailingReconciliationQueue>();
         services.AddScoped<IEmailQueueProcessor, ProbeEmailQueueProcessor>();
         return services;
     }
@@ -62,38 +59,18 @@ public sealed class EmailDeliveryWorkerTests
 
     private sealed class WorkerProbe
     {
-        public int ReconciliationCalls { get; set; }
         public int ProcessingCalls { get; set; }
-        public bool CancelReconciliation { get; init; }
-        public List<ScopeMarker> ReconciliationScopes { get; } = [];
         public List<ScopeMarker> ProcessingScopes { get; } = [];
     }
 
     private sealed class ScopeMarker;
-
-    private sealed class FailingReconciliationQueue(WorkerProbe probe, ScopeMarker scope)
-        : IMeetingInvitationQueue
-    {
-        public Task<int> QueueForPublishedMeetingAsync(
-            Guid meetingId, CancellationToken ct = default)
-            => Task.FromResult(0);
-
-        public Task<Guid?> QueueNextUninitializedPublishedMeetingAsync(
-            CancellationToken ct = default)
-        {
-            probe.ReconciliationCalls++;
-            probe.ReconciliationScopes.Add(scope);
-            return probe.CancelReconciliation
-                ? Task.FromCanceled<Guid?>(ct)
-                : Task.FromException<Guid?>(new InvalidOperationException("Reconciliation unavailable."));
-        }
-    }
 
     private sealed class ProbeEmailQueueProcessor(WorkerProbe probe, ScopeMarker scope)
         : IEmailQueueProcessor
     {
         public Task<EmailProcessingResult> ProcessNextAsync(CancellationToken ct = default)
         {
+            ct.ThrowIfCancellationRequested();
             probe.ProcessingCalls++;
             probe.ProcessingScopes.Add(scope);
             return Task.FromResult(new EmailProcessingResult(EmailProcessingOutcome.NoWork));

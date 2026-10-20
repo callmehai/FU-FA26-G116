@@ -30,46 +30,20 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
     }
 
     [Fact]
-    public async Task Grants_are_independent_and_response_is_owned_without_attendance_changes()
+    public async Task Response_is_owned_without_attendance_changes()
     {
         var s = await f.Seed(); using var secretary = f.Client(s.Secretary); using var member = f.Client(s.Member);
-        Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync(s.Url + "/participants")).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync(s.Url + "/invitation-responses")).StatusCode);
-        await Code(await Write(secretary, s.Url + "/participants/assignments", HttpMethod.Put, new
-        {
-            changes = new[] {
-            new { participantId = s.MemberAssignment, role = "Member", additionalPermissions = new[] { "ViewInvitationResponses" } } }
-        }), 200, "MSG153");
-        var summary = await member.GetFromJsonAsync<JsonElement>(s.Url + "/invitation-responses");
+        var summary = await member.GetFromJsonAsync<JsonElement>(s.Url + "/participants");
         Assert.Equal(3, summary.GetProperty("totals").GetProperty("pending").GetInt32());
-        Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync(s.Url + "/participants")).StatusCode);
-        await Code(await member.GetAsync(s.Url + "/invitation-responses?q=User"), 400, "MSG276");
         await Code(await Write(member, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Accepted" }), 200, "MSG105");
         await Code(await Write(member, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Accepted" }), 200, "MSG154");
         await Code(await Write(member, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Delegated" }), 400, "MSG106");
         await using var db = f.Db(); var p = await db.MeetingParticipants.FindAsync(s.MemberAssignment);
         Assert.Equal(InvitationResponse.Accepted, p!.Response); Assert.Equal(f.Clock.Now, p.RespondedAt); Assert.Equal(AttendanceStatus.Unknown, p.Attendance);
-        Assert.Equal(MeetingRole.Member, p.Role); Assert.Equal(1, (await db.Meetings.FindAsync(s.MeetingId))!.ParticipantsRevision);
+        Assert.Equal(MeetingRole.Member, p.Role); Assert.Equal(0, (await db.Meetings.FindAsync(s.MeetingId))!.ParticipantsRevision);
     }
 
-    [Fact]
-    public async Task Recovery_reuses_current_member_and_never_resets_evidence_or_grants()
-    {
-        var s = await f.Seed(MeetingStatus.Draft); using var secretary = f.Client(s.Secretary); using var organizer = f.Client(s.Organizer);
-        await using (var db = f.Db())
-        {
-            var p = await db.MeetingParticipants.FindAsync(s.MemberAssignment); p!.Response = InvitationResponse.Declined; p.RespondedAt = f.Clock.Now;
-            p.Attendance = AttendanceStatus.Present; p.AttendanceRecordedById = s.Secretary; p.AttendanceRecordedAt = f.Clock.Now; await db.SaveChangesAsync();
-        }
-        await Code(await Write(secretary, s.Url + $"/participants/{s.SecretaryAssignment}", HttpMethod.Delete), 200, "MSG103");
-        Assert.Equal(HttpStatusCode.NotFound, (await organizer.GetAsync(s.Url + "/participants")).StatusCode);
-        var tag = await Tag(organizer, s.Url);
-        await Code(await Write(organizer, s.Url + "/participants/secretary-recovery", HttpMethod.Post, new { userId = s.Member }, tag), 200, "MSG100");
-        await using var check = f.Db(); var member = await check.MeetingParticipants.FindAsync(s.MemberAssignment);
-        Assert.Equal(MeetingRole.Secretary, member!.Role); Assert.Equal(InvitationResponse.Declined, member.Response); Assert.Equal(AttendanceStatus.Present, member.Attendance);
-        Assert.Equal(3, await check.MeetingParticipants.CountAsync(p => p.MeetingId == s.MeetingId));
-        Assert.Empty(await check.MeetingInvitationDispatches.Where(d => d.MeetingId == s.MeetingId).ToArrayAsync());
-    }
+
 
     [Theory]
     [InlineData(MeetingStatus.Draft, true, false)]
@@ -83,8 +57,8 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
     {
         var s = await f.Seed(state); using var secretary = f.Client(s.Secretary); using var chair = f.Client(s.Chair); using var member = f.Client(s.Member);
         Assert.Equal(HttpStatusCode.OK, (await secretary.GetAsync(s.Url + "/participants")).StatusCode);
-        Assert.Equal(published ? HttpStatusCode.OK : HttpStatusCode.NotFound, (await chair.GetAsync(s.Url + "/participants")).StatusCode);
-        Assert.Equal(published ? HttpStatusCode.OK : HttpStatusCode.NotFound, (await secretary.GetAsync(s.Url + "/invitation-responses")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await chair.GetAsync(s.Url + "/participants")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await secretary.GetAsync(s.Url + "/invitation-responses")).StatusCode);
         var add = await Write(secretary, s.Url + "/participants", HttpMethod.Post, new { userIds = new[] { s.Outsider }, role = "Member" });
         await Code(add, editable ? 201 : 409, editable ? "MSG96" : "MSG98");
         var response = await Write(member, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Accepted" });
@@ -115,7 +89,7 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
     [Fact]
     public async Task Chair_replacement_requires_confirmation_and_rolls_back_both_roles_on_second_save_failure()
     {
-        var s = await f.Seed(); using var secretary = f.Client(s.Secretary);
+        var s = await f.Seed(); using var secretary = f.Client(s.Chair);
         var changes = new[] { new { participantId = s.ChairAssignment, role = "Member" }, new { participantId = s.MemberAssignment, role = "Chair" } };
         await Code(await Write(secretary, s.Url + "/participants/assignments", HttpMethod.Put, new { changes }), 400, "MSG101");
         var body = new { changes, chairReplacement = new { outgoingParticipantId = s.ChairAssignment, incomingParticipantId = s.MemberAssignment, confirmed = true } };
@@ -128,7 +102,7 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
             Assert.Equal(MeetingRole.Member, (await db.MeetingParticipants.FindAsync(s.MemberAssignment))!.Role);
             Assert.Equal(0, await db.MeetingInvitationDispatches.CountAsync(d => d.MeetingId == s.MeetingId));
         }
-        await Code(await Write(secretary, s.Url + "/participants/assignments", HttpMethod.Put, body), 200, "MSG100");
+        await Code(await Write(secretary, s.Url + "/participants/assignments", HttpMethod.Put, body), 200, "MSG257");
         await using var check = f.Db(); Assert.Equal(2, await check.MeetingInvitationDispatches.CountAsync(d => d.MeetingId == s.MeetingId));
     }
 
@@ -151,7 +125,7 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
             (await db.Users.FindAsync(s.Member))!.IsActive = false;
             await db.SaveChangesAsync();
         }
-        await Code(await Write(secretary, s.Url + "/participants/assignments", HttpMethod.Put, body), 400, "MSG101");
+        await Code(await Write(secretary, s.Url + "/participants/assignments", HttpMethod.Put, body), 400, "MSG259");
         await using (var db = f.Db())
         {
             (await db.Users.FindAsync(s.Member))!.IsActive = true;
@@ -182,7 +156,7 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
             changes = new[] {
             new { participantId = s.SecretaryAssignment, role = "Member" }, new { participantId = s.MemberAssignment, role = "Secretary" } }
         }), 200, "MSG100");
-        Assert.Equal(HttpStatusCode.NotFound, (await secretary.GetAsync(s.Url + "/participants")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await secretary.GetAsync(s.Url + "/participants")).StatusCode);
     }
 
     [Fact]
@@ -204,8 +178,7 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
         var json = await Code(await Write(secretary, s.Url + "/guest-invitations", HttpMethod.Post, new
         {
             invitedName = "Khách",
-            email = "guest@example.test",
-            additionalPermissions = new[] { "ViewMeetingParticipants", "ViewInvitationResponses" }
+            email = "guest@example.test"
         }), 201, "MSG96");
         var id = json.GetProperty("createdIds")[0].GetGuid();
         using var guest = f.Guest(s.MeetingId, id); using var unverified = f.Guest(s.MeetingId, id, verified: false);
@@ -225,7 +198,7 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
     {
         var s = await f.Seed(); using var client = f.Client(s.Secretary);
         await Code(await Write(client, s.Url + "/participants", HttpMethod.Post, new { userIds = new[] { s.Outsider, Guid.NewGuid() }, role = "Member" }), 400, "MSG97");
-        await Code(await Write(client, s.Url + "/participants", HttpMethod.Post, new { userIds = new[] { s.Outsider }, role = "Member", additionalPermissions = new[] { "AdminUsers" } }), 400, "MSG152");
+        await Code(await Write(client, s.Url + "/participants", HttpMethod.Post, new { userIds = new[] { s.Outsider }, role = "Member", additionalPermissions = new[] { "AdminUsers" } }), 400, "MSG97");
         await Code(await Write(client, s.Url + "/guest-invitations", HttpMethod.Post, new { invitedName = "Khách", email = "Case@example.test" }), 201, "MSG96");
         await Code(await Write(client, s.Url + "/guest-invitations", HttpMethod.Post, new { invitedName = "Khách", email = "case@EXAMPLE.test" }, await Tag(client, s.Url)), 400, "MSG97");
         await using var db = f.Db(); Assert.False(await db.MeetingParticipants.AnyAsync(p => p.MeetingId == s.MeetingId && p.UserId == s.Outsider));
@@ -265,11 +238,11 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
     }
 
     [Fact]
-    public async Task Guest_sessions_and_grants_are_independent_and_profile_does_not_replace_invitation_evidence()
+    public async Task Guest_sessions_are_independent_and_profile_does_not_replace_invitation_evidence()
     {
         var s = await f.Seed(); using var secretary = f.Client(s.Secretary);
         var created = await Code(await Write(secretary, s.Url + "/guest-invitations", HttpMethod.Post,
-            new { invitedName = "Tên trên lời mời", email = "identity@example.test", additionalPermissions = new[] { "ViewMeetingParticipants" } }), 201, "MSG96");
+            new { invitedName = "Tên trên lời mời", email = "identity@example.test" }), 201, "MSG96");
         var id = created.GetProperty("createdIds")[0].GetGuid();
         f.Guests.Profiles[id] = new("Tên tự khai", "Chức danh tự khai");
         using var first = f.Guest(s.MeetingId, id);
@@ -280,28 +253,26 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
         Assert.Equal("Tên trên lời mời", row.GetProperty("invitedName").GetString());
         Assert.Equal("Tên tự khai", row.GetProperty("displayName").GetString());
         Assert.Equal("identity@example.test", row.GetProperty("email").GetString());
-        Assert.Equal(JsonValueKind.Null, row.GetProperty("additionalPermissions").ValueKind);
+        Assert.False(row.TryGetProperty("additionalPermissions", out _));
         Assert.Equal(HttpStatusCode.NotFound, (await second.GetAsync(s.Url + "/invitation-responses")).StatusCode);
         f.Guests.Sessions[firstSession.Identity.SessionId] = firstSession with { Revoked = true };
         Assert.Equal(HttpStatusCode.NotFound, (await first.GetAsync(s.Url + "/invitation-response")).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await second.GetAsync(s.Url + "/invitation-response")).StatusCode);
         var other = await f.Seed();
         Assert.Equal(HttpStatusCode.NotFound, (await second.GetAsync(other.Url + "/participants")).StatusCode);
-        await Code(await Write(secretary, s.Url + $"/guest-invitations/{id}/permissions", HttpMethod.Put,
-            new { additionalPermissions = new[] { "ViewInvitationResponses" } }, await Tag(secretary, s.Url)), 200, "MSG153");
-        Assert.Equal(HttpStatusCode.NotFound, (await second.GetAsync(s.Url + "/participants")).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await second.GetAsync(s.Url + "/invitation-responses")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await second.GetAsync(s.Url + "/participants")).StatusCode);
+
     }
 
     [Fact]
-    public async Task Inactive_secretary_is_not_bypassed_by_recovery_and_chunked_payload_is_bounded()
+    public async Task Inactive_secretary_is_forbidden_and_chunked_payload_is_bounded()
     {
         var s = await f.Seed(MeetingStatus.Approved); using var organizer = f.Client(s.Organizer); using var secretary = f.Client(s.Secretary);
         await using var db = f.Db(); var user = (await db.Users.FindAsync(s.Secretary))!; user.IsActive = false; await db.SaveChangesAsync();
         var context = await organizer.GetFromJsonAsync<JsonElement>(s.Url + "/participant-context");
-        Assert.False(context.GetProperty("permissions").GetProperty("canRecoverSecretary").GetBoolean());
+        Assert.False(context.GetProperty("permissions").GetProperty("canManageParticipants").GetBoolean());
         Assert.Equal(HttpStatusCode.Forbidden, (await secretary.GetAsync(s.Url + "/participants")).StatusCode);
-        await Code(await Write(organizer, s.Url + "/participants/secretary-recovery", HttpMethod.Post, new { userId = s.Outsider }), 400, "MSG97");
+        Assert.Equal(HttpStatusCode.MethodNotAllowed, (await Write(organizer, s.Url + "/participants/secretary-recovery", HttpMethod.Post, new { userId = s.Outsider })).StatusCode);
         user.IsActive = true; await db.SaveChangesAsync();
         using var request = new HttpRequestMessage(HttpMethod.Post, s.Url + "/participants") { Content = new UnknownLengthContent(new string('x', 65537)) };
         request.Headers.IfMatch.ParseAdd("\"participants-0\"");

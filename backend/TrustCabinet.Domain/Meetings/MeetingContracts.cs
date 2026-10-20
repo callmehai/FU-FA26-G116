@@ -1,5 +1,6 @@
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Domain.Meetings;
 
@@ -24,6 +25,10 @@ public sealed record ValidatedMeetingInput(
     string? OnlineLink,
     Sensitivity Sensitivity,
     string Description);
+
+[System.Text.Json.Serialization.JsonUnmappedMemberHandling(System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow)]
+public sealed record ParticipantSeed(Guid UserId, string? Role);
+public sealed record MeetingPerson(Guid UserId, string FullName);
 
 public sealed record MeetingApproverOption(Guid Id, string FullName);
 
@@ -55,9 +60,12 @@ public sealed record MeetingDetails(
     Guid CreatedById,
     Guid? AssignedApproverId,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt)
+    DateTimeOffset UpdatedAt,
+    MeetingPerson? Chair = null,
+    IReadOnlyList<MeetingPerson>? Secretaries = null,
+    string? MyMeetingRole = null)
 {
-    public static MeetingDetails From(Meeting meeting) => new(
+    public static MeetingDetails From(Meeting meeting, Guid? actorId = null) => new(
         meeting.Id,
         meeting.Title,
         meeting.Description,
@@ -73,13 +81,19 @@ public sealed record MeetingDetails(
         meeting.CreatedById,
         meeting.Status == MeetingStatus.Draft ? null : meeting.AssignedApproverId,
         meeting.CreatedAt,
-        meeting.UpdatedAt);
+        meeting.UpdatedAt,
+        meeting.Participants.Where(p => ParticipantRules.Current(p) && p.Role == MeetingRole.Chair)
+            .Select(p => new MeetingPerson(p.UserId, p.User.FullName)).SingleOrDefault(),
+        meeting.Participants.Where(p => ParticipantRules.Current(p) && p.Role == MeetingRole.Secretary)
+            .OrderBy(p => p.User.FullName).ThenBy(p => p.UserId).Select(p => new MeetingPerson(p.UserId, p.User.FullName)).ToArray(),
+        meeting.Participants.SingleOrDefault(p => ParticipantRules.Current(p) && p.UserId == actorId)?.Role.ToString());
 }
 
 public enum MeetingOutcome
 {
     Success,
     InvalidInformation,
+    InvalidParticipants,
     NotFound,
     NotEditable,
     SaveFailed,

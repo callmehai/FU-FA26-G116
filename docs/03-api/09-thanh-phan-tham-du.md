@@ -1,134 +1,109 @@
-# SCRUM-20 — API thành phần tham dự và phản hồi lời mời
+# SCRUM-20 / SCRUM-97 — API thành phần tham dự
 
-Backend theo [kế hoạch đã duyệt](../02-design/09-scrum20-ke-hoach-backend.md), baseline PO 13/10/2026, UC-27/28a/28b/28c/29/30. Frontend và UC-04 production triển khai riêng. Các request dưới đây dùng relative path, Bearer authentication hiện có, JSON camelCase; enum PascalCase. Mọi response của nhóm endpoint có `Cache-Control: no-store`.
+Baseline PO Hải ngày 20/10/2026, thay thế các quy tắc roster cũ của PR #92. UC-73 bàn giao Chủ tọa được thực hiện ngay trong SCRUM-20. UC/BR/sequence được BA đồng bộ tại Final Review; không dùng các mô tả grants/recovery cũ để tích hợp API này.
 
-## Baseline bàn giao và thay đổi PO chưa tích hợp
+## 1. Quyền và bất biến
 
-Ghi chú do AI hỗ trợ cập nhật ngày 19/10/2026: contract này mô tả implementation SCRUM-20 theo PO 13/10, **chưa phải toàn bộ yêu cầu PO 16/10**. [SCRUM-97](https://sep490g116.atlassian.net/browse/SCRUM-97) sở hữu UC-73 và việc chặn Secretary/Organizer thay Chair sau Published bằng MSG256. Hiện Secretary vẫn có thể thay Chair trong Published/InProgress bằng batch confirmed hợp lệ; chưa có endpoint Chair tự bàn giao, chưa áp dụng điều kiện người nhận UC-73 không được là Secretary. Nếu phát hành phải đáp ứng ngay PO mới, cần tích hợp SCRUM-97 trước phát hành.
+Mọi cuộc họp luôn có đúng một current Chair. Draft/Rejected/Approved cho phép 0..n Secretary; Published/InProgress phải giữ ít nhất một current Secretary. Publish vẫn yêu cầu Chair và Secretary active. WaitingApproval/Ended khóa thay đổi roster.
 
-MSG275/MSG276 là mapping của bản tích hợp local với main; không dùng MSG252/MSG253 dành cho SCRUM-96. SCRUM-98 sở hữu thay đổi agenda, SCRUM-99 sở hữu hủy cuộc họp và tích hợp participant/dispatch cho trạng thái mới. Guest OTP/session thuộc SCRUM-59; cảnh báo inline Confidential/Secret ở contract này cần thống nhất với yêu cầu confirmation của SCRUM-59 khi tích hợp, không tự thêm dialog trong SCRUM-20.
+Người quản lý là current participant active có role Chair hoặc Secretary. Organizer, approver và admin không có quyền quản lý roster riêng. Ai qua MeetingReadPolicy hoặc Guest access hợp lệ đều đọc roster và phản hồi. Chair và Secretary đọc meeting mọi trạng thái; Member từ Published. Organizer/current approver giữ quyền đọc độc lập của workflow. Chair/Secretary được xem rejection reason, nhưng không tự có quyền đọc organizer-transfer metadata.
 
-## 1. Quyền và trạng thái
+Không gỡ Chair, kể cả tự gỡ. Không hạ Chair nếu không có người thay trong cùng batch. Preparation: cả Chair/Secretary được phân công mọi role. Published/InProgress: Chair tự bàn giao; Secretary chỉ thay khi tài khoản Chair hiện tại inactive. Người nhận Chair phải current internal active và không đang là Secretary. Batch phải hạ Chair cũ xuống Member, nâng người mới lên Chair và có confirmation khớp cả hai assignment ID. Thao tác nguyên tử, không gọi hai request liên tiếp.
 
-- Quyền quản lý thuộc **User active đang được phân công Secretary** trong cuộc họp; không suy từ system role, capability claim hoặc body.
-- Organizer active được recovery một Secretary khi **không còn current Secretary**, chỉ ở Draft/Rejected/Approved. Secretary inactive vẫn là current, không mở recovery. Recovery Member giữ nguyên assignment, phản hồi, điểm danh và grants; tạo assignment mới nếu chưa có.
-- Sửa thành phần ở Draft/Rejected/Approved/Published/InProgress. WaitingApproval và Ended khóa sửa. Luôn tối đa một Chair; Published/InProgress phải giữ đúng một Chair và ít nhất một Secretary. Công bố cần Chair và Secretary active.
-- Secretary đọc roster mọi trạng thái; Chair có quyền mặc định từ Published. Member/Guest cần grant `ViewMeetingParticipants`. Quyền summary `ViewInvitationResponses` độc lập và chỉ có hiệu lực Published/InProgress/Ended; Chair/Secretary mặc định có quyền này ở các trạng thái đó.
-- Organizer/Approver có quyền đọc cuộc họp không đồng nghĩa có quyền roster/summary. Người chỉ có quyền summary thấy tên/email trong summary nhưng không có search/options/roster.
-- Phản hồi của chính mình: Accepted/Declined trong Published/InProgress. Không delegation. Không cập nhật attendance, role, grants hoặc trạng thái cuộc họp. Cùng giá trị là no-op, giữ RespondedAt.
-- Gỡ mềm/revoke giữ lịch sử. Mời lại tạo ID mới, Pending, không kế thừa grants. Quyền đọc độc lập của Organizer/Approver vẫn còn. Các API Meeting/Agenda, presenter options, notification target và Agenda hub dùng current assignment.
-- Guest không tạo User và không giữ role nội bộ. Guest production mặc định bị từ chối, xem [hợp đồng UC-04](09-thanh-phan-tham-du-guest-uc04.md).
+Không có per-participant grants, organizer secretary-recovery hoặc endpoint tổng hợp phản hồi riêng. Guest không có internal role; OTP/profile/session production thuộc [SCRUM-59](09-thanh-phan-tham-du-guest-uc04.md).
 
-Không đăng nhập → 401; account inactive → 403; không được đọc tài nguyên/view cụ thể → 404; có quyền đọc meeting nhưng thiếu quyền quản lý → 403. Body sai không làm lộ sự tồn tại của meeting bị cấm: service kiểm quyền trước khi trả validation.
+## 2. Transport
 
-## 2. Endpoint
+Base: `/api/meetings/{meetingId}`. Authentication bắt buộc. Không đủ quyền đọc: 404 rỗng; inactive internal: 403 rỗng; readable non-manager thực hiện quản lý: 403/MSG85. Mọi response của nhóm participants có `Cache-Control: no-store`.
 
-Prefix: `/api/meetings/{meetingId}`. Tất cả ID là GUID; `participantId` là ID assignment, **không phải UserId**; `guestInvitationId` là ID lời mời Guest.
+Roster/context/options trả ETag `"participants-N"`. Mutations trừ own response bắt buộc `If-Match`; thiếu/sai cú pháp: 400/MSG276; revision cũ: 409/MSG275. Revision truyền dưới dạng string. Own response không tăng roster revision, nhưng vẫn phát event để FE tải phản hồi mới. No-op không phát event.
 
-| Method/path | Input | Kết quả/quyền |
-|---|---|---|
-| GET `/participant-context` | Không query | Context không chứa roster/PII; các flags quyền, status, revision |
-| GET `/participants` | `q`, `page`, `pageSize` | Roster; quyền ViewMeetingParticipants |
-| GET `/participants/editor-options` | `q`, `page`, `pageSize` | User active hợp lệ, roles/catalogue; Secretary hoặc Organizer recovery |
-| GET `/invitation-response` | Không query | Phản hồi của chính actor; từ Published |
-| GET `/invitation-responses` | `page`, `pageSize`; **không q** | Summary toàn bộ current invitees, tổng trạng thái độc lập trang |
-| POST `/participants/secretary-recovery` | `{ "userId": "GUID" }` | 201/MSG96 tạo hoặc 200/MSG100 promote Member |
-| POST `/participants` | `{ "userIds": ["GUID"], "role": "Member", "additionalPermissions": [] }` | 201/MSG96; cả batch atomic, 1–100 user |
-| POST `/guest-invitations` | `{ "invitedName": "Tên khách", "email": "guest@example.test", "additionalPermissions": [] }` | 201/MSG96, không tạo User |
-| PUT `/participants/assignments` | `changes` và tùy trường hợp `chairReplacement`, xem bên dưới | 200/MSG100 hoặc MSG153/MSG154 |
-| PUT `/guest-invitations/{guestInvitationId}/permissions` | `{ "additionalPermissions": [] }` | 200/MSG153 hoặc MSG154 |
-| DELETE `/participants/{participantId}` | Không body | 200/MSG103 |
-| DELETE `/guest-invitations/{guestInvitationId}` | Không body | 200/MSG103 |
-| PUT `/invitation-response` | `{ "response": "Accepted" }` hoặc Declined | 200/MSG105; no-op MSG154 |
+JSON mutation strict, phân biệt tên property, không nhận property lạ/trùng, enum sai hoa thường, giá trị null không hợp lệ; `additionalPermissions` bị từ chối. Tối đa 64 KiB. DELETE không body. Mutation không nhận query; reads chỉ nhận query được ghi rõ bên dưới.
 
-Query phân trang mặc định `page=1`, `pageSize=20`, pageSize tối đa100, q tối đa200 ký tự. Không chấp nhận query lạ/trùng key, query trên mutation. Roster sort displayName rồi kind/ID ổn định; options sort FullName/ID. Search không coi `%` hoặc `_` là wildcard SQL. Total luôn tính sau lọc.
+## 3. Đọc
 
-## 3. ETag và validation
+| Method/path | Contract |
+|---|---|
+| GET /participant-context | `{meetingId,status,revision,myRole,permissions:{canManageParticipants,canReplaceChair,canRespond}}` |
+| GET /participants?q=&page=1&pageSize=20 | `{items,total,page,pageSize,revision,totals:{pending,accepted,declined,total}}` |
+| GET /participants/editor-options?q=&page=1&pageSize=20 | Manager ở trạng thái editable; `{items:[{id,fullName,email}],total,page,pageSize,roles:["Chair","Secretary","Member"],revision}` |
+| GET /invitation-response | Own current invitation: `{id,kind,response,respondedAt,canRespond}`, từ Published |
 
-GET context/roster/options và mutation roster thành công trả `ETag: "participants-0"` (tăng sau mỗi thay đổi thật). **Mọi mutation roster**, kể cả recovery và DELETE, bắt buộc gửi `If-Match` bằng ETag vừa đọc. Riêng PUT own response không yêu cầu If-Match và không tăng roster revision.
+`myRole` là Chair/Secretary/Member/Guest/null. `canManageParticipants` = manager + editable. Preparation: `canReplaceChair` bằng manage; Published/InProgress: current Chair hoặc Secretary có Chair inactive; locked states false. `canRespond` chỉ current internal/Guest ở Published/InProgress.
 
-`revision` trong JSON là chuỗi số thập phân; không chuyển sang JavaScript Number vì DB dùng bigint. Header là strong ETag, không chấp nhận wildcard, weak tag hoặc nhiều giá trị. Thiếu/sai → 400/MSG276; revision cũ → 409/MSG275. Reload rồi để người dùng xác nhận lại, không tự replay thao tác cũ.
-
-JSON tối đa64KiB kể cả chunked. Chỉ `application/json`/JSON media type; không chấp nhận property lạ, duplicate ở mọi cấp, sai casing, null (ngoại trừ `chairReplacement: null`), item null hoặc enum dạng số. IDs phải non-empty; role chỉ Chair/Secretary/Member. Email Guest trim, tối đa256; invitedName trim, 1–200 ký tự. Email trùng current Guest hoặc email current internal bị từ chối không phân biệt hoa thường. Một user invalid làm cả batch thất bại.
-
-Catalogue hiện có hai grant, trả qua editor-options dưới dạng `{code,name}`. New grants chỉ cấp cho Member/Guest. Khi đổi role, omit `additionalPermissions` giữ nguyên; `[]` xóa; array là tập cuối. Các grants hợp lệ sẵn có được giữ khi promote Chair/Secretary, không phát sinh grant mới cho hai role đó. Không có quyền quản lý thành phần trong catalogue.
-
-Ví dụ đổi Chair atomic, đồng thời thay Secretary nếu cần:
+Roster item:
 
 ```json
 {
-  "changes": [
-    { "participantId": "OUTGOING_CHAIR_ID", "role": "Member" },
-    { "participantId": "INCOMING_CHAIR_ID", "role": "Chair" }
+  "id":"assignment-or-invitation-guid","kind":"Internal","displayName":"Nguyễn An",
+  "email":"an@example.test","role":"Member","userId":"user-guid","isActive":true,
+  "invitedName":null,"selfDeclaredDisplayName":null,"selfDeclaredJobTitle":null,
+  "response":"Pending","respondedAt":null
+}
+```
+
+Guest có role/userId/isActive null; displayName ưu tiên profile tự khai, invitedName/email giữ evidence lời mời. Chỉ current internal và Guest chưa revoke. Sort displayName không phân biệt hoa thường, kind, id. `q` trim, tối đa 200 ký tự, tìm displayName/email/invitedName; page >=1, pageSize 1..100. `total` tính sau search; `totals` tính trên toàn roster trước search/paging. Options loại mọi current internal và email trùng current Guest.
+
+## 4. Ghi
+
+| Method/path | Body | Thành công |
+|---|---|---|
+| POST /participants | `{userIds:["guid"],role:"Member"}` (1..100 unique active users) | 201/MSG96 + createdIds + revision |
+| POST /guest-invitations | `{invitedName:"Khách",email:"guest@example.test"}` | 201/MSG96 + createdIds + revision |
+| PUT /participants/assignments | `{changes:[{participantId,role}],chairReplacement?:{outgoingParticipantId,incomingParticipantId,confirmed:true}}` | 200/MSG100; Chair bàn giao sau Published: MSG257 |
+| DELETE /participants/{participantId} | Không body | 200/MSG103 |
+| DELETE /guest-invitations/{invitationId} | Không body | 200/MSG103 |
+| PUT /invitation-response | `{response:"Accepted"}` hoặc Declined | 200/MSG105 + response |
+
+Guest name trim 1..200, email trim 1..256 và đúng format; email current unique không phân biệt hoa thường và không trùng current internal. Changes 1..100 assignment ID không trùng. Reinvite tạo ID mới, không kế thừa response/attendance của assignment cũ. No-op: 200/MSG154.
+
+Ví dụ bàn giao (gọi bằng token Chair ở Published/InProgress):
+
+```json
+{
+  "changes":[
+    {"participantId":"outgoing-assignment-guid","role":"Member"},
+    {"participantId":"incoming-assignment-guid","role":"Chair"}
   ],
-  "chairReplacement": {
-    "outgoingParticipantId": "OUTGOING_CHAIR_ID",
-    "incomingParticipantId": "INCOMING_CHAIR_ID",
-    "confirmed": true
+  "chairReplacement":{
+    "outgoingParticipantId":"outgoing-assignment-guid",
+    "incomingParticipantId":"incoming-assignment-guid",
+    "confirmed":true
   }
 }
 ```
 
-IDs ví dụ phải thay bằng GUID thật. Outgoing Chair bắt buộc xuống Member; kể cả tài khoản Chair cũ inactive vẫn được hạ xuống Member trong batch thay Chair đã xác nhận. Incoming Chair phải active; ngoại lệ này không cho phép đổi role khác của người inactive. Nếu incoming là Secretary cuối, thêm thay đổi một Member → Secretary trong cùng batch, hoặc phân công Secretary khác trước. Không dùng hai request tuần tự demote/promote. `changes` 1–100 phần tử, không trùng participantId. Confirmation dư/sai/thiếu đều invalid.
+Đã bỏ routes `POST /participants/secretary-recovery`, `PUT /guest-invitations/{id}/permissions`, `GET /invitation-responses`; client không gọi nữa.
 
-## 4. Response shapes
+## 5. Lỗi và realtime
 
-Context:
+| HTTP/code | Tình huống |
+|---|---|
+| 400/MSG97 | Add/Guest/DELETE payload không hợp lệ |
+| 400/MSG101 | Changes/role/confirmation không hợp lệ |
+| 400/MSG106 | Response không phải Accepted/Declined |
+| 400/MSG259 | Recipient Chair không hợp lệ từ Published |
+| 400/MSG276 | Query/If-Match sai |
+| 403/MSG85 | Readable caller không phải manager |
+| 409/MSG98 | WaitingApproval hoặc Ended khóa roster |
+| 409/MSG107 | Không còn cho respond |
+| 409/MSG109 | Mất Chair hoặc Secretary bắt buộc |
+| 409/MSG256 | Secretary thay Chair active từ Published |
+| 409/MSG275 | Stale revision |
+| 413/MSG87; 415/MSG34 | Body quá lớn; content type sai |
+| 500/MSG95 | Đọc roster thất bại |
+| 503/MSG99, MSG102, MSG104, MSG108 | Lưu add, assignments, remove, response thất bại |
 
-```json
-{
-  "meetingId": "GUID", "status": "Published", "revision": "3",
-  "permissions": {
-    "canViewParticipants": true, "canViewResponses": true,
-    "canManageParticipants": true, "canRecoverSecretary": false, "canRespond": true
-  }
-}
-```
+MSG152/153 ngừng dùng, không tái cấp. MSG258/260 vẫn dành sẵn.
 
-Roster: `{items,total,page,pageSize,revision}`. Mỗi item có `id`, `kind` (Internal/Guest), `displayName`, `email`, `role` (null với Guest), `userId`, `isActive` (null với Guest), `invitedName`, `selfDeclaredDisplayName`, `selfDeclaredJobTitle`, `additionalPermissions`. Các trường không phù hợp là null. **Chỉ Secretary nhận additionalPermissions**; viewer khác nhận null. Không có Response/Attendance trong roster.
+Hub `/hubs/meetings`: join bằng `JoinMeeting(meetingId)`, nghe `participantsChanged` payload `{eventId,meetingId,revision,occurredAt}`. Sau commit có thay đổi, kể cả response, gửi đến hợp readers trước/sau: active participants, creator, approver lọc MeetingReadPolicy, Guest sessions hợp lệ qua adapter. Người vừa bị gỡ vẫn nhận invalidation, reload nhận 404. Payload không mang roster/PII. Lỗi transport ghi log, không rollback; hook disconnect room là port riêng.
 
-Editor-options: `{items:[{id,fullName,email}],total,page,pageSize,mode,roles,permissionCatalog,revision}`. Mode `Manage`/`RecoverSecretary`; recovery chỉ role Secretary, catalogue rỗng; Member current có thể xuất hiện để promote.
+## 6. Migration và delivery
 
-Own response: `{id,kind,response,respondedAt,canRespond}`. Summary: `{items:[{id,kind,displayName,email,response,respondedAt}],total,page,pageSize,totals:{pending,accepted,declined,total}}`. Counts gồm current internal và Guest, kể cả internal inactive còn current. Không có attendance/grants/job title trong summary.
+Migration chưa lên main `20261014114845_MeetingParticipantLifecycleAndGuestInvitations` đã được sửa trực tiếp. Bỏ bảng grants; thêm Guest invitation/dispatch, assignment history và revision. SQL preflight vẫn chặn legacy Guest/delegation/multiple Chair, không xóa dữ liệu. Với meeting thiếu Chair: promote current creator nếu có; nếu chưa có thì insert Chair Pending/Unknown bằng UUID PostgreSQL. Backfill không ghi đè response/attendance cũ.
 
-Mutation thành công: `{code,message,revision}`; tạo mới thêm `createdIds`. PUT response: `{code,message,response:{id,kind,response,respondedAt,canRespond}}`; không trả roster. Sau self-removal/self-demotion, response thành công vẫn trả metadata tối thiểu, request kế tiếp kiểm quyền mới.
+Initial delivery key của dòng cũ/backfill: `meeting:{meetingId}:published:{userId}`; dòng API mới: `participant:{assignmentId}:invited`. Worker không còn reconcile toàn bộ meeting Published cũ, nên không tự gửi lại lời mời cũ. Publish và mọi thay đổi cần thông báo stage durable dispatch cùng transaction; Guest reschedule dedup theo history event + invitation. SMTP disabled giữ intent.
 
-Lỗi có mã: `{code,message,errors}`; errors là dictionary field → string[] khi service xác định được trường lỗi, còn lại null. FE match code, không match message. Không phải mọi lỗi validation đều có field errors.
+Guest unavailable: probe readiness không khóa meeting; retry 1 phút, 5 phút, 30 phút rồi 6 giờ, không tiêu hao retry kỹ thuật. Khi Ready, khóa meeting → dispatch, kiểm current/status và prepare link trong transaction, materialize EmailMessage nguyên tử. Không gửi SMTP trong lock. Audit chỉ ghi các dòng đổi. Down chặn khi có Guest/dispatch/removed history; sau khi dùng tính năng không mặc định rollback bằng Down.
 
-| HTTP | Code | Tình huống |
-|---|---|---|
-| 500 | MSG95 | Lỗi đọc roster/response/context/options |
-| 400 | MSG97 | Dữ liệu mời/thành phần sai |
-| 409 | MSG98 | Trạng thái khóa quản lý |
-| 503 | MSG99 | Không lưu được thêm/recovery |
-| 400 | MSG101 | Role/batch/confirmation sai |
-| 503 | MSG102 | Không lưu được role/grants |
-| 503 | MSG104 | Không lưu được gỡ/revoke |
-| 400 | MSG106 | Phản hồi sai |
-| 409 | MSG107 | Không còn được phản hồi |
-| 503 | MSG108 | Không lưu được phản hồi |
-| 409 | MSG109 | Vi phạm Chair/Secretary bắt buộc |
-| 400 | MSG152 | Grant sai/không được cấp |
-| 409 | MSG275 | Revision cũ |
-| 400 | MSG276 | Query/If-Match sai |
-| 415 / 413 | MSG34 / MSG87 | Media type / payload size |
-
-## 5. Transaction và delivery
-
-Writer khóa meeting trước, rồi đọc quyền/state/current assignments lại trong transaction. Selected users được khóa chia sẻ để không đổi active/email trong lúc ghi. Chair cũ được demote và flush trong cùng transaction trước promote, để không vi phạm unique index; mọi lỗi rollback role/grant/revision/audit/notification/dispatch.
-
-Trước Publish không tạo dispatch. Publish ghi dispatch cho toàn bộ current active internal và current Guest; add Published/InProgress chỉ ghi người mới. Role/grants thông báo người bị ảnh hưởng; đổi Chair thông báo cả hai. Remove có thông báo không kèm link. HTTP success chỉ nói đã lưu, không bảo đảm email đã giao.
-
-Dời lịch Published (UC-15/BR-76) giữ notification nội bộ hiện có và tạo dispatch `Rescheduled` cho từng Guest chưa revoke, cùng transaction với schedule/history. `EventId` là ID history Reschedule; key `roster:{historyId}:Rescheduled:{guestInvitationId}` duy nhất theo sự kiện và invitation. Gửi lại cùng lịch là no-op; lần dời lịch khác có event mới. Email chứa giờ mới và link xác minh, không lộ phòng/link vào họp; không đính ICS cho sự kiện dời lịch. UC-04 chưa sẵn sàng thì dispatch chờ dependency; lỗi gửi không hoàn tác lịch đã lưu.
-
-SMTP disabled vẫn giữ dispatch. Worker khi enabled tạo EmailMessage idempotent, rồi SMTP processor hiện có gửi với lease/retry. Guest chưa có UC-04 → BlockedDependency, retry sau60s, không tiêu thụ attempt kỹ thuật. Technical retry theo RetryDelaySeconds nhân đôi, trần900s, MaxAttempts; quá giới hạn Failed. Removed/revoked/inactive được kiểm trước materialize; initial/role/grants bị suppress nếu không còn current hoặc meeting Ended. Không giữ DB lock trong SMTP. Email đã tạo/gửi không thể bảo đảm thu hồi; server phải kiểm quyền khi mở link.
-
-SMTP là at-least-once: crash sau mail server nhận nhưng trước ghi Sent có thể gửi trùng. DB đảm bảo một EmailMessage/event key, không hứa exactly-once ở mailbox. Legacy reconcile theo từng recipient ở Published/InProgress; không gửi lại key đã có EmailMessage/dispatch.
-
-## 6. Migration
-
-`20261014114845_MeetingParticipantLifecycleAndGuestInvitations` thêm lifecycle/revision, Guest, grants và durable dispatch. Giữ response/attendance/history; backfill legacy delivery key để không gửi lại. Partial unique current(meeting,user), current Chair, current Guest email; grants XOR owner và unique owner/key.
-
-Preflight **dừng** nếu có legacy Guest trong MeetingParticipant, Delegated/delegated_to hoặc nhiều Chair. Không xóa/chuyển dữ liệu ngầm. Cần người sở hữu dữ liệu quyết định mapping trước upgrade. Down bị chặn khi đã có Guest/grant/dispatch/removed history; dùng forward fix hoặc restore đã chuẩn bị. Không sửa migration đã lên main.
-
-Tài liệu liên quan: [FE/manual](09-thanh-phan-tham-du-ban-giao.md), [UC-04](09-thanh-phan-tham-du-guest-uc04.md), [kết quả test](09-thanh-phan-tham-du-ket-qua-kiem-thu.md), [ADR-0021](../05-decisions/0021-vong-doi-thanh-phan-va-y-dinh-gui-thu.md).
+Xem [bàn giao FE/test thủ công](09-thanh-phan-tham-du-ban-giao.md) và [ADR-0021](../05-decisions/0021-vong-doi-thanh-phan-va-y-dinh-gui-thu.md).

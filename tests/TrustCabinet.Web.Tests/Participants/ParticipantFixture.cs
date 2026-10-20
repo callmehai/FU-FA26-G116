@@ -26,6 +26,7 @@ public sealed class ParticipantFixture : IAsyncLifetime
     { MaxPoolSize = 20 }.ConnectionString);
     internal readonly TestClock Clock = new();
     internal readonly GuestAdapter Guests = new();
+    internal readonly ChangePublisher Changes = new();
     internal readonly FailureInterceptor Failure = new();
     internal readonly QueryCounter Queries = new();
     internal Factory Host = null!;
@@ -46,9 +47,23 @@ public sealed class ParticipantFixture : IAsyncLifetime
                 s.AddDbContext<TrustCabinetDbContext>(o => o.UseNpgsql(f.Database.DataSource, p => p.MigrationsHistoryTable("__ef_migrations_history"))
                     .UseSnakeCaseNamingConvention().AddInterceptors(f.Failure, f.Queries));
                 s.RemoveAll<TimeProvider>(); s.AddSingleton<TimeProvider>(f.Clock);
+                s.Replace(ServiceDescriptor.Singleton<IParticipantsChangePublisher>(f.Changes));
                 s.Replace(ServiceDescriptor.Singleton<IParticipantGuestAccess>(f.Guests));
                 s.Replace(ServiceDescriptor.Singleton<IParticipantGuestIdentityResolver>(f.Guests));
             });
+        }
+    }
+    internal sealed class ChangePublisher : IParticipantsChangePublisher
+    {
+        internal readonly ConcurrentQueue<(ParticipantsChange Change, Guid[] Users, ParticipantGuestSession[] Guests)> Events = new();
+        internal Guid? FailMeeting;
+        internal IParticipantsChangePublisher? Transport;
+        public Task PublishAsync(ParticipantsChange change, IReadOnlyCollection<Guid> users,
+            IReadOnlyCollection<ParticipantGuestSession> guests, CancellationToken ct)
+        {
+            if (FailMeeting == change.MeetingId) throw new InvalidOperationException("Injected transport failure");
+            Events.Enqueue((change, users.ToArray(), guests.ToArray()));
+            return Transport?.PublishAsync(change, users, guests, ct) ?? Task.CompletedTask;
         }
     }
     internal sealed class TestClock : TimeProvider
@@ -92,6 +107,10 @@ public sealed class ParticipantFixture : IAsyncLifetime
             Guid.TryParse(p.FindFirstValue("test_session"), out var s);
             return new(m, i, s);
         }
+        public Task<IReadOnlyList<ParticipantGuestSession>> ListReadersAsync(Guid meetingId, CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<ParticipantGuestSession>>(Sessions.Values
+                .Where(s => s.Identity.MeetingId == meetingId && s.Verified && !s.Revoked && s.ExpiresAt > Clock.Now)
+                .Select(s => s.Identity).ToArray());
         public Task<bool> CanAccessAsync(ParticipantGuestSession identity, CancellationToken ct) => Task.FromResult(
             Sessions.TryGetValue(identity.SessionId, out var s) && s.Identity == identity && s.Verified && !s.Revoked && s.ExpiresAt > Clock.Now);
         public Task<IReadOnlyDictionary<Guid, GuestDisplayProfile>> GetProfilesAsync(Guid meetingId, IReadOnlyCollection<Guid> ids, CancellationToken ct)

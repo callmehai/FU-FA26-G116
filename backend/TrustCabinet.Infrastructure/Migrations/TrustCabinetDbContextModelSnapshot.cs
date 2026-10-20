@@ -802,6 +802,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(256)")
                         .HasColumnName("deduplication_key");
 
+                    b.Property<int>("DependencyAttemptCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("dependency_attempt_count");
+
                     b.Property<Guid?>("EmailMessageId")
                         .HasColumnType("uuid")
                         .HasColumnName("email_message_id");
@@ -1131,65 +1135,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.ToTable("meeting_participants", null, t =>
                         {
                             t.HasCheckConstraint("ck_participant_removal", "(assignment_status = 'Current' AND removed_at IS NULL AND removed_by_id IS NULL) OR (assignment_status = 'Removed' AND removed_at IS NOT NULL AND removed_by_id IS NOT NULL)");
-                        });
-                });
-
-            modelBuilder.Entity("TrustCabinet.Domain.Entities.MeetingParticipantPermission", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<DateTimeOffset>("GrantedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("granted_at");
-
-                    b.Property<Guid>("GrantedById")
-                        .HasColumnType("uuid")
-                        .HasColumnName("granted_by_id");
-
-                    b.Property<Guid?>("GuestInvitationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("guest_invitation_id");
-
-                    b.Property<Guid?>("MeetingParticipantId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("meeting_participant_id");
-
-                    b.Property<string>("PermissionKey")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("permission_key");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id")
-                        .HasName("pk_meeting_participant_permissions");
-
-                    b.HasIndex("GrantedById")
-                        .HasDatabaseName("ix_meeting_participant_permissions_granted_by_id");
-
-                    b.HasIndex("GuestInvitationId", "PermissionKey")
-                        .IsUnique()
-                        .HasDatabaseName("ix_meeting_participant_permissions_guest_invitation_id_permiss")
-                        .HasFilter("guest_invitation_id IS NOT NULL");
-
-                    b.HasIndex("MeetingParticipantId", "PermissionKey")
-                        .IsUnique()
-                        .HasDatabaseName("ix_meeting_participant_permissions_meeting_participant_id_perm")
-                        .HasFilter("meeting_participant_id IS NOT NULL");
-
-                    b.ToTable("meeting_participant_permissions", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_permission_owner", "(meeting_participant_id IS NULL) <> (guest_invitation_id IS NULL)");
                         });
                 });
 
@@ -2483,32 +2428,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("Meeting");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("TrustCabinet.Domain.Entities.MeetingParticipantPermission", b =>
-                {
-                    b.HasOne("TrustCabinet.Domain.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("GrantedById")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_meeting_participant_permissions_users_granted_by_id");
-
-                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", "GuestInvitation")
-                        .WithMany()
-                        .HasForeignKey("GuestInvitationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_meeting_participant_permissions_meeting_guest_invitations_g");
-
-                    b.HasOne("TrustCabinet.Domain.Entities.MeetingParticipant", "MeetingParticipant")
-                        .WithMany()
-                        .HasForeignKey("MeetingParticipantId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_meeting_participant_permissions_meeting_participants_meetin");
-
-                    b.Navigation("GuestInvitation");
-
-                    b.Navigation("MeetingParticipant");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.MeetingStatusHistory", b =>

@@ -1,23 +1,25 @@
 # ADR-0021 — Lịch sử thành phần và ý định gửi thư cùng transaction
 
-- Ngày: 14/10/2026
-- Trạng thái: Đề xuất, đã hiện thực trên branch SCRUM-20; chờ team review
-- Liên quan: ADR-0016, ADR-0017, UC-27–30, SCRUM-15/19/20, UC-04
-
-## Bối cảnh
-
-Gỡ rồi mời lại cần giữ phản hồi/điểm danh của lần cũ nhưng không khôi phục quyền cũ. Gửi email sau domain commit bằng việc dựng lại roster hiện tại có thể mất sự kiện role/grants/remove khi process chết. SMTP disabled không nên làm mất yêu cầu thông báo đã lưu.
+- Ngày: 14/10/2026; cập nhật theo PO Hải 20/10/2026.
+- Trạng thái: Đề xuất trong PR #92, chưa accepted trên main.
+- Liên quan: SCRUM-20, SCRUM-97/UC-73, SCRUM-59/UC-04, SCRUM-41.
 
 ## Quyết định
 
-MeetingParticipant có Current/Removed, thời điểm/người gỡ, partial unique current(meeting,user), tối đa một current Chair. Re-add tạo ID mới. Guest là MeetingGuestInvitation riêng, không User/role nội bộ. Grant gắn với đúng assignment hoặc invitation bằng XOR owner, không theo UserId chung. Giữ evidence khi remove/revoke.
+Quyền roster chỉ theo current role Chair/Secretary của tài khoản active. Không có grants cá nhân hoặc organizer secretary-recovery. Mỗi meeting luôn đúng một current Chair từ tạo Draft; Published/InProgress giữ ít nhất một Secretary. Chair/Secretary đọc meeting mọi trạng thái. Workflow quyền creator/approver giữ độc lập.
 
-Mọi roster mutation khóa meeting, kiểm trạng thái/quyền và revision trong transaction. Revision bigint truyền qua JSON string, If-Match strong ETag giúp không ghi đè lựa chọn cũ. Chair swap demote/flush rồi promote trong cùng transaction. Roster readers dùng RepeatableRead để các page DTO và totals nhất quán trong một request.
+MeetingParticipant có Current/Removed và evidence phản hồi/điểm danh. Reinvite tạo assignment mới. Guest lưu riêng trong MeetingGuestInvitation, không User/internal role. Hai bảng mới là GuestInvitation và InvitationDispatch; dispatch có XOR owner internal/Guest. Partial unique bảo vệ current(meeting,user), current Chair, current Guest email không phân biệt hoa thường.
 
-MeetingInvitationDispatch giữ versioned snapshot và deduplication key trong transaction cùng domain/audit/notification. Worker materialize EmailMessage sau commit, khóa meeting trước dispatch; SMTP processor/lease hiện có đảm nhiệm delivery. Initial key theo assignment mới; migration backfill key cũ để tương thích. SMTP disabled vẫn giữ intent; re-enable xử lý sau khi kiểm current/state.
+Tạo meeting nhận roster internal, khóa các user theo thứ tự bằng FOR SHARE, lưu meeting/history/roster cùng transaction, không tạo thông báo Draft. Migration chưa lên main được sửa trực tiếp: preflight giữ dữ liệu lạ; thiếu Chair thì promote current creator hoặc insert Chair, giữ response/attendance cũ.
 
-UC-04 sở hữu verification credential, OTP, profile, session production qua port. Default deny/unavailable cho đến khi tích hợp. Room callback chỉ là best effort transport hook; fresh authorization ở server luôn bắt buộc.
+Mutation khóa meeting, kiểm quyền/trạng thái/revision. Chair swap demote/flush rồi promote nguyên tử. Published/InProgress chỉ Chair bàn giao, ngoại lệ Secretary thay Chair inactive; recipient active current internal không phải Secretary. If-Match và revision string chống ghi đè roster cũ. Response không tăng roster revision nhưng vẫn invalidation.
 
-## Hệ quả và giới hạn
+Audit chỉ ghi dòng thay đổi trước/sau. Sau commit phát participantsChanged tới hợp readers trước/sau; payload chỉ invalidation. Best effort không rollback domain. Hook room access riêng giữ nguyên.
 
-Cần ba bảng mới, index và migration preflight; dữ liệu legacy Guest/delegation/multiple Chair cần mapping được review. Down không được âm thầm làm mất lịch sử. Email có thể trùng nếu crash sau SMTP accept, trước mark Sent; không cam kết exactly-once mailbox. Room transport chưa triển khai; Guest E2E chờ UC-04. Chi tiết wire contract và các gate: [API](../03-api/09-thanh-phan-tham-du.md).
+Dispatch snapshot và dedup key lưu cùng domain/notification. Chỉ worker dispatch materialize EmailMessage, không còn legacy publication reconciliation. Guest readiness probe không khóa meeting khi unavailable, backoff 1m/5m/30m/6h không tiêu hao technical retries. Ready: meeting lock → dispatch lock → prepare credential trong cùng unit of work → EmailMessage; SMTP chạy sau commit.
+
+## Hệ quả
+
+Delivery key cũ/backfill giữ định dạng meeting:...:published:..., API assignment mới dùng participant:...:invited. Meeting đã Published trước migration không tự được gửi lại. Down chặn Guest/dispatch/removed history để tránh mất dữ liệu. SMTP crash sau accept có thể gửi trùng; không cam kết exactly-once mailbox.
+
+Guest credential/OTP/profile/session do SCRUM-59 cung cấp, mặc định deny/unavailable. Room disconnect do SCRUM-41. API và bước test: [contract](../03-api/09-thanh-phan-tham-du.md), [handoff](../03-api/09-thanh-phan-tham-du-ban-giao.md).

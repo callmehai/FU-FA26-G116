@@ -17,7 +17,7 @@ public static class MeetingReadPolicy
                 && participant.Role != MeetingRole.Guest
                 && participant.Response != InvitationResponse.Delegated
                 && participant.DelegatedToUserId == null
-                && (participant.Role == MeetingRole.Secretary
+                && ((participant.Role == MeetingRole.Secretary || participant.Role == MeetingRole.Chair)
                     || meeting.Status == MeetingStatus.Published
                     || meeting.Status == MeetingStatus.InProgress
                     || meeting.Status == MeetingStatus.Ended));
@@ -40,16 +40,16 @@ public static class MeetingReadPolicy
             || (meeting.Status != MeetingStatus.Draft && meeting.AssignedApproverId == userId);
 
     public static bool CanReadHistory(Meeting meeting, Guid userId)
-        => CanRead(meeting, userId) || IsAssignedSecretary(meeting, userId);
+        => CanRead(meeting, userId) || IsAssignedManager(meeting, userId);
 
     public static bool CanReadRejectionReason(Meeting meeting, Guid userId)
-        => CanReadFullHistory(meeting, userId) || IsAssignedSecretary(meeting, userId);
+        => CanReadFullHistory(meeting, userId) || IsAssignedManager(meeting, userId);
 
-    private static bool IsAssignedSecretary(Meeting meeting, Guid userId)
+    private static bool IsAssignedManager(Meeting meeting, Guid userId)
         => meeting.Participants.Any(participant => participant.MeetingId == meeting.Id
             && participant.UserId == userId
             && participant.AssignmentStatus == AssignmentStatus.Current
-            && participant.Role == MeetingRole.Secretary
+            && (participant.Role == MeetingRole.Secretary || participant.Role == MeetingRole.Chair)
             && participant.Response != InvitationResponse.Delegated
             && participant.DelegatedToUserId is null
             && participant.User is { IsActive: true });

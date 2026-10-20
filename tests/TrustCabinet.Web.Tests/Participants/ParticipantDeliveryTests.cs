@@ -23,6 +23,7 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
     };
     private sealed class Links : IGuestInvitationLinkProvider
     {
+        public Task<bool> IsAvailableAsync(CancellationToken ct) => Task.FromResult(Result.Status != GuestLinkStatus.Unavailable);
         public GuestInvitationLink Result = new(GuestLinkStatus.Unavailable);
         public Task<GuestInvitationLink> PrepareAsync(Guid invitationId, CancellationToken ct) => Task.FromResult(Result);
     }
@@ -39,6 +40,32 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
             new { invitedName = "Khách", email = $"{Guid.NewGuid():N}@guests.test" }), 201, "MSG96");
         await using var db = f.Db();
         return await db.MeetingInvitationDispatches.Where(d => d.MeetingId == s.MeetingId).Select(d => d.Id).SingleAsync();
+    }
+
+    [Fact]
+    public async Task Unavailable_guest_uses_exponential_dependency_delay_without_locking_meeting()
+    {
+        var s = await f.Seed();
+        var id = await AddGuest(s);
+        var originalTime = f.Clock.Now;
+        await using var locked = f.Db();
+        await using var tx = await locked.Database.BeginTransactionAsync();
+        await locked.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM meetings WHERE id = {s.MeetingId} FOR UPDATE");
+        try
+        {
+            foreach (var minutes in new[] { 1, 5, 30, 360, 360 })
+            {
+                var started = f.Clock.Now;
+                Assert.Equal(0, await Process(id).WaitAsync(TimeSpan.FromSeconds(5)));
+                await using var verify = f.Db();
+                var dispatch = await verify.MeetingInvitationDispatches.SingleAsync(d => d.Id == id);
+                Assert.Equal(InvitationDispatchState.BlockedDependency, dispatch.State);
+                Assert.Equal(started.AddMinutes(minutes), dispatch.NextAttemptAt);
+                Assert.Equal(0, dispatch.AttemptCount);
+                f.Clock.Now = dispatch.NextAttemptAt!.Value;
+            }
+        }
+        finally { f.Clock.Now = originalTime; }
     }
 
     [Fact]
@@ -108,14 +135,9 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
     }
 
     [Fact]
-    public async Task Publication_stages_all_recipients_and_grants_in_the_same_transaction()
+    public async Task Publication_stages_all_recipients_in_the_same_transaction()
     {
         var s = await f.Seed(MeetingStatus.Approved); using var secretary = f.Client(s.Secretary);
-        await Code(await Write(secretary, s.Url + "/participants/assignments", HttpMethod.Put, new
-        {
-            changes = new[] {
-            new { participantId = s.MemberAssignment, role = "Member", additionalPermissions = new[] { "ViewInvitationResponses" } } }
-        }), 200, "MSG153");
         await Code(await Write(secretary, s.Url + "/guest-invitations", HttpMethod.Post,
             new { invitedName = "Guest", email = $"{Guid.NewGuid():N}@guests.test" }, await Tag(secretary, s.Url)), 201, "MSG96");
         await using (var db = f.Db())
@@ -127,7 +149,7 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
             await repo.StagePublicationInvitationsAsync(meeting, f.Clock.Now); await db.SaveChangesAsync();
             var events = await db.MeetingInvitationDispatches.Where(d => d.MeetingId == s.MeetingId).ToArrayAsync();
             Assert.Equal(4, events.Length);
-            Assert.Contains("ViewInvitationResponses", events.Single(d => d.ParticipantId == s.MemberAssignment).PayloadJson);
+            Assert.DoesNotContain("Permissions", events.Single(d => d.ParticipantId == s.MemberAssignment).PayloadJson, StringComparison.Ordinal);
             await tx.RollbackAsync();
         }
         await using var check = f.Db();

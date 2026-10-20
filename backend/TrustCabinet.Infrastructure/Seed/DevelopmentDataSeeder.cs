@@ -103,6 +103,13 @@ public static class DevelopmentDataSeeder
 
         db.AddRange(meetings);
 
+        foreach (var meeting in meetings.Skip(1))
+        {
+            meeting.Participants.Add(new MeetingParticipant { Meeting = meeting, User = chair, Role = MeetingRole.Chair });
+            if (meeting.Status is MeetingStatus.Published or MeetingStatus.InProgress or MeetingStatus.Ended)
+                meeting.Participants.Add(new MeetingParticipant { Meeting = meeting, User = secretary, Role = MeetingRole.Secretary });
+        }
+
         var published = meetings[0];
 
         db.AddRange(

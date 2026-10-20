@@ -44,7 +44,6 @@ public sealed class MeetingEndpointsTests : IDisposable
         internal FakeMeetingRepository Meetings { get; } = new();
 
         internal FakeUserAccountRepository Accounts { get; } = new();
-        internal FakeMeetingInvitationQueue Invitations { get; } = new();
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -57,8 +56,6 @@ public sealed class MeetingEndpointsTests : IDisposable
                 services.AddSingleton<IMeetingRepository>(Meetings);
                 services.RemoveAll<IMeetingService>();
                 services.AddScoped<IMeetingService, MeetingService>();
-                services.RemoveAll<IMeetingInvitationQueue>();
-                services.AddSingleton<IMeetingInvitationQueue>(Invitations);
             });
         }
 
@@ -132,6 +129,38 @@ public sealed class MeetingEndpointsTests : IDisposable
 
     private static string Iso(DateTimeOffset value)
         => value.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", System.Globalization.CultureInfo.InvariantCulture);
+
+    private static CreateMeetingRequest ValidCreateRequest(string? title = "Giao ban tuần")
+    {
+        var r = ValidRequest(title);
+        return new(r.Title, r.PlannedStartTime, r.PlannedEndTime, r.Mode, r.Location, r.OnlineLink,
+            r.Sensitivity, r.Description, [new(Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"), "Chair")]);
+    }
+
+    [Fact]
+    public async Task Create_requires_participants_with_MSG277_and_update_rejects_roster()
+    {
+        var creator = GivenCreator();
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+        var invalid = await client.PostAsJsonAsync("/api/meetings", ValidCreateRequest() with { Participants = [] });
+        using var error = await JsonOf(invalid);
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        Assert.Equal("MSG277", error.RootElement.GetProperty("code").GetString());
+        Assert.True(error.RootElement.GetProperty("errors").TryGetProperty("participants", out _));
+        Assert.Empty(_factory.Meetings.Meetings);
+
+        var created = await client.PostAsJsonAsync("/api/meetings", ValidCreateRequest());
+        using var body = await JsonOf(created);
+        var meeting = body.RootElement.GetProperty("meeting");
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        Assert.Equal("Selected user", meeting.GetProperty("chair").GetProperty("fullName").GetString());
+        Assert.Empty(meeting.GetProperty("secretaries").EnumerateArray());
+        Assert.Equal(JsonValueKind.Null, meeting.GetProperty("myMeetingRole").ValueKind);
+        var update = await client.PutAsJsonAsync($"/api/meetings/{meeting.GetProperty("id").GetGuid()}", ValidCreateRequest());
+        using var rejected = await JsonOf(update);
+        Assert.Equal(HttpStatusCode.BadRequest, update.StatusCode);
+        Assert.Equal("MSG31", rejected.RootElement.GetProperty("code").GetString());
+    }
 
     private static MeetingRequest ValidRequest(string? title = "Giao ban tuần")
         => new(
@@ -218,7 +247,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(approverId, meeting.AssignedApproverId);
         Assert.Single(meeting.StatusHistory);
         Assert.Empty(_factory.Meetings.Notifications);
-        Assert.Empty(_factory.Invitations.MeetingIds);
+        Assert.Empty(_factory.Meetings.StagedPublicationIds);
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}/history")).StatusCode);
 
@@ -327,7 +356,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(previousOrganizerId, persisted.CreatedById);
         Assert.Empty(persisted.StatusHistory);
         Assert.Empty(_factory.Meetings.Notifications);
-        Assert.Empty(_factory.Invitations.MeetingIds);
+        Assert.Empty(_factory.Meetings.StagedPublicationIds);
     }
 
     [Theory]
@@ -409,7 +438,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(MeetingHistoryAction.ReturnToDraft, Assert.Single(meeting.StatusHistory).Action);
         Assert.Empty(_factory.Meetings.Notifications);
         Assert.Empty(_factory.Meetings.EmailMessages);
-        Assert.Empty(_factory.Invitations.MeetingIds);
+        Assert.Empty(_factory.Meetings.StagedPublicationIds);
     }
 
     [Fact]
@@ -485,7 +514,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         }
         Assert.Empty(_factory.Meetings.Notifications);
         Assert.Empty(_factory.Meetings.EmailMessages);
-        Assert.Empty(_factory.Invitations.MeetingIds);
+        Assert.Empty(_factory.Meetings.StagedPublicationIds);
     }
 
     [Fact]
@@ -506,7 +535,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
         Assert.Empty(meeting.StatusHistory);
         Assert.Empty(_factory.Meetings.Notifications);
-        Assert.Empty(_factory.Invitations.MeetingIds);
+        Assert.Empty(_factory.Meetings.StagedPublicationIds);
     }
 
     [Theory]
@@ -717,34 +746,10 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(MeetingStatus.Approved, meeting.Status);
         Assert.Empty(meeting.StatusHistory);
         Assert.Empty(_factory.Meetings.Notifications);
-        Assert.Empty(_factory.Invitations.MeetingIds);
+        Assert.Empty(_factory.Meetings.StagedPublicationIds);
     }
 
-    [Fact]
-    public async Task Publish_producer_configuration_failure_returns_MSG45_and_keeps_the_publication()
-    {
-        var creator = GivenCreator();
-        var meeting = OwnedMeetingBy(creator);
-        meeting.Status = MeetingStatus.Approved;
-        AddPublishRoster(meeting);
-        _factory.Meetings.Meetings.Add(meeting);
-        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
-        _factory.Invitations.NextQueueThrows = new InvalidOperationException("Sender missing");
-        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/meetings/{meeting.Id}/transitions", new { action = "Publish" });
-        using var body = await JsonOf(response);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("MSG45", body.RootElement.GetProperty("code").GetString());
-        Assert.Equal(MeetingStatus.Published, Assert.Single(_factory.Meetings.Meetings).Status);
-        Assert.Equal(
-            MeetingHistoryAction.Publish,
-            Assert.Single(_factory.Meetings.Meetings.Single().StatusHistory).Action);
-        Assert.Equal(2, _factory.Meetings.Notifications.Count);
-        Assert.Empty(_factory.Invitations.MeetingIds);
-    }
 
     [Fact]
     public async Task Publish_returns_MSG137_when_the_required_roster_is_not_ready()
@@ -769,7 +774,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Empty(meeting.StatusHistory);
         Assert.Empty(_factory.Meetings.Notifications);
         Assert.Empty(_factory.Meetings.EmailMessages);
-        Assert.Empty(_factory.Invitations.MeetingIds);
+        Assert.Empty(_factory.Meetings.StagedPublicationIds);
         Assert.Equal(0, _factory.Meetings.SaveCount);
     }
 
@@ -943,7 +948,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(MeetingHistoryAction.SubmitForApproval, submission.Action);
         Assert.Equal(newApproverId, Assert.Single(_factory.Meetings.Notifications).UserId);
         Assert.Empty(_factory.Meetings.EmailMessages);
-        Assert.Empty(_factory.Invitations.MeetingIds);
+        Assert.Empty(_factory.Meetings.StagedPublicationIds);
     }
 
     [Fact]
@@ -973,7 +978,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Empty(meeting.StatusHistory);
         Assert.Empty(_factory.Meetings.Notifications);
         Assert.Empty(_factory.Meetings.EmailMessages);
-        Assert.Empty(_factory.Invitations.MeetingIds);
+        Assert.Empty(_factory.Meetings.StagedPublicationIds);
         Assert.Equal(0, _factory.Meetings.SaveCount);
     }
 
@@ -1017,7 +1022,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(MeetingHistoryAction.Publish, Assert.Single(meeting.StatusHistory).Action);
         Assert.Equal(2, _factory.Meetings.Notifications.Count);
         Assert.Empty(_factory.Meetings.EmailMessages);
-        Assert.Equal(meeting.Id, Assert.Single(_factory.Invitations.MeetingIds));
+        Assert.Equal(meeting.Id, Assert.Single(_factory.Meetings.StagedPublicationIds));
         Assert.Equal(1, _factory.Meetings.SaveCount);
     }
 
@@ -1170,7 +1175,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Assigned_chair_cannot_read_before_publication()
+    public async Task Assigned_chair_can_read_before_publication()
     {
         var creator = GivenCreator();
         var chair = GivenMember("history-chair@trustcabinet.local");
@@ -1199,9 +1204,9 @@ public sealed class MeetingEndpointsTests : IDisposable
         _factory.Meetings.Meetings.Add(meeting);
         using var client = _factory.ClientFor(chair);
 
-        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/api/meetings/{meeting.Id}")).StatusCode);
         var historyResponse = await client.GetAsync($"/api/meetings/{meeting.Id}/history");
-        Assert.Equal(HttpStatusCode.NotFound, historyResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, historyResponse.StatusCode);
     }
 
     [Fact]
@@ -1410,7 +1415,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var creator = GivenCreator();
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
 
-        var created = await client.PostAsJsonAsync("/api/meetings", ValidRequest());
+        var created = await client.PostAsJsonAsync("/api/meetings", ValidCreateRequest());
         using var body = await JsonOf(created);
         var meetingId = body.RootElement.GetProperty("meeting").GetProperty("id").GetGuid();
 
@@ -1432,7 +1437,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
 
         var response = await client.PostAsJsonAsync(
-            "/api/meetings", ValidRequest(title: "   ") with { Mode = "Wrong" });
+            "/api/meetings", ValidCreateRequest(title: "   ") with { Mode = "Wrong" });
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -1463,13 +1468,13 @@ public sealed class MeetingEndpointsTests : IDisposable
     {
         using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
 
-        var past = await client.PostAsJsonAsync("/api/meetings", ValidRequest() with
+        var past = await client.PostAsJsonAsync("/api/meetings", ValidCreateRequest() with
         {
             PlannedStartTime = Iso(DateTimeOffset.UtcNow.AddHours(-2)),
             PlannedEndTime = Iso(DateTimeOffset.UtcNow.AddHours(-1)),
         });
         using var pastBody = await JsonOf(past);
-        var backwards = await client.PostAsJsonAsync("/api/meetings", ValidRequest() with
+        var backwards = await client.PostAsJsonAsync("/api/meetings", ValidCreateRequest() with
         {
             PlannedEndTime = Iso(FutureStart),
         });
@@ -1494,6 +1499,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var request = new
         {
             title = "Giao ban tuần",
+            participants = new[] { new ParticipantSeed(creator.Id, "Chair") },
             plannedStartTime = Iso(FutureStart),
             plannedEndTime = Iso(FutureStart.AddMinutes(90)),
             onlineLink = "  ",
@@ -1519,7 +1525,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     {
         using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
 
-        var response = await client.PostAsJsonAsync("/api/meetings", ValidRequest() with
+        var response = await client.PostAsJsonAsync("/api/meetings", ValidCreateRequest() with
         {
             OnlineLink = "https://meet.example.vn/" + new string('a', 1000),
         });
@@ -1538,6 +1544,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var response = await client.PostAsJsonAsync("/api/meetings", new
         {
             title = "Giao ban tuần",
+            participants = new[] { new ParticipantSeed(creator.Id, "Chair") },
             plannedStartTime = Iso(FutureStart),
             plannedEndTime = Iso(FutureStart.AddHours(1)),
             assignedApproverId = Guid.CreateVersion7(),
@@ -1658,7 +1665,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         var other = GivenCreator("other-meeting-creator@trustcabinet.local");
         using var creatorClient = _factory.ClientFor(creator, Capability.MeetingCreator);
         using var otherClient = _factory.ClientFor(other, Capability.MeetingCreator);
-        var create = await creatorClient.PostAsJsonAsync("/api/meetings", ValidRequest());
+        var create = await creatorClient.PostAsJsonAsync("/api/meetings", ValidCreateRequest());
         using var createBody = await JsonOf(create);
         var id = createBody.RootElement.GetProperty("meeting").GetProperty("id").GetGuid();
 
@@ -1742,7 +1749,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     {
         var creator = GivenCreator();
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
-        var create = await client.PostAsJsonAsync("/api/meetings", ValidRequest());
+        var create = await client.PostAsJsonAsync("/api/meetings", ValidCreateRequest());
         using var createBody = await JsonOf(create);
         var id = createBody.RootElement.GetProperty("meeting").GetProperty("id").GetGuid();
 
@@ -2167,7 +2174,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var wrongCapability = _factory.ClientFor(creator, Capability.AdminUsers);
 
         var anonymousResponse = await anonymous.GetAsync($"/api/meetings/{Guid.CreateVersion7()}");
-        var forbiddenResponse = await wrongCapability.PostAsJsonAsync("/api/meetings", ValidRequest());
+        var forbiddenResponse = await wrongCapability.PostAsJsonAsync("/api/meetings", ValidCreateRequest());
         var forbiddenApprovers = await wrongCapability.GetAsync("/api/meetings/approvers");
 
         Assert.Equal(HttpStatusCode.Unauthorized, anonymousResponse.StatusCode);
@@ -2181,7 +2188,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
         _factory.Meetings.NextSaveThrows = new Npgsql.NpgsqlException("database unavailable");
 
-        var response = await client.PostAsJsonAsync("/api/meetings", ValidRequest());
+        var response = await client.PostAsJsonAsync("/api/meetings", ValidCreateRequest());
         using var body = await JsonOf(response);
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);

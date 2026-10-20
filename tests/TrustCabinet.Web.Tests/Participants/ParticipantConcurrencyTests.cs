@@ -16,7 +16,7 @@ public sealed class ParticipantConcurrencyTests(ParticipantFixture f, ITestOutpu
     [Fact]
     public async Task Competing_chair_swaps_use_revision_and_preserve_exactly_one_chair_and_secretary()
     {
-        var s = await f.Seed(); using var secretary = f.Client(s.Secretary);
+        var s = await f.Seed(MeetingStatus.Approved); using var secretary = f.Client(s.Secretary);
         var body = new
         {
             changes = new[] { new { participantId = s.ChairAssignment, role = "Member" },
@@ -30,7 +30,7 @@ public sealed class ParticipantConcurrencyTests(ParticipantFixture f, ITestOutpu
         await using var db = f.Db();
         Assert.Equal(1, await db.MeetingParticipants.CountAsync(p => p.MeetingId == s.MeetingId && p.Role == MeetingRole.Chair));
         Assert.Equal(1, await db.MeetingParticipants.CountAsync(p => p.MeetingId == s.MeetingId && p.Role == MeetingRole.Secretary));
-        Assert.Equal(2, await db.MeetingInvitationDispatches.CountAsync(d => d.MeetingId == s.MeetingId));
+        Assert.Equal(0, await db.MeetingInvitationDispatches.CountAsync(d => d.MeetingId == s.MeetingId));
     }
 
     [Fact]
@@ -48,20 +48,21 @@ public sealed class ParticipantConcurrencyTests(ParticipantFixture f, ITestOutpu
     }
 
     [Fact]
-    public async Task Removed_organizer_keeps_independent_meeting_access_but_not_participant_grants()
+    public async Task Removed_organizer_keeps_read_access_but_cannot_manage_roster()
     {
         var s = await f.Seed(); using var secretary = f.Client(s.Secretary); using var organizer = f.Client(s.Organizer);
         var added = await Code(await Write(secretary, s.Url + "/participants", HttpMethod.Post, new
         {
             userIds = new[] { s.Organizer },
-            role = "Member",
-            additionalPermissions = new[] { "ViewMeetingParticipants" }
+            role = "Member"
         }), 201, "MSG96");
         Assert.Equal(HttpStatusCode.OK, (await organizer.GetAsync(s.Url + "/participants")).StatusCode);
         var id = added.GetProperty("createdIds")[0].GetGuid();
         await Code(await Write(secretary, s.Url + $"/participants/{id}", HttpMethod.Delete, etag: await Tag(secretary, s.Url)), 200, "MSG103");
         Assert.Equal(HttpStatusCode.OK, (await organizer.GetAsync(s.Url)).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await organizer.GetAsync(s.Url + "/participants")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await organizer.GetAsync(s.Url + "/participants")).StatusCode);
+        await Code(await Write(organizer, s.Url + "/participants", HttpMethod.Post,
+            new { userIds = new[] { s.Outsider }, role = "Member" }), 403, "MSG85");
     }
 
     [Fact]
@@ -97,7 +98,7 @@ public sealed class ParticipantConcurrencyTests(ParticipantFixture f, ITestOutpu
                 using var roster = await client.GetAsync(s.Url + "/participants?pageSize=100");
                 var rosterMs = watch.ElapsedMilliseconds;
                 watch.Restart();
-                using var responses = await client.GetAsync(s.Url + "/invitation-responses?pageSize=100");
+                using var responses = await client.GetAsync(s.Url + "/participants?pageSize=100");
                 Assert.Equal(HttpStatusCode.OK, roster.StatusCode); Assert.Equal(HttpStatusCode.OK, responses.StatusCode);
                 return new[] { rosterMs, watch.ElapsedMilliseconds };
             }));
@@ -107,7 +108,7 @@ public sealed class ParticipantConcurrencyTests(ParticipantFixture f, ITestOutpu
     }
 
     [Fact]
-    public async Task Development_scenarios_are_insert_only_and_recovery_is_available_in_preparation_states()
+    public async Task Development_scenarios_are_insert_only_and_always_have_a_chair()
     {
         await using var db = f.Db();
         var originalCount = await db.Meetings.CountAsync();
@@ -117,7 +118,7 @@ public sealed class ParticipantConcurrencyTests(ParticipantFixture f, ITestOutpu
         await Infrastructure.Seed.ParticipantDevelopmentDataSeeder.SeedAsync(db);
         var meetings = await db.Meetings.Where(m => m.Title.StartsWith("[SCRUM20-DEV]")).Include(m => m.Participants).ToArrayAsync();
         Assert.Equal(7, meetings.Length);
-        Assert.All(meetings.Where(m => ParticipantRules.Preparation(m.Status)), m => Assert.True(ParticipantRules.CanRecover(m, m.CreatedById)));
+        Assert.All(meetings, m => Assert.Single(m.Participants, p => p.Role == MeetingRole.Chair));
         meetings[0].Title = "Edited by tester"; await db.SaveChangesAsync();
         await Infrastructure.Seed.ParticipantDevelopmentDataSeeder.SeedAsync(db);
         Assert.Equal("Edited by tester", (await db.Meetings.FindAsync(meetings[0].Id))!.Title);

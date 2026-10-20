@@ -19,10 +19,6 @@ public sealed class ParticipantRepository(TrustCabinetDbContext db) : IParticipa
         if (meeting is null) return null;
         var guestQuery = db.MeetingGuestInvitations.Where(g => g.MeetingId == meetingId && g.RevokedAt == null);
         var guests = await (forUpdate ? guestQuery : guestQuery.AsNoTracking()).ToListAsync(ct);
-        var grantQuery = db.MeetingParticipantPermissions.Where(g =>
-            (g.MeetingParticipant != null && g.MeetingParticipant.MeetingId == meetingId && g.MeetingParticipant.AssignmentStatus == AssignmentStatus.Current)
-            || (g.GuestInvitation != null && g.GuestInvitation.MeetingId == meetingId && g.GuestInvitation.RevokedAt == null));
-        var grants = await (forUpdate ? grantQuery : grantQuery.AsNoTracking()).ToListAsync(ct);
-        return new(meeting, guests, grants);
+        return new(meeting, guests);
     }
 }

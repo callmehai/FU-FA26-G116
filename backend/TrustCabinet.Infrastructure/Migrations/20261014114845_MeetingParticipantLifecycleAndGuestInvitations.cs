@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -22,6 +22,7 @@ namespace TrustCabinet.Infrastructure.Migrations
                     END IF;
                 END $$;
                 """);
+
             migrationBuilder.DropIndex(
                 name: "ix_meeting_participants_meeting_id_user_id",
                 table: "meeting_participants");
@@ -60,7 +61,22 @@ namespace TrustCabinet.Infrastructure.Migrations
                 type: "uuid",
                 nullable: true);
 
-            migrationBuilder.Sql("UPDATE meeting_participants SET initial_invitation_delivery_key = 'meeting:' || meeting_id::text || ':published:' || user_id::text;");
+            migrationBuilder.Sql("""
+                UPDATE meeting_participants
+                SET initial_invitation_delivery_key = 'meeting:' || meeting_id::text || ':published:' || user_id::text;
+                UPDATE meeting_participants p SET role = 'Chair'
+                FROM meetings m WHERE p.meeting_id = m.id AND p.user_id = m.created_by_id
+                    AND p.assignment_status = 'Current'
+                    AND NOT EXISTS (SELECT 1 FROM meeting_participants c
+                        WHERE c.meeting_id = m.id AND c.assignment_status = 'Current' AND c.role = 'Chair');
+                INSERT INTO meeting_participants
+                    (id, meeting_id, user_id, role, assignment_status, response, attendance,
+                     initial_invitation_delivery_key, created_at, updated_at)
+                SELECT gen_random_uuid(), m.id, m.created_by_id, 'Chair', 'Current', 'Pending', 'Unknown',
+                    'meeting:' || m.id::text || ':published:' || m.created_by_id::text, now(), now()
+                FROM meetings m WHERE NOT EXISTS (SELECT 1 FROM meeting_participants c
+                    WHERE c.meeting_id = m.id AND c.assignment_status = 'Current' AND c.role = 'Chair');
+                """);
 
             migrationBuilder.CreateTable(
                 name: "meeting_guest_invitations",
@@ -127,6 +143,7 @@ namespace TrustCabinet.Infrastructure.Migrations
                     payload_version = table.Column<int>(type: "integer", nullable: false),
                     payload_json = table.Column<string>(type: "jsonb", nullable: false),
                     state = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
+                    dependency_attempt_count = table.Column<int>(type: "integer", nullable: false),
                     attempt_count = table.Column<int>(type: "integer", nullable: false),
                     next_attempt_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     last_error = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
@@ -160,43 +177,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         name: "fk_meeting_invitation_dispatches_meetings_meeting_id",
                         column: x => x.meeting_id,
                         principalTable: "meetings",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "meeting_participant_permissions",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    meeting_participant_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    guest_invitation_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    permission_key = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    granted_by_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    granted_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_meeting_participant_permissions", x => x.id);
-                    table.CheckConstraint("ck_permission_owner", "(meeting_participant_id IS NULL) <> (guest_invitation_id IS NULL)");
-                    table.ForeignKey(
-                        name: "fk_meeting_participant_permissions_meeting_guest_invitations_g",
-                        column: x => x.guest_invitation_id,
-                        principalTable: "meeting_guest_invitations",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "fk_meeting_participant_permissions_meeting_participants_meetin",
-                        column: x => x.meeting_participant_id,
-                        principalTable: "meeting_participants",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "fk_meeting_participant_permissions_users_granted_by_id",
-                        column: x => x.granted_by_id,
-                        principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -288,25 +268,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                 table: "meeting_invitation_dispatches",
                 columns: new[] { "state", "next_attempt_at" });
 
-            migrationBuilder.CreateIndex(
-                name: "ix_meeting_participant_permissions_granted_by_id",
-                table: "meeting_participant_permissions",
-                column: "granted_by_id");
-
-            migrationBuilder.CreateIndex(
-                name: "ix_meeting_participant_permissions_guest_invitation_id_permiss",
-                table: "meeting_participant_permissions",
-                columns: new[] { "guest_invitation_id", "permission_key" },
-                unique: true,
-                filter: "guest_invitation_id IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "ix_meeting_participant_permissions_meeting_participant_id_perm",
-                table: "meeting_participant_permissions",
-                columns: new[] { "meeting_participant_id", "permission_key" },
-                unique: true,
-                filter: "meeting_participant_id IS NOT NULL");
-
             migrationBuilder.AddForeignKey(
                 name: "fk_meeting_participants_users_removed_by_id",
                 table: "meeting_participants",
@@ -322,22 +283,19 @@ namespace TrustCabinet.Infrastructure.Migrations
             migrationBuilder.Sql("""
                 DO $$ BEGIN
                     IF EXISTS (SELECT 1 FROM meeting_guest_invitations)
-                        OR EXISTS (SELECT 1 FROM meeting_participant_permissions)
                         OR EXISTS (SELECT 1 FROM meeting_invitation_dispatches)
                         OR EXISTS (SELECT 1 FROM meeting_participants WHERE assignment_status = 'Removed') THEN
-                        RAISE EXCEPTION 'SCRUM-20 rollback would discard invitation/grant/history data. Use a reviewed forward fix or backup restore.';
+                        RAISE EXCEPTION 'SCRUM-20 rollback would discard invitation/history data. Use a reviewed forward fix or backup restore.';
                     END IF;
                 END $$;
                 """);
+
             migrationBuilder.DropForeignKey(
                 name: "fk_meeting_participants_users_removed_by_id",
                 table: "meeting_participants");
 
             migrationBuilder.DropTable(
                 name: "meeting_invitation_dispatches");
-
-            migrationBuilder.DropTable(
-                name: "meeting_participant_permissions");
 
             migrationBuilder.DropTable(
                 name: "meeting_guest_invitations");
