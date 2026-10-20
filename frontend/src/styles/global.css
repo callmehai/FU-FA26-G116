@@ -72,6 +72,19 @@
   --stage-ink: #e6ecf5;
   --stage-ink-soft: #bccadc;
   --stage-accent: #a9c8ff;
+  /* A microphone or camera switched off, in Meet's colours: a pale red button with a deep red icon,
+     its arrow end deep red with a pale red arrow. */
+  --stage-off-bg: #f9dedc;
+  --stage-off-ink: #601410;
+  /* The microphone and camera pills when on, as in Meet: the arrow end a step darker than the
+     buttons, its arrow a muted grey-blue. */
+  --stage-control-dim: #213656;
+  --stage-ink-dim: #8d9db6;
+  /* Motion of the control panel, measured on Google Meet: a damped spring, about 9% overshoot,
+     settled in ~360ms. Browsers without linear() get a single-overshoot curve instead. */
+  --ease-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+  /* Material's emphasised deceleration, for what should not wobble (a menu popping up). */
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
   /* Name plates over a video tile. */
   --stage-scrim: #0009;
   --speaking: #22c55e;
@@ -105,6 +118,12 @@
   --accent-amber: #b26b00;
   --accent-emerald: #0e6b44;
   --wash-amber: #fffaf0;
+}
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --ease-spring: linear(0, 0.066, 0.222, 0.414, 0.604, 0.77, 0.901, 0.994, 1.052, 1.081, 1.089, 1.083,
+      1.069, 1.052, 1.035, 1.02, 1.009, 1.001, 0.995, 0.993, 0.992, 0.993, 0.994, 0.995, 1);
+  }
 }
 
 /* ---------- Base ---------- */
@@ -2210,6 +2229,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   padding: 0 16px;
 }
 .room-controls-main {
+  --panel-pad: 12px;
+  --tray-gap: 16px;
   position: relative;
   z-index: 5;
   align-self: end;
@@ -2217,13 +2238,18 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   margin-bottom: 4px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 12px;
+  justify-content: flex-end;
+  padding: var(--panel-pad);
   border-radius: 24px;
   background: var(--stage-panel);
+  /* As in Meet the width never changes — it is the buttons' — and only the height moves: useDeviceTray
+     sets it in pixels so it can spring. */
+  transition: height 0.36s var(--ease-spring);
 }
-.room-controls-row { display: flex; justify-content: center; gap: 12px; }
-.room-controls-side { display: flex; gap: 4px; justify-self: end; }
+.room-controls-main.is-resizing { overflow: clip; }
+/* Above the tray, which rises from behind it. */
+.room-controls-row { position: relative; z-index: 1; flex: none; display: flex; gap: 12px; }
+.room-controls-side { position: relative; z-index: 6; display: flex; gap: 4px; justify-self: end; }
 .room-control {
   position: relative;
   display: inline-flex;
@@ -2240,20 +2266,37 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   /* As in Meet: switching a device off morphs the pill into a rounded square. */
   transition: border-radius 0.2s ease, background-color 0.2s ease;
 }
-.room-control:hover { background: var(--stage-control-hover); }
 .room-control:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .room-control:disabled { opacity: 0.6; cursor: default; }
 /* A device you switched off, as in Meet: a soft red button with a deep red icon, not a solid red
    one — solid red is the leave button alone. */
-.room-control-off { width: 48px; border-radius: 12px; background: var(--chip-red-bg); color: var(--chip-red-fg); }
-.room-control-off:hover { background: var(--chip-red-bg); filter: brightness(0.94); }
+.room-control-off { width: 48px; border-radius: 12px; background: var(--stage-off-bg); color: var(--stage-off-ink); }
 .room-control-active { background: var(--brand-wash); color: var(--brand-ink); }
-.room-control-active:hover { background: var(--brand-wash-line); }
 .room-control-leave { width: 72px; border-radius: 24px; background: var(--danger); }
-.room-control-leave:hover { background: var(--danger-ink); }
 .room-control-side { width: 48px; background: transparent; color: var(--sidebar-ink-soft); }
-.room-control-side:hover { background: var(--stage-control); color: #fff; }
 .room-control-side.room-control-active { background: var(--brand-wash); color: var(--brand-ink); }
+/* Hover and press as in Meet (Material 3): a layer of the content colour over the button, 8% on
+   hover and 12% while pressed, fading in 75ms — a dark button lightens, a light one darkens. */
+.room-control::before,
+.room-split::before,
+.room-select-trigger::before,
+.room-select-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 75ms linear;
+}
+/* Only where there is a real hover: a tap on a touch screen would leave it lit. */
+@media (hover: hover) {
+  :is(.room-control, .room-select-trigger, .room-select-item):hover:not(:disabled)::before,
+  .room-split:has(> .room-split-more:hover)::before { opacity: 0.08; }
+}
+:is(.room-control, .room-select-trigger, .room-select-item):active:not(:disabled)::before,
+.room-split:has(> .room-split-more:active)::before { opacity: 0.12; }
 /* The label, shown on hover or keyboard focus above the button. */
 .room-control-tip {
   position: absolute;
@@ -2272,39 +2315,96 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   pointer-events: none;
   transition: opacity 0.12s;
 }
-.room-control:hover .room-control-tip,
+@media (hover: hover) {
+  .room-control:hover .room-control-tip { opacity: 1; transition-delay: 0.5s; }
+}
 .room-control:focus-visible .room-control-tip { opacity: 1; transition-delay: 0.5s; }
+/* With a tray open the pickers sit where the tooltips would. */
+.room-controls-main.is-open .room-control-tip { display: none; }
 /* Microphone and camera carry their tray arrow on the left, in one pill, as in Meet. */
-.room-split { position: relative; display: inline-flex; align-items: center; border-radius: 24px; background: var(--stage-control); transition: border-radius 0.2s ease, background-color 0.2s ease; }
-.room-split > .room-control { width: 48px; }
-.room-split > .room-control:not(.room-control-off):not(.room-control-active) { background: var(--stage-control-hover); }
-.room-split > .room-control:not(.room-control-off):not(.room-control-active):hover { filter: brightness(1.15); }
-.room-split:has(> .room-control-off) { border-radius: 12px; background: var(--danger-ink); }
-.room-split-more {
+/* As in Meet: on, a darker pill with the button as a round of the usual button colour at its right;
+   off, both clusters turn the same deep red rounded rectangle with a pale red button. */
+.room-split {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  border-radius: 24px;
+  background: var(--stage-control-dim);
+  color: var(--stage-ink-dim);
+  transition: border-radius 0.2s ease, background-color 0.2s ease;
+}
+.room-split > .room-control { width: 48px; }
+/* The arrow's hover layer is light on the dark pill and pale red on the deep red one. */
+.room-split::before { background: var(--stage-ink); }
+.room-split:has(> .room-control-off)::before { background: var(--stage-off-bg); }
+.room-split:has(> .room-control-off) { border-radius: 12px; background: var(--stage-off-ink); color: var(--stage-off-bg); }
+.room-split-more {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
   width: 40px;
   height: 48px;
   padding: 0 0 0 4px;
   border: 0;
   border-radius: inherit;
   background: transparent;
-  color: #fff;
+  color: inherit;
   cursor: pointer;
 }
-.room-split-more:hover { color: var(--stage-accent); }
+/* The arrow's hover lights the whole pill from behind, as in Meet, where the arrow is a button the
+   full width of the cluster with the microphone or camera button on top of it. */
+.room-split-more > * { grid-area: 1 / 1; }
+.room-split-more svg { transition: transform 0.36s var(--ease-spring), opacity 0.15s linear; }
+.room-split-more[aria-expanded="true"] svg { transform: rotate(180deg); }
+/* While the microphone is on, three bars follow your voice where the arrow is; pointing at it, or
+   its tray being open, slides the arrow back up in their place, as Meet does. */
+.room-level { display: flex; align-items: center; gap: 2px; height: 14px; transition: opacity 0.15s linear; }
+.room-level > span {
+  width: 3px;
+  height: calc(3px + var(--level, 0) * var(--reach));
+  border-radius: 2px;
+  background: var(--stage-accent);
+  transition: height 80ms linear;
+}
+.room-level > span:nth-child(odd) { --reach: 6px; }
+.room-level > span:nth-child(2) { --reach: 11px; }
+.room-split-more.has-level:not(:hover, :focus-visible, [aria-expanded="true"]) svg { opacity: 0; transform: translateY(8px); }
+.room-split-more.has-level:is(:hover, :focus-visible, [aria-expanded="true"]) .room-level { opacity: 0; }
 .room-split-more:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-/* The tray the arrow opens, on top of the buttons inside the same panel. */
-.room-tray { display: flex; gap: 8px; }
-.room-select { position: relative; flex: 1 1 auto; min-width: 0; max-width: 280px; }
+/* The tray the arrow opens, across the top of the panel and exactly as wide as the buttons, so
+   opening it never widens anything. It rises 16px from behind the buttons and fades in once the
+   panel has made room; closing, it fades at once, then turns hidden. */
+.room-tray {
+  position: absolute;
+  top: var(--panel-pad);
+  left: var(--panel-pad);
+  right: var(--panel-pad);
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px);
+  transition: opacity 0.08s linear, transform 0.36s var(--ease-spring), visibility 0s linear 0.36s;
+}
+.room-controls-main.is-open .room-tray {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.15s linear 0.08s, transform 0.36s var(--ease-spring), visibility 0s;
+}
+/* Pickers share the width equally whatever their device names, so choosing a device moves nothing;
+   a long name is shortened (the full one is in the menu and the picker's title). Switching trays
+   fades the new pickers in. */
+.room-select { position: relative; flex: 1 1 0; min-width: 0; animation: room-picker-in 0.18s linear both; }
+@keyframes room-picker-in { from { opacity: 0; } }
 .room-select-trigger {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
   height: 32px;
-  padding: 0 12px 0 14px;
+  padding: 0 10px 0 12px;
   border: 1px solid var(--stage-line);
   border-radius: 16px;
   background: transparent;
@@ -2314,14 +2414,19 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   font-weight: 500;
   cursor: pointer;
 }
-.room-select-trigger:hover:not(:disabled),
+@media (hover: hover) {
+  .room-select-trigger:hover:not(:disabled) { color: var(--stage-ink); }
+}
 .room-select-trigger[aria-expanded="true"] { background: var(--stage-control); color: var(--stage-ink); }
+.room-select-caret { flex: none; display: inline-flex; transition: transform 0.2s var(--ease-emphasized); }
+.room-select-trigger[aria-expanded="true"] .room-select-caret { transform: rotate(180deg); }
 .room-select-trigger:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .room-select-trigger:disabled { cursor: default; opacity: 0.75; }
 .room-select-value { flex: 1; min-width: 0; overflow: hidden; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
 .room-select-menu {
   position: absolute;
-  bottom: calc(100% + 16px);
+  /* Right on the picker, over the panel's edge, as in Meet. */
+  bottom: calc(100% + 4px);
   left: 0;
   z-index: 10;
   min-width: 100%;
@@ -2332,10 +2437,16 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   padding: 4px;
   border-radius: 16px;
   background: var(--stage-panel);
-  box-shadow: 0 6px 20px #0007;
+  box-shadow: 0 2px 10px #0006;
+  /* Pops up from the picker: a quick fade and a 0.8 → 1 vertical grow, measured on Meet. */
+  transform-origin: bottom center;
+  animation: room-menu-fade 0.05s linear both, room-menu-grow 0.22s var(--ease-emphasized) both;
 }
+@keyframes room-menu-fade { from { opacity: 0; } }
+@keyframes room-menu-grow { from { transform: scaleY(0.8); } }
 /* As in Meet: names centred, the chosen one on a lighter plate in the accent colour with a tick. */
 .room-select-item {
+  position: relative;
   display: grid;
   grid-template-columns: 24px 1fr 24px;
   align-items: center;
@@ -2354,7 +2465,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   text-align: center;
   cursor: pointer;
 }
-.room-select-item:hover { background: #ffffff14; }
 .room-select-item:focus-visible { outline: 2px solid var(--stage-accent); outline-offset: -2px; }
 .room-select-item.is-active { border-radius: 12px; background: var(--stage-control); color: var(--stage-accent); }
 .room-select-check { display: inline-flex; }
@@ -2423,6 +2533,10 @@ html:has(.room), body:has(.room) { overflow: hidden; overscroll-behavior: none; 
 .room-panel, .room-chat-list, .room-select-menu { overscroll-behavior: contain; }
 /* Toasts sit above the control bar in the room, not over "Chat" and "Rời phòng". */
 body:has(.room) .toast-stack { bottom: 96px; }
+/* Narrower than this, the right-aligned toasts reach the centre panel: lift them over an open tray. */
+@media (max-width: 1107px) {
+  body:has(.room-controls-main.is-open) .toast-stack { bottom: 140px; }
+}
 
 @media (max-width: 1023px) {
   .room-panel {
@@ -2437,16 +2551,30 @@ body:has(.room) .toast-stack { bottom: 96px; }
   .room-link-short { display: inline; }
 }
 
-/* A phone: no room for a centred group, so the call controls start at the left. */
-@media (max-width: 560px) {
+/* Too narrow to centre the call controls between two equal sides: they start at the left, and the
+   pickers stack, as wide as the buttons. */
+@media (max-width: 720px) {
   .room-controls { grid-template-columns: auto auto; justify-content: space-between; gap: 8px; padding: 0 8px; }
   .room-controls-spacer { display: none; }
+  .room-tray { flex-direction: column; }
+  .room-select { flex: none; }
+  body:has(.room-controls-main.is-open) .toast-stack { bottom: 180px; }
+}
+
+/* A phone: smaller buttons. */
+@media (max-width: 560px) {
   /* Phones have no floating window (Document Picture-in-Picture is desktop-only). */
   .room-control-pip { display: none; }
-  .room-controls-main { gap: 8px; margin-bottom: 11px; padding: 8px; border-radius: 20px; }
+  /* No spring here: with a smaller panel its dip on closing would touch the buttons. */
+  .room-controls-main {
+    --panel-pad: 8px;
+    --tray-gap: 8px;
+    margin-bottom: 11px;
+    border-radius: 20px;
+    transition: height 0.3s var(--ease-emphasized);
+  }
   .room-controls-row { gap: 6px; }
-  .room-tray { flex-direction: column; }
-  .room-select { max-width: none; }
+  body:has(.room-controls-main.is-open) .toast-stack { bottom: 164px; }
   .room-control, .room-split > .room-control, .room-control-off, .room-control-side { width: 42px; height: 42px; }
   .room-control-leave { width: 54px; }
   .room-split-more { width: 26px; height: 42px; }

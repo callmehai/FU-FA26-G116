@@ -969,9 +969,11 @@ cd frontend && npm run lint && npm run build
 ### PR3 — `feat/scrum-42-video` (~1 ngày)
 
 - [ ] Camera trong PreJoin (xem trước), bật/tắt trong phòng không gọi lại.
-- [ ] Chọn thiết bị trong phòng như Google Meet: mũi tên cạnh mic/cam làm khung nút nở lên thành khay
-  (Micro + Loa, hoặc Camera), mỗi ô mở một menu; thiết bị mặc định của hệ thống chỉ hiện một lần.
-  Đổi bằng `room.switchActiveDevice(kind, deviceId)`.
+- [ ] Chọn thiết bị trong phòng như Google Meet: rê chuột lên mũi tên cạnh mic/cam (hoặc bấm vào nó)
+  thì khung nút nở lên thành khay (Micro + Loa, hoặc Camera), mỗi ô mở một menu; thiết bị mặc định
+  của hệ thống chỉ hiện một lần. Rời chuột khỏi khung thì khay tự đóng, trừ khi đang mở menu. Khung
+  giữ nguyên bề ngang (bằng hàng nút) và chỉ nở lên trên, các nút không xê dịch. Khi micro bật, chỗ
+  mũi tên hiện ba vạch theo giọng nói. Đổi bằng `room.switchActiveDevice(kind, deviceId)`.
 - [ ] Lưới video phân trang, viền người đang nói, chữ cái đầu khi tắt cam.
 - [ ] Load test lưới §9.3.
 

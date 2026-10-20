@@ -1,4 +1,16 @@
-import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent, type ReactNode } from 'react'
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type KeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react'
 import { createPortal } from 'react-dom'
 import { useBeforeUnload } from 'react-router-dom'
 import {
@@ -17,7 +29,17 @@ import {
   type ReceivedChatMessage,
   type TrackReferenceOrPlaceholder,
 } from '@livekit/components-react'
-import { type Participant, ParticipantEvent, type Room, RoomEvent, Track, type TrackPublication } from 'livekit-client'
+import {
+  createAudioAnalyser,
+  type LocalAudioTrack,
+  type Participant,
+  ParticipantEvent,
+  type Room,
+  RoomEvent,
+  Track,
+  TrackEvent,
+  type TrackPublication,
+} from 'livekit-client'
 import { muteCallParticipant } from '../../../api/calls'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import { Icon, type IconName } from '../../../components/Icon'
@@ -99,6 +121,7 @@ function RoomLayout({
   const [cameraBusy, setCameraBusy] = useState(false)
   const floating = usePipWindow()
   const tray = useDeviceTray()
+  const micTrack = localParticipant.getTrackPublication(Track.Source.Microphone)?.audioTrack
 
   // Closing the tab while connected asks first; the browser shows its own wording.
   useBeforeUnload((event) => event.preventDefault())
@@ -283,30 +306,41 @@ function RoomLayout({
           with a tooltip — the label stays the button's accessible name. */}
       <footer className="room-controls">
         <div className="room-controls-spacer" aria-hidden="true" />
-        <div className={`room-controls-main${tray.open ? ' is-open' : ''}`} ref={tray.ref}>
-          {tray.open && (
-            <div
-              className="room-tray"
-              id={tray.id}
-              role="group"
-              aria-label={tray.open === 'audio' ? 'Cài đặt âm thanh' : 'Cài đặt video'}
-            >
-              {tray.open === 'audio' ? (
-                <>
-                  <DeviceSelect kind="audioinput" icon="mic" title="Micro" />
-                  <DeviceSelect kind="audiooutput" icon="volume" title="Loa" />
-                </>
-              ) : (
-                <DeviceSelect kind="videoinput" icon="video" title="Camera" />
-              )}
-            </div>
-          )}
-          <div className="room-controls-row">
+        <div
+          className={`room-controls-main${tray.open ? ' is-open' : ''}`}
+          ref={tray.panelRef}
+          onPointerEnter={tray.onPanelEnter}
+          onPointerMove={tray.onPanelMove}
+          onPointerLeave={tray.onPanelLeave}
+        >
+          {/* Stays rendered while the panel closes, so it can fade out with it. */}
+          <div
+            className="room-tray"
+            ref={tray.trayRef}
+            id={tray.id}
+            inert={!tray.open}
+            {...(tray.shown && {
+              role: 'group',
+              'aria-label': tray.shown === 'audio' ? 'Cài đặt âm thanh' : 'Cài đặt video',
+            })}
+          >
+            {tray.shown === 'audio' && (
+              <>
+                <DeviceSelect key="audioinput" kind="audioinput" icon="mic" title="Micro" />
+                <DeviceSelect key="audiooutput" kind="audiooutput" icon="volume" title="Loa" />
+              </>
+            )}
+            {tray.shown === 'video' && <DeviceSelect key="videoinput" kind="videoinput" icon="video" title="Camera" />}
+          </div>
+          <div className="room-controls-row" ref={tray.rowRef}>
             <DeviceSplit
               label="Cài đặt âm thanh"
               open={tray.open === 'audio'}
               trayId={tray.id}
-              onToggle={() => tray.toggle('audio')}
+              onToggle={(event) => tray.toggle('audio', event)}
+              onArrowEnter={(event) => tray.onArrowEnter('audio', event)}
+              onArrowLeave={tray.onArrowLeave}
+              level={isMicrophoneEnabled && micTrack ? <MicLevel track={micTrack} /> : undefined}
             >
               <ControlButton
                 icon={isMicrophoneEnabled ? 'mic' : 'micOff'}
@@ -320,7 +354,9 @@ function RoomLayout({
               label="Cài đặt video"
               open={tray.open === 'video'}
               trayId={tray.id}
-              onToggle={() => tray.toggle('video')}
+              onToggle={(event) => tray.toggle('video', event)}
+              onArrowEnter={(event) => tray.onArrowEnter('video', event)}
+              onArrowLeave={tray.onArrowLeave}
             >
               <ControlButton
                 icon={isCameraEnabled ? 'video' : 'videoOff'}
@@ -337,20 +373,20 @@ function RoomLayout({
               active={isScreenShareEnabled}
               onClick={toggleScreenShare}
             />
+            {/* In the panel, as Meet keeps picture-in-picture among the call controls. */}
+            {floating.supported && (
+              <ControlButton
+                icon="pictureInPicture"
+                label={floating.pip ? 'Đóng cửa sổ nổi' : 'Mở cửa sổ nổi'}
+                className="room-control-pip"
+                active={floating.pip !== null}
+                onClick={() => (floating.pip ? floating.close() : void floating.open())}
+              />
+            )}
             <ControlButton icon="phoneOff" label="Rời phòng" leave onClick={() => setConfirmingLeave(true)} />
           </div>
         </div>
         <div className="room-controls-side">
-          {floating.supported && (
-            <ControlButton
-              icon="pictureInPicture"
-              label={floating.pip ? 'Đóng cửa sổ nổi' : 'Mở cửa sổ nổi'}
-              className="room-control-pip"
-              side
-              active={floating.pip !== null}
-              onClick={() => (floating.pip ? floating.close() : void floating.open())}
-            />
-          )}
           <ControlButton
             icon="users"
             label="Người dự"
@@ -902,24 +938,140 @@ function useMicrophoneOn(participant: Participant) {
 
 type TrayKind = 'audio' | 'video'
 
+/** Whether the control panel's height is still animating. */
+function isResizing(panel: HTMLElement) {
+  return panel
+    .getAnimations()
+    .some((a) => a instanceof CSSTransition && a.transitionProperty === 'height' && a.playState !== 'finished')
+}
+
+/** How long the pointer rests on an arrow before its tray opens, and how long the panel waits after
+ *  the pointer leaves before it closes — both measured on Google Meet. */
+const TRAY_HOVER_OPEN_MS = 180
+const TRAY_LEAVE_CLOSE_MS = 500
+
 /**
  * Switch microphone, camera and speaker without leaving the room (SCRUM-42), as Google Meet does:
- * the arrow beside the microphone or camera grows the control panel upwards into a tray of device
- * pickers. A click outside the panel closes it; Escape closes an open picker first, then the tray.
+ * resting the mouse on the arrow beside the microphone or camera (or clicking it) grows the control
+ * panel upwards into a tray of device pickers. Moving the mouse off the panel closes it again,
+ * unless a picker's menu is open; so do a click outside, the arrow, and Escape once no menu is open.
  */
 function useDeviceTray() {
   const [open, setOpen] = useState<TrayKind | null>(null)
-  const ref = useRef<HTMLDivElement>(null)
+  // The last tray shown, kept while the panel closes so the tray fades out instead of vanishing.
+  const [shown, setShown] = useState<TrayKind | null>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const trayRef = useRef<HTMLDivElement>(null)
+  const rowRef = useRef<HTMLDivElement>(null)
+  const openTimer = useRef(0)
+  const closeTimer = useRef(0)
+  // Where the mouse last moved inside the panel, and the listener waiting for it to move outside.
+  const lastMove = useRef({ x: NaN, y: NaN })
+  const stopWaiting = useRef<(() => void) | null>(null)
   const id = useId()
+
+  const menuOpen = () => panelRef.current?.querySelector('[role="menu"]') != null
+
+  function cancelClose() {
+    window.clearTimeout(closeTimer.current)
+    stopWaiting.current?.()
+    stopWaiting.current = null
+  }
+
+  function show(kind: TrayKind | null) {
+    window.clearTimeout(openTimer.current)
+    cancelClose()
+    setOpen(kind)
+    if (kind) setShown(kind)
+  }
+
+  function scheduleClose() {
+    cancelClose()
+    closeTimer.current = window.setTimeout(() => {
+      if (menuOpen()) waitForMoveOutside()
+      else show(null)
+    }, TRAY_LEAVE_CLOSE_MS)
+  }
+
+  /** Close only once the mouse really moves somewhere outside the panel, with no menu open. */
+  function waitForMoveOutside() {
+    if (stopWaiting.current) return
+    const onMove = (event: PointerEvent) => {
+      if (event.pointerType !== 'mouse' || menuOpen()) return
+      if (panelRef.current?.contains(event.target as Node)) return
+      scheduleClose()
+    }
+    document.addEventListener('pointermove', onMove)
+    stopWaiting.current = () => document.removeEventListener('pointermove', onMove)
+  }
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(openTimer.current)
+      window.clearTimeout(closeTimer.current)
+      stopWaiting.current?.()
+    },
+    [],
+  )
+
+  // As in Meet, the panel keeps its width — that of the buttons — and only grows upwards: its
+  // height is set in pixels so it can spring. While it moves it clips the tray to its rounded edge
+  // (the tray starts behind the buttons); at rest it does not, so menus and tooltips can stand out.
+  useLayoutEffect(() => {
+    const panel = panelRef.current
+    const tray = trayRef.current
+    const row = rowRef.current
+    if (!panel || !tray || !row) return
+    const fit = () => {
+      const style = getComputedStyle(panel)
+      const pad = parseFloat(style.getPropertyValue('--panel-pad')) || 0
+      const gap = parseFloat(style.getPropertyValue('--tray-gap')) || 0
+      const height = `${row.offsetHeight + 2 * pad + (open ? tray.offsetHeight + gap : 0)}px`
+      if (height === panel.style.height) return
+      if (panel.style.height && parseFloat(style.transitionDuration) > 0) {
+        panel.classList.add('is-resizing')
+        // Should nothing animate after all, do not leave it clipped.
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            if (!isResizing(panel)) panel.classList.remove('is-resizing')
+          }),
+        )
+      }
+      panel.style.height = height
+    }
+    fit()
+    const observer = new ResizeObserver(fit)
+    observer.observe(row)
+    observer.observe(tray)
+    return () => observer.disconnect()
+  }, [open, shown])
+
+  useEffect(() => {
+    const panel = panelRef.current
+    if (!panel) return
+    const onEnd = (event: TransitionEvent) => {
+      if (event.target === panel && !isResizing(panel)) panel.classList.remove('is-resizing')
+    }
+    panel.addEventListener('transitionend', onEnd)
+    panel.addEventListener('transitioncancel', onEnd)
+    return () => {
+      panel.removeEventListener('transitionend', onEnd)
+      panel.removeEventListener('transitioncancel', onEnd)
+    }
+  }, [])
 
   useEffect(() => {
     if (!open) return
     const onPointer = (event: PointerEvent) => {
-      if (!ref.current?.contains(event.target as Node)) setOpen(null)
+      if (!panelRef.current?.contains(event.target as Node)) show(null)
     }
     const onKey = (event: globalThis.KeyboardEvent) => {
       // A picker's own menu takes the first Escape.
-      if (event.key === 'Escape' && !ref.current?.querySelector('[role="menu"]')) setOpen(null)
+      if (event.key !== 'Escape' || panelRef.current?.querySelector('[role="menu"]')) return
+      if (trayRef.current?.contains(document.activeElement)) {
+        panelRef.current?.querySelector<HTMLElement>(`[aria-controls="${CSS.escape(id)}"]`)?.focus()
+      }
+      show(null)
     }
     document.addEventListener('pointerdown', onPointer)
     document.addEventListener('keydown', onKey)
@@ -927,9 +1079,69 @@ function useDeviceTray() {
       document.removeEventListener('pointerdown', onPointer)
       document.removeEventListener('keydown', onKey)
     }
-  }, [open])
+  }, [open, id])
 
-  return { open, ref, id, toggle: (kind: TrayKind) => setOpen((v) => (v === kind ? null : kind)) }
+  return {
+    open,
+    shown,
+    id,
+    panelRef,
+    trayRef,
+    rowRef,
+    toggle(kind: TrayKind, event: ReactMouseEvent) {
+      show(open === kind ? null : kind)
+      // Opened from the keyboard: the tray sits before the buttons in tab order, so step into it,
+      // once its first picker has its device list (a moment after it appears).
+      if (open !== kind && event.detail === 0) {
+        const arrow = event.currentTarget
+        requestAnimationFrame(() => {
+          const tray = trayRef.current
+          if (!tray) return
+          const focus = (picker: HTMLElement | null | undefined) => {
+            if (picker && document.activeElement === arrow) picker.focus()
+          }
+          const first = () => tray.querySelector<HTMLButtonElement>('.room-select-trigger')
+          const step = () => {
+            const picker = first()
+            if (!picker || picker.disabled) return false
+            focus(picker)
+            return true
+          }
+          if (step()) return
+          const observer = new MutationObserver(() => {
+            if (step()) observer.disconnect()
+          })
+          observer.observe(tray, { subtree: true, childList: true, attributes: true, attributeFilter: ['disabled'] })
+          // A microphone without permission never gets a list; settle for the next picker then.
+          window.setTimeout(() => {
+            observer.disconnect()
+            focus(tray.querySelector<HTMLElement>('.room-select-trigger:not(:disabled)'))
+          }, 1500)
+        })
+      }
+    },
+    onArrowEnter(kind: TrayKind, event: ReactPointerEvent) {
+      if (event.pointerType !== 'mouse' || open === kind) return
+      window.clearTimeout(openTimer.current)
+      openTimer.current = window.setTimeout(() => show(kind), TRAY_HOVER_OPEN_MS)
+    },
+    onArrowLeave() {
+      window.clearTimeout(openTimer.current)
+    },
+    onPanelEnter() {
+      cancelClose()
+    },
+    onPanelMove(event: ReactPointerEvent) {
+      lastMove.current = { x: event.clientX, y: event.clientY }
+    },
+    onPanelLeave(event: ReactPointerEvent) {
+      if (event.pointerType !== 'mouse' || !open) return
+      // A leave where the mouse has not moved means the page moved instead: a picked item's menu
+      // went away from under it, or the window was resized. That is not the user leaving.
+      if (event.clientX === lastMove.current.x && event.clientY === lastMove.current.y) waitForMoveOutside()
+      else scheduleClose()
+    },
+  }
 }
 
 /** The microphone or camera button with its tray arrow on the left, in one pill. */
@@ -938,32 +1150,94 @@ function DeviceSplit({
   open,
   trayId,
   onToggle,
+  onArrowEnter,
+  onArrowLeave,
+  level,
   children,
 }: {
   label: string
   open: boolean
   trayId: string
-  onToggle: () => void
+  onToggle: (event: ReactMouseEvent) => void
+  onArrowEnter: (event: ReactPointerEvent) => void
+  onArrowLeave: () => void
+  /** Shown in the arrow's place while the device is on (the microphone's voice level). */
+  level?: ReactNode
   children: ReactNode
 }) {
   return (
     <div className="room-split">
       <button
         type="button"
-        className="room-split-more"
+        className={`room-split-more${level ? ' has-level' : ''}`}
         aria-label={label}
         aria-expanded={open}
         aria-controls={open ? trayId : undefined}
         onClick={onToggle}
+        onPointerEnter={onArrowEnter}
+        onPointerLeave={onArrowLeave}
       >
-        <Icon name={open ? 'chevronDown' : 'chevronUp'} size={16} />
+        {level}
+        <Icon name="chevronUp" size={16} />
       </button>
       {children}
     </div>
   )
 }
 
+/**
+ * Three bars in the microphone's arrow that follow your own voice while the microphone is on, as
+ * Meet's do; pointing at the arrow brings the arrow back. Read from the local track, so they move
+ * at once instead of waiting for the server's speaker updates.
+ */
+function MicLevel({ track }: { track: LocalAudioTrack }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  // A device switch restarts the track on a new capture; the analyser has to follow it.
+  const [capture, setCapture] = useState(0)
+
+  useEffect(() => {
+    const restarted = () => setCapture((n) => n + 1)
+    track.on(TrackEvent.Restarted, restarted)
+    return () => {
+      track.off(TrackEvent.Restarted, restarted)
+    }
+  }, [track])
+
+  useEffect(() => {
+    const bars = ref.current
+    if (!bars || !track.mediaStreamTrack) return
+    const { calculateVolume, cleanup } = createAudioAnalyser(track, { smoothingTimeConstant: 0.5 })
+    let frame = 0
+    let last = 0
+    const tick = (now: number) => {
+      if (now - last >= 60) {
+        last = now
+        bars.style.setProperty('--level', Math.min(1, calculateVolume() * 5).toFixed(2))
+      }
+      frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => {
+      cancelAnimationFrame(frame)
+      void cleanup()
+    }
+  }, [track, capture])
+
+  return (
+    <span className="room-level" ref={ref} aria-hidden="true">
+      <span />
+      <span />
+      <span />
+    </span>
+  )
+}
+
 type DeviceOption = { id: string; label: string; isDefault: boolean }
+
+/** A picker shows the name without its trailing "(Built-in)" or "(Virtual)"; the menu has it whole. */
+function shortDeviceName(label: string) {
+  return label.replace(/\s*\([^()]*\)$/, '') || label
+}
 
 /**
  * Chrome lists the system default twice: once as "default" ("Mặc định - Micrô MacBook Air") and
@@ -988,6 +1262,7 @@ function DeviceSelect({ kind, icon, title }: { kind: MediaDeviceKind; icon: Icon
   const toast = useToast()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const menuId = useId()
   const { devices, activeDeviceId, setActiveMediaDevice } = useMediaDeviceSelect({
     kind,
@@ -1012,7 +1287,9 @@ function DeviceSelect({ kind, icon, title }: { kind: MediaDeviceKind; icon: Icon
       if (!ref.current?.contains(event.target as Node)) setOpen(false)
     }
     const onKey = (event: globalThis.KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false)
+      if (event.key !== 'Escape') return
+      setOpen(false)
+      triggerRef.current?.focus()
     }
     document.addEventListener('pointerdown', onPointer)
     document.addEventListener('keydown', onKey)
@@ -1024,6 +1301,7 @@ function DeviceSelect({ kind, icon, title }: { kind: MediaDeviceKind; icon: Icon
 
   function pick(id: string) {
     setOpen(false)
+    triggerRef.current?.focus()
     setActiveMediaDevice(id).catch((err: unknown) =>
       toast.show(
         kind === 'audiooutput' ? errorMessage(err) : deviceErrorMessage(err, kind === 'audioinput' ? 'micro' : 'camera'),
@@ -1033,11 +1311,26 @@ function DeviceSelect({ kind, icon, title }: { kind: MediaDeviceKind; icon: Icon
   }
 
   function onMenuKey(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
-    event.preventDefault()
+    // Tab leaves the menu for the next control, so the menu goes with it.
+    if (event.key === 'Tab') {
+      setOpen(false)
+      return
+    }
     const items = [...event.currentTarget.querySelectorAll<HTMLElement>('[role="menuitemradio"]')]
     const at = items.indexOf(document.activeElement as HTMLElement)
-    items[(at + (event.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length]?.focus()
+    const next =
+      event.key === 'ArrowDown'
+        ? (at + 1) % items.length
+        : event.key === 'ArrowUp'
+          ? (at + items.length - 1) % items.length
+          : event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? items.length - 1
+              : -1
+    if (next < 0) return
+    event.preventDefault()
+    items[next]?.focus()
   }
 
   if (options.length === 0) {
@@ -1059,17 +1352,21 @@ function DeviceSelect({ kind, icon, title }: { kind: MediaDeviceKind; icon: Icon
   return (
     <div className="room-select" ref={ref}>
       <button
+        ref={triggerRef}
         type="button"
         className="room-select-trigger"
         aria-label={`${title}: ${active?.label ?? ''}`}
+        title={active?.label}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
         onClick={() => setOpen((v) => !v)}
       >
         <Icon name={icon} size={18} />
-        <span className="room-select-value">{active?.label}</span>
-        <Icon name={open ? 'chevronUp' : 'chevronDown'} size={16} />
+        <span className="room-select-value">{active && shortDeviceName(active.label)}</span>
+        <span className="room-select-caret">
+          <Icon name="chevronDown" size={16} />
+        </span>
       </button>
       {open && (
         <div className="room-select-menu" role="menu" id={menuId} aria-label={title} onKeyDown={onMenuKey}>
