@@ -164,7 +164,7 @@ code {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 7px;
   height: var(--control-height);
   padding: 0 16px;
   border: 1px solid transparent;
@@ -174,9 +174,17 @@ code {
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
+  transition: background-color .15s, border-color .15s, color .15s, box-shadow .15s, translate .15s;
 }
+.btn .icon { flex: none; }
 
-.btn:disabled { opacity: .5; cursor: not-allowed; }
+/* Disabled as AI-eCabinet greys it: a solid grey, not a faded copy of the colour, so it never reads
+   as a lighter primary. */
+.btn:disabled { cursor: not-allowed; }
+.btn-primary:disabled { background: var(--line); border-color: var(--control-line); color: var(--muted-ink); }
+.btn-outline:disabled { background: var(--surface-alt); color: var(--faint-ink); }
+.btn-ghost:disabled { color: var(--faint-ink); }
+.btn-danger:disabled { opacity: .55; }
 
 .btn-primary { background: var(--brand); color: #fff; }
 .btn-primary:hover:not(:disabled) { background: var(--brand-ink); }
@@ -189,8 +197,29 @@ code {
 .btn-outline { background: var(--surface); border-color: var(--control-line); color: var(--ink); }
 .btn-outline:hover:not(:disabled) { background: var(--surface-alt); }
 
-.btn-danger { background: var(--danger); color: #fff; }
-.btn-danger:hover:not(:disabled) { background: var(--danger-ink); }
+/* Destructive, tinted rather than solid red (AI-eCabinet D3): red stays for warnings and "Mật". */
+.btn-danger { background: var(--chip-red-bg); border-color: color-mix(in srgb, var(--danger) 28%, transparent); color: var(--danger-ink); }
+.btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 16%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+
+/* The call to action (AI-eCabinet's cta, in the brand blue): raised, and it lifts on hover. For the
+   page's own action ("Tạo cuộc họp") and for what waits on the user ("Duyệt", "Vào phòng họp"). */
+.btn-cta { font-weight: 700; box-shadow: inset 0 -2px 0 rgb(0 0 0 / 14%), 0 4px 12px color-mix(in srgb, var(--brand) 30%, transparent); }
+.btn-cta:hover:not(:disabled) { translate: 0 -1px; box-shadow: inset 0 -2px 0 rgb(0 0 0 / 14%), 0 8px 18px color-mix(in srgb, var(--brand) 42%, transparent); }
+.btn-cta:disabled { box-shadow: none; }
+/* Waiting on the user right now: it ripples until done, and its arrow nudges (eCab cta-ping). One
+   per screen at most — a list of rippling buttons would be noise. */
+.btn-ping:not(:disabled) { animation: cta-ping 1.8s ease-out .6s infinite; }
+.btn-nudge .icon:last-child { animation: nudge 2s ease-in-out infinite; }
+@keyframes cta-ping {
+  0% { box-shadow: inset 0 -2px 0 rgb(0 0 0 / 14%), 0 0 0 0 color-mix(in srgb, var(--brand) 55%, transparent), 0 4px 12px color-mix(in srgb, var(--brand) 30%, transparent); }
+  100% { box-shadow: inset 0 -2px 0 rgb(0 0 0 / 14%), 0 0 0 12px color-mix(in srgb, var(--brand) 0%, transparent), 0 4px 12px color-mix(in srgb, var(--brand) 30%, transparent); }
+}
+@keyframes nudge { 0%, 60%, 100% { translate: 0 0; } 75% { translate: 3px 0; } }
+
+/* A button that is only its icon; the name lives in aria-label and the tooltip (data-tooltip). */
+.btn-icon { width: var(--control-height); padding: 0; }
+.btn-icon.btn-sm { width: 34px; }
+.btn-icon.btn-lg { width: 44px; }
 
 /* Entering a meeting in progress — the same solid green as the "Đang diễn ra" state. */
 .btn-live { background: var(--live); color: #fff; box-shadow: 0 0 0 3px var(--live-ring); }
@@ -235,7 +264,7 @@ code {
 .is-pressed { animation: press .18s ease-out; }
 
 .btn-primary:active:not(:disabled) { background: var(--brand-ink); box-shadow: inset 0 1px 2px #0003; }
-.btn-danger:active:not(:disabled) { background: var(--danger-ink); box-shadow: inset 0 1px 2px #0003; }
+.btn-danger:active:not(:disabled) { background: color-mix(in srgb, var(--danger) 22%, var(--surface)); }
 :is(.btn-ghost, .btn-outline, .icon-button, .menu-item, .select-option):active:not(:disabled) { background: var(--line); }
 :is(.sidebar-item, .sidebar-subitem):active { background: var(--sidebar-active); }
 
@@ -460,9 +489,10 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .shell-collapsed .sidebar-label { opacity: 0; pointer-events: none; }
 .shell-collapsed .sidebar-group { height: 0; padding: 0; margin: 0; overflow: hidden; }
 
-/* "Thu gọn menu": the last row of the sidebar, above the account. Quieter than the nav items. */
-.sidebar-collapse { flex: none; padding: 4px 12px 8px; }
-.sidebar-collapse .sidebar-item { width: 100%; color: var(--sidebar-ink-soft); }
+/* The collapse toggle: the first row under the brand, quieter than the nav items. 48px wide at the
+   nav's padding, so its icon sits at the same x in both widths. */
+.sidebar-collapse { flex: none; padding: 8px 12px 0; }
+.sidebar-collapse .sidebar-item { width: 48px; color: var(--sidebar-ink-soft); }
 .sidebar-collapse .icon { flex: none; transition: transform .25s; }
 .shell-collapsed .sidebar-collapse .icon { transform: rotate(180deg); }
 
@@ -1352,6 +1382,10 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .workflow-body p + p, .workflow-reason + p { margin-top: 6px; }
 .workflow-reason { margin-bottom: 0; }
 .workflow-actions { display: flex; flex: none; align-self: center; gap: 8px; }
+/* A bar that only asks ("Bạn có tham dự cuộc họp này?"): one line, centred on its buttons. */
+.workflow-bar-compact { align-items: center; }
+.workflow-bar-compact .workflow-body { padding-top: 0; }
+.workflow-bar-compact .workflow-body h2 { margin: 0; }
 .readiness-list { margin: 6px 0 0; padding-left: 20px; color: var(--ink-soft); font-size: 14px; }
 .readiness-list li + li { margin-top: 2px; }
 .alert .readiness-list { color: inherit; }
@@ -1422,6 +1456,25 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .role-capability-options input { grid-row: span 2; margin: 2px 0 0; }
 .role-capability-options small { grid-column: 2; color: var(--muted-ink); font-size: 13px; }
 
+/* ---------- Tooltip (components/TooltipLayer.tsx) ----------
+   One label in the top layer for whatever carries data-tooltip: above it, or below near the top. */
+.tooltip {
+  position: fixed;
+  inset: auto;
+  z-index: 50;
+  max-width: 280px;
+  margin: 0;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  pointer-events: none;
+}
+
 /* ---------- Dialog (components/Dialog.tsx, native <dialog>) ---------- */
 .dialog {
   width: min(512px, calc(100vw - 32px));
@@ -1458,7 +1511,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .form-section { display: flex; flex-direction: column; gap: 14px; }
 .form-section + .form-section { padding-top: 20px; border-top: 1px solid var(--line); }
 .form-section-title { margin: 0; color: var(--ink-soft); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
-.form-note { margin: 0; color: var(--muted-ink); font-size: 13px; font-style: italic; }
 
 /* ---------- Toasts (components/ToastProvider.tsx) ---------- */
 .toast-stack {
@@ -1999,7 +2051,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .roster-list { display: flex; flex-direction: column; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); list-style: none; }
 .roster-row { display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 12px; }
 .roster-row + .roster-row { border-top: 1px solid var(--line-soft); }
-.roster-row-invalid { background: var(--chip-red-bg); }
+.roster-row-invalid { box-shadow: inset 3px 0 0 var(--danger); }
 .roster-row-main { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
 .roster-role { flex: none; width: 152px; }
 .roster-empty { margin: 0; padding: 14px 16px; border: 1px dashed var(--control-line); border-radius: var(--radius); color: var(--muted-ink); font-size: 14px; }
@@ -2017,7 +2069,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* The roster tab: a person with their answer, and the panel's own alert under the toolbar. */
 .participant-cell { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-width: 0; }
 .participants-alert { margin: 12px 16px 0; }
-.participants-guest { width: var(--control-height); padding: 0; }
 .participants-skeleton-search { width: 320px; height: var(--control-height); }
 
 /* Picking people in a dialog: a search box over a scrolling list of checkable rows. */

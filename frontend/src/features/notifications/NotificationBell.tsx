@@ -42,7 +42,7 @@ export function NotificationBell() {
         ref={buttonRef}
         type="button"
         className={`icon-button notif-bell${panelOpen ? ' notif-bell-open' : ''}`}
-        title="Thông báo"
+        data-tooltip="Thông báo"
         aria-label={label}
         aria-expanded={panelOpen}
         aria-controls={panelOpen ? PANEL_ID : undefined}

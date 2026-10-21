@@ -23,6 +23,7 @@ import { rosterError, type RosterEntry } from '../participants/roster'
 import { RosterField } from '../participants/RosterField'
 import { useAuth } from '../auth/useAuth'
 import { createMeetingPrefill } from './meetingDialogLink'
+import { Icon } from '../../components/Icon'
 
 /** The backend's limits (MeetingRules). The inputs enforce them; the backend checks again. */
 const TITLE_MAX = 300
@@ -176,10 +177,8 @@ function rosterServerErrors(errors: Record<string, unknown>, roster: RosterEntry
     if (entry) rows[entry.userId] ??= message
     else if (key.startsWith('participants')) whole ??= message
   }
-  return {
-    rows,
-    whole: whole ?? (Object.keys(rows).length > 0 ? 'Có người không mời được, xem từng dòng bên dưới.' : undefined),
-  }
+  // A row's own message is enough; the field adds one only for a problem with the list as a whole.
+  return { rows, whole }
 }
 
 function sameValues(a: Values, b: Values) {
@@ -316,9 +315,15 @@ export function MeetingForm({
         // The roster no longer holds: someone picked was deactivated meanwhile, or a rule changed.
         const { rows, whole } = rosterServerErrors(err.body?.errors ?? {}, roster)
         setRosterRowErrors(rows)
-        const serverErrors: FieldErrors = { participants: whole ?? err.body?.message }
+        const firstRow = Object.keys(rows)[0]
+        const serverErrors: FieldErrors = { participants: whole ?? (firstRow ? undefined : err.body?.message) }
         setFieldErrors(serverErrors)
-        focusFirstError(serverErrors)
+        if (!firstRow) focusFirstError(serverErrors)
+        // Bring the first refused person into view, on their role.
+        else
+          requestAnimationFrame(() =>
+            formRef.current?.querySelector<HTMLElement>('.roster-row-invalid .select-trigger')?.focus(),
+          )
       } else {
         setFormError(errorMessage(err))
       }
@@ -345,10 +350,11 @@ export function MeetingForm({
       onClose={cancel}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" onClick={cancel} disabled={pending}>
+          <button type="button" className="btn btn-outline" onClick={cancel} disabled={pending}>
             Huỷ
           </button>
           <button type="submit" form={FORM_ID} className="btn btn-primary" disabled={pending}>
+            <Icon name={meeting ? 'check' : 'plus'} size={16} />
             {pending ? pendingLabel : submitLabel}
           </button>
         </>
@@ -535,10 +541,6 @@ export function MeetingForm({
               rowErrors={rosterRowErrors}
             />
           </section>
-        )}
-
-        {!meeting && (
-          <p className="form-note">Sau khi tạo, thêm nội dung cuộc họp và tài liệu ở màn chi tiết rồi gửi duyệt.</p>
         )}
 
         {formError && (

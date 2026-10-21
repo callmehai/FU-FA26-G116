@@ -8,6 +8,7 @@ import {
 } from '../../api/participants'
 import { ApiError } from '../../api/client'
 import { Dialog } from '../../components/Dialog'
+import { Icon } from '../../components/Icon'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { errorMessage } from '../../lib/errors'
 import {
@@ -99,14 +100,14 @@ export function AddParticipantsDialog({
   return (
     <Dialog
       title="Thêm thành phần tham dự"
-      description="Chọn một hoặc nhiều người, rồi chọn vai trò chung cho họ."
       onClose={close}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" onClick={close} disabled={pending}>
+          <button type="button" className="btn btn-outline" onClick={close} disabled={pending}>
             Huỷ
           </button>
           <button type="button" className="btn btn-primary" onClick={submit} disabled={pending || selected.size === 0}>
+            <Icon name="userPlus" size={16} />
             {pending ? 'Đang thêm…' : selected.size > 0 ? `Thêm ${selected.size} người` : 'Thêm'}
           </button>
         </>
@@ -200,16 +201,16 @@ export function InviteGuestDialog({
 
   return (
     <Dialog
-      title="Mời khách"
-      description="Khách là người ngoài hệ thống. Thư mời được gửi tới email khi cuộc họp đã công bố."
+      title="Mời khách ngoài hệ thống"
       onClose={close}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" onClick={close} disabled={pending}>
+          <button type="button" className="btn btn-outline" onClick={close} disabled={pending}>
             Huỷ
           </button>
           <button type="submit" form="invite-guest" className="btn btn-primary" disabled={pending}>
-            {pending ? 'Đang mời…' : 'Mời khách'}
+            <Icon name="mail" size={16} />
+            {pending ? 'Đang mời…' : 'Mời'}
           </button>
         </>
       }
@@ -323,7 +324,7 @@ export function ChangeRoleDialog({
       onClose={close}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" onClick={close} disabled={pending}>
+          <button type="button" className="btn btn-outline" onClick={close} disabled={pending}>
             Huỷ
           </button>
           <button
@@ -332,7 +333,8 @@ export function ChangeRoleDialog({
             onClick={submit}
             disabled={pending || role === row.role || (handover && !chair)}
           >
-            {pending ? 'Đang lưu…' : handover ? 'Giao vai trò Chủ tọa' : 'Lưu vai trò'}
+            <Icon name="check" size={16} />
+            {pending ? 'Đang lưu…' : handover ? 'Giao Chủ tọa' : 'Lưu'}
           </button>
         </>
       }
@@ -342,16 +344,13 @@ export function ChangeRoleDialog({
         <div className="field">
           <span>Vai trò</span>
           <SegmentedControl value={role} options={roles} onChange={setRole} label="Vai trò" />
-          {!canReplaceChair && (
-            <small className="field-hint">Sau khi công bố, chỉ Chủ tọa được giao vai trò Chủ tọa cho người khác.</small>
-          )}
         </div>
         {handover && (
           <p className="alert alert-info">
             {chair === undefined
               ? 'Đang tìm Chủ tọa hiện tại…'
               : chair
-                ? `${chair.displayName} đang là Chủ tọa sẽ thành Thành viên. Mỗi cuộc họp chỉ có một Chủ tọa.`
+                ? `${chair.displayName} sẽ thành Thành viên.`
                 : 'Không tìm thấy Chủ tọa hiện tại. Hãy tải lại trang.'}
           </p>
         )}

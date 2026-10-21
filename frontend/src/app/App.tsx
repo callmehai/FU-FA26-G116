@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
+import { TooltipLayer } from '../components/TooltipLayer'
 import { NotFound } from '../components/NotFound'
 import { RequireAuth } from '../features/auth/RequireAuth'
 import { RequireCapability } from '../features/auth/RequireCapability'
@@ -41,6 +42,8 @@ const DocumentsPage = lazy(() =>
 export function App() {
   return (
     <Suspense fallback={<div className="route-fallback">Đang tải…</div>}>
+      {/* One tooltip for every screen, the sign-in pages included. */}
+      <TooltipLayer />
       <Routes>
         <Route path={routes.login} element={<LoginPage />} />
         {/* Public and outside the session gate: whoever opens the emailed link has no session. */}

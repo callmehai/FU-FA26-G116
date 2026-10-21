@@ -79,6 +79,7 @@ export function MeetingDetailPage() {
           <div className="alert alert-error page-alert" role="alert">
             <p>{state.message}</p>
             <button type="button" className="btn btn-outline btn-sm" onClick={retry}>
+              <Icon name="refresh" size={16} />
               Thử lại
             </button>
           </div>
@@ -216,9 +217,11 @@ function MeetingDetail({
         {(canEdit || canReschedule || roomOpen) && (
           <div className="page-header-actions">
             {roomOpen && (
-              <Link className="btn btn-primary btn-lg" to={routes.meetingRoom(meeting.id)}>
-                <Icon name="video" size={16} />
+              // The meeting is running and waiting for the user: eCab's rippling "Vào phòng họp".
+              <Link className="btn btn-primary btn-lg btn-cta btn-ping btn-nudge" to={routes.meetingRoom(meeting.id)}>
+                <Icon name="video" size={18} />
                 Vào phòng họp
+                <Icon name="arrowRight" size={16} />
               </Link>
             )}
             {(canEdit || canReschedule) && (
@@ -243,16 +246,15 @@ function MeetingDetail({
       )}
 
       {meeting.canRespond && (
-        <section className="workflow-bar workflow-blue" aria-labelledby="rsvp-title">
+        <section className="workflow-bar workflow-blue workflow-bar-compact" aria-labelledby="rsvp-title">
           <span className="workflow-icon" aria-hidden="true">
             <Icon name="calendar" size={18} />
           </span>
           <div className="workflow-body">
             <h2 id="rsvp-title">Bạn có tham dự cuộc họp này?</h2>
-            <p>Trả lời một lần. Chọn không tham dự thì cuộc họp không còn hiện trên lịch của bạn.</p>
           </div>
           <div className="workflow-actions">
-            <RsvpButtons meetingId={meeting.id} labelledBy="rsvp-title" onAnswered={() => void reload()} />
+            <RsvpButtons meetingId={meeting.id} labelledBy="rsvp-title" onAnswered={() => void reload()} ping />
           </div>
         </section>
       )}

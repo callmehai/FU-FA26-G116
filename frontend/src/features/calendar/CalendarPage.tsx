@@ -165,7 +165,7 @@ export function CalendarPage() {
             className="btn btn-outline"
             onClick={() => step(-1)}
             aria-label={`${unit} trước`}
-            title={`${unit} trước`}
+            data-tooltip={`${unit} trước`}
           >
             <Icon name="chevronLeft" size={18} />
           </button>
@@ -174,7 +174,7 @@ export function CalendarPage() {
             className="btn btn-outline"
             onClick={() => step(1)}
             aria-label={`${unit} sau`}
-            title={`${unit} sau`}
+            data-tooltip={`${unit} sau`}
           >
             <Icon name="chevronRight" size={18} />
           </button>
@@ -198,7 +198,7 @@ export function CalendarPage() {
               type="button"
               aria-pressed={mode === 'calendar'}
               aria-label="Lịch"
-              title="Lịch"
+              data-tooltip="Lịch"
               onClick={() => go({ mode: 'calendar' })}
             >
               <span className="view-toggle-icon">
@@ -210,7 +210,7 @@ export function CalendarPage() {
               type="button"
               aria-pressed={mode === 'list'}
               aria-label="Danh sách"
-              title="Danh sách"
+              data-tooltip="Danh sách"
               onClick={() => go({ mode: 'list' })}
             >
               <span className="view-toggle-icon">
@@ -222,7 +222,7 @@ export function CalendarPage() {
           <Select value={span} options={SPAN_OPTIONS} onChange={changeSpan} label="Kiểu lịch" />
           <CalendarFilter value={filter} entries={inView} onChange={(next) => go({ filter: next })} />
           {can('MeetingCreator') && (
-            <Link className="btn btn-primary" to={createLink.to} state={createLink.state}>
+            <Link className="btn btn-primary btn-cta" to={createLink.to} state={createLink.state}>
               <Icon name="plus" size={18} />
               Tạo cuộc họp
             </Link>
@@ -309,6 +309,7 @@ function ScheduleNotice({
       <div className="alert alert-error page-alert calendar-note" role="alert">
         <p>{schedule.message}</p>
         <button type="button" className="btn btn-outline btn-sm" onClick={onRetry}>
+          <Icon name="refresh" size={16} />
           Thử lại
         </button>
       </div>
@@ -319,6 +320,7 @@ function ScheduleNotice({
       <div className="alert alert-info page-alert calendar-note" role="status">
         <p>Không có cuộc họp nào khớp bộ lọc trong khoảng này.</p>
         <button type="button" className="btn btn-outline btn-sm" onClick={onClearFilter}>
+          <Icon name="x" size={16} />
           Bỏ lọc
         </button>
       </div>
@@ -439,7 +441,7 @@ function GridEvent({
       data-cal-trigger=""
       className={`cal-event cal-event-${STATUS_TONE[meeting.status]}${tall ? '' : ' cal-event-short'}`}
       style={{ top, height, left: `calc(${(lane / lanes) * 100}% + 5px)`, width: `calc(${100 / lanes}% - 10px)` }}
-      title={`${meeting.title} · ${timeRange(entry)}`}
+      data-tooltip={`${meeting.title} · ${timeRange(entry)}`}
     >
       <span className="cal-event-time">
         {timeRange(entry)}
@@ -531,7 +533,7 @@ function MonthGrid({
                     type="button"
                     className="month-day"
                     onClick={() => onOpenWeek(day)}
-                    title="Xem tuần này"
+                    data-tooltip="Xem tuần này"
                     aria-label={`${dayLabel(day)}${today ? ', hôm nay' : ''}: xem tuần`}
                     aria-current={today ? 'date' : undefined}
                   >
@@ -543,7 +545,7 @@ function MonthGrid({
                       className="month-more"
                       onClick={() => onOpenWeek(day)}
                       aria-label={`${hidden} cuộc họp nữa ngày ${formatDay(day)}: xem tuần`}
-                      title={`${hidden} cuộc họp nữa`}
+                      data-tooltip={`${hidden} cuộc họp nữa`}
                     >
                       +{hidden}
                       <span className="month-more-word"> cuộc họp</span>
@@ -574,7 +576,7 @@ function MonthEvent({ entry, onOpen }: { entry: ScheduleEntry; onOpen: OpenOverv
       onClick={tileClick(entry, onOpen)}
       data-cal-trigger=""
       className={`month-event cal-event-${STATUS_TONE[meeting.status]}`}
-      title={`${meeting.title} · ${timeRange(entry)} · ${MEETING_STATUS_LABEL[meeting.status]}`}
+      data-tooltip={`${meeting.title} · ${timeRange(entry)} · ${MEETING_STATUS_LABEL[meeting.status]}`}
     >
       <span className="month-event-time">{formatClock(entry.start)}</span>
       <span className="month-event-title">{meeting.title}</span>

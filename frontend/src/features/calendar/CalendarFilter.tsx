@@ -78,7 +78,7 @@ export function CalendarFilter({
         aria-controls={open ? PANEL_ID : undefined}
         // The label hides on narrow windows (global.css), so the name lives here.
         aria-label={active > 0 ? `Bộ lọc, ${active} nhóm đang lọc` : 'Bộ lọc'}
-        title="Bộ lọc"
+        data-tooltip="Bộ lọc"
         onClick={() => setOpen(!open)}
       >
         <Icon name="filter" size={18} />
@@ -133,7 +133,13 @@ export function CalendarFilter({
           </fieldset>
 
           <div className="cal-filter-foot">
-            <button type="button" className="btn btn-ghost" disabled={active === 0} onClick={() => onChange(NO_FILTER)}>
+            <button
+              type="button"
+              className="btn btn-outline"
+              disabled={active === 0}
+              onClick={() => onChange(NO_FILTER)}
+            >
+              <Icon name="x" size={16} />
               Bỏ lọc
             </button>
             <button
@@ -144,6 +150,7 @@ export function CalendarFilter({
                 buttonRef.current?.focus()
               }}
             >
+              <Icon name="check" size={16} />
               Xong
             </button>
           </div>

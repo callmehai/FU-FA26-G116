@@ -157,10 +157,12 @@ export function MeetingsPage() {
         <p className="cell-error">{load.invalidQuery ? 'Bộ lọc trên đường dẫn không hợp lệ.' : load.message}</p>
         {load.invalidQuery ? (
           <button type="button" className="btn btn-outline btn-sm" onClick={clearFilters}>
+            <Icon name="x" size={16} />
             Đặt lại bộ lọc
           </button>
         ) : (
           <button type="button" className="btn btn-outline btn-sm" onClick={() => setAttempt((n) => n + 1)}>
+            <Icon name="refresh" size={16} />
             Thử lại
           </button>
         )}
@@ -181,6 +183,7 @@ export function MeetingsPage() {
       <EmptyRow>
         <p className="empty-title">Không có cuộc họp nào khớp bộ lọc.</p>
         <button type="button" className="btn btn-outline btn-sm" onClick={clearFilters}>
+          <Icon name="x" size={16} />
           Xoá bộ lọc
         </button>
       </EmptyRow>
@@ -188,7 +191,7 @@ export function MeetingsPage() {
       <EmptyRow>
         <p className="empty-title">Chưa có cuộc họp nào.</p>
         {canCreate ? (
-          <Link className="btn btn-primary btn-sm" to={createLink.to} state={createLink.state}>
+          <Link className="btn btn-primary btn-sm btn-cta" to={createLink.to} state={createLink.state}>
             <Icon name="plus" size={16} />
             Tạo cuộc họp
           </Link>
@@ -233,7 +236,7 @@ export function MeetingsPage() {
             to={routes.meeting(m.id)}
             state={back}
             onClick={(e) => e.stopPropagation()}
-            title="Xem chi tiết"
+            data-tooltip="Xem chi tiết"
             aria-label={`Xem chi tiết ${m.title}`}
           >
             <Icon name="eye" />
@@ -254,7 +257,7 @@ export function MeetingsPage() {
         }
         action={
           canCreate && (
-            <Link className="btn btn-primary btn-lg" to={createLink.to} state={createLink.state}>
+            <Link className="btn btn-primary btn-lg btn-cta" to={createLink.to} state={createLink.state}>
               <Icon name="plus" size={18} />
               Tạo cuộc họp
             </Link>
@@ -306,7 +309,7 @@ export function MeetingsPage() {
               max={state.to || undefined}
               onChange={(e) => update({ from: e.target.value })}
               aria-label="Diễn ra từ ngày"
-              title="Diễn ra từ ngày"
+              data-tooltip="Diễn ra từ ngày"
             />
             <span aria-hidden="true">–</span>
             <input
@@ -315,7 +318,7 @@ export function MeetingsPage() {
               min={state.from || undefined}
               onChange={(e) => update({ to: e.target.value })}
               aria-label="Diễn ra đến ngày"
-              title="Diễn ra đến ngày"
+              data-tooltip="Diễn ra đến ngày"
               aria-invalid={!!rangeError}
             />
           </fieldset>
@@ -326,7 +329,7 @@ export function MeetingsPage() {
               type="button"
               className="icon-button"
               onClick={clearFilters}
-              title="Xoá bộ lọc"
+              data-tooltip="Xoá bộ lọc"
               aria-label="Xoá bộ lọc"
             >
               <Icon name="x" size={16} />

@@ -121,6 +121,7 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
       <div className="alert alert-error" role="alert">
         <p>{state.message}</p>
         <button type="button" className="btn btn-outline btn-sm" onClick={() => void load()}>
+          <Icon name="refresh" size={16} />
           Thử lại
         </button>
       </div>
@@ -149,19 +150,24 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
         </label>
         {manage && (
           <div className="toolbar-end row-actions participants-actions">
-            {/* Icon-only, so the toolbar keeps one line inside the detail page's narrow column. */}
+            {/* Two kinds of invitee, two icons: someone with an account, or a guest by email. */}
             <button
               type="button"
-              className="btn btn-outline participants-guest"
+              className="btn btn-outline btn-icon"
               onClick={() => setOpen({ kind: 'guest' })}
-              aria-label="Mời khách"
-              title="Mời khách"
+              aria-label="Mời khách ngoài hệ thống"
+              data-tooltip="Mời khách ngoài hệ thống (qua email)"
             >
-              <Icon name="userPlus" size={16} />
+              <Icon name="mail" size={18} />
             </button>
-            <button type="button" className="btn btn-primary" onClick={() => setOpen({ kind: 'add' })}>
-              <Icon name="plus" size={16} />
-              Thêm thành phần
+            <button
+              type="button"
+              className="btn btn-primary btn-icon btn-cta"
+              onClick={() => setOpen({ kind: 'add' })}
+              aria-label="Thêm người dự họp"
+              data-tooltip="Thêm người dự họp"
+            >
+              <Icon name="userPlus" size={18} />
             </button>
           </div>
         )}
@@ -171,6 +177,7 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
         <div className="alert alert-error participants-alert" role="alert">
           <p>{state.message}</p>
           <button type="button" className="btn btn-outline btn-sm" onClick={() => void load()}>
+            <Icon name="refresh" size={16} />
             Thử lại
           </button>
         </div>
@@ -200,6 +207,7 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
                         setPage(1)
                       }}
                     >
+                      <Icon name="x" size={16} />
                       Xoá tìm kiếm
                     </button>
                   </div>
@@ -329,7 +337,7 @@ function RowActions({ row, onOpen }: { row: ParticipantRow; onOpen: (open: Open)
         type="button"
         className="icon-button"
         aria-label={row.kind === 'Guest' ? `Thu hồi lời mời của ${row.displayName}` : `Gỡ ${row.displayName}`}
-        title={row.kind === 'Guest' ? 'Thu hồi lời mời' : 'Gỡ khỏi cuộc họp'}
+        data-tooltip={row.kind === 'Guest' ? 'Thu hồi lời mời' : 'Gỡ khỏi cuộc họp'}
         onClick={() => onOpen({ kind: 'remove', row })}
       >
         <Icon name="trash" size={16} />

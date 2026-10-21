@@ -197,7 +197,11 @@ export function RosterField({
       {value.length > 0 ? (
         <ul className="roster-list" aria-label="Người đã chọn">
           {value.map((p) => (
-            <li key={p.userId} className={rowErrors?.[p.userId] ? 'roster-row roster-row-invalid' : 'roster-row'}>
+            <li
+              key={p.userId}
+              className={rowErrors?.[p.userId] ? 'roster-row roster-row-invalid' : 'roster-row'}
+              aria-invalid={!!rowErrors?.[p.userId]}
+            >
               <div className="roster-row-main">
                 <Person name={p.userId === me ? `${p.fullName} (Tôi)` : p.fullName} email={p.email} />
                 {rowErrors?.[p.userId] && <small className="field-error">{rowErrors[p.userId]}</small>}
@@ -223,14 +227,10 @@ export function RosterField({
           ))}
         </ul>
       ) : (
-        <p className="roster-empty">Chưa chọn ai. Tìm người ở ô trên, rồi chọn một người làm Chủ tọa.</p>
+        <p className="roster-empty">Chưa chọn ai.</p>
       )}
 
-      {error ? (
-        <small className="field-error">{error}</small>
-      ) : (
-        <small className="field-hint">Đúng một Chủ tọa. Chọn Chủ tọa khác thì người cũ thành Thành viên.</small>
-      )}
+      {error && <small className="field-error">{error}</small>}
     </div>
   )
 }

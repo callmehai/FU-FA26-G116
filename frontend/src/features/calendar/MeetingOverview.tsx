@@ -223,7 +223,7 @@ export function MeetingOverview({
             <p className="overview-people-label">Thành phần tham dự · {people.length}</p>
             <ul className="overview-avatars">
               {shown.map((p) => (
-                <li key={p.id} title={p.displayName}>
+                <li key={p.id} data-tooltip={p.displayName}>
                   <Avatar name={p.displayName} />
                   <span>{p.displayName}</span>
                 </li>
@@ -247,7 +247,7 @@ export function MeetingOverview({
             {expanded && hidden.length > 0 && (
               <ul id={listId} className="overview-rest" aria-label="Những người còn lại">
                 {hidden.map((p) => (
-                  <li key={p.id} title={p.displayName}>
+                  <li key={p.id} data-tooltip={p.displayName}>
                     <Avatar name={p.displayName} small />
                     <span>{p.displayName}</span>
                   </li>
@@ -264,21 +264,24 @@ export function MeetingOverview({
             <Icon name="calendar" size={16} />
             Xác nhận tham dự?
           </span>
-          <RsvpButtons meetingId={item.id} labelledBy={`${titleId}-ask`} onAnswered={onAnswered} />
+          <RsvpButtons meetingId={item.id} labelledBy={`${titleId}-ask`} onAnswered={onAnswered} ping />
         </div>
       )}
 
       <footer className="overview-foot">
         <button type="button" className="btn btn-outline" onClick={onClose}>
+          <Icon name="x" size={16} />
           Đóng
         </button>
         {state.kind === 'error' ? (
           <button type="button" className="btn btn-primary" onClick={() => setAttempt((n) => n + 1)}>
+            <Icon name="refresh" size={16} />
             Thử lại
           </button>
         ) : (
           <Link className="btn btn-primary" to={routes.meeting(item.id)} state={back}>
             Xem chi tiết
+            <Icon name="arrowRight" size={16} />
           </Link>
         )}
       </footer>

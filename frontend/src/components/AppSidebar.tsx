@@ -46,7 +46,12 @@ export function AppSidebar({ collapsed }: { collapsed: boolean }) {
     <nav className="sidebar-nav" aria-label="Điều hướng chính">
       <p className="sidebar-group sidebar-label">Nghiệp vụ</p>
       {WORK.filter((e) => !e.cap || can(e.cap)).map((entry) => (
-        <NavLink key={entry.to} to={entry.to} className="sidebar-item" title={collapsed ? entry.label : undefined}>
+        <NavLink
+          key={entry.to}
+          to={entry.to}
+          className="sidebar-item"
+          data-tooltip={collapsed ? entry.label : undefined}
+        >
           <Icon name={entry.icon} size={20} />
           <span className="sidebar-label">{entry.label}</span>
         </NavLink>
@@ -57,7 +62,7 @@ export function AppSidebar({ collapsed }: { collapsed: boolean }) {
           <p className="sidebar-group sidebar-label">Hệ thống</p>
           {collapsed ? (
             admin.map((entry) => (
-              <NavLink key={entry.to} to={entry.to} className="sidebar-item" title={entry.label}>
+              <NavLink key={entry.to} to={entry.to} className="sidebar-item" data-tooltip={entry.label}>
                 <Icon name={entry.icon} size={20} />
                 <span className="sidebar-label">{entry.label}</span>
               </NavLink>

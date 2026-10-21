@@ -68,6 +68,7 @@ export function MeetingHistory({
               onClick={onLoadMore}
               disabled={history.loadingMore}
             >
+              <Icon name="chevronDown" size={16} />
               {history.loadingMore ? 'Đang tải…' : 'Xem thêm'}
             </button>
           )}

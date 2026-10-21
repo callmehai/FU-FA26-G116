@@ -192,7 +192,7 @@ export function UserFormDialog({
       onClose={close}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" onClick={close} disabled={pending}>
+          <button type="button" className="btn btn-outline" onClick={close} disabled={pending}>
             Huỷ
           </button>
           <button
@@ -201,6 +201,7 @@ export function UserFormDialog({
             className="btn btn-primary"
             disabled={pending || (editing !== null && original === null)}
           >
+            <Icon name={editing ? 'check' : 'userPlus'} size={16} />
             {pending ? 'Đang lưu…' : editing ? 'Lưu thay đổi' : 'Tạo tài khoản'}
           </button>
         </>
@@ -215,6 +216,7 @@ export function UserFormDialog({
               className="btn btn-outline btn-sm"
               onClick={retryLoad}
             >
+              <Icon name="refresh" size={16} />
               Thử lại
             </button>
           </div>
@@ -280,7 +282,7 @@ export function UserFormDialog({
                   type="button"
                   className="icon-button"
                   onClick={() => setShowPassword((v) => !v)}
-                  title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                  data-tooltip={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                   aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 >
                   <Icon name={showPassword ? 'eyeOff' : 'eye'} size={16} />
@@ -290,7 +292,7 @@ export function UserFormDialog({
                   className="icon-button"
                   onClick={copyPassword}
                   disabled={!password}
-                  title="Sao chép mật khẩu"
+                  data-tooltip="Sao chép mật khẩu"
                   aria-label="Sao chép mật khẩu"
                 >
                   <Icon name="copy" size={16} />

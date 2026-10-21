@@ -85,7 +85,7 @@ export function AppShell() {
   return (
     <div className={`shell${collapsed ? ' shell-collapsed' : ''}`}>
       <aside className="sidebar">
-        <NavLink className="sidebar-brand" to={routes.calendar} title="TrustCabinet">
+        <NavLink className="sidebar-brand" to={routes.calendar} data-tooltip={collapsed ? 'TrustCabinet' : undefined}>
           <span className="sidebar-brand-disc">
             <BrandMark size={32} />
           </span>
@@ -95,27 +95,28 @@ export function AppShell() {
           </span>
         </NavLink>
 
-        <AppSidebar collapsed={collapsed} />
-
-        {/* Inside the sidebar, above the account: a round button on its edge sat beside every page's
-            first control (the back link, "Hôm nay") and was easy to hit by mistake. */}
+        {/* Inside the sidebar, under the brand: a round button on its edge sat beside every page's
+            first control (the back link, "Hôm nay") and was easy to hit by mistake. Icon only, and
+            under the fixed-height brand row, so it stays in one spot whether the sidebar is wide or
+            narrow; at the foot, the account row growing when narrow pushed it up. */}
         <div className="sidebar-collapse">
           <button
             type="button"
             className="sidebar-item"
             onClick={() => setCollapsed((c) => !c)}
             aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-            title={collapsed ? 'Mở rộng menu' : undefined}
+            data-tooltip={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
             aria-expanded={!collapsed}
           >
             <Icon name="chevronLeft" size={18} />
-            <span className="sidebar-label">Thu gọn menu</span>
           </button>
         </div>
 
+        <AppSidebar collapsed={collapsed} />
+
         <div className="sidebar-foot">
           <details className="account" ref={accountMenuRef}>
-            <summary aria-label={`Tài khoản ${user.fullName}`} title={collapsed ? user.fullName : undefined}>
+            <summary aria-label={`Tài khoản ${user.fullName}`} data-tooltip={collapsed ? user.fullName : undefined}>
               <span className="avatar" style={{ backgroundColor: avatar.bg, color: avatar.fg }}>
                 {initials(user.fullName)}
               </span>
