@@ -1,5 +1,11 @@
 # Tự deploy lên server test sau mỗi lần CI trên main xanh — merge PR xong là server tự cập nhật.
 #
+# CI gọi workflow này như một job của chính nó (job "deploy" trong ci.yml), không dùng workflow_run:
+# nhờ vậy trạng thái deploy hiện trên đúng commit vừa merge, cạnh hai check build & test, và dấu
+# tích của commit chỉ xanh khi server đã chạy bản mới. workflow_run thì gắn check vào commit đang
+# ở đầu main lúc nó bắt đầu — hai PR merge sát nhau là deploy của PR trước hiện trên commit của PR
+# sau — và luôn chạy file deploy.yml của main chứ không phải của commit đang deploy.
+#
 # Image được build ngay trên runner của GitHub rồi chép sang server qua SSH: server test chỉ có 1 GB
 # RAM, tự build mất 15–20 phút và đốt hết CPU burst. Không dùng registry (GHCR) để khỏi phải cấp
 # thêm token đọc package cho server.
@@ -8,29 +14,27 @@
 name: Deploy server test
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches: [main]
+  # Gọi từ ci.yml khi backend và frontend đã xanh trên một lần push lên main.
+  workflow_call:
   # Nút "Run workflow" trong tab Actions — deploy lại main mà không cần push.
   workflow_dispatch:
-
-# Hai lần merge sát nhau thì chạy lần lượt, không chạy chồng lên server.
-concurrency:
-  group: deploy-server-test
-  cancel-in-progress: false
 
 jobs:
   deploy:
     name: Build & deploy
-    # workflow_run cũng chạy khi CI đỏ, và khi CI chạy cho pull request — chỉ deploy push lên main
-    # đã xanh.
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
+    # Hai lần merge sát nhau thì chạy lần lượt, không chạy chồng lên server. Đặt ở job để áp dụng
+    # cho cả lần CI gọi lẫn lần bấm Run workflow.
+    concurrency:
+      group: deploy-server-test
+      cancel-in-progress: false
+    # Trang chủ repo có mục Deployments: lần deploy gần nhất, commit nào, kèm link mở server.
+    environment:
+      name: server-test
+      url: ${{ steps.check.outputs.url }}
     env:
-      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      # Gọi từ CI thì github.sha là commit vừa push lên main.
+      SHA: ${{ github.sha }}
       SERVER: ubuntu@${{ secrets.DEPLOY_HOST }}
     steps:
       - uses: actions/checkout@v4
@@ -80,6 +84,7 @@ jobs:
             docker image prune -f > /dev/null"
 
       - name: Kiểm tra
+        id: check
         run: |
           site=$(ssh "$SERVER" "grep '^SITE_ADDRESS=' ~/TrustCabinet/deploy/.env | cut -d= -f2")
           # /rtc/validate không kèm token: LiveKit trả 401. Caddy không chuyển được tới LiveKit thì
@@ -89,6 +94,7 @@ jobs:
             rtc=$(curl -sS -o /dev/null -w '%{http_code}' "https://$site/rtc/validate" || true)
             if [ "$health" = 200 ] && [ "$rtc" = 401 ]; then
               echo "Đã deploy $SHA lên https://$site"
+              echo "url=https://$site" >> "$GITHUB_OUTPUT"
               exit 0
             fi
             sleep 5
