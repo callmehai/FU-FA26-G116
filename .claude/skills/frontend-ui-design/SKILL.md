@@ -148,6 +148,9 @@ Vietnamese, specific, and about consequences: "Lưu thay đổi không tự gử
 giữ nguyên." beats "Lưu ý khi sửa". Say what a button does ("Tạo cuộc họp", "Lưu thay đổi"). Show
 the backend's `message` when there is one; branch on `code`, never on text.
 
+Then cut it down: one line per row, chips and icons over sentences, secondary facts in tooltips —
+see **minimize-text**.
+
 ## 8. Before you commit
 
 ```bash
