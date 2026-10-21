@@ -63,8 +63,8 @@ public sealed class AgendaFixture : IAsyncLifetime
                 fixture.Guests.Clock = fixture.Clock;
                 services.RemoveAll<IAgendaGuestAccess>();
                 services.AddSingleton<IAgendaGuestAccess>(fixture.Guests);
-                services.RemoveAll<IAgendaGuestIdentityResolver>();
-                services.AddSingleton<IAgendaGuestIdentityResolver>(fixture.Guests);
+                services.RemoveAll<IMeetingGuestIdentityResolver>();
+                services.AddSingleton<IMeetingGuestIdentityResolver>(fixture.Guests);
                 services.RemoveAll<IAgendaChangePublisher>();
                 services.AddScoped<AgendaChangePublisher>();
                 services.AddScoped<IAgendaChangePublisher>(p => new Push(fixture, p.GetRequiredService<AgendaChangePublisher>()));

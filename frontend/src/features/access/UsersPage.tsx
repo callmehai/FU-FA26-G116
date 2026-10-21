@@ -271,7 +271,7 @@ export function UsersPage() {
         }
         action={
           <button
-            className="btn btn-primary btn-lg"
+            className="btn btn-primary btn-lg btn-cta"
             type="button"
             onClick={() => void openUserForm({ mode: 'create' })}
             disabled={roles === null}
@@ -326,6 +326,7 @@ export function UsersPage() {
                   <td colSpan={COLUMN_COUNT} className="cell-empty">
                     <p className="cell-error">{loadError}</p>
                     <button type="button" className="btn btn-outline btn-sm" onClick={retry}>
+                      <Icon name="refresh" size={16} />
                       Thử lại
                     </button>
                   </td>
@@ -389,7 +390,7 @@ export function UsersPage() {
                             type="button"
                             className="icon-button icon-button-sm"
                             onClick={() => void openUserForm({ mode: 'edit', id: u.id })}
-                            title="Sửa hồ sơ"
+                            data-tooltip="Sửa hồ sơ"
                             aria-label={`Sửa tài khoản ${u.fullName}`}
                           >
                             <Icon name="pencil" size={16} />
@@ -399,7 +400,7 @@ export function UsersPage() {
                             className="icon-button icon-button-sm"
                             onClick={() => setStatusTarget(u)}
                             disabled={isSelf}
-                            title={
+                            data-tooltip={
                               isSelf
                                 ? 'Không thể tự đổi trạng thái tài khoản của mình'
                                 : u.isActive
@@ -415,7 +416,7 @@ export function UsersPage() {
                             className="icon-button icon-button-sm"
                             onClick={() => setResetTarget(u)}
                             disabled={resetUnavailable !== null}
-                            title={resetUnavailable ?? 'Gửi liên kết đặt lại mật khẩu'}
+                            data-tooltip={resetUnavailable ?? 'Gửi liên kết đặt lại mật khẩu'}
                             aria-label={`Gửi liên kết đặt lại mật khẩu cho ${u.fullName}`}
                           >
                             <Icon name="key" size={16} />

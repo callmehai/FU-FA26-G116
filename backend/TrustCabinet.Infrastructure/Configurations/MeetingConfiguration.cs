@@ -8,6 +8,8 @@ public class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
 {
     public void Configure(EntityTypeBuilder<Meeting> builder)
     {
+        builder.Property(m => m.ParticipantsRevision).HasDefaultValue(0L);
+        builder.ToTable(t => t.HasCheckConstraint("ck_participants_revision", "participants_revision >= 0"));
         builder.Property(m => m.Title).HasMaxLength(300).IsRequired();
         builder.Property(m => m.Description).HasMaxLength(4000);
         builder.Property(m => m.Location).HasMaxLength(300);

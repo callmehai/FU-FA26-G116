@@ -1,5 +1,7 @@
 # SCRUM-25 — contract tích hợp Guest cho người triển khai UC-04
 
+**Cập nhật bàn giao SCRUM-20 ngày 14/10/2026:** SCRUM-20 đã lưu invitation (grants đã bỏ theo PO 20/10/2026) và consumer contracts; OTP, profile tự khai, session/credential **production tách sang UC-04** theo quyết định người phụ trách. Phân công UC-04/SCRUM-20 chung trong bản gốc bên dưới được làm rõ bởi [contract mới](09-thanh-phan-tham-du-guest-uc04.md). Cả Agenda và Participants vẫn fail-closed với Guest cho đến khi adapters production được tích hợp; không nghiệm thu Guest E2E từ test-only adapter.
+
 Phạm vi đã chốt ngày 13/10/2026: SCRUM-25 chuẩn bị phần đọc Agenda/realtime cho Guest theo ADR-0016; UC-04/SCRUM-20 triển khai lời mời, OTP, profile, session và lưu trữ. Không thêm endpoint xác thực, entity, migration, gửi email hoặc tạo User giả trong SCRUM-25. Các adapter mặc định **từ chối Guest**; không bật tính năng bằng cấu hình cho phép tất cả.
 
 ## Phần Agenda đã thực hiện
@@ -15,7 +17,7 @@ Phạm vi đã chốt ngày 13/10/2026: SCRUM-25 chuẩn bị phần đọc Agen
 
 | Thành phần | Vị trí contract | Trách nhiệm |
 |---|---|---|
-| `IAgendaGuestIdentityResolver.Resolve(ClaimsPrincipal)` | `backend/TrustCabinet.Web/AgendaGuestIdentity.cs` | Map principal **đã được authentication middleware xác thực** thành `AgendaGuestSession(MeetingId, InvitationId, SessionId)`. Đây chỉ là identity, chưa cấp quyền đọc. |
+| `IMeetingGuestIdentityResolver.Resolve(ClaimsPrincipal)` | `backend/TrustCabinet.Web/MeetingGuestIdentity.cs` | Map principal **đã được authentication middleware xác thực** thành `MeetingGuestSession(MeetingId, InvitationId, SessionId)`. Đây chỉ là identity, chưa cấp quyền đọc. |
 | `IAgendaGuestAccess.CanReadAsync(session, ct)` | `backend/TrustCabinet.Domain/Agenda/AgendaGuestAccess.cs` | Đọc lại invitation và session hiện tại; trả true chỉ khi tất cả điều kiện dưới đây đúng. |
 | `IAgendaGuestAccess.ListReadersAsync(meetingId, ct)` | Cùng interface | Trả các identity session hiện còn quyền trong đúng meeting, dựa trên cùng rule với CanReadAsync, dùng query theo tập hợp để tránh N+1. Không trả tên/email/token. |
 
@@ -36,7 +38,7 @@ Middleware hiện nhận JWT Bearer có issuer/audience/signature/lifetime đư�
 
 Tên claim và wire format do UC-04 quyết định, không phụ thuộc các claim `test_*` trong test SCRUM-25. Resolver chỉ đọc claim từ principal đã xác thực; không đọc header/body/query như bằng chứng danh tính, không query database trong resolver đồng bộ. Chỉ trả null cho principal không phải Guest. Principal Guest lỗi claim trả identity có GUID rỗng để Agenda từ chối; không fallback thành User. Kể cả resolver nhầm trả Guest kèm subject User, Agenda vẫn chặn toàn bộ mutation/options.
 
-Đăng ký implementation sau các service Agenda, thay cả hai mặc định bằng `services.Replace(...)` từ `Microsoft.Extensions.DependencyInjection.Extensions`. Dùng lifetime scoped nếu adapter cần scoped DbContext; không singleton hóa DbContext. Mặc định hiện là `UnavailableAgendaGuestIdentityResolver` và `UnavailableAgendaGuestAccess`: nếu chưa thay resolver, principal Guest không có UserId nhận 403; có resolver nhưng chưa thay access adapter thì GET nhận 404 và không nhận event.
+Đăng ký implementation sau các service Agenda, thay cả hai mặc định bằng `services.Replace(...)` từ `Microsoft.Extensions.DependencyInjection.Extensions`. Dùng lifetime scoped nếu adapter cần scoped DbContext; không singleton hóa DbContext. Mặc định hiện là `UnavailableMeetingGuestIdentityResolver` và `UnavailableAgendaGuestAccess`: nếu chưa thay resolver, principal Guest không có UserId nhận 403; có resolver nhưng chưa thay access adapter thì GET nhận 404 và không nhận event.
 
 `IAgendaGuestAccess` nằm trong Domain, implementation UC-04 có thể ở Infrastructure; resolver ClaimsPrincipal ở Web. Không đưa ASP.NET/EF vào Domain. UC-04 không cần sửa thuật toán Agenda hoặc snapshot DTO để bật phần đọc Guest.
 
@@ -71,3 +73,5 @@ Test thủ công sau khi UC-04 đã tích hợp:
 6. Reconnect một phiên còn hiệu lực rồi join/GET để lấy snapshot mới nhất. Kiểm tra tài khoản User/roster không tăng do đăng nhập Guest.
 
 Các lỗi storage và race dùng automated test trên database riêng, không gây lỗi trên server test dùng chung.
+
+Cập nhật review 21/10/2026: Agenda, Participants và MeetingHub dùng chung `MeetingGuestSession` và `IMeetingGuestIdentityResolver`; UC-04 chỉ đăng ký một resolver. Các port kiểm quyền theo feature vẫn tách riêng, dùng cùng invitation/session storage. Tên group Guest được tạo duy nhất bằng `MeetingHub.GuestGroup`.

@@ -203,7 +203,7 @@ export function RolesPage() {
         title="Vai trò"
         description="Mỗi vai trò là một nhóm quyền; gán vai trò cho tài khoản ở màn Người dùng & Quyền."
         action={
-          <button type="button" className="btn btn-primary btn-lg" onClick={() => setFormTarget({ mode: 'create' })}>
+          <button type="button" className="btn btn-primary btn-lg btn-cta" onClick={() => setFormTarget({ mode: 'create' })}>
             <Icon name="plus" size={18} />
             Tạo vai trò
           </button>
@@ -248,6 +248,7 @@ export function RolesPage() {
         <div className="cell-empty">
           <p className="cell-error">{loadError}</p>
           <button type="button" className="btn btn-outline btn-sm" onClick={() => void load()}>
+            <Icon name="refresh" size={16} />
             Thử lại
           </button>
         </div>
@@ -282,7 +283,7 @@ export function RolesPage() {
                             type="button"
                             className="icon-button"
                             onClick={() => setFormTarget({ mode: 'edit', role })}
-                            title="Sửa vai trò"
+                            data-tooltip="Sửa vai trò"
                             aria-label={`Sửa vai trò ${role.name}`}
                           >
                             <Icon name="pencil" size={16} />
@@ -291,7 +292,7 @@ export function RolesPage() {
                             type="button"
                             className="icon-button"
                             onClick={() => setDeleteTarget(role)}
-                            title="Xoá vai trò"
+                            data-tooltip="Xoá vai trò"
                             aria-label={`Xoá vai trò ${role.name}`}
                           >
                             <Icon name="trash" size={16} />
@@ -324,7 +325,7 @@ export function RolesPage() {
                   </tr>
                   <tr>
                     {columns.map((column) => (
-                      <th key={column.code} className={`matrix-cap${groupStart(column.code)}`} title={column.description}>
+                      <th key={column.code} className={`matrix-cap${groupStart(column.code)}`} data-tooltip={column.description}>
                         {column.name}
                       </th>
                     ))}
@@ -368,10 +369,12 @@ export function RolesPage() {
                         <td className="col-action">
                           {dirty && (
                             <span className="row-actions">
-                              <button type="button" className="btn btn-ghost btn-sm" onClick={() => discard(id)} disabled={saving !== null}>
+                              <button type="button" className="btn btn-outline btn-sm" onClick={() => discard(id)} disabled={saving !== null}>
+                                <Icon name="undo" size={16} />
                                 Hoàn tác
                               </button>
                               <button type="button" className="btn btn-primary btn-sm" onClick={() => void save(id)} disabled={saving !== null}>
+                                <Icon name="check" size={16} />
                                 {saving === id ? 'Đang lưu…' : 'Lưu'}
                               </button>
                             </span>

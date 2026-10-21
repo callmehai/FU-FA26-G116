@@ -165,6 +165,7 @@ export function ResetPasswordPage() {
               <p className="alert-hint">{notice.hint}</p>
             </div>
             <Link ref={loginLinkRef} className="btn btn-outline btn-block" to={routes.login}>
+              <Icon name="logIn" size={16} />
               Về trang đăng nhập
             </Link>
           </>
@@ -241,7 +242,8 @@ export function ResetPasswordPage() {
               )}
             </div>
 
-            <button className="btn btn-primary btn-block" type="submit" disabled={pending}>
+            <button className="btn btn-primary btn-block btn-cta" type="submit" disabled={pending}>
+              <Icon name="key" size={18} />
               {pending ? 'Đang đặt lại…' : 'Đặt mật khẩu mới'}
             </button>
             <p className="login-hint">Đặt lại xong, mọi thiết bị đang đăng nhập tài khoản này sẽ bị đăng xuất.</p>
@@ -260,7 +262,7 @@ function RevealToggle({ shown, onToggle }: { shown: boolean; onToggle: () => voi
       type="button"
       className="icon-button"
       onClick={onToggle}
-      title={label}
+      data-tooltip={label}
       aria-label={label}
       aria-pressed={shown}
     >

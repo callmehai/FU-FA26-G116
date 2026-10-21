@@ -5,35 +5,20 @@ using TrustCabinet.Domain.Notifications;
 
 namespace TrustCabinet.Web.Tests.Meetings;
 
-internal sealed class FakeMeetingInvitationQueue : IMeetingInvitationQueue
-{
-    public List<Guid> MeetingIds { get; } = [];
-    public Exception? NextQueueThrows { get; set; }
-
-    public Task<int> QueueForPublishedMeetingAsync(Guid meetingId, CancellationToken ct = default)
-    {
-        ct.ThrowIfCancellationRequested();
-        if (NextQueueThrows is { } exception)
-        {
-            NextQueueThrows = null;
-            throw exception;
-        }
-        MeetingIds.Add(meetingId);
-        return Task.FromResult(0);
-    }
-
-    public Task<Guid?> QueueNextUninitializedPublishedMeetingAsync(CancellationToken ct = default)
-    {
-        ct.ThrowIfCancellationRequested();
-        return Task.FromResult<Guid?>(null);
-    }
-}
-
 internal sealed class FakeMeetingRepository : IMeetingRepository
 {
     private readonly List<Meeting> _pendingAdds = [];
     private readonly List<Notification> _pendingNotifications = [];
     private readonly List<EmailMessage> _pendingEmailMessages = [];
+
+    public List<Guid> StagedPublicationIds { get; } = [];
+    public Task StagePublicationInvitationsAsync(Meeting meeting, DateTimeOffset now, CancellationToken ct = default)
+    {
+        StagedPublicationIds.Add(meeting.Id);
+        return Task.CompletedTask;
+    }
+    public Task<IReadOnlyList<User>> LockParticipantUsersAsync(Guid[] userIds, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<User>>(userIds.Select(id => new User { Id = id, FullName = "Selected user", Email = $"{id}@test.local", IsActive = !InactiveUserIds.Contains(id) }).ToArray());
 
     public List<Meeting> Meetings { get; } = [];
 
@@ -263,6 +248,7 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
     {
         var snapshot = Meetings.Select(Clone).ToArray();
         var notifications = Notifications.ToArray();
+        var publications = StagedPublicationIds.ToArray();
         var emailMessages = EmailMessages.ToArray();
         try
         {
@@ -270,6 +256,8 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         }
         catch
         {
+            StagedPublicationIds.Clear();
+            StagedPublicationIds.AddRange(publications);
             Meetings.Clear();
             Meetings.AddRange(snapshot);
             Notifications.Clear();

@@ -104,6 +104,19 @@ public static class DevelopmentDataSeeder
 
         db.AddRange(meetings);
 
+        // The in-progress room demo has explicit accepted invitations below; do not create a
+        // second assignment for the same meeting/user pair here.
+        var inProgress = meetings[2];
+        foreach (var meeting in meetings.Skip(1))
+        {
+            if (meeting == inProgress)
+                continue;
+
+            meeting.Participants.Add(new MeetingParticipant { Meeting = meeting, User = chair, Role = MeetingRole.Chair });
+            if (meeting.Status is MeetingStatus.Published or MeetingStatus.InProgress or MeetingStatus.Ended)
+                meeting.Participants.Add(new MeetingParticipant { Meeting = meeting, User = secretary, Role = MeetingRole.Secretary });
+        }
+
         var published = meetings[0];
 
         db.AddRange(
@@ -113,7 +126,6 @@ public static class DevelopmentDataSeeder
 
         // The in-progress online meeting is where the call room is tried out (SCRUM-41), and only
         // invited participants may enter it.
-        var inProgress = meetings[2];
         db.AddRange(
             new MeetingParticipant { Meeting = inProgress, User = chair, Role = MeetingRole.Chair, Response = InvitationResponse.Accepted },
             new MeetingParticipant { Meeting = inProgress, User = secretary, Role = MeetingRole.Secretary, Response = InvitationResponse.Accepted },

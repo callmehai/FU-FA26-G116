@@ -1,0 +1,288 @@
+{
+  "info": {
+    "name": "SCRUM-20 / SCRUM-97 Participants — PO 20/10/2026",
+    "description": "Chạy thủ công từng request trên DB thử riêng. Đổi token theo actor; GET context trước mutation để lưu ETag. Guest production chờ SCRUM-59. Không export token thật.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5225"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "meetingId",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "participantId",
+      "value": ""
+    },
+    {
+      "key": "guestInvitationId",
+      "value": ""
+    },
+    {
+      "key": "outgoingParticipantId",
+      "value": ""
+    },
+    {
+      "key": "incomingParticipantId",
+      "value": ""
+    },
+    {
+      "key": "etag",
+      "value": "\"participants-0\""
+    }
+  ],
+  "item": [
+    {
+      "name": "Chọn người trước tạo họp (token MeetingCreator)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/meetings/participant-options?q=&page=1&pageSize=20"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Lookup thành công\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Chỉ trả trường cần thiết\", () => { const body = pm.response.json(); body.items.forEach(x => pm.expect(Object.keys(x).sort()).to.eql([\"email\", \"fullName\", \"id\"])); pm.expect(body).not.to.have.property(\"revision\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tạo họp kèm Chair (token MeetingCreator)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"SCRUM20 manual\",\n  \"plannedStartTime\": \"2099-01-01T09:00:00+07:00\",\n  \"plannedEndTime\": \"2099-01-01T10:00:00+07:00\",\n  \"mode\": \"InPerson\",\n  \"location\": \"Phòng test\",\n  \"sensitivity\": \"Internal\",\n  \"description\": \"Test roster\",\n  \"participants\": [\n    {\n      \"userId\": \"{{userId}}\",\n      \"role\": \"Chair\"\n    }\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Chi tiết meeting / vai trò hiện tại",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}"
+      }
+    },
+    {
+      "name": "Context — lưu ETag trước mỗi mutation",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participant-context"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) pm.collectionVariables.set(\"etag\", pm.response.headers.get(\"ETag\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roster + responses + totals",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants?page=1&pageSize=20"
+      }
+    },
+    {
+      "name": "Options (manager)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/editor-options?page=1&pageSize=20"
+      }
+    },
+    {
+      "name": "Thêm internal",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userIds\": [\n    \"{{userId}}\"\n  ],\n  \"role\": \"Member\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Mời Guest",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/guest-invitations",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"invitedName\": \"Khách thử\",\n  \"email\": \"guest@example.test\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Đổi role",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/assignments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"changes\": [\n    {\n      \"participantId\": \"{{participantId}}\",\n      \"role\": \"Secretary\"\n    }\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Giao Chủ tọa — token Chair từ Published, hoặc Secretary khi Chair inactive",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/assignments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"changes\": [\n    {\n      \"participantId\": \"{{outgoingParticipantId}}\",\n      \"role\": \"Member\"\n    },\n    {\n      \"participantId\": \"{{incomingParticipantId}}\",\n      \"role\": \"Chair\"\n    }\n  ],\n  \"chairReplacement\": {\n    \"outgoingParticipantId\": \"{{outgoingParticipantId}}\",\n    \"incomingParticipantId\": \"{{incomingParticipantId}}\",\n    \"confirmed\": true\n  }\n}"
+        }
+      }
+    },
+    {
+      "name": "Own response",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/invitation-response"
+      }
+    },
+    {
+      "name": "Accept own invitation",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/invitation-response",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"response\": \"Accepted\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Decline own invitation",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/invitation-response",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"response\": \"Declined\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Gỡ internal",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/{{participantId}}"
+      }
+    },
+    {
+      "name": "Thu hồi Guest",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/guest-invitations/{{guestInvitationId}}"
+      }
+    }
+  ]
+}

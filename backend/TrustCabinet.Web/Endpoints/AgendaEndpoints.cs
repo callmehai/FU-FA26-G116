@@ -42,7 +42,7 @@ public static class AgendaEndpoints
     {
         const string prefix = "/api/meetings/{meetingId:guid}/agenda";
         app.MapGet(prefix, async (Guid meetingId, HttpContext context, IAgendaService service,
-            IAgendaGuestIdentityResolver identities, CancellationToken ct) =>
+            IMeetingGuestIdentityResolver identities, CancellationToken ct) =>
         {
             if (identities.Resolve(context.User) is { } guest)
                 return Map(await service.GetForGuestAsync(meetingId, guest, ct), meetingId);
@@ -86,7 +86,7 @@ public static class AgendaEndpoints
     }
 
     private static ValueTask<object?> RejectGuestWrite(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
-        => context.HttpContext.RequestServices.GetRequiredService<IAgendaGuestIdentityResolver>()
+        => context.HttpContext.RequestServices.GetRequiredService<IMeetingGuestIdentityResolver>()
             .Resolve(context.HttpContext.User) is not null
             ? ValueTask.FromResult<object?>(Results.Forbid()) : next(context);
 

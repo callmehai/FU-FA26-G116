@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
+import { TooltipLayer } from '../components/TooltipLayer'
 import { NotFound } from '../components/NotFound'
 import { RequireAuth } from '../features/auth/RequireAuth'
 import { RequireCapability } from '../features/auth/RequireCapability'
@@ -11,12 +12,6 @@ import { routes } from '../lib/routes'
 // the session gate stay eager — they are needed immediately on every signed-in view.
 const MeetingsPage = lazy(() =>
   import('../features/meetings/MeetingsPage').then((m) => ({ default: m.MeetingsPage })),
-)
-const CreateMeetingPage = lazy(() =>
-  import('../features/meetings/CreateMeetingPage').then((m) => ({ default: m.CreateMeetingPage })),
-)
-const EditMeetingPage = lazy(() =>
-  import('../features/meetings/EditMeetingPage').then((m) => ({ default: m.EditMeetingPage })),
 )
 const MeetingDetailPage = lazy(() =>
   import('../features/meetings/detail/MeetingDetailPage').then((m) => ({ default: m.MeetingDetailPage })),
@@ -47,6 +42,8 @@ const DocumentsPage = lazy(() =>
 export function App() {
   return (
     <Suspense fallback={<div className="route-fallback">Đang tải…</div>}>
+      {/* One tooltip for every screen, the sign-in pages included. */}
+      <TooltipLayer />
       <Routes>
         <Route path={routes.login} element={<LoginPage />} />
         {/* Public and outside the session gate: whoever opens the emailed link has no session. */}
@@ -66,23 +63,9 @@ export function App() {
             <Route path={routes.calendar} element={<CalendarPage />} />
             <Route path={routes.documents} element={<DocumentsPage />} />
             <Route path={routes.meetings} element={<MeetingsPage />} />
-            <Route
-              path={routes.meetingNew}
-              element={
-                <RequireCapability cap="MeetingCreator">
-                  <CreateMeetingPage />
-                </RequireCapability>
-              }
-            />
-            {/* The page also 404s for anyone but the meeting's creator, as PUT does. */}
-            <Route
-              path={routes.meetingEdit(':meetingId')}
-              element={
-                <RequireCapability cap="MeetingCreator">
-                  <EditMeetingPage />
-                </RequireCapability>
-              }
-            />
+            {/* Create and edit are dialogs now (`?create=`, `?edit=`); old links land on them. */}
+            <Route path={routes.meetingNew} element={<Navigate to={`${routes.meetings}?create=1`} replace />} />
+            <Route path={routes.meetingEdit(':meetingId')} element={<EditLinkRedirect />} />
             {/* No capability gate: an unreadable meeting 404s, which the page renders as NotFound. */}
             <Route path={routes.meeting(':meetingId')} element={<MeetingDetailPage />} />
             <Route
@@ -107,4 +90,10 @@ export function App() {
       </Routes>
     </Suspense>
   )
+}
+
+/** `/mgmt/meetings/{id}/edit` from before the edit dialog: the meeting's page with it open. */
+function EditLinkRedirect() {
+  const { meetingId = '' } = useParams()
+  return <Navigate to={`${routes.meeting(meetingId)}?edit=1`} replace />
 }

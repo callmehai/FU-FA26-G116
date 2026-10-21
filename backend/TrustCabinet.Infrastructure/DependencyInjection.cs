@@ -54,6 +54,7 @@ public static class DependencyInjection
         await ReferenceDataSeeder.SeedAsync(db);
         await DevelopmentDataSeeder.SeedAsync(db);
         await AgendaDevelopmentDataSeeder.SeedAsync(db);
+        await ParticipantDevelopmentDataSeeder.SeedAsync(db);
     }
 
     /// <summary>

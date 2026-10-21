@@ -31,3 +31,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0018](0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md) | Tài liệu không có phiên bản — kho cá nhân và cuộc họp chỉ giữ tham chiếu tới file | Đã chấp nhận — PO 13/10/2026; phần khoá gỡ, AgendaItemId và số UC-33b thay thế bởi ADR-0020 |
 | [0019](0019-chuan-bi-bieu-quyet-truoc-khi-hop.md) | Chuẩn bị biểu quyết trước khi họp và chốt điều kiện mở phiếu | Đã chấp nhận — xác nhận người dùng 14/10/2026 |
 | [0020](0020-tai-lieu-theo-quyen-xem-cuoc-hop.md) | Tài liệu đi theo quyền xem cuộc họp; biểu quyết không gắn mục nghị sự | Đã chấp nhận — PO 15/10/2026 |
+| [0021](0021-vong-doi-thanh-phan-va-y-dinh-gui-thu.md) | Lịch sử thành phần và ý định gửi thư cùng transaction | Đề xuất — implementation SCRUM-20 |

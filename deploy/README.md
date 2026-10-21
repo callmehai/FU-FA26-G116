@@ -88,8 +88,6 @@ xác nhận LiveKit đã chạy sau Caddy.
 
 ## Việc làm tay trên server
 
-Mở terminal: Lightsail → máy `trustcabinet` → **Connect using SSH**, rồi `cd ~/TrustCabinet`.
-
 ### Xem log, kiểm tra
 
 ```bash

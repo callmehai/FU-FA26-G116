@@ -88,7 +88,7 @@ public class MeetingServiceTests
     {
         var input = ValidInput(title: title!);
 
-        var result = await NewService().CreateAsync(input, _actorId);
+        var result = await NewService().CreateAsync(input, _actorId, [new(_actorId, "Chair")]);
 
         Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
         Assert.Contains("title", result.Errors!.Keys);
@@ -106,7 +106,7 @@ public class MeetingServiceTests
                 location: new string('b', 301),
                 sensitivity: "not-a-sensitivity",
                 description: new string('c', 4001)),
-            _actorId);
+            _actorId, [new(_actorId, "Chair")]);
 
         Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
         Assert.Equal(5, result.Errors!.Count);
@@ -127,7 +127,7 @@ public class MeetingServiceTests
         var result = await NewService().CreateAsync(
             ValidInput(title: "  Giao ban  ", mode: mode, sensitivity: sensitivity,
                 location: "  Phòng A  ", description: "Có\nxuống dòng"),
-            _actorId);
+            _actorId, [new(_actorId, "Chair")]);
 
         Assert.True(result.Succeeded);
         var meeting = Assert.Single(_repository.Meetings);
@@ -146,7 +146,7 @@ public class MeetingServiceTests
     public async Task Create_uses_form_defaults()
     {
         var result = await NewService().CreateAsync(
-            ValidInput(mode: null, sensitivity: null), _actorId);
+            ValidInput(mode: null, sensitivity: null), _actorId, [new(_actorId, "Chair")]);
 
         Assert.True(result.Succeeded);
         var meeting = Assert.Single(_repository.Meetings);
@@ -162,7 +162,7 @@ public class MeetingServiceTests
                 title: new string('t', 300),
                 location: new string('l', 300),
                 description: new string('d', 4000)),
-            _actorId);
+            _actorId, [new(_actorId, "Chair")]);
 
         Assert.True(result.Succeeded);
         var meeting = Assert.Single(_repository.Meetings);
@@ -181,7 +181,7 @@ public class MeetingServiceTests
             OnlineLink = "  https://meet.example.vn/x  ",
         };
 
-        var result = await NewService().CreateAsync(input, _actorId);
+        var result = await NewService().CreateAsync(input, _actorId, [new(_actorId, "Chair")]);
 
         Assert.True(result.Succeeded);
         var meeting = Assert.Single(_repository.Meetings);
@@ -198,7 +198,7 @@ public class MeetingServiceTests
     [InlineData("not a time")]
     public async Task Create_rejects_a_time_without_an_offset(string start)
     {
-        var result = await NewService().CreateAsync(ValidInput() with { PlannedStartTime = start }, _actorId);
+        var result = await NewService().CreateAsync(ValidInput() with { PlannedStartTime = start }, _actorId, [new(_actorId, "Chair")]);
 
         Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
         Assert.Contains("plannedStartTime", result.Errors!.Keys);
@@ -230,7 +230,7 @@ public class MeetingServiceTests
             null,
             null);
 
-        var result = await NewService().CreateAsync(input, _actorId);
+        var result = await NewService().CreateAsync(input, _actorId, [new(_actorId, "Chair")]);
 
         Assert.True(result.Succeeded);
         Assert.Null(Assert.Single(_repository.Meetings).AssignedApproverId);
@@ -242,7 +242,7 @@ public class MeetingServiceTests
         var approverId = Guid.CreateVersion7();
         _repository.IneligibleApproverIds.Add(approverId);
 
-        var result = await NewService().CreateAsync(ValidInput(), _actorId);
+        var result = await NewService().CreateAsync(ValidInput(), _actorId, [new(_actorId, "Chair")]);
 
         Assert.True(result.Succeeded);
         Assert.Null(Assert.Single(_repository.Meetings).AssignedApproverId);
@@ -465,6 +465,22 @@ public class MeetingServiceTests
     }
 
     [Fact]
+    public async Task List_with_timing_compares_against_the_service_clock()
+    {
+        var query = new MeetingListQuery(
+            null, null, null, null, null, 1, 20, MeetingSortBy.PlannedStartTime, MeetingSortDirection.Desc,
+            Timing: MeetingTiming.Upcoming);
+        var before = DateTimeOffset.UtcNow;
+
+        await NewService().ListAsync(query, _actorId);
+
+        var now = _repository.LastListQuery!.Now;
+        Assert.NotNull(now);
+        Assert.InRange(now.Value, before, DateTimeOffset.UtcNow);
+        Assert.Equal(query with { Now = now }, _repository.LastListQuery);
+    }
+
+    [Fact]
     public async Task List_maps_a_database_failure_to_read_failed()
     {
         var failure = new NpgsqlException("database unavailable");
@@ -528,7 +544,7 @@ public class MeetingServiceTests
     {
         _repository.NextSaveThrows = new NpgsqlException("database unavailable");
 
-        var result = await NewService().CreateAsync(ValidInput(), _actorId);
+        var result = await NewService().CreateAsync(ValidInput(), _actorId, [new(_actorId, "Chair")]);
 
         Assert.Equal(MeetingOutcome.SaveFailed, result.Outcome);
         Assert.Empty(_repository.Meetings);

@@ -15,7 +15,7 @@ Phòng họp **không có hub SignalR**.
 Tất cả điều kiện sau phải đúng:
 
 - đã đăng nhập, tài khoản đang hoạt động;
-- có dòng `meeting_participants` của cuộc họp, chưa uỷ quyền cho ai (`response` khác `Delegated` và `delegated_to_user_id` rỗng) — cùng quy tắc "người dự hiện tại" với agenda;
+- có assignment nội bộ `Current` trong `meeting_participants` của cuộc họp (không dùng dòng `Removed` hoặc role Guest), chưa uỷ quyền cho ai (`response` khác `Delegated` và `delegated_to_user_id` rỗng) — cùng quy tắc "người dự hiện tại" với agenda;
 - cuộc họp `InProgress`;
 - hình thức `Online` hoặc `Hybrid`.
 
@@ -113,3 +113,5 @@ Chỉ lưu ai vào/ra phòng và lúc nào. Không lưu âm thanh, hình, chat; 
 - Types: `frontend/src/types/call.ts`. API: `frontend/src/api/calls.ts`.
 - Phân nhánh theo `code`, không theo `message`.
 - `404` từ `GET …/call` → hiện `NotFound` như cuộc họp không tồn tại.
+
+SCRUM-20: cấp quyền phòng và danh sách cho phép của job đối soát cùng dùng `ParticipantRules.ActiveExpression`. Gỡ rồi mời lại chỉ xét assignment Current mới; dòng lịch sử không tạo quyền hoặc làm truy vấn trả nhiều dòng.
