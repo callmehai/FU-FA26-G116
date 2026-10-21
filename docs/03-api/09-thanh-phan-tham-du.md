@@ -20,6 +20,14 @@ Roster/context/options trả ETag `"participants-N"`. Mutations trừ own respon
 
 JSON mutation strict, phân biệt tên property, không nhận property lạ/trùng, enum sai hoa thường, giá trị null không hợp lệ; `additionalPermissions` bị từ chối. Tối đa 64 KiB. DELETE không body. Mutation không nhận query; reads chỉ nhận query được ghi rõ bên dưới.
 
+## 2.1. Chọn người trước khi tạo cuộc họp
+
+`GET /api/meetings/participant-options?q=&page=1&pageSize=20` dùng capability `MeetingCreator`, kiểm tra lại quyền và tài khoản active trong database. Không cần meeting ID hoặc `AdminUsers`. Chưa đăng nhập: 401; thiếu quyền: 403. Không mở rộng quyền `/api/users`.
+
+Trả 200: `{items:[{id,fullName,email}],total,page,pageSize,roles:["Chair","Secretary","Member"]}`. Chỉ user active; bao gồm chính người tạo và người đang tham dự cuộc họp khác. Không trả thông tin quản trị, revision hoặc ETag; `Cache-Control: no-store`. Sort fullName rồi ID; `q` trim, tối đa 200 ký tự, tìm tên/email không phân biệt hoa thường và xử lý `%`/`_` như ký tự thường. Page mặc định 1, pageSize mặc định 20 (1..100), page vượt cuối trả items rỗng. Query lạ/trùng/sai: 400/MSG276; lỗi đọc: 500/MSG95. `total` tính sau search, trước paging.
+
+FE dùng ID từ endpoint này để xây `participants` khi POST tạo họp. Backend vẫn kiểm tra lại user active và đúng một Chair khi lưu; kết quả lookup không bảo đảm trạng thái tài khoản giữ nguyên đến lúc POST. Editor-options theo meeting bên dưới tiếp tục dành cho quản lý roster đã tồn tại.
+
 ## 3. Đọc
 
 | Method/path | Contract |

@@ -54,6 +54,25 @@
   ],
   "item": [
     {
+      "name": "Chọn người trước tạo họp (token MeetingCreator)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/meetings/participant-options?q=&page=1&pageSize=20"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Lookup thành công\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Chỉ trả trường cần thiết\", () => { const body = pm.response.json(); body.items.forEach(x => pm.expect(Object.keys(x).sort()).to.eql([\"email\", \"fullName\", \"id\"])); pm.expect(body).not.to.have.property(\"revision\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Tạo họp kèm Chair (token MeetingCreator)",
       "request": {
         "method": "POST",

@@ -31,7 +31,7 @@ Các mã UC-27–30 dưới đây đã có Backend. OTP/session production thu�
 
 | Mã | HTTP | Endpoint / tình huống | Thông báo |
 |---|---|---|---|
-| `MSG95` | 500 | GET participant context/roster/options/own-response/summary lỗi đọc | Không tải được danh sách thành phần hoặc phản hồi lời mời. |
+| `MSG95` | 500 | GET participant context/roster/options/own-response hoặc /api/meetings/participant-options lỗi đọc | Không tải được danh sách thành phần hoặc phản hồi lời mời. |
 | `MSG96` | 201 | Thêm internal/Guest hoặc recovery thêm Secretary | Thêm thành phần tham dự thành công. |
 | `MSG97` | 400 | Selection/batch/Guest input không hợp lệ | Thông tin gửi lên không hợp lệ. |
 | `MSG98` | 409 | State không cho sửa roster | Không thể sửa thành phần ở trạng thái hiện tại của cuộc họp. |
@@ -50,7 +50,7 @@ Các mã UC-27–30 dưới đây đã có Backend. OTP/session production thu�
 | `MSG153` | — | Ngừng dùng — quyền bổ sung đã bỏ theo PO 20/10/2026 | Không tái cấp. |
 | `MSG154` | 200 | Role/grants/response không có thay đổi | Không có thay đổi cần lưu. |
 | `MSG275` | 409 | Revision roster stale | Danh sách thành phần đã thay đổi. Vui lòng tải lại và thử lại. |
-| `MSG276` | 400 | Query hoặc If-Match thiếu/sai | Query hoặc If-Match không hợp lệ. Vui lòng tải lại dữ liệu. |
+| `MSG276` | 400 | Query (kể cả lookup trước tạo họp) hoặc If-Match thiếu/sai | Query hoặc If-Match không hợp lệ. Vui lòng tải lại dữ liệu. |
 
 Endpoint Participants dùng lại `415/MSG34` cho content-type và `413/MSG87` cho giới hạn 64 KiB. 401 authentication; 403/404 body rỗng theo quyền và khả năng tiết lộ tài nguyên.
 

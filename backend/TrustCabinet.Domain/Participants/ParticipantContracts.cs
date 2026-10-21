@@ -50,12 +50,14 @@ public sealed record ParticipantRow(Guid Id, string Kind, string DisplayName, st
     string Response, DateTimeOffset? RespondedAt);
 public sealed record ParticipantPage(IReadOnlyList<ParticipantRow> Items, int Total, int Page, int PageSize, string Revision, ResponseTotals Totals);
 public sealed record ParticipantOption(Guid Id, string FullName, string Email);
+public sealed record ParticipantCreationOptions(IReadOnlyList<ParticipantOption> Items, int Total, int Page, int PageSize, string[] Roles);
 public sealed record ParticipantOptions(IReadOnlyList<ParticipantOption> Items, int Total, int Page, int PageSize,
     string[] Roles, string Revision);
 public sealed record InvitationResponseView(Guid Id, string Kind, string Response, DateTimeOffset? RespondedAt, bool CanRespond);
 public sealed record ResponseTotals(int Pending, int Accepted, int Declined, int Total);
 public interface IParticipantService
 {
+    Task<ParticipantResult> ReadCreationOptionsAsync(ParticipantQuery query, CancellationToken ct);
     Task<ParticipantResult> ReadAsync(Guid meetingId, ParticipantActor actor, ParticipantOperation operation, ParticipantQuery query, CancellationToken ct);
     Task<ParticipantResult> MutateAsync(Guid meetingId, Guid? targetId, ParticipantActor actor, ParticipantOperation operation, ParticipantInput input, CancellationToken ct);
 }

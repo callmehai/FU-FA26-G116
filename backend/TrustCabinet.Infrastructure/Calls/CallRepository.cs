@@ -3,6 +3,7 @@ using Npgsql;
 using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Infrastructure.Calls;
 
@@ -11,9 +12,7 @@ namespace TrustCabinet.Infrastructure.Calls;
 /// <c>meeting_participants</c> rather than through the meeting repository: entering the room is a
 /// stricter rule than reading the meeting (the creator or approver alone may not join).
 ///
-/// "Invited" means what <c>AgendaRules.CurrentParticipant</c> means — active account, not delegated
-/// away — written out here because EF has to translate it. SCRUM-20 extends both when assignments
-/// gain Current/Removed.
+/// Only current, active internal assignments grant room access; removed assignments remain history.
 /// </summary>
 public sealed class CallRepository(TrustCabinetDbContext db) : ICallRepository
 {
@@ -26,21 +25,17 @@ public sealed class CallRepository(TrustCabinetDbContext db) : ICallRepository
 
     public Task<CallRoomAccess?> FindRoomAccessAsync(Guid meetingId, Guid userId, CancellationToken ct = default)
         => db.MeetingParticipants.AsNoTracking()
+            .Where(ParticipantRules.ActiveExpression)
             .Where(p => p.MeetingId == meetingId
                 && p.UserId == userId
-                && p.Response != InvitationResponse.Delegated
-                && p.DelegatedToUserId == null
-                && p.User.IsActive
                 && ParticipantVisible.Contains(p.Meeting.Status))
             .Select(p => new CallRoomAccess(p.MeetingId, p.Meeting.Status, p.Meeting.Mode, p.Role, p.User.FullName))
             .SingleOrDefaultAsync(ct);
 
     public async Task<IReadOnlySet<Guid>> ListAllowedUserIdsAsync(Guid meetingId, CancellationToken ct = default)
         => (await db.MeetingParticipants.AsNoTracking()
+            .Where(ParticipantRules.ActiveExpression)
             .Where(p => p.MeetingId == meetingId
-                && p.Response != InvitationResponse.Delegated
-                && p.DelegatedToUserId == null
-                && p.User.IsActive
                 && p.Meeting.Status == MeetingStatus.InProgress
                 && p.Meeting.Mode != MeetingMode.InPerson)
             .Select(p => p.UserId)

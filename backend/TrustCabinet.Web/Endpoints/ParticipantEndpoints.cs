@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Web.Endpoints;
@@ -41,6 +42,33 @@ public static class ParticipantEndpoints
 
     public static void MapParticipantEndpoints(this IEndpointRouteBuilder app)
     {
+        app.MapGroup("/api/meetings")
+            .RequireCapability(
+                Capability.MeetingCreator,
+                Results.Json(
+                    new
+                    {
+                        code = Msg95ReadFailed,
+                        message = "Không tải được danh sách thành phần hoặc phản hồi lời mời.",
+                    },
+                    statusCode: 500
+                )
+            )
+            .MapGet(
+                "/participant-options",
+                async (HttpContext context, IParticipantService service, CancellationToken ct) =>
+                {
+                    context.Response.Headers.CacheControl = "no-store";
+                    return Map(
+                        await service.ReadCreationOptionsAsync(
+                            Query(context.Request, ParticipantOperation.Options),
+                            ct
+                        ),
+                        ParticipantOperation.Options,
+                        context
+                    );
+                }
+            );
         var group = app.MapGroup("/api/meetings/{meetingId:guid}").RequireAuthorization();
         Read("/participant-context", ParticipantOperation.Context);
         Read("/participants", ParticipantOperation.Roster);

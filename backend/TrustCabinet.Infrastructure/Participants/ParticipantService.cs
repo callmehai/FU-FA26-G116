@@ -249,23 +249,54 @@ public sealed partial class ParticipantService(
         }
     }
 
-    private async Task<ParticipantResult> OptionsAsync(
-        ParticipantSnapshot s,
+    public async Task<ParticipantResult> ReadCreationOptionsAsync(
         ParticipantQuery query,
         CancellationToken ct
     )
     {
-        var current = s.Meeting.Participants.Where(ParticipantRules.Current).ToArray();
-        var excluded = current.Select(p => p.UserId).ToArray();
-        var users = db
-            .Users.AsNoTracking()
-            .Where(u =>
-                u.IsActive
-                && !excluded.Contains(u.Id)
+        if (
+            query.Invalid
+            || query.Page < 1
+            || query.PageSize is < 1 or > 100
+            || query.Search?.Length > 200
+        )
+            return new(ParticipantFailure.InvalidRequest);
+        try
+        {
+            await using var tx = await db.Database.BeginTransactionAsync(
+                IsolationLevel.RepeatableRead,
+                ct
+            );
+            return await OptionsAsync(null, query, ct);
+        }
+        catch (Exception ex) when (Persistence(ex))
+        {
+            logger.LogError(ex, "Participant creation options read failed");
+            return new(ParticipantFailure.ReadFailed);
+        }
+    }
+
+    private async Task<ParticipantResult> OptionsAsync(
+        ParticipantSnapshot? s,
+        ParticipantQuery query,
+        CancellationToken ct
+    )
+    {
+        var users = db.Users.AsNoTracking().Where(u => u.IsActive);
+        if (s is not null)
+        {
+            var excluded = s
+                .Meeting.Participants.Where(ParticipantRules.Current)
+                .Select(p => p.UserId)
+                .ToArray();
+            var meetingId = s.Meeting.Id;
+            users = users.Where(u =>
+                !excluded.Contains(u.Id)
                 && !db.MeetingGuestInvitations.Any(g =>
-                    g.MeetingId == s.Meeting.Id && g.RevokedAt == null && g.Email == u.Email
+                    g.MeetingId == meetingId && g.RevokedAt == null && g.Email == u.Email
                 )
             );
+        }
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             var pattern =
@@ -293,6 +324,16 @@ public sealed partial class ParticipantService(
                     .Take(query.PageSize)
                     .Select(u => new ParticipantOption(u.Id, u.FullName, u.Email))
                     .ToArrayAsync(ct);
+        if (s is null)
+            return new(
+                Data: new ParticipantCreationOptions(
+                    items,
+                    total,
+                    query.Page,
+                    query.PageSize,
+                    ["Chair", "Secretary", "Member"]
+                )
+            );
         return new(
             Data: new ParticipantOptions(
                 items,

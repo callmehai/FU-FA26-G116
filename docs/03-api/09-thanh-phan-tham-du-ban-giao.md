@@ -4,7 +4,7 @@ Baseline PO 20/10/2026; tài liệu do AI hỗ trợ cập nhật ngày 21/10/20
 
 ## Contract FE cần đổi
 
-1. Form tạo họp gửi `participants:[{userId,role}]`, 1..100 current internal active, đúng một Chair. Người tạo không bắt buộc tham dự; không bắt buộc Secretary khi tạo. Thiếu/không hợp lệ: 400/MSG277, `errors` là dictionary string theo key participants hoặc participants[i].userId/.role. PUT meeting không nhận participants.
+1. Form tạo họp lấy user từ `GET /api/meetings/participant-options?q=&page=1&pageSize=20` bằng quyền `MeetingCreator` (không gọi `/api/users`). Response items chỉ gồm id/fullName/email, có total/page/pageSize/roles, không có revision/ETag. Form tạo họp gửi `participants:[{userId,role}]`, 1..100 current internal active, đúng một Chair. Người tạo không bắt buộc tham dự; không bắt buộc Secretary khi tạo. Thiếu/không hợp lệ: 400/MSG277, `errors` là dictionary string theo key participants hoặc participants[i].userId/.role. PUT meeting không nhận participants.
 2. Chi tiết/create trả `chair:{userId,fullName}|null`, `secretaries:[]`, `myMeetingRole`. Dùng để hiện vai trò và trạng thái sẵn sàng; không thay authorization server.
 3. Context có `myRole` và đúng ba flags `canManageParticipants,canReplaceChair,canRespond`. Bỏ recovery UI và mọi checkbox quyền bổ sung.
 4. Roster gồm response/respondedAt và totals toàn bộ current roster; bỏ gọi invitation-responses. Options bỏ mode/permissionCatalog, roles luôn Chair/Secretary/Member.
@@ -12,7 +12,7 @@ Baseline PO 20/10/2026; tài liệu do AI hỗ trợ cập nhật ngày 21/10/20
 6. Giữ ETag/If-Match và revision dạng string. 409/MSG275 phải tải lại và để người dùng xác nhận lại. MSG276 query/header sai. Không dùng MSG252/253 (SCRUM-96).
 7. Sau save hoặc `participantsChanged`, reload context/roster/detail. Event có thể cùng revision khi chỉ thay response; không bỏ event chỉ vì revision không tăng. Dedupe eventId. Người bị gỡ nhận invalidation và reload404 thì rời màn chi tiết. Không báo “đã gửi email” chỉ từ save thành công.
 8. Các mã MSG256/257/259 đã triển khai trong SCRUM-20/SCRUM-97; MSG258/260 còn dành sẵn. MSG152/153 ngừng dùng. SCRUM-26 phải remap MSG277/278 trước tích hợp.
-9. Guest OTP/profile/session thật còn chờ SCRUM-59; room disconnect chờ SCRUM-41. Không nghiệm thu Guest production bằng test JWT/adapters.
+9. Guest OTP/profile/session thật còn chờ SCRUM-59; phòng nội bộ đã tích hợp truy vấn current/active với SCRUM-41: gỡ participant chặn cấp quyền mới ngay; job đối soát phòng loại người đã gỡ ở chu kỳ tiếp theo (30 giây). Không nghiệm thu Guest production bằng test JWT/adapters.
 
 ## Test thủ công
 
@@ -49,3 +49,11 @@ Kết quả kiểm thử hiện tại ở [test report](09-thanh-phan-tham-du-ke
 Test thêm: mời Guest khi UC-04 Unavailable rồi gỡ, hoặc thêm/gỡ Member trước khi worker materialize: dispatch Removed phải Suppressed, không có thư thu hồi. Với Invitation đã Materialized, gỡ vẫn tạo thư thu hồi không chứa link bảo vệ. Đây là điều kiện đã xếp hàng email, không cam kết SMTP đã gửi.
 
 Trên môi trường kiểm thử riêng, dùng provider ném InvalidOperationException ở IsAvailableAsync/PrepareAsync: attempt tăng, có backoff, đủ MaxAttempts thành Failed; dispatch sau và email reset mật khẩu đã xếp hàng vẫn được xử lý. Không cố tình gây lỗi provider/database dùng chung.
+
+## Regression tích hợp phòng và lookup (21/10/2026)
+
+1. Token chỉ có MeetingCreator: gọi lookup tìm theo tên/email, pageSize=1 rồi page=2; user inactive không xuất hiện, `/api/users` vẫn 403. Query sai trả MSG276. Dùng ID trả về tạo họp có một Chair, kỳ vọng 201/MSG29.
+2. Token không có MeetingCreator gọi lookup: 403; chưa đăng nhập: 401. Thu hồi quyền trong database rồi gọi lại với token cũ: 403.
+3. Với cuộc họp Online/InProgress: gỡ Member, dùng token Member thử vào phòng phải bị từ chối; chờ job đối soát loại kết nối hiện có. Mời lại cùng user, vào phòng được theo assignment mới và không lỗi trùng dòng. Lịch sử assignment cũ vẫn giữ.
+
+Vẫn chờ FE gửi participants trước khi merge/deploy phối hợp. Lookup mới và sửa truy vấn không cần migration.

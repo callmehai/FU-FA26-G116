@@ -1,5 +1,17 @@
 # SCRUM-20 / UC-73 — kết quả kiểm thử Backend
 
+## Sửa tích hợp phòng và lookup — working tree trên 04d3a5c (21/10/2026)
+
+- CallRepository dùng ActiveExpression cho cấp quyền phòng và danh sách đối soát; lịch sử Removed không cấp quyền, mời lại không lỗi nhiều assignment. Bỏ helper IsSecretary không còn dùng.
+- Thêm GET /api/meetings/participant-options, quyền MeetingCreator kiểm tra lại từ database; user active, search/paging và chỉ id/fullName/email. Dùng MSG95/MSG276 hiện có, không thêm migration hay sửa frontend source.
+- Full suite: **1.170 pass, 0 fail, 0 skip** trên PostgreSQL17/Redis8 riêng; TRX `%TEMP%/scrum20-final-fixes/full.trx`. Bao gồm 3 regression phòng và 1 test luồng lookup/tạo họp, query/paging/authorization.
+- Release build -warnaserror: 0 warning/error. Frontend lint/build pass sau npm ci để đồng bộ dependency LiveKit từ main. Build FE còn cảnh báo kích thước chunk phòng họp. Không sửa package/lockfile.
+- Published head 04d3a5c có [CI #370](https://github.com/callmehai/TrustCabinet/actions/runs/39586386830) pass. Các sửa đổi tích hợp/lookup này chưa commit/push, CI đó chưa bao gồm chúng. Sau bổ sung mapping lỗi đọc ở capability gate, chạy lại build và regression/catalô trên binary cuối.
+- Chưa chạy SMTP/LiveKit thật, Guest production, UI E2E hoặc preflight database dùng chung. Vẫn giữ gate FE gửi participants trước merge/deploy phối hợp; không commit/push/merge trong phiên này.
+
+Các mục bên dưới là kết quả lịch sử theo từng baseline, không phải trạng thái published hiện tại.
+
+
 ## Sửa review 21/10/2026 — working tree trên 487ca24
 
 Báo cáo do AI hỗ trợ soạn. Phần sửa review này chưa commit/push; CI #354 chỉ xác nhận published head 487ca24. Không merge/deploy hoặc tác động database dùng chung.

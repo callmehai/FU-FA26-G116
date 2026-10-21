@@ -29,7 +29,6 @@ public static class ParticipantRules
     public static bool Preparation(MeetingStatus status) => status is MeetingStatus.Draft or MeetingStatus.Rejected or MeetingStatus.Approved;
     public static bool Published(MeetingStatus status) => status is MeetingStatus.Published or MeetingStatus.InProgress or MeetingStatus.Ended;
     public static bool Respondable(MeetingStatus status) => status is MeetingStatus.Published or MeetingStatus.InProgress;
-    public static bool IsSecretary(Meeting meeting, Guid actor) => meeting.Participants.Any(p => p.UserId == actor && Active(p) && p.Role == MeetingRole.Secretary);
     public static bool IsManager(Meeting meeting, Guid actor) => meeting.Participants.Any(p =>
         p.UserId == actor && Active(p) && p.Role is MeetingRole.Chair or MeetingRole.Secretary);
     public static bool CanReplaceChair(Meeting meeting, Guid actor)
