@@ -232,9 +232,7 @@ export function CalendarPage() {
 
       <ScheduleNotice
         schedule={schedule}
-        filteredOut={
-          !!inView?.length && visible.kind === 'loaded' && visible.entries.length === 0
-        }
+        filteredOut={!!inView?.length && visible.kind === 'loaded' && visible.entries.length === 0}
         onRetry={() => setAttempt((n) => n + 1)}
         onClearFilter={() => go({ filter: NO_FILTER })}
       />
