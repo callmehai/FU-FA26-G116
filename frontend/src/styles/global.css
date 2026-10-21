@@ -2381,7 +2381,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   left: var(--panel-pad);
   right: var(--panel-pad);
   display: flex;
-  gap: 8px;
+  gap: 6px;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.08s linear, visibility 0s linear 0.36s;
@@ -2401,7 +2401,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   gap: 6px;
   width: 100%;
   height: 32px;
-  padding: 0 10px 0 12px;
+  padding: 0 8px 0 10px;
   border: 1px solid var(--stage-line);
   border-radius: 16px;
   background: transparent;
@@ -2428,7 +2428,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   z-index: 10;
   min-width: 100%;
   width: max-content;
-  max-width: min(360px, calc(100vw - 16px));
+  /* Wide enough for the usual device names on one line, as Meet's are. */
+  max-width: min(420px, calc(100vw - 16px));
   max-height: min(60vh, 420px);
   overflow-y: auto;
   padding: 4px;

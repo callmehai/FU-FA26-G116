@@ -1209,13 +1209,19 @@ function MicLevel({ track }: { track: LocalAudioTrack }) {
   useEffect(() => {
     const bars = ref.current
     if (!bars || !track.mediaStreamTrack) return
-    const { calculateVolume, cleanup } = createAudioAnalyser(track, { smoothingTimeConstant: 0.5 })
+    // The library's default range (-100 to -80 dB) saturates on a quiet room's hiss; -80 to -20 dB
+    // leaves a quiet room near 0.03 and puts speech well above it.
+    const { calculateVolume, cleanup } = createAudioAnalyser(track, {
+      smoothingTimeConstant: 0.5,
+      minDecibels: -80,
+      maxDecibels: -20,
+    })
     let frame = 0
     let last = 0
     const tick = (now: number) => {
       if (now - last >= 60) {
         last = now
-        bars.style.setProperty('--level', Math.min(1, calculateVolume() * 5).toFixed(2))
+        bars.style.setProperty('--level', Math.min(1, Math.max(0, (calculateVolume() - 0.04) / 0.2)).toFixed(2))
       }
       frame = requestAnimationFrame(tick)
     }
