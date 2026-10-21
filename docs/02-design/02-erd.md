@@ -458,6 +458,13 @@ erDiagram
 
 Chỉ lưu **sự kiện cuộc gọi**, không lưu media. Mỗi CallParticipant phải tham chiếu đúng một identity: User XOR MeetingGuestInvitation. Rớt mạng vào lại sinh một dòng mới cho connection stint tiếp theo. Mỗi Meeting có tối đa một MeetingRoom CallSession Active.
 
+Từ [ADR-0010](../05-decisions/0010-phong-hop-truc-tuyen-dung-livekit-sfu.md), âm thanh, hình và
+signalling đi qua LiveKit (SFU), không phải trực tiếp giữa các trình duyệt, và backend không làm tín
+hiệu. Phiên phòng họp được tạo từ webhook `participant_joined` của LiveKit, không phải lúc cấp token.
+Index duy nhất có điều kiện `ux_call_sessions_active_meeting_room` (`meeting_id` khi
+`status = 'Active'`) bảo đảm mỗi cuộc họp chỉ có một phiên đang mở, kể cả khi hai webhook tới cùng
+lúc.
+
 ## 9. Nền tảng, thông báo và kiểm toán
 
 `Notification` thuộc về đúng một User (`UserId`) và có thể trỏ tới một Meeting

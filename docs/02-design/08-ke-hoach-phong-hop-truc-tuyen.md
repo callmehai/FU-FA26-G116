@@ -944,7 +944,7 @@ cd frontend && npm run lint && npm run build
 - [ ] Docs:
   - ADR-0010 đã có từ PR thiết kế. Code phải khác quyết định thì viết ADR mới, không sửa ADR đã
     chấp nhận;
-  - `docs/03-api/07-phong-hop-truc-tuyen.md`;
+  - `docs/03-api/09-phong-hop-truc-tuyen.md`;
   - catalogue MSG (dòng + "Mã tiếp theo");
   - `docs/02-design/02-erd.md` (index mới, phiên tạo từ webhook);
   - `docs/02-design/03-co-so-du-lieu.md` (cách bật LiveKit);
