@@ -1,0 +1,17 @@
+# LiveKit cho server test (ADR-0010). KHÔNG chứa secret: key truyền qua biến môi trường LIVEKIT_KEYS,
+# docker-compose.yml đọc từ deploy/.env. Hướng dẫn: deploy/README.md, mục "Phòng họp trực tuyến".
+port: 7880              # signalling + API, chỉ mở trong mạng Docker; Caddy chuyển /rtc vào đây
+rtc:
+  tcp_port: 7881        # ICE/TCP dự phòng khi mạng chặn UDP — phải mở trên firewall Lightsail
+  udp_port: 7882        # một cổng UDP gom mọi peer — phải mở trên firewall Lightsail
+  # Máy Lightsail chỉ biết IP nội bộ; IP tĩnh là NAT của AWS. LiveKit hỏi STUN để biết IP công khai
+  # rồi báo IP đó cho trình duyệt — thiếu dòng này trình duyệt nhận IP container 172.x, không tới được.
+  use_external_ip: true
+room:
+  max_participants: 50
+webhook:
+  api_key: trustcabinet-test         # phải trùng tên key trong LIVEKIT_KEYS và LiveKit__ApiKey
+  urls:
+    - http://app:8080/api/livekit/webhook
+logging:
+  level: info

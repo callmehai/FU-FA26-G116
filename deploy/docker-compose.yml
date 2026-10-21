@@ -1,4 +1,5 @@
-# Server test chung của nhóm — app + PostgreSQL + Redis + Caddy (tự lấy chứng chỉ HTTPS).
+# Server test chung của nhóm — app + PostgreSQL + Redis + LiveKit (phòng họp) + Caddy (tự lấy chứng
+# chỉ HTTPS).
 # Hướng dẫn: deploy/README.md. Lý do chọn cách này: docs/05-decisions/0015-server-test-tren-lightsail.md
 #
 #   cp deploy/.env.example deploy/.env   # rồi điền giá trị thật, .env đã bị gitignore
@@ -32,6 +33,12 @@ services:
       Email__Smtp__Username: "${SMTP_USERNAME:-}"
       Email__Smtp__Password: "${SMTP_PASSWORD:-}"
       Email__Smtp__FromAddress: "${SMTP_FROM:-}"
+      # Phòng họp (ADR-0010). Trình duyệt vào signalling qua Caddy (/rtc), backend gọi API của LiveKit
+      # thẳng trong mạng Docker. Tên key phải trùng deploy/livekit.yaml.
+      LiveKit__PublicUrl: "wss://${SITE_ADDRESS}"
+      LiveKit__ApiUrl: "http://livekit:7880"
+      LiveKit__ApiKey: trustcabinet-test
+      LiveKit__ApiSecret: "${LIVEKIT_API_SECRET:?Chua dat LIVEKIT_API_SECRET trong deploy/.env}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,6 +75,22 @@ services:
       retries: 10
       start_period: 5s
 
+  livekit:
+    # Cùng phiên bản với docker-compose.yml ở gốc repo (máy dev).
+    image: livekit/livekit-server:v1.13.7
+    restart: unless-stopped
+    command: --config /etc/livekit.yaml
+    environment:
+      # "tên-key: secret", secret ít nhất 32 ký tự — SDK .NET từ chối secret ngắn hơn.
+      LIVEKIT_KEYS: "trustcabinet-test: ${LIVEKIT_API_SECRET:?Chua dat LIVEKIT_API_SECRET trong deploy/.env}"
+    # Chỉ media mở ra Internet, và phải mở thêm trên firewall Lightsail. Cổng 7880 (signalling, API)
+    # không mở: trình duyệt đi qua Caddy, backend đi trong mạng Docker.
+    ports:
+      - "7881:7881"       # ICE/TCP
+      - "7882:7882/udp"   # ICE/UDP
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -83,6 +106,7 @@ services:
       - caddy-config:/config
     depends_on:
       - app
+      - livekit
 
 volumes:
   pgdata:
