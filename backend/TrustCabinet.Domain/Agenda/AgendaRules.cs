@@ -15,9 +15,7 @@ public static class AgendaRules
         or MeetingStatus.WaitingApproval or MeetingStatus.Rejected or MeetingStatus.Approved
         or MeetingStatus.Published or MeetingStatus.InProgress;
 
-    public static bool CurrentParticipant(MeetingParticipant participant) => participant.User.IsActive
-        && participant.AssignmentStatus == Participants.AssignmentStatus.Current && participant.Role != MeetingRole.Guest
-        && participant.Response != InvitationResponse.Delegated && participant.DelegatedToUserId is null;
+    public static bool CurrentParticipant(MeetingParticipant participant) => Participants.ParticipantRules.Active(participant);
 
     public static bool HasRole(Meeting meeting, Guid actor, MeetingRole role) => meeting.Participants
         .Any(p => p.MeetingId == meeting.Id && p.UserId == actor && p.Role == role && CurrentParticipant(p));

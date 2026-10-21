@@ -23,9 +23,13 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
     };
     private sealed class Links : IGuestInvitationLinkProvider
     {
-        public Task<bool> IsAvailableAsync(CancellationToken ct) => Task.FromResult(Result.Status != GuestLinkStatus.Unavailable);
+        public Exception? ProbeFailure;
+        public Exception? PrepareFailure;
+        public Task<bool> IsAvailableAsync(CancellationToken ct) => ProbeFailure is not null
+            ? Task.FromException<bool>(ProbeFailure) : Task.FromResult(Result.Status != GuestLinkStatus.Unavailable);
         public GuestInvitationLink Result = new(GuestLinkStatus.Unavailable);
-        public Task<GuestInvitationLink> PrepareAsync(Guid invitationId, CancellationToken ct) => Task.FromResult(Result);
+        public Task<GuestInvitationLink> PrepareAsync(Guid invitationId, CancellationToken ct) => PrepareFailure is not null
+            ? Task.FromException<GuestInvitationLink>(PrepareFailure) : Task.FromResult(Result);
     }
     private async Task<int> Process(Guid id, Links? links = null)
     {
@@ -104,19 +108,102 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
         Assert.DoesNotContain("Địa điểm:", email.Body); Assert.Contains("/guest/verify", email.CalendarAttachment);
     }
 
-    [Fact]
-    public async Task Revocation_suppresses_pending_guest_invitation_and_removal_has_no_protected_link()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Removal_requires_materialized_invitation_for_same_owner(bool guest)
+    {
+        var s = await f.Seed();
+        using var secretary = f.Client(s.Secretary);
+        Guid id;
+        Guid ownerId;
+        if (guest)
+        {
+            id = await AddGuest(s);
+            Assert.Equal(0, await Process(id)); // UC-04 unavailable.
+            await using var db = f.Db();
+            ownerId = await db.MeetingGuestInvitations.Where(g => g.MeetingId == s.MeetingId).Select(g => g.Id).SingleAsync();
+        }
+        else
+        {
+            await Code(await Write(secretary, s.Url + "/participants", HttpMethod.Post,
+                new { userIds = new[] { s.Outsider }, role = "Member" }), 201, "MSG96");
+            await using var db = f.Db();
+            var invitation = await db.MeetingInvitationDispatches.SingleAsync(d => d.MeetingId == s.MeetingId);
+            id = invitation.Id;
+            ownerId = invitation.ParticipantId!.Value;
+        }
+        var route = guest ? "guest-invitations" : "participants";
+        await Code(await Write(secretary, s.Url + $"/{route}/{ownerId}", HttpMethod.Delete,
+            etag: await Tag(secretary, s.Url)), 200, "MSG103");
+        await using var check = f.Db();
+        var removed = await check.MeetingInvitationDispatches.SingleAsync(d => d.MeetingId == s.MeetingId && d.EventKind == InvitationEventKind.Removed);
+        Assert.Equal(0, await Process(removed.Id)); // Also safe before processing the original invitation.
+        Assert.Equal(InvitationDispatchState.Suppressed,
+            (await check.MeetingInvitationDispatches.AsNoTracking().SingleAsync(d => d.Id == removed.Id)).State);
+        Assert.Empty(await check.EmailMessages.Where(e => e.MeetingId == s.MeetingId).ToArrayAsync());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Materialized_guest_invitation_allows_removal_without_protected_link(bool legacyEmailOnly)
     {
         var s = await f.Seed(); var id = await AddGuest(s);
-        await using var db = f.Db(); var guest = await db.MeetingGuestInvitations.SingleAsync(g => g.MeetingId == s.MeetingId);
+        Assert.Equal(1, await Process(id, new Links { Result = new(GuestLinkStatus.Ready, "https://meetings.test/verify") }));
+        await using var db = f.Db();
+        var guest = await db.MeetingGuestInvitations.SingleAsync(g => g.MeetingId == s.MeetingId);
+        if (legacyEmailOnly)
+            await db.MeetingInvitationDispatches.Where(d => d.Id == id).ExecuteDeleteAsync();
         using var secretary = f.Client(s.Secretary);
-        await Code(await Write(secretary, s.Url + $"/guest-invitations/{guest.Id}", HttpMethod.Delete, etag: await Tag(secretary, s.Url)), 200, "MSG103");
-        Assert.Equal(0, await Process(id));
+        await Code(await Write(secretary, s.Url + $"/guest-invitations/{guest.Id}", HttpMethod.Delete,
+            etag: await Tag(secretary, s.Url)), 200, "MSG103");
         var removed = await db.MeetingInvitationDispatches.SingleAsync(d => d.MeetingId == s.MeetingId && d.EventKind == InvitationEventKind.Removed);
         Assert.Equal(1, await Process(removed.Id));
-        var email = await db.EmailMessages.SingleAsync(e => e.MeetingId == s.MeetingId);
+        var email = await db.EmailMessages.SingleAsync(e => e.DeduplicationKey == removed.DeduplicationKey);
         Assert.DoesNotContain("https://", email.Body); Assert.Null(email.CalendarAttachment);
-        Assert.Equal(InvitationDispatchState.Suppressed, (await db.MeetingInvitationDispatches.AsNoTracking().SingleAsync(d => d.Id == id)).State);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public async Task Unexpected_provider_errors_retry_and_exhaust_budget(bool probe, bool cancellationException)
+    {
+        var s = await f.Seed(); var id = await AddGuest(s);
+        Exception failure = cancellationException ? new OperationCanceledException("credential-must-not-leak")
+            : new InvalidOperationException("credential-must-not-leak");
+        var links = new Links { Result = new(GuestLinkStatus.Ready, "https://meetings.test/verify"),
+            ProbeFailure = probe ? failure : null, PrepareFailure = probe ? null : failure };
+        await using var db = f.Db();
+        for (var attempt = 1; attempt <= _options.MaxAttempts; attempt++)
+        {
+            Assert.Equal(0, await Process(id, links));
+            var dispatch = await db.MeetingInvitationDispatches.SingleAsync(d => d.Id == id);
+            await db.Entry(dispatch).ReloadAsync();
+            Assert.Equal(attempt, dispatch.AttemptCount);
+            Assert.Equal(failure.GetType().Name, dispatch.LastError);
+            Assert.True(dispatch.NextAttemptAt > f.Clock.Now);
+            Assert.Equal(attempt == _options.MaxAttempts ? InvitationDispatchState.Failed : InvitationDispatchState.Pending, dispatch.State);
+            if (attempt < _options.MaxAttempts) { dispatch.NextAttemptAt = null; await db.SaveChangesAsync(); }
+        }
+    }
+
+    [Fact]
+    public async Task Unexpected_dispatch_failure_does_not_block_later_dispatches_in_batch()
+    {
+        var s = await f.Seed(); var id = await AddGuest(s);
+        using var secretary = f.Client(s.Secretary);
+        await Code(await Write(secretary, s.Url + "/participants", HttpMethod.Post,
+            new { userIds = new[] { s.Outsider }, role = "Member" }, await Tag(secretary, s.Url)), 201, "MSG96");
+        await using var db = f.Db();
+        var processor = new MeetingInvitationDispatchProcessor(db, Options.Create(_options), f.Clock,
+            new Links { ProbeFailure = new InvalidOperationException("private-provider-detail") },
+            NullLogger<MeetingInvitationDispatchProcessor>.Instance);
+        await processor.ProcessNextAsync(default);
+        Assert.Equal(1, await db.MeetingInvitationDispatches.Where(d => d.Id == id).Select(d => d.AttemptCount).SingleAsync());
+        Assert.Single(await db.EmailMessages.Where(e => e.MeetingId == s.MeetingId).ToArrayAsync());
     }
 
     [Fact]

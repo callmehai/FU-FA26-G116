@@ -50,11 +50,18 @@ internal sealed class EmailDeliveryWorker(
     internal async Task<EmailProcessingResult> ProcessOnceAsync(CancellationToken ct)
     {
 
-        await using (var scope = scopeFactory.CreateAsyncScope())
+        try
         {
+            await using var scope = scopeFactory.CreateAsyncScope();
             // Optional only for legacy worker test doubles; production registers the processor.
             var dispatches = scope.ServiceProvider.GetService<MeetingInvitationDispatchProcessor>();
             if (dispatches is not null) await dispatches.ProcessNextAsync(ct);
+        }
+        catch (Exception exception) when (!ct.IsCancellationRequested)
+        {
+            // Provider exceptions may contain credentials. Queued email processing must continue.
+            logger.LogWarning("Invitation dispatch failed; failure type {FailureType}. Queued email processing will continue.",
+                exception.GetType().Name);
         }
 
         await using var processingScope = scopeFactory.CreateAsyncScope();

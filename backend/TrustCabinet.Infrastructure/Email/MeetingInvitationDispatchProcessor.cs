@@ -2,7 +2,6 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Participants;
@@ -45,39 +44,60 @@ public sealed class MeetingInvitationDispatchProcessor(
     {
         if (!options.Value.Smtp.Enabled)
             return 0;
-        var candidate = await db
-            .MeetingInvitationDispatches.AsNoTracking()
-            .SingleOrDefaultAsync(d => d.Id == id, ct);
-        if (
-            candidate is null
-            || candidate.State
-                is not (
-                    InvitationDispatchState.Pending
-                    or InvitationDispatchState.BlockedDependency
-                )
-            || candidate.NextAttemptAt > clock.GetUtcNow()
-        )
-            return 0;
-        Guid? meetingId = candidate.MeetingId;
-        if (
-            candidate.GuestInvitationId is not null
-            && candidate.EventKind != InvitationEventKind.Removed
-            && !await links.IsAvailableAsync(ct)
-        )
+        var attempt = 0;
+        try
         {
-            // An unavailable integration must not serialize roster mutations on the meeting row.
-            var now = clock.GetUtcNow();
+            var candidate = await db
+                .MeetingInvitationDispatches.AsNoTracking()
+                .SingleOrDefaultAsync(d => d.Id == id, ct);
             if (
-                !await db.MeetingGuestInvitations.AnyAsync(
-                    g => g.Id == candidate.GuestInvitationId && g.RevokedAt == null,
-                    ct
-                )
-                || await db.Meetings.AnyAsync(
-                    m => m.Id == meetingId && m.Status == MeetingStatus.Ended,
-                    ct
-                )
+                candidate is null
+                || candidate.State
+                    is not (
+                        InvitationDispatchState.Pending
+                        or InvitationDispatchState.BlockedDependency
+                    )
+                || candidate.NextAttemptAt > clock.GetUtcNow()
+            )
+                return 0;
+            attempt = candidate.AttemptCount;
+            Guid? meetingId = candidate.MeetingId;
+            if (
+                candidate.GuestInvitationId is not null
+                && candidate.EventKind != InvitationEventKind.Removed
+                && !await links.IsAvailableAsync(ct)
             )
             {
+                // An unavailable integration must not serialize roster mutations on the meeting row.
+                var deferredAt = clock.GetUtcNow();
+                if (
+                    !await db.MeetingGuestInvitations.AnyAsync(
+                        g => g.Id == candidate.GuestInvitationId && g.RevokedAt == null,
+                        ct
+                    )
+                    || await db.Meetings.AnyAsync(
+                        m => m.Id == meetingId && m.Status == MeetingStatus.Ended,
+                        ct
+                    )
+                )
+                {
+                    await db
+                        .MeetingInvitationDispatches.Where(d =>
+                            d.Id == id
+                            && (
+                                d.State == InvitationDispatchState.Pending
+                                || d.State == InvitationDispatchState.BlockedDependency
+                            )
+                        )
+                        .ExecuteUpdateAsync(
+                            set =>
+                                set.SetProperty(d => d.State, InvitationDispatchState.Suppressed)
+                                    .SetProperty(d => d.UpdatedAt, deferredAt),
+                            ct
+                        );
+                    return 0;
+                }
+                var next = DependencyRetryAt(deferredAt, candidate.DependencyAttemptCount);
                 await db
                     .MeetingInvitationDispatches.Where(d =>
                         d.Id == id
@@ -85,42 +105,22 @@ public sealed class MeetingInvitationDispatchProcessor(
                             d.State == InvitationDispatchState.Pending
                             || d.State == InvitationDispatchState.BlockedDependency
                         )
+                        && (d.NextAttemptAt == null || d.NextAttemptAt <= deferredAt)
                     )
                     .ExecuteUpdateAsync(
                         set =>
-                            set.SetProperty(d => d.State, InvitationDispatchState.Suppressed)
-                                .SetProperty(d => d.UpdatedAt, now),
+                            set.SetProperty(d => d.State, InvitationDispatchState.BlockedDependency)
+                                .SetProperty(
+                                    d => d.DependencyAttemptCount,
+                                    d => d.DependencyAttemptCount + 1
+                                )
+                                .SetProperty(d => d.NextAttemptAt, next)
+                                .SetProperty(d => d.LastError, "Unavailable")
+                                .SetProperty(d => d.UpdatedAt, deferredAt),
                         ct
                     );
                 return 0;
             }
-            var next = DependencyRetryAt(now, candidate.DependencyAttemptCount);
-            await db
-                .MeetingInvitationDispatches.Where(d =>
-                    d.Id == id
-                    && (
-                        d.State == InvitationDispatchState.Pending
-                        || d.State == InvitationDispatchState.BlockedDependency
-                    )
-                    && (d.NextAttemptAt == null || d.NextAttemptAt <= now)
-                )
-                .ExecuteUpdateAsync(
-                    set =>
-                        set.SetProperty(d => d.State, InvitationDispatchState.BlockedDependency)
-                            .SetProperty(
-                                d => d.DependencyAttemptCount,
-                                d => d.DependencyAttemptCount + 1
-                            )
-                            .SetProperty(d => d.NextAttemptAt, next)
-                            .SetProperty(d => d.LastError, "Unavailable")
-                            .SetProperty(d => d.UpdatedAt, now),
-                    ct
-                );
-            return 0;
-        }
-        var attempt = 0;
-        try
-        {
             await using var tx = await db.Database.BeginTransactionAsync(ct);
             await db
                 .Meetings.FromSqlInterpolated(
@@ -166,16 +166,9 @@ public sealed class MeetingInvitationDispatchProcessor(
                 .Select(m => m.Status)
                 .SingleAsync(ct);
             var current = dispatch.ParticipantId is { } participantId
-                ? await db.MeetingParticipants.AnyAsync(
-                    p =>
-                        p.Id == participantId
-                        && p.AssignmentStatus == AssignmentStatus.Current
-                        && p.Role != MeetingRole.Guest
-                        && p.Response != InvitationResponse.Delegated
-                        && p.DelegatedToUserId == null
-                        && p.User.IsActive,
-                    ct
-                )
+                ? await db
+                    .MeetingParticipants.Where(ParticipantRules.ActiveExpression)
+                    .AnyAsync(p => p.Id == participantId, ct)
                 : await db.MeetingGuestInvitations.AnyAsync(
                     g => g.Id == dispatch.GuestInvitationId && g.RevokedAt == null,
                     ct
@@ -190,6 +183,45 @@ public sealed class MeetingInvitationDispatchProcessor(
                 await db.SaveChangesAsync(ct);
                 await tx.CommitAsync(ct);
                 return 0;
+            }
+            // A withdrawal is meaningful only after this assignment's invitation became an email.
+            // Match the delivery key too: pre-migration invitations may have no dispatch row.
+            if (dispatch.EventKind == InvitationEventKind.Removed)
+            {
+                var initialKey = dispatch.ParticipantId is { } ownerId
+                    ? await db
+                        .MeetingParticipants.Where(p => p.Id == ownerId)
+                        .Select(p => p.InitialInvitationDeliveryKey)
+                        .SingleAsync(ct)
+                    : await db
+                        .MeetingGuestInvitations.Where(g => g.Id == dispatch.GuestInvitationId)
+                        .Select(g => g.InitialInvitationDeliveryKey)
+                        .SingleAsync(ct);
+                var materialized =
+                    await db.MeetingInvitationDispatches.AnyAsync(
+                        d =>
+                            d.MeetingId == meetingId
+                            && d.ParticipantId == dispatch.ParticipantId
+                            && d.GuestInvitationId == dispatch.GuestInvitationId
+                            && d.EventKind == InvitationEventKind.Invitation
+                            && d.State == InvitationDispatchState.Materialized,
+                        ct
+                    )
+                    || (
+                        initialKey != null
+                        && await db.EmailMessages.AnyAsync(
+                            e => e.DeduplicationKey == initialKey,
+                            ct
+                        )
+                    );
+                if (!materialized)
+                {
+                    dispatch.State = InvitationDispatchState.Suppressed;
+                    dispatch.UpdatedAt = now;
+                    await db.SaveChangesAsync(ct);
+                    await tx.CommitAsync(ct);
+                    return 0;
+                }
             }
             var link =
                 options.Value.ApplicationBaseUrl.TrimEnd('/') + $"/mgmt/meetings/{meetingId}";
@@ -297,8 +329,7 @@ public sealed class MeetingInvitationDispatchProcessor(
             await tx.CommitAsync(ct);
             return 1;
         }
-        catch (Exception ex)
-            when (ex is DbUpdateException or NpgsqlException or TimeoutException or JsonException)
+        catch (Exception ex) when (!ct.IsCancellationRequested)
         {
             db.ChangeTracker.Clear();
             // Never log payloads or exception messages from a credential provider.

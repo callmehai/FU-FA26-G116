@@ -60,7 +60,7 @@ public static class ParticipantEndpoints
                     Guid meetingId,
                     HttpContext context,
                     IParticipantService service,
-                    IParticipantGuestIdentityResolver identities,
+                    IMeetingGuestIdentityResolver identities,
                     CancellationToken ct
                 ) =>
                 {
@@ -85,7 +85,7 @@ public static class ParticipantEndpoints
                     Guid meetingId,
                     HttpContext context,
                     IParticipantService service,
-                    IParticipantGuestIdentityResolver identities,
+                    IMeetingGuestIdentityResolver identities,
                     CancellationToken ct
                 ) =>
                 {

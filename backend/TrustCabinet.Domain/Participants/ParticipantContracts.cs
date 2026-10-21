@@ -1,3 +1,4 @@
+using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
@@ -8,17 +9,13 @@ public enum ParticipantOperation { Context, Roster, Options, OwnResponse, AddInt
 public enum ParticipantFailure { None, NotFound, Forbidden, Inactive, Locked, Invalid, InvalidRole, ChairHandoverDenied, InvalidChairRecipient, RequiredRoles, Stale, InvalidRequest, UnsupportedMedia, TooLarge, ReadFailed, SaveFailed, CannotRespond }
 public enum ParticipantSuccess { Saved, Created, RoleChanged, ChairHandedOver, Removed, Responded, NoChanges }
 
-public sealed record ParticipantActor(Guid? UserId = null, ParticipantGuestSession? Guest = null);
-public sealed record ParticipantGuestSession(Guid MeetingId, Guid InvitationId, Guid SessionId)
-{
-    public bool IsValid => MeetingId != Guid.Empty && InvitationId != Guid.Empty && SessionId != Guid.Empty;
-}
+public sealed record ParticipantActor(Guid? UserId = null, MeetingGuestSession? Guest = null);
 public sealed record GuestDisplayProfile(string? DisplayName, string? JobTitle);
 public interface IParticipantGuestAccess
 {
-    Task<IReadOnlyList<ParticipantGuestSession>> ListReadersAsync(Guid meetingId, CancellationToken ct)
-        => Task.FromResult<IReadOnlyList<ParticipantGuestSession>>([]);
-    Task<bool> CanAccessAsync(ParticipantGuestSession session, CancellationToken ct);
+    Task<IReadOnlyList<MeetingGuestSession>> ListReadersAsync(Guid meetingId, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<MeetingGuestSession>>([]);
+    Task<bool> CanAccessAsync(MeetingGuestSession session, CancellationToken ct);
     Task<IReadOnlyDictionary<Guid, GuestDisplayProfile>> GetProfilesAsync(Guid meetingId, IReadOnlyCollection<Guid> invitationIds, CancellationToken ct);
 }
 public enum GuestLinkStatus { Ready, Unavailable, Invalid }
@@ -73,5 +70,5 @@ public sealed record ParticipantsChange(Guid EventId, Guid MeetingId, string Rev
 public interface IParticipantsChangePublisher
 {
     Task PublishAsync(ParticipantsChange change, IReadOnlyCollection<Guid> userIds,
-        IReadOnlyCollection<ParticipantGuestSession> guests, CancellationToken ct);
+        IReadOnlyCollection<MeetingGuestSession> guests, CancellationToken ct);
 }

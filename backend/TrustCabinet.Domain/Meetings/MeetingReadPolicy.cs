@@ -11,12 +11,8 @@ public static class MeetingReadPolicy
     private static readonly Expression<Func<Meeting, Guid, bool>> ReadExpression
         = (meeting, userId) => meeting.CreatedById == userId
             || (meeting.Status != MeetingStatus.Draft && meeting.AssignedApproverId == userId)
-            || meeting.Participants.Any(participant => participant.MeetingId == meeting.Id
+            || meeting.Participants.AsQueryable().Where(ParticipantRules.CurrentExpression).Any(participant => participant.MeetingId == meeting.Id
                 && participant.UserId == userId
-                && participant.AssignmentStatus == AssignmentStatus.Current
-                && participant.Role != MeetingRole.Guest
-                && participant.Response != InvitationResponse.Delegated
-                && participant.DelegatedToUserId == null
                 && ((participant.Role == MeetingRole.Secretary || participant.Role == MeetingRole.Chair)
                     || meeting.Status == MeetingStatus.Published
                     || meeting.Status == MeetingStatus.InProgress
@@ -47,12 +43,8 @@ public static class MeetingReadPolicy
 
     private static bool IsAssignedManager(Meeting meeting, Guid userId)
         => meeting.Participants.Any(participant => participant.MeetingId == meeting.Id
-            && participant.UserId == userId
-            && participant.AssignmentStatus == AssignmentStatus.Current
-            && (participant.Role == MeetingRole.Secretary || participant.Role == MeetingRole.Chair)
-            && participant.Response != InvitationResponse.Delegated
-            && participant.DelegatedToUserId is null
-            && participant.User is { IsActive: true });
+            && participant.UserId == userId && ParticipantRules.Active(participant)
+            && (participant.Role == MeetingRole.Secretary || participant.Role == MeetingRole.Chair));
 
     private sealed class BindUser(ParameterExpression user, Expression value) : ExpressionVisitor
     {

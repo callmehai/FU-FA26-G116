@@ -107,3 +107,10 @@ Initial delivery key của dòng cũ/backfill: `meeting:{meetingId}:published:{u
 Guest unavailable: probe readiness không khóa meeting; retry 1 phút, 5 phút, 30 phút rồi 6 giờ, không tiêu hao retry kỹ thuật. Khi Ready, khóa meeting → dispatch, kiểm current/status và prepare link trong transaction, materialize EmailMessage nguyên tử. Không gửi SMTP trong lock. Audit chỉ ghi các dòng đổi. Down chặn khi có Guest/dispatch/removed history; sau khi dùng tính năng không mặc định rollback bằng Down.
 
 Xem [bàn giao FE/test thủ công](09-thanh-phan-tham-du-ban-giao.md) và [ADR-0021](../05-decisions/0021-vong-doi-thanh-phan-va-y-dinh-gui-thu.md).
+
+### Sửa review 21/10/2026
+
+- Dispatch Removed chỉ tạo thư khi Invitation của cùng assignment/invitation đã Materialized, hoặc có EmailMessage khớp initial delivery key (hỗ trợ dữ liệu cũ chưa có dispatch). Nếu chưa thì Suppressed. Materialized nghĩa là email đã được xếp hàng, không phải SMTP đã gửi thành công. Không dùng invitation cũ của lần mời trước để cho phép thư thu hồi của lần mới.
+- Mọi exception kỹ thuật từ readiness probe, prepare và materialize đều tăng AttemptCount, backoff và Failed khi hết MaxAttempts; cancellation từ host được propagate, không tính thất bại. Log chỉ ghi loại exception, không ghi message/payload/token.
+- Worker cô lập lỗi dispatch, kể cả lỗi khi truy vấn hoặc ghi trạng thái retry; hàng đợi email đã có (gồm reset mật khẩu) vẫn được xử lý ở scope riêng.
+- Add internal trùng email current Guest trả 400/MSG97 với errors.userIds.

@@ -1,8 +1,22 @@
 # SCRUM-20 / UC-73 — kết quả kiểm thử Backend
 
-## Trạng thái ngày 21/10/2026
+## Sửa review 21/10/2026 — working tree trên 487ca24
 
-Báo cáo do AI hỗ trợ soạn cho thay đổi PO Hải chốt ngày 20/10/2026. Kiểm thử working tree trên branch `feat/scrum20-Backend-Invite-participants-and-acept`, nền HEAD `adca53b`. Các thay đổi mới chưa commit/push; CI xanh của HEAD cũ không xác nhận working tree này. Chưa merge hoặc deploy.
+Báo cáo do AI hỗ trợ soạn. Phần sửa review này chưa commit/push; CI #354 chỉ xác nhận published head 487ca24. Không merge/deploy hoặc tác động database dùng chung.
+
+- Full backend Release suite: **1.126 pass, 0 fail, 0 skip**, trên PostgreSQL17/Redis8 riêng. TRX `%TEMP%/scrum20-po-results/review2-full.trx`; log `%TEMP%/scrum20-review2-full.log`.
+- Release build `-warnaserror`: 0 warning/error; frontend lint/build và diff check pass.
+- Removed không materialize khi lời mời cùng owner chưa thành email; vẫn hỗ trợ initial delivery key của dữ liệu cũ. Test Guest chờ UC-04, Member thêm/gỡ ngay, đã materialize và legacy EmailMessage không có dispatch.
+- Exception ở IsAvailableAsync/PrepareAsync (kể cả OperationCanceledException khi host chưa hủy) tăng attempt/backoff, Failed khi hết budget; dispatch sau vẫn materialize. Host cancellation propagate.
+- Worker dùng try/catch riêng cho dispatch; lỗi không cản email queue ở scope mới. Không log exception message chứa credential.
+- Regression khóa Chair giữa snapshot và FOR SHARE: được thay theo policy inactive mà không phát UPDATE users. Trùng Guest email trả errors.userIds.
+- Dùng expression participant chung, identity/resolver Guest chung cho Agenda/Participants/hub; không thay quyền workflow/Agenda.
+
+**Gate merge:** chờ FE do Hải triển khai gửi participants khi tạo meeting, đưa FE/BE lên main cùng lúc. Sau khi owner commit/push bản sửa cần CI mới và review lại. SMTP thật và Guest production chưa nghiệm thu; hướng dẫn ở [bàn giao](09-thanh-phan-tham-du-ban-giao.md).
+
+## Kiểm thử bản PO trước review
+
+Bản PO 20/10/2026 đã commit/push tại `487ca24dd4ad5368e5c74ace7aaacb66926b2c5d`; [CI #354](https://github.com/callmehai/TrustCabinet/actions/runs/39496645545) pass. Bảng bên dưới ghi kết quả của bản PO trước review. Phần sửa review mới được ghi riêng ở đầu báo cáo.
 
 ## Kết quả thực chạy
 

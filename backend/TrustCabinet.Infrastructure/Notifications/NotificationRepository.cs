@@ -81,14 +81,10 @@ public sealed class NotificationRepository(TrustCabinetDbContext db) : INotifica
 
     public Task<List<UpcomingMeetingRecipient>> FindUpcomingMeetingRecipientsAsync(
         DateTimeOffset now, DateTimeOffset cutoff, CancellationToken ct = default)
-        => db.MeetingParticipants.AsNoTracking()
+        => db.MeetingParticipants.AsNoTracking().Where(Domain.Participants.ParticipantRules.ActiveExpression)
             .Where(participant => participant.Meeting.Status == MeetingStatus.Published
-                && participant.AssignmentStatus == Domain.Participants.AssignmentStatus.Current
-                && participant.Role != MeetingRole.Guest && participant.Response != InvitationResponse.Delegated
-                && participant.DelegatedToUserId == null
                 && participant.Meeting.PlannedStartTime > now
-                && participant.Meeting.PlannedStartTime <= cutoff
-                && participant.User.IsActive)
+                && participant.Meeting.PlannedStartTime <= cutoff)
             .Select(participant => new UpcomingMeetingRecipient(
                 participant.MeetingId,
                 participant.Meeting.Title,

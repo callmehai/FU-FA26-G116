@@ -61,7 +61,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`07-gui-email-thu-moi-note-cai-dat-may-moi.md`](07-gui-email-thu-moi-note-cai-dat-may-moi.md) —
   checklist cấu hình database, User Secrets, SMTP, migration và kiểm tra worker trên máy mới
 
-- [`09-thanh-phan-tham-du.md`](09-thanh-phan-tham-du.md) — SCRUM-20: roster, Guest invitation, grants, recovery, Chair swap và phản hồi lời mời; ETag/validation/delivery/migration
+- [`09-thanh-phan-tham-du.md`](09-thanh-phan-tham-du.md) — SCRUM-20: roster, Guest invitation, quyền Chair/Secretary, Chair handover và phản hồi lời mời; ETag/validation/delivery/migration
 - [`09-thanh-phan-tham-du-ban-giao.md`](09-thanh-phan-tham-du-ban-giao.md) — FE, Postman, fixture và các bước test thủ công
 - [`09-thanh-phan-tham-du-guest-uc04.md`](09-thanh-phan-tham-du-guest-uc04.md) — port và gate tích hợp OTP/session Guest production
 - [`09-thanh-phan-tham-du-ket-qua-kiem-thu.md`](09-thanh-phan-tham-du-ket-qua-kiem-thu.md) — kết quả build/test, performance và giới hạn nghiệm thu

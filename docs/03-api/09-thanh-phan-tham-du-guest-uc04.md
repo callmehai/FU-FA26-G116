@@ -8,7 +8,7 @@ Change note đã ghi tại [SCRUM-20 comment 10221](https://sep490g116.atlassian
 
 | Port | Chủ triển khai production | Nghĩa vụ |
 |---|---|---|
-| `IParticipantGuestIdentityResolver` (Web) | UC-04 | Chỉ resolve trusted principal được authentication handler xác thực thành MeetingId/InvitationId/SessionId. Không đọc ID tùy ý từ query/body/header |
+| `IMeetingGuestIdentityResolver` (Web) | UC-04 | Chỉ resolve trusted principal được authentication handler xác thực thành MeetingId/InvitationId/SessionId. Không đọc ID tùy ý từ query/body/header |
 | `IParticipantGuestAccess` (Domain) | UC-04 | CanAccessAsync đọc trạng thái session thật mỗi request: đúng binding, verified email, chưa hết hạn/revoke; không cache quyền vào JWT rồi tin mãi |
 | `ListReadersAsync` | UC-04 | Trả session verified/current/non-expired/non-revoked cho realtime participantsChanged; dùng chung identity binding với Agenda hub |
 | `GetProfilesAsync` | UC-04 | Một batch invitation IDs; trả DisplayName/JobTitle tự khai. Email và invitedName evidence vẫn thuộc invitation; không ghi đè bằng self-declared profile |
@@ -37,3 +37,5 @@ UC-04 phải cung cấp cả adapters Agenda: [contract SCRUM-25](08-agenda-cont
 6. Guest Ended đọc được view có quyền nhưng không respond; inactive internal không thể dùng đường Guest để vượt account policy.
 
 Hiện có consumer integration tests với test-only adapter cho verified/unverified/expired/mixed identity/revoked invitation và delivery dependency. **Guest E2E production: Blocked by UC-04**, không tính các test đó là đã nghiệm thu OTP/session thật.
+
+Cập nhật review 21/10/2026: Agenda, Participants và MeetingHub dùng chung `MeetingGuestSession` và `IMeetingGuestIdentityResolver`; UC-04 chỉ đăng ký một resolver. Các port kiểm quyền theo feature vẫn tách riêng, dùng cùng invitation/session storage. Tên group Guest được tạo duy nhất bằng `MeetingHub.GuestGroup`.

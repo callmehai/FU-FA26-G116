@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
@@ -5,9 +6,24 @@ namespace TrustCabinet.Domain.Participants;
 
 public static class ParticipantRules
 {
-    public static bool Current(MeetingParticipant p) => p.AssignmentStatus == AssignmentStatus.Current
-        && p.Role != MeetingRole.Guest && p.Response != InvitationResponse.Delegated && p.DelegatedToUserId is null;
-    public static bool Active(MeetingParticipant p) => Current(p) && p.User.IsActive;
+    public static Expression<Func<MeetingParticipant, bool>> CurrentExpression { get; } = p =>
+        p.AssignmentStatus == AssignmentStatus.Current && p.Role != MeetingRole.Guest
+        && p.Response != InvitationResponse.Delegated && p.DelegatedToUserId == null;
+    public static Expression<Func<MeetingParticipant, bool>> ActiveExpression { get; } = BuildActiveExpression();
+    private static readonly Func<MeetingParticipant, bool> IsCurrent = CurrentExpression.Compile();
+    private static readonly Func<MeetingParticipant, bool> IsActive = ActiveExpression.Compile();
+    public static bool Current(MeetingParticipant p) => IsCurrent(p);
+    public static bool Active(MeetingParticipant p) => IsActive(p);
+
+    private static Expression<Func<MeetingParticipant, bool>> BuildActiveExpression()
+    {
+        var participant = CurrentExpression.Parameters[0];
+        var user = Expression.Property(participant, nameof(MeetingParticipant.User));
+        var active = Expression.AndAlso(Expression.NotEqual(user, Expression.Constant(null, typeof(User))),
+            Expression.Property(user, nameof(User.IsActive)));
+        return Expression.Lambda<Func<MeetingParticipant, bool>>(
+            Expression.AndAlso(CurrentExpression.Body, active), participant);
+    }
     public static bool Editable(MeetingStatus status) => status is MeetingStatus.Draft or MeetingStatus.Rejected
         or MeetingStatus.Approved or MeetingStatus.Published or MeetingStatus.InProgress;
     public static bool Preparation(MeetingStatus status) => status is MeetingStatus.Draft or MeetingStatus.Rejected or MeetingStatus.Approved;
@@ -22,8 +38,6 @@ public static class ParticipantRules
         return Preparation(meeting.Status) || meeting.Participants.Any(p => p.UserId == actor && Active(p) && p.Role == MeetingRole.Chair)
             || meeting.Participants.Any(p => Current(p) && p.Role == MeetingRole.Chair && !p.User.IsActive);
     }
-    public static bool ValidChairRecipient(MeetingParticipant participant) => Active(participant)
-        && participant.Role != MeetingRole.Secretary;
     public static bool ValidRoles(MeetingStatus status, IEnumerable<MeetingRole> roles)
     {
         var list = roles.ToArray();

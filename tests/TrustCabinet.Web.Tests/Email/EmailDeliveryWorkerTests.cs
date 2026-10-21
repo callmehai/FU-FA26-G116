@@ -41,6 +41,42 @@ public sealed class EmailDeliveryWorkerTests
         Assert.Equal(0, probe.ProcessingCalls);
     }
 
+    [Fact]
+    public async Task Dispatch_failure_does_not_block_queued_email_and_uses_fresh_scope()
+    {
+        var probe = new WorkerProbe();
+        var services = Services(probe);
+        var dispatchScopes = new List<object>();
+        services.AddScoped<MeetingInvitationDispatchProcessor>(provider =>
+        {
+            dispatchScopes.Add(provider.GetRequiredService<ScopeMarker>());
+            throw new InvalidOperationException("provider-secret");
+        });
+        using var provider = services.BuildServiceProvider();
+        var worker = Worker(provider);
+        await worker.ProcessOnceAsync(default);
+        await worker.ProcessOnceAsync(default);
+        Assert.Equal(2, probe.ProcessingCalls);
+        Assert.Equal(2, dispatchScopes.Distinct().Count());
+        Assert.DoesNotContain(dispatchScopes[0], probe.ProcessingScopes);
+    }
+
+    [Fact]
+    public async Task Dispatch_host_cancellation_propagates_without_sending_email()
+    {
+        var probe = new WorkerProbe();
+        using var cancellation = new CancellationTokenSource();
+        var services = Services(probe);
+        services.AddScoped<MeetingInvitationDispatchProcessor>(_ =>
+        {
+            cancellation.Cancel();
+            throw new OperationCanceledException(cancellation.Token);
+        });
+        using var provider = services.BuildServiceProvider();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Worker(provider).ProcessOnceAsync(cancellation.Token));
+        Assert.Equal(0, probe.ProcessingCalls);
+    }
+
     private static ServiceCollection Services(WorkerProbe probe)
     {
         var services = new ServiceCollection();

@@ -41,3 +41,11 @@ Seed `[SCRUM20-DEV]` có 7 trạng thái, ID prefix `20000000-0000-7000-8000-`, 
 SMTP thật không thuộc kết quả automated tests. Khi kiểm mail dùng SMTP sandbox, kiểm lịch/role/link và không gửi tới người thật. Guest default giữ BlockedDependency với backoff 1m/5m/30m/6h. Integration thật theo [contract UC-04](09-thanh-phan-tham-du-guest-uc04.md). Migration không tự chạy lại trên database đã ghi nhận cùng ID cũ: môi trường thử đã apply bản PR cũ cần dựng database thử mới hoặc owner quản lý nâng cấp riêng; không sửa schema bằng tay.
 
 Kết quả kiểm thử hiện tại ở [test report](09-thanh-phan-tham-du-ket-qua-kiem-thu.md).
+
+## Gate tích hợp và regression review 21/10/2026
+
+**Chờ FE do Hải thực hiện gửi participants khi tạo meeting rồi merge phối hợp cùng lúc.** Không đưa riêng contract bắt buộc mới lên server test khi màn tạo họp còn gửi payload cũ.
+
+Test thêm: mời Guest khi UC-04 Unavailable rồi gỡ, hoặc thêm/gỡ Member trước khi worker materialize: dispatch Removed phải Suppressed, không có thư thu hồi. Với Invitation đã Materialized, gỡ vẫn tạo thư thu hồi không chứa link bảo vệ. Đây là điều kiện đã xếp hàng email, không cam kết SMTP đã gửi.
+
+Trên môi trường kiểm thử riêng, dùng provider ném InvalidOperationException ở IsAvailableAsync/PrepareAsync: attempt tăng, có backoff, đủ MaxAttempts thành Failed; dispatch sau và email reset mật khẩu đã xếp hàng vẫn được xử lý. Không cố tình gây lỗi provider/database dùng chung.

@@ -319,7 +319,7 @@ public sealed partial class ParticipantService(
         ParticipantResult result;
         ParticipantsChange? changeEvent = null;
         HashSet<Guid> readers = [];
-        HashSet<ParticipantGuestSession> guestReaders = [];
+        HashSet<MeetingGuestSession> guestReaders = [];
         try
         {
             await using var tx = await db.Database.BeginTransactionAsync(
@@ -518,7 +518,7 @@ public sealed partial class ParticipantService(
             .ToArrayAsync(ct);
     }
 
-    private async Task<IReadOnlyList<ParticipantGuestSession>> GuestReadersAsync(
+    private async Task<IReadOnlyList<MeetingGuestSession>> GuestReadersAsync(
         Meeting meeting,
         CancellationToken ct
     ) =>
@@ -605,7 +605,7 @@ public sealed partial class ParticipantService(
                 ct
             )
         )
-            return new(ParticipantFailure.Invalid);
+            return Invalid("userIds", "Người được chọn đã được mời với tư cách Khách.");
         if (
             !ParticipantRules.ValidRoles(
                 s.Meeting.Status,
@@ -740,9 +740,15 @@ public sealed partial class ParticipantService(
             )
             .AsNoTracking()
             .ToDictionaryAsync(u => u.Id, ct);
-        foreach (var p in current.Values)
-            p.User.IsActive = users[p.UserId].IsActive;
-        if (live && touchesChair && !ParticipantRules.CanReplaceChair(s.Meeting, actor))
+        var actorParticipant = current.Values.FirstOrDefault(p => p.UserId == actor);
+        if (actorParticipant is null)
+            return new(ParticipantFailure.Forbidden);
+        if (!users[actor].IsActive)
+            return new(ParticipantFailure.Inactive);
+        var canReplaceChair = actorParticipant.Role == MeetingRole.Chair
+            || (actorParticipant.Role == MeetingRole.Secretary && oldChair is not null
+                && !users[oldChair.UserId].IsActive);
+        if (live && touchesChair && !canReplaceChair)
             return new(ParticipantFailure.ChairHandoverDenied);
         foreach (var c in changes)
         {
@@ -756,7 +762,7 @@ public sealed partial class ParticipantService(
                 live
                 && c.Role == nameof(MeetingRole.Chair)
                 && c.ParticipantId != oldChair?.Id
-                && !ParticipantRules.ValidChairRecipient(participant)
+                && (!users[participant.UserId].IsActive || participant.Role == MeetingRole.Secretary)
             )
                 return new(ParticipantFailure.InvalidChairRecipient);
         }

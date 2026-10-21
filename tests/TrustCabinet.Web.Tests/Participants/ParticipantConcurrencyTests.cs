@@ -14,6 +14,31 @@ namespace TrustCabinet.Web.Tests.Participants;
 public sealed class ParticipantConcurrencyTests(ParticipantFixture f, ITestOutputHelper output) : IClassFixture<ParticipantFixture>
 {
     [Fact]
+    public async Task Chair_deactivated_after_snapshot_is_replaced_without_updating_tracked_user()
+    {
+        var s = await f.Seed();
+        using var secretary = f.Client(s.Secretary);
+        f.Queries.BeforeUserLock = async () =>
+        {
+            await using var db = f.Db();
+            await db.Users.Where(u => u.Id == s.Chair).ExecuteUpdateAsync(set => set.SetProperty(u => u.IsActive, false));
+        };
+        f.Queries.RejectUserUpdates = true;
+        try
+        {
+            await Code(await Write(secretary, s.Url + "/participants/assignments", HttpMethod.Put, new
+            {
+                changes = new[] { new { participantId = s.ChairAssignment, role = "Member" }, new { participantId = s.MemberAssignment, role = "Chair" } },
+                chairReplacement = new { outgoingParticipantId = s.ChairAssignment, incomingParticipantId = s.MemberAssignment, confirmed = true }
+            }), 200, "MSG100");
+            await using var check = f.Db();
+            Assert.False(await check.Users.Where(u => u.Id == s.Chair).Select(u => u.IsActive).SingleAsync());
+            Assert.Equal(MeetingRole.Chair, await check.MeetingParticipants.Where(p => p.Id == s.MemberAssignment).Select(p => p.Role).SingleAsync());
+        }
+        finally { f.Queries.BeforeUserLock = null; f.Queries.RejectUserUpdates = false; }
+    }
+
+    [Fact]
     public async Task Competing_chair_swaps_use_revision_and_preserve_exactly_one_chair_and_secretary()
     {
         var s = await f.Seed(MeetingStatus.Approved); using var secretary = f.Client(s.Secretary);

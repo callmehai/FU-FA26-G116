@@ -54,7 +54,7 @@ Ví dụ snapshot (các ID minh họa; `orderVersion` luôn lấy nguyên token 
 
 ## Realtime và điểm tích hợp
 
-Theo ADR-0016, Guest đã xác minh và còn quyền theo lời mời đọc tài liệu cuộc họp như Member. SCRUM-25 đã có đường đọc snapshot và hub qua `IAgendaGuestIdentityResolver` / `IAgendaGuestAccess`, group tách theo invitation/session và kiểm quyền lại mỗi request/lần phát. Adapter mặc định từ chối; UC-04/SCRUM-20 cần cung cấp OTP/session/repository thật và thay đăng ký DI theo [contract tích hợp Guest](08-agenda-contract-tich-hop-guest-uc04.md). Không dùng `MeetingRole.Guest` của model User cũ hoặc tên presenter tự nhập làm bằng chứng xác minh. Các test adapter chứng minh phía Agenda, chưa phải nghiệm thu UC-04 end-to-end.
+Theo ADR-0016, Guest đã xác minh và còn quyền theo lời mời đọc tài liệu cuộc họp như Member. SCRUM-25 đã có đường đọc snapshot và hub qua `IMeetingGuestIdentityResolver` / `IAgendaGuestAccess`, group tách theo invitation/session và kiểm quyền lại mỗi request/lần phát. Adapter mặc định từ chối; UC-04/SCRUM-20 cần cung cấp OTP/session/repository thật và thay đăng ký DI theo [contract tích hợp Guest](08-agenda-contract-tich-hop-guest-uc04.md). Không dùng `MeetingRole.Guest` của model User cũ hoặc tên presenter tự nhập làm bằng chứng xác minh. Các test adapter chứng minh phía Agenda, chưa phải nghiệm thu UC-04 end-to-end.
 
 Hub `/hubs/meetings`: `JoinMeeting(meetingId)`, `LeaveMeeting(meetingId)`. Event `agendaChanged`: eventId, meetingId, changeType (Created/Updated/Deleted/Reordered/Started/Completed/MeetingEnded), agendaItemId?, title?, occurredAt. Publisher kiểm lại active user và MeetingReadPolicy trước mỗi lần gửi tới group meeting/user. Sau commit mới gửi; lỗi push không đổi thành công lưu. Không bảo đảm durable delivery: FE phải resync.
 
@@ -77,3 +77,5 @@ Publisher nhận cancellation sau 2 giây, nhưng request vẫn chờ task publi
 | 26 | GET/hub | — | Visibility, response shape, event isolation/revocation/reconnect |
 
 Minimal API AgendaEndpoints tương ứng Controller trong diagram; AgendaService điều phối; IMeetingRepository/MeetingReadPolicy được tái sử dụng. AgendaDocumentRepository là adapter model tài liệu hiện tại. Không thêm Application project.
+
+Cập nhật review 21/10/2026: Agenda, Participants và MeetingHub dùng chung `MeetingGuestSession` và `IMeetingGuestIdentityResolver`; UC-04 chỉ đăng ký một resolver. Các port kiểm quyền theo feature vẫn tách riêng, dùng cùng invitation/session storage. Tên group Guest được tạo duy nhất bằng `MeetingHub.GuestGroup`.

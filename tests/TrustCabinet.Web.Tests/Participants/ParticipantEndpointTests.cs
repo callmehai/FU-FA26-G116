@@ -30,6 +30,21 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
     }
 
     [Fact]
+    public async Task Internal_invitee_matching_current_guest_returns_userIds_error()
+    {
+        var s = await f.Seed();
+        using var client = f.Client(s.Secretary);
+        await Code(await Write(client, s.Url + "/guest-invitations", HttpMethod.Post,
+            new { invitedName = "Khách", email = "duplicate@guests.test" }), 201, "MSG96");
+        await using var db = f.Db();
+        await db.Users.Where(u => u.Id == s.Outsider).ExecuteUpdateAsync(set => set.SetProperty(u => u.Email, "DUPLICATE@guests.test"));
+        var result = await Code(await Write(client, s.Url + "/participants", HttpMethod.Post,
+            new { userIds = new[] { s.Outsider }, role = "Member" }, await Tag(client, s.Url)), 400, "MSG97");
+        Assert.NotEmpty(result.GetProperty("errors").GetProperty("userIds").EnumerateArray());
+        Assert.False(await db.MeetingParticipants.AnyAsync(p => p.MeetingId == s.MeetingId && p.UserId == s.Outsider));
+    }
+
+    [Fact]
     public async Task Response_is_owned_without_attendance_changes()
     {
         var s = await f.Seed(); using var secretary = f.Client(s.Secretary); using var member = f.Client(s.Member);
