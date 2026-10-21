@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   ChevronsUpDown,
   CircleCheck,
   CircleX,
@@ -34,9 +35,11 @@ import {
   MessageSquare,
   Mic,
   MicOff,
+  Monitor,
   Paperclip,
   PenLine,
   PhoneOff,
+  PictureInPicture2,
   Plus,
   Presentation,
   Radio,
@@ -46,7 +49,6 @@ import {
   Settings,
   Shield,
   ShieldAlert,
-  SlidersHorizontal,
   SquareCheck,
   Trash2,
   Upload,
@@ -86,6 +88,7 @@ const ICONS = {
   chevronLeft: ChevronLeft,
   chevronDown: ChevronDown,
   chevronRight: ChevronRight,
+  chevronUp: ChevronUp,
   // Sort indicators on table headers: both ways (sortable, not sorted), then each direction.
   sortBoth: ChevronsUpDown,
   sortAsc: ArrowUp,
@@ -128,9 +131,10 @@ const ICONS = {
   messageSquare: MessageSquare,
   phoneOff: PhoneOff,
   volume: Volume2,
-  // SCRUM-42: device settings.
-  sliders: SlidersHorizontal,
   videoOff: VideoOff,
+  // SCRUM-43: screen sharing.
+  monitor: Monitor,
+  pictureInPicture: PictureInPicture2,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS
