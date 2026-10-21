@@ -1,8 +1,8 @@
 # Server test chung
 
 Một bản TrustCabinet chạy 24/7 để cả nhóm (Tester, BA, giảng viên) mở bằng trình duyệt, không cần
-cài gì. Chạy trên **một máy AWS Lightsail** bằng Docker Compose: app, PostgreSQL, Redis và Caddy (tự
-lấy chứng chỉ HTTPS). Mỗi lần merge vào `main` và CI xanh, server **tự cập nhật**. Lý do chọn cách
+cài gì. Chạy trên **một máy AWS Lightsail** bằng Docker Compose: app, PostgreSQL, Redis, LiveKit (phòng
+họp trực tuyến) và Caddy (tự lấy chứng chỉ HTTPS). Mỗi lần merge vào `main` và CI xanh, server **tự cập nhật**. Lý do chọn cách
 này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-lightsail.md).
 
 > **Đây là môi trường test, không phải production.** App chạy ở chế độ `Development`: tự migrate,
@@ -23,6 +23,19 @@ Mở <https://trustcabinet.workspace-hub.space>. Tài khoản, mật khẩu chun
 
 Cần thử nhiều vai trò cùng lúc thì mở thêm cửa sổ ẩn danh hoặc profile Chrome khác — mỗi cửa sổ
 giữ một phiên đăng nhập.
+
+### Phòng họp trực tuyến
+
+Cuộc họp demo **"Rà soát kế hoạch chuyển đổi số"** đang diễn ra và họp trực tuyến, với ba thành
+phần: `chutoa@` (chủ toạ), `thuky@` (thư ký), `thanhvien@` (thành viên). Mở cuộc họp → **Vào phòng
+họp**, cho trình duyệt dùng micro và camera. Muốn thấy nhau thì mỗi người một cửa sổ, đăng nhập bằng
+một tài khoản khác nhau.
+
+- Server nhỏ (1 GB RAM, CPU chia sẻ): thử với **khoảng 5–6 người bật camera** là vừa, đừng mời cả
+  lớp vào một lúc.
+- Media đi thẳng tới server qua cổng **7882/UDP**, mạng chặn UDP thì qua **7881/TCP**. Wi-Fi công ty
+  hay trường học chặn cả hai thì không vào được phòng (vẫn dùng được các màn khác); khi đó dùng 4G
+  hoặc mạng nhà. Server test không có TURN qua cổng 443.
 
 Server chạy đúng code của `main`. Merge PR xong khoảng 10 phút (CI rồi deploy) là bản mới lên server;
 tính năng chưa merge thì chưa có.
@@ -65,6 +78,12 @@ repository secret**:
 
 Thử bằng **Run workflow**; bước *Kiểm tra* xanh là xong.
 
+### Bật phòng họp trên server dựng trước khi có LiveKit
+
+Chỉ một việc: thêm hai rule firewall **7881/TCP** và **7882/UDP** như ở bước 2 của *Dựng server lần
+đầu*. Secret của LiveKit thì lần deploy kế tiếp tự sinh trên server, và bước *Kiểm tra* của workflow
+xác nhận LiveKit đã chạy sau Caddy.
+
 ## Việc làm tay trên server
 
 Mở terminal: Lightsail → máy `trustcabinet` → **Connect using SSH**, rồi `cd ~/TrustCabinet`.
@@ -75,6 +94,7 @@ Mở terminal: Lightsail → máy `trustcabinet` → **Connect using SSH**, rồ
 docker compose -f deploy/docker-compose.yml ps
 docker compose -f deploy/docker-compose.yml logs -f app        # Ctrl+C để thoát
 docker compose -f deploy/docker-compose.yml logs caddy | grep -i certificate
+docker compose -f deploy/docker-compose.yml logs livekit | grep -i nodeIP   # IP báo cho trình duyệt
 ```
 
 Ở chế độ Development, app in mọi câu SQL ra log — rối nhưng không phải lỗi; tìm dòng `fail:` hay
@@ -135,6 +155,9 @@ Máy `trustcabinet` → tab **Networking**:
   khi đang gắn vào máy, nhưng **tính tiền khi nằm không**: xoá máy thì xoá luôn IP tĩnh.
 - **Firewall rules → Add rule → HTTPS**, nguồn *Any IPv4 or IPv6 address*. SSH (22) và HTTP (80) có
   sẵn; HTTP cần để Caddy xin chứng chỉ và chuyển hướng sang HTTPS.
+- Thêm hai rule nữa cho media của phòng họp, cùng nguồn *Any IPv4 or IPv6 address*: **Custom, TCP,
+  7881** và **Custom, UDP, 7882**. Thiếu hai rule này thì trang vẫn mở được nhưng vào phòng họp sẽ
+  báo mất kết nối.
 
 ### 3. Tên miền
 
@@ -185,6 +208,7 @@ cat > deploy/.env <<EOF
 SITE_ADDRESS=trustcabinet.workspace-hub.space
 POSTGRES_PASSWORD=$(openssl rand -hex 24)
 SIGNING_KEY=$(openssl rand -hex 32)
+LIVEKIT_API_SECRET=$(openssl rand -hex 32)
 EOF
 chmod 600 deploy/.env
 docker compose -f deploy/docker-compose.yml up -d --build
@@ -193,6 +217,8 @@ docker compose -f deploy/docker-compose.yml up -d --build
 - `SITE_ADDRESS` — tên miền ở bước 3. Đổi về sau thì sửa dòng này rồi `up -d`.
 - `POSTGRES_PASSWORD`, `SIGNING_KEY` — sinh một lần, đừng đổi: đổi `POSTGRES_PASSWORD` sau khi
   database đã tạo thì app không kết nối được nữa; đổi `SIGNING_KEY` thì mọi người bị đăng xuất.
+- `LIVEKIT_API_SECRET` — khoá để backend ký vé vào phòng họp. Quên dòng này cũng không sao: workflow
+  deploy tự sinh và thêm vào `deploy/.env` nếu chưa có.
 
 Lần đầu build trên server mất 15–20 phút; các lần sau GitHub Actions build hộ. Xong khi `logs caddy`
 có `certificate obtained successfully`. Cuối cùng làm phần **Tự động deploy → Thiết lập một lần**.
@@ -226,3 +252,5 @@ plan: hết credit là AWS trừ tiền thẻ.
 | Workflow deploy đỏ ở bước SSH | `DEPLOY_HOST` / `DEPLOY_HOST_KEY` sai, hoặc đã đổi IP tĩnh |
 | Đăng nhập xong bị văng ra ngay | Phải vào bằng `https://`; cookie refresh token chỉ gửi qua HTTPS |
 | Hết ổ đĩa | `docker system prune -f` (không có `-v`, để giữ database) |
+| Vào phòng họp báo mất kết nối, hoặc quay mãi không thấy ai | Firewall Lightsail phải có 7881/TCP và 7882/UDP; `logs livekit \| grep -i nodeIP` phải ra IP tĩnh, không phải 172.x; thử bằng 4G để loại trừ Wi-Fi chặn cổng |
+| Workflow deploy đỏ ở bước *Kiểm tra*, báo `/rtc/validate` | `logs livekit` và `logs caddy`; container `livekit` phải đang chạy (`ps`) |

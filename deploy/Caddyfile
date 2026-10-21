@@ -2,6 +2,16 @@
 # refresh token đặt Secure, và Google Sign-In không chấp nhận origin http (trừ localhost).
 # reverse_proxy tự chuyển tiếp WebSocket, nên SignalR ở /hubs không cần cấu hình thêm.
 {$SITE_ADDRESS} {
-	encode zstd gzip
-	reverse_proxy app:8080
+	# Phòng họp: WebSocket signalling của LiveKit nằm ở /rtc ngay trên tên miền này, nên không cần tên
+	# miền hay chứng chỉ thứ hai. Media không đi qua Caddy mà tới thẳng LiveKit ở cổng 7881/7882.
+	# API quản trị của LiveKit (/twirp) không mở ra ngoài: backend gọi http://livekit:7880.
+	@livekit path /rtc /rtc/*
+	handle @livekit {
+		reverse_proxy livekit:7880
+	}
+
+	handle {
+		encode zstd gzip
+		reverse_proxy app:8080
+	}
 }
