@@ -2,8 +2,7 @@
 # refresh token đặt Secure, và Google Sign-In không chấp nhận origin http (trừ localhost).
 # reverse_proxy tự chuyển tiếp WebSocket, nên SignalR ở /hubs không cần cấu hình thêm.
 {$SITE_ADDRESS} {
-	# Lớp bảo vệ của trình duyệt cho mọi response, kể cả /rtc. CSP chưa bật: cần chạy thử kiểu
-	# Report-Only với phòng họp trước, vì khai thiếu một nguồn là màn đó hỏng.
+	# Lớp bảo vệ của trình duyệt cho mọi response, kể cả /rtc.
 	header {
 		# Chỉ vào bằng HTTPS, kể cả khi gõ http:// (không kèm includeSubDomains: tên miền mẹ không phải của dự án).
 		Strict-Transport-Security "max-age=31536000"
@@ -13,6 +12,11 @@
 		X-Frame-Options "DENY"
 		# Link ra ngoài chỉ mang tên miền, không mang đường dẫn có ID cuộc họp.
 		Referrer-Policy "strict-origin-when-cross-origin"
+		# CSP, giai đoạn 1: chỉ báo cáo, chưa chặn. Trình duyệt ghi ra console những gì lẽ ra bị chặn;
+		# quét bằng ~/.playwright-e2e/tests/csp-sweep.spec.ts (cả phòng họp) đến khi sạch, rồi đổi tên
+		# header thành Content-Security-Policy. Nguồn ngoài duy nhất: Google Fonts và Google Sign-In
+		# (gsi/client tự chèn style inline, nên style-src cần 'unsafe-inline'; script thì không).
+		Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com/gsi/style; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://accounts.google.com/gsi/; frame-src https://accounts.google.com/gsi/; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 	}
 
 	# Phòng họp: WebSocket signalling của LiveKit nằm ở /rtc ngay trên tên miền này, nên không cần tên
