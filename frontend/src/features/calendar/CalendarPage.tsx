@@ -14,7 +14,7 @@ import { STATUS_TONE } from '../meetings/statusTone'
 import { CalendarFilter } from './CalendarFilter'
 import { DatePicker } from './DatePicker'
 import { MeetingOverview } from './MeetingOverview'
-import { NO_FILTER, activeGroups, matchesFilter, readFilter, writeFilter, type CalendarFilterValue } from './filter'
+import { NO_FILTER, matchesFilter, readFilter, writeFilter, type CalendarFilterValue } from './filter'
 import { useSchedule, type Schedule, type ScheduleEntry } from './useSchedule'
 import {
   WEEKDAYS,
@@ -232,9 +232,7 @@ export function CalendarPage() {
 
       <ScheduleNotice
         schedule={schedule}
-        filteredOut={
-          activeGroups(filter) > 0 && !!inView?.length && visible.kind === 'loaded' && visible.entries.length === 0
-        }
+        filteredOut={!!inView?.length && visible.kind === 'loaded' && visible.entries.length === 0}
         onRetry={() => setAttempt((n) => n + 1)}
         onClearFilter={() => go({ filter: NO_FILTER })}
       />
@@ -320,8 +318,8 @@ function ScheduleNotice({
       <div className="alert alert-info page-alert calendar-note" role="status">
         <p>Không có cuộc họp nào khớp bộ lọc trong khoảng này.</p>
         <button type="button" className="btn btn-outline btn-sm" onClick={onClearFilter}>
-          <Icon name="x" size={16} />
-          Bỏ lọc
+          <Icon name="list" size={16} />
+          Xem mọi cuộc họp
         </button>
       </div>
     )

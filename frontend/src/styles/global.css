@@ -1880,16 +1880,20 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   font-size: 13px;
   cursor: pointer;
 }
-.cal-pick:hover { background: var(--surface-alt); }
-.cal-pick[aria-pressed='true'] { border-color: var(--brand); background: var(--brand-wash); color: var(--brand); font-weight: 600; }
-.cal-pick-count { color: var(--muted-ink); font-weight: 500; }
+.cal-pick:hover:not(:disabled) { border-color: var(--brand-wash-line); background: var(--surface-alt); }
+/* Chosen reads as solid brand, as eCab's pills; the dot keeps its colour on a white ring. */
+.cal-pick[aria-pressed='true'] { border-color: var(--brand); background: var(--brand); color: #fff; font-weight: 600; }
+.cal-pick[aria-pressed='true']:hover { background: var(--brand-ink); }
+.cal-pick[aria-pressed='true'] .cal-dot { box-shadow: 0 0 0 2px #fff; }
+.cal-pick[aria-pressed='true'] .cal-pick-count { color: rgb(255 255 255 / .75); }
+.cal-pick:disabled { opacity: .45; cursor: default; }
+.cal-pick-count { color: var(--muted-ink); font-weight: 500; font-variant-numeric: tabular-nums; }
 .cal-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot-slate); }
 .cal-dot-amber { background: var(--dot-amber); }
 .cal-dot-red { background: var(--dot-red); }
 .cal-dot-emerald { background: var(--dot-emerald); }
 .cal-dot-blue { background: var(--dot-blue); }
 .cal-dot-live { background: var(--live); }
-.cal-filter-hint { margin: 8px 0 0; color: var(--muted-ink); font-size: 12px; }
 .cal-filter-foot { display: flex; justify-content: space-between; margin: 0 -16px; padding: 12px 16px 0; border-top: 1px solid var(--line-soft); }
 
 /* ---------- Calendar quick look (features/calendar/MeetingOverview.tsx) ----------
