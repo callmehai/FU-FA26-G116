@@ -21,6 +21,9 @@ const EditMeetingPage = lazy(() =>
 const MeetingDetailPage = lazy(() =>
   import('../features/meetings/detail/MeetingDetailPage').then((m) => ({ default: m.MeetingDetailPage })),
 )
+const MeetingRoomPage = lazy(() =>
+  import('../features/calls/room/MeetingRoomPage').then((m) => ({ default: m.MeetingRoomPage })),
+)
 const UsersPage = lazy(() => import('../features/access/UsersPage').then((m) => ({ default: m.UsersPage })))
 const RolesPage = lazy(() => import('../features/access/RolesPage').then((m) => ({ default: m.RolesPage })))
 const ResetPasswordPage = lazy(() =>
@@ -53,6 +56,9 @@ export function App() {
         <Route path="/" element={<Navigate to={routes.meetings} replace />} />
 
         <Route element={<RequireAuth />}>
+          {/* The call room fills the window, outside the shell. Anyone may open the URL; the
+              backend answers 404 to someone who is not invited, and the page renders NotFound. */}
+          <Route path={routes.meetingRoom(':meetingId')} element={<MeetingRoomPage />} />
           <Route element={<AppShell />}>
             {/* Inside the guard and the shell: following an old /mgmt link must not remount either —
                 that would drop the notification connection. */}
