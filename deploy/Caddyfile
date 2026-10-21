@@ -2,6 +2,19 @@
 # refresh token đặt Secure, và Google Sign-In không chấp nhận origin http (trừ localhost).
 # reverse_proxy tự chuyển tiếp WebSocket, nên SignalR ở /hubs không cần cấu hình thêm.
 {$SITE_ADDRESS} {
+	# Lớp bảo vệ của trình duyệt cho mọi response, kể cả /rtc. CSP chưa bật: cần chạy thử kiểu
+	# Report-Only với phòng họp trước, vì khai thiếu một nguồn là màn đó hỏng.
+	header {
+		# Chỉ vào bằng HTTPS, kể cả khi gõ http:// (không kèm includeSubDomains: tên miền mẹ không phải của dự án).
+		Strict-Transport-Security "max-age=31536000"
+		# Không đoán loại file: file người dùng tải lên không bị chạy như script.
+		X-Content-Type-Options "nosniff"
+		# Không cho trang khác nhúng app vào iframe (chống clickjacking); app không tự nhúng mình.
+		X-Frame-Options "DENY"
+		# Link ra ngoài chỉ mang tên miền, không mang đường dẫn có ID cuộc họp.
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
 	# Phòng họp: WebSocket signalling của LiveKit nằm ở /rtc ngay trên tên miền này, nên không cần tên
 	# miền hay chứng chỉ thứ hai. Media không đi qua Caddy mà tới thẳng LiveKit ở cổng 7881/7882.
 	# API quản trị của LiveKit (/twirp) không mở ra ngoài: backend gọi http://livekit:7880.
