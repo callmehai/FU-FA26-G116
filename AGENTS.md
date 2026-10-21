@@ -276,6 +276,11 @@ Details in [docs/DEVELOPMENT_WORKFLOW.md §2.1](docs/DEVELOPMENT_WORKFLOW.md#21-
 - Meeting recordings and voice identification are personal data under Vietnam's Decree
   13/2023/NĐ-CP. When touching this area, state the consent and deletion obligations explicitly
   rather than silently persisting the data.
+- **The test server enforces a Content-Security-Policy** (`deploy/Caddyfile`); local development has
+  none. Scripts, fonts, images, frames and connections may come only from our own origin, Google
+  Fonts and Google Sign-In. A new outside source (a CDN, an analytics or AI service called from the
+  browser) works locally and is blocked on the server until it is added there. Never add
+  `'unsafe-inline'` or `'unsafe-eval'` to `script-src`: that is what keeps an XSS from running.
 - `backend/TrustCabinet.Web/wwwroot/` is build output. Edits there are lost on the next build.
 - **Never commit a connection string, API key or credential.** `appsettings.json` is committed, so
   secrets do not go there. Use `dotnet user-secrets set "ConnectionStrings:TrustCabinet" "..."` locally
