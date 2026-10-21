@@ -53,8 +53,12 @@ public sealed partial class ParticipantService(
             ParticipantRules.IsManager(s.Meeting, id)
                 && ParticipantRules.Editable(s.Meeting.Status),
             ParticipantRules.CanReplaceChair(s.Meeting, id),
-            (own is not null || actor.Guest is not null)
-                && ParticipantRules.Respondable(s.Meeting.Status)
+            own is not null
+                ? ParticipantRules.CanRespond(s.Meeting.Status, own)
+                : actor.Guest is { } guest
+                    && ParticipantRules.Respondable(s.Meeting.Status)
+                    && s.Guests.SingleOrDefault(g => g.Id == guest.InvitationId)?.Response
+                        == InvitationResponse.Pending
         );
     }
 
@@ -211,12 +215,6 @@ public sealed partial class ParticipantService(
                 .ThenBy(r => r.Id)
                 .ToArray();
             var offset = (long)(query.Page - 1) * query.PageSize;
-            var totals = new ResponseTotals(
-                rows.Count(r => r.Response == "Pending"),
-                rows.Count(r => r.Response == "Accepted"),
-                rows.Count(r => r.Response == "Declined"),
-                rows.Length
-            );
             var search = query.Search?.Trim();
             if (!string.IsNullOrEmpty(search))
                 rows = rows.Where(r =>
@@ -236,8 +234,7 @@ public sealed partial class ParticipantService(
                     rows.Length,
                     query.Page,
                     query.PageSize,
-                    Revision(m),
-                    totals
+                    Revision(m)
                 ),
                 Revision: m.ParticipantsRevision
             );
@@ -920,6 +917,8 @@ public sealed partial class ParticipantService(
         var p = Own(s, actor);
         if (p is not null)
         {
+            if (p.Role == MeetingRole.Chair)
+                return new(ParticipantFailure.ChairCannotRespond);
             if (p.Response == value)
                 return new(
                     Data: new InvitationResponseView(
@@ -931,6 +930,9 @@ public sealed partial class ParticipantService(
                     ),
                     Success: ParticipantSuccess.NoChanges
                 );
+            // The first answer is final, as in AI-eCabinet.
+            if (p.Response != InvitationResponse.Pending)
+                return new(ParticipantFailure.ResponseFinal);
             p.Response = value;
             p.RespondedAt = now;
             p.UpdatedAt = now;
@@ -951,6 +953,8 @@ public sealed partial class ParticipantService(
                 ),
                 Success: ParticipantSuccess.NoChanges
             );
+        if (g.Response != InvitationResponse.Pending)
+            return new(ParticipantFailure.ResponseFinal);
         g.Response = value;
         g.RespondedAt = now;
         g.UpdatedAt = now;

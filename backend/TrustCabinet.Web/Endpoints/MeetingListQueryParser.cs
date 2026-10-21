@@ -24,6 +24,7 @@ public static partial class MeetingListQueryParser
         var rawPageSize = Read(values, "pageSize", fieldErrors);
         var rawSortBy = Read(values, "sortBy", fieldErrors);
         var rawSortDir = Read(values, "sortDir", fieldErrors);
+        var rawExcludeDeclined = Read(values, "excludeDeclined", fieldErrors);
 
         MeetingStatus? status = null;
         if (rawStatus is not null)
@@ -87,6 +88,13 @@ public static partial class MeetingListQueryParser
             fieldErrors["sortDir"] = "Chiều sắp xếp không hợp lệ.";
         }
 
+        // The calendar asks for this: a meeting the caller declined leaves their calendar, as in AI-eCabinet.
+        var excludeDeclined = rawExcludeDeclined == "true";
+        if (rawExcludeDeclined is not null && rawExcludeDeclined is not ("true" or "false"))
+        {
+            fieldErrors["excludeDeclined"] = "Tham số excludeDeclined chỉ nhận true hoặc false.";
+        }
+
         errors = fieldErrors;
         if (fieldErrors.Count > 0)
         {
@@ -95,7 +103,7 @@ public static partial class MeetingListQueryParser
         }
 
         query = new MeetingListQuery(
-            status, sensitivity, rawSearch?.Trim(), from, to, page, pageSize, sortBy, sortDirection);
+            status, sensitivity, rawSearch?.Trim(), from, to, page, pageSize, sortBy, sortDirection, excludeDeclined);
         return true;
     }
 

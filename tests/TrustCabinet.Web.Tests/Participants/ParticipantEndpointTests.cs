@@ -48,14 +48,57 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
     public async Task Response_is_owned_without_attendance_changes()
     {
         var s = await f.Seed(); using var secretary = f.Client(s.Secretary); using var member = f.Client(s.Member);
-        var summary = await member.GetFromJsonAsync<JsonElement>(s.Url + "/participants");
-        Assert.Equal(3, summary.GetProperty("totals").GetProperty("pending").GetInt32());
         await Code(await Write(member, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Accepted" }), 200, "MSG105");
         await Code(await Write(member, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Accepted" }), 200, "MSG154");
         await Code(await Write(member, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Delegated" }), 400, "MSG106");
         await using var db = f.Db(); var p = await db.MeetingParticipants.FindAsync(s.MemberAssignment);
         Assert.Equal(InvitationResponse.Accepted, p!.Response); Assert.Equal(f.Clock.Now, p.RespondedAt); Assert.Equal(AttendanceStatus.Unknown, p.Attendance);
         Assert.Equal(MeetingRole.Member, p.Role); Assert.Equal(0, (await db.Meetings.FindAsync(s.MeetingId))!.ParticipantsRevision);
+    }
+
+    [Fact]
+    public async Task Response_is_asked_once_and_never_of_the_chair()
+    {
+        var s = await f.Seed(); using var chair = f.Client(s.Chair); using var member = f.Client(s.Member);
+        var before = await member.GetFromJsonAsync<JsonElement>(s.Url);
+        Assert.True(before.GetProperty("canRespond").GetBoolean());
+        Assert.Equal(JsonValueKind.Null, before.GetProperty("myResponse").ValueKind);
+        Assert.False((await chair.GetFromJsonAsync<JsonElement>(s.Url)).GetProperty("canRespond").GetBoolean());
+        var context = await chair.GetFromJsonAsync<JsonElement>(s.Url + "/participant-context");
+        Assert.False(context.GetProperty("permissions").GetProperty("canRespond").GetBoolean());
+        await Code(await Write(chair, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Accepted" }), 409, "MSG286");
+
+        await Code(await Write(member, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Declined" }), 200, "MSG105");
+        await Code(await Write(member, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Accepted" }), 409, "MSG285");
+        var after = await member.GetFromJsonAsync<JsonElement>(s.Url);
+        Assert.False(after.GetProperty("canRespond").GetBoolean());
+        Assert.Equal("Declined", after.GetProperty("myResponse").GetString());
+        await using var db = f.Db();
+        Assert.Equal(InvitationResponse.Declined, (await db.MeetingParticipants.FindAsync(s.MemberAssignment))!.Response);
+        Assert.Equal(InvitationResponse.Pending, (await db.MeetingParticipants.FindAsync(s.ChairAssignment))!.Response);
+    }
+
+    [Fact]
+    public async Task A_declined_meeting_leaves_only_the_decliners_calendar()
+    {
+        var s = await f.Seed(); using var member = f.Client(s.Member); using var secretary = f.Client(s.Secretary);
+        async Task<JsonElement?> Listed(HttpClient client, string query)
+        {
+            var page = await client.GetFromJsonAsync<JsonElement>("/api/meetings?pageSize=100" + query);
+            return page.GetProperty("items").EnumerateArray().Cast<JsonElement?>()
+                .SingleOrDefault(item => item!.Value.GetProperty("id").GetGuid() == s.MeetingId);
+        }
+
+        var invited = await Listed(member, "&excludeDeclined=true");
+        Assert.True(invited!.Value.GetProperty("canRespond").GetBoolean());
+        await Code(await Write(member, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Declined" }), 200, "MSG105");
+
+        Assert.Null(await Listed(member, "&excludeDeclined=true"));
+        var listed = await Listed(member, "");
+        Assert.Equal("Declined", listed!.Value.GetProperty("myResponse").GetString());
+        Assert.False(listed.Value.GetProperty("canRespond").GetBoolean());
+        Assert.NotNull(await Listed(secretary, "&excludeDeclined=true"));
+        Assert.Equal(HttpStatusCode.BadRequest, (await member.GetAsync("/api/meetings?excludeDeclined=yes")).StatusCode);
     }
 
 

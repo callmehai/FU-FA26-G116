@@ -14,6 +14,8 @@ Tạo meeting nhận roster internal, khóa các user theo thứ tự bằng FOR
 
 Mutation khóa meeting, kiểm quyền/trạng thái/revision. Chair swap demote/flush rồi promote nguyên tử. Published/InProgress chỉ Chair bàn giao, ngoại lệ Secretary thay Chair inactive; recipient active current internal không phải Secretary. If-Match và revision string chống ghi đè roster cũ. Response không tăng roster revision nhưng vẫn invalidation.
 
+Trả lời lời mời theo AI-eCabinet (PO Hải 21/10/2026; eCab `migrations/0038_meeting_responses.sql`, `modules/meetings/internal/respond.go`, commit `8108e91f`): chỉ là xác nhận trước, trả lời một lần, Chủ tọa không trả lời, chưa trả lời coi như tham dự, không có bộ đếm. Từ chối không đổi quyền; chỉ ẩn cuộc họp khỏi lịch của người đó.
+
 Audit chỉ ghi dòng thay đổi trước/sau. Sau commit phát participantsChanged tới hợp readers trước/sau; payload chỉ invalidation. Best effort không rollback domain. Hook room access riêng giữ nguyên.
 
 Dispatch snapshot và dedup key lưu cùng domain/notification. Chỉ worker dispatch materialize EmailMessage, không còn legacy publication reconciliation. Guest readiness probe không khóa meeting khi unavailable, backoff 1m/5m/30m/6h không tiêu hao technical retries. Ready: meeting lock → dispatch lock → prepare credential trong cùng unit of work → EmailMessage; SMTP chạy sau commit.

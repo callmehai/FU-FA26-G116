@@ -16,7 +16,8 @@ public sealed record MeetingListQuery(
     int Page,
     int PageSize,
     MeetingSortBy SortBy,
-    MeetingSortDirection SortDirection);
+    MeetingSortDirection SortDirection,
+    bool ExcludeDeclined = false);
 
 public sealed record MeetingListItem(
     Guid Id,
@@ -27,7 +28,9 @@ public sealed record MeetingListItem(
     string Location,
     DateTimeOffset CreatedAt,
     MeetingStatus Status,
-    Sensitivity Sensitivity);
+    Sensitivity Sensitivity,
+    string? MyResponse = null,
+    bool CanRespond = false);
 
 public sealed record MeetingListPage(
     IReadOnlyList<MeetingListItem> Items,

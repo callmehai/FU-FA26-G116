@@ -1,5 +1,11 @@
 # SCRUM-20 / UC-73 — kết quả kiểm thử Backend
 
+## Trả lời lời mời theo AI-eCabinet + tích hợp FE (21/10/2026)
+
+- Trả lời một lần (MSG285), Chủ tọa không trả lời (MSG286), bỏ `totals`, thêm `myResponse`/`canRespond` vào chi tiết và danh sách, `excludeDeclined` cho lịch, địa điểm Hybrid không có phòng chỉ ghi link.
+- Full suite: **1.173 pass, 0 fail, 0 skip** trên PostgreSQL 17/Redis 8 local (thêm 3 test: trả lời một lần/Chủ tọa, lịch ẩn cuộc họp đã từ chối, địa điểm Hybrid). Build `-warnaserror` 0 warning/error; FE lint/build pass.
+- Kiểm thử giao diện bằng Playwright (14 kịch bản): tạo họp có thành phần, trả lời trên chi tiết và trên lịch, Chủ tọa không được hỏi, thêm/đổi vai trò/giao Chủ tọa/gỡ, realtime giữa hai trình duyệt, 409 MSG275, lỗi tải 500 rồi "Thử lại", MSG277 hiện đúng dòng, thanh công cụ một dòng ở 1200px.
+
 ## Sửa tích hợp phòng và lookup — working tree trên 04d3a5c (21/10/2026)
 
 - CallRepository dùng ActiveExpression cho cấp quyền phòng và danh sách đối soát; lịch sử Removed không cấp quyền, mời lại không lỗi nhiều assignment. Bỏ helper IsSecretary không còn dùng.

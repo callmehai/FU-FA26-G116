@@ -6,7 +6,7 @@ namespace TrustCabinet.Domain.Participants;
 
 public enum AssignmentStatus { Current, Removed }
 public enum ParticipantOperation { Context, Roster, Options, OwnResponse, AddInternal, AddGuest, ChangeAssignments, RemoveInternal, RevokeGuest, Respond }
-public enum ParticipantFailure { None, NotFound, Forbidden, Inactive, Locked, Invalid, InvalidRole, ChairHandoverDenied, InvalidChairRecipient, RequiredRoles, Stale, InvalidRequest, UnsupportedMedia, TooLarge, ReadFailed, SaveFailed, CannotRespond }
+public enum ParticipantFailure { None, NotFound, Forbidden, Inactive, Locked, Invalid, InvalidRole, ChairHandoverDenied, InvalidChairRecipient, RequiredRoles, Stale, InvalidRequest, UnsupportedMedia, TooLarge, ReadFailed, SaveFailed, CannotRespond, ResponseFinal, ChairCannotRespond }
 public enum ParticipantSuccess { Saved, Created, RoleChanged, ChairHandedOver, Removed, Responded, NoChanges }
 
 public sealed record ParticipantActor(Guid? UserId = null, MeetingGuestSession? Guest = null);
@@ -48,13 +48,12 @@ public sealed record ParticipantContext(Guid MeetingId, string Status, string Re
 public sealed record ParticipantRow(Guid Id, string Kind, string DisplayName, string Email, string? Role,
     Guid? UserId, bool? IsActive, string? InvitedName, string? SelfDeclaredDisplayName, string? SelfDeclaredJobTitle,
     string Response, DateTimeOffset? RespondedAt);
-public sealed record ParticipantPage(IReadOnlyList<ParticipantRow> Items, int Total, int Page, int PageSize, string Revision, ResponseTotals Totals);
+public sealed record ParticipantPage(IReadOnlyList<ParticipantRow> Items, int Total, int Page, int PageSize, string Revision);
 public sealed record ParticipantOption(Guid Id, string FullName, string Email);
 public sealed record ParticipantCreationOptions(IReadOnlyList<ParticipantOption> Items, int Total, int Page, int PageSize, string[] Roles);
 public sealed record ParticipantOptions(IReadOnlyList<ParticipantOption> Items, int Total, int Page, int PageSize,
     string[] Roles, string Revision);
 public sealed record InvitationResponseView(Guid Id, string Kind, string Response, DateTimeOffset? RespondedAt, bool CanRespond);
-public sealed record ResponseTotals(int Pending, int Accepted, int Declined, int Total);
 public interface IParticipantService
 {
     Task<ParticipantResult> ReadCreationOptionsAsync(ParticipantQuery query, CancellationToken ct);

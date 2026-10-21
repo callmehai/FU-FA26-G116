@@ -20,8 +20,15 @@ public static class MeetingInvitationEvents
         var ownerId = p?.Id ?? g!.Id;
         var key = kind == InvitationEventKind.Invitation ? p is not null ? InitialKey(p) : g!.InitialInvitationDeliveryKey
             : $"roster:{eventId}:{kind}:{ownerId}";
-        var place = meeting.Mode == MeetingMode.Online ? meeting.OnlineLink ?? "Phòng họp trực tuyến TrustCabinet"
-            : meeting.Mode == MeetingMode.Hybrid ? $"{meeting.Location} · {meeting.OnlineLink ?? "Phòng họp trực tuyến TrustCabinet"}" : meeting.Location;
+        var link = meeting.OnlineLink ?? "Phòng họp trực tuyến TrustCabinet";
+        // A hybrid meeting may have no room yet: then it happens at its link alone.
+        var place = meeting.Mode switch
+        {
+            MeetingMode.Online => link,
+            MeetingMode.Hybrid when meeting.Location.Length > 0 => $"{meeting.Location} · {link}",
+            MeetingMode.Hybrid => link,
+            _ => meeting.Location,
+        };
         db.MeetingInvitationDispatches.Add(new()
         {
             EventId = eventId,

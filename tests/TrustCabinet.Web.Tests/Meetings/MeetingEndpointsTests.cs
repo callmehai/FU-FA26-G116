@@ -1327,7 +1327,8 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal("Draft", item.GetProperty("status").GetString());
         Assert.Equal("Internal", item.GetProperty("sensitivity").GetString());
         Assert.Equal(
-            ["id", "title", "plannedStartTime", "plannedEndTime", "mode", "location", "createdAt", "status", "sensitivity"],
+            ["id", "title", "plannedStartTime", "plannedEndTime", "mode", "location", "createdAt", "status", "sensitivity",
+                "myResponse", "canRespond"],
             item.EnumerateObject().Select(property => property.Name));
     }
 
