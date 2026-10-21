@@ -42,14 +42,16 @@ tính năng chưa merge thì chưa có.
 
 ## Tự động deploy
 
-[.github/workflows/deploy.yml](../.github/workflows/deploy.yml) chạy sau mỗi lần CI trên `main` xanh:
-build image trên runner của GitHub, chép sang server qua SSH, đưa code trên server về đúng commit đó
-rồi khởi động lại container. App tự áp dụng migration mới khi khởi động. Không build trên server: máy
-1 GB tự build mất 15–20 phút và đốt hết CPU burst.
+[.github/workflows/deploy.yml](../.github/workflows/deploy.yml) là job cuối của CI trên `main`, chạy
+khi build & test đã xanh: build image trên runner của GitHub, chép sang server qua SSH, đưa code trên
+server về đúng commit đó rồi khởi động lại container. App tự áp dụng migration mới khi khởi động.
+Không build trên server: máy 1 GB tự build mất 15–20 phút và đốt hết CPU burst.
 
-- Xem tiến trình: tab **Actions** của repo → *Deploy server test*.
+- Xem đã deploy xong chưa: bấm dấu tích cạnh commit mới nhất trên trang chủ repo — check *CI / Deploy
+  server test / Build & deploy* xanh là server đã chạy bản đó. Mục **Deployments** ở cột phải trang
+  chủ repo ghi lần deploy gần nhất, kèm link mở server.
 - Deploy lại mà không cần push: tab **Actions** → *Deploy server test* → **Run workflow**.
-- CI đỏ thì không deploy; server giữ bản cũ.
+- CI đỏ thì không deploy; server giữ bản cũ. Trên pull request, check deploy hiện là *Skipped*.
 
 **Chỉ `main` được deploy.** Database ở đây áp dụng migration tự động: deploy một nhánh có migration
 chưa merge rồi quay về `main` sẽ để lại schema mà `main` không biết, và chỉ sửa được bằng cách xoá
