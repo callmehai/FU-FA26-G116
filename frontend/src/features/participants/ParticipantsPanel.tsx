@@ -101,6 +101,13 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
       setOpen(null)
       if (outcome.kind === 'saved') toast.show(outcome.response.message)
       else if (!handleAccessLost(outcome.error)) toast.show(errorMessage(outcome.error), 'error')
+      // Take the new revision from the answer at once: the reload below (and the hub's) takes a
+      // round trip, and a change made in that window would otherwise go out stale and get 409.
+      const revision = outcome.kind === 'saved' ? outcome.response.revision : undefined
+      if (revision)
+        setState((s) =>
+          s.kind === 'loaded' ? { ...s, data: { ...s.data, roster: { ...s.data.roster, revision } } } : s,
+        )
       void load()
       onChanged?.()
     },
