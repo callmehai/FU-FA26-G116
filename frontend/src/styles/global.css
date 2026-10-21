@@ -2319,8 +2319,9 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .room-control:hover .room-control-tip { opacity: 1; transition-delay: 0.5s; }
 }
 .room-control:focus-visible .room-control-tip { opacity: 1; transition-delay: 0.5s; }
-/* With a tray open the pickers sit where the tooltips would. */
-.room-controls-main.is-open .room-control-tip { display: none; }
+/* With a tray open the pickers sit where the tooltips would. Hidden rather than removed, so a tip
+   under the pointer when the tray closes still waits its 0.5s. */
+.room-controls-main.is-open .room-control-tip { visibility: hidden; opacity: 0; transition: none; }
 /* Microphone and camera carry their tray arrow on the left, in one pill, as in Meet. */
 /* As in Meet: on, a darker pill with the button as a round of the usual button colour at its right;
    off, both clusters turn the same deep red rounded rectangle with a pale red button. */
@@ -2440,6 +2441,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   transform-origin: bottom center;
   animation: room-menu-fade 0.05s linear both, room-menu-grow 0.22s var(--ease-emphasized) both;
 }
+/* The right-hand picker's menu grows leftwards, so it stays inside the panel and off the toasts. */
+.room-select + .room-select .room-select-menu { left: auto; right: 0; }
 @keyframes room-menu-fade { from { opacity: 0; } }
 @keyframes room-menu-grow { from { transform: scaleY(0.8); } }
 /* As in Meet: names centred, the chosen one on a lighter plate in the accent colour with a tick. */
@@ -2558,6 +2561,9 @@ body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
   .room-controls-spacer { display: none; }
   .room-tray { flex-direction: column; }
   .room-select { flex: none; }
+  /* Stacked, both menus start at the left, as the panel does, and keep the page gutter. */
+  .room-select + .room-select .room-select-menu { left: 0; right: auto; }
+  .room-select-menu { max-width: min(420px, calc(100vw - 32px)); }
   body:has(.room-controls-main.is-open) .toast-stack { bottom: 180px; }
   /* No spring for the taller stacked tray: its dip on closing would reach the buttons. */
   .room-controls-main { transition: height 0.3s var(--ease-emphasized); }
