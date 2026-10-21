@@ -59,6 +59,16 @@ type PanelId = 'people' | 'chat'
 
 const CHAT_MAX = 1000
 
+/**
+ * Screen sharing only where it can work, as Meet does. Phones and tablets cannot share a screen:
+ * Safari on iOS and iPadOS, and Chrome and Firefox on Android, have no getDisplayMedia. A device with
+ * only a touch screen is treated the same even when its browser reports the API, so a phone never
+ * shows a button that would fail. Watching someone else present still works everywhere.
+ */
+const CAN_SHARE_SCREEN =
+  typeof navigator.mediaDevices?.getDisplayMedia === 'function' &&
+  !window.matchMedia('(hover: none) and (pointer: coarse)').matches
+
 const ROLE_ORDER: Record<MeetingRole, number> = { Chair: 0, Secretary: 1, Member: 2, Guest: 3 }
 
 /**
@@ -363,12 +373,14 @@ function RoomLayout({
                 onClick={() => void toggleCamera()}
               />
             </DeviceSplit>
-            <ControlButton
-              icon="monitor"
-              label={isScreenShareEnabled ? 'Dừng chia sẻ' : 'Chia sẻ màn hình'}
-              active={isScreenShareEnabled}
-              onClick={toggleScreenShare}
-            />
+            {CAN_SHARE_SCREEN && (
+              <ControlButton
+                icon="monitor"
+                label={isScreenShareEnabled ? 'Dừng chia sẻ' : 'Chia sẻ màn hình'}
+                active={isScreenShareEnabled}
+                onClick={toggleScreenShare}
+              />
+            )}
             {/* In the panel, as Meet keeps picture-in-picture among the call controls. */}
             {floating.supported && (
               <ControlButton
