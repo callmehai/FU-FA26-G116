@@ -489,12 +489,31 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .shell-collapsed .sidebar-label { opacity: 0; pointer-events: none; }
 .shell-collapsed .sidebar-group { height: 0; padding: 0; margin: 0; overflow: hidden; }
 
-/* The collapse toggle: the first row under the brand, quieter than the nav items. 48px wide at the
-   nav's padding, so its icon sits at the same x in both widths. */
-.sidebar-collapse { flex: none; padding: 8px 12px 0; }
-.sidebar-collapse .sidebar-item { width: 48px; color: var(--sidebar-ink-soft); }
-.sidebar-collapse .icon { flex: none; transition: transform .25s; }
-.shell-collapsed .sidebar-collapse .icon { transform: rotate(180deg); }
+/* The collapse toggle: a 24px disc on the sidebar's right edge, level with the first nav row. Half
+   of it reaches into the content's 24px padding, so 12px stay clear of the page. */
+.sidebar-edge-toggle {
+  position: absolute;
+  top: 84px;
+  right: -12px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgb(15 23 42 / .18);
+  color: var(--brand);
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.sidebar-edge-toggle:hover { border-color: var(--brand); background: var(--brand); color: #fff; }
+.sidebar-edge-toggle:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.sidebar-edge-toggle .icon { flex: none; transition: transform .25s; }
+.shell-collapsed .sidebar-edge-toggle .icon { transform: rotate(180deg); }
 
 .sidebar-brand {
   display: flex;
@@ -2117,7 +2136,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 @media (max-width: 720px) {
   /* AppShell keeps the sidebar collapsed here and drops the toggle. */
-  .sidebar-collapse { display: none; }
+  .sidebar-edge-toggle { display: none; }
   .summary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .summary-card { padding: 10px 12px; }
   .summary-icon { display: none; }

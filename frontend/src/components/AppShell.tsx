@@ -95,22 +95,20 @@ export function AppShell() {
           </span>
         </NavLink>
 
-        {/* Inside the sidebar, under the brand: a round button on its edge sat beside every page's
-            first control (the back link, "Hôm nay") and was easy to hit by mistake. Icon only, and
-            under the fixed-height brand row, so it stays in one spot whether the sidebar is wide or
-            narrow; at the foot, the account row growing when narrow pushed it up. */}
-        <div className="sidebar-collapse">
-          <button
-            type="button"
-            className="sidebar-item"
-            onClick={() => setCollapsed((c) => !c)}
-            aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-            data-tooltip={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-            aria-expanded={!collapsed}
-          >
-            <Icon name="chevronLeft" size={18} />
-          </button>
-        </div>
+        {/* A small round button on the sidebar's right edge, a row below the brand: fixed to the
+            sidebar, so it never moves when the sidebar narrows, and low enough to clear every
+            page's first control (the back link, "Hôm nay"). It reaches 12px past the edge, still
+            12px short of the content's padding, so it never touches the page. Icon only. */}
+        <button
+          type="button"
+          className="sidebar-edge-toggle"
+          onClick={() => setCollapsed((c) => !c)}
+          aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+          data-tooltip={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+          aria-expanded={!collapsed}
+        >
+          <Icon name="chevronLeft" size={14} />
+        </button>
 
         <AppSidebar collapsed={collapsed} />
 
