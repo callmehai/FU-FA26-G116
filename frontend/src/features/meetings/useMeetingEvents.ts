@@ -18,7 +18,8 @@ const channels = new Map<string, Channel>()
 /**
  * Opens the connection and joins the meeting's group. Events only say "re-read": every listener is
  * told on `participantsChanged` (each event once, by id — delivery is at least once), and again
- * whenever the connection comes back after a gap, because events pushed meanwhile are not replayed.
+ * once joined and whenever the connection comes back after a gap, because events pushed before the
+ * join are not replayed.
  */
 function open(meetingId: string): Channel {
   const connection: HubConnection = createHubConnection('/hubs/meetings')
@@ -60,7 +61,9 @@ function open(meetingId: string): Channel {
       return
     }
     await join()
-    if (attempt > 0) notify()
+    // The first join is a gap too: the page read the roster before it was in the group, and a change
+    // in between (a second or so to a far server) was sent without it. Re-read once now.
+    notify()
     attempt = 0
   }
 
