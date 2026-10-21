@@ -1,0 +1,364 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { getParticipantContext, listParticipants, removeParticipant, revokeGuest } from '../../api/participants'
+import { Badge, type BadgeTone } from '../../components/Badge'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { Icon } from '../../components/Icon'
+import { Pagination } from '../../components/Pagination'
+import { useToast } from '../../components/toastContext'
+import { errorMessage, isApiError } from '../../lib/errors'
+import { useSearchBox } from '../../lib/useSearchBox'
+import {
+  MEETING_ROLE_LABEL,
+  type MeetingRole,
+  type ParticipantContext,
+  type ParticipantPage,
+  type ParticipantRow,
+} from '../../types/participant'
+import { useAccessLost } from '../auth/useAccessLost'
+import { useMeetingEvents } from '../meetings/useMeetingEvents'
+import { isRefusal, type DialogOutcome } from './outcome'
+import { AddParticipantsDialog, ChangeRoleDialog, InviteGuestDialog } from './ParticipantDialogs'
+import { Person } from './Person'
+import { RsvpChip } from './Rsvp'
+
+const PAGE_SIZES = [20, 50, 100] as const
+
+const ROLE_TONE: Record<MeetingRole, BadgeTone> = { Chair: 'brand', Secretary: 'blue', Member: 'slate' }
+
+type Loaded = { context: ParticipantContext; roster: ParticipantPage }
+type State =
+  | { kind: 'loading' }
+  | { kind: 'loaded'; data: Loaded; stale: boolean }
+  | { kind: 'error'; message: string; data: Loaded | null }
+  | { kind: 'gone' }
+
+type Open =
+  | { kind: 'add' }
+  | { kind: 'guest' }
+  | { kind: 'role'; row: ParticipantRow & { role: MeetingRole } }
+  | { kind: 'remove'; row: ParticipantRow }
+  | null
+
+/**
+ * The meeting's roster (SCRUM-20, UC-27–30): everyone may read it; the Chair and Secretaries add,
+ * invite guests, change roles, hand over the chair and remove people, while the status allows it.
+ * What the caller may do comes from the server's participant context, never from guessing.
+ *
+ * A panel (ADR-0011): it loads its own data and listens on `/hubs/meetings` itself, so a change
+ * made by anyone — including an invitee's answer — re-reads it. `onChanged` lets the page re-read
+ * what it shows too (the Chair and Secretaries in "Thông tin chung").
+ */
+export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string; onChanged?: () => void }) {
+  const toast = useToast()
+  const handleAccessLost = useAccessLost()
+  const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState<number>(PAGE_SIZES[0])
+  const [search, setSearch] = useSearchBox(query, (value) => {
+    setQuery(value.trim())
+    setPage(1)
+  })
+  const [state, setState] = useState<State>({ kind: 'loading' })
+  const [open, setOpen] = useState<Open>(null)
+  const generation = useRef(0)
+
+  const load = useCallback(async () => {
+    const current = ++generation.current
+    setState((s) => (s.kind === 'loaded' ? { ...s, stale: true } : s))
+    try {
+      const [context, roster] = await Promise.all([
+        getParticipantContext(meetingId),
+        listParticipants(meetingId, query, page, pageSize),
+      ])
+      if (current !== generation.current) return
+      // A page past the end (people were removed meanwhile): step back to the last one.
+      if (roster.items.length === 0 && page > 1) return setPage(Math.max(1, Math.ceil(roster.total / pageSize)))
+      setState({ kind: 'loaded', data: { context, roster }, stale: false })
+    } catch (err) {
+      if (current !== generation.current || handleAccessLost(err)) return
+      if (isApiError(err, 404)) return setState({ kind: 'gone' })
+      setState((s) => ({
+        kind: 'error',
+        message: errorMessage(err),
+        data: s.kind === 'loaded' || s.kind === 'error' ? s.data : null,
+      }))
+    }
+  }, [meetingId, query, page, pageSize, handleAccessLost])
+
+  useEffect(() => {
+    void Promise.resolve().then(load)
+    const loads = generation
+    return () => {
+      loads.current++
+    }
+  }, [load])
+
+  useMeetingEvents(meetingId, () => void load())
+
+  /** Every dialog ends here: say what happened, then show what is true now. */
+  const finish = useCallback(
+    (outcome: DialogOutcome) => {
+      setOpen(null)
+      if (outcome.kind === 'saved') toast.show(outcome.response.message)
+      else if (!handleAccessLost(outcome.error)) toast.show(errorMessage(outcome.error), 'error')
+      void load()
+      onChanged?.()
+    },
+    [toast, handleAccessLost, load, onChanged],
+  )
+
+  if (state.kind === 'gone') {
+    return (
+      <div className="card card-pending tab-pending">
+        <p>Bạn không còn xem được thành phần của cuộc họp này.</p>
+      </div>
+    )
+  }
+
+  const data = state.kind === 'loading' ? null : state.data
+  if (!data) {
+    return state.kind === 'error' ? (
+      <div className="alert alert-error" role="alert">
+        <p>{state.message}</p>
+        <button type="button" className="btn btn-outline btn-sm" onClick={() => void load()}>
+          Thử lại
+        </button>
+      </div>
+    ) : (
+      <PanelSkeleton />
+    )
+  }
+
+  const { context, roster } = data
+  const manage = context.permissions.canManageParticipants
+  const totalPages = Math.max(1, Math.ceil(roster.total / roster.pageSize))
+
+  return (
+    <section className="list-panel participants-panel" aria-label="Thành phần tham dự">
+      <div className="toolbar">
+        <label className="search search-flex">
+          <Icon name="search" size={16} />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Tìm theo tên hoặc email"
+            aria-label="Tìm thành phần"
+            maxLength={200}
+          />
+        </label>
+        {manage && (
+          <div className="toolbar-end row-actions participants-actions">
+            {/* Icon-only, so the toolbar keeps one line inside the detail page's narrow column. */}
+            <button
+              type="button"
+              className="btn btn-outline participants-guest"
+              onClick={() => setOpen({ kind: 'guest' })}
+              aria-label="Mời khách"
+              title="Mời khách"
+            >
+              <Icon name="userPlus" size={16} />
+            </button>
+            <button type="button" className="btn btn-primary" onClick={() => setOpen({ kind: 'add' })}>
+              <Icon name="plus" size={16} />
+              Thêm thành phần
+            </button>
+          </div>
+        )}
+      </div>
+
+      {state.kind === 'error' && (
+        <div className="alert alert-error participants-alert" role="alert">
+          <p>{state.message}</p>
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => void load()}>
+            Thử lại
+          </button>
+        </div>
+      )}
+
+      <div className="table-card">
+        <table className={state.kind === 'loaded' && state.stale ? 'data-table data-table-stale' : 'data-table'}>
+          <thead>
+            <tr>
+              <th>Thành phần</th>
+              <th>Vai trò</th>
+              {manage && <th className="col-action">Thao tác</th>}
+            </tr>
+          </thead>
+          <tbody aria-busy={state.kind === 'loaded' && state.stale}>
+            {roster.items.length === 0 ? (
+              <tr>
+                <td colSpan={manage ? 3 : 2}>
+                  <div className="cell-empty">
+                    <p className="empty-title">Không có thành phần nào khớp “{query}”.</p>
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      onClick={() => {
+                        setSearch('')
+                        setQuery('')
+                        setPage(1)
+                      }}
+                    >
+                      Xoá tìm kiếm
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              roster.items.map((row) => (
+                <tr key={row.id} className={row.isActive === false ? 'row-inactive' : undefined}>
+                  <td className="cell-title">
+                    <span className="participant-cell">
+                      <Person name={row.displayName} email={row.email} />
+                      <span className="chip-row">
+                        {row.isActive === false && <Badge tone="slate">Tài khoản đã khoá</Badge>}
+                        {row.role !== 'Chair' && <RsvpChip response={row.response} />}
+                      </span>
+                    </span>
+                  </td>
+                  <td>
+                    {row.role ? (
+                      <Badge tone={ROLE_TONE[row.role]}>{MEETING_ROLE_LABEL[row.role]}</Badge>
+                    ) : (
+                      <Badge tone="outline">Khách</Badge>
+                    )}
+                  </td>
+                  {manage && (
+                    <td className="col-action">
+                      <RowActions row={row} onOpen={setOpen} />
+                    </td>
+                  )}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <Pagination
+        page={roster.page}
+        pageSize={roster.pageSize}
+        totalCount={roster.total}
+        totalPages={totalPages}
+        pageSizes={PAGE_SIZES}
+        itemLabel="thành phần"
+        onPageChange={setPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size)
+          setPage(1)
+        }}
+      />
+
+      {open?.kind === 'add' && (
+        <AddParticipantsDialog
+          meetingId={meetingId}
+          revision={roster.revision}
+          onClose={() => setOpen(null)}
+          onDone={finish}
+        />
+      )}
+      {open?.kind === 'guest' && (
+        <InviteGuestDialog
+          meetingId={meetingId}
+          revision={roster.revision}
+          onClose={() => setOpen(null)}
+          onDone={finish}
+        />
+      )}
+      {open?.kind === 'role' && (
+        <ChangeRoleDialog
+          meetingId={meetingId}
+          revision={roster.revision}
+          row={open.row}
+          canReplaceChair={context.permissions.canReplaceChair}
+          onClose={() => setOpen(null)}
+          onDone={finish}
+        />
+      )}
+      {open?.kind === 'remove' && (
+        <ConfirmDialog
+          title={open.row.kind === 'Guest' ? 'Thu hồi lời mời khách?' : 'Gỡ khỏi cuộc họp?'}
+          tone="danger"
+          confirmLabel={open.row.kind === 'Guest' ? 'Thu hồi lời mời' : 'Gỡ khỏi cuộc họp'}
+          pendingLabel="Đang gỡ…"
+          onConfirm={async () => {
+            const row = open.row
+            try {
+              const response = await (row.kind === 'Guest'
+                ? revokeGuest(meetingId, roster.revision, row.id)
+                : removeParticipant(meetingId, roster.revision, row.id))
+              finish({ kind: 'saved', response })
+            } catch (err) {
+              if (!isRefusal(err)) throw err
+              finish({ kind: 'refused', error: err })
+            }
+          }}
+          onClose={() => setOpen(null)}
+        >
+          {open.row.kind === 'Guest'
+            ? `${open.row.displayName} không còn vào được cuộc họp bằng lời mời đã nhận.`
+            : `${open.row.displayName} không còn xem được cuộc họp này. Nếu cuộc họp đã công bố, họ nhận thông báo đã được gỡ.`}
+        </ConfirmDialog>
+      )}
+    </section>
+  )
+}
+
+/**
+ * The Chair has no row actions: a meeting always keeps one, so the chair moves by making someone
+ * else Chair. A guest has no role to change, only an invitation to withdraw.
+ */
+function RowActions({ row, onOpen }: { row: ParticipantRow; onOpen: (open: Open) => void }) {
+  if (row.role === 'Chair') return null
+  const role = row.role
+  return (
+    <span className="row-actions">
+      {role && (
+        <button
+          type="button"
+          className="icon-button"
+          aria-label={`Đổi vai trò của ${row.displayName}`}
+          title="Đổi vai trò"
+          onClick={() => onOpen({ kind: 'role', row: { ...row, role } })}
+        >
+          <Icon name="pencil" size={16} />
+        </button>
+      )}
+      <button
+        type="button"
+        className="icon-button"
+        aria-label={row.kind === 'Guest' ? `Thu hồi lời mời của ${row.displayName}` : `Gỡ ${row.displayName}`}
+        title={row.kind === 'Guest' ? 'Thu hồi lời mời' : 'Gỡ khỏi cuộc họp'}
+        onClick={() => onOpen({ kind: 'remove', row })}
+      >
+        <Icon name="trash" size={16} />
+      </button>
+    </span>
+  )
+}
+
+/** Shaped like the loaded panel, so nothing jumps when the roster arrives. */
+function PanelSkeleton() {
+  return (
+    <div className="list-panel" aria-busy="true" aria-label="Đang tải thành phần tham dự">
+      <div className="toolbar">
+        <span className="skeleton participants-skeleton-search" />
+      </div>
+      <table className="data-table">
+        <tbody>
+          {Array.from({ length: 4 }, (_, i) => (
+            <tr key={i} className="row-skeleton">
+              <td>
+                <span className="skeleton" />
+              </td>
+              <td>
+                <span className="skeleton" />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}

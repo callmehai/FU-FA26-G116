@@ -19,8 +19,11 @@ import {
 import { placeLabel } from '../place'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
+import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
+import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
 import { SensitivityBadge, StatusBadge } from '../StatusBadge'
 import { useMeeting } from '../useMeeting'
+import { useMeetingEvents } from '../useMeetingEvents'
 import { useMeetingApprovers } from '../useMeetingApprovers'
 import { MeetingHistory } from '../workflow/MeetingHistory'
 import { MeetingWorkflowBar, type WorkflowRole } from '../workflow/MeetingWorkflowBar'
@@ -40,8 +43,7 @@ const TABS = [
 type TabId = (typeof TABS)[number]['id']
 
 /** What each tab is waiting on, surfaced in the UI so the backlog is visible while building. */
-const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview'>, string> = {
-  attendees: 'GET /api/meetings/{id}/attendees',
+const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview' | 'attendees'>, string> = {
   agenda: 'GET /api/meetings/{id}/agenda',
   documents: 'GET /api/meetings/{id}/documents',
   recordings: 'GET /api/meetings/{id}/recordings',
@@ -135,6 +137,9 @@ function MeetingDetail({
   }, [approvers.list, history.items])
   const nameOf = useCallback((id: string) => (id === user?.id ? 'bạn' : (names.get(id) ?? null)), [names, user?.id])
 
+  // A roster change can move the Chair, the caller's role or whether they are asked to answer.
+  useMeetingEvents(meeting.id, () => void reload())
+
   const { reload: reloadHistory, append: appendHistory } = history
   const onOutcome = useCallback(
     (outcome: WorkflowOutcome) => {
@@ -192,6 +197,7 @@ function MeetingDetail({
             <h1>{meeting.title}</h1>
             <StatusBadge status={meeting.status} />
             <SensitivityBadge sensitivity={meeting.sensitivity} />
+            <RsvpChip response={meeting.myResponse} />
           </div>
           <p className="record-facts">
             <span>
@@ -233,6 +239,21 @@ function MeetingDetail({
         />
       )}
 
+      {meeting.canRespond && (
+        <section className="workflow-bar workflow-blue" aria-labelledby="rsvp-title">
+          <span className="workflow-icon" aria-hidden="true">
+            <Icon name="calendar" size={18} />
+          </span>
+          <div className="workflow-body">
+            <h2 id="rsvp-title">Bạn có tham dự cuộc họp này?</h2>
+            <p>Trả lời một lần. Chọn không tham dự thì cuộc họp không còn hiện trên lịch của bạn.</p>
+          </div>
+          <div className="workflow-actions">
+            <RsvpButtons meetingId={meeting.id} labelledBy="rsvp-title" onAnswered={() => void reload()} />
+          </div>
+        </section>
+      )}
+
       <div className="tabs" role="tablist" aria-label="Chi tiết cuộc họp">
         {TABS.map((t) => (
           <button
@@ -255,6 +276,8 @@ function MeetingDetail({
               meeting={meeting}
               approver={isOrganizer || isApprover ? approverLabel(meeting, user?.id, nameOf, approvers) : null}
             />
+          ) : tab === 'attendees' ? (
+            <ParticipantsPanel meetingId={meeting.id} onChanged={() => void reload()} />
           ) : (
             <div className="card card-pending tab-pending">
               <p>Tab này chưa có nghiệp vụ.</p>
@@ -342,6 +365,18 @@ function Overview({ meeting, approver }: { meeting: Meeting; approver: { text: s
           )}
         </div>
       )}
+      <div className="field-item field-row-start">
+        <span>Chủ tọa</span>
+        {meeting.chair ? <strong>{meeting.chair.fullName}</strong> : <em className="value-empty">Chưa có</em>}
+      </div>
+      <div className="field-item">
+        <span>Thư ký</span>
+        {meeting.secretaries.length > 0 ? (
+          <strong>{meeting.secretaries.map((s) => s.fullName).join(', ')}</strong>
+        ) : (
+          <em className="value-empty">Chưa có</em>
+        )}
+      </div>
       {approver && (
         <div className="field-item">
           <span>Người duyệt</span>

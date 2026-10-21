@@ -6,6 +6,7 @@ import { backState } from '../../lib/backTarget'
 import { routes } from '../../lib/routes'
 import { useAuth } from '../auth/useAuth'
 import { placeLabel } from '../meetings/place'
+import { RsvpButtons, RsvpChip } from '../participants/Rsvp'
 import { MEETING_STATUS_LABEL } from '../../types/meeting'
 import { SensitivityBadge, StatusBadge } from '../meetings/StatusBadge'
 import { STATUS_TONE } from '../meetings/statusTone'
@@ -225,7 +226,7 @@ export function CalendarPage() {
       />
 
       {mode === 'list' ? (
-        <DayList days={days} now={now} schedule={visible} />
+        <DayList days={days} now={now} schedule={visible} onAnswered={() => setAttempt((n) => n + 1)} />
       ) : byMonth ? (
         <MonthGrid month={month} days={gridDays} now={now} schedule={visible} onOpenWeek={openWeek} />
       ) : (
@@ -506,7 +507,17 @@ function MonthEvent({ entry }: { entry: ScheduleEntry }) {
   )
 }
 
-function DayList({ days, now, schedule }: { days: Date[]; now: Date; schedule: Schedule }) {
+function DayList({
+  days,
+  now,
+  schedule,
+  onAnswered,
+}: {
+  days: Date[]
+  now: Date
+  schedule: Schedule
+  onAnswered: () => void
+}) {
   const entries = schedule.kind === 'loaded' ? schedule.entries : []
 
   return (
@@ -539,7 +550,7 @@ function DayList({ days, now, schedule }: { days: Date[]; now: Date; schedule: S
                 <p className="agenda-empty">Không có cuộc họp</p>
               </div>
             ) : (
-              dayEntries.map((entry) => <AgendaItem key={entry.meeting.id} entry={entry} />)
+              dayEntries.map((entry) => <AgendaItem key={entry.meeting.id} entry={entry} onAnswered={onAnswered} />)
             )}
           </section>
         )
@@ -548,7 +559,11 @@ function DayList({ days, now, schedule }: { days: Date[]; now: Date; schedule: S
   )
 }
 
-function AgendaItem({ entry }: { entry: ScheduleEntry }) {
+/**
+ * One meeting in the list view. An invitee who has not answered is asked here, as AI-eCabinet asks
+ * on its calendar: answering re-reads the range, so a declined meeting leaves the list.
+ */
+function AgendaItem({ entry, onAnswered }: { entry: ScheduleEntry; onAnswered: () => void }) {
   const { meeting } = entry
   const tone = STATUS_TONE[meeting.status]
   const back = backState('Lịch làm việc', useLocation())
@@ -575,7 +590,14 @@ function AgendaItem({ entry }: { entry: ScheduleEntry }) {
           <p className="agenda-chips">
             <StatusBadge status={meeting.status} />
             <SensitivityBadge sensitivity={meeting.sensitivity} />
+            <RsvpChip response={meeting.myResponse} />
           </p>
+          {meeting.canRespond && (
+            <div className="agenda-rsvp">
+              <span id={`rsvp-${meeting.id}`}>Xác nhận tham dự?</span>
+              <RsvpButtons meetingId={meeting.id} labelledBy={`rsvp-${meeting.id}`} onAnswered={onAnswered} />
+            </div>
+          )}
         </div>
         <Link className="btn btn-outline btn-sm agenda-open" to={routes.meeting(meeting.id)} state={back}>
           Xem chi tiết

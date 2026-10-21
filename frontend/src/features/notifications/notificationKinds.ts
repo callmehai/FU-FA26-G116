@@ -26,6 +26,8 @@ const KINDS: Record<NotificationType, Kind> = {
   MinutesWaitingApproval: { icon: 'fileText', tone: 'violet' },
   MinutesIssued: { icon: 'fileText', tone: 'emerald' },
   DocumentAdded: { icon: 'paperclip', tone: 'slate' },
+  MeetingRoleChanged: { icon: 'users', tone: 'blue' },
+  MeetingParticipantRemoved: { icon: 'calendarX', tone: 'slate' },
 }
 
 /** A kind added on the backend later still renders, as a plain bell. */

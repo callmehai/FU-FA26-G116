@@ -17,6 +17,9 @@ import {
   type MeetingRequest,
   type Sensitivity,
 } from '../../types/meeting'
+import type { ParticipantSeed } from '../../types/participant'
+import { rosterError, type RosterEntry } from '../participants/roster'
+import { RosterField } from '../participants/RosterField'
 
 /** The backend's limits (MeetingRules). The inputs enforce them; the backend checks again. */
 const TITLE_MAX = 300
@@ -35,6 +38,7 @@ type Field =
   | 'sensitivity'
   | 'location'
   | 'onlineLink'
+  | 'participants'
 type FieldErrors = Partial<Record<Field, string>>
 
 /** Field order on screen, so the first error to focus is the one highest on the page. */
@@ -48,6 +52,7 @@ const FIELD_ORDER: Field[] = [
   'sensitivity',
   'location',
   'onlineLink',
+  'participants',
 ]
 
 interface Values {
@@ -149,6 +154,26 @@ function toRequest(values: Values): MeetingRequest {
   }
 }
 
+/**
+ * MSG277 names a picked person by position (`participants[2].userId`); the form shows it on that
+ * person's row, and anything about the roster as a whole under the field.
+ */
+function rosterServerErrors(errors: Record<string, unknown>, roster: RosterEntry[]) {
+  const rows: Record<string, string> = {}
+  let whole: string | undefined
+  for (const [key, raw] of Object.entries(errors)) {
+    const message = Array.isArray(raw) ? String(raw[0]) : String(raw)
+    const index = /^participants\[(\d+)\]/.exec(key)?.[1]
+    const entry = index === undefined ? undefined : roster[Number(index)]
+    if (entry) rows[entry.userId] ??= message
+    else if (key.startsWith('participants')) whole ??= message
+  }
+  return {
+    rows,
+    whole: whole ?? (Object.keys(rows).length > 0 ? 'Có người không mời được, xem từng dòng bên dưới.' : undefined),
+  }
+}
+
 function sameValues(a: Values, b: Values) {
   return (Object.keys(a) as (keyof Values)[]).every((key) => a[key] === b[key])
 }
@@ -174,7 +199,8 @@ export function MeetingForm({
   meeting: Meeting | null
   submitLabel: string
   pendingLabel: string
-  onSubmit: (body: MeetingRequest) => Promise<MeetingMutationResponse>
+  /** On create the body also carries `participants`; an edit never sends them (the roster has its own tab). */
+  onSubmit: (body: MeetingRequest & { participants?: ParticipantSeed[] }) => Promise<MeetingMutationResponse>
   onSaved: (response: MeetingMutationResponse) => void
   /** Returns true when the page has handled the failure itself; otherwise the form shows it. */
   onError: (error: unknown) => boolean
@@ -188,10 +214,13 @@ export function MeetingForm({
   const [formError, setFormError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
+  /** Who attends: chosen only when creating; afterwards the detail page's attendees tab manages it. */
+  const [roster, setRoster] = useState<RosterEntry[]>([])
+  const [rosterRowErrors, setRosterRowErrors] = useState<Record<string, string>>({})
   const formRef = useRef<HTMLFormElement>(null)
   const submitted = useRef(false)
 
-  const dirty = !sameValues(values, initial)
+  const dirty = !sameValues(values, initial) || roster.length > 0
 
   // Closing the tab or reloading with unsaved input asks first. In-app links are not covered: the
   // app uses <BrowserRouter>, and route blocking needs a data router.
@@ -231,7 +260,10 @@ export function MeetingForm({
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     const errors = validate(values, needsFutureStart)
+    const rosterProblem = meeting ? undefined : rosterError(roster)
+    if (rosterProblem) errors.participants = rosterProblem
     setFieldErrors(errors)
+    setRosterRowErrors({})
     setFormError(null)
     if (Object.keys(errors).length > 0) {
       focusFirstError(errors)
@@ -240,7 +272,10 @@ export function MeetingForm({
 
     setPending(true)
     try {
-      const response = await onSubmit(toRequest(values))
+      const body = toRequest(values)
+      const response = await onSubmit(
+        meeting ? body : { ...body, participants: roster.map(({ userId, role }) => ({ userId, role })) },
+      )
       submitted.current = true
       onSaved(response)
     } catch (err) {
@@ -249,6 +284,13 @@ export function MeetingForm({
       if (isApiError(err, 400, 'MSG31') && err.body?.errors) {
         // Every invalid field at once, keyed by the request's own field names.
         const serverErrors = err.body.errors as FieldErrors
+        setFieldErrors(serverErrors)
+        focusFirstError(serverErrors)
+      } else if (isApiError(err, 400, 'MSG277')) {
+        // The roster no longer holds: someone picked was deactivated meanwhile, or a rule changed.
+        const { rows, whole } = rosterServerErrors(err.body?.errors ?? {}, roster)
+        setRosterRowErrors(rows)
+        const serverErrors: FieldErrors = { participants: whole ?? err.body?.message }
         setFieldErrors(serverErrors)
         focusFirstError(serverErrors)
       } else {
@@ -409,6 +451,23 @@ export function MeetingForm({
             />
             {errorOf('onlineLink', 'Không bắt buộc, tối đa 1.000 ký tự.')}
           </label>
+        )}
+
+        {!meeting && (
+          <RosterField
+            value={roster}
+            onChange={(next) => {
+              setRoster(next)
+              setRosterRowErrors({})
+              setFieldErrors((errors) => {
+                const rest = { ...errors }
+                delete rest.participants
+                return rest
+              })
+            }}
+            error={fieldErrors.participants}
+            rowErrors={rosterRowErrors}
+          />
         )}
 
         {formError && (

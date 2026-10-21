@@ -1255,6 +1255,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .field-item > span:first-child { color: var(--label-ink); font-size: 13px; }
 .field-item > strong { font-weight: 600; overflow-wrap: anywhere; }
 .field-grid .span-all { grid-column: 1 / -1; }
+/* Starts a new row: the meeting's people read together, not after whatever the place left. */
+.field-grid .field-row-start { grid-column-start: 1; }
 /* The description sits under a rule, apart from the short facts above it. */
 .field-grid .field-divided { padding-top: 18px; border-top: 1px solid var(--line-soft); }
 /* An unset value reads as absent, not as data: muted and italic, never an em dash that looks typed. */
@@ -1359,6 +1361,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .workflow-amber { --workflow-accent: var(--accent-amber); --workflow-tint: var(--chip-amber-bg); --workflow-ink: var(--chip-amber-fg); }
 .workflow-warning { --workflow-accent: var(--accent-amber); --workflow-tint: var(--chip-amber-bg); --workflow-ink: var(--chip-amber-fg); background: var(--wash-amber); }
 .workflow-red { --workflow-accent: var(--danger); --workflow-tint: var(--chip-red-bg); --workflow-ink: var(--chip-red-fg); }
+.workflow-blue { --workflow-accent: var(--brand); --workflow-tint: var(--chip-blue-bg); --workflow-ink: var(--chip-blue-fg); }
 .workflow-emerald { --workflow-accent: var(--accent-emerald); --workflow-tint: var(--chip-emerald-bg); --workflow-ink: var(--chip-emerald-fg); }
 .workflow-icon {
   display: grid;
@@ -1899,6 +1902,69 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .agenda-row { grid-template-columns: 56px 24px minmax(0, 1fr); }
   .agenda-card { flex-direction: column; align-items: flex-start; }
 }
+
+/* ---------- Participants (SCRUM-20, features/participants) ---------- */
+/* Picking who attends on the create form: a search box with its matches underneath, then one row
+   per person with their role. */
+.roster-search { width: 100%; }
+.roster-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: 320px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  list-style: none;
+}
+.roster-option { padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+.roster-option-active { background: var(--brand-wash); }
+.roster-option .avatar, .roster-row .avatar { width: 32px; height: 32px; font-size: 12px; }
+.roster-menu-note { padding: 10px 8px; color: var(--muted-ink); font-size: 14px; }
+.roster-menu-error { color: var(--danger-ink); }
+
+.roster-list { display: flex; flex-direction: column; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); list-style: none; }
+.roster-row { display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 12px; }
+.roster-row + .roster-row { border-top: 1px solid var(--line-soft); }
+.roster-row-invalid { background: var(--chip-red-bg); }
+.roster-row-main { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
+.roster-role { flex: none; width: 152px; }
+.roster-empty { margin: 0; padding: 14px 16px; border: 1px dashed var(--control-line); border-radius: var(--radius); color: var(--muted-ink); font-size: 14px; }
+
+/* Name over email; both cut with an ellipsis rather than pushing the role off the row. */
+.person-text { display: flex; flex-direction: column; min-width: 0; }
+.person-text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* "Bạn có tham dự cuộc họp này?" — the two answers, and the answer once given. */
+.rsvp-buttons { display: inline-flex; flex-wrap: wrap; gap: 8px; }
+.rsvp-chip { gap: 4px; padding-left: 8px; }
+/* On a calendar card: the question and its two answers on one line under the chips. */
+.agenda-rsvp { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 4px; color: var(--ink-soft); font-size: 14px; font-weight: 500; }
+
+/* The roster tab: a person with their answer, and the panel's own alert under the toolbar. */
+.participant-cell { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-width: 0; }
+.participants-alert { margin: 12px 16px 0; }
+.participants-guest { width: var(--control-height); padding: 0; }
+.participants-skeleton-search { width: 320px; height: var(--control-height); }
+
+/* Picking people in a dialog: a search box over a scrolling list of checkable rows. */
+.dialog-form { display: flex; flex-direction: column; gap: 16px; }
+.pick-list { display: flex; flex-direction: column; height: 280px; margin-top: 8px; overflow-y: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+.pick-list[aria-busy='true'] { opacity: .6; }
+.pick-row { display: flex; flex: none; align-items: center; gap: 12px; padding: 8px 12px; cursor: pointer; }
+.pick-row + .pick-row { border-top: 1px solid var(--line-soft); }
+.pick-row:hover { background: var(--surface-alt); }
+.pick-row input { flex: none; width: 16px; height: 16px; }
+.pick-row .avatar { width: 32px; height: 32px; font-size: 12px; }
+.pick-note { margin: 0; padding: 14px 12px; color: var(--muted-ink); font-size: 14px; }
+.pick-note-error { color: var(--danger-ink); }
+.pick-role { margin-top: 16px; }
 
 /* ---------- Placeholder screens ----------
    A screen whose backend does not exist yet: what it will do, and the endpoint it waits on. */

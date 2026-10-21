@@ -20,7 +20,8 @@ const PAGE_SIZE = 100
 /**
  * The meetings between `from` and `to`, for the calendar's grids and list. GET /api/meetings?from&to
  * returns the meetings whose own schedule overlaps the range (BR-30), after the server's visibility
- * rule (BR-29), with the times, place and the caller's roles the calendar shows and filters on.
+ * rule (BR-29), with the times, place and the caller's roles the calendar shows and filters on,
+ * minus the meetings the caller declined.
  * Every page is read: the calendar shows the whole range, never a first page of it.
  */
 export function useSchedule(from: Date, to: Date, attempt: number): Schedule {
@@ -49,6 +50,8 @@ export function useSchedule(from: Date, to: Date, attempt: number): Schedule {
             pageSize: PAGE_SIZE,
             sortBy: 'plannedStartTime',
             sortDir: 'asc',
+            // A meeting the caller declined leaves their calendar, as in AI-eCabinet (SCRUM-20).
+            excludeDeclined: true,
           })
           if (cancelled) return
           for (const meeting of result.items) byId.set(meeting.id, meeting)

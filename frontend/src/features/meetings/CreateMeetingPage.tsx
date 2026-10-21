@@ -8,8 +8,8 @@ import { useAccessLost } from '../auth/useAccessLost'
 import { MeetingForm } from './MeetingForm'
 
 /**
- * UC-14 Create Meeting. The meeting is saved as a draft with its own schedule; attendees, agenda and
- * the request for approval come afterwards, from the detail page.
+ * UC-14 Create Meeting. The meeting is saved as a draft with its own schedule and who attends
+ * (SCRUM-20); guests, agenda and the request for approval come afterwards, from the detail page.
  */
 export function CreateMeetingPage() {
   const navigate = useNavigate()
@@ -30,7 +30,7 @@ export function CreateMeetingPage() {
           meeting={null}
           submitLabel="Tạo cuộc họp"
           pendingLabel="Đang tạo…"
-          onSubmit={createMeeting}
+          onSubmit={(body) => createMeeting({ ...body, participants: body.participants ?? [] })}
           onSaved={(response) => {
             toast.show(response.message)
             // Replace: going back from the new meeting should not reopen an already-submitted form.
