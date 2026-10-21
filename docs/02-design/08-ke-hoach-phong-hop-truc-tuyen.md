@@ -760,19 +760,29 @@ prejoin ──bấm "Vào phòng"──▶ joining ──POST join──▶ conn
   `navigate(routes.meeting(id))`. Khi đang kết nối: `useBeforeUnload` cảnh báo đóng tab. App dùng
   `BrowserRouter` nên **không có `useBlocker`**: nút Back trình duyệt sẽ rời phòng (giống Meet) —
   chấp nhận.
-- Trong phòng **không có link nào chuyển tab hiện tại**. Link sang màn khác dùng
+- Trong phòng **không có link nào chuyển tab hiện tại** mà không hỏi: nút quay lại ở đầu header
+  mở cùng hộp xác nhận với "Rời phòng", đồng ý thì về trang cuộc họp. Link sang màn khác dùng
   `target="_blank" rel="noopener"`.
 
 ### 6.4 Màn chờ (PreJoin)
 
-- Tiêu đề cuộc họp; "Đang có N người trong phòng" (từ `participantCount`, `null` thì ẩn).
-- Khung xem trước camera (`usePreviewTracks`); camera tắt → chữ cái đầu tên trên nền
-  `avatarColors`.
-- Thanh mức âm mic (audio level của preview track) để người dùng biết mic đang nhận tiếng.
-- Hai `Select`: micro, camera (`Room.getLocalDevices(kind)`). Có loa (`audiooutput`) nếu trình duyệt
-  hỗ trợ.
-- Nút bật/tắt mic, cam. Mặc định: **mic bật, cam tắt**. Nhớ lựa chọn trong `localStorage` (bọc
-  try/catch).
+Bố cục theo màn "Sẵn sàng tham gia?" của Google Meet (đo trên Meet, khung 1440px):
+
+- Thanh trên: dấu TrustCabinet bên trái, người đang đăng nhập (tên, email, avatar) bên phải.
+- Khung xem trước 16:9, rộng tối đa 740px, bo 16px. Camera tắt → chữ "Camera đang tắt" giữa khung;
+  camera bật → hình của mình (lật gương) và tên ở góc trên trái.
+- Hai nút bật/tắt mic, cam nằm giữa cạnh dưới khung (viên 56×48; tắt thì nền đỏ nhạt). Mic bật →
+  chấm tròn báo tiếng ở góc dưới trái, đọc mức âm từ track xem trước của mic.
+- Ba ô chọn dưới khung, chia đều bề ngang: micro, loa, camera. Ô loa chỉ có khi trình duyệt hỗ trợ
+  `setSinkId`. Menu giống khay thiết bị trong phòng, nhưng màu sáng theo trang.
+- Cột bên phải: "Sẵn sàng tham gia?", tên cuộc họp, nhãn mật nếu có, "Không có người nào khác ở đây"
+  hoặc "Đang có N người trong phòng" (từ `participantCount`), nút "Vào phòng", nút chữ "Quay lại
+  trang cuộc họp".
+- Dưới 1000px hai cột xếp chồng; điện thoại (≤ 560px) khung 4:3, ba ô chọn xếp dọc.
+- Mặc định: **mic bật, cam tắt**. Nhớ lựa chọn bật/tắt và thiết bị (cả loa) trong `localStorage`
+  (bọc try/catch); vào phòng thì áp micro, camera, loa đã chọn.
+- Các trang "không vào được" (chưa mở, đã kết thúc, mất kết nối) dùng cùng thanh trên, một câu ở
+  giữa và hai nút.
 - Lỗi thiết bị (`MediaDeviceFailure.getFailure(err)`):
 
 | Failure | Câu hiển thị |
@@ -791,7 +801,7 @@ prejoin ──bấm "Vào phòng"──▶ joining ──POST join──▶ conn
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│ Tên cuộc họp · Đang diễn ra · 00:42:10                    [Mật] [≡] │  header 56px
+│ ‹  Tên cuộc họp  [N người trong phòng] [Mật]                         │  header 60px, một dòng
 ├──────────────────────────────────────────┬───────────────────────────┤
 │  Lưới video / màn hình chia sẻ           │  Panel 360px (thu gọn được)│
 ├──────────────────────────────────────────┴───────────────────────────┤
@@ -802,8 +812,14 @@ prejoin ──bấm "Vào phòng"──▶ joining ──POST join──▶ conn
 Dưới 1024px, panel đè lên stage dạng sheet. Nền stage là `--stage-bg` (đặt bằng giá trị `--ink`).
 Đây không phải dark mode — UI vẫn chỉ có bản sáng.
 
+Panel đóng khi mới vào phòng, như Meet: sân khấu được cả bề ngang, panel mở khi bấm.
+
 **Lưới:**
 - Tối đa 9 ô/trang (3×3), 4 ô khi cửa sổ < 1024px; có nút trang trước/sau.
+- Cỡ ô tính từ vùng sân khấu đo được (`fitTiles`), không theo nội dung video: thử từng số cột, lấy
+  cách cho ô lớn nhất. Sân khấu nằm ngang → ô 16:9; nằm dọc (điện thoại) → ô được phép cao tới 3:4.
+  Hàng chưa đầy căn giữa. Nhờ vậy dù mở hay đóng panel, mọi ô đều trọn vẹn và không lấn xuống thanh
+  điều khiển.
 - Thứ tự: người đang nói lên trang 1 **chỉ khi họ đang ở trang khác** (tránh ô nhảy liên tục),
   mình ở cuối.
 - Ô bị ẩn do phân trang không attach video → adaptive stream tự dừng tải.
@@ -908,8 +924,8 @@ const ROOM_PANELS: RoomPanel[] = [
 ]
 ```
 
-Panel chưa có component thì **không** thêm vào registry. Header phòng có link "Mở chi tiết cuộc họp"
-(tab mới) để dùng tạm.
+Panel chưa có component thì **không** thêm vào registry. Header phòng có nút quay lại trang cuộc họp
+(hỏi trước khi rời phòng).
 
 ---
 
