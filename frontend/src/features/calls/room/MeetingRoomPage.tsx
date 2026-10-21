@@ -1,10 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { DisconnectReason, type LocalVideoTrack, Room, RoomEvent, createLocalVideoTrack } from 'livekit-client'
+import {
+  DisconnectReason,
+  type LocalAudioTrack,
+  type LocalVideoTrack,
+  Room,
+  RoomEvent,
+  createLocalAudioTrack,
+  createLocalVideoTrack,
+} from 'livekit-client'
 import { getMeetingCall, joinMeetingCall } from '../../../api/calls'
 import { Icon } from '../../../components/Icon'
 import { NotFound } from '../../../components/NotFound'
-import { Select } from '../../../components/Select'
+import { BrandMark } from '../../../components/BrandMark'
 import { useToast } from '../../../components/toastContext'
 import { avatarColors, initials } from '../../../lib/avatar'
 import { errorMessage, isApiError } from '../../../lib/errors'
@@ -13,9 +21,11 @@ import type { CallRoomState } from '../../../types/call'
 import type { Meeting } from '../../../types/meeting'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
+import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useMeeting } from '../../meetings/useMeeting'
+import { DevicePicker, MicLevel } from './devices'
 import { RoomView } from './RoomView'
-import { ROOM_OPTIONS, deviceErrorMessage, disconnectMessage } from './roomSupport'
+import { ROOM_OPTIONS, deviceErrorMessage, deviceOptions, disconnectMessage, noDeviceReason } from './roomSupport'
 
 type Phase =
   | { kind: 'lobby' }
@@ -25,20 +35,27 @@ type Phase =
 interface Prefs {
   mic: boolean
   micId: string
+  speakerId: string
   cam: boolean
   camId: string
 }
 
 const PREFS_KEY = 'trustcabinet.call.prefs'
 
-/** A per-browser convenience: remember whether the user joins muted and with which microphone. */
+/** A per-browser convenience: remember whether the user joins muted, and with which devices. */
 function loadPrefs(): Prefs {
   try {
     const saved = JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') as Partial<Prefs>
     // Microphone on, camera off unless the user chose otherwise before (SCRUM-42).
-    return { mic: saved.mic ?? true, micId: saved.micId ?? '', cam: saved.cam ?? false, camId: saved.camId ?? '' }
+    return {
+      mic: saved.mic ?? true,
+      micId: saved.micId ?? '',
+      speakerId: saved.speakerId ?? '',
+      cam: saved.cam ?? false,
+      camId: saved.camId ?? '',
+    }
   } catch {
-    return { mic: true, micId: '', cam: false, camId: '' }
+    return { mic: true, micId: '', speakerId: '', cam: false, camId: '' }
   }
 }
 
@@ -87,9 +104,9 @@ export function MeetingRoomPage() {
 
   if (meetingState.kind !== 'loaded' || call === 'loading') {
     return (
-      <div className="room-lobby">
-        <p className="page-loading">Đang tải phòng họp…</p>
-      </div>
+      <RoomPage>
+        <p className="page-loading prejoin-loading">Đang tải phòng họp…</p>
+      </RoomPage>
     )
   }
 
@@ -174,30 +191,30 @@ function PreJoin({
   onJoined: () => void
 }) {
   const [prefs, setPrefs] = useState(loadPrefs)
-  const [mics, setMics] = useState<MediaDeviceInfo[]>([])
-  const [cameras, setCameras] = useState<MediaDeviceInfo[]>([])
+  const [micAllowed, setMicAllowed] = useState(false)
   const [micError, setMicError] = useState<string | null>(null)
   const [joinError, setJoinError] = useState<string | null>(null)
   const [joining, setJoining] = useState(false)
   const toast = useToast()
   const handleAccessLost = useAccessLost()
+  const micOn = prefs.mic && !micError
   const { attachVideo, ready: previewReady, error: previewError, release: releasePreview } = useCameraPreview(
     prefs.cam,
     prefs.camId,
   )
-  // The room has no identity before connecting; the pre-join avatar uses the signed-in name.
-  const myName = useAuth().user?.fullName ?? ''
+  const { track: micTrack, release: releaseMic } = useMicPreview(micOn && micAllowed, prefs.micId)
+  // Labels only come once a permission is granted, so the lists are read again then.
+  const devices = useDeviceList(`${micAllowed}:${previewReady}`)
+  const user = useAuth().user
+  // The room has no identity before connecting; the preview uses the signed-in name.
+  const myName = user?.fullName ?? ''
 
   useEffect(() => {
     let cancelled = false
     // Asking for the device list asks for permission too, so a refusal shows up here, before joining.
     Room.getLocalDevices('audioinput')
-      .then((devices) => !cancelled && setMics(devices.filter((d) => d.deviceId)))
+      .then(() => !cancelled && setMicAllowed(true))
       .catch((err: unknown) => !cancelled && setMicError(deviceErrorMessage(err, 'micro')))
-    // Cameras without asking: the camera is off by default and the preview asks when turned on.
-    Room.getLocalDevices('videoinput', false)
-      .then((devices) => !cancelled && setCameras(devices.filter((d) => d.deviceId)))
-      .catch(() => undefined)
     return () => {
       cancelled = true
     }
@@ -213,11 +230,15 @@ function PreJoin({
     setJoinError(null)
     try {
       const ticket = await joinMeetingCall(meeting.id)
-      // The preview holds the camera; release it so publishing can open it again.
+      // The previews hold the camera and microphone; release them so publishing can open them again.
       releasePreview()
+      releaseMic()
       await room.connect(ticket.serverUrl, ticket.token)
       onJoined()
-      if (prefs.mic && !micError) {
+      if (prefs.speakerId && CAN_PICK_SPEAKER) {
+        await room.switchActiveDevice('audiooutput', prefs.speakerId).catch(() => undefined)
+      }
+      if (micOn) {
         try {
           await room.localParticipant.setMicrophoneEnabled(true, prefs.micId ? { deviceId: prefs.micId } : undefined)
         } catch (err) {
@@ -239,76 +260,89 @@ function PreJoin({
     }
   }
 
-  const micOn = prefs.mic && !micError
   const camOn = prefs.cam && !previewError
-  const colors = avatarColors(myName)
+  const restricted = meeting.sensitivity === 'Secret' || meeting.sensitivity === 'Confidential'
+  const ofKind = (kind: MediaDeviceKind) => devices.filter((d) => d.kind === kind)
 
   return (
-    <div className="room-lobby">
-      <section className="room-lobby-card room-lobby-card-wide" aria-labelledby="prejoin-title">
-        <div className="room-preview" aria-label="Xem trước hình của bạn">
-          {camOn ? (
-            <video ref={attachVideo} className="room-preview-video" muted playsInline autoPlay />
-          ) : (
-            <span className="room-tile-avatar" style={{ backgroundColor: colors.bg, color: colors.fg }} aria-hidden="true">
-              {initials(myName)}
-            </span>
-          )}
-          <span className="room-preview-caption">
-            {!camOn ? 'Camera đang tắt' : previewReady ? 'Hình của bạn' : 'Đang mở camera… Nếu trình duyệt hỏi, hãy chọn Cho phép.'}
-          </span>
-        </div>
-
-        <div className="room-lobby-side">
-          <p className="room-lobby-eyebrow">Phòng họp trực tuyến</p>
-          <h1 id="prejoin-title">{meeting.title}</h1>
-          <p className="room-lobby-meta">
-            {call.participantCount === null
-              ? 'Cuộc họp đang diễn ra.'
-              : call.participantCount === 0
-                ? 'Chưa có ai trong phòng.'
-                : `Đang có ${call.participantCount} người trong phòng.`}
-          </p>
-
-          <div className="room-prejoin-controls">
-            <div className="room-prejoin-row">
+    <RoomPage>
+      <main className="prejoin-main">
+        <div className="prejoin-media">
+          {/* Laid out as Meet's: your picture, its two switches over its bottom edge, the pickers under it. */}
+          <div className="prejoin-preview" role="group" aria-label="Xem trước hình của bạn">
+            {camOn && <video ref={attachVideo} className="prejoin-preview-video" muted playsInline autoPlay />}
+            {(!camOn || !previewReady) && (
+              <p className="prejoin-preview-text">{camOn ? 'Đang mở camera…' : 'Camera đang tắt'}</p>
+            )}
+            {camOn && previewReady && <span className="prejoin-preview-name">{myName}</span>}
+            {micTrack && (
+              <span className="prejoin-voice" title="Micro đang nhận tiếng">
+                <MicLevel track={micTrack} />
+              </span>
+            )}
+            <div className="prejoin-toggles">
               <button
                 type="button"
-                className={`room-toggle${micOn ? '' : ' room-toggle-off'}`}
-                aria-pressed={micOn}
+                className={`prejoin-toggle${micOn ? '' : ' is-off'}`}
+                aria-label={micOn ? 'Tắt micro' : 'Bật micro'}
+                title={micOn ? 'Tắt micro' : 'Bật micro'}
                 disabled={Boolean(micError)}
                 onClick={() => update({ ...prefs, mic: !prefs.mic })}
               >
                 <Icon name={micOn ? 'mic' : 'micOff'} />
-                {micOn ? 'Micro bật' : 'Micro tắt'}
               </button>
               <button
                 type="button"
-                className={`room-toggle${camOn ? '' : ' room-toggle-off'}`}
-                aria-pressed={camOn}
+                className={`prejoin-toggle${camOn ? '' : ' is-off'}`}
+                aria-label={camOn ? 'Tắt camera' : 'Bật camera'}
+                title={camOn ? 'Tắt camera' : 'Bật camera'}
                 onClick={() => update({ ...prefs, cam: !prefs.cam })}
               >
                 <Icon name={camOn ? 'video' : 'videoOff'} />
-                {camOn ? 'Camera bật' : 'Camera tắt'}
               </button>
             </div>
-            {mics.length > 1 && (
-              <Select
-                label="Chọn micro"
-                value={prefs.micId}
-                options={deviceOptions(mics, 'Micro')}
-                onChange={(micId) => update({ ...prefs, micId })}
-              />
-            )}
-            {camOn && cameras.length > 1 && (
-              <Select
-                label="Chọn camera"
-                value={prefs.camId}
-                options={deviceOptions(cameras, 'Camera')}
-                onChange={(camId) => update({ ...prefs, camId })}
-              />
-            )}
           </div>
+          <div className="prejoin-devices">
+            <DevicePicker
+              title="Micro"
+              icon="mic"
+              options={deviceOptions(ofKind('audioinput'), 'Micro')}
+              activeId={prefs.micId}
+              emptyReason={noDeviceReason('audioinput', 'Micro')}
+              onPick={(micId) => update({ ...prefs, micId })}
+            />
+            {CAN_PICK_SPEAKER && (
+              <DevicePicker
+                title="Loa"
+                icon="volume"
+                options={deviceOptions(ofKind('audiooutput'), 'Loa')}
+                activeId={prefs.speakerId}
+                emptyReason={noDeviceReason('audiooutput', 'Loa')}
+                onPick={(speakerId) => update({ ...prefs, speakerId })}
+              />
+            )}
+            <DevicePicker
+              title="Camera"
+              icon="video"
+              options={deviceOptions(ofKind('videoinput'), 'Camera')}
+              activeId={prefs.camId}
+              emptyReason={noDeviceReason('videoinput', 'Camera')}
+              onPick={(camId) => update({ ...prefs, camId })}
+            />
+          </div>
+        </div>
+
+        <section className="prejoin-side" aria-labelledby="prejoin-title">
+          <h1 id="prejoin-title">Sẵn sàng tham gia?</h1>
+          <p className="prejoin-meeting">{meeting.title}</p>
+          {restricted && <SensitivityBadge sensitivity={meeting.sensitivity} />}
+          <p className="prejoin-presence">
+            {call.participantCount === null
+              ? 'Cuộc họp đang diễn ra'
+              : call.participantCount === 0
+                ? 'Không có người nào khác ở đây'
+                : `Đang có ${call.participantCount} người trong phòng`}
+          </p>
 
           {micError && (
             <div className="alert alert-warning" role="status">
@@ -326,25 +360,72 @@ function PreJoin({
             </div>
           )}
 
-          <div className="room-lobby-actions">
-            <Link className="btn btn-outline" to={routes.meeting(meeting.id)}>
-              Quay lại cuộc họp
-            </Link>
-            <button type="button" className="btn btn-primary" disabled={joining} onClick={() => void join()}>
-              {joining ? 'Đang vào phòng…' : 'Vào phòng'}
-            </button>
-          </div>
-        </div>
-      </section>
-    </div>
+          <button type="button" className="prejoin-join" disabled={joining} onClick={() => void join()}>
+            {joining ? 'Đang vào phòng…' : 'Vào phòng'}
+          </button>
+          <Link className="prejoin-text-button" to={routes.meeting(meeting.id)}>
+            <Icon name="chevronLeft" size={18} />
+            Quay lại trang cuộc họp
+          </Link>
+        </section>
+      </main>
+    </RoomPage>
   )
 }
 
-function deviceOptions(devices: MediaDeviceInfo[], noun: string) {
-  return [
-    { value: '', label: `${noun} mặc định của máy` },
-    ...devices.map((d, i) => ({ value: d.deviceId, label: d.label || `${noun} ${i + 1}` })),
-  ]
+/** Choosing a speaker needs setSinkId, which Safari on a phone and older Firefox lack. */
+const CAN_PICK_SPEAKER = typeof HTMLMediaElement !== 'undefined' && 'setSinkId' in HTMLMediaElement.prototype
+
+/** Every media device, read again on `refresh` and whenever one is plugged in or out. */
+function useDeviceList(refresh: string) {
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
+  useEffect(() => {
+    const media = navigator.mediaDevices
+    if (!media?.enumerateDevices) return
+    let cancelled = false
+    const load = () =>
+      void media.enumerateDevices().then(
+        (list) => !cancelled && setDevices(list),
+        () => undefined,
+      )
+    load()
+    media.addEventListener('devicechange', load)
+    return () => {
+      cancelled = true
+      media.removeEventListener('devicechange', load)
+    }
+  }, [refresh])
+  return devices
+}
+
+/**
+ * The microphone while it is on in the pre-join screen, for its voice indicator — as Meet shows one.
+ * Closed when switched off, when the device changes, on unmount, and by `release` before joining.
+ */
+function useMicPreview(enabled: boolean, deviceId: string) {
+  const [result, setResult] = useState<{ key: string; track?: LocalAudioTrack }>({ key: '' })
+  const key = enabled ? `on:${deviceId}` : 'off'
+  const track = result.key === key ? result.track : undefined
+
+  useEffect(() => {
+    if (!enabled) return
+    let cancelled = false
+    let opened: LocalAudioTrack | undefined
+    createLocalAudioTrack(deviceId ? { deviceId } : undefined)
+      .then((created) => {
+        if (cancelled) return created.stop()
+        opened = created
+        setResult({ key: `on:${deviceId}`, track: created })
+      })
+      // Without the indicator the screen still works; joining reports a real microphone problem.
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+      opened?.stop()
+    }
+  }, [enabled, deviceId])
+
+  return { track, release: () => track?.stop() }
 }
 
 /**
@@ -389,6 +470,34 @@ function useCameraPreview(enabled: boolean, deviceId: string) {
   return { attachVideo: setVideo, ready: track !== undefined, error, release: () => track?.stop() }
 }
 
+/** The room's own page outside the call, as Meet's: its mark on the left, who is signed in on the right. */
+function RoomPage({ children }: { children: ReactNode }) {
+  const user = useAuth().user
+  const colors = avatarColors(user?.fullName ?? '')
+  return (
+    <div className="prejoin">
+      <header className="prejoin-top">
+        <span className="prejoin-brand">
+          <BrandMark size={32} />
+          TrustCabinet
+        </span>
+        {user && (
+          <span className="prejoin-account">
+            <span className="prejoin-account-text">
+              <span className="prejoin-account-name">{user.fullName}</span>
+              <span className="prejoin-account-mail">{user.email}</span>
+            </span>
+            <span className="prejoin-avatar" style={{ backgroundColor: colors.bg, color: colors.fg }} aria-hidden="true">
+              {initials(user.fullName)}
+            </span>
+          </span>
+        )}
+      </header>
+      {children}
+    </div>
+  )
+}
+
 function LobbyMessage({
   meetingId,
   title,
@@ -398,21 +507,20 @@ function LobbyMessage({
   meetingId: string
   title: string
   text: string
-  children?: React.ReactNode
+  children?: ReactNode
 }) {
   return (
-    <div className="room-lobby">
-      <section className="room-lobby-card">
-        <p className="room-lobby-eyebrow">Phòng họp trực tuyến</p>
-        <h1>{title}</h1>
-        <p className="room-lobby-meta">{text}</p>
-        <div className="room-lobby-actions">
+    <RoomPage>
+      <main className="prejoin-message">
+        <h1>{text}</h1>
+        <p className="prejoin-meeting">{title}</p>
+        <div className="prejoin-message-actions">
           <Link className="btn btn-outline" to={routes.meeting(meetingId)}>
             Về trang cuộc họp
           </Link>
           {children}
         </div>
-      </section>
-    </div>
+      </main>
+    </RoomPage>
   )
 }

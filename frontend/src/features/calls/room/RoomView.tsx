@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
+  type CSSProperties,
   type KeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
@@ -22,7 +23,6 @@ import {
   useChat,
   useIsSpeaking,
   useLocalParticipant,
-  useMediaDeviceSelect,
   useParticipants,
   useSpeakingParticipants,
   useTracks,
@@ -30,14 +30,11 @@ import {
   type TrackReferenceOrPlaceholder,
 } from '@livekit/components-react'
 import {
-  createAudioAnalyser,
-  type LocalAudioTrack,
   type Participant,
   ParticipantEvent,
   type Room,
   RoomEvent,
   Track,
-  TrackEvent,
   type TrackPublication,
 } from 'livekit-client'
 import { muteCallParticipant } from '../../../api/calls'
@@ -46,15 +43,13 @@ import { Icon, type IconName } from '../../../components/Icon'
 import { useToast } from '../../../components/toastContext'
 import { avatarColors, initials } from '../../../lib/avatar'
 import { errorMessage, isApiError } from '../../../lib/errors'
-import { routes } from '../../../lib/routes'
 import { MEETING_ROLE_LABEL, type MeetingRole } from '../../../types/call'
 import { type Meeting } from '../../../types/meeting'
-import { SensitivityBadge, StatusBadge } from '../../meetings/StatusBadge'
+import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useAccessLost } from '../../auth/useAccessLost'
+import { DeviceSelect, MicLevel } from './devices'
 import { usePipWindow } from './pipWindow'
 import { deviceErrorMessage, meetingRoleOf } from './roomSupport'
-
-const PANEL_OVERLAY_QUERY = '(max-width: 1023px)'
 
 /** ⌘ on a Mac, Ctrl elsewhere — the modifier of the mic and camera shortcuts. */
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
@@ -101,10 +96,8 @@ function RoomLayout({
   myRole: MeetingRole
   onLeave: () => Promise<void>
 }) {
-  // Below 1024px a panel covers the stage (see .room-panel in global.css), so it starts closed there.
-  const [panel, setPanel] = useState<PanelId | null>(() =>
-    window.matchMedia(PANEL_OVERLAY_QUERY).matches ? null : 'people',
-  )
+  // As in Meet, the stage starts with the whole width; the panels open on demand.
+  const [panel, setPanel] = useState<PanelId | null>(null)
   const [confirmingLeave, setConfirmingLeave] = useState(false)
   const [reconnecting, setReconnecting] = useState(false)
   const participants = useParticipants()
@@ -230,22 +223,25 @@ function RoomLayout({
 
   return (
     <div className={`room${panel ? ' room-with-panel' : ''}`}>
+      {/* One line, as the meeting page's own heading: back, the title, then how many are here and how
+          sensitive it is. Going back leaves the call, so it asks first, like "Rời phòng". */}
       <header className="room-header">
-        <div className="room-title">
-          <h1>{meeting.title}</h1>
-          <div className="room-title-facts">
-            <StatusBadge status="InProgress" />
-            <span className="room-count">
-              <Icon name="users" size={13} />
-              {participants.length} người trong phòng
-            </span>
-            {restricted && <SensitivityBadge sensitivity={meeting.sensitivity} />}
-          </div>
-        </div>
-        <a className="room-header-link" href={routes.meeting(meeting.id)} target="_blank" rel="noopener">
-          <span className="room-link-long">Mở chi tiết cuộc họp</span>
-          <span className="room-link-short">Chi tiết</span>
-        </a>
+        <button
+          type="button"
+          className="room-back"
+          aria-label="Quay lại trang cuộc họp"
+          title="Quay lại trang cuộc họp"
+          onClick={() => setConfirmingLeave(true)}
+        >
+          <Icon name="chevronLeft" size={20} />
+        </button>
+        <h1 className="room-title">{meeting.title}</h1>
+        <span className="room-count">
+          <Icon name="users" size={13} />
+          {participants.length}
+          <span className="room-count-label">người trong phòng</span>
+        </span>
+        {restricted && <SensitivityBadge sensitivity={meeting.sensitivity} />}
       </header>
 
       {reconnecting && (
@@ -615,11 +611,15 @@ function ParticipantGrid({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className="room-grid-wrap">
-      <div className="room-grid" data-count={visible.length}>
-        {visible.map((trackRef) => (
-          <ParticipantTile key={trackRef.participant.identity} trackRef={trackRef} />
-        ))}
-      </div>
+      {compact ? (
+        <div className="room-grid">
+          {visible.map((trackRef) => (
+            <ParticipantTile key={trackRef.participant.identity} trackRef={trackRef} />
+          ))}
+        </div>
+      ) : (
+        <FittedTiles tiles={visible} />
+      )}
       {pages > 1 && (
         <nav className="room-pager" aria-label="Trang người dự">
           <button type="button" className="icon-button" aria-label="Trang trước" disabled={current === 0} onClick={() => setPage(current - 1)}>
@@ -632,6 +632,81 @@ function ParticipantGrid({ compact = false }: { compact?: boolean }) {
             <Icon name="chevronRight" />
           </button>
         </nav>
+      )}
+    </div>
+  )
+}
+
+const TILE_GAP = 12
+const TILE_GAP_PHONE = 8
+
+/**
+ * The biggest tiles that fit `count` of them in the box, as Meet lays out its grid: 16:9 on a wide
+ * stage; on a tall one (a phone held upright) as tall as 3:4, so two people stacked fill the screen.
+ * Rows that are not full are centred.
+ */
+function fitTiles(width: number, height: number, count: number, gap: number) {
+  const [narrowest, widest] = width >= height ? [16 / 9, 16 / 9] : [3 / 4, 16 / 9]
+  let best = { columns: 1, width: 0, height: 0 }
+  for (let columns = 1; columns <= count; columns++) {
+    const rows = Math.ceil(count / columns)
+    const cellWidth = (width - gap * (columns - 1)) / columns
+    const cellHeight = (height - gap * (rows - 1)) / rows
+    if (cellWidth <= 0 || cellHeight <= 0) continue
+    const aspect = Math.min(widest, Math.max(narrowest, cellWidth / cellHeight))
+    const tileWidth = Math.min(cellWidth, cellHeight * aspect)
+    const tileHeight = tileWidth / aspect
+    if (tileWidth * tileHeight > best.width * best.height) {
+      best = { columns, width: Math.floor(tileWidth), height: Math.floor(tileHeight) }
+    }
+  }
+  return best
+}
+
+/**
+ * The stage's tiles, sized from the space they have rather than from their content, so however
+ * many people there are and whether a panel is open, every tile is whole and none slides under the
+ * control bar.
+ */
+function FittedTiles({ tiles }: { tiles: TrackReferenceOrPlaceholder[] }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [box, setBox] = useState({ width: 0, height: 0 })
+
+  useLayoutEffect(() => {
+    const area = ref.current
+    if (!area) return
+    const measure = () => {
+      const { width, height } = area.getBoundingClientRect()
+      setBox((current) =>
+        current.width === Math.floor(width) && current.height === Math.floor(height)
+          ? current
+          : { width: Math.floor(width), height: Math.floor(height) },
+      )
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(area)
+    return () => observer.disconnect()
+  }, [])
+
+  const gap = box.width < 600 ? TILE_GAP_PHONE : TILE_GAP
+  const fit = fitTiles(box.width, box.height, tiles.length, gap)
+
+  return (
+    <div className="room-grid-area" ref={ref}>
+      {fit.width > 0 && (
+        <div
+          className="room-grid-fit"
+          style={{ gap, width: fit.columns * fit.width + (fit.columns - 1) * gap }}
+        >
+          {tiles.map((trackRef) => (
+            <ParticipantTile
+              key={trackRef.participant.identity}
+              trackRef={trackRef}
+              style={{ width: fit.width, height: fit.height }}
+            />
+          ))}
+        </div>
       )}
     </div>
   )
@@ -695,7 +770,7 @@ function usePageSize() {
   )
 }
 
-function ParticipantTile({ trackRef }: { trackRef: TrackReferenceOrPlaceholder }) {
+function ParticipantTile({ trackRef, style }: { trackRef: TrackReferenceOrPlaceholder; style?: CSSProperties }) {
   const participant = trackRef.participant
   const speaking = useIsSpeaking(participant)
   const micMuted = !useMicrophoneOn(participant)
@@ -705,7 +780,7 @@ function ParticipantTile({ trackRef }: { trackRef: TrackReferenceOrPlaceholder }
   const colors = avatarColors(name)
 
   return (
-    <figure className={`room-tile${speaking ? ' room-tile-speaking' : ''}`}>
+    <figure className={`room-tile${speaking ? ' room-tile-speaking' : ''}`} style={style}>
       {showVideo ? (
         <VideoTrack
           trackRef={trackRef}
@@ -1184,227 +1259,6 @@ function DeviceSplit({
         <Icon name="chevronUp" size={16} />
       </button>
       {children}
-    </div>
-  )
-}
-
-/**
- * Three bars in the microphone's arrow that follow your own voice while the microphone is on, as
- * Meet's do; pointing at the arrow brings the arrow back. Read from the local track, so they move
- * at once instead of waiting for the server's speaker updates.
- */
-function MicLevel({ track }: { track: LocalAudioTrack }) {
-  const ref = useRef<HTMLSpanElement>(null)
-  // A device switch restarts the track on a new capture; the analyser has to follow it.
-  const [capture, setCapture] = useState(0)
-
-  useEffect(() => {
-    const restarted = () => setCapture((n) => n + 1)
-    track.on(TrackEvent.Restarted, restarted)
-    return () => {
-      track.off(TrackEvent.Restarted, restarted)
-    }
-  }, [track])
-
-  useEffect(() => {
-    const bars = ref.current
-    if (!bars || !track.mediaStreamTrack) return
-    // The library's default range (-100 to -80 dB) saturates on a quiet room's hiss; -80 to -20 dB
-    // leaves a quiet room near 0.03 and puts speech well above it.
-    const { calculateVolume, cleanup } = createAudioAnalyser(track, {
-      smoothingTimeConstant: 0.5,
-      minDecibels: -80,
-      maxDecibels: -20,
-    })
-    let frame = 0
-    let last = 0
-    const tick = (now: number) => {
-      if (now - last >= 60) {
-        last = now
-        bars.style.setProperty('--level', Math.min(1, Math.max(0, (calculateVolume() - 0.04) / 0.2)).toFixed(2))
-      }
-      frame = requestAnimationFrame(tick)
-    }
-    frame = requestAnimationFrame(tick)
-    return () => {
-      cancelAnimationFrame(frame)
-      void cleanup()
-    }
-  }, [track, capture])
-
-  return (
-    <span className="room-level" ref={ref} aria-hidden="true">
-      <span />
-      <span />
-      <span />
-    </span>
-  )
-}
-
-type DeviceOption = { id: string; label: string; isDefault: boolean }
-
-/**
- * A picker leaves out the suffixes that say nothing about which device it is — "(Built-in)",
- * "(Virtual)", "(Aggregate)", a USB id like "(1C1C:B782)" — keeping any that tell two apart, such as
- * "(Jabra Evolve 65)". The menu shows the whole name.
- */
-function shortDeviceName(label: string) {
-  return label.replace(/\s*\((?:built-in|virtual|aggregate|[0-9a-f]{4}:[0-9a-f]{4})\)$/i, '') || label
-}
-
-/**
- * Chrome lists the system default twice: once as "default" ("Mặc định - Micrô MacBook Air") and
- * once as the device itself. Like Meet, show the device once and mark it as the default. The
- * "communications" entry (Windows) is the same kind of alias.
- */
-function deviceOptions(devices: MediaDeviceInfo[], title: string): DeviceOption[] {
-  const alias = devices.find((d) => d.deviceId === 'default')
-  const real = devices.filter((d) => d.deviceId && d.deviceId !== 'default' && d.deviceId !== 'communications')
-  if (real.length === 0) {
-    return alias ? [{ id: alias.deviceId, label: alias.label || title, isDefault: true }] : []
-  }
-  const aliasName = alias?.label.includes(' - ') ? alias.label.slice(alias.label.indexOf(' - ') + 3) : alias?.label
-  const defaultDevice =
-    alias && (real.find((d) => d.groupId === alias.groupId && d.label === aliasName) ?? real.find((d) => d.label === aliasName))
-  const options = real.map((d, i) => ({ id: d.deviceId, label: d.label || `${title} ${i + 1}`, isDefault: d === defaultDevice }))
-  // A default we cannot match to a device stays its own entry, so following the system still works.
-  return alias && !defaultDevice ? [{ id: alias.deviceId, label: alias.label || title, isDefault: true }, ...options] : options
-}
-
-function DeviceSelect({ kind, icon, title }: { kind: MediaDeviceKind; icon: IconName; title: string }) {
-  const toast = useToast()
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  const triggerRef = useRef<HTMLButtonElement>(null)
-  const menuId = useId()
-  const { devices, activeDeviceId, setActiveMediaDevice } = useMediaDeviceSelect({
-    kind,
-    requestPermissions: kind !== 'audiooutput',
-  })
-  const options = deviceOptions(devices, title)
-  // The list arrives a moment after the tray opens; only call it empty once it has had time to.
-  const [settled, setSettled] = useState(false)
-  useEffect(() => {
-    const timer = window.setTimeout(() => setSettled(true), 1000)
-    return () => window.clearTimeout(timer)
-  }, [])
-  const active =
-    options.find((o) => o.id === activeDeviceId) ??
-    (activeDeviceId === '' || activeDeviceId === 'default' ? options.find((o) => o.isDefault) : undefined) ??
-    options[0]
-
-  useEffect(() => {
-    if (!open) return
-    ref.current?.querySelector<HTMLElement>('[role="menuitemradio"][aria-checked="true"]')?.focus()
-    const onPointer = (event: PointerEvent) => {
-      if (!ref.current?.contains(event.target as Node)) setOpen(false)
-    }
-    const onKey = (event: globalThis.KeyboardEvent) => {
-      if (event.key !== 'Escape') return
-      setOpen(false)
-      triggerRef.current?.focus()
-    }
-    document.addEventListener('pointerdown', onPointer)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('pointerdown', onPointer)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [open])
-
-  function pick(id: string) {
-    setOpen(false)
-    triggerRef.current?.focus()
-    setActiveMediaDevice(id).catch((err: unknown) =>
-      toast.show(
-        kind === 'audiooutput' ? errorMessage(err) : deviceErrorMessage(err, kind === 'audioinput' ? 'micro' : 'camera'),
-        'error',
-      ),
-    )
-  }
-
-  function onMenuKey(event: KeyboardEvent<HTMLDivElement>) {
-    // Tab leaves the menu for the next control, so the menu goes with it.
-    if (event.key === 'Tab') {
-      setOpen(false)
-      return
-    }
-    const items = [...event.currentTarget.querySelectorAll<HTMLElement>('[role="menuitemradio"]')]
-    const at = items.indexOf(document.activeElement as HTMLElement)
-    const next =
-      event.key === 'ArrowDown'
-        ? (at + 1) % items.length
-        : event.key === 'ArrowUp'
-          ? (at + items.length - 1) % items.length
-          : event.key === 'Home'
-            ? 0
-            : event.key === 'End'
-              ? items.length - 1
-              : -1
-    if (next < 0) return
-    event.preventDefault()
-    items[next]?.focus()
-  }
-
-  if (options.length === 0) {
-    const reason = !settled
-      ? title
-      : kind === 'audiooutput'
-        ? 'Trình duyệt này không cho chọn loa'
-        : `Chưa có quyền dùng ${title.toLowerCase()}, hoặc máy không có ${title.toLowerCase()}`
-    return (
-      <div className="room-select">
-        <button type="button" className="room-select-trigger" disabled aria-label={`${title}: ${reason}`}>
-          <Icon name={icon} size={18} />
-          <span className="room-select-value">{reason}</span>
-        </button>
-      </div>
-    )
-  }
-
-  return (
-    <div className="room-select" ref={ref}>
-      <button
-        ref={triggerRef}
-        type="button"
-        className="room-select-trigger"
-        aria-label={`${title}: ${active?.label ?? ''}`}
-        title={active?.label}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-controls={open ? menuId : undefined}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <Icon name={icon} size={18} />
-        <span className="room-select-value">{active && shortDeviceName(active.label)}</span>
-        <span className="room-select-caret">
-          <Icon name="chevronDown" size={16} />
-        </span>
-      </button>
-      {open && (
-        <div className="room-select-menu" role="menu" id={menuId} aria-label={title} onKeyDown={onMenuKey}>
-          {options.map((option) => {
-            const checked = option.id === active?.id
-            return (
-              <button
-                key={option.id}
-                type="button"
-                role="menuitemradio"
-                aria-checked={checked}
-                tabIndex={checked ? 0 : -1}
-                className={`room-select-item${checked ? ' is-active' : ''}`}
-                onClick={() => pick(option.id)}
-              >
-                <span className="room-select-check">{checked && <Icon name="check" size={18} />}</span>
-                <span className="room-select-text">
-                  <span className="room-select-name">{option.label}</span>
-                  {option.isDefault && <span className="room-select-note">Theo mặc định của hệ thống</span>}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      )}
     </div>
   )
 }

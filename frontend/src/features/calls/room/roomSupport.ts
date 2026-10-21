@@ -53,3 +53,40 @@ export function deviceErrorMessage(error: unknown, device: 'micro' | 'camera'): 
       return `Không mở được ${device}. Bạn vẫn có thể vào phòng để nghe.`
   }
 }
+
+export type DeviceOption = { id: string; label: string; isDefault: boolean }
+
+/**
+ * A picker leaves out the suffixes that say nothing about which device it is — "(Built-in)",
+ * "(Virtual)", "(Aggregate)", a USB id like "(1C1C:B782)" — keeping any that tell two apart, such as
+ * "(Jabra Evolve 65)". The menu shows the whole name.
+ */
+export function shortDeviceName(label: string) {
+  return label.replace(/\s*\((?:built-in|virtual|aggregate|[0-9a-f]{4}:[0-9a-f]{4})\)$/i, '') || label
+}
+
+/**
+ * Chrome lists the system default twice: once as "default" ("Mặc định - Micrô MacBook Air") and
+ * once as the device itself. Like Meet, show the device once and mark it as the default. The
+ * "communications" entry (Windows) is the same kind of alias.
+ */
+export function deviceOptions(devices: MediaDeviceInfo[], title: string): DeviceOption[] {
+  const alias = devices.find((d) => d.deviceId === 'default')
+  const real = devices.filter((d) => d.deviceId && d.deviceId !== 'default' && d.deviceId !== 'communications')
+  if (real.length === 0) {
+    return alias ? [{ id: alias.deviceId, label: alias.label || title, isDefault: true }] : []
+  }
+  const aliasName = alias?.label.includes(' - ') ? alias.label.slice(alias.label.indexOf(' - ') + 3) : alias?.label
+  const defaultDevice =
+    alias && (real.find((d) => d.groupId === alias.groupId && d.label === aliasName) ?? real.find((d) => d.label === aliasName))
+  const options = real.map((d, i) => ({ id: d.deviceId, label: d.label || `${title} ${i + 1}`, isDefault: d === defaultDevice }))
+  // A default we cannot match to a device stays its own entry, so following the system still works.
+  return alias && !defaultDevice ? [{ id: alias.deviceId, label: alias.label || title, isDefault: true }, ...options] : options
+}
+
+/** Why a picker has nothing to offer, in the words both the tray and the pre-join screen use. */
+export function noDeviceReason(kind: MediaDeviceKind, title: string) {
+  return kind === 'audiooutput'
+    ? 'Trình duyệt này không cho chọn loa'
+    : `Chưa có quyền dùng ${title.toLowerCase()}, hoặc máy không có ${title.toLowerCase()}`
+}
