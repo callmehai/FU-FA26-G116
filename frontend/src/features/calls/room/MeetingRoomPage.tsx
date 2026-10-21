@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { DisconnectReason, Room, RoomEvent } from 'livekit-client'
+import { DisconnectReason, type LocalVideoTrack, Room, RoomEvent, createLocalVideoTrack } from 'livekit-client'
 import { getMeetingCall, joinMeetingCall } from '../../../api/calls'
 import { Icon } from '../../../components/Icon'
 import { NotFound } from '../../../components/NotFound'
 import { Select } from '../../../components/Select'
 import { useToast } from '../../../components/toastContext'
+import { avatarColors, initials } from '../../../lib/avatar'
 import { errorMessage, isApiError } from '../../../lib/errors'
 import { routes } from '../../../lib/routes'
 import type { CallRoomState } from '../../../types/call'
 import type { Meeting } from '../../../types/meeting'
 import { useAccessLost } from '../../auth/useAccessLost'
+import { useAuth } from '../../auth/useAuth'
 import { useMeeting } from '../../meetings/useMeeting'
 import { RoomView } from './RoomView'
 import { ROOM_OPTIONS, deviceErrorMessage, disconnectMessage } from './roomSupport'
@@ -23,6 +25,8 @@ type Phase =
 interface Prefs {
   mic: boolean
   micId: string
+  cam: boolean
+  camId: string
 }
 
 const PREFS_KEY = 'trustcabinet.call.prefs'
@@ -31,9 +35,10 @@ const PREFS_KEY = 'trustcabinet.call.prefs'
 function loadPrefs(): Prefs {
   try {
     const saved = JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') as Partial<Prefs>
-    return { mic: saved.mic ?? true, micId: saved.micId ?? '' }
+    // Microphone on, camera off unless the user chose otherwise before (SCRUM-42).
+    return { mic: saved.mic ?? true, micId: saved.micId ?? '', cam: saved.cam ?? false, camId: saved.camId ?? '' }
   } catch {
-    return { mic: true, micId: '' }
+    return { mic: true, micId: '', cam: false, camId: '' }
   }
 }
 
@@ -170,18 +175,29 @@ function PreJoin({
 }) {
   const [prefs, setPrefs] = useState(loadPrefs)
   const [mics, setMics] = useState<MediaDeviceInfo[]>([])
-  const [deviceError, setDeviceError] = useState<string | null>(null)
+  const [cameras, setCameras] = useState<MediaDeviceInfo[]>([])
+  const [micError, setMicError] = useState<string | null>(null)
   const [joinError, setJoinError] = useState<string | null>(null)
   const [joining, setJoining] = useState(false)
   const toast = useToast()
   const handleAccessLost = useAccessLost()
+  const { attachVideo, ready: previewReady, error: previewError, release: releasePreview } = useCameraPreview(
+    prefs.cam,
+    prefs.camId,
+  )
+  // The room has no identity before connecting; the pre-join avatar uses the signed-in name.
+  const myName = useAuth().user?.fullName ?? ''
 
   useEffect(() => {
     let cancelled = false
     // Asking for the device list asks for permission too, so a refusal shows up here, before joining.
     Room.getLocalDevices('audioinput')
       .then((devices) => !cancelled && setMics(devices.filter((d) => d.deviceId)))
-      .catch((err: unknown) => !cancelled && setDeviceError(deviceErrorMessage(err, 'micro')))
+      .catch((err: unknown) => !cancelled && setMicError(deviceErrorMessage(err, 'micro')))
+    // Cameras without asking: the camera is off by default and the preview asks when turned on.
+    Room.getLocalDevices('videoinput', false)
+      .then((devices) => !cancelled && setCameras(devices.filter((d) => d.deviceId)))
+      .catch(() => undefined)
     return () => {
       cancelled = true
     }
@@ -197,13 +213,22 @@ function PreJoin({
     setJoinError(null)
     try {
       const ticket = await joinMeetingCall(meeting.id)
+      // The preview holds the camera; release it so publishing can open it again.
+      releasePreview()
       await room.connect(ticket.serverUrl, ticket.token)
       onJoined()
-      if (prefs.mic && !deviceError) {
+      if (prefs.mic && !micError) {
         try {
           await room.localParticipant.setMicrophoneEnabled(true, prefs.micId ? { deviceId: prefs.micId } : undefined)
         } catch (err) {
           toast.show(deviceErrorMessage(err, 'micro'), 'error')
+        }
+      }
+      if (prefs.cam && !previewError) {
+        try {
+          await room.localParticipant.setCameraEnabled(true, prefs.camId ? { deviceId: prefs.camId } : undefined)
+        } catch (err) {
+          toast.show(deviceErrorMessage(err, 'camera'), 'error')
         }
       }
     } catch (err) {
@@ -214,67 +239,154 @@ function PreJoin({
     }
   }
 
-  const micOptions = [
-    { value: '', label: 'Micro mặc định của máy' },
-    ...mics.map((d, i) => ({ value: d.deviceId, label: d.label || `Micro ${i + 1}` })),
-  ]
+  const micOn = prefs.mic && !micError
+  const camOn = prefs.cam && !previewError
+  const colors = avatarColors(myName)
 
   return (
     <div className="room-lobby">
-      <section className="room-lobby-card" aria-labelledby="prejoin-title">
-        <p className="room-lobby-eyebrow">Phòng họp trực tuyến</p>
-        <h1 id="prejoin-title">{meeting.title}</h1>
-        <p className="room-lobby-meta">
-          {call.participantCount === null
-            ? 'Cuộc họp đang diễn ra.'
-            : call.participantCount === 0
-              ? 'Chưa có ai trong phòng.'
-              : `Đang có ${call.participantCount} người trong phòng.`}
-        </p>
-
-        <div className="room-prejoin-controls">
-          <button
-            type="button"
-            className={`room-toggle${prefs.mic && !deviceError ? '' : ' room-toggle-off'}`}
-            aria-pressed={prefs.mic && !deviceError}
-            disabled={Boolean(deviceError)}
-            onClick={() => update({ ...prefs, mic: !prefs.mic })}
-          >
-            <Icon name={prefs.mic && !deviceError ? 'mic' : 'micOff'} />
-            {prefs.mic && !deviceError ? 'Micro bật khi vào phòng' : 'Vào phòng với micro tắt'}
-          </button>
-          {mics.length > 1 && (
-            <Select
-              label="Chọn micro"
-              value={prefs.micId}
-              options={micOptions}
-              onChange={(micId) => update({ ...prefs, micId })}
-            />
+      <section className="room-lobby-card room-lobby-card-wide" aria-labelledby="prejoin-title">
+        <div className="room-preview" aria-label="Xem trước hình của bạn">
+          {camOn ? (
+            <video ref={attachVideo} className="room-preview-video" muted playsInline autoPlay />
+          ) : (
+            <span className="room-tile-avatar" style={{ backgroundColor: colors.bg, color: colors.fg }} aria-hidden="true">
+              {initials(myName)}
+            </span>
           )}
+          <span className="room-preview-caption">
+            {!camOn ? 'Camera đang tắt' : previewReady ? 'Hình của bạn' : 'Đang mở camera… Nếu trình duyệt hỏi, hãy chọn Cho phép.'}
+          </span>
         </div>
 
-        {deviceError && (
-          <div className="alert alert-warning" role="status">
-            <p>{deviceError}</p>
-          </div>
-        )}
-        {joinError && (
-          <div className="alert alert-error" role="alert">
-            <p>{joinError}</p>
-          </div>
-        )}
+        <div className="room-lobby-side">
+          <p className="room-lobby-eyebrow">Phòng họp trực tuyến</p>
+          <h1 id="prejoin-title">{meeting.title}</h1>
+          <p className="room-lobby-meta">
+            {call.participantCount === null
+              ? 'Cuộc họp đang diễn ra.'
+              : call.participantCount === 0
+                ? 'Chưa có ai trong phòng.'
+                : `Đang có ${call.participantCount} người trong phòng.`}
+          </p>
 
-        <div className="room-lobby-actions">
-          <Link className="btn btn-outline" to={routes.meeting(meeting.id)}>
-            Quay lại cuộc họp
-          </Link>
-          <button type="button" className="btn btn-primary" disabled={joining} onClick={() => void join()}>
-            {joining ? 'Đang vào phòng…' : 'Vào phòng'}
-          </button>
+          <div className="room-prejoin-controls">
+            <div className="room-prejoin-row">
+              <button
+                type="button"
+                className={`room-toggle${micOn ? '' : ' room-toggle-off'}`}
+                aria-pressed={micOn}
+                disabled={Boolean(micError)}
+                onClick={() => update({ ...prefs, mic: !prefs.mic })}
+              >
+                <Icon name={micOn ? 'mic' : 'micOff'} />
+                {micOn ? 'Micro bật' : 'Micro tắt'}
+              </button>
+              <button
+                type="button"
+                className={`room-toggle${camOn ? '' : ' room-toggle-off'}`}
+                aria-pressed={camOn}
+                onClick={() => update({ ...prefs, cam: !prefs.cam })}
+              >
+                <Icon name={camOn ? 'video' : 'videoOff'} />
+                {camOn ? 'Camera bật' : 'Camera tắt'}
+              </button>
+            </div>
+            {mics.length > 1 && (
+              <Select
+                label="Chọn micro"
+                value={prefs.micId}
+                options={deviceOptions(mics, 'Micro')}
+                onChange={(micId) => update({ ...prefs, micId })}
+              />
+            )}
+            {camOn && cameras.length > 1 && (
+              <Select
+                label="Chọn camera"
+                value={prefs.camId}
+                options={deviceOptions(cameras, 'Camera')}
+                onChange={(camId) => update({ ...prefs, camId })}
+              />
+            )}
+          </div>
+
+          {micError && (
+            <div className="alert alert-warning" role="status">
+              <p>{micError}</p>
+            </div>
+          )}
+          {prefs.cam && previewError && (
+            <div className="alert alert-warning" role="status">
+              <p>{previewError}</p>
+            </div>
+          )}
+          {joinError && (
+            <div className="alert alert-error" role="alert">
+              <p>{joinError}</p>
+            </div>
+          )}
+
+          <div className="room-lobby-actions">
+            <Link className="btn btn-outline" to={routes.meeting(meeting.id)}>
+              Quay lại cuộc họp
+            </Link>
+            <button type="button" className="btn btn-primary" disabled={joining} onClick={() => void join()}>
+              {joining ? 'Đang vào phòng…' : 'Vào phòng'}
+            </button>
+          </div>
         </div>
       </section>
     </div>
   )
+}
+
+function deviceOptions(devices: MediaDeviceInfo[], noun: string) {
+  return [
+    { value: '', label: `${noun} mặc định của máy` },
+    ...devices.map((d, i) => ({ value: d.deviceId, label: d.label || `${noun} ${i + 1}` })),
+  ]
+}
+
+/**
+ * A local camera preview (SCRUM-42): opens the camera while `enabled`, closes it when switched off,
+ * when the device changes, and on unmount. `release` hands the camera over before publishing.
+ * Results are keyed by device, so a stale track or error from a previous choice is never shown.
+ */
+function useCameraPreview(enabled: boolean, deviceId: string) {
+  const [result, setResult] = useState<{ key: string; track?: LocalVideoTrack; error?: string }>({ key: '' })
+  const [video, setVideo] = useState<HTMLVideoElement | null>(null)
+  const key = enabled ? `on:${deviceId}` : 'off'
+  const track = result.key === key ? result.track : undefined
+  const error = result.key === key ? result.error : undefined
+
+  useEffect(() => {
+    if (!enabled) return
+    let cancelled = false
+    let opened: LocalVideoTrack | undefined
+    createLocalVideoTrack(deviceId ? { deviceId } : undefined)
+      .then((created) => {
+        if (cancelled) return created.stop()
+        opened = created
+        setResult({ key: `on:${deviceId}`, track: created })
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) setResult({ key: `on:${deviceId}`, error: deviceErrorMessage(err, 'camera') })
+      })
+    return () => {
+      cancelled = true
+      opened?.stop()
+    }
+  }, [enabled, deviceId])
+
+  useEffect(() => {
+    if (!track || !video) return
+    track.attach(video)
+    return () => {
+      track.detach(video)
+    }
+  }, [track, video])
+
+  return { attachVideo: setVideo, ready: track !== undefined, error, release: () => track?.stop() }
 }
 
 function LobbyMessage({

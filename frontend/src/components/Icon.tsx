@@ -46,6 +46,7 @@ import {
   Settings,
   Shield,
   ShieldAlert,
+  SlidersHorizontal,
   SquareCheck,
   Trash2,
   Upload,
@@ -53,6 +54,7 @@ import {
   UserRound,
   Users,
   Video,
+  VideoOff,
   Volume2,
   X,
   type LucideIcon,
@@ -126,6 +128,9 @@ const ICONS = {
   messageSquare: MessageSquare,
   phoneOff: PhoneOff,
   volume: Volume2,
+  // SCRUM-42: device settings.
+  sliders: SlidersHorizontal,
+  videoOff: VideoOff,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS
