@@ -76,6 +76,8 @@
      its arrow end deep red with a pale red arrow. */
   --stage-off-bg: #f9dedc;
   --stage-off-ink: #601410;
+  /* The pre-join switches when on, Meet's pale grey-blue over the picture. */
+  --stage-toggle-on: #dde3ea;
   /* The microphone and camera pills when on, as in Meet: the arrow end a step darker than the
      buttons, its arrow a muted grey-blue. */
   --stage-control-dim: #213656;
@@ -1946,73 +1948,189 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 /* ── Call room (SCRUM-41, ADR-0010/0011) ─────────────────────────────────────────────────────── */
 
-.room-lobby {
-  min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  padding: 24px 16px;
-  background: var(--paper);
-}
-.room-lobby-card {
-  width: min(520px, 100%);
-  padding: 28px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  display: grid;
+/* The room's pages outside the call — pre-join, "you left", "not open yet" — laid out as Google
+   Meet's, measured on it: a white page, the mark top left and who is signed in top right. */
+.prejoin { min-height: 100dvh; display: flex; flex-direction: column; background: var(--surface); color: var(--ink); }
+.prejoin-top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 16px;
+  height: 64px;
+  padding: 8px 16px 8px 24px;
 }
-.room-lobby-card h1 { margin: 0; font-size: 20px; line-height: 1.3; color: var(--ink); }
-.room-lobby-eyebrow { margin: 0; color: var(--brand); font-size: 13px; font-weight: 600; }
-.room-lobby-meta { margin: 0; color: var(--muted-ink); font-size: 14px; }
-.room-lobby-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
-.room-prejoin-controls { display: grid; gap: 10px; }
-.room-prejoin-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.room-lobby-card-wide { width: min(880px, 100%); grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: center; gap: 24px; }
-.room-lobby-side { display: grid; gap: 16px; }
-.room-preview {
+.prejoin-brand { display: inline-flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; }
+.prejoin-account { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
+.prejoin-account-text { display: grid; min-width: 0; text-align: right; font-size: 14px; line-height: 20px; }
+.prejoin-account-text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prejoin-account-mail { color: var(--muted-ink); font-size: 12px; line-height: 16px; }
+.prejoin-avatar { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; font-size: 13px; font-weight: 600; }
+.prejoin-loading { margin: auto; }
+
+/* Your picture (740 × 416 at 1440 px, 16 px corners) beside a 400 px column, 40 px apart. */
+.prejoin-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 740px) minmax(280px, 400px);
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  padding: 24px 40px 48px;
+}
+/* One track that may shrink below the pills' content, or the three pills would hold it at their
+   combined width and push the picture over the column beside it. */
+.prejoin-media { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.prejoin-preview {
   position: relative;
   aspect-ratio: 16 / 9;
-  border-radius: 12px;
+  border-radius: 16px;
   background: var(--stage-bg);
   display: grid;
   place-items: center;
   overflow: hidden;
 }
 /* Your own picture is mirrored, as in a mirror and every call app; others see it the right way round. */
-.room-preview-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-.room-preview-caption {
+.prejoin-preview-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.prejoin-preview-text { margin: 0; padding: 0 24px; color: #fff; font-size: 22px; line-height: 28px; text-align: center; }
+.prejoin-preview-name {
   position: absolute;
-  left: 10px;
-  bottom: 10px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: var(--stage-scrim);
+  top: 24px;
+  left: 16px;
+  max-width: calc(100% - 32px);
+  overflow: hidden;
   color: #fff;
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px #0008;
 }
-@media (max-width: 767px) {
-  .room-lobby-card-wide { grid-template-columns: 1fr; }
+/* The voice indicator in the corner, Meet's round one: the room's three bars, white on blue. */
+.prejoin-voice {
+  position: absolute;
+  left: 16px;
+  bottom: 24px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--brand);
 }
+.prejoin-voice .room-level > span { background: #fff; }
+.prejoin-toggles { position: absolute; left: 50%; bottom: 16px; display: flex; gap: 12px; transform: translateX(-50%); }
+.prejoin-toggle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 48px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--stage-toggle-on);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.prejoin-toggle.is-off { background: var(--stage-off-bg); color: var(--stage-off-ink); }
+.prejoin-toggle:disabled { cursor: not-allowed; opacity: 0.6; }
+.prejoin-toggle:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
-.room-toggle {
+/* Meet's three pickers under the picture: equal pills on a pale outline, menus light like the page. */
+.prejoin-devices { min-width: 0; display: flex; gap: 8px; }
+.prejoin-devices .room-select { flex: 1 1 0; }
+.prejoin-devices .room-select-trigger { border-color: var(--control-line); color: var(--ink-soft); }
+.prejoin-devices .room-select-trigger:hover:not(:disabled) { color: var(--ink); }
+.prejoin-devices .room-select-trigger[aria-expanded="true"] { border-color: transparent; background: var(--brand-wash); color: var(--brand-ink); }
+.prejoin-devices .room-select-menu { background: var(--surface); box-shadow: var(--shadow); }
+.prejoin-devices .room-select + .room-select .room-select-menu { left: 0; right: auto; }
+.prejoin-devices .room-select:last-child:not(:first-child) .room-select-menu { left: auto; right: 0; }
+.prejoin-devices .room-select-item { color: var(--ink); }
+.prejoin-devices .room-select-item.is-active { background: var(--brand-wash); color: var(--brand-ink); }
+.prejoin-devices .room-select-item:focus-visible { outline-color: var(--focus); }
+
+/* The column beside it, centred: the question, the meeting, who is in, then the way in. */
+.prejoin-side { min-width: 0; display: grid; justify-items: center; text-align: center; }
+.prejoin-side h1 { margin: 0; font-size: 28px; font-weight: 400; line-height: 36px; }
+.prejoin-meeting { max-width: 100%; margin: 12px 0 0; font-size: 16px; font-weight: 600; line-height: 24px; overflow-wrap: anywhere; }
+.prejoin-side > .level { margin-top: 8px; }
+.prejoin-presence { margin: 12px 0 0; color: var(--ink-soft); font-size: 14px; font-weight: 500; line-height: 20px; letter-spacing: 0.25px; }
+.prejoin-side > .alert { width: 100%; margin-top: 16px; text-align: left; }
+.prejoin-join {
+  position: relative;
+  width: 240px;
+  max-width: 100%;
+  height: 56px;
+  margin-top: 32px;
+  border: 0;
+  border-radius: 28px;
+  background: var(--brand);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.prejoin-join:disabled { cursor: progress; opacity: 0.75; }
+.prejoin-join:focus-visible, .prejoin-text-button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.prejoin-text-button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: var(--control-height);
-  padding: 0 14px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--paper);
-  color: var(--ink);
-  font: inherit;
+  height: 40px;
+  margin-top: 20px;
+  padding: 0 16px 0 12px;
+  border-radius: 20px;
+  color: var(--brand);
   font-size: 14px;
-  cursor: pointer;
-  justify-self: start;
+  font-weight: 600;
+  text-decoration: none;
 }
-.room-toggle-off { background: var(--chip-red-bg); color: var(--chip-red-fg); border-color: transparent; }
-.room-toggle:disabled { opacity: .6; cursor: not-allowed; }
+/* The same 8% / 12% layer of the content colour as the room's buttons. */
+.prejoin-toggle::before, .prejoin-join::before, .prejoin-text-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 75ms linear;
+}
+@media (hover: hover) {
+  :is(.prejoin-toggle, .prejoin-join, .prejoin-text-button):hover:not(:disabled)::before { opacity: 0.08; }
+}
+:is(.prejoin-toggle, .prejoin-join, .prejoin-text-button):active:not(:disabled)::before { opacity: 0.12; }
+
+/* "You left", "not open yet": Meet's single centred statement with its two ways on. */
+.prejoin-message { flex: 1; display: grid; align-content: center; justify-items: center; gap: 0; padding: 24px 16px 64px; text-align: center; }
+.prejoin-message h1 { max-width: 640px; margin: 0; font-size: 28px; font-weight: 400; line-height: 36px; }
+.prejoin-message-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 32px; }
+
+/* Too narrow for two columns: the picture on top, the column under it, as Meet stacks them. */
+@media (max-width: 999px) {
+  .prejoin-main { grid-template-columns: minmax(0, 740px); align-content: start; gap: 32px; padding: 16px 24px 32px; }
+}
+/* A phone: a taller picture, the way in right under it so it shows without scrolling, then the
+   pickers stacked as wide as the screen. */
+@media (max-width: 560px) {
+  .prejoin-top { height: 56px; padding: 8px 16px; }
+  .prejoin-account-text { display: none; }
+  .prejoin-main { gap: 24px; padding: 8px 16px 32px; }
+  .prejoin-media { display: contents; }
+  .prejoin-preview { order: 1; }
+  .prejoin-side { order: 2; }
+  .prejoin-devices { order: 3; }
+  .prejoin-preview { aspect-ratio: 4 / 3; }
+  .prejoin-devices { flex-direction: column; }
+  .prejoin-devices .room-select-trigger { height: 40px; border-radius: 20px; }
+  .prejoin-side h1, .prejoin-message h1 { font-size: 24px; line-height: 32px; }
+  .prejoin-join { width: 100%; margin-top: 24px; }
+}
 
 .room {
   height: 100dvh;
@@ -2028,24 +2146,38 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   height: 60px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 0 16px;
+  gap: 10px;
+  padding: 0 16px 0 8px;
   background: linear-gradient(90deg, var(--sidebar-top), var(--sidebar-bottom));
   color: #fff;
   border-bottom: 2px solid var(--gold);
 }
-.room-title { min-width: 0; display: grid; gap: 4px; }
-.room-title h1 {
-  margin: 0;
+.room-back {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+.room-back:hover { background: var(--sidebar-hover); }
+.room-back:focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 2px; }
+/* The title gives way first: the facts after it keep their full width. */
+.room-title {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0 2px 0 0;
   font-size: 15px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.room-title-facts { display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; }
-.room-title-facts > * { flex: none; height: 22px; }
+.room-header > .room-count, .room-header > .level { flex: none; height: 22px; }
 .room-count {
   display: inline-flex;
   align-items: center;
@@ -2057,23 +2189,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   font-size: 12px;
   font-weight: 500;
 }
-.room-header-link {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  height: 36px;
-  padding: 0 14px;
-  border: 1px solid var(--sidebar-line);
-  border-radius: var(--radius);
-  background: var(--sidebar-hover);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-}
-.room-header-link:hover { background: var(--sidebar-active); }
-.room-header-link:focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 2px; }
-.room-link-short { display: none; }
 
 .room-banner {
   flex: none;
@@ -2117,10 +2232,11 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr));
   grid-auto-rows: minmax(0, 1fr);
 }
-.room-grid[data-count="2"] { --cols: 2; }
-.room-grid[data-count="3"], .room-grid[data-count="4"] { --cols: 2; }
-.room-grid[data-count="5"], .room-grid[data-count="6"],
-.room-grid[data-count="7"], .room-grid[data-count="8"], .room-grid[data-count="9"] { --cols: 3; }
+/* The stage's grid: tiles sized in FittedTiles from the space measured here, centred, the last row
+   too. The area is what gets measured, so it must not grow with its content. */
+.room-grid-area { flex: 1; min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.room-grid-fit { display: flex; flex-wrap: wrap; justify-content: center; align-content: center; }
+.room-grid-fit > .room-tile { flex: none; }
 
 .room-tile {
   position: relative;
@@ -2550,8 +2666,6 @@ body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
     box-shadow: var(--shadow);
     z-index: 5;
   }
-  .room-link-long { display: none; }
-  .room-link-short { display: inline; }
 }
 
 /* Too narrow to centre the call controls between two equal sides: they start at the left, and the
@@ -2571,6 +2685,10 @@ body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
 
 /* A phone: smaller buttons. */
 @media (max-width: 560px) {
+  /* A panel as wide as the screen less its gutters, the same on both sides. */
+  .room-panel { width: calc(100vw - 16px); }
+  /* The count keeps its number; the words stay for screen readers. */
+  .room-count-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   /* Phones have no floating window (Document Picture-in-Picture is desktop-only). */
   .room-control-pip { display: none; }
   .room-controls-main { --panel-pad: 8px; --tray-gap: 8px; margin-bottom: 11px; border-radius: 20px; }
