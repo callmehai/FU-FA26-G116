@@ -163,8 +163,11 @@ layout claim; the pair shows the reader what actually moved.
 - A screenshot the user sent with the bug report is a valid "before".
 - One image per scenario, the two shots next to each other under "Trước" / "Sau":
   `python3 ~/.playwright-e2e/pair.py before.png after.png pair.png` (see *Browser setup notes*).
+  Keep the ticket's evidence together in `~/.playwright-e2e/reports/<ticket>/` (`pairs/`, `shots/`),
+  outside the repo; §6 turns it into the HTML report.
 - A text or label change needs a pair too; a pure refactor with nothing visible does not.
-- Remove the `../tc-before` worktree when done (`git worktree remove ../tc-before`).
+- Keep the `../tc-before` worktree until the PR is merged (review fixes need new pairs), then
+  `git worktree remove ../tc-before`.
 
 ## 4. Test the states, not just the happy path
 
@@ -209,11 +212,19 @@ create.
 
 - In the PR, a **Tested locally** checklist: one line per scenario with the concrete result
   ("Rows per page 10 → 4 pages; page 4 shows 31–31 trong 31, next disabled").
-- In the report to the user, every before/after pair (§3) with its path and one line on what
-  changed. In the PR, say in words what each pair shows.
-- Do not commit screenshots or test data.
-- When the user has finished looking: stop both servers, delete the `[Test FE]` rows, remove any
-  temporary worktree or branch.
+- **One local HTML report per ticket**, so the user and every teammate can open it in a browser
+  whatever coding agent they use. It is self-contained (images embedded) and lives outside the repo:
+  write `~/.playwright-e2e/reports/<ticket>/manifest.json` (what changed, the scenarios and their
+  results, each before/after pair and scenario shot with one line on what it shows, the decisions
+  still open), then `python3 ~/.playwright-e2e/report.py reports/<ticket>/manifest.json` writes
+  `index.html` beside it. Give the user that path and open it (`open …` on macOS). Do not publish it
+  to an agent-specific host (a Claude Artifact, a Codex share link): not everyone on the team can
+  open those. Rebuild it after each round of review fixes.
+- In the PR, say in words what each pair shows. Do not commit screenshots, the report or test data.
+- When the user has finished looking, stop both servers. **After the PR is merged**, clean up the
+  rest: delete the `[Test FE]` rows, remove `~/.playwright-e2e/reports/<ticket>/`, the
+  `../tc-before` worktree and any temporary branch. Until then keep them — review fixes re-run the
+  same scenarios and rebuild the report.
 
 ## Browser setup notes
 
@@ -233,6 +244,10 @@ or CI. To set it up on a new machine, create `~/.playwright-e2e` with:
 - `pair.py` for the before/after pairs: open both PNGs with Pillow (`pip install pillow`), paste
   them side by side on a white sheet with a 44px band on top, write "Trước" and "Sau" there in a
   font with Vietnamese diacritics (PIL's built-in font has none), save.
+- `report.py` for the §6 report: read the manifest (title, heading, lead, facts, changes, checks,
+  pairs, shots, asks; image paths relative to it), embed each image as a JPEG data URI (pairs at
+  1800px wide, shots at 1200px), write one plain `index.html` with inline CSS and no external
+  requests, so it opens offline.
 
 The setup is done when the smoke test passes against the running app.
 
