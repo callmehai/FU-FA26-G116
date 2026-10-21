@@ -35,9 +35,12 @@ type Phase =
 interface Prefs {
   mic: boolean
   micId: string
+  micLabel: string
   speakerId: string
+  speakerLabel: string
   cam: boolean
   camId: string
+  camLabel: string
 }
 
 const PREFS_KEY = 'trustcabinet.call.prefs'
@@ -50,12 +53,15 @@ function loadPrefs(): Prefs {
     return {
       mic: saved.mic ?? true,
       micId: saved.micId ?? '',
+      micLabel: saved.micLabel ?? '',
       speakerId: saved.speakerId ?? '',
+      speakerLabel: saved.speakerLabel ?? '',
       cam: saved.cam ?? false,
       camId: saved.camId ?? '',
+      camLabel: saved.camLabel ?? '',
     }
   } catch {
-    return { mic: true, micId: '', speakerId: '', cam: false, camId: '' }
+    return { mic: true, micId: '', micLabel: '', speakerId: '', speakerLabel: '', cam: false, camId: '', camLabel: '' }
   }
 }
 
@@ -198,13 +204,18 @@ function PreJoin({
   const toast = useToast()
   const handleAccessLost = useAccessLost()
   const micOn = prefs.mic && !micError
+  // Labels only come once a permission is granted, so the lists are read again then.
+  const { devices, reload: reloadDevices } = useDeviceList(micAllowed)
+  const ofKind = (kind: MediaDeviceKind) => devices.filter((d) => d.kind === kind)
+  const micId = savedDevice(ofKind('audioinput'), prefs.micId, prefs.micLabel)
+  const speakerId = savedDevice(ofKind('audiooutput'), prefs.speakerId, prefs.speakerLabel)
+  const camId = savedDevice(ofKind('videoinput'), prefs.camId, prefs.camLabel)
   const { attachVideo, ready: previewReady, error: previewError, release: releasePreview } = useCameraPreview(
     prefs.cam,
-    prefs.camId,
+    camId,
+    reloadDevices,
   )
-  const { track: micTrack, release: releaseMic } = useMicPreview(micOn && micAllowed, prefs.micId)
-  // Labels only come once a permission is granted, so the lists are read again then.
-  const devices = useDeviceList(`${micAllowed}:${previewReady}`)
+  const { track: micTrack, release: releaseMic } = useMicPreview(micOn && micAllowed, micId)
   const user = useAuth().user
   // The room has no identity before connecting; the preview uses the signed-in name.
   const myName = user?.fullName ?? ''
@@ -235,19 +246,19 @@ function PreJoin({
       releaseMic()
       await room.connect(ticket.serverUrl, ticket.token)
       onJoined()
-      if (prefs.speakerId && CAN_PICK_SPEAKER) {
-        await room.switchActiveDevice('audiooutput', prefs.speakerId).catch(() => undefined)
+      if (speakerId && CAN_PICK_SPEAKER) {
+        await room.switchActiveDevice('audiooutput', speakerId).catch(() => undefined)
       }
       if (micOn) {
         try {
-          await room.localParticipant.setMicrophoneEnabled(true, prefs.micId ? { deviceId: prefs.micId } : undefined)
+          await room.localParticipant.setMicrophoneEnabled(true, micId ? { deviceId: micId } : undefined)
         } catch (err) {
           toast.show(deviceErrorMessage(err, 'micro'), 'error')
         }
       }
       if (prefs.cam && !previewError) {
         try {
-          await room.localParticipant.setCameraEnabled(true, prefs.camId ? { deviceId: prefs.camId } : undefined)
+          await room.localParticipant.setCameraEnabled(true, camId ? { deviceId: camId } : undefined)
         } catch (err) {
           toast.show(deviceErrorMessage(err, 'camera'), 'error')
         }
@@ -262,7 +273,7 @@ function PreJoin({
 
   const camOn = prefs.cam && !previewError
   const restricted = meeting.sensitivity === 'Secret' || meeting.sensitivity === 'Confidential'
-  const ofKind = (kind: MediaDeviceKind) => devices.filter((d) => d.kind === kind)
+  const labelOf = (id: string) => devices.find((d) => d.deviceId === id)?.label ?? ''
 
   return (
     <RoomPage>
@@ -307,27 +318,27 @@ function PreJoin({
               title="Micro"
               icon="mic"
               options={deviceOptions(ofKind('audioinput'), 'Micro')}
-              activeId={prefs.micId}
+              activeId={micId}
               emptyReason={noDeviceReason('audioinput', 'Micro')}
-              onPick={(micId) => update({ ...prefs, micId })}
+              onPick={(id) => update({ ...prefs, micId: id, micLabel: labelOf(id) })}
             />
             {CAN_PICK_SPEAKER && (
               <DevicePicker
                 title="Loa"
                 icon="volume"
                 options={deviceOptions(ofKind('audiooutput'), 'Loa')}
-                activeId={prefs.speakerId}
+                activeId={speakerId}
                 emptyReason={noDeviceReason('audiooutput', 'Loa')}
-                onPick={(speakerId) => update({ ...prefs, speakerId })}
+                onPick={(id) => update({ ...prefs, speakerId: id, speakerLabel: labelOf(id) })}
               />
             )}
             <DevicePicker
               title="Camera"
               icon="video"
               options={deviceOptions(ofKind('videoinput'), 'Camera')}
-              activeId={prefs.camId}
+              activeId={camId}
               emptyReason={noDeviceReason('videoinput', 'Camera')}
-              onPick={(camId) => update({ ...prefs, camId })}
+              onPick={(id) => update({ ...prefs, camId: id, camLabel: labelOf(id) })}
             />
           </div>
         </div>
@@ -373,29 +384,38 @@ function PreJoin({
   )
 }
 
+/**
+ * The device a saved choice points at. Some browsers give devices new ids between visits (Safari,
+ * Firefox, Chrome after "allow this time"), so a choice whose id is gone is found again by its name,
+ * and one that matches nothing falls back to the system default.
+ */
+function savedDevice(devices: MediaDeviceInfo[], id: string, label: string) {
+  // Before any permission the list has one entry per kind with no id: nothing to compare yet.
+  const known = devices.filter((d) => d.deviceId)
+  if (!id || known.length === 0 || known.some((d) => d.deviceId === id)) return id
+  return known.find((d) => label !== '' && d.label === label)?.deviceId ?? ''
+}
+
 /** Choosing a speaker needs setSinkId, which Safari on a phone and older Firefox lack. */
 const CAN_PICK_SPEAKER = typeof HTMLMediaElement !== 'undefined' && 'setSinkId' in HTMLMediaElement.prototype
 
-/** Every media device, read again on `refresh` and whenever one is plugged in or out. */
-function useDeviceList(refresh: string) {
+/**
+ * Every media device, read again when `refresh` changes, on `reload`, and whenever one is plugged
+ * in or out.
+ */
+function useDeviceList(refresh: unknown) {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
+  const reload = useCallback(() => {
+    void navigator.mediaDevices?.enumerateDevices().then(setDevices, () => undefined)
+  }, [])
   useEffect(() => {
     const media = navigator.mediaDevices
     if (!media?.enumerateDevices) return
-    let cancelled = false
-    const load = () =>
-      void media.enumerateDevices().then(
-        (list) => !cancelled && setDevices(list),
-        () => undefined,
-      )
-    load()
-    media.addEventListener('devicechange', load)
-    return () => {
-      cancelled = true
-      media.removeEventListener('devicechange', load)
-    }
-  }, [refresh])
-  return devices
+    reload()
+    media.addEventListener('devicechange', reload)
+    return () => media.removeEventListener('devicechange', reload)
+  }, [refresh, reload])
+  return { devices, reload }
 }
 
 /**
@@ -433,7 +453,7 @@ function useMicPreview(enabled: boolean, deviceId: string) {
  * when the device changes, and on unmount. `release` hands the camera over before publishing.
  * Results are keyed by device, so a stale track or error from a previous choice is never shown.
  */
-function useCameraPreview(enabled: boolean, deviceId: string) {
+function useCameraPreview(enabled: boolean, deviceId: string, onOpened?: () => void) {
   const [result, setResult] = useState<{ key: string; track?: LocalVideoTrack; error?: string }>({ key: '' })
   const [video, setVideo] = useState<HTMLVideoElement | null>(null)
   const key = enabled ? `on:${deviceId}` : 'off'
@@ -449,6 +469,8 @@ function useCameraPreview(enabled: boolean, deviceId: string) {
         if (cancelled) return created.stop()
         opened = created
         setResult({ key: `on:${deviceId}`, track: created })
+        // A first camera permission brings the cameras' names with it.
+        onOpened?.()
       })
       .catch((err: unknown) => {
         if (!cancelled) setResult({ key: `on:${deviceId}`, error: deviceErrorMessage(err, 'camera') })
@@ -457,7 +479,7 @@ function useCameraPreview(enabled: boolean, deviceId: string) {
       cancelled = true
       opened?.stop()
     }
-  }, [enabled, deviceId])
+  }, [enabled, deviceId, onOpened])
 
   useEffect(() => {
     if (!track || !video) return
