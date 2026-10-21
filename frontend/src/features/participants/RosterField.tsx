@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type KeyboardEvent } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { listParticipantOptions } from '../../api/participants'
 import { Icon } from '../../components/Icon'
 import { Select } from '../../components/Select'
@@ -20,17 +20,22 @@ const ROLE_OPTIONS = MEETING_ROLES.map((value) => ({ value, label: MEETING_ROLE_
  */
 export function RosterField({
   value,
+  me,
   onChange,
   error,
   rowErrors,
 }: {
   value: RosterEntry[]
+  /** The signed-in user's id, marked "(Tôi)" in the list. */
+  me?: string
   onChange: (next: RosterEntry[]) => void
   error?: string
   /** Server errors for one picked person, keyed by user id. */
   rowErrors?: Record<string, string>
 }) {
   const listId = useId()
+  const inputRef = useRef<HTMLInputElement>(null)
+  const menuRef = useRef<HTMLUListElement>(null)
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
   const [highlighted, setHighlighted] = useState(0)
@@ -59,6 +64,29 @@ export function RosterField({
       window.clearTimeout(timer)
     }
   }, [open, query, value.length])
+
+  // In the top layer, pinned under the search box while the dialog body scrolls, as Select does.
+  useLayoutEffect(() => {
+    const menu = menuRef.current
+    const input = inputRef.current
+    if (!open || !menu || !input) return
+    menu.showPopover?.()
+    function place() {
+      if (!menu || !input) return
+      const box = input.getBoundingClientRect()
+      menu.style.left = `${box.left}px`
+      menu.style.width = `${box.width}px`
+      menu.style.top = `${box.bottom + 4}px`
+    }
+    place()
+    window.addEventListener('scroll', place, true)
+    window.addEventListener('resize', place)
+    return () => {
+      window.removeEventListener('scroll', place, true)
+      window.removeEventListener('resize', place)
+      if (menu.matches(':popover-open')) menu.hidePopover()
+    }
+  }, [open])
 
   const picked = new Set(value.map((p) => p.userId))
   const matches = result.kind === 'loaded' ? result.items.filter((o) => !picked.has(o.id)).slice(0, SHOWN) : []
@@ -101,11 +129,12 @@ export function RosterField({
 
   return (
     <div className="field span-2" data-field="participants">
-      <span className="field-required">Thành phần tham dự</span>
+      <span className="field-required">Người dự họp</span>
 
       <div className="search roster-search">
         <Icon name="search" size={16} />
         <input
+          ref={inputRef}
           role="combobox"
           aria-label="Tìm người dự họp"
           aria-expanded={open}
@@ -128,7 +157,14 @@ export function RosterField({
           onKeyDown={onKeyDown}
         />
         {open && (
-          <ul id={listId} className="roster-menu" role="listbox" aria-label="Người có thể mời">
+          <ul
+            ref={menuRef}
+            id={listId}
+            className="roster-menu"
+            role="listbox"
+            aria-label="Người có thể mời"
+            popover="manual"
+          >
             {result.kind === 'error' ? (
               <li className="roster-menu-note roster-menu-error">{result.message}</li>
             ) : result.kind !== 'loaded' ? (
@@ -163,7 +199,7 @@ export function RosterField({
           {value.map((p) => (
             <li key={p.userId} className={rowErrors?.[p.userId] ? 'roster-row roster-row-invalid' : 'roster-row'}>
               <div className="roster-row-main">
-                <Person name={p.fullName} email={p.email} />
+                <Person name={p.userId === me ? `${p.fullName} (Tôi)` : p.fullName} email={p.email} />
                 {rowErrors?.[p.userId] && <small className="field-error">{rowErrors[p.userId]}</small>}
               </div>
               <div className="roster-role">

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { getMeetingCall } from '../../../api/calls'
 import { BackLink } from '../../../components/BackLink'
 import { Icon } from '../../../components/Icon'
@@ -7,7 +7,7 @@ import { NotFound } from '../../../components/NotFound'
 import { useToast } from '../../../components/toastContext'
 import { isApiError } from '../../../lib/errors'
 import { formatDateTime, formatSchedule } from '../../../lib/format'
-import { useBackTarget, useForwardedBackState, type BackTarget } from '../../../lib/backTarget'
+import { useBackTarget, type BackTarget } from '../../../lib/backTarget'
 import { routes } from '../../../lib/routes'
 import {
   EDITABLE_STATUSES,
@@ -23,6 +23,8 @@ import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
 import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
 import { SensitivityBadge, StatusBadge } from '../StatusBadge'
 import { useMeeting } from '../useMeeting'
+import { EditMeetingDialog } from '../MeetingDialogs'
+import { EDIT_PARAM, useEditMeetingLink } from '../meetingDialogLink'
 import { useMeetingEvents } from '../useMeetingEvents'
 import { useMeetingApprovers } from '../useMeetingApprovers'
 import { MeetingHistory } from '../workflow/MeetingHistory'
@@ -105,8 +107,9 @@ function MeetingDetail({
   const handleAccessLost = useAccessLost()
   const [tab, setTab] = useState<TabId>('overview')
   const history = useMeetingHistory(meeting.id)
-  // The edit page sends the user back here, and from here the back link still leads to the calendar.
-  const forwardBack = useForwardedBackState()
+  // UC-15 opens as a dialog on this page (`?edit=1`), keeping the back link's target.
+  const editLink = useEditMeetingLink()
+  const [params] = useSearchParams()
 
   const isOrganizer = meeting.createdById === user?.id && can('MeetingCreator')
   const isApprover =
@@ -219,7 +222,7 @@ function MeetingDetail({
               </Link>
             )}
             {(canEdit || canReschedule) && (
-              <Link className="btn btn-outline btn-lg" to={routes.meetingEdit(meeting.id)} state={forwardBack}>
+              <Link className="btn btn-outline btn-lg" to={editLink.to} state={editLink.state}>
                 <Icon name={canEdit ? 'pencil' : 'calendar'} size={16} />
                 {canEdit ? 'Chỉnh sửa' : 'Dời lịch'}
               </Link>
@@ -287,6 +290,17 @@ function MeetingDetail({
             </div>
           )}
         </section>
+
+        {params.has(EDIT_PARAM) && (canEdit || canReschedule) && (
+          <EditMeetingDialog
+            meeting={meeting}
+            onSaved={replace}
+            onStale={() => {
+              void reload()
+              void reloadHistory()
+            }}
+          />
+        )}
 
         <MeetingHistory
           history={history}

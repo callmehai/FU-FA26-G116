@@ -460,38 +460,11 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .shell-collapsed .sidebar-label { opacity: 0; pointer-events: none; }
 .shell-collapsed .sidebar-group { height: 0; padding: 0; margin: 0; overflow: hidden; }
 
-/* A 26px disc on the sidebar's edge, inside a 44px hit area. */
-.sidebar-toggle {
-  position: absolute;
-  top: 12px;
-  right: -22px;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-.sidebar-toggle > span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: var(--surface);
-  box-shadow: 0 1px 4px #1a243326;
-  color: var(--ink-soft);
-  transition: background-color .15s;
-}
-.sidebar-toggle:hover > span { background: var(--surface-alt); }
-.sidebar-toggle .icon { transition: transform .25s; }
-.shell-collapsed .sidebar-toggle .icon { transform: rotate(180deg); }
+/* "Thu gọn menu": the last row of the sidebar, above the account. Quieter than the nav items. */
+.sidebar-collapse { flex: none; padding: 4px 12px 8px; }
+.sidebar-collapse .sidebar-item { width: 100%; color: var(--sidebar-ink-soft); }
+.sidebar-collapse .icon { flex: none; transition: transform .25s; }
+.shell-collapsed .sidebar-collapse .icon { transform: rotate(180deg); }
 
 .sidebar-brand {
   display: flex;
@@ -1472,6 +1445,20 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .dialog-text { margin: 0; color: var(--ink-soft); }
 .dialog-error { margin-top: 12px; }
 .dialog-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 16px 24px 20px; border-top: 1px solid var(--line); }
+/* A whole form: wider, its body scrolls between the fixed head and the pinned actions. */
+.dialog-lg { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); }
+.dialog-lg .dialog-body { flex: 1; min-height: 0; }
+@media (max-width: 640px) {
+  .dialog-lg { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; border-radius: 0; }
+  .dialog-lg .dialog-foot .btn { flex: 1; height: 44px; }
+}
+
+/* The meeting form's sections, as AI-eCabinet groups them: a small caps heading, a divider between. */
+.meeting-form { display: flex; flex-direction: column; gap: 20px; }
+.form-section { display: flex; flex-direction: column; gap: 14px; }
+.form-section + .form-section { padding-top: 20px; border-top: 1px solid var(--line); }
+.form-section-title { margin: 0; color: var(--ink-soft); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.form-note { margin: 0; color: var(--muted-ink); font-size: 13px; font-style: italic; }
 
 /* ---------- Toasts (components/ToastProvider.tsx) ---------- */
 .toast-stack {
@@ -1843,6 +1830,86 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .cal-filter-hint { margin: 8px 0 0; color: var(--muted-ink); font-size: 12px; }
 .cal-filter-foot { display: flex; justify-content: space-between; margin: 0 -16px; padding: 12px 16px 0; border-top: 1px solid var(--line-soft); }
 
+/* ---------- Calendar quick look (features/calendar/MeetingOverview.tsx) ----------
+   AI-eCabinet's overview: a 420px card beside the tile, its body scrolling between a fixed head and
+   footer; on a phone a bottom sheet over a scrim. */
+.overview {
+  position: fixed;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  width: min(420px, calc(100vw - 16px));
+  max-height: min(38rem, calc(100dvh - 16px));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.overview-scrim { position: fixed; inset: 0; z-index: 40; display: flex; align-items: flex-end; background: var(--overlay); }
+.overview-sheet { position: static; width: 100%; max-height: 82dvh; border: 0; border-radius: 16px 16px 0 0; }
+.overview-head { flex: none; display: flex; flex-direction: column; gap: 9px; padding: 16px 20px 13px; border-bottom: 1px solid var(--line-soft); }
+.overview-head h2 {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-wrap: balance;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  outline: none;
+}
+.overview-head h2:focus-visible { border-radius: 4px; box-shadow: var(--focus-ring); }
+.overview-body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 20px 16px; font-size: 13.5px; }
+.overview-facts { display: flex; flex-direction: column; gap: 10px; margin: 0; }
+.overview-row { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 12px; }
+.overview-row dt { color: var(--muted-ink); }
+.overview-row dd { display: flex; flex-direction: column; margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.overview-time { font-weight: 600; font-variant-numeric: tabular-nums; }
+.overview-muted { color: var(--muted-ink); font-weight: 400; }
+.overview-link { display: inline-flex; align-items: center; gap: 5px; color: var(--brand); font-weight: 600; }
+.overview-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.overview-note { margin: 0 0 12px; color: var(--muted-ink); }
+.overview-desc {
+  display: -webkit-box;
+  margin: 14px 0 0;
+  overflow: hidden;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.overview-people { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+.overview-people-label { margin: 0 0 10px; color: var(--muted-ink); font-size: 12px; font-weight: 600; }
+.overview-avatars { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.overview-avatars > li { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 80px; font-size: 12px; line-height: 1.3; text-align: center; }
+.overview-avatars > li > span:last-child { display: -webkit-box; overflow: hidden; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.overview-avatar { width: 32px; height: 32px; font-size: 12px; }
+.overview-avatar-sm { width: 28px; height: 28px; font-size: 11px; }
+.overview-more { width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--surface-alt); color: var(--ink-soft); font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+.overview-more:hover { color: var(--brand); }
+.overview-more-on, .overview-more-on:hover { background: var(--brand); color: #fff; }
+.overview-rest { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin: 12px 0 0; padding: 12px 0 0; border-top: 1px dashed var(--line); list-style: none; }
+.overview-rest li { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; }
+.overview-rest li span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.overview-task { flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; padding: 12px 16px; border-top: 1px solid var(--line-soft); }
+.overview-task-title { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-size: 13.5px; font-weight: 700; }
+.overview-task-title .icon { color: var(--brand); }
+.overview-foot { flex: none; display: flex; justify-content: flex-end; gap: 8px; padding: 11px 14px; border-top: 1px solid var(--line-soft); background: var(--surface-alt); }
+.overview-foot .btn { height: 36px; }
+.overview-skeleton { display: block; width: 60%; height: 18px; }
+.overview-skeleton-label { display: block; width: 144px; height: 16px; margin-bottom: 10px; }
+.overview-skeleton-avatar { display: block; width: 32px; height: 32px; margin: 0 24px; border-radius: 50%; }
+@media (max-width: 640px) {
+  .overview-row { grid-template-columns: 104px minmax(0, 1fr); }
+  .overview-rest { grid-template-columns: 1fr; }
+  .overview-foot .btn { flex: 1; height: 40px; }
+}
+
 /* ---------- Calendar list view ----------
    One section per day: a heading line, then each session as a time column, a dot on the day's
    rail, and a card. A day with nothing on it says so in a dashed box. */
@@ -1908,11 +1975,11 @@ input[aria-invalid='true'] { border-color: var(--danger); }
    per person with their role. */
 .roster-search { width: 100%; }
 .roster-menu {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  z-index: 20;
+  /* Top layer (popover="manual"), placed by RosterField from the search box: inside the dialog's
+     scrolling body an absolutely placed list was cut off. `inset: auto` undoes the UA centring. */
+  position: fixed;
+  inset: auto;
+  z-index: 30;
   max-height: 320px;
   margin: 0;
   padding: 4px;
@@ -1999,7 +2066,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 @media (max-width: 720px) {
   /* AppShell keeps the sidebar collapsed here and drops the toggle. */
-  .sidebar-toggle { display: none; }
+  .sidebar-collapse { display: none; }
   .summary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .summary-card { padding: 10px 12px; }
   .summary-icon { display: none; }

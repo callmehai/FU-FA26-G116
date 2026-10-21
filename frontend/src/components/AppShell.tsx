@@ -1,5 +1,5 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { routes } from '../lib/routes'
 import { useAuth } from '../features/auth/useAuth'
 import { avatarColors, initials } from '../lib/avatar'
@@ -8,6 +8,11 @@ import { AppSidebar } from './AppSidebar'
 import { BrandMark } from './BrandMark'
 import { ConfirmDialog } from './ConfirmDialog'
 import { Icon } from './Icon'
+
+// Loaded the first time `?create=` appears: most visits never open the form.
+const CreateMeetingHost = lazy(() =>
+  import('../features/meetings/MeetingDialogs').then((m) => ({ default: m.CreateMeetingHost })),
+)
 
 /** Where the collapsed/expanded choice survives a reload. A per-browser convenience only. */
 const COLLAPSED_KEY = 'tc.sidebarCollapsed'
@@ -59,6 +64,9 @@ export function AppShell() {
     }
   }, [])
 
+  const [params] = useSearchParams()
+  const creating = params.has('create')
+
   if (!user) return null
 
   function askToSignOut() {
@@ -77,19 +85,6 @@ export function AppShell() {
   return (
     <div className={`shell${collapsed ? ' shell-collapsed' : ''}`}>
       <aside className="sidebar">
-        <button
-          type="button"
-          className="sidebar-toggle"
-          onClick={() => setCollapsed((c) => !c)}
-          aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-          title={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-          aria-expanded={!collapsed}
-        >
-          <span>
-            <Icon name="chevronLeft" size={16} />
-          </span>
-        </button>
-
         <NavLink className="sidebar-brand" to={routes.calendar} title="TrustCabinet">
           <span className="sidebar-brand-disc">
             <BrandMark size={32} />
@@ -101,6 +96,22 @@ export function AppShell() {
         </NavLink>
 
         <AppSidebar collapsed={collapsed} />
+
+        {/* Inside the sidebar, above the account: a round button on its edge sat beside every page's
+            first control (the back link, "Hôm nay") and was easy to hit by mistake. */}
+        <div className="sidebar-collapse">
+          <button
+            type="button"
+            className="sidebar-item"
+            onClick={() => setCollapsed((c) => !c)}
+            aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+            title={collapsed ? 'Mở rộng menu' : undefined}
+            aria-expanded={!collapsed}
+          >
+            <Icon name="chevronLeft" size={18} />
+            <span className="sidebar-label">Thu gọn menu</span>
+          </button>
+        </div>
 
         <div className="sidebar-foot">
           <details className="account" ref={accountMenuRef}>
@@ -136,6 +147,12 @@ export function AppShell() {
         <Suspense fallback={<p className="route-fallback">Đang tải…</p>}>
           <Outlet />
         </Suspense>
+        {/* The create dialog opens over whichever page carries `?create=` (AI-eCabinet's host). */}
+        {creating && (
+          <Suspense fallback={null}>
+            <CreateMeetingHost />
+          </Suspense>
+        )}
       </main>
 
       {confirmingSignOut && (

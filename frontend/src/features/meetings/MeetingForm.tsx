@@ -1,6 +1,7 @@
-import { useCallback, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useBeforeUnload } from 'react-router-dom'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { Dialog } from '../../components/Dialog'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { fromDateTimeInput, toDateTimeInput } from '../../lib/dateInput'
 import { errorMessage, isApiError } from '../../lib/errors'
@@ -20,6 +21,8 @@ import {
 import type { ParticipantSeed } from '../../types/participant'
 import { rosterError, type RosterEntry } from '../participants/roster'
 import { RosterField } from '../participants/RosterField'
+import { useAuth } from '../auth/useAuth'
+import { createMeetingPrefill } from './meetingDialogLink'
 
 /** The backend's limits (MeetingRules). The inputs enforce them; the backend checks again. */
 const TITLE_MAX = 300
@@ -78,17 +81,22 @@ interface Values {
 const MODE_OPTIONS = MEETING_MODES.map((value) => ({ value, label: MEETING_MODE_LABEL[value] }))
 const SENSITIVITY_OPTIONS = SENSITIVITIES.map((value) => ({ value, label: SENSITIVITY_LABEL[value] }))
 const LOCKED_HINT = 'Đã công bố, không đổi được.'
+const FORM_ID = 'meeting-form'
 
-/** Create starts from the defaults the backend would apply anyway: in person, routine sensitivity. */
-function initialValues(meeting: Meeting | null): Values {
+/**
+ * Create starts from the defaults the backend would apply anyway (in person, routine sensitivity)
+ * and from the window AI-eCabinet fills for the day the calendar showed.
+ */
+function initialValues(meeting: Meeting | null, day: string | null): Values {
   const start = meeting ? toDateTimeInput(meeting.plannedStartTime) : ''
   const end = meeting ? toDateTimeInput(meeting.plannedEndTime) : ''
+  const prefill = meeting ? null : createMeetingPrefill(day)
   return {
     title: meeting?.title ?? '',
     description: meeting?.description ?? '',
-    date: start.slice(0, 10),
-    start: start.slice(11),
-    end: end.slice(11),
+    date: prefill?.date ?? start.slice(0, 10),
+    start: prefill?.start ?? start.slice(11),
+    end: prefill?.end ?? end.slice(11),
     endDays: meeting ? daysBetween(start.slice(0, 10), end.slice(0, 10)) : 0,
     mode: meeting?.mode ?? 'InPerson',
     sensitivity: meeting?.sensitivity ?? 'Normal',
@@ -179,24 +187,34 @@ function sameValues(a: Values, b: Values) {
 }
 
 /**
- * UC-14 and UC-15 share this form, so creating and editing cannot drift apart. A Published meeting
- * opens it in reschedule mode (UC-15 AF-1): only the times, place and link stay editable (BR-158).
+ * UC-14 and UC-15 share this form, so creating and editing cannot drift apart. It is a dialog over
+ * the current screen, as AI-eCabinet's create and edit forms are, in the same sections: content,
+ * time, how, and (create only) who attends. A Published meeting opens it in reschedule mode
+ * (UC-15 AF-1): only the times, place and link stay editable (BR-158).
  *
- * The page around it owns what differs: where the meeting comes from, what a save calls, and the
- * errors only one of them can hit (404 and 409 exist only for an edit). Everything the user types is
- * kept when a save fails.
+ * The caller owns what differs: where the meeting comes from, what a save calls, and the errors
+ * only one of them can hit (404 and 409 exist only for an edit). Everything the user types is kept
+ * when a save fails; closing a touched form asks first.
  */
 export function MeetingForm({
   meeting,
+  day = null,
+  title,
+  notice,
   submitLabel,
   pendingLabel,
   onSubmit,
   onSaved,
   onError,
-  onCancel,
+  onClose,
 }: {
   /** The meeting being edited, or null to create one. */
   meeting: Meeting | null
+  /** Create only: the day the calendar showed (`?create=`), which seeds the window. */
+  day?: string | null
+  title: string
+  /** Shown above the sections, e.g. why a rejected meeting is not resubmitted by saving. */
+  notice?: ReactNode
   submitLabel: string
   pendingLabel: string
   /** On create the body also carries `participants`; an edit never sends them (the roster has its own tab). */
@@ -204,23 +222,31 @@ export function MeetingForm({
   onSaved: (response: MeetingMutationResponse) => void
   /** Returns true when the page has handled the failure itself; otherwise the form shows it. */
   onError: (error: unknown) => boolean
-  onCancel: () => void
+  onClose: () => void
 }) {
+  const { user } = useAuth()
   const reschedule = !!meeting && RESCHEDULABLE_STATUSES.includes(meeting.status)
   const needsFutureStart = !meeting || reschedule
-  const [initial] = useState(() => initialValues(meeting))
+  const [initial] = useState(() => initialValues(meeting, day))
   const [values, setValues] = useState(initial)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
-  /** Who attends: chosen only when creating; afterwards the detail page's attendees tab manages it. */
-  const [roster, setRoster] = useState<RosterEntry[]>([])
+  /**
+   * Who attends: chosen only when creating; afterwards the attendees tab manages it. It starts with
+   * the organizer as Chair, as AI-eCabinet does; they may hand the chair on or leave the list, since
+   * an organizer need not attend.
+   */
+  const [initialRoster] = useState<RosterEntry[]>(() =>
+    !meeting && user ? [{ userId: user.id, fullName: user.fullName, email: user.email, role: 'Chair' }] : [],
+  )
+  const [roster, setRoster] = useState(initialRoster)
   const [rosterRowErrors, setRosterRowErrors] = useState<Record<string, string>>({})
   const formRef = useRef<HTMLFormElement>(null)
   const submitted = useRef(false)
 
-  const dirty = !sameValues(values, initial) || roster.length > 0
+  const dirty = !sameValues(values, initial) || JSON.stringify(roster) !== JSON.stringify(initialRoster)
 
   // Closing the tab or reloading with unsaved input asks first. In-app links are not covered: the
   // app uses <BrowserRouter>, and route blocking needs a data router.
@@ -300,8 +326,9 @@ export function MeetingForm({
   }
 
   function cancel() {
+    if (pending) return
     if (dirty) setConfirmDiscard(true)
-    else onCancel()
+    else onClose()
   }
 
   const errorOf = (field: Field, hint?: string) =>
@@ -312,193 +339,228 @@ export function MeetingForm({
     )
 
   return (
-    <>
-      <form ref={formRef} className="card form-card form-grid" onSubmit={handleSubmit} noValidate>
+    <Dialog
+      title={title}
+      size="lg"
+      onClose={cancel}
+      footer={
+        <>
+          <button type="button" className="btn btn-ghost" onClick={cancel} disabled={pending}>
+            Huỷ
+          </button>
+          <button type="submit" form={FORM_ID} className="btn btn-primary" disabled={pending}>
+            {pending ? pendingLabel : submitLabel}
+          </button>
+        </>
+      }
+    >
+      <form id={FORM_ID} ref={formRef} className="meeting-form" onSubmit={handleSubmit} noValidate>
         {reschedule && (
-          <p className="alert alert-info span-2">
+          <p className="alert alert-info">
             Cuộc họp đã công bố: chỉ dời được thời gian, địa điểm và link họp. Lưu xong, mọi người được mời sẽ nhận thông
             báo lịch mới.
           </p>
         )}
+        {notice}
 
-        <label className="field span-2" data-field="title">
-          <span className="field-required">Tên cuộc họp</span>
-          <input
-            name="title"
-            value={values.title}
-            onChange={(e) => set('title', e.target.value)}
-            maxLength={TITLE_MAX}
-            placeholder="Ví dụ: Giao ban tuần 40"
-            aria-invalid={!!fieldErrors.title}
-            autoFocus={!meeting}
-            disabled={reschedule}
-          />
-          {errorOf('title', reschedule ? LOCKED_HINT : undefined)}
-        </label>
+        <section className="form-section" aria-labelledby="meeting-form-content">
+          <h3 id="meeting-form-content" className="form-section-title">
+            Nội dung
+          </h3>
+          <label className="field" data-field="title">
+            <span className="field-required">Tên cuộc họp</span>
+            <input
+              name="title"
+              value={values.title}
+              onChange={(e) => set('title', e.target.value)}
+              maxLength={TITLE_MAX}
+              placeholder="Ví dụ: Giao ban tuần 40"
+              aria-invalid={!!fieldErrors.title}
+              disabled={reschedule}
+            />
+            {errorOf('title', reschedule ? LOCKED_HINT : undefined)}
+          </label>
 
-        <label className="field span-2" data-field="description">
-          <span>Mô tả</span>
-          <textarea
-            name="description"
-            rows={3}
-            value={values.description}
-            onChange={(e) => set('description', e.target.value)}
-            maxLength={DESCRIPTION_MAX}
-            placeholder={reschedule ? undefined : 'Mục đích, nội dung chính dự kiến bàn…'}
-            aria-invalid={!!fieldErrors.description}
-            disabled={reschedule}
-          />
-          <span className="field-foot">
-            {fieldErrors.description ? (
-              <small className="field-error">{fieldErrors.description}</small>
-            ) : reschedule ? (
-              <small className="field-hint">{LOCKED_HINT}</small>
-            ) : (
-              <span />
+          <label className="field" data-field="description">
+            <span>Mô tả</span>
+            <textarea
+              name="description"
+              rows={3}
+              value={values.description}
+              onChange={(e) => set('description', e.target.value)}
+              maxLength={DESCRIPTION_MAX}
+              placeholder={reschedule ? undefined : 'Mục đích, nội dung chính dự kiến bàn…'}
+              aria-invalid={!!fieldErrors.description}
+              disabled={reschedule}
+            />
+            <span className="field-foot">
+              {fieldErrors.description ? (
+                <small className="field-error">{fieldErrors.description}</small>
+              ) : reschedule ? (
+                <small className="field-hint">{LOCKED_HINT}</small>
+              ) : (
+                <span />
+              )}
+              <small className="field-counter">
+                {values.description.length.toLocaleString('vi-VN')}/{DESCRIPTION_MAX.toLocaleString('vi-VN')}
+              </small>
+            </span>
+          </label>
+        </section>
+
+        <section className="form-section" aria-labelledby="meeting-form-time">
+          <h3 id="meeting-form-time" className="form-section-title">
+            Thời gian
+          </h3>
+          <div className="form-row-3">
+            <label className="field" data-field="date">
+              <span className="field-required">Ngày họp</span>
+              <input
+                type="date"
+                name="date"
+                value={values.date}
+                onChange={(e) => set('date', e.target.value)}
+                aria-invalid={!!fieldErrors.date}
+              />
+              {errorOf('date')}
+            </label>
+            <label className="field" data-field="plannedStartTime">
+              <span className="field-required">Bắt đầu</span>
+              <input
+                type="time"
+                name="start"
+                value={values.start}
+                onChange={(e) => set('start', e.target.value)}
+                aria-invalid={!!fieldErrors.plannedStartTime}
+              />
+              {errorOf('plannedStartTime')}
+            </label>
+            <label className="field" data-field="plannedEndTime">
+              <span className="field-required">Kết thúc</span>
+              <input
+                type="time"
+                name="end"
+                value={values.end}
+                min={values.endDays === 0 ? values.start || undefined : undefined}
+                onChange={(e) => set('end', e.target.value)}
+                aria-invalid={!!fieldErrors.plannedEndTime}
+              />
+              {errorOf(
+                'plannedEndTime',
+                values.endDays > 0 && values.date ? `Ngày ${endDayLabel(values)}.` : undefined,
+              )}
+            </label>
+          </div>
+        </section>
+
+        <section className="form-section" aria-labelledby="meeting-form-how">
+          <h3 id="meeting-form-how" className="form-section-title">
+            Hình thức & mức độ
+          </h3>
+          <div className="form-grid">
+            <div className="field" data-field="mode">
+              <span>Hình thức</span>
+              <SegmentedControl
+                value={values.mode}
+                options={MODE_OPTIONS}
+                onChange={(v) => set('mode', v)}
+                label="Hình thức"
+                disabled={reschedule}
+              />
+              {errorOf('mode', reschedule ? LOCKED_HINT : undefined)}
+            </div>
+
+            <div className="field" data-field="sensitivity">
+              <span>Mức độ mật</span>
+              <SegmentedControl
+                value={values.sensitivity}
+                options={SENSITIVITY_OPTIONS}
+                onChange={(v) => set('sensitivity', v)}
+                label="Mức độ mật"
+                disabled={reschedule}
+              />
+              {errorOf('sensitivity', reschedule ? LOCKED_HINT : undefined)}
+            </div>
+
+            {/* The place and the link follow the mode: in person needs a room, online a link, hybrid both. */}
+            {values.mode !== 'Online' && (
+              <label className={values.mode === 'InPerson' ? 'field span-2' : 'field'} data-field="location">
+                <span>{values.mode === 'Hybrid' ? 'Địa điểm họp trực tiếp' : 'Địa điểm'}</span>
+                <input
+                  name="location"
+                  value={values.location}
+                  onChange={(e) => set('location', e.target.value)}
+                  maxLength={LOCATION_MAX}
+                  placeholder="Ví dụ: Phòng họp A — Tầng 4"
+                  aria-invalid={!!fieldErrors.location}
+                />
+                {errorOf('location', 'Phòng họp hoặc địa chỉ.')}
+              </label>
             )}
-            <small className="field-counter">
-              {values.description.length.toLocaleString('vi-VN')}/{DESCRIPTION_MAX.toLocaleString('vi-VN')}
-            </small>
-          </span>
-        </label>
 
-        <div className="form-row-3 span-2">
-          <label className="field" data-field="date">
-            <span className="field-required">Ngày họp</span>
-            <input
-              type="date"
-              name="date"
-              value={values.date}
-              onChange={(e) => set('date', e.target.value)}
-              aria-invalid={!!fieldErrors.date}
-            />
-            {errorOf('date')}
-          </label>
-          <label className="field" data-field="plannedStartTime">
-            <span className="field-required">Bắt đầu</span>
-            <input
-              type="time"
-              name="start"
-              value={values.start}
-              onChange={(e) => set('start', e.target.value)}
-              aria-invalid={!!fieldErrors.plannedStartTime}
-            />
-            {errorOf('plannedStartTime')}
-          </label>
-          <label className="field" data-field="plannedEndTime">
-            <span className="field-required">Kết thúc</span>
-            <input
-              type="time"
-              name="end"
-              value={values.end}
-              min={values.endDays === 0 ? values.start || undefined : undefined}
-              onChange={(e) => set('end', e.target.value)}
-              aria-invalid={!!fieldErrors.plannedEndTime}
-            />
-            {errorOf('plannedEndTime', values.endDays > 0 && values.date ? `Ngày ${endDayLabel(values)}.` : undefined)}
-          </label>
-        </div>
+            {values.mode !== 'InPerson' && (
+              <label className={values.mode === 'Online' ? 'field span-2' : 'field'} data-field="onlineLink">
+                <span>Link họp trực tuyến</span>
+                <input
+                  name="onlineLink"
+                  value={values.onlineLink}
+                  onChange={(e) => set('onlineLink', e.target.value)}
+                  placeholder="Để trống: phòng họp TrustCabinet"
+                  aria-invalid={!!fieldErrors.onlineLink}
+                />
+                {errorOf('onlineLink', 'Không bắt buộc, tối đa 1.000 ký tự.')}
+              </label>
+            )}
+          </div>
+        </section>
 
-        <div className="field" data-field="mode">
-          <span>Hình thức</span>
-          <SegmentedControl
-            value={values.mode}
-            options={MODE_OPTIONS}
-            onChange={(v) => set('mode', v)}
-            label="Hình thức"
-            disabled={reschedule}
-          />
-          {errorOf('mode', reschedule ? LOCKED_HINT : undefined)}
-        </div>
-
-        <div className="field" data-field="sensitivity">
-          <span>Mức độ mật</span>
-          <SegmentedControl
-            value={values.sensitivity}
-            options={SENSITIVITY_OPTIONS}
-            onChange={(v) => set('sensitivity', v)}
-            label="Mức độ mật"
-            disabled={reschedule}
-          />
-          {errorOf('sensitivity', reschedule ? LOCKED_HINT : undefined)}
-        </div>
-
-        {/* The place and the link follow the mode: in person needs a room, online a link, hybrid both. */}
-        {values.mode !== 'Online' && (
-          <label className={values.mode === 'InPerson' ? 'field span-2' : 'field'} data-field="location">
-            <span>{values.mode === 'Hybrid' ? 'Địa điểm họp trực tiếp' : 'Địa điểm'}</span>
-            <input
-              name="location"
-              value={values.location}
-              onChange={(e) => set('location', e.target.value)}
-              maxLength={LOCATION_MAX}
-              placeholder="Ví dụ: Phòng họp A — Tầng 4"
-              aria-invalid={!!fieldErrors.location}
+        {!meeting && (
+          <section className="form-section" aria-labelledby="meeting-form-roster">
+            <h3 id="meeting-form-roster" className="form-section-title">
+              Thành phần tham dự
+            </h3>
+            <RosterField
+              value={roster}
+              me={user?.id}
+              onChange={(next) => {
+                setRoster(next)
+                setRosterRowErrors({})
+                setFieldErrors((errors) => {
+                  const rest = { ...errors }
+                  delete rest.participants
+                  return rest
+                })
+              }}
+              error={fieldErrors.participants}
+              rowErrors={rosterRowErrors}
             />
-            {errorOf('location', 'Phòng họp hoặc địa chỉ.')}
-          </label>
-        )}
-
-        {values.mode !== 'InPerson' && (
-          <label className={values.mode === 'Online' ? 'field span-2' : 'field'} data-field="onlineLink">
-            <span>Link họp trực tuyến</span>
-            <input
-              name="onlineLink"
-              value={values.onlineLink}
-              onChange={(e) => set('onlineLink', e.target.value)}
-              placeholder="Để trống: phòng họp TrustCabinet"
-              aria-invalid={!!fieldErrors.onlineLink}
-            />
-            {errorOf('onlineLink', 'Không bắt buộc, tối đa 1.000 ký tự.')}
-          </label>
+          </section>
         )}
 
         {!meeting && (
-          <RosterField
-            value={roster}
-            onChange={(next) => {
-              setRoster(next)
-              setRosterRowErrors({})
-              setFieldErrors((errors) => {
-                const rest = { ...errors }
-                delete rest.participants
-                return rest
-              })
-            }}
-            error={fieldErrors.participants}
-            rowErrors={rosterRowErrors}
-          />
+          <p className="form-note">Sau khi tạo, thêm nội dung cuộc họp và tài liệu ở màn chi tiết rồi gửi duyệt.</p>
         )}
 
         {formError && (
-          <p className="alert alert-error span-2" role="alert">
+          <p className="alert alert-error" role="alert">
             {formError}
           </p>
         )}
-
-        <div className="form-actions span-2">
-          <button type="button" className="btn btn-ghost" onClick={cancel} disabled={pending}>
-            Huỷ
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={pending}>
-            {pending ? pendingLabel : submitLabel}
-          </button>
-        </div>
       </form>
 
       {confirmDiscard && (
         <ConfirmDialog
-          title="Bỏ thay đổi chưa lưu?"
+          title={meeting ? 'Bỏ thay đổi chưa lưu?' : 'Bỏ cuộc họp đang soạn?'}
           tone="danger"
-          confirmLabel="Bỏ thay đổi"
-          cancelLabel="Tiếp tục sửa"
-          pendingLabel="Đang thoát…"
-          onConfirm={async () => onCancel()}
+          confirmLabel={meeting ? 'Bỏ thay đổi' : 'Bỏ cuộc họp'}
+          cancelLabel={meeting ? 'Tiếp tục sửa' : 'Tiếp tục soạn'}
+          pendingLabel="Đang đóng…"
+          onConfirm={async () => onClose()}
           onClose={() => setConfirmDiscard(false)}
         >
           Những gì bạn vừa nhập sẽ không được lưu.
         </ConfirmDialog>
       )}
-    </>
+    </Dialog>
   )
 }

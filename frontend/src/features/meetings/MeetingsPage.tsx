@@ -34,6 +34,7 @@ import {
 import { placeLabel } from './place'
 import { SensitivityBadge, StatusBadge } from './StatusBadge'
 import { StatusSummary } from './StatusSummary'
+import { useCreateMeetingLink } from './meetingDialogLink'
 
 // An empty value means "no filter", which is why these lists lead with an all-pass entry.
 const STATUS_OPTIONS = [
@@ -141,6 +142,7 @@ export function MeetingsPage() {
   const filtered = hasFilters(state)
   const data = shown
   const canCreate = can('MeetingCreator')
+  const createLink = useCreateMeetingLink()
 
   let body: ReactNode
   if (rangeError) {
@@ -186,7 +188,7 @@ export function MeetingsPage() {
       <EmptyRow>
         <p className="empty-title">Chưa có cuộc họp nào.</p>
         {canCreate ? (
-          <Link className="btn btn-primary btn-sm" to={routes.meetingNew}>
+          <Link className="btn btn-primary btn-sm" to={createLink.to} state={createLink.state}>
             <Icon name="plus" size={16} />
             Tạo cuộc họp
           </Link>
@@ -252,7 +254,7 @@ export function MeetingsPage() {
         }
         action={
           canCreate && (
-            <Link className="btn btn-primary btn-lg" to={routes.meetingNew}>
+            <Link className="btn btn-primary btn-lg" to={createLink.to} state={createLink.state}>
               <Icon name="plus" size={18} />
               Tạo cuộc họp
             </Link>
