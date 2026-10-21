@@ -145,6 +145,27 @@ Playwright) to prove layout claims:
 - an alert lines up with the form → equal widths;
 - a menu shows its whole list → `scrollHeight <= clientHeight`.
 
+### Before and after, side by side
+
+Every change to what the user sees comes with evidence of what it changed: the same screen, in the
+same state and at the same viewport, once on the old code and once on the new. Numbers prove a
+layout claim; the pair shows the reader what actually moved.
+
+- Capture **before** first, before editing. If the change is already made, run the old code in a
+  second worktree on another Vite port, against the same backend:
+  ```bash
+  git worktree add ../tc-before origin/main          # or the commit before the change
+  ln -s "$PWD/frontend/node_modules" ../tc-before/frontend/node_modules
+  (cd ../tc-before/frontend && npx vite --port 5174 --strictPort)   # in the background
+  ```
+  Then run the **same spec** twice, changing only the base URL: have it read
+  `test.use({ baseURL: process.env.BASE ?? 'http://localhost:5173' })`.
+- A screenshot the user sent with the bug report is a valid "before".
+- One image per scenario, the two shots next to each other under "Trước" / "Sau":
+  `python3 ~/.playwright-e2e/pair.py before.png after.png pair.png` (see *Browser setup notes*).
+- A text or label change needs a pair too; a pure refactor with nothing visible does not.
+- Remove the `../tc-before` worktree when done (`git worktree remove ../tc-before`).
+
 ## 4. Test the states, not just the happy path
 
 For each screen, walk the state table in **frontend-ui-design** §2:
@@ -188,6 +209,8 @@ create.
 
 - In the PR, a **Tested locally** checklist: one line per scenario with the concrete result
   ("Rows per page 10 → 4 pages; page 4 shows 31–31 trong 31, next disabled").
+- In the report to the user, every before/after pair (§3) with its path and one line on what
+  changed. In the PR, say in words what each pair shows.
 - Do not commit screenshots or test data.
 - When the user has finished looking: stop both servers, delete the `[Test FE]` rows, remove any
   temporary worktree or branch.
@@ -207,6 +230,9 @@ or CI. To set it up on a new machine, create `~/.playwright-e2e` with:
   the access token) and `signIn(page, seed)` (`login(page.request, …)` plus
   `page.addInitScript(() => localStorage.setItem('trustcabinet.signedIn', '1'))`);
 - `tests/smoke.spec.ts`: sign in as `thuky`, open `/calendar`, expect it not to land on `/login`.
+- `pair.py` for the before/after pairs: open both PNGs with Pillow (`pip install pillow`), paste
+  them side by side on a white sheet with a 44px band on top, write "Trước" and "Sau" there in a
+  font with Vietnamese diacritics (PIL's built-in font has none), save.
 
 The setup is done when the smoke test passes against the running app.
 
