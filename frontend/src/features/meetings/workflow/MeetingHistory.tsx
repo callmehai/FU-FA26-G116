@@ -1,15 +1,16 @@
 import { Icon } from '../../../components/Icon'
 import { formatDateTime } from '../../../lib/format'
 import type { MeetingHistoryItem } from '../../../types/meeting'
+import { StatusBadge } from '../StatusBadge'
 import { STATUS_TONE } from '../statusTone'
 import { historyActionLabel } from './historyLabels'
 import type { MeetingHistoryState } from './useMeetingHistory'
 
 /**
  * The lifecycle timeline beside every tab of the detail page (SCRUM-19), oldest first like the
- * API. Each row says what happened, who did it and when, plus what that action carried: who a
- * submission went to, why a meeting was rejected. Participants read the same timeline with the
- * rejection reasons hidden by the server.
+ * API. As in AI-eCabinet, a row is what happened and when, on one line; who did it (and who a
+ * submission went to) is in the time's tooltip. A rejection's reason stays in view: it is what the
+ * reader came for. Participants read the same timeline with the reasons hidden by the server.
  */
 export function MeetingHistory({
   history,
@@ -81,15 +82,19 @@ export function MeetingHistory({
 function HistoryRow({ item, nameOf }: { item: MeetingHistoryItem; nameOf: (id: string) => string | null }) {
   const approver =
     item.action === 'SubmitForApproval' && item.assignedApproverId ? nameOf(item.assignedApproverId) : null
+  const who = [`Người thực hiện: ${item.actorName}`, approver && `Người duyệt: ${approver}`].filter(Boolean).join('\n')
 
   return (
     // The dot takes the colour of the state the action led to, as the status chips do.
     <li className={`timeline-${STATUS_TONE[item.resultingStatus]}`}>
-      <p className="timeline-title">{historyActionLabel(item)}</p>
-      <p className="timeline-meta">
-        {item.actorName} · <time dateTime={item.occurredAt}>{formatDateTime(item.occurredAt)}</time>
-      </p>
-      {approver && <p className="timeline-detail">Người duyệt: {approver}</p>}
+      <div className="timeline-row">
+        <StatusBadge status={item.resultingStatus} label={historyActionLabel(item)} plain />
+        {/* Focusable, so the keyboard reaches who acted; screen readers hear it in the text. */}
+        <time className="timeline-time" dateTime={item.occurredAt} tabIndex={0} data-tooltip={who}>
+          {formatDateTime(item.occurredAt)}
+          <span className="visually-hidden">, {who.replace('\n', ', ')}</span>
+        </time>
+      </div>
       {item.rejectionReason && <blockquote className="timeline-reason">{item.rejectionReason}</blockquote>}
     </li>
   )

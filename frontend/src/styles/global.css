@@ -1196,6 +1196,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .status-blue { --status-dot: var(--dot-blue); background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
 .status-violet { --status-dot: var(--dot-violet); background: var(--chip-violet-bg); color: var(--chip-violet-fg); }
 .status-live { --status-dot: var(--live-dot); background: var(--live); color: #fff; }
+.status-plain::before { display: none; }
+.status-plain { padding: 0 10px; }
 
 .level {
   display: inline-flex;
@@ -1283,7 +1285,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* Dot and line are both drawn by the <li>, from one origin, so they cannot drift apart: the dot's
    centre and the line's centre sit on the same x (6px). Each item draws the segment from its own
    dot down to the next one's, and the last item draws none. The 12px dot sits on a white ring in
-   its own colour, centred on the 21px title line. */
+   its own colour, centred on the 24px chip. */
 .timeline { margin: 0; padding: 0; list-style: none; }
 .timeline li { position: relative; padding: 0 0 16px 24px; }
 .timeline li:last-child { padding-bottom: 0; }
@@ -1292,7 +1294,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   content: '';
   position: absolute;
   z-index: 1;
-  top: 5px;
+  top: 6px;
   left: 0;
   width: 12px;
   height: 12px;
@@ -1304,7 +1306,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .timeline li:not(:last-child)::after {
   content: '';
   position: absolute;
-  top: 21px;
+  top: 22px;
   bottom: -1px;
   left: 5px;
   width: 2px;
@@ -1318,9 +1320,18 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .timeline-violet { --dot: var(--dot-violet); }
 .timeline-live { --dot: var(--live); }
 
-.timeline-title { margin: 0; font-weight: 700; }
-.timeline-meta { margin: 0; color: var(--muted-ink); font-size: 13px; }
-.timeline-detail { margin: 4px 0 0; color: var(--ink-soft); font-size: 13px; }
+.timeline-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 24px; }
+/* Who acted lives in the time's tooltip (AI-eCabinet), so a row stays one line. */
+.timeline-time {
+  flex: none;
+  border-radius: 4px;
+  color: var(--muted-ink);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+}
+.timeline-time:hover { color: var(--ink); }
+.timeline-time:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 /* A rejection reason is the author's own words: quoted, line breaks kept. */
 .timeline-reason,
 .workflow-reason {
@@ -1470,6 +1481,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   font-size: 12.5px;
   font-weight: 500;
   line-height: 1.35;
+  white-space: pre-line;
   pointer-events: none;
 }
 
