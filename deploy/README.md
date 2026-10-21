@@ -253,4 +253,4 @@ plan: hết credit là AWS trừ tiền thẻ.
 | Đăng nhập xong bị văng ra ngay | Phải vào bằng `https://`; cookie refresh token chỉ gửi qua HTTPS |
 | Hết ổ đĩa | `docker system prune -f` (không có `-v`, để giữ database) |
 | Vào phòng họp báo mất kết nối, hoặc quay mãi không thấy ai | Firewall Lightsail phải có 7881/TCP và 7882/UDP; `logs livekit \| grep -i nodeIP` phải ra IP tĩnh, không phải 172.x; thử bằng 4G để loại trừ Wi-Fi chặn cổng |
-| Workflow deploy đỏ ở bước *Kiểm tra*, báo `/rtc/validate` | `logs livekit` và `logs caddy`; container `livekit` phải đang chạy (`ps`) |
+| Workflow deploy đỏ ở bước *Kiểm tra*, báo `/rtc/validate` | `logs livekit` và `logs caddy`; container `livekit` phải đang chạy (`ps`). `/rtc/validate` trả 200 là Caddy còn chạy Caddyfile cũ: `docker compose -f deploy/docker-compose.yml restart caddy` (Caddyfile mount từng file, sửa file xong container không tự đọc lại) |
