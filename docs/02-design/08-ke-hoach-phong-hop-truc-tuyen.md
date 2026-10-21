@@ -815,15 +815,14 @@ Dưới 1024px, panel đè lên stage dạng sheet. Nền stage là `--stage-bg`
   `box-shadow`, không dùng `border`).
 
 **Chia sẻ màn hình:**
-- Có người chia sẻ → `ScreenShareStage` (khung lớn) + dải camera; nhãn "X đang trình bày".
-- Bấm Chia sẻ → `ScreenShareConfirmDialog`:
-  - tiêu đề `Chia sẻ màn hình`;
-  - nội dung `Mọi người trong phòng sẽ thấy nội dung bạn chọn. Trước khi chia sẻ, hãy đóng tin
-    nhắn, email hoặc tài liệu riêng tư. Nên chọn một tab hoặc một cửa sổ thay vì toàn màn hình.`;
-  - thêm dòng `X đang trình bày — bạn chia sẻ thì phần của X sẽ dừng.` nếu có người đang chia sẻ;
-  - nút `Chọn nội dung để chia sẻ` / `Huỷ`.
-- Gọi `setScreenShareEnabled(true, { audio: true, selfBrowserSurface: 'exclude',
-  surfaceSwitching: 'include', contentHint: 'detail' })`.
+- Có người chia sẻ → `ScreenShareStage` (khung lớn) + dải camera ô 16:9 nhỏ; nhãn "X đang trình bày".
+- Người đang trình bày không xem lại màn hình của chính mình (sẽ lặp gương khi chia sẻ toàn màn
+  hình): khung lớn là thẻ `Bạn đang trình bày cho mọi người` + nút `Dừng trình bày`, như Google Meet.
+- Bấm Chia sẻ → mở thẳng bảng chọn của trình duyệt, không có hộp xác nhận riêng (PO 20/10/2026:
+  làm như Google Meet / Discord, bớt cảnh báo). Bảng chọn của trình duyệt đã cho thấy nội dung sẽ
+  chia sẻ.
+- Gọi `setScreenShareEnabled(true, { audio: true, selfBrowserSurface: 'include',
+  surfaceSwitching: 'include', contentHint: 'detail' })` — có cả thẻ hiện tại trong bảng chọn.
 - Người dùng bấm "Dừng chia sẻ" trên thanh trình duyệt → SDK tự unpublish → `LocalTrackUnpublished`
   với `source === Track.Source.ScreenShare` → cập nhật nút.
 - Người khác bắt đầu chia sẻ khi mình đang chia sẻ → tự `setScreenShareEnabled(false)` + toast
@@ -944,7 +943,7 @@ cd frontend && npm run lint && npm run build
 - [ ] Docs:
   - ADR-0010 đã có từ PR thiết kế. Code phải khác quyết định thì viết ADR mới, không sửa ADR đã
     chấp nhận;
-  - `docs/03-api/07-phong-hop-truc-tuyen.md`;
+  - `docs/03-api/09-phong-hop-truc-tuyen.md`;
   - catalogue MSG (dòng + "Mã tiếp theo");
   - `docs/02-design/02-erd.md` (index mới, phiên tạo từ webhook);
   - `docs/02-design/03-co-so-du-lieu.md` (cách bật LiveKit);
@@ -970,7 +969,11 @@ cd frontend && npm run lint && npm run build
 ### PR3 — `feat/scrum-42-video` (~1 ngày)
 
 - [ ] Camera trong PreJoin (xem trước), bật/tắt trong phòng không gọi lại.
-- [ ] Chọn thiết bị trong phòng: `DeviceMenu` + `room.switchActiveDevice(kind, deviceId)`.
+- [ ] Chọn thiết bị trong phòng như Google Meet: rê chuột lên mũi tên cạnh mic/cam (hoặc bấm vào nó)
+  thì khung nút nở lên thành khay (Micro + Loa, hoặc Camera), mỗi ô mở một menu; thiết bị mặc định
+  của hệ thống chỉ hiện một lần. Rời chuột khỏi khung thì khay tự đóng, trừ khi đang mở menu. Khung
+  giữ nguyên bề ngang (bằng hàng nút) và chỉ nở lên trên, các nút không xê dịch. Khi micro bật, chỗ
+  mũi tên hiện ba vạch theo giọng nói. Đổi bằng `room.switchActiveDevice(kind, deviceId)`.
 - [ ] Lưới video phân trang, viền người đang nói, chữ cái đầu khi tắt cam.
 - [ ] Load test lưới §9.3.
 

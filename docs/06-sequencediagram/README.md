@@ -177,6 +177,11 @@ Success message cũng theo cùng convention:
 MeetingPage-->Secretary: MSG60 - Agenda item created successfully.
 ```
 
+Message hiển thị chỉ gồm mã và nội dung trong [catalogue](../03-api/00-danh-muc-ma-thong-bao.md). **Không thêm dòng giải
+thích** sau message (`\nNo role changed`, `\nRefresh Vote documents`, `\nDraft Vote not disclosed (BR-253)`…), không
+dùng `note` của SequenceDiagram.org. Hệ quả không hiển thị (dữ liệu giữ nguyên, không gửi thông báo) đã nằm trong đặc tả
+UC; nếu là một bước hệ thống thật thì vẽ thành message hoặc self-call riêng.
+
 ## 6. Activation bar convention
 
 Khi lifeline bắt đầu xử lý:
@@ -514,6 +519,7 @@ deactivate MeetingPage
 - [ ] Không dùng `loop` để mô tả resubmit.
 - [ ] Mọi `MSGxx` hiển thị cho Actor đều có **full message content**.
 - [ ] Success message cũng có mã + nội dung đầy đủ.
+- [ ] Không có `note`, không có dòng giải thích nối sau message hay self-call.
 - [ ] Activation/deactivation không bị treo hoặc chồng sai.
 - [ ] Không có lifeline Meeting Session; không trộn `CallSession` (kỹ thuật) với nghiệp vụ cuộc họp.
 - [ ] Không tự thêm hành vi không có trong Report 3 / BR / MSG / design đã duyệt.
@@ -533,9 +539,11 @@ deactivate MeetingPage
 | [auth/](auth/README.md) | UC-01 → UC-04 |
 | [user-management/](user-management/README.md) | UC-05, UC-06a → UC-06c, UC-07, UC-08, UC-09 |
 | [role-management/](role-management/README.md) | UC-10, UC-11, UC-12a → UC-12c, UC-13 |
-| [meeting-management/](meeting-management/README.md) | UC-14 → UC-22 |
-| [agenda-management/](agenda-management/README.md) | UC-23a → UC-23d, UC-24 → UC-26 |
-| [meeting-participant-management/](meeting-participant-management/README.md) | UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31 |
+| [meeting-management/](meeting-management/README.md) | UC-14 → UC-22, UC-75 |
+| [agenda-management/](agenda-management/README.md) | UC-23a → UC-23d, UC-24 → UC-26, UC-77 |
+| [meeting-participant-management/](meeting-participant-management/README.md) | UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31, UC-73 |
+| [document-management/](document-management/README.md) | UC-74 |
+| [voting-management/](voting-management/README.md) | UC-76a, UC-76b |
 | [notification-management/](notification-management/README.md) | UC-66, UC-67a, UC-67b, UC-68 |
 
 Xuất PNG: `node scripts/export-diagrams.js docs/06-sequencediagram/<thư mục hoặc file>` (cần truy cập `sequencediagram.org`).

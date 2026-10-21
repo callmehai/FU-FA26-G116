@@ -4,6 +4,7 @@ actor "Secretary" as Secretary
 boundary "Meeting Management Page" as MeetingPage
 control ":Agenda Controller" as AgendaController
 control ":Agenda Service" as AgendaService
+control ":Notification Service" as NotificationService
 participant ":Meeting Repository" as MeetingRepository
 participant ":Meeting Participant Repository" as MeetingParticipantRepository
 participant ":Agenda Item Repository" as AgendaItemRepository
@@ -14,7 +15,7 @@ Secretary->MeetingPage: Create Agenda Item
 activate MeetingPage
 MeetingPage->AgendaController: Create Agenda Item
 activate AgendaController
-AgendaController->AgendaService: createAgendaItem(meetingId, secretaryId, agendaInfo, documentIds)
+AgendaController->AgendaService: createAgendaItem(meetingId, secretaryId, agendaInfo, presenterId, documentIds)
 activate AgendaService
 
 AgendaService->MeetingRepository: Get selected Meeting and current status
@@ -41,6 +42,17 @@ alt Agenda planning no longer permitted - EX-2
     AgendaController-->MeetingPage: MSG67 - The agenda for this meeting can no longer be modified.
     MeetingPage-->Secretary: MSG67 - The agenda for this meeting can no longer be modified.
 else Agenda planning permitted
+    opt Presenter selected
+        AgendaService->MeetingParticipantRepository: Verify Presenter is a current internal participant\nor current Guest of this Meeting (BR-306)
+        activate MeetingParticipantRepository
+        MeetingParticipantRepository->Database: Verify Presenter is a current internal participant\nor current Guest of this Meeting (BR-306)
+        activate Database
+        Database-->MeetingParticipantRepository: Current participant or Guest / Invalid Presenter
+        deactivate Database
+        MeetingParticipantRepository-->AgendaService: Current participant or Guest / Invalid Presenter
+        deactivate MeetingParticipantRepository
+
+    end
     opt Meeting documents selected
         AgendaService->DocumentRepository: Verify selected documents belong to this Meeting
         activate DocumentRepository
@@ -52,7 +64,7 @@ else Agenda planning permitted
         deactivate DocumentRepository
 
     end
-    AgendaService->AgendaService: Validate Title, positive Planned Duration and selected documents (BR-66)
+    AgendaService->AgendaService: Validate required Title, optional Presenter and Description,\nand selected documents (BR-66, BR-306)
     alt Invalid Item information - EX-1
         AgendaService-->AgendaController: MSG66 - Invalid agenda item information.\nApplicable field messages; no Item created
         AgendaController-->MeetingPage: MSG66 - Invalid agenda item information.\nApplicable field messages; no Item created
@@ -81,6 +93,12 @@ else Agenda planning permitted
             AgendaController-->MeetingPage: MSG68 - Unable to create the agenda item. Please try again.
             MeetingPage-->Secretary: MSG68 - Unable to create the agenda item. Please try again.
         else Change saved successfully
+            opt Presenter set while Meeting is Published or InProgress
+                AgendaService->NotificationService: Notify the Presenter: internal user in the application,\nGuest by email (BR-307)
+                activate NotificationService
+                NotificationService-->AgendaService: Notification created / delivery failed\n(failure does not undo the change)
+                deactivate NotificationService
+            end
             AgendaService->AgendaService: Automatically refresh the complete saved Agenda\nfor currently authorized users viewing this Meeting (BR-73)
             AgendaService-->AgendaController: MSG60 - Agenda item created successfully.
             AgendaController-->MeetingPage: MSG60 - Agenda item created successfully.

@@ -62,23 +62,36 @@ jobs:
       - name: Khởi động lại
         # git đưa server về đúng commit vừa build, để docker-compose.yml và Caddyfile khớp với
         # image. --no-build: dùng image vừa chép sang, không build lại trên server.
+        # Secret của LiveKit sinh ngay trên server ở lần deploy đầu có phòng họp, không đi qua GitHub;
+        # đã có thì giữ nguyên, vì đổi secret là token đang dùng hết hiệu lực.
+        # Caddyfile và livekit.yaml được mount từng file: git thay bằng file mới nên container đang
+        # chạy vẫn đọc bản cũ, còn compose không biết nội dung đã đổi nên không tạo lại container.
+        # Đổi thì khởi động lại đúng container đó.
         run: |
           ssh "$SERVER" "set -e
             cd ~/TrustCabinet
+            before=\$(git rev-parse HEAD)
             git fetch -q origin
             git checkout -q -B main $SHA
+            grep -q '^LIVEKIT_API_SECRET=.' deploy/.env || echo \"LIVEKIT_API_SECRET=\$(openssl rand -hex 32)\" >> deploy/.env
             docker compose -f deploy/docker-compose.yml up -d --no-build
+            git diff --quiet \$before HEAD -- deploy/Caddyfile || docker compose -f deploy/docker-compose.yml restart caddy
+            git diff --quiet \$before HEAD -- deploy/livekit.yaml || docker compose -f deploy/docker-compose.yml restart livekit
             docker image prune -f > /dev/null"
 
       - name: Kiểm tra
         run: |
           site=$(ssh "$SERVER" "grep '^SITE_ADDRESS=' ~/TrustCabinet/deploy/.env | cut -d= -f2")
+          # /rtc/validate không kèm token: LiveKit trả 401. Caddy không chuyển được tới LiveKit thì
+          # app trả trang SPA với 200, hoặc Caddy trả 502.
           for _ in $(seq 1 30); do
-            if curl -fsS "https://$site/api/health" > /dev/null; then
+            health=$(curl -sS -o /dev/null -w '%{http_code}' "https://$site/api/health" || true)
+            rtc=$(curl -sS -o /dev/null -w '%{http_code}' "https://$site/rtc/validate" || true)
+            if [ "$health" = 200 ] && [ "$rtc" = 401 ]; then
               echo "Đã deploy $SHA lên https://$site"
               exit 0
             fi
             sleep 5
           done
-          echo "::error::https://$site/api/health không trả lời sau 150 giây"
+          echo "::error::Sau 150 giây: /api/health trả $health (cần 200), /rtc/validate trả $rtc (cần 401 của LiveKit)"
           exit 1

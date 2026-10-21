@@ -1,6 +1,6 @@
 # Thành phần tham dự và vai trò trong cuộc họp — FE-06
 
-Các sequence UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31 tuân theo [convention chung](../README.md). Cùng nằm trong FE-06 không có nghĩa cùng implementation task. Đặc tả của lần chỉnh sửa này nằm tại
+Các sequence UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31, UC-73 tuân theo [convention chung](../README.md). Cùng nằm trong FE-06 không có nghĩa cùng implementation task. Đặc tả của lần chỉnh sửa này nằm tại
 [Report 3, FE-06](../../08-reports/Report-3_Software_Requirement_Specification.md#6-fe-06--meeting-participant-management).
 
 - Organizer khởi tạo Secretary đầu tiên (BR-78). Secretary được gán có quyền xem meeting trước `Published` (BR-118)
@@ -13,6 +13,13 @@ Các sequence UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31 tuân theo [conventi
   thêm người ở `Published`/`InProgress` thì gửi lời mời cho người được thêm (BR-90, BR-91).
 - Participant phản hồi `Accepted` hoặc `Declined` (không còn uỷ quyền — BR-105) ở `Published`/`InProgress`.
   Từ `Ended` trở đi, hồ sơ chỉ đọc.
+
+## Thay Chủ toạ — 18/10/2026
+
+Theo quyết định PO 16/10/2026: Secretary chỉ gán hoặc thay Chair **trước khi công bố** (BR-294); từ `Published`, sequence
+UC-28b dừng ở EX-5 với MSG256. Từ `Published`/`InProgress`, Chair hiện hành tự giao vai trò cho một thành phần tham dự
+nội bộ khác qua UC-73 (BR-295, BR-296): hai vai trò đổi cùng lúc, Chair cũ thành Member. Gỡ một người khỏi cuộc họp thì
+các mục nghị sự người đó trình bày về "Chưa có người trình bày" trong cùng lần lưu (UC-28c, BR-308).
 
 ## Ghi chú thay đổi để đối chiếu SCRUM-20
 

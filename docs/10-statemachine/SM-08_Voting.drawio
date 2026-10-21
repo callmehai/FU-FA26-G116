@@ -20,10 +20,10 @@
         <mxCell id="Closed" value="Closed" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=16;rounded=1;arcSize=20;fillColor=#ffffff;strokeColor=#334155;fontColor=#172554;strokeWidth=2;">
           <mxGeometry as="geometry" x="460" y="520" width="260" height="80" />
         </mxCell>
-        <mxCell id="transition-0" value="Chair creates vote&#10;[meeting InProgress]" edge="1" parent="1" source="initial" target="Draft" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+        <mxCell id="transition-0" value="Chair or Secretary saves vote draft&#10;[meeting Approved, Published or InProgress]" edge="1" parent="1" source="initial" target="Draft" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
           <mxGeometry as="geometry" relative="1" />
         </mxCell>
-        <mxCell id="transition-1" value="Chair opens vote" edge="1" parent="1" source="Draft" target="Open" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+        <mxCell id="transition-1" value="Chair opens vote&#10;[meeting InProgress, no other vote Open]&#10;/ fix eligible voters and documents" edge="1" parent="1" source="Draft" target="Open" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
           <mxGeometry as="geometry" relative="1" />
         </mxCell>
         <mxCell id="transition-2" value="Chair closes vote" edge="1" parent="1" source="Open" target="Closed" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">

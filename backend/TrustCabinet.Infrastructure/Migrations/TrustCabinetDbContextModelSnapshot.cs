@@ -268,6 +268,11 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_call_sessions");
 
+                    b.HasIndex("MeetingId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_call_sessions_active_meeting_room")
+                        .HasFilter("status = 'Active' AND meeting_id IS NOT NULL");
+
                     b.HasIndex("RecordingId")
                         .HasDatabaseName("ix_call_sessions_recording_id");
 

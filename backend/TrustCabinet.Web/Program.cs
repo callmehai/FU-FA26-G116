@@ -10,6 +10,7 @@ using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Access;
 using TrustCabinet.Infrastructure.Authentication;
 using TrustCabinet.Infrastructure.Email;
+using TrustCabinet.Infrastructure.Calls;
 using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Infrastructure.Users;
@@ -34,6 +35,11 @@ builder.Services.AddSingleton<IUserIdProvider, NotificationUserIdProvider>();
 builder.Services.AddTrustCabinetNotifications();
 builder.Services.AddHostedService<NotificationWorker>();
 builder.Services.AddTrustCabinetEmailDelivery(builder.Configuration);
+
+// SCRUM-39: meeting call room on LiveKit (ADR-0010). Starts without LiveKit configured; the
+// call endpoints then answer 503.
+builder.Services.AddTrustCabinetCalls(builder.Configuration);
+builder.Services.AddHostedService<CallRoomJanitor>();
 
 // The audit log records where a request came from, and only the web layer can see that.
 builder.Services.AddHttpContextAccessor();
@@ -169,6 +175,9 @@ app.MapHub<MeetingHub>("/hubs/meetings", options => options.CloseOnAuthenticatio
 app.MapNotificationEndpoints();
 app.MapHub<NotificationHub>("/hubs/notifications", options =>
     options.CloseOnAuthenticationExpiration = true);
+
+// SCRUM-39/41: meeting call room — state, join token, chair mute, LiveKit webhook.
+app.MapCallEndpoints();
 
 // Health endpoint — the frontend calls this to confirm the backend is alive.
 app.MapGet("/api/health", () => Results.Ok(new

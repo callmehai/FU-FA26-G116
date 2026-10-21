@@ -98,11 +98,11 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 | `MSG259` | 400 | PUT assignments: người nhận Chair không current/active hoặc đang là Secretary | Người nhận vai trò Chủ tọa phải là thành viên nội bộ hiện tại, đang hoạt động và không phải Thư ký. |
 | `MSG277` | 400 | POST meetings: roster khởi tạo không hợp lệ | Danh sách thành phần tham dự không hợp lệ. |
 
-`MSG258` và `MSG260` tiếp tục dành sẵn. Nhánh SCRUM-26 cần remap MSG277/278 trước khi tích hợp; MSG277 thuộc validation tạo họp trong PR #92.
+`MSG258` và `MSG260` tiếp tục dành sẵn. Nhánh SCRUM-26 cần remap các mã trùng trước khi tích hợp; `MSG277` đã thuộc validation roster khi tạo họp trong PR #92.
 
 ## Mã tiếp theo
 
-**`MSG278`** — `MSG252`–`MSG274` dành sẵn, chưa triển khai, cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277` theo bảng contract Participants. `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020. Giữ nguyên MSG141 đã triển khai; đặc tả UC-23b dùng MSG250 cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG151` dành cho thay đổi FE-06 trong Report 3; `MSG154` đã triển khai; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG285`** — Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`; `MSG278`–`MSG279` thuộc dải cần rà soát với SCRUM-26 trước khi tích hợp. `MSG252`–`MSG274` dành sẵn, chưa triển khai, cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020; đặc tả UC-23b dùng `MSG250` cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG151` dành cho thay đổi FE-06 trong Report 3; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -234,6 +234,27 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG137` | 409 | POST Publish | Không có đúng một Chair active hoặc không có Secretary active | `Cuộc họp cần có đúng một Chủ tọa đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố.` | BE |
 | `MSG138` | 200 | `PUT /api/meetings/{id}` | Organizer dời lịch cuộc họp `Published` (UC-15 AF-1): thời gian hoặc địa điểm đã đổi và người được mời đã có thông báo. PUT không đổi gì vẫn trả `MSG30` | `Đã dời lịch cuộc họp. Người được mời sẽ nhận thông báo.` | BE |
 
+### Phòng họp trực tuyến — SCRUM-39, SCRUM-41 (`/api/meetings/{id}/call`)
+
+Dùng các mã UC-37/UC-41 đã dành sẵn ở bảng dưới khi tình huống khớp; tình huống chưa có mã thì lấy
+mã mới.
+
+| Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
+|---|---|---|---|---|---|
+| `MSG117` | 409 | `POST …/call/join`, `POST …/call/participants/{userId}/mute` | Cuộc họp không ở trạng thái `InProgress` | `Phòng họp chỉ mở khi cuộc họp đang diễn ra.` | BE |
+| `MSG118` | 500 | `POST …/call/join` | Lỗi database khi kiểm quyền vào phòng | `Không thể vào phòng họp. Vui lòng thử lại.` | BE |
+| `MSG123` | 403 | `POST …/call/participants/{userId}/mute` | Người gọi được mời nhưng không phải chủ toạ | `Chỉ chủ toạ mới tắt được micro của người khác.` | BE |
+| `MSG124` | 502 | `POST …/call/participants/{userId}/mute` | LiveKit không phản hồi hoặc từ chối | `Máy chủ phòng họp không phản hồi. Vui lòng thử lại.` | BE |
+| `MSG280` | 409 | `POST …/call/join` | Cuộc họp hình thức `InPerson` — không có phòng trực tuyến | `Cuộc họp này họp trực tiếp nên không có phòng họp trực tuyến.` | BE |
+| `MSG281` | 503 | `POST …/call/join`, `POST …/mute` | Máy chủ chưa cấu hình LiveKit | `Phòng họp trực tuyến chưa sẵn sàng. Vui lòng liên hệ quản trị viên.` | BE |
+| `MSG282` | 409 | `POST …/call/participants/{userId}/mute` | Người bị tắt mic không còn trong phòng hoặc không có micro | `Người này không còn trong phòng hoặc chưa bật micro.` | BE |
+| `MSG283` | 500 | `GET …/call` | Lỗi database khi tải trạng thái phòng | `Không thể tải trạng thái phòng họp. Vui lòng thử lại.` | BE |
+| `MSG284` | 500 | `POST …/call/participants/{userId}/mute` | Lỗi database khi kiểm quyền tắt mic | `Không thể tắt micro. Vui lòng thử lại.` | BE |
+
+Người không được mời vào phòng **không có mã**: API trả `404` không body, như cuộc họp không tồn
+tại.
+
+
 ### Dành sẵn, chưa có code
 
 Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpoint và contract tiếng Việt ở mục Agenda phía trên; các mã còn lại chưa triển khai hoặc đã ngừng dùng như ghi chú từng dòng. Cột *Use case* theo danh mục 70 UC (10/10/2026); mã Meeting Session ghi số UC cũ. Người làm các use case còn lại dùng đúng các mã dưới đây.
@@ -305,14 +326,14 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG114` | UC-22 | *This meeting cannot be ended.* |
 | `MSG115` | UC-21 | *Unable to start the meeting. Please try again.* |
 | `MSG116` | UC-22 | *Unable to end the meeting. Please try again.* |
-| `MSG117` | UC-37 Join Meeting Room | *The online meeting room is not available.* |
-| `MSG118` | UC-37 | *Unable to join the meeting room. Please try again.* |
+| `MSG117` | UC-37 Join Meeting Room · Đã triển khai SCRUM-39 | *The online meeting room is not available.* |
+| `MSG118` | UC-37 · Đã triển khai SCRUM-39 | *Unable to join the meeting room. Please try again.* |
 | `MSG119` | UC-39a Manage Microphone | *Microphone access is unavailable. Check your browser or device permissions.* |
 | `MSG120` | UC-39b Manage Camera | *Camera access is unavailable. Check your browser or device permissions.* |
 | `MSG121` | UC-39c Manage Screen Sharing | *Unable to share your screen.* |
 | `MSG122` | UC-40 View Meeting Room Participants | *Unable to load meeting room participants. Please try again.* |
-| `MSG123` | UC-41 Moderate Meeting Room | *You are not allowed to moderate this meeting room.* |
-| `MSG124` | UC-41 | *Unable to apply the room moderation action.* |
+| `MSG123` | UC-41 Moderate Meeting Room · Đã triển khai SCRUM-39 | *You are not allowed to moderate this meeting room.* |
+| `MSG124` | UC-41 · Đã triển khai SCRUM-39 | *Unable to apply the room moderation action.* |
 | `MSG125` | UC-42 Use In-room Chat | *Unable to send the room message. Please try again.* |
 | `MSG126` | UC-04 / EX-2 | *Unable to verify the guest invitation. Check the code and try again.* |
 | `MSG127` | ADR-0013 · View Meeting Sessions (UC-53 cũ, đã bỏ) | *Unable to load meeting sessions. Please try again.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |

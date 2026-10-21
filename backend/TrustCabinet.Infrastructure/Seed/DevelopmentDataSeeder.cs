@@ -45,6 +45,7 @@ public static class DevelopmentDataSeeder
         {
             await RepairPlaceholderPasswordsAsync(db, demoPasswordHash, ct);
             await SeedWorkflowDemoAsync(db, ct);
+            await EnsureCallRoomDemoParticipantsAsync(db, ct);
             return;
         }
 
@@ -116,6 +117,14 @@ public static class DevelopmentDataSeeder
             new MeetingParticipant { Meeting = published, User = chair, Role = MeetingRole.Chair, Response = InvitationResponse.Accepted, RespondedAt = At("2026-09-16T10:00:00Z") },
             new MeetingParticipant { Meeting = published, User = secretary, Role = MeetingRole.Secretary, Response = InvitationResponse.Accepted, RespondedAt = At("2026-09-16T09:25:00Z") },
             new MeetingParticipant { Meeting = published, User = member, Role = MeetingRole.Member });
+
+        // The in-progress online meeting is where the call room is tried out (SCRUM-41), and only
+        // invited participants may enter it.
+        var inProgress = meetings[2];
+        db.AddRange(
+            new MeetingParticipant { Meeting = inProgress, User = chair, Role = MeetingRole.Chair, Response = InvitationResponse.Accepted },
+            new MeetingParticipant { Meeting = inProgress, User = secretary, Role = MeetingRole.Secretary, Response = InvitationResponse.Accepted },
+            new MeetingParticipant { Meeting = inProgress, User = member, Role = MeetingRole.Member, Response = InvitationResponse.Accepted });
 
         // The same four steps the detail screen's timeline shows today.
         db.AddRange(
@@ -249,6 +258,51 @@ public static class DevelopmentDataSeeder
         {
             user.PasswordHash = demoPasswordHash;
             user.UpdatedAt = DateTimeOffset.UtcNow;
+        }
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    private const string CallRoomDemoMeetingTitle = "Rà soát kế hoạch chuyển đổi số";
+
+    /// <summary>
+    /// Invites the three demo users to the in-progress demo meeting on databases seeded before
+    /// SCRUM-41, which left it without participants — so nobody could enter its call room.
+    ///
+    /// Narrow like <see cref="RepairPlaceholderPasswordsAsync"/>: only that meeting, only while it
+    /// is still in progress and still has nobody invited, only with demo accounts that exist.
+    /// </summary>
+    private static async Task EnsureCallRoomDemoParticipantsAsync(TrustCabinetDbContext db, CancellationToken ct)
+    {
+        var meeting = await db.Meetings.SingleOrDefaultAsync(
+            m => m.Title == CallRoomDemoMeetingTitle
+                && m.Status == MeetingStatus.InProgress
+                && !m.Participants.Any(),
+            ct);
+        if (meeting is null)
+        {
+            return;
+        }
+
+        var invitations = new (string Email, MeetingRole Role)[]
+        {
+            ("chutoa@trustcabinet.local", MeetingRole.Chair),
+            ("thuky@trustcabinet.local", MeetingRole.Secretary),
+            ("thanhvien@trustcabinet.local", MeetingRole.Member),
+        };
+        foreach (var (email, role) in invitations)
+        {
+            var user = await db.Users.SingleOrDefaultAsync(u => u.Email == email, ct);
+            if (user is not null)
+            {
+                db.MeetingParticipants.Add(new MeetingParticipant
+                {
+                    MeetingId = meeting.Id,
+                    UserId = user.Id,
+                    Role = role,
+                    Response = InvitationResponse.Accepted,
+                });
+            }
         }
 
         await db.SaveChangesAsync(ct);

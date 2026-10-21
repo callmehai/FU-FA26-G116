@@ -1,0 +1,85 @@
+title UC-74 - Confirm Document Read
+
+actor "Chair / Secretary / Participant / Guest" as User
+boundary "Document Viewer" as DocumentViewer
+control ":Document Controller" as DocumentController
+control ":Document Read Service" as ReadService
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Meeting Document Repository" as MeetingDocumentRepository
+participant ":Document Read Confirmation Repository" as ReadConfirmationRepository
+database ":Database" as Database
+
+User->DocumentViewer: Tick "I have read this document"
+activate DocumentViewer
+DocumentViewer->DocumentViewer: Check the last page of the document was reached in this viewer (BR-290)
+alt Last page not reached - EX-1
+    DocumentViewer-->User: MSG254 - Scroll to the last page of the document before confirming that you have read it.
+else Last page reached
+    DocumentViewer->DocumentController: Confirm document read (last page reached)
+    activate DocumentController
+    DocumentController->ReadService: confirmDocumentRead(meetingId, meetingDocumentId, actorId, lastPageReached)
+    activate ReadService
+    ReadService->MeetingAccessPolicy: Check actor can currently view the Meeting (BR-181, BR-275)
+    activate MeetingAccessPolicy
+    MeetingAccessPolicy->Database: Check current Meeting relationship or valid Guest invitation
+    activate Database
+    Database-->MeetingAccessPolicy: Access / No access
+    deactivate Database
+    MeetingAccessPolicy-->ReadService: Access / No access
+    deactivate MeetingAccessPolicy
+    ReadService->MeetingDocumentRepository: Check document is attached to the Meeting and linked to a Vote (BR-287)
+    activate MeetingDocumentRepository
+    MeetingDocumentRepository->Database: Check document is attached to the Meeting and linked to a Vote (BR-287)
+    activate Database
+    Database-->MeetingDocumentRepository: Vote document / Not available
+    deactivate Database
+    MeetingDocumentRepository-->ReadService: Vote document / Not available
+    deactivate MeetingDocumentRepository
+    alt Document or Meeting no longer accessible - EX-2
+        ReadService-->DocumentController: MSG156 - Meeting documents are not accessible.
+        DocumentController-->DocumentViewer: MSG156 - Meeting documents are not accessible.
+        DocumentViewer-->User: MSG156 - Meeting documents are not accessible.
+    else Vote document accessible
+        ReadService->ReadConfirmationRepository: Get existing confirmation for actor and document
+        activate ReadConfirmationRepository
+        ReadConfirmationRepository->Database: Get existing confirmation for actor and document
+        activate Database
+        Database-->ReadConfirmationRepository: Confirmation and time / None
+        deactivate Database
+        ReadConfirmationRepository-->ReadService: Confirmation and time / None
+        deactivate ReadConfirmationRepository
+        alt Document already confirmed - AF-1
+            ReadService-->DocumentController: Already read at confirmation time (BR-291)
+            DocumentController-->DocumentViewer: Already read at confirmation time
+            DocumentViewer-->User: Show document as read with its confirmation time
+        else Not yet confirmed
+            ReadService->ReadService: Recheck last page reached (BR-290)
+            alt Last page not reached - EX-1
+                ReadService-->DocumentController: MSG254 - Scroll to the last page of the document before confirming that you have read it.
+                DocumentController-->DocumentViewer: MSG254 - Scroll to the last page of the document before confirming that you have read it.
+                DocumentViewer-->User: MSG254 - Scroll to the last page of the document before confirming that you have read it.
+            else Last page reached
+                ReadService->ReadConfirmationRepository: Save confirmation with actor, document and time;\nnot linked to any ballot choice (BR-290, BR-291, BR-293)
+                activate ReadConfirmationRepository
+                ReadConfirmationRepository->Database: Save confirmation with actor, document and time;\nnot linked to any ballot choice (BR-290, BR-291, BR-293)
+                activate Database
+                Database-->ReadConfirmationRepository: Confirmation saved / Save failed
+                deactivate Database
+                ReadConfirmationRepository-->ReadService: Confirmation saved / Save failed
+                deactivate ReadConfirmationRepository
+                alt Confirmation cannot be saved - EX-3
+                    ReadService-->DocumentController: MSG255 - Unable to confirm document reading. Please try again.
+                    DocumentController-->DocumentViewer: MSG255 - Unable to confirm document reading. Please try again.
+                    DocumentViewer-->User: MSG255 - Unable to confirm document reading. Please try again.
+                else Confirmation saved
+                    ReadService-->DocumentController: MSG253 - Document read confirmed.
+                    DocumentController-->DocumentViewer: MSG253 - Document read confirmed.
+                    DocumentViewer-->User: MSG253 - Document read confirmed.
+                end
+            end
+        end
+    end
+    deactivate ReadService
+    deactivate DocumentController
+end
+deactivate DocumentViewer

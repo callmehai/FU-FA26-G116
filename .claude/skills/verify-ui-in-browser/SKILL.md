@@ -1,6 +1,6 @@
 ---
 name: verify-ui-in-browser
-description: Run TrustCabinet locally and check a frontend change in a real browser through the chrome-devtools MCP — start the servers, sign in as the seeded roles, drive forms and lists, take screenshots and critique them, measure layout, simulate errors and conflicts, confirm what reached the database, then clean up. Use before opening or updating any PR that changes what the user sees, and whenever asked to "chạy local lên xem" or test a screen.
+description: Run TrustCabinet locally and check a frontend change in a real browser — through Playwright when the machine has it set up, otherwise the chrome-devtools MCP — start the servers, sign in as the seeded roles, drive forms and lists, take screenshots and critique them, measure layout, simulate errors and conflicts, confirm what reached the database, then clean up. Use before opening or updating any PR that changes what the user sees, and whenever asked to "chạy local lên xem" or test a screen.
 ---
 
 # Verifying a UI change in the browser
@@ -26,7 +26,86 @@ Development seed accounts, password `TrustCabinet@2026`: `quantri@` (admin), `ch
 approver), `thuky@` (secretary, meeting creator), `thanhvien@` (member) — all
 `@trustcabinet.local`.
 
-## 2. Drive the browser (chrome-devtools MCP)
+## 2. Drive the browser
+
+Pick the tool first:
+
+```bash
+test -f ~/.playwright-e2e/node_modules/@playwright/test/package.json && echo playwright || echo cdp
+```
+
+- **Playwright** (preferred when it is set up — see *Browser setup notes*): the checks are a spec
+  file, so a whole scenario runs in one command, can be re-run after every fix, and the reviewer
+  can run the same file. Follow §2a.
+- **chrome-devtools MCP** otherwise: drive the page one tool call at a time. Follow §2b.
+
+The rest of this skill (what to measure, which states to test, test data, the report) is the same
+for both.
+
+### 2a. Playwright
+
+The workspace lives outside the repo, in `~/.playwright-e2e` (`playwright.config.ts`,
+`fixtures.ts`, `tests/`). It never starts the app: start it as in §1 first. Write one spec per
+ticket, `tests/<ticket>.spec.ts` (e.g. `scrum-47.spec.ts`), and keep it there for the re-run after
+review fixes. Never copy it into the repo.
+
+```bash
+cd ~/.playwright-e2e
+npx playwright test tests/smoke.spec.ts                     # first: proves browser + app + sign-in
+PW_OUT=<scratchpad>/pw npx playwright test tests/scrum-47.spec.ts   # artifacts into the scratchpad
+npx playwright test tests/scrum-47.spec.ts -g "filter" --headed    # one test, watch it run
+```
+
+```ts
+import { execSync } from 'node:child_process'
+import { expect, login, signIn, test } from '../fixtures'
+
+test('…', async ({ page, browser }, info) => {
+  await signIn(page, 'thuky')                 // API login: refresh cookie + "signed in" marker
+  await page.goto('/calendar?span=month')
+  await page.screenshot({ path: info.outputPath('month.png') })   // then Read the PNG and look
+})
+```
+
+- **Signing in**: `signIn(page, seed)` logs in through the API, so each test starts signed in
+  without the form. `login(page.request, seed)` returns a bearer token for creating `[Test FE]`
+  data through the API. A second user at the same time: `const other = await (await
+  browser.newContext()).newPage(); await signIn(other, 'thanhvien')`.
+- **Locators**: prefer roles and labels, which also checks the accessible names:
+  `getByRole('button', { name: 'Thử lại' })`, `getByRole('alert')`, `getByLabel('Email')`.
+- **Inputs**: `fill` works on text **and** on `date` / `datetime-local` (`'2026-10-05T09:00'`) —
+  React hears it.
+- **`Select`**: `getByRole('button', { name: /^Kiểu lịch/ }).click()`, then
+  `getByRole('option', { name: 'Tháng' }).click()`. The trigger's name is `"<label>: <value>"`.
+- **`SegmentedControl`**: `getByRole('radio', { name: '…' }).check({ force: true })` — the input is
+  visually hidden.
+- **Look**: save screenshots with `info.outputPath()` and open them with the Read tool, then
+  critique as in §2b. `main.content` is the scroll container: screenshot it with
+  `page.locator('main.content').screenshot()` or set its `scrollTop` first.
+- **Measure**: `locator.boundingBox()`, or `evaluateAll` for many elements at once:
+  ```ts
+  const tops = await page.locator('.calendar-toolbar > *').evaluateAll((els) =>
+    els.map((e) => Math.round(e.getBoundingClientRect().top)))
+  expect(new Set(tops).size).toBe(1)          // the toolbar is one line
+  ```
+- **Window size**: `page.setViewportSize({ width: 1200, height: 700 })`.
+- **Server error**: `page.route` instead of patching `fetch`; flip it off and use "Thử lại":
+  ```ts
+  let fail = true
+  await page.route('**/api/meetings?*', (r) =>
+    fail ? r.fulfill({ status: 500, json: { code: 'MSG38', message: '…' } }) : r.continue())
+  ```
+- **Requests**: `page.waitForRequest(/\/api\/meetings\?/)`, or collect with
+  `page.on('request', …)` and assert the count and the query string.
+- **Database**: call psql from the spec, so the check sits next to the action it verifies:
+  ```ts
+  const DB = 'docker compose exec -T postgres psql -U trustcabinet -d trustcabinet -tAc'
+  const psql = (sql: string) => execSync(`${DB} "${sql}"`, { cwd: '<repo root>' }).toString().trim()
+  ```
+- A failing test keeps a screenshot and a trace in the output folder:
+  `npx playwright show-trace <out>/…/trace.zip` replays it step by step.
+
+### 2b. chrome-devtools MCP
 
 - `new_page` / `navigate_page` to open screens. For a second user at the same time, use
   `new_page` with `isolatedContext: "<name>"` — it gets its own cookies and storage.
@@ -40,7 +119,7 @@ approver), `thuky@` (secretary, meeting creator), `thanhvien@` (member) — all
 - Check at a **1200px-wide** window as well as a large one — the toolbar and two-column form
   must still fit.
 
-### Inputs that need care
+#### Inputs that need care
 
 - **Text inputs**: the `fill` tool works.
 - **`date` / `datetime-local`**: `fill` changes the DOM but React never hears it. Use the native
@@ -57,7 +136,8 @@ approver), `thuky@` (secretary, meeting creator), `thanhvien@` (member) — all
 
 ## 3. Measure, don't eyeball
 
-Use `getBoundingClientRect()` in `evaluate_script` to prove layout claims:
+Use `getBoundingClientRect()` (in `evaluate_script`, or `evaluateAll` / `boundingBox()` in
+Playwright) to prove layout claims:
 
 - a toolbar is one line → every child has the same `top`;
 - a form does not jump when a mode changes → `.form-card` height is equal in every mode;
@@ -75,8 +155,8 @@ For each screen, walk the state table in **frontend-ui-design** §2:
   docker compose exec -T postgres psql -U trustcabinet -d trustcabinet \
     -c "UPDATE meetings SET status='WaitingApproval' WHERE id='<id>';"
   ```
-- **Server error**: patch `fetch` inside the page for the one call, check the error state, restore
-  it and use "Thử lại":
+- **Server error**: fail the one call, check the error state, then let it through and use
+  "Thử lại". Playwright: `page.route` (§2a). CDP: patch `fetch` inside the page:
   ```js
   const real = window.fetch
   window.fetch = (u, i) => String(u).startsWith('/api/meetings?')
@@ -114,7 +194,23 @@ create.
 
 ## Browser setup notes
 
-The MCP server is configured per machine (`~/.claude.json` → `mcpServers.chrome-devtools`).
+**Playwright** is set up per machine, outside the repo, so it adds nothing to `frontend/package.json`
+or CI. To set it up on a new machine, create `~/.playwright-e2e` with:
+
+- `package.json` with `@playwright/test` pinned (`"1.64.1"`), then `npm install` and
+  `npx playwright install chromium`;
+- `playwright.config.ts`: `testDir: './tests'`, `outputDir: process.env.PW_OUT ?? './test-results'`,
+  `workers: 1` (one shared database), `baseURL: 'http://localhost:5173'`, viewport 1536×864,
+  `locale: 'vi-VN'`, `timezoneId: 'Asia/Ho_Chi_Minh'`, `screenshot: 'only-on-failure'`,
+  `trace: 'retain-on-failure'`;
+- `fixtures.ts` exporting `test`, `expect`, `login(request, seed)` (POST `/api/auth/login`, returns
+  the access token) and `signIn(page, seed)` (`login(page.request, …)` plus
+  `page.addInitScript(() => localStorage.setItem('trustcabinet.signedIn', '1'))`);
+- `tests/smoke.spec.ts`: sign in as `thuky`, open `/calendar`, expect it not to land on `/login`.
+
+The setup is done when the smoke test passes against the running app.
+
+**chrome-devtools**: the MCP server is configured per machine (`~/.claude.json` → `mcpServers.chrome-devtools`).
 With `--isolated` it starts a throw-away profile every session — nothing persists, including the
 app's sign-in. Without it, it keeps a dedicated profile in
 `~/.cache/chrome-devtools-mcp/chrome-profile`. `--autoConnect` (Chrome 144+, after ticking

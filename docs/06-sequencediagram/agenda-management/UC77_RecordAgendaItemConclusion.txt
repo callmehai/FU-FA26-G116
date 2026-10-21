@@ -1,0 +1,98 @@
+title UC-77 - Record Agenda Item Conclusion
+
+actor "Chair / Secretary" as Actor
+boundary "Meeting Management Page" as MeetingPage
+control ":Agenda Controller" as AgendaController
+control ":Agenda Service" as AgendaService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Participant Repository" as MeetingParticipantRepository
+participant ":Agenda Item Repository" as AgendaItemRepository
+participant ":Minutes Repository" as MinutesRepository
+database ":Database" as Database
+
+Actor->MeetingPage: Save Agenda Item conclusion
+activate MeetingPage
+MeetingPage->AgendaController: Record Agenda Item Conclusion
+activate AgendaController
+AgendaController->AgendaService: recordAgendaItemConclusion(meetingId, agendaItemId, actorId, conclusion)
+activate AgendaService
+
+AgendaService->MeetingRepository: Get selected Meeting and current status
+activate MeetingRepository
+MeetingRepository->Database: Get selected Meeting and current status
+activate Database
+Database-->MeetingRepository: Meeting / Not found
+deactivate Database
+MeetingRepository-->AgendaService: Meeting / Not found
+deactivate MeetingRepository
+
+AgendaService->AgendaItemRepository: Get selected Item and Meeting membership
+activate AgendaItemRepository
+AgendaItemRepository->Database: Get selected Item and Meeting membership
+activate Database
+Database-->AgendaItemRepository: Item and current status / Not found
+deactivate Database
+AgendaItemRepository-->AgendaService: Item and current status / Not found
+deactivate AgendaItemRepository
+
+alt Meeting not accessible or Item no longer exists - EX-4
+    AgendaService-->AgendaController: MSG174 - This Meeting is not accessible.
+    AgendaController-->MeetingPage: MSG174 - This Meeting is not accessible.
+    MeetingPage-->Actor: MSG174 - This Meeting is not accessible.
+else Meeting and Item available
+    AgendaService->MeetingParticipantRepository: Check current Chair or Secretary assignment
+    activate MeetingParticipantRepository
+    MeetingParticipantRepository->Database: Check current Chair or Secretary assignment
+    activate Database
+    Database-->MeetingParticipantRepository: Current Chair or Secretary / Not eligible
+    deactivate Database
+    MeetingParticipantRepository-->AgendaService: Current Chair or Secretary / Not eligible
+    deactivate MeetingParticipantRepository
+
+    AgendaService->MinutesRepository: Check whether the minutes draft has been generated
+    activate MinutesRepository
+    MinutesRepository->Database: Check whether the minutes draft has been generated
+    activate Database
+    Database-->MinutesRepository: Draft generated / Not generated
+    deactivate Database
+    MinutesRepository-->AgendaService: Draft generated / Not generated
+    deactivate MinutesRepository
+
+    AgendaService->AgendaService: Verify Chair or Secretary, Item InProgress or Done,\nMeeting InProgress or Ended without a minutes draft (BR-310)
+    alt Conclusion can no longer be changed - EX-2
+        AgendaService-->AgendaController: MSG273 - The conclusion of this agenda item can no longer be changed.
+        AgendaController-->MeetingPage: MSG273 - The conclusion of this agenda item can no longer be changed.
+        MeetingPage-->Actor: MSG273 - The conclusion of this agenda item can no longer be changed.
+    else Change permitted
+        AgendaService->AgendaService: Validate conclusion is not blank and has at most 2,000 characters (BR-309)
+        alt Conclusion blank or too long - EX-1
+            AgendaService-->AgendaController: MSG272 - Enter a conclusion of up to 2,000 characters.
+            AgendaController-->MeetingPage: MSG272 - Enter a conclusion of up to 2,000 characters.
+            MeetingPage-->Actor: MSG272 - Enter a conclusion of up to 2,000 characters.
+        else Conclusion valid
+            AgendaService->AgendaItemRepository: Save the conclusion, replacing any earlier one, with actor and time;\nkeep status, actual times, Presenter, documents and position (BR-309, BR-311)
+            activate AgendaItemRepository
+            AgendaItemRepository->Database: Save the conclusion, replacing any earlier one, with actor and time;\nkeep status, actual times, Presenter, documents and position (BR-309, BR-311)
+            activate Database
+            Database-->AgendaItemRepository: Conclusion saved / Save failed; earlier conclusion preserved
+            deactivate Database
+            AgendaItemRepository-->AgendaService: Conclusion saved / Save failed; earlier conclusion preserved
+            deactivate AgendaItemRepository
+
+            alt Conclusion cannot be saved - EX-3
+                AgendaService-->AgendaController: MSG274 - Unable to save the agenda item conclusion. Please try again.
+                AgendaController-->MeetingPage: MSG274 - Unable to save the agenda item conclusion. Please try again.
+                MeetingPage-->Actor: MSG274 - Unable to save the agenda item conclusion. Please try again.
+            else Conclusion saved
+                AgendaService->AgendaService: Automatically refresh the Agenda\nfor currently authorized viewers (BR-73)
+                AgendaService-->AgendaController: MSG271 - Agenda item conclusion saved.
+                AgendaController-->MeetingPage: MSG271 - Agenda item conclusion saved.
+                MeetingPage-->Actor: MSG271 - Agenda item conclusion saved.
+            end
+        end
+    end
+end
+
+deactivate AgendaService
+deactivate AgendaController
+deactivate MeetingPage

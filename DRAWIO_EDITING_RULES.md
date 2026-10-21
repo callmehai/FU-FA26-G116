@@ -33,6 +33,16 @@ of the user's request.
   clipped text, and unnecessary line wrapping.
 - Do not restyle unrelated diagrams or introduce a new visual theme for a local edit.
 
+## No notes inside diagrams
+
+- Do not add notes, comment shapes (`shape=note`), callouts or free-text annotations to a diagram, and
+  do not append explanatory lines to an existing label. A diagram shows only its model elements:
+  actions, decisions, states, transitions, classes, messages and their guards.
+- A requirement that does not fit the existing flow (an optional action available "at any time", a
+  rule, a reason for a change) belongs in the UC Specification, the folder README or the commit
+  message, not in a note. If it must appear in the diagram, model it as a real element with a
+  proper edge, or leave it out and say so in the README.
+
 ## Render, inspect, and validate
 
 - Render the edited source to the requested image format, then inspect the rendered image. Source

@@ -38,5 +38,27 @@ services:
       retries: 10
       start_period: 5s
 
+  # Phòng họp trực tuyến (SCRUM-39, ADR-0010). Chỉ chạy khi cần:
+  #   docker compose --profile calls up -d
+  # Nằm trong profile để ai không làm phần gọi vẫn `docker compose up -d` như cũ, không cần secret.
+  livekit:
+    image: livekit/livekit-server:v1.13.7
+    container_name: trustcabinet-livekit
+    profiles: ["calls"]
+    command: --config /etc/livekit.yaml
+    environment:
+      # "tên-key: secret". Secret ít nhất 32 ký tự — SDK .NET từ chối secret ngắn hơn.
+      # Không dùng ${VAR:?}: compose nội suy cả file, kể cả service ngoài profile đang chạy.
+      LIVEKIT_KEYS: "trustcabinet-dev: ${LIVEKIT_API_SECRET:-}"
+    ports:
+      - "7880:7880"       # HTTP API + WebSocket signalling
+      - "7881:7881"       # ICE/TCP
+      - "7882:7882/udp"   # ICE/UDP
+    volumes:
+      - ./docker/livekit.dev.yaml:/etc/livekit.yaml:ro
+    extra_hosts:
+      # Docker Desktop có sẵn host.docker.internal; Linux cần dòng này.
+      - "host.docker.internal:host-gateway"
+
 volumes:
   trustcabinet-pgdata:

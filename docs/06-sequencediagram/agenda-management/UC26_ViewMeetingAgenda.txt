@@ -55,12 +55,12 @@ else Meeting accessible
                 AgendaController-->MeetingPage: Agenda refresh failed; do not represent old data as latest
                 MeetingPage-->User: MSG128 - Unable to load the meeting agenda. Please try again.
             else Latest Agenda retrieved
-                AgendaService-->AgendaController: Complete Agenda with current order and execution data
+                AgendaService-->AgendaController: Complete Agenda with current order, execution data and Item conclusions
                 AgendaController-->MeetingPage: Complete latest saved Agenda
                 alt No Items exist - AF-1
                     MeetingPage-->User: Display empty Agenda; keep view ready for saved changes
                 else Agenda contains Items
-                    MeetingPage-->User: Automatically display full Agenda: title, presenter,\nplanned duration, order, status and actual times
+                    MeetingPage-->User: Automatically display full Agenda: title, presenter, order, status, actual times\nand any Item conclusion with who last saved it and when (BR-311)
                 end
             end
         end

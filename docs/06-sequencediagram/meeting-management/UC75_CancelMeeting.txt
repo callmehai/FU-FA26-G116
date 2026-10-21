@@ -1,0 +1,80 @@
+title UC-75 - Cancel Meeting
+
+actor "Meeting Organizer" as Organizer
+boundary "Meeting Management Page" as MeetingPage
+control ":Meeting Controller" as MeetingController
+control ":Meeting Service" as MeetingService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Participant Repository" as ParticipantRepository
+participant ":Notification Service" as NotificationService
+participant ":Meeting Invitation Queue" as InvitationQueue
+database ":Database" as Database
+
+Organizer->MeetingPage: Confirm Cancel meeting with a cancellation reason
+activate MeetingPage
+MeetingPage->MeetingController: Cancel meeting
+activate MeetingController
+MeetingController->MeetingService: cancelMeeting(meetingId, organizerId, reason)
+activate MeetingService
+
+MeetingService->MeetingRepository: Get Meeting, its Organizer and current status
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting
+activate Database
+Database-->MeetingRepository: Meeting and status
+deactivate Database
+MeetingRepository-->MeetingService: Meeting and status
+deactivate MeetingRepository
+
+MeetingService->MeetingService: Verify actor is the Meeting Organizer and Meeting is Draft,\nWaitingApproval, Rejected, Approved or Published (BR-297)
+alt Meeting can no longer be cancelled - EX-2
+    MeetingService-->MeetingController: MSG263 - This meeting can no longer be cancelled.
+    MeetingController-->MeetingPage: MSG263 - This meeting can no longer be cancelled.
+    MeetingPage-->Organizer: MSG263 - This meeting can no longer be cancelled.
+else Cancellation permitted
+    MeetingService->MeetingService: Validate cancellation reason is not blank (BR-298)
+    alt Cancellation reason is missing - EX-1
+        MeetingService-->MeetingController: MSG262 - Enter a reason for cancelling the meeting.
+        MeetingController-->MeetingPage: MSG262 - Enter a reason for cancelling the meeting.
+        MeetingPage-->Organizer: MSG262 - Enter a reason for cancelling the meeting.
+    else Reason provided
+        MeetingService->MeetingRepository: Recheck status, set Cancelled, record reason, actor and time\nin status history and close any pending approval request together (BR-38, BR-298, BR-299)
+        activate MeetingRepository
+        MeetingRepository->Database: Save status, history and approval request as one change
+        activate Database
+        Database-->MeetingRepository: Cancelled / Save failed; Meeting unchanged
+        deactivate Database
+        MeetingRepository-->MeetingService: Cancelled / Save failed; Meeting unchanged
+        deactivate MeetingRepository
+        alt Cancellation cannot be saved - EX-3
+            MeetingService-->MeetingController: MSG264 - Unable to cancel the meeting. Please try again.
+            MeetingController-->MeetingPage: MSG264 - Unable to cancel the meeting. Please try again.
+            MeetingPage-->Organizer: MSG264 - Unable to cancel the meeting. Please try again.
+        else Meeting cancelled
+            opt Meeting was Published
+                MeetingService->ParticipantRepository: Get current invited internal participants and Guests
+                activate ParticipantRepository
+                ParticipantRepository->Database: Get invited internal participants and Guests
+                activate Database
+                Database-->ParticipantRepository: Invitees
+                deactivate Database
+                ParticipantRepository-->MeetingService: Invitees
+                deactivate ParticipantRepository
+                MeetingService->NotificationService: Notify invited internal participants in the application with the reason (BR-300)
+                activate NotificationService
+                NotificationService-->MeetingService: Notifications created / delivery failed\n(failure does not undo the cancellation)
+                deactivate NotificationService
+                MeetingService->InvitationQueue: Queue cancellation emails to invited internal participants and Guests\nwith the reason (BR-300)
+                activate InvitationQueue
+                InvitationQueue-->MeetingService: Delivery arranged / retry delivery;\nMeeting remains Cancelled
+                deactivate InvitationQueue
+            end
+            MeetingService-->MeetingController: MSG261 - Meeting cancelled successfully.
+            MeetingController-->MeetingPage: MSG261 - Meeting cancelled successfully.
+            MeetingPage-->Organizer: MSG261 - Meeting cancelled successfully.
+        end
+    end
+end
+deactivate MeetingService
+deactivate MeetingController
+deactivate MeetingPage

@@ -49,42 +49,34 @@ alt Item cannot become current - EX-1
     AgendaController-->MeetingPage: MSG73 - This agenda item cannot be set as current.
     MeetingPage-->Chair: MSG73 - This agenda item cannot be set as current.
 else Initial conditions valid
-    AgendaService->AgendaItemRepository: Get any InProgress Item and first Pending Item\nin latest Meeting order (BR-70, BR-71)
+    AgendaService->AgendaItemRepository: Get any InProgress Item of the Meeting (BR-71)
     activate AgendaItemRepository
-    AgendaItemRepository->Database: Get any InProgress Item and first Pending Item\nin latest Meeting order (BR-70, BR-71)
+    AgendaItemRepository->Database: Get any InProgress Item of the Meeting (BR-71)
     activate Database
-    Database-->AgendaItemRepository: Current Item / None; first Pending Item
+    Database-->AgendaItemRepository: Current Item / None
     deactivate Database
-    AgendaItemRepository-->AgendaService: Current Item / None; first Pending Item
+    AgendaItemRepository-->AgendaService: Current Item / None
     deactivate AgendaItemRepository
 
     alt Another Item is InProgress - EX-2
         AgendaService-->AgendaController: MSG72 - Another agenda item is already in progress.\nComplete it before starting another agenda item.
         AgendaController-->MeetingPage: MSG72 - Another agenda item is already in progress.\nComplete it before starting another agenda item.
         MeetingPage-->Chair: MSG72 - Another agenda item is already in progress.\nComplete it before starting another agenda item.
-    else Selected Item is not first Pending - EX-3
-        AgendaService-->AgendaController: MSG144 - Start the first Pending agenda item in the current order.\nAgenda unchanged; refresh Agenda
-        AgendaController-->MeetingPage: MSG144 - Start the first Pending agenda item in the current order.\nAgenda unchanged; refresh Agenda
-        MeetingPage-->Chair: MSG144 - Start the first Pending agenda item in the current order.\nAgenda unchanged; refresh Agenda
-    else Selected Item is first Pending and no Item is current
-        AgendaService->AgendaItemRepository: Recheck current status and order and save InProgress with actual start time\nas one successful change; allow only one concurrent start (BR-70, BR-71, BR-72)
+    else No Item is current; position of the selected Item does not matter
+        AgendaService->AgendaItemRepository: Recheck Item is Pending and no Item is InProgress, then save InProgress\nwith actual start time as one change; allow only one concurrent start (BR-70, BR-71, BR-72)
         activate AgendaItemRepository
-        AgendaItemRepository->Database: Recheck current status and order and save InProgress with actual start time\nas one successful change; allow only one concurrent start (BR-70, BR-71, BR-72)
+        AgendaItemRepository->Database: Recheck Item is Pending and no Item is InProgress, then save InProgress\nwith actual start time as one change; allow only one concurrent start (BR-70, BR-71, BR-72)
         activate Database
-        Database-->AgendaItemRepository: Started / Another Item started / First Pending changed / Save failed
+        Database-->AgendaItemRepository: Started / Another Item started / Save failed
         deactivate Database
-        AgendaItemRepository-->AgendaService: Started / Another Item started / First Pending changed / Save failed
+        AgendaItemRepository-->AgendaService: Started / Another Item started / Save failed
         deactivate AgendaItemRepository
 
         alt Another Item became current - EX-2
             AgendaService-->AgendaController: MSG72 - Another agenda item is already in progress.\nComplete it before starting another agenda item.
             AgendaController-->MeetingPage: MSG72 - Another agenda item is already in progress.\nComplete it before starting another agenda item.
             MeetingPage-->Chair: MSG72 - Another agenda item is already in progress.\nComplete it before starting another agenda item.
-        else First Pending changed - EX-3
-            AgendaService-->AgendaController: MSG144 - Start the first Pending agenda item in the current order.
-            AgendaController-->MeetingPage: MSG144 - Start the first Pending agenda item in the current order.
-            MeetingPage-->Chair: MSG144 - Start the first Pending agenda item in the current order.
-        else Status or actual start cannot be saved - EX-4
+        else Status or actual start cannot be saved - EX-3
             AgendaService-->AgendaController: MSG75 - Unable to set the current agenda item. Please try again.\nPrevious Agenda and timestamps preserved
             AgendaController-->MeetingPage: MSG75 - Unable to set the current agenda item. Please try again.\nPrevious Agenda and timestamps preserved
             MeetingPage-->Chair: MSG75 - Unable to set the current agenda item. Please try again.\nPrevious Agenda and timestamps preserved
