@@ -31,8 +31,12 @@ import {
   LockOpen,
   LogOut,
   MapPin,
+  MessageSquare,
+  Mic,
+  MicOff,
   Paperclip,
   PenLine,
+  PhoneOff,
   Plus,
   Presentation,
   Radio,
@@ -49,6 +53,7 @@ import {
   UserRound,
   Users,
   Video,
+  Volume2,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -115,6 +120,12 @@ const ICONS = {
   broadcast: Radio,
   more: Ellipsis,
   moreVertical: EllipsisVertical,
+  // Call room (SCRUM-41).
+  mic: Mic,
+  micOff: MicOff,
+  messageSquare: MessageSquare,
+  phoneOff: PhoneOff,
+  volume: Volume2,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS
