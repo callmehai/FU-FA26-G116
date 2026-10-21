@@ -25,6 +25,7 @@ public static partial class MeetingListQueryParser
         var rawSortBy = Read(values, "sortBy", fieldErrors);
         var rawSortDir = Read(values, "sortDir", fieldErrors);
         var rawExcludeDeclined = Read(values, "excludeDeclined", fieldErrors);
+        var rawTiming = Read(values, "timing", fieldErrors);
 
         MeetingStatus? status = null;
         if (rawStatus is not null)
@@ -95,6 +96,19 @@ public static partial class MeetingListQueryParser
             fieldErrors["excludeDeclined"] = "Tham số excludeDeclined chỉ nhận true hoặc false.";
         }
 
+        // Upcoming: starts after now. Past: started at or before now, so a meeting under way is past.
+        MeetingTiming? timing = rawTiming switch
+        {
+            null => null,
+            "upcoming" => MeetingTiming.Upcoming,
+            "past" => MeetingTiming.Past,
+            _ => null,
+        };
+        if (rawTiming is not null && timing is null)
+        {
+            fieldErrors["timing"] = "Tham số timing chỉ nhận upcoming hoặc past.";
+        }
+
         errors = fieldErrors;
         if (fieldErrors.Count > 0)
         {
@@ -103,7 +117,7 @@ public static partial class MeetingListQueryParser
         }
 
         query = new MeetingListQuery(
-            status, sensitivity, rawSearch?.Trim(), from, to, page, pageSize, sortBy, sortDirection, excludeDeclined);
+            status, sensitivity, rawSearch?.Trim(), from, to, page, pageSize, sortBy, sortDirection, excludeDeclined, timing);
         return true;
     }
 

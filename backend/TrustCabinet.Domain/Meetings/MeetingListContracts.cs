@@ -6,6 +6,9 @@ public enum MeetingSortBy { Title, PlannedStartTime, CreatedAt }
 
 public enum MeetingSortDirection { Asc, Desc }
 
+/// <summary>Where a meeting's planned start falls against now, as AI-eCabinet's list filters it.</summary>
+public enum MeetingTiming { Upcoming, Past }
+
 /// <summary>Validated criteria for an authorized meeting page.</summary>
 public sealed record MeetingListQuery(
     MeetingStatus? Status,
@@ -17,7 +20,10 @@ public sealed record MeetingListQuery(
     int PageSize,
     MeetingSortBy SortBy,
     MeetingSortDirection SortDirection,
-    bool ExcludeDeclined = false);
+    bool ExcludeDeclined = false,
+    MeetingTiming? Timing = null,
+    // The "now" Timing compares against; the service sets it from its clock.
+    DateTimeOffset? Now = null);
 
 public sealed record MeetingListItem(
     Guid Id,

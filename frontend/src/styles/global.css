@@ -1108,27 +1108,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .row-skeleton td:last-child .skeleton { width: 24px; margin-left: auto; }
 @keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
 
-/* Two date inputs drawn as one control, so the range reads as a single filter. */
-.date-range {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  height: var(--control-height);
-  margin: 0;
-  padding: 0 4px;
-  border: 1px solid var(--control-line);
-  border-radius: var(--radius);
-  background: var(--surface);
-  color: var(--muted-ink);
-}
-.date-range-label { padding: 0 4px 0 8px; font-size: 14px; white-space: nowrap; }
-.date-range input { width: 132px; height: 34px; padding: 0 6px; border: none; box-shadow: none; }
-.date-range input:focus-visible { box-shadow: none; }
-.date-range:focus-within { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
-.date-range-invalid { border-color: var(--danger); }
-/* Below 1400px the toolbar needs the room; the fieldset's legend still names the range. */
-@media (max-width: 1400px) { .date-range-label { display: none; } }
-
 /* ---------- Pagination (components/Pagination.tsx) ---------- */
 .pagination {
   display: flex;

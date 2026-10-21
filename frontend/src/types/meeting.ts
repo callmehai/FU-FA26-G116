@@ -153,7 +153,11 @@ export interface MeetingListQuery {
   sortDir: SortDirection
   /** The calendar's view: leave out meetings the caller declined, as in AI-eCabinet. */
   excludeDeclined?: boolean
+  /** Planned start after now (`upcoming`) or at/before it (`past`), by the server's clock. */
+  timing?: MeetingTiming
 }
+
+export type MeetingTiming = 'upcoming' | 'past'
 
 /**
  * Body of POST /api/meetings and PUT /api/meetings/{id}. PUT replaces every field. The approver is

@@ -21,9 +21,10 @@ import {
 import { useAccessLost } from '../auth/useAccessLost'
 import { useAuth } from '../auth/useAuth'
 import {
-  DEFAULT_STATE,
   PAGE_SIZES,
-  dateRangeError,
+  WHEN_LABEL,
+  WHEN_OPTIONS,
+  clearedState,
   defaultDirection,
   hasFilters,
   readListState,
@@ -45,6 +46,11 @@ const STATUS_OPTIONS = [
 const SENSITIVITY_OPTIONS = [
   { value: '' as const, label: 'Mọi mức độ' },
   ...SENSITIVITIES.map((s) => ({ value: s, label: SENSITIVITY_LABEL[s] })),
+]
+
+const WHEN_SELECT_OPTIONS = [
+  { value: '' as const, label: 'Mọi thời điểm' },
+  ...WHEN_OPTIONS.map((w) => ({ value: w, label: WHEN_LABEL[w] })),
 ]
 
 const COLUMN_COUNT = 7
@@ -70,7 +76,6 @@ export function MeetingsPage() {
   const back = backState('Cuộc họp', location)
   const state = readListState(searchParams)
   const queryKey = writeListState(state).toString()
-  const rangeError = dateRangeError(state)
 
   const [load, setLoad] = useState<Load>({ kind: 'loading' })
   /** The last good page, kept on screen while the next one loads so the table does not flash empty. */
@@ -91,7 +96,6 @@ export function MeetingsPage() {
   const [search, setSearch] = useSearchBox(state.q, (q) => update({ q }))
 
   useEffect(() => {
-    if (rangeError) return
     let cancelled = false
     // Deferred past the effect's synchronous phase, as the other pages do.
     void Promise.resolve().then(async () => {
@@ -124,7 +128,7 @@ export function MeetingsPage() {
     return () => {
       cancelled = true
     }
-  }, [queryKey, rangeError, attempt, handleAccessLost, setSearchParams])
+  }, [queryKey, attempt, handleAccessLost, setSearchParams])
 
   function sortBy(column: MeetingSortBy) {
     const sortDir = state.sortBy === column ? (state.sortDir === 'asc' ? 'desc' : 'asc') : defaultDirection(column)
@@ -133,25 +137,18 @@ export function MeetingsPage() {
 
   function clearFilters() {
     setSearch('')
-    setSearchParams(
-      writeListState({ ...DEFAULT_STATE, pageSize: state.pageSize, sortBy: state.sortBy, sortDir: state.sortDir }),
-      { replace: true },
-    )
+    setSearchParams(writeListState(clearedState(state)), { replace: true })
   }
 
   const filtered = hasFilters(state)
+  // The list as it opens: only meetings under way, which most of the time is none.
+  const onlyLive = state.status === 'InProgress' && !state.q.trim() && !state.sensitivity && !state.when
   const data = shown
   const canCreate = can('MeetingCreator')
   const createLink = useCreateMeetingLink()
 
   let body: ReactNode
-  if (rangeError) {
-    body = (
-      <EmptyRow>
-        Không có cuộc họp nào trong khoảng thời gian này — ngày kết thúc đang đứng trước ngày bắt đầu.
-      </EmptyRow>
-    )
-  } else if (load.kind === 'error') {
+  if (load.kind === 'error') {
     body = (
       <EmptyRow>
         <p className="cell-error">{load.invalidQuery ? 'Bộ lọc trên đường dẫn không hợp lệ.' : load.message}</p>
@@ -179,7 +176,15 @@ export function MeetingsPage() {
       </tr>
     ))
   } else if (data.items.length === 0) {
-    body = filtered ? (
+    body = onlyLive ? (
+      <EmptyRow>
+        <p className="empty-title">Hiện không có cuộc họp nào đang diễn ra.</p>
+        <button type="button" className="btn btn-outline btn-sm" onClick={clearFilters}>
+          <Icon name="list" size={16} />
+          Xem mọi cuộc họp
+        </button>
+      </EmptyRow>
+    ) : filtered ? (
       <EmptyRow>
         <p className="empty-title">Không có cuộc họp nào khớp bộ lọc.</p>
         <button type="button" className="btn btn-outline btn-sm" onClick={clearFilters}>
@@ -298,30 +303,12 @@ export function MeetingsPage() {
             label="Mức độ"
           />
 
-          <fieldset className={rangeError ? 'date-range date-range-invalid' : 'date-range'}>
-            <legend className="visually-hidden">Thời gian diễn ra</legend>
-            <span className="date-range-label" aria-hidden="true">
-              Thời điểm
-            </span>
-            <input
-              type="date"
-              value={state.from}
-              max={state.to || undefined}
-              onChange={(e) => update({ from: e.target.value })}
-              aria-label="Diễn ra từ ngày"
-              data-tooltip="Diễn ra từ ngày"
-            />
-            <span aria-hidden="true">–</span>
-            <input
-              type="date"
-              value={state.to}
-              min={state.from || undefined}
-              onChange={(e) => update({ to: e.target.value })}
-              aria-label="Diễn ra đến ngày"
-              data-tooltip="Diễn ra đến ngày"
-              aria-invalid={!!rangeError}
-            />
-          </fieldset>
+          <Select
+            value={state.when}
+            options={WHEN_SELECT_OPTIONS}
+            onChange={(when) => update({ when })}
+            label="Thời điểm"
+          />
 
           {/* Icon-only so the toolbar stays on one line; the empty state carries the labelled button. */}
           {filtered && (
@@ -358,7 +345,7 @@ export function MeetingsPage() {
           </table>
         </div>
 
-        {data && data.totalCount > 0 && !rangeError && load.kind !== 'error' && (
+        {data && data.totalCount > 0 && load.kind !== 'error' && (
           <Pagination
             page={data.page}
             pageSize={data.pageSize}

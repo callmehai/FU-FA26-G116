@@ -1,9 +1,10 @@
-import { endOfDateInput, startOfDateInput } from '../../lib/dateInput'
+import { addDays, endOfDay, startOfWeek } from '../calendar/dates'
 import {
   MEETING_STATUSES,
   SENSITIVITIES,
   type MeetingListQuery,
   type MeetingSortBy,
+  type MeetingTiming,
   type MeetingStatus,
   type Sensitivity,
   type SortDirection,
@@ -15,23 +16,39 @@ import {
  *
  * Whatever is in the URL is read defensively: an unknown value is dropped rather than sent, so a
  * hand-edited or outdated link falls back to the default instead of failing with a 400.
+ *
+ * As in AI-eCabinet, the list opens on what is happening now: no `status` in the URL means
+ * "Đang diễn ra", and `status=all` is the explicit "every status".
  */
 export interface ListState {
   q: string
   status: MeetingStatus | ''
   sensitivity: Sensitivity | ''
-  /** `YYYY-MM-DD` in the viewer's timezone, as a date input holds it. */
-  from: string
-  to: string
+  when: When | ''
   page: number
   pageSize: number
   sortBy: MeetingSortBy
   sortDir: SortDirection
 }
 
+/**
+ * The "Thời điểm" presets, AI-eCabinet's: the two windows people ask for, and before or after now.
+ * No free date range — the calendar is where a particular day is looked up.
+ */
+export const WHEN_OPTIONS = ['today', 'week', 'upcoming', 'past'] as const
+export type When = (typeof WHEN_OPTIONS)[number]
+
+export const WHEN_LABEL: Record<When, string> = {
+  today: 'Hôm nay',
+  week: 'Tuần này',
+  upcoming: 'Chưa diễn ra',
+  past: 'Đã diễn ra',
+}
+
+const ALL_STATUSES = 'all'
+
 export const PAGE_SIZES = [10, 20, 50] as const
 const SORT_COLUMNS: readonly MeetingSortBy[] = ['title', 'plannedStartTime', 'createdAt']
-const DATE = /^\d{4}-\d{2}-\d{2}$/
 
 /** A name sorts A→Z first; a time sorts newest first. Same defaults as the backend. */
 export function defaultDirection(column: MeetingSortBy): SortDirection {
@@ -40,10 +57,9 @@ export function defaultDirection(column: MeetingSortBy): SortDirection {
 
 export const DEFAULT_STATE: ListState = {
   q: '',
-  status: '',
+  status: 'InProgress',
   sensitivity: '',
-  from: '',
-  to: '',
+  when: '',
   page: 1,
   pageSize: 20,
   sortBy: 'plannedStartTime',
@@ -58,15 +74,13 @@ export function readListState(params: URLSearchParams): ListState {
   const sortBy = oneOf(params.get('sortBy'), SORT_COLUMNS) ?? DEFAULT_STATE.sortBy
   const page = Number(params.get('page'))
   const pageSize = Number(params.get('pageSize'))
-  const from = params.get('from') ?? ''
-  const to = params.get('to') ?? ''
+  const status = params.get('status')
 
   return {
     q: params.get('q') ?? '',
-    status: oneOf(params.get('status'), MEETING_STATUSES) ?? '',
+    status: status === ALL_STATUSES ? '' : (oneOf(status, MEETING_STATUSES) ?? DEFAULT_STATE.status),
     sensitivity: oneOf(params.get('sensitivity'), SENSITIVITIES) ?? '',
-    from: DATE.test(from) ? from : '',
-    to: DATE.test(to) ? to : '',
+    when: oneOf(params.get('when'), WHEN_OPTIONS) ?? '',
     page: Number.isInteger(page) && page >= 1 ? page : 1,
     pageSize: (PAGE_SIZES as readonly number[]).includes(pageSize) ? pageSize : DEFAULT_STATE.pageSize,
     sortBy,
@@ -79,10 +93,9 @@ export function writeListState(state: ListState): URLSearchParams {
   const params = new URLSearchParams()
   const q = state.q.trim()
   if (q) params.set('q', q)
-  if (state.status) params.set('status', state.status)
+  if (state.status !== DEFAULT_STATE.status) params.set('status', state.status || ALL_STATUSES)
   if (state.sensitivity) params.set('sensitivity', state.sensitivity)
-  if (state.from) params.set('from', state.from)
-  if (state.to) params.set('to', state.to)
+  if (state.when) params.set('when', state.when)
   if (state.sortBy !== DEFAULT_STATE.sortBy || state.sortDir !== DEFAULT_STATE.sortDir) {
     params.set('sortBy', state.sortBy)
     params.set('sortDir', state.sortDir)
@@ -94,28 +107,40 @@ export function writeListState(state: ListState): URLSearchParams {
 
 /** Whether anything narrows the list — decides between "no meetings yet" and "nothing matches". */
 export function hasFilters(state: ListState) {
-  return Boolean(state.q.trim() || state.status || state.sensitivity || state.from || state.to)
+  return Boolean(state.q.trim() || state.status || state.sensitivity || state.when)
 }
 
-/** A "to" before the "from" can only return nothing; the page says so instead of asking the server. */
-export function dateRangeError(state: ListState): string | null {
-  return state.from && state.to && state.from > state.to ? 'Ngày kết thúc phải từ ngày bắt đầu trở đi.' : null
+/** "Bỏ lọc": every meeting, keeping how the user sorts and pages. */
+export function clearedState(state: ListState): ListState {
+  return { ...DEFAULT_STATE, status: '', pageSize: state.pageSize, sortBy: state.sortBy, sortDir: state.sortDir }
 }
 
 /**
- * The request for the current state. The date range covers whole local days: "from" starts at
- * 00:00 of its day and "to" runs to the end of its day, so picking the same day twice finds that day.
+ * The request for the current state. "Hôm nay" and "Tuần này" are whole local days (Monday to
+ * Sunday), sent as a range; before or after now is the server's `timing`, against its own clock.
  */
-export function toQuery(state: ListState): MeetingListQuery {
+export function toQuery(state: ListState, now = new Date()): MeetingListQuery {
+  const range =
+    state.when === 'today'
+      ? { from: now, to: now }
+      : state.when === 'week'
+        ? { from: startOfWeek(now), to: addDays(startOfWeek(now), 6) }
+        : null
+  const timing: MeetingTiming | undefined = state.when === 'upcoming' || state.when === 'past' ? state.when : undefined
   return {
     q: state.q.trim() || undefined,
     status: state.status || undefined,
     sensitivity: state.sensitivity || undefined,
-    from: startOfDateInput(state.from) ?? undefined,
-    to: endOfDateInput(state.to) ?? undefined,
+    from: range ? startOfDay(range.from).toISOString() : undefined,
+    to: range ? endOfDay(range.to).toISOString() : undefined,
+    timing,
     page: state.page,
     pageSize: state.pageSize,
     sortBy: state.sortBy,
     sortDir: state.sortDir,
   }
+}
+
+function startOfDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }

@@ -39,6 +39,14 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             meetings = meetings.Where(m => m.PlannedStartTime <= to);
         }
 
+        if (query.Timing is { } timing)
+        {
+            var now = query.Now ?? DateTimeOffset.UtcNow;
+            meetings = timing == MeetingTiming.Upcoming
+                ? meetings.Where(m => m.PlannedStartTime > now)
+                : meetings.Where(m => m.PlannedStartTime <= now);
+        }
+
         if (query.ExcludeDeclined)
         {
             // The Chair is never asked, so an answer left from before they took the chair does not hide the meeting.

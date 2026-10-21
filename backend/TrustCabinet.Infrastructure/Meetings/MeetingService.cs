@@ -139,7 +139,8 @@ public sealed class MeetingService(
     {
         try
         {
-            return MeetingListResult.Success(await meetings.FindAuthorizedPageAsync(actorId, query, ct));
+            return MeetingListResult.Success(await meetings.FindAuthorizedPageAsync(
+                actorId, query.Timing is null ? query : query with { Now = UtcNow }, ct));
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {

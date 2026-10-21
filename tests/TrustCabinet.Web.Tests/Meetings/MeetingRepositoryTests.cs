@@ -1464,6 +1464,27 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Authorized_page_timing_splits_on_the_planned_start_against_now()
+    {
+        // As AI-eCabinet: upcoming starts after now; past started at or before now, under way included.
+        var now = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero);
+        var underWay = ListMeeting("Under way", MeetingStatus.Draft, now.AddMinutes(-30));
+        var startsNow = ListMeeting("Starts now", MeetingStatus.Draft, now);
+        var later = ListMeeting("Later", MeetingStatus.Draft, now.AddMinutes(1));
+        _db.Meetings.AddRange(underWay, startsNow, later);
+        await _db.SaveChangesAsync();
+        var repository = new MeetingRepository(_db);
+
+        var upcoming = await repository.FindAuthorizedPageAsync(
+            _creatorId, ListQuery() with { Timing = MeetingTiming.Upcoming, Now = now });
+        var past = await repository.FindAuthorizedPageAsync(
+            _creatorId, ListQuery() with { Timing = MeetingTiming.Past, Now = now });
+
+        Assert.Equal([later.Id], upcoming.Items.Select(item => item.Id));
+        Assert.Equal(new[] { underWay.Id, startsNow.Id }.Order(), past.Items.Select(item => item.Id).Order());
+    }
+
+    [Fact]
     public async Task Authorized_page_sorts_all_columns_in_both_directions_and_pages_stably()
     {
         var baseTime = new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
