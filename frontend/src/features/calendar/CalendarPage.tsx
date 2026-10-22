@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { Icon } from '../../components/Icon'
 import { Select } from '../../components/Select'
@@ -6,12 +6,15 @@ import { backState } from '../../lib/backTarget'
 import { routes } from '../../lib/routes'
 import { useAuth } from '../auth/useAuth'
 import { placeLabel } from '../meetings/place'
+import { RsvpButtons, RsvpChip } from '../participants/Rsvp'
+import { useCreateMeetingLink } from '../meetings/meetingDialogLink'
 import { MEETING_STATUS_LABEL } from '../../types/meeting'
 import { SensitivityBadge, StatusBadge } from '../meetings/StatusBadge'
 import { STATUS_TONE } from '../meetings/statusTone'
 import { CalendarFilter } from './CalendarFilter'
 import { DatePicker } from './DatePicker'
-import { NO_FILTER, activeGroups, matchesFilter, readFilter, writeFilter, type CalendarFilterValue } from './filter'
+import { MeetingOverview } from './MeetingOverview'
+import { NO_FILTER, matchesFilter, readFilter, writeFilter, type CalendarFilterValue } from './filter'
 import { useSchedule, type Schedule, type ScheduleEntry } from './useSchedule'
 import {
   WEEKDAYS,
@@ -66,6 +69,15 @@ export function CalendarPage() {
   const [params, setParams] = useSearchParams()
   const now = useNow()
   const [attempt, setAttempt] = useState(0)
+  /** The quick look open beside a tile, as AI-eCabinet's calendar opens it. */
+  const [overview, setOverview] = useState<Overview | null>(null)
+  const closeOverview = useCallback(() => setOverview(null), [])
+  // A second click on the same tile closes its card; another tile opens its own.
+  const openOverview = useCallback<OpenOverview>(
+    (entry, anchor, keyboard) =>
+      setOverview((current) => (current?.entry.meeting.id === entry.meeting.id ? null : { entry, anchor, keyboard })),
+    [],
+  )
   const spanParam = params.get('span')
   const span: Span = spanParam === 'full' || spanParam === 'month' ? spanParam : 'work'
   const mode: Mode = params.get('mode') === 'list' ? 'list' : 'calendar'
@@ -131,6 +143,9 @@ export function CalendarPage() {
     go({ span: weekend ? 'full' : 'work', week: startOfWeek(day), mode: 'calendar' }, true)
   }
 
+  // The new meeting starts on the day in view, as AI-eCabinet seeds it: today when it is on screen.
+  const createLink = useCreateMeetingLink(days.some((d) => sameDay(d, now)) ? now : days[0])
+
   const unit = byMonth ? 'Tháng' : 'Tuần'
   const step = (n: number) => (byMonth ? go({ month: addMonths(month, n) }) : go({ week: addDays(monday, 7 * n) }))
 
@@ -150,7 +165,7 @@ export function CalendarPage() {
             className="btn btn-outline"
             onClick={() => step(-1)}
             aria-label={`${unit} trước`}
-            title={`${unit} trước`}
+            data-tooltip={`${unit} trước`}
           >
             <Icon name="chevronLeft" size={18} />
           </button>
@@ -159,7 +174,7 @@ export function CalendarPage() {
             className="btn btn-outline"
             onClick={() => step(1)}
             aria-label={`${unit} sau`}
-            title={`${unit} sau`}
+            data-tooltip={`${unit} sau`}
           >
             <Icon name="chevronRight" size={18} />
           </button>
@@ -183,7 +198,7 @@ export function CalendarPage() {
               type="button"
               aria-pressed={mode === 'calendar'}
               aria-label="Lịch"
-              title="Lịch"
+              data-tooltip="Lịch"
               onClick={() => go({ mode: 'calendar' })}
             >
               <span className="view-toggle-icon">
@@ -195,7 +210,7 @@ export function CalendarPage() {
               type="button"
               aria-pressed={mode === 'list'}
               aria-label="Danh sách"
-              title="Danh sách"
+              data-tooltip="Danh sách"
               onClick={() => go({ mode: 'list' })}
             >
               <span className="view-toggle-icon">
@@ -207,7 +222,7 @@ export function CalendarPage() {
           <Select value={span} options={SPAN_OPTIONS} onChange={changeSpan} label="Kiểu lịch" />
           <CalendarFilter value={filter} entries={inView} onChange={(next) => go({ filter: next })} />
           {can('MeetingCreator') && (
-            <Link className="btn btn-primary" to={routes.meetingNew}>
+            <Link className="btn btn-primary btn-cta" to={createLink.to} state={createLink.state}>
               <Icon name="plus" size={18} />
               Tạo cuộc họp
             </Link>
@@ -217,22 +232,61 @@ export function CalendarPage() {
 
       <ScheduleNotice
         schedule={schedule}
-        filteredOut={
-          activeGroups(filter) > 0 && !!inView?.length && visible.kind === 'loaded' && visible.entries.length === 0
-        }
+        filteredOut={!!inView?.length && visible.kind === 'loaded' && visible.entries.length === 0}
         onRetry={() => setAttempt((n) => n + 1)}
         onClearFilter={() => go({ filter: NO_FILTER })}
       />
 
       {mode === 'list' ? (
-        <DayList days={days} now={now} schedule={visible} />
+        <DayList days={days} now={now} schedule={visible} onAnswered={() => setAttempt((n) => n + 1)} />
       ) : byMonth ? (
-        <MonthGrid month={month} days={gridDays} now={now} schedule={visible} onOpenWeek={openWeek} />
+        <MonthGrid
+          month={month}
+          days={gridDays}
+          now={now}
+          schedule={visible}
+          onOpenWeek={openWeek}
+          onOpen={openOverview}
+        />
       ) : (
-        <WeekGrid days={days} now={now} schedule={visible} />
+        <WeekGrid days={days} now={now} schedule={visible} onOpen={openOverview} />
+      )}
+
+      {overview && (
+        <MeetingOverview
+          key={overview.entry.meeting.id}
+          item={overview.entry.meeting}
+          anchor={overview.anchor}
+          keyboard={overview.keyboard}
+          onClose={closeOverview}
+          onAnswered={(response) => {
+            setAttempt((n) => n + 1)
+            // A declined meeting leaves the calendar, and its card with it.
+            if (response === 'Declined') closeOverview()
+          }}
+        />
       )}
     </>
   )
+}
+
+interface Overview {
+  entry: ScheduleEntry
+  anchor: HTMLElement
+  keyboard: boolean
+}
+type OpenOverview = (entry: ScheduleEntry, anchor: HTMLElement, keyboard: boolean) => void
+
+/**
+ * A tile is still a link to the meeting, so Ctrl/⌘-click and middle-click open it in a new tab;
+ * a plain click opens the quick look instead. `detail` is 0 for a keyboard "click".
+ */
+function tileClick(entry: ScheduleEntry, onOpen: OpenOverview) {
+  return (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    event.preventDefault()
+    onOpen(entry, event.currentTarget, event.detail === 0)
+  }
 }
 
 /** Why the range shows nothing, when it is not simply free. */
@@ -253,6 +307,7 @@ function ScheduleNotice({
       <div className="alert alert-error page-alert calendar-note" role="alert">
         <p>{schedule.message}</p>
         <button type="button" className="btn btn-outline btn-sm" onClick={onRetry}>
+          <Icon name="refresh" size={16} />
           Thử lại
         </button>
       </div>
@@ -263,7 +318,8 @@ function ScheduleNotice({
       <div className="alert alert-info page-alert calendar-note" role="status">
         <p>Không có cuộc họp nào khớp bộ lọc trong khoảng này.</p>
         <button type="button" className="btn btn-outline btn-sm" onClick={onClearFilter}>
-          Bỏ lọc
+          <Icon name="list" size={16} />
+          Xem mọi cuộc họp
         </button>
       </div>
     )
@@ -271,7 +327,17 @@ function ScheduleNotice({
   return null
 }
 
-function WeekGrid({ days, now, schedule }: { days: Date[]; now: Date; schedule: Schedule }) {
+function WeekGrid({
+  days,
+  now,
+  schedule,
+  onOpen,
+}: {
+  days: Date[]
+  now: Date
+  schedule: Schedule
+  onOpen: OpenOverview
+}) {
   const entries = schedule.kind === 'loaded' ? schedule.entries : []
   const nowTop = minutesOfDay(now) * (HOUR_HEIGHT / 60)
   const showsToday = days.some((d) => sameDay(d, now))
@@ -327,7 +393,7 @@ function WeekGrid({ days, now, schedule }: { days: Date[]; now: Date; schedule: 
                 style={{ height: GRID_HEIGHT }}
               >
                 {dayEntries.map(({ entry, lane, lanes }) => (
-                  <GridEvent key={entry.meeting.id} entry={entry} lane={lane} lanes={lanes} />
+                  <GridEvent key={entry.meeting.id} entry={entry} lane={lane} lanes={lanes} onOpen={onOpen} />
                 ))}
                 {schedule.kind === 'loaded' && dayEntries.length === 0 && (
                   <span className="calendar-free" style={{ top: (WORKDAY_START_HOUR + 2) * HOUR_HEIGHT }}>
@@ -345,7 +411,17 @@ function WeekGrid({ days, now, schedule }: { days: Date[]; now: Date; schedule: 
   )
 }
 
-function GridEvent({ entry, lane, lanes }: { entry: ScheduleEntry; lane: number; lanes: number }) {
+function GridEvent({
+  entry,
+  lane,
+  lanes,
+  onOpen,
+}: {
+  entry: ScheduleEntry
+  lane: number
+  lanes: number
+  onOpen: OpenOverview
+}) {
   const top = minutesOfDay(entry.start) * (HOUR_HEIGHT / 60)
   // A meeting running past midnight stops at the bottom of its own day.
   const bottom = sameDay(entry.start, entry.end) ? minutesOfDay(entry.end) * (HOUR_HEIGHT / 60) : GRID_HEIGHT
@@ -359,9 +435,11 @@ function GridEvent({ entry, lane, lanes }: { entry: ScheduleEntry; lane: number;
     <Link
       to={routes.meeting(meeting.id)}
       state={back}
+      onClick={tileClick(entry, onOpen)}
+      data-cal-trigger=""
       className={`cal-event cal-event-${STATUS_TONE[meeting.status]}${tall ? '' : ' cal-event-short'}`}
       style={{ top, height, left: `calc(${(lane / lanes) * 100}% + 5px)`, width: `calc(${100 / lanes}% - 10px)` }}
-      title={`${meeting.title} · ${timeRange(entry)}`}
+      data-tooltip={`${meeting.title} · ${timeRange(entry)}`}
     >
       <span className="cal-event-time">
         {timeRange(entry)}
@@ -388,12 +466,14 @@ function MonthGrid({
   now,
   schedule,
   onOpenWeek,
+  onOpen,
 }: {
   month: Date
   days: Date[]
   now: Date
   schedule: Schedule
   onOpenWeek: (day: Date) => void
+  onOpen: OpenOverview
 }) {
   const entries = schedule.kind === 'loaded' ? schedule.entries : []
   // The weeks share the frame's height, five or six alike, so the grid never scrolls; each cell
@@ -451,7 +531,7 @@ function MonthGrid({
                     type="button"
                     className="month-day"
                     onClick={() => onOpenWeek(day)}
-                    title="Xem tuần này"
+                    data-tooltip="Xem tuần này"
                     aria-label={`${dayLabel(day)}${today ? ', hôm nay' : ''}: xem tuần`}
                     aria-current={today ? 'date' : undefined}
                   >
@@ -463,7 +543,7 @@ function MonthGrid({
                       className="month-more"
                       onClick={() => onOpenWeek(day)}
                       aria-label={`${hidden} cuộc họp nữa ngày ${formatDay(day)}: xem tuần`}
-                      title={`${hidden} cuộc họp nữa`}
+                      data-tooltip={`${hidden} cuộc họp nữa`}
                     >
                       +{hidden}
                       <span className="month-more-word"> cuộc họp</span>
@@ -471,7 +551,7 @@ function MonthGrid({
                   )}
                 </div>
                 {shown.map((entry) => (
-                  <MonthEvent key={entry.meeting.id} entry={entry} />
+                  <MonthEvent key={entry.meeting.id} entry={entry} onOpen={onOpen} />
                 ))}
               </div>
             )
@@ -483,7 +563,7 @@ function MonthGrid({
   )
 }
 
-function MonthEvent({ entry }: { entry: ScheduleEntry }) {
+function MonthEvent({ entry, onOpen }: { entry: ScheduleEntry; onOpen: OpenOverview }) {
   const { meeting } = entry
   // Back from the meeting lands on this month, in this view.
   const back = backState('Lịch làm việc', useLocation())
@@ -491,8 +571,10 @@ function MonthEvent({ entry }: { entry: ScheduleEntry }) {
     <Link
       to={routes.meeting(meeting.id)}
       state={back}
+      onClick={tileClick(entry, onOpen)}
+      data-cal-trigger=""
       className={`month-event cal-event-${STATUS_TONE[meeting.status]}`}
-      title={`${meeting.title} · ${timeRange(entry)} · ${MEETING_STATUS_LABEL[meeting.status]}`}
+      data-tooltip={`${meeting.title} · ${timeRange(entry)} · ${MEETING_STATUS_LABEL[meeting.status]}`}
     >
       <span className="month-event-time">{formatClock(entry.start)}</span>
       <span className="month-event-title">{meeting.title}</span>
@@ -506,7 +588,17 @@ function MonthEvent({ entry }: { entry: ScheduleEntry }) {
   )
 }
 
-function DayList({ days, now, schedule }: { days: Date[]; now: Date; schedule: Schedule }) {
+function DayList({
+  days,
+  now,
+  schedule,
+  onAnswered,
+}: {
+  days: Date[]
+  now: Date
+  schedule: Schedule
+  onAnswered: () => void
+}) {
   const entries = schedule.kind === 'loaded' ? schedule.entries : []
 
   return (
@@ -539,7 +631,7 @@ function DayList({ days, now, schedule }: { days: Date[]; now: Date; schedule: S
                 <p className="agenda-empty">Không có cuộc họp</p>
               </div>
             ) : (
-              dayEntries.map((entry) => <AgendaItem key={entry.meeting.id} entry={entry} />)
+              dayEntries.map((entry) => <AgendaItem key={entry.meeting.id} entry={entry} onAnswered={onAnswered} />)
             )}
           </section>
         )
@@ -548,7 +640,11 @@ function DayList({ days, now, schedule }: { days: Date[]; now: Date; schedule: S
   )
 }
 
-function AgendaItem({ entry }: { entry: ScheduleEntry }) {
+/**
+ * One meeting in the list view. An invitee who has not answered is asked here, as AI-eCabinet asks
+ * on its calendar: answering re-reads the range, so a declined meeting leaves the list.
+ */
+function AgendaItem({ entry, onAnswered }: { entry: ScheduleEntry; onAnswered: () => void }) {
   const { meeting } = entry
   const tone = STATUS_TONE[meeting.status]
   const back = backState('Lịch làm việc', useLocation())
@@ -575,7 +671,14 @@ function AgendaItem({ entry }: { entry: ScheduleEntry }) {
           <p className="agenda-chips">
             <StatusBadge status={meeting.status} />
             <SensitivityBadge sensitivity={meeting.sensitivity} />
+            <RsvpChip response={meeting.myResponse} />
           </p>
+          {meeting.canRespond && (
+            <div className="agenda-rsvp">
+              <span id={`rsvp-${meeting.id}`}>Xác nhận tham dự?</span>
+              <RsvpButtons meetingId={meeting.id} labelledBy={`rsvp-${meeting.id}`} onAnswered={onAnswered} />
+            </div>
+          )}
         </div>
         <Link className="btn btn-outline btn-sm agenda-open" to={routes.meeting(meeting.id)} state={back}>
           Xem chi tiết

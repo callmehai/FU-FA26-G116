@@ -63,30 +63,42 @@ public sealed record MeetingDetails(
     DateTimeOffset UpdatedAt,
     MeetingPerson? Chair = null,
     IReadOnlyList<MeetingPerson>? Secretaries = null,
-    string? MyMeetingRole = null)
+    string? MyMeetingRole = null,
+    string? MyResponse = null,
+    bool CanRespond = false)
 {
-    public static MeetingDetails From(Meeting meeting, Guid? actorId = null) => new(
-        meeting.Id,
-        meeting.Title,
-        meeting.Description,
-        meeting.PlannedStartTime,
-        meeting.PlannedEndTime,
-        meeting.ActualStartedAt,
-        meeting.ActualEndedAt,
-        meeting.Mode,
-        meeting.Location,
-        meeting.OnlineLink,
-        meeting.Sensitivity,
-        meeting.Status,
-        meeting.CreatedById,
-        meeting.Status == MeetingStatus.Draft ? null : meeting.AssignedApproverId,
-        meeting.CreatedAt,
-        meeting.UpdatedAt,
-        meeting.Participants.Where(p => ParticipantRules.Current(p) && p.Role == MeetingRole.Chair)
-            .Select(p => new MeetingPerson(p.UserId, p.User.FullName)).SingleOrDefault(),
-        meeting.Participants.Where(p => ParticipantRules.Current(p) && p.Role == MeetingRole.Secretary)
-            .OrderBy(p => p.User.FullName).ThenBy(p => p.UserId).Select(p => new MeetingPerson(p.UserId, p.User.FullName)).ToArray(),
-        meeting.Participants.SingleOrDefault(p => ParticipantRules.Current(p) && p.UserId == actorId)?.Role.ToString());
+    public static MeetingDetails From(Meeting meeting, Guid? actorId = null)
+    {
+        var mine = meeting.Participants.SingleOrDefault(p => ParticipantRules.Current(p) && p.UserId == actorId);
+        return new(
+            meeting.Id,
+            meeting.Title,
+            meeting.Description,
+            meeting.PlannedStartTime,
+            meeting.PlannedEndTime,
+            meeting.ActualStartedAt,
+            meeting.ActualEndedAt,
+            meeting.Mode,
+            meeting.Location,
+            meeting.OnlineLink,
+            meeting.Sensitivity,
+            meeting.Status,
+            meeting.CreatedById,
+            meeting.Status == MeetingStatus.Draft ? null : meeting.AssignedApproverId,
+            meeting.CreatedAt,
+            meeting.UpdatedAt,
+            meeting.Participants.Where(p => ParticipantRules.Current(p) && p.Role == MeetingRole.Chair)
+                .Select(p => new MeetingPerson(p.UserId, p.User.FullName)).SingleOrDefault(),
+            meeting.Participants.Where(p => ParticipantRules.Current(p) && p.Role == MeetingRole.Secretary)
+                .OrderBy(p => p.User.FullName).ThenBy(p => p.UserId).Select(p => new MeetingPerson(p.UserId, p.User.FullName)).ToArray(),
+            mine?.Role.ToString(),
+            MyResponseOf(mine?.Role, mine?.Response),
+            mine is not null && ParticipantRules.CanRespond(meeting.Status, mine));
+    }
+
+    /// <summary>The caller's answer to the invitation; null while unanswered, and always for the Chair, who is not asked.</summary>
+    public static string? MyResponseOf(MeetingRole? role, InvitationResponse? response)
+        => role is null or MeetingRole.Chair || response is null or InvitationResponse.Pending ? null : response.ToString();
 }
 
 public enum MeetingOutcome

@@ -658,7 +658,8 @@ public sealed record MeetingResponse(
     Guid? AssignedApproverId,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    MeetingPerson? Chair, IReadOnlyList<MeetingPerson> Secretaries, string? MyMeetingRole)
+    MeetingPerson? Chair, IReadOnlyList<MeetingPerson> Secretaries, string? MyMeetingRole,
+    string? MyResponse, bool CanRespond)
 {
     public static MeetingResponse From(MeetingDetails meeting) => new(
         meeting.Id,
@@ -676,7 +677,8 @@ public sealed record MeetingResponse(
         meeting.CreatedById,
         meeting.AssignedApproverId,
         meeting.CreatedAt,
-        meeting.UpdatedAt, meeting.Chair, meeting.Secretaries ?? [], meeting.MyMeetingRole);
+        meeting.UpdatedAt, meeting.Chair, meeting.Secretaries ?? [], meeting.MyMeetingRole,
+        meeting.MyResponse, meeting.CanRespond);
 }
 
 public sealed record MeetingMutationResponse(string Code, string Message, MeetingResponse Meeting);
@@ -690,11 +692,13 @@ public sealed record MeetingListItemResponse(
     string Location,
     DateTimeOffset CreatedAt,
     string Status,
-    string Sensitivity)
+    string Sensitivity,
+    string? MyResponse,
+    bool CanRespond)
 {
     public static MeetingListItemResponse From(MeetingListItem item) => new(
         item.Id, item.Title, item.PlannedStartTime, item.PlannedEndTime, item.Mode.ToString(), item.Location,
-        item.CreatedAt, item.Status.ToString(), item.Sensitivity.ToString());
+        item.CreatedAt, item.Status.ToString(), item.Sensitivity.ToString(), item.MyResponse, item.CanRespond);
 }
 
 public sealed record MeetingListResponse(

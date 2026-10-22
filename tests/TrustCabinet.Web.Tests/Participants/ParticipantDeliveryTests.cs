@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -69,6 +70,22 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
         Assert.Equal(dispatches.Select(d => d.DeduplicationKey).Order(), emails.Select(e => e.DeduplicationKey).Order());
         Assert.Contains(emails, e => e.Body.Contains("Chủ tọa", StringComparison.Ordinal));
         Assert.Contains(emails, e => e.Body.Contains("Thành viên", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Hybrid_meeting_without_a_room_is_placed_at_its_link_alone()
+    {
+        var s = await f.Seed();
+        await using (var db = f.Db())
+            await db.Meetings.Where(m => m.Id == s.MeetingId).ExecuteUpdateAsync(set => set
+                .SetProperty(m => m.Mode, MeetingMode.Hybrid).SetProperty(m => m.Location, ""));
+        using var secretary = f.Client(s.Secretary);
+        await Code(await Write(secretary, s.Url + "/participants", HttpMethod.Post,
+            new { userIds = new[] { s.Outsider }, role = "Member" }, await Tag(secretary, s.Url)), 201, "MSG96");
+        await using var read = f.Db();
+        var payload = await read.MeetingInvitationDispatches.Where(d => d.MeetingId == s.MeetingId)
+            .Select(d => d.PayloadJson).SingleAsync();
+        Assert.Equal("Phòng họp trực tuyến TrustCabinet", JsonDocument.Parse(payload).RootElement.GetProperty("Place").GetString());
     }
 
     [Fact]

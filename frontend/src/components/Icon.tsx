@@ -1,5 +1,10 @@
 import {
   ArrowDown,
+  ArrowRight,
+  LogIn,
+  Mail,
+  RotateCcw,
+  ExternalLink,
   ArrowUp,
   Bell,
   Building2,
@@ -135,6 +140,11 @@ const ICONS = {
   // SCRUM-43: screen sharing.
   monitor: Monitor,
   pictureInPicture: PictureInPicture2,
+  externalLink: ExternalLink,
+  arrowRight: ArrowRight,
+  logIn: LogIn,
+  mail: Mail,
+  undo: RotateCcw,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS

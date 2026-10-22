@@ -1,3 +1,5 @@
+import type { InvitationResponse, MeetingRole, ParticipantSeed } from './participant'
+
 /**
  * Meeting lifecycle. The order below is the state machine: a meeting is drafted, submitted for
  * approval, approved (or rejected and resubmitted), published to attendees, run, then ended. The
@@ -90,6 +92,20 @@ export interface Meeting {
   assignedApproverId: string | null
   createdAt: string
   updatedAt: string
+  /** The current Chair; every meeting has exactly one (SCRUM-20). */
+  chair: MeetingPerson | null
+  secretaries: MeetingPerson[]
+  /** The caller's role in this meeting; null when they are not on its roster (e.g. the organizer alone). */
+  myMeetingRole: MeetingRole | null
+  /** The caller's answer to the invitation; null while unanswered (counts as attending) and for the Chair. */
+  myResponse: Exclude<InvitationResponse, 'Pending'> | null
+  /** Whether to ask "Bạn có tham dự cuộc họp này?" now: invited, not the Chair, Published or InProgress, not answered yet. */
+  canRespond: boolean
+}
+
+export interface MeetingPerson {
+  userId: string
+  fullName: string
 }
 
 /** One row of the meeting list — only what the list shows. */
@@ -103,6 +119,9 @@ export interface MeetingListItem {
   createdAt: string
   status: MeetingStatus
   sensitivity: Sensitivity
+  /** As on `Meeting`: lets the calendar ask for an answer without reading each meeting. */
+  myResponse: Exclude<InvitationResponse, 'Pending'> | null
+  canRespond: boolean
 }
 
 /** The columns GET /api/meetings can sort by. */
@@ -132,7 +151,13 @@ export interface MeetingListQuery {
   pageSize: number
   sortBy: MeetingSortBy
   sortDir: SortDirection
+  /** The calendar's view: leave out meetings the caller declined, as in AI-eCabinet. */
+  excludeDeclined?: boolean
+  /** Planned start after now (`upcoming`) or at/before it (`past`), by the server's clock. */
+  timing?: MeetingTiming
 }
+
+export type MeetingTiming = 'upcoming' | 'past'
 
 /**
  * Body of POST /api/meetings and PUT /api/meetings/{id}. PUT replaces every field. The approver is
@@ -148,6 +173,11 @@ export interface MeetingRequest {
   onlineLink: string | null
   sensitivity: Sensitivity
   description: string
+}
+
+/** POST /api/meetings also names who attends: 1–100 active accounts, exactly one of them Chair. */
+export interface MeetingCreateRequest extends MeetingRequest {
+  participants: ParticipantSeed[]
 }
 
 /** POST answers MSG29; PUT answers MSG30, or MSG138 when a Published meeting was rescheduled. */

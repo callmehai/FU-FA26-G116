@@ -15,12 +15,15 @@ export function Dialog({
   onClose,
   children,
   footer,
+  size = 'md',
 }: {
   title: string
   description?: ReactNode
   onClose: () => void
   children?: ReactNode
   footer?: ReactNode
+  /** `lg` holds a whole form (create or edit a meeting); on a phone it takes the screen. */
+  size?: 'md' | 'lg'
 }) {
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
@@ -45,7 +48,7 @@ export function Dialog({
   return (
     <dialog
       ref={ref}
-      className="dialog"
+      className={size === 'lg' ? 'dialog dialog-lg' : 'dialog'}
       aria-labelledby={titleId}
       onCancel={(event) => {
         event.preventDefault()

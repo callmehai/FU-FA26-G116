@@ -465,6 +465,22 @@ public class MeetingServiceTests
     }
 
     [Fact]
+    public async Task List_with_timing_compares_against_the_service_clock()
+    {
+        var query = new MeetingListQuery(
+            null, null, null, null, null, 1, 20, MeetingSortBy.PlannedStartTime, MeetingSortDirection.Desc,
+            Timing: MeetingTiming.Upcoming);
+        var before = DateTimeOffset.UtcNow;
+
+        await NewService().ListAsync(query, _actorId);
+
+        var now = _repository.LastListQuery!.Now;
+        Assert.NotNull(now);
+        Assert.InRange(now.Value, before, DateTimeOffset.UtcNow);
+        Assert.Equal(query with { Now = now }, _repository.LastListQuery);
+    }
+
+    [Fact]
     public async Task List_maps_a_database_failure_to_read_failed()
     {
         var failure = new NpgsqlException("database unavailable");

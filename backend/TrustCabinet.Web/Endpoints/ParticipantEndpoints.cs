@@ -34,6 +34,8 @@ public static class ParticipantEndpoints
     private const string Msg259InvalidChairRecipient = "MSG259";
     private const string Msg258NoChairCandidates = "MSG258";
     private const string Msg260CannotHandOverChair = "MSG260";
+    private const string Msg285ResponseFinal = "MSG285";
+    private const string Msg286ChairCannotRespond = "MSG286";
     private const int MaxBytes = 64 * 1024;
     private static readonly JsonSerializerOptions InputJson = new(JsonSerializerDefaults.Web)
     {
@@ -378,6 +380,16 @@ public static class ParticipantEndpoints
                     409,
                     Msg107CannotRespond,
                     "Lời mời này không còn cho phép phản hồi."
+                ),
+                ParticipantFailure.ResponseFinal => (
+                    409,
+                    Msg285ResponseFinal,
+                    "Bạn đã trả lời lời mời này. Câu trả lời không đổi được."
+                ),
+                ParticipantFailure.ChairCannotRespond => (
+                    409,
+                    Msg286ChairCannotRespond,
+                    "Chủ tọa điều hành cuộc họp nên không cần xác nhận tham dự."
                 ),
                 ParticipantFailure.UnsupportedMedia => (
                     415,

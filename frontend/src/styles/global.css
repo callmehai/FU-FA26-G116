@@ -164,7 +164,7 @@ code {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 7px;
   height: var(--control-height);
   padding: 0 16px;
   border: 1px solid transparent;
@@ -174,9 +174,17 @@ code {
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
+  transition: background-color .15s, border-color .15s, color .15s, box-shadow .15s, translate .15s;
 }
+.btn .icon { flex: none; }
 
-.btn:disabled { opacity: .5; cursor: not-allowed; }
+/* Disabled as AI-eCabinet greys it: a solid grey, not a faded copy of the colour, so it never reads
+   as a lighter primary. */
+.btn:disabled { cursor: not-allowed; }
+.btn-primary:disabled { background: var(--line); border-color: var(--control-line); color: var(--muted-ink); }
+.btn-outline:disabled { background: var(--surface-alt); color: var(--faint-ink); }
+.btn-ghost:disabled { color: var(--faint-ink); }
+.btn-danger:disabled { opacity: .55; }
 
 .btn-primary { background: var(--brand); color: #fff; }
 .btn-primary:hover:not(:disabled) { background: var(--brand-ink); }
@@ -189,8 +197,29 @@ code {
 .btn-outline { background: var(--surface); border-color: var(--control-line); color: var(--ink); }
 .btn-outline:hover:not(:disabled) { background: var(--surface-alt); }
 
-.btn-danger { background: var(--danger); color: #fff; }
-.btn-danger:hover:not(:disabled) { background: var(--danger-ink); }
+/* Destructive, tinted rather than solid red (AI-eCabinet D3): red stays for warnings and "Mật". */
+.btn-danger { background: var(--chip-red-bg); border-color: color-mix(in srgb, var(--danger) 28%, transparent); color: var(--danger-ink); }
+.btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 16%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+
+/* The call to action (AI-eCabinet's cta, in the brand blue): raised, and it lifts on hover. For the
+   page's own action ("Tạo cuộc họp") and for what waits on the user ("Duyệt", "Vào phòng họp"). */
+.btn-cta { font-weight: 700; box-shadow: inset 0 -2px 0 rgb(0 0 0 / 14%), 0 4px 12px color-mix(in srgb, var(--brand) 30%, transparent); }
+.btn-cta:hover:not(:disabled) { translate: 0 -1px; box-shadow: inset 0 -2px 0 rgb(0 0 0 / 14%), 0 8px 18px color-mix(in srgb, var(--brand) 42%, transparent); }
+.btn-cta:disabled { box-shadow: none; }
+/* Waiting on the user right now: it ripples until done, and its arrow nudges (eCab cta-ping). One
+   per screen at most — a list of rippling buttons would be noise. */
+.btn-ping:not(:disabled) { animation: cta-ping 1.8s ease-out .6s infinite; }
+.btn-nudge .icon:last-child { animation: nudge 2s ease-in-out infinite; }
+@keyframes cta-ping {
+  0% { box-shadow: inset 0 -2px 0 rgb(0 0 0 / 14%), 0 0 0 0 color-mix(in srgb, var(--brand) 55%, transparent), 0 4px 12px color-mix(in srgb, var(--brand) 30%, transparent); }
+  100% { box-shadow: inset 0 -2px 0 rgb(0 0 0 / 14%), 0 0 0 12px color-mix(in srgb, var(--brand) 0%, transparent), 0 4px 12px color-mix(in srgb, var(--brand) 30%, transparent); }
+}
+@keyframes nudge { 0%, 60%, 100% { translate: 0 0; } 75% { translate: 3px 0; } }
+
+/* A button that is only its icon; the name lives in aria-label and the tooltip (data-tooltip). */
+.btn-icon { width: var(--control-height); padding: 0; }
+.btn-icon.btn-sm { width: 34px; }
+.btn-icon.btn-lg { width: 44px; }
 
 /* Entering a meeting in progress — the same solid green as the "Đang diễn ra" state. */
 .btn-live { background: var(--live); color: #fff; box-shadow: 0 0 0 3px var(--live-ring); }
@@ -235,7 +264,7 @@ code {
 .is-pressed { animation: press .18s ease-out; }
 
 .btn-primary:active:not(:disabled) { background: var(--brand-ink); box-shadow: inset 0 1px 2px #0003; }
-.btn-danger:active:not(:disabled) { background: var(--danger-ink); box-shadow: inset 0 1px 2px #0003; }
+.btn-danger:active:not(:disabled) { background: color-mix(in srgb, var(--danger) 22%, var(--surface)); }
 :is(.btn-ghost, .btn-outline, .icon-button, .menu-item, .select-option):active:not(:disabled) { background: var(--line); }
 :is(.sidebar-item, .sidebar-subitem):active { background: var(--sidebar-active); }
 
@@ -460,38 +489,31 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .shell-collapsed .sidebar-label { opacity: 0; pointer-events: none; }
 .shell-collapsed .sidebar-group { height: 0; padding: 0; margin: 0; overflow: hidden; }
 
-/* A 26px disc on the sidebar's edge, inside a 44px hit area. */
-.sidebar-toggle {
+/* The collapse toggle: a 24px disc on the sidebar's right edge, level with the first nav row. Half
+   of it reaches into the content's 24px padding, so 12px stay clear of the page. */
+.sidebar-edge-toggle {
   position: absolute;
-  top: 12px;
-  right: -22px;
-  z-index: 5;
+  top: 84px;
+  right: -12px;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 24px;
+  height: 24px;
   padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-.sidebar-toggle > span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
   border: 1px solid var(--line);
   border-radius: 50%;
   background: var(--surface);
-  box-shadow: 0 1px 4px #1a243326;
-  color: var(--ink-soft);
-  transition: background-color .15s;
+  box-shadow: 0 1px 3px rgb(15 23 42 / .18);
+  color: var(--brand);
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
 }
-.sidebar-toggle:hover > span { background: var(--surface-alt); }
-.sidebar-toggle .icon { transition: transform .25s; }
-.shell-collapsed .sidebar-toggle .icon { transform: rotate(180deg); }
+.sidebar-edge-toggle:hover { border-color: var(--brand); background: var(--brand); color: #fff; }
+.sidebar-edge-toggle:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.sidebar-edge-toggle .icon { flex: none; transition: transform .25s; }
+.shell-collapsed .sidebar-edge-toggle .icon { transform: rotate(180deg); }
 
 .sidebar-brand {
   display: flex;
@@ -1086,27 +1108,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .row-skeleton td:last-child .skeleton { width: 24px; margin-left: auto; }
 @keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
 
-/* Two date inputs drawn as one control, so the range reads as a single filter. */
-.date-range {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  height: var(--control-height);
-  margin: 0;
-  padding: 0 4px;
-  border: 1px solid var(--control-line);
-  border-radius: var(--radius);
-  background: var(--surface);
-  color: var(--muted-ink);
-}
-.date-range-label { padding: 0 4px 0 8px; font-size: 14px; white-space: nowrap; }
-.date-range input { width: 132px; height: 34px; padding: 0 6px; border: none; box-shadow: none; }
-.date-range input:focus-visible { box-shadow: none; }
-.date-range:focus-within { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
-.date-range-invalid { border-color: var(--danger); }
-/* Below 1400px the toolbar needs the room; the fieldset's legend still names the range. */
-@media (max-width: 1400px) { .date-range-label { display: none; } }
-
 /* ---------- Pagination (components/Pagination.tsx) ---------- */
 .pagination {
   display: flex;
@@ -1195,6 +1196,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .status-blue { --status-dot: var(--dot-blue); background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
 .status-violet { --status-dot: var(--dot-violet); background: var(--chip-violet-bg); color: var(--chip-violet-fg); }
 .status-live { --status-dot: var(--live-dot); background: var(--live); color: #fff; }
+.status-plain::before { display: none; }
+.status-plain { padding: 0 10px; }
 
 .level {
   display: inline-flex;
@@ -1255,6 +1258,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .field-item > span:first-child { color: var(--label-ink); font-size: 13px; }
 .field-item > strong { font-weight: 600; overflow-wrap: anywhere; }
 .field-grid .span-all { grid-column: 1 / -1; }
+/* Starts a new row: the meeting's people read together, not after whatever the place left. */
+.field-grid .field-row-start { grid-column-start: 1; }
 /* The description sits under a rule, apart from the short facts above it. */
 .field-grid .field-divided { padding-top: 18px; border-top: 1px solid var(--line-soft); }
 /* An unset value reads as absent, not as data: muted and italic, never an em dash that looks typed. */
@@ -1280,7 +1285,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* Dot and line are both drawn by the <li>, from one origin, so they cannot drift apart: the dot's
    centre and the line's centre sit on the same x (6px). Each item draws the segment from its own
    dot down to the next one's, and the last item draws none. The 12px dot sits on a white ring in
-   its own colour, centred on the 21px title line. */
+   its own colour, centred on the 24px chip. */
 .timeline { margin: 0; padding: 0; list-style: none; }
 .timeline li { position: relative; padding: 0 0 16px 24px; }
 .timeline li:last-child { padding-bottom: 0; }
@@ -1289,7 +1294,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   content: '';
   position: absolute;
   z-index: 1;
-  top: 5px;
+  top: 6px;
   left: 0;
   width: 12px;
   height: 12px;
@@ -1301,7 +1306,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .timeline li:not(:last-child)::after {
   content: '';
   position: absolute;
-  top: 21px;
+  top: 22px;
   bottom: -1px;
   left: 5px;
   width: 2px;
@@ -1315,9 +1320,18 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .timeline-violet { --dot: var(--dot-violet); }
 .timeline-live { --dot: var(--live); }
 
-.timeline-title { margin: 0; font-weight: 700; }
-.timeline-meta { margin: 0; color: var(--muted-ink); font-size: 13px; }
-.timeline-detail { margin: 4px 0 0; color: var(--ink-soft); font-size: 13px; }
+.timeline-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 24px; }
+/* Who acted lives in the time's tooltip (AI-eCabinet), so a row stays one line. */
+.timeline-time {
+  flex: none;
+  border-radius: 4px;
+  color: var(--muted-ink);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+}
+.timeline-time:hover { color: var(--ink); }
+.timeline-time:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 /* A rejection reason is the author's own words: quoted, line breaks kept. */
 .timeline-reason,
 .workflow-reason {
@@ -1359,6 +1373,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .workflow-amber { --workflow-accent: var(--accent-amber); --workflow-tint: var(--chip-amber-bg); --workflow-ink: var(--chip-amber-fg); }
 .workflow-warning { --workflow-accent: var(--accent-amber); --workflow-tint: var(--chip-amber-bg); --workflow-ink: var(--chip-amber-fg); background: var(--wash-amber); }
 .workflow-red { --workflow-accent: var(--danger); --workflow-tint: var(--chip-red-bg); --workflow-ink: var(--chip-red-fg); }
+.workflow-blue { --workflow-accent: var(--brand); --workflow-tint: var(--chip-blue-bg); --workflow-ink: var(--chip-blue-fg); }
 .workflow-emerald { --workflow-accent: var(--accent-emerald); --workflow-tint: var(--chip-emerald-bg); --workflow-ink: var(--chip-emerald-fg); }
 .workflow-icon {
   display: grid;
@@ -1376,6 +1391,10 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .workflow-body p + p, .workflow-reason + p { margin-top: 6px; }
 .workflow-reason { margin-bottom: 0; }
 .workflow-actions { display: flex; flex: none; align-self: center; gap: 8px; }
+/* A bar that only asks ("Bạn có tham dự cuộc họp này?"): one line, centred on its buttons. */
+.workflow-bar-compact { align-items: center; }
+.workflow-bar-compact .workflow-body { padding-top: 0; }
+.workflow-bar-compact .workflow-body h2 { margin: 0; }
 .readiness-list { margin: 6px 0 0; padding-left: 20px; color: var(--ink-soft); font-size: 14px; }
 .readiness-list li + li { margin-top: 2px; }
 .alert .readiness-list { color: inherit; }
@@ -1446,6 +1465,26 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .role-capability-options input { grid-row: span 2; margin: 2px 0 0; }
 .role-capability-options small { grid-column: 2; color: var(--muted-ink); font-size: 13px; }
 
+/* ---------- Tooltip (components/TooltipLayer.tsx) ----------
+   One label in the top layer for whatever carries data-tooltip: above it, or below near the top. */
+.tooltip {
+  position: fixed;
+  inset: auto;
+  z-index: 50;
+  max-width: 280px;
+  margin: 0;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: pre-line;
+  pointer-events: none;
+}
+
 /* ---------- Dialog (components/Dialog.tsx, native <dialog>) ---------- */
 .dialog {
   width: min(512px, calc(100vw - 32px));
@@ -1469,6 +1508,19 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .dialog-text { margin: 0; color: var(--ink-soft); }
 .dialog-error { margin-top: 12px; }
 .dialog-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 16px 24px 20px; border-top: 1px solid var(--line); }
+/* A whole form: wider, its body scrolls between the fixed head and the pinned actions. */
+.dialog-lg { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); }
+.dialog-lg .dialog-body { flex: 1; min-height: 0; }
+@media (max-width: 640px) {
+  .dialog-lg { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; border-radius: 0; }
+  .dialog-lg .dialog-foot .btn { flex: 1; height: 44px; }
+}
+
+/* The meeting form's sections, as AI-eCabinet groups them: a small caps heading, a divider between. */
+.meeting-form { display: flex; flex-direction: column; gap: 20px; }
+.form-section { display: flex; flex-direction: column; gap: 14px; }
+.form-section + .form-section { padding-top: 20px; border-top: 1px solid var(--line); }
+.form-section-title { margin: 0; color: var(--ink-soft); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
 
 /* ---------- Toasts (components/ToastProvider.tsx) ---------- */
 .toast-stack {
@@ -1828,17 +1880,101 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   font-size: 13px;
   cursor: pointer;
 }
-.cal-pick:hover { background: var(--surface-alt); }
-.cal-pick[aria-pressed='true'] { border-color: var(--brand); background: var(--brand-wash); color: var(--brand); font-weight: 600; }
-.cal-pick-count { color: var(--muted-ink); font-weight: 500; }
+.cal-pick:hover:not(:disabled) { border-color: var(--brand-wash-line); background: var(--surface-alt); }
+/* Chosen reads as solid brand, as eCab's pills; the dot keeps its colour on a white ring. */
+.cal-pick[aria-pressed='true'] { border-color: var(--brand); background: var(--brand); color: #fff; font-weight: 600; }
+.cal-pick[aria-pressed='true']:hover { background: var(--brand-ink); }
+.cal-pick[aria-pressed='true'] .cal-dot { box-shadow: 0 0 0 2px #fff; }
+.cal-pick[aria-pressed='true'] .cal-pick-count { color: rgb(255 255 255 / .75); }
+.cal-pick:disabled { opacity: .45; cursor: default; }
+.cal-pick-count { color: var(--muted-ink); font-weight: 500; font-variant-numeric: tabular-nums; }
 .cal-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot-slate); }
 .cal-dot-amber { background: var(--dot-amber); }
 .cal-dot-red { background: var(--dot-red); }
 .cal-dot-emerald { background: var(--dot-emerald); }
 .cal-dot-blue { background: var(--dot-blue); }
 .cal-dot-live { background: var(--live); }
-.cal-filter-hint { margin: 8px 0 0; color: var(--muted-ink); font-size: 12px; }
 .cal-filter-foot { display: flex; justify-content: space-between; margin: 0 -16px; padding: 12px 16px 0; border-top: 1px solid var(--line-soft); }
+
+/* ---------- Calendar quick look (features/calendar/MeetingOverview.tsx) ----------
+   AI-eCabinet's overview: a 420px card beside the tile, its body scrolling between a fixed head and
+   footer; on a phone a bottom sheet over a scrim. */
+.overview {
+  position: fixed;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  width: min(420px, calc(100vw - 16px));
+  max-height: min(38rem, calc(100dvh - 16px));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.overview-scrim { position: fixed; inset: 0; z-index: 40; display: flex; align-items: flex-end; background: var(--overlay); }
+.overview-sheet { position: static; width: 100%; max-height: 82dvh; border: 0; border-radius: 16px 16px 0 0; }
+.overview-head { flex: none; display: flex; flex-direction: column; gap: 9px; padding: 16px 20px 13px; border-bottom: 1px solid var(--line-soft); }
+.overview-head h2 {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-wrap: balance;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  outline: none;
+}
+.overview-head h2:focus-visible { border-radius: 4px; box-shadow: var(--focus-ring); }
+.overview-body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 20px 16px; font-size: 13.5px; }
+.overview-facts { display: flex; flex-direction: column; gap: 10px; margin: 0; }
+.overview-row { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 12px; }
+.overview-row dt { color: var(--muted-ink); }
+.overview-row dd { display: flex; flex-direction: column; margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.overview-time { font-weight: 600; font-variant-numeric: tabular-nums; }
+.overview-muted { color: var(--muted-ink); font-weight: 400; }
+.overview-link { display: inline-flex; align-items: center; gap: 5px; color: var(--brand); font-weight: 600; }
+.overview-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.overview-note { margin: 0 0 12px; color: var(--muted-ink); }
+.overview-desc {
+  display: -webkit-box;
+  margin: 14px 0 0;
+  overflow: hidden;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.overview-people { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+.overview-people-label { margin: 0 0 10px; color: var(--muted-ink); font-size: 12px; font-weight: 600; }
+.overview-avatars { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.overview-avatars > li { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 80px; font-size: 12px; line-height: 1.3; text-align: center; }
+.overview-avatars > li > span:last-child { display: -webkit-box; overflow: hidden; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.overview-avatar { width: 32px; height: 32px; font-size: 12px; }
+.overview-avatar-sm { width: 28px; height: 28px; font-size: 11px; }
+.overview-more { width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--surface-alt); color: var(--ink-soft); font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+.overview-more:hover { color: var(--brand); }
+.overview-more-on, .overview-more-on:hover { background: var(--brand); color: #fff; }
+.overview-rest { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin: 12px 0 0; padding: 12px 0 0; border-top: 1px dashed var(--line); list-style: none; }
+.overview-rest li { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; }
+.overview-rest li span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.overview-task { flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; padding: 12px 16px; border-top: 1px solid var(--line-soft); }
+.overview-task-title { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-size: 13.5px; font-weight: 700; }
+.overview-task-title .icon { color: var(--brand); }
+.overview-foot { flex: none; display: flex; justify-content: flex-end; gap: 8px; padding: 11px 14px; border-top: 1px solid var(--line-soft); background: var(--surface-alt); }
+.overview-foot .btn { height: 36px; }
+.overview-skeleton { display: block; width: 60%; height: 18px; }
+.overview-skeleton-label { display: block; width: 144px; height: 16px; margin-bottom: 10px; }
+.overview-skeleton-avatar { display: block; width: 32px; height: 32px; margin: 0 24px; border-radius: 50%; }
+@media (max-width: 640px) {
+  .overview-row { grid-template-columns: 104px minmax(0, 1fr); }
+  .overview-rest { grid-template-columns: 1fr; }
+  .overview-foot .btn { flex: 1; height: 40px; }
+}
 
 /* ---------- Calendar list view ----------
    One section per day: a heading line, then each session as a time column, a dot on the day's
@@ -1900,6 +2036,68 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .agenda-card { flex-direction: column; align-items: flex-start; }
 }
 
+/* ---------- Participants (SCRUM-20, features/participants) ---------- */
+/* Picking who attends on the create form: a search box with its matches underneath, then one row
+   per person with their role. */
+.roster-search { width: 100%; }
+.roster-menu {
+  /* Top layer (popover="manual"), placed by RosterField from the search box: inside the dialog's
+     scrolling body an absolutely placed list was cut off. `inset: auto` undoes the UA centring. */
+  position: fixed;
+  inset: auto;
+  z-index: 30;
+  max-height: 320px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  list-style: none;
+}
+.roster-option { padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+.roster-option-active { background: var(--brand-wash); }
+.roster-option .avatar, .roster-row .avatar { width: 32px; height: 32px; font-size: 12px; }
+.roster-menu-note { padding: 10px 8px; color: var(--muted-ink); font-size: 14px; }
+.roster-menu-error { color: var(--danger-ink); }
+
+.roster-list { display: flex; flex-direction: column; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); list-style: none; }
+.roster-row { display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 12px; }
+.roster-row + .roster-row { border-top: 1px solid var(--line-soft); }
+.roster-row-invalid { box-shadow: inset 3px 0 0 var(--danger); }
+.roster-row-main { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
+.roster-role { flex: none; width: 152px; }
+.roster-empty { margin: 0; padding: 14px 16px; border: 1px dashed var(--control-line); border-radius: var(--radius); color: var(--muted-ink); font-size: 14px; }
+
+/* Name over email; both cut with an ellipsis rather than pushing the role off the row. */
+.person-text { display: flex; flex-direction: column; min-width: 0; }
+.person-text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* "Bạn có tham dự cuộc họp này?" — the two answers, and the answer once given. */
+.rsvp-buttons { display: inline-flex; flex-wrap: wrap; gap: 8px; }
+.rsvp-chip { gap: 4px; padding-left: 8px; }
+/* On a calendar card: the question and its two answers on one line under the chips. */
+.agenda-rsvp { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 4px; color: var(--ink-soft); font-size: 14px; font-weight: 500; }
+
+/* The roster tab: a person with their answer, and the panel's own alert under the toolbar. */
+.participant-cell { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-width: 0; }
+.participants-alert { margin: 12px 16px 0; }
+.participants-skeleton-search { width: 320px; height: var(--control-height); }
+
+/* Picking people in a dialog: a search box over a scrolling list of checkable rows. */
+.dialog-form { display: flex; flex-direction: column; gap: 16px; }
+.pick-list { display: flex; flex-direction: column; height: 280px; margin-top: 8px; overflow-y: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+.pick-list[aria-busy='true'] { opacity: .6; }
+.pick-row { display: flex; flex: none; align-items: center; gap: 12px; padding: 8px 12px; cursor: pointer; }
+.pick-row + .pick-row { border-top: 1px solid var(--line-soft); }
+.pick-row:hover { background: var(--surface-alt); }
+.pick-row input { flex: none; width: 16px; height: 16px; }
+.pick-row .avatar { width: 32px; height: 32px; font-size: 12px; }
+.pick-note { margin: 0; padding: 14px 12px; color: var(--muted-ink); font-size: 14px; }
+.pick-note-error { color: var(--danger-ink); }
+.pick-role { margin-top: 16px; }
+
 /* ---------- Placeholder screens ----------
    A screen whose backend does not exist yet: what it will do, and the endpoint it waits on. */
 .placeholder-card { display: flex; flex: none; flex-direction: column; align-items: center; gap: 8px; padding: 48px 24px; color: var(--muted-ink); text-align: center; }
@@ -1933,7 +2131,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 @media (max-width: 720px) {
   /* AppShell keeps the sidebar collapsed here and drops the toggle. */
-  .sidebar-toggle { display: none; }
+  .sidebar-edge-toggle { display: none; }
   .summary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .summary-card { padding: 10px 12px; }
   .summary-icon { display: none; }

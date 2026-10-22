@@ -78,7 +78,7 @@ export function StatusSummary({
             className={`summary-card summary-${card.tone}${selected ? ' summary-card-selected' : ''}`}
             aria-pressed={selected}
             onClick={() => onSelect(selected ? '' : card.status)}
-            title={selected ? 'Bỏ lọc theo trạng thái này' : `Chỉ xem cuộc họp ${card.label.toLowerCase()}`}
+            data-tooltip={selected ? 'Bỏ lọc theo trạng thái này' : `Chỉ xem cuộc họp ${card.label.toLowerCase()}`}
           >
             <span className="summary-icon">
               <Icon name={card.icon} size={22} />

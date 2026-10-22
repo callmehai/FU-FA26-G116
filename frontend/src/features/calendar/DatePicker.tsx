@@ -83,7 +83,7 @@ export function DatePicker({
           className="calendar-range-button"
           aria-expanded={open}
           aria-controls={open ? PANEL_ID : undefined}
-          title="Chọn ngày nhanh"
+          data-tooltip="Chọn ngày nhanh"
           onClick={toggle}
         >
           {label}
@@ -111,7 +111,7 @@ export function DatePicker({
               type="button"
               className="icon-button"
               aria-label="Tháng trước"
-              title="Tháng trước"
+              data-tooltip="Tháng trước"
               onClick={() => setShown(addMonths(shown, -1))}
             >
               <Icon name="chevronLeft" size={18} />
@@ -120,7 +120,7 @@ export function DatePicker({
               type="button"
               className="icon-button"
               aria-label="Tháng sau"
-              title="Tháng sau"
+              data-tooltip="Tháng sau"
               onClick={() => setShown(addMonths(shown, 1))}
             >
               <Icon name="chevronRight" size={18} />

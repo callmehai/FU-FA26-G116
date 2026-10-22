@@ -85,7 +85,7 @@ export function Pagination({
           onClick={() => onPageChange(page - 1)}
           disabled={disabled || page <= 1}
           aria-label="Trang trước"
-          title="Trang trước"
+          data-tooltip="Trang trước"
         >
           <Icon name="chevronLeft" size={16} />
         </button>
@@ -114,7 +114,7 @@ export function Pagination({
           onClick={() => onPageChange(page + 1)}
           disabled={disabled || page >= totalPages}
           aria-label="Trang sau"
-          title="Trang sau"
+          data-tooltip="Trang sau"
         >
           <Icon name="chevronRight" size={16} />
         </button>

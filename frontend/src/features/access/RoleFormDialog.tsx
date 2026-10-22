@@ -5,6 +5,7 @@ import { errorMessage, isApiError } from '../../lib/errors'
 import type { RoleMutationResponse, RoleRecord } from '../../types/role'
 import type { PermissionDescriptor } from '../../types/rolePermission'
 import type { Capability } from '../../types/user'
+import { Icon } from '../../components/Icon'
 
 export type RoleFormTarget = { mode: 'create' } | { mode: 'edit'; role: RoleRecord }
 type RoleField = 'name' | 'description' | 'capabilities'
@@ -100,8 +101,11 @@ export function RoleFormDialog({
       onClose={close}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" onClick={close} disabled={pending}>Huỷ</button>
+          <button type="button" className="btn btn-outline" onClick={close} disabled={pending}>
+            Huỷ
+          </button>
           <button type="submit" form={formId} className="btn btn-primary" disabled={pending}>
+            <Icon name={editing ? 'check' : 'plus'} size={16} />
             {pending ? 'Đang lưu…' : editing ? 'Lưu thay đổi' : 'Tạo vai trò'}
           </button>
         </>

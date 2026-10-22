@@ -26,9 +26,11 @@ Case moves from Jira to Done, what each role hands over, and what Done means. Ji
 
 **Frontend work** follows the project-specific skills in [.claude/skills/](.claude/skills/):
 [frontend-ui-design](.claude/skills/frontend-ui-design/SKILL.md) for how a screen is designed and
-built, and [verify-ui-in-browser](.claude/skills/verify-ui-in-browser/SKILL.md) for running the app
-and checking the change in a real browser before the PR. Claude Code loads them as skills; any other
-agent reads the two files directly. The third-party [evondev ui-ux skill](.agents/skills/ui-ux/SKILL.md)
+built, [verify-ui-in-browser](.claude/skills/verify-ui-in-browser/SKILL.md) for running the app
+and checking the change in a real browser before the PR, and
+[minimize-text](.claude/skills/minimize-text/SKILL.md) for keeping each screen to the words people
+scan for, with the rest in tooltips. Claude Code loads them as skills; any other
+agent reads the files directly. The third-party [evondev ui-ux skill](.agents/skills/ui-ux/SKILL.md)
 is available as additional guidance; project rules here and `frontend-ui-design` take precedence.
 **Diagram and architecture work** uses [drawio-skill](.agents/skills/drawio-skill/SKILL.md)
 for creating, editing, and validating `.drawio` models (such as the ERD), following
@@ -274,6 +276,11 @@ Details in [docs/DEVELOPMENT_WORKFLOW.md §2.1](docs/DEVELOPMENT_WORKFLOW.md#21-
 - Meeting recordings and voice identification are personal data under Vietnam's Decree
   13/2023/NĐ-CP. When touching this area, state the consent and deletion obligations explicitly
   rather than silently persisting the data.
+- **The test server enforces a Content-Security-Policy** (`deploy/Caddyfile`); local development has
+  none. Scripts, fonts, images, frames and connections may come only from our own origin, Google
+  Fonts and Google Sign-In. A new outside source (a CDN, an analytics or AI service called from the
+  browser) works locally and is blocked on the server until it is added there. Never add
+  `'unsafe-inline'` or `'unsafe-eval'` to `script-src`: that is what keeps an XSS from running.
 - `backend/TrustCabinet.Web/wwwroot/` is build output. Edits there are lost on the next build.
 - **Never commit a connection string, API key or credential.** `appsettings.json` is committed, so
   secrets do not go there. Use `dotnet user-secrets set "ConnectionStrings:TrustCabinet" "..."` locally

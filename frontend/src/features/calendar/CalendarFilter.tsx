@@ -1,30 +1,29 @@
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from '../../components/Icon'
+import { SENSITIVITIES, SENSITIVITY_LABEL, type Sensitivity } from '../../types/meeting'
 import {
-  MEETING_STATUS_LABEL,
-  SENSITIVITIES,
-  SENSITIVITY_LABEL,
-  type MeetingStatus,
-  type Sensitivity,
-} from '../../types/meeting'
-import { STATUS_TONE } from '../meetings/statusTone'
-import {
-  NO_FILTER,
-  STATUSES,
+  DEFAULT_FILTER,
+  GROUPS,
+  GROUP_LABEL,
+  GROUP_OF,
+  GROUP_TONE,
   activeGroups,
   matchesSensitivity,
   matchesStatus,
-  toggle,
+  toggleGroup,
   type CalendarFilterValue,
+  type StatusGroup,
 } from './filter'
 import type { ScheduleEntry } from './useSchedule'
 
 const PANEL_ID = 'calendar-filter'
 
 /**
- * "Bộ lọc" on the calendar (SCRUM-47): a non-modal panel under the button. Each chip filters at
- * once; "Xong" only closes. It narrows what the server already allowed the caller to see — the
- * server filters by visibility (BR-29), so this is a view, never a permission boundary.
+ * "Bộ lọc" on the calendar (SCRUM-47), as AI-eCabinet's: status groups, opening on the meetings
+ * that will happen (Đã duyệt, Đã công bố, Đang diễn ra), and one level. Each chip filters at once;
+ * a chip with nothing in the range is dimmed, and the last status stays on. "Đặt lại" goes back to
+ * the default; "Xong" only closes. It narrows what the server already allowed the caller to see —
+ * the server filters by visibility (BR-29), so this is a view, never a permission boundary.
  */
 export function CalendarFilter({
   value,
@@ -60,11 +59,12 @@ export function CalendarFilter({
   }, [open])
 
   // Each chip counts what the other group lets through, so the number is what a click would add.
-  const byStatus = new Map<MeetingStatus, number>()
+  const byGroup = new Map<StatusGroup, number>()
   const bySensitivity = new Map<Sensitivity, number>()
   for (const entry of entries ?? []) {
     const { status, sensitivity } = entry.meeting
-    if (matchesSensitivity(entry, value)) byStatus.set(status, (byStatus.get(status) ?? 0) + 1)
+    const group = GROUP_OF[status]
+    if (matchesSensitivity(entry, value)) byGroup.set(group, (byGroup.get(group) ?? 0) + 1)
     if (matchesStatus(entry, value)) bySensitivity.set(sensitivity, (bySensitivity.get(sensitivity) ?? 0) + 1)
   }
 
@@ -77,8 +77,8 @@ export function CalendarFilter({
         aria-expanded={open}
         aria-controls={open ? PANEL_ID : undefined}
         // The label hides on narrow windows (global.css), so the name lives here.
-        aria-label={active > 0 ? `Bộ lọc, ${active} nhóm đang lọc` : 'Bộ lọc'}
-        title="Bộ lọc"
+        aria-label={active > 0 ? `Bộ lọc, ${active} bộ lọc khác mặc định` : 'Bộ lọc'}
+        data-tooltip="Bộ lọc"
         onClick={() => setOpen(!open)}
       >
         <Icon name="filter" size={18} />
@@ -95,46 +95,60 @@ export function CalendarFilter({
           <fieldset className="cal-filter-group">
             <legend>Trạng thái</legend>
             <div className="cal-filter-chips">
-              {STATUSES.map((status) => (
-                <button
-                  key={status}
-                  type="button"
-                  className="cal-pick"
-                  aria-pressed={value.statuses.includes(status)}
-                  onClick={() => onChange({ ...value, statuses: toggle(value.statuses, status, STATUSES) })}
-                >
-                  <span className={`cal-dot cal-dot-${STATUS_TONE[status]}`} aria-hidden="true" />
-                  {MEETING_STATUS_LABEL[status]}
-                  {entries && <span className="cal-pick-count">{byStatus.get(status) ?? 0}</span>}
-                </button>
-              ))}
+              {GROUPS.map((group) => {
+                const on = value.groups.includes(group)
+                const count = byGroup.get(group) ?? 0
+                return (
+                  <button
+                    key={group}
+                    type="button"
+                    className="cal-pick"
+                    aria-pressed={on}
+                    disabled={!!entries && count === 0 && !on}
+                    data-tooltip={group === 'ended' ? 'Gồm cả cuộc họp nháp' : undefined}
+                    onClick={() => onChange({ ...value, groups: toggleGroup(value.groups, group) })}
+                  >
+                    <span className={`cal-dot cal-dot-${GROUP_TONE[group]}`} aria-hidden="true" />
+                    {GROUP_LABEL[group]}
+                    {entries && <span className="cal-pick-count">{count}</span>}
+                  </button>
+                )
+              })}
             </div>
           </fieldset>
 
           <fieldset className="cal-filter-group">
             <legend>Mức độ</legend>
             <div className="cal-filter-chips">
-              {SENSITIVITIES.map((sensitivity) => (
-                <button
-                  key={sensitivity}
-                  type="button"
-                  className="cal-pick"
-                  aria-pressed={value.sensitivities.includes(sensitivity)}
-                  onClick={() =>
-                    onChange({ ...value, sensitivities: toggle(value.sensitivities, sensitivity, SENSITIVITIES) })
-                  }
-                >
-                  {SENSITIVITY_LABEL[sensitivity]}
-                  {entries && <span className="cal-pick-count">{bySensitivity.get(sensitivity) ?? 0}</span>}
-                </button>
-              ))}
+              {SENSITIVITIES.map((sensitivity) => {
+                const on = value.sensitivity === sensitivity
+                const count = bySensitivity.get(sensitivity) ?? 0
+                return (
+                  <button
+                    key={sensitivity}
+                    type="button"
+                    className="cal-pick"
+                    aria-pressed={on}
+                    disabled={!!entries && count === 0 && !on}
+                    onClick={() => onChange({ ...value, sensitivity: on ? null : sensitivity })}
+                  >
+                    {SENSITIVITY_LABEL[sensitivity]}
+                    {entries && <span className="cal-pick-count">{count}</span>}
+                  </button>
+                )
+              })}
             </div>
-            <p className="cal-filter-hint">Không chọn gì là hiện mọi cuộc họp bạn được xem.</p>
           </fieldset>
 
           <div className="cal-filter-foot">
-            <button type="button" className="btn btn-ghost" disabled={active === 0} onClick={() => onChange(NO_FILTER)}>
-              Bỏ lọc
+            <button
+              type="button"
+              className="btn btn-outline"
+              disabled={active === 0}
+              onClick={() => onChange(DEFAULT_FILTER)}
+            >
+              <Icon name="undo" size={16} />
+              Đặt lại
             </button>
             <button
               type="button"
@@ -144,6 +158,7 @@ export function CalendarFilter({
                 buttonRef.current?.focus()
               }}
             >
+              <Icon name="check" size={16} />
               Xong
             </button>
           </div>

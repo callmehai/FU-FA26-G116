@@ -80,6 +80,8 @@ lần. Tất cả bộ lọc được kết hợp bằng AND (BR-30/BR-31).
 | `page`, `pageSize` | Mặc định `1`, `20`; `page` từ `1` đến `2.147.483.647`, `pageSize` từ `1` đến `100` |
 | `sortBy` | `title`, `plannedStartTime`, `createdAt`; mặc định `plannedStartTime` |
 | `sortDir` | `asc`, `desc`; mặc định `asc` với title, `desc` với hai cột thời gian |
+| `excludeDeclined` | `true` hoặc `false` (mặc định). `true` bỏ các cuộc họp người gọi đã trả lời **Không tham dự** — lịch làm việc dùng tham số này, giống AI-eCabinet. Màn danh sách cuộc họp không gửi, nên vẫn thấy cuộc họp đã từ chối. Giá trị khác trả `400 MSG32` |
+| `timing` | `upcoming` (giờ bắt đầu dự kiến sau thời điểm server nhận request) hoặc `past` (bắt đầu từ thời điểm đó trở về trước, nên cuộc họp đang diễn ra tính là `past`), như bộ lọc “Thời điểm” của AI-eCabinet. Không gửi thì không lọc. Màn danh sách dùng cho “Chưa diễn ra” / “Đã diễn ra”; “Hôm nay” và “Tuần này” vẫn gửi `from`/`to` theo múi giờ người xem. Giá trị khác trả `400 MSG32` |
 
 Khi nhiều dòng có cùng giá trị sort, xếp tiếp theo `id asc`. Ví dụ:
 `GET /api/meetings?status=Published&sensitivity=Internal&q=giao&from=2026-10-01T00%3A00%3A00Z&page=2&pageSize=20&sortBy=createdAt&sortDir=desc`.
@@ -106,7 +108,9 @@ tối đa bảy chữ số. Timestamp thiếu timezone hoặc `sortBy=startsAt` 
       "location": "Phòng họp A",
       "createdAt": "2026-09-25T02:00:00+00:00",
       "status": "Published",
-      "sensitivity": "Internal"
+      "sensitivity": "Internal",
+      "myResponse": null,
+      "canRespond": true
     }
   ],
   "page": 2,
@@ -174,6 +178,11 @@ tới khi Chair bắt đầu/kết thúc, UC-21/UC-22), `status`, `createdById`,
 Trả `200 OK` và object meeting phẳng, không bọc envelope: `plannedStartTime`, `plannedEndTime`,
 `actualStartedAt`, `actualEndedAt`, `onlineLink` cùng các trường thông tin. `mode`, `sensitivity` và
 `status` là chuỗi enum. Chi tiết và response tạo họp có thêm `chair:{userId,fullName}|null`, `secretaries:[{userId,fullName}]`, `myMeetingRole:Chair|Secretary|Member|null`, chỉ tính current participants. Chair chỉ null với dữ liệu chưa backfill. Đây không phải quyền quản lý workflow của creator/approver.
+
+Chi tiết, response tạo/sửa họp và mỗi dòng của `GET /api/meetings` còn có câu trả lời lời mời của chính người gọi (SCRUM-20, theo AI-eCabinet):
+
+- `myResponse: "Accepted" | "Declined" | null` — `null` khi chưa trả lời (coi như tham dự), khi người gọi không có trong thành phần, và luôn `null` với Chủ tọa (Chủ tọa không được hỏi).
+- `canRespond: boolean` — `true` khi nên hỏi "Bạn có tham dự cuộc họp này?": người gọi là thành phần nội bộ hiện tại, tài khoản đang hoạt động, không phải Chủ tọa, cuộc họp `Published`/`InProgress` và chưa trả lời. FE hiện hai nút trả lời theo cờ này; endpoint trả lời vẫn tự kiểm tra lại.
 
 ### PUT `/api/meetings/{id}`
 
@@ -510,6 +519,10 @@ stale content.
 - Nếu PUT trả `409 MSG33`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
 - Sau khi POST hoặc PUT thành công, FE hiển thị message và mở chi tiết `meeting.id`. Danh sách
   SCRUM-18 đã tích hợp lọc, sort và pagination server-side; tiêu chí được giữ trên URL.
+- Màn danh sách mở sẵn bộ lọc **Đang diễn ra** (`status=InProgress`); đường dẫn không có `status`
+  nghĩa là bộ lọc mặc định này, còn `status=all` là bỏ lọc trạng thái. Bộ lọc **Thời điểm** chỉ có
+  các lựa chọn sẵn như AI-eCabinet: Hôm nay, Tuần này (Thứ Hai–Chủ Nhật) gửi `from`/`to` theo múi
+  giờ người xem; Chưa diễn ra, Đã diễn ra gửi `timing`. Không còn ô chọn khoảng ngày.
 - FE mở form và nút chỉnh sửa ở cả `Draft` và `Rejected` theo contract PUT. Sửa nội dung ở
   Rejected giữ nguyên trạng thái, assignment và rejection history; gửi duyệt lại trực tiếp bằng
   `SubmitForApproval`. `ReturnToDraft` là tùy chọn.
@@ -521,10 +534,13 @@ stale content.
 - **Lịch làm việc (SCRUM-47):** đọc `GET /api/meetings?from&to` với `pageSize=100`, sắp theo
   `plannedStartTime asc`, và đọc **đủ mọi trang** của khoảng đang xem (dạng tháng có thể quá 100
   cuộc họp). Dạng tháng gửi `from` = Thứ Hai đầu lưới, `to` = cuối Chủ Nhật cuối lưới. Bộ lọc
-  trạng thái và mức độ của lịch chọn được nhiều giá trị, nên FE lọc trên tập đã tải (server đã lọc
-  quyền xem theo BR-29) thay vì gửi `status`/`sensitivity` — hai tham số này chỉ nhận một giá trị.
-  URL của lịch: `?span=work|full|month`, `week=YYYY-MM-DD`, `month=YYYY-MM`, `mode=list`,
-  `status=Draft,Approved`, `sensitivity=Secret`.
+  trạng thái của lịch theo AI-eCabinet: sáu nhóm (Chờ duyệt, Đã duyệt, Đã công bố, Đang diễn ra, Đã
+  kết thúc — gồm cả nháp, Bị từ chối), chọn được nhiều nhóm, **mặc định chỉ bật Đã duyệt, Đã công
+  bố, Đang diễn ra** và luôn giữ ít nhất một nhóm; mức độ chọn một. FE lọc trên tập đã tải (server
+  đã lọc quyền xem theo BR-29) thay vì gửi `status`/`sensitivity`. URL của lịch:
+  `?span=work|full|month`, `week=YYYY-MM-DD`, `month=YYYY-MM`, `mode=list`,
+  `status=waiting,approved,published,live,ended,rejected` (không có là nhóm mặc định, `all` là mọi
+  nhóm), `sensitivity=Secret`.
 
 ### Luồng duyệt trên trang chi tiết (SCRUM-19)
 

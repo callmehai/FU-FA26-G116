@@ -6,10 +6,23 @@ import { STATUS_TONE } from './statusTone'
  * A meeting's lifecycle state as a rounded chip with a dot.
  *
  * `label` overrides the text while keeping the colour. The history timeline needs that: a row
- * there records what *happened* ("Đã gửi duyệt"), not what the meeting *is* ("Chờ duyệt").
+ * there records what *happened* ("Đã gửi duyệt"), not what the meeting *is* ("Chờ duyệt"), and
+ * passes `plain`: its own dot already sits on the timeline.
  */
-export function StatusBadge({ status, label }: { status: MeetingStatus; label?: string }) {
-  return <span className={`status status-${STATUS_TONE[status]}`}>{label ?? MEETING_STATUS_LABEL[status]}</span>
+export function StatusBadge({
+  status,
+  label,
+  plain = false,
+}: {
+  status: MeetingStatus
+  label?: string
+  plain?: boolean
+}) {
+  return (
+    <span className={`status status-${STATUS_TONE[status]}${plain ? ' status-plain' : ''}`}>
+      {label ?? MEETING_STATUS_LABEL[status]}
+    </span>
+  )
 }
 
 const LEVEL: Record<Sensitivity, { className: string; icon: IconName }> = {

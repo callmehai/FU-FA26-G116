@@ -115,7 +115,7 @@ public sealed class ParticipantRolePolicyTests(ParticipantFixture f) : IClassFix
     }
 
     [Fact]
-    public async Task Non_managers_read_roster_but_cannot_mutate_and_totals_ignore_search()
+    public async Task Non_managers_read_roster_but_cannot_mutate()
     {
         var s = await f.Seed();
         await using (var db = f.Db())
@@ -128,7 +128,7 @@ public sealed class ParticipantRolePolicyTests(ParticipantFixture f) : IClassFix
             using var client = f.Client(actor);
             var page = await client.GetFromJsonAsync<JsonElement>(s.Url + "/participants?q=no-match&page=2&pageSize=1");
             Assert.Equal(0, page.GetProperty("total").GetInt32());
-            Assert.Equal(3, page.GetProperty("totals").GetProperty("total").GetInt32());
+            Assert.False(page.TryGetProperty("totals", out _));
             await Code(await Write(client, s.Url + "/participants", HttpMethod.Post,
                 new { userIds = new[] { s.Outsider }, role = "Member" }), 403, "MSG85");
             await Code(await client.GetAsync(s.Url + "/participants/editor-options"), 403, "MSG85");
@@ -136,7 +136,6 @@ public sealed class ParticipantRolePolicyTests(ParticipantFixture f) : IClassFix
         using var member = f.Client(s.Member);
         await Code(await Write(member, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Accepted" }), 200, "MSG105");
         var roster = await member.GetFromJsonAsync<JsonElement>(s.Url + "/participants");
-        Assert.Equal(1, roster.GetProperty("totals").GetProperty("accepted").GetInt32());
         var row = roster.GetProperty("items").EnumerateArray().Single(r => r.GetProperty("userId").GetGuid() == s.Member);
         Assert.Equal("Accepted", row.GetProperty("response").GetString());
         Assert.Equal(f.Clock.Now, row.GetProperty("respondedAt").GetDateTimeOffset());

@@ -33,11 +33,11 @@ FE dùng ID từ endpoint này để xây `participants` khi POST tạo họp. B
 | Method/path | Contract |
 |---|---|
 | GET /participant-context | `{meetingId,status,revision,myRole,permissions:{canManageParticipants,canReplaceChair,canRespond}}` |
-| GET /participants?q=&page=1&pageSize=20 | `{items,total,page,pageSize,revision,totals:{pending,accepted,declined,total}}` |
+| GET /participants?q=&page=1&pageSize=20 | `{items,total,page,pageSize,revision}` |
 | GET /participants/editor-options?q=&page=1&pageSize=20 | Manager ở trạng thái editable; `{items:[{id,fullName,email}],total,page,pageSize,roles:["Chair","Secretary","Member"],revision}` |
 | GET /invitation-response | Own current invitation: `{id,kind,response,respondedAt,canRespond}`, từ Published |
 
-`myRole` là Chair/Secretary/Member/Guest/null. `canManageParticipants` = manager + editable. Preparation: `canReplaceChair` bằng manage; Published/InProgress: current Chair hoặc Secretary có Chair inactive; locked states false. `canRespond` chỉ current internal/Guest ở Published/InProgress.
+`myRole` là Chair/Secretary/Member/Guest/null. `canManageParticipants` = manager + editable. Preparation: `canReplaceChair` bằng manage; Published/InProgress: current Chair hoặc Secretary có Chair inactive; locked states false. `canRespond` chỉ current internal active (không phải Chair) hoặc Guest, ở Published/InProgress, **chưa trả lời** — xem §4.1.
 
 Roster item:
 
@@ -50,7 +50,7 @@ Roster item:
 }
 ```
 
-Guest có role/userId/isActive null; displayName ưu tiên profile tự khai, invitedName/email giữ evidence lời mời. Chỉ current internal và Guest chưa revoke. Sort displayName không phân biệt hoa thường, kind, id. `q` trim, tối đa 200 ký tự, tìm displayName/email/invitedName; page >=1, pageSize 1..100. `total` tính sau search; `totals` tính trên toàn roster trước search/paging. Options loại mọi current internal và email trùng current Guest.
+Guest có role/userId/isActive null; displayName ưu tiên profile tự khai, invitedName/email giữ evidence lời mời. Chỉ current internal và Guest chưa revoke. Sort displayName không phân biệt hoa thường, kind, id. `q` trim, tối đa 200 ký tự, tìm displayName/email/invitedName; page >=1, pageSize 1..100. `total` tính sau search. Không có bộ đếm phản hồi (`totals` đã bỏ, xem §4.1). Options loại mọi current internal và email trùng current Guest.
 
 ## 4. Ghi
 
@@ -81,6 +81,16 @@ Ví dụ bàn giao (gọi bằng token Chair ở Published/InProgress):
 }
 ```
 
+### 4.1. Trả lời lời mời — theo AI-eCabinet (PO Hải 21/10/2026)
+
+Câu trả lời chỉ là xác nhận trước, giống AI-eCabinet (`migrations/0038_meeting_responses.sql`, `modules/meetings/internal/respond.go`, commit `8108e91f`):
+
+- **Trả lời một lần.** Gửi lại đúng câu đã ghi: 200/MSG154. Gửi câu khác: 409/MSG285, không ghi gì.
+- **Chủ tọa không trả lời** (Chủ tọa điều hành cuộc họp): 409/MSG286. Response của Chủ tọa giữ `Pending` và không hiển thị.
+- **Chưa trả lời coi như tham dự.** Không có bộ đếm Chờ/Chấp nhận/Từ chối.
+- **Không đổi quyền gì.** Từ chối vẫn xem được cuộc họp, tài liệu và vào phòng họp; tác dụng duy nhất là cuộc họp biến khỏi lịch của người đó (`GET /api/meetings?excludeDeclined=true`, xem [05-quan-ly-cuoc-hop.md](05-quan-ly-cuoc-hop.md)). Chủ tọa không bị ẩn kể cả còn câu từ chối từ trước khi nhận vai trò.
+- FE hỏi ở đầu màn chi tiết và trên thẻ cuộc họp ở lịch dạng danh sách, theo `canRespond` có sẵn trong dữ liệu cuộc họp; không hỏi trong tab thành phần. Tab chỉ hiện nhãn cạnh tên người đã trả lời.
+
 Đã bỏ routes `POST /participants/secretary-recovery`, `PUT /guest-invitations/{id}/permissions`, `GET /invitation-responses`; client không gọi nữa.
 
 ## 5. Lỗi và realtime
@@ -98,6 +108,8 @@ Ví dụ bàn giao (gọi bằng token Chair ở Published/InProgress):
 | 409/MSG109 | Mất Chair hoặc Secretary bắt buộc |
 | 409/MSG256 | Secretary thay Chair active từ Published |
 | 409/MSG275 | Stale revision |
+| 409/MSG285 | Đã trả lời lời mời, gửi câu trả lời khác |
+| 409/MSG286 | Chủ tọa trả lời lời mời |
 | 413/MSG87; 415/MSG34 | Body quá lớn; content type sai |
 | 500/MSG95 | Đọc roster thất bại |
 | 503/MSG99, MSG102, MSG104, MSG108 | Lưu add, assignments, remove, response thất bại |

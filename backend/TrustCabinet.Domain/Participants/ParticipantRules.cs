@@ -29,6 +29,14 @@ public static class ParticipantRules
     public static bool Preparation(MeetingStatus status) => status is MeetingStatus.Draft or MeetingStatus.Rejected or MeetingStatus.Approved;
     public static bool Published(MeetingStatus status) => status is MeetingStatus.Published or MeetingStatus.InProgress or MeetingStatus.Ended;
     public static bool Respondable(MeetingStatus status) => status is MeetingStatus.Published or MeetingStatus.InProgress;
+    /// <summary>
+    /// As in AI-eCabinet: an invitee answers once, while the meeting is Published or InProgress. The Chair runs the
+    /// meeting and is never asked. The answer is a courtesy: it changes no access, only hides a declined meeting from
+    /// the invitee's calendar.
+    /// </summary>
+    public static bool CanRespond(MeetingStatus status, MeetingParticipant p) => Active(p) && CanRespond(status, p.Role, p.Response);
+    public static bool CanRespond(MeetingStatus status, MeetingRole role, InvitationResponse response) => Respondable(status)
+        && role != MeetingRole.Chair && response == InvitationResponse.Pending;
     public static bool IsManager(Meeting meeting, Guid actor) => meeting.Participants.Any(p =>
         p.UserId == actor && Active(p) && p.Role is MeetingRole.Chair or MeetingRole.Secretary);
     public static bool CanReplaceChair(Meeting meeting, Guid actor)

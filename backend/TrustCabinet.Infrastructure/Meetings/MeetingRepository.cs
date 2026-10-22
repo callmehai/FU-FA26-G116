@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Infrastructure.Meetings;
 
@@ -38,6 +39,21 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             meetings = meetings.Where(m => m.PlannedStartTime <= to);
         }
 
+        if (query.Timing is { } timing)
+        {
+            var now = query.Now ?? DateTimeOffset.UtcNow;
+            meetings = timing == MeetingTiming.Upcoming
+                ? meetings.Where(m => m.PlannedStartTime > now)
+                : meetings.Where(m => m.PlannedStartTime <= now);
+        }
+
+        if (query.ExcludeDeclined)
+        {
+            // The Chair is never asked, so an answer left from before they took the chair does not hide the meeting.
+            meetings = meetings.Where(m => !m.Participants.AsQueryable().Where(ParticipantRules.CurrentExpression)
+                .Any(p => p.UserId == actorId && p.Role != MeetingRole.Chair && p.Response == InvitationResponse.Declined));
+        }
+
         if (query.Query is { Length: > 0 } search)
         {
             var pattern = $"%{search.Replace("\\", "\\\\", StringComparison.Ordinal)
@@ -63,14 +79,28 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             _ => meetings.OrderByDescending(m => m.PlannedStartTime),
         };
 
-        var items = await ordered
+        var rows = await ordered
             .ThenBy(m => m.Id)
             .Skip(checked((int)offset))
             .Take(query.PageSize)
-            .Select(m => new MeetingListItem(
-                m.Id, m.Title, m.PlannedStartTime, m.PlannedEndTime, m.Mode, m.Location,
-                m.CreatedAt, m.Status, m.Sensitivity))
+            .Select(m => new
+            {
+                Item = new MeetingListItem(
+                    m.Id, m.Title, m.PlannedStartTime, m.PlannedEndTime, m.Mode, m.Location,
+                    m.CreatedAt, m.Status, m.Sensitivity, null, false),
+                Mine = m.Participants.AsQueryable().Where(ParticipantRules.ActiveExpression)
+                    .Where(p => p.UserId == actorId)
+                    .Select(p => new { p.Role, p.Response })
+                    .FirstOrDefault(),
+            })
             .ToListAsync(ct);
+
+        // The caller's own invitation, so the calendar can ask "Xác nhận tham dự?" without a request per meeting.
+        var items = rows.Select(row => row.Mine is null ? row.Item : row.Item with
+        {
+            MyResponse = MeetingDetails.MyResponseOf(row.Mine.Role, row.Mine.Response),
+            CanRespond = ParticipantRules.CanRespond(row.Item.Status, row.Mine.Role, row.Mine.Response),
+        }).ToList();
 
         return new MeetingListPage(items, query.Page, query.PageSize, totalCount);
     }
