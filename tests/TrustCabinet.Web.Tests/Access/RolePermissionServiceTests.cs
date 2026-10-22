@@ -23,12 +23,12 @@ public class RolePermissionServiceTests
 {
     private readonly FakeRolePermissionRepository _roles = new();
     private readonly FakeAuditService _audit = new();
-    private readonly FakeRefreshTokenStore _refreshTokens = new();
+    private readonly FakeCapabilitiesChangePublisher _publisher = new();
     private readonly FakeAdministratorInvariantGuard _invariant = new();
     private readonly Guid _actorId = Guid.CreateVersion7();
 
     private RolePermissionService NewService() => new(
-        _roles, _audit, _refreshTokens, _invariant,
+        _roles, _audit, _publisher, _invariant,
         NullLogger<RolePermissionService>.Instance);
 
     // ------------------------------------------------------ UC-10 · View role & permission matrix
@@ -151,7 +151,7 @@ public class RolePermissionServiceTests
     }
 
     [Fact]
-    public async Task Update_ends_the_sessions_of_everyone_holding_the_role()
+    public async Task Update_tells_everyone_holding_the_role_and_nobody_else()
     {
         var affected = Guid.CreateVersion7();
         var untouched = Guid.CreateVersion7();
@@ -160,83 +160,55 @@ public class RolePermissionServiceTests
 
         await NewService().UpdateAsync(BuiltInRoles.Member, [Capability.MeetingCreator], _actorId);
 
-        // Capabilities travel inside the access token, so without this the people holding this
-        // role keep the old set until their token expires — SCRUM-60's "có hiệu lực ngay".
-        Assert.Contains(affected, _refreshTokens.RevokedUsers);
-        Assert.DoesNotContain(untouched, _refreshTokens.RevokedUsers);
+        // Capabilities travel inside the access token: told, the browser refreshes now instead of
+        // carrying the old set until the token is close to expiring.
+        Assert.Contains(affected, _publisher.Notified);
+        Assert.DoesNotContain(untouched, _publisher.Notified);
     }
 
     [Fact]
-    public async Task Update_ends_sessions_when_a_capability_is_granted_too()
+    public async Task Update_tells_the_role_when_a_capability_is_taken_away_too()
     {
-        var member = Guid.CreateVersion7();
-        _roles.WithActiveUser(BuiltInRoles.Member, member);
+        var secretary = Guid.CreateVersion7();
+        _roles.WithActiveUser(BuiltInRoles.Secretary, secretary);
 
-        await NewService().UpdateAsync(BuiltInRoles.Member, [Capability.MinutesEditor], _actorId);
+        await NewService().UpdateAsync(BuiltInRoles.Secretary, [], _actorId);
 
-        // Not only on a removal: someone whose role just gained a capability holds a token that
-        // does not carry it, so their new rights would not work until it lapsed either.
-        Assert.Contains(member, _refreshTokens.RevokedUsers);
+        // The server already refuses the lost capability; the push lets the menu drop it too.
+        Assert.Equal([secretary], _publisher.Notified);
     }
 
     [Fact]
-    public async Task Sessions_are_ended_after_the_transaction_commits_not_inside_it()
+    public async Task Accounts_are_told_after_the_transaction_commits_not_inside_it()
     {
-        // Revoking runs one Redis round trip per affected account, in sequence. Inside the
-        // invariant lock that would block every other administrative write for the whole run, and
-        // a Redis outage would roll back a configuration change the database had accepted.
+        // Told before the commit, a browser could refresh, read the old matrix, and wait for a
+        // push that has already been and gone.
         _roles.WithActiveUser(BuiltInRoles.Member, Guid.CreateVersion7());
         _roles.WithActiveUser(BuiltInRoles.Member, Guid.CreateVersion7());
 
-        _refreshTokens.OnRevokeAll = () =>
-            Assert.False(_invariant.IsInsideWrite, "Sessions were revoked while the lock was held.");
+        _publisher.OnPublish = () =>
+            Assert.False(_invariant.IsInsideWrite, "Accounts were told while the lock was held.");
 
         var result = await NewService().UpdateAsync(
             BuiltInRoles.Member, [Capability.MeetingCreator], _actorId);
 
         Assert.True(result.Succeeded);
-        Assert.Equal(2, _refreshTokens.RevokedUsers.Count);
+        Assert.Equal(2, _publisher.Notified.Count);
     }
 
     [Fact]
-    public async Task The_matrix_change_survives_the_session_store_being_down()
+    public async Task The_matrix_change_survives_the_push_failing()
     {
         // The configuration is saved and correct. Telling the administrator it failed would have
-        // them repeat a change that did happen; what is actually lost is the early end of some
-        // sessions, which lapse by themselves when their access tokens expire.
+        // them repeat a change that did happen; what is lost is only an early token refresh.
         _roles.WithActiveUser(BuiltInRoles.Member, Guid.CreateVersion7());
-        _refreshTokens.OnRevokeAll = () => throw new InvalidOperationException("Redis khong phan hoi");
+        _publisher.OnPublish = () => throw new InvalidOperationException("Hub khong phan hoi");
 
         var result = await NewService().UpdateAsync(
             BuiltInRoles.Member, [Capability.MeetingCreator], _actorId);
 
         Assert.True(result.Succeeded);
         Assert.Single(_audit.Records);
-    }
-
-    [Fact]
-    public async Task One_unreachable_session_does_not_stop_the_others_being_ended()
-    {
-        // The loop goes on after a failure: one account whose revoke threw must not leave everyone
-        // else on the role still holding a usable refresh token.
-        _roles.WithActiveUser(BuiltInRoles.Member, Guid.CreateVersion7());
-        _roles.WithActiveUser(BuiltInRoles.Member, Guid.CreateVersion7());
-        _roles.WithActiveUser(BuiltInRoles.Member, Guid.CreateVersion7());
-
-        var attempts = 0;
-        _refreshTokens.OnRevokeAll = () =>
-        {
-            if (++attempts == 1)
-            {
-                throw new InvalidOperationException("Redis tu choi mot lan");
-            }
-        };
-
-        var result = await NewService().UpdateAsync(
-            BuiltInRoles.Member, [Capability.MeetingCreator], _actorId);
-
-        Assert.True(result.Succeeded);
-        Assert.Equal(3, attempts);
     }
 
     [Fact]
@@ -261,12 +233,12 @@ public class RolePermissionServiceTests
             BuiltInRoles.Admin, [Capability.AdminUsers], _actorId);
 
         // Answered as success — the system is in the state asked for — but nothing happened, so
-        // there is no audit row for a change that was not made and no session ended for
-        // capabilities nobody lost.
+        // there is no audit row for a change that was not made and nobody told their capabilities
+        // changed.
         Assert.True(result.Succeeded);
         Assert.Equal(0, _roles.SaveCount);
         Assert.Empty(_audit.Records);
-        Assert.Empty(_refreshTokens.RevokedUsers);
+        Assert.Empty(_publisher.Notified);
     }
 
     [Fact]
@@ -436,10 +408,10 @@ public class RolePermissionServiceTests
         Assert.Equal(RolePermissionOutcome.SaveFailed, result.Outcome);
         Assert.Null(result.Matrix);
 
-        // Nothing changed, nothing recorded, nobody signed out — the diagram's failure branch
-        // stops before all three.
+        // Nothing changed, nothing recorded, nobody told — the diagram's failure branch stops
+        // before all three.
         Assert.Empty(_roles.CapabilitiesOf(BuiltInRoles.Member));
         Assert.Empty(_audit.Records);
-        Assert.Empty(_refreshTokens.RevokedUsers);
+        Assert.Empty(_publisher.Notified);
     }
 }

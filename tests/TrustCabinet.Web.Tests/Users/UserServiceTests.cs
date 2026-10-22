@@ -26,6 +26,7 @@ public class UserServiceTests
     private readonly FakeAdministratorInvariantGuard _invariant = new();
     private readonly FakePasswordResetTokenStore _resetTokens = new();
     private readonly FakePasswordResetEmailSender _resetEmail = new();
+    private readonly TrustCabinet.Web.Tests.Access.FakeCapabilitiesChangePublisher _capabilitiesChanged = new();
     private readonly Guid _actorId = Guid.CreateVersion7();
 
     private UserService NewService() => new(
@@ -36,6 +37,7 @@ public class UserServiceTests
         _invariant,
         _resetTokens,
         _resetEmail,
+        _capabilitiesChanged,
         NullLogger<UserService>.Instance);
 
     private User GivenUser(
@@ -133,7 +135,7 @@ public class UserServiceTests
         var hasher = new TrustCabinet.Infrastructure.Authentication.PasswordHasher();
         var service = new UserService(
             _users, hasher, _audit, _refreshTokens, _invariant, _resetTokens, _resetEmail,
-            NullLogger<UserService>.Instance);
+            _capabilitiesChanged, NullLogger<UserService>.Instance);
 
         await service.CreateAsync(
             new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, BuiltInRoles.Chair),
@@ -426,17 +428,48 @@ public class UserServiceTests
     }
 
     [Fact]
-    public async Task Update_ends_the_sessions_when_the_role_changes()
+    public async Task Update_keeps_the_sessions_and_tells_the_account_when_the_role_changes()
     {
-        // Capabilities travel inside the access token, so without this the person keeps the rights
-        // they had until it expires.
+        // SCRUM-105, PO 22/10/2026: a role change used to sign the person out. Now the session
+        // stays, and the push makes their browser refresh the token and hide what they lost.
         var user = GivenUser(role: BuiltInRoles.Member);
         await _refreshTokens.StoreAsync("rt-cua-ho", user.Id, TimeSpan.FromDays(7));
 
         await NewService().UpdateAsync(
             user.Id, new UserEdit(user.FullName, user.Email, BuiltInRoles.Secretary), _actorId);
 
+        Assert.Single(_refreshTokens.ActiveTokens);
+        Assert.Equal([user.Id], _capabilitiesChanged.Notified);
+    }
+
+    [Fact]
+    public async Task A_role_and_email_change_together_ends_the_session_without_a_push()
+    {
+        // The email change signs the person out; telling them their access was updated first
+        // would be followed straight away by the sign-in page.
+        var user = GivenUser(role: BuiltInRoles.Member);
+        await _refreshTokens.StoreAsync("rt-cua-ho", user.Id, TimeSpan.FromDays(7));
+
+        await NewService().UpdateAsync(
+            user.Id, new UserEdit(user.FullName, "dia-chi-moi@trustcabinet.local", BuiltInRoles.Secretary),
+            _actorId);
+
         Assert.Empty(_refreshTokens.ActiveTokens);
+        Assert.Empty(_capabilitiesChanged.Notified);
+    }
+
+    [Fact]
+    public async Task A_role_change_survives_the_push_failing()
+    {
+        // The edit is saved and enforced; failing the request would have the administrator redo it.
+        var user = GivenUser(role: BuiltInRoles.Member);
+        _capabilitiesChanged.OnPublish = () => throw new InvalidOperationException("Hub khong phan hoi");
+
+        var result = await NewService().UpdateAsync(
+            user.Id, new UserEdit(user.FullName, user.Email, BuiltInRoles.Secretary), _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(BuiltInRoles.Secretary, Assert.Single(_users.Users).RoleId);
     }
 
     [Fact]
@@ -450,6 +483,7 @@ public class UserServiceTests
             user.Id, new UserEdit("Tên Đã Sửa", user.Email, BuiltInRoles.Secretary), _actorId);
 
         Assert.Single(_refreshTokens.ActiveTokens);
+        Assert.Empty(_capabilitiesChanged.Notified);
     }
 
     [Fact]
@@ -538,13 +572,15 @@ public class UserServiceTests
 
         Assert.True(result.Succeeded);
         Assert.Equal(BuiltInRoles.Member, retired.RoleId);
+        // No session to update, so nobody to tell.
+        Assert.Empty(_capabilitiesChanged.Notified);
     }
 
     [Fact]
     public async Task Changing_an_email_ends_the_sessions_too()
     {
         // The access token carries an email claim, so /api/auth/me would keep answering with the
-        // old address for as long as the token lived. Only a role change used to revoke.
+        // old address for as long as the token lived. A role change no longer revokes (SCRUM-105).
         var user = GivenUser("Lê Thành Viên", "cu@trustcabinet.local");
         await _refreshTokens.StoreAsync("rt-cua-ho", user.Id, TimeSpan.FromDays(7));
 
@@ -553,6 +589,7 @@ public class UserServiceTests
 
         Assert.True(result.Succeeded);
         Assert.Empty(_refreshTokens.ActiveTokens);
+        Assert.Empty(_capabilitiesChanged.Notified);
     }
 
     [Fact]
@@ -602,11 +639,28 @@ public class UserServiceTests
         _refreshTokens.OnRevokeAll = () =>
             Assert.False(_invariant.IsInsideWrite, "Sessions were revoked while the lock was held.");
 
+        // An email change: since SCRUM-105 a role change no longer ends the session.
+        var result = await NewService().UpdateAsync(
+            user.Id, new UserEdit(user.FullName, "dia-chi-moi@trustcabinet.local", BuiltInRoles.Member),
+            _actorId);
+
+        Assert.True(result.Succeeded);
+        Assert.Empty(_refreshTokens.ActiveTokens);
+    }
+
+    [Fact]
+    public async Task A_role_change_is_pushed_after_the_transaction_commits_not_inside_it()
+    {
+        // Told before the commit, the browser could refresh and read the old role back.
+        var user = GivenUser("Lê Thành Viên", "thanhvien@trustcabinet.local");
+        _capabilitiesChanged.OnPublish = () =>
+            Assert.False(_invariant.IsInsideWrite, "The account was told while the lock was held.");
+
         var result = await NewService().UpdateAsync(
             user.Id, new UserEdit(user.FullName, user.Email, BuiltInRoles.Chair), _actorId);
 
         Assert.True(result.Succeeded);
-        Assert.Empty(_refreshTokens.ActiveTokens);
+        Assert.Equal([user.Id], _capabilitiesChanged.Notified);
     }
 
     [Fact]
@@ -618,11 +672,13 @@ public class UserServiceTests
         var user = GivenUser("Lê Thành Viên", "thanhvien@trustcabinet.local");
         _refreshTokens.OnRevokeAll = () => throw new InvalidOperationException("Redis khong phan hoi");
 
+        // An email change, the edit that still ends the session.
         var result = await NewService().UpdateAsync(
-            user.Id, new UserEdit(user.FullName, user.Email, BuiltInRoles.Chair), _actorId);
+            user.Id, new UserEdit(user.FullName, "dia-chi-moi@trustcabinet.local", BuiltInRoles.Member),
+            _actorId);
 
         Assert.True(result.Succeeded);
-        Assert.Equal(BuiltInRoles.Chair, user.RoleId);
+        Assert.Equal("dia-chi-moi@trustcabinet.local", user.Email);
     }
 
     // ------------------------------------------- UC-06c · Deactivate / reactivate user account

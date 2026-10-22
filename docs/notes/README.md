@@ -6,6 +6,8 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 
 ## Danh sách
 
+- [Tài liệu cuộc họp — SCRUM-21/22/23](NOTE-tai-lieu-scrum-21-22-23.md) — 22/10/2026; UC-32a/32c/35, BR-315 → BR-318,
+  sequence, class diagram FE-07, wireframe v7; so sánh với AI-eCabinet, câu hỏi cho PO và phần còn phải đồng bộ.
 - [Bàn giao cập nhật màn hình theo Report 3 ngày 18/10/2026](NOTE-cap-nhat-man-hinh-18-10-2026.md) — màn 4.x, 5.x,
   6.1, 7.5, 8.3, 11.x cần sửa theo UC/BR mới (agenda, vote gắn tài liệu, giao chủ toạ, huỷ cuộc họp); SCRUM-100.
 - [Thay đổi để dành cho UC chưa đặc tả](NOTE-uc-chua-dac-ta-cho-sua.md) — 18/10/2026; phần ý PO/hội đồng chạm UC

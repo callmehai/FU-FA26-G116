@@ -18,9 +18,10 @@ trích xuất nguyên trạng các class C# đã triển khai.
 | FE-04 Meeting Management | [drawio](feature-04-meeting-management-class-diagram.drawio) · [PNG](feature-04-meeting-management-class-diagram.drawio.png) | UC-14–UC-22, UC-75 |
 | FE-05 Agenda Management | [drawio](feature-05-agenda-management-class-diagram.drawio) · [PNG](feature-05-agenda-management-class-diagram.drawio.png) | UC-23a/b/c/d, UC-24–UC-26, UC-77 |
 | FE-06 Meeting Participant Management | [drawio](feature-06-meeting-participant-management-class-diagram.drawio) · [PNG](feature-06-meeting-participant-management-class-diagram.drawio.png) | UC-27, UC-28a/b/c, UC-29–UC-31, UC-73 |
+| FE-07 Meeting Document Management (một phần) | [drawio](feature-07-document-management-class-diagram.drawio) · [PNG](feature-07-document-management-class-diagram.drawio.png) | UC-32a, UC-32c, UC-35 |
 | FE-13 Notification | [drawio](feature-13-notification-management-class-diagram.drawio) · [PNG](feature-13-notification-management-class-diagram.drawio.png) | UC-66, UC-67a/b, UC-68 |
 
-FE-07–FE-12, FE-14 và FE-15 chưa có class diagram trong thư mục này. FE-05 Meeting Session cũ
+FE-07 mới có phần đọc tài liệu cuộc họp và góp ý (UC-32a, UC-32c, UC-35 — SCRUM-21/22/23, 22/10/2026); kho cá nhân, thêm/gỡ/gắn tài liệu (UC-33a–d, UC-34, UC-36, UC-71, UC-72 — SCRUM-58) chưa vẽ. FE-08–FE-12, FE-14 và FE-15 chưa có class diagram trong thư mục này. FE-05 Meeting Session cũ
 đã bị bỏ theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md); FE-05 hiện tại là Agenda.
 UC-07 hiện nằm trong FE-02, không còn một bản 02b độc lập.
 
@@ -161,6 +162,16 @@ class và cạnh cần thiết; giữ ID, bố cục và quan hệ cũ.
 - **Kiểm tra:** validator 0 lỗi cho cả ba source; đã render và xem ảnh. PNG FE-04/05/06 xuất bằng draw.io 31.7.0, nhúng
   model ở chunk `zTXt` keyword `mxGraphModel` (khác dạng `tEXt`/`mxfile` ghi ở §5). Đã giải mã chunk và đối chiếu
   nội dung với source; **chưa** mở lại PNG bằng draw.io để kiểm tra roundtrip.
+
+## 6b. FE-07 — tài liệu cuộc họp · 22/10/2026
+
+Vẽ mới từ UC-32a, UC-32c, UC-35 (bản sửa 22/10/2026) và ba sequence cùng tên trong
+[document-management](../06-sequencediagram/document-management/README.md). Entity theo Report 3 §I.3.2 (Entity 19,
+20, 20a, 21) — tức mô hình **đích**, chưa phải code: code vẫn là `Document.MeetingId` + `DocumentVersion`, migration làm
+khi triển khai SCRUM-58/SCRUM-21. `MeetingAccessPolicy` dùng chung với FE-05; `FileStorage` là trách nhiệm đọc object
+trong kho đối tượng, chưa có class tương ứng (**PROPOSED**). `MeetingDocumentGroups`, `FileContent` là DTO trả về,
+không vẽ thành class. `AuditLogRepository` phục vụ BR-318. Validator 0 lỗi; đã render và xem ảnh. PNG xuất bằng draw.io
+desktop, nhúng model ở chunk `zTXt`; chưa mở lại PNG bằng draw.io để kiểm tra roundtrip.
 
 ## 7. Rà soát hiện trạng · 14/10/2026
 

@@ -1,0 +1,92 @@
+title UC-32c - Preview Meeting Document
+
+actor "Authorized User" as User
+boundary "Document Viewer" as DocumentViewer
+control ":Meeting Document Controller" as DocumentController
+control ":Meeting Document Service" as DocumentService
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Meeting Document Repository" as MeetingDocumentRepository
+participant ":File Storage" as FileStorage
+participant ":Audit Log Repository" as AuditLogRepository
+database ":Database" as Database
+
+User->DocumentViewer: Open a Meeting document
+activate DocumentViewer
+
+DocumentViewer->DocumentController: Get Meeting document content
+activate DocumentController
+
+DocumentController->DocumentService: getDocumentContent(meetingId, meetingDocumentId, actor, download)
+activate DocumentService
+
+DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting,\nincluding a valid Guest invitation (BR-181, BR-200, BR-275)
+activate MeetingAccessPolicy
+MeetingAccessPolicy->Database: Check current Meeting relationship or valid Guest invitation
+activate Database
+Database-->MeetingAccessPolicy: Access / No access
+deactivate Database
+MeetingAccessPolicy-->DocumentService: Access / No access
+deactivate MeetingAccessPolicy
+
+DocumentService->MeetingDocumentRepository: Get document still attached to this Meeting (BR-211)
+activate MeetingDocumentRepository
+MeetingDocumentRepository->Database: Retrieve Meeting document not removed, with its stored file
+activate Database
+Database-->MeetingDocumentRepository: Meeting document / Not found
+deactivate Database
+MeetingDocumentRepository-->DocumentService: Meeting document / Not found
+deactivate MeetingDocumentRepository
+
+alt Document is no longer accessible - EX-1
+    DocumentService-->DocumentController: MSG156 - Meeting documents are not accessible.
+    DocumentController-->DocumentViewer: MSG156 - Meeting documents are not accessible.
+    DocumentViewer-->User: MSG156 - Meeting documents are not accessible.
+
+else Download requested for a Secret Meeting - EX-3
+    DocumentService-->DocumentController: MSG159 - Secret Meeting documents can only be viewed online and cannot be downloaded.
+    DocumentController-->DocumentViewer: MSG159 - Secret Meeting documents can only be viewed online and cannot be downloaded.
+    DocumentViewer-->User: MSG159 - Secret Meeting documents can only be viewed online and cannot be downloaded.
+
+else Document can be provided
+    DocumentService->FileStorage: Read the uploaded file unchanged (BR-183, BR-216)
+    activate FileStorage
+    FileStorage-->DocumentService: File content / Read failed
+    deactivate FileStorage
+
+    alt File cannot be provided - EX-2 / EX-4
+        DocumentService-->DocumentController: Read failed
+        DocumentController-->DocumentViewer: Read failed
+
+        alt Viewing - EX-2
+            DocumentViewer-->User: MSG158 - Unable to display the document. Please try again.
+        else Downloading - EX-4
+            DocumentViewer-->User: MSG160 - Unable to download the document. Please try again.
+        end
+
+    else File read
+        opt Meeting is Confidential or Secret
+            DocumentService->AuditLogRepository: Record view or download with actor and time (BR-318)
+            activate AuditLogRepository
+            AuditLogRepository->Database: Insert audit entry
+            activate Database
+            Database-->AuditLogRepository: Entry saved
+            deactivate Database
+            AuditLogRepository-->DocumentService: Entry saved
+            deactivate AuditLogRepository
+        end
+
+        DocumentService-->DocumentController: File content, file name and Meeting sensitivity
+        DocumentController-->DocumentViewer: File content, file name and Meeting sensitivity
+
+        alt Download chosen for a Meeting that is not Secret - AF-1
+            DocumentViewer-->User: Provide the original file (BR-188)
+        else Viewing
+            DocumentViewer->DocumentViewer: Render PDF pages or the DOCX document in the browser;\nhide Download for a Secret Meeting (BR-188)
+            DocumentViewer-->User: Show the document with its name and Meeting sensitivity,\nread-only after the Meeting ends (BR-282)
+        end
+    end
+end
+
+deactivate DocumentService
+deactivate DocumentController
+deactivate DocumentViewer
