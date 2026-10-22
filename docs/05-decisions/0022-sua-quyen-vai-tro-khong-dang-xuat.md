@@ -1,6 +1,7 @@
 # ADR-0022: Sửa quyền của vai trò không đăng xuất ai — báo qua hub để trình duyệt tự refresh token
 
-- **Trạng thái:** Đề xuất
+- **Trạng thái:** Đề xuất — dòng *"Không đổi"* về đổi vai trò của một người thay thế bởi
+  [ADR-0023](0023-doi-vai-tro-nguoi-dung-khong-dang-xuat.md)
 - **Ngày:** 2026-10-22
 - **Người quyết định:** Nhóm SEP490-G116
 - **Liên quan:** `SCRUM-105`, `SCRUM-60`; thay thế phần *"Kèm theo: thu hồi session nằm ngoài
