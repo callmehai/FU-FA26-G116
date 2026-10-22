@@ -5,8 +5,8 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Domain.Participants;
 
 public enum AssignmentStatus { Current, Removed }
-public enum ParticipantOperation { Context, Roster, Options, OwnResponse, AddInternal, AddGuest, ChangeAssignments, RemoveInternal, RevokeGuest, Respond }
-public enum ParticipantFailure { None, NotFound, Forbidden, Inactive, Locked, Invalid, InvalidRole, ChairHandoverDenied, InvalidChairRecipient, RequiredRoles, Stale, InvalidRequest, UnsupportedMedia, TooLarge, ReadFailed, SaveFailed, CannotRespond }
+public enum ParticipantOperation { Context, Roster, Options, OwnResponse, AddInternal, AddGuest, ChangeAssignments, RemoveInternal, RevokeGuest, Respond, ChairHandoverCandidates, HandOverChair }
+public enum ParticipantFailure { None, NotFound, Forbidden, Inactive, Locked, Invalid, InvalidRole, ChairHandoverDenied, InvalidChairRecipient, RequiredRoles, Stale, InvalidRequest, UnsupportedMedia, TooLarge, ReadFailed, SaveFailed, CannotRespond, CannotHandOverChair }
 public enum ParticipantSuccess { Saved, Created, RoleChanged, ChairHandedOver, Removed, Responded, NoChanges }
 
 public sealed record ParticipantActor(Guid? UserId = null, MeetingGuestSession? Guest = null);
@@ -38,7 +38,8 @@ public sealed record ChairReplacement(Guid OutgoingParticipantId, Guid IncomingP
 public sealed record ParticipantInput(Guid[]? UserIds = null, string? Role = null,
     string? InvitedName = null, string? Email = null,
     ParticipantChange[]? Changes = null, ChairReplacement? ChairReplacement = null, string? Response = null,
-    long? Revision = null, ParticipantFailure ParseFailure = ParticipantFailure.None);
+    long? Revision = null, ParticipantFailure ParseFailure = ParticipantFailure.None,
+    Guid? NewChairParticipantId = null, bool Confirmed = false);
 public sealed record ParticipantQuery(int Page = 1, int PageSize = 20, string? Search = null, bool Invalid = false);
 public sealed record ParticipantResult(ParticipantFailure Failure = ParticipantFailure.None, object? Data = null,
     long? Revision = null, ParticipantSuccess Success = ParticipantSuccess.Saved,
@@ -50,6 +51,9 @@ public sealed record ParticipantRow(Guid Id, string Kind, string DisplayName, st
     string Response, DateTimeOffset? RespondedAt);
 public sealed record ParticipantPage(IReadOnlyList<ParticipantRow> Items, int Total, int Page, int PageSize, string Revision, ResponseTotals Totals);
 public sealed record ParticipantOption(Guid Id, string FullName, string Email);
+public sealed record ChairHandoverCandidate(Guid ParticipantId, Guid UserId, string FullName, string Email);
+public sealed record ChairHandoverCandidatePage(IReadOnlyList<ChairHandoverCandidate> Items, int Total,
+    int EligibleTotal, int Page, int PageSize, string Revision);
 public sealed record ParticipantCreationOptions(IReadOnlyList<ParticipantOption> Items, int Total, int Page, int PageSize, string[] Roles);
 public sealed record ParticipantOptions(IReadOnlyList<ParticipantOption> Items, int Total, int Page, int PageSize,
     string[] Roles, string Revision);

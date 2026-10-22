@@ -8,10 +8,10 @@ Baseline PO 20/10/2026; tài liệu do AI hỗ trợ cập nhật ngày 21/10/20
 2. Chi tiết/create trả `chair:{userId,fullName}|null`, `secretaries:[]`, `myMeetingRole`. Dùng để hiện vai trò và trạng thái sẵn sàng; không thay authorization server.
 3. Context có `myRole` và đúng ba flags `canManageParticipants,canReplaceChair,canRespond`. Bỏ recovery UI và mọi checkbox quyền bổ sung.
 4. Roster gồm response/respondedAt và totals toàn bộ current roster; bỏ gọi invitation-responses. Options bỏ mode/permissionCatalog, roles luôn Chair/Secretary/Member.
-5. Bàn giao dùng một PUT assignments có batch demote/promote và confirmation khớp hai assignment IDs. Published/InProgress: chỉ Chair bàn giao, hoặc Secretary thay Chair inactive; recipient không phải Secretary và phải active/current. Thành công Chair bàn giao: MSG257; đổi role khác: MSG100.
+5. UC-73 mới dùng GET candidates và một POST chair-handover theo hướng dẫn bên dưới. PUT assignments có batch demote/promote và confirmation vẫn tương thích: Published/InProgress chỉ Chair bàn giao hoặc Secretary thay Chair inactive; recipient không phải Secretary và phải active/current. Thành công Chair bàn giao: MSG257; Secretary thay Chair inactive: MSG100.
 6. Giữ ETag/If-Match và revision dạng string. 409/MSG275 phải tải lại và để người dùng xác nhận lại. MSG276 query/header sai. Không dùng MSG252/253 (SCRUM-96).
 7. Sau save hoặc `participantsChanged`, reload context/roster/detail. Event có thể cùng revision khi chỉ thay response; không bỏ event chỉ vì revision không tăng. Dedupe eventId. Người bị gỡ nhận invalidation và reload404 thì rời màn chi tiết. Không báo “đã gửi email” chỉ từ save thành công.
-8. Các mã MSG256/257/259 đã triển khai trong SCRUM-20/SCRUM-97; MSG258/260 còn dành sẵn. MSG152/153 ngừng dùng. SCRUM-26 phải remap MSG277/278 trước tích hợp.
+8. Các mã MSG256–MSG260 đã triển khai; MSG258 là empty state HTTP200, MSG260 là lỗi409 của UC-73 mới. MSG152/153 ngừng dùng. SCRUM-26 phải remap MSG277/278 trước tích hợp.
 9. Guest OTP/profile/session thật còn chờ SCRUM-59; phòng nội bộ đã tích hợp truy vấn current/active với SCRUM-41: gỡ participant chặn cấp quyền mới ngay; job đối soát phòng loại người đã gỡ ở chu kỳ tiếp theo (30 giây). Không nghiệm thu Guest production bằng test JWT/adapters.
 
 ## Test thủ công
@@ -57,3 +57,29 @@ Trên môi trường kiểm thử riêng, dùng provider ném InvalidOperationEx
 3. Với cuộc họp Online/InProgress: gỡ Member, dùng token Member thử vào phòng phải bị từ chối; chờ job đối soát loại kết nối hiện có. Mời lại cùng user, vào phòng được theo assignment mới và không lỗi trùng dòng. Lịch sử assignment cũ vẫn giữ.
 
 Vẫn chờ FE gửi participants trước khi merge/deploy phối hợp. Lookup mới và sửa truy vấn không cần migration.
+
+## UC-73 riêng — bàn giao SCRUM-97 ngày 22/10/2026
+
+Backend task này chỉ bổ sung API/tests/tài liệu. Thành viên FE tự tạo types và functions qua `src/api/client.ts`, dùng relative URL và contract [API §8](09-thanh-phan-tham-du.md#8-scrum-97--api-chuyên-biệt-uc-73). Không đổi ba flags context.
+
+1. Hiện hành động khi `myRole === "Chair"`, status Published/InProgress và `permissions.canReplaceChair`. Server luôn kiểm quyền lại.
+2. Mở dialog gọi GET `/api/meetings/{id}/participants/chair-handover-candidates?q=&page=1&pageSize=20`. Không dùng editor-options, không tự lọc một trang roster.
+3. Mỗi item có participantId/userId/fullName/email; giữ participantId làm lựa chọn. Giữ revision string và ETag **cùng response GET**.
+4. Nếu code MSG258 trong HTTP200, hiển thị trạng thái chưa có Member phù hợp và khóa nút xác nhận; không gọi isApiError cho tình huống này. Search rỗng với eligibleTotal>0 chỉ là không khớp tìm kiếm.
+5. Chọn người rồi xác nhận; gửi **một POST** `/participants/chair-handover` với `{newChairParticipantId: selected.participantId,confirmed:true}` và `If-Match: "participants-${revision}"`. Không tự hạ Chair bằng request riêng, không gửi actor/role.
+6. Khi `participantsChanged`, tải lại dữ liệu cần thiết và dedupe theo eventId; revision có thể không đổi khi event do response lời mời.
+7. Secretary thay Chair inactive tiếp tục dùng PUT assignments với confirmation hiện hành. API mới không dành cho Secretary, kể cả canReplaceChair đang true.
+
+| Response | Cách FE xử lý |
+|---|---|
+| 200/MSG257 | Đóng dialog, reload context/detail/roster; Chair cũ vẫn Member, không tự rời phòng |
+| 200/MSG258 | Empty state, khóa nút xác nhận; không coi là exception |
+| 400/MSG259 | Bỏ lựa chọn cũ, tải lại candidates |
+| 409/MSG260 | Đóng dialog, tải lại context/detail/roster vì quyền/status đổi |
+| 409/MSG275 | Reload và yêu cầu người dùng chọn/xác nhận lại; không tự retry mutation |
+| 409/MSG109 | Báo thiếu vai trò bắt buộc; tải lại roster để người có quyền phân công Secretary |
+| 400/MSG101 hoặc MSG276 | Kiểm schema/header/query của client; không tự gửi lại batch |
+| 401/403/404 | Theo xử lý session/access hiện có; không suy luận meeting tồn tại từ404 |
+| 500/MSG95 hoặc 503/MSG102 | Báo lỗi tương ứng; tải lại dữ liệu trước khi người dùng thử lại |
+
+Collection Postman có folder `UC-73 — smoke tuần tự` (DB riêng), dùng token Chair và token Member được cấp bên ngoài collection. Kết quả/giới hạn xác minh và change note cho BA: [báo cáo SCRUM-97](10-scrum97-ket-qua-kiem-thu.md).

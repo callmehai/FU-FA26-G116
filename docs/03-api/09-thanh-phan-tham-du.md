@@ -102,7 +102,7 @@ Ví dụ bàn giao (gọi bằng token Chair ở Published/InProgress):
 | 500/MSG95 | Đọc roster thất bại |
 | 503/MSG99, MSG102, MSG104, MSG108 | Lưu add, assignments, remove, response thất bại |
 
-MSG152/153 ngừng dùng, không tái cấp. MSG258/260 vẫn dành sẵn.
+MSG152/153 ngừng dùng, không tái cấp. MSG258/260 đã triển khai ở hai API UC-73 chuyên biệt (§8); PUT vẫn giữ mapping hiện hành.
 
 Hub `/hubs/meetings`: join bằng `JoinMeeting(meetingId)`, nghe `participantsChanged` payload `{eventId,meetingId,revision,occurredAt}`. Sau commit có thay đổi, kể cả response, gửi đến hợp readers trước/sau: active participants, creator, approver lọc MeetingReadPolicy, Guest sessions hợp lệ qua adapter. Người vừa bị gỡ vẫn nhận invalidation, reload nhận 404. Payload không mang roster/PII. Lỗi transport ghi log, không rollback; hook disconnect room là port riêng.
 
@@ -122,3 +122,82 @@ Xem [bàn giao FE/test thủ công](09-thanh-phan-tham-du-ban-giao.md) và [ADR-
 - Mọi exception kỹ thuật từ readiness probe, prepare và materialize đều tăng AttemptCount, backoff và Failed khi hết MaxAttempts; cancellation từ host được propagate, không tính thất bại. Log chỉ ghi loại exception, không ghi message/payload/token.
 - Worker cô lập lỗi dispatch, kể cả lỗi khi truy vấn hoặc ghi trạng thái retry; hàng đợi email đã có (gồm reset mật khẩu) vẫn được xử lý ở scope riêng.
 - Add internal trùng email current Guest trả 400/MSG97 với errors.userIds.
+
+## 8. SCRUM-97 — API chuyên biệt UC-73
+
+Bổ sung ngày 22/10/2026 trên baseline `875dde2`. PUT assignments tiếp tục tương thích. POST mới chỉ dành cho **current Chair nội bộ active** tự bàn giao ở **Published/InProgress**. Secretary thay Chair inactive tiếp tục dùng PUT đã có confirmation; không được dùng POST này. Organizer/admin không có đặc quyền chuyển giao từ system role.
+
+### 8.1. Danh sách người nhận
+
+```http
+GET /api/meetings/{meetingId}/participants/chair-handover-candidates?q=&page=1&pageSize=20
+```
+
+`q` trim, tối đa 200 ký tự, tìm fullName/email không phân biệt hoa thường. `page` mặc định1, >=1; `pageSize` mặc định20, 1..100. Không nhận key lạ, trùng hoặc sai kiểu. Sort fullName không phân biệt hoa thường rồi participantId. Lọc **trước search/paging**: assignment thuộc meeting, `ParticipantRules.Current`, tài khoản active, role Member và khác caller. Không cần Accept lời mời, điểm danh hoặc kết nối phòng. Không gọi Guest profile adapter hoặc editor-options.
+
+Response `200`, `ETag: "participants-7"`, `Cache-Control: no-store`:
+
+```json
+{
+  "items": [{"participantId":"019a0010-0000-7000-8000-000000000001","userId":"019a0010-0000-7000-8000-000000000002","fullName":"Nguyễn Văn A","email":"a@example.test"}],
+  "total":1,"eligibleTotal":1,"page":1,"pageSize":20,"revision":"7",
+  "code":null,"message":null
+}
+```
+
+`participantId` là assignment ID, không phải user ID. `eligibleTotal` đếm toàn meeting trước search; `total` đếm sau search trước paging. Revision là string cùng roster revision, đọc trong transaction RepeatableRead.
+
+Nếu toàn meeting không có người nhận: `items:[]`, `total:0`, `eligibleTotal:0`, `code:"MSG258"`, `message:"Không có thành viên đủ điều kiện nhận vai trò Chủ tọa. Hãy thêm thành viên nội bộ trước."`, vẫn HTTP200. Nếu chỉ search không khớp/page vượt cuối nhưng eligibleTotal>0: items rỗng, code/message null.
+
+### 8.2. Một request chuyển giao
+
+```http
+POST /api/meetings/{meetingId}/participants/chair-handover
+Content-Type: application/json
+If-Match: "participants-7"
+```
+
+```json
+{"newChairParticipantId":"019a0010-0000-7000-8000-000000000001","confirmed":true}
+```
+
+Không gửi actor, Chair cũ, role hoặc batch. Backend xác định chúng từ principal/database. Response200, ETag `"participants-8"` và no-store:
+
+```json
+{"code":"MSG257","message":"Giao vai trò Chủ tọa thành công.","revision":"8"}
+```
+
+Hậu điều kiện: Chair cũ thành Member, người nhận thành Chair; giữ assignment IDs và trạng thái Current; một Chair và ít nhất một current Secretary. Không thay system role, response/respondedAt, attendance/recorder/time, ballots hoặc history. Không gỡ Chair cũ, không tự rời phòng. Revision tăng đúng một lần.
+
+Khóa meeting FOR UPDATE, đọc account mới dưới FOR SHARE theo thứ tự ID. Demote/save rồi promote/save trong **cùng transaction** để tuân thủ unique Chair. Hai notifications MeetingRoleChanged và hai dispatch RoleChanged cùng một audit `meeting.participants.HandOverChair` chứa hai changes được commit chung. Bất kỳ save lỗi rollback toàn bộ. Sau commit phát một participantsChanged đến readers trước/sau; transport lỗi chỉ log, durable intent vẫn còn, response vẫn thành công. Không gửi SMTP trong request.
+
+### 8.3. Thứ tự lỗi cố định
+
+1. Authentication401 theo middleware hiện hành.
+2. Tài khoản/quyền đọc: không tồn tại/không được đọc404 rỗng; inactive403 rỗng; Guest có quyền đọc403/MSG85.
+3. Current active Chair và status Published/InProgress; nếu không409/MSG260: “Bạn không còn quyền giao vai trò Chủ tọa cho cuộc họp này.”
+4. Content type, size, JSON/schema body.
+5. Header If-Match hiện diện/đúng định dạng; POST không nhận query.
+6. Người nhận hợp lệ dưới account lock; sai400/MSG259.
+7. Revision khớp; stale409/MSG275.
+8. Bảo toàn vai trò bắt buộc; thiếu Secretary409/MSG109.
+9. Lưu transaction; lỗi503/MSG102.
+
+GET áp dụng bước1–3 trước query validation. Mã409/MSG260 chỉ áp dụng hai API mới, không đổi lỗi PUT assignments. Cựu Chair gửi lại ETag cũ nhận MSG260; candidate bị gỡ/inactive/thành Secretary nhận MSG259 kể cả ETag stale; actor/recipient vẫn hợp lệ nhưng thay đổi chỗ khác trong roster nhận MSG275.
+
+| HTTP/code | UC-73 |
+|---|---|
+| 200/MSG258 | Toàn meeting không có candidate; không phải API error |
+| 400/MSG101 | JSON sai/null, key thừa/trùng/sai hoa thường, GUID thiếu/sai/rỗng, confirmed thiếu hoặc khác true |
+| 400/MSG259 | Recipient chính mình, Secretary, Guest, inactive, Removed/delegated, không tồn tại hoặc assignment meeting khác |
+| 400/MSG276 | Query sai, POST có query, If-Match thiếu/sai |
+| 403/MSG85 | Guest đọc hợp lệ gọi UC-73 |
+| 409/MSG260 | Internal reader không phải current Chair hoặc status không cho bàn giao |
+| 409/MSG275 | Roster revision stale sau khi actor và recipient vẫn hợp lệ |
+| 409/MSG109 | Thiếu vai trò bắt buộc sau swap |
+| 413/MSG87 | Body vượt 64 KiB |
+| 415/MSG34 | Content-Type không được hỗ trợ |
+| 500/MSG95 | Đọc candidates thất bại |
+| 503/MSG102 | Lưu handover thất bại |
+
+Nguồn và các điểm BA cần đồng bộ: [plan](../02-design/10-scrum97-ke-hoach-backend.md). Kết quả thực chạy: [báo cáo SCRUM-97](10-scrum97-ket-qua-kiem-thu.md).

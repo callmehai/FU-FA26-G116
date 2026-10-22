@@ -76,11 +76,22 @@ public sealed class ParticipantFixture : IAsyncLifetime
     {
         internal int Count;
         internal Func<Task>? BeforeUserLock;
+        internal Func<Task>? BeforeMeetingLock;
+        internal bool FailMeetingRead;
         internal bool RejectUserUpdates;
         public override async ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(DbCommand command,
             CommandEventData eventData, InterceptionResult<DbDataReader> result, CancellationToken ct = default)
         {
             Interlocked.Increment(ref Count);
+            if (FailMeetingRead && command.CommandText.Contains("FROM meetings", StringComparison.Ordinal))
+                throw new TimeoutException("Injected meeting read failure.");
+            if (command.CommandText.Contains("FROM meetings", StringComparison.Ordinal)
+                && command.CommandText.Contains("FOR UPDATE", StringComparison.Ordinal)
+                && BeforeMeetingLock is { } meetingCallback)
+            {
+                BeforeMeetingLock = null;
+                await meetingCallback();
+            }
             if (command.CommandText.Contains("FROM users", StringComparison.Ordinal) && command.CommandText.Contains("FOR SHARE", StringComparison.Ordinal)
                 && BeforeUserLock is { } callback)
             {

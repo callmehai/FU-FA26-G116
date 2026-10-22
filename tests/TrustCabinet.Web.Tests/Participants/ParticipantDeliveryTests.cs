@@ -47,6 +47,31 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
     }
 
     [Fact]
+    public async Task Dedicated_handover_dispatch_materializes_once_under_concurrent_retries()
+    {
+        var s = await f.Seed(); using var chair = f.Client(s.Chair);
+        await Code(await Write(chair, s.Url + "/participants/chair-handover", HttpMethod.Post,
+            new { newChairParticipantId = s.MemberAssignment, confirmed = true }), 200, "MSG257");
+        await using var db = f.Db();
+        var dispatches = await db.MeetingInvitationDispatches.Where(d => d.MeetingId == s.MeetingId).ToArrayAsync();
+        Assert.Equal(2, dispatches.Length);
+        _options.Smtp.Enabled = false;
+        foreach (var d in dispatches) Assert.Equal(0, await Process(d.Id));
+        Assert.False(await db.EmailMessages.AnyAsync(e => e.MeetingId == s.MeetingId));
+        _options.Smtp.Enabled = true;
+        foreach (var d in dispatches)
+        {
+            Assert.Equal(1, (await Task.WhenAll(Process(d.Id), Process(d.Id))).Sum());
+            Assert.Equal(0, await Process(d.Id));
+        }
+        var emails = await db.EmailMessages.Where(e => e.MeetingId == s.MeetingId).ToArrayAsync();
+        Assert.Equal(2, emails.Length);
+        Assert.Equal(dispatches.Select(d => d.DeduplicationKey).Order(), emails.Select(e => e.DeduplicationKey).Order());
+        Assert.Contains(emails, e => e.Body.Contains("Chủ tọa", StringComparison.Ordinal));
+        Assert.Contains(emails, e => e.Body.Contains("Thành viên", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task Unavailable_guest_uses_exponential_dependency_delay_without_locking_meeting()
     {
         var s = await f.Seed();
