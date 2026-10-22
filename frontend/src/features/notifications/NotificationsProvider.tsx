@@ -5,6 +5,7 @@ import * as notificationsApi from '../../api/notifications'
 import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
 import type { AppNotification, NotificationPush } from '../../types/notification'
+import { useAuth } from '../auth/useAuth'
 import { NotificationsContext, type NotificationFeed, type NotificationsApi } from './notificationsContext'
 
 const PAGE_SIZE = 20
@@ -33,6 +34,7 @@ const EMPTY_FEED: NotificationFeed = {
  */
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const toast = useToast()
+  const { reloadSession } = useAuth()
   const [unreadCount, setUnreadCount] = useState<number | null>(null)
   const [feed, setFeed] = useState<NotificationFeed>(EMPTY_FEED)
   const [arrivals, setArrivals] = useState(0)
@@ -169,11 +171,15 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     [toast],
   )
 
-  /** After a gap in the connection: re-read the count, and the list if it was on screen. */
+  /**
+   * After a gap in the connection: re-read the count, and the list if it was on screen — and the
+   * session, in case a `capabilitiesChanged` was pushed meanwhile.
+   */
   const resync = useCallback(() => {
     void refreshCount()
     if (feedRef.current.loaded) void loadFirstPage()
-  }, [refreshCount, loadFirstPage])
+    void reloadSession()
+  }, [refreshCount, loadFirstPage, reloadSession])
 
   // The connection outlives renders; its handlers reach the latest callbacks through refs.
   const receiveRef = useRef(receive)
@@ -190,6 +196,9 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     let retryTimer: number | undefined
 
     connection.on('notificationReceived', (push: NotificationPush) => receiveRef.current(push))
+    // SCRUM-105: an administrator changed the capabilities of this account's role. Re-reading the
+    // session refreshes the token, so the new set applies now and the session stays.
+    connection.on('capabilitiesChanged', () => void reloadSession())
     // The built-in reconnect recovered a dropped connection; what was pushed meanwhile is lost.
     connection.onreconnected(() => resyncRef.current())
     // Closed for good: the server ended a connection whose token expired, or reconnecting failed.
@@ -243,7 +252,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       window.removeEventListener('online', catchUp)
       void connection.stop()
     }
-  }, [refreshCount])
+  }, [refreshCount, reloadSession])
 
   const value = useMemo<NotificationsApi>(
     () => ({

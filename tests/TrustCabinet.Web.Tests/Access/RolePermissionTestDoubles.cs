@@ -135,3 +135,19 @@ internal sealed class FakeRolePermissionRepository : IRolePermissionRepository
         => Task.FromResult(rolesWithCapability.Sum(
             role => _usersByRole.TryGetValue(role, out var ids) ? ids.Count : 0));
 }
+
+/// <summary>Records who was told their capabilities changed, and whether the lock was still held.</summary>
+internal sealed class FakeCapabilitiesChangePublisher : ICapabilitiesChangePublisher
+{
+    public List<Guid> Notified { get; } = [];
+
+    /// <summary>Runs before recording, so a test can throw or inspect the moment of the push.</summary>
+    public Action? OnPublish { get; set; }
+
+    public Task PublishAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
+    {
+        OnPublish?.Invoke();
+        Notified.AddRange(userIds);
+        return Task.CompletedTask;
+    }
+}

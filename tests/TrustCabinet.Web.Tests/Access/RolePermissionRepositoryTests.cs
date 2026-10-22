@@ -83,7 +83,7 @@ public class RolePermissionRepositoryTests : IAsyncLifetime
         => new(
             new RolePermissionRepository(db),
             new FakeAuditService(),
-            new FakeRefreshTokenStore(),
+            new FakeCapabilitiesChangePublisher(),
             // The real guard, not the fake: these tests run against a real PostgreSQL, and the
             // lock is the thing under test on the concurrency cases below.
             new AdministratorInvariantGuard(db),

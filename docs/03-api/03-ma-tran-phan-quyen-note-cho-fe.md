@@ -156,15 +156,22 @@ bảo vệ.
 
 ---
 
-## 6. Sau khi lưu thành công, **người đang đăng nhập bị đăng xuất** — kể cả chính bạn
+## 6. Sau khi lưu thành công, người đang đăng nhập **nhận quyền mới, không bị đăng xuất**
 
-Đổi ma trận xong, backend **huỷ refresh token của mọi tài khoản mang vai trò vừa sửa**, ở cả hai
-chiều (thêm quyền cũng huỷ, vì token cũ chưa chứa quyền mới).
+> **Đổi theo SCRUM-105.** Trước đây backend huỷ refresh token của mọi tài khoản mang vai trò vừa
+> sửa, nên họ bị đăng xuất. Giờ backend không huỷ nữa.
+
+Đổi ma trận xong, backend gửi sự kiện **`capabilitiesChanged`** (không payload) trên
+`/hubs/notifications` tới mọi tài khoản đang hoạt động mang vai trò vừa sửa, ở cả hai chiều.
+`NotificationsProvider` nhận được thì gọi `reloadSession()`: đọc `/me`, thấy quyền khác token thì
+`/refresh`, rồi sidebar và `RequireCapability` render lại theo quyền mới. Mỗi lần hub kết nối lại,
+FE cũng gọi `reloadSession()`, phòng trường hợp sự kiện đã phát lúc mất kết nối.
 
 Hệ quả FE phải lường:
 
-1. **Nếu quản trị viên sửa chính vai trò của mình** → phiên của họ sẽ kết thúc ở lần refresh kế
-   tiếp. Nên hiện thông báo kiểu *"Thay đổi đã lưu. Bạn có thể cần đăng nhập lại để áp dụng."*
+1. **Nếu quản trị viên sửa chính vai trò của mình** → họ cũng nhận sự kiện, phiên giữ nguyên.
+   `RolesPage` vẫn tự gọi `reloadSession()` sau khi lưu; gọi hai lần không sao vì refresh là
+   single-flight.
 2. **Nếu họ gỡ `AdminUsers` khỏi chính vai trò mình đang mang** → request **kế tiếp** tới
    `/api/roles/capabilities` hay `/api/users` sẽ nhận **`403` ngay lập tức**, không chờ token hết
    hạn. Đây **không phải bug** — backend đọc lại quyền từ database ở từng request.
