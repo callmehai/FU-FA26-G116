@@ -4,6 +4,8 @@ Ngày 22/10/2026, Asia/Saigon. Kết quả trong tài liệu là các lệnh th�
 
 ## 1. Baseline và phần thay đổi
 
+Thông tin Git và kết quả ở mục 1–5 ghi nhận phiên triển khai đầu. Bản sửa sau review độc lập và kết quả xác minh mới nằm ở mục 6.
+
 Branch: `refactor/SCRUM-97-BACKNEND-Synchronize-attendees-according-to-PO-relate-to-SCRUM-20`.
 HEAD ban đầu `adca53ba29c0b4c670cd01984b675d17018c8f4c`, working tree sạch. Đã fast-forward đúng yêu cầu owner tới `875dde2b09702af539bb49fda2c44c8396d0e235`. Không tạo commit mới. Mọi thay đổi SCRUM-97 vẫn nằm trong working tree, chưa stage/commit/push.
 
@@ -95,3 +97,31 @@ Nội dung để owner đăng vào SCRUM-97/SCRUM-20 khi bàn giao:
 > BA Final Review cần đối chiếu UC-73, UC-28b, BR-126/169/294/295/296, sequence UC-73/UC-28b và class FE-06: API chuyên biệt và error precedence; empty search khác không có candidate; eligibility không yêu cầu Accepted/Present/room connection; Chair cũ giữ Member; ngoại lệ Chair inactive và bỏ grants/recovery theo change note10240. Contract `docs/03-api/09-thanh-phan-tham-du.md` §8 là nguồn bàn giao kỹ thuật. FE dùng candidates mới + một POST, reload context/detail/roster theo response/event; chưa đánh dấu toàn Jira Done.
 
 Các khác biệt baseline cũ đã ghi trong comment10240/10242 của SCRUM-20 và10241 của SCRUM-97. Phần bổ sung hai API/MSG258/260 ở đây **chưa đăng Jira** theo phạm vi owner yêu cầu. Không sửa hàng loạt tài liệu BA hoặc ADR đã chấp nhận.
+
+## 6. Sửa review P2 — ưu tiên lỗi body/media/size trước query
+
+Ngày 22/10/2026. Đầu phiên sửa: đúng branch SCRUM-97, HEAD `9c7ad556f603eaf26ff06d87544e0e8178639e3c`, working tree sạch. Giữ nguyên commit hiện có; phần sửa này chưa stage/commit/push. Main vẫn `ed94dc99f545121fe15f3981c2a783a34a2ae90f`.
+
+Finding hợp lệ: nhánh query trong `ParticipantEndpoints.Write` ghi đè `ParseFailure` dù ParseAsync đã phát hiện lỗi. Với POST chair-handover có `?unexpected=1`, JSON sai/confirmed false/media sai/body quá lớn đều trả MSG276, trái thứ tự API §8.3.
+
+Sửa tối thiểu: riêng operation HandOverChair, chỉ gán InvalidRequest cho query khi ParseFailure còn None. Các mutations khác, gồm PUT assignments, giữ nguyên thứ tự lỗi hiện hành. Không thay contract, model hoặc FE.
+
+Thêm theory gồm bốn trường hợp, đều có current active Chair, meeting Published, If-Match hợp lệ và query lạ:
+
+| Lỗi kèm query lạ | POST handover sau sửa |
+|---|---|
+| JSON sai cú pháp | 400/MSG101 |
+| confirmed false | 400/MSG101 |
+| Content-Type text/plain | 415/MSG34 |
+| Body 65.537 byte | 413/MSG87 |
+
+Mỗi trường hợp cũng gửi PUT assignments để kiểm chứng vẫn trả400/MSG276 và xác nhận không đổi Chair/revision/audit/notification/dispatch/event. Tests query với body hợp lệ hiện có tiếp tục kiểm400/MSG276.
+
+Kết quả thực chạy trên PostgreSQL17/Redis8 riêng:
+
+- Trước sửa: cả bốn tests mới fail đúng finding (`p2-red.log`).
+- Sau sửa: Release build `--no-restore -warnaserror` pass, 0 warning/error (`p2-build.log`).
+- Participants + MessageCodeCatalogueTests: **217 pass, 0 fail, 0 skip** (`p2-regression.log`, `scrum97-p2-regression.trx`).
+- `git diff --check`: pass.
+
+Artifacts nằm tại `C:\Users\PC\AppData\Local\Temp\scrum97-results\`. Phiên sửa này không chạy lại full suite, Newman hoặc FE build; số1227/full-suite và9 requests/Newman ở mục3 là kết quả trước bản sửa P2, không phải kết quả mới. Không đăng Jira hoặc triển khai môi trường chung.

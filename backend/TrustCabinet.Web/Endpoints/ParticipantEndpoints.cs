@@ -141,7 +141,11 @@ public static class ParticipantEndpoints
                         && await context.Request.Body.ReadAsync(new byte[1], ct) != 0
                     )
                         input = input with { ParseFailure = ParticipantFailure.Invalid };
-                    if (context.Request.Query.Count > 0)
+                    if (
+                        context.Request.Query.Count > 0
+                        && (operation != ParticipantOperation.HandOverChair
+                            || input.ParseFailure == ParticipantFailure.None)
+                    )
                         input = input with { ParseFailure = ParticipantFailure.InvalidRequest };
                     if (operation != ParticipantOperation.Respond)
                         input = input with

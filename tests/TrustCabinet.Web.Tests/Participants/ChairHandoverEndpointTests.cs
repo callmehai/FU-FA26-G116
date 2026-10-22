@@ -256,6 +256,32 @@ public sealed class ChairHandoverEndpointTests(ParticipantFixture f) : IClassFix
     }
 
     [Theory]
+    [InlineData("json", 400, "MSG101")]
+    [InlineData("confirmation", 400, "MSG101")]
+    [InlineData("media", 415, "MSG34")]
+    [InlineData("size", 413, "MSG87")]
+    public async Task Body_media_and_size_errors_precede_unknown_query(string kind, int status, string code)
+    {
+        var s = await f.Seed(); using var chair = f.Client(s.Chair);
+        var body = kind switch
+        {
+            "json" => "{",
+            "confirmation" => JsonSerializer.Serialize(new { newChairParticipantId = s.MemberAssignment, confirmed = false }),
+            "size" => new string(' ', 65537),
+            _ => "{}",
+        };
+        using var request = new HttpRequestMessage(HttpMethod.Post, s.Url + Handover + "?unexpected=1")
+        { Content = new StringContent(body, Encoding.UTF8, kind == "media" ? "text/plain" : "application/json") };
+        request.Headers.TryAddWithoutValidation("If-Match", "\"participants-0\"");
+        await Code(await chair.SendAsync(request), status, code);
+        using var legacy = new HttpRequestMessage(HttpMethod.Put, s.Url + "/participants/assignments?unexpected=1")
+        { Content = new StringContent(body, Encoding.UTF8, kind == "media" ? "text/plain" : "application/json") };
+        legacy.Headers.TryAddWithoutValidation("If-Match", "\"participants-0\"");
+        await Code(await chair.SendAsync(legacy), 400, "MSG276");
+        await Unchanged(s);
+    }
+
+    [Theory]
     [InlineData("?page=0")]
     [InlineData("?page=-1")]
     [InlineData("?page=abc")]
