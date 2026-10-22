@@ -230,6 +230,25 @@ public class RolePermissionEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Put_does_not_sign_out_the_accounts_holding_the_role()
+    {
+        // SCRUM-105: every holder used to lose their refresh token here, and with it the session.
+        // Granting and then taking away again must leave every session standing — the gate test
+        // above is what keeps a capability taken away from working.
+        _factory.Roles.WithActiveUser(BuiltInRoles.Member, Guid.CreateVersion7());
+        var admin = AdminClient();
+
+        foreach (var capabilities in new[] { new[] { "MeetingCreator" }, [] })
+        {
+            var response = await admin.PutAsJsonAsync(
+                "/api/roles/capabilities", new { roleId = BuiltInRoles.Member, capabilities });
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        Assert.Empty(_factory.RefreshTokens.RevokedUsers);
+    }
+
+    [Fact]
     public async Task Put_answers_MSG18_when_the_database_refuses()
     {
         _factory.Roles.NextSaveThrows = new Npgsql.NpgsqlException("connection lost");

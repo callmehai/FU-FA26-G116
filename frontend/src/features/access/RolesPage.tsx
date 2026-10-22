@@ -37,14 +37,9 @@ function groupColumns(columns: PermissionDescriptor[]) {
 
 /** SCRUM-60/63: edit the role-capability matrix and manage custom roles. */
 export function RolesPage() {
-  const { user: me, signOut, reloadSession } = useAuth()
+  const { user: me, reloadSession } = useAuth()
   const toast = useToast()
   const handleAccessLost = useAccessLost()
-
-  /** UC-03's MSG06 when the sign-out never reached the server, as the account menu shows it. */
-  async function signOutToApply() {
-    if (!(await signOut())) toast.show('Không thể đăng xuất. Vui lòng thử lại.', 'error')
-  }
 
   const [matrix, setMatrix] = useState<RolePermissionMatrix | null>(null)
   const [roles, setRoles] = useState<RoleRecord[] | null>(null)
@@ -52,7 +47,6 @@ export function RolesPage() {
   const [drafts, setDrafts] = useState<Record<string, Capability[]>>({})
   const [saving, setSaving] = useState<string | null>(null)
   const [rowErrors, setRowErrors] = useState<Record<string, RowError | undefined>>({})
-  const [ownRoleChanged, setOwnRoleChanged] = useState(false)
   const [activeTab, setActiveTab] = useState<'roles' | 'matrix'>('roles')
   const [formTarget, setFormTarget] = useState<RoleFormTarget | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<RoleRecord | null>(null)
@@ -143,7 +137,9 @@ export function RolesPage() {
         return rest
       })
       toast.show(response.message)
-      if (roleId === me?.roleId) setOwnRoleChanged(true)
+      // Own role: the session stays and the new set applies at once (SCRUM-105). The hub pushes the
+      // same signal, but this tab need not wait for it.
+      if (roleId === me?.roleId) void reloadSession()
     } catch (error) {
       if (handleAccessLost(error)) return
       const invalid = isApiError(error, 400, 'MSG17') ? error.body?.errors : undefined
@@ -209,18 +205,6 @@ export function RolesPage() {
           </button>
         }
       />
-
-      {ownRoleChanged && (
-        <div className="alert alert-warning page-alert" role="status">
-          <p>
-            Bạn vừa đổi quyền của chính vai trò mình đang mang. Phiên đăng nhập hiện tại vẫn giữ quyền cũ và sẽ
-            kết thúc ở lần gia hạn tiếp theo — hãy đăng nhập lại để áp dụng quyền mới.
-          </p>
-          <button type="button" className="btn btn-outline btn-sm" onClick={() => void signOutToApply()}>
-            Đăng nhập lại
-          </button>
-        </div>
-      )}
 
       <div className="tabs" role="tablist" aria-label="Vai trò">
         <button

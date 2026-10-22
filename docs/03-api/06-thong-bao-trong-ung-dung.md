@@ -134,6 +134,13 @@ khử trùng theo `id`. Khi user không online, lần `GET /api/notifications` s
 liệu đã lưu. FE khử trùng theo `id` và đọc lại số chưa đọc mỗi khi kết nối lại — xem
 [Hợp đồng tích hợp FE](#hợp-đồng-tích-hợp-fe).
 
+Cùng hub còn một sự kiện **`capabilitiesChanged`**, không có payload (SCRUM-105). Server gửi nó tới
+mọi tài khoản đang hoạt động thuộc một vai trò, ngay sau khi quản trị viên lưu thay đổi quyền của
+vai trò đó (`PUT /api/roles/capabilities`). FE nhận được thì gọi `reloadSession()`: đọc `/me`, thấy
+quyền khác token thì `/refresh` để lấy token mang quyền mới. Phiên giữ nguyên. Đây chỉ là tín hiệu:
+client bỏ qua nó cũng không có thêm quyền gì, vì server đọc lại quyền ở mỗi request — xem
+[03-ma-tran-phan-quyen.md](03-ma-tran-phan-quyen.md#thay-đổi-có-hiệu-lực-ngay-không-chờ-token-hết-hạn).
+
 ## Hợp đồng tích hợp FE
 
 Chuông thông báo nằm trên app bar, dùng chung cho cả hai workspace. Code ở
@@ -164,7 +171,9 @@ Chuông thông báo nằm trên app bar, dùng chung cho cả hai workspace. Cod
 - **Realtime.** Sự kiện `notificationReceived` được khử trùng theo `id`. Panel đang đóng: chuông
   rung và hiện toast tiêu đề kèm nội dung. Panel đang mở: dòng mới hiện ở đầu danh sách. Sự kiện
   phát trong lúc mất kết nối không được gửi lại, nên mỗi lần kết nối lại, khi tab hiện lại và khi
-  có mạng trở lại, FE đọc lại số chưa đọc (và trang 1 nếu danh sách đã tải).
+  có mạng trở lại, FE đọc lại số chưa đọc (và trang 1 nếu danh sách đã tải). `capabilitiesChanged`
+  gọi `reloadSession()`; mỗi lần kết nối lại FE cũng gọi nó, phòng trường hợp sự kiện này đã phát
+  trong lúc mất kết nối.
 - **Kết nối lại.** Thử lại sau 0, 2, 5, 10 giây rồi cứ 30 giây một lần, không bỏ cuộc. Token được
   lấy mới ở mỗi lần kết nối, nên khi server đóng kết nối vì token hết hạn, lần kết nối sau mang
   token đã refresh.
