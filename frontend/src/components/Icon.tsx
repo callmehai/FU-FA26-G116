@@ -1,5 +1,10 @@
 import {
   ArrowDown,
+  ArrowRight,
+  LogIn,
+  Mail,
+  RotateCcw,
+  ExternalLink,
   ArrowUp,
   Bell,
   Building2,
@@ -10,6 +15,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   ChevronsUpDown,
   CircleCheck,
   CircleX,
@@ -22,6 +28,7 @@ import {
   FileText,
   Folder,
   FolderPlus,
+  Funnel,
   Globe,
   KeyRound,
   LayoutGrid,
@@ -30,8 +37,14 @@ import {
   LockOpen,
   LogOut,
   MapPin,
+  MessageSquare,
+  Mic,
+  MicOff,
+  Monitor,
   Paperclip,
   PenLine,
+  PhoneOff,
+  PictureInPicture2,
   Plus,
   Presentation,
   Radio,
@@ -48,6 +61,8 @@ import {
   UserRound,
   Users,
   Video,
+  VideoOff,
+  Volume2,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -63,6 +78,7 @@ const ICONS = {
   shield: Shield,
   grid: LayoutGrid,
   list: List,
+  filter: Funnel,
   bell: Bell,
   // Notification kinds (SCRUM-14): what each one is about, at a glance.
   clock: Clock,
@@ -77,6 +93,7 @@ const ICONS = {
   chevronLeft: ChevronLeft,
   chevronDown: ChevronDown,
   chevronRight: ChevronRight,
+  chevronUp: ChevronUp,
   // Sort indicators on table headers: both ways (sortable, not sorted), then each direction.
   sortBoth: ChevronsUpDown,
   sortAsc: ArrowUp,
@@ -113,6 +130,21 @@ const ICONS = {
   broadcast: Radio,
   more: Ellipsis,
   moreVertical: EllipsisVertical,
+  // Call room (SCRUM-41).
+  mic: Mic,
+  micOff: MicOff,
+  messageSquare: MessageSquare,
+  phoneOff: PhoneOff,
+  volume: Volume2,
+  videoOff: VideoOff,
+  // SCRUM-43: screen sharing.
+  monitor: Monitor,
+  pictureInPicture: PictureInPicture2,
+  externalLink: ExternalLink,
+  arrowRight: ArrowRight,
+  logIn: LogIn,
+  mail: Mail,
+  undo: RotateCcw,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS

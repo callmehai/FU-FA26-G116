@@ -2,6 +2,34 @@
 # refresh token đặt Secure, và Google Sign-In không chấp nhận origin http (trừ localhost).
 # reverse_proxy tự chuyển tiếp WebSocket, nên SignalR ở /hubs không cần cấu hình thêm.
 {$SITE_ADDRESS} {
-	encode zstd gzip
-	reverse_proxy app:8080
+	# Lớp bảo vệ của trình duyệt cho mọi response, kể cả /rtc.
+	header {
+		# Chỉ vào bằng HTTPS, kể cả khi gõ http:// (không kèm includeSubDomains: tên miền mẹ không phải của dự án).
+		Strict-Transport-Security "max-age=31536000"
+		# Không đoán loại file: file người dùng tải lên không bị chạy như script.
+		X-Content-Type-Options "nosniff"
+		# Không cho trang khác nhúng app vào iframe (chống clickjacking); app không tự nhúng mình.
+		X-Frame-Options "DENY"
+		# Link ra ngoài chỉ mang tên miền, không mang đường dẫn có ID cuộc họp.
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# CSP: chỉ cho chạy script và mở kết nối tới chính tên miền này (và Google Sign-In), nên một
+		# đoạn mã lỡ lọt vào trang (XSS) không chạy được và không gửi được dữ liệu ra ngoài. Đã chạy
+		# Report-Only và quét mọi màn, cả phòng họp (~/.playwright-e2e/tests/csp-sweep.spec.ts): sạch.
+		# gsi/client tự chèn style inline, nên style-src cần 'unsafe-inline'; script thì không.
+		# Thêm nguồn ngoài mới (CDN, dịch vụ) thì phải thêm vào đây, nếu không màn đó sẽ hỏng.
+		Content-Security-Policy "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com/gsi/style; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://accounts.google.com/gsi/; frame-src https://accounts.google.com/gsi/; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+	}
+
+	# Phòng họp: WebSocket signalling của LiveKit nằm ở /rtc ngay trên tên miền này, nên không cần tên
+	# miền hay chứng chỉ thứ hai. Media không đi qua Caddy mà tới thẳng LiveKit ở cổng 7881/7882.
+	# API quản trị của LiveKit (/twirp) không mở ra ngoài: backend gọi http://livekit:7880.
+	@livekit path /rtc /rtc/*
+	handle @livekit {
+		reverse_proxy livekit:7880
+	}
+
+	handle {
+		encode zstd gzip
+		reverse_proxy app:8080
+	}
 }

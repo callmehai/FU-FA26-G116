@@ -74,6 +74,31 @@ không cần nhớ lệnh nào sau khi `git pull` về một migration mới. Mu
 Ngoài Development thì **không bao giờ** tự migrate — triển khai thật chạy `dotnet ef database
 update` như một bước có người duyệt.
 
+### 4. Phòng họp trực tuyến (chỉ khi làm phần gọi)
+
+Phòng họp chạy trên LiveKit ([ADR-0010](../05-decisions/0010-phong-hop-truc-tuyen-dung-livekit-sfu.md)).
+Không làm phần này thì bỏ qua: backend vẫn chạy, các endpoint gọi trả `503`.
+
+```bash
+# 1. Đặt secret (ít nhất 32 ký tự) trong .env — xem .env.example
+echo "LIVEKIT_API_SECRET=$(openssl rand -hex 24)" >> .env
+
+# 2. Cho backend biết cùng secret đó
+dotnet user-secrets set "LiveKit:ApiSecret" "<giá trị vừa đặt>" --project backend/TrustCabinet.Web
+
+# 3. Chạy LiveKit (profile riêng, docker compose up -d thường không bật nó)
+docker compose --profile calls up -d livekit
+curl http://localhost:7880        # trả "OK"
+```
+
+Địa chỉ và tên key đã có sẵn trong `appsettings.Development.json`. Cuộc họp demo
+"Rà soát kế hoạch chuyển đổi số" đang `InProgress` và có sẵn ba thành phần tham dự (`chutoa@`,
+`thuky@`, `thanhvien@`) để thử phòng họp.
+
+Trên Linux, webhook từ container gọi về `host.docker.internal:5225` có thể không tới Kestrel đang
+bind `localhost`. Chạy backend với `--urls http://0.0.0.0:5225`, hoặc bỏ qua: job đối soát bù lại
+trong 30 giây.
+
 ## Dữ liệu tham chiếu — bắt buộc phải seed
 
 Khác với dữ liệu mẫu ở mục dưới (chỉ có ở Development), **ma trận `role_capabilities` là dữ liệu

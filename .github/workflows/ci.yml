@@ -85,3 +85,12 @@ jobs:
 
       # `npm run build` chạy tsc -b trước, nên bước này bắt luôn lỗi kiểu TypeScript.
       - run: npm run build
+
+  # Push lên main mà hai job trên xanh thì deploy lên server test (.github/workflows/deploy.yml).
+  # Nằm trong CI để commit hiện cả trạng thái deploy; trên pull request job này hiện là Skipped.
+  deploy:
+    name: Deploy server test
+    needs: [backend, frontend]
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit

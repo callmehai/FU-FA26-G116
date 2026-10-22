@@ -3,6 +3,19 @@
 Ngày 20/10/2026; branch `feat/SCRUM-26-BACKEND-Taking-attendance-of-participants`.
 [Contract](10-diem-danh.md), [bàn giao](10-diem-danh-ban-giao.md).
 
+## Kiểm tra sau resolve merge — 22/10/2026
+
+Tích hợp main `f6db57f` vào branch SCRUM-26: giữ migration SCRUM-20 trên main, bỏ grants đã được loại khỏi roster, dùng MeetingGuestSession chung; lỗi đọc attendance chuyển từ MSG277 sang MSG287 để tránh trùng validation tạo meeting. Quyền ghi vẫn Secretary/InProgress.
+
+- Release build `-warnaserror`: pass, 0 warning/error.
+- Regression: **1.239/1.239 pass**, 0 failed/skipped, 2 phút 51 giây; gồm 59 test Attendance. Bổ sung xác nhận owner/member nhận event không cần grant; giữ các ca mất quyền, Guest session và concurrency.
+- PostgreSQL dùng database riêng của từng fixture; Redis test tại `127.0.0.1:6389`. Không migrate database ứng dụng/server chung.
+- EF `has-pending-model-changes`: không có thay đổi chưa được migration phản ánh.
+- `npm ci`, frontend lint/build: pass; build còn cảnh báo bundle phòng họp trên 500 kB.
+- Git: không còn unmerged entries/conflict marker; `git diff --cached --check` pass. Chưa commit/push/deploy.
+
+Các kết quả ngày 20/10 dưới đây là lịch sử trước merge; chính sách grants và ẩn invitationResponse khi đó đã được thay bằng quyền roster hiện tại trên main.
+
 ## Môi trường và dependency
 
 - Windows, .NET SDK 10.0.402; ASP.NET Core/EF Core 10, PostgreSQL thật qua test harness tạo database tên riêng cho từng fixture rồi dọn sau test.

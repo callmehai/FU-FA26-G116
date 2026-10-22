@@ -13,13 +13,13 @@ Một phiên bản mới (ví dụ v5 → v6) nộp đủ ba phần:
 
 Chỉ sửa HTML bằng tay. Plugin và ảnh luôn sinh ra từ HTML bằng script trong `_tools/`. Giữ file HTML và thư mục `figma-v<N>` của bản cũ.
 
-## Bản hiện có — v5
+## Bản hiện có — v6
 
 | Thành phần | Đường dẫn | Vai trò |
 |---|---|---|
-| HTML | [TrustCabinet-wireframe-v5.html](TrustCabinet-wireframe-v5.html) | Bản thiết kế gốc. |
-| Plugin Figma | [figma-v5/](figma-v5/) (`manifest.json`, `code.js`) | Dựng lại màn trong Figma Desktop. |
-| Ảnh | [screens/](screens/) | PNG từng màn của v5. |
+| HTML | [TrustCabinet-wireframe-v6.html](TrustCabinet-wireframe-v6.html) | Bản thiết kế gốc. |
+| Plugin Figma | [figma-v6/](figma-v6/) (`manifest.json`, `code.js`) | Dựng lại màn trong Figma Desktop. |
+| Ảnh | [screens/](screens/) | PNG từng màn của v6. |
 | Tool | [_tools/](_tools/) | Sinh plugin và ảnh từ HTML. |
 
 ## 1. Thư mục
@@ -192,7 +192,7 @@ Script mở HTML bằng Chrome headless, bật **Kích thước thật**, chờ 
 từng màn. `extract.js` đi qua DOM và chỉ giữ những phần tử nhìn thấy được (có nền, viền, bóng, bo góc…) làm
 khung. `div` chỉ để bố cục bị gộp vào khung cha, nhờ vậy Figma ít layer.
 
-`out\v5.json` của bản trước phải có sẵn (hiện có `out\v4.json` và `out\v5.json`). Nếu đã sửa `extract.js`,
+`out\v5.json` của bản trước phải có sẵn (hiện có `out\v4.json`, `out\v5.json` và `out\v6.json`). Nếu đã sửa `extract.js`,
 trích lại cả bản cũ để hai bản so được với nhau:
 
 ```powershell
@@ -341,5 +341,6 @@ LAYOUT = [ { code: 'FE-11', name: 'FE-11 · Biểu quyết',
 |---|---|---|
 | v4 | 14/10/2026 | ADR-0018: tài liệu không phiên bản, kho cá nhân có thư mục; chọn vai trò bỏ phiếu. Dựng lại 1.3, 5.3, 7.x, 11.1, 11.2, 11.4, 14.2 |
 | v5 | 15/10/2026 | FE-11 theo UC-52a–UC-57 và ADR-0019. Sửa 8.5, 11.1–11.4, 14.2; thêm 11.1b, 11.2b, 11.3b, 11.5 |
+| v6 | 19/10/2026 | SCRUM-47: lịch tháng và bộ lọc lịch theo trạng thái, mức độ (luồng phụ UC-17), tham khảo AI-eCabinet. Sửa 4.1, 4.2 (nút Bộ lọc, tiêu đề mở bảng chọn ngày, UC-17); thêm 4.1b, 4.1c, 4.1d |
 
 Ra bản mới thì thêm một dòng vào bảng này.

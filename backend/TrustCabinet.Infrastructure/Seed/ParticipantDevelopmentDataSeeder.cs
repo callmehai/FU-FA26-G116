@@ -41,8 +41,7 @@ public static class ParticipantDevelopmentDataSeeder
                 ActualEndedAt = state == MeetingStatus.Ended ? starts.AddHours(1) : null
             };
             db.Meetings.Add(meeting);
-            // The first three scenarios deliberately require Organizer recovery.
-            if (index >= 3) db.MeetingParticipants.Add(new() { MeetingId = id, UserId = secretary.Id, Role = MeetingRole.Secretary });
+            db.MeetingParticipants.Add(new() { MeetingId = id, UserId = secretary.Id, Role = MeetingRole.Secretary });
             db.MeetingParticipants.AddRange(new MeetingParticipant { MeetingId = id, UserId = chair.Id, Role = MeetingRole.Chair },
                 new MeetingParticipant { MeetingId = id, UserId = member.Id, Role = MeetingRole.Member });
         }

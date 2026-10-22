@@ -16,7 +16,6 @@ public enum NotificationType
     MinutesIssued,
     DocumentAdded,
     MeetingRoleChanged,
-    MeetingPermissionsChanged,
     MeetingParticipantRemoved,
 }
 

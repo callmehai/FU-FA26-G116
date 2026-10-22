@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
+import { getMeetingCall } from '../../../api/calls'
 import { BackLink } from '../../../components/BackLink'
 import { Icon } from '../../../components/Icon'
 import { NotFound } from '../../../components/NotFound'
 import { useToast } from '../../../components/toastContext'
 import { isApiError } from '../../../lib/errors'
 import { formatDateTime, formatSchedule } from '../../../lib/format'
-import { useBackTarget, useForwardedBackState, type BackTarget } from '../../../lib/backTarget'
+import { useBackTarget, type BackTarget } from '../../../lib/backTarget'
 import { routes } from '../../../lib/routes'
 import {
   EDITABLE_STATUSES,
@@ -18,8 +19,13 @@ import {
 import { placeLabel } from '../place'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
+import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
+import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
 import { SensitivityBadge, StatusBadge } from '../StatusBadge'
 import { useMeeting } from '../useMeeting'
+import { EditMeetingDialog } from '../MeetingDialogs'
+import { EDIT_PARAM, useEditMeetingLink } from '../meetingDialogLink'
+import { useMeetingEvents } from '../useMeetingEvents'
 import { useMeetingApprovers } from '../useMeetingApprovers'
 import { MeetingHistory } from '../workflow/MeetingHistory'
 import { MeetingWorkflowBar, type WorkflowRole } from '../workflow/MeetingWorkflowBar'
@@ -39,8 +45,7 @@ const TABS = [
 type TabId = (typeof TABS)[number]['id']
 
 /** What each tab is waiting on, surfaced in the UI so the backlog is visible while building. */
-const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview'>, string> = {
-  attendees: 'GET /api/meetings/{id}/attendees',
+const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview' | 'attendees'>, string> = {
   agenda: 'GET /api/meetings/{id}/agenda',
   documents: 'GET /api/meetings/{id}/documents',
   recordings: 'GET /api/meetings/{id}/recordings',
@@ -74,6 +79,7 @@ export function MeetingDetailPage() {
           <div className="alert alert-error page-alert" role="alert">
             <p>{state.message}</p>
             <button type="button" className="btn btn-outline btn-sm" onClick={retry}>
+              <Icon name="refresh" size={16} />
               Thử lại
             </button>
           </div>
@@ -102,8 +108,9 @@ function MeetingDetail({
   const handleAccessLost = useAccessLost()
   const [tab, setTab] = useState<TabId>('overview')
   const history = useMeetingHistory(meeting.id)
-  // The edit page sends the user back here, and from here the back link still leads to the calendar.
-  const forwardBack = useForwardedBackState()
+  // UC-15 opens as a dialog on this page (`?edit=1`), keeping the back link's target.
+  const editLink = useEditMeetingLink()
+  const [params] = useSearchParams()
 
   const isOrganizer = meeting.createdById === user?.id && can('MeetingCreator')
   const isApprover =
@@ -123,6 +130,7 @@ function MeetingDetail({
   const canEdit = isOrganizer && EDITABLE_STATUSES.includes(meeting.status)
   // UC-15 AF-1: after publishing, the organizer may still move the time, place and link.
   const canReschedule = isOrganizer && RESCHEDULABLE_STATUSES.includes(meeting.status)
+  const roomOpen = useCallRoomOpen(meeting)
 
   /** Display names the page already knows: whoever acted in the history, and the approver list. */
   const names = useMemo(() => {
@@ -132,6 +140,9 @@ function MeetingDetail({
     return map
   }, [approvers.list, history.items])
   const nameOf = useCallback((id: string) => (id === user?.id ? 'bạn' : (names.get(id) ?? null)), [names, user?.id])
+
+  // A roster change can move the Chair, the caller's role or whether they are asked to answer.
+  useMeetingEvents(meeting.id, () => void reload())
 
   const { reload: reloadHistory, append: appendHistory } = history
   const onOutcome = useCallback(
@@ -190,6 +201,7 @@ function MeetingDetail({
             <h1>{meeting.title}</h1>
             <StatusBadge status={meeting.status} />
             <SensitivityBadge sensitivity={meeting.sensitivity} />
+            <RsvpChip response={meeting.myResponse} />
           </div>
           <p className="record-facts">
             <span>
@@ -202,12 +214,22 @@ function MeetingDetail({
             </span>
           </p>
         </div>
-        {(canEdit || canReschedule) && (
+        {(canEdit || canReschedule || roomOpen) && (
           <div className="page-header-actions">
-            <Link className="btn btn-outline btn-lg" to={routes.meetingEdit(meeting.id)} state={forwardBack}>
-              <Icon name={canEdit ? 'pencil' : 'calendar'} size={16} />
-              {canEdit ? 'Chỉnh sửa' : 'Dời lịch'}
-            </Link>
+            {roomOpen && (
+              // The meeting is running and waiting for the user: eCab's rippling "Vào phòng họp".
+              <Link className="btn btn-primary btn-lg btn-cta btn-ping btn-nudge" to={routes.meetingRoom(meeting.id)}>
+                <Icon name="video" size={18} />
+                Vào phòng họp
+                <Icon name="arrowRight" size={16} />
+              </Link>
+            )}
+            {(canEdit || canReschedule) && (
+              <Link className="btn btn-outline btn-lg" to={editLink.to} state={editLink.state}>
+                <Icon name={canEdit ? 'pencil' : 'calendar'} size={16} />
+                {canEdit ? 'Chỉnh sửa' : 'Dời lịch'}
+              </Link>
+            )}
           </div>
         )}
       </div>
@@ -221,6 +243,20 @@ function MeetingDetail({
           nameOf={nameOf}
           onOutcome={onOutcome}
         />
+      )}
+
+      {meeting.canRespond && (
+        <section className="workflow-bar workflow-blue workflow-bar-compact" aria-labelledby="rsvp-title">
+          <span className="workflow-icon" aria-hidden="true">
+            <Icon name="calendar" size={18} />
+          </span>
+          <div className="workflow-body">
+            <h2 id="rsvp-title">Bạn có tham dự cuộc họp này?</h2>
+          </div>
+          <div className="workflow-actions">
+            <RsvpButtons meetingId={meeting.id} labelledBy="rsvp-title" onAnswered={() => void reload()} ping />
+          </div>
+        </section>
       )}
 
       <div className="tabs" role="tablist" aria-label="Chi tiết cuộc họp">
@@ -245,6 +281,8 @@ function MeetingDetail({
               meeting={meeting}
               approver={isOrganizer || isApprover ? approverLabel(meeting, user?.id, nameOf, approvers) : null}
             />
+          ) : tab === 'attendees' ? (
+            <ParticipantsPanel meetingId={meeting.id} onChanged={() => void reload()} />
           ) : (
             <div className="card card-pending tab-pending">
               <p>Tab này chưa có nghiệp vụ.</p>
@@ -254,6 +292,17 @@ function MeetingDetail({
             </div>
           )}
         </section>
+
+        {params.has(EDIT_PARAM) && (canEdit || canReschedule) && (
+          <EditMeetingDialog
+            meeting={meeting}
+            onSaved={replace}
+            onStale={() => {
+              void reload()
+              void reloadHistory()
+            }}
+          />
+        )}
 
         <MeetingHistory
           history={history}
@@ -332,6 +381,18 @@ function Overview({ meeting, approver }: { meeting: Meeting; approver: { text: s
           )}
         </div>
       )}
+      <div className="field-item field-row-start">
+        <span>Chủ tọa</span>
+        {meeting.chair ? <strong>{meeting.chair.fullName}</strong> : <em className="value-empty">Chưa có</em>}
+      </div>
+      <div className="field-item">
+        <span>Thư ký</span>
+        {meeting.secretaries.length > 0 ? (
+          <strong>{meeting.secretaries.map((s) => s.fullName).join(', ')}</strong>
+        ) : (
+          <em className="value-empty">Chưa có</em>
+        )}
+      </div>
       {approver && (
         <div className="field-item">
           <span>Người duyệt</span>
@@ -388,4 +449,27 @@ function DetailSkeleton() {
       </div>
     </div>
   )
+}
+
+/**
+ * Whether to offer "join the call room" (SCRUM-41). Only an online or hybrid meeting in progress
+ * has a room, so nothing is asked otherwise; and the backend answers 404 to someone who is not
+ * invited (e.g. the organizer who is not a participant), which simply hides the button.
+ */
+function useCallRoomOpen(meeting: Meeting) {
+  const [open, setOpen] = useState(false)
+  const eligible = meeting.mode !== 'InPerson' && meeting.status === 'InProgress'
+
+  useEffect(() => {
+    if (!eligible) return
+    let cancelled = false
+    getMeetingCall(meeting.id)
+      .then((call) => !cancelled && setOpen(call.status === 'Open'))
+      .catch(() => !cancelled && setOpen(false))
+    return () => {
+      cancelled = true
+    }
+  }, [eligible, meeting.id])
+
+  return eligible && open
 }

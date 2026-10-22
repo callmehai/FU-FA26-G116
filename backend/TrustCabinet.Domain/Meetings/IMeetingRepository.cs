@@ -34,6 +34,8 @@ public interface IMeetingRepository
 
     Task AddHistoryAsync(MeetingStatusHistory history, CancellationToken ct = default);
 
+    Task<IReadOnlyList<User>> LockParticipantUsersAsync(Guid[] userIds, CancellationToken ct = default);
+
     Task AddAsync(Meeting meeting, CancellationToken ct = default);
 
     Task SaveChangesAsync(CancellationToken ct = default);

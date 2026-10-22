@@ -17,6 +17,8 @@ export const routes = {
   meetingNew: '/mgmt/meetings/new',
   meeting: (id: string) => `/mgmt/meetings/${id}`,
   meetingEdit: (id: string) => `/mgmt/meetings/${id}/edit`,
+  /** Full-screen call room (SCRUM-41): outside the app shell, so the call owns the whole tab. */
+  meetingRoom: (id: string) => `/mgmt/meetings/${id}/room`,
   adminUsers: '/mgmt/admin/users',
   adminRoles: '/mgmt/admin/roles',
   // ADR-0006: each user's own document library.

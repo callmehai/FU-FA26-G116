@@ -17,7 +17,7 @@ Ngày 20/10/2026. [API](10-diem-danh.md), [kết quả kiểm thử](10-diem-dan
 
 ## Dependency và ranh giới bàn giao
 
-- SCRUM-20 được squash local từ `adca53ba29c0b4c670cd01984b675d17018c8f4c`, không tạo commit. Diff staged ban đầu là dependency; SCRUM-26 có source Attendance, hai property/configuration, migration, registration, helper quyền dùng chung, port Guest session, test và docs mới.
+- Đã tích hợp SCRUM-20 hiện tại từ main: bỏ grants, dùng MeetingGuestSession chung và quyền đọc roster theo MeetingReadPolicy. Attendance vẫn chỉ cho Secretary ghi. MSG277 giữ nguyên nghĩa validation tạo meeting trên main; lỗi đọc attendance chuyển sang MSG287.
 - SCRUM-59/UC-04 cung cấp Guest credentials/profile/session thật và hai adapter participant + agenda/hub dùng cùng identity. Mặc định production deny; test dùng fake adapter. Không tuyên bố Guest end-to-end đã hoàn thành.
 - SCRUM-41 phụ trách room; FE tích hợp AttendancePanel. Start/End endpoint không được thêm trong task này; test dùng fixture trạng thái.
 - Chưa commit/push/deploy hoặc áp dụng migration vào DB dùng chung. Người review cần phân biệt migration dependency và migration điểm danh.
@@ -44,6 +44,6 @@ Các tài liệu UC-31 và sequence bắt buộc đều có. Không viết lại
 
 Tóm tắt kỹ thuật bàn giao:
 
-Backend UC-31 bổ sung GET attendance, POST atomic theo entry; AttendanceVersion riêng trên internal assignment và Guest invitation để chống ghi đè. Response/role không đổi version. Ghi audit cùng transaction và attendanceChanged sau commit, chỉ gửi roster readers. Bổ sung query/read codes MSG277/278, hiện thực MSG147–151. MSG151 bao gồm stale điểm danh; MSG150 dùng câu trung tính khi commit chưa xác định. Legacy Unknown/Excused/Delegated được giữ, chỉ cho ghi Present/Absent. Guest production integration chờ UC-04; FE/room do task khác. Migration mới chỉ thêm hai cột; dependency SCRUM-20 giữ migration riêng.
+Backend UC-31 bổ sung GET attendance, POST atomic theo entry; AttendanceVersion riêng trên internal assignment và Guest invitation để chống ghi đè. Response/role không đổi version. Ghi audit cùng transaction và attendanceChanged sau commit, chỉ gửi roster readers. Bổ sung query/read codes MSG287/278, hiện thực MSG147–151. MSG151 bao gồm stale điểm danh; MSG150 dùng câu trung tính khi commit chưa xác định. Legacy Unknown/Excused/Delegated được giữ, chỉ cho ghi Present/Absent. Guest production integration chờ UC-04; FE/room do task khác. Migration mới chỉ thêm hai cột; dependency SCRUM-20 giữ migration riêng.
 
 BA cần đối chiếu: comment Jira 30/09 về self-attendance đã bị mô tả hiện tại thay thế; README sequence cũ còn nói Jira chưa cập nhật; EX numbering DOCX/Markdown khác nhau; state machine legacy còn Excused/Delegated; DCD cần thể hiện Guest recorder/version kỹ thuật nếu được đưa vào class diagram. Không coi các phần cũ đó là yêu cầu mở lại self-attendance hoặc quorum.

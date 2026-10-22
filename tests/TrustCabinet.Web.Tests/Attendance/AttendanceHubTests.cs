@@ -35,7 +35,7 @@ public sealed class AttendanceHubTests(ParticipantFixture f) : IClassFixture<Par
         allowed.On<AttendanceChange>("attendanceChanged", e => received.Writer.TryWrite(e));
         excluded.On<AttendanceChange>("attendanceChanged", e => denied.Writer.TryWrite(e));
         await Task.WhenAll(allowed.StartAsync(), excluded.StartAsync());
-        await allowed.InvokeAsync("JoinMeeting", s.MeetingId); await excluded.InvokeAsync("JoinMeeting", s.MeetingId);
+        await allowed.InvokeAsync("JoinMeeting", s.MeetingId);
         await Code(await Save(secretary, s, Entry(s.MeetingId, s.MemberAssignment)), 200, "MSG147");
         var change = await Next(received.Reader); Assert.Equal(s.MeetingId, change.MeetingId); Assert.NotEqual(Guid.Empty, change.EventId);
         var page = await secretary.GetFromJsonAsync<JsonElement>(s.Url + "/attendance");
@@ -52,20 +52,33 @@ public sealed class AttendanceHubTests(ParticipantFixture f) : IClassFixture<Par
     }
 
     [Theory]
-    [InlineData("grant")]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Owner_and_member_readers_receive_events_without_grants(bool owner)
+    {
+        var s = await f.Seed(MeetingStatus.InProgress);
+        using var secretary = f.Client(s.Secretary);
+        using var reader = f.Client(owner ? s.Organizer : s.Member);
+        await using var hub = f.Hub(reader);
+        var events = Channel.CreateUnbounded<AttendanceChange>();
+        hub.On<AttendanceChange>("attendanceChanged", e => events.Writer.TryWrite(e));
+        await hub.StartAsync(); await hub.InvokeAsync("JoinMeeting", s.MeetingId);
+        Assert.Equal(HttpStatusCode.OK, (await reader.GetAsync(s.Url + "/attendance")).StatusCode);
+        await Code(await Save(secretary, s, Entry(s.MeetingId, s.MemberAssignment)), 200, "MSG147");
+        Assert.Equal(s.MeetingId, (await Next(events.Reader)).MeetingId);
+    }
+
+    [Theory]
     [InlineData("inactive")]
     [InlineData("removed")]
     public async Task Existing_subscriber_losing_permission_receives_no_further_event(string reason)
     {
         var s = await f.Seed(MeetingStatus.InProgress); using var secretary = f.Client(s.Secretary); using var member = f.Client(s.Member);
-        await using var db = f.Db(); var grant = new MeetingParticipantPermission { MeetingParticipantId = s.MemberAssignment,
-            PermissionKey = MeetingPermissionCatalog.ViewParticipants, GrantedById = s.Secretary, GrantedAt = f.Clock.Now };
-        db.MeetingParticipantPermissions.Add(grant); await db.SaveChangesAsync();
+        await using var db = f.Db();
         await using var hub = f.Hub(member); var events = Channel.CreateUnbounded<AttendanceChange>();
         hub.On<AttendanceChange>("attendanceChanged", e => events.Writer.TryWrite(e)); await hub.StartAsync(); await hub.InvokeAsync("JoinMeeting", s.MeetingId);
         await Save(secretary, s, Entry(s.MeetingId, s.ChairAssignment)); await Next(events.Reader);
-        if (reason == "grant") db.Remove(grant);
-        else if (reason == "inactive") (await db.Users.FindAsync(s.Member))!.IsActive = false;
+        if (reason == "inactive") (await db.Users.FindAsync(s.Member))!.IsActive = false;
         else { var p = (await db.MeetingParticipants.FindAsync(s.MemberAssignment))!; p.AssignmentStatus = AssignmentStatus.Removed; p.RemovedAt = f.Clock.Now; p.RemovedById = s.Secretary; }
         await db.SaveChangesAsync();
         await Code(await Save(secretary, s, Entry(s.MeetingId, s.ChairAssignment, status: "Absent", version: 1)), 200, "MSG147");
@@ -77,7 +90,6 @@ public sealed class AttendanceHubTests(ParticipantFixture f) : IClassFixture<Par
     [InlineData("expired")]
     [InlineData("unverified")]
     [InlineData("invitationRevoked")]
-    [InlineData("grant")]
     public async Task Guest_sessions_are_isolated_and_revalidated_after_join(string change)
     {
         var s = await f.Seed(MeetingStatus.InProgress); var g = await Guest(f, s); using var secretary = f.Client(s.Secretary);
@@ -102,13 +114,12 @@ public sealed class AttendanceHubTests(ParticipantFixture f) : IClassFixture<Par
         else
         {
             await using var db = f.Db();
-            if (change == "grant") db.RemoveRange(await db.MeetingParticipantPermissions.Where(p => p.GuestInvitationId == g.Id).ToArrayAsync());
-            else { var row = (await db.MeetingGuestInvitations.FindAsync(g.Id))!; row.RevokedAt = f.Clock.Now; row.RevokedById = s.Secretary; }
+            { var row = (await db.MeetingGuestInvitations.FindAsync(g.Id))!; row.RevokedAt = f.Clock.Now; row.RevokedById = s.Secretary; }
             await db.SaveChangesAsync();
         }
         await Code(await Save(secretary, s, Entry(s.MeetingId, s.MemberAssignment, status: "Absent", version: 1)), 200, "MSG147");
         await None(eventsA.Reader);
-        if (change is "grant" or "invitationRevoked") await None(eventsB.Reader); else await Next(eventsB.Reader);
+        if (change is "invitationRevoked") await None(eventsB.Reader); else await Next(eventsB.Reader);
     }
 
     [Fact]
@@ -116,6 +127,6 @@ public sealed class AttendanceHubTests(ParticipantFixture f) : IClassFixture<Par
     {
         IParticipantGuestAccess access = new UnavailableParticipantGuestAccess();
         Assert.False(await access.CanAccessAsync(new(Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7()), default));
-        Assert.Empty(await access.ListSessionsAsync(Guid.CreateVersion7(), default));
+        Assert.Empty(await access.ListReadersAsync(Guid.CreateVersion7(), default));
     }
 }

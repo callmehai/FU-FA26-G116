@@ -38,19 +38,17 @@ public sealed class AttendanceService(TrustCabinetDbContext db, AttendanceReposi
             var access = await AccessAsync(snapshot, actor, ct);
             if (access != AttendanceFailure.None) return new(access);
             var s = snapshot!;
-            var permissions = ParticipantReadPermissions.Evaluate(s, actor);
-            if (!permissions.CanViewParticipants) return new(AttendanceFailure.NotFound);
             if (query.Invalid || query.Page < 1 || query.PageSize is < 1 or > 100) return new(AttendanceFailure.InvalidQuery);
             var current = s.Meeting.Participants.Where(ParticipantRules.Current).ToArray();
             var profiles = await guests.GetProfilesAsync(meetingId, s.Guests.Select(g => g.Id).ToArray(), ct);
             var recorders = await RecordersAsync(current.Select(p => p.AttendanceRecordedById)
                 .Concat(s.Guests.Select(g => g.AttendanceRecordedById)), ct);
             var rows = current.Select(p => Row(meetingId, p.Id, "Internal", p.User.FullName, p.Role.ToString(), p.User.IsActive,
-                permissions.CanViewResponses ? p.Response.ToString() : null, p.Attendance, p.AttendanceVersion,
+                p.Response.ToString(), p.Attendance, p.AttendanceVersion,
                 p.AttendanceRecordedById, p.AttendanceRecordedAt, recorders))
                 .Concat(s.Guests.Select(g => Row(meetingId, g.Id, "Guest",
                     profiles.GetValueOrDefault(g.Id)?.DisplayName ?? g.InvitedName, null, null,
-                    permissions.CanViewResponses ? g.Response.ToString() : null, g.Attendance, g.AttendanceVersion,
+                    g.Response.ToString(), g.Attendance, g.AttendanceVersion,
                     g.AttendanceRecordedById, g.AttendanceRecordedAt, recorders)))
                 .OrderBy(r => r.DisplayName, StringComparer.OrdinalIgnoreCase).ThenBy(r => r.Kind, StringComparer.Ordinal).ThenBy(r => r.Id).ToArray();
             var totals = new AttendanceTotals(rows.Count(r => r.Attendance == "Present"), rows.Count(r => r.Attendance == "Absent"),
@@ -59,7 +57,7 @@ public sealed class AttendanceService(TrustCabinetDbContext db, AttendanceReposi
             var page = offset >= rows.Length ? [] : rows.Skip((int)offset).Take(query.PageSize).ToArray();
             return new(Page: new(meetingId, s.Meeting.Status.ToString(), clock.GetUtcNow(),
                 new(actor.Guest is null && actor.UserId is { } id && ParticipantRules.IsSecretary(s.Meeting, id)
-                    && s.Meeting.Status == MeetingStatus.InProgress, permissions.CanViewResponses), page, rows.Length, query.Page, query.PageSize, totals));
+                    && s.Meeting.Status == MeetingStatus.InProgress, true), page, rows.Length, query.Page, query.PageSize, totals));
         }
         catch (Exception ex) when (Persistence(ex) || ex is InvalidDataException)
         { logger.LogError(ex, "Attendance read failed for {MeetingId}", meetingId); return new(AttendanceFailure.ReadFailed); }

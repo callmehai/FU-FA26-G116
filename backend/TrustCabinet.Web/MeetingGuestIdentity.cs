@@ -1,3 +1,4 @@
+using TrustCabinet.Domain.Meetings;
 using System.Security.Claims;
 using TrustCabinet.Domain.Agenda;
 
@@ -10,13 +11,13 @@ namespace TrustCabinet.Web;
 /// Return null only for non-guest principals; malformed guest identities must remain guest identities
 /// with empty IDs so the caller denies them instead of falling back to internal User access.
 /// </summary>
-public interface IAgendaGuestIdentityResolver
+public interface IMeetingGuestIdentityResolver
 {
-    AgendaGuestSession? Resolve(ClaimsPrincipal principal);
+    MeetingGuestSession? Resolve(ClaimsPrincipal principal);
 }
 
 /// <summary>No guest authentication is installed by SCRUM-25.</summary>
-public sealed class UnavailableAgendaGuestIdentityResolver : IAgendaGuestIdentityResolver
+public sealed class UnavailableMeetingGuestIdentityResolver : IMeetingGuestIdentityResolver
 {
-    public AgendaGuestSession? Resolve(ClaimsPrincipal principal) => null;
+    public MeetingGuestSession? Resolve(ClaimsPrincipal principal) => null;
 }

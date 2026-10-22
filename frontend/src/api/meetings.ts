@@ -1,6 +1,7 @@
 import type {
   Meeting,
   MeetingApprover,
+  MeetingCreateRequest,
   MeetingHistoryPage,
   MeetingListQuery,
   MeetingListResponse,
@@ -36,8 +37,11 @@ export function listMeetings(query: MeetingListQuery) {
 
 export const getMeeting = (id: string) => api.get<Meeting>(`/api/meetings/${id}`)
 
-/** UC-14 — 201 with MSG29. The meeting starts as a draft. */
-export const createMeeting = (body: MeetingRequest) => api.post<MeetingMutationResponse>('/api/meetings', body)
+/**
+ * UC-14 — 201 with MSG29. The meeting starts as a draft, with its roster (SCRUM-20); an invalid
+ * roster answers 400 MSG277 with errors keyed `participants` or `participants[i].userId`/`.role`.
+ */
+export const createMeeting = (body: MeetingCreateRequest) => api.post<MeetingMutationResponse>('/api/meetings', body)
 
 /** UC-15 — MSG30, or 409 MSG33 once the meeting has left Draft/Rejected. */
 export const updateMeeting = (id: string, body: MeetingRequest) =>

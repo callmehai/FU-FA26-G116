@@ -2,7 +2,7 @@
 
 **Hiện thực Backend SCRUM-26 (20/10/2026):** thêm `AttendanceVersion` (`bigint NOT NULL DEFAULT 0`) vào `MeetingParticipant` và `MeetingGuestInvitation`; chỉ tăng khi attendance đổi, không tăng theo response/role. Tái sử dụng Attendance/AttendanceRecordedById/AttendanceRecordedAt và AuditLog. Giữ nguyên dữ liệu legacy, không thêm bảng/index/trigger. Đây là thuộc tính kỹ thuật của schema hiện thực; không thay đổi số thực thể hay các hình mô hình mục tiêu. [ADR-0022](../05-decisions/0022-version-rieng-cho-diem-danh.md), [contract và migration](../03-api/10-diem-danh.md).
 
-**Hiện thực Backend SCRUM-20 (14/10/2026):** thêm `MeetingParticipant.AssignmentStatus/RemovedAt/RemovedById/InitialInvitationDeliveryKey`, `Meeting.ParticipantsRevision`, ba bảng `MeetingGuestInvitation`, `MeetingParticipantPermission`, `MeetingInvitationDispatch`. Grant XOR assignment/Guest, unique current assignment/Guest email/Chair; Guest credential/profile/session production thuộc UC-04, chưa được tạo ở migration này. Dispatch là bảng kỹ thuật, không tự tăng số thực thể nghiệp vụ trong mô hình mục tiêu bên dưới. Chi tiết và preflight legacy: [API §6](../03-api/09-thanh-phan-tham-du.md#6-migration), [ADR-0021](../05-decisions/0021-vong-doi-thanh-phan-va-y-dinh-gui-thu.md). Các hình mục tiêu chưa được coi là snapshot schema hiện thực.
+**Hiện thực Backend SCRUM-20 / SCRUM-97 theo PO 20/10/2026:** MeetingParticipant có AssignmentStatus/RemovedAt/RemovedById/InitialInvitationDeliveryKey; Meeting có ParticipantsRevision. Hai bảng mới: MeetingGuestInvitation, MeetingInvitationDispatch. Không có bảng quyền bổ sung; quyền roster theo current Chair/Secretary active. Unique current assignment/Guest email/Chair; ứng dụng giữ đúng một Chair, migration backfill creator khi thiếu. Guest credential/profile/session production thuộc SCRUM-59. Chi tiết: [API §6](../03-api/09-thanh-phan-tham-du.md#6-migration-và-delivery), [ADR-0021](../05-decisions/0021-vong-doi-thanh-phan-va-y-dinh-gui-thu.md). Hình mục tiêu bên dưới chưa phải snapshot schema hiện thực.
 
 Tài liệu này mô tả **mô hình dữ liệu khái niệm/logic mục tiêu** của TrustCabinet để làm nguồn cho Report 3, không phải bản trích xuất schema hiện tại. Mô hình đích có đúng **30 thực thể nghiệp vụ/dữ liệu** (thêm `Folder` ngày 13/10/2026, ADR-0018), khớp Report 3 §I.3.2 và ERD vẽ ở [assets/erd-muc-tieu/](../assets/erd-muc-tieu/). Hệ thống được triển khai bằng EF Core code-first và PostgreSQL; thay đổi ERD không tự thay đổi entity, cấu hình, schema hay migration.
 
@@ -462,6 +462,13 @@ erDiagram
 
 Chỉ lưu **sự kiện cuộc gọi**, không lưu media. Mỗi CallParticipant phải tham chiếu đúng một identity: User XOR MeetingGuestInvitation. Rớt mạng vào lại sinh một dòng mới cho connection stint tiếp theo. Mỗi Meeting có tối đa một MeetingRoom CallSession Active.
 
+Từ [ADR-0010](../05-decisions/0010-phong-hop-truc-tuyen-dung-livekit-sfu.md), âm thanh, hình và
+signalling đi qua LiveKit (SFU), không phải trực tiếp giữa các trình duyệt, và backend không làm tín
+hiệu. Phiên phòng họp được tạo từ webhook `participant_joined` của LiveKit, không phải lúc cấp token.
+Index duy nhất có điều kiện `ux_call_sessions_active_meeting_room` (`meeting_id` khi
+`status = 'Active'`) bảo đảm mỗi cuộc họp chỉ có một phiên đang mở, kể cả khi hai webhook tới cùng
+lúc.
+
 ## 9. Nền tảng, thông báo và kiểm toán
 
 `Notification` thuộc về đúng một User (`UserId`) và có thể trỏ tới một Meeting
@@ -616,7 +623,7 @@ erDiagram
 
 - **ADR-0010:** phần gắn CallSession với MeetingSession đã được [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md) thay thế: phòng ở cấp Meeting, mở khi Meeting `InProgress`.
 - **`CallSession.RecordingId`:** ERD vẫn giữ quan hệ phòng họp → bản ghi, mâu thuẫn với "hệ thống không tự ghi âm" (Recording.Source chỉ còn `Upload`). Giữ nguyên lần này; cần quyết định khi làm FE-08 / FE-09.
-- **Guest:** quyết định PO 13/10/2026 tại ADR-0016 thay quyền chỉ nghe; ADR-0017 bỏ gate đóng Vote trước End Meeting. Chi tiết schema cho Guest display information, permission grants, comments và votes chưa thiết kế trong đợt này.
+- **Guest:** quyết định PO 13/10/2026 tại ADR-0016 thay quyền chỉ nghe; ADR-0017 bỏ gate đóng Vote trước End Meeting. Chi tiết schema cho Guest display information, comments và votes chưa thiết kế trong đợt này.
 - **Tài liệu vòng đời cuộc họp:** đã chỉnh sơ đồ — Rejected sửa rồi gửi duyệt lại sang WaitingApproval; bỏ `MinutesIssued`, `Archived`.
 - **ADR-0006 / ADR-0018:** kho cá nhân, quyền sở hữu và ngữ cảnh comment qua MeetingDocument phù hợp với mô hình đích; phần phiên bản và ghim phiên bản của ADR-0006 đã được ADR-0018 thay bằng tham chiếu tới StoredFile. Câu hỏi chưa chốt về hạn mức kho và quyền truy cập của người đã rời tổ chức nằm ngoài phạm vi ERD này.
 
@@ -685,4 +692,4 @@ kín; vai trò trong cuộc họp tách khỏi vai trò hệ thống.
 
 ## Quyết định quyền bổ sung — PO 13/10/2026
 
-Quyền hiệu lực trong Meeting là quyền mặc định của role cộng quyền được cấp bổ sung cho người đó. PermissionCode là mã từ catalogue quyền của hệ thống; ViewParticipants/ViewResponses là ví dụ, không phải enum chỉ có hai giá trị. Danh sách quyền và ma trận grant theo role chưa chốt; không thêm fields/entities mới trong đợt chỉnh yêu cầu này. Guest nhận quyền bổ sung như Member với các ngoại lệ đã chốt ở ADR-0016.
+Quyết định PO 20/10/2026 bỏ quyền bổ sung theo từng người. Quyền roster chỉ theo current role: Chair/Secretary active quản lý; mọi reader hợp lệ xem roster và phản hồi. Guest không có role nội bộ hoặc grants.

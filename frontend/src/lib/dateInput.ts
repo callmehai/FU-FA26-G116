@@ -20,13 +20,3 @@ export function fromDateTimeInput(value: string): string | null {
   const d = new Date(value)
   return Number.isNaN(d.getTime()) ? null : d.toISOString()
 }
-
-/** A date input's `YYYY-MM-DD` → the first instant of that local day, as UTC ISO. */
-export function startOfDateInput(value: string): string | null {
-  return fromDateTimeInput(value && `${value}T00:00:00`)
-}
-
-/** A date input's `YYYY-MM-DD` → the last millisecond of that local day, as UTC ISO. */
-export function endOfDateInput(value: string): string | null {
-  return fromDateTimeInput(value && `${value}T23:59:59.999`)
-}

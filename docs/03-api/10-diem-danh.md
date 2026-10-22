@@ -6,9 +6,9 @@ Quyết định concurrency: [ADR-0022](../05-decisions/0022-version-rieng-cho-d
 
 ## 1. Quyền và phạm vi
 
-- Internal dùng JWT hiện có; Guest đi qua `IParticipantGuestIdentityResolver` và `IParticipantGuestAccess` của UC-04. Adapter mặc định từ chối Guest, không phát session giả.
-- GET yêu cầu quyền đọc roster UC-27: Secretary hiện hành được xem; sau công bố Chair hoặc Member/Guest có `ViewMeetingParticipants` được xem. Organizer không tự có quyền roster. Guest phải có invitation current và session đã xác minh, chưa hết hạn/revoke.
-- `ViewInvitationResponses` được kiểm tra độc lập. Không có quyền này thì mỗi `invitationResponse` bằng null.
+- Internal dùng JWT hiện có; Guest đi qua `IMeetingGuestIdentityResolver` và `IParticipantGuestAccess` của UC-04. Adapter mặc định từ chối Guest, không phát session giả.
+- GET theo quyền đọc meeting/roster UC-27 trên main: owner, approver và thành phần hiện hành theo MeetingReadPolicy; Guest phải có invitation current, meeting đã công bố và session đã xác minh, chưa hết hạn/revoke. Internal phải active.
+- Mọi người đọc roster được xem invitationResponse theo chính sách SCRUM-20 mới; không còn grants riêng.
 - POST chỉ Secretary hiện hành, tài khoản active, Meeting InProgress. Re-authorize ở mỗi lần lưu; token không thay thế phân quyền.
 - API che tài nguyên không được biết bằng 404; người được đọc meeting nhưng không được ghi nhận 403. User inactive nhận 403, chưa xác thực 401.
 - Chỉ ghi Present/Absent cho entry được gửi. Không suy ra attendance từ response hoặc phòng gọi; thiếu attendance không chặn End Meeting.
@@ -104,7 +104,7 @@ Audit `meeting.attendance.recorded`: một dòng/batch thay đổi, object Meeti
 | 409/MSG149 | Không còn InProgress; tải lại và khóa thao tác |
 | 409/MSG151 | Tải lại, so sánh draft, yêu cầu người dùng quyết định; không auto retry |
 | 503/MSG150 | Lỗi lưu hoặc commit chưa xác định; GET lại trước khi thử tiếp |
-| 500/MSG277 | GET lỗi đọc |
+| 500/MSG287 | GET lỗi đọc |
 | 400/MSG278 | Query GET sai |
 | 415/MSG34, 413/MSG87 | Sửa content-type/kích thước body |
 | 401, 403, 404 | Theo authentication/quyền tài nguyên; không có code mới |
@@ -115,7 +115,7 @@ Lỗi trước commit rollback toàn bộ. Mất kết nối lúc commit có th�
 
 Hub `/hubs/meetings`, JoinMeeting/LeaveMeeting hiện có. Event `attendanceChanged` chỉ chứa `{eventId,meetingId,occurredAt}`, không chứa roster/PII. Event là tín hiệu GET lại, không phải nguồn dữ liệu.
 
-Publisher đọc lại current assignments/grants/active users. Chỉ group có quyền roster nhận event; không gửi tất cả meeting viewers. Guest cần cả participant adapter và agenda/hub adapter xác thực cùng meeting/invitation/session. `IParticipantGuestAccess.ListSessionsAsync` mặc định rỗng; UC-04 cung cấp session còn hiệu lực, CanAccessAsync/CanReadAsync vẫn kiểm lại mỗi session. Dùng nhóm Guest theo session hiện có, không gom chỉ theo invitation.
+Publisher đọc lại quyền meeting, current assignments và active users, bao gồm owner/approver đủ quyền. Chỉ group đã join và còn quyền đọc nhận event. Guest cần cả participant adapter và agenda/hub adapter xác thực cùng meeting/invitation/session. `IParticipantGuestAccess.ListReadersAsync` mặc định rỗng; UC-04 cung cấp session còn hiệu lực, CanAccessAsync/CanReadAsync vẫn kiểm lại mỗi session. Dùng nhóm Guest theo session hiện có, không gom chỉ theo invitation.
 
 Publication best effort sau commit, awaited với timeout 5 giây, không fire-and-forget scoped DbContext, không thêm outbox. GET khi reconnect/focus và polling dự phòng để phục hồi event bị mất. Test adapter không thay thế production UC-04.
 

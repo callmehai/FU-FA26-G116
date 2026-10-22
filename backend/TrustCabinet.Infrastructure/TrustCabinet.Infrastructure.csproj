@@ -10,6 +10,8 @@
     <PackageReference Include="MailKit" Version="4.17.0" />
     <!-- Pin MailKit's transitive dependency to the security-patched runtime package. -->
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
+    <PackageReference Include="Livekit.Server.Sdk.Dotnet" Version="1.2.3" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.12" />
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="10.0.12" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.12" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.12" />

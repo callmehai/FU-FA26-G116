@@ -178,10 +178,10 @@ function organizerView(
         actions: (
           <button
             type="button"
-            className="btn btn-primary"
+            className="btn btn-primary btn-cta btn-ping"
             onClick={() => open('submit')}
             disabled={!canSubmit}
-            title={canSubmit ? undefined : 'Hoàn thiện thông tin trước khi gửi duyệt'}
+            data-tooltip={canSubmit ? undefined : 'Hoàn thiện thông tin trước khi gửi duyệt'}
           >
             <Icon name="send" size={16} />
             Gửi duyệt
@@ -207,7 +207,8 @@ function organizerView(
             </p>
           ),
           actions: (
-            <button type="button" className="btn btn-primary" onClick={() => open('returnToDraft')}>
+            <button type="button" className="btn btn-outline" onClick={() => open('returnToDraft')}>
+              <Icon name="undo" size={16} />
               Rút về nháp
             </button>
           ),
@@ -243,10 +244,10 @@ function organizerView(
         actions: (
           <button
             type="button"
-            className="btn btn-primary"
+            className="btn btn-primary btn-cta btn-ping"
             onClick={() => open('submit')}
             disabled={!canSubmit}
-            title={canSubmit ? undefined : 'Hoàn thiện thông tin trước khi gửi duyệt'}
+            data-tooltip={canSubmit ? undefined : 'Hoàn thiện thông tin trước khi gửi duyệt'}
           >
             <Icon name="send" size={16} />
             Gửi duyệt lại
@@ -267,7 +268,7 @@ function organizerView(
           </p>
         ),
         actions: (
-          <button type="button" className="btn btn-primary" onClick={() => open('publish')}>
+          <button type="button" className="btn btn-primary btn-cta btn-ping" onClick={() => open('publish')}>
             <Icon name="send" size={16} />
             Công bố
           </button>
@@ -299,10 +300,11 @@ function approverView(
         ),
         actions: (
           <>
-            <button type="button" className="btn btn-outline" onClick={() => open('reject')}>
+            <button type="button" className="btn btn-danger" onClick={() => open('reject')}>
+              <Icon name="x" size={16} />
               Từ chối
             </button>
-            <button type="button" className="btn btn-primary" onClick={() => open('approve')}>
+            <button type="button" className="btn btn-primary btn-cta btn-ping" onClick={() => open('approve')}>
               <Icon name="check" size={16} />
               Duyệt
             </button>

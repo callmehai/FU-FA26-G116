@@ -24,8 +24,6 @@ public sealed class AttendancePerformanceTests(ParticipantFixture f, ITestOutput
         {
             var p = new MeetingParticipant { MeetingId = s.MeetingId, UserId = user.Id };
             db.MeetingParticipants.Add(p);
-            db.MeetingParticipantPermissions.Add(new() { MeetingParticipantId = p.Id, PermissionKey = MeetingPermissionCatalog.ViewParticipants,
-                GrantedById = s.Secretary, GrantedAt = f.Clock.Now });
         }
         await db.SaveChangesAsync(); using var secretary = f.Client(s.Secretary);
         await secretary.GetAsync(s.Url + "/attendance?pageSize=100");

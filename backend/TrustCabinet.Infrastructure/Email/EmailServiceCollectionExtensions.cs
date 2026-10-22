@@ -19,7 +19,6 @@ public static class EmailServiceCollectionExtensions
             .ValidateOnStart();
 
         services.TryAddSingleton(TimeProvider.System);
-        services.AddScoped<IMeetingInvitationQueue, MeetingInvitationQueue>();
         services.AddScoped<MeetingInvitationDispatchProcessor>();
         services.AddScoped<EmailQueueProcessor>();
         services.AddScoped<IEmailQueueProcessor>(provider =>

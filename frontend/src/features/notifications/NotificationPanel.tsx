@@ -79,7 +79,7 @@ export function NotificationPanel({ id, onClose }: { id: string; onClose: () => 
         <button
           type="button"
           className="btn btn-ghost btn-sm notif-mark-all"
-          title="Đánh dấu tất cả đã đọc"
+          data-tooltip="Đánh dấu tất cả đã đọc"
           onClick={markEverything}
           disabled={unread === 0 || markingAll}
         >
@@ -202,7 +202,11 @@ function NotificationRow({
             {notification.title}
           </span>
           {notification.body && <span className="notif-text">{notification.body}</span>}
-          <time className="notif-time" dateTime={notification.createdAt} title={formatDateTime(notification.createdAt)}>
+          <time
+            className="notif-time"
+            dateTime={notification.createdAt}
+            data-tooltip={formatDateTime(notification.createdAt)}
+          >
             {formatRelative(notification.createdAt, now)}
           </time>
         </span>
@@ -213,7 +217,7 @@ function NotificationRow({
           <button
             type="button"
             className="icon-button notif-mark"
-            title="Đánh dấu đã đọc"
+            data-tooltip="Đánh dấu đã đọc"
             aria-label={`Đánh dấu đã đọc: ${notification.title}`}
             onClick={markRead}
           >

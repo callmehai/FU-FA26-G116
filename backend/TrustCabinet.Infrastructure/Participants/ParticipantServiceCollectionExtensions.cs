@@ -1,3 +1,4 @@
+using TrustCabinet.Domain.Meetings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Domain.Participants;
@@ -19,12 +20,13 @@ public static class ParticipantServiceCollectionExtensions
 
 public sealed class UnavailableParticipantGuestAccess : IParticipantGuestAccess
 {
-    public Task<bool> CanAccessAsync(ParticipantGuestSession session, CancellationToken ct) => Task.FromResult(false);
+    public Task<bool> CanAccessAsync(MeetingGuestSession session, CancellationToken ct) => Task.FromResult(false);
     public Task<IReadOnlyDictionary<Guid, GuestDisplayProfile>> GetProfilesAsync(Guid meetingId, IReadOnlyCollection<Guid> invitationIds, CancellationToken ct)
         => Task.FromResult<IReadOnlyDictionary<Guid, GuestDisplayProfile>>(new Dictionary<Guid, GuestDisplayProfile>());
 }
 public sealed class UnavailableGuestInvitationLinkProvider : IGuestInvitationLinkProvider
 {
+    public Task<bool> IsAvailableAsync(CancellationToken ct) => Task.FromResult(false);
     public Task<GuestInvitationLink> PrepareAsync(Guid invitationId, CancellationToken ct) => Task.FromResult(new GuestInvitationLink(GuestLinkStatus.Unavailable));
 }
 public sealed class UnavailableMeetingParticipantAccessPublisher : IMeetingParticipantAccessPublisher

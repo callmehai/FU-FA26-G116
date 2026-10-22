@@ -51,7 +51,7 @@ public sealed class AttendanceEndpointTests(ParticipantFixture f) : IClassFixtur
         var s = await f.Seed(MeetingStatus.InProgress); using var client = f.Client(s.Secretary);
         await using var db = f.Db();
         await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE meeting_participants SET attendance = {value} WHERE id = {s.MemberAssignment}");
-        await Code(await client.GetAsync(s.Url + "/attendance"), 500, "MSG277");
+        await Code(await client.GetAsync(s.Url + "/attendance"), 500, "MSG287");
         Assert.Equal(value, await db.Database.SqlQuery<string>($"SELECT attendance AS \"Value\" FROM meeting_participants WHERE id = {s.MemberAssignment}").SingleAsync());
     }
 
@@ -74,14 +74,12 @@ public sealed class AttendanceEndpointTests(ParticipantFixture f) : IClassFixtur
         => new { id, kind, attendance = status, expectedVersion = AttendanceRules.Token(meeting, kind, id, version) };
     internal static Task<HttpResponseMessage> Save(HttpClient client, ParticipantFixture.Scenario s, params object[] entries)
         => client.PostAsJsonAsync(s.Url + "/attendance", new { entries });
-    internal static async Task<MeetingGuestInvitation> Guest(ParticipantFixture f, ParticipantFixture.Scenario s, bool grant = true)
+    internal static async Task<MeetingGuestInvitation> Guest(ParticipantFixture f, ParticipantFixture.Scenario s)
     {
         await using var db = f.Db();
         var guest = new MeetingGuestInvitation { MeetingId = s.MeetingId, InvitedById = s.Secretary, InvitedName = "Invited guest",
             Email = $"{Guid.CreateVersion7():N}@guest.test", SensitivityAtInvitation = Sensitivity.Internal };
         db.MeetingGuestInvitations.Add(guest);
-        if (grant) db.MeetingParticipantPermissions.Add(new() { GuestInvitationId = guest.Id,
-            PermissionKey = MeetingPermissionCatalog.ViewParticipants, GrantedById = s.Secretary, GrantedAt = f.Clock.Now });
         await db.SaveChangesAsync(); return guest;
     }
 
@@ -183,12 +181,11 @@ public sealed class AttendanceEndpointTests(ParticipantFixture f) : IClassFixtur
         using var chair = f.Client(s.Chair); using var secretary = f.Client(s.Secretary);
         Assert.Equal(HttpStatusCode.Unauthorized, (await anon.GetAsync(s.Url + "/attendance")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync(s.Url + "/attendance?page=-1")).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync(s.Url + "/attendance")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await member.GetAsync(s.Url + "/attendance")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await Save(chair, s, Entry(s.MeetingId, s.MemberAssignment))).StatusCode);
-        await using var db = f.Db(); db.MeetingParticipantPermissions.Add(new() { MeetingParticipantId = s.MemberAssignment,
-            PermissionKey = MeetingPermissionCatalog.ViewParticipants, GrantedById = s.Secretary, GrantedAt = f.Clock.Now }); await db.SaveChangesAsync();
+        await using var db = f.Db();
         var page = await member.GetFromJsonAsync<JsonElement>(s.Url + "/attendance");
-        Assert.All(page.GetProperty("items").EnumerateArray(), row => { Assert.Equal(JsonValueKind.Null, row.GetProperty("invitationResponse").ValueKind); Assert.False(row.TryGetProperty("email", out _)); });
+        Assert.All(page.GetProperty("items").EnumerateArray(), row => { Assert.Equal(JsonValueKind.String, row.GetProperty("invitationResponse").ValueKind); Assert.False(row.TryGetProperty("email", out _)); });
         using var guest = f.Guest(s.MeetingId, g.Id); using var unverified = f.Guest(s.MeetingId, g.Id, verified: false);
         using var expired = f.Guest(s.MeetingId, g.Id, expired: true); using var mixed = f.Guest(s.MeetingId, g.Id, user: s.Secretary);
         Assert.Equal(HttpStatusCode.OK, (await guest.GetAsync(s.Url + "/attendance")).StatusCode);
@@ -234,7 +231,7 @@ public sealed class AttendanceEndpointTests(ParticipantFixture f) : IClassFixtur
     {
         var s = await f.Seed(MeetingStatus.InProgress); using var client = f.Client(s.Secretary);
         f.Guests.FailProfiles = true;
-        try { await Code(await client.GetAsync(s.Url + "/attendance"), 500, "MSG277"); }
+        try { await Code(await client.GetAsync(s.Url + "/attendance"), 500, "MSG287"); }
         finally { f.Guests.FailProfiles = false; }
         foreach (var q in new[] { "page=0", "page=1&page=2", "pageSize=101", "q=x", "page=-1", "page=2147483648" })
             await Code(await client.GetAsync(s.Url + "/attendance?" + q), 400, "MSG278");

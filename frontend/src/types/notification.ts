@@ -21,6 +21,9 @@ export type NotificationType =
   | 'MinutesWaitingApproval'
   | 'MinutesIssued'
   | 'DocumentAdded'
+  /** SCRUM-20: the caller's role in a meeting changed, or they were removed from it. */
+  | 'MeetingRoleChanged'
+  | 'MeetingParticipantRemoved'
 
 export interface AppNotification {
   id: string

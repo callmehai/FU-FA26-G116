@@ -7,7 +7,7 @@ using TrustCabinet.Domain.Participants;
 namespace TrustCabinet.Infrastructure.Email;
 
 public sealed record InvitationPayload(string Name, string Email, string MeetingTitle, string Description,
-    DateTimeOffset StartsAt, DateTimeOffset EndsAt, string Place, string Mode, string? Role, string[] Permissions);
+    DateTimeOffset StartsAt, DateTimeOffset EndsAt, string Place, string Mode, string? Role);
 
 public static class MeetingInvitationEvents
 {
@@ -20,11 +20,15 @@ public static class MeetingInvitationEvents
         var ownerId = p?.Id ?? g!.Id;
         var key = kind == InvitationEventKind.Invitation ? p is not null ? InitialKey(p) : g!.InitialInvitationDeliveryKey
             : $"roster:{eventId}:{kind}:{ownerId}";
-        var permissions = db.ChangeTracker.Entries<MeetingParticipantPermission>()
-            .Where(e => e.State != EntityState.Deleted && (p is not null ? e.Entity.MeetingParticipantId == p.Id : e.Entity.GuestInvitationId == g!.Id))
-            .Select(e => e.Entity.PermissionKey).Order().ToArray();
-        var place = meeting.Mode == MeetingMode.Online ? meeting.OnlineLink ?? "Phòng họp trực tuyến TrustCabinet"
-            : meeting.Mode == MeetingMode.Hybrid ? $"{meeting.Location} · {meeting.OnlineLink ?? "Phòng họp trực tuyến TrustCabinet"}" : meeting.Location;
+        var link = meeting.OnlineLink ?? "Phòng họp trực tuyến TrustCabinet";
+        // A hybrid meeting may have no room yet: then it happens at its link alone.
+        var place = meeting.Mode switch
+        {
+            MeetingMode.Online => link,
+            MeetingMode.Hybrid when meeting.Location.Length > 0 => $"{meeting.Location} · {link}",
+            MeetingMode.Hybrid => link,
+            _ => meeting.Location,
+        };
         db.MeetingInvitationDispatches.Add(new()
         {
             EventId = eventId,
@@ -37,7 +41,7 @@ public static class MeetingInvitationEvents
             UpdatedAt = now,
             PayloadJson = JsonSerializer.Serialize(new InvitationPayload(p?.User.FullName ?? g!.InvitedName, p?.User.Email ?? g!.Email,
                 meeting.Title, meeting.Description, meeting.PlannedStartTime, meeting.PlannedEndTime, place,
-                meeting.Mode.ToString(), p?.Role.ToString(), permissions))
+                meeting.Mode.ToString(), p?.Role.ToString()))
         });
         if (notify && p is not null)
         {
@@ -51,7 +55,6 @@ public static class MeetingInvitationEvents
                 {
                     InvitationEventKind.Invitation => NotificationType.MeetingInvited,
                     InvitationEventKind.RoleChanged => NotificationType.MeetingRoleChanged,
-                    InvitationEventKind.PermissionsChanged => NotificationType.MeetingPermissionsChanged,
                     InvitationEventKind.Rescheduled => NotificationType.MeetingRescheduled,
                     _ => NotificationType.MeetingParticipantRemoved
                 },
@@ -68,7 +71,6 @@ public static class MeetingInvitationEvents
     {
         InvitationEventKind.Invitation => "Lời mời tham dự cuộc họp",
         InvitationEventKind.RoleChanged => "Vai trò cuộc họp đã thay đổi",
-        InvitationEventKind.PermissionsChanged => "Quyền cuộc họp đã thay đổi",
         InvitationEventKind.Rescheduled => "Cuộc họp đã dời lịch",
         _ => "Lời mời tham dự đã được thu hồi"
     };

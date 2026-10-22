@@ -5,6 +5,7 @@ import { errorMessage, isApiError } from '../../lib/errors'
 import { JUST_SIGNED_IN, routes } from '../../lib/routes'
 import { GoogleSignInButton } from './GoogleSignInButton'
 import { useAuth } from './useAuth'
+import { Icon } from '../../components/Icon'
 
 interface LoginError {
   message: string
@@ -148,7 +149,8 @@ export function LoginPage() {
             />
           </label>
 
-          <button className="btn btn-primary btn-block" type="submit" disabled={pending !== null}>
+          <button className="btn btn-primary btn-block btn-cta" type="submit" disabled={pending !== null}>
+            <Icon name="logIn" size={18} />
             {pending === 'password' ? 'Đang đăng nhập…' : 'Đăng nhập bằng mật khẩu'}
           </button>
         </form>

@@ -1,3 +1,4 @@
+using TrustCabinet.Domain.Meetings;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Json;
@@ -22,29 +23,29 @@ namespace TrustCabinet.Web.Tests.Agenda;
 
 public sealed class AgendaGuestTests(AgendaFixture fixture) : IClassFixture<AgendaFixture>
 {
-    private AgendaGuestSession Grant(Guid meetingId, Guid? invitation = null)
+    private MeetingGuestSession Grant(Guid meetingId, Guid? invitation = null)
     {
-        var identity = new AgendaGuestSession(meetingId, invitation ?? Guid.NewGuid(), Guid.NewGuid());
+        var identity = new MeetingGuestSession(meetingId, invitation ?? Guid.NewGuid(), Guid.NewGuid());
         fixture.Guests.Sessions[identity.SessionId] = new(identity, fixture.Clock.Now.AddHours(1));
         return identity;
     }
 
     // Test-only wire format. UC-04 owns the production token/session format and resolver.
-    private static string Token(AgendaGuestSession identity, string? subject = null, DateTimeOffset? expires = null)
+    private static string Token(MeetingGuestSession identity, string? subject = null, DateTimeOffset? expires = null)
         => new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken("TrustCabinet", "TrustCabinet",
             [new Claim("sub", subject ?? $"guest:{identity.SessionId:D}"), new Claim("test_guest", "true"),
              new Claim("test_meeting", identity.MeetingId.ToString()), new Claim("test_invitation", identity.InvitationId.ToString()),
              new Claim("test_session", identity.SessionId.ToString())], expires: (expires ?? DateTimeOffset.UtcNow.AddMinutes(5)).UtcDateTime,
             signingCredentials: new(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AgendaFixture.SigningKey)), SecurityAlgorithms.HmacSha256)));
 
-    private HttpClient Client(AgendaGuestSession identity, string? subject = null)
+    private HttpClient Client(MeetingGuestSession identity, string? subject = null)
     {
         var client = fixture.Client();
         client.DefaultRequestHeaders.Authorization = new("Bearer", Token(identity, subject));
         return client;
     }
 
-    private HubConnection Hub(AgendaGuestSession identity) => new HubConnectionBuilder()
+    private HubConnection Hub(MeetingGuestSession identity) => new HubConnectionBuilder()
         .WithUrl("http://localhost/hubs/meetings", options =>
         {
             options.Transports = HttpTransportType.LongPolling;
@@ -156,7 +157,7 @@ public sealed class AgendaGuestTests(AgendaFixture fixture) : IClassFixture<Agen
         client.DefaultRequestHeaders.Authorization = new("Bearer", Token(guest));
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync(s.Url)).StatusCode);
         Assert.Empty(await new UnavailableAgendaGuestAccess().ListReadersAsync(s.MeetingId, default));
-        Assert.Null(new UnavailableAgendaGuestIdentityResolver().Resolve(new ClaimsPrincipal(new ClaimsIdentity("test"))));
+        Assert.Null(new UnavailableMeetingGuestIdentityResolver().Resolve(new ClaimsPrincipal(new ClaimsIdentity("test"))));
     }
 
     [Fact]
