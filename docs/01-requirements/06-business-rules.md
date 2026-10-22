@@ -1,6 +1,6 @@
 # Danh mục Quy tắc Nghiệp vụ (Business Rules) — TrustCabinet
 
-Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX cập nhật 22/10/2026, bao gồm ADR-0020, quyết định SCRUM-19 ngày 16/10/2026, trao đổi PO 16/10/2026, góp ý hội đồng review lần 1 và BR-313 theo SCRUM-105). Có **261 BR đang dùng** trong dải `BR-01` → `BR-313`; mã `BR` độc lập với mã thông báo `MSG`.
+Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX cập nhật 22/10/2026, bao gồm ADR-0020, quyết định SCRUM-19 ngày 16/10/2026, trao đổi PO 16/10/2026, góp ý hội đồng review lần 1 BR-313/BR-314 theo SCRUM-105). Có **262 BR đang dùng** trong dải `BR-01` → `BR-314`; mã `BR` độc lập với mã thông báo `MSG`.
 
 ## Quy ước đồng bộ
 
@@ -276,6 +276,7 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-311` | The system records who last saved an Item conclusion and when, and shows them with the conclusion. | UC-26, UC-77 | Review 18/10/2026 — Agenda presenter and Item conclusion | Agenda Management |
 | `BR-312` | Meeting Minutes include each Agenda Item with its Presenter and recorded conclusion. | UC-59, UC-77 | Review 18/10/2026 — Agenda presenter and Item conclusion | Agenda Management |
 | `BR-313` | A change to a role's permissions applies to the users holding that role from their next action, without ending their active sessions. | UC-11 | SCRUM-105, BA 22/10/2026 | Role-Based Access Control |
+| `BR-314` | Changing a user's system role applies the new role's permissions to that user from their next action, without ending their active sessions. | UC-08 | SCRUM-105, PO 22/10/2026 | Role-Based Access Control |
 
 ## BR đã ngừng dùng
 

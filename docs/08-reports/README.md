@@ -98,10 +98,14 @@ Test); chúng không phải file đích của DOCX Report 5.0.
 
 Thư mục Drive chứa các report: [SEP490-G116 Reports](https://drive.google.com/drive/folders/19wdKDAYViFGn4nlrmCnyNJkDQ0IOw-Z7?usp=drive_link).
 
-**Report 3 đồng bộ Markdown gần nhất:** 22/10/2026, từ DOCX local sau khi sửa UC-11 (thêm POST-3 và
-bước 6) và thêm BR-313 theo SCRUM-105, BA chốt 22/10/2026: đổi quyền của vai trò không còn đăng xuất
-người đang giữ vai trò đó; quyền mới áp dụng từ thao tác kế tiếp. Sequence diagram UC-11 (source, PNG,
-tab draw.io) cập nhật cùng đợt. Không thay nội dung trên Drive.
+**Report 3 đồng bộ Markdown gần nhất:** 22/10/2026 (lần 2), từ DOCX local sau khi sửa UC-08 (thêm
+POST-4, bước 9 Normal Flow và bước 6 AF-1) và thêm BR-314 theo yêu cầu PO 22/10/2026 cho SCRUM-105: đổi
+vai trò của một người dùng cũng không đăng xuất họ; họ được báo và quyền của vai trò mới áp dụng ngay.
+Sequence diagram UC-08 (source, PNG, tab draw.io) cập nhật cùng đợt. Không thay nội dung trên Drive.
+
+Lần 1 cùng ngày: sửa UC-11 (thêm POST-3 và bước 6) và thêm BR-313 theo SCRUM-105, BA chốt 22/10/2026:
+đổi quyền của vai trò không còn đăng xuất người đang giữ vai trò đó. Sequence diagram UC-11 cập nhật
+cùng đợt.
 
 Lần đồng bộ trước: 16/10/2026, từ DOCX local sau khi sửa UC-19, UC-20 và BR-39
 theo quyết định SCRUM-19 ngày 16/10/2026: người tổ chức nhận thông báo trong ứng dụng khi cuộc họp được
