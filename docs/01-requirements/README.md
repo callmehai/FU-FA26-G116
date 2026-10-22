@@ -18,8 +18,8 @@ Nguồn chuẩn là ba báo cáo DOCX trên Google Drive (Report 1, 2, 3), đư�
 - [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case đồng bộ từ Report 3 §II (UC đã đặc tả
   và UC placeholder), có link tới sequence diagram tương ứng. FE-11 đã có đặc tả UC-52a, UC-52b,
   UC-53–UC-57 theo quyết định 14/10/2026; các sequence của FE-11 chưa được tạo trong đợt đặc tả này.
-- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1 (260 BR đang dùng trong
-  dải BR-01 → BR-312; danh sách BR ngừng dùng ở cuối file). FE-07/FE-11 đã đồng bộ ngày 15/10/2026,
+- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1 (261 BR đang dùng trong
+  dải BR-01 → BR-313; danh sách BR ngừng dùng ở cuối file). FE-07/FE-11 đã đồng bộ ngày 15/10/2026,
   gồm UC-33b/33d theo ADR-0020; các phần màn hình chờ cập nhật theo [note bàn giao](../notes/README.md).
 - Mã thông báo `MSGnn`: [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md) là nguồn chuẩn duy nhất.
 
