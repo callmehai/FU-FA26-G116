@@ -132,4 +132,27 @@ public sealed class AttendanceConcurrencyTests(ParticipantFixture f) : IClassFix
         await Code(await Save(client, s, Entry(s.MeetingId, s.ChairAssignment), Entry(s.MeetingId, s.MemberAssignment, version: long.MaxValue)), 503, "MSG150");
         db.ChangeTracker.Clear(); Assert.Equal(0, (await db.MeetingParticipants.FindAsync(s.ChairAssignment))!.AttendanceVersion);
     }
+    [Fact]
+    public async Task Chair_handover_and_attendance_serialize_without_overwriting_each_other()
+    {
+        var s = await f.Seed(MeetingStatus.InProgress);
+        using var chair = f.Client(s.Chair); using var secretary = f.Client(s.Secretary);
+        await using var db = f.Db(); await using var tx = await db.Database.BeginTransactionAsync();
+        await db.Meetings.FromSqlInterpolated($"SELECT * FROM meetings WHERE id = {s.MeetingId} FOR UPDATE").ToArrayAsync();
+        var attendance = Save(secretary, s, Entry(s.MeetingId, s.MemberAssignment));
+        var handover = Write(chair, s.Url + "/participants/chair-handover", HttpMethod.Post,
+            new { newChairParticipantId = s.MemberAssignment, confirmed = true });
+        await Waiters(2); await tx.CommitAsync();
+        await Code(await attendance.WaitAsync(TimeSpan.FromSeconds(15)), 200, "MSG147");
+        await Code(await handover.WaitAsync(TimeSpan.FromSeconds(15)), 200, "MSG257");
+        db.ChangeTracker.Clear();
+        var incoming = (await db.MeetingParticipants.FindAsync(s.MemberAssignment))!;
+        Assert.Equal(MeetingRole.Chair, incoming.Role);
+        Assert.Equal(AttendanceStatus.Present, incoming.Attendance);
+        Assert.Equal(1, incoming.AttendanceVersion);
+        Assert.Equal(s.Secretary, incoming.AttendanceRecordedById);
+        Assert.Equal(1, (await db.Meetings.FindAsync(s.MeetingId))!.ParticipantsRevision);
+        await Code(await Save(secretary, s, Entry(s.MeetingId, s.MemberAssignment, status: "Absent", version: 1)), 200, "MSG147");
+    }
+
 }

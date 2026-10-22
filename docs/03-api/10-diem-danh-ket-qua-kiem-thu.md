@@ -3,6 +3,15 @@
 Ngày 20/10/2026; branch `feat/SCRUM-26-BACKEND-Taking-attendance-of-participants`.
 [Contract](10-diem-danh.md), [bàn giao](10-diem-danh-ban-giao.md).
 
+## Đồng bộ SCRUM-97 — 22/10/2026
+
+Tích hợp branch SCRUM-97 tại `48268ede97ede308bf6313a95059ffa788f857b5` vào SCRUM-26 sau merge main `fa408bc`. Giữ MSG287/MSG278 của attendance, bổ sung MSG258/MSG260 của UC-73, mã tiếp theo MSG288; giữ cả hai collection trong README Postman. Không thêm hoặc sửa migration.
+
+- Release build `-warnaserror`: 0 warning/error; frontend lint/build pass (cảnh báo bundle phòng họp trên 500 kB còn nguyên); EF model check pass.
+- Regression toàn solution: 1.305 test, lượt đầu 1.287 pass và 18 fail do Redis test đang tắt. Khởi động Redis tại cổng 6389, chạy lại toàn bộ 25 test Redis: 25/25 pass; xác nhận cả 18 test lỗi ban đầu đều pass trong lượt chạy lại. Không có test skipped hoặc lỗi còn lại.
+- 60 test Attendance pass, gồm test mới chạy đồng thời POST chair-handover và POST attendance: cả hai thành công, role/attendance/recorder/version được giữ, Secretary tiếp tục lưu được với token mới.
+- Không còn unmerged entries; `git diff --cached --check` pass. Kết quả được stage, chưa tạo merge commit hoặc push.
+
 ## Kiểm tra sau resolve merge — 22/10/2026
 
 Tích hợp main `f6db57f` vào branch SCRUM-26: giữ migration SCRUM-20 trên main, bỏ grants đã được loại khỏi roster, dùng MeetingGuestSession chung; lỗi đọc attendance chuyển từ MSG277 sang MSG287 để tránh trùng validation tạo meeting. Quyền ghi vẫn Secretary/InProgress.

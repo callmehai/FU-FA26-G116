@@ -32,6 +32,8 @@ public static class ParticipantEndpoints
     private const string Msg256ChairHandoverDenied = "MSG256";
     private const string Msg257ChairHandedOver = "MSG257";
     private const string Msg259InvalidChairRecipient = "MSG259";
+    private const string Msg258NoChairCandidates = "MSG258";
+    private const string Msg260CannotHandOverChair = "MSG260";
     private const string Msg285ResponseFinal = "MSG285";
     private const string Msg286ChairCannotRespond = "MSG286";
     private const int MaxBytes = 64 * 1024;
@@ -75,10 +77,12 @@ public static class ParticipantEndpoints
         Read("/participant-context", ParticipantOperation.Context);
         Read("/participants", ParticipantOperation.Roster);
         Read("/participants/editor-options", ParticipantOperation.Options);
+        Read("/participants/chair-handover-candidates", ParticipantOperation.ChairHandoverCandidates);
         Read("/invitation-response", ParticipantOperation.OwnResponse);
         Write("POST", "/participants", ParticipantOperation.AddInternal);
         Write("POST", "/guest-invitations", ParticipantOperation.AddGuest);
         Write("PUT", "/participants/assignments", ParticipantOperation.ChangeAssignments);
+        Write("POST", "/participants/chair-handover", ParticipantOperation.HandOverChair);
         Write("DELETE", "/participants/{targetId:guid}", ParticipantOperation.RemoveInternal);
         Write("DELETE", "/guest-invitations/{targetId:guid}", ParticipantOperation.RevokeGuest);
         Write("PUT", "/invitation-response", ParticipantOperation.Respond);
@@ -139,7 +143,11 @@ public static class ParticipantEndpoints
                         && await context.Request.Body.ReadAsync(new byte[1], ct) != 0
                     )
                         input = input with { ParseFailure = ParticipantFailure.Invalid };
-                    if (context.Request.Query.Count > 0)
+                    if (
+                        context.Request.Query.Count > 0
+                        && (operation != ParticipantOperation.HandOverChair
+                            || input.ParseFailure == ParticipantFailure.None)
+                    )
                         input = input with { ParseFailure = ParticipantFailure.InvalidRequest };
                     if (operation != ParticipantOperation.Respond)
                         input = input with
@@ -157,7 +165,7 @@ public static class ParticipantEndpoints
 
     private static ParticipantQuery Query(HttpRequest request, ParticipantOperation operation)
     {
-        var allowed = operation is ParticipantOperation.Roster or ParticipantOperation.Options
+        var allowed = operation is ParticipantOperation.Roster or ParticipantOperation.Options or ParticipantOperation.ChairHandoverCandidates
             ? new[] { "q", "page", "pageSize" }
             : [];
         var invalid = request.Query.Any(p =>
@@ -210,6 +218,7 @@ public static class ParticipantEndpoints
     );
 
     private sealed record ResponseBody(string? Response);
+    private sealed record ChairHandoverBody(Guid NewChairParticipantId, bool Confirmed);
 
     private static async Task<ParticipantInput> ParseAsync(
         HttpRequest request,
@@ -248,6 +257,7 @@ public static class ParticipantEndpoints
                 ParticipantOperation.ChangeAssignments => Assign(
                     root.Deserialize<AssignmentsBody>(InputJson)!
                 ),
+                ParticipantOperation.HandOverChair => Handover(root.Deserialize<ChairHandoverBody>(InputJson)!),
                 ParticipantOperation.Respond => new(
                     Response: root.Deserialize<ResponseBody>(InputJson)!.Response
                 ),
@@ -257,7 +267,7 @@ public static class ParticipantEndpoints
         catch (Exception ex) when (ex is JsonException or InvalidOperationException)
         {
             return new(
-                ParseFailure: operation == ParticipantOperation.ChangeAssignments
+                ParseFailure: operation is ParticipantOperation.ChangeAssignments or ParticipantOperation.HandOverChair
                     ? ParticipantFailure.InvalidRole
                     : ParticipantFailure.Invalid
             );
@@ -272,6 +282,11 @@ public static class ParticipantEndpoints
 
     private static ParticipantInput Assign(AssignmentsBody b) =>
         new(Changes: b.Changes, ChairReplacement: b.ChairReplacement);
+
+    private static ParticipantInput Handover(ChairHandoverBody b) =>
+        b.NewChairParticipantId == Guid.Empty || !b.Confirmed
+            ? new(ParseFailure: ParticipantFailure.InvalidRole)
+            : new(NewChairParticipantId: b.NewChairParticipantId, Confirmed: b.Confirmed);
 
     private static void ValidateTree(JsonElement value)
     {
@@ -320,6 +335,11 @@ public static class ParticipantEndpoints
                     409,
                     Msg256ChairHandoverDenied,
                     "Chỉ Chủ tọa được giao vai trò Chủ tọa khi tài khoản hiện tại còn hoạt động."
+                ),
+                ParticipantFailure.CannotHandOverChair => (
+                    409,
+                    Msg260CannotHandOverChair,
+                    "Bạn không còn quyền giao vai trò Chủ tọa cho cuộc họp này."
                 ),
                 ParticipantFailure.InvalidChairRecipient => (
                     400,
@@ -415,6 +435,16 @@ public static class ParticipantEndpoints
         if (result.Revision is { } revision)
             context.Response.Headers.ETag =
                 $"\"participants-{revision.ToString(CultureInfo.InvariantCulture)}\"";
+        if (result.Data is ChairHandoverCandidatePage candidates)
+            return Results.Ok(new
+            {
+                candidates.Items, candidates.Total, candidates.EligibleTotal,
+                candidates.Page, candidates.PageSize, candidates.Revision,
+                code = candidates.EligibleTotal == 0 ? Msg258NoChairCandidates : null,
+                message = candidates.EligibleTotal == 0
+                    ? "Không có thành viên đủ điều kiện nhận vai trò Chủ tọa. Hãy thêm thành viên nội bộ trước."
+                    : null,
+            });
         if (
             operation
             is ParticipantOperation.Context
