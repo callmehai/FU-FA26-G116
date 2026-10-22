@@ -4308,8 +4308,8 @@ activate Database
 Database--&amp;gt;&amp;gt;AuditLogRepository: Audit record saved
 deactivate Database
 AuditLogRepository--&amp;gt;&amp;gt;UserService: Audit record saved
-UserService-&amp;gt;&amp;gt;UserService: Notify the user that their access changed so their sessions&amp;lt;br/&amp;gt;apply the new role's permissions without signing in again (BR-314)
 deactivate AuditLogRepository
+UserService-&amp;gt;&amp;gt;UserService: Notify the user that their access changed so their sessions&amp;lt;br/&amp;gt;apply the new role's permissions without signing in again (BR-314)
 UserService--&amp;gt;&amp;gt;UserController: User role updated successfully
 deactivate UserService
 UserController--&amp;gt;&amp;gt;UserPage: MSG10 - User account updated successfully

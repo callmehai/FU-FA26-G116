@@ -296,5 +296,6 @@ riêng như đặc tả mô tả, đó chỉ là một dialog chọn vai trò (`
 này với hai field kia lấy từ `GET /api/users/{id}`.
 
 Mã trả về giống UC-06b: `MSG10` thành công, `MSG09` kèm `errors.roleId` khi vai trò vừa bị xoá, `MSG12`
-khi đó là quản trị viên cuối cùng (mục 4). Đổi vai trò sẽ đăng xuất người được đổi, và làm chết liên
-kết đặt lại mật khẩu đang chờ của họ (nếu có).
+khi đó là quản trị viên cuối cùng (mục 4). Đổi vai trò **không** đăng xuất người được đổi (SCRUM-105):
+họ nhận sự kiện `capabilitiesChanged`, thấy toast `MSG287` và menu đổi theo ngay. Liên kết đặt lại mật
+khẩu đang chờ của họ vẫn dùng được. Đổi email thì vẫn đăng xuất và huỷ liên kết đó.

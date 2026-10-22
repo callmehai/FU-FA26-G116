@@ -40,6 +40,8 @@ với địa chỉ), **vô hiệu hoá tài khoản** và **đặt lại mật k
 - Không còn thao tác phân quyền nào (sửa ma trận, đổi vai trò) đăng xuất người dùng.
 - Kết luận an toàn vẫn dựa vào điều kiện của ADR-0022: mọi endpoint gắn quyền phải đi qua
   `RequireCapability`.
-- Đổi vai trò **và** email trong cùng một lần lưu thì vẫn đăng xuất, vì có đổi email.
+- Đổi vai trò **và** email trong cùng một lần lưu thì vẫn đăng xuất, vì có đổi email; khi đó server
+  không gửi `capabilitiesChanged`, để người dùng không thấy "quyền vừa được cập nhật" ngay trước màn
+  đăng nhập. Tài khoản không hoạt động cũng không được gửi, vì không có phiên nào để cập nhật.
 - Hợp đồng: [02-quan-ly-nguoi-dung.md](../03-api/02-quan-ly-nguoi-dung.md),
   [06-thong-bao-trong-ung-dung.md](../03-api/06-thong-bao-trong-ung-dung.md).

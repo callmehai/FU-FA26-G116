@@ -140,7 +140,8 @@ khi lưu, trong hai trường hợp:
 - quản trị viên đổi quyền của một vai trò (`PUT /api/roles/capabilities`): gửi tới mọi tài khoản đang
   hoạt động thuộc vai trò đó;
 - quản trị viên đổi vai trò của một tài khoản (`PUT /api/users/{id}` với `roleId` mới): gửi tới đúng
-  tài khoản đó.
+  tài khoản đó, nếu tài khoản đang hoạt động. Cùng lần lưu mà đổi cả email thì **không** gửi: đổi
+  email huỷ phiên, người đó sẽ phải đăng nhập lại.
 
 FE nhận được thì hiện toast `MSG287` "Quyền truy cập của bạn vừa được cập nhật." và gọi
 `reloadSession()`: đọc `/me`, thấy quyền khác token thì `/refresh` để lấy token mang quyền mới, rồi

@@ -238,10 +238,14 @@ public sealed partial class UserService(
         // a network round trip. See GuardedWriteAsync.
         var emailChanged = !string.Equals(before.Email, user.Email, StringComparison.Ordinal);
 
+        // Told only when the session survives: with a new email too, "your access was updated"
+        // would be followed straight away by the sign-in page. An inactive account has no session.
+        var notify = before.RoleId != user.RoleId && !emailChanged && user.IsActive;
+
         return new Written(
             UserResult.Success(UserAccount.From(user)),
             emailChanged ? user.Id : null,
-            before.RoleId != user.RoleId ? user.Id : null);
+            notify ? user.Id : null);
     }
 
     public Task<UserResult> ChangeStatusAsync(

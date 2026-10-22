@@ -443,6 +443,22 @@ public class UserServiceTests
     }
 
     [Fact]
+    public async Task A_role_and_email_change_together_ends_the_session_without_a_push()
+    {
+        // The email change signs the person out; telling them their access was updated first
+        // would be followed straight away by the sign-in page.
+        var user = GivenUser(role: BuiltInRoles.Member);
+        await _refreshTokens.StoreAsync("rt-cua-ho", user.Id, TimeSpan.FromDays(7));
+
+        await NewService().UpdateAsync(
+            user.Id, new UserEdit(user.FullName, "dia-chi-moi@trustcabinet.local", BuiltInRoles.Secretary),
+            _actorId);
+
+        Assert.Empty(_refreshTokens.ActiveTokens);
+        Assert.Empty(_capabilitiesChanged.Notified);
+    }
+
+    [Fact]
     public async Task A_role_change_survives_the_push_failing()
     {
         // The edit is saved and enforced; failing the request would have the administrator redo it.
@@ -556,6 +572,8 @@ public class UserServiceTests
 
         Assert.True(result.Succeeded);
         Assert.Equal(BuiltInRoles.Member, retired.RoleId);
+        // No session to update, so nobody to tell.
+        Assert.Empty(_capabilitiesChanged.Notified);
     }
 
     [Fact]
