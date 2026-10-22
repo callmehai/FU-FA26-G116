@@ -115,15 +115,23 @@ public sealed class CallRepository(TrustCabinetDbContext db) : ICallRepository
             return;
         }
 
-        var open = await db.CallParticipants.Where(p => p.CallSessionId == sessionId && p.LeftAt == null).ToListAsync(ct);
-        foreach (var stint in open)
+        var participants = await db.CallParticipants.Where(p => p.CallSessionId == sessionId).ToListAsync(ct);
+        // Provider clocks and delayed events can be ahead of the local confirmation time.
+        // Preserve existing evidence and never end a session before any of its known stints.
+        var effectiveEnd = endedAt < session.StartedAt ? session.StartedAt : endedAt;
+        foreach (var stint in participants)
         {
-            stint.LeftAt = endedAt < stint.JoinedAt ? stint.JoinedAt : endedAt;
+            if (stint.JoinedAt > effectiveEnd) effectiveEnd = stint.JoinedAt;
+            if (stint.LeftAt is { } leftAt && leftAt > effectiveEnd) effectiveEnd = leftAt;
+        }
+        foreach (var stint in participants.Where(p => p.LeftAt == null))
+        {
+            stint.LeftAt = effectiveEnd;
             stint.UpdatedAt = DateTimeOffset.UtcNow;
         }
 
         session.Status = CallStatus.Ended;
-        session.EndedAt = endedAt;
+        session.EndedAt = effectiveEnd;
         session.UpdatedAt = DateTimeOffset.UtcNow;
         await db.SaveChangesAsync(ct);
     }

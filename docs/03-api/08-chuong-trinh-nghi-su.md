@@ -79,3 +79,7 @@ Publisher nhận cancellation sau 2 giây, nhưng request vẫn chờ task publi
 Minimal API AgendaEndpoints tương ứng Controller trong diagram; AgendaService điều phối; IMeetingRepository/MeetingReadPolicy được tái sử dụng. AgendaDocumentRepository là adapter model tài liệu hiện tại. Không thêm Application project.
 
 Cập nhật review 21/10/2026: Agenda, Participants và MeetingHub dùng chung `MeetingGuestSession` và `IMeetingGuestIdentityResolver`; UC-04 chỉ đăng ký một resolver. Các port kiểm quyền theo feature vẫn tách riêng, dùng cùng invitation/session storage. Tên group Guest được tạo duy nhất bằng `MeetingHub.GuestGroup`.
+
+## Tích hợp End Meeting — SCRUM-69
+
+Lifecycle End gọi IAgendaMeetingEnd trong cùng transaction và khóa Meeting. Current item thành Done với mốc End; Pending/Done khác giữ nguyên. Không có current item vẫn End được. Sau commit luôn phát agendaChanged/MeetingEnded, kể cả agendaItemId/title null; FE GET lại Meeting và Agenda để làm mới status/quyền. Lỗi publish không rollback End. [Bàn giao UC-21/22](10-scrum69-ban-giao.md).

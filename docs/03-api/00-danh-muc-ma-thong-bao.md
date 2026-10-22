@@ -102,6 +102,19 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 
 `MSG258` và `MSG260` tiếp tục dành sẵn. Nhánh SCRUM-26 cần remap các mã trùng trước khi tích hợp; `MSG277` đã thuộc validation roster khi tạo họp trong PR #92.
 
+### Bắt đầu/kết thúc cuộc họp — SCRUM-69 (UC-21/22)
+
+| Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
+|---|---|---|---|---|---|
+| `MSG110` | 200 | `POST /api/meetings/{id}/transitions` | Start thành công | `Bắt đầu cuộc họp thành công.` | BE |
+| `MSG111` | 200 | `POST /api/meetings/{id}/transitions` | End thành công | `Kết thúc cuộc họp thành công.` | BE |
+| `MSG112` | 403 | `POST /api/meetings/{id}/transitions` | Start: caller đọc được nhưng không phải active current Chair | `Không thể bắt đầu cuộc họp này.` | BE |
+| `MSG112` | 409 | `POST /api/meetings/{id}/transitions` | Start: sai trạng thái hoặc thiếu roster | `Không thể bắt đầu cuộc họp này.` | BE |
+| `MSG114` | 403 | `POST /api/meetings/{id}/transitions` | End: caller đọc được nhưng không phải active current Chair | `Không thể kết thúc cuộc họp này.` | BE |
+| `MSG114` | 409 | `POST /api/meetings/{id}/transitions` | End: sai trạng thái | `Không thể kết thúc cuộc họp này.` | BE |
+| `MSG115` | 503 | `POST /api/meetings/{id}/transitions` | Start: lỗi persistence trước commit | `Không thể bắt đầu cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG116` | 503 | `POST /api/meetings/{id}/transitions` | End: lỗi persistence hoặc timestamp agenda không hợp lệ trước commit | `Không thể kết thúc cuộc họp. Vui lòng thử lại.` | BE |
+
 ## Mã tiếp theo
 
 **`MSG287`** — Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278`–`MSG279` thuộc dải cần rà soát với SCRUM-26 trước khi tích hợp. `MSG252`–`MSG274` dành sẵn, chưa triển khai, cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020; đặc tả UC-23b dùng `MSG250` cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG151` dành cho thay đổi FE-06 trong Report 3; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
@@ -321,13 +334,13 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG153` | UC-28b / Main Flow · Ngừng dùng — PO 20/10/2026 | *Meeting permissions updated successfully.* |
 | `MSG154` | UC-28b / Trạng thái UI không có thay đổi, không có EX riêng | *No changes to save.* |
 | `MSG155` | UC-22 / EX-3 cũ · Ngừng dùng 13/10/2026 | Bỏ điều kiện điểm danh đủ trước khi kết thúc theo quyết định PO; không tái sử dụng mã. |
-| `MSG110` | UC-21 Start Meeting | *Meeting started successfully.* |
-| `MSG111` | UC-22 End Meeting | *Meeting ended successfully.* |
-| `MSG112` | UC-21 | *This meeting cannot be started.* |
+| `MSG110` | UC-21 Start Meeting | *Meeting started successfully.* — **Đã triển khai SCRUM-69**, xem HTTP contract phía trên. |
+| `MSG111` | UC-22 End Meeting | *Meeting ended successfully.* — **Đã triển khai SCRUM-69**, xem HTTP contract phía trên. |
+| `MSG112` | UC-21 | *This meeting cannot be started.* — **Đã triển khai SCRUM-69**, xem HTTP contract phía trên. |
 | `MSG113` | ADR-0013 · End Meeting khi còn phiên (UC-44 cũ, đã bỏ) | *Complete or cancel all unfinished meeting sessions before ending the meeting.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
-| `MSG114` | UC-22 | *This meeting cannot be ended.* |
-| `MSG115` | UC-21 | *Unable to start the meeting. Please try again.* |
-| `MSG116` | UC-22 | *Unable to end the meeting. Please try again.* |
+| `MSG114` | UC-22 | *This meeting cannot be ended.* — **Đã triển khai SCRUM-69**, xem HTTP contract phía trên. |
+| `MSG115` | UC-21 | *Unable to start the meeting. Please try again.* — **Đã triển khai SCRUM-69**, xem HTTP contract phía trên. |
+| `MSG116` | UC-22 | *Unable to end the meeting. Please try again.* — **Đã triển khai SCRUM-69**, xem HTTP contract phía trên. |
 | `MSG117` | UC-37 Join Meeting Room · Đã triển khai SCRUM-39 | *The online meeting room is not available.* |
 | `MSG118` | UC-37 · Đã triển khai SCRUM-39 | *Unable to join the meeting room. Please try again.* |
 | `MSG119` | UC-39a Manage Microphone | *Microphone access is unavailable. Check your browser or device permissions.* |

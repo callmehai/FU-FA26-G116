@@ -6,6 +6,8 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 
 Đã có:
 
+- [SCRUM-69 — bàn giao Start/End](10-scrum69-ban-giao.md), [báo cáo kiểm thử](10-scrum69-kiem-thu.md), [Postman](postman/SCRUM-69-Meeting-Lifecycle.postman_collection.json).
+
 - [`08-chuong-trinh-nghi-su.md`](08-chuong-trinh-nghi-su.md) — contract Backend SCRUM-25, UC-23a–d/24/25/26; [bàn giao FE và kiểm thử](08-chuong-trinh-nghi-su-ban-giao.md).
 - [`08-agenda-contract-tich-hop-guest-uc04.md`](08-agenda-contract-tich-hop-guest-uc04.md) — adapter identity/session, quyền đọc Agenda và hub Guest; phần UC-04 cần triển khai để tích hợp.
 

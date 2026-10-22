@@ -238,3 +238,7 @@ Chạy câu `DELETE` riêng **sau** các request Postman, không chạy cùng c�
 
 Test tự động tạo fixture notification trực tiếp trong database in-memory; không mở endpoint gửi
 thông báo tùy ý để phục vụ test.
+
+## Nguồn MeetingStarted — SCRUM-69
+
+Sau commit Start, NotificationService tạo batch MeetingStarted cho active current internal participants (gồm Chair actor, không loại Declined), distinct UserId; loại Guest/Removed/Delegated/inactive. Title `Cuộc họp đã bắt đầu`, body `Cuộc họp “{meetingTitle}” đã bắt đầu.`, target Meeting, OriginHistoryId của Start, deduplication key `meeting-started:{historyId:D}:{userId:D}`; timestamp bằng mốc Start. Worker hiện có push dòng đã lưu. Việc tạo batch là best effort, lỗi không rollback Start và không có replay bền vững mới; không gửi email. FE cần thêm nhãn MeetingStarted. [Bàn giao](10-scrum69-ban-giao.md).
