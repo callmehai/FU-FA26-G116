@@ -170,8 +170,8 @@ FE cũng gọi `reloadSession()`, phòng trường hợp sự kiện đã phát 
 Hệ quả FE phải lường:
 
 1. **Nếu quản trị viên sửa chính vai trò của mình** → họ cũng nhận sự kiện, phiên giữ nguyên.
-   `RolesPage` vẫn tự gọi `reloadSession()` sau khi lưu; gọi hai lần không sao vì refresh là
-   single-flight.
+   `RolesPage` tự gọi `reloadSession()` ngay sau khi lưu, không chờ sự kiện, và không còn banner
+   "hãy đăng nhập lại". Gọi hai lần không sao vì refresh là single-flight.
 2. **Nếu họ gỡ `AdminUsers` khỏi chính vai trò mình đang mang** → request **kế tiếp** tới
    `/api/roles/capabilities` hay `/api/users` sẽ nhận **`403` ngay lập tức**, không chờ token hết
    hạn. Đây **không phải bug** — backend đọc lại quyền từ database ở từng request.

@@ -49,7 +49,9 @@ public sealed class RolePermissionService(
         {
             try
             {
-                await capabilitiesChanged.PublishAsync(written.Notify, ct);
+                // Not the request's token: the change has committed, and an administrator closing
+                // the tab now must not cancel telling the people it affects.
+                await capabilitiesChanged.PublishAsync(written.Notify, CancellationToken.None);
             }
             catch (Exception exception)
             {
