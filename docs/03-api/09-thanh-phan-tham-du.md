@@ -86,6 +86,7 @@ Ví dụ bàn giao (gọi bằng token Chair ở Published/InProgress):
 Câu trả lời chỉ là xác nhận trước, giống AI-eCabinet (`migrations/0038_meeting_responses.sql`, `modules/meetings/internal/respond.go`, commit `8108e91f`):
 
 - **Trả lời một lần.** Gửi lại đúng câu đã ghi: 200/MSG154. Gửi câu khác: 409/MSG285, không ghi gì.
+- PUT thành công (MSG105) và gửi lại cùng câu trả lời (MSG154) đều trả `response.canRespond:false`, nhất quán với GET invitation-response/context, cho cả internal và Guest. No-op giữ nguyên respondedAt, không thêm audit/event hoặc tăng revision.
 - **Chủ tọa không trả lời** (Chủ tọa điều hành cuộc họp): 409/MSG286. Response của Chủ tọa giữ `Pending` và không hiển thị.
 - **Chưa trả lời coi như tham dự.** Không có bộ đếm Chờ/Chấp nhận/Từ chối.
 - **Không đổi quyền gì.** Từ chối vẫn xem được cuộc họp, tài liệu và vào phòng họp; tác dụng duy nhất là cuộc họp biến khỏi lịch của người đó (`GET /api/meetings?excludeDeclined=true`, xem [05-quan-ly-cuoc-hop.md](05-quan-ly-cuoc-hop.md)). Chủ tọa không bị ẩn kể cả còn câu từ chối từ trước khi nhận vai trò.

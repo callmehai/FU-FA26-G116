@@ -4,7 +4,7 @@ Ngày 22/10/2026, Asia/Saigon. Kết quả trong tài liệu là các lệnh th�
 
 ## 1. Baseline và phần thay đổi
 
-Thông tin Git và kết quả ở mục 1–5 ghi nhận phiên triển khai đầu. Bản sửa sau review độc lập và kết quả xác minh mới nằm ở mục 6.
+Thông tin Git và kết quả ở mục 1–5 ghi nhận phiên triển khai đầu. Các bản sửa sau review độc lập và kết quả xác minh mới nằm ở mục 6–7.
 
 Branch: `refactor/SCRUM-97-BACKNEND-Synchronize-attendees-according-to-PO-relate-to-SCRUM-20`.
 HEAD ban đầu `adca53ba29c0b4c670cd01984b675d17018c8f4c`, working tree sạch. Đã fast-forward đúng yêu cầu owner tới `875dde2b09702af539bb49fda2c44c8396d0e235`. Không tạo commit mới. Mọi thay đổi SCRUM-97 vẫn nằm trong working tree, chưa stage/commit/push.
@@ -125,3 +125,22 @@ Kết quả thực chạy trên PostgreSQL17/Redis8 riêng:
 - `git diff --check`: pass.
 
 Artifacts nằm tại `C:\Users\PC\AppData\Local\Temp\scrum97-results\`. Phiên sửa này không chạy lại full suite, Newman hoặc FE build; số1227/full-suite và9 requests/Newman ở mục3 là kết quả trước bản sửa P2, không phải kết quả mới. Không đăng Jira hoặc triển khai môi trường chung.
+
+## 7. Sửa review sau merge — canRespond trong response PUT
+
+Đầu phiên sửa: branch SCRUM-97, HEAD `1ea340f028ffdd14fbc8979a4d5c9c5b5b88a294`, working tree sạch; main `f6db57f734a1147be58c6432c55ebd03b011627c`. Đây là trạng thái đã có trước phiên sửa, không thực hiện merge hoặc thay HEAD trong phiên này.
+
+Finding P2 hợp lệ: `Respond` hardcode canRespond=true ở bốn nhánh thành công/no-op cho internal/Guest, trong khi quy tắc trả lời một lần đã được áp dụng ở GET/context và validation. Lỗi được kế thừa từ baseline sau merge, không phải lỗi resolve merge.
+
+Sửa `ParticipantService.Respond`: tính `Permissions(s, actor).CanRespond` từ snapshot sau khi gán phản hồi, hoặc từ phản hồi đã có ở nhánh no-op. Dùng cùng quy tắc với GET/context; response PUT chỉ được trả thành công khi transaction lưu thành công. Sau Accepted/Declined, flag false cho cả internal và Guest. Giữ MSG105/154/285/286, không thay authorization, revision, transaction hoặc schema.
+
+Thêm `Answered_invitation_put_and_no_op_match_read_permissions` gồm bốn cases internal/Guest × Accepted/Declined. Kiểm trực tiếp response PUT MSG105, so sánh với GET invitation-response/context, retry cùng câu MSG154 giữ nguyên response/respondedAt, đổi câu vẫn409/MSG285; retry/reject không thêm audit/event và revision giữ nguyên.
+
+Kết quả thực chạy với PostgreSQL17/Redis8 kiểm thử riêng:
+
+- Trước sửa: cả bốn cases fail vì canRespond=true (`response-red.log`).
+- Sau sửa: Release build `--no-restore -warnaserror` pass, 0 warning/error (`response-build.log`).
+- Participants + MessageCodeCatalogueTests: **224 pass, 0 fail, 0 skip**, gồm cả handover và các regression đã có (`response-regression.log`, `scrum97-response-regression.trx`).
+- `git diff --check`: pass.
+
+Log/TRX tại `C:\Users\PC\AppData\Local\Temp\scrum97-results\`. Không chạy lại full suite/Newman/FE build trong phiên sửa flag này; số1.241 tests từ review sau merge là kết quả do reviewer cung cấp, không dùng làm bằng chứng của bản sửa hiện tại. API §4.1 đã ghi rõ flag của MSG105/MSG154. Không sửa source FE/entity/migration; chưa stage/commit/push, không đăng Jira hoặc deploy.

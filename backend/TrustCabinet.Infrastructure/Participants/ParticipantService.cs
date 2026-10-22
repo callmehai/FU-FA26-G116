@@ -991,7 +991,7 @@ public sealed partial class ParticipantService(
                         "Internal",
                         p.Response.ToString(),
                         p.RespondedAt,
-                        true
+                        Permissions(s, actor).CanRespond
                     ),
                     Success: ParticipantSuccess.NoChanges
                 );
@@ -1002,7 +1002,7 @@ public sealed partial class ParticipantService(
             p.RespondedAt = now;
             p.UpdatedAt = now;
             return new(
-                Data: new InvitationResponseView(p.Id, "Internal", value.ToString(), now, true),
+                Data: new InvitationResponseView(p.Id, "Internal", value.ToString(), now, Permissions(s, actor).CanRespond),
                 Success: ParticipantSuccess.Responded
             );
         }
@@ -1014,7 +1014,7 @@ public sealed partial class ParticipantService(
                     "Guest",
                     g.Response.ToString(),
                     g.RespondedAt,
-                    true
+                    Permissions(s, actor).CanRespond
                 ),
                 Success: ParticipantSuccess.NoChanges
             );
@@ -1024,7 +1024,7 @@ public sealed partial class ParticipantService(
         g.RespondedAt = now;
         g.UpdatedAt = now;
         return new(
-            Data: new InvitationResponseView(g.Id, "Guest", value.ToString(), now, true),
+            Data: new InvitationResponseView(g.Id, "Guest", value.ToString(), now, Permissions(s, actor).CanRespond),
             Success: ParticipantSuccess.Responded
         );
     }
