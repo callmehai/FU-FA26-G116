@@ -1,0 +1,95 @@
+title UC-35 - Comment on Meeting Document
+
+actor "Authorized User" as User
+boundary "Document Viewer" as DocumentViewer
+control ":Document Comment Controller" as CommentController
+control ":Document Comment Service" as CommentService
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Meeting Document Repository" as MeetingDocumentRepository
+participant ":Document Comment Repository" as CommentRepository
+database ":Database" as Database
+
+User->DocumentViewer: Send comment or reply
+activate DocumentViewer
+
+DocumentViewer->CommentController: Add comment (text, optional PDF page, optional parent comment)
+activate CommentController
+
+CommentController->CommentService: addComment(meetingId, meetingDocumentId, actor, body, pageNumber, parentCommentId)
+activate CommentService
+
+CommentService->CommentService: Check comment is not blank (BR-246)
+
+alt Comment is empty - EX-1
+    CommentService-->CommentController: MSG200 - Enter a comment.
+    CommentController-->DocumentViewer: MSG200 - Enter a comment.
+    DocumentViewer-->User: MSG200 - Enter a comment.
+
+else Comment has text
+    CommentService->MeetingAccessPolicy: Check actor can currently view the Meeting,\nincluding a valid Guest invitation (BR-181, BR-249, BR-275)
+    activate MeetingAccessPolicy
+    MeetingAccessPolicy->Database: Check current Meeting relationship or valid Guest invitation
+    activate Database
+    Database-->MeetingAccessPolicy: Access / No access
+    deactivate Database
+    MeetingAccessPolicy-->CommentService: Access / No access
+    deactivate MeetingAccessPolicy
+
+    CommentService->MeetingDocumentRepository: Get document still attached, with Meeting status
+    activate MeetingDocumentRepository
+    MeetingDocumentRepository->Database: Retrieve Meeting document not removed and its Meeting
+    activate Database
+    Database-->MeetingDocumentRepository: Meeting document and Meeting status / Not found
+    deactivate Database
+    MeetingDocumentRepository-->CommentService: Meeting document and Meeting status / Not found
+    deactivate MeetingDocumentRepository
+
+    alt Document is no longer available - EX-2
+        CommentService-->CommentController: MSG156 - Meeting documents are not accessible.
+        CommentController-->DocumentViewer: MSG156 - Meeting documents are not accessible.
+        DocumentViewer-->User: MSG156 - Meeting documents are not accessible.
+
+    else Meeting has ended - EX-5
+        CommentService-->CommentController: MSG251 - Comments are read-only after the Meeting has ended.
+        CommentController-->DocumentViewer: MSG251 - Comments are read-only after the Meeting has ended.
+        DocumentViewer-->User: MSG251 - Comments are read-only after the Meeting has ended.
+
+    else Commenting is permitted
+        opt Reply to a comment - AF-2
+            CommentService->CommentRepository: Resolve the top-level comment of the thread\nin the same Meeting document (BR-317)
+            activate CommentRepository
+            CommentRepository->Database: Retrieve parent comment
+            activate Database
+            Database-->CommentRepository: Top-level comment
+            deactivate Database
+            CommentRepository-->CommentService: Top-level comment
+            deactivate CommentRepository
+        end
+
+        CommentService->CommentService: Keep the page only for a PDF; a DOCX comment has no page (BR-248)
+
+        CommentService->CommentRepository: Save comment with author or Guest invitation,\npage, thread and posting time (BR-250)
+        activate CommentRepository
+        CommentRepository->Database: Insert comment
+        activate Database
+        Database-->CommentRepository: Comment saved / Save failed
+        deactivate Database
+        CommentRepository-->CommentService: Comment saved / Save failed
+        deactivate CommentRepository
+
+        alt Comment cannot be saved - EX-3
+            CommentService-->CommentController: MSG202 - Unable to add the comment. No comment was saved. Please try again.
+            CommentController-->DocumentViewer: MSG202 - Unable to add the comment. No comment was saved. Please try again.
+            DocumentViewer-->User: MSG202 - Unable to add the comment. No comment was saved. Please try again.
+
+        else Comment saved
+            CommentService-->CommentController: MSG199 - Comment added successfully.
+            CommentController-->DocumentViewer: MSG199 - Comment added successfully.
+            DocumentViewer-->User: MSG199 - Comment added successfully.
+        end
+    end
+end
+
+deactivate CommentService
+deactivate CommentController
+deactivate DocumentViewer
