@@ -163,7 +163,7 @@ bảo vệ.
 
 Đổi ma trận xong, backend gửi sự kiện **`capabilitiesChanged`** (không payload) trên
 `/hubs/notifications` tới mọi tài khoản đang hoạt động mang vai trò vừa sửa, ở cả hai chiều.
-`NotificationsProvider` nhận được thì gọi `reloadSession()`: đọc `/me`, thấy quyền khác token thì
+`NotificationsProvider` nhận được thì hiện toast `MSG287` và gọi `reloadSession()`: đọc `/me`, thấy quyền khác token thì
 `/refresh`, rồi sidebar và `RequireCapability` render lại theo quyền mới. Mỗi lần hub kết nối lại,
 FE cũng gọi `reloadSession()`, phòng trường hợp sự kiện đã phát lúc mất kết nối.
 

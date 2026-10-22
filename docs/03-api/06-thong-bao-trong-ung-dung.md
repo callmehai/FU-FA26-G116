@@ -134,10 +134,17 @@ khử trùng theo `id`. Khi user không online, lần `GET /api/notifications` s
 liệu đã lưu. FE khử trùng theo `id` và đọc lại số chưa đọc mỗi khi kết nối lại — xem
 [Hợp đồng tích hợp FE](#hợp-đồng-tích-hợp-fe).
 
-Cùng hub còn một sự kiện **`capabilitiesChanged`**, không có payload (SCRUM-105). Server gửi nó tới
-mọi tài khoản đang hoạt động thuộc một vai trò, ngay sau khi quản trị viên lưu thay đổi quyền của
-vai trò đó (`PUT /api/roles/capabilities`). FE nhận được thì gọi `reloadSession()`: đọc `/me`, thấy
-quyền khác token thì `/refresh` để lấy token mang quyền mới. Phiên giữ nguyên. Đây chỉ là tín hiệu:
+Cùng hub còn một sự kiện **`capabilitiesChanged`**, không có payload (SCRUM-105). Server gửi nó sau
+khi lưu, trong hai trường hợp:
+
+- quản trị viên đổi quyền của một vai trò (`PUT /api/roles/capabilities`): gửi tới mọi tài khoản đang
+  hoạt động thuộc vai trò đó;
+- quản trị viên đổi vai trò của một tài khoản (`PUT /api/users/{id}` với `roleId` mới): gửi tới đúng
+  tài khoản đó.
+
+FE nhận được thì hiện toast `MSG287` "Quyền truy cập của bạn vừa được cập nhật." và gọi
+`reloadSession()`: đọc `/me`, thấy quyền khác token thì `/refresh` để lấy token mang quyền mới, rồi
+menu, nút và route đổi theo ngay, không tải lại trang. Phiên giữ nguyên. Đây chỉ là tín hiệu:
 client bỏ qua nó cũng không có thêm quyền gì, vì server đọc lại quyền ở mỗi request — xem
 [03-ma-tran-phan-quyen.md](03-ma-tran-phan-quyen.md#thay-đổi-có-hiệu-lực-ngay-không-chờ-token-hết-hạn).
 

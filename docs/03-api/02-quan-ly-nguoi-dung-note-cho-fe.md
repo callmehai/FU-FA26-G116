@@ -123,7 +123,7 @@ nhân, và chúng khác nhau ở chỗ phiên còn sống hay không:
 | Nguyên nhân | Refresh token | Đăng nhập lại có vào được `/api/users` không? |
 |---|---|---|
 | Bị vô hiệu hoá | đã bị huỷ | Không — đăng nhập cũng bị chặn |
-| Bị đổi vai trò | đã bị huỷ | Tuỳ vai trò mới |
+| Bị đổi vai trò | **vẫn còn** (SCRUM-105) — FE nhận `capabilitiesChanged` và tự ẩn menu | Tuỳ vai trò mới |
 | `role_capabilities` bị cấu hình lại, `AdminUsers` chuyển sang role khác | **vẫn còn** | **Không** — đăng nhập vẫn được nhưng `/api/users` vẫn `403` |
 
 Dòng thứ ba là chỗ dễ làm FE rơi vào vòng lặp khó chịu: đá về trang đăng nhập → đăng nhập thành
@@ -131,8 +131,8 @@ công → vào lại màn hình → `403` → lại đá ra. Nên:
 
 - `403` trên `/api/users/*` → **đá về trang chủ / màn hình họ còn quyền**, kèm thông báo
   "Quyền truy cập đã thay đổi." Chỉ xoá phiên và bắt đăng nhập lại khi `/api/auth/me` cũng hỏng.
-- **Đừng** retry. **Đừng** gọi `/api/auth/refresh` để cứu — refresh không cấp thêm quyền, và ở hai
-  nguyên nhân đầu thì refresh token cũng đã bị huỷ rồi.
+- **Đừng** retry. **Đừng** gọi `/api/auth/refresh` để cứu — refresh không cấp thêm quyền, và khi bị vô
+  hiệu hoá thì refresh token cũng đã bị huỷ rồi.
 - Sau khi đăng nhập lại, lọc menu bằng `can()` trên `capabilities` mới — nếu không còn `AdminUsers`
   thì đừng hiện mục quản lý người dùng nữa.
 
