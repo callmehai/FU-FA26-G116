@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { resetPassword } from '../../api/auth'
 import { BrandMark } from '../../components/BrandMark'
 import { Icon } from '../../components/Icon'
+import { RevealToggle } from '../../components/RevealToggle'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { routes } from '../../lib/routes'
@@ -251,22 +252,5 @@ export function ResetPasswordPage() {
         )}
       </div>
     </div>
-  )
-}
-
-/** The show/hide button inside a password box (`.input-reveal`). */
-function RevealToggle({ shown, onToggle }: { shown: boolean; onToggle: () => void }) {
-  const label = shown ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'
-  return (
-    <button
-      type="button"
-      className="icon-button"
-      onClick={onToggle}
-      data-tooltip={label}
-      aria-label={label}
-      aria-pressed={shown}
-    >
-      <Icon name={shown ? 'eyeOff' : 'eye'} size={16} />
-    </button>
   )
 }
