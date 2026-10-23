@@ -375,9 +375,8 @@ export function UsersPage() {
                         {[u.hasPassword && 'Mật khẩu', u.hasGoogleLink && 'Google'].filter(Boolean).join(', ')}
                       </td>
                       <td>
-                        <span className={u.isActive ? 'status status-emerald' : 'status status-ended'}>
-                          {u.isActive ? 'Hoạt động' : 'Đã vô hiệu hoá'}
-                        </span>
+                        {/* The normal case is plain text; only the exception stands out. */}
+                        {u.isActive ? 'Hoạt động' : <span className="user-disabled">Đã vô hiệu hoá</span>}
                       </td>
                       <td className="cell-muted">{formatDate(u.createdAt)}</td>
                       <td className="col-action">

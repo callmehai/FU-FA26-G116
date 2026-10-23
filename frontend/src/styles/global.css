@@ -940,7 +940,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .summary-card:hover { border-color: var(--brand-wash-line); }
 .summary-label { color: var(--muted-ink); font-size: 13px; }
 .summary-count { font-size: 24px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.summary-card .summary-count-missing { color: var(--faint-ink); }
+.summary-card .summary-count-missing { color: var(--label-ink); }
 .summary-count-skeleton { width: 40px; height: 24px; margin: 2px 0 3px; }
 .summary-card-selected,
 .summary-card-selected:hover { border-color: var(--brand); background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--brand); }
@@ -1049,6 +1049,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .data-table th.col-action { text-align: right; }
 
 .row-inactive td { color: var(--muted-ink); }
+.user-disabled { color: var(--ink); font-weight: 600; }
 /* A row that opens its record. The title stays a real link for keyboard and middle-click. */
 .row-link { cursor: pointer; }
 .row-link .cell-title a:hover { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
@@ -1255,7 +1256,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* The description sits under a rule, apart from the short facts above it. */
 .field-grid .field-divided { padding-top: 18px; border-top: 1px solid var(--line-soft); }
 /* An unset value reads as absent, not as data: muted and italic, never an em dash that looks typed. */
-.value-empty { color: var(--faint-ink); font-style: italic; font-weight: 400; }
+/* Absent values stay readable (4.5:1, WCAG): italic marks them, not a faint grey. */
+.value-empty { color: var(--label-ink); font-style: italic; font-weight: 400; }
 /* Free text keeps the author's line breaks. */
 .value-text { max-width: 760px; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 
@@ -1754,7 +1756,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .cal-event-red { border-color: var(--edge-red); background: var(--chip-red-bg); color: #6e1418; }
 .cal-event-red .cal-event-title { text-decoration: line-through; }
 .cal-event-violet { border-color: #c9b8f0; background: var(--chip-violet-bg); color: #3e2577; }
-.calendar-free { position: absolute; right: 8px; left: 8px; color: var(--faint-ink); font-size: 13px; text-align: center; }
+.calendar-free { position: absolute; right: 8px; left: 8px; color: var(--label-ink); font-size: 13px; text-align: center; }
 
 .calendar-legend { display: flex; flex: none; flex-wrap: wrap; gap: 14px; padding: 8px 12px; border-top: 1px solid var(--line-soft); background: #fbfcfd; color: var(--muted-ink); font-size: 12px; }
 .calendar-legend span { display: flex; align-items: center; gap: 5px; }
