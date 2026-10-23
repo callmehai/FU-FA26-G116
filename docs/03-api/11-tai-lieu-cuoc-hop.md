@@ -95,8 +95,10 @@ Khoá là `files[i]` theo thứ tự part tệp; key `files` dùng cho lỗi c�
 
 - Gửi `FormData`: với mỗi tệp `append('files', file)` rồi `append('pageCounts', n ?? '')`. Không đặt
   header `Content-Type` tay — trình duyệt tự thêm boundary.
-- Chặn sớm trong hộp thoại (10 tệp, 200 MB, 50 MB, đuôi `.pdf`/`.docx`), nhưng vẫn xử lý `MSG164`/`MSG288`
-  từ server: server kiểm theo nội dung, FE chỉ thấy đuôi.
+- **Bắt buộc** kiểm giới hạn ở FE trước khi gửi: ≤ 50 MB mỗi tệp, ≤ 10 tệp, ≤ 200 MB tổng, đuôi
+  `.pdf`/`.docx`. Body quá lớn bị server từ chối ngay khi trình duyệt còn đang gửi, nên trình duyệt thường chỉ
+  thấy lỗi mạng, không đọc được `MSG288`. Vẫn xử lý `MSG164`/`MSG288` từ server: server kiểm theo nội dung, FE
+  chỉ thấy đuôi.
 - Đọc `errors["files[i]"]` để đánh dấu đúng tệp trong danh sách đã chọn.
 - `MSG162`/`MSG172`/`MSG174` có thể đến **sau** khi người dùng đã bấm tải (mất vai trò, cuộc họp vừa kết
   thúc): đóng hộp thoại và tải lại cuộc họp.
