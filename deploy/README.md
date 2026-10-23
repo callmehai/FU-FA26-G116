@@ -243,17 +243,19 @@ Tải tài liệu lên cuộc họp lưu byte trên R2 ([ADR-0024](../docs/05-de
 Chưa cấu hình thì app vẫn chạy, nút tải lên báo `MSG166`.
 
 1. Cloudflare Dashboard → **R2 Object Storage** → bật R2 (cần thêm phương thức thanh toán, gói miễn phí vẫn đủ
-   cho server test) → **Create bucket** `trustcabinet-test`, Location: **Provide a location hint → Asia-Pacific (APAC)** (server test ở
-   Singapore; vị trí không đổi được sau khi tạo). **Không** bật Public access hay
-   custom domain.
+   cho server test) → **Create bucket** `trustcabinet-docs`, Location: **Provide a location hint → Asia-Pacific
+   (APAC)** (server test ở Singapore). Vị trí không đổi được sau khi tạo, và R2 **chỉ nhận hint ở lần đầu một tên
+   bucket được tạo**: xoá rồi tạo lại cùng tên thì vẫn ra vị trí cũ, nên muốn đổi vị trí phải dùng tên mới
+   (`trustcabinet-test` đã bị khoá ở ENAM). Xem **Settings → Location** để chắc chắn là APAC. **Không** bật Public
+   access hay custom domain.
 2. **R2 → Manage API tokens → Create API token**: quyền *Object Read & Write*, áp dụng cho **chỉ** bucket
-   `trustcabinet-test`. Lưu lại Access Key ID, Secret Access Key và endpoint
+   `trustcabinet-docs`. Lưu lại Access Key ID, Secret Access Key và endpoint
    `https://<account-id>.r2.cloudflarestorage.com` (secret chỉ hiện một lần).
 3. Trên server, thêm vào `deploy/.env` rồi `docker compose -f deploy/docker-compose.yml up -d`:
 
    ```bash
    R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
-   R2_BUCKET=trustcabinet-test
+   R2_BUCKET=trustcabinet-docs
    R2_ACCESS_KEY_ID=...
    R2_SECRET_ACCESS_KEY=...
    ```
