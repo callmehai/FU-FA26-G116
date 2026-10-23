@@ -32,6 +32,7 @@ public sealed class EmailMigrationPostgresTests : IAsyncLifetime
                 .UseSnakeCaseNamingConvention()
                 .Options);
 
+        await _database.CreateFromTemplateAsync(TestSchema.MigratedTo(BeforeReliableEmailDelivery));
         await MigrateToAsync(BeforeReliableEmailDelivery);
     }
 

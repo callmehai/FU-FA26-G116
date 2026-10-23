@@ -6,6 +6,7 @@ namespace TrustCabinet.Web.Tests;
 internal sealed class PostgreSqlTestDatabase : IAsyncDisposable
 {
     private readonly string _databaseName;
+    private readonly string _connectionString;
     private readonly string _adminConnectionString;
 
     public NpgsqlDataSource DataSource { get; }
@@ -15,12 +16,20 @@ internal sealed class PostgreSqlTestDatabase : IAsyncDisposable
         var settings = new NpgsqlConnectionStringBuilder(templateConnectionString);
         _databaseName = $"{settings.Database}_{Guid.CreateVersion7():N}";
         settings.Database = _databaseName;
-        DataSource = NpgsqlDataSource.Create(settings.ConnectionString);
+        _connectionString = settings.ConnectionString;
+        DataSource = NpgsqlDataSource.Create(_connectionString);
 
         settings.Database = "postgres";
         settings.Pooling = false;
         _adminConnectionString = settings.ConnectionString;
     }
+
+    /// <summary>
+    /// Creates this database as a copy of a schema built once per run, instead of building the
+    /// schema again here. Call it before the first connection; see <see cref="PostgreSqlSchemaTemplates"/>.
+    /// </summary>
+    public Task CreateFromTemplateAsync(TestSchema schema)
+        => PostgreSqlSchemaTemplates.CreateDatabaseAsync(_connectionString, schema);
 
     public async ValueTask DisposeAsync()
     {

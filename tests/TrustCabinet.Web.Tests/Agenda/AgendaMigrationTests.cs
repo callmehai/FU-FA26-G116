@@ -23,6 +23,7 @@ public sealed class AgendaMigrationTests
             .UseSnakeCaseNamingConvention().Options);
         var migrations = db.Database.GetMigrations().ToArray();
         var previous = migrations[Array.FindIndex(migrations, m => m.EndsWith("AgendaExecutionInvariants", StringComparison.Ordinal)) - 1];
+        await database.CreateFromTemplateAsync(TestSchema.MigratedTo(previous));
         await db.GetService<IMigrator>().MigrateAsync(previous);
         var user = new User { FullName = "Migration", Email = "migration@agenda.test", PasswordHash = "test-only" };
         var meeting = new Meeting

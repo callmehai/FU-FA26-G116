@@ -31,6 +31,7 @@ public class AdministratorInvariantGuardTests : IAsyncLifetime
 
         try
         {
+            await _database.CreateFromTemplateAsync(TestSchema.EnsureCreated);
             await _db.Database.EnsureCreatedAsync();
         }
         catch (Npgsql.NpgsqlException e)
