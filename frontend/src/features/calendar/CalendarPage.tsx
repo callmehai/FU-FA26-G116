@@ -670,7 +670,7 @@ function AgendaItem({ entry, onAnswered }: { entry: ScheduleEntry; onAnswered: (
           </p>
           <p className="agenda-chips">
             <StatusBadge status={meeting.status} />
-            <SensitivityBadge sensitivity={meeting.sensitivity} />
+            {meeting.sensitivity !== 'Normal' && <SensitivityBadge sensitivity={meeting.sensitivity} />}
             <RsvpChip response={meeting.myResponse} />
           </p>
           {meeting.canRespond && (

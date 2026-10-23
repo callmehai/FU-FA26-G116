@@ -1141,10 +1141,11 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .chip-row { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 
 /* ---------- Chips ----------
-   Three kinds, told apart by shape as well as colour:
+   Three kinds, told apart by shape as well as colour (ADR-0028):
    - .badge: a plain soft label (a role, a count);
-   - .status: a meeting's lifecycle state — rounded, with a dot; "Đang diễn ra" is the one solid;
-   - .level: a sensitivity level — square corners and its own icon. */
+   - .status: a meeting's lifecycle state — a coloured icon and text with no chip, like a status
+     indicator in Cloudscape or Carbon; "Đang diễn ra" is the one solid label;
+   - .level: a sensitivity level — square corners and its own icon; "Thường" is plain text. */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -1172,25 +1173,23 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   align-items: center;
   gap: 6px;
   height: 24px;
-  padding: 0 10px 0 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
+  color: var(--ink);
+  font-weight: 500;
   white-space: nowrap;
 }
-.status::before { content: ''; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--status-dot); }
-.status-slate { --status-dot: var(--dot-slate); background: var(--chip-slate-bg); color: var(--chip-slate-fg); box-shadow: inset 0 0 0 1px var(--line); }
-.status-ended { --status-dot: var(--dot-slate); background: var(--chip-slate-bg); color: var(--label-ink); }
-.status-amber { --status-dot: var(--dot-amber); background: var(--chip-amber-bg); color: var(--chip-amber-fg); }
-.status-red { --status-dot: var(--dot-red); background: var(--chip-red-bg); color: var(--chip-red-fg); }
-.status-emerald { --status-dot: var(--dot-emerald); background: var(--chip-emerald-bg); color: var(--chip-emerald-fg); }
-.status-blue { --status-dot: var(--dot-blue); background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
-.status-violet { --status-dot: var(--dot-violet); background: var(--chip-violet-bg); color: var(--chip-violet-fg); }
-.status-live { --status-dot: var(--live-dot); background: var(--live); color: #fff; }
-.status-plain::before { display: none; }
-/* A history row's event ("Gửi duyệt") is a label, not the meeting's state: square like every other
-   chip. Only the live state chip keeps its rounded ends, to differ from the sensitivity .level. */
-.status-plain { padding: 0 10px; border-radius: var(--radius); }
+/* The icon carries the tone; the text stays ink so every state reads at full contrast. */
+.status > svg { flex: none; color: var(--status-icon); }
+.status-slate { --status-icon: var(--chip-slate-fg); }
+.status-ended { --status-icon: var(--label-ink); color: var(--label-ink); }
+.status-amber { --status-icon: var(--chip-amber-fg); }
+.status-red { --status-icon: var(--chip-red-fg); }
+.status-emerald { --status-icon: var(--chip-emerald-fg); }
+.status-blue { --status-icon: var(--chip-blue-fg); }
+.status-violet { --status-icon: var(--chip-violet-fg); }
+.status-live { --status-icon: #fff; padding: 0 8px; border-radius: var(--radius); background: var(--live); color: #fff; font-size: 12px; font-weight: 600; }
+/* A history row's event ("Gửi duyệt") is a label, not the meeting's state: the text alone, even
+   when it led to the live state. */
+.status-plain, .status-plain.status-live { padding: 0; background: none; color: var(--ink); font-size: inherit; font-weight: 600; }
 
 .level {
   display: inline-flex;
@@ -1207,6 +1206,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .level-internal { background: var(--brand-wash); color: var(--chip-indigo-fg); box-shadow: inset 0 0 0 1px var(--brand-wash-line); }
 .level-confidential { background: var(--chip-amber-bg); color: var(--chip-amber-fg); box-shadow: inset 0 0 0 1px #ecc98a; }
 .level-secret { background: var(--chip-red-bg); color: var(--chip-red-fg); box-shadow: inset 0 0 0 1px var(--edge-red); font-weight: 700; }
+.level-plain { padding: 0; color: inherit; font-size: inherit; font-weight: 400; }
 
 /* ---------- Tabs ---------- */
 .tabs { display: flex; flex: none; gap: 4px; margin-bottom: 16px; overflow-x: auto; border-bottom: 1px solid var(--line); }

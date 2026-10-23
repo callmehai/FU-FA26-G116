@@ -95,8 +95,7 @@ display, terracotta accent — is the *next* wave of slop (Anthropic, taste, uns
 |---|---|---|
 | T1 gradient | sidebar `#3f63b3 → #304f97`; room header and login band follow it | ADR-0012 |
 | T5 caps | table column headings "viết hoa 12px" | ADR-0012 |
-| T10 icon soup | sensitivity chips: 4px, one icon per level | ADR-0012 |
-| T7 pill + dot | meeting status chip: rounded, with a dot, "Đang diễn ra" solid | ADR-0012, AGENTS.md (status and sensitivity differ by shape) |
+| T10 icon soup | sensitivity chips: 4px, one icon per level; "Thường" is plain text (ADR-0028) | ADR-0012 |
 | T20 dev text | placeholder screens say which endpoint they wait for | ADR-0012 |
 | T7 pills | call room pre-join and controls follow Google Meet | room design (SCRUM-39..44) |
 

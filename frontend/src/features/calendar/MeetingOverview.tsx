@@ -163,7 +163,8 @@ export function MeetingOverview({
         </h2>
         <div className="chip-row">
           <StatusBadge status={item.status} />
-          <SensitivityBadge sensitivity={item.sensitivity} />
+          {/* "Thường" is the usual case: like the call room, only a restricted level is labelled. */}
+          {item.sensitivity !== 'Normal' && <SensitivityBadge sensitivity={item.sensitivity} />}
           <RsvpChip response={meeting?.myResponse ?? item.myResponse} />
         </div>
       </header>

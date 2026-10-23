@@ -22,7 +22,7 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0009](0009-tu-lien-ket-google-lan-dau-theo-email.md) | Tự liên kết tài khoản Google ở lần đăng nhập đầu, theo email đã xác minh | Đề xuất |
 | [0010](0010-phong-hop-truc-tuyen-dung-livekit-sfu.md) | Phòng họp trực tuyến dùng LiveKit (SFU) tự host | Đã chấp nhận — phần Meeting Session thay thế bởi ADR-0013; quyền Guest thay thế bởi ADR-0016 |
 | [0011](0011-tinh-nang-hop-la-panel-dung-chung.md) | Tính năng dùng trong lúc họp là panel dùng chung cho màn chi tiết và phòng họp | Đã chấp nhận — phần Meeting Session thay thế bởi ADR-0013 |
-| [0012](0012-giao-dien-hanh-chinh-sidebar-doc.md) | Giao diện phong cách hành chính, một sidebar dọc | Đề xuất |
+| [0012](0012-giao-dien-hanh-chinh-sidebar-doc.md) | Giao diện phong cách hành chính, một sidebar dọc | Đề xuất — phần hình nhãn trạng thái và mức độ thay thế bởi ADR-0028 |
 | [0013](0013-mot-cuoc-hop-la-mot-buoi-hop.md) | Một cuộc họp là một buổi họp — bỏ Meeting Session | Đã chấp nhận |
 | [0014](0014-bieu-quyet-chi-trong-cuoc-hop.md) | Biểu quyết chỉ diễn ra trong cuộc họp, Chủ toạ ghi kết luận | Đã chấp nhận — phần loại Guest thay thế bởi ADR-0016, gate End Meeting thay thế bởi ADR-0017, chuẩn bị Vote nháp thay thế bởi ADR-0019 |
 | [0015](0015-server-test-tren-lightsail.md) | Server test chung chạy Docker Compose trên một máy Lightsail, ở chế độ Development, tự deploy từ `main` | Đề xuất |
@@ -36,3 +36,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0023](0023-doi-vai-tro-nguoi-dung-khong-dang-xuat.md) | Đổi vai trò của một người dùng cũng không đăng xuất — báo và áp dụng quyền mới ngay | Đề xuất — SCRUM-105, PO 22/10/2026 |
 | [0024](0024-luu-file-tai-lieu-tren-cloudflare-r2.md) | Lưu file tài liệu trên Cloudflare R2, mọi byte đi qua backend | Đề xuất — SCRUM-107 |
 | [0025](0025-version-rieng-cho-diem-danh.md) | Version riêng cho điểm danh; không dùng xmin toàn dòng | Đã chấp nhận trong phạm vi SCRUM-26, chờ team review branch |
+| [0028](0028-trang-thai-la-icon-va-chu.md) | Trạng thái cuộc họp là icon và chữ, mức "Thường" không gắn chip | Đề xuất |

@@ -200,7 +200,7 @@ function MeetingDetail({
           <div className="record-title">
             <h1>{meeting.title}</h1>
             <StatusBadge status={meeting.status} />
-            <SensitivityBadge sensitivity={meeting.sensitivity} />
+            {meeting.sensitivity !== 'Normal' && <SensitivityBadge sensitivity={meeting.sensitivity} />}
             <RsvpChip response={meeting.myResponse} />
           </div>
           <p className="record-facts">
