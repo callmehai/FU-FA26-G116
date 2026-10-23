@@ -27,7 +27,9 @@ Case moves from Jira to Done, what each role hands over, and what Done means. Ji
 **Frontend work** follows the project-specific skills in [.claude/skills/](.claude/skills/):
 [frontend-ui-design](.claude/skills/frontend-ui-design/SKILL.md) for how a screen is designed and
 built, [verify-ui-in-browser](.claude/skills/verify-ui-in-browser/SKILL.md) for running the app
-and checking the change in a real browser before the PR, and
+and checking the change in a real browser before the PR,
+[check-responsive](.claude/skills/check-responsive/SKILL.md) for checking every change on a phone
+(390px, touch) as well as at 1200px and 1440px, and
 [minimize-text](.claude/skills/minimize-text/SKILL.md) for keeping each screen to the words people
 scan for, with the rest in tooltips. Claude Code loads them as skills; any other
 agent reads the files directly. The third-party [evondev ui-ux skill](.agents/skills/ui-ux/SKILL.md)

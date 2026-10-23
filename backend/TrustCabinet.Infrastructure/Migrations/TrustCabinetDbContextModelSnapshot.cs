@@ -705,6 +705,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("attendance_recorded_by_id");
 
+                    b.Property<long>("AttendanceVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L)
+                        .HasColumnName("attendance_version");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -1059,6 +1065,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Property<Guid?>("AttendanceRecordedById")
                         .HasColumnType("uuid")
                         .HasColumnName("attendance_recorded_by_id");
+
+                    b.Property<long>("AttendanceVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L)
+                        .HasColumnName("attendance_version");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")

@@ -1,5 +1,7 @@
 # Cơ sở dữ liệu — cài đặt và migration
 
+**Migration SCRUM-26:** `AddAttendanceVersions` thêm đúng hai cột `attendance_version bigint NOT NULL DEFAULT 0` trên `meeting_participants` và `meeting_guest_invitations`, giữ nguyên dữ liệu nghiệp vụ. Tách khỏi migration SCRUM-20; không chỉnh migration cũ. Down chỉ dùng cho database test dùng một lần vì xóa lịch sử version. Không tự áp dụng lên server chung. [Contract](../03-api/10-diem-danh.md#5-database-và-vận-hành).
+
 **Migration SCRUM-20:** `20261014114845_MeetingParticipantLifecycleAndGuestInvitations` có preflight dừng khi legacy Guest/delegation hoặc nhiều Chair; không tự xóa/mapping dữ liệu. Downgrade bị chặn nếu đã phát sinh Guest/grants/dispatch/removed history. Chuẩn bị backup và forward fix/mapping được review trước khi áp dụng lên database dùng chung; chi tiết [API §6](../03-api/09-thanh-phan-tham-du.md#6-migration). Test migration chạy trên database PostgreSQL riêng, không sửa schema thủ công của dự án.
 
 PostgreSQL + EF Core 10 (Npgsql), **code-first**: mô hình nằm trong code C#, schema sinh ra từ

@@ -37,6 +37,8 @@ public static class ParticipantRules
     public static bool CanRespond(MeetingStatus status, MeetingParticipant p) => Active(p) && CanRespond(status, p.Role, p.Response);
     public static bool CanRespond(MeetingStatus status, MeetingRole role, InvitationResponse response) => Respondable(status)
         && role != MeetingRole.Chair && response == InvitationResponse.Pending;
+    public static bool IsSecretary(Meeting meeting, Guid actor) => meeting.Participants.Any(p =>
+        p.UserId == actor && Active(p) && p.Role == MeetingRole.Secretary);
     public static bool IsManager(Meeting meeting, Guid actor) => meeting.Participants.Any(p =>
         p.UserId == actor && Active(p) && p.Role is MeetingRole.Chair or MeetingRole.Secretary);
     public static bool CanReplaceChair(Meeting meeting, Guid actor)

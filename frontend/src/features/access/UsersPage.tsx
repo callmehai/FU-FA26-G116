@@ -168,8 +168,9 @@ export function UsersPage() {
     } else {
       patch(response.user)
       // Editing yourself: re-read name, email and capabilities from /api/auth/me so the shell and
-      // the sidebar match what the backend now enforces. A new role or email has revoked this
-      // session on the backend; the reload notices and ends it here too, rather than minutes later.
+      // the sidebar match what the backend now enforces. A new role keeps the session and the
+      // reload picks up its capabilities; a new email has revoked the session on the backend, and
+      // the reload notices and ends it here too, rather than minutes later.
       if (response.user.id === me?.id) void reloadSession()
     }
   }

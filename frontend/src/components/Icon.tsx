@@ -57,6 +57,7 @@ import {
   SquareCheck,
   Trash2,
   Upload,
+  UserCheck,
   UserPlus,
   UserRound,
   Users,
@@ -115,6 +116,7 @@ const ICONS = {
   video: Video,
   user: UserRound,
   userPlus: UserPlus,
+  userCheck: UserCheck,
   // Sidebar sections.
   meeting: Presentation,
   folder: Folder,

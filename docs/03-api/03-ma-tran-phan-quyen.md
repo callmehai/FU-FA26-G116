@@ -194,20 +194,27 @@ vẫn cầm token mang bộ quyền cũ cho tới khi token hết hạn (tối �
 `Authentication:AccessTokenMinutes`, mặc định 15 phút).
 
 Ticket yêu cầu *"có hiệu lực ngay với phiên đang đăng nhập, hoặc nói rõ là phải đăng nhập lại"*.
-Code làm **cả hai**:
+Code làm cho thay đổi **có hiệu lực ngay, không đăng xuất ai** (SCRUM-105):
 
-1. **Huỷ refresh token của mọi tài khoản đang giữ vai trò đó.** Phiên kết thúc ở lần refresh kế
-   tiếp thay vì chờ hết hạn tự nhiên. Giống hệt cách UC-06b xử lý khi đổi vai trò của một người.
-   - Huỷ ở **cả hai chiều** — thêm quyền cũng huỷ, không riêng gỡ quyền. Người vừa được cấp thêm
-     quyền đang cầm token **không** chứa quyền đó, nên quyền mới cũng chưa dùng được.
-   - Tài khoản đã bị vô hiệu hoá thì bỏ qua: họ không có phiên nào dùng được để mà kết thúc.
-   - **Chạy sau khi transaction commit, không nằm trong đó.** Mỗi tài khoản là một round trip sang
-     Redis; làm bên trong thì khoá bị giữ suốt cả vòng lặp, và Redis chết sẽ rollback luôn thay đổi
-     đã hợp lệ. Thu hồi lỗi thì ghi log rồi đi tiếp — cấu hình đã lưu đúng, báo lỗi chỉ khiến quản
-     trị viên làm lại việc đã xong. Cái mất là phiên kết thúc muộn hơn, tối đa đúng bằng vòng đời
-     access token, tức cửa sổ mà mục kế tiếp đã bịt.
-2. **Các endpoint quản trị đọc lại quyền từ database ở từng request**, nên đường nguy hiểm nhất
-   đóng ngay lập tức — xem mục kế tiếp.
+1. **Server đọc lại quyền từ database ở từng request** (`CapabilityGate`, xem mục kế tiếp). Quyền
+   vừa bị gỡ bị từ chối (`403`) ngay ở request kế tiếp, kể cả khi người đó còn cầm access token
+   cũ. `/api/auth/refresh` cũng đọc lại quyền, nên token mới luôn mang đúng bộ quyền hiện tại.
+2. **Báo cho mọi tài khoản đang hoạt động thuộc vai trò đó** qua sự kiện `capabilitiesChanged`
+   trên `/hubs/notifications` ([06-thong-bao-trong-ung-dung.md](06-thong-bao-trong-ung-dung.md)).
+   Trình duyệt nhận được thì refresh token ngay, nên menu và route đổi theo quyền mới mà không cần
+   đăng nhập lại.
+   - Báo ở **cả hai chiều**. Người vừa được thêm quyền đang cầm token **không** chứa quyền đó, nên
+     chưa dùng được cho tới khi refresh. Người vừa bị gỡ quyền thì cần menu bỏ mục đó đi.
+   - **Gửi sau khi transaction commit, không nằm trong đó.** Báo trước khi commit thì trình duyệt
+     có thể refresh, đọc phải ma trận cũ, rồi không còn sự kiện nào để chờ nữa. Gửi lỗi thì ghi log
+     rồi bỏ qua: cấu hình đã lưu đúng, và server vẫn chặn đúng. Cái mất chỉ là trình duyệt nhận quyền
+     mới muộn hơn: lúc tab được mở lại, lúc gặp `403`, hoặc lúc token sắp hết hạn.
+
+**Trước SCRUM-105**, backend huỷ refresh token của mọi tài khoản thuộc vai trò, nên ai đang đăng
+nhập cũng bị đăng xuất khi quay lại tab. Việc huỷ đó không thêm lớp bảo vệ nào: huỷ refresh token
+không làm access token đang dùng mất hiệu lực, còn quyền bị gỡ thì bước 1 đã chặn. Đổi vai trò hoặc
+email của **một người** (UC-06b), vô hiệu hoá tài khoản và đặt lại mật khẩu thì **vẫn** huỷ phiên
+như cũ.
 
 ### Vì sao phải đọc lại quyền ở từng request
 
@@ -254,8 +261,8 @@ Mỗi lần đổi thành công ghi một dòng vào `audit_log`:
 Có đủ **giá trị trước và sau**, theo đúng tiêu chí nghiệm thu.
 
 **Request không đổi gì thì không ghi gì.** Gửi lên đúng bộ quyền vai trò đang có sẽ trả `MSG16`
-(hệ thống đang ở đúng trạng thái được yêu cầu) nhưng không ghi audit log và không kết thúc phiên
-của ai — không có thay đổi nào để mà ghi.
+(hệ thống đang ở đúng trạng thái được yêu cầu) nhưng không ghi audit log và không gửi
+`capabilitiesChanged` cho ai — không có thay đổi nào để mà ghi.
 
 ---
 
@@ -350,10 +357,10 @@ Bản vẽ vẽ `Role` là `<<entity>>` với `roleId: UUID`, `roleName`, `descr
 ### 4. UC-11 có thêm nhánh "không đổi gì"
 
 Bản vẽ UC-11 chỉ có hai nhánh: hợp lệ và không hợp lệ. Code có thêm một đường: request trùng khớp
-trạng thái hiện tại thì trả `MSG16` nhưng **không ghi audit log và không huỷ phiên của ai**.
+trạng thái hiện tại thì trả `MSG16` nhưng **không ghi audit log và không báo cho ai**.
 
 Không phải tối ưu vặt: ghi một dòng audit "đã đổi quyền" cho một lần không đổi gì sẽ làm bẩn đúng
-thứ bằng chứng mà `SCRUM-16` cần chính xác, và sẽ đá văng phiên của cả một nhóm người mà không vì
+thứ bằng chứng mà `SCRUM-16` cần chính xác, và sẽ bắt cả một nhóm người refresh token mà không vì
 lý do gì.
 
 ### 5. `getPermissionCatalog()` gộp vào `GET /api/roles/capabilities`

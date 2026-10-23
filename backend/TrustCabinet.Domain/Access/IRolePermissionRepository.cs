@@ -46,10 +46,10 @@ public interface IRolePermissionRepository
     Task SaveChangesAsync(CancellationToken ct = default);
 
     /// <summary>
-    /// The ids of every active account currently holding <paramref name="roleId"/> — whose sessions
-    /// have to end when the role's capabilities change.
+    /// The ids of every active account currently holding <paramref name="roleId"/> — who are told
+    /// to refresh their token when the role's capabilities change.
     ///
-    /// Ids rather than entities: the only thing done with them is revoking refresh tokens, and
+    /// Ids rather than entities: the only thing done with them is addressing a realtime push, and
     /// loading whole accounts to read one column each would be a query the screen never uses.
     /// </summary>
     Task<IReadOnlyCollection<Guid>> FindActiveUserIdsInRoleAsync(

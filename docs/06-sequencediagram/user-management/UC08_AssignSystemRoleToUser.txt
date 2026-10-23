@@ -82,6 +82,7 @@ else Selected role is available
         AuditLogRepository-->UserService: Audit record saved
         deactivate AuditLogRepository
 
+        UserService->UserService: Notify the user that their access changed so their sessions\napply the new role's permissions without signing in again (BR-314)
         UserService-->UserController: User role updated successfully
         deactivate UserService
         UserController-->UserPage: MSG10 - User account updated successfully

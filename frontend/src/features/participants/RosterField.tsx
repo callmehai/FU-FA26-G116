@@ -218,7 +218,7 @@ export function RosterField({
                 type="button"
                 className="icon-button"
                 aria-label={`Bỏ ${p.fullName}`}
-                title="Bỏ khỏi danh sách"
+                data-tooltip="Bỏ khỏi danh sách"
                 onClick={() => onChange(value.filter((x) => x.userId !== p.userId))}
               >
                 <Icon name="x" size={16} />

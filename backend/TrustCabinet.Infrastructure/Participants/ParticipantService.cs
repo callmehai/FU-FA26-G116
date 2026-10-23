@@ -27,7 +27,8 @@ public sealed partial class ParticipantService(
 ) : IParticipantService
 {
     private static bool Persistence(Exception ex) =>
-        ex is DbUpdateException or NpgsqlException or TimeoutException;
+        ex is DbUpdateException or NpgsqlException or TimeoutException
+            or InvalidOperationException { InnerException: NpgsqlException or TimeoutException };
 
     private static string Revision(Meeting m) =>
         m.ParticipantsRevision.ToString(CultureInfo.InvariantCulture);
@@ -60,6 +61,34 @@ public sealed partial class ParticipantService(
                     && s.Guests.SingleOrDefault(g => g.Id == guest.InvitationId)?.Response
                         == InvitationResponse.Pending
         );
+    }
+
+    private static ParticipantFailure HandoverAccess(ParticipantSnapshot s, ParticipantActor actor) =>
+        actor.Guest is not null
+            ? ParticipantFailure.Forbidden
+            : Own(s, actor)?.Role == MeetingRole.Chair && ParticipantRules.Respondable(s.Meeting.Status)
+                ? ParticipantFailure.None
+                : ParticipantFailure.CannotHandOverChair;
+
+    private static bool EligibleChairRecipient(MeetingParticipant participant, bool active) =>
+        ParticipantRules.Current(participant) && participant.Role == MeetingRole.Member && active;
+
+    private static ParticipantResult ChairCandidates(ParticipantSnapshot s, ParticipantActor actor, ParticipantQuery query)
+    {
+        var eligible = s.Meeting.Participants
+            .Where(p => p.UserId != actor.UserId && EligibleChairRecipient(p, p.User.IsActive))
+            .Select(p => new ChairHandoverCandidate(p.Id, p.UserId, p.User.FullName, p.User.Email))
+            .ToArray();
+        var search = query.Search?.Trim();
+        var matches = eligible.Where(p => string.IsNullOrEmpty(search)
+                || p.FullName.Contains(search, StringComparison.OrdinalIgnoreCase)
+                || p.Email.Contains(search, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(p => p.FullName, StringComparer.OrdinalIgnoreCase).ThenBy(p => p.ParticipantId).ToArray();
+        var offset = (long)(query.Page - 1) * query.PageSize;
+        return new(Data: new ChairHandoverCandidatePage(
+            offset >= matches.Length ? [] : matches.Skip((int)offset).Take(query.PageSize).ToArray(),
+            matches.Length, eligible.Length, query.Page, query.PageSize, Revision(s.Meeting)),
+            Revision: s.Meeting.ParticipantsRevision);
     }
 
     private async Task<ParticipantFailure> AccessAsync(
@@ -113,6 +142,12 @@ public sealed partial class ParticipantService(
             var snapshot = s!;
             var m = snapshot.Meeting;
             var permissions = Permissions(snapshot, actor);
+            if (operation == ParticipantOperation.ChairHandoverCandidates)
+            {
+                var handoverAccess = HandoverAccess(snapshot, actor);
+                if (handoverAccess != ParticipantFailure.None)
+                    return new(handoverAccess);
+            }
             if (operation == ParticipantOperation.Options && !permissions.CanManageParticipants)
                 return new(
                     actor.UserId is { } user && ParticipantRules.IsManager(m, user)
@@ -169,6 +204,8 @@ public sealed partial class ParticipantService(
             }
             if (operation == ParticipantOperation.Options)
                 return await OptionsAsync(snapshot, query, ct);
+            if (operation == ParticipantOperation.ChairHandoverCandidates)
+                return ChairCandidates(snapshot, actor, query);
             var profiles = await guestAccess.GetProfilesAsync(
                 meetingId,
                 snapshot.Guests.Select(g => g.Id).ToArray(),
@@ -378,12 +415,19 @@ public sealed partial class ParticipantService(
             var snapshot = s!;
             var m = snapshot.Meeting;
             var response = operation == ParticipantOperation.Respond;
+            Dictionary<Guid, User>? lockedUsers = null;
             if (response)
             {
                 if (Own(snapshot, actor) is null && actor.Guest is null)
                     return new(ParticipantFailure.NotFound);
                 if (!ParticipantRules.Respondable(m.Status))
                     return new(ParticipantFailure.CannotRespond);
+            }
+            else if (operation == ParticipantOperation.HandOverChair)
+            {
+                var handoverAccess = HandoverAccess(snapshot, actor);
+                if (handoverAccess != ParticipantFailure.None)
+                    return new(handoverAccess);
             }
             else
             {
@@ -399,6 +443,22 @@ public sealed partial class ParticipantService(
                 return new(input.ParseFailure);
             if (!response && input.Revision is null)
                 return new(ParticipantFailure.InvalidRequest);
+            if (operation == ParticipantOperation.HandOverChair)
+            {
+                if (input.NewChairParticipantId is null || input.NewChairParticipantId == Guid.Empty || !input.Confirmed)
+                    return new(ParticipantFailure.InvalidRole);
+                lockedUsers = await LockCurrentUsersAsync(snapshot, ct);
+                var recipient = m.Participants.SingleOrDefault(p => p.Id == input.NewChairParticipantId);
+                if (recipient is null || recipient.UserId == actor.UserId
+                    || !EligibleChairRecipient(recipient, lockedUsers.TryGetValue(recipient.UserId, out var user) && user.IsActive))
+                    return new(ParticipantFailure.InvalidChairRecipient);
+                var outgoing = Own(snapshot, actor)!;
+                input = input with
+                {
+                    Changes = [new(outgoing.Id, nameof(MeetingRole.Member)), new(recipient.Id, nameof(MeetingRole.Chair))],
+                    ChairReplacement = new(outgoing.Id, recipient.Id, true),
+                };
+            }
             if (!response && input.Revision != m.ParticipantsRevision)
                 return new(ParticipantFailure.Stale);
             var now = AgendaExecution.UtcMicroseconds(clock.GetUtcNow());
@@ -420,12 +480,13 @@ public sealed partial class ParticipantService(
                     now,
                     ct
                 ),
-                ParticipantOperation.ChangeAssignments => await ChangeAsync(
+                ParticipantOperation.ChangeAssignments or ParticipantOperation.HandOverChair => await ChangeAsync(
                     snapshot,
                     actor.UserId!.Value,
                     input,
                     now,
-                    ct
+                    ct,
+                    lockedUsers
                 ),
                 ParticipantOperation.RemoveInternal or ParticipantOperation.RevokeGuest => Remove(
                     snapshot,
@@ -747,12 +808,22 @@ public sealed partial class ParticipantService(
         );
     }
 
+    private Task<Dictionary<Guid, User>> LockCurrentUsersAsync(ParticipantSnapshot s, CancellationToken ct)
+    {
+        // Fresh untracked rows are authoritative for account state; never overwrite tracked users.
+        var userIds = s.Meeting.Participants.Where(ParticipantRules.Current).Select(p => p.UserId).Distinct().Order().ToArray();
+        return db.Users.FromSqlInterpolated(
+                $"SELECT * FROM users WHERE id = ANY({userIds}) ORDER BY id FOR SHARE")
+            .AsNoTracking().ToDictionaryAsync(u => u.Id, ct);
+    }
+
     private async Task<ParticipantResult> ChangeAsync(
         ParticipantSnapshot s,
         Guid actor,
         ParticipantInput input,
         DateTimeOffset now,
-        CancellationToken ct
+        CancellationToken ct,
+        Dictionary<Guid, User>? lockedUsers = null
     )
     {
         var changes = input.Changes ?? [];
@@ -771,13 +842,7 @@ public sealed partial class ParticipantService(
             || c.ParticipantId == oldChair?.Id && c.Role != nameof(MeetingRole.Chair)
         );
         // Lock all current accounts in one order, including the outgoing Chair used for authorization.
-        var userIds = current.Values.Select(p => p.UserId).Order().ToArray();
-        var users = await db
-            .Users.FromSqlInterpolated(
-                $"SELECT * FROM users WHERE id = ANY({userIds}) ORDER BY id FOR SHARE"
-            )
-            .AsNoTracking()
-            .ToDictionaryAsync(u => u.Id, ct);
+        var users = lockedUsers ?? await LockCurrentUsersAsync(s, ct);
         var actorParticipant = current.Values.FirstOrDefault(p => p.UserId == actor);
         if (actorParticipant is null)
             return new(ParticipantFailure.Forbidden);
@@ -800,7 +865,7 @@ public sealed partial class ParticipantService(
                 live
                 && c.Role == nameof(MeetingRole.Chair)
                 && c.ParticipantId != oldChair?.Id
-                && (!users[participant.UserId].IsActive || participant.Role == MeetingRole.Secretary)
+                && !EligibleChairRecipient(participant, users[participant.UserId].IsActive)
             )
                 return new(ParticipantFailure.InvalidChairRecipient);
         }
@@ -926,7 +991,7 @@ public sealed partial class ParticipantService(
                         "Internal",
                         p.Response.ToString(),
                         p.RespondedAt,
-                        true
+                        Permissions(s, actor).CanRespond
                     ),
                     Success: ParticipantSuccess.NoChanges
                 );
@@ -937,7 +1002,7 @@ public sealed partial class ParticipantService(
             p.RespondedAt = now;
             p.UpdatedAt = now;
             return new(
-                Data: new InvitationResponseView(p.Id, "Internal", value.ToString(), now, true),
+                Data: new InvitationResponseView(p.Id, "Internal", value.ToString(), now, Permissions(s, actor).CanRespond),
                 Success: ParticipantSuccess.Responded
             );
         }
@@ -949,7 +1014,7 @@ public sealed partial class ParticipantService(
                     "Guest",
                     g.Response.ToString(),
                     g.RespondedAt,
-                    true
+                    Permissions(s, actor).CanRespond
                 ),
                 Success: ParticipantSuccess.NoChanges
             );
@@ -959,7 +1024,7 @@ public sealed partial class ParticipantService(
         g.RespondedAt = now;
         g.UpdatedAt = now;
         return new(
-            Data: new InvitationResponseView(g.Id, "Guest", value.ToString(), now, true),
+            Data: new InvitationResponseView(g.Id, "Guest", value.ToString(), now, Permissions(s, actor).CanRespond),
             Success: ParticipantSuccess.Responded
         );
     }

@@ -1,7 +1,8 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useId, useState, type FormEvent } from 'react'
 import {
   addParticipants,
   changeAssignments,
+  handOverChair,
   inviteGuest,
   listEditorOptions,
   listParticipants,
@@ -9,7 +10,6 @@ import {
 import { ApiError } from '../../api/client'
 import { Dialog } from '../../components/Dialog'
 import { Icon } from '../../components/Icon'
-import { SegmentedControl } from '../../components/SegmentedControl'
 import { errorMessage } from '../../lib/errors'
 import {
   MEETING_ROLE_LABEL,
@@ -28,7 +28,57 @@ function fieldError(err: unknown, key: string): string | undefined {
 }
 
 const SEARCH_DELAY_MS = 300
-const ADD_ROLES = (['Secretary', 'Member'] as const).map((value) => ({ value, label: MEETING_ROLE_LABEL[value] }))
+
+/** What each meeting role may do, in a line under its name — the question a role picker answers. */
+const ROLE_DESCRIPTION: Record<MeetingRole, string> = {
+  Chair: 'Điều hành cuộc họp, chuyển mục nghị sự, tắt micro người dự.',
+  Secretary: 'Soạn chương trình nghị sự, quản lý thành phần.',
+  Member: 'Xem cuộc họp và vào phòng họp.',
+}
+
+/**
+ * Pick one meeting role: a radio per row with what the role may do under its name, as AI-eCabinet
+ * does. `notes` replaces a row's line, for a consequence the user must read before choosing it.
+ */
+function RolePicker<T extends MeetingRole>({
+  value,
+  roles,
+  onChange,
+  notes,
+}: {
+  value: T
+  roles: readonly T[]
+  onChange: (role: T) => void
+  notes?: Partial<Record<T, string>>
+}) {
+  const name = useId()
+  return (
+    <fieldset className="choice-list">
+      <legend>Vai trò</legend>
+      {roles.map((role) => (
+        // The radio is named by the role alone; its line is a description, not part of the name.
+        <label key={role} className="choice-row">
+          <input
+            type="radio"
+            name={name}
+            checked={value === role}
+            onChange={() => onChange(role)}
+            aria-labelledby={`${name}-${role}`}
+            aria-describedby={`${name}-${role}-desc`}
+          />
+          <span className="choice-text">
+            <span id={`${name}-${role}`} className="choice-label">
+              {MEETING_ROLE_LABEL[role]}
+            </span>
+            <span id={`${name}-${role}-desc`} className="choice-desc">
+              {notes?.[role] ?? ROLE_DESCRIPTION[role]}
+            </span>
+          </span>
+        </label>
+      ))}
+    </fieldset>
+  )
+}
 
 /**
  * Add internal people (POST …/participants). Search people not on the roster yet, tick several, give
@@ -148,9 +198,8 @@ export function AddParticipantsDialog({
           Đang hiện {options.items.length} trong {options.total} người. Gõ tên cụ thể hơn để tìm người khác.
         </p>
       )}
-      <div className="field pick-role">
-        <span>Vai trò</span>
-        <SegmentedControl value={role} options={ADD_ROLES} onChange={setRole} label="Vai trò" />
+      <div className="pick-role">
+        <RolePicker value={role} roles={['Secretary', 'Member'] as const} onChange={setRole} />
       </div>
       {error && (
         <p className="alert alert-error dialog-error" role="alert">
@@ -248,22 +297,28 @@ export function InviteGuestDialog({
 }
 
 /**
- * Change one internal participant's role (PUT …/participants/assignments). Making them Chair moves
- * the chair in one request: the current Chair becomes "Thành viên" and the change carries the
- * confirmation the backend requires, so the meeting never has zero or two Chairs.
+ * Change one internal participant's role. Making them Chair moves the chair in one step: the current
+ * Chair becomes "Thành viên", so the meeting never has zero or two Chairs. This is the only place the
+ * chair moves. The Chair of a published meeting hands it over with POST …/participants/chair-handover
+ * (UC-73); before publication, and a Secretary replacing a deactivated Chair, use PUT …/assignments
+ * with the confirmation the backend requires.
  */
 export function ChangeRoleDialog({
   meetingId,
   revision,
   row,
-  canReplaceChair,
+  chairOption,
+  handOver,
   onClose,
   onDone,
 }: {
   meetingId: string
   revision: string
   row: ParticipantRow & { role: MeetingRole }
-  canReplaceChair: boolean
+  /** Offer "Chủ tọa": the caller may move the chair now, and this person may take it. */
+  chairOption: boolean
+  /** The caller is the Chair of a published meeting, handing the role over themselves. */
+  handOver: boolean
   onClose: () => void
   onDone: (outcome: DialogOutcome) => void
 }) {
@@ -272,13 +327,13 @@ export function ChangeRoleDialog({
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const roles = (
-    canReplaceChair ? (['Chair', 'Secretary', 'Member'] as const) : (['Secretary', 'Member'] as const)
-  ).map((value) => ({ value, label: MEETING_ROLE_LABEL[value] }))
+  const roles = chairOption ? (['Chair', 'Secretary', 'Member'] as const) : (['Secretary', 'Member'] as const)
+  const promote = role === 'Chair'
 
-  // Handing over the chair needs the current Chair's assignment, which may sit on another page.
+  // Replacing the Chair through PUT needs the current Chair's assignment, which may sit on another page.
+  // Read it as the dialog opens, so the "Chủ tọa" row can name who steps down before anyone picks it.
   useEffect(() => {
-    if (role !== 'Chair' || chair !== undefined) return
+    if (!chairOption || handOver || chair !== undefined) return
     let cancelled = false
     findChair(meetingId).then(
       (found) => !cancelled && setChair(found),
@@ -287,27 +342,33 @@ export function ChangeRoleDialog({
     return () => {
       cancelled = true
     }
-  }, [role, chair, meetingId, onDone])
+  }, [chairOption, handOver, chair, meetingId, onDone])
 
   async function submit() {
     setPending(true)
     setError(null)
     try {
-      const body =
-        role === 'Chair' && chair
-          ? {
-              changes: [
-                { participantId: chair.id, role: 'Member' as const },
-                { participantId: row.id, role: 'Chair' as const },
-              ],
-              chairReplacement: {
-                outgoingParticipantId: chair.id,
-                incomingParticipantId: row.id,
-                confirmed: true as const,
-              },
-            }
-          : { changes: [{ participantId: row.id, role }] }
-      onDone({ kind: 'saved', response: await changeAssignments(meetingId, revision, body) })
+      const response =
+        promote && handOver
+          ? await handOverChair(meetingId, revision, row.id)
+          : await changeAssignments(
+              meetingId,
+              revision,
+              promote && chair
+                ? {
+                    changes: [
+                      { participantId: chair.id, role: 'Member' },
+                      { participantId: row.id, role: 'Chair' },
+                    ],
+                    chairReplacement: {
+                      outgoingParticipantId: chair.id,
+                      incomingParticipantId: row.id,
+                      confirmed: true,
+                    },
+                  }
+                : { changes: [{ participantId: row.id, role }] },
+            )
+      onDone({ kind: 'saved', response })
     } catch (err) {
       setPending(false)
       if (isRefusal(err)) onDone({ kind: 'refused', error: err })
@@ -316,7 +377,6 @@ export function ChangeRoleDialog({
   }
 
   const close = () => !pending && onClose()
-  const handover = role === 'Chair'
 
   return (
     <Dialog
@@ -331,29 +391,28 @@ export function ChangeRoleDialog({
             type="button"
             className="btn btn-primary"
             onClick={submit}
-            disabled={pending || role === row.role || (handover && !chair)}
+            disabled={pending || role === row.role || (promote && !handOver && !chair)}
           >
             <Icon name="check" size={16} />
-            {pending ? 'Đang lưu…' : handover ? 'Giao Chủ tọa' : 'Lưu'}
+            {pending ? 'Đang lưu…' : promote ? 'Giao Chủ tọa' : 'Lưu'}
           </button>
         </>
       }
     >
       <div className="dialog-form">
         <Person name={row.displayName} email={row.email} />
-        <div className="field">
-          <span>Vai trò</span>
-          <SegmentedControl value={role} options={roles} onChange={setRole} label="Vai trò" />
-        </div>
-        {handover && (
-          <p className="alert alert-info">
-            {chair === undefined
-              ? 'Đang tìm Chủ tọa hiện tại…'
-              : chair
-                ? `${chair.displayName} sẽ thành Thành viên.`
-                : 'Không tìm thấy Chủ tọa hiện tại. Hãy tải lại trang.'}
-          </p>
-        )}
+        {/* Who steps down sits in the "Chủ tọa" line itself, so choosing it changes no height. */}
+        <RolePicker
+          value={role}
+          roles={roles}
+          onChange={setRole}
+          notes={{
+            Chair:
+              chair === null
+                ? 'Không tìm thấy Chủ tọa hiện tại. Hãy tải lại trang.'
+                : `${ROLE_DESCRIPTION.Chair} ${handOver ? 'Bạn' : (chair?.displayName ?? 'Chủ tọa hiện tại')} sẽ thành Thành viên.`,
+          }}
+        />
         {error && (
           <p className="alert alert-error dialog-error" role="alert">
             {error}
