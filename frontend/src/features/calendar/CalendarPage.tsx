@@ -439,7 +439,7 @@ function GridEvent({
       data-cal-trigger=""
       className={`cal-event cal-event-${STATUS_TONE[meeting.status]}${tall ? '' : ' cal-event-short'}`}
       style={{ top, height, left: `calc(${(lane / lanes) * 100}% + 5px)`, width: `calc(${100 / lanes}% - 10px)` }}
-      data-tooltip={`${meeting.title} · ${timeRange(entry)}`}
+      data-tooltip={`${meeting.title}\n${timeRange(entry)}`}
     >
       <span className="cal-event-time">
         {timeRange(entry)}
@@ -574,7 +574,7 @@ function MonthEvent({ entry, onOpen }: { entry: ScheduleEntry; onOpen: OpenOverv
       onClick={tileClick(entry, onOpen)}
       data-cal-trigger=""
       className={`month-event cal-event-${STATUS_TONE[meeting.status]}`}
-      data-tooltip={`${meeting.title} · ${timeRange(entry)} · ${MEETING_STATUS_LABEL[meeting.status]}`}
+      data-tooltip={`${meeting.title}\n${timeRange(entry)}, ${MEETING_STATUS_LABEL[meeting.status]}`}
     >
       <span className="month-event-time">{formatClock(entry.start)}</span>
       <span className="month-event-title">{meeting.title}</span>

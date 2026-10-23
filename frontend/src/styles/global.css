@@ -49,8 +49,10 @@
   --sidebar-mid: #375aa6;
   --sidebar-bottom: #304f97;
   --sidebar-ink-soft: #e1eaf6;
-  --sidebar-hover: rgb(255 255 255 / 12%);
-  --sidebar-active: rgb(255 255 255 / 22%);
+  /* Hover and the current item darken the blue: a white wash lifts it until white text drops
+     under 4.5:1 (sloplint A1 measured 4.0:1 on the active item). */
+  --sidebar-hover: rgb(15 23 42 / 14%);
+  --sidebar-active: rgb(15 23 42 / 25%);
   --sidebar-line: rgb(255 255 255 / 16%);
 
   --shadow-sm: 0 1px 2px #1a24330f;
@@ -159,7 +161,8 @@ code {
   border-radius: 6px;
   background: var(--surface-alt);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: .88em;
+  /* .88em of 13px body text came out at 11.4px; 12px is the floor (ADR-0012). */
+  font-size: max(.88em, 12px);
 }
 
 /* ---------- Buttons ---------- */
@@ -511,7 +514,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   border: 1px solid var(--line);
   border-radius: 50%;
   background: var(--surface);
-  box-shadow: 0 1px 3px rgb(15 23 42 / .18);
   color: var(--brand);
   cursor: pointer;
   transition: background .15s, color .15s, border-color .15s;
