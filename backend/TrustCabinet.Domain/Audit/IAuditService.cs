@@ -90,4 +90,19 @@ public static class AuditActions
     public const string RecordingErased = "recording.erased";
 
     public const string RecordingObjectType = "Recording";
+
+    /// <summary>SCRUM-35 — a person agreed to Voice ID; the notice version and purpose they agreed to are in the details.</summary>
+    public const string VoiceConsentGranted = "voice.consent_granted";
+
+    /// <summary>A person withdrew Voice ID; the details say how many samples were erased with it.</summary>
+    public const string VoiceConsentWithdrawn = "voice.consent_withdrawn";
+
+    public const string VoiceSampleAdded = "voice.sample_added";
+    public const string VoiceSampleDeleted = "voice.sample_deleted";
+    public const string VoiceConsentObjectType = "VoiceConsent";
+    public const string VoiceSampleObjectType = "VoiceSample";
+
+    /// <summary>A secretary said who a voice in a recording is — or cleared it. The machine's suggestion travels along.</summary>
+    public const string TranscriptSpeakerAssigned = "transcript.speaker_assigned";
+    public const string TranscriptSpeakerObjectType = "TranscriptSpeaker";
 }

@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Transcription;
+using TrustCabinet.Domain.VoiceId;
 using TrustCabinet.Infrastructure;
 
 namespace TrustCabinet.Web.Tests.Recordings;
@@ -63,12 +64,14 @@ public sealed class RecordingFixture : IAsyncLifetime
                 services.AddSingleton<TimeProvider>(fixture.Clock);
                 services.RemoveAll<ISpeechEngine>();
                 services.AddSingleton<ISpeechEngine>(fixture.Speech);
+                services.RemoveAll<IVoiceEmbedder>();
+                services.AddSingleton<IVoiceEmbedder>(fixture.Speech);
             });
         }
     }
 
     /// <summary>Stands in for workers/speech: returns what a test sets, or throws what it sets.</summary>
-    internal sealed class FakeSpeechEngine : ISpeechEngine
+    internal sealed class FakeSpeechEngine : ISpeechEngine, IVoiceEmbedder
     {
         internal SpeechTranscription Result = new(23380, "vi", "gipformer-1.5-68m-int8@abc123def456", "eres2net-base-200k@0123456789ab",
             [new(0, 5800, "SPEAKER_00", "Kính thưa các đồng chí."), new(6500, 10900, "SPEAKER_01", "Tôi đề nghị bổ sung kinh phí.")],
@@ -80,6 +83,14 @@ public sealed class RecordingFixture : IAsyncLifetime
         internal byte[]? LastAudio;
 
         public bool IsConfigured => true;
+
+        /// <summary>What the next enrolment sample embeds to; a test sets one vector per sample it posts.</summary>
+        internal float[] NextEmbedding = [1f, 0f, 0f];
+        internal Exception? EmbedFailure;
+
+        public Task<SpeechEmbedding> EmbedAsync(Stream audio, string contentType, CancellationToken ct)
+            => EmbedFailure is { } failure ? Task.FromException<SpeechEmbedding>(failure)
+                : Task.FromResult(new SpeechEmbedding(NextEmbedding, "eres2net-base-200k@0123456789ab", 7200));
 
         public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, CancellationToken ct)
         {
@@ -102,12 +113,14 @@ public sealed class RecordingFixture : IAsyncLifetime
     internal sealed class FailureInterceptor : DbCommandInterceptor, ISaveChangesInterceptor
     {
         internal bool FailRead;
+        internal bool FailVoiceRead;
         internal bool FailSave;
 
         public override ValueTask<InterceptionResult<System.Data.Common.DbDataReader>> ReaderExecutingAsync(
             System.Data.Common.DbCommand command, CommandEventData eventData,
             InterceptionResult<System.Data.Common.DbDataReader> result, CancellationToken cancellationToken = default)
-            => FailRead && command.CommandText.Contains("FROM recordings", StringComparison.Ordinal)
+            => (FailRead && command.CommandText.Contains("FROM recordings", StringComparison.Ordinal))
+                || (FailVoiceRead && command.CommandText.Contains("FROM voice_consents", StringComparison.Ordinal))
                 ? throw new Npgsql.NpgsqlException("Injected read failure.") : ValueTask.FromResult(result);
 
         public ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,

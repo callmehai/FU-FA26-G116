@@ -14,6 +14,9 @@ khoản 1 điểm d, Điều 25 khoản 3). Dù căn cứ nào, người dự c�
 đúng mục đích, và phải xoá khi hết hạn (Điều 3 khoản 3, Điều 14). Hệ thống giữ ba nghĩa vụ đó bằng
 dữ liệu, không chỉ bằng lời hứa trên tài liệu.
 
+Nhận ra **ai** đang nói từ giọng (Voice ID) là chuyện khác: đó là dữ liệu sinh trắc học, cần sự đồng
+ý riêng của từng người (xem [13 · Nhận diện giọng nói](13-nhan-dien-giong-noi.md)).
+
 | Nghĩa vụ | Cột / cơ chế |
 |---|---|
 | Thông báo trước khi lưu | `consentConfirmed=true` bắt buộc: Thư ký xác nhận đã thông báo cho người dự và không ai phản đối. Thời điểm xác nhận lưu ở `ConsentObtainedAt`. Có người phản đối thì không ghi |

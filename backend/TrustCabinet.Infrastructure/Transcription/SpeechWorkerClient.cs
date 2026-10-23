@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using TrustCabinet.Domain.Transcription;
+using TrustCabinet.Domain.VoiceId;
 
 namespace TrustCabinet.Infrastructure.Transcription;
 
@@ -24,7 +25,7 @@ public sealed class SpeechOptions
 }
 
 /// <summary>HTTP client for workers/speech — the contract is in workers/speech/README.md.</summary>
-public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<SpeechOptions> options) : ISpeechEngine
+public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<SpeechOptions> options) : ISpeechEngine, IVoiceEmbedder
 {
     public const string HttpClientName = "speech";
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -41,7 +42,17 @@ public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<Spee
             [.. (body.Speakers ?? []).Select(s => new SpeechSpeaker(s.Label ?? "", s.SpeechMs, s.Embedding ?? []))]);
     }
 
-    private async Task<HttpResponseMessage> SendAsync(string path, Stream audio, string contentType, CancellationToken ct)
+    /// <summary>SCRUM-35 — the embedding of one enrolment sample, after the worker's quality checks.</summary>
+    public async Task<SpeechEmbedding> EmbedAsync(Stream audio, string contentType, CancellationToken ct)
+    {
+        using var response = await SendAsync("v1/embed", audio, contentType, ct, sample: true);
+        var body = await response.Content.ReadFromJsonAsync<EmbedBody>(Json, ct)
+            ?? throw new SpeechEngineException("Máy chủ nhận dạng giọng nói trả kết quả rỗng.");
+        return new(body.Embedding ?? [], body.Model ?? "", body.SpeechMs);
+    }
+
+    private async Task<HttpResponseMessage> SendAsync(string path, Stream audio, string contentType, CancellationToken ct,
+        bool sample = false)
     {
         if (!IsConfigured) throw new SpeechEngineException("Máy chủ nhận dạng giọng nói chưa được cấu hình.");
         var client = clients.CreateClient(HttpClientName);
@@ -65,6 +76,9 @@ public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<Spee
         var status = response.StatusCode;
         var error = await ReadErrorAsync(response, ct);
         response.Dispose();
+        // A sample the worker turned down is the person's to redo, not an outage.
+        if (sample && (status == HttpStatusCode.UnprocessableEntity || error == "unreadable_audio"))
+            throw new VoiceSampleRejectedException(error ?? "rejected");
         throw new SpeechEngineException(status switch
         {
             HttpStatusCode.BadRequest when error == "unreadable_audio" => "Không đọc được tệp âm thanh.",
@@ -81,6 +95,7 @@ public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<Spee
     }
 
     private sealed record ErrorBody(string? Error);
+    private sealed record EmbedBody(float[]? Embedding, string? Model, long SpeechMs);
     private sealed record SegmentBody(long StartMs, long EndMs, string? Speaker, string? Text);
     private sealed record SpeakerBody(string? Label, long SpeechMs, float[]? Embedding);
     private sealed record TranscribeBody(long DurationMs, string? Language, string? AsrModel, string? EmbeddingModel,

@@ -1,11 +1,17 @@
+using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Npgsql;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Domain.Participants;
 using TrustCabinet.Domain.Recordings;
 using TrustCabinet.Domain.Transcription;
+using TrustCabinet.Domain.VoiceId;
+using TrustCabinet.Infrastructure.VoiceId;
 
 namespace TrustCabinet.Infrastructure.Transcription;
 
@@ -15,7 +21,8 @@ namespace TrustCabinet.Infrastructure.Transcription;
 /// with it (RecordingService).
 /// </summary>
 public sealed class TranscriptionService(IMeetingRepository meetings, IRecordingRepository recordings,
-    ITranscriptRepository transcripts, IRecordingStorage storage, ISpeechEngine engine, TimeProvider clock,
+    ITranscriptRepository transcripts, IRecordingStorage storage, ISpeechEngine engine, IVoiceIdRepository voices,
+    IVoiceprintProtector protector, IOptions<VoiceIdOptions> voiceOptions, IAuditService audit, TimeProvider clock,
     ILogger<TranscriptionService> logger) : ITranscriptionService
 {
     private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
@@ -28,12 +35,20 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             if (recording is null || meeting is null) return new(failure);
             var canEdit = RecordingRules.IsSecretary(meeting, actorId);
             var transcript = await transcripts.FindByRecordingAsync(recordingId, false, ct);
+            // Who the secretary may name a voice as: the meeting's own people, offered only to the secretary.
+            TranscriptPerson[] people = canEdit
+                ? [.. Participants(meeting).Select(p => new TranscriptPerson(p.UserId, p.User.FullName))
+                    .DistinctBy(p => p.Id).OrderBy(p => p.FullName)]
+                : [];
             if (transcript is null)
-                return new(Data: new TranscriptView(recordingId, "None", "", "vi", "", null, recording.DurationMs, canEdit, []));
+                return new(Data: new TranscriptView(recordingId, "None", "", "vi", "", null, recording.DurationMs, canEdit, [], [], people));
             return new(Data: new TranscriptView(recordingId, transcript.Status.ToString(), transcript.Provider,
                 transcript.Language, transcript.ErrorMessage, transcript.CompletedAt, recording.DurationMs, canEdit,
                 [.. transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptSegmentView(s.Id, s.Position,
-                    s.StartMs, s.EndMs, s.Text, s.SpeakerLabel, s.EditedAt, s.EditedBy?.FullName))]));
+                    s.StartMs, s.EndMs, s.Text, s.SpeakerLabel, s.EditedAt, s.EditedBy?.FullName))],
+                [.. transcript.Speakers.OrderBy(s => s.Label).Select(s => new TranscriptSpeakerView(s.Label, s.SpeechMs,
+                    s.SuggestedUserId, s.SuggestedUser?.FullName, s.SuggestionScore, s.AssignedUserId, s.AssignedUser?.FullName))],
+                people));
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -105,6 +120,38 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         }
     }
 
+    public async Task<TranscriptOutcome> AssignSpeakerAsync(Guid recordingId, string label, Guid? userId, Guid actorId,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var (recording, meeting, failure) = await ReadableAsync(recordingId, actorId, ct);
+            if (recording is null || meeting is null) return new(failure);
+            if (!RecordingRules.IsSecretary(meeting, actorId)) return new(TranscriptFailure.Forbidden);
+            var transcript = await transcripts.FindByRecordingAsync(recordingId, true, ct);
+            var speaker = transcript?.Speakers.SingleOrDefault(s => s.Label == label);
+            if (speaker is null) return new(TranscriptFailure.NotFound);
+            var person = userId is { } id ? Participants(meeting).FirstOrDefault(p => p.UserId == id) : null;
+            if (userId is not null && person is null) return new(TranscriptFailure.InvalidSpeaker);
+            var now = clock.GetUtcNow();
+            speaker.AssignedUserId = userId;
+            speaker.AssignedById = actorId;
+            speaker.AssignedAt = now;
+            speaker.UpdatedAt = now;
+            await audit.RecordAsync(AuditActions.TranscriptSpeakerAssigned, AuditActions.TranscriptSpeakerObjectType, speaker.Id,
+                actorId, new { recordingId, label, userId, suggestedUserId = speaker.SuggestedUserId,
+                    acceptedSuggestion = userId is not null && userId == speaker.SuggestedUserId }, ct);
+            await transcripts.SaveChangesAsync(ct);
+            return new(Data: new TranscriptSpeakerView(speaker.Label, speaker.SpeechMs, speaker.SuggestedUserId,
+                speaker.SuggestedUser?.FullName, speaker.SuggestionScore, userId, person?.User.FullName));
+        }
+        catch (Exception ex) when (PersistenceError(ex))
+        {
+            logger.LogError(ex, "Failed to name speaker {Label} of {RecordingId}", label, recordingId);
+            return new(TranscriptFailure.SaveFailed);
+        }
+    }
+
     public Task<int> RequeueInterruptedAsync(CancellationToken ct = default)
         => transcripts.RequeueProcessingAsync(clock.GetUtcNow(), ct);
 
@@ -160,6 +207,14 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     Text = s.Text.Length > TranscriptRules.MaxSegmentText ? s.Text[..TranscriptRules.MaxSegmentText] : s.Text,
                     SpeakerLabel = s.Speaker ?? "", CreatedAt = now, UpdatedAt = now,
                 }));
+                await transcripts.DeleteSpeakersAsync(transcriptId, token);
+                var suggestions = await SuggestSpeakersAsync(recording.MeetingId, result, token);
+                transcripts.AddSpeakers(result.Speakers.Select(sp => new TranscriptSpeaker
+                {
+                    TranscriptId = transcriptId, Label = sp.Label, SpeechMs = sp.SpeechMs,
+                    SuggestedUserId = suggestions.GetValueOrDefault(sp.Label)?.UserId,
+                    SuggestionScore = suggestions.GetValueOrDefault(sp.Label)?.Score, CreatedAt = now, UpdatedAt = now,
+                }));
                 current.Status = TranscriptStatus.Completed;
                 current.Provider = TranscriptRules.Provider(result.AsrModel);
                 current.Language = result.Language;
@@ -172,6 +227,37 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             return 0;
         }, ct);
     }
+
+    /// <summary>
+    /// SCRUM-35 — compares each voice with the enrolled samples of the meeting's own people who consented. The voices'
+    /// embeddings are used here and dropped; only the resulting suggestion is stored.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, SpeakerMatcher.Suggestion>> SuggestSpeakersAsync(Guid meetingId,
+        SpeechTranscription result, CancellationToken ct)
+    {
+        if (result.Speakers.Count == 0 || result.EmbeddingModel.Length == 0) return new Dictionary<string, SpeakerMatcher.Suggestion>();
+        var meeting = await meetings.FindWorkflowAsync(meetingId, false, ct);
+        if (meeting is null) return new Dictionary<string, SpeakerMatcher.Suggestion>();
+        var people = Participants(meeting).Select(p => p.UserId).Distinct().ToArray();
+        var candidates = new List<SpeakerMatcher.Candidate>();
+        foreach (var sample in await voices.ListMatchableSamplesAsync(people, result.EmbeddingModel, ct))
+        {
+            try
+            {
+                candidates.Add(new(sample.UserId, protector.Unprotect(sample.Ciphertext, sample.UserId, sample.Id, sample.EmbeddingModel)));
+            }
+            catch (CryptographicException ex)
+            {
+                // A key rotated without re-enrolment: that person is simply not suggested.
+                logger.LogWarning(ex, "Voice sample {SampleId} could not be decrypted", sample.Id);
+            }
+        }
+        var options = voiceOptions.Value;
+        return SpeakerMatcher.Suggest(result.Speakers, candidates, options.SuggestThreshold, options.SuggestMargin);
+    }
+
+    private static IEnumerable<MeetingParticipant> Participants(Meeting meeting)
+        => meeting.Participants.Where(p => p.MeetingId == meeting.Id && ParticipantRules.Active(p));
 
     private async Task<(Recording? Recording, Meeting? Meeting, TranscriptFailure Failure)> ReadableAsync(Guid recordingId,
         Guid actorId, CancellationToken ct, bool forUpdate = false)

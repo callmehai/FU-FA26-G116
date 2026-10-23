@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Domain.Transcription;
+using TrustCabinet.Domain.VoiceId;
 
 namespace TrustCabinet.Infrastructure.Transcription;
 
@@ -14,7 +15,10 @@ public static class TranscriptionServiceCollectionExtensions
     {
         services.Configure<SpeechOptions>(configuration.GetSection(SpeechOptions.SectionName));
         services.AddHttpClient(SpeechWorkerClient.HttpClientName);
-        services.AddSingleton<ISpeechEngine, SpeechWorkerClient>();
+        // One client for both jobs of the worker; tests replace either interface on its own.
+        services.AddSingleton<SpeechWorkerClient>();
+        services.AddSingleton<ISpeechEngine>(provider => provider.GetRequiredService<SpeechWorkerClient>());
+        services.AddSingleton<IVoiceEmbedder>(provider => provider.GetRequiredService<SpeechWorkerClient>());
         services.AddScoped<ITranscriptRepository, TranscriptRepository>();
         services.AddScoped<ITranscriptionService, TranscriptionService>();
         return services;

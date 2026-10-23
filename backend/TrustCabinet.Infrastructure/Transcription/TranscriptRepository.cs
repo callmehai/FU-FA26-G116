@@ -10,7 +10,9 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
     public async Task<Transcript?> FindByRecordingAsync(Guid recordingId, bool tracked, CancellationToken ct)
     {
         var query = db.Transcripts.Include(t => t.Segments).ThenInclude(s => s.EditedBy)
-            .Where(t => t.RecordingId == recordingId);
+            .Include(t => t.Speakers).ThenInclude(s => s.SuggestedUser)
+            .Include(t => t.Speakers).ThenInclude(s => s.AssignedUser)
+            .AsSplitQuery().Where(t => t.RecordingId == recordingId);
         return await (tracked ? query : query.AsNoTracking()).SingleOrDefaultAsync(ct);
     }
 
@@ -40,6 +42,11 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
         => db.TranscriptSegments.Where(s => s.TranscriptId == transcriptId).ExecuteDeleteAsync(ct);
 
     public void Add(Transcript transcript) => db.Transcripts.Add(transcript);
+
+    public Task DeleteSpeakersAsync(Guid transcriptId, CancellationToken ct)
+        => db.TranscriptSpeakers.Where(s => s.TranscriptId == transcriptId).ExecuteDeleteAsync(ct);
+
+    public void AddSpeakers(IEnumerable<TranscriptSpeaker> speakers) => db.TranscriptSpeakers.AddRange(speakers);
 
     public void AddSegments(IEnumerable<TranscriptSegment> segments) => db.TranscriptSegments.AddRange(segments);
 

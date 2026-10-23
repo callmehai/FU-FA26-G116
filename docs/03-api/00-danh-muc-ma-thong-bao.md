@@ -136,7 +136,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 
 ## Mã tiếp theo
 
-**`MSG305`** — Bản ghi cuộc họp (SCRUM-29) dùng `MSG290`–`MSG298`; gỡ băng (SCRUM-31) dùng `MSG299`–`MSG304`. `MSG288` (UC-33a EX-8, giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026) đã triển khai cùng `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174` trong SCRUM-107. SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG261`–`MSG274` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020; đặc tả UC-23b dùng `MSG250` cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3; trong dải này SCRUM-107 đã triển khai `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, phần còn lại chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`/`MSG146` dành cho thay đổi FE-06 trong Report 3; `MSG147`–`MSG151` đã triển khai trong SCRUM-26; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG318`** — Bản ghi cuộc họp (SCRUM-29) dùng `MSG290`–`MSG298`; gỡ băng (SCRUM-31) dùng `MSG299`–`MSG304`; Voice ID (SCRUM-35) dùng `MSG305`–`MSG317`. `MSG288` (UC-33a EX-8, giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026) đã triển khai cùng `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174` trong SCRUM-107. SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG261`–`MSG274` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020; đặc tả UC-23b dùng `MSG250` cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3; trong dải này SCRUM-107 đã triển khai `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, phần còn lại chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`/`MSG146` dành cho thay đổi FE-06 trong Report 3; `MSG147`–`MSG151` đã triển khai trong SCRUM-26; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -321,6 +321,28 @@ lại `MSG295` — cùng tình huống "không phải Thư ký mà quản lý b�
 | `MSG302` | 200 | `PUT /api/transcript-segments/{id}` | Thư ký sửa chữ một đoạn; ghi người sửa và lúc sửa | `Đã lưu đoạn gỡ băng.` | BE |
 | `MSG303` | 400 | `PUT /api/transcript-segments/{id}` | Nội dung rỗng hoặc quá 8000 ký tự | `Nội dung đoạn gỡ băng không hợp lệ.` | BE |
 | `MSG304` | 503 | `POST …/transcribe`, `PUT /api/transcript-segments/{id}` | Lỗi database khi lưu | `Không lưu được thay đổi bản gỡ băng. Vui lòng thử lại.` | BE |
+| `MSG316` | 200 | `PUT /api/recordings/{id}/speakers/{label}` | Thư ký gán (hoặc bỏ gán, `userId: null`) tên thật cho một giọng — SCRUM-35 | `Đã gán người nói.` | BE |
+| `MSG317` | 400 | `PUT /api/recordings/{id}/speakers/{label}` | Người được gán không có trong danh sách thành phần hiện tại của cuộc họp | `Người được gán phải có trong danh sách cuộc họp.` | BE |
+
+### Voice ID của chính mình — SCRUM-35 (`/api/me/voice`)
+
+Chi tiết: [`13-nhan-dien-giong-noi.md`](13-nhan-dien-giong-noi.md). Không có route nào nhận id của người
+khác. Xoá giọng mẫu của người khác (hoặc id không tồn tại) là `404` không body.
+
+| Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
+|---|---|---|---|---|---|
+| `MSG292` | 415 | `POST /api/me/voice/samples` | Cùng tình huống như bản ghi: định dạng âm thanh không hỗ trợ | `Định dạng âm thanh không được hỗ trợ. Dùng mp3, m4a, wav, webm hoặc ogg.` | BE |
+| `MSG305` | 200 | `POST /api/me/voice/consent` | Đồng ý Voice ID (gọi lại khi đã đồng ý vẫn trả mã này, không tạo dòng mới) | `Đã bật nhận diện giọng nói cho tài khoản của bạn.` | BE |
+| `MSG306` | 200 | `DELETE /api/me/voice/consent` | Rút đồng ý: xoá mọi giọng mẫu và mọi gợi ý trỏ tới người này | `Đã tắt nhận diện giọng nói và xoá toàn bộ giọng mẫu.` | BE |
+| `MSG307` | 201 | `POST /api/me/voice/samples` | Lưu giọng mẫu (chỉ vector đã mã hoá) | `Đã lưu giọng mẫu.` | BE |
+| `MSG308` | 409 | `POST /api/me/voice/samples` | Chưa đồng ý, hoặc đã rút đồng ý | `Cần đồng ý nhận diện giọng nói trước khi ghi giọng mẫu.` | BE |
+| `MSG309` | 422 | `POST /api/me/voice/samples` | Giọng mẫu không đạt; `reason`: `too_short`, `too_quiet`, `clipped`, `multiple_speakers`, `too_long`, `unreadable_audio` — câu `message` theo từng lý do | `Giọng mẫu quá ngắn — cần ít nhất 6 giây có tiếng nói. Hãy đọc hết đoạn văn mẫu.` (ví dụ) | BE |
+| `MSG310` | 409 | `POST /api/me/voice/samples` | Đã đủ 5 giọng mẫu | `Đã đủ 5 giọng mẫu. Xoá bớt rồi ghi lại.` | BE |
+| `MSG311` | 200 | `DELETE /api/me/voice/samples/{id}` | Xoá một giọng mẫu của mình | `Đã xoá giọng mẫu.` | BE |
+| `MSG312` | 503 | `POST /api/me/voice/samples` | Worker nhận dạng giọng nói không chạy / chưa cấu hình | `Máy chủ nhận dạng giọng nói chưa sẵn sàng. Vui lòng thử lại sau.` | BE |
+| `MSG313` | 400 | `POST /api/me/voice/consent`, `POST /api/me/voice/samples` | Phiên bản thông báo không khớp (`errors.noticeVersion`), hoặc không có tệp / không phải multipart | `Thông tin gửi lên không hợp lệ.` | BE |
+| `MSG314` | 500 | `GET /api/me/voice` | Lỗi database khi đọc | `Không tải được thông tin giọng nói.` | BE |
+| `MSG315` | 503 | `POST`/`DELETE …/consent`, `POST`/`DELETE …/samples` | Lỗi database khi lưu | `Không lưu được thay đổi. Vui lòng thử lại.` | BE |
 
 
 ### Dành sẵn, chưa có code

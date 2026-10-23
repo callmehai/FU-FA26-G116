@@ -29,7 +29,7 @@ public sealed class SpeechEngineException(string userMessage, Exception? inner =
     public string UserMessage { get; } = userMessage;
 }
 
-public enum TranscriptFailure { None, NotFound, Inactive, Forbidden, NotRetryable, Invalid, ReadFailed, SaveFailed }
+public enum TranscriptFailure { None, NotFound, Inactive, Forbidden, NotRetryable, Invalid, InvalidSpeaker, ReadFailed, SaveFailed }
 
 public sealed record TranscriptOutcome(TranscriptFailure Failure = TranscriptFailure.None, object? Data = null,
     IReadOnlyDictionary<string, string[]>? Errors = null);
@@ -37,15 +37,27 @@ public sealed record TranscriptOutcome(TranscriptFailure Failure = TranscriptFai
 public sealed record TranscriptSegmentView(Guid Id, int Position, long StartMs, long EndMs, string Text,
     string SpeakerLabel, DateTimeOffset? EditedAt, string? EditedByName);
 
+/// <summary>
+/// SCRUM-35 — one voice of the recording. <c>Suggested*</c> is the machine's guess from enrolled voices;
+/// <c>Assigned*</c> is the secretary's decision, and only that one names the speaker.
+/// </summary>
+public sealed record TranscriptSpeakerView(string Label, long SpeechMs, Guid? SuggestedUserId, string? SuggestedName,
+    double? SuggestionScore, Guid? AssignedUserId, string? AssignedName);
+
+public sealed record TranscriptPerson(Guid Id, string FullName);
+
 public sealed record TranscriptView(Guid RecordingId, string Status, string Provider, string Language,
     string ErrorMessage, DateTimeOffset? CompletedAt, long DurationMs, bool CanEdit,
-    IReadOnlyList<TranscriptSegmentView> Segments);
+    IReadOnlyList<TranscriptSegmentView> Segments, IReadOnlyList<TranscriptSpeakerView> Speakers,
+    IReadOnlyList<TranscriptPerson> People);
 
 public interface ITranscriptionService
 {
     Task<TranscriptOutcome> GetAsync(Guid recordingId, Guid actorId, CancellationToken ct = default);
     Task<TranscriptOutcome> RetryAsync(Guid recordingId, Guid actorId, CancellationToken ct = default);
     Task<TranscriptOutcome> EditSegmentAsync(Guid segmentId, Guid actorId, string? text, CancellationToken ct = default);
+    /// <summary>SCRUM-35 — the secretary says who a voice is, or clears it with null.</summary>
+    Task<TranscriptOutcome> AssignSpeakerAsync(Guid recordingId, string label, Guid? userId, Guid actorId, CancellationToken ct = default);
     /// <summary>Takes the oldest waiting transcript and runs it; false when there was nothing to do.</summary>
     Task<bool> ProcessNextAsync(CancellationToken ct = default);
     /// <summary>Puts back transcripts a previous process was running when it stopped.</summary>
@@ -62,6 +74,8 @@ public interface ITranscriptRepository
     Task<Transcript?> FindForProcessingAsync(Guid transcriptId, CancellationToken ct);
     Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct);
     void Add(Transcript transcript);
+    Task DeleteSpeakersAsync(Guid transcriptId, CancellationToken ct);
+    void AddSpeakers(IEnumerable<TranscriptSpeaker> speakers);
     void AddSegments(IEnumerable<TranscriptSegment> segments);
     Task SaveChangesAsync(CancellationToken ct);
 }

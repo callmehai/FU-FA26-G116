@@ -46,8 +46,8 @@ public class DatabaseModelTests
                 "meeting_minutes", "meeting_notes", "meeting_participants",
                 "meeting_status_history", "meeting_summaries", "meetings", "minutes_signatures",
                 "notifications", "recordings", "role_capabilities", "roles", "speaking_requests", "stored_files",
-                "transcript_segments", "transcripts", "users", "vote_choices",
-                "vote_receipts", "voting_options", "voting_sessions",
+                "transcript_segments", "transcript_speakers", "transcripts", "users", "voice_consents",
+                "voice_samples", "vote_choices", "vote_receipts", "voting_options", "voting_sessions",
             ],
             tables);
     }
@@ -464,22 +464,31 @@ public class DatabaseModelTests
 
 
     [Fact]
-    public void No_voiceprint_is_stored_anywhere()
+    public void A_voice_is_stored_only_as_an_encrypted_enrolment_sample()
     {
         using var db = NewContext();
 
+        // Voice ID is in scope since ADR-0027, and a voice used to recognise someone is biometric data under
+        // Luật BVDLCN 91/2025/QH15. The only place it may live is VoiceSample.Ciphertext, under a consent that can
+        // be withdrawn. A float array or a column named after an embedding anywhere else — on a transcript, a
+        // speaker, a user — would be a voiceprint kept without that consent, so this test fails on one.
         var suspicious = db.Model.GetEntityTypes()
-            .SelectMany(e => e.GetProperties().Select(p => $"{e.ClrType.Name}.{p.Name}"))
-            .Where(name => name.Contains("Voiceprint", StringComparison.OrdinalIgnoreCase)
-                || name.Contains("VoiceEmbedding", StringComparison.OrdinalIgnoreCase)
-                || name.Contains("Biometric", StringComparison.OrdinalIgnoreCase))
+            .SelectMany(e => e.GetProperties().Select(p => (Entity: e.ClrType, Property: p)))
+            .Where(x => x.Property.ClrType == typeof(float[]) || x.Property.ClrType == typeof(double[])
+                || x.Property.Name.Contains("Embedding", StringComparison.OrdinalIgnoreCase) && x.Entity != typeof(VoiceSample)
+                || x.Property.Name.Contains("Voiceprint", StringComparison.OrdinalIgnoreCase)
+                || x.Property.Name.Contains("Biometric", StringComparison.OrdinalIgnoreCase))
+            .Select(x => $"{x.Entity.Name}.{x.Property.Name}")
             .ToArray();
-
-        // Speaker separation within one recording is in scope; recognising the same voice across
-        // meetings is not. A voiceprint is biometric data under Decree 13/2023/NĐ-CP, with its own
-        // consent and erasure duties, and the project cut it deliberately. This test is here so
-        // the cut survives someone adding "just one column".
         Assert.Empty(suspicious);
+
+        var sample = db.Model.FindEntityType(typeof(VoiceSample))!;
+        Assert.Equal(typeof(byte[]), sample.FindProperty(nameof(VoiceSample.Ciphertext))!.ClrType);
+        Assert.Equal(typeof(string), sample.FindProperty(nameof(VoiceSample.EmbeddingModel))!.ClrType);
+        // A sample cannot outlive the consent it was taken under.
+        Assert.Equal(DeleteBehavior.Cascade, sample.GetForeignKeys().Single(f => f.PrincipalEntityType.ClrType == typeof(VoiceConsent)).DeleteBehavior);
+        var consent = db.Model.FindEntityType(typeof(VoiceConsent))!;
+        Assert.Contains(consent.GetIndexes(), i => i.IsUnique && i.GetFilter() == "withdrawn_at IS NULL");
     }
 
     [Fact]
