@@ -1,10 +1,8 @@
-import { Icon } from '../../components/Icon'
 import { Select, type SelectOption } from '../../components/Select'
 import { formatDateTime } from '../../lib/format'
 import {
   ATTENDANCE_LABEL,
   LEGACY_ATTENDANCE_LABEL,
-  type AttendancePage,
   type AttendanceRow,
   type AttendanceStatus,
 } from '../../types/attendance'
@@ -82,17 +80,4 @@ function AttendanceBadge({ row, note }: { row: AttendanceRow; note: string | nul
     )
   }
   return <span className="attendance-unmarked">Chưa điểm danh</span>
-}
-
-/** "Có mặt 3/8", with the full split in the tooltip; counts are over the whole roster. */
-export function AttendanceSummary({ totals }: { totals: AttendancePage['totals'] }) {
-  const split = [`Có mặt ${totals.present}`, `Vắng ${totals.absent}`, `Chưa điểm danh ${totals.unmarked}`]
-  if (totals.legacy > 0) split.push(`Giá trị cũ ${totals.legacy}`)
-  return (
-    <span className="badge badge-emerald attendance-summary" tabIndex={0} data-tooltip={split.join(' · ')}>
-      <Icon name="userCheck" size={14} />
-      Có mặt {totals.present}/{totals.total}
-      <span className="visually-hidden">. {split.join(', ')}</span>
-    </span>
-  )
 }

@@ -3,7 +3,7 @@ import { Icon } from '../../components/Icon'
 import { avatarColors, initials } from '../../lib/avatar'
 import type { AttendanceRow } from '../../types/attendance'
 import { MEETING_ROLE_LABEL, type MeetingRole } from '../../types/participant'
-import { AttendanceCell, AttendanceSummary } from './AttendanceCell'
+import { AttendanceCell } from './AttendanceCell'
 import { useAttendance } from './useAttendance'
 
 const ROLE_ORDER: Record<MeetingRole, number> = { Chair: 0, Secretary: 1, Member: 2 }
@@ -29,10 +29,7 @@ export function AttendancePanel({ meetingId }: { meetingId: string }) {
 
   return (
     <div className="room-panel-body attendance-panel">
-      <div className="attendance-panel-head">
-        <h2 className="room-panel-title">Điểm danh</h2>
-        {data && <AttendanceSummary totals={data.totals} />}
-      </div>
+      <h2 className="room-panel-title">Điểm danh</h2>
 
       {state.kind === 'gone' && <p className="cell-sub">Bạn không còn xem được điểm danh của cuộc họp này.</p>}
       {state.kind === 'error' && (

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getParticipantContext, listParticipants, removeParticipant, revokeGuest } from '../../api/participants'
-import { Badge, type BadgeTone } from '../../components/Badge'
+import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { Pagination } from '../../components/Pagination'
@@ -14,7 +14,7 @@ import {
   type ParticipantPage,
   type ParticipantRow,
 } from '../../types/participant'
-import { AttendanceCell, AttendanceSummary } from '../attendance/AttendanceCell'
+import { AttendanceCell } from '../attendance/AttendanceCell'
 import { useAttendance } from '../attendance/useAttendance'
 import { useAccessLost } from '../auth/useAccessLost'
 import { useAuth } from '../auth/useAuth'
@@ -25,8 +25,6 @@ import { Person } from './Person'
 import { RsvpChip } from './Rsvp'
 
 const PAGE_SIZES = [20, 50, 100] as const
-
-const ROLE_TONE: Record<MeetingRole, BadgeTone> = { Chair: 'brand', Secretary: 'blue', Member: 'slate' }
 
 type Loaded = { context: ParticipantContext; roster: ParticipantPage }
 type State =
@@ -198,7 +196,6 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
             maxLength={200}
           />
         </label>
-        {showAttendance && attendanceData && <AttendanceSummary totals={attendanceData.totals} />}
         {manage && (
           <div className="toolbar-end row-actions participants-actions">
             {/* Two kinds of invitee, two icons: someone with an account, or a guest by email. */}
@@ -381,9 +378,16 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
   )
 }
 
-/** A role chip; a guest has no role. */
+/**
+ * A role chip, as AI-eCabinet draws it: square, each role a tint of its own hue and none solid — a
+ * solid Chair beside a tinted Secretary reads as one colour twice. A guest has no role.
+ */
 function RoleBadge({ role }: { role: MeetingRole | null }) {
-  return role ? <Badge tone={ROLE_TONE[role]}>{MEETING_ROLE_LABEL[role]}</Badge> : <Badge tone="outline">Khách</Badge>
+  return (
+    <span className={`role-chip role-${role?.toLowerCase() ?? 'guest'}`}>
+      {role ? MEETING_ROLE_LABEL[role] : 'Khách'}
+    </span>
+  )
 }
 
 /**
