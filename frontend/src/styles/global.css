@@ -1073,6 +1073,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .person { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .person .avatar { width: 36px; height: 36px; }
 .person-name { display: block; color: var(--ink); font-weight: 600; }
+.person-self { color: var(--muted-ink); font-weight: 500; }
 
 /* Sortable header: the whole label is the button; the arrow is faint until the column is active. */
 .sort-button {

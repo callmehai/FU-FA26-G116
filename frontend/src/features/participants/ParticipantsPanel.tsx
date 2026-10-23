@@ -15,6 +15,7 @@ import {
   type ParticipantRow,
 } from '../../types/participant'
 import { useAccessLost } from '../auth/useAccessLost'
+import { useAuth } from '../auth/useAuth'
 import { useMeetingEvents } from '../meetings/useMeetingEvents'
 import { isRefusal, type DialogOutcome } from './outcome'
 import { AddParticipantsDialog, ChangeRoleDialog, InviteGuestDialog } from './ParticipantDialogs'
@@ -53,6 +54,7 @@ type RowOpen = { kind: 'role'; row: ParticipantRow & { role: MeetingRole } } | {
  */
 export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string; onChanged?: () => void }) {
   const toast = useToast()
+  const { user } = useAuth()
   const handleAccessLost = useAccessLost()
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
@@ -241,7 +243,11 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
                 <tr key={row.id} className={row.isActive === false ? 'row-inactive' : undefined}>
                   <td className="cell-title">
                     <span className="participant-cell">
-                      <Person name={row.displayName} email={row.email} />
+                      <Person
+                        name={row.displayName}
+                        email={row.email}
+                        self={row.userId !== null && row.userId === user?.id}
+                      />
                       <span className="chip-row">
                         <span className="role-inline">
                           <RoleBadge role={row.role} />
