@@ -11,6 +11,7 @@ using TrustCabinet.Infrastructure.Access;
 using TrustCabinet.Infrastructure.Authentication;
 using TrustCabinet.Infrastructure.Email;
 using TrustCabinet.Infrastructure.Calls;
+using TrustCabinet.Infrastructure.Documents;
 using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Infrastructure.Users;
@@ -41,6 +42,10 @@ builder.Services.AddTrustCabinetEmailDelivery(builder.Configuration);
 // call endpoints then answer 503.
 builder.Services.AddTrustCabinetCalls(builder.Configuration);
 builder.Services.AddHostedService<CallRoomJanitor>();
+
+// SCRUM-107: meeting documents, bytes on Cloudflare R2 (ADR-0024). Starts without a store
+// configured; uploads then answer 503/MSG166.
+builder.Services.AddTrustCabinetDocuments(builder.Configuration);
 
 // The audit log records where a request came from, and only the web layer can see that.
 builder.Services.AddHttpContextAccessor();
@@ -170,6 +175,7 @@ app.MapRoleEndpoints();
 app.MapMeetingEndpoints();
 app.MapAgendaEndpoints();
 app.MapParticipantEndpoints();
+app.MapMeetingDocumentEndpoints();
 app.MapHub<MeetingHub>("/hubs/meetings", options => options.CloseOnAuthenticationExpiration = true);
 
 // SCRUM-14: user-scoped notification list/read APIs and realtime delivery.

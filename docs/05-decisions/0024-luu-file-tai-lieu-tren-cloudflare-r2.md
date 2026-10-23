@@ -38,8 +38,10 @@ Ràng buộc:
 6. **Cấu hình và bí mật.** Endpoint, tên bucket, access key và secret key đọc từ cấu hình (`dotnet user-secrets` khi
    dev, biến môi trường khi deploy), không đặt trong `appsettings.json`. Access key chỉ có quyền đọc/ghi đúng bucket
    đó.
-7. **Dev local dùng MinIO** trong `docker-compose.yml`, cùng giao thức S3, nên dev và server test chạy chung một đoạn
-   code. Test tự động (cả trên CI) thay kho file bằng bản giả trong bộ nhớ, không cần MinIO.
+7. **Dev local dùng SeaweedFS** (`chrislusf/seaweedfs`, Apache-2.0) trong `docker-compose.yml`, cùng giao thức S3,
+   nên dev và server test chạy chung một đoạn code. Test tự động (cả trên CI) thay kho file bằng bản giả trong bộ
+   nhớ, không cần kho thật. *Sửa khi làm SCRUM-107:* bản đề xuất ghi MinIO, nhưng MinIO đã ngừng phát hành image
+   công khai (Docker Hub, quay.io đều không kéo được nữa), nên đổi sang SeaweedFS.
 
 ## Phương án đã cân nhắc
 
@@ -66,5 +68,5 @@ Ràng buộc:
   vào dùng thật thì đơn vị vận hành phải lập hồ sơ đánh giá tác động chuyển dữ liệu ra nước ngoài, hoặc chuyển sang kho
   đối tượng đặt trong nước có API S3 — code không phải đổi, chỉ đổi cấu hình.
 - **Việc phát sinh:** tạo bucket và access key R2 cho server test; thêm biến môi trường vào `deploy/` và
-  [deploy/README.md](../../deploy/README.md); thêm dịch vụ MinIO vào `docker-compose.yml` và hướng dẫn trong
+  [deploy/README.md](../../deploy/README.md); thêm dịch vụ SeaweedFS vào `docker-compose.yml` và hướng dẫn trong
   [02-design/03-co-so-du-lieu.md](../02-design/03-co-so-du-lieu.md) — làm cùng SCRUM-107.

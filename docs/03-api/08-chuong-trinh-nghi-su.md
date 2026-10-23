@@ -16,7 +16,7 @@ Reorder nhận `{orderVersion,pendingItemIds}`. Token SHA-256 của danh sách `
 
 401 chưa đăng nhập; 403 inactive hoặc thiếu meeting role; 404 body rỗng cho meeting/item không tồn tại hoặc không được đọc; 409 conflict nghiệp vụ; 400/MSG66 input; 415/MSG34 Content-Type; 413/MSG87 body lớn; 503/MSG68–71,75–76 persistence. Chi tiết mã xem catalogue.
 
-Mỗi mutation khóa meeting trước, kiểm lại actor/assignment/status dưới lock, lưu item/document trong một transaction ReadCommitted. Các writer participant/document/lifecycle phải dùng cùng khóa. Current model loại assignment Delegated; SCRUM-20 phải cập nhật policy khi thêm Current/Removed. Document IDs hiện là **Document ID**, không phải MeetingDocument ID. Không chuyển tài liệu từ item khác; bỏ chọn chỉ SetNull.
+Mỗi mutation khóa meeting trước, kiểm lại actor/assignment/status dưới lock, lưu item/document trong một transaction ReadCommitted. Các writer participant/document/lifecycle phải dùng cùng khóa. Current model loại assignment Delegated; SCRUM-20 phải cập nhật policy khi thêm Current/Removed. Từ SCRUM-107, document IDs là **MeetingDocument ID** (tài liệu đang hiệu lực của cuộc họp, xem [11-tai-lieu-cuoc-hop.md](11-tai-lieu-cuoc-hop.md)); liên kết nằm ở bảng `meeting_document_agenda_items`. Agenda vẫn giữ mỗi tài liệu tối đa một mục; không chuyển tài liệu từ item khác; bỏ chọn chỉ xoá dòng liên kết, tài liệu vẫn trong cuộc họp.
 
 ## Ví dụ response
 

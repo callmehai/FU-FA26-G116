@@ -237,6 +237,29 @@ Mặc định tắt. Điền các biến `SMTP_*` trong `deploy/.env` (xem
 `SMTP_ENABLED=true`, rồi `docker compose -f deploy/docker-compose.yml up -d`. Email chỉ đến được
 những người dùng có địa chỉ thật — các tài khoản `@trustcabinet.local` thì không.
 
+### 9. Kho tệp tài liệu trên Cloudflare R2
+
+Tải tài liệu lên cuộc họp lưu byte trên R2 ([ADR-0024](../docs/05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)).
+Chưa cấu hình thì app vẫn chạy, nút tải lên báo `MSG166`.
+
+1. Cloudflare Dashboard → **R2 Object Storage** → bật R2 (cần thêm phương thức thanh toán, gói miễn phí vẫn đủ
+   cho server test) → **Create bucket** `trustcabinet-test`, location *Automatic*. **Không** bật Public access hay
+   custom domain.
+2. **R2 → Manage API tokens → Create API token**: quyền *Object Read & Write*, áp dụng cho **chỉ** bucket
+   `trustcabinet-test`. Lưu lại Access Key ID, Secret Access Key và endpoint
+   `https://<account-id>.r2.cloudflarestorage.com` (secret chỉ hiện một lần).
+3. Trên server, thêm vào `deploy/.env` rồi `docker compose -f deploy/docker-compose.yml up -d`:
+
+   ```bash
+   R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+   R2_BUCKET=trustcabinet-test
+   R2_ACCESS_KEY_ID=...
+   R2_SECRET_ACCESS_KEY=...
+   ```
+
+Trình duyệt không gọi thẳng R2 nên CSP trong `Caddyfile` giữ nguyên. Chỉ tải lên dữ liệu giả: R2 lưu ngoài Việt
+Nam (Nghị định 13/2023/NĐ-CP, xem ADR-0024).
+
 ## Sau khi bảo vệ xong
 
 Xoá máy `trustcabinet` **và** IP tĩnh trên Lightsail, rồi đóng tài khoản AWS. Tài khoản đang ở Paid

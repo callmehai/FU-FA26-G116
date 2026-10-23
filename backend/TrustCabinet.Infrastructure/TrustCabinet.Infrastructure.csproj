@@ -5,6 +5,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- S3 API client for the file store: Cloudflare R2, SeaweedFS in development (ADR-0024). -->
+    <PackageReference Include="AWSSDK.S3" Version="4.0.100.2" />
     <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
     <PackageReference Include="Google.Apis.Auth" Version="1.76.0" />
     <PackageReference Include="MailKit" Version="4.17.0" />

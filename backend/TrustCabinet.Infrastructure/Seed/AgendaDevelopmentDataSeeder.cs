@@ -37,9 +37,21 @@ public static class AgendaDevelopmentDataSeeder
                 ActualEndedAt = status == MeetingStatus.Draft ? null : start.AddMinutes(5) };
             db.AgendaItems.AddRange(first, new() { MeetingId = id, Position = 4, Title = "Thảo luận kế hoạch", PlannedDurationMinutes = 20 },
                 new() { MeetingId = id, Position = 8, Title = "Kết luận", PlannedDurationMinutes = 10, PresenterName = "Báo cáo viên khách mời" });
-            db.Documents.AddRange(new Document { MeetingId = id, Title = "Tài liệu chưa gắn mục (fixture)", UploadedById = secretary.Id },
-                new Document { MeetingId = id, AgendaItemId = first.Id, Title = "Tài liệu đã gắn mục (fixture)", UploadedById = secretary.Id });
+            // Rows only: these fixtures have no object in the file store, so they list but do not open.
+            var unlinked = Fixture(id, "Tài liệu chưa gắn mục (fixture)", secretary.Id);
+            var linked = Fixture(id, "Tài liệu đã gắn mục (fixture)", secretary.Id);
+            db.MeetingDocuments.AddRange(unlinked, linked);
+            db.MeetingDocumentAgendaItems.Add(new() { MeetingDocumentId = linked.Id, AgendaItemId = first.Id });
         }
         await db.SaveChangesAsync(ct);
+    }
+
+    private static MeetingDocument Fixture(Guid meetingId, string fileName, Guid uploaderId)
+    {
+        var fileId = Guid.CreateVersion7();
+        var now = DateTimeOffset.UtcNow;
+        return new MeetingDocument { MeetingId = meetingId, FileName = fileName, AddedById = uploaderId, AddedAt = now,
+            StoredFile = new StoredFile { Id = fileId, StorageKey = $"stored-files/{fileId:D}", OriginalFileName = fileName,
+                ContentType = "application/pdf", ContentSha256 = new string('0', 64), UploadedById = uploaderId, UploadedAt = now } };
     }
 }
