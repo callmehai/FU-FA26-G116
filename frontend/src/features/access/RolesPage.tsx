@@ -195,9 +195,7 @@ export function RolesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Quản trị"
         title="Vai trò"
-        description="Mỗi vai trò là một nhóm quyền; gán vai trò cho tài khoản ở màn Người dùng & Quyền."
         action={
           <button type="button" className="btn btn-primary btn-lg btn-cta" onClick={() => setFormTarget({ mode: 'create' })}>
             <Icon name="plus" size={18} />
@@ -258,7 +256,7 @@ export function RolesPage() {
                       {role.isBuiltIn && <Badge tone="outline">Mặc định</Badge>}{' '}
                       {role.id === me?.roleId && <Badge tone="blue">Vai trò của bạn</Badge>}
                     </td>
-                    <td className="cell-muted">{role.description ?? '—'}</td>
+                    <td className="cell-muted">{role.description ?? <em className="value-empty">Chưa có mô tả</em>}</td>
                     <td>{role.userCount}</td>
                     <td>
                       {!role.isBuiltIn && (

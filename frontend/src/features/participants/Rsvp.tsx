@@ -18,13 +18,10 @@ export function RsvpButtons({
   meetingId,
   onAnswered,
   labelledBy,
-  ping = false,
 }: {
   meetingId: string
   onAnswered: (response: Exclude<InvitationResponse, 'Pending'>) => void
   labelledBy?: string
-  /** The one question on screen (detail page, quick look) ripples; a list of cards does not. */
-  ping?: boolean
 }) {
   const toast = useToast()
   const handleAccessLost = useAccessLost()
@@ -52,7 +49,7 @@ export function RsvpButtons({
     <div className="rsvp-buttons" role="group" aria-labelledby={labelledBy}>
       <button
         type="button"
-        className={`btn btn-accept btn-sm btn-cta${ping ? ' btn-ping' : ''}`}
+        className="btn btn-accept btn-sm btn-cta"
         disabled={pending !== null}
         onClick={() => send('Accepted')}
       >

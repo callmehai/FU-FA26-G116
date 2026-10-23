@@ -264,7 +264,7 @@ export function MeetingOverview({
             <Icon name="calendar" size={16} />
             Xác nhận tham dự?
           </span>
-          <RsvpButtons meetingId={item.id} labelledBy={`${titleId}-ask`} onAnswered={onAnswered} ping />
+          <RsvpButtons meetingId={item.id} labelledBy={`${titleId}-ask`} onAnswered={onAnswered} />
         </div>
       )}
 
