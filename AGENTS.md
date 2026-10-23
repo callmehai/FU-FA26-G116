@@ -34,7 +34,8 @@ and checking the change in a real browser before the PR,
 scan for, with the rest in tooltips, and [anti-ai-slop](.claude/skills/anti-ai-slop/SKILL.md)
 (phòng chống AI slop) for catching the generated look — gradients, glows, endless motion, KPI
 tiles, eyebrows, side stripes and the other tells catalogued from published research and the big
-design systems — with a DOM checker to run on every screen. Claude Code loads them as skills; any other
+design systems — measured on every screen with [sloplint](https://github.com/callmehai/sloplint),
+whose project exceptions live in `.slop.json`. Claude Code loads them as skills; any other
 agent reads the files directly. The third-party [evondev ui-ux skill](.agents/skills/ui-ux/SKILL.md)
 is available as additional guidance; project rules here and `frontend-ui-design` take precedence.
 **Diagram and architecture work** uses [drawio-skill](.agents/skills/drawio-skill/SKILL.md)

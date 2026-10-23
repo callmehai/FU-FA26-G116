@@ -206,7 +206,7 @@ code {
 
 /* The page's own action ("Tạo cuộc họp") and what waits on the user ("Duyệt"): weight, not effects.
    No glow, lift or ripple — a coloured halo and an endlessly pulsing button are the stock tells of a
-   generated UI (anti-ai-slop T3, T8). */
+   generated UI (sloplint S6, M1). */
 .btn-cta { font-weight: 700; }
 
 /* A button that is only its icon; the name lives in aria-label and the tooltip (data-tooltip). */
@@ -1186,7 +1186,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .status-emerald { --status-icon: var(--chip-emerald-fg); }
 .status-blue { --status-icon: var(--chip-blue-fg); }
 .status-violet { --status-icon: var(--chip-violet-fg); }
-.status-live { --status-icon: #fff; padding: 0 8px; border-radius: var(--radius); background: var(--live); color: #fff; font-size: 12px; font-weight: 600; }
+.status-live { padding: 0 8px; border-radius: var(--radius); background: var(--live); color: #fff; font-size: 12px; font-weight: 600; }
 /* A history row's event ("Gửi duyệt") is a label, not the meeting's state: the text alone, even
    when it led to the live state. */
 .status-plain, .status-plain.status-live { padding: 0; background: none; color: var(--ink); font-size: inherit; font-weight: 600; }
@@ -1351,7 +1351,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* ---------- Approval workflow (SCRUM-19) ----------
    Where the meeting stands and the next step for the person looking, between the page header and
    the tabs. The state's colour is on its icon only — a coloured side stripe on a card is the most
-   reliable generated-UI tell (anti-ai-slop T6); the text stays ink for contrast. */
+   reliable generated-UI tell (sloplint S3); the text stays ink for contrast. */
 .workflow-bar {
   display: flex;
   align-items: flex-start;

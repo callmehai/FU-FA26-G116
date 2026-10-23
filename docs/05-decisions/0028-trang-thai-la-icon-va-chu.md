@@ -30,8 +30,9 @@ Chúng tôi thay phần "hình của từng loại nhãn" trong ADR-0012:
   thái có một icon riêng: Nháp (bút), Chờ duyệt (đồng hồ), Bị từ chối (dấu X tròn), Đã duyệt (dấu
   tích tròn), Đã công bố (máy bay giấy), Đã kết thúc (hai dấu tích). Như vậy trạng thái khác nhau
   cả ở hình chứ không chỉ ở màu.
-- **"Đang diễn ra" vẫn là nhãn nền đặc duy nhất**, bo 6px như mọi control, có icon phát sóng. Cuộc
-  họp đang diễn ra vẫn là thứ dễ thấy nhất trên mọi màn.
+- **"Đang diễn ra" vẫn là nhãn nền đặc duy nhất**, bo 6px như mọi control, chỉ có chữ. Nền đặc đã
+  là hình riêng của nó; thêm icon vào nhãn có nền là thêm một lớp trang trí (Cloudscape: không đặt
+  icon trong badge). Cuộc họp đang diễn ra vẫn là thứ dễ thấy nhất trên mọi màn.
 - **Mức độ** giữ chip bo góc 4px có icon cho Nội bộ, Hạn chế và Mật. **"Thường" là chữ thường**
   trong bảng và trong ô "Mức độ". Trong hàng chip (đầu trang chi tiết, thẻ lịch, khung xem nhanh)
   thì bỏ hẳn "Thường", giống phòng họp vẫn làm: không có nhãn nghĩa là mức thường.

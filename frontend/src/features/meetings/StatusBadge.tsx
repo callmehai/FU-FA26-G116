@@ -2,14 +2,16 @@ import { Icon, type IconName } from '../../components/Icon'
 import { MEETING_STATUS_LABEL, SENSITIVITY_LABEL, type MeetingStatus, type Sensitivity } from '../../types/meeting'
 import { STATUS_TONE } from './statusTone'
 
-/** One glyph per state, so states differ by shape and not only by colour (ADR-0028). */
-const STATUS_ICON: Record<MeetingStatus, IconName> = {
+/**
+ * One glyph per state, so states differ by shape and not only by colour (ADR-0028). "Đang diễn ra"
+ * has none: its solid fill is its shape, and an icon on a filled label is one decoration too many.
+ */
+const STATUS_ICON: Partial<Record<MeetingStatus, IconName>> = {
   Draft: 'pencil',
   WaitingApproval: 'clock',
   Rejected: 'xCircle',
   Approved: 'checkCircle',
   Published: 'send',
-  InProgress: 'broadcast',
   Ended: 'checkCheck',
 }
 
@@ -32,7 +34,7 @@ export function StatusBadge({
 }) {
   return (
     <span className={`status status-${STATUS_TONE[status]}${plain ? ' status-plain' : ''}`}>
-      {!plain && <Icon name={STATUS_ICON[status]} size={14} />}
+      {!plain && STATUS_ICON[status] && <Icon name={STATUS_ICON[status]} size={14} />}
       {label ?? MEETING_STATUS_LABEL[status]}
     </span>
   )
