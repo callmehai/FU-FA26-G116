@@ -548,7 +548,7 @@ deactivate MeetingPage
 
 Xuất PNG: `node scripts/export-diagrams.js docs/06-sequencediagram/<thư mục hoặc file>` (cần truy cập `sequencediagram.org`).
 
-Đồng bộ ảnh `.drawio.png` từ 44 tab UC của file draw.io gộp (bỏ qua tab index):
+Đồng bộ ảnh `.drawio.png` từ 53 tab UC của file draw.io gộp (bỏ qua tab index):
 `python scripts/sync_sequence_drawio_png.py` (cần cài Draw.io; có thể đặt `DRAWIO_EXECUTABLE` nếu CLI chưa có trong PATH).
 
 UC09 và UC13 bổ sung ngày 13/10/2026: source + PNG theo đặc tả hiện hành. Đây là thiết kế đích; unlock/lock store và audit-read endpoint chưa có code. Không tự cấp message codes mới. Quy tắc lưu lock/audit nguyên tử trong UC09 là đề xuất kỹ thuật để giữ audit evidence nhất quán khi update thất bại.

@@ -98,11 +98,14 @@ Test); chúng không phải file đích của DOCX Report 5.0.
 
 Thư mục Drive chứa các report: [SEP490-G116 Reports](https://drive.google.com/drive/folders/19wdKDAYViFGn4nlrmCnyNJkDQ0IOw-Z7?usp=drive_link).
 
-**Report 3 đồng bộ Markdown gần nhất:** 22/10/2026 (lần 3), từ DOCX local sau khi sửa UC-32a, UC-32c, UC-33a
+**Report 3 đồng bộ Markdown gần nhất:** 23/10/2026, từ DOCX local sau khi viết lại đặc tả màn hình 7.3, 7.4,
+7.5 và 8.1–8.5 theo wireframe v7 và phòng họp đã chạy trên server test (bỏ giơ tay, tắt mic tất cả, chat lưu lại), đổi
+tên 8.3, 8.5, thêm 8.6 In-Room Documents Panel (chưa làm), thay ảnh các màn đó, sửa bảng Screen List và thêm một dòng
+Change Log. Không thay nội dung trên Drive.
+
+Lần trước: 22/10/2026 (lần 3), từ DOCX local sau khi sửa UC-32a, UC-32c, UC-33a
 (EX-8), UC-35, thêm BR-315 → BR-319, MSG288 (mục V.2), một dòng Change Log và thay ảnh ERD ở mục 3.1 bằng ERD mục
-tiêu mới (`MeetingDocumentAgendaItem`, Guest góp ý) — SCRUM-21/22/23, PO duyệt 22/10/2026. Các phần đặc tả màn hình
-(Documents tab, Add Document dialog, In-Room Meeting Panel) giữ nguyên, xem
-[note bàn giao](../notes/NOTE-tai-lieu-scrum-21-22-23.md). Không thay nội dung trên Drive.
+tiêu mới (`MeetingDocumentAgendaItem`, Guest góp ý) — SCRUM-21/22/23, PO duyệt 22/10/2026. Không thay nội dung trên Drive.
 
 Lần 2 cùng ngày: từ DOCX local sau khi sửa UC-08 (thêm
 POST-4, bước 9 Normal Flow và bước 6 AF-1) và thêm BR-314 theo yêu cầu PO 22/10/2026 cho SCRUM-105: đổi

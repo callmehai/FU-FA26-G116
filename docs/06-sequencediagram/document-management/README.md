@@ -12,8 +12,8 @@ Các UC tài liệu khác (UC-33a → UC-33d, UC-34, UC-36, UC-71, UC-72) chưa 
 
 UC-32a, UC-32c, UC-35 vẽ ngày 22/10/2026 theo đặc tả sửa cùng ngày (nhóm theo mục nghị sự, panel Tài liệu
 trong phòng họp, trả lời góp ý, BR-315 → BR-318). Boundary của UC-32a gộp tab Tài liệu và panel trong phòng vì
-cùng một request; nhánh AF-3 chỉ đổi thứ tự hiển thị. Source và PNG đã có; **tab trong file draw.io gộp và ảnh
-`drawio-png/` chưa thêm** — các tab cũ được dựng bằng Mermaid import trong draw.io desktop, cần làm tay.
+cùng một request; nhánh AF-3 chỉ đổi thứ tự hiển thị. Source, PNG, tab trong file draw.io gộp và ảnh
+`drawio-png/` đã có (tab thêm 23/10/2026 bằng bộ chuyển Mermaid của draw.io, style chuẩn hoá như tab UC-74).
 
 Xác nhận đã đọc chỉ áp dụng cho tài liệu gắn với một biểu quyết của cuộc họp; checkbox chỉ bật khi người dùng đã cuộn
 tới trang cuối (BR-290). Một xác nhận tính cho mọi biểu quyết cùng gắn tài liệu đó, không rút lại được và không gắn

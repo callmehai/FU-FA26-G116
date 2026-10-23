@@ -39,6 +39,7 @@ Table of Contents
 | 15/10/2026 | M | KhanhPG | Align UC Specifications, Business Rules and System Messages with ADR-0020; add UC-33b and UC-33d, Meeting-based document reading, Meeting-end document/link locks, multiple Agenda Item links, Meeting-start folder dates and independent Meeting document names. Screen and data descriptions are handed over in a separate note. Record PO follow-up: read-only documents/comments after Meeting end, preserve Meeting documents when deleting an Agenda Item, and start a new addition without previous comments when readding a removed document. Review all sixteen FE-07 UC Specifications for business wording. Review FE-11 against ADR-0016/0017/0019/0020: clarify Meeting-owned Votes, draft versus immediate opening, voting checks, secret-ballot completion and inaccessible-resource flows; retire cancellation MSG237. Hand over UI action/state alignment in the FE-11 screen note. Clarify BR-192/228 and UC-33a under ADR-0020: automatic Meeting folders use the planned Meeting start date in Vietnam time, including recreation after deletion. Synchronize the non-screen FE-07/FE-11 handover: actor lists, message contexts, UC inventory and target data relationships for Guest identities, fixed voter eligibility and multiple document-Item links; simplify BR-159. Screen specifications and illustrations remain pending in the handover notes. Support one or more files per UC-33a/36 submission under BR-286: validate each file, add the whole selection or none, and identify invalid selections. Align the reserved message wording with multiple-file outcomes. |
 | 16/10/2026 | M | LocHD | Align UC-19, UC-20 and BR-39 with the SCRUM-19 team decision of 16/10/2026: the Meeting Organizer is notified in the application when a Meeting is approved or rejected (a rejection includes its reason), together with the decision and its history, and no email is sent for the decision; on publication, the publishing Meeting Organizer receives no in-app invitation notification, while every current internal participant, including that Organizer, is still sent the invitation email. |
 | 22/10/2026 | M | LocHD | Align UC-32a, UC-32c and UC-35 with SCRUM-21/22/23: documents grouped by Agenda Item, Vote and general, Documents panel in the online meeting room, audit of views and downloads of Confidential/Secret documents, one-level replies to comments; UC-33a EX-8 upload limit of 10 files and 200 MB per submission; add BR-315 to BR-319 and MSG288; update the ERD image (MeetingDocumentAgendaItem, Guest comment author). |
+| 23/10/2026 | M | LocHD | Rewrite the screen specifications 7.3 Documents Tab, 7.4 Add Document dialog, 7.5 Document Viewer and 8.1–8.5 of the online room to match wireframe v7 and the room as deployed (no raise hand, mute all or saved chat); rename 8.3 and 8.5, add 8.6 In-Room Documents Panel (planned); update their images and the Screen List. |
 
 *A - Added M - Modified D - Deleted
 
@@ -874,14 +875,15 @@ Notes:
 | 6.4 | Invitation Response | FE-06 Meeting Participant Management | Allows an invited Chair, Secretary, Participant or verified Guest to view the invitation and accept or decline it, and to change the response until the meeting ends. |
 | 7.1 | Document Library – Empty State | FE-07 Personal Document Library & Meeting Document Management | Shows the Document Library of a user who has no folders or files yet: an empty-state panel explaining how the library is used and the accepted file types, with New folder and Upload buttons at the top of the page and inside the panel. |
 | 7.2 | Personal Document Library | FE-07 Personal Document Library & Meeting Document Management | Allows an internal user to browse folders, search and filter his/her private documents by file type, upload files, organise files and folders, delete files and see where each document is used in meetings. |
-| 7.3 | Meeting Detail – Documents Tab | FE-07 Personal Document Library & Meeting Document Management | Allows users related to a meeting to view its documents, filtered by agenda item, with uploader and comment count, and the Chair or Secretary to add documents or remove them from the Meeting. |
-| 7.4 | Add Document to Meeting Dialog | FE-07 Personal Document Library & Meeting Document Management | Allows the Chair or Secretary to attach documents to a meeting from the computer or the personal library and link them to an agenda item. |
-| 7.5 | Document Viewer – Preview & Comments | FE-07 Personal Document Library & Meeting Document Management | Allows users related to a meeting to preview a meeting document page by page, download it unless the Meeting is Secret, and read and add comments. |
-| 8.1 | Meeting Lobby | FE-08 Online Meeting Room Management | Allows the Chair, Secretary, Participant or a verified Guest to preview camera and microphone, choose audio and video devices and enter the online room of an Online or Hybrid meeting. |
-| 8.2 | Online Meeting Room – Video Grid | FE-08 Online Meeting Room Management | Allows users connected to the online room to see participants in a video grid, see who is speaking, turn their own microphone and camera on or off, raise a hand and leave the room. |
-| 8.3 | In-Room Participants & Moderation Panel | FE-08 Online Meeting Room Management | Allows users in the online room to view who is connected and their room presence, and allows the Chair to manage the raise-hand queue, invite speakers, mute participants and remove users from the room. |
-| 8.4 | Screen Sharing & Chat | FE-08 Online Meeting Room Management | Allows users connected to the online room to share their screen on the main stage, follow a shared screen and exchange text chat messages with everyone currently in the room. |
-| 8.5 | In-Room Meeting Panel | FE-08 Online Meeting Room Management | Allows users in the online room to follow the meeting agenda, open meeting documents and, for eligible voters (holders of the meeting roles the Chair selected for the Vote, verified Guests included), cast their vote on an open Vote without leaving the room. |
+| 7.3 | Meeting Detail – Documents Tab | FE-07 Personal Document Library & Meeting Document Management | Allows users who can view a meeting to see its documents grouped by Agenda Item, Vote or general, with page and comment counts, and the Chair or Secretary to add, link, unlink and remove documents until the meeting ends. |
+| 7.4 | Add Document to Meeting Dialog | FE-07 Personal Document Library & Meeting Document Management | Allows the Chair or Secretary to add documents to a meeting from the computer (up to 10 files and 200 MB at a time) or from the personal library, generally or for one Agenda Item. |
+| 7.5 | Document Viewer – Preview & Comments | FE-07 Personal Document Library & Meeting Document Management | Allows users who can view a meeting to preview a meeting document page by page, download it unless the Meeting is Secret, and read, write and reply to comments. |
+| 8.1 | Meeting Lobby | FE-08 Online Meeting Room Management | Allows the Chair, Secretary, Participant or a verified Guest to preview camera and microphone, choose audio and video devices and enter the online room of an In Progress Online or Hybrid meeting. |
+| 8.2 | Online Meeting Room – Video Grid | FE-08 Online Meeting Room Management | Allows users connected to the online room to see participants in a video grid, see who is speaking, turn their own microphone and camera on or off, share the screen, use a floating window, open the side panels and leave the room. |
+| 8.3 | In-Room Participants Panel | FE-08 Online Meeting Room Management | Allows users in the online room to view who is connected with their meeting role, who is speaking and who is muted, and allows the Chair to mute a participant. |
+| 8.4 | Screen Sharing & Chat | FE-08 Online Meeting Room Management | Allows users connected to the online room to present their screen on the main stage, follow a shared screen and exchange text chat messages that are not kept after the meeting. |
+| 8.5 | In-Room Voting Panel | FE-08 Online Meeting Room Management | Planned: allows eligible voters in the online room to follow the open Vote and cast a ballot without leaving the room. |
+| 8.6 | In-Room Documents Panel | FE-08 Online Meeting Room Management | Planned: allows users in the online room to read the meeting documents, current Agenda Item first, opening each document in a new tab so the call continues. |
 | 9.1 | Meeting Detail – Recordings Tab | FE-09 Meeting Audio Upload & Media Library | Allows the Secretary to upload the meeting audio after the meeting has ended, see processing status and uploaded files, review the speaker-attributed transcript and start generating the AI summary. |
 | 9.2 | Upload Audio Dialog | FE-09 Meeting Audio Upload & Media Library | Allows the Secretary to select or drag an MP3, M4A or WAV audio file of up to 500 MB, confirm recording consent and upload it to an Ended meeting for transcription. |
 | 10.1 | Speaker-Attributed Transcript | FE-10 Speaker-Attributed Transcription & Meeting Summary | Allows the Secretary to play the uploaded meeting audio, search and correct the transcript text, and assign unknown voices to meeting attendees before generating the meeting summary. |
@@ -2827,21 +2829,23 @@ Field Description
 
 #### 7.3 Meeting Detail – Documents Tab
 
-The Meeting Detail – Documents tab lists the documents attached to the selected Meeting. Each document is either linked to one agenda item or is a general document of the Meeting. The Meeting keeps its own reference to each file, so deleting the file from a personal library does not remove it from the Meeting. Users related to the meeting view the list and open a document in the Document Viewer (7.5); the Chair and the Secretary add documents from the computer or from their personal library through the Add Document to Meeting Dialog (7.4) and remove documents from the Meeting (UC-32a, UC-32c, UC-33a, UC-33c).
+The Meeting Detail – Documents tab lists the documents attached to the selected Meeting in three groups, as in AI-eCabinet: By meeting content, with one block per Agenda Item in agenda order; Voting, with the documents attached to each Vote; and General documents, linked to no Agenda Item. A file linked to several Agenda Items appears under each of them and is uploaded only once. The Meeting keeps its own reference to each file, so deleting the file from a personal library does not remove it from the Meeting. Anyone who can view the Meeting reads its documents; the Chair and the Secretary add, link, unlink and remove documents until the Meeting ends (UC-32a, UC-32c, UC-33a, UC-33b, UC-33c, UC-33d, BR-275, BR-277).
 
-This screen allows users related to the meeting (Meeting Organizer, Meeting Approver, Chair, Secretary, Participant) to:
+This screen allows users who can view the meeting (Meeting Organizer, Meeting Approver, Chair, Secretary, Participant, verified Guest) to:
 
-- View Meeting Documents: view the documents of the Meeting with file name, size, linked agenda item, the person who added it and the number of comments (UC-32a).
+- View Meeting Documents: view the documents grouped by Agenda Item, Vote or general, each with file name, page count for a PDF and number of comments (UC-32a).
 
-- Filter by Agenda Item: choose an agenda item, or general documents, to show only the related documents (UC-32a).
+- Switch Grouping: choose By meeting content, Voting or General documents (UC-32a).
 
 - Open Document: click a document to open it in the Document Viewer with preview and comments (UC-32c).
 
-- Add Document from Library: (Chair, Secretary) click “Choose from Document Library” to attach files from the personal library (UC-33a).
+On the screen, the Chair and the Secretary can also:
 
-- Upload Document from Computer: (Chair, Secretary) click “Upload from computer” to attach a file from the device (UC-33a).
+- Add General Document: click “Add general document” to add documents that belong to no Agenda Item through the Add Document to Meeting Dialog (UC-33a).
 
-- Remove Document: (Chair, Secretary) click “Remove” on a row to remove the document from the Meeting; not allowed once the Meeting has minutes (UC-33c).
+- Attach to Agenda Item: open the paperclip menu of an Agenda Item and choose Upload from computer, Choose from meeting documents or Choose from my library (UC-33a, UC-33b).
+
+- Unlink or Remove Document: open the ⋯ menu of a row and choose Remove from this item or Remove from the meeting (UC-33d, UC-33c).
 
 Field Description
 
@@ -2849,27 +2853,24 @@ Field Description
 | --- | --- |
 | Meeting header | Read-only: back link “‹ Meetings” [‹ Cuộc họp], meeting title with status chip (e.g. Draft [Nháp], In Progress [Đang họp]) and confidentiality chip (e.g. Normal [Thường]); second line: planned date and time and mode · location (e.g. “Thursday, 15/10/2026 · 08:30–09:30 · Hybrid · Room 2.1, floor 2”). |
 | Tabs | Documents [Tài liệu] is selected. Other tabs: General Information, Participants, Meeting Content, Voting, Recordings, Summary, Minutes. |
-| Agenda item filter [Tất cả mục nghị sự] | Dropdown. Values: All agenda items (default), each agenda item of the Meeting by order and title, and General documents [Tài liệu chung]. |
-| Choose from Document Library [Chọn từ Kho tài liệu] | Secondary button; opens the Add Document to Meeting Dialog on the “From my library” tab. Visible only to the Chair and the Secretary of the Meeting. |
-| Upload from computer [Tải lên từ máy] | Primary button; opens the Add Document to Meeting Dialog on the “From computer” tab. Visible only to the Chair and the Secretary. |
-| Document [Tài liệu] | Column: file thumbnail, file name and size, e.g. “Bao-cao-Sprint5.pdf · 2,4 MB”. Clicking the row opens the Document Viewer (7.5). |
-| Linked item [Gắn với mục] | Column: the agenda item the document belongs to (e.g. “1. Sprint 5 results report”), or “General document” [Tài liệu chung] in grey when no item is linked. |
-| Remove [Gỡ khỏi cuộc họp] | Icon button on each row, visible only to the Chair and the Secretary. Asks for confirmation, then removes the document from the Meeting; its comments are kept as history but no longer listed. Not allowed once Meeting Minutes exist (UC-33c, BR-185). |
-| Added by [Người thêm] | Column: full name of the user who added the document to the Meeting. |
-| Comments [Góp ý] | Column: number of comments on the document, e.g. 3 (UC-35). |
-| Access rules | Only users related to the Meeting see this tab (BR-29). An external Guest, within a verified Guest session, sees only all attached Meeting documents under Member read rules (BR-120, BR-154). |
+| Grouping [Theo nội dung họp / Biểu quyết / Tài liệu chung] | Segmented control: By meeting content (default), Voting, General documents; each segment shows its number of documents (UC-32a). |
+| Agenda Item block | Collapsible block per Agenda Item in agenda order with order number, title and number of documents; during an In Progress Meeting the current item is expanded first. Tooltip: “A document can be attached to several items.” [Một tài liệu có thể gắn ở nhiều mục.] (BR-277). |
+| Attach [paperclip icon] | Icon button on each Agenda Item block, Chair and Secretary only, until the Meeting ends. Menu: Upload from computer [Tải tệp lên từ máy], Choose from meeting documents [Chọn từ tài liệu cuộc họp], Choose from my library [Chọn từ Tài liệu của tôi] (UC-33a, UC-33b). |
+| Document row | File type badge, file name, page count for a PDF and number of comments, e.g. “Ke-hoach-kinh-doanh-2027.pdf · 14 pages · 4 comments”. Who added the document and when are shown in a tooltip on the name. Clicking the row opens the Document Viewer (7.5). |
+| Vote documents | In the Voting group, each Vote lists its documents with the user’s own state Read [Đã đọc] or Not read [Chưa đọc] (UC-74). |
+| Row menu [⋯] | Chair and Secretary only, until the Meeting ends. Remove from this item [Gỡ khỏi mục này] unlinks the document from that Agenda Item only (UC-33d). Remove from the meeting [Gỡ khỏi cuộc họp] asks for confirmation and removes the document from every item; its comments are kept as history but no longer listed (UC-33c, BR-281). |
+| Add general document [Thêm tài liệu chung] | Button, Chair and Secretary only; opens the Add Document to Meeting Dialog (7.4). |
+| Access rules | Anyone who can currently view the Meeting reads its documents, including verified Guests and the Meeting Approver; there is no separate reading permission (BR-275). After the Meeting ends every add, link and remove control is hidden and the documents are read-only (BR-185, BR-282). |
 
 #### 7.4 Add Document to Meeting Dialog
 
-The Add Document to Meeting Dialog opens from the Documents tab with “Choose from Document Library” or “Upload from computer”. The Chair or the Secretary selects files from his/her personal library or uploads a file from the computer, and optionally links them to one agenda item. A document selected from the personal library remains in that library. A file uploaded from the computer is also stored in the uploader’s personal library, in the folder named after the meeting (UC-33a, BR-184, BR-192).
+The Add Document to Meeting Dialog opens from “Add general document” or from the paperclip menu of an Agenda Item on the Documents tab. The Chair or the Secretary selects files from his/her personal library or uploads files from the computer. A document selected from the personal library remains in that library. A file uploaded from the computer is also stored in the uploader’s personal library, in the folder named after the meeting. All submitted documents are added together, or none is added (UC-33a, BR-184, BR-192, BR-286).
 
 This screen allows the Chair or the Secretary to:
 
 - Select Documents from Library: on the “From my library” tab tick one or more files of his/her personal library (UC-33a).
 
-- Upload from Computer: on the “From computer” tab choose a file from the device to add to the Meeting (UC-33a).
-
-- Link to Agenda Item: choose the agenda item the documents belong to, or leave it empty for a general document (UC-33a).
+- Upload from Computer: on the “From computer” tab drop or choose up to 10 PDF or DOCX files at a time (UC-33a, BR-319).
 
 - Add Documents: click “Add <n> documents” to attach the selected files to the Meeting (UC-33a).
 
@@ -2882,205 +2883,214 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Dialog title | “Add documents” [Thêm tài liệu]. |
-| Tabs | From computer [Từ máy tính] / From my library [Từ kho của tôi]; the tab is preselected by the button used on the Documents tab. |
-| Library file list | From my library tab. Rows with checkbox, file icon, file name and upload date (e.g. “09/10”). Only the user’s own library files are listed. At least one file must be selected. |
-| Link to agenda item [Gắn với mục nghị sự] | Dropdown, optional. Lists the agenda items of the Meeting by order and title (e.g. “3. Minutes signing and sealing procedure”). Hint: “Leave empty for a general document.” [Để trống thì là tài liệu chung.] |
-| Access notice | Info box: “Everyone in the Meeting, including verified Guests, can read the added documents.” [Mọi người trong cuộc họp, kể cả khách mời đã xác minh, đều đọc được tài liệu đã thêm.] (BR-181) |
+| Tabs | From computer [Từ máy tính] / From my library [Từ kho của tôi]. |
+| Library file list | From my library tab: folder picker, search by file name and rows with checkbox, file type badge, file name and upload date (e.g. “09/10”). Only the user’s own library files are listed; a file already in this Meeting is greyed out with “Already in the meeting” [Đã có trong cuộc họp]. At least one file must be selected. |
+| Upload area | From computer tab: drop zone “Drag files here or click to choose” [Kéo tệp vào đây hoặc bấm để chọn]. Only PDF or DOCX, at most 50 MB each, and at most 10 files totalling 200 MB per submission; files that break a limit are named in an error and nothing is added (MSG164, MSG288, BR-187, BR-215, BR-319). |
+| Agenda Item [Gắn với mục nghị sự] | Shown with the Agenda Item when the dialog opens from that item’s paperclip menu; the documents are then also linked to it (UC-33b). Opened from “Add general document”, the documents are general documents. |
+| Access notice | Info box: “Everyone in the Meeting, including verified Guests, can read the added documents.” [Mọi người trong cuộc họp, kể cả khách mời đã xác minh, đều đọc được tài liệu đã thêm.] (BR-275) |
 | Cancel [Huỷ] | Text button; closes the dialog. |
-| Add <n> documents [Thêm <n> tài liệu] | Primary button showing the number of selected files (e.g. “Add 1 document”). Adds each file with its linked item, records the user as “Added by” and refreshes the Documents tab. If the file cannot be added, an error is shown and nothing is attached. |
+| Add <n> documents [Thêm <n> tài liệu] | Primary button showing the number of selected files (e.g. “Add 1 document”). Adds all files, records the user as the one who added them and refreshes the Documents tab. If any file cannot be added, an error is shown and nothing is attached (BR-286). |
 
 #### 7.5 Document Viewer – Preview & Comments
 
-The Document Viewer opens when a user clicks a document on the Documents tab, on an agenda item or in the current item card. It renders the document in the browser – a PDF page by page, a DOCX as one continuous scrollable document – with zoom, and a side panel with its comments. Users related to the meeting preview the document, download it unless the Meeting is Secret, and add comments, which refer to a page in a PDF (UC-32c, UC-35).
+The Document Viewer opens when a user clicks a document on the Documents tab, on an Agenda Item or in the Documents panel of the online room; opened from the room, it opens in a new browser tab so the call continues (BR-315). It renders the document in the browser – a PDF page by page, a DOCX as one continuous scrollable document – with zoom, and a side panel with its comments. Users who can view the Meeting preview the document, download it unless the Meeting is Secret, comment, and reply to a comment in one level (UC-32c, UC-35).
 
-This screen allows users related to the meeting (Meeting Organizer, Meeting Approver, Chair, Secretary, Participant) to:
+This screen allows users who can view the meeting (Meeting Organizer, Meeting Approver, Chair, Secretary, Participant, verified Guest) to:
 
 - Preview Meeting Document: read the document (a PDF page by page) and zoom in or out (UC-32c).
 
-- View Comments: read the comments on the document with author, page and time (UC-35).
+- View Comments: read the comments with author, page and time, each followed by its replies (UC-35).
 
-- Comment on Document: (Meeting Organizer, Chair, Secretary, Participant, verified Guest) type a comment and click “Send” (UC-35).
+- Comment on Document: type a comment and click “Send”; for a PDF it refers to the page being viewed (UC-35).
+
+- Reply to Comment: click “Reply” under a comment; a reply to a reply joins the same thread, one level deep (UC-35, BR-317).
 
 - Download Document: click “Download” to save the original file; not available in a Secret Meeting, where documents can only be viewed online (UC-32c).
 
 On the screen, s/he can also:
 
-- Back to Documents: click “‹ Documents” to return to the Documents tab of the Meeting.
+- Back to Documents: click “‹ Documents” to return to the Documents tab of the Meeting, or to close the tab opened from the room.
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Back link [‹ Tài liệu] | Returns to the Documents tab of the Meeting. |
-| Document header | Read-only: file name (e.g. “Du-thao-nghi-quyet-HDQT.pdf”) and confidentiality chip of the Meeting (e.g. Secret [Mật] in red). |
+| Back link [‹ Tài liệu] | Returns to the Documents tab of the Meeting; in a tab opened from the room it closes that tab. |
+| Document header | Read-only: file type badge, file name (e.g. “Du-thao-nghi-quyet-HDQT.pdf”), confidentiality chip of the Meeting (e.g. Secret [Mật] in red) and the meeting title. |
 | Page indicator [Trang 2 / 6] | Read-only current page and total number of pages; updates while scrolling. Shown for PDF documents only. |
 | Zoom − / + | Two square buttons that decrease or increase the zoom level of the preview. |
-| Download [Tải về] | Secondary button; downloads the original file. Hidden in a Secret Meeting, where documents can only be viewed online (BR-188). |
-| Preview pane | UI behavior: Read-only rendering made in the browser with no server conversion – PDF pages, or a DOCX as one continuous scrollable document; a highlighted passage marks the area a comment refers to. For a Secret document the viewer’s name and viewing time are printed as a watermark on every page. |
-| Comments tab [Bình luận 4] | Tab with the number of comments; selected by default. Each comment shows avatar initials, author, page and relative time (e.g. “Page 2 · 2 hours ago”) and the comment text. |
-| Comment box [Viết bình luận…] | Textarea, required to send, empty by default; for a PDF the comment is linked to the page being viewed; a DOCX comment has no page. Hidden for users who may not comment (Meeting Approver). Verified current Guests may comment as Members. |
-| Send [Gửi] | Primary button; posts the comment, which appears at the top of the list and increases the comment count on the Documents tab (UC-35). |
+| Download [Tải về] | Secondary button; downloads the original file. In a Secret Meeting it is replaced by the chip “View online only” [Chỉ xem trực tuyến] (BR-188). |
+| Preview pane | Read-only rendering made in the browser with no server conversion – PDF pages, or a DOCX as one continuous scrollable document; a highlighted passage marks the area a comment refers to. For a Secret document the viewer’s name and viewing time are printed as a watermark on every page. Each view or download of a Restricted or Secret document is recorded in the audit log (BR-318). |
+| Comments tab [Bình luận 4] | Tab with the number of comments. Each comment shows avatar initials, author, page and relative time (e.g. “Page 2 · 2 hours ago”), the text and a “Reply” [Trả lời] link; replies are indented under it. A Guest’s comment shows the name the Guest gave with the label Guest [Khách mời] (ADR-0016). |
+| Comment box [Viết bình luận…] | Textarea, required to send; for a PDF the comment is linked to the page being viewed, a DOCX comment has no page. Hidden after the Meeting ends, when comments are read-only (BR-282, MSG251). |
+| Send [Gửi] | Primary button; posts the comment or reply, which appears in the list and increases the comment count on the Documents tab (UC-35). |
 
 ### 8. FE-08 – Online Meeting Room Management
 
 #### 8.1 Meeting Lobby
 
-The Meeting Lobby is the pre-join screen of the TrustCabinet Online Meeting Room. It opens when an invited user clicks “Join room” on an Online or Hybrid meeting (from the meeting detail page, the dashboard or a notification), or when an external Guest continues after Guest Verification. Before entering, the user checks the camera preview and selects the microphone, speaker and camera; the lobby also states clearly that the room is never recorded (UC-37, UC-39a, UC-39b, UC-04).
+The Meeting Lobby is the pre-join screen of the Online Meeting Room, laid out like Google Meet. It opens when a user clicks “Join online room” on an In Progress Online or Hybrid meeting, or when a verified Guest continues to the room. The page has its own top bar with the TrustCabinet mark and the signed-in account; the left side shows the camera preview with the microphone and camera switches and the device pickers, the right side the meeting and the Join button (UC-37, UC-39a, UC-39b, UC-04).
 
 This screen allows the Chair, Secretary, Participant and a verified Guest to:
 
-- View Meeting Status: see the meeting title, its live status with the actual start time and how many people are already in the room (UC-37).
+- Preview Camera and Microphone: see the camera preview and a voice level indicator while the microphone is on (UC-39a, UC-39b).
 
-- Preview Camera: see the camera preview of the selected camera before entering the room (UC-39b).
+- Set Initial Microphone and Camera State: switch the microphone (on by default) and the camera (off by default) before entering; the browser remembers the choice for the next time (UC-39a, UC-39b).
 
-- Select Devices: choose the microphone, speaker and camera to be used in the room (UC-39a, UC-39b).
-
-- Set Initial Microphone and Camera State: decide whether to enter with the microphone on or off and the camera on or off (UC-39a, UC-39b).
+- Select Devices: choose the microphone, speaker and camera (UC-39a, UC-39b).
 
 - Join Meeting Room: click “Join room” to enter the Online Meeting Room – Video Grid (UC-37).
 
 On the screen, s/he can also:
 
-- Read the No-Recording Notice: see that the online room records neither audio nor video, and that any recording needed for the minutes is uploaded by the Secretary after the meeting (FE-09).
+- Back to the Meeting: click “‹ Back to the meeting page” [Quay lại trang cuộc họp].
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting status line | Read-only eyebrow text, e.g. “ĐANG HỌP · BẮT ĐẦU 13:02” [In progress · started 13:02], showing the lifecycle status and the actual start time recorded by Start Meeting (UC-21). |
-| Meeting title | Read-only, e.g. “Họp Hội đồng quản trị quý IV”. |
-| Room presence count | Read-only, e.g. “9 người đang trong phòng” [9 people in the room]; number of users currently connected to the room (UC-40). |
-| Camera preview | Video area showing the local camera image of the selected camera; shows an empty placeholder when the camera is off or no permission has been given by the browser. |
-| Micro: Bật / Camera: Tắt [Mic: On / Camera: Off] | Two toggle buttons under the preview; each click switches the state and the label. Default shown: microphone on, camera off. The chosen state is applied when the user enters the room (UC-39a, UC-39b). |
-| Micro [Microphone] | Dropdown, required; lists the microphones detected by the browser, default the system device (e.g. “Micro MacBook Pro”). Can still be changed inside the room. |
-| Loa [Speaker] | Dropdown, required; lists available audio output devices, e.g. “Loa ngoài” [External speaker]. |
-| Camera | Dropdown; lists available cameras, e.g. “FaceTime HD”. Changing it refreshes the preview immediately. |
-| No-recording notice | Read-only blue info box: “Phòng họp trực tuyến không ghi âm, không ghi hình. Nếu cần bản ghi để làm biên bản, Thư ký tải lên sau cuộc họp.” [The online room records neither audio nor video. If a recording is needed for the minutes, the Secretary uploads it after the meeting.] The system never records the room. |
-| Vào phòng họp [Join room] | Primary button. The system re-checks room-entry eligibility: the user must be a current Chair, Secretary or Participant of the meeting, or a Guest within a valid, meeting-scoped Guest access (BR-152 – BR-157, BR-120); removed or revoked invitees are refused (BR-97, BR-100). Joining is refused once the meeting is Ended (BR-143). On success the user opens the Online Meeting Room – Video Grid with the chosen devices. |
+| Top bar | TrustCabinet mark on the left; full name, email and initials avatar of the signed-in user on the right. |
+| Camera preview | Dark rounded area showing the selected camera; “Camera is off” [Camera đang tắt] when the camera is off or not permitted by the browser. |
+| Microphone / Camera switches | Two round icon buttons on the bottom edge of the preview, with tooltips such as “Turn off microphone” [Tắt micro]; a switched-off device is shown in light red. A voice level indicator shows while the microphone receives sound. |
+| Device pickers [Micro / Loa / Camera] | Three pill buttons under the preview, each opening the devices detected by the browser (e.g. “MacBook Pro Microphone”). Without browser permission they read e.g. “No permission to use the microphone, or no microphone” and are disabled; the Speaker picker is hidden in browsers that cannot choose an audio output. |
+| Heading | “Ready to join?” [Sẵn sàng tham gia?] followed by the meeting title. |
+| Confidentiality chip | Shown only for a Restricted or Secret Meeting. |
+| Room presence | e.g. “6 people in the room” [Đang có 6 người trong phòng], or “No one else is here” [Không có người nào khác ở đây]. |
+| Vào phòng [Join room] | Primary pill button; reads “Joining…” while connecting. The system re-checks that the user can still view the Meeting, that it is In Progress and that it has an online room (BR-143, BR-152 – BR-157, BR-120). On success the user enters the Video Grid with the chosen devices. |
+| Room unavailable message | When the Meeting has not started, has ended or is held in person only, the page shows only a message such as “The room opens only while the meeting is in progress.” [Phòng họp chỉ mở khi cuộc họp đang diễn ra.] and “Back to the meeting page”; after a dropped connection it also offers “Rejoin” [Vào lại]. |
 
 #### 8.2 Online Meeting Room – Video Grid
 
-The Online Meeting Room – Video Grid is the full-screen main view of the online room, shown after the user clicks “Join room” in the Meeting Lobby. It displays the connected people as a video grid with the active speaker highlighted, and a bottom toolbar from which the user controls his/her own microphone and camera, opens the People, Chat and Meeting side panels, or leaves the room. Leaving the room does not change the meeting lifecycle; only the Chair can end the meeting (UC-38, UC-39a, UC-39b, UC-40).
+The Online Meeting Room – Video Grid is the full-screen main view of the online room, laid out like Google Meet: a one-line blue header with a gold bottom edge, a navy stage with the video tiles, the call controls centred at the bottom as icons with tooltips, and the People and Chat panel buttons at the bottom right. Leaving the room does not change the meeting lifecycle; only the Chair ends the meeting (UC-37, UC-38, UC-39a, UC-39b, UC-40).
 
 This screen allows the Chair, Secretary, Participant and a verified Guest connected to the room to:
 
-- View Video Grid: see the camera image or initials avatar of the people in the room, with the current speaker highlighted and muted people marked (UC-40).
+- View Video Grid: see the camera image or initials of the people in the room, with the current speaker highlighted, muted people marked and the Chair tagged; the grid pages when more people are connected than fit (UC-40).
 
-- Manage Microphone: turn his/her own microphone on or off (UC-39a).
+- Manage Microphone: turn his/her own microphone on or off (Ctrl+D) and choose the microphone and speaker (UC-39a).
 
-- Manage Camera: turn his/her own camera on or off (UC-39b).
+- Manage Camera: turn his/her own camera on or off (Ctrl+E) and choose the camera (UC-39b).
 
-- Leave Meeting Room: click “Leave room” to disconnect from the room without ending the meeting (UC-38).
+- Leave Meeting Room: click “Leave” and confirm to disconnect without ending the meeting (UC-38).
 
 On the screen, s/he can also:
 
-- Raise Hand: click “Raise hand” to ask for the floor; the request appears in the Chair’s speaking queue in the In-Room Participants & Moderation Panel.
+- Share Screen: present a screen, window or tab to everyone (8.4, UC-39c).
 
-- Open Side Panels: open the People panel (UC-40, UC-41), the Chat panel (UC-42), screen sharing (UC-39c) or the In-Room Meeting Panel (UC-26, UC-55, UC-32a).
+- Open Floating Window: move the call into a small picture-in-picture window to work in other tabs while staying in the room.
+
+- Open Side Panels: open the Participants panel (8.3) or the Chat panel (8.4).
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Room header | Read-only top bar: meeting title (e.g. “Họp Hội đồng quản trị quý IV”), the current Agenda Item (e.g. “Mục 2 · Báo cáo kế hoạch kinh doanh 2027”) updated in real time when the Chair changes it (BR-73), elapsed time “Đã họp 00:42:17” [Elapsed] counted from the actual start time, and the confidentiality chip (Normal / Internal / Restricted / Secret [Mật]). |
-| Video tile | One tile per connected user: camera image when the camera is on, otherwise a circle with the user’s initials (e.g. “PL”), plus a name label (e.g. “Phạm Thị Lan”). The grid adapts to the number of tiles (e.g. 3 × 2). |
+| Room header | Back button ‹ (asks for confirmation, as Leave does), meeting title, chip “6 people in the room” [6 người trong phòng] and the confidentiality chip for a Restricted or Secret Meeting. |
+| Video tile | Camera image, or a circle with the user’s initials when the camera is off; name label with a crossed microphone when muted, “(Bạn)” [You] for the local user and the gold tag “Chủ toạ” [Chair]. |
 | Active speaker highlight | Blue border around the tile of the person currently speaking. |
-| Muted indicator | Red crossed-out icon before the name label when that person’s microphone is off (e.g. “Trần Thu Hà”). |
-| Overflow tile | “+4 người” [+4 people] tile shown when more people are connected than the grid can display; the full list is in the People panel. |
-| Tắt mic [Mute mic] | Toggle button; switches the user’s own microphone off/on. A user muted by the Chair can unmute himself/herself again (UC-39a, UC-41). |
-| Camera | Toggle button; switches the user’s own camera on/off (UC-39b). |
-| Chia sẻ [Share] | Starts or stops sharing the user’s screen; opens the Screen Sharing & Chat layout (UC-39c). |
-| Giơ tay [Raise hand] | Toggle button; raises or lowers the user’s hand. A raised hand is listed with its time in the Chair’s speaking queue. |
-| Người (11) [People (n)] | Opens the In-Room Participants & Moderation Panel; the number is the count of users currently connected (UC-40). |
-| Chat / Cuộc họp [Meeting] | Open the in-room Chat panel (UC-42) and the In-Room Meeting Panel with Agenda, Voting and Documents tabs (UC-26, UC-55, UC-32a). |
-| Rời phòng [Leave room] | Red button. Disconnects the user from the room and returns to the meeting detail page; the meeting stays In Progress and the user may join again while the meeting is In Progress (UC-38). When the Chair ends the meeting, every connected user is disconnected automatically (BR-143). |
+| Pager ‹ 1 / 2 › | Shown when more people are connected than the stage can display. |
+| Microphone [Tắt micro / Bật micro] | Icon button, red when off; the arrow ⌃ beside it opens the microphone and speaker pickers. A user muted by the Chair is told so and may turn the microphone on again (UC-39a, UC-41). |
+| Camera [Tắt camera / Bật camera] | Icon button, red when off; the arrow ⌃ opens the camera picker (UC-39b). |
+| Share screen [Chia sẻ màn hình] | Icon button, highlighted while sharing (8.4, UC-39c). |
+| Floating window [Mở cửa sổ nổi] | Icon button in browsers that support it; while the call is in the floating window the stage shows “The meeting is in a floating window” with “Bring the meeting back to this window”. |
+| Leave [Rời phòng] | Red button. Confirmation “Leave the meeting room – The meeting continues with the others. You can rejoin while the meeting is in progress.” with Stay [Ở lại] and Leave [Rời phòng]. The meeting stays In Progress; when the Chair ends the meeting every connected user is disconnected (UC-38, BR-143). |
+| Participants / Chat [Người dự / Chat] | Icon buttons at the bottom right that open the side panels (8.3, 8.4); Chat shows the number of unread messages. |
+| Connection banners | “Connection lost, reconnecting…” [Mất kết nối, đang kết nối lại…] while reconnecting, and a banner with a button when the browser blocks audio playback. |
 
-#### 8.3 In-Room Participants & Moderation Panel
+#### 8.3 In-Room Participants Panel
 
-The In-Room Participants & Moderation Panel is the right-hand side panel of the online room, opened with the “People (n)” button on the room toolbar. It lists the users currently connected to the room with their meeting role or room presence and the queue of raised hands. Every connected user can view the list; only the assigned Chair sees and uses the moderation controls (UC-40, UC-41).
+The In-Room Participants Panel is the white 360 px panel on the right of the online room, opened with the Participants icon at the bottom right. It lists the users currently connected to the room with their meeting role. Every connected user can view the list; only the Chair can mute another user (UC-40, UC-41).
 
 This screen allows users connected to the room (Chair, Secretary, Participant, Guest) to:
 
-- View Meeting Room Participants: see the number and list of users currently in the room, each with initials, full name and meeting role (Chair, Secretary, Guest) or presence such as “Speaking” (UC-40).
+- View Meeting Room Participants: see the number and the list of users in the room, sorted by meeting role (Chair, Secretary, Member, Guest) and then by name, with who is speaking and whose microphone is off (UC-40).
 
-- View Speaking Requests: see the users who have raised their hand and the time of the request (UC-40).
+On the screen, the Chair can also:
 
-On the screen, s/he can also:
-
-- Invite to Speak (Chair only): click “Invite to speak” next to a raised hand to give that person the floor; the request leaves the queue (UC-41).
-
-- Mute a Participant or Everyone (Chair only): mute the microphone of one connected user or click “Mute all” (UC-41).
-
-- Remove from Room (Chair only): remove a connected user from the online room; this does not remove him/her from the meeting roster (UC-41).
+- Mute a Participant: click “Mute” next to a user whose microphone is on (UC-41).
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Người trong phòng 11 [People in the room] | Panel header with the count of currently connected users (UC-40). |
-| Tắt mic tất cả [Mute all] | Red outline button, visible only to the Chair. Mutes every connected user except the Chair after a confirmation; users can unmute themselves afterwards (UC-41). |
-| XIN PHÁT BIỂU (2) [Speaking requests] | Section listing raised hands in request order, each with initials, name and “Giơ tay hh:mm” [Raised hand at]. Hidden when nobody has raised a hand. |
-| Mời nói [Invite to speak] | Primary button on each request, visible only to the Chair. Gives the floor to that user, lowers the hand and removes the entry from the queue (UC-41). |
-| TRONG PHÒNG [In the room] | Section listing every connected user: initials avatar, full name and a sub-label with the meeting role (Chủ trì [Chair], Thư ký [Secretary], Khách mời [Guest]) or the current presence (Đang phát biểu [Speaking]). Removed or revoked invitees disappear from the list when their room-entry access ends (BR-101). |
-| Row moderation icons | Two icon buttons per row, active only for the Chair: mute this user’s microphone and remove this user from the room (UC-41). For other users the icons only show the person’s microphone and camera state. |
-| Visibility rule | All connected users can view this panel; moderation actions are limited to the assigned Chair of the meeting (permission matrix, Online meeting room – Moderate). |
+| Panel title [Người dự (6)] | Title with the number of users currently connected (UC-40). |
+| Participant row | Initials avatar, full name with “(Bạn)” [You] for the local user, and the meeting role below: Chủ toạ [Chair], Thư ký [Secretary], Thành viên [Member], Khách mời [Guest]. |
+| Speaking indicator | Green dot while the user is speaking. |
+| Microphone state | Microphone icon; shown red and crossed out when the microphone is off. |
+| Tắt mic [Mute] | Outline button shown only to the Chair, on other users whose microphone is on. The user is told “The Chair has muted your microphone. You can turn it back on when you need to speak.” (UC-41). |
+| Not provided | Raising a hand, muting everyone and removing a user from the room are not part of the current version. |
 
 #### 8.4 Screen Sharing & Chat
 
-The Screen Sharing & Chat layout of the online room appears when a connected user starts sharing his/her screen with the “Share” button and/or opens the Chat panel from the room toolbar. The shared screen takes the main stage, the video tiles shrink into a side column, and the Chat panel on the right shows the text messages exchanged in the room; chat messages are kept with the meeting (UC-39c, UC-42).
+The Screen Sharing & Chat layout appears when a connected user presents his/her screen and/or opens the Chat panel. The shared screen takes the main stage and the video tiles move to a strip beside it. Chat lives only in the room: messages are seen by the people currently in the room and are not kept after the meeting (UC-39c, UC-42).
 
 This screen allows the Chair, Secretary, Participant and a verified Guest connected to the room to:
 
-- Manage Screen Sharing: start sharing his/her screen or a window, and stop sharing with the same button (UC-39c).
+- Manage Screen Sharing: start or stop presenting a screen, window or tab; one person presents at a time, and when someone else starts, the previous presenter’s share stops and that user is told (UC-39c).
 
 - View Shared Screen: follow the screen shared by another user on the main stage (UC-39c).
 
-- Use In-room Chat: read the messages sent in the room and send a text message to everyone currently in the room (UC-42).
+- Use In-room Chat: read the messages sent since joining and send a text message to everyone currently in the room (UC-42).
 
 On the screen, s/he can also:
 
-- Close the Chat Panel: close the panel with the icon in its header to return to the full stage.
+- Close the Chat Panel: click the Chat icon again to return to the full stage.
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Room header | Read-only top bar: meeting title (e.g. “Họp Hội đồng quản trị quý IV”), the current Agenda Item (e.g. “Mục 2 · Báo cáo kế hoạch kinh doanh 2027”) updated in real time when the Chair changes it (BR-73), elapsed time “Đã họp 00:42:17” [Elapsed] counted from the actual start time, and the confidentiality chip (Normal / Internal / Restricted / Secret [Mật]). |
-| Shared screen stage | Main area showing the shared screen; caption at the bottom “Phạm Thị Lan đang chia sẻ màn hình” [Phạm Thị Lan is sharing the screen]. |
-| Video tile column | Narrow column of video tiles beside the shared screen (name label, initials avatar, active-speaker border, muted icon) as in the Video Grid. |
-| Chia sẻ [Share] | Toolbar toggle, highlighted while the user is sharing; the browser asks which screen or window to share. Clicking again stops sharing and the room returns to the grid layout (UC-39c). |
-| Chat panel header | Title “Chat” with a close icon. |
-| Message list | Read-only list in time order; each message shows the sender name in bold, the time (hh:mm) and the text, e.g. “Đỗ Văn Tùng 13:38 – Slide 4 số liệu chi phí là của quý III hay cả năm ạ?”. Only users currently connected to the room can read and send messages (UC-42). |
-| Nhắn cho mọi người… [Message everyone…] | Text input at the bottom of the panel; Enter sends the message to everyone in the room. Empty messages are not sent. Chat is text only. |
-| Chat [toolbar] | Toolbar toggle, highlighted while the Chat panel is open. |
+| Shared screen stage | Main area showing the shared screen; caption “Phạm Thị Lan is presenting” [Phạm Thị Lan đang trình bày]; the presenter sees “You are presenting to everyone” [Bạn đang trình bày cho mọi người]. |
+| Video tile strip | Video tiles beside the shared screen, as in the Video Grid. |
+| Share screen [Chia sẻ màn hình / Dừng chia sẻ] | Toolbar toggle, highlighted while sharing; the browser asks which screen, window or tab to share (UC-39c). |
+| Chat panel title | “Chat”. |
+| Chat notice | “Messages are visible only to people in the room and are not kept after the meeting.” [Tin nhắn chỉ hiện với người đang trong phòng và không được lưu lại sau cuộc họp.] |
+| Message list | Messages in time order with sender (“Bạn” [You] for the user’s own messages) and time hh:mm; “No messages yet.” [Chưa có tin nhắn nào.] when empty. A user who joins later does not see earlier messages. |
+| Message box | Textarea “Type a message — Enter to send, Shift+Enter for a new line”, at most 1,000 characters with a counter (e.g. “0/1000”). |
+| Gửi [Send] | Primary button, enabled when the message is not blank. If sending fails: “Could not send the message. Please try again.” [Không gửi được tin nhắn. Vui lòng thử lại.] |
 
-#### 8.5 In-Room Meeting Panel
+#### 8.5 In-Room Voting Panel
 
-The In-Room Meeting Panel is the right-hand side panel opened with the “Meeting” button on the room toolbar. It reuses the components of the meeting detail page in three tabs – Agenda, Voting and Documents – so that people in the room can follow the agenda, read the meeting documents and vote without leaving the room. When the Chair opens a Vote, everyone in the room receives a pop-up notice and the panel opens automatically on the Voting tab (UC-26, UC-55, UC-32a).
+The In-Room Voting Panel is planned (SCRUM-96) and not part of the current version. It adds a Voting icon next to Participants and Chat; the white 360 px panel reuses the components of the Voting tab of the meeting detail page (ADR-0011). When the Chair opens a Vote, the panel opens for everyone in the room (UC-52b, UC-55).
 
 This screen allows users connected to the room (Chair, Secretary, Participant, Guest) to:
 
-- View Meeting Agenda: see the Agenda Items of the meeting and which item is currently in progress (UC-26).
+- View Vote Status: see the open Vote, when it opened, whether the ballot is secret and how many eligible voters have voted (UC-52b).
 
-- View Meeting Votes: see the open Vote, the agenda item it belongs to and how many eligible voters have voted (UC-52).
-
-- Cast Vote: choose one option of the open Vote and submit the ballot once; available only to users on the eligible list fixed when the Vote opened, i.e. current holders of the meeting roles the Chair selected, verified Guests included when Guest is selected (UC-55, BR-190).
-
-- View Meeting Documents: open the documents attached to the meeting; a Guest sees all attached Meeting documents (UC-32a).
+- Cast Vote: choose one option and submit the ballot once; available only to users on the eligible list fixed when the Vote opened, i.e. current holders of the meeting roles the Chair selected, verified Guests included when Guest is selected (UC-55, BR-190).
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Cuộc họp [Meeting] | Panel title. |
-| Tabs | Nghị sự [Agenda], Biểu quyết [Voting] with a badge showing the number of Open votes (e.g. 1), Tài liệu [Documents]. The Voting tab is selected automatically when a Vote is opened. |
-| Vote status line | Status chip “Đang mở” [Open] (green) followed by “Mở lúc 13:58 · Mục 2” [Opened at 13:58 · Item 2]: opening time and related Agenda Item. |
+| Panel title [Biểu quyết] | Title of the panel; label “Planned” [Chưa làm] in the wireframe. |
+| Vote status line | Status chip “Open” [Đang mở] (green) followed by “Opened at 13:58 · secret ballot”. A Vote belongs to the Meeting, not to an Agenda Item (ADR-0019). |
 | Vote question | Read-only bold text, e.g. “Thông qua kế hoạch kinh doanh năm 2027”. |
-| Vote options | Radio cards, exactly one may be selected: Đồng ý [Agree], Không đồng ý [Disagree], Không ý kiến [Abstain]. No option is selected by default. |
-| Gửi phiếu [Submit vote] | Primary button, enabled after an option is selected. Records the ballot once for the voter; voting is possible only while the meeting is In Progress and the Vote is Open, and only for users on the eligible list fixed when the Vote opened – current holders of the meeting roles the Chair selected, verified Guests included when Guest is selected (BR-160, BR-165, BR-190). After submission the options become read-only with the user’s choice shown. |
-| Ballot progress | Read-only text “Đã bỏ phiếu 7/11 · phiếu kín” [Voted 7/11 · secret ballot]: number of ballots cast out of eligible voters; for a secret ballot individual choices are not shown. |
-| Agenda tab | Read-only list of Agenda Items in order with presenter, planned duration and status (Pending / In Progress / Done); the current item is highlighted and updated in real time (BR-64, BR-73). |
-| Documents tab | List of meeting documents; clicking a document opens the Document Viewer. A Guest sees all attached Meeting documents (UC-32a). |
+| Ballot progress | “Voted 7/11” [Đã bỏ phiếu 7/11]: ballots cast out of eligible voters; no option results while the Vote is open, and for a secret ballot no indication of who has just voted. |
+| Vote options | Radio cards, exactly one may be selected: Đồng ý [Agree], Không đồng ý [Disagree], Không ý kiến [Abstain]. |
+| Gửi phiếu [Submit vote] | Primary button, shown only to eligible users who still have access and have not voted. Hint: “A submitted ballot cannot be changed or withdrawn.” After submission the panel only confirms the ballot (BR-160, BR-165, BR-190). |
+
+#### 8.6 In-Room Documents Panel
+
+The In-Room Documents Panel is planned (SCRUM-21) and not part of the current version. It adds a Documents icon next to Participants and Chat; the white 360 px panel reuses the Documents tab component in its room variant (ADR-0011). It is read-only: the documents of the current Agenda Item come first, and a document opens in the Document Viewer in a new browser tab so the call is not interrupted (UC-32a, UC-32c, BR-315, BR-316).
+
+This screen allows users connected to the room (Chair, Secretary, Participant, Guest) to:
+
+- View Meeting Documents: see the documents of the current Agenda Item first, the other items collapsed and the general documents (UC-32a).
+
+- Open Document: click a document to read and comment on it in a new tab while staying in the room (UC-32c, UC-35, BR-315).
+
+Field Description
+
+| Field Name | Description |
+| --- | --- |
+| Panel title [Tài liệu (5)] | Title with the number of Meeting documents; label “Planned” [Chưa làm] in the wireframe. |
+| Online-only chip [Chỉ xem trực tuyến] | Shown for a Secret Meeting, whose documents cannot be downloaded (BR-188). |
+| Current item group | “Current item · 2. Báo cáo kế hoạch kinh doanh 2027” [Mục đang bàn]; follows the Chair when the current Agenda Item changes. |
+| Document row | File type badge, file name, page count and number of comments; tooltip “Opens in a new tab · you stay in the room” [Mở ở tab mới · bạn vẫn ở trong phòng]. |
+| Other items [Mục khác] | Collapsed rows with order number, title and number of documents; expanding one lists its documents. |
+| General documents [Tài liệu chung] | Documents linked to no Agenda Item. |
+| Read-only rule | No add, link or remove actions in the room (BR-316); documents added from the Documents tab appear in the panel without reloading. To show a page to everyone, the presenter shares the screen (8.4). |
 
 ### 9. FE-09 – Meeting Audio Upload & Media Library
 

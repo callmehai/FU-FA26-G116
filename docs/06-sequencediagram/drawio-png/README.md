@@ -27,3 +27,6 @@ hoặc chưa có, cần chạy lại `python scripts/sync_sequence_drawio_png.py
 - Chưa có ảnh, tab mới: UC-73, UC-74, UC-75, UC-76a, UC-76b, UC-77.
 
 Trong lúc chờ, nguồn đúng là file `.txt` và ảnh `.png` cùng tên trong thư mục của từng feature.
+
+**23/10/2026:** đã xuất ảnh cho tab mới UC-32a, UC-32c, UC-35. Riêng UC-32c (khoảng 36 triệu pixel ở scale 2) bị
+cắt phần dưới nên xuất ở **scale 1.5**; chạy lại script toàn bộ sẽ đưa nó về scale 2 — kiểm tra ảnh không bị cắt.
