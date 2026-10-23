@@ -56,6 +56,46 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
         Assert.Equal(MeetingRole.Member, p.Role); Assert.Equal(0, (await db.Meetings.FindAsync(s.MeetingId))!.ParticipantsRevision);
     }
 
+    [Theory]
+    [InlineData(false, "Accepted")]
+    [InlineData(false, "Declined")]
+    [InlineData(true, "Accepted")]
+    [InlineData(true, "Declined")]
+    public async Task Answered_invitation_put_and_no_op_match_read_permissions(bool guest, string answer)
+    {
+        var s = await f.Seed();
+        await using var db = f.Db();
+        var invitation = new MeetingGuestInvitation
+        {
+            MeetingId = s.MeetingId, Email = "response@guests.test",
+            InvitedName = "Guest", InvitedById = s.Secretary,
+        };
+        if (guest) { db.MeetingGuestInvitations.Add(invitation); await db.SaveChangesAsync(); }
+        using var client = guest ? f.Guest(s.MeetingId, invitation.Id) : f.Client(s.Member);
+        var before = await client.GetFromJsonAsync<JsonElement>(s.Url + "/invitation-response");
+        Assert.True(before.GetProperty("canRespond").GetBoolean());
+        var saved = await Code(await Write(client, s.Url + "/invitation-response", HttpMethod.Put,
+            new { response = answer }), 200, "MSG105");
+        var view = saved.GetProperty("response");
+        Assert.False(view.GetProperty("canRespond").GetBoolean());
+        Assert.Equal(answer, view.GetProperty("response").GetString());
+        Assert.Equal(guest ? invitation.Id : s.MemberAssignment, view.GetProperty("id").GetGuid());
+        var read = await client.GetFromJsonAsync<JsonElement>(s.Url + "/invitation-response");
+        Assert.Equal(view.ToString(), read.ToString());
+        var context = await client.GetFromJsonAsync<JsonElement>(s.Url + "/participant-context");
+        Assert.False(context.GetProperty("permissions").GetProperty("canRespond").GetBoolean());
+        var events = f.Changes.Events.Count(e => e.Change.MeetingId == s.MeetingId);
+        var audits = await db.AuditLog.CountAsync(a => a.ObjectId == s.MeetingId);
+        var repeated = await Code(await Write(client, s.Url + "/invitation-response", HttpMethod.Put,
+            new { response = answer }), 200, "MSG154");
+        Assert.Equal(view.ToString(), repeated.GetProperty("response").ToString());
+        await Code(await Write(client, s.Url + "/invitation-response", HttpMethod.Put,
+            new { response = answer == "Accepted" ? "Declined" : "Accepted" }), 409, "MSG285");
+        Assert.Equal(events, f.Changes.Events.Count(e => e.Change.MeetingId == s.MeetingId));
+        Assert.Equal(audits, await db.AuditLog.CountAsync(a => a.ObjectId == s.MeetingId));
+        Assert.Equal(0, (await db.Meetings.FindAsync(s.MeetingId))!.ParticipantsRevision);
+    }
+
     [Fact]
     public async Task Response_is_asked_once_and_never_of_the_chair()
     {

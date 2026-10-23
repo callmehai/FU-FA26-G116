@@ -7,6 +7,7 @@
 - [`03-co-so-du-lieu.md`](03-co-so-du-lieu.md) — cài PostgreSQL, chuỗi kết nối, vòng đời migration
 - [`04-luong-nghiep-vu-chinh.md`](04-luong-nghiep-vu-chinh.md) — 4 luồng nghiệp vụ chính BF-01 → BF-04 (bản PO duyệt 09/10/2026)
 - [`08-ke-hoach-phong-hop-truc-tuyen.md`](08-ke-hoach-phong-hop-truc-tuyen.md) — thiết kế giải pháp phòng họp trực tuyến (LiveKit / WebRTC)
+- [`10-scrum97-ke-hoach-backend.md`](10-scrum97-ke-hoach-backend.md) — kế hoạch thực thi UC-73, nguồn yêu cầu, thứ tự validation và ma trận kiểm thử Backend.
 
 Dự kiến có thêm:
 

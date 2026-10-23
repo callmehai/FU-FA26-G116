@@ -96,15 +96,17 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 | Mã | HTTP | Endpoint / tình huống | Thông báo |
 |---|---|---|---|
 | `MSG256` | 409 | PUT assignments: Secretary tác động Chair còn active ở Published/InProgress | Chỉ Chủ tọa được giao vai trò Chủ tọa khi tài khoản hiện tại còn hoạt động. |
-| `MSG257` | 200 | PUT assignments: Chair bàn giao ở Published/InProgress | Giao vai trò Chủ tọa thành công. |
-| `MSG259` | 400 | PUT assignments: người nhận Chair không current/active hoặc đang là Secretary | Người nhận vai trò Chủ tọa phải là thành viên nội bộ hiện tại, đang hoạt động và không phải Thư ký. |
+| `MSG257` | 200 | PUT assignments / POST chair-handover: Chair bàn giao ở Published/InProgress | Giao vai trò Chủ tọa thành công. |
+| `MSG258` | 200 | GET chair-handover-candidates: toàn meeting không có current active Member đủ điều kiện | Không có thành viên đủ điều kiện nhận vai trò Chủ tọa. Hãy thêm thành viên nội bộ trước. |
+| `MSG259` | 400 | PUT assignments / POST chair-handover: người nhận Chair không phải current active Member khác Chair | Người nhận vai trò Chủ tọa phải là thành viên nội bộ hiện tại, đang hoạt động và không phải Thư ký. |
+| `MSG260` | 409 | GET chair-handover-candidates / POST chair-handover: người đọc nội bộ không còn là current Chair hoặc status không cho bàn giao | Bạn không còn quyền giao vai trò Chủ tọa cho cuộc họp này. |
 | `MSG277` | 400 | POST meetings: roster khởi tạo không hợp lệ | Danh sách thành phần tham dự không hợp lệ. |
 
-`MSG258` và `MSG260` tiếp tục dành sẵn. Nhánh SCRUM-26 cần remap các mã trùng trước khi tích hợp; `MSG277` đã thuộc validation roster khi tạo họp trong PR #92.
+`MSG258` và `MSG260` đã triển khai trong API chuyên biệt UC-73 của SCRUM-97. `MSG258` là empty state trong response thành công, không dùng cho search không khớp. Nhánh SCRUM-26 cần remap các mã trùng trước khi tích hợp; `MSG277` đã thuộc validation roster khi tạo họp trong PR #92.
 
 ## Mã tiếp theo
 
-**`MSG289`** — `MSG288` dành sẵn cho UC-33a EX-8 (giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026). SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278`–`MSG279` thuộc dải cần rà soát với SCRUM-26 trước khi tích hợp. `MSG252`–`MSG274` dành sẵn, chưa triển khai, cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020; đặc tả UC-23b dùng `MSG250` cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG151` dành cho thay đổi FE-06 trong Report 3; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG289`** — `MSG288` dành sẵn cho UC-33a EX-8 (giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026). SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278`–`MSG279` thuộc dải cần rà soát với SCRUM-26 trước khi tích hợp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG261`–`MSG274` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020; đặc tả UC-23b dùng `MSG250` cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG151` dành cho thay đổi FE-06 trong Report 3; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -537,7 +539,7 @@ Các mã dưới đây được dành sẵn cho đặc tả nghiệp vụ trong 
 
 ### Tài liệu và liên kết mục nghị sự — ADR-0020 (15/10/2026)
 
-Các mã sau **Dành sẵn, chưa triển khai**; thông điệp đặc tả bằng tiếng Anh.
+Bảng nguồn đặc tả dưới đây giữ thông điệp tiếng Anh để truy vết. Trạng thái triển khai theo từng dòng; riêng MSG256–MSG260 đã có Backend, contract HTTP và thông điệp tiếng Việt ở bảng phía trên.
 
 | Mã | Nguồn / tình huống | Thông báo chuẩn |
 |---|---|---|
@@ -561,9 +563,9 @@ Các mã sau **Dành sẵn, chưa triển khai**; thông điệp đặc tả b�
 | `MSG255` | UC-74 / EX-3 · Dành sẵn, chưa triển khai | Unable to confirm document reading. Please try again. |
 | `MSG256` | UC-28b / EX-5 · Đã triển khai trong SCRUM-20 / SCRUM-97 | From publication onward, only the current Chair can hand over the Chair role. |
 | `MSG257` | UC-73 / Main Flow · Đã triển khai trong SCRUM-20 / SCRUM-97 | Chair role handed over successfully. |
-| `MSG258` | UC-73 / AF-1 · Dành sẵn, chưa triển khai | No participant can receive the Chair role. Add an internal participant first. |
+| `MSG258` | UC-73 / AF-1 · Đã triển khai trong SCRUM-97 | No participant can receive the Chair role. Add an internal participant first. |
 | `MSG259` | UC-73 / EX-1 · Đã triển khai trong SCRUM-20 / SCRUM-97 | The selected participant can no longer receive the Chair role. Select another participant. |
-| `MSG260` | UC-73 / EX-2 · Dành sẵn, chưa triển khai | You can no longer hand over the Chair role for this meeting. |
+| `MSG260` | UC-73 / EX-2 · Đã triển khai trong SCRUM-97 | You can no longer hand over the Chair role for this meeting. |
 | `MSG261` | UC-75 / Main Flow · Dành sẵn, chưa triển khai | Meeting cancelled successfully. |
 | `MSG262` | UC-75 / EX-1 · Dành sẵn, chưa triển khai | Enter a reason for cancelling the meeting. |
 | `MSG263` | UC-75 / EX-2 · Dành sẵn, chưa triển khai | This meeting can no longer be cancelled. |
