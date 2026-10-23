@@ -93,7 +93,8 @@ Collection Postman có folder `UC-73 — smoke tuần tự` (DB riêng), dùng t
 
 ## FE đã tích hợp UC-73 (23/10/2026)
 
-- **Một chỗ duy nhất để đổi Chủ tọa**: nút bút chì "Đổi vai trò" trên dòng của người sẽ làm Chủ tọa, chọn "Chủ tọa", hộp thoại nói rõ "X thành Chủ tọa, Y thành Thành viên", bấm **Giao Chủ tọa**. Không có nút riêng trên thanh công cụ, để mọi trạng thái cuộc họp và mọi người bấm đều đi cùng một đường.
+- **Một chỗ duy nhất để đổi Chủ tọa**: nút bút chì "Đổi vai trò" trên dòng của người sẽ làm Chủ tọa, chọn "Chủ tọa", bấm **Giao Chủ tọa**. Không có nút riêng trên thanh công cụ, để mọi trạng thái cuộc họp và mọi người bấm đều đi cùng một đường.
+- Chọn vai trò (hộp thoại Đổi vai trò và Thêm thành phần) là danh sách radio dọc như AI-eCabinet, dưới mỗi vai trò một dòng nói vai trò đó làm được gì. Dòng của "Chủ tọa" nói luôn ai sẽ thành Thành viên ("Bạn sẽ thành Thành viên." hoặc tên Chủ tọa hiện tại), nên chọn không làm hộp thoại đổi chiều cao.
 - Lựa chọn "Chủ tọa" chỉ hiện khi `permissions.canReplaceChair` và người trên dòng nhận được: tài khoản còn hoạt động, và từ Published chỉ Thành viên (không phải Thư ký). Lựa chọn và request được chốt lúc mở hộp thoại; panel tải lại phía sau không đổi chúng, server kiểm lại.
 - FE tự chọn API: Chủ tọa của cuộc họp Published/InProgress gọi POST chair-handover (§8); trước Published, và Thư ký thay Chủ tọa đã khoá tài khoản, gọi PUT assignments kèm `chairReplacement`. Người dùng không thấy khác biệt.
 - MSG259: báo trong hộp thoại. MSG260, MSG275, 403, 404: đóng hộp thoại, báo lý do, tải lại tab. MSG102: báo trong hộp thoại, bấm lại được.
