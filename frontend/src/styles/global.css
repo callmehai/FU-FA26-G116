@@ -2097,6 +2097,57 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .participants-panel .person-name { white-space: normal; overflow-wrap: anywhere; }
 }
 .participants-alert { margin: 12px 16px 0; }
+
+/* Attendance (SCRUM-26), in the roster's own column and in the call room's panel. The Secretary's two
+   choices are one bordered control; the picked one takes the colour of its chip — green for present,
+   grey for absent — and nothing picked reads as "Chưa điểm danh", which is not absent. */
+.col-attendance { width: 1%; white-space: nowrap; }
+.attendance-inline { display: none; }
+@container (max-width: 520px) {
+  .participants-panel .col-attendance { display: none; }
+  .participants-panel .attendance-inline { display: flex; flex-basis: 100%; }
+}
+.attendance-toggle {
+  display: inline-flex;
+  height: var(--control-height);
+  overflow: hidden;
+  border: 1px solid var(--control-line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.attendance-option { position: relative; display: flex; }
+.attendance-option + .attendance-option { border-left: 1px solid var(--control-line); }
+.attendance-option input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.attendance-option > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+  padding: 0 12px;
+  color: var(--muted-ink);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color .15s, color .15s;
+}
+.attendance-option:hover > span { background: var(--surface-alt); color: var(--ink); }
+.attendance-present input:checked + span { background: var(--chip-emerald-bg); color: var(--chip-emerald-fg); font-weight: 700; }
+.attendance-absent input:checked + span { background: var(--chip-slate-bg); color: var(--ink); font-weight: 700; }
+.attendance-option input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: -2px; }
+.attendance-option input:disabled { cursor: progress; }
+.attendance-toggle[aria-busy='true'] { opacity: .7; }
+/* The label keeps room for its bold self, so picking one does not widen it and shift the rows. */
+.attendance-label { display: inline-flex; flex-direction: column; }
+.attendance-label::after { content: attr(data-text); height: 0; overflow: hidden; visibility: hidden; font-weight: 700; }
+.attendance-badge, .attendance-summary { gap: 4px; padding-left: 8px; }
+.attendance-unmarked { font-size: 13px; white-space: nowrap; }
+.attendance-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.attendance-list { list-style: none; margin: 0; padding: 0; overflow-y: auto; display: grid; gap: 4px; }
+.attendance-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+/* The name wraps rather than ending in "…": a touch screen has no tooltip to show the rest. */
+.attendance-row .attendance-name strong { white-space: normal; overflow-wrap: anywhere; }
+.attendance-panel .attendance-option > span { padding: 0 8px; }
+.attendance-skeleton { width: 100%; height: 40px; }
 .participants-skeleton-search { width: 320px; height: var(--control-height); }
 
 /* Picking people in a dialog: a search box over a scrolling list of checkable rows. */

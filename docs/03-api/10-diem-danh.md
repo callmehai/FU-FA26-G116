@@ -124,3 +124,15 @@ Publication best effort sau commit, awaited với timeout 5 giây, không fire-a
 Dependency SCRUM-20 giữ nguyên migration riêng. Migration mới `AddAttendanceVersions` chỉ thêm `attendance_version` vào `meeting_participants` và `meeting_guest_invitations`. Không table/index/trigger/check constraint mới. Default 0, giữ nguyên attendance/recorder/time/response/current-history. Không cấu hình concurrency token toàn entity để tránh làm response writer thất bại vì điểm danh thay đổi.
 
 Chỉ áp dụng/rollback trong DB test riêng trong lần triển khai này. Không tự migrate server chung. Down xóa hai cột, vì vậy không downgrade database đang phục vụ attendance; test Down chỉ chứng minh dữ liệu nghiệp vụ khác được giữ, version bị reset khi Up lại. Snapshot/model phải khớp, migration SCRUM-20 bất biến.
+
+## 6. Tích hợp FE
+
+Màn hình theo AI-eCabinet: điểm danh là một cột trong bảng thành phần, chọn là lưu, không có nút Lưu.
+
+- **Trang chi tiết**, tab "Thành phần tham dự": cột "Điểm danh" chỉ hiện khi Meeting `InProgress` hoặc `Ended`; trước đó FE không gọi GET. Thư ký (`canRecordAttendance`) thấy hai nút "Có mặt" / "Vắng"; người khác thấy chip "Có mặt" / "Vắng" hoặc chữ "Chưa điểm danh". Người ghi và thời điểm nằm trong tooltip. Chip "Có mặt x/y" trên thanh công cụ lấy từ `totals`.
+- **Phòng họp**: nút "Điểm danh" cạnh "Người dự" mở panel 360px cùng dữ liệu, cùng ô điều khiển; Thư ký điểm danh mà không rời phòng.
+- Hai nơi dùng chung `useAttendance` và `AttendanceCell` (ADR-0011). FE đọc cả roster bằng `pageSize=100`, nối trang khi dài hơn, ghép vào bảng theo `id` (assignment hoặc invitation ID).
+- Mỗi lần bấm gửi đúng một entry với `rowVersion` đang hiển thị. Không có bản nháp nên không có gì để giữ khi `409/MSG151`: FE hiện thông báo của BE, đọc lại, người dùng bấm lại nếu vẫn muốn. `409/MSG149`, `503/MSG150` và `403` (không còn là Thư ký) cũng hiện thông báo rồi đọc lại. Không tự thử lại.
+- Đọc lại khi có `attendanceChanged` hoặc `participantsChanged`, khi hub kết nối lại, khi cửa sổ được focus, và mỗi 15 giây khi Meeting `InProgress` và tab đang hiển thị; không bao giờ hai GET chồng nhau. Kết quả GET cũ hơn một lần lưu bị bỏ.
+
+Khác ticket: SCRUM-26 ghi "AttendancePanel dùng chung, variant page/room". Trang chi tiết đặt điểm danh vào bảng thành phần như AI-eCabinet thay vì một panel riêng; phòng họp dùng `AttendancePanel`. Logic và ô điều khiển vẫn viết một lần.

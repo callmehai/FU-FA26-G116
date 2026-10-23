@@ -14,6 +14,8 @@ import {
   type ParticipantPage,
   type ParticipantRow,
 } from '../../types/participant'
+import { AttendanceCell, AttendanceSummary } from '../attendance/AttendanceCell'
+import { useAttendance } from '../attendance/useAttendance'
 import { useAccessLost } from '../auth/useAccessLost'
 import { useAuth } from '../auth/useAuth'
 import { useMeetingEvents } from '../meetings/useMeetingEvents'
@@ -48,6 +50,9 @@ type RowOpen = { kind: 'role'; row: ParticipantRow & { role: MeetingRole } } | {
  * invite guests, change roles, hand over the chair and remove people, while the status allows it.
  * What the caller may do comes from the server's participant context, never from guessing.
  *
+ * Once the meeting has started, each row also carries its attendance (SCRUM-26), as AI-eCabinet's
+ * roster does: the Secretary marks "Có mặt" or "Vắng" right in the row, everyone else reads it.
+ *
  * A panel (ADR-0011): it loads its own data and listens on `/hubs/meetings` itself, so a change
  * made by anyone — including an invitee's answer — re-reads it. `onChanged` lets the page re-read
  * what it shows too (the Chair and Secretaries in "Thông tin chung").
@@ -66,6 +71,10 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
   const [state, setState] = useState<State>({ kind: 'loading' })
   const [open, setOpen] = useState<Open>(null)
   const generation = useRef(0)
+  const status = state.kind === 'loaded' || state.kind === 'error' ? state.data?.context.status : undefined
+  // Attendance exists from the start of the meeting on; before that every row would say "Chưa điểm danh".
+  const showAttendance = status === 'InProgress' || status === 'Ended'
+  const attendance = useAttendance(meetingId, showAttendance)
 
   const load = useCallback(async () => {
     const current = ++generation.current
@@ -158,6 +167,22 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
         : open,
     )
   const totalPages = Math.max(1, Math.ceil(roster.total / roster.pageSize))
+  const attendanceData =
+    attendance.state.kind === 'loaded' || attendance.state.kind === 'error' ? attendance.state.data : null
+  const attendanceOf = new Map(attendanceData?.rows.map((row) => [row.id, row]))
+  const canRecord = attendanceData?.permissions.canRecordAttendance ?? false
+  const columns = 2 + (showAttendance ? 1 : 0) + (manage ? 1 : 0)
+  const attendanceCell = (id: string) => {
+    const row = attendanceOf.get(id)
+    return row ? (
+      <AttendanceCell
+        row={row}
+        canRecord={canRecord}
+        pending={attendance.pending.get(id)}
+        onRecord={attendance.record}
+      />
+    ) : null
+  }
 
   return (
     <section className="list-panel participants-panel" aria-label="Thành phần tham dự">
@@ -173,6 +198,7 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
             maxLength={200}
           />
         </label>
+        {showAttendance && attendanceData && <AttendanceSummary totals={attendanceData.totals} />}
         {manage && (
           <div className="toolbar-end row-actions participants-actions">
             {/* Two kinds of invitee, two icons: someone with an account, or a guest by email. */}
@@ -208,19 +234,30 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
         </div>
       )}
 
+      {showAttendance && attendance.state.kind === 'error' && (
+        <div className="alert alert-error participants-alert" role="alert">
+          <p>{attendance.state.message}</p>
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => void attendance.reload()}>
+            <Icon name="refresh" size={16} />
+            Thử lại
+          </button>
+        </div>
+      )}
+
       <div className="table-card">
         <table className={state.kind === 'loaded' && state.stale ? 'data-table data-table-stale' : 'data-table'}>
           <thead>
             <tr>
               <th>Thành phần</th>
               <th className="col-role">Vai trò</th>
+              {showAttendance && <th className="col-attendance">Điểm danh</th>}
               {manage && <th className="col-action">Thao tác</th>}
             </tr>
           </thead>
           <tbody aria-busy={state.kind === 'loaded' && state.stale}>
             {roster.items.length === 0 ? (
               <tr>
-                <td colSpan={manage ? 3 : 2}>
+                <td colSpan={columns}>
                   <div className="cell-empty">
                     <p className="empty-title">Không có thành phần nào khớp “{query}”.</p>
                     <button
@@ -255,11 +292,13 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
                         {row.isActive === false && <Badge tone="slate">Tài khoản đã khoá</Badge>}
                         {row.role !== 'Chair' && <RsvpChip response={row.response} />}
                       </span>
+                      {showAttendance && <span className="attendance-inline">{attendanceCell(row.id)}</span>}
                     </span>
                   </td>
                   <td className="col-role">
                     <RoleBadge role={row.role} />
                   </td>
+                  {showAttendance && <td className="col-attendance">{attendanceCell(row.id)}</td>}
                   {manage && (
                     <td className="col-action">
                       <RowActions row={row} onOpen={openRow} />
