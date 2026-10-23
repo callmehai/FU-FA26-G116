@@ -15,7 +15,7 @@ export function Person({ name, email, self = false }: { name: string; email: str
         <span className="person-name">
           {name}
           {/* A no-break space keeps "(tôi)" with the last word when the name wraps. */}
-          {self && <span className="person-self">{'\u00a0'}(tôi)</span>}
+          {self && '\u00a0(tôi)'}
         </span>
         <span className="cell-sub">{email}</span>
       </span>
