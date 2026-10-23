@@ -86,7 +86,7 @@ first time, and `npx playwright install chromium` downloads the browser once.
 1. **Scan the source** the change touches:
 
    ```bash
-   npx -y github:callmehai/sloplint#v0.2.0 static frontend/src
+   npx -y github:callmehai/sloplint#v0.2.1 static frontend/src
    ```
 
 2. **Scan the rendered screens** the change touches, at 1440 and at 390 with touch.
@@ -94,7 +94,7 @@ first time, and `npx playwright install chromium` downloads the browser once.
    the secretary elsewhere; `SLOP_SEED=chutoa` to pick one):
 
    ```bash
-   npx -y github:callmehai/sloplint#v0.2.0 scan \
+   npx -y github:callmehai/sloplint#v0.2.1 scan \
      http://localhost:5173/mgmt/meetings http://localhost:5173/calendar \
      --scope app --setup .claude/skills/anti-ai-slop/login.mjs --wait 1500 --out slop-report
    ```
@@ -109,7 +109,7 @@ first time, and `npx playwright install chromium` downloads the browser once.
    verify-ui-in-browser) and the new one with the same paths, then:
 
    ```bash
-   npx -y github:callmehai/sloplint#v0.2.0 diff before after --by order --out diff
+   npx -y github:callmehai/sloplint#v0.2.1 diff before after --by order --out diff
    ```
 
    `diff/diff.html` has one card per change, with a sentence on what changed and the same region
