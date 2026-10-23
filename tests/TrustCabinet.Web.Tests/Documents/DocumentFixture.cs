@@ -119,15 +119,18 @@ internal static class SampleFiles
     internal static byte[] Pdf(string text = "TrustCabinet")
         => Encoding.ASCII.GetBytes($"%PDF-1.7\n1 0 obj << /Type /Catalog >> endobj\n% {text}\n%%EOF\n");
 
-    internal static byte[] Docx(string mainContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
-        bool withDocument = true)
+    internal const string DocxMain = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
+
+    internal static byte[] Docx(string mainContentType = DocxMain, bool withDocument = true, string extraTypes = "",
+        int padding = 0)
     {
         using var buffer = new MemoryStream();
         using (var zip = new ZipArchive(buffer, ZipArchiveMode.Create, leaveOpen: true))
         {
             Write(zip, "[Content_Types].xml", "<?xml version=\"1.0\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
-                + $"<Override PartName=\"/word/document.xml\" ContentType=\"{mainContentType}\"/></Types>");
+                + $"{extraTypes}<Override PartName=\"/word/document.xml\" ContentType=\"{mainContentType}\"/></Types>");
             if (withDocument) Write(zip, "word/document.xml", "<w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"/>");
+            for (var i = 0; i < padding; i++) zip.CreateEntry($"pad/{i}");
         }
         return buffer.ToArray();
     }

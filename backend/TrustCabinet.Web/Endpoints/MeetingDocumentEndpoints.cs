@@ -43,7 +43,13 @@ public static class MeetingDocumentEndpoints
         if (context.Features.Get<IHttpMaxRequestBodySizeFeature>() is { IsReadOnly: false } size)
             size.MaxRequestBodySize = MaxRequestBytes;
         // Parts over 64 KB are buffered to a temp file, never held in memory (1 GB server, ADR-0024).
-        context.Features.Set<IFormFeature>(new FormFeature(request, new FormOptions { MultipartBodyLengthLimit = MaxRequestBytes }));
+        // Smaller ones stay in memory, so the part count is capped too: room for well over 10 files
+        // and their page counts, so a few extra files still get MSG288; far more is malformed (MSG164).
+        context.Features.Set<IFormFeature>(new FormFeature(request, new FormOptions
+        {
+            MultipartBodyLengthLimit = MaxRequestBytes,
+            ValueCountLimit = 64,
+        }));
 
         IFormCollection form;
         try
@@ -62,7 +68,8 @@ public static class MeetingDocumentEndpoints
 
         // pageCounts[i] belongs to the i-th file part; the browser counts PDF pages with pdf.js.
         var pageCounts = form["pageCounts"].Concat(form["pageCounts[]"]).ToArray();
-        var candidates = form.Files.Select((file, index) => new DocumentUploadCandidate(file.FileName, file.Length,
+        var files = form.Files.GetFiles("files").Concat(form.Files.GetFiles("files[]"));
+        var candidates = files.Select((file, index) => new DocumentUploadCandidate(file.FileName, file.Length,
             file.OpenReadStream, index < pageCounts.Length ? pageCounts[index] : null)).ToArray();
         var validated = await DocumentFileRules.ValidateAsync(candidates, ct);
         if (validated.Failure != DocumentUploadFailure.None) return Map(validated, meetingId);

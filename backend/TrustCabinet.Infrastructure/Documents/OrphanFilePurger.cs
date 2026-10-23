@@ -54,7 +54,8 @@ public sealed class OrphanFilePurgeWorker(IServiceScopeFactory scopes, IFileStor
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         if (!storage.IsConfigured) return;
-        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(options.Value.OrphanPurgeIntervalMinutes));
+        // PeriodicTimer throws on a zero period, which would stop the whole host at start-up.
+        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(Math.Max(1, options.Value.OrphanPurgeIntervalMinutes)));
         do
         {
             try

@@ -207,6 +207,46 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
     }
 
     [Fact]
+    public async Task Secretary_who_loses_the_role_while_files_upload_is_refused_and_its_objects_deleted()
+    {
+        var s = await fixture.Seed();
+        var objects = fixture.Storage.Objects.Count;
+        fixture.Storage.BeforeWrite = async _ =>
+        {
+            await using var db = fixture.Db();
+            await db.MeetingParticipants.Where(p => p.MeetingId == s.MeetingId && p.UserId == s.Secretary)
+                .ExecuteUpdateAsync(u => u.SetProperty(p => p.Role, MeetingRole.Member));
+        };
+        using var client = fixture.Client(s.Secretary);
+
+        await AssertCode(await client.PostAsync(s.Url, DocumentFixture.Form(("a.pdf", SampleFiles.Pdf(), "1"))), 403, "MSG162");
+        await AssertNothingAdded(s, objects);
+    }
+
+    [Fact]
+    public async Task A_member_sending_an_invalid_file_is_refused_for_the_role_not_the_file()
+    {
+        var s = await fixture.Seed();
+        using var member = fixture.Client(s.Member);
+        // Access is checked before the body is read (deviation from the sequence diagram's order).
+        await AssertCode(await member.PostAsync(s.Url, DocumentFixture.Form(("anh.pdf", SampleFiles.Png(), null))), 403, "MSG162");
+    }
+
+    [Fact]
+    public async Task Html_disguised_with_a_pdf_marker_and_mismatched_names_are_rejected()
+    {
+        var s = await fixture.Seed();
+        using var client = fixture.Client(s.Secretary);
+        var objects = fixture.Storage.Objects.Count;
+        var poly = "<html><script>alert(document.domain)</script><!-- %PDF-1.4 -->"u8.ToArray();
+
+        var body = await AssertCode(await client.PostAsync(s.Url, DocumentFixture.Form(
+            ("poly.pdf", poly, null), ("that.html", SampleFiles.Pdf(), "1"))), 400, "MSG164");
+        Assert.Equal(["files[0]", "files[1]"], body.GetProperty("errors").EnumerateObject().Select(e => e.Name));
+        await AssertNothingAdded(s, objects);
+    }
+
+    [Fact]
     public async Task Store_failure_on_the_second_file_deletes_the_first_and_adds_nothing()
     {
         var s = await fixture.Seed();

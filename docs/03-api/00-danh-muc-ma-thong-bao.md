@@ -112,7 +112,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 |---|---|---|---|
 | `MSG161` | 201 | Tải lên thành công, kèm `addedCount` và `documents` | Đã thêm tài liệu vào cuộc họp. |
 | `MSG162` | 403 | Xem được cuộc họp nhưng không còn là Chủ toạ/Thư ký hiện tại | Bạn không còn quyền thêm tài liệu vào cuộc họp này. |
-| `MSG164` | 400 | Không có tệp, không phải multipart, hoặc tệp sai loại theo nội dung / rỗng / quá 50 MB; `errors["files[i]"]` | Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB. |
+| `MSG164` | 400 | Không có tệp, không phải multipart, multipart hỏng, hoặc tệp có đuôi khác `.pdf`/`.docx` / nội dung không khớp đuôi / rỗng / quá 50 MB; `errors["files[i]"]` | Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB. |
 | `MSG166` | 503 | R2/DB lỗi hoặc chưa cấu hình kho tệp; đã xoá object của lần tải | Không thêm được tài liệu. Chưa có tài liệu nào được thêm. Vui lòng thử lại. |
 | `MSG172` | 409 | Cuộc họp `Ended`, kể cả khi vừa kết thúc trong lúc tải | Không thể thêm tài liệu sau khi cuộc họp đã kết thúc. |
 | `MSG174` | 404 | Không xem được cuộc họp hoặc cuộc họp không tồn tại (cùng body) | Không truy cập được cuộc họp này. |

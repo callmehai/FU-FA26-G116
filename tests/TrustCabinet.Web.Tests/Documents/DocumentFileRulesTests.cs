@@ -12,15 +12,21 @@ public sealed class DocumentFileRulesTests
     {
         Assert.Equal(DocumentFileRules.PdfContentType, await Detect(SampleFiles.Pdf()));
         Assert.Equal(DocumentFileRules.DocxContentType, await Detect(SampleFiles.Docx()));
-        // Readers accept junk before the header, within the first 1024 bytes.
-        Assert.Equal(DocumentFileRules.PdfContentType, await Detect([.. new byte[500], .. SampleFiles.Pdf()]));
     }
 
     [Fact]
     public async Task Everything_else_is_rejected()
     {
         Assert.Null(await Detect(SampleFiles.Png()));
-        Assert.Null(await Detect([.. new byte[2000], .. SampleFiles.Pdf()]));
+        // The header must open the file: otherwise an HTML page with "%PDF-" in a comment passes.
+        Assert.Null(await Detect([.. new byte[1], .. SampleFiles.Pdf()]));
+        Assert.Null(await Detect("<html><script>alert(1)</script><!-- %PDF-1.4 -->"u8.ToArray()));
+        // A DOCM that merely mentions the DOCX type somewhere else in [Content_Types].xml.
+        Assert.Null(await Detect(SampleFiles.Docx("application/vnd.ms-word.document.macroEnabled.main+xml",
+            extraTypes: $"<!-- {SampleFiles.DocxMain} --><Override PartName=\"/x.xml\" ContentType=\"{SampleFiles.DocxMain}\"/>")));
+        // ZipArchive loads the whole central directory: one too large to inspect cheaply is refused.
+        Assert.Null(await Detect(SampleFiles.Docx(padding: 5001)));
+        Assert.Equal(DocumentFileRules.DocxContentType, await Detect(SampleFiles.Docx(padding: 100)));
         Assert.Null(await Detect(SampleFiles.Docx("application/vnd.ms-word.document.macroEnabled.main+xml")));
         Assert.Null(await Detect(SampleFiles.Docx("application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml")));
         Assert.Null(await Detect(SampleFiles.Docx(withDocument: false)));
@@ -51,6 +57,19 @@ public sealed class DocumentFileRulesTests
         Assert.Equal("Họp – 24/10/2026", DocumentFileRules.UploadFolderName(meeting));
         meeting.PlannedStartTime = new DateTimeOffset(2026, 10, 23, 16, 59, 0, TimeSpan.Zero);
         Assert.Equal("Họp – 23/10/2026", DocumentFileRules.UploadFolderName(meeting));
+    }
+
+    [Theory]
+    [InlineData("poly.html", true)]     // real PDF bytes under a name that would download as HTML
+    [InlineData("x.pdf.exe", true)]
+    [InlineData("..", true)]
+    [InlineData("du-thao.pdf", false)]  // DOCX bytes named .pdf
+    [InlineData("BAO-CAO.PDF", true)]   // the extension check ignores case: this one passes
+    public async Task The_name_must_be_pdf_or_docx_and_agree_with_the_bytes(string name, bool pdfBytes)
+    {
+        var bytes = pdfBytes ? SampleFiles.Pdf() : SampleFiles.Docx();
+        var result = await DocumentFileRules.ValidateAsync([new(name, bytes.Length, () => new MemoryStream(bytes), null)], default);
+        Assert.Equal(name == "BAO-CAO.PDF" ? DocumentUploadFailure.None : DocumentUploadFailure.Invalid, result.Failure);
     }
 
     [Fact]

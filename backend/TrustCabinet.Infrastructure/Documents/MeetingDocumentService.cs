@@ -75,9 +75,13 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to store uploaded documents for meeting {MeetingId}", meetingId);
             await DeleteAsync(written);
-            if (ex is OperationCanceledException && ct.IsCancellationRequested) throw;
+            if (ex is OperationCanceledException && ct.IsCancellationRequested)
+            {
+                logger.LogInformation("Document upload for meeting {MeetingId} was abandoned by the client", meetingId);
+                throw;
+            }
+            logger.LogError(ex, "Failed to store uploaded documents for meeting {MeetingId}", meetingId);
             return new(DocumentUploadFailure.StoreFailed);
         }
 
@@ -119,10 +123,13 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
                 return new DocumentUploadOutcome(Documents: added);
             }, CancellationToken.None);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex)
         {
+            // Any failure here, not only a database one, leaves objects with no row the purge could find.
+            await DeleteAsync(written);
+            if (!PersistenceError(ex)) throw;
             logger.LogError(ex, "Failed to save uploaded documents for meeting {MeetingId}", meetingId);
-            outcome = new(DocumentUploadFailure.StoreFailed);
+            return new(DocumentUploadFailure.StoreFailed);
         }
 
         if (outcome.Failure != DocumentUploadFailure.None) await DeleteAsync(written);
