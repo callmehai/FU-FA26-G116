@@ -34,4 +34,5 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0021](0021-vong-doi-thanh-phan-va-y-dinh-gui-thu.md) | Lịch sử thành phần và ý định gửi thư cùng transaction | Đề xuất — implementation SCRUM-20 |
 | [0022](0022-sua-quyen-vai-tro-khong-dang-xuat.md) | Sửa quyền của vai trò không đăng xuất ai — báo qua hub để trình duyệt tự refresh token | Đề xuất — SCRUM-105; phần đổi vai trò của một người thay thế bởi ADR-0023 |
 | [0023](0023-doi-vai-tro-nguoi-dung-khong-dang-xuat.md) | Đổi vai trò của một người dùng cũng không đăng xuất — báo và áp dụng quyền mới ngay | Đề xuất — SCRUM-105, PO 22/10/2026 |
-| [0024](0024-version-rieng-cho-diem-danh.md) | Version riêng cho điểm danh; không dùng xmin toàn dòng | Đã chấp nhận trong phạm vi SCRUM-26, chờ team review branch |
+| [0024](0024-luu-file-tai-lieu-tren-cloudflare-r2.md) | Lưu file tài liệu trên Cloudflare R2, mọi byte đi qua backend | Đề xuất — SCRUM-107 |
+| [0025](0025-version-rieng-cho-diem-danh.md) | Version riêng cho điểm danh; không dùng xmin toàn dòng | Đã chấp nhận trong phạm vi SCRUM-26, chờ team review branch |

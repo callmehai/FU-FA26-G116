@@ -117,7 +117,8 @@ test('…', async ({ page, browser }, info) => {
 - The app's scroll container is `main.content`, so `fullPage` screenshots do not scroll. Scroll it
   in a script first: `document.querySelector('main.content').scrollTop = N`.
 - Check at a **1200px-wide** window as well as a large one — the toolbar and two-column form
-  must still fit.
+  must still fit — and on a **phone (390px, touch)**: see **check-responsive**, which applies to
+  Playwright runs too.
 
 #### Inputs that need care
 

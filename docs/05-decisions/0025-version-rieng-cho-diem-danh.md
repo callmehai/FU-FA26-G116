@@ -1,4 +1,4 @@
-# ADR-0024: Version riêng cho điểm danh
+# ADR-0025: Version riêng cho điểm danh
 
 - **Trạng thái:** Đã chấp nhận trong phạm vi triển khai SCRUM-26; chờ team review branch.
 - **Ngày:** 2026-10-20

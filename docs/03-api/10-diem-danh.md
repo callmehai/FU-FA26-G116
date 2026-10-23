@@ -1,7 +1,7 @@
 # Điểm danh — Backend SCRUM-26 / UC-31
 
 Ngày 20/10/2026. Nguồn nghiệp vụ: Jira SCRUM-26, UC-31, BR-116/170/171/172/178, ADR-0016/0017.
-Quyết định concurrency: [ADR-0024](../05-decisions/0024-version-rieng-cho-diem-danh.md).
+Quyết định concurrency: [ADR-0025](../05-decisions/0025-version-rieng-cho-diem-danh.md).
 [Bàn giao FE/BA](10-diem-danh-ban-giao.md), [kiểm thử](10-diem-danh-ket-qua-kiem-thu.md).
 
 ## 1. Quyền và phạm vi

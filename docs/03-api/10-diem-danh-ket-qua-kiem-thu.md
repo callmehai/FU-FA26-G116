@@ -5,7 +5,7 @@ Ngày 20/10/2026; branch `feat/SCRUM-26-BACKEND-Taking-attendance-of-participant
 
 ## Resolve merge main và review — 23/10/2026
 
-Merge main `82a8af2` vào branch đã tích hợp SCRUM-97 (`629f483`). Xử lý trùng mã: MSG287 giữ nghĩa thông báo cập nhật quyền đã vào main; lỗi đọc attendance chuyển sang MSG289, mã tiếp theo MSG290. ADR điểm danh đổi số từ 0022 sang 0024 để giữ ADR-0022/0023 của main; cập nhật link, không đổi quyết định kỹ thuật. Các mã trong ghi nhận ngày 22/10 bên dưới là lịch sử trước lần remap này.
+Merge main `82a8af2` vào branch đã tích hợp SCRUM-97 (`629f483`). Xử lý trùng mã: MSG287 giữ nghĩa thông báo cập nhật quyền đã vào main; lỗi đọc attendance chuyển sang MSG289, mã tiếp theo MSG290. ADR điểm danh đổi số từ 0022 sang 0024 để giữ ADR-0022/0023 của main (sau đó đổi tiếp sang 0025 vì main cấp 0024 cho Cloudflare R2, SCRUM-107); cập nhật link, không đổi quyết định kỹ thuật. Các mã trong ghi nhận ngày 22/10 bên dưới là lịch sử trước lần remap này.
 
 - Release build `-warnaserror`: pass, 0 warning/error. Frontend lint/build pass; còn cảnh báo bundle phòng họp trên 500 kB.
 - Regression: 1.312 test; lượt đầu 1.287 pass, 25 lỗi kết nối Redis cổng 6379. Chạy lại toàn bộ 25 test Redis với container riêng cổng 6389: 25/25 pass; đối chiếu TRX xác nhận không còn test lỗi hoặc skipped.
