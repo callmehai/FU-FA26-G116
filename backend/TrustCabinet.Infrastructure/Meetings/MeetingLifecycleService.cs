@@ -91,7 +91,7 @@ public sealed class MeetingLifecycleService(
         }
 
         // Commit is complete. Each awaited effect gets its own budget, independent of RequestAborted.
-        // A failed effect must never retry SaveChanges against a rolled-back lifecycle transaction.
+        // Effect failures are logged without changing the committed transition result.
         if (!result.Succeeded) return result;
         var record = result.History!;
         if (starting)

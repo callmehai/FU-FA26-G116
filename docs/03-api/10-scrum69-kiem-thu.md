@@ -151,3 +151,27 @@ liệt kê ở trên. Lượt trước chạy song song với smoke/load LiveKit
 trong khi transition/history đúng. TRX không có log đủ để kết luận nguồn lỗi side effect.
 Ca này PASS trong suite chạy độc lập; không sửa assertion, không bỏ test hoặc đổi budget notification.
 Lưu bằng chứng lượt đó ở `TestResults/scrum69-review-full.trx` để theo dõi nếu tái xuất hiện.
+
+## Tích hợp main mới sau review P1 — 23/10/2026
+
+Tích hợp `origin/main` tại `e75bb65` (bao gồm `da5caf6`, Documents/R2) vào nhánh
+SCRUM-69 từ `d9138df`, dùng merge chưa commit. Bỏ seed Document/DocumentVersions
+và `Scenario.DocumentId` không được lifecycle test sử dụng; không khôi phục model cũ.
+Resolve catalogue bằng cách giữ cả contract SCRUM-69 và SCRUM-107, mã tiếp theo `MSG290`.
+Viết lại comment post-commit để mô tả đúng cách xử lý lỗi side effect.
+
+Kết quả trên bản tích hợp này:
+
+- `dotnet build TrustCabinet.sln --configuration Release -warnaserror`: PASS, 0 warning/error.
+- `dotnet test TrustCabinet.sln --configuration Release --no-build --collect:"XPlat Code Coverage" --logger "trx;LogFileName=scrum69-main-integration.trx"`:
+  **1.432 passed, 0 failed, 0 skipped**, 3m18s; PostgreSQL thật và Redis 8 riêng,
+  `TRUSTCABINET_TEST_REDIS=127.0.0.1:16389`. Không chạy smoke/load song song.
+- `npm --prefix frontend run lint` và `npm --prefix frontend run build`: PASS.
+  Vite vẫn cảnh báo chunk lớn hơn 500 kB.
+- `git diff --check` và `git diff --cached --check`: PASS; không còn unmerged path.
+
+Artifact nằm trong `tests/TrustCabinet.Web.Tests/TestResults/`: `scrum69-main-integration.trx`
+và `76ae486e-e1f1-4d52-a123-e950307608e3/coverage.cobertura.xml`.
+Không thêm migration hoặc sửa Frontend ngoài nội dung nhập từ main. Không chạy lại LiveKit
+smoke/Newman trong lượt sửa fixture này; kết quả LiveKit trước đó không phải lượt kiểm chứng mới.
+Chưa commit/push và chưa merge vào main; toàn UC vẫn chờ FE → BA Final Review → Tester.

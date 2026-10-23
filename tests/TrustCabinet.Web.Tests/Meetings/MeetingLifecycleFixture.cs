@@ -185,7 +185,7 @@ public sealed class MeetingLifecycleFixture : IAsyncLifetime
         }
     }
 
-    internal sealed record Scenario(Guid MeetingId, Guid Secretary, Guid Chair, Guid Member, Guid Organizer, Guid Outsider, Guid[] Items, Guid DocumentId)
+    internal sealed record Scenario(Guid MeetingId, Guid Secretary, Guid Chair, Guid Member, Guid Organizer, Guid Outsider, Guid[] Items)
     {
         internal string Url => $"/api/meetings/{MeetingId}/agenda";
     }
@@ -205,12 +205,8 @@ public sealed class MeetingLifecycleFixture : IAsyncLifetime
         var items = Enumerable.Range(0, count).Select(i => new AgendaItem { MeetingId = meeting.Id,
             Title = $"Mục {i + 1}", Position = 1 + i * 3, PlannedDurationMinutes = 20 }).ToArray();
         db.AgendaItems.AddRange(items);
-        var document = new Document { MeetingId = meeting.Id, Title = "Tài liệu nội bộ", UploadedById = users[0].Id };
-        db.Documents.Add(document);
-        db.DocumentVersions.Add(new() { DocumentId = document.Id, VersionNumber = 1, UploadedById = users[0].Id,
-            FileName = "test.txt", StoragePath = "private/test.txt", ContentType = "text/plain", ContentSha256 = new string('a', 64), ByteSize = 10 });
         await db.SaveChangesAsync();
-        return new(meeting.Id, users[0].Id, users[1].Id, users[2].Id, users[3].Id, users[4].Id, items.Select(i => i.Id).ToArray(), document.Id);
+        return new(meeting.Id, users[0].Id, users[1].Id, users[2].Id, users[3].Id, users[4].Id, items.Select(i => i.Id).ToArray());
     }
 
     internal static string Token(Guid actor, DateTimeOffset? expires = null) => new JwtSecurityTokenHandler().WriteToken(
