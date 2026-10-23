@@ -2,14 +2,16 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { eraseRecording, getRecordingPlayback, listRecordings, uploadRecording } from '../../api/recordings'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Dialog } from '../../components/Dialog'
-import { Badge } from '../../components/Badge'
+import { Badge, type BadgeTone } from '../../components/Badge'
 import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDate, formatDateTime } from '../../lib/format'
 import type { Recording, RecordingList, RecordingSource } from '../../types/recording'
+import type { TranscriptStatus } from '../../types/transcript'
 import { useAccessLost } from '../auth/useAccessLost'
 import { formatDuration, formatSize, probeDuration } from './format'
+import { TranscriptView } from './TranscriptView'
 import { useRecorder, type RecordedTake } from './useRecorder'
 
 /**
@@ -23,6 +25,8 @@ import { useRecorder, type RecordedTake } from './useRecorder'
 
 const DEFAULT_PURPOSE = 'Lập biên bản cuộc họp'
 const ACCEPT = '.mp3,.m4a,.aac,.wav,.webm,.ogg,audio/*'
+/** Same pace as an open transcript (TranscriptView). */
+const TRANSCRIPT_POLL_MS = 4000
 
 type LoadState = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'loaded'; data: RecordingList }
 
@@ -58,24 +62,41 @@ export function RecordingsPanel({ meetingId, variant = 'page' }: { meetingId: st
 
   // A response that arrives after the panel moved on (another meeting, unmounted) is dropped.
   const generation = useRef(0)
-  const load = useCallback(async () => {
-    const mine = generation.current
-    try {
-      const data = await listRecordings(meetingId)
-      if (mine === generation.current) setState({ kind: 'loaded', data })
-    } catch (error) {
-      if (mine !== generation.current || handleAccessLost(error)) return
-      setState({ kind: 'error', message: errorMessage(error) })
-    }
-  }, [meetingId, handleAccessLost])
+  const load = useCallback(
+    async (quiet = false) => {
+      const mine = generation.current
+      try {
+        const data = await listRecordings(meetingId)
+        if (mine === generation.current) setState({ kind: 'loaded', data })
+      } catch (error) {
+        // A background refresh that fails keeps the list on screen; the next one tries again.
+        if (mine !== generation.current || handleAccessLost(error) || quiet) return
+        setState({ kind: 'error', message: errorMessage(error) })
+      }
+    },
+    [meetingId, handleAccessLost],
+  )
 
   useEffect(() => {
-    void Promise.resolve().then(load)
+    void Promise.resolve().then(() => load())
     const loads = generation
     return () => {
       loads.current++
     }
   }, [load])
+
+  // Transcripts are made in the background after a save (SCRUM-31). Follow the list until none is
+  // left waiting, so a row's badge changes without opening it or reloading the page.
+  const transcribing =
+    state.kind === 'loaded' &&
+    state.data.items.some(
+      (r) => r.status !== 'Deleted' && (r.transcriptStatus === 'Pending' || r.transcriptStatus === 'Processing'),
+    )
+  useEffect(() => {
+    if (!transcribing) return
+    const timer = window.setInterval(() => void load(true), TRANSCRIPT_POLL_MS)
+    return () => window.clearInterval(timer)
+  }, [transcribing, load])
 
   const save = useCallback(
     async (upload: PendingUpload) => {
@@ -335,13 +356,31 @@ export function RecordingsPanel({ meetingId, variant = 'page' }: { meetingId: st
   )
 }
 
+const TRANSCRIPT_BADGE: Partial<Record<TranscriptStatus, { tone: BadgeTone; label: string }>> = {
+  Pending: { tone: 'amber', label: 'Đang chuyển chữ' },
+  Processing: { tone: 'amber', label: 'Đang chuyển chữ' },
+  Completed: { tone: 'emerald', label: 'Có bản gỡ băng' },
+  Failed: { tone: 'red', label: 'Lỗi chuyển chữ' },
+}
+
 function RecordingRow({ recording, onErase }: { recording: Recording; onErase: () => void }) {
   const [playback, setPlayback] = useState<
     { kind: 'loading' } | { kind: 'ready'; url: string } | { kind: 'error'; message: string } | null
   >(null)
+  // Follows the transcript while it is open, so the badge changes the moment it finishes; a newer
+  // status from the list (refreshed while transcripts are pending) wins whenever it changes.
+  const [transcriptStatus, setTranscriptStatus] = useState(recording.transcriptStatus)
+  const [listedStatus, setListedStatus] = useState(recording.transcriptStatus)
+  if (recording.transcriptStatus !== listedStatus) {
+    setListedStatus(recording.transcriptStatus)
+    setTranscriptStatus(recording.transcriptStatus)
+  }
+  const audio = useRef<HTMLAudioElement>(null)
+  const [currentMs, setCurrentMs] = useState(0)
   const deleted = recording.status === 'Deleted'
+  const badge = deleted ? undefined : TRANSCRIPT_BADGE[transcriptStatus]
 
-  const togglePlay = async () => {
+  const toggle = async () => {
     if (playback) {
       setPlayback(null)
       return
@@ -364,7 +403,7 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
     .join(' · ')
 
   return (
-    <li className={`recording-row${deleted ? ' recording-deleted' : ''}`}>
+    <li className={`recording-row${deleted ? ' recording-deleted' : ''}${playback ? ' recording-open' : ''}`}>
       <span className="recording-icon" aria-hidden="true">
         <Icon name="fileAudio" size={18} />
       </span>
@@ -378,6 +417,7 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
             <Badge tone="red">Đã xoá</Badge>
           ) : (
             <>
+              {badge && <Badge tone={badge.tone}>{badge.label}</Badge>}
               {recording.durationMs > 0 && <span>{formatDuration(recording.durationMs)}</span>}
               <span>{formatSize(recording.byteSize)}</span>
             </>
@@ -390,10 +430,10 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
           <button
             type="button"
             className="btn btn-outline btn-icon btn-sm"
-            onClick={() => void togglePlay()}
-            aria-label={playback ? 'Đóng trình phát' : 'Nghe'}
+            onClick={() => void toggle()}
+            aria-label={playback ? 'Đóng' : 'Nghe và xem bản gỡ băng'}
             aria-expanded={playback !== null}
-            data-tooltip={playback ? 'Đóng trình phát' : 'Nghe'}
+            data-tooltip={playback ? 'Đóng' : 'Nghe và xem bản gỡ băng'}
           >
             <Icon name={playback ? 'x' : 'play'} size={16} />
           </button>
@@ -417,7 +457,26 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
         </p>
       )}
       {playback?.kind === 'ready' && (
-        <audio className="recording-player" controls autoPlay preload="metadata" src={playback.url} />
+        <div className="recording-player recording-detail">
+          <audio
+            ref={audio}
+            controls
+            preload="metadata"
+            src={playback.url}
+            onTimeUpdate={(e) => setCurrentMs(e.currentTarget.currentTime * 1000)}
+          />
+          <TranscriptView
+            recordingId={recording.id}
+            currentMs={currentMs}
+            onSeek={(ms) => {
+              const element = audio.current
+              if (!element) return
+              element.currentTime = ms / 1000
+              void element.play().catch(() => undefined)
+            }}
+            onStatus={setTranscriptStatus}
+          />
+        </div>
       )}
     </li>
   )

@@ -22,7 +22,8 @@ public sealed record RecordingUpload(string FileName, string ContentType, string
 
 public sealed record RecordingView(Guid Id, string FileName, string ContentType, long ByteSize, long DurationMs,
     string Source, string Status, DateTimeOffset CreatedAt, string CreatedByName, DateTimeOffset? ConsentObtainedAt,
-    string ConsentPurpose, DateTimeOffset? RetainUntil, DateTimeOffset? DeletedAt, bool CanErase);
+    string ConsentPurpose, DateTimeOffset? RetainUntil, DateTimeOffset? DeletedAt, bool CanErase,
+    string TranscriptStatus);
 
 public sealed record RecordingList(Guid MeetingId, bool CanUpload, IReadOnlyList<RecordingView> Items);
 

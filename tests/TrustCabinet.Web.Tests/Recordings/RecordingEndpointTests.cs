@@ -193,8 +193,10 @@ public sealed class RecordingEndpointTests(RecordingFixture fixture) : IClassFix
         var id = await Upload(s);
         await using (var db = fixture.Db())
         {
-            db.Transcripts.Add(new() { RecordingId = id, Status = TranscriptStatus.Completed,
-                Segments = [new() { Position = 1, Text = "Kính thưa các đồng chí." }] });
+            // The upload queued a transcript already; give it a result as if the worker had finished.
+            var transcript = await db.Transcripts.SingleAsync(t => t.RecordingId == id);
+            transcript.Status = TranscriptStatus.Completed;
+            db.TranscriptSegments.Add(new() { TranscriptId = transcript.Id, Position = 1, Text = "Kính thưa các đồng chí." });
             await db.SaveChangesAsync();
         }
         using var member = fixture.Client(s.Member);

@@ -81,6 +81,8 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
                     ByteSize = upload.ByteSize, DurationMs = upload.DurationMs ?? 0, ConsentObtainedAt = now,
                     ConsentPurpose = purpose, RetainUntil = now.AddDays(options.Value.RetentionDays),
                     CreatedById = actorId, CreatedAt = now, UpdatedAt = now,
+                    // SCRUM-31: speech to text starts on its own; TranscriptionWorker picks this up.
+                    Transcript = new Transcript { CreatedAt = now, UpdatedAt = now },
                 };
                 recordings.Add(recording);
                 await audit.RecordAsync(AuditActions.RecordingUploaded, AuditActions.RecordingObjectType, recording.Id, actorId,
@@ -216,5 +218,6 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
 
     private static RecordingView View(Recording r, bool secretary) => new(r.Id, r.FileName, r.ContentType, r.ByteSize,
         r.DurationMs, r.Source.ToString(), r.Status.ToString(), r.CreatedAt, r.CreatedBy.FullName, r.ConsentObtainedAt,
-        r.ConsentPurpose, r.RetainUntil, r.DeletedAt, secretary && r.Status != RecordingStatus.Deleted);
+        r.ConsentPurpose, r.RetainUntil, r.DeletedAt, secretary && r.Status != RecordingStatus.Deleted,
+        r.Transcript?.Status.ToString() ?? "None");
 }

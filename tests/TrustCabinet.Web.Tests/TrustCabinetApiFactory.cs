@@ -65,6 +65,15 @@ public class TrustCabinetApiFactory : WebApplicationFactory<Program>
             {
                 services.Remove(retention);
             }
+
+            // The transcription queue too: tests drive ProcessNextAsync themselves, with a fake speech engine.
+            var transcription = services.SingleOrDefault(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService)
+                && descriptor.ImplementationType == typeof(TranscriptionWorker));
+            if (transcription is not null)
+            {
+                services.Remove(transcription);
+            }
         });
     }
 }

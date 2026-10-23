@@ -1,3 +1,5 @@
+import type { TranscriptStatus } from './transcript'
+
 /** Mirrors the recording responses of docs/03-api/12-ban-ghi-cuoc-hop.md (SCRUM-29). */
 
 export type RecordingSource = 'Upload' | 'BrowserCapture'
@@ -19,6 +21,8 @@ export interface Recording {
   retainUntil: string | null
   deletedAt: string | null
   canErase: boolean
+  /** SCRUM-31 — "None" for a recording kept before speech to text existed. */
+  transcriptStatus: TranscriptStatus
 }
 
 export interface RecordingList {

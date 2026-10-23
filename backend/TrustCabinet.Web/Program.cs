@@ -18,6 +18,7 @@ using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Infrastructure.Users;
 using TrustCabinet.Infrastructure.Participants;
 using TrustCabinet.Infrastructure.Recordings;
+using TrustCabinet.Infrastructure.Transcription;
 using TrustCabinet.Web;
 using TrustCabinet.Web.Endpoints;
 
@@ -54,6 +55,10 @@ builder.Services.AddTrustCabinetDocuments(builder.Configuration);
 // SCRUM-29: recordings of a sitting, on local disk, erased when their retention period runs out.
 builder.Services.AddTrustCabinetRecordings(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddHostedService<RecordingRetentionWorker>();
+
+// SCRUM-31: speech to text on the in-house speech worker (workers/speech), one recording at a time.
+builder.Services.AddTrustCabinetTranscription(builder.Configuration);
+builder.Services.AddHostedService<TranscriptionWorker>();
 
 // The audit log records where a request came from, and only the web layer can see that.
 builder.Services.AddHttpContextAccessor();
@@ -197,6 +202,9 @@ app.MapCallEndpoints();
 
 // SCRUM-29: recordings — list, upload, signed playback, erase.
 app.MapRecordingEndpoints();
+
+// SCRUM-31: transcript of a recording — read, re-run, correct a segment.
+app.MapTranscriptEndpoints();
 
 // Health endpoint — the frontend calls this to confirm the backend is alive.
 app.MapGet("/api/health", () => Results.Ok(new

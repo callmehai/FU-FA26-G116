@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Transcription;
 using TrustCabinet.Infrastructure;
 
 namespace TrustCabinet.Web.Tests.Recordings;
@@ -19,6 +20,7 @@ public sealed class RecordingFixture : IAsyncLifetime
     internal readonly PostgreSqlTestDatabase Database = new(PostgresTestDatabase.ConnectionString("trustcabinet_recording_tests"));
     internal readonly TestClock Clock = new();
     internal readonly FailureInterceptor Failures = new();
+    internal readonly FakeSpeechEngine Speech = new();
     internal readonly string StorageRoot = Path.Combine(Path.GetTempPath(), $"tc-recordings-{Guid.NewGuid():N}");
     internal Factory Host = null!;
     internal const string SigningKey = "khoa-ky-chi-dung-trong-test-du-32-ky-tu";
@@ -59,7 +61,34 @@ public sealed class RecordingFixture : IAsyncLifetime
                     .AddInterceptors(fixture.Failures));
                 services.RemoveAll<TimeProvider>();
                 services.AddSingleton<TimeProvider>(fixture.Clock);
+                services.RemoveAll<ISpeechEngine>();
+                services.AddSingleton<ISpeechEngine>(fixture.Speech);
             });
+        }
+    }
+
+    /// <summary>Stands in for workers/speech: returns what a test sets, or throws what it sets.</summary>
+    internal sealed class FakeSpeechEngine : ISpeechEngine
+    {
+        internal SpeechTranscription Result = new(23380, "vi", "gipformer-1.5-68m-int8@abc123def456", "eres2net-base-200k@0123456789ab",
+            [new(0, 5800, "SPEAKER_00", "Kính thưa các đồng chí."), new(6500, 10900, "SPEAKER_01", "Tôi đề nghị bổ sung kinh phí.")],
+            [new("SPEAKER_00", 5800, [1f, 0f]), new("SPEAKER_01", 4400, [0f, 1f])]);
+        internal Exception? Failure;
+        /// <summary>Runs while the "worker" is busy, to change the world under a running transcription.</summary>
+        internal Func<Task>? During;
+        internal int Calls;
+        internal byte[]? LastAudio;
+
+        public bool IsConfigured => true;
+
+        public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, CancellationToken ct)
+        {
+            Calls++;
+            using var copy = new MemoryStream();
+            await audio.CopyToAsync(copy, ct);
+            LastAudio = copy.ToArray();
+            if (During is { } during) await during();
+            return Failure is { } failure ? throw failure : Result;
         }
     }
 

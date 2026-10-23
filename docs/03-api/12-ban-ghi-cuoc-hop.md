@@ -1,4 +1,4 @@
-# 12 · Bản ghi cuộc họp (SCRUM-29)
+# 12 · Bản ghi cuộc họp và gỡ băng (SCRUM-29, SCRUM-31)
 
 Thư ký lưu bản ghi âm của cuộc họp: ghi thẳng trên trình duyệt hoặc tải lên tệp ghi bằng thiết bị
 khác. Bản ghi là đầu vào cho gỡ băng (SCRUM-31) và nhận diện người nói (SCRUM-35).
@@ -108,6 +108,54 @@ Thư ký xoá theo yêu cầu. `200 MSG296`; gọi lại trên bản đã xoá v
 | `RetentionDays` | `180` | Thời hạn lưu trữ ghi vào từng bản ghi lúc lưu |
 | `MaxUploadMegabytes` | `300` | Ba giờ mp3, hoặc một giờ WAV 16 kHz |
 | `PlaybackUrlMinutes` | `120` | |
+
+## Gỡ băng (SCRUM-31)
+
+Lưu bản ghi xong là bản ghi tự vào **hàng chờ chuyển thành chữ** (`Transcript.Status = Pending`).
+`TranscriptionWorker` lấy từng bản ghi một (`FOR UPDATE SKIP LOCKED`), gửi âm thanh tới **worker
+nhận dạng giọng nói tự chạy trong mạng nội bộ** (`workers/speech`, [ADR-0026](../05-decisions/0026-tu-chay-nhan-dang-giong-noi.md)),
+rồi lưu từng đoạn kèm thời điểm và nhãn người nói. Âm thanh **không rời khỏi hệ thống**.
+
+Trạng thái: `None` (bản ghi lưu trước khi có SCRUM-31) → `Pending` → `Processing` → `Completed`
+hoặc `Failed` (kèm `errorMessage` viết cho Thư ký đọc). App khởi động lại giữa chừng thì bản đang
+`Processing` quay về `Pending`. Bản ghi bị xoá trong lúc đang chạy thì kết quả bị bỏ, không ghi lại.
+
+Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
+
+### `GET /api/recordings/{recordingId}/transcript`
+
+```json
+{
+  "recordingId": "…", "status": "Completed",
+  "provider": "self-hosted:gipformer-1.5-68m-int8@b528768939c7",
+  "language": "vi", "errorMessage": "", "completedAt": "…", "durationMs": 23380, "canEdit": true,
+  "segments": [
+    { "id": "…", "position": 1, "startMs": 0, "endMs": 5800, "text": "Kính thưa các đồng chí, …",
+      "speakerLabel": "SPEAKER_00", "editedAt": null, "editedByName": null }
+  ]
+}
+```
+
+`speakerLabel` là nhãn trong **riêng bản ghi này** (`SPEAKER_00` → FE hiện *Người nói 1*); gán tên
+thật là việc của SCRUM-35. Không có vector giọng nói nào trong response hay trong database.
+
+### `POST /api/recordings/{recordingId}/transcribe`
+
+Thư ký chạy lại khi lần trước lỗi, hoặc chạy lần đầu cho bản ghi `None`. `202 MSG300`; đang chờ,
+đang chạy hoặc đã xong: `409 MSG301`.
+
+### `PUT /api/transcript-segments/{segmentId}` — `{ "text": "…" }`
+
+Thư ký sửa chữ máy nhận sai. Cắt khoảng trắng hai đầu, 1–8000 ký tự (`400 MSG303`). Lưu `EditedBy`,
+`EditedAt` để phân biệt chữ người sửa với chữ máy. `200 MSG302` `{ code, message, segment: { segmentId, text, editedAt } }`.
+
+### Cấu hình (`Speech:*`)
+
+| Khoá | Mặc định | Ghi chú |
+|---|---|---|
+| `BaseUrl` | rỗng (Development: `http://localhost:8090`) | Rỗng thì app vẫn chạy, bản gỡ băng báo *Máy chủ nhận dạng giọng nói chưa được cấu hình.* |
+| `ApiKey` | rỗng | Khoá dùng chung với worker (`SPEECH_API_KEY`) |
+| `TimeoutMinutes` | `120` | |
 
 ## Chưa làm trong SCRUM-29
 

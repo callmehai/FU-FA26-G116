@@ -198,7 +198,8 @@ nhóm này trước tiên:
   đồng ý và xoá dữ liệu theo Nghị định 13/2023/NĐ-CP
 - Ký số bằng USB token / HSM thật — thay bằng ký mô phỏng để trình diễn
 - Trợ lý AI hỏi đáp xuyên nguồn, có trích dẫn
-- Triển khai mạng cô lập (air-gapped), tự vận hành mô hình AI
+- Triển khai mạng cô lập (air-gapped). Riêng nhận dạng giọng nói **đã tự chạy** trong hệ thống
+  ([ADR-0026](docs/05-decisions/0026-tu-chay-nhan-dang-giong-noi.md)), theo nhận xét hội đồng 17/10/2026
 - Tích hợp hệ thống eOffice bên ngoài
 
 Danh sách này chưa chốt — thống nhất lại với giảng viên hướng dẫn trước khi khoá phạm vi.
