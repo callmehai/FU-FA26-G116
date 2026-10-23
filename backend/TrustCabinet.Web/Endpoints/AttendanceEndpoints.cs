@@ -13,7 +13,7 @@ public static class AttendanceEndpoints
     private const string Msg149Locked = "MSG149";
     private const string Msg150SaveFailed = "MSG150";
     private const string Msg151Stale = "MSG151";
-    private const string Msg287ReadFailed = "MSG287";
+    private const string Msg289ReadFailed = "MSG289";
     private const string Msg278InvalidQuery = "MSG278";
     private const string Msg34UnsupportedMedia = "MSG34";
     private const string Msg87TooLarge = "MSG87";
@@ -102,7 +102,7 @@ public static class AttendanceEndpoints
             {
                 AttendanceFailure.Locked => (409, Msg149Locked, "Chỉ được điểm danh khi cuộc họp đang diễn ra."),
                 AttendanceFailure.Stale => (409, Msg151Stale, "Thành phần hoặc dữ liệu điểm danh đã thay đổi. Vui lòng tải lại và kiểm tra trước khi lưu."),
-                AttendanceFailure.ReadFailed => (500, Msg287ReadFailed, "Không tải được dữ liệu điểm danh."),
+                AttendanceFailure.ReadFailed => (500, Msg289ReadFailed, "Không tải được dữ liệu điểm danh."),
                 AttendanceFailure.InvalidQuery => (400, Msg278InvalidQuery, "Tham số phân trang điểm danh không hợp lệ."),
                 AttendanceFailure.SaveFailed => (503, Msg150SaveFailed, "Không xác nhận được kết quả lưu điểm danh. Vui lòng tải lại dữ liệu trước khi thử lại."),
                 AttendanceFailure.UnsupportedMedia => (415, Msg34UnsupportedMedia, "Yêu cầu phải dùng Content-Type application/json."),

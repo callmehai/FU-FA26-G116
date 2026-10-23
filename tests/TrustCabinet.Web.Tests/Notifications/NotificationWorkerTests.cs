@@ -79,14 +79,15 @@ public class NotificationWorkerTests
         Assert.Equal(1, payload.GetProperty("unreadCount").GetInt32());
     }
 
-    private sealed class FakeHubContext : IHubContext<NotificationHub>
+    /// <summary>Also used by CapabilitiesChangePublisherTests.</summary>
+    internal sealed class FakeHubContext : IHubContext<NotificationHub>
     {
         public FakeHubClients ClientsImpl { get; } = new();
         public IHubClients Clients => ClientsImpl;
         public IGroupManager Groups => throw new NotSupportedException();
     }
 
-    private sealed class FakeHubClients : IHubClients
+    internal sealed class FakeHubClients : IHubClients
     {
         public string? SelectedUser { get; private set; }
         public FakeClientProxy Proxy { get; } = new();
@@ -106,11 +107,15 @@ public class NotificationWorkerTests
             SelectedUser = userId;
             return Proxy;
         }
+        public IReadOnlyList<string>? SelectedUsers { get; private set; }
         public IClientProxy Users(IReadOnlyList<string> userIds)
-            => throw new NotSupportedException();
+        {
+            SelectedUsers = userIds;
+            return Proxy;
+        }
     }
 
-    private sealed class FakeClientProxy : IClientProxy
+    internal sealed class FakeClientProxy : IClientProxy
     {
         public List<(string Method, object?[] Args)> Calls { get; } = [];
 

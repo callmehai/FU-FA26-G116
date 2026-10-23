@@ -51,7 +51,7 @@ public sealed class AttendanceEndpointTests(ParticipantFixture f) : IClassFixtur
         var s = await f.Seed(MeetingStatus.InProgress); using var client = f.Client(s.Secretary);
         await using var db = f.Db();
         await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE meeting_participants SET attendance = {value} WHERE id = {s.MemberAssignment}");
-        await Code(await client.GetAsync(s.Url + "/attendance"), 500, "MSG287");
+        await Code(await client.GetAsync(s.Url + "/attendance"), 500, "MSG289");
         Assert.Equal(value, await db.Database.SqlQuery<string>($"SELECT attendance AS \"Value\" FROM meeting_participants WHERE id = {s.MemberAssignment}").SingleAsync());
     }
 
@@ -231,7 +231,7 @@ public sealed class AttendanceEndpointTests(ParticipantFixture f) : IClassFixtur
     {
         var s = await f.Seed(MeetingStatus.InProgress); using var client = f.Client(s.Secretary);
         f.Guests.FailProfiles = true;
-        try { await Code(await client.GetAsync(s.Url + "/attendance"), 500, "MSG287"); }
+        try { await Code(await client.GetAsync(s.Url + "/attendance"), 500, "MSG289"); }
         finally { f.Guests.FailProfiles = false; }
         foreach (var q in new[] { "page=0", "page=1&page=2", "pageSize=101", "q=x", "page=-1", "page=2147483648" })
             await Code(await client.GetAsync(s.Url + "/attendance?" + q), 400, "MSG278");

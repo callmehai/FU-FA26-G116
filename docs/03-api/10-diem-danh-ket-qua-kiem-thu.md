@@ -3,6 +3,16 @@
 Ngày 20/10/2026; branch `feat/SCRUM-26-BACKEND-Taking-attendance-of-participants`.
 [Contract](10-diem-danh.md), [bàn giao](10-diem-danh-ban-giao.md).
 
+## Resolve merge main và review — 23/10/2026
+
+Merge main `82a8af2` vào branch đã tích hợp SCRUM-97 (`629f483`). Xử lý trùng mã: MSG287 giữ nghĩa thông báo cập nhật quyền đã vào main; lỗi đọc attendance chuyển sang MSG289, mã tiếp theo MSG290. ADR điểm danh đổi số từ 0022 sang 0024 để giữ ADR-0022/0023 của main; cập nhật link, không đổi quyết định kỹ thuật. Các mã trong ghi nhận ngày 22/10 bên dưới là lịch sử trước lần remap này.
+
+- Release build `-warnaserror`: pass, 0 warning/error. Frontend lint/build pass; còn cảnh báo bundle phòng họp trên 500 kB.
+- Regression: 1.312 test; lượt đầu 1.287 pass, 25 lỗi kết nối Redis cổng 6379. Chạy lại toàn bộ 25 test Redis với container riêng cổng 6389: 25/25 pass; đối chiếu TRX xác nhận không còn test lỗi hoặc skipped.
+- EF model check và Git whitespace check pass; không còn unmerged entries/conflict marker.
+- Review phần tích hợp SCRUM-26/SCRUM-97: chưa phát hiện lỗi cần yêu cầu sửa còn lại về phân quyền, transaction/version, realtime hoặc migration. Guest production/UI điểm danh end-to-end chưa được kiểm chứng trong lượt này.
+- Chưa tạo merge commit, push hoặc deploy.
+
 ## Đồng bộ SCRUM-97 — 22/10/2026
 
 Tích hợp branch SCRUM-97 tại `48268ede97ede308bf6313a95059ffa788f857b5` vào SCRUM-26 sau merge main `fa408bc`. Giữ MSG287/MSG278 của attendance, bổ sung MSG258/MSG260 của UC-73, mã tiếp theo MSG288; giữ cả hai collection trong README Postman. Không thêm hoặc sửa migration.

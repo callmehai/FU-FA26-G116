@@ -171,8 +171,10 @@ function tokenIsStale(user: CurrentUser) {
  * When the answer no longer matches the token — a capability granted or taken away, a new role, a
  * new email — the token is refreshed straight away. Rendering from /me alone would show a menu the
  * token cannot open yet (every request 403s until the token expires), or hide one it still can.
- * Every such change also revokes the user's refresh tokens on the backend, so this refresh usually
- * ends the session, and the user signs in again with the new rights — which is the intent.
+ * A new role, or a change to the role's capabilities, keeps the session: the refresh succeeds and
+ * carries the new set (SCRUM-105). A new email or a deactivation revokes the account's refresh
+ * tokens on the backend, so there this refresh ends the session and the user signs in again,
+ * which is the intent.
  *
  * A 401 here has already been through the client's refresh, and `refresh()` ends the session when
  * the backend refuses it. The session is not ended here on top of that: a refresh that failed

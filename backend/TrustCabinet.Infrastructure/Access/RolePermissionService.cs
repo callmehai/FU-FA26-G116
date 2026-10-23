@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Npgsql;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
-using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
@@ -19,7 +18,7 @@ namespace TrustCabinet.Infrastructure.Access;
 public sealed class RolePermissionService(
     IRolePermissionRepository roles,
     IAuditService audit,
-    IRefreshTokenStore refreshTokens,
+    ICapabilitiesChangePublisher capabilitiesChanged,
     IAdministratorInvariantGuard administratorInvariant,
     ILogger<RolePermissionService> logger) : IRolePermissionService
 {
@@ -44,30 +43,26 @@ public sealed class RolePermissionService(
         var written = await administratorInvariant.WriteAsync(
             token => UpdateWithinTransactionAsync(roleId, capabilities, actorId, token), ct);
 
-        // After the commit, never inside it. Revoking runs one Redis round trip per affected
-        // account, in sequence; doing that under the lock would block every other administrative
-        // write for the whole run, and a Redis outage would roll back a configuration change the
-        // database had already accepted.
-        //
-        // The cost is a window, not a hole: until it runs, those accounts still hold a usable
-        // refresh token. It is bounded by the access token's 15 minutes, the same exposure
-        // accepted elsewhere for the same reason.
-        foreach (var userId in written.RevokeSessionsOf)
+        // After the commit, never inside it: a client told before the commit would refresh, read
+        // the old matrix, and wait for a push that already happened.
+        if (written.Notify.Count > 0)
         {
             try
             {
-                await refreshTokens.RevokeAllForUserAsync(userId, ct);
+                // Not the request's token: the change has committed, and an administrator closing
+                // the tab now must not cancel telling the people it affects.
+                await capabilitiesChanged.PublishAsync(written.Notify, CancellationToken.None);
             }
             catch (Exception exception)
             {
-                // Logged, not rethrown, and the loop goes on: the matrix is already saved, and
-                // telling the administrator it failed would have them repeat a change that did
-                // happen. One account's session lapsing on its own is the smaller loss.
+                // Logged, not rethrown: the matrix is already saved, and telling the administrator
+                // it failed would have them repeat a change that did happen. Nothing is less safe
+                // either — the push only spares the browser waiting for its next refresh.
                 logger.LogError(
                     exception,
-                    "Permissions for role {RoleId} changed, but ending the sessions of {UserId} "
-                    + "failed. The session lapses on its own when the access token expires.",
-                    roleId, userId);
+                    "Permissions for role {RoleId} changed, but telling its accounts failed. They "
+                    + "pick up the change at their next token refresh.",
+                    roleId);
             }
         }
 
@@ -75,14 +70,14 @@ public sealed class RolePermissionService(
     }
 
     /// <summary>
-    /// What a guarded update produced: the answer for the caller, and whose sessions the change
-    /// invalidated — empty on every branch that wrote nothing.
+    /// What a guarded update produced: the answer for the caller, and who to tell that their
+    /// capabilities changed — empty on every branch that wrote nothing.
     /// </summary>
     private readonly record struct Written(
-        RolePermissionResult Result, IReadOnlyCollection<Guid> RevokeSessionsOf)
+        RolePermissionResult Result, IReadOnlyCollection<Guid> Notify)
     {
         /// <summary>
-        /// Lets a refusal be returned as-is: a branch that wrote nothing has no session to end.
+        /// Lets a refusal be returned as-is: a branch that wrote nothing has nobody to tell.
         /// </summary>
         public static implicit operator Written(RolePermissionResult result) => new(result, []);
     }
@@ -161,22 +156,21 @@ public sealed class RolePermissionService(
             },
             ct);
 
-        // SCRUM-60: "thay đổi có hiệu lực ngay với phiên đang đăng nhập, hoặc nói rõ là phải đăng
-        // nhập lại". Capabilities are copied into the access token when it is issued, so everyone
-        // already holding this role keeps the old set until their token expires. Dropping their
-        // refresh tokens ends the session at the next refresh instead of waiting it out — the same
-        // step UserService takes on a role change, for the same reason.
+        // SCRUM-60: "thay đổi có hiệu lực ngay với phiên đang đăng nhập". Capabilities are copied
+        // into the access token when it is issued, so everyone holding this role carries the old
+        // set until they refresh. Their sessions are *not* ended (SCRUM-105): a capability taken
+        // away already stops working at the next request, because CapabilityGate re-reads the
+        // matrix on every gated call, and RefreshAsync re-reads it too. Revoking refresh tokens
+        // added no protection on top of that — it only signed people out.
         //
-        // Both directions, not only on a capability removed: someone whose role just gained a
-        // capability is holding a token that does not carry it, so their new rights would not
-        // work either until the token lapsed.
+        // So the accounts are told instead, and their browser refreshes straight away. Both
+        // directions: a capability gained is useless until a token carries it.
         //
-        // Collected here, revoked by the caller once the transaction has committed — see
-        // UpdateAsync for why Redis must not be reached while the lock is held.
+        // Collected here, pushed by the caller once the transaction has committed.
         var affected = await roles.FindActiveUserIdsInRoleAsync(roleId, ct);
 
         logger.LogInformation(
-            "Permissions for role {RoleId} changed by {ActorId}; {Count} session(s) to end.",
+            "Permissions for role {RoleId} changed by {ActorId}; {Count} account(s) to notify.",
             roleId, actorId, affected.Count);
 
         // Rebuilt from the requested values rather than re-queried: the save succeeded, so this is

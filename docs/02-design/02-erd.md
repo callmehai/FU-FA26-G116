@@ -1,6 +1,6 @@
 # Mô hình dữ liệu (ERD)
 
-**Hiện thực Backend SCRUM-26 (20/10/2026):** thêm `AttendanceVersion` (`bigint NOT NULL DEFAULT 0`) vào `MeetingParticipant` và `MeetingGuestInvitation`; chỉ tăng khi attendance đổi, không tăng theo response/role. Tái sử dụng Attendance/AttendanceRecordedById/AttendanceRecordedAt và AuditLog. Giữ nguyên dữ liệu legacy, không thêm bảng/index/trigger. Đây là thuộc tính kỹ thuật của schema hiện thực; không thay đổi số thực thể hay các hình mô hình mục tiêu. [ADR-0022](../05-decisions/0022-version-rieng-cho-diem-danh.md), [contract và migration](../03-api/10-diem-danh.md).
+**Hiện thực Backend SCRUM-26 (20/10/2026):** thêm `AttendanceVersion` (`bigint NOT NULL DEFAULT 0`) vào `MeetingParticipant` và `MeetingGuestInvitation`; chỉ tăng khi attendance đổi, không tăng theo response/role. Tái sử dụng Attendance/AttendanceRecordedById/AttendanceRecordedAt và AuditLog. Giữ nguyên dữ liệu legacy, không thêm bảng/index/trigger. Đây là thuộc tính kỹ thuật của schema hiện thực; không thay đổi số thực thể hay các hình mô hình mục tiêu. [ADR-0024](../05-decisions/0024-version-rieng-cho-diem-danh.md), [contract và migration](../03-api/10-diem-danh.md).
 
 **Hiện thực Backend SCRUM-20 / SCRUM-97 theo PO 20/10/2026:** MeetingParticipant có AssignmentStatus/RemovedAt/RemovedById/InitialInvitationDeliveryKey; Meeting có ParticipantsRevision. Hai bảng mới: MeetingGuestInvitation, MeetingInvitationDispatch. Không có bảng quyền bổ sung; quyền roster theo current Chair/Secretary active. Unique current assignment/Guest email/Chair; ứng dụng giữ đúng một Chair, migration backfill creator khi thiếu. Guest credential/profile/session production thuộc SCRUM-59. Chi tiết: [API §6](../03-api/09-thanh-phan-tham-du.md#6-migration-và-delivery), [ADR-0021](../05-decisions/0021-vong-doi-thanh-phan-va-y-dinh-gui-thu.md). Hình mục tiêu bên dưới chưa phải snapshot schema hiện thực.
 
@@ -43,7 +43,8 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | StoredFile | File bất biến trong kho đối tượng; kho cá nhân và cuộc họp chỉ tham chiếu tới nó | NEED MIGRATION / RESTRUCTURE | Code đang là `DocumentVersion`: đổi thành StoredFile, bỏ DocumentId/VersionNumber, thêm PageCount, UploadedAt, PurgedAt (ADR-0018). |
 | Folder | Thư mục trong kho cá nhân, lồng tối đa 5 cấp (như AI-eCabinet) | NOT IMPLEMENTED | Thêm; `MeetingId` cho thư mục tự tạo khi tải thẳng vào cuộc họp (ADR-0018). |
 | MeetingDocument | Một dòng tài liệu trong cuộc họp, trỏ tới một StoredFile | NOT IMPLEMENTED | Thêm; tham chiếu StoredFile (không chép byte), Document nguồn tuỳ chọn, gỡ bằng RemovedAt (ADR-0018). |
-| DocumentComment | Góp ý trong ngữ cảnh tài liệu đính kèm cuộc họp | NEED MIGRATION / RESTRUCTURE | Đổi DocumentId thành MeetingDocumentId. |
+| MeetingDocumentAgendaItem | Bảng nối tài liệu cuộc họp ↔ mục nghị sự (Entity 20a, không tính vào 30 thực thể) | NOT IMPLEMENTED | Thêm theo ADR-0020: một tài liệu gắn nhiều mục; thay cột `AgendaItemId` đơn. Hình ERD mục tiêu ở `assets/erd-muc-tieu/` đã vẽ bảng này (22/10/2026). |
+| DocumentComment | Góp ý trong ngữ cảnh tài liệu đính kèm cuộc họp | NEED MIGRATION / RESTRUCTURE | Đổi DocumentId thành MeetingDocumentId; AuthorId thành nullable, thêm GuestInvitationId (Guest góp ý, ADR-0016); trả lời một cấp (BR-317). |
 | SpeakingRequest | Yêu cầu/lượt phát biểu | IMPLEMENTED | Giữ. |
 | MeetingNote | Ghi chú thư ký | IMPLEMENTED | Giữ. |
 | VotingSession | Một lần biểu quyết trong cuộc họp | NEED MIGRATION / RESTRUCTURE | Bỏ `Kind`, `OpensAt`, `ClosesAt`; thêm `OpenedAt`, `ClosedAt`, `ConclusionNote`, `ConcludedById`, `EligibleRoles` (Chủ toạ chọn vai trò được bỏ phiếu, như AI-eCabinet); `Conclusion` thành Passed/NotPassed/Deferred; AgendaItem liên kết tùy chọn (ADR-0014). |
@@ -185,7 +186,8 @@ erDiagram
     Document o|--o{ MeetingDocument : "sourcing"
     StoredFile ||--o{ Document : "storing"
     StoredFile ||--o{ MeetingDocument : "storing"
-    AgendaItem o|--o{ MeetingDocument : "associating with"
+    MeetingDocument ||--o{ MeetingDocumentAgendaItem : "linked through"
+    AgendaItem ||--o{ MeetingDocumentAgendaItem : "linking"
     MeetingDocument ||--o{ DocumentComment : "providing context for"
     DocumentComment ||--o{ DocumentComment : "replying to"
 
@@ -235,17 +237,21 @@ erDiagram
         uuid StoredFileId FK
         uuid DocumentId FK "nullable; dòng kho nguồn, null khi đã xoá khỏi kho"
         string FileName
-        uuid AgendaItemId FK "nullable"
         uuid AddedById FK
         timestamptz AddedAt
         timestamptz RemovedAt "nullable; UC-33c"
         uuid RemovedById FK "nullable"
     }
+    MeetingDocumentAgendaItem {
+        uuid MeetingDocumentId PK, FK
+        uuid AgendaItemId PK, FK "cùng Meeting với MeetingDocument"
+    }
     DocumentComment {
         uuid Id PK
         uuid MeetingDocumentId FK
         uuid ParentCommentId FK "null nếu là góp ý gốc"
-        uuid AuthorId FK
+        uuid AuthorId FK "nullable; đúng một trong AuthorId, GuestInvitationId"
+        uuid GuestInvitationId FK "nullable; tác giả là Guest"
         int PageNumber "nullable"
         string Body
         bool IsResolved
@@ -551,7 +557,8 @@ erDiagram
 | Meeting | 1 → 0..* | MeetingDocument | Nhận tài liệu |
 | Document | 0..1 → 0..* | MeetingDocument | Là nguồn (null khi đã xoá khỏi kho) |
 | StoredFile | 1 → 0..* | MeetingDocument | Lưu nội dung cho tài liệu cuộc họp |
-| AgendaItem | 0..1 → 0..* | MeetingDocument | Gắn với |
+| MeetingDocument | 1 → 0..* | MeetingDocumentAgendaItem | Gắn với mục nghị sự (ADR-0020) |
+| AgendaItem | 1 → 0..* | MeetingDocumentAgendaItem | Có tài liệu gắn |
 | MeetingDocument | 1 → 0..* | DocumentComment | Cung cấp ngữ cảnh cho |
 | DocumentComment | 0..1 → 0..* | DocumentComment | Trả lời |
 | Meeting | 1 → 0..* | SpeakingRequest | Tiếp nhận |
@@ -592,7 +599,7 @@ erDiagram
 7. Mỗi cặp (MeetingId, GuestEmail) có tối đa một lời mời Guest còn hiệu lực. Không mời email Guest nếu email đó đã thuộc một participant nội bộ hiện hành trong cùng Meeting.
 8. Để công bố hoặc bắt đầu Meeting, phải có đúng một Chair và ít nhất một Secretary đang được phân công hiện hành, đồng thời tài khoản của họ còn hoạt động (BR-124, BR-125, BR-127).
 9. Phản hồi lời mời chỉ là Accepted hoặc Declined; không có uỷ quyền phản hồi (BR-105). Điểm danh chỉ Present/Absent; chưa ghi nhận giữ null, không coi là Absent.
-10. MeetingDocument tham chiếu một StoredFile bất biến; mỗi StoredFile có tối đa một MeetingDocument đang hiệu lực (`RemovedAt` null) trong mỗi Meeting. Nếu có AgendaItemId, AgendaItem đó phải thuộc cùng Meeting. Không gỡ được khi Meeting đã có biên bản (BR-185).
+10. MeetingDocument tham chiếu một StoredFile bất biến; mỗi StoredFile có tối đa một MeetingDocument đang hiệu lực (`RemovedAt` null) trong mỗi Meeting. Một tài liệu gắn được nhiều mục nghị sự của cùng Meeting qua MeetingDocumentAgendaItem (BR-277, BR-278). Không thêm, gỡ hay đổi liên kết được khi Meeting đã kết thúc (BR-185, ADR-0020).
 11. VoteReceipt duy nhất theo (VotingSessionId, VoterId). VoteChoice ẩn danh phải có VoterId null; không gộp receipt với choice.
 12. Mỗi Recording có tối đa một Transcript; mỗi Meeting có tối đa một MeetingSummary hiện hành.
 13. MeetingStatusHistory và AuditLogEntry là bằng chứng chỉ ghi thêm.

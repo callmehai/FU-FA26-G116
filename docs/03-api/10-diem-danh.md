@@ -1,7 +1,7 @@
 # Điểm danh — Backend SCRUM-26 / UC-31
 
 Ngày 20/10/2026. Nguồn nghiệp vụ: Jira SCRUM-26, UC-31, BR-116/170/171/172/178, ADR-0016/0017.
-Quyết định concurrency: [ADR-0022](../05-decisions/0022-version-rieng-cho-diem-danh.md).
+Quyết định concurrency: [ADR-0024](../05-decisions/0024-version-rieng-cho-diem-danh.md).
 [Bàn giao FE/BA](10-diem-danh-ban-giao.md), [kiểm thử](10-diem-danh-ket-qua-kiem-thu.md).
 
 ## 1. Quyền và phạm vi
@@ -104,7 +104,7 @@ Audit `meeting.attendance.recorded`: một dòng/batch thay đổi, object Meeti
 | 409/MSG149 | Không còn InProgress; tải lại và khóa thao tác |
 | 409/MSG151 | Tải lại, so sánh draft, yêu cầu người dùng quyết định; không auto retry |
 | 503/MSG150 | Lỗi lưu hoặc commit chưa xác định; GET lại trước khi thử tiếp |
-| 500/MSG287 | GET lỗi đọc |
+| 500/MSG289 | GET lỗi đọc |
 | 400/MSG278 | Query GET sai |
 | 415/MSG34, 413/MSG87 | Sửa content-type/kích thước body |
 | 401, 403, 404 | Theo authentication/quyền tài nguyên; không có code mới |

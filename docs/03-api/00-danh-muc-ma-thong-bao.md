@@ -36,7 +36,7 @@ UC-31 đã có Backend theo [contract điểm danh](10-diem-danh.md). Các dòng
 | `MSG149` | 409 | Meeting không còn InProgress | Chỉ được điểm danh khi cuộc họp đang diễn ra. |
 | `MSG150` | 503 | Không lưu được hoặc kết quả commit chưa xác định | Không xác nhận được kết quả lưu điểm danh. Vui lòng tải lại dữ liệu trước khi thử lại. |
 | `MSG151` | 409 | Entry không còn current hoặc version điểm danh stale | Thành phần hoặc dữ liệu điểm danh đã thay đổi. Vui lòng tải lại và kiểm tra trước khi lưu. |
-| `MSG287` | 500 | GET attendance lỗi đọc | Không tải được dữ liệu điểm danh. |
+| `MSG289` | 500 | GET attendance lỗi đọc | Không tải được dữ liệu điểm danh. |
 | `MSG278` | 400 | Query GET attendance không hợp lệ | Tham số phân trang điểm danh không hợp lệ. |
 
 Dùng lại 415/MSG34 và 413/MSG87 cho content-type và body 64 KiB; 401 authentication, 403/404 body rỗng. MSG150 không hứa rollback khi client/server mất kết nối đúng lúc commit. MSG151 bao gồm xung đột điểm danh theo entry, không dùng revision roster.
@@ -118,11 +118,11 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 | `MSG260` | 409 | GET chair-handover-candidates / POST chair-handover: người đọc nội bộ không còn là current Chair hoặc status không cho bàn giao | Bạn không còn quyền giao vai trò Chủ tọa cho cuộc họp này. |
 | `MSG277` | 400 | POST meetings: roster khởi tạo không hợp lệ | Danh sách thành phần tham dự không hợp lệ. |
 
-`MSG258` và `MSG260` đã triển khai trong API chuyên biệt UC-73 của SCRUM-97. `MSG258` là empty state trong response thành công, không dùng cho search không khớp. SCRUM-26 dùng `MSG287` cho lỗi đọc và `MSG278` cho query không hợp lệ; `MSG277` đã thuộc validation roster khi tạo họp trong PR #92.
+`MSG258` và `MSG260` đã triển khai trong API chuyên biệt UC-73 của SCRUM-97. `MSG258` là empty state trong response thành công, không dùng cho search không khớp. SCRUM-26 dùng `MSG289` cho lỗi đọc và `MSG278` cho query không hợp lệ; `MSG277` đã thuộc validation roster khi tạo họp trong PR #92.
 
 ## Mã tiếp theo
 
-**`MSG288`** — Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG287` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG261`–`MSG274` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020; đặc tả UC-23b dùng `MSG250` cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG151` dành cho thay đổi FE-06 trong Report 3; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG290`** — `MSG288` dành sẵn cho UC-33a EX-8 (giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026). SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG261`–`MSG274` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020; đặc tả UC-23b dùng `MSG250` cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3, chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`–`MSG151` dành cho thay đổi FE-06 trong Report 3; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -179,6 +179,7 @@ chỉ khác câu chữ. Nhánh "không có quyền truy cập hệ thống" đã
 | `MSG16` | 200 | `PUT /api/roles/capabilities` | Cập nhật phân quyền thành công (kể cả không đổi gì) | `Cập nhật phân quyền thành công.` | BE |
 | `MSG17` | 400 | `PUT /api/roles/capabilities` | Cấu hình không hợp lệ — kèm `errors` (`roleId`, `capabilities`, `adminUsers`) | `Cấu hình phân quyền không hợp lệ.` | BE |
 | `MSG18` | 500 | `PUT /api/roles/capabilities` | Database từ chối ghi | `Không thể cập nhật phân quyền. Vui lòng thử lại.` | BE |
+| `MSG287` | — | — (FE, sự kiện hub `capabilitiesChanged`) | Quản trị viên vừa đổi vai trò của tài khoản, hoặc đổi quyền của vai trò tài khoản đang giữ; phiên giữ nguyên, menu và nút đổi theo ngay (SCRUM-105) | `Quyền truy cập của bạn vừa được cập nhật.` | FE |
 
 ### Quản lý vai trò — UC-12a, UC-12b, UC-12c (`/api/roles`)
 
@@ -595,6 +596,7 @@ Bảng nguồn đặc tả dưới đây giữ thông điệp tiếng Anh để 
 | `MSG272` | UC-77 / EX-1 · Dành sẵn, chưa triển khai | Enter a conclusion of up to 2,000 characters. |
 | `MSG273` | UC-77 / EX-2 · Dành sẵn, chưa triển khai | The conclusion of this agenda item can no longer be changed. |
 | `MSG274` | UC-77 / EX-3 · Dành sẵn, chưa triển khai | Unable to save the agenda item conclusion. Please try again. |
+| `MSG288` | UC-33a / EX-8, BR-319 · Dành sẵn, chưa triển khai (PO 22/10/2026) | Upload up to 10 files at a time, no larger than 200 MB in total. |
 
 ## Ghi chú: mã dùng chung có chủ ý
 
