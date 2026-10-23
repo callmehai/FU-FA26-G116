@@ -56,6 +56,15 @@ public class TrustCabinetApiFactory : WebApplicationFactory<Program>
             {
                 services.Remove(orphanPurge);
             }
+
+            // And the recording retention sweep, which would open a database connection.
+            var retention = services.SingleOrDefault(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService)
+                && descriptor.ImplementationType == typeof(RecordingRetentionWorker));
+            if (retention is not null)
+            {
+                services.Remove(retention);
+            }
         });
     }
 }

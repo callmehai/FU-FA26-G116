@@ -136,7 +136,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 
 ## Mã tiếp theo
 
-**`MSG290`** — `MSG288` (UC-33a EX-8, giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026) đã triển khai cùng `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174` trong SCRUM-107. SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG261`–`MSG274` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020; đặc tả UC-23b dùng `MSG250` cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3; trong dải này SCRUM-107 đã triển khai `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, phần còn lại chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`/`MSG146` dành cho thay đổi FE-06 trong Report 3; `MSG147`–`MSG151` đã triển khai trong SCRUM-26; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG299`** — Bản ghi cuộc họp (SCRUM-29) dùng `MSG290`–`MSG298`. `MSG288` (UC-33a EX-8, giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026) đã triển khai cùng `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174` trong SCRUM-107. SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG261`–`MSG274` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020; đặc tả UC-23b dùng `MSG250` cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3; trong dải này SCRUM-107 đã triển khai `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, phần còn lại chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`/`MSG146` dành cho thay đổi FE-06 trong Report 3; `MSG147`–`MSG151` đã triển khai trong SCRUM-26; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -288,6 +288,25 @@ mã mới.
 
 Người không được mời vào phòng **không có mã**: API trả `404` không body, như cuộc họp không tồn
 tại.
+
+### Bản ghi cuộc họp — SCRUM-29 (`/api/meetings/{id}/recordings`, `/api/recordings/{id}`)
+
+Chi tiết: [`12-ban-ghi-cuoc-hop.md`](12-ban-ghi-cuoc-hop.md). Người không đọc được cuộc họp, hoặc
+đọc được nhưng không có trong danh sách thành phần (người tạo, người duyệt), nhận `404` không body:
+bản ghi là dữ liệu cá nhân của người phát biểu. Link phát (`…/audio?expires=…&signature=…`) sai
+hoặc hết hạn cũng là `404` không body.
+
+| Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
+|---|---|---|---|---|---|
+| `MSG290` | 201 | `POST …/recordings` | Thư ký lưu bản ghi (đã xác nhận đồng ý, có mục đích và hạn lưu trữ) | `Đã lưu bản ghi.` | BE |
+| `MSG291` | 400 | `POST …/recordings` | Không phải multipart, thiếu tệp, chưa xác nhận đồng ý, nguồn/thời lượng sai, trường lặp | `Thông tin bản ghi không hợp lệ.` (hoặc câu cụ thể hơn) | BE |
+| `MSG292` | 415 | `POST …/recordings` | Tệp không phải mp3, m4a, aac, wav, webm, ogg | `Định dạng âm thanh không được hỗ trợ. Dùng mp3, m4a, wav, webm hoặc ogg.` | BE |
+| `MSG293` | 413 | `POST …/recordings` | Tệp vượt giới hạn (`Recordings:MaxUploadMegabytes`, mặc định 300 MB) | `Bản ghi vượt quá 300 MB.` | BE |
+| `MSG294` | 409 | `POST …/recordings` | Cuộc họp chưa diễn ra (khác `InProgress`, `Ended`) | `Chỉ lưu bản ghi khi cuộc họp đang diễn ra hoặc đã kết thúc.` | BE |
+| `MSG295` | 403 | `POST …/recordings`, `DELETE /api/recordings/{id}` | Người trong cuộc họp nhưng không phải Thư ký hiện tại | `Chỉ Thư ký cuộc họp được quản lý bản ghi.` | BE |
+| `MSG296` | 200 | `DELETE /api/recordings/{id}` | Đã xoá audio và transcript; dòng bản ghi giữ lại làm bằng chứng. Gọi lại trên bản đã xoá vẫn trả mã này | `Đã xoá bản ghi.` | BE |
+| `MSG297` | 500 | `GET …/recordings`, `GET /api/recordings/{id}/playback` | Lỗi database khi đọc | `Không tải được danh sách bản ghi.` | BE |
+| `MSG298` | 503 | `POST …/recordings`, `DELETE /api/recordings/{id}` | Lỗi database khi lưu; tệp vừa tải lên bị xoá theo | `Không lưu được thay đổi bản ghi. Vui lòng thử lại.` | BE |
 
 
 ### Dành sẵn, chưa có code

@@ -17,6 +17,7 @@ using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Infrastructure.Users;
 using TrustCabinet.Infrastructure.Participants;
+using TrustCabinet.Infrastructure.Recordings;
 using TrustCabinet.Web;
 using TrustCabinet.Web.Endpoints;
 
@@ -49,6 +50,10 @@ builder.Services.AddHostedService<CallRoomJanitor>();
 // SCRUM-107: meeting documents, bytes on Cloudflare R2 (ADR-0024). Starts without a store
 // configured; uploads then answer 503/MSG166.
 builder.Services.AddTrustCabinetDocuments(builder.Configuration);
+
+// SCRUM-29: recordings of a sitting, on local disk, erased when their retention period runs out.
+builder.Services.AddTrustCabinetRecordings(builder.Configuration, builder.Environment.ContentRootPath);
+builder.Services.AddHostedService<RecordingRetentionWorker>();
 
 // The audit log records where a request came from, and only the web layer can see that.
 builder.Services.AddHttpContextAccessor();
@@ -189,6 +194,9 @@ app.MapHub<NotificationHub>("/hubs/notifications", options =>
 
 // SCRUM-39/41: meeting call room — state, join token, chair mute, LiveKit webhook.
 app.MapCallEndpoints();
+
+// SCRUM-29: recordings — list, upload, signed playback, erase.
+app.MapRecordingEndpoints();
 
 // Health endpoint — the frontend calls this to confirm the backend is alive.
 app.MapGet("/api/health", () => Results.Ok(new

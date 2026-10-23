@@ -79,4 +79,15 @@ public static class AuditActions
     /// <c>ObjectId</c> is the role's id — roles are rows since ADR-0008.
     /// </summary>
     public const string RoleObjectType = "Role";
+
+    /// <summary>SCRUM-29 — a secretary stored a recording, after confirming the participants were told.</summary>
+    public const string RecordingUploaded = "recording.uploaded";
+
+    /// <summary>
+    /// The audio bytes of a recording were erased — on a secretary's request or because the retention period
+    /// ran out (the details say which). The row stays, so the erasure itself can be shown to have happened.
+    /// </summary>
+    public const string RecordingErased = "recording.erased";
+
+    public const string RecordingObjectType = "Recording";
 }

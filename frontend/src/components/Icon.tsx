@@ -25,6 +25,7 @@ import {
   EllipsisVertical,
   Eye,
   EyeOff,
+  FileAudio,
   FileText,
   Folder,
   FolderPlus,
@@ -42,9 +43,11 @@ import {
   MicOff,
   Monitor,
   Paperclip,
+  Pause,
   PenLine,
   PhoneOff,
   PictureInPicture2,
+  Play,
   Plus,
   Presentation,
   Radio,
@@ -53,6 +56,7 @@ import {
   Send,
   Settings,
   Shield,
+  Square,
   ShieldAlert,
   SquareCheck,
   Trash2,
@@ -147,6 +151,10 @@ const ICONS = {
   logIn: LogIn,
   mail: Mail,
   undo: RotateCcw,
+  play: Play,
+  pause: Pause,
+  stop: Square,
+  fileAudio: FileAudio,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS
