@@ -44,8 +44,6 @@ Trình bày chung cho cả phòng: dùng chia sẻ màn hình sẵn có (UC-39c)
 
 ## Còn phải làm
 
-- **Sequence draw.io gộp**: thêm tab UC-32a, UC-32c, UC-35 vào `TrustCabinet_Sequence_Diagrams.drawio` và ảnh
-  `drawio-png/` (các tab cũ dựng bằng Mermaid import trong draw.io desktop).
 - **Report 3 – đặc tả màn hình** (Documents tab, Add Document dialog, In-Room Meeting Panel): còn mô tả bộ lọc theo mục,
   nút "Meeting" mở panel ba tab; cần viết lại theo 7.3, 8.5, 8.6 của wireframe v7. Đợt này chỉ sửa UC/BR/MSG/ERD.
 - **Report 3 trên Drive**: chưa thay (chỉ sửa DOCX local).
