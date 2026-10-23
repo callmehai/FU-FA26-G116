@@ -155,5 +155,8 @@ export function useRecorder() {
     return () => window.removeEventListener('beforeunload', warn)
   }, [active])
 
-  return { state, active, start, pause, resume, stop, discard, reset: () => setState({ kind: 'idle' }) }
+  /** The take's length right now, for timers set in effects and handlers (not for rendering — use state). */
+  const elapsedMs = useCallback(() => elapsed(), [])
+
+  return { state, active, start, pause, resume, stop, discard, elapsedMs, reset: () => setState({ kind: 'idle' }) }
 }

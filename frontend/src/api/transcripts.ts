@@ -1,4 +1,4 @@
-import type { SegmentSaved, Transcript, TranscriptMessage } from '../types/transcript'
+import type { SegmentSaved, SpeakerAssigned, Transcript, TranscriptMessage } from '../types/transcript'
 import { api } from './client'
 
 /**
@@ -14,3 +14,7 @@ export const retryTranscript = (recordingId: string) =>
 
 export const editTranscriptSegment = (segmentId: string, text: string) =>
   api.put<SegmentSaved>(`/api/transcript-segments/${segmentId}`, { text })
+
+/** SCRUM-35 — the Secretary names a voice, or clears it with null. */
+export const assignSpeaker = (recordingId: string, label: string, userId: string | null) =>
+  api.put<SpeakerAssigned>(`/api/recordings/${recordingId}/speakers/${encodeURIComponent(label)}`, { userId })

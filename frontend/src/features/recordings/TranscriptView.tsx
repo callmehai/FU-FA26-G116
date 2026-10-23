@@ -7,6 +7,7 @@ import { errorMessage } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
 import type { Transcript, TranscriptSegment, TranscriptStatus } from '../../types/transcript'
 import { formatDuration } from './format'
+import { SpeakerList } from './SpeakerList'
 import { speakerName, speakerTone } from './speakers'
 
 /**
@@ -124,12 +125,15 @@ export function TranscriptView({
     )
 
   const active = transcript.segments.findLast((s) => s.startMs <= currentMs)?.id
+  // Only a name the Secretary assigned replaces "Người nói N" on the segments.
+  const names = new Map(transcript.speakers.filter((s) => s.assignedName).map((s) => [s.label, s.assignedName!]))
   return (
     <div className="transcript">
       <p className="transcript-note">
         <Badge tone="outline">Máy nhận dạng</Badge>
         <span className="field-hint">Chữ do máy tạo, có thể sai — bấm vào mốc giờ để nghe lại đoạn đó.</span>
       </p>
+      <SpeakerList transcript={transcript} onChanged={() => void load()} />
       {transcript.segments.length === 0 ? (
         <p className="field-hint">Không nghe thấy lời nói nào trong bản ghi.</p>
       ) : (
@@ -138,6 +142,7 @@ export function TranscriptView({
             <SegmentRow
               key={segment.id}
               segment={segment}
+              name={names.get(segment.speakerLabel)}
               active={segment.id === active}
               canEdit={transcript.canEdit}
               editing={editing === segment.id}
@@ -157,6 +162,7 @@ export function TranscriptView({
 
 function SegmentRow({
   segment,
+  name,
   active,
   canEdit,
   editing,
@@ -165,6 +171,7 @@ function SegmentRow({
   onSeek,
 }: {
   segment: TranscriptSegment
+  name: string | undefined
   active: boolean
   canEdit: boolean
   editing: boolean
@@ -202,7 +209,7 @@ function SegmentRow({
       </button>
       <div className="transcript-body">
         <span className="transcript-speaker">
-          <Badge tone={speakerTone(segment.speakerLabel)}>{speakerName(segment.speakerLabel)}</Badge>
+          <Badge tone={speakerTone(segment.speakerLabel)}>{name ?? speakerName(segment.speakerLabel)}</Badge>
           {segment.editedAt && (
             <span
               className="transcript-edited"

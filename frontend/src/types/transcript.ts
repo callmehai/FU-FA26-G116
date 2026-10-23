@@ -14,6 +14,23 @@ export interface TranscriptSegment {
   editedByName: string | null
 }
 
+/** SCRUM-35 — one voice of the recording: the machine's suggestion and the Secretary's decision. */
+export interface TranscriptSpeaker {
+  label: string
+  speechMs: number
+  suggestedUserId: string | null
+  suggestedName: string | null
+  /** Cosine similarity, 0–1. */
+  suggestionScore: number | null
+  assignedUserId: string | null
+  assignedName: string | null
+}
+
+export interface TranscriptPerson {
+  id: string
+  fullName: string
+}
+
 export interface Transcript {
   recordingId: string
   status: TranscriptStatus
@@ -24,6 +41,9 @@ export interface Transcript {
   durationMs: number
   canEdit: boolean
   segments: TranscriptSegment[]
+  speakers: TranscriptSpeaker[]
+  /** The meeting's people the Secretary may name a voice as; empty for everyone else. */
+  people: TranscriptPerson[]
 }
 
 export interface TranscriptMessage {
@@ -33,4 +53,8 @@ export interface TranscriptMessage {
 
 export interface SegmentSaved extends TranscriptMessage {
   segment: { segmentId: string; text: string; editedAt: string }
+}
+
+export interface SpeakerAssigned extends TranscriptMessage {
+  speaker: TranscriptSpeaker
 }
