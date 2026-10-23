@@ -19,23 +19,30 @@ public sealed class AgendaRepository(TrustCabinetDbContext db) : IAgendaReposito
     public void Remove(AgendaItem item) => db.AgendaItems.Remove(item);
 }
 
+/// <summary>
+/// Agenda's view of the meeting's active documents (ids are MeetingDocument ids). The link table
+/// allows a document on several items (ADR-0020 §5), but agenda planning still keeps the earlier
+/// one-item rule until UC-33b/UC-33d bring their own endpoints (SCRUM-58).
+/// </summary>
 public sealed class AgendaDocumentRepository(TrustCabinetDbContext db) : IAgendaDocumentRepository
 {
     public async Task<IReadOnlyList<AgendaDocumentOption>> ListAsync(Guid meetingId, CancellationToken ct)
-        => await db.Documents.AsNoTracking().Where(d => d.MeetingId == meetingId)
-            .OrderBy(d => d.Title).ThenBy(d => d.Id)
-            .Select(d => new AgendaDocumentOption(d.Id, d.Title, d.AgendaItemId)).ToListAsync(ct);
+        => await db.MeetingDocuments.AsNoTracking().Where(d => d.MeetingId == meetingId && d.RemovedAt == null)
+            .OrderBy(d => d.FileName).ThenBy(d => d.Id)
+            .Select(d => new AgendaDocumentOption(d.Id, d.FileName,
+                d.AgendaItemLinks.OrderBy(l => l.AgendaItemId).Select(l => (Guid?)l.AgendaItemId).FirstOrDefault()))
+            .ToListAsync(ct);
 
     public async Task<bool> CanAssociateAsync(Guid meetingId, Guid? itemId, IReadOnlyList<Guid> documentIds, CancellationToken ct)
-        => await db.Documents.CountAsync(d => documentIds.Contains(d.Id) && d.MeetingId == meetingId
-            && (d.AgendaItemId == null || d.AgendaItemId == itemId), ct) == documentIds.Count;
+        => await db.MeetingDocuments.CountAsync(d => documentIds.Contains(d.Id) && d.MeetingId == meetingId
+            && d.RemovedAt == null && d.AgendaItemLinks.All(l => l.AgendaItemId == itemId), ct) == documentIds.Count;
 
     public async Task AssociateAsync(Guid meetingId, Guid itemId, IReadOnlyList<Guid> documentIds, CancellationToken ct)
     {
-        var documents = await db.Documents.Where(d => d.MeetingId == meetingId
-            && (d.AgendaItemId == itemId || documentIds.Contains(d.Id))).ToListAsync(ct);
-        foreach (var document in documents)
-            document.AgendaItemId = documentIds.Contains(document.Id) ? itemId : null;
+        var links = await db.MeetingDocumentAgendaItems.Where(l => l.AgendaItemId == itemId).ToListAsync(ct);
+        db.MeetingDocumentAgendaItems.RemoveRange(links.Where(l => !documentIds.Contains(l.MeetingDocumentId)));
+        db.MeetingDocumentAgendaItems.AddRange(documentIds.Where(id => links.All(l => l.MeetingDocumentId != id))
+            .Select(id => new MeetingDocumentAgendaItem { MeetingDocumentId = id, AgendaItemId = itemId }));
     }
 }
 

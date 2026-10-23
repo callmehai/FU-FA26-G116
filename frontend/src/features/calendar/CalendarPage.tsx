@@ -670,7 +670,7 @@ function AgendaItem({ entry, onAnswered }: { entry: ScheduleEntry; onAnswered: (
           </p>
           <p className="agenda-chips">
             <StatusBadge status={meeting.status} />
-            <SensitivityBadge sensitivity={meeting.sensitivity} />
+            {meeting.sensitivity !== 'Normal' && <SensitivityBadge sensitivity={meeting.sensitivity} />}
             <RsvpChip response={meeting.myResponse} />
           </p>
           {meeting.canRespond && (
@@ -694,7 +694,8 @@ function DayHead({ day, today }: { day: Date; today: boolean }) {
     <div className={today ? 'calendar-day calendar-today' : 'calendar-day'}>
       <span className="calendar-weekday">
         {WEEKDAYS[day.getDay()]}
-        {today && ' · Hôm nay'}
+        {/* The column's wash and the filled date already say it; screen readers still hear it. */}
+        {today && <span className="visually-hidden"> hôm nay</span>}
       </span>
       <span className="calendar-date">
         {day.getDate()}/{day.getMonth() + 1}

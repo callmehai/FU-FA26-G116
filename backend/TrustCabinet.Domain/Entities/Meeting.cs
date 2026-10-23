@@ -59,7 +59,7 @@ public class Meeting : Entity
     public ICollection<MeetingParticipant> Participants { get; set; } = [];
     public ICollection<MeetingStatusHistory> StatusHistory { get; set; } = [];
     public ICollection<AgendaItem> AgendaItems { get; set; } = [];
-    public ICollection<Document> Documents { get; set; } = [];
+    public ICollection<MeetingDocument> Documents { get; set; } = [];
     public ICollection<VotingSession> VotingSessions { get; set; } = [];
     public ICollection<SpeakingRequest> SpeakingRequests { get; set; } = [];
     public ICollection<MeetingNote> Notes { get; set; } = [];

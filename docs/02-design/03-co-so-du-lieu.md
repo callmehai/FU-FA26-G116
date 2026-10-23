@@ -99,6 +99,28 @@ Trên Linux, webhook từ container gọi về `host.docker.internal:5225` có t
 bind `localhost`. Chạy backend với `--urls http://0.0.0.0:5225`, hoặc bỏ qua: job đối soát bù lại
 trong 30 giây.
 
+### 5. Kho tệp tài liệu
+
+Tài liệu cuộc họp lưu trên kho đối tượng có API S3: Cloudflare R2 ở server test, SeaweedFS ở máy dev
+([ADR-0024](../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)). Không làm phần tài liệu thì bỏ qua:
+backend vẫn chạy, tải tài liệu trả `503/MSG166`.
+
+`docker compose up -d` đã bật SeaweedFS ở `http://localhost:8333` (không xác thực). Tạo bucket một lần, rồi
+cho backend biết địa chỉ — bốn giá trị đều phải có, key bất kỳ vì SeaweedFS dev không kiểm:
+
+```bash
+# Tạo bucket trước. Đừng để SeaweedFS tự tạo ở lần ghi đầu: bucket đó ghi được nhưng đọc lại báo NoSuchBucket.
+curl -X PUT http://localhost:8333/trustcabinet-dev      # PowerShell: curl.exe -X PUT ...
+
+dotnet user-secrets set "FileStorage:ServiceUrl" "http://localhost:8333" --project backend/TrustCabinet.Web
+dotnet user-secrets set "FileStorage:BucketName" "trustcabinet-dev" --project backend/TrustCabinet.Web
+dotnet user-secrets set "FileStorage:AccessKeyId" "dev" --project backend/TrustCabinet.Web
+dotnet user-secrets set "FileStorage:SecretAccessKey" "dev" --project backend/TrustCabinet.Web
+```
+
+Muốn thử thẳng với R2 thì thay bằng endpoint, bucket và access key R2 (xem [deploy/README.md §9](../../deploy/README.md)).
+Test tự động không cần kho thật: chúng dùng bản giả trong bộ nhớ.
+
 ## Dữ liệu tham chiếu — bắt buộc phải seed
 
 Khác với dữ liệu mẫu ở mục dưới (chỉ có ở Development), **ma trận `role_capabilities` là dữ liệu

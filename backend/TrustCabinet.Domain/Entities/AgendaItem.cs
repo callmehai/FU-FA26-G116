@@ -36,6 +36,6 @@ public class AgendaItem : Entity
 
     public DateTimeOffset? ActualEndedAt { get; set; }
 
-    public ICollection<Document> Documents { get; set; } = [];
+    public ICollection<MeetingDocumentAgendaItem> DocumentLinks { get; set; } = [];
     public ICollection<VotingSession> VotingSessions { get; set; } = [];
 }

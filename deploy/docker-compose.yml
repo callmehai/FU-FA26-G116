@@ -39,6 +39,12 @@ services:
       LiveKit__ApiUrl: "http://livekit:7880"
       LiveKit__ApiKey: trustcabinet-test
       LiveKit__ApiSecret: "${LIVEKIT_API_SECRET:?Chua dat LIVEKIT_API_SECRET trong deploy/.env}"
+      # Kho tệp tài liệu trên Cloudflare R2 (ADR-0024). Để trống thì app vẫn chạy, tải tài liệu trả
+      # 503/MSG166. Xem deploy/README.md §9.
+      FileStorage__ServiceUrl: "${R2_ENDPOINT:-}"
+      FileStorage__BucketName: "${R2_BUCKET:-}"
+      FileStorage__AccessKeyId: "${R2_ACCESS_KEY_ID:-}"
+      FileStorage__SecretAccessKey: "${R2_SECRET_ACCESS_KEY:-}"
     depends_on:
       postgres:
         condition: service_healthy

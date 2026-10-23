@@ -166,6 +166,17 @@ layout claim; the pair shows the reader what actually moved.
   `python3 ~/.playwright-e2e/pair.py before.png after.png pair.png` (see *Browser setup notes*).
   Keep the ticket's evidence together in `~/.playwright-e2e/reports/<ticket>/` (`pairs/`, `shots/`),
   outside the repo; §6 turns it into the HTML report.
+- **Box every change, so none is missed.** A pair side by side hides small fixes. Scan both
+  builds with [sloplint](../anti-ai-slop/SKILL.md) on the same paths and diff them:
+  ```bash
+  S="npx -y github:callmehai/sloplint#v0.2.1"; R=~/.playwright-e2e/reports/<ticket>
+  $S scan http://localhost:5174/<path>… --setup .claude/skills/anti-ai-slop/login.mjs --out $R/truoc
+  $S scan http://localhost:5173/<path>… --setup .claude/skills/anti-ai-slop/login.mjs --out $R/sau
+  $S diff $R/truoc $R/sau --by order --out $R/diff
+  ```
+  `diff.html` has one card per change: what changed, in a sentence, and the same region cropped
+  before and after. Check `diff.json` lists only changes you meant, and link `diff.html` from the
+  report. Keep the pairs for scenarios a scan cannot reach (a dialog, a toast, a hover).
 - A text or label change needs a pair too; a pure refactor with nothing visible does not.
 - Keep the `../tc-before` worktree until the PR is merged (review fixes need new pairs), then
   `git worktree remove ../tc-before`.

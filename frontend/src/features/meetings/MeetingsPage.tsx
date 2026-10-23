@@ -11,6 +11,7 @@ import { formatClock, formatDate, formatWeekdayDate } from '../../lib/format'
 import { routes } from '../../lib/routes'
 import { useSearchBox } from '../../lib/useSearchBox'
 import {
+  MEETING_MODE_LABEL,
   MEETING_STATUSES,
   MEETING_STATUS_LABEL,
   SENSITIVITIES,
@@ -32,7 +33,6 @@ import {
   writeListState,
   type ListState,
 } from './listParams'
-import { placeLabel } from './place'
 import { SensitivityBadge, StatusBadge } from './StatusBadge'
 import { StatusSummary } from './StatusSummary'
 import { useCreateMeetingLink } from './meetingDialogLink'
@@ -228,7 +228,10 @@ export function MeetingsPage() {
               : `${formatDate(m.plannedStartTime)} – ${formatDate(m.plannedEndTime)}`}
           </span>
         </td>
-        <td className="cell-muted cell-place">{placeLabel(m)}</td>
+        <td className="cell-muted cell-place">
+          {MEETING_MODE_LABEL[m.mode]}
+          {m.mode !== 'Online' && m.location && <span className="cell-sub">{m.location}</span>}
+        </td>
         <td>
           <StatusBadge status={m.status} />
         </td>
@@ -255,11 +258,6 @@ export function MeetingsPage() {
     <>
       <PageHeader
         title="Danh sách cuộc họp"
-        description={
-          data && !filtered
-            ? `Các cuộc họp bạn có quyền xem · ${data.totalCount.toLocaleString('vi-VN')} cuộc họp`
-            : 'Các cuộc họp bạn có quyền xem.'
-        }
         action={
           canCreate && (
             <Link className="btn btn-primary btn-lg btn-cta" to={createLink.to} state={createLink.state}>
@@ -335,7 +333,7 @@ export function MeetingsPage() {
                 <SortHeader column="plannedStartTime" state={state} onSort={sortBy}>
                   Thời gian
                 </SortHeader>
-                <th className="cell-place">Hình thức · Địa điểm</th>
+                <th className="cell-place">Hình thức</th>
                 <th>Trạng thái</th>
                 <th>Mức độ</th>
                 <th className="col-action">Thao tác</th>

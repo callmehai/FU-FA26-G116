@@ -167,8 +167,8 @@ public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<A
         await AssertCode(await client.DeleteAsync(s.Url + $"/{s.Items[1]}"), 200, "MSG62");
         await using (var db = fixture.Db())
         {
-            Assert.Null((await db.Documents.SingleAsync(d => d.Id == s.DocumentId)).AgendaItemId);
-            Assert.Single(await db.DocumentVersions.Where(d => d.DocumentId == s.DocumentId).ToListAsync());
+            Assert.Null(await AgendaFixture.LinkedItem(db, s.DocumentId));
+            Assert.True(await db.MeetingDocuments.AnyAsync(d => d.Id == s.DocumentId && d.RemovedAt == null));
         }
         var created = await AssertCode(await client.PostAsJsonAsync(s.Url, Input()), 201, "MSG60");
         var last = created.GetProperty("agendaItemId").GetGuid();
@@ -265,7 +265,7 @@ public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<A
         Assert.Equal(events, fixture.Events.Count);
         await using var check = fixture.Db();
         Assert.Equal(3, await check.AgendaItems.CountAsync(i => i.MeetingId == s.MeetingId));
-        Assert.Null((await check.Documents.SingleAsync(d => d.Id == s.DocumentId)).AgendaItemId);
+        Assert.Null(await AgendaFixture.LinkedItem(check, s.DocumentId));
     }
 
     [Fact]

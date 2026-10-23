@@ -200,7 +200,7 @@ function MeetingDetail({
           <div className="record-title">
             <h1>{meeting.title}</h1>
             <StatusBadge status={meeting.status} />
-            <SensitivityBadge sensitivity={meeting.sensitivity} />
+            {meeting.sensitivity !== 'Normal' && <SensitivityBadge sensitivity={meeting.sensitivity} />}
             <RsvpChip response={meeting.myResponse} />
           </div>
           <p className="record-facts">
@@ -217,11 +217,10 @@ function MeetingDetail({
         {(canEdit || canReschedule || roomOpen) && (
           <div className="page-header-actions">
             {roomOpen && (
-              // The meeting is running and waiting for the user: eCab's rippling "Vào phòng họp".
-              <Link className="btn btn-live btn-lg btn-cta btn-ping btn-nudge" to={routes.meetingRoom(meeting.id)}>
+              // The meeting is running: green like its "Đang diễn ra" state, so it stands apart from blue.
+              <Link className="btn btn-live btn-lg btn-cta" to={routes.meetingRoom(meeting.id)}>
                 <Icon name="video" size={18} />
                 Vào phòng họp
-                <Icon name="arrowRight" size={16} />
               </Link>
             )}
             {(canEdit || canReschedule) && (
@@ -254,12 +253,10 @@ function MeetingDetail({
             <h2 id="rsvp-title">Bạn có tham dự cuộc họp này?</h2>
           </div>
           <div className="workflow-actions">
-            {/* One ripple per screen: while the room is open, "Vào phòng họp" is the one. */}
             <RsvpButtons
               meetingId={meeting.id}
               labelledBy="rsvp-title"
               onAnswered={() => void reload()}
-              ping={!roomOpen}
             />
           </div>
         </section>

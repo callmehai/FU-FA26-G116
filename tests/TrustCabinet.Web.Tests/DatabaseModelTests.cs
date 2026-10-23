@@ -41,10 +41,11 @@ public class DatabaseModelTests
         Assert.Equal(
             [
                 "agenda_items", "audit_log", "call_participants", "call_sessions",
-                "document_comments", "document_versions", "documents", "email_messages",
-                "meeting_guest_invitations", "meeting_invitation_dispatches", "meeting_minutes", "meeting_notes", "meeting_participants",
+                "document_comments", "documents", "email_messages", "folders",
+                "meeting_document_agenda_items", "meeting_documents", "meeting_guest_invitations", "meeting_invitation_dispatches",
+                "meeting_minutes", "meeting_notes", "meeting_participants",
                 "meeting_status_history", "meeting_summaries", "meetings", "minutes_signatures",
-                "notifications", "recordings", "role_capabilities", "roles", "speaking_requests",
+                "notifications", "recordings", "role_capabilities", "roles", "speaking_requests", "stored_files",
                 "transcript_segments", "transcripts", "users", "vote_choices",
                 "vote_receipts", "voting_options", "voting_sessions",
             ],
