@@ -1,3 +1,7 @@
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.SignalR.Client;
+using TrustCabinet.Domain.Agenda;
+using TrustCabinet.Domain.Attendance;
 using TrustCabinet.Domain.Meetings;
 using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
@@ -30,6 +34,7 @@ public sealed class ParticipantFixture : IAsyncLifetime
     internal readonly ChangePublisher Changes = new();
     internal readonly FailureInterceptor Failure = new();
     internal readonly QueryCounter Queries = new();
+    internal bool FailAttendancePublication;
     internal Factory Host = null!;
     internal TrustCabinetDbContext Db() => new(new DbContextOptionsBuilder<TrustCabinetDbContext>().UseNpgsql(Database.DataSource,
         o => o.MigrationsHistoryTable("__ef_migrations_history")).UseSnakeCaseNamingConvention().Options);
@@ -51,6 +56,10 @@ public sealed class ParticipantFixture : IAsyncLifetime
                 s.Replace(ServiceDescriptor.Singleton<IParticipantsChangePublisher>(f.Changes));
                 s.Replace(ServiceDescriptor.Singleton<IParticipantGuestAccess>(f.Guests));
                 s.Replace(ServiceDescriptor.Singleton<IMeetingGuestIdentityResolver>(f.Guests));
+                s.Replace(ServiceDescriptor.Singleton<IAgendaGuestAccess>(f.Guests));
+                s.AddScoped<AttendanceChangePublisher>();
+                s.Replace(ServiceDescriptor.Scoped<IAttendanceChangePublisher>(sp =>
+                    new TestAttendancePublisher(f, sp.GetRequiredService<AttendanceChangePublisher>())));
             });
         }
     }
@@ -66,6 +75,11 @@ public sealed class ParticipantFixture : IAsyncLifetime
             Events.Enqueue((change, users.ToArray(), guests.ToArray()));
             return Transport?.PublishAsync(change, users, guests, ct) ?? Task.CompletedTask;
         }
+    }
+    private sealed class TestAttendancePublisher(ParticipantFixture f, AttendanceChangePublisher inner) : IAttendanceChangePublisher
+    {
+        public Task PublishAsync(AttendanceChange change, CancellationToken ct) => f.FailAttendancePublication
+            ? throw new TimeoutException("Injected post-commit transport failure.") : inner.PublishAsync(change, ct);
     }
     internal sealed class TestClock : TimeProvider
     {
@@ -111,14 +125,15 @@ public sealed class ParticipantFixture : IAsyncLifetime
         public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData e, InterceptionResult<int> result, CancellationToken ct = default)
         {
             if (MeetingId is { } id && (e.Context!.ChangeTracker.Entries<Meeting>().Any(m => m.Entity.Id == id)
-                || e.Context.ChangeTracker.Entries<MeetingInvitationDispatch>().Any(d => d.Entity.MeetingId == id))
+                || e.Context.ChangeTracker.Entries<MeetingInvitationDispatch>().Any(d => d.Entity.MeetingId == id)
+                || e.Context.ChangeTracker.Entries<AuditLogEntry>().Any(a => a.Entity.ObjectId == id))
                 && Interlocked.Increment(ref Calls) == FailOnSave) throw new DbUpdateException("Injected participant persistence failure.");
             return ValueTask.FromResult(result);
         }
         internal void Reset() { MeetingId = null; Calls = 0; FailOnSave = 1; }
     }
     internal sealed record Session(MeetingGuestSession Identity, DateTimeOffset ExpiresAt, bool Verified = true, bool Revoked = false);
-    internal sealed class GuestAdapter : IParticipantGuestAccess, IMeetingGuestIdentityResolver
+    internal sealed class GuestAdapter : IParticipantGuestAccess, IMeetingGuestIdentityResolver, IAgendaGuestAccess
     {
         internal TestClock Clock = null!;
         internal readonly ConcurrentDictionary<Guid, Session> Sessions = new();
@@ -136,6 +151,7 @@ public sealed class ParticipantFixture : IAsyncLifetime
             => Task.FromResult<IReadOnlyList<MeetingGuestSession>>(Sessions.Values
                 .Where(s => s.Identity.MeetingId == meetingId && s.Verified && !s.Revoked && s.ExpiresAt > Clock.Now)
                 .Select(s => s.Identity).ToArray());
+        public Task<bool> CanReadAsync(MeetingGuestSession identity, CancellationToken ct) => CanAccessAsync(identity, ct);
         public Task<bool> CanAccessAsync(MeetingGuestSession identity, CancellationToken ct) => Task.FromResult(
             Sessions.TryGetValue(identity.SessionId, out var s) && s.Identity == identity && s.Verified && !s.Revoked && s.ExpiresAt > Clock.Now);
         public Task<IReadOnlyDictionary<Guid, GuestDisplayProfile>> GetProfilesAsync(Guid meetingId, IReadOnlyCollection<Guid> ids, CancellationToken ct)
@@ -173,6 +189,13 @@ public sealed class ParticipantFixture : IAsyncLifetime
         if (id is not null) client.DefaultRequestHeaders.Authorization = new("Bearer", Token([new("sub", id.ToString()!)]));
         return client;
     }
+    internal HubConnection Hub(HttpClient client) => new HubConnectionBuilder()
+        .WithUrl("http://localhost/hubs/meetings", options =>
+        {
+            options.Transports = HttpTransportType.LongPolling;
+            options.HttpMessageHandlerFactory = _ => Host.Server.CreateHandler();
+            options.AccessTokenProvider = () => Task.FromResult(client.DefaultRequestHeaders.Authorization?.Parameter);
+        }).Build();
     internal HttpClient Guest(Guid meeting, Guid invitation, bool verified = true, bool expired = false, Guid? user = null)
     {
         var identity = new MeetingGuestSession(meeting, invitation, Guid.CreateVersion7());

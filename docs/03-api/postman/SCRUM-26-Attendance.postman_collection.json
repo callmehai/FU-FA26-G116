@@ -1,0 +1,55 @@
+{
+  "info": {
+    "name": "SCRUM-26 Attendance",
+    "description": "Dùng database local/test. Điền token Secretary và meetingId InProgress. GET chọn entryId hoặc tự lấy entry đầu tiên; POST đổi dữ liệu điểm danh thật của entry đã chọn. Không chứa credentials. Chạy lại GET trước mỗi lần sửa; muốn kiểm tra stale thì chạy lại POST với token cũ.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5225" },
+    { "key": "accessToken", "value": "" },
+    { "key": "meetingId", "value": "" },
+    { "key": "entryId", "value": "" },
+    { "key": "kind", "value": "Internal" },
+    { "key": "attendance", "value": "Present" },
+    { "key": "expectedVersion", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "01 GET attendance and capture selected entry token",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/meetings/{{meetingId}}/attendance?page=1&pageSize=100" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('GET 200', () => pm.response.to.have.status(200));",
+        "if (pm.response.code === 200) {",
+        "  const body = pm.response.json();",
+        "  const selected = pm.variables.get('entryId');",
+        "  const entry = selected ? body.items.find(i => i.id === selected && i.kind === pm.variables.get('kind')) : body.items[0];",
+        "  pm.test('Selected current entry is on this page', () => pm.expect(entry).to.exist);",
+        "  if (entry) { pm.collectionVariables.set('entryId', entry.id); pm.collectionVariables.set('kind', entry.kind); pm.collectionVariables.set('expectedVersion', entry.rowVersion); }",
+        "}"
+      ] } }]
+    },
+    {
+      "name": "02 POST selected attendance (changes local/test data)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/attendance",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"entries\": [{\n    \"id\": \"{{entryId}}\",\n    \"kind\": \"{{kind}}\",\n    \"attendance\": \"{{attendance}}\",\n    \"expectedVersion\": \"{{expectedVersion}}\"\n  }]\n}"
+        }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('POST saved or explicit conflict', () => pm.expect([200,409]).to.include(pm.response.code));",
+        "const body = pm.response.json();",
+        "if (pm.response.code === 200) pm.test('Saved', () => pm.expect(body.code).to.eql('MSG147'));",
+        "if (pm.response.code === 409) pm.test('Refresh required', () => pm.expect(['MSG149','MSG151']).to.include(body.code));",
+        "// Keep the old token intentionally for a manual stale-token check; run GET before the next edit."
+      ] } }]
+    }
+  ]
+}

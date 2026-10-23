@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Infrastructure.Agenda;
+using TrustCabinet.Infrastructure.Attendance;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Access;
@@ -27,8 +28,10 @@ builder.Services.AddTrustCabinetRolePermissions();
 builder.Services.AddTrustCabinetMeetings();
 builder.Services.AddTrustCabinetAgenda();
 builder.Services.AddTrustCabinetParticipants();
+builder.Services.AddTrustCabinetAttendance();
 builder.Services.AddSingleton<IMeetingGuestIdentityResolver, UnavailableMeetingGuestIdentityResolver>();
 builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
+builder.Services.AddScoped<TrustCabinet.Domain.Attendance.IAttendanceChangePublisher, AttendanceChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Participants.IParticipantsChangePublisher, ParticipantsChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Access.ICapabilitiesChangePublisher, CapabilitiesChangePublisher>();
 builder.Services.AddSignalR();
@@ -170,6 +173,7 @@ app.MapRoleEndpoints();
 app.MapMeetingEndpoints();
 app.MapAgendaEndpoints();
 app.MapParticipantEndpoints();
+app.MapAttendanceEndpoints();
 app.MapHub<MeetingHub>("/hubs/meetings", options => options.CloseOnAuthenticationExpiration = true);
 
 // SCRUM-14: user-scoped notification list/read APIs and realtime delivery.
