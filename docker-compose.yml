@@ -72,6 +72,26 @@ services:
       # Docker Desktop có sẵn host.docker.internal; Linux cần dòng này.
       - "host.docker.internal:host-gateway"
 
+  # Worker nhận dạng giọng nói (SCRUM-31/35): chuyển giọng nói thành chữ, tách người nói, vector
+  # giọng cho Voice ID. Chạy CPU, model nằm sẵn trong image. Chỉ chạy khi cần:
+  #   docker compose --profile speech up -d --build
+  # Lần build đầu tải ~110 MB model. Chỉ mở cổng cho máy mình (127.0.0.1): backend gọi vào,
+  # không ai khác cần tới. Hướng dẫn: workers/speech/README.md
+  speech:
+    build: ./workers/speech
+    image: trustcabinet-speech:dev
+    container_name: trustcabinet-speech
+    profiles: ["speech"]
+    restart: unless-stopped
+    environment:
+      # Để trống thì không bắt xác thực — chỉ nên vậy khi cổng không ra ngoài máy.
+      SPEECH_API_KEY: ${SPEECH_API_KEY:-}
+    ports:
+      - "127.0.0.1:8090:8090"
+    # Đo được: rảnh ~260 MB, đỉnh ~1.5 GB với một bản ghi 10 phút, và process giữ tới ~2.4 GB sau
+    # vài bản liên tiếp. Một giờ âm thanh giải mã ra thêm ~230 MB. 3 GB vẫn đủ.
+    mem_limit: 3g
+
 volumes:
   trustcabinet-pgdata:
   trustcabinet-files:

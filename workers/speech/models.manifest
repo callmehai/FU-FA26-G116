@@ -1,0 +1,15 @@
+# One model file per line: <relative path> <sha256> <url>
+# A URL ending in "#<member>" names a file inside a .tar.bz2 archive.
+# fetch_models.py downloads and verifies these; the server verifies them again at boot.
+
+# Gipformer 1.5 — 68M RNN-T Zipformer, Vietnamese ASR, int8 — MIT — g-group-ai-lab
+gipformer/encoder.int8.onnx b528768939c7711a889be81a718ea7f2ee50d0d2d384d53f399e15b44bd9408c https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/main/encoder.int8.onnx
+gipformer/decoder.int8.onnx e0a156b5454722a524230f9e35d5d928cfcdd3723437b418e5bd5e04f1c3a101 https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/main/decoder.int8.onnx
+gipformer/joiner.int8.onnx 12636559d135315f002a1e1b477077d415e888477378db0fd450aee5b21ac551 https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/main/joiner.int8.onnx
+gipformer/tokens.txt f536d03c2e95ebd2930cf0abec88e823bd17d3c1933da7ae6a82db3b80605e15 https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/main/tokens.txt
+
+# 3D-Speaker ERes2Net base, 200k speakers — speaker embedding, 512 dims — Apache-2.0 — ONNX by k2-fsa
+eres2net_base.onnx e2d2048292e055f7b61cdec3db010503f35369b245bf0b3bbad021c9a91e4053 https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_eres2net_base_200k_sv_zh-cn_16k-common.onnx
+
+# Silero VAD — MIT
+silero_vad.onnx 9e2449e1087496d8d4caba907f23e0bd3f78d91fa552479bb9c23ac09cbb1fd6 https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx

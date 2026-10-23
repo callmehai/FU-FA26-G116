@@ -40,8 +40,15 @@ Worker không lưu gì: nhận âm thanh, trả kết quả, xoá tệp tạm.
 |---|---|---|
 | Chuyển giọng nói tiếng Việt thành chữ | Gipformer 1.5 (Zipformer RNN-T 68M, int8) | MIT |
 | Lọc khoảng lặng | Silero VAD | MIT |
-| Tìm chỗ đổi người nói | pyannote segmentation-3.0 (ONNX) | MIT |
-| Đặc trưng giọng (vector 512 số) | 3D-Speaker ERes2Net base | Apache-2.0 |
+| Đặc trưng giọng (vector 512 số), dùng cả để tách người nói | 3D-Speaker ERes2Net base | Apache-2.0 |
+
+Tách người nói không dùng bộ có sẵn của sherpa-onnx (pyannote): đo trên máy nhóm, bộ đó chậm gần bằng
+độ dài bản ghi khi chạy trong Docker. Worker cắt phần có tiếng thành khung 3 giây, lấy vector giọng
+từng khung rồi gom nhóm. Sau đó nó gộp tiếp những nhóm có giọng tổng thể gần như trùng nhau. Cách
+này nhanh hơn khoảng 6 lần, đổi lại chỗ chuyển người nói chỉ chính xác tới khoảng 0,75 giây và không
+tách được hai người nói chồng lên nhau. Trước khi lọc khoảng lặng, worker tăng âm trượt theo từng
+quãng 1,5 giây, để lời của người ngồi xa máy ghi không bị bỏ qua. Ngưỡng được chỉnh trên giọng tổng
+hợp và một bản ghi cuộc họp thật có đáp án (`workers/speech/README.md`, mục "Hiệu chỉnh").
 
 Mỗi tệp mô hình được ghim bằng SHA-256 trong `workers/speech/models.manifest`, tải lúc build image và
 kiểm lại lúc khởi động. Tên và mã băm của mô hình được ghi vào từng bản gỡ băng

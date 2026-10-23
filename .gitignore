@@ -498,3 +498,7 @@ docs/project-guide.html
 
 # Recordings stored by the backend in development (Recordings:StorageRoot)
 backend/TrustCabinet.Web/App_Data/
+
+# Worker nhận dạng giọng nói (workers/speech): venv và model tải về khi đặt SPEECH_MODELS_DIR trong repo.
+workers/speech/.venv/
+workers/speech/models/
