@@ -1216,7 +1216,9 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .status-violet { --status-dot: var(--dot-violet); background: var(--chip-violet-bg); color: var(--chip-violet-fg); }
 .status-live { --status-dot: var(--live-dot); background: var(--live); color: #fff; }
 .status-plain::before { display: none; }
-.status-plain { padding: 0 10px; }
+/* A history row's event ("Gửi duyệt") is a label, not the meeting's state: square like every other
+   chip. Only the live state chip keeps its rounded ends, to differ from the sensitivity .level. */
+.status-plain { padding: 0 10px; border-radius: var(--radius); }
 
 .level {
   display: inline-flex;
