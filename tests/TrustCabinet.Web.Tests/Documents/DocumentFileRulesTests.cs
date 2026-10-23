@@ -21,6 +21,8 @@ public sealed class DocumentFileRulesTests
         Assert.Equal(DocumentFileRules.DocxContentType, await Detect(SampleFiles.Docx(byExtension: true)));
         // The main part is whatever _rels/.rels names.
         Assert.Equal(DocumentFileRules.DocxContentType, await Detect(SampleFiles.Docx(mainPart: "word/document2.xml")));
+        // Word's "Strict Open XML Document" names it with the ISO 29500 Strict relationship type.
+        Assert.Equal(DocumentFileRules.DocxContentType, await Detect(SampleFiles.Docx(strict: true)));
         Assert.Null(await Detect(SampleFiles.Docx(withRelationship: false)));
         Assert.Null(await Detect(SampleFiles.Docx("application/vnd.ms-word.document.macroEnabled.main+xml", byExtension: true)));
         // An Override for the main part wins over the extension's Default.

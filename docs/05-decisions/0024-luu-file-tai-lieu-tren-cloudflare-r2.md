@@ -68,10 +68,12 @@ Ràng buộc:
 - **Không sót object.** Mọi object đều có dòng `StoredFile` từ trước khi được đẩy, nên dù transaction lỗi, xoá
   lỗi hay process chết, job dọn vẫn tìm ra nó. Đổi lại, một lần tải hỏng để lại dòng `StoredFile` đã ghi
   `PurgedAt`, như mọi tệp đã dọn.
-- **Dữ liệu cá nhân (Nghị định 13/2023/NĐ-CP).** Tài liệu cuộc họp có thể chứa dữ liệu cá nhân, mà R2 lưu ở trung tâm
-  dữ liệu ngoài Việt Nam, tức là chuyển dữ liệu cá nhân ra nước ngoài. Server test của đồ án chỉ dùng dữ liệu giả. Đưa
-  vào dùng thật thì đơn vị vận hành phải lập hồ sơ đánh giá tác động chuyển dữ liệu ra nước ngoài, hoặc chuyển sang kho
-  đối tượng đặt trong nước có API S3 — code không phải đổi, chỉ đổi cấu hình.
+- **Dữ liệu cá nhân (Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15).** Tài liệu cuộc họp có thể chứa dữ liệu cá nhân, mà
+  R2 lưu ở trung tâm dữ liệu ngoài Việt Nam, tức là chuyển dữ liệu cá nhân xuyên biên giới (Điều 20). Server test của
+  đồ án chỉ dùng dữ liệu giả. Đưa vào dùng thật thì đơn vị vận hành phải lập hồ sơ đánh giá tác động chuyển dữ liệu cá
+  nhân xuyên biên giới và nộp trong 60 ngày (Điều 20 khoản 2), hoặc chuyển sang kho đối tượng đặt trong nước có API
+  S3 — code không phải đổi, chỉ đổi cấu hình. *Sửa khi review PR #128:* bản đề xuất trích Nghị định 13/2023/NĐ-CP,
+  đã được Luật 91/2025 thay từ 01/01/2026.
 - **Việc phát sinh:** tạo bucket và access key R2 cho server test; thêm biến môi trường vào `deploy/` và
   [deploy/README.md](../../deploy/README.md); thêm dịch vụ SeaweedFS vào `docker-compose.yml` và hướng dẫn trong
   [02-design/03-co-so-du-lieu.md](../02-design/03-co-so-du-lieu.md) — làm cùng SCRUM-107.

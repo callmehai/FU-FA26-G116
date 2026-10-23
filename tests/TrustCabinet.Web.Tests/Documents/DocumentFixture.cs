@@ -126,9 +126,13 @@ internal static class SampleFiles
     /// <param name="mainPart">Where the package relationship points; Word uses word/document.xml.</param>
     /// <param name="byExtension">Declare the main type as the Default for .xml rather than an Override,
     /// and start the XML parts with a UTF-8 BOM — what System.IO.Packaging and the Open XML SDK write.</param>
+    /// <param name="strict">Use the ISO 29500 Strict relationship type, as Word's "Strict Open XML Document" does.</param>
     internal static byte[] Docx(string mainContentType = DocxMain, bool withDocument = true, string extraTypes = "",
-        int padding = 0, string mainPart = "word/document.xml", bool byExtension = false, bool withRelationship = true)
+        int padding = 0, string mainPart = "word/document.xml", bool byExtension = false, bool withRelationship = true,
+        bool strict = false)
     {
+        var relationshipType = strict ? "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument"
+            : "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument";
         using var buffer = new MemoryStream();
         using (var zip = new ZipArchive(buffer, ZipArchiveMode.Create, leaveOpen: true))
         {
@@ -138,7 +142,7 @@ internal static class SampleFiles
                 + $"{extraTypes}{declaration}</Types>", byExtension);
             if (withRelationship)
                 Write(zip, "_rels/.rels", "<?xml version=\"1.0\" encoding=\"utf-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
-                    + $"<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"{mainPart}\"/></Relationships>", byExtension);
+                    + $"<Relationship Id=\"rId1\" Type=\"{relationshipType}\" Target=\"{mainPart}\"/></Relationships>", byExtension);
             if (withDocument) Write(zip, mainPart, "<w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"/>");
             for (var i = 0; i < padding; i++) zip.CreateEntry($"pad/{i}");
         }

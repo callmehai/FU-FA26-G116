@@ -22,7 +22,12 @@ public static class DocumentFileRules
     public const string DocxContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
     private const string DocxMainContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
-    private const string OfficeDocumentRelationship = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument";
+    /// <summary>Transitional, and ISO 29500 Strict (Word's "Strict Open XML Document").</summary>
+    private static readonly string[] OfficeDocumentRelationships =
+    [
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
+        "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument",
+    ];
     private static readonly XNamespace ContentTypesNamespace = "http://schemas.openxmlformats.org/package/2006/content-types";
     private static readonly XNamespace RelationshipsNamespace = "http://schemas.openxmlformats.org/package/2006/relationships";
 
@@ -133,7 +138,8 @@ public static class DocumentFileRules
             // The main part is whichever the package relationship names (OPC), not always word/document.xml.
             var target = (string?)(await ReadPackageXmlAsync(zip, "_rels/.rels", ct))?.Root?
                 .Elements(RelationshipsNamespace + "Relationship")
-                .FirstOrDefault(e => (string?)e.Attribute("Type") == OfficeDocumentRelationship)?.Attribute("Target");
+                .FirstOrDefault(e => e.Attribute("Type")?.Value is { } type && OfficeDocumentRelationships.Contains(type))?
+                .Attribute("Target");
             if (target is null) return null;
             var partName = "/" + target.TrimStart('/');
             if (zip.GetEntry(partName[1..]) is null) return null;

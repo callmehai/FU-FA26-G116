@@ -10,9 +10,11 @@ namespace TrustCabinet.Infrastructure.Documents;
 /// <summary>
 /// BR-213: deletes the object of every stored file no library row and no active meeting document
 /// points at any more, once its grace period is over, then stamps <c>PurgedAt</c>. The row stays.
-/// Nothing can start pointing at such a file again — attaching always goes through a library row —
-/// so checking once before the delete is enough. That includes the rows an upload writes before its
-/// objects (ADR-0024 §4): if the upload never committed, they are orphans like any other.
+/// Outside an upload nothing can start pointing at such a file again — attaching always goes through
+/// a library row — so checking once before the delete is enough. An upload is the exception: it
+/// writes its rows before its objects (ADR-0024 §4) and they stay unreferenced until it commits, so
+/// only the grace period keeps them safe, and it is never under an hour. If the upload never
+/// commits, they are orphans like any other.
 /// </summary>
 public sealed class OrphanFilePurger(TrustCabinetDbContext db, IFileStorage storage, TimeProvider clock,
     IOptions<FileStorageOptions> options, ILogger<OrphanFilePurger> logger)
@@ -22,7 +24,8 @@ public sealed class OrphanFilePurger(TrustCabinetDbContext db, IFileStorage stor
     public async Task<int> PurgeAsync(CancellationToken ct)
     {
         var now = clock.GetUtcNow();
-        var cutoff = now - TimeSpan.FromHours(options.Value.OrphanGracePeriodHours);
+        // A shorter grace period could purge an upload that has not committed yet.
+        var cutoff = now - TimeSpan.FromHours(Math.Max(1, options.Value.OrphanGracePeriodHours));
         // Batches until none are left. A file whose delete fails sits out the rest of this run, so
         // it cannot keep the files behind it from ever being reached. A dead store therefore costs
         // one failed delete per orphan per run, which is fine at this scale.

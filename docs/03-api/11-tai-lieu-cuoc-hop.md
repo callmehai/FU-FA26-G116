@@ -40,7 +40,7 @@ mỗi `pageCounts` tối đa 16 byte; vượt một trong hai → `MSG164`.
 | Loại | Điều kiện | `contentType` lưu |
 |---|---|---|
 | PDF | Tệp **bắt đầu** bằng `%PDF-` (offset 0; không chấp nhận rác phía trước dù đặc tả PDF cho phép) | `application/pdf` |
-| DOCX | zip có central directory ≤ 5.000 entry và ≤ 1 MB; main part là part mà quan hệ `officeDocument` trong `_rels/.rels` trỏ tới (thường là `word/document.xml`) và có trong zip; trong `[Content_Types].xml`, `Override` của chính part đó — không có thì `Default` theo đuôi của nó — khai `…wordprocessingml.document.main+xml`. Hai part XML này được đọc theo byte nên có BOM vẫn đọc được (Open XML SDK, `System.IO.Packaging` đều ghi BOM và chỉ dùng `Default`); không chấp nhận DTD | `application/vnd.openxmlformats-officedocument.wordprocessingml.document` |
+| DOCX | zip có central directory ≤ 5.000 entry và ≤ 1 MB; main part là part mà quan hệ `officeDocument` trong `_rels/.rels` trỏ tới (kiểu Transitional, hoặc Strict như Word lưu "Strict Open XML Document"; thường là `word/document.xml`) và có trong zip; trong `[Content_Types].xml`, `Override` của chính part đó — không có thì `Default` theo đuôi của nó — khai `…wordprocessingml.document.main+xml`. Hai part XML này được đọc theo byte nên có BOM vẫn đọc được (Open XML SDK, `System.IO.Packaging` đều ghi BOM và chỉ dùng `Default`); không chấp nhận DTD | `application/vnd.openxmlformats-officedocument.wordprocessingml.document` |
 
 DOCM (có macro), DOTX (mẫu), ảnh đổi đuôi, HTML có chuỗi `%PDF-` trong comment, zip hỏng, zip có central
 directory quá lớn (để `ZipArchive` không phải nạp hàng trăm MB vào RAM), ZIP64 → không hợp lệ. Server không chuyển đổi tệp, lưu
@@ -130,7 +130,8 @@ mật — `dotnet user-secrets` khi dev, biến môi trường `FileStorage__*` 
 `OrphanFilePurgeWorker` chạy lúc khởi động rồi mỗi `FileStorage:OrphanPurgeIntervalMinutes` (mặc định
 60). Mỗi lượt duyệt hết, từng loạt 100, các `StoredFile` thoả: `PurgedAt` rỗng, không còn `Document`, không còn
 `MeetingDocument` có `RemovedAt` rỗng, `UploadedAt` cũ hơn `FileStorage:OrphanGracePeriodHours` (mặc
-định 24). Xoá object rồi ghi `PurgedAt`; **giữ** dòng `StoredFile`. Xoá lỗi thì tệp đó ngồi ngoài phần còn lại
+định 24, tối thiểu 1 dù cấu hình thấp hơn: dòng `StoredFile` của một lần tải đang chạy cũng chưa ai trỏ tới cho
+tới khi commit). Xoá object rồi ghi `PurgedAt`; **giữ** dòng `StoredFile`. Xoá lỗi thì tệp đó ngồi ngoài phần còn lại
 của lượt và để lượt sau thử lại, nên vài tệp xoá mãi không được không chặn các tệp phía sau. Dòng `StoredFile`
 của một lần tải không hoàn tất (ghi trước khi đẩy object, xem bước 6) cũng thoả điều kiện, nên object của nó được
 dọn theo cùng đường này. Lỗi bất kỳ trong một lượt, kể cả timeout của SDK (ném `OperationCanceledException`), chỉ
@@ -139,9 +140,10 @@ dọn theo cùng đường này. Lỗi bất kỳ trong một lượt, kể cả
 Ticket này chưa có đường xoá khỏi kho hay gỡ khỏi cuộc họp (SCRUM-58), nên job được kiểm bằng
 `OrphanFilePurgerTests`.
 
-## Dữ liệu cá nhân (Nghị định 13/2023/NĐ-CP)
+## Dữ liệu cá nhân (Luật 91/2025/QH15)
 
-Tài liệu cuộc họp có thể chứa dữ liệu cá nhân, mà R2 lưu ngoài Việt Nam. Server test chỉ dùng dữ liệu
+Tài liệu cuộc họp có thể chứa dữ liệu cá nhân, mà R2 lưu ngoài Việt Nam, tức là chuyển dữ liệu cá nhân xuyên
+biên giới (Điều 20). Server test chỉ dùng dữ liệu
 giả. Byte bị xoá khỏi R2 khi job dọn chạy (sau khi không còn ai tham chiếu); dòng `StoredFile` giữ tên
 tệp và SHA-256 làm bằng chứng, không giữ nội dung. Nghĩa vụ khi đưa vào dùng thật ghi ở ADR-0024.
 
@@ -172,11 +174,12 @@ nhiều mục (ADR-0020 §5); UC-33b/UC-33d (SCRUM-58) mở rộng phần đó.
   kho; dùng lại thư mục sau khi đổi tên/chuyển,
   tạo lại sau khi xoá; Agenda liệt kê tài liệu vừa tải.
 - `DocumentFileRulesTests`: nhận diện theo nội dung (HTML giả PDF, DOCM giả DOCX, central directory quá lớn;
-  DOCX có BOM và chỉ khai `Default` như `System.IO.Packaging` ghi, main part tên khác, thiếu `_rels/.rels`),
+  DOCX có BOM và chỉ khai `Default` như `System.IO.Packaging` ghi, main part tên khác, DOCX Strict, thiếu
+  `_rels/.rels`),
   tên tệp có ký tự định dạng (U+202E, U+200B),
   đuôi phải khớp nội dung, tên tệp, ngày thư mục theo giờ Việt Nam, giới hạn tổng kiểm trước khi đọc tệp,
   `pageCount` chỉ cho PDF.
 - Thêm ở endpoint: mất vai trò Thư ký giữa lúc tải → `MSG162` và object bị xoá; Thành viên gửi tệp sai → `MSG162`
   (quyền kiểm trước); HTML giả PDF và PDF mang tên `.html` → `MSG164`.
 - `OrphanFilePurgerTests`: chỉ dọn tệp không còn tham chiếu và quá thời gian chờ; xoá lỗi thì để lượt sau;
-  100 tệp xoá lỗi không chặn tệp thứ 101.
+  100 tệp xoá lỗi không chặn tệp thứ 101; thời gian chờ cấu hình 0 vẫn giữ tệp mới tải 30 phút.

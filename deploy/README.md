@@ -8,7 +8,7 @@ này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-lightsail.md).
 > **Đây là môi trường test, không phải production.** App chạy ở chế độ `Development`: tự migrate,
 > tự seed tài khoản demo với mật khẩu công khai trong repo, và trả stack trace khi lỗi. Ai có URL
 > cũng đăng nhập được bằng quyền quản trị. **Chỉ nhập dữ liệu giả** — không tải lên tài liệu, ghi âm
-> hay thông tin cá nhân thật (Nghị định 13/2023/NĐ-CP).
+> hay thông tin cá nhân thật (Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15).
 
 ## Dành cho người test
 
@@ -261,7 +261,7 @@ Chưa cấu hình thì app vẫn chạy, nút tải lên báo `MSG166`.
    ```
 
 Trình duyệt không gọi thẳng R2 nên CSP trong `Caddyfile` giữ nguyên. Chỉ tải lên dữ liệu giả: R2 lưu ngoài Việt
-Nam (Nghị định 13/2023/NĐ-CP, xem ADR-0024).
+Nam, tức là chuyển dữ liệu cá nhân xuyên biên giới (Luật 91/2025/QH15 Điều 20, xem ADR-0024).
 
 ## Sau khi bảo vệ xong
 

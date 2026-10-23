@@ -95,8 +95,25 @@ public sealed class OrphanFilePurgerTests(DocumentFixture fixture) : IAsyncLifet
         Assert.Equal(Now, (await fixture.Db().StoredFiles.SingleAsync(f => f.Id == last.Id)).PurgedAt);
     }
 
-    private OrphanFilePurger Purger(Infrastructure.TrustCabinetDbContext db) => new(db, fixture.Storage, new FixedClock(),
-        Options.Create(new FileStorageOptions { OrphanGracePeriodHours = 24 }), NullLogger<OrphanFilePurger>.Instance);
+    [Fact]
+    public async Task The_grace_period_is_never_under_an_hour()
+    {
+        // An upload in flight has unreferenced rows; a zero grace period must not purge it.
+        var s = await fixture.Seed();
+        await using var db = fixture.Db();
+        var uploading = File(s.Secretary, Now.AddMinutes(-30));
+        var abandoned = File(s.Secretary, Now.AddHours(-2));
+        db.StoredFiles.AddRange(uploading, abandoned);
+        await db.SaveChangesAsync();
+
+        Assert.Equal(1, await Purger(db, graceHours: 0).PurgeAsync(default));
+        Assert.Null((await fixture.Db().StoredFiles.SingleAsync(f => f.Id == uploading.Id)).PurgedAt);
+        Assert.Equal(Now, (await fixture.Db().StoredFiles.SingleAsync(f => f.Id == abandoned.Id)).PurgedAt);
+    }
+
+    private OrphanFilePurger Purger(Infrastructure.TrustCabinetDbContext db, int graceHours = 24) => new(db,
+        fixture.Storage, new FixedClock(), Options.Create(new FileStorageOptions { OrphanGracePeriodHours = graceHours }),
+        NullLogger<OrphanFilePurger>.Instance);
 
     private static StoredFile File(Guid uploader, DateTimeOffset uploadedAt)
     {
