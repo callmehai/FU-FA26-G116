@@ -100,3 +100,23 @@ Collection Postman có folder `UC-73 — smoke tuần tự` (DB riêng), dùng t
 - MSG259: báo trong hộp thoại. MSG260, MSG275, 403, 404: đóng hộp thoại, báo lý do, tải lại tab. MSG102: báo trong hộp thoại, bấm lại được.
 - **Không dùng** GET chair-handover-candidates, nên MSG258 không hiện trên UI: không ai nhận được thì không dòng nào có lựa chọn "Chủ tọa". Khác Normal Flow bước 1–2 của UC-73 ("chọn Hand over Chair, hệ thống hiện danh sách"); quy tắc nghiệp vụ không đổi. Đã ghi vào Jira SCRUM-97 cho BA Final Review.
 - Bảng thành phần đổi bố cục theo độ rộng của chính nó (container query, dưới 520px): vai trò thành chip dưới tên, tên xuống dòng thay vì cắt, nút sửa/gỡ luôn trong khung. Trước đây trên điện thoại và ở cửa sổ 1024px (bảng nằm cạnh Lịch sử trạng thái) cột Vai trò và nút thao tác bị đẩy ra ngoài, phải cuộn ngang.
+- Nút bút chì "Đổi vai trò" và nút "Bỏ khỏi danh sách" ở form tạo cuộc họp dùng tooltip chung của app (`data-tooltip`), không dùng tooltip mặc định của trình duyệt.
+
+### Nghiệp vụ đổi vai trò đã chốt (PO Hải, 23/10/2026)
+
+Chốt theo các tình huống hay gặp trong cuộc họp nội bộ, không thêm luồng cho tình huống hiếm. Quy tắc giữ nguyên như baseline 20/10 và code PR #119; không cần sửa BE.
+
+| Tình huống | Mức độ | Cách làm trên hệ thống |
+|---|---|---|
+| Chọn nhầm Chủ tọa/Thư ký khi soạn, trước khi công bố | Hay gặp | Đổi vai trò tự do (PUT assignments) |
+| Thêm người phút chót, có người không dự được | Hay gặp | Thêm, gỡ, hoặc người đó báo vắng |
+| Lãnh đạo bận, giao cấp phó chủ trì thay (đã công bố) | Hay gặp | Chủ tọa giao cho một Thành viên; Chủ tọa cũ thành Thành viên (UC-73) |
+| Đổi người làm thư ký | Hay gặp | Cho người mới làm Thư ký, rồi đổi người cũ về Thành viên (hai thao tác, cuộc họp luôn còn Thư ký) |
+| Chủ tọa phải rời giữa buổi | Thỉnh thoảng | Như giao cho cấp phó, làm khi InProgress |
+| Thêm Thư ký phụ ghi biên bản | Thỉnh thoảng | Đổi vai trò một Thành viên thành Thư ký |
+| Tài khoản Chủ tọa bị khoá trước giờ họp | Hiếm | Thư ký thay Chủ tọa (baseline 20/10) |
+| Chủ tọa và Thư ký đổi vai trò cho nhau | Gần như không có | **Không hỗ trợ.** Dòng Thư ký không có lựa chọn "Chủ tọa" từ khi công bố (BR-295) |
+
+- Từ khi công bố chỉ Chủ tọa tự giao vai trò; Thư ký chỉ giao khi tài khoản Chủ tọa bị khoá. Giữ như vậy để Thư ký không tự ý đổi Chủ tọa; AI-eCabinet còn chặt hơn (chỉ Chủ trì được đổi vai trò).
+- AI-eCabinet (commit `b331c60e`) không có luồng giao riêng: chỉ Chủ trì đổi vai trò từng người, cuộc họp cần ít nhất một Chủ trì nên đổi chéo phải qua hai bước, có lúc hai Chủ trì. TrustCabinet giữ đúng một Chủ tọa và luôn có Thư ký từ khi công bố, nên không theo cách hai bước đó.
+- Thư mời khách (POST guest-invitations) chưa gửi được dù bật SMTP: link xác minh cho khách (`IGuestInvitationLinkProvider`) vẫn là bản tạm, thuộc SCRUM-59. Lời mời được giữ và thử lại, tự gửi khi phần link xong.
