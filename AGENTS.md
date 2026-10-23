@@ -31,7 +31,10 @@ and checking the change in a real browser before the PR,
 [check-responsive](.claude/skills/check-responsive/SKILL.md) for checking every change on a phone
 (390px, touch) as well as at 1200px and 1440px, and
 [minimize-text](.claude/skills/minimize-text/SKILL.md) for keeping each screen to the words people
-scan for, with the rest in tooltips. Claude Code loads them as skills; any other
+scan for, with the rest in tooltips, and [anti-ai-slop](.claude/skills/anti-ai-slop/SKILL.md)
+(phòng chống AI slop) for tracing every element to AI-eCabinet or the ticket and removing the
+generated look — pills, decorative counters, one colour for every CTA, items out of line. Claude
+Code loads them as skills; any other
 agent reads the files directly. The third-party [evondev ui-ux skill](.agents/skills/ui-ux/SKILL.md)
 is available as additional guidance; project rules here and `frontend-ui-design` take precedence.
 **Diagram and architecture work** uses [drawio-skill](.agents/skills/drawio-skill/SKILL.md)
