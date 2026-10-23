@@ -98,7 +98,7 @@ export interface AssignmentsRequest {
   chairReplacement?: { outgoingParticipantId: string; incomingParticipantId: string; confirmed: true }
 }
 
-/** Success of a roster change: MSG96 added, MSG100 role changed, MSG257 Chair handed over, MSG103 removed, MSG154 nothing changed. */
+/** Success of a roster change: MSG96 added, MSG100 role changed, MSG257 Chair handed over (PUT or POST chair-handover), MSG103 removed, MSG154 nothing changed. */
 export interface ParticipantMutationResponse {
   code: string
   message: string

@@ -2082,6 +2082,18 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 /* The roster tab: a person with their answer, and the panel's own alert under the toolbar. */
 .participant-cell { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-width: 0; }
+/* The roster re-flows by its own width, not the window's: it is narrow on a phone, beside the status
+   history at a 1024px window, and in the call room's side panel. Under 520px the role moves under the
+   name and the name gives way with an ellipsis, so the row actions stay in view without scrolling. */
+.participants-panel { container-type: inline-size; }
+.role-inline { display: none; }
+@container (max-width: 520px) {
+  .participants-panel .col-role { display: none; }
+  .participants-panel .role-inline { display: contents; }
+  .participants-panel td.cell-title { width: 100%; max-width: 0; }
+  /* The name is what people read: it wraps rather than ending in "…" (a touch screen has no tooltip). */
+  .participants-panel .person-name { white-space: normal; overflow-wrap: anywhere; }
+}
 .participants-alert { margin: 12px 16px 0; }
 .participants-skeleton-search { width: 320px; height: var(--control-height); }
 

@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import {
   addParticipants,
   changeAssignments,
+  handOverChair,
   inviteGuest,
   listEditorOptions,
   listParticipants,
@@ -248,22 +249,28 @@ export function InviteGuestDialog({
 }
 
 /**
- * Change one internal participant's role (PUT …/participants/assignments). Making them Chair moves
- * the chair in one request: the current Chair becomes "Thành viên" and the change carries the
- * confirmation the backend requires, so the meeting never has zero or two Chairs.
+ * Change one internal participant's role. Making them Chair moves the chair in one step: the current
+ * Chair becomes "Thành viên", so the meeting never has zero or two Chairs. This is the only place the
+ * chair moves. The Chair of a published meeting hands it over with POST …/participants/chair-handover
+ * (UC-73); before publication, and a Secretary replacing a deactivated Chair, use PUT …/assignments
+ * with the confirmation the backend requires.
  */
 export function ChangeRoleDialog({
   meetingId,
   revision,
   row,
-  canReplaceChair,
+  chairOption,
+  handOver,
   onClose,
   onDone,
 }: {
   meetingId: string
   revision: string
   row: ParticipantRow & { role: MeetingRole }
-  canReplaceChair: boolean
+  /** Offer "Chủ tọa": the caller may move the chair now, and this person may take it. */
+  chairOption: boolean
+  /** The caller is the Chair of a published meeting, handing the role over themselves. */
+  handOver: boolean
   onClose: () => void
   onDone: (outcome: DialogOutcome) => void
 }) {
@@ -272,13 +279,14 @@ export function ChangeRoleDialog({
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const roles = (
-    canReplaceChair ? (['Chair', 'Secretary', 'Member'] as const) : (['Secretary', 'Member'] as const)
-  ).map((value) => ({ value, label: MEETING_ROLE_LABEL[value] }))
+  const roles = (chairOption ? (['Chair', 'Secretary', 'Member'] as const) : (['Secretary', 'Member'] as const)).map(
+    (value) => ({ value, label: MEETING_ROLE_LABEL[value] }),
+  )
+  const promote = role === 'Chair'
 
-  // Handing over the chair needs the current Chair's assignment, which may sit on another page.
+  // Replacing the Chair through PUT needs the current Chair's assignment, which may sit on another page.
   useEffect(() => {
-    if (role !== 'Chair' || chair !== undefined) return
+    if (!promote || handOver || chair !== undefined) return
     let cancelled = false
     findChair(meetingId).then(
       (found) => !cancelled && setChair(found),
@@ -287,27 +295,33 @@ export function ChangeRoleDialog({
     return () => {
       cancelled = true
     }
-  }, [role, chair, meetingId, onDone])
+  }, [promote, handOver, chair, meetingId, onDone])
 
   async function submit() {
     setPending(true)
     setError(null)
     try {
-      const body =
-        role === 'Chair' && chair
-          ? {
-              changes: [
-                { participantId: chair.id, role: 'Member' as const },
-                { participantId: row.id, role: 'Chair' as const },
-              ],
-              chairReplacement: {
-                outgoingParticipantId: chair.id,
-                incomingParticipantId: row.id,
-                confirmed: true as const,
-              },
-            }
-          : { changes: [{ participantId: row.id, role }] }
-      onDone({ kind: 'saved', response: await changeAssignments(meetingId, revision, body) })
+      const response =
+        promote && handOver
+          ? await handOverChair(meetingId, revision, row.id)
+          : await changeAssignments(
+              meetingId,
+              revision,
+              promote && chair
+                ? {
+                    changes: [
+                      { participantId: chair.id, role: 'Member' },
+                      { participantId: row.id, role: 'Chair' },
+                    ],
+                    chairReplacement: {
+                      outgoingParticipantId: chair.id,
+                      incomingParticipantId: row.id,
+                      confirmed: true,
+                    },
+                  }
+                : { changes: [{ participantId: row.id, role }] },
+            )
+      onDone({ kind: 'saved', response })
     } catch (err) {
       setPending(false)
       if (isRefusal(err)) onDone({ kind: 'refused', error: err })
@@ -316,7 +330,6 @@ export function ChangeRoleDialog({
   }
 
   const close = () => !pending && onClose()
-  const handover = role === 'Chair'
 
   return (
     <Dialog
@@ -331,10 +344,10 @@ export function ChangeRoleDialog({
             type="button"
             className="btn btn-primary"
             onClick={submit}
-            disabled={pending || role === row.role || (handover && !chair)}
+            disabled={pending || role === row.role || (promote && !handOver && !chair)}
           >
             <Icon name="check" size={16} />
-            {pending ? 'Đang lưu…' : handover ? 'Giao Chủ tọa' : 'Lưu'}
+            {pending ? 'Đang lưu…' : promote ? 'Giao Chủ tọa' : 'Lưu'}
           </button>
         </>
       }
@@ -345,13 +358,15 @@ export function ChangeRoleDialog({
           <span>Vai trò</span>
           <SegmentedControl value={role} options={roles} onChange={setRole} label="Vai trò" />
         </div>
-        {handover && (
+        {promote && (
           <p className="alert alert-info">
-            {chair === undefined
-              ? 'Đang tìm Chủ tọa hiện tại…'
-              : chair
-                ? `${chair.displayName} sẽ thành Thành viên.`
-                : 'Không tìm thấy Chủ tọa hiện tại. Hãy tải lại trang.'}
+            {handOver
+              ? `${row.displayName} thành Chủ tọa, bạn thành Thành viên.`
+              : chair === undefined
+                ? 'Đang tìm Chủ tọa hiện tại…'
+                : chair
+                  ? `${row.displayName} thành Chủ tọa, ${chair.displayName} thành Thành viên.`
+                  : 'Không tìm thấy Chủ tọa hiện tại. Hãy tải lại trang.'}
           </p>
         )}
         {error && (

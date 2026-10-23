@@ -90,3 +90,12 @@ Backend task này chỉ bổ sung API/tests/tài liệu. Thành viên FE tự t�
 | 500/MSG95 hoặc 503/MSG102 | Báo lỗi tương ứng; tải lại dữ liệu trước khi người dùng thử lại |
 
 Collection Postman có folder `UC-73 — smoke tuần tự` (DB riêng), dùng token Chair và token Member được cấp bên ngoài collection. Kết quả/giới hạn xác minh và change note cho BA: [báo cáo SCRUM-97](10-scrum97-ket-qua-kiem-thu.md).
+
+## FE đã tích hợp UC-73 (23/10/2026)
+
+- **Một chỗ duy nhất để đổi Chủ tọa**: nút bút chì "Đổi vai trò" trên dòng của người sẽ làm Chủ tọa, chọn "Chủ tọa", hộp thoại nói rõ "X thành Chủ tọa, Y thành Thành viên", bấm **Giao Chủ tọa**. Không có nút riêng trên thanh công cụ, để mọi trạng thái cuộc họp và mọi người bấm đều đi cùng một đường.
+- Lựa chọn "Chủ tọa" chỉ hiện khi `permissions.canReplaceChair` và người trên dòng nhận được: tài khoản còn hoạt động, và từ Published chỉ Thành viên (không phải Thư ký). Lựa chọn và request được chốt lúc mở hộp thoại; panel tải lại phía sau không đổi chúng, server kiểm lại.
+- FE tự chọn API: Chủ tọa của cuộc họp Published/InProgress gọi POST chair-handover (§8); trước Published, và Thư ký thay Chủ tọa đã khoá tài khoản, gọi PUT assignments kèm `chairReplacement`. Người dùng không thấy khác biệt.
+- MSG259: báo trong hộp thoại. MSG260, MSG275, 403, 404: đóng hộp thoại, báo lý do, tải lại tab. MSG102: báo trong hộp thoại, bấm lại được.
+- **Không dùng** GET chair-handover-candidates, nên MSG258 không hiện trên UI: không ai nhận được thì không dòng nào có lựa chọn "Chủ tọa". Khác Normal Flow bước 1–2 của UC-73 ("chọn Hand over Chair, hệ thống hiện danh sách"); quy tắc nghiệp vụ không đổi. Đã ghi vào Jira SCRUM-97 cho BA Final Review.
+- Bảng thành phần đổi bố cục theo độ rộng của chính nó (container query, dưới 520px): vai trò thành chip dưới tên, tên xuống dòng thay vì cắt, nút sửa/gỡ luôn trong khung. Trước đây trên điện thoại và ở cửa sổ 1024px (bảng nằm cạnh Lịch sử trạng thái) cột Vai trò và nút thao tác bị đẩy ra ngoài, phải cuộn ngang.
