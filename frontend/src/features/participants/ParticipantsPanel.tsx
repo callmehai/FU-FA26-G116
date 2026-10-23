@@ -285,6 +285,7 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
                         email={row.email}
                         self={row.userId !== null && row.userId === user?.id}
                       />
+                      {showAttendance && <span className="attendance-inline">{attendanceCell(row.id)}</span>}
                       <span className="chip-row">
                         <span className="role-inline">
                           <RoleBadge role={row.role} />
@@ -292,7 +293,6 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
                         {row.isActive === false && <Badge tone="slate">Tài khoản đã khoá</Badge>}
                         {row.role !== 'Chair' && <RsvpChip response={row.response} />}
                       </span>
-                      {showAttendance && <span className="attendance-inline">{attendanceCell(row.id)}</span>}
                     </span>
                   </td>
                   <td className="col-role">

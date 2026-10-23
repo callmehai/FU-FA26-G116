@@ -218,7 +218,7 @@ function MeetingDetail({
           <div className="page-header-actions">
             {roomOpen && (
               // The meeting is running and waiting for the user: eCab's rippling "Vào phòng họp".
-              <Link className="btn btn-primary btn-lg btn-cta btn-ping btn-nudge" to={routes.meetingRoom(meeting.id)}>
+              <Link className="btn btn-live btn-lg btn-cta btn-ping btn-nudge" to={routes.meetingRoom(meeting.id)}>
                 <Icon name="video" size={18} />
                 Vào phòng họp
                 <Icon name="arrowRight" size={16} />
@@ -254,7 +254,13 @@ function MeetingDetail({
             <h2 id="rsvp-title">Bạn có tham dự cuộc họp này?</h2>
           </div>
           <div className="workflow-actions">
-            <RsvpButtons meetingId={meeting.id} labelledBy="rsvp-title" onAnswered={() => void reload()} ping />
+            {/* One ripple per screen: while the room is open, "Vào phòng họp" is the one. */}
+            <RsvpButtons
+              meetingId={meeting.id}
+              labelledBy="rsvp-title"
+              onAnswered={() => void reload()}
+              ping={!roomOpen}
+            />
           </div>
         </section>
       )}

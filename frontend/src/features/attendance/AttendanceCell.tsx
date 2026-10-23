@@ -1,5 +1,5 @@
-import { useId } from 'react'
 import { Icon } from '../../components/Icon'
+import { Select, type SelectOption } from '../../components/Select'
 import { formatDateTime } from '../../lib/format'
 import {
   ATTENDANCE_LABEL,
@@ -9,10 +9,14 @@ import {
   type AttendanceStatus,
 } from '../../types/attendance'
 
-const CHOICES: { value: AttendanceStatus; icon: 'check' | 'x' }[] = [
-  { value: 'Present', icon: 'check' },
-  { value: 'Absent', icon: 'x' },
-]
+/** Green as the meeting's "Đang diễn ra"; absent is grey — red stays for warnings and "Mật". */
+const DOT: Record<AttendanceStatus, string> = { Present: 'var(--live)', Absent: 'var(--muted-ink)' }
+
+const OPTIONS: SelectOption<AttendanceStatus>[] = (['Present', 'Absent'] as const).map((value) => ({
+  value,
+  label: ATTENDANCE_LABEL[value],
+  dot: DOT[value],
+}))
 
 /** "Nguyễn Thư Ký điểm danh lúc 09:05 23/10/2026", as AI-eCabinet words it; null when never recorded. */
 function recordedNote(row: AttendanceRow) {
@@ -24,9 +28,10 @@ function recordedNote(row: AttendanceRow) {
 }
 
 /**
- * One person's attendance. The Secretary gets two buttons, "Có mặt" and "Vắng": a click saves it
- * at once. Everyone else reads a chip, or "Chưa điểm danh" — which is not the same as absent. Who
- * recorded it and when sits in the tooltip.
+ * One person's attendance, as AI-eCabinet shows it: the Secretary gets a small picker, dashed and
+ * reading "Điểm danh" until something is picked — picking is the save. Everyone else reads a dot
+ * and a word, or "Chưa điểm danh", which is not the same as absent. Who recorded it and when sits
+ * in the tooltip.
  */
 export function AttendanceCell({
   row,
@@ -40,61 +45,43 @@ export function AttendanceCell({
   pending?: AttendanceStatus
   onRecord: (row: AttendanceRow, value: AttendanceStatus) => void
 }) {
-  const name = useId()
   const note = recordedNote(row)
 
   if (!canRecord) return <AttendanceBadge row={row} note={note} />
 
-  const value = pending ?? row.attendance
   return (
-    <div
-      className="attendance-toggle"
-      role="radiogroup"
-      aria-label={`Điểm danh ${row.displayName}`}
-      aria-busy={pending !== undefined}
-      data-tooltip={note ?? undefined}
-    >
-      {CHOICES.map((choice) => (
-        <label key={choice.value} className={`attendance-option attendance-${choice.value.toLowerCase()}`}>
-          <input
-            type="radio"
-            name={name}
-            value={choice.value}
-            checked={value === choice.value}
-            disabled={pending !== undefined}
-            onChange={() => onRecord(row, choice.value)}
-          />
-          <span>
-            <Icon name={choice.icon} size={14} />
-            <span className="attendance-label" data-text={ATTENDANCE_LABEL[choice.value]}>
-              {ATTENDANCE_LABEL[choice.value]}
-            </span>
-          </span>
-        </label>
-      ))}
-    </div>
+    <span className="attendance-picker" data-tooltip={note ?? undefined} aria-busy={pending !== undefined}>
+      <Select
+        size="sm"
+        value={pending ?? row.attendance}
+        options={OPTIONS}
+        placeholder="Điểm danh"
+        label={`Điểm danh ${row.displayName}`}
+        disabled={pending !== undefined}
+        onChange={(value) => value !== row.attendance && onRecord(row, value)}
+      />
+    </span>
   )
 }
 
 function AttendanceBadge({ row, note }: { row: AttendanceRow; note: string | null }) {
   const tooltip = note ? { tabIndex: 0, 'data-tooltip': note } : {}
   if (row.attendance) {
-    const present = row.attendance === 'Present'
     return (
-      <span className={`badge attendance-badge ${present ? 'badge-emerald' : 'badge-slate'}`} {...tooltip}>
-        <Icon name={present ? 'check' : 'x'} size={14} />
+      <span className="attendance-badge" {...tooltip}>
+        <span className="select-dot" style={{ background: DOT[row.attendance] }} aria-hidden="true" />
         {ATTENDANCE_LABEL[row.attendance]}
       </span>
     )
   }
   if (row.legacyAttendance) {
     return (
-      <span className="badge badge-outline" {...tooltip}>
+      <span className="attendance-badge" {...tooltip}>
         {LEGACY_ATTENDANCE_LABEL[row.legacyAttendance]}
       </span>
     )
   }
-  return <em className="value-empty attendance-unmarked">Chưa điểm danh</em>
+  return <span className="attendance-unmarked">Chưa điểm danh</span>
 }
 
 /** "Có mặt 3/8", with the full split in the tooltip; counts are over the whole roster. */
