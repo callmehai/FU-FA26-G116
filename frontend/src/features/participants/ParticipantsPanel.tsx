@@ -15,6 +15,7 @@ import {
   type ParticipantRow,
 } from '../../types/participant'
 import { useAccessLost } from '../auth/useAccessLost'
+import { useAuth } from '../auth/useAuth'
 import { useMeetingEvents } from '../meetings/useMeetingEvents'
 import { isRefusal, type DialogOutcome } from './outcome'
 import { AddParticipantsDialog, ChangeRoleDialog, InviteGuestDialog } from './ParticipantDialogs'
@@ -35,9 +36,12 @@ type State =
 type Open =
   | { kind: 'add' }
   | { kind: 'guest' }
-  | { kind: 'role'; row: ParticipantRow & { role: MeetingRole } }
+  | { kind: 'role'; row: ParticipantRow & { role: MeetingRole }; chairOption: boolean; handOver: boolean }
   | { kind: 'remove'; row: ParticipantRow }
   | null
+
+/** What a row's buttons open; the panel adds what the role dialog may offer. */
+type RowOpen = { kind: 'role'; row: ParticipantRow & { role: MeetingRole } } | { kind: 'remove'; row: ParticipantRow }
 
 /**
  * The meeting's roster (SCRUM-20, UC-27–30): everyone may read it; the Chair and Secretaries add,
@@ -50,6 +54,7 @@ type Open =
  */
 export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string; onChanged?: () => void }) {
   const toast = useToast()
+  const { user } = useAuth()
   const handleAccessLost = useAccessLost()
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
@@ -139,6 +144,19 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
 
   const { context, roster } = data
   const manage = context.permissions.canManageParticipants
+  const live = context.status === 'Published' || context.status === 'InProgress'
+  // Settled when the role dialog opens: a reload behind it (someone else's change) must not swap its
+  // options or its request under the user. The server rechecks and answers MSG259/MSG260.
+  const openRow = (open: RowOpen) =>
+    setOpen(
+      open.kind === 'role'
+        ? {
+            ...open,
+            chairOption: context.permissions.canReplaceChair && canTakeChair(open.row, live),
+            handOver: live && context.myRole === 'Chair',
+          }
+        : open,
+    )
   const totalPages = Math.max(1, Math.ceil(roster.total / roster.pageSize))
 
   return (
@@ -195,7 +213,7 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
           <thead>
             <tr>
               <th>Thành phần</th>
-              <th>Vai trò</th>
+              <th className="col-role">Vai trò</th>
               {manage && <th className="col-action">Thao tác</th>}
             </tr>
           </thead>
@@ -225,23 +243,26 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
                 <tr key={row.id} className={row.isActive === false ? 'row-inactive' : undefined}>
                   <td className="cell-title">
                     <span className="participant-cell">
-                      <Person name={row.displayName} email={row.email} />
+                      <Person
+                        name={row.displayName}
+                        email={row.email}
+                        self={row.userId !== null && row.userId === user?.id}
+                      />
                       <span className="chip-row">
+                        <span className="role-inline">
+                          <RoleBadge role={row.role} />
+                        </span>
                         {row.isActive === false && <Badge tone="slate">Tài khoản đã khoá</Badge>}
                         {row.role !== 'Chair' && <RsvpChip response={row.response} />}
                       </span>
                     </span>
                   </td>
-                  <td>
-                    {row.role ? (
-                      <Badge tone={ROLE_TONE[row.role]}>{MEETING_ROLE_LABEL[row.role]}</Badge>
-                    ) : (
-                      <Badge tone="outline">Khách</Badge>
-                    )}
+                  <td className="col-role">
+                    <RoleBadge role={row.role} />
                   </td>
                   {manage && (
                     <td className="col-action">
-                      <RowActions row={row} onOpen={setOpen} />
+                      <RowActions row={row} onOpen={openRow} />
                     </td>
                   )}
                 </tr>
@@ -286,7 +307,8 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
           meetingId={meetingId}
           revision={roster.revision}
           row={open.row}
-          canReplaceChair={context.permissions.canReplaceChair}
+          chairOption={open.chairOption}
+          handOver={open.handOver}
           onClose={() => setOpen(null)}
           onDone={finish}
         />
@@ -320,11 +342,24 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
   )
 }
 
+/** A role chip; a guest has no role. */
+function RoleBadge({ role }: { role: MeetingRole | null }) {
+  return role ? <Badge tone={ROLE_TONE[role]}>{MEETING_ROLE_LABEL[role]}</Badge> : <Badge tone="outline">Khách</Badge>
+}
+
+/**
+ * Whether this person may take the chair, as the server checks it: an active account, and once the
+ * meeting is published only a Member — not a Secretary (MSG259).
+ */
+function canTakeChair(row: ParticipantRow, live: boolean) {
+  return row.isActive !== false && (!live || row.role === 'Member')
+}
+
 /**
  * The Chair has no row actions: a meeting always keeps one, so the chair moves by making someone
  * else Chair. A guest has no role to change, only an invitation to withdraw.
  */
-function RowActions({ row, onOpen }: { row: ParticipantRow; onOpen: (open: Open) => void }) {
+function RowActions({ row, onOpen }: { row: ParticipantRow; onOpen: (open: RowOpen) => void }) {
   if (row.role === 'Chair') return null
   const role = row.role
   return (
@@ -334,7 +369,7 @@ function RowActions({ row, onOpen }: { row: ParticipantRow; onOpen: (open: Open)
           type="button"
           className="icon-button"
           aria-label={`Đổi vai trò của ${row.displayName}`}
-          title="Đổi vai trò"
+          data-tooltip="Đổi vai trò"
           onClick={() => onOpen({ kind: 'role', row: { ...row, role } })}
         >
           <Icon name="pencil" size={16} />

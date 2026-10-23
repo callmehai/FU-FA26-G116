@@ -343,6 +343,6 @@ LAYOUT = [ { code: 'FE-11', name: 'FE-11 · Biểu quyết',
 | v5 | 15/10/2026 | FE-11 theo UC-52a–UC-57 và ADR-0019. Sửa 8.5, 11.1–11.4, 14.2; thêm 11.1b, 11.2b, 11.3b, 11.5 |
 | v6 | 19/10/2026 | SCRUM-47: lịch tháng và bộ lọc lịch theo trạng thái, mức độ (luồng phụ UC-17), tham khảo AI-eCabinet. Sửa 4.1, 4.2 (nút Bộ lọc, tiêu đề mở bảng chọn ngày, UC-17); thêm 4.1b, 4.1c, 4.1d |
 
-| v7 | 22/10/2026 | SCRUM-21/22/23: tài liệu cuộc họp theo UC-32a, UC-32c, UC-35 (sửa 22/10/2026), tham khảo AI-eCabinet. Sửa 7.3 (nhóm theo mục / biểu quyết / chung, menu gỡ khỏi mục hoặc cuộc họp), 7.5 (trả lời góp ý, khách mời góp ý); thêm 8.6 (panel Tài liệu trong phòng họp). Vẽ lại phòng họp FE-08 (8.1–8.5) cho khớp bản đã chạy trên server test 22/10/2026; số UC mục 8 sửa theo danh mục UC hiện hành (UC-37–UC-42) |
+| v7 | 22/10/2026 | SCRUM-21/22/23: tài liệu cuộc họp theo UC-32a, UC-32c, UC-35 (sửa 22/10/2026), tham khảo AI-eCabinet. Sửa 7.3 (nhóm theo mục / biểu quyết / chung, menu gỡ khỏi mục hoặc cuộc họp), 7.5 (trả lời góp ý, khách mời góp ý); thêm 8.6 (panel Tài liệu trong phòng họp). Vẽ lại phòng họp FE-08 (8.1–8.5) cho khớp bản đã chạy trên server test 22/10/2026; số UC mục 8 sửa theo danh mục UC hiện hành (UC-37–UC-42). 23/10/2026: 7.4, 7.4b bỏ ô chọn mục (gắn mục khi mở từ ghim của mục), ghi giới hạn 10 tệp / 200 MB mỗi lần (BR-319) |
 
 Ra bản mới thì thêm một dòng vào bảng này.
