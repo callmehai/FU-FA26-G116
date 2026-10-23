@@ -243,7 +243,8 @@ Tải tài liệu lên cuộc họp lưu byte trên R2 ([ADR-0024](../docs/05-de
 Chưa cấu hình thì app vẫn chạy, nút tải lên báo `MSG166`.
 
 1. Cloudflare Dashboard → **R2 Object Storage** → bật R2 (cần thêm phương thức thanh toán, gói miễn phí vẫn đủ
-   cho server test) → **Create bucket** `trustcabinet-test`, location *Automatic*. **Không** bật Public access hay
+   cho server test) → **Create bucket** `trustcabinet-test`, Location: **Provide a location hint → Asia-Pacific (APAC)** (server test ở
+   Singapore; vị trí không đổi được sau khi tạo). **Không** bật Public access hay
    custom domain.
 2. **R2 → Manage API tokens → Create API token**: quyền *Object Read & Write*, áp dụng cho **chỉ** bucket
    `trustcabinet-test`. Lưu lại Access Key ID, Secret Access Key và endpoint
