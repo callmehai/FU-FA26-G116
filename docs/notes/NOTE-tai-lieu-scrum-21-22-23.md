@@ -14,7 +14,8 @@ nghiệp vụ tab Tài liệu của AI-eCabinet (bản dev, xem ngày 22/10/2026
 | Class diagram | [FE-07 (một phần)](../07-classdiagram/feature-07-document-management-class-diagram.drawio), bố cục lại theo lưới: không còn đường cắt nhau |
 | ERD | `MeetingDocument.AgendaItemId` → bảng nối `MeetingDocumentAgendaItem` theo ADR-0020; `DocumentComment.GuestInvitationId` ([02-erd.md](../02-design/02-erd.md), hình [ERD mục tiêu](../assets/erd-muc-tieu/README.md) xếp lại theo bố cục Meeting ở giữa) |
 | Wireframe | [v7](../wireframe/TrustCabinet-wireframe-v7.html): sửa 7.3, 7.5; vẽ lại phòng họp 8.1–8.5 theo bản đã chạy trên server test; thêm 8.6 |
-| Report 3 | DOCX + Markdown: UC-32a, UC-32c, UC-33a, UC-35, BR-315 → BR-319, MSG288, Change Log, ảnh ERD mục 3.1 |
+| Report 3 | DOCX + Markdown: UC-32a, UC-32c, UC-33a, UC-35, BR-315 → BR-319, MSG288, Change Log, ảnh ERD mục 3.1; 23/10/2026 viết lại đặc tả màn hình 7.3–7.5, 8.1–8.5, thêm 8.6, thay ảnh màn |
+| Sequence draw.io gộp | Tab UC-32a, UC-32c, UC-35 và ảnh `drawio-png/` (23/10/2026) |
 | Jira | SCRUM-21/22/23 viết lại; comment quyết định PO ở SCRUM-21, SCRUM-23, SCRUM-58; tạo **SCRUM-106** (gom góp ý, Sprint sau) |
 
 Trả lời góp ý dùng lại MSG199/MSG200/MSG202. Mã mới duy nhất: MSG288 (giới hạn mỗi lần tải lên).
@@ -44,9 +45,7 @@ Trình bày chung cho cả phòng: dùng chia sẻ màn hình sẵn có (UC-39c)
 
 ## Còn phải làm
 
-- **Report 3 – đặc tả màn hình** (Documents tab, Add Document dialog, In-Room Meeting Panel): còn mô tả bộ lọc theo mục,
-  nút "Meeting" mở panel ba tab; cần viết lại theo 7.3, 8.5, 8.6 của wireframe v7. Đợt này chỉ sửa UC/BR/MSG/ERD.
 - **Report 3 trên Drive**: chưa thay (chỉ sửa DOCX local).
-- **Figma**: chạy plugin `figma-v7` để dựng lại 5.3, 7.3, 7.5, 8.1–8.5 và thêm 8.6.
+- **Figma**: chạy plugin `figma-v7` để dựng lại 5.3, 7.3, 7.4, 7.4b, 7.5, 8.1–8.5 và thêm 8.6.
 - ERD mục tiêu vẫn có quan hệ `AgendaItem` → `VotingSession` (ADR-0014) trong khi BR-285 nói biểu quyết không gắn mục
   nghị sự; cần BA xem lại ở đợt biểu quyết.
