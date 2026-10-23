@@ -1,4 +1,7 @@
+using System.Text;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Net.Http.Headers;
 using TrustCabinet.Domain.Documents;
 
 namespace TrustCabinet.Web.Endpoints;
@@ -16,6 +19,13 @@ public static class MeetingDocumentEndpoints
 
     /// <summary>The 200 MB of files plus room for the multipart framing and the page counts.</summary>
     private const long MaxRequestBytes = DocumentFileRules.MaxTotalBytes + 1024 * 1024;
+
+    /// <summary>Room for well over 10 files and their page counts, so a few extra files still get
+    /// MSG288; far more is malformed (MSG164).</summary>
+    private const int MaxParts = 64;
+    private const int MaxPageCountBytes = 16;
+    /// <summary>ASP.NET Core's own form reader allows the same.</summary>
+    private const int MaxBoundaryLength = 128;
 
     public static void MapMeetingDocumentEndpoints(this IEndpointRouteBuilder app)
     {
@@ -39,42 +49,89 @@ public static class MeetingDocumentEndpoints
                 Errors: new Dictionary<string, string[]> { ["files"] = ["Yêu cầu phải gửi tệp dạng multipart/form-data."] }), meetingId);
         if (request.ContentLength > MaxRequestBytes) return Map(new(DocumentUploadFailure.TooMany), meetingId);
 
-        // Kestrel stops at 30 MB and the form reader at 128 MB by default; this endpoint alone needs 200 MB.
+        // Kestrel stops at 30 MB by default; this endpoint alone needs 200 MB.
         if (context.Features.Get<IHttpMaxRequestBodySizeFeature>() is { IsReadOnly: false } size)
             size.MaxRequestBodySize = MaxRequestBytes;
-        // Parts over 64 KB are buffered to a temp file, never held in memory (1 GB server, ADR-0024).
-        // Smaller ones stay in memory, so the part count is capped too: room for well over 10 files
-        // and their page counts, so a few extra files still get MSG288; far more is malformed (MSG164).
-        context.Features.Set<IFormFeature>(new FormFeature(request, new FormOptions
-        {
-            MultipartBodyLengthLimit = MaxRequestBytes,
-            ValueCountLimit = 64,
-        }));
 
-        IFormCollection form;
+        var tempFiles = new List<string>();
         try
         {
-            form = await request.ReadFormAsync(ct);
+            DocumentUploadCandidate[] candidates;
+            try
+            {
+                candidates = await ReadUploadAsync(request, tempFiles, ct);
+            }
+            catch (BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413PayloadTooLarge)
+            {
+                return Map(new(DocumentUploadFailure.TooMany), meetingId);
+            }
+            catch (InvalidDataException)
+            {
+                return Map(new(DocumentUploadFailure.Invalid,
+                    Errors: new Dictionary<string, string[]> { ["files"] = ["Nội dung multipart không hợp lệ."] }), meetingId);
+            }
+
+            var validated = await DocumentFileRules.ValidateAsync(candidates, ct);
+            if (validated.Failure != DocumentUploadFailure.None) return Map(validated, meetingId);
+
+            return Map(await service.UploadAsync(meetingId, actor, validated.Files!, ct), meetingId);
         }
-        catch (BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413PayloadTooLarge)
+        finally
         {
-            return Map(new(DocumentUploadFailure.TooMany), meetingId);
+            foreach (var path in tempFiles)
+            {
+                try { File.Delete(path); }
+                catch (IOException) { /* the OS temp cleaner gets it */ }
+            }
         }
-        catch (InvalidDataException)
+    }
+
+    /// <summary>
+    /// Reads the multipart body by hand rather than with ReadFormAsync, which reads every
+    /// non-file part whole into a string however large it is (its value limit only covers
+    /// urlencoded forms). File parts go to temp files; a page count longer than a few digits,
+    /// or more parts than any real upload has, is malformed. Other parts are skipped unread.
+    /// </summary>
+    private static async Task<DocumentUploadCandidate[]> ReadUploadAsync(HttpRequest request, List<string> tempFiles,
+        CancellationToken ct)
+    {
+        var boundary = HeaderUtilities.RemoveQuotes(MediaTypeHeaderValue.Parse(request.ContentType).Boundary).Value;
+        if (string.IsNullOrEmpty(boundary) || boundary.Length > MaxBoundaryLength)
+            throw new InvalidDataException("Missing or overlong multipart boundary.");
+        var reader = new MultipartReader(boundary, request.Body) { BodyLengthLimit = MaxRequestBytes };
+
+        var files = new List<(string? Name, string Path, long Length)>();
+        var pageCounts = new List<string>();
+        var parts = 0;
+        // ReadNextSectionAsync drains whatever of the previous part was not read.
+        while (await reader.ReadNextSectionAsync(ct) is { } section)
         {
-            return Map(new(DocumentUploadFailure.Invalid,
-                Errors: new Dictionary<string, string[]> { ["files"] = ["Nội dung multipart không hợp lệ."] }), meetingId);
+            if (++parts > MaxParts) throw new InvalidDataException("Too many multipart sections.");
+            if (section.GetContentDispositionHeader() is not { } disposition) continue;
+            var name = HeaderUtilities.RemoveQuotes(disposition.Name).Value;
+            if (disposition.IsFileDisposition() && name is "files" or "files[]")
+            {
+                var path = Path.GetTempFileName();
+                tempFiles.Add(path);
+                await using var file = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 81920,
+                    FileOptions.Asynchronous);
+                await section.Body.CopyToAsync(file, ct);
+                files.Add((section.AsFileSection()!.FileName, path, file.Length));
+            }
+            else if (disposition.IsFormDisposition() && name is "pageCounts" or "pageCounts[]")
+            {
+                var buffer = new byte[MaxPageCountBytes + 1];
+                var length = await section.Body.ReadAtLeastAsync(buffer, buffer.Length, throwOnEndOfStream: false, ct);
+                if (length > MaxPageCountBytes) throw new InvalidDataException("Page count too long.");
+                pageCounts.Add(Encoding.UTF8.GetString(buffer, 0, length));
+            }
         }
 
         // pageCounts[i] belongs to the i-th file part; the browser counts PDF pages with pdf.js.
-        var pageCounts = form["pageCounts"].Concat(form["pageCounts[]"]).ToArray();
-        var files = form.Files.GetFiles("files").Concat(form.Files.GetFiles("files[]"));
-        var candidates = files.Select((file, index) => new DocumentUploadCandidate(file.FileName, file.Length,
-            file.OpenReadStream, index < pageCounts.Length ? pageCounts[index] : null)).ToArray();
-        var validated = await DocumentFileRules.ValidateAsync(candidates, ct);
-        if (validated.Failure != DocumentUploadFailure.None) return Map(validated, meetingId);
-
-        return Map(await service.UploadAsync(meetingId, actor, validated.Files!, ct), meetingId);
+        return files.Select((file, index) => new DocumentUploadCandidate(file.Name, file.Length,
+            () => new FileStream(file.Path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920,
+                FileOptions.Asynchronous | FileOptions.SequentialScan),
+            index < pageCounts.Count ? pageCounts[index] : null)).ToArray();
     }
 
     private static IResult Map(DocumentUploadOutcome outcome, Guid meetingId)

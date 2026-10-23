@@ -2,7 +2,6 @@ using System.Buffers.Binary;
 using System.Globalization;
 using System.IO.Compression;
 using System.Security.Cryptography;
-using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using TrustCabinet.Domain.Entities;
@@ -23,14 +22,16 @@ public static class DocumentFileRules
     public const string DocxContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
     private const string DocxMainContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
+    private const string OfficeDocumentRelationship = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument";
     private static readonly XNamespace ContentTypesNamespace = "http://schemas.openxmlformats.org/package/2006/content-types";
+    private static readonly XNamespace RelationshipsNamespace = "http://schemas.openxmlformats.org/package/2006/relationships";
 
     private static readonly byte[] PdfHeader = "%PDF-"u8.ToArray();
     private static readonly byte[] ZipHeader = [0x50, 0x4B, 0x03, 0x04];
     private static readonly byte[] EndOfCentralDirectory = [0x50, 0x4B, 0x05, 0x06];
 
-    /// <summary>Plenty for any real [Content_Types].xml, small enough that a crafted one cannot balloon.</summary>
-    private const int ContentTypesReadLimit = 1024 * 1024;
+    /// <summary>Plenty for any real [Content_Types].xml or _rels/.rels, small enough that a crafted one cannot balloon.</summary>
+    private const int PackageXmlReadLimit = 1024 * 1024;
 
     /// <summary>
     /// A real DOCX has a few dozen entries. ZipArchive loads the whole central directory into
@@ -127,24 +128,45 @@ public static class DocumentFileRules
         stream.Position = 0;
         try
         {
-            // Opening a zip reads only its central directory; just [Content_Types].xml is inflated.
+            // Opening a zip reads only its central directory; just the two package XML parts are inflated.
             using var zip = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
-            if (zip.GetEntry("word/document.xml") is null) return null;
-            var types = zip.GetEntry("[Content_Types].xml");
+            // The main part is whichever the package relationship names (OPC), not always word/document.xml.
+            var target = (string?)(await ReadPackageXmlAsync(zip, "_rels/.rels", ct))?.Root?
+                .Elements(RelationshipsNamespace + "Relationship")
+                .FirstOrDefault(e => (string?)e.Attribute("Type") == OfficeDocumentRelationship)?.Attribute("Target");
+            if (target is null) return null;
+            var partName = "/" + target.TrimStart('/');
+            if (zip.GetEntry(partName[1..]) is null) return null;
+            var types = (await ReadPackageXmlAsync(zip, "[Content_Types].xml", ct))?.Root;
             if (types is null) return null;
-            await using var entry = types.Open();
-            var buffer = new byte[ContentTypesReadLimit];
-            var length = await entry.ReadAtLeastAsync(buffer, buffer.Length, throwOnEndOfStream: false, ct);
             // The main part's own declaration, not any mention: a DOCM declares a macro-enabled type here.
-            var main = XDocument.Parse(Encoding.UTF8.GetString(buffer, 0, length)).Root?
-                .Elements(ContentTypesNamespace + "Override")
-                .FirstOrDefault(e => string.Equals((string?)e.Attribute("PartName"), "/word/document.xml", StringComparison.OrdinalIgnoreCase));
-            return (string?)main?.Attribute("ContentType") == DocxMainContentType ? DocxContentType : null;
+            // An Override for the part wins, else the Default for its extension — which is all
+            // System.IO.Packaging writes.
+            var extension = Path.GetExtension(partName).TrimStart('.');
+            var declared = types.Elements(ContentTypesNamespace + "Override")
+                    .FirstOrDefault(e => string.Equals((string?)e.Attribute("PartName"), partName, StringComparison.OrdinalIgnoreCase))
+                ?? types.Elements(ContentTypesNamespace + "Default")
+                    .FirstOrDefault(e => string.Equals((string?)e.Attribute("Extension"), extension, StringComparison.OrdinalIgnoreCase));
+            return (string?)declared?.Attribute("ContentType") == DocxMainContentType ? DocxContentType : null;
         }
         catch (Exception ex) when (ex is InvalidDataException or XmlException)
         {
             return null;
         }
+    }
+
+    private static async Task<XDocument?> ReadPackageXmlAsync(ZipArchive zip, string entryName, CancellationToken ct)
+    {
+        if (zip.GetEntry(entryName) is not { } entry) return null;
+        await using var content = entry.Open();
+        var buffer = new byte[PackageXmlReadLimit];
+        var length = await content.ReadAtLeastAsync(buffer, buffer.Length, throwOnEndOfStream: false, ct);
+        // From the bytes, not a decoded string, so a BOM and the declared encoding are honoured
+        // (Open XML SDK and System.IO.Packaging start these parts with a UTF-8 BOM). No DTDs: no
+        // real package has one, and entity expansion is the classic way to balloon a parser.
+        using var reader = XmlReader.Create(new MemoryStream(buffer, 0, length),
+            new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit });
+        return XDocument.Load(reader);
     }
 
     /// <summary>
@@ -174,8 +196,12 @@ public static class DocumentFileRules
     public static string? NormalizeFileName(string? fileName)
     {
         var name = fileName?.Split('/', '\\')[^1].Trim();
-        return string.IsNullOrEmpty(name) || name.Length > MaxFileNameLength || name.Any(char.IsControl) ? null : name;
+        return string.IsNullOrEmpty(name) || name.Length > MaxFileNameLength || name.Any(IsInvisible) ? null : name;
     }
+
+    /// <summary>Control and format characters: a right-to-left override (U+202E) before "xcod.pdf" shows the name as "fdp.docx".</summary>
+    private static bool IsInvisible(char c)
+        => char.IsControl(c) || CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.Format;
 
     /// <summary>The browser counts pages with pdf.js; a value it could not produce is stored as unknown.</summary>
     private static int? ParsePageCount(string? value)

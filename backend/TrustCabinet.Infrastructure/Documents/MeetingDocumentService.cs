@@ -14,9 +14,10 @@ public sealed class MeetingDocumentRepository(TrustCabinetDbContext db) : IMeeti
 
     public void AddFolder(Folder folder) => db.Folders.Add(folder);
 
-    public void AddUpload(StoredFile file, Document document, MeetingDocument meetingDocument)
+    public void AddStoredFiles(IEnumerable<StoredFile> files) => db.StoredFiles.AddRange(files);
+
+    public void AddUpload(Document document, MeetingDocument meetingDocument)
     {
-        db.StoredFiles.Add(file);
         db.Documents.Add(document);
         db.MeetingDocuments.Add(meetingDocument);
     }
@@ -62,7 +63,21 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             };
         }).ToArray();
 
-        // Objects first, rows second (ADR-0024 §4): a row never points at bytes that are not there.
+        // The StoredFile rows go in first, on their own, so that an object never exists without a
+        // row: if the process dies mid-upload (a deploy restarts the container), the rows have no
+        // Document and the orphan purge deletes the objects once the grace period is over.
+        // Nothing points at these rows until the transaction below commits (ADR-0024 §4).
+        try
+        {
+            documents.AddStoredFiles(stored);
+            await meetings.SaveChangesAsync(ct);
+        }
+        catch (Exception ex) when (PersistenceError(ex))
+        {
+            logger.LogError(ex, "Failed to record uploaded documents for meeting {MeetingId}", meetingId);
+            return new(DocumentUploadFailure.StoreFailed);
+        }
+
         var written = new List<string>();
         try
         {
@@ -116,7 +131,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
                     var meetingDocument = new MeetingDocument { MeetingId = meetingId, StoredFileId = file.Id,
                         DocumentId = document.Id, FileName = file.OriginalFileName, AddedById = actorId, AddedAt = now,
                         CreatedAt = now, UpdatedAt = now };
-                    documents.AddUpload(file, document, meetingDocument);
+                    documents.AddUpload(document, meetingDocument);
                     added.Add(new(meetingDocument.Id, file.OriginalFileName, file.ContentType, file.ByteSize, file.PageCount));
                 }
                 await meetings.SaveChangesAsync(token);
@@ -125,7 +140,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
         }
         catch (Exception ex)
         {
-            // Any failure here, not only a database one, leaves objects with no row the purge could find.
+            // Any failure here, not only a database one: the purge would get them, but not for a day.
             await DeleteAsync(written);
             if (!PersistenceError(ex)) throw;
             logger.LogError(ex, "Failed to save uploaded documents for meeting {MeetingId}", meetingId);
@@ -137,8 +152,8 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
     }
 
     /// <summary>
-    /// Best effort. An object left behind has no row, so the orphan purge cannot see it; the
-    /// warning carries the key so it can be removed by hand (ADR-0024).
+    /// Best effort and early: the rows stay without a Document, so the orphan purge deletes
+    /// whatever is left after the grace period anyway, and stamps them.
     /// </summary>
     private async Task DeleteAsync(IEnumerable<string> keys)
     {

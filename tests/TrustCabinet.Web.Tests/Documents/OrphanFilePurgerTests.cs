@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Infrastructure.Documents;
 
@@ -78,13 +79,29 @@ public sealed class OrphanFilePurgerTests(DocumentFixture fixture) : IAsyncLifet
         Assert.Equal(1, await Purger(db).PurgeAsync(default));
     }
 
+    [Fact]
+    public async Task Files_that_keep_failing_do_not_block_the_ones_behind_them()
+    {
+        var s = await fixture.Seed();
+        await using var db = fixture.Db();
+        // A full batch of failures, uploaded first, then one that can go.
+        var failing = Enumerable.Range(0, 100).Select(i => File(s.Secretary, Old.AddMinutes(-100 + i))).ToArray();
+        var last = File(s.Secretary, Old);
+        db.StoredFiles.AddRange([.. failing, last]);
+        await db.SaveChangesAsync();
+        foreach (var file in failing) fixture.Storage.FailDeleteFor[file.StorageKey] = true;
+
+        Assert.Equal(1, await Purger(db).PurgeAsync(default));
+        Assert.Equal(Now, (await fixture.Db().StoredFiles.SingleAsync(f => f.Id == last.Id)).PurgedAt);
+    }
+
     private OrphanFilePurger Purger(Infrastructure.TrustCabinetDbContext db) => new(db, fixture.Storage, new FixedClock(),
         Options.Create(new FileStorageOptions { OrphanGracePeriodHours = 24 }), NullLogger<OrphanFilePurger>.Instance);
 
     private static StoredFile File(Guid uploader, DateTimeOffset uploadedAt)
     {
         var id = Guid.CreateVersion7();
-        return new StoredFile { Id = id, StorageKey = $"stored-files/{id:D}", OriginalFileName = "x.pdf",
+        return new StoredFile { Id = id, StorageKey = DocumentFileRules.StorageKey(id), OriginalFileName = "x.pdf",
             ContentType = "application/pdf", ContentSha256 = new string('a', 64), ByteSize = 1,
             UploadedById = uploader, UploadedAt = uploadedAt };
     }

@@ -283,6 +283,55 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
         fixture.SaveFailure.Enabled = false;
         await using var db = fixture.Db();
         Assert.False(await db.MeetingDocuments.AnyAsync(d => d.MeetingId == s.MeetingId));
+        // The object stays, but its row was written before it and nothing references it, so the
+        // orphan purge finds it — as it would if the process had died before the commit.
+        var file = await db.StoredFiles.SingleAsync(f => f.UploadedById == s.Secretary);
+        Assert.True(fixture.Storage.Objects.ContainsKey(file.StorageKey));
+        Assert.Null(file.PurgedAt);
+        Assert.False(await db.Documents.AnyAsync(d => d.StoredFileId == file.Id));
+    }
+
+    [Fact]
+    public async Task Every_object_written_has_its_row_already()
+    {
+        var s = await fixture.Seed();
+        var rowsAtWrite = new List<bool>();
+        fixture.Storage.BeforeWrite = async _ =>
+        {
+            await using var db = fixture.Db();
+            rowsAtWrite.Add(await db.StoredFiles.CountAsync(f => f.UploadedById == s.Secretary) == 2);
+        };
+        using var client = fixture.Client(s.Secretary);
+
+        await AssertCode(await client.PostAsync(s.Url, DocumentFixture.Form(("a.pdf", SampleFiles.Pdf(), "1"), ("b.pdf", SampleFiles.Pdf(), "1"))), 201, "MSG161");
+        Assert.Equal([true, true], rowsAtWrite);
+    }
+
+    [Fact]
+    public async Task A_page_count_part_longer_than_a_number_is_malformed_and_other_parts_are_skipped()
+    {
+        var s = await fixture.Seed();
+        using var client = fixture.Client(s.Secretary);
+        var form = DocumentFixture.Form(("a.pdf", SampleFiles.Pdf(), "1"));
+        form.Add(new StringContent(new string('x', 1024 * 1024)), "notes");
+        form.Add(new ByteArrayContent(new byte[1024]), "attachment", "other.pdf");
+        Assert.Equal(1, (await AssertCode(await client.PostAsync(s.Url, form), 201, "MSG161")).GetProperty("addedCount").GetInt32());
+
+        var objects = fixture.Storage.Objects.Count;
+        var tooLong = new MultipartFormDataContent { { new ByteArrayContent(SampleFiles.Pdf()), "files", "b.pdf" },
+            { new StringContent(new string('1', 17)), "pageCounts" } };
+        await AssertCode(await client.PostAsync(s.Url, tooLong), 400, "MSG164");
+        Assert.Equal(objects, fixture.Storage.Objects.Count);
+    }
+
+    [Fact]
+    public async Task More_parts_than_any_real_upload_is_malformed()
+    {
+        var s = await fixture.Seed();
+        using var client = fixture.Client(s.Secretary);
+        var form = new MultipartFormDataContent();
+        for (var i = 0; i < 65; i++) form.Add(new StringContent(""), "pageCounts");
+        await AssertCode(await client.PostAsync(s.Url, form), 400, "MSG164");
     }
 
     [Fact]
@@ -356,7 +405,10 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
     {
         await using var db = fixture.Db();
         Assert.False(await db.MeetingDocuments.AnyAsync(d => d.MeetingId == s.MeetingId));
-        Assert.False(await db.StoredFiles.AnyAsync(f => f.UploadedById == s.Secretary));
+        // An upload that got as far as the store leaves its StoredFile rows, unreferenced, for the
+        // purge; none may point at an object that is still there.
+        var keys = await db.StoredFiles.Where(f => f.UploadedById == s.Secretary).Select(f => f.StorageKey).ToListAsync();
+        Assert.DoesNotContain(keys, fixture.Storage.Objects.ContainsKey);
         Assert.False(await db.Documents.AnyAsync(d => d.OwnerId == s.Secretary));
         Assert.False(await db.Folders.AnyAsync(f => f.MeetingId == s.MeetingId));
         Assert.Equal(objectsBefore, fixture.Storage.Objects.Count);

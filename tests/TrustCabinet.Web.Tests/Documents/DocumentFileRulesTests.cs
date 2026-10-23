@@ -15,6 +15,20 @@ public sealed class DocumentFileRulesTests
     }
 
     [Fact]
+    public async Task Docx_follows_the_package_rules_not_just_what_word_writes()
+    {
+        // BOM-prefixed parts with the main type declared per extension: System.IO.Packaging output.
+        Assert.Equal(DocumentFileRules.DocxContentType, await Detect(SampleFiles.Docx(byExtension: true)));
+        // The main part is whatever _rels/.rels names.
+        Assert.Equal(DocumentFileRules.DocxContentType, await Detect(SampleFiles.Docx(mainPart: "word/document2.xml")));
+        Assert.Null(await Detect(SampleFiles.Docx(withRelationship: false)));
+        Assert.Null(await Detect(SampleFiles.Docx("application/vnd.ms-word.document.macroEnabled.main+xml", byExtension: true)));
+        // An Override for the main part wins over the extension's Default.
+        Assert.Null(await Detect(SampleFiles.Docx("application/vnd.ms-word.document.macroEnabled.main+xml",
+            extraTypes: $"<Default Extension=\"xml\" ContentType=\"{SampleFiles.DocxMain}\"/>")));
+    }
+
+    [Fact]
     public async Task Everything_else_is_rejected()
     {
         Assert.Null(await Detect(SampleFiles.Png()));
@@ -40,6 +54,8 @@ public sealed class DocumentFileRulesTests
     [InlineData("", null)]
     [InlineData("a/", null)]
     [InlineData("tab\there.pdf", null)]
+    [InlineData("Bao cao‮xcod.pdf", null)]   // right-to-left override: would show as "Bao caofdp.docx"
+    [InlineData("a​b.pdf", null)]            // zero-width space
     public void File_names_keep_only_the_last_segment(string input, string? expected)
         => Assert.Equal(expected, DocumentFileRules.NormalizeFileName(input));
 

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
@@ -51,7 +52,7 @@ public static class AgendaDevelopmentDataSeeder
         var fileId = Guid.CreateVersion7();
         var now = DateTimeOffset.UtcNow;
         return new MeetingDocument { MeetingId = meetingId, FileName = fileName, AddedById = uploaderId, AddedAt = now,
-            StoredFile = new StoredFile { Id = fileId, StorageKey = $"stored-files/{fileId:D}", OriginalFileName = fileName,
+            StoredFile = new StoredFile { Id = fileId, StorageKey = DocumentFileRules.StorageKey(fileId), OriginalFileName = fileName,
                 ContentType = "application/pdf", ContentSha256 = new string('0', 64), UploadedById = uploaderId, UploadedAt = now } };
     }
 }

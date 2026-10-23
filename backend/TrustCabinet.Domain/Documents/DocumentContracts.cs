@@ -54,5 +54,7 @@ public interface IMeetingDocumentRepository
 
     void AddFolder(Entities.Folder folder);
 
-    void AddUpload(Entities.StoredFile file, Entities.Document document, Entities.MeetingDocument meetingDocument);
+    void AddStoredFiles(IEnumerable<Entities.StoredFile> files);
+
+    void AddUpload(Entities.Document document, Entities.MeetingDocument meetingDocument);
 }

@@ -55,12 +55,14 @@ public sealed class DocumentFixture : IAsyncLifetime
         }
     }
 
+    /// <summary>Fails the save that adds meeting documents, i.e. the transaction after the objects are up.</summary>
     internal sealed class SaveFailureInterceptor : SaveChangesInterceptor
     {
         internal bool Enabled;
         public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,
             InterceptionResult<int> result, CancellationToken cancellationToken = default)
-            => Enabled ? throw new DbUpdateException("Injected persistence failure.") : ValueTask.FromResult(result);
+            => Enabled && eventData.Context!.ChangeTracker.Entries<MeetingDocument>().Any(e => e.State == EntityState.Added)
+                ? throw new DbUpdateException("Injected persistence failure.") : ValueTask.FromResult(result);
     }
 
     internal sealed record Scenario(Guid MeetingId, Guid Secretary, Guid Chair, Guid Member, Guid Organizer, Guid Outsider)
@@ -121,15 +123,23 @@ internal static class SampleFiles
 
     internal const string DocxMain = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
 
+    /// <param name="mainPart">Where the package relationship points; Word uses word/document.xml.</param>
+    /// <param name="byExtension">Declare the main type as the Default for .xml rather than an Override,
+    /// and start the XML parts with a UTF-8 BOM — what System.IO.Packaging and the Open XML SDK write.</param>
     internal static byte[] Docx(string mainContentType = DocxMain, bool withDocument = true, string extraTypes = "",
-        int padding = 0)
+        int padding = 0, string mainPart = "word/document.xml", bool byExtension = false, bool withRelationship = true)
     {
         using var buffer = new MemoryStream();
         using (var zip = new ZipArchive(buffer, ZipArchiveMode.Create, leaveOpen: true))
         {
-            Write(zip, "[Content_Types].xml", "<?xml version=\"1.0\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
-                + $"{extraTypes}<Override PartName=\"/word/document.xml\" ContentType=\"{mainContentType}\"/></Types>");
-            if (withDocument) Write(zip, "word/document.xml", "<w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"/>");
+            var declaration = byExtension ? $"<Default Extension=\"xml\" ContentType=\"{mainContentType}\"/>"
+                : $"<Override PartName=\"/{mainPart}\" ContentType=\"{mainContentType}\"/>";
+            Write(zip, "[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"utf-8\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
+                + $"{extraTypes}{declaration}</Types>", byExtension);
+            if (withRelationship)
+                Write(zip, "_rels/.rels", "<?xml version=\"1.0\" encoding=\"utf-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
+                    + $"<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"{mainPart}\"/></Relationships>", byExtension);
+            if (withDocument) Write(zip, mainPart, "<w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"/>");
             for (var i = 0; i < padding; i++) zip.CreateEntry($"pad/{i}");
         }
         return buffer.ToArray();
@@ -137,9 +147,9 @@ internal static class SampleFiles
 
     internal static byte[] Png() => [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0x0D, 0x49, 0x48, 0x44, 0x52];
 
-    private static void Write(ZipArchive zip, string name, string content)
+    private static void Write(ZipArchive zip, string name, string content, bool bom = false)
     {
-        using var writer = new StreamWriter(zip.CreateEntry(name).Open());
+        using var writer = new StreamWriter(zip.CreateEntry(name).Open(), new UTF8Encoding(bom));
         writer.Write(content);
     }
 }
@@ -151,6 +161,8 @@ internal sealed class MemoryFileStorage : IFileStorage
     internal bool Configured = true;
     internal Func<int, Task>? BeforeWrite;
     internal bool FailDelete;
+    /// <summary>Keys whose delete fails, as if the store kept refusing just those.</summary>
+    internal readonly ConcurrentDictionary<string, bool> FailDeleteFor = new();
     private int _writes;
 
     public bool IsConfigured => Configured;
@@ -170,7 +182,7 @@ internal sealed class MemoryFileStorage : IFileStorage
 
     public Task DeleteAsync(string key, CancellationToken ct)
     {
-        if (FailDelete) throw new IOException("Injected delete failure.");
+        if (FailDelete || FailDeleteFor.ContainsKey(key)) throw new IOException("Injected delete failure.");
         Objects.TryRemove(key, out _);
         return Task.CompletedTask;
     }
@@ -179,6 +191,7 @@ internal sealed class MemoryFileStorage : IFileStorage
     {
         BeforeWrite = null;
         FailDelete = false;
+        FailDeleteFor.Clear();
         Configured = true;
         _writes = 0;
     }

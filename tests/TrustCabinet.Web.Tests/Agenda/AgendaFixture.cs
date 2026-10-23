@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using TrustCabinet.Domain.Agenda;
+using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
@@ -134,7 +135,7 @@ public sealed class AgendaFixture : IAsyncLifetime
     {
         var fileId = Guid.CreateVersion7();
         var document = new MeetingDocument { MeetingId = meetingId, FileName = fileName, AddedById = uploader,
-            AddedAt = DateTimeOffset.UtcNow, StoredFile = new StoredFile { Id = fileId, StorageKey = $"stored-files/{fileId:D}",
+            AddedAt = DateTimeOffset.UtcNow, StoredFile = new StoredFile { Id = fileId, StorageKey = DocumentFileRules.StorageKey(fileId),
                 OriginalFileName = fileName, ContentType = "application/pdf", ContentSha256 = new string('a', 64), ByteSize = 10,
                 UploadedById = uploader, UploadedAt = DateTimeOffset.UtcNow } };
         if (agendaItemId is { } item) document.AgendaItemLinks.Add(new() { AgendaItemId = item });

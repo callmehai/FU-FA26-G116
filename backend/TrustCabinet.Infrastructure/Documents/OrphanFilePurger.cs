@@ -11,7 +11,8 @@ namespace TrustCabinet.Infrastructure.Documents;
 /// BR-213: deletes the object of every stored file no library row and no active meeting document
 /// points at any more, once its grace period is over, then stamps <c>PurgedAt</c>. The row stays.
 /// Nothing can start pointing at such a file again — attaching always goes through a library row —
-/// so checking once before the delete is enough.
+/// so checking once before the delete is enough. That includes the rows an upload writes before its
+/// objects (ADR-0024 §4): if the upload never committed, they are orphans like any other.
 /// </summary>
 public sealed class OrphanFilePurger(TrustCabinetDbContext db, IFileStorage storage, TimeProvider clock,
     IOptions<FileStorageOptions> options, ILogger<OrphanFilePurger> logger)
@@ -22,28 +23,37 @@ public sealed class OrphanFilePurger(TrustCabinetDbContext db, IFileStorage stor
     {
         var now = clock.GetUtcNow();
         var cutoff = now - TimeSpan.FromHours(options.Value.OrphanGracePeriodHours);
-        var orphans = await db.StoredFiles.AsNoTracking()
-            .Where(f => f.PurgedAt == null && f.UploadedAt < cutoff
-                && !db.Documents.Any(d => d.StoredFileId == f.Id)
-                && !db.MeetingDocuments.Any(d => d.StoredFileId == f.Id && d.RemovedAt == null))
-            .OrderBy(f => f.UploadedAt).Take(BatchSize)
-            .Select(f => new { f.Id, f.StorageKey })
-            .ToListAsync(ct);
-
+        // Batches until none are left. A file whose delete fails sits out the rest of this run, so
+        // it cannot keep the files behind it from ever being reached. A dead store therefore costs
+        // one failed delete per orphan per run, which is fine at this scale.
+        var failed = new List<Guid>();
         var purged = 0;
-        foreach (var orphan in orphans)
+        while (true)
         {
-            try { await storage.DeleteAsync(orphan.StorageKey, ct); }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            var orphans = await db.StoredFiles.AsNoTracking()
+                .Where(f => f.PurgedAt == null && f.UploadedAt < cutoff && !failed.Contains(f.Id)
+                    && !db.Documents.Any(d => d.StoredFileId == f.Id)
+                    && !db.MeetingDocuments.Any(d => d.StoredFileId == f.Id && d.RemovedAt == null))
+                .OrderBy(f => f.UploadedAt).Take(BatchSize)
+                .Select(f => new { f.Id, f.StorageKey })
+                .ToListAsync(ct);
+            if (orphans.Count == 0) return purged;
+
+            foreach (var orphan in orphans)
             {
-                // Left unstamped, so the next run tries again.
-                logger.LogWarning(ex, "Could not purge stored object {StorageKey}", orphan.StorageKey);
-                continue;
+                try { await storage.DeleteAsync(orphan.StorageKey, ct); }
+                // Only our own shutdown stops the run; an SDK timeout surfaces as a cancellation too.
+                catch (Exception ex) when (!ct.IsCancellationRequested)
+                {
+                    // Left unstamped, so the next run tries again.
+                    logger.LogWarning(ex, "Could not purge stored object {StorageKey}", orphan.StorageKey);
+                    failed.Add(orphan.Id);
+                    continue;
+                }
+                purged += await db.StoredFiles.Where(f => f.Id == orphan.Id && f.PurgedAt == null)
+                    .ExecuteUpdateAsync(s => s.SetProperty(f => f.PurgedAt, now).SetProperty(f => f.UpdatedAt, now), ct);
             }
-            purged += await db.StoredFiles.Where(f => f.Id == orphan.Id && f.PurgedAt == null)
-                .ExecuteUpdateAsync(s => s.SetProperty(f => f.PurgedAt, now).SetProperty(f => f.UpdatedAt, now), ct);
         }
-        return purged;
     }
 }
 
@@ -64,8 +74,13 @@ public sealed class OrphanFilePurgeWorker(IServiceScopeFactory scopes, IFileStor
                 var purged = await scope.ServiceProvider.GetRequiredService<OrphanFilePurger>().PurgeAsync(stoppingToken);
                 if (purged > 0) logger.LogInformation("Purged {Count} orphaned stored files", purged);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
+                break;
+            }
+            catch (Exception ex)
+            {
+                // Anything else, a timeout's cancellation included, must not stop the host (StopHost is the default).
                 logger.LogError(ex, "Orphan file purge failed");
             }
         }

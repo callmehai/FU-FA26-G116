@@ -31,9 +31,13 @@ Ràng buộc:
      trình duyệt.
 3. **Khoá object là `stored-files/{storedFileId}`**. Khoá không chứa tên file, ID cuộc họp hay người tải, vì tên
    object có thể lộ qua log hay bảng điều khiển của R2. Tên file chỉ nằm trong DB.
-4. **Tất cả hoặc không (BR-194, BR-286).** Backend đẩy mọi object của một lần tải lên R2 trước, rồi ghi DB trong
-   một transaction. Transaction lỗi thì xoá lại các object vừa đẩy; xoá không được thì ghi log cảnh báo kèm khoá
-   object. Không thêm trạng thái "đang tải" vào `StoredFile`.
+4. **Tất cả hoặc không (BR-194, BR-286).** Backend ghi trước các dòng `StoredFile` (chưa có `Document` hay
+   `MeetingDocument` nào trỏ tới), đẩy mọi object của lần tải lên R2, rồi ghi `Document` và `MeetingDocument`
+   trong một transaction. Lỗi thì xoá lại các object vừa đẩy. Không thêm trạng thái "đang tải" vào `StoredFile`:
+   một dòng không ai trỏ tới đã là "chưa xong", và job dọn ở mục 5 xoá object của nó sau thời gian chờ, kể cả khi
+   process chết giữa chừng. *Sửa khi review PR #128:* bản đề xuất đẩy object trước rồi mới ghi mọi dòng, nên một
+   object đẩy xong mà process chết (deploy khởi động lại container) thì không có dòng nào, job dọn không bao giờ
+   thấy.
 5. **Job dọn file mồ côi (BR-213)** xoá object trên R2 rồi ghi `PurgedAt`, giữ dòng `StoredFile` như ADR-0018 §7.
 6. **Cấu hình và bí mật.** Endpoint, tên bucket, access key và secret key đọc từ cấu hình (`dotnet user-secrets` khi
    dev, biến môi trường khi deploy), không đặt trong `appsettings.json`. Access key chỉ có quyền đọc/ghi đúng bucket
@@ -61,8 +65,9 @@ Ràng buộc:
 - **Giới hạn request.** Kestrel mặc định chỉ nhận body 30 MB; endpoint tải lên phải nâng giới hạn cho đủ 200 MB.
   Caddy mặc định không giới hạn body.
 - **CSP giữ nguyên**, vì trình duyệt không gọi thẳng R2.
-- **Có thể sót object.** Khi transaction lỗi mà xoá object cũng lỗi, object đó không có dòng `StoredFile` nên job dọn
-  không thấy. Số lượng nhỏ, có log để dọn tay. Cần dọn tự động thì job duyệt danh sách object trên R2 và so với DB.
+- **Không sót object.** Mọi object đều có dòng `StoredFile` từ trước khi được đẩy, nên dù transaction lỗi, xoá
+  lỗi hay process chết, job dọn vẫn tìm ra nó. Đổi lại, một lần tải hỏng để lại dòng `StoredFile` đã ghi
+  `PurgedAt`, như mọi tệp đã dọn.
 - **Dữ liệu cá nhân (Nghị định 13/2023/NĐ-CP).** Tài liệu cuộc họp có thể chứa dữ liệu cá nhân, mà R2 lưu ở trung tâm
   dữ liệu ngoài Việt Nam, tức là chuyển dữ liệu cá nhân ra nước ngoài. Server test của đồ án chỉ dùng dữ liệu giả. Đưa
   vào dùng thật thì đơn vị vận hành phải lập hồ sơ đánh giá tác động chuyển dữ liệu ra nước ngoài, hoặc chuyển sang kho
