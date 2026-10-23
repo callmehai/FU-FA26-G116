@@ -17,6 +17,8 @@ public class MeetingGuestInvitation : Entity
     public DateTimeOffset? RevokedAt { get; set; }
     public Guid? RevokedById { get; set; }
     public AttendanceStatus Attendance { get; set; } = AttendanceStatus.Unknown;
+    /// <summary>Incremented only by the attendance writer when the saved attendance changes.</summary>
+    public long AttendanceVersion { get; set; }
     public Guid? AttendanceRecordedById { get; set; }
     public DateTimeOffset? AttendanceRecordedAt { get; set; }
     public string InitialInvitationDeliveryKey { get; set; } = string.Empty;

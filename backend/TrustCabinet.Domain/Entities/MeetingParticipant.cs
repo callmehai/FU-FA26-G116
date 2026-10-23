@@ -41,6 +41,9 @@ public class MeetingParticipant : Entity
     /// </summary>
     public AttendanceStatus Attendance { get; set; } = AttendanceStatus.Unknown;
 
+    /// <summary>Incremented only by the attendance writer when the saved attendance changes.</summary>
+    public long AttendanceVersion { get; set; }
+
     /// <summary>The assigned secretary who recorded official attendance.</summary>
     public Guid? AttendanceRecordedById { get; set; }
     public User? AttendanceRecordedBy { get; set; }
