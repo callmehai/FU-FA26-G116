@@ -369,7 +369,7 @@ function RowActions({ row, onOpen }: { row: ParticipantRow; onOpen: (open: RowOp
           type="button"
           className="icon-button"
           aria-label={`Đổi vai trò của ${row.displayName}`}
-          title="Đổi vai trò"
+          data-tooltip="Đổi vai trò"
           onClick={() => onOpen({ kind: 'role', row: { ...row, role } })}
         >
           <Icon name="pencil" size={16} />
