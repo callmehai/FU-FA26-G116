@@ -53,6 +53,18 @@ export const inviteGuest = (meetingId: string, revision: string, invitedName: st
 export const changeAssignments = (meetingId: string, revision: string, body: AssignmentsRequest) =>
   api.put<ParticipantMutationResponse>(`${base(meetingId)}/participants/assignments`, body, ifMatch(revision))
 
+/**
+ * The Chair hands the role over in one request (UC-73): the server makes the caller a Member and the
+ * chosen assignment Chair together. 200 MSG257; 400 MSG259 when that person can no longer take it;
+ * 409 MSG260 when the caller can no longer hand it over.
+ */
+export const handOverChair = (meetingId: string, revision: string, newChairParticipantId: string) =>
+  api.post<ParticipantMutationResponse>(
+    `${base(meetingId)}/participants/chair-handover`,
+    { newChairParticipantId, confirmed: true },
+    ifMatch(revision),
+  )
+
 export const removeParticipant = (meetingId: string, revision: string, participantId: string) =>
   api.delete<ParticipantMutationResponse>(`${base(meetingId)}/participants/${participantId}`, ifMatch(revision))
 

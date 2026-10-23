@@ -1073,6 +1073,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .person { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .person .avatar { width: 36px; height: 36px; }
 .person-name { display: block; color: var(--ink); font-weight: 600; }
+/* Quiet text, not a chip that reads like a role; no space before it, so it never wraps away from the name. */
+.person-self { margin-left: 6px; color: var(--muted-ink); font-size: 13px; font-weight: 400; white-space: nowrap; }
 
 /* Sortable header: the whole label is the button; the arrow is faint until the column is active. */
 .sort-button {
@@ -2082,6 +2084,18 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 /* The roster tab: a person with their answer, and the panel's own alert under the toolbar. */
 .participant-cell { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-width: 0; }
+/* The roster re-flows by its own width, not the window's: it is narrow on a phone, beside the status
+   history at a 1024px window, and in the call room's side panel. Under 520px the role moves under the
+   name and the name gives way with an ellipsis, so the row actions stay in view without scrolling. */
+.participants-panel { container-type: inline-size; }
+.role-inline { display: none; }
+@container (max-width: 520px) {
+  .participants-panel .col-role { display: none; }
+  .participants-panel .role-inline { display: contents; }
+  .participants-panel td.cell-title { width: 100%; max-width: 0; }
+  /* The name is what people read: it wraps rather than ending in "…" (a touch screen has no tooltip). */
+  .participants-panel .person-name { white-space: normal; overflow-wrap: anywhere; }
+}
 .participants-alert { margin: 12px 16px 0; }
 .participants-skeleton-search { width: 320px; height: var(--control-height); }
 
@@ -2097,6 +2111,18 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .pick-note { margin: 0; padding: 14px 12px; color: var(--muted-ink); font-size: 14px; }
 .pick-note-error { color: var(--danger-ink); }
 .pick-role { margin-top: 16px; }
+
+/* Picking one role: a radio per row, what the role may do under its name (as AI-eCabinet). The
+   whole row is the click target, and the picked row is tinted so the choice reads at a glance. */
+.choice-list { display: flex; flex-direction: column; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.choice-list legend { margin-bottom: 8px; padding: 0; color: var(--ink); font-size: 14px; font-weight: 500; line-height: 1; }
+.choice-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
+.choice-row:hover { background: var(--surface-alt); }
+.choice-row:has(input:checked) { border-color: var(--brand); background: var(--brand-wash); }
+.choice-row input { flex: none; width: 16px; height: 16px; margin: 2px 0 0; accent-color: var(--brand); }
+.choice-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.choice-label { color: var(--ink); font-size: 14px; font-weight: 600; }
+.choice-desc { color: var(--muted-ink); font-size: 13px; }
 
 /* ---------- Placeholder screens ----------
    A screen whose backend does not exist yet: what it will do, and the endpoint it waits on. */
