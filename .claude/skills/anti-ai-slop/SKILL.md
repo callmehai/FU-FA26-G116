@@ -78,7 +78,8 @@ Run it on the screenshots of every viewport you test (1440, 1200, 390 touch):
    ```ts
    // No pills: every chip's radius is below half its height (.status is the one deliberate pill).
    const pills = await page.locator('.badge, .role-chip, [class*="chip"]:not(.status)').evaluateAll((els) =>
-     els.filter((e) => parseFloat(getComputedStyle(e).borderTopLeftRadius) >= e.getBoundingClientRect().height / 2 - 1)
+     els.filter((e) => e.getBoundingClientRect().height > 8 // skip .visually-hidden and hidden copies
+       && parseFloat(getComputedStyle(e).borderTopLeftRadius) >= e.getBoundingClientRect().height / 2 - 1)
        .map((e) => e.className))
    // Every list lines up: one left edge per kind of item.
    const lefts = (sel: string) => page.locator(sel).evaluateAll((els) =>
