@@ -542,7 +542,7 @@ deactivate MeetingPage
 | [meeting-management/](meeting-management/README.md) | UC-14 → UC-22, UC-75 |
 | [agenda-management/](agenda-management/README.md) | UC-23a → UC-23d, UC-24 → UC-26, UC-77 |
 | [meeting-participant-management/](meeting-participant-management/README.md) | UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31, UC-73 |
-| [document-management/](document-management/README.md) | UC-32a, UC-32c, UC-35, UC-74 |
+| [document-management/](document-management/README.md) | UC-32a, UC-32c, UC-33a (AF-1), UC-35, UC-74 |
 | [voting-management/](voting-management/README.md) | UC-76a, UC-76b |
 | [notification-management/](notification-management/README.md) | UC-66, UC-67a, UC-67b, UC-68 |
 

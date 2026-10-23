@@ -30,3 +30,6 @@ Trong lúc chờ, nguồn đúng là file `.txt` và ảnh `.png` cùng tên tro
 
 **23/10/2026:** đã xuất ảnh cho tab mới UC-32a, UC-32c, UC-35. Riêng UC-32c (khoảng 36 triệu pixel ở scale 2) bị
 cắt phần dưới nên xuất ở **scale 1.5**; chạy lại script toàn bộ sẽ đưa nó về scale 2 — kiểm tra ảnh không bị cắt.
+
+**23/10/2026 (SCRUM-107):** thêm tab UC-33a AF-1 *Upload Documents to Meeting* và xuất ảnh. Cũng xuất ở **scale 1.5**
+vì scale 2 bị cắt nửa dưới, như UC-32c.
