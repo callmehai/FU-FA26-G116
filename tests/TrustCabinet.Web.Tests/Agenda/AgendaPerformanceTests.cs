@@ -24,8 +24,8 @@ public sealed class AgendaPerformanceTests(AgendaFixture fixture, ITestOutputHel
         var large = await fixture.Seed(count: 50);
         await using (var db = fixture.Db())
         {
-            db.Documents.AddRange(large.Items.SelectMany(item => Enumerable.Range(0, 4).Select(n => new Document {
-                MeetingId = large.MeetingId, AgendaItemId = item, Title = $"Doc {n}", UploadedById = large.Secretary })));
+            db.MeetingDocuments.AddRange(large.Items.SelectMany(item => Enumerable.Range(0, 4).Select(n =>
+                AgendaFixture.TestDocument(large.MeetingId, $"Doc {n}", large.Secretary, item))));
             await db.SaveChangesAsync();
         }
         using var a = fixture.Client(small.Member);
@@ -52,8 +52,8 @@ public sealed class AgendaPerformanceTests(AgendaFixture fixture, ITestOutputHel
         {
             db.Users.AddRange(users);
             db.MeetingParticipants.AddRange(users.Select(u => new MeetingParticipant { MeetingId = s.MeetingId, UserId = u.Id }));
-            db.Documents.AddRange(s.Items.SelectMany(item => Enumerable.Range(0, 2).Select(n => new Document {
-                MeetingId = s.MeetingId, AgendaItemId = item, Title = $"Doc {n}", UploadedById = s.Secretary })));
+            db.MeetingDocuments.AddRange(s.Items.SelectMany(item => Enumerable.Range(0, 2).Select(n =>
+                AgendaFixture.TestDocument(s.MeetingId, $"Doc {n}", s.Secretary, item))));
             await db.SaveChangesAsync();
         }
         var clients = users.Select(u => fixture.Client(u.Id)).ToArray();

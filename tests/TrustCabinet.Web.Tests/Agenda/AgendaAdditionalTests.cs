@@ -82,7 +82,7 @@ public sealed class AgendaAdditionalTests(AgendaFixture fixture) : IClassFixture
         await AgendaDevelopmentDataSeeder.SeedAsync(db);
         Assert.Equal("User edit", (await db.Meetings.SingleAsync(m => m.Id == meeting.Id)).Title);
         Assert.Equal(2, await db.AgendaItems.CountAsync(i => i.MeetingId == meeting.Id));
-        Assert.Equal(6, await db.Documents.CountAsync(d => d.Title.EndsWith("(fixture)")));
+        Assert.Equal(6, await db.MeetingDocuments.CountAsync(d => d.FileName.EndsWith("(fixture)")));
     }
 
     [Fact]
@@ -149,7 +149,7 @@ public sealed class AgendaAdditionalTests(AgendaFixture fixture) : IClassFixture
         {
             (await db.Users.SingleAsync(u => u.Id == s.Member)).IsActive = false;
             await db.SaveChangesAsync();
-            Assert.Null((await db.Documents.SingleAsync(d => d.Id == s.DocumentId)).AgendaItemId);
+            Assert.Null(await AgendaFixture.LinkedItem(db, s.DocumentId));
         }
         await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input("New title", presenter: s.Member)), 200, "MSG61");
     }
@@ -197,19 +197,20 @@ public sealed class AgendaAdditionalTests(AgendaFixture fixture) : IClassFixture
         Guid failingDocument;
         await using (var db = fixture.Db())
         {
-            var document = new Document { MeetingId = s.MeetingId, Title = "Injected link failure", UploadedById = s.Secretary };
-            db.Documents.Add(document);
+            var document = AgendaFixture.TestDocument(s.MeetingId, "Injected link failure", s.Secretary);
+            db.MeetingDocuments.Add(document);
             await db.SaveChangesAsync();
             failingDocument = document.Id;
             await db.Database.ExecuteSqlRawAsync("""
                 CREATE FUNCTION agenda_test_fail_link() RETURNS trigger LANGUAGE plpgsql AS $$
                 BEGIN
-                    IF NEW.title = 'Injected link failure' AND NEW.agenda_item_id IS NOT NULL THEN
+                    IF EXISTS (SELECT 1 FROM meeting_documents WHERE id = NEW.meeting_document_id
+                        AND file_name = 'Injected link failure') THEN
                         RAISE EXCEPTION 'Injected association persistence failure';
                     END IF;
                     RETURN NEW;
                 END $$;
-                CREATE TRIGGER agenda_test_link_failure BEFORE UPDATE ON documents
+                CREATE TRIGGER agenda_test_link_failure BEFORE INSERT ON meeting_document_agenda_items
                     FOR EACH ROW EXECUTE FUNCTION agenda_test_fail_link();
                 """);
         }
@@ -220,13 +221,13 @@ public sealed class AgendaAdditionalTests(AgendaFixture fixture) : IClassFixture
             await AssertCode(await client.PostAsJsonAsync(s.Url, Input(documents: [s.DocumentId, failingDocument])), 503, "MSG68");
             await using var check = fixture.Db();
             Assert.Equal(3, await check.AgendaItems.CountAsync(i => i.MeetingId == s.MeetingId));
-            Assert.All(await check.Documents.Where(d => d.MeetingId == s.MeetingId).ToArrayAsync(), d => Assert.Null(d.AgendaItemId));
+            Assert.False(await check.MeetingDocumentAgendaItems.AnyAsync(l => l.MeetingDocument.MeetingId == s.MeetingId));
             Assert.Equal(events, fixture.Events.Count);
         }
         finally
         {
             await using var cleanup = fixture.Db();
-            await cleanup.Database.ExecuteSqlRawAsync("DROP TRIGGER agenda_test_link_failure ON documents; DROP FUNCTION agenda_test_fail_link();");
+            await cleanup.Database.ExecuteSqlRawAsync("DROP TRIGGER agenda_test_link_failure ON meeting_document_agenda_items; DROP FUNCTION agenda_test_fail_link();");
         }
     }
 

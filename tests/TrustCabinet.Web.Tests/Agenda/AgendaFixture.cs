@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using TrustCabinet.Domain.Agenda;
+using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
@@ -123,13 +124,28 @@ public sealed class AgendaFixture : IAsyncLifetime
         var items = Enumerable.Range(0, count).Select(i => new AgendaItem { MeetingId = meeting.Id,
             Title = $"Mục {i + 1}", Position = 1 + i * 3, PlannedDurationMinutes = 20 }).ToArray();
         db.AgendaItems.AddRange(items);
-        var document = new Document { MeetingId = meeting.Id, Title = "Tài liệu nội bộ", UploadedById = users[0].Id };
-        db.Documents.Add(document);
-        db.DocumentVersions.Add(new() { DocumentId = document.Id, VersionNumber = 1, UploadedById = users[0].Id,
-            FileName = "test.txt", StoragePath = "private/test.txt", ContentType = "text/plain", ContentSha256 = new string('a', 64), ByteSize = 10 });
+        var document = TestDocument(meeting.Id, "Tài liệu nội bộ", users[0].Id);
+        db.MeetingDocuments.Add(document);
         await db.SaveChangesAsync();
         return new(meeting.Id, users[0].Id, users[1].Id, users[2].Id, users[3].Id, users[4].Id, items.Select(i => i.Id).ToArray(), document.Id);
     }
+
+    /// <summary>A meeting document row with its stored file; no object exists in any store.</summary>
+    internal static MeetingDocument TestDocument(Guid meetingId, string fileName, Guid uploader, Guid? agendaItemId = null)
+    {
+        var fileId = Guid.CreateVersion7();
+        var document = new MeetingDocument { MeetingId = meetingId, FileName = fileName, AddedById = uploader,
+            AddedAt = DateTimeOffset.UtcNow, StoredFile = new StoredFile { Id = fileId, StorageKey = DocumentFileRules.StorageKey(fileId),
+                OriginalFileName = fileName, ContentType = "application/pdf", ContentSha256 = new string('a', 64), ByteSize = 10,
+                UploadedById = uploader, UploadedAt = DateTimeOffset.UtcNow } };
+        if (agendaItemId is { } item) document.AgendaItemLinks.Add(new() { AgendaItemId = item });
+        return document;
+    }
+
+    /// <summary>The agenda item a document is linked to, or null for a general document.</summary>
+    internal static Task<Guid?> LinkedItem(TrustCabinetDbContext db, Guid documentId)
+        => db.MeetingDocumentAgendaItems.Where(l => l.MeetingDocumentId == documentId)
+            .Select(l => (Guid?)l.AgendaItemId).SingleOrDefaultAsync();
 
     internal static string Token(Guid actor, DateTimeOffset? expires = null) => new JwtSecurityTokenHandler().WriteToken(
         new JwtSecurityToken("TrustCabinet", "TrustCabinet", [new Claim("sub", actor.ToString())],

@@ -8,7 +8,7 @@ này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-lightsail.md).
 > **Đây là môi trường test, không phải production.** App chạy ở chế độ `Development`: tự migrate,
 > tự seed tài khoản demo với mật khẩu công khai trong repo, và trả stack trace khi lỗi. Ai có URL
 > cũng đăng nhập được bằng quyền quản trị. **Chỉ nhập dữ liệu giả** — không tải lên tài liệu, ghi âm
-> hay thông tin cá nhân thật (Nghị định 13/2023/NĐ-CP).
+> hay thông tin cá nhân thật (Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15).
 
 ## Dành cho người test
 
@@ -236,6 +236,32 @@ Mặc định tắt. Điền các biến `SMTP_*` trong `deploy/.env` (xem
 [note SMTP](../docs/03-api/07-gui-email-thu-moi-note-cai-dat-may-moi.md#4-cấu-hình-smtp)), đặt
 `SMTP_ENABLED=true`, rồi `docker compose -f deploy/docker-compose.yml up -d`. Email chỉ đến được
 những người dùng có địa chỉ thật — các tài khoản `@trustcabinet.local` thì không.
+
+### 9. Kho tệp tài liệu trên Cloudflare R2
+
+Tải tài liệu lên cuộc họp lưu byte trên R2 ([ADR-0024](../docs/05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)).
+Chưa cấu hình thì app vẫn chạy, nút tải lên báo `MSG166`.
+
+1. Cloudflare Dashboard → **R2 Object Storage** → bật R2 (cần thêm phương thức thanh toán, gói miễn phí vẫn đủ
+   cho server test) → **Create bucket** `trustcabinet-docs`, Location: **Provide a location hint → Asia-Pacific
+   (APAC)** (server test ở Singapore). Vị trí không đổi được sau khi tạo, và R2 **chỉ nhận hint ở lần đầu một tên
+   bucket được tạo**: xoá rồi tạo lại cùng tên thì vẫn ra vị trí cũ, nên muốn đổi vị trí phải dùng tên mới
+   (`trustcabinet-test` đã bị khoá ở ENAM). Xem **Settings → Location** để chắc chắn là APAC. **Không** bật Public
+   access hay custom domain.
+2. **R2 → Manage API tokens → Create API token**: quyền *Object Read & Write*, áp dụng cho **chỉ** bucket
+   `trustcabinet-docs`. Lưu lại Access Key ID, Secret Access Key và endpoint
+   `https://<account-id>.r2.cloudflarestorage.com` (secret chỉ hiện một lần).
+3. Trên server, thêm vào `deploy/.env` rồi `docker compose -f deploy/docker-compose.yml up -d`:
+
+   ```bash
+   R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+   R2_BUCKET=trustcabinet-docs
+   R2_ACCESS_KEY_ID=...
+   R2_SECRET_ACCESS_KEY=...
+   ```
+
+Trình duyệt không gọi thẳng R2 nên CSP trong `Caddyfile` giữ nguyên. Chỉ tải lên dữ liệu giả: R2 lưu ngoài Việt
+Nam, tức là chuyển dữ liệu cá nhân xuyên biên giới (Luật 91/2025/QH15 Điều 20, xem ADR-0024).
 
 ## Sau khi bảo vệ xong
 
