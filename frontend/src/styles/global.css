@@ -1073,6 +1073,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .person { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .person .avatar { width: 36px; height: 36px; }
 .person-name { display: block; color: var(--ink); font-weight: 600; }
+/* Quiet text, not a chip that reads like a role; no space before it, so it never wraps away from the name. */
+.person-self { margin-left: 6px; color: var(--muted-ink); font-size: 13px; font-weight: 400; white-space: nowrap; }
 
 /* Sortable header: the whole label is the button; the arrow is faint until the column is active. */
 .sort-button {
