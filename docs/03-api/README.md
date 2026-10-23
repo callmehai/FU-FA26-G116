@@ -6,6 +6,8 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 
 Đã có:
 
+- [`10-diem-danh.md`](10-diem-danh.md) — Backend SCRUM-26 / UC-31; [bàn giao FE/BA](10-diem-danh-ban-giao.md), [kết quả kiểm thử](10-diem-danh-ket-qua-kiem-thu.md). Version riêng từng người, batch atomic, realtime theo quyền roster.
+
 - [`08-chuong-trinh-nghi-su.md`](08-chuong-trinh-nghi-su.md) — contract Backend SCRUM-25, UC-23a–d/24/25/26; [bàn giao FE và kiểm thử](08-chuong-trinh-nghi-su-ban-giao.md).
 - [`08-agenda-contract-tich-hop-guest-uc04.md`](08-agenda-contract-tich-hop-guest-uc04.md) — adapter identity/session, quyền đọc Agenda và hub Guest; phần UC-04 cần triển khai để tích hợp.
 

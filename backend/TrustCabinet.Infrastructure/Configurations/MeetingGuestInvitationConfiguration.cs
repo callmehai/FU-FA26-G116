@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Attendance;
 
 namespace TrustCabinet.Infrastructure.Configurations;
 
@@ -9,10 +10,12 @@ public sealed class MeetingGuestInvitationConfiguration : IEntityTypeConfigurati
 {
     public void Configure(EntityTypeBuilder<MeetingGuestInvitation> b)
     {
+        b.Property(p => p.AttendanceVersion).HasDefaultValue(0L).IsRequired();
         b.Property(x => x.InvitedName).HasMaxLength(200).IsRequired();
         b.Property(x => x.Email).HasColumnType("citext").HasMaxLength(256).IsRequired();
         b.Property(x => x.Response).HasConversion<string>().HasMaxLength(32);
-        b.Property(x => x.Attendance).HasConversion<string>().HasMaxLength(32).HasDefaultValue(AttendanceStatus.Unknown);
+        b.Property(x => x.Attendance).HasConversion(value => value.ToString(), value => AttendanceRules.ReadStored(value))
+            .HasMaxLength(32).HasDefaultValue(AttendanceStatus.Unknown);
         b.Property(x => x.SensitivityAtInvitation).HasConversion<string>().HasMaxLength(32);
         b.Property(x => x.InitialInvitationDeliveryKey).HasMaxLength(256);
         b.HasOne(x => x.Meeting).WithMany().HasForeignKey(x => x.MeetingId).OnDelete(DeleteBehavior.Restrict);

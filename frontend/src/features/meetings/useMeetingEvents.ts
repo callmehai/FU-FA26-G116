@@ -1,9 +1,16 @@
 import { HubConnectionState, type HubConnection } from '@microsoft/signalr'
 import { useEffect, useRef } from 'react'
 import { createHubConnection, retryDelay } from '../../api/hubs'
+import type { AttendanceChangedEvent } from '../../types/attendance'
 import type { ParticipantsChangedEvent } from '../../types/participant'
 
-type Listener = () => void
+/** What the meeting's hub announces; each only says "re-read". */
+export type MeetingEvent = 'participantsChanged' | 'attendanceChanged'
+
+interface Listener {
+  events: readonly MeetingEvent[]
+  notify: () => void
+}
 
 interface Channel {
   listeners: Set<Listener>
@@ -16,10 +23,10 @@ interface Channel {
 const channels = new Map<string, Channel>()
 
 /**
- * Opens the connection and joins the meeting's group. Events only say "re-read": every listener is
- * told on `participantsChanged` (each event once, by id — delivery is at least once), and again
- * once joined and whenever the connection comes back after a gap, because events pushed before the
- * join are not replayed.
+ * Opens the connection and joins the meeting's group. Events only say "re-read": a listener is told
+ * on the events it asked for (each event once, by id — delivery is at least once), and every
+ * listener again once joined and whenever the connection comes back after a gap, because events
+ * pushed before the join are not replayed.
  */
 function open(meetingId: string): Channel {
   const connection: HubConnection = createHubConnection('/hubs/meetings')
@@ -28,7 +35,8 @@ function open(meetingId: string): Channel {
   let closed = false
   let attempt = 0
   let retryTimer: number | undefined
-  const notify = () => listeners.forEach((listener) => listener())
+  const notify = (event?: MeetingEvent) =>
+    listeners.forEach((listener) => (!event || listener.events.includes(event)) && listener.notify())
 
   // A meeting the caller can no longer read refuses the join; the next re-read shows why.
   const join = () =>
@@ -37,12 +45,14 @@ function open(meetingId: string): Channel {
       () => false,
     )
 
-  connection.on('participantsChanged', (event: ParticipantsChangedEvent) => {
-    if (event.meetingId.toLowerCase() !== meetingId.toLowerCase() || seen.has(event.eventId)) return
-    seen.add(event.eventId)
-    notify()
-  })
-  connection.onreconnected(() => void join().then(notify))
+  for (const name of ['participantsChanged', 'attendanceChanged'] as const) {
+    connection.on(name, (event: ParticipantsChangedEvent | AttendanceChangedEvent) => {
+      if (event.meetingId.toLowerCase() !== meetingId.toLowerCase() || seen.has(event.eventId)) return
+      seen.add(event.eventId)
+      notify(name)
+    })
+  }
+  connection.onreconnected(() => void join().then(() => notify()))
   connection.onclose(() => {
     if (!closed) schedule()
   })
@@ -112,14 +122,25 @@ function subscribe(meetingId: string, listener: Listener) {
   }
 }
 
+const ROSTER_EVENTS: readonly MeetingEvent[] = ['participantsChanged']
+
 /**
- * Calls `onChange` whenever the meeting's roster changes (SCRUM-20) or the connection recovers from
- * a gap. The caller re-reads what it shows; it never trusts an event's payload as data.
+ * Calls `onChange` whenever one of `events` arrives — by default the roster changing (SCRUM-20) —
+ * or the connection recovers from a gap. The caller re-reads what it shows; it never trusts an
+ * event's payload as data.
  */
-export function useMeetingEvents(meetingId: string, onChange: () => void) {
+export function useMeetingEvents(
+  meetingId: string,
+  onChange: () => void,
+  events: readonly MeetingEvent[] = ROSTER_EVENTS,
+) {
   const onChangeRef = useRef(onChange)
   useEffect(() => {
     onChangeRef.current = onChange
   })
-  useEffect(() => subscribe(meetingId, () => onChangeRef.current()), [meetingId])
+  const key = events.join()
+  useEffect(
+    () => subscribe(meetingId, { events: key.split(',') as MeetingEvent[], notify: () => onChangeRef.current() }),
+    [meetingId, key],
+  )
 }

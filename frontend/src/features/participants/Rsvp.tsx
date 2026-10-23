@@ -52,7 +52,7 @@ export function RsvpButtons({
     <div className="rsvp-buttons" role="group" aria-labelledby={labelledBy}>
       <button
         type="button"
-        className={`btn btn-primary btn-sm btn-cta${ping ? ' btn-ping' : ''}`}
+        className={`btn btn-accept btn-sm btn-cta${ping ? ' btn-ping' : ''}`}
         disabled={pending !== null}
         onClick={() => send('Accepted')}
       >
