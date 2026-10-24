@@ -16,7 +16,8 @@ audit and calls. There is still **no authentication and no business endpoint** �
 nothing reads or writes them yet. Do not assume domain code exists somewhere — check or ask first.
 
 The model is documented in [docs/02-design/02-erd.md](docs/02-design/02-erd.md), which also lists
-what deliberately has no table (task tracking, voiceprints, organisations, org units). Read it before adding
+what deliberately has no table (task tracking, organisations, org units; voiceprints were excluded
+until they moved into scope — see "Watch out"). Read it before adding
 an entity.
 
 **Before working on any feature, read [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md)
@@ -284,10 +285,18 @@ Details in [docs/DEVELOPMENT_WORKFLOW.md §2.1](docs/DEVELOPMENT_WORKFLOW.md#21-
 
 ## Watch out
 
-- Some features are deliberately out of scope (task/action-item tracking, voiceprint
-  identification, real HSM signing, air-gapped deployment, eOffice integration) — see the README.
-  Do not implement them unprompted. TrustCabinet stops at the approved minutes: it never tracks
-  assignees, due dates or completion state.
+- Some features are deliberately out of scope (task/action-item tracking, real HSM signing,
+  air-gapped deployment, eOffice integration) — see the README. Do not implement them unprompted.
+  TrustCabinet stops at the approved minutes: it never tracks assignees, due dates or completion
+  state.
+- **Voice identification (voiceprint) is now in scope**, reversing the earlier exclusion; ASR
+  (speech-to-text) comes first, speaker identification after it. The speech and minutes-drafting
+  models must run **locally**: no external API (security) and no company-hosted model (supervisor
+  guidance, 22/10/2026). Until the ADR for this lands, the old boundary is still in the code:
+  `SpeakerLabel` only, a test in `DatabaseModelTests` (`No_voiceprint_is_stored_anywhere`) that
+  blocks any voiceprint column, and the "no voiceprint" notes in `TranscriptSegment.cs`, the ERD and
+  the README. When implementing, write the ADR first, then update those places and that test in the
+  same change; a voiceprint is biometric data, so state consent, retention and deletion explicitly.
 - **One organisation, no org units.** There is no `organizations` table, no multi-tenancy, and no
   `org_units` — no department hierarchy, no unit on a user or a meeting, and no "invite the whole
   unit". Sign-in is email + password or Google; no separate IdP. Both are settled in
