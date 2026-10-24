@@ -5,6 +5,8 @@ import { errorMessage, isApiError } from '../../lib/errors'
 import { JUST_SIGNED_IN, routes } from '../../lib/routes'
 import { GoogleSignInButton } from './GoogleSignInButton'
 import { useAuth } from './useAuth'
+import { Icon } from '../../components/Icon'
+import { RevealToggle } from '../../components/RevealToggle'
 
 interface LoginError {
   message: string
@@ -45,6 +47,7 @@ export function LoginPage() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [pending, setPending] = useState<'password' | 'google' | null>(null)
   const [error, setError] = useState<LoginError | null>(null)
 
@@ -137,18 +140,25 @@ export function LoginPage() {
             />
           </label>
 
-          <label className="field">
-            <span>Mật khẩu</span>
-            <input
-              type="password"
-              name="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-            />
-          </label>
+          {/* Not a wrapping <label>: the reveal button inside would become part of its label. */}
+          <div className="field">
+            <label htmlFor="login-password">Mật khẩu</label>
+            <div className="input-reveal">
+              <input
+                id="login-password"
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                spellCheck={false}
+              />
+              <RevealToggle shown={showPassword} onToggle={() => setShowPassword((v) => !v)} />
+            </div>
+          </div>
 
-          <button className="btn btn-primary btn-block" type="submit" disabled={pending !== null}>
+          <button className="btn btn-primary btn-block btn-cta" type="submit" disabled={pending !== null}>
+            <Icon name="logIn" size={18} />
             {pending === 'password' ? 'Đang đăng nhập…' : 'Đăng nhập bằng mật khẩu'}
           </button>
         </form>

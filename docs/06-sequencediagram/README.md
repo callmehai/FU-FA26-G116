@@ -542,13 +542,13 @@ deactivate MeetingPage
 | [meeting-management/](meeting-management/README.md) | UC-14 → UC-22, UC-75 |
 | [agenda-management/](agenda-management/README.md) | UC-23a → UC-23d, UC-24 → UC-26, UC-77 |
 | [meeting-participant-management/](meeting-participant-management/README.md) | UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31, UC-73 |
-| [document-management/](document-management/README.md) | UC-74 |
+| [document-management/](document-management/README.md) | UC-32a, UC-32c, UC-33a (AF-1), UC-35, UC-74 |
 | [voting-management/](voting-management/README.md) | UC-76a, UC-76b |
 | [notification-management/](notification-management/README.md) | UC-66, UC-67a, UC-67b, UC-68 |
 
 Xuất PNG: `node scripts/export-diagrams.js docs/06-sequencediagram/<thư mục hoặc file>` (cần truy cập `sequencediagram.org`).
 
-Đồng bộ ảnh `.drawio.png` từ 44 tab UC của file draw.io gộp (bỏ qua tab index):
+Đồng bộ ảnh `.drawio.png` từ 53 tab UC của file draw.io gộp (bỏ qua tab index):
 `python scripts/sync_sequence_drawio_png.py` (cần cài Draw.io; có thể đặt `DRAWIO_EXECUTABLE` nếu CLI chưa có trong PATH).
 
 UC09 và UC13 bổ sung ngày 13/10/2026: source + PNG theo đặc tả hiện hành. Đây là thiết kế đích; unlock/lock store và audit-read endpoint chưa có code. Không tự cấp message codes mới. Quy tắc lưu lock/audit nguyên tử trong UC09 là đề xuất kỹ thuật để giữ audit evidence nhất quán khi update thất bại.

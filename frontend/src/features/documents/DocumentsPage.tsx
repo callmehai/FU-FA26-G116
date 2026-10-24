@@ -8,10 +8,7 @@ import { PageHeader } from '../../components/PageHeader'
 export function DocumentsPage() {
   return (
     <>
-      <PageHeader
-        title="Kho tài liệu"
-        description="Tài liệu riêng của bạn — chỉ bạn thấy và quản lý được những gì ở đây."
-      />
+      <PageHeader title="Kho tài liệu" />
 
       <div className="card placeholder-card">
         <span className="placeholder-icon">

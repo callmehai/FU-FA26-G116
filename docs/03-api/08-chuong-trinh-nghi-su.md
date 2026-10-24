@@ -16,7 +16,7 @@ Reorder nhận `{orderVersion,pendingItemIds}`. Token SHA-256 của danh sách `
 
 401 chưa đăng nhập; 403 inactive hoặc thiếu meeting role; 404 body rỗng cho meeting/item không tồn tại hoặc không được đọc; 409 conflict nghiệp vụ; 400/MSG66 input; 415/MSG34 Content-Type; 413/MSG87 body lớn; 503/MSG68–71,75–76 persistence. Chi tiết mã xem catalogue.
 
-Mỗi mutation khóa meeting trước, kiểm lại actor/assignment/status dưới lock, lưu item/document trong một transaction ReadCommitted. Các writer participant/document/lifecycle phải dùng cùng khóa. Current model loại assignment Delegated; SCRUM-20 phải cập nhật policy khi thêm Current/Removed. Document IDs hiện là **Document ID**, không phải MeetingDocument ID. Không chuyển tài liệu từ item khác; bỏ chọn chỉ SetNull.
+Mỗi mutation khóa meeting trước, kiểm lại actor/assignment/status dưới lock, lưu item/document trong một transaction ReadCommitted. Các writer participant/document/lifecycle phải dùng cùng khóa. Current model loại assignment Delegated; SCRUM-20 phải cập nhật policy khi thêm Current/Removed. Từ SCRUM-107, document IDs là **MeetingDocument ID** (tài liệu đang hiệu lực của cuộc họp, xem [11-tai-lieu-cuoc-hop.md](11-tai-lieu-cuoc-hop.md)); liên kết nằm ở bảng `meeting_document_agenda_items`. Agenda vẫn giữ mỗi tài liệu tối đa một mục; không chuyển tài liệu từ item khác; bỏ chọn chỉ xoá dòng liên kết, tài liệu vẫn trong cuộc họp.
 
 ## Ví dụ response
 
@@ -54,7 +54,7 @@ Ví dụ snapshot (các ID minh họa; `orderVersion` luôn lấy nguyên token 
 
 ## Realtime và điểm tích hợp
 
-Theo ADR-0016, Guest đã xác minh và còn quyền theo lời mời đọc tài liệu cuộc họp như Member. SCRUM-25 đã có đường đọc snapshot và hub qua `IAgendaGuestIdentityResolver` / `IAgendaGuestAccess`, group tách theo invitation/session và kiểm quyền lại mỗi request/lần phát. Adapter mặc định từ chối; UC-04/SCRUM-20 cần cung cấp OTP/session/repository thật và thay đăng ký DI theo [contract tích hợp Guest](08-agenda-contract-tich-hop-guest-uc04.md). Không dùng `MeetingRole.Guest` của model User cũ hoặc tên presenter tự nhập làm bằng chứng xác minh. Các test adapter chứng minh phía Agenda, chưa phải nghiệm thu UC-04 end-to-end.
+Theo ADR-0016, Guest đã xác minh và còn quyền theo lời mời đọc tài liệu cuộc họp như Member. SCRUM-25 đã có đường đọc snapshot và hub qua `IMeetingGuestIdentityResolver` / `IAgendaGuestAccess`, group tách theo invitation/session và kiểm quyền lại mỗi request/lần phát. Adapter mặc định từ chối; UC-04/SCRUM-20 cần cung cấp OTP/session/repository thật và thay đăng ký DI theo [contract tích hợp Guest](08-agenda-contract-tich-hop-guest-uc04.md). Không dùng `MeetingRole.Guest` của model User cũ hoặc tên presenter tự nhập làm bằng chứng xác minh. Các test adapter chứng minh phía Agenda, chưa phải nghiệm thu UC-04 end-to-end.
 
 Hub `/hubs/meetings`: `JoinMeeting(meetingId)`, `LeaveMeeting(meetingId)`. Event `agendaChanged`: eventId, meetingId, changeType (Created/Updated/Deleted/Reordered/Started/Completed/MeetingEnded), agendaItemId?, title?, occurredAt. Publisher kiểm lại active user và MeetingReadPolicy trước mỗi lần gửi tới group meeting/user. Sau commit mới gửi; lỗi push không đổi thành công lưu. Không bảo đảm durable delivery: FE phải resync.
 
@@ -77,3 +77,5 @@ Publisher nhận cancellation sau 2 giây, nhưng request vẫn chờ task publi
 | 26 | GET/hub | — | Visibility, response shape, event isolation/revocation/reconnect |
 
 Minimal API AgendaEndpoints tương ứng Controller trong diagram; AgendaService điều phối; IMeetingRepository/MeetingReadPolicy được tái sử dụng. AgendaDocumentRepository là adapter model tài liệu hiện tại. Không thêm Application project.
+
+Cập nhật review 21/10/2026: Agenda, Participants và MeetingHub dùng chung `MeetingGuestSession` và `IMeetingGuestIdentityResolver`; UC-04 chỉ đăng ký một resolver. Các port kiểm quyền theo feature vẫn tách riêng, dùng cùng invitation/session storage. Tên group Guest được tạo duy nhất bằng `MeetingHub.GuestGroup`.

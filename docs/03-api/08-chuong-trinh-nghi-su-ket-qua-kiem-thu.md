@@ -2,6 +2,8 @@
 
 Ngày kiểm tra: 13/10/2026 (UTC+7). Branch `codex/scrum25-backend-agenda`, tách từ `origin/main` tại `ee27fb1`. Tài liệu participant ở `0de8254` chỉ được tham chiếu, không đưa commit participant vào branch.
 
+Ghi chú 21/10/2026: tên identity/resolver trong báo cáo lịch sử bên dưới đã được hợp nhất thành `MeetingGuestSession` / `IMeetingGuestIdentityResolver` dùng chung Agenda và Participants; xem [contract hiện hành](08-agenda-contract-tich-hop-guest-uc04.md).
+
 ## Thay đổi thực tế
 
 ### Bổ sung điểm tích hợp Guest trong phạm vi SCRUM-25 (13/10/2026)

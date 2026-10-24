@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TrustCabinet.Infrastructure.Documents;
 
 namespace TrustCabinet.Web.Tests;
 
@@ -35,6 +36,25 @@ public class TrustCabinetApiFactory : WebApplicationFactory<Program>
             if (notificationWorker is not null)
             {
                 services.Remove(notificationWorker);
+            }
+
+            // Same for the call room reconciliation: it would reach for a real LiveKit.
+            var callRoomJanitor = services.SingleOrDefault(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService)
+                && descriptor.ImplementationType == typeof(CallRoomJanitor));
+            if (callRoomJanitor is not null)
+            {
+                services.Remove(callRoomJanitor);
+            }
+
+            // And the orphan purge: a test that swaps in a configured store must decide itself when
+            // files are purged, not race a background run.
+            var orphanPurge = services.SingleOrDefault(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService)
+                && descriptor.ImplementationType == typeof(OrphanFilePurgeWorker));
+            if (orphanPurge is not null)
+            {
+                services.Remove(orphanPurge);
             }
         });
     }

@@ -10,18 +10,16 @@ public class DocumentCommentConfiguration : IEntityTypeConfiguration<DocumentCom
     {
         builder.Property(c => c.Body).HasMaxLength(4000).IsRequired();
 
-        builder.HasIndex(c => new { c.DocumentId, c.CreatedAt });
+        builder.HasIndex(c => new { c.MeetingDocumentId, c.CreatedAt });
 
-        builder.HasOne(c => c.Document)
+        // A comment is written either by an internal user or by a Guest, never both or neither.
+        builder.ToTable(t => t.HasCheckConstraint(
+            "ck_document_comments_one_author", "num_nonnulls(author_id, guest_invitation_id) = 1"));
+
+        builder.HasOne(c => c.MeetingDocument)
             .WithMany(d => d.Comments)
-            .HasForeignKey(c => c.DocumentId)
+            .HasForeignKey(c => c.MeetingDocumentId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        // Restrict: a comment written against version 2 keeps pointing at version 2.
-        builder.HasOne(c => c.DocumentVersion)
-            .WithMany()
-            .HasForeignKey(c => c.DocumentVersionId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         // Restrict on the self-reference: deleting a comment that has replies must be a deliberate
         // decision in code, not something the database does silently to a whole thread.
@@ -33,6 +31,11 @@ public class DocumentCommentConfiguration : IEntityTypeConfiguration<DocumentCom
         builder.HasOne(c => c.Author)
             .WithMany()
             .HasForeignKey(c => c.AuthorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(c => c.GuestInvitation)
+            .WithMany()
+            .HasForeignKey(c => c.GuestInvitationId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

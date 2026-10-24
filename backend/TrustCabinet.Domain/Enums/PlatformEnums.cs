@@ -15,6 +15,8 @@ public enum NotificationType
     MinutesWaitingApproval,
     MinutesIssued,
     DocumentAdded,
+    MeetingRoleChanged,
+    MeetingParticipantRemoved,
 }
 
 /// <summary>Delivery state of a queued email (SCRUM-15).</summary>

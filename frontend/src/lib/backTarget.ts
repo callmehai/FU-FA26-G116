@@ -36,9 +36,3 @@ export function useBackTarget(fallback: BackTarget): BackTarget {
   }
   return fallback
 }
-
-/** Forwards the back target a page was opened with, for a link that goes one level deeper. */
-export function useForwardedBackState(): BackState | undefined {
-  const state = useLocation().state as BackState | null
-  return state?.back ? { back: state.back } : undefined
-}

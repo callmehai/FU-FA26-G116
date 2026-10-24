@@ -49,8 +49,10 @@
   --sidebar-mid: #375aa6;
   --sidebar-bottom: #304f97;
   --sidebar-ink-soft: #e1eaf6;
-  --sidebar-hover: rgb(255 255 255 / 12%);
-  --sidebar-active: rgb(255 255 255 / 22%);
+  /* Hover and the current item darken the blue: a white wash lifts it until white text drops
+     under 4.5:1 (sloplint A1 measured 4.0:1 on the active item). */
+  --sidebar-hover: rgb(15 23 42 / 14%);
+  --sidebar-active: rgb(15 23 42 / 25%);
   --sidebar-line: rgb(255 255 255 / 16%);
 
   --shadow-sm: 0 1px 2px #1a24330f;
@@ -60,9 +62,42 @@
   --sidebar-width: 256px;
   --sidebar-width-collapsed: 72px;
   --control-height: 40px;
+  /* Call room (SCRUM-41): the video stage is dark like every call app, the chrome stays light. */
+  --stage-bg: #12233b;
+  --stage-tile: #1d3150;
+  /* The control panel under the stage, as in Meet: a raised plate, buttons a step lighter, and
+     the dark device menus that open from it. */
+  --stage-panel: #1a2d4a;
+  --stage-control: #2a4266;
+  --stage-control-hover: #36517d;
+  --stage-line: #3d5780;
+  --stage-ink: #e6ecf5;
+  --stage-ink-soft: #bccadc;
+  --stage-accent: #a9c8ff;
+  /* A microphone or camera switched off, in Meet's colours: a pale red button with a deep red icon,
+     its arrow end deep red with a pale red arrow. */
+  --stage-off-bg: #f9dedc;
+  --stage-off-ink: #601410;
+  /* The pre-join switches when on, Meet's pale grey-blue over the picture. */
+  --stage-toggle-on: #dde3ea;
+  /* The microphone and camera pills when on, as in Meet: the arrow end a step darker than the
+     buttons, its arrow a muted grey-blue. */
+  --stage-control-dim: #213656;
+  --stage-ink-dim: #8d9db6;
+  /* Motion of the control panel, measured on Google Meet: a damped spring, about 9% overshoot,
+     settled in ~360ms. Browsers without linear() get a single-overshoot curve instead. */
+  --ease-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+  /* Material's emphasised deceleration, for what should not wobble (a menu popping up). */
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  /* Name plates over a video tile. */
+  --stage-scrim: #0009;
+  --speaking: #22c55e;
 
   /* Soft status chips. Each pair is background / text. */
   --chip-slate-bg: #f1f3f6;   --chip-slate-fg: #4b5563;
+  /* Meeting roles (AI-eCabinet's .d-role): a tint per role, never solid. */
+  --role-chair-bg: #e3e9f2;   --role-chair-fg: var(--brand);
+  --role-secretary-bg: #ddf1f2; --role-secretary-fg: #0e6370;
   --chip-amber-bg: #fff6e0;   --chip-amber-fg: #8a5300;
   --chip-red-bg: #fdeeee;     --chip-red-fg: #9a1c22;
   --chip-emerald-bg: #e3f4ea; --chip-emerald-fg: #0e6b44;
@@ -90,6 +125,12 @@
   --accent-amber: #b26b00;
   --accent-emerald: #0e6b44;
   --wash-amber: #fffaf0;
+}
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --ease-spring: linear(0, 0.066, 0.222, 0.414, 0.604, 0.77, 0.901, 0.994, 1.052, 1.081, 1.089, 1.083,
+      1.069, 1.052, 1.035, 1.02, 1.009, 1.001, 0.995, 0.993, 0.992, 0.993, 0.994, 0.995, 1);
+  }
 }
 
 /* ---------- Base ---------- */
@@ -120,7 +161,8 @@ code {
   border-radius: 6px;
   background: var(--surface-alt);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: .88em;
+  /* .88em of 13px body text came out at 11.4px; 12px is the floor (ADR-0012). */
+  font-size: max(.88em, 12px);
 }
 
 /* ---------- Buttons ---------- */
@@ -128,7 +170,7 @@ code {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 7px;
   height: var(--control-height);
   padding: 0 16px;
   border: 1px solid transparent;
@@ -138,9 +180,17 @@ code {
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
+  transition: background-color .15s, border-color .15s, color .15s, box-shadow .15s, translate .15s;
 }
+.btn .icon { flex: none; }
 
-.btn:disabled { opacity: .5; cursor: not-allowed; }
+/* Disabled as AI-eCabinet greys it: a solid grey, not a faded copy of the colour, so it never reads
+   as a lighter primary. */
+.btn:disabled { cursor: not-allowed; }
+.btn-primary:disabled { background: var(--line); border-color: var(--control-line); color: var(--muted-ink); }
+.btn-outline:disabled { background: var(--surface-alt); color: var(--faint-ink); }
+.btn-ghost:disabled { color: var(--faint-ink); }
+.btn-danger:disabled { opacity: .55; }
 
 .btn-primary { background: var(--brand); color: #fff; }
 .btn-primary:hover:not(:disabled) { background: var(--brand-ink); }
@@ -153,12 +203,27 @@ code {
 .btn-outline { background: var(--surface); border-color: var(--control-line); color: var(--ink); }
 .btn-outline:hover:not(:disabled) { background: var(--surface-alt); }
 
-.btn-danger { background: var(--danger); color: #fff; }
-.btn-danger:hover:not(:disabled) { background: var(--danger-ink); }
+/* Destructive, tinted rather than solid red (AI-eCabinet D3): red stays for warnings and "Mật". */
+.btn-danger { background: var(--chip-red-bg); border-color: color-mix(in srgb, var(--danger) 28%, transparent); color: var(--danger-ink); }
+.btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 16%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
 
-/* Entering a meeting in progress — the same solid green as the "Đang diễn ra" state. */
-.btn-live { background: var(--live); color: #fff; box-shadow: 0 0 0 3px var(--live-ring); }
-.btn-live:hover:not(:disabled) { filter: brightness(1.08); }
+/* The page's own action ("Tạo cuộc họp") and what waits on the user ("Duyệt"): weight, not effects.
+   No glow, lift or ripple — a coloured halo and an endlessly pulsing button are the stock tells of a
+   generated UI (sloplint S6, M1). */
+.btn-cta { font-weight: 700; }
+
+/* A button that is only its icon; the name lives in aria-label and the tooltip (data-tooltip). */
+.btn-icon { width: var(--control-height); padding: 0; }
+.btn-icon.btn-sm { width: 34px; }
+.btn-icon.btn-lg { width: 44px; }
+
+/* Entering a meeting in progress — the same solid green as the "Đang diễn ra" state — so a live
+   screen does not show three blue calls to action side by side. */
+.btn-live { background: var(--live); color: #fff; }
+.btn-live:hover:not(:disabled) { background: color-mix(in srgb, var(--live) 86%, #000); }
+/* "Tham dự": a yes to the invitation, in the soft green of the "Đã xác nhận tham dự" chip it becomes. */
+.btn-accept { background: var(--chip-emerald-bg); border-color: color-mix(in srgb, var(--live) 32%, transparent); color: var(--chip-emerald-fg); }
+.btn-accept:hover:not(:disabled) { background: color-mix(in srgb, var(--live) 16%, var(--surface)); border-color: color-mix(in srgb, var(--live) 50%, transparent); }
 
 .btn-block { width: 100%; }
 .btn-sm { height: 34px; padding: 0 12px; font-size: 13px; }
@@ -199,7 +264,7 @@ code {
 .is-pressed { animation: press .18s ease-out; }
 
 .btn-primary:active:not(:disabled) { background: var(--brand-ink); box-shadow: inset 0 1px 2px #0003; }
-.btn-danger:active:not(:disabled) { background: var(--danger-ink); box-shadow: inset 0 1px 2px #0003; }
+.btn-danger:active:not(:disabled) { background: color-mix(in srgb, var(--danger) 22%, var(--surface)); }
 :is(.btn-ghost, .btn-outline, .icon-button, .menu-item, .select-option):active:not(:disabled) { background: var(--line); }
 :is(.sidebar-item, .sidebar-subitem):active { background: var(--sidebar-active); }
 
@@ -349,6 +414,15 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .select-option-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 /* Always takes its width, so labels never shift when the selection changes. */
 .select-check { display: flex; width: 16px; flex: none; color: var(--brand); }
+/* A state shown as a coloured dot and a word, as AI-eCabinet's attendance picker does. */
+.select-value, .select-placeholder { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.select-option-label:has(.select-dot) { display: inline-flex; align-items: center; gap: 6px; }
+.select-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; }
+.select-trigger:disabled { cursor: progress; opacity: .7; }
+/* The table-row size: 32px, so a row stays one line of text tall. Touch keeps the 40px target. */
+.select-sm .select-trigger { min-width: 0; height: 32px; padding: 0 8px 0 10px; font-size: 13px; font-weight: 600; }
+.select-sm .select-empty { border-style: dashed; font-weight: 500; }
+@media (pointer: coarse) { .select-sm .select-trigger { height: var(--control-height); } }
 
 /* ---------- Login ----------
    A band of the sidebar's blue across the top of the page, edged in gold, with the sign-in card
@@ -385,11 +459,11 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   padding: 32px 30px 28px;
   border-radius: 12px;
   background: var(--surface);
-  box-shadow: 0 30px 70px #08183047, inset 0 2px 0 var(--gold);
+  box-shadow: var(--shadow), inset 0 2px 0 var(--gold);
 }
 
 .login-head { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
-.login-mark { display: flex; margin-bottom: 10px; border-radius: 50%; box-shadow: 0 0 0 3px var(--gold-soft), 0 10px 24px #10285033; }
+.login-mark { display: flex; margin-bottom: 10px; border-radius: 50%; box-shadow: 0 0 0 3px var(--gold-soft); }
 .login-head h1 { font-size: 24px; font-weight: 700; line-height: 32px; }
 .login-sub { margin: 0; color: var(--muted-ink); font-size: 14px; }
 .login-card form { display: flex; flex-direction: column; gap: 16px; }
@@ -424,38 +498,30 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .shell-collapsed .sidebar-label { opacity: 0; pointer-events: none; }
 .shell-collapsed .sidebar-group { height: 0; padding: 0; margin: 0; overflow: hidden; }
 
-/* A 26px disc on the sidebar's edge, inside a 44px hit area. */
-.sidebar-toggle {
+/* The collapse toggle: a 24px disc on the sidebar's right edge, level with the first nav row. Half
+   of it reaches into the content's 24px padding, so 12px stay clear of the page. */
+.sidebar-edge-toggle {
   position: absolute;
-  top: 12px;
-  right: -22px;
-  z-index: 5;
+  top: 84px;
+  right: -12px;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 24px;
+  height: 24px;
   padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-.sidebar-toggle > span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
   border: 1px solid var(--line);
   border-radius: 50%;
   background: var(--surface);
-  box-shadow: 0 1px 4px #1a243326;
-  color: var(--ink-soft);
-  transition: background-color .15s;
+  color: var(--brand);
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
 }
-.sidebar-toggle:hover > span { background: var(--surface-alt); }
-.sidebar-toggle .icon { transition: transform .25s; }
-.shell-collapsed .sidebar-toggle .icon { transform: rotate(180deg); }
+.sidebar-edge-toggle:hover { border-color: var(--brand); background: var(--brand); color: #fff; }
+.sidebar-edge-toggle:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.sidebar-edge-toggle .icon { flex: none; transition: transform .25s; }
+.shell-collapsed .sidebar-edge-toggle .icon { transform: rotate(180deg); }
 
 .sidebar-brand {
   display: flex;
@@ -634,7 +700,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   background: var(--alert-dot);
   box-shadow: 0 0 0 2px var(--sidebar-bottom);
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 18px;
   text-align: center;
@@ -711,14 +777,14 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .notif-item-unread .notif-open { background: var(--brand-wash); }
 .notif-item-unread .notif-open:hover:not(:disabled) { background: var(--surface-alt); }
 
-.notif-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; }
-.notif-tone-blue { background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
-.notif-tone-amber { background: var(--chip-amber-bg); color: var(--chip-amber-fg); }
-.notif-tone-violet { background: var(--chip-violet-bg); color: var(--chip-violet-fg); }
-.notif-tone-emerald { background: var(--chip-emerald-bg); color: var(--chip-emerald-fg); }
-.notif-tone-red { background: var(--chip-red-bg); color: var(--chip-red-fg); }
-.notif-tone-indigo { background: var(--chip-indigo-bg); color: var(--chip-indigo-fg); }
-.notif-tone-slate { background: var(--chip-slate-bg); color: var(--chip-slate-fg); }
+.notif-icon { display: grid; place-items: center; width: 20px; height: 20px; }
+.notif-tone-blue { color: var(--chip-blue-fg); }
+.notif-tone-amber { color: var(--chip-amber-fg); }
+.notif-tone-violet { color: var(--chip-violet-fg); }
+.notif-tone-emerald { color: var(--chip-emerald-fg); }
+.notif-tone-red { color: var(--chip-red-fg); }
+.notif-tone-indigo { color: var(--chip-indigo-fg); }
+.notif-tone-slate { color: var(--chip-slate-fg); }
 
 .notif-content { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .notif-title { color: var(--ink-soft); font-size: 14px; font-weight: 500; line-height: 20px; overflow-wrap: anywhere; }
@@ -849,56 +915,38 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 }
 
 /* A small uppercase line above the title naming the section ("QUẢN TRỊ"). */
-.page-eyebrow { margin: 0 0 2px; color: var(--label-ink); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
 .page-header-desc { margin: 2px 0 0; color: var(--muted-ink); font-size: 14px; }
 .page-header-actions { display: flex; flex: none; align-items: center; gap: 8px; }
 .page-loading { margin: 0; padding: 48px 0; color: var(--muted-ink); text-align: center; }
 
 /* ---------- Status summary (features/meetings/StatusSummary.tsx) ----------
-   Four counts that double as a status filter. The selected one turns solid brand blue — the same
-   "you are here" signal as the active sidebar entry. */
-.summary-cards { display: grid; flex: none; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; }
+   Four counts that double as a status filter: a label and a number, set as type rather than as
+   KPI tiles (no icon tile, no caption repeating the label, no colour per card). The selected one
+   takes the brand edge and wash, like the active sidebar entry. */
+.summary-cards { display: grid; flex: none; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
 
 .summary-card {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   background: var(--surface);
   color: var(--ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: border-color .15s, box-shadow .15s, background-color .15s;
+  transition: border-color .15s, background-color .15s;
 }
-.summary-card:hover { border-color: var(--brand-wash-line); box-shadow: 0 2px 8px #1a24330f; }
-
-.summary-icon { display: flex; flex: none; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 10px; }
-.summary-body { display: flex; flex-direction: column; min-width: 0; }
+.summary-card:hover { border-color: var(--brand-wash-line); }
 .summary-label { color: var(--muted-ink); font-size: 13px; }
-.summary-count { font-size: 30px; font-weight: 700; line-height: 1.15; }
-.summary-card .summary-count-missing { color: var(--faint-ink); }
-.summary-count-skeleton { width: 40px; height: 28px; margin: 3px 0 4px; }
-.summary-hint { overflow: hidden; color: var(--label-ink); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-
-.summary-live .summary-icon { background: var(--chip-emerald-bg); color: var(--live); }
-.summary-live .summary-count { color: var(--live); }
-.summary-blue .summary-icon { background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
-.summary-blue .summary-count { color: var(--chip-blue-fg); }
-.summary-amber .summary-icon { background: var(--chip-amber-bg); color: var(--chip-amber-fg); }
-.summary-amber .summary-count, .summary-amber .summary-hint { color: var(--chip-amber-fg); }
-.summary-card .summary-hint-missing { color: var(--label-ink); }
-.summary-slate .summary-icon { background: var(--chip-slate-bg); color: var(--muted-ink); }
-.summary-slate .summary-count { color: var(--ink-soft); }
-
+.summary-count { font-size: 24px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.summary-card .summary-count-missing { color: var(--label-ink); }
+.summary-count-skeleton { width: 40px; height: 24px; margin: 2px 0 3px; }
 .summary-card-selected,
-.summary-card-selected:hover { border-color: var(--brand); background: var(--brand); box-shadow: 0 4px 12px #1d4e8938; color: #fff; }
-.summary-card-selected .summary-icon { background: rgb(255 255 255 / 16%); color: #fff; }
-.summary-card-selected .summary-label { color: #dce6f3; }
-.summary-card-selected .summary-count { color: #fff; }
-.summary-card-selected .summary-hint { color: var(--gold-soft); font-weight: 600; }
+.summary-card-selected:hover { border-color: var(--brand); background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--brand); }
+.summary-card-selected .summary-label { color: var(--brand); font-weight: 600; }
 
 /* ---------- Toolbar ---------- */
 .toolbar { display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
@@ -1003,6 +1051,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .data-table th.col-action { text-align: right; }
 
 .row-inactive td { color: var(--muted-ink); }
+.user-disabled { color: var(--ink); font-weight: 600; }
 /* A row that opens its record. The title stays a real link for keyboard and middle-click. */
 .row-link { cursor: pointer; }
 .row-link .cell-title a:hover { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
@@ -1015,6 +1064,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .person { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .person .avatar { width: 36px; height: 36px; }
 .person-name { display: block; color: var(--ink); font-weight: 600; }
+/* Quiet text, not a chip that reads like a role; no space before it, so it never wraps away from the name. */
+.person-self { margin-left: 6px; color: var(--muted-ink); font-size: 13px; font-weight: 400; white-space: nowrap; }
 
 /* Sortable header: the whole label is the button; the arrow is faint until the column is active. */
 .sort-button {
@@ -1049,27 +1100,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .row-skeleton td:nth-child(n+3) .skeleton { width: 72px; }
 .row-skeleton td:last-child .skeleton { width: 24px; margin-left: auto; }
 @keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
-
-/* Two date inputs drawn as one control, so the range reads as a single filter. */
-.date-range {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  height: var(--control-height);
-  margin: 0;
-  padding: 0 4px;
-  border: 1px solid var(--control-line);
-  border-radius: var(--radius);
-  background: var(--surface);
-  color: var(--muted-ink);
-}
-.date-range-label { padding: 0 4px 0 8px; font-size: 14px; white-space: nowrap; }
-.date-range input { width: 132px; height: 34px; padding: 0 6px; border: none; box-shadow: none; }
-.date-range input:focus-visible { box-shadow: none; }
-.date-range:focus-within { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
-.date-range-invalid { border-color: var(--danger); }
-/* Below 1400px the toolbar needs the room; the fieldset's legend still names the range. */
-@media (max-width: 1400px) { .date-range-label { display: none; } }
 
 /* ---------- Pagination (components/Pagination.tsx) ---------- */
 .pagination {
@@ -1113,17 +1143,18 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .chip-row { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 
 /* ---------- Chips ----------
-   Three kinds, told apart by shape as well as colour:
+   Three kinds, told apart by shape as well as colour (ADR-0028):
    - .badge: a plain soft label (a role, a count);
-   - .status: a meeting's lifecycle state — rounded, with a dot; "Đang diễn ra" is the one solid;
-   - .level: a sensitivity level — square corners and its own icon. */
+   - .status: a meeting's lifecycle state — a coloured icon and text with no chip, like a status
+     indicator in Cloudscape or Carbon; "Đang diễn ra" is the one solid label;
+   - .level: a sensitivity level — square corners and its own icon; "Thường" is plain text. */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   height: 24px;
   padding: 0 10px;
-  border-radius: 12px;
+  border-radius: var(--radius);
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
@@ -1144,21 +1175,23 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   align-items: center;
   gap: 6px;
   height: 24px;
-  padding: 0 10px 0 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
+  color: var(--ink);
+  font-weight: 500;
   white-space: nowrap;
 }
-.status::before { content: ''; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--status-dot); }
-.status-slate { --status-dot: var(--dot-slate); background: var(--chip-slate-bg); color: var(--chip-slate-fg); box-shadow: inset 0 0 0 1px var(--line); }
-.status-ended { --status-dot: var(--dot-slate); background: var(--chip-slate-bg); color: var(--label-ink); }
-.status-amber { --status-dot: var(--dot-amber); background: var(--chip-amber-bg); color: var(--chip-amber-fg); }
-.status-red { --status-dot: var(--dot-red); background: var(--chip-red-bg); color: var(--chip-red-fg); }
-.status-emerald { --status-dot: var(--dot-emerald); background: var(--chip-emerald-bg); color: var(--chip-emerald-fg); }
-.status-blue { --status-dot: var(--dot-blue); background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
-.status-violet { --status-dot: var(--dot-violet); background: var(--chip-violet-bg); color: var(--chip-violet-fg); }
-.status-live { --status-dot: var(--live-dot); background: var(--live); color: #fff; }
+/* The icon carries the tone; the text stays ink so every state reads at full contrast. */
+.status > svg { flex: none; color: var(--status-icon); }
+.status-slate { --status-icon: var(--chip-slate-fg); }
+.status-ended { --status-icon: var(--label-ink); color: var(--label-ink); }
+.status-amber { --status-icon: var(--chip-amber-fg); }
+.status-red { --status-icon: var(--chip-red-fg); }
+.status-emerald { --status-icon: var(--chip-emerald-fg); }
+.status-blue { --status-icon: var(--chip-blue-fg); }
+.status-violet { --status-icon: var(--chip-violet-fg); }
+.status-live { padding: 0 8px; border-radius: var(--radius); background: var(--live); color: #fff; font-size: 12px; font-weight: 600; }
+/* A history row's event ("Gửi duyệt") is a label, not the meeting's state: the text alone, even
+   when it led to the live state. */
+.status-plain, .status-plain.status-live { padding: 0; background: none; color: var(--ink); font-size: inherit; font-weight: 600; }
 
 .level {
   display: inline-flex;
@@ -1175,6 +1208,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .level-internal { background: var(--brand-wash); color: var(--chip-indigo-fg); box-shadow: inset 0 0 0 1px var(--brand-wash-line); }
 .level-confidential { background: var(--chip-amber-bg); color: var(--chip-amber-fg); box-shadow: inset 0 0 0 1px #ecc98a; }
 .level-secret { background: var(--chip-red-bg); color: var(--chip-red-fg); box-shadow: inset 0 0 0 1px var(--edge-red); font-weight: 700; }
+.level-plain { padding: 0; color: inherit; font-size: inherit; font-weight: 400; }
 
 /* ---------- Tabs ---------- */
 .tabs { display: flex; flex: none; gap: 4px; margin-bottom: 16px; overflow-x: auto; border-bottom: 1px solid var(--line); }
@@ -1219,10 +1253,13 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .field-item > span:first-child { color: var(--label-ink); font-size: 13px; }
 .field-item > strong { font-weight: 600; overflow-wrap: anywhere; }
 .field-grid .span-all { grid-column: 1 / -1; }
+/* Starts a new row: the meeting's people read together, not after whatever the place left. */
+.field-grid .field-row-start { grid-column-start: 1; }
 /* The description sits under a rule, apart from the short facts above it. */
 .field-grid .field-divided { padding-top: 18px; border-top: 1px solid var(--line-soft); }
 /* An unset value reads as absent, not as data: muted and italic, never an em dash that looks typed. */
-.value-empty { color: var(--faint-ink); font-style: italic; font-weight: 400; }
+/* Absent values stay readable (4.5:1, WCAG): italic marks them, not a faint grey. */
+.value-empty { color: var(--label-ink); font-style: italic; font-weight: 400; }
 /* Free text keeps the author's line breaks. */
 .value-text { max-width: 760px; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 
@@ -1244,7 +1281,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* Dot and line are both drawn by the <li>, from one origin, so they cannot drift apart: the dot's
    centre and the line's centre sit on the same x (6px). Each item draws the segment from its own
    dot down to the next one's, and the last item draws none. The 12px dot sits on a white ring in
-   its own colour, centred on the 21px title line. */
+   its own colour, centred on the 24px chip. */
 .timeline { margin: 0; padding: 0; list-style: none; }
 .timeline li { position: relative; padding: 0 0 16px 24px; }
 .timeline li:last-child { padding-bottom: 0; }
@@ -1253,7 +1290,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   content: '';
   position: absolute;
   z-index: 1;
-  top: 5px;
+  top: 6px;
   left: 0;
   width: 12px;
   height: 12px;
@@ -1265,7 +1302,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .timeline li:not(:last-child)::after {
   content: '';
   position: absolute;
-  top: 21px;
+  top: 22px;
   bottom: -1px;
   left: 5px;
   width: 2px;
@@ -1279,9 +1316,18 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .timeline-violet { --dot: var(--dot-violet); }
 .timeline-live { --dot: var(--live); }
 
-.timeline-title { margin: 0; font-weight: 700; }
-.timeline-meta { margin: 0; color: var(--muted-ink); font-size: 13px; }
-.timeline-detail { margin: 4px 0 0; color: var(--ink-soft); font-size: 13px; }
+.timeline-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 24px; }
+/* Who acted lives in the time's tooltip (AI-eCabinet), so a row stays one line. */
+.timeline-time {
+  flex: none;
+  border-radius: 4px;
+  color: var(--muted-ink);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+}
+.timeline-time:hover { color: var(--ink); }
+.timeline-time:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 /* A rejection reason is the author's own words: quoted, line breaks kept. */
 .timeline-reason,
 .workflow-reason {
@@ -1306,7 +1352,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 /* ---------- Approval workflow (SCRUM-19) ----------
    Where the meeting stands and the next step for the person looking, between the page header and
-   the tabs. The left edge carries the state's colour; the text stays ink for contrast. */
+   the tabs. The state's colour is on its icon only — a coloured side stripe on a card is the most
+   reliable generated-UI tell (sloplint S3); the text stays ink for contrast. */
 .workflow-bar {
   display: flex;
   align-items: flex-start;
@@ -1314,25 +1361,21 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   margin-bottom: 20px;
   padding: 16px 18px;
   border: 1px solid var(--line);
-  border-left: 3px solid var(--workflow-accent);
   border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
 }
-.workflow-slate { --workflow-accent: var(--muted-ink); --workflow-tint: var(--chip-slate-bg); --workflow-ink: var(--ink-soft); }
-.workflow-amber { --workflow-accent: var(--accent-amber); --workflow-tint: var(--chip-amber-bg); --workflow-ink: var(--chip-amber-fg); }
-.workflow-warning { --workflow-accent: var(--accent-amber); --workflow-tint: var(--chip-amber-bg); --workflow-ink: var(--chip-amber-fg); background: var(--wash-amber); }
-.workflow-red { --workflow-accent: var(--danger); --workflow-tint: var(--chip-red-bg); --workflow-ink: var(--chip-red-fg); }
-.workflow-emerald { --workflow-accent: var(--accent-emerald); --workflow-tint: var(--chip-emerald-bg); --workflow-ink: var(--chip-emerald-fg); }
+.workflow-slate { --workflow-accent: var(--muted-ink); }
+.workflow-amber { --workflow-accent: var(--accent-amber); }
+.workflow-warning { --workflow-accent: var(--accent-amber); background: var(--wash-amber); }
+.workflow-red { --workflow-accent: var(--danger); }
+.workflow-blue { --workflow-accent: var(--brand); }
+.workflow-emerald { --workflow-accent: var(--accent-emerald); }
 .workflow-icon {
   display: grid;
   flex: none;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--workflow-tint);
-  color: var(--workflow-ink);
+  height: 22px;
+  color: var(--workflow-accent);
 }
 .workflow-body { flex: 1; min-width: 0; padding-top: 1px; }
 .workflow-body h2 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
@@ -1340,6 +1383,10 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .workflow-body p + p, .workflow-reason + p { margin-top: 6px; }
 .workflow-reason { margin-bottom: 0; }
 .workflow-actions { display: flex; flex: none; align-self: center; gap: 8px; }
+/* A bar that only asks ("Bạn có tham dự cuộc họp này?"): one line, centred on its buttons. */
+.workflow-bar-compact { align-items: center; }
+.workflow-bar-compact .workflow-body { padding-top: 0; }
+.workflow-bar-compact .workflow-body h2 { margin: 0; }
 .readiness-list { margin: 6px 0 0; padding-left: 20px; color: var(--ink-soft); font-size: 14px; }
 .readiness-list li + li { margin-top: 2px; }
 .alert .readiness-list { color: inherit; }
@@ -1410,6 +1457,26 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .role-capability-options input { grid-row: span 2; margin: 2px 0 0; }
 .role-capability-options small { grid-column: 2; color: var(--muted-ink); font-size: 13px; }
 
+/* ---------- Tooltip (components/TooltipLayer.tsx) ----------
+   One label in the top layer for whatever carries data-tooltip: above it, or below near the top. */
+.tooltip {
+  position: fixed;
+  inset: auto;
+  z-index: 50;
+  max-width: 280px;
+  margin: 0;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: pre-line;
+  pointer-events: none;
+}
+
 /* ---------- Dialog (components/Dialog.tsx, native <dialog>) ---------- */
 .dialog {
   width: min(512px, calc(100vw - 32px));
@@ -1433,6 +1500,19 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .dialog-text { margin: 0; color: var(--ink-soft); }
 .dialog-error { margin-top: 12px; }
 .dialog-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 16px 24px 20px; border-top: 1px solid var(--line); }
+/* A whole form: wider, its body scrolls between the fixed head and the pinned actions. */
+.dialog-lg { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); }
+.dialog-lg .dialog-body { flex: 1; min-height: 0; }
+@media (max-width: 640px) {
+  .dialog-lg { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; border-radius: 0; }
+  .dialog-lg .dialog-foot .btn { flex: 1; height: 44px; }
+}
+
+/* The meeting form's sections, as AI-eCabinet groups them: a small caps heading, a divider between. */
+.meeting-form { display: flex; flex-direction: column; gap: 20px; }
+.form-section { display: flex; flex-direction: column; gap: 14px; }
+.form-section + .form-section { padding-top: 20px; border-top: 1px solid var(--line); }
+.form-section-title { margin: 0; color: var(--ink); font-size: 14px; font-weight: 700; }
 
 /* ---------- Toasts (components/ToastProvider.tsx) ---------- */
 .toast-stack {
@@ -1520,9 +1600,62 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 /* ---------- Calendar (features/calendar) ---------- */
 .calendar-toolbar { display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; }
-.calendar-range { margin-left: 4px; font-size: 18px; white-space: nowrap; }
+.calendar-range { margin: 0; font-size: 18px; white-space: nowrap; }
+
+/* "Chọn ngày nhanh" (SCRUM-47): the range title is a button that opens a month calendar under it. */
+.date-pick { position: relative; }
+.calendar-range-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 40px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.calendar-range-button:hover, .calendar-range-button[aria-expanded='true'] { background: var(--brand-wash); color: var(--brand); }
+.calendar-range-button .icon { transition: transform .15s; }
+.calendar-range-button[aria-expanded='true'] .icon { transform: rotate(180deg); }
+.date-pick-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  width: 340px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 12px 32px #1a243326;
+}
+.date-pick-title { margin: 0 0 10px; color: var(--label-ink); font-size: 13px; font-weight: 600; }
+.date-pick-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.date-pick-head .select:first-child { width: 120px; }
+.date-pick-head .select:nth-child(2) { width: 96px; }
+.date-pick-head .select-trigger { min-width: 0; }
+.date-pick-head .icon-button:nth-child(3) { margin-left: auto; }
+.date-pick-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); row-gap: 4px; }
+.date-pick-weekday { padding: 6px 0; color: var(--label-ink); font-size: 12px; font-weight: 600; text-align: center; }
+.date-pick-day { display: grid; place-items: center; height: 36px; padding: 0; border: 0; background: none; color: var(--ink); font: inherit; cursor: pointer; }
+.date-pick-num { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; }
+.date-pick-day:hover .date-pick-num { background: var(--surface-alt); }
+.date-pick-outside { color: var(--faint-ink); }
+.date-pick-viewed { background: var(--brand-wash); color: var(--brand); font-weight: 600; }
+.date-pick-start { border-radius: 18px 0 0 18px; }
+.date-pick-end { border-radius: 0 18px 18px 0; }
+.date-pick-start.date-pick-end { border-radius: 18px; }
+.date-pick-today .date-pick-num { box-shadow: inset 0 0 0 2px var(--gold); font-weight: 700; }
+.date-pick-legend { display: flex; gap: 18px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-soft); color: var(--muted-ink); font-size: 12px; }
+.date-pick-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.date-pick-legend i { width: 12px; height: 12px; border-radius: 50%; }
+.date-pick-swatch-today { box-shadow: inset 0 0 0 2px var(--gold); }
+.date-pick-swatch-viewed { border-radius: 3px; background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--edge-blue); }
 .calendar-toolbar-end { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }
-.calendar-toolbar-end .select { width: 168px; }
+.calendar-toolbar-end .select { width: 140px; }
 .calendar-note { flex: none; margin-bottom: 16px; }
 .calendar-note a { font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 
@@ -1538,6 +1671,13 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .view-toggle button + button { border-left: 1px solid var(--control-line); }
 .view-toggle button:hover { background: var(--surface-alt); }
 .view-toggle button[aria-pressed='true'] { background: var(--brand); color: #fff; font-weight: 700; }
+.view-toggle-icon { display: none; }
+/* Below 1400px the calendar toolbar needs the room: the view buttons keep their icon and tooltip. */
+@media (max-width: 1400px) {
+  .view-toggle button { display: inline-grid; place-items: center; width: 44px; padding: 0; }
+  .view-toggle-icon { display: inline-flex; }
+  .view-toggle-label { display: none; }
+}
 
 .calendar {
   display: flex;
@@ -1609,7 +1749,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .cal-event-short .cal-event-title { display: block; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
 .cal-event-place { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; opacity: .85; }
 .cal-event-secret { display: inline-flex; align-items: center; gap: 3px; height: 18px; margin-left: auto; padding: 0 6px; border-radius: 4px; background: var(--surface); color: var(--chip-red-fg); font-size: 11px; }
-.cal-event-live { border-color: var(--live); background: var(--live); color: #fff; box-shadow: 0 2px 6px #0e6b4440; }
+.cal-event-live { border-color: var(--live); background: var(--live); color: #fff; }
 .cal-event-blue { border-color: var(--edge-blue); background: var(--chip-blue-bg); color: #152e5c; }
 .cal-event-blue .cal-event-time { color: var(--chip-blue-fg); }
 .cal-event-emerald { border-color: #9fd8b9; background: var(--chip-emerald-bg); color: #0b4f33; }
@@ -1618,7 +1758,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .cal-event-red { border-color: var(--edge-red); background: var(--chip-red-bg); color: #6e1418; }
 .cal-event-red .cal-event-title { text-decoration: line-through; }
 .cal-event-violet { border-color: #c9b8f0; background: var(--chip-violet-bg); color: #3e2577; }
-.calendar-free { position: absolute; right: 8px; left: 8px; color: var(--faint-ink); font-size: 13px; text-align: center; }
+.calendar-free { position: absolute; right: 8px; left: 8px; color: var(--label-ink); font-size: 13px; text-align: center; }
 
 .calendar-legend { display: flex; flex: none; flex-wrap: wrap; gap: 14px; padding: 8px 12px; border-top: 1px solid var(--line-soft); background: #fbfcfd; color: var(--muted-ink); font-size: 12px; }
 .calendar-legend span { display: flex; align-items: center; gap: 5px; }
@@ -1629,6 +1769,204 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .legend-amber::before { border: 1.5px dashed var(--accent-amber); background: var(--chip-amber-bg); }
 .legend-slate::before, .legend-ended::before { background: var(--chip-slate-bg); box-shadow: inset 0 0 0 1.5px var(--faint-ink); }
 .legend-red::before { background: var(--chip-red-bg); box-shadow: inset 0 0 0 1.5px var(--danger); }
+
+/* The month grid (SCRUM-47): seven columns Monday first, its weeks sharing the frame's height.
+   A meeting is one line in the colours and edges of its week-grid block. */
+.month-scroll { display: flex; flex-direction: column; }
+/* Exactly the frame's height (flex: 1 1 0), so the 1fr weeks split it and nothing scrolls. */
+.month { display: grid; flex: 1 1 0; min-height: 0; grid-template-columns: repeat(7, minmax(0, 1fr)); min-width: 760px; }
+.month-weekday {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  border-left: 1px solid var(--line-soft);
+  background: var(--surface-head);
+  color: var(--label-ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+.month-cell { display: flex; flex-direction: column; gap: 3px; min-width: 0; min-height: 0; overflow: hidden; padding: 5px 8px 7px; border-bottom: 1px solid var(--line-soft); border-left: 1px solid var(--line-soft); }
+.month-weekday:nth-child(7n + 1), .month-cell:nth-child(7n + 1) { border-left: 0; }
+.month-weekend { background: #fafbfc; }
+.month-cell-head { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+.month-outside { background: #f6f7f9; }
+.month-outside .month-day { color: var(--faint-ink); }
+.month-outside .month-event { opacity: .75; }
+.month-today { background: #f7fafe; }
+.month-day {
+  align-self: flex-start;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.month-day:hover { background: var(--surface-alt); }
+.month-today .month-day, .month-today .month-day:hover { background: var(--brand); color: #fff; }
+.month-event {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+/* The neutral look, at zero specificity so the .cal-event-<tone> colours above always win. */
+:where(.month-event) { border: 1px solid var(--line); background: var(--chip-slate-bg); color: var(--ink-soft); }
+.month-event:hover { box-shadow: 0 2px 8px #1a243326; }
+.month-event-time { flex: none; font-weight: 700; }
+.month-event-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.month-event .cal-event-secret { flex: none; font-size: 12px; }
+.cal-event-blue .month-event-time { color: var(--chip-blue-fg); }
+.cal-event-amber .month-event-time { color: var(--chip-amber-fg); }
+.cal-event-red .month-event-title { text-decoration: line-through; }
+.month-more { flex: none; white-space: nowrap; padding: 2px 6px; border: 0; border-radius: 4px; background: none; color: var(--brand); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.month-more:hover { background: var(--brand-wash); }
+/* A narrow column keeps the count only; the tooltip and aria-label still say what it is. */
+@media (max-width: 1400px) { .month-more-word { display: none; } }
+
+/* "Bộ lọc" (SCRUM-47): a non-modal panel under its button, chips that toggle at once. */
+.cal-filter { position: relative; }
+.cal-filter-on { border-color: var(--brand); background: var(--brand-wash); color: var(--brand); }
+/* Below 1400px the toolbar needs the room: the button keeps its icon, badge and tooltip. */
+@media (max-width: 1400px) { .cal-filter-label { display: none; } }
+.cal-filter-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--brand); color: #fff; font-size: 12px; font-weight: 700; }
+.cal-filter-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(540px, calc(100vw - 32px));
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 12px 32px #1a243326;
+}
+.cal-filter-group { min-width: 0; margin: 0; padding: 0; border: 0; }
+.cal-filter-group legend { margin-bottom: 8px; padding: 0; color: var(--label-ink); font-size: 13px; font-weight: 600; }
+.cal-filter-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.cal-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--control-line);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cal-pick:hover:not(:disabled) { border-color: var(--brand-wash-line); background: var(--surface-alt); }
+/* Chosen reads as solid brand, as eCab's pills; the dot keeps its colour on a white ring. */
+.cal-pick[aria-pressed='true'] { border-color: var(--brand); background: var(--brand); color: #fff; font-weight: 600; }
+.cal-pick[aria-pressed='true']:hover { background: var(--brand-ink); }
+.cal-pick[aria-pressed='true'] .cal-dot { box-shadow: 0 0 0 2px #fff; }
+.cal-pick[aria-pressed='true'] .cal-pick-count { color: rgb(255 255 255 / .75); }
+.cal-pick:disabled { opacity: .45; cursor: default; }
+.cal-pick-count { color: var(--muted-ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+.cal-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot-slate); }
+.cal-dot-amber { background: var(--dot-amber); }
+.cal-dot-red { background: var(--dot-red); }
+.cal-dot-emerald { background: var(--dot-emerald); }
+.cal-dot-blue { background: var(--dot-blue); }
+.cal-dot-live { background: var(--live); }
+.cal-filter-foot { display: flex; justify-content: space-between; margin: 0 -16px; padding: 12px 16px 0; border-top: 1px solid var(--line-soft); }
+
+/* ---------- Calendar quick look (features/calendar/MeetingOverview.tsx) ----------
+   AI-eCabinet's overview: a 420px card beside the tile, its body scrolling between a fixed head and
+   footer; on a phone a bottom sheet over a scrim. */
+.overview {
+  position: fixed;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  width: min(420px, calc(100vw - 16px));
+  max-height: min(38rem, calc(100dvh - 16px));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.overview-scrim { position: fixed; inset: 0; z-index: 40; display: flex; align-items: flex-end; background: var(--overlay); }
+.overview-sheet { position: static; width: 100%; max-height: 82dvh; border: 0; border-radius: 16px 16px 0 0; }
+.overview-head { flex: none; display: flex; flex-direction: column; gap: 9px; padding: 16px 20px 13px; border-bottom: 1px solid var(--line-soft); }
+.overview-head h2 {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-wrap: balance;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  outline: none;
+}
+.overview-head h2:focus-visible { border-radius: 4px; box-shadow: var(--focus-ring); }
+.overview-body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 20px 16px; font-size: 13.5px; }
+.overview-facts { display: flex; flex-direction: column; gap: 10px; margin: 0; }
+.overview-row { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 12px; }
+.overview-row dt { color: var(--muted-ink); }
+.overview-row dd { display: flex; flex-direction: column; margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.overview-time { font-weight: 600; font-variant-numeric: tabular-nums; }
+.overview-muted { color: var(--muted-ink); font-weight: 400; }
+.overview-link { display: inline-flex; align-items: center; gap: 5px; color: var(--brand); font-weight: 600; }
+.overview-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.overview-note { margin: 0 0 12px; color: var(--muted-ink); }
+.overview-desc {
+  display: -webkit-box;
+  margin: 14px 0 0;
+  overflow: hidden;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.overview-people { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+.overview-people-label { margin: 0 0 10px; color: var(--muted-ink); font-size: 12px; font-weight: 600; }
+.overview-avatars { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.overview-avatars > li { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 80px; font-size: 12px; line-height: 1.3; text-align: center; }
+.overview-avatars > li > span:last-child { display: -webkit-box; overflow: hidden; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.overview-avatar { width: 32px; height: 32px; font-size: 12px; }
+.overview-avatar-sm { width: 28px; height: 28px; font-size: 11px; }
+.overview-more { width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--surface-alt); color: var(--ink-soft); font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+.overview-more:hover { color: var(--brand); }
+.overview-more-on, .overview-more-on:hover { background: var(--brand); color: #fff; }
+.overview-rest { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin: 12px 0 0; padding: 12px 0 0; border-top: 1px dashed var(--line); list-style: none; }
+.overview-rest li { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; }
+.overview-rest li span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.overview-task { flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; padding: 12px 16px; border-top: 1px solid var(--line-soft); }
+.overview-task-title { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-size: 13.5px; font-weight: 700; }
+.overview-task-title .icon { color: var(--brand); }
+.overview-foot { flex: none; display: flex; justify-content: flex-end; gap: 8px; padding: 11px 14px; border-top: 1px solid var(--line-soft); background: var(--surface-alt); }
+.overview-foot .btn { height: 36px; }
+.overview-skeleton { display: block; width: 60%; height: 18px; }
+.overview-skeleton-label { display: block; width: 144px; height: 16px; margin-bottom: 10px; }
+.overview-skeleton-avatar { display: block; width: 32px; height: 32px; margin: 0 24px; border-radius: 50%; }
+@media (max-width: 640px) {
+  .overview-row { grid-template-columns: 104px minmax(0, 1fr); }
+  .overview-rest { grid-template-columns: 1fr; }
+  .overview-foot .btn { flex: 1; height: 40px; }
+}
 
 /* ---------- Calendar list view ----------
    One section per day: a heading line, then each session as a time column, a dot on the day's
@@ -1658,10 +1996,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   min-width: 0;
   padding: 14px 18px;
   border: 1px solid var(--line);
-  border-left: 4px solid var(--agenda-tone, var(--dot-blue));
-  border-radius: 10px;
+  border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: 0 1px 3px #1a24330d;
 }
 .agenda-card-main { display: flex; flex: 1; flex-direction: column; gap: 6px; min-width: 0; }
 .agenda-title { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.35; }
@@ -1672,7 +2008,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .agenda-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 0; }
 .agenda-open { flex: none; height: 38px; padding: 0 12px 0 16px; border-radius: 19px; color: var(--brand); }
 .agenda-empty { grid-column: 3; margin: 0; padding: 14px 18px; border: 1px dashed var(--control-line); border-radius: 10px; color: var(--muted-ink); }
-.agenda-card-skeleton { grid-column: 3; flex-direction: column; align-items: stretch; gap: 10px; border-left-color: var(--line); }
+.agenda-card-skeleton { grid-column: 3; flex-direction: column; align-items: stretch; gap: 10px; }
 .agenda-card-skeleton .skeleton:first-child { width: 45%; height: 16px; }
 .agenda-card-skeleton .skeleton:last-child { width: 30%; }
 
@@ -1690,11 +2026,142 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .agenda-card { flex-direction: column; align-items: flex-start; }
 }
 
+/* ---------- Participants (SCRUM-20, features/participants) ---------- */
+/* Picking who attends on the create form: a search box with its matches underneath, then one row
+   per person with their role. */
+.roster-search { width: 100%; }
+.roster-menu {
+  /* Top layer (popover="manual"), placed by RosterField from the search box: inside the dialog's
+     scrolling body an absolutely placed list was cut off. `inset: auto` undoes the UA centring. */
+  position: fixed;
+  inset: auto;
+  z-index: 30;
+  max-height: 320px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  list-style: none;
+}
+.roster-option { padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+.roster-option-active { background: var(--brand-wash); }
+.roster-option .avatar, .roster-row .avatar { width: 32px; height: 32px; font-size: 12px; }
+.roster-menu-note { padding: 10px 8px; color: var(--muted-ink); font-size: 14px; }
+.roster-menu-error { color: var(--danger-ink); }
+
+.roster-list { display: flex; flex-direction: column; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); list-style: none; }
+.roster-row { display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 12px; }
+.roster-row + .roster-row { border-top: 1px solid var(--line-soft); }
+.roster-row-invalid { box-shadow: inset 3px 0 0 var(--danger); }
+.roster-row-main { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
+.roster-role { flex: none; width: 152px; }
+.roster-empty { margin: 0; padding: 14px 16px; border: 1px dashed var(--control-line); border-radius: var(--radius); color: var(--muted-ink); font-size: 14px; }
+
+/* Name over email; both cut with an ellipsis rather than pushing the role off the row. */
+.person-text { display: flex; flex-direction: column; min-width: 0; }
+.person-text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* "Bạn có tham dự cuộc họp này?" — the two answers, and the answer once given. */
+.rsvp-buttons { display: inline-flex; flex-wrap: wrap; gap: 8px; }
+.rsvp-chip { gap: 4px; padding-left: 8px; }
+/* On a calendar card: the question and its two answers on one line under the chips. */
+.agenda-rsvp { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 4px; color: var(--ink-soft); font-size: 14px; font-weight: 500; }
+
+/* The roster tab: a person with their answer, and the panel's own alert under the toolbar. */
+.participant-cell { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-width: 0; }
+/* The roster re-flows by its own width, not the window's: it is narrow on a phone, beside the status
+   history at a 1024px window, and in the call room's side panel. Under 520px the role moves under the
+   name and the name gives way with an ellipsis, so the row actions stay in view without scrolling. */
+.participants-panel { container-type: inline-size; }
+.role-inline { display: none; }
+@container (max-width: 520px) {
+  .participants-panel .col-role { display: none; }
+  .participants-panel .role-inline { display: contents; }
+  .participants-panel td.cell-title { width: 100%; max-width: 0; }
+  /* As AI-eCabinet's narrow roster: the person takes the first line, and the line under it — the
+     attendance, then the chips — starts where the name does (36px avatar + 12px gap), so the chips
+     line up from row to row instead of trailing each email. */
+  .participants-panel .participant-cell { gap: 6px 8px; padding-left: 48px; }
+  .participants-panel .participant-cell > .person { flex-basis: calc(100% + 48px); margin-left: -48px; }
+  /* The name is what people read: it wraps rather than ending in "…" (a touch screen has no tooltip). */
+  .participants-panel .person-name { white-space: normal; overflow-wrap: anywhere; }
+}
+.participants-alert { margin: 12px 16px 0; }
+
+.role-chip { display: inline-flex; flex: none; align-items: center; height: 22px; padding: 0 8px; border-radius: var(--radius); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.role-chair { background: var(--role-chair-bg); color: var(--role-chair-fg); }
+.role-secretary { background: var(--role-secretary-bg); color: var(--role-secretary-fg); }
+.role-member { background: var(--surface-alt); color: var(--ink-soft); }
+.role-guest { background: var(--surface); color: var(--muted-ink); box-shadow: inset 0 0 0 1px var(--line); }
+
+/* Attendance (SCRUM-26), in the roster's own column and in the call room's panel, drawn as
+   AI-eCabinet does: the Secretary's small picker (dashed "Điểm danh" until set), a dot and a word
+   for everyone else, plain muted text for "Chưa điểm danh" — which is not absent. */
+.col-attendance { width: 1%; white-space: nowrap; }
+.attendance-inline { display: none; }
+@container (max-width: 520px) {
+  .participants-panel .col-attendance { display: none; }
+  /* First on the line and one width, so the picker and the chips after it line up row to row. */
+  .participants-panel .attendance-inline { display: flex; flex: none; width: 124px; }
+}
+.attendance-picker { display: inline-flex; }
+/* One width for every row, so the column reads as a straight line whatever is picked. */
+.attendance-picker .select { width: 124px; }
+.attendance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 4px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.attendance-unmarked { color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
+.attendance-list { list-style: none; margin: 0; padding: 0; overflow-y: auto; display: grid; gap: 4px; }
+.attendance-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+/* The name wraps rather than ending in "…": a touch screen has no tooltip to show the rest. */
+.attendance-row .attendance-name strong { white-space: normal; overflow-wrap: anywhere; }
+.attendance-skeleton { width: 100%; height: 32px; }
+.participants-skeleton-search { width: 320px; height: var(--control-height); }
+
+/* Picking people in a dialog: a search box over a scrolling list of checkable rows. */
+.dialog-form { display: flex; flex-direction: column; gap: 16px; }
+.pick-list { display: flex; flex-direction: column; height: 280px; margin-top: 8px; overflow-y: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+.pick-list[aria-busy='true'] { opacity: .6; }
+.pick-row { display: flex; flex: none; align-items: center; gap: 12px; padding: 8px 12px; cursor: pointer; }
+.pick-row + .pick-row { border-top: 1px solid var(--line-soft); }
+.pick-row:hover { background: var(--surface-alt); }
+.pick-row input { flex: none; width: 16px; height: 16px; }
+.pick-row .avatar { width: 32px; height: 32px; font-size: 12px; }
+.pick-note { margin: 0; padding: 14px 12px; color: var(--muted-ink); font-size: 14px; }
+.pick-note-error { color: var(--danger-ink); }
+.pick-role { margin-top: 16px; }
+
+/* Picking one role: a radio per row, what the role may do under its name (as AI-eCabinet). The
+   whole row is the click target, and the picked row is tinted so the choice reads at a glance. */
+.choice-list { display: flex; flex-direction: column; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.choice-list legend { margin-bottom: 8px; padding: 0; color: var(--ink); font-size: 14px; font-weight: 500; line-height: 1; }
+.choice-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
+.choice-row:hover { background: var(--surface-alt); }
+.choice-row:has(input:checked) { border-color: var(--brand); background: var(--brand-wash); }
+.choice-row input { flex: none; width: 16px; height: 16px; margin: 2px 0 0; accent-color: var(--brand); }
+.choice-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.choice-label { color: var(--ink); font-size: 14px; font-weight: 600; }
+.choice-desc { color: var(--muted-ink); font-size: 13px; }
+
 /* ---------- Placeholder screens ----------
    A screen whose backend does not exist yet: what it will do, and the endpoint it waits on. */
 .placeholder-card { display: flex; flex: none; flex-direction: column; align-items: center; gap: 8px; padding: 48px 24px; color: var(--muted-ink); text-align: center; }
 .placeholder-card p { max-width: 560px; margin: 0; }
-.placeholder-icon { display: grid; place-items: center; width: 56px; height: 56px; margin-bottom: 4px; border-radius: 14px; background: var(--brand-wash); color: var(--brand); }
+.placeholder-icon { display: grid; place-items: center; margin-bottom: 4px; color: var(--muted-ink); }
 .placeholder-title { color: var(--ink); font-size: 16px; font-weight: 700; }
 .placeholder-card .placeholder-blocked { margin-top: 4px; font-size: 13px; }
 
@@ -1723,15 +2190,767 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 @media (max-width: 720px) {
   /* AppShell keeps the sidebar collapsed here and drops the toggle. */
-  .sidebar-toggle { display: none; }
+  .sidebar-edge-toggle { display: none; }
   .summary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .summary-card { padding: 10px 12px; }
-  .summary-icon { display: none; }
-  .summary-count { font-size: 24px; }
+  .summary-count { font-size: 20px; }
   .page-header { flex-wrap: wrap; }
   .field-grid, .form-grid, .form-row-3 { grid-template-columns: minmax(0, 1fr); }
   .page-alert { flex-direction: column; align-items: flex-start; }
   .content { padding: 20px 16px; }
   .search { width: 100%; }
   .tabs { overflow-x: auto; }
+}
+
+/* ── Call room (SCRUM-41, ADR-0010/0011) ─────────────────────────────────────────────────────── */
+
+/* The room's pages outside the call — pre-join, "you left", "not open yet" — laid out as Google
+   Meet's, measured on it: a white page, the mark top left and who is signed in top right. */
+.prejoin { min-height: 100dvh; display: flex; flex-direction: column; background: var(--surface); color: var(--ink); }
+.prejoin-top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 64px;
+  padding: 8px 16px 8px 24px;
+}
+.prejoin-brand { display: inline-flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; }
+.prejoin-account { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
+.prejoin-account-text { display: grid; min-width: 0; text-align: right; font-size: 14px; line-height: 20px; }
+.prejoin-account-text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prejoin-account-mail { color: var(--muted-ink); font-size: 12px; line-height: 16px; }
+.prejoin-avatar { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; font-size: 13px; font-weight: 600; }
+.prejoin-loading { margin: auto; }
+
+/* Your picture (740 × 416 at 1440 px, 16 px corners) beside a 400 px column, 40 px apart. */
+.prejoin-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 740px) minmax(280px, 400px);
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  padding: 24px 40px 48px;
+}
+/* One track that may shrink below the pills' content, or the three pills would hold it at their
+   combined width and push the picture over the column beside it. */
+.prejoin-media { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.prejoin-preview {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  background: var(--stage-bg);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+/* Your own picture is mirrored, as in a mirror and every call app; others see it the right way round. */
+.prejoin-preview-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.prejoin-preview-text { margin: 0; padding: 0 24px; color: #fff; font-size: 22px; line-height: 28px; text-align: center; }
+.prejoin-preview-name {
+  position: absolute;
+  top: 24px;
+  left: 16px;
+  max-width: calc(100% - 32px);
+  overflow: hidden;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px #0008;
+}
+/* The voice indicator in the corner, Meet's round one: the room's three bars, white on blue. */
+.prejoin-voice {
+  position: absolute;
+  left: 16px;
+  bottom: 24px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--brand);
+}
+.prejoin-voice .room-level > span { background: #fff; }
+.prejoin-toggles { position: absolute; left: 50%; bottom: 16px; display: flex; gap: 12px; transform: translateX(-50%); }
+.prejoin-toggle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 48px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--stage-toggle-on);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.prejoin-toggle.is-off { background: var(--stage-off-bg); color: var(--stage-off-ink); }
+.prejoin-toggle:disabled { cursor: not-allowed; opacity: 0.6; }
+.prejoin-toggle:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* Meet's three pickers under the picture: equal pills on a pale outline, menus light like the page. */
+.prejoin-devices { min-width: 0; display: flex; gap: 8px; }
+.prejoin-devices .room-select { flex: 1 1 0; }
+.prejoin-devices .room-select-trigger { border-color: var(--control-line); color: var(--ink-soft); }
+.prejoin-devices .room-select-trigger:hover:not(:disabled) { color: var(--ink); }
+.prejoin-devices .room-select-trigger[aria-expanded="true"] { border-color: transparent; background: var(--brand-wash); color: var(--brand-ink); }
+.prejoin-devices .room-select-menu { background: var(--surface); box-shadow: var(--shadow); }
+.prejoin-devices .room-select + .room-select .room-select-menu { left: 0; right: auto; }
+.prejoin-devices .room-select:last-child:not(:first-child) .room-select-menu { left: auto; right: 0; }
+.prejoin-devices .room-select-item { color: var(--ink); }
+.prejoin-devices .room-select-item.is-active { background: var(--brand-wash); color: var(--brand-ink); }
+.prejoin-devices .room-select-item:focus-visible { outline-color: var(--focus); }
+
+/* The column beside it, centred: the question, the meeting, who is in, then the way in. */
+.prejoin-side { min-width: 0; display: grid; justify-items: center; text-align: center; }
+.prejoin-side h1 { margin: 0; font-size: 28px; font-weight: 400; line-height: 36px; }
+.prejoin-meeting { max-width: 100%; margin: 12px 0 0; font-size: 16px; font-weight: 600; line-height: 24px; overflow-wrap: anywhere; }
+.prejoin-side > .level { margin-top: 8px; }
+.prejoin-presence { margin: 12px 0 0; color: var(--ink-soft); font-size: 14px; font-weight: 500; line-height: 20px; letter-spacing: 0.25px; }
+.prejoin-side > .alert { width: 100%; margin-top: 16px; text-align: left; }
+.prejoin-join {
+  position: relative;
+  width: 240px;
+  max-width: 100%;
+  height: 56px;
+  margin-top: 32px;
+  border: 0;
+  border-radius: 28px;
+  background: var(--brand);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.prejoin-join:disabled { cursor: progress; opacity: 0.75; }
+.prejoin-join:focus-visible, .prejoin-text-button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.prejoin-text-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  margin-top: 20px;
+  padding: 0 16px 0 12px;
+  border-radius: 20px;
+  color: var(--brand);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+/* The same 8% / 12% layer of the content colour as the room's buttons. */
+.prejoin-toggle::before, .prejoin-join::before, .prejoin-text-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 75ms linear;
+}
+@media (hover: hover) {
+  :is(.prejoin-toggle, .prejoin-join, .prejoin-text-button):hover:not(:disabled)::before { opacity: 0.08; }
+}
+:is(.prejoin-toggle, .prejoin-join, .prejoin-text-button):active:not(:disabled)::before { opacity: 0.12; }
+
+/* "You left", "not open yet": Meet's single centred statement with its two ways on. */
+.prejoin-message { flex: 1; display: grid; align-content: center; justify-items: center; gap: 0; padding: 24px 16px 64px; text-align: center; }
+.prejoin-message h1 { max-width: 640px; margin: 0; font-size: 28px; font-weight: 400; line-height: 36px; }
+.prejoin-message-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 32px; }
+
+/* Too narrow for two columns: the picture on top, the column under it, as Meet stacks them. */
+@media (max-width: 999px) {
+  .prejoin-main { grid-template-columns: minmax(0, 740px); align-content: start; gap: 32px; padding: 16px 24px 32px; }
+}
+/* A phone: a taller picture, the way in right under it so it shows without scrolling, then the
+   pickers stacked as wide as the screen. */
+@media (max-width: 560px) {
+  .prejoin-top { height: 56px; padding: 8px 16px; }
+  .prejoin-account-text { display: none; }
+  .prejoin-main { gap: 24px; padding: 8px 16px 32px; }
+  .prejoin-media { display: contents; }
+  .prejoin-preview { order: 1; }
+  .prejoin-side { order: 2; }
+  .prejoin-devices { order: 3; }
+  .prejoin-preview { aspect-ratio: 4 / 3; }
+  .prejoin-devices { flex-direction: column; }
+  .prejoin-devices .room-select-trigger { height: 40px; border-radius: 20px; }
+  .prejoin-side h1, .prejoin-message h1 { font-size: 24px; line-height: 32px; }
+  .prejoin-join { width: 100%; margin-top: 24px; }
+}
+
+.room {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--stage-bg);
+  color: #fff;
+  overflow: hidden;
+}
+/* The room's title bar wears the app's blue, like the sidebar, with a thin gold edge (ADR-0012). */
+.room-header {
+  flex: none;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px 0 8px;
+  background: linear-gradient(90deg, var(--sidebar-top), var(--sidebar-bottom));
+  color: #fff;
+  border-bottom: 2px solid var(--gold);
+}
+.room-back {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+.room-back:hover { background: var(--sidebar-hover); }
+.room-back:focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 2px; }
+/* The title gives way first: the facts after it keep their full width. */
+.room-title {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0 2px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.room-header > .room-count, .room-header > .level { flex: none; height: 22px; }
+.room-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 11px;
+  background: var(--sidebar-active);
+  color: var(--sidebar-ink-soft);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.room-banner {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--chip-amber-bg);
+  color: var(--chip-amber-fg);
+  font-size: 14px;
+}
+
+.room-body { flex: 1; min-height: 0; display: flex; }
+.room-stage { flex: 1; min-width: 0; min-height: 0; padding: 16px; display: flex; }
+.room-grid-wrap { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+.room-pager { flex: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; }
+.room-pager .icon-button { color: #fff; }
+.room-pager .icon-button:hover:not(:disabled) { background: var(--stage-tile); }
+.room-presenting { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) 248px; gap: 12px; }
+.room-screen { position: relative; margin: 0; min-height: 0; border-radius: 12px; background: #000; overflow: hidden; display: grid; }
+.room-screen-video { width: 100%; height: 100%; object-fit: contain; }
+/* Beside a shared screen the cameras are small 16:9 tiles centred in a column, as in Meet —
+   never stretched to the column's full height. */
+.room-filmstrip { min-width: 0; min-height: 0; display: flex; }
+.room-filmstrip .room-grid { --cols: 1 !important; min-height: 0; grid-auto-rows: minmax(0, 140px); align-content: center; }
+/* Each row is at most 140px but shrinks with the window, and the tile keeps 16:9 inside it, so the
+   column plus its pager always fits the stage and never spills onto the control bar. */
+.room-filmstrip .room-tile { aspect-ratio: 16 / 9; height: 100%; max-width: 100%; justify-self: center; }
+.room-filmstrip .room-tile-avatar { width: 56px; height: 56px; font-size: 20px; }
+@media (max-width: 1023px) {
+  .room-presenting { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
+  .room-filmstrip .room-grid { --cols: 4 !important; grid-auto-rows: auto; }
+  .room-filmstrip .room-tile { height: auto; width: 100%; }
+}
+
+.room-grid {
+  flex: 1;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+}
+/* The stage's grid: tiles sized in FittedTiles from the space measured here, centred, the last row
+   too. The area is what gets measured, so it must not grow with its content. */
+.room-grid-area { flex: 1; min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.room-grid-fit { display: flex; flex-wrap: wrap; justify-content: center; align-content: center; }
+.room-grid-fit > .room-tile { flex: none; }
+
+.room-tile {
+  position: relative;
+  margin: 0;
+  min-height: 0;
+  border-radius: 12px;
+  background: var(--stage-tile);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  /* Outline, not border: the speaking ring must not resize the tile. */
+  outline: 3px solid transparent;
+  outline-offset: -3px;
+  transition: outline-color .15s;
+}
+.room-tile-speaking { outline-color: var(--speaking); }
+.room-tile-video { width: 100%; height: 100%; object-fit: cover; }
+.room-tile-video-self { transform: scaleX(-1); }
+.room-tile-avatar {
+  display: grid;
+  place-items: center;
+  width: clamp(56px, 22%, 112px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  font-size: clamp(22px, 4vw, 44px);
+  font-weight: 600;
+}
+.room-tile-name {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  max-width: calc(100% - 20px);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--stage-scrim);
+  font-size: 13px;
+}
+.room-tile-name span:first-of-type { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.room-role {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--gold-soft);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.room-panel {
+  flex: none;
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  margin: 16px 16px 16px 0;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  overflow: hidden;
+}
+.room-panel-body { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 16px; gap: 12px; }
+.room-panel-title { margin: 0; font-size: 15px; font-weight: 600; }
+
+.room-people { list-style: none; margin: 0; padding: 0; overflow-y: auto; display: grid; gap: 4px; }
+.room-person { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.avatar-sm { width: 32px; height: 32px; font-size: 13px; flex: none; }
+.room-person-name { flex: 1; min-width: 0; display: grid; }
+.room-person-name strong { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.room-person-name small { color: var(--muted-ink); font-size: 12px; }
+.room-person-mic { display: inline-flex; color: var(--ink-soft); }
+.room-person-mic.is-muted { color: var(--danger); }
+.room-speaking-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--speaking); flex: none; }
+
+.room-chat-note { margin: 0; color: var(--muted-ink); font-size: 12px; }
+.room-chat-list { flex: 1; min-height: 0; overflow-y: auto; list-style: none; margin: 0; padding: 0; display: grid; align-content: start; gap: 12px; }
+.room-chat-empty { color: var(--muted-ink); font-size: 14px; font-style: italic; }
+.room-chat-message p { margin: 2px 0 0; font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.room-chat-meta { display: flex; gap: 8px; align-items: baseline; font-size: 13px; }
+.room-chat-meta time { color: var(--muted-ink); font-size: 12px; }
+.room-chat-message.is-mine strong { color: var(--brand); }
+.room-chat-form { display: grid; gap: 6px; }
+.room-chat-form textarea {
+  width: 100%;
+  resize: none;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+}
+.room-chat-form textarea:focus { outline: 2px solid var(--focus-ring); border-color: var(--focus); }
+.room-chat-actions { display: flex; justify-content: space-between; align-items: center; }
+
+.room-controls {
+  flex: none;
+  height: 80px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  /* One fixed row: the control panel is end-aligned in it, so an open tray grows it upwards. */
+  grid-template-rows: 80px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+}
+.room-controls-main {
+  --panel-pad: 12px;
+  --tray-gap: 16px;
+  position: relative;
+  z-index: 5;
+  align-self: end;
+  /* Closed, the 72px panel sits centred in the 80px bar, level with the side buttons. */
+  margin-bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: var(--panel-pad);
+  border-radius: 24px;
+  background: var(--stage-panel);
+  /* As in Meet the width never changes — it is the buttons' — and only the height moves: useDeviceTray
+     sets it in pixels so it can spring. */
+  transition: height 0.36s var(--ease-spring);
+}
+.room-controls-main.is-resizing { overflow: clip; }
+/* Above the tray, which rises from behind it. */
+.room-controls-row { position: relative; z-index: 1; flex: none; display: flex; gap: 12px; }
+.room-controls-side { position: relative; z-index: 6; display: flex; gap: 4px; justify-self: end; }
+.room-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 24px;
+  background: var(--stage-control);
+  color: #fff;
+  cursor: pointer;
+  /* As in Meet: switching a device off morphs the pill into a rounded square. */
+  transition: border-radius 0.2s ease, background-color 0.2s ease;
+}
+.room-control:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.room-control:disabled { opacity: 0.6; cursor: default; }
+/* A device you switched off, as in Meet: a soft red button with a deep red icon, not a solid red
+   one — solid red is the leave button alone. */
+.room-control-off { width: 48px; border-radius: 12px; background: var(--stage-off-bg); color: var(--stage-off-ink); }
+.room-control-active { background: var(--brand-wash); color: var(--brand-ink); }
+.room-control-leave { width: 72px; border-radius: 24px; background: var(--danger); }
+.room-control-side { width: 48px; background: transparent; color: var(--sidebar-ink-soft); }
+.room-control-side.room-control-active { background: var(--brand-wash); color: var(--brand-ink); }
+/* Hover and press as in Meet (Material 3): a layer of the content colour over the button, 8% on
+   hover and 12% while pressed, fading in 75ms — a dark button lightens, a light one darkens. */
+.room-control::before,
+.room-split::before,
+.room-select-trigger::before,
+.room-select-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 75ms linear;
+}
+/* Only where there is a real hover: a tap on a touch screen would leave it lit. */
+@media (hover: hover) {
+  :is(.room-control, .room-select-trigger, .room-select-item):hover:not(:disabled)::before,
+  .room-split:has(> .room-split-more:hover)::before { opacity: 0.08; }
+}
+:is(.room-control, .room-select-trigger, .room-select-item):active:not(:disabled)::before,
+.room-split:has(> .room-split-more:active)::before { opacity: 0.12; }
+/* The label, shown on hover or keyboard focus above the button. */
+.room-control-tip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+}
+@media (hover: hover) {
+  .room-control:hover .room-control-tip { opacity: 1; transition-delay: 0.5s; }
+}
+.room-control:focus-visible .room-control-tip { opacity: 1; transition-delay: 0.5s; }
+/* With a tray open the pickers sit where the tooltips would. Hidden rather than removed, so a tip
+   under the pointer when the tray closes still waits its 0.5s. */
+.room-controls-main.is-open .room-control-tip { visibility: hidden; opacity: 0; transition: none; }
+/* Microphone and camera carry their tray arrow on the left, in one pill, as in Meet. */
+/* As in Meet: on, a darker pill with the button as a round of the usual button colour at its right;
+   off, both clusters turn the same deep red rounded rectangle with a pale red button. */
+.room-split {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 24px;
+  background: var(--stage-control-dim);
+  color: var(--stage-ink-dim);
+  transition: border-radius 0.2s ease, background-color 0.2s ease;
+}
+.room-split > .room-control { width: 48px; }
+/* The arrow's hover layer is light on the dark pill and pale red on the deep red one. */
+.room-split::before { background: var(--stage-ink); }
+.room-split:has(> .room-control-off)::before { background: var(--stage-off-bg); }
+.room-split:has(> .room-control-off) { border-radius: 12px; background: var(--stage-off-ink); color: var(--stage-off-bg); }
+.room-split-more {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 48px;
+  padding: 0 0 0 4px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+/* The arrow's hover lights the whole pill from behind, as in Meet, where the arrow is a button the
+   full width of the cluster with the microphone or camera button on top of it. */
+.room-split-more > * { grid-area: 1 / 1; }
+.room-split-more svg { transition: transform 0.36s var(--ease-spring), opacity 0.15s linear; }
+.room-split-more[aria-expanded="true"] svg { transform: rotate(180deg); }
+/* While the microphone is on, three bars follow your voice where the arrow is; pointing at it, or
+   its tray being open, slides the arrow back up in their place, as Meet does. */
+.room-level { display: flex; align-items: center; gap: 2px; height: 14px; transition: opacity 0.15s linear; }
+.room-level > span {
+  width: 3px;
+  height: calc(3px + var(--level, 0) * var(--reach));
+  border-radius: 2px;
+  background: var(--stage-accent);
+  transition: height 80ms linear;
+}
+.room-level > span:nth-child(odd) { --reach: 6px; }
+.room-level > span:nth-child(2) { --reach: 11px; }
+.room-split-more.has-level:not(:hover, :focus-visible, [aria-expanded="true"]) svg { opacity: 0; transform: translateY(8px); }
+.room-split-more.has-level:is(:hover, :focus-visible, [aria-expanded="true"]) .room-level { opacity: 0; }
+.room-split-more:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* The tray the arrow opens: right above the buttons and exactly as wide as them, so opening it never
+   widens anything. The panel's rising edge uncovers it (see useDeviceTray) while it fades in;
+   closing, it fades at once as the edge comes down over it, then turns hidden. Switching trays
+   swaps the pickers at once, as Meet does. */
+.room-tray {
+  position: absolute;
+  bottom: calc(var(--panel-pad) + var(--row-height, 48px) + var(--tray-gap));
+  left: var(--panel-pad);
+  right: var(--panel-pad);
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.08s linear, visibility 0s linear 0.36s;
+}
+.room-controls-main.is-open .room-tray {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.18s linear 0.04s, visibility 0s;
+}
+/* Pickers share the width equally whatever their device names, so choosing a device moves nothing;
+   a long name is shortened (the full one is in the menu and the picker's title). */
+.room-select { position: relative; flex: 1 1 0; min-width: 0; }
+.room-select-trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 32px;
+  padding: 0 8px 0 10px;
+  border: 1px solid var(--stage-line);
+  border-radius: 16px;
+  background: transparent;
+  color: var(--stage-ink-soft);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .room-select-trigger:hover:not(:disabled) { color: var(--stage-ink); }
+}
+.room-select-trigger[aria-expanded="true"] { background: var(--stage-control); color: var(--stage-ink); }
+.room-select-caret { flex: none; display: inline-flex; transition: transform 0.2s var(--ease-emphasized); }
+.room-select-trigger[aria-expanded="true"] .room-select-caret { transform: rotate(180deg); }
+.room-select-trigger:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.room-select-trigger:disabled { cursor: default; opacity: 0.75; }
+.room-select-value { flex: 1; min-width: 0; overflow: hidden; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+.room-select-menu {
+  position: absolute;
+  /* Right on the picker, over the panel's edge, as in Meet. */
+  bottom: calc(100% + 4px);
+  left: 0;
+  z-index: 10;
+  min-width: 100%;
+  width: max-content;
+  /* Wide enough for the usual device names on one line, as Meet's are. */
+  max-width: min(420px, calc(100vw - 16px));
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+  padding: 4px;
+  border-radius: 16px;
+  background: var(--stage-panel);
+  box-shadow: 0 2px 10px #0006;
+  /* Pops up from the picker: a quick fade and a 0.8 → 1 vertical grow, measured on Meet. */
+  transform-origin: bottom center;
+  animation: room-menu-fade 0.05s linear both, room-menu-grow 0.22s var(--ease-emphasized) both;
+}
+/* The right-hand picker's menu grows leftwards, so it stays inside the panel and off the toasts. */
+.room-select + .room-select .room-select-menu { left: auto; right: 0; }
+@keyframes room-menu-fade { from { opacity: 0; } }
+@keyframes room-menu-grow { from { transform: scaleY(0.8); } }
+/* As in Meet: names centred, the chosen one on a lighter plate in the accent colour with a tick. */
+.room-select-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 24px 1fr 24px;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--stage-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+.room-select-item:focus-visible { outline: 2px solid var(--stage-accent); outline-offset: -2px; }
+.room-select-item.is-active { border-radius: 12px; background: var(--stage-control); color: var(--stage-accent); }
+.room-select-check { display: inline-flex; }
+.room-select-text { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+.room-select-note { font-weight: 400; }
+/* The floating window (Document Picture-in-Picture): the stage, your camera in a corner, controls. */
+.room-pip-body { margin: 0; overflow: hidden; overscroll-behavior: none; background: var(--stage-bg); }
+.room-pip { height: 100vh; display: flex; flex-direction: column; gap: 8px; padding: 8px; box-sizing: border-box; }
+.room-pip-stage { position: relative; flex: 1; min-height: 0; display: grid; }
+.room-pip-stage > .room-tile, .room-pip-stage > .room-screen { min-height: 0; }
+.room-pip-self { position: absolute; right: 8px; bottom: 8px; width: 34%; aspect-ratio: 16 / 9; display: grid; box-shadow: var(--shadow); border-radius: 12px; }
+.room-pip-self .room-tile-avatar { width: 32px; height: 32px; font-size: 13px; }
+.room-pip-self .room-tile-name { display: none; }
+.room-pip-alone { margin: auto; color: #fff; font-size: 14px; }
+.room-pip-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  background: var(--stage-tile);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.room-elsewhere {
+  flex: 1;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  border-radius: 12px;
+  background: var(--stage-tile);
+  color: #fff;
+  text-align: center;
+}
+.room-elsewhere h2 { margin: 0; font-size: 20px; font-weight: 600; }
+.room-elsewhere p { margin: 0; max-width: 420px; color: var(--sidebar-ink-soft); font-size: 14px; }
+.room-pip-controls { flex: none; display: flex; justify-content: center; gap: 8px; }
+.room-pip .room-control { width: 52px; height: 40px; }
+.room-pip .room-control-off { width: 44px; }
+.room-pip .room-control-leave { width: 60px; }
+.room-pip .room-control-tip { display: none; }
+/* At the right edge, keep the tip on screen. */
+.room-controls-side .room-control:last-child .room-control-tip { left: auto; right: 0; transform: none; }
+.room-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: var(--alert-dot);
+  color: #fff;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
+}
+/* The room is one fixed screen, like a call app: no page scroll and no macOS rubber-band bounce
+   when a trackpad swipe reaches the edge — only the panels scroll inside themselves. */
+html:has(.room), body:has(.room) { overflow: hidden; overscroll-behavior: none; }
+.room-panel, .room-chat-list, .room-select-menu { overscroll-behavior: contain; }
+/* Toasts sit above the control bar in the room, not over "Chat" and "Rời phòng". */
+body:has(.room) .toast-stack { bottom: 96px; }
+body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
+/* Narrower than this, the right-aligned toasts reach the centre panel (432px with the floating-window
+   button): lift them over an open tray. */
+@media (max-width: 1175px) {
+  body:has(.room-controls-main.is-open) .toast-stack { bottom: 140px; }
+}
+
+@media (max-width: 1023px) {
+  .room-panel {
+    position: fixed;
+    inset: 62px 8px 88px auto;
+    width: min(360px, calc(100vw - 16px));
+    margin: 0;
+    box-shadow: var(--shadow);
+    z-index: 5;
+  }
+}
+
+/* Too narrow to centre the call controls between two equal sides: they start at the left, and the
+   pickers stack, as wide as the buttons. */
+@media (max-width: 720px) {
+  .room-controls { grid-template-columns: auto auto; justify-content: space-between; gap: 8px; padding: 0 8px; }
+  .room-controls-spacer { display: none; }
+  .room-tray { flex-direction: column; }
+  .room-select { flex: none; }
+  /* Stacked, both menus start at the left, as the panel does, and keep the page gutter. */
+  .room-select + .room-select .room-select-menu { left: 0; right: auto; }
+  .room-select-menu { max-width: min(420px, calc(100vw - 32px)); }
+  body:has(.room-controls-main.is-open) .toast-stack { bottom: 180px; }
+  /* No spring for the taller stacked tray: its dip on closing would reach the buttons. */
+  .room-controls-main { transition: height 0.3s var(--ease-emphasized); }
+}
+
+/* A phone: smaller buttons. */
+@media (max-width: 560px) {
+  /* A panel as wide as the screen less its gutters, the same on both sides. */
+  .room-panel { width: calc(100vw - 16px); }
+  /* The count keeps its number; the words stay for screen readers. */
+  .room-count-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  /* Phones have no floating window (Document Picture-in-Picture is desktop-only). */
+  .room-control-pip { display: none; }
+  .room-controls-main { --panel-pad: 8px; --tray-gap: 8px; margin-bottom: 11px; border-radius: 20px; }
+  .room-controls-row { gap: 6px; }
+  body:has(.room-controls-main.is-open) .toast-stack { bottom: 164px; }
+  .room-control, .room-split > .room-control, .room-control-off, .room-control-side { width: 42px; height: 42px; }
+  .room-control-leave { width: 54px; }
+  .room-split-more { width: 26px; height: 42px; }
 }

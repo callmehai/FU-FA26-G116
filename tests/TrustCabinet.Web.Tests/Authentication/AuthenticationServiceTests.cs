@@ -342,6 +342,23 @@ public class AuthenticationServiceTests
     }
 
     [Fact]
+    public async Task A_refresh_carries_the_capabilities_the_role_has_now()
+    {
+        // SCRUM-105: a role's capabilities change without ending its holders' sessions, so the
+        // refresh is what brings the new set — in both directions.
+        var user = NewUser();
+        _users.WithUser(user).WithCapabilities(BuiltInRoles.Secretary, Capability.MeetingCreator);
+        var service = NewService();
+        var signIn = await service.SignInAsync(user.Email, Password);
+
+        _users.WithCapabilities(BuiltInRoles.Secretary, Capability.MinutesEditor, Capability.AdminUsers);
+        var refreshed = await service.RefreshAsync(signIn.RefreshToken!);
+
+        Assert.Equal(SignInOutcome.Success, refreshed.Outcome);
+        Assert.Equal([Capability.MinutesEditor, Capability.AdminUsers], refreshed.Capabilities);
+    }
+
+    [Fact]
     public async Task A_refresh_token_works_only_once()
     {
         var user = NewUser();

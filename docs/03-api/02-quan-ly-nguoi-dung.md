@@ -20,7 +20,7 @@ Bản vẽ từng use case:
 | UC-06b — Sửa tài khoản | [UC06b_UpdateUserAccount.png](../06-sequencediagram/user-management/UC06b_UpdateUserAccount.png) |
 | UC-06c — Vô hiệu hoá / kích hoạt lại | [UC06c_DeactivateReactivateUserAccount.png](../06-sequencediagram/user-management/UC06c_DeactivateReactivateUserAccount.png) |
 | UC-07 — Đặt lại mật khẩu | [UC07_ResetUserPassword.png](../06-sequencediagram/user-management/UC07_ResetUserPassword.png) — chỉ vẽ nửa quản trị viên gửi liên kết |
-| UC-08 — Gán / đổi vai trò | *chưa có* — đặc tả đang trỏ nhầm sang sơ đồ UC-11 |
+| UC-08 — Gán / đổi vai trò | [UC08_AssignSystemRoleToUser.png](../06-sequencediagram/user-management/UC08_AssignSystemRoleToUser.png) |
 
 | Participant trong diagram | Code |
 |---|---|
@@ -51,9 +51,10 @@ khai báo thì không có cách nào phân biệt "cố tình làm tốt hơn" v
 3. **UC-06b có thêm nhánh trùng email** mà bản vẽ không có (`alt` của UC-06b chỉ có hai operand).
    Unique index không quan tâm bản vẽ viết gì: thiếu nhánh này thì sửa ai đó sang email đã tồn tại
    sẽ ra `500` thay vì `MSG08`.
-4. **UC-06b dùng `:Token Service` mà bản vẽ UC-06b không vẽ lifeline đó** — chỉ UC-06c có. Đổi vai
-   trò phải huỷ refresh token vì capability nằm trong access token; không huỷ thì người đó giữ
-   nguyên quyền cũ tới khi token hết hạn.
+4. **UC-06b dùng `:Token Service` mà bản vẽ UC-06b không vẽ lifeline đó** — chỉ UC-06c có. Đổi
+   email phải huỷ refresh token vì access token mang claim email. Đổi vai trò thì **không** huỷ
+   (SCRUM-105): server báo qua hub để trình duyệt refresh token, còn quyền bị mất đã bị từ chối ở
+   request kế tiếp vì mọi endpoint gắn quyền đọc lại quyền từ database.
 5. **UC-06b và UC-06c có thêm luật "không được xoá sổ quản trị viên cuối cùng"**, xem
    [phần riêng bên dưới](#luật-không-được-xoá-sổ-quản-trị-viên-cuối-cùng). Với **UC-06c** thì nó lấp
    vào nhánh *"Status change is not allowed"* bản vẽ đã có sẵn nhưng không nói khi nào. Với
@@ -75,11 +76,12 @@ khai báo thì không có cách nào phân biệt "cố tình làm tốt hơn" v
     "Create password reset request" là `IPasswordResetTokenStore` (Redis); `:Email Service` gửi
     **đồng bộ** qua SMTP chứ không qua hàng đợi `email_messages` — lý do ở
     [mục UC-07](#uc-07--post-apiusersidpassword-reset). `MSG15` trả HTTP `503`.
-11. **Luật mới không có trong đặc tả:** liên kết đang chờ bị thu hồi khi tài khoản bị vô hiệu hoá,
-    đổi email hoặc đổi vai trò; đặt lại thành công thì huỷ mọi refresh token của tài khoản.
-12. **UC-08 không có endpoint và sequence diagram riêng.** Gán / đổi vai trò chạy trên
-    `PUT /api/users/{id}` của UC-06b — xem [mục UC-08](#uc-08--gán--đổi-vai-trò-hệ-thống--dùng-put-apiusersid).
-    "Sơ đồ liên quan" của UC-08 trong đặc tả đang trỏ nhầm sang `UC11_ConfigureRolePermissions.png`.
+11. **Luật mới không có trong đặc tả:** liên kết đang chờ bị thu hồi khi tài khoản bị vô hiệu hoá
+    hoặc đổi email; đặt lại thành công thì huỷ mọi refresh token của tài khoản. Đổi vai trò không
+    còn thu hồi liên kết (SCRUM-105).
+12. **UC-08 không có endpoint riêng.** Gán / đổi vai trò chạy trên `PUT /api/users/{id}` của
+    UC-06b — xem [mục UC-08](#uc-08--gán--đổi-vai-trò-hệ-thống--dùng-put-apiusersid). Sequence diagram
+    của UC-08 vẽ một lời gọi `assignSystemRole` riêng; trong code đó là cùng endpoint sửa tài khoản.
 
 **Không có thay đổi database.** Cả hai bảng đã có sẵn từ migration `ExpandDomainModel`; story này
 chỉ đọc và ghi vào chúng. UC-07 cũng không thêm migration: token đặt lại mật khẩu sống ở Redis.
@@ -204,9 +206,16 @@ fields", nên phải chỉ ra được *field nào*.
 **Không có `password` trong body.** Đổi mật khẩu người khác là UC-07; một màn hình sửa hồ sơ không
 nên có khả năng âm thầm đặt mật khẩu cho ai đó.
 
-**Đổi vai trò sẽ kết thúc phiên của người đó.** Capability nằm trong access token, nên nếu không
-huỷ refresh token thì họ giữ nguyên quyền cũ cho tới khi token hết hạn. Sửa tên (không đổi role)
-thì **không** đăng xuất họ — sửa lỗi chính tả không nên đá ai ra khỏi hệ thống.
+**Đổi vai trò không đăng xuất người đó** (SCRUM-105, PO 22/10/2026). Server gửi sự kiện
+`capabilitiesChanged` trên `/hubs/notifications` tới đúng tài khoản đó sau khi lưu; trình duyệt của họ
+hiện thông báo, refresh token và ẩn ngay những gì vai trò mới không còn cho làm, không cần tải lại
+trang. Quyền bị mất thì server đã từ chối (`403`) từ request kế tiếp, vì mọi endpoint gắn quyền đọc
+lại quyền từ database — xem [04-phan-quyen-phia-server.md](04-phan-quyen-phia-server.md).
+
+**Đổi email thì vẫn kết thúc phiên** (kể cả khi đổi vai trò cùng lúc; khi đó không gửi
+`capabilitiesChanged`) và thu hồi liên kết đặt lại mật khẩu đang chờ: access token
+mang claim email, và phiên hay liên kết gắn với một địa chỉ gõ nhầm hoặc bị lộ phải bị huỷ. Sửa tên
+thì không đăng xuất ai.
 
 ## UC-06c · `PUT /api/users/{id}/status`
 
@@ -411,11 +420,10 @@ việc, phải giữ hai bộ luật đồng bộ với nhau.
 | EX-1 · Vai trò không còn | `400 MSG09`, `errors.roleId = "Vai trò không tồn tại."`, không đổi gì |
 | EX-2 · Hạ vai trò quản trị viên cuối cùng | `409 MSG12`, giữ vai trò cũ — xem [luật quản trị viên cuối cùng](#luật-không-được-xoá-sổ-quản-trị-viên-cuối-cùng) |
 
-Thêm một điều đặc tả không nói: **đổi vai trò sẽ đăng xuất người đó** (POST-2 "nhận capability của vai
-trò mới" chỉ thật sự đúng khi access token cũ — mang capability cũ — không được gia hạn nữa).
+Đổi vai trò **không** đăng xuất người đó (SCRUM-105): họ nhận thông báo và quyền của vai trò mới
+ngay, không cần tải lại trang — xem [mục UC-06b](#uc-06b--put-apiusersid).
 
-Đặc tả UC-08 đang trỏ "Sơ đồ liên quan" sang `UC11_ConfigureRolePermissions.png` — sơ đồ của use case
-khác. UC-08 chưa có sequence diagram riêng; để BA vẽ ở `BA Final Review`.
+Sequence diagram: [UC08_AssignSystemRoleToUser.png](../06-sequencediagram/user-management/UC08_AssignSystemRoleToUser.png).
 
 ## Mã thông báo
 

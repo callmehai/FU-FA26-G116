@@ -4,6 +4,8 @@ import { Icon } from './Icon'
 export interface SelectOption<T extends string> {
   value: T
   label: string
+  /** A colour (a CSS value) for a dot before the label, where the value is a state — "● Có mặt". */
+  dot?: string
 }
 
 /**
@@ -27,13 +29,21 @@ export function Select<T extends string>({
   onChange,
   label,
   id,
+  placeholder,
+  size,
+  disabled = false,
 }: {
-  value: T
+  /** Null while nothing is picked yet: the trigger then shows `placeholder` (or `label`), muted. */
+  value: T | null
   options: SelectOption<T>[]
   onChange: (value: T) => void
   /** Accessible name, used when the control has no visible <label> wrapping it. */
   label: string
   id?: string
+  placeholder?: string
+  /** 'sm' is the 32px control that sits inside a table row (40px on a touch screen). */
+  size?: 'sm'
+  disabled?: boolean
 }) {
   const generatedId = useId()
   const listId = id ?? generatedId
@@ -138,11 +148,12 @@ export function Select<T extends string>({
   }
 
   return (
-    <div className="select" ref={rootRef}>
+    <div className={size === 'sm' ? 'select select-sm' : 'select'} ref={rootRef}>
       <button
         type="button"
         ref={triggerRef}
-        className="select-trigger"
+        className={selected ? 'select-trigger' : 'select-trigger select-empty'}
+        disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listId}
@@ -154,7 +165,10 @@ export function Select<T extends string>({
         onKeyDown={onKeyDown}
       >
         {/* Nothing picked yet: the accessible name stands in, muted so it does not read as a value. */}
-        <span className={selected ? undefined : 'select-placeholder'}>{selected?.label ?? label}</span>
+        <span className={selected ? 'select-value' : 'select-placeholder'}>
+          {selected?.dot && <span className="select-dot" style={{ background: selected.dot }} aria-hidden="true" />}
+          {selected?.label ?? placeholder ?? label}
+        </span>
         <Icon name="chevronDown" size={16} />
       </button>
 
@@ -172,7 +186,10 @@ export function Select<T extends string>({
             >
               {/* Label first, so it lines up with the value in the trigger; the check sits at the
                   end of the row, where it marks one row without indenting all the others. */}
-              <span className="select-option-label">{option.label}</span>
+              <span className="select-option-label">
+                {option.dot && <span className="select-dot" style={{ background: option.dot }} aria-hidden="true" />}
+                {option.label}
+              </span>
               <span className="select-check">{option.value === value && <Icon name="check" size={16} />}</span>
             </li>
           ))}

@@ -4,6 +4,7 @@ import { Dialog } from '../../../components/Dialog'
 import { errorMessage, isApiError } from '../../../lib/errors'
 import type { Meeting } from '../../../types/meeting'
 import { workflowFailure, type WorkflowOutcome } from './workflowOutcome'
+import { Icon } from '../../../components/Icon'
 
 /** The backend's limit, counted after trimming. */
 const REASON_MAX = 1000
@@ -60,10 +61,11 @@ export function RejectMeetingDialog({
       onClose={close}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" onClick={close} disabled={pending}>
+          <button type="button" className="btn btn-outline" onClick={close} disabled={pending}>
             Huỷ
           </button>
           <button type="button" className="btn btn-danger" onClick={reject} disabled={pending}>
+            <Icon name="x" size={16} />
             {pending ? 'Đang từ chối…' : 'Từ chối'}
           </button>
         </>

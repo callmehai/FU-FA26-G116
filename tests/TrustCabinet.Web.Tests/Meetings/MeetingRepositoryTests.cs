@@ -23,7 +23,7 @@ namespace TrustCabinet.Web.Tests.Meetings;
 /// <summary>PostgreSQL integration checks for meeting transactions, row locks and audit constraints.</summary>
 public sealed class MeetingRepositoryTests : IAsyncLifetime
 {
-    private sealed class PostgreSqlMeetingApiFactory(string connectionString, bool failInvitationQueue = false) : TrustCabinetApiFactory
+    private sealed class PostgreSqlMeetingApiFactory(string connectionString) : TrustCabinetApiFactory
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -48,22 +48,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
                     // Enable the producer without registering the hosted SMTP worker.
                     options.Smtp.Enabled = true;
                 });
-                if (failInvitationQueue)
-                {
-                    services.RemoveAll<IMeetingInvitationQueue>();
-                    services.AddScoped<IMeetingInvitationQueue, FailingInvitationQueue>();
-                }
             });
         }
-    }
-
-    private sealed class FailingInvitationQueue : IMeetingInvitationQueue
-    {
-        public Task<int> QueueForPublishedMeetingAsync(Guid meetingId, CancellationToken ct = default)
-            => Task.FromException<int>(new InvalidOperationException("Invitation producer unavailable."));
-
-        public Task<Guid?> QueueNextUninitializedPublishedMeetingAsync(CancellationToken ct = default)
-            => Task.FromException<Guid?>(new InvalidOperationException("Invitation producer unavailable."));
     }
 
     private static readonly string AdminConnectionString =
@@ -150,12 +136,21 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     private MeetingService NewService(TrustCabinetDbContext? db = null, bool smtpEnabled = true)
     {
         var context = db ?? _db;
-        var invitations = new MeetingInvitationQueue(context, Options.Create(new EmailDeliveryOptions
+        return new MeetingService(new MeetingRepository(context), NullLogger<MeetingService>.Instance);
+    }
+
+    private async Task MaterializeInvitations(Guid meetingId, bool smtpEnabled = true)
+    {
+        await using var db = NewContext();
+        var processor = new MeetingInvitationDispatchProcessor(db, Options.Create(new EmailDeliveryOptions
         {
             ApplicationBaseUrl = "https://hop.example.vn",
-            Smtp = new SmtpOptions { Enabled = smtpEnabled, FromAddress = "no-reply@example.vn" },
-        }), TimeProvider.System, NullLogger<MeetingInvitationQueue>.Instance);
-        return new MeetingService(new MeetingRepository(context), NullLogger<MeetingService>.Instance, invitations: invitations);
+            Smtp = new() { Enabled = smtpEnabled, FromAddress = "no-reply@example.vn" }
+        }), TimeProvider.System, new TrustCabinet.Infrastructure.Participants.UnavailableGuestInvitationLinkProvider(),
+            NullLogger<MeetingInvitationDispatchProcessor>.Instance);
+        var intents = await db.MeetingInvitationDispatches.Where(d => d.MeetingId == meetingId).Select(d => d.Id).ToArrayAsync();
+        Assert.NotEmpty(intents);
+        foreach (var id in intents) await processor.ProcessAsync(id, default);
     }
 
     private static readonly DateTimeOffset FutureStart =
@@ -236,7 +231,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task Create_persists_the_meeting_and_initial_history_as_one_operation()
     {
-        var result = await NewService().CreateAsync(Input(), _creatorId);
+        var result = await NewService().CreateAsync(Input(), _creatorId, [new(_creatorId, "Chair")]);
 
         Assert.True(result.Succeeded);
         await using var verify = NewContext();
@@ -265,7 +260,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
                 FOR EACH ROW EXECUTE FUNCTION reject_test_meeting_history();
             """);
 
-        var result = await NewService().CreateAsync(Input(), _creatorId);
+        var result = await NewService().CreateAsync(Input(), _creatorId, [new(_creatorId, "Chair")]);
 
         Assert.Equal(MeetingOutcome.SaveFailed, result.Outcome);
         Assert.Equal(0, await _db.Meetings.CountAsync());
@@ -275,7 +270,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task PostgreSql_rejects_history_update_delete_truncate_and_meeting_deletion()
     {
-        var created = await NewService().CreateAsync(Input(), _creatorId);
+        var created = await NewService().CreateAsync(Input(), _creatorId, [new(_creatorId, "Chair")]);
         Assert.True(created.Succeeded);
         var history = await _db.MeetingStatusHistory.SingleAsync();
         var tampered = "tampered";
@@ -359,7 +354,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var newApprover = NewUser("Replacement approver", _approverRoleId);
         _db.Users.AddRange(oldApprover, newApprover);
         await _db.SaveChangesAsync();
-        var created = await NewService().CreateAsync(Input(), _creatorId);
+        var created = await NewService().CreateAsync(Input(), _creatorId, [new(_creatorId, "Chair")]);
         var meetingId = created.Meeting!.Id;
         _db.AgendaItems.Add(new AgendaItem { MeetingId = meetingId, Title = "Báo cáo", Position = 1 });
         await _db.SaveChangesAsync();
@@ -492,22 +487,15 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         _db.Users.AddRange(administrator, replacement, approver);
         _db.RoleCapabilities.Add(new RoleCapability { RoleId = adminRole.Id, Capability = Capability.AdminUsers });
         await _db.SaveChangesAsync();
-        var created = await NewService().CreateAsync(Input("Organizer recovery"), _creatorId);
+        var created = await NewService().CreateAsync(Input("Organizer recovery"), _creatorId, [new(replacement.Id, "Chair")]);
         var meetingId = created.Meeting!.Id;
         _db.AgendaItems.Add(new AgendaItem { MeetingId = meetingId, Title = "Báo cáo", Position = 1 });
         _db.MeetingParticipants.Add(new MeetingParticipant
         {
             MeetingId = meetingId,
-            UserId = replacement.Id,
-            Role = MeetingRole.Chair,
-            Response = InvitationResponse.Accepted,
-        });
-        _db.MeetingParticipants.Add(new MeetingParticipant
-        {
-            MeetingId = meetingId,
             UserId = approver.Id,
             Role = MeetingRole.Secretary,
-            Response = InvitationResponse.Delegated,
+            Response = InvitationResponse.Pending,
         });
         await _db.SaveChangesAsync();
         Assert.True((await NewService().TransitionAsync(meetingId,
@@ -591,6 +579,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(MeetingStatus.Published,
             await verify.Meetings.Where(item => item.Id == meetingId).Select(item => item.Status).SingleAsync());
         Assert.Equal(5, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
+        await MaterializeInvitations(meetingId);
         var emails = await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync();
         Assert.Equal(2, emails.Count);
         Assert.Contains(emails, email => email.ToAddress == replacement.Email && email.Status == EmailStatus.Queued);
@@ -604,7 +593,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var approver = NewUser("Workflow approver", _approverRoleId);
         _db.Users.Add(approver);
         await _db.SaveChangesAsync();
-        var created = await NewService().CreateAsync(Input(), _creatorId);
+        var created = await NewService().CreateAsync(Input(), _creatorId, [new(_creatorId, "Chair")]);
         Assert.True(created.Succeeded);
         var meetingId = created.Meeting!.Id;
         _db.AgendaItems.Add(new AgendaItem
@@ -622,16 +611,15 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         _db.Users.AddRange(inactive, delegated, member);
         await _db.SaveChangesAsync();
         _db.MeetingParticipants.AddRange(
-            new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId, Role = MeetingRole.Chair },
             new MeetingParticipant { MeetingId = meetingId, UserId = inactive.Id },
-            new MeetingParticipant { MeetingId = meetingId, UserId = member.Id },
+            new MeetingParticipant { MeetingId = meetingId, UserId = member.Id, Role = MeetingRole.Secretary },
             new MeetingParticipant
             {
                 MeetingId = meetingId,
                 UserId = delegated.Id,
-                Role = MeetingRole.Secretary,
+                Role = MeetingRole.Member,
                 Response = InvitationResponse.Delegated,
-                DelegatedToUserId = _creatorId,
+                DelegatedToUserId = member.Id,
             });
         await _db.SaveChangesAsync();
 
@@ -687,15 +675,17 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.All(history.Where(item => item.Action == MeetingHistoryAction.SubmitForApproval), item =>
             Assert.Equal(approver.Id, item.AssignedApproverId));
 
+        await MaterializeInvitations(meetingId, smtpEnabled);
         var invitations = await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync();
-        // Email reaches every active participant, the publishing creator and the delegated one included.
-        Assert.Equal(smtpEnabled ? 3 : 0, invitations.Count);
+        // Email reaches active non-delegated participants, including the publishing creator.
+        Assert.Equal(smtpEnabled ? 2 : 0, invitations.Count);
         Assert.Equal(
             (smtpEnabled
                 ? new[]
                 {
-                    $"meeting:{meetingId:D}:published:{_creatorId:D}",
-                    $"meeting:{meetingId:D}:published:{delegated.Id:D}",
+                    created.Meeting!.Chair is not null
+                        ? (await verify.MeetingParticipants.SingleAsync(p => p.MeetingId == meetingId && p.UserId == _creatorId)).InitialInvitationDeliveryKey!
+                        : throw new InvalidOperationException(),
                     $"meeting:{meetingId:D}:published:{member.Id:D}",
                 }
                 : Array.Empty<string>()).Order(),
@@ -721,7 +711,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task History_endpoint_reads_while_another_transaction_holds_the_meeting_row_lock()
     {
-        var created = await NewService().CreateAsync(Input(), _creatorId);
+        var created = await NewService().CreateAsync(Input(), _creatorId, [new(_creatorId, "Chair")]);
         Assert.True(created.Succeeded);
         var meetingId = created.Meeting!.Id;
 
@@ -802,6 +792,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(count, await _db.Meetings.CountAsync());
         Assert.Equal(MeetingStatus.Published, (await _db.Meetings.SingleAsync(meeting => meeting.Id == meetingId)).Status);
         Assert.Equal(4, await _db.MeetingStatusHistory.CountAsync(history => history.MeetingId == meetingId));
+        await MaterializeInvitations(meetingId);
         var invitations = await _db.EmailMessages.Where(email => email.MeetingId == meetingId).ToListAsync();
         Assert.Equal(3, invitations.Count);
         Assert.All(invitations, email =>
@@ -857,19 +848,24 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Publish_endpoint_commits_the_real_transaction_when_invitation_producer_fails()
+    public async Task Publish_endpoint_commits_durable_dispatch_without_legacy_producer()
     {
-        var created = await NewService().CreateAsync(Input(), _creatorId);
+        var created = await NewService().CreateAsync(Input(), _creatorId, [new(_creatorId, "Chair")]);
         var meetingId = created.Meeting!.Id;
         await _db.Meetings.Where(meeting => meeting.Id == meetingId)
             .ExecuteUpdateAsync(setters => setters.SetProperty(meeting => meeting.Status, MeetingStatus.Approved));
         var secretary = NewUser("Failure-path Secretary", _approverRoleId);
         _db.Users.Add(secretary);
         _db.MeetingParticipants.AddRange(
-            new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId, Role = MeetingRole.Chair },
-            new MeetingParticipant { MeetingId = meetingId, User = secretary, Role = MeetingRole.Secretary });
+            new MeetingParticipant
+            {
+                MeetingId = meetingId,
+                User = secretary,
+                Role = MeetingRole.Secretary,
+                Response = InvitationResponse.Pending,
+            });
         await _db.SaveChangesAsync();
-        using var app = new PostgreSqlMeetingApiFactory(_connectionString, failInvitationQueue: true);
+        using var app = new PostgreSqlMeetingApiFactory(_connectionString);
         using var client = app.CreateClient();
         var user = await _db.Users.AsNoTracking().SingleAsync(item => item.Id == _creatorId);
         var issuer = app.Services.GetRequiredService<ITokenIssuer>();
@@ -893,6 +889,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(secretary.Id, notification.UserId);
         Assert.Equal(publicationHistory.Id, notification.OriginHistoryId);
         Assert.Empty(await verify.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync());
+        Assert.Equal(2, await verify.MeetingInvitationDispatches.CountAsync(d => d.MeetingId == meetingId));
     }
 
     [Fact]
@@ -953,7 +950,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         _db.Users.Add(approver);
         var title = new string('a', 290) + string.Concat(Enumerable.Repeat("📋", 5));
         var service = NewService();
-        var created = await service.CreateAsync(Input(title), _creatorId);
+        var created = await service.CreateAsync(Input(title), _creatorId, [new(_creatorId, "Chair")]);
         Assert.True(created.Succeeded);
         var meetingId = created.Meeting!.Id;
         _db.AgendaItems.Add(new AgendaItem
@@ -965,13 +962,12 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             PresenterId = _creatorId,
         });
         _db.MeetingParticipants.AddRange(
-            new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId, Role = MeetingRole.Chair },
             new MeetingParticipant
             {
                 MeetingId = meetingId,
                 UserId = approver.Id,
                 Role = MeetingRole.Secretary,
-                Response = InvitationResponse.Delegated,
+                Response = InvitationResponse.Pending,
             });
         await _db.SaveChangesAsync();
 
@@ -985,12 +981,13 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
 
         Assert.Equal(MeetingWorkflowOutcome.Success, published.Outcome);
         _db.ChangeTracker.Clear();
+        await MaterializeInvitations(meetingId);
         var emails = await _db.EmailMessages.Where(item => item.MeetingId == meetingId).ToListAsync();
         Assert.Equal(2, emails.Count);
         var creatorEmail = await _db.Users
             .Where(user => user.Id == _creatorId).Select(user => user.Email).SingleAsync();
         var email = Assert.Single(emails, item => item.ToAddress == creatorEmail);
-        Assert.StartsWith("Thư mời họp: ", email.Subject);
+        Assert.StartsWith("Lời mời tham dự cuộc họp: ", email.Subject);
         Assert.True(email.Subject.Length <= 300);
         Assert.DoesNotContain("\uFFFD", email.Subject);
         Assert.Contains(title, email.Body, StringComparison.Ordinal);
@@ -1005,7 +1002,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var replacement = NewUser("Replacement approver", _approverRoleId);
         _db.Users.AddRange(originalApprover, replacement);
         await _db.SaveChangesAsync();
-        var created = await NewService().CreateAsync(Input(), _creatorId);
+        var created = await NewService().CreateAsync(Input(), _creatorId, [new(_creatorId, "Chair")]);
         var meetingId = created.Meeting!.Id;
         Assert.True((await NewService().TransitionAsync(meetingId,
             new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, originalApprover.Id),
@@ -1045,25 +1042,18 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task Publish_endpoint_allows_a_meeting_without_sessions()
     {
-        var created = await NewService().CreateAsync(Input(), _creatorId);
+        var created = await NewService().CreateAsync(Input(), _creatorId, [new(_creatorId, "Chair")]);
         var meetingId = created.Meeting!.Id;
-        var chair = NewUser("Publish Chair", _approverRoleId);
+        var chair = await _db.Users.SingleAsync(u => u.Id == _creatorId);
         var secretary = NewUser("Publish Secretary", _approverRoleId);
-        _db.Users.AddRange(chair, secretary);
+        _db.Users.Add(secretary);
         _db.MeetingParticipants.AddRange(
-            new MeetingParticipant
-            {
-                MeetingId = meetingId,
-                User = chair,
-                Role = MeetingRole.Chair,
-                Response = InvitationResponse.Delegated,
-            },
             new MeetingParticipant
             {
                 MeetingId = meetingId,
                 User = secretary,
                 Role = MeetingRole.Secretary,
-                Response = InvitationResponse.Delegated,
+                Response = InvitationResponse.Pending,
             });
         await _db.SaveChangesAsync();
         await _db.Meetings.Where(item => item.Id == meetingId).ExecuteUpdateAsync(setters =>
@@ -1082,7 +1072,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(MeetingStatus.Published, await verify.Meetings.Where(item => item.Id == meetingId)
             .Select(item => item.Status).SingleAsync());
         Assert.Equal(2, await verify.MeetingStatusHistory.CountAsync(item => item.MeetingId == meetingId));
-        Assert.False(await verify.Notifications.AnyAsync(item => item.MeetingId == meetingId));
+        Assert.Equal(1, await verify.Notifications.CountAsync(item => item.MeetingId == meetingId));
+        await MaterializeInvitations(meetingId);
         Assert.Equal(2, await verify.EmailMessages.CountAsync(item => item.MeetingId == meetingId));
     }
 
@@ -1167,7 +1158,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     {
         var approver = NewUser("Concurrent workflow approver", _approverRoleId);
         _db.Users.Add(approver);
-        var created = await NewService().CreateAsync(Input(), _creatorId);
+        var created = await NewService().CreateAsync(Input(), _creatorId, [new(_creatorId, "Chair")]);
         Assert.True(created.Succeeded);
         var meetingId = created.Meeting!.Id;
         _db.AgendaItems.Add(new AgendaItem
@@ -1179,13 +1170,12 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             PresenterId = _creatorId,
         });
         _db.MeetingParticipants.AddRange(
-            new MeetingParticipant { MeetingId = meetingId, UserId = _creatorId, Role = MeetingRole.Chair },
             new MeetingParticipant
             {
                 MeetingId = meetingId,
                 UserId = approver.Id,
                 Role = MeetingRole.Secretary,
-                Response = InvitationResponse.Delegated,
+                Response = InvitationResponse.Pending,
             });
         await _db.SaveChangesAsync();
 
@@ -1212,13 +1202,14 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         await using var verify = NewContext();
         Assert.Single(await verify.MeetingStatusHistory.Where(item =>
             item.MeetingId == meetingId && item.Action == MeetingHistoryAction.Publish).ToListAsync());
+        await MaterializeInvitations(meetingId);
         Assert.Equal(2, await verify.EmailMessages.CountAsync(item => item.MeetingId == meetingId));
     }
 
     [Fact]
     public async Task Update_waits_for_a_concurrent_status_change_then_refuses_the_stale_edit()
     {
-        var created = await NewService().CreateAsync(Input(), _creatorId);
+        var created = await NewService().CreateAsync(Input(), _creatorId, [new(_creatorId, "Chair")]);
         Assert.True(created.Succeeded);
         var id = created.Meeting!.Id;
 
@@ -1345,7 +1336,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
                 or MeetingStatus.InProgress
                 or MeetingStatus.Ended;
             Assert.Equal(participantCanRead, await repository.FindAccessibleAsync(meeting.Id, participant.Id) is not null);
-            Assert.Equal(participantCanRead, await repository.FindAccessibleAsync(meeting.Id, chair.Id) is not null);
+            Assert.NotNull(await repository.FindAccessibleAsync(meeting.Id, chair.Id));
             Assert.NotNull(await repository.FindAccessibleAsync(meeting.Id, secretary.Id));
 
             Assert.Null(await repository.FindAccessibleAsync(meeting.Id, unrelated.Id));
@@ -1393,8 +1384,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             MeetingStatus.Published, MeetingStatus.InProgress, MeetingStatus.Ended,
         ];
         Assert.All(participantPage.Items, item => Assert.Contains(item.Status, publishedStatuses));
-        Assert.Equal(3, chairPage.TotalCount);
-        Assert.All(chairPage.Items, item => Assert.Contains(item.Status, publishedStatuses));
+        Assert.Equal(7, chairPage.TotalCount);
+        Assert.Equal(Enum.GetValues<MeetingStatus>().Order(), chairPage.Items.Select(item => item.Status).Order());
         Assert.Equal(7, secretaryPage.TotalCount);
         Assert.Equal(0, unrelatedPage.TotalCount);
         Assert.Empty(unrelatedPage.Items);
@@ -1470,6 +1461,27 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(from.AddMinutes(15), item.PlannedStartTime);
         Assert.Equal(from.AddMinutes(75), item.PlannedEndTime);
         Assert.Equal(MeetingMode.InPerson, item.Mode);
+    }
+
+    [Fact]
+    public async Task Authorized_page_timing_splits_on_the_planned_start_against_now()
+    {
+        // As AI-eCabinet: upcoming starts after now; past started at or before now, under way included.
+        var now = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero);
+        var underWay = ListMeeting("Under way", MeetingStatus.Draft, now.AddMinutes(-30));
+        var startsNow = ListMeeting("Starts now", MeetingStatus.Draft, now);
+        var later = ListMeeting("Later", MeetingStatus.Draft, now.AddMinutes(1));
+        _db.Meetings.AddRange(underWay, startsNow, later);
+        await _db.SaveChangesAsync();
+        var repository = new MeetingRepository(_db);
+
+        var upcoming = await repository.FindAuthorizedPageAsync(
+            _creatorId, ListQuery() with { Timing = MeetingTiming.Upcoming, Now = now });
+        var past = await repository.FindAuthorizedPageAsync(
+            _creatorId, ListQuery() with { Timing = MeetingTiming.Past, Now = now });
+
+        Assert.Equal([later.Id], upcoming.Items.Select(item => item.Id));
+        Assert.Equal(new[] { underWay.Id, startsNow.Id }.Order(), past.Items.Select(item => item.Id).Order());
     }
 
     [Fact]

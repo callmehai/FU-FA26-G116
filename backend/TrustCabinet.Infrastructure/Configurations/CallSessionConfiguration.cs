@@ -13,6 +13,13 @@ public class CallSessionConfiguration : IEntityTypeConfiguration<CallSession>
 
         builder.HasIndex(c => new { c.MeetingId, c.StartedAt });
 
+        // One live room per meeting (ADR-0010). The first two participant_joined webhooks can
+        // arrive together; without this both would open a session.
+        builder.HasIndex(c => c.MeetingId)
+            .IsUnique()
+            .HasFilter("status = 'Active' AND meeting_id IS NOT NULL")
+            .HasDatabaseName(Calls.CallRepository.ActiveRoomIndex);
+
         builder.HasOne(c => c.Meeting)
             .WithMany()
             .HasForeignKey(c => c.MeetingId)

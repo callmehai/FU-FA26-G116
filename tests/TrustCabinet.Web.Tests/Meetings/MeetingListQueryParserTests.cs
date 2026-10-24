@@ -100,6 +100,19 @@ public sealed class MeetingListQueryParserTests
     }
 
     [Theory]
+    [InlineData("?timing=upcoming", MeetingTiming.Upcoming)]
+    [InlineData("?timing=past", MeetingTiming.Past)]
+    [InlineData("", null)]
+    public void Timing_reads_upcoming_or_past(string input, MeetingTiming? expected)
+    {
+        var (query, errors) = Parse(input);
+
+        Assert.Empty(errors);
+        Assert.Equal(expected, query!.Timing);
+        Assert.Null(query.Now);
+    }
+
+    [Theory]
     [InlineData("?status=published", "status")]
     [InlineData("?sensitivity=Unknown", "sensitivity")]
     [InlineData("?from=2026-10-01", "from")]
@@ -116,6 +129,8 @@ public sealed class MeetingListQueryParserTests
     [InlineData("?sortBy=startsAt", "sortBy")]
     [InlineData("?sortDir=up", "sortDir")]
     [InlineData("?status=Draft&status=Published", "status")]
+    [InlineData("?timing=today", "timing")]
+    [InlineData("?timing=Upcoming", "timing")]
     public void Invalid_value_returns_its_field_error(string input, string field)
     {
         var (query, errors) = Parse(input);

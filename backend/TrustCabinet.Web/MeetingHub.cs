@@ -9,11 +9,11 @@ using TrustCabinet.Web.Endpoints;
 namespace TrustCabinet.Web;
 
 [Authorize]
-public sealed class MeetingHub(IMeetingRepository meetings, IAgendaGuestIdentityResolver identities,
+public sealed class MeetingHub(IMeetingRepository meetings, IMeetingGuestIdentityResolver identities,
     IAgendaGuestAccess guests) : Hub
 {
     internal static string Group(Guid meetingId, Guid userId) => $"meeting:{meetingId:D}:user:{userId:D}";
-    internal static string GuestGroup(AgendaGuestSession guest)
+    internal static string GuestGroup(MeetingGuestSession guest)
         => $"meeting:{guest.MeetingId:D}:guest:{guest.InvitationId:D}:session:{guest.SessionId:D}";
 
     public override async Task OnConnectedAsync()
@@ -58,7 +58,7 @@ public sealed class MeetingHub(IMeetingRepository meetings, IAgendaGuestIdentity
             Group(meetingId, CapabilityGate.GatedUserId(Context.User!)), Context.ConnectionAborted);
     }
 
-    private async Task<bool> CanGuestRead(AgendaGuestSession guest, Guid meetingId)
+    private async Task<bool> CanGuestRead(MeetingGuestSession guest, Guid meetingId)
     {
         if (!guest.IsValid || guest.MeetingId != meetingId || !await guests.CanReadAsync(guest, Context.ConnectionAborted))
             return false;

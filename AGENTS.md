@@ -26,9 +26,26 @@ Case moves from Jira to Done, what each role hands over, and what Done means. Ji
 
 **Frontend work** follows the project-specific skills in [.claude/skills/](.claude/skills/):
 [frontend-ui-design](.claude/skills/frontend-ui-design/SKILL.md) for how a screen is designed and
-built, and [verify-ui-in-browser](.claude/skills/verify-ui-in-browser/SKILL.md) for running the app
-and checking the change in a real browser before the PR. Claude Code loads them as skills; any other
-agent reads the two files directly. The third-party [evondev ui-ux skill](.agents/skills/ui-ux/SKILL.md)
+built, [verify-ui-in-browser](.claude/skills/verify-ui-in-browser/SKILL.md) for running the app
+and checking the change in a real browser before the PR,
+[check-responsive](.claude/skills/check-responsive/SKILL.md) for checking every change on a phone
+(390px, touch) as well as at 1200px and 1440px, and
+[minimize-text](.claude/skills/minimize-text/SKILL.md) for keeping each screen to the words people
+scan for, with the rest in tooltips, and [sloplint](.claude/skills/sloplint/SKILL.md)
+(phòng chống AI slop) for catching the generated look — gradients, glows, endless motion, KPI
+tiles, eyebrows, side stripes and the other tells catalogued from published research and the big
+design systems. Claude Code loads them as skills; any other agent reads the files directly.
+
+**sloplint in this repo.** The skill is [sloplint](https://github.com/callmehai/sloplint) `v0.3.0`,
+vendored unchanged (see its `VENDORED.md`). Run its CLI as `npx -y github:callmehai/sloplint#v0.3.0
+<scan|diff|static>` from the repository root wherever the skill says `node <skill>/checker/cli.mjs`:
+the repo has no root `node_modules`, and `npx` brings Playwright with it. `.slop.json` declares the
+exceptions our ADRs mandate (sidebar gradient, uppercase column headings, sensitivity icons, the
+call room's Meet pills); pass `--setup .slop.login.mjs` so each page signs in as a seeded user, and
+add `#tab=<tab label>`, `#open=notifications` or `#click=<button name>` to a URL to measure a
+detail tab, the notification panel or a dialog. A list that opens filtered to one status repeats it on every row, so scan it
+with `?status=all`. Lucide icons, Be Vietnam Pro and the blue `--brand` are project choices, not
+tells. The third-party [evondev ui-ux skill](.agents/skills/ui-ux/SKILL.md)
 is available as additional guidance; project rules here and `frontend-ui-design` take precedence.
 **Diagram and architecture work** uses [drawio-skill](.agents/skills/drawio-skill/SKILL.md)
 for creating, editing, and validating `.drawio` models (such as the ERD), following
@@ -103,6 +120,11 @@ Two processes, two terminals:
 dotnet run --project backend/TrustCabinet.Web   # :5225 — API
 cd frontend && npm run dev                      # :5173 — UI with hot reload
 ```
+
+Uploading meeting documents also needs the SeaweedFS container that `docker compose up -d` starts and
+the `FileStorage:*` user-secrets ([03-co-so-du-lieu.md §5](docs/02-design/03-co-so-du-lieu.md#5-kho-tệp-tài-liệu));
+without them the app still runs and uploads answer `503/MSG166`. The test server stores the bytes on
+Cloudflare R2 ([ADR-0024](docs/05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)).
 
 Open **http://localhost:5173** (not 5225). Vite proxies `/api` and `/hubs` to the backend — see
 [frontend/vite.config.ts](frontend/vite.config.ts).
@@ -274,6 +296,11 @@ Details in [docs/DEVELOPMENT_WORKFLOW.md §2.1](docs/DEVELOPMENT_WORKFLOW.md#21-
 - Meeting recordings and voice identification are personal data under Vietnam's Decree
   13/2023/NĐ-CP. When touching this area, state the consent and deletion obligations explicitly
   rather than silently persisting the data.
+- **The test server enforces a Content-Security-Policy** (`deploy/Caddyfile`); local development has
+  none. Scripts, fonts, images, frames and connections may come only from our own origin, Google
+  Fonts and Google Sign-In. A new outside source (a CDN, an analytics or AI service called from the
+  browser) works locally and is blocked on the server until it is added there. Never add
+  `'unsafe-inline'` or `'unsafe-eval'` to `script-src`: that is what keeps an XSS from running.
 - `backend/TrustCabinet.Web/wwwroot/` is build output. Edits there are lost on the next build.
 - **Never commit a connection string, API key or credential.** `appsettings.json` is committed, so
   secrets do not go there. Use `dotnet user-secrets set "ConnectionStrings:TrustCabinet" "..."` locally

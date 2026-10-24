@@ -1,0 +1,16 @@
+# LiveKit cho máy dev (ADR-0010). KHÔNG chứa secret: key được truyền qua biến môi trường
+# LIVEKIT_KEYS, docker-compose.yml đọc từ .env. Hướng dẫn: docs/02-design/03-co-so-du-lieu.md.
+port: 7880
+rtc:
+  tcp_port: 7881        # ICE/TCP dự phòng khi UDP bị chặn
+  udp_port: 7882        # một cổng UDP gom mọi peer; KHÔNG đặt port_range_start/end
+  use_external_ip: false
+  node_ip: 127.0.0.1    # thiếu dòng này LiveKit quảng bá IP container 172.x, trình duyệt không tới được
+room:
+  max_participants: 50
+webhook:
+  api_key: trustcabinet-dev          # phải trùng tên key trong LIVEKIT_KEYS
+  urls:
+    - http://host.docker.internal:5225/api/livekit/webhook
+logging:
+  level: info

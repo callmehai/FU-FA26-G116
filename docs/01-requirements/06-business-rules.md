@@ -1,6 +1,6 @@
 # Danh mục Quy tắc Nghiệp vụ (Business Rules) — TrustCabinet
 
-Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX cập nhật 18/10/2026, bao gồm ADR-0020, quyết định SCRUM-19 ngày 16/10/2026, trao đổi PO 16/10/2026 và góp ý hội đồng review lần 1). Có **260 BR đang dùng** trong dải `BR-01` → `BR-312`; mã `BR` độc lập với mã thông báo `MSG`.
+Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX cập nhật 22/10/2026, bao gồm ADR-0020, quyết định SCRUM-19 ngày 16/10/2026, trao đổi PO 16/10/2026, góp ý hội đồng review lần 1, và BR-313/BR-314 theo SCRUM-105). Có **267 BR đang dùng** trong dải `BR-01` → `BR-319`; BR-315 → BR-319 (tài liệu trong phòng họp, trả lời góp ý, kiểm toán lượt xem tài liệu mật, giới hạn mỗi lần tải lên — SCRUM-21/22/23) PO duyệt 22/10/2026 và đã đồng bộ vào Report 3 DOCX; mã `BR` độc lập với mã thông báo `MSG`.
 
 ## Quy ước đồng bộ
 
@@ -275,6 +275,13 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-310` | The current Chair or Secretary may record or change an Item conclusion only for an InProgress or Done Item, while the Meeting is InProgress or after it ends until the minutes draft is generated. After that, the conclusion is read-only. | UC-77 | Review 18/10/2026 — Agenda presenter and Item conclusion | Agenda Management |
 | `BR-311` | The system records who last saved an Item conclusion and when, and shows them with the conclusion. | UC-26, UC-77 | Review 18/10/2026 — Agenda presenter and Item conclusion | Agenda Management |
 | `BR-312` | Meeting Minutes include each Agenda Item with its Presenter and recorded conclusion. | UC-59, UC-77 | Review 18/10/2026 — Agenda presenter and Item conclusion | Agenda Management |
+| `BR-313` | A change to a role's permissions applies to the users holding that role from their next action, without ending their active sessions. | UC-11 | SCRUM-105, BA 22/10/2026 | Role-Based Access Control |
+| `BR-314` | Changing a user's system role applies the new role's permissions to that user from their next action, without ending their active sessions. | UC-08 | SCRUM-105, PO 22/10/2026 | Role-Based Access Control |
+| `BR-315` | Opening a Meeting document from the online meeting room keeps the user in the room. | UC-32a, UC-32c | SCRUM-21, BA 22/10/2026 — ADR-0011, PO approved 22/10/2026 | Document Management |
+| `BR-316` | The online meeting room offers Meeting documents for reading and commenting only; adding, linking and removing documents are done outside the room. | UC-32a | SCRUM-21, BA 22/10/2026 — ADR-0011, PO approved 22/10/2026 | Document Management |
+| `BR-317` | A reply belongs to one top-level comment of the same Meeting document; replies are not nested further. | UC-35 | SCRUM-23, BA 22/10/2026 — PO approved 22/10/2026 | Document Management |
+| `BR-318` | Each view or download of a document of a Confidential or Secret Meeting is recorded in the audit log with the user and time. | UC-32c | SCRUM-22, PO 13/10/2026 | Document Management |
+| `BR-319` | One upload from the computer to a Meeting contains at most 10 files with a total size of at most 200 MB. | UC-33a | PO 22/10/2026 — as in AI-eCabinet | Document Management |
 
 ## BR đã ngừng dùng
 
