@@ -176,27 +176,29 @@ Mười điểm lệch trong note 07 chia làm ba loại: sửa đặc tả, ch�
 | UC-33a | EX-3 | Thêm các trường hợp (điểm 5, 9): request không có tệp, không phải multipart hoặc multipart hỏng → MSG164; **đuôi phải là `.pdf` hoặc `.docx` và khớp nội dung**; PDF chỉ nhận khi `%PDF-` ở đầu tệp. |
 | UC-33a | EX-7 | Nêu rõ (điểm 4, 10): cuộc họp bị giấu và cuộc họp không tồn tại nhận cùng một MSG174; người từng là Chủ tọa/Thư ký mất vai trò và không còn xem được cuộc họp nhận MSG174, không phải MSG162. |
 | UC-33a | EX-8 | Nêu rõ (điểm 3): MSG288 dùng cho cả "> 10 tệp" và "> 200 MB", kể cả khi kích thước khai báo vượt giới hạn — từ chối trước khi nhận hết tệp. |
+**Trạng thái lượt 2:** đã viết patch ([patch-scrum-107.md](note-may-nha/patch-scrum-107.md)) và sửa `05-use-case-specifications.md` cho UC-33a (AF-1, EX-1, EX-3, EX-6, EX-7, EX-8). Report 3 DOCX chưa dán — Khánh dán rồi chạy `sync_reports.py`.
+
 
 ### 6.2 Business Rules
 
-- [ ] **BR-187** hoặc **BR-215** (điểm 9): thêm "the file extension must be .pdf or .docx and match the detected content". Mặc định sửa BR-215 vì BR đó nói về nhận diện theo nội dung.
-- [ ] Cân nhắc BR mới (BR-32x) cho thứ tự kiểm "authority before file validation" (điểm 1) — **hỏi PO**; mặc định chỉ ghi trong UC-33a và sequence, không thành BR.
-- [ ] **BR-319**: không đổi nội dung; đối chiếu câu với EX-8 mới.
+- [x] **BR-187** hoặc **BR-215** (điểm 9): thêm "the file extension must be .pdf or .docx and match the detected content". Mặc định sửa BR-215 vì BR đó nói về nhận diện theo nội dung. → Đã sửa BR-215 (mặc định); BR-187 giữ nguyên.
+- [x] Cân nhắc BR mới (BR-32x) cho thứ tự kiểm "authority before file validation" (điểm 1) — **hỏi PO**; mặc định chỉ ghi trong UC-33a và sequence, không thành BR. → Dùng mặc định: không tạo BR, chỉ ghi ở UC-33a AF-1 và sequence.
+- [x] **BR-319**: không đổi nội dung; đối chiếu câu với EX-8 mới.
 
 ### 6.3 Message (Report 3 V.2)
 
-- [ ] **MSG288** (dòng 256): đổi cột trạng thái từ "Dành sẵn, chưa triển khai" thành loại hiển thị thật (Form error), vì SCRUM-107 đã triển khai.
-- [ ] **MSG164**: thêm tình huống request không có tệp / không phải multipart / đuôi không khớp nội dung.
-- [ ] **MSG174**: thêm tình huống người mất vai trò không còn xem được cuộc họp.
+- [x] **MSG288** (dòng 256): đổi cột trạng thái từ "Dành sẵn, chưa triển khai" thành loại hiển thị thật (Form error), vì SCRUM-107 đã triển khai. → Patch: cột loại "Form error". Catalogue đã ghi "Đã triển khai SCRUM-107".
+- [x] **MSG164**: thêm tình huống request không có tệp / không phải multipart / đuôi không khớp nội dung. → Patch: sửa cột Where, câu giữ nguyên.
+- [x] **MSG174**: thêm tình huống người mất vai trò không còn xem được cuộc họp. → Patch: sửa cột Where, câu giữ nguyên.
 
 ### 6.4 Dữ liệu
 
-- [ ] Report 3 I.3.2 entity *Document* (dòng ~404, `PageCount`) (điểm 6): "PageCount do trình duyệt gửi, chỉ lưu cho PDF khi là số nguyên dương; không rõ thì để trống, không từ chối tải lên".
+- [x] Report 3 I.3.2 entity *Document* (dòng ~404, `PageCount`) (điểm 6): "PageCount do trình duyệt gửi, chỉ lưu cho PDF khi là số nguyên dương; không rõ thì để trống, không từ chối tải lên". → Trường nằm ở entity 19 *StoredFile*, không phải Document; patch ghi đúng chỗ.
 
 ### 6.5 Diagram
 
-- [ ] Sequence `docs/06-sequencediagram/document-management/UC33a_UploadDocumentsToMeeting` (.txt, tab drawio, PNG): đưa khối kiểm quyền/trạng thái lên trước khối kiểm tệp; thêm nhánh MSG164 (multipart hỏng, đuôi không khớp), MSG288 (chặn theo kích thước khai báo), MSG174 (mất vai trò); kho lưu ghi là "Object storage (R2)" — đối chiếu tên participant với ADR-0024.
-- [ ] Class diagram `feature-07-document-management-class-diagram.drawio`: kiểm tra `pageCount` nullable và lớp lưu trữ đối tượng (R2/S3) có khớp không.
+- [x] Sequence `docs/06-sequencediagram/document-management/UC33a_UploadDocumentsToMeeting` (.txt, tab drawio, PNG): đưa khối kiểm quyền/trạng thái lên trước khối kiểm tệp; thêm nhánh MSG164 (multipart hỏng, đuôi không khớp), MSG288 (chặn theo kích thước khai báo), MSG174 (mất vai trò); kho lưu ghi là "Object storage (R2)" — đối chiếu tên participant với ADR-0024.
+- [x] Class diagram `feature-07-document-management-class-diagram.drawio`: kiểm tra `pageCount` nullable và lớp lưu trữ đối tượng (R2/S3) có khớp không. → Đã kiểm: `pageCount: int?` và `FileStorage` khớp, không cần sửa.
 
 ### 6.6 Chỉ ghi nhận, không sửa đặc tả
 
@@ -287,6 +289,7 @@ Mười điểm lệch trong note 07 chia làm ba loại: sửa đặc tả, ch�
 4. Diagram: sequence `.txt` → tab trong drawio → `python scripts/sync_sequence_drawio_png.py`;
    rồi các diagram riêng của ticket.
 5. Đánh dấu `[x]` các mục đã xong trong plan; một commit cho lượt đó (commit message tiếng Việt).
+   **Cấm** dòng `Co-Authored-By: Claude …` hay bất kỳ dòng attribution nào trong commit.
 6. Dừng lại, báo Khánh. Không tự sang lượt sau.
 
 ### 8.3 Giữ token thấp

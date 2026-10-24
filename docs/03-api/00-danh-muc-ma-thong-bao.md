@@ -484,7 +484,7 @@ Các mã dưới đây **dành sẵn** cho đặc tả ngày 14/10/2026, chưa p
 | `MSG161` | UC-33a / Normal Flow · Dành sẵn | Documents added to the Meeting successfully. |
 | `MSG162` | UC-33a / EX-1 · Dành sẵn | You no longer have permission to add documents to this Meeting. |
 | `MSG163` | ADR-0020 · Ngừng dùng | Retired: document addition and Agenda Item linking are separate operations under ADR-0020. Do not reuse. |
-| `MSG164` | UC-33a / EX-3; UC-36 / EX-1 · Dành sẵn | Select valid PDF or DOCX files, each no larger than 50 MB. |
+| `MSG164` | UC-33a / EX-3 (also no file or an invalid request); UC-36 / EX-1 · Dành sẵn | Select valid PDF or DOCX files, each no larger than 50 MB. |
 | `MSG165` | UC-33a / EX-4 · Dành sẵn | One or more selected documents are already attached to the Meeting. |
 | `MSG166` | UC-33a / EX-5 · Dành sẵn | Unable to add the documents. No documents were added. Please try again. |
 | `MSG167` | UC-33c / Normal Flow · Dành sẵn | Document removed from the Meeting successfully. |
@@ -494,7 +494,7 @@ Các mã dưới đây **dành sẵn** cho đặc tả ngày 14/10/2026, chưa p
 | `MSG171` | UC-33c / EX-4 · Dành sẵn | Unable to remove the document. It remains attached to the Meeting. Please try again. |
 | `MSG172` | UC-33a / EX-6 · Dành sẵn | Documents cannot be added after the Meeting has ended. |
 | `MSG173` | ADR-0020 · Ngừng dùng | Retired: Agenda Item status no longer locks document links under ADR-0020. Do not reuse. |
-| `MSG174` | UC-33a / EX-7; UC-33b / EX-7; UC-33c / EX-5; UC-33d / EX-7 · Dành sẵn | This Meeting is not accessible. |
+| `MSG174` | UC-33a / EX-7 (also a former Chair or Secretary who can no longer view the Meeting); UC-33b / EX-7; UC-33c / EX-5; UC-33d / EX-7 · Dành sẵn | This Meeting is not accessible. |
 | `MSG175` | UC-34 / EX-2; UC-71a / EX-1; UC-71b / EX-1; UC-71c / EX-1; UC-72b / EX-1; UC-72c / EX-1; UC-72d / EX-1 · Dành sẵn | This personal-library item is not available. |
 | `MSG176` | UC-34 / EX-1 · Dành sẵn | Unable to load your personal document library. Please try again. |
 | `MSG177` | UC-36 / Normal Flow · Dành sẵn | Documents uploaded to your personal library successfully. |

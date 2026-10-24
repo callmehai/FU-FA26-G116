@@ -6,7 +6,7 @@ control ":Meeting Document Controller" as DocumentController
 control ":Meeting Document Service" as DocumentService
 participant ":Meeting Access Policy" as MeetingAccessPolicy
 participant ":Folder Repository" as FolderRepository
-participant ":File Storage" as FileStorage
+participant ":Object Storage (R2)" as FileStorage
 participant ":Meeting Document Repository" as MeetingDocumentRepository
 database ":Database" as Database
 
@@ -19,47 +19,47 @@ activate DocumentController
 DocumentController->DocumentService: uploadDocuments(meetingId, files, actor)
 activate DocumentService
 
-DocumentService->DocumentService: Check at most 10 files totalling at most 200 MB (BR-319)
+DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting\nand is its current Chair or Secretary (BR-184, BR-195)
+activate MeetingAccessPolicy
+MeetingAccessPolicy->Database: Retrieve Meeting status and the actor's current Meeting role
+activate Database
+Database-->MeetingAccessPolicy: Meeting status and Meeting role / Not found
+deactivate Database
+MeetingAccessPolicy-->DocumentService: Access, Meeting role and Meeting status / No access
+deactivate MeetingAccessPolicy
 
-alt Submission exceeds the limit - EX-8
-    DocumentService-->DocumentController: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
-    DocumentController-->DocumentsTab: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
-    DocumentsTab-->Actor: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
+alt Meeting is unavailable or the actor can no longer view it - EX-7
+    DocumentService-->DocumentController: MSG174 - This Meeting is not accessible.
+    DocumentController-->DocumentsTab: MSG174 - This Meeting is not accessible.
+    DocumentsTab-->Actor: MSG174 - This Meeting is not accessible.
 
-else Submission is within the limit
-    DocumentService->DocumentService: Check every file is a PDF or DOCX by its actual content\nand no larger than 50 MB (BR-187, BR-214, BR-215)
+else Actor is no longer the Chair or Secretary - EX-1
+    DocumentService-->DocumentController: MSG162 - You no longer have permission to add documents to this Meeting.
+    DocumentController-->DocumentsTab: MSG162 - You no longer have permission to add documents to this Meeting.
+    DocumentsTab-->Actor: MSG162 - You no longer have permission to add documents to this Meeting.
 
-    alt No file, or one or more files are invalid - EX-3
-        DocumentService-->DocumentController: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
-        DocumentController-->DocumentsTab: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
-        DocumentsTab-->Actor: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
+else Meeting has ended - EX-6
+    DocumentService-->DocumentController: MSG172 - Documents cannot be added after the Meeting has ended.
+    DocumentController-->DocumentsTab: MSG172 - Documents cannot be added after the Meeting has ended.
+    DocumentsTab-->Actor: MSG172 - Documents cannot be added after the Meeting has ended.
 
-    else Every file is valid
-        DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting\nand is its current Chair or Secretary (BR-184, BR-195)
-        activate MeetingAccessPolicy
-        MeetingAccessPolicy->Database: Retrieve Meeting status and the actor's current Meeting role
-        activate Database
-        Database-->MeetingAccessPolicy: Meeting status and Meeting role / Not found
-        deactivate Database
-        MeetingAccessPolicy-->DocumentService: Access, Meeting role and Meeting status / No access
-        deactivate MeetingAccessPolicy
+else Actor may add documents
+    DocumentService->DocumentService: Check at most 10 files totalling at most 200 MB (BR-319)
 
-        alt Meeting is unavailable - EX-7
-            DocumentService-->DocumentController: MSG174 - This Meeting is not accessible.
-            DocumentController-->DocumentsTab: MSG174 - This Meeting is not accessible.
-            DocumentsTab-->Actor: MSG174 - This Meeting is not accessible.
+    alt Submission or its declared size exceeds the limit - EX-8
+        DocumentService-->DocumentController: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
+        DocumentController-->DocumentsTab: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
+        DocumentsTab-->Actor: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
 
-        else Actor is no longer the Chair or Secretary - EX-1
-            DocumentService-->DocumentController: MSG162 - You no longer have permission to add documents to this Meeting.
-            DocumentController-->DocumentsTab: MSG162 - You no longer have permission to add documents to this Meeting.
-            DocumentsTab-->Actor: MSG162 - You no longer have permission to add documents to this Meeting.
+    else Submission is within the limit
+        DocumentService->DocumentService: Check each file has a .pdf or .docx extension matching its content\nand is no larger than 50 MB (BR-187, BR-214, BR-215)
 
-        else Meeting has ended - EX-6
-            DocumentService-->DocumentController: MSG172 - Documents cannot be added after the Meeting has ended.
-            DocumentController-->DocumentsTab: MSG172 - Documents cannot be added after the Meeting has ended.
-            DocumentsTab-->Actor: MSG172 - Documents cannot be added after the Meeting has ended.
+        alt No file, malformed request, or one or more files are invalid - EX-3
+            DocumentService-->DocumentController: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
+            DocumentController-->DocumentsTab: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
+            DocumentsTab-->Actor: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
 
-        else Actor may add documents
+        else Every file is valid
             DocumentService->FolderRepository: Get the actor's folder for this Meeting (BR-227)
             activate FolderRepository
             FolderRepository->Database: Retrieve the folder linked to this Meeting and owner

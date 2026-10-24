@@ -24966,7 +24966,7 @@ deactivate NotificationPanel
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <UserObject id="mermaid-uc33a_uploaddocumentstomeeting" label="" mermaidData="{&quot;data&quot;: &quot;%%{init: {\&quot;sequence\&quot;: {\&quot;mirrorActors\&quot;: false}}}%%\nsequenceDiagram\nactor Actor as \&quot;Chair or Secretary\&quot;\nparticipant DocumentsTab@{ \&quot;type\&quot;: \&quot;boundary\&quot; } as \&quot;Meeting Documents Tab\&quot;\nparticipant DocumentController@{ \&quot;type\&quot;: \&quot;control\&quot; } as \&quot;:Meeting Document Controller\&quot;\nparticipant DocumentService@{ \&quot;type\&quot;: \&quot;control\&quot; } as \&quot;:Meeting Document Service\&quot;\nparticipant MeetingAccessPolicy as \&quot;:Meeting Access Policy\&quot;\nparticipant FolderRepository as \&quot;:Folder Repository\&quot;\nparticipant FileStorage as \&quot;:File Storage\&quot;\nparticipant MeetingDocumentRepository as \&quot;:Meeting Document Repository\&quot;\nparticipant Database@{ \&quot;type\&quot;: \&quot;database\&quot; } as \&quot;:Database\&quot;\nActor-&gt;&gt;DocumentsTab: Submit the selected files\nactivate DocumentsTab\nDocumentsTab-&gt;&gt;DocumentController: Upload files to the Meeting\nactivate DocumentController\nDocumentController-&gt;&gt;DocumentService: uploadDocuments(meetingId, files, actor)\nactivate DocumentService\nDocumentService-&gt;&gt;DocumentService: Check at most 10 files totalling at most 200 MB (BR-319)\nalt Submission exceeds the limit - EX-8\nDocumentService--&gt;&gt;DocumentController: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.\nDocumentController--&gt;&gt;DocumentsTab: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.\nDocumentsTab--&gt;&gt;Actor: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.\nelse Submission is within the limit\nDocumentService-&gt;&gt;DocumentService: Check every file is a PDF or DOCX by its actual content&lt;br/&gt;and no larger than 50 MB (BR-187, BR-214, BR-215)\nalt No file, or one or more files are invalid - EX-3\nDocumentService--&gt;&gt;DocumentController: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.\nDocumentController--&gt;&gt;DocumentsTab: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.\nDocumentsTab--&gt;&gt;Actor: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.\nelse Every file is valid\nDocumentService-&gt;&gt;MeetingAccessPolicy: Check actor can currently view the Meeting&lt;br/&gt;and is its current Chair or Secretary (BR-184, BR-195)\nactivate MeetingAccessPolicy\nMeetingAccessPolicy-&gt;&gt;Database: Retrieve Meeting status and the actor's current Meeting role\nactivate Database\nDatabase--&gt;&gt;MeetingAccessPolicy: Meeting status and Meeting role / Not found\ndeactivate Database\nMeetingAccessPolicy--&gt;&gt;DocumentService: Access, Meeting role and Meeting status / No access\ndeactivate MeetingAccessPolicy\nalt Meeting is unavailable - EX-7\nDocumentService--&gt;&gt;DocumentController: MSG174 - This Meeting is not accessible.\nDocumentController--&gt;&gt;DocumentsTab: MSG174 - This Meeting is not accessible.\nDocumentsTab--&gt;&gt;Actor: MSG174 - This Meeting is not accessible.\nelse Actor is no longer the Chair or Secretary - EX-1\nDocumentService--&gt;&gt;DocumentController: MSG162 - You no longer have permission to add documents to this Meeting.\nDocumentController--&gt;&gt;DocumentsTab: MSG162 - You no longer have permission to add documents to this Meeting.\nDocumentsTab--&gt;&gt;Actor: MSG162 - You no longer have permission to add documents to this Meeting.\nelse Meeting has ended - EX-6\nDocumentService--&gt;&gt;DocumentController: MSG172 - Documents cannot be added after the Meeting has ended.\nDocumentController--&gt;&gt;DocumentsTab: MSG172 - Documents cannot be added after the Meeting has ended.\nDocumentsTab--&gt;&gt;Actor: MSG172 - Documents cannot be added after the Meeting has ended.\nelse Actor may add documents\nDocumentService-&gt;&gt;FolderRepository: Get the actor's folder for this Meeting (BR-227)\nactivate FolderRepository\nFolderRepository-&gt;&gt;Database: Retrieve the folder linked to this Meeting and owner\nactivate Database\nDatabase--&gt;&gt;FolderRepository: Meeting folder / Not found\ndeactivate Database\nFolderRepository--&gt;&gt;DocumentService: Meeting folder / Not found\ndeactivate FolderRepository\nopt Meeting folder does not exist\nDocumentService-&gt;&gt;DocumentService: Prepare a new folder at the library root named&lt;br/&gt;\&quot;&lt;Meeting title&gt; - dd/mm/yyyy\&quot; in Vietnam time (BR-192, BR-226, BR-228)\nend\nDocumentService-&gt;&gt;FileStorage: Store each file unchanged as a new stored file (BR-183, BR-216)\nactivate FileStorage\nFileStorage--&gt;&gt;DocumentService: All files stored / Storing failed\ndeactivate FileStorage\nalt Files cannot be stored - EX-5\nDocumentService-&gt;&gt;FileStorage: Delete the files already stored in this submission (BR-286)\nactivate FileStorage\nFileStorage--&gt;&gt;DocumentService: Files deleted\ndeactivate FileStorage\nDocumentService--&gt;&gt;DocumentController: MSG166 - Unable to add the documents. No documents were added. Please try again.\nDocumentController--&gt;&gt;DocumentsTab: MSG166 - Unable to add the documents. No documents were added. Please try again.\nDocumentsTab--&gt;&gt;Actor: MSG166 - Unable to add the documents. No documents were added. Please try again.\nelse All files stored\nDocumentService-&gt;&gt;MeetingDocumentRepository: Save the stored files, the library documents in the Meeting folder&lt;br/&gt;and the general Meeting documents together (BR-194, BR-210, BR-229, BR-286)\nactivate MeetingDocumentRepository\nMeetingDocumentRepository-&gt;&gt;Database: Insert Meeting folder if new, stored files,&lt;br/&gt;library documents and Meeting documents in one transaction\nactivate Database\nDatabase--&gt;&gt;MeetingDocumentRepository: Saved / Failed\ndeactivate Database\nMeetingDocumentRepository--&gt;&gt;DocumentService: Saved / Failed\ndeactivate MeetingDocumentRepository\nalt Addition cannot be completed - EX-5\nDocumentService-&gt;&gt;FileStorage: Delete the files stored in this submission (BR-286)\nactivate FileStorage\nFileStorage--&gt;&gt;DocumentService: Files deleted\ndeactivate FileStorage\nDocumentService--&gt;&gt;DocumentController: MSG166 - Unable to add the documents. No documents were added. Please try again.\nDocumentController--&gt;&gt;DocumentsTab: MSG166 - Unable to add the documents. No documents were added. Please try again.\nDocumentsTab--&gt;&gt;Actor: MSG166 - Unable to add the documents. No documents were added. Please try again.\nelse Documents added\nDocumentService--&gt;&gt;DocumentController: Number of documents added\nDocumentController--&gt;&gt;DocumentsTab: Number of documents added\nDocumentsTab-&gt;&gt;DocumentsTab: Refresh the Meeting document list\nDocumentsTab--&gt;&gt;Actor: MSG161 - Documents added to the Meeting successfully.\nend\nend\nend\nend\nend\ndeactivate DocumentService\ndeactivate DocumentController\ndeactivate DocumentsTab&quot;, &quot;config&quot;: null}"><mxCell style="group;transparentBounds=1;editIcon=1;lockedGroup=0;groupPadding=20;" connectable="0" parent="1" vertex="1"><mxGeometry x="0" y="0" width="3710.0" height="46.0" as="geometry" /></mxCell></UserObject><mxCell id="title-uc33a_uploaddocumentstomeeting" value="UC-33a - Upload Documents to Meeting (AF-1)" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#000000;" vertex="1" parent="1"><mxGeometry x="0.0" y="0" width="3710.0" height="42" as="geometry" /></mxCell><UserObject label="Chair or Secretary" mermaidId="n:Actor" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;size=90;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Chair or Secretary" id="2">
+        <UserObject id="mermaid-uc33a_uploaddocumentstomeeting" label="" mermaidData="{&quot;data&quot;: &quot;%%{init: {\&quot;sequence\&quot;: {\&quot;mirrorActors\&quot;: false}}}%%\nsequenceDiagram\nactor Actor as \&quot;Chair or Secretary\&quot;\nparticipant DocumentsTab@{ \&quot;type\&quot;: \&quot;boundary\&quot; } as \&quot;Meeting Documents Tab\&quot;\nparticipant DocumentController@{ \&quot;type\&quot;: \&quot;control\&quot; } as \&quot;:Meeting Document Controller\&quot;\nparticipant DocumentService@{ \&quot;type\&quot;: \&quot;control\&quot; } as \&quot;:Meeting Document Service\&quot;\nparticipant MeetingAccessPolicy as \&quot;:Meeting Access Policy\&quot;\nparticipant FolderRepository as \&quot;:Folder Repository\&quot;\nparticipant FileStorage as \&quot;:Object Storage (R2)\&quot;\nparticipant MeetingDocumentRepository as \&quot;:Meeting Document Repository\&quot;\nparticipant Database@{ \&quot;type\&quot;: \&quot;database\&quot; } as \&quot;:Database\&quot;\nActor-&gt;&gt;DocumentsTab: Submit the selected files\nactivate DocumentsTab\nDocumentsTab-&gt;&gt;DocumentController: Upload files to the Meeting\nactivate DocumentController\nDocumentController-&gt;&gt;DocumentService: uploadDocuments(meetingId, files, actor)\nactivate DocumentService\nDocumentService-&gt;&gt;MeetingAccessPolicy: Check actor can currently view the Meeting&lt;br/&gt;and is its current Chair or Secretary (BR-184, BR-195)\nactivate MeetingAccessPolicy\nMeetingAccessPolicy-&gt;&gt;Database: Retrieve Meeting status and the actor's current Meeting role\nactivate Database\nDatabase--&gt;&gt;MeetingAccessPolicy: Meeting status and Meeting role / Not found\ndeactivate Database\nMeetingAccessPolicy--&gt;&gt;DocumentService: Access, Meeting role and Meeting status / No access\ndeactivate MeetingAccessPolicy\nalt Meeting is unavailable or the actor can no longer view it - EX-7\nDocumentService--&gt;&gt;DocumentController: MSG174 - This Meeting is not accessible.\nDocumentController--&gt;&gt;DocumentsTab: MSG174 - This Meeting is not accessible.\nDocumentsTab--&gt;&gt;Actor: MSG174 - This Meeting is not accessible.\nelse Actor is no longer the Chair or Secretary - EX-1\nDocumentService--&gt;&gt;DocumentController: MSG162 - You no longer have permission to add documents to this Meeting.\nDocumentController--&gt;&gt;DocumentsTab: MSG162 - You no longer have permission to add documents to this Meeting.\nDocumentsTab--&gt;&gt;Actor: MSG162 - You no longer have permission to add documents to this Meeting.\nelse Meeting has ended - EX-6\nDocumentService--&gt;&gt;DocumentController: MSG172 - Documents cannot be added after the Meeting has ended.\nDocumentController--&gt;&gt;DocumentsTab: MSG172 - Documents cannot be added after the Meeting has ended.\nDocumentsTab--&gt;&gt;Actor: MSG172 - Documents cannot be added after the Meeting has ended.\nelse Actor may add documents\nDocumentService-&gt;&gt;DocumentService: Check at most 10 files totalling at most 200 MB (BR-319)\nalt Submission or its declared size exceeds the limit - EX-8\nDocumentService--&gt;&gt;DocumentController: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.\nDocumentController--&gt;&gt;DocumentsTab: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.\nDocumentsTab--&gt;&gt;Actor: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.\nelse Submission is within the limit\nDocumentService-&gt;&gt;DocumentService: Check each file has a .pdf or .docx extension matching its content&lt;br/&gt;and is no larger than 50 MB (BR-187, BR-214, BR-215)\nalt No file, malformed request, or one or more files are invalid - EX-3\nDocumentService--&gt;&gt;DocumentController: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.\nDocumentController--&gt;&gt;DocumentsTab: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.\nDocumentsTab--&gt;&gt;Actor: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.\nelse Every file is valid\nDocumentService-&gt;&gt;FolderRepository: Get the actor's folder for this Meeting (BR-227)\nactivate FolderRepository\nFolderRepository-&gt;&gt;Database: Retrieve the folder linked to this Meeting and owner\nactivate Database\nDatabase--&gt;&gt;FolderRepository: Meeting folder / Not found\ndeactivate Database\nFolderRepository--&gt;&gt;DocumentService: Meeting folder / Not found\ndeactivate FolderRepository\nopt Meeting folder does not exist\nDocumentService-&gt;&gt;DocumentService: Prepare a new folder at the library root named&lt;br/&gt;\&quot;&lt;Meeting title&gt; - dd/mm/yyyy\&quot; in Vietnam time (BR-192, BR-226, BR-228)\nend\nDocumentService-&gt;&gt;FileStorage: Store each file unchanged as a new stored file (BR-183, BR-216)\nactivate FileStorage\nFileStorage--&gt;&gt;DocumentService: All files stored / Storing failed\ndeactivate FileStorage\nalt Files cannot be stored - EX-5\nDocumentService-&gt;&gt;FileStorage: Delete the files already stored in this submission (BR-286)\nactivate FileStorage\nFileStorage--&gt;&gt;DocumentService: Files deleted\ndeactivate FileStorage\nDocumentService--&gt;&gt;DocumentController: MSG166 - Unable to add the documents. No documents were added. Please try again.\nDocumentController--&gt;&gt;DocumentsTab: MSG166 - Unable to add the documents. No documents were added. Please try again.\nDocumentsTab--&gt;&gt;Actor: MSG166 - Unable to add the documents. No documents were added. Please try again.\nelse All files stored\nDocumentService-&gt;&gt;MeetingDocumentRepository: Save the stored files, the library documents in the Meeting folder&lt;br/&gt;and the general Meeting documents together (BR-194, BR-210, BR-229, BR-286)\nactivate MeetingDocumentRepository\nMeetingDocumentRepository-&gt;&gt;Database: Insert Meeting folder if new, stored files,&lt;br/&gt;library documents and Meeting documents in one transaction\nactivate Database\nDatabase--&gt;&gt;MeetingDocumentRepository: Saved / Failed\ndeactivate Database\nMeetingDocumentRepository--&gt;&gt;DocumentService: Saved / Failed\ndeactivate MeetingDocumentRepository\nalt Addition cannot be completed - EX-5\nDocumentService-&gt;&gt;FileStorage: Delete the files stored in this submission (BR-286)\nactivate FileStorage\nFileStorage--&gt;&gt;DocumentService: Files deleted\ndeactivate FileStorage\nDocumentService--&gt;&gt;DocumentController: MSG166 - Unable to add the documents. No documents were added. Please try again.\nDocumentController--&gt;&gt;DocumentsTab: MSG166 - Unable to add the documents. No documents were added. Please try again.\nDocumentsTab--&gt;&gt;Actor: MSG166 - Unable to add the documents. No documents were added. Please try again.\nelse Documents added\nDocumentService--&gt;&gt;DocumentController: Number of documents added\nDocumentController--&gt;&gt;DocumentsTab: Number of documents added\nDocumentsTab-&gt;&gt;DocumentsTab: Refresh the Meeting document list\nDocumentsTab--&gt;&gt;Actor: MSG161 - Documents added to the Meeting successfully.\nend\nend\nend\nend\nend\ndeactivate DocumentService\ndeactivate DocumentController\ndeactivate DocumentsTab&quot;, &quot;config&quot;: null}"><mxCell style="group;transparentBounds=1;editIcon=1;lockedGroup=0;groupPadding=20;" connectable="0" parent="1" vertex="1"><mxGeometry x="0" y="0" width="3710.0" height="46.0" as="geometry" /></mxCell></UserObject><mxCell id="title-uc33a_uploaddocumentstomeeting" value="UC-33a - Upload Documents to Meeting (AF-1)" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#000000;" vertex="1" parent="1"><mxGeometry x="0.0" y="0" width="3710.0" height="42" as="geometry" /></mxCell><UserObject label="Chair or Secretary" mermaidId="n:Actor" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;size=90;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Chair or Secretary" id="2">
           <mxCell parent="mermaid-uc33a_uploaddocumentstomeeting" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=1.25;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;size=90;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
             <mxGeometry height="3314" width="150" as="geometry" y="46.0" />
           </mxCell>
@@ -25001,7 +25001,7 @@ deactivate NotificationPanel
           </mxCell>
         </UserObject>
         <mxCell id="38" parent="6" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
-          <mxGeometry height="138" width="10" x="77" y="893" as="geometry" />
+          <mxGeometry height="138" width="10" x="77" y="249.0" as="geometry" />
         </mxCell>
         <UserObject label=":Folder Repository" mermaidId="n:FolderRepository" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue=":Folder Repository" id="7">
           <mxCell parent="mermaid-uc33a_uploaddocumentstomeeting" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;size=65;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
@@ -25011,7 +25011,7 @@ deactivate NotificationPanel
         <mxCell id="40" parent="7" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
           <mxGeometry height="138" width="10" x="70" y="1671" as="geometry" />
         </mxCell>
-        <UserObject label=":File Storage" mermaidId="n:FileStorage" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue=":File Storage" id="8">
+        <UserObject label=":Object Storage (R2)" mermaidId="n:FileStorage" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue=":Object Storage (R2)" id="8">
           <mxCell parent="mermaid-uc33a_uploaddocumentstomeeting" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;size=65;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
             <mxGeometry height="3289" width="150" x="2832" as="geometry" y="46.0" />
           </mxCell>
@@ -25039,7 +25039,7 @@ deactivate NotificationPanel
           </mxCell>
         </UserObject>
         <mxCell id="37" parent="10" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
-          <mxGeometry height="46" width="10" x="70" y="939" as="geometry" />
+          <mxGeometry height="46" width="10" x="70" y="295.0" as="geometry" />
         </mxCell>
         <mxCell id="39" parent="10" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
           <mxGeometry height="46" width="10" x="70" y="1717" as="geometry" />
@@ -25049,57 +25049,57 @@ deactivate NotificationPanel
         </mxCell>
         <UserObject label="alt" mermaidId="n:f0" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);height=20;width=50;" mermaidBaseValue="alt" id="11">
           <mxCell parent="mermaid-uc33a_uploaddocumentstomeeting" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=1;pointerEvents=0;dropTarget=0;fillColor=none;strokeColor=#000000;fontSize=13;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" vertex="1">
-            <mxGeometry height="2915" width="3648" x="25" y="335.0" as="geometry" />
+            <mxGeometry height="2109" width="3628" x="35" y="1131.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="12" parent="11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Submission exceeds the limit - EX-8]" vertex="1">
-          <mxGeometry height="16" width="3594" x="54" y="2" as="geometry" />
+        <mxCell id="12" parent="11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Submission or its declared size exceeds the limit - EX-8]" vertex="1">
+          <mxGeometry height="16" width="3574" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="13" parent="11" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
-          <mxGeometry height="1" width="3648" y="188" as="geometry" />
+          <mxGeometry height="1" width="3628" y="188" as="geometry" />
         </mxCell>
         <mxCell id="14" parent="11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Submission is within the limit]" vertex="1">
-          <mxGeometry height="16" width="3594" y="190" as="geometry" x="54" />
+          <mxGeometry height="16" width="3574" y="190" as="geometry" x="54" />
         </mxCell>
         <UserObject label="alt" mermaidId="n:f1" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);height=20;width=50;" mermaidBaseValue="alt" id="15">
           <mxCell parent="mermaid-uc33a_uploaddocumentstomeeting" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=1;pointerEvents=0;dropTarget=0;fillColor=none;strokeColor=#000000;fontSize=13;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" vertex="1">
-            <mxGeometry height="2583" width="3628" x="35" y="657.0" as="geometry" />
+            <mxGeometry height="1777" width="3608" x="45" y="1453.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="16" parent="15" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[No file, or one or more files are invalid - EX-3]" vertex="1">
-          <mxGeometry height="16" width="3574" x="54" y="2" as="geometry" />
+        <mxCell id="16" parent="15" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[No file, malformed request, or one or more files are invalid - EX-3]" vertex="1">
+          <mxGeometry height="16" width="3554" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="17" parent="15" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
-          <mxGeometry height="1" width="3628" y="188" as="geometry" />
+          <mxGeometry height="1" width="3608" y="188" as="geometry" />
         </mxCell>
         <mxCell id="18" parent="15" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Every file is valid]" vertex="1">
-          <mxGeometry height="16" width="3574" y="190" as="geometry" x="54" />
+          <mxGeometry height="16" width="3554" y="190" as="geometry" x="54" />
         </mxCell>
         <UserObject label="alt" mermaidId="n:f2" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);height=20;width=50;" mermaidBaseValue="alt" id="19">
           <mxCell parent="mermaid-uc33a_uploaddocumentstomeeting" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=1;pointerEvents=0;dropTarget=0;fillColor=none;strokeColor=#000000;fontSize=13;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" vertex="1">
-            <mxGeometry height="2143" width="3608" x="45" y="1087.0" as="geometry" />
+            <mxGeometry height="2807" width="3648" x="25" y="443.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="20" parent="19" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Meeting is unavailable - EX-7]" vertex="1">
-          <mxGeometry height="16" width="3554" x="54" y="2" as="geometry" />
+        <mxCell id="20" parent="19" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Meeting is unavailable or the actor can no longer view it - EX-7]" vertex="1">
+          <mxGeometry height="16" width="3594" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="21" parent="19" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
-          <mxGeometry height="1" width="3608" y="188" as="geometry" />
+          <mxGeometry height="1" width="3648" y="188" as="geometry" />
         </mxCell>
         <mxCell id="22" parent="19" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Actor is no longer the Chair or Secretary - EX-1]" vertex="1">
-          <mxGeometry height="16" width="3554" y="190" as="geometry" x="54" />
+          <mxGeometry height="16" width="3594" y="190" as="geometry" x="54" />
         </mxCell>
         <mxCell id="23" parent="19" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
-          <mxGeometry height="1" width="3608" y="371" as="geometry" />
+          <mxGeometry height="1" width="3648" y="371" as="geometry" />
         </mxCell>
         <mxCell id="24" parent="19" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Meeting has ended - EX-6]" vertex="1">
-          <mxGeometry height="16" width="3554" y="373" as="geometry" x="54" />
+          <mxGeometry height="16" width="3594" y="373" as="geometry" x="54" />
         </mxCell>
         <mxCell id="25" parent="19" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
-          <mxGeometry height="1" width="3608" y="554" as="geometry" />
+          <mxGeometry height="1" width="3648" y="554" as="geometry" />
         </mxCell>
         <mxCell id="26" parent="19" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Actor may add documents]" vertex="1">
-          <mxGeometry height="16" width="3554" y="556" as="geometry" x="54" />
+          <mxGeometry height="16" width="3594" y="556" as="geometry" x="54" />
         </mxCell>
         <UserObject label="opt" mermaidId="n:f3" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);height=20;width=50;" mermaidBaseValue="opt" id="27">
           <mxCell parent="mermaid-uc33a_uploaddocumentstomeeting" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=1;pointerEvents=0;dropTarget=0;fillColor=none;strokeColor=#000000;fontSize=13;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" vertex="1">
@@ -25174,26 +25174,26 @@ deactivate NotificationPanel
           <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="46" style="edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=1;endArrow=block;endSize=9;verticalAlign=bottom;align=center;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="46">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="2107" y="295.0" />
-                <mxPoint x="2111" y="307.0" />
-                <mxPoint x="2107" y="319.0" />
+                <mxPoint x="2107" y="1091.0" />
+                <mxPoint x="2111" y="1103.0" />
+                <mxPoint x="2107" y="1115.0" />
               </Array>
-              <mxPoint x="2072" y="295.0" as="sourcePoint" />
-              <mxPoint x="2072" y="319.0" as="targetPoint" />
+              <mxPoint x="2072" y="1091.0" as="sourcePoint" />
+              <mxPoint x="2072" y="1115.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
         <mxCell id="53" parent="mermaid-uc33a_uploaddocumentstomeeting" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="Check at most 10 files totalling at most 200 MB (BR-319)" vertex="1">
-          <mxGeometry height="18" width="440" x="1972" y="269.0" as="geometry" />
+          <mxGeometry height="18" width="440" x="1972" y="1065.0" as="geometry" />
         </mxCell>
         <UserObject label="MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total." mermaidId="e:DocumentService-&gt;DocumentController#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total." id="54">
           <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1735" y="416.0" />
+                <mxPoint x="1735" y="1212.0" />
               </Array>
-              <mxPoint x="2062" y="416.0" as="sourcePoint" />
-              <mxPoint x="1409" y="416.0" as="targetPoint" />
+              <mxPoint x="2062" y="1212.0" as="sourcePoint" />
+              <mxPoint x="1409" y="1212.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -25201,10 +25201,10 @@ deactivate NotificationPanel
           <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="48">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1072" y="462.0" />
+                <mxPoint x="1072" y="1258.0" />
               </Array>
-              <mxPoint x="1399" y="462.0" as="sourcePoint" />
-              <mxPoint x="745" y="462.0" as="targetPoint" />
+              <mxPoint x="1399" y="1258.0" as="sourcePoint" />
+              <mxPoint x="745" y="1258.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -25212,10 +25212,10 @@ deactivate NotificationPanel
           <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="405" y="508.0" />
+                <mxPoint x="405" y="1304.0" />
               </Array>
-              <mxPoint x="735" y="508.0" as="sourcePoint" />
-              <mxPoint x="75" y="508.0" as="targetPoint" />
+              <mxPoint x="735" y="1304.0" as="sourcePoint" />
+              <mxPoint x="75" y="1304.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -25223,162 +25223,19 @@ deactivate NotificationPanel
           <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="46" style="edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=1;endArrow=block;endSize=9;verticalAlign=bottom;align=center;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="46">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="2107" y="617.0" />
-                <mxPoint x="2111" y="629.0" />
-                <mxPoint x="2107" y="641.0" />
+                <mxPoint x="2107" y="1413.0" />
+                <mxPoint x="2111" y="1425.0" />
+                <mxPoint x="2107" y="1437.0" />
               </Array>
-              <mxPoint x="2072" y="617.0" as="sourcePoint" />
-              <mxPoint x="2072" y="641.0" as="targetPoint" />
+              <mxPoint x="2072" y="1413.0" as="sourcePoint" />
+              <mxPoint x="2072" y="1437.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <mxCell id="58" parent="mermaid-uc33a_uploaddocumentstomeeting" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="Check every file is a PDF or DOCX by its actual content&#10;and no larger than 50 MB (BR-187, BR-214, BR-215)" vertex="1">
-          <mxGeometry height="18" width="440" x="1972" y="591.0" as="geometry" />
+        <mxCell id="58" parent="mermaid-uc33a_uploaddocumentstomeeting" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="Check each file has a .pdf or .docx extension matching its content&#10;and is no larger than 50 MB (BR-187, BR-214, BR-215)" vertex="1">
+          <mxGeometry height="18" width="440" x="1972" y="1387.0" as="geometry" />
         </mxCell>
         <UserObject label="MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB." mermaidId="e:DocumentService-&gt;DocumentController#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB." id="59">
-          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="47">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1735" y="738.0" />
-              </Array>
-              <mxPoint x="2062" y="738.0" as="sourcePoint" />
-              <mxPoint x="1409" y="738.0" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB." mermaidId="e:DocumentController-&gt;DocumentsTab#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB." id="60">
-          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="48">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1072" y="784.0" />
-              </Array>
-              <mxPoint x="1399" y="784.0" as="sourcePoint" />
-              <mxPoint x="745" y="784.0" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB." mermaidId="e:DocumentsTab-&gt;Actor#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB." id="61">
-          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="2">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="405" y="830.0" />
-              </Array>
-              <mxPoint x="735" y="830.0" as="sourcePoint" />
-              <mxPoint x="75" y="830.0" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Check actor can currently view the Meeting&#10;and is its current Chair or Secretary (BR-184, BR-195)" mermaidId="e:DocumentService-&gt;MeetingAccessPolicy#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Check actor can currently view the Meeting&#10;and is its current Chair or Secretary (BR-184, BR-195)" id="62">
-          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="46" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="38">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="2284" y="939.0" />
-              </Array>
-              <mxPoint x="2072" y="939.0" as="sourcePoint" />
-              <mxPoint x="2495" y="939.0" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Retrieve Meeting status and the actor's current Meeting role" mermaidId="e:MeetingAccessPolicy-&gt;Database#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Retrieve Meeting status and the actor's current Meeting role" id="63">
-          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="38" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="37">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="3067" y="985.0" />
-              </Array>
-              <mxPoint x="2505" y="985.0" as="sourcePoint" />
-              <mxPoint x="3628" y="985.0" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Meeting status and Meeting role / Not found" mermaidId="e:Database-&gt;MeetingAccessPolicy#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Meeting status and Meeting role / Not found" id="64">
-          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="37" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="38">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="3067" y="1031.0" />
-              </Array>
-              <mxPoint x="3628" y="1031.0" as="sourcePoint" />
-              <mxPoint x="2505" y="1031.0" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Access, Meeting role and Meeting status / No access" mermaidId="e:MeetingAccessPolicy-&gt;DocumentService#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Access, Meeting role and Meeting status / No access" id="65">
-          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="38" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="46">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="2284" y="1077.0" />
-              </Array>
-              <mxPoint x="2495" y="1077.0" as="sourcePoint" />
-              <mxPoint x="2072" y="1077.0" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="MSG174 - This Meeting is not accessible." mermaidId="e:DocumentService-&gt;DocumentController#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG174 - This Meeting is not accessible." id="66">
-          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="47">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1735" y="1168.0" />
-              </Array>
-              <mxPoint x="2062" y="1168.0" as="sourcePoint" />
-              <mxPoint x="1409" y="1168.0" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="MSG174 - This Meeting is not accessible." mermaidId="e:DocumentController-&gt;DocumentsTab#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG174 - This Meeting is not accessible." id="67">
-          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="48">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1072" y="1214.0" />
-              </Array>
-              <mxPoint x="1399" y="1214.0" as="sourcePoint" />
-              <mxPoint x="745" y="1214.0" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="MSG174 - This Meeting is not accessible." mermaidId="e:DocumentsTab-&gt;Actor#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG174 - This Meeting is not accessible." id="68">
-          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="2">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="405" y="1260.0" />
-              </Array>
-              <mxPoint x="735" y="1260.0" as="sourcePoint" />
-              <mxPoint x="75" y="1260.0" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="MSG162 - You no longer have permission to add documents to this Meeting." mermaidId="e:DocumentService-&gt;DocumentController#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG162 - You no longer have permission to add documents to this Meeting." id="69">
-          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="47">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1735" y="1351.0" />
-              </Array>
-              <mxPoint x="2062" y="1351.0" as="sourcePoint" />
-              <mxPoint x="1409" y="1351.0" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="MSG162 - You no longer have permission to add documents to this Meeting." mermaidId="e:DocumentController-&gt;DocumentsTab#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG162 - You no longer have permission to add documents to this Meeting." id="70">
-          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="48">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1072" y="1397.0" />
-              </Array>
-              <mxPoint x="1399" y="1397.0" as="sourcePoint" />
-              <mxPoint x="745" y="1397.0" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="MSG162 - You no longer have permission to add documents to this Meeting." mermaidId="e:DocumentsTab-&gt;Actor#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG162 - You no longer have permission to add documents to this Meeting." id="71">
-          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="2">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="405" y="1443.0" />
-              </Array>
-              <mxPoint x="735" y="1443.0" as="sourcePoint" />
-              <mxPoint x="75" y="1443.0" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="MSG172 - Documents cannot be added after the Meeting has ended." mermaidId="e:DocumentService-&gt;DocumentController#4" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG172 - Documents cannot be added after the Meeting has ended." id="72">
           <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -25389,7 +25246,7 @@ deactivate NotificationPanel
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG172 - Documents cannot be added after the Meeting has ended." mermaidId="e:DocumentController-&gt;DocumentsTab#4" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG172 - Documents cannot be added after the Meeting has ended." id="73">
+        <UserObject label="MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB." mermaidId="e:DocumentController-&gt;DocumentsTab#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB." id="60">
           <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="48">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -25400,7 +25257,7 @@ deactivate NotificationPanel
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG172 - Documents cannot be added after the Meeting has ended." mermaidId="e:DocumentsTab-&gt;Actor#4" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG172 - Documents cannot be added after the Meeting has ended." id="74">
+        <UserObject label="MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB." mermaidId="e:DocumentsTab-&gt;Actor#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB." id="61">
           <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -25408,6 +25265,149 @@ deactivate NotificationPanel
               </Array>
               <mxPoint x="735" y="1626.0" as="sourcePoint" />
               <mxPoint x="75" y="1626.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Check actor can currently view the Meeting&#10;and is its current Chair or Secretary (BR-184, BR-195)" mermaidId="e:DocumentService-&gt;MeetingAccessPolicy#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Check actor can currently view the Meeting&#10;and is its current Chair or Secretary (BR-184, BR-195)" id="62">
+          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="46" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="38">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2284" y="295.0" />
+              </Array>
+              <mxPoint x="2072" y="295.0" as="sourcePoint" />
+              <mxPoint x="2495" y="295.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Retrieve Meeting status and the actor's current Meeting role" mermaidId="e:MeetingAccessPolicy-&gt;Database#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Retrieve Meeting status and the actor's current Meeting role" id="63">
+          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="38" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="37">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="3067" y="341.0" />
+              </Array>
+              <mxPoint x="2505" y="341.0" as="sourcePoint" />
+              <mxPoint x="3628" y="341.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Meeting status and Meeting role / Not found" mermaidId="e:Database-&gt;MeetingAccessPolicy#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Meeting status and Meeting role / Not found" id="64">
+          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="37" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="38">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="3067" y="387.0" />
+              </Array>
+              <mxPoint x="3628" y="387.0" as="sourcePoint" />
+              <mxPoint x="2505" y="387.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Access, Meeting role and Meeting status / No access" mermaidId="e:MeetingAccessPolicy-&gt;DocumentService#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Access, Meeting role and Meeting status / No access" id="65">
+          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="38" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="46">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2284" y="433.0" />
+              </Array>
+              <mxPoint x="2495" y="433.0" as="sourcePoint" />
+              <mxPoint x="2072" y="433.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="MSG174 - This Meeting is not accessible." mermaidId="e:DocumentService-&gt;DocumentController#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG174 - This Meeting is not accessible." id="66">
+          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="47">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1735" y="524.0" />
+              </Array>
+              <mxPoint x="2062" y="524.0" as="sourcePoint" />
+              <mxPoint x="1409" y="524.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="MSG174 - This Meeting is not accessible." mermaidId="e:DocumentController-&gt;DocumentsTab#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG174 - This Meeting is not accessible." id="67">
+          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="48">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1072" y="570.0" />
+              </Array>
+              <mxPoint x="1399" y="570.0" as="sourcePoint" />
+              <mxPoint x="745" y="570.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="MSG174 - This Meeting is not accessible." mermaidId="e:DocumentsTab-&gt;Actor#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG174 - This Meeting is not accessible." id="68">
+          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="2">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="405" y="616.0" />
+              </Array>
+              <mxPoint x="735" y="616.0" as="sourcePoint" />
+              <mxPoint x="75" y="616.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="MSG162 - You no longer have permission to add documents to this Meeting." mermaidId="e:DocumentService-&gt;DocumentController#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG162 - You no longer have permission to add documents to this Meeting." id="69">
+          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="47">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1735" y="707.0" />
+              </Array>
+              <mxPoint x="2062" y="707.0" as="sourcePoint" />
+              <mxPoint x="1409" y="707.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="MSG162 - You no longer have permission to add documents to this Meeting." mermaidId="e:DocumentController-&gt;DocumentsTab#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG162 - You no longer have permission to add documents to this Meeting." id="70">
+          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="48">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1072" y="753.0" />
+              </Array>
+              <mxPoint x="1399" y="753.0" as="sourcePoint" />
+              <mxPoint x="745" y="753.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="MSG162 - You no longer have permission to add documents to this Meeting." mermaidId="e:DocumentsTab-&gt;Actor#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG162 - You no longer have permission to add documents to this Meeting." id="71">
+          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="2">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="405" y="799.0" />
+              </Array>
+              <mxPoint x="735" y="799.0" as="sourcePoint" />
+              <mxPoint x="75" y="799.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="MSG172 - Documents cannot be added after the Meeting has ended." mermaidId="e:DocumentService-&gt;DocumentController#4" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG172 - Documents cannot be added after the Meeting has ended." id="72">
+          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="47">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1735" y="890.0" />
+              </Array>
+              <mxPoint x="2062" y="890.0" as="sourcePoint" />
+              <mxPoint x="1409" y="890.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="MSG172 - Documents cannot be added after the Meeting has ended." mermaidId="e:DocumentController-&gt;DocumentsTab#4" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG172 - Documents cannot be added after the Meeting has ended." id="73">
+          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="48">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1072" y="936.0" />
+              </Array>
+              <mxPoint x="1399" y="936.0" as="sourcePoint" />
+              <mxPoint x="745" y="936.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="MSG172 - Documents cannot be added after the Meeting has ended." mermaidId="e:DocumentsTab-&gt;Actor#4" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG172 - Documents cannot be added after the Meeting has ended." id="74">
+          <mxCell edge="1" parent="mermaid-uc33a_uploaddocumentstomeeting" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;labelBackgroundColor=#ffffff;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="2">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="405" y="982.0" />
+              </Array>
+              <mxPoint x="735" y="982.0" as="sourcePoint" />
+              <mxPoint x="75" y="982.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>

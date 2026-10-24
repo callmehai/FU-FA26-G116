@@ -188,7 +188,7 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-212` | Removing a Meeting document preserves its comments as history. | UC-33c | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
 | `BR-213` | A file is deleted by periodic cleanup when no personal-library document or active Meeting document uses it. | UC-33c, UC-71a | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
 | `BR-214` | An uploaded document must not exceed 50 MB. | UC-33a, UC-36 | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
-| `BR-215` | An uploaded document's type is determined from its actual content. | UC-33a, UC-36 | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
+| `BR-215` | An uploaded document's type is determined from its actual content, and its file extension must be .pdf or .docx and match that content. | UC-33a, UC-36 | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
 | `BR-216` | Uploaded files retain their original format and content. | UC-33a, UC-36 | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
 | `BR-219` | A personal-library folder belongs to one user. | UC-34, UC-72 | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
 | `BR-220` | A folder name must not be empty. | UC-72a, UC-72b | ADR-0018 / PO 14/10/2026 — atomic rule review | Document / Guest access |
