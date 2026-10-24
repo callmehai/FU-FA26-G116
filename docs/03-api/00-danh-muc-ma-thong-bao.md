@@ -113,12 +113,12 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 |---|---|---|---|
 | `MSG256` | 409 | PUT assignments: Secretary tác động Chair còn active ở Published/InProgress | Chỉ Chủ tọa được giao vai trò Chủ tọa khi tài khoản hiện tại còn hoạt động. |
 | `MSG257` | 200 | PUT assignments / POST chair-handover: Chair bàn giao ở Published/InProgress | Giao vai trò Chủ tọa thành công. |
-| `MSG258` | 200 | GET chair-handover-candidates: toàn meeting không có current active Member đủ điều kiện | Không có thành viên đủ điều kiện nhận vai trò Chủ tọa. Hãy thêm thành viên nội bộ trước. |
+| `MSG258` | 200 | GET chair-handover-candidates: toàn meeting không có current active Member đủ điều kiện. FE không gọi endpoint này và không hiển thị mã: không ai nhận được thì không dòng nào có lựa chọn "Chủ tọa" | Không có thành viên đủ điều kiện nhận vai trò Chủ tọa. Hãy thêm thành viên nội bộ trước. |
 | `MSG259` | 400 | PUT assignments / POST chair-handover: người nhận Chair không phải current active Member khác Chair | Người nhận vai trò Chủ tọa phải là thành viên nội bộ hiện tại, đang hoạt động và không phải Thư ký. |
 | `MSG260` | 409 | GET chair-handover-candidates / POST chair-handover: người đọc nội bộ không còn là current Chair hoặc status không cho bàn giao | Bạn không còn quyền giao vai trò Chủ tọa cho cuộc họp này. |
 | `MSG277` | 400 | POST meetings: roster khởi tạo không hợp lệ | Danh sách thành phần tham dự không hợp lệ. |
 
-`MSG258` và `MSG260` đã triển khai trong API chuyên biệt UC-73 của SCRUM-97. `MSG258` là empty state trong response thành công, không dùng cho search không khớp. SCRUM-26 dùng `MSG289` cho lỗi đọc và `MSG278` cho query không hợp lệ; `MSG277` đã thuộc validation roster khi tạo họp trong PR #92.
+`MSG258` và `MSG260` đã triển khai trong API chuyên biệt UC-73 của SCRUM-97. `MSG258` là empty state trong response thành công, không dùng cho search không khớp; BE vẫn trả mã này nhưng FE không hiển thị (ẩn lựa chọn Chủ tọa). SCRUM-26 dùng `MSG289` cho lỗi đọc và `MSG278` cho query không hợp lệ; `MSG277` đã thuộc validation roster khi tạo họp trong PR #92.
 
 ## Tài liệu cuộc họp — contract Backend SCRUM-107
 
@@ -591,9 +591,9 @@ Bảng nguồn đặc tả dưới đây giữ thông điệp tiếng Anh để 
 | `MSG253` | UC-74 / Main Flow · Dành sẵn, chưa triển khai | Document read confirmed. |
 | `MSG254` | UC-74 / EX-1 · Dành sẵn, chưa triển khai | Scroll to the last page of the document before confirming that you have read it. |
 | `MSG255` | UC-74 / EX-3 · Dành sẵn, chưa triển khai | Unable to confirm document reading. Please try again. |
-| `MSG256` | UC-28b / EX-5 · Đã triển khai trong SCRUM-20 / SCRUM-97 | From publication onward, only the current Chair can hand over the Chair role. |
+| `MSG256` | UC-28b / EX-5 · Đã triển khai trong SCRUM-20 / SCRUM-97 | From publication onward, only the current Chair can hand over the Chair role while the Chair’s account is active. |
 | `MSG257` | UC-73 / Main Flow · Đã triển khai trong SCRUM-20 / SCRUM-97 | Chair role handed over successfully. |
-| `MSG258` | UC-73 / AF-1 · Đã triển khai trong SCRUM-97 | No participant can receive the Chair role. Add an internal participant first. |
+| `MSG258` | UC-73 / AF-1 · Đã triển khai trong SCRUM-97 (API trả 200, UI không hiển thị) | No participant can receive the Chair role. Add an internal participant first. |
 | `MSG259` | UC-73 / EX-1 · Đã triển khai trong SCRUM-20 / SCRUM-97 | The selected participant can no longer receive the Chair role. Select another participant. |
 | `MSG260` | UC-73 / EX-2 · Đã triển khai trong SCRUM-97 | You can no longer hand over the Chair role for this meeting. |
 | `MSG261` | UC-75 / Main Flow · Dành sẵn, chưa triển khai | Meeting cancelled successfully. |

@@ -82,20 +82,20 @@ Report 3 và các diagram. **Không gồm** đặc tả chi tiết màn hình (R
 
 ### 3.2 Business Rules
 
-- [ ] **BR-126**: thêm ngoại lệ "the Secretary may replace the Chair when the Chair's account is locked".
-- [ ] **BR-295**: đối chiếu — người nhận không phải Thư ký hiện tại (giữ). Thêm câu "Chair and Secretary do not swap roles" vào BR-295 hoặc BR mới.
-- [ ] **BR-294**: kiểm tra nội dung "before publication" khớp "đổi vai trò tự do".
+- [x] **BR-126**: thêm ngoại lệ "the Secretary may replace the Chair when the Chair's account is locked".
+- [x] **BR-295**: đối chiếu — người nhận không phải Thư ký hiện tại (giữ). Thêm câu "Chair and Secretary do not swap roles" vào BR-295 hoặc BR mới.
+- [x] **BR-294**: kiểm tra nội dung "before publication" khớp "đổi vai trò tự do".
 
 ### 3.3 Message
 
-- [ ] **MSG258**: catalogue (dòng 116, 596) và Report 3 V.2 (dòng 239) — ghi "BE vẫn trả 200/MSG258 làm empty state; FE không hiển thị, ẩn lựa chọn Chủ tọa". Không xoá mã.
-- [ ] **MSG256**: Report 3 V.2 vẫn là câu cũ; câu tiếng Việt trong catalogue đã nói "khi tài khoản hiện tại còn hoạt động" — đồng bộ câu tiếng Anh theo ngoại lệ tài khoản bị khoá.
+- [x] **MSG258**: catalogue (dòng 116, 596) và Report 3 V.2 (dòng 239) — ghi "BE vẫn trả 200/MSG258 làm empty state; FE không hiển thị, ẩn lựa chọn Chủ tọa". Không xoá mã.
+- [x] **MSG256**: Report 3 V.2 vẫn là câu cũ; câu tiếng Việt trong catalogue đã nói "khi tài khoản hiện tại còn hoạt động" — đồng bộ câu tiếng Anh theo ngoại lệ tài khoản bị khoá.
 
 ### 3.4 Diagram
 
-- [ ] Sequence `UC73_HandOverChair` (.txt, tab drawio, PNG): luồng từ dòng người nhận; bỏ nhánh MSG258 hiển thị.
-- [ ] Sequence `UC28b_AssignChangeMeetingRole`: nhánh Thư ký thay Chủ tọa bị khoá (`PUT assignments` kèm `chairReplacement`).
-- [ ] Class diagram `feature-06`: kiểm tra phương thức `chairReplacement` / chair-handover.
+- [x] Sequence `UC73_HandOverChair` (.txt, tab drawio, PNG): luồng từ dòng người nhận; bỏ nhánh MSG258 hiển thị.
+- [x] Sequence `UC28b_AssignChangeMeetingRole`: nhánh Thư ký thay Chủ tọa bị khoá (`PUT assignments` kèm `chairReplacement`).
+- [x] Class diagram `feature-06`: kiểm tra phương thức `chairReplacement` / chair-handover. Đã kiểm: `handOverChair` có ở controller, service, repository; thay Chủ tọa bị khoá dùng `manageMeetingRoleAndPermissions` sẵn có, không cần sửa class diagram.
 
 ## 4. Voice ID và tách người nói — SCRUM-31, 35, 102, 103
 
