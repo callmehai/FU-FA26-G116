@@ -4,7 +4,7 @@
 [ADR-0025](../../../05-decisions/0025-version-rieng-cho-diem-danh.md), [API điểm danh](../../../03-api/10-diem-danh.md),
 catalogue MSG150/151/289.
 
-**Đã áp dụng thẳng vào DOCX** `Report_3_...docx` (chỉ `word/document.xml`, không đụng ảnh), chạy `sync_reports.py --report 3`,
+**Đã áp dụng vào DOCX ngày 24/10/2026** (lượt 1, commit `696bd5d`) — `Report_3_...docx` (chỉ `word/document.xml`, không đụng ảnh), chạy `sync_reports.py --report 3`,
 rồi đồng bộ tay `05-use-case-specifications.md`, `06-business-rules.md` và bảng tiếng Anh `00-danh-muc-ma-thong-bao.md`. Bảng dưới là bản ghi những gì đã đổi — Khánh **không cần dán lại**.
 Các đoạn không ghi ở đây giữ nguyên.
 
@@ -71,15 +71,9 @@ Giữ nguyên MSG147, MSG148, MSG149.
    Patch theo mục 6. Hai dòng đó trong docs API nên thống nhất (ngoài phạm vi lượt này, chỉ tài liệu API).
 4. MSG150 ở Report 3 cũ ghi `UC-31 / EX-3` nhưng UC-31 dùng EX-5 cho lỗi lưu; `05-use-case-specifications.md` và catalogue vẫn đánh EX-3 (UC bản Markdown có thứ tự EX khác Report 3). Patch sửa V.2 theo Report 3; sync sẽ đồng bộ lại các số này.
 
-## 7. Việc còn lại cho máy nhà (Khánh)
+## 7. Việc còn lại
 
-Lượt này **không** sinh lại PNG (sequence) và không đụng `SM-06`. Chạy trên máy có draw.io:
-
-```bash
-python scripts/sync_sequence_drawio_png.py
-```
-
-Rồi xem `docs/06-sequencediagram/drawio-png/uc31_recordattendance.drawio.png` (nhãn MSG150/MSG151 dài hơn, kiểm có tràn khung) và commit PNG.
+PNG `uc31_recordattendance.drawio.png` đã xuất ngày 24/10/2026 bằng draw.io `--scale 1.5` (4972×3096, không `--embed-diagram` vì bản embed nhúng cả 54 tab, 3,9 MB); nhãn MSG150/MSG151 nằm trong khung.
 
 Chưa làm trong sequence UC-31 (plan 05 mục 5.4): nhánh GET attendance có version, 500/MSG289 — sơ đồ chỉ vẽ POST, thêm nhánh cần thêm ô và chỉnh bố cục. Đã sửa: chữ MSG150, MSG151, nhãn nhánh stale, bước validate (kèm version).
 `SM-06_Attendance`: không có trạng thái "nháp" → không cần sửa. `grep ADR-0024 docs/`: không chỗ nào nói về điểm danh → không đổi.

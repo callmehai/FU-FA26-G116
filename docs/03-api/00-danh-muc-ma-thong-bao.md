@@ -342,6 +342,8 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG106` | UC-29 | *Invalid meeting invitation response.* |
 | `MSG107` | UC-29 | *This meeting invitation can no longer be answered.* |
 | `MSG108` | UC-29 | *Unable to save the meeting invitation response. Please try again.* |
+| `MSG285` | UC-29 / EX-4 · Đã triển khai SCRUM-20 | *You have already answered this invitation. Your answer cannot be changed.* |
+| `MSG286` | UC-29 / EX-5 · Đã triển khai SCRUM-20 | *The Chair runs the Meeting, so no attendance confirmation is needed.* |
 | `MSG109` | UC-28b / UC-28c | *The meeting must retain its required Chair and Secretary. Assign a replacement first.* |
 | `MSG145` | UC-28a / Validation chi tiết · Dành sẵn | *One or more selected participants are invalid. No participants were added.* |
 | `MSG146` | UC-28b / Mã dành sẵn, UC tinh gọn dùng MSG102 | *Unable to replace the Chair. Meeting roles remain unchanged.* |
@@ -352,7 +354,8 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG151` | UC-31 / EX-4, BR-172 · Đã triển khai SCRUM-26 | *The participant or attendance data has changed. Please reload and review before saving.* |
 | `MSG152` | UC-28a / EX-1; UC-28b / EX-1 · Ngừng dùng — PO 20/10/2026 | *One or more selected meeting permissions are not allowed.* |
 | `MSG153` | UC-28b / Main Flow · Ngừng dùng — PO 20/10/2026 | *Meeting permissions updated successfully.* |
-| `MSG154` | UC-28b / Trạng thái UI không có thay đổi, không có EX riêng | *No changes to save.* |
+| `MSG154` | UC-28b / Trạng thái UI không có thay đổi, không có EX riêng; UC-29 / AF-1 gửi lại đúng câu trả lời đã ghi | *No changes to save.* |
+| `MSG277` | UC-14 / EX-3 · Đã triển khai SCRUM-20 | *The meeting participant list is not valid.* |
 | `MSG155` | UC-22 / EX-3 cũ · Ngừng dùng 13/10/2026 | Bỏ điều kiện điểm danh đủ trước khi kết thúc theo quyết định PO; không tái sử dụng mã. |
 | `MSG110` | UC-21 Start Meeting | *Meeting started successfully.* |
 | `MSG111` | UC-22 End Meeting | *Meeting ended successfully.* |

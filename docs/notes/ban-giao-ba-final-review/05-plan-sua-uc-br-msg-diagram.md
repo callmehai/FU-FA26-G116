@@ -34,6 +34,8 @@ Report 3 và các diagram. **Không gồm** đặc tả chi tiết màn hình (R
 
 ### 2.1 UC Specification (Report 3 mục II)
 
+**Trạng thái lượt 4:** patch viết xong ở [patch-scrum-18-20.md](note-may-nha/patch-scrum-18-20.md); **đã dán vào Report 3 DOCX ngày 24/10/2026** cho 2.1, 2.2 và 2.3 (V.2); `05-use-case-specifications.md` và `06-business-rules.md` chưa có phần lượt 4 vì `sync_reports.py` chỉ ghi `Report-3_...md`. Mặc định đã dùng: UC-30 giữ riêng, bộ lọc Đang diễn ra không thành BR; UC-15 không đổi; thêm BR-320 (thành phần khi tạo) và BR-321 (chưa trả lời = tham dự, từ chối chỉ ẩn khỏi lịch).
+
 | UC | Report 3 | Sửa gì |
 |---|---|---|
 | UC-14 Create Meeting | II.4.1 | Bước 3: chọn thành phần tham dự ngay trong form. Form là popup, không còn trang riêng. POST-3 ("may subsequently be assigned participants") → thành phần được lưu cùng lúc tạo. Thêm EX cho thành phần không hợp lệ (đối chiếu mã BE dùng khi tạo kèm roster, `MSG277` theo PR #92). |
@@ -45,31 +47,31 @@ Report 3 và các diagram. **Không gồm** đặc tả chi tiết màn hình (R
 
 ### 2.2 Business Rules (Report 3 V.1 + `06-business-rules.md`)
 
-- [ ] **BR-30**: thay "overlap khoảng ngày" bằng 4 lựa chọn sẵn; nêu rõ quy tắc Chưa/Đã diễn ra theo giờ bắt đầu dự kiến và Hôm nay/Tuần này theo múi giờ người xem.
-- [ ] **BR-106**: "may be changed while Published/InProgress" → mỗi lời mời trả lời một lần, không đổi được. Gửi lại đúng câu đã ghi không phải lỗi.
-- [ ] **BR-105**: thêm "Chair does not respond" hoặc tách BR mới.
-- [ ] **BR mới (BR-320…)**: Chủ tọa không trả lời lời mời; chưa trả lời coi như tham dự; từ chối chỉ ẩn khỏi lịch của chính người đó, không đổi quyền; danh sách cuộc họp mở sẵn bộ lọc Đang diễn ra (nếu nhóm coi đây là rule chứ không phải UI — mặc định ghi trong UC-17 và đặc tả màn hình, không thành BR).
-- [ ] **BR-115**, **BR-176**: bỏ phần "totals" nếu có nhắc.
+- [x] **BR-30**: thay "overlap khoảng ngày" bằng 4 lựa chọn sẵn; nêu rõ quy tắc Chưa/Đã diễn ra theo giờ bắt đầu dự kiến và Hôm nay/Tuần này theo múi giờ người xem.
+- [x] **BR-106**: "may be changed while Published/InProgress" → mỗi lời mời trả lời một lần, không đổi được. Gửi lại đúng câu đã ghi không phải lỗi.
+- [x] **BR-105**: thêm "Chair does not respond" hoặc tách BR mới.
+- [x] **BR mới (BR-320…)**: Chủ tọa không trả lời lời mời; chưa trả lời coi như tham dự; từ chối chỉ ẩn khỏi lịch của chính người đó, không đổi quyền; danh sách cuộc họp mở sẵn bộ lọc Đang diễn ra (nếu nhóm coi đây là rule chứ không phải UI — mặc định ghi trong UC-17 và đặc tả màn hình, không thành BR).
+- [x] **BR-115**, **BR-176**: bỏ phần "totals" nếu có nhắc.
 - [ ] Rà mục I.3.3 Data Business Rules và mục I.3.2 entity *InvitationResponse* xem có ghi "latest response / may change" không.
 
 ### 2.3 Message (Report 3 V.2)
 
-- [ ] Thêm **MSG285**, **MSG286** (nguồn: catalogue dòng 65–66).
-- [ ] **MSG154**: mở rộng tình huống "gửi lại đúng câu trả lời đã ghi" (UC-29), không chỉ UC-28b.
-- [ ] Đối chiếu MSG105–MSG108 với UC-29 mới.
-- [ ] Bảng tiếng Anh trong catalogue (dòng 341–344): thêm dòng MSG285/MSG286 cho truy vết.
+- [x] (đã dán DOCX 24/10/2026) Thêm **MSG285**, **MSG286** (nguồn: catalogue dòng 65–66).
+- [x] (đã dán DOCX 24/10/2026) **MSG154**: mở rộng tình huống "gửi lại đúng câu trả lời đã ghi" (UC-29), không chỉ UC-28b.
+- [x] (đã dán DOCX 24/10/2026) Đối chiếu MSG105–MSG108 với UC-29 mới.
+- [x] Bảng tiếng Anh trong catalogue (dòng 341–344): thêm dòng MSG285/MSG286 cho truy vết (thêm cả MSG277 vì UC-14 EX-3 dẫn tới).
 
 ### 2.4 Diagram
 
-- [ ] Sequence `UC29_RespondToMeetingInvitation` (.txt, tab drawio, PNG): thêm nhánh MSG285, MSG286, MSG154; bỏ nhánh đổi câu trả lời.
-- [ ] Sequence `UC30_ViewParticipantResponseStatus`: bỏ bước tính totals.
-- [ ] Sequence `UC17_ViewMeetingList`: tham số `status=InProgress` mặc định, `timing=upcoming|past`, `from/to` cho Hôm nay/Tuần này, `excludeDeclined` (lịch).
-- [ ] Sequence `UC14_CreateMeeting`: gửi kèm thành phần trong cùng request (đối chiếu API 05).
-- [ ] **State machine `SM-04_InvitationResponse`**: bỏ 2 chuyển "Invitee changes to…"; ghi chú Chair giữ Pending. Xuất lại PNG nếu Report 3 dùng ảnh.
-- [ ] **Use case diagram** (`docs/assets/use-case-diagrams/trustcabinet-use-cases.drawio`, trang Chair → `uc-chair.png`): bỏ liên kết Chair — UC-29. Report 3 I.4.3.4 thay ảnh.
+- [x] Sequence `UC29_RespondToMeetingInvitation` (.txt, tab drawio, PNG): thêm nhánh MSG285, MSG286, MSG154; bỏ nhánh đổi câu trả lời.
+- [x] Sequence `UC30_ViewParticipantResponseStatus`: bỏ bước tính totals.
+- [x] Sequence `UC17_ViewMeetingList`: tham số `status=InProgress` mặc định, `timing=upcoming|past`, `from/to` cho Hôm nay/Tuần này, `excludeDeclined` (lịch).
+- [x] Sequence `UC14_CreateMeeting`: gửi kèm thành phần trong cùng request (đối chiếu API 05).
+- [x] **State machine `SM-04_InvitationResponse`**: bỏ 2 chuyển "Invitee changes to…"; ghi chú Chair giữ Pending. Xuất lại PNG nếu Report 3 dùng ảnh. → Đã bỏ 2 chuyển, thêm ghi chú; PNG xuất lại.
+- [x] **Use case diagram** (`docs/assets/use-case-diagrams/trustcabinet-use-cases.drawio`, trang Chair → `uc-chair.png`): bỏ liên kết Chair — UC-29. Report 3 I.4.3.4 thay ảnh. → Đã bỏ UC-29 khỏi trang Chair, `uc-chair.png` xuất lại; Khánh chèn vào Report 3.
 - [ ] Permission Matrix I.4.4: dòng UC-29 bỏ Chair.
-- [ ] Class diagram `feature-06-…drawio`: kiểm tra có thuộc tính/phương thức đổi phản hồi hoặc totals không. `feature-04-…drawio`: tạo cuộc họp kèm thành phần, bộ lọc thời gian.
-- [ ] Business flow `BF-02_Meeting_Preparation_Approval.drawio`: bước "chọn thành phần" nằm trong tạo cuộc họp; bước phản hồi lời mời một lần.
+- [x] Class diagram `feature-06-…drawio`: kiểm tra có thuộc tính/phương thức đổi phản hồi hoặc totals không. `feature-04-…drawio`: tạo cuộc họp kèm thành phần, bộ lọc thời gian. → Đã kiểm: feature-06 không có đổi phản hồi/totals; feature-04 dùng `createMeeting(meeting)` và `criteria: Map`, đủ chứa thành phần và bộ lọc, không sửa.
+- [x] Business flow `BF-02_Meeting_Preparation_Approval.drawio`: bước "chọn thành phần" nằm trong tạo cuộc họp; bước phản hồi lời mời một lần. → Sửa nhãn, giữ bố cục: bước tạo kèm participants, "Reschedule Meeting (time, location, link)", trả lời "(once)"; PNG xuất lại.
 
 ## 3. SCRUM-97 — UC-73 giao Chủ tọa
 
@@ -159,7 +161,8 @@ Report 3 và các diagram. **Không gồm** đặc tả chi tiết màn hình (R
 
 ### 5.4 Diagram
 
-- [ ] Sequence `UC31_RecordAttendance` (.txt và tab drawio xong; còn PNG chạy máy nhà, nhánh GET/MSG289 chưa vẽ): GET attendance có version, PUT gửi version, 409 MSG151 → tải lại; 503 MSG150; 500 MSG289.
+- [x] PNG `uc31_recordattendance.drawio.png` đã xuất 24/10/2026 (draw.io `--scale 1.5`, 4972×4184; nhãn MSG150/MSG151 nằm trong khung).
+- [x] Sequence `UC31_RecordAttendance` (.txt, tab drawio và PNG xong; thêm khối GET attendance với nhánh 500 MSG289): GET attendance có version, PUT gửi version, 409 MSG151 → tải lại; 503 MSG150; 500 MSG289.
 - [x] State machine `SM-06_Attendance`: kiểm tra có trạng thái "nháp" không.
 - [x] Dẫn chiếu ADR: `grep -rn "ADR-0024" docs/` — chỗ nào nói điểm danh thì đổi thành ADR-0025.
 
@@ -176,7 +179,7 @@ Mười điểm lệch trong note 07 chia làm ba loại: sửa đặc tả, ch�
 | UC-33a | EX-3 | Thêm các trường hợp (điểm 5, 9): request không có tệp, không phải multipart hoặc multipart hỏng → MSG164; **đuôi phải là `.pdf` hoặc `.docx` và khớp nội dung**; PDF chỉ nhận khi `%PDF-` ở đầu tệp. |
 | UC-33a | EX-7 | Nêu rõ (điểm 4, 10): cuộc họp bị giấu và cuộc họp không tồn tại nhận cùng một MSG174; người từng là Chủ tọa/Thư ký mất vai trò và không còn xem được cuộc họp nhận MSG174, không phải MSG162. |
 | UC-33a | EX-8 | Nêu rõ (điểm 3): MSG288 dùng cho cả "> 10 tệp" và "> 200 MB", kể cả khi kích thước khai báo vượt giới hạn — từ chối trước khi nhận hết tệp. |
-**Trạng thái lượt 2:** đã viết patch ([patch-scrum-107.md](note-may-nha/patch-scrum-107.md)) và sửa `05-use-case-specifications.md` cho UC-33a (AF-1, EX-1, EX-3, EX-6, EX-7, EX-8). Report 3 DOCX chưa dán — Khánh dán rồi chạy `sync_reports.py`.
+**Trạng thái lượt 2:** đã viết patch ([patch-scrum-107.md](note-may-nha/patch-scrum-107.md)) và sửa `05-use-case-specifications.md` cho UC-33a (AF-1, EX-1, EX-3, EX-6, EX-7, EX-8). Đã dán vào Report 3 DOCX và chạy `sync_reports.py --report 3` ngày 24/10/2026 (12 dòng UC/BR/V.2 + MSG288 loại hiển thị); PageCount của StoredFile (I.3.2) và Change Log chưa dán (ngoài phạm vi 4 mục).
 
 
 ### 6.2 Business Rules
@@ -251,7 +254,7 @@ Mười điểm lệch trong note 07 chia làm ba loại: sửa đặc tả, ch�
 
 - [ ] Rà Report 3 V.2 còn thiếu các mã đã có trong catalogue (ngoài phạm vi các note, ví dụ MSG277–MSG284, MSG287) — ghi thành việc riêng nếu nhiều. MSG288 đã nằm trong mục 6.3.
 - [ ] `docs/01-requirements/00-master-use-case-inventory.md`: actor UC-29, UC mới Voice ID.
-- [ ] Cập nhật số BR trong đầu `06-business-rules.md` ("267 BR đang dùng…").
+- [x] Cập nhật số BR trong đầu `06-business-rules.md` (267 → 269 sau BR-320, BR-321).
 - [ ] Change Log Report 3.
 - [ ] Comment Jira từng ticket: đã cập nhật docs gì; chuyển ticket khỏi BA Final Review.
 - [ ] Note này: đánh dấu xong từng mục; README thư mục cập nhật trạng thái.

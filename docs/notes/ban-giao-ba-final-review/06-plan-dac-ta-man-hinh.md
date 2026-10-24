@@ -4,7 +4,7 @@
 Inventory** (screen flow, screen list), cho 6 note bàn giao. Phần UC, BR, message, diagram ở
 [05-plan-sua-uc-br-msg-diagram.md](05-plan-sua-uc-br-msg-diagram.md).
 
-**Trạng thái:** bản nháp để Khánh duyệt. Chưa chụp, chưa sửa.
+**Trạng thái (24/10/2026):** phần màn hình SCRUM-18/20, SCRUM-97, SCRUM-26 xong và **đã vào Report 3 DOCX** (chữ I.5.1.b, III.4.1–4.5, III.6.1, 6.3, 6.4, 8.3; 7 ảnh thay, 9 ảnh chèn; đã sync). Nguồn: wireframe `TrustCabinet-wireframe-v8.html`, `figma-v8/`, 16 ảnh trong `docs/wireframe/screens/`, chữ ở [patch-dac-ta-man-hinh](note-may-nha/patch-dac-ta-man-hinh.md). Chưa làm: hình Screen Flow I.5.1.a (không có nguồn), Change Log, III.5.x (chờ PR #135 SCRUM-98), Voice ID (FE chưa có màn). Ảnh lấy từ wireframe v8, không chụp từ app; câu hỏi mục 5 dùng mặc định (III.6.4 giữ mục riêng, dialog Đổi vai trò trong III.6.1).
 
 ## 0. Cách làm
 
@@ -62,36 +62,36 @@ chưa chụp được bản thật. **Chỉ sửa chữ, giữ ảnh cũ** đế
 
 | Mục Report 3 | Màn | Chụp | Sửa đặc tả |
 |---|---|---|---|
-| III.7.4 Add Document to Meeting Dialog | Dialog thêm tài liệu, tab Từ máy tính | Chưa — chụp lại khi FE nối API (vùng thả tệp, danh sách tệp lỗi, thông báo MSG288) | Vùng tải lên: đuôi `.pdf`/`.docx` phải khớp nội dung; MSG288 cho > 10 tệp hoặc > 200 MB; MSG164 cho tệp sai loại hoặc request không có tệp; người không còn quyền nhận MSG162 dù tệp sai (hệ thống kiểm quyền trước); mất quyền xem cuộc họp nhận MSG174. |
-| III.7.3 Meeting Detail – Documents Tab | Tab Tài liệu | Không chụp lại | Dòng tài liệu: số trang chỉ hiện khi biết (PDF có `pageCount`), không rõ thì bỏ trống. |
+| III.7.4 Add Document to Meeting Dialog | Dialog thêm tài liệu, tab Từ máy tính | Chưa — chụp lại khi FE nối API (vùng thả tệp, danh sách tệp lỗi, thông báo MSG288) | Vùng tải lên: đuôi `.pdf`/`.docx` phải khớp nội dung; MSG288 cho > 10 tệp hoặc > 200 MB; MSG164 cho tệp sai loại hoặc request không có tệp; người không còn quyền nhận MSG162 dù tệp sai (hệ thống kiểm quyền trước); mất quyền xem cuộc họp nhận MSG174. [x] Đã sửa chữ trong DOCX 24/10/2026 ([patch-chu-man-hinh](note-may-nha/patch-chu-man-hinh.md)); ảnh chờ FE. |
+| III.7.3 Meeting Detail – Documents Tab | Tab Tài liệu | Không chụp lại | Dòng tài liệu: số trang chỉ hiện khi biết (PDF có `pageCount`), không rõ thì bỏ trống. [x] Phần chữ đã sửa trong DOCX 24/10/2026. |
 
 ### Voice ID (SCRUM-31, 35, 102, 103)
 
 FE chưa có màn Voice ID, màn bản ghi, transcript. **Chưa chụp được.**
 
-- [ ] III.9.2 Upload Audio Dialog: sửa chữ câu đồng ý ghi âm từ NĐ 13/2023 sang Luật 91/2025/QH15 + NĐ 356/2025/NĐ-CP (chỉ sửa chữ, giữ wireframe đến khi có màn).
-- [ ] III.10.1 Speaker-Attributed Transcript: ghi "hệ thống gợi ý tên người nói, Thư ký xác nhận" khi viết lại.
+- [x] III.9.2 Upload Audio Dialog (đã sửa chữ trong DOCX 24/10/2026): sửa chữ câu đồng ý ghi âm từ NĐ 13/2023 sang Luật 91/2025/QH15 + NĐ 356/2025/NĐ-CP (chỉ sửa chữ, giữ wireframe đến khi có màn).
+- [x] III.10.1 Speaker-Attributed Transcript (đã sửa chữ trong DOCX 24/10/2026): ghi "hệ thống gợi ý tên người nói, Thư ký xác nhận" khi viết lại.
 - [ ] Màn đăng ký giọng mẫu / đồng ý Voice ID: thêm mục mới khi FE xong; tạm thời giữ chỗ.
 
 ## 2. Screen Inventory (Report 3 I.5.1)
 
-- [ ] a. Screen Flow: Tạo/Sửa cuộc họp là popup từ Danh sách/Chi tiết, không còn màn riêng; thêm dialog Đổi vai trò.
-- [ ] b. Screen List: sửa dòng Create/Edit Meeting (popup), Invitation Response (gộp hoặc đổi mô tả), Attendance Check (cột trong tab), thêm Change Role Dialog; Voice ID để sau.
+- [ ] a. Screen Flow (patch mục 2.a; chưa làm: không có nguồn hình, giữ hình cũ): Tạo/Sửa cuộc họp là popup từ Danh sách/Chi tiết, không còn màn riêng; thêm dialog Đổi vai trò.
+- [x] b. Screen List (patch mục 2.b, thêm dòng 6.1b): sửa dòng Create/Edit Meeting (popup), Invitation Response (gộp hoặc đổi mô tả), Attendance Check (cột trong tab), thêm Change Role Dialog; Voice ID để sau.
 
 ## 3. Danh sách ảnh cần chụp (checklist chụp một lượt)
 
 Tài khoản seed: Thư ký, Chủ tọa, Thành viên, Người tổ chức. Chuẩn bị 1 cuộc họp Published (có người
 chưa trả lời, đã đồng ý, đã từ chối) và 1 cuộc họp InProgress.
 
-- [ ] Lịch tháng — Thành viên đã từ chối 1 cuộc họp
-- [ ] Lịch danh sách — thẻ có nút trả lời; thẻ đã trả lời
-- [ ] Danh sách cuộc họp — mặc định Đang diễn ra; dropdown thời gian mở
-- [ ] Popup tạo cuộc họp — có ô thành phần; popup sửa
-- [ ] Chi tiết — thanh trả lời (Thành viên); sau khi trả lời; góc nhìn Chủ tọa
-- [ ] Tab Thành phần — nhãn phản hồi; "(Tôi)"; menu Đổi vai trò
-- [ ] Dialog Đổi vai trò — Chủ tọa chọn "Chủ tọa"; không có lựa chọn Chủ tọa; Thư ký mở
-- [ ] Tab Thành phần InProgress — cột điểm danh (Thư ký); chỉ xem (Thành viên); thông báo 409
-- [ ] Phòng họp — panel điểm danh
+- [x] Lịch tháng — Thành viên đã từ chối 1 cuộc họp (chỉ ghi chú ở 4.1, khung không đổi)
+- [x] Lịch danh sách — thẻ có nút trả lời; thẻ đã trả lời (4.2)
+- [x] Danh sách cuộc họp — mặc định Đang diễn ra; dropdown thời gian mở (4.3, 4.3b)
+- [x] Popup tạo cuộc họp — có ô thành phần; popup sửa (4.4, 4.4b)
+- [x] Chi tiết — thanh trả lời (Thành viên); sau khi trả lời; góc nhìn Chủ tọa (4.5b, 4.5c; Chủ tọa = ghi chú, không nhãn)
+- [x] Tab Thành phần — nhãn phản hồi; "(Tôi)"; menu Đổi vai trò (6.1; FE là nút bút, không phải menu)
+- [x] Dialog Đổi vai trò — Chủ tọa chọn "Chủ tọa"; không có lựa chọn Chủ tọa; Thư ký mở (6.1b, 6.1c)
+- [x] Tab Thành phần InProgress — cột điểm danh (Thư ký); chỉ xem (Thành viên); thông báo 409 (6.3, 6.3b; 409/MSG151 ghi trong notes, không vẽ)
+- [x] Phòng họp — panel điểm danh (8.7)
 
 ## 4. Thứ tự
 

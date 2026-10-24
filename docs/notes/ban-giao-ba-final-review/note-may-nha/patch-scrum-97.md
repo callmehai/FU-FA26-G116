@@ -4,7 +4,7 @@
 [bàn giao SCRUM-97, mục "Nghiệp vụ đổi vai trò đã chốt"](../../../03-api/09-thanh-phan-tham-du-ban-giao.md), [API thành phần tham dự](../../../03-api/09-thanh-phan-tham-du.md),
 catalogue MSG256–MSG260. PO Hải chốt 23/10/2026; FE ở PR #123.
 
-**Chưa áp dụng vào DOCX.** Khánh dán các dòng dưới vào `Report_3_...docx`, rồi chạy `python scripts/sync_reports.py --report 3`.
+**Đã áp dụng vào DOCX ngày 24/10/2026** (`Report_3_...docx`, rồi `python scripts/sync_reports.py --report 3`). Change Log (mục 5) **chưa dán** vì ngoài phạm vi bốn mục I.4.2, II, V.1, V.2; xem README.
 Bản Markdown `06-business-rules.md`, bảng tiếng Anh `00-danh-muc-ma-thong-bao.md` và UC-28b trong `05-use-case-specifications.md` đã sửa tay
 cho khớp patch này (bản 05 là bản rút gọn của Report 3: UC-28b chỉ có Description, AF-1 và EX-5 tương ứng; UC-73 không có trong file này).
 Các đoạn không ghi ở đây giữ nguyên.
@@ -90,4 +90,4 @@ Câu MSG258 và các dòng MSG257, MSG259, MSG260 giữ nguyên. Không xoá mã
 
 ## 7. Việc còn lại cho máy nhà (Khánh)
 
-Dán patch vào DOCX rồi sync. PNG sequence `UC73_HandOverChair` và `UC28b_AssignChangeMeetingRole`: xem [README](README.md).
+Không còn việc. PNG sequence `UC73_HandOverChair` và `UC28b_AssignChangeMeetingRole` đã xuất (xem [README](README.md)).

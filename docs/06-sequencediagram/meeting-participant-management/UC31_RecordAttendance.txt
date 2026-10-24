@@ -7,6 +7,33 @@ control ":Meeting Participant Service" as ParticipantService
 participant ":Meeting Participant Repository" as ParticipantRepository
 database ":Database" as Database
 
+User->MeetingPage: Open the attendance of the Meeting (InProgress or Ended)
+activate MeetingPage
+MeetingPage->ParticipantController: Request the current attendance of the Meeting
+activate ParticipantController
+ParticipantController->ParticipantService: getMeetingAttendance(meeting, actor)
+activate ParticipantService
+ParticipantService->ParticipantRepository: Read current roster and attendance values with attendance versions
+activate ParticipantRepository
+ParticipantRepository->Database: Retrieve current roster and attendance information
+activate Database
+Database-->ParticipantRepository: Attendance information / Read failure
+deactivate Database
+ParticipantRepository-->ParticipantService: Attendance information / Read failure
+deactivate ParticipantRepository
+alt Attendance cannot be loaded - EX-6
+ParticipantService-->ParticipantController: MSG289 - Unable to load attendance data.
+ParticipantController-->MeetingPage: MSG289 - Unable to load attendance data.
+MeetingPage-->User: MSG289 - Unable to load attendance data.
+else Attendance loaded
+ParticipantService-->ParticipantController: Attendance values with attendance versions
+ParticipantController-->MeetingPage: Attendance values with attendance versions
+MeetingPage-->User: Display the attendance of each participant and Guest
+end
+deactivate ParticipantService
+deactivate ParticipantController
+deactivate MeetingPage
+
 User->MeetingPage: Submit Present/Absent changes for selected internal participants or Guests
 activate MeetingPage
 MeetingPage->ParticipantController: Submit Present/Absent changes for selected internal participants or Guests

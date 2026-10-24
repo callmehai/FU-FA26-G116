@@ -613,9 +613,7 @@
         <mxCell id="uc-36" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Complete Agenda Item" vertex="1">
           <mxGeometry height="44" width="170" x="1236" y="722" as="geometry" />
         </mxCell>
-        <mxCell id="uc-41" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Respond to Meeting Invitation" vertex="1">
-          <mxGeometry height="44" width="170" x="345" y="330" as="geometry" />
-        </mxCell>
+
         <mxCell id="uc-43" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Start Meeting" vertex="1">
           <mxGeometry height="44" width="170" x="551" y="551" as="geometry" />
         </mxCell>
@@ -742,9 +740,7 @@
         <mxCell id="assoc-22" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-22" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="assoc-41" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-41" value="">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
+
         <mxCell id="assoc-46" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-46" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>

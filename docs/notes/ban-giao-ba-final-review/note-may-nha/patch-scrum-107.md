@@ -4,9 +4,9 @@
 [API tài liệu cuộc họp](../../../03-api/11-tai-lieu-cuoc-hop.md), [ADR-0024](../../../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md),
 catalogue MSG164/MSG174/MSG288.
 
-**Chưa áp dụng vào DOCX.** Khánh dán các dòng dưới vào `Report_3_...docx`, rồi chạy `python scripts/sync_reports.py --report 3`.
+**Đã áp dụng vào DOCX ngày 24/10/2026** (`Report_3_...docx`, rồi `python scripts/sync_reports.py --report 3`). Các dòng I.3.2 (StoredFile.PageCount, mục 4) và Change Log (mục 5) **chưa dán** vì ngoài phạm vi bốn mục I.4.2, II, V.1, V.2; xem README.
 Bản Markdown `05-use-case-specifications.md`, `06-business-rules.md` và bảng tiếng Anh `00-danh-muc-ma-thong-bao.md` đã sửa tay
-cho khớp patch này, nên sau khi sync, `git diff` của hai file đầu phải trống (nếu không, bản dán lệch bảng dưới).
+cho khớp patch này, nên sau khi sync, `git diff` của hai file đầu trống (đã kiểm).
 Các đoạn không ghi ở đây giữ nguyên.
 
 Tên cột ở bảng dưới: **Mục** (vị trí trong Report 3) · **Ô / bước** · **Câu cũ** · **Câu mới**.
@@ -91,4 +91,4 @@ Plan ghi "entity Document", nhưng `PageCount` nằm ở **StoredFile** (Entity 
 
 ## 8. Việc còn lại cho máy nhà (Khánh)
 
-Xem trạng thái xuất PNG của `UC33a_UploadDocumentsToMeeting` trong [README](README.md).
+Không còn việc. PNG `UC33a_UploadDocumentsToMeeting` đã xuất (xem [README](README.md)).

@@ -7,7 +7,7 @@ control ":Meeting Participant Service" as ParticipantService
 participant ":Meeting Participant Repository" as ParticipantRepository
 database ":Database" as Database
 
-User->MeetingPage: Request View Participant Response Status
+User->MeetingPage: Open the Participants tab
 activate MeetingPage
 MeetingPage->ParticipantController: Request View Participant Response Status
 activate ParticipantController
@@ -33,11 +33,11 @@ ParticipantController-->MeetingPage: MSG95 - Unable to load meeting participants
 MeetingPage-->User: MSG95 - Unable to load meeting participants. Please try again.
 else Viewing is permitted
 ParticipantService->ParticipantService: Limit response-view access to response rows; do not grant roster browsing or search (BR-176)
-ParticipantService->ParticipantService: Exclude removed/revoked entries from current results and totals (BR-103)
-ParticipantService->ParticipantService: Show Pending for unanswered invitations;\nif all Pending, Accepted = 0 and Declined = 0 (BR-115)
-ParticipantService-->ParticipantController: Current invitee names, emails, latest responses, response times and status totals; no information changed
-ParticipantController-->MeetingPage: Current invitee names, emails, latest responses, response times and status totals; no information changed
-MeetingPage-->User: Current invitee names, emails, latest responses, response times and status totals; no information changed
+ParticipantService->ParticipantService: Exclude removed/revoked entries from current results (BR-103)
+ParticipantService->ParticipantService: Label each invitee Accepted or Declined; no label for unanswered invitees or the Chair;\nno totals are computed (BR-115, BR-321)
+ParticipantService-->ParticipantController: Current invitee names, emails and response labels; no totals; no information changed
+ParticipantController-->MeetingPage: Current invitee names, emails and response labels; no totals; no information changed
+MeetingPage-->User: Current invitee names, emails and response labels; no totals; no information changed
 end
 deactivate ParticipantService
 deactivate ParticipantController
