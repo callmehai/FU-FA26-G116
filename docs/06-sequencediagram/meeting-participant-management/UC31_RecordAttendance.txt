@@ -22,7 +22,7 @@ deactivate Database
 ParticipantRepository-->ParticipantService: Current information / Read failure
 deactivate ParticipantRepository
 ParticipantService->ParticipantService: Require active assigned Secretary and InProgress Meeting (BR-170)
-ParticipantService->ParticipantService: Validate official Present/Absent choices for submitted current entries only; omitted entries retain saved/unmarked state;\nnever infer attendance from invitation responses or room connections (BR-116, BR-171, BR-172)
+ParticipantService->ParticipantService: Validate official Present/Absent choices and attendance versions for submitted current entries only; omitted entries retain saved/unmarked state;\nnever infer attendance from invitation responses or room connections (BR-116, BR-171, BR-172)
 alt Secretary is no longer authorized - EX-2
 ParticipantService-->ParticipantController: Request denied; previous attendance unchanged
 ParticipantController-->MeetingPage: Request denied; previous attendance unchanged
@@ -31,10 +31,10 @@ else Meeting is no longer InProgress - EX-2
 ParticipantService-->ParticipantController: MSG149 - Attendance can only be recorded while the meeting is in progress.
 ParticipantController-->MeetingPage: MSG149 - Attendance can only be recorded while the meeting is in progress.
 MeetingPage-->User: MSG149 - Attendance can only be recorded while the meeting is in progress.
-else A submitted internal/Guest entry is stale or no longer current - EX-4
-ParticipantService-->ParticipantController: MSG151 - The meeting participant list has changed. Refresh it and try again.
-ParticipantController-->MeetingPage: MSG151 - The meeting participant list has changed. Refresh it and try again.
-MeetingPage-->User: MSG151 - The meeting participant list has changed. Refresh it and try again.
+else A submitted entry is no longer current or its attendance version is stale - EX-4
+ParticipantService-->ParticipantController: MSG151 - The participant or attendance data has changed. Please reload and review before saving.
+ParticipantController-->MeetingPage: MSG151 - The participant or attendance data has changed. Please reload and review before saving.
+MeetingPage-->User: MSG151 - The participant or attendance data has changed. Please reload and review before saving.
 else At least one submitted entry lacks a valid Present/Absent choice - EX-1
 ParticipantService-->ParticipantController: MSG148 - Select Present or Absent for each submitted participant or Guest.
 ParticipantController-->MeetingPage: MSG148 - Select Present or Absent for each submitted participant or Guest.
@@ -49,9 +49,9 @@ deactivate Database
 ParticipantRepository-->ParticipantService: Complete save / No changes saved
 deactivate ParticipantRepository
 alt Any attendance save fails - EX-3
-ParticipantService-->ParticipantController: MSG150 - Unable to save attendance. No changes were saved.
-ParticipantController-->MeetingPage: MSG150 - Unable to save attendance. No changes were saved.
-MeetingPage-->User: MSG150 - Unable to save attendance. No changes were saved.
+ParticipantService-->ParticipantController: MSG150 - Unable to confirm the attendance save result. Please reload the data before trying again.
+ParticipantController-->MeetingPage: MSG150 - Unable to confirm the attendance save result. Please reload the data before trying again.
+MeetingPage-->User: MSG150 - Unable to confirm the attendance save result. Please reload the data before trying again.
 else Submitted changes saved
 ParticipantService-->ParticipantController: MSG147 - Meeting attendance saved successfully.
 ParticipantController-->MeetingPage: MSG147 - Meeting attendance saved successfully.

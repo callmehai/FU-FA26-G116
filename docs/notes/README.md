@@ -6,6 +6,10 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 
 ## Danh sách
 
+- [Bàn giao BA Final Review 24/10/2026](ban-giao-ba-final-review/README.md) — sáu note của leader,
+  xử lý lần lượt: SCRUM-18/20 (lời mời, tạo/sửa, danh sách), SCRUM-97 (giao Chủ tọa),
+  Voice ID (UC-43–51, ERD), SCRUM-26 (điểm danh), SCRUM-107 (tải tài liệu, PR #128),
+  chương trình nghị sự (SCRUM-98, UC-23, UC-77).
 - [Tài liệu cuộc họp — SCRUM-21/22/23](NOTE-tai-lieu-scrum-21-22-23.md) — 22/10/2026; UC-32a/32c/35, BR-315 → BR-318,
   sequence, class diagram FE-07, wireframe v7; so sánh với AI-eCabinet, câu hỏi cho PO và phần còn phải đồng bộ.
 - [Bàn giao cập nhật màn hình theo Report 3 ngày 18/10/2026](NOTE-cap-nhat-man-hinh-18-10-2026.md) — màn 4.x, 5.x,

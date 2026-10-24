@@ -348,8 +348,8 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG147` | UC-31 / Main Flow · Đã triển khai SCRUM-26 | *Meeting attendance saved successfully.* |
 | `MSG148` | UC-31 / EX-1 · Đã triển khai SCRUM-26 | *Select Present or Absent for each submitted participant or Guest.* |
 | `MSG149` | UC-31 / EX-2 · Đã triển khai SCRUM-26 | *Attendance can only be recorded while the meeting is in progress.* |
-| `MSG150` | UC-31 / EX-3 · Đã triển khai SCRUM-26 | *Unable to save attendance. No changes were saved.* |
-| `MSG151` | UC-31 / EX-4, BR-172 · Đã triển khai SCRUM-26 | *The meeting participant list has changed. Refresh it and try again.* |
+| `MSG150` | UC-31 / EX-5 · Đã triển khai SCRUM-26 | *Unable to confirm the attendance save result. Please reload the data before trying again.* |
+| `MSG151` | UC-31 / EX-4, BR-172 · Đã triển khai SCRUM-26 | *The participant or attendance data has changed. Please reload and review before saving.* |
 | `MSG152` | UC-28a / EX-1; UC-28b / EX-1 · Ngừng dùng — PO 20/10/2026 | *One or more selected meeting permissions are not allowed.* |
 | `MSG153` | UC-28b / Main Flow · Ngừng dùng — PO 20/10/2026 | *Meeting permissions updated successfully.* |
 | `MSG154` | UC-28b / Trạng thái UI không có thay đổi, không có EX riêng | *No changes to save.* |
@@ -611,6 +611,7 @@ Bảng nguồn đặc tả dưới đây giữ thông điệp tiếng Anh để 
 | `MSG273` | UC-77 / EX-2 · Dành sẵn, chưa triển khai | The conclusion of this agenda item can no longer be changed. |
 | `MSG274` | UC-77 / EX-3 · Dành sẵn, chưa triển khai | Unable to save the agenda item conclusion. Please try again. |
 | `MSG288` | UC-33a / EX-8, BR-319 · Đã triển khai SCRUM-107 (PO 22/10/2026) | Upload up to 10 files at a time, no larger than 200 MB in total. |
+| `MSG289` | UC-31 / EX-6 · Đã triển khai SCRUM-26 | Unable to load attendance data. |
 
 ## Ghi chú: mã dùng chung có chủ ý
 
