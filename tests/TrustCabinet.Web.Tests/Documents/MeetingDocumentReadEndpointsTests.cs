@@ -243,6 +243,35 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
     }
 
     [Fact]
+    public async Task Secret_download_checks_attachment_before_refusing_and_refuses_before_touching_the_store()
+    {
+        var s = await fixture.Seed(sensitivity: Sensitivity.Secret);
+        var other = await fixture.Seed(sensitivity: Sensitivity.Secret);
+        var removed = await AddDocument(s.MeetingId, s.Secretary, "Đã gỡ.pdf", SampleFiles.Pdf(), removed: true);
+        var foreign = await AddDocument(other.MeetingId, other.Secretary, "Họp khác.pdf", SampleFiles.Pdf());
+        var noObject = await AddDocument(s.MeetingId, s.Secretary, "Mất.pdf");
+        using var client = fixture.Client(s.Member);
+
+        // A 403 here would confirm the ID exists in this meeting.
+        foreach (var id in new[] { removed, foreign, Guid.NewGuid() })
+            await AssertCode(await client.GetAsync(s.ContentUrl(id, download: true)), 404, "MSG156");
+        // The object is missing, yet the answer is the refusal: the store is never asked.
+        await AssertCode(await client.GetAsync(s.ContentUrl(noObject, download: true)), 403, "MSG159");
+    }
+
+    [Fact]
+    public async Task Content_lookup_failure_is_MSG158_when_viewing_and_MSG160_when_downloading()
+    {
+        var s = await fixture.Seed();
+        var id = await AddDocument(s.MeetingId, s.Secretary, "Báo cáo.pdf", SampleFiles.Pdf());
+        using var client = fixture.Client(s.Member);
+        fixture.ReadFailure.Table = "meeting_documents";
+
+        await AssertCode(await client.GetAsync(s.ContentUrl(id)), 503, "MSG158");
+        await AssertCode(await client.GetAsync(s.ContentUrl(id, download: true)), 503, "MSG160");
+    }
+
+    [Fact]
     public async Task Missing_object_is_MSG158_when_viewing_and_MSG160_when_downloading_and_is_not_audited()
     {
         var s = await fixture.Seed(sensitivity: Sensitivity.Confidential);
@@ -275,11 +304,14 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
         var other = await fixture.Seed();
         await using var member = fixture.Hub(s.Member);
         await using var outsider = fixture.Hub(other.Member);
+        // A reader of the same meeting who never joined it.
+        await using var notJoined = fixture.Hub(s.Chair);
         var received = Channel.CreateUnbounded<MeetingDocumentsChange>();
         var excluded = Channel.CreateUnbounded<MeetingDocumentsChange>();
         member.On<MeetingDocumentsChange>("documentsChanged", e => received.Writer.TryWrite(e));
         outsider.On<MeetingDocumentsChange>("documentsChanged", e => excluded.Writer.TryWrite(e));
-        await Task.WhenAll(member.StartAsync(), outsider.StartAsync());
+        notJoined.On<MeetingDocumentsChange>("documentsChanged", e => excluded.Writer.TryWrite(e));
+        await Task.WhenAll(member.StartAsync(), outsider.StartAsync(), notJoined.StartAsync());
         await member.InvokeAsync("JoinMeeting", s.MeetingId);
         await outsider.InvokeAsync("JoinMeeting", other.MeetingId);
         using var secretary = fixture.Client(s.Secretary);

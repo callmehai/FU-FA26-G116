@@ -168,7 +168,14 @@ tự dựng bản xem: PDF bằng pdf.js, DOCX bằng `docx-preview`.
 | `X-Content-Type-Options` | `nosniff` |
 
 `download=true` là lần **tải về** (AF-1): cuộc họp `Secret` bị chặn (`MSG159`, BR-188), kể cả khi mức mật vừa đổi
-sau lúc mở trình xem. Không có tham số là lần **xem**.
+sau lúc mở trình xem. Không có tham số (hoặc `download=false`) là lần **xem**. Chỉ nhận `true`/`false`; giá trị khác bị
+ASP.NET Core trả `400` không có `code`.
+
+**Giới hạn của BR-188.** Trình duyệt phải tự dựng bản xem từ tệp gốc, nên lần xem vẫn đưa **đúng byte gốc** tới trình
+duyệt. Với cuộc họp `Secret`, server chặn `download=true` và FE ẩn nút Tải về, nhưng người xem được vẫn có thể lưu
+blob đó (hoặc gọi `content` không có `download`); lần đó được ghi kiểm toán là `document.viewed`, vì server không
+phân biệt được. Đây là rủi ro đã biết khi không chuyển đổi tệp trên server (ADR-0018), không phải lỗ hổng sửa được ở
+endpoint.
 
 **Nhật ký kiểm toán** (BR-318): cuộc họp `Confidential` hoặc `Secret` ghi một dòng `AuditLogEntry` cho mỗi lần
 xem / tải thành công — `action` `document.viewed` hoặc `document.downloaded`, `objectType` `MeetingDocument`,
@@ -185,7 +192,7 @@ không ghi.
 | 500 | `MSG157` | danh sách | Lỗi đọc DB; FE không được hiển thị như danh sách rỗng |
 | 403 | `MSG159` | `content?download=true` | Cuộc họp `Secret` |
 | 503 | `MSG158` | `content` | Không đưa được tệp: object thiếu trên kho, kho chưa cấu hình hoặc lỗi, DB lỗi, không ghi được nhật ký kiểm toán |
-| 503 | `MSG160` | `content?download=true` | Như `MSG158` |
+| 503 | `MSG160` | `content?download=true` | Như `MSG158`. Riêng lỗi DB ở bước kiểm tài khoản đang hoạt động (trước khi đọc tham số) luôn trả `MSG158` |
 
 ### Realtime
 
@@ -218,7 +225,9 @@ không hiện, `currentAgendaItemId`, `pageCount`/`commentCount`/`addedBy`; cu�
 được; người ngoài, cuộc họp không tồn tại, thành viên của cuộc họp `Draft` → cùng `404/MSG156`; lỗi đọc DB →
 `MSG157`; byte trả về khớp, header `attachment` + `filename*`, `no-store`, `nosniff`, `Content-Length`; `Normal`
 không ghi kiểm toán; `Secret` xem được và ghi `document.viewed`, tải về `403/MSG159` (cả Chủ toạ) không ghi gì thêm;
-`Confidential` tải về ghi `document.downloaded`; tài liệu đã gỡ / của cuộc họp khác / không tồn tại → `MSG156`;
+`Confidential` tải về ghi `document.downloaded`; tài liệu đã gỡ / của cuộc họp khác / không tồn tại → `MSG156`, kể cả
+khi tải về từ cuộc họp `Secret` (không trả `403` để lộ ID); tải về `Secret` khi object thiếu vẫn `MSG159` (chặn trước khi
+chạm kho); lỗi DB lúc tra tài liệu → `MSG158`/`MSG160`;
 object thiếu hoặc kho chưa cấu hình → `MSG158`/`MSG160`, không ghi kiểm toán; lỗi ghi kiểm toán → không gửi tệp;
 tải lên phát `documentsChanged` chỉ cho người đã join cuộc họp đó, tải lên lỗi không phát.
 

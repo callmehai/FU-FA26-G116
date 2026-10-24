@@ -27,7 +27,7 @@ public sealed class MeetingDocumentRepository(TrustCabinetDbContext db) : IMeeti
     public async Task<MeetingDocumentList> ListAsync(Guid meetingId, CancellationToken ct)
     {
         var items = await db.AgendaItems.AsNoTracking().Where(i => i.MeetingId == meetingId)
-            .OrderBy(i => i.Position).Select(i => new { i.Id, i.Position, i.Title, i.Status }).ToListAsync(ct);
+            .OrderBy(i => i.Position).ThenBy(i => i.Id).Select(i => new { i.Id, i.Position, i.Title, i.Status }).ToListAsync(ct);
         var rows = await db.MeetingDocuments.AsNoTracking()
             .Where(d => d.MeetingId == meetingId && d.RemovedAt == null)
             .OrderBy(d => d.AddedAt).ThenBy(d => d.Id)
