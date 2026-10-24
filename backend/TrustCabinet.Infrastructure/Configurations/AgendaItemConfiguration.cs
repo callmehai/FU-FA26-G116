@@ -10,7 +10,17 @@ public class AgendaItemConfiguration : IEntityTypeConfiguration<AgendaItem>
     {
         builder.Property(a => a.Title).HasMaxLength(300).IsRequired();
         builder.Property(a => a.Description).HasMaxLength(4000);
-        builder.Property(a => a.PresenterName).HasMaxLength(200);
+        builder.Property(a => a.LegacyPresenterName).HasColumnName("presenter_name").HasMaxLength(200);
+        builder.Property(a => a.Conclusion).HasMaxLength(2000);
+        builder.HasOne(a => a.PresenterGuestInvitation).WithMany()
+            .HasForeignKey(a => a.PresenterGuestInvitationId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(a => a.ConclusionUpdatedBy).WithMany()
+            .HasForeignKey(a => a.ConclusionUpdatedById).OnDelete(DeleteBehavior.Restrict);
+        builder.ToTable(t =>
+        {
+            t.HasCheckConstraint("ck_agenda_items_presenter", "presenter_id IS NULL OR presenter_guest_invitation_id IS NULL");
+            t.HasCheckConstraint("ck_agenda_items_conclusion", "(conclusion IS NULL AND conclusion_updated_by_id IS NULL AND conclusion_updated_at IS NULL) OR (conclusion IS NOT NULL AND conclusion_updated_by_id IS NOT NULL AND conclusion_updated_at IS NOT NULL)");
+        });
         builder.Property(a => a.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
 
         // Deliberately not unique. Drag-and-drop reordering rewrites several positions at once,

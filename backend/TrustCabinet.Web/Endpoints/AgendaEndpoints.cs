@@ -24,12 +24,15 @@ public static class AgendaEndpoints
     private const string Msg75StartFailed = "MSG75";
     private const string Msg76CompleteFailed = "MSG76";
     private const string Msg128ReadFailed = "MSG128";
-    private const string Msg141PlanningFieldsLocked = "MSG141";
     private const string Msg142DeleteLocked = "MSG142";
     private const string Msg143OrderConflict = "MSG143";
-    private const string Msg144NotFirstPending = "MSG144";
     private const string Msg34UnsupportedMedia = "MSG34";
     private const string Msg87BodyTooLarge = "MSG87";
+    private const string Msg174NotFound = "MSG174";
+    private const string Msg271ConclusionSaved = "MSG271";
+    private const string Msg272ConclusionInvalid = "MSG272";
+    private const string Msg273ConclusionDenied = "MSG273";
+    private const string Msg274ConclusionFailed = "MSG274";
     private const int MaxBodyBytes = 64 * 1024;
     private static readonly JsonSerializerOptions InputJson = new(JsonSerializerDefaults.Web)
     {
@@ -61,6 +64,8 @@ public static class AgendaEndpoints
         Register(AgendaOperation.Start, "POST", "/{itemId:guid}/current");
         Register(AgendaOperation.Complete, "POST", "/{itemId:guid}/complete");
 
+        Register(AgendaOperation.RecordConclusion, "PUT", "/{itemId:guid}/conclusion");
+
         void Register(AgendaOperation operation, string method, string suffix)
         {
             app.MapGroup(prefix).RequireActiveUser(Map(new(AgendaFailure.SaveFailed), Guid.Empty, operation))
@@ -69,8 +74,8 @@ public static class AgendaEndpoints
                 {
                     var actor = CapabilityGate.GatedUserId(context.User);
                     var item = context.Request.RouteValues.TryGetValue("itemId", out var value) ? Guid.Parse(value!.ToString()!) : Guid.Empty;
-                    var input = operation is AgendaOperation.Create or AgendaOperation.Update or AgendaOperation.Reorder
-                        ? await ParseAsync(context.Request, operation == AgendaOperation.Reorder, ct) : new AgendaInput();
+                    var input = operation is AgendaOperation.Create or AgendaOperation.Update or AgendaOperation.Reorder or AgendaOperation.RecordConclusion
+                        ? await ParseAsync(context.Request, operation, ct) : new AgendaInput();
                     var result = operation switch
                     {
                         AgendaOperation.Create => await service.CreateAsync(meetingId, actor, input, ct),
@@ -78,6 +83,7 @@ public static class AgendaEndpoints
                         AgendaOperation.Delete => await service.DeleteAsync(meetingId, item, actor, ct),
                         AgendaOperation.Reorder => await service.ReorderAsync(meetingId, actor, input, ct),
                         AgendaOperation.Start => await service.StartAsync(meetingId, item, actor, ct),
+                        AgendaOperation.RecordConclusion => await service.RecordConclusionAsync(meetingId, item, actor, input, ct),
                         _ => await service.CompleteAsync(meetingId, item, actor, ct)
                     };
                     return Map(result, meetingId, operation);
@@ -90,11 +96,13 @@ public static class AgendaEndpoints
             .Resolve(context.HttpContext.User) is not null
             ? ValueTask.FromResult<object?>(Results.Forbid()) : next(context);
 
-    private sealed record PlanningBody(string? Title, string? Description, int? PlannedDurationMinutes,
-        Guid? PresenterId, string? PresenterName, Guid[]? DocumentIds);
-    private sealed record OrderBody(string? OrderVersion, Guid[]? PendingItemIds);
+    private sealed record PlanningBody(string? Title, string? Description,
+        Guid? PresenterId, Guid? PresenterGuestInvitationId, Guid[]? DocumentIds);
+    private sealed record OrderBody(string? OrderVersion, Guid[]? OrderedItemIds);
 
-    private static async Task<AgendaInput> ParseAsync(HttpRequest request, bool reorder, CancellationToken ct)
+    private sealed record ConclusionBody(string? Conclusion);
+
+    private static async Task<AgendaInput> ParseAsync(HttpRequest request, AgendaOperation operation, CancellationToken ct)
     {
         if (!request.HasJsonContentType()) return new(ParseFailure: AgendaFailure.UnsupportedMedia);
         if (request.ContentLength > MaxBodyBytes) return new(ParseFailure: AgendaFailure.TooLarge);
@@ -113,15 +121,17 @@ public static class AgendaEndpoints
             if (json.RootElement.ValueKind != JsonValueKind.Object
                 || json.RootElement.EnumerateObject().Select(PropertyName).Distinct().Count() != json.RootElement.EnumerateObject().Count())
                 throw new JsonException();
-            if (reorder)
+            if (operation == AgendaOperation.Reorder)
             {
                 var order = json.RootElement.Deserialize<OrderBody>(InputJson)!;
-                return new(OrderVersion: order.OrderVersion, PendingItemIds: order.PendingItemIds);
+                return new(OrderVersion: order.OrderVersion, OrderedItemIds: order.OrderedItemIds);
             }
+            if (operation == AgendaOperation.RecordConclusion)
+                return new(Conclusion: json.RootElement.Deserialize<ConclusionBody>(InputJson)!.Conclusion);
             var body = json.RootElement.Deserialize<PlanningBody>(InputJson)!;
-            return new(body.Title, body.Description, body.PlannedDurationMinutes, body.PresenterId, body.PresenterName, body.DocumentIds);
+            return new(body.Title, body.Description, body.PresenterId, body.PresenterGuestInvitationId, body.DocumentIds);
         }
-        catch (JsonException) { return new(ParseFailure: reorder ? AgendaFailure.InvalidOrder : AgendaFailure.Invalid); }
+        catch (JsonException) { return new(ParseFailure: operation == AgendaOperation.Reorder ? AgendaFailure.InvalidOrder : AgendaFailure.Invalid); }
     }
 
     private static string PropertyName(JsonProperty property)
@@ -136,9 +146,11 @@ public static class AgendaEndpoints
 
     private static IResult Map(AgendaOutcome result, Guid meetingId, AgendaOperation? operation = null)
     {
-        var denied = operation == AgendaOperation.Start ? Msg73StartDenied
+        var denied = operation == AgendaOperation.RecordConclusion ? Msg273ConclusionDenied
+            : operation == AgendaOperation.Start ? Msg73StartDenied
             : operation == AgendaOperation.Complete ? Msg74CompleteDenied : Msg67PlanningDenied;
-        if (result.Failure == AgendaFailure.NotFound) return Results.NotFound();
+        if (result.Failure == AgendaFailure.NotFound) return operation == AgendaOperation.RecordConclusion
+            ? Error(404, Msg174NotFound, "Không truy cập được cuộc họp này.") : Results.NotFound();
         if (result.Failure == AgendaFailure.Inactive) return Results.Forbid();
         if (result.Failure != AgendaFailure.None)
         {
@@ -146,21 +158,19 @@ public static class AgendaEndpoints
             {
                 AgendaFailure.Forbidden => (403, denied, "Bạn không có quyền thực hiện thao tác này."),
                 AgendaFailure.Locked => (409, denied, "Trạng thái cuộc họp không cho phép thao tác này."),
-                AgendaFailure.Invalid => (400, Msg66Invalid, "Thông tin mục nghị sự không hợp lệ."),
+                AgendaFailure.Invalid => (400, operation == AgendaOperation.RecordConclusion ? Msg272ConclusionInvalid : Msg66Invalid, "Thông tin mục nghị sự không hợp lệ."),
                 AgendaFailure.UnsupportedMedia => (415, Msg34UnsupportedMedia, "Yêu cầu phải dùng Content-Type application/json."),
                 AgendaFailure.TooLarge => (413, Msg87BodyTooLarge, "Nội dung yêu cầu vượt quá 64 KiB."),
                 AgendaFailure.ReadFailed => (500, Msg128ReadFailed, "Không tải được chương trình nghị sự."),
-                AgendaFailure.PlanningFieldsLocked => (409, Msg141PlanningFieldsLocked, "Chỉ được sửa tiêu đề và mô tả sau khi mục đã bắt đầu."),
                 AgendaFailure.DeleteLocked => (409, Msg142DeleteLocked, "Chỉ được xóa mục nghị sự chưa bắt đầu."),
-                AgendaFailure.InvalidOrder => (400, Msg143OrderConflict, "Danh sách sắp xếp phải chứa đúng mỗi mục chưa bắt đầu một lần."),
+                AgendaFailure.InvalidOrder => (400, Msg143OrderConflict, "Danh sách sắp xếp phải chứa đúng mỗi mục nghị sự một lần."),
                 AgendaFailure.StaleOrder => (409, Msg143OrderConflict, "Chương trình nghị sự đã thay đổi. Vui lòng tải lại."),
                 AgendaFailure.AlreadyCurrent => (409, Msg72AlreadyCurrent, "Đã có mục nghị sự đang diễn ra."),
                 AgendaFailure.CannotStart => (409, Msg73StartDenied, "Mục nghị sự không còn ở trạng thái chờ."),
                 AgendaFailure.CannotComplete => (409, Msg74CompleteDenied, "Chỉ được hoàn thành mục nghị sự đang diễn ra."),
-                AgendaFailure.NotFirstPending => (409, Msg144NotFirstPending, "Phải bắt đầu mục nghị sự chờ đầu tiên."),
                 _ => (503, operation switch { AgendaOperation.Create => Msg68CreateFailed, AgendaOperation.Update => Msg69UpdateFailed,
                     AgendaOperation.Delete => Msg70DeleteFailed, AgendaOperation.Reorder => Msg71ReorderFailed,
-                    AgendaOperation.Start => Msg75StartFailed, _ => Msg76CompleteFailed }, "Không lưu được thao tác nghị sự. Vui lòng thử lại.")
+                    AgendaOperation.Start => Msg75StartFailed, AgendaOperation.RecordConclusion => Msg274ConclusionFailed, _ => Msg76CompleteFailed }, "Không lưu được thao tác nghị sự. Vui lòng thử lại.")
             };
             return Error(status, code, message, result.Errors);
         }
@@ -172,6 +182,7 @@ public static class AgendaEndpoints
             AgendaOperation.Delete => (Msg62Deleted, "Xóa mục nghị sự thành công."),
             AgendaOperation.Reorder => (Msg63Reordered, "Sắp xếp mục nghị sự thành công."),
             AgendaOperation.Start => (Msg64Started, "Bắt đầu mục nghị sự thành công."),
+            AgendaOperation.RecordConclusion => (Msg271ConclusionSaved, "Lưu kết luận mục nghị sự thành công."),
             _ => (Msg65Completed, "Hoàn thành mục nghị sự thành công.")
         };
         var body = new Dictionary<string, object?> { ["code"] = successCode, ["message"] = successMessage, ["meetingId"] = meetingId };

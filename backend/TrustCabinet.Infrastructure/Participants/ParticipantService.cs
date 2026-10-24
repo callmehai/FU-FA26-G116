@@ -23,7 +23,8 @@ public sealed partial class ParticipantService(
     ICallerContext caller,
     TimeProvider clock,
     ILogger<ParticipantService> logger,
-    IParticipantsChangePublisher publisher
+    IParticipantsChangePublisher publisher,
+    IAgendaChangePublisher agendaPublisher
 ) : IParticipantService
 {
     private static bool Persistence(Exception ex) =>
@@ -391,6 +392,7 @@ public sealed partial class ParticipantService(
     )
     {
         MeetingAccessChange? accessChange = null;
+        AgendaChange? agendaChange = null;
         ParticipantResult result;
         ParticipantsChange? changeEvent = null;
         HashSet<Guid> readers = [];
@@ -503,6 +505,22 @@ public sealed partial class ParticipantService(
                 || result.Success == ParticipantSuccess.NoChanges
             )
                 return result with { Revision = response ? null : m.ParticipantsRevision };
+            if (operation is ParticipantOperation.RemoveInternal or ParticipantOperation.RevokeGuest)
+            {
+                var userId = operation == ParticipantOperation.RemoveInternal
+                    ? snapshot.Meeting.Participants.Single(p => p.Id == targetId).UserId : (Guid?)null;
+                var affected = await db.AgendaItems.Where(i => i.MeetingId == meetingId
+                    && (userId != null ? i.PresenterId == userId : i.PresenterGuestInvitationId == targetId)).ToListAsync(ct);
+                foreach (var item in affected)
+                {
+                    item.PresenterId = null;
+                    item.PresenterGuestInvitationId = null;
+                    item.LegacyPresenterName = "";
+                    item.UpdatedAt = now;
+                }
+                if (affected.Count > 0)
+                    agendaChange = new(Guid.CreateVersion7(), meetingId, "PresenterCleared", null, null, now);
+            }
             if (!response)
                 m.ParticipantsRevision = checked(m.ParticipantsRevision + 1);
             var after = Evidence(snapshot);
@@ -567,6 +585,12 @@ public sealed partial class ParticipantService(
                 meetingId
             );
             return new(ParticipantFailure.SaveFailed);
+        }
+        if (agendaChange is not null)
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+            try { await agendaPublisher.PublishAsync(agendaChange, timeout.Token); }
+            catch (Exception ex) { logger.LogWarning(ex, "Agenda presenter cleanup committed; delivery failed for {MeetingId}", meetingId); }
         }
         if (changeEvent is not null)
         {

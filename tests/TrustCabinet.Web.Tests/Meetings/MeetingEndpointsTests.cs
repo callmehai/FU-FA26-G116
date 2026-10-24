@@ -452,7 +452,6 @@ public sealed class MeetingEndpointsTests : IDisposable
             MeetingId = meeting.Id,
             Position = 1,
             Title = "Báo cáo",
-            PlannedDurationMinutes = 30,
             PresenterId = Guid.CreateVersion7(),
         });
         _factory.Meetings.Meetings.Add(meeting);
@@ -634,7 +633,6 @@ public sealed class MeetingEndpointsTests : IDisposable
                     MeetingId = meeting.Id,
                     Position = 1,
                     Title = "Báo cáo",
-                    PlannedDurationMinutes = 30,
                     PresenterId = Guid.CreateVersion7(),
                 });
                 _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];

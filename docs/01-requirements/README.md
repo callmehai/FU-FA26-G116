@@ -13,7 +13,7 @@ Nguồn chuẩn là ba báo cáo DOCX trên Google Drive (Report 1, 2, 3), đư�
 ## 1. Cấu trúc tài liệu
 
 - [00-master-use-case-inventory.md](00-master-use-case-inventory.md) — Danh mục tổng thể: 15 Feature (FE-01 → FE-15),
-  72 Use Case (UC-01 → UC-72), actor, quan hệ `<<extend>>`/`<<include>>`, **bảng đổi số UC cũ → mới** sau đợt gom UC
+  73 Use Case trong bản trích (UC-01 → UC-72 và UC-77), actor, quan hệ `<<extend>>`/`<<include>>`, **bảng đổi số UC cũ → mới** sau đợt gom UC
   ngày 10/10/2026.
 - [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case đồng bộ từ Report 3 §II (UC đã đặc tả
   và UC placeholder), có link tới sequence diagram tương ứng. FE-11 đã có đặc tả UC-52a, UC-52b,
@@ -170,3 +170,5 @@ Ví dụ: **`MSGnn – “Only an empty folder can be deleted.”`** Mã thực 
 - [ ] **Quy tắc nghiệp vụ (BR)**: Đánh mã `BR-XX` rõ ràng và được dẫn chiếu tại các bước kiểm tra tương ứng.
 
 - [07-ra-soat-guest-va-diem-danh.md](07-ra-soat-guest-va-diem-danh.md) — quyết định Guest 13/10/2026 và phân tích BR-122 chưa chốt.
+
+SCRUM-98 (24/10/2026): đồng bộ phần FE-05/UC-77 và POST-4 UC-28c từ snapshot Report 3 đã cập nhật. Inventory bổ sung UC-77; BR-306–312 dùng định nghĩa hiện có. Không chỉnh DOCX/snapshot trong lượt triển khai Backend này; [handoff](../03-api/08-scrum98-ban-giao.md) ghi phần chờ BA Final Review.

@@ -58,3 +58,5 @@ Biến của collection (`baseUrl`, `mailpitUrl`, email và mật khẩu demo) s
   `POST /api/users/{id}/password-reset` — nhận `409 MSG14`. Có test tự động trong `UserEndpointsTests`.
 - `MSG15` (không gửi được email) không nằm trong collection: muốn thử thì `docker stop tc-mailpit`
   rồi gọi lại `POST /api/users/{id}/password-reset` — nhận `503 MSG15` sau vài giây.
+
+Collection `SCRUM-25-Agenda.postman_collection.json` giữ tên file để không gãy link, nội dung đã nâng contract SCRUM-98 và thêm UC-77. Chạy thủ công trên DB test riêng theo [bàn giao SCRUM-98](../08-scrum98-ban-giao.md); request cũ duration được giữ duy nhất như ca negative. Không export token.

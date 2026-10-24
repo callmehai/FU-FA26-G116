@@ -122,7 +122,7 @@ public sealed class AgendaFixture : IAsyncLifetime
         for (var i = 0; i < 3; i++) db.MeetingParticipants.Add(new() { MeetingId = meeting.Id, UserId = users[i].Id,
             Role = i == 0 ? MeetingRole.Secretary : i == 1 ? MeetingRole.Chair : MeetingRole.Member });
         var items = Enumerable.Range(0, count).Select(i => new AgendaItem { MeetingId = meeting.Id,
-            Title = $"Mục {i + 1}", Position = 1 + i * 3, PlannedDurationMinutes = 20 }).ToArray();
+            Title = $"Mục {i + 1}", Position = 1 + i * 3 }).ToArray();
         db.AgendaItems.AddRange(items);
         var document = TestDocument(meeting.Id, "Tài liệu nội bộ", users[0].Id);
         db.MeetingDocuments.Add(document);

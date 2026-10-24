@@ -116,7 +116,7 @@ public sealed class MeetingScheduleMigrationTests : IAsyncLifetime
 
     private async Task MigrateToLatestAsync()
     {
-        await _db.GetService<IMigrator>().MigrateAsync();
+        await _db.GetService<IMigrator>().MigrateAsync(_db.Database.GetMigrations().TakeWhile(m => !m.EndsWith("SynchronizeAgendaWithPoRequirements", StringComparison.Ordinal)).Last());
         _db.ChangeTracker.Clear();
     }
 
