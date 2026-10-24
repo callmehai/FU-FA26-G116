@@ -81,7 +81,7 @@ Plan ghi "entity Document", nhưng `PageCount` nằm ở **StoredFile** (Entity 
 ## 7. Câu hỏi đã dùng mặc định / điểm lệch cần Khánh xem
 
 1. **Quy tắc đuôi tệp** vào **BR-215**, không vào BR-187 (câu hỏi 7 của plan mục 9, dùng mặc định).
-2. **Thứ tự kiểm quyền → kiểm tệp** chỉ ghi ở UC-33a AF-1 và sequence, không tạo BR (câu hỏi 6, dùng mặc định). Nếu PO muốn BR, lấy BR-320.
+2. **Thứ tự kiểm quyền → kiểm tệp** chỉ ghi ở UC-33a AF-1 và sequence, không tạo BR (câu hỏi 6, dùng mặc định). Nếu PO muốn BR, lấy số trống tiếp theo (BR-322; BR-320, BR-321 đã dùng cho SCRUM-20).
 3. **Điểm 7** (lập nghị sự vẫn "mỗi tài liệu một mục", trong khi I.3.2 và ADR-0020 cho phép nhiều mục): lệch của UC-33b / SCRUM-58, chưa làm. Không sửa spec; cần ghi comment vào Jira SCRUM-58.
 4. **Điểm 2** (kho dev là SeaweedFS): ADR-0024 và `03-co-so-du-lieu.md` đã sửa trong PR; Report 3 không nhắc MinIO nên không sửa.
 5. **Điểm 8** (fixture dev của agenda mất object trên kho nên không mở được, DB dev và server test mất hai tài liệu fixture mỗi cuộc họp `[SCRUM-25]`): vấn đề dữ liệu dev, báo leader/BE, không đưa vào Report 3.
