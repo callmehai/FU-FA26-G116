@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 
 namespace TrustCabinet.Infrastructure.Documents;
@@ -21,12 +23,113 @@ public sealed class MeetingDocumentRepository(TrustCabinetDbContext db) : IMeeti
         db.Documents.Add(document);
         db.MeetingDocuments.Add(meetingDocument);
     }
+
+    public async Task<MeetingDocumentList> ListAsync(Guid meetingId, CancellationToken ct)
+    {
+        var items = await db.AgendaItems.AsNoTracking().Where(i => i.MeetingId == meetingId)
+            .OrderBy(i => i.Position).Select(i => new { i.Id, i.Position, i.Title, i.Status }).ToListAsync(ct);
+        var rows = await db.MeetingDocuments.AsNoTracking()
+            .Where(d => d.MeetingId == meetingId && d.RemovedAt == null)
+            .OrderBy(d => d.AddedAt).ThenBy(d => d.Id)
+            .Select(d => new
+            {
+                Row = new MeetingDocumentRow(d.Id, d.FileName, d.StoredFile.ContentType, d.StoredFile.ByteSize,
+                    d.StoredFile.PageCount, d.Comments.Count, new MeetingPerson(d.AddedById, d.AddedBy.FullName), d.AddedAt),
+                ItemIds = d.AgendaItemLinks.Select(l => l.AgendaItemId).ToList(),
+            }).ToListAsync(ct);
+
+        // A document linked to several items shows under each (BR-277); one linked to none is general (BR-280).
+        var groups = items.Select(i => new MeetingDocumentAgendaGroup(i.Id, i.Position, i.Title, i.Status.ToString(),
+            rows.Where(r => r.ItemIds.Contains(i.Id)).Select(r => r.Row).ToList())).ToList();
+        var general = rows.Where(r => r.ItemIds.Count == 0).Select(r => r.Row).ToList();
+        var current = items.FirstOrDefault(i => i.Status == AgendaItemStatus.InProgress)?.Id;
+        return new(meetingId, current, groups, general);
+    }
+
+    public Task<AttachedDocumentFile?> FindAttachedFileAsync(Guid meetingId, Guid meetingDocumentId, CancellationToken ct)
+        => db.MeetingDocuments.AsNoTracking()
+            .Where(d => d.Id == meetingDocumentId && d.MeetingId == meetingId && d.RemovedAt == null)
+            .Select(d => new AttachedDocumentFile(d.FileName, d.StoredFile.StorageKey, d.StoredFile.ContentType,
+                d.StoredFile.ByteSize))
+            .SingleOrDefaultAsync(ct);
 }
 
 public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeetingDocumentRepository documents,
-    IFileStorage storage, TimeProvider clock, ILogger<MeetingDocumentService> logger) : IMeetingDocumentService
+    IFileStorage storage, IAuditService audit, TimeProvider clock, ILogger<MeetingDocumentService> logger)
+    : IMeetingDocumentService
 {
     private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
+
+    public async Task<MeetingDocumentListOutcome> ListAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
+    {
+        try
+        {
+            var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
+            // Same answer for a meeting that does not exist and one the caller cannot see (SCRUM-22).
+            if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId)) return new(DocumentReadFailure.NotFound);
+            return new(List: await documents.ListAsync(meetingId, ct));
+        }
+        catch (Exception ex) when (PersistenceError(ex))
+        {
+            logger.LogError(ex, "Failed to list documents of meeting {MeetingId}", meetingId);
+            return new(DocumentReadFailure.ReadFailed);
+        }
+    }
+
+    public async Task<MeetingDocumentContentOutcome> OpenContentAsync(Guid meetingId, Guid meetingDocumentId,
+        Guid actorId, bool download, CancellationToken ct = default)
+    {
+        Meeting? meeting;
+        AttachedDocumentFile? file;
+        try
+        {
+            meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
+            if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId)) return new(DocumentReadFailure.NotFound);
+            file = await documents.FindAttachedFileAsync(meetingId, meetingDocumentId, ct);
+        }
+        catch (Exception ex) when (PersistenceError(ex))
+        {
+            logger.LogError(ex, "Failed to look up document {DocumentId} of meeting {MeetingId}", meetingDocumentId, meetingId);
+            return new(DocumentReadFailure.ReadFailed);
+        }
+        // Removed, or never in this meeting: the same answer, so an ID from another meeting reveals nothing (BR-211).
+        if (file is null) return new(DocumentReadFailure.NotFound);
+        if (download && meeting.Sensitivity == Sensitivity.Secret) return new(DocumentReadFailure.DownloadForbidden);
+
+        Stream content;
+        try
+        {
+            content = await storage.OpenReadAsync(file.StorageKey, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            // A missing object, an unconfigured store or the store being down all read as "try again".
+            logger.LogError(ex, "Failed to open stored object {StorageKey} for document {DocumentId}", file.StorageKey,
+                meetingDocumentId);
+            return new(DocumentReadFailure.ReadFailed);
+        }
+
+        if (meeting.Sensitivity is Sensitivity.Confidential or Sensitivity.Secret)
+        {
+            // Recorded only once the file is actually there to hand over, and before it is: no
+            // audit row, no content (BR-318).
+            try
+            {
+                await audit.RecordAsync(download ? AuditActions.DocumentDownloaded : AuditActions.DocumentViewed,
+                    AuditActions.MeetingDocumentObjectType, meetingDocumentId, actorId,
+                    new { meetingId, fileName = file.FileName, sensitivity = meeting.Sensitivity.ToString() }, ct);
+            }
+            catch (Exception ex)
+            {
+                await content.DisposeAsync();
+                if (!PersistenceError(ex)) throw;
+                logger.LogError(ex, "Failed to audit access to document {DocumentId}", meetingDocumentId);
+                return new(DocumentReadFailure.ReadFailed);
+            }
+        }
+
+        return new(Content: new(content, file.FileName, file.ContentType, file.ByteSize));
+    }
 
     public async Task<DocumentUploadOutcome> CheckUploadAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
     {

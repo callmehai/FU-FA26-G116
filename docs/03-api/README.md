@@ -72,7 +72,9 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`09-thanh-phan-tham-du-ket-qua-kiem-thu.md`](09-thanh-phan-tham-du-ket-qua-kiem-thu.md) — kết quả build/test, performance và giới hạn nghiệm thu
 - [`11-tai-lieu-cuoc-hop.md`](11-tai-lieu-cuoc-hop.md) — SCRUM-107: tải tệp từ máy lên cuộc họp
   (UC-33a AF-1), kiểm loại theo nội dung, tất cả hoặc không, thư mục kho tự tạo, lưu trên R2, job dọn
-  file mồ côi; mã `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, `MSG288`; note cho FE
+  file mồ côi; mã `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, `MSG288`; note cho FE.
+  SCRUM-21: danh sách tài liệu nhóm theo mục nghị sự (UC-32a), xem / tải về đúng byte gốc, chặn tải về cuộc họp
+  Mật, nhật ký kiểm toán Confidential/Secret (UC-32c), event `documentsChanged`; mã `MSG156`–`MSG160`; note cho FE
 - [`10-scrum97-ket-qua-kiem-thu.md`](10-scrum97-ket-qua-kiem-thu.md) — kết quả riêng của phần SCRUM-97 bổ sung trên baseline SCRUM-20; kèm change note Jira để owner đăng.
 
 Dự kiến có thêm:

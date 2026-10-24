@@ -1,11 +1,12 @@
-# SCRUM-107 · Tải tài liệu từ máy lên cuộc họp
+# Tài liệu cuộc họp — tải lên (SCRUM-107), xem và tải về (SCRUM-21)
 
-UC-33a AF-1 *Upload files from the computer*. Byte lưu trên Cloudflare R2, mọi lượt tải lên đi qua
+UC-33a AF-1 *Upload files from the computer* (SCRUM-107); UC-32a *View Meeting Documents* và UC-32c *Preview
+Meeting Document* ở [mục SCRUM-21](#scrum-21--xem-và-tải-tài-liệu). Byte lưu trên Cloudflare R2, mọi lượt tải lên đi qua
 backend ([ADR-0024](../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)); mô hình dữ liệu theo
 [ADR-0018](../05-decisions/0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md) và
 [ERD §2](../02-design/02-erd.md). Sequence: [UC33a_UploadDocumentsToMeeting](../06-sequencediagram/document-management/UC33a_UploadDocumentsToMeeting.txt).
 
-Danh sách tài liệu, xem trước và tải về thuộc SCRUM-21; tải vào kho và chọn từ kho thuộc SCRUM-58.
+Tải vào kho, chọn từ kho, gắn / gỡ thuộc SCRUM-58.
 
 ## Endpoint
 
@@ -109,6 +110,118 @@ Khoá là `files[i]` theo thứ tự part tệp; key `files` dùng cho lỗi c�
 - `documentIds` của Agenda (`editor-options`, POST/PUT item) giờ là **MeetingDocument ID**, cùng loại
   `id` trả ở đây.
 
+## SCRUM-21 · Xem và tải tài liệu
+
+UC-32a, UC-32c. Sequence: [UC32a_ViewMeetingDocuments](../06-sequencediagram/document-management/UC32a_ViewMeetingDocuments.txt),
+[UC32c_PreviewMeetingDocument](../06-sequencediagram/document-management/UC32c_PreviewMeetingDocument.txt).
+
+**Quyền đọc** = quyền xem cuộc họp (`MeetingReadPolicy`, cùng luật với `GET /api/meetings/{id}`): Người tổ chức,
+Người duyệt (từ khi gửi duyệt), Chủ toạ/Thư ký hiện tại, thành viên hiện tại khi cuộc họp đã `Published`,
+`InProgress` hoặc `Ended`. Không có quyền đọc tài liệu riêng (BR-181, BR-275). Cả hai endpoint cần bearer token của
+tài khoản đang hoạt động; **Guest chưa được hỗ trợ** vì chưa có xác thực Guest (UC-04).
+
+### `GET /api/meetings/{meetingId}/documents` — UC-32a
+
+`200`:
+
+```json
+{
+  "meetingId": "…",
+  "currentAgendaItemId": "…",
+  "agendaItems": [
+    {
+      "id": "…", "position": 1, "title": "Báo cáo quý 3", "status": "InProgress",
+      "documents": [
+        {
+          "id": "…", "fileName": "Tờ trình.pdf", "contentType": "application/pdf", "byteSize": 81234,
+          "pageCount": 12, "commentCount": 2, "addedBy": { "userId": "…", "fullName": "Nguyễn Văn A" },
+          "addedAt": "2026-10-24T02:15:00+00:00"
+        }
+      ]
+    }
+  ],
+  "general": [ { "id": "…", "fileName": "Phụ lục.docx", "pageCount": null, "…": "…" } ]
+}
+```
+
+- `agendaItems`: **mọi** mục nghị sự theo `position`, kể cả mục chưa có tài liệu (để FE đặt nút thêm tài liệu cho
+  từng mục ở SCRUM-58). Tài liệu gắn nhiều mục xuất hiện ở từng mục (BR-277). `status`: `Pending` /
+  `InProgress` / `Done`.
+- `general`: tài liệu không gắn mục nào (BR-280).
+- Trong mỗi nhóm, tài liệu xếp theo thời điểm thêm (cũ trước). Tài liệu đã gỡ không có mặt (BR-211).
+- `currentAgendaItemId`: mục đang `InProgress`, hoặc `null`. Panel trong phòng họp dùng nó để đưa mục đang bàn
+  lên đầu (BR-316) — server **không** đổi thứ tự theo nơi gọi.
+- `id` là **MeetingDocument ID**, cùng loại với `documents[].id` khi tải lên và `documentIds` của Agenda.
+- `pageCount` chỉ có ở PDF (FE đếm lúc tải lên); DOCX luôn `null`. `commentCount` đếm mọi góp ý và trả lời.
+
+### `GET /api/meetings/{meetingId}/documents/{meetingDocumentId}/content[?download=true]` — UC-32c
+
+Trả **đúng byte đã tải lên**, đọc theo luồng từ kho tệp qua backend, không chuyển đổi (BR-183, BR-216). Trình duyệt
+tự dựng bản xem: PDF bằng pdf.js, DOCX bằng `docx-preview`.
+
+| Header | Giá trị |
+|---|---|
+| `Content-Type` | `contentType` đã lưu lúc tải lên (nhận diện theo nội dung) |
+| `Content-Length` | `byteSize` |
+| `Content-Disposition` | luôn `attachment; filename=…; filename*=UTF-8''…` — origin của mình không bao giờ render tệp tải lên thành trang |
+| `Cache-Control` | `private, no-store` |
+| `X-Content-Type-Options` | `nosniff` |
+
+`download=true` là lần **tải về** (AF-1): cuộc họp `Secret` bị chặn (`MSG159`, BR-188), kể cả khi mức mật vừa đổi
+sau lúc mở trình xem. Không có tham số là lần **xem**.
+
+**Nhật ký kiểm toán** (BR-318): cuộc họp `Confidential` hoặc `Secret` ghi một dòng `AuditLogEntry` cho mỗi lần
+xem / tải thành công — `action` `document.viewed` hoặc `document.downloaded`, `objectType` `MeetingDocument`,
+`objectId` là MeetingDocument ID, `details` có `meetingId`, `fileName`, `sensitivity`. Dòng được ghi sau khi mở được
+tệp và **trước** khi gửi byte; không ghi được thì không gửi tệp (`MSG158`/`MSG160`). Cuộc họp `Normal`/`Internal`
+không ghi.
+
+### Lỗi
+
+| HTTP | Mã | Endpoint | Khi nào |
+|---|---|---|---|
+| 401 / 403 | — | cả hai | Chưa đăng nhập / tài khoản bị khoá (body rỗng) |
+| 404 | `MSG156` | cả hai | Không xem được cuộc họp, cuộc họp không tồn tại, tài liệu đã gỡ, hoặc ID tài liệu của cuộc họp khác — **cùng một body** |
+| 500 | `MSG157` | danh sách | Lỗi đọc DB; FE không được hiển thị như danh sách rỗng |
+| 403 | `MSG159` | `content?download=true` | Cuộc họp `Secret` |
+| 503 | `MSG158` | `content` | Không đưa được tệp: object thiếu trên kho, kho chưa cấu hình hoặc lỗi, DB lỗi, không ghi được nhật ký kiểm toán |
+| 503 | `MSG160` | `content?download=true` | Như `MSG158` |
+
+### Realtime
+
+Sau mỗi lần tải lên thành công, hub `/hubs/meetings` gửi `documentsChanged` `{ "meetingId": "…" }` cho mọi người
+đang `JoinMeeting` và còn quyền xem cuộc họp (cùng nhóm người nhận với `agendaChanged`). Event chỉ báo "có thay
+đổi", FE gọi lại `GET …/documents`. Đổi mục đang bàn đã có `agendaChanged` (`Started` / `Completed`). Gỡ và gắn / gỡ
+mục (SCRUM-58) nên phát cùng event này.
+
+### Note cho FE (SCRUM-21)
+
+- Token nằm trong JS (không có cookie), nên **không** mở thẳng URL `content` ở tab mới hay đặt vào `<a href>`. Gọi
+  bằng client API (bearer) lấy `Blob`/`ArrayBuffer`, rồi đưa cho pdf.js / `docx-preview`; tải về thì
+  `URL.createObjectURL` + `<a download>` với `fileName` từ danh sách. "Mở ở tab mới" từ phòng họp (BR-315) = mở route
+  trình xem của FE ở tab mới, route đó tự gọi API.
+- `client.ts` hiện đọc JSON; cần một biến thể trả `Blob` cho `content` nhưng vẫn đọc body JSON khi lỗi để lấy `code`.
+- Nút Tải về ẩn khi `sensitivity === 'Secret'` (lấy từ `GET /api/meetings/{id}`); server vẫn chặn.
+- Chỉ đọc sau khi kết thúc (BR-282), nút Tải lên chỉ cho Chủ toạ/Thư ký: lấy `status` và `myMeetingRole` từ
+  `GET /api/meetings/{id}`, endpoint danh sách không lặp lại.
+- Nhóm **Biểu quyết** (UC-32a AF-1) chưa có dữ liệu: mô hình chưa có bảng gắn tài liệu với biểu quyết. Ẩn nhóm này
+  cho tới khi phần biểu quyết / UC-74 thêm bảng đó.
+- `MSG158`/`MSG160` là lỗi tạm thời: hiện nút thử lại. `MSG156` giữa chừng (tài liệu vừa bị gỡ, mất quyền): đóng
+  trình xem và tải lại danh sách.
+- Lắng nghe `documentsChanged` và `agendaChanged` để làm mới tab Tài liệu và panel trong phòng.
+
+### Kiểm thử (SCRUM-21)
+
+`tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs` (PostgreSQL thật, kho tệp trong bộ
+nhớ): nhóm theo mục đúng thứ tự `position`, tài liệu gắn mục 1 và 3 hiện ở cả hai, tài liệu chung, tài liệu đã gỡ
+không hiện, `currentAgendaItemId`, `pageCount`/`commentCount`/`addedBy`; cuộc họp rỗng; cuộc họp đã kết thúc vẫn đọc
+được; người ngoài, cuộc họp không tồn tại, thành viên của cuộc họp `Draft` → cùng `404/MSG156`; lỗi đọc DB →
+`MSG157`; byte trả về khớp, header `attachment` + `filename*`, `no-store`, `nosniff`, `Content-Length`; `Normal`
+không ghi kiểm toán; `Secret` xem được và ghi `document.viewed`, tải về `403/MSG159` (cả Chủ toạ) không ghi gì thêm;
+`Confidential` tải về ghi `document.downloaded`; tài liệu đã gỡ / của cuộc họp khác / không tồn tại → `MSG156`;
+object thiếu hoặc kho chưa cấu hình → `MSG158`/`MSG160`, không ghi kiểm toán; lỗi ghi kiểm toán → không gửi tệp;
+tải lên phát `documentsChanged` chỉ cho người đã join cuộc họp đó, tải lên lỗi không phát.
+
 ## Lưu trữ và cấu hình
 
 Section `FileStorage` (ADR-0024). `ServiceUrl`, `BucketName`, `AccessKeyId`, `SecretAccessKey` là bí
@@ -121,9 +234,9 @@ mật — `dotnet user-secrets` khi dev, biến môi trường `FileStorage__*` 
   không phải tệp thành chuỗi, to bao nhiêu cũng vậy (`ValueLengthLimit` chỉ áp cho form urlencoded). Part tệp ghi
   ra tệp tạm trên đĩa, không giữ trong RAM, và bị xoá khi request kết thúc; `pageCounts` đọc tối đa 16 byte; part
   khác bị bỏ qua không đọc. Giới hạn body chỉ nâng lên 201 MB cho riêng endpoint này (Kestrel mặc định 30 MB).
-- Tên tệp được lưu nguyên văn (chỉ bỏ phần đường dẫn). Endpoint tải về của SCRUM-21 phải mã hoá tên trong
+- Tên tệp được lưu nguyên văn (chỉ bỏ phần đường dẫn). Endpoint `content` của SCRUM-21 mã hoá tên trong
   `Content-Disposition` (`filename*=UTF-8''…`) thay vì chèn thẳng.
-- Kho tệp có thêm `OpenReadAsync(key)` đọc object theo luồng cho SCRUM-21. CSP của server test không đổi.
+- Kho tệp có `OpenReadAsync(key)` đọc object theo luồng; endpoint `content` của SCRUM-21 dùng nó. CSP của server test không đổi.
 
 ### Job dọn file mồ côi (BR-213)
 

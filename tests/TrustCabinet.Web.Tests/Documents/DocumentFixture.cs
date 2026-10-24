@@ -3,6 +3,8 @@ using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +23,7 @@ public sealed class DocumentFixture : IAsyncLifetime
     internal readonly PostgreSqlTestDatabase Database = new(PostgresTestDatabase.ConnectionString("trustcabinet_document_tests"));
     internal readonly MemoryFileStorage Storage = new();
     internal readonly SaveFailureInterceptor SaveFailure = new();
+    internal readonly ReadFailureInterceptor ReadFailure = new();
     internal Factory Host = null!;
 
     internal TrustCabinetDbContext Db() => new(new DbContextOptionsBuilder<TrustCabinetDbContext>()
@@ -48,7 +51,7 @@ public sealed class DocumentFixture : IAsyncLifetime
                 services.RemoveAll<DbContextOptions<TrustCabinetDbContext>>();
                 services.AddDbContext<TrustCabinetDbContext>(o => o.UseNpgsql(fixture.Database.DataSource,
                     p => p.MigrationsHistoryTable("__ef_migrations_history")).UseSnakeCaseNamingConvention()
-                    .AddInterceptors(fixture.SaveFailure));
+                    .AddInterceptors(fixture.SaveFailure, fixture.ReadFailure));
                 services.RemoveAll<IFileStorage>();
                 services.AddSingleton<IFileStorage>(fixture.Storage);
             });
@@ -59,28 +62,46 @@ public sealed class DocumentFixture : IAsyncLifetime
     internal sealed class SaveFailureInterceptor : SaveChangesInterceptor
     {
         internal bool Enabled;
+        /// <summary>Fails the save that writes an audit row instead.</summary>
+        internal bool FailAudit;
         public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,
             InterceptionResult<int> result, CancellationToken cancellationToken = default)
-            => Enabled && eventData.Context!.ChangeTracker.Entries<MeetingDocument>().Any(e => e.State == EntityState.Added)
+            => (Enabled && eventData.Context!.ChangeTracker.Entries<MeetingDocument>().Any(e => e.State == EntityState.Added))
+                || (FailAudit && eventData.Context!.ChangeTracker.Entries<AuditLogEntry>().Any(e => e.State == EntityState.Added))
                 ? throw new DbUpdateException("Injected persistence failure.") : ValueTask.FromResult(result);
+    }
+
+    /// <summary>Fails every query that reads the given table.</summary>
+    internal sealed class ReadFailureInterceptor : DbCommandInterceptor
+    {
+        internal string? Table;
+        public override ValueTask<InterceptionResult<System.Data.Common.DbDataReader>> ReaderExecutingAsync(
+            System.Data.Common.DbCommand command, CommandEventData eventData,
+            InterceptionResult<System.Data.Common.DbDataReader> result, CancellationToken cancellationToken = default)
+            => Table is { } table && command.CommandText.Contains(table, StringComparison.Ordinal)
+                ? throw new Npgsql.NpgsqlException("Injected read failure.") : ValueTask.FromResult(result);
     }
 
     internal sealed record Scenario(Guid MeetingId, Guid Secretary, Guid Chair, Guid Member, Guid Organizer, Guid Outsider)
     {
         internal string Url => $"/api/meetings/{MeetingId}/documents/upload";
+        internal string ListUrl => $"/api/meetings/{MeetingId}/documents";
+        internal string ContentUrl(Guid documentId, bool download = false)
+            => $"/api/meetings/{MeetingId}/documents/{documentId}/content" + (download ? "?download=true" : "");
     }
 
     /// <summary>Planned start 18:30 UTC on 23/10 is 01:30 on 24/10 in Vietnam: the folder must say 24/10/2026.</summary>
     internal static readonly DateTimeOffset PlannedStart = new(2026, 10, 23, 18, 30, 0, TimeSpan.Zero);
 
-    internal async Task<Scenario> Seed(MeetingStatus status = MeetingStatus.InProgress)
+    internal async Task<Scenario> Seed(MeetingStatus status = MeetingStatus.InProgress,
+        Sensitivity sensitivity = Sensitivity.Normal)
     {
         await using var db = Db();
         var users = Enumerable.Range(0, 5).Select(i => new User { FullName = $"Document test {i}",
             Email = $"{Guid.NewGuid():N}@documents.test", PasswordHash = "test-only-non-login-hash" }).ToArray();
         db.Users.AddRange(users);
         var meeting = new Meeting { Title = "Họp giao ban", CreatedById = users[3].Id, Status = status,
-            PlannedStartTime = PlannedStart, PlannedEndTime = PlannedStart.AddHours(1) };
+            Sensitivity = sensitivity, PlannedStartTime = PlannedStart, PlannedEndTime = PlannedStart.AddHours(1) };
         db.Meetings.Add(meeting);
         db.MeetingParticipants.AddRange(
             new MeetingParticipant { MeetingId = meeting.Id, UserId = users[0].Id, Role = MeetingRole.Secretary },
@@ -96,6 +117,14 @@ public sealed class DocumentFixture : IAsyncLifetime
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AgendaFixture.Token(actor));
         return client;
     }
+
+    internal HubConnection Hub(Guid actor) => new HubConnectionBuilder()
+        .WithUrl("http://localhost/hubs/meetings", options =>
+        {
+            options.Transports = HttpTransportType.LongPolling;
+            options.HttpMessageHandlerFactory = _ => Host.Server.CreateHandler();
+            options.AccessTokenProvider = () => Task.FromResult<string?>(AgendaFixture.Token(actor));
+        }).Build();
 
     internal static MultipartFormDataContent Form(params (string Name, byte[] Bytes, string? PageCount)[] files)
     {
