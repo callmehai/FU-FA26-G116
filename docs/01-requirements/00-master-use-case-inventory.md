@@ -130,7 +130,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 |---|---|---|---|---|
 | UC-27 | Xem thành phần tham dự *(View Meeting Participants)* | Secretary, Chair, Participant, Guest | Đã đặc tả | `<<extend>>` UC-16 |
 | UC-28 | Quản lý thành phần tham dự *(Manage Meeting Participants)* — gồm UC-28a thêm nhiều người nội bộ cùng vai trò/quyền hoặc mời từng Guest, UC-28b Quản lý vai trò & quyền bổ sung, UC-28c Xoá / thu hồi | Meeting Organizer, Secretary | Đã đặc tả | Secretary: `<<extend>>` UC-27; Organizer gán Thư ký khi chưa có hoặc không còn trong giai đoạn chuẩn bị: `<<extend>>` UC-16 |
-| UC-29 | Phản hồi lời mời họp *(Respond to Meeting Invitation)* | Chair, Secretary, Participant, Guest | Đã đặc tả | Độc lập; Guest đi qua UC-04 |
+| UC-29 | Phản hồi lời mời họp *(Respond to Meeting Invitation)* | Secretary, Participant, Guest | Đã đặc tả | Độc lập; Guest đi qua UC-04 |
 | UC-30 | Xem trạng thái phản hồi *(View Participant Response Status)* | Secretary, Chair, Participant, Guest | Đã đặc tả | Mở từ cuộc họp có thể truy cập; Member/Guest cần quyền xem phản hồi. Thấy danh tính trong dòng phản hồi không cấp quyền xem hoặc tìm trong roster |
 | UC-31 | Ghi nhận điểm danh *(Record Attendance)* — Secretary lưu Present/Absent cho một/nhiều người được chọn khi `InProgress` | Secretary | Đã đặc tả | `<<extend>>` UC-27 |
 

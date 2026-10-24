@@ -4,7 +4,7 @@
 Inventory** (screen flow, screen list), cho 6 note bàn giao. Phần UC, BR, message, diagram ở
 [05-plan-sua-uc-br-msg-diagram.md](05-plan-sua-uc-br-msg-diagram.md).
 
-**Trạng thái (24/10/2026):** phần màn hình SCRUM-18/20, SCRUM-97, SCRUM-26 xong và **đã vào Report 3 DOCX** (chữ I.5.1.b, III.4.1–4.5, III.6.1, 6.3, 6.4, 8.3; 7 ảnh thay, 9 ảnh chèn; đã sync). Nguồn: wireframe `TrustCabinet-wireframe-v8.html`, `figma-v8/`, 16 ảnh trong `docs/wireframe/screens/`, chữ ở [patch-dac-ta-man-hinh](note-may-nha/patch-dac-ta-man-hinh.md). Chưa làm: hình Screen Flow I.5.1.a (không có nguồn), Change Log, III.5.x (chờ PR #135 SCRUM-98), Voice ID (FE chưa có màn). Ảnh lấy từ wireframe v8, không chụp từ app; câu hỏi mục 5 dùng mặc định (III.6.4 giữ mục riêng, dialog Đổi vai trò trong III.6.1).
+**Trạng thái (24/10/2026):** phần màn hình SCRUM-18/20, SCRUM-97, SCRUM-26 xong và **đã vào Report 3 DOCX** (chữ I.5.1.b, III.4.1–4.5, III.6.1, 6.3, 6.4, 8.3; 7 ảnh thay, 9 ảnh chèn; đã sync). Nguồn: wireframe `TrustCabinet-wireframe-v8.html`, `figma-v8/`, 16 ảnh trong `docs/wireframe/screens/`, chữ ở [patch-dac-ta-man-hinh](note-may-nha/patch-dac-ta-man-hinh.md). Change Log đã thêm 24/10/2026. Chưa làm: III.5.x (chờ PR #135 SCRUM-98), Voice ID (FE chưa có màn). Ảnh lấy từ wireframe v8, không chụp từ app; câu hỏi mục 5 dùng mặc định (III.6.4 giữ mục riêng, dialog Đổi vai trò trong III.6.1).
 
 ## 0. Cách làm
 
@@ -75,7 +75,7 @@ FE chưa có màn Voice ID, màn bản ghi, transcript. **Chưa chụp được.
 
 ## 2. Screen Inventory (Report 3 I.5.1)
 
-- [ ] a. Screen Flow (patch mục 2.a; chưa làm: không có nguồn hình, giữ hình cũ): Tạo/Sửa cuộc họp là popup từ Danh sách/Chi tiết, không còn màn riêng; thêm dialog Đổi vai trò.
+- [x] a. Screen Flow (đã thay hình trong DOCX 24/10/2026 bằng `docs/12-screenflow/TrustCabinet-screen-flow.png`, có popup tạo/sửa, Đổi vai trò và 8.7; Screen List thêm dòng 8.7): Tạo/Sửa cuộc họp là popup từ Danh sách/Chi tiết, không còn màn riêng; thêm dialog Đổi vai trò.
 - [x] b. Screen List (patch mục 2.b, thêm dòng 6.1b): sửa dòng Create/Edit Meeting (popup), Invitation Response (gộp hoặc đổi mô tả), Attendance Check (cột trong tab), thêm Change Role Dialog; Voice ID để sau.
 
 ## 3. Danh sách ảnh cần chụp (checklist chụp một lượt)

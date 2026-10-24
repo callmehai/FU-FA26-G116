@@ -41,6 +41,11 @@ Table of Contents
 | 22/10/2026 | M | LocHD | Align UC-32a, UC-32c and UC-35 with SCRUM-21/22/23: documents grouped by Agenda Item, Vote and general, Documents panel in the online meeting room, audit of views and downloads of Confidential/Secret documents, one-level replies to comments; UC-33a EX-8 upload limit of 10 files and 200 MB per submission; add BR-315 to BR-319 and MSG288; update the ERD image (MeetingDocumentAgendaItem, Guest comment author). |
 | 23/10/2026 | M | LocHD | Rewrite the screen specifications 7.3 Documents Tab, 7.4 Add Document dialog, 7.5 Document Viewer and 8.1–8.5 of the online room to match wireframe v7 and the room as deployed (no raise hand, mute all or saved chat); rename 8.3 and 8.5, add 8.6 In-Room Documents Panel (planned); update their images and the Screen List. |
 | 24/10/2026 | M | KhanhPG | Align UC-31 and BR-172 with SCRUM-26 as implemented: attendance is a column of the participant table (a panel only in the online meeting room), no Present/Absent totals, per-person attendance version (ADR-0025), a conflict (MSG151) keeps no unsaved selection and reloads, neutral wording for MSG150 and MSG151, add EX-6 and MSG289 for a failed load. |
+| 24/10/2026 | M | KhanhPG | Align UC-33a and BR-215 with SCRUM-107 as implemented: in AF-1 the authority, Meeting access and status checks run before the file checks (a non-Chair/Secretary receives MSG162, not MSG164), EX-1/3/6/7/8 renumbered to Step 2 and Step 3 of AF-1, the file extension must be .pdf or .docx and match the content, a malformed request is MSG164, a declared size over the limit is MSG288, a former Chair or Secretary who can no longer view the Meeting receives MSG174; MSG288 is no longer reserved; StoredFile.PageCount is stored only for a PDF with a positive whole number. |
+| 24/10/2026 | M | KhanhPG | Align UC-73 and UC-28b with SCRUM-97 as implemented: UC-73 starts from Change role on the recipient's row and a role option list instead of a recipient list, AF-1 no longer displays MSG258 (no Chair option is offered), PRE-3 says active participant; UC-28b Description, AF-1 and EX-5 allow the Secretary to replace the Chair after publication only when the Chair's account is locked; BR-126 gets that exception, BR-295 states that Chair and Secretary do not swap roles and applies to UC-28b; MSG256 adds the active-account condition, MSG258 is not displayed. |
+| 24/10/2026 | M | KhanhPG | Align UC-14, UC-17, UC-28a, UC-29 and UC-30 with SCRUM-18/SCRUM-20 as implemented: UC-14 chooses the initial participants in the creation dialog (new EX-3, MSG277, BR-320); UC-17 opens on In Progress and offers fixed time choices (BR-30), calendar hides declined Meetings (AF-4); UC-29 is answered once, the Chair does not respond, same answer again is MSG154, a different answer is MSG285, the Chair gets MSG286 (BR-105, BR-106, BR-115, BR-321); UC-30 shows labels instead of totals (BR-176). |
+| 24/10/2026 | M | KhanhPG | Align the screen specifications and images with wireframe v8 for SCRUM-18/SCRUM-20, SCRUM-97 and SCRUM-26: Screen List 4.2–4.5, 6.1, 6.3, 6.4 and 8.3 plus new 6.1b Change Role Dialog; rewrite 4.1–4.5, 6.1, 6.3, 6.4 and 8.3 (calendar hides declined Meetings, answer on the card and at the top of the Meeting detail, Create / Edit Meeting dialog with initial participants, list opens on In Progress with four time choices, response labels and Change Role dialog, attendance column and in-room attendance panel); replace 7 images and add 9; update the wording of 7.3, 7.4, 9.2 and 10.1 (document page count, upload checks, Law 91/2025/QH15 and Decree 356/2025/ND-CP, speaker suggestions confirmed by the Secretary). |
+| 24/10/2026 | M | KhanhPG | Complete the BA Final Review sweep for SCRUM-26, SCRUM-97, SCRUM-107 and SCRUM-18/SCRUM-20: remove UC-29 from the Chair in the Permission Matrix, the Chair actor description and the invitation email; state in the InvitationResponse and RespondedAt fields and in a new Data Business Rule that an invitation is answered once; describe StoredFile.PageCount; replace the Chair use case diagram and the BF-02 image; add to System Messages the implemented codes MSG78–MSG82, MSG85–MSG89, MSG117, MSG118, MSG123, MSG124, MSG130–MSG137, MSG275, MSG276, MSG278, MSG280–MSG284 and MSG287; mark MSG152 and MSG153 as retired (PO 20/10/2026) and use MSG01 for session renewal. |
 
 *A - Added M - Modified D - Deleted
 
@@ -199,8 +204,8 @@ Internal user assigned to a meeting, together with the meeting role, the invitat
 | 2 | MeetingId | uuid | FK | No | Meeting the user is assigned to (references Meeting). |
 | 3 | UserId | uuid | FK | No | Internal user assigned to the meeting (references User). |
 | 4 | MeetingRole | enum |  | No | Role of the user in this meeting, independent of the system role. Values: Chair, Secretary, Member. |
-| 5 | InvitationResponse | enum |  | No | Answer to the meeting invitation. Values: Pending, Accepted, Declined. |
-| 6 | RespondedAt | timestamptz |  | Yes | Date and time the participant responded to the invitation. |
+| 5 | InvitationResponse | enum |  | No | Answer to the meeting invitation, recorded once and not changed afterwards. Values: Pending, Accepted, Declined. The Chair does not respond, so the Chair's value stays Pending. |
+| 6 | RespondedAt | timestamptz |  | Yes | Date and time the participant answered the invitation; set once together with InvitationResponse. |
 | 7 | Attendance | enum |  | Yes | Official attendance: Present or Absent. Empty until recorded by the assigned Secretary. Invitation response and room presence do not set attendance. |
 | 8 | AssignmentStatus | enum |  | No | Whether the participant is still assigned to the meeting. Values: Current, Removed. |
 | 9 | RemovedAt | timestamptz |  | Yes | Date and time the participant was removed from the meeting. |
@@ -227,8 +232,8 @@ Invitation that lets an external Guest without an internal account join a meetin
 | 2 | MeetingId | uuid | FK | No | Meeting the guest is invited to (references Meeting). |
 | 3 | GuestName | string |  | No | Display name of the guest. |
 | 4 | GuestEmail | citext |  | No | Email address the invitation is sent to; compared case-insensitively. |
-| 5 | InvitationResponse | string |  | No | Guest's answer to the invitation. |
-| 6 | RespondedAt | timestamptz |  | Yes | Date and time the guest responded. |
+| 5 | InvitationResponse | string |  | No | Guest's answer to the invitation, recorded once and not changed afterwards. |
+| 6 | RespondedAt | timestamptz |  | Yes | Date and time the guest answered the invitation; set once together with InvitationResponse. |
 | 7 | InvitationStatus | string |  | No | Current state of the invitation link (for example active, expired or revoked). |
 | 8 | TokenHash | string |  | No | Hash of the invitation token carried in the link; the plain token is never stored. |
 | 9 | ExpiresAt | timestamptz |  | No | Date and time after which the invitation link can no longer be used. |
@@ -402,7 +407,7 @@ One uploaded file in object storage. It is immutable; personal library entries a
 | 3 | ContentType | string |  | No | File type detected from the file content (PDF or DOCX). The file is stored as uploaded; the browser renders the preview. |
 | 4 | ByteSize | bigint |  | No | File size in bytes. |
 | 5 | ContentSha256 | string |  | No | SHA-256 hash of the stored file, used to detect changes to the file. |
-| 6 | PageCount | int |  | Yes | Number of pages of a PDF; null for a DOCX, which is previewed as one continuous document. |
+| 6 | PageCount | int |  | Yes | Number of pages of a PDF, as counted by the browser; stored only for a PDF and only when it is a positive whole number. Null for a DOCX, which is previewed as one continuous document, and when the page count is unknown; a missing or invalid count never rejects the upload. |
 | 7 | UploadedById | uuid | FK | No | User who uploaded the file (references User). |
 | 8 | UploadedAt | timestamptz |  | No | Date and time the file was uploaded. |
 | 9 | PurgedAt | timestamptz |  | Yes | Date and time the cleanup deleted the object; null while the file is stored. |
@@ -589,6 +594,7 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | Unique username | A username identifies at most one internal user account. | Account creation/change |
 | Unique email | An internal email address identifies at most one account. | Account creation/change |
 | Meeting schedule | Each Meeting has planned start and end times; planned end follows planned start. | Meeting creation/update |
+| Invitation response | Each invitation has one response: Pending until the invitee answers Accepted or Declined. The answer is recorded once with its response time and is not changed afterwards; the Chair does not answer, so the Chair's invitation stays Pending. The initial participants of a new Meeting are saved with the Meeting in one save, each Pending. | Meeting creation; Invitation response |
 | Single meeting lifecycle | A Meeting has exactly one lifecycle. No Meeting Session entity or nested session lifecycle exists. | Meeting lifecycle |
 | Agenda ownership | Each Agenda Item belongs to exactly one Meeting. Reordering is within that Meeting. | Agenda management |
 | Vote ownership | Each Vote belongs to one Meeting and is not linked to an Agenda Item. | Voting management |
@@ -711,7 +717,7 @@ The Meeting Approver reviews assigned meeting approval requests and approves or 
 
 ##### 4.3.4 UCs for Chair
 
-The Chair responds to the invitation, starts and ends the meeting, steers the agenda (set current / complete item), joins and moderates the online room, and creates, opens and closes votes and records each vote's conclusion. The Chair also adds and removes meeting documents, comments on meeting documents, signs or requests revision of the minutes, and can view all records of the chaired meeting. The current assigned Chair may cast a vote (UC-55) while the Meeting is InProgress and the Vote is Open, under BR-160 and BR-165.
+The Chair starts and ends the meeting, steers the agenda (set current / complete item), joins and moderates the online room, and creates, opens and closes votes and records each vote's conclusion. The Chair does not respond to the invitation because the Chair runs the meeting. The Chair also adds and removes meeting documents, comments on meeting documents, signs or requests revision of the minutes, and can view all records of the chaired meeting. The current assigned Chair may cast a vote (UC-55) while the Meeting is InProgress and the Vote is Open, under BR-160 and BR-165.
 
 ##### 4.3.5 UCs for Secretary
 
@@ -761,7 +767,7 @@ Full = unrestricted  ·  Restricted = conditions apply (see footnotes)  ·  No =
 | Participant | Add participant / Invite Guest | No | Restricted ³ | No | No | Restricted ³ | No | No |
 | Participant | Manage meeting role & additional permissions | No | No | No | No | Restricted ³ | No | No |
 | Participant | Remove participant / Revoke Guest | No | No | No | No | Restricted ³ | No | No |
-| Invitation response | Respond (accept / decline) | No | No | No | Restricted ¹⁰ | Restricted ¹⁰ | Restricted ¹⁰ | Restricted ¹¹ |
+| Invitation response | Respond (accept / decline) | No | No | No | No | Restricted ¹⁰ | Restricted ¹⁰ | Restricted ¹¹ |
 | Attendance | Record | No | No | No | No | Restricted ³ (InProgress only) | No | No |
 | Personal document library | View | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | No |
 | Personal document library | Upload / Organize (folders, rename, move, delete) | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | No |
@@ -819,7 +825,7 @@ Notes:
 
 ⁹ Only the active assigned Chair may set or complete the current Agenda Item while the Meeting is InProgress; at most one Item may be InProgress.
 
-¹⁰ Only the user's own invitation, while the meeting is still open for responses.
+¹⁰ Only the user's own invitation, while the Meeting is Published or In Progress; each invitation is answered once and the answer cannot be changed afterwards. The Chair does not respond. (BR-105, BR-106)
 
 ¹¹ Only within a valid meeting-scoped Guest session, established by email-code verification (UC-04), for the meeting the Guest was invited to.
 
@@ -886,6 +892,7 @@ Notes:
 | 8.4 | Screen Sharing & Chat | FE-08 Online Meeting Room Management | Allows users connected to the online room to present their screen on the main stage, follow a shared screen and exchange text chat messages that are not kept after the meeting. |
 | 8.5 | In-Room Voting Panel | FE-08 Online Meeting Room Management | Planned: allows eligible voters in the online room to follow the open Vote and cast a ballot without leaving the room. |
 | 8.6 | In-Room Documents Panel | FE-08 Online Meeting Room Management | Planned: allows users in the online room to read the meeting documents, current Agenda Item first, opening each document in a new tab so the call continues. |
+| 8.7 | In-Room Attendance Panel | FE-08 Online Meeting Room Management | Allows the Secretary to record Present or Absent for any current internal participant or Guest from a separate Attendance panel without leaving the online room; choosing a value saves it. Other users do not see the panel. No totals are shown. |
 | 9.1 | Meeting Detail – Recordings Tab | FE-09 Meeting Audio Upload & Media Library | Allows the Secretary to upload the meeting audio after the meeting has ended, see processing status and uploaded files, review the speaker-attributed transcript and start generating the AI summary. |
 | 9.2 | Upload Audio Dialog | FE-09 Meeting Audio Upload & Media Library | Allows the Secretary to select or drag an MP3, M4A or WAV audio file of up to 500 MB, confirm recording consent and upload it to an Ended meeting for transcription. |
 | 10.1 | Speaker-Attributed Transcript | FE-10 Speaker-Attributed Transcription & Meeting Summary | Allows the Secretary to play the uploaded meeting audio, search and correct the transcript text, and assign unknown voices to meeting attendees before generating the meeting summary. |
@@ -3523,7 +3530,7 @@ This email allows the invited Chair, Secretary, Participant or Guest to:
 
 - Read Invitation: view the meeting name, the recipient’s meeting role and the planned time, location and Chair.
 
-- Respond to Meeting Invitation: choose Attend or Decline, which opens the Invitation Response screen (6.4) with that choice pre-selected (UC-29).
+- Respond to Meeting Invitation: choose Attend or Decline, which opens the Invitation Response screen (6.4) with that choice pre-selected (UC-29). The answer is recorded once; the Chair is not asked to respond.
 
 - View Details: open the meeting details after signing in or after Guest verification.
 
@@ -3537,7 +3544,7 @@ Field Description
 | Salutation | Recipient name and meeting role, e.g. “Kính gửi ông Ngô Đình Phúc, … với vai trò Khách mời” (Guest). |
 | Meeting information | Box with the Meeting’s planned date and time range, location and Chair, e.g. “14/10/2026 · 13:00 – 15:00”, “Phòng họp A3, tầng 5”, “Chủ trì: Nguyễn Minh Châu”. |
 | Attend [Tham dự] | Primary button link; opens the Invitation Response screen with Attend pre-selected. |
-| Decline [Không tham dự] | Button link; opens the Invitation Response screen with Decline pre-selected. Internal participants and Guests may accept or decline and change their own response while responses are allowed (BR-105). |
+| Decline [Không tham dự] | Button link; opens the Invitation Response screen with Decline pre-selected. Internal participants other than the Chair and Guests answer once and cannot change the answer afterwards (BR-105, BR-106). |
 | View details [Xem chi tiết] | Link; opens the meeting details (after sign-in or Guest verification). Access is limited to the invited Meeting (BR-120, BR-154). |
 | Security note | “Link chỉ dùng cho địa chỉ email này. Khi mở, ông sẽ được yêu cầu nhập mã xác minh.” Guest links are meeting-specific, require email verification, expire after the configured period and stop working when the invitation is revoked (BR-152 – BR-157). |
 | Delivery | Sent through a background queue; a delivery failure is retried and does not undo publishing or the roster change (BR-39, BR-40, BR-94). |
@@ -4118,7 +4125,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 5 | MSG05 | Form error | UC-02 – Sign in with Google / Exception Flows | This Google account has not been granted access to the system. |
 | 6 | MSG02 | Form error | UC-02 – Sign in with Google / Exception Flows | Your account is currently unavailable. Please contact your administrator for assistance. |
 | 7 | MSG06 | Dialog / Toast | UC-03 – Sign Out / Exception Flows | Unable to sign out. Please try again. |
-| 8 | MSG140 | Redirect to sign-in | Common – Session Renewal | Your session has expired. Please sign in again. |
+| 8 | MSG01 | Redirect to sign-in | Common – Session Renewal | Your session has expired. Please sign in again. |
 | 9 | MSG02 | Redirect to sign-in | Common – Session Renewal | Your account is currently unavailable. Please contact your administrator for assistance. |
 | 10 | MSG07 | Toast | UC-06a – Create User Account / Main Flow | User account created successfully. |
 | 11 | MSG08 | Field error | UC-06a – Create User Account / Exception Flows | Email is already in use. |
@@ -4237,8 +4244,8 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 144 | MSG149 | Dialog | UC-31 / EX-2 | Attendance can only be recorded while the meeting is in progress. |
 | 145 | MSG150 | Toast | UC-31 / EX-5 | Unable to confirm the attendance save result. Please reload the data before trying again. |
 | 146 | MSG151 | Dialog | UC-31 / EX-4, BR-172 / Changed submitted participant or attendance | The participant or attendance data has changed. Please reload and review before saving. |
-| 147 | MSG152 | Field / Form error | UC-28a / EX-1; UC-28b / EX-1 | One or more selected meeting permissions are not allowed. |
-| 148 | MSG153 | Toast | UC-28b / Main Flow | Meeting permissions updated successfully. |
+| 147 | MSG152 | Retired | Retired; formerly UC-28a / EX-1; UC-28b / EX-1 | Retired on 20/10/2026 (PO 20/10/2026): additional Meeting permissions per participant were removed. This code must not be reused. |
+| 148 | MSG153 | Retired | Retired; formerly UC-28b / Main Flow | Retired on 20/10/2026 (PO 20/10/2026): additional Meeting permissions per participant were removed. This code must not be reused. |
 | 149 | MSG154 | Information | UC-28b / Unchanged selection UI; no separate exception flow. UC-29 / AF-1 – the same response is submitted again | No changes to save. |
 | 150 | MSG155 | Form error | Retired on 13/10/2026; formerly UC-22 / EX-3 | Retired: attendance incompleteness must not block End Meeting. This code must not be reused. |
 | 151 | MSG156 | Form error | UC-32a / EX-1; UC-32c / EX-1; UC-35 / EX-2 | Meeting documents are not accessible. |
@@ -4365,6 +4372,37 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 258 | MSG285 | Toast | UC-29 – Respond to Meeting Invitation / EX-4 | You have already answered this invitation. Your answer cannot be changed. |
 | 259 | MSG286 | Toast | UC-29 – Respond to Meeting Invitation / EX-5 | The Chair runs the Meeting, so no attendance confirmation is needed. |
 | 260 | MSG277 | Form error | UC-14 – Create Meeting / EX-3 | The meeting participant list is not valid. |
+| 261 | MSG78 | Toast | UC-18 – Submit Meeting for Approval / Main Flow | Meeting submitted for approval. |
+| 262 | MSG79 | Toast | Meeting workflow – Return to Draft / Main Flow | Meeting returned to Draft. |
+| 263 | MSG80 | Form error | Meeting workflow – Status change request / Validation (API) | The status change request is not valid. |
+| 264 | MSG81 | Form error | UC-18 – Submit Meeting for Approval / Exception Flows | The meeting does not have enough information to be submitted for approval. |
+| 265 | MSG82 | Form error | UC-18 – Submit Meeting for Approval / Exception Flows | The approver is not valid or can no longer approve meetings. |
+| 266 | MSG85 | Dialog | Meeting workflow and participant actions / Authorization (API) | You do not have permission to perform this action. |
+| 267 | MSG86 | Form error | Meeting workflow – View status history / Validation (API) | The query parameters are not valid. |
+| 268 | MSG87 | Form error | Meeting workflow and Agenda Management / Validation (API) | The request content is larger than 64 KiB. |
+| 269 | MSG88 | Toast | Meeting workflow – Approve, Reject, Return to Draft, Transfer Organizer / Exception Flows | Unable to change the meeting status. Please try again. |
+| 270 | MSG89 | Toast | Meeting workflow – Transfer Organizer / Main Flow | Meeting transferred to the new organizer. |
+| 271 | MSG117 | Dialog | UC-37 – Join Meeting Room / Exception Flows | The online meeting room is not available. |
+| 272 | MSG118 | Toast | UC-37 – Join Meeting Room / Exception Flows | Unable to join the meeting room. Please try again. |
+| 273 | MSG123 | Dialog | UC-41 – Moderate Meeting Room / Exception Flows | You are not allowed to moderate this meeting room. |
+| 274 | MSG124 | Toast | UC-41 – Moderate Meeting Room / Exception Flows | Unable to apply the room moderation action. |
+| 275 | MSG130 | Toast | Meeting workflow – Approver list / Exception Flows | Unable to load the approver list. Please try again. |
+| 276 | MSG131 | Toast | Meeting workflow / Exception Flows | Unable to verify the accounts for this meeting action. Please try again. |
+| 277 | MSG132 | Dialog | UC-19 – Review Meeting Approval / Exception Flows | The meeting status has changed or no longer allows this action. |
+| 278 | MSG133 | Dialog | Meeting workflow – Return to Draft / Exception Flows | The meeting status has changed or no longer allows this action. |
+| 279 | MSG134 | Form error | Meeting workflow – Transfer Organizer / Exception Flows | The new organizer is not valid or can no longer create meetings. |
+| 280 | MSG135 | Dialog | Meeting workflow – Transfer Organizer / Exception Flows | The meeting status has changed or no longer allows this action. |
+| 281 | MSG136 | Toast | Meeting workflow – Readiness and status history / Exception Flows | Unable to load the meeting workflow data. Please try again. |
+| 282 | MSG137 | Form error | UC-20 – Publish Meeting / Exception Flows | The meeting needs exactly one active Chair and at least one active Secretary before it can be published. |
+| 283 | MSG275 | Dialog | UC-28 – Manage Meeting Participants / Exception Flows | The participant list has changed. Please reload and try again. |
+| 284 | MSG276 | Form error | UC-28 – Manage Meeting Participants / Validation (API) | The query or If-Match header is not valid. Please reload the data. |
+| 285 | MSG278 | Form error | UC-31 – Record Attendance / Validation (API) | The attendance paging parameters are not valid. |
+| 286 | MSG280 | Dialog | UC-37 – Join Meeting Room / Exception Flows | This meeting is held in person, so it has no online meeting room. |
+| 287 | MSG281 | Dialog | UC-37 – Join Meeting Room / Exception Flows | The online meeting room is not ready. Please contact the administrator. |
+| 288 | MSG282 | Toast | UC-41 – Moderate Meeting Room / Exception Flows | This person is no longer in the room or has no microphone on. |
+| 289 | MSG283 | Toast | UC-40 – View Meeting Room Participants / Exception Flows | Unable to load the meeting room status. Please try again. |
+| 290 | MSG284 | Toast | UC-41 – Moderate Meeting Room / Exception Flows | Unable to mute the microphone. Please try again. |
+| 291 | MSG287 | Toast | Common – Access update (front-end event capabilitiesChanged, SCRUM-105) | Your access rights have just been updated. |
 
 ### 3. Other Requirements
 

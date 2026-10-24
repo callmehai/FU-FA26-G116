@@ -25,10 +25,10 @@ Report 3 và các diagram. **Không gồm** đặc tả chi tiết màn hình (R
 
 ## 1. Bước chuẩn bị (trước khi sửa)
 
-- [ ] Đọc comment Jira: SCRUM-20, SCRUM-18, SCRUM-97 (2 comment mới nhất), SCRUM-26 (comment 10255),
+- [ ] (chuyển session Jira) Đọc comment Jira: SCRUM-20, SCRUM-18, SCRUM-97 (2 comment mới nhất), SCRUM-26 (comment 10255),
       mô tả SCRUM-31, SCRUM-35, SCRUM-102, SCRUM-103.
-- [ ] Xem PR #111 (SCRUM-20), PR #123 (SCRUM-97), PR #128 (SCRUM-107, mục *Deviations from the docs*) để đối chiếu hành vi thật.
-- [ ] Hỏi Hải: PR Voice ID (README + ADR mới) đã merge chưa, số ADR là bao nhiêu — mục 4 dẫn chiếu ADR đó.
+- [ ] (chuyển session Jira) Xem PR #111 (SCRUM-20), PR #123 (SCRUM-97), PR #128 (SCRUM-107, mục *Deviations from the docs*) để đối chiếu hành vi thật.
+- [ ] (chuyển session Jira; thuộc lượt 7) Hỏi Hải: PR Voice ID (README + ADR mới) đã merge chưa, số ADR là bao nhiêu — mục 4 dẫn chiếu ADR đó.
 
 ## 2. SCRUM-18 / SCRUM-20 — lời mời, tạo/sửa, danh sách
 
@@ -52,7 +52,7 @@ Report 3 và các diagram. **Không gồm** đặc tả chi tiết màn hình (R
 - [x] **BR-105**: thêm "Chair does not respond" hoặc tách BR mới.
 - [x] **BR mới (BR-320…)**: Chủ tọa không trả lời lời mời; chưa trả lời coi như tham dự; từ chối chỉ ẩn khỏi lịch của chính người đó, không đổi quyền; danh sách cuộc họp mở sẵn bộ lọc Đang diễn ra (nếu nhóm coi đây là rule chứ không phải UI — mặc định ghi trong UC-17 và đặc tả màn hình, không thành BR).
 - [x] **BR-115**, **BR-176**: bỏ phần "totals" nếu có nhắc.
-- [ ] Rà mục I.3.3 Data Business Rules và mục I.3.2 entity *InvitationResponse* xem có ghi "latest response / may change" không.
+- [x] Rà mục I.3.3 Data Business Rules và mục I.3.2 entity *InvitationResponse*. → Không có chữ "latest/may change"; đã thêm "trả lời một lần, Chủ tọa giữ Pending" vào InvitationResponse/RespondedAt (participant, guest) và một Data Business Rule mới (24/10/2026, [patch-sot-luot-1-4](note-may-nha/patch-sot-luot-1-4.md)).
 
 ### 2.3 Message (Report 3 V.2)
 
@@ -69,7 +69,7 @@ Report 3 và các diagram. **Không gồm** đặc tả chi tiết màn hình (R
 - [x] Sequence `UC14_CreateMeeting`: gửi kèm thành phần trong cùng request (đối chiếu API 05).
 - [x] **State machine `SM-04_InvitationResponse`**: bỏ 2 chuyển "Invitee changes to…"; ghi chú Chair giữ Pending. Xuất lại PNG nếu Report 3 dùng ảnh. → Đã bỏ 2 chuyển, thêm ghi chú; PNG xuất lại.
 - [x] **Use case diagram** (`docs/assets/use-case-diagrams/trustcabinet-use-cases.drawio`, trang Chair → `uc-chair.png`): bỏ liên kết Chair — UC-29. Report 3 I.4.3.4 thay ảnh. → Đã bỏ UC-29 khỏi trang Chair, `uc-chair.png` xuất lại; Khánh chèn vào Report 3.
-- [ ] Permission Matrix I.4.4: dòng UC-29 bỏ Chair.
+- [x] Permission Matrix I.4.4: dòng UC-29 bỏ Chair (ô Chair = No, chú thích ¹⁰, mô tả actor Chair, email mời). Ảnh use case Chair và BF-02 đã thay trong DOCX 24/10/2026.
 - [x] Class diagram `feature-06-…drawio`: kiểm tra có thuộc tính/phương thức đổi phản hồi hoặc totals không. `feature-04-…drawio`: tạo cuộc họp kèm thành phần, bộ lọc thời gian. → Đã kiểm: feature-06 không có đổi phản hồi/totals; feature-04 dùng `createMeeting(meeting)` và `criteria: Map`, đủ chứa thành phần và bộ lọc, không sửa.
 - [x] Business flow `BF-02_Meeting_Preparation_Approval.drawio`: bước "chọn thành phần" nằm trong tạo cuộc họp; bước phản hồi lời mời một lần. → Sửa nhãn, giữ bố cục: bước tạo kèm participants, "Reschedule Meeting (time, location, link)", trả lời "(once)"; PNG xuất lại.
 
@@ -252,11 +252,11 @@ Mười điểm lệch trong note 07 chia làm ba loại: sửa đặc tả, ch�
 
 ## 7. Việc chung khi xong
 
-- [ ] Rà Report 3 V.2 còn thiếu các mã đã có trong catalogue (ngoài phạm vi các note, ví dụ MSG277–MSG284, MSG287) — ghi thành việc riêng nếu nhiều. MSG288 đã nằm trong mục 6.3.
-- [ ] `docs/01-requirements/00-master-use-case-inventory.md`: actor UC-29, UC mới Voice ID.
+- [x] Rà Report 3 V.2 còn thiếu các mã đã có trong catalogue → thêm 31 dòng (#261–#291), đánh dấu MSG152/MSG153 ngừng dùng, sửa dòng phiên hết hạn từ MSG140 sang MSG01. MSG271–274 thuộc lượt 5, MSG141/MSG144 giữ "Retired" theo đặc tả, xem [patch-sot-luot-1-4](note-may-nha/patch-sot-luot-1-4.md).
+- [x] `docs/01-requirements/00-master-use-case-inventory.md`: actor UC-29 bỏ Chair (UC mới Voice ID thuộc lượt 7, chưa làm).
 - [x] Cập nhật số BR trong đầu `06-business-rules.md` (267 → 269 sau BR-320, BR-321).
-- [ ] Change Log Report 3.
-- [ ] Comment Jira từng ticket: đã cập nhật docs gì; chuyển ticket khỏi BA Final Review.
+- [x] Change Log Report 3: thêm 5 dòng 24/10/2026 (SCRUM-107, 97, 18/20, màn hình v8, rà soát tổng); dòng SCRUM-26 đã có từ lượt 1.
+- [ ] Comment Jira từng ticket: đã cập nhật docs gì; chuyển ticket khỏi BA Final Review. → chuyển session Jira, không làm ở đây.
 - [ ] Note này: đánh dấu xong từng mục; README thư mục cập nhật trạng thái.
 
 ## 8. Thứ tự và cách chạy (agent đọc mục này trước)

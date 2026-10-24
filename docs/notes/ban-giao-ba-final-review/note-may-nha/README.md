@@ -14,19 +14,9 @@ máy có draw.io; bảng dưới ghi trạng thái và phần còn lại.
 
 `sync_sequence_drawio_png.py` dùng `--scale 2` làm ảnh bị cắt nửa dưới trắng và chạy cả 51 tab mất hơn 5 phút, nên PNG được xuất từng tab bằng draw.io CLI `--scale 1.5`. Không dùng `--embed-diagram`: bản draw.io hiện tại nhúng cả 54 tab vào mỗi PNG (3,9 MB, CRC chunk `zTXt` sai).
 
-## Chưa dán (ngoài phạm vi 4 mục)
+## Đã dán nốt phần sót (24/10/2026)
 
-Chỉ dán §I.4.2, §II, §V.1, §V.2 theo yêu cầu. Các dòng sau còn nằm trong patch:
-
-| Patch | Mục Report 3 | Nội dung |
-|---|---|---|
-| 107 | I.3.2 Entity 19 StoredFile, field `PageCount` | Mô tả mới: đếm trang bởi trình duyệt, chỉ lưu cho PDF khi là số nguyên dương |
-| 26, 107, 97, 18-20 | Change Log (cuối bảng) | Bốn dòng 24/10/2026 (mục Change Log của mỗi patch) |
-| 18-20 | Mục 10 của patch (I.3.2 InvitationResponse, Permission Matrix I.4.4, ảnh I.4.3.4, danh mục màn hình I.4.5, §III Meeting List / Create / Participants / Invitation Response, email lời mời) | Ghi Jira / plan 06, không có câu dán |
-| 26, 107 | §III đặc tả màn hình "Attendance Check", "Add Document to Meeting Dialog" | Thuộc plan 06 |
-| 6 (màn hình) | I.5.1.a Screen Flow (hình) | Chưa làm: không có file nguồn của hình; giữ hình cũ. Các thay đổi cần vẽ ghi ở mục 2.a của patch-dac-ta-man-hinh |
-| 6 (màn hình) | Change Log | Một dòng 24/10/2026 cho lượt đặc tả màn hình chưa dán |
-| 6 (màn hình) | III.5.x chương trình nghị sự | Chờ PR #135 (SCRUM-98) |
+[patch-sot-luot-1-4.md](patch-sot-luot-1-4.md): Permission Matrix, I.3.2/I.3.3 InvitationResponse, StoredFile.PageCount, email mời, ảnh use case Chair và BF-02, V.2 (31 mã, MSG152/153 ngừng dùng), Change Log; hình Screen Flow I.5.1.a (`docs/12-screenflow/`, thêm node 8.7) và dòng Screen List 8.7 cũng đã dán. Việc còn mở nằm trong mục "Còn mở" của file đó (quyền bổ sung, III.5.x chờ PR #135, Voice ID).
 
 ## Dòng patch không khớp nguyên văn
 
