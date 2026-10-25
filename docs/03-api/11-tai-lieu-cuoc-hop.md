@@ -220,6 +220,21 @@ mục (SCRUM-58) nên phát cùng event này.
   trình xem và tải lại danh sách.
 - Lắng nghe `documentsChanged` và `agendaChanged` để làm mới tab Tài liệu và panel trong phòng.
 
+### FE đã làm (SCRUM-21, SCRUM-107)
+
+- `features/documents/DocumentsPanel.tsx` (`variant: 'page' | 'room'`, ADR-0011): tab Tài liệu ở chi tiết cuộc
+  họp và panel "Tài liệu" trong phòng họp. Số thứ tự mục lấy theo thứ tự trong danh sách, không theo `position`
+  (có thể nhảy số sau khi sắp xếp lại).
+- Trình xem ở route `/mgmt/meetings/{id}/documents/{meetingDocumentId}`, ngoài khung ứng dụng: PDF bằng pdf.js
+  (bản `legacy`, worker cùng origin, CSP không đổi), DOCX bằng `docx-preview`. Từ phòng họp mở ở tab mới, nút
+  "‹ Tài liệu" đóng tab đó; ngoài phòng thì về `?tab=documents` của cuộc họp.
+- Hộp thoại tải lên gửi một request duy nhất qua `XMLHttpRequest` (`api.upload` trong `client.ts`) để có tiến độ;
+  tiến độ từng tệp tính theo số byte đã gửi. Đếm số trang PDF bằng pdf.js ngay khi chọn tệp.
+- Kiểm trước khi gửi dùng lại câu của `MSG164` (sai đuôi, rỗng, quá 50 MB) và `MSG288` (quá 10 tệp / 200 MB), không
+  cấp mã mới.
+- Chưa có: nhóm Biểu quyết (chưa có dữ liệu), tab "Từ kho của tôi", ghim ở từng mục và menu Gỡ (SCRUM-58), cột góp ý
+  trong trình xem (SCRUM-23).
+
 ### Kiểm thử (SCRUM-21)
 
 `tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs` (PostgreSQL thật, kho tệp trong bộ

@@ -2,14 +2,18 @@ import { HubConnectionState, type HubConnection } from '@microsoft/signalr'
 import { useEffect, useRef } from 'react'
 import { createHubConnection, retryDelay } from '../../api/hubs'
 import type { AttendanceChangedEvent } from '../../types/attendance'
+import type { DocumentsChangedEvent } from '../../types/document'
 import type { AgendaChangedEvent } from '../../types/meeting'
 import type { ParticipantsChangedEvent } from '../../types/participant'
 
 /**
- * What the meeting's hub announces; each only says "re-read". `meetingEnded` is the `agendaChanged`
- * that ending the meeting sends (SCRUM-69), the only change of status anyone else hears about.
+ * What the meeting's hub announces; each only says "re-read". `agendaChanged` is any change to the
+ * agenda, the item in progress included; `meetingEnded` is the one that ending the meeting sends
+ * (SCRUM-69), the only change of status anyone else hears about, so it is told to both.
+ * `documentsChanged` follows an upload (SCRUM-21).
  */
-export type MeetingEvent = 'participantsChanged' | 'attendanceChanged' | 'meetingEnded'
+export type MeetingEvent =
+  'participantsChanged' | 'attendanceChanged' | 'agendaChanged' | 'meetingEnded' | 'documentsChanged'
 
 interface Listener {
   events: readonly MeetingEvent[]
@@ -49,18 +53,18 @@ function open(meetingId: string): Channel {
       () => false,
     )
 
-  for (const name of ['participantsChanged', 'attendanceChanged'] as const) {
-    connection.on(name, (event: ParticipantsChangedEvent | AttendanceChangedEvent) => {
+  for (const name of ['participantsChanged', 'attendanceChanged', 'documentsChanged'] as const) {
+    connection.on(name, (event: ParticipantsChangedEvent | AttendanceChangedEvent | DocumentsChangedEvent) => {
       if (event.meetingId.toLowerCase() !== meetingId.toLowerCase() || seen.has(event.eventId)) return
       seen.add(event.eventId)
       notify(name)
     })
   }
   connection.on('agendaChanged', (event: AgendaChangedEvent) => {
-    if (event.changeType !== 'MeetingEnded') return
     if (event.meetingId.toLowerCase() !== meetingId.toLowerCase() || seen.has(event.eventId)) return
     seen.add(event.eventId)
-    notify('meetingEnded')
+    notify('agendaChanged')
+    if (event.changeType === 'MeetingEnded') notify('meetingEnded')
   })
   connection.onreconnected(() => void join().then(() => notify()))
   connection.onclose(() => {

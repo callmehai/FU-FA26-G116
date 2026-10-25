@@ -46,6 +46,7 @@ import { errorMessage, isApiError } from '../../../lib/errors'
 import { MEETING_ROLE_LABEL, type MeetingRole } from '../../../types/call'
 import { type Meeting } from '../../../types/meeting'
 import { AttendancePanel } from '../../attendance/AttendancePanel'
+import { DocumentsPanel } from '../../documents/DocumentsPanel'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { DeviceSelect, MicLevel } from './devices'
@@ -56,9 +57,14 @@ import { deviceErrorMessage, meetingRoleOf } from './roomSupport'
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
 const MOD = IS_MAC ? '⌘' : 'Ctrl'
 
-type PanelId = 'people' | 'attendance' | 'chat'
+type PanelId = 'people' | 'attendance' | 'documents' | 'chat'
 
-const PANEL_LABEL: Record<PanelId, string> = { people: 'Người dự', attendance: 'Điểm danh', chat: 'Chat' }
+const PANEL_LABEL: Record<PanelId, string> = {
+  people: 'Người dự',
+  attendance: 'Điểm danh',
+  documents: 'Tài liệu',
+  chat: 'Chat',
+}
 
 const CHAT_MAX = 1000
 
@@ -306,6 +312,8 @@ function RoomLayout({
               <ParticipantsPanel meetingId={meeting.id} participants={participants} isChair={myRole === 'Chair'} />
             ) : panel === 'attendance' ? (
               <AttendancePanel meetingId={meeting.id} />
+            ) : panel === 'documents' ? (
+              <DocumentsPanel meeting={meeting} variant="room" />
             ) : (
               <ChatPanel messages={chat.chatMessages} send={chat.send} isSending={chat.isSending} />
             )}
@@ -413,6 +421,13 @@ function RoomLayout({
             side
             active={panel === 'attendance'}
             onClick={() => togglePanel('attendance')}
+          />
+          <ControlButton
+            icon="fileText"
+            label="Tài liệu"
+            side
+            active={panel === 'documents'}
+            onClick={() => togglePanel('documents')}
           />
           <ControlButton
             icon="messageSquare"

@@ -15,6 +15,7 @@ export function SegmentedControl<T extends string>({
   onChange,
   label,
   disabled = false,
+  counts,
 }: {
   value: T
   options: SelectOption<T>[]
@@ -22,6 +23,8 @@ export function SegmentedControl<T extends string>({
   /** Accessible name of the group. */
   label: string
   disabled?: boolean
+  /** A number after an option's label — how many items it holds. */
+  counts?: Partial<Record<T, number>>
 }) {
   const name = useId()
 
@@ -37,7 +40,10 @@ export function SegmentedControl<T extends string>({
             onChange={() => onChange(option.value)}
             disabled={disabled}
           />
-          <span>{option.label}</span>
+          <span>
+            {option.label}
+            {counts?.[option.value] !== undefined && <b className="segmented-count">{counts[option.value]}</b>}
+          </span>
         </label>
       ))}
     </div>

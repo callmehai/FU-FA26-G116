@@ -22,6 +22,7 @@ import {
   CircleX,
   Clock,
   Copy,
+  Download,
   Ellipsis,
   EllipsisVertical,
   Eye,
@@ -67,6 +68,8 @@ import {
   VideoOff,
   Volume2,
   X,
+  ZoomIn,
+  ZoomOut,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -125,6 +128,9 @@ const ICONS = {
   folderPlus: FolderPlus,
   settings: Settings,
   upload: Upload,
+  download: Download,
+  zoomIn: ZoomIn,
+  zoomOut: ZoomOut,
   // Sensitivity levels: each one has its own shape, not only its own colour.
   globe: Globe,
   building: Building2,
