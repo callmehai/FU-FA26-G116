@@ -200,7 +200,7 @@ với người duyệt được chọn cho cycle mới; không bắt buộc `Ret
 `description` khác giá trị đang lưu thì trả `400 MSG31` với `errors` đúng các field đó. Giờ bắt đầu mới
 phải ở tương lai (BR-75). Có thay đổi thì trong cùng transaction: lưu lịch mới, giữ `Published`, ghi
 một history `Reschedule` (`Published → Published`) và một notification `MeetingRescheduled` cho mỗi
-participant active, chưa Delegated (BR-76); trả `200 MSG138`. Body không đổi gì trả `200 MSG30` và
+participant active, chưa Delegated, trừ chính người dời lịch (BR-76); trả `200 MSG138`. Body không đổi gì trả `200 MSG30` và
 không ghi history hay notification. Guest hiện tại có durable dispatch Rescheduled cùng transaction (SCRUM-20); link xác minh thật còn phụ thuộc SCRUM-59. Internal nhận notification như trước.
 
 ### POST `/api/meetings/{id}/transitions` — SCRUM-19
