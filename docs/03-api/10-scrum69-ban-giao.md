@@ -67,3 +67,11 @@ Kết quả build, full regression, coverage, concurrency, hiệu năng và gi�
 ## Bổ sung sau review — thời gian đóng CallSession
 
 Giờ End của Meeting/history là mốc nghiệp vụ; CallSession dùng giờ server sau khi provider xác nhận DeleteRoom. Không truyền mốc End của Meeting vào CloseMeetingRoomAsync nữa. Repository lấy mốc kết thúc hiệu lực không sớm hơn StartedAt, mọi JoinedAt và LeftAt đã lưu, rồi dùng cùng mốc đó để đóng các stint còn mở; không sửa stint đã đóng. Quy tắc này cũng bảo vệ khi timestamp provider lệch về tương lai hoặc sự kiện đến trễ. Reconciliation lấy giờ sau DeleteRoom cho session cần đóng. Không thay schema hoặc ghi đè ActualEndedAt/history của Meeting.
+
+## FE đã tích hợp
+
+- Trang chi tiết: Chủ tọa thấy **Bắt đầu họp** khi `Published` và **Kết thúc họp** khi `InProgress`, cạnh "Vào phòng họp". Nút dựa trên `myMeetingRole`, server vẫn kiểm lại.
+- Bắt đầu: còn ≤ 15 phút tới giờ dự kiến thì bấm là chạy ngay; sớm hơn thì hỏi "Bắt đầu sớm hơn lịch?". Không có Thư ký thì hộp thoại nói lý do và không gửi request. Kết thúc luôn hỏi xác nhận.
+- Lỗi: `409 MSG112/MSG114` và `403 MSG112/MSG114` hiện toast rồi đọc lại trang; `503 MSG115/MSG116` hiện toast và giữ nút để thử lại.
+- Người khác đang mở trang tự cập nhật: Kết thúc qua `agendaChanged` loại `MeetingEnded` trên `/hubs/meetings`; Bắt đầu qua thông báo `MeetingStarted` (hub thông báo). Màn chờ phòng họp "chỉ mở khi cuộc họp đang diễn ra" tự chuyển sang màn vào phòng khi nhận `MeetingStarted`.
+- Lịch sử hiện "Bắt đầu họp"/"Kết thúc họp"; chuông thông báo có biểu tượng riêng cho `MeetingStarted`.

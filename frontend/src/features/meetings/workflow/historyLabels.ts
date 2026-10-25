@@ -24,6 +24,10 @@ export function historyActionLabel(item: MeetingHistoryItem): string {
       return 'Chuyển người tổ chức'
     case 'Reschedule':
       return 'Dời lịch'
+    case 'Start':
+      return 'Bắt đầu họp'
+    case 'End':
+      return 'Kết thúc họp'
     default:
       // Rows written before SCRUM-19 only know where the meeting ended up.
       return MEETING_STATUS_LABEL[item.resultingStatus] ?? item.resultingStatus
