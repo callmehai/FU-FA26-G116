@@ -199,7 +199,24 @@ public sealed class AgendaPoRequirementsTests(AgendaFixture fixture) : IClassFix
         Assert.Equal(notify ? 2 : 0, await check.Notifications.CountAsync(n => n.MeetingId == s.MeetingId && n.Type == NotificationType.AgendaPresenterAssigned));
         var emails = await check.EmailMessages.Where(e => e.MeetingId == s.MeetingId).ToListAsync();
         Assert.Equal(notify ? 1 : 0, emails.Count);
-        Assert.All(emails, e => { Assert.Equal(guest.Email, e.ToAddress); Assert.Null(e.CalendarAttachment); Assert.Equal(EmailStatus.Queued, e.Status); });
+        var meetingTitle = await check.Meetings.Where(m => m.Id == s.MeetingId).Select(m => m.Title).SingleAsync();
+        Assert.All(emails, e =>
+        {
+            Assert.Equal(guest.Email, e.ToAddress); Assert.Null(e.CalendarAttachment); Assert.Equal(EmailStatus.Queued, e.Status);
+            // The guest learns which meeting, not just which item.
+            Assert.Contains(meetingTitle, e.Body);
+        });
+    }
+
+    [Fact]
+    public async Task A_secretary_who_assigns_themselves_is_not_notified()
+    {
+        var s = await fixture.Seed(MeetingStatus.Published);
+        using var client = fixture.Client(s.Secretary);
+        await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input(presenter: s.Secretary)), 200, "MSG61");
+        await using var check = fixture.Db();
+        Assert.Equal(s.Secretary, (await check.AgendaItems.SingleAsync(i => i.Id == s.Items[0])).PresenterId);
+        Assert.False(await check.Notifications.AnyAsync(n => n.MeetingId == s.MeetingId && n.Type == NotificationType.AgendaPresenterAssigned));
     }
 
     [Fact]

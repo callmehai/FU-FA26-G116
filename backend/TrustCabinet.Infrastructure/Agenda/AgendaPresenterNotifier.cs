@@ -14,8 +14,9 @@ public sealed class AgendaPresenterNotifier(IServiceScopeFactory scopes) : IAgen
         await using var scope = scopes.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<TrustCabinetDbContext>();
         await using var tx = await db.Database.BeginTransactionAsync(ct);
-        await db.Meetings.FromSqlInterpolated($"SELECT * FROM meetings WHERE id = {assignment.MeetingId} FOR UPDATE")
-            .AsNoTracking().ToListAsync(ct);
+        var meeting = (await db.Meetings.FromSqlInterpolated($"SELECT * FROM meetings WHERE id = {assignment.MeetingId} FOR UPDATE")
+            .AsNoTracking().ToListAsync(ct)).SingleOrDefault();
+        if (meeting is null) return;
         var item = await db.AgendaItems.AsNoTracking().SingleOrDefaultAsync(i => i.Id == assignment.AgendaItemId
             && i.MeetingId == assignment.MeetingId, ct);
         if (item is null || item.PresenterId != assignment.PresenterId
@@ -24,7 +25,10 @@ public sealed class AgendaPresenterNotifier(IServiceScopeFactory scopes) : IAgen
         if (recipient is null) return;
         var key = $"agenda-presenter:{assignment.EventId:D}:{recipient:D}";
         const string title = "Phân công trình bày mục nghị sự";
-        var body = $"Bạn được phân công trình bày mục nghị sự: {item.Title}.";
+        // A guest has no other way to tell which meeting this is, so name it and its time.
+        var starts = TimeZoneInfo.ConvertTime(meeting.PlannedStartTime, TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh"));
+        var body = $"Bạn được phân công trình bày mục nghị sự \"{item.Title}\" trong cuộc họp \"{meeting.Title}\" "
+            + $"lúc {starts:HH:mm dd/MM/yyyy}.";
         if (assignment.PresenterId is { } userId)
         {
             var participants = await db.MeetingParticipants.Include(p => p.User)

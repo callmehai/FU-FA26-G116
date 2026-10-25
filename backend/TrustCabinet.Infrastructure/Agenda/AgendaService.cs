@@ -185,7 +185,9 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
                         item.LegacyPresenterName = "";
                         item.UpdatedAt = now;
                         await documents.AssociateAsync(meetingId, item.Id, input.DocumentIds!, token);
+                        // Nobody is notified about their own action: a Secretary who assigns themselves gets nothing.
                         if (presenterChanged && (input.PresenterId.HasValue || input.PresenterGuestInvitationId.HasValue)
+                            && input.PresenterId != actorId
                             && meeting.Status is MeetingStatus.Published or MeetingStatus.InProgress)
                             assignment = new(Guid.CreateVersion7(), meetingId, item.Id, input.PresenterId, input.PresenterGuestInvitationId, now);
                     }
