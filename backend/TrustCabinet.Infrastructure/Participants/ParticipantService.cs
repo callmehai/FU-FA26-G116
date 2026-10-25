@@ -23,7 +23,8 @@ public sealed partial class ParticipantService(
     ICallerContext caller,
     TimeProvider clock,
     ILogger<ParticipantService> logger,
-    IParticipantsChangePublisher publisher
+    IParticipantsChangePublisher publisher,
+    IAgendaChangePublisher agendaPublisher
 ) : IParticipantService
 {
     private static bool Persistence(Exception ex) =>
@@ -391,6 +392,7 @@ public sealed partial class ParticipantService(
     )
     {
         MeetingAccessChange? accessChange = null;
+        AgendaChange? agendaChange = null;
         ParticipantResult result;
         ParticipantsChange? changeEvent = null;
         HashSet<Guid> readers = [];
@@ -469,6 +471,7 @@ public sealed partial class ParticipantService(
             {
                 ParticipantOperation.AddInternal => await AddInternalAsync(
                     snapshot,
+                    actor.UserId!.Value,
                     input,
                     now,
                     ct
@@ -503,6 +506,22 @@ public sealed partial class ParticipantService(
                 || result.Success == ParticipantSuccess.NoChanges
             )
                 return result with { Revision = response ? null : m.ParticipantsRevision };
+            if (operation is ParticipantOperation.RemoveInternal or ParticipantOperation.RevokeGuest)
+            {
+                var userId = operation == ParticipantOperation.RemoveInternal
+                    ? snapshot.Meeting.Participants.Single(p => p.Id == targetId).UserId : (Guid?)null;
+                var affected = await db.AgendaItems.Where(i => i.MeetingId == meetingId
+                    && (userId != null ? i.PresenterId == userId : i.PresenterGuestInvitationId == targetId)).ToListAsync(ct);
+                foreach (var item in affected)
+                {
+                    item.PresenterId = null;
+                    item.PresenterGuestInvitationId = null;
+                    item.LegacyPresenterName = "";
+                    item.UpdatedAt = now;
+                }
+                if (affected.Count > 0)
+                    agendaChange = new(Guid.CreateVersion7(), meetingId, "PresenterCleared", null, null, now);
+            }
             if (!response)
                 m.ParticipantsRevision = checked(m.ParticipantsRevision + 1);
             var after = Evidence(snapshot);
@@ -567,6 +586,12 @@ public sealed partial class ParticipantService(
                 meetingId
             );
             return new(ParticipantFailure.SaveFailed);
+        }
+        if (agendaChange is not null)
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+            try { await agendaPublisher.PublishAsync(agendaChange, timeout.Token); }
+            catch (Exception ex) { logger.LogWarning(ex, "Agenda presenter cleanup committed; delivery failed for {MeetingId}", meetingId); }
         }
         if (changeEvent is not null)
         {
@@ -668,6 +693,7 @@ public sealed partial class ParticipantService(
 
     private async Task<ParticipantResult> AddInternalAsync(
         ParticipantSnapshot s,
+        Guid actor,
         ParticipantInput input,
         DateTimeOffset now,
         CancellationToken ct
@@ -739,7 +765,7 @@ public sealed partial class ParticipantService(
                 p.User = trackedUsers.GetValueOrDefault(user.Id) ?? user;
                 if (db.Entry(p.User).State == EntityState.Detached)
                     db.Attach(p.User);
-                Stage(s.Meeting, p, null, InvitationEventKind.Invitation, now);
+                Stage(s.Meeting, p, null, InvitationEventKind.Invitation, actor, now);
                 created.Add(p.Id);
             }
         }
@@ -801,7 +827,7 @@ public sealed partial class ParticipantService(
         };
         guest.InitialInvitationDeliveryKey = $"guest:{guest.Id}:invited";
         db.MeetingGuestInvitations.Add(guest);
-        Stage(s.Meeting, null, guest, InvitationEventKind.Invitation, now);
+        Stage(s.Meeting, null, guest, InvitationEventKind.Invitation, actor, now);
         return new(
             Data: new { createdIds = new[] { guest.Id } },
             Success: ParticipantSuccess.Created
@@ -920,7 +946,7 @@ public sealed partial class ParticipantService(
             var p = current[c.ParticipantId];
             p.Role = final[p.Id];
             p.UpdatedAt = now;
-            Stage(s.Meeting, p, null, InvitationEventKind.RoleChanged, now);
+            Stage(s.Meeting, p, null, InvitationEventKind.RoleChanged, actor, now);
         }
         return new(
             Success: handover ? ParticipantSuccess.ChairHandedOver : ParticipantSuccess.RoleChanged
@@ -943,7 +969,7 @@ public sealed partial class ParticipantService(
             g.RevokedAt = now;
             g.RevokedById = actor;
             g.UpdatedAt = now;
-            Stage(s.Meeting, null, g, InvitationEventKind.Removed, now);
+            Stage(s.Meeting, null, g, InvitationEventKind.Removed, actor, now);
         }
         else
         {
@@ -964,7 +990,7 @@ public sealed partial class ParticipantService(
             p.RemovedAt = now;
             p.RemovedById = actor;
             p.UpdatedAt = now;
-            Stage(s.Meeting, p, null, InvitationEventKind.Removed, now);
+            Stage(s.Meeting, p, null, InvitationEventKind.Removed, actor, now);
         }
         return new(Success: ParticipantSuccess.Removed);
     }
@@ -1034,11 +1060,14 @@ public sealed partial class ParticipantService(
         MeetingParticipant? p,
         MeetingGuestInvitation? g,
         InvitationEventKind kind,
+        Guid actor,
         DateTimeOffset now
     )
     {
+        // Nobody is told in-app about their own action, e.g. the Chair who handed over the role
+        // and so became a Member. The email still goes out: it keeps their calendar in step.
         if (ParticipantRules.Respondable(meeting.Status))
-            MeetingInvitationEvents.Stage(db, meeting, p, g, kind, now, notify: true);
+            MeetingInvitationEvents.Stage(db, meeting, p, g, kind, now, notify: p?.UserId != actor);
     }
 
     [GeneratedRegex(@"^[^\s@<>\r\n]+@[^\s@<>\r\n]+\.[^\s@<>\r\n]+$", RegexOptions.CultureInvariant)]

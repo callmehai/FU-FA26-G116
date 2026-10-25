@@ -61,7 +61,6 @@ public sealed class MeetingWorkflowServiceTests
             MeetingId = meetingId,
             Position = position,
             Title = "Báo cáo",
-            PlannedDurationMinutes = 30,
             PresenterId = Guid.CreateVersion7(),
         };
 

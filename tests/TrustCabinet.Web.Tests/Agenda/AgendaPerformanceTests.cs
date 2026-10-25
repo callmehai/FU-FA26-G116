@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Enums;
 using Xunit.Abstractions;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 
@@ -26,6 +27,17 @@ public sealed class AgendaPerformanceTests(AgendaFixture fixture, ITestOutputHel
         {
             db.MeetingDocuments.AddRange(large.Items.SelectMany(item => Enumerable.Range(0, 4).Select(n =>
                 AgendaFixture.TestDocument(large.MeetingId, $"Doc {n}", large.Secretary, item))));
+            var guest = AgendaPoRequirementsTests.Guest(large);
+            db.MeetingGuestInvitations.Add(guest);
+            foreach (var item in await db.AgendaItems.Where(i => i.MeetingId == large.MeetingId).ToListAsync())
+            {
+                item.PresenterGuestInvitationId = guest.Id;
+                item.Conclusion = "Recorded";
+                item.ConclusionUpdatedById = large.Secretary;
+                item.ConclusionUpdatedAt = fixture.Clock.Now;
+            }
+            db.MeetingDocumentAgendaItems.AddRange(large.Items.Select(id => new MeetingDocumentAgendaItem
+                { AgendaItemId = id, MeetingDocumentId = large.DocumentId }));
             await db.SaveChangesAsync();
         }
         using var a = fixture.Client(small.Member);

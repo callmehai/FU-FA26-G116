@@ -385,7 +385,7 @@ public sealed class EmailMigrationPostgresTests : IAsyncLifetime
     }
 
     private Task MigrateToAsync(string? target = null)
-        => _db.GetService<IMigrator>().MigrateAsync(target);
+        => _db.GetService<IMigrator>().MigrateAsync(target ?? _db.Database.GetMigrations().TakeWhile(m => !m.EndsWith("SynchronizeAgendaWithPoRequirements", StringComparison.Ordinal)).Last());
 
     private async Task<string[]> DeliveryColumnsAsync()
         => await _db.Database.SqlQuery<string>($"""

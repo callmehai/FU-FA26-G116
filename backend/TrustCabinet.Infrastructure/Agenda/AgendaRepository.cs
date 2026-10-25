@@ -11,18 +11,21 @@ public sealed class AgendaRepository(TrustCabinetDbContext db) : IAgendaReposito
 {
     public async Task<IReadOnlyList<AgendaItem>> ListAsync(Guid meetingId, bool tracked, CancellationToken ct)
     {
-        IQueryable<AgendaItem> query = db.AgendaItems.Include(i => i.Presenter).Where(i => i.MeetingId == meetingId);
+        IQueryable<AgendaItem> query = db.AgendaItems.Include(i => i.Presenter).Include(i => i.PresenterGuestInvitation).Include(i => i.ConclusionUpdatedBy).Where(i => i.MeetingId == meetingId);
         if (!tracked) query = query.AsNoTracking();
         return await query.OrderBy(i => i.Position).ThenBy(i => i.Id).ToListAsync(ct);
     }
+    public async Task<IReadOnlyList<MeetingGuestInvitation>> CurrentGuestsAsync(Guid meetingId, CancellationToken ct)
+        => await db.MeetingGuestInvitations.AsNoTracking().Where(g => g.MeetingId == meetingId && g.RevokedAt == null).ToListAsync(ct);
+    public Task<bool> HasMinutesAsync(Guid meetingId, CancellationToken ct)
+        => db.MeetingMinutes.AnyAsync(m => m.MeetingId == meetingId, ct);
     public void Add(AgendaItem item) => db.AgendaItems.Add(item);
     public void Remove(AgendaItem item) => db.AgendaItems.Remove(item);
 }
 
 /// <summary>
 /// Agenda's view of the meeting's active documents (ids are MeetingDocument ids). The link table
-/// allows a document on several items (ADR-0020 §5), but agenda planning still keeps the earlier
-/// one-item rule until UC-33b/UC-33d bring their own endpoints (SCRUM-58).
+/// allows a document on several items (ADR-0020 §5). Each mutation changes only its own links.
 /// </summary>
 public sealed class AgendaDocumentRepository(TrustCabinetDbContext db) : IAgendaDocumentRepository
 {
@@ -30,12 +33,12 @@ public sealed class AgendaDocumentRepository(TrustCabinetDbContext db) : IAgenda
         => await db.MeetingDocuments.AsNoTracking().Where(d => d.MeetingId == meetingId && d.RemovedAt == null)
             .OrderBy(d => d.FileName).ThenBy(d => d.Id)
             .Select(d => new AgendaDocumentOption(d.Id, d.FileName,
-                d.AgendaItemLinks.OrderBy(l => l.AgendaItemId).Select(l => (Guid?)l.AgendaItemId).FirstOrDefault()))
+                d.AgendaItemLinks.OrderBy(l => l.AgendaItemId).Select(l => l.AgendaItemId).ToArray()))
             .ToListAsync(ct);
 
     public async Task<bool> CanAssociateAsync(Guid meetingId, Guid? itemId, IReadOnlyList<Guid> documentIds, CancellationToken ct)
         => await db.MeetingDocuments.CountAsync(d => documentIds.Contains(d.Id) && d.MeetingId == meetingId
-            && d.RemovedAt == null && d.AgendaItemLinks.All(l => l.AgendaItemId == itemId), ct) == documentIds.Count;
+            && d.RemovedAt == null, ct) == documentIds.Count;
 
     public async Task AssociateAsync(Guid meetingId, Guid itemId, IReadOnlyList<Guid> documentIds, CancellationToken ct)
     {
@@ -59,7 +62,7 @@ public sealed class AgendaMeetingEnd(TrustCabinetDbContext db) : IAgendaMeetingE
             && i.Status == AgendaItemStatus.InProgress, ct);
         if (item is null) return null;
         if (!AgendaExecution.TryComplete(item, endedAt))
-            throw new InvalidOperationException("The current agenda item has no valid start time or the end precedes its start.");
+            throw new InvalidAgendaExecutionException();
         return new(Guid.CreateVersion7(), meetingId, "MeetingEnded", item.Id, item.Title, item.ActualEndedAt!.Value);
     }
 }
@@ -71,6 +74,7 @@ public static class AgendaServiceCollectionExtensions
         services.AddScoped<IAgendaRepository, AgendaRepository>();
         services.AddScoped<IAgendaDocumentRepository, AgendaDocumentRepository>();
         services.AddScoped<IAgendaService, AgendaService>();
+        services.AddScoped<IAgendaPresenterNotifier, AgendaPresenterNotifier>();
         services.AddScoped<IAgendaMeetingEnd, AgendaMeetingEnd>();
         services.TryAddScoped<IAgendaGuestAccess, UnavailableAgendaGuestAccess>();
         return services;

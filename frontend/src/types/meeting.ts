@@ -201,10 +201,12 @@ export type MeetingTransitionRequest =
   | { action: 'SubmitForApproval'; assignedApproverId: string }
   | { action: 'Reject'; reason: string }
   | { action: 'Approve' | 'ReturnToDraft' | 'Publish' }
+  /** SCRUM-69: the meeting's current Chair starts or ends it. */
+  | { action: 'Start' | 'End' }
 
 export type MeetingTransitionAction = MeetingTransitionRequest['action']
 
-/** Success: MSG78 submit, MSG43 approve, MSG44 reject, MSG79 return to draft, MSG45 publish. */
+/** Success: MSG78 submit, MSG43 approve, MSG44 reject, MSG79 return to draft, MSG45 publish, MSG110/111 start/end. */
 export interface MeetingTransitionResponse {
   code: string
   message: string
@@ -223,6 +225,8 @@ export type MeetingHistoryAction =
   | 'Publish'
   | 'TransferOrganizer'
   | 'Reschedule'
+  | 'Start'
+  | 'End'
   | 'LegacyTransition'
 
 /** One immutable row of GET /api/meetings/{id}/history. */
@@ -265,4 +269,17 @@ export interface MeetingSubmissionReadiness {
   status: MeetingStatus
   ready: boolean
   errors: Record<string, string>
+}
+
+/**
+ * `agendaChanged` on `/hubs/meetings` (SCRUM-25). Ending the meeting sends one with `changeType`
+ * `MeetingEnded` (SCRUM-69); the item fields are null when no item was under discussion.
+ */
+export interface AgendaChangedEvent {
+  eventId: string
+  meetingId: string
+  changeType: string
+  agendaItemId: string | null
+  title: string | null
+  occurredAt: string
 }

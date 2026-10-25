@@ -13,7 +13,8 @@ export type WorkflowOutcome =
   | { kind: 'conflict'; message: string }
   /**
    * 403 MSG85, or MSG46 on publish — the caller is no longer the one who may take this action
-   * (an organizer who lost `MeetingCreator` gets MSG46 from publish).
+   * (an organizer who lost `MeetingCreator` gets MSG46 from publish). Start and end answer MSG112
+   * and MSG114 to someone who is no longer the meeting's Chair.
    */
   | { kind: 'forbidden'; message: string }
   /** 404 — the meeting is gone, or the caller may no longer read it. */
@@ -24,7 +25,12 @@ export type WorkflowOutcome =
 /** The failures that end the action; null for the ones its dialog should show and keep open. */
 export function workflowFailure(error: unknown): WorkflowOutcome | null {
   if (error instanceof ApiError && error.status === 409) return { kind: 'conflict', message: errorMessage(error) }
-  if (isApiError(error, 403, 'MSG85') || isApiError(error, 403, 'MSG46')) {
+  if (
+    isApiError(error, 403, 'MSG85') ||
+    isApiError(error, 403, 'MSG46') ||
+    isApiError(error, 403, 'MSG112') ||
+    isApiError(error, 403, 'MSG114')
+  ) {
     return { kind: 'forbidden', message: errorMessage(error) }
   }
   if (isApiError(error, 403)) return { kind: 'accessLost', error }

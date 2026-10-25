@@ -38,7 +38,7 @@ public sealed class ParticipantMigrationTests
                 attendance_recorded_by_id, attendance_recorded_at, created_at, updated_at)
             VALUES ({participant}, {meeting}, {user.Id}, 'Member', 'Accepted', {now}, 'Present', {user.Id}, {now}, {now}, {now})
             """);
-        await db.Database.MigrateAsync();
+        await db.GetService<IMigrator>().MigrateAsync(db.Database.GetMigrations().TakeWhile(m => !m.EndsWith("SynchronizeAgendaWithPoRequirements", StringComparison.Ordinal)).Last());
         var chair = await db.MeetingParticipants.AsNoTracking().SingleAsync();
         Assert.Equal(MeetingRole.Chair, chair.Role);
         Assert.Equal(user.Id, chair.UserId);
@@ -48,7 +48,7 @@ public sealed class ParticipantMigrationTests
         if (creatorAlreadyPresent) { Assert.Equal(participant, chair.Id); Assert.Equal(now, chair.RespondedAt); }
         Assert.Empty(await db.MeetingInvitationDispatches.ToArrayAsync());
         await db.GetService<IMigrator>().MigrateAsync(previous);
-        await db.Database.MigrateAsync();
+        await db.GetService<IMigrator>().MigrateAsync(db.Database.GetMigrations().TakeWhile(m => !m.EndsWith("SynchronizeAgendaWithPoRequirements", StringComparison.Ordinal)).Last());
         var restored = await db.MeetingParticipants.AsNoTracking().SingleAsync();
         Assert.Equal(chair.Id, restored.Id);
         Assert.Equal(chair.Response, restored.Response);
@@ -92,13 +92,13 @@ public sealed class ParticipantMigrationTests
             """);
         if (scenario != "valid")
         {
-            var error = await Assert.ThrowsAsync<PostgresException>(() => db.Database.MigrateAsync());
+            var error = await Assert.ThrowsAsync<PostgresException>(() => db.GetService<IMigrator>().MigrateAsync(db.Database.GetMigrations().TakeWhile(m => !m.EndsWith("SynchronizeAgendaWithPoRequirements", StringComparison.Ordinal)).Last()));
             Assert.Contains("SCRUM-20", error.MessageText);
             Assert.Equal(response, await db.Database.SqlQuery<string>($"SELECT response AS \"Value\" FROM meeting_participants WHERE id = {participant}").SingleAsync());
             Assert.DoesNotContain(await db.Database.GetAppliedMigrationsAsync(), m => m.EndsWith("MeetingParticipantLifecycleAndGuestInvitations", StringComparison.Ordinal));
             return;
         }
-        await db.Database.MigrateAsync();
+        await db.GetService<IMigrator>().MigrateAsync(db.Database.GetMigrations().TakeWhile(m => !m.EndsWith("SynchronizeAgendaWithPoRequirements", StringComparison.Ordinal)).Last());
         Assert.False(db.Database.HasPendingModelChanges());
         var p = await db.MeetingParticipants.SingleAsync();
         Assert.Equal(AssignmentStatus.Current, p.AssignmentStatus); Assert.Equal(InvitationResponse.Declined, p.Response);

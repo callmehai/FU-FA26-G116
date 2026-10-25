@@ -297,7 +297,14 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task Workflow_migration_backfills_known_actions_and_marks_unclassifiable_rows_legacy()
     {
-        await _db.Database.MigrateAsync("20260924150426_MeetingApproverAndOptionalEndTime");
+        // Start the historical migration test on its own old-schema database; SCRUM-98 is irreversible.
+        await using var legacyDatabase = new PostgreSqlTestDatabase(AdminConnectionString);
+        await using var legacyDb = new TrustCabinetDbContext(new DbContextOptionsBuilder<TrustCabinetDbContext>()
+            .UseNpgsql(legacyDatabase.DataSource).UseSnakeCaseNamingConvention().Options);
+        await legacyDb.Database.MigrateAsync("20260924150426_MeetingApproverAndOptionalEndTime");
+        var legacyUser = new User { FullName = "Legacy author", Email = "legacy@migration.test", PasswordHash = "test-only" };
+        legacyDb.Users.Add(legacyUser);
+        await legacyDb.SaveChangesAsync();
         var meeting = new Meeting
         {
             Title = "Legacy history migration",
@@ -306,17 +313,17 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             Sensitivity = Sensitivity.Internal,
             Mode = MeetingMode.InPerson,
             Location = string.Empty,
-            CreatedById = _creatorId,
+            CreatedById = legacyUser.Id,
         };
         var legacySchedule = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero);
-        await _db.Database.ExecuteSqlInterpolatedAsync($"""
+        await legacyDb.Database.ExecuteSqlInterpolatedAsync($"""
             INSERT INTO meetings (
                 id, title, description, status, sensitivity, mode, location,
                 starts_at, ends_at, created_by_id, assigned_approver_id, created_at, updated_at)
             VALUES (
                 {meeting.Id}, {meeting.Title}, {meeting.Description}, {meeting.Status.ToString()},
                 {meeting.Sensitivity.ToString()}, {meeting.Mode.ToString()}, {meeting.Location},
-                {legacySchedule}, {legacySchedule.AddHours(1)}, {_creatorId}, {null},
+                {legacySchedule}, {legacySchedule.AddHours(1)}, {legacyUser.Id}, {null},
                 {legacySchedule.AddDays(-1)}, {legacySchedule.AddDays(-1)})
             """);
 
@@ -324,17 +331,17 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var legacyHistoryId = Guid.CreateVersion7();
         var occurredAt = new DateTimeOffset(2026, 9, 20, 10, 0, 0, TimeSpan.Zero);
         var reason = "Giữ nguyên lý do cũ";
-        await _db.Database.ExecuteSqlInterpolatedAsync($"""
+        await legacyDb.Database.ExecuteSqlInterpolatedAsync($"""
             INSERT INTO meeting_status_history
                 (id, meeting_id, from_status, to_status, actor_id, reason, occurred_at, created_at, updated_at)
             VALUES
-                ({createHistoryId}, {meeting.Id}, {null}, {"Draft"}, {_creatorId}, {reason}, {occurredAt}, {occurredAt}, {occurredAt}),
-                ({legacyHistoryId}, {meeting.Id}, {"Draft"}, {"Published"}, {_creatorId}, {string.Empty}, {occurredAt.AddMinutes(1)}, {occurredAt}, {occurredAt})
+                ({createHistoryId}, {meeting.Id}, {null}, {"Draft"}, {legacyUser.Id}, {reason}, {occurredAt}, {occurredAt}, {occurredAt}),
+                ({legacyHistoryId}, {meeting.Id}, {"Draft"}, {"Published"}, {legacyUser.Id}, {string.Empty}, {occurredAt.AddMinutes(1)}, {occurredAt}, {occurredAt})
             """);
 
-        await _db.Database.MigrateAsync();
-        _db.ChangeTracker.Clear();
-        var rows = await _db.MeetingStatusHistory
+        await legacyDb.Database.MigrateAsync();
+        legacyDb.ChangeTracker.Clear();
+        var rows = await legacyDb.MeetingStatusHistory
             .Where(item => item.MeetingId == meeting.Id)
             .ToDictionaryAsync(item => item.Id);
 
@@ -601,7 +608,6 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             MeetingId = meetingId,
             Position = 1,
             Title = "Báo cáo",
-            PlannedDurationMinutes = 30,
             PresenterId = _creatorId,
         });
 
@@ -958,7 +964,6 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             MeetingId = meetingId,
             Position = 1,
             Title = "Báo cáo",
-            PlannedDurationMinutes = 30,
             PresenterId = _creatorId,
         });
         _db.MeetingParticipants.AddRange(
@@ -1166,7 +1171,6 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             MeetingId = meetingId,
             Position = 1,
             Title = "Báo cáo",
-            PlannedDurationMinutes = 30,
             PresenterId = _creatorId,
         });
         _db.MeetingParticipants.AddRange(

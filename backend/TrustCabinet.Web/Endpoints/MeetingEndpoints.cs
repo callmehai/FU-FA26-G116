@@ -12,6 +12,12 @@ namespace TrustCabinet.Web.Endpoints;
 /// <summary>HTTP boundary for meeting creation, updates, detail and authorized listing.</summary>
 public static class MeetingEndpoints
 {
+    private const string Msg110Started = "MSG110";
+    private const string Msg111Ended = "MSG111";
+    private const string Msg112StartConflict = "MSG112";
+    private const string Msg114EndConflict = "MSG114";
+    private const string Msg115StartFailed = "MSG115";
+    private const string Msg116EndFailed = "MSG116";
     private const string Msg277InvalidParticipants = "MSG277";
     private const int MaxMeetingRequestBodyBytes = 64 * 1024;
     private const string Msg29Created = "MSG29";
@@ -123,6 +129,7 @@ public static class MeetingEndpoints
         HttpRequest request,
         ClaimsPrincipal principal,
         IMeetingService service,
+        IMeetingLifecycleService lifecycle,
         CancellationToken ct)
     {
         var actorId = CapabilityGate.CurrentUserId(principal);
@@ -169,7 +176,9 @@ public static class MeetingEndpoints
                 "Yêu cầu chuyển trạng thái không hợp lệ.");
         }
 
-        var result = await service.TransitionAsync(id, command, actorId.Value, ct);
+        var result = command.Action is MeetingTransitionAction.Start or MeetingTransitionAction.End
+            ? await lifecycle.TransitionAsync(id, command, actorId.Value, ct)
+            : await service.TransitionAsync(id, command, actorId.Value, ct);
         return result.Outcome switch
         {
             MeetingWorkflowOutcome.Success when command.Action == MeetingTransitionAction.TransferOrganizer
@@ -188,6 +197,8 @@ public static class MeetingEndpoints
             MeetingWorkflowOutcome.NotFound => Results.NotFound(),
             MeetingWorkflowOutcome.Forbidden when command.Action == MeetingTransitionAction.Publish => WorkflowError(
                 StatusCodes.Status403Forbidden, Msg46PublishConflict, "Cuộc họp này không còn có thể công bố."),
+            MeetingWorkflowOutcome.Forbidden when command.Action is MeetingTransitionAction.Start or MeetingTransitionAction.End
+                => WorkflowError(StatusCodes.Status403Forbidden, TransitionConflictCode(command.Action), LifecycleConflictMessage(command.Action)),
             MeetingWorkflowOutcome.Forbidden => WorkflowError(
                 StatusCodes.Status403Forbidden, Msg85ActionForbidden, "Bạn không có quyền thực hiện thao tác này."),
             MeetingWorkflowOutcome.InvalidRequest => WorkflowError(
@@ -213,11 +224,17 @@ public static class MeetingEndpoints
                 {
                     MeetingTransitionAction.SubmitForApproval => "Cuộc họp không còn ở trạng thái Draft hoặc Rejected.",
                     MeetingTransitionAction.Publish => "Cuộc họp này không còn có thể công bố.",
+                    MeetingTransitionAction.Start or MeetingTransitionAction.End => LifecycleConflictMessage(command.Action),
                     _ => "Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.",
                 }),
             _ => SaveFailed(
                 TransitionFailureCode(command.Action),
-                "Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại."),
+                command.Action switch
+                {
+                    MeetingTransitionAction.Start => "Không thể bắt đầu cuộc họp. Vui lòng thử lại.",
+                    MeetingTransitionAction.End => "Không thể kết thúc cuộc họp. Vui lòng thử lại.",
+                    _ => "Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.",
+                }),
         };
     }
 
@@ -339,6 +356,8 @@ public static class MeetingEndpoints
 
     private static string TransitionMessage(MeetingTransitionAction action) => action switch
     {
+        MeetingTransitionAction.Start => "Bắt đầu cuộc họp thành công.",
+        MeetingTransitionAction.End => "Kết thúc cuộc họp thành công.",
         MeetingTransitionAction.SubmitForApproval => "Đã gửi cuộc họp để duyệt.",
         MeetingTransitionAction.Approve => "Đã duyệt cuộc họp.",
         MeetingTransitionAction.Reject => "Đã từ chối cuộc họp.",
@@ -350,6 +369,8 @@ public static class MeetingEndpoints
 
     private static string TransitionSuccessCode(MeetingTransitionAction action) => action switch
     {
+        MeetingTransitionAction.Start => Msg110Started,
+        MeetingTransitionAction.End => Msg111Ended,
         MeetingTransitionAction.SubmitForApproval => Msg78Submitted,
         MeetingTransitionAction.Approve => Msg43Approved,
         MeetingTransitionAction.Reject => Msg44Rejected,
@@ -361,6 +382,8 @@ public static class MeetingEndpoints
 
     private static string TransitionConflictCode(MeetingTransitionAction action) => action switch
     {
+        MeetingTransitionAction.Start => Msg112StartConflict,
+        MeetingTransitionAction.End => Msg114EndConflict,
         MeetingTransitionAction.SubmitForApproval => Msg41SubmitConflict,
         MeetingTransitionAction.Approve or MeetingTransitionAction.Reject => Msg132ApprovalConflict,
         MeetingTransitionAction.ReturnToDraft => Msg133ReturnToDraftConflict,
@@ -371,12 +394,17 @@ public static class MeetingEndpoints
 
     private static string TransitionFailureCode(MeetingTransitionAction action) => action switch
     {
+        MeetingTransitionAction.Start => Msg115StartFailed,
+        MeetingTransitionAction.End => Msg116EndFailed,
         MeetingTransitionAction.SubmitForApproval => Msg42SubmitFailed,
         MeetingTransitionAction.Approve or MeetingTransitionAction.Reject or MeetingTransitionAction.ReturnToDraft
             => Msg88TransitionFailed,
         MeetingTransitionAction.Publish => Msg47PublishFailed,
         _ => Msg88TransitionFailed,
     };
+
+    private static string LifecycleConflictMessage(MeetingTransitionAction action)
+        => action == MeetingTransitionAction.Start ? "Không thể bắt đầu cuộc họp này." : "Không thể kết thúc cuộc họp này.";
 
     private static IResult InvalidHistoryQuery()
         => WorkflowError(StatusCodes.Status400BadRequest, Msg86HistoryInvalidQuery, "Tham số truy vấn không hợp lệ.");

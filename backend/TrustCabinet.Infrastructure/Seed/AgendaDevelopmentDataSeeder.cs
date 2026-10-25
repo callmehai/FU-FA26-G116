@@ -32,12 +32,12 @@ public static class AgendaDevelopmentDataSeeder
             db.Meetings.Add(meeting);
             foreach (var (user, role) in new[] { (secretary, MeetingRole.Secretary), (chair, MeetingRole.Chair), (member, MeetingRole.Member) })
                 db.MeetingParticipants.Add(new() { MeetingId = id, UserId = user.Id, Role = role });
-            var first = new AgendaItem { MeetingId = id, Position = 1, Title = "Báo cáo đầu kỳ", PlannedDurationMinutes = 10,
+            var first = new AgendaItem { MeetingId = id, Position = 1, Title = "Báo cáo đầu kỳ",
                 PresenterId = member.Id, Status = status == MeetingStatus.Draft ? AgendaItemStatus.Pending : AgendaItemStatus.Done,
                 ActualStartedAt = status == MeetingStatus.Draft ? null : start,
                 ActualEndedAt = status == MeetingStatus.Draft ? null : start.AddMinutes(5) };
-            db.AgendaItems.AddRange(first, new() { MeetingId = id, Position = 4, Title = "Thảo luận kế hoạch", PlannedDurationMinutes = 20 },
-                new() { MeetingId = id, Position = 8, Title = "Kết luận", PlannedDurationMinutes = 10, PresenterName = "Báo cáo viên khách mời" });
+            db.AgendaItems.AddRange(first, new() { MeetingId = id, Position = 4, Title = "Thảo luận kế hoạch" },
+                new() { MeetingId = id, Position = 8, Title = "Kết luận" });
             // Rows only: these fixtures have no object in the file store, so they list but do not open.
             var unlinked = Fixture(id, "Tài liệu chưa gắn mục (fixture)", secretary.Id);
             var linked = Fixture(id, "Tài liệu đã gắn mục (fixture)", secretary.Id);

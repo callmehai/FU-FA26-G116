@@ -20,14 +20,10 @@ public static class AgendaRules
     public static bool HasRole(Meeting meeting, Guid actor, MeetingRole role) => meeting.Participants
         .Any(p => p.MeetingId == meeting.Id && p.UserId == actor && p.Role == role && CurrentParticipant(p));
 
-    public static bool CanReadDocuments(Meeting meeting, Guid actor) => meeting.Participants
-        .Any(p => p.MeetingId == meeting.Id && p.UserId == actor && p.Role != MeetingRole.Guest && CurrentParticipant(p));
-
     public static AgendaInput Normalize(AgendaInput input) => input with
     {
         Title = input.Title?.Trim() ?? "",
         Description = input.Description ?? "",
-        PresenterName = input.PresenterName?.Trim() ?? "",
         DocumentIds = input.DocumentIds ?? []
     };
 
@@ -36,10 +32,9 @@ public static class AgendaRules
         var errors = new Dictionary<string, string[]>();
         if (input.Title is not { Length: > 0 and <= 300 }) errors["title"] = ["Tiêu đề phải có từ 1 đến 300 ký tự."];
         if (input.Description?.Length > 4000) errors["description"] = ["Mô tả không quá 4000 ký tự."];
-        if (input.PlannedDurationMinutes is not > 0) errors["plannedDurationMinutes"] = ["Thời lượng phải là số nguyên dương."];
-        if (input.PresenterName?.Length > 200 || input.PresenterId == Guid.Empty
-            || (input.PresenterId.HasValue && !string.IsNullOrEmpty(input.PresenterName)))
-            errors["presenterId"] = ["Chọn người trình bày hoặc nhập tên, không đồng thời cả hai."];
+        if (input.PresenterId == Guid.Empty || input.PresenterGuestInvitationId == Guid.Empty
+            || (input.PresenterId.HasValue && input.PresenterGuestInvitationId.HasValue))
+            errors["presenterId"] = ["Chỉ chọn một người trình bày nội bộ hoặc khách mời hợp lệ."];
         if (input.DocumentIds is { } ids && (ids.Contains(Guid.Empty) || ids.Distinct().Count() != ids.Count))
             errors["documentIds"] = ["Danh sách tài liệu không hợp lệ."];
         return errors;
@@ -52,15 +47,19 @@ public static class AgendaRules
         return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
     }
 
-    public static AgendaActions Actions(Meeting meeting, Guid actor, AgendaItem item, IReadOnlyList<AgendaItem> items)
+    public static bool CanRecordConclusion(Meeting meeting, Guid actor, AgendaItem item, bool hasMinutes)
+        => !hasMinutes && meeting.Status is MeetingStatus.InProgress or MeetingStatus.Ended
+            && item.Status is AgendaItemStatus.InProgress or AgendaItemStatus.Done
+            && (HasRole(meeting, actor, MeetingRole.Chair) || HasRole(meeting, actor, MeetingRole.Secretary));
+
+    public static AgendaActions Actions(Meeting meeting, Guid actor, AgendaItem item, IReadOnlyList<AgendaItem> items, bool hasMinutes = false)
     {
         var planning = PlanningAllowed(meeting.Status) && HasRole(meeting, actor, MeetingRole.Secretary);
         var chair = meeting.Status == MeetingStatus.InProgress && HasRole(meeting, actor, MeetingRole.Chair);
         var pending = item.Status == AgendaItemStatus.Pending;
-        var first = items.FirstOrDefault(i => i.Status == AgendaItemStatus.Pending);
-        return new(planning, planning && pending, planning && pending,
-            chair && pending && first?.Id == item.Id && !items.Any(i => i.Status == AgendaItemStatus.InProgress),
-            chair && item.Status == AgendaItemStatus.InProgress);
+        return new(planning, planning, planning && pending,
+            chair && pending && !items.Any(i => i.Status == AgendaItemStatus.InProgress),
+            chair && item.Status == AgendaItemStatus.InProgress, CanRecordConclusion(meeting, actor, item, hasMinutes));
     }
 }
 

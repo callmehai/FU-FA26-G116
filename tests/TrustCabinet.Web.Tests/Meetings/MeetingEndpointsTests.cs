@@ -452,7 +452,6 @@ public sealed class MeetingEndpointsTests : IDisposable
             MeetingId = meeting.Id,
             Position = 1,
             Title = "Báo cáo",
-            PlannedDurationMinutes = 30,
             PresenterId = Guid.CreateVersion7(),
         });
         _factory.Meetings.Meetings.Add(meeting);
@@ -634,7 +633,6 @@ public sealed class MeetingEndpointsTests : IDisposable
                     MeetingId = meeting.Id,
                     Position = 1,
                     Title = "Báo cáo",
-                    PlannedDurationMinutes = 30,
                     PresenterId = Guid.CreateVersion7(),
                 });
                 _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
@@ -1910,6 +1908,33 @@ public sealed class MeetingEndpointsTests : IDisposable
             Assert.Equal(NotificationType.MeetingRescheduled, notification.Type);
             Assert.Equal(history.Id, notification.OriginHistoryId);
         });
+    }
+
+    [Fact]
+    public async Task Put_reschedule_does_not_notify_the_organizer_of_their_own_change()
+    {
+        var creator = GivenCreator();
+        var meeting = PublishedMeetingWithInvitees(creator, out var invitees);
+        meeting.Participants.Add(new MeetingParticipant
+        {
+            MeetingId = meeting.Id,
+            UserId = creator.Id,
+            User = creator,
+            Role = MeetingRole.Chair,
+        });
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+        var newStart = FutureStart.AddDays(1);
+
+        var response = await client.PutAsJsonAsync($"/api/meetings/{meeting.Id}", ValidRequest() with
+        {
+            PlannedStartTime = Iso(newStart),
+            PlannedEndTime = Iso(newStart.AddHours(2)),
+        });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            invitees.Select(invitee => invitee.Id).Order(),
+            _factory.Meetings.Notifications.Select(notification => notification.UserId).Order());
     }
 
     [Fact]
