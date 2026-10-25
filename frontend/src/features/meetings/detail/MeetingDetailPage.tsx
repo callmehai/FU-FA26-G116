@@ -20,6 +20,7 @@ import { placeLabel } from '../place'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
 import { useNotifications } from '../../notifications/notificationsContext'
+import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
 import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
 import { SensitivityBadge, StatusBadge } from '../StatusBadge'
@@ -48,8 +49,7 @@ const TABS = [
 type TabId = (typeof TABS)[number]['id']
 
 /** What each tab is waiting on, surfaced in the UI so the backlog is visible while building. */
-const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview' | 'attendees'>, string> = {
-  agenda: 'GET /api/meetings/{id}/agenda',
+const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview' | 'attendees' | 'agenda'>, string> = {
   documents: 'GET /api/meetings/{id}/documents',
   recordings: 'GET /api/meetings/{id}/recordings',
   minutes: 'GET /api/meetings/{id}/minutes',
@@ -306,6 +306,8 @@ function MeetingDetail({
             />
           ) : tab === 'attendees' ? (
             <ParticipantsPanel meetingId={meeting.id} onChanged={() => void reload()} />
+          ) : tab === 'agenda' ? (
+            <AgendaPanel meetingId={meeting.id} variant="page" />
           ) : (
             <div className="card card-pending tab-pending">
               <p>Tab này chưa có nghiệp vụ.</p>

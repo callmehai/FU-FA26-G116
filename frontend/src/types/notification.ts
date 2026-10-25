@@ -26,6 +26,8 @@ export type NotificationType =
   /** SCRUM-20: the caller's role in a meeting changed, or they were removed from it. */
   | 'MeetingRoleChanged'
   | 'MeetingParticipantRemoved'
+  /** SCRUM-98: someone else made the reader the presenter of an agenda item. */
+  | 'AgendaPresenterAssigned'
 
 export interface AppNotification {
   id: string
