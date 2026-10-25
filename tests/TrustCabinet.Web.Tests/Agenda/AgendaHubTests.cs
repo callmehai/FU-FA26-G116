@@ -52,13 +52,17 @@ public sealed class AgendaHubTests(AgendaFixture fixture) : IClassFixture<Agenda
         await Next(received.Reader, "Deleted");
         snapshot = await member.GetFromJsonAsync<JsonElement>(s.Url);
         var reversed = snapshot.GetProperty("items").EnumerateArray().Select(i => i.GetProperty("id").GetGuid()).Reverse().ToArray();
-        await AssertCode(await secretary.PutAsJsonAsync(s.Url + "/order", new { orderVersion = snapshot.GetProperty("orderVersion").GetString(), pendingItemIds = reversed }), 200, "MSG63");
+        await AssertCode(await secretary.PutAsJsonAsync(s.Url + "/order", new { orderVersion = snapshot.GetProperty("orderVersion").GetString(), orderedItemIds = reversed }), 200, "MSG63");
         var reorder = await Next(received.Reader, "Reordered");
         Assert.Null(reorder.Title);
         await AssertCode(await chair.PostAsync(s.Url + $"/{reversed[0]}/current", null), 200, "MSG64");
         await Next(received.Reader, "Started");
         await AssertCode(await chair.PostAsync(s.Url + $"/{reversed[0]}/complete", null), 200, "MSG65");
         await Next(received.Reader, "Completed");
+        await AssertCode(await secretary.PutAsJsonAsync(s.Url + $"/{reversed[0]}/conclusion", new { conclusion = "Committed conclusion" }), 200, "MSG271");
+        await Next(received.Reader, "ConclusionUpdated");
+        snapshot = await member.GetFromJsonAsync<JsonElement>(s.Url);
+        Assert.Equal("Committed conclusion", snapshot.GetProperty("items")[0].GetProperty("conclusion").GetString());
         Assert.Empty(excluded);
 
         await viewer.InvokeAsync("LeaveMeeting", s.MeetingId);

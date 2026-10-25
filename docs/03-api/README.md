@@ -9,7 +9,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [SCRUM-69 — bàn giao Start/End](10-scrum69-ban-giao.md), [báo cáo kiểm thử](10-scrum69-kiem-thu.md), [Postman](postman/SCRUM-69-Meeting-Lifecycle.postman_collection.json).
 - [`10-diem-danh.md`](10-diem-danh.md) — Backend SCRUM-26 / UC-31; [bàn giao FE/BA](10-diem-danh-ban-giao.md), [kết quả kiểm thử](10-diem-danh-ket-qua-kiem-thu.md). Version riêng từng người, batch atomic, realtime theo quyền roster.
 
-- [`08-chuong-trinh-nghi-su.md`](08-chuong-trinh-nghi-su.md) — contract Backend SCRUM-25, UC-23a–d/24/25/26; [bàn giao FE và kiểm thử](08-chuong-trinh-nghi-su-ban-giao.md).
+- [`08-chuong-trinh-nghi-su.md`](08-chuong-trinh-nghi-su.md) — contract Backend SCRUM-98, UC-23a–d/24/25/26/77; [bàn giao SCRUM-25 lịch sử](08-chuong-trinh-nghi-su-ban-giao.md).
 - [`08-agenda-contract-tich-hop-guest-uc04.md`](08-agenda-contract-tich-hop-guest-uc04.md) — adapter identity/session, quyền đọc Agenda và hub Guest; phần UC-04 cần triển khai để tích hợp.
 
 - [`00-danh-muc-ma-thong-bao.md`](00-danh-muc-ma-thong-bao.md) — **danh mục mọi mã `MSGnn`**:
@@ -86,3 +86,5 @@ Dự kiến có thêm:
 
 Khi backend bật OpenAPI, tài liệu sinh tự động đóng vai trò tham chiếu chi tiết; các file ở đây
 tập trung vào ý định thiết kế và phần OpenAPI không diễn tả được (luồng, quyền, tình huống lỗi).
+
+SCRUM-98 thay thế contract Agenda SCRUM-25: [bàn giao BE → FE/BA](08-scrum98-ban-giao.md), [báo cáo kiểm thử riêng](08-scrum98-ket-qua-kiem-thu.md). UC-77, presenter Internal/Guest, bỏ duration và reorder mọi trạng thái. Báo cáo SCRUM-25 là lịch sử, không ghi đè.

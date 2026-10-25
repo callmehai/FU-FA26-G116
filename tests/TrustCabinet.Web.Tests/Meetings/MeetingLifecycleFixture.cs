@@ -203,7 +203,7 @@ public sealed class MeetingLifecycleFixture : IAsyncLifetime
         for (var i = 0; i < 3; i++) db.MeetingParticipants.Add(new() { MeetingId = meeting.Id, UserId = users[i].Id,
             Role = i == 0 ? MeetingRole.Secretary : i == 1 ? MeetingRole.Chair : MeetingRole.Member });
         var items = Enumerable.Range(0, count).Select(i => new AgendaItem { MeetingId = meeting.Id,
-            Title = $"Mục {i + 1}", Position = 1 + i * 3, PlannedDurationMinutes = 20 }).ToArray();
+            Title = $"Mục {i + 1}", Position = 1 + i * 3 }).ToArray();
         db.AgendaItems.AddRange(items);
         await db.SaveChangesAsync();
         return new(meeting.Id, users[0].Id, users[1].Id, users[2].Id, users[3].Id, users[4].Id, items.Select(i => i.Id).ToArray());

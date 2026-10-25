@@ -57,7 +57,7 @@ public class RolesAsDataMigrationTests : IAsyncLifetime
     }
 
     private Task MigrateToAsync(string? target = null)
-        => _db.GetService<IMigrator>().MigrateAsync(target);
+        => _db.GetService<IMigrator>().MigrateAsync(target ?? _db.Database.GetMigrations().TakeWhile(m => !m.EndsWith("SynchronizeAgendaWithPoRequirements", StringComparison.Ordinal)).Last());
 
     /// <summary>An account in the pre-RolesAsData shape: its role is the enum's name.</summary>
     private Task InsertOldUserAsync(string email, string role, bool isActive = true)

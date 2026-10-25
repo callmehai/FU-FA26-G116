@@ -283,8 +283,8 @@ object trên kho, nên liệt kê được nhưng chưa mở được) trên **D
 DB dev cũ và server test **mất hẳn** hai tài liệu fixture mỗi cuộc họp `[SCRUM-25]` sau migration; muốn có lại thì
 seed lại từ đầu (`docker compose down -v`, [deploy/README.md](../../deploy/README.md) mục xoá dữ liệu).
 
-Agenda giữ hợp đồng cũ: mỗi tài liệu vẫn gắn tối đa một mục khi lập chương trình. Bảng nối cho phép
-nhiều mục (ADR-0020 §5); UC-33b/UC-33d (SCRUM-58) mở rộng phần đó.
+Từ SCRUM-98, một tài liệu gắn được nhiều mục khi lập chương trình (bảng nối, ADR-0020 §5); sửa một
+mục chỉ đổi liên kết của mục đó. UC-33b/UC-33d (SCRUM-58) thêm endpoint gắn/gỡ riêng.
 
 ## Kiểm thử
 

@@ -17,6 +17,7 @@ public enum NotificationType
     DocumentAdded,
     MeetingRoleChanged,
     MeetingParticipantRemoved,
+    AgendaPresenterAssigned,
     MeetingStarted,
 }
 

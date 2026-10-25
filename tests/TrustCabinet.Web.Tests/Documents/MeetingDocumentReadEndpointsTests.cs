@@ -54,7 +54,7 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
         await using var db = fixture.Db();
         // Inserted in reverse so the answer must come from Position, not insertion order.
         var items = statuses.Select((status, i) => new AgendaItem { MeetingId = meetingId, Title = $"Mục {i + 1}",
-            Position = i + 1, Status = status, PlannedDurationMinutes = 10 }).ToArray();
+            Position = i + 1, Status = status }).ToArray();
         db.AgendaItems.AddRange(items.Reverse());
         await db.SaveChangesAsync();
         return items.Select(i => i.Id).ToArray();

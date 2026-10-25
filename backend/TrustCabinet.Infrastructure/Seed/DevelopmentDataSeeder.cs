@@ -211,7 +211,6 @@ public static class DevelopmentDataSeeder
             Position = 1,
             Title = "Rà soát kế hoạch triển khai",
             Description = "Agenda mẫu đã đủ thông tin để gửi duyệt.",
-            PlannedDurationMinutes = 30,
             Presenter = member,
             Status = AgendaItemStatus.Pending,
         });
