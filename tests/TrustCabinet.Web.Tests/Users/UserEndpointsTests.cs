@@ -371,6 +371,24 @@ public class UserEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Changing_the_role_does_not_sign_the_account_out()
+    {
+        // SCRUM-105, PO 22/10/2026: a role change keeps the session; the push brings the new rights.
+        var target = GivenUser("Lê Thành Viên", "thanhvien-moi@trustcabinet.local");
+        await _factory.RefreshTokens.StoreAsync("rt-cua-ho", target.Id, TimeSpan.FromDays(7));
+
+        var response = await AdminClient().PutAsJsonAsync($"/api/users/{target.Id}", new
+        {
+            fullName = target.FullName,
+            email = target.Email,
+            roleId = BuiltInRoles.Secretary,
+        });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Single(_factory.RefreshTokens.ActiveTokens);
+    }
+
+    [Fact]
     public async Task Update_answers_404_for_an_unknown_account()
     {
         var client = AdminClient();

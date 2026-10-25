@@ -49,32 +49,24 @@ internal sealed class EmailDeliveryWorker(
 
     internal async Task<EmailProcessingResult> ProcessOnceAsync(CancellationToken ct)
     {
-        await TryReconcileInvitationJobsAsync(ct);
+
+        try
+        {
+            await using var scope = scopeFactory.CreateAsyncScope();
+            // Optional only for legacy worker test doubles; production registers the processor.
+            var dispatches = scope.ServiceProvider.GetService<MeetingInvitationDispatchProcessor>();
+            if (dispatches is not null) await dispatches.ProcessNextAsync(ct);
+        }
+        catch (Exception exception) when (!ct.IsCancellationRequested)
+        {
+            // Provider exceptions may contain credentials. Queued email processing must continue.
+            logger.LogWarning("Invitation dispatch failed; failure type {FailureType}. Queued email processing will continue.",
+                exception.GetType().Name);
+        }
 
         await using var processingScope = scopeFactory.CreateAsyncScope();
         var processor = processingScope.ServiceProvider.GetRequiredService<IEmailQueueProcessor>();
         return await processor.ProcessNextAsync(ct);
-    }
-
-    private async Task TryReconcileInvitationJobsAsync(CancellationToken ct)
-    {
-        try
-        {
-            await using var reconciliationScope = scopeFactory.CreateAsyncScope();
-            var invitationQueue = reconciliationScope.ServiceProvider
-                .GetRequiredService<IMeetingInvitationQueue>();
-            await invitationQueue.QueueNextUninitializedPublishedMeetingAsync(ct);
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(
-                exception,
-                "Could not reconcile invitation jobs for published meetings. Queued email processing will continue.");
-        }
     }
 
     private async Task Delay(TimeSpan delay, CancellationToken ct)

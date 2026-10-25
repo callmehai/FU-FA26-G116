@@ -168,8 +168,9 @@ export function UsersPage() {
     } else {
       patch(response.user)
       // Editing yourself: re-read name, email and capabilities from /api/auth/me so the shell and
-      // the sidebar match what the backend now enforces. A new role or email has revoked this
-      // session on the backend; the reload notices and ends it here too, rather than minutes later.
+      // the sidebar match what the backend now enforces. A new role keeps the session and the
+      // reload picks up its capabilities; a new email has revoked the session on the backend, and
+      // the reload notices and ends it here too, rather than minutes later.
       if (response.user.id === me?.id) void reloadSession()
     }
   }
@@ -262,16 +263,11 @@ export function UsersPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Quản trị"
         title="Người dùng & Quyền"
-        description={
-          users
-            ? `Quản lý người dùng và phân quyền hệ thống · ${users.length} tài khoản, ${activeCount} đang hoạt động.`
-            : 'Quản lý người dùng và phân quyền hệ thống.'
-        }
+        description={users ? `${users.length} tài khoản, ${activeCount} đang hoạt động` : undefined}
         action={
           <button
-            className="btn btn-primary btn-lg"
+            className="btn btn-primary btn-lg btn-cta"
             type="button"
             onClick={() => void openUserForm({ mode: 'create' })}
             disabled={roles === null}
@@ -326,6 +322,7 @@ export function UsersPage() {
                   <td colSpan={COLUMN_COUNT} className="cell-empty">
                     <p className="cell-error">{loadError}</p>
                     <button type="button" className="btn btn-outline btn-sm" onClick={retry}>
+                      <Icon name="refresh" size={16} />
                       Thử lại
                     </button>
                   </td>
@@ -375,12 +372,11 @@ export function UsersPage() {
                         <Badge tone="slate">{u.roleName}</Badge>
                       </td>
                       <td className="cell-muted">
-                        {[u.hasPassword && 'Mật khẩu', u.hasGoogleLink && 'Google'].filter(Boolean).join(' · ')}
+                        {[u.hasPassword && 'Mật khẩu', u.hasGoogleLink && 'Google'].filter(Boolean).join(', ')}
                       </td>
                       <td>
-                        <span className={u.isActive ? 'status status-emerald' : 'status status-ended'}>
-                          {u.isActive ? 'Hoạt động' : 'Đã vô hiệu hoá'}
-                        </span>
+                        {/* The normal case is plain text; only the exception stands out. */}
+                        {u.isActive ? 'Hoạt động' : <span className="user-disabled">Đã vô hiệu hoá</span>}
                       </td>
                       <td className="cell-muted">{formatDate(u.createdAt)}</td>
                       <td className="col-action">
@@ -389,7 +385,7 @@ export function UsersPage() {
                             type="button"
                             className="icon-button icon-button-sm"
                             onClick={() => void openUserForm({ mode: 'edit', id: u.id })}
-                            title="Sửa hồ sơ"
+                            data-tooltip="Sửa hồ sơ"
                             aria-label={`Sửa tài khoản ${u.fullName}`}
                           >
                             <Icon name="pencil" size={16} />
@@ -399,7 +395,7 @@ export function UsersPage() {
                             className="icon-button icon-button-sm"
                             onClick={() => setStatusTarget(u)}
                             disabled={isSelf}
-                            title={
+                            data-tooltip={
                               isSelf
                                 ? 'Không thể tự đổi trạng thái tài khoản của mình'
                                 : u.isActive
@@ -415,7 +411,7 @@ export function UsersPage() {
                             className="icon-button icon-button-sm"
                             onClick={() => setResetTarget(u)}
                             disabled={resetUnavailable !== null}
-                            title={resetUnavailable ?? 'Gửi liên kết đặt lại mật khẩu'}
+                            data-tooltip={resetUnavailable ?? 'Gửi liên kết đặt lại mật khẩu'}
                             aria-label={`Gửi liên kết đặt lại mật khẩu cho ${u.fullName}`}
                           >
                             <Icon name="key" size={16} />

@@ -6,6 +6,8 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 
 Đã có:
 
+- [`10-diem-danh.md`](10-diem-danh.md) — Backend SCRUM-26 / UC-31; [bàn giao FE/BA](10-diem-danh-ban-giao.md), [kết quả kiểm thử](10-diem-danh-ket-qua-kiem-thu.md). Version riêng từng người, batch atomic, realtime theo quyền roster.
+
 - [`08-chuong-trinh-nghi-su.md`](08-chuong-trinh-nghi-su.md) — contract Backend SCRUM-25, UC-23a–d/24/25/26; [bàn giao FE và kiểm thử](08-chuong-trinh-nghi-su-ban-giao.md).
 - [`08-agenda-contract-tich-hop-guest-uc04.md`](08-agenda-contract-tich-hop-guest-uc04.md) — adapter identity/session, quyền đọc Agenda và hub Guest; phần UC-04 cần triển khai để tích hợp.
 
@@ -60,6 +62,18 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   queue/SMTP không thuộc contract frontend
 - [`07-gui-email-thu-moi-note-cai-dat-may-moi.md`](07-gui-email-thu-moi-note-cai-dat-may-moi.md) —
   checklist cấu hình database, User Secrets, SMTP, migration và kiểm tra worker trên máy mới
+- [`09-phong-hop-truc-tuyen.md`](09-phong-hop-truc-tuyen.md) — phòng họp trực tuyến trên LiveKit
+  (`SCRUM-39`/`SCRUM-41`): ai được vào phòng, cấp token, chủ toạ tắt mic, webhook và job đối soát;
+  mã `MSG117`, `MSG118`, `MSG123`, `MSG124`, `MSG280`–`MSG284`
+
+- [`09-thanh-phan-tham-du.md`](09-thanh-phan-tham-du.md) — SCRUM-20: roster, Guest invitation, quyền Chair/Secretary, Chair handover và phản hồi lời mời; ETag/validation/delivery/migration
+- [`09-thanh-phan-tham-du-ban-giao.md`](09-thanh-phan-tham-du-ban-giao.md) — FE, Postman, fixture và các bước test thủ công
+- [`09-thanh-phan-tham-du-guest-uc04.md`](09-thanh-phan-tham-du-guest-uc04.md) — port và gate tích hợp OTP/session Guest production
+- [`09-thanh-phan-tham-du-ket-qua-kiem-thu.md`](09-thanh-phan-tham-du-ket-qua-kiem-thu.md) — kết quả build/test, performance và giới hạn nghiệm thu
+- [`11-tai-lieu-cuoc-hop.md`](11-tai-lieu-cuoc-hop.md) — SCRUM-107: tải tệp từ máy lên cuộc họp
+  (UC-33a AF-1), kiểm loại theo nội dung, tất cả hoặc không, thư mục kho tự tạo, lưu trên R2, job dọn
+  file mồ côi; mã `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, `MSG288`; note cho FE
+- [`10-scrum97-ket-qua-kiem-thu.md`](10-scrum97-ket-qua-kiem-thu.md) — kết quả riêng của phần SCRUM-97 bổ sung trên baseline SCRUM-20; kèm change note Jira để owner đăng.
 
 Dự kiến có thêm:
 

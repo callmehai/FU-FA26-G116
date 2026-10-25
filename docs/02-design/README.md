@@ -7,6 +7,7 @@
 - [`03-co-so-du-lieu.md`](03-co-so-du-lieu.md) — cài PostgreSQL, chuỗi kết nối, vòng đời migration
 - [`04-luong-nghiep-vu-chinh.md`](04-luong-nghiep-vu-chinh.md) — 4 luồng nghiệp vụ chính BF-01 → BF-04 (bản PO duyệt 09/10/2026)
 - [`08-ke-hoach-phong-hop-truc-tuyen.md`](08-ke-hoach-phong-hop-truc-tuyen.md) — thiết kế giải pháp phòng họp trực tuyến (LiveKit / WebRTC)
+- [`10-scrum97-ke-hoach-backend.md`](10-scrum97-ke-hoach-backend.md) — kế hoạch thực thi UC-73, nguồn yêu cầu, thứ tự validation và ma trận kiểm thử Backend.
 
 Dự kiến có thêm:
 
@@ -14,4 +15,8 @@ Dự kiến có thêm:
 - `06-giao-dien.md` — sơ đồ màn hình, wireframe, quy ước thiết kế
 - `07-bao-mat.md` — xác thực, phân quyền RBAC, kiểm soát truy cập tài liệu
 
-Sơ đồ đặt trong [../assets/](../assets/), commit cả file nguồn lẫn ảnh xuất ra.
+Sơ đồ đặt trong các thư mục [06-sequencediagram](../06-sequencediagram/),
+[07-classdiagram](../07-classdiagram/), [09-bussinessflow](../09-bussinessflow/),
+[10-statemachine](../10-statemachine/), [11-contextdiagram](../11-contextdiagram/),
+[12-screenflow](../12-screenflow/), [13-erd](../13-erd/) và [14-uc-diagram](../14-uc-diagram/);
+commit cả file nguồn lẫn ảnh xuất ra.

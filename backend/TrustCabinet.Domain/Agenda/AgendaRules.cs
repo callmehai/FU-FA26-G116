@@ -15,9 +15,7 @@ public static class AgendaRules
         or MeetingStatus.WaitingApproval or MeetingStatus.Rejected or MeetingStatus.Approved
         or MeetingStatus.Published or MeetingStatus.InProgress;
 
-    // SCRUM-20 must extend this predicate when assignment history gains Current/Removed.
-    public static bool CurrentParticipant(MeetingParticipant participant) => participant.User.IsActive
-        && participant.Response != InvitationResponse.Delegated && participant.DelegatedToUserId is null;
+    public static bool CurrentParticipant(MeetingParticipant participant) => Participants.ParticipantRules.Active(participant);
 
     public static bool HasRole(Meeting meeting, Guid actor, MeetingRole role) => meeting.Participants
         .Any(p => p.MeetingId == meeting.Id && p.UserId == actor && p.Role == role && CurrentParticipant(p));
@@ -27,8 +25,10 @@ public static class AgendaRules
 
     public static AgendaInput Normalize(AgendaInput input) => input with
     {
-        Title = input.Title?.Trim() ?? "", Description = input.Description ?? "",
-        PresenterName = input.PresenterName?.Trim() ?? "", DocumentIds = input.DocumentIds ?? []
+        Title = input.Title?.Trim() ?? "",
+        Description = input.Description ?? "",
+        PresenterName = input.PresenterName?.Trim() ?? "",
+        DocumentIds = input.DocumentIds ?? []
     };
 
     public static IReadOnlyDictionary<string, string[]> Validate(AgendaInput input)

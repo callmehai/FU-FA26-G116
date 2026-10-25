@@ -148,6 +148,9 @@ Vietnamese, specific, and about consequences: "Lưu thay đổi không tự gử
 giữ nguyên." beats "Lưu ý khi sửa". Say what a button does ("Tạo cuộc họp", "Lưu thay đổi"). Show
 the backend's `message` when there is one; branch on `code`, never on text.
 
+Then cut it down: one line per row, chips and icons over sentences, secondary facts in tooltips —
+see **minimize-text**.
+
 ## 8. Before you commit
 
 ```bash
@@ -162,6 +165,7 @@ npx prettier --print-width 120 --single-quote --no-semi --write <your files>
 
 Check `git diff` afterwards and revert any reformatting of lines you did not change.
 
-Then run **verify-ui-in-browser**, and put what you tested in the PR's "Tested locally" list.
+Then run **verify-ui-in-browser** and **check-responsive** (a phone width is part of every check,
+not an extra), and put what you tested in the PR's "Tested locally" list.
 Screens that change user-facing behaviour also update `docs/03-api/` where the contract's
 "Hợp đồng tích hợp FE" section describes it.

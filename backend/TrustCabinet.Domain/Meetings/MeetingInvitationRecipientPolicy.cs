@@ -14,8 +14,7 @@ public static class MeetingInvitationRecipientPolicy
     public static IReadOnlyList<MeetingParticipant> SelectSnapshot(
         IEnumerable<MeetingParticipant> participants)
         => participants
-            .Where(participant => participant.User is { IsActive: true }
-                && participant.Response != InvitationResponse.Delegated)
+            .Where(Participants.ParticipantRules.Active)
             .DistinctBy(participant => participant.UserId)
             .ToArray();
 }

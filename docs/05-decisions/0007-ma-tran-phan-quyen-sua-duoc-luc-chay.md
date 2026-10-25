@@ -1,6 +1,7 @@
 # ADR-0007: Ma trận phân quyền sửa được lúc chạy — bỏ `HasData`
 
-- **Trạng thái:** Đã chấp nhận
+- **Trạng thái:** Đã chấp nhận — phần *"Kèm theo: thu hồi session nằm ngoài transaction"* thay thế
+  bởi [ADR-0022](0022-sua-quyen-vai-tro-khong-dang-xuat.md) đối với việc sửa ma trận quyền
 - **Ngày:** 2026-09-22
 - **Người quyết định:** Nhóm SEP490-G116
 - **Liên quan:** `SCRUM-60` (quản lý ma trận vai trò – quyền), `SCRUM-12` (thực thi quyền),

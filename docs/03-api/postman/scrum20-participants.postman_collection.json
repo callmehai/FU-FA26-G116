@@ -1,0 +1,588 @@
+{
+  "info": {
+    "name": "SCRUM-20 / SCRUM-97 Participants — PO 20/10/2026",
+    "description": "Chạy thủ công từng request trên DB thử riêng. Đổi token theo actor; GET context trước mutation để lưu ETag. Guest production chờ SCRUM-59. Không export token thật.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5225"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "meetingId",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "participantId",
+      "value": ""
+    },
+    {
+      "key": "guestInvitationId",
+      "value": ""
+    },
+    {
+      "key": "outgoingParticipantId",
+      "value": ""
+    },
+    {
+      "key": "incomingParticipantId",
+      "value": ""
+    },
+    {
+      "key": "etag",
+      "value": "\"participants-0\""
+    },
+    {
+      "key": "memberToken",
+      "value": ""
+    },
+    {
+      "key": "handoverEtag",
+      "value": ""
+    },
+    {
+      "key": "handoverRevision",
+      "value": ""
+    },
+    {
+      "key": "newChairParticipantId",
+      "value": ""
+    },
+    {
+      "key": "previousChairParticipantId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Chọn người trước tạo họp (token MeetingCreator)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/meetings/participant-options?q=&page=1&pageSize=20"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Lookup thành công\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Chỉ trả trường cần thiết\", () => { const body = pm.response.json(); body.items.forEach(x => pm.expect(Object.keys(x).sort()).to.eql([\"email\", \"fullName\", \"id\"])); pm.expect(body).not.to.have.property(\"revision\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tạo họp kèm Chair (token MeetingCreator)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"SCRUM20 manual\",\n  \"plannedStartTime\": \"2099-01-01T09:00:00+07:00\",\n  \"plannedEndTime\": \"2099-01-01T10:00:00+07:00\",\n  \"mode\": \"InPerson\",\n  \"location\": \"Phòng test\",\n  \"sensitivity\": \"Internal\",\n  \"description\": \"Test roster\",\n  \"participants\": [\n    {\n      \"userId\": \"{{userId}}\",\n      \"role\": \"Chair\"\n    }\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Chi tiết meeting / vai trò hiện tại",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}"
+      }
+    },
+    {
+      "name": "Context — lưu ETag trước mỗi mutation",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participant-context"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) pm.collectionVariables.set(\"etag\", pm.response.headers.get(\"ETag\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roster + responses + totals",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants?page=1&pageSize=20"
+      }
+    },
+    {
+      "name": "Options (manager)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/editor-options?page=1&pageSize=20"
+      }
+    },
+    {
+      "name": "Thêm internal",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userIds\": [\n    \"{{userId}}\"\n  ],\n  \"role\": \"Member\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Mời Guest",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/guest-invitations",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"invitedName\": \"Khách thử\",\n  \"email\": \"guest@example.test\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Đổi role",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/assignments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"changes\": [\n    {\n      \"participantId\": \"{{participantId}}\",\n      \"role\": \"Secretary\"\n    }\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Giao Chủ tọa — token Chair từ Published, hoặc Secretary khi Chair inactive",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/assignments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"changes\": [\n    {\n      \"participantId\": \"{{outgoingParticipantId}}\",\n      \"role\": \"Member\"\n    },\n    {\n      \"participantId\": \"{{incomingParticipantId}}\",\n      \"role\": \"Chair\"\n    }\n  ],\n  \"chairReplacement\": {\n    \"outgoingParticipantId\": \"{{outgoingParticipantId}}\",\n    \"incomingParticipantId\": \"{{incomingParticipantId}}\",\n    \"confirmed\": true\n  }\n}"
+        }
+      }
+    },
+    {
+      "name": "Own response",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/invitation-response"
+      }
+    },
+    {
+      "name": "Accept own invitation",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/invitation-response",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"response\": \"Accepted\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Decline own invitation",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/invitation-response",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"response\": \"Declined\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Gỡ internal",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/{{participantId}}"
+      }
+    },
+    {
+      "name": "Thu hồi Guest",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "If-Match",
+            "value": "{{etag}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/meetings/{{meetingId}}/guest-invitations/{{guestInvitationId}}"
+      }
+    },
+    {
+      "name": "UC-73 — smoke tuần tự",
+      "description": "Chỉ chạy folder này trên DB riêng: token=Chair, memberToken=Member đầu tiên được chọn. Dùng fixture có đúng một Member hợp lệ, revision ban đầu bất kỳ. Không export environment có token. Chạy thành công sẽ đổi Chair.",
+      "item": [
+        {
+          "name": "01 Candidates và ETag",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/chair-handover-candidates"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"GET 200\", () => pm.response.to.have.status(200));",
+                  "const b=pm.response.json(); pm.test(\"Có đúng một candidate và code null\",()=>{pm.expect(b.eligibleTotal).to.eql(1);pm.expect(b.items.length).to.eql(1);pm.expect(b.code).to.eql(null);});",
+                  "pm.test(\"Revision/cache headers\",()=>{pm.expect(typeof b.revision).to.eql(\"string\");pm.expect(pm.response.headers.get(\"ETag\")).to.eql(`\"participants-${b.revision}\"`);pm.expect(pm.response.headers.get(\"Cache-Control\")).to.include(\"no-store\");});",
+                  "pm.collectionVariables.set(\"newChairParticipantId\",b.items[0].participantId);pm.collectionVariables.set(\"handoverEtag\",pm.response.headers.get(\"ETag\"));pm.collectionVariables.set(\"handoverRevision\",b.revision);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 POST chuyển giao",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/chair-handover",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newChairParticipantId\": \"{{newChairParticipantId}}\",\n  \"confirmed\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{handoverEtag}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 MSG257\",()=>{pm.response.to.have.status(200);pm.expect(pm.response.json().code).to.eql(\"MSG257\");});",
+                  "pm.test(\"Revision tăng đúng một\",()=>{const b=pm.response.json();pm.expect(BigInt(b.revision)).to.eql(BigInt(pm.collectionVariables.get(\"handoverRevision\"))+1n);pm.expect(pm.response.headers.get(\"ETag\")).to.eql(`\"participants-${b.revision}\"`);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 Context Chair cũ",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participant-context"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Chair cũ còn là Member, mất quyền quản lý\",()=>{pm.response.to.have.status(200);const b=pm.response.json();pm.expect(b.myRole).to.eql(\"Member\");pm.expect(b.permissions.canManageParticipants).to.eql(false);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 Context Chair mới",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participant-context",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{memberToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Chair mới có quyền\",()=>{pm.response.to.have.status(200);const b=pm.response.json();pm.expect(b.myRole).to.eql(\"Chair\");pm.expect(b.permissions.canReplaceChair).to.eql(true);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 Retry Chair cũ bị chặn",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/chair-handover",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newChairParticipantId\": \"{{newChairParticipantId}}\",\n  \"confirmed\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{handoverEtag}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"409 MSG260 trước stale\",()=>{pm.response.to.have.status(409);pm.expect(pm.response.json().code).to.eql(\"MSG260\");});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 Candidates của Chair mới",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/chair-handover-candidates",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{memberToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"GET 200 có Chair cũ\",()=>{pm.response.to.have.status(200);pm.expect(pm.response.json().items.length).to.eql(1);});",
+                  "pm.collectionVariables.set(\"previousChairParticipantId\",pm.response.json().items[0].participantId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 Chair mới gửi ETag cũ",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/chair-handover",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{memberToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newChairParticipantId\": \"{{previousChairParticipantId}}\",\n  \"confirmed\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{handoverEtag}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"409 MSG275\",()=>{pm.response.to.have.status(409);pm.expect(pm.response.json().code).to.eql(\"MSG275\");});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 Search không khớp không dùng MSG258",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants/chair-handover-candidates?q=__no_candidate_matches__",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{memberToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 empty search, eligibleTotal còn 1\",()=>{pm.response.to.have.status(200);const b=pm.response.json();pm.expect(b.items).to.eql([]);pm.expect(b.eligibleTotal).to.eql(1);pm.expect(b.total).to.eql(0);pm.expect(b.code).to.eql(null);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 Chair mới vẫn giữ quyền sau stale",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participant-context",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{memberToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Không swap thêm sau retry/stale\",()=>{pm.response.to.have.status(200);const b=pm.response.json();pm.expect(b.myRole).to.eql(\"Chair\");pm.expect(BigInt(b.revision)).to.eql(BigInt(pm.collectionVariables.get(\"handoverRevision\"))+1n);});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

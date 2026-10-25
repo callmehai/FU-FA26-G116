@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using HttpJsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
@@ -11,6 +12,7 @@ namespace TrustCabinet.Web.Endpoints;
 /// <summary>HTTP boundary for meeting creation, updates, detail and authorized listing.</summary>
 public static class MeetingEndpoints
 {
+    private const string Msg277InvalidParticipants = "MSG277";
     private const int MaxMeetingRequestBodyBytes = 64 * 1024;
     private const string Msg29Created = "MSG29";
     private const string Msg30Updated = "MSG30";
@@ -387,7 +389,7 @@ public static class MeetingEndpoints
         => Results.Json(new MeetingErrorResponse(code, message, errors), statusCode: statusCode);
 
     private static async Task<IResult> CreateAsync(
-        [FromBody] MeetingRequest? request,
+        [FromBody] CreateMeetingRequest? request,
         ClaimsPrincipal principal,
         IMeetingService service,
         CancellationToken ct)
@@ -395,13 +397,14 @@ public static class MeetingEndpoints
         var result = await service.CreateAsync(
             request?.ToInput() ?? EmptyInput,
             CapabilityGate.GatedUserId(principal),
-            ct);
+            request?.Participants, ct);
 
         return result.Outcome switch
         {
             MeetingOutcome.Success => Results.Created(
                 $"/api/meetings/{result.Meeting!.Id}",
                 new MeetingMutationResponse(Msg29Created, "Tạo cuộc họp thành công.", MeetingResponse.From(result.Meeting))),
+            MeetingOutcome.InvalidParticipants => WorkflowError(400, Msg277InvalidParticipants, "Danh sách thành phần tham dự không hợp lệ.", result.Errors),
             MeetingOutcome.InvalidInformation => Invalid(result),
             _ => ServerError(Msg35CreateFailed, "Không thể tạo cuộc họp. Vui lòng thử lại."),
         };
@@ -505,10 +508,11 @@ public static class MeetingEndpoints
                 async token =>
                 {
                     bodyBuffer.Position = 0;
-                    var parsed = await JsonSerializer.DeserializeAsync<MeetingRequest>(
-                        bodyBuffer,
-                        jsonOptions.Value.SerializerOptions,
-                        token);
+                    using var document = await JsonDocument.ParseAsync(bodyBuffer, cancellationToken: token);
+                    if (document.RootElement.ValueKind == JsonValueKind.Object
+                        && document.RootElement.EnumerateObject().Any(p => p.Name.Equals("participants", StringComparison.OrdinalIgnoreCase)))
+                        throw new JsonException("Participants can only be supplied when creating a meeting.");
+                    var parsed = document.RootElement.Deserialize<MeetingRequest>(jsonOptions.Value.SerializerOptions);
                     return parsed?.ToInput() ?? EmptyInput;
                 },
                 actorId,
@@ -615,6 +619,14 @@ public static class MeetingEndpoints
 /// The only caller-editable meeting fields. State, identity, actual times and audit timestamps are
 /// server-owned. Times are ISO 8601 with an offset.
 /// </summary>
+public sealed record CreateMeetingRequest(
+    string? Title, string? PlannedStartTime, string? PlannedEndTime, string? Mode,
+    string? Location, string? OnlineLink, string? Sensitivity, string? Description,
+    ParticipantSeed[]? Participants)
+{
+    public MeetingInput ToInput() => new(Title, PlannedStartTime, PlannedEndTime, Mode, Location, OnlineLink, Sensitivity, Description);
+}
+
 public sealed record MeetingRequest(
     string? Title,
     string? PlannedStartTime,
@@ -645,7 +657,9 @@ public sealed record MeetingResponse(
     Guid CreatedById,
     Guid? AssignedApproverId,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt)
+    DateTimeOffset UpdatedAt,
+    MeetingPerson? Chair, IReadOnlyList<MeetingPerson> Secretaries, string? MyMeetingRole,
+    string? MyResponse, bool CanRespond)
 {
     public static MeetingResponse From(MeetingDetails meeting) => new(
         meeting.Id,
@@ -663,7 +677,8 @@ public sealed record MeetingResponse(
         meeting.CreatedById,
         meeting.AssignedApproverId,
         meeting.CreatedAt,
-        meeting.UpdatedAt);
+        meeting.UpdatedAt, meeting.Chair, meeting.Secretaries ?? [], meeting.MyMeetingRole,
+        meeting.MyResponse, meeting.CanRespond);
 }
 
 public sealed record MeetingMutationResponse(string Code, string Message, MeetingResponse Meeting);
@@ -677,11 +692,13 @@ public sealed record MeetingListItemResponse(
     string Location,
     DateTimeOffset CreatedAt,
     string Status,
-    string Sensitivity)
+    string Sensitivity,
+    string? MyResponse,
+    bool CanRespond)
 {
     public static MeetingListItemResponse From(MeetingListItem item) => new(
         item.Id, item.Title, item.PlannedStartTime, item.PlannedEndTime, item.Mode.ToString(), item.Location,
-        item.CreatedAt, item.Status.ToString(), item.Sensitivity.ToString());
+        item.CreatedAt, item.Status.ToString(), item.Sensitivity.ToString(), item.MyResponse, item.CanRespond);
 }
 
 public sealed record MeetingListResponse(

@@ -16,7 +16,8 @@ audit and calls. There is still **no authentication and no business endpoint** �
 nothing reads or writes them yet. Do not assume domain code exists somewhere — check or ask first.
 
 The model is documented in [docs/02-design/02-erd.md](docs/02-design/02-erd.md), which also lists
-what deliberately has no table (task tracking, voiceprints, organisations, org units). Read it before adding
+what deliberately has no table (task tracking, organisations, org units; voiceprints were excluded
+until they moved into scope — see "Watch out"). Read it before adding
 an entity.
 
 **Before working on any feature, read [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md)
@@ -26,9 +27,30 @@ Case moves from Jira to Done, what each role hands over, and what Done means. Ji
 
 **Frontend work** follows the project-specific skills in [.claude/skills/](.claude/skills/):
 [frontend-ui-design](.claude/skills/frontend-ui-design/SKILL.md) for how a screen is designed and
-built, and [verify-ui-in-browser](.claude/skills/verify-ui-in-browser/SKILL.md) for running the app
-and checking the change in a real browser before the PR. Claude Code loads them as skills; any other
-agent reads the two files directly. The third-party [evondev ui-ux skill](.agents/skills/ui-ux/SKILL.md)
+built, [verify-ui-in-browser](.claude/skills/verify-ui-in-browser/SKILL.md) for running the app
+and checking the change in a real browser before the PR,
+[check-responsive](.claude/skills/check-responsive/SKILL.md) for checking every change on a phone
+(390px, touch) as well as at 1200px and 1440px, and
+[minimize-text](.claude/skills/minimize-text/SKILL.md) for keeping each screen to the words people
+scan for, with the rest in tooltips, and [sloplint](.claude/skills/sloplint/SKILL.md)
+(phòng chống AI slop) for catching the generated look — gradients, glows, endless motion, KPI
+tiles, eyebrows, side stripes and the other tells catalogued from published research and the big
+design systems. Claude Code loads them as skills; any other agent reads the files directly.
+**Skill location:** the five project skills live in `.claude/skills/` (canonical — Claude Code loads
+them) and are mirrored verbatim into `.agents/skills/`, which other agents load from; edit the
+canonical copy and mirror it in the same change. `.agents/skills/` additionally holds the two
+third-party skills, drawio-skill and ui-ux, which exist nowhere else.
+
+**sloplint in this repo.** The skill is [sloplint](https://github.com/callmehai/sloplint) `v0.3.0`,
+vendored unchanged (see its `VENDORED.md`). Run its CLI as `npx -y github:callmehai/sloplint#v0.3.0
+<scan|diff|static>` from the repository root wherever the skill says `node <skill>/checker/cli.mjs`:
+the repo has no root `node_modules`, and `npx` brings Playwright with it. `.slop.json` declares the
+exceptions our ADRs mandate (sidebar gradient, uppercase column headings, sensitivity icons, the
+call room's Meet pills); pass `--setup .slop.login.mjs` so each page signs in as a seeded user, and
+add `#tab=<tab label>`, `#open=notifications` or `#click=<button name>` to a URL to measure a
+detail tab, the notification panel or a dialog. A list that opens filtered to one status repeats it on every row, so scan it
+with `?status=all`. Lucide icons, Be Vietnam Pro and the blue `--brand` are project choices, not
+tells. The third-party [evondev ui-ux skill](.agents/skills/ui-ux/SKILL.md)
 is available as additional guidance; project rules here and `frontend-ui-design` take precedence.
 **Diagram and architecture work** uses [drawio-skill](.agents/skills/drawio-skill/SKILL.md)
 for creating, editing, and validating `.drawio` models (such as the ERD), following
@@ -103,6 +125,11 @@ Two processes, two terminals:
 dotnet run --project backend/TrustCabinet.Web   # :5225 — API
 cd frontend && npm run dev                      # :5173 — UI with hot reload
 ```
+
+Uploading meeting documents also needs the SeaweedFS container that `docker compose up -d` starts and
+the `FileStorage:*` user-secrets ([03-co-so-du-lieu.md §5](docs/02-design/03-co-so-du-lieu.md#5-kho-tệp-tài-liệu));
+without them the app still runs and uploads answer `503/MSG166`. The test server stores the bytes on
+Cloudflare R2 ([ADR-0024](docs/05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)).
 
 Open **http://localhost:5173** (not 5225). Vite proxies `/api` and `/hubs` to the backend — see
 [frontend/vite.config.ts](frontend/vite.config.ts).
@@ -247,6 +274,10 @@ When a change affects the API contract, a technical decision or the scope, updat
   [frontend/src/pages/scopeData.ts](frontend/src/pages/scopeData.ts) (the landing page reads it).
 - New or changed endpoint → update [docs/03-api/](docs/03-api/).
 
+**Reports** live in the repo and are published outward: edit the DOCX in `docs/08-reports/source/`,
+regenerate the Markdown snapshot (`scripts/sync_reports.py`), and push to Drive only when asked
+(`scripts/push_reports.py`). Drive is never the source — nothing reads reports back from it.
+
 **BA settles the requirement docs last, not first.** BE writes the basic UC Specification and
 Sequence Diagram, then implements; BE and FE change whatever the Use Case needs and note each change
 as a comment in the Jira ticket; after FE integration the ticket moves to `BA Final Review` and BA
@@ -262,10 +293,18 @@ Details in [docs/DEVELOPMENT_WORKFLOW.md §2.1](docs/DEVELOPMENT_WORKFLOW.md#21-
 
 ## Watch out
 
-- Some features are deliberately out of scope (task/action-item tracking, voiceprint
-  identification, real HSM signing, air-gapped deployment, eOffice integration) — see the README.
-  Do not implement them unprompted. TrustCabinet stops at the approved minutes: it never tracks
-  assignees, due dates or completion state.
+- Some features are deliberately out of scope (task/action-item tracking, real HSM signing,
+  air-gapped deployment, eOffice integration) — see the README. Do not implement them unprompted.
+  TrustCabinet stops at the approved minutes: it never tracks assignees, due dates or completion
+  state.
+- **Voice identification (voiceprint) is now in scope**, reversing the earlier exclusion; ASR
+  (speech-to-text) comes first, speaker identification after it. The speech and minutes-drafting
+  models must run **locally**: no external API (security) and no company-hosted model (supervisor
+  guidance, 22/10/2026). Until the ADR for this lands, the old boundary is still in the code:
+  `SpeakerLabel` only, a test in `DatabaseModelTests` (`No_voiceprint_is_stored_anywhere`) that
+  blocks any voiceprint column, and the "no voiceprint" notes in `TranscriptSegment.cs`, the ERD and
+  the README. When implementing, write the ADR first, then update those places and that test in the
+  same change; a voiceprint is biometric data, so state consent, retention and deletion explicitly.
 - **One organisation, no org units.** There is no `organizations` table, no multi-tenancy, and no
   `org_units` — no department hierarchy, no unit on a user or a meeting, and no "invite the whole
   unit". Sign-in is email + password or Google; no separate IdP. Both are settled in
@@ -274,6 +313,11 @@ Details in [docs/DEVELOPMENT_WORKFLOW.md §2.1](docs/DEVELOPMENT_WORKFLOW.md#21-
 - Meeting recordings and voice identification are personal data under Vietnam's Decree
   13/2023/NĐ-CP. When touching this area, state the consent and deletion obligations explicitly
   rather than silently persisting the data.
+- **The test server enforces a Content-Security-Policy** (`deploy/Caddyfile`); local development has
+  none. Scripts, fonts, images, frames and connections may come only from our own origin, Google
+  Fonts and Google Sign-In. A new outside source (a CDN, an analytics or AI service called from the
+  browser) works locally and is blocked on the server until it is added there. Never add
+  `'unsafe-inline'` or `'unsafe-eval'` to `script-src`: that is what keeps an XSS from running.
 - `backend/TrustCabinet.Web/wwwroot/` is build output. Edits there are lost on the next build.
 - **Never commit a connection string, API key or credential.** `appsettings.json` is committed, so
   secrets do not go there. Use `dotnet user-secrets set "ConnectionStrings:TrustCabinet" "..."` locally

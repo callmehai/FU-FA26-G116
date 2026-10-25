@@ -136,7 +136,7 @@ BA documentation describes **business and system behaviour**, not implementation
 what happens and under which rules, not which C# class or React component does it.
 
 Diagrams and specs live in [docs/02-design/](02-design/); diagram sources and exported images both
-go in [docs/assets/](assets/).
+go in their numbered folder under `docs/` (06, 07, 09–14).
 
 ### 4.2 Backend (BE)
 

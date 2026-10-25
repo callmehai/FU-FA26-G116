@@ -26,6 +26,7 @@ public sealed partial class UserService(
     IAdministratorInvariantGuard administratorInvariant,
     IPasswordResetTokenStore passwordResetTokens,
     IPasswordResetEmailSender passwordResetEmail,
+    ICapabilitiesChangePublisher capabilitiesChanged,
     ILogger<UserService> logger) : IUserService
 {
     /// <summary>
@@ -224,24 +225,27 @@ public sealed partial class UserService(
 
         logger.LogInformation("Account {UserId} updated by {ActorId}.", user.Id, actorId);
 
-        // The <c>:Token Service</c> step again, which the UC-06b diagram does not draw. A role
-        // change alters what the account may do, and capabilities travel inside the access token —
-        // so until it expires the person keeps the rights they had. Dropping their refresh tokens
-        // ends the session instead of waiting for it to lapse.
+        // A role change keeps the session (SCRUM-105, PO 22/10/2026). Capabilities travel inside
+        // the access token, but every gated endpoint re-reads them from the database, so a lost
+        // capability is refused at the next request anyway; the person is told instead, and their
+        // browser refreshes the token and hides what they can no longer use.
         //
-        // Handed back rather than done here: Redis is a different system, and reaching it while
-        // holding the invariant lock would block every other administrative write for the length
-        // of a network round trip — and make a Redis outage roll back a legitimate edit. See
-        // GuardedWriteAsync.
+        // An email change still ends the session: the access token carries the email claim, and a
+        // link or session tied to a mistyped or compromised address has to go.
         //
-        // An email change is revoked too, not only a role change: the access token carries the
-        // email claim, so /api/auth/me would keep answering with the old address until it expired.
-        var changed = before.RoleId != user.RoleId
-            || !string.Equals(before.Email, user.Email, StringComparison.Ordinal);
+        // Handed back rather than done here: Redis and the hub are other systems, and reaching
+        // them while holding the invariant lock would block every other administrative write for
+        // a network round trip. See GuardedWriteAsync.
+        var emailChanged = !string.Equals(before.Email, user.Email, StringComparison.Ordinal);
+
+        // Told only when the session survives: with a new email too, "your access was updated"
+        // would be followed straight away by the sign-in page. An inactive account has no session.
+        var notify = before.RoleId != user.RoleId && !emailChanged && user.IsActive;
 
         return new Written(
             UserResult.Success(UserAccount.From(user)),
-            changed ? user.Id : null);
+            emailChanged ? user.Id : null,
+            notify ? user.Id : null);
     }
 
     public Task<UserResult> ChangeStatusAsync(
@@ -530,10 +534,12 @@ public sealed partial class UserService(
     }
 
     /// <summary>
-    /// What a guarded write produced: the answer for the caller, and whose session the change
-    /// invalidated — <c>null</c> when nothing needs revoking, including on every refused branch.
+    /// What a guarded write produced: the answer for the caller, whose session the change
+    /// invalidated, and whose capabilities it changed — <c>null</c> when there is nothing to do,
+    /// including on every refused branch.
     /// </summary>
-    private readonly record struct Written(UserResult Result, Guid? RevokeSessionsOf)
+    private readonly record struct Written(
+        UserResult Result, Guid? RevokeSessionsOf, Guid? NotifyCapabilitiesOf = null)
     {
         /// <summary>
         /// Lets a refusal be returned as-is. Every early return is a branch that wrote nothing,
@@ -544,8 +550,8 @@ public sealed partial class UserService(
     }
 
     /// <summary>
-    /// Runs a write under the shared administrator-invariant lock, then ends the affected sessions
-    /// once the transaction has committed.
+    /// Runs a write under the shared administrator-invariant lock, then — once the transaction has
+    /// committed — ends the affected sessions and tells an account whose role changed.
     ///
     /// Revoking afterwards rather than inside is deliberate. Redis is a separate system: reaching
     /// it while holding the lock would keep every other administrative write waiting for a network
@@ -584,9 +590,7 @@ public sealed partial class UserService(
             // An outstanding UC-07 reset link goes too, for every change that ends the sessions:
             //   - deactivation: otherwise reactivating within the hour brings the link back;
             //   - email change: otherwise a link sent to a mistyped or compromised address keeps
-            //     working after the address is corrected;
-            //   - role change: not needed for safety, but it rides on the same signal, and an
-            //     administrator who changed someone's access can send a fresh link in one click.
+            //     working after the address is corrected.
             // Separate from the revoke above, so a failure in either cannot skip the other.
             try
             {
@@ -599,6 +603,26 @@ public sealed partial class UserService(
                     "Account {UserId} was changed, but revoking its password reset link failed. "
                     + "The link expires on its own within the hour.",
                     userId);
+            }
+        }
+
+        if (written.NotifyCapabilitiesOf is { } changedUserId)
+        {
+            try
+            {
+                // Not the request's token: the change has committed, and an administrator closing
+                // the tab now must not cancel telling the person it affects.
+                await capabilitiesChanged.PublishAsync([changedUserId], CancellationToken.None);
+            }
+            catch (Exception exception)
+            {
+                // Logged, not rethrown: the edit is saved, and the server already enforces the new
+                // role. Only the early token refresh is lost.
+                logger.LogError(
+                    exception,
+                    "The role of account {UserId} changed, but telling the account failed. It picks "
+                    + "up the change at its next token refresh.",
+                    changedUserId);
             }
         }
 

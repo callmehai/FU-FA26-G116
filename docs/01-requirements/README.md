@@ -7,20 +7,25 @@ Nguồn chuẩn là ba báo cáo DOCX trên Google Drive (Report 1, 2, 3), đư�
 
 - Mọi chức năng, luồng nghiệp vụ và quy tắc kiểm thử bám theo các đặc tả tại đây.
 - Khi Report 3 thay đổi, sửa DOCX local trước, sinh snapshot bằng `scripts/sync_reports.py`, rồi đồng bộ lại thư mục này trong **cùng commit**. Quy tắc snapshot Report 1–7 nằm ở [08-reports/README.md](../08-reports/README.md).
+- Hai bản trích của Report 3 — [05-use-case-specifications.md](05-use-case-specifications.md) (§II) và
+  [06-business-rules.md](06-business-rules.md) (§V.1) — **không sửa tay**: sinh lại bằng
+  `python scripts/sync_requirement_extracts.py` (thêm `--check` để chỉ xem lệch). Script giữ nguyên những phần
+  Report 3 không có: ghi chú `_UC gom …_`, link `Sequence Diagram:`, dòng `Placeholder only` và mục BR đã ngừng dùng.
 
 ---
 
 ## 1. Cấu trúc tài liệu
 
 - [00-master-use-case-inventory.md](00-master-use-case-inventory.md) — Danh mục tổng thể: 15 Feature (FE-01 → FE-15),
-  72 Use Case (UC-01 → UC-72), actor, quan hệ `<<extend>>`/`<<include>>`, **bảng đổi số UC cũ → mới** sau đợt gom UC
-  ngày 10/10/2026.
-- [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case đồng bộ từ Report 3 §II (UC đã đặc tả
-  và UC placeholder), có link tới sequence diagram tương ứng. FE-11 đã có đặc tả UC-52a, UC-52b,
-  UC-53–UC-57 theo quyết định 14/10/2026; các sequence của FE-11 chưa được tạo trong đợt đặc tả này.
-- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1 (260 BR đang dùng trong
-  dải BR-01 → BR-312; danh sách BR ngừng dùng ở cuối file). FE-07/FE-11 đã đồng bộ ngày 15/10/2026,
-  gồm UC-33b/33d theo ADR-0020; các phần màn hình chờ cập nhật theo [note bàn giao](../notes/README.md).
+  77 Use Case (UC-01 → UC-77), actor, quan hệ `<<extend>>`/`<<include>>`, **bảng đổi số UC cũ → mới** sau đợt gom UC
+  ngày 10/10/2026. UC-73 → UC-77 thêm ngày 24/10/2026, nối tiếp dải số cũ.
+- [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case đồng bộ từ Report 3 §II (bản DOCX
+  24/10/2026): 116 heading UC, 73 bảng đặc tả, phần còn lại là placeholder, có link tới sequence diagram tương ứng.
+  UC-73 → UC-77 (Hand Over Chair, Confirm Document Read, Cancel Meeting, Manage Vote Documents, Record Agenda Item
+  Conclusion) đã có đặc tả nhưng **chưa có sequence diagram**.
+- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1: **269 BR đang dùng**
+  trong dải BR-01 → BR-321 (BR-313/BR-314 theo SCRUM-105, BR-320/BR-321 PO duyệt 20–21/10/2026; đợt BA Final Review
+  24/10/2026 sửa BR-30/105/106/115/126/172/176/215/295); danh sách BR ngừng dùng ở cuối file.
 - Mã thông báo `MSGnn`: [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md) là nguồn chuẩn duy nhất.
 
 Yêu cầu phi chức năng, phạm vi MoSCoW và dữ liệu cá nhân hiện nằm trong Report 1 và Report 3 §IV; chưa tách file riêng.

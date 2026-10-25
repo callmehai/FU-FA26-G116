@@ -1,5 +1,9 @@
 # Cơ sở dữ liệu — cài đặt và migration
 
+**Migration SCRUM-26:** `AddAttendanceVersions` thêm đúng hai cột `attendance_version bigint NOT NULL DEFAULT 0` trên `meeting_participants` và `meeting_guest_invitations`, giữ nguyên dữ liệu nghiệp vụ. Tách khỏi migration SCRUM-20; không chỉnh migration cũ. Down chỉ dùng cho database test dùng một lần vì xóa lịch sử version. Không tự áp dụng lên server chung. [Contract](../03-api/10-diem-danh.md#5-database-và-vận-hành).
+
+**Migration SCRUM-20:** `20261014114845_MeetingParticipantLifecycleAndGuestInvitations` có preflight dừng khi legacy Guest/delegation hoặc nhiều Chair; không tự xóa/mapping dữ liệu. Downgrade bị chặn nếu đã phát sinh Guest/grants/dispatch/removed history. Chuẩn bị backup và forward fix/mapping được review trước khi áp dụng lên database dùng chung; chi tiết [API §6](../03-api/09-thanh-phan-tham-du.md#6-migration). Test migration chạy trên database PostgreSQL riêng, không sửa schema thủ công của dự án.
+
 PostgreSQL + EF Core 10 (Npgsql), **code-first**: mô hình nằm trong code C#, schema sinh ra từ
 migration. Không sửa database bằng tay — sửa entity rồi tạo migration.
 
@@ -69,6 +73,53 @@ không cần nhớ lệnh nào sau khi `git pull` về một migration mới. Mu
 
 Ngoài Development thì **không bao giờ** tự migrate — triển khai thật chạy `dotnet ef database
 update` như một bước có người duyệt.
+
+### 4. Phòng họp trực tuyến (chỉ khi làm phần gọi)
+
+Phòng họp chạy trên LiveKit ([ADR-0010](../05-decisions/0010-phong-hop-truc-tuyen-dung-livekit-sfu.md)).
+Không làm phần này thì bỏ qua: backend vẫn chạy, các endpoint gọi trả `503`.
+
+```bash
+# 1. Đặt secret (ít nhất 32 ký tự) trong .env — xem .env.example
+echo "LIVEKIT_API_SECRET=$(openssl rand -hex 24)" >> .env
+
+# 2. Cho backend biết cùng secret đó
+dotnet user-secrets set "LiveKit:ApiSecret" "<giá trị vừa đặt>" --project backend/TrustCabinet.Web
+
+# 3. Chạy LiveKit (profile riêng, docker compose up -d thường không bật nó)
+docker compose --profile calls up -d livekit
+curl http://localhost:7880        # trả "OK"
+```
+
+Địa chỉ và tên key đã có sẵn trong `appsettings.Development.json`. Cuộc họp demo
+"Rà soát kế hoạch chuyển đổi số" đang `InProgress` và có sẵn ba thành phần tham dự (`chutoa@`,
+`thuky@`, `thanhvien@`) để thử phòng họp.
+
+Trên Linux, webhook từ container gọi về `host.docker.internal:5225` có thể không tới Kestrel đang
+bind `localhost`. Chạy backend với `--urls http://0.0.0.0:5225`, hoặc bỏ qua: job đối soát bù lại
+trong 30 giây.
+
+### 5. Kho tệp tài liệu
+
+Tài liệu cuộc họp lưu trên kho đối tượng có API S3: Cloudflare R2 ở server test, SeaweedFS ở máy dev
+([ADR-0024](../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)). Không làm phần tài liệu thì bỏ qua:
+backend vẫn chạy, tải tài liệu trả `503/MSG166`.
+
+`docker compose up -d` đã bật SeaweedFS ở `http://localhost:8333` (không xác thực). Tạo bucket một lần, rồi
+cho backend biết địa chỉ — bốn giá trị đều phải có, key bất kỳ vì SeaweedFS dev không kiểm:
+
+```bash
+# Tạo bucket trước. Đừng để SeaweedFS tự tạo ở lần ghi đầu: bucket đó ghi được nhưng đọc lại báo NoSuchBucket.
+curl -X PUT http://localhost:8333/trustcabinet-dev      # PowerShell: curl.exe -X PUT ...
+
+dotnet user-secrets set "FileStorage:ServiceUrl" "http://localhost:8333" --project backend/TrustCabinet.Web
+dotnet user-secrets set "FileStorage:BucketName" "trustcabinet-dev" --project backend/TrustCabinet.Web
+dotnet user-secrets set "FileStorage:AccessKeyId" "dev" --project backend/TrustCabinet.Web
+dotnet user-secrets set "FileStorage:SecretAccessKey" "dev" --project backend/TrustCabinet.Web
+```
+
+Muốn thử thẳng với R2 thì thay bằng endpoint, bucket và access key R2 (xem [deploy/README.md §9](../../deploy/README.md)).
+Test tự động không cần kho thật: chúng dùng bản giả trong bộ nhớ.
 
 ## Dữ liệu tham chiếu — bắt buộc phải seed
 

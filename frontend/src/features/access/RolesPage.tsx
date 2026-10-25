@@ -37,14 +37,9 @@ function groupColumns(columns: PermissionDescriptor[]) {
 
 /** SCRUM-60/63: edit the role-capability matrix and manage custom roles. */
 export function RolesPage() {
-  const { user: me, signOut, reloadSession } = useAuth()
+  const { user: me, reloadSession } = useAuth()
   const toast = useToast()
   const handleAccessLost = useAccessLost()
-
-  /** UC-03's MSG06 when the sign-out never reached the server, as the account menu shows it. */
-  async function signOutToApply() {
-    if (!(await signOut())) toast.show('Không thể đăng xuất. Vui lòng thử lại.', 'error')
-  }
 
   const [matrix, setMatrix] = useState<RolePermissionMatrix | null>(null)
   const [roles, setRoles] = useState<RoleRecord[] | null>(null)
@@ -52,7 +47,6 @@ export function RolesPage() {
   const [drafts, setDrafts] = useState<Record<string, Capability[]>>({})
   const [saving, setSaving] = useState<string | null>(null)
   const [rowErrors, setRowErrors] = useState<Record<string, RowError | undefined>>({})
-  const [ownRoleChanged, setOwnRoleChanged] = useState(false)
   const [activeTab, setActiveTab] = useState<'roles' | 'matrix'>('roles')
   const [formTarget, setFormTarget] = useState<RoleFormTarget | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<RoleRecord | null>(null)
@@ -143,7 +137,9 @@ export function RolesPage() {
         return rest
       })
       toast.show(response.message)
-      if (roleId === me?.roleId) setOwnRoleChanged(true)
+      // Own role: the session stays and the new set applies at once (SCRUM-105). The hub pushes the
+      // same signal, but this tab need not wait for it.
+      if (roleId === me?.roleId) void reloadSession()
     } catch (error) {
       if (handleAccessLost(error)) return
       const invalid = isApiError(error, 400, 'MSG17') ? error.body?.errors : undefined
@@ -199,28 +195,14 @@ export function RolesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Quản trị"
         title="Vai trò"
-        description="Mỗi vai trò là một nhóm quyền; gán vai trò cho tài khoản ở màn Người dùng & Quyền."
         action={
-          <button type="button" className="btn btn-primary btn-lg" onClick={() => setFormTarget({ mode: 'create' })}>
+          <button type="button" className="btn btn-primary btn-lg btn-cta" onClick={() => setFormTarget({ mode: 'create' })}>
             <Icon name="plus" size={18} />
             Tạo vai trò
           </button>
         }
       />
-
-      {ownRoleChanged && (
-        <div className="alert alert-warning page-alert" role="status">
-          <p>
-            Bạn vừa đổi quyền của chính vai trò mình đang mang. Phiên đăng nhập hiện tại vẫn giữ quyền cũ và sẽ
-            kết thúc ở lần gia hạn tiếp theo — hãy đăng nhập lại để áp dụng quyền mới.
-          </p>
-          <button type="button" className="btn btn-outline btn-sm" onClick={() => void signOutToApply()}>
-            Đăng nhập lại
-          </button>
-        </div>
-      )}
 
       <div className="tabs" role="tablist" aria-label="Vai trò">
         <button
@@ -248,6 +230,7 @@ export function RolesPage() {
         <div className="cell-empty">
           <p className="cell-error">{loadError}</p>
           <button type="button" className="btn btn-outline btn-sm" onClick={() => void load()}>
+            <Icon name="refresh" size={16} />
             Thử lại
           </button>
         </div>
@@ -273,7 +256,7 @@ export function RolesPage() {
                       {role.isBuiltIn && <Badge tone="outline">Mặc định</Badge>}{' '}
                       {role.id === me?.roleId && <Badge tone="blue">Vai trò của bạn</Badge>}
                     </td>
-                    <td className="cell-muted">{role.description ?? '—'}</td>
+                    <td className="cell-muted">{role.description ?? <em className="value-empty">Chưa có mô tả</em>}</td>
                     <td>{role.userCount}</td>
                     <td>
                       {!role.isBuiltIn && (
@@ -282,7 +265,7 @@ export function RolesPage() {
                             type="button"
                             className="icon-button"
                             onClick={() => setFormTarget({ mode: 'edit', role })}
-                            title="Sửa vai trò"
+                            data-tooltip="Sửa vai trò"
                             aria-label={`Sửa vai trò ${role.name}`}
                           >
                             <Icon name="pencil" size={16} />
@@ -291,7 +274,7 @@ export function RolesPage() {
                             type="button"
                             className="icon-button"
                             onClick={() => setDeleteTarget(role)}
-                            title="Xoá vai trò"
+                            data-tooltip="Xoá vai trò"
                             aria-label={`Xoá vai trò ${role.name}`}
                           >
                             <Icon name="trash" size={16} />
@@ -324,7 +307,7 @@ export function RolesPage() {
                   </tr>
                   <tr>
                     {columns.map((column) => (
-                      <th key={column.code} className={`matrix-cap${groupStart(column.code)}`} title={column.description}>
+                      <th key={column.code} className={`matrix-cap${groupStart(column.code)}`} data-tooltip={column.description}>
                         {column.name}
                       </th>
                     ))}
@@ -368,10 +351,12 @@ export function RolesPage() {
                         <td className="col-action">
                           {dirty && (
                             <span className="row-actions">
-                              <button type="button" className="btn btn-ghost btn-sm" onClick={() => discard(id)} disabled={saving !== null}>
+                              <button type="button" className="btn btn-outline btn-sm" onClick={() => discard(id)} disabled={saving !== null}>
+                                <Icon name="undo" size={16} />
                                 Hoàn tác
                               </button>
                               <button type="button" className="btn btn-primary btn-sm" onClick={() => void save(id)} disabled={saving !== null}>
+                                <Icon name="check" size={16} />
                                 {saving === id ? 'Đang lưu…' : 'Lưu'}
                               </button>
                             </span>

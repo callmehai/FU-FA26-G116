@@ -77,6 +77,7 @@ public sealed class AgendaHubTests(AgendaFixture fixture) : IClassFixture<Agenda
     [Theory]
     [InlineData("inactive")]
     [InlineData("removed")]
+    [InlineData("softRemoved")]
     [InlineData("delegated")]
     public async Task Stale_subscription_stops_receiving_after_loss_of_access(string reason)
     {
@@ -96,6 +97,13 @@ public sealed class AgendaHubTests(AgendaFixture fixture) : IClassFixture<Agenda
             {
                 var row = await db.MeetingParticipants.SingleAsync(p => p.MeetingId == s.MeetingId && p.UserId == s.Member);
                 if (reason == "removed") db.Remove(row);
+                else if (reason == "softRemoved")
+                {
+                    var root = $"/api/meetings/{s.MeetingId}";
+                    await Participants.ParticipantEndpointTests.Code(await Participants.ParticipantEndpointTests.Write(
+                        secretary, root + $"/participants/{row.Id}", HttpMethod.Delete,
+                        etag: await Participants.ParticipantEndpointTests.Tag(secretary, root)), 200, "MSG103");
+                }
                 else row.Response = Domain.Enums.InvitationResponse.Delegated;
             }
             await db.SaveChangesAsync();

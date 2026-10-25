@@ -7,6 +7,7 @@ import type { Meeting, MeetingApprover, MeetingTransitionResponse } from '../../
 import { readinessProblems } from './readiness'
 import type { WorkflowOutcome } from './workflowOutcome'
 import { workflowFailure } from './workflowOutcome'
+import { Icon } from '../../../components/Icon'
 
 /**
  * UC-18 Submit for approval: the organizer picks who reviews this cycle. The approver is chosen
@@ -89,10 +90,11 @@ export function SubmitForApprovalDialog({
       onClose={close}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" onClick={close} disabled={pending}>
+          <button type="button" className="btn btn-outline" onClick={close} disabled={pending}>
             Huỷ
           </button>
           <button type="button" className="btn btn-primary" onClick={submit} disabled={pending || noneEligible}>
+            <Icon name="send" size={16} />
             {pending ? 'Đang gửi…' : meeting.status === 'Rejected' ? 'Gửi duyệt lại' : 'Gửi duyệt'}
           </button>
         </>

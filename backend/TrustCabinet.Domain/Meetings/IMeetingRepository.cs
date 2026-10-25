@@ -34,9 +34,17 @@ public interface IMeetingRepository
 
     Task AddHistoryAsync(MeetingStatusHistory history, CancellationToken ct = default);
 
+    Task<IReadOnlyList<User>> LockParticipantUsersAsync(Guid[] userIds, CancellationToken ct = default);
+
     Task AddAsync(Meeting meeting, CancellationToken ct = default);
 
     Task SaveChangesAsync(CancellationToken ct = default);
+
+    Task StagePublicationInvitationsAsync(Meeting meeting, DateTimeOffset now, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, DateTimeOffset now, CancellationToken ct = default)
+        => Task.CompletedTask;
 
     Task<T> InTransactionAsync<T>(
         Func<CancellationToken, Task<T>> operation, CancellationToken ct = default);

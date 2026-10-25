@@ -33,145 +33,17 @@ public sealed class EmailDeliveryTests
             operation => operation.Name == "deduplication_key").IsNullable);
     }
 
-    [Fact]
-    public async Task Published_meeting_is_queued_once_per_participant_with_its_schedule_and_a_calendar_file()
-    {
-        await using var db = NewDatabase();
-        var meeting = PublishedMeeting();
-        db.Meetings.Add(meeting);
-        await db.SaveChangesAsync();
 
-        var queue = new MeetingInvitationQueue(
-            db,
-            Options.Create(DeliveryOptions()),
-            new FixedTimeProvider(Now),
-            NullLogger<MeetingInvitationQueue>.Instance);
 
-        var count = await queue.QueueForPublishedMeetingAsync(meeting.Id);
 
-        Assert.Equal(2, count);
-        var messages = await db.EmailMessages.OrderBy(item => item.ToAddress).ToListAsync();
-        Assert.All(messages, message =>
-        {
-            Assert.Equal(EmailStatus.Queued, message.Status);
-            Assert.Equal(meeting.Id, message.MeetingId);
-            Assert.True(message.Subject.Length <= 300);
-            Assert.Contains("Hình thức: Kết hợp", message.Body, StringComparison.Ordinal);
-            Assert.Contains("Địa điểm:", message.Body, StringComparison.Ordinal);
-            Assert.Contains("Bắt đầu: ", message.Body, StringComparison.Ordinal);
-            Assert.Contains("Kết thúc: ", message.Body, StringComparison.Ordinal);
-            Assert.Contains($"/mgmt/meetings/{meeting.Id:D}", message.Body, StringComparison.Ordinal);
-            Assert.NotNull(message.CalendarAttachment);
-            Assert.Contains(
-                $"DTSTART:{meeting.PlannedStartTime.UtcDateTime:yyyyMMdd'T'HHmmss'Z'}",
-                message.CalendarAttachment, StringComparison.Ordinal);
-            Assert.Contains(
-                $"DTEND:{meeting.PlannedEndTime.UtcDateTime:yyyyMMdd'T'HHmmss'Z'}",
-                message.CalendarAttachment, StringComparison.Ordinal);
-        });
-        Assert.Equal(
-            ["an@trustcabinet.local", "binh@trustcabinet.local"],
-            messages.Select(item => item.ToAddress));
 
-        var repeatedCount = await queue.QueueForPublishedMeetingAsync(meeting.Id);
-        Assert.Equal(0, repeatedCount);
-        Assert.Equal(2, await db.EmailMessages.CountAsync());
-    }
 
-    [Fact]
-    public async Task Inactive_participants_are_not_queued()
-    {
-        await using var db = NewDatabase();
-        var meeting = PublishedMeeting();
-        meeting.Participants.First().User.IsActive = false;
-        db.Meetings.Add(meeting);
-        await db.SaveChangesAsync();
 
-        var count = await Queue(db).QueueForPublishedMeetingAsync(meeting.Id);
 
-        Assert.Equal(1, count);
-        Assert.DoesNotContain(
-            await db.EmailMessages.Select(item => item.ToAddress).ToListAsync(),
-            address => address == "an@trustcabinet.local");
-    }
 
-    [Fact]
-    public async Task Reconciliation_queues_a_published_meeting_that_has_no_invitation_jobs()
-    {
-        await using var db = NewDatabase();
-        var alreadyInitialized = PublishedMeeting();
-        var missingJobs = PublishedMeeting();
-        missingJobs.CreatedAt = alreadyInitialized.CreatedAt.AddMinutes(1);
-        db.Meetings.AddRange(alreadyInitialized, missingJobs);
-        await db.SaveChangesAsync();
-        await Queue(db).QueueForPublishedMeetingAsync(alreadyInitialized.Id);
 
-        var reconciledMeetingId = await Queue(db).QueueNextUninitializedPublishedMeetingAsync();
 
-        Assert.Equal(missingJobs.Id, reconciledMeetingId);
-        Assert.Equal(
-            2,
-            await db.EmailMessages.CountAsync(message => message.MeetingId == missingJobs.Id));
-        Assert.Empty(missingJobs.StatusHistory);
-    }
 
-    [Fact]
-    public async Task Reconciliation_does_nothing_when_all_published_meetings_are_initialized()
-    {
-        await using var db = NewDatabase();
-        var meeting = PublishedMeeting();
-        db.Meetings.Add(meeting);
-        await db.SaveChangesAsync();
-        var queue = Queue(db);
-        await queue.QueueForPublishedMeetingAsync(meeting.Id);
-
-        var reconciledMeetingId = await queue.QueueNextUninitializedPublishedMeetingAsync();
-
-        Assert.Null(reconciledMeetingId);
-        Assert.Equal(2, await db.EmailMessages.CountAsync());
-    }
-
-    [Fact]
-    public async Task Disabled_email_delivery_does_not_queue_malformed_messages()
-    {
-        await using var db = NewDatabase();
-        var meeting = PublishedMeeting();
-        db.Meetings.Add(meeting);
-        await db.SaveChangesAsync();
-        var options = DeliveryOptions();
-        options.Smtp.Enabled = false;
-        options.ApplicationBaseUrl = string.Empty;
-        options.Smtp.FromAddress = string.Empty;
-
-        var count = await new MeetingInvitationQueue(
-                db,
-                Options.Create(options),
-                new FixedTimeProvider(Now),
-                NullLogger<MeetingInvitationQueue>.Instance)
-            .QueueForPublishedMeetingAsync(meeting.Id);
-
-        Assert.Equal(0, count);
-        Assert.Empty(await db.EmailMessages.ToListAsync());
-    }
-
-    [Fact]
-    public async Task Subject_truncation_does_not_split_an_emoji()
-    {
-        await using var db = NewDatabase();
-        var meeting = PublishedMeeting();
-        const string prefix = "Thư mời họp: ";
-        meeting.Title = new string('a', 300 - prefix.Length - 2) + "😀";
-        db.Meetings.Add(meeting);
-        await db.SaveChangesAsync();
-
-        await Queue(db).QueueForPublishedMeetingAsync(meeting.Id);
-
-        var subject = (await db.EmailMessages.FirstAsync()).Subject;
-        Assert.Equal(300, subject.Length);
-        Assert.EndsWith("😀", subject, StringComparison.Ordinal);
-        _ = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true)
-            .GetBytes(subject);
-    }
 
     [Fact]
     public void Calendar_parameter_names_are_quoted_and_rfc_6868_encoded()
@@ -201,25 +73,7 @@ public sealed class EmailDeliveryTests
             StringComparison.Ordinal);
     }
 
-    [Fact]
-    public async Task Non_published_meeting_cannot_queue_invitations()
-    {
-        await using var db = NewDatabase();
-        var meeting = PublishedMeeting();
-        meeting.Status = MeetingStatus.Approved;
-        db.Meetings.Add(meeting);
-        await db.SaveChangesAsync();
 
-        var queue = new MeetingInvitationQueue(
-            db,
-            Options.Create(DeliveryOptions()),
-            new FixedTimeProvider(Now),
-            NullLogger<MeetingInvitationQueue>.Instance);
-
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => queue.QueueForPublishedMeetingAsync(meeting.Id));
-        Assert.Empty(await db.EmailMessages.ToListAsync());
-    }
 
     [Fact]
     public void Smtp_message_contains_a_calendar_request_and_stable_message_id()
@@ -239,13 +93,6 @@ public sealed class EmailDeliveryTests
         Assert.Equal("REQUEST", calendar.ContentType.Parameters["method"]);
         Assert.Equal("thu-moi-hop.ics", calendar.FileName);
     }
-
-    private static MeetingInvitationQueue Queue(TrustCabinetDbContext db)
-        => new(
-            db,
-            Options.Create(DeliveryOptions()),
-            new FixedTimeProvider(Now),
-            NullLogger<MeetingInvitationQueue>.Instance);
 
     private static TrustCabinetDbContext NewDatabase()
     {

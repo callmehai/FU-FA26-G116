@@ -3,22 +3,16 @@ using TrustCabinet.Domain.Entities.Common;
 namespace TrustCabinet.Domain.Entities;
 
 /// <summary>
-/// A remark left on a document before the meeting, so the sitting does not have to be spent
-/// reading (SCRUM-23). Threaded: a reply points at its parent.
+/// A remark left on a meeting document, so the sitting does not have to be spent reading
+/// (SCRUM-23). It belongs to the meeting's copy, not the library row, so it stays in that
+/// meeting's context. Replies are one level deep (BR-317).
 /// </summary>
 public class DocumentComment : Entity
 {
-    public Guid DocumentId { get; set; }
-    public Document Document { get; set; } = null!;
+    public Guid MeetingDocumentId { get; set; }
+    public MeetingDocument MeetingDocument { get; set; } = null!;
 
-    /// <summary>
-    /// The version the comment was written against. A later upload does not move the comment,
-    /// because the sentence it refers to may no longer be there.
-    /// </summary>
-    public Guid? DocumentVersionId { get; set; }
-    public DocumentVersion? DocumentVersion { get; set; }
-
-    /// <summary>1-based page the comment refers to, when the viewer could pin it to one.</summary>
+    /// <summary>1-based page the comment refers to; PDF only, since DOCX has no pages in the viewer.</summary>
     public int? PageNumber { get; set; }
 
     /// <summary>Null for a top-level comment.</summary>
@@ -26,8 +20,13 @@ public class DocumentComment : Entity
     public DocumentComment? ParentComment { get; set; }
     public ICollection<DocumentComment> Replies { get; set; } = [];
 
-    public Guid AuthorId { get; set; }
-    public User Author { get; set; } = null!;
+    /// <summary>Exactly one of <see cref="AuthorId"/> and <see cref="GuestInvitationId"/> is set.</summary>
+    public Guid? AuthorId { get; set; }
+    public User? Author { get; set; }
+
+    /// <summary>Set when a Guest wrote the comment (ADR-0016).</summary>
+    public Guid? GuestInvitationId { get; set; }
+    public MeetingGuestInvitation? GuestInvitation { get; set; }
 
     public required string Body { get; set; }
 

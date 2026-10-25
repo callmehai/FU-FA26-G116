@@ -16,7 +16,7 @@ namespace TrustCabinet.Web.Tests.Authentication;
 /// </summary>
 public class RedisRefreshTokenStoreTests : IAsyncLifetime
 {
-    private const string ConnectionString = "localhost:6379";
+    private static string ConnectionString => Environment.GetEnvironmentVariable("TRUSTCABINET_TEST_REDIS") ?? "localhost:6379";
 
     private IConnectionMultiplexer? _redis;
 
@@ -49,7 +49,7 @@ public class RedisRefreshTokenStoreTests : IAsyncLifetime
         catch (RedisConnectionException e)
         {
             throw new InvalidOperationException(
-                $"These tests need a Redis at {ConnectionString}. Start one with "
+                "These tests need Redis (TRUSTCABINET_TEST_REDIS, default localhost:6379). Start one with "
                 + "`docker compose up -d redis`.", e);
         }
     }

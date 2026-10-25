@@ -1,0 +1,69 @@
+title UC-32a - View Meeting Documents
+
+actor "Authorized User" as User
+boundary "Meeting Documents Tab / Room Documents Panel" as DocumentsTab
+control ":Meeting Document Controller" as DocumentController
+control ":Meeting Document Service" as DocumentService
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Meeting Document Repository" as MeetingDocumentRepository
+database ":Database" as Database
+
+User->DocumentsTab: Open Meeting documents
+activate DocumentsTab
+
+DocumentsTab->DocumentController: View Meeting documents
+activate DocumentController
+
+DocumentController->DocumentService: getMeetingDocuments(meetingId, actor, fromRoom)
+activate DocumentService
+
+DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting,\nincluding a valid Guest invitation (BR-181, BR-200, BR-275)
+activate MeetingAccessPolicy
+MeetingAccessPolicy->Database: Check current Meeting relationship or valid Guest invitation
+activate Database
+Database-->MeetingAccessPolicy: Access / No access
+deactivate Database
+MeetingAccessPolicy-->DocumentService: Access / No access
+deactivate MeetingAccessPolicy
+
+alt Meeting documents are not accessible - EX-1
+    DocumentService-->DocumentController: MSG156 - Meeting documents are not accessible.
+    DocumentController-->DocumentsTab: MSG156 - Meeting documents are not accessible.
+    DocumentsTab-->User: MSG156 - Meeting documents are not accessible.
+
+else Actor can view the Meeting
+    DocumentService->MeetingDocumentRepository: Get current Meeting documents with Agenda Item links,\nVote links, adder and comment count (BR-211, BR-277)
+    activate MeetingDocumentRepository
+    MeetingDocumentRepository->Database: Retrieve documents not removed from the Meeting
+    activate Database
+    Database-->MeetingDocumentRepository: Meeting documents / Load failed
+    deactivate Database
+    MeetingDocumentRepository-->DocumentService: Meeting documents / Load failed
+    deactivate MeetingDocumentRepository
+
+    alt Document list cannot be loaded - EX-2
+        DocumentService-->DocumentController: MSG157 - Unable to load the document list. Please try again.
+        DocumentController-->DocumentsTab: MSG157 - Unable to load the document list. Please try again.
+        DocumentsTab-->User: MSG157 - Unable to load the document list. Please try again.
+
+    else Documents loaded
+        DocumentService->DocumentService: Group by Agenda Item in agenda order, by Vote,\nand documents with no Item link as general (BR-277, BR-280)
+
+        opt Opened from the online meeting room - AF-3
+            DocumentService->DocumentService: Put documents of the current Agenda Item first;\noffer reading only (BR-316)
+        end
+
+        DocumentService-->DocumentController: Grouped Meeting documents,\nread-only after the Meeting ends (BR-282)
+        DocumentController-->DocumentsTab: Grouped Meeting documents
+
+        alt No documents in the current grouping - AF-2
+            DocumentsTab-->User: Show that no documents are available for the current grouping
+        else Documents available
+            DocumentsTab-->User: Show documents grouped by Agenda Item, Vote or general
+        end
+    end
+end
+
+deactivate DocumentService
+deactivate DocumentController
+deactivate DocumentsTab

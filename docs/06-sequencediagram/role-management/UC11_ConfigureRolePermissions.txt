@@ -38,6 +38,7 @@ else Valid permission configuration
         AuditService->Database: Save audit log
         Database-->AuditService: Audit log saved
         AuditService-->RoleService: Audit recorded
+        RoleService->RoleService: Notify users currently holding the role so their sessions\napply the updated permissions without signing in again (BR-313)
         RoleService-->RoleController: Role permissions updated successfully
         RoleController-->RolePage: MSG16 - Role permissions updated successfully
         RolePage-->Admin: Show success message

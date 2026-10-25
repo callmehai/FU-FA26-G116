@@ -5,6 +5,7 @@ import * as notificationsApi from '../../api/notifications'
 import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
 import type { AppNotification, NotificationPush } from '../../types/notification'
+import { useAuth } from '../auth/useAuth'
 import { NotificationsContext, type NotificationFeed, type NotificationsApi } from './notificationsContext'
 
 const PAGE_SIZE = 20
@@ -33,6 +34,7 @@ const EMPTY_FEED: NotificationFeed = {
  */
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const toast = useToast()
+  const { reloadSession } = useAuth()
   const [unreadCount, setUnreadCount] = useState<number | null>(null)
   const [feed, setFeed] = useState<NotificationFeed>(EMPTY_FEED)
   const [arrivals, setArrivals] = useState(0)
@@ -169,19 +171,35 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     [toast],
   )
 
-  /** After a gap in the connection: re-read the count, and the list if it was on screen. */
+  /**
+   * After a gap in the connection: re-read the count, and the list if it was on screen — and the
+   * session, in case a `capabilitiesChanged` was pushed meanwhile.
+   */
   const resync = useCallback(() => {
     void refreshCount()
     if (feedRef.current.loaded) void loadFirstPage()
-  }, [refreshCount, loadFirstPage])
+    void reloadSession()
+  }, [refreshCount, loadFirstPage, reloadSession])
+
+  /**
+   * SCRUM-105: an administrator changed this account's role, or the capabilities of its role.
+   * Re-reading the session refreshes the token, so the menus and buttons follow the new set at
+   * once and the session stays. MSG287 (FE) tells the user why something just appeared or went.
+   */
+  const capabilitiesChanged = useCallback(() => {
+    toast.show('Quyền truy cập của bạn vừa được cập nhật.', 'info')
+    void reloadSession()
+  }, [toast, reloadSession])
 
   // The connection outlives renders; its handlers reach the latest callbacks through refs.
   const receiveRef = useRef(receive)
   const resyncRef = useRef(resync)
+  const capabilitiesChangedRef = useRef(capabilitiesChanged)
   useEffect(() => {
     receiveRef.current = receive
     resyncRef.current = resync
-  }, [receive, resync])
+    capabilitiesChangedRef.current = capabilitiesChanged
+  }, [receive, resync, capabilitiesChanged])
 
   useEffect(() => {
     const connection = createHubConnection('/hubs/notifications')
@@ -190,6 +208,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     let retryTimer: number | undefined
 
     connection.on('notificationReceived', (push: NotificationPush) => receiveRef.current(push))
+    connection.on('capabilitiesChanged', () => capabilitiesChangedRef.current())
     // The built-in reconnect recovered a dropped connection; what was pushed meanwhile is lost.
     connection.onreconnected(() => resyncRef.current())
     // Closed for good: the server ended a connection whose token expired, or reconnecting failed.

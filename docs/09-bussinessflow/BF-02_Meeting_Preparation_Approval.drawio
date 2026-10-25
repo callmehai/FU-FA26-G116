@@ -10,7 +10,7 @@
         <mxCell id="start" parent="org" style="ellipse;html=1;fillColor=#000000;strokeColor=#000000;fontColor=#000000;fontSize=12;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;spacingRight=8;" value="Start" vertex="1">
           <mxGeometry height="30" width="30" x="105" y="65" as="geometry" />
         </mxCell>
-        <mxCell id="o1" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Create Meeting (title, schedule, mode, location, sensitivity)" vertex="1">
+        <mxCell id="o1" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Create Meeting (title, schedule, mode, location, sensitivity, participants)" vertex="1">
           <mxGeometry height="50" width="170" x="35" y="145" as="geometry" />
         </mxCell>
         <mxCell id="o2" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Assign First Secretary" vertex="1">
@@ -31,7 +31,7 @@
         <mxCell id="o7" parent="org" style="rhombus;spacingLeft=16;spacingRight=16;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=11;" value="Edit Meeting Needed?" vertex="1">
           <mxGeometry height="76" width="160" x="40" y="1572" as="geometry" />
         </mxCell>
-        <mxCell id="o8" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Edit Meeting (time, location, link, participants, permissions)" vertex="1">
+        <mxCell id="o8" parent="org" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Reschedule Meeting (time, location, link)" vertex="1">
           <mxGeometry height="50" width="170" x="35" y="1675" as="geometry" />
         </mxCell>
         <mxCell id="end" parent="org" style="ellipse;shape=endState;html=1;fillColor=#000000;strokeColor=#000000;fontColor=#000000;fontSize=12;labelPosition=left;verticalLabelPosition=middle;align=right;verticalAlign=middle;spacingRight=8;" value="End" vertex="1">
@@ -76,7 +76,7 @@
         <mxCell id="t6" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Set Meeting to Published &amp; Create Invitations" vertex="1">
           <mxGeometry height="50" width="170" x="235" y="1315" as="geometry" />
         </mxCell>
-        <mxCell id="t7" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Save Invitation Response" vertex="1">
+        <mxCell id="t7" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Save Invitation Response (once)" vertex="1">
           <mxGeometry height="50" width="170" x="235" y="1495" as="geometry" />
         </mxCell>
         <mxCell id="t8" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Save New Schedule &amp; Notify Invitees" vertex="1">
@@ -97,7 +97,7 @@
         <mxCell id="p1" parent="par" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Open Invitation (Guest verifies email)" vertex="1">
           <mxGeometry height="50" width="170" x="65" y="1405" as="geometry" />
         </mxCell>
-        <mxCell id="p2" parent="par" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Accept / Decline Invitation" vertex="1">
+        <mxCell id="p2" parent="par" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Accept / Decline Invitation (once)" vertex="1">
           <mxGeometry height="50" width="170" x="65" y="1495" as="geometry" />
         </mxCell>
         <mxCell id="eml" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Email Service" vertex="1">

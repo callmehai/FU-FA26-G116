@@ -135,8 +135,8 @@ Khi lớp nghiệp vụ lớn dần, dự kiến tách thêm `backend/TrustCabin
 | Backend | ASP.NET Core 10 (Minimal API) | đã có |
 | Frontend | React 19 + Vite + TypeScript | đã có |
 | Định tuyến FE | React Router | đã có |
-| Realtime | SignalR | tín hiệu gọi, biểu quyết, thông báo — chưa làm |
-| Thoại/video | WebRTC | chưa làm |
+| Realtime | SignalR | thông báo đã có; biểu quyết — chưa làm |
+| Thoại/video | WebRTC qua LiveKit (SFU, tự host) | phòng họp — [ADR-0010](docs/05-decisions/0010-phong-hop-truc-tuyen-dung-livekit-sfu.md) |
 | Cơ sở dữ liệu | PostgreSQL 17 + EF Core 10 (Npgsql), code-first | 28 bảng — xem [02-erd.md](docs/02-design/02-erd.md) và [ADR-0003](docs/05-decisions/0003-chon-postgresql-thay-cho-sql-server.md) |
 
 ## Phạm vi chức năng dự kiến

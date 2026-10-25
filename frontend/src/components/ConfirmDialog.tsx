@@ -61,7 +61,7 @@ export function ConfirmDialog({
       onClose={close}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" onClick={close} disabled={pending}>
+          <button type="button" className="btn btn-outline" onClick={close} disabled={pending}>
             {cancelLabel}
           </button>
           <button

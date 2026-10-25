@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Infrastructure.Meetings;
 
@@ -11,7 +12,7 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
 {
     public Task<Meeting?> FindAccessibleAsync(
         Guid id, Guid actorId, CancellationToken ct = default)
-        => AccessibleTo(actorId).SingleOrDefaultAsync(m => m.Id == id, ct);
+        => AccessibleTo(actorId).Include(m => m.Participants).ThenInclude(p => p.User).SingleOrDefaultAsync(m => m.Id == id, ct);
 
     public async Task<MeetingListPage> FindAuthorizedPageAsync(
         Guid actorId, MeetingListQuery query, CancellationToken ct = default)
@@ -36,6 +37,21 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
         if (query.To is { } to)
         {
             meetings = meetings.Where(m => m.PlannedStartTime <= to);
+        }
+
+        if (query.Timing is { } timing)
+        {
+            var now = query.Now ?? DateTimeOffset.UtcNow;
+            meetings = timing == MeetingTiming.Upcoming
+                ? meetings.Where(m => m.PlannedStartTime > now)
+                : meetings.Where(m => m.PlannedStartTime <= now);
+        }
+
+        if (query.ExcludeDeclined)
+        {
+            // The Chair is never asked, so an answer left from before they took the chair does not hide the meeting.
+            meetings = meetings.Where(m => !m.Participants.AsQueryable().Where(ParticipantRules.CurrentExpression)
+                .Any(p => p.UserId == actorId && p.Role != MeetingRole.Chair && p.Response == InvitationResponse.Declined));
         }
 
         if (query.Query is { Length: > 0 } search)
@@ -63,14 +79,28 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             _ => meetings.OrderByDescending(m => m.PlannedStartTime),
         };
 
-        var items = await ordered
+        var rows = await ordered
             .ThenBy(m => m.Id)
             .Skip(checked((int)offset))
             .Take(query.PageSize)
-            .Select(m => new MeetingListItem(
-                m.Id, m.Title, m.PlannedStartTime, m.PlannedEndTime, m.Mode, m.Location,
-                m.CreatedAt, m.Status, m.Sensitivity))
+            .Select(m => new
+            {
+                Item = new MeetingListItem(
+                    m.Id, m.Title, m.PlannedStartTime, m.PlannedEndTime, m.Mode, m.Location,
+                    m.CreatedAt, m.Status, m.Sensitivity, null, false),
+                Mine = m.Participants.AsQueryable().Where(ParticipantRules.ActiveExpression)
+                    .Where(p => p.UserId == actorId)
+                    .Select(p => new { p.Role, p.Response })
+                    .FirstOrDefault(),
+            })
             .ToListAsync(ct);
+
+        // The caller's own invitation, so the calendar can ask "Xác nhận tham dự?" without a request per meeting.
+        var items = rows.Select(row => row.Mine is null ? row.Item : row.Item with
+        {
+            MyResponse = MeetingDetails.MyResponseOf(row.Mine.Role, row.Mine.Response),
+            CanRespond = ParticipantRules.CanRespond(row.Item.Status, row.Mine.Role, row.Mine.Response),
+        }).ToList();
 
         return new MeetingListPage(items, query.Page, query.PageSize, totalCount);
     }
@@ -139,6 +169,9 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             {
                 return null;
             }
+            // Publication readiness must not race account deactivation after the meeting lock.
+            await db.Users.FromSqlInterpolated($"SELECT * FROM users WHERE id IN (SELECT user_id FROM meeting_participants WHERE meeting_id = {id}) ORDER BY id FOR SHARE")
+                .AsNoTracking().ToArrayAsync(ct);
         }
 
         IQueryable<Meeting> query = db.Meetings
@@ -225,6 +258,10 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
         return Task.CompletedTask;
     }
 
+    public async Task<IReadOnlyList<User>> LockParticipantUsersAsync(Guid[] userIds, CancellationToken ct = default)
+        => await db.Users.FromSqlInterpolated($"SELECT * FROM users WHERE id = ANY({userIds.Order().ToArray()}) ORDER BY id FOR SHARE")
+            .ToArrayAsync(ct);
+
     public Task AddAsync(Meeting meeting, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
@@ -233,6 +270,20 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
     }
 
     public Task SaveChangesAsync(CancellationToken ct = default) => db.SaveChangesAsync(ct);
+
+    public async Task StagePublicationInvitationsAsync(Meeting meeting, DateTimeOffset now, CancellationToken ct = default)
+    {
+        foreach (var participant in MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants))
+            Email.MeetingInvitationEvents.Stage(db, meeting, participant, null, InvitationEventKind.Invitation, now, notify: false);
+        foreach (var guest in await db.MeetingGuestInvitations.Where(g => g.MeetingId == meeting.Id && g.RevokedAt == null).ToArrayAsync(ct))
+            Email.MeetingInvitationEvents.Stage(db, meeting, null, guest, InvitationEventKind.Invitation, now, notify: false);
+    }
+
+    public async Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, DateTimeOffset now, CancellationToken ct = default)
+    {
+        foreach (var guest in await db.MeetingGuestInvitations.Where(g => g.MeetingId == meeting.Id && g.RevokedAt == null).ToArrayAsync(ct))
+            Email.MeetingInvitationEvents.Stage(db, meeting, null, guest, InvitationEventKind.Rescheduled, now, notify: false, historyId);
+    }
 
     public async Task<T> InTransactionAsync<T>(
         Func<CancellationToken, Task<T>> operation, CancellationToken ct = default)

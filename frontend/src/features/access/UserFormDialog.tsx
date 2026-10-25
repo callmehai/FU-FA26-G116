@@ -169,8 +169,7 @@ export function UserFormDialog({
     if (!pending) onClose()
   }
 
-  const roleChanged = original !== null && roleId !== original.roleId
-  // The backend ends the account's sessions on either change (UserService.UpdateAsync).
+  // The backend ends the account's sessions on an email change (UserService.UpdateAsync).
   const emailChanged = original !== null && email.trim() !== original.email
   const isSelf = editing !== null && editing === currentUserId
   const formId = 'user-form'
@@ -192,7 +191,7 @@ export function UserFormDialog({
       onClose={close}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" onClick={close} disabled={pending}>
+          <button type="button" className="btn btn-outline" onClick={close} disabled={pending}>
             Huỷ
           </button>
           <button
@@ -201,6 +200,7 @@ export function UserFormDialog({
             className="btn btn-primary"
             disabled={pending || (editing !== null && original === null)}
           >
+            <Icon name={editing ? 'check' : 'userPlus'} size={16} />
             {pending ? 'Đang lưu…' : editing ? 'Lưu thay đổi' : 'Tạo tài khoản'}
           </button>
         </>
@@ -215,6 +215,7 @@ export function UserFormDialog({
               className="btn btn-outline btn-sm"
               onClick={retryLoad}
             >
+              <Icon name="refresh" size={16} />
               Thử lại
             </button>
           </div>
@@ -280,7 +281,7 @@ export function UserFormDialog({
                   type="button"
                   className="icon-button"
                   onClick={() => setShowPassword((v) => !v)}
-                  title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                  data-tooltip={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                   aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 >
                   <Icon name={showPassword ? 'eyeOff' : 'eye'} size={16} />
@@ -290,7 +291,7 @@ export function UserFormDialog({
                   className="icon-button"
                   onClick={copyPassword}
                   disabled={!password}
-                  title="Sao chép mật khẩu"
+                  data-tooltip="Sao chép mật khẩu"
                   aria-label="Sao chép mật khẩu"
                 >
                   <Icon name="copy" size={16} />
@@ -335,13 +336,12 @@ export function UserFormDialog({
             </p>
           )}
 
-          {(roleChanged || emailChanged) && (
+          {/* A role change keeps the session and applies at once (SCRUM-105); only an email change signs out. */}
+          {emailChanged && (
             <p className="alert alert-warning span-2">
               {isSelf
-                ? `Bạn đang đổi ${roleChanged ? 'vai trò' : 'email'} của chính mình. Sau khi lưu, bạn sẽ bị đăng xuất và cần đăng nhập lại.`
-                : roleChanged
-                  ? 'Đổi vai trò sẽ đăng xuất người này khỏi mọi thiết bị để quyền mới có hiệu lực.'
-                  : 'Đổi email sẽ đăng xuất người này khỏi mọi thiết bị.'}
+                ? 'Bạn đang đổi email của chính mình. Sau khi lưu, bạn sẽ bị đăng xuất và cần đăng nhập lại.'
+                : 'Đổi email sẽ đăng xuất người này khỏi mọi thiết bị.'}
             </p>
           )}
         </form>

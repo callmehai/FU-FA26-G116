@@ -1,22 +1,18 @@
 import { useEffect, useState } from 'react'
 import { listMeetings } from '../../api/meetings'
-import { Icon, type IconName } from '../../components/Icon'
 import type { MeetingStatus } from '../../types/meeting'
 import { useAccessLost } from '../auth/useAccessLost'
 
 interface Card {
   status: MeetingStatus
   label: string
-  hint: string
-  icon: IconName
-  tone: string
 }
 
 const CARDS: Card[] = [
-  { status: 'InProgress', label: 'Đang diễn ra', hint: 'Đang họp', icon: 'broadcast', tone: 'live' },
-  { status: 'Published', label: 'Đã công bố', hint: 'Đã gửi giấy mời', icon: 'send', tone: 'blue' },
-  { status: 'WaitingApproval', label: 'Chờ duyệt', hint: 'Đã gửi người duyệt', icon: 'clock', tone: 'amber' },
-  { status: 'Draft', label: 'Bản nháp', hint: 'Chưa gửi duyệt', icon: 'fileText', tone: 'slate' },
+  { status: 'InProgress', label: 'Đang diễn ra' },
+  { status: 'Published', label: 'Đã công bố' },
+  { status: 'WaitingApproval', label: 'Chờ duyệt' },
+  { status: 'Draft', label: 'Bản nháp' },
 ]
 
 type Counts = Partial<Record<MeetingStatus, number>> | 'error' | null
@@ -75,29 +71,25 @@ export function StatusSummary({
           <button
             key={card.status}
             type="button"
-            className={`summary-card summary-${card.tone}${selected ? ' summary-card-selected' : ''}`}
+            className={`summary-card${selected ? ' summary-card-selected' : ''}`}
             aria-pressed={selected}
             onClick={() => onSelect(selected ? '' : card.status)}
-            title={selected ? 'Bỏ lọc theo trạng thái này' : `Chỉ xem cuộc họp ${card.label.toLowerCase()}`}
+            data-tooltip={
+              counts === 'error'
+                ? 'Không tải được số lượng'
+                : selected
+                  ? 'Bỏ lọc theo trạng thái này'
+                  : `Chỉ xem cuộc họp ${card.label.toLowerCase()}`
+            }
           >
-            <span className="summary-icon">
-              <Icon name={card.icon} size={22} />
-            </span>
-            <span className="summary-body">
-              <span className="summary-label">{card.label}</span>
-              {count !== undefined ? (
-                <span className="summary-count">{count.toLocaleString('vi-VN')}</span>
-              ) : counts === 'error' ? (
-                <span className="summary-count summary-count-missing">–</span>
-              ) : (
-                <span className="skeleton summary-count-skeleton" aria-hidden="true" />
-              )}
-              {counts === 'error' ? (
-                <span className="summary-hint summary-hint-missing">Không tải được</span>
-              ) : (
-                <span className="summary-hint">{card.hint}</span>
-              )}
-            </span>
+            <span className="summary-label">{card.label}</span>
+            {count !== undefined ? (
+              <span className="summary-count">{count.toLocaleString('vi-VN')}</span>
+            ) : counts === 'error' ? (
+              <span className="summary-count summary-count-missing">–</span>
+            ) : (
+              <span className="skeleton summary-count-skeleton" aria-hidden="true" />
+            )}
           </button>
         )
       })}

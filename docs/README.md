@@ -27,13 +27,19 @@ BE → FE → BA chốt tài liệu → Tester, Definition of Done. Đọc trư�
 | [09-bussinessflow/](09-bussinessflow/) | Swimlane 4 luồng nghiệp vụ chính BF-01 → BF-04 |
 | [10-statemachine/](10-statemachine/) | Sơ đồ trạng thái nghiệp vụ và các trạng thái liên quan |
 | [11-contextdiagram/](11-contextdiagram/) | Context diagram của hệ thống và file ảnh xuất |
+| [12-screenflow/](12-screenflow/) | Sơ đồ luồng chuyển màn hình (Screen Flow) và file ảnh xuất |
+| [13-erd/](13-erd/README.md) | Ba cách trình bày ERD: mục tiêu dạng bảng, Chen và snapshot schema hiện tại |
+| [14-uc-diagram/](14-uc-diagram/README.md) | Use Case Diagram theo 7 actor, source draw.io nhiều trang và ảnh xuất |
 | [notes/](notes/) | Ghi chú rà soát và bàn giao cập nhật tài liệu cho người phụ trách |
-| [assets/](assets/) | Ảnh, sơ đồ, file nguồn (`.drawio`, `.excalidraw`) được các tài liệu trên nhúng |
 | [wireframe/](wireframe/) | Wireframe màn hình theo phiên bản: HTML, plugin Figma và ảnh cho report. Quy tắc bàn giao ở [wireframe/README.md](wireframe/README.md) |
 
 Mỗi thư mục trong `docs/` có một `README.md` riêng ghi phạm vi, nguồn chuẩn và quan hệ giữa source với
 các file xuất. Khi bắt đầu task tài liệu, agent đọc file này rồi lần theo README của từng thư mục cha
 tới đúng khu vực cần sửa; quy tắc nạp context nằm trong [AGENTS.md](../AGENTS.md).
+
+Đưa sơ đồ lên thư mục **Diagrams** trên Google Drive bằng
+[DIAGRAM_DRIVE_SYNC.md](DIAGRAM_DRIVE_SYNC.md): một chiều repo → Drive, danh sách nhóm và cách chạy
+`scripts/push_diagrams.py`.
 
 ## Quy ước
 

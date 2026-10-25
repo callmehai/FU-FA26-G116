@@ -20,7 +20,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
     public Task<AgendaOutcome> EditorOptionsAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
         => ReadAsync(meetingId, actorId, true, ct);
 
-    public async Task<AgendaOutcome> GetForGuestAsync(Guid meetingId, AgendaGuestSession guest, CancellationToken ct = default)
+    public async Task<AgendaOutcome> GetForGuestAsync(Guid meetingId, MeetingGuestSession guest, CancellationToken ct = default)
     {
         try
         {

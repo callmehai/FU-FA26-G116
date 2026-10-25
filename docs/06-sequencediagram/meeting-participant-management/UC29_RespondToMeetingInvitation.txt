@@ -1,13 +1,13 @@
 title UC-29 - Respond to Meeting Invitation
 
-actor "Chair / Secretary / Participant / Guest" as User
+actor "Secretary / Participant / Guest" as User
 boundary "Meeting Management Page" as MeetingPage
 control ":Meeting Participant Controller" as ParticipantController
 control ":Meeting Participant Service" as ParticipantService
 participant ":Meeting Participant Repository" as ParticipantRepository
 database ":Database" as Database
 
-User->MeetingPage: Submit Accepted or Declined for own invitation
+User->MeetingPage: Submit Accepted or Declined for own invitation\n(question at the top of Meeting detail or on the calendar card)
 activate MeetingPage
 MeetingPage->ParticipantController: Submit Accepted or Declined for own invitation
 activate ParticipantController
@@ -21,17 +21,29 @@ Database-->ParticipantRepository: Current information / Read failure
 deactivate Database
 ParticipantRepository-->ParticipantService: Current information / Read failure
 deactivate ParticipantRepository
-ParticipantService->ParticipantService: Verify invitation ownership, current invitation, Meeting Published/InProgress,\nand valid Guest access established through UC-04 (BR-104–BR-106, BR-153–BR-157)
+ParticipantService->ParticipantService: Verify invitation ownership, current invitation, Meeting Published/InProgress,\nvalid Guest access established through UC-04, that the actor is not the Chair,\nand compare the value with any response already recorded (BR-104–BR-106, BR-153–BR-157)
 alt Response is invalid - EX-2
 ParticipantService-->ParticipantController: MSG106 - Invalid meeting invitation response.
 ParticipantController-->MeetingPage: MSG106 - Invalid meeting invitation response.
 MeetingPage-->User: MSG106 - Invalid meeting invitation response.
+else Actor is the Chair - EX-5
+ParticipantService-->ParticipantController: MSG286 - The Chair runs the Meeting, so no attendance confirmation is needed.
+ParticipantController-->MeetingPage: MSG286 - The Chair runs the Meeting, so no attendance confirmation is needed.
+MeetingPage-->User: MSG286 - The Chair runs the Meeting, so no attendance confirmation is needed.
 else Meeting or invitation no longer allows a response - EX-1
 ParticipantService-->ParticipantController: MSG107 - This meeting invitation can no longer be answered.
 ParticipantController-->MeetingPage: MSG107 - This meeting invitation can no longer be answered.
 MeetingPage-->User: MSG107 - This meeting invitation can no longer be answered.
+else A different response is already recorded - EX-4
+ParticipantService-->ParticipantController: MSG285 - You have already answered this invitation. Your answer cannot be changed.
+ParticipantController-->MeetingPage: MSG285 - You have already answered this invitation. Your answer cannot be changed.
+MeetingPage-->User: MSG285 - You have already answered this invitation. Your answer cannot be changed.
+else The same response is already recorded - AF-1
+ParticipantService-->ParticipantController: MSG154 - No changes to save.
+ParticipantController-->MeetingPage: MSG154 - No changes to save.
+MeetingPage-->User: MSG154 - No changes to save.
 else Response is allowed
-ParticipantService->ParticipantRepository: Save latest Accepted or Declined response and response time;\na previous response may be replaced (AF-1); attendance, roles and extras unchanged (BR-115, BR-116, BR-173)
+ParticipantService->ParticipantRepository: Save the Accepted or Declined response and response time once;\nnever replaced afterwards; attendance, roles, access and extras unchanged (BR-106, BR-115, BR-116, BR-321)
 activate ParticipantRepository
 ParticipantRepository->Database: Save all requested changes together;\nrecheck Meeting status, authority and roster before saving
 activate Database

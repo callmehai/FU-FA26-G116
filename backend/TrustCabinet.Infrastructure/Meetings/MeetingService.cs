@@ -5,7 +5,7 @@ using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Domain.Notifications;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Infrastructure.Meetings;
 
@@ -13,13 +13,12 @@ namespace TrustCabinet.Infrastructure.Meetings;
 public sealed class MeetingService(
     IMeetingRepository meetings,
     ILogger<MeetingService> logger,
-    TimeProvider? timeProvider = null,
-    IMeetingInvitationQueue? invitations = null) : IMeetingService
+    TimeProvider? timeProvider = null) : IMeetingService
 {
     private DateTimeOffset UtcNow => (timeProvider ?? TimeProvider.System).GetUtcNow();
 
     public async Task<MeetingResult> CreateAsync(
-        MeetingInput input, Guid actorId, CancellationToken ct = default)
+        MeetingInput input, Guid actorId, IReadOnlyList<ParticipantSeed>? participants = null, CancellationToken ct = default)
     {
         var now = UtcNow;
         if (!MeetingRules.TryValidate(input, startsAfter: now, out var valid, out var errors))
@@ -59,9 +58,49 @@ public sealed class MeetingService(
 
         try
         {
-            await meetings.AddAsync(meeting, ct);
-            await meetings.SaveChangesAsync(ct);
-            return MeetingResult.Success(MeetingDetails.From(meeting));
+            return await meetings.InTransactionAsync(async token =>
+            {
+                var rosterErrors = new Dictionary<string, string>();
+                if (participants is null || participants.Count is < 1 or > 100)
+                    rosterErrors["participants"] = "Chọn từ 1 đến 100 thành phần tham dự, có đúng một Chủ tọa.";
+                else
+                {
+                    var seen = new HashSet<Guid>();
+                    for (var i = 0; i < participants.Count; i++)
+                    {
+                        var seed = participants[i];
+                        if (seed is null || seed.UserId == Guid.Empty || !seen.Add(seed.UserId))
+                            rosterErrors[$"participants[{i}].userId"] = "Người dùng không hợp lệ hoặc bị trùng.";
+                        if (seed is null || !ParticipantRules.TryRole(seed.Role, out _))
+                            rosterErrors[$"participants[{i}].role"] = "Chọn Chủ tọa, Thư ký hoặc Thành viên.";
+                    }
+                    if (participants.Count(p => p?.Role == nameof(MeetingRole.Chair)) != 1)
+                        rosterErrors["participants"] = "Cuộc họp phải có đúng một Chủ tọa.";
+                }
+                if (rosterErrors.Count > 0)
+                    return new MeetingResult(MeetingOutcome.InvalidParticipants, Errors: rosterErrors);
+                var users = (await meetings.LockParticipantUsersAsync(participants!.Select(p => p.UserId).ToArray(), token))
+                    .ToDictionary(u => u.Id);
+                for (var i = 0; i < participants!.Count; i++)
+                    if (!users.TryGetValue(participants[i].UserId, out var user) || !user.IsActive)
+                        rosterErrors[$"participants[{i}].userId"] = "Người dùng không tồn tại hoặc đã ngừng hoạt động.";
+                if (rosterErrors.Count > 0)
+                    return new MeetingResult(MeetingOutcome.InvalidParticipants, Errors: rosterErrors);
+                foreach (var seed in participants)
+                {
+                    var participant = new MeetingParticipant
+                    {
+                        MeetingId = meeting.Id, UserId = seed.UserId, User = users[seed.UserId],
+                        Role = Enum.Parse<MeetingRole>(seed.Role!), Response = InvitationResponse.Pending,
+                        CreatedAt = now, UpdatedAt = now
+                    };
+                    participant.InitialInvitationDeliveryKey = $"participant:{participant.Id}:invited";
+                    meeting.Participants.Add(participant);
+                }
+                await meetings.AddAsync(meeting, token);
+                await meetings.SaveChangesAsync(token);
+                return MeetingResult.Success(MeetingDetails.From(meeting, actorId));
+            }, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -82,7 +121,7 @@ public sealed class MeetingService(
             var meeting = await meetings.FindAccessibleAsync(id, actorId, ct);
             return meeting is null
                 ? MeetingResult.Failure(MeetingOutcome.NotFound)
-                : MeetingResult.Success(MeetingDetails.From(meeting));
+                : MeetingResult.Success(MeetingDetails.From(meeting, actorId));
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -100,7 +139,8 @@ public sealed class MeetingService(
     {
         try
         {
-            return MeetingListResult.Success(await meetings.FindAuthorizedPageAsync(actorId, query, ct));
+            return MeetingListResult.Success(await meetings.FindAuthorizedPageAsync(
+                actorId, query.Timing is null ? query : query with { Now = UtcNow }, ct));
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -144,7 +184,7 @@ public sealed class MeetingService(
             }
 
             return MeetingRules.IsEditable(meeting.Status) || MeetingRules.IsReschedulable(meeting.Status)
-                ? MeetingResult.Success(MeetingDetails.From(meeting))
+                ? MeetingResult.Success(MeetingDetails.From(meeting, actorId))
                 : MeetingResult.Failure(MeetingOutcome.NotEditable);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -204,7 +244,7 @@ public sealed class MeetingService(
                     await meetings.SaveChangesAsync(token);
                 }
 
-                return MeetingResult.Success(MeetingDetails.From(meeting));
+                return MeetingResult.Success(MeetingDetails.From(meeting, actorId));
             }, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -254,7 +294,7 @@ public sealed class MeetingService(
 
         if (!HasChanges(meeting, input))
         {
-            return MeetingResult.Success(MeetingDetails.From(meeting));
+            return MeetingResult.Success(MeetingDetails.From(meeting, actorId));
         }
 
         Apply(meeting, input, now);
@@ -273,6 +313,7 @@ public sealed class MeetingService(
         };
         meeting.StatusHistory.Add(history);
         await meetings.AddHistoryAsync(history, ct);
+        await meetings.StageGuestRescheduleInvitationsAsync(meeting, history.Id, now, ct);
         await meetings.AddNotificationsAsync(
             MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants)
                 .Select(participant => CreateNotification(
@@ -286,7 +327,7 @@ public sealed class MeetingService(
                 .ToArray(),
             ct);
         await meetings.SaveChangesAsync(ct);
-        return MeetingResult.Success(MeetingDetails.From(meeting), rescheduled: true);
+        return MeetingResult.Success(MeetingDetails.From(meeting, actorId), rescheduled: true);
     }
 
     private static void Apply(Meeting meeting, ValidatedMeetingInput input, DateTimeOffset now)
@@ -451,9 +492,9 @@ public sealed class MeetingService(
                 if (command.Action == MeetingTransitionAction.Publish)
                 {
                     var activeChairCount = meeting.Participants.Count(participant =>
-                        participant.Role == MeetingRole.Chair && participant.User.IsActive);
+                        participant.Role == MeetingRole.Chair && Domain.Participants.ParticipantRules.Active(participant));
                     var hasActiveSecretary = meeting.Participants.Any(participant =>
-                        participant.Role == MeetingRole.Secretary && participant.User.IsActive);
+                        participant.Role == MeetingRole.Secretary && Domain.Participants.ParticipantRules.Active(participant));
                     if (activeChairCount != 1 || !hasActiveSecretary)
                     {
                         return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.PublicationRosterNotReady);
@@ -596,6 +637,7 @@ public sealed class MeetingService(
                         now,
                         history.Id)).ToArray();
                     await meetings.AddNotificationsAsync(notifications, token);
+                    await meetings.StagePublicationInvitationsAsync(meeting, now, token);
                 }
 
                 await meetings.SaveChangesAsync(token);
@@ -604,14 +646,8 @@ public sealed class MeetingService(
                 // Recovery permission does not grant access to meeting contents.
                 return transfersOrganizer
                     ? MeetingWorkflowResult.OrganizerTransferred(historyRecord)
-                    : MeetingWorkflowResult.Success(MeetingDetails.From(meeting), historyRecord);
+                    : MeetingWorkflowResult.Success(MeetingDetails.From(meeting, actorId), historyRecord);
             }, ct);
-
-            if (command.Action == MeetingTransitionAction.Publish
-                && result.Outcome == MeetingWorkflowOutcome.Success)
-            {
-                await TryQueuePublishedMeetingAsync(id, ct);
-            }
 
             return result;
         }
@@ -623,35 +659,6 @@ public sealed class MeetingService(
         {
             logger.LogError(exception, "Could not perform {Action} for meeting {MeetingId}.", command.Action, id);
             return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.SaveFailed);
-        }
-    }
-
-    private async Task TryQueuePublishedMeetingAsync(Guid meetingId, CancellationToken ct)
-    {
-        if (invitations is null)
-        {
-            logger.LogError(
-                "Invitation jobs were not initialized for published meeting {MeetingId} because the producer is not registered. The email worker can reconcile the publication later.",
-                meetingId);
-            return;
-        }
-
-        try
-        {
-            await invitations.QueueForPublishedMeetingAsync(meetingId, ct);
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            logger.LogWarning(
-                "Invitation job initialization was cancelled after meeting {MeetingId} was published. The email worker will retry it.",
-                meetingId);
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(
-                exception,
-                "Invitation jobs were not initialized after meeting {MeetingId} was published. The email worker will retry them.",
-                meetingId);
         }
     }
 
