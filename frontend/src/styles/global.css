@@ -2176,8 +2176,9 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .agenda-panel-room .agenda-toolbar { padding: 0 0 12px; border: 0; }
 .agenda-item { position: relative; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
 .agenda-item-open { box-shadow: 0 1px 3px rgb(16 24 40 / .08); }
-/* The item under discussion: the live green edge, as "Đang diễn ra" is the live green elsewhere. */
-.agenda-item-current { border-color: var(--live-ring); background: var(--live-wash); box-shadow: inset 3px 0 0 var(--live); }
+/* The item under discussion: a live green edge only, as "Đang diễn ra" is the live green elsewhere. Its
+   background stays white like every other item; a green wash behind the white boxes clashed. */
+.agenda-item-current { border-color: var(--live-ring); box-shadow: inset 3px 0 0 var(--live); }
 .agenda-item-dragging { z-index: 2; box-shadow: 0 8px 24px rgb(16 24 40 / .18); }
 /* Where the title starts, so the facts and the opened body line up under it. */
 .agenda-item { --agenda-indent: 46px; }
@@ -2217,10 +2218,9 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .icon-button-danger { color: var(--danger); }
 .agenda-action-slot { width: 34px; flex: none; }
 .agenda-body { padding: 4px 12px 12px var(--agenda-indent); }
-.agenda-note { margin: 0 0 12px; color: var(--muted-ink); }
+.agenda-text.agenda-note { margin: 0 0 12px; color: var(--muted-ink); }
 .agenda-boxes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
 .agenda-box { min-width: 0; padding: 10px 12px 12px; border-radius: var(--radius); background: var(--surface-alt); }
-.agenda-item-current .agenda-box { background: var(--surface); }
 .agenda-box-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; margin-bottom: 4px; }
 .agenda-box-head h4 { margin: 0; color: var(--label-ink); font-size: 13px; font-weight: 600; }
 .agenda-box .value-empty { margin: 0; font-size: 13px; }
