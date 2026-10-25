@@ -24,23 +24,25 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE_DIR = ROOT / "docs" / "08-reports" / "source"
+# Drive targets come from "Link Drive chuẩn Report 1–7" in docs/08-reports/README.md;
+# change them together, and only ever point at the file named there.
 REPORTS = (
     (
         "Report-1.docx",
         "Report 1 – Project Introduction",
-        "https://docs.google.com/document/d/1Lbw_A5CHPJzDa4kkLQFdjjn_c5KRIwOW/edit",
+        "https://docs.google.com/document/d/15ncrJ-7eInb0vLIOXmRfZsugiPkunGW6/edit",
         ROOT / "docs" / "08-reports" / "Report-1_Project_Introduction.md",
     ),
     (
         "Report-2.docx",
         "Report 2 – Project Management Plan",
-        "https://docs.google.com/document/d/1d4K3K3zcURku4SG84nXj7Zj6D-KiqGXa/edit",
+        "https://docs.google.com/document/d/1oyefDV6vVOBY0qtO4sCQVMcoj3tDHKqo/edit",
         ROOT / "docs" / "08-reports" / "Report-2_Project_Management_Plan.md",
     ),
     (
         "Report-3.docx",
         "Report 3 – Software Requirement Specification",
-        "https://docs.google.com/document/d/1rQuQxHWq4nJPJYMrrMlAZQ3P173PTXJz/edit",
+        "https://docs.google.com/document/d/1JNNCwt0Yc_KLS9dPB6wtP8HW6x7D1fWl/edit",
         ROOT / "docs" / "08-reports" / "Report-3_Software_Requirement_Specification.md",
     ),
 )
@@ -225,6 +227,11 @@ def write_atomic(path: Path, content: str) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Sync local or Google Drive DOCX reports to Markdown.")
     parser.add_argument("--download", "-d", action="store_true", help="Refresh the three configured Drive reports")
+    parser.add_argument(
+        "--allow-drive-import",
+        action="store_true",
+        help="Allow --download to overwrite docs/08-reports/source/*.docx from Drive",
+    )
     parser.add_argument("--source", help="Local DOCX/directory (relative to repo root), or Drive file/folder URL")
     parser.add_argument("--report", type=int, choices=(1, 2, 3), help="Report to sync; required for a single Drive file")
     parser.add_argument("--report3-source", type=Path, help="Legacy alias for --source LOCAL_DOCX --report 3")
@@ -232,6 +239,11 @@ def main() -> int:
     args = parser.parse_args()
     if args.download and (args.source or args.report3_source):
         parser.error("--download cannot be combined with an explicit source")
+    if args.download and not args.allow_drive_import:
+        parser.error(
+            "--download overwrites docs/08-reports/source/*.docx with the Drive copy, "
+            "and the repo is the source of truth; pass --allow-drive-import if you really mean it"
+        )
     if args.report3_source and (args.source or args.report):
         parser.error("--report3-source cannot be combined with --source or --report")
     source_arg = str(args.report3_source) if args.report3_source else args.source

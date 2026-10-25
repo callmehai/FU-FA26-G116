@@ -36,6 +36,10 @@ scan for, with the rest in tooltips, and [sloplint](.claude/skills/sloplint/SKIL
 (phòng chống AI slop) for catching the generated look — gradients, glows, endless motion, KPI
 tiles, eyebrows, side stripes and the other tells catalogued from published research and the big
 design systems. Claude Code loads them as skills; any other agent reads the files directly.
+**Skill location:** the five project skills live in `.claude/skills/` (canonical — Claude Code loads
+them) and are mirrored verbatim into `.agents/skills/`, which other agents load from; edit the
+canonical copy and mirror it in the same change. `.agents/skills/` additionally holds the two
+third-party skills, drawio-skill and ui-ux, which exist nowhere else.
 
 **sloplint in this repo.** The skill is [sloplint](https://github.com/callmehai/sloplint) `v0.3.0`,
 vendored unchanged (see its `VENDORED.md`). Run its CLI as `npx -y github:callmehai/sloplint#v0.3.0
@@ -269,6 +273,10 @@ When a change affects the API contract, a technical decision or the scope, updat
 - Scope change → update `docs/01-requirements/` **and**
   [frontend/src/pages/scopeData.ts](frontend/src/pages/scopeData.ts) (the landing page reads it).
 - New or changed endpoint → update [docs/03-api/](docs/03-api/).
+
+**Reports** live in the repo and are published outward: edit the DOCX in `docs/08-reports/source/`,
+regenerate the Markdown snapshot (`scripts/sync_reports.py`), and push to Drive only when asked
+(`scripts/push_reports.py`). Drive is never the source — nothing reads reports back from it.
 
 **BA settles the requirement docs last, not first.** BE writes the basic UC Specification and
 Sequence Diagram, then implements; BE and FE change whatever the Use Case needs and note each change

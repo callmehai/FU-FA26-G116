@@ -26,6 +26,25 @@ Markdown snapshot của Report 1–7.
   khớp với bảng. Sau khi ghi, kiểm tra cùng ID/link vẫn mở được và kích thước/thời gian cập nhật
   phản ánh bản mới.
 - Việc thay DOCX trên Drive không cập nhật Markdown. Việc tạo Markdown không đọc hay ghi Drive.
+- Chiều dữ liệu là **một chiều: repo → Drive**. `docs/08-reports/source/*.docx` là nguồn duy nhất;
+  Markdown là snapshot sinh từ đó; Drive là bản phát hành, chỉ được ghi từ đó. Không có bước nào đọc
+  ngược từ Drive về `source/` — `sync_reports.py --download` sẽ từ chối chạy nếu thiếu
+  `--allow-drive-import`, vì nó ghi đè bản local.
+
+## Quy trình một lần sửa
+
+1. Sửa DOCX trong `source/`. Không sửa tay Markdown snapshot.
+2. Sinh lại snapshot:
+   `python scripts/sync_reports.py --source docs/08-reports/source/<tên>.docx --report <số>`
+3. Rà `git diff -- docs/08-reports`, chắc diff chỉ nằm trong vùng vừa sửa.
+4. **Khi được yêu cầu phát hành** (không tự động, không bắt buộc mỗi lần sửa):
+   - `python scripts/push_reports.py <số> --check` — xem Drive đang lệch bao nhiêu;
+   - `python scripts/push_reports.py <số>` — dry run, in ra file đích;
+   - `python scripts/push_reports.py <số> --confirm` — ghi đè nội dung, giữ nguyên ID/link;
+   - `python scripts/push_reports.py <số> --check` — phải ra `UP TO DATE`.
+5. Push cần `GOOGLE_DRIVE_ACCESS_TOKEN` (scope `https://www.googleapis.com/auth/drive`) trong môi
+   trường. Không commit token; không dùng `drive.file` vì các file đích có từ trước.
+
 
 ## Style UC Specification
 
@@ -96,9 +115,16 @@ tương ứng, giữ nguyên file ID và URL.
 Report 5 còn có các workbook kiểm thử riêng (Unit Test, Integration Test, System Test và Acceptance
 Test); chúng không phải file đích của DOCX Report 5.0.
 
-Thư mục Drive chứa các report: [SEP490-G116 Reports](https://drive.google.com/drive/folders/19wdKDAYViFGn4nlrmCnyNJkDQ0IOw-Z7?usp=drive_link).
+Thư mục Drive chứa các report: [SEP490-G116 › Docs](https://drive.google.com/drive/folders/19wdKDAYViFGn4nlrmCnyNJkDQ0IOw-Z7?usp=drive_link).
 
-**Report 3 đồng bộ Markdown gần nhất:** 23/10/2026, từ DOCX local sau khi viết lại đặc tả màn hình 7.3, 7.4,
+**Trạng thái phát hành (25/10/2026):** bản trên Drive đang dừng ở Change Log 15/10/2026, còn DOCX
+local đã tới 24/10/2026 — các đợt 16/10 → 24/10 mới chỉ đồng bộ Markdown, **chưa đẩy Drive**. Từ nay
+chiều làm việc là repo → Drive, nên lần push tới sẽ đưa Drive lên đúng bản local.
+
+**Report 3 đồng bộ Markdown gần nhất:** 24/10/2026, gộp sáu dòng Change Log 24/10 của KhanhPG thành
+một. Chỉ đồng bộ Markdown; không thay nội dung trên Drive.
+
+Trước đó: 23/10/2026, từ DOCX local sau khi viết lại đặc tả màn hình 7.3, 7.4,
 7.5 và 8.1–8.5 theo wireframe v7 và phòng họp đã chạy trên server test (bỏ giơ tay, tắt mic tất cả, chat lưu lại), đổi
 tên 8.3, 8.5, thêm 8.6 In-Room Documents Panel (chưa làm), thay ảnh các màn đó, sửa bảng Screen List và thêm một dòng
 Change Log. Không thay nội dung trên Drive.
