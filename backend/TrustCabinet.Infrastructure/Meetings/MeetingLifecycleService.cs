@@ -54,7 +54,9 @@ public sealed class MeetingLifecycleService(
                 if (starting)
                 {
                     meeting.ActualStartedAt = now;
+                    // The Chair just started it, so only the others are told (as for Publish).
                     recipients = MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants)
+                        .Where(p => p.UserId != actorId)
                         .Select(p => p.UserId).ToArray();
                 }
                 else

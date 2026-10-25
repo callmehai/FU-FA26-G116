@@ -1,5 +1,5 @@
 // Manual, media-free LiveKit clients. Tokens travel through stdin only, never stdout.
-import { chromium } from '../../../scripts/node_modules/playwright/index.mjs';
+import { chromium } from 'playwright';
 import { createInterface } from 'node:readline';
 import { resolve } from 'node:path';
 

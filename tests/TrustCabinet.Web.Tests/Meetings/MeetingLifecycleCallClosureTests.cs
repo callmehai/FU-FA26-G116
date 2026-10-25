@@ -10,12 +10,13 @@ public sealed partial class MeetingLifecycleTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Join_between_meeting_end_and_provider_confirmation_uses_room_closure_time(bool existingSession)
+    public async Task Join_between_meeting_end_and_provider_confirmation_is_recorded_and_closed_at_once(bool existingSession)
     {
         var s = await fixture.Seed(MeetingStatus.InProgress);
         var meetingEndedAt = fixture.Clock.Now;
         var joinedAt = meetingEndedAt.AddSeconds(1);
         var confirmedAt = meetingEndedAt.AddSeconds(2);
+        var room = CallRoomNames.ForMeeting(s.MeetingId);
         if (existingSession)
         {
             await using var scope = fixture.Host.Services.CreateAsyncScope();
@@ -26,6 +27,8 @@ public sealed partial class MeetingLifecycleTests
         fixture.BeforeRoomClosed = async (id, ct) =>
         {
             Assert.Equal(s.MeetingId, id);
+            // The webhook closes the room itself; run the late join only once.
+            fixture.BeforeRoomClosed = null;
             await using var scope = fixture.Host.Services.CreateAsyncScope();
             await scope.ServiceProvider.GetRequiredService<ICallRoomService>().HandleWebhookAsync(new(
                 "late-join", "participant_joined", CallRoomNames.ForMeeting(id), s.Member.ToString("D"),
@@ -39,18 +42,22 @@ public sealed partial class MeetingLifecycleTests
         {
             Assert.Equal(meetingEndedAt, (await check.Meetings.FindAsync(s.MeetingId))!.ActualEndedAt);
             Assert.Equal(meetingEndedAt, (await check.MeetingStatusHistory.SingleAsync(h => h.MeetingId == s.MeetingId)).OccurredAt);
+            // The late joiner's own webhook closed the room again, so nothing waits for reconciliation.
+            // The server clock still reads the End time, so the session ends at the join evidence.
+            Assert.Equal(2, fixture.ClosedRooms.Count(r => r == room));
             var session = await check.CallSessions.SingleAsync(c => c.MeetingId == s.MeetingId);
             Assert.Equal(CallStatus.Ended, session.Status);
-            Assert.Equal(confirmedAt, session.EndedAt);
+            Assert.Equal(joinedAt, session.EndedAt);
             Assert.True(session.EndedAt >= session.StartedAt);
             var stints = await check.CallParticipants.Where(p => p.CallSessionId == session.Id).ToArrayAsync();
             Assert.Equal(existingSession ? 2 : 1, stints.Length);
-            Assert.All(stints, p => { Assert.Equal(confirmedAt, p.LeftAt); Assert.True(p.LeftAt >= p.JoinedAt); });
+            Assert.Contains(stints, p => p.UserId == s.Member && p.JoinedAt == joinedAt);
+            Assert.All(stints, p => { Assert.Equal(joinedAt, p.LeftAt); Assert.True(p.LeftAt >= p.JoinedAt); });
         }
         await using (var scope = fixture.Host.Services.CreateAsyncScope())
             await scope.ServiceProvider.GetRequiredService<ICallRoomService>().ReconcileAsync();
         await using var final = fixture.Db();
-        Assert.Equal(confirmedAt, (await final.CallSessions.SingleAsync(c => c.MeetingId == s.MeetingId)).EndedAt);
+        Assert.Equal(joinedAt, (await final.CallSessions.SingleAsync(c => c.MeetingId == s.MeetingId)).EndedAt);
     }
 
     [Theory]

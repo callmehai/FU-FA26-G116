@@ -118,7 +118,7 @@ SCRUM-20: cấp quyền phòng và danh sách cho phép của job đối soát c
 
 ## Tích hợp End Meeting — SCRUM-69
 
-Sau commit End, lifecycle gọi CloseMeetingRoomAsync cho Online/Hybrid; gateway DeleteRoom theo CallRoomNames, kể cả chưa có active CallSession. Provider xác nhận đóng rồi mới kết thúc session/stint còn mở; room không tồn tại được xem đã đóng, không tạo session giả. InPerson/chưa cấu hình LiveKit không chặn lifecycle. Lỗi provider/bookkeeping không đổi MSG111: janitor đối soát chu kỳ 30 giây, gồm orphan room. Không chạy đối soát toàn bộ trong request End. Join ticket mới từ chối Ended; JWT cũ không thu hồi tức thời, có thể tái vào cho đến lần đối soát tiếp theo. [Bàn giao và giới hạn](10-scrum69-ban-giao.md).
+Sau commit End, lifecycle gọi CloseMeetingRoomAsync cho Online/Hybrid; gateway DeleteRoom theo CallRoomNames, kể cả chưa có active CallSession. Provider xác nhận đóng rồi mới kết thúc session/stint còn mở; room không tồn tại được xem đã đóng, không tạo session giả. InPerson/chưa cấu hình LiveKit không chặn lifecycle. Lỗi provider/bookkeeping không đổi MSG111: janitor đối soát chu kỳ 30 giây, gồm orphan room. Không chạy đối soát toàn bộ trong request End. Join ticket mới từ chối Ended. JWT cũ không thu hồi được và LiveKit tự tạo lại room cho người còn giữ nó, nên webhook `participant_joined` kiểm tra lại: nếu Meeting đã rời InProgress (hoặc là InPerson) thì ghi lượt vào đó làm bằng chứng, xóa room và kết thúc session ngay, không chờ đối soát. [Bàn giao và giới hạn](10-scrum69-ban-giao.md).
 
 ## Bổ sung sau review — thời gian đóng CallSession
 

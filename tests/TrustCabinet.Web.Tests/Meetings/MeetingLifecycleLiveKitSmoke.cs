@@ -32,7 +32,7 @@ public static class MeetingLifecycleLiveKitSmoke
             RedirectStandardInput = true, RedirectStandardOutput = true, UseShellExecute = false,
             CreateNoWindow = true,
         } };
-        node.StartInfo.ArgumentList.Add("docs/03-api/postman/meeting-lifecycle-livekit-smoke.mjs");
+        node.StartInfo.ArgumentList.Add("scripts/scrum69-livekit-clients.mjs");
         var nodeStarted = false;
         try
         {

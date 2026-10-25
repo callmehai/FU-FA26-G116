@@ -184,6 +184,17 @@ public sealed class CallRoomService(
                     var joinedAt = webhook.ParticipantJoinedAt ?? webhook.CreatedAt;
                     var session = await calls.EnsureActiveRoomSessionAsync(meetingId, joiner, joinedAt, ct);
                     await calls.RecordJoinAsync(session.Id, joiner, joinedAt, ct);
+
+                    // A join ticket outlives the meeting by up to its TTL, and LiveKit recreates a
+                    // deleted room for whoever still holds one. Close it again now (UC-22, BR-143)
+                    // instead of at the next reconciliation; the stint above records the visit.
+                    if (await calls.FindRoomAccessAsync(meetingId, joiner, ct) is { } access
+                        && CallRoomRules.StatusOf(access.Status, access.Mode) != CallRoomStatus.Open)
+                    {
+                        logger.LogInformation("Closing {Room} again: {UserId} joined after it closed", webhook.RoomName, joiner);
+                        await liveKit.DeleteRoomAsync(webhook.RoomName!, ct);
+                        await calls.EndSessionAsync(session.Id, UtcNow, ct);
+                    }
                 }
 
                 break;

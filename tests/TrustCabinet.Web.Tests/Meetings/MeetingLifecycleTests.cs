@@ -56,7 +56,8 @@ public sealed partial class MeetingLifecycleTests(MeetingLifecycleFixture fixtur
         Assert.Equal(new[] { MeetingHistoryAction.Start, MeetingHistoryAction.End }, history.Select(h => h.Action));
         Assert.All(history, h => { Assert.Equal(s.Chair, h.ActorId); Assert.Equal(fixture.Clock.Now, h.OccurredAt); Assert.Equal(h.OccurredAt, h.CreatedAt); Assert.Equal(h.CreatedAt, h.UpdatedAt); });
         var notifications = await check.Notifications.Where(n => n.MeetingId == s.MeetingId).ToArrayAsync();
-        Assert.Equal(new[] { s.Chair, s.Secretary, s.Member }.Order(), notifications.Select(n => n.UserId).Order());
+        // The Chair who started it is not told of their own action; a Declined invitee still is.
+        Assert.Equal(new[] { s.Secretary, s.Member }.Order(), notifications.Select(n => n.UserId).Order());
         Assert.All(notifications, n =>
         {
             Assert.Equal(NotificationType.MeetingStarted, n.Type);

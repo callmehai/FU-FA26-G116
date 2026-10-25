@@ -48,19 +48,19 @@ Checklist FE:
 
 ## Side effect và giới hạn nhất quán
 
-Start lưu Meeting và history cùng transaction rồi mới lưu batch notification. Recipient là active current internal participants, distinct UserId, gồm Chair actor và Declined; loại Guest/Removed/Delegated/inactive. Notification `MeetingStarted`, target Meeting, OriginHistoryId và khóa `meeting-started:{historyId}:{userId}`. Unique index hiện có chống trùng. Notification đã lưu được worker push tiếp; lỗi tạo notification sau commit là best effort, **không có outbox/replay bền vững mới**, không gửi email Start.
+Start lưu Meeting và history cùng transaction rồi mới lưu batch notification. Recipient là active current internal participants, distinct UserId, trừ Chủ tọa vừa bấm Start (không ai nhận thông báo về thao tác của chính mình, như Publish), vẫn gồm Declined; loại Guest/Removed/Delegated/inactive. Notification `MeetingStarted`, target Meeting, OriginHistoryId và khóa `meeting-started:{historyId}:{userId}`. Unique index hiện có chống trùng. Notification đã lưu được worker push tiếp; lỗi tạo notification sau commit là best effort, **không có outbox/replay bền vững mới**, không gửi email Start.
 
 End hoàn tất current agenda trong cùng transaction; không có current item vẫn thành công. Pending/Done khác và Vote/ballot/attendance/response giữ nguyên. Timestamp agenda không hợp lệ làm rollback toàn bộ với MSG116, không sửa hộ dữ liệu.
 
 Sau commit End, publisher phát agendaChanged và service đóng room Online/Hybrid. Mỗi side effect có budget 2 giây độc lập RequestAborted, được await; lỗi publisher không ngăn thử đóng room. Room không tồn tại là đã đóng; không cần active CallSession mới gọi DeleteRoom, không tạo session giả. Sau provider xác nhận mới đóng session/stint đang mở. InPerson không gọi provider; LiveKit chưa cấu hình không chặn Start/End.
 
-MSG111 xác nhận Meeting đã Ended. Khi provider/bookkeeping lỗi, job đối soát (chu kỳ 30 giây) thử lại, kể cả orphan room không có CallSession; thời gian thực tế còn phụ thuộc provider và các lần retry. Join ticket mới bị từ chối sau End. JWT đã cấp **không được thu hồi tức thời**: client có thể dùng lại token để tái tạo room cho tới khi đối soát loại khỏi phòng. Xem số đo thực tế trong [báo cáo kiểm thử](10-scrum69-kiem-thu.md).
+MSG111 xác nhận Meeting đã Ended. Khi provider/bookkeeping lỗi, job đối soát (chu kỳ 30 giây) thử lại, kể cả orphan room không có CallSession; thời gian thực tế còn phụ thuộc provider và các lần retry. Join ticket mới bị từ chối sau End. JWT đã cấp không thu hồi được: LiveKit vẫn cho client dùng lại token để tái tạo room. Webhook `participant_joined` chặn việc này — Meeting không còn InProgress thì lượt vào được ghi lại rồi room bị xóa và session kết thúc ngay; job đối soát chỉ còn là lưới an toàn khi webhook bị mất. Xem số đo thực tế trong [báo cáo kiểm thử](10-scrum69-kiem-thu.md).
 
 ## Tester và trạng thái bàn giao
 
 [Collection Postman](postman/SCRUM-69-Meeting-Lifecycle.postman_collection.json) cần một Meeting Published riêng, Chair và Secretary active, token Chair và một participant không phải Chair; chạy tuần tự sẽ kết thúc Meeting đó. Không dùng dữ liệu production.
 
-[Smoke LiveKit](postman/meeting-lifecycle-livekit-smoke.mjs) sử dụng hai Chrome headless client không bật microphone/camera, database test riêng; cách chạy ở [README Postman](postman/README.md).
+[Smoke LiveKit](../../scripts/scrum69-livekit-clients.mjs) sử dụng hai Chrome headless client không bật microphone/camera, database test riêng; cách chạy ở [README Postman](postman/README.md).
 
 Kết quả build, full regression, coverage, concurrency, hiệu năng và giới hạn được ghi trong [báo cáo kiểm thử](10-scrum69-kiem-thu.md). Backend sẵn sàng bàn giao không đồng nghĩa SCRUM-69 đã Done: còn FE → BA Final Review → Tester theo workflow. Source Frontend không được sửa trong task này.
 

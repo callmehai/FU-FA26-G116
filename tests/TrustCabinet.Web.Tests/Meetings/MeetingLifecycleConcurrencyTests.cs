@@ -37,7 +37,7 @@ public sealed partial class MeetingLifecycleTests
         await using var check = fixture.Db();
         var history = Assert.Single(await check.MeetingStatusHistory.Where(h => h.MeetingId == s.MeetingId).ToArrayAsync());
         Assert.Equal(fixture.Clock.Now, history.OccurredAt);
-        Assert.Equal(action == "Start" ? 3 : 0, await check.Notifications.CountAsync(n => n.MeetingId == s.MeetingId));
+        Assert.Equal(action == "Start" ? 2 : 0, await check.Notifications.CountAsync(n => n.MeetingId == s.MeetingId));
         Assert.Equal(action == "Start" ? 0 : 1, fixture.ClosedRooms.Count(r => r == CallRoomNames.ForMeeting(s.MeetingId)));
         Assert.Equal(action == "Start" ? 0 : 1, fixture.Events.Count(e => e.MeetingId == s.MeetingId));
         if (action == "End") Assert.Empty(await check.AgendaItems.Where(i => i.MeetingId == s.MeetingId && i.Status == AgendaItemStatus.InProgress).ToArrayAsync());
@@ -144,7 +144,7 @@ public sealed partial class MeetingLifecycleTests
         }
         finally { fixture.OnCommitted = null; }
         await using var check = fixture.Db();
-        if (action == "Start") Assert.Equal(3, await check.Notifications.CountAsync(n => n.MeetingId == s.MeetingId));
+        if (action == "Start") Assert.Equal(2, await check.Notifications.CountAsync(n => n.MeetingId == s.MeetingId));
         else Assert.Contains(CallRoomNames.ForMeeting(s.MeetingId), fixture.ClosedRooms);
     }
 }

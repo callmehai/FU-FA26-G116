@@ -144,6 +144,10 @@ ticket mới bị từ chối; token cũ vẫn tái vào được và một lư�
 100 caller/100 Meeting độc lập, LiveKit local: P95 Start **603,5 ms**, End **650,1 ms**.
 Các giới hạn eventual cleanup/JWT cũ và việc chưa chạy Newman vẫn như phần trên.
 
+Sau review PR #133: webhook `participant_joined` của Meeting đã Ended/InPerson xóa room và kết thúc
+session ngay (`CallRoomServiceTests`, `MeetingLifecycleCallClosureTests`). Smoke LiveKit trên
+không cấu hình webhook về test host nên vẫn đo đường reconciliation như cũ.
+
 Regression cuối sau sửa P2: **1.252 passed, 0 failed, 0 skipped**, khoảng 2m34s,
 Redis 8 riêng `127.0.0.1:16389`. Artifact `scrum69-review-full-isolated.trx` và coverage mới được
 liệt kê ở trên. Lượt trước chạy song song với smoke/load LiveKit có 1/1.252 ca fail:

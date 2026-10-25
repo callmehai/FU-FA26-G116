@@ -68,7 +68,7 @@ Collection SCRUM-69 độc lập với quy trình UC-07/08 trên. Điền `baseU
 Meeting test Published mới. Không dùng tài khoản hoặc dữ liệu production.
 
 Smoke tự động dùng [runner C#](../../../scripts/scrum69-livekit-smoke.cs) và
-[hai client LiveKit](meeting-lifecycle-livekit-smoke.mjs), không mở microphone/camera. Cần .NET 10,
+[hai client LiveKit](../../../scripts/scrum69-livekit-clients.mjs), không mở microphone/camera. Cần .NET 10,
 Node, Chrome, Docker, PostgreSQL cho test (tài khoản có quyền tạo database riêng), `npm --prefix scripts ci`
 và `npm --prefix frontend ci`. Runner áp migration vào database tên ngẫu nhiên rồi xóa database đó,
 không dùng dữ liệu Development. Chạy từ root repository:

@@ -94,6 +94,6 @@ public sealed partial class MeetingLifecycleTests
         await Expect(await Act(s, "Start"), 200, "MSG110");
         await using var check = fixture.Db();
         var recipients = await check.Notifications.Where(n => n.MeetingId == s.MeetingId).Select(n => n.UserId).ToArrayAsync();
-        Assert.Equal(new[] { s.Chair, s.Secretary }.Order(), recipients.Order());
+        Assert.Equal(new[] { s.Secretary }, recipients);
     }
 }
