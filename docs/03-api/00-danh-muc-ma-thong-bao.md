@@ -120,6 +120,19 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 
 `MSG258` và `MSG260` đã triển khai trong API chuyên biệt UC-73 của SCRUM-97. `MSG258` là empty state trong response thành công, không dùng cho search không khớp. SCRUM-26 dùng `MSG289` cho lỗi đọc và `MSG278` cho query không hợp lệ; `MSG277` đã thuộc validation roster khi tạo họp trong PR #92.
 
+### Bắt đầu/kết thúc cuộc họp — SCRUM-69 (UC-21/22)
+
+| Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
+|---|---|---|---|---|---|
+| `MSG110` | 200 | `POST /api/meetings/{id}/transitions` | Start thành công | `Bắt đầu cuộc họp thành công.` | BE |
+| `MSG111` | 200 | `POST /api/meetings/{id}/transitions` | End thành công | `Kết thúc cuộc họp thành công.` | BE |
+| `MSG112` | 403 | `POST /api/meetings/{id}/transitions` | Start: caller đọc được nhưng không phải active current Chair | `Không thể bắt đầu cuộc họp này.` | BE |
+| `MSG112` | 409 | `POST /api/meetings/{id}/transitions` | Start: sai trạng thái hoặc thiếu roster | `Không thể bắt đầu cuộc họp này.` | BE |
+| `MSG114` | 403 | `POST /api/meetings/{id}/transitions` | End: caller đọc được nhưng không phải active current Chair | `Không thể kết thúc cuộc họp này.` | BE |
+| `MSG114` | 409 | `POST /api/meetings/{id}/transitions` | End: sai trạng thái | `Không thể kết thúc cuộc họp này.` | BE |
+| `MSG115` | 503 | `POST /api/meetings/{id}/transitions` | Start: lỗi persistence trước commit | `Không thể bắt đầu cuộc họp. Vui lòng thử lại.` | BE |
+| `MSG116` | 503 | `POST /api/meetings/{id}/transitions` | End: lỗi persistence hoặc timestamp agenda không hợp lệ trước commit | `Không thể kết thúc cuộc họp. Vui lòng thử lại.` | BE |
+
 ## Tài liệu cuộc họp — contract Backend SCRUM-107
 
 `POST /api/meetings/{id}/documents/upload` (UC-33a AF-1), chi tiết ở [11-tai-lieu-cuoc-hop.md](11-tai-lieu-cuoc-hop.md). Các mã dưới đây **đã triển khai**; dòng nguồn UC phía dưới giữ để truy vết. Không cấp mã mới.
@@ -354,13 +367,13 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG153` | UC-28b / Main Flow · Ngừng dùng — PO 20/10/2026 | *Meeting permissions updated successfully.* |
 | `MSG154` | UC-28b / Trạng thái UI không có thay đổi, không có EX riêng | *No changes to save.* |
 | `MSG155` | UC-22 / EX-3 cũ · Ngừng dùng 13/10/2026 | Bỏ điều kiện điểm danh đủ trước khi kết thúc theo quyết định PO; không tái sử dụng mã. |
-| `MSG110` | UC-21 Start Meeting | *Meeting started successfully.* |
-| `MSG111` | UC-22 End Meeting | *Meeting ended successfully.* |
-| `MSG112` | UC-21 | *This meeting cannot be started.* |
+| `MSG110` | UC-21 Start Meeting | *Meeting started successfully.* — **Đã triển khai SCRUM-69**, xem HTTP contract phía trên. |
+| `MSG111` | UC-22 End Meeting | *Meeting ended successfully.* — **Đã triển khai SCRUM-69**, xem HTTP contract phía trên. |
+| `MSG112` | UC-21 | *This meeting cannot be started.* — **Đã triển khai SCRUM-69**, xem HTTP contract phía trên. |
 | `MSG113` | ADR-0013 · End Meeting khi còn phiên (UC-44 cũ, đã bỏ) | *Complete or cancel all unfinished meeting sessions before ending the meeting.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
-| `MSG114` | UC-22 | *This meeting cannot be ended.* |
-| `MSG115` | UC-21 | *Unable to start the meeting. Please try again.* |
-| `MSG116` | UC-22 | *Unable to end the meeting. Please try again.* |
+| `MSG114` | UC-22 | *This meeting cannot be ended.* — **Đã triển khai SCRUM-69**, xem HTTP contract phía trên. |
+| `MSG115` | UC-21 | *Unable to start the meeting. Please try again.* — **Đã triển khai SCRUM-69**, xem HTTP contract phía trên. |
+| `MSG116` | UC-22 | *Unable to end the meeting. Please try again.* — **Đã triển khai SCRUM-69**, xem HTTP contract phía trên. |
 | `MSG117` | UC-37 Join Meeting Room · Đã triển khai SCRUM-39 | *The online meeting room is not available.* |
 | `MSG118` | UC-37 · Đã triển khai SCRUM-39 | *Unable to join the meeting room. Please try again.* |
 | `MSG119` | UC-39a Manage Microphone | *Microphone access is unavailable. Check your browser or device permissions.* |

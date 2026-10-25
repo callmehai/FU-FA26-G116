@@ -23,14 +23,12 @@ import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useMeeting } from '../../meetings/useMeeting'
+import { useNotifications } from '../../notifications/notificationsContext'
 import { DevicePicker, MicLevel } from './devices'
 import { RoomView } from './RoomView'
 import { ROOM_OPTIONS, deviceErrorMessage, deviceOptions, disconnectMessage, noDeviceReason } from './roomSupport'
 
-type Phase =
-  | { kind: 'lobby' }
-  | { kind: 'inRoom' }
-  | { kind: 'left'; reason: DisconnectReason | undefined }
+type Phase = { kind: 'lobby' } | { kind: 'inRoom' } | { kind: 'left'; reason: DisconnectReason | undefined }
 
 interface Prefs {
   mic: boolean
@@ -83,23 +81,43 @@ function savePrefs(prefs: Prefs) {
  */
 export function MeetingRoomPage() {
   const { meetingId } = useParams()
-  const { state: meetingState } = useMeeting(meetingId)
+  const { state: meetingState, reload: reloadMeeting } = useMeeting(meetingId)
   const [call, setCall] = useState<CallRoomState | 'loading' | 'notFound' | { error: string }>('loading')
   const handleAccessLost = useAccessLost()
 
+  const readCall = useCallback(
+    (isCancelled: () => boolean) => {
+      if (!meetingId) return
+      getMeetingCall(meetingId)
+        .then((state) => !isCancelled() && setCall(state))
+        .catch((err: unknown) => {
+          if (isCancelled() || handleAccessLost(err)) return
+          setCall(isApiError(err, 404) ? 'notFound' : { error: errorMessage(err) })
+        })
+    },
+    [meetingId, handleAccessLost],
+  )
+
   useEffect(() => {
-    if (!meetingId) return
     let cancelled = false
-    getMeetingCall(meetingId)
-      .then((state) => !cancelled && setCall(state))
-      .catch((err: unknown) => {
-        if (cancelled || handleAccessLost(err)) return
-        setCall(isApiError(err, 404) ? 'notFound' : { error: errorMessage(err) })
-      })
+    readCall(() => cancelled)
     return () => {
       cancelled = true
     }
-  }, [meetingId, handleAccessLost])
+  }, [readCall])
+
+  // Someone waiting here before the start learns that the Chair started only from the notification
+  // it sends them (SCRUM-69): re-read then, so "chỉ mở khi cuộc họp đang diễn ra" becomes the lobby.
+  const { lastArrival } = useNotifications()
+  const seenArrival = useRef(lastArrival)
+  useEffect(() => {
+    if (!lastArrival || lastArrival === seenArrival.current) return
+    seenArrival.current = lastArrival
+    if (lastArrival.type !== 'MeetingStarted' || lastArrival.meetingId?.toLowerCase() !== meetingId?.toLowerCase())
+      return
+    void reloadMeeting()
+    readCall(() => false)
+  }, [lastArrival, meetingId, reloadMeeting, readCall])
 
   if (meetingState.kind === 'notFound' || call === 'notFound') return <NotFound />
 
@@ -210,11 +228,12 @@ function PreJoin({
   const micId = savedDevice(ofKind('audioinput'), prefs.micId, prefs.micLabel)
   const speakerId = savedDevice(ofKind('audiooutput'), prefs.speakerId, prefs.speakerLabel)
   const camId = savedDevice(ofKind('videoinput'), prefs.camId, prefs.camLabel)
-  const { attachVideo, ready: previewReady, error: previewError, release: releasePreview } = useCameraPreview(
-    prefs.cam,
-    camId,
-    reloadDevices,
-  )
+  const {
+    attachVideo,
+    ready: previewReady,
+    error: previewError,
+    release: releasePreview,
+  } = useCameraPreview(prefs.cam, camId, reloadDevices)
   const { track: micTrack, release: releaseMic } = useMicPreview(micOn && micAllowed, micId)
   const user = useAuth().user
   // The room has no identity before connecting; the preview uses the signed-in name.
@@ -509,7 +528,11 @@ function RoomPage({ children }: { children: ReactNode }) {
               <span className="prejoin-account-name">{user.fullName}</span>
               <span className="prejoin-account-mail">{user.email}</span>
             </span>
-            <span className="prejoin-avatar" style={{ backgroundColor: colors.bg, color: colors.fg }} aria-hidden="true">
+            <span
+              className="prejoin-avatar"
+              style={{ backgroundColor: colors.bg, color: colors.fg }}
+              aria-hidden="true"
+            >
               {initials(user.fullName)}
             </span>
           </span>

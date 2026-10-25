@@ -15,6 +15,8 @@ export type NotificationType =
   | 'MeetingRejected'
   | 'MeetingPublished'
   | 'MeetingStartingSoon'
+  /** SCRUM-69: the Chair started the meeting; never sent to the Chair who did. */
+  | 'MeetingStarted'
   | 'MeetingRescheduled'
   | 'MeetingCancelled'
   | 'VotingOpened'

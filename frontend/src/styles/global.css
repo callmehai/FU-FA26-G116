@@ -1244,6 +1244,12 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .record-facts { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; color: var(--muted-ink); }
 .record-facts span { display: inline-flex; align-items: center; gap: 6px; }
 .record-facts .icon { color: var(--label-ink); }
+/* "Vào phòng họp" next to the Chair's "Kết thúc họp" is wider than a phone: wrap, never run off. */
+.record-head .page-header-actions { flex-wrap: wrap; max-width: 100%; }
+@media (max-width: 720px) {
+  .record-head .page-header-actions { flex: 1 1 100%; }
+  .record-head .page-header-actions > .btn { flex: 1 1 0; min-width: max-content; }
+}
 
 .detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 360px); gap: 16px; align-items: start; }
 
@@ -1316,7 +1322,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .timeline-violet { --dot: var(--dot-violet); }
 .timeline-live { --dot: var(--live); }
 
-.timeline-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 24px; }
+/* On a 360px phone a long label and the time do not fit one line: the time moves under the label. */
+.timeline-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 8px; min-height: 24px; }
 /* Who acted lives in the time's tooltip (AI-eCabinet), so a row stays one line. */
 .timeline-time {
   flex: none;

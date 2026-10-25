@@ -22,6 +22,11 @@ export interface NotificationsApi {
   feed: NotificationFeed
   /** Increases once per notification pushed in realtime, so the bell can ring. */
   arrivals: number
+  /**
+   * The newest notification pushed in realtime, so an open screen about the same meeting can
+   * re-read itself (a meeting the Chair just started publishes nothing else). Null until one comes.
+   */
+  lastArrival: AppNotification | null
   panelOpen: boolean
   setPanelOpen: (open: boolean) => void
   loadFirstPage: () => Promise<void>

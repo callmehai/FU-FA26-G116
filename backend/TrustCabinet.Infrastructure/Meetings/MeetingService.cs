@@ -723,7 +723,7 @@ public sealed class MeetingService(
 
     private static bool IsCommandShapeValid(MeetingTransitionCommand command)
     {
-        if (!Enum.IsDefined(command.Action))
+        if (!Enum.IsDefined(command.Action) || command.Action is MeetingTransitionAction.Start or MeetingTransitionAction.End)
         {
             return false;
         }

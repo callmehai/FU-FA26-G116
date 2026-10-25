@@ -2,6 +2,7 @@
 
 | Collection | Phạm vi |
 |---|---|
+| [`SCRUM-69-Meeting-Lifecycle.postman_collection.json`](SCRUM-69-Meeting-Lifecycle.postman_collection.json) | UC-21/22; 11 request tuần tự trên Meeting Published riêng, xem [bàn giao](../10-scrum69-ban-giao.md) |
 | [`SCRUM-26-Attendance.postman_collection.json`](SCRUM-26-Attendance.postman_collection.json) | UC-31; GET rồi chọn entry và POST. Điền biến trong môi trường local; không dùng flow UC-07/08 bên dưới. [Contract](../10-diem-danh.md) |
 | [`scrum20-participants.postman_collection.json`](scrum20-participants.postman_collection.json) | Participants; folder `UC-73 — smoke tuần tự` gồm 9 request trên DB riêng, kiểm GET/POST/context/retry/stale/search. Đặt `token` là Chair, `memberToken` là Member duy nhất trong meeting Published/InProgress; không export token. Các request còn lại chạy thủ công theo [bàn giao](../09-thanh-phan-tham-du-ban-giao.md). |
 | [`SCRUM-25-Agenda.postman_collection.json`](SCRUM-25-Agenda.postman_collection.json) | UC-23a–d/24/25/26; chạy thủ công theo [hướng dẫn Agenda](../08-chuong-trinh-nghi-su-ban-giao.md), không áp dụng quy trình UC-07/08 bên dưới |
@@ -58,3 +59,33 @@ Biến của collection (`baseUrl`, `mailpitUrl`, email và mật khẩu demo) s
   `POST /api/users/{id}/password-reset` — nhận `409 MSG14`. Có test tự động trong `UserEndpointsTests`.
 - `MSG15` (không gửi được email) không nằm trong collection: muốn thử thì `docker stop tc-mailpit`
   rồi gọi lại `POST /api/users/{id}/password-reset` — nhận `503 MSG15` sau vài giây.
+
+## SCRUM-69 — Start/End và smoke LiveKit
+
+Collection SCRUM-69 độc lập với quy trình UC-07/08 trên. Điền `baseUrl`, `meetingId`, `chairToken`,
+`memberToken`. Meeting phải Published, có active current Chair/Secretary; memberToken là participant
+được đọc nhưng không là Chair. Chạy đủ 11 request theo thứ tự; Meeting sẽ Ended. Để chạy lại cần
+Meeting test Published mới. Không dùng tài khoản hoặc dữ liệu production.
+
+Smoke tự động dùng [runner C#](../../../scripts/scrum69-livekit-smoke.cs) và
+[hai client LiveKit](../../../scripts/scrum69-livekit-clients.mjs), không mở microphone/camera. Cần .NET 10,
+Node, Chrome, Docker, PostgreSQL cho test (tài khoản có quyền tạo database riêng), `npm --prefix scripts ci`
+và `npm --prefix frontend ci`. Runner áp migration vào database tên ngẫu nhiên rồi xóa database đó,
+không dùng dữ liệu Development. Chạy từ root repository:
+
+```powershell
+$env:SCRUM69_LIVEKIT_SECRET = [Guid]::NewGuid().ToString('N')
+docker run -d --name scrum69-livekit-test -p 7880:7880 -p 7881:7881 -p 7882:7882/udp livekit/livekit-server:v1.13.7 --dev --bind 0.0.0.0 --node-ip 127.0.0.1 --keys "scrum69-test: $env:SCRUM69_LIVEKIT_SECRET"
+# Đặt TRUSTCABINET_TEST_CONNECTION_STRING hoặc POSTGRES_PASSWORD của PostgreSQL test trong môi trường.
+# Runner file-based nằm trong thư mục temp: cần biến môi trường, không tự tìm được .env của repository.
+dotnet run --file scripts/scrum69-livekit-smoke.cs
+docker stop scrum69-livekit-test
+docker rm scrum69-livekit-test
+```
+
+Không ghi secret/token vào collection hoặc source. Runner truyền join ticket tới client bằng stdin,
+chỉ in kết quả và latency. Nó kiểm tra hai client bị ngắt sau End, từ chối join ticket mới, thử lại
+token cũ và gọi một lượt reconciliation nếu token cũ vào được; sau đó đo 100 caller trên 100 Meeting
+độc lập với LiveKit thật local. Đây không phải kiểm thử tải media hoặc chứng nhận hiệu năng deployment.
+
+Xem [báo cáo thực chạy](../10-scrum69-kiem-thu.md) và [checklist FE/Tester](../10-scrum69-ban-giao.md).

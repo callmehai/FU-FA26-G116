@@ -59,7 +59,7 @@ public sealed class AgendaMeetingEnd(TrustCabinetDbContext db) : IAgendaMeetingE
             && i.Status == AgendaItemStatus.InProgress, ct);
         if (item is null) return null;
         if (!AgendaExecution.TryComplete(item, endedAt))
-            throw new InvalidOperationException("The current agenda item has no valid start time or the end precedes its start.");
+            throw new InvalidAgendaExecutionException();
         return new(Guid.CreateVersion7(), meetingId, "MeetingEnded", item.Id, item.Title, item.ActualEndedAt!.Value);
     }
 }
