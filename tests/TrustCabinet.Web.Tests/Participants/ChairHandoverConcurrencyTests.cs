@@ -139,16 +139,18 @@ public sealed class ChairHandoverConcurrencyTests(ParticipantFixture f) : IClass
             }), 200, "MSG100");
         }
         finally { f.Queries.RejectUserUpdates = false; }
-        await AssertOneSwap(s);
+        // The Secretary acted, so the locked-out Chair and the new one are both told in-app.
+        await AssertOneSwap(s, notifications: 2);
     }
 
-    private async Task AssertOneSwap(ParticipantFixture.Scenario s)
+    private async Task AssertOneSwap(ParticipantFixture.Scenario s, int notifications = 1)
     {
         await using var db = f.Db();
         Assert.Equal(1, (await db.Meetings.FindAsync(s.MeetingId))!.ParticipantsRevision);
         Assert.Equal(1, await db.MeetingParticipants.CountAsync(p => p.MeetingId == s.MeetingId && p.Role == MeetingRole.Chair));
         Assert.Equal(1, await db.MeetingParticipants.CountAsync(p => p.MeetingId == s.MeetingId && p.Role == MeetingRole.Secretary));
-        Assert.Equal(2, await db.Notifications.CountAsync(n => n.MeetingId == s.MeetingId));
+        // By default the outgoing Chair handed over and gets only the email, not an in-app notice.
+        Assert.Equal(notifications, await db.Notifications.CountAsync(n => n.MeetingId == s.MeetingId));
         Assert.Equal(2, await db.MeetingInvitationDispatches.CountAsync(d => d.MeetingId == s.MeetingId));
         Assert.Equal(1, await db.AuditLog.CountAsync(a => a.ObjectId == s.MeetingId));
         Assert.Single(f.Changes.Events, e => e.Change.MeetingId == s.MeetingId);
