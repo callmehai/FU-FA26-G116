@@ -8,11 +8,12 @@ Run:
     python scripts/push_reports.py 3            # dry run: where it would write
     python scripts/push_reports.py 3 --confirm  # replace the Drive content
 
-The Drive target is a Google Doc, so the local DOCX is uploaded with
-`files.update` and converted: the file keeps its ID, name and link, and no copy
-is created. Needs GOOGLE_DRIVE_ACCESS_TOKEN with Drive write access. The targets
-already exist and were not created by this client, so `drive.file` is not
-enough: request https://www.googleapis.com/auth/drive.
+The Drive target is either a Google Doc or a stored DOCX — whichever it already
+is. Either way the local DOCX is uploaded with `files.update`, so the file keeps
+its ID, name, link and type, and no copy is created. Needs a Drive credential
+with write access (see `scripts/drive_auth.py`). The targets already exist and
+were not created by this client, so `drive.file` is not enough: request
+https://www.googleapis.com/auth/drive.
 """
 
 from __future__ import annotations
@@ -20,7 +21,6 @@ from __future__ import annotations
 import argparse
 import difflib
 import json
-import os
 import re
 import sys
 import tempfile
@@ -32,6 +32,7 @@ import zipfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import drive_auth  # noqa: E402  (same directory, shared credential)
 from sync_reports import docx_to_markdown  # noqa: E402  (same directory, shared parser)
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -70,12 +71,7 @@ TARGETS: dict[int, tuple[str, str, str]] = {
 
 
 def token() -> str:
-    value = os.environ.get("GOOGLE_DRIVE_ACCESS_TOKEN")
-    if not value:
-        raise SystemExit(
-            "GOOGLE_DRIVE_ACCESS_TOKEN is not set; it needs Drive write access."
-        )
-    return value
+    return drive_auth.access_token()
 
 
 def call(request: urllib.request.Request) -> bytes:
@@ -89,29 +85,31 @@ def call(request: urllib.request.Request) -> bytes:
 
 
 def metadata(file_id: str) -> dict:
-    fields = "id,name,mimeType,modifiedTime,size,owners(emailAddress),trashed"
+    fields = "id,name,mimeType,modifiedTime,size,owners(emailAddress),trashed,capabilities(canEdit)"
     request = urllib.request.Request(
         f"{API}/files/{file_id}?fields={urllib.parse.quote(fields)}&supportsAllDrives=true"
     )
     return json.loads(call(request))
 
 
-def export_docx(file_id: str, target: Path) -> None:
-    request = urllib.request.Request(
-        f"{API}/files/{file_id}/export?mimeType={urllib.parse.quote(DOCX_MIME)}"
-    )
-    target.write_bytes(call(request))
+def download_docx(file_id: str, target: Path, mime_type: str) -> None:
+    """Fetch the current content: a Google Doc is exported, a stored DOCX downloaded."""
+    if mime_type == DOC_MIME:
+        url = f"{API}/files/{file_id}/export?mimeType={urllib.parse.quote(DOCX_MIME)}"
+    else:
+        url = f"{API}/files/{file_id}?alt=media&supportsAllDrives=true"
+    target.write_bytes(call(urllib.request.Request(url)))
     with zipfile.ZipFile(target) as document:
         document.read("word/document.xml")
 
 
-def upload(file_id: str, path: Path) -> dict:
+def upload(file_id: str, path: Path, mime_type: str) -> dict:
     boundary = f"trustcabinet-{uuid.uuid4().hex}"
     body = b"".join(
         [
             f"--{boundary}\r\n".encode(),
             b"Content-Type: application/json; charset=UTF-8\r\n\r\n",
-            json.dumps({"mimeType": DOC_MIME}).encode("utf-8"),
+            json.dumps({"mimeType": mime_type}).encode("utf-8"),
             b"\r\n",
             f"--{boundary}\r\n".encode(),
             f"Content-Type: {DOCX_MIME}\r\n\r\n".encode(),
@@ -129,23 +127,21 @@ def upload(file_id: str, path: Path) -> dict:
     return json.loads(call(request))
 
 
-def normalised(path: Path) -> str:
-    return re.sub(r"\s+", " ", docx_to_markdown(path)).strip()
-
-
 def changelog_dates(text: str) -> list[str]:
     return re.findall(r"^\| (\d{2}/\d{2}/\d{4}) \|", text, re.M)
 
 
-def check(file_id: str, local: Path) -> int:
+def check(file_id: str, local: Path, mime_type: str) -> int:
     with tempfile.TemporaryDirectory(prefix="push-reports-") as temporary:
         remote = Path(temporary) / "remote.docx"
-        export_docx(file_id, remote)
-        remote_text = normalised(remote)
-    local_text = normalised(local)
+        download_docx(file_id, remote, mime_type)
+        remote_markdown = docx_to_markdown(remote)
+    remote_text = re.sub(r"\s+", " ", remote_markdown).strip()
+    local_markdown = docx_to_markdown(local)
+    local_text = re.sub(r"\s+", " ", local_markdown).strip()
 
-    remote_dates = changelog_dates(remote_text)
-    local_dates = changelog_dates(local_text)
+    remote_dates = changelog_dates(remote_markdown)
+    local_dates = changelog_dates(local_markdown)
     print(f"local  Change Log rows: {len(local_dates)} (last {local_dates[-1] if local_dates else '-'})")
     print(f"drive  Change Log rows: {len(remote_dates)} (last {remote_dates[-1] if remote_dates else '-'})")
 
@@ -186,9 +182,14 @@ def main() -> int:
     before = metadata(file_id)
     if before.get("trashed"):
         raise SystemExit("The Drive target is in the trash; refusing to write.")
+    if not before.get("capabilities", {}).get("canEdit"):
+        raise SystemExit(
+            "The account behind the token cannot edit this Drive file; "
+            "ask the owner for edit access before pushing."
+        )
 
     if args.check:
-        return check(file_id, local)
+        return check(file_id, local, before["mimeType"])
 
     print(f"Local  {local.relative_to(ROOT)} ({local.stat().st_size:,} bytes)")
     describe("Drive", before)
@@ -202,7 +203,7 @@ def main() -> int:
         return 0
 
     print("\nUploading ...")
-    upload(file_id, local)
+    upload(file_id, local, before["mimeType"])
     after = metadata(file_id)
     describe("After", after)
 

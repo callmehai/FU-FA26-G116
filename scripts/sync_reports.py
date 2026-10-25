@@ -10,7 +10,6 @@ from __future__ import annotations
 import argparse
 import io
 import json
-import os
 import re
 import sys
 import tempfile
@@ -21,6 +20,7 @@ import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path
 
+import drive_auth  # same directory, shared credential
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE_DIR = ROOT / "docs" / "08-reports" / "source"
@@ -60,16 +60,18 @@ def report_number(name: str) -> int:
 
 def drive_request(url: str) -> bytes:
     headers = {"User-Agent": "Mozilla/5.0"}
-    token = os.environ.get("GOOGLE_DRIVE_ACCESS_TOKEN")
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
+    if drive_auth.configured():
+        headers["Authorization"] = f"Bearer {drive_auth.access_token()}"
     with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=60) as response:
         return response.read()
 
 
 def drive_api(path: str, **params: str) -> bytes:
-    if not os.environ.get("GOOGLE_DRIVE_ACCESS_TOKEN"):
-        raise ValueError("Drive folder/private file requires GOOGLE_DRIVE_ACCESS_TOKEN with Drive read access.")
+    if not drive_auth.configured():
+        raise ValueError(
+            "Drive folder/private file requires a Drive credential with read access: "
+            "GOOGLE_DRIVE_REFRESH_TOKEN (with client id and secret) or GOOGLE_DRIVE_ACCESS_TOKEN."
+        )
     return drive_request(f"https://www.googleapis.com/drive/v3/{path}?{urllib.parse.urlencode(params)}")
 
 
@@ -81,7 +83,7 @@ def download_docx(url: str, target: Path, mime_type: str | None = None) -> None:
     file_id = match.group(1) if match else urllib.parse.parse_qs(parsed.query).get("id", [""])[0]
     if not re.fullmatch(r"[\w-]+", file_id):
         raise ValueError(f"Invalid Drive file URL: {url}")
-    if os.environ.get("GOOGLE_DRIVE_ACCESS_TOKEN"):
+    if drive_auth.configured():
         if mime_type is None:
             metadata = json.loads(drive_api(f"files/{file_id}", fields="mimeType", supportsAllDrives="true"))
             mime_type = metadata["mimeType"]
@@ -99,7 +101,7 @@ def download_docx(url: str, target: Path, mime_type: str | None = None) -> None:
         with zipfile.ZipFile(io.BytesIO(data)) as document:
             ET.fromstring(document.read("word/document.xml"))
     except (zipfile.BadZipFile, KeyError, ET.ParseError) as error:
-        raise ValueError("Drive did not return a DOCX. Check sharing/access; for private or large files set GOOGLE_DRIVE_ACCESS_TOKEN.") from error
+        raise ValueError("Drive did not return a DOCX. Check sharing/access; for private or large files set a Drive credential (GOOGLE_DRIVE_REFRESH_TOKEN or GOOGLE_DRIVE_ACCESS_TOKEN).") from error
     target.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile("wb", dir=target.parent, delete=False) as temporary:
         temporary.write(data)
