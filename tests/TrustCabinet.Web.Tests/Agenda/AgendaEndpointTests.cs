@@ -9,8 +9,8 @@ namespace TrustCabinet.Web.Tests.Agenda;
 
 public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<AgendaFixture>
 {
-    internal static object Input(string title = "Tiêu đề", int duration = 20, Guid? presenter = null, Guid[]? documents = null)
-        => new { title, description = "Dòng 1\nDòng 2", plannedDurationMinutes = duration, presenterId = presenter, documentIds = documents ?? [] };
+    internal static object Input(string title = "Tiêu đề", Guid? presenter = null, Guid[]? documents = null)
+        => new { title, description = "Dòng 1\nDòng 2", presenterId = presenter, documentIds = documents ?? [] };
 
     internal static async Task<JsonElement> AssertCode(HttpResponseMessage response, int status, string code)
     {
@@ -80,7 +80,13 @@ public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<A
     }
 
     [Theory]
-    [InlineData("{}")]
+    [InlineData("{\"title\":\"X\",\"presenterId\":\"bad\"}")]
+    [InlineData("{\"Title\":\"X\"}")]
+    [InlineData("{\"title\":\"X\",\"title\":\"Y\"}")]
+    [InlineData("{\"title\":\"X\",\"status\":\"Done\"}")]
+    [InlineData("{\"title\":\"X\",\"actualStartedAt\":null}")]
+    [InlineData("{\"title\":\"X\",\"presenterName\":\"Legacy\"}")]
+    [InlineData("{}") ]
     [InlineData("null")]
     [InlineData("[]")]
     [InlineData("{")]
@@ -135,9 +141,9 @@ public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<A
         using var client = fixture.Client(s.Secretary);
         var bad = new object[] {
             Input(new string('x', 301)),
-            new { title = "X", plannedDurationMinutes = 20, description = new string('x', 4001) },
-            new { title = "X", plannedDurationMinutes = 20, presenterName = new string('x', 201) },
-            new { title = "X", plannedDurationMinutes = 20, presenterName = "X", presenterId = s.Member },
+            new { title = "X", description = new string('x', 4001) },
+            new { title = "X", presenterGuestInvitationId = Guid.Empty },
+            new { title = "X", presenterGuestInvitationId = Guid.NewGuid(), presenterId = s.Member },
             Input(presenter: s.Outsider), Input(presenter: Guid.Empty),
             Input(documents: [s.DocumentId, s.DocumentId]), Input(documents: [Guid.Empty]), Input(documents: [other.DocumentId]) };
         foreach (var input in bad) await AssertCode(await client.PostAsJsonAsync(s.Url, input), 400, "MSG66");
@@ -163,28 +169,30 @@ public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<A
         var s = await fixture.Seed();
         using var client = fixture.Client(s.Secretary);
         await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[1]}", Input(documents: [s.DocumentId])), 200, "MSG61");
-        await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input(documents: [s.DocumentId])), 400, "MSG66");
+        await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input(documents: [s.DocumentId])), 200, "MSG61");
         await AssertCode(await client.DeleteAsync(s.Url + $"/{s.Items[1]}"), 200, "MSG62");
         await using (var db = fixture.Db())
         {
-            Assert.Null(await AgendaFixture.LinkedItem(db, s.DocumentId));
+            Assert.Equal(s.Items[0], await AgendaFixture.LinkedItem(db, s.DocumentId));
             Assert.True(await db.MeetingDocuments.AnyAsync(d => d.Id == s.DocumentId && d.RemovedAt == null));
         }
         var created = await AssertCode(await client.PostAsJsonAsync(s.Url, Input()), 201, "MSG60");
         var last = created.GetProperty("agendaItemId").GetGuid();
         var snapshot = await client.GetFromJsonAsync<JsonElement>(s.Url);
         Assert.Equal(new[] { 1, 7, 8 }, snapshot.GetProperty("items").EnumerateArray().Select(i => i.GetProperty("position").GetInt32()));
-        var order = new { orderVersion = snapshot.GetProperty("orderVersion").GetString(), pendingItemIds = new[] { last, s.Items[2], s.Items[0] } };
+        var order = new { orderVersion = snapshot.GetProperty("orderVersion").GetString(), orderedItemIds = new[] { last, s.Items[2], s.Items[0] } };
         await AssertCode(await client.PutAsJsonAsync(s.Url + "/order", order), 200, "MSG63");
         await AssertCode(await client.PutAsJsonAsync(s.Url + "/order", order), 409, "MSG143");
         snapshot = await client.GetFromJsonAsync<JsonElement>(s.Url);
-        await AssertCode(await client.PutAsJsonAsync(s.Url + "/order", new { orderVersion = snapshot.GetProperty("orderVersion").GetString(), pendingItemIds = new[] { last } }), 400, "MSG143");
+        await AssertCode(await client.PutAsJsonAsync(s.Url + "/order", new { orderVersion = snapshot.GetProperty("orderVersion").GetString(), orderedItemIds = new[] { last } }), 400, "MSG143");
         Assert.Equal(last, snapshot.GetProperty("items")[0].GetProperty("id").GetGuid());
         using var organizer = fixture.Client(s.Organizer);
         await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{last}", Input(documents: [s.DocumentId])), 200, "MSG61");
-        var hidden = await organizer.GetFromJsonAsync<JsonElement>(s.Url);
-        Assert.False(hidden.GetProperty("items")[0].GetProperty("canReadDocuments").GetBoolean());
-        Assert.Empty(hidden.GetProperty("items")[0].GetProperty("documents").EnumerateArray());
+        // The Organizer is not a participant but may read the meeting, so sees its documents as in GET …/documents.
+        var organizerView = await organizer.GetFromJsonAsync<JsonElement>(s.Url);
+        Assert.True(organizerView.GetProperty("items")[0].GetProperty("canReadDocuments").GetBoolean());
+        Assert.Equal(s.DocumentId, Assert.Single(organizerView.GetProperty("items")[0].GetProperty("documents")
+            .EnumerateArray()).GetProperty("id").GetGuid());
     }
 
     [Fact]
@@ -195,13 +203,12 @@ public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<A
         using var secretary = fixture.Client(s.Secretary);
         await AssertCode(await secretary.PostAsync(s.Url + $"/{s.Items[0]}/current", null), 403, "MSG73");
         await AssertCode(await secretary.PostAsync(s.Url + $"/{s.Items[0]}/complete", null), 403, "MSG74");
-        await AssertCode(await chair.PostAsync(s.Url + $"/{s.Items[1]}/current", null), 409, "MSG144");
         await AssertCode(await chair.PostAsync(s.Url + $"/{s.Items[0]}/current", null), 200, "MSG64");
         await AssertCode(await chair.PostAsync(s.Url + $"/{s.Items[1]}/current", null), 409, "MSG72");
         await AssertCode(await chair.PostAsync(s.Url + $"/{s.Items[0]}/current", null), 409, "MSG73");
         await AssertCode(await chair.PostAsync(s.Url + $"/{s.Items[1]}/complete", null), 409, "MSG74");
         await AssertCode(await secretary.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input("Sửa tiêu đề")), 200, "MSG61");
-        await AssertCode(await secretary.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input("Không lưu một phần", 21)), 409, "MSG141");
+        await AssertCode(await secretary.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input("Sửa tiêu đề", presenter: s.Member, documents: [s.DocumentId])), 200, "MSG61");
         await AssertCode(await secretary.DeleteAsync(s.Url + $"/{s.Items[0]}"), 409, "MSG142");
         await AssertCode(await chair.PostAsync(s.Url + $"/{s.Items[0]}/complete", null), 200, "MSG65");
         await AssertCode(await chair.PostAsync(s.Url + $"/{s.Items[0]}/complete", null), 409, "MSG74");
@@ -209,11 +216,13 @@ public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<A
         var item = snapshot.GetProperty("items")[0];
         Assert.Equal("Done", item.GetProperty("status").GetString());
         Assert.Equal("Sửa tiêu đề", item.GetProperty("title").GetString());
-        Assert.Equal(0, item.GetProperty("actualDurationSeconds").GetDouble());
+        Assert.False(item.TryGetProperty("actualDurationSeconds", out _));
+        Assert.False(item.TryGetProperty("plannedDurationMinutes", out _));
+        Assert.Equal(item.GetProperty("actualStartedAt").GetDateTimeOffset(), item.GetProperty("actualEndedAt").GetDateTimeOffset());
         Assert.Equal("InProgress", snapshot.GetProperty("meetingStatus").GetString());
         Assert.Equal("Pending", snapshot.GetProperty("items")[1].GetProperty("status").GetString());
         var count = fixture.Events.Count;
-        await AssertCode(await secretary.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input("Sửa tiêu đề")), 200, "MSG61");
+        await AssertCode(await secretary.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input("Sửa tiêu đề", presenter: s.Member, documents: [s.DocumentId])), 200, "MSG61");
         Assert.Equal(count, fixture.Events.Count);
     }
 
@@ -257,7 +266,7 @@ public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<A
                 "create" => await client.PostAsJsonAsync(s.Url, Input(documents: [s.DocumentId])),
                 "update" => await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input()),
                 "delete" => await client.DeleteAsync(s.Url + $"/{s.Items[0]}"),
-                "order" => await client.PutAsJsonAsync(s.Url + "/order", new { orderVersion = snapshot.GetProperty("orderVersion").GetString(), pendingItemIds = s.Items.Reverse().ToArray() }),
+                "order" => await client.PutAsJsonAsync(s.Url + "/order", new { orderVersion = snapshot.GetProperty("orderVersion").GetString(), orderedItemIds = s.Items.Reverse().ToArray() }),
                 _ => await client.PostAsync(s.Url + $"/{s.Items[0]}/{action}", null) };
             await AssertCode(response, 503, code);
         }

@@ -56,7 +56,8 @@ public sealed class ParticipantRolePolicyTests(ParticipantFixture f) : IClassFix
         await using var db = f.Db();
         Assert.Equal(MeetingRole.Member, (await db.MeetingParticipants.FindAsync(s.ChairAssignment))!.Role);
         Assert.Equal(MeetingRole.Chair, (await db.MeetingParticipants.FindAsync(s.MemberAssignment))!.Role);
-        Assert.Equal(2, await db.Notifications.CountAsync(n => n.MeetingId == s.MeetingId && n.Type == NotificationType.MeetingRoleChanged));
+        // The Chair is not told in-app about their own handover; the new Chair is.
+        Assert.Equal(s.Member, (await db.Notifications.SingleAsync(n => n.MeetingId == s.MeetingId && n.Type == NotificationType.MeetingRoleChanged)).UserId);
         Assert.Equal(2, await db.MeetingInvitationDispatches.CountAsync(d => d.MeetingId == s.MeetingId && d.EventKind == InvitationEventKind.RoleChanged));
     }
 

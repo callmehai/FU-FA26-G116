@@ -79,4 +79,16 @@ public static class AuditActions
     /// <c>ObjectId</c> is the role's id — roles are rows since ADR-0008.
     /// </summary>
     public const string RoleObjectType = "Role";
+
+    /// <summary>UC-32c — a document of a Confidential or Secret meeting was opened in the viewer (BR-318).</summary>
+    public const string DocumentViewed = "document.viewed";
+
+    /// <summary>UC-32c AF-1 — the same, downloaded. Only a Confidential one gets here: Secret is not downloadable (BR-188).</summary>
+    public const string DocumentDownloaded = "document.downloaded";
+
+    /// <summary>
+    /// What <c>AuditLogEntry.ObjectType</c> carries for the two above. The <c>ObjectId</c> is the
+    /// MeetingDocument, since that is what the reader opened; the meeting goes in the details.
+    /// </summary>
+    public const string MeetingDocumentObjectType = "MeetingDocument";
 }

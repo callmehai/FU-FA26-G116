@@ -32,6 +32,8 @@ public enum MeetingHistoryAction
     /// <summary>The organizer moved a Published meeting's schedule, place or link (UC-15 AF-1).</summary>
     Reschedule,
     LegacyTransition,
+    Start,
+    End,
 }
 
 /// <summary>Actions accepted by the meeting transition API. LegacyTransition is never a command.</summary>
@@ -43,6 +45,8 @@ public enum MeetingTransitionAction
     ReturnToDraft,
     Publish,
     TransferOrganizer,
+    Start,
+    End,
 }
 
 /// <summary>

@@ -42,7 +42,7 @@ notification hoặc invitation. Ở `Published`, cùng PUT là **dời lịch** 
 đổi được thời gian, địa điểm, link. Hệ thống đọc trạng thái mới nhất sau khi khóa dòng và trước khi
 validate nội dung. Trạng thái khác `Draft`/`Rejected`/`Published` trả `409 MSG33`.
 
-### Authorization matrix cho SCRUM-19
+### Authorization matrix cho SCRUM-19 và SCRUM-69
 
 | Hành vi | Quan hệ/capability bắt buộc | Chair có tự được phép không? |
 |---|---|---|
@@ -51,6 +51,8 @@ validate nội dung. Trạng thái khác `Draft`/`Rejected`/`Published` trả `4
 | Approve/Reject | Current `AssignedApproverId` + capability `MeetingApprover`, khác Organizer; meeting WaitingApproval | Không; chỉ được nếu Chair đồng thời là current Assigned Approver và không phải Organizer |
 | Publish | Meeting Organizer + `MeetingCreator`; meeting Approved; đúng một Chair active và ít nhất một Secretary active. Invitation response không ảnh hưởng readiness | Không; chỉ được nếu Chair đồng thời là Organizer |
 | TransferOrganizer | Actor active có `AdminUsers`; meeting Approved và Organizer hiện tại inactive; Organizer mới active có `MeetingCreator`, khác người cũ và current Assigned Approver | Không |
+| Start | Active current Chair; Published; đúng một active current Chair và ít nhất một active current Secretary | Có; không cần system capability |
+| End | Active current Chair; InProgress; không gate Secretary/Vote/attendance/agenda Pending | Có; không cần system capability |
 | Đọc full lifecycle history/rejection reason | Meeting Organizer hoặc current Assigned Approver | Chair được đọc rejection reason; organizer-transfer metadata vẫn redacted |
 | Đọc history/rejection reason của Chair/Secretary | Participant current của chính meeting có role Chair hoặc Secretary, user active, chưa ủy quyền (`Response != Delegated`, `DelegatedToUserId = null`) | Có; không xem snapshot Organizer cũ/mới nếu không đồng thời có full-history permission |
 | Đọc timeline redacted | Member từ Published; mọi quan hệ đọc hợp lệ khác không có full-history permission | Không có rejection reason hoặc organizer-transfer metadata |
@@ -200,7 +202,7 @@ với người duyệt được chọn cho cycle mới; không bắt buộc `Ret
 `description` khác giá trị đang lưu thì trả `400 MSG31` với `errors` đúng các field đó. Giờ bắt đầu mới
 phải ở tương lai (BR-75). Có thay đổi thì trong cùng transaction: lưu lịch mới, giữ `Published`, ghi
 một history `Reschedule` (`Published → Published`) và một notification `MeetingRescheduled` cho mỗi
-participant active, chưa Delegated (BR-76); trả `200 MSG138`. Body không đổi gì trả `200 MSG30` và
+participant active, chưa Delegated, trừ chính người dời lịch (BR-76); trả `200 MSG138`. Body không đổi gì trả `200 MSG30` và
 không ghi history hay notification. Guest hiện tại có durable dispatch Rescheduled cùng transaction (SCRUM-20); link xác minh thật còn phụ thuộc SCRUM-59. Internal nhận notification như trước.
 
 ### POST `/api/meetings/{id}/transitions` — SCRUM-19
@@ -218,6 +220,8 @@ Endpoint nhận một action, không nhận actor, source/target status hoặc t
 | `ReturnToDraft` | Không | Rejected → Draft; hoặc WaitingApproval → Draft khi approver hiện tại không còn hợp lệ |
 | `Publish` | Không | Approved → Published |
 | `TransferOrganizer` | `organizerId` GUID khác rỗng, bắt buộc | Approved → Approved; đổi Organizer khi người cũ inactive |
+| `Start` | Không — SCRUM-69 | Published → InProgress |
+| `End` | Không — SCRUM-69 | InProgress → Ended |
 
 `TransferOrganizer` là đường khôi phục khi meeting đã duyệt nhưng Organizer bị vô hiệu hóa.
 Gửi `{"action":"TransferOrganizer","organizerId":"<GUID người tổ chức mới>"}` qua endpoint này.
@@ -594,3 +598,21 @@ stale content.
 ## Bàn giao thay đổi roster PO 20/10/2026
 
 Form FE hiện có phải bổ sung participants khi tạo. Chi tiết contract, lỗi MSG277 và UC-73: [API roster](09-thanh-phan-tham-du.md), [handoff](09-thanh-phan-tham-du-ban-giao.md). Thay đổi này không sửa quyền submit/approve/publish/reschedule.
+
+## SCRUM-69 — Start/End (UC-21/22)
+
+`POST /api/meetings/{id}/transitions` nhận `{"action":"Start"}` hoặc `{"action":"End"}`.
+Chỉ nhận `action`, đúng casing; property lạ/trùng (kể cả actor, timestamp, reason) bị từ chối.
+Giới hạn 64 KiB, Content-Type application/json. Request End là xác nhận của người dùng.
+
+- Start: active current Chair, Published → InProgress; đúng một active current Chair và ít nhất một active current Secretary. Không yêu cầu Accepted/Present, giờ dự kiến, agenda hoặc LiveKit.
+- End: active current Chair, InProgress → Ended; không gate Secretary, Vote Open, attendance hay Pending agenda. Current agenda thành Done trong cùng transaction; Pending/Done khác giữ nguyên.
+- Thành công: `MeetingTransitionResponse { code, message, meeting, history }`; Start `200/MSG110`, End `200/MSG111`. Server ghi actualStartedAt/actualEndedAt UTC microsecond và một history Start/End; End giữ actualStartedAt.
+- Không đăng nhập: 401; inactive: 403 theo gate; lookup gate lỗi: 503/MSG131.
+- Không tồn tại/không được đọc: 404 body rỗng. Đọc được nhưng không phải Chair: 403/MSG112 (Start), MSG114 (End). Sai trạng thái/readiness: 409 cùng mã. Gọi lặp cũng 409, không lặp side effect.
+- Persistence thất bại trước commit: 503/MSG115 (Start), MSG116 (End); timestamp agenda không hợp lệ cũng MSG116 và rollback. JSON/action sai 400/MSG80, Content-Type sai 415/MSG34, body quá lớn 413/MSG87.
+
+Meeting, current agenda và history được ghi dưới khóa Meeting trong một transaction ReadCommitted.
+Notification Start, agendaChanged/MeetingEnded và đóng LiveKit chạy sau commit với budget độc lập request.
+Lỗi side effect không đổi kết quả thành công; notification creation best effort, room được janitor đối soát.
+Không có lifecycle event Start mới. Xem [bàn giao FE/Tester](10-scrum69-ban-giao.md).

@@ -306,3 +306,9 @@ Ai từng làm SQL Server rất dễ vấp:
 
 Domain tách khỏi EF để quy tắc nghiệp vụ về sau không bị buộc vào một ORM cụ thể. Nếu lớp nghiệp vụ
 lớn thêm thì tách tiếp `TrustCabinet.Application` như README đã dự tính.
+
+## Migration Agenda SCRUM-98
+
+`SynchronizeAgendaWithPoRequirements` bỏ cột duration, thêm Guest presenter và conclusion/author/time nullable, check và FK Restrict. Cột presenter_name giữ nguyên dữ liệu lịch sử. Không reset seed, không đổi các bảng Meeting/Participants/Documents/Minutes/Notification/Email.
+
+Trước rollout phải backup database và kiểm khả năng restore; Frontend phải được tích hợp contract mới. Down chủ động ném lỗi vì không thể khôi phục duration đã bỏ. Dùng backup đã kiểm chứng hoặc forward fix, không tạo duration giả. Khi phát triển/kiểm thử SCRUM-98 chỉ migrate database test riêng; không tự chạy startup Development hay migrate trên server chung.

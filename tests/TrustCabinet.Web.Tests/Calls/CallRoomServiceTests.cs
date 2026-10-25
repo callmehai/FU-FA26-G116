@@ -143,6 +143,31 @@ public sealed class CallRoomServiceTests
         Assert.Equal(CallStatus.Ended, session.Status);
     }
 
+    [Theory]
+    [InlineData(MeetingStatus.Ended, MeetingMode.Online)]
+    [InlineData(MeetingStatus.InProgress, MeetingMode.InPerson)]
+    public async Task Joining_a_closed_room_with_an_old_ticket_closes_it_again_at_once(MeetingStatus status, MeetingMode mode)
+    {
+        _calls.Invite(_meetingId, _member, status: status, mode: mode);
+
+        await Service.HandleWebhookAsync(Webhook("participant_joined", _member));
+
+        Assert.Equal(Room, Assert.Single(_liveKit.Deleted));
+        Assert.Equal(CallStatus.Ended, Assert.Single(_calls.Sessions).Status);
+        Assert.NotNull(Assert.Single(_calls.Stints).LeftAt);
+    }
+
+    [Fact]
+    public async Task Joining_an_open_room_leaves_it_open()
+    {
+        _calls.Invite(_meetingId, _member);
+
+        await Service.HandleWebhookAsync(Webhook("participant_joined", _member));
+
+        Assert.Empty(_liveKit.Deleted);
+        Assert.Equal(CallStatus.Active, Assert.Single(_calls.Sessions).Status);
+    }
+
     [Fact]
     public async Task Webhooks_for_other_rooms_or_synthetic_identities_are_ignored()
     {

@@ -11,10 +11,10 @@ public sealed class AgendaRulesTests
     [InlineData(1)]
     [InlineData(1200)]
     [InlineData(1201)]
-    public void Actual_duration_is_independent_of_planned_duration(int seconds)
+    public void Completion_records_timestamp_even_immediately_after_start(int seconds)
     {
         var start = new DateTimeOffset(2026, 10, 12, 0, 0, 0, TimeSpan.Zero);
-        var item = new AgendaItem { Title = "Test", Status = AgendaItemStatus.InProgress, ActualStartedAt = start, PlannedDurationMinutes = 20 };
+        var item = new AgendaItem { Title = "Test", Status = AgendaItemStatus.InProgress, ActualStartedAt = start };
         Assert.True(AgendaExecution.TryComplete(item, start.AddSeconds(seconds).AddTicks(7)));
         Assert.Equal(seconds, (item.ActualEndedAt!.Value - item.ActualStartedAt!.Value).TotalSeconds);
         Assert.Equal(start, item.ActualStartedAt);
@@ -51,12 +51,11 @@ public sealed class AgendaRulesTests
     [Fact]
     public void Normalization_preserves_newlines_and_validates_boundaries()
     {
-        var input = AgendaRules.Normalize(new("  X  ", "A\nB", int.MaxValue, PresenterName: "  Khách  "));
+        var input = AgendaRules.Normalize(new("  X  ", "A\nB"));
         Assert.Equal("X", input.Title);
         Assert.Equal("A\nB", input.Description);
-        Assert.Equal("Khách", input.PresenterName);
         Assert.Empty(AgendaRules.Validate(input));
         Assert.Empty(input.DocumentIds!);
-        Assert.NotEmpty(AgendaRules.Validate(AgendaRules.Normalize(new(" ", PlannedDurationMinutes: 0))));
+        Assert.NotEmpty(AgendaRules.Validate(AgendaRules.Normalize(new(" "))));
     }
 }

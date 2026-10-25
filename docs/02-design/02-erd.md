@@ -36,13 +36,13 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | MeetingStatusHistory | Bằng chứng chuyển trạng thái | NEED MIGRATION / RESTRUCTURE | Giữ append-only; đồng bộ vòng đời đích. |
 | MeetingParticipant | Phân công người tham dự nội bộ | NEED MIGRATION / RESTRUCTURE | Bỏ Guest; hỗ trợ phân công Current/Removed và lưu lịch sử. |
 | MeetingGuestInvitation | Lời mời khách ngoài theo cuộc họp | NOT IMPLEMENTED | Thêm entity riêng; khách không phải User/người tham dự nội bộ. |
-| AgendaItem | Mục nghị sự của cuộc họp | NEED MIGRATION / RESTRUCTURE | Giữ MeetingId (không đổi sang MeetingSessionId); trạng thái đích Pending/InProgress/Done. |
+| AgendaItem | Mục nghị sự của cuộc họp | IMPLEMENTED (SCRUM-98) | MeetingId; Pending/InProgress/Done; presenter Internal/Guest; kết luận và author/time; bỏ duration, giữ tên lịch sử. |
 | Notification | Thông báo của User | IMPLEMENTED | Giữ User bắt buộc, Meeting tùy chọn. |
 | Document | Một dòng trong kho cá nhân, trỏ tới một StoredFile | IMPLEMENTED (SCRUM-107) | OwnerId, FolderId, StoredFileId, FileName (ADR-0018); không còn Category (PO bỏ "Phân loại" 22/10/2026). |
 | StoredFile | File bất biến trong kho đối tượng; kho cá nhân và cuộc họp chỉ tham chiếu tới nó | IMPLEMENTED (SCRUM-107) | Thay `DocumentVersion`; có OriginalFileName, PageCount, UploadedAt, PurgedAt (ADR-0018). Byte nằm trên Cloudflare R2 (ADR-0024); job dọn file mồ côi ghi PurgedAt. |
 | Folder | Thư mục trong kho cá nhân, lồng tối đa 5 cấp (như AI-eCabinet) | IMPLEMENTED (SCRUM-107, bảng) | `MeetingId` cho thư mục tự tạo khi tải thẳng vào cuộc họp, duy nhất theo (OwnerId, MeetingId) (ADR-0018). Giới hạn 5 cấp và thao tác thư mục thuộc UC-72 (SCRUM-58). |
 | MeetingDocument | Một dòng tài liệu trong cuộc họp, trỏ tới một StoredFile | IMPLEMENTED (SCRUM-107) | Tham chiếu StoredFile (không chép byte), Document nguồn tuỳ chọn (SetNull), gỡ bằng RemovedAt; unique (MeetingId, StoredFileId) khi RemovedAt null (ADR-0018). |
-| MeetingDocumentAgendaItem | Bảng nối tài liệu cuộc họp ↔ mục nghị sự (Entity 20a, không tính vào 30 thực thể) | IMPLEMENTED (SCRUM-107, bảng) | Theo ADR-0020: thay cột `AgendaItemId` đơn. Agenda planning tạm giữ một mục mỗi tài liệu cho tới UC-33b/UC-33d (SCRUM-58). |
+| MeetingDocumentAgendaItem | Bảng nối tài liệu cuộc họp ↔ mục nghị sự (Entity 20a, không tính vào 30 thực thể) | IMPLEMENTED (SCRUM-107, bảng) | Theo ADR-0020: thay cột `AgendaItemId` đơn. Adapter Agenda đã hỗ trợ nhiều mục mỗi tài liệu trong SCRUM-98. |
 | DocumentComment | Góp ý trong ngữ cảnh tài liệu đính kèm cuộc họp | IMPLEMENTED (SCRUM-107, bảng) | MeetingDocumentId; AuthorId nullable, GuestInvitationId (ADR-0016), check đúng một tác giả. Trả lời một cấp (BR-317) do SCRUM-23 kiểm. |
 | SpeakingRequest | Yêu cầu/lượt phát biểu | IMPLEMENTED | Giữ. |
 | MeetingNote | Ghi chú thư ký | IMPLEMENTED | Giữ. |
@@ -178,6 +178,8 @@ Guest không có User account, system Role hoặc internal MeetingRole; quyền 
 erDiagram
     Meeting ||--o{ AgendaItem : "containing"
     User o|--o{ AgendaItem : "presenting"
+    MeetingGuestInvitation o|--o{ AgendaItem : "presenting"
+    User o|--o{ AgendaItem : "last conclusion author"
     User ||--o{ Document : "owning"
     User ||--o{ Folder : "owning"
     Folder o|--o{ Folder : "containing"
@@ -198,9 +200,12 @@ erDiagram
         int Position
         string Title
         string Description "nullable"
-        int PlannedDurationMinutes
+        uuid PresenterGuestInvitationId FK "nullable; không đồng thời PresenterId"
+        string LegacyPresenterName "cột presenter_name; chỉ lịch sử"
+        string Conclusion "nullable, tối đa 2000"
+        uuid ConclusionUpdatedById FK "nullable"
+        timestamptz ConclusionUpdatedAt "nullable"
         uuid PresenterId FK "null nếu người presenting là khách"
-        string PresenterName
         string Status "Pending|InProgress|Done"
         timestamptz ActualStartedAt
         timestamptz ActualEndedAt
@@ -711,8 +716,14 @@ kín; vai trò trong cuộc họp tách khỏi vai trò hệ thống.
 
 ## Ràng buộc Agenda sau SCRUM-25
 
-`AgendaItemStatus` chỉ gồm Pending, InProgress, Done. Migration AgendaExecutionInvariants kiểm tra dữ liệu cũ rồi thêm check constraint và unique partial index theo meeting_id khi status='InProgress'. Index (meeting_id, position) vẫn không unique; mọi writer khóa meeting trước khi đổi agenda. Actual duration không có cột riêng: tính ActualEndedAt − ActualStartedAt. Xem [contract Agenda](../03-api/08-chuong-trinh-nghi-su.md).
+`AgendaItemStatus` chỉ gồm Pending, InProgress, Done. Migration AgendaExecutionInvariants kiểm tra dữ liệu cũ rồi thêm check constraint và unique partial index theo meeting_id khi status='InProgress'. Index (meeting_id, position) vẫn không unique; mọi writer khóa meeting trước khi đổi agenda. SCRUM-98 bỏ PlannedDurationMinutes; không tính/trả duration trong Agenda DTO, chỉ giữ ActualStartedAt/ActualEndedAt. Xem [contract Agenda](../03-api/08-chuong-trinh-nghi-su.md).
 
 ## Quyết định quyền bổ sung — PO 13/10/2026
 
 Quyết định PO 20/10/2026 bỏ quyền bổ sung theo từng người. Quyền roster chỉ theo current role: Chair/Secretary active quản lý; mọi reader hợp lệ xem roster và phản hồi. Guest không có role nội bộ hoặc grants.
+
+## SCRUM-98 — presenter và kết luận
+
+Migration `SynchronizeAgendaWithPoRequirements` chỉ đổi Agenda. `LegacyPresenterName` map nguyên cột `presenter_name`; không suy ID từ tên/email. Guest presenter và conclusion author dùng FK Restrict. Check presenter không đồng thời hai ID; content/author/time conclusion cùng null hoặc cùng có giá trị. Assignment hợp lệ phải thuộc current roster (internal active; Guest chưa revoked); removal/revoke clear presenter cùng transaction. Không thay bảng nối tài liệu.
+
+Có bất kỳ MeetingMinutes nào thì khóa sửa kết luận. Writer UC-59 phải dùng cùng meeting lock và tạo biên bản trong transaction đọc kết luận. Không có flag mới trên Meeting. Class diagram FE-05 vẫn còn biểu diễn tài liệu bằng liên kết đơn; BA Final Review đối chiếu bảng nối và contract này, không đổi nguồn diagram chỉ để đồng tên C#.
