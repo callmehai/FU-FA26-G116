@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { getMeetingDocumentContent } from '../../api/documents'
 import { Icon } from '../../components/Icon'
 import { NotFound } from '../../components/NotFound'
@@ -70,7 +70,16 @@ export function DocumentViewerPage() {
           </div>
         </div>
       ) : meeting.state.kind === 'loaded' && doc ? (
-        <Viewer meeting={meeting.state.meeting} doc={doc} content={content} onStale={meeting.reload} />
+        <Viewer
+          meeting={meeting.state.meeting}
+          doc={doc}
+          content={content}
+          // MSG159: the meeting became Secret. MSG156: the document is gone, and the re-read list says so.
+          onStale={() => {
+            void meeting.reload()
+            void documents.reload()
+          }}
+        />
       ) : (
         <div className="viewer-message" aria-busy="true">
           Đang tải tài liệu…
@@ -105,6 +114,8 @@ function Viewer({
         <h1 className="viewer-title" data-tooltip={doc.fileName}>
           {doc.fileName}
         </h1>
+        {/* On a phone the name gets the first line to itself, the controls go under it. */}
+        <span className="viewer-break" aria-hidden="true" />
         {meeting.sensitivity !== 'Normal' && <SensitivityBadge sensitivity={meeting.sensitivity} />}
         <span className="viewer-meeting">{meeting.title}</span>
         <span className="viewer-spacer" />
@@ -179,18 +190,20 @@ function Viewer({
 }
 
 /**
- * "‹ Tài liệu": a tab of its own (opened from the call room) closes, so the room's tab comes back;
- * otherwise back to the meeting's Tài liệu tab. A browser that refuses to close the tab navigates.
+ * "‹ Tài liệu": the tab the call room opened (`?from=room`, nothing before it) closes, so the room's
+ * tab comes back; otherwise back to the meeting's Tài liệu tab. A browser that refuses to close the
+ * tab navigates instead.
  */
 function BackToDocuments({ meetingId }: { meetingId: string }) {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
   const to = `${routes.meeting(meetingId)}?tab=documents`
   return (
     <Link
       className="back-link viewer-back"
       to={to}
       onClick={(event) => {
-        if (window.history.length > 1) return
+        if (params.get('from') !== 'room' || window.history.length > 1) return
         event.preventDefault()
         window.close()
         setTimeout(() => navigate(to))

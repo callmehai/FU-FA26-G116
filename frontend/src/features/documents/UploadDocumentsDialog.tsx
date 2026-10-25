@@ -63,6 +63,8 @@ export function UploadDocumentsDialog({
   const [failure, setFailure] = useState<string | null>(null)
   /** Bytes sent, while the request runs. */
   const [sent, setSent] = useState<number | null>(null)
+  /** The whole body is out: the server may already be committing, so cancelling could not undo it. */
+  const [allSent, setAllSent] = useState(false)
   const [dragging, setDragging] = useState(false)
   const nextKey = useRef(0)
   const abort = useRef<AbortController | null>(null)
@@ -95,12 +97,16 @@ export function UploadDocumentsDialog({
     try {
       const files = await Promise.all(picked.map(async (p) => ({ file: p.file, pageCount: await p.pages })))
       const response = await uploadMeetingDocuments(meeting.id, files, {
-        onProgress: (loaded) => setSent(loaded),
+        onProgress: (loaded, size) => {
+          setSent(loaded)
+          setAllSent(loaded >= size)
+        },
         signal: abort.current.signal,
       })
       onUploaded(response.message)
     } catch (err) {
       setSent(null)
+      setAllSent(false)
       if (err instanceof DOMException && err.name === 'AbortError') return
       if (isApiError(err, 400, 'MSG164')) {
         // Keyed `files[i]` in the order sent; `files` alone is about the whole request.
@@ -117,6 +123,7 @@ export function UploadDocumentsDialog({
   }
 
   function close() {
+    if (allSent) return
     abort.current?.abort()
     onClose()
   }
@@ -140,7 +147,7 @@ export function UploadDocumentsDialog({
       onClose={close}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" onClick={close}>
+          <button type="button" className="btn btn-ghost" disabled={allSent} onClick={close}>
             Huỷ
           </button>
           <button

@@ -47,7 +47,10 @@ export function PdfView({
     void (async () => {
       try {
         const pdfjs = await loadPdfJs()
-        open.task = pdfjs.getDocument({ data: new Uint8Array(await blob.arrayBuffer()) })
+        const data = new Uint8Array(await blob.arrayBuffer())
+        // Left while pdf.js was still loading: create no worker the cleanup has already missed.
+        if (cancelled) return
+        open.task = pdfjs.getDocument({ data })
         const doc = await open.task.promise
         // ponytail: every page proxy is fetched up front for its size; fine for meeting papers,
         // switch to per-page sizes on demand if 1000-page files show up.
@@ -120,7 +123,12 @@ function PdfPage({ page, width, label }: { page: PDFPageProxy; width: number; la
     el.height = Math.floor(viewport.height)
     const task = page.render({ canvas: el, viewport })
     task.promise.catch(() => {})
-    return () => task.cancel()
+    return () => {
+      task.cancel()
+      // Free the bitmap of a page scrolled far away: a long PDF on a phone runs out of canvas memory.
+      el.width = 0
+      el.height = 0
+    }
   }, [near, page, width, base.width])
 
   return (
@@ -143,8 +151,9 @@ export function DocxView({ blob, zoom }: { blob: Blob; zoom: number }) {
     void (async () => {
       try {
         const { renderAsync } = await import('docx-preview')
-        if (cancelled) return
-        await renderAsync(blob, el, undefined, {
+        // Drawn off-screen and made safe before it joins the page.
+        const target = document.createElement('div')
+        await renderAsync(blob, target, undefined, {
           className: 'docx',
           inWrapper: false,
           breakPages: false,
@@ -152,7 +161,12 @@ export function DocxView({ blob, zoom }: { blob: Blob; zoom: number }) {
           // Word's fixed page width would overflow a phone; the stage sets the width instead.
           ignoreWidth: true,
           ignoreHeight: true,
+          // An altChunk is HTML embedded in the file, drawn as a same-origin iframe: it could run script.
+          renderAltChunks: false,
         })
+        if (cancelled) return
+        neutralizeLinks(target)
+        el.replaceChildren(target)
       } catch {
         if (!cancelled) setFailed(true)
       }
@@ -176,4 +190,28 @@ export function DocxView({ blob, zoom }: { blob: Blob; zoom: number }) {
       </div>
     </div>
   )
+}
+
+const SAFE_PROTOCOLS = new Set(['http:', 'https:', 'mailto:'])
+
+/**
+ * docx-preview copies a hyperlink's target into `href` as written in the file, so an uploaded DOCX
+ * could carry `javascript:` and run in our origin, where the access token lives. Keep web, mail and
+ * in-document links only; the outside ones open in a new tab, away from the viewer.
+ */
+function neutralizeLinks(root: HTMLElement) {
+  root.querySelectorAll('iframe, object, embed, script').forEach((el) => el.remove())
+  root.querySelectorAll<HTMLAnchorElement>('a[href]').forEach((a) => {
+    const href = a.getAttribute('href') ?? ''
+    if (href.startsWith('#')) return
+    let protocol = ''
+    try {
+      protocol = new URL(href, window.location.href).protocol
+    } catch {
+      // Not a URL at all: drop it.
+    }
+    if (!SAFE_PROTOCOLS.has(protocol)) return a.removeAttribute('href')
+    a.target = '_blank'
+    a.rel = 'noopener noreferrer'
+  })
 }

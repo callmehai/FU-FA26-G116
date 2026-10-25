@@ -222,12 +222,14 @@ function AgendaGroup({
   row: RowProps
   folded?: boolean
 }) {
-  const [open, setOpen] = useState(!folded && item.documents.length > 0)
   const count = item.documents.length
+  // Until the user folds or opens it, it follows its content: an item that gains a document opens.
+  const [toggled, setToggled] = useState<boolean | null>(null)
+  const open = toggled ?? (!folded && count > 0)
 
   return (
     <div className="documents-group">
-      <button type="button" className="documents-group-head" aria-expanded={open} onClick={() => setOpen(!open)}>
+      <button type="button" className="documents-group-head" aria-expanded={open} onClick={() => setToggled(!open)}>
         <Icon name={open ? 'chevronDown' : 'chevronRight'} size={16} />
         <span className="documents-group-title">
           {number}. {item.title}
@@ -267,7 +269,7 @@ function DocumentRow({ doc, row }: { doc: MeetingDocument; row: RowProps }) {
     <li className="documents-row">
       <Link
         className="documents-row-link"
-        to={routes.meetingDocument(row.meetingId, doc.id)}
+        to={`${routes.meetingDocument(row.meetingId, doc.id)}${room ? '?from=room' : ''}`}
         data-tooltip={room ? 'Mở ở tab mới, bạn vẫn ở trong phòng' : added}
         {...(room && { target: '_blank', rel: 'noopener' })}
       >

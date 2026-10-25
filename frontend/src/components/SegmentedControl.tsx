@@ -42,7 +42,13 @@ export function SegmentedControl<T extends string>({
           />
           <span>
             {option.label}
-            {counts?.[option.value] !== undefined && <b className="segmented-count">{counts[option.value]}</b>}
+            {counts?.[option.value] !== undefined && (
+              // The space keeps the label and the number apart in the accessible name.
+              <>
+                {' '}
+                <b className="segmented-count">{counts[option.value]}</b>
+              </>
+            )}
           </span>
         </label>
       ))}
