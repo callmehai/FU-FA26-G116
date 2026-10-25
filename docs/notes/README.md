@@ -6,13 +6,12 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 
 ## Danh sách
 
-- [Review PR #136 và Bổ sung BA Final Review](NOTE-review-pr136-va-bo-sung-ba-final-review.md) — 25/10/2026;
+- [Review PR #136 và Bổ sung BA Final Review](ban-giao-ba-final-review/10-review-pr136-va-bo-sung-sau-merge.md) — 25/10/2026;
   tổng hợp toàn bộ feedback review PR #136 (CI đỏ .mmd, conflict main, MSG174, BR-115, UC-28b, UC-73, số EX trong sequence)
   và các chỉ đạo PO mới nhất từ PR #133 (không tự gửi thông báo), #134 (rủi ro BR-188), #135/SCRUM-98 (BR-72/238/307) và #141 (FE màn 5.2).
-- [Bàn giao BA Final Review 24/10/2026](ban-giao-ba-final-review/README.md) — sáu note của leader,
-  xử lý lần lượt: SCRUM-18/20 (lời mời, tạo/sửa, danh sách), SCRUM-97 (giao Chủ tọa),
-  Voice ID (UC-43–51, ERD), SCRUM-26 (điểm danh), SCRUM-107 (tải tài liệu, PR #128),
-  chương trình nghị sự (SCRUM-98, UC-23, UC-77).
+- [Bàn giao BA Final Review 24/10/2026](ban-giao-ba-final-review/README.md) — bảy note của leader,
+  xử lý lần lượt: SCRUM-18/20, SCRUM-97, Voice ID, SCRUM-26, SCRUM-107, Chương trình nghị sự (SCRUM-98),
+  và Review PR #136 / bổ sung sau merge.
 - [Tài liệu cuộc họp — SCRUM-21/22/23](NOTE-tai-lieu-scrum-21-22-23.md) — 22/10/2026; UC-32a/32c/35, BR-315 → BR-318,
   sequence, class diagram FE-07, wireframe v7; so sánh với AI-eCabinet, câu hỏi cho PO và phần còn phải đồng bộ.
 - [Bàn giao cập nhật màn hình theo Report 3 ngày 18/10/2026](NOTE-cap-nhat-man-hinh-18-10-2026.md) — màn 4.x, 5.x,

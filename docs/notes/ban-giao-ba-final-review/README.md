@@ -1,9 +1,9 @@
 # Bàn giao BA Final Review — 24/10/2026
 
-Sáu note do agent của leader gửi cho Khánh. Mỗi file giữ nguyên phạm vi cần sửa.
-Chưa áp vào UC/BR/Report. Khi ticket sang **BA Final Review**, xử lý lần lượt theo số thứ tự.
+Sáu note ban đầu của leader cùng note 10 tổng hợp review PR #136 và bổ sung mới nhất sau merge.
+Mỗi file giữ nguyên phạm vi cần sửa. Khi ticket sang **BA Final Review**, xử lý lần lượt theo số thứ tự.
 
-| # | File | Ticket | Việc |
+| # | File | Ticket / PR | Việc |
 |---|---|---|---|
 | 1 | [SCRUM-18 / SCRUM-20](01-scrum-18-20-loi-moi-va-danh-sach.md) | SCRUM-20 (PR #111), một phần SCRUM-18 | UC-14, UC-17, UC-28, UC-29, UC-30, BR-30, sequence UC-29/30/17 |
 | 2 | [SCRUM-97](02-scrum-97-giao-chu-toa.md) | SCRUM-97 (PR #123), PO chốt 23/10/2026 | UC-73, sequence, MSG258, BR-126 |
@@ -11,6 +11,7 @@ Chưa áp vào UC/BR/Report. Khi ticket sang **BA Final Review**, xử lý lần
 | 4 | [SCRUM-26](04-scrum-26-diem-danh.md) | SCRUM-26 | UC-31, sequence, Report 3, ADR-0025, MSG150 |
 | 5 | [SCRUM-107](07-scrum-107-tai-len-tai-lieu.md) | SCRUM-107 (PR #128) | UC-33a AF-1: 10 điểm lệch docs trong mô tả PR |
 | 6 | [Chương trình nghị sự](08-chuong-trinh-nghi-su.md) | SCRUM-98, UC-23, UC-77 | Bỏ thời lượng, người trình bày, tài liệu nhiều mục, kết luận item |
+| 10 | [Review PR #136 & Bổ sung sau merge](10-review-pr136-va-bo-sung-sau-merge.md) | PR #136, #133, #134, #135, #137, #141 | Fix CI .mmd, conflict main, MSG174, BR-115, UC-28b, UC-73, quy tắc không tự nhận thông báo, PO Agenda 25/10, rủi ro BR-188 |
 
 Plan gom cả sáu note. **Thứ tự làm và cách giao cho agent: [plan 05 mục 8](05-plan-sua-uc-br-msg-diagram.md#8-thứ-tự-và-cách-chạy-agent-đọc-mục-này-trước)** —
 làm lần lượt từng lượt, mỗi lượt một session mới.
