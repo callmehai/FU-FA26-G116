@@ -6,10 +6,11 @@ import type { AgendaChangedEvent } from '../../types/meeting'
 import type { ParticipantsChangedEvent } from '../../types/participant'
 
 /**
- * What the meeting's hub announces; each only says "re-read". `meetingEnded` is the `agendaChanged`
- * that ending the meeting sends (SCRUM-69), the only change of status anyone else hears about.
+ * What the meeting's hub announces; each only says "re-read". `agendaChanged` is any change to the
+ * agenda (SCRUM-25); `meetingEnded` is the one that ending the meeting sends (SCRUM-69), the only
+ * change of status anyone else hears about, so it is told to both.
  */
-export type MeetingEvent = 'participantsChanged' | 'attendanceChanged' | 'meetingEnded'
+export type MeetingEvent = 'participantsChanged' | 'attendanceChanged' | 'agendaChanged' | 'meetingEnded'
 
 interface Listener {
   events: readonly MeetingEvent[]
@@ -57,10 +58,10 @@ function open(meetingId: string): Channel {
     })
   }
   connection.on('agendaChanged', (event: AgendaChangedEvent) => {
-    if (event.changeType !== 'MeetingEnded') return
     if (event.meetingId.toLowerCase() !== meetingId.toLowerCase() || seen.has(event.eventId)) return
     seen.add(event.eventId)
-    notify('meetingEnded')
+    notify('agendaChanged')
+    if (event.changeType === 'MeetingEnded') notify('meetingEnded')
   })
   connection.onreconnected(() => void join().then(() => notify()))
   connection.onclose(() => {

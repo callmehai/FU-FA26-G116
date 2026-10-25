@@ -29,6 +29,8 @@ import {
   FileText,
   Folder,
   FolderPlus,
+  GripVertical,
+  ClipboardCheck,
   Funnel,
   Globe,
   KeyRound,
@@ -152,6 +154,9 @@ const ICONS = {
   // SCRUM-69: the Chair starts and ends the meeting.
   play: Play,
   stop: CircleStop,
+  // SCRUM-25: drag an agenda item; an item that has a conclusion.
+  grip: GripVertical,
+  clipboardCheck: ClipboardCheck,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS
