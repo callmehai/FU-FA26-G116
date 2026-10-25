@@ -182,9 +182,11 @@ public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<A
         Assert.Equal(last, snapshot.GetProperty("items")[0].GetProperty("id").GetGuid());
         using var organizer = fixture.Client(s.Organizer);
         await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{last}", Input(documents: [s.DocumentId])), 200, "MSG61");
-        var hidden = await organizer.GetFromJsonAsync<JsonElement>(s.Url);
-        Assert.False(hidden.GetProperty("items")[0].GetProperty("canReadDocuments").GetBoolean());
-        Assert.Empty(hidden.GetProperty("items")[0].GetProperty("documents").EnumerateArray());
+        // The Organizer is not a participant but may read the meeting, so sees its documents as in GET …/documents.
+        var organizerView = await organizer.GetFromJsonAsync<JsonElement>(s.Url);
+        Assert.True(organizerView.GetProperty("items")[0].GetProperty("canReadDocuments").GetBoolean());
+        Assert.Equal(s.DocumentId, Assert.Single(organizerView.GetProperty("items")[0].GetProperty("documents")
+            .EnumerateArray()).GetProperty("id").GetGuid());
     }
 
     [Fact]
