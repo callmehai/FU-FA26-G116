@@ -131,8 +131,10 @@ public static class MeetingDocumentEndpoints
             var uploaded = await service.UploadAsync(meetingId, actor, validated.Files!, ct);
             if (uploaded.Failure == DocumentUploadFailure.None)
             {
-                // The documents are committed; a lost event only means readers refresh later.
-                try { await publisher.PublishAsync(meetingId, CancellationToken.None); }
+                // The documents are committed; a lost event only means readers refresh later. The same 2 s budget
+                // as agenda events, so a slow hub or database never holds up the uploader's response.
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                try { await publisher.PublishAsync(meetingId, timeout.Token); }
                 catch (Exception ex)
                 {
                     logs.CreateLogger(nameof(MeetingDocumentEndpoints))

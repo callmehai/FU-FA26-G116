@@ -20,9 +20,6 @@ public static class AgendaRules
     public static bool HasRole(Meeting meeting, Guid actor, MeetingRole role) => meeting.Participants
         .Any(p => p.MeetingId == meeting.Id && p.UserId == actor && p.Role == role && CurrentParticipant(p));
 
-    public static bool CanReadDocuments(Meeting meeting, Guid actor) => meeting.Participants
-        .Any(p => p.MeetingId == meeting.Id && p.UserId == actor && p.Role != MeetingRole.Guest && CurrentParticipant(p));
-
     public static AgendaInput Normalize(AgendaInput input) => input with
     {
         Title = input.Title?.Trim() ?? "",

@@ -101,16 +101,19 @@ public sealed class AgendaChangePublisher(IHubContext<MeetingHub> hub, IMeetingR
     }
 }
 
-/// <summary>Only says which meeting: a reader refetches the list, which is reauthorized.</summary>
-public sealed record MeetingDocumentsChange(Guid MeetingId);
+/// <summary>Only says which meeting: a reader refetches the list, which is reauthorized. EventId lets a
+/// client drop a redelivered event, like the other meeting events.</summary>
+public sealed record MeetingDocumentsChange(Guid EventId, Guid MeetingId, DateTimeOffset OccurredAt);
 
 /// <summary>Tells the Documents tab and the room panel that documents were added (SCRUM-21).</summary>
 public sealed class MeetingDocumentChangePublisher(IHubContext<MeetingHub> hub, IMeetingRepository meetings,
-    TrustCabinetDbContext db, IAgendaGuestAccess guests)
+    TrustCabinetDbContext db, IAgendaGuestAccess guests, TimeProvider clock)
 {
     public async Task PublishAsync(Guid meetingId, CancellationToken ct)
     {
         var groups = await AgendaChangePublisher.ReaderGroupsAsync(meetingId, meetings, db, guests, ct);
-        if (groups.Count > 0) await hub.Clients.Groups(groups).SendAsync("documentsChanged", new MeetingDocumentsChange(meetingId), ct);
+        if (groups.Count > 0)
+            await hub.Clients.Groups(groups).SendAsync("documentsChanged",
+                new MeetingDocumentsChange(Guid.CreateVersion7(), meetingId, clock.GetUtcNow()), ct);
     }
 }

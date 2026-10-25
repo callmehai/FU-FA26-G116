@@ -175,7 +175,8 @@ ASP.NET Core trả `400` không có `code`.
 duyệt. Với cuộc họp `Secret`, server chặn `download=true` và FE ẩn nút Tải về, nhưng người xem được vẫn có thể lưu
 blob đó (hoặc gọi `content` không có `download`); lần đó được ghi kiểm toán là `document.viewed`, vì server không
 phân biệt được. Đây là rủi ro đã biết khi không chuyển đổi tệp trên server (ADR-0018), không phải lỗ hổng sửa được ở
-endpoint.
+endpoint. PO chấp nhận rủi ro này ngày 2026-10-25 (không chuyển tệp thành ảnh trên server, không đóng dấu tên người
+xem).
 
 **Nhật ký kiểm toán** (BR-318): cuộc họp `Confidential` hoặc `Secret` ghi một dòng `AuditLogEntry` cho mỗi lần
 xem / tải thành công — `action` `document.viewed` hoặc `document.downloaded`, `objectType` `MeetingDocument`,
@@ -196,9 +197,11 @@ không ghi.
 
 ### Realtime
 
-Sau mỗi lần tải lên thành công, hub `/hubs/meetings` gửi `documentsChanged` `{ "meetingId": "…" }` cho mọi người
+Sau mỗi lần tải lên thành công, hub `/hubs/meetings` gửi `documentsChanged` `{ "eventId", "meetingId", "occurredAt" }` cho mọi người
 đang `JoinMeeting` và còn quyền xem cuộc họp (cùng nhóm người nhận với `agendaChanged`). Event chỉ báo "có thay
-đổi", FE gọi lại `GET …/documents`. Đổi mục đang bàn đã có `agendaChanged` (`Started` / `Completed`). Gỡ và gắn / gỡ
+đổi", FE gọi lại `GET …/documents`. Mỗi event có `eventId` riêng như `agendaChanged`, nên lọc trùng theo
+`eventId` trong `useMeetingEvents` không nuốt mất lần tải lên sau. Gửi event có giới hạn 2 giây (như agenda): hub hay DB
+chậm không giữ phản hồi tải lên. Đổi mục đang bàn đã có `agendaChanged` (`Started` / `Completed`). Gỡ và gắn / gỡ
 mục (SCRUM-58) nên phát cùng event này.
 
 ### Note cho FE (SCRUM-21)

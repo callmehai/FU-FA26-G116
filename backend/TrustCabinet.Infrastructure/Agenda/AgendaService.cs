@@ -29,7 +29,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
             var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
             if (meeting is null || !AgendaRules.GuestCanViewMeeting(meeting.Status))
                 return new(AgendaFailure.NotFound);
-            return await SnapshotAsync(meeting, null, true, false, ct);
+            return await SnapshotAsync(meeting, null, false, ct);
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -56,7 +56,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
                     .Select(p => new AgendaPresenter(p.UserId, p.User.FullName)).DistinctBy(p => p.Id)
                     .OrderBy(p => p.FullName).ThenBy(p => p.Id).ToArray(), await documents.ListAsync(meetingId, ct)));
             }
-            return await SnapshotAsync(meeting, actorId, AgendaRules.CanReadDocuments(meeting, actorId), planning, ct);
+            return await SnapshotAsync(meeting, actorId, planning, ct);
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -65,11 +65,11 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
         }
     }
 
-    private async Task<AgendaOutcome> SnapshotAsync(Meeting meeting, Guid? actorId, bool canReadDocuments,
-        bool planning, CancellationToken ct)
+    private async Task<AgendaOutcome> SnapshotAsync(Meeting meeting, Guid? actorId, bool planning, CancellationToken ct)
     {
         var items = await agenda.ListAsync(meeting.Id, false, ct);
-        var linked = canReadDocuments ? await documents.ListAsync(meeting.Id, ct) : [];
+        // Whoever may read the meeting may read its documents (BR-275), as in GET …/documents.
+        var linked = await documents.ListAsync(meeting.Id, ct);
         var byItem = linked.Where(d => d.AgendaItemId.HasValue).ToLookup(d => d.AgendaItemId!.Value);
         return new(Data: new AgendaSnapshot(meeting.Id, meeting.Status.ToString(), meeting.PlannedStartTime,
             meeting.PlannedEndTime, Now, AgendaRules.OrderVersion(items), new(planning, planning),
@@ -78,7 +78,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
                 i.ActualStartedAt, i.ActualEndedAt,
                 i.Status == AgendaItemStatus.Done && i.ActualStartedAt is { } start && i.ActualEndedAt is { } end
                     ? (end - start).TotalSeconds : null,
-                canReadDocuments, byItem[i.Id].Select(d => new AgendaDocument(d.Id, d.Title)).ToArray(),
+                true, byItem[i.Id].Select(d => new AgendaDocument(d.Id, d.Title)).ToArray(),
                 actorId is { } userId ? AgendaRules.Actions(meeting, userId, i, items)
                     : new(false, false, false, false, false))).ToArray()));
     }

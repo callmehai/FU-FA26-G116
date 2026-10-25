@@ -319,11 +319,18 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
         await AssertCode(await secretary.PostAsync(s.Url, DocumentFixture.Form(("Mới.pdf", SampleFiles.Pdf(), "1"))), 201, "MSG161");
 
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        Assert.Equal(s.MeetingId, (await received.Reader.ReadAsync(timeout.Token)).MeetingId);
+        var first = await received.Reader.ReadAsync(timeout.Token);
+        Assert.Equal(s.MeetingId, first.MeetingId);
+        Assert.NotEqual(default, first.OccurredAt);
         // A failed upload changes nothing, so it says nothing.
         await AssertCode(await secretary.PostAsync(s.Url, DocumentFixture.Form(("anh.pdf", SampleFiles.Png(), null))), 400, "MSG164");
         await Task.Delay(500);
         Assert.False(received.Reader.TryRead(out _));
+        // Every event has its own id: the FE drops an id it has already seen.
+        await AssertCode(await secretary.PostAsync(s.Url, DocumentFixture.Form(("Mới 2.pdf", SampleFiles.Pdf(), "1"))), 201, "MSG161");
+        var second = await received.Reader.ReadAsync(timeout.Token);
+        Assert.NotEqual(Guid.Empty, first.EventId);
+        Assert.NotEqual(first.EventId, second.EventId);
         Assert.False(excluded.Reader.TryRead(out _));
     }
 }
