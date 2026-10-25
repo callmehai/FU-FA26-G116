@@ -76,4 +76,47 @@ phòng (`UpdateParticipant` với metadata mới), hoặc phát một sự kiệ
 
 - Report 3 trên Drive chưa thay (chỉ sửa DOCX local).
 - Wireframe 8.1–8.7: bản vẽ hiện tại chưa có màn hình nổi (UC-78) và khay chọn thiết bị của UC-39d.
-- Sequence diagram cho UC-37 → UC-42, UC-39d, UC-78 chưa vẽ.
+
+## 4 điểm còn hở cần xử lý tiếp trên nhánh này
+
+### 1. Đồng bộ trạng thái triển khai: BR-328, UC-41, UC-73 và nhánh Guest của UC-37
+- **Hiện trạng**: 
+  - `BR-328` ghi "Đổi vai trò có hiệu lực ngay trong phòng họp mà không cần vào lại", nhưng LiveKit metadata hiện tại chỉ cấp 1 lần lúc tạo token. Sau khi Chair bàn giao qua UC-73 hoặc đổi role qua UC-28b, người dùng trong phòng chưa nhận được metadata mới ngay lập tức.
+  - Nhánh Guest của `UC-37` (AF-2) phụ thuộc xác thực Guest (`UC-04` / SCRUM-25), hiện tại backend trả `404` vì chưa có token Guest.
+- **Phương án chọn để thực hiện tiếp**:
+  - Ghi chú rõ trạng thái **"Chưa triển khai (Chờ cập nhật LiveKit metadata / Token Guest UC-04)"** trong đặc tả `BR-328`, `UC-41`, `UC-73` và `UC-37` để phản ánh đúng hiện trạng giữa tài liệu và code.
+  - Hoặc triển khai bổ sung cơ chế gửi SignalR event / gọi LiveKit UpdateParticipant API khi đổi role và hoàn thiện Guest resolver khi UC-04 hoàn tất.
+
+### 2. Định nghĩa hằng số mã thông báo MSG ở Frontend (`RoomView.tsx`)
+- **Hiện trạng**: Các mã `MSG290`–`MSG299` và `MSG119`–`MSG121`, `MSG125` đã được đưa vào danh mục mã thông báo (`docs/03-api/00-danh-muc-ma-thong-bao.md`), và giao diện `RoomView.tsx` (dòng 853...) đang hiển thị chuỗi tiếng Việt khớp hoàn toàn với nội dung danh mục. Tuy nhiên, code FE đang hardcode chuỗi trực tiếp, chưa khai báo các hằng số mã `MSGnn`.
+- **Việc cần làm**:
+  - Tạo file hằng số thông báo FE (ví dụ `frontend/src/features/calls/room/callMessages.ts` hoặc tương đương).
+  - Khai báo các constant mã `MSG119`, `MSG120`, `MSG121`, `MSG125`, `MSG290`–`MSG299` kèm text tương ứng để code FE và catalogue đồng bộ 100%.
+
+### 3. Vẽ Sequence Diagram cho FE-08 (Online Meeting Room)
+- **Hiện trạng**: Thư mục `docs/06-sequencediagram/` hiện đã có đầy đủ sơ đồ cho các feature khác (Agenda, Participant, Voting, Notification...) nhưng chưa có thư mục riêng cho phòng họp trực tuyến FE-08.
+- **Việc cần làm**:
+  - Tạo thư mục `docs/06-sequencediagram/online-meeting-room/` kèm `README.md`.
+  - Thiết kế các file sequence diagram (`.txt` và drawio / PNG):
+    - `UC37_JoinMeetingRoom` (gồm Main flow và AF-2 Guest join)
+    - `UC38_LeaveMeetingRoom` (rời phòng, ngắt kết nối duplicate session)
+    - `UC39_ManageRoomControls` (`UC39a` Mic, `UC39b` Camera, `UC39c` Screen Share, `UC39d` Chọn thiết bị)
+    - `UC40_ViewParticipants`
+    - `UC41_ModerateMeetingRoom` (Chủ toạ tắt mic một chiều)
+    - `UC42_InRoomChat` (Text stream LiveKit)
+    - `UC78_FloatingMeetingWindow` (Document PiP)
+
+### 4. Ghi chú cập nhật Ticket Jira cho các điểm lệch yêu cầu
+Theo quy trình phát triển ([DEVELOPMENT_WORKFLOW.md](../../DEVELOPMENT_WORKFLOW.md)), các thay đổi và thu hẹp nghiệp vụ cần được ghi comment vào ticket Jira trước khi chuyển BA Final Review:
+- **SCRUM-39 (Join/Leave Room)**:
+  - Ghi chú: Nhánh Guest join (UC-37 AF-2) phụ thuộc token Guest (UC-04 / SCRUM-25), hiện tạm thời trả `404` cho tới khi xác thực Guest sẵn sàng.
+  - Một tài khoản một kết nối (BR-327, LiveKit duplicate identity kick out).
+- **SCRUM-41 (Room Moderation & Chat)**:
+  - Ghi chú thu hẹp phạm vi: Chỉ làm chức năng Chủ toạ tắt mic người khác 1 chiều (`UC-41`, `BR-324`). Không làm giơ tay, tắt mic tất cả và mời người ra khỏi phòng.
+  - Chat trong phòng (`UC-42`, `BR-326`): dùng text stream tạm thời, không lưu vào database và không hiển thị cho người vào sau.
+  - Lỗi role metadata (`BR-328`): Đổi vai trò chưa đồng bộ ngay lập tức vào LiveKit metadata trong phiên hiện tại.
+- **SCRUM-42 (Device & Stage Controls)**:
+  - Ghi chú bổ sung: Tách `UC-39d` (Chọn thiết bị audio/video, lưu `localStorage`, `BR-330`) và bổ sung `UC-78` (Cửa sổ nổi PiP, `BR-331`).
+- **SCRUM-43 (Screen Sharing)**:
+  - Ghi chú: Tại một thời điểm chỉ 1 người chia sẻ màn hình (`BR-325`), khi người khác chia sẻ thì người trước tự động dừng và nhận `MSG292`.
+
