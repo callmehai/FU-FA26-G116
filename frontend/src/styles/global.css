@@ -2921,6 +2921,10 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 }
 /* The right-hand picker's menu grows leftwards, so it stays inside the panel and off the toasts. */
 .room-select + .room-select .room-select-menu { left: auto; right: 0; }
+/* ⋯ of the panels on a phone (RoomView MorePanels): shown only under 560px; opens leftwards. */
+.room-more { position: relative; display: none; }
+.room-more-menu { left: auto; right: 0; }
+.room-more-menu .room-select-item { grid-template-columns: 24px 1fr; text-align: left; }
 @keyframes room-menu-fade { from { opacity: 0; } }
 @keyframes room-menu-grow { from { transform: scaleY(0.8); } }
 /* As in Meet: names centred, the chosen one on a lighter plate in the accent colour with a tick. */
@@ -3058,11 +3062,9 @@ body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
   body:has(.room-controls-main.is-open) .toast-stack { bottom: 164px; }
   .room-control, .room-split > .room-control, .room-control-off, .room-control-side { width: 42px; height: 42px; }
   .room-control-leave { width: 54px; }
-  /* Four side buttons since SCRUM-21 (Tài liệu): packed, still 40px, so the bar fits 390px. */
-  .room-controls-side { gap: 0; }
-  .room-controls-row { gap: 4px; }
-  .room-control-side { width: 40px; }
-  .room-controls .room-control-leave { width: 48px; }
+  /* Five panels do not fit beside the call controls: all but "Người dự" and "Chat" go behind ⋯. */
+  .room-controls-side .room-control-tucked { display: none; }
+  .room-more { display: flex; }
   .room-split-more { width: 26px; height: 42px; }
 }
 
