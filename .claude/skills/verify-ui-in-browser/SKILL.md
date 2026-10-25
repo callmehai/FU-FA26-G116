@@ -167,19 +167,23 @@ layout claim; the pair shows the reader what actually moved.
   the difference and misses small ones (the user, 2026-10-25, could not tell what had changed).
   A pair with no box is not evidence.
   1. In the spec, right after each screenshot, save where the changed elements are, relative to
-     the shot, as `<shot>.boxes.json` (a list of `[x, y, w, h]`). Use the same selectors in both
-     runs; an element that exists on one side only (a new button) is simply missing on the other:
+     the shot and in **image pixels**, as `<shot>.boxes.json` (a list of `[x, y, w, h]`). Shots are
+     taken at 2x (*Browser setup notes*), so CSS pixels are multiplied by `devicePixelRatio`. Use
+     the same selectors in both runs; an element that exists on one side only (a new button) is
+     simply missing on the other:
      ```ts
      async function saveBoxes(page: Page, file: string, selectors: string[], within?: string) {
        const boxes = await page.evaluate(([sels, root]) => {
          const o = root ? document.querySelector(root)!.getBoundingClientRect() : { left: 0, top: 0 }
          return sels.flatMap((sel) => [...document.querySelectorAll(sel)].map((el) => {
            const r = el.getBoundingClientRect()
-           return [r.left - o.left, r.top - o.top, r.width, r.height].map(Math.round)
+           return [r.left - o.left, r.top - o.top, r.width, r.height].map((v) => Math.round(v * devicePixelRatio))
          }))
        }, [selectors, within ?? null] as const)
        writeFileSync(file.replace(/\.png$/, '.boxes.json'), JSON.stringify(boxes))
      }
+     // Toasts about other test data land at random and differ between the two runs: hide them.
+     await page.addStyleTag({ content: '.toast-stack { display: none !important; }' })
      await page.locator('main.content').screenshot({ path: info.outputPath('x.png') })
      await saveBoxes(page, info.outputPath('x.png'), ['.record-head .page-header-actions'], 'main.content')
      ```
@@ -264,6 +268,12 @@ create.
   `index.html` beside it. Give the user that path and open it (`open …` on macOS). Do not publish it
   to an agent-specific host (a Claude Artifact, a Codex share link): not everyone on the team can
   open those. Rebuild it after each round of review fixes.
+- **Every image in the report opens big on click.** A screenshot scaled down to the page column is
+  too small to read (the user, 2026-10-25), and opening the raw image in a new tab is no better.
+  `report.py` embeds each image at full resolution and opens it in a zoom viewer: fit to the screen,
+  a click goes to 100% then 200% around the point clicked, `+`/`−` and Ctrl + wheel zoom, drag pans,
+  `←`/`→` move to the next image, Esc closes. Open the report and check one pair at 100% is sharp
+  before handing it over; a blurry one means the shots were taken at 1x.
 - In the PR, say in words what each pair shows, box by box. Do not commit screenshots, the report
   or test data.
 - When the user has finished looking, stop both servers. **After the PR is merged**, clean up the
@@ -280,7 +290,7 @@ or CI. To set it up on a new machine, create `~/.playwright-e2e` with:
   `npx playwright install chromium`;
 - `playwright.config.ts`: `testDir: './tests'`, `outputDir: process.env.PW_OUT ?? './test-results'`,
   `workers: 1` (one shared database), `baseURL: 'http://localhost:5173'`, viewport 1536×864,
-  `locale: 'vi-VN'`, `timezoneId: 'Asia/Ho_Chi_Minh'`, `screenshot: 'only-on-failure'`,
+  `deviceScaleFactor: 2` (shots stay sharp when zoomed in the report), `locale: 'vi-VN'`, `timezoneId: 'Asia/Ho_Chi_Minh'`, `screenshot: 'only-on-failure'`,
   `trace: 'retain-on-failure'`;
 - `fixtures.ts` exporting `test`, `expect`, `login(request, seed)` (POST `/api/auth/login`, returns
   the access token) and `signIn(page, seed)` (`login(page.request, …)` plus
@@ -288,16 +298,18 @@ or CI. To set it up on a new machine, create `~/.playwright-e2e` with:
 - `tests/smoke.spec.ts`: sign in as `thuky`, open `/calendar`, expect it not to land on `/login`.
 - `pair.py` for the before/after pairs: open both PNGs with Pillow (`pip install pillow`), paste
   them side by side on a white sheet with a 44px band on top, write "Trước" and "Sau" there in a
-  font with Vietnamese diacritics (PIL's built-in font has none). Draw a 4px red rectangle around
+  font with Vietnamese diacritics (PIL's built-in font has none). Scale the band, labels, box
+  lines and tags with the shot (×2 for a 2x shot: width ÷ 1200), or they come out half size. Draw a 4px red rectangle around
   each changed region on both shots, with its number in a red tag placed outside the rectangle
   (right, else left, else above). Regions come from `--boxes before.json after.json` (box *i* is
   the union of entry *i* on each side), `--box x,y,w,h`, or, when neither is given, a pixel diff:
   changed pixels on an 8px grid, cells within 3 cells of each other merged into one box,
   `--ignore x,y,w,h` to leave a region out. Print every box drawn, then save.
 - `report.py` for the §6 report: read the manifest (title, heading, lead, facts, changes, checks,
-  pairs, shots, asks; image paths relative to it), embed each image as a JPEG data URI (pairs at
-  1800px wide, shots at 1200px), write one plain `index.html` with inline CSS and no external
-  requests, so it opens offline.
+  pairs, shots, asks; image paths relative to it), embed each image once as a JPEG data URI at
+  full resolution (pairs up to 6000px wide, shots up to 3000px), wrap it in a button that opens a
+  `<dialog>` zoom viewer reusing the same data URI (so the file does not double), and write one
+  plain `index.html` with inline CSS and script and no external requests, so it opens offline.
 
 The setup is done when the smoke test passes against the running app.
 
