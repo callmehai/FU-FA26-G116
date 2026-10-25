@@ -1,0 +1,744 @@
+{
+  "$comment": "The single registry of tells. min: occurrences needed before a tell counts toward the score (a finding marked strong counts alone; W1/W2 count only when the checker marks them strong, i.e. dense). The checker, the static scanner, the report and references/tells.md all key on `id`. weight: 3 = strong tell on its own, 2 = clear tell, 1 = weak alone, counts in combination. scope: app (product/admin/dashboard), landing (marketing), both. detect: dom (rendered-page checker), static (source scanner), manual (read the code/screen).",
+  "version": 1,
+  "categories": {
+    "color": "Colour",
+    "type": "Typography",
+    "surface": "Shape, depth and effects",
+    "layout": "Layout and components",
+    "motion": "Motion",
+    "copy": "Copy and content",
+    "a11y": "Accessibility and states"
+  },
+  "tells": [
+    {
+      "id": "C1",
+      "slug": "decorative-gradient",
+      "category": "color",
+      "scope": "both",
+      "weight": 0,
+      "min": 2,
+      "detect": [
+        "dom",
+        "static"
+      ],
+      "title": "Decorative gradient",
+      "short": "Gradient washes on surfaces, sidebars, headers, buttons or badges that carry no information.",
+      "fix": "Flat token colour. Keep a gradient only where it encodes data (a heat scale, a progress fill)."
+    },
+    {
+      "id": "C2",
+      "slug": "gradient-text",
+      "category": "color",
+      "scope": "both",
+      "weight": 2,
+      "detect": [
+        "dom",
+        "static"
+      ],
+      "title": "Gradient text",
+      "short": "Headline text filled with a gradient (background-clip: text).",
+      "fix": "Solid ink. Emphasis comes from size, weight and position, not a fill."
+    },
+    {
+      "id": "C3",
+      "slug": "ai-purple",
+      "category": "color",
+      "scope": "both",
+      "weight": 2,
+      "detect": [
+        "dom",
+        "static"
+      ],
+      "title": "Default indigo/violet primary",
+      "short": "Primary buttons and accents in the framework-default indigo/violet (hue 240-290, e.g. #6366F1, #8B5CF6).",
+      "fix": "Derive the primary from the brand. If the brand truly is violet, declare it in .slop.json."
+    },
+    {
+      "id": "C4",
+      "slug": "accent-sprawl",
+      "category": "color",
+      "scope": "both",
+      "weight": 0,
+      "detect": [
+        "dom"
+      ],
+      "title": "Accent sprawl",
+      "short": "Many saturated hues used as solid fills; colour on chrome rather than on data; each card its own colour.",
+      "fix": "Neutral UI, one brand colour for action and selection, semantic colours only for state."
+    },
+    {
+      "id": "C5",
+      "slug": "neon-on-dark",
+      "category": "color",
+      "scope": "landing",
+      "weight": 0,
+      "detect": [
+        "dom"
+      ],
+      "title": "Neon on near-black",
+      "short": "A near-black page with one acid accent and glowing elements, with no light theme.",
+      "fix": "Pick the theme for the audience. Drop the glow; contrast does the work."
+    },
+    {
+      "id": "C6",
+      "slug": "stock-palette",
+      "category": "color",
+      "scope": "both",
+      "weight": 1,
+      "detect": [
+        "static"
+      ],
+      "title": "Untouched framework palette",
+      "short": "Tailwind/shadcn stock swatches used as the brand (indigo-500, violet-600, slate-900, shadcn default HSL vars).",
+      "fix": "Define project tokens on :root and use them everywhere."
+    },
+    {
+      "id": "C7",
+      "slug": "editorial-wave",
+      "category": "color",
+      "scope": "landing",
+      "weight": 2,
+      "detect": [
+        "dom"
+      ],
+      "title": "Cream + serif + terracotta",
+      "short": "The 2026 'tasteful default': warm cream ground (#F4F1EA-ish), serif display face, terracotta/clay or sage accent.",
+      "fix": "Do not swap one default for another. Choose palette and type from the brand and audience."
+    },
+    {
+      "id": "T1",
+      "slug": "default-font-only",
+      "category": "type",
+      "scope": "both",
+      "weight": 3,
+      "detect": [
+        "dom"
+      ],
+      "title": "Default face as the whole identity",
+      "short": "Inter, Roboto, Arial, Open Sans or the system stack as the only family, for display and body alike.",
+      "fix": "Keep a neutral body face if you like; give headings a deliberate choice. Declare an intended default in .slop.json."
+    },
+    {
+      "id": "T2",
+      "slug": "trend-display-font",
+      "category": "type",
+      "scope": "landing",
+      "weight": 2,
+      "detect": [
+        "dom"
+      ],
+      "title": "Trend display face",
+      "short": "The second-wave defaults: Space Grotesk, Instrument Serif, Fraunces, Syne, Geist, Playfair as display.",
+      "fix": "Choose for the brand, not because it is the current safe pick."
+    },
+    {
+      "id": "T3",
+      "slug": "eyebrow-caps",
+      "category": "type",
+      "scope": "both",
+      "weight": 0,
+      "detect": [
+        "dom",
+        "static"
+      ],
+      "title": "Eyebrows and tracked caps",
+      "short": "Tiny uppercase, letter-spaced labels above headings, on section titles, nav, table heads.",
+      "fix": "Sentence case, untracked, the body face. The heading already names the section."
+    },
+    {
+      "id": "T4",
+      "slug": "accent-word",
+      "category": "type",
+      "scope": "landing",
+      "weight": 2,
+      "detect": [
+        "dom"
+      ],
+      "title": "One accented word in a headline",
+      "short": "A single word in a heading set in italic serif or a different colour.",
+      "fix": "One style per heading. Let the sentence carry the emphasis."
+    },
+    {
+      "id": "T5",
+      "slug": "mono-costume",
+      "category": "type",
+      "scope": "both",
+      "weight": 0,
+      "detect": [
+        "dom"
+      ],
+      "title": "Monospace as costume",
+      "short": "Monospace used for labels, captions or meta that are not code, IDs or aligned figures.",
+      "fix": "Body face with tabular-nums for numbers; mono only for code and identifiers."
+    },
+    {
+      "id": "T6",
+      "slug": "flat-type-scale",
+      "category": "type",
+      "scope": "both",
+      "weight": 0,
+      "detect": [
+        "dom"
+      ],
+      "title": "Many near-equal sizes",
+      "short": "Lots of font sizes a pixel or two apart instead of a few clearly separated steps.",
+      "fix": "A scale of about five sizes, far apart (e.g. 12/14/16/20/28)."
+    },
+    {
+      "id": "T7",
+      "slug": "tiny-text",
+      "category": "type",
+      "scope": "both",
+      "weight": 0,
+      "min": 3,
+      "detect": [
+        "dom"
+      ],
+      "title": "Text under 12px",
+      "short": "Visible text set below 12px.",
+      "fix": "12px floor (Cloudscape, Carbon); shorten the text instead of shrinking it."
+    },
+    {
+      "id": "T8",
+      "slug": "stranded-word",
+      "category": "type",
+      "scope": "landing",
+      "weight": 0,
+      "detect": [
+        "dom"
+      ],
+      "title": "Stranded last word",
+      "short": "A multi-line heading whose last line holds a single word.",
+      "fix": "text-wrap: balance on headings; rewrite if it still strands."
+    },
+    {
+      "id": "S1",
+      "slug": "one-radius",
+      "category": "surface",
+      "scope": "both",
+      "weight": 3,
+      "detect": [
+        "dom"
+      ],
+      "title": "One big radius on everything",
+      "short": "A single radius of 12px or more on most boxes, regardless of hierarchy.",
+      "fix": "Radius per nesting level: smaller inside, larger outside; controls and chips share one small radius."
+    },
+    {
+      "id": "S2",
+      "slug": "shape-mix",
+      "category": "surface",
+      "scope": "both",
+      "weight": 0,
+      "detect": [
+        "dom"
+      ],
+      "title": "Mixed chip shapes and heights",
+      "short": "Pills next to square chips, or several chip heights, for the same kind of label; pill buttons in a dense app.",
+      "fix": "One shape and one height per kind of label. Pills are fine when consistent (Carbon, Primer)."
+    },
+    {
+      "id": "S3",
+      "slug": "side-stripe",
+      "category": "surface",
+      "scope": "both",
+      "weight": 0,
+      "detect": [
+        "dom",
+        "static"
+      ],
+      "title": "Coloured side stripe",
+      "short": "A 3-4px coloured border on one edge of a card, alert, banner or list item, used as decoration.",
+      "fix": "Put the colour on the element that means it (an icon, a status label); keep the card border uniform. An edge that marks current position (active nav item, selected row, diff gutter, blockquote) is fine."
+    },
+    {
+      "id": "S4",
+      "slug": "shadow-everything",
+      "category": "surface",
+      "scope": "both",
+      "weight": 2,
+      "detect": [
+        "dom"
+      ],
+      "title": "Soft shadow under every card",
+      "short": "Resting cards and panels lifted by the same soft grey drop shadow.",
+      "fix": "Group with a border or whitespace. Shadows belong to overlays (menus, dialogs, popovers) and draggable items."
+    },
+    {
+      "id": "S5",
+      "slug": "elevation-soup",
+      "category": "surface",
+      "scope": "both",
+      "weight": 2,
+      "min": 2,
+      "detect": [
+        "dom"
+      ],
+      "title": "Border + shadow on one resting box",
+      "short": "A resting box with a border and a drop shadow (and sometimes a ring) at once.",
+      "fix": "Pick one: border or elevation."
+    },
+    {
+      "id": "S6",
+      "slug": "glow",
+      "category": "surface",
+      "scope": "both",
+      "weight": 1,
+      "detect": [
+        "dom",
+        "static"
+      ],
+      "title": "Glow and dramatic shadow",
+      "short": "Coloured blurred halos, glowing buttons, text-shadow, very large drop shadows.",
+      "fix": "No coloured shadows. Buttons rest flat (M3 level 0); overlays use the system's shadow step."
+    },
+    {
+      "id": "S7",
+      "slug": "glass",
+      "category": "surface",
+      "scope": "both",
+      "weight": 1,
+      "detect": [
+        "dom",
+        "static"
+      ],
+      "title": "Glassmorphism",
+      "short": "backdrop-filter blur on translucent panels, navs and cards as decoration.",
+      "fix": "Opaque surfaces. Blur only for controls floating over moving content (Apple HIG)."
+    },
+    {
+      "id": "S8",
+      "slug": "nested-cards",
+      "category": "surface",
+      "scope": "both",
+      "weight": 0,
+      "detect": [
+        "dom"
+      ],
+      "title": "Cards inside cards",
+      "short": "A bordered or shadowed box inside another, inside another.",
+      "fix": "One container level; inside it use spacing, dividers and headings."
+    },
+    {
+      "id": "S9",
+      "slug": "blob-background",
+      "category": "surface",
+      "scope": "landing",
+      "weight": 1,
+      "detect": [
+        "dom",
+        "static"
+      ],
+      "title": "Aurora/blob background",
+      "short": "Blurred colour blobs, mesh or aurora gradients, grid-and-glow backdrops behind the hero.",
+      "fix": "A plain ground, or real imagery of the product."
+    },
+    {
+      "id": "L1",
+      "slug": "kpi-tiles",
+      "category": "layout",
+      "scope": "app",
+      "weight": 2,
+      "detect": [
+        "dom"
+      ],
+      "title": "KPI tile row",
+      "short": "3-6 identical cards, each with an icon tile, a big (often coloured) number, a caption or a +12% chip.",
+      "fix": "Numbers as type in a compact row or inside the table header; no icon tiles, no captions repeating the label."
+    },
+    {
+      "id": "L2",
+      "slug": "icon-tile",
+      "category": "layout",
+      "scope": "both",
+      "weight": 1,
+      "detect": [
+        "dom"
+      ],
+      "title": "Icon in a tinted tile",
+      "short": "A glyph inside a coloured square or circle beside a heading, card, row or feature.",
+      "fix": "The glyph alone, coloured like its text, or no icon. No icons on section headings (Cloudscape)."
+    },
+    {
+      "id": "L3",
+      "slug": "icon-soup",
+      "category": "layout",
+      "scope": "both",
+      "weight": 1,
+      "min": 3,
+      "detect": [
+        "dom"
+      ],
+      "title": "Icon soup chip",
+      "short": "One small label carrying an icon, words, a tint and a border.",
+      "fix": "Words alone, or an icon-only control with a tooltip. 'Don't include icons on badges' (Cloudscape)."
+    },
+    {
+      "id": "L4",
+      "slug": "hero-three-cards",
+      "category": "layout",
+      "scope": "landing",
+      "weight": 0,
+      "detect": [
+        "dom"
+      ],
+      "title": "Centred hero, then three icon cards",
+      "short": "Centred headline with two CTAs, followed by a grid of 3 or 6 same-shaped feature cards with icons.",
+      "fix": "Lead with the product itself (a real screenshot, a demo, the main job); vary the rhythm of sections."
+    },
+    {
+      "id": "L5",
+      "slug": "hero-pill",
+      "category": "layout",
+      "scope": "landing",
+      "weight": 3,
+      "detect": [
+        "dom"
+      ],
+      "title": "Pill badge above the hero",
+      "short": "A rounded 'New: ...' or sparkle chip sitting above the H1.",
+      "fix": "Delete it; put real news in the headline or a changelog link."
+    },
+    {
+      "id": "L6",
+      "slug": "index-numbers",
+      "category": "layout",
+      "scope": "landing",
+      "weight": 0,
+      "detect": [
+        "dom"
+      ],
+      "title": "01 / 02 / 03 markers",
+      "short": "Zero-padded numbers on sections or cards that are not a sequence.",
+      "fix": "Number only real steps; otherwise drop the markers."
+    },
+    {
+      "id": "L7",
+      "slug": "fake-chrome",
+      "category": "layout",
+      "scope": "landing",
+      "weight": 1,
+      "detect": [
+        "dom"
+      ],
+      "title": "Fake window chrome",
+      "short": "Three traffic-light dots drawn around a screenshot or code block.",
+      "fix": "Show the screenshot as it is, or a real device frame if context matters."
+    },
+    {
+      "id": "L8",
+      "slug": "emoji-icons",
+      "category": "layout",
+      "scope": "both",
+      "weight": 0,
+      "detect": [
+        "dom",
+        "static"
+      ],
+      "title": "Emoji and sparkles as icons",
+      "short": "Emoji in headings, nav, bullets or buttons; the four-point sparkle on anything 'AI'.",
+      "fix": "One icon set, used to supplement text; name AI features by what they do."
+    },
+    {
+      "id": "L9",
+      "slug": "status-dot",
+      "category": "layout",
+      "scope": "both",
+      "weight": 2,
+      "detect": [
+        "dom"
+      ],
+      "title": "Decorative status dots",
+      "short": "A coloured dot on every chip or row, often pulsing, repeating what the label already says.",
+      "fix": "Status as icon/shape + text (Carbon, Cloudscape); show a marker only where it changes a decision."
+    },
+    {
+      "id": "L10",
+      "slug": "badge-every-row",
+      "category": "layout",
+      "scope": "app",
+      "weight": 1,
+      "detect": [
+        "dom"
+      ],
+      "title": "Same badge on every row",
+      "short": "A table column where every row carries the same coloured badge.",
+      "fix": "Plain text for the normal case; highlight only the exception."
+    },
+    {
+      "id": "L11",
+      "slug": "meta-strings",
+      "category": "layout",
+      "scope": "both",
+      "weight": 0,
+      "min": 2,
+      "detect": [
+        "dom",
+        "static"
+      ],
+      "title": "Middle-dot meta strings and glued arrows",
+      "short": "'A · B · C' joins, 'WORD — fragment' labels, '→' appended to links and buttons.",
+      "fix": "Separate cells, a second line, or a comma. A button says what it does without an arrow."
+    },
+    {
+      "id": "L12",
+      "slug": "dash-empty",
+      "category": "layout",
+      "scope": "app",
+      "weight": 1,
+      "detect": [
+        "dom"
+      ],
+      "title": "Dash for an empty value",
+      "short": "\"N/A\", \"null\", \"none\", or a dash standing for a missing value outside a dense table.",
+      "fix": "One empty-value convention: a muted dash only in dense tables (Cloudscape), words such as \"Not set\" in detail views and forms; never \"N/A\"."
+    },
+    {
+      "id": "L13",
+      "slug": "competing-primaries",
+      "category": "layout",
+      "scope": "both",
+      "weight": 0,
+      "detect": [
+        "dom"
+      ],
+      "title": "Competing primary buttons",
+      "short": "Several solid filled buttons visible at once.",
+      "fix": "One primary per page or area (Cloudscape, Carbon, Atlassian, Fluent, Primer); others outline, subtle or link."
+    },
+    {
+      "id": "L14",
+      "slug": "hero-in-app",
+      "category": "layout",
+      "scope": "app",
+      "weight": 2,
+      "detect": [
+        "manual"
+      ],
+      "title": "Hero or welcome banner inside the app",
+      "short": "A marketing-style hero, greeting banner or illustration at the top of a working screen.",
+      "fix": "Start with the user's work: the list, the queue, the next action."
+    },
+    {
+      "id": "L15",
+      "slug": "fake-charts",
+      "category": "layout",
+      "scope": "app",
+      "weight": 2,
+      "detect": [
+        "manual"
+      ],
+      "title": "Charts standing in for content",
+      "short": "Sparklines, donuts or progress rings that fill space without supporting a decision.",
+      "fix": "A chart only when the shape of the data answers a question; otherwise a number or a table."
+    },
+    {
+      "id": "M1",
+      "slug": "endless-motion",
+      "category": "motion",
+      "scope": "both",
+      "weight": 0,
+      "detect": [
+        "dom",
+        "static"
+      ],
+      "title": "Endless motion",
+      "short": "Infinite animations that signal nothing: pulsing dots, rippling CTAs, nudging arrows, shimmer outside loading.",
+      "fix": "Nothing loops unless it marks a real ongoing state (loading, recording, a live call) and stops when the state ends; mark those role=\"status\"."
+    },
+    {
+      "id": "M2",
+      "slug": "hover-lift",
+      "category": "motion",
+      "scope": "both",
+      "weight": 0,
+      "detect": [
+        "dom",
+        "static"
+      ],
+      "title": "Hover lift and scale",
+      "short": "Cards and buttons that translate up or scale on hover.",
+      "fix": "Change colour or border on hover; keep layout still (Uncodixfy, no-slop-ui)."
+    },
+    {
+      "id": "M3",
+      "slug": "transition-all",
+      "category": "motion",
+      "scope": "both",
+      "weight": 1,
+      "detect": [
+        "dom",
+        "static"
+      ],
+      "title": "transition: all",
+      "short": "Transitions on every property, usually with one shared duration.",
+      "fix": "Transition only the properties that change, 50-150ms for hover/press (Atlassian, Carbon)."
+    },
+    {
+      "id": "M4",
+      "slug": "fade-up-reveal",
+      "category": "motion",
+      "scope": "landing",
+      "weight": 2,
+      "detect": [
+        "dom",
+        "static"
+      ],
+      "title": "Fade-up on every section",
+      "short": "Every section fades and rises into view with the same timing.",
+      "fix": "At most one deliberate entrance; content is simply there."
+    },
+    {
+      "id": "M5",
+      "slug": "no-reduced-motion",
+      "category": "motion",
+      "scope": "both",
+      "weight": 1,
+      "detect": [
+        "dom",
+        "static"
+      ],
+      "title": "Motion without a reduced-motion path",
+      "short": "Animations with no prefers-reduced-motion rule.",
+      "fix": "@media (prefers-reduced-motion: reduce) removes non-essential motion."
+    },
+    {
+      "id": "W1",
+      "slug": "buzzwords",
+      "category": "copy",
+      "scope": "both",
+      "weight": 2,
+      "min": 999,
+      "detect": [
+        "dom"
+      ],
+      "title": "Buzzword copy",
+      "short": "Unlock, supercharge, seamless, elevate, unleash, revolutionise; 'not just X, it's Y'; 'all-in-one platform'.",
+      "fix": "Say what the product does, with a concrete noun and verb."
+    },
+    {
+      "id": "W2",
+      "slug": "generic-cta",
+      "category": "copy",
+      "scope": "both",
+      "weight": 0,
+      "min": 999,
+      "detect": [
+        "dom"
+      ],
+      "title": "Generic call to action",
+      "short": "'Get started', 'Learn more', 'Submit', 'Click here' as button labels.",
+      "fix": "Verb + object: 'Create meeting', 'Save changes' (Anthropic, Cloudscape)."
+    },
+    {
+      "id": "W3",
+      "slug": "explainer-copy",
+      "category": "copy",
+      "scope": "both",
+      "weight": 1,
+      "detect": [
+        "dom",
+        "manual"
+      ],
+      "title": "Copy that explains the screen",
+      "short": "Subtitles restating the title, section notes describing the UI, developer text leaking into the page.",
+      "fix": "Delete it. A header line may carry data (a count), not an explanation."
+    },
+    {
+      "id": "W4",
+      "slug": "exclamations",
+      "category": "copy",
+      "scope": "both",
+      "weight": 0,
+      "min": 2,
+      "detect": [
+        "dom"
+      ],
+      "title": "Exclamation marks and cheer",
+      "short": "Exclamation marks, 'Oops!', 'Awesome!' in UI copy.",
+      "fix": "Calm statements; errors name the problem and the recovery (Atlassian, Fluent)."
+    },
+    {
+      "id": "W5",
+      "slug": "template-leak",
+      "category": "copy",
+      "scope": "both",
+      "weight": 2,
+      "detect": [
+        "dom"
+      ],
+      "title": "Template leakage",
+      "short": "Lorem ipsum, [Name], {{placeholders}}, John Doe, Acme Inc, example.com in the shipped UI.",
+      "fix": "Real data, or an honest empty state."
+    },
+    {
+      "id": "W6",
+      "slug": "invented-proof",
+      "category": "copy",
+      "scope": "landing",
+      "weight": 0,
+      "min": 2,
+      "detect": [
+        "dom",
+        "manual"
+      ],
+      "title": "Invented social proof",
+      "short": "Round stat banners (10k+ users, 99.9% uptime, 4.9 stars), 'Trusted by' logo walls, testimonials without sources.",
+      "fix": "Only claims you can source; otherwise leave them out."
+    },
+    {
+      "id": "A1",
+      "slug": "low-contrast",
+      "category": "a11y",
+      "scope": "both",
+      "weight": 0,
+      "min": 3,
+      "detect": [
+        "dom"
+      ],
+      "title": "Low-contrast text",
+      "short": "Body text under 4.5:1 against its background, often grey-on-grey or grey on colour.",
+      "fix": "4.5:1 for body, 3:1 for large text and UI marks (WCAG 2.2)."
+    },
+    {
+      "id": "A2",
+      "slug": "focus-removed",
+      "category": "a11y",
+      "scope": "both",
+      "weight": 2,
+      "detect": [
+        "static"
+      ],
+      "title": "Focus ring removed",
+      "short": "outline: none / outline-none without a visible :focus-visible replacement.",
+      "fix": "A visible :focus-visible ring in the brand colour."
+    },
+    {
+      "id": "A3",
+      "slug": "happy-path-only",
+      "category": "a11y",
+      "scope": "both",
+      "weight": 2,
+      "detect": [
+        "manual"
+      ],
+      "title": "Only the happy path",
+      "short": "No designed empty, filtered-empty, loading, error or long-content states.",
+      "fix": "Design each state with real, hostile data: long names, zero items, failures."
+    },
+    {
+      "id": "A4",
+      "slug": "toast-everything",
+      "category": "a11y",
+      "scope": "app",
+      "weight": 1,
+      "detect": [
+        "manual"
+      ],
+      "title": "A toast for every action",
+      "short": "Success toasts for actions whose result is already visible on screen.",
+      "fix": "Toast only when the result is off-screen, delayed or failed."
+    }
+  ]
+}
