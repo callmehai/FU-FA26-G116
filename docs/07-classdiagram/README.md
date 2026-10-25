@@ -19,9 +19,10 @@ trích xuất nguyên trạng các class C# đã triển khai.
 | FE-05 Agenda Management | [drawio](feature-05-agenda-management-class-diagram.drawio) · [PNG](feature-05-agenda-management-class-diagram.drawio.png) | UC-23a/b/c/d, UC-24–UC-26, UC-77 |
 | FE-06 Meeting Participant Management | [drawio](feature-06-meeting-participant-management-class-diagram.drawio) · [PNG](feature-06-meeting-participant-management-class-diagram.drawio.png) | UC-27, UC-28a/b/c, UC-29–UC-31, UC-73 |
 | FE-07 Meeting Document Management (một phần) | [drawio](feature-07-document-management-class-diagram.drawio) · [PNG](feature-07-document-management-class-diagram.drawio.png) | UC-32a, UC-32c, UC-33a AF-1, UC-35 |
+| FE-11 Voting Management | [drawio](feature-11-voting-management-class-diagram.drawio) · [PNG](feature-11-voting-management-class-diagram.drawio.png) | UC-52a, UC-52b, UC-53–UC-57, UC-76a, UC-76b |
 | FE-13 Notification | [drawio](feature-13-notification-management-class-diagram.drawio) · [PNG](feature-13-notification-management-class-diagram.drawio.png) | UC-66, UC-67a/b, UC-68 |
 
-FE-07 mới có phần đọc tài liệu cuộc họp và góp ý (UC-32a, UC-32c, UC-35 — SCRUM-21/22/23, 22/10/2026) và tải từ máy vào cuộc họp (UC-33a AF-1 — SCRUM-107, 23/10/2026): thêm `uploadDocuments` từ `MeetingDocumentsTab` xuống service, `FileStorage.write/delete` (R2, [ADR-0024](../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)), `FolderRepository`, entity `Folder` và `Document` (dòng kho), `StoredFile.originalFileName`, và làn bên trái cho job dọn file mồ côi `OrphanFilePurgeJob` + `StoredFileRepository` (BR-213). Cùng đợt sửa `downloadDocument` của `DocumentViewer` thêm `meetingId` cho khớp controller. Luồng chọn từ kho, gỡ/gắn tài liệu, xem/quản lý kho (UC-33a luồng chính, UC-33b–d, UC-34, UC-36, UC-71, UC-72 — SCRUM-58) chưa vẽ. Còn thiếu quan hệ tác giả `DocumentComment.authorId` → `User` (mới vẽ phía Guest); để lại cho SCRUM-23. FE-08–FE-12, FE-14 và FE-15 chưa có class diagram trong thư mục này. FE-05 Meeting Session cũ
+FE-07 mới có phần đọc tài liệu cuộc họp và góp ý (UC-32a, UC-32c, UC-35 — SCRUM-21/22/23, 22/10/2026) và tải từ máy vào cuộc họp (UC-33a AF-1 — SCRUM-107, 23/10/2026): thêm `uploadDocuments` từ `MeetingDocumentsTab` xuống service, `FileStorage.write/delete` (R2, [ADR-0024](../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)), `FolderRepository`, entity `Folder` và `Document` (dòng kho), `StoredFile.originalFileName`, và làn bên trái cho job dọn file mồ côi `OrphanFilePurgeJob` + `StoredFileRepository` (BR-213). Cùng đợt sửa `downloadDocument` của `DocumentViewer` thêm `meetingId` cho khớp controller. Luồng chọn từ kho, gỡ/gắn tài liệu, xem/quản lý kho (UC-33a luồng chính, UC-33b–d, UC-34, UC-36, UC-71, UC-72 — SCRUM-58) chưa vẽ. Còn thiếu quan hệ tác giả `DocumentComment.authorId` → `User` (mới vẽ phía Guest); để lại cho SCRUM-23. FE-08–FE-10, FE-12, FE-14 và FE-15 chưa có class diagram trong thư mục này. FE-05 Meeting Session cũ
 đã bị bỏ theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md); FE-05 hiện tại là Agenda.
 UC-07 hiện nằm trong FE-02, không còn một bản 02b độc lập.
 
@@ -172,6 +173,48 @@ khi triển khai SCRUM-58/SCRUM-21. `MeetingAccessPolicy` dùng chung với FE-0
 trong kho đối tượng, chưa có class tương ứng (**PROPOSED**). `MeetingDocumentGroups`, `FileContent` là DTO trả về,
 không vẽ thành class. `AuditLogRepository` phục vụ BR-318. Validator 0 lỗi; đã render và xem ảnh. PNG xuất bằng draw.io
 desktop, nhúng model ở chunk `zTXt`; chưa mở lại PNG bằng draw.io để kiểm tra roundtrip.
+
+## 6c. FE-11 — biểu quyết · 25/10/2026
+
+Vẽ mới từ 9 sequence trong [voting-management](../06-sequencediagram/voting-management/README.md) (UC-52a, UC-52b, UC-53,
+UC-54, UC-55, UC-56, UC-57, UC-76a, UC-76b), UC/BR/MSG đã chốt 25/10/2026 và schema voting trong [ERD](../02-design/02-erd.md)
+cùng `Domain/Entities/Vot*.cs`, `Vote*.cs`. Đây là **thiết kế**, chưa có endpoint. 30 class: 4 lớp Boundary/Control/Service/Policy,
+8 repository/interface, 12 entity, 3 enumeration của domain và 3 type đề xuất. Nét đứt ở viền class = `PROPOSED / NEEDS APPROVAL`
+(không có trong schema, ERD hay sequence): `VoteInput`, `VoteDocumentSource`, `VoteDraftOperation`, `PersonalDocumentRepository`,
+`FileStorage`, `DocumentReadConfirmationRepository` và entity `DocumentReadConfirmation` (UC-74 chưa có bảng). Tái dùng từ FE-05/06/07:
+`MeetingAccessPolicy`, `MeetingParticipantRepository`, `MeetingDocumentRepository`, `MeetingDocument`, `Document`,
+`MeetingGuestInvitation`, `User`, `Meeting`, `MeetingRole`. Phiếu có `VoterId`/`GuestInvitationId` (đúng một, hoặc cả hai null ở
+`VoteChoice` kín) nên Guest không bao giờ là `User` ([ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md)).
+
+| Sequence (message tới receiver) | Class → operation |
+|---|---|
+| UC-52a `listMeetingVotes` | `VoteService.listMeetingVotes`; `VoteRepository.findVisibleByMeeting` (lọc Draft, BR-253); `MeetingAccessPolicy.canViewMeeting` |
+| UC-52b `getVoteStatus` | `VoteService.getVoteStatus`; `VoteRepository.findWithMeeting` / `findWithDetail`; `VoteReceiptRepository.countByVote`; `VoteChoiceRepository.countByOption` / `findWithVoters` |
+| UC-53 `manageVoteDraft` | `VoteService.manageVoteDraft`, `validateVoteInfo`; `VoteRepository.findWithMeetingAndOpenVote`, `addDraft`, `updateDraft`, `deleteDraft`; mở từ form → UC-54 |
+| UC-54 `openVote` | `VoteService.openVote`; `MeetingParticipantRepository.verifyChairAssignment`, `findEligibleHolders`; `VoteRepository.saveOpened` (chốt người đủ điều kiện, `eligibleCount`, tài liệu) |
+| UC-55 `castVote` | `VoteService.castVote`, `validateOption`; `VoteRepository.findForBallot`; `VoteReceiptRepository.findByVoter` / `add`; `VoteChoiceRepository.add`; `DocumentReadConfirmationRepository.findByVoterAndVoteDocuments`; `ref` UC-74 không vẽ (thuộc FE-07) |
+| UC-56 `closeVote` | `VoteService.closeVote`; `VoteChoiceRepository.countByOption`; `VoteRepository.saveClosed` |
+| UC-57 `recordVoteConclusion` | `VoteService.recordVoteConclusion`; `VoteRepository.saveConclusion` |
+| UC-76a `attachVoteDocuments` | `VoteService.attachVoteDocuments`, `validateUploadedFiles`; `MeetingDocumentRepository.findAvailableForVote`, `addUploads`; `PersonalDocumentRepository.findOwnedAvailable`; `FileStorage.write`; `VoteRepository.attachDocuments` |
+| UC-76b `detachVoteDocument` | `VoteService.detachVoteDocument`; `VoteRepository.detachDocument` |
+
+`VoteController` và `MeetingManagementPage` lặp lại tên operation của service; sequence chỉ có message tự nhiên ở hai tầng này
+nên tên/tham số là **PROPOSED**. Return, SQL I/O, activation và `alt` không sinh operation.
+
+**Chỗ lệch và việc chờ quyết định**
+
+- **UC-56 và schema:** UC nói ghi trạng thái Closed cùng kết quả kiểm phiếu, nhưng schema không có cột/bảng lưu tally. Diagram vẽ
+  `saveClosed(voteId)` (trạng thái, `closedAt`) và tally tính từ `VoteChoice`. **NEEDS REVIEW:** BA/PO chốt tally là dữ liệu tính hay lưu.
+- **Loại `VoteDocumentSource`, `VoteInput`, `VoteDraftOperation`** suy từ tham số `source`, `voteInfo`, `operation` của sequence; tên và
+  literal chưa có nguồn.
+- **UC-74** (`DocumentViewer`, `DocumentReadService`) chưa có class diagram ở FE-07; chỉ vẽ phần UC-55 gọi, tức repository đọc xác nhận.
+- **`MeetingRole`:** FE-06 vẽ 3 giá trị, schema và diagram này có thêm `Guest`; FE-06 cần cập nhật khi chạm vào.
+- `MeetingAccessPolicy` ở sequence truy vấn Database trực tiếp; class không có repository phía sau (như FE-05/07).
+  `MeetingParticipant` không vẽ, `MeetingParticipantRepository` chỉ nhận message.
+- `VotingSession.title`, `description`, `createdById` có trong entity C# nhưng UC chỉ nói "content": giữ theo code.
+- **Hình học:** validator báo 3 cạnh giao nhau ở cụm `User`/`MeetingGuestInvitation` (mỗi trong 3 entity phiếu nối tới cả hai, hai tầng nên
+  không tránh được). Không có chồng chữ hay cạnh xuyên class. PNG xuất bằng draw.io 29.6.1, chunk `zTXt` đã viết lại zlib + CRC đúng, `IEND`
+  đủ, XML nhúng khớp source; CLI hiện tại không mở lại được PNG (kể cả FE-06 cũ) nên **chưa kiểm roundtrip bằng draw.io**.
 
 ## 7. Rà soát hiện trạng · 14/10/2026
 

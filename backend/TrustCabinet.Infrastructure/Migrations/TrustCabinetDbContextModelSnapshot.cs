@@ -2010,6 +2010,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<Guid?>("GuestInvitationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guest_invitation_id");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -2029,6 +2033,9 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_vote_choices");
 
+                    b.HasIndex("GuestInvitationId")
+                        .HasDatabaseName("ix_vote_choices_guest_invitation_id");
+
                     b.HasIndex("VoterId")
                         .HasDatabaseName("ix_vote_choices_voter_id");
 
@@ -2038,7 +2045,81 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasIndex("VotingSessionId", "VotingOptionId")
                         .HasDatabaseName("ix_vote_choices_voting_session_id_voting_option_id");
 
-                    b.ToTable("vote_choices", (string)null);
+                    b.ToTable("vote_choices", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_vote_choices_at_most_one_voter", "num_nonnulls(voter_id, guest_invitation_id) <= 1");
+                        });
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.VoteDocument", b =>
+                {
+                    b.Property<Guid>("VotingSessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("voting_session_id");
+
+                    b.Property<Guid>("MeetingDocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("meeting_document_id");
+
+                    b.HasKey("VotingSessionId", "MeetingDocumentId")
+                        .HasName("pk_vote_documents");
+
+                    b.HasIndex("MeetingDocumentId")
+                        .HasDatabaseName("ix_vote_documents_meeting_document_id");
+
+                    b.ToTable("vote_documents", (string)null);
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.VoteEligibleVoter", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("GuestInvitationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guest_invitation_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<Guid>("VotingSessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("voting_session_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_vote_eligible_voters");
+
+                    b.HasIndex("GuestInvitationId")
+                        .HasDatabaseName("ix_vote_eligible_voters_guest_invitation_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_vote_eligible_voters_user_id");
+
+                    b.HasIndex("VotingSessionId", "GuestInvitationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_vote_eligible_voters_voting_session_id_guest_invitation_id")
+                        .HasFilter("guest_invitation_id IS NOT NULL");
+
+                    b.HasIndex("VotingSessionId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_vote_eligible_voters_voting_session_id_user_id")
+                        .HasFilter("user_id IS NOT NULL");
+
+                    b.ToTable("vote_eligible_voters", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_vote_eligible_voters_one_voter", "num_nonnulls(user_id, guest_invitation_id) = 1");
+                        });
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.VoteReceipt", b =>
@@ -2056,11 +2137,15 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<Guid?>("GuestInvitationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guest_invitation_id");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
-                    b.Property<Guid>("VoterId")
+                    b.Property<Guid?>("VoterId")
                         .HasColumnType("uuid")
                         .HasColumnName("voter_id");
 
@@ -2071,14 +2156,26 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_vote_receipts");
 
+                    b.HasIndex("GuestInvitationId")
+                        .HasDatabaseName("ix_vote_receipts_guest_invitation_id");
+
                     b.HasIndex("VoterId")
                         .HasDatabaseName("ix_vote_receipts_voter_id");
 
+                    b.HasIndex("VotingSessionId", "GuestInvitationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_vote_receipts_voting_session_id_guest_invitation_id")
+                        .HasFilter("guest_invitation_id IS NOT NULL");
+
                     b.HasIndex("VotingSessionId", "VoterId")
                         .IsUnique()
-                        .HasDatabaseName("ix_vote_receipts_voting_session_id_voter_id");
+                        .HasDatabaseName("ix_vote_receipts_voting_session_id_voter_id")
+                        .HasFilter("voter_id IS NOT NULL");
 
-                    b.ToTable("vote_receipts", (string)null);
+                    b.ToTable("vote_receipts", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_vote_receipts_one_voter", "num_nonnulls(voter_id, guest_invitation_id) = 1");
+                        });
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.VotingOption", b =>
@@ -2127,23 +2224,28 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid?>("AgendaItemId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("agenda_item_id");
-
                     b.Property<DateTimeOffset?>("ClosedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("closed_at");
 
-                    b.Property<DateTimeOffset?>("ClosesAt")
+                    b.Property<DateTimeOffset?>("ConcludedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("closes_at");
+                        .HasColumnName("concluded_at");
+
+                    b.Property<Guid?>("ConcludedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("concluded_by_id");
 
                     b.Property<string>("Conclusion")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("conclusion");
+
+                    b.Property<string>("ConclusionNote")
                         .IsRequired()
                         .HasMaxLength(4000)
                         .HasColumnType("character varying(4000)")
-                        .HasColumnName("conclusion");
+                        .HasColumnName("conclusion_note");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -2163,23 +2265,22 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("eligible_count");
 
+                    b.PrimitiveCollection<string[]>("EligibleRoles")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("eligible_roles");
+
                     b.Property<bool>("IsAnonymous")
                         .HasColumnType("boolean")
                         .HasColumnName("is_anonymous");
-
-                    b.Property<string>("Kind")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("kind");
 
                     b.Property<Guid>("MeetingId")
                         .HasColumnType("uuid")
                         .HasColumnName("meeting_id");
 
-                    b.Property<DateTimeOffset?>("OpensAt")
+                    b.Property<DateTimeOffset?>("OpenedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("opens_at");
+                        .HasColumnName("opened_at");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -2200,11 +2301,16 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_voting_sessions");
 
-                    b.HasIndex("AgendaItemId")
-                        .HasDatabaseName("ix_voting_sessions_agenda_item_id");
+                    b.HasIndex("ConcludedById")
+                        .HasDatabaseName("ix_voting_sessions_concluded_by_id");
 
                     b.HasIndex("CreatedById")
                         .HasDatabaseName("ix_voting_sessions_created_by_id");
+
+                    b.HasIndex("MeetingId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_voting_sessions_meeting_id")
+                        .HasFilter("status = 'Open'");
 
                     b.HasIndex("MeetingId", "CreatedAt")
                         .HasDatabaseName("ix_voting_sessions_meeting_id_created_at");
@@ -2889,6 +2995,12 @@ namespace TrustCabinet.Infrastructure.Migrations
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.VoteChoice", b =>
                 {
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", "GuestInvitation")
+                        .WithMany()
+                        .HasForeignKey("GuestInvitationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_vote_choices_meeting_guest_invitations_guest_invitation_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.User", "Voter")
                         .WithMany()
                         .HasForeignKey("VoterId")
@@ -2909,6 +3021,8 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_vote_choices_voting_sessions_voting_session_id");
 
+                    b.Navigation("GuestInvitation");
+
                     b.Navigation("Voter");
 
                     b.Navigation("VotingOption");
@@ -2916,13 +3030,67 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("VotingSession");
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.VoteDocument", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingDocument", "MeetingDocument")
+                        .WithMany("VoteLinks")
+                        .HasForeignKey("MeetingDocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_vote_documents_meeting_documents_meeting_document_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.VotingSession", "VotingSession")
+                        .WithMany("Documents")
+                        .HasForeignKey("VotingSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_vote_documents_voting_sessions_voting_session_id");
+
+                    b.Navigation("MeetingDocument");
+
+                    b.Navigation("VotingSession");
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.VoteEligibleVoter", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", "GuestInvitation")
+                        .WithMany()
+                        .HasForeignKey("GuestInvitationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_vote_eligible_voters_meeting_guest_invitations_guest_invita");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_vote_eligible_voters_users_user_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.VotingSession", "VotingSession")
+                        .WithMany("EligibleVoters")
+                        .HasForeignKey("VotingSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_vote_eligible_voters_voting_sessions_voting_session_id");
+
+                    b.Navigation("GuestInvitation");
+
+                    b.Navigation("User");
+
+                    b.Navigation("VotingSession");
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.VoteReceipt", b =>
                 {
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", "GuestInvitation")
+                        .WithMany()
+                        .HasForeignKey("GuestInvitationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_vote_receipts_meeting_guest_invitations_guest_invitation_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.User", "Voter")
                         .WithMany()
                         .HasForeignKey("VoterId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_vote_receipts_users_voter_id");
 
                     b.HasOne("TrustCabinet.Domain.Entities.VotingSession", "VotingSession")
@@ -2931,6 +3099,8 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_vote_receipts_voting_sessions_voting_session_id");
+
+                    b.Navigation("GuestInvitation");
 
                     b.Navigation("Voter");
 
@@ -2951,11 +3121,11 @@ namespace TrustCabinet.Infrastructure.Migrations
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.VotingSession", b =>
                 {
-                    b.HasOne("TrustCabinet.Domain.Entities.AgendaItem", "AgendaItem")
-                        .WithMany("VotingSessions")
-                        .HasForeignKey("AgendaItemId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_voting_sessions_agenda_items_agenda_item_id");
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "ConcludedBy")
+                        .WithMany()
+                        .HasForeignKey("ConcludedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_voting_sessions_users_concluded_by_id");
 
                     b.HasOne("TrustCabinet.Domain.Entities.User", "CreatedBy")
                         .WithMany()
@@ -2971,7 +3141,7 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_voting_sessions_meetings_meeting_id");
 
-                    b.Navigation("AgendaItem");
+                    b.Navigation("ConcludedBy");
 
                     b.Navigation("CreatedBy");
 
@@ -2981,8 +3151,6 @@ namespace TrustCabinet.Infrastructure.Migrations
             modelBuilder.Entity("TrustCabinet.Domain.Entities.AgendaItem", b =>
                 {
                     b.Navigation("DocumentLinks");
-
-                    b.Navigation("VotingSessions");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.CallSession", b =>
@@ -3023,6 +3191,8 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("AgendaItemLinks");
 
                     b.Navigation("Comments");
+
+                    b.Navigation("VoteLinks");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.MeetingMinutes", b =>
@@ -3053,6 +3223,10 @@ namespace TrustCabinet.Infrastructure.Migrations
             modelBuilder.Entity("TrustCabinet.Domain.Entities.VotingSession", b =>
                 {
                     b.Navigation("Choices");
+
+                    b.Navigation("Documents");
+
+                    b.Navigation("EligibleVoters");
 
                     b.Navigation("Options");
 

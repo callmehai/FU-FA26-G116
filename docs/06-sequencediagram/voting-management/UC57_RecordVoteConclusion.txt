@@ -1,0 +1,77 @@
+title UC-57 - Record Vote Conclusion
+
+actor "Chair" as Actor
+boundary "Meeting Management Page" as MeetingPage
+control ":Vote Controller" as VoteController
+control ":Vote Service" as VoteService
+participant ":Meeting Participant Repository" as ParticipantRepository
+participant ":Vote Repository" as VoteRepository
+database ":Database" as Database
+
+Actor->MeetingPage: Confirm Record conclusion (Passed / NotPassed / Deferred, optional note)
+activate MeetingPage
+MeetingPage->VoteController: Record Vote conclusion
+activate VoteController
+VoteController->VoteService: recordVoteConclusion(meetingId, voteId, actorId, conclusion, note)
+activate VoteService
+
+VoteService->VoteRepository: Get Vote, its Meeting, tally and any saved conclusion
+activate VoteRepository
+VoteRepository->Database: Get Vote, its Meeting, tally and any saved conclusion
+activate Database
+Database-->VoteRepository: Vote, Meeting, tally and conclusion / Not found
+deactivate Database
+VoteRepository-->VoteService: Vote, Meeting, tally and conclusion / Not found
+deactivate VoteRepository
+VoteService->ParticipantRepository: Check current Chair assignment
+activate ParticipantRepository
+ParticipantRepository->Database: Check current Chair assignment
+activate Database
+Database-->ParticipantRepository: Current Chair / Not eligible
+deactivate Database
+ParticipantRepository-->VoteService: Current Chair / Not eligible
+deactivate ParticipantRepository
+alt Meeting or Vote not accessible - EX-5
+    VoteService-->VoteController: MSG205 - Meeting votes are not accessible.
+    VoteController-->MeetingPage: MSG205 - Meeting votes are not accessible.
+    MeetingPage-->Actor: MSG205 - Meeting votes are not accessible.
+else Actor not the current Chair, Meeting not InProgress or Ended, or Vote not Closed with a tally - EX-3
+    VoteService-->VoteController: MSG234 - Only the current Chair can record a conclusion for a Closed vote\nwhile the meeting is InProgress or Ended.
+    VoteController-->MeetingPage: MSG234 - Only the current Chair can record a conclusion for a Closed vote\nwhile the meeting is InProgress or Ended.
+    MeetingPage-->Actor: MSG234 - Only the current Chair can record a conclusion for a Closed vote\nwhile the meeting is InProgress or Ended.
+else Conclusion already recorded - EX-2
+    VoteService-->VoteController: MSG233 - The vote conclusion has already been recorded and cannot be changed.
+    VoteController-->MeetingPage: MSG233 - The vote conclusion has already been recorded and cannot be changed.
+    MeetingPage-->Actor: MSG233 - The vote conclusion has already been recorded and cannot be changed.
+else Closed Vote without conclusion (BR-161, BR-262)
+    alt Conclusion missing or not Passed, NotPassed or Deferred - EX-1
+        VoteService-->VoteController: MSG232 - Select Passed, NotPassed or Deferred.
+        VoteController-->MeetingPage: MSG232 - Select Passed, NotPassed or Deferred.
+        MeetingPage-->Actor: MSG232 - Select Passed, NotPassed or Deferred.
+    else Conclusion is valid (BR-161)
+        opt Meeting is Ended - AF-1
+            VoteService->VoteService: Record the outcome of the existing Vote; open no new voting\nand accept no ballot
+        end
+        VoteService->VoteRepository: Recheck no conclusion exists; save the conclusion, optional note, recording Chair\nand recording time; ballots and tally unchanged (BR-262, BR-263)
+        activate VoteRepository
+        VoteRepository->Database: Insert Vote conclusion
+        activate Database
+        Database-->VoteRepository: Conclusion saved / Save failed; nothing added
+        deactivate Database
+        VoteRepository-->VoteService: Conclusion saved / Save failed; nothing added
+        deactivate VoteRepository
+        alt Conclusion cannot be recorded - EX-4
+            VoteService-->VoteController: MSG236 - Unable to record the vote conclusion. No conclusion was recorded. Please try again.
+            VoteController-->MeetingPage: MSG236 - Unable to record the vote conclusion. No conclusion was recorded. Please try again.
+            MeetingPage-->Actor: MSG236 - Unable to record the vote conclusion. No conclusion was recorded. Please try again.
+        else Conclusion recorded
+            VoteService-->VoteController: MSG235 - Vote conclusion recorded successfully.
+            VoteController-->MeetingPage: MSG235 - Vote conclusion recorded successfully.
+            MeetingPage-->Actor: MSG235 - Vote conclusion recorded successfully.
+        end
+    end
+end
+
+deactivate VoteService
+deactivate VoteController
+deactivate MeetingPage

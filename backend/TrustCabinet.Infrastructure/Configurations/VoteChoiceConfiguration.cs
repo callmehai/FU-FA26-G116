@@ -23,10 +23,19 @@ public class VoteChoiceConfiguration : IEntityTypeConfiguration<VoteChoice>
             .HasForeignKey(c => c.VotingOptionId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Null in an anonymous session — the column exists only so an open vote can be changed.
+        // Null in a secret vote; in a public one exactly one is set so the result can name each
+        // voter's choice. The database can only rule out both at once.
+        builder.ToTable(t => t.HasCheckConstraint(
+            "ck_vote_choices_at_most_one_voter", "num_nonnulls(voter_id, guest_invitation_id) <= 1"));
+
         builder.HasOne(c => c.Voter)
             .WithMany()
             .HasForeignKey(c => c.VoterId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(c => c.GuestInvitation)
+            .WithMany()
+            .HasForeignKey(c => c.GuestInvitationId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
