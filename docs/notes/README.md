@@ -6,6 +6,9 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 
 ## Danh sách
 
+- [Review PR #136 và Bổ sung BA Final Review](NOTE-review-pr136-va-bo-sung-ba-final-review.md) — 25/10/2026;
+  tổng hợp toàn bộ feedback review PR #136 (CI đỏ .mmd, conflict main, MSG174, BR-115, UC-28b, UC-73, số EX trong sequence)
+  và các chỉ đạo PO mới nhất từ PR #133 (không tự gửi thông báo), #134 (rủi ro BR-188), #135/SCRUM-98 (BR-72/238/307) và #141 (FE màn 5.2).
 - [Bàn giao BA Final Review 24/10/2026](ban-giao-ba-final-review/README.md) — sáu note của leader,
   xử lý lần lượt: SCRUM-18/20 (lời mời, tạo/sửa, danh sách), SCRUM-97 (giao Chủ tọa),
   Voice ID (UC-43–51, ERD), SCRUM-26 (điểm danh), SCRUM-107 (tải tài liệu, PR #128),
