@@ -6,6 +6,9 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 
 ## Danh sách
 
+- [Phòng họp trực tuyến — rà soát FE-08 25/10/2026](NOTE-phong-hop-truc-tuyen-25-10-2026.md) — đặc tả
+  UC-37 → UC-42, UC-39d, UC-78, BR-322 → BR-331 và mã `MSG119`–`MSG121`, `MSG125`, `MSG290`–`MSG299`;
+  hai việc còn lại của BE: Guest chưa vào được phòng, đổi vai trò khi phòng đang mở không tới được phòng.
 - [Bàn giao BA Final Review 24/10/2026](ban-giao-ba-final-review/README.md) — sáu note của leader,
   xử lý lần lượt: SCRUM-18/20 (lời mời, tạo/sửa, danh sách), SCRUM-97 (giao Chủ tọa),
   Voice ID (UC-43–51, ERD), SCRUM-26 (điểm danh), SCRUM-107 (tải tài liệu, PR #128),

@@ -11,7 +11,7 @@
 > [Report 2](../08-reports/Report-2_Project_Management_Plan.md) (kế hoạch),
 > [Report 3](../08-reports/Report-3_Software_Requirement_Specification.md) (UC, BR, quyền).
 
-**Baseline hiện tại: 15 Feature, 77 Use Case (UC-01 → UC-77).** Cập nhật FE-07/FE-11 ngày 15/10/2026:
+**Baseline hiện tại: 15 Feature, 78 Use Case (UC-01 → UC-78).** Cập nhật FE-07/FE-11 ngày 15/10/2026:
 UC-32b vẫn bỏ; UC-33b được tái cấp cho gắn tài liệu vào mục nghị sự, bổ sung UC-33d để bỏ gắn một mục
 theo [ADR-0020](../05-decisions/0020-tai-lieu-theo-quyen-xem-cuoc-hop.md). FE-07 có 16 UC chi tiết;
 FE-11 có 9 UC chi tiết.
@@ -20,6 +20,11 @@ Bổ sung ngày 24/10/2026 (đợt BA Final Review, đã có trong Report 3 §I.
 to Another Participant, **UC-74** Confirm Document Read, **UC-75** Cancel Meeting, **UC-76** Manage Vote
 Documents (UC-76a, UC-76b), **UC-77** Record Agenda Item Conclusion. Các UC này nối tiếp dải số cũ, không
 đánh lại UC-01 → UC-72.
+
+Bổ sung ngày 25/10/2026 (rà soát FE-08 với code): **UC-39d** Choose Audio and Video Devices (UC con của
+UC-39) và **UC-78** Keep Meeting in a Floating Window (`<<extend>>` UC-37). UC-37 → UC-42 nay đã đặc tả
+đầy đủ; UC-41 chỉ còn nghĩa "Chủ toạ tắt mic người khác", không gồm giơ tay, tắt mic tất cả hay mời ra khỏi
+phòng.
 
 ## Các quyết định đã áp dụng
 
@@ -159,12 +164,13 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-37 | Vào phòng họp *(Join Meeting Room)* | Organizer, Approver, Chair, Secretary, Participant có phân công; Guest | Placeholder | Internal: `<<extend>>` UC-16; Guest qua UC-04 |
-| UC-38 | Rời phòng họp *(Leave Meeting Room)* | User đang trong phòng | Placeholder | Độc lập khi đã kết nối |
-| UC-39 | Điều khiển trong phòng *(Manage Meeting Room Controls)* — gồm UC-39a Micro, UC-39b Camera, UC-39c Chia sẻ màn hình | User đang trong phòng | Placeholder | Độc lập khi đã kết nối |
-| UC-40 | Xem người đang trong phòng *(View Meeting Room Participants)* | User đang trong phòng | Placeholder | Độc lập khi đã kết nối |
-| UC-41 | Điều phối phòng họp *(Moderate Meeting Room)* | Chair | Placeholder | Độc lập khi đã kết nối |
-| UC-42 | Chat trong phòng *(Use In-room Chat)* | User đang trong phòng | Placeholder | Độc lập khi đã kết nối |
+| UC-37 | Vào phòng họp *(Join Meeting Room)* | Chair, Secretary, Participant có phân công hiện hành; Guest có lời mời hợp lệ | Đã đặc tả | Internal: `<<extend>>` UC-16; Guest qua UC-04; UC-78 `<<extend>>` UC-37 |
+| UC-38 | Rời phòng họp *(Leave Meeting Room)* | User đang trong phòng | Đã đặc tả | Độc lập khi đã kết nối |
+| UC-39 | Điều khiển trong phòng *(Manage Meeting Room Controls)* — gồm UC-39a Micro, UC-39b Camera, UC-39c Chia sẻ màn hình, UC-39d Chọn thiết bị âm thanh và hình ảnh | User đang trong phòng | Đã đặc tả bốn UC con | Độc lập khi đã kết nối |
+| UC-40 | Xem người đang trong phòng *(View Meeting Room Participants)* | User đang trong phòng | Đã đặc tả | Độc lập khi đã kết nối |
+| UC-41 | Điều phối phòng họp *(Moderate Meeting Room)* — chỉ tắt mic người khác, một chiều | Chair hiện hành | Đã đặc tả | Độc lập khi đã kết nối |
+| UC-42 | Chat trong phòng *(Use In-room Chat)* | User đang trong phòng | Đã đặc tả | Độc lập khi đã kết nối |
+| UC-78 | Giữ cuộc họp trong cửa sổ nổi *(Keep Meeting in a Floating Window)* | User đang trong phòng | Đã đặc tả | `<<extend>>` UC-37 |
 
 ## FE-09 — Upload audio & Thư viện media *(Meeting Audio Upload & Media Library)*
 
@@ -274,7 +280,8 @@ Số cũ là số trong danh mục 94 UC (baseline 05/10/2026), dùng trong comm
 Feature cũ → mới: FE-01 → FE-04 giữ số; **FE-05 Meeting Session Management bị bỏ**; FE-06 → FE-05, FE-07 → FE-06, FE-08 → FE-07,
 FE-09 → FE-08, FE-10 → FE-09, FE-11 → FE-10, FE-12 → FE-11, FE-13 → FE-12, FE-14 → FE-13, FE-15 → FE-14, FE-16 → FE-15.
 
-Cột *mới* là số sau ngày 10/10/2026. `UC-71`, `UC-72` mới (thêm 13/10/2026, kho tài liệu) không liên quan `UC-71`, `UC-72` cũ ở cột trái.
+Cột *mới* là số sau ngày 10/10/2026. `UC-71`, `UC-72` mới (thêm 13/10/2026, kho tài liệu) không liên quan `UC-71`, `UC-72` cũ ở cột trái;
+`UC-78` mới (thêm 25/10/2026, cửa sổ nổi) không liên quan `UC-78` cũ ở cột trái (đã đổi thành UC-59).
 
 > Bảng `00-danh-muc-ma-thong-bao.md` vẫn ghi số UC cũ ở cột UC; tra bảng này khi đọc.
 
@@ -330,7 +337,7 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
 | FE-05 | Agenda Management | 5 | 4 |
 | FE-06 | Meeting Participant Management | 6 | 3 |
 | FE-07 | Personal Document Library & Meeting Document Management | 8 | 13 |
-| FE-08 | Online Meeting Room Management | 6 | 3 |
+| FE-08 | Online Meeting Room Management | 7 | 4 |
 | FE-09 | Meeting Audio Upload & Media Library | 2 | 2 |
 | FE-10 | Speaker-Attributed Transcription & Meeting Summary | 7 | — |
 | FE-11 | Voting Management | 7 | 4 |
@@ -338,7 +345,7 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
 | FE-13 | Email & In-App Notification | 3 | 2 |
 | FE-14 | Personal Dashboard & Meeting Workspace | 1 | — |
 | FE-15 | Reporting & Statistics | 1 | 2 |
-| **Tổng** | | **77** | **39** |
+| **Tổng** | | **78** | **40** |
 
 # 8. Ngoài phạm vi UC
 

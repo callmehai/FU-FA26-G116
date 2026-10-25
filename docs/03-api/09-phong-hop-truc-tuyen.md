@@ -1,4 +1,4 @@
-# SCRUM-39 · SCRUM-41 · Phòng họp trực tuyến
+# SCRUM-39 · SCRUM-41 · SCRUM-42 · SCRUM-43 · Phòng họp trực tuyến
 
 Phòng họp chạy trên LiveKit tự host ([ADR-0010](../05-decisions/0010-phong-hop-truc-tuyen-dung-livekit-sfu.md)).
 Âm thanh, hình và signalling (SDP/ICE) đi thẳng giữa trình duyệt và LiveKit. Backend chỉ quyết
@@ -20,6 +20,11 @@ Tất cả điều kiện sau phải đúng:
 - hình thức `Online` hoặc `Hybrid`.
 
 Người tạo hay người duyệt cuộc họp mà **không** có tên trong thành phần tham dự thì không vào được.
+
+**Guest chưa vào được phòng.** Cả ba endpoint gắn `RequireActiveUser` và `FindRoomAccessAsync` chỉ
+so `meeting_participants.UserId`, trong khi xác thực Guest (SCRUM-25) chưa cài — Guest mở phòng nhận
+`404` như cuộc họp không tồn tại. Yêu cầu Guest vào phòng (ADR-0016, UC-37 AF-2) vẫn giữ trong đặc
+tả; việc còn lại của BE ghi ở [note rà soát FE-08](../notes/NOTE-phong-hop-truc-tuyen-25-10-2026.md).
 
 Tên phòng LiveKit là `meeting-{meetingId}`, danh tính (`identity`) là `userId`, cả hai do server
 đặt. `metadata` của người trong phòng là `{"meetingRole":"Chair"|"Secretary"|"Member"|"Guest"}` —
@@ -74,6 +79,33 @@ Tắt mic chỉ **tắt**, không bao giờ bật hộ. Người đã tắt sẵ
 
 Câu `message` của từng mã ở [danh mục](00-danh-muc-ma-thong-bao.md#phòng-họp-trực-tuyến--scrum-39-scrum-41-apimeetingsidcall).
 
+## Phía trình duyệt
+
+Các mã `MSG119`–`MSG121`, `MSG125` và `MSG290`–`MSG299` **FE tự hiển thị**, API không trả: bảng ở
+[danh mục](00-danh-muc-ma-thong-bao.md#thông-điệp-phía-trình-duyệt--scrum-39-scrum-41). Hành vi dưới
+đây không đi qua endpoint nào, nên không có mã HTTP.
+
+- **Rời phòng (UC-38).** Nút Rời phòng hỏi xác nhận rồi ngắt kết nối và về màn chi tiết; không gọi
+  API, không đổi trạng thái cuộc họp. Rời từ cửa sổ nổi thì không hỏi, vì cửa sổ chính đang bị che.
+  Người đã rời vào lại được trong khi cuộc họp còn `InProgress`.
+- **Bị ngắt kết nối.** Lý do do LiveKit trả, FE đổi thành câu và quyết định có cho vào lại không:
+  `CLIENT_INITIATED` → “Bạn đã rời phòng họp.” (vào lại được); `DUPLICATE_IDENTITY` → `MSG294` (vào
+  lại được); `PARTICIPANT_REMOVED` → `MSG295` (không vào lại); `ROOM_DELETED`/`ROOM_CLOSED` →
+  `MSG293` (không vào lại); còn lại → `MSG296` (vào lại được).
+- **Một tài khoản một kết nối (BR-327).** LiveKit đóng kết nối cũ khi cùng `identity` vào phòng lần
+  nữa; tab cũ hiện `MSG294`.
+- **Chat (UC-42, BR-326).** Text stream của LiveKit, tối đa 1.000 ký tự, không đi qua API và không
+  lưu; người vào sau không thấy tin trước. Gửi lỗi thì giữ nguyên nội dung và hiện `MSG125`.
+- **Thiết bị (UC-39d, BR-330).** Đổi micro/loa/camera bằng `switchActiveDevice`; lựa chọn nằm trong
+  `localStorage` (`trustcabinet.call.prefs`) của trình duyệt, không gửi lên server.
+- **Chia sẻ màn hình (UC-39c, BR-325).** Khi người khác publish track `SCREEN_SHARE`, webhook tắt
+  track của người đang trình bày; FE nhận `LocalTrackUnpublished` và hiện `MSG292`.
+- **Cửa sổ nổi (UC-78, BR-331).** Document Picture-in-Picture, dùng lại đúng `Room` đang mở — không
+  gọi `join` lần hai và không tạo dòng `call_participants` mới.
+- **Vai trò hiển thị (BR-328).** Lấy từ `metadata.meetingRole` của người trong phòng. Metadata chỉ
+  đặt lúc cấp token, nên đổi vai trò giữa cuộc họp chưa tới được phòng — xem
+  [note rà soát FE-08](../notes/NOTE-phong-hop-truc-tuyen-25-10-2026.md).
+
 ## Webhook và đối soát
 
 LiveKit gửi `POST /api/livekit/webhook`:
@@ -110,8 +142,13 @@ Chỉ lưu ai vào/ra phòng và lúc nào. Không lưu âm thanh, hình, chat; 
 
 ## Hợp đồng tích hợp FE
 
-- Types: `frontend/src/types/call.ts`. API: `frontend/src/api/calls.ts`.
+- Types: `frontend/src/types/call.ts`. API: `frontend/src/api/calls.ts`. UI:
+  `frontend/src/features/calls/room/` (`MeetingRoomPage.tsx`, `RoomView.tsx`, `roomSupport.ts`,
+  `pipWindow.ts`).
 - Phân nhánh theo `code`, không theo `message`.
 - `404` từ `GET …/call` → hiện `NotFound` như cuộc họp không tồn tại.
+- Mã `MSG119`–`MSG121`, `MSG125`, `MSG290`–`MSG299` chỉ có ở FE; đừng chờ backend trả chúng, và đừng
+  thêm nhánh `isApiError` cho chúng.
+- Guest chưa được hỗ trợ ở cả ba endpoint (xem đầu tài liệu); đừng mở nút vào phòng cho Guest.
 
 SCRUM-20: cấp quyền phòng và danh sách cho phép của job đối soát cùng dùng `ParticipantRules.ActiveExpression`. Gỡ rồi mời lại chỉ xét assignment Current mới; dòng lịch sử không tạo quyền hoặc làm truy vấn trả nhiều dòng.

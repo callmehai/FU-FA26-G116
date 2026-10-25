@@ -136,7 +136,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 
 ## Mã tiếp theo
 
-**`MSG290`** — `MSG288` (UC-33a EX-8, giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026) đã triển khai cùng `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174` trong SCRUM-107. SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG261`–`MSG274` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020; đặc tả UC-23b dùng `MSG250` cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3; trong dải này SCRUM-107 đã triển khai `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, phần còn lại chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`/`MSG146` dành cho thay đổi FE-06 trong Report 3; `MSG147`–`MSG151` đã triển khai trong SCRUM-26; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG300`** — `MSG288` (UC-33a EX-8, giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026) đã triển khai cùng `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174` trong SCRUM-107. SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41/42/43) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn, `MSG280`–`MSG284` do backend trả và `MSG119`–`MSG121`, `MSG125`, `MSG290`–`MSG299` do FE hiển thị; `MSG122` ngừng dùng. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG261`–`MSG274` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG251` dành sẵn, chưa triển khai, cho ADR-0020; đặc tả UC-23b dùng `MSG250` cho giới hạn planning fields. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3; trong dải này SCRUM-107 đã triển khai `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, phần còn lại chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`/`MSG146` dành cho thay đổi FE-06 trong Report 3; `MSG147`–`MSG151` đã triển khai trong SCRUM-26; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG141`–`MSG144` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` phục vụ participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -289,6 +289,30 @@ mã mới.
 Người không được mời vào phòng **không có mã**: API trả `404` không body, như cuộc họp không tồn
 tại.
 
+#### Thông điệp phía trình duyệt — SCRUM-39, SCRUM-41
+
+Các mã dưới đây **FE tự hiển thị**, không đi qua API nên cột HTTP để `—`. Chúng được cấp từ dải dành
+sẵn `MSG119`–`MSG125` và dải mới `MSG290`–`MSG299`; đặc tả tương ứng ở Report 3 UC-37 → UC-42, UC-39d
+và UC-78.
+
+| Mã | HTTP | Màn hình | Tình huống | `message` | Trạng thái |
+|---|---|---|---|---|---|
+| `MSG119` | — | Sảnh chờ, trong phòng | Trình duyệt chặn micro (UC-39a EX-1) | `Trình duyệt đang chặn micro. Bấm biểu tượng ổ khoá cạnh thanh địa chỉ, chọn Cho phép rồi tải lại trang. Bạn vẫn có thể vào phòng để nghe.` | FE |
+| `MSG120` | — | Sảnh chờ, trong phòng | Trình duyệt chặn camera (UC-39b EX-1) | `Trình duyệt đang chặn camera. Bấm biểu tượng ổ khoá cạnh thanh địa chỉ, chọn Cho phép rồi tải lại trang. Bạn vẫn có thể vào phòng để nghe.` | FE |
+| `MSG121` | — | Trong phòng | Không bắt đầu được chia sẻ màn hình (UC-39c EX-1) | `Không chia sẻ được màn hình. Vui lòng thử lại.` | FE |
+| `MSG122` | — | — | Bảng Người dự đọc trực tiếp từ phòng họp, không còn dữ liệu phải tải | **Ngừng dùng.** Không tái cấp mã. | — |
+| `MSG125` | — | Panel Chat | Không gửi được tin nhắn (UC-42 EX-1) | `Không gửi được tin nhắn. Vui lòng thử lại.` | FE |
+| `MSG290` | — | Panel Người dự | Chủ toạ tắt mic thành công (UC-41 bước 5) | `Đã tắt micro của {tên}.` | FE |
+| `MSG291` | — | Trong phòng | Người bị chủ toạ tắt mic được báo (UC-41 bước 5) | `Chủ toạ đã tắt micro của bạn. Bạn có thể bật lại khi cần phát biểu.` | FE |
+| `MSG292` | — | Trong phòng | Người khác bắt đầu trình bày nên phần chia sẻ của mình dừng (UC-39c AF-1) | `{tên} bắt đầu trình bày, phần chia sẻ của bạn đã dừng.` | FE |
+| `MSG293` | — | Sảnh chờ | Cuộc họp đã kết thúc nên phòng đóng (UC-38 EX-1) | `Cuộc họp đã kết thúc, phòng họp đã đóng.` | FE |
+| `MSG294` | — | Sảnh chờ | Cùng tài khoản vào phòng từ tab hoặc thiết bị khác (UC-38 EX-2) | `Bạn đã vào phòng này từ tab hoặc thiết bị khác. Tab này đã rời phòng.` | FE |
+| `MSG295` | — | Sảnh chờ | Người dùng không còn trong danh sách tham dự phòng (UC-38 EX-3) | `Bạn không còn trong danh sách tham dự phòng họp này.` | FE |
+| `MSG296` | — | Sảnh chờ | Mất kết nối tới phòng họp (UC-38 EX-4) | `Mất kết nối tới phòng họp.` | FE |
+| `MSG297` | — | Sảnh chờ, trong phòng | Không tìm thấy thiết bị đã chọn (UC-39a/b/d EX) | `Không tìm thấy thiết bị này trên máy.` | FE |
+| `MSG298` | — | Sảnh chờ, trong phòng | Thiết bị đang bị ứng dụng khác dùng (UC-39a/b/d EX) | `Thiết bị đang được ứng dụng khác dùng (Zoom, Teams…). Đóng ứng dụng đó rồi thử lại.` | FE |
+| `MSG299` | — | Sảnh chờ, trong phòng | Không mở được thiết bị vì lý do khác (UC-39d EX-3) | `Không mở được thiết bị này. Bạn vẫn có thể vào phòng để nghe.` | FE |
+
 
 ### Dành sẵn, chưa có code
 
@@ -364,15 +388,25 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG114` | UC-22 | *This meeting cannot be ended.* |
 | `MSG115` | UC-21 | *Unable to start the meeting. Please try again.* |
 | `MSG116` | UC-22 | *Unable to end the meeting. Please try again.* |
-| `MSG117` | UC-37 Join Meeting Room · Đã triển khai SCRUM-39 | *The online meeting room is not available.* |
+| `MSG117` | UC-37 Join Meeting Room · Đã triển khai SCRUM-39 | *The meeting room opens only while the meeting is in progress.* — Phòng họp chỉ mở khi cuộc họp đang diễn ra. |
 | `MSG118` | UC-37 · Đã triển khai SCRUM-39 | *Unable to join the meeting room. Please try again.* |
-| `MSG119` | UC-39a Manage Microphone | *Microphone access is unavailable. Check your browser or device permissions.* |
-| `MSG120` | UC-39b Manage Camera | *Camera access is unavailable. Check your browser or device permissions.* |
-| `MSG121` | UC-39c Manage Screen Sharing | *Unable to share your screen.* |
-| `MSG122` | UC-40 View Meeting Room Participants | *Unable to load meeting room participants. Please try again.* |
-| `MSG123` | UC-41 Moderate Meeting Room · Đã triển khai SCRUM-39 | *You are not allowed to moderate this meeting room.* |
-| `MSG124` | UC-41 · Đã triển khai SCRUM-39 | *Unable to apply the room moderation action.* |
-| `MSG125` | UC-42 Use In-room Chat | *Unable to send the room message. Please try again.* |
+| `MSG119` | UC-39a Manage Microphone · Đã triển khai SCRUM-41 (FE) | *Microphone access is unavailable. Check your browser or device permissions.* |
+| `MSG120` | UC-39b Manage Camera · Đã triển khai SCRUM-41 (FE) | *Camera access is unavailable. Check your browser or device permissions.* |
+| `MSG121` | UC-39c Manage Screen Sharing · Đã triển khai SCRUM-41 (FE) | *Unable to share your screen.* |
+| `MSG122` | UC-40 View Meeting Room Participants · Ngừng dùng 25/10/2026 | **Ngừng dùng:** bảng Người dự đọc trực tiếp từ phòng họp nên không còn dữ liệu phải tải. Không tái cấp mã. |
+| `MSG123` | UC-41 Moderate Meeting Room · Đã triển khai SCRUM-39 | *Only the Chair can mute another person's microphone.* — Chỉ chủ toạ mới tắt được micro của người khác. |
+| `MSG124` | UC-41 · Đã triển khai SCRUM-39 | *The meeting room server did not respond. Please try again.* — Máy chủ phòng họp không phản hồi. Vui lòng thử lại. |
+| `MSG125` | UC-42 Use In-room Chat · Đã triển khai SCRUM-41 (FE) | *Unable to send the room message. Please try again.* |
+| `MSG290` | UC-41 Moderate Meeting Room · Đã triển khai SCRUM-41 (FE) | *Microphone muted for {name}.* |
+| `MSG291` | UC-41 Moderate Meeting Room · Đã triển khai SCRUM-41 (FE) | *The Chair has muted your microphone. You can turn it back on when you need to speak.* |
+| `MSG292` | UC-39c Manage Screen Sharing · Đã triển khai SCRUM-43 (FE) | *{name} started presenting, so your screen share was stopped.* |
+| `MSG293` | UC-38 Leave Meeting Room · Đã triển khai SCRUM-39 (FE) | *The meeting has ended, so the room closed.* |
+| `MSG294` | UC-38 Leave Meeting Room · Đã triển khai SCRUM-39 (FE) | *You joined this room from another tab or device, so this tab left the room.* |
+| `MSG295` | UC-38 Leave Meeting Room · Đã triển khai SCRUM-39 (FE) | *You are no longer on the participant list of this meeting room.* |
+| `MSG296` | UC-38 Leave Meeting Room · Đã triển khai SCRUM-39 (FE) | *The connection to the meeting room was lost.* |
+| `MSG297` | UC-39a / UC-39b / UC-39d · Đã triển khai SCRUM-42 (FE) | *That device was not found on this computer.* |
+| `MSG298` | UC-39a / UC-39b / UC-39d · Đã triển khai SCRUM-42 (FE) | *That device is being used by another application. Close it and try again.* |
+| `MSG299` | UC-39d Choose Audio and Video Devices · Đã triển khai SCRUM-42 (FE) | *The device could not be opened. You can still join the room to listen.* |
 | `MSG126` | UC-04 / EX-2 | *Unable to verify the guest invitation. Check the code and try again.* |
 | `MSG127` | ADR-0013 · View Meeting Sessions (UC-53 cũ, đã bỏ) | *Unable to load meeting sessions. Please try again.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
 | `MSG128` | UC-26 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |
