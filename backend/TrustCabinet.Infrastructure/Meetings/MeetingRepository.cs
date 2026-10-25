@@ -170,8 +170,18 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
                 return null;
             }
             // Publication readiness must not race account deactivation after the meeting lock.
-            await db.Users.FromSqlInterpolated($"SELECT * FROM users WHERE id IN (SELECT user_id FROM meeting_participants WHERE meeting_id = {id}) ORDER BY id FOR SHARE")
+            var lockedUsers = await db.Users.FromSqlInterpolated($"SELECT * FROM users WHERE id IN (SELECT user_id FROM meeting_participants WHERE meeting_id = {id}) ORDER BY id FOR SHARE")
                 .AsNoTracking().ToArrayAsync(ct);
+            // The active-user HTTP gate may already track the actor before this lock was acquired.
+            // EF identity resolution would otherwise reuse that stale account in the roster query.
+            foreach (var user in lockedUsers)
+            {
+                var entry = db.ChangeTracker.Entries<User>()
+                    .SingleOrDefault(e => e.Entity.Id == user.Id && e.State == EntityState.Unchanged);
+                if (entry is null) continue;
+                entry.CurrentValues.SetValues(user);
+                entry.OriginalValues.SetValues(user);
+            }
         }
 
         IQueryable<Meeting> query = db.Meetings

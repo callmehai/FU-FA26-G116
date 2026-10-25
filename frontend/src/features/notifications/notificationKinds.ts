@@ -20,6 +20,7 @@ const KINDS: Record<NotificationType, Kind> = {
   MeetingRejected: { icon: 'xCircle', tone: 'red' },
   MeetingPublished: { icon: 'send', tone: 'emerald' },
   MeetingStartingSoon: { icon: 'clock', tone: 'amber' },
+  MeetingStarted: { icon: 'play', tone: 'emerald' },
   MeetingRescheduled: { icon: 'calendar', tone: 'amber' },
   MeetingCancelled: { icon: 'calendarX', tone: 'red' },
   VotingOpened: { icon: 'checkSquare', tone: 'indigo' },

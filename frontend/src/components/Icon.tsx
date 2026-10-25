@@ -18,6 +18,7 @@ import {
   ChevronUp,
   ChevronsUpDown,
   CircleCheck,
+  CircleStop,
   CircleX,
   Clock,
   Copy,
@@ -45,6 +46,7 @@ import {
   PenLine,
   PhoneOff,
   PictureInPicture2,
+  Play,
   Plus,
   Presentation,
   Radio,
@@ -147,6 +149,9 @@ const ICONS = {
   logIn: LogIn,
   mail: Mail,
   undo: RotateCcw,
+  // SCRUM-69: the Chair starts and ends the meeting.
+  play: Play,
+  stop: CircleStop,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS

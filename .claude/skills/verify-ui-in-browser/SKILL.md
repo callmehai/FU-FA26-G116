@@ -162,8 +162,40 @@ layout claim; the pair shows the reader what actually moved.
   Then run the **same spec** twice, changing only the base URL: have it read
   `test.use({ baseURL: process.env.BASE ?? 'http://localhost:5173' })`.
 - A screenshot the user sent with the bug report is a valid "before".
-- One image per scenario, the two shots next to each other under "Trước" / "Sau":
-  `python3 ~/.playwright-e2e/pair.py before.png after.png pair.png` (see *Browser setup notes*).
+- One image per scenario, the two shots next to each other under "Trước" / "Sau", **with every
+  change boxed in red on both sides and numbered**. Without the boxes the reader has to hunt for
+  the difference and misses small ones (the user, 2026-10-25, could not tell what had changed).
+  A pair with no box is not evidence.
+  1. In the spec, right after each screenshot, save where the changed elements are, relative to
+     the shot, as `<shot>.boxes.json` (a list of `[x, y, w, h]`). Use the same selectors in both
+     runs; an element that exists on one side only (a new button) is simply missing on the other:
+     ```ts
+     async function saveBoxes(page: Page, file: string, selectors: string[], within?: string) {
+       const boxes = await page.evaluate(([sels, root]) => {
+         const o = root ? document.querySelector(root)!.getBoundingClientRect() : { left: 0, top: 0 }
+         return sels.flatMap((sel) => [...document.querySelectorAll(sel)].map((el) => {
+           const r = el.getBoundingClientRect()
+           return [r.left - o.left, r.top - o.top, r.width, r.height].map(Math.round)
+         }))
+       }, [selectors, within ?? null] as const)
+       writeFileSync(file.replace(/\.png$/, '.boxes.json'), JSON.stringify(boxes))
+     }
+     await page.locator('main.content').screenshot({ path: info.outputPath('x.png') })
+     await saveBoxes(page, info.outputPath('x.png'), ['.record-head .page-header-actions'], 'main.content')
+     ```
+  2. Stitch with the boxes: box *i* covers element *i* in both shots and is drawn in the same place
+     on each side, numbered outside the box so it never hides the text it points at:
+     ```bash
+     python3 ~/.playwright-e2e/pair.py before.png after.png pair.png \
+       --boxes before.boxes.json after.boxes.json
+     ```
+     Without `--boxes` (or `--box x,y,w,h`), `pair.py` finds the changed regions by pixel diff.
+     That is only right when both shots hold the same data. It prints every box it drew: read
+     them, and switch to explicit boxes when one surrounds a timestamp, a toast or a whole column
+     pushed down by the change.
+  3. Look at the pair. Every change has a box, every box is a change, and the caption in the
+     report and the PR names the boxes ("Khung 1: …, khung 2: …").
+
   Keep the ticket's evidence together in `~/.playwright-e2e/reports/<ticket>/` (`pairs/`, `shots/`),
   outside the repo; §6 turns it into the HTML report.
 - **Box every change, so none is missed.** A pair side by side hides small fixes. Scan both
@@ -232,7 +264,8 @@ create.
   `index.html` beside it. Give the user that path and open it (`open …` on macOS). Do not publish it
   to an agent-specific host (a Claude Artifact, a Codex share link): not everyone on the team can
   open those. Rebuild it after each round of review fixes.
-- In the PR, say in words what each pair shows. Do not commit screenshots, the report or test data.
+- In the PR, say in words what each pair shows, box by box. Do not commit screenshots, the report
+  or test data.
 - When the user has finished looking, stop both servers. **After the PR is merged**, clean up the
   rest: delete the `[Test FE]` rows, remove `~/.playwright-e2e/reports/<ticket>/`, the
   `../tc-before` worktree and any temporary branch. Until then keep them — review fixes re-run the
@@ -255,7 +288,12 @@ or CI. To set it up on a new machine, create `~/.playwright-e2e` with:
 - `tests/smoke.spec.ts`: sign in as `thuky`, open `/calendar`, expect it not to land on `/login`.
 - `pair.py` for the before/after pairs: open both PNGs with Pillow (`pip install pillow`), paste
   them side by side on a white sheet with a 44px band on top, write "Trước" and "Sau" there in a
-  font with Vietnamese diacritics (PIL's built-in font has none), save.
+  font with Vietnamese diacritics (PIL's built-in font has none). Draw a 4px red rectangle around
+  each changed region on both shots, with its number in a red tag placed outside the rectangle
+  (right, else left, else above). Regions come from `--boxes before.json after.json` (box *i* is
+  the union of entry *i* on each side), `--box x,y,w,h`, or, when neither is given, a pixel diff:
+  changed pixels on an 8px grid, cells within 3 cells of each other merged into one box,
+  `--ignore x,y,w,h` to leave a region out. Print every box drawn, then save.
 - `report.py` for the §6 report: read the manifest (title, heading, lead, facts, changes, checks,
   pairs, shots, asks; image paths relative to it), embed each image as a JPEG data URI (pairs at
   1800px wide, shots at 1200px), write one plain `index.html` with inline CSS and no external

@@ -182,7 +182,7 @@ Không gửi actor, Chair cũ, role hoặc batch. Backend xác định chúng t�
 
 Hậu điều kiện: Chair cũ thành Member, người nhận thành Chair; giữ assignment IDs và trạng thái Current; một Chair và ít nhất một current Secretary. Không thay system role, response/respondedAt, attendance/recorder/time, ballots hoặc history. Không gỡ Chair cũ, không tự rời phòng. Revision tăng đúng một lần.
 
-Khóa meeting FOR UPDATE, đọc account mới dưới FOR SHARE theo thứ tự ID. Demote/save rồi promote/save trong **cùng transaction** để tuân thủ unique Chair. Hai notifications MeetingRoleChanged và hai dispatch RoleChanged cùng một audit `meeting.participants.HandOverChair` chứa hai changes được commit chung. Bất kỳ save lỗi rollback toàn bộ. Sau commit phát một participantsChanged đến readers trước/sau; transport lỗi chỉ log, durable intent vẫn còn, response vẫn thành công. Không gửi SMTP trong request.
+Khóa meeting FOR UPDATE, đọc account mới dưới FOR SHARE theo thứ tự ID. Demote/save rồi promote/save trong **cùng transaction** để tuân thủ unique Chair. Hai dispatch RoleChanged và notification MeetingRoleChanged cho người nhận vai trò — Chủ tọa tự giao thì không nhận notification về thao tác của chính mình; Thư ký thay Chủ tọa bị khóa thì cả hai Chủ tọa cũ và mới đều nhận — cùng một audit `meeting.participants.HandOverChair` chứa hai changes được commit chung. Bất kỳ save lỗi rollback toàn bộ. Sau commit phát một participantsChanged đến readers trước/sau; transport lỗi chỉ log, durable intent vẫn còn, response vẫn thành công. Không gửi SMTP trong request.
 
 ### 8.3. Thứ tự lỗi cố định
 

@@ -2,10 +2,14 @@ import { HubConnectionState, type HubConnection } from '@microsoft/signalr'
 import { useEffect, useRef } from 'react'
 import { createHubConnection, retryDelay } from '../../api/hubs'
 import type { AttendanceChangedEvent } from '../../types/attendance'
+import type { AgendaChangedEvent } from '../../types/meeting'
 import type { ParticipantsChangedEvent } from '../../types/participant'
 
-/** What the meeting's hub announces; each only says "re-read". */
-export type MeetingEvent = 'participantsChanged' | 'attendanceChanged'
+/**
+ * What the meeting's hub announces; each only says "re-read". `meetingEnded` is the `agendaChanged`
+ * that ending the meeting sends (SCRUM-69), the only change of status anyone else hears about.
+ */
+export type MeetingEvent = 'participantsChanged' | 'attendanceChanged' | 'meetingEnded'
 
 interface Listener {
   events: readonly MeetingEvent[]
@@ -52,6 +56,12 @@ function open(meetingId: string): Channel {
       notify(name)
     })
   }
+  connection.on('agendaChanged', (event: AgendaChangedEvent) => {
+    if (event.changeType !== 'MeetingEnded') return
+    if (event.meetingId.toLowerCase() !== meetingId.toLowerCase() || seen.has(event.eventId)) return
+    seen.add(event.eventId)
+    notify('meetingEnded')
+  })
   connection.onreconnected(() => void join().then(() => notify()))
   connection.onclose(() => {
     if (!closed) schedule()

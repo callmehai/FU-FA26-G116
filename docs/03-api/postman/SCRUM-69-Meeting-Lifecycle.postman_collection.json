@@ -1,0 +1,71 @@
+{
+  "info": {
+    "name": "SCRUM-69 — Bắt đầu/kết thúc cuộc họp",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Chạy tuần tự trên Meeting Published riêng có active Chair và Secretary. Collection kết thúc Meeting này. Điền các biến token bằng tài khoản test."
+  },
+  "variable": [
+    {"key":"baseUrl","value":"http://localhost:5225"},
+    {"key":"meetingId","value":""},
+    {"key":"chairToken","value":""},
+    {"key":"memberToken","value":""}
+  ],
+  "auth": {"type":"bearer","bearer":[{"key":"token","value":"{{chairToken}}","type":"string"}]},
+  "item": [
+    {
+      "name":"01 — Chưa đăng nhập",
+      "request":{"method":"POST","url":"{{baseUrl}}/api/meetings/{{meetingId}}/transitions","auth":{"type":"noauth"},"header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"action\":\"Start\"}"}},
+      "event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('HTTP 401', () => pm.response.to.have.status(401));"]}}]
+    },
+    {
+      "name":"02 — Member không phải Chair",
+      "request":{"method":"POST","url":"{{baseUrl}}/api/meetings/{{meetingId}}/transitions","auth":{"type":"bearer","bearer":[{"key":"token","value":"{{memberToken}}","type":"string"}]},"header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"action\":\"Start\"}"}},
+      "event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('403 MSG112', () => { pm.response.to.have.status(403); pm.expect(pm.response.json().code).to.eql('MSG112'); });"]}}]
+    },
+    {
+      "name":"03 — Meeting không tồn tại",
+      "request":{"method":"POST","url":"{{baseUrl}}/api/meetings/00000000-0000-0000-0000-000000000001/transitions","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"action\":\"Start\"}"}},
+      "event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('404 empty', () => { pm.response.to.have.status(404); pm.expect(pm.response.text()).to.eql(''); });"]}}]
+    },
+    {
+      "name":"04 — Start",
+      "request":{"method":"POST","url":"{{baseUrl}}/api/meetings/{{meetingId}}/transitions","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"action\":\"Start\"}"}},
+      "event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('200 MSG110 InProgress', () => { pm.response.to.have.status(200); const b = pm.response.json(); pm.expect(b.code).to.eql('MSG110'); pm.expect(b.meeting.status).to.eql('InProgress'); pm.expect(b.history.action).to.eql('Start'); pm.expect(b.meeting.actualStartedAt).to.be.a('string'); });"]}}]
+    },
+    {
+      "name":"05 — Start lặp",
+      "request":{"method":"POST","url":"{{baseUrl}}/api/meetings/{{meetingId}}/transitions","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"action\":\"Start\"}"}},
+      "event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('409 MSG112', () => { pm.response.to.have.status(409); pm.expect(pm.response.json().code).to.eql('MSG112'); });"]}}]
+    },
+    {
+      "name":"06 — Đọc lịch sử Start",
+      "request":{"method":"GET","url":"{{baseUrl}}/api/meetings/{{meetingId}}/history"},
+      "event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('Start history', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().items.filter(h => h.action === 'Start')).to.have.lengthOf(1); });"]}}]
+    },
+    {
+      "name":"07 — Member không được End",
+      "request":{"method":"POST","url":"{{baseUrl}}/api/meetings/{{meetingId}}/transitions","auth":{"type":"bearer","bearer":[{"key":"token","value":"{{memberToken}}","type":"string"}]},"header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"action\":\"End\"}"}},
+      "event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('403 MSG114', () => { pm.response.to.have.status(403); pm.expect(pm.response.json().code).to.eql('MSG114'); });"]}}]
+    },
+    {
+      "name":"08 — End đã xác nhận",
+      "request":{"method":"POST","url":"{{baseUrl}}/api/meetings/{{meetingId}}/transitions","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"action\":\"End\"}"}},
+      "event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('200 MSG111 Ended', () => { pm.response.to.have.status(200); const b = pm.response.json(); pm.expect(b.code).to.eql('MSG111'); pm.expect(b.meeting.status).to.eql('Ended'); pm.expect(b.history.action).to.eql('End'); pm.expect(b.meeting.actualEndedAt).to.be.a('string'); });"]}}]
+    },
+    {
+      "name":"09 — End lặp",
+      "request":{"method":"POST","url":"{{baseUrl}}/api/meetings/{{meetingId}}/transitions","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"action\":\"End\"}"}},
+      "event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('409 MSG114', () => { pm.response.to.have.status(409); pm.expect(pm.response.json().code).to.eql('MSG114'); });"]}}]
+    },
+    {
+      "name":"10 — Đọc lịch sử End",
+      "request":{"method":"GET","url":"{{baseUrl}}/api/meetings/{{meetingId}}/history"},
+      "event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('One Start, one End', () => { pm.response.to.have.status(200); const h = pm.response.json().items; pm.expect(h.filter(i => i.action === 'Start')).to.have.lengthOf(1); pm.expect(h.filter(i => i.action === 'End')).to.have.lengthOf(1); });"]}}]
+    },
+    {
+      "name":"11 — Đọc Agenda sau End",
+      "request":{"method":"GET","url":"{{baseUrl}}/api/meetings/{{meetingId}}/agenda"},
+      "event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('Ended snapshot', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().meetingStatus).to.eql('Ended'); });"]}}]
+    }
+  ]
+}

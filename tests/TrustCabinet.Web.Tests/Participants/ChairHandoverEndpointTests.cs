@@ -80,9 +80,11 @@ public sealed class ChairHandoverEndpointTests(ParticipantFixture f) : IClassFix
         Assert.Equal(1, await db.Meetings.Where(m => m.Id == s.MeetingId).Select(m => m.ParticipantsRevision).SingleAsync());
         Assert.Equal(1, await db.MeetingParticipants.CountAsync(p => p.MeetingId == s.MeetingId && p.Role == MeetingRole.Chair));
         Assert.Equal(1, await db.MeetingParticipants.CountAsync(p => p.MeetingId == s.MeetingId && p.Role == MeetingRole.Secretary));
-        var notifications = await db.Notifications.Where(n => n.MeetingId == s.MeetingId).ToArrayAsync();
-        Assert.Equal(2, notifications.Length);
-        Assert.All(notifications, n => Assert.Equal(NotificationType.MeetingRoleChanged, n.Type));
+        // The outgoing Chair handed over the role themselves: only the new Chair is told in-app,
+        // while both still get the email that keeps their calendar in step.
+        var notification = Assert.Single(await db.Notifications.Where(n => n.MeetingId == s.MeetingId).ToArrayAsync());
+        Assert.Equal(NotificationType.MeetingRoleChanged, notification.Type);
+        Assert.Equal(s.Member, notification.UserId);
         var dispatch = await db.MeetingInvitationDispatches.Where(d => d.MeetingId == s.MeetingId).ToArrayAsync();
         Assert.Equal(2, dispatch.Length);
         Assert.All(dispatch, d => Assert.Equal(InvitationEventKind.RoleChanged, d.EventKind));

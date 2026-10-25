@@ -88,3 +88,9 @@ Chỉ gán/đổi presenter ở Published/InProgress mới enqueue sau commit, v
 Hub `/hubs/meetings`: JoinMeeting/LeaveMeeting; event `agendaChanged` gồm eventId,meetingId,changeType,agendaItemId?,title?,occurredAt. Types: Created/Updated/Deleted/Reordered/Started/Completed/MeetingEnded/ConclusionUpdated/PresenterCleared. Không chứa conclusion/email. Publisher kiểm lại từng recipient, không broadcast dữ liệu cho cả Meeting. Sau commit mới gửi, yêu cầu hủy sau 2 giây và chờ scoped task kết thúc. FE refetch sau mutation/event; reconnect phải join lại và GET. Không bảo đảm durable realtime.
 
 Guest adapter mặc định vẫn từ chối; [UC-04 contract](08-agenda-contract-tich-hop-guest-uc04.md) là phụ thuộc riêng. UC-59 writer phải dùng cùng meeting lock, đọc conclusions/presenter và tạo MeetingMinutes trong một transaction. Có bất kỳ biên bản, bất kể status/content, khóa conclusion; không tạo/xóa nháp tạm gây mở khóa. SCRUM-98 không thực hiện Guest login hoặc sinh nháp AI.
+
+Cập nhật review 21/10/2026: Agenda, Participants và MeetingHub dùng chung `MeetingGuestSession` và `IMeetingGuestIdentityResolver`; UC-04 chỉ đăng ký một resolver. Các port kiểm quyền theo feature vẫn tách riêng, dùng cùng invitation/session storage. Tên group Guest được tạo duy nhất bằng `MeetingHub.GuestGroup`.
+
+## Tích hợp End Meeting — SCRUM-69
+
+Lifecycle End gọi IAgendaMeetingEnd trong cùng transaction và khóa Meeting. Current item thành Done với mốc End; Pending/Done khác giữ nguyên. Không có current item vẫn End được. Sau commit luôn phát agendaChanged/MeetingEnded, kể cả agendaItemId/title null; FE GET lại Meeting và Agenda để làm mới status/quyền. Lỗi publish không rollback End. [Bàn giao UC-21/22](10-scrum69-ban-giao.md).

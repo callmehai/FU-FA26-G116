@@ -1911,6 +1911,33 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Put_reschedule_does_not_notify_the_organizer_of_their_own_change()
+    {
+        var creator = GivenCreator();
+        var meeting = PublishedMeetingWithInvitees(creator, out var invitees);
+        meeting.Participants.Add(new MeetingParticipant
+        {
+            MeetingId = meeting.Id,
+            UserId = creator.Id,
+            User = creator,
+            Role = MeetingRole.Chair,
+        });
+        using var client = _factory.ClientFor(creator, Capability.MeetingCreator);
+        var newStart = FutureStart.AddDays(1);
+
+        var response = await client.PutAsJsonAsync($"/api/meetings/{meeting.Id}", ValidRequest() with
+        {
+            PlannedStartTime = Iso(newStart),
+            PlannedEndTime = Iso(newStart.AddHours(2)),
+        });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            invitees.Select(invitee => invitee.Id).Order(),
+            _factory.Meetings.Notifications.Select(notification => notification.UserId).Order());
+    }
+
+    [Fact]
     public async Task Put_on_a_published_meeting_rejects_fields_outside_the_schedule()
     {
         var creator = GivenCreator();

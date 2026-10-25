@@ -38,6 +38,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [unreadCount, setUnreadCount] = useState<number | null>(null)
   const [feed, setFeed] = useState<NotificationFeed>(EMPTY_FEED)
   const [arrivals, setArrivals] = useState(0)
+  const [lastArrival, setLastArrival] = useState<AppNotification | null>(null)
   const [panelOpen, setPanelOpenState] = useState(false)
 
   // Read inside callbacks and hub handlers, which must not be recreated on every change.
@@ -165,6 +166,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
       if (!isNew) return
       setArrivals((a) => a + 1)
+      setLastArrival(notification)
       // With the panel open the new row appearing at the top says it already.
       if (!panelOpenRef.current) toast.show(`${notification.title} — ${notification.body}`, 'info')
     },
@@ -269,6 +271,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       unreadCount,
       feed,
       arrivals,
+      lastArrival,
       panelOpen,
       setPanelOpen,
       loadFirstPage,
@@ -277,7 +280,19 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       markAllRead,
       openTarget,
     }),
-    [unreadCount, feed, arrivals, panelOpen, setPanelOpen, loadFirstPage, loadMore, markRead, markAllRead, openTarget],
+    [
+      unreadCount,
+      feed,
+      arrivals,
+      lastArrival,
+      panelOpen,
+      setPanelOpen,
+      loadFirstPage,
+      loadMore,
+      markRead,
+      markAllRead,
+      openTarget,
+    ],
   )
 
   return <NotificationsContext value={value}>{children}</NotificationsContext>

@@ -19,6 +19,7 @@ import {
 import { placeLabel } from '../place'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
+import { useNotifications } from '../../notifications/notificationsContext'
 import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
 import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
 import { SensitivityBadge, StatusBadge } from '../StatusBadge'
@@ -28,6 +29,8 @@ import { EDIT_PARAM, useEditMeetingLink } from '../meetingDialogLink'
 import { useMeetingEvents } from '../useMeetingEvents'
 import { useMeetingApprovers } from '../useMeetingApprovers'
 import { MeetingHistory } from '../workflow/MeetingHistory'
+import { lifecycleAction } from '../workflow/lifecycle'
+import { MeetingLifecycleActions } from '../workflow/MeetingLifecycleActions'
 import { MeetingWorkflowBar, type WorkflowRole } from '../workflow/MeetingWorkflowBar'
 import { useMeetingHistory } from '../workflow/useMeetingHistory'
 import type { WorkflowOutcome } from '../workflow/workflowOutcome'
@@ -51,6 +54,9 @@ const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview' | 'attendees'>, string> =
   recordings: 'GET /api/meetings/{id}/recordings',
   minutes: 'GET /api/meetings/{id}/minutes',
 }
+
+/** The hub event that tells an open page the meeting was ended (SCRUM-69). */
+const MEETING_ENDED = ['meetingEnded'] as const
 
 /** The approval workflow ends at publishing; after that the bar has nothing left to say. */
 const REVIEW_STATUSES = ['WaitingApproval', 'Rejected', 'Approved'] as const
@@ -131,6 +137,8 @@ function MeetingDetail({
   // UC-15 AF-1: after publishing, the organizer may still move the time, place and link.
   const canReschedule = isOrganizer && RESCHEDULABLE_STATUSES.includes(meeting.status)
   const roomOpen = useCallRoomOpen(meeting)
+  // SCRUM-69: the Chair starts a published meeting and ends a running one.
+  const canRun = lifecycleAction(meeting) !== null
 
   /** Display names the page already knows: whoever acted in the history, and the approver list. */
   const names = useMemo(() => {
@@ -145,6 +153,21 @@ function MeetingDetail({
   useMeetingEvents(meeting.id, () => void reload())
 
   const { reload: reloadHistory, append: appendHistory } = history
+
+  // Someone else ending the meeting arrives on the hub; starting it publishes nothing there, so the
+  // notification it sends to everyone but the Chair is the signal. Either way, re-read the page.
+  const reloadAll = useCallback(() => {
+    void reload()
+    void reloadHistory()
+  }, [reload, reloadHistory])
+  useMeetingEvents(meeting.id, reloadAll, MEETING_ENDED)
+  const { lastArrival } = useNotifications()
+  const seenArrival = useRef(lastArrival)
+  useEffect(() => {
+    if (!lastArrival || lastArrival === seenArrival.current) return
+    seenArrival.current = lastArrival
+    if (lastArrival.meetingId?.toLowerCase() === meeting.id.toLowerCase()) reloadAll()
+  }, [lastArrival, meeting.id, reloadAll])
   const onOutcome = useCallback(
     (outcome: WorkflowOutcome) => {
       switch (outcome.kind) {
@@ -214,7 +237,7 @@ function MeetingDetail({
             </span>
           </p>
         </div>
-        {(canEdit || canReschedule || roomOpen) && (
+        {(canEdit || canReschedule || roomOpen || canRun) && (
           <div className="page-header-actions">
             {roomOpen && (
               // The meeting is running: green like its "Đang diễn ra" state, so it stands apart from blue.
@@ -223,6 +246,7 @@ function MeetingDetail({
                 Vào phòng họp
               </Link>
             )}
+            {canRun && <MeetingLifecycleActions meeting={meeting} onOutcome={onOutcome} />}
             {(canEdit || canReschedule) && (
               <Link className="btn btn-outline btn-lg" to={editLink.to} state={editLink.state}>
                 <Icon name={canEdit ? 'pencil' : 'calendar'} size={16} />
@@ -253,11 +277,7 @@ function MeetingDetail({
             <h2 id="rsvp-title">Bạn có tham dự cuộc họp này?</h2>
           </div>
           <div className="workflow-actions">
-            <RsvpButtons
-              meetingId={meeting.id}
-              labelledBy="rsvp-title"
-              onAnswered={() => void reload()}
-            />
+            <RsvpButtons meetingId={meeting.id} labelledBy="rsvp-title" onAnswered={() => void reload()} />
           </div>
         </section>
       )}

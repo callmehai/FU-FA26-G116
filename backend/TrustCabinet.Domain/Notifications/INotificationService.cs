@@ -4,6 +4,9 @@ namespace TrustCabinet.Domain.Notifications;
 
 public interface INotificationService
 {
+    Task QueueMeetingStartedAsync(Guid meetingId, string meetingTitle, Guid historyId,
+        DateTimeOffset occurredAt, IReadOnlyList<Guid> recipientUserIds, CancellationToken ct = default);
+
     Task<NotificationPage> ListAsync(
         Guid userId, int page, int pageSize, CancellationToken ct = default);
 

@@ -471,6 +471,7 @@ public sealed partial class ParticipantService(
             {
                 ParticipantOperation.AddInternal => await AddInternalAsync(
                     snapshot,
+                    actor.UserId!.Value,
                     input,
                     now,
                     ct
@@ -692,6 +693,7 @@ public sealed partial class ParticipantService(
 
     private async Task<ParticipantResult> AddInternalAsync(
         ParticipantSnapshot s,
+        Guid actor,
         ParticipantInput input,
         DateTimeOffset now,
         CancellationToken ct
@@ -763,7 +765,7 @@ public sealed partial class ParticipantService(
                 p.User = trackedUsers.GetValueOrDefault(user.Id) ?? user;
                 if (db.Entry(p.User).State == EntityState.Detached)
                     db.Attach(p.User);
-                Stage(s.Meeting, p, null, InvitationEventKind.Invitation, now);
+                Stage(s.Meeting, p, null, InvitationEventKind.Invitation, actor, now);
                 created.Add(p.Id);
             }
         }
@@ -825,7 +827,7 @@ public sealed partial class ParticipantService(
         };
         guest.InitialInvitationDeliveryKey = $"guest:{guest.Id}:invited";
         db.MeetingGuestInvitations.Add(guest);
-        Stage(s.Meeting, null, guest, InvitationEventKind.Invitation, now);
+        Stage(s.Meeting, null, guest, InvitationEventKind.Invitation, actor, now);
         return new(
             Data: new { createdIds = new[] { guest.Id } },
             Success: ParticipantSuccess.Created
@@ -944,7 +946,7 @@ public sealed partial class ParticipantService(
             var p = current[c.ParticipantId];
             p.Role = final[p.Id];
             p.UpdatedAt = now;
-            Stage(s.Meeting, p, null, InvitationEventKind.RoleChanged, now);
+            Stage(s.Meeting, p, null, InvitationEventKind.RoleChanged, actor, now);
         }
         return new(
             Success: handover ? ParticipantSuccess.ChairHandedOver : ParticipantSuccess.RoleChanged
@@ -967,7 +969,7 @@ public sealed partial class ParticipantService(
             g.RevokedAt = now;
             g.RevokedById = actor;
             g.UpdatedAt = now;
-            Stage(s.Meeting, null, g, InvitationEventKind.Removed, now);
+            Stage(s.Meeting, null, g, InvitationEventKind.Removed, actor, now);
         }
         else
         {
@@ -988,7 +990,7 @@ public sealed partial class ParticipantService(
             p.RemovedAt = now;
             p.RemovedById = actor;
             p.UpdatedAt = now;
-            Stage(s.Meeting, p, null, InvitationEventKind.Removed, now);
+            Stage(s.Meeting, p, null, InvitationEventKind.Removed, actor, now);
         }
         return new(Success: ParticipantSuccess.Removed);
     }
@@ -1058,11 +1060,14 @@ public sealed partial class ParticipantService(
         MeetingParticipant? p,
         MeetingGuestInvitation? g,
         InvitationEventKind kind,
+        Guid actor,
         DateTimeOffset now
     )
     {
+        // Nobody is told in-app about their own action, e.g. the Chair who handed over the role
+        // and so became a Member. The email still goes out: it keeps their calendar in step.
         if (ParticipantRules.Respondable(meeting.Status))
-            MeetingInvitationEvents.Stage(db, meeting, p, g, kind, now, notify: true);
+            MeetingInvitationEvents.Stage(db, meeting, p, g, kind, now, notify: p?.UserId != actor);
     }
 
     [GeneratedRegex(@"^[^\s@<>\r\n]+@[^\s@<>\r\n]+\.[^\s@<>\r\n]+$", RegexOptions.CultureInvariant)]

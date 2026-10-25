@@ -18,6 +18,7 @@ public enum NotificationType
     MeetingRoleChanged,
     MeetingParticipantRemoved,
     AgendaPresenterAssigned,
+    MeetingStarted,
 }
 
 /// <summary>Delivery state of a queued email (SCRUM-15).</summary>

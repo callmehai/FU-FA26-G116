@@ -6,6 +6,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 
 Đã có:
 
+- [SCRUM-69 — bàn giao Start/End](10-scrum69-ban-giao.md), [báo cáo kiểm thử](10-scrum69-kiem-thu.md), [Postman](postman/SCRUM-69-Meeting-Lifecycle.postman_collection.json).
 - [`10-diem-danh.md`](10-diem-danh.md) — Backend SCRUM-26 / UC-31; [bàn giao FE/BA](10-diem-danh-ban-giao.md), [kết quả kiểm thử](10-diem-danh-ket-qua-kiem-thu.md). Version riêng từng người, batch atomic, realtime theo quyền roster.
 
 - [`08-chuong-trinh-nghi-su.md`](08-chuong-trinh-nghi-su.md) — contract Backend SCRUM-98, UC-23a–d/24/25/26/77; [bàn giao SCRUM-25 lịch sử](08-chuong-trinh-nghi-su-ban-giao.md).
