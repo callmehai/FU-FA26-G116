@@ -527,7 +527,8 @@ deactivate MeetingPage
 ## 15. Tên file và số UC
 
 - Tên file: `UC<số UC>_<TênUseCase>.txt` + `.png` cùng tên, ví dụ `UC23a_CreateAgendaItem.txt`. Dòng `title` ghi `UC-23a - Create Agenda Item`.
-- Số UC theo [Master Use Case Inventory](../01-requirements/00-master-use-case-inventory.md) (UC-01 → UC-70, baseline 10/10/2026).
+- Số UC theo [Master Use Case Inventory](../01-requirements/00-master-use-case-inventory.md) (UC-01 → UC-77: baseline
+  10/10/2026 là UC-01 → UC-70, UC-71/UC-72 thêm 13/10/2026, UC-73 → UC-77 thêm 24/10/2026).
   Ngày 10/10/2026 toàn bộ file đã đổi tên theo số mới; bảng đổi số cũ → mới ở §5 của inventory.
 - Thư mục `meeting-session-management/` đã bị xoá cùng Meeting Session (ADR-0013).
 - BR trong các sơ đồ vẽ trước 10/10/2026 có chỗ dùng số BR của bản dự thảo cũ. Khi chạm vào một sơ đồ, đối chiếu lại từng

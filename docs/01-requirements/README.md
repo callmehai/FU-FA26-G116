@@ -22,7 +22,7 @@ Nguồn chuẩn là ba báo cáo DOCX trên Google Drive (Report 1, 2, 3), đư�
 - [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case đồng bộ từ Report 3 §II (bản DOCX
   24/10/2026): 116 heading UC, 73 bảng đặc tả, phần còn lại là placeholder, có link tới sequence diagram tương ứng.
   UC-73 → UC-77 (Hand Over Chair, Confirm Document Read, Cancel Meeting, Manage Vote Documents, Record Agenda Item
-  Conclusion) đã có đặc tả nhưng **chưa có sequence diagram**.
+  Conclusion) đã có đặc tả và sequence diagram (`UC73_HandOverChair` → `UC77_RecordAgendaItemConclusion`).
 - [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1: **269 BR đang dùng**
   trong dải BR-01 → BR-321 (BR-313/BR-314 theo SCRUM-105, BR-320/BR-321 PO duyệt 20–21/10/2026; đợt BA Final Review
   24/10/2026 sửa BR-30/105/106/115/126/172/176/215/295); danh sách BR ngừng dùng ở cuối file.

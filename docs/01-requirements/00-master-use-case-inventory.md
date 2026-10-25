@@ -326,19 +326,19 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
 | FE-01 | Authentication & Account Security | 4 | — |
 | FE-02 | User & Profile Management | 5 | 3 |
 | FE-03 | Role-Based Access Control | 4 | 3 |
-| FE-04 | Meeting Management | 9 | — |
-| FE-05 | Agenda Management | 4 | 4 |
-| FE-06 | Meeting Participant Management | 5 | 3 |
-| FE-07 | Personal Document Library & Meeting Document Management | 7 | 11 |
+| FE-04 | Meeting Management | 10 | — |
+| FE-05 | Agenda Management | 5 | 4 |
+| FE-06 | Meeting Participant Management | 6 | 3 |
+| FE-07 | Personal Document Library & Meeting Document Management | 8 | 13 |
 | FE-08 | Online Meeting Room Management | 6 | 3 |
 | FE-09 | Meeting Audio Upload & Media Library | 2 | 2 |
 | FE-10 | Speaker-Attributed Transcription & Meeting Summary | 7 | — |
-| FE-11 | Voting Management | 6 | 2 |
+| FE-11 | Voting Management | 7 | 4 |
 | FE-12 | Meeting Minutes & Digital Signing | 8 | — |
 | FE-13 | Email & In-App Notification | 3 | 2 |
 | FE-14 | Personal Dashboard & Meeting Workspace | 1 | — |
 | FE-15 | Reporting & Statistics | 1 | 2 |
-| **Tổng** | | **72** | **35** |
+| **Tổng** | | **77** | **39** |
 
 # 8. Ngoài phạm vi UC
 
