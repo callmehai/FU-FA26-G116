@@ -1,7 +1,9 @@
-# Use Case Diagram theo Actor
+# 14 · Use Case Diagram theo Actor
 
-Nguồn: [Master Use Case Inventory](../../01-requirements/00-master-use-case-inventory.md), baseline 10/10/2026 (70 UC, đã gom
-UC nhỏ). Đồng bộ từ thư mục `Diagrams/UC diagram` của nhóm — cùng bộ hình dùng trong Report 3 §I.4.3.
+Nguồn: [Master Use Case Inventory](../01-requirements/00-master-use-case-inventory.md), baseline
+10/10/2026 (70 UC, đã gom UC nhỏ). Cùng bộ hình dùng trong Report 3 §I.4.3. Đây là nguồn local;
+thư mục `UC diagram` trên Drive chỉ nhận bản đẩy lên theo
+[DIAGRAM_DRIVE_SYNC.md](../DIAGRAM_DRIVE_SYNC.md).
 
 [`trustcabinet-use-cases.drawio`](trustcabinet-use-cases.drawio) là file editable duy nhất, mỗi actor một trang
 (System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant, Guest). PNG xuất từ từng trang.
@@ -22,3 +24,6 @@ cũ theo baseline 05/10/2026 (94 UC, file `.drawio` + `.pdf` riêng từng actor
 
 Xuất lại PNG sau khi sửa: mở `.drawio` bằng draw.io, *File → Export as → PNG* từng trang, hoặc
 `draw.io -x -f png -p <số trang> -o uc-<actor>.png trustcabinet-use-cases.drawio`.
+
+Trên Drive, ảnh giữ tên `trustcabinet-use-cases-<Actor>.drawio.png`; script map từ `uc-<actor>.png` sang
+tên đó, nên không cần đổi tên file local.

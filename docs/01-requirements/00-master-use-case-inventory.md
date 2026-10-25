@@ -6,15 +6,20 @@
 > Use Case Diagram và đặt tên ticket.
 > **Liên kết:** [Đặc tả Use Case](05-use-case-specifications.md) · [Business Rules](06-business-rules.md) ·
 > [Luồng nghiệp vụ chính](../02-design/04-luong-nghiep-vu-chinh.md) · [Business Flow BF-01 → BF-04](../09-bussinessflow/README.md) ·
-> [ERD](../02-design/02-erd.md) · [Use Case Diagram](../assets/use-case-diagrams/README.md).
+> [ERD](../02-design/02-erd.md) · [Use Case Diagram](../14-uc-diagram/README.md).
 > **Nguồn chuẩn:** [Report 1](../08-reports/Report-1_Project_Introduction.md) (phạm vi FE-01 → FE-15),
 > [Report 2](../08-reports/Report-2_Project_Management_Plan.md) (kế hoạch),
 > [Report 3](../08-reports/Report-3_Software_Requirement_Specification.md) (UC, BR, quyền).
 
-**Baseline hiện tại: 15 Feature, 72 Use Case (UC-01 → UC-72).** Cập nhật FE-07/FE-11 ngày 15/10/2026:
+**Baseline hiện tại: 15 Feature, 77 Use Case (UC-01 → UC-77).** Cập nhật FE-07/FE-11 ngày 15/10/2026:
 UC-32b vẫn bỏ; UC-33b được tái cấp cho gắn tài liệu vào mục nghị sự, bổ sung UC-33d để bỏ gắn một mục
 theo [ADR-0020](../05-decisions/0020-tai-lieu-theo-quyen-xem-cuoc-hop.md). FE-07 có 16 UC chi tiết;
-FE-11 có 7 UC chi tiết. Số UC gom giữ nguyên.
+FE-11 có 9 UC chi tiết.
+
+Bổ sung ngày 24/10/2026 (đợt BA Final Review, đã có trong Report 3 §I.4 và §II): **UC-73** Hand Over Chair
+to Another Participant, **UC-74** Confirm Document Read, **UC-75** Cancel Meeting, **UC-76** Manage Vote
+Documents (UC-76a, UC-76b), **UC-77** Record Agenda Item Conclusion. Các UC này nối tiếp dải số cũ, không
+đánh lại UC-01 → UC-72.
 
 ## Các quyết định đã áp dụng
 
@@ -114,6 +119,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-20 | Công bố cuộc họp *(Publish Meeting)* | Meeting Organizer; Email / SMTP | Đã đặc tả | `<<extend>>` UC-16 |
 | UC-21 | Bắt đầu cuộc họp *(Start Meeting)* | Chair | Đã đặc tả | `<<extend>>` UC-16 |
 | UC-22 | Kết thúc cuộc họp *(End Meeting)* — không phụ thuộc Vote Open hay điểm danh đủ/thiếu | Chair | Đã đặc tả | `<<extend>>` UC-16 |
+| UC-75 | Huỷ cuộc họp *(Cancel Meeting)* — Organizer huỷ trước khi họp bắt đầu, bắt buộc nêu lý do; Meeting `Cancelled` chỉ đọc và thông báo cho người được mời nếu đã `Published` | Meeting Organizer; Email / SMTP | Đã đặc tả | `<<extend>>` UC-16 |
 
 ## FE-05 — Quản lý chương trình nghị sự *(Agenda Management)*
 
@@ -123,6 +129,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-24 | Đặt mục agenda hiện tại *(Set Current Agenda Item)* | Chair | Đã đặc tả | `<<extend>>` UC-26 |
 | UC-25 | Hoàn thành mục agenda *(Complete Agenda Item)* | Chair | Đã đặc tả | `<<extend>>` UC-26 |
 | UC-26 | Xem chương trình nghị sự *(View Meeting Agenda)* | Actor có quan hệ với cuộc họp | Đã đặc tả | `<<extend>>` UC-16 |
+| UC-77 | Ghi kết luận mục agenda *(Record Agenda Item Conclusion)* — Chair/Secretary ghi hoặc sửa kết luận của mục `InProgress`/`Done` cho tới khi sinh biên bản nháp | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-26 |
 
 ## FE-06 — Quản lý thành phần tham dự *(Meeting Participant Management)*
 
@@ -133,6 +140,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-29 | Phản hồi lời mời họp *(Respond to Meeting Invitation)* | Secretary, Participant, Guest | Đã đặc tả | Độc lập; Guest đi qua UC-04 |
 | UC-30 | Xem trạng thái phản hồi *(View Participant Response Status)* | Secretary, Chair, Participant, Guest | Đã đặc tả | Mở từ cuộc họp có thể truy cập; Member/Guest cần quyền xem phản hồi. Thấy danh tính trong dòng phản hồi không cấp quyền xem hoặc tìm trong roster |
 | UC-31 | Ghi nhận điểm danh *(Record Attendance)* — Secretary lưu Present/Absent cho một/nhiều người được chọn khi `InProgress` | Secretary | Đã đặc tả | `<<extend>>` UC-27 |
+| UC-73 | Chuyển vai trò Chair cho người khác *(Hand Over Chair to Another Participant)* — Chair hiện hành chuyển trong một bước: người nhận thành Chair, người chuyển thành Member | Chair | Đã đặc tả | `<<extend>>` UC-27 |
 
 ## FE-07 — Kho tài liệu cá nhân & Tài liệu cuộc họp *(Personal Document Library & Meeting Document Management)*
 
@@ -145,6 +153,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-36 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* — một hoặc nhiều PDF/DOCX cùng lần, tối đa 50 MB mỗi file, vào thư mục đang chọn; cả nhóm thành công hoặc không thêm tài liệu nào | Internal user | Đã đặc tả | `<<extend>>` UC-34 |
 | UC-71 | Quản lý tài liệu trong kho *(Manage Personal Documents)* — gồm UC-71a Xoá khỏi kho (tài liệu đã gắn vào cuộc họp vẫn giữ nguyên), UC-71b Đổi tên, UC-71c Chuyển thư mục | Internal user | Đã đặc tả các UC con | `<<extend>>` UC-34 |
 | UC-72 | Quản lý thư mục kho *(Manage Library Folders)* — gồm UC-72a Tạo, UC-72b Đổi tên, UC-72c Chuyển, UC-72d Xoá thư mục rỗng; lồng tối đa 5 cấp | Internal user | Đã đặc tả các UC con | `<<extend>>` UC-34 |
+| UC-74 | Xác nhận đã đọc tài liệu biểu quyết *(Confirm Document Read)* — cuộn tới trang cuối rồi xác nhận; bắt buộc trước khi bỏ phiếu | Chair, Secretary, Participant, Guest có quyền bỏ phiếu | Đã đặc tả | Được gọi trước UC-55 |
 
 ## FE-08 — Phòng họp trực tuyến *(Online Meeting Room Management)*
 
@@ -186,6 +195,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-55 | Bỏ phiếu *(Cast Vote)* — người trong danh sách chốt lúc mở và còn quyền truy cập; Guest xác minh qua lời mời | Chair, Secretary, Participant, Guest | Đã đặc tả | `<<extend>>` UC-52 |
 | UC-56 | Đóng biểu quyết *(Close Vote)* — khi `InProgress` hoặc sau `Ended` | Chair | Đã đặc tả | `<<extend>>` UC-52 |
 | UC-57 | Ghi kết luận biểu quyết *(Record Vote Conclusion)* — Chair chọn `Passed` / `NotPassed` / `Deferred`; ghi rồi không sửa | Chair | Đã đặc tả | `<<extend>>` UC-52 |
+| UC-76 | Quản lý tài liệu biểu quyết *(Manage Vote Documents)* — gồm UC-76a Gắn tài liệu vào Vote nháp, UC-76b Bỏ gắn; danh sách chốt khi Vote mở | Chair, Secretary | Đã đặc tả các UC con | `<<extend>>` UC-53 |
 
 ## FE-12 — Biên bản & Ký điện tử *(Meeting Minutes & Digital Signing)*
 

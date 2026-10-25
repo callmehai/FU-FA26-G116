@@ -42,8 +42,20 @@ Markdown snapshot của Report 1–7.
    - `python scripts/push_reports.py <số>` — dry run, in ra file đích;
    - `python scripts/push_reports.py <số> --confirm` — ghi đè nội dung, giữ nguyên ID/link;
    - `python scripts/push_reports.py <số> --check` — phải ra `UP TO DATE`.
-5. Push cần `GOOGLE_DRIVE_ACCESS_TOKEN` (scope `https://www.googleapis.com/auth/drive`) trong môi
-   trường. Không commit token; không dùng `drive.file` vì các file đích có từ trước.
+5. Push cần credential Drive trong môi trường, scope `https://www.googleapis.com/auth/drive`:
+   - **Refresh token — làm một lần, khuyến nghị.** Tạo OAuth client loại *Desktop app* trong Google
+     Cloud project có bật Drive API, đặt `GOOGLE_DRIVE_CLIENT_ID` và `GOOGLE_DRIVE_CLIENT_SECRET`,
+     rồi chạy `python scripts/google_drive_token.py`. Script mở trình duyệt, in refresh token kèm
+     email tài khoản Drive sẽ dùng. Đặt token đó vào `GOOGLE_DRIVE_REFRESH_TOKEN`; mỗi lần push,
+     script tự đổi sang access token mới (xem `scripts/drive_auth.py`).
+   - **Access token — một lần chạy.** Dán token sống khoảng một giờ vào `GOOGLE_DRIVE_ACCESS_TOKEN`.
+   - **Kiểm tra:** `python scripts/google_drive_token.py --check` phải in ra đúng email tài khoản có
+     quyền ghi thư mục `Docs`. Lỗi `401` là token sai/hết hạn, `403` là thiếu scope hoặc tài khoản
+     không có quyền ghi.
+   - Không commit token, không đặt vào `appsettings.json`. Không dùng `drive.file` vì các file đích có
+     từ trước.
+   - OAuth consent screen để **Testing** thì refresh token hết hạn sau 7 ngày; muốn giữ lâu thì publish
+     app (app chưa verify sẽ hiện cảnh báo và giới hạn 100 user — đủ cho nhu cầu nội bộ).
 
 
 ## Style UC Specification
@@ -117,12 +129,13 @@ Test); chúng không phải file đích của DOCX Report 5.0.
 
 Thư mục Drive chứa các report: [SEP490-G116 › Docs](https://drive.google.com/drive/folders/19wdKDAYViFGn4nlrmCnyNJkDQ0IOw-Z7?usp=drive_link).
 
-**Trạng thái phát hành (25/10/2026):** bản trên Drive đang dừng ở Change Log 15/10/2026, còn DOCX
-local đã tới 24/10/2026 — các đợt 16/10 → 24/10 mới chỉ đồng bộ Markdown, **chưa đẩy Drive**. Từ nay
-chiều làm việc là repo → Drive, nên lần push tới sẽ đưa Drive lên đúng bản local.
+**Trạng thái phát hành (25/10/2026):** Drive đã được đẩy lên đúng bản local — Report 1 và Report 2
+(Change Log 13/10), Report 3 (Change Log 24/10); `python scripts/push_reports.py <số> --check` trả
+`UP TO DATE` cho cả ba, file ID và link không đổi. Report 4 vốn đã khớp. Từ nay chiều làm việc là
+repo → Drive.
 
 **Report 3 đồng bộ Markdown gần nhất:** 24/10/2026, gộp sáu dòng Change Log 24/10 của KhanhPG thành
-một. Chỉ đồng bộ Markdown; không thay nội dung trên Drive.
+một. Lần đẩy 25/10 đưa trọn đợt 16/10 → 24/10 lên Drive trong một lần (9 ngày, 4 dòng Change Log).
 
 Trước đó: 23/10/2026, từ DOCX local sau khi viết lại đặc tả màn hình 7.3, 7.4,
 7.5 và 8.1–8.5 theo wireframe v7 và phòng họp đã chạy trên server test (bỏ giơ tay, tắt mic tất cả, chat lưu lại), đổi

@@ -3,7 +3,10 @@
 Bản thiết kế các màn TrustCabinet để dựng trong Figma và lấy ảnh cho report. Đây không phải
 frontend chạy thật: không gọi API và không lưu dữ liệu.
 
-Prototype HTML luồng cuộc họp nằm riêng ở [assets/wireframe](../assets/wireframe/README.md).
+Prototype HTML luồng cuộc họp theo nghiệp vụ nằm cùng thư mục:
+[luong-cuoc-hop.html](luong-cuoc-hop.html) — mở bằng trình duyệt, không gọi API và không lưu dữ liệu.
+Đây là tài liệu tham khảo, không thay thế UI đang chạy; khi cập nhật, đối chiếu luồng tại
+[09-bussinessflow](../09-bussinessflow/README.md) và [ADR-0012](../05-decisions/0012-giao-dien-hanh-chinh-sidebar-doc.md).
 
 Một phiên bản mới (ví dụ v5 → v6) nộp đủ ba phần:
 

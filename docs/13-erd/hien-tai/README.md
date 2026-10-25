@@ -7,3 +7,6 @@ Thư mục chứa các bản xuất ERD hiện tại: [source draw.io](trustcabi
 Đây là snapshot cấu trúc hiện thực, không thay thế mô hình mục tiêu trong
 [02-erd.md](../../02-design/02-erd.md). Trước khi dùng làm bằng chứng cho schema hiện hành, đối chiếu
 migration/model đang có và xác nhận snapshot đã được sinh lại từ đúng trạng thái database.
+
+**Không đẩy thư mục này lên Drive.** Bản đồng bộ lên thư mục `ERD` chỉ gồm [mục tiêu](../muc-tieu/README.md)
+và [Chen](../chen/README.md); xem [DIAGRAM_DRIVE_SYNC.md](../../DIAGRAM_DRIVE_SYNC.md).

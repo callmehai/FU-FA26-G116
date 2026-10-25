@@ -1,11 +1,13 @@
 # Danh mục Quy tắc Nghiệp vụ (Business Rules) — TrustCabinet
 
-Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX cập nhật 22/10/2026, bao gồm ADR-0020, quyết định SCRUM-19 ngày 16/10/2026, trao đổi PO 16/10/2026, góp ý hội đồng review lần 1, và BR-313/BR-314 theo SCRUM-105). Có **269 BR đang dùng** trong dải `BR-01` → `BR-321`; BR-320, BR-321 (thành phần tham dự khi tạo cuộc họp; chưa trả lời coi như tham dự, từ chối chỉ ẩn khỏi lịch — SCRUM-18/20) PO duyệt 20–21/10/2026 và đã đồng bộ vào Report 3 DOCX; BR-315 → BR-319 (tài liệu trong phòng họp, trả lời góp ý, kiểm toán lượt xem tài liệu mật, giới hạn mỗi lần tải lên — SCRUM-21/22/23) PO duyệt 22/10/2026 và đã đồng bộ vào Report 3 DOCX; mã `BR` độc lập với mã thông báo `MSG`.
+Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX cập nhật 24/10/2026, bao gồm ADR-0020, quyết định SCRUM-19 ngày 16/10/2026, trao đổi PO 16/10/2026, góp ý hội đồng review lần 1, BR-313/BR-314 theo SCRUM-105 và đợt BA Final Review 24/10/2026 sửa BR-30/105/106/115/126/172/176/215/295). Có **269 BR đang dùng** trong dải `BR-01` → `BR-321`; BR-320, BR-321 (thành phần tham dự khi tạo cuộc họp; chưa trả lời coi như tham dự, từ chối chỉ ẩn khỏi lịch — SCRUM-18/20) PO duyệt 20–21/10/2026 và đã đồng bộ vào Report 3 DOCX; BR-315 → BR-319 (tài liệu trong phòng họp, trả lời góp ý, kiểm toán lượt xem tài liệu mật, giới hạn mỗi lần tải lên — SCRUM-21/22/23) PO duyệt 22/10/2026 và đã đồng bộ vào Report 3 DOCX; mã `BR` độc lập với mã thông báo `MSG`.
 
 ## Quy ước đồng bộ
 
-- Report 3 là nguồn chuẩn. Sửa BR trong DOCX trước, chạy `python scripts/sync_reports.py`, rồi đồng bộ lại file này.
-- Số UC trong cột *Applies To* là số UC **sau khi gom và đánh số lại** (UC-01 → UC-72). Bảng đổi số cũ → mới nằm ở [Master Use Case Inventory §5](00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới).
+- Report 3 là nguồn chuẩn. Sửa BR trong DOCX trước, chạy `python scripts/sync_reports.py`, rồi sinh lại bảng dưới
+  đây bằng `python scripts/sync_requirement_extracts.py` (thêm `--check` để chỉ xem lệch) — **không sửa tay**.
+  Mục **BR đã ngừng dùng** ở cuối file là phần viết tay, script giữ nguyên.
+- Số UC trong cột *Applies To* là số UC **sau khi gom và đánh số lại** (UC-01 → UC-77; UC-73 → UC-77 nối tiếp dải cũ, không đánh lại UC-01 → UC-72). Bảng đổi số cũ → mới nằm ở [Master Use Case Inventory §5](00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới).
 - **Không đánh lại số BR.** BR đã ngừng dùng giữ nguyên mã, không tái cấp (danh sách ở cuối file).
 - UC Specification và Sequence Diagram dẫn chiếu đúng BR ID tại bước áp dụng, không chép lại nội dung.
 - Khi BR dẫn đến một thông báo, liên kết tình huống với mã trong [danh mục mã thông báo](../03-api/00-danh-muc-ma-thong-bao.md).
@@ -14,7 +16,6 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 
 | BR-ID | Rule Statement (nguyên văn Report 3) | Applies To | Rationale | Enforced By |
 |---|---|---|---|---|
-| BR-ID | Rule Statement | Applies To | Rationale | Enforced By |
 | `BR-01` | Passwords must never be stored in plain text. Password-based credentials must be protected using a secure salted password-hashing mechanism. | UC-01, UC-07 |  |  |
 | `BR-02` | Authentication failure messages must not reveal whether a specific username or email exists in the system. | UC-01 |  |  |
 | `BR-03` | A deactivated user account must not be allowed to sign in or access authenticated system functions. | UC-01, UC-02, UC-06c, UC-07 |  |  |
@@ -119,7 +120,7 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-123` | A Meeting may have at most one current Chair at a time. | UC-28a, UC-28b |  |  |
 | `BR-124` | Publishing a Meeting requires exactly one current Chair whose internal account is active. | UC-20 |  |  |
 | `BR-125` | Publishing a Meeting requires at least one current Secretary whose internal account is active. | UC-20 |  |  |
-| `BR-126` | A Published or InProgress Meeting must retain its current Chair. From publication onward, the Chair role changes only when the current Chair hands it over through UC-73; the Secretary and the Meeting Organizer cannot replace the Chair, except that the Secretary may replace the Chair when the Chair’s account is locked. (BR-169, BR-295) | UC-28b, UC-28c, UC-73 | PO 16/10/2026 — Chair hands over the Chair role; Secretary does not replace the Chair; PO 23/10/2026 — Secretary replaces the Chair only when the Chair’s account is locked |  |
+| `BR-126` | A Published or InProgress Meeting must retain its current Chair. From publication onward, the Chair role changes only when the current Chair hands it over through UC-73; the Secretary and the Meeting Organizer cannot replace the Chair, except that the Secretary may replace the Chair when the Chair's account is locked. (BR-169, BR-295) | UC-28b, UC-28c, UC-73 | PO 16/10/2026 — Chair hands over the Chair role; Secretary does not replace the Chair; PO 23/10/2026 — Secretary replaces the Chair only when the Chair's account is locked |  |
 | `BR-127` | Starting a Meeting requires exactly one current Chair and at least one current Secretary whose internal accounts are active. | UC-21 |  |  |
 | `BR-129` | Invitation responses do not change readiness requirements for the assigned active Chair and Secretary when publishing or starting a Meeting. | UC-20, UC-21 |  |  |
 | `BR-130` | Only an active current Chair assigned to the Meeting may explicitly start or end that Meeting. | UC-21, UC-22 |  |  |
