@@ -8,8 +8,8 @@ import type { ParticipantsChangedEvent } from '../../types/participant'
 
 /**
  * What the meeting's hub announces; each only says "re-read". `agendaChanged` is any change to the
- * agenda, the item in progress included; `meetingEnded` is the one that ending the meeting sends
- * (SCRUM-69), the only change of status anyone else hears about, so it is told to both.
+ * agenda (SCRUM-25), the item in progress included; `meetingEnded` is the one that ending the meeting
+ * sends (SCRUM-69), the only change of status anyone else hears about, so it is told to both.
  * `documentsChanged` follows an upload (SCRUM-21).
  */
 export type MeetingEvent =

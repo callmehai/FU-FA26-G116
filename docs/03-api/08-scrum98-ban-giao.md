@@ -25,6 +25,16 @@ Branch `refactor/Synchronize-Agenda-according-to-PO-remove-duration-remove-seque
 9. Refetch sau mutation/event; reconnect join lại rồi GET. Notification AgendaPresenterAssigned mở target Meeting hiện có.
 10. Kiểm UI theo skills dự án ở 390px touch, 1200px, 1440px trong phần việc FE.
 
+## FE đã tích hợp (25/10/2026)
+
+- Tab **Nội dung cuộc họp** ở màn chi tiết và panel **Nội dung họp** trong phòng họp dùng chung `features/agenda/AgendaPanel` (ADR-0011), bố cục theo AI-eCabinet: mỗi mục một dòng (số thứ tự, tiêu đề, người trình bày, trạng thái, "Đã kết luận", số tài liệu), bấm tiêu đề để mở ghi chú, tài liệu và kết luận ngay tại chỗ. Mục đang bàn có viền xanh và tự mở.
+- Mọi nút theo `actions`/`permissions` của snapshot: Thư ký **Thêm nội dung**, sửa, xoá (chỉ mục chưa bắt đầu, có xác nhận), **kéo thả** sắp xếp mọi mục (`@dnd-kit`, kéo được bằng chuột, cảm ứng và bàn phím); Chủ tọa **Bắt đầu** ở mọi mục chờ và **Xong** ở mục đang bàn; Chủ tọa/Thư ký **Ghi kết luận** (tối đa 2.000 ký tự, không xoá rỗng, hiện người lưu và thời điểm).
+- Hộp thoại thêm/sửa: "Nội dung cần bàn" (bắt buộc), "Người trình bày" (thành phần nội bộ và khách, khách ghi "(khách)"; tên cũ nhập tay hiện làm gợi ý), "Ghi chú", "Tài liệu" (chọn từ tài liệu đã tải lên của cuộc họp). Lỗi trường `400 MSG66` hiện dưới ô; lỗi khác (mục đã bị xoá, cuộc họp đã khoá) hiện trong hộp thoại và danh sách đọc lại. Đóng khi đã sửa thì hỏi "Bỏ thay đổi chưa lưu?".
+- Kéo thả gửi `orderedItemIds` + `orderVersion`; khoá lần kéo tiếp theo tới khi đọc lại xong, để không gửi `orderVersion` cũ. `409 MSG143` hiện toast và đọc lại.
+- Tự cập nhật khi nhận `agendaChanged` (mọi loại) hoặc `participantsChanged` trên `/hubs/meetings`, và khi cửa sổ được focus lại. Thông báo `AgendaPresenterAssigned` có biểu tượng riêng trong chuông.
+- Trong phòng họp (360px): không có tay kéo; các nút khác giữ nguyên.
+- Khác màn 5.2 của note 18/10: chưa có menu "+ Thêm tài liệu" 3 lựa chọn. Tải tệp lên từ máy nằm ở tab Tài liệu (SCRUM-107), "Tài liệu của tôi" chờ SCRUM-58; hộp thoại chỉ chọn trong tài liệu đã có của cuộc họp.
+
 ## Database và rollout
 
 Một migration mới `20261024061104_SynchronizeAgendaWithPoRequirements`: bỏ planned_duration_minutes; giữ presenter_name dưới property LegacyPresenterName; thêm presenter_guest_invitation_id, conclusion, conclusion_updated_by_id, conclusion_updated_at; thêm index/FK Restrict/check. Không thay migration cũ hoặc bảng ngoài Agenda.

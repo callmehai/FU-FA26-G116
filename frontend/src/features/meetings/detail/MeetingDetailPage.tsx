@@ -20,6 +20,7 @@ import { placeLabel } from '../place'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
 import { useNotifications } from '../../notifications/notificationsContext'
+import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { DocumentsPanel } from '../../documents/DocumentsPanel'
 import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
 import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
@@ -49,8 +50,7 @@ const TABS = [
 type TabId = (typeof TABS)[number]['id']
 
 /** What each tab is waiting on, surfaced in the UI so the backlog is visible while building. */
-const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview' | 'attendees' | 'documents'>, string> = {
-  agenda: 'GET /api/meetings/{id}/agenda',
+const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview' | 'attendees' | 'agenda' | 'documents'>, string> = {
   recordings: 'GET /api/meetings/{id}/recordings',
   minutes: 'GET /api/meetings/{id}/minutes',
 }
@@ -307,6 +307,8 @@ function MeetingDetail({
             />
           ) : tab === 'attendees' ? (
             <ParticipantsPanel meetingId={meeting.id} onChanged={() => void reload()} />
+          ) : tab === 'agenda' ? (
+            <AgendaPanel meetingId={meeting.id} variant="page" />
           ) : tab === 'documents' ? (
             <DocumentsPanel meeting={meeting} variant="page" onMeetingStale={() => void reload()} />
           ) : (

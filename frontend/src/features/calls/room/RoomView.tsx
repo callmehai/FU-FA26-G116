@@ -45,6 +45,7 @@ import { avatarColors, initials } from '../../../lib/avatar'
 import { errorMessage, isApiError } from '../../../lib/errors'
 import { MEETING_ROLE_LABEL, type MeetingRole } from '../../../types/call'
 import { type Meeting } from '../../../types/meeting'
+import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { AttendancePanel } from '../../attendance/AttendancePanel'
 import { DocumentsPanel } from '../../documents/DocumentsPanel'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
@@ -57,10 +58,11 @@ import { deviceErrorMessage, meetingRoleOf } from './roomSupport'
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
 const MOD = IS_MAC ? '⌘' : 'Ctrl'
 
-type PanelId = 'people' | 'attendance' | 'documents' | 'chat'
+type PanelId = 'people' | 'agenda' | 'attendance' | 'documents' | 'chat'
 
 const PANEL_LABEL: Record<PanelId, string> = {
   people: 'Người dự',
+  agenda: 'Nội dung họp',
   attendance: 'Điểm danh',
   documents: 'Tài liệu',
   chat: 'Chat',
@@ -310,6 +312,8 @@ function RoomLayout({
           <aside className="room-panel" aria-label={PANEL_LABEL[panel]}>
             {panel === 'people' ? (
               <ParticipantsPanel meetingId={meeting.id} participants={participants} isChair={myRole === 'Chair'} />
+            ) : panel === 'agenda' ? (
+              <AgendaPanel meetingId={meeting.id} variant="room" />
             ) : panel === 'attendance' ? (
               <AttendancePanel meetingId={meeting.id} />
             ) : panel === 'documents' ? (
@@ -414,6 +418,13 @@ function RoomLayout({
             side
             active={panel === 'people'}
             onClick={() => togglePanel('people')}
+          />
+          <ControlButton
+            icon="list"
+            label="Nội dung họp"
+            side
+            active={panel === 'agenda'}
+            onClick={() => togglePanel('agenda')}
           />
           <ControlButton
             icon="userCheck"
