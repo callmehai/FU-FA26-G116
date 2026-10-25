@@ -25,7 +25,7 @@ public sealed class AgendaAdditionalTests(AgendaFixture fixture) : IClassFixture
         var db = scope.ServiceProvider.GetRequiredService<TrustCabinet.Infrastructure.TrustCabinetDbContext>();
         var publisher = new DelayedPublisher(db, failAfterCancellation);
         var service = ActivatorUtilities.CreateInstance<AgendaService>(scope.ServiceProvider, publisher);
-        var mutation = service.CreateAsync(s.MeetingId, s.Secretary, new("Committed", PlannedDurationMinutes: 20));
+        var mutation = service.CreateAsync(s.MeetingId, s.Secretary, new("Committed"));
         try
         {
             await publisher.CancellationObserved.Task.WaitAsync(TimeSpan.FromSeconds(10));
@@ -104,7 +104,7 @@ public sealed class AgendaAdditionalTests(AgendaFixture fixture) : IClassFixture
     }
 
     [Fact]
-    public async Task Reorder_keeps_done_and_current_positions_noop_keeps_updated_at()
+    public async Task Reorder_moves_done_and_current_positions_noop_keeps_updated_at()
     {
         var s = await fixture.Seed(count: 4);
         await using (var db = fixture.Db())
@@ -120,23 +120,23 @@ public sealed class AgendaAdditionalTests(AgendaFixture fixture) : IClassFixture
         }
         using var client = fixture.Client(s.Secretary);
         var snapshot = await client.GetFromJsonAsync<JsonElement>(s.Url);
-        await AssertCode(await client.PutAsJsonAsync(s.Url + "/order", new { orderVersion = snapshot.GetProperty("orderVersion").GetString(), pendingItemIds = new[] { s.Items[3], s.Items[1] } }), 200, "MSG63");
+        await AssertCode(await client.PutAsJsonAsync(s.Url + "/order", new { orderVersion = snapshot.GetProperty("orderVersion").GetString(), orderedItemIds = new[] { s.Items[3], s.Items[2], s.Items[1], s.Items[0] } }), 200, "MSG63");
         await using var check = fixture.Db();
         var ordered = await check.AgendaItems.Where(i => i.MeetingId == s.MeetingId).OrderBy(i => i.Position).ToArrayAsync();
-        Assert.Equal(new[] { s.Items[0], s.Items[3], s.Items[2], s.Items[1] }, ordered.Select(i => i.Id));
+        Assert.Equal(new[] { s.Items[3], s.Items[2], s.Items[1], s.Items[0] }, ordered.Select(i => i.Id));
         Assert.Equal(new[] { 1, 4, 7, 10 }, ordered.Select(i => i.Position));
-        Assert.Equal(fixture.Clock.Now, ordered[2].ActualStartedAt);
+        Assert.Equal(fixture.Clock.Now, ordered[1].ActualStartedAt);
         var before = ordered.Select(i => i.UpdatedAt).ToArray();
         var events = fixture.Events.Count;
         snapshot = await client.GetFromJsonAsync<JsonElement>(s.Url);
-        await AssertCode(await client.PutAsJsonAsync(s.Url + "/order", new { orderVersion = snapshot.GetProperty("orderVersion").GetString(), pendingItemIds = new[] { s.Items[3], s.Items[1] } }), 200, "MSG63");
+        await AssertCode(await client.PutAsJsonAsync(s.Url + "/order", new { orderVersion = snapshot.GetProperty("orderVersion").GetString(), orderedItemIds = new[] { s.Items[3], s.Items[2], s.Items[1], s.Items[0] } }), 200, "MSG63");
         check.ChangeTracker.Clear();
         Assert.Equal(before, await check.AgendaItems.Where(i => i.MeetingId == s.MeetingId).OrderBy(i => i.Position).Select(i => i.UpdatedAt).ToArrayAsync());
         Assert.Equal(events, fixture.Events.Count);
     }
 
     [Fact]
-    public async Task Removing_selection_does_not_delete_documents_and_completed_presenter_can_be_inactive()
+    public async Task Removing_selection_does_not_delete_documents_and_inactive_presenter_must_be_replaced()
     {
         var s = await fixture.Seed();
         using var client = fixture.Client(s.Secretary);
@@ -151,7 +151,7 @@ public sealed class AgendaAdditionalTests(AgendaFixture fixture) : IClassFixture
             await db.SaveChangesAsync();
             Assert.Null(await AgendaFixture.LinkedItem(db, s.DocumentId));
         }
-        await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input("New title", presenter: s.Member)), 200, "MSG61");
+        await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input("New title", presenter: s.Member)), 400, "MSG66");
     }
 
     [Fact]
@@ -267,6 +267,6 @@ public sealed class AgendaAdditionalTests(AgendaFixture fixture) : IClassFixture
         using var cancelled = new CancellationTokenSource();
         await cancelled.CancelAsync();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.GetAsync(s.MeetingId, s.Secretary, cancelled.Token));
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.CreateAsync(s.MeetingId, s.Secretary, new("X", PlannedDurationMinutes: 20), cancelled.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.CreateAsync(s.MeetingId, s.Secretary, new("X"), cancelled.Token));
     }
 }

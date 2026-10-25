@@ -1244,6 +1244,12 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .record-facts { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; color: var(--muted-ink); }
 .record-facts span { display: inline-flex; align-items: center; gap: 6px; }
 .record-facts .icon { color: var(--label-ink); }
+/* "Vào phòng họp" next to the Chair's "Kết thúc họp" is wider than a phone: wrap, never run off. */
+.record-head .page-header-actions { flex-wrap: wrap; max-width: 100%; }
+@media (max-width: 720px) {
+  .record-head .page-header-actions { flex: 1 1 100%; }
+  .record-head .page-header-actions > .btn { flex: 1 1 0; min-width: max-content; }
+}
 
 .detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 360px); gap: 16px; align-items: start; }
 
@@ -1316,7 +1322,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .timeline-violet { --dot: var(--dot-violet); }
 .timeline-live { --dot: var(--live); }
 
-.timeline-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 24px; }
+/* On a 360px phone a long label and the time do not fit one line: the time moves under the label. */
+.timeline-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 8px; min-height: 24px; }
 /* Who acted lives in the time's tooltip (AI-eCabinet), so a row stays one line. */
 .timeline-time {
   flex: none;
@@ -2156,6 +2163,105 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .choice-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .choice-label { color: var(--ink); font-size: 14px; font-weight: 600; }
 .choice-desc { color: var(--muted-ink); font-size: 13px; }
+
+/* ---------- Agenda (SCRUM-25, features/agenda) ----------
+   One line per item, as AI-eCabinet: handle, number, title, then presenter, state, conclusion and
+   documents in fixed columns, then actions. Narrow (a phone, the room's 360px panel) the facts move
+   under the title and the actions to their own line. */
+.agenda-panel { container-type: inline-size; }
+.agenda-toolbar { flex-wrap: nowrap; }
+.agenda-alert { margin: 12px 16px 0; }
+.agenda-list { list-style: none; margin: 0; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.agenda-panel-room .agenda-list { padding: 0; }
+.agenda-panel-room .agenda-toolbar { padding: 0 0 12px; border: 0; }
+.agenda-item { position: relative; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.agenda-item-open { box-shadow: 0 1px 3px rgb(16 24 40 / .08); }
+/* The item under discussion: a live green edge only, as "Đang diễn ra" is the live green elsewhere. Its
+   background stays white like every other item; a green wash behind the white boxes clashed. */
+.agenda-item-current { border-color: var(--live-ring); box-shadow: inset 3px 0 0 var(--live); }
+.agenda-item-dragging { z-index: 2; box-shadow: 0 8px 24px rgb(16 24 40 / .18); }
+/* Where the title starts, so the facts and the opened body line up under it. */
+.agenda-item { --agenda-indent: 46px; }
+.agenda-item:has(.agenda-grip) { --agenda-indent: 80px; }
+.agenda-head { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; padding: 4px 12px 8px; }
+.agenda-break { flex-basis: 100%; height: 0; }
+.agenda-grip {
+  display: inline-grid; flex: none; place-items: center; width: 28px; height: 36px; margin-right: -4px;
+  border: 0; border-radius: var(--radius); background: transparent; color: var(--label-ink);
+  cursor: grab; touch-action: none;
+}
+.agenda-grip:hover { background: var(--surface-alt); color: var(--ink); }
+.agenda-item-dragging .agenda-grip { cursor: grabbing; }
+.agenda-number {
+  display: inline-grid; flex: none; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--surface-alt); color: var(--label-ink); font-size: 12px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.agenda-title {
+  display: flex; flex: 1; align-items: flex-start; gap: 6px; min-width: 0; min-height: 40px; padding: 10px 0;
+  border: 0; background: transparent; color: var(--ink); font: inherit; font-weight: 600; text-align: left;
+  cursor: pointer;
+}
+.agenda-title > svg { flex: none; margin-top: 3px; color: var(--label-ink); }
+.agenda-title > span { min-width: 0; overflow-wrap: anywhere; }
+.agenda-title:hover > span { color: var(--brand); }
+.agenda-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; min-width: 0; padding-left: calc(var(--agenda-indent) - 12px); }
+.agenda-presenter { display: inline-flex; align-items: center; gap: 6px; max-width: 240px; min-width: 0; font-size: 13px; }
+.agenda-presenter-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted-ink); }
+.agenda-presenter-none .agenda-presenter-name { color: var(--label-ink); font-style: italic; }
+.avatar-xs { width: 22px; height: 22px; font-size: 10px; }
+.avatar-empty { border: 1px dashed var(--label-ink); background: transparent; }
+.agenda-status, .agenda-concluded { font-size: 13px; }
+.agenda-docs { display: inline-flex; align-items: center; gap: 4px; width: 36px; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
+.agenda-docs-none { color: var(--faint-ink); }
+.agenda-actions { flex: none; gap: 6px; }
+.icon-button-danger { color: var(--danger); }
+.agenda-action-slot { width: 34px; flex: none; }
+.agenda-body { padding: 4px 12px 12px var(--agenda-indent); }
+.agenda-text.agenda-note { margin: 0 0 12px; color: var(--muted-ink); }
+.agenda-boxes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.agenda-box { min-width: 0; padding: 10px 12px 12px; border-radius: var(--radius); background: var(--surface-alt); }
+.agenda-box-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; margin-bottom: 4px; }
+.agenda-box-head h4 { margin: 0; color: var(--label-ink); font-size: 13px; font-weight: 600; }
+.agenda-box .value-empty { margin: 0; font-size: 13px; }
+.agenda-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.agenda-stamp { margin: 8px 0 0; color: var(--label-ink); font-size: 12px; }
+.agenda-doc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13px; }
+.agenda-doc-list li { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.agenda-doc-list li > svg { flex: none; color: var(--label-ink); }
+.agenda-doc-list li > span { min-width: 0; overflow-wrap: anywhere; }
+.agenda-conclusion-editor textarea { width: 100%; background: var(--surface); }
+.agenda-conclusion-editor .field-foot { margin-top: 4px; }
+.agenda-conclusion-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.agenda-empty { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 40px 16px; color: var(--label-ink); text-align: center; }
+.agenda-empty p { margin: 8px 0 0; color: var(--ink); font-weight: 600; }
+.agenda-empty small { color: var(--muted-ink); font-size: 13px; }
+.agenda-skeleton { width: 60%; height: 18px; }
+.agenda-pick-list { height: auto; max-height: 220px; }
+.agenda-pick-list .pick-row > svg { flex: none; color: var(--label-ink); }
+.agenda-pick-title { min-width: 0; overflow-wrap: anywhere; }
+.agenda-room { overflow-y: auto; }
+
+/* Wide enough for AI-eCabinet's single line: facts in fixed columns between title and actions. */
+@container (min-width: 960px) {
+  .agenda-head { flex-wrap: nowrap; min-height: 52px; }
+  .agenda-break { display: none; }
+  .agenda-meta { flex: none; flex-wrap: nowrap; order: 1; padding-left: 0; }
+  .agenda-presenter { width: 180px; }
+  .agenda-actions { order: 2; }
+}
+@container (max-width: 640px) {
+  .agenda-boxes { grid-template-columns: minmax(0, 1fr); }
+}
+/* A phone or the room's panel: the actions share the facts' line, at its end. */
+@container (max-width: 520px) {
+  .agenda-meta { flex: 1 1 0; padding-left: 0; }
+  .agenda-actions { order: 6; margin-left: auto; }
+  .agenda-panel .agenda-body { padding-left: 12px; }
+  .agenda-toolbar { padding-left: 12px; padding-right: 12px; }
+  .agenda-list { padding-left: 12px; padding-right: 12px; }
+  .agenda-panel-room .agenda-list { padding: 0; }
+}
 
 /* ---------- Placeholder screens ----------
    A screen whose backend does not exist yet: what it will do, and the endpoint it waits on. */

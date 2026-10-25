@@ -6,9 +6,17 @@ using TrustCabinet.Domain.Documents;
 
 namespace TrustCabinet.Web.Endpoints;
 
-/// <summary>UC-33a AF-1 — upload files from the computer into a meeting (SCRUM-107, ADR-0024).</summary>
+/// <summary>
+/// UC-32a, UC-32c — list, view and download meeting documents (SCRUM-21); UC-33a AF-1 — upload
+/// files from the computer into a meeting (SCRUM-107, ADR-0024).
+/// </summary>
 public static class MeetingDocumentEndpoints
 {
+    private const string Msg156DocumentsUnavailable = "MSG156";
+    private const string Msg157ListFailed = "MSG157";
+    private const string Msg158ViewFailed = "MSG158";
+    private const string Msg159SecretNoDownload = "MSG159";
+    private const string Msg160DownloadFailed = "MSG160";
     private const string Msg161Added = "MSG161";
     private const string Msg162AddDenied = "MSG162";
     private const string Msg164InvalidFiles = "MSG164";
@@ -29,13 +37,59 @@ public static class MeetingDocumentEndpoints
 
     public static void MapMeetingDocumentEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGroup("/api/meetings/{meetingId:guid}/documents")
+        const string prefix = "/api/meetings/{meetingId:guid}/documents";
+        app.MapGroup(prefix).RequireActiveUser(ReadError(DocumentReadFailure.ReadFailed, Msg157ListFailed))
+            .MapGet("", async (Guid meetingId, HttpContext context, IMeetingDocumentService service, CancellationToken ct) =>
+            {
+                var outcome = await service.ListAsync(meetingId, CapabilityGate.GatedUserId(context.User), ct);
+                return outcome.List is { } list ? Results.Ok(list) : ReadError(outcome.Failure, Msg157ListFailed);
+            });
+        // The gate cannot tell a view from a download, so a database failure there reads as a failed view.
+        app.MapGroup(prefix).RequireActiveUser(ReadError(DocumentReadFailure.ReadFailed, Msg158ViewFailed))
+            .MapGet("/{meetingDocumentId:guid}/content", ContentAsync);
+        app.MapGroup(prefix)
             .RequireActiveUser(Map(new(DocumentUploadFailure.StoreFailed), Guid.Empty))
             .MapPost("/upload", UploadAsync);
     }
 
+    /// <summary>
+    /// Streams the stored bytes unchanged (BR-183, BR-216); the browser renders PDF and DOCX itself.
+    /// <paramref name="download"/> marks the attachment as a download, refused for a Secret meeting (BR-188).
+    /// </summary>
+    private static async Task<IResult> ContentAsync(Guid meetingId, Guid meetingDocumentId, HttpContext context,
+        IMeetingDocumentService service, CancellationToken ct, bool download = false)
+    {
+        var outcome = await service.OpenContentAsync(meetingId, meetingDocumentId,
+            CapabilityGate.GatedUserId(context.User), download, ct);
+        if (outcome.Content is not { } file) return ReadError(outcome.Failure, download ? Msg160DownloadFailed : Msg158ViewFailed);
+
+        context.Response.ContentLength = file.ByteSize;
+        // Confidential content must not linger in a shared browser's or proxy's cache.
+        context.Response.Headers.CacheControl = "private, no-store";
+        context.Response.Headers.XContentTypeOptions = "nosniff";
+        // Always an attachment, never inline: our origin must not render an uploaded file as a page.
+        // fileDownloadName writes filename*=UTF-8''… rather than the raw name.
+        return Results.Stream(file.Content, file.ContentType, fileDownloadName: file.FileName);
+    }
+
+    private static IResult ReadError(DocumentReadFailure failure, string readFailedCode)
+    {
+        var (status, code, message) = failure switch
+        {
+            // Same answer for a meeting that does not exist, one the caller cannot see, and a
+            // document removed from it or from another meeting (SCRUM-22, BR-211).
+            DocumentReadFailure.NotFound => (404, Msg156DocumentsUnavailable, "Không truy cập được tài liệu của cuộc họp."),
+            DocumentReadFailure.DownloadForbidden => (403, Msg159SecretNoDownload,
+                "Tài liệu của cuộc họp Mật chỉ được xem trực tuyến, không được tải về."),
+            _ when readFailedCode == Msg157ListFailed => (500, Msg157ListFailed, "Không tải được danh sách tài liệu. Vui lòng thử lại."),
+            _ when readFailedCode == Msg160DownloadFailed => (503, Msg160DownloadFailed, "Không tải về được tài liệu. Vui lòng thử lại."),
+            _ => (503, Msg158ViewFailed, "Không hiển thị được tài liệu. Vui lòng thử lại."),
+        };
+        return Results.Json(new { code, message }, statusCode: status);
+    }
+
     private static async Task<IResult> UploadAsync(Guid meetingId, HttpContext context, IMeetingDocumentService service,
-        CancellationToken ct)
+        MeetingDocumentChangePublisher publisher, ILoggerFactory logs, CancellationToken ct)
     {
         var actor = CapabilityGate.GatedUserId(context.User);
 
@@ -74,7 +128,20 @@ public static class MeetingDocumentEndpoints
             var validated = await DocumentFileRules.ValidateAsync(candidates, ct);
             if (validated.Failure != DocumentUploadFailure.None) return Map(validated, meetingId);
 
-            return Map(await service.UploadAsync(meetingId, actor, validated.Files!, ct), meetingId);
+            var uploaded = await service.UploadAsync(meetingId, actor, validated.Files!, ct);
+            if (uploaded.Failure == DocumentUploadFailure.None)
+            {
+                // The documents are committed; a lost event only means readers refresh later. The same 2 s budget
+                // as agenda events, so a slow hub or database never holds up the uploader's response.
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                try { await publisher.PublishAsync(meetingId, timeout.Token); }
+                catch (Exception ex)
+                {
+                    logs.CreateLogger(nameof(MeetingDocumentEndpoints))
+                        .LogWarning(ex, "Could not publish documentsChanged for meeting {MeetingId}", meetingId);
+                }
+            }
+            return Map(uploaded, meetingId);
         }
         finally
         {

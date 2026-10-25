@@ -95,6 +95,7 @@ public sealed class AgendaGuestTests(AgendaFixture fixture) : IClassFixture<Agen
         var before = await client.GetStringAsync(s.Url);
         var events = fixture.Events.Count;
         Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync(s.Url + "/editor-options")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}/conclusion", new { conclusion = "Guest cannot write" })).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await client.PostAsJsonAsync(s.Url, Input())).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input())).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await client.DeleteAsync(s.Url + $"/{s.Items[0]}")).StatusCode);

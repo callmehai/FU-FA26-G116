@@ -41,7 +41,7 @@ public sealed class AttendanceMigrationTests
             Assert.Equal("attendance_version", column.Name); Assert.Equal("bigint", column.ColumnType);
             Assert.Equal(0L, column.DefaultValue); Assert.False(column.IsNullable);
         });
-        await db.Database.MigrateAsync(); Assert.False(db.Database.HasPendingModelChanges());
+        await db.GetService<IMigrator>().MigrateAsync(db.Database.GetMigrations().TakeWhile(m => !m.EndsWith("SynchronizeAgendaWithPoRequirements", StringComparison.Ordinal)).Last()); Assert.False(db.Database.HasPendingModelChanges());
         foreach (var type in new[] { typeof(MeetingParticipant), typeof(MeetingGuestInvitation) })
         {
             var property = db.Model.FindEntityType(type)!.FindProperty("AttendanceVersion")!;
@@ -54,7 +54,7 @@ public sealed class AttendanceMigrationTests
         Assert.Equal("Declined", row.Response.ToString()); Assert.Equal("Accepted", guest.Response.ToString());
         await db.GetService<IMigrator>().MigrateAsync(previous);
         Assert.Equal("Excused", await db.Database.SqlQuery<string>($"SELECT attendance AS \"Value\" FROM meeting_participants WHERE id = {p}").SingleAsync());
-        await db.Database.MigrateAsync(); db.ChangeTracker.Clear();
+        await db.GetService<IMigrator>().MigrateAsync(db.Database.GetMigrations().TakeWhile(m => !m.EndsWith("SynchronizeAgendaWithPoRequirements", StringComparison.Ordinal)).Last()); db.ChangeTracker.Clear();
         Assert.Equal(0, (await db.MeetingGuestInvitations.SingleAsync()).AttendanceVersion);
     }
 }

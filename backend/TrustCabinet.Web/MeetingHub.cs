@@ -73,8 +73,18 @@ public sealed class AgendaChangePublisher(IHubContext<MeetingHub> hub, IMeetingR
     public async Task PublishAsync(AgendaChange change, CancellationToken ct)
     {
         // Fail closed. The service logs failed publication without undoing the committed write.
-        var meeting = await meetings.FindWorkflowAsync(change.MeetingId, ct: ct);
-        if (meeting is null) return;
+        var groups = await ReaderGroupsAsync(change.MeetingId, meetings, db, guests, ct);
+        if (groups.Count == 0) return;
+        await hub.Clients.Groups(groups).SendAsync("agendaChanged", change, ct);
+        logger.LogDebug("Published agenda event {EventId} to {Count} authorized user groups", change.EventId, groups.Count);
+    }
+
+    /// <summary>The joined groups of every active user and guest session who may read the meeting now.</summary>
+    internal static async Task<List<string>> ReaderGroupsAsync(Guid meetingId, IMeetingRepository meetings,
+        TrustCabinetDbContext db, IAgendaGuestAccess guests, CancellationToken ct)
+    {
+        var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
+        if (meeting is null) return [];
         var candidates = meeting.Participants.Select(p => p.UserId).Append(meeting.CreatedById)
             .Concat(meeting.AssignedApproverId is { } approver ? [approver] : [])
             .Distinct().Where(actor => MeetingReadPolicy.CanRead(meeting, actor)).ToArray();
@@ -87,8 +97,23 @@ public sealed class AgendaChangePublisher(IHubContext<MeetingHub> hub, IMeetingR
             groups.AddRange(readers.Where(g => g.IsValid && g.MeetingId == meeting.Id)
                 .Distinct().Select(MeetingHub.GuestGroup));
         }
-        if (groups.Count == 0) return;
-        await hub.Clients.Groups(groups).SendAsync("agendaChanged", change, ct);
-        logger.LogDebug("Published agenda event {EventId} to {Count} authorized user groups", change.EventId, groups.Count);
+        return groups;
+    }
+}
+
+/// <summary>Only says which meeting: a reader refetches the list, which is reauthorized. EventId lets a
+/// client drop a redelivered event, like the other meeting events.</summary>
+public sealed record MeetingDocumentsChange(Guid EventId, Guid MeetingId, DateTimeOffset OccurredAt);
+
+/// <summary>Tells the Documents tab and the room panel that documents were added (SCRUM-21).</summary>
+public sealed class MeetingDocumentChangePublisher(IHubContext<MeetingHub> hub, IMeetingRepository meetings,
+    TrustCabinetDbContext db, IAgendaGuestAccess guests, TimeProvider clock)
+{
+    public async Task PublishAsync(Guid meetingId, CancellationToken ct)
+    {
+        var groups = await AgendaChangePublisher.ReaderGroupsAsync(meetingId, meetings, db, guests, ct);
+        if (groups.Count > 0)
+            await hub.Clients.Groups(groups).SendAsync("documentsChanged",
+                new MeetingDocumentsChange(Guid.CreateVersion7(), meetingId, clock.GetUtcNow()), ct);
     }
 }

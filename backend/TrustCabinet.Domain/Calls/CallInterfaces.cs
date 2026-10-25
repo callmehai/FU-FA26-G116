@@ -31,7 +31,10 @@ public interface ICallRepository
 
     Task RecordLeaveAsync(Guid sessionId, Guid userId, DateTimeOffset leftAt, CancellationToken ct = default);
 
-    /// <summary>Ends the session and closes every stint still open.</summary>
+    /// <summary>
+    /// Ends the session and closes every stint still open. The effective end cannot precede
+    /// the session start or any already recorded participant join/leave timestamp.
+    /// </summary>
     Task EndSessionAsync(Guid sessionId, DateTimeOffset endedAt, CancellationToken ct = default);
 
     Task<IReadOnlyList<ActiveRoomSession>> ListActiveRoomSessionsAsync(CancellationToken ct = default);
@@ -65,6 +68,9 @@ public interface ILiveKitGateway
 
 public interface ICallRoomService
 {
+    /// <summary>Closes the provider room, then ends call history using the closure confirmation time.</summary>
+    Task CloseMeetingRoomAsync(Guid meetingId, CancellationToken ct = default);
+
     Task<CallResult<CallRoomView>> GetRoomAsync(Guid meetingId, Guid actorId, CancellationToken ct = default);
 
     Task<CallResult<CallJoinTicket>> JoinAsync(Guid meetingId, Guid actorId, CancellationToken ct = default);

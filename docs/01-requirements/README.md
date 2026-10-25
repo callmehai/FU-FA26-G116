@@ -175,3 +175,5 @@ Ví dụ: **`MSGnn – “Only an empty folder can be deleted.”`** Mã thực 
 - [ ] **Quy tắc nghiệp vụ (BR)**: Đánh mã `BR-XX` rõ ràng và được dẫn chiếu tại các bước kiểm tra tương ứng.
 
 - [07-ra-soat-guest-va-diem-danh.md](07-ra-soat-guest-va-diem-danh.md) — quyết định Guest 13/10/2026 và phân tích BR-122 chưa chốt.
+
+SCRUM-98 (24/10/2026): đồng bộ phần FE-05/UC-77 và POST-4 UC-28c từ snapshot Report 3 đã cập nhật. Inventory bổ sung UC-77; BR-306–312 dùng định nghĩa hiện có. Không chỉnh DOCX/snapshot trong lượt triển khai Backend này; [handoff](../03-api/08-scrum98-ban-giao.md) ghi phần chờ BA Final Review.

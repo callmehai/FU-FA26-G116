@@ -38,7 +38,6 @@ public sealed class AgendaMigrationTests
             MeetingId = meeting.Id,
             Title = "A",
             Position = 1,
-            PlannedDurationMinutes = 20,
             Status = AgendaItemStatus.InProgress,
             ActualStartedAt = new(2026, 10, 12, 0, 0, 0, TimeSpan.Zero)
         };
@@ -47,7 +46,6 @@ public sealed class AgendaMigrationTests
             MeetingId = meeting.Id,
             Title = "B",
             Position = 8,
-            PlannedDurationMinutes = 20,
             Status = scenario == "duplicate" ? AgendaItemStatus.InProgress : AgendaItemStatus.Pending
         };
         db.Add(user);
@@ -59,8 +57,13 @@ public sealed class AgendaMigrationTests
             VALUES ({meeting.Id}, {meeting.Title}, '', 'InProgress', 'Internal', 'InPerson', '',
                 {meeting.PlannedStartTime}, {meeting.PlannedEndTime}, {user.Id}, {meeting.CreatedAt}, {meeting.UpdatedAt})
             """);
-        db.AddRange(a, b);
-        await db.SaveChangesAsync();
+        foreach (var item in new[] { a, b })
+            await db.Database.ExecuteSqlInterpolatedAsync($"""
+                INSERT INTO agenda_items (id, meeting_id, title, description, position, planned_duration_minutes,
+                    presenter_name, status, actual_started_at, created_at, updated_at)
+                VALUES ({item.Id}, {meeting.Id}, {item.Title}, '', {item.Position}, 20, 'Legacy',
+                    {item.Status.ToString()}, {item.ActualStartedAt}, {item.CreatedAt}, {item.UpdatedAt})
+                """);
         if (scenario is "Postponed" or "Unknown")
             await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE agenda_items SET status = {scenario} WHERE id = {b.Id}");
         if (scenario != "valid")
