@@ -52,7 +52,8 @@ import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { DeviceSelect, MicLevel } from './devices'
 import { usePipWindow } from './pipWindow'
-import { deviceErrorMessage, meetingRoleOf } from './roomSupport'
+import { RoomRolesContext, useRoleOf, useRoomRoles } from './roomRoles'
+import { deviceErrorMessage } from './roomSupport'
 
 /** ⌘ on a Mac, Ctrl elsewhere — the modifier of the mic and camera shortcuts. */
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
@@ -105,9 +106,15 @@ export function RoomView({
   myRole: MeetingRole
   onLeave: () => Promise<void>
 }) {
+  // The role the room was joined with holds only until the roster says otherwise (BR-328).
+  const roleOf = useRoomRoles(meeting.id)
+  const currentRole = roleOf(room.localParticipant) ?? myRole
+
   return (
     <RoomContext.Provider value={room}>
-      <RoomLayout room={room} meeting={meeting} myRole={myRole} onLeave={onLeave} />
+      <RoomRolesContext.Provider value={roleOf}>
+        <RoomLayout room={room} meeting={meeting} myRole={currentRole} onLeave={onLeave} />
+      </RoomRolesContext.Provider>
       <RoomAudioRenderer />
     </RoomContext.Provider>
   )
@@ -907,7 +914,7 @@ function ParticipantTile({ trackRef, style }: { trackRef: TrackReferenceOrPlaceh
   const speaking = useIsSpeaking(participant)
   const micMuted = !useMicrophoneOn(participant)
   const name = participant.name || 'Người dự'
-  const role = meetingRoleOf(participant)
+  const role = useRoleOf()(participant)
   const showVideo = isTrackReference(trackRef) && !trackRef.publication.isMuted
   const colors = avatarColors(name)
 
@@ -944,14 +951,15 @@ function ParticipantsPanel({
   const toast = useToast()
   const handleAccessLost = useAccessLost()
   const [pending, setPending] = useState<string | null>(null)
+  const roleOf = useRoleOf()
 
   const sorted = useMemo(
     () =>
       [...participants].sort((a, b) => {
-        const byRole = ROLE_ORDER[meetingRoleOf(a) ?? 'Member'] - ROLE_ORDER[meetingRoleOf(b) ?? 'Member']
+        const byRole = ROLE_ORDER[roleOf(a) ?? 'Member'] - ROLE_ORDER[roleOf(b) ?? 'Member']
         return byRole || (a.name ?? '').localeCompare(b.name ?? '', 'vi', { numeric: true })
       }),
-    [participants],
+    [participants, roleOf],
   )
 
   async function mute(participant: Participant) {
@@ -1000,7 +1008,7 @@ function PersonRow({
   const speaking = useIsSpeaking(participant)
   const micMuted = !useMicrophoneOn(participant)
   const name = participant.name || 'Người dự'
-  const role = meetingRoleOf(participant)
+  const role = useRoleOf()(participant)
   const colors = avatarColors(name)
 
   return (
