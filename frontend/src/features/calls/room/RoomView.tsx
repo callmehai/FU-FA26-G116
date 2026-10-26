@@ -59,7 +59,7 @@ import { DeviceSelect, MicLevel } from './devices'
 import { usePipWindow } from './pipWindow'
 import { useRecordingSign } from './recordingSign'
 import { RoomRolesContext, useRoleOf, useRoomRoles } from './roomRoles'
-import { deviceErrorMessage } from './roomSupport'
+import { deviceErrorMessage, roomMessage } from './roomSupport'
 
 /** ⌘ on a Mac, Ctrl elsewhere — the modifier of the mic and camera shortcuts. */
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
@@ -184,7 +184,7 @@ function RoomLayout({
     // A microphone that goes muted without the user clicking was muted by the chair.
     const onMuted = (publication: TrackPublication, participant: Participant) => {
       if (participant.isLocal && publication.source === Track.Source.Microphone && !selfMuting.current) {
-        toast.show('Chủ toạ đã tắt micro của bạn. Bạn có thể bật lại khi cần phát biểu.', 'info')
+        toast.show(roomMessage.mutedByChair, 'info')
       }
     }
     // Someone else started presenting while I am: step aside (SCRUM-43). The server mutes the
@@ -193,7 +193,7 @@ function RoomLayout({
       if (publication.source !== Track.Source.ScreenShare || participant.isLocal) return
       if (!room.localParticipant.isScreenShareEnabled) return
       void room.localParticipant.setScreenShareEnabled(false)
-      toast.show(`${participant.name || 'Người khác'} bắt đầu trình bày, phần chia sẻ của bạn đã dừng.`, 'info')
+      toast.show(roomMessage.shareTakenOver(participant.name || 'Người khác'), 'info')
     }
     room.on(RoomEvent.TrackPublished, onPublished)
     room.on(RoomEvent.Reconnecting, onReconnecting)
@@ -269,7 +269,7 @@ function RoomLayout({
       })
     } catch (err) {
       if (err instanceof Error && err.name === 'NotAllowedError') return
-      toast.show('Không chia sẻ được màn hình. Vui lòng thử lại.', 'error')
+      toast.show(roomMessage.shareFailed, 'error')
     }
   }
 
@@ -324,7 +324,7 @@ function RoomLayout({
 
       {reconnecting && (
         <div className="room-banner" role="status">
-          Mất kết nối, đang kết nối lại…
+          {roomMessage.reconnecting}
         </div>
       )}
       <StartAudioBanner />
@@ -529,11 +529,7 @@ function RoomLayout({
           tone="danger"
           onConfirm={onLeave}
           onClose={() => setConfirmingLeave(false)}
-          blocker={
-            callRecorder.active
-              ? 'Bạn đang ghi âm cuộc họp. Bấm Dừng và lưu ở panel Bản ghi trước khi rời phòng.'
-              : undefined
-          }
+          blocker={callRecorder.active ? roomMessage.recordingBlocksLeave : undefined}
         >
           Cuộc họp vẫn tiếp tục với những người khác. Bạn có thể vào lại khi cuộc họp còn đang diễn ra.
         </ConfirmDialog>
@@ -769,7 +765,7 @@ function StartAudioBanner() {
   if (canPlayAudio) return null
   return (
     <div className="room-banner room-banner-action" role="status">
-      <span>Trình duyệt đang chặn phát âm thanh.</span>
+      <span>{roomMessage.audioBlocked}</span>
       <button type="button" className="btn btn-primary btn-sm" onClick={() => void startAudio()}>
         <Icon name="volume" size={16} />
         Bấm để nghe mọi người
@@ -1031,7 +1027,7 @@ function ParticipantsPanel({
     setPending(participant.identity)
     try {
       await muteCallParticipant(meetingId, participant.identity)
-      toast.show(`Đã tắt micro của ${participant.name || 'người này'}.`, 'success')
+      toast.show(roomMessage.muted(participant.name || 'người này'), 'success')
     } catch (err) {
       // 403 MSG123 is "not the chair" — the caller can still see the meeting, so it is not access lost.
       if (!isApiError(err, 403, 'MSG123') && handleAccessLost(err)) return
@@ -1127,7 +1123,7 @@ function ChatPanel({
       await send(text)
       setDraft('')
     } catch {
-      setError('Không gửi được tin nhắn. Vui lòng thử lại.')
+      setError(roomMessage.chatFailed)
     }
   }
 
