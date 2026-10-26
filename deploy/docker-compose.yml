@@ -1,5 +1,5 @@
 # Server test chung của nhóm — app + PostgreSQL + Redis + LiveKit (phòng họp) + Caddy (tự lấy chứng
-# chỉ HTTPS).
+# chỉ HTTPS), và máy chuyển chữ khi bật profile speech.
 # Hướng dẫn: deploy/README.md. Lý do chọn cách này: docs/05-decisions/0015-server-test-tren-lightsail.md
 #
 #   cp deploy/.env.example deploy/.env   # rồi điền giá trị thật, .env đã bị gitignore
@@ -45,6 +45,9 @@ services:
       FileStorage__BucketName: "${R2_BUCKET:-}"
       FileStorage__AccessKeyId: "${R2_ACCESS_KEY_ID:-}"
       FileStorage__SecretAccessKey: "${R2_SECRET_ACCESS_KEY:-}"
+      # Máy chuyển chữ (ADR-0026). Chỉ chạy khi deploy/.env có COMPOSE_PROFILES=speech, vì cần máy 4 GB.
+      # Để trống thì app vẫn chạy, chuyển chữ và ghi theo micro trả 503/MSG312. Xem deploy/README.md §10.
+      Speech__BaseUrl: "${SPEECH_URL:-}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -96,6 +99,22 @@ services:
       - "7882:7882/udp"   # ICE/UDP
     volumes:
       - ./livekit.yaml:/etc/livekit.yaml:ro
+
+  speech:
+    # Chỉ chạy khi deploy/.env có COMPOSE_PROFILES=speech. Workflow deploy build image trên GitHub và
+    # chỉ chép sang khi workers/speech đổi, vì image ~770 MB.
+    image: trustcabinet-speech:latest
+    build:
+      context: ../workers/speech
+    profiles: ["speech"]
+    restart: unless-stopped
+    environment:
+      # Máy test có 2 vCPU: dùng hết cho một model, các yêu cầu khác xếp hàng ở backend.
+      SPEECH_THREADS: "2"
+    # Không mở cổng: chỉ app gọi vào, trong mạng Docker. Âm thanh không rời server.
+    # Đo ở máy dev: rảnh ~260 MB, đỉnh ~1.5 GB với một bản ghi 10 phút. Giới hạn để một bản ghi dài
+    # không đẩy PostgreSQL và LiveKit ra khỏi RAM của máy 4 GB.
+    mem_limit: 2500m
 
   caddy:
     image: caddy:2-alpine
