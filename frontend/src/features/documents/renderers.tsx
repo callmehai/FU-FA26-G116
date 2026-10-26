@@ -126,21 +126,27 @@ function PdfPage({ page, width, label }: { page: PDFPageProxy; width: number; la
     // canvas limit when that would be too many pixels; the CSS size stays the same either way.
     const density = Math.min(window.devicePixelRatio, Math.sqrt(MAX_CANVAS_PIXELS / (width * height)))
     const viewport = page.getViewport({ scale: (width / base.width) * density })
+    // pdf.js draws on an opaque canvas (alpha: false), which is solid black between a resize and
+    // the end of drawing: dragging the scrollbar fast showed black pages. Hidden until drawn, the
+    // page shows its white sheet meanwhile, as a DOCX does.
+    el.style.visibility = 'hidden'
     el.width = Math.floor(viewport.width)
     el.height = Math.floor(viewport.height)
     const task = page.render({ canvas: el, viewport })
-    task.promise.catch(() => {})
+    task.promise.then(() => (el.style.visibility = ''), () => {})
     return () => {
       task.cancel()
       // Free the bitmap of a page scrolled far away: a long PDF on a phone runs out of canvas memory.
+      el.style.visibility = 'hidden'
       el.width = 0
       el.height = 0
     }
   }, [near, page, width, height, base.width])
 
   return (
-    <div className="pdf-page" style={{ width, height }}>
-      <canvas ref={canvas} style={{ width, height }} aria-label={label} role="img" />
+    // The label sits on the sheet, not the canvas: a hidden canvas leaves the accessibility tree.
+    <div className="pdf-page" style={{ width, height }} role="img" aria-label={label}>
+      <canvas ref={canvas} style={{ width, height }} />
     </div>
   )
 }
