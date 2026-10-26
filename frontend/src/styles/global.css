@@ -3075,15 +3075,20 @@ body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
 /* ---------- Meeting documents (features/documents, SCRUM-21 / SCRUM-107) ----------
    One panel for the Tài liệu tab and the call room (ADR-0011): groups by agenda item, one line per
    file with its type tag; the room variant scrolls inside the 360px side panel. */
-.segmented-count { margin-left: 2px; font-weight: 700; }
+/* The label is a flex box, which drops the space before the number: the margin stands in for it. */
+.segmented-count { margin-left: 6px; font-weight: 700; }
 .documents-panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .room-panel-body.documents-panel { overflow-y: auto; }
 .documents-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+/* The group is as wide as its labels, so each option takes its own width rather than half: an equal
+   half cut "Theo nội dung họp 0" short and pushed the number over the divider. */
 .documents-toolbar .segmented { flex: none; }
+.documents-toolbar .segmented-option { flex: 1 0 auto; }
 /* A phone: the two groups share the full width, the upload button goes under them. */
 @media (max-width: 560px) {
   .documents-toolbar .segmented { width: 100%; }
-  .documents-toolbar .segmented-option span { padding: 0 6px; font-size: 13px; }
+  .documents-toolbar .segmented-option span { padding: 0 4px; font-size: 13px; }
+  .documents-toolbar .segmented-count { margin-left: 4px; }
 }
 .documents-card { padding: 0; overflow: hidden; }
 .documents-group + .documents-group { border-top: 1px solid var(--line); }
