@@ -15,3 +15,9 @@ export function speakerTone(label: string): BadgeTone {
   const match = /^SPEAKER_(\d+)$/.exec(label)
   return match ? SPEAKER_TONES[Number(match[1]) % SPEAKER_TONES.length] : 'outline'
 }
+
+/** The ink of the voice's chip, for a dot that ties a picker to the segments it names. */
+export function speakerColor(label: string) {
+  const tone = speakerTone(label)
+  return tone === 'outline' ? 'var(--ink)' : `var(--chip-${tone}-fg)`
+}

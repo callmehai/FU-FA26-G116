@@ -3091,12 +3091,13 @@ body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
 @media (prefers-reduced-motion: reduce) { .recorder-dot { animation: none; } }
 .recording-list { margin: 0; padding: 4px 0; list-style: none; }
 .recording-row {
-  display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; gap: 4px 12px;
+  display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; align-items: center; gap: 4px 12px;
   padding: 10px 16px; border-bottom: 1px solid var(--line-soft);
 }
 .recording-row:last-child { border-bottom: 0; }
 .recording-skeleton { height: 58px; }
-.recording-icon { display: grid; width: 36px; height: 36px; place-items: center; border-radius: var(--radius); background: var(--surface-alt); color: var(--muted-ink); }
+/* A plain glyph, like the file icons in the documents list: a tinted tile around it reads as decoration. */
+.recording-icon { display: grid; width: 24px; height: 36px; place-items: center; color: var(--muted-ink); }
 .recording-main { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
 .recording-name { overflow: hidden; color: var(--ink); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .recording-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; width: fit-content; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
@@ -3168,22 +3169,23 @@ audio.recording-player { height: 40px; }
   .voice-actions { flex-direction: column-reverse; align-items: stretch; }
 }
 
-/* SCRUM-35 — voices of a recording and who they are. */
-/* Rows share the list's columns (subgrid), so names line up even when the voice chips differ in width. */
-.speaker-list { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 10px; margin: 0; padding: 0; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
-.speaker-row { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line-soft); font-size: 14px; }
-.speaker-row:last-child { border-bottom: 0; }
-.speaker-who { min-width: 0; color: var(--ink); }
-/* One line: a long name gives way ("…"), the confidence always shows. */
-.speaker-suggestion { display: flex; align-items: baseline; gap: 6px; min-width: 0; color: var(--ink-soft); }
+/* SCRUM-35 — voices of a recording and who they are. Several small cells to a row, so six voices
+   take two lines on a desktop instead of six; a cell with a Voice ID guess takes two columns. */
+.speaker-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 8px 16px; margin: 0; padding: 8px 12px; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
+.speaker-row { display: flex; min-width: 0; flex-direction: column; gap: 6px; font-size: 14px; }
+.speaker-head { display: flex; min-width: 0; align-items: center; gap: 8px; }
+.speaker-head .select { min-width: 0; }
+/* The picker fits its name rather than the cell, so the time sits right after it. */
+.speaker-head .select-trigger { width: auto; max-width: 100%; }
+.speaker-head .select-value, .speaker-head .select-placeholder { overflow: hidden; }
+.speaker-name { display: inline-flex; min-width: 0; align-items: center; gap: 6px; color: var(--ink); font-size: 13px; font-weight: 600; }
+.speaker-time { flex: none; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+/* One line: a long name gives way ("…"), the confidence and the confirm button always show. */
+.speaker-suggestion { display: flex; min-width: 0; align-items: center; gap: 6px; color: var(--ink-soft); font-size: 13px; }
 .speaker-suggestion-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .speaker-suggestion .field-hint { flex: none; }
-.speaker-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
-.speaker-actions .select { min-width: 180px; }
-@media (max-width: 720px) {
-  .speaker-list { grid-template-columns: auto minmax(0, 1fr); }
-  .speaker-actions { grid-column: 1 / -1; flex-wrap: wrap; }
-  .speaker-actions .select { flex: 1; min-width: 0; }
+.speaker-suggestion .btn { flex: none; }
+@media (min-width: 721px) { .speaker-row-wide { grid-column: span 2; } }
 
 /* ---------- Meeting documents (features/documents, SCRUM-21 / SCRUM-107) ----------
    One panel for the Tài liệu tab and the call room (ADR-0011): groups by agenda item, one line per

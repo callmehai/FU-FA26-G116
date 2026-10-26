@@ -32,6 +32,7 @@ export function Select<T extends string>({
   placeholder,
   size,
   disabled = false,
+  marker,
 }: {
   /** Null while nothing is picked yet: the trigger then shows `placeholder` (or `label`), muted. */
   value: T | null
@@ -44,6 +45,8 @@ export function Select<T extends string>({
   /** 'sm' is the 32px control that sits inside a table row (40px on a touch screen). */
   size?: 'sm'
   disabled?: boolean
+  /** A colour for a dot that stays before the trigger's text whatever is picked — whose voice it is. */
+  marker?: string
 }) {
   const generatedId = useId()
   const listId = id ?? generatedId
@@ -166,7 +169,9 @@ export function Select<T extends string>({
       >
         {/* Nothing picked yet: the accessible name stands in, muted so it does not read as a value. */}
         <span className={selected ? 'select-value' : 'select-placeholder'}>
-          {selected?.dot && <span className="select-dot" style={{ background: selected.dot }} aria-hidden="true" />}
+          {(marker ?? selected?.dot) && (
+            <span className="select-dot" style={{ background: marker ?? selected?.dot }} aria-hidden="true" />
+          )}
           {selected?.label ?? placeholder ?? label}
         </span>
         <Icon name="chevronDown" size={16} />
