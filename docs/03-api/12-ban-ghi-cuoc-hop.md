@@ -1,4 +1,4 @@
-# 12 · Bản ghi cuộc họp và gỡ băng (SCRUM-29, SCRUM-31, SCRUM-109)
+# 12 · Bản ghi cuộc họp và gỡ băng (SCRUM-29, SCRUM-31, SCRUM-44, SCRUM-109)
 
 Thư ký lưu bản ghi âm của cuộc họp: ghi thẳng trên trình duyệt hoặc tải lên tệp ghi bằng thiết bị
 khác. Bản ghi là đầu vào cho gỡ băng (SCRUM-31) và nhận diện người nói (SCRUM-35).
@@ -227,8 +227,22 @@ Chủ tọa hoặc Thư ký, trước khi họp (`MSG324`; đã bắt đầu th�
 `{ eventId, meetingId, changeType: "ClipAdded" | "ClipEdited" | "ClipDeleted" | "CaptureModeChanged", occurredAt }`,
 gửi cho người trong danh sách cuộc họp. Không mang chữ: ai nhận thì đọc lại.
 
+## Ghi cả cuộc gọi (SCRUM-44)
+
+Cuộc họp thu chung cả phòng thì trong phòng họp, panel **Bản ghi** thay panel Lời nói. Nút **Ghi âm** ở đó
+thu micro của Thư ký cùng tiếng mọi người trong cuộc gọi, rồi lưu bằng `POST …/recordings` như trên
+(`source = BrowserCapture`). Không có endpoint mới. Lý do và giới hạn: [ADR-0030](../05-decisions/0030-ghi-ca-cuoc-goi-tu-may-thu-ky.md).
+
+Mọi người trong phòng thấy chip **Đang ghi âm cuộc họp**. Thư ký phát tín hiệu trên kênh dữ liệu
+của LiveKit, không qua backend:
+
+| Topic | Payload | Gửi khi | Người nhận |
+|---|---|---|---|
+| `recording` | `{ "recording": true }` | Mỗi 4 giây trong lúc ghi | Chỉ tin người có vai trò Thư ký; tắt chip sau 10 giây không nghe nhịp nào |
+| `recording` | `{ "recording": false }` | Dừng, tạm dừng hoặc rời phòng | Tắt chip ngay |
+
 ## Chưa làm trong SCRUM-29
 
-- Banner "Đang ghi âm" phát cho **mọi** người dự qua hub (tiêu chí nghiệm thu của ticket): hiện
-  chỉ trình duyệt của Thư ký hiện trạng thái ghi. Ghi chú trong Jira.
+- Banner "Đang ghi âm" cho mọi người dự khi Thư ký ghi trên **trang chi tiết** (họp trực tiếp): chỉ
+  trình duyệt của Thư ký hiện trạng thái ghi. Trong phòng họp trực tuyến thì đã có (SCRUM-44, ở trên).
 - Quyền nghe của khách mời (chờ SCRUM-59).

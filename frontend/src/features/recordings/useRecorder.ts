@@ -12,6 +12,12 @@ export type RecorderState =
   | { kind: 'recording' | 'paused'; elapsedMs: number }
   | { kind: 'error'; message: string }
 
+/** Where a take's sound comes from, and how to let go of it afterwards. */
+export interface RecordingInput {
+  stream: MediaStream
+  release: () => void
+}
+
 export interface RecordedTake {
   blob: Blob
   durationMs: number
@@ -36,9 +42,20 @@ function micErrorMessage(error: unknown) {
   return 'Không mở được micro.'
 }
 
+/** The microphone on its own: the meeting page, where everyone sits in one room around the Secretary's laptop. */
+async function openMic(): Promise<RecordingInput> {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
+  })
+  return { stream, release: () => stream.getTracks().forEach((track) => track.stop()) }
+}
+
+export type Recorder = ReturnType<typeof useRecorder>
+
 export function useRecorder() {
   const [state, setState] = useState<RecorderState>({ kind: 'idle' })
   const recorder = useRef<MediaRecorder | null>(null)
+  const input = useRef<RecordingInput | null>(null)
   const chunks = useRef<Blob[]>([])
   // Time spent recording, not counting pauses: the length the file will actually have.
   const activeMs = useRef(0)
@@ -48,12 +65,19 @@ export function useRecorder() {
 
   useEffect(() => {
     if (state.kind !== 'recording') return
-    const timer = window.setInterval(() => setState({ kind: 'recording', elapsedMs: elapsed() }), 500)
+    // Only while still recording: a tick that lands between Stop and the re-render would otherwise turn the
+    // stopped recorder back into one "recording" at 00:00, for good.
+    const timer = window.setInterval(
+      () =>
+        setState((current) => (current.kind === 'recording' ? { kind: 'recording', elapsedMs: elapsed() } : current)),
+      500,
+    )
     return () => window.clearInterval(timer)
   }, [state.kind])
 
   const release = useCallback(() => {
-    recorder.current?.stream.getTracks().forEach((track) => track.stop())
+    input.current?.release()
+    input.current = null
     recorder.current = null
     resumedAt.current = null
   }, [])
@@ -61,35 +85,40 @@ export function useRecorder() {
   // Leaving the screen mid-recording must not leave the microphone on.
   useEffect(() => release, [release])
 
-  const start = useCallback(async () => {
-    const mimeType = pickMimeType()
-    if (mimeType === null) {
-      setState({
-        kind: 'error',
-        message: 'Trình duyệt này không ghi âm được. Hãy dùng Chrome, Edge, Firefox hoặc Safari mới.',
-      })
-      return
-    }
-    setState({ kind: 'starting' })
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
-      })
-      const next = new MediaRecorder(stream, mimeType ? { mimeType, audioBitsPerSecond: 64000 } : undefined)
-      chunks.current = []
-      next.ondataavailable = (event) => {
-        if (event.data.size > 0) chunks.current.push(event.data)
+  /** `open` picks the sound: the microphone unless told otherwise (the call room records the whole call). */
+  const start = useCallback(
+    async (open: () => Promise<RecordingInput> | RecordingInput = openMic) => {
+      const mimeType = pickMimeType()
+      if (mimeType === null) {
+        setState({
+          kind: 'error',
+          message: 'Trình duyệt này không ghi âm được. Hãy dùng Chrome, Edge, Firefox hoặc Safari mới.',
+        })
+        return
       }
-      next.start(1000)
-      recorder.current = next
-      activeMs.current = 0
-      resumedAt.current = performance.now()
-      setState({ kind: 'recording', elapsedMs: 0 })
-    } catch (error) {
-      release()
-      setState({ kind: 'error', message: micErrorMessage(error) })
-    }
-  }, [release])
+      setState({ kind: 'starting' })
+      try {
+        input.current = await open()
+        const next = new MediaRecorder(
+          input.current.stream,
+          mimeType ? { mimeType, audioBitsPerSecond: 64000 } : undefined,
+        )
+        chunks.current = []
+        next.ondataavailable = (event) => {
+          if (event.data.size > 0) chunks.current.push(event.data)
+        }
+        next.start(1000)
+        recorder.current = next
+        activeMs.current = 0
+        resumedAt.current = performance.now()
+        setState({ kind: 'recording', elapsedMs: 0 })
+      } catch (error) {
+        release()
+        setState({ kind: 'error', message: micErrorMessage(error) })
+      }
+    },
+    [release],
+  )
 
   const pause = useCallback(() => {
     if (recorder.current?.state !== 'recording') return

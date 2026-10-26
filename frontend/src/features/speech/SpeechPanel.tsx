@@ -7,6 +7,8 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
 import { CAPTURE_MODE_LABEL, type CaptureMode, type SpeechClip } from '../../types/speech'
+import { RecordingsPanel } from '../recordings/RecordingsPanel'
+import type { Recorder, RecordingInput } from '../recordings/useRecorder'
 import { useSpeech, type Speech } from './useSpeech'
 
 /**
@@ -23,13 +25,21 @@ export function SpeechPanel({
   variant,
   speech,
   onCaptureMode,
+  recorder,
+  recordSource,
 }: {
   meetingId: string
   variant: 'page' | 'room'
   speech?: Speech
   /** Told the capture mode on every read, so the page can show the room recordings beside it or not. */
   onCaptureMode?: (mode: CaptureMode) => void
+  /** The call room's recorder and the whole call as its sound (SCRUM-44), for a meeting captured as one room. */
+  recorder?: Recorder
+  recordSource?: () => RecordingInput
 }) {
+  // A meeting captured as one room has no per-mic lines: in the call, the panel is where the Secretary records it.
+  if (speech && variant === 'room' && speech.list?.captureMode === 'Room')
+    return <RecordingsPanel meetingId={meetingId} variant="room" recorder={recorder} source={recordSource} />
   return speech ? (
     <SpeechView speech={speech} variant={variant} />
   ) : (
@@ -68,7 +78,6 @@ function SpeechView({ speech, variant }: { speech: Speech; variant: 'page' | 'ro
       {list && !room && list.canChangeMode && (
         <ModePicker meetingId={speech.meetingId} mode={list.captureMode} onChanged={speech.reload} />
       )}
-      {list && room && !perMic && <p className="field-hint">Cuộc họp thu chung cả phòng: Thư ký ghi âm.</p>}
       {list?.canCapture && <MyMic speech={speech} room={room} />}
       {list && (perMic || clips.length > 0) && <Lines speech={speech} room={room} />}
     </div>

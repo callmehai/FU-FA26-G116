@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useId,
   useLayoutEffect,
@@ -48,12 +49,15 @@ import { type Meeting } from '../../../types/meeting'
 import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { AttendancePanel } from '../../attendance/AttendancePanel'
 import { DocumentsPanel } from '../../documents/DocumentsPanel'
+import { mixCall } from '../../recordings/callMix'
+import { useRecorder } from '../../recordings/useRecorder'
 import { SpeechPanel } from '../../speech/SpeechPanel'
 import { useSpeech } from '../../speech/useSpeech'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { DeviceSelect, MicLevel } from './devices'
 import { usePipWindow } from './pipWindow'
+import { useRecordingSign } from './recordingSign'
 import { RoomRolesContext, useRoleOf, useRoomRoles } from './roomRoles'
 import { deviceErrorMessage } from './roomSupport'
 
@@ -161,6 +165,15 @@ function RoomLayout({
     micOn: isMicrophoneEnabled,
     deviceId: room.getActiveDevice('audioinput'),
   })
+
+  // SCRUM-44: a meeting captured as one room is recorded from the Secretary's tab, the whole call mixed. Held here
+  // so the take goes on with the panel closed; leaving the room while it runs is refused below.
+  const roomCapture = speech.list?.captureMode === 'Room'
+  const callRecorder = useRecorder()
+  const recordCall = useCallback(() => mixCall(room), [room])
+  const callRecorded = useRecordingSign(room, callRecorder.state.kind === 'recording')
+  const labelOf = (id: PanelId) => (id === 'speech' && roomCapture ? 'Bản ghi' : PANEL_LABEL[id])
+  const iconOf = (id: PanelId, icon: IconName): IconName => (id === 'speech' && roomCapture ? 'mic' : icon)
 
   // Closing the tab while connected asks first; the browser shows its own wording.
   useBeforeUnload((event) => event.preventDefault())
@@ -298,6 +311,15 @@ function RoomLayout({
             </span>
           </button>
         )}
+        {callRecorded && (
+          <button type="button" className="room-recording" onClick={() => setPanel('speech')}>
+            <Icon name="mic" size={13} />
+            <span className="room-recording-long">Đang ghi âm cuộc họp</span>
+            <span className="room-recording-short" aria-hidden="true">
+              Đang ghi âm
+            </span>
+          </button>
+        )}
       </header>
 
       {reconnecting && (
@@ -344,7 +366,7 @@ function RoomLayout({
         </main>
 
         {panel && (
-          <aside className="room-panel" aria-label={PANEL_LABEL[panel]}>
+          <aside className="room-panel" aria-label={labelOf(panel)}>
             {panel === 'people' ? (
               <ParticipantsPanel meetingId={meeting.id} participants={participants} isChair={myRole === 'Chair'} />
             ) : panel === 'agenda' ? (
@@ -354,7 +376,13 @@ function RoomLayout({
             ) : panel === 'documents' ? (
               <DocumentsPanel meeting={meeting} variant="room" />
             ) : panel === 'speech' ? (
-              <SpeechPanel meetingId={meeting.id} variant="room" speech={speech} />
+              <SpeechPanel
+                meetingId={meeting.id}
+                variant="room"
+                speech={speech}
+                recorder={callRecorder}
+                recordSource={recordCall}
+              />
             ) : (
               <ChatPanel messages={chat.chatMessages} send={chat.send} isSending={chat.isSending} />
             )}
@@ -459,15 +487,15 @@ function RoomLayout({
           {TUCKED_PANELS.map((item) => (
             <ControlButton
               key={item.id}
-              icon={item.icon}
-              label={PANEL_LABEL[item.id]}
+              icon={iconOf(item.id, item.icon)}
+              label={labelOf(item.id)}
               side
               className="room-control-tucked"
               active={panel === item.id}
               onClick={() => togglePanel(item.id)}
             />
           ))}
-          <MorePanels panel={panel} onPick={togglePanel} />
+          <MorePanels panel={panel} onPick={togglePanel} labelOf={labelOf} iconOf={iconOf} />
           <ControlButton
             icon="messageSquare"
             label="Chat"
@@ -501,6 +529,11 @@ function RoomLayout({
           tone="danger"
           onConfirm={onLeave}
           onClose={() => setConfirmingLeave(false)}
+          blocker={
+            callRecorder.active
+              ? 'Bạn đang ghi âm cuộc họp. Bấm Dừng và lưu ở panel Bản ghi trước khi rời phòng.'
+              : undefined
+          }
         >
           Cuộc họp vẫn tiếp tục với những người khác. Bạn có thể vào lại khi cuộc họp còn đang diễn ra.
         </ConfirmDialog>
@@ -591,7 +624,17 @@ function PipView({
  * ⋯ on a phone (hidden by CSS on wider screens): a menu of the panels that do not fit on the bar.
  * Lit while one of them is open, like the buttons it stands in for.
  */
-function MorePanels({ panel, onPick }: { panel: PanelId | null; onPick: (id: PanelId) => void }) {
+function MorePanels({
+  panel,
+  onPick,
+  labelOf,
+  iconOf,
+}: {
+  panel: PanelId | null
+  onPick: (id: PanelId) => void
+  labelOf: (id: PanelId) => string
+  iconOf: (id: PanelId, icon: IconName) => IconName
+}) {
   const [open, setOpen] = useState(false)
   const root = useRef<HTMLDivElement>(null)
   const menuId = useId()
@@ -661,8 +704,8 @@ function MorePanels({ panel, onPick }: { panel: PanelId | null; onPick: (id: Pan
                 onPick(item.id)
               }}
             >
-              <Icon name={item.icon} size={18} />
-              <span className="room-select-text">{PANEL_LABEL[item.id]}</span>
+              <Icon name={iconOf(item.id, item.icon)} size={18} />
+              <span className="room-select-text">{labelOf(item.id)}</span>
             </button>
           ))}
         </div>
