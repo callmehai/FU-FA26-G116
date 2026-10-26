@@ -12,7 +12,7 @@ import type { TranscriptStatus } from '../../types/transcript'
 import { useAccessLost } from '../auth/useAccessLost'
 import { formatDuration, formatSize, probeDuration } from './format'
 import { TranscriptView } from './TranscriptView'
-import { useRecorder, type RecordedTake } from './useRecorder'
+import { useRecorder, type RecordedTake, type Recorder, type RecordingInput } from './useRecorder'
 
 /**
  * SCRUM-29 — the meeting's recordings, as a panel (ADR-0011): the detail tab renders it, and the
@@ -51,19 +51,27 @@ function takeName(take: RecordedTake) {
 /**
  * `existingOnly`: the meeting is captured per mic (SCRUM-109), so there is nothing new to record here — show
  * recordings made before, if any, and nothing at all otherwise.
+ *
+ * In the call room (SCRUM-44) the room holds the recorder, so a take goes on with the panel closed, and `source`
+ * records the whole call rather than the Secretary's microphone alone.
  */
 export function RecordingsPanel({
   meetingId,
   variant = 'page',
   existingOnly = false,
+  recorder: held,
+  source,
 }: {
   meetingId: string
   variant?: 'page' | 'room'
   existingOnly?: boolean
+  recorder?: Recorder
+  source?: () => RecordingInput
 }) {
   const toast = useToast()
   const handleAccessLost = useAccessLost()
-  const recorder = useRecorder()
+  const own = useRecorder()
+  const recorder = held ?? own
   const [state, setState] = useState<LoadState>({ kind: 'loading' })
   const [consent, setConsent] = useState<Consent | null>(null)
   const [purpose, setPurpose] = useState(DEFAULT_PURPOSE)
@@ -185,6 +193,7 @@ export function RecordingsPanel({
               className="btn btn-primary btn-cta"
               onClick={() => setConsent({ kind: 'record' })}
               disabled={busy}
+              data-tooltip={source ? 'Thu micro của bạn và tiếng mọi người trong cuộc gọi' : undefined}
             >
               <Icon name="mic" size={18} />
               Ghi âm
@@ -298,7 +307,13 @@ export function RecordingsPanel({
       {data && data.items.length === 0 && (
         <div className="cell-empty">
           <p className="empty-title">Chưa có bản ghi.</p>
-          {canUpload && <p className="field-hint">Ghi âm ngay trên trình duyệt hoặc tải tệp ghi sẵn lên.</p>}
+          {canUpload && (
+            <p className="field-hint">
+              {source
+                ? 'Ghi âm thu cả micro của bạn và tiếng mọi người trong cuộc gọi.'
+                : 'Ghi âm ngay trên trình duyệt hoặc tải tệp ghi sẵn lên.'}
+            </p>
+          )}
         </div>
       )}
 
@@ -319,7 +334,7 @@ export function RecordingsPanel({
           onConfirm={() => {
             const current = consent
             setConsent(null)
-            if (current.kind === 'record') void recorder.start()
+            if (current.kind === 'record') void recorder.start(source)
             else
               void probeDuration(current.file).then((durationMs) =>
                 save({
