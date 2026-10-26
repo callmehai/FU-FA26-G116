@@ -417,6 +417,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* A state shown as a coloured dot and a word, as AI-eCabinet's attendance picker does. */
 .select-value, .select-placeholder { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
 .select-option-label:has(.select-dot) { display: inline-flex; align-items: center; gap: 6px; }
+.select-option-hint { margin-left: 8px; color: var(--muted-ink); font-size: 12px; font-weight: 400; }
 .select-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; }
 .select-trigger:disabled { cursor: progress; opacity: .7; }
 /* The table-row size: 32px, so a row stays one line of text tall. Touch keeps the 40px target. */
@@ -3170,22 +3171,15 @@ audio.recording-player { height: 40px; }
 }
 
 /* SCRUM-35 — voices of a recording and who they are. Several small cells to a row, so six voices
-   take two lines on a desktop instead of six; a cell with a Voice ID guess takes two columns. */
+   take two lines on a desktop instead of six. */
 .speaker-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 8px 16px; margin: 0; padding: 8px 12px; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
-.speaker-row { display: flex; min-width: 0; flex-direction: column; gap: 6px; font-size: 14px; }
-.speaker-head { display: flex; min-width: 0; align-items: center; gap: 8px; }
-.speaker-head .select { min-width: 0; }
+.speaker-row { display: flex; min-width: 0; align-items: center; gap: 8px; font-size: 14px; }
+.speaker-row .select { min-width: 0; }
 /* The picker fits its name rather than the cell, so the time sits right after it. */
-.speaker-head .select-trigger { width: auto; max-width: 100%; }
-.speaker-head .select-value, .speaker-head .select-placeholder { overflow: hidden; }
+.speaker-row .select-trigger { width: auto; max-width: 100%; }
+.speaker-row .select-value, .speaker-row .select-placeholder { overflow: hidden; }
 .speaker-name { display: inline-flex; min-width: 0; align-items: center; gap: 6px; color: var(--ink); font-size: 13px; font-weight: 600; }
 .speaker-time { flex: none; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
-/* One line: a long name gives way ("…"), the confidence and the confirm button always show. */
-.speaker-suggestion { display: flex; min-width: 0; align-items: center; gap: 6px; color: var(--ink-soft); font-size: 13px; }
-.speaker-suggestion-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.speaker-suggestion .field-hint { flex: none; }
-.speaker-suggestion .btn { flex: none; }
-@media (min-width: 721px) { .speaker-row-wide { grid-column: span 2; } }
 
 /* ---------- Meeting documents (features/documents, SCRUM-21 / SCRUM-107) ----------
    One panel for the Tài liệu tab and the call room (ADR-0011): groups by agenda item, one line per

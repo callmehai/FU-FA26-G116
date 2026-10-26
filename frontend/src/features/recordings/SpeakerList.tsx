@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { assignSpeaker } from '../../api/transcripts'
-import { Icon } from '../../components/Icon'
 import { Select } from '../../components/Select'
 import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
@@ -9,8 +8,8 @@ import { formatDuration } from './format'
 import { speakerColor, speakerName } from './speakers'
 
 /**
- * SCRUM-35 — who each voice is. The machine's guess reads as a question ("Có thể là …") until the
- * Secretary confirms it or picks someone else; only then does the name replace "Người nói N".
+ * SCRUM-35 — who each voice is. The machine's guess is only a suggestion ("Đề xuất" at the top of
+ * the picker) until the Secretary picks someone; only then does the name replace "Người nói N".
  *
  * Each voice is one small cell, several to a row: its picker shows "Người nói N" until it is named,
  * as AI-eCabinet's speaker grid does, so six voices no longer push the transcript a screen down.
@@ -66,59 +65,43 @@ function SpeakerRow({
 
   const label = speakerName(speaker.label)
   const spoke = formatDuration(speaker.speechMs)
-  const suggestion =
-    speaker.assignedUserId === null && speaker.suggestedUserId && speaker.suggestedName ? speaker : null
+  // The machine's guess is a person, not a score: it leads the picker as "Đề xuất" and names itself on
+  // hover. A percentage meant nothing to the people reading it.
+  const suggested = speaker.assignedUserId === null ? speaker.suggestedUserId : null
+  const hint = suggested && speaker.suggestedName ? `Giọng giống ${speaker.suggestedName}` : undefined
+  const ordered = suggested
+    ? [...people].sort((a, b) => Number(b.id === suggested) - Number(a.id === suggested))
+    : people
   return (
-    <li className={suggestion ? 'speaker-row speaker-row-wide' : 'speaker-row'}>
-      <span className="speaker-head">
-        {canEdit ? (
-          <Select
-            size="sm"
-            label={`Tên của ${label}`}
-            value={speaker.assignedUserId}
-            placeholder={label}
-            marker={speakerColor(speaker.label)}
-            disabled={saving}
-            options={[
-              ...people.map((p) => ({ value: p.id, label: p.fullName })),
-              ...(speaker.assignedUserId ? [{ value: NOBODY, label: `Bỏ tên, để lại "${label}"` }] : []),
-            ]}
-            onChange={(value) => void assign(value === NOBODY ? null : value)}
-          />
-        ) : (
-          <span className="speaker-name">
-            <span className="select-dot" style={{ background: speakerColor(speaker.label) }} aria-hidden="true" />
-            {speaker.assignedName ?? label}
-          </span>
-        )}
-        <span className="speaker-time" tabIndex={0} data-tooltip={`Nói tổng cộng ${spoke}`}>
-          {spoke}
-        </span>
-      </span>
-      {suggestion && (
-        <span className="speaker-suggestion">
-          <span
-            className="speaker-suggestion-name"
-            tabIndex={0}
-            data-tooltip="Máy so giọng với giọng mẫu của người trong cuộc họp đã bật Voice ID. Thư ký xác nhận mới thành tên."
-          >
-            Có thể là <strong>{suggestion.suggestedName}</strong>
-          </span>
-          <span className="field-hint">{Math.round((suggestion.suggestionScore ?? 0) * 100)}%</span>
-          {canEdit && (
-            <button
-              type="button"
-              className="btn btn-outline btn-icon btn-sm"
-              disabled={saving}
-              onClick={() => void assign(suggestion.suggestedUserId)}
-              aria-label={`Đúng là ${suggestion.suggestedName}`}
-              data-tooltip={`Đúng là ${suggestion.suggestedName}`}
-            >
-              <Icon name="check" size={16} />
-            </button>
-          )}
+    <li className="speaker-row">
+      {canEdit ? (
+        <Select
+          size="sm"
+          label={`Tên của ${label}`}
+          value={speaker.assignedUserId}
+          placeholder={label}
+          marker={speakerColor(speaker.label)}
+          tooltip={hint}
+          disabled={saving}
+          options={[
+            ...ordered.map((p) => ({
+              value: p.id,
+              label: p.fullName,
+              hint: p.id === suggested ? 'Đề xuất' : undefined,
+            })),
+            ...(speaker.assignedUserId ? [{ value: NOBODY, label: `Bỏ tên, để lại "${label}"` }] : []),
+          ]}
+          onChange={(value) => void assign(value === NOBODY ? null : value)}
+        />
+      ) : (
+        <span className="speaker-name" tabIndex={hint ? 0 : undefined} data-tooltip={hint}>
+          <span className="select-dot" style={{ background: speakerColor(speaker.label) }} aria-hidden="true" />
+          {speaker.assignedName ?? label}
         </span>
       )}
+      <span className="speaker-time" tabIndex={0} data-tooltip={`Nói tổng cộng ${spoke}`}>
+        {spoke}
+      </span>
     </li>
   )
 }

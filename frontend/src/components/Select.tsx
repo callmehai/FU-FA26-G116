@@ -6,6 +6,8 @@ export interface SelectOption<T extends string> {
   label: string
   /** A colour (a CSS value) for a dot before the label, where the value is a state — "● Có mặt". */
   dot?: string
+  /** A muted word after the label, such as "Đề xuất" on the person a voice most likely belongs to. */
+  hint?: string
 }
 
 /**
@@ -33,6 +35,7 @@ export function Select<T extends string>({
   size,
   disabled = false,
   marker,
+  tooltip,
 }: {
   /** Null while nothing is picked yet: the trigger then shows `placeholder` (or `label`), muted. */
   value: T | null
@@ -47,6 +50,8 @@ export function Select<T extends string>({
   disabled?: boolean
   /** A colour for a dot that stays before the trigger's text whatever is picked — whose voice it is. */
   marker?: string
+  /** Shown on hover or focus of the trigger, for a fact the closed control does not say. */
+  tooltip?: string
 }) {
   const generatedId = useId()
   const listId = id ?? generatedId
@@ -166,6 +171,7 @@ export function Select<T extends string>({
         aria-activedescendant={open ? `${listId}-${highlighted}` : undefined}
         onClick={() => (open ? setOpen(false) : openAt(Math.max(0, options.findIndex((o) => o.value === value))))}
         onKeyDown={onKeyDown}
+        data-tooltip={open ? undefined : tooltip}
       >
         {/* Nothing picked yet: the accessible name stands in, muted so it does not read as a value. */}
         <span className={selected ? 'select-value' : 'select-placeholder'}>
@@ -194,6 +200,7 @@ export function Select<T extends string>({
               <span className="select-option-label">
                 {option.dot && <span className="select-dot" style={{ background: option.dot }} aria-hidden="true" />}
                 {option.label}
+                {option.hint && <span className="select-option-hint">{option.hint}</span>}
               </span>
               <span className="select-check">{option.value === value && <Icon name="check" size={16} />}</span>
             </li>
