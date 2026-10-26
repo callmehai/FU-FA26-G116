@@ -38,3 +38,5 @@
 
 - SCRUM-98 còn ghi câu hỏi PO về việc đổi thứ tự item Done. Code hiện cho phép.
 - Cần làm rõ “hoàn thành mục lúc nào cũng được” có cho phép hoàn thành item Pending mà không bắt đầu trước không. Code hiện chỉ hoàn thành item InProgress.
+
+> **Đã chốt 25/10/2026 (PO):** cả hai điểm trên đã có đáp án, xem [11 §3](11-quy-tac-thong-bao-agenda-po-25-10.md#3-scrum-98-agenda-pr-135-po-chốt-2510).

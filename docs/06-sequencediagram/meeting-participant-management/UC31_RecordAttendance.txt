@@ -50,7 +50,7 @@ ParticipantRepository-->ParticipantService: Current information / Read failure
 deactivate ParticipantRepository
 ParticipantService->ParticipantService: Require active assigned Secretary and InProgress Meeting (BR-170)
 ParticipantService->ParticipantService: Validate official Present/Absent choices and attendance versions for submitted current entries only; omitted entries retain saved/unmarked state;\nnever infer attendance from invitation responses or room connections (BR-116, BR-171, BR-172)
-alt Secretary is no longer authorized - EX-2
+alt Secretary is no longer authorized - EX-3
 ParticipantService-->ParticipantController: Request denied; previous attendance unchanged
 ParticipantController-->MeetingPage: Request denied; previous attendance unchanged
 MeetingPage-->User: Request denied; previous attendance unchanged
@@ -75,7 +75,7 @@ Database-->ParticipantRepository: Complete save / No changes saved
 deactivate Database
 ParticipantRepository-->ParticipantService: Complete save / No changes saved
 deactivate ParticipantRepository
-alt Any attendance save fails - EX-3
+alt Any attendance save fails - EX-5
 ParticipantService-->ParticipantController: MSG150 - Unable to confirm the attendance save result. Please reload the data before trying again.
 ParticipantController-->MeetingPage: MSG150 - Unable to confirm the attendance save result. Please reload the data before trying again.
 MeetingPage-->User: MSG150 - Unable to confirm the attendance save result. Please reload the data before trying again.

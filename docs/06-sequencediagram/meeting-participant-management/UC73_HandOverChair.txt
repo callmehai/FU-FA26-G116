@@ -47,7 +47,7 @@ else Hand-over permitted
             ParticipantController-->MeetingPage: MSG102 - Unable to update the meeting role. Please try again.
             MeetingPage-->Chair: MSG102 - Unable to update the meeting role. Please try again.
         else Both roles saved
-            ParticipantService->NotificationService: Notify the new Chair and the former Chair (BR-92)
+            ParticipantService->NotificationService: Notify the new Chair and the former Chair;\nthe actor gets no in-app notification (BR-92, BR-322)
             activate NotificationService
             NotificationService-->ParticipantService: Notifications created / delivery failed\n(failure does not undo the change)
             deactivate NotificationService

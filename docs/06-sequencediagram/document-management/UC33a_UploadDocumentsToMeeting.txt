@@ -44,9 +44,15 @@ else Meeting has ended - EX-6
     DocumentsTab-->Actor: MSG172 - Documents cannot be added after the Meeting has ended.
 
 else Actor may add documents
-    DocumentService->DocumentService: Check at most 10 files totalling at most 200 MB (BR-319)
+    DocumentService->DocumentService: Read the submission and check it is a well-formed request with at least one file
 
-    alt Submission or its declared size exceeds the limit - EX-8
+    alt Request is malformed or contains no file - EX-3
+        DocumentService-->DocumentController: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
+        DocumentController-->DocumentsTab: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
+        DocumentsTab-->Actor: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
+
+    else Submission or its declared size exceeds the limit - EX-8
+        DocumentService->DocumentService: Check at most 10 files totalling at most 200 MB (BR-319)
         DocumentService-->DocumentController: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
         DocumentController-->DocumentsTab: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
         DocumentsTab-->Actor: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
@@ -54,7 +60,7 @@ else Actor may add documents
     else Submission is within the limit
         DocumentService->DocumentService: Check each file has a .pdf or .docx extension matching its content\nand is no larger than 50 MB (BR-187, BR-214, BR-215)
 
-        alt No file, malformed request, or one or more files are invalid - EX-3
+        alt One or more files are invalid - EX-3
             DocumentService-->DocumentController: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
             DocumentController-->DocumentsTab: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
             DocumentsTab-->Actor: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
@@ -90,14 +96,23 @@ else Actor may add documents
             else All files stored
                 DocumentService->MeetingDocumentRepository: Save the stored files, the library documents in the Meeting folder\nand the general Meeting documents together (BR-194, BR-210, BR-229, BR-286)
                 activate MeetingDocumentRepository
-                MeetingDocumentRepository->Database: Insert Meeting folder if new, stored files,\nlibrary documents and Meeting documents in one transaction
+                MeetingDocumentRepository->Database: Recheck Meeting status and the actor's role under the Meeting lock, then insert Meeting folder if new,\nstored files, library documents and Meeting documents in one transaction
                 activate Database
                 Database-->MeetingDocumentRepository: Saved / Failed
                 deactivate Database
                 MeetingDocumentRepository-->DocumentService: Saved / Failed
                 deactivate MeetingDocumentRepository
 
-                alt Addition cannot be completed - EX-5
+                alt Meeting unavailable, actor no longer Chair or Secretary, or Meeting ended while uploading - EX-7, EX-1, EX-6
+                    DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
+                    activate FileStorage
+                    FileStorage-->DocumentService: Files deleted
+                    deactivate FileStorage
+                    DocumentService-->DocumentController: MSG174 / MSG162 / MSG172 - the same message as the corresponding check above
+                    DocumentController-->DocumentsTab: MSG174 / MSG162 / MSG172
+                    DocumentsTab-->Actor: MSG174 / MSG162 / MSG172
+
+                else Addition cannot be completed - EX-5
                     DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
                     activate FileStorage
                     FileStorage-->DocumentService: Files deleted

@@ -236,7 +236,7 @@ public sealed partial class MessageCodeCatalogueTests
     public void Workflow_sequences_use_catalogued_codes_with_the_documented_status(string diagram)
     {
         var source = File.ReadAllText(Path.Combine(
-            RepoRoot, "docs", "assets", "diagrams", "meeting-management", $"{diagram}.mmd"));
+            RepoRoot, "docs", "06-sequencediagram", "meeting-management", $"{diagram}.mmd"));
         Assert.DoesNotMatch(@"\bMEETING_[A-Z_]+\b", source);
         var responses = DiagramResponseCode().Matches(source);
         Assert.NotEmpty(responses);

@@ -34,9 +34,9 @@ MeetingPage-->User: MSG95 - Unable to load meeting participants. Please try agai
 else Viewing is permitted
 ParticipantService->ParticipantService: Limit response-view access to response rows; do not grant roster browsing or search (BR-176)
 ParticipantService->ParticipantService: Exclude removed/revoked entries from current results (BR-103)
-ParticipantService->ParticipantService: Label each invitee Accepted or Declined; no label for unanswered invitees or the Chair;\nno totals are computed (BR-115, BR-321)
-ParticipantService-->ParticipantController: Current invitee names, emails and response labels; no totals; no information changed
-ParticipantController-->MeetingPage: Current invitee names, emails and response labels; no totals; no information changed
+ParticipantService-->ParticipantController: Current invitee names, emails and raw response values (including Pending and the Chair's); no totals; no information changed
+ParticipantController-->MeetingPage: Current invitee names, emails and raw response values (including Pending and the Chair's); no totals; no information changed
+MeetingPage->MeetingPage: Label each invitee Accepted or Declined; no label for unanswered invitees; hide the Chair's response;\nno totals are computed (BR-115, BR-321)
 MeetingPage-->User: Current invitee names, emails and response labels; no totals; no information changed
 end
 deactivate ParticipantService
