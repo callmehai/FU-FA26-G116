@@ -177,6 +177,10 @@ export const api = {
   postForm: <T>(path: string, form: FormData, init?: RequestOptions) =>
     request<T>(path, { ...init, method: 'POST', body: form }),
 
+  /** Raw bytes as the body — one spoken sentence's audio (SCRUM-109) — typed by the Blob itself. */
+  putBlob: <T>(path: string, body: Blob, init?: RequestOptions) =>
+    request<T>(path, { ...init, method: 'PUT', body, headers: { 'Content-Type': body.type, ...init?.headers } }),
+
   /** A file's bytes; an error still carries its JSON body, so its `code` can be matched. */
   blob: (path: string, init?: RequestOptions) =>
     fetchOk(path, { ...init, method: 'GET', headers: { Accept: '*/*', ...init?.headers } }).then((res) => res.blob()),

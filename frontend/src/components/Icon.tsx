@@ -1,5 +1,6 @@
 import {
   ArrowDown,
+  Captions,
   ArrowRight,
   LogIn,
   Mail,
@@ -85,6 +86,8 @@ import {
  */
 const ICONS = {
   calendar: CalendarDays,
+  // SCRUM-109: the per-mic transcript, a line of words per sentence.
+  captions: Captions,
   users: Users,
   shield: Shield,
   grid: LayoutGrid,

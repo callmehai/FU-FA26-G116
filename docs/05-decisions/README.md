@@ -39,3 +39,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0026](0026-tu-chay-nhan-dang-giong-noi.md) | Tự chạy nhận dạng giọng nói (chuyển thành chữ, tách người nói) trên một worker nội bộ | Đề xuất — SCRUM-31, nhận xét hội đồng 17/10/2026 |
 | [0027](0027-voice-id-co-dong-y.md) | Voice ID có đồng ý — lưu giọng mẫu đã mã hoá, máy chỉ gợi ý tên, Thư ký quyết định | Đề xuất — SCRUM-35, nhận xét hội đồng 17/10/2026 |
 | [0028](0028-trang-thai-la-icon-va-chu.md) | Trạng thái cuộc họp là icon và chữ, mức "Thường" không gắn chip | Đề xuất |
+| [0029](0029-ghi-am-theo-micro-tung-nguoi.md) | Ghi âm theo micro từng người, chỉ lưu chữ của từng câu | Đề xuất — SCRUM-109 |

@@ -48,6 +48,8 @@ import { type Meeting } from '../../../types/meeting'
 import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { AttendancePanel } from '../../attendance/AttendancePanel'
 import { DocumentsPanel } from '../../documents/DocumentsPanel'
+import { SpeechPanel } from '../../speech/SpeechPanel'
+import { useSpeech } from '../../speech/useSpeech'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { DeviceSelect, MicLevel } from './devices'
@@ -59,13 +61,14 @@ import { deviceErrorMessage } from './roomSupport'
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
 const MOD = IS_MAC ? '⌘' : 'Ctrl'
 
-type PanelId = 'people' | 'agenda' | 'attendance' | 'documents' | 'chat'
+type PanelId = 'people' | 'agenda' | 'attendance' | 'documents' | 'speech' | 'chat'
 
 const PANEL_LABEL: Record<PanelId, string> = {
   people: 'Người dự',
   agenda: 'Nội dung họp',
   attendance: 'Điểm danh',
   documents: 'Tài liệu',
+  speech: 'Lời nói',
   chat: 'Chat',
 }
 
@@ -74,6 +77,7 @@ const TUCKED_PANELS: { id: PanelId; icon: IconName }[] = [
   { id: 'agenda', icon: 'list' },
   { id: 'attendance', icon: 'userCheck' },
   { id: 'documents', icon: 'fileText' },
+  { id: 'speech', icon: 'captions' },
 ]
 
 const CHAT_MAX = 1000
@@ -150,6 +154,13 @@ function RoomLayout({
   const floating = usePipWindow()
   const tray = useDeviceTray()
   const micTrack = localParticipant.getTrackPublication(Track.Source.Microphone)?.audioTrack
+  // SCRUM-109: what this person says goes into the per-mic transcript while their call mic is on. Held here, not in
+  // the panel, so it keeps going with the panel closed; they can stop it there.
+  const speech = useSpeech(meeting.id, {
+    defaultOn: true,
+    micOn: isMicrophoneEnabled,
+    deviceId: room.getActiveDevice('audioinput'),
+  })
 
   // Closing the tab while connected asks first; the browser shows its own wording.
   useBeforeUnload((event) => event.preventDefault())
@@ -277,6 +288,16 @@ function RoomLayout({
           <span className="room-count-label">người trong phòng</span>
         </span>
         {restricted && <SensitivityBadge sensitivity={meeting.sensitivity} />}
+        {speech.capturing && (
+          <button type="button" className="room-recording" onClick={() => setPanel('speech')}>
+            <Icon name="mic" size={13} />
+            {/* A phone's header has no room for the whole sentence; the dot says the rest. */}
+            <span className="room-recording-long">Đang ghi lời bạn</span>
+            <span className="room-recording-short" aria-hidden="true">
+              Đang ghi
+            </span>
+          </button>
+        )}
       </header>
 
       {reconnecting && (
@@ -332,6 +353,8 @@ function RoomLayout({
               <AttendancePanel meetingId={meeting.id} />
             ) : panel === 'documents' ? (
               <DocumentsPanel meeting={meeting} variant="room" />
+            ) : panel === 'speech' ? (
+              <SpeechPanel meetingId={meeting.id} variant="room" speech={speech} />
             ) : (
               <ChatPanel messages={chat.chatMessages} send={chat.send} isSending={chat.isSending} />
             )}

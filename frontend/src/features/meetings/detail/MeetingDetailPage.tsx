@@ -24,6 +24,8 @@ import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { DocumentsPanel } from '../../documents/DocumentsPanel'
 import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
 import { RecordingsPanel } from '../../recordings/RecordingsPanel'
+import { SpeechPanel } from '../../speech/SpeechPanel'
+import type { CaptureMode } from '../../../types/speech'
 import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
 import { SensitivityBadge, StatusBadge } from '../StatusBadge'
 import { useMeeting } from '../useMeeting'
@@ -115,6 +117,8 @@ function MeetingDetail({
   const [params] = useSearchParams()
   // `?tab=documents` is where the document viewer's back link lands.
   const [tab, setTab] = useState<TabId>(() => TABS.find((t) => t.id === params.get('tab'))?.id ?? 'overview')
+  // SCRUM-109: the Bản ghi tab may change it; until it says, the meeting's own value stands.
+  const [captureMode, setCaptureMode] = useState<CaptureMode | null>(null)
   const history = useMeetingHistory(meeting.id)
   // UC-15 opens as a dialog on this page (`?edit=1`), keeping the back link's target.
   const editLink = useEditMeetingLink()
@@ -312,7 +316,14 @@ function MeetingDetail({
           ) : tab === 'documents' ? (
             <DocumentsPanel meeting={meeting} variant="page" onMeetingStale={() => void reload()} />
           ) : tab === 'recordings' ? (
-            <RecordingsPanel meetingId={meeting.id} variant="page" />
+            <div className="recordings-tab">
+              <SpeechPanel meetingId={meeting.id} variant="page" onCaptureMode={setCaptureMode} />
+              <RecordingsPanel
+                meetingId={meeting.id}
+                variant="page"
+                existingOnly={(captureMode ?? meeting.captureMode) === 'PerMic'}
+              />
+            </div>
           ) : (
             <div className="card card-pending tab-pending">
               <p>Tab này chưa có nghiệp vụ.</p>

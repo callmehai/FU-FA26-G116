@@ -48,7 +48,19 @@ function takeName(take: RecordedTake) {
   return `ghi-am-${pad(now.getDate())}-${pad(now.getMonth() + 1)}-${now.getFullYear()}-${pad(now.getHours())}${pad(now.getMinutes())}.${take.extension}`
 }
 
-export function RecordingsPanel({ meetingId, variant = 'page' }: { meetingId: string; variant?: 'page' | 'room' }) {
+/**
+ * `existingOnly`: the meeting is captured per mic (SCRUM-109), so there is nothing new to record here — show
+ * recordings made before, if any, and nothing at all otherwise.
+ */
+export function RecordingsPanel({
+  meetingId,
+  variant = 'page',
+  existingOnly = false,
+}: {
+  meetingId: string
+  variant?: 'page' | 'room'
+  existingOnly?: boolean
+}) {
   const toast = useToast()
   const handleAccessLost = useAccessLost()
   const recorder = useRecorder()
@@ -148,7 +160,8 @@ export function RecordingsPanel({ meetingId, variant = 'page' }: { meetingId: st
   }
 
   const data = state.kind === 'loaded' ? state.data : null
-  const canUpload = data?.canUpload ?? false
+  const canUpload = !existingOnly && (data?.canUpload ?? false)
+  if (existingOnly && data?.items.length === 0) return null
   const busy = recorder.active || recorder.state.kind === 'starting' || saving || pending !== null
 
   return (
