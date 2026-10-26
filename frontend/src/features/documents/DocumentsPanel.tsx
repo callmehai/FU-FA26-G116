@@ -17,10 +17,10 @@ import { useMeetingDocuments } from './useMeetingDocuments'
 type Group = 'agenda' | 'general'
 
 const GROUPS = [
-  { value: 'agenda', label: 'Theo nội dung họp' },
+  { value: 'agenda', label: 'Theo nội dung họp', short: 'Nội dung họp' },
   // "Biểu quyết" (UC-32a AF-1) waits for the table linking documents to votes (UC-74).
   { value: 'general', label: 'Tài liệu chung' },
-] satisfies { value: Group; label: string }[]
+] satisfies { value: Group; label: string; short?: string }[]
 
 /**
  * The meeting's documents (SCRUM-21, UC-32a), written once for the Tài liệu tab and the call room's
