@@ -320,7 +320,8 @@ public sealed class EmailMigrationPostgresTests : IAsyncLifetime
             OccurredAt = now,
         };
         _db.Users.AddRange(previousOrganizer, newOrganizer, administrator);
-        _db.Meetings.Add(meeting);
+        await _db.SaveChangesAsync();
+        await LegacyMeetingRows.InsertAsync(_db, meeting);
         _db.MeetingStatusHistory.Add(transfer);
         await _db.SaveChangesAsync();
         _db.ChangeTracker.Clear();
