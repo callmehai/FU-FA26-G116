@@ -7,7 +7,7 @@ message by writing its id (BR-158, MSG138) in a comment, a constant or a test na
 for those ids.
 
 Usage:
-    python scripts/trace_br.py --html              # writes docs/uc-map.html (gitignored), the main output
+    python scripts/trace_br.py --html              # writes docs/uc-map.html, the main output
     python scripts/trace_br.py --html out.html     # same, somewhere else
     python scripts/trace_br.py                     # drift summary to stdout
     python scripts/trace_br.py --uc UC-15          # one use case card in the terminal

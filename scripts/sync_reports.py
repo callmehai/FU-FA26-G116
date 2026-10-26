@@ -328,10 +328,19 @@ def main() -> int:
             for destination, content in converted:
                 write_atomic(destination, content)
                 print(f"Synced {destination}")
+            if any("Report-3" in str(destination) for destination, _ in converted):
+                trace_script = ROOT / "scripts" / "trace_br.py"
+                if trace_script.is_file():
+                    import subprocess
+                    result = subprocess.run([sys.executable, str(trace_script), "--html"], capture_output=True, text=True)
+                    if result.returncode == 0:
+                        print(f"Synced {ROOT / 'docs' / 'uc-map.html'}")
+                    else:
+                        print(f"Warning: could not sync uc-map.html: {result.stderr}", file=sys.stderr)
     except (ValueError, OSError, urllib.error.URLError) as error:
         print(f"Sync failed: {error}", file=sys.stderr)
         return 1
-    print("Review changes with: git diff -- docs/08-reports")
+    print("Review changes with: git diff -- docs/08-reports docs/uc-map.html")
     return 0
 
 
