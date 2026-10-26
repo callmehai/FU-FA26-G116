@@ -3146,7 +3146,9 @@ body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
 /* In the room: sections instead of a card; each file is a bordered line. */
 .room-panel-body .documents-section { display: flex; flex-direction: column; gap: 8px; }
 .documents-section-title { margin: 0; color: var(--label-ink); font-size: 13px; font-weight: 600; }
-.room-panel-body .documents-rows { display: grid; gap: 8px; }
+/* minmax(0, …): an auto column grows to a long file name and pushes the panel sideways; this one
+   keeps the panel's width so the name is cut with "…". */
+.room-panel-body .documents-rows { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .room-panel-body .documents-row { padding: 0 10px; border: 1px solid var(--line); border-radius: var(--radius); }
 .room-panel-body .documents-row-link { min-height: 52px; padding: 6px 0; }
 .room-panel-body .documents-group { border: 0; }
