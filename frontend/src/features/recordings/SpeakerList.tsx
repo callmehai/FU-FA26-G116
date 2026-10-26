@@ -8,7 +8,7 @@ import { formatDuration } from './format'
 import { speakerColor, speakerName } from './speakers'
 
 /**
- * SCRUM-35 — who each voice is. The machine's guess is only a suggestion ("Đề xuất" at the top of
+ * SCRUM-35 — who each voice is. The machine's guess is only a suggestion ("Khớp giọng nhất" at the top of
  * the picker) until the Secretary picks someone; only then does the name replace "Người nói N".
  *
  * Each voice is one small cell, several to a row: its picker shows "Người nói N" until it is named,
@@ -65,10 +65,10 @@ function SpeakerRow({
 
   const label = speakerName(speaker.label)
   const spoke = formatDuration(speaker.speechMs)
-  // The machine's guess is a person, not a score: it leads the picker as "Đề xuất" and names itself on
+  // The machine's guess is a person, not a score: it leads the picker as "Khớp giọng nhất" and names itself on
   // hover. A percentage meant nothing to the people reading it.
   const suggested = speaker.assignedUserId === null ? speaker.suggestedUserId : null
-  const hint = suggested && speaker.suggestedName ? `Giọng giống ${speaker.suggestedName}` : undefined
+  const hint = suggested && speaker.suggestedName ? `Khớp giọng nhất: ${speaker.suggestedName}` : undefined
   const ordered = suggested
     ? [...people].sort((a, b) => Number(b.id === suggested) - Number(a.id === suggested))
     : people
@@ -87,7 +87,7 @@ function SpeakerRow({
             ...ordered.map((p) => ({
               value: p.id,
               label: p.fullName,
-              hint: p.id === suggested ? 'Đề xuất' : undefined,
+              hint: p.id === suggested ? 'Khớp giọng nhất' : undefined,
             })),
             ...(speaker.assignedUserId ? [{ value: NOBODY, label: `Bỏ tên, để lại "${label}"` }] : []),
           ]}

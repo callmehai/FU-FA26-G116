@@ -6,7 +6,7 @@ export interface SelectOption<T extends string> {
   label: string
   /** A colour (a CSS value) for a dot before the label, where the value is a state — "● Có mặt". */
   dot?: string
-  /** A muted word after the label, such as "Đề xuất" on the person a voice most likely belongs to. */
+  /** A muted word after the label, such as "Khớp giọng nhất" on the person a voice most likely belongs to. */
   hint?: string
 }
 
