@@ -144,8 +144,9 @@ function PdfPage({ page, width, label }: { page: PDFPageProxy; width: number; la
   }, [near, page, width, height, base.width])
 
   return (
-    <div className="pdf-page" style={{ width, height }}>
-      <canvas ref={canvas} style={{ width, height }} aria-label={label} role="img" />
+    // The label sits on the sheet, not the canvas: a hidden canvas leaves the accessibility tree.
+    <div className="pdf-page" style={{ width, height }} role="img" aria-label={label}>
+      <canvas ref={canvas} style={{ width, height }} />
     </div>
   )
 }
