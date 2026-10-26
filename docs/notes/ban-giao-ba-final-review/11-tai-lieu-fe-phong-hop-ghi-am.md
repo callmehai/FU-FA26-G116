@@ -51,7 +51,7 @@ File cần sửa: UC-32a, UC-32c, UC-33a AF-1 trong `05-use-case-specifications.
     * **Micro từng người** (SCRUM-109, đã xong): mỗi người tự thu micro mình, cắt theo câu, chữ hiện theo đợt sau mỗi câu, tên người nói = chủ micro. Người dự thấy mình đang được ghi và tự tắt được; Chủ toạ không bật mic người khác từ xa.
     * **Thu chung cả phòng** (SCRUM-29/31/35, SCRUM-44): Thư ký xác nhận đã có đồng ý + mục đích + hạn lưu khi lưu.
 4. **BR-328** (đổi Chủ toạ giữa họp): PO chốt **không khoá** đổi vai trò khi đang họp (eCab cũng cho; Chủ toạ phải rời họp thì giao lại). Hải đang sửa để phòng tự cập nhật; giữ BR-328.
-5. **Nhánh `docs/design-diagrams` có code biểu quyết + migration `VotesBelongToMeeting`:** PO hỏi code của ai, cho ticket nào. Migration không nên nằm trong PR tài liệu. **Việc cần làm: kiểm `git log` các file đó trước khi merge #136; nếu không phải của BA thì tách ra.**
+5. **Nhánh `docs/design-diagrams` có code biểu quyết + migration `VotesBelongToMeeting`:** PO hỏi code của ai, cho ticket nào. Migration không nên nằm trong PR tài liệu. **Đã kiểm 26/10:** `origin/docs/design-diagrams` không có file backend nào (chỉ đổi một dòng trong `MessageCodeCatalogueTests.cs`). Code biểu quyết + migration `20261025104005_VotesBelongToMeetingWithEligibleVotersAndDocuments` nằm ở nhánh `docs/voting-management-design` (commit `089112b`). Trả lời Hải như vậy; cách tách ở mục 6.3.
 
 ## 4. Mã thông báo: số liệu cuối cùng
 
@@ -78,3 +78,42 @@ SCRUM-29, 31, 35, 109 và 44 đều đã sang BA Final Review.
 * Cần cập nhật **UC ghi âm + sequence diagram** theo hai cách thu này.
 
 **Việc BA:** UC "Đăng ký phát biểu" (SCRUM-27); bỏ SCRUM-40 khỏi UC và phạm vi; UC chọn chế độ thu + micro từng người; cập nhật UC ghi âm + sequence theo ADR-0030; giữ BR-328; mã MSG theo mục 4.
+
+## 6. Kế hoạch sau khi PR #136 merge
+
+Tình trạng ngày 26/10:
+* `docs/online-meeting-spec` và `docs/voting-management-design` đều tụt sau `main` 48 commit, và đã merge một bản **cũ** của `docs/design-diagrams`. Vì vậy diff so với `main` lẫn cả phần của PR #136 (bộ test report, script, wireframe…), lên tới 157–199 file. Merge `main` sau khi #136 vào thì diff chỉ còn phần riêng của từng nhánh.
+* **Trùng số BR:** `main` dừng ở BR-319; `docs/design-diagrams` có BR-320, BR-321 và BR-322 (không ai nhận thông báo về thao tác của chính mình, thêm lúc sửa note 10); `docs/online-meeting-spec` dùng BR-322 → BR-331 cho phòng họp, và PO đã nhắc công khai BR-328.
+
+### 6.1. Trước khi merge PR #136 (trên `docs/design-diagrams`)
+
+1. Đổi BR-322 "không tự nhận thông báo" thành **BR-332**, để dải BR-322 → BR-331 của phòng họp giữ nguyên số. Sửa ở mọi chỗ trích dẫn:
+   * `docs/01-requirements/06-business-rules.md` (dòng BR, cột UC, các BR-76, BR-92, BR-164, BR-307 trỏ tới nó, số đếm và dải ở đầu file);
+   * `docs/01-requirements/05-use-case-specifications.md` (UC-15, UC-21, UC-23a, UC-23b, UC-28b, UC-73);
+   * Report 3: sửa DOCX `docs/08-reports/source/Report_3_Software_Requirement_Specification.docx`, rồi chạy `python scripts/sync_reports.py --report 3 --source "docs/08-reports/source/Report_3_Software_Requirement_Specification.docx"`;
+   * các sequence `.txt` (UC15, UC21, UC23a, UC23b, UC28b, UC73), xuất lại PNG, sửa nhãn trong `TrustCabinet_Sequence_Diagrams.drawio` và xuất lại `drawio-png/`.
+2. Commit phần sửa note 10, **không** kèm note 08, note 11 và `README.md` của thư mục note (để sang nhánh mới).
+3. Chạy `dotnet test TrustCabinet.sln` và `dotnet build TrustCabinet.sln -warnaserror`, push, chờ review và merge.
+4. Mục 1.3 của note 10 (tách bộ test report của Trường Huy sang PR riêng) do nhóm quyết.
+
+### 6.2. Nhánh `docs/online-meeting-spec`
+
+1. `git checkout docs/online-meeting-spec`, `git merge origin/main`; xung đột ở danh mục mã, BR, UC, Report 3 thì lấy bản `main` rồi thêm phần phòng họp vào sau.
+2. **Mã MSG:** đánh số lại toàn bộ mã phòng họp đang dùng MSG290–MSG299, bắt đầu từ dòng "Mã tiếp theo" trên `main` lúc merge (MSG328 nếu chưa ai lấy thêm). Sửa cả danh mục, UC, sequence, FE (`isApiError`) và test nếu có. Chạy `dotnet test --filter MessageCodeCatalogueTests`.
+3. **BR:** kiểm lại BR-322 → BR-331 không còn trùng (sau bước 6.1 thì `main` đã có BR-332). Giữ **BR-328**, thêm ý: không khoá đổi vai trò khi đang họp; Chủ toạ phải rời họp thì giao lại; phòng tự cập nhật vai trò (Hải đang sửa).
+4. **UC "Đăng ký phát biểu"** (SCRUM-27): giơ tay / hạ tay, có chế độ phát biểu theo lượt; dựa trên bảng `speaking_requests` đã có. Thêm UC, BR, sequence, vào danh sách UC §I.4.2 của Report 3.
+5. **Bỏ gọi 1–1 (SCRUM-40):** bỏ khỏi UC, `docs/01-requirements/` và `frontend/src/pages/scopeData.ts` (AGENTS.md: đổi phạm vi phải sửa cả hai).
+6. **Ghi âm:**
+   * UC mới: chọn chế độ thu (form tạo/sửa hoặc tab Bản ghi, Chủ toạ/Thư ký, khoá khi bắt đầu họp) và ghi âm micro từng người, theo ADR-0029, `docs/03-api/12-ban-ghi-cuoc-hop.md`, trường `captureMode` trong `05-quan-ly-cuoc-hop.md`. Ghi rõ: không lưu âm thanh, chỉ lưu chữ + mốc giờ + chủ micro; người dự thấy mình đang được ghi và tự tắt được.
+   * UC ghi âm thu chung cả phòng + sequence theo ADR-0030: Thư ký ghi trong phòng họp (thu cả micro mình và giọng trong cuộc gọi) hoặc tải tệp lên; chip "Đang ghi âm cuộc họp"; Thư ký xác nhận đồng ý + mục đích + hạn lưu khi lưu.
+   * Bỏ mọi chỗ còn ghi "hỏi đồng ý từng người".
+7. Làm nốt các điểm lệch ở mục 1 và 2 của note này (UC-32a, UC-32c, UC-33a AF-1; Report 3 §III 7.3, 7.4b, 7.5, 7.5b, 8.6).
+8. Sửa Report 3 bằng DOCX rồi sync sang md; chạy test, push, mở PR.
+
+### 6.3. Nhánh `docs/voting-management-design`
+
+1. `git merge origin/main` sau khi #136 vào.
+2. Tách code backend sang **nhánh code riêng** gắn ticket biểu quyết (hỏi Hải ticket nào): entity `VotingSession`, `VoteChoice`, `VoteDocument`, `VoteEligibleVoter`, `VoteReceipt`, `AgendaItem`, `MeetingDocument`, `VotingEnums`, các `*Configuration.cs`, `TrustCabinetDbContext.cs`, `DatabaseModelTests.cs`. Nhánh docs chỉ giữ ERD, sequence, class diagram.
+3. **Không** mang file migration cũ sang: trên nhánh code, xoá migration `20261025104005_...` và tạo lại bằng `dotnet dotnet-ef migrations add VotesBelongToMeeting ...` trên `main` mới nhất, để `ModelSnapshot` khớp (main đã đi 48 commit).
+4. Kiểm số BR/MSG mới của nhánh với `main` và với `docs/online-meeting-spec`; lấy số kế tiếp, không dùng số đã cấp.
+5. Chạy `dotnet build -warnaserror` + `dotnet test`, push, mở PR docs và PR code riêng.
