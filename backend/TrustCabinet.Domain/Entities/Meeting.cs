@@ -29,6 +29,13 @@ public class Meeting : Entity
 
     public MeetingMode Mode { get; set; }
 
+    /// <summary>
+    /// How speech is captured (SCRUM-109). Changeable until the meeting starts, then fixed: people
+    /// must know before they speak whether their own mic is being transcribed, and a transcript
+    /// cannot be half per-mic lines and half one room recording.
+    /// </summary>
+    public CaptureMode CaptureMode { get; set; } = CaptureMode.PerMic;
+
     /// <summary>Room name, address, or how to join when the meeting is online.</summary>
     public string Location { get; set; } = string.Empty;
 

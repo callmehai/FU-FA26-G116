@@ -32,4 +32,7 @@ public class Transcript : Entity
     public DateTimeOffset? CompletedAt { get; set; }
 
     public ICollection<TranscriptSegment> Segments { get; set; } = [];
+
+    /// <summary>The voices found in the recording and who each one is (SCRUM-35).</summary>
+    public ICollection<TranscriptSpeaker> Speakers { get; set; } = [];
 }

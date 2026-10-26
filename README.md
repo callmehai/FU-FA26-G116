@@ -159,7 +159,8 @@ Mức ưu tiên: **(M)** bắt buộc · **(S)** nên có · **(C)** có thể c
 ### Sau họp
 - (M) Chuyển giọng nói thành văn bản (ASR tiếng Việt)
 - (M) Sinh biên bản, phê duyệt, lưu bản chốt
-- (S) Tách người nói, gán danh tính giọng
+- (S) Tách người nói, gán danh tính giọng — Voice ID có đồng ý, máy gợi ý tên, Thư ký xác nhận
+  ([ADR-0027](docs/05-decisions/0027-voice-id-co-dong-y.md))
 - (S) Tóm tắt nội dung cuộc họp bằng AI
 - (C) Ký số biên bản (PKI)
 - (C) Báo cáo, thống kê
@@ -194,11 +195,10 @@ Mức ưu tiên: **(M)** bắt buộc · **(S)** nên có · **(C)** có thể c
 Tốn nhiều công và rủi ro cao cho một đồ án. Nếu tiến độ căng, cắt hoặc đơn giản hoá
 nhóm này trước tiên:
 
-- Nhận diện người nói bằng voiceprint — là dữ liệu sinh trắc học, kéo theo yêu cầu
-  đồng ý và xoá dữ liệu theo Nghị định 13/2023/NĐ-CP
 - Ký số bằng USB token / HSM thật — thay bằng ký mô phỏng để trình diễn
 - Trợ lý AI hỏi đáp xuyên nguồn, có trích dẫn
-- Triển khai mạng cô lập (air-gapped), tự vận hành mô hình AI
+- Triển khai mạng cô lập (air-gapped). Riêng nhận dạng giọng nói **đã tự chạy** trong hệ thống
+  ([ADR-0026](docs/05-decisions/0026-tu-chay-nhan-dang-giong-noi.md)), theo nhận xét hội đồng 17/10/2026
 - Tích hợp hệ thống eOffice bên ngoài
 
 Danh sách này chưa chốt — thống nhất lại với giảng viên hướng dẫn trước khi khoá phạm vi.

@@ -94,7 +94,8 @@ async function send(path: string, init: RequestOptions, token: string | null) {
     ...rest,
     headers: {
       Accept: 'application/json',
-      ...(rest.body ? { 'Content-Type': 'application/json' } : {}),
+      // A FormData body sets its own multipart Content-Type, boundary included.
+      ...(typeof rest.body === 'string' ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...rest.headers,
     },
@@ -171,6 +172,14 @@ export const api = {
     request<T>(path, { ...init, method: 'PUT', body: body === undefined ? undefined : JSON.stringify(body) }),
 
   delete: <T>(path: string, init?: RequestOptions) => request<T>(path, { ...init, method: 'DELETE' }),
+
+  /** A multipart upload — files go as they are, never base64 inside JSON. */
+  postForm: <T>(path: string, form: FormData, init?: RequestOptions) =>
+    request<T>(path, { ...init, method: 'POST', body: form }),
+
+  /** Raw bytes as the body — one spoken sentence's audio (SCRUM-109) — typed by the Blob itself. */
+  putBlob: <T>(path: string, body: Blob, init?: RequestOptions) =>
+    request<T>(path, { ...init, method: 'PUT', body, headers: { 'Content-Type': body.type, ...init?.headers } }),
 
   /** A file's bytes; an error still carries its JSON body, so its `code` can be matched. */
   blob: (path: string, init?: RequestOptions) =>

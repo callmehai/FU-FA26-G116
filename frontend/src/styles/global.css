@@ -417,6 +417,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* A state shown as a coloured dot and a word, as AI-eCabinet's attendance picker does. */
 .select-value, .select-placeholder { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
 .select-option-label:has(.select-dot) { display: inline-flex; align-items: center; gap: 6px; }
+.select-option-hint { margin-left: 8px; color: var(--muted-ink); font-size: 12px; font-weight: 400; }
 .select-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; }
 .select-trigger:disabled { cursor: progress; opacity: .7; }
 /* The table-row size: 32px, so a row stays one line of text tall. Touch keeps the 40px target. */
@@ -3073,6 +3074,154 @@ body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
   .room-more { display: flex; }
   .room-split-more { width: 26px; height: 42px; }
 }
+
+/* SCRUM-29 — recordings panel. One line per recording; who, purpose and erase date sit in the tooltip. */
+.recordings-title { margin: 0; font-size: 16px; font-weight: 600; color: var(--ink); }
+.recordings-panel .toolbar { display: flex; align-items: center; gap: 12px; min-height: 64px; }
+.recordings-panel .toolbar .row-actions { gap: 8px; }
+.recordings-alert { margin: 12px 16px 0; }
+.recordings-alert .row-actions { gap: 8px; margin-top: 8px; }
+.recordings-alert .row-actions .btn { margin-top: 0; }
+.recordings-saving { margin: 12px 16px 0; color: var(--muted-ink); font-size: 14px; }
+.recorder-bar {
+  display: flex; align-items: center; gap: 10px; margin: 12px 16px 0; padding: 8px 8px 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent); border-radius: var(--radius);
+  background: var(--chip-red-bg); color: var(--chip-red-fg); font-size: 14px;
+}
+.recorder-dot { width: 10px; height: 10px; flex: none; border-radius: 50%; background: var(--danger); animation: recorder-blink 1.2s ease-in-out infinite; }
+.recorder-paused { border-color: var(--line); background: var(--surface-alt); color: var(--muted-ink); }
+.recorder-paused .recorder-dot { background: var(--faint-ink); animation: none; }
+.recorder-label { font-weight: 600; }
+.recorder-time { font-variant-numeric: tabular-nums; }
+.recorder-actions { gap: 6px; margin-left: auto; }
+@keyframes recorder-blink { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .recorder-dot { animation: none; } }
+.recording-list { margin: 0; padding: 4px 0; list-style: none; }
+.recording-row {
+  display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; align-items: center; gap: 4px 12px;
+  padding: 10px 16px; border-bottom: 1px solid var(--line-soft);
+}
+.recording-row:last-child { border-bottom: 0; }
+.recording-skeleton { height: 58px; }
+/* A plain glyph, like the file icons in the documents list: a tinted tile around it reads as decoration. */
+.recording-icon { display: grid; width: 24px; height: 36px; place-items: center; color: var(--muted-ink); }
+.recording-main { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.recording-name { overflow: hidden; color: var(--ink); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.recording-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; width: fit-content; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
+.recording-actions { gap: 6px; }
+.recording-deleted .recording-name { color: var(--muted-ink); font-weight: 500; text-decoration: line-through; }
+.recording-player { grid-column: 2 / -1; width: 100%; margin: 4px 0 0; }
+audio.recording-player { height: 40px; }
+.consent-file { display: flex; align-items: center; gap: 6px; margin: 0 0 14px; color: var(--muted-ink); font-size: 14px; }
+.consent-check { display: flex; align-items: flex-start; gap: 10px; margin: 16px 0 8px; font-size: 14px; line-height: 1.45; cursor: pointer; }
+.consent-check input { margin-top: 2px; flex: none; }
+.recordings-room .recording-row { padding: 10px 12px; }
+@media (max-width: 560px) {
+  .recording-row { grid-template-columns: minmax(0, 1fr) auto; padding: 10px 12px; }
+  .recording-icon { display: none; }
+  .recording-player { grid-column: 1 / -1; }
+  .recorder-bar { flex-wrap: wrap; }
+  .recording-actions .btn-icon.btn-sm { width: 40px; height: 40px; }
+}
+
+/* SCRUM-31 — transcript under the player: time · speaker · text, the segment being heard highlighted. */
+.recording-detail { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+.recording-detail audio { width: 100%; height: 40px; }
+.recording-open { background: var(--surface-head); }
+.transcript { display: flex; flex-direction: column; gap: 8px; }
+.transcript-note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
+.transcript-status { margin: 0; }
+.transcript-running { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--ink); font-size: 14px; }
+.transcript-spinner { width: 14px; height: 14px; flex: none; border: 2px solid var(--line); border-top-color: var(--brand); border-radius: 50%; animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .transcript-spinner { animation: none; } }
+.transcript-segments { display: flex; flex-direction: column; max-height: 480px; margin: 0; padding: 0; overflow-y: auto; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
+.transcript-segment { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: start; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line-soft); }
+.transcript-segment:last-child { border-bottom: 0; }
+.transcript-active { background: var(--brand-wash); }
+.transcript-time { padding: 2px 0; border: 0; background: none; color: var(--brand); font: inherit; font-size: 13px; font-variant-numeric: tabular-nums; text-align: left; cursor: pointer; }
+.transcript-time:hover { text-decoration: underline; }
+.transcript-body { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.transcript-speaker { display: flex; align-items: center; gap: 8px; }
+.transcript-edited { color: var(--muted-ink); font-size: 12px; font-style: italic; }
+.transcript-text { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
+.transcript-editor { display: flex; flex-direction: column; gap: 6px; }
+.transcript-editor textarea { width: 100%; resize: vertical; }
+.transcript-editor-actions { justify-content: flex-end; gap: 6px; }
+@media (max-width: 560px) {
+  .transcript-segment { grid-template-columns: 48px minmax(0, 1fr); }
+  .transcript-edit { grid-column: 2; justify-self: start; }
+}
+
+/* SCRUM-35 — "Giọng nói của tôi": consent first, then samples. */
+.voice-card { display: flex; flex-direction: column; gap: 14px; }
+.voice-card .card-title { margin: 0; }
+.voice-skeleton { height: 220px; }
+.voice-notice { display: flex; flex-direction: column; gap: 8px; margin: 0; padding-left: 20px; color: var(--ink); font-size: 14px; line-height: 1.5; }
+.voice-status { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.voice-count { margin-left: auto; color: var(--muted-ink); font-size: 14px; font-variant-numeric: tabular-nums; }
+.voice-card > .alert { margin: 0; }
+.voice-samples { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); }
+.voice-sample { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 12px; border-bottom: 1px solid var(--line-soft); color: var(--muted-ink); }
+.voice-sample:last-child { border-bottom: 0; }
+/* Name and "length · date" stay whole; on a phone the second drops under the first. */
+.voice-sample-text { display: flex; flex-wrap: wrap; column-gap: 10px; min-width: 0; }
+.voice-sample-text > * { white-space: nowrap; }
+.voice-sample-name { color: var(--ink); font-weight: 500; }
+.voice-sample .btn { margin-left: auto; }
+.voice-actions { justify-content: space-between; }
+.voice-passage { margin: 8px 0 0; padding: 14px 16px; border-left: 3px solid var(--brand); border-radius: var(--radius); background: var(--brand-wash); color: var(--ink); font-size: 16px; line-height: 1.7; }
+.voice-recording { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; color: var(--chip-red-fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) {
+  .voice-actions { flex-direction: column-reverse; align-items: stretch; }
+}
+
+/* SCRUM-109 — the per-mic transcript: the person's own switch, then one line per sentence. Shared by the Bản ghi tab
+   and the call room's panel (ADR-0011). */
+.recordings-tab { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.speech-panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.speech-mode { max-width: 520px; }
+/* The "being recorded" sign: a red mic while it feeds the transcript, a grey struck-through one when it does not. */
+.speech-mine { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 8px 12px; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
+.speech-mine-icon { display: flex; flex: none; color: var(--faint-ink); }
+.speech-mine.is-live .speech-mine-icon { color: var(--danger); }
+/* One line whatever the state, so the card never changes height while someone speaks; the meter shows speech. */
+.speech-mine-text { flex: 1; min-width: 0; overflow: hidden; color: var(--ink); font-size: 14px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.speech-meter { width: 56px; height: 6px; flex: none; overflow: hidden; border-radius: 3px; background: var(--line-soft); }
+.speech-meter > span { display: block; height: 100%; background: var(--brand); transform-origin: left; transition: transform .12s linear; }
+.speech-mine .btn { flex: none; }
+.speech-empty { margin: 0; }
+.speech-lines { display: flex; flex-direction: column; max-height: 520px; margin: 0; padding: 4px 0; overflow-y: auto; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
+.speech-lines-room { flex: 1; min-height: 0; max-height: none; }
+/* A speaker's run of sentences reads as one block: the name and time once, at its start. */
+.speech-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: 8px; padding: 2px 12px; }
+.speech-line-first { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line-soft); }
+.speech-line-first:first-child { margin-top: 0; border-top: 0; }
+.speech-line-head { display: flex; grid-column: 1 / -1; align-items: baseline; gap: 8px; font-size: 13px; }
+.speech-line-head time { color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+.speech-line-text { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+/* Negative margins: the 32px buttons sit beside a 22px line of text without making the line taller. */
+.speech-line-actions { display: flex; gap: 2px; margin: -5px 0; opacity: 0; transition: opacity .12s; }
+.speech-line:hover .speech-line-actions, .speech-line:focus-within .speech-line-actions { opacity: 1; }
+@media (hover: none) { .speech-line-actions { opacity: 1; } }
+/* Everyone whose mic feeds the transcript sees it in the header, in the one colour kept for warnings. */
+.room-recording { display: inline-flex; flex: none; align-items: center; gap: 6px; height: 22px; padding: 0 10px; border: 0; border-radius: 11px; background: var(--danger); color: var(--surface); font: inherit; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.room-recording-short { display: none; }
+@media (max-width: 560px) {
+  .room-recording-long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .room-recording-short { display: inline; }
+}
+
+/* SCRUM-35 — voices of a recording and who they are. Several small cells to a row, so six voices
+   take two lines on a desktop instead of six. */
+.speaker-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 8px 16px; margin: 0; padding: 8px 12px; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
+.speaker-row { display: flex; min-width: 0; align-items: center; gap: 8px; font-size: 14px; }
+.speaker-row .select { min-width: 0; }
+/* The picker fits its name rather than the cell, so the time sits right after it. */
+.speaker-row .select-trigger { width: auto; max-width: 100%; }
+.speaker-row .select-value, .speaker-row .select-placeholder { overflow: hidden; }
+.speaker-name { display: inline-flex; min-width: 0; align-items: center; gap: 6px; color: var(--ink); font-size: 13px; font-weight: 600; }
+.speaker-time { flex: none; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
 
 /* ---------- Meeting documents (features/documents, SCRUM-21 / SCRUM-107) ----------
    One panel for the Tài liệu tab and the call room (ADR-0011): groups by agenda item, one line per

@@ -17,6 +17,9 @@ using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Infrastructure.Users;
 using TrustCabinet.Infrastructure.Participants;
+using TrustCabinet.Infrastructure.Recordings;
+using TrustCabinet.Infrastructure.Transcription;
+using TrustCabinet.Infrastructure.VoiceId;
 using TrustCabinet.Web;
 using TrustCabinet.Web.Endpoints;
 
@@ -34,6 +37,7 @@ builder.Services.AddSingleton<IMeetingGuestIdentityResolver, UnavailableMeetingG
 builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
 builder.Services.AddScoped<MeetingDocumentChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Attendance.IAttendanceChangePublisher, AttendanceChangePublisher>();
+builder.Services.AddScoped<TrustCabinet.Domain.Recordings.ISpeechChangePublisher, SpeechChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Participants.IParticipantsChangePublisher, ParticipantsChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Access.ICapabilitiesChangePublisher, CapabilitiesChangePublisher>();
 builder.Services.AddSignalR();
@@ -50,6 +54,17 @@ builder.Services.AddHostedService<CallRoomJanitor>();
 // SCRUM-107: meeting documents, bytes on Cloudflare R2 (ADR-0024). Starts without a store
 // configured; uploads then answer 503/MSG166.
 builder.Services.AddTrustCabinetDocuments(builder.Configuration);
+
+// SCRUM-29: recordings of a sitting, on local disk, erased when their retention period runs out.
+builder.Services.AddTrustCabinetRecordings(builder.Configuration, builder.Environment.ContentRootPath);
+builder.Services.AddHostedService<RecordingRetentionWorker>();
+
+// SCRUM-31: speech to text on the in-house speech worker (workers/speech), one recording at a time.
+builder.Services.AddTrustCabinetTranscription(builder.Configuration);
+builder.Services.AddHostedService<TranscriptionWorker>();
+
+// SCRUM-35: Voice ID — consent, encrypted enrolment samples, speaker suggestions in transcripts.
+builder.Services.AddTrustCabinetVoiceId(builder.Configuration);
 
 // The audit log records where a request came from, and only the web layer can see that.
 builder.Services.AddHttpContextAccessor();
@@ -190,6 +205,16 @@ app.MapHub<NotificationHub>("/hubs/notifications", options =>
 
 // SCRUM-39/41: meeting call room — state, join token, chair mute, LiveKit webhook.
 app.MapCallEndpoints();
+
+// SCRUM-29: recordings — list, upload, signed playback, erase.
+app.MapRecordingEndpoints();
+app.MapSpeechClipEndpoints();
+
+// SCRUM-31: transcript of a recording — read, re-run, correct a segment.
+app.MapTranscriptEndpoints();
+
+// SCRUM-35: the caller's own Voice ID.
+app.MapVoiceIdEndpoints();
 
 // Health endpoint — the frontend calls this to confirm the backend is alive.
 app.MapGet("/api/health", () => Results.Ok(new

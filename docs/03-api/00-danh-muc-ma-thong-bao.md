@@ -161,7 +161,7 @@ dòng nguồn UC phía dưới giữ để truy vết. Không cấp mã mới.
 
 ## Mã tiếp theo
 
-**`MSG290`** — `MSG288` (UC-33a EX-8, giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026) đã triển khai cùng `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174` trong SCRUM-107. SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG261`–`MSG270` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG249` và `MSG251` dành sẵn, chưa triển khai, cho ADR-0020; `MSG250` ngừng dùng. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3; trong dải này SCRUM-107 đã triển khai `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, SCRUM-21 đã triển khai `MSG156`–`MSG160`, phần còn lại chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`/`MSG146` dành cho thay đổi FE-06 trong Report 3; `MSG147`–`MSG151` đã triển khai trong SCRUM-26; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG142`–`MSG143`, `MSG271`–`MSG274` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG328`** — Bản ghi cuộc họp (SCRUM-29) dùng `MSG290`–`MSG298`; gỡ băng (SCRUM-31) dùng `MSG299`–`MSG304`; Voice ID (SCRUM-35) dùng `MSG305`–`MSG317`; ghi âm theo micro từng người (SCRUM-109) dùng `MSG318`–`MSG327`. `MSG288` (UC-33a EX-8, giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026) đã triển khai cùng `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174` trong SCRUM-107. SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG261`–`MSG270` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG249` và `MSG251` dành sẵn, chưa triển khai, cho ADR-0020; `MSG250` ngừng dùng. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3; trong dải này SCRUM-107 đã triển khai `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, SCRUM-21 đã triển khai `MSG156`–`MSG160`, phần còn lại chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`/`MSG146` dành cho thay đổi FE-06 trong Report 3; `MSG147`–`MSG151` đã triển khai trong SCRUM-26; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG142`–`MSG143`, `MSG271`–`MSG274` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -314,6 +314,87 @@ mã mới.
 Người không được mời vào phòng **không có mã**: API trả `404` không body, như cuộc họp không tồn
 tại.
 
+### Bản ghi cuộc họp — SCRUM-29 (`/api/meetings/{id}/recordings`, `/api/recordings/{id}`)
+
+Chi tiết: [`12-ban-ghi-cuoc-hop.md`](12-ban-ghi-cuoc-hop.md). Người không đọc được cuộc họp, hoặc
+đọc được nhưng không có trong danh sách thành phần (người tạo, người duyệt), nhận `404` không body:
+bản ghi là dữ liệu cá nhân của người phát biểu. Link phát (`…/audio?expires=…&signature=…`) sai
+hoặc hết hạn cũng là `404` không body.
+
+| Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
+|---|---|---|---|---|---|
+| `MSG290` | 201 | `POST …/recordings` | Thư ký lưu bản ghi (đã xác nhận đồng ý, có mục đích và hạn lưu trữ) | `Đã lưu bản ghi.` | BE |
+| `MSG291` | 400 | `POST …/recordings` | Không phải multipart, thiếu tệp, chưa xác nhận đồng ý, nguồn/thời lượng sai, trường lặp | `Thông tin bản ghi không hợp lệ.` (hoặc câu cụ thể hơn) | BE |
+| `MSG292` | 415 | `POST …/recordings` | Tệp không phải mp3, m4a, aac, wav, webm, ogg | `Định dạng âm thanh không được hỗ trợ. Dùng mp3, m4a, wav, webm hoặc ogg.` | BE |
+| `MSG293` | 413 | `POST …/recordings` | Tệp vượt giới hạn (`Recordings:MaxUploadMegabytes`, mặc định 300 MB) | `Bản ghi vượt quá 300 MB.` | BE |
+| `MSG294` | 409 | `POST …/recordings` | Cuộc họp chưa diễn ra (khác `InProgress`, `Ended`) | `Chỉ lưu bản ghi khi cuộc họp đang diễn ra hoặc đã kết thúc.` | BE |
+| `MSG295` | 403 | `POST …/recordings`, `DELETE /api/recordings/{id}` | Người trong cuộc họp nhưng không phải Thư ký hiện tại | `Chỉ Thư ký cuộc họp được quản lý bản ghi.` | BE |
+| `MSG296` | 200 | `DELETE /api/recordings/{id}` | Đã xoá audio và transcript; dòng bản ghi giữ lại làm bằng chứng. Gọi lại trên bản đã xoá vẫn trả mã này | `Đã xoá bản ghi.` | BE |
+| `MSG297` | 500 | `GET …/recordings`, `GET /api/recordings/{id}/playback` | Lỗi database khi đọc | `Không tải được danh sách bản ghi.` | BE |
+| `MSG298` | 503 | `POST …/recordings`, `DELETE /api/recordings/{id}` | Lỗi database khi lưu; tệp vừa tải lên bị xoá theo | `Không lưu được thay đổi bản ghi. Vui lòng thử lại.` | BE |
+
+### Gỡ băng — SCRUM-31 (`/api/recordings/{id}/transcript`, `/api/transcript-segments/{id}`)
+
+Cùng quy tắc `404` như bản ghi. Người trong cuộc họp mà không phải Thư ký sửa hoặc chạy lại thì nhận
+lại `MSG295` — cùng tình huống "không phải Thư ký mà quản lý bản ghi".
+
+| Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
+|---|---|---|---|---|---|
+| `MSG299` | 500 | `GET …/transcript` | Lỗi database khi đọc bản gỡ băng | `Không tải được bản gỡ băng.` | BE |
+| `MSG300` | 202 | `POST /api/recordings/{id}/transcribe` | Đưa bản ghi (chưa có bản gỡ băng hoặc lần trước lỗi) vào hàng chờ | `Đã đưa bản ghi vào hàng chờ chuyển thành chữ.` | BE |
+| `MSG301` | 409 | `POST /api/recordings/{id}/transcribe` | Bản gỡ băng đang chờ, đang chạy hoặc đã xong | `Chỉ chạy lại khi lần chuyển thành chữ trước bị lỗi.` | BE |
+| `MSG302` | 200 | `PUT /api/transcript-segments/{id}` | Thư ký sửa chữ một đoạn; ghi người sửa và lúc sửa | `Đã lưu đoạn gỡ băng.` | BE |
+| `MSG303` | 400 | `PUT /api/transcript-segments/{id}` | Nội dung rỗng hoặc quá 8000 ký tự | `Nội dung đoạn gỡ băng không hợp lệ.` | BE |
+| `MSG304` | 503 | `POST …/transcribe`, `PUT /api/transcript-segments/{id}` | Lỗi database khi lưu | `Không lưu được thay đổi bản gỡ băng. Vui lòng thử lại.` | BE |
+| `MSG316` | 200 | `PUT /api/recordings/{id}/speakers/{label}` | Thư ký gán (hoặc bỏ gán, `userId: null`) tên thật cho một giọng — SCRUM-35 | `Đã gán người nói.` | BE |
+| `MSG317` | 400 | `PUT /api/recordings/{id}/speakers/{label}` | Người được gán không có trong danh sách thành phần hiện tại của cuộc họp | `Người được gán phải có trong danh sách cuộc họp.` | BE |
+
+### Voice ID của chính mình — SCRUM-35 (`/api/me/voice`)
+
+Chi tiết: [`13-nhan-dien-giong-noi.md`](13-nhan-dien-giong-noi.md). Không có route nào nhận id của người
+khác. Xoá giọng mẫu của người khác (hoặc id không tồn tại) là `404` không body.
+
+| Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
+|---|---|---|---|---|---|
+| `MSG292` | 415 | `POST /api/me/voice/samples` | Cùng tình huống như bản ghi: định dạng âm thanh không hỗ trợ | `Định dạng âm thanh không được hỗ trợ. Dùng mp3, m4a, wav, webm hoặc ogg.` | BE |
+| `MSG305` | 200 | `POST /api/me/voice/consent` | Đồng ý Voice ID (gọi lại khi đã đồng ý vẫn trả mã này, không tạo dòng mới) | `Đã bật nhận diện giọng nói cho tài khoản của bạn.` | BE |
+| `MSG306` | 200 | `DELETE /api/me/voice/consent` | Rút đồng ý: xoá mọi giọng mẫu và mọi gợi ý trỏ tới người này | `Đã tắt nhận diện giọng nói và xoá toàn bộ giọng mẫu.` | BE |
+| `MSG307` | 201 | `POST /api/me/voice/samples` | Lưu giọng mẫu (chỉ vector đã mã hoá) | `Đã lưu giọng mẫu.` | BE |
+| `MSG308` | 409 | `POST /api/me/voice/samples` | Chưa đồng ý, hoặc đã rút đồng ý | `Cần đồng ý nhận diện giọng nói trước khi ghi giọng mẫu.` | BE |
+| `MSG309` | 422 | `POST /api/me/voice/samples` | Giọng mẫu không đạt; `reason`: `too_short`, `too_quiet`, `clipped`, `multiple_speakers`, `too_long`, `unreadable_audio` — câu `message` theo từng lý do | `Giọng mẫu quá ngắn — cần ít nhất 6 giây có tiếng nói. Hãy đọc hết đoạn văn mẫu.` (ví dụ) | BE |
+| `MSG310` | 409 | `POST /api/me/voice/samples` | Đã đủ 5 giọng mẫu | `Đã đủ 5 giọng mẫu. Xoá bớt rồi ghi lại.` | BE |
+| `MSG311` | 200 | `DELETE /api/me/voice/samples/{id}` | Xoá một giọng mẫu của mình | `Đã xoá giọng mẫu.` | BE |
+| `MSG312` | 503 | `POST /api/me/voice/samples` | Worker nhận dạng giọng nói không chạy / chưa cấu hình | `Máy chủ nhận dạng giọng nói chưa sẵn sàng. Vui lòng thử lại sau.` | BE |
+| `MSG313` | 400 | `POST /api/me/voice/consent`, `POST /api/me/voice/samples` | Phiên bản thông báo không khớp (`errors.noticeVersion`), hoặc không có tệp / không phải multipart | `Thông tin gửi lên không hợp lệ.` | BE |
+| `MSG314` | 500 | `GET /api/me/voice` | Lỗi database khi đọc | `Không tải được thông tin giọng nói.` | BE |
+| `MSG315` | 503 | `POST`/`DELETE …/consent`, `POST`/`DELETE …/samples` | Lỗi database khi lưu | `Không lưu được thay đổi. Vui lòng thử lại.` | BE |
+
+
+### Ghi âm theo micro từng người — SCRUM-109 (`/api/meetings/{id}/speech-clips`, `/api/speech-clips/{id}`, `/api/meetings/{id}/capture-mode`)
+
+Chi tiết: [`12-ban-ghi-cuoc-hop.md`](12-ban-ghi-cuoc-hop.md#ghi-âm-theo-micro-từng-người-scrum-109). Cùng
+quy tắc `404` như bản ghi: chỉ người trong danh sách cuộc họp đọc và gửi được. Dùng lại mã của gỡ băng
+cho cùng tình huống: `MSG295` (sửa chữ mà không phải Thư ký), `MSG299` (lỗi đọc), `MSG302`/`MSG303`/`MSG304`
+(sửa chữ một câu), và `MSG312` của Voice ID (worker chưa sẵn sàng). Câu toàn im lặng trả `204`, không body.
+
+| Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
+|---|---|---|---|---|---|
+| `MSG295` | 403 | `PUT /api/speech-clips/{id}/text` | Người trong cuộc họp nhưng không phải Thư ký sửa chữ một câu | `Chỉ Thư ký cuộc họp được quản lý bản ghi.` | BE |
+| `MSG299` | 500 | `GET …/speech-clips` | Lỗi database khi đọc | `Không tải được bản gỡ băng.` | BE |
+| `MSG302` | 200 | `PUT /api/speech-clips/{id}/text` | Thư ký sửa chữ một câu; ghi người sửa và lúc sửa | `Đã lưu đoạn gỡ băng.` | BE |
+| `MSG303` | 400 | `PUT /api/speech-clips/{id}/text` | Nội dung rỗng hoặc quá 8000 ký tự | `Nội dung đoạn gỡ băng không hợp lệ.` | BE |
+| `MSG304` | 503 | `PUT …/speech-clips/{clientId}`, `PUT …/text`, `DELETE /api/speech-clips/{id}`, `PUT …/capture-mode` | Lỗi database khi lưu | `Không lưu được thay đổi bản gỡ băng. Vui lòng thử lại.` | BE |
+| `MSG312` | 503 | `PUT …/speech-clips/{clientId}` | Worker nhận dạng giọng nói không chạy, chưa cấu hình, hoặc bận quá 30 giây; trình duyệt giữ câu và gửi lại | `Máy chủ nhận dạng giọng nói chưa sẵn sàng. Vui lòng thử lại sau.` | BE |
+| `MSG318` | 200 | `PUT …/speech-clips/{clientId}` | Đã chuyển câu thành chữ và lưu (gửi lại cùng `clientId` trả lại câu đã lưu, không gỡ băng lại) | `Đã ghi câu nói.` | BE |
+| `MSG319` | 400 | `PUT …/speech-clips/{clientId}` | Thân không phải âm thanh wav/webm/ogg, thiếu hoặc sai `startedAt`/`durationMs`, thời lượng ngoài 1 ms–60 giây | `Câu nói gửi lên không hợp lệ.` (hoặc câu cụ thể hơn) | BE |
+| `MSG320` | 409 | `PUT …/speech-clips/{clientId}` | Cuộc họp chọn thu chung cả phòng, hoặc không đang diễn ra | `Cuộc họp không ghi theo micro từng người, hoặc không còn đang diễn ra.` | BE |
+| `MSG321` | 413 | `PUT …/speech-clips/{clientId}` | Âm thanh một câu quá 3 MB | `Một câu nói tối đa 60 giây.` | BE |
+| `MSG322` | 200 | `DELETE /api/speech-clips/{id}` | Người nói rút lại câu của mình, hoặc Thư ký xoá một câu | `Đã xoá câu nói.` | BE |
+| `MSG323` | 403 | `DELETE /api/speech-clips/{id}` | Không phải người nói, cũng không phải Thư ký | `Chỉ người nói hoặc Thư ký được xoá câu này.` | BE |
+| `MSG324` | 200 | `PUT …/capture-mode` | Chủ tọa hoặc Thư ký đổi cách ghi âm trước khi họp | `Đã đổi cách ghi âm.` | BE |
+| `MSG325` | 409 | `PUT …/capture-mode` | Cuộc họp đã bắt đầu hoặc đã kết thúc | `Cuộc họp đã bắt đầu nên không đổi được cách ghi âm.` | BE |
+| `MSG326` | 400 | `PUT …/capture-mode` | `mode` khác `PerMic`, `Room` | `Cách ghi âm không hợp lệ.` | BE |
+| `MSG327` | 403 | `PUT …/capture-mode` | Người trong cuộc họp nhưng không phải Chủ tọa hay Thư ký | `Chỉ Chủ tọa hoặc Thư ký được đổi cách ghi âm.` | BE |
 
 ### Dành sẵn, chưa có code
 

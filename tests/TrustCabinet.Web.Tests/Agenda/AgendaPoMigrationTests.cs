@@ -22,7 +22,8 @@ public sealed class AgendaPoMigrationTests
         var user = new User { Email = "legacy@agenda.test", FullName = "Legacy User", PasswordHash = "test-only" };
         var now = new DateTimeOffset(2026, 10, 24, 0, 0, 0, TimeSpan.Zero);
         var meeting = new Meeting { Title = "Preserve", CreatedById = user.Id, PlannedStartTime = now, PlannedEndTime = now.AddHours(1) };
-        db.AddRange(user, meeting);
+        db.Add(user); await db.SaveChangesAsync();
+        await LegacyMeetingRows.InsertAsync(db, meeting);
         var guest = new MeetingGuestInvitation { MeetingId = meeting.Id, InvitedName = "Legacy guest", Email = "guest@agenda.test", InvitedById = user.Id };
         db.Add(guest); await db.SaveChangesAsync();
         var ids = Enumerable.Range(0, 3).Select(_ => Guid.CreateVersion7()).ToArray();

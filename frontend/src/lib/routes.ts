@@ -25,6 +25,8 @@ export const routes = {
   adminRoles: '/mgmt/admin/roles',
   // ADR-0006: each user's own document library.
   documents: '/mgmt/documents',
+  // SCRUM-35: the signed-in person's own Voice ID.
+  myVoice: '/mgmt/my-voice',
   calendar: '/calendar',
 } as const
 

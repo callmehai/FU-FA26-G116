@@ -1,5 +1,6 @@
 import {
   ArrowDown,
+  Captions,
   ArrowRight,
   LogIn,
   Mail,
@@ -27,6 +28,7 @@ import {
   EllipsisVertical,
   Eye,
   EyeOff,
+  FileAudio,
   FileText,
   Folder,
   FolderPlus,
@@ -46,6 +48,7 @@ import {
   MicOff,
   Monitor,
   Paperclip,
+  Pause,
   PenLine,
   PhoneOff,
   PictureInPicture2,
@@ -58,6 +61,7 @@ import {
   Send,
   Settings,
   Shield,
+  Square,
   ShieldAlert,
   SquareCheck,
   Trash2,
@@ -82,6 +86,8 @@ import {
  */
 const ICONS = {
   calendar: CalendarDays,
+  // SCRUM-109: the per-mic transcript, a line of words per sentence.
+  captions: Captions,
   users: Users,
   shield: Shield,
   grid: LayoutGrid,
@@ -160,6 +166,10 @@ const ICONS = {
   // SCRUM-69: the Chair starts and ends the meeting.
   play: Play,
   stop: CircleStop,
+  // SCRUM-29: a recorder's pause and stop, and an audio file.
+  pause: Pause,
+  recordStop: Square,
+  fileAudio: FileAudio,
   // SCRUM-25: drag an agenda item; an item that has a conclusion.
   grip: GripVertical,
   clipboardCheck: ClipboardCheck,

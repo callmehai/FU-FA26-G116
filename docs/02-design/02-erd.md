@@ -657,7 +657,7 @@ erDiagram
 | Không có bảng cho | Vì sao |
 |---|---|
 | Nhiệm vụ / action item | Ngoài phạm vi. TrustCabinet dừng ở biên bản đã chốt — xem mục "Không làm" trong [README](../../README.md). Không có `tasks`, `assignments`, không có cột hạn hoàn thành ở đâu cả |
-| Voiceprint / đặc trưng giọng | Dữ liệu sinh trắc học theo Nghị định 13/2023/NĐ-CP. Chỉ tách người nói **trong một bản ghi** (`SpeakerLabel`), rồi người gán tên tay. Có test tự động chặn việc thêm cột kiểu này |
+| Vector giọng ở bất kỳ đâu ngoài `voice_samples` | Từ 23/10/2026 Voice ID nằm trong phạm vi ([ADR-0027](../05-decisions/0027-voice-id-co-dong-y.md)): giọng mẫu chỉ lưu **đã mã hoá** trong `voice_samples`, dưới một `voice_consents` rút được. Vector các giọng trong bản ghi họp không lưu; `transcript_speakers` chỉ giữ gợi ý và tên Thư ký gán. Có test tự động chặn vector ở bảng khác. *Bảng mới chưa vẽ vào ERD mục tiêu — BA bổ sung ở BA Final Review* |
 | Khoá mã hoá, sổ huỷ khoá | Không làm mã hoá phong bì |
 | Tổ chức (`organizations`, `tenants`) | Hệ thống phục vụ **đúng một tổ chức**. Không có bảng tổ chức, không multi-tenant, không vùng lưu trú dữ liệu — xem [ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md) |
 | Đơn vị / phòng ban (`org_units`) | Cũng theo ADR-0004: không có phân cấp cha–con, không gán người dùng vào đơn vị, không có "đơn vị chủ trì" cuộc họp. Mời họp là mời **từng người**. Có test tự động chặn việc thêm lại cột kiểu này |
