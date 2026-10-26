@@ -18,6 +18,8 @@ public class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         builder.Property(m => m.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(m => m.Sensitivity).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(m => m.Mode).HasConversion<string>().HasMaxLength(32).IsRequired();
+        builder.Property(m => m.CaptureMode).HasConversion<string>().HasMaxLength(32).IsRequired()
+            .HasDefaultValue(TrustCabinet.Domain.Enums.CaptureMode.PerMic);
 
         // The list filters by status and sorts by start; the calendar and reminders read by start.
         builder.HasIndex(m => new { m.Status, m.PlannedStartTime });

@@ -1,4 +1,4 @@
-# 12 · Bản ghi cuộc họp và gỡ băng (SCRUM-29, SCRUM-31)
+# 12 · Bản ghi cuộc họp và gỡ băng (SCRUM-29, SCRUM-31, SCRUM-109)
 
 Thư ký lưu bản ghi âm của cuộc họp: ghi thẳng trên trình duyệt hoặc tải lên tệp ghi bằng thiết bị
 khác. Bản ghi là đầu vào cho gỡ băng (SCRUM-31) và nhận diện người nói (SCRUM-35).
@@ -159,6 +159,73 @@ Thư ký sửa chữ máy nhận sai. Cắt khoảng trắng hai đầu, 1–800
 | `BaseUrl` | rỗng (Development: `http://localhost:8090`) | Rỗng thì app vẫn chạy, bản gỡ băng báo *Máy chủ nhận dạng giọng nói chưa được cấu hình.* |
 | `ApiKey` | rỗng | Khoá dùng chung với worker (`SPEECH_API_KEY`) |
 | `TimeoutMinutes` | `120` | |
+
+## Ghi âm theo micro từng người (SCRUM-109)
+
+Cuộc họp có **cách ghi âm** (`captureMode`), cùng hai lựa chọn như AI-eCabinet:
+
+| `captureMode` | Cách thu | Lưu gì | Tên người nói |
+|---|---|---|---|
+| `PerMic` (mặc định) | Trình duyệt của mỗi người dự tự thu micro của chính họ, cắt theo câu khi ngừng nói (theo mức âm lượng, không dùng WebAssembly) và gửi từng câu lên | Mỗi câu: chữ, lúc bắt đầu, thời lượng, chủ micro. **Không lưu âm thanh** | Chủ micro |
+| `Room` | Thư ký tải tệp lên hoặc ghi bằng trình duyệt (các mục trên) | Bản ghi và bản gỡ băng | Thư ký gán, có gợi ý Voice ID |
+
+- Chọn ở form tạo/sửa cuộc họp (`captureMode` trong body của `POST`/`PUT /api/meetings`, bỏ trống thì
+  giữ nguyên, khi tạo là `PerMic`), hoặc ở tab Bản ghi bằng `PUT …/capture-mode`. Cuộc họp đã công bố
+  chỉ đổi được bằng `PUT …/capture-mode` (form dời lịch trả lỗi trường `captureMode`), để không ai nhận
+  thông báo "dời lịch". **Khoá khi cuộc họp đã bắt đầu**: người dự phải biết trước micro mình có được gỡ
+  băng không, và một bản gỡ băng không thể nửa theo micro, nửa thu chung.
+- Không ai bật micro của người khác được, kể cả Chủ tọa (khác eCab). Mỗi người thấy mình đang được ghi
+  và tự tắt được; người nói rút lại được câu của mình.
+- Âm thanh một câu chỉ nằm trong bộ nhớ của request: backend gửi worker (`diarize=false`, tối đa 2 câu
+  cùng lúc trên cả server), nhận chữ rồi bỏ. Câu toàn im lặng không tạo dòng nào.
+- Chữ của các câu là dữ liệu cá nhân, xoá theo cùng hạn với bản ghi (`Recordings:RetentionDays`).
+
+Quyền: đọc, gửi câu và xoá câu của mình là người trong danh sách cuộc họp (như nghe bản ghi); sửa chữ
+là Thư ký; xoá câu của người khác là Thư ký; đổi cách ghi âm là Chủ tọa hoặc Thư ký. Người ngoài danh
+sách nhận `404`.
+
+### `GET /api/meetings/{meetingId}/speech-clips[?since=…]`
+
+```json
+{
+  "meetingId": "…", "captureMode": "PerMic", "canCapture": true, "canEdit": false, "canChangeMode": false,
+  "readAt": "2026-10-26T08:01:02.123Z",
+  "items": [
+    { "id": "…", "speakerId": "…", "speakerName": "Lê Thành Viên", "startedAt": "2026-10-26T08:00:57Z",
+      "durationMs": 2400, "text": "Tôi đồng ý với dự thảo.", "updatedAt": "…", "editedAt": null,
+      "editedByName": null, "canDelete": true }
+  ]
+}
+```
+
+Xếp theo `startedAt`. `canCapture` là micro **của chính người gọi** được gửi câu lúc này (cuộc họp
+`InProgress` và `PerMic`). `since` = `readAt` của lần đọc trước: chỉ trả câu mới hoặc vừa sửa. Câu bị xoá
+thì đọc lại từ đầu (sự kiện `speechChanged` có `changeType: "ClipDeleted"`).
+
+### `PUT /api/meetings/{meetingId}/speech-clips/{clientClipId}?startedAt=…&durationMs=…`
+
+Thân là âm thanh của **một câu** (`audio/wav`, `audio/webm`, `audio/ogg`, tối đa 3 MB, 1 ms–60 giây).
+`clientClipId` do trình duyệt sinh; gửi lại cùng id (mất phản hồi, mạng chập chờn) trả lại câu đã lưu,
+không gỡ băng lần hai. `startedAt` theo đồng hồ trình duyệt; lệch quá 2 phút hoặc trước giờ họp thì lấy
+giờ server. `200 MSG318` kèm `clip`, `204` nếu toàn im lặng, `503 MSG312` khi worker chưa sẵn sàng
+(trình duyệt giữ câu và gửi lại), `409 MSG320` khi cuộc họp không ghi theo micro hoặc không còn diễn ra.
+
+### `PUT /api/speech-clips/{clipId}/text` — `{ "text": "…" }`
+
+Thư ký sửa chữ một câu, như sửa đoạn gỡ băng (`MSG302`).
+
+### `DELETE /api/speech-clips/{clipId}`
+
+Người nói rút lại câu của mình, hoặc Thư ký xoá (`MSG322`). Xoá hẳn, ghi nhật ký kiểm toán.
+
+### `PUT /api/meetings/{meetingId}/capture-mode` — `{ "mode": "PerMic" | "Room" }`
+
+Chủ tọa hoặc Thư ký, trước khi họp (`MSG324`; đã bắt đầu thì `409 MSG325`).
+
+### Sự kiện hub `speechChanged`
+
+`{ eventId, meetingId, changeType: "ClipAdded" | "ClipEdited" | "ClipDeleted" | "CaptureModeChanged", occurredAt }`,
+gửi cho người trong danh sách cuộc họp. Không mang chữ: ai nhận thì đọc lại.
 
 ## Chưa làm trong SCRUM-29
 

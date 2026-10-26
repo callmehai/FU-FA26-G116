@@ -37,6 +37,7 @@ builder.Services.AddSingleton<IMeetingGuestIdentityResolver, UnavailableMeetingG
 builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
 builder.Services.AddScoped<MeetingDocumentChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Attendance.IAttendanceChangePublisher, AttendanceChangePublisher>();
+builder.Services.AddScoped<TrustCabinet.Domain.Recordings.ISpeechChangePublisher, SpeechChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Participants.IParticipantsChangePublisher, ParticipantsChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Access.ICapabilitiesChangePublisher, CapabilitiesChangePublisher>();
 builder.Services.AddSignalR();
@@ -207,6 +208,7 @@ app.MapCallEndpoints();
 
 // SCRUM-29: recordings — list, upload, signed playback, erase.
 app.MapRecordingEndpoints();
+app.MapSpeechClipEndpoints();
 
 // SCRUM-31: transcript of a recording — read, re-run, correct a segment.
 app.MapTranscriptEndpoints();

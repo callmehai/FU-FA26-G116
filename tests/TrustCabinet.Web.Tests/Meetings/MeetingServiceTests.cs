@@ -155,6 +155,39 @@ public class MeetingServiceTests
     }
 
     [Fact]
+    public async Task Create_captures_per_mic_unless_the_form_picks_the_room()
+    {
+        Assert.True((await NewService().CreateAsync(ValidInput(), _actorId, [new(_actorId, "Chair")])).Succeeded);
+        Assert.True((await NewService().CreateAsync(ValidInput() with { CaptureMode = "Room" }, _actorId,
+            [new(_actorId, "Chair")])).Succeeded);
+        Assert.Equal([CaptureMode.PerMic, CaptureMode.Room], _repository.Meetings.Select(m => m.CaptureMode));
+
+        var invalid = await NewService().CreateAsync(ValidInput() with { CaptureMode = "Mic" }, _actorId, [new(_actorId, "Chair")]);
+        Assert.Equal(MeetingOutcome.InvalidInformation, invalid.Outcome);
+        Assert.Equal("Cách ghi âm không hợp lệ.", invalid.Errors!["captureMode"]);
+    }
+
+    [Fact]
+    public async Task Update_of_a_draft_changes_the_capture_mode_and_a_form_without_it_keeps_it()
+    {
+        var meeting = GivenMeeting(MeetingStatus.Draft);
+        Assert.True((await NewService().UpdateAsync(meeting.Id, ValidInput() with { CaptureMode = "Room" }, _actorId)).Succeeded);
+        Assert.Equal(CaptureMode.Room, meeting.CaptureMode);
+        Assert.True((await NewService().UpdateAsync(meeting.Id, ValidInput(), _actorId)).Succeeded);
+        Assert.Equal(CaptureMode.Room, meeting.CaptureMode);
+    }
+
+    [Fact]
+    public async Task A_published_meeting_changes_its_capture_mode_in_the_recordings_tab_not_by_rescheduling()
+    {
+        var meeting = GivenMeeting(MeetingStatus.Published);
+        var result = await NewService().UpdateAsync(meeting.Id, ValidInput() with { CaptureMode = "Room" }, _actorId);
+        Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
+        Assert.Equal("Cuộc họp đã công bố, đổi cách ghi âm ở tab Bản ghi.", result.Errors!["captureMode"]);
+        Assert.Equal(CaptureMode.PerMic, meeting.CaptureMode);
+    }
+
+    [Fact]
     public async Task Create_accepts_the_documented_maximum_lengths()
     {
         var result = await NewService().CreateAsync(

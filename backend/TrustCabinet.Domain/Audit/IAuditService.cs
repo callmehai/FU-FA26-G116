@@ -106,6 +106,17 @@ public static class AuditActions
     public const string TranscriptSpeakerAssigned = "transcript.speaker_assigned";
     public const string TranscriptSpeakerObjectType = "TranscriptSpeaker";
 
+    /// <summary>SCRUM-109 — the Secretary corrected the machine's text of one per-mic sentence.</summary>
+    public const string SpeechClipEdited = "speech_clip.edited";
+
+    /// <summary>A per-mic sentence was taken out — by its speaker or the Secretary (the details say which).</summary>
+    public const string SpeechClipDeleted = "speech_clip.deleted";
+    public const string SpeechClipObjectType = "SpeechClip";
+
+    /// <summary>The Chair or a Secretary switched how the meeting is captured before it started.</summary>
+    public const string CaptureModeChanged = "meeting.capture_mode_changed";
+    public const string MeetingObjectType = "Meeting";
+
     /// <summary>UC-32c — a document of a Confidential or Secret meeting was opened in the viewer (BR-318).</summary>
     public const string DocumentViewed = "document.viewed";
 

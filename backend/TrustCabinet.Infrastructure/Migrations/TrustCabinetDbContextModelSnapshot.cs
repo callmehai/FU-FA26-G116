@@ -589,6 +589,14 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("assigned_approver_id");
 
+                    b.Property<string>("CaptureMode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasDefaultValue("PerMic")
+                        .HasColumnName("capture_mode");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -1742,6 +1750,80 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasDatabaseName("ix_speaking_requests_meeting_id_status_queue_position");
 
                     b.ToTable("speaking_requests", (string)null);
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.SpeechClip", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ClientClipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("client_clip_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<long>("DurationMs")
+                        .HasColumnType("bigint")
+                        .HasColumnName("duration_ms");
+
+                    b.Property<DateTimeOffset?>("EditedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("edited_at");
+
+                    b.Property<Guid?>("EditedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("edited_by_id");
+
+                    b.Property<Guid>("MeetingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("meeting_id");
+
+                    b.Property<Guid>("SpeakerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("speaker_id");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)")
+                        .HasColumnName("text");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_speech_clips");
+
+                    b.HasIndex("EditedById")
+                        .HasDatabaseName("ix_speech_clips_edited_by_id");
+
+                    b.HasIndex("SpeakerId")
+                        .HasDatabaseName("ix_speech_clips_speaker_id");
+
+                    b.HasIndex("MeetingId", "StartedAt")
+                        .HasDatabaseName("ix_speech_clips_meeting_id_started_at");
+
+                    b.HasIndex("MeetingId", "UpdatedAt")
+                        .HasDatabaseName("ix_speech_clips_meeting_id_updated_at");
+
+                    b.HasIndex("MeetingId", "SpeakerId", "ClientClipId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_speech_clips_meeting_id_speaker_id_client_clip_id");
+
+                    b.ToTable("speech_clips", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_speech_clips_duration", "duration_ms > 0");
+                        });
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.StoredFile", b =>
@@ -3028,6 +3110,35 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("Meeting");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.SpeechClip", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "EditedBy")
+                        .WithMany()
+                        .HasForeignKey("EditedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_speech_clips_users_edited_by_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
+                        .WithMany()
+                        .HasForeignKey("MeetingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_speech_clips_meetings_meeting_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "Speaker")
+                        .WithMany()
+                        .HasForeignKey("SpeakerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_speech_clips_users_speaker_id");
+
+                    b.Navigation("EditedBy");
+
+                    b.Navigation("Meeting");
+
+                    b.Navigation("Speaker");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.StoredFile", b =>

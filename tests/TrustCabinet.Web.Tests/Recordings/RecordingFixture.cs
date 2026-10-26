@@ -81,6 +81,7 @@ public sealed class RecordingFixture : IAsyncLifetime
         internal Func<Task>? During;
         internal int Calls;
         internal byte[]? LastAudio;
+        internal bool? LastDiarize;
 
         public bool IsConfigured => true;
 
@@ -95,6 +96,7 @@ public sealed class RecordingFixture : IAsyncLifetime
         public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, CancellationToken ct)
         {
             Calls++;
+            LastDiarize = diarize;
             using var copy = new MemoryStream();
             await audio.CopyToAsync(copy, ct);
             LastAudio = copy.ToArray();
@@ -113,6 +115,7 @@ public sealed class RecordingFixture : IAsyncLifetime
     internal sealed class FailureInterceptor : DbCommandInterceptor, ISaveChangesInterceptor
     {
         internal bool FailRead;
+        internal bool FailClipRead;
         internal bool FailVoiceRead;
         internal bool FailSave;
 
@@ -121,6 +124,7 @@ public sealed class RecordingFixture : IAsyncLifetime
             InterceptionResult<System.Data.Common.DbDataReader> result, CancellationToken cancellationToken = default)
             => (FailRead && command.CommandText.Contains("FROM recordings", StringComparison.Ordinal))
                 || (FailVoiceRead && command.CommandText.Contains("FROM voice_consents", StringComparison.Ordinal))
+                || (FailClipRead && command.CommandText.Contains("FROM speech_clips", StringComparison.Ordinal))
                 ? throw new Npgsql.NpgsqlException("Injected read failure.") : ValueTask.FromResult(result);
 
         public ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,
@@ -133,13 +137,13 @@ public sealed class RecordingFixture : IAsyncLifetime
         internal string Url => $"/api/meetings/{MeetingId}/recordings";
     }
 
-    internal async Task<Scenario> Seed(MeetingStatus status = MeetingStatus.InProgress)
+    internal async Task<Scenario> Seed(MeetingStatus status = MeetingStatus.InProgress, CaptureMode capture = CaptureMode.PerMic)
     {
         await using var db = Db();
         var users = Enumerable.Range(0, 5).Select(i => new User { FullName = $"Recording test {i}",
             Email = $"{Guid.NewGuid():N}@recording.test", PasswordHash = "test-only-non-login-hash" }).ToArray();
         db.Users.AddRange(users);
-        var meeting = new Meeting { Title = "Recording test", CreatedById = users[3].Id, Status = status,
+        var meeting = new Meeting { Title = "Recording test", CreatedById = users[3].Id, Status = status, CaptureMode = capture,
             PlannedStartTime = Clock.Now, PlannedEndTime = Clock.Now.AddHours(1) };
         db.Meetings.Add(meeting);
         for (var i = 0; i < 3; i++) db.MeetingParticipants.Add(new() { MeetingId = meeting.Id, UserId = users[i].Id,
