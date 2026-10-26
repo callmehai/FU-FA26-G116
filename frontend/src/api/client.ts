@@ -71,17 +71,21 @@ interface RequestOptions extends RequestInit {
 
 /**
  * Reads an error body if there is one. Several error responses are empty (`Content-Length: 0`),
- * and `res.json()` on an empty body throws, which would hide the real status behind a parse error.
+ * and `JSON.parse` on an empty body throws, which would hide the real status behind a parse error.
  */
-async function readErrorBody(res: Response): Promise<ApiErrorBody | undefined> {
+function parseErrorBody(text: string): ApiErrorBody | undefined {
   try {
-    const text = await res.text()
     if (!text) return undefined
     const parsed = JSON.parse(text) as Partial<ApiErrorBody>
     return typeof parsed.code === 'string' ? (parsed as ApiErrorBody) : undefined
   } catch {
     return undefined
   }
+}
+
+function apiError(status: number, path: string, method: string, text: string) {
+  const body = parseErrorBody(text)
+  return new ApiError(status, path, body?.message ?? `${method} ${path} → HTTP ${status}`, body)
 }
 
 async function send(path: string, init: RequestOptions, token: string | null) {
@@ -98,7 +102,8 @@ async function send(path: string, init: RequestOptions, token: string | null) {
   })
 }
 
-async function request<T>(path: string, init: RequestOptions): Promise<T> {
+/** One request with the session's token, refreshed and retried once on a 401; non-2xx throws `ApiError`. */
+async function fetchOk(path: string, init: RequestOptions): Promise<Response> {
   const authenticated = !init.anonymous && auth !== null
   let res = await send(path, init, authenticated ? await auth!.getAccessToken() : null)
 
@@ -109,20 +114,52 @@ async function request<T>(path: string, init: RequestOptions): Promise<T> {
     if (token) res = await send(path, init, token)
   }
 
-  if (!res.ok) {
-    const body = await readErrorBody(res)
-    throw new ApiError(
-      res.status,
-      path,
-      body?.message ?? `${init.method ?? 'GET'} ${path} → HTTP ${res.status}`,
-      body,
-    )
-  }
+  if (!res.ok) throw apiError(res.status, path, init.method ?? 'GET', await res.text().catch(() => ''))
+  return res
+}
+
+async function request<T>(path: string, init: RequestOptions): Promise<T> {
+  const res = await fetchOk(path, init)
 
   // 204 No Content has no body to parse.
   if (res.status === 204) return undefined as T
 
   return (await res.json()) as T
+}
+
+/**
+ * POSTs a `FormData` through XMLHttpRequest, which, unlike fetch, reports upload progress. The
+ * browser sets the multipart boundary itself. Same token handling and errors as `request`; a
+ * network failure rejects with a TypeError as fetch does, an abort with an `AbortError`.
+ */
+async function upload<T>(
+  path: string,
+  form: FormData,
+  { onProgress, signal }: { onProgress?: (loaded: number, total: number) => void; signal?: AbortSignal } = {},
+): Promise<T> {
+  const attempt = (token: string | null) =>
+    new Promise<XMLHttpRequest>((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open('POST', path)
+      xhr.setRequestHeader('Accept', 'application/json')
+      if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+      xhr.upload.onprogress = (e) => e.lengthComputable && onProgress?.(e.loaded, e.total)
+      xhr.onload = () => resolve(xhr)
+      xhr.onerror = () => reject(new TypeError('Network request failed'))
+      xhr.onabort = () => reject(new DOMException('Upload cancelled', 'AbortError'))
+      if (signal?.aborted) return reject(new DOMException('Upload cancelled', 'AbortError'))
+      signal?.addEventListener('abort', () => xhr.abort(), { once: true })
+      xhr.send(form)
+    })
+
+  const authenticated = auth !== null
+  let xhr = await attempt(authenticated ? await auth!.getAccessToken() : null)
+  if (xhr.status === 401 && authenticated) {
+    const token = await auth!.recoverFromUnauthorized()
+    if (token) xhr = await attempt(token)
+  }
+  if (xhr.status < 200 || xhr.status >= 300) throw apiError(xhr.status, path, 'POST', xhr.responseText)
+  return JSON.parse(xhr.responseText) as T
 }
 
 export const api = {
@@ -139,4 +176,10 @@ export const api = {
   /** A multipart upload — files go as they are, never base64 inside JSON. */
   postForm: <T>(path: string, form: FormData, init?: RequestOptions) =>
     request<T>(path, { ...init, method: 'POST', body: form }),
+
+  /** A file's bytes; an error still carries its JSON body, so its `code` can be matched. */
+  blob: (path: string, init?: RequestOptions) =>
+    fetchOk(path, { ...init, method: 'GET', headers: { Accept: '*/*', ...init?.headers } }).then((res) => res.blob()),
+
+  upload,
 }

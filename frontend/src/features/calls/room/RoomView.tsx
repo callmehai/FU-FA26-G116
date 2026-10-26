@@ -45,7 +45,9 @@ import { avatarColors, initials } from '../../../lib/avatar'
 import { errorMessage, isApiError } from '../../../lib/errors'
 import { MEETING_ROLE_LABEL, type MeetingRole } from '../../../types/call'
 import { type Meeting } from '../../../types/meeting'
+import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { AttendancePanel } from '../../attendance/AttendancePanel'
+import { DocumentsPanel } from '../../documents/DocumentsPanel'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { DeviceSelect, MicLevel } from './devices'
@@ -56,9 +58,22 @@ import { deviceErrorMessage, meetingRoleOf } from './roomSupport'
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
 const MOD = IS_MAC ? '⌘' : 'Ctrl'
 
-type PanelId = 'people' | 'attendance' | 'chat'
+type PanelId = 'people' | 'agenda' | 'attendance' | 'documents' | 'chat'
 
-const PANEL_LABEL: Record<PanelId, string> = { people: 'Người dự', attendance: 'Điểm danh', chat: 'Chat' }
+const PANEL_LABEL: Record<PanelId, string> = {
+  people: 'Người dự',
+  agenda: 'Nội dung họp',
+  attendance: 'Điểm danh',
+  documents: 'Tài liệu',
+  chat: 'Chat',
+}
+
+/** On a phone only "Người dự" and "Chat" fit beside the call controls; these go behind ⋯, as in Meet. */
+const TUCKED_PANELS: { id: PanelId; icon: IconName }[] = [
+  { id: 'agenda', icon: 'list' },
+  { id: 'attendance', icon: 'userCheck' },
+  { id: 'documents', icon: 'fileText' },
+]
 
 const CHAT_MAX = 1000
 
@@ -304,8 +319,12 @@ function RoomLayout({
           <aside className="room-panel" aria-label={PANEL_LABEL[panel]}>
             {panel === 'people' ? (
               <ParticipantsPanel meetingId={meeting.id} participants={participants} isChair={myRole === 'Chair'} />
+            ) : panel === 'agenda' ? (
+              <AgendaPanel meetingId={meeting.id} variant="room" />
             ) : panel === 'attendance' ? (
               <AttendancePanel meetingId={meeting.id} />
+            ) : panel === 'documents' ? (
+              <DocumentsPanel meeting={meeting} variant="room" />
             ) : (
               <ChatPanel messages={chat.chatMessages} send={chat.send} isSending={chat.isSending} />
             )}
@@ -407,13 +426,18 @@ function RoomLayout({
             active={panel === 'people'}
             onClick={() => togglePanel('people')}
           />
-          <ControlButton
-            icon="userCheck"
-            label="Điểm danh"
-            side
-            active={panel === 'attendance'}
-            onClick={() => togglePanel('attendance')}
-          />
+          {TUCKED_PANELS.map((item) => (
+            <ControlButton
+              key={item.id}
+              icon={item.icon}
+              label={PANEL_LABEL[item.id]}
+              side
+              className="room-control-tucked"
+              active={panel === item.id}
+              onClick={() => togglePanel(item.id)}
+            />
+          ))}
+          <MorePanels panel={panel} onPick={togglePanel} />
           <ControlButton
             icon="messageSquare"
             label="Chat"
@@ -530,6 +554,90 @@ function PipView({
         />
         <ControlButton icon="phoneOff" label="Rời phòng" leave onClick={onLeave} />
       </div>
+    </div>
+  )
+}
+
+/**
+ * ⋯ on a phone (hidden by CSS on wider screens): a menu of the panels that do not fit on the bar.
+ * Lit while one of them is open, like the buttons it stands in for.
+ */
+function MorePanels({ panel, onPick }: { panel: PanelId | null; onPick: (id: PanelId) => void }) {
+  const [open, setOpen] = useState(false)
+  const root = useRef<HTMLDivElement>(null)
+  const menuId = useId()
+
+  useEffect(() => {
+    if (!open) return
+    root.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus()
+    const onDown = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) setOpen(false)
+    }
+    // A menu's keys (WAI-ARIA menu pattern): arrows move through the items and wrap, Home and End
+    // jump to the ends, Escape closes and hands focus back to ⋯.
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false)
+        root.current?.querySelector<HTMLElement>('button')?.focus()
+        return
+      }
+      const items = [...(root.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])]
+      const at = items.indexOf(document.activeElement as HTMLElement)
+      const next =
+        event.key === 'ArrowDown'
+          ? (at + 1) % items.length
+          : event.key === 'ArrowUp'
+            ? (at - 1 + items.length) % items.length
+            : event.key === 'Home'
+              ? 0
+              : event.key === 'End'
+                ? items.length - 1
+                : -1
+      if (next < 0) return
+      event.preventDefault()
+      items[next]?.focus()
+    }
+    document.addEventListener('pointerdown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  const lit = TUCKED_PANELS.some((item) => item.id === panel)
+  return (
+    <div className="room-more" ref={root}>
+      <button
+        type="button"
+        className={`room-control room-control-side${lit ? ' room-control-active' : ''}`}
+        aria-label="Thêm"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
+        onClick={() => setOpen(!open)}
+      >
+        <Icon name="more" size={20} />
+      </button>
+      {open && (
+        <div className="room-select-menu room-more-menu" role="menu" id={menuId} aria-label="Thêm">
+          {TUCKED_PANELS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              role="menuitem"
+              className={`room-select-item${panel === item.id ? ' is-active' : ''}`}
+              onClick={() => {
+                setOpen(false)
+                onPick(item.id)
+              }}
+            >
+              <Icon name={item.icon} size={18} />
+              <span className="room-select-text">{PANEL_LABEL[item.id]}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -65,10 +65,10 @@ export function formatWeekdayDate(iso: string) {
 }
 
 /**
- * A meeting's planned or actual sitting: "Thứ Năm, 15/10/2026 · 08:30–09:30". One that runs past
+ * A meeting's planned or actual sitting: "Thứ Năm, 15/10/2026, 08:30–09:30". One that runs past
  * midnight names both days.
  */
 export function formatSchedule(startIso: string, endIso: string) {
   if (formatDate(startIso) !== formatDate(endIso)) return `${formatDateTime(startIso)} – ${formatDateTime(endIso)}`
-  return `${formatWeekdayDate(startIso)} · ${formatClock(startIso)}–${formatClock(endIso)}`
+  return `${formatWeekdayDate(startIso)}, ${formatClock(startIso)}–${formatClock(endIso)}`
 }

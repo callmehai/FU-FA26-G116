@@ -329,7 +329,7 @@ function RecordSampleDialog({
             disabled={elapsed < MIN_SAMPLE_MS}
             onClick={() => void finish()}
           >
-            {elapsed >= MIN_SAMPLE_MS && <Icon name="stop" size={18} />}
+            {elapsed >= MIN_SAMPLE_MS && <Icon name="recordStop" size={18} />}
             {elapsed < MIN_SAMPLE_MS
               ? `Đọc tiếp… (${Math.ceil((MIN_SAMPLE_MS - elapsed) / 1000)} giây)`
               : 'Dừng và lưu'}

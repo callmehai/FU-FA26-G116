@@ -105,4 +105,16 @@ public static class AuditActions
     /// <summary>A secretary said who a voice in a recording is — or cleared it. The machine's suggestion travels along.</summary>
     public const string TranscriptSpeakerAssigned = "transcript.speaker_assigned";
     public const string TranscriptSpeakerObjectType = "TranscriptSpeaker";
+
+    /// <summary>UC-32c — a document of a Confidential or Secret meeting was opened in the viewer (BR-318).</summary>
+    public const string DocumentViewed = "document.viewed";
+
+    /// <summary>UC-32c AF-1 — the same, downloaded. Only a Confidential one gets here: Secret is not downloadable (BR-188).</summary>
+    public const string DocumentDownloaded = "document.downloaded";
+
+    /// <summary>
+    /// What <c>AuditLogEntry.ObjectType</c> carries for the two above. The <c>ObjectId</c> is the
+    /// MeetingDocument, since that is what the reader opened; the meeting goes in the details.
+    /// </summary>
+    public const string MeetingDocumentObjectType = "MeetingDocument";
 }

@@ -6,9 +6,10 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 
 Đã có:
 
+- [SCRUM-69 — bàn giao Start/End](10-scrum69-ban-giao.md), [báo cáo kiểm thử](10-scrum69-kiem-thu.md), [Postman](postman/SCRUM-69-Meeting-Lifecycle.postman_collection.json).
 - [`10-diem-danh.md`](10-diem-danh.md) — Backend SCRUM-26 / UC-31; [bàn giao FE/BA](10-diem-danh-ban-giao.md), [kết quả kiểm thử](10-diem-danh-ket-qua-kiem-thu.md). Version riêng từng người, batch atomic, realtime theo quyền roster.
 
-- [`08-chuong-trinh-nghi-su.md`](08-chuong-trinh-nghi-su.md) — contract Backend SCRUM-25, UC-23a–d/24/25/26; [bàn giao FE và kiểm thử](08-chuong-trinh-nghi-su-ban-giao.md).
+- [`08-chuong-trinh-nghi-su.md`](08-chuong-trinh-nghi-su.md) — contract Backend SCRUM-98, UC-23a–d/24/25/26/77; [bàn giao SCRUM-25 lịch sử](08-chuong-trinh-nghi-su-ban-giao.md).
 - [`08-agenda-contract-tich-hop-guest-uc04.md`](08-agenda-contract-tich-hop-guest-uc04.md) — adapter identity/session, quyền đọc Agenda và hub Guest; phần UC-04 cần triển khai để tích hợp.
 
 - [`00-danh-muc-ma-thong-bao.md`](00-danh-muc-ma-thong-bao.md) — **danh mục mọi mã `MSGnn`**:
@@ -72,7 +73,9 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`09-thanh-phan-tham-du-ket-qua-kiem-thu.md`](09-thanh-phan-tham-du-ket-qua-kiem-thu.md) — kết quả build/test, performance và giới hạn nghiệm thu
 - [`11-tai-lieu-cuoc-hop.md`](11-tai-lieu-cuoc-hop.md) — SCRUM-107: tải tệp từ máy lên cuộc họp
   (UC-33a AF-1), kiểm loại theo nội dung, tất cả hoặc không, thư mục kho tự tạo, lưu trên R2, job dọn
-  file mồ côi; mã `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, `MSG288`; note cho FE
+  file mồ côi; mã `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, `MSG288`; note cho FE.
+  SCRUM-21: danh sách tài liệu nhóm theo mục nghị sự (UC-32a), xem / tải về đúng byte gốc, chặn tải về cuộc họp
+  Mật, nhật ký kiểm toán Confidential/Secret (UC-32c), event `documentsChanged`; mã `MSG156`–`MSG160`; note cho FE
 - [`10-scrum97-ket-qua-kiem-thu.md`](10-scrum97-ket-qua-kiem-thu.md) — kết quả riêng của phần SCRUM-97 bổ sung trên baseline SCRUM-20; kèm change note Jira để owner đăng.
 - [`12-ban-ghi-cuoc-hop.md`](12-ban-ghi-cuoc-hop.md) — SCRUM-29: lưu, nghe (link ký sẵn), xoá bản ghi cuộc họp; đồng ý, mục đích, hạn lưu trữ và job tự xoá; mã `MSG290`–`MSG298`. SCRUM-31: hàng chờ chuyển thành chữ trên worker tự chạy, xem, chạy lại, sửa đoạn; mã `MSG299`–`MSG304`
 - [`13-nhan-dien-giong-noi.md`](13-nhan-dien-giong-noi.md) — SCRUM-35: Voice ID của chính mình (đồng ý, giọng mẫu mã hoá, rút đồng ý), gợi ý và gán tên người nói trong bản gỡ băng; nghĩa vụ dữ liệu sinh trắc học; mã `MSG305`–`MSG317`
@@ -85,3 +88,5 @@ Dự kiến có thêm:
 
 Khi backend bật OpenAPI, tài liệu sinh tự động đóng vai trò tham chiếu chi tiết; các file ở đây
 tập trung vào ý định thiết kế và phần OpenAPI không diễn tả được (luồng, quyền, tình huống lỗi).
+
+SCRUM-98 thay thế contract Agenda SCRUM-25: [bàn giao BE → FE/BA](08-scrum98-ban-giao.md), [báo cáo kiểm thử riêng](08-scrum98-ket-qua-kiem-thu.md). UC-77, presenter Internal/Guest, bỏ duration và reorder mọi trạng thái. Báo cáo SCRUM-25 là lịch sử, không ghi đè.

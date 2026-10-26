@@ -51,6 +51,9 @@ export function Dialog({
       className={size === 'lg' ? 'dialog dialog-lg' : 'dialog'}
       aria-labelledby={titleId}
       onCancel={(event) => {
+        // A dialog opened inside this one (a ConfirmDialog) handles its own Escape; React bubbles
+        // that `cancel` up here, where it must not close — or reopen — anything.
+        if (event.target !== event.currentTarget) return
         event.preventDefault()
         onClose()
       }}

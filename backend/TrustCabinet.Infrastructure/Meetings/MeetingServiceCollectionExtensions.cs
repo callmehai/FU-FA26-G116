@@ -10,6 +10,7 @@ public static class MeetingServiceCollectionExtensions
         services.AddSingleton<TimeProvider>(TimeProvider.System);
         services.AddScoped<IMeetingRepository, MeetingRepository>();
         services.AddScoped<IMeetingService, MeetingService>();
+        services.AddScoped<IMeetingLifecycleService, MeetingLifecycleService>();
         return services;
     }
 }

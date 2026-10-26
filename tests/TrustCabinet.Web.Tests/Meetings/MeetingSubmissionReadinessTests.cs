@@ -69,7 +69,6 @@ public sealed class MeetingSubmissionReadinessTests
                 {
                     Position = 1,
                     Title = "Báo cáo",
-                    PlannedDurationMinutes = 30,
                     PresenterId = Guid.CreateVersion7(),
                 },
             ],

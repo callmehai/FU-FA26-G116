@@ -19,6 +19,9 @@ import {
 import { placeLabel } from '../place'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
+import { useNotifications } from '../../notifications/notificationsContext'
+import { AgendaPanel } from '../../agenda/AgendaPanel'
+import { DocumentsPanel } from '../../documents/DocumentsPanel'
 import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
 import { RecordingsPanel } from '../../recordings/RecordingsPanel'
 import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
@@ -29,6 +32,8 @@ import { EDIT_PARAM, useEditMeetingLink } from '../meetingDialogLink'
 import { useMeetingEvents } from '../useMeetingEvents'
 import { useMeetingApprovers } from '../useMeetingApprovers'
 import { MeetingHistory } from '../workflow/MeetingHistory'
+import { lifecycleAction } from '../workflow/lifecycle'
+import { MeetingLifecycleActions } from '../workflow/MeetingLifecycleActions'
 import { MeetingWorkflowBar, type WorkflowRole } from '../workflow/MeetingWorkflowBar'
 import { useMeetingHistory } from '../workflow/useMeetingHistory'
 import type { WorkflowOutcome } from '../workflow/workflowOutcome'
@@ -46,11 +51,12 @@ const TABS = [
 type TabId = (typeof TABS)[number]['id']
 
 /** What each tab is waiting on, surfaced in the UI so the backlog is visible while building. */
-const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview' | 'attendees' | 'recordings'>, string> = {
-  agenda: 'GET /api/meetings/{id}/agenda',
-  documents: 'GET /api/meetings/{id}/documents',
+const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview' | 'attendees' | 'agenda' | 'documents' | 'recordings'>, string> = {
   minutes: 'GET /api/meetings/{id}/minutes',
 }
+
+/** The hub event that tells an open page the meeting was ended (SCRUM-69). */
+const MEETING_ENDED = ['meetingEnded'] as const
 
 /** The approval workflow ends at publishing; after that the bar has nothing left to say. */
 const REVIEW_STATUSES = ['WaitingApproval', 'Rejected', 'Approved'] as const
@@ -106,11 +112,12 @@ function MeetingDetail({
   const { user, can, reloadSession } = useAuth()
   const toast = useToast()
   const handleAccessLost = useAccessLost()
-  const [tab, setTab] = useState<TabId>('overview')
+  const [params] = useSearchParams()
+  // `?tab=documents` is where the document viewer's back link lands.
+  const [tab, setTab] = useState<TabId>(() => TABS.find((t) => t.id === params.get('tab'))?.id ?? 'overview')
   const history = useMeetingHistory(meeting.id)
   // UC-15 opens as a dialog on this page (`?edit=1`), keeping the back link's target.
   const editLink = useEditMeetingLink()
-  const [params] = useSearchParams()
 
   const isOrganizer = meeting.createdById === user?.id && can('MeetingCreator')
   const isApprover =
@@ -131,6 +138,8 @@ function MeetingDetail({
   // UC-15 AF-1: after publishing, the organizer may still move the time, place and link.
   const canReschedule = isOrganizer && RESCHEDULABLE_STATUSES.includes(meeting.status)
   const roomOpen = useCallRoomOpen(meeting)
+  // SCRUM-69: the Chair starts a published meeting and ends a running one.
+  const canRun = lifecycleAction(meeting) !== null
 
   /** Display names the page already knows: whoever acted in the history, and the approver list. */
   const names = useMemo(() => {
@@ -145,6 +154,21 @@ function MeetingDetail({
   useMeetingEvents(meeting.id, () => void reload())
 
   const { reload: reloadHistory, append: appendHistory } = history
+
+  // Someone else ending the meeting arrives on the hub; starting it publishes nothing there, so the
+  // notification it sends to everyone but the Chair is the signal. Either way, re-read the page.
+  const reloadAll = useCallback(() => {
+    void reload()
+    void reloadHistory()
+  }, [reload, reloadHistory])
+  useMeetingEvents(meeting.id, reloadAll, MEETING_ENDED)
+  const { lastArrival } = useNotifications()
+  const seenArrival = useRef(lastArrival)
+  useEffect(() => {
+    if (!lastArrival || lastArrival === seenArrival.current) return
+    seenArrival.current = lastArrival
+    if (lastArrival.meetingId?.toLowerCase() === meeting.id.toLowerCase()) reloadAll()
+  }, [lastArrival, meeting.id, reloadAll])
   const onOutcome = useCallback(
     (outcome: WorkflowOutcome) => {
       switch (outcome.kind) {
@@ -200,7 +224,7 @@ function MeetingDetail({
           <div className="record-title">
             <h1>{meeting.title}</h1>
             <StatusBadge status={meeting.status} />
-            <SensitivityBadge sensitivity={meeting.sensitivity} />
+            {meeting.sensitivity !== 'Normal' && <SensitivityBadge sensitivity={meeting.sensitivity} />}
             <RsvpChip response={meeting.myResponse} />
           </div>
           <p className="record-facts">
@@ -214,16 +238,16 @@ function MeetingDetail({
             </span>
           </p>
         </div>
-        {(canEdit || canReschedule || roomOpen) && (
+        {(canEdit || canReschedule || roomOpen || canRun) && (
           <div className="page-header-actions">
             {roomOpen && (
-              // The meeting is running and waiting for the user: eCab's rippling "Vào phòng họp".
-              <Link className="btn btn-live btn-lg btn-cta btn-ping btn-nudge" to={routes.meetingRoom(meeting.id)}>
+              // The meeting is running: green like its "Đang diễn ra" state, so it stands apart from blue.
+              <Link className="btn btn-live btn-lg btn-cta" to={routes.meetingRoom(meeting.id)}>
                 <Icon name="video" size={18} />
                 Vào phòng họp
-                <Icon name="arrowRight" size={16} />
               </Link>
             )}
+            {canRun && <MeetingLifecycleActions meeting={meeting} onOutcome={onOutcome} />}
             {(canEdit || canReschedule) && (
               <Link className="btn btn-outline btn-lg" to={editLink.to} state={editLink.state}>
                 <Icon name={canEdit ? 'pencil' : 'calendar'} size={16} />
@@ -254,13 +278,7 @@ function MeetingDetail({
             <h2 id="rsvp-title">Bạn có tham dự cuộc họp này?</h2>
           </div>
           <div className="workflow-actions">
-            {/* One ripple per screen: while the room is open, "Vào phòng họp" is the one. */}
-            <RsvpButtons
-              meetingId={meeting.id}
-              labelledBy="rsvp-title"
-              onAnswered={() => void reload()}
-              ping={!roomOpen}
-            />
+            <RsvpButtons meetingId={meeting.id} labelledBy="rsvp-title" onAnswered={() => void reload()} />
           </div>
         </section>
       )}
@@ -289,6 +307,10 @@ function MeetingDetail({
             />
           ) : tab === 'attendees' ? (
             <ParticipantsPanel meetingId={meeting.id} onChanged={() => void reload()} />
+          ) : tab === 'agenda' ? (
+            <AgendaPanel meetingId={meeting.id} variant="page" />
+          ) : tab === 'documents' ? (
+            <DocumentsPanel meeting={meeting} variant="page" onMeetingStale={() => void reload()} />
           ) : tab === 'recordings' ? (
             <RecordingsPanel meetingId={meeting.id} variant="page" />
           ) : (

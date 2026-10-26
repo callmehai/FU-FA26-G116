@@ -51,14 +51,14 @@ public sealed class AgendaConcurrencyTests(AgendaFixture fixture) : IClassFixtur
         var snapshot = await client.GetFromJsonAsync<JsonElement>(s.Url);
         var token = snapshot.GetProperty("orderVersion").GetString();
         var responses = await Task.WhenAll(
-            client.PutAsJsonAsync(s.Url + "/order", new { orderVersion = token, pendingItemIds = s.Items.Reverse().ToArray() }),
-            client.PutAsJsonAsync(s.Url + "/order", new { orderVersion = token, pendingItemIds = new[] { s.Items[1], s.Items[0], s.Items[2] } }));
+            client.PutAsJsonAsync(s.Url + "/order", new { orderVersion = token, orderedItemIds = s.Items.Reverse().ToArray() }),
+            client.PutAsJsonAsync(s.Url + "/order", new { orderVersion = token, orderedItemIds = new[] { s.Items[1], s.Items[0], s.Items[2] } }));
         Assert.Single(responses, r => r.StatusCode == HttpStatusCode.OK);
         await AssertCode(Assert.Single(responses, r => r.StatusCode == HttpStatusCode.Conflict), 409, "MSG143");
     }
 
     [Theory]
-    [InlineData("start", "MSG141", 409)]
+    [InlineData("start", "MSG61", 200)]
     [InlineData("ended", "MSG67", 409)]
     [InlineData("role", "MSG67", 403)]
     [InlineData("removed", "", 404)]
@@ -69,7 +69,7 @@ public sealed class AgendaConcurrencyTests(AgendaFixture fixture) : IClassFixtur
         await using var locked = fixture.Db();
         await using var transaction = await locked.Database.BeginTransactionAsync();
         await locked.Meetings.FromSqlInterpolated($"SELECT * FROM meetings WHERE id = {s.MeetingId} FOR UPDATE").ToListAsync();
-        var request = client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input(duration: 30));
+        var request = client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input("Updated after lock"));
         await WaitForLockWaiter(locked, s.MeetingId);
         if (change == "start")
         {
@@ -90,7 +90,7 @@ public sealed class AgendaConcurrencyTests(AgendaFixture fixture) : IClassFixtur
         if (status == 404) Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         else await AssertCode(response, status, code);
         await using var check = fixture.Db();
-        Assert.Equal(20, (await check.AgendaItems.SingleAsync(i => i.Id == s.Items[0])).PlannedDurationMinutes);
+        Assert.Equal(change == "start" ? "Updated after lock" : "Mục 1", (await check.AgendaItems.SingleAsync(i => i.Id == s.Items[0])).Title);
     }
 
     // Observing PostgreSQL's lock wait guarantees the request is queued before the winning commit.
@@ -124,12 +124,12 @@ public sealed class AgendaConcurrencyTests(AgendaFixture fixture) : IClassFixtur
         await using var locked = fixture.Db();
         await using var transaction = await locked.Database.BeginTransactionAsync();
         await locked.Meetings.FromSqlInterpolated($"SELECT * FROM meetings WHERE id = {s.MeetingId} FOR UPDATE").ToListAsync();
-        var request = client.PutAsJsonAsync(s.Url + "/order", new { orderVersion = snapshot.GetProperty("orderVersion").GetString(), pendingItemIds = s.Items.Reverse().ToArray() });
+        var request = client.PutAsJsonAsync(s.Url + "/order", new { orderVersion = snapshot.GetProperty("orderVersion").GetString(), orderedItemIds = s.Items.Reverse().ToArray() });
         await WaitForLockWaiter(locked, s.MeetingId);
         var item = await locked.AgendaItems.SingleAsync(i => i.Id == s.Items[0]);
         if (change == "start") { item.Status = AgendaItemStatus.InProgress; item.ActualStartedAt = fixture.Clock.Now; }
         else if (change == "delete") locked.Remove(item);
-        else locked.AgendaItems.Add(new() { MeetingId = s.MeetingId, Title = "New", Position = 8, PlannedDurationMinutes = 10 });
+        else locked.AgendaItems.Add(new() { MeetingId = s.MeetingId, Title = "New", Position = 8 });
         await locked.SaveChangesAsync();
         await transaction.CommitAsync();
         await AssertCode(await request.WaitAsync(TimeSpan.FromSeconds(10)), 409, "MSG143");

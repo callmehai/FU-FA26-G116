@@ -263,13 +263,8 @@ export function UsersPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Quản trị"
         title="Người dùng & Quyền"
-        description={
-          users
-            ? `Quản lý người dùng và phân quyền hệ thống · ${users.length} tài khoản, ${activeCount} đang hoạt động.`
-            : 'Quản lý người dùng và phân quyền hệ thống.'
-        }
+        description={users ? `${users.length} tài khoản, ${activeCount} đang hoạt động` : undefined}
         action={
           <button
             className="btn btn-primary btn-lg btn-cta"
@@ -377,12 +372,11 @@ export function UsersPage() {
                         <Badge tone="slate">{u.roleName}</Badge>
                       </td>
                       <td className="cell-muted">
-                        {[u.hasPassword && 'Mật khẩu', u.hasGoogleLink && 'Google'].filter(Boolean).join(' · ')}
+                        {[u.hasPassword && 'Mật khẩu', u.hasGoogleLink && 'Google'].filter(Boolean).join(', ')}
                       </td>
                       <td>
-                        <span className={u.isActive ? 'status status-emerald' : 'status status-ended'}>
-                          {u.isActive ? 'Hoạt động' : 'Đã vô hiệu hoá'}
-                        </span>
+                        {/* The normal case is plain text; only the exception stands out. */}
+                        {u.isActive ? 'Hoạt động' : <span className="user-disabled">Đã vô hiệu hoá</span>}
                       </td>
                       <td className="cell-muted">{formatDate(u.createdAt)}</td>
                       <td className="col-action">

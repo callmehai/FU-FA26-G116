@@ -228,7 +228,7 @@ export function RecordingsPanel({ meetingId, variant = 'page' }: { meetingId: st
               </button>
             )}
             <button type="button" className="btn btn-primary btn-sm" onClick={() => void stopAndSave()}>
-              <Icon name="stop" size={16} />
+              <Icon name="recordStop" size={16} />
               Dừng và lưu
             </button>
           </div>

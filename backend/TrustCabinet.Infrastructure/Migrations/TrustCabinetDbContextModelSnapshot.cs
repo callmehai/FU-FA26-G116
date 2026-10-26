@@ -38,6 +38,19 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("actual_started_at");
 
+                    b.Property<string>("Conclusion")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("conclusion");
+
+                    b.Property<DateTimeOffset?>("ConclusionUpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("conclusion_updated_at");
+
+                    b.Property<Guid?>("ConclusionUpdatedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("conclusion_updated_by_id");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -48,27 +61,27 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(4000)")
                         .HasColumnName("description");
 
+                    b.Property<string>("LegacyPresenterName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("presenter_name");
+
                     b.Property<Guid>("MeetingId")
                         .HasColumnType("uuid")
                         .HasColumnName("meeting_id");
-
-                    b.Property<int>("PlannedDurationMinutes")
-                        .HasColumnType("integer")
-                        .HasColumnName("planned_duration_minutes");
 
                     b.Property<int>("Position")
                         .HasColumnType("integer")
                         .HasColumnName("position");
 
+                    b.Property<Guid?>("PresenterGuestInvitationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("presenter_guest_invitation_id");
+
                     b.Property<Guid?>("PresenterId")
                         .HasColumnType("uuid")
                         .HasColumnName("presenter_id");
-
-                    b.Property<string>("PresenterName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("presenter_name");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -89,6 +102,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_agenda_items");
 
+                    b.HasIndex("ConclusionUpdatedById")
+                        .HasDatabaseName("ix_agenda_items_conclusion_updated_by_id");
+
+                    b.HasIndex("PresenterGuestInvitationId")
+                        .HasDatabaseName("ix_agenda_items_presenter_guest_invitation_id");
+
                     b.HasIndex("PresenterId")
                         .HasDatabaseName("ix_agenda_items_presenter_id");
 
@@ -102,6 +121,10 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.ToTable("agenda_items", null, t =>
                         {
+                            t.HasCheckConstraint("ck_agenda_items_conclusion", "(conclusion IS NULL AND conclusion_updated_by_id IS NULL AND conclusion_updated_at IS NULL) OR (conclusion IS NOT NULL AND conclusion_updated_by_id IS NOT NULL AND conclusion_updated_at IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_agenda_items_presenter", "presenter_id IS NULL OR presenter_guest_invitation_id IS NULL");
+
                             t.HasCheckConstraint("ck_agenda_items_status", "status IN ('Pending', 'InProgress', 'Done')");
                         });
                 });
@@ -2382,6 +2405,12 @@ namespace TrustCabinet.Infrastructure.Migrations
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.AgendaItem", b =>
                 {
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "ConclusionUpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("ConclusionUpdatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_agenda_items_users_conclusion_updated_by_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
                         .WithMany("AgendaItems")
                         .HasForeignKey("MeetingId")
@@ -2389,15 +2418,25 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_agenda_items_meetings_meeting_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", "PresenterGuestInvitation")
+                        .WithMany()
+                        .HasForeignKey("PresenterGuestInvitationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_agenda_items_meeting_guest_invitations_presenter_guest_invi");
+
                     b.HasOne("TrustCabinet.Domain.Entities.User", "Presenter")
                         .WithMany()
                         .HasForeignKey("PresenterId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_agenda_items_users_presenter_id");
 
+                    b.Navigation("ConclusionUpdatedBy");
+
                     b.Navigation("Meeting");
 
                     b.Navigation("Presenter");
+
+                    b.Navigation("PresenterGuestInvitation");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.AuditLogEntry", b =>

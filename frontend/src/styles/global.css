@@ -49,8 +49,10 @@
   --sidebar-mid: #375aa6;
   --sidebar-bottom: #304f97;
   --sidebar-ink-soft: #e1eaf6;
-  --sidebar-hover: rgb(255 255 255 / 12%);
-  --sidebar-active: rgb(255 255 255 / 22%);
+  /* Hover and the current item darken the blue: a white wash lifts it until white text drops
+     under 4.5:1 (sloplint A1 measured 4.0:1 on the active item). */
+  --sidebar-hover: rgb(15 23 42 / 14%);
+  --sidebar-active: rgb(15 23 42 / 25%);
   --sidebar-line: rgb(255 255 255 / 16%);
 
   --shadow-sm: 0 1px 2px #1a24330f;
@@ -159,7 +161,8 @@ code {
   border-radius: 6px;
   background: var(--surface-alt);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: .88em;
+  /* .88em of 13px body text came out at 11.4px; 12px is the floor (ADR-0012). */
+  font-size: max(.88em, 12px);
 }
 
 /* ---------- Buttons ---------- */
@@ -204,21 +207,10 @@ code {
 .btn-danger { background: var(--chip-red-bg); border-color: color-mix(in srgb, var(--danger) 28%, transparent); color: var(--danger-ink); }
 .btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 16%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
 
-/* The call to action (AI-eCabinet's cta): raised, and it lifts on hover. For the page's own action
-   ("Tạo cuộc họp") and for what waits on the user ("Duyệt"). Its glow takes the button's colour
-   (`--cta-glow`): brand blue by default, green on the live actions below. */
-.btn-cta { --cta-glow: var(--brand); font-weight: 700; box-shadow: inset 0 -2px 0 rgb(0 0 0 / 14%), 0 4px 12px color-mix(in srgb, var(--cta-glow) 30%, transparent); }
-.btn-cta:hover:not(:disabled) { translate: 0 -1px; box-shadow: inset 0 -2px 0 rgb(0 0 0 / 14%), 0 8px 18px color-mix(in srgb, var(--cta-glow) 42%, transparent); }
-.btn-cta:disabled { box-shadow: none; }
-/* Waiting on the user right now: it ripples until done, and its arrow nudges (eCab cta-ping). One
-   per screen at most — a list of rippling buttons would be noise. */
-.btn-ping:not(:disabled) { animation: cta-ping 1.8s ease-out .6s infinite; }
-.btn-nudge .icon:last-child { animation: nudge 2s ease-in-out infinite; }
-@keyframes cta-ping {
-  0% { box-shadow: inset 0 -2px 0 rgb(0 0 0 / 14%), 0 0 0 0 color-mix(in srgb, var(--cta-glow, var(--brand)) 55%, transparent), 0 4px 12px color-mix(in srgb, var(--cta-glow, var(--brand)) 30%, transparent); }
-  100% { box-shadow: inset 0 -2px 0 rgb(0 0 0 / 14%), 0 0 0 12px color-mix(in srgb, var(--cta-glow, var(--brand)) 0%, transparent), 0 4px 12px color-mix(in srgb, var(--cta-glow, var(--brand)) 30%, transparent); }
-}
-@keyframes nudge { 0%, 60%, 100% { translate: 0 0; } 75% { translate: 3px 0; } }
+/* The page's own action ("Tạo cuộc họp") and what waits on the user ("Duyệt"): weight, not effects.
+   No glow, lift or ripple — a coloured halo and an endlessly pulsing button are the stock tells of a
+   generated UI (sloplint S6, M1). */
+.btn-cta { font-weight: 700; }
 
 /* A button that is only its icon; the name lives in aria-label and the tooltip (data-tooltip). */
 .btn-icon { width: var(--control-height); padding: 0; }
@@ -227,10 +219,10 @@ code {
 
 /* Entering a meeting in progress — the same solid green as the "Đang diễn ra" state — so a live
    screen does not show three blue calls to action side by side. */
-.btn-live { --cta-glow: var(--live); background: var(--live); color: #fff; }
+.btn-live { background: var(--live); color: #fff; }
 .btn-live:hover:not(:disabled) { background: color-mix(in srgb, var(--live) 86%, #000); }
 /* "Tham dự": a yes to the invitation, in the soft green of the "Đã xác nhận tham dự" chip it becomes. */
-.btn-accept { --cta-glow: var(--live); background: var(--chip-emerald-bg); border-color: color-mix(in srgb, var(--live) 32%, transparent); color: var(--chip-emerald-fg); }
+.btn-accept { background: var(--chip-emerald-bg); border-color: color-mix(in srgb, var(--live) 32%, transparent); color: var(--chip-emerald-fg); }
 .btn-accept:hover:not(:disabled) { background: color-mix(in srgb, var(--live) 16%, var(--surface)); border-color: color-mix(in srgb, var(--live) 50%, transparent); }
 
 .btn-block { width: 100%; }
@@ -467,11 +459,11 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   padding: 32px 30px 28px;
   border-radius: 12px;
   background: var(--surface);
-  box-shadow: 0 30px 70px #08183047, inset 0 2px 0 var(--gold);
+  box-shadow: var(--shadow), inset 0 2px 0 var(--gold);
 }
 
 .login-head { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
-.login-mark { display: flex; margin-bottom: 10px; border-radius: 50%; box-shadow: 0 0 0 3px var(--gold-soft), 0 10px 24px #10285033; }
+.login-mark { display: flex; margin-bottom: 10px; border-radius: 50%; box-shadow: 0 0 0 3px var(--gold-soft); }
 .login-head h1 { font-size: 24px; font-weight: 700; line-height: 32px; }
 .login-sub { margin: 0; color: var(--muted-ink); font-size: 14px; }
 .login-card form { display: flex; flex-direction: column; gap: 16px; }
@@ -522,7 +514,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   border: 1px solid var(--line);
   border-radius: 50%;
   background: var(--surface);
-  box-shadow: 0 1px 3px rgb(15 23 42 / .18);
   color: var(--brand);
   cursor: pointer;
   transition: background .15s, color .15s, border-color .15s;
@@ -709,7 +700,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   background: var(--alert-dot);
   box-shadow: 0 0 0 2px var(--sidebar-bottom);
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 18px;
   text-align: center;
@@ -786,14 +777,14 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .notif-item-unread .notif-open { background: var(--brand-wash); }
 .notif-item-unread .notif-open:hover:not(:disabled) { background: var(--surface-alt); }
 
-.notif-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; }
-.notif-tone-blue { background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
-.notif-tone-amber { background: var(--chip-amber-bg); color: var(--chip-amber-fg); }
-.notif-tone-violet { background: var(--chip-violet-bg); color: var(--chip-violet-fg); }
-.notif-tone-emerald { background: var(--chip-emerald-bg); color: var(--chip-emerald-fg); }
-.notif-tone-red { background: var(--chip-red-bg); color: var(--chip-red-fg); }
-.notif-tone-indigo { background: var(--chip-indigo-bg); color: var(--chip-indigo-fg); }
-.notif-tone-slate { background: var(--chip-slate-bg); color: var(--chip-slate-fg); }
+.notif-icon { display: grid; place-items: center; width: 20px; height: 20px; }
+.notif-tone-blue { color: var(--chip-blue-fg); }
+.notif-tone-amber { color: var(--chip-amber-fg); }
+.notif-tone-violet { color: var(--chip-violet-fg); }
+.notif-tone-emerald { color: var(--chip-emerald-fg); }
+.notif-tone-red { color: var(--chip-red-fg); }
+.notif-tone-indigo { color: var(--chip-indigo-fg); }
+.notif-tone-slate { color: var(--chip-slate-fg); }
 
 .notif-content { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .notif-title { color: var(--ink-soft); font-size: 14px; font-weight: 500; line-height: 20px; overflow-wrap: anywhere; }
@@ -924,56 +915,38 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 }
 
 /* A small uppercase line above the title naming the section ("QUẢN TRỊ"). */
-.page-eyebrow { margin: 0 0 2px; color: var(--label-ink); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
 .page-header-desc { margin: 2px 0 0; color: var(--muted-ink); font-size: 14px; }
 .page-header-actions { display: flex; flex: none; align-items: center; gap: 8px; }
 .page-loading { margin: 0; padding: 48px 0; color: var(--muted-ink); text-align: center; }
 
 /* ---------- Status summary (features/meetings/StatusSummary.tsx) ----------
-   Four counts that double as a status filter. The selected one turns solid brand blue — the same
-   "you are here" signal as the active sidebar entry. */
-.summary-cards { display: grid; flex: none; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; }
+   Four counts that double as a status filter: a label and a number, set as type rather than as
+   KPI tiles (no icon tile, no caption repeating the label, no colour per card). The selected one
+   takes the brand edge and wash, like the active sidebar entry. */
+.summary-cards { display: grid; flex: none; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
 
 .summary-card {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   background: var(--surface);
   color: var(--ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: border-color .15s, box-shadow .15s, background-color .15s;
+  transition: border-color .15s, background-color .15s;
 }
-.summary-card:hover { border-color: var(--brand-wash-line); box-shadow: 0 2px 8px #1a24330f; }
-
-.summary-icon { display: flex; flex: none; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 10px; }
-.summary-body { display: flex; flex-direction: column; min-width: 0; }
+.summary-card:hover { border-color: var(--brand-wash-line); }
 .summary-label { color: var(--muted-ink); font-size: 13px; }
-.summary-count { font-size: 30px; font-weight: 700; line-height: 1.15; }
-.summary-card .summary-count-missing { color: var(--faint-ink); }
-.summary-count-skeleton { width: 40px; height: 28px; margin: 3px 0 4px; }
-.summary-hint { overflow: hidden; color: var(--label-ink); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-
-.summary-live .summary-icon { background: var(--chip-emerald-bg); color: var(--live); }
-.summary-live .summary-count { color: var(--live); }
-.summary-blue .summary-icon { background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
-.summary-blue .summary-count { color: var(--chip-blue-fg); }
-.summary-amber .summary-icon { background: var(--chip-amber-bg); color: var(--chip-amber-fg); }
-.summary-amber .summary-count, .summary-amber .summary-hint { color: var(--chip-amber-fg); }
-.summary-card .summary-hint-missing { color: var(--label-ink); }
-.summary-slate .summary-icon { background: var(--chip-slate-bg); color: var(--muted-ink); }
-.summary-slate .summary-count { color: var(--ink-soft); }
-
+.summary-count { font-size: 24px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.summary-card .summary-count-missing { color: var(--label-ink); }
+.summary-count-skeleton { width: 40px; height: 24px; margin: 2px 0 3px; }
 .summary-card-selected,
-.summary-card-selected:hover { border-color: var(--brand); background: var(--brand); box-shadow: 0 4px 12px #1d4e8938; color: #fff; }
-.summary-card-selected .summary-icon { background: rgb(255 255 255 / 16%); color: #fff; }
-.summary-card-selected .summary-label { color: #dce6f3; }
-.summary-card-selected .summary-count { color: #fff; }
-.summary-card-selected .summary-hint { color: var(--gold-soft); font-weight: 600; }
+.summary-card-selected:hover { border-color: var(--brand); background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--brand); }
+.summary-card-selected .summary-label { color: var(--brand); font-weight: 600; }
 
 /* ---------- Toolbar ---------- */
 .toolbar { display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
@@ -1078,6 +1051,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .data-table th.col-action { text-align: right; }
 
 .row-inactive td { color: var(--muted-ink); }
+.user-disabled { color: var(--ink); font-weight: 600; }
 /* A row that opens its record. The title stays a real link for keyboard and middle-click. */
 .row-link { cursor: pointer; }
 .row-link .cell-title a:hover { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
@@ -1169,10 +1143,11 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .chip-row { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 
 /* ---------- Chips ----------
-   Three kinds, told apart by shape as well as colour:
+   Three kinds, told apart by shape as well as colour (ADR-0028):
    - .badge: a plain soft label (a role, a count);
-   - .status: a meeting's lifecycle state — rounded, with a dot; "Đang diễn ra" is the one solid;
-   - .level: a sensitivity level — square corners and its own icon. */
+   - .status: a meeting's lifecycle state — a coloured icon and text with no chip, like a status
+     indicator in Cloudscape or Carbon; "Đang diễn ra" is the one solid label;
+   - .level: a sensitivity level — square corners and its own icon; "Thường" is plain text. */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -1200,25 +1175,23 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   align-items: center;
   gap: 6px;
   height: 24px;
-  padding: 0 10px 0 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
+  color: var(--ink);
+  font-weight: 500;
   white-space: nowrap;
 }
-.status::before { content: ''; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--status-dot); }
-.status-slate { --status-dot: var(--dot-slate); background: var(--chip-slate-bg); color: var(--chip-slate-fg); box-shadow: inset 0 0 0 1px var(--line); }
-.status-ended { --status-dot: var(--dot-slate); background: var(--chip-slate-bg); color: var(--label-ink); }
-.status-amber { --status-dot: var(--dot-amber); background: var(--chip-amber-bg); color: var(--chip-amber-fg); }
-.status-red { --status-dot: var(--dot-red); background: var(--chip-red-bg); color: var(--chip-red-fg); }
-.status-emerald { --status-dot: var(--dot-emerald); background: var(--chip-emerald-bg); color: var(--chip-emerald-fg); }
-.status-blue { --status-dot: var(--dot-blue); background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
-.status-violet { --status-dot: var(--dot-violet); background: var(--chip-violet-bg); color: var(--chip-violet-fg); }
-.status-live { --status-dot: var(--live-dot); background: var(--live); color: #fff; }
-.status-plain::before { display: none; }
-/* A history row's event ("Gửi duyệt") is a label, not the meeting's state: square like every other
-   chip. Only the live state chip keeps its rounded ends, to differ from the sensitivity .level. */
-.status-plain { padding: 0 10px; border-radius: var(--radius); }
+/* The icon carries the tone; the text stays ink so every state reads at full contrast. */
+.status > svg { flex: none; color: var(--status-icon); }
+.status-slate { --status-icon: var(--chip-slate-fg); }
+.status-ended { --status-icon: var(--label-ink); color: var(--label-ink); }
+.status-amber { --status-icon: var(--chip-amber-fg); }
+.status-red { --status-icon: var(--chip-red-fg); }
+.status-emerald { --status-icon: var(--chip-emerald-fg); }
+.status-blue { --status-icon: var(--chip-blue-fg); }
+.status-violet { --status-icon: var(--chip-violet-fg); }
+.status-live { padding: 0 8px; border-radius: var(--radius); background: var(--live); color: #fff; font-size: 12px; font-weight: 600; }
+/* A history row's event ("Gửi duyệt") is a label, not the meeting's state: the text alone, even
+   when it led to the live state. */
+.status-plain, .status-plain.status-live { padding: 0; background: none; color: var(--ink); font-size: inherit; font-weight: 600; }
 
 .level {
   display: inline-flex;
@@ -1235,6 +1208,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .level-internal { background: var(--brand-wash); color: var(--chip-indigo-fg); box-shadow: inset 0 0 0 1px var(--brand-wash-line); }
 .level-confidential { background: var(--chip-amber-bg); color: var(--chip-amber-fg); box-shadow: inset 0 0 0 1px #ecc98a; }
 .level-secret { background: var(--chip-red-bg); color: var(--chip-red-fg); box-shadow: inset 0 0 0 1px var(--edge-red); font-weight: 700; }
+.level-plain { padding: 0; color: inherit; font-size: inherit; font-weight: 400; }
 
 /* ---------- Tabs ---------- */
 .tabs { display: flex; flex: none; gap: 4px; margin-bottom: 16px; overflow-x: auto; border-bottom: 1px solid var(--line); }
@@ -1270,6 +1244,12 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .record-facts { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; color: var(--muted-ink); }
 .record-facts span { display: inline-flex; align-items: center; gap: 6px; }
 .record-facts .icon { color: var(--label-ink); }
+/* "Vào phòng họp" next to the Chair's "Kết thúc họp" is wider than a phone: wrap, never run off. */
+.record-head .page-header-actions { flex-wrap: wrap; max-width: 100%; }
+@media (max-width: 720px) {
+  .record-head .page-header-actions { flex: 1 1 100%; }
+  .record-head .page-header-actions > .btn { flex: 1 1 0; min-width: max-content; }
+}
 
 .detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 360px); gap: 16px; align-items: start; }
 
@@ -1284,7 +1264,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* The description sits under a rule, apart from the short facts above it. */
 .field-grid .field-divided { padding-top: 18px; border-top: 1px solid var(--line-soft); }
 /* An unset value reads as absent, not as data: muted and italic, never an em dash that looks typed. */
-.value-empty { color: var(--faint-ink); font-style: italic; font-weight: 400; }
+/* Absent values stay readable (4.5:1, WCAG): italic marks them, not a faint grey. */
+.value-empty { color: var(--label-ink); font-style: italic; font-weight: 400; }
 /* Free text keeps the author's line breaks. */
 .value-text { max-width: 760px; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 
@@ -1341,7 +1322,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .timeline-violet { --dot: var(--dot-violet); }
 .timeline-live { --dot: var(--live); }
 
-.timeline-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 24px; }
+/* On a 360px phone a long label and the time do not fit one line: the time moves under the label. */
+.timeline-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 8px; min-height: 24px; }
 /* Who acted lives in the time's tooltip (AI-eCabinet), so a row stays one line. */
 .timeline-time {
   flex: none;
@@ -1377,7 +1359,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 /* ---------- Approval workflow (SCRUM-19) ----------
    Where the meeting stands and the next step for the person looking, between the page header and
-   the tabs. The left edge carries the state's colour; the text stays ink for contrast. */
+   the tabs. The state's colour is on its icon only — a coloured side stripe on a card is the most
+   reliable generated-UI tell (sloplint S3); the text stays ink for contrast. */
 .workflow-bar {
   display: flex;
   align-items: flex-start;
@@ -1385,26 +1368,21 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   margin-bottom: 20px;
   padding: 16px 18px;
   border: 1px solid var(--line);
-  border-left: 3px solid var(--workflow-accent);
   border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
 }
-.workflow-slate { --workflow-accent: var(--muted-ink); --workflow-tint: var(--chip-slate-bg); --workflow-ink: var(--ink-soft); }
-.workflow-amber { --workflow-accent: var(--accent-amber); --workflow-tint: var(--chip-amber-bg); --workflow-ink: var(--chip-amber-fg); }
-.workflow-warning { --workflow-accent: var(--accent-amber); --workflow-tint: var(--chip-amber-bg); --workflow-ink: var(--chip-amber-fg); background: var(--wash-amber); }
-.workflow-red { --workflow-accent: var(--danger); --workflow-tint: var(--chip-red-bg); --workflow-ink: var(--chip-red-fg); }
-.workflow-blue { --workflow-accent: var(--brand); --workflow-tint: var(--chip-blue-bg); --workflow-ink: var(--chip-blue-fg); }
-.workflow-emerald { --workflow-accent: var(--accent-emerald); --workflow-tint: var(--chip-emerald-bg); --workflow-ink: var(--chip-emerald-fg); }
+.workflow-slate { --workflow-accent: var(--muted-ink); }
+.workflow-amber { --workflow-accent: var(--accent-amber); }
+.workflow-warning { --workflow-accent: var(--accent-amber); background: var(--wash-amber); }
+.workflow-red { --workflow-accent: var(--danger); }
+.workflow-blue { --workflow-accent: var(--brand); }
+.workflow-emerald { --workflow-accent: var(--accent-emerald); }
 .workflow-icon {
   display: grid;
   flex: none;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--workflow-tint);
-  color: var(--workflow-ink);
+  height: 22px;
+  color: var(--workflow-accent);
 }
 .workflow-body { flex: 1; min-width: 0; padding-top: 1px; }
 .workflow-body h2 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
@@ -1541,7 +1519,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .meeting-form { display: flex; flex-direction: column; gap: 20px; }
 .form-section { display: flex; flex-direction: column; gap: 14px; }
 .form-section + .form-section { padding-top: 20px; border-top: 1px solid var(--line); }
-.form-section-title { margin: 0; color: var(--ink-soft); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.form-section-title { margin: 0; color: var(--ink); font-size: 14px; font-weight: 700; }
 
 /* ---------- Toasts (components/ToastProvider.tsx) ---------- */
 .toast-stack {
@@ -1778,7 +1756,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .cal-event-short .cal-event-title { display: block; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
 .cal-event-place { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; opacity: .85; }
 .cal-event-secret { display: inline-flex; align-items: center; gap: 3px; height: 18px; margin-left: auto; padding: 0 6px; border-radius: 4px; background: var(--surface); color: var(--chip-red-fg); font-size: 11px; }
-.cal-event-live { border-color: var(--live); background: var(--live); color: #fff; box-shadow: 0 2px 6px #0e6b4440; }
+.cal-event-live { border-color: var(--live); background: var(--live); color: #fff; }
 .cal-event-blue { border-color: var(--edge-blue); background: var(--chip-blue-bg); color: #152e5c; }
 .cal-event-blue .cal-event-time { color: var(--chip-blue-fg); }
 .cal-event-emerald { border-color: #9fd8b9; background: var(--chip-emerald-bg); color: #0b4f33; }
@@ -1787,7 +1765,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .cal-event-red { border-color: var(--edge-red); background: var(--chip-red-bg); color: #6e1418; }
 .cal-event-red .cal-event-title { text-decoration: line-through; }
 .cal-event-violet { border-color: #c9b8f0; background: var(--chip-violet-bg); color: #3e2577; }
-.calendar-free { position: absolute; right: 8px; left: 8px; color: var(--faint-ink); font-size: 13px; text-align: center; }
+.calendar-free { position: absolute; right: 8px; left: 8px; color: var(--label-ink); font-size: 13px; text-align: center; }
 
 .calendar-legend { display: flex; flex: none; flex-wrap: wrap; gap: 14px; padding: 8px 12px; border-top: 1px solid var(--line-soft); background: #fbfcfd; color: var(--muted-ink); font-size: 12px; }
 .calendar-legend span { display: flex; align-items: center; gap: 5px; }
@@ -2025,10 +2003,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   min-width: 0;
   padding: 14px 18px;
   border: 1px solid var(--line);
-  border-left: 4px solid var(--agenda-tone, var(--dot-blue));
-  border-radius: 10px;
+  border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: 0 1px 3px #1a24330d;
 }
 .agenda-card-main { display: flex; flex: 1; flex-direction: column; gap: 6px; min-width: 0; }
 .agenda-title { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.35; }
@@ -2039,7 +2015,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .agenda-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 0; }
 .agenda-open { flex: none; height: 38px; padding: 0 12px 0 16px; border-radius: 19px; color: var(--brand); }
 .agenda-empty { grid-column: 3; margin: 0; padding: 14px 18px; border: 1px dashed var(--control-line); border-radius: 10px; color: var(--muted-ink); }
-.agenda-card-skeleton { grid-column: 3; flex-direction: column; align-items: stretch; gap: 10px; border-left-color: var(--line); }
+.agenda-card-skeleton { grid-column: 3; flex-direction: column; align-items: stretch; gap: 10px; }
 .agenda-card-skeleton .skeleton:first-child { width: 45%; height: 16px; }
 .agenda-card-skeleton .skeleton:last-child { width: 30%; }
 
@@ -2188,11 +2164,110 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .choice-label { color: var(--ink); font-size: 14px; font-weight: 600; }
 .choice-desc { color: var(--muted-ink); font-size: 13px; }
 
+/* ---------- Agenda (SCRUM-25, features/agenda) ----------
+   One line per item, as AI-eCabinet: handle, number, title, then presenter, state, conclusion and
+   documents in fixed columns, then actions. Narrow (a phone, the room's 360px panel) the facts move
+   under the title and the actions to their own line. */
+.agenda-panel { container-type: inline-size; }
+.agenda-toolbar { flex-wrap: nowrap; }
+.agenda-alert { margin: 12px 16px 0; }
+.agenda-list { list-style: none; margin: 0; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.agenda-panel-room .agenda-list { padding: 0; }
+.agenda-panel-room .agenda-toolbar { padding: 0 0 12px; border: 0; }
+.agenda-item { position: relative; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.agenda-item-open { box-shadow: 0 1px 3px rgb(16 24 40 / .08); }
+/* The item under discussion: a live green edge only, as "Đang diễn ra" is the live green elsewhere. Its
+   background stays white like every other item; a green wash behind the white boxes clashed. */
+.agenda-item-current { border-color: var(--live-ring); box-shadow: inset 3px 0 0 var(--live); }
+.agenda-item-dragging { z-index: 2; box-shadow: 0 8px 24px rgb(16 24 40 / .18); }
+/* Where the title starts, so the facts and the opened body line up under it. */
+.agenda-item { --agenda-indent: 46px; }
+.agenda-item:has(.agenda-grip) { --agenda-indent: 80px; }
+.agenda-head { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; padding: 4px 12px 8px; }
+.agenda-break { flex-basis: 100%; height: 0; }
+.agenda-grip {
+  display: inline-grid; flex: none; place-items: center; width: 28px; height: 36px; margin-right: -4px;
+  border: 0; border-radius: var(--radius); background: transparent; color: var(--label-ink);
+  cursor: grab; touch-action: none;
+}
+.agenda-grip:hover { background: var(--surface-alt); color: var(--ink); }
+.agenda-item-dragging .agenda-grip { cursor: grabbing; }
+.agenda-number {
+  display: inline-grid; flex: none; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--surface-alt); color: var(--label-ink); font-size: 12px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.agenda-title {
+  display: flex; flex: 1; align-items: flex-start; gap: 6px; min-width: 0; min-height: 40px; padding: 10px 0;
+  border: 0; background: transparent; color: var(--ink); font: inherit; font-weight: 600; text-align: left;
+  cursor: pointer;
+}
+.agenda-title > svg { flex: none; margin-top: 3px; color: var(--label-ink); }
+.agenda-title > span { min-width: 0; overflow-wrap: anywhere; }
+.agenda-title:hover > span { color: var(--brand); }
+.agenda-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; min-width: 0; padding-left: calc(var(--agenda-indent) - 12px); }
+.agenda-presenter { display: inline-flex; align-items: center; gap: 6px; max-width: 240px; min-width: 0; font-size: 13px; }
+.agenda-presenter-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted-ink); }
+.agenda-presenter-none .agenda-presenter-name { color: var(--label-ink); font-style: italic; }
+.avatar-xs { width: 22px; height: 22px; font-size: 10px; }
+.avatar-empty { border: 1px dashed var(--label-ink); background: transparent; }
+.agenda-status, .agenda-concluded { font-size: 13px; }
+.agenda-docs { display: inline-flex; align-items: center; gap: 4px; width: 36px; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
+.agenda-docs-none { color: var(--faint-ink); }
+.agenda-actions { flex: none; gap: 6px; }
+.icon-button-danger { color: var(--danger); }
+.agenda-action-slot { width: 34px; flex: none; }
+.agenda-body { padding: 4px 12px 12px var(--agenda-indent); }
+.agenda-text.agenda-note { margin: 0 0 12px; color: var(--muted-ink); }
+.agenda-boxes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.agenda-box { min-width: 0; padding: 10px 12px 12px; border-radius: var(--radius); background: var(--surface-alt); }
+.agenda-box-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; margin-bottom: 4px; }
+.agenda-box-head h4 { margin: 0; color: var(--label-ink); font-size: 13px; font-weight: 600; }
+.agenda-box .value-empty { margin: 0; font-size: 13px; }
+.agenda-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.agenda-stamp { margin: 8px 0 0; color: var(--label-ink); font-size: 12px; }
+.agenda-doc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13px; }
+.agenda-doc-list li { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.agenda-doc-list li > svg { flex: none; color: var(--label-ink); }
+.agenda-doc-list li > span { min-width: 0; overflow-wrap: anywhere; }
+.agenda-conclusion-editor textarea { width: 100%; background: var(--surface); }
+.agenda-conclusion-editor .field-foot { margin-top: 4px; }
+.agenda-conclusion-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.agenda-empty { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 40px 16px; color: var(--label-ink); text-align: center; }
+.agenda-empty p { margin: 8px 0 0; color: var(--ink); font-weight: 600; }
+.agenda-empty small { color: var(--muted-ink); font-size: 13px; }
+.agenda-skeleton { width: 60%; height: 18px; }
+.agenda-pick-list { height: auto; max-height: 220px; }
+.agenda-pick-list .pick-row > svg { flex: none; color: var(--label-ink); }
+.agenda-pick-title { min-width: 0; overflow-wrap: anywhere; }
+.agenda-room { overflow-y: auto; }
+
+/* Wide enough for AI-eCabinet's single line: facts in fixed columns between title and actions. */
+@container (min-width: 960px) {
+  .agenda-head { flex-wrap: nowrap; min-height: 52px; }
+  .agenda-break { display: none; }
+  .agenda-meta { flex: none; flex-wrap: nowrap; order: 1; padding-left: 0; }
+  .agenda-presenter { width: 180px; }
+  .agenda-actions { order: 2; }
+}
+@container (max-width: 640px) {
+  .agenda-boxes { grid-template-columns: minmax(0, 1fr); }
+}
+/* A phone or the room's panel: the actions share the facts' line, at its end. */
+@container (max-width: 520px) {
+  .agenda-meta { flex: 1 1 0; padding-left: 0; }
+  .agenda-actions { order: 6; margin-left: auto; }
+  .agenda-panel .agenda-body { padding-left: 12px; }
+  .agenda-toolbar { padding-left: 12px; padding-right: 12px; }
+  .agenda-list { padding-left: 12px; padding-right: 12px; }
+  .agenda-panel-room .agenda-list { padding: 0; }
+}
+
 /* ---------- Placeholder screens ----------
    A screen whose backend does not exist yet: what it will do, and the endpoint it waits on. */
 .placeholder-card { display: flex; flex: none; flex-direction: column; align-items: center; gap: 8px; padding: 48px 24px; color: var(--muted-ink); text-align: center; }
 .placeholder-card p { max-width: 560px; margin: 0; }
-.placeholder-icon { display: grid; place-items: center; width: 56px; height: 56px; margin-bottom: 4px; border-radius: 14px; background: var(--brand-wash); color: var(--brand); }
+.placeholder-icon { display: grid; place-items: center; margin-bottom: 4px; color: var(--muted-ink); }
 .placeholder-title { color: var(--ink); font-size: 16px; font-weight: 700; }
 .placeholder-card .placeholder-blocked { margin-top: 4px; font-size: 13px; }
 
@@ -2224,8 +2299,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .sidebar-edge-toggle { display: none; }
   .summary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .summary-card { padding: 10px 12px; }
-  .summary-icon { display: none; }
-  .summary-count { font-size: 24px; }
+  .summary-count { font-size: 20px; }
   .page-header { flex-wrap: wrap; }
   .field-grid, .form-grid, .form-row-3 { grid-template-columns: minmax(0, 1fr); }
   .page-alert { flex-direction: column; align-items: flex-start; }
@@ -2847,6 +2921,10 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 }
 /* The right-hand picker's menu grows leftwards, so it stays inside the panel and off the toasts. */
 .room-select + .room-select .room-select-menu { left: auto; right: 0; }
+/* ⋯ of the panels on a phone (RoomView MorePanels): shown only under 560px; opens leftwards. */
+.room-more { position: relative; display: none; }
+.room-more-menu { left: auto; right: 0; }
+.room-more-menu .room-select-item { grid-template-columns: 24px 1fr; text-align: left; }
 @keyframes room-menu-fade { from { opacity: 0; } }
 @keyframes room-menu-grow { from { transform: scaleY(0.8); } }
 /* As in Meet: names centred, the chosen one on a lighter plate in the accent colour with a tick. */
@@ -2984,6 +3062,9 @@ body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
   body:has(.room-controls-main.is-open) .toast-stack { bottom: 164px; }
   .room-control, .room-split > .room-control, .room-control-off, .room-control-side { width: 42px; height: 42px; }
   .room-control-leave { width: 54px; }
+  /* Five panels do not fit beside the call controls: all but "Người dự" and "Chat" go behind ⋯. */
+  .room-controls-side .room-control-tucked { display: none; }
+  .room-more { display: flex; }
   .room-split-more { width: 26px; height: 42px; }
 }
 
@@ -3103,4 +3184,184 @@ audio.recording-player { height: 40px; }
   .speaker-list { grid-template-columns: auto minmax(0, 1fr); }
   .speaker-actions { grid-column: 1 / -1; flex-wrap: wrap; }
   .speaker-actions .select { flex: 1; min-width: 0; }
+
+/* ---------- Meeting documents (features/documents, SCRUM-21 / SCRUM-107) ----------
+   One panel for the Tài liệu tab and the call room (ADR-0011): groups by agenda item, one line per
+   file with its type tag; the room variant scrolls inside the 360px side panel. */
+.segmented-count { margin-left: 2px; font-weight: 700; }
+.documents-panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.room-panel-body.documents-panel { overflow-y: auto; }
+.documents-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.documents-toolbar .segmented { flex: none; }
+/* A phone: the two groups share the full width, the upload button goes under them. */
+@media (max-width: 560px) {
+  .documents-toolbar .segmented { width: 100%; }
+  .documents-toolbar .segmented-option span { padding: 0 6px; font-size: 13px; }
+}
+.documents-card { padding: 0; overflow: hidden; }
+.documents-group + .documents-group { border-top: 1px solid var(--line); }
+.documents-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 16px;
+  border: 0;
+  background: var(--surface-head);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.documents-group-head:hover { background: var(--surface-alt); }
+.documents-group-head:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.documents-group-title { flex: 1; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.documents-rows { list-style: none; margin: 0; padding: 0; }
+.documents-row { display: flex; align-items: center; gap: 8px; padding: 0 12px 0 0; border-top: 1px solid var(--line-soft); }
+.documents-card > .documents-rows > .documents-row:first-child { border-top: 0; }
+.documents-row-link {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 56px;
+  padding: 8px 0 8px 40px;
+  color: var(--ink);
+}
+.documents-card > .documents-rows .documents-row-link { padding-left: 16px; }
+.documents-row-link:hover strong { color: var(--brand); text-decoration: underline; }
+.documents-row-link > .icon { flex: none; color: var(--muted-ink); }
+.documents-row-name { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.documents-row-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.documents-row-name small { color: var(--label-ink); font-size: 13px; }
+.documents-empty { margin: 0; padding: 16px; color: var(--muted-ink); }
+.documents-empty-nested { padding: 12px 16px 12px 40px; border-top: 1px solid var(--line-soft); }
+.documents-skeleton { width: 100%; height: 40px; margin: 8px 16px; }
+/* Touch: the small icon buttons of the list, the upload rows and the viewer's zoom reach 40px. */
+@media (pointer: coarse) {
+  .documents-row .icon-button-sm, .upload-row .icon-button-sm, .viewer-zoom .icon-button-sm { width: 40px; height: 40px; }
+}
+
+/* In the room: sections instead of a card; each file is a bordered line. */
+.room-panel-body .documents-section { display: flex; flex-direction: column; gap: 8px; }
+.documents-section-title { margin: 0; color: var(--label-ink); font-size: 13px; font-weight: 600; }
+.room-panel-body .documents-rows { display: grid; gap: 8px; }
+.room-panel-body .documents-row { padding: 0 10px; border: 1px solid var(--line); border-radius: var(--radius); }
+.room-panel-body .documents-row-link { min-height: 52px; padding: 6px 0; }
+.room-panel-body .documents-group { border: 0; }
+.room-panel-body .documents-group-head { min-height: 40px; padding: 6px 4px; background: transparent; }
+.room-panel-body .documents-group-head:hover { background: var(--surface-alt); }
+.room-panel-body .documents-group .documents-rows { padding: 0 0 8px; }
+.room-panel-body .documents-empty { padding: 4px 0; font-size: 13px; }
+.room-panel-body .documents-empty-nested { padding: 4px 4px 8px 28px; border: 0; }
+
+.file-tag {
+  flex: none;
+  width: 52px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+/* Not red: red is kept for "Mật" and warnings (AGENTS.md). */
+.file-tag-pdf { background: var(--chip-violet-bg); color: var(--chip-violet-fg); }
+.file-tag-docx { background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
+.online-only {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+  border-radius: var(--radius);
+  background: var(--chip-red-bg);
+  color: var(--danger-ink);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Upload dialog (wireframe 7.4b). */
+.dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 16px;
+  border: 1px dashed var(--control-line);
+  border-radius: var(--radius);
+  background: var(--surface-head);
+  color: var(--muted-ink);
+  text-align: center;
+  cursor: pointer;
+}
+.dropzone strong { color: var(--ink); }
+.dropzone span { font-size: 13px; }
+.dropzone:hover, .dropzone.is-dragging { border-color: var(--brand); background: var(--brand-wash); }
+.dropzone:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.dropzone.is-disabled { cursor: progress; opacity: .6; }
+/* The input fills the zone, invisible: a tap anywhere opens the picker, and it keeps the focus. */
+.dropzone input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: inherit; }
+.upload-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.upload-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 6px 6px 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.upload-row-error { border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+.upload-row-error small { color: var(--danger-ink); }
+.upload-row-name { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.upload-row-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.upload-row-name small { color: var(--label-ink); font-size: 13px; }
+.upload-progress { flex: none; width: 96px; height: 6px; margin-right: 8px; border-radius: 3px; background: var(--surface-alt); overflow: hidden; }
+.upload-progress i { display: block; height: 100%; background: var(--brand); transition: width .2s; }
+.upload-body { display: grid; gap: 12px; }
+
+/* Document viewer (wireframe 7.5 / 7.5b): the whole window, a header line over a grey stage. */
+.viewer { display: flex; flex-direction: column; height: 100dvh; background: var(--paper); }
+.viewer-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  min-height: 64px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.viewer-back { align-self: center; margin: 0; }
+.viewer-title { min-width: 0; margin: 0; overflow: hidden; font-size: 16px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.viewer-meeting { flex: 0 1 auto; min-width: 0; overflow: hidden; color: var(--muted-ink); font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.viewer-spacer { flex: 1; }
+.viewer-break { display: none; }
+.viewer-page { flex: none; color: var(--muted-ink); font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.viewer-zoom { display: flex; flex: none; align-items: center; gap: 2px; }
+.viewer-zoom-value { min-width: 48px; font-size: 14px; font-variant-numeric: tabular-nums; text-align: center; }
+.viewer-stage { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.viewer-scroll { flex: 1; min-height: 0; overflow: auto; padding: 24px; }
+.viewer-message { display: grid; place-items: center; padding: 48px 16px; color: var(--muted-ink); }
+.pdf-page { margin: 0 auto 16px; background: var(--surface); box-shadow: var(--shadow-sm); }
+.pdf-page canvas { display: block; }
+.docx-sheet { margin: 0 auto; padding: 40px 48px; background: var(--surface); box-shadow: var(--shadow-sm); color: var(--ink); }
+/* docx-preview draws Word's page box; the sheet is the page here. */
+.docx-sheet section.docx { width: auto !important; min-height: 0 !important; padding: 0 !important; background: none !important; box-shadow: none !important; }
+@media (max-width: 720px) {
+  .viewer-meeting { display: none; }
+  .viewer-head { flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  /* The name on a line of its own, wrapped in full: a phone has no tooltip to read it from. */
+  .viewer-title { flex: 1 1 0; overflow: visible; white-space: normal; overflow-wrap: anywhere; }
+  .viewer-break { display: block; flex-basis: 100%; height: 0; }
+  .viewer-spacer { display: block; }
+  .viewer-download-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .viewer-scroll { padding: 12px 8px; }
+  .docx-sheet { padding: 20px 16px; }
 }

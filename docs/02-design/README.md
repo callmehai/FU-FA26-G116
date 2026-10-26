@@ -16,3 +16,5 @@ Dự kiến có thêm:
 - `07-bao-mat.md` — xác thực, phân quyền RBAC, kiểm soát truy cập tài liệu
 
 Sơ đồ đặt trong [../assets/](../assets/), commit cả file nguồn lẫn ảnh xuất ra.
+
+SCRUM-98: ERD Markdown và hướng dẫn database mô tả migration Agenda, legacy presenter và khóa kết luận bằng MeetingMinutes. Nguồn diagram không sửa; phần lệch được ghi ở [bàn giao](../03-api/08-scrum98-ban-giao.md).

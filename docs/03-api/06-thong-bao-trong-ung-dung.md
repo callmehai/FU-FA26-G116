@@ -204,7 +204,11 @@ Chuông thông báo nằm trên app bar, dùng chung cho cả hai workspace. Cod
   `meeting-starting-soon:{meetingId}:{plannedStart unix seconds}:{userId}` ngăn xếp lặp; cuộc họp bị
   dời lịch có giờ mới nên được nhắc lại.
 - **Dời lịch (`MeetingRescheduled`):** PUT dời lịch meeting `Published` (UC-15 AF-1) tạo một thông
-  báo cho mỗi participant active, chưa Delegated, cùng transaction với thay đổi lịch (BR-76).
+  báo cho mỗi participant active, chưa Delegated, trừ chính người dời lịch, cùng transaction với
+  thay đổi lịch (BR-76).
+- **Quy tắc chung:** không ai nhận thông báo trong ứng dụng về thao tác của chính mình (Công bố,
+  Dời lịch, Bắt đầu họp, đổi vai trò/gỡ khỏi thành phần). Email/thư mời vẫn gửi cho họ, vì nó giữ
+  lịch của họ khớp.
 - **Được giao nhiệm vụ:** phạm vi đã chốt của TrustCabinet không có task/action item (xem
   [ERD](../02-design/02-erd.md)); vì vậy chưa có nguồn hay URL đích cho loại thông báo này.
   Cần thay đổi phạm vi ở Jira/BA trước khi triển khai.
@@ -255,3 +259,7 @@ Chạy câu `DELETE` riêng **sau** các request Postman, không chạy cùng c�
 
 Test tự động tạo fixture notification trực tiếp trong database in-memory; không mở endpoint gửi
 thông báo tùy ý để phục vụ test.
+
+## Nguồn MeetingStarted — SCRUM-69
+
+Sau commit Start, NotificationService tạo batch MeetingStarted cho active current internal participants (trừ Chủ tọa vừa bấm Start — không ai nhận thông báo về thao tác của chính mình; không loại Declined), distinct UserId; loại Guest/Removed/Delegated/inactive. Title `Cuộc họp đã bắt đầu`, body `Cuộc họp “{meetingTitle}” đã bắt đầu.`, target Meeting, OriginHistoryId của Start, deduplication key `meeting-started:{historyId:D}:{userId:D}`; timestamp bằng mốc Start. Worker hiện có push dòng đã lưu. Việc tạo batch là best effort, lỗi không rollback Start và không có replay bền vững mới; không gửi email. FE cần thêm nhãn MeetingStarted. [Bàn giao](10-scrum69-ban-giao.md).

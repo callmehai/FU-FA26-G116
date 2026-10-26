@@ -18,9 +18,11 @@ import {
   ChevronUp,
   ChevronsUpDown,
   CircleCheck,
+  CircleStop,
   CircleX,
   Clock,
   Copy,
+  Download,
   Ellipsis,
   EllipsisVertical,
   Eye,
@@ -29,6 +31,8 @@ import {
   FileText,
   Folder,
   FolderPlus,
+  GripVertical,
+  ClipboardCheck,
   Funnel,
   Globe,
   KeyRound,
@@ -69,6 +73,8 @@ import {
   VideoOff,
   Volume2,
   X,
+  ZoomIn,
+  ZoomOut,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -127,6 +133,9 @@ const ICONS = {
   folderPlus: FolderPlus,
   settings: Settings,
   upload: Upload,
+  download: Download,
+  zoomIn: ZoomIn,
+  zoomOut: ZoomOut,
   // Sensitivity levels: each one has its own shape, not only its own colour.
   globe: Globe,
   building: Building2,
@@ -151,10 +160,16 @@ const ICONS = {
   logIn: LogIn,
   mail: Mail,
   undo: RotateCcw,
+  // SCRUM-69: the Chair starts and ends the meeting.
   play: Play,
+  stop: CircleStop,
+  // SCRUM-29: a recorder's pause and stop, and an audio file.
   pause: Pause,
-  stop: Square,
+  recordStop: Square,
   fileAudio: FileAudio,
+  // SCRUM-25: drag an agenda item; an item that has a conclusion.
+  grip: GripVertical,
+  clipboardCheck: ClipboardCheck,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS

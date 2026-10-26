@@ -11,7 +11,7 @@
 > [Report 2](../08-reports/Report-2_Project_Management_Plan.md) (kế hoạch),
 > [Report 3](../08-reports/Report-3_Software_Requirement_Specification.md) (UC, BR, quyền).
 
-**Baseline hiện tại: 15 Feature, 72 Use Case (UC-01 → UC-72).** Cập nhật FE-07/FE-11 ngày 15/10/2026:
+**Bản trích hiện tại: 15 Feature, 73 Use Case (UC-01 → UC-72 và UC-77).** UC-77 được bổ sung từ Report 3 ngày 24/10/2026 trong SCRUM-98; các UC bổ sung khác ngoài phạm vi task này chờ đồng bộ riêng. Cập nhật FE-07/FE-11 ngày 15/10/2026:
 UC-32b vẫn bỏ; UC-33b được tái cấp cho gắn tài liệu vào mục nghị sự, bổ sung UC-33d để bỏ gắn một mục
 theo [ADR-0020](../05-decisions/0020-tai-lieu-theo-quyen-xem-cuoc-hop.md). FE-07 có 16 UC chi tiết;
 FE-11 có 7 UC chi tiết. Số UC gom giữ nguyên.
@@ -123,6 +123,8 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-24 | Đặt mục agenda hiện tại *(Set Current Agenda Item)* | Chair | Đã đặc tả | `<<extend>>` UC-26 |
 | UC-25 | Hoàn thành mục agenda *(Complete Agenda Item)* | Chair | Đã đặc tả | `<<extend>>` UC-26 |
 | UC-26 | Xem chương trình nghị sự *(View Meeting Agenda)* | Actor có quan hệ với cuộc họp | Đã đặc tả | `<<extend>>` UC-16 |
+
+| UC-77 | Ghi kết luận mục nghị sự *(Record Agenda Item Conclusion)* | Chair, Secretary | Đã đặc tả trong Report 3 FE-05; đồng bộ SCRUM-98 | `<<extend>>` UC-26 |
 
 ## FE-06 — Quản lý thành phần tham dự *(Meeting Participant Management)*
 
@@ -317,7 +319,7 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
 | FE-02 | User & Profile Management | 5 | 3 |
 | FE-03 | Role-Based Access Control | 4 | 3 |
 | FE-04 | Meeting Management | 9 | — |
-| FE-05 | Agenda Management | 4 | 4 |
+| FE-05 | Agenda Management | 5 | 4 |
 | FE-06 | Meeting Participant Management | 5 | 3 |
 | FE-07 | Personal Document Library & Meeting Document Management | 7 | 11 |
 | FE-08 | Online Meeting Room Management | 6 | 3 |
@@ -328,7 +330,7 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
 | FE-13 | Email & In-App Notification | 3 | 2 |
 | FE-14 | Personal Dashboard & Meeting Workspace | 1 | — |
 | FE-15 | Reporting & Statistics | 1 | 2 |
-| **Tổng** | | **72** | **35** |
+| **Tổng** | | **73** | **35** |
 
 # 8. Ngoài phạm vi UC
 

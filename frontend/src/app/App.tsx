@@ -27,6 +27,9 @@ const ResetPasswordPage = lazy(() =>
 const CalendarPage = lazy(() =>
   import('../features/calendar/CalendarPage').then((m) => ({ default: m.CalendarPage })),
 )
+const DocumentViewerPage = lazy(() =>
+  import('../features/documents/DocumentViewerPage').then((m) => ({ default: m.DocumentViewerPage })),
+)
 const DocumentsPage = lazy(() =>
   import('../features/documents/DocumentsPage').then((m) => ({ default: m.DocumentsPage })),
 )
@@ -57,6 +60,8 @@ export function App() {
           {/* The call room fills the window, outside the shell. Anyone may open the URL; the
               backend answers 404 to someone who is not invited, and the page renders NotFound. */}
           <Route path={routes.meetingRoom(':meetingId')} element={<MeetingRoomPage />} />
+          {/* Full screen too; an unreadable meeting or document renders NotFound. */}
+          <Route path={routes.meetingDocument(':meetingId', ':documentId')} element={<DocumentViewerPage />} />
           <Route element={<AppShell />}>
             {/* Inside the guard and the shell: following an old /mgmt link must not remount either —
                 that would drop the notification connection. */}
