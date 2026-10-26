@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { sendSpeechClip } from '../../api/speech'
 import { ApiError } from '../../api/client'
+import { isApiError } from '../../lib/errors'
 import { ClipCutter, SAMPLE_RATE } from './clipCutter'
 import { encodeWav, Resampler } from './wav'
 // Always a file of our own origin: Vite would inline a file this small as a data: URL, which the test server's CSP
@@ -22,6 +23,10 @@ export interface MicCapture {
   level: number
   /** Sentences waiting to be sent or being sent. */
   waiting: number
+  /** Of those, the ones that already failed once and are being retried: something is wrong, not just slow. */
+  retrying: number
+  /** The server has no transcriber running (MSG312): nothing becomes words until it is back. */
+  engineDown: boolean
   /** Sentences the server turned down for good (not an outage, which is retried). */
   refused: number
 }
@@ -59,6 +64,8 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
   const [error, setError] = useState<string | null>(null)
   const [level, setLevel] = useState(0)
   const [waiting, setWaiting] = useState(0)
+  const [retrying, setRetrying] = useState(0)
+  const [engineDown, setEngineDown] = useState(false)
   const [refused, setRefused] = useState(0)
   // The queue outlives a capture session: switching the mic off must not drop what was already said.
   const queue = useRef<Pending[]>([])
@@ -74,12 +81,17 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
         if (item.sending || item.dueAt > now) continue
         item.sending = true
         sendSpeechClip(meetingId, item.id, item.audio, item.startedAt, item.durationMs).then(
-          () => settle(item),
+          () => {
+            setEngineDown(false)
+            settle(item)
+          },
           (failure: unknown) => {
             if (retryable(failure)) {
               item.sending = false
               item.attempt++
               item.dueAt = Date.now() + Math.min(MAX_WAIT_MS, 1000 * 2 ** (item.attempt - 1))
+              setEngineDown(isApiError(failure, 503, 'MSG312'))
+              count()
               schedule()
             } else {
               setRefused((n) => n + 1)
@@ -92,8 +104,12 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
     }
     const settle = (item: Pending) => {
       queue.current = queue.current.filter((q) => q !== item)
-      setWaiting(queue.current.length)
+      count()
       pump()
+    }
+    const count = () => {
+      setWaiting(queue.current.length)
+      setRetrying(queue.current.filter((q) => q.attempt > 0).length)
     }
     const schedule = () => {
       const next = queue.current.filter((q) => !q.sending).reduce((at, q) => Math.min(at, q.dueAt), Infinity)
@@ -184,5 +200,5 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
     }
   }, [active, deviceId])
 
-  return { state: active ? state : 'off', error, level: active ? level : 0, waiting, refused }
+  return { state: active ? state : 'off', error, level: active ? level : 0, waiting, retrying, engineDown, refused }
 }

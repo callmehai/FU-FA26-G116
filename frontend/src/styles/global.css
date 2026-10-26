@@ -3191,6 +3191,7 @@ audio.recording-player { height: 40px; }
 .speech-meter { width: 56px; height: 6px; flex: none; overflow: hidden; border-radius: 3px; background: var(--line-soft); }
 .speech-meter > span { display: block; height: 100%; background: var(--brand); transform-origin: left; transition: transform .12s linear; }
 .speech-mine .btn { flex: none; }
+.speech-mine-note { flex-basis: 100%; margin: 0; }
 .speech-empty { margin: 0; }
 .speech-lines { display: flex; flex-direction: column; max-height: 520px; margin: 0; padding: 4px 0; overflow-y: auto; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
 .speech-lines-room { flex: 1; min-height: 0; max-height: none; }

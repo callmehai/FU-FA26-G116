@@ -133,6 +133,13 @@ function MyMic({ speech, room }: { speech: Speech; room: boolean }) {
             ? 'Đang mở micro…'
             : 'Đang ghi'
   const live = capturing && (capture.state === 'listening' || capture.state === 'speaking')
+  // Sending as usual says nothing: the lines appearing say it. Only a sentence that is stuck gets a line here.
+  // A no-break space keeps the count with "câu" when the line wraps.
+  const stuck = capture.engineDown
+    ? `Máy chuyển chữ chưa chạy: ${capture.waiting}\u00a0câu đang chờ, tự gửi khi máy chạy lại.`
+    : capture.retrying > 0
+      ? `Chưa gửi được ${capture.waiting}\u00a0câu, đang thử lại.`
+      : null
   return (
     <div className={`speech-mine${live ? ' is-live' : ''}`} role="status">
       {/* A mic, struck through when it is not feeding the transcript: the shape says it, not a coloured dot. */}
@@ -142,8 +149,6 @@ function MyMic({ speech, room }: { speech: Speech; room: boolean }) {
       {/* Short: the room's narrow panel has the meter and the button beside it, and the header already says whose. */}
       <span className="speech-mine-text" title={status ?? undefined}>
         {status}
-        {capture.waiting > 0 && <small className="field-hint"> · đang gửi {capture.waiting} câu</small>}
-        {capture.refused > 0 && <small className="field-error"> · {capture.refused} câu không gửi được</small>}
       </span>
       {live && (
         <span className="speech-meter" aria-hidden="true">
@@ -159,6 +164,11 @@ function MyMic({ speech, room }: { speech: Speech; room: boolean }) {
         <Icon name={mine ? 'micOff' : 'mic'} size={16} />
         {mine ? 'Dừng ghi' : 'Ghi lời tôi'}
       </button>
+      {/* Its own line, so it wraps instead of being cut off beside the button in the room's narrow panel. */}
+      {stuck && <p className="speech-mine-note field-error">{stuck}</p>}
+      {capture.refused > 0 && (
+        <p className="speech-mine-note field-error">{capture.refused}&nbsp;câu không gửi được.</p>
+      )}
     </div>
   )
 }
