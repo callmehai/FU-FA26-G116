@@ -344,8 +344,10 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
 
 - Chỉ có trong code, chưa thành UC: *ReturnToDraft*, *TransferOrganizer* (endpoint workflow SCRUM-19). Cần PO/BA quyết định
   promote hay dọn code.
-- Không làm (Report 1): theo dõi task / action item, nhận dạng giọng nói (voiceprint), ký HSM thật, triển khai air-gapped,
+- Không làm (Report 1): theo dõi task / action item, ký HSM thật, triển khai air-gapped,
   tích hợp eOffice, nhiều tổ chức / đơn vị ([ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md)).
+- Đưa vào phạm vi 23/10/2026 theo nhận xét hội đồng: nhận diện người nói bằng giọng mẫu (Voice ID) có đồng ý riêng —
+  [ADR-0027](../05-decisions/0027-voice-id-co-dong-y.md). UC cho đồng ý / ghi giọng mẫu / rút đồng ý chưa đánh số, BA bổ sung (SCRUM-35).
 - Lịch sử trạng thái, lịch tuần / tháng: là màn hình / luồng phụ của UC-16, UC-17, không tách UC.
 
 Guest 13/10/2026: [ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md); UC-27/30 cần quyền xem tương ứng như Member, UC-40 xem người đang kết nối mặc định. BR-122 đã chốt; xem [quyết định mới](../05-decisions/0017-ket-thuc-hop-khong-phu-thuoc-diem-danh-bieu-quyet.md).

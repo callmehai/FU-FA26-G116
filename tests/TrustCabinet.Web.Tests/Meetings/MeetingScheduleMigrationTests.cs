@@ -44,7 +44,7 @@ public sealed class MeetingScheduleMigrationTests : IAsyncLifetime
 
         await MigrateToLatestAsync();
 
-        var meeting = await _db.Meetings.SingleAsync(item => item.Id == meetingId);
+        var meeting = await Schedule(meetingId);
         Assert.Equal(Morning, meeting.PlannedStartTime);
         Assert.Equal(Morning.AddHours(6), meeting.PlannedEndTime);
         Assert.Null(meeting.ActualStartedAt);
@@ -63,10 +63,10 @@ public sealed class MeetingScheduleMigrationTests : IAsyncLifetime
 
         await MigrateToLatestAsync();
 
-        var cancelled = await _db.Meetings.SingleAsync(item => item.Id == allCancelled);
+        var cancelled = await Schedule(allCancelled);
         Assert.Equal(Morning, cancelled.PlannedStartTime);
         Assert.Equal(Morning.AddHours(1), cancelled.PlannedEndTime);
-        var empty = await _db.Meetings.SingleAsync(item => item.Id == withoutSessions);
+        var empty = await Schedule(withoutSessions);
         Assert.Equal(CreatedAt, empty.PlannedStartTime);
         Assert.Equal(CreatedAt.AddHours(1), empty.PlannedEndTime);
     }
@@ -89,7 +89,7 @@ public sealed class MeetingScheduleMigrationTests : IAsyncLifetime
 
         await MigrateToLatestAsync();
 
-        Assert.Equal(MeetingStatus.Ended, (await _db.Meetings.SingleAsync(item => item.Id == meetingId)).Status);
+        Assert.Equal(MeetingStatus.Ended, (await Schedule(meetingId)).Status);
         var history = await _db.MeetingStatusHistory.SingleAsync(item => item.MeetingId == meetingId);
         Assert.Equal(MeetingStatus.Ended, history.FromStatus);
         Assert.Equal(MeetingStatus.Ended, history.ToStatus);
@@ -161,6 +161,17 @@ public sealed class MeetingScheduleMigrationTests : IAsyncLifetime
             SELECT EXISTS (SELECT 1 FROM information_schema.tables
                 WHERE table_schema = 'public' AND table_name = {table}) AS "Value"
             """).SingleAsync();
+
+    /// <summary>
+    /// Only the columns this test asserts on: the schema is at this migration, and today's model has columns added
+    /// after it (SCRUM-109's capture mode, for one) that a whole-entity read would ask for.
+    /// </summary>
+    private Task<MeetingSchedule> Schedule(Guid meetingId) => _db.Meetings.Where(m => m.Id == meetingId)
+        .Select(m => new MeetingSchedule(m.PlannedStartTime, m.PlannedEndTime, m.ActualStartedAt, m.ActualEndedAt, m.OnlineLink, m.Status))
+        .SingleAsync();
+
+    private sealed record MeetingSchedule(DateTimeOffset PlannedStartTime, DateTimeOffset PlannedEndTime,
+        DateTimeOffset? ActualStartedAt, DateTimeOffset? ActualEndedAt, string? OnlineLink, MeetingStatus Status);
 
     private sealed record RestoredSession(DateTimeOffset Start, DateTimeOffset End, string Status);
 }

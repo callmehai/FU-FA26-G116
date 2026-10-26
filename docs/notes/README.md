@@ -18,6 +18,9 @@ UC Specification, Business Rules hoặc ADR đã chốt.
   6.1, 7.5, 8.3, 11.x cần sửa theo UC/BR mới (agenda, vote gắn tài liệu, giao chủ toạ, huỷ cuộc họp); SCRUM-100.
 - [Thay đổi để dành cho UC chưa đặc tả](NOTE-uc-chua-dac-ta-cho-sua.md) — 18/10/2026; phần ý PO/hội đồng chạm UC
   placeholder (FE-08, FE-09, FE-10, FE-12) và các vùng Report 3 chưa sửa trong đợt này.
+- [Báo cáo nhận diện giọng nói theo góp ý hội đồng](NOTE-bao-cao-nhan-dien-giong-noi.md) — 23/10/2026; trả lời mục 1–3
+  của góp ý lần 1: Voice ID có đồng ý, độ chính xác đo trên VIVOS và một cuộc họp thật, bảng chi phí AI, đối chiếu
+  Luật 91/2025 và NĐ 356/2025, việc còn lại.
 - [Góp ý của hội đồng — lần review 1](NOTE-gop-y-hoi-dong-lan-1.md) — ghi nhận 18/10/2026; xác định người nói,
   chi phí AI, huỷ/quá hạn cuộc họp, người ký và ban hành biên bản, uỷ quyền, nhắc lịch, NĐ 13/2023, chữ ký số. Đã áp dụng một phần vào Report 3 18/10/2026.
 - [Hồ sơ theo dõi và review UC, BR, MSG của FE-11](NOTE-review-fe11-uc-br-msg.md) — bản tiếng Việt dễ đọc của UC-52a/52b, UC-53–57, BR liên quan và MSG205–236; có liên kết đến các danh mục chuẩn để đối chiếu.

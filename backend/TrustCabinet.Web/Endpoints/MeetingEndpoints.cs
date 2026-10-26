@@ -650,9 +650,10 @@ public static class MeetingEndpoints
 public sealed record CreateMeetingRequest(
     string? Title, string? PlannedStartTime, string? PlannedEndTime, string? Mode,
     string? Location, string? OnlineLink, string? Sensitivity, string? Description,
-    ParticipantSeed[]? Participants)
+    ParticipantSeed[]? Participants, string? CaptureMode = null)
 {
-    public MeetingInput ToInput() => new(Title, PlannedStartTime, PlannedEndTime, Mode, Location, OnlineLink, Sensitivity, Description);
+    public MeetingInput ToInput() => new(Title, PlannedStartTime, PlannedEndTime, Mode, Location, OnlineLink, Sensitivity, Description,
+        CaptureMode);
 }
 
 public sealed record MeetingRequest(
@@ -663,10 +664,11 @@ public sealed record MeetingRequest(
     string? Location,
     string? OnlineLink,
     string? Sensitivity,
-    string? Description)
+    string? Description,
+    string? CaptureMode = null)
 {
     public MeetingInput ToInput() => new(
-        Title, PlannedStartTime, PlannedEndTime, Mode, Location, OnlineLink, Sensitivity, Description);
+        Title, PlannedStartTime, PlannedEndTime, Mode, Location, OnlineLink, Sensitivity, Description, CaptureMode);
 }
 
 public sealed record MeetingResponse(
@@ -687,7 +689,7 @@ public sealed record MeetingResponse(
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     MeetingPerson? Chair, IReadOnlyList<MeetingPerson> Secretaries, string? MyMeetingRole,
-    string? MyResponse, bool CanRespond)
+    string? MyResponse, bool CanRespond, string CaptureMode)
 {
     public static MeetingResponse From(MeetingDetails meeting) => new(
         meeting.Id,
@@ -706,7 +708,7 @@ public sealed record MeetingResponse(
         meeting.AssignedApproverId,
         meeting.CreatedAt,
         meeting.UpdatedAt, meeting.Chair, meeting.Secretaries ?? [], meeting.MyMeetingRole,
-        meeting.MyResponse, meeting.CanRespond);
+        meeting.MyResponse, meeting.CanRespond, meeting.CaptureMode.ToString());
 }
 
 public sealed record MeetingMutationResponse(string Code, string Message, MeetingResponse Meeting);

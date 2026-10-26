@@ -63,6 +63,26 @@ jobs:
       - name: Chép image sang server
         run: docker save trustcabinet-app:latest | gzip | ssh "$SERVER" 'gunzip | docker load'
 
+      - name: Máy chuyển chữ
+        # Chỉ khi server bật profile speech (cần máy 4 GB, deploy/README.md §10). Image ~770 MB nên chỉ
+        # build và chép khi workers/speech đổi: tag theo mã băm thư mục đó, server có rồi thì bỏ qua.
+        run: |
+          if ! ssh "$SERVER" "grep -qE '^COMPOSE_PROFILES=.*speech' ~/TrustCabinet/deploy/.env"; then
+            echo "Server chưa bật máy chuyển chữ, bỏ qua"
+            exit 0
+          fi
+          tree=$(git rev-parse HEAD:workers/speech)
+          if ssh "$SERVER" "docker image inspect trustcabinet-speech:$tree" > /dev/null 2>&1; then
+            echo "Server đã có image máy chuyển chữ $tree"
+          else
+            docker build -t "trustcabinet-speech:$tree" workers/speech
+            docker save "trustcabinet-speech:$tree" | gzip | ssh "$SERVER" 'gunzip | docker load'
+          fi
+          # latest là tên docker-compose.yml dùng; các bản cũ thì xoá cho khỏi đầy đĩa.
+          ssh "$SERVER" "set -e
+            docker tag trustcabinet-speech:$tree trustcabinet-speech:latest
+            docker images trustcabinet-speech --format '{{.Tag}}' | grep -vxE 'latest|$tree' | xargs -r -I{} docker rmi -f trustcabinet-speech:{} > /dev/null"
+
       - name: Khởi động lại
         # git đưa server về đúng commit vừa build, để docker-compose.yml và Caddyfile khớp với
         # image. --no-build: dùng image vừa chép sang, không build lại trên server.
@@ -101,3 +121,16 @@ jobs:
           done
           echo "::error::Sau 150 giây: /api/health trả $health (cần 200), /rtc/validate trả $rtc (cần 401 của LiveKit)"
           exit 1
+
+      - name: Kiểm tra máy chuyển chữ
+        # Lần đầu worker nạp model và tự kiểm tra mã băm, mất khoảng một phút.
+        run: |
+          ssh "$SERVER" "cd ~/TrustCabinet
+            grep -qE '^COMPOSE_PROFILES=.*speech' deploy/.env || { echo 'Server chưa bật máy chuyển chữ'; exit 0; }
+            for _ in \$(seq 1 36); do
+              status=\$(docker inspect -f '{{.State.Health.Status}}' \$(docker compose -f deploy/docker-compose.yml ps -q speech) 2> /dev/null)
+              [ \"\$status\" = healthy ] && { echo 'Máy chuyển chữ đã chạy'; exit 0; }
+              sleep 5
+            done
+            echo \"::error::Sau 180 giây máy chuyển chữ vẫn chưa healthy (\$status). Xem: docker compose -f deploy/docker-compose.yml logs speech\"
+            exit 1"

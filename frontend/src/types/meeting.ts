@@ -1,3 +1,4 @@
+import type { CaptureMode } from './speech'
 import type { InvitationResponse, MeetingRole, ParticipantSeed } from './participant'
 
 /**
@@ -101,6 +102,8 @@ export interface Meeting {
   myResponse: Exclude<InvitationResponse, 'Pending'> | null
   /** Whether to ask "Bạn có tham dự cuộc họp này?" now: invited, not the Chair, Published or InProgress, not answered yet. */
   canRespond: boolean
+  /** How speech is captured (SCRUM-109); fixed once the meeting starts. */
+  captureMode: CaptureMode
 }
 
 export interface MeetingPerson {
@@ -173,6 +176,8 @@ export interface MeetingRequest {
   onlineLink: string | null
   sensitivity: Sensitivity
   description: string
+  /** Left out keeps the current one (PerMic on create). A Published meeting changes it from the Bản ghi tab. */
+  captureMode?: CaptureMode
 }
 
 /** POST /api/meetings also names who attends: 1–100 active accounts, exactly one of them Chair. */

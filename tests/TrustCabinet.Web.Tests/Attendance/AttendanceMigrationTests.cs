@@ -20,7 +20,7 @@ public sealed class AttendanceMigrationTests
         var user = new User { FullName = "Migration", Email = "migration@attendance.test", PasswordHash = "test-only" };
         db.Users.Add(user); await db.SaveChangesAsync();
         var meeting = new Meeting { CreatedById = user.Id, Title = "Historical", PlannedStartTime = DateTimeOffset.UtcNow, PlannedEndTime = DateTimeOffset.UtcNow.AddHours(1) };
-        db.Meetings.Add(meeting); await db.SaveChangesAsync();
+        await LegacyMeetingRows.InsertAsync(db, meeting);
         var p = Guid.CreateVersion7(); var g = Guid.CreateVersion7(); var now = new DateTimeOffset(2026, 10, 20, 0, 0, 0, TimeSpan.Zero);
         await db.Database.ExecuteSqlInterpolatedAsync($"""
             INSERT INTO meeting_participants (id, meeting_id, user_id, role, response, attendance, attendance_recorded_by_id, attendance_recorded_at, created_at, updated_at)

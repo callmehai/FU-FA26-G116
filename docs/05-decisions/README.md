@@ -36,4 +36,8 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0023](0023-doi-vai-tro-nguoi-dung-khong-dang-xuat.md) | Đổi vai trò của một người dùng cũng không đăng xuất — báo và áp dụng quyền mới ngay | Đề xuất — SCRUM-105, PO 22/10/2026 |
 | [0024](0024-luu-file-tai-lieu-tren-cloudflare-r2.md) | Lưu file tài liệu trên Cloudflare R2, mọi byte đi qua backend | Đề xuất — SCRUM-107 |
 | [0025](0025-version-rieng-cho-diem-danh.md) | Version riêng cho điểm danh; không dùng xmin toàn dòng | Đã chấp nhận trong phạm vi SCRUM-26, chờ team review branch |
+| [0026](0026-tu-chay-nhan-dang-giong-noi.md) | Tự chạy nhận dạng giọng nói (chuyển thành chữ, tách người nói) trên một worker nội bộ | Đề xuất — SCRUM-31, nhận xét hội đồng 17/10/2026 |
+| [0027](0027-voice-id-co-dong-y.md) | Voice ID có đồng ý — lưu giọng mẫu đã mã hoá, máy chỉ gợi ý tên, Thư ký quyết định | Đề xuất — SCRUM-35, nhận xét hội đồng 17/10/2026 |
 | [0028](0028-trang-thai-la-icon-va-chu.md) | Trạng thái cuộc họp là icon và chữ, mức "Thường" không gắn chip | Đề xuất |
+| [0029](0029-ghi-am-theo-micro-tung-nguoi.md) | Ghi âm theo micro từng người, chỉ lưu chữ của từng câu | Đề xuất — SCRUM-109 |
+| [0030](0030-ghi-ca-cuoc-goi-tu-may-thu-ky.md) | Ghi cả cuộc gọi từ trình duyệt của Thư ký, báo đang ghi qua kênh dữ liệu của cuộc gọi | Đề xuất — SCRUM-44, PO 26/10/2026 |

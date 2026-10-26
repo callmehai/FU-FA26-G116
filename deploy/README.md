@@ -2,7 +2,7 @@
 
 Một bản TrustCabinet chạy 24/7 để cả nhóm (Tester, BA, giảng viên) mở bằng trình duyệt, không cần
 cài gì. Chạy trên **một máy AWS Lightsail** bằng Docker Compose: app, PostgreSQL, Redis, LiveKit (phòng
-họp trực tuyến) và Caddy (tự lấy chứng chỉ HTTPS). Mỗi lần merge vào `main` và CI xanh, server **tự cập nhật**. Lý do chọn cách
+họp trực tuyến), Caddy (tự lấy chứng chỉ HTTPS), và máy chuyển chữ nếu máy đủ 4 GB RAM (§10). Mỗi lần merge vào `main` và CI xanh, server **tự cập nhật**. Lý do chọn cách
 này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-lightsail.md).
 
 > **Đây là môi trường test, không phải production.** App chạy ở chế độ `Development`: tự migrate,
@@ -262,6 +262,35 @@ Chưa cấu hình thì app vẫn chạy, nút tải lên báo `MSG166`.
 
 Trình duyệt không gọi thẳng R2 nên CSP trong `Caddyfile` giữ nguyên. Chỉ tải lên dữ liệu giả: R2 lưu ngoài Việt
 Nam, tức là chuyển dữ liệu cá nhân xuyên biên giới (Luật 91/2025/QH15 Điều 20, xem ADR-0024).
+
+### 10. Máy chuyển chữ (tuỳ chọn, cần máy 4 GB)
+
+Chuyển bản ghi thành chữ, Voice ID và ghi theo micro từng người đều cần worker nhận dạng giọng nói
+([`workers/speech`](../workers/speech/README.md), [ADR-0026](../docs/05-decisions/0026-tu-chay-nhan-dang-giong-noi.md)).
+Chưa bật thì app vẫn chạy, các chức năng đó báo `MSG312`. Worker chạy ngay trên server, không mở cổng ra
+ngoài, nên âm thanh không rời server.
+
+Worker cần khoảng 2,5 GB RAM, máy $7 (1 GB) **không chạy nổi**. Bật trên máy 1 GB thì server hết RAM.
+
+1. **Lên máy 4 GB ($24/tháng)**: Lightsail → máy `trustcabinet` → **Snapshots → Create snapshot**. Từ snapshot
+   đó → **Create new instance**, chọn size **$24** (4 GB). Lightsail không đổi size tại chỗ. Tài khoản bị chặn
+   gói này thì gửi case *Account and billing* cho AWS Support (xem §1).
+2. **Chuyển IP tĩnh** sang máy mới: **Networking → IP tĩnh → Attach** vào máy mới. Tên miền giữ nguyên.
+   Mở lại firewall như §2 (máy mới tạo từ snapshot không mang theo firewall).
+3. Trên máy mới, thêm vào `deploy/.env`:
+
+   ```bash
+   COMPOSE_PROFILES=speech
+   SPEECH_URL=http://speech:8090
+   ```
+
+4. GitHub → **Actions → Deploy server test → Run workflow**. Lần đầu workflow build image worker (~770 MB) rồi
+   chép sang, mất thêm vài phút. Các lần sau chỉ chép lại khi `workers/speech` đổi. Bước *Kiểm tra máy chuyển
+   chữ* xanh là xong.
+5. Xoá máy 1 GB cũ khi máy mới đã chạy ổn, để không bị tính tiền hai máy.
+
+CPU của Lightsail là loại *burst*: chạy hết công suất được trong thời gian ngắn, chạy liên tục thì bị giới hạn.
+Một câu nói chuyển chữ trong vài giây. Một bản ghi dài chạy chậm dần, và lúc đó phòng họp cũng có thể giật.
 
 ## Sau khi bảo vệ xong
 

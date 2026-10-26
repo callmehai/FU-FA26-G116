@@ -43,3 +43,18 @@ public enum MinutesStatus
     /// <summary>Replaced by a later revision.</summary>
     Superseded,
 }
+
+/// <summary>
+/// How a meeting's speech is captured (SCRUM-109), chosen before it starts and fixed once it has.
+/// The same choice AI-eCabinet offers, with the attendee's own mic as the default.
+/// </summary>
+public enum CaptureMode
+{
+    /// <summary>
+    /// Each attendee's browser captures their own microphone and sends it a sentence at a time, so
+    /// every line of the transcript belongs to the owner of the mic that heard it.
+    /// </summary>
+    PerMic,
+    /// <summary>One recording of the whole room, uploaded or captured by the Secretary (SCRUM-29/31/35).</summary>
+    Room,
+}

@@ -1,0 +1,248 @@
+# 12 · Bản ghi cuộc họp và gỡ băng (SCRUM-29, SCRUM-31, SCRUM-44, SCRUM-109)
+
+Thư ký lưu bản ghi âm của cuộc họp: ghi thẳng trên trình duyệt hoặc tải lên tệp ghi bằng thiết bị
+khác. Bản ghi là đầu vào cho gỡ băng (SCRUM-31) và nhận diện người nói (SCRUM-35).
+
+Bản ghi là **dữ liệu cá nhân** của mọi người phát biểu (Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15,
+hiệu lực 01/01/2026, và Nghị định 356/2025/NĐ-CP; trước đó là Nghị định 13/2023/NĐ-CP).
+
+**Ghi âm cuộc họp không dựa vào sự đồng ý của từng người.** Luật không coi im lặng là đồng ý (Điều 9
+khoản 4 điểm d), nên việc "không ai phản đối" không thay được chữ ký đồng ý của từng người. Căn cứ để
+ghi âm là của đơn vị triển khai. Với cơ quan nhà nước, đó là phục vụ hoạt động của cơ quan (Điều 19
+khoản 1 điểm c). Với tổ chức khác, đó là thoả thuận hoặc nội quy mà người lao động đã biết (Điều 19
+khoản 1 điểm d, Điều 25 khoản 3). Dù căn cứ nào, người dự cũng phải được thông báo, chỉ được dùng
+đúng mục đích, và phải xoá khi hết hạn (Điều 3 khoản 3, Điều 14). Hệ thống giữ ba nghĩa vụ đó bằng
+dữ liệu, không chỉ bằng lời hứa trên tài liệu.
+
+Nhận ra **ai** đang nói từ giọng (Voice ID) là chuyện khác: đó là dữ liệu sinh trắc học, cần sự đồng
+ý riêng của từng người (xem [13 · Nhận diện giọng nói](13-nhan-dien-giong-noi.md)).
+
+| Nghĩa vụ | Cột / cơ chế |
+|---|---|
+| Thông báo trước khi lưu | `consentConfirmed=true` bắt buộc: Thư ký xác nhận đã thông báo cho người dự và không ai phản đối. Thời điểm xác nhận lưu ở `ConsentObtainedAt`. Có người phản đối thì không ghi |
+| Nêu mục đích | `consentPurpose` (mặc định *Lập biên bản cuộc họp*) lưu cùng bản ghi |
+| Thời hạn lưu trữ và xoá | `RetainUntil` = lúc lưu + `Recordings:RetentionDays` (mặc định 180 ngày); job `RecordingRetentionWorker` xoá tự động mỗi 15 phút; Thư ký xoá theo yêu cầu bất cứ lúc nào |
+
+Khi xoá, **tệp âm thanh và transcript** bị xoá; dòng `recordings` giữ lại với `Status = Deleted`
+và `DeletedAt`, kèm một dòng nhật ký kiểm toán `recording.erased` (ai xoá, hay do hết hạn). Như vậy
+biên bản vẫn nói được "đã có bản ghi và đã xoá ngày …", và yêu cầu xoá chứng minh được là đã làm.
+
+## Quyền
+
+| Ai | Xem danh sách, nghe | Lưu, xoá |
+|---|---|---|
+| Thư ký hiện tại của cuộc họp | ✓ | ✓ |
+| Chủ toạ, thành viên hiện tại | ✓ | `403 MSG295` |
+| Người tạo / người duyệt **không** có trong danh sách thành phần | `404` | `404` |
+| Người ngoài cuộc họp | `404` | `404` |
+
+Người tạo và người duyệt đọc được cuộc họp nhưng không nghe được bản ghi: họ không có mặt trong
+cuộc họp, mà bản ghi là giọng nói của người khác. Khách mời (Guest) chưa có quyền với bản ghi.
+
+Chỉ lưu khi cuộc họp `InProgress` hoặc `Ended` (`409 MSG294`); xoá được ở mọi trạng thái.
+
+## Endpoint
+
+### `GET /api/meetings/{meetingId}/recordings`
+
+```json
+{
+  "meetingId": "…",
+  "canUpload": true,
+  "items": [
+    {
+      "id": "…", "fileName": "phien-hop.webm", "contentType": "audio/webm",
+      "byteSize": 1048576, "durationMs": 65000, "source": "BrowserCapture",
+      "status": "Available", "createdAt": "…", "createdByName": "Nguyễn Văn A",
+      "consentObtainedAt": "…", "consentPurpose": "Lập biên bản cuộc họp",
+      "retainUntil": "…", "deletedAt": null, "canErase": true
+    }
+  ]
+}
+```
+
+`status`: `Available` | `Deleted`. `source`: `Upload` | `BrowserCapture`. Mới nhất lên đầu.
+`durationMs = 0` nghĩa là chưa biết (trình duyệt không gửi); gỡ băng sẽ điền giá trị thật.
+Không trả đường dẫn lưu trữ.
+
+### `POST /api/meetings/{meetingId}/recordings` — `multipart/form-data`
+
+| Trường | Bắt buộc | Ghi chú |
+|---|---|---|
+| `file` | ✓ | Một tệp. `Content-Type` của phần tệp: `audio/mpeg`, `audio/mp4`, `audio/x-m4a`, `audio/aac`, `audio/wav`, `audio/webm`, `audio/ogg` (tham số codec như `;codecs=opus` được bỏ qua) |
+| `consentConfirmed` | ✓ | Đúng chữ `true` — Thư ký xác nhận đã thông báo cho người dự và không ai phản đối |
+| `consentPurpose` | | ≤ 1000 ký tự; bỏ trống thì dùng mục đích mặc định |
+| `source` | | `Upload` (mặc định) hoặc `BrowserCapture` |
+| `durationMs` | | Số nguyên ≥ 0, trình duyệt đo được |
+
+Quyền và trạng thái cuộc họp được kiểm **trước** khi nhận byte đầu tiên. Tệp được ghi thẳng xuống
+đĩa (không giữ cả form trong RAM), tên tệp trên đĩa là id mới, không dùng tên người dùng gửi. Bất cứ
+lý do gì khiến bản ghi không được giữ (thiếu đồng ý, lỗi database…), tệp đã ghi bị xoá ngay.
+
+`201 MSG290` `{ code, message, recordingId }`. Lỗi: `400 MSG291`, `415 MSG292`, `413 MSG293`,
+`409 MSG294`, `403 MSG295`, `503 MSG298`.
+
+### `GET /api/recordings/{recordingId}/playback`
+
+Thẻ `<audio>` không gửi được bearer token, nên FE xin một **link ký sẵn** rồi gán vào `src`:
+
+```json
+{ "url": "/api/recordings/…/audio?expires=1761210000&signature=…", "expiresAt": "…" }
+```
+
+Link sống `Recordings:PlaybackUrlMinutes` (mặc định 120 phút), ký HMAC-SHA256 bằng khoá dẫn xuất
+(HKDF) từ `Authentication:SigningKey` với nhãn riêng — không cần cấu hình thêm bí mật. Quyền nghe
+được kiểm ở bước xin link.
+
+### `GET /api/recordings/{recordingId}/audio?expires=…&signature=…`
+
+Không cần đăng nhập; trả tệp với `Range` (tua được), `Cache-Control: private, no-store`. Sai chữ ký,
+hết hạn, hoặc bản ghi đã xoá: `404` không body.
+
+### `DELETE /api/recordings/{recordingId}`
+
+Thư ký xoá theo yêu cầu. `200 MSG296`; gọi lại trên bản đã xoá vẫn `200 MSG296`.
+
+## Cấu hình (`Recordings:*`)
+
+| Khoá | Mặc định | Ghi chú |
+|---|---|---|
+| `StorageRoot` | `App_Data/recordings` (tính từ content root) | Server test phải mount volume vào đây, nếu không redeploy là mất bản ghi |
+| `RetentionDays` | `180` | Thời hạn lưu trữ ghi vào từng bản ghi lúc lưu |
+| `MaxUploadMegabytes` | `300` | Ba giờ mp3, hoặc một giờ WAV 16 kHz |
+| `PlaybackUrlMinutes` | `120` | |
+
+## Gỡ băng (SCRUM-31)
+
+Lưu bản ghi xong là bản ghi tự vào **hàng chờ chuyển thành chữ** (`Transcript.Status = Pending`).
+`TranscriptionWorker` lấy từng bản ghi một (`FOR UPDATE SKIP LOCKED`), gửi âm thanh tới **worker
+nhận dạng giọng nói tự chạy trong mạng nội bộ** (`workers/speech`, [ADR-0026](../05-decisions/0026-tu-chay-nhan-dang-giong-noi.md)),
+rồi lưu từng đoạn kèm thời điểm và nhãn người nói. Âm thanh **không rời khỏi hệ thống**.
+
+Trạng thái: `None` (bản ghi lưu trước khi có SCRUM-31) → `Pending` → `Processing` → `Completed`
+hoặc `Failed` (kèm `errorMessage` viết cho Thư ký đọc). App khởi động lại giữa chừng thì bản đang
+`Processing` quay về `Pending`. Bản ghi bị xoá trong lúc đang chạy thì kết quả bị bỏ, không ghi lại.
+
+Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
+
+### `GET /api/recordings/{recordingId}/transcript`
+
+```json
+{
+  "recordingId": "…", "status": "Completed",
+  "provider": "self-hosted:gipformer-1.5-68m-int8@b528768939c7",
+  "language": "vi", "errorMessage": "", "completedAt": "…", "durationMs": 23380, "canEdit": true,
+  "segments": [
+    { "id": "…", "position": 1, "startMs": 0, "endMs": 5800, "text": "Kính thưa các đồng chí, …",
+      "speakerLabel": "SPEAKER_00", "editedAt": null, "editedByName": null }
+  ]
+}
+```
+
+`speakerLabel` là nhãn trong **riêng bản ghi này** (`SPEAKER_00` → FE hiện *Người nói 1*); gán tên
+thật là việc của SCRUM-35. Không có vector giọng nói nào trong response hay trong database.
+
+### `POST /api/recordings/{recordingId}/transcribe`
+
+Thư ký chạy lại khi lần trước lỗi, hoặc chạy lần đầu cho bản ghi `None`. `202 MSG300`; đang chờ,
+đang chạy hoặc đã xong: `409 MSG301`.
+
+### `PUT /api/transcript-segments/{segmentId}` — `{ "text": "…" }`
+
+Thư ký sửa chữ máy nhận sai. Cắt khoảng trắng hai đầu, 1–8000 ký tự (`400 MSG303`). Lưu `EditedBy`,
+`EditedAt` để phân biệt chữ người sửa với chữ máy. `200 MSG302` `{ code, message, segment: { segmentId, text, editedAt } }`.
+
+### Cấu hình (`Speech:*`)
+
+| Khoá | Mặc định | Ghi chú |
+|---|---|---|
+| `BaseUrl` | rỗng (Development: `http://localhost:8090`) | Rỗng thì app vẫn chạy, bản gỡ băng báo *Máy chủ nhận dạng giọng nói chưa được cấu hình.* |
+| `ApiKey` | rỗng | Khoá dùng chung với worker (`SPEECH_API_KEY`) |
+| `TimeoutMinutes` | `120` | |
+
+## Ghi âm theo micro từng người (SCRUM-109)
+
+Cuộc họp có **cách ghi âm** (`captureMode`), cùng hai lựa chọn như AI-eCabinet:
+
+| `captureMode` | Cách thu | Lưu gì | Tên người nói |
+|---|---|---|---|
+| `PerMic` (mặc định) | Trình duyệt của mỗi người dự tự thu micro của chính họ, cắt theo câu khi ngừng nói (theo mức âm lượng, không dùng WebAssembly) và gửi từng câu lên | Mỗi câu: chữ, lúc bắt đầu, thời lượng, chủ micro. **Không lưu âm thanh** | Chủ micro |
+| `Room` | Thư ký tải tệp lên hoặc ghi bằng trình duyệt (các mục trên) | Bản ghi và bản gỡ băng | Thư ký gán, có gợi ý Voice ID |
+
+- Chọn ở form tạo/sửa cuộc họp (`captureMode` trong body của `POST`/`PUT /api/meetings`, bỏ trống thì
+  giữ nguyên, khi tạo là `PerMic`), hoặc ở tab Bản ghi bằng `PUT …/capture-mode`. Cuộc họp đã công bố
+  chỉ đổi được bằng `PUT …/capture-mode` (form dời lịch trả lỗi trường `captureMode`), để không ai nhận
+  thông báo "dời lịch". **Khoá khi cuộc họp đã bắt đầu**: người dự phải biết trước micro mình có được gỡ
+  băng không, và một bản gỡ băng không thể nửa theo micro, nửa thu chung.
+- Không ai bật micro của người khác được, kể cả Chủ tọa (khác eCab). Mỗi người thấy mình đang được ghi
+  và tự tắt được; người nói rút lại được câu của mình.
+- Âm thanh một câu chỉ nằm trong bộ nhớ của request: backend gửi worker (`diarize=false`, tối đa 2 câu
+  cùng lúc trên cả server), nhận chữ rồi bỏ. Câu toàn im lặng không tạo dòng nào.
+- Chữ của các câu là dữ liệu cá nhân, xoá theo cùng hạn với bản ghi (`Recordings:RetentionDays`).
+
+Quyền: đọc, gửi câu và xoá câu của mình là người trong danh sách cuộc họp (như nghe bản ghi); sửa chữ
+là Thư ký; xoá câu của người khác là Thư ký; đổi cách ghi âm là Chủ tọa hoặc Thư ký. Người ngoài danh
+sách nhận `404`.
+
+### `GET /api/meetings/{meetingId}/speech-clips[?since=…]`
+
+```json
+{
+  "meetingId": "…", "captureMode": "PerMic", "canCapture": true, "canEdit": false, "canChangeMode": false,
+  "readAt": "2026-10-26T08:01:02.123Z",
+  "items": [
+    { "id": "…", "speakerId": "…", "speakerName": "Lê Thành Viên", "startedAt": "2026-10-26T08:00:57Z",
+      "durationMs": 2400, "text": "Tôi đồng ý với dự thảo.", "updatedAt": "…", "editedAt": null,
+      "editedByName": null, "canDelete": true }
+  ]
+}
+```
+
+Xếp theo `startedAt`. `canCapture` là micro **của chính người gọi** được gửi câu lúc này (cuộc họp
+`InProgress` và `PerMic`). `since` = `readAt` của lần đọc trước: chỉ trả câu mới hoặc vừa sửa. Câu bị xoá
+thì đọc lại từ đầu (sự kiện `speechChanged` có `changeType: "ClipDeleted"`).
+
+### `PUT /api/meetings/{meetingId}/speech-clips/{clientClipId}?startedAt=…&durationMs=…`
+
+Thân là âm thanh của **một câu** (`audio/wav`, `audio/webm`, `audio/ogg`, tối đa 3 MB, 1 ms–60 giây).
+`clientClipId` do trình duyệt sinh; gửi lại cùng id (mất phản hồi, mạng chập chờn) trả lại câu đã lưu,
+không gỡ băng lần hai. `startedAt` theo đồng hồ trình duyệt; lệch quá 2 phút hoặc trước giờ họp thì lấy
+giờ server. `200 MSG318` kèm `clip`, `204` nếu toàn im lặng, `503 MSG312` khi worker chưa sẵn sàng
+(trình duyệt giữ câu và gửi lại), `409 MSG320` khi cuộc họp không ghi theo micro hoặc không còn diễn ra.
+
+### `PUT /api/speech-clips/{clipId}/text` — `{ "text": "…" }`
+
+Thư ký sửa chữ một câu, như sửa đoạn gỡ băng (`MSG302`).
+
+### `DELETE /api/speech-clips/{clipId}`
+
+Người nói rút lại câu của mình, hoặc Thư ký xoá (`MSG322`). Xoá hẳn, ghi nhật ký kiểm toán.
+
+### `PUT /api/meetings/{meetingId}/capture-mode` — `{ "mode": "PerMic" | "Room" }`
+
+Chủ tọa hoặc Thư ký, trước khi họp (`MSG324`; đã bắt đầu thì `409 MSG325`).
+
+### Sự kiện hub `speechChanged`
+
+`{ eventId, meetingId, changeType: "ClipAdded" | "ClipEdited" | "ClipDeleted" | "CaptureModeChanged", occurredAt }`,
+gửi cho người trong danh sách cuộc họp. Không mang chữ: ai nhận thì đọc lại.
+
+## Ghi cả cuộc gọi (SCRUM-44)
+
+Cuộc họp thu chung cả phòng thì trong phòng họp, panel **Bản ghi** thay panel Lời nói. Nút **Ghi âm** ở đó
+thu micro của Thư ký cùng tiếng mọi người trong cuộc gọi, rồi lưu bằng `POST …/recordings` như trên
+(`source = BrowserCapture`). Không có endpoint mới. Lý do và giới hạn: [ADR-0030](../05-decisions/0030-ghi-ca-cuoc-goi-tu-may-thu-ky.md).
+
+Mọi người trong phòng thấy chip **Đang ghi âm cuộc họp**. Thư ký phát tín hiệu trên kênh dữ liệu
+của LiveKit, không qua backend:
+
+| Topic | Payload | Gửi khi | Người nhận |
+|---|---|---|---|
+| `recording` | `{ "recording": true }` | Mỗi 4 giây trong lúc ghi | Chỉ tin người có vai trò Thư ký; tắt chip sau 10 giây không nghe nhịp nào |
+| `recording` | `{ "recording": false }` | Dừng, tạm dừng hoặc rời phòng | Tắt chip ngay |
+
+## Chưa làm trong SCRUM-29
+
+- Banner "Đang ghi âm" cho mọi người dự khi Thư ký ghi trên **trang chi tiết** (họp trực tiếp): chỉ
+  trình duyệt của Thư ký hiện trạng thái ghi. Trong phòng họp trực tuyến thì đã có (SCRUM-44, ở trên).
+- Quyền nghe của khách mời (chờ SCRUM-59).

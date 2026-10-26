@@ -19,10 +19,14 @@ export const routes = {
   meetingEdit: (id: string) => `/mgmt/meetings/${id}/edit`,
   /** Full-screen call room (SCRUM-41): outside the app shell, so the call owns the whole tab. */
   meetingRoom: (id: string) => `/mgmt/meetings/${id}/room`,
+  /** Document viewer (SCRUM-21): full screen as well, and what the call room opens in a new tab. */
+  meetingDocument: (id: string, documentId: string) => `/mgmt/meetings/${id}/documents/${documentId}`,
   adminUsers: '/mgmt/admin/users',
   adminRoles: '/mgmt/admin/roles',
   // ADR-0006: each user's own document library.
   documents: '/mgmt/documents',
+  // SCRUM-35: the signed-in person's own Voice ID.
+  myVoice: '/mgmt/my-voice',
   calendar: '/calendar',
 } as const
 

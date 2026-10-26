@@ -589,6 +589,14 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("assigned_approver_id");
 
+                    b.Property<string>("CaptureMode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasDefaultValue("PerMic")
+                        .HasColumnName("capture_mode");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -1744,6 +1752,80 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.ToTable("speaking_requests", (string)null);
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.SpeechClip", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ClientClipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("client_clip_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<long>("DurationMs")
+                        .HasColumnType("bigint")
+                        .HasColumnName("duration_ms");
+
+                    b.Property<DateTimeOffset?>("EditedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("edited_at");
+
+                    b.Property<Guid?>("EditedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("edited_by_id");
+
+                    b.Property<Guid>("MeetingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("meeting_id");
+
+                    b.Property<Guid>("SpeakerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("speaker_id");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)")
+                        .HasColumnName("text");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_speech_clips");
+
+                    b.HasIndex("EditedById")
+                        .HasDatabaseName("ix_speech_clips_edited_by_id");
+
+                    b.HasIndex("SpeakerId")
+                        .HasDatabaseName("ix_speech_clips_speaker_id");
+
+                    b.HasIndex("MeetingId", "StartedAt")
+                        .HasDatabaseName("ix_speech_clips_meeting_id_started_at");
+
+                    b.HasIndex("MeetingId", "UpdatedAt")
+                        .HasDatabaseName("ix_speech_clips_meeting_id_updated_at");
+
+                    b.HasIndex("MeetingId", "SpeakerId", "ClientClipId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_speech_clips_meeting_id_speaker_id_client_clip_id");
+
+                    b.ToTable("speech_clips", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_speech_clips_duration", "duration_ms > 0");
+                        });
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.StoredFile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1952,6 +2034,74 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.ToTable("transcript_segments", (string)null);
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.TranscriptSpeaker", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("AssignedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("assigned_at");
+
+                    b.Property<Guid?>("AssignedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_by_id");
+
+                    b.Property<Guid?>("AssignedUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_user_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("label");
+
+                    b.Property<long>("SpeechMs")
+                        .HasColumnType("bigint")
+                        .HasColumnName("speech_ms");
+
+                    b.Property<Guid?>("SuggestedUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("suggested_user_id");
+
+                    b.Property<double?>("SuggestionScore")
+                        .HasColumnType("double precision")
+                        .HasColumnName("suggestion_score");
+
+                    b.Property<Guid>("TranscriptId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("transcript_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_transcript_speakers");
+
+                    b.HasIndex("AssignedById")
+                        .HasDatabaseName("ix_transcript_speakers_assigned_by_id");
+
+                    b.HasIndex("AssignedUserId")
+                        .HasDatabaseName("ix_transcript_speakers_assigned_user_id");
+
+                    b.HasIndex("SuggestedUserId")
+                        .HasDatabaseName("ix_transcript_speakers_suggested_user_id");
+
+                    b.HasIndex("TranscriptId", "Label")
+                        .IsUnique()
+                        .HasDatabaseName("ix_transcript_speakers_transcript_id_label");
+
+                    b.ToTable("transcript_speakers", (string)null);
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2016,6 +2166,106 @@ namespace TrustCabinet.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_users_has_a_way_to_sign_in", "password_hash IS NOT NULL OR google_subject_id IS NOT NULL");
                         });
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.VoiceConsent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("GrantedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("granted_at");
+
+                    b.Property<string>("NoticeVersion")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("notice_version");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("purpose");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateTimeOffset?>("WithdrawnAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("withdrawn_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_voice_consents");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_voice_consents_user_id")
+                        .HasFilter("withdrawn_at IS NULL");
+
+                    b.ToTable("voice_consents", (string)null);
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.VoiceSample", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<byte[]>("Ciphertext")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("ciphertext");
+
+                    b.Property<Guid>("ConsentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("consent_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("EmbeddingModel")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("embedding_model");
+
+                    b.Property<long>("SpeechMs")
+                        .HasColumnType("bigint")
+                        .HasColumnName("speech_ms");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_voice_samples");
+
+                    b.HasIndex("ConsentId")
+                        .HasDatabaseName("ix_voice_samples_consent_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_voice_samples_user_id");
+
+                    b.ToTable("voice_samples", (string)null);
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.VoteChoice", b =>
@@ -2862,6 +3112,35 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.SpeechClip", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "EditedBy")
+                        .WithMany()
+                        .HasForeignKey("EditedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_speech_clips_users_edited_by_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
+                        .WithMany()
+                        .HasForeignKey("MeetingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_speech_clips_meetings_meeting_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "Speaker")
+                        .WithMany()
+                        .HasForeignKey("SpeakerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_speech_clips_users_speaker_id");
+
+                    b.Navigation("EditedBy");
+
+                    b.Navigation("Meeting");
+
+                    b.Navigation("Speaker");
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.StoredFile", b =>
                 {
                     b.HasOne("TrustCabinet.Domain.Entities.User", "UploadedBy")
@@ -2914,6 +3193,42 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("Transcript");
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.TranscriptSpeaker", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "AssignedBy")
+                        .WithMany()
+                        .HasForeignKey("AssignedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_transcript_speakers_users_assigned_by_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "AssignedUser")
+                        .WithMany()
+                        .HasForeignKey("AssignedUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_transcript_speakers_users_assigned_user_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "SuggestedUser")
+                        .WithMany()
+                        .HasForeignKey("SuggestedUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_transcript_speakers_users_suggested_user_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.Transcript", "Transcript")
+                        .WithMany("Speakers")
+                        .HasForeignKey("TranscriptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_transcript_speakers_transcripts_transcript_id");
+
+                    b.Navigation("AssignedBy");
+
+                    b.Navigation("AssignedUser");
+
+                    b.Navigation("SuggestedUser");
+
+                    b.Navigation("Transcript");
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.User", b =>
                 {
                     b.HasOne("TrustCabinet.Domain.Entities.Role", "Role")
@@ -2924,6 +3239,39 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasConstraintName("fk_users_roles_role_id");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.VoiceConsent", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_voice_consents_users_user_id");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.VoiceSample", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.VoiceConsent", "Consent")
+                        .WithMany()
+                        .HasForeignKey("ConsentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_voice_samples_voice_consents_consent_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_voice_samples_users_user_id");
+
+                    b.Navigation("Consent");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.VoteChoice", b =>
@@ -3077,6 +3425,8 @@ namespace TrustCabinet.Infrastructure.Migrations
             modelBuilder.Entity("TrustCabinet.Domain.Entities.Transcript", b =>
                 {
                     b.Navigation("Segments");
+
+                    b.Navigation("Speakers");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.User", b =>

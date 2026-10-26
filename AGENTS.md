@@ -16,8 +16,7 @@ audit and calls. There is still **no authentication and no business endpoint** �
 nothing reads or writes them yet. Do not assume domain code exists somewhere — check or ask first.
 
 The model is documented in [docs/02-design/02-erd.md](docs/02-design/02-erd.md), which also lists
-what deliberately has no table (task tracking, organisations, org units; voiceprints were excluded
-until they moved into scope — see "Watch out"). Read it before adding
+what deliberately has no table (task tracking, organisations, org units). Read it before adding
 an entity.
 
 **Before working on any feature, read [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md)
@@ -294,25 +293,22 @@ Details in [docs/DEVELOPMENT_WORKFLOW.md §2.1](docs/DEVELOPMENT_WORKFLOW.md#21-
 ## Watch out
 
 - Some features are deliberately out of scope (task/action-item tracking, real HSM signing,
-  air-gapped deployment, eOffice integration) — see the README. Do not implement them unprompted.
-  TrustCabinet stops at the approved minutes: it never tracks assignees, due dates or completion
-  state.
-- **Voice identification (voiceprint) is now in scope**, reversing the earlier exclusion; ASR
-  (speech-to-text) comes first, speaker identification after it. The speech and minutes-drafting
-  models must run **locally**: no external API (security) and no company-hosted model (supervisor
-  guidance, 22/10/2026). Until the ADR for this lands, the old boundary is still in the code:
-  `SpeakerLabel` only, a test in `DatabaseModelTests` (`No_voiceprint_is_stored_anywhere`) that
-  blocks any voiceprint column, and the "no voiceprint" notes in `TranscriptSegment.cs`, the ERD and
-  the README. When implementing, write the ADR first, then update those places and that test in the
-  same change; a voiceprint is biometric data, so state consent, retention and deletion explicitly.
+  air-gapped deployment, eOffice integration) — see the README. Voice ID came **into** scope on
+  2026-10-23 at the review council's request ([ADR-0027](docs/05-decisions/0027-voice-id-co-dong-y.md)),
+  under its own consent; speech models run in-house ([ADR-0026](docs/05-decisions/0026-tu-chay-nhan-dang-giong-noi.md)).
+  Do not implement them unprompted. TrustCabinet stops at the approved minutes: it never tracks
+  assignees, due dates or completion state.
 - **One organisation, no org units.** There is no `organizations` table, no multi-tenancy, and no
   `org_units` — no department hierarchy, no unit on a user or a meeting, and no "invite the whole
   unit". Sign-in is email + password or Google; no separate IdP. Both are settled in
   [ADR-0004](docs/05-decisions/0004-mot-to-chuc-khong-co-don-vi.md), and a test in
   `DatabaseModelTests` fails if an `OrgUnit*` property comes back.
-- Meeting recordings and voice identification are personal data under Vietnam's Decree
-  13/2023/NĐ-CP. When touching this area, state the consent and deletion obligations explicitly
-  rather than silently persisting the data.
+- Meeting recordings are personal data, and a voice used to recognise someone is **sensitive
+  biometric data**, under Vietnam's Personal Data Protection Law 91/2025/QH15 (in force since
+  2026-01-01, guided by Decree 356/2025/NĐ-CP; it superseded the Decree 13/2023/NĐ-CP regime). When
+  touching this area, state the consent and deletion obligations explicitly rather than silently
+  persisting the data. A voice embedding may live only encrypted in `voice_samples`, under a
+  consent that can be withdrawn; `DatabaseModelTests` fails if one appears anywhere else.
 - **The test server enforces a Content-Security-Policy** (`deploy/Caddyfile`); local development has
   none. Scripts, fonts, images, frames and connections may come only from our own origin, Google
   Fonts and Google Sign-In. A new outside source (a CDN, an analytics or AI service called from the
