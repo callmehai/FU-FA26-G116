@@ -7,6 +7,13 @@ on:
     branches: [main]
   pull_request:
 
+# Push mới lên cùng một PR huỷ lần chạy cũ còn dở: chỉ kết quả của commit cuối có ý nghĩa, và repo
+# private chỉ có 2.000 phút Actions miễn phí mỗi tháng (tháng 10/2026 hết sạch trước ngày 26).
+# Trên main thì không huỷ, vì mỗi lần push kéo theo một lần deploy.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   backend:
     name: Backend — build & test
@@ -46,6 +53,29 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Commit merge của PR cùng cha đầu tiên của nó (đầu nhánh đích), để so ra các file PR đổi.
+          fetch-depth: 2
+
+      # PR không đụng tới backend, test hay CI (chỉ frontend/ hoặc docs/) thì chỉ chạy các test đọc
+      # mã nguồn ngoài backend: danh mục mã thông báo (đọc FE và docs) và bản sao skill. Hơn 1.500 test
+      # còn lại chạy trên PostgreSQL mất ~6 phút mà kết quả không thể đổi. Build vẫn chạy đủ, và push
+      # lên main luôn chạy toàn bộ.
+      - name: Chọn test
+        id: scope
+        run: |
+          filter=""
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            # Đọc hết danh sách trước khi lọc: grep -q thoát sớm làm git diff chết vì SIGPIPE, và
+            # bash của runner chạy với pipefail.
+            changed=$(git diff --name-only HEAD^1 HEAD)
+            outside=$(grep -vE '^(frontend/|docs/|\.agents/|\.claude/|[^/]+\.md$)' <<< "$changed" || true)
+          fi
+          if [ "${{ github.event_name }}" = pull_request ] && [ -z "$outside" ]; then
+            filter="FullyQualifiedName~MessageCodeCatalogueTests|FullyQualifiedName~SkillMirrorTests"
+          fi
+          echo "filter=$filter" >> "$GITHUB_OUTPUT"
+          echo "Bộ lọc test: ${filter:-toàn bộ}"
 
       # global-json-file đảm bảo CI dùng đúng bản SDK đã pin trong global.json.
       - uses: actions/setup-dotnet@v4
@@ -61,7 +91,9 @@ jobs:
       # kèm lý do, chứ đừng gỡ cờ này.
       - run: dotnet build TrustCabinet.sln --no-restore --configuration Release -warnaserror
 
-      - run: dotnet test TrustCabinet.sln --no-build --configuration Release --verbosity normal
+      - run: dotnet test TrustCabinet.sln --no-build --configuration Release --verbosity normal --filter "$FILTER"
+        env:
+          FILTER: ${{ steps.scope.outputs.filter }}
 
   frontend:
     name: Frontend — lint & build
