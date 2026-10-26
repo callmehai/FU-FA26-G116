@@ -2227,9 +2227,13 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .agenda-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .agenda-stamp { margin: 8px 0 0; color: var(--label-ink); font-size: 12px; }
 .agenda-doc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13px; }
-.agenda-doc-list li { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.agenda-doc-list li > svg { flex: none; color: var(--label-ink); }
-.agenda-doc-list li > span { min-width: 0; overflow-wrap: anywhere; }
+.agenda-doc-list li { display: flex; min-width: 0; }
+/* Each name opens the document viewer: brand-coloured like other links, so it reads as one. */
+.agenda-doc-list a { display: inline-flex; align-items: center; gap: 6px; min-width: 0; color: var(--brand); }
+.agenda-doc-list a:hover > span { text-decoration: underline; }
+.agenda-doc-list a > svg { flex: none; color: var(--label-ink); }
+.agenda-doc-list a > span { min-width: 0; overflow-wrap: anywhere; }
+@media (hover: none) { .agenda-doc-list a { min-height: 40px; } }
 .agenda-conclusion-editor textarea { width: 100%; background: var(--surface); }
 .agenda-conclusion-editor .field-foot { margin-top: 4px; }
 .agenda-conclusion-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
