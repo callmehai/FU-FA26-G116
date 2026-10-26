@@ -52,6 +52,7 @@ export function DocumentsPanel({
   }
   const { download, busyId } = useDocumentDownload(meeting.id, stale)
   const canDownload = meeting.sensitivity !== 'Secret'
+  const total = data && distinctCount([...data.agendaItems.flatMap((item) => item.documents), ...data.general])
 
   const rowProps = { meetingId: meeting.id, variant, canDownload, busyId, onDownload: download }
   const body = !data ? null : variant === 'room' ? (
@@ -64,7 +65,7 @@ export function DocumentsPanel({
     <div className={variant === 'room' ? 'room-panel-body documents-panel' : 'documents-panel'}>
       {variant === 'room' && (
         <>
-          <h2 className="room-panel-title">Tài liệu{data && ` (${distinctCount(data)})`}</h2>
+          <h2 className="room-panel-title">Tài liệu{total !== null && ` (${total})`}</h2>
           {!canDownload && <OnlineOnly />}
         </>
       )}
@@ -110,7 +111,8 @@ function PageList({
   const [uploading, setUploading] = useState(false)
   const canUpload =
     meeting.status !== 'Ended' && (meeting.myMeetingRole === 'Chair' || meeting.myMeetingRole === 'Secretary')
-  const agendaCount = data.agendaItems.reduce((n, item) => n + item.documents.length, 0)
+  // A document linked to several items counts once, as the room panel's total does.
+  const agendaCount = distinctCount(data.agendaItems.flatMap((item) => item.documents))
 
   return (
     <>
@@ -297,8 +299,8 @@ function DocumentRow({ doc, row }: { doc: MeetingDocument; row: RowProps }) {
 }
 
 /** A document linked to several items counts once. */
-function distinctCount(data: MeetingDocumentList) {
-  return new Set([...data.agendaItems.flatMap((item) => item.documents), ...data.general].map((d) => d.id)).size
+function distinctCount(documents: MeetingDocument[]) {
+  return new Set(documents.map((d) => d.id)).size
 }
 
 function ListSkeleton() {

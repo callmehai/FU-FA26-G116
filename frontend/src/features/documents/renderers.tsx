@@ -6,6 +6,11 @@ import { loadPdfJs } from './pdf'
 const MAX_WIDTH = 880
 /** Gutter left and right of the page inside the stage. */
 const GUTTER = 24
+/**
+ * The largest canvas iOS Safari draws (4096²); past it the page comes out blank. An A4 page at
+ * 880px × 200% on a 2× screen is ~17.5 M pixels, so the drawing resolution is capped there.
+ */
+const MAX_CANVAS_PIXELS = 16_777_216
 /** MSG158's wording: the file arrived but cannot be drawn. */
 const CANNOT_DISPLAY = 'Không hiển thị được tài liệu. Vui lòng thử lại.'
 
@@ -117,8 +122,10 @@ function PdfPage({ page, width, label }: { page: PDFPageProxy; width: number; la
   useEffect(() => {
     const el = canvas.current
     if (!near || !el) return
-    // Drawn at the screen's pixel density, so text stays sharp on a retina display.
-    const viewport = page.getViewport({ scale: (width / base.width) * window.devicePixelRatio })
+    // Drawn at the screen's pixel density, so text stays sharp on a retina display — down to the
+    // canvas limit when that would be too many pixels; the CSS size stays the same either way.
+    const density = Math.min(window.devicePixelRatio, Math.sqrt(MAX_CANVAS_PIXELS / (width * height)))
+    const viewport = page.getViewport({ scale: (width / base.width) * density })
     el.width = Math.floor(viewport.width)
     el.height = Math.floor(viewport.height)
     const task = page.render({ canvas: el, viewport })
@@ -129,7 +136,7 @@ function PdfPage({ page, width, label }: { page: PDFPageProxy; width: number; la
       el.width = 0
       el.height = 0
     }
-  }, [near, page, width, base.width])
+  }, [near, page, width, height, base.width])
 
   return (
     <div className="pdf-page" style={{ width, height }}>

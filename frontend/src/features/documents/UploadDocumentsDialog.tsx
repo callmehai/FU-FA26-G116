@@ -1,5 +1,6 @@
 import { useRef, useState, type DragEvent } from 'react'
 import { uploadMeetingDocuments } from '../../api/documents'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Dialog } from '../../components/Dialog'
 import { Icon } from '../../components/Icon'
 import { errorMessage, isApiError } from '../../lib/errors'
@@ -66,6 +67,8 @@ export function UploadDocumentsDialog({
   /** The whole body is out: the server may already be committing, so cancelling could not undo it. */
   const [allSent, setAllSent] = useState(false)
   const [dragging, setDragging] = useState(false)
+  /** Asking before the picked files are thrown away. */
+  const [discarding, setDiscarding] = useState(false)
   const nextKey = useRef(0)
   const abort = useRef<AbortController | null>(null)
 
@@ -124,6 +127,12 @@ export function UploadDocumentsDialog({
 
   function close() {
     if (allSent) return
+    // Picked files are the user's work: ask before dropping them (frontend-ui-design §3).
+    if (picked.length > 0) return setDiscarding(true)
+    onClose()
+  }
+
+  function discard() {
     abort.current?.abort()
     onClose()
   }
@@ -247,6 +256,21 @@ export function UploadDocumentsDialog({
           {folderDate.format(new Date(meeting.plannedStartTime))}”. Ai xem được cuộc họp đều đọc được tài liệu đã thêm.
         </p>
       </div>
+      {discarding && (
+        <ConfirmDialog
+          title="Bỏ tệp đã chọn"
+          confirmLabel="Bỏ tệp đã chọn"
+          pendingLabel="Đang bỏ…"
+          cancelLabel={uploading ? 'Tiếp tục tải lên' : 'Tiếp tục chọn'}
+          tone="danger"
+          onConfirm={async () => discard()}
+          onClose={() => setDiscarding(false)}
+        >
+          {uploading
+            ? 'Lần tải đang chạy sẽ dừng lại, không tệp nào được thêm vào cuộc họp.'
+            : `${picked.length} tệp đã chọn sẽ không được thêm vào cuộc họp.`}
+        </ConfirmDialog>
+      )}
     </Dialog>
   )
 }

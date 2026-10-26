@@ -1,3 +1,5 @@
+import type { AgendaItemStatus } from './agenda'
+
 /**
  * Meeting documents (SCRUM-107 upload, SCRUM-21 view). Contract in docs/03-api/11-tai-lieu-cuoc-hop.md.
  * Every `id` here is a **MeetingDocument ID** — the same one Agenda's `documentIds` carries.
@@ -20,8 +22,6 @@ export interface MeetingDocument {
   addedBy: { userId: string; fullName: string }
   addedAt: string
 }
-
-export type AgendaItemStatus = 'Pending' | 'InProgress' | 'Done'
 
 export interface DocumentsAgendaItem {
   id: string

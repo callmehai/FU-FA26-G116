@@ -573,10 +573,29 @@ function MorePanels({ panel, onPick }: { panel: PanelId | null; onPick: (id: Pan
     const onDown = (event: PointerEvent) => {
       if (!root.current?.contains(event.target as Node)) setOpen(false)
     }
+    // A menu's keys (WAI-ARIA menu pattern): arrows move through the items and wrap, Home and End
+    // jump to the ends, Escape closes and hands focus back to ⋯.
     const onKey = (event: globalThis.KeyboardEvent) => {
-      if (event.key !== 'Escape') return
-      setOpen(false)
-      root.current?.querySelector<HTMLElement>('button')?.focus()
+      if (event.key === 'Escape') {
+        setOpen(false)
+        root.current?.querySelector<HTMLElement>('button')?.focus()
+        return
+      }
+      const items = [...(root.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])]
+      const at = items.indexOf(document.activeElement as HTMLElement)
+      const next =
+        event.key === 'ArrowDown'
+          ? (at + 1) % items.length
+          : event.key === 'ArrowUp'
+            ? (at - 1 + items.length) % items.length
+            : event.key === 'Home'
+              ? 0
+              : event.key === 'End'
+                ? items.length - 1
+                : -1
+      if (next < 0) return
+      event.preventDefault()
+      items[next]?.focus()
     }
     document.addEventListener('pointerdown', onDown)
     document.addEventListener('keydown', onKey)
