@@ -2921,6 +2921,10 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 }
 /* The right-hand picker's menu grows leftwards, so it stays inside the panel and off the toasts. */
 .room-select + .room-select .room-select-menu { left: auto; right: 0; }
+/* ⋯ of the panels on a phone (RoomView MorePanels): shown only under 560px; opens leftwards. */
+.room-more { position: relative; display: none; }
+.room-more-menu { left: auto; right: 0; }
+.room-more-menu .room-select-item { grid-template-columns: 24px 1fr; text-align: left; }
 @keyframes room-menu-fade { from { opacity: 0; } }
 @keyframes room-menu-grow { from { transform: scaleY(0.8); } }
 /* As in Meet: names centred, the chosen one on a lighter plate in the accent colour with a tick. */
@@ -3058,5 +3062,189 @@ body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
   body:has(.room-controls-main.is-open) .toast-stack { bottom: 164px; }
   .room-control, .room-split > .room-control, .room-control-off, .room-control-side { width: 42px; height: 42px; }
   .room-control-leave { width: 54px; }
+  /* Five panels do not fit beside the call controls: all but "Người dự" and "Chat" go behind ⋯. */
+  .room-controls-side .room-control-tucked { display: none; }
+  .room-more { display: flex; }
   .room-split-more { width: 26px; height: 42px; }
+}
+
+/* ---------- Meeting documents (features/documents, SCRUM-21 / SCRUM-107) ----------
+   One panel for the Tài liệu tab and the call room (ADR-0011): groups by agenda item, one line per
+   file with its type tag; the room variant scrolls inside the 360px side panel. */
+.segmented-count { margin-left: 2px; font-weight: 700; }
+.documents-panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.room-panel-body.documents-panel { overflow-y: auto; }
+.documents-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.documents-toolbar .segmented { flex: none; }
+/* A phone: the two groups share the full width, the upload button goes under them. */
+@media (max-width: 560px) {
+  .documents-toolbar .segmented { width: 100%; }
+  .documents-toolbar .segmented-option span { padding: 0 6px; font-size: 13px; }
+}
+.documents-card { padding: 0; overflow: hidden; }
+.documents-group + .documents-group { border-top: 1px solid var(--line); }
+.documents-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 16px;
+  border: 0;
+  background: var(--surface-head);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.documents-group-head:hover { background: var(--surface-alt); }
+.documents-group-head:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.documents-group-title { flex: 1; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.documents-rows { list-style: none; margin: 0; padding: 0; }
+.documents-row { display: flex; align-items: center; gap: 8px; padding: 0 12px 0 0; border-top: 1px solid var(--line-soft); }
+.documents-card > .documents-rows > .documents-row:first-child { border-top: 0; }
+.documents-row-link {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 56px;
+  padding: 8px 0 8px 40px;
+  color: var(--ink);
+}
+.documents-card > .documents-rows .documents-row-link { padding-left: 16px; }
+.documents-row-link:hover strong { color: var(--brand); text-decoration: underline; }
+.documents-row-link > .icon { flex: none; color: var(--muted-ink); }
+.documents-row-name { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.documents-row-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.documents-row-name small { color: var(--label-ink); font-size: 13px; }
+.documents-empty { margin: 0; padding: 16px; color: var(--muted-ink); }
+.documents-empty-nested { padding: 12px 16px 12px 40px; border-top: 1px solid var(--line-soft); }
+.documents-skeleton { width: 100%; height: 40px; margin: 8px 16px; }
+/* Touch: the small icon buttons of the list, the upload rows and the viewer's zoom reach 40px. */
+@media (pointer: coarse) {
+  .documents-row .icon-button-sm, .upload-row .icon-button-sm, .viewer-zoom .icon-button-sm { width: 40px; height: 40px; }
+}
+
+/* In the room: sections instead of a card; each file is a bordered line. */
+.room-panel-body .documents-section { display: flex; flex-direction: column; gap: 8px; }
+.documents-section-title { margin: 0; color: var(--label-ink); font-size: 13px; font-weight: 600; }
+.room-panel-body .documents-rows { display: grid; gap: 8px; }
+.room-panel-body .documents-row { padding: 0 10px; border: 1px solid var(--line); border-radius: var(--radius); }
+.room-panel-body .documents-row-link { min-height: 52px; padding: 6px 0; }
+.room-panel-body .documents-group { border: 0; }
+.room-panel-body .documents-group-head { min-height: 40px; padding: 6px 4px; background: transparent; }
+.room-panel-body .documents-group-head:hover { background: var(--surface-alt); }
+.room-panel-body .documents-group .documents-rows { padding: 0 0 8px; }
+.room-panel-body .documents-empty { padding: 4px 0; font-size: 13px; }
+.room-panel-body .documents-empty-nested { padding: 4px 4px 8px 28px; border: 0; }
+
+.file-tag {
+  flex: none;
+  width: 52px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+/* Not red: red is kept for "Mật" and warnings (AGENTS.md). */
+.file-tag-pdf { background: var(--chip-violet-bg); color: var(--chip-violet-fg); }
+.file-tag-docx { background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
+.online-only {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+  border-radius: var(--radius);
+  background: var(--chip-red-bg);
+  color: var(--danger-ink);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Upload dialog (wireframe 7.4b). */
+.dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 16px;
+  border: 1px dashed var(--control-line);
+  border-radius: var(--radius);
+  background: var(--surface-head);
+  color: var(--muted-ink);
+  text-align: center;
+  cursor: pointer;
+}
+.dropzone strong { color: var(--ink); }
+.dropzone span { font-size: 13px; }
+.dropzone:hover, .dropzone.is-dragging { border-color: var(--brand); background: var(--brand-wash); }
+.dropzone:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.dropzone.is-disabled { cursor: progress; opacity: .6; }
+/* The input fills the zone, invisible: a tap anywhere opens the picker, and it keeps the focus. */
+.dropzone input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: inherit; }
+.upload-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.upload-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 6px 6px 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.upload-row-error { border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+.upload-row-error small { color: var(--danger-ink); }
+.upload-row-name { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.upload-row-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.upload-row-name small { color: var(--label-ink); font-size: 13px; }
+.upload-progress { flex: none; width: 96px; height: 6px; margin-right: 8px; border-radius: 3px; background: var(--surface-alt); overflow: hidden; }
+.upload-progress i { display: block; height: 100%; background: var(--brand); transition: width .2s; }
+.upload-body { display: grid; gap: 12px; }
+
+/* Document viewer (wireframe 7.5 / 7.5b): the whole window, a header line over a grey stage. */
+.viewer { display: flex; flex-direction: column; height: 100dvh; background: var(--paper); }
+.viewer-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  min-height: 64px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.viewer-back { align-self: center; margin: 0; }
+.viewer-title { min-width: 0; margin: 0; overflow: hidden; font-size: 16px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.viewer-meeting { flex: 0 1 auto; min-width: 0; overflow: hidden; color: var(--muted-ink); font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.viewer-spacer { flex: 1; }
+.viewer-break { display: none; }
+.viewer-page { flex: none; color: var(--muted-ink); font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.viewer-zoom { display: flex; flex: none; align-items: center; gap: 2px; }
+.viewer-zoom-value { min-width: 48px; font-size: 14px; font-variant-numeric: tabular-nums; text-align: center; }
+.viewer-stage { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.viewer-scroll { flex: 1; min-height: 0; overflow: auto; padding: 24px; }
+.viewer-message { display: grid; place-items: center; padding: 48px 16px; color: var(--muted-ink); }
+.pdf-page { margin: 0 auto 16px; background: var(--surface); box-shadow: var(--shadow-sm); }
+.pdf-page canvas { display: block; }
+.docx-sheet { margin: 0 auto; padding: 40px 48px; background: var(--surface); box-shadow: var(--shadow-sm); color: var(--ink); }
+/* docx-preview draws Word's page box; the sheet is the page here. */
+.docx-sheet section.docx { width: auto !important; min-height: 0 !important; padding: 0 !important; background: none !important; box-shadow: none !important; }
+@media (max-width: 720px) {
+  .viewer-meeting { display: none; }
+  .viewer-head { flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  /* The name on a line of its own, wrapped in full: a phone has no tooltip to read it from. */
+  .viewer-title { flex: 1 1 0; overflow: visible; white-space: normal; overflow-wrap: anywhere; }
+  .viewer-break { display: block; flex-basis: 100%; height: 0; }
+  .viewer-spacer { display: block; }
+  .viewer-download-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .viewer-scroll { padding: 12px 8px; }
+  .docx-sheet { padding: 20px 16px; }
 }

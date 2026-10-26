@@ -21,6 +21,7 @@ import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
 import { useNotifications } from '../../notifications/notificationsContext'
 import { AgendaPanel } from '../../agenda/AgendaPanel'
+import { DocumentsPanel } from '../../documents/DocumentsPanel'
 import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
 import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
 import { SensitivityBadge, StatusBadge } from '../StatusBadge'
@@ -49,8 +50,7 @@ const TABS = [
 type TabId = (typeof TABS)[number]['id']
 
 /** What each tab is waiting on, surfaced in the UI so the backlog is visible while building. */
-const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview' | 'attendees' | 'agenda'>, string> = {
-  documents: 'GET /api/meetings/{id}/documents',
+const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview' | 'attendees' | 'agenda' | 'documents'>, string> = {
   recordings: 'GET /api/meetings/{id}/recordings',
   minutes: 'GET /api/meetings/{id}/minutes',
 }
@@ -112,11 +112,12 @@ function MeetingDetail({
   const { user, can, reloadSession } = useAuth()
   const toast = useToast()
   const handleAccessLost = useAccessLost()
-  const [tab, setTab] = useState<TabId>('overview')
+  const [params] = useSearchParams()
+  // `?tab=documents` is where the document viewer's back link lands.
+  const [tab, setTab] = useState<TabId>(() => TABS.find((t) => t.id === params.get('tab'))?.id ?? 'overview')
   const history = useMeetingHistory(meeting.id)
   // UC-15 opens as a dialog on this page (`?edit=1`), keeping the back link's target.
   const editLink = useEditMeetingLink()
-  const [params] = useSearchParams()
 
   const isOrganizer = meeting.createdById === user?.id && can('MeetingCreator')
   const isApprover =
@@ -308,6 +309,8 @@ function MeetingDetail({
             <ParticipantsPanel meetingId={meeting.id} onChanged={() => void reload()} />
           ) : tab === 'agenda' ? (
             <AgendaPanel meetingId={meeting.id} variant="page" />
+          ) : tab === 'documents' ? (
+            <DocumentsPanel meeting={meeting} variant="page" onMeetingStale={() => void reload()} />
           ) : (
             <div className="card card-pending tab-pending">
               <p>Tab này chưa có nghiệp vụ.</p>
