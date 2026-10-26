@@ -495,6 +495,7 @@ frontend/node_modules/.vite/
 # Cấu hình MCP server của riêng từng máy (chrome-devtools…), mỗi người tự đặt.
 .mcp.json
 docs/project-guide.html
+docs/uc-map.html
 
 # Recordings stored by the backend in development (Recordings:StorageRoot)
 backend/TrustCabinet.Web/App_Data/
