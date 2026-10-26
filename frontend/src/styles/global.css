@@ -2966,9 +2966,10 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .room-pip-stage { position: relative; flex: 1; min-height: 0; display: grid; }
 .room-pip-stage > .room-tile, .room-pip-stage > .room-screen { min-height: 0; }
 .room-pip-self { position: absolute; right: 8px; bottom: 8px; width: 34%; aspect-ratio: 16 / 9; display: grid; box-shadow: var(--shadow); border-radius: 12px; }
+/* Same navy as the tile behind it otherwise: a lighter fill and an edge keep your corner tile visible. */
+.room-pip-self .room-tile { background: var(--stage-control); box-shadow: inset 0 0 0 1px var(--stage-line); }
 .room-pip-self .room-tile-avatar { width: 32px; height: 32px; font-size: 13px; }
 .room-pip-self .room-tile-name { display: none; }
-.room-pip-alone { margin: auto; color: #fff; font-size: 14px; }
 .room-pip-bar {
   flex: none;
   display: flex;

@@ -532,7 +532,8 @@ function PipView({
   const self = cameras.find((t) => t.participant.isLocal)
   const others = cameras.filter((t) => !t.participant.isLocal)
   const speaking = others.find((t) => speakers.some((p) => p.identity === t.participant.identity))
-  const main = speaking ?? others[0]
+  // Alone in the room, Meet fills the window with your own tile (camera, or your initials) rather than a sentence.
+  const main = speaking ?? others[0] ?? self
 
   return (
     <div className="room room-pip">
@@ -553,10 +554,8 @@ function PipView({
           </figure>
         ) : main ? (
           <ParticipantTile trackRef={main} />
-        ) : (
-          <p className="room-pip-alone">Chỉ có bạn trong phòng</p>
-        )}
-        {self && (presenter || main) && (
+        ) : null}
+        {self && ((presenter && isTrackReference(presenter)) || main !== self) && (
           <div className="room-pip-self">
             <ParticipantTile trackRef={self} />
           </div>
