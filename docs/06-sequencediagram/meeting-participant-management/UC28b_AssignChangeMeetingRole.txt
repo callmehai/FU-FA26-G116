@@ -43,13 +43,13 @@ else Published/InProgress last Secretary would be lost without same-save replace
 ParticipantService-->ParticipantController: MSG109 - The meeting must retain its required Chair and Secretary. Assign a replacement first.
 ParticipantController-->MeetingPage: MSG109 - The meeting must retain its required Chair and Secretary. Assign a replacement first.
 MeetingPage-->User: MSG109 - The meeting must retain its required Chair and Secretary. Assign a replacement first.
-else Meeting is Published or InProgress and the change replaces the current Chair,\ngives the Chair role to another participant or changes the Chair to another role - EX-5
-ParticipantService-->ParticipantController: MSG256 - From publication onward, only the current Chair can hand over the Chair role.
-ParticipantController-->MeetingPage: MSG256 - From publication onward, only the current Chair can hand over the Chair role.
-MeetingPage-->User: MSG256 - From publication onward, only the current Chair can hand over the Chair role.
+else Meeting is Published or InProgress, the Chair account is active and the change replaces the current Chair,\ngives the Chair role to another participant or changes the Chair to another role - EX-5
+ParticipantService-->ParticipantController: MSG256 - From publication onward, only the current Chair can hand over the Chair role while the Chair account is active.
+ParticipantController-->MeetingPage: MSG256 - From publication onward, only the current Chair can hand over the Chair role while the Chair account is active.
+MeetingPage-->User: MSG256 - From publication onward, only the current Chair can hand over the Chair role while the Chair account is active.
 else Requested change is valid
-alt Confirmed replacement of the current Chair before publication - AF-1
-ParticipantService->ParticipantService: Recheck Meeting is not yet Published, outgoing Chair\nand incoming current internal participant; exactly one Chair;\npreparation may temporarily have no Secretary (BR-122, BR-123, BR-169, BR-294)
+alt Confirmed replacement of the current Chair before publication, or after publication when the Chair account is locked - AF-1
+ParticipantService->ParticipantService: Recheck Meeting is not yet Published or the Chair account is locked, outgoing Chair\nand incoming current active internal participant (not the Secretary after publication); exactly one Chair;\npreparation may temporarily have no Secretary (BR-122, BR-123, BR-126, BR-169, BR-294, BR-295)
 ParticipantService->ParticipantRepository: Change outgoing Chair to Member and incoming participant to Chair together;\ncombine role defaults and valid individual grants; no hardcoded two-view ceiling;\npreserve system roles and responses (BR-169, BR-177)
 activate ParticipantRepository
 ParticipantRepository->Database: Save all requested changes together;\nrecheck Meeting status, authority and roster before saving
@@ -74,7 +74,7 @@ ParticipantController-->MeetingPage: MSG102 - Unable to update the meeting role.
 MeetingPage-->User: MSG102 - Unable to update the meeting role. Please try again.
 else Complete change saved
 opt Meeting is Published or InProgress
-ParticipantService->NotificationService: Notify affected internal participants or Guest by email (BR-92, BR-94)
+ParticipantService->NotificationService: Notify affected internal participants or Guest by email;\nthe actor gets no in-app notification (BR-92, BR-94, BR-322)
 activate NotificationService
 NotificationService-->ParticipantService: Delivery arranged / Failure recorded for retry
 deactivate NotificationService

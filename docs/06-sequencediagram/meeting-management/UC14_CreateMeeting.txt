@@ -7,16 +7,18 @@ control ":Meeting Service" as MeetingService
 participant ":Meeting Repository" as MeetingRepository
 database ":Database" as Database
 
-Organizer->MeetingPage: Submit meeting information
+Organizer->MeetingPage: Submit meeting information\nand initial participants with Meeting Roles
 activate MeetingPage
 
-MeetingPage->MeetingController: Create meeting
+MeetingPage->MeetingController: Create meeting (meetingInfo, participants)
 activate MeetingController
 
-MeetingController->MeetingService: createMeeting(meetingInfo)
+MeetingController->MeetingService: createMeeting(meetingInfo, participants)
 activate MeetingService
 
 MeetingService->MeetingService: Validate required meeting information, Planned Start Time in the future\nand Planned End Time after Planned Start Time (BR-24, BR-62, BR-162)
+
+MeetingService->MeetingService: Validate participants: 1..100 active internal users, each listed once,\nvalid Meeting Role, exactly one Chair, no Guests (BR-320)
 
 alt Meeting information is invalid - EX-1
     MeetingService-->MeetingController: MSG31 - Invalid meeting information
@@ -25,13 +27,22 @@ alt Meeting information is invalid - EX-1
     deactivate MeetingController
     MeetingPage-->Organizer: MSG31 - Invalid meeting information
 
+else Participants are invalid - EX-3
+    activate MeetingController
+    activate MeetingService
+    MeetingService-->MeetingController: MSG277 - The meeting participant list is not valid
+    deactivate MeetingService
+    MeetingController-->MeetingPage: Return participant validation errors
+    deactivate MeetingController
+    MeetingPage-->Organizer: MSG277 - The meeting participant list is not valid
+
 else Meeting information is valid
     activate MeetingController
     activate MeetingService
-    MeetingService->MeetingRepository: Create meeting with Draft status\n(BR-26)
+    MeetingService->MeetingRepository: Create meeting with Draft status and its participants\nwith Pending responses in the same save (BR-26, BR-320)
     activate MeetingRepository
 
-    MeetingRepository->Database: Insert meeting
+    MeetingRepository->Database: Insert meeting and participants
     activate Database
 
     alt Meeting cannot be created - EX-2

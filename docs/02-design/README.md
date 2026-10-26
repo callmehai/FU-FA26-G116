@@ -15,6 +15,10 @@ Dự kiến có thêm:
 - `06-giao-dien.md` — sơ đồ màn hình, wireframe, quy ước thiết kế
 - `07-bao-mat.md` — xác thực, phân quyền RBAC, kiểm soát truy cập tài liệu
 
-Sơ đồ đặt trong [../assets/](../assets/), commit cả file nguồn lẫn ảnh xuất ra.
+Sơ đồ đặt trong các thư mục [06-sequencediagram](../06-sequencediagram/),
+[07-classdiagram](../07-classdiagram/), [09-bussinessflow](../09-bussinessflow/),
+[10-statemachine](../10-statemachine/), [11-contextdiagram](../11-contextdiagram/),
+[12-screenflow](../12-screenflow/), [13-erd](../13-erd/) và [14-uc-diagram](../14-uc-diagram/);
+commit cả file nguồn lẫn ảnh xuất ra.
 
 SCRUM-98: ERD Markdown và hướng dẫn database mô tả migration Agenda, legacy presenter và khóa kết luận bằng MeetingMinutes. Nguồn diagram không sửa; phần lệch được ghi ở [bàn giao](../03-api/08-scrum98-ban-giao.md).

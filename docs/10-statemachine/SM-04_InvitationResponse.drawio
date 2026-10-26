@@ -34,16 +34,8 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="transition-3" value="Invitee changes to Declined" edge="1" parent="1" source="Accepted" target="Declined" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
-          <mxGeometry as="geometry" relative="1" />
-        </mxCell>
-        <mxCell id="transition-4" value="Invitee changes to Accepted" edge="1" parent="1" source="Declined" target="Accepted" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endSize=10;strokeWidth=2;strokeColor=#334155;fontColor=#334155;fontFamily=Arial;fontSize=14;labelBackgroundColor=#ffffff;exitX=1;exitY=0.3;entryX=1;entryY=0.7;">
-          <mxGeometry as="geometry" relative="1">
-            <Array as="points">
-              <mxPoint x="850" y="544" />
-              <mxPoint x="850" y="396" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="note-once" value="The answer is given once and cannot be changed (BR-106). The Chair does not respond and stays Pending." vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=14;text;align=left;fontColor=#334155;">
+          <mxGeometry as="geometry" x="760" y="340" width="360" height="60" />
         </mxCell>
       </root>
     </mxGraphModel>

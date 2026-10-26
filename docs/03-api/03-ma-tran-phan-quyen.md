@@ -15,7 +15,7 @@ Sequence diagram chia bốn participant: `Role & Permission Management Page` →
 | `:Audit Service` | [`backend/TrustCabinet.Infrastructure/Audit/AuditService.cs`](../../backend/TrustCabinet.Infrastructure/Audit/AuditService.cs) |
 | `Database` | bảng `role_capabilities` và `audit_log` |
 
-Class diagram: [`feature-03-role-management-class-diagram.png`](../07-classdiagram/feature-03-role-management-class-diagram.png).
+Class diagram: [`feature-03-role-management-class-diagram.drawio.png`](../07-classdiagram/feature-03-role-management-class-diagram.drawio.png).
 Tạo / đổi tên / xoá vai trò (`SCRUM-63`): [04-quan-ly-vai-tro.md](04-quan-ly-vai-tro.md).
 
 ---

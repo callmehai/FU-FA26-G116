@@ -6,6 +6,11 @@
 > [Master Use Case Inventory §5](01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới).
 > Phần còn mở: mục `[B]` (API docs + code/migration) và cập nhật `03-api/00-danh-muc-ma-thong-bao.md`.
 
+> **Đã lật chiều 25/10/2026:** repo — `docs/08-reports/source/*.docx` — là nguồn, Drive chỉ là bản
+> phát hành (`scripts/push_reports.py`, chạy khi được yêu cầu). Các link Drive trong mục 0 bên dưới
+> đã chết; dùng bảng link trong [08-reports/README.md](../08-reports/README.md). Nội dung dưới giữ
+> nguyên làm lịch sử.
+
 
 > **Đọc phần 0 → 5 trước khi sửa bất cứ file nào.** Phần A, B, C bên dưới là danh sách sửa
 > chi tiết theo từng file, từng dòng, viết để một AI có giới hạn hoặc một thành viên mới làm

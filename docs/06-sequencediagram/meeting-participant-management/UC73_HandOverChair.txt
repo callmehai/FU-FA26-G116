@@ -8,7 +8,7 @@ participant ":Meeting Participant Repository" as ParticipantRepository
 database ":Database" as Database
 participant ":Notification Service" as NotificationService
 
-Chair->MeetingPage: Confirm Hand over Chair to the selected participant
+Chair->MeetingPage: Change role on the selected row: choose Chair and confirm Hand over Chair
 activate MeetingPage
 MeetingPage->ParticipantController: Hand over Chair
 activate ParticipantController
@@ -47,7 +47,7 @@ else Hand-over permitted
             ParticipantController-->MeetingPage: MSG102 - Unable to update the meeting role. Please try again.
             MeetingPage-->Chair: MSG102 - Unable to update the meeting role. Please try again.
         else Both roles saved
-            ParticipantService->NotificationService: Notify the new Chair and the former Chair (BR-92)
+            ParticipantService->NotificationService: Notify the new Chair and the former Chair;\nthe actor gets no in-app notification (BR-92, BR-322)
             activate NotificationService
             NotificationService-->ParticipantService: Notifications created / delivery failed\n(failure does not undo the change)
             deactivate NotificationService

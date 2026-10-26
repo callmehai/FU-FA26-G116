@@ -26,6 +26,39 @@ Markdown snapshot của Report 1–7.
   khớp với bảng. Sau khi ghi, kiểm tra cùng ID/link vẫn mở được và kích thước/thời gian cập nhật
   phản ánh bản mới.
 - Việc thay DOCX trên Drive không cập nhật Markdown. Việc tạo Markdown không đọc hay ghi Drive.
+- Chiều dữ liệu là **một chiều: repo → Drive**. `docs/08-reports/source/*.docx` là nguồn duy nhất;
+  Markdown là snapshot sinh từ đó; Drive là bản phát hành, chỉ được ghi từ đó. Không có bước nào đọc
+  ngược từ Drive về `source/` — `sync_reports.py --download` sẽ từ chối chạy nếu thiếu
+  `--allow-drive-import`, vì nó ghi đè bản local.
+
+## Quy trình một lần sửa
+
+1. Sửa DOCX trong `source/`. Không sửa tay Markdown snapshot.
+2. Sinh lại snapshot:
+   `python scripts/sync_reports.py --source docs/08-reports/source/<tên>.docx --report <số>`
+3. Rà `git diff -- docs/08-reports`, chắc diff chỉ nằm trong vùng vừa sửa.
+4. **Khi được yêu cầu phát hành** (không tự động, không bắt buộc mỗi lần sửa):
+   - `python scripts/push_reports.py <số> --check` — xem Drive đang lệch bao nhiêu;
+   - `python scripts/push_reports.py <số>` — dry run, in ra file đích;
+   - `python scripts/push_reports.py <số> --confirm` — ghi đè nội dung, giữ nguyên ID/link;
+   - `python scripts/push_reports.py <số> --check` — phải ra `UP TO DATE`.
+   `<số>` nhận `1`–`4`, `5.0`, `5.2`; `minutes` cho cả thư mục biên bản họp; `all` cho mọi đích.
+   Biên bản họp là file mới mỗi buổi nên `minutes` tạo file còn thiếu thay vì thay nội dung file cũ.
+5. Push cần credential Drive trong môi trường, scope `https://www.googleapis.com/auth/drive`:
+   - **Refresh token — làm một lần, khuyến nghị.** Tạo OAuth client loại *Desktop app* trong Google
+     Cloud project có bật Drive API, đặt `GOOGLE_DRIVE_CLIENT_ID` và `GOOGLE_DRIVE_CLIENT_SECRET`,
+     rồi chạy `python scripts/google_drive_token.py`. Script mở trình duyệt, in refresh token kèm
+     email tài khoản Drive sẽ dùng. Đặt token đó vào `GOOGLE_DRIVE_REFRESH_TOKEN`; mỗi lần push,
+     script tự đổi sang access token mới (xem `scripts/drive_auth.py`).
+   - **Access token — một lần chạy.** Dán token sống khoảng một giờ vào `GOOGLE_DRIVE_ACCESS_TOKEN`.
+   - **Kiểm tra:** `python scripts/google_drive_token.py --check` phải in ra đúng email tài khoản có
+     quyền ghi thư mục `Docs`. Lỗi `401` là token sai/hết hạn, `403` là thiếu scope hoặc tài khoản
+     không có quyền ghi.
+   - Không commit token, không đặt vào `appsettings.json`. Không dùng `drive.file` vì các file đích có
+     từ trước.
+   - OAuth consent screen để **Testing** thì refresh token hết hạn sau 7 ngày; muốn giữ lâu thì publish
+     app (app chưa verify sẽ hiện cảnh báo và giới hạn 100 user — đủ cho nhu cầu nội bộ).
+
 
 ## Style UC Specification
 
@@ -93,12 +126,34 @@ tương ứng, giữ nguyên file ID và URL.
 | 6 | `Report-6_Software User Guides.docx` | [Report 6 – Software User Guides](https://docs.google.com/document/d/1d_z9XEz_rOqqop6W0Et_Q0kywj492EHG/edit) |
 | 7 | `Report-7_Final Project Document.docx` | [Report 7 – Final Project Document](https://docs.google.com/document/d/1jXB0xKyxTkIQ7X_qodNX7H0MWYnGo8Fi/edit) |
 
-Report 5 còn có các workbook kiểm thử riêng (Unit Test, Integration Test, System Test và Acceptance
-Test); chúng không phải file đích của DOCX Report 5.0.
+Report 5 còn có các workbook kiểm thử riêng; chúng không phải file đích của DOCX Report 5.0. Chỉ 5.0
+và 5.2 có bản nguồn trong repo (`test-reports/`), bốn file còn lại mới chỉ có trên Drive:
 
-Thư mục Drive chứa các report: [SEP490-G116 Reports](https://drive.google.com/drive/folders/19wdKDAYViFGn4nlrmCnyNJkDQ0IOw-Z7?usp=drive_link).
+| Report | Tên file trên Drive | Link Drive |
+|---|---|---|
+| 5.1 | `Report-5.1_Unit Test.xls` | [Report 5.1 – Unit Test](https://docs.google.com/spreadsheets/d/12TjU1izNI0KtQ9EfbgLCdYm-IrDnLP58/edit) |
+| 5.2 | `Report-5.2_Integration Test.xlsx` | [Report 5.2 – Integration Test](https://docs.google.com/spreadsheets/d/1a9L8H_WE1PvDpXkqj8zpM9hv7plsShqV/edit) |
+| 5.3 | `Report-5.3_System Test_FRs.xlsx` | [Report 5.3 – System Test FRs](https://docs.google.com/spreadsheets/d/1a8pRvfEquTioVXf6XRXf0iiBukVWEXzQ/edit) |
+| 5.4 | `Report-5.4_System Test_NFRs.xlsx` | [Report 5.4 – System Test NFRs](https://docs.google.com/spreadsheets/d/1Y_i_wnKfyc1qUXSjnaJFwvavjtFvsOyj/edit) |
+| 5.5 | `Report-5.5_Acceptance Test Scripts.xlsx` | [Report 5.5 – Acceptance Test Scripts](https://docs.google.com/spreadsheets/d/1cbHwanGSqSqumHlFE-UR_HLSWwSKf1cq/edit) |
 
-**Report 3 đồng bộ Markdown gần nhất:** 23/10/2026, từ DOCX local sau khi viết lại đặc tả màn hình 7.3, 7.4,
+Biên bản họp không có ID cố định vì mỗi buổi là một file mới. Chúng nằm trong thư mục
+[Meeting_Minutes](https://drive.google.com/drive/folders/14ir6QuR6UWga57nkrSayzSQZSNcRVhce) và được
+khớp theo tên file; `push_reports.py minutes` tạo file còn thiếu, thay file đã lệch nội dung, và để
+nguyên file chỉ có trên Drive.
+
+Thư mục Drive chứa các report: [SEP490-G116 › Docs](https://drive.google.com/drive/folders/19wdKDAYViFGn4nlrmCnyNJkDQ0IOw-Z7?usp=drive_link).
+
+**Trạng thái phát hành (25/10/2026):** Drive đã được đẩy lên đúng bản local — Report 1 và Report 2
+(Change Log 13/10), Report 3 (Change Log 24/10), Report 5.0 và 5.2 (bản 24/10), cùng 10 biên bản họp
+(thêm bốn buổi 13/10, 14/10, 16/10 và 22/10). `python scripts/push_reports.py all --check` trả
+`UP TO DATE` cho tất cả; file ID và link không đổi. Report 4 vốn đã khớp nên không cần ghi lại. Từ nay
+chiều làm việc là repo → Drive.
+
+**Report 3 đồng bộ Markdown gần nhất:** 24/10/2026, gộp sáu dòng Change Log 24/10 của KhanhPG thành
+một. Lần đẩy 25/10 đưa trọn đợt 16/10 → 24/10 lên Drive trong một lần (9 ngày, 4 dòng Change Log).
+
+Trước đó: 23/10/2026, từ DOCX local sau khi viết lại đặc tả màn hình 7.3, 7.4,
 7.5 và 8.1–8.5 theo wireframe v7 và phòng họp đã chạy trên server test (bỏ giơ tay, tắt mic tất cả, chat lưu lại), đổi
 tên 8.3, 8.5, thêm 8.6 In-Room Documents Panel (chưa làm), thay ảnh các màn đó, sửa bảng Screen List và thêm một dòng
 Change Log. Không thay nội dung trên Drive.

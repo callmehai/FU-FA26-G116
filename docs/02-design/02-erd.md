@@ -4,15 +4,14 @@
 
 **Hiện thực Backend SCRUM-20 / SCRUM-97 theo PO 20/10/2026:** MeetingParticipant có AssignmentStatus/RemovedAt/RemovedById/InitialInvitationDeliveryKey; Meeting có ParticipantsRevision. Hai bảng mới: MeetingGuestInvitation, MeetingInvitationDispatch. Không có bảng quyền bổ sung; quyền roster theo current Chair/Secretary active. Unique current assignment/Guest email/Chair; ứng dụng giữ đúng một Chair, migration backfill creator khi thiếu. Guest credential/profile/session production thuộc SCRUM-59. Chi tiết: [API §6](../03-api/09-thanh-phan-tham-du.md#6-migration-và-delivery), [ADR-0021](../05-decisions/0021-vong-doi-thanh-phan-va-y-dinh-gui-thu.md). Hình mục tiêu bên dưới chưa phải snapshot schema hiện thực.
 
-Tài liệu này mô tả **mô hình dữ liệu khái niệm/logic mục tiêu** của TrustCabinet để làm nguồn cho Report 3, không phải bản trích xuất schema hiện tại. Mô hình đích có đúng **30 thực thể nghiệp vụ/dữ liệu** (thêm `Folder` ngày 13/10/2026, ADR-0018), khớp Report 3 §I.3.2 và ERD vẽ ở [assets/erd-muc-tieu/](../assets/erd-muc-tieu/). Hệ thống được triển khai bằng EF Core code-first và PostgreSQL; thay đổi ERD không tự thay đổi entity, cấu hình, schema hay migration.
+Tài liệu này mô tả **mô hình dữ liệu khái niệm/logic mục tiêu** của TrustCabinet để làm nguồn cho Report 3, không phải bản trích xuất schema hiện tại. Mô hình đích có đúng **30 thực thể nghiệp vụ/dữ liệu** (thêm `Folder` ngày 13/10/2026, ADR-0018), khớp Report 3 §I.3.2 và ERD vẽ ở [13-erd/muc-tieu/](../13-erd/muc-tieu/README.md). Hệ thống được triển khai bằng EF Core code-first và PostgreSQL; thay đổi ERD không tự thay đổi entity, cấu hình, schema hay migration.
 
-**ERD thực thể–quan hệ:** [file drawio chỉnh sửa được](../assets/erd-chen/trustcabinet-erd-chen.drawio),
-[PDF một trang](../assets/erd-chen/trustcabinet-erd-chen.pdf) và
-[ảnh toàn bộ mô hình](../assets/erd-chen/trustcabinet-erd-chen.png). Một ảnh chứa toàn bộ
+**ERD thực thể–quan hệ:** [file drawio chỉnh sửa được](../13-erd/chen/trustcabinet-erd-chen.drawio) và
+[ảnh toàn bộ mô hình](../13-erd/chen/trustcabinet-erd-chen.drawio.png). Một ảnh chứa toàn bộ
 30 thực thể hình chữ nhật và 49 quan hệ hình thoi; action trong hình thoi dùng tiếng Anh.
 Bội số thể hiện bằng đầu nối crow’s foot, không ghi số trên đường nối. Sơ đồ bỏ thuộc tính
 để tập trung vào thực thể và quan hệ, bố trí quanh Meeting và User theo DB design hiện có.
-Bản dạng bảng ở `erd-muc-tieu/` được giữ để đối chiếu các thuộc tính và thiết kế dữ liệu.
+[Bản dạng bảng](../13-erd/muc-tieu/README.md) được giữ để đối chiếu các thuộc tính và thiết kế dữ liệu.
 
 Hiện thực: EF Core 10 code-first, PostgreSQL qua Npgsql
 ([ADR-0003](../05-decisions/0003-chon-postgresql-thay-cho-sql-server.md)). Entity ở

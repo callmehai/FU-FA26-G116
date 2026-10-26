@@ -7,13 +7,13 @@ control ":Meeting Service" as MeetingService
 participant ":Meeting Repository" as MeetingRepository
 database ":Database" as Database
 
-User->MeetingPage: Request meeting list with current criteria
+User->MeetingPage: Request meeting list with current criteria\n(opens with status=InProgress preset)
 activate MeetingPage
 
 MeetingPage->MeetingController: View meeting list
 activate MeetingController
 
-MeetingController->MeetingController: Validate search, filter, sorting, and paging criteria
+MeetingController->MeetingController: Validate search, filter, sorting, and paging criteria\n(status, timing=upcoming|past, from/to for Today and This week, excludeDeclined)
 
 alt Query criteria are invalid - EX-2
     MeetingController-->MeetingPage: MSG32 - Invalid query parameters
@@ -26,7 +26,7 @@ else Query criteria are valid
     activate MeetingService
     MeetingService->MeetingRepository: Find authorized meetings with criteria\n(BR-29, BR-30, BR-31, BR-32)
     activate MeetingRepository
-    MeetingRepository->Database: Filter authorized meetings by name, status (including Cancelled),\nconfidentiality and Time Range overlapping Meeting Planned Start/End Time (BR-30, BR-297)
+    MeetingRepository->Database: Filter authorized meetings by name, status (including Cancelled), confidentiality,\nToday/This week overlapping Meeting Planned Start/End Time, or Not yet held/Already held by Planned Start Time\n(BR-30, BR-297); omit declined meetings only when excludeDeclined=true (calendar, BR-321)
     activate Database
 
     alt Meeting list cannot be retrieved - EX-1
@@ -53,7 +53,7 @@ else Query criteria are valid
         deactivate MeetingService
         MeetingController-->MeetingPage: Display meeting list
         deactivate MeetingController
-        MeetingPage-->User: Meeting list with status, including Cancelled Meetings,\nor no matching meetings
+        MeetingPage-->User: Meeting list with status, including Cancelled Meetings and Meetings the user declined,\nor no matching meetings
     end
 end
 

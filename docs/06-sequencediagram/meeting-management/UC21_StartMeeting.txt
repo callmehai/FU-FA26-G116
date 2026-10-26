@@ -104,8 +104,8 @@ exactly one active Chair and at least one active Secretary (BR-127, BR-130, BR-1
             deactivate MeetingStatusHistoryRepository
 
             MeetingService->NotificationService: Notify current invited internal participants
-            activate NotificationService
-that the Meeting has started (BR-164)
+that the Meeting has started,
+except the Chair who started it (BR-164, BR-322)
             activate NotificationService
             NotificationService-->MeetingService: Notifications created / delivery failed
 (failure does not undo the start)
@@ -116,7 +116,6 @@ that the Meeting has started (BR-164)
             MeetingController-->MeetingPage: MSG110 - Meeting started successfully
             deactivate MeetingController
             MeetingPage-->Chair: MSG110 - Meeting started successfully
-            deactivate NotificationService
         end
     end
 end
