@@ -156,6 +156,13 @@ Thư mục Drive chứa các report: [SEP490-G116 › Docs](https://drive.google
 `UP TO DATE` cho tất cả; file ID và link không đổi. Report 4 vốn đã khớp nên không cần ghi lại. Từ nay
 chiều làm việc là repo → Drive.
 
+**Report 4 (28/10/2026):** điền mục II. Detailed Code Design bằng class diagram
+([07-classdiagram/](../07-classdiagram/README.md)) và sequence diagram từng UC
+([06-sequencediagram/](../06-sequencediagram/README.md), ảnh `.png` trong thư mục từng feature) của FE-01 → FE-07,
+FE-11 và FE-13: 8 class diagram, 68 sequence diagram; thêm một dòng Change Log (HuyNT) và cập nhật mục lục. Các mục
+I, III, IV vẫn là nội dung mẫu, chưa sửa. File ~28 MB nên chưa đẩy lên Drive được qua trình duyệt (giới hạn 10 MB);
+đẩy bằng `push_reports.py 4 --confirm` hoặc tải lên phiên bản mới cho đúng file ở bảng link chuẩn phía trên.
+
 **Report 3 đồng bộ Markdown gần nhất:** 24/10/2026, gộp sáu dòng Change Log 24/10 của KhanhPG thành
 một. Lần đẩy 25/10 đưa trọn đợt 16/10 → 24/10 lên Drive trong một lần (9 ngày, 4 dòng Change Log).
 
