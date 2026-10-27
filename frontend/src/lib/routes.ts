@@ -25,6 +25,9 @@ export const routes = {
   adminRoles: '/mgmt/admin/roles',
   // ADR-0006: each user's own document library.
   documents: '/mgmt/documents',
+  /** A document of one's library, full screen; `folder` is where "‹ Kho tài liệu" returns and where it is listed. */
+  libraryDocument: (id: string, folderId: string | null = null) =>
+    `/mgmt/documents/${id}${folderId ? `?folder=${folderId}` : ''}`,
   // SCRUM-35: the signed-in person's own Voice ID.
   myVoice: '/mgmt/my-voice',
   calendar: '/calendar',

@@ -220,7 +220,7 @@ Người nói rút lại câu của mình, hoặc Thư ký xoá (`MSG322`). Xoá
 
 ### `PUT /api/meetings/{meetingId}/capture-mode` — `{ "mode": "PerMic" | "Room" }`
 
-Chủ tọa hoặc Thư ký, trước khi họp (`MSG324`; đã bắt đầu thì `409 MSG325`).
+Chủ tọa hoặc Thư ký, trước khi họp (`MSG324`; đã bắt đầu thì `409 MSG325`, cuộc họp đã huỷ thì `409 MSG349`).
 
 ### Sự kiện hub `speechChanged`
 

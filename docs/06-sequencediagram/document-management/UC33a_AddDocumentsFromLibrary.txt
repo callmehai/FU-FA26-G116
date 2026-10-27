@@ -1,0 +1,116 @@
+title UC-33a - Add Documents from Personal Library
+
+actor "Chair or Secretary" as Actor
+boundary "Meeting Documents Tab" as DocumentsTab
+control ":Meeting Document Controller" as DocumentController
+control ":Meeting Document Service" as DocumentService
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Library Document Repository" as LibraryDocumentRepository
+participant ":Meeting Document Repository" as MeetingDocumentRepository
+database ":Database" as Database
+
+Actor->DocumentsTab: Submit the selected personal library documents
+activate DocumentsTab
+
+DocumentsTab->DocumentController: Add the selected library documents to the Meeting
+activate DocumentController
+
+DocumentController->DocumentService: addLibraryDocuments(meetingId, libraryDocumentIds, actor)
+activate DocumentService
+
+DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting\nand is its current Chair or Secretary (BR-184, BR-195)
+activate MeetingAccessPolicy
+MeetingAccessPolicy->Database: Retrieve Meeting status and the actor's current Meeting role
+activate Database
+Database-->MeetingAccessPolicy: Meeting status and Meeting role / Not found
+deactivate Database
+MeetingAccessPolicy-->DocumentService: Access, Meeting role and Meeting status / No access
+deactivate MeetingAccessPolicy
+
+alt Meeting is unavailable or the actor can no longer view it - EX-7
+    DocumentService-->DocumentController: MSG174 - This Meeting is not accessible.
+    DocumentController-->DocumentsTab: MSG174 - This Meeting is not accessible.
+    DocumentsTab-->Actor: MSG174 - This Meeting is not accessible.
+else Actor is no longer the Chair or Secretary - EX-1
+    DocumentService-->DocumentController: MSG162 - You no longer have permission to add documents to this Meeting.
+    DocumentController-->DocumentsTab: MSG162 - You no longer have permission to add documents to this Meeting.
+    DocumentsTab-->Actor: MSG162 - You no longer have permission to add documents to this Meeting.
+else Meeting has ended - EX-6
+    DocumentService-->DocumentController: MSG172 - Documents cannot be added after the Meeting has ended.
+    DocumentController-->DocumentsTab: MSG172 - Documents cannot be added after the Meeting has ended.
+    DocumentsTab-->Actor: MSG172 - Documents cannot be added after the Meeting has ended.
+else Actor may add documents
+    DocumentService->LibraryDocumentRepository: Get the selected documents of the actor's personal library (BR-193, BR-209)
+    activate LibraryDocumentRepository
+    LibraryDocumentRepository->Database: Retrieve selected documents owned by the actor
+    activate Database
+    Database-->LibraryDocumentRepository: Available library documents
+    deactivate Database
+    LibraryDocumentRepository-->DocumentService: Available library documents
+    deactivate LibraryDocumentRepository
+
+    DocumentService->DocumentService: Check at least one document is selected and every selected document\nis available and belongs to the actor (BR-209)
+
+    alt Selection is missing or a document is unavailable - EX-2
+        DocumentService-->DocumentController: MSG249 - Select one or more available documents from your personal library.
+        DocumentController-->DocumentsTab: MSG249 - Select one or more available documents from your personal library.
+        DocumentsTab-->Actor: MSG249 - Select one or more available documents from your personal library.
+    else Selection is available
+        DocumentService->MeetingDocumentRepository: Get the documents currently attached to this Meeting
+        activate MeetingDocumentRepository
+        MeetingDocumentRepository->Database: Retrieve current Meeting documents
+        activate Database
+        Database-->MeetingDocumentRepository: Current Meeting documents
+        deactivate Database
+        MeetingDocumentRepository-->DocumentService: Current Meeting documents
+        deactivate MeetingDocumentRepository
+
+        DocumentService->DocumentService: Check none of the selected documents is already attached\nto this Meeting (BR-193)
+
+        alt A selected document is already attached - EX-4
+            DocumentService-->DocumentController: MSG165 - One or more selected documents are already attached to the Meeting.
+            DocumentController-->DocumentsTab: MSG165 - One or more selected documents are already attached to the Meeting.
+            DocumentsTab-->Actor: MSG165 - One or more selected documents are already attached to the Meeting.
+        else No selected document is attached yet
+            DocumentService->MeetingDocumentRepository: Add every selected document as a general Meeting document under its current name,\nrecording who added it and when, in one transaction with the Meeting locked\n(BR-197, BR-276, BR-284, BR-286)
+            activate MeetingDocumentRepository
+            MeetingDocumentRepository->Database: Under the Meeting lock, recheck status, the actor's role\nand that none is attached, then insert the Meeting documents\npointing at the library documents' stored files
+            activate Database
+            Database-->MeetingDocumentRepository: Saved / Failed
+            deactivate Database
+            MeetingDocumentRepository-->DocumentService: Saved / Failed
+            deactivate MeetingDocumentRepository
+
+            alt Save fails: Meeting is unavailable or actor can no longer view it - EX-7
+                DocumentService-->DocumentController: MSG174 - This Meeting is not accessible.
+                DocumentController-->DocumentsTab: MSG174 - This Meeting is not accessible.
+                DocumentsTab-->Actor: MSG174 - This Meeting is not accessible.
+            else Save fails: Actor is no longer the Chair or Secretary - EX-1
+                DocumentService-->DocumentController: MSG162 - You no longer have permission to add documents to this Meeting.
+                DocumentController-->DocumentsTab: MSG162 - You no longer have permission to add documents to this Meeting.
+                DocumentsTab-->Actor: MSG162 - You no longer have permission to add documents to this Meeting.
+            else Save fails: Meeting has ended - EX-6
+                DocumentService-->DocumentController: MSG172 - Documents cannot be added after the Meeting has ended.
+                DocumentController-->DocumentsTab: MSG172 - Documents cannot be added after the Meeting has ended.
+                DocumentsTab-->Actor: MSG172 - Documents cannot be added after the Meeting has ended.
+            else Save fails: A selected document is already attached - EX-4
+                DocumentService-->DocumentController: MSG165 - One or more selected documents are already attached to the Meeting.
+                DocumentController-->DocumentsTab: MSG165 - One or more selected documents are already attached to the Meeting.
+                DocumentsTab-->Actor: MSG165 - One or more selected documents are already attached to the Meeting.
+            else Save fails: Database persistence error - EX-5
+                DocumentService-->DocumentController: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                DocumentController-->DocumentsTab: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                DocumentsTab-->Actor: MSG166 - Unable to add the documents. No documents were added. Please try again.
+            else Documents added
+                DocumentService-->DocumentController: Number of documents added
+                DocumentController-->DocumentsTab: Number of documents added
+                DocumentsTab->DocumentsTab: Refresh the Meeting document list
+                DocumentsTab-->Actor: MSG161 - Documents added to the Meeting successfully.
+            end
+        end
+    end
+end
+
+deactivate DocumentService
+deactivate DocumentController
+deactivate DocumentsTab

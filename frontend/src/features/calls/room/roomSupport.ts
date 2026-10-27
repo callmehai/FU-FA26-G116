@@ -26,6 +26,7 @@ export const roomMessage = {
   otherTab: 'Bạn đã vào phòng này từ tab hoặc thiết bị khác. Tab này đã rời phòng.', // MSG329
   removed: 'Bạn không còn trong danh sách tham dự phòng họp này.', // MSG330
   closed: 'Cuộc họp đã kết thúc, phòng họp đã đóng.', // MSG331
+  cancelled: 'Cuộc họp đã huỷ nên phòng họp không mở.', // MSG350
   lost: 'Mất kết nối tới phòng họp.', // MSG332
   reconnecting: 'Mất kết nối, đang kết nối lại…', // MSG333
   deviceBlocked: (device: Device) =>

@@ -16,6 +16,21 @@ tab từ file gốc, bỏ qua tab index, xuất ảnh ở scale 2, rồi xóa c�
 tab UC tương ứng. Không chỉnh sửa ảnh trong thư mục này; hãy sửa tab trong file Draw.io gộp rồi chạy
 lại script.
 
+## Xuất ảnh các trang lớn (27/10/2026)
+
+Draw.io CLI 32.6.1 trên máy này chỉ vẽ trọn một trang khi chạy với `--disable-gpu --disable-software-rasterizer`, và cắt
+phần dưới hoặc bên phải nếu ảnh ra quá khoảng 2900 px mỗi chiều (ví dụ scale 2 cho trang rộng 4000 đơn vị). Bốn ảnh sau được
+xuất lại ngày 27/10/2026 ở scale nhỏ hơn 2 để vẫn trọn vẹn, mở kiểm tra bằng cách so vùng có nét vẽ với kích thước ảnh:
+
+| Ảnh | Scale |
+|---|---|
+| `uc33a_uploaddocumentstomeeting` | 0.6 |
+| `uc33b_attachdocumentstoagendaitem` | 0.5 (bản scale 2 cũ trắng hoàn toàn) |
+| `uc34b_viewlockedaccountlibrary` | 0.9 |
+| `uc36_uploadtopersonallibrary` | 0.7 |
+
+Muốn nét to hơn thì phóng to trực tiếp trong file Draw.io; ảnh chỉ để xem nhanh.
+
 ## Ảnh đang chờ xuất lại (19/10/2026)
 
 Đợt đồng bộ theo Report 3 ngày 18/10/2026 đã sửa source `.txt`, ảnh SequenceDiagram.org và tab trong file Draw.io gộp,
@@ -33,3 +48,5 @@ cắt phần dưới nên xuất ở **scale 1.5**; chạy lại script toàn b�
 
 **23/10/2026 (SCRUM-107):** thêm tab UC-33a AF-1 *Upload Documents to Meeting* và xuất ảnh. Cũng xuất ở **scale 1.5**
 vì scale 2 bị cắt nửa dưới, như UC-32c.
+
+**27/10/2026 (FE-07):** dựng lại tab UC-32a, UC-32c, UC-33a (tải lên) và thêm 13 tab UC-33a (thư viện), UC-33b, UC-33c, UC-33d, UC-34, UC-36, UC-71a/b/c, UC-72a/b/c/d từ các `.txt` trong `document-management/`; xuất lại 16 ảnh. Cả 16 ảnh xuất ở scale 2 bằng draw.io 32.6.1 (bản 29.6.1 không vẽ biểu tượng actor/boundary/control/database).

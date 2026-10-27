@@ -1,0 +1,60 @@
+title UC-71b - Rename Document
+
+actor "Internal User" as Actor
+boundary "Personal Library Screen" as LibraryScreen
+control ":Document Controller" as DocumentController
+control ":Document Service" as DocumentService
+participant ":Document Repository" as DocumentRepository
+database ":Database" as Database
+
+Actor->LibraryScreen: Submit the new document name
+activate LibraryScreen
+
+LibraryScreen->DocumentController: Rename the personal-library document
+activate DocumentController
+
+DocumentController->DocumentService: renameLibraryDocument(userId, documentId, newName)
+activate DocumentService
+
+DocumentService->DocumentService: Check the actor is an Internal User\nwith a personal library (BR-204, BR-242)
+
+DocumentService->DocumentRepository: Get the selected document owned by the actor (BR-242)
+activate DocumentRepository
+DocumentRepository->Database: Retrieve the document by id and owner
+activate Database
+Database-->DocumentRepository: Document / Not found
+deactivate Database
+DocumentRepository-->DocumentService: Document / Not found
+deactivate DocumentRepository
+
+alt Document is missing or no longer belongs to the actor - EX-1
+    DocumentService-->DocumentController: MSG175 - This personal-library item is not available.
+    DocumentController-->LibraryScreen: MSG175 - This personal-library item is not available.
+    LibraryScreen-->Actor: MSG175 - This personal-library item is not available.
+
+else Document is available
+    DocumentService->DocumentRepository: Save the new library document name only,\nleaving the file content and names already copied into Meetings unchanged\n(BR-183, BR-224, BR-276)
+    activate DocumentRepository
+    DocumentRepository->Database: Update the library document name
+    activate Database
+    Database-->DocumentRepository: Updated / Failed
+    deactivate Database
+    DocumentRepository-->DocumentService: Updated document / Failed
+    deactivate DocumentRepository
+
+    alt Document cannot be renamed - EX-2
+        DocumentService-->DocumentController: MSG184 - Unable to rename the document. Its name remains unchanged.
+        DocumentController-->LibraryScreen: MSG184 - Unable to rename the document. Its name remains unchanged.
+        LibraryScreen-->Actor: MSG184 - Unable to rename the document. Its name remains unchanged.
+
+    else Document renamed
+        DocumentService-->DocumentController: Renamed document
+        DocumentController-->LibraryScreen: Renamed document
+        LibraryScreen->LibraryScreen: Refresh the displayed name
+        LibraryScreen-->Actor: MSG183 - Document renamed successfully.
+    end
+end
+
+deactivate DocumentService
+deactivate DocumentController
+deactivate LibraryScreen

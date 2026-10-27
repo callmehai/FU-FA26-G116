@@ -2,7 +2,8 @@ namespace TrustCabinet.Domain.Enums;
 
 /// <summary>
 /// The meeting state machine, in the order a meeting travels through it. It stops at Ended: the
-/// minutes have their own status (ADR-0013). Documented in
+/// minutes have their own status (ADR-0013). Cancelled is the other final state, reached only before
+/// the meeting starts (UC-75, ADR-0032). Documented in
 /// docs/02-design/01-vong-doi-cuoc-hop.md, which is the authority — keep the two in step.
 ///
 /// Stored as a string, not an int, so the database stays readable and inserting a new state
@@ -17,6 +18,7 @@ public enum MeetingStatus
     Published,
     InProgress,
     Ended,
+    Cancelled,
 }
 
 /// <summary>Server-owned lifecycle action written to immutable meeting history.</summary>
@@ -34,6 +36,10 @@ public enum MeetingHistoryAction
     LegacyTransition,
     Start,
     End,
+    /// <summary>The organizer cancelled the meeting before it started (UC-75).</summary>
+    Cancel,
+    /// <summary>The system cancelled a meeting nobody started a day after its planned start (BR-301).</summary>
+    AutoCancel,
 }
 
 /// <summary>Actions accepted by the meeting transition API. LegacyTransition is never a command.</summary>
@@ -47,6 +53,7 @@ public enum MeetingTransitionAction
     TransferOrganizer,
     Start,
     End,
+    Cancel,
 }
 
 /// <summary>

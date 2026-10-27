@@ -2,10 +2,11 @@ import { PDF_TYPE, type MeetingDocument } from '../../types/document'
 
 const size = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 })
 
-/** "640 KB", "1,6 MB" — the way the upload limits are written. */
+/** "640 KB", "1,6 MB", "1 GB" — the way the upload limits and the storage limit are written. */
 export function formatBytes(bytes: number) {
   if (bytes < 1024 * 1024) return `${size.format(Math.max(1, Math.round(bytes / 1024)))} KB`
-  return `${size.format(bytes / (1024 * 1024))} MB`
+  if (bytes < 1024 * 1024 * 1024) return `${size.format(bytes / (1024 * 1024))} MB`
+  return `${size.format(bytes / (1024 * 1024 * 1024))} GB`
 }
 
 export const isPdf = (doc: Pick<MeetingDocument, 'contentType'>) => doc.contentType === PDF_TYPE

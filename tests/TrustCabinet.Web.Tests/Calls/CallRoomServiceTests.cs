@@ -36,6 +36,8 @@ public sealed class CallRoomServiceTests
     [InlineData(MeetingStatus.InProgress, MeetingMode.InPerson, CallRoomStatus.InPersonOnly)]
     [InlineData(MeetingStatus.Published, MeetingMode.Online, CallRoomStatus.NotStarted)]
     [InlineData(MeetingStatus.Ended, MeetingMode.Online, CallRoomStatus.Ended)]
+    [InlineData(MeetingStatus.Cancelled, MeetingMode.Online, CallRoomStatus.Cancelled)]
+    [InlineData(MeetingStatus.Cancelled, MeetingMode.InPerson, CallRoomStatus.InPersonOnly)]
     public void Room_status_follows_meeting_status_and_mode(MeetingStatus status, MeetingMode mode, CallRoomStatus expected)
         => Assert.Equal(expected, CallRoomRules.StatusOf(status, mode));
 

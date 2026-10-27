@@ -17,15 +17,18 @@ internal static class CalendarInvitationBuilder
         string meetingUrl,
         string organizerName,
         string organizerEmail,
-        DateTimeOffset createdAt)
+        DateTimeOffset createdAt,
+        bool cancelled = false)
     {
+        // A cancellation reuses the invitation's UID with a higher SEQUENCE, so calendar apps that
+        // accepted the invitation remove the event instead of adding a second one (RFC 5546 §3.2.5).
         var lines = new List<string>
         {
             "BEGIN:VCALENDAR",
             "PRODID:-//TrustCabinet//Meeting Invitation//VI",
             "VERSION:2.0",
             "CALSCALE:GREGORIAN",
-            "METHOD:REQUEST",
+            cancelled ? "METHOD:CANCEL" : "METHOD:REQUEST",
             "BEGIN:VEVENT",
             $"UID:{meetingId:D}@trustcabinet",
             $"DTSTAMP:{Utc(createdAt)}",
@@ -43,13 +46,17 @@ internal static class CalendarInvitationBuilder
         lines.Add($"URL:{Escape(meetingUrl)}");
         lines.Add($"ORGANIZER;CN=\"{EncodeParameter(organizerName)}\":mailto:{organizerEmail}");
         lines.Add($"ATTENDEE;CN=\"{EncodeParameter(attendeeName)}\";RSVP=TRUE:mailto:{attendeeEmail}");
-        lines.Add("STATUS:CONFIRMED");
-        lines.Add("SEQUENCE:0");
+        lines.Add(cancelled ? "STATUS:CANCELLED" : "STATUS:CONFIRMED");
+        lines.Add(cancelled ? "SEQUENCE:1" : "SEQUENCE:0");
         lines.Add("END:VEVENT");
         lines.Add("END:VCALENDAR");
 
         return string.Join("\r\n", lines.Select(FoldLine)) + "\r\n";
     }
+
+    /// <summary>The iTIP method of a built calendar, which the MIME part must repeat for mail clients to act on it.</summary>
+    public static string MethodOf(string calendar)
+        => calendar.Contains("\r\nMETHOD:CANCEL\r\n", StringComparison.Ordinal) ? "CANCEL" : "REQUEST";
 
     private static string Utc(DateTimeOffset value)
         => value.UtcDateTime.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);

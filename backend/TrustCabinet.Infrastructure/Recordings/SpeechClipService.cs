@@ -211,6 +211,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
                 var meeting = await meetings.FindWorkflowAsync(meetingId, true, token);
                 if (meeting is null || !RecordingRules.CanListen(meeting, actorId)) return new(SpeechClipFailure.NotFound);
                 if (!SpeechClipRules.RunsRecord(meeting, actorId)) return new(SpeechClipFailure.Forbidden);
+                if (meeting.Status == MeetingStatus.Cancelled) return new(SpeechClipFailure.Cancelled);
                 if (!SpeechClipRules.ModeChangeable(meeting.Status)) return new(SpeechClipFailure.Locked);
                 if (meeting.CaptureMode != capture)
                 {

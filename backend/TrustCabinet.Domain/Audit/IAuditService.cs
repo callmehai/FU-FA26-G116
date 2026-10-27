@@ -128,4 +128,10 @@ public static class AuditActions
     /// MeetingDocument, since that is what the reader opened; the meeting goes in the details.
     /// </summary>
     public const string MeetingDocumentObjectType = "MeetingDocument";
+
+    /// <summary>
+    /// PO 27/10/2026 — an administrator read a deactivated person's personal library, to recover their documents.
+    /// The <c>ObjectId</c> is the owner; the details say which folder was listed or which document was opened.
+    /// </summary>
+    public const string PersonalLibraryRead = "library.read";
 }

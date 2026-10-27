@@ -29,7 +29,7 @@ builder.Services.AddTrustCabinetDatabase(builder.Configuration);
 builder.Services.AddTrustCabinetAuthentication(builder.Configuration);
 builder.Services.AddTrustCabinetUserManagement();
 builder.Services.AddTrustCabinetRolePermissions();
-builder.Services.AddTrustCabinetMeetings();
+builder.Services.AddTrustCabinetMeetings(builder.Configuration);
 builder.Services.AddTrustCabinetAgenda();
 builder.Services.AddTrustCabinetParticipants();
 builder.Services.AddTrustCabinetAttendance();
@@ -58,6 +58,8 @@ builder.Services.AddTrustCabinetDocuments(builder.Configuration);
 // SCRUM-29: recordings of a sitting, on local disk, erased when their retention period runs out.
 builder.Services.AddTrustCabinetRecordings(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddHostedService<RecordingRetentionWorker>();
+// SCRUM-99: cancels meetings nobody started a day after their planned start (BR-301).
+builder.Services.AddHostedService<MeetingOverdueWorker>();
 
 // SCRUM-31: speech to text on the in-house speech worker (workers/speech), one recording at a time.
 builder.Services.AddTrustCabinetTranscription(builder.Configuration);
@@ -196,6 +198,9 @@ app.MapAgendaEndpoints();
 app.MapParticipantEndpoints();
 app.MapAttendanceEndpoints();
 app.MapMeetingDocumentEndpoints();
+// SCRUM-58: the personal library and its folders; SCRUM-23: comments on a meeting document.
+app.MapPersonalLibraryEndpoints();
+app.MapDocumentCommentEndpoints();
 app.MapHub<MeetingHub>("/hubs/meetings", options => options.CloseOnAuthenticationExpiration = true);
 
 // SCRUM-14: user-scoped notification list/read APIs and realtime delivery.
@@ -215,6 +220,9 @@ app.MapTranscriptEndpoints();
 
 // SCRUM-35: the caller's own Voice ID.
 app.MapVoiceIdEndpoints();
+
+// SCRUM-15: Resend's delivery webhook (ADR-0031).
+app.MapEmailEndpoints();
 
 // Health endpoint — the frontend calls this to confirm the backend is alive.
 app.MapGet("/api/health", () => Results.Ok(new

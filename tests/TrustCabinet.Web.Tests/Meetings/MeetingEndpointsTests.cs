@@ -613,6 +613,124 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(expectedCode, body.RootElement.GetProperty("code").GetString());
     }
 
+    // UC-75 Cancel Meeting (SCRUM-99).
+
+    private async Task<(HttpResponseMessage Response, JsonDocument Body)> CancelAsync(
+        User actor, Meeting meeting, string json)
+    {
+        using var client = _factory.ClientFor(actor);
+        var response = await client.PostAsync(
+            $"/api/meetings/{meeting.Id}/transitions",
+            new StringContent(json, Encoding.UTF8, "application/json"));
+        return (response, await JsonOf(response));
+    }
+
+    [Fact]
+    public async Task Cancel_returns_MSG261_and_the_meeting_with_its_cancellation()
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+
+        var (response, body) = await CancelAsync(creator, meeting,
+            JsonSerializer.Serialize(new { action = "Cancel", reason = "Đổi kế hoạch" }));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("MSG261", body.RootElement.GetProperty("code").GetString());
+        var returned = body.RootElement.GetProperty("meeting");
+        Assert.Equal("Cancelled", returned.GetProperty("status").GetString());
+        var cancellation = returned.GetProperty("cancellation");
+        Assert.Equal("Đổi kế hoạch", cancellation.GetProperty("reason").GetString());
+        Assert.Equal(creator.Id, cancellation.GetProperty("cancelledById").GetGuid());
+        var history = body.RootElement.GetProperty("history");
+        Assert.Equal("Cancel", history.GetProperty("action").GetString());
+        Assert.Equal("Đổi kế hoạch", history.GetProperty("cancellationReason").GetString());
+    }
+
+    [Theory]
+    [InlineData("{\"action\":\"Cancel\"}", "MSG262")]
+    [InlineData("{\"action\":\"Cancel\",\"reason\":\"  \"}", "MSG262")]
+    public async Task Cancel_without_a_reason_returns_MSG262(string json, string expectedCode)
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+
+        var (response, body) = await CancelAsync(creator, meeting, json);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(expectedCode, body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(MeetingStatus.Draft, meeting.Status);
+    }
+
+    [Fact]
+    public async Task Cancel_with_a_reason_over_1000_characters_returns_MSG345()
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+
+        var (response, body) = await CancelAsync(creator, meeting,
+            JsonSerializer.Serialize(new { action = "Cancel", reason = new string('a', 1001) }));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("MSG345", body.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task Cancel_of_a_started_meeting_returns_409_MSG263()
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        meeting.Status = MeetingStatus.InProgress;
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+
+        var (response, body) = await CancelAsync(creator, meeting,
+            JsonSerializer.Serialize(new { action = "Cancel", reason = "Muộn rồi" }));
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal("MSG263", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(MeetingStatus.InProgress, meeting.Status);
+    }
+
+    [Fact]
+    public async Task Cancel_by_someone_who_is_not_the_organizer_returns_403_MSG263()
+    {
+        var creator = GivenCreator();
+        var approver = GivenMember("cancel-approver@trustcabinet.local");
+        var meeting = OwnedMeetingBy(creator, approver.Id);
+        meeting.Status = MeetingStatus.WaitingApproval;
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[approver.Id] = [Capability.MeetingApprover, Capability.MeetingCreator];
+
+        var (response, body) = await CancelAsync(approver, meeting,
+            JsonSerializer.Serialize(new { action = "Cancel", reason = "Không phải của tôi" }));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal("MSG263", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
+    }
+
+    [Fact]
+    public async Task Cancel_that_cannot_be_saved_returns_MSG264()
+    {
+        var creator = GivenCreator();
+        var meeting = OwnedMeetingBy(creator);
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+        _factory.Meetings.NextSaveThrows = new Npgsql.NpgsqlException("database unavailable");
+
+        var (response, body) = await CancelAsync(creator, meeting,
+            JsonSerializer.Serialize(new { action = "Cancel", reason = "Đổi kế hoạch" }));
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal("MSG264", body.RootElement.GetProperty("code").GetString());
+    }
+
     [Theory]
     [InlineData("SubmitForApproval", "MSG42")]
     [InlineData("Approve", "MSG88")]

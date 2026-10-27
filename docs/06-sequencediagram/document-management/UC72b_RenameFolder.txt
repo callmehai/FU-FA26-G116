@@ -1,0 +1,67 @@
+title UC-72b - Rename Folder
+
+actor "Internal User" as Actor
+boundary "Personal Library Screen" as LibraryScreen
+control ":Folder Controller" as FolderController
+control ":Folder Service" as FolderService
+participant ":Folder Repository" as FolderRepository
+database ":Database" as Database
+
+Actor->LibraryScreen: Submit the new folder name
+activate LibraryScreen
+
+LibraryScreen->FolderController: Rename the selected folder
+activate FolderController
+
+FolderController->FolderService: renameFolder(ownerId, folderId, name)
+activate FolderService
+
+FolderService->FolderRepository: Get the selected folder owned by the user (BR-219, BR-242)
+activate FolderRepository
+FolderRepository->Database: Retrieve the folder
+activate Database
+Database-->FolderRepository: Folder / Not found
+deactivate Database
+FolderRepository-->FolderService: Folder / Not found
+deactivate FolderRepository
+
+alt Folder is missing or not owned by the user - EX-1
+    FolderService-->FolderController: MSG175 - This personal-library item is not available.
+    FolderController-->LibraryScreen: MSG175 - This personal-library item is not available.
+    LibraryScreen-->Actor: MSG175 - This personal-library item is not available.
+
+else Folder is available
+    FolderService->FolderService: Check the new folder name is not blank,\nduplicate names permitted (BR-220, BR-221)
+
+    alt Folder name is blank - EX-2
+        FolderService-->FolderController: MSG188 - Enter a folder name.
+        FolderController-->LibraryScreen: MSG188 - Enter a folder name.
+        LibraryScreen-->Actor: MSG188 - Enter a folder name.
+
+    else Folder name is valid
+        FolderService->FolderRepository: Save the new name only, without changing the location or contents
+        activate FolderRepository
+        FolderRepository->Database: Update folder name
+        activate Database
+        Database-->FolderRepository: Saved / Failed
+        deactivate Database
+        FolderRepository-->FolderService: Renamed folder / Failed
+        deactivate FolderRepository
+
+        alt Folder cannot be renamed - EX-3
+            FolderService-->FolderController: MSG192 - Unable to rename the folder. Its name remains unchanged.
+            FolderController-->LibraryScreen: MSG192 - Unable to rename the folder. Its name remains unchanged.
+            LibraryScreen-->Actor: MSG192 - Unable to rename the folder. Its name remains unchanged.
+
+        else Folder is renamed
+            FolderService-->FolderController: Renamed folder
+            FolderController-->LibraryScreen: Renamed folder
+            LibraryScreen->LibraryScreen: Refresh the folder name
+            LibraryScreen-->Actor: MSG191 - Folder renamed successfully.
+        end
+    end
+end
+
+deactivate FolderService
+deactivate FolderController
+deactivate LibraryScreen

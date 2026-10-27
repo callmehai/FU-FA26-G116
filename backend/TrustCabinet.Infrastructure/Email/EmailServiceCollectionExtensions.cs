@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using MimeKit;
 using TrustCabinet.Domain.Notifications;
 using TrustCabinet.Domain.Users;
@@ -23,10 +24,19 @@ public static class EmailServiceCollectionExtensions
         services.AddScoped<EmailQueueProcessor>();
         services.AddScoped<IEmailQueueProcessor>(provider =>
             provider.GetRequiredService<EmailQueueProcessor>());
-        services.AddSingleton<IEmailSender, SmtpEmailSender>();
+        services.AddHttpClient(ResendEmailSender.HttpClientName);
+        services.AddSingleton<SmtpEmailSender>();
+        services.AddSingleton<ResendEmailSender>();
+        services.AddSingleton<IEmailSender>(provider =>
+            provider.GetRequiredService<IOptions<EmailDeliveryOptions>>().Value.Provider
+                == EmailProvider.Resend
+                ? provider.GetRequiredService<ResendEmailSender>()
+                : provider.GetRequiredService<SmtpEmailSender>());
         services.AddSingleton<IPasswordResetEmailSender, PasswordResetEmailSender>();
+        services.AddScoped<IEmailWebhookReceiver, ResendWebhookReceiver>();
 
-        if (configuration.GetValue<bool>("Email:Smtp:Enabled"))
+        var delivery = configuration.GetSection(EmailDeliveryOptions.SectionName).Get<EmailDeliveryOptions>();
+        if (delivery?.Enabled == true)
         {
             services.AddHostedService<EmailDeliveryWorker>();
         }
@@ -46,26 +56,47 @@ public static class EmailServiceCollectionExtensions
             return false;
         }
 
-        if (!options.Smtp.Enabled)
+        if (!Enum.IsDefined(options.Provider))
+        {
+            return false;
+        }
+
+        if (!options.Enabled)
         {
             return true;
         }
 
-        return Uri.TryCreate(options.ApplicationBaseUrl, UriKind.Absolute, out var applicationUri)
-            && applicationUri.Scheme is "http" or "https"
-            && !string.IsNullOrWhiteSpace(options.Smtp.Host)
-            && options.Smtp.Port is >= 1 and <= 65535
-            && MailboxAddress.TryParse(options.Smtp.FromAddress, out _)
-            && options.Smtp.TimeoutSeconds is >= 1 and <= 300
-            && Enum.IsDefined(options.Smtp.Security)
-            && (string.IsNullOrWhiteSpace(options.Smtp.Username)
-                == string.IsNullOrWhiteSpace(options.Smtp.Password));
+        if (!Uri.TryCreate(options.ApplicationBaseUrl, UriKind.Absolute, out var applicationUri)
+            || applicationUri.Scheme is not ("http" or "https"))
+        {
+            return false;
+        }
+
+        return options.Provider == EmailProvider.Resend
+            ? ValidResend(options.Resend)
+            : ValidSmtp(options.Smtp);
     }
 
+    private static bool ValidResend(ResendOptions options)
+        => Uri.TryCreate(options.ApiUrl, UriKind.Absolute, out var apiUri)
+            && apiUri.Scheme == "https"
+            && !string.IsNullOrWhiteSpace(options.ApiKey)
+            && MailboxAddress.TryParse(options.FromAddress, out _);
+
+    private static bool ValidSmtp(SmtpOptions options)
+        => !string.IsNullOrWhiteSpace(options.Host)
+            && options.Port is >= 1 and <= 65535
+            && MailboxAddress.TryParse(options.FromAddress, out _)
+            && options.TimeoutSeconds is >= 1 and <= 300
+            && Enum.IsDefined(options.Security)
+            && (string.IsNullOrWhiteSpace(options.Username)
+                == string.IsNullOrWhiteSpace(options.Password));
+
     private const string InvalidOptionsMessage =
-        "Email configuration is invalid. When Email:Smtp:Enabled is true, set an absolute "
-        + "Email:ApplicationBaseUrl, SMTP host, port, sender address and timeout. Username and "
-        + "password must either both be supplied or both be omitted. The processing lease must "
+        "Email configuration is invalid. Email:Provider must be Smtp or Resend. When the chosen provider is enabled, "
+        + "set an absolute Email:ApplicationBaseUrl; for Resend an https ApiUrl, an ApiKey and a FromAddress; for SMTP the "
+        + "host, port, sender address and timeout, with username and "
+        + "password either both supplied or both omitted. The processing lease must "
         + "be longer than the complete send-attempt timeout, and retry, lease, SMTP timeout and polling values must be within "
         + "their documented ranges.";
 }
