@@ -91,9 +91,10 @@ cd frontend && npm run lint                  # oxlint
 cd frontend && npm run build                 # tsc -b + vite build
 ```
 
-CI chạy đúng bốn bước này trên mọi pull request
-([.github/workflows/ci.yml](.github/workflows/ci.yml)); merge vào `main` xong thì server test tự
-cập nhật.
+CI chạy bốn bước này trên mọi pull request, nhưng chỉ phần bị đổi: PR chỉ sửa frontend thì backend
+chỉ chạy các test đọc mã nguồn FE và docs, PR chỉ sửa README hay `deploy/` thì bỏ qua cả hai
+([.github/workflows/ci.yml](.github/workflows/ci.yml)). Merge vào `main` xong thì server test tự cập
+nhật, và chỉ build lại image nào có code đổi.
 
 > **Không commit chuỗi kết nối, API key hay mật khẩu.** Repo để public. Dùng `dotnet user-secrets`
 > ở máy mình và biến môi trường khi triển khai.
