@@ -457,7 +457,7 @@ function GridEvent({
         state={back}
         onClick={tileClick(entry, onOpen)}
         data-cal-trigger=""
-        className={`cal-event cal-event-${STATUS_TONE[meeting.status]}${tall ? '' : ' cal-event-short'}${hidden ? ' cal-event-crowded' : ''}`}
+        className={`cal-event cal-event-${STATUS_TONE[meeting.status]}${tall ? '' : ' cal-event-short'}${hidden ? ' cal-event-crowded' : ''}${meeting.status === 'Cancelled' ? ' cal-cancelled' : ''}`}
         style={{ top, height }}
         data-tooltip={`${meeting.title}\n${timeRange(entry)}`}
       >
@@ -606,7 +606,7 @@ function MonthEvent({ entry, onOpen }: { entry: ScheduleEntry; onOpen: OpenOverv
       state={back}
       onClick={tileClick(entry, onOpen)}
       data-cal-trigger=""
-      className={`month-event cal-event-${STATUS_TONE[meeting.status]}`}
+      className={`month-event cal-event-${STATUS_TONE[meeting.status]}${meeting.status === 'Cancelled' ? ' cal-cancelled' : ''}`}
       data-tooltip={`${meeting.title}\n${timeRange(entry)}, ${MEETING_STATUS_LABEL[meeting.status]}`}
     >
       <span className="month-event-time">{formatClock(entry.start)}</span>
@@ -700,7 +700,13 @@ function AgendaItem({ entry, onAnswered }: { entry: ScheduleEntry; onAnswered: (
       <span className="agenda-dot" aria-hidden="true" />
       <article className="agenda-card">
         <div className="agenda-card-main">
-          <h2 className={meeting.status === 'Rejected' ? 'agenda-title agenda-title-struck' : 'agenda-title'}>
+          <h2
+            className={
+              meeting.status === 'Rejected' || meeting.status === 'Cancelled'
+                ? 'agenda-title agenda-title-struck'
+                : 'agenda-title'
+            }
+          >
             <Link to={routes.meeting(meeting.id)} state={back}>
               {meeting.title}
             </Link>
@@ -758,6 +764,7 @@ function Legend() {
       <span className="legend-slate">Nháp</span>
       <span className="legend-ended">Đã kết thúc</span>
       <span className="legend-red">Bị từ chối</span>
+      <span className="legend-ended legend-struck">Đã huỷ</span>
     </div>
   )
 }

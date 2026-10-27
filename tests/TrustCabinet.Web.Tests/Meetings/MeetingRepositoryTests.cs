@@ -1378,9 +1378,10 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         var secretaryPage = await repository.FindAuthorizedPageAsync(secretary.Id, ListQuery());
         var unrelatedPage = await repository.FindAuthorizedPageAsync(unrelated.Id, ListQuery());
 
-        Assert.Equal(7, creatorPage.TotalCount);
-        Assert.Equal(7, creatorPage.Items.Count);
-        Assert.Equal(6, approverPage.TotalCount);
+        // One meeting per status; the Cancelled one was never published, so members never saw it.
+        Assert.Equal(8, creatorPage.TotalCount);
+        Assert.Equal(8, creatorPage.Items.Count);
+        Assert.Equal(7, approverPage.TotalCount);
         Assert.DoesNotContain(approverPage.Items, item => item.Status == MeetingStatus.Draft);
         Assert.Equal(3, participantPage.TotalCount);
         MeetingStatus[] publishedStatuses =
@@ -1388,15 +1389,84 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             MeetingStatus.Published, MeetingStatus.InProgress, MeetingStatus.Ended,
         ];
         Assert.All(participantPage.Items, item => Assert.Contains(item.Status, publishedStatuses));
-        Assert.Equal(7, chairPage.TotalCount);
+        Assert.Equal(8, chairPage.TotalCount);
         Assert.Equal(Enum.GetValues<MeetingStatus>().Order(), chairPage.Items.Select(item => item.Status).Order());
-        Assert.Equal(7, secretaryPage.TotalCount);
+        Assert.Equal(8, secretaryPage.TotalCount);
         Assert.Equal(0, unrelatedPage.TotalCount);
         Assert.Empty(unrelatedPage.Items);
         var approverFirst = await repository.FindAuthorizedPageAsync(
             approver.Id, ListQuery(pageSize: 2));
-        Assert.Equal(6, approverFirst.TotalCount);
+        Assert.Equal(7, approverFirst.TotalCount);
         Assert.Equal(2, approverFirst.Items.Count);
+    }
+
+    [Fact]
+    public async Task A_member_sees_a_meeting_cancelled_after_it_was_announced_but_not_one_cancelled_before()
+    {
+        var member = NewUser("Cancel Member", _approverRoleId);
+        _db.Users.Add(member);
+        var startsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero);
+        var announced = ListMeeting("Đã công bố rồi huỷ", MeetingStatus.Cancelled, startsAt, participantId: member.Id);
+        announced.CancelledFromStatus = MeetingStatus.Published;
+        var draft = ListMeeting("Huỷ từ bản nháp", MeetingStatus.Cancelled, startsAt, participantId: member.Id);
+        draft.CancelledFromStatus = MeetingStatus.Draft;
+        _db.Meetings.AddRange(announced, draft);
+        await _db.SaveChangesAsync();
+
+        var page = await new MeetingRepository(_db).FindAuthorizedPageAsync(member.Id, ListQuery());
+
+        Assert.Equal("Đã công bố rồi huỷ", Assert.Single(page.Items).Title);
+        Assert.True(MeetingReadPolicy.CanRead(announced, member.Id));
+        Assert.False(MeetingReadPolicy.CanRead(draft, member.Id));
+    }
+
+    [Fact]
+    public async Task Overdue_sweep_cancels_unstarted_meetings_a_day_after_their_start_as_the_system()
+    {
+        var now = new DateTimeOffset(2026, 10, 27, 10, 0, 0, TimeSpan.Zero);
+        var overdue = ListMeeting("Quá hạn", MeetingStatus.Published, now.AddHours(-25));
+        var notYet = ListMeeting("Chưa tới mốc", MeetingStatus.Published, now.AddHours(-23));
+        var started = ListMeeting("Đang họp", MeetingStatus.InProgress, now.AddHours(-30));
+        var staleDraft = ListMeeting("Nháp cũ", MeetingStatus.Draft, now.AddDays(-3));
+        _db.Meetings.AddRange(overdue, notYet, started, staleDraft);
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+        var service = new MeetingOverdueService(
+            new MeetingRepository(_db),
+            Microsoft.Extensions.Options.Options.Create(new MeetingOverdueOptions()),
+            new FixedClock(now),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<MeetingOverdueService>.Instance);
+
+        Assert.Equal(2, await service.CancelOverdueAsync());
+        Assert.Equal(0, await service.CancelOverdueAsync());
+
+        _db.ChangeTracker.Clear();
+        var statuses = await _db.Meetings.AsNoTracking().ToDictionaryAsync(m => m.Title, m => m.Status);
+        Assert.Equal(MeetingStatus.Cancelled, statuses["Quá hạn"]);
+        Assert.Equal(MeetingStatus.Cancelled, statuses["Nháp cũ"]);
+        Assert.Equal(MeetingStatus.Published, statuses["Chưa tới mốc"]);
+        Assert.Equal(MeetingStatus.InProgress, statuses["Đang họp"]);
+        var cancelled = await _db.Meetings.AsNoTracking().SingleAsync(m => m.Id == overdue.Id);
+        Assert.Null(cancelled.CancelledById);
+        Assert.Equal(MeetingStatus.Published, cancelled.CancelledFromStatus);
+        Assert.Contains("24 giờ", cancelled.CancellationReason);
+        var history = await _db.MeetingStatusHistory.AsNoTracking().SingleAsync(h => h.MeetingId == overdue.Id);
+        Assert.Equal(MeetingHistoryAction.AutoCancel, history.Action);
+        Assert.Null(history.ActorId);
+        var notice = await _db.Notifications.AsNoTracking().SingleAsync(n => n.MeetingId == overdue.Id);
+        Assert.Equal(_creatorId, notice.UserId);
+        Assert.Equal(NotificationType.MeetingCancelled, notice.Type);
+
+        var page = await new MeetingRepository(_db).FindHistoryPageAsync(overdue.Id, 1, 20);
+        var item = Assert.Single(page!.Items);
+        Assert.Null(item.ActorId);
+        Assert.Equal(MeetingHistoryRecord.SystemActorName, item.ActorName);
+        Assert.Equal(cancelled.CancellationReason, item.CancellationReason);
+    }
+
+    private sealed class FixedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
     }
 
     [Fact]

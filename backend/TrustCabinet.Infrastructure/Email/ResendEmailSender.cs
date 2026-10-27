@@ -77,7 +77,7 @@ internal sealed class ResendEmailSender(
                 new Attachment(
                     Filename: "thu-moi-hop.ics",
                     Content: Convert.ToBase64String(Encoding.UTF8.GetBytes(message.CalendarAttachment)),
-                    ContentType: "text/calendar; charset=utf-8; method=REQUEST"),
+                    ContentType: $"text/calendar; charset=utf-8; method={CalendarInvitationBuilder.MethodOf(message.CalendarAttachment)}"),
             ],
         // Lets the webhook find the row even if storing the returned id was lost.
         Tags: [new Tag("email_message_id", message.Id.ToString("N"))]);

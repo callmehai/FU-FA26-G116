@@ -46,6 +46,10 @@ public sealed record MeetingApproverListResult(
         => new(MeetingOutcome.ReadFailed);
 }
 
+/// <summary>Who cancelled a meeting, when and why (BR-298). A null <paramref name="CancelledById"/> is the system.</summary>
+public sealed record MeetingCancellation(
+    DateTimeOffset CancelledAt, Guid? CancelledById, string CancelledByName, string Reason);
+
 /// <summary>A safe, flat representation returned by the meeting service.</summary>
 public sealed record MeetingDetails(
     Guid Id,
@@ -69,7 +73,8 @@ public sealed record MeetingDetails(
     string? MyMeetingRole = null,
     string? MyResponse = null,
     bool CanRespond = false,
-    CaptureMode CaptureMode = CaptureMode.PerMic)
+    CaptureMode CaptureMode = CaptureMode.PerMic,
+    MeetingCancellation? Cancellation = null)
 {
     public static MeetingDetails From(Meeting meeting, Guid? actorId = null)
     {
@@ -98,7 +103,14 @@ public sealed record MeetingDetails(
             mine?.Role.ToString(),
             MyResponseOf(mine?.Role, mine?.Response),
             mine is not null && ParticipantRules.CanRespond(meeting.Status, mine),
-            meeting.CaptureMode);
+            meeting.CaptureMode,
+            meeting.Status == MeetingStatus.Cancelled && meeting.CancelledAt is { } cancelledAt
+                ? new MeetingCancellation(
+                    cancelledAt,
+                    meeting.CancelledById,
+                    meeting.CancelledBy?.FullName ?? MeetingHistoryRecord.SystemActorName,
+                    meeting.CancellationReason)
+                : null);
     }
 
     /// <summary>The caller's answer to the invitation; null while unanswered, and always for the Chair, who is not asked.</summary>

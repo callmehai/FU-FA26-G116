@@ -95,7 +95,9 @@ function HistoryRow({ item, nameOf }: { item: MeetingHistoryItem; nameOf: (id: s
           <span className="visually-hidden">, {who.replace('\n', ', ')}</span>
         </time>
       </div>
-      {item.rejectionReason && <blockquote className="timeline-reason">{item.rejectionReason}</blockquote>}
+      {(item.rejectionReason ?? item.cancellationReason) && (
+        <blockquote className="timeline-reason">{item.rejectionReason ?? item.cancellationReason}</blockquote>
+      )}
     </li>
   )
 }

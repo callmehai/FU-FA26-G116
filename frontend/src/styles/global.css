@@ -1398,7 +1398,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .readiness-list { margin: 6px 0 0; padding-left: 20px; color: var(--ink-soft); font-size: 14px; }
 .readiness-list li + li { margin-top: 2px; }
 .alert .readiness-list { color: inherit; }
-.dialog-note { margin-top: 16px; font-size: 13.5px; }
+/* Two classes: .dialog-text, declared later, resets every margin to 0. */
+.dialog-text.dialog-note { margin-top: 16px; font-size: 13.5px; }
 
 /* ---------- Forms ---------- */
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
@@ -1414,7 +1415,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* The actions sit under a divider at the end of the form, where the eye already is. */
 .form-card .form-actions { margin-top: 4px; padding-top: 20px; border-top: 1px solid var(--line); }
 .field-foot { display: flex; justify-content: space-between; gap: 12px; }
-.field-counter { flex: none; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+.field-counter { flex: none; margin-left: auto; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
 /* An inline action inside a line of text ("… Thử lại"). */
 .link-button {
   padding: 0;
@@ -1758,6 +1759,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .cal-event-short { justify-content: center; padding: 2px 10px; }
 .cal-event-time { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .cal-event-title { display: -webkit-box; overflow: hidden; font-weight: 600; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+/* A cancelled meeting stays where it was planned, grey and struck through, so nobody turns up for it. */
+.cal-cancelled .cal-event-title, .cal-cancelled .month-event-title { text-decoration: line-through; }
 .cal-event-short .cal-event-title { display: block; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
 .cal-event-place { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; opacity: .85; }
 .cal-event-secret { display: inline-flex; align-items: center; gap: 3px; height: 18px; margin-left: auto; padding: 0 6px; border-radius: 4px; background: var(--surface); color: var(--chip-red-fg); font-size: 11px; }
@@ -1786,6 +1789,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .legend-amber::before { border: 1.5px dashed var(--accent-amber); background: var(--chip-amber-bg); }
 .legend-slate::before, .legend-ended::before { background: var(--chip-slate-bg); box-shadow: inset 0 0 0 1.5px var(--faint-ink); }
 .legend-red::before { background: var(--chip-red-bg); box-shadow: inset 0 0 0 1.5px var(--danger); }
+/* A cancelled meeting is grey like an ended one; its struck-through title is what tells them apart. */
+.legend-struck { text-decoration: line-through; }
 
 /* The month grid (SCRUM-47): seven columns Monday first, its weeks sharing the frame's height.
    A meeting is one line in the colours and edges of its week-grid block. */

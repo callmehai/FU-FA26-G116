@@ -612,6 +612,25 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("assigned_approver_id");
 
+                    b.Property<string>("CancellationReason")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("cancellation_reason");
+
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cancelled_at");
+
+                    b.Property<Guid?>("CancelledById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cancelled_by_id");
+
+                    b.Property<string>("CancelledFromStatus")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("cancelled_from_status");
+
                     b.Property<string>("CaptureMode")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -692,6 +711,9 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("AssignedApproverId")
                         .HasDatabaseName("ix_meetings_assigned_approver_id");
+
+                    b.HasIndex("CancelledById")
+                        .HasDatabaseName("ix_meetings_cancelled_by_id");
 
                     b.HasIndex("CreatedById")
                         .HasDatabaseName("ix_meetings_created_by_id");
@@ -1285,7 +1307,7 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(64)")
                         .HasColumnName("action");
 
-                    b.Property<Guid>("ActorId")
+                    b.Property<Guid?>("ActorId")
                         .HasColumnType("uuid")
                         .HasColumnName("actor_id");
 
@@ -2716,6 +2738,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_meetings_users_assigned_approver_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "CancelledBy")
+                        .WithMany()
+                        .HasForeignKey("CancelledById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_meetings_users_cancelled_by_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.User", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById")
@@ -2724,6 +2752,8 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasConstraintName("fk_meetings_users_created_by_id");
 
                     b.Navigation("AssignedApprover");
+
+                    b.Navigation("CancelledBy");
 
                     b.Navigation("CreatedBy");
                 });
@@ -2969,7 +2999,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("ActorId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_meeting_status_history_users_actor_id");
 
                     b.HasOne("TrustCabinet.Domain.Entities.User", "AssignedApprover")

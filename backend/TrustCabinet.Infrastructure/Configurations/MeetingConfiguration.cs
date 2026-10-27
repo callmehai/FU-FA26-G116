@@ -20,6 +20,8 @@ public class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         builder.Property(m => m.Mode).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(m => m.CaptureMode).HasConversion<string>().HasMaxLength(32).IsRequired()
             .HasDefaultValue(TrustCabinet.Domain.Enums.CaptureMode.PerMic);
+        builder.Property(m => m.CancellationReason).HasMaxLength(1000);
+        builder.Property(m => m.CancelledFromStatus).HasConversion<string>().HasMaxLength(32);
 
         // The list filters by status and sorts by start; the calendar and reminders read by start.
         builder.HasIndex(m => new { m.Status, m.PlannedStartTime });
@@ -33,6 +35,11 @@ public class MeetingConfiguration : IEntityTypeConfiguration<Meeting>
         builder.HasOne(m => m.AssignedApprover)
             .WithMany()
             .HasForeignKey(m => m.AssignedApproverId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(m => m.CancelledBy)
+            .WithMany()
+            .HasForeignKey(m => m.CancelledById)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

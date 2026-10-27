@@ -64,7 +64,7 @@ public sealed class MeetingInvitationDispatchProcessor(
             Guid? meetingId = candidate.MeetingId;
             if (
                 candidate.GuestInvitationId is not null
-                && candidate.EventKind != InvitationEventKind.Removed
+                && !MeetingInvitationEvents.IsWithdrawal(candidate.EventKind)
                 && !await links.IsAvailableAsync(ct)
             )
             {
@@ -76,7 +76,9 @@ public sealed class MeetingInvitationDispatchProcessor(
                         ct
                     )
                     || await db.Meetings.AnyAsync(
-                        m => m.Id == meetingId && m.Status == MeetingStatus.Ended,
+                        m =>
+                            m.Id == meetingId
+                            && (m.Status == MeetingStatus.Ended || m.Status == MeetingStatus.Cancelled),
                         ct
                     )
                 )
@@ -173,10 +175,15 @@ public sealed class MeetingInvitationDispatchProcessor(
                     g => g.Id == dispatch.GuestInvitationId && g.RevokedAt == null,
                     ct
                 );
-            if (
-                dispatch.EventKind != InvitationEventKind.Removed
-                && (!current || status == MeetingStatus.Ended)
-            )
+            // An invitation, role change or new time for a meeting that has ended or been called off is moot. The
+            // cancellation notice itself still goes to everyone who is on the roster.
+            var moot = dispatch.EventKind switch
+            {
+                InvitationEventKind.Removed => false,
+                InvitationEventKind.Cancelled => !current,
+                _ => !current || status is MeetingStatus.Ended or MeetingStatus.Cancelled,
+            };
+            if (moot)
             {
                 dispatch.State = InvitationDispatchState.Suppressed;
                 dispatch.UpdatedAt = now;
@@ -186,7 +193,7 @@ public sealed class MeetingInvitationDispatchProcessor(
             }
             // A withdrawal is meaningful only after this assignment's invitation became an email.
             // Match the delivery key too: pre-migration invitations may have no dispatch row.
-            if (dispatch.EventKind == InvitationEventKind.Removed)
+            if (MeetingInvitationEvents.IsWithdrawal(dispatch.EventKind))
             {
                 var initialKey = dispatch.ParticipantId is { } ownerId
                     ? await db
@@ -227,7 +234,7 @@ public sealed class MeetingInvitationDispatchProcessor(
                 options.Value.ApplicationBaseUrl.TrimEnd('/') + $"/mgmt/meetings/{meetingId}";
             if (
                 dispatch.GuestInvitationId is { } guestId
-                && dispatch.EventKind != InvitationEventKind.Removed
+                && !MeetingInvitationEvents.IsWithdrawal(dispatch.EventKind)
             )
             {
                 var result = await links.PrepareAsync(guestId, ct);
@@ -266,6 +273,7 @@ public sealed class MeetingInvitationDispatchProcessor(
                 JsonSerializer.Deserialize<InvitationPayload>(dispatch.PayloadJson)
                 ?? throw new JsonException("Missing invitation payload.");
             var removal = dispatch.EventKind == InvitationEventKind.Removed;
+            var cancellation = dispatch.EventKind == InvitationEventKind.Cancelled;
             var subject =
                 $"{MeetingInvitationEvents.Title(dispatch.EventKind)}: {payload.MeetingTitle}"
                     .Replace('\r', ' ')
@@ -275,7 +283,13 @@ public sealed class MeetingInvitationDispatchProcessor(
             var zone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
             var body =
                 $"Xin chào {payload.Name},\n\n{MeetingInvitationEvents.Title(dispatch.EventKind)}: \"{payload.MeetingTitle}\".\n";
-            if (!removal)
+            if (cancellation)
+            {
+                // No link: there is nothing left to join, and a Guest's link would need verifying first.
+                body +=
+                    $"\nThời gian dự kiến: {TimeZoneInfo.ConvertTime(payload.StartsAt, zone):dd/MM/yyyy HH:mm zzz}\nLý do huỷ: {payload.Reason}\n";
+            }
+            else if (!removal)
             {
                 body +=
                     $"\nBắt đầu: {TimeZoneInfo.ConvertTime(payload.StartsAt, zone):dd/MM/yyyy HH:mm zzz}\nKết thúc: {TimeZoneInfo.ConvertTime(payload.EndsAt, zone):dd/MM/yyyy HH:mm zzz}\n";
@@ -304,7 +318,7 @@ public sealed class MeetingInvitationDispatchProcessor(
                 CreatedAt = now,
                 UpdatedAt = now,
             };
-            if (dispatch.EventKind == InvitationEventKind.Invitation)
+            if (dispatch.EventKind is InvitationEventKind.Invitation or InvitationEventKind.Cancelled)
                 email.CalendarAttachment = CalendarInvitationBuilder.Build(
                     meetingId.Value,
                     payload.MeetingTitle,
@@ -315,9 +329,10 @@ public sealed class MeetingInvitationDispatchProcessor(
                     payload.Name,
                     payload.Email,
                     link,
-                    options.Value.Smtp.FromName,
-                    options.Value.Smtp.FromAddress,
-                    now
+                    options.Value.FromName,
+                    options.Value.FromAddress,
+                    now,
+                    cancelled: cancellation
                 );
             db.EmailMessages.Add(email);
             dispatch.EmailMessageId = email.Id;

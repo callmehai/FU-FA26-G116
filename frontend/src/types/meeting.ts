@@ -4,7 +4,8 @@ import type { InvitationResponse, MeetingRole, ParticipantSeed } from './partici
 /**
  * Meeting lifecycle. The order below is the state machine: a meeting is drafted, submitted for
  * approval, approved (or rejected and resubmitted), published to attendees, run, then ended. The
- * minutes have their own status (ADR-0013).
+ * minutes have their own status (ADR-0013). Cancelled is the other end, reached only before the start
+ * (UC-75, ADR-0032).
  *
  * Kept as a const array so the UI can both type-check a status and iterate the states, e.g. to
  * render a filter dropdown.
@@ -17,6 +18,7 @@ export const MEETING_STATUSES = [
   'Published',
   'InProgress',
   'Ended',
+  'Cancelled',
 ] as const
 
 export type MeetingStatus = (typeof MEETING_STATUSES)[number]
@@ -29,7 +31,17 @@ export const MEETING_STATUS_LABEL: Record<MeetingStatus, string> = {
   Published: 'Đã công bố',
   InProgress: 'Đang diễn ra',
   Ended: 'Đã kết thúc',
+  Cancelled: 'Đã huỷ',
 }
+
+/** UC-75: the organizer may cancel any meeting that has not started (BR-297). The backend checks again. */
+export const CANCELLABLE_STATUSES: readonly MeetingStatus[] = [
+  'Draft',
+  'WaitingApproval',
+  'Rejected',
+  'Approved',
+  'Published',
+]
 
 /** UC-15: the only states whose information can still be changed. The backend checks again on PUT. */
 export const EDITABLE_STATUSES: readonly MeetingStatus[] = ['Draft', 'Rejected']
@@ -104,6 +116,17 @@ export interface Meeting {
   canRespond: boolean
   /** How speech is captured (SCRUM-109); fixed once the meeting starts. */
   captureMode: CaptureMode
+  /** Only on a Cancelled meeting: who called it off, when and why (BR-298). */
+  cancellation: MeetingCancellation | null
+}
+
+export interface MeetingCancellation {
+  cancelledAt: string
+  /** Null when the system cancelled it because nobody started it a day after its planned start (BR-301). */
+  cancelledById: string | null
+  /** "Hệ thống" when `cancelledById` is null. */
+  cancelledByName: string
+  reason: string
 }
 
 export interface MeetingPerson {
@@ -205,13 +228,18 @@ export interface MeetingApprover {
 export type MeetingTransitionRequest =
   | { action: 'SubmitForApproval'; assignedApproverId: string }
   | { action: 'Reject'; reason: string }
+  /** UC-75: the organizer cancels before the start, with a reason of at most 1,000 characters. */
+  | { action: 'Cancel'; reason: string }
   | { action: 'Approve' | 'ReturnToDraft' | 'Publish' }
   /** SCRUM-69: the meeting's current Chair starts or ends it. */
   | { action: 'Start' | 'End' }
 
 export type MeetingTransitionAction = MeetingTransitionRequest['action']
 
-/** Success: MSG78 submit, MSG43 approve, MSG44 reject, MSG79 return to draft, MSG45 publish, MSG110/111 start/end. */
+/**
+ * Success: MSG78 submit, MSG43 approve, MSG44 reject, MSG79 return to draft, MSG45 publish, MSG110/111 start/end,
+ * MSG261 cancel.
+ */
 export interface MeetingTransitionResponse {
   code: string
   message: string
@@ -232,6 +260,10 @@ export type MeetingHistoryAction =
   | 'Reschedule'
   | 'Start'
   | 'End'
+  /** UC-75: the organizer cancelled it. */
+  | 'Cancel'
+  /** BR-301: the system cancelled it a day after its planned start; `actorId` is null. */
+  | 'AutoCancel'
   | 'LegacyTransition'
 
 /** One immutable row of GET /api/meetings/{id}/history. */
@@ -242,7 +274,8 @@ export interface MeetingHistoryItem {
   /** Null on the row that created the meeting. */
   fromStatus: MeetingStatus | null
   resultingStatus: MeetingStatus
-  actorId: string
+  /** Null when the system acted (an `AutoCancel` row); `actorName` then reads "Hệ thống". */
+  actorId: string | null
   actorName: string
   occurredAt: string
   /**
@@ -254,6 +287,8 @@ export interface MeetingHistoryItem {
   assignedApproverId: string | null
   previousOrganizerId: string | null
   newOrganizerId: string | null
+  /** On a `Cancel` or `AutoCancel` row, for everyone who may read the meeting (BR-298). */
+  cancellationReason: string | null
 }
 
 /** GET /api/meetings/{id}/history — oldest first. */

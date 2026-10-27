@@ -56,6 +56,21 @@ public class Meeting : Entity
     /// <summary>Written by the system when the Chair ends the meeting (UC-22).</summary>
     public DateTimeOffset? ActualEndedAt { get; set; }
 
+    /// <summary>When the meeting became <see cref="MeetingStatus.Cancelled"/> (UC-75, BR-298).</summary>
+    public DateTimeOffset? CancelledAt { get; set; }
+
+    /// <summary>Who cancelled it; null when the system did because nobody started it (BR-301).</summary>
+    public Guid? CancelledById { get; set; }
+    public User? CancelledBy { get; set; }
+
+    public string CancellationReason { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The status it was cancelled from. A meeting cancelled after it was Published stays visible to the
+    /// people it was announced to; one cancelled earlier never reached them (BR-29).
+    /// </summary>
+    public MeetingStatus? CancelledFromStatus { get; set; }
+
     public Guid CreatedById { get; set; }
     public User CreatedBy { get; set; } = null!;
 
