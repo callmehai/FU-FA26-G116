@@ -110,7 +110,9 @@ function PageList({
   const [group, setGroup] = useState<Group>('agenda')
   const [uploading, setUploading] = useState(false)
   const canUpload =
-    meeting.status !== 'Ended' && (meeting.myMeetingRole === 'Chair' || meeting.myMeetingRole === 'Secretary')
+    meeting.status !== 'Ended' &&
+    meeting.status !== 'Cancelled' &&
+    (meeting.myMeetingRole === 'Chair' || meeting.myMeetingRole === 'Secretary')
   // A document linked to several items counts once, as the room panel's total does.
   const agendaCount = distinctCount(data.agendaItems.flatMap((item) => item.documents))
 

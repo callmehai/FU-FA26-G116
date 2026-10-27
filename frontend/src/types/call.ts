@@ -4,7 +4,7 @@
  */
 
 /** Whether the room can be entered, computed on the server from the meeting's status and mode. */
-export type CallRoomStatus = 'Open' | 'NotStarted' | 'Ended' | 'InPersonOnly'
+export type CallRoomStatus = 'Open' | 'NotStarted' | 'Ended' | 'InPersonOnly' | 'Cancelled'
 
 /** A participant's role in one meeting — not their system role. */
 export type MeetingRole = 'Chair' | 'Secretary' | 'Member' | 'Guest'

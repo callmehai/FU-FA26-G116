@@ -505,6 +505,7 @@ cho cùng tình huống: `MSG295` (sửa chữ mà không phải Thư ký), `MSG
 | `MSG323` | 403 | `DELETE /api/speech-clips/{id}` | Không phải người nói, cũng không phải Thư ký | `Chỉ người nói hoặc Thư ký được xoá câu này.` | BE |
 | `MSG324` | 200 | `PUT …/capture-mode` | Chủ tọa hoặc Thư ký đổi cách ghi âm trước khi họp | `Đã đổi cách ghi âm.` | BE |
 | `MSG325` | 409 | `PUT …/capture-mode` | Cuộc họp đã bắt đầu hoặc đã kết thúc | `Cuộc họp đã bắt đầu nên không đổi được cách ghi âm.` | BE |
+| `MSG349` | 409 | `PUT …/capture-mode` | Cuộc họp đã huỷ (BR-299) | `Cuộc họp đã huỷ nên không thay đổi được nữa.` | BE |
 | `MSG326` | 400 | `PUT …/capture-mode` | `mode` khác `PerMic`, `Room` | `Cách ghi âm không hợp lệ.` | BE |
 | `MSG327` | 403 | `PUT …/capture-mode` | Người trong cuộc họp nhưng không phải Chủ tọa hay Thư ký | `Chỉ Chủ tọa hoặc Thư ký được đổi cách ghi âm.` | BE |
 

@@ -6,7 +6,8 @@ namespace TrustCabinet.Domain.Recordings;
 
 public enum SpeechClipFailure
 {
-    None, NotFound, Inactive, Forbidden, NotCapturing, Locked, Invalid, TooLarge, EngineUnavailable, ReadFailed, SaveFailed
+    None, NotFound, Inactive, Forbidden, NotCapturing, Locked, Cancelled, Invalid, TooLarge, EngineUnavailable, ReadFailed,
+    SaveFailed
 }
 
 public sealed record SpeechClipOutcome(SpeechClipFailure Failure = SpeechClipFailure.None, object? Data = null,
@@ -67,8 +68,9 @@ public static class SpeechClipRules
     public static bool Capturing(Meeting meeting)
         => meeting.Status == MeetingStatus.InProgress && meeting.CaptureMode == CaptureMode.PerMic;
 
-    /// <summary>Fixed once the meeting starts, as AI-eCabinet does.</summary>
-    public static bool ModeChangeable(MeetingStatus status) => status is not (MeetingStatus.InProgress or MeetingStatus.Ended);
+    /// <summary>Fixed once the meeting starts, as AI-eCabinet does, and once it is cancelled.</summary>
+    public static bool ModeChangeable(MeetingStatus status)
+        => status is not (MeetingStatus.InProgress or MeetingStatus.Ended or MeetingStatus.Cancelled);
 
     /// <summary>Who runs the meeting's record: its current Chair and Secretaries.</summary>
     public static bool RunsRecord(Meeting meeting, Guid actor) => meeting.Participants.Any(p => p.MeetingId == meeting.Id

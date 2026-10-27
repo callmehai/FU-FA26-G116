@@ -28,7 +28,10 @@ public sealed class CallRepository(TrustCabinetDbContext db) : ICallRepository
             .Where(ParticipantRules.ActiveExpression)
             .Where(p => p.MeetingId == meetingId
                 && p.UserId == userId
-                && ParticipantVisible.Contains(p.Meeting.Status))
+                && (ParticipantVisible.Contains(p.Meeting.Status)
+                    // As MeetingReadPolicy: invitees were told of a cancellation after publishing, so the lobby
+                    // says the meeting was cancelled rather than that the page does not exist.
+                    || (p.Meeting.Status == MeetingStatus.Cancelled && p.Meeting.CancelledFromStatus == MeetingStatus.Published)))
             .Select(p => new CallRoomAccess(p.MeetingId, p.Meeting.Status, p.Meeting.Mode, p.Role, p.User.FullName))
             .SingleOrDefaultAsync(ct);
 
