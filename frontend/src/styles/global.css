@@ -1740,6 +1740,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
    struck through), so the grid still reads without colour. */
 .cal-event {
   position: absolute;
+  right: 5px;
+  left: 5px;
   z-index: 1;
   display: flex;
   flex-direction: column;
@@ -1768,6 +1770,11 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .cal-event-red { border-color: var(--edge-red); background: var(--chip-red-bg); color: #6e1418; }
 .cal-event-red .cal-event-title { text-decoration: line-through; }
 .cal-event-violet { border-color: #c9b8f0; background: var(--chip-violet-bg); color: #3e2577; }
+/* The meetings overlapping the one drawn, as a chip on its right edge that opens the day's list. */
+.cal-more { position: absolute; right: 9px; z-index: 2; height: 22px; padding: 0 7px; border: 1px solid var(--brand); border-radius: 4px; background: var(--surface); color: var(--brand); font: inherit; font-size: 12px; font-weight: 700; line-height: 20px; cursor: pointer; }
+.cal-more:hover { background: var(--brand-wash); }
+.cal-event.cal-event-crowded { padding-right: 52px; }
+.cal-event-crowded .cal-event-time { overflow: hidden; }
 .calendar-free { position: absolute; right: 8px; left: 8px; color: var(--label-ink); font-size: 13px; text-align: center; }
 
 .calendar-legend { display: flex; flex: none; flex-wrap: wrap; gap: 14px; padding: 8px 12px; border-top: 1px solid var(--line-soft); background: #fbfcfd; color: var(--muted-ink); font-size: 12px; }
