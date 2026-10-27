@@ -3,13 +3,13 @@ import { formatBytes } from './documentFile'
 import { FileTypeTag } from './DocumentTags'
 import { INVALID_FILES, OVER_LIMIT, type FileUpload } from './useFileUpload'
 
-/** The dropzone, the picked files with their progress, and what went wrong. */
+/** The dropzone, the picked files and what is wrong with the pick. Sending is the upload tray's. */
 export function FileUploadFields({ upload, roomLeft }: { upload: FileUpload; roomLeft?: number }) {
-  const { picked, rejected, failure, uploading, dragging, total, overLimit, overQuota, progress } = upload
+  const { picked, rejected, dragging, total, overLimit, overQuota } = upload
   return (
     <>
       <label
-        className={`dropzone${dragging ? ' is-dragging' : ''}${uploading ? ' is-disabled' : ''}`}
+        className={`dropzone${dragging ? ' is-dragging' : ''}`}
         onDragOver={(event) => {
           event.preventDefault()
           upload.setDragging(true)
@@ -21,7 +21,6 @@ export function FileUploadFields({ upload, roomLeft }: { upload: FileUpload; roo
           type="file"
           multiple
           accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-          disabled={uploading}
           onChange={(event) => {
             upload.add(event.target.files)
             // Picking the same file again after removing it must still fire a change.
@@ -59,42 +58,25 @@ export function FileUploadFields({ upload, roomLeft }: { upload: FileUpload; roo
 
       {picked.length > 0 && (
         <ul className="upload-list" aria-label="Tệp đã chọn">
-          {picked.map((p, i) => (
-            <li key={p.key} className={p.error ? 'upload-row upload-row-error' : 'upload-row'}>
+          {picked.map((p) => (
+            <li key={p.key} className="upload-row">
               <FileTypeTag pdf={p.pdf} />
               <span className="upload-row-name">
                 <strong>{p.file.name}</strong>
-                <small>{p.error ?? formatBytes(p.file.size)}</small>
+                <small>{formatBytes(p.file.size)}</small>
               </span>
-              {progress[i] !== null ? (
-                <span
-                  className="upload-progress"
-                  role="progressbar"
-                  aria-label={`Tiến độ tải ${p.file.name}`}
-                  aria-valuenow={Math.round(progress[i]! * 100)}
-                >
-                  <i style={{ width: `${progress[i]! * 100}%` }} />
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  className="icon-button icon-button-sm"
-                  aria-label={`Bỏ ${p.file.name}`}
-                  data-tooltip="Bỏ tệp này"
-                  onClick={() => upload.setPicked((all) => all.filter((x) => x.key !== p.key))}
-                >
-                  <Icon name="x" size={16} />
-                </button>
-              )}
+              <button
+                type="button"
+                className="icon-button icon-button-sm"
+                aria-label={`Bỏ ${p.file.name}`}
+                data-tooltip="Bỏ tệp này"
+                onClick={() => upload.setPicked((all) => all.filter((x) => x.key !== p.key))}
+              >
+                <Icon name="x" size={16} />
+              </button>
             </li>
           ))}
         </ul>
-      )}
-
-      {failure && (
-        <div className="alert alert-error" role="alert">
-          <p>{failure}</p>
-        </div>
       )}
     </>
   )

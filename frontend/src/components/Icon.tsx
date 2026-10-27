@@ -18,6 +18,7 @@ import {
   ChevronRight,
   ChevronUp,
   ChevronsUpDown,
+  CircleAlert,
   CircleCheck,
   CircleStop,
   CircleX,
@@ -100,6 +101,7 @@ const ICONS = {
   bell: Bell,
   // Notification kinds (SCRUM-14): what each one is about, at a glance.
   clock: Clock,
+  alertCircle: CircleAlert,
   checkCircle: CircleCheck,
   xCircle: CircleX,
   checkCheck: CheckCheck,

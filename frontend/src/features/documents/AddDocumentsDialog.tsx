@@ -10,6 +10,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Dialog } from '../../components/Dialog'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { errorMessage, isApiError } from '../../lib/errors'
+import { routes } from '../../lib/routes'
 import type { LibraryDocument, MeetingDocument } from '../../types/document'
 import type { Meeting } from '../../types/meeting'
 import { useAccessLost } from '../auth/useAccessLost'
@@ -50,7 +51,9 @@ function isStale(err: unknown) {
 /**
  * Adding documents to a meeting (SCRUM-107, SCRUM-58): to the general group (UC-33a) from the computer or the
  * library, or to one agenda item (UC-33b) from the meeting's own documents, the library or the computer.
- * All or none (BR-194, BR-304). Uploads also land in the uploader's library, in the meeting's folder (BR-192).
+ * A choice from the library or the meeting is all or none (BR-304). Files from the computer go to the upload
+ * queue, one request each (PO 27/10/2026): each is all or none on its own, meeting and library together
+ * (BR-194), and lands in the uploader's library, in the meeting's folder (BR-192).
  */
 export function AddDocumentsDialog({
   meeting,
@@ -58,6 +61,7 @@ export function AddDocumentsDialog({
   meetingDocuments = [],
   onClose,
   onAdded,
+  onQueued,
   onStale,
 }: {
   meeting: Meeting
@@ -67,6 +71,8 @@ export function AddDocumentsDialog({
   meetingDocuments?: MeetingDocument[]
   onClose: () => void
   onAdded: (message: string) => void
+  /** Files from the computer are in the upload queue; the tray follows them. */
+  onQueued: () => void
   onStale: (message: string) => void
 }) {
   const handleAccessLost = useAccessLost()
@@ -85,18 +91,26 @@ export function AddDocumentsDialog({
   const [discarding, setDiscarding] = useState(false)
 
   const upload = useFileUpload({
-    upload: (files, options) =>
-      item
-        ? uploadToAgendaItem(meeting.id, item.id, files, options)
-        : uploadMeetingDocuments(meeting.id, files, options),
-    isStale,
-    onUploaded: onAdded,
-    onStale,
+    toRequest: ({ file, pdf, pages }) => ({
+      name: file.name,
+      kind: pdf ? 'pdf' : 'docx',
+      where: item ? `${meeting.title} · mục ${item.number}` : meeting.title,
+      href: `${routes.meeting(meeting.id)}?tab=documents`,
+      target: `meeting:${meeting.id}`,
+      isExpected: isStale,
+      send: async (options) => {
+        const files = [{ file, pageCount: await pages }]
+        return item
+          ? uploadToAgendaItem(meeting.id, item.id, files, options)
+          : uploadMeetingDocuments(meeting.id, files, options)
+      },
+    }),
+    onQueued,
   })
 
   const chosen =
     source === 'computer' ? upload.picked.length : source === 'library' ? fromLibrary.size : fromMeeting.size
-  const busy = upload.uploading || pending
+  const busy = pending
   const dirty = upload.picked.length > 0 || fromLibrary.size > 0 || fromMeeting.size > 0
 
   async function addChosen() {
@@ -127,20 +141,14 @@ export function AddDocumentsDialog({
   }
 
   function close() {
-    if (upload.allSent || pending) return
+    if (pending) return
     // What the user picked is their work: ask before dropping it (frontend-ui-design §3).
     if (dirty) return setDiscarding(true)
     onClose()
   }
 
   const n = chosen > 0 ? `${chosen} ` : ''
-  const submitLabel = upload.uploading
-    ? 'Đang tải lên…'
-    : pending
-      ? 'Đang thêm…'
-      : source === 'meeting'
-        ? `Gắn ${n}tài liệu`
-        : `Thêm ${n}tài liệu`
+  const submitLabel = pending ? 'Đang thêm…' : source === 'meeting' ? `Gắn ${n}tài liệu` : `Thêm ${n}tài liệu`
 
   return (
     <Dialog
@@ -149,7 +157,7 @@ export function AddDocumentsDialog({
       onClose={close}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" disabled={upload.allSent || pending} onClick={close}>
+          <button type="button" className="btn btn-ghost" disabled={pending} onClick={close}>
             Huỷ
           </button>
           <button
@@ -248,17 +256,12 @@ export function AddDocumentsDialog({
           title="Bỏ tài liệu đã chọn"
           confirmLabel="Bỏ tài liệu đã chọn"
           pendingLabel="Đang bỏ…"
-          cancelLabel={upload.uploading ? 'Tiếp tục tải lên' : 'Tiếp tục chọn'}
+          cancelLabel="Tiếp tục chọn"
           tone="danger"
-          onConfirm={async () => {
-            upload.abort()
-            onClose()
-          }}
+          onConfirm={async () => onClose()}
           onClose={() => setDiscarding(false)}
         >
-          {upload.uploading
-            ? 'Lần tải đang chạy sẽ dừng lại, không tệp nào được thêm vào cuộc họp.'
-            : 'Tài liệu đã chọn sẽ không được thêm vào cuộc họp.'}
+          Tài liệu đã chọn sẽ không được thêm vào cuộc họp.
         </ConfirmDialog>
       )}
     </Dialog>

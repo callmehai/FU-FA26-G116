@@ -4,6 +4,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Dialog } from '../../components/Dialog'
 import { Icon } from '../../components/Icon'
 import { errorMessage, isApiError } from '../../lib/errors'
+import { routes } from '../../lib/routes'
 import type { LibraryFolder } from '../../types/document'
 import { FileUploadFields } from './FileUploadFields'
 import { useFileUpload } from './useFileUpload'
@@ -216,35 +217,40 @@ export function MoveDialog({
 }
 
 /**
- * UC-36: files from the computer into the open folder, all or none. What the library still holds is checked
- * before sending (MSG346); `onStale` when the folder went away meanwhile (MSG179).
+ * UC-36: files from the computer into the open folder, through the upload queue, one request each. What the
+ * library still holds is checked before queuing (MSG346); the page re-reads when each one ends, so a folder
+ * that went away meanwhile (MSG179) shows as it is.
  */
 export function LibraryUploadDialog({
   folderId,
   folders,
   roomLeft,
   onClose,
-  onUploaded,
-  onStale,
+  onQueued,
 }: {
   folderId: string | null
   folders: LibraryFolder[]
   roomLeft: number
   onClose: () => void
-  onUploaded: (message: string) => void
-  onStale: (message: string) => void
+  onQueued: () => void
 }) {
   const [discarding, setDiscarding] = useState(false)
+  const where = placeName(folders, folderId)
   const upload = useFileUpload({
-    upload: (files, options) => uploadToLibrary(folderId, files, options),
-    isStale: (err) => isApiError(err, 404, 'MSG179'),
+    toRequest: ({ file, pdf, pages }) => ({
+      name: file.name,
+      kind: pdf ? 'pdf' : 'docx',
+      where,
+      href: `${routes.documents}${folderId ? `?folder=${folderId}` : ''}`,
+      target: 'library',
+      isExpected: (err) => isApiError(err, 404, 'MSG179'),
+      send: async (options) => uploadToLibrary(folderId, [{ file, pageCount: await pages }], options),
+    }),
     roomLeft,
-    onUploaded,
-    onStale,
+    onQueued,
   })
 
   function close() {
-    if (upload.allSent) return
     if (upload.picked.length > 0) return setDiscarding(true)
     onClose()
   }
@@ -255,27 +261,18 @@ export function LibraryUploadDialog({
       onClose={close}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" disabled={upload.allSent} onClick={close}>
+          <button type="button" className="btn btn-ghost" onClick={close}>
             Huỷ
           </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            disabled={!upload.canSubmit}
-            onClick={() => void upload.submit()}
-          >
-            {upload.uploading
-              ? 'Đang tải lên…'
-              : upload.picked.length > 0
-                ? `Tải lên ${upload.picked.length} tài liệu`
-                : 'Tải lên'}
+          <button type="button" className="btn btn-primary" disabled={!upload.canSubmit} onClick={upload.submit}>
+            {upload.picked.length > 0 ? `Tải lên ${upload.picked.length} tài liệu` : 'Tải lên'}
           </button>
         </>
       }
     >
       <div className="upload-body">
         <p className="dialog-text">
-          Thư mục đích: <strong>{placeName(folders, folderId)}</strong>
+          Thư mục đích: <strong>{where}</strong>
         </p>
         <FileUploadFields upload={upload} roomLeft={roomLeft} />
       </div>
@@ -284,17 +281,12 @@ export function LibraryUploadDialog({
           title="Bỏ tệp đã chọn"
           confirmLabel="Bỏ tệp đã chọn"
           pendingLabel="Đang bỏ…"
-          cancelLabel={upload.uploading ? 'Tiếp tục tải lên' : 'Tiếp tục chọn'}
+          cancelLabel="Tiếp tục chọn"
           tone="danger"
-          onConfirm={async () => {
-            upload.abort()
-            onClose()
-          }}
+          onConfirm={async () => onClose()}
           onClose={() => setDiscarding(false)}
         >
-          {upload.uploading
-            ? 'Lần tải đang chạy sẽ dừng lại, không tệp nào được thêm vào kho.'
-            : `${upload.picked.length} tệp đã chọn sẽ không được tải lên.`}
+          {upload.picked.length} tệp đã chọn sẽ không được tải lên.
         </ConfirmDialog>
       )}
     </Dialog>

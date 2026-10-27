@@ -7,9 +7,11 @@ import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDate, formatDateTime } from '../../lib/format'
+import { routes } from '../../lib/routes'
 import type { Recording, RecordingList, RecordingSource } from '../../types/recording'
 import type { TranscriptStatus } from '../../types/transcript'
 import { useAccessLost } from '../auth/useAccessLost'
+import { useUploads, useUploadsSettled } from '../uploads/uploadsContext'
 import { formatDuration, formatSize, probeDuration } from './format'
 import { TranscriptView } from './TranscriptView'
 import { useRecorder, type RecordedTake, type Recorder, type RecordingInput } from './useRecorder'
@@ -32,14 +34,25 @@ type LoadState = { kind: 'loading' } | { kind: 'error'; message: string } | { ki
 
 type Consent = { kind: 'record' } | { kind: 'upload'; file: File }
 
-/** A take or file that failed to save stays here, so a network hiccup never loses a meeting. */
+/** A take or a picked file, for the upload queue. */
 interface PendingUpload {
   blob: Blob
   fileName: string
   source: RecordingSource
   durationMs?: number
   purpose: string
-  error: string | null
+}
+
+/** The meeting ended for recording, or the Secretary role moved: the list says so once re-read. */
+const isExpected = (err: unknown) => isApiError(err, 409, 'MSG294') || isApiError(err, 403, 'MSG295')
+
+function saveToComputer(upload: PendingUpload) {
+  const url = URL.createObjectURL(upload.blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = upload.fileName
+  link.click()
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 function takeName(take: RecordedTake) {
@@ -70,13 +83,12 @@ export function RecordingsPanel({
 }) {
   const toast = useToast()
   const handleAccessLost = useAccessLost()
+  const uploads = useUploads()
   const own = useRecorder()
   const recorder = held ?? own
   const [state, setState] = useState<LoadState>({ kind: 'loading' })
   const [consent, setConsent] = useState<Consent | null>(null)
   const [purpose, setPurpose] = useState(DEFAULT_PURPOSE)
-  const [pending, setPending] = useState<PendingUpload | null>(null)
-  const [saving, setSaving] = useState(false)
   const [erasing, setErasing] = useState<Recording | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
 
@@ -118,59 +130,53 @@ export function RecordingsPanel({
     return () => window.clearInterval(timer)
   }, [transcribing, load])
 
+  // Saving goes through the upload queue: it goes on with the panel closed or the page left, a network
+  // hiccup is tried again, and a take that still fails stays in the tray with "Lưu về máy", so it is never lost.
   const save = useCallback(
-    async (upload: PendingUpload) => {
-      setSaving(true)
-      try {
-        const result = await uploadRecording(meetingId, {
-          file: upload.blob,
-          fileName: upload.fileName,
-          source: upload.source,
-          consentPurpose: upload.purpose,
-          durationMs: upload.durationMs,
-        })
-        setPending(null)
-        toast.show(result.message, 'success')
-        await load()
-      } catch (error) {
-        // The meeting ended for recording, or the role moved: the list now tells the truth.
-        if (isApiError(error, 409, 'MSG294') || isApiError(error, 403, 'MSG295')) void load()
-        else if (handleAccessLost(error)) return
-        setPending({ ...upload, error: errorMessage(error) })
-      } finally {
-        setSaving(false)
-      }
-    },
-    [meetingId, toast, load, handleAccessLost],
+    (upload: PendingUpload) =>
+      uploads.enqueue([
+        {
+          name: upload.fileName,
+          kind: 'audio',
+          where: 'Bản ghi cuộc họp',
+          href: `${routes.meeting(meetingId)}?tab=recordings`,
+          target: `recordings:${meetingId}`,
+          isExpected,
+          keep: () => saveToComputer(upload),
+          send: (options) =>
+            uploadRecording(
+              meetingId,
+              {
+                file: upload.blob,
+                fileName: upload.fileName,
+                source: upload.source,
+                consentPurpose: upload.purpose,
+                durationMs: upload.durationMs,
+              },
+              options,
+            ),
+        },
+      ]),
+    [meetingId, uploads],
   )
+  useUploadsSettled(`recordings:${meetingId}`, () => void load())
 
   const stopAndSave = async () => {
     const take = await recorder.stop()
     if (!take) return
-    await save({
+    save({
       blob: take.blob,
       fileName: takeName(take),
       source: 'BrowserCapture',
       durationMs: take.durationMs,
       purpose,
-      error: null,
     })
-  }
-
-  const downloadPending = () => {
-    if (!pending) return
-    const url = URL.createObjectURL(pending.blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = pending.fileName
-    link.click()
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
   const data = state.kind === 'loaded' ? state.data : null
   const canUpload = !existingOnly && (data?.canUpload ?? false)
   if (existingOnly && data?.items.length === 0) return null
-  const busy = recorder.active || recorder.state.kind === 'starting' || saving || pending !== null
+  const busy = recorder.active || recorder.state.kind === 'starting'
 
   return (
     <section className={`list-panel recordings-panel recordings-${variant}`} aria-label="Bản ghi">
@@ -257,32 +263,6 @@ export function RecordingsPanel({
         </div>
       )}
 
-      {saving && (
-        <p className="recordings-saving" role="status">
-          Đang lưu bản ghi…
-        </p>
-      )}
-
-      {pending && !saving && (
-        <div className="alert alert-error recordings-alert" role="alert">
-          <p>
-            Chưa lưu được “{pending.fileName}”: {pending.error} Bản ghi vẫn còn trên trình duyệt này.
-          </p>
-          <div className="row-actions">
-            <button type="button" className="btn btn-primary btn-sm" onClick={() => void save(pending)}>
-              <Icon name="refresh" size={16} />
-              Lưu lại
-            </button>
-            <button type="button" className="btn btn-outline btn-sm" onClick={downloadPending}>
-              Tải về máy
-            </button>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPending(null)}>
-              Bỏ
-            </button>
-          </div>
-        </div>
-      )}
-
       {state.kind === 'error' && (
         <div className="alert alert-error recordings-alert" role="alert">
           <p>{state.message}</p>
@@ -343,7 +323,6 @@ export function RecordingsPanel({
                   source: 'Upload',
                   durationMs,
                   purpose: purpose.trim() || DEFAULT_PURPOSE,
-                  error: null,
                 }),
               )
           }}

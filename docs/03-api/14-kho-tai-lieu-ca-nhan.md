@@ -159,7 +159,9 @@ không đăng nhập được nên không tự đọc. **Phạm vi mới, chưa 
 - `MSG175` / `MSG179` giữa chừng (mục vừa bị xoá ở tab khác): tải lại kho.
 - Hiện "Đã dùng x / 1 GB" từ `usedBytes` / `quotaBytes`; kiểm hạn mức ở FE trước khi gửi để khỏi đẩy 200 MB rồi mới
   nhận `MSG346`. Server vẫn kiểm lại.
-- Tải lên: giống hộp tải lên của cuộc họp (`api.upload`, `FormData`, kiểm 10 tệp / 200 MB / 50 MB trước khi gửi).
+- Tải lên: giống hộp tải lên của cuộc họp (kiểm 10 tệp / 200 MB / 50 MB trước khi gửi), qua hàng đợi ở trình duyệt, mỗi
+  tệp một request ([ADR-0033](../05-decisions/0033-hang-doi-tai-len-o-trinh-duyet.md)). Mỗi tệp xong thì màn kho đọc lại vị
+  trí và dung lượng.
 
 ## Kiểm thử
 

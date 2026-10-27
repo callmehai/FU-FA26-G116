@@ -22,6 +22,7 @@ import { routes } from '../../lib/routes'
 import { useSearchBox } from '../../lib/useSearchBox'
 import type { LibraryDocument, LibraryFolder, LibraryView } from '../../types/document'
 import { useAccessLost } from '../auth/useAccessLost'
+import { useUploadsSettled } from '../uploads/uploadsContext'
 import { formatBytes, isPdf, saveBlob } from './documentFile'
 import { FileTypeTag } from './DocumentTags'
 import { LibraryUploadDialog, MoveDialog, NameDialog } from './LibraryDialogs'
@@ -123,6 +124,9 @@ export function DocumentsPage() {
     toast.show(message)
     reload()
   }
+  // A queued file ended, from this page or a meeting's (which also lands in the library, BR-192): the place
+  // and the space used are read again.
+  useUploadsSettled('*', reload)
 
   const folders = view?.folders ?? []
   const trail = trailOf(folders, folderId)
@@ -419,12 +423,7 @@ export function DocumentsPage() {
           folders={folders}
           roomLeft={view.quotaBytes - view.usedBytes}
           onClose={() => setDialog(null)}
-          onUploaded={done}
-          onStale={(message) => {
-            setDialog(null)
-            toast.show(message, 'error')
-            reload()
-          }}
+          onQueued={() => setDialog(null)}
         />
       )}
 

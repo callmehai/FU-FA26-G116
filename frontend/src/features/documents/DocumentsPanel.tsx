@@ -14,6 +14,7 @@ import type { Meeting } from '../../types/meeting'
 import { AddDocumentsDialog } from './AddDocumentsDialog'
 import { documentFacts, isPdf } from './documentFile'
 import { FileTypeTag, OnlineOnly } from './DocumentTags'
+import { useUploadsSettled } from '../uploads/uploadsContext'
 import { useDocumentDownload } from './useDocumentDownload'
 import { useMeetingDocuments } from './useMeetingDocuments'
 
@@ -56,6 +57,8 @@ export function DocumentsPanel({
     onMeetingStale?.()
   }
   const { download, busyId } = useDocumentDownload(meeting.id, stale)
+  // A queued file ended: show the list as it is; a refusal may also mean the meeting changed (role, status).
+  useUploadsSettled(`meeting:${meeting.id}`, (job) => (job.status === 'done' ? void reload() : stale()))
   const canDownload = meeting.sensitivity !== 'Secret'
   const total = data && distinctCount([...data.agendaItems.flatMap((item) => item.documents), ...data.general])
 
@@ -200,6 +203,10 @@ function PageList({
             setAdding(null)
             toast.show(message)
             onUploaded()
+          }}
+          onQueued={() => {
+            if (!adding.item) setGroup('general')
+            setAdding(null)
           }}
           onStale={(message) => {
             setAdding(null)

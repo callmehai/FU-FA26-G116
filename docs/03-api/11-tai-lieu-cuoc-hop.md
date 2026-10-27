@@ -101,7 +101,7 @@ Khoá là `files[i]` theo thứ tự part tệp; key `files` dùng cho lỗi c�
   `.pdf`/`.docx`. Body quá lớn bị server từ chối ngay khi trình duyệt còn đang gửi, nên trình duyệt thường chỉ
   thấy lỗi mạng, không đọc được `MSG288`. Vẫn xử lý `MSG164`/`MSG288` từ server: server kiểm theo nội dung, FE
   chỉ thấy đuôi.
-- Đọc `errors["files[i]"]` để đánh dấu đúng tệp trong danh sách đã chọn.
+- Đọc `errors["files[i]"]` để đánh dấu đúng tệp. FE hiện gửi mỗi tệp một request (ADR-0033), nên chỉ có `files[0]`.
 - `MSG162`/`MSG172`/`MSG174` có thể đến **sau** khi người dùng đã bấm tải (mất vai trò, cuộc họp vừa kết
   thúc): đóng hộp thoại và tải lại cuộc họp.
 - Tải 200 MB qua server 1 GB mất thời gian — hiện tiến độ bằng `XMLHttpRequest.upload.onprogress`
@@ -229,8 +229,9 @@ gắn và gỡ mục (SCRUM-58) phát cùng event này.
 - Trình xem ở route `/mgmt/meetings/{id}/documents/{meetingDocumentId}`, ngoài khung ứng dụng: PDF bằng pdf.js
   (bản `legacy`, worker cùng origin, CSP không đổi), DOCX bằng `docx-preview`. Từ phòng họp mở ở tab mới, nút
   "‹ Tài liệu" đóng tab đó; ngoài phòng thì về `?tab=documents` của cuộc họp.
-- Hộp thoại tải lên gửi một request duy nhất qua `XMLHttpRequest` (`api.upload` trong `client.ts`) để có tiến độ;
-  tiến độ từng tệp tính theo số byte đã gửi. Đếm số trang PDF bằng pdf.js ngay khi chọn tệp.
+- Tải lên đi qua hàng đợi ở trình duyệt ([ADR-0033](../05-decisions/0033-hang-doi-tai-len-o-trinh-duyet.md)): hộp thoại
+  chỉ chọn và kiểm tệp, mỗi tệp một request `XMLHttpRequest` (`api.upload`, có tiến độ), chạy lần lượt; khay ở góc theo
+  dõi, tự thử lại khi chắc chưa lưu, rồi chờ "Thử lại". Đếm số trang PDF bằng pdf.js ngay khi chọn tệp.
 - Kiểm trước khi gửi dùng lại câu của `MSG164` (sai đuôi, rỗng, quá 50 MB) và `MSG288` (quá 10 tệp / 200 MB), không
   cấp mã mới.
 - DOCX là nội dung người dùng tải lên, được dựng ngay trong origin của mình: trình xem tắt `renderAltChunks` (HTML nhúng

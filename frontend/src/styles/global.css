@@ -1528,10 +1528,12 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .form-section-title { margin: 0; color: var(--ink); font-size: 14px; font-weight: 700; }
 
 /* ---------- Toasts (components/ToastProvider.tsx) ---------- */
+/* The bottom-right corner is shared: the upload tray sits on --corner-bottom (lifted over the call room's
+   controls), the toasts above it by the tray's height (--upload-tray-h, set by UploadTray). */
 .toast-stack {
   position: fixed;
   right: 16px;
-  bottom: 16px;
+  bottom: calc(var(--corner-bottom, 16px) + var(--upload-tray-h, 0px));
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -3037,12 +3039,12 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 html:has(.room), body:has(.room) { overflow: hidden; overscroll-behavior: none; }
 .room-panel, .room-chat-list, .room-select-menu { overscroll-behavior: contain; }
 /* Toasts sit above the control bar in the room, not over "Chat" and "Rời phòng". */
-body:has(.room) .toast-stack { bottom: 96px; }
-body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
+body:has(.room) { --corner-bottom: 96px; }
+body:has(.room) :is(.toast-stack, .upload-tray) { transition: bottom 0.3s var(--ease-emphasized); }
 /* Narrower than this, the right-aligned toasts reach the centre panel (432px with the floating-window
    button): lift them over an open tray. */
 @media (max-width: 1175px) {
-  body:has(.room-controls-main.is-open) .toast-stack { bottom: 140px; }
+  body:has(.room-controls-main.is-open) { --corner-bottom: 140px; }
 }
 
 @media (max-width: 1023px) {
@@ -3066,7 +3068,7 @@ body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
   /* Stacked, both menus start at the left, as the panel does, and keep the page gutter. */
   .room-select + .room-select .room-select-menu { left: 0; right: auto; }
   .room-select-menu { max-width: min(420px, calc(100vw - 32px)); }
-  body:has(.room-controls-main.is-open) .toast-stack { bottom: 180px; }
+  body:has(.room-controls-main.is-open) { --corner-bottom: 180px; }
   /* No spring for the taller stacked tray: its dip on closing would reach the buttons. */
   .room-controls-main { transition: height 0.3s var(--ease-emphasized); }
 }
@@ -3081,7 +3083,7 @@ body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
   .room-control-pip { display: none; }
   .room-controls-main { --panel-pad: 8px; --tray-gap: 8px; margin-bottom: 11px; border-radius: 20px; }
   .room-controls-row { gap: 6px; }
-  body:has(.room-controls-main.is-open) .toast-stack { bottom: 164px; }
+  body:has(.room-controls-main.is-open) { --corner-bottom: 164px; }
   .room-control, .room-split > .room-control, .room-control-off, .room-control-side { width: 42px; height: 42px; }
   .room-control-leave { width: 54px; }
   /* Five panels do not fit beside the call controls: all but "Người dự" and "Chat" go behind ⋯. */
@@ -3095,9 +3097,6 @@ body:has(.room) .toast-stack { transition: bottom 0.3s var(--ease-emphasized); }
 .recordings-panel .toolbar { display: flex; align-items: center; gap: 12px; min-height: 64px; }
 .recordings-panel .toolbar .row-actions { gap: 8px; }
 .recordings-alert { margin: 12px 16px 0; }
-.recordings-alert .row-actions { gap: 8px; margin-top: 8px; }
-.recordings-alert .row-actions .btn { margin-top: 0; }
-.recordings-saving { margin: 12px 16px 0; color: var(--muted-ink); font-size: 14px; }
 .recorder-bar {
   display: flex; align-items: center; gap: 10px; margin: 12px 16px 0; padding: 8px 8px 8px 12px;
   border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent); border-radius: var(--radius);
@@ -3373,7 +3372,6 @@ audio.recording-player { height: 40px; }
 .dropzone span { font-size: 13px; }
 .dropzone:hover, .dropzone.is-dragging { border-color: var(--brand); background: var(--brand-wash); }
 .dropzone:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
-.dropzone.is-disabled { cursor: progress; opacity: .6; }
 /* The input fills the zone, invisible: a tap anywhere opens the picker, and it keeps the focus. */
 .dropzone input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: inherit; }
 .upload-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
@@ -3386,13 +3384,9 @@ audio.recording-player { height: 40px; }
   border: 1px solid var(--line);
   border-radius: var(--radius);
 }
-.upload-row-error { border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
-.upload-row-error small { color: var(--danger-ink); }
 .upload-row-name { display: flex; flex: 1; flex-direction: column; min-width: 0; }
 .upload-row-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
 .upload-row-name small { color: var(--label-ink); font-size: 13px; }
-.upload-progress { flex: none; width: 96px; height: 6px; margin-right: 8px; border-radius: 3px; background: var(--surface-alt); overflow: hidden; }
-.upload-progress i { display: block; height: 100%; background: var(--brand); transition: width .2s; }
 .upload-body { display: grid; gap: 12px; }
 .add-docs-item { margin: 0; color: var(--muted-ink); overflow-wrap: anywhere; }
 
@@ -3554,4 +3548,55 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .viewer-download-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .viewer-scroll { padding: 12px 8px; }
   .docx-sheet { padding: 20px 16px; }
+}
+
+/* ---------- Upload queue (features/uploads) ---------- */
+.upload-tray {
+  position: fixed;
+  right: 16px;
+  bottom: var(--corner-bottom, 16px);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  /* As wide as a toast, so the corner keeps one left edge. */
+  width: min(356px, calc(100vw - 32px));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.upload-tray-head { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 4px 6px 4px 14px; border-bottom: 1px solid var(--line-soft); }
+.upload-tray-head h2 { flex: 1; min-width: 0; margin: 0; overflow: hidden; font-size: 14px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.upload-tray-list { max-height: min(320px, 45vh); margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.upload-tray-list > li + li { border-top: 1px solid var(--line-soft); }
+.upload-tray-row { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 8px 6px 8px 14px; }
+.upload-tray-audio { display: grid; flex: none; place-items: center; width: 24px; color: var(--brand); }
+.upload-tray-main { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 0; }
+.upload-tray-main strong { overflow: hidden; font-size: 13px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.upload-tray-main small { display: flex; gap: 6px; min-width: 0; color: var(--muted-ink); font-size: 12px; }
+.upload-tray-main small > :first-child { min-width: 0; overflow: hidden; color: var(--ink); text-overflow: ellipsis; white-space: nowrap; }
+.upload-tray-main small > :first-child:not(:last-child) { max-width: 60%; }
+.upload-tray-main small a { text-decoration: none; }
+.upload-tray-main small a:hover { text-decoration: underline; }
+.upload-tray-state { min-width: 0; overflow-wrap: anywhere; }
+.upload-tray-state::before { content: "·"; margin-right: 6px; color: var(--faint-ink); }
+.upload-tray-error { color: var(--danger-ink); font-size: 12px; overflow-wrap: anywhere; }
+.upload-tray-row.is-done .upload-tray-state { color: var(--chip-emerald-fg); }
+.upload-tray-row.is-canceled .upload-tray-main { opacity: .7; }
+.upload-tray-done { padding: 0 9px; }
+.tray-ok { display: inline-flex; color: var(--chip-emerald-fg); }
+.tray-bad { display: inline-flex; color: var(--danger); }
+.tray-off { display: inline-flex; color: var(--muted-ink); }
+.upload-progress { display: block; height: 4px; margin-top: 4px; border-radius: 2px; background: var(--surface-alt); overflow: hidden; }
+.upload-progress i { display: block; height: 100%; background: var(--brand); transition: width .2s; }
+.upload-progress.is-saving i { animation: upload-saving 1.2s ease-in-out infinite alternate; }
+@keyframes upload-saving { from { opacity: 1; } to { opacity: .45; } }
+.upload-spinner { flex: none; width: 16px; height: 16px; border: 2px solid var(--line); border-top-color: var(--brand); border-radius: 50%; animation: spin .9s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .upload-spinner, .upload-progress.is-saving i { animation: none; }
+}
+/* Touch: the row buttons reach 40px. */
+@media (hover: none) {
+  .upload-tray .icon-button-sm { width: 40px; height: 40px; }
 }
