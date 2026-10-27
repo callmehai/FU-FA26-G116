@@ -78,7 +78,7 @@ internal sealed class SmtpEmailSender(
                 FileName = "thu-moi-hop.ics",
             };
             calendar.ContentType.Charset = Encoding.UTF8.WebName;
-            calendar.ContentType.Parameters.Add("method", "REQUEST");
+            calendar.ContentType.Parameters.Add("method", CalendarInvitationBuilder.MethodOf(queued.CalendarAttachment));
             body.Attachments.Add(calendar);
         }
 

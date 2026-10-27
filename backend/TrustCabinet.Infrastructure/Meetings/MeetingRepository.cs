@@ -12,7 +12,8 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
 {
     public Task<Meeting?> FindAccessibleAsync(
         Guid id, Guid actorId, CancellationToken ct = default)
-        => AccessibleTo(actorId).Include(m => m.Participants).ThenInclude(p => p.User).SingleOrDefaultAsync(m => m.Id == id, ct);
+        => AccessibleTo(actorId).Include(m => m.CancelledBy).Include(m => m.Participants).ThenInclude(p => p.User)
+            .SingleOrDefaultAsync(m => m.Id == id, ct);
 
     public async Task<MeetingListPage> FindAuthorizedPageAsync(
         Guid actorId, MeetingListQuery query, CancellationToken ct = default)
@@ -186,6 +187,7 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
 
         IQueryable<Meeting> query = db.Meetings
             .AsSplitQuery()
+            .Include(meeting => meeting.CancelledBy)
             .Include(meeting => meeting.Participants)
             .ThenInclude(participant => participant.User);
 
@@ -196,6 +198,18 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
 
         return await query.SingleOrDefaultAsync(meeting => meeting.Id == id, ct);
     }
+
+    public async Task<IReadOnlyList<Guid>> ListOverdueAsync(DateTimeOffset cutoff, int take, CancellationToken ct = default)
+        => await db.Meetings.AsNoTracking()
+            .Where(m => (m.Status == MeetingStatus.Draft || m.Status == MeetingStatus.WaitingApproval
+                    || m.Status == MeetingStatus.Rejected || m.Status == MeetingStatus.Approved
+                    || m.Status == MeetingStatus.Published)
+                && m.PlannedStartTime <= cutoff)
+            .OrderBy(m => m.PlannedStartTime)
+            .ThenBy(m => m.Id)
+            .Select(m => m.Id)
+            .Take(take)
+            .ToListAsync(ct);
 
     public async Task<MeetingHistoryPage?> FindHistoryPageAsync(
         Guid meetingId, int page, int pageSize, CancellationToken ct = default)
@@ -226,12 +240,14 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
                 item.FromStatus,
                 item.ToStatus,
                 item.ActorId,
-                item.Actor.FullName,
+                item.Actor != null ? item.Actor.FullName : MeetingHistoryRecord.SystemActorName,
                 item.OccurredAt,
                 item.Action == MeetingHistoryAction.Reject ? item.Reason : null,
                 item.AssignedApproverId,
                 item.PreviousOrganizerId,
-                item.NewOrganizerId))
+                item.NewOrganizerId,
+                item.Action == MeetingHistoryAction.Cancel || item.Action == MeetingHistoryAction.AutoCancel
+                    ? item.Reason : null))
             .ToListAsync(ct);
 
         return new MeetingHistoryPage(items, page, pageSize, total);
@@ -287,6 +303,18 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             Email.MeetingInvitationEvents.Stage(db, meeting, participant, null, InvitationEventKind.Invitation, now, notify: false);
         foreach (var guest in await db.MeetingGuestInvitations.Where(g => g.MeetingId == meeting.Id && g.RevokedAt == null).ToArrayAsync(ct))
             Email.MeetingInvitationEvents.Stage(db, meeting, null, guest, InvitationEventKind.Invitation, now, notify: false);
+    }
+
+    public async Task StageCancellationAsync(
+        Meeting meeting, Guid historyId, Guid actorId, string reason, DateTimeOffset now, CancellationToken ct = default)
+    {
+        // The organizer who cancelled needs no bell for it, but still gets the email like every invitee.
+        foreach (var participant in MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants))
+            Email.MeetingInvitationEvents.Stage(db, meeting, participant, null, InvitationEventKind.Cancelled, now,
+                notify: participant.UserId != actorId, historyId, reason);
+        foreach (var guest in await db.MeetingGuestInvitations.Where(g => g.MeetingId == meeting.Id && g.RevokedAt == null).ToArrayAsync(ct))
+            Email.MeetingInvitationEvents.Stage(db, meeting, null, guest, InvitationEventKind.Cancelled, now,
+                notify: false, historyId, reason);
     }
 
     public async Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, DateTimeOffset now, CancellationToken ct = default)

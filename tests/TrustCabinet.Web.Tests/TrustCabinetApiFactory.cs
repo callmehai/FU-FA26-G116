@@ -66,6 +66,15 @@ public class TrustCabinetApiFactory : WebApplicationFactory<Program>
                 services.Remove(retention);
             }
 
+            // And the overdue meeting sweep, which would open a database connection too.
+            var overdue = services.SingleOrDefault(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService)
+                && descriptor.ImplementationType == typeof(MeetingOverdueWorker));
+            if (overdue is not null)
+            {
+                services.Remove(overdue);
+            }
+
             // The transcription queue too: tests drive ProcessNextAsync themselves, with a fake speech engine.
             var transcription = services.SingleOrDefault(descriptor =>
                 descriptor.ServiceType == typeof(IHostedService)

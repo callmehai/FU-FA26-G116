@@ -39,6 +39,11 @@ public sealed class EmailDeliveryOptions
         _ => false,
     };
 
+    /// <summary>The sender of the chosen transport, which a calendar invitation names as its organizer.</summary>
+    public string FromAddress => Provider == EmailProvider.Resend ? Resend.FromAddress : Smtp.FromAddress;
+
+    public string FromName => Provider == EmailProvider.Resend ? Resend.FromName : Smtp.FromName;
+
     public bool IsUndeliverable(string address)
     {
         var at = address.LastIndexOf('@');

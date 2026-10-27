@@ -10,6 +10,7 @@ import { formatDateTime, formatSchedule } from '../../../lib/format'
 import { useBackTarget, type BackTarget } from '../../../lib/backTarget'
 import { routes } from '../../../lib/routes'
 import {
+  CANCELLABLE_STATUSES,
   EDITABLE_STATUSES,
   MEETING_MODE_LABEL,
   RESCHEDULABLE_STATUSES,
@@ -33,6 +34,7 @@ import { EditMeetingDialog } from '../MeetingDialogs'
 import { EDIT_PARAM, useEditMeetingLink } from '../meetingDialogLink'
 import { useMeetingEvents } from '../useMeetingEvents'
 import { useMeetingApprovers } from '../useMeetingApprovers'
+import { CancelMeetingDialog } from '../workflow/CancelMeetingDialog'
 import { MeetingHistory } from '../workflow/MeetingHistory'
 import { lifecycleAction } from '../workflow/lifecycle'
 import { MeetingLifecycleActions } from '../workflow/MeetingLifecycleActions'
@@ -144,12 +146,15 @@ function MeetingDetail({
   const roomOpen = useCallRoomOpen(meeting)
   // SCRUM-69: the Chair starts a published meeting and ends a running one.
   const canRun = lifecycleAction(meeting) !== null
+  // UC-75: the organizer calls it off any time before it starts.
+  const canCancel = isOrganizer && CANCELLABLE_STATUSES.includes(meeting.status)
+  const [cancelling, setCancelling] = useState(false)
 
   /** Display names the page already knows: whoever acted in the history, and the approver list. */
   const names = useMemo(() => {
     const map = new Map<string, string>()
     for (const approver of approvers.list ?? []) map.set(approver.id, approver.fullName)
-    for (const item of history.items) map.set(item.actorId, item.actorName)
+    for (const item of history.items) if (item.actorId) map.set(item.actorId, item.actorName)
     return map
   }, [approvers.list, history.items])
   const nameOf = useCallback((id: string) => (id === user?.id ? 'bạn' : (names.get(id) ?? null)), [names, user?.id])
@@ -242,7 +247,7 @@ function MeetingDetail({
             </span>
           </p>
         </div>
-        {(canEdit || canReschedule || roomOpen || canRun) && (
+        {(canEdit || canReschedule || roomOpen || canRun || canCancel) && (
           <div className="page-header-actions">
             {roomOpen && (
               // The meeting is running: green like its "Đang diễn ra" state, so it stands apart from blue.
@@ -258,9 +263,28 @@ function MeetingDetail({
                 {canEdit ? 'Chỉnh sửa' : 'Dời lịch'}
               </Link>
             )}
+            {canCancel && (
+              <button type="button" className="btn btn-outline btn-lg" onClick={() => setCancelling(true)}>
+                <Icon name="calendarX" size={16} />
+                Huỷ cuộc họp
+              </button>
+            )}
           </div>
         )}
       </div>
+
+      {cancelling && (
+        <CancelMeetingDialog
+          meeting={meeting}
+          onDone={(outcome) => {
+            setCancelling(false)
+            onOutcome(outcome)
+          }}
+          onClose={() => setCancelling(false)}
+        />
+      )}
+
+      {meeting.cancellation && <CancellationBar meeting={meeting} userId={user?.id} />}
 
       {role && (
         <MeetingWorkflowBar
@@ -353,6 +377,29 @@ function MeetingDetail({
         />
       </div>
     </>
+  )
+}
+
+/** Who called the meeting off, when and why (BR-298), in place of the workflow bar it no longer has. */
+function CancellationBar({ meeting, userId }: { meeting: Meeting; userId: string | undefined }) {
+  const cancellation = meeting.cancellation!
+  const when = formatDateTime(cancellation.cancelledAt)
+  const bySystem = cancellation.cancelledById === null
+  return (
+    <section className="workflow-bar workflow-slate" aria-labelledby="cancelled-title">
+      <span className="workflow-icon" aria-hidden="true">
+        <Icon name="calendarX" size={18} />
+      </span>
+      <div className="workflow-body">
+        <h2 id="cancelled-title">{bySystem ? 'Cuộc họp đã tự huỷ' : 'Cuộc họp đã huỷ'}</h2>
+        <p>
+          {bySystem
+            ? `Hệ thống huỷ lúc ${when}.`
+            : `${cancellation.cancelledById === userId ? 'Bạn' : cancellation.cancelledByName} huỷ lúc ${when}.`}
+        </p>
+        <blockquote className="workflow-reason">{cancellation.reason}</blockquote>
+      </div>
+    </section>
   )
 }
 

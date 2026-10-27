@@ -13,6 +13,7 @@ const STATUS_ICON: Partial<Record<MeetingStatus, IconName>> = {
   Approved: 'checkCircle',
   Published: 'send',
   Ended: 'checkCheck',
+  Cancelled: 'calendarX',
 }
 
 /**

@@ -28,6 +28,10 @@ export function historyActionLabel(item: MeetingHistoryItem): string {
       return 'Bắt đầu họp'
     case 'End':
       return 'Kết thúc họp'
+    case 'Cancel':
+      return 'Huỷ cuộc họp'
+    case 'AutoCancel':
+      return 'Tự huỷ (quá hạn)'
     default:
       // Rows written before SCRUM-19 only know where the meeting ended up.
       return MEETING_STATUS_LABEL[item.resultingStatus] ?? item.resultingStatus

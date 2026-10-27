@@ -115,7 +115,7 @@ erDiagram
     Meeting {
         uuid Id PK
         string Title
-        string Status "Draft|WaitingApproval|Rejected|Approved|Published|InProgress|Ended"
+        string Status "Draft|WaitingApproval|Rejected|Approved|Published|InProgress|Ended|Cancelled"
         string Sensitivity "Normal|Internal|Confidential|Secret"
         string Mode "InPerson|Online|Hybrid"
         string Location
@@ -124,6 +124,10 @@ erDiagram
         timestamptz PlannedEndTime "sau PlannedStartTime"
         timestamptz ActualStartedAt "nullable, ghi khi Start Meeting"
         timestamptz ActualEndedAt "nullable, ghi khi End Meeting"
+        timestamptz CancelledAt "nullable, ghi khi huỷ (UC-75)"
+        uuid CancelledById FK "nullable; null = hệ thống tự huỷ"
+        string CancellationReason
+        string CancelledFromStatus "nullable; Published thì người được mời vẫn đọc được"
         string Description
         uuid CreatedById FK
         uuid AssignedApproverId FK "nullable"

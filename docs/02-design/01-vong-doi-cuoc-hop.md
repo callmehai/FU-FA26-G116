@@ -15,19 +15,23 @@ Mã trạng thái giữ nguyên tiếng Anh để dùng trực tiếp trong code
 | `Published` | Đã công bố | Đã gửi thư mời; Organizer chỉ còn dời được giờ, địa điểm, link (*Reschedule*) |
 | `InProgress` | Đang diễn ra | Chủ toạ đã bắt đầu cuộc họp; agenda chạy, biểu quyết mở được |
 | `Ended` | Đã kết thúc | Cuộc họp đóng; xử lý hậu kỳ (audio, transcript, tóm tắt, biên bản) |
+| `Cancelled` | Đã huỷ | Không diễn ra: Organizer huỷ trước khi bắt đầu, hoặc hệ thống tự huỷ khi quá 24 giờ sau giờ bắt đầu dự kiến mà chưa bắt đầu ([ADR-0032](../05-decisions/0032-huy-cuoc-hop-va-tu-huy-khi-qua-han.md)). Chỉ đọc |
 
 ```
 Draft ──gửi duyệt──> WaitingApproval ──duyệt──> Approved ──công bố──> Published ──bắt đầu──> InProgress ──kết thúc──> Ended
   ^                        │                                           │  ^
   └──sửa, gửi lại── Rejected <──từ chối                                └──┘ dời lịch (Reschedule)
+
+Draft, WaitingApproval, Rejected, Approved, Published ──huỷ (Organizer) / tự huỷ (Hệ thống)──> Cancelled
 ```
 
-Vòng đời PO chốt kết thúc ở `Ended` (quyết định 09/10/2026). Trạng thái của biên bản nằm ở `MeetingMinutes.Status`
+Vòng đời PO chốt kết thúc ở `Ended` (quyết định 09/10/2026); `Cancelled` là điểm cuối thứ hai, chỉ tới được trước khi
+bắt đầu (UC-75, SCRUM-99). Trạng thái của biên bản nằm ở `MeetingMinutes.Status`
 (`Draft → PendingSignature → RevisionRequested → Sealed`), không phải trạng thái cuộc họp. **Không có Meeting Session**:
 một cuộc họp là một buổi họp, tự mang `PlannedStartTime` / `PlannedEndTime` / `ActualStartedAt` / `ActualEndedAt`
 ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)).
 
-Code đã khớp: enum `MeetingStatus` (backend và [types/meeting.ts](../../frontend/src/types/meeting.ts)) chỉ còn bảy
+Code đã khớp: enum `MeetingStatus` (backend và [types/meeting.ts](../../frontend/src/types/meeting.ts)) có tám
 trạng thái trên. Migration `MeetingOwnsScheduleDropSessions` chuyển dữ liệu `MinutesIssued` / `Archived` cũ thành `Ended`
 và drop bảng `meeting_sessions`. Dời lịch sau công bố ghi history `Reschedule` (`Published → Published`).
 

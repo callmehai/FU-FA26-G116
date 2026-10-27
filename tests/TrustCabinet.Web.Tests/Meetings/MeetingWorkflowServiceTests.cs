@@ -1021,6 +1021,135 @@ public sealed class MeetingWorkflowServiceTests
         Assert.Empty(_repository.StagedPublicationIds);
     }
 
+    // UC-75 Cancel Meeting (SCRUM-99).
+
+    [Fact]
+    public async Task Cancel_after_publication_records_who_why_and_when_and_tells_the_invitees()
+    {
+        var meeting = GivenMeeting(MeetingStatus.Approved);
+        meeting.Status = MeetingStatus.Published;
+
+        var result = await NewService().TransitionAsync(
+            meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.Cancel, Reason: "  Lãnh đạo đi công tác  "),
+            _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        Assert.Equal(MeetingStatus.Cancelled, meeting.Status);
+        Assert.Equal(MeetingStatus.Published, meeting.CancelledFromStatus);
+        Assert.Equal(_organizerId, meeting.CancelledById);
+        Assert.NotNull(meeting.CancelledAt);
+        Assert.Equal("Lãnh đạo đi công tác", meeting.CancellationReason);
+        var history = Assert.Single(meeting.StatusHistory);
+        Assert.Equal(MeetingHistoryAction.Cancel, history.Action);
+        Assert.Equal(MeetingStatus.Published, history.FromStatus);
+        Assert.Equal(MeetingStatus.Cancelled, history.ToStatus);
+        Assert.Equal(_organizerId, history.ActorId);
+        Assert.Equal("Lãnh đạo đi công tác", history.Reason);
+        Assert.Equal("Lãnh đạo đi công tác", result.History!.CancellationReason);
+        Assert.Equal("Lãnh đạo đi công tác", result.Meeting!.Cancellation!.Reason);
+        var staged = Assert.Single(_repository.StagedCancellations);
+        Assert.Equal((meeting.Id, history.Id, "Lãnh đạo đi công tác"), staged);
+    }
+
+    [Fact]
+    public async Task Cancel_while_waiting_for_approval_closes_the_request_and_tells_the_approver()
+    {
+        var meeting = GivenMeeting(MeetingStatus.WaitingApproval);
+
+        var result = await NewService().TransitionAsync(
+            meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Cancel, Reason: "Gộp vào họp tháng"),
+            _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        Assert.Equal(MeetingStatus.Cancelled, meeting.Status);
+        Assert.Empty(_repository.StagedCancellations);
+        var notification = Assert.Single(_repository.Notifications);
+        Assert.Equal(_approverId, notification.UserId);
+        Assert.Equal(NotificationType.MeetingCancelled, notification.Type);
+        Assert.Contains("Gộp vào họp tháng", notification.Body);
+    }
+
+    [Theory]
+    [InlineData(MeetingStatus.Draft)]
+    [InlineData(MeetingStatus.Rejected)]
+    [InlineData(MeetingStatus.Approved)]
+    public async Task Cancel_before_publication_tells_nobody(MeetingStatus status)
+    {
+        var meeting = GivenMeeting(status);
+
+        var result = await NewService().TransitionAsync(
+            meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Cancel, Reason: "Không cần nữa"),
+            _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        Assert.Equal(status, meeting.CancelledFromStatus);
+        Assert.Empty(_repository.StagedCancellations);
+        Assert.Empty(_repository.Notifications);
+    }
+
+    [Theory]
+    [InlineData(MeetingStatus.InProgress)]
+    [InlineData(MeetingStatus.Ended)]
+    [InlineData(MeetingStatus.Cancelled)]
+    public async Task A_started_ended_or_cancelled_meeting_cannot_be_cancelled(MeetingStatus status)
+    {
+        var meeting = GivenMeeting(MeetingStatus.Approved);
+        meeting.Status = status;
+
+        var result = await NewService().TransitionAsync(
+            meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Cancel, Reason: "Muộn rồi"),
+            _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.StatusConflict, result.Outcome);
+        Assert.Equal(status, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Cancel_requires_a_reason(string? reason)
+    {
+        var meeting = GivenMeeting();
+
+        var result = await NewService().TransitionAsync(
+            meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Cancel, Reason: reason), _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.CancellationReasonRequired, result.Outcome);
+        Assert.Equal(MeetingStatus.Draft, meeting.Status);
+    }
+
+    [Fact]
+    public async Task Cancel_accepts_exactly_1000_characters_and_rejects_1001()
+    {
+        var meeting = GivenMeeting();
+
+        var tooLong = await NewService().TransitionAsync(
+            meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Cancel, Reason: new string('a', 1001)),
+            _organizerId);
+        var exact = await NewService().TransitionAsync(
+            meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Cancel, Reason: new string('a', 1000)),
+            _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.CancellationReasonTooLong, tooLong.Outcome);
+        Assert.Equal(MeetingWorkflowOutcome.Success, exact.Outcome);
+    }
+
+    [Fact]
+    public async Task Only_the_organizer_may_cancel()
+    {
+        var meeting = GivenMeeting(MeetingStatus.WaitingApproval);
+
+        var result = await NewService().TransitionAsync(
+            meeting.Id, new MeetingTransitionCommand(MeetingTransitionAction.Cancel, Reason: "Không phải việc của tôi"),
+            _approverId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Forbidden, result.Outcome);
+        Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
+    }
+
     private static MeetingParticipant Participant(
         Meeting meeting, bool active, InvitationResponse response)
     {
