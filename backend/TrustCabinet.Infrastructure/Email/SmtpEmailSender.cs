@@ -11,7 +11,7 @@ internal sealed class SmtpEmailSender(
     IOptions<EmailDeliveryOptions> options,
     ILogger<SmtpEmailSender> logger) : IEmailSender
 {
-    public async Task SendAsync(EmailMessage queued, CancellationToken ct = default)
+    public async Task<string?> SendAsync(EmailMessage queued, CancellationToken ct = default)
     {
         var smtpOptions = options.Value.Smtp;
         var message = BuildMessage(queued, smtpOptions);
@@ -48,6 +48,9 @@ internal sealed class SmtpEmailSender(
             logger.LogWarning(
                 exception, "The SMTP server accepted message {MessageId} but QUIT failed.", queued.Id);
         }
+
+        // SMTP hands back no id that a later report could be matched on.
+        return null;
     }
 
     internal static MimeMessage BuildMessage(EmailMessage queued, SmtpOptions options)

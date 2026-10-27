@@ -116,7 +116,7 @@ public sealed class PasswordResetEmailSenderTests
 
         public List<EmailMessage> Sent { get; } = [];
 
-        public async Task SendAsync(EmailMessage message, CancellationToken ct = default)
+        public async Task<string?> SendAsync(EmailMessage message, CancellationToken ct = default)
         {
             if (Hangs)
             {
@@ -129,6 +129,7 @@ public sealed class PasswordResetEmailSenderTests
             }
 
             Sent.Add(message);
+            return null;
         }
     }
 }

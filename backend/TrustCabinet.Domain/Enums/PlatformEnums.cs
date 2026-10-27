@@ -32,6 +32,23 @@ public enum EmailStatus
     Failed,
 }
 
+/// <summary>
+/// What the email provider later reported about a <see cref="EmailStatus.Sent"/> message (ADR-0031). "Sent" only
+/// means the provider accepted it; whether the recipient's server took it arrives afterwards through a webhook.
+/// </summary>
+public enum EmailDeliveryState
+{
+    Delivered,
+    /// <summary>The recipient's server deferred it; the provider is still trying.</summary>
+    Delayed,
+    Bounced,
+    /// <summary>The recipient marked it as spam.</summary>
+    Complained,
+    /// <summary>Not attempted: the address is on the provider's suppression list after an earlier bounce or complaint.</summary>
+    Suppressed,
+    Failed,
+}
+
 /// <summary>Whether a call is person-to-person or the room attached to a meeting.</summary>
 public enum CallKind
 {

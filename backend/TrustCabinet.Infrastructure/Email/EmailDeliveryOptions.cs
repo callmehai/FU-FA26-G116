@@ -24,7 +24,20 @@ public sealed class EmailDeliveryOptions
     /// </summary>
     public string[] UndeliverableDomains { get; set; } = [];
 
+    /// <summary>Which transport sends the mail; SMTP stays for local development (ADR-0031).</summary>
+    public EmailProvider Provider { get; set; } = EmailProvider.Smtp;
+
     public SmtpOptions Smtp { get; set; } = new();
+
+    public ResendOptions Resend { get; set; } = new();
+
+    /// <summary>Whether the chosen transport is switched on. Off, nothing is sent and invitations wait.</summary>
+    public bool Enabled => Provider switch
+    {
+        EmailProvider.Smtp => Smtp.Enabled,
+        EmailProvider.Resend => Resend.Enabled,
+        _ => false,
+    };
 
     public bool IsUndeliverable(string address)
     {
@@ -34,6 +47,12 @@ public sealed class EmailDeliveryOptions
         return UndeliverableDomains.Any(blocked =>
             string.Equals(domain, blocked.Trim().TrimEnd('.'), StringComparison.OrdinalIgnoreCase));
     }
+}
+
+public enum EmailProvider
+{
+    Smtp,
+    Resend,
 }
 
 public enum SmtpSecurityMode
@@ -62,4 +81,26 @@ public sealed class SmtpOptions
     public string FromName { get; set; } = "TrustCabinet";
 
     public int TimeoutSeconds { get; set; } = 30;
+}
+
+/// <summary>Resend's HTTP API (ADR-0031). The key and the webhook secret are secrets: environment variables only.</summary>
+public sealed class ResendOptions
+{
+    public bool Enabled { get; set; }
+
+    public string ApiUrl { get; set; } = "https://api.resend.com/";
+
+    /// <summary>A sending-only key, restricted to the verified domain.</summary>
+    public string ApiKey { get; set; } = string.Empty;
+
+    /// <summary>An address on the domain verified in Resend.</summary>
+    public string FromAddress { get; set; } = string.Empty;
+
+    public string FromName { get; set; } = "TrustCabinet";
+
+    /// <summary>
+    /// The <c>whsec_…</c> signing secret of the webhook that reports delivery. Empty, the webhook answers 503 and
+    /// messages stay at <see cref="TrustCabinet.Domain.Enums.EmailStatus.Sent"/> with no delivery state.
+    /// </summary>
+    public string WebhookSecret { get; set; } = string.Empty;
 }

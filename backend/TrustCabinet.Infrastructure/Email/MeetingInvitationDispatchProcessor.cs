@@ -18,7 +18,7 @@ public sealed class MeetingInvitationDispatchProcessor(
 {
     public async Task<int> ProcessNextAsync(CancellationToken ct)
     {
-        if (!options.Value.Smtp.Enabled)
+        if (!options.Value.Enabled)
             return 0;
         var now = clock.GetUtcNow();
         var ids = await db
@@ -42,7 +42,7 @@ public sealed class MeetingInvitationDispatchProcessor(
 
     public async Task<int> ProcessAsync(Guid id, CancellationToken ct)
     {
-        if (!options.Value.Smtp.Enabled)
+        if (!options.Value.Enabled)
             return 0;
         var attempt = 0;
         try

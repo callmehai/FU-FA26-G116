@@ -216,6 +216,9 @@ app.MapTranscriptEndpoints();
 // SCRUM-35: the caller's own Voice ID.
 app.MapVoiceIdEndpoints();
 
+// SCRUM-15: Resend's delivery webhook (ADR-0031).
+app.MapEmailEndpoints();
+
 // Health endpoint — the frontend calls this to confirm the backend is alive.
 app.MapGet("/api/health", () => Results.Ok(new
 {

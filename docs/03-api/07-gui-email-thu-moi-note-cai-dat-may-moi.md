@@ -45,6 +45,12 @@ phải đổi password trong PostgreSQL hoặc tạo lại database dev có ch�
 
 ## 4. Cấu hình SMTP
 
+Server test gửi qua Resend ([ADR-0031](../05-decisions/0031-gui-email-qua-resend.md), cách cài ở
+[deploy/README.md §8](../../deploy/README.md#8-gửi-email-thật-tuỳ-chọn)). Máy dev thường không cần gửi thư thật; khi
+cần thì dùng SMTP như dưới đây (`Email:Provider` mặc định là `Smtp`), hoặc đặt `Email:Provider` = `Resend` với
+`Email:Resend:ApiKey`, `Email:Resend:FromAddress` và `Email:Resend:Enabled` = `true`. Webhook giao thư cần một URL
+công khai, nên máy dev không nhận được.
+
 Ví dụ Gmail dùng cổng 587 và STARTTLS. `Email:Smtp:Password` phải là App Password dành cho SMTP,
 không dùng mật khẩu đăng nhập Gmail thông thường. Email phải là chuỗi thuần, không ghi dạng
 `[email](mailto:email)`.
