@@ -173,6 +173,27 @@ trong kho đối tượng, chưa có class tương ứng (**PROPOSED**). `Meetin
 không vẽ thành class. `AuditLogRepository` phục vụ BR-318. Validator 0 lỗi; đã render và xem ảnh. PNG xuất bằng draw.io
 desktop, nhúng model ở chunk `zTXt`; chưa mở lại PNG bằng draw.io để kiểm tra roundtrip.
 
+## 6c. FE-07 — đối chiếu as-built · 27/10/2026
+
+Đợt BA Final Review của SCRUM-107 (UC-33a) và SCRUM-21 (UC-32a, UC-32c): đọc code đã merge rồi sửa **cục bộ** source
+FE-07 cho khớp, giữ nguyên ID, bố cục và các quan hệ khác. Ảnh `feature-07-document-management-class-diagram.drawio.png`
+đã xuất lại từ đúng source này (draw.io desktop, `--scale 2`, 4365×3279, không nhúng diagram) và đã xem lại ảnh.
+
+- `MeetingDocumentsTab`: `switchGrouping(byItem | general)` — nhóm Biểu quyết chưa có (chờ UC-74/SCRUM-96);
+  `uploadDocuments(meetingId, files[], pageCounts[])`.
+- `MeetingDocumentController` / `MeetingDocumentService`: bỏ `fromRoom` (máy chủ trả `currentAgendaItemId`, trình duyệt tự
+  đưa mục đang bàn lên đầu); `uploadDocuments(..., files, pageCounts, actor)`; `groupDocuments(documents, agenda)` — bỏ
+  tham số `votes`.
+- Thêm lớp `<<utility>> DocumentFileRules` (`validateFiles`, `detectContentType`, `uploadFolderName`, giới hạn 10 tệp /
+  200 MB mỗi lần, 50 MB mỗi tệp — BR-319, BR-187), vẽ cạnh phụ thuộc từ controller và service. Đây là lớp thật trong
+  `TrustCabinet.Domain/Documents`, không phải lớp đề xuất.
+- `MeetingDocumentRepository`: `addStoredFiles`, `findUploadFolder`, `addFolder`, `addUpload` thay cho `addUploads(...)`,
+  đúng thứ tự "ghi dòng tệp lưu trữ → đẩy byte → transaction khoá cuộc họp" của ADR-0024 §4.
+- Xoá lớp `FolderRepository` (code dùng chung `MeetingDocumentRepository` cho thư mục) và hai cạnh nối tới nó.
+
+Phần **chưa** khớp code và vẫn giữ nguyên vì thuộc UC khác: `Comment`, `DocumentVersion`, `DocumentShare` và các thao tác
+bình luận (UC-35/SCRUM-23), gắn/bỏ gắn mục nghị sự (UC-33b–33d/SCRUM-58).
+
 ## 7. Rà soát hiện trạng · 14/10/2026
 
 Đã đọc 7 source DCD, 44 sequence `.txt` theo feature, các README tương ứng, UC/BR/Entity Descriptions
