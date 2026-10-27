@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { getLibrary, getLibraryContent } from '../../api/library'
+import { getLibrary, getLibraryContent, getUserLibrary, getUserLibraryContent } from '../../api/library'
 import { Icon } from '../../components/Icon'
 import { NotFound } from '../../components/NotFound'
 import { errorMessage, isApiError } from '../../lib/errors'
@@ -22,10 +22,11 @@ type State =
 /**
  * A document of one's own library, full screen, drawn as a meeting document is (SCRUM-111). Its name and type
  * come from the folder it is listed in (`?folder=`), its bytes from the content endpoint; someone else's or a
- * deleted document answers 404 MSG175, which shows the shared NotFound.
+ * deleted document answers 404 MSG175, which shows the shared NotFound. With a `userId` in the route it is a
+ * deactivated person's document, read by an administrator (SCRUM-113): the same screen, from that library.
  */
 export function LibraryViewerPage() {
-  const { documentId = '' } = useParams()
+  const { documentId = '', userId } = useParams()
   const [params] = useSearchParams()
   const folderId = params.get('folder') || null
   const handleAccessLost = useAccessLost()
@@ -36,7 +37,10 @@ export function LibraryViewerPage() {
 
   useEffect(() => {
     let live = true
-    Promise.all([getLibrary(folderId), getLibraryContent(documentId)])
+    const read = userId
+      ? Promise.all([getUserLibrary(userId, folderId), getUserLibraryContent(userId, documentId)])
+      : Promise.all([getLibrary(folderId), getLibraryContent(documentId)])
+    read
       .then(([view, blob]) => {
         if (!live) return
         const doc = view.documents.find((d) => d.id === documentId)
@@ -49,10 +53,12 @@ export function LibraryViewerPage() {
     return () => {
       live = false
     }
-  }, [documentId, folderId, attempt, handleAccessLost])
+  }, [documentId, userId, folderId, attempt, handleAccessLost])
 
   if (state.kind === 'gone') return <NotFound />
-  const back = `${routes.documents}${folderId ? `?folder=${folderId}` : ''}`
+  const back = userId
+    ? routes.userLibrary(userId, folderId)
+    : `${routes.documents}${folderId ? `?folder=${folderId}` : ''}`
 
   return (
     <div className="viewer">

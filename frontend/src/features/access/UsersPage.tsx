@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { listRoles } from '../../api/roles'
 import { changeUserStatus, getUser, listUsers, requestPasswordReset } from '../../api/users'
 import { Badge } from '../../components/Badge'
@@ -11,6 +11,7 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { avatarColors, initials } from '../../lib/avatar'
 import { formatDate } from '../../lib/format'
+import { routes } from '../../lib/routes'
 import { useSearchBox } from '../../lib/useSearchBox'
 import type { RoleRecord } from '../../types/role'
 import type { UserAccount, UserMutationResponse } from '../../types/user'
@@ -416,6 +417,27 @@ export function UsersPage() {
                           >
                             <Icon name="key" size={16} />
                           </button>
+                          {/* SCRUM-113: an active person's library stays theirs; a deactivated one's is read here. */}
+                          {u.isActive ? (
+                            <button
+                              type="button"
+                              className="icon-button icon-button-sm"
+                              disabled
+                              data-tooltip="Chỉ xem được kho của tài khoản đã vô hiệu hoá"
+                              aria-label={`Xem kho tài liệu của ${u.fullName}`}
+                            >
+                              <Icon name="folder" size={16} />
+                            </button>
+                          ) : (
+                            <Link
+                              to={routes.userLibrary(u.id)}
+                              className="icon-button icon-button-sm"
+                              data-tooltip="Xem kho tài liệu"
+                              aria-label={`Xem kho tài liệu của ${u.fullName}`}
+                            >
+                              <Icon name="folder" size={16} />
+                            </Link>
+                          )}
                         </span>
                       </td>
                     </tr>

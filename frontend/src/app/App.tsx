@@ -36,6 +36,9 @@ const DocumentsPage = lazy(() =>
 const LibraryViewerPage = lazy(() =>
   import('../features/documents/LibraryViewerPage').then((m) => ({ default: m.LibraryViewerPage })),
 )
+const UserLibraryPage = lazy(() =>
+  import('../features/documents/UserLibraryPage').then((m) => ({ default: m.UserLibraryPage })),
+)
 const VoicePage = lazy(() => import('../features/voice/VoicePage').then((m) => ({ default: m.VoicePage })))
 
 /**
@@ -66,6 +69,14 @@ export function App() {
           {/* Full screen too; an unreadable meeting or document renders NotFound. */}
           <Route path={routes.meetingDocument(':meetingId', ':documentId')} element={<DocumentViewerPage />} />
           <Route path={routes.libraryDocument(':documentId')} element={<LibraryViewerPage />} />
+          <Route
+            path={routes.userLibraryDocument(':userId', ':documentId')}
+            element={
+              <RequireCapability cap="AdminUsers">
+                <LibraryViewerPage />
+              </RequireCapability>
+            }
+          />
           <Route element={<AppShell />}>
             {/* Inside the guard and the shell: following an old /mgmt link must not remount either —
                 that would drop the notification connection. */}
@@ -84,6 +95,14 @@ export function App() {
               element={
                 <RequireCapability cap="AdminUsers">
                   <UsersPage />
+                </RequireCapability>
+              }
+            />
+            <Route
+              path={routes.userLibrary(':userId')}
+              element={
+                <RequireCapability cap="AdminUsers">
+                  <UserLibraryPage />
                 </RequireCapability>
               }
             />

@@ -45,8 +45,8 @@ hay chuyển đi giữa lúc đang ghi vào.
       "folderId": null, "createdAt": "…", "meetingCount": 2
     }
   ],
-  "usedBytes": 81234,
-  "quotaBytes": 1073741824
+  "storageUsedBytes": 81234,
+  "storageLimitBytes": 10737418240
 }
 ```
 
@@ -132,7 +132,7 @@ dòng kho nào và không còn cuộc họp nào đang dùng (BR-213).
 ## Quản trị viên đọc kho của tài khoản đã khoá
 
 PO chốt 27/10/2026: để lấy lại tài liệu khi người dùng nghỉ, Quản trị viên đọc được kho của **tài khoản đã khoá**; chủ kho
-không đăng nhập được nên không tự đọc. **Phạm vi mới, chưa có UC/BR** — BA bổ sung ở BA Final Review.
+không đăng nhập được nên không tự đọc. Đặc tả: UC-34b (BA viết ở PR #166). Màn FE: SCRUM-113.
 
 | Endpoint | Ghi chú |
 |---|---|
@@ -147,7 +147,7 @@ không đăng nhập được nên không tự đọc. **Phạm vi mới, chưa 
   Ai xem được cuộc họp thì mở tệp qua cuộc họp, nơi áp đủ luật của nó: Mật không tải xuống (BR-188), bản đã gỡ không còn
   (BR-211), kiểm toán `document.*` kèm mức mật. Nếu không, tệp tải từ máy vào một cuộc họp Mật — vốn tự vào kho của
   người tải — sẽ tải về được qua đây.
-  `usedBytes` vẫn tính cả phần bị ẩn.
+  `storageUsedBytes` là của cả hệ thống, nên tính cả phần bị ẩn.
 - **Mỗi lần đọc ghi một dòng kiểm toán** `library.read`, `objectType` `User`, `objectId` là chủ kho, `details` có
   `folderId` (xem danh sách) hoặc `documentId` + `fileName` (mở tệp). Không ghi được kiểm toán thì không trả dữ liệu
   (`500 MSG176` / `503 MSG158`). Chỉ đọc; Quản trị viên không sửa, chuyển hay xoá được gì trong kho này.
@@ -165,6 +165,9 @@ không đăng nhập được nên không tự đọc. **Phạm vi mới, chưa 
 - Tải lên: giống hộp tải lên của cuộc họp (kiểm 10 tệp / 200 MB / 50 MB trước khi gửi), qua hàng đợi ở trình duyệt, mỗi
   tệp một request ([ADR-0033](../05-decisions/0033-hang-doi-tai-len-o-trinh-duyet.md)). Mỗi tệp xong thì màn kho đọc lại vị
   trí và dung lượng.
+- Kho của tài khoản đã khoá (SCRUM-113): nút "Xem kho tài liệu" ở màn Người dùng, chỉ bật với tài khoản đã vô hiệu hoá;
+  màn `/mgmt/admin/users/{userId}/library?folder=` và trình xem `…/library/{documentId}` chỉ đọc (mở, tải về). `MSG175`
+  ở gốc kho (tài khoản vừa được kích hoạt lại) → báo và về màn Người dùng; ở một thư mục → về gốc kho đó.
 
 ## Kiểm thử
 
