@@ -236,9 +236,10 @@ Mặc định tắt. Server gửi qua Resend, từ `no-reply@<SITE_ADDRESS>`
 ([ADR-0031](../docs/05-decisions/0031-gui-email-qua-resend.md)). Làm một lần:
 
 1. **Tên miền gửi.** Trên [resend.com](https://resend.com) → *Domains* → *Add Domain*, nhập đúng `SITE_ADDRESS`
-   (ví dụ `trustcabinet.workspace-hub.space`). Resend đưa ra 3 bản ghi: TXT `resend._domainkey` (DKIM), MX và TXT
-   `send` (SPF). Thêm chúng ở Namecheap → *Advanced DNS*. Ô *Host* chỉ ghi phần trước tên miền gốc, ví dụ
-   `resend._domainkey.trustcabinet` và `send.trustcabinet`. Chờ Resend báo *Verified*.
+   (ví dụ `trustcabinet.workspace-hub.space`), region Tokyo (gần server Singapore). Resend đưa ra 3 bản ghi: TXT
+   `resend._domainkey` (DKIM), CNAME `rsend` và CNAME `send` (SPF, địa chỉ nhận thư dội). Thêm chúng ở Namecheap →
+   *Advanced DNS*. Ô *Host* chỉ ghi phần trước tên miền gốc, ví dụ `resend._domainkey.trustcabinet`,
+   `rsend.trustcabinet`, `send.trustcabinet`; giá trị chép đúng từ trang của Resend. Chờ Resend báo *Verified*.
 2. **API key.** *API Keys* → *Create*, quyền **Sending access**, chỉ trên tên miền vừa xác minh. Key chỉ hiện một
    lần.
 3. **Webhook.** *Webhooks* → *Add Endpoint*: URL `https://<SITE_ADDRESS>/api/email/resend/webhook`, chọn các sự kiện
