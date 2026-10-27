@@ -52,7 +52,7 @@ public static class DocumentCommentEndpoints
             // meeting: the same answer (BR-211, BR-284).
             CommentFailure.NotFound => (404, Msg156DocumentsUnavailable, "Không truy cập được tài liệu của cuộc họp."),
             CommentFailure.Ended => (409, Msg251CommentsReadOnly, "Cuộc họp đã kết thúc nên góp ý chỉ còn để đọc."),
-            CommentFailure.Cancelled => (409, Msg349MeetingCancelled, "Cuộc họp đã huỷ nên tài liệu và góp ý chỉ còn để đọc."),
+            CommentFailure.Cancelled => (409, Msg349MeetingCancelled, "Cuộc họp đã huỷ nên không thay đổi được nữa."),
             CommentFailure.ReadFailed => (500, Msg204CommentsLoadFailed, "Không tải được góp ý của tài liệu. Vui lòng thử lại."),
             _ => (503, Msg202CommentFailed, "Không gửi được góp ý. Chưa có góp ý nào được lưu. Vui lòng thử lại."),
         };

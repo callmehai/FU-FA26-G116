@@ -142,6 +142,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 | `MSG164` | 400 | Không có tệp, không phải multipart, multipart hỏng, hoặc tệp có đuôi khác `.pdf`/`.docx` / nội dung không khớp đuôi / rỗng / quá 50 MB; `errors["files[i]"]` | Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB. |
 | `MSG166` | 503 | R2/DB lỗi hoặc chưa cấu hình kho tệp; đã xoá object của lần tải | Không thêm được tài liệu. Chưa có tài liệu nào được thêm. Vui lòng thử lại. |
 | `MSG172` | 409 | Cuộc họp `Ended`, kể cả khi vừa kết thúc trong lúc tải | Không thể thêm tài liệu sau khi cuộc họp đã kết thúc. |
+| `MSG349` | 409 | Cuộc họp `Cancelled` (BR-299) | Cuộc họp đã huỷ nên không thay đổi được nữa. |
 | `MSG174` | 404 | Không xem được cuộc họp hoặc cuộc họp không tồn tại (cùng body) | Không truy cập được cuộc họp này. |
 | `MSG288` | 400 | Quá 10 tệp hoặc tổng quá 200 MB (BR-319) | Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 200 MB. |
 
@@ -192,7 +193,6 @@ dòng nguồn UC phía dưới giữ để truy vết. Không cấp mã mới.
 | `MSG346` | 409 | Tải lên làm kho vượt 1 GB (PO 27/10/2026); không tệp nào được thêm | Kho tài liệu của bạn chỉ chứa tối đa 1 GB. Chưa có tài liệu nào được tải lên. |
 | `MSG347` | 400 | Đổi tên tài liệu: tên trống hoặc chỉ có phần đuôi, có ký tự điều khiển, dài quá 255 ký tự, hoặc đổi phần đuôi `.pdf`/`.docx` | Tên tài liệu không hợp lệ. Tên không được trống và phải giữ phần đuôi .pdf hoặc .docx của tệp. |
 | `MSG348` | 400 | Tên thư mục quá 400 ký tự; góp ý quá 4.000 ký tự (SCRUM-23) | Nội dung vượt quá độ dài cho phép. |
-| `MSG349` | 409 | Cuộc họp đã huỷ (SCRUM-99): tải lên, thêm từ kho, gỡ, gắn, gỡ liên kết tài liệu và gửi góp ý (SCRUM-23) đều bị từ chối | Cuộc họp đã huỷ nên tài liệu và góp ý chỉ còn để đọc. |
 
 Dùng lại cho cùng tình huống: `MSG164`/`MSG288` (tải lên kho, như UC-33a AF-1), `MSG158`/`MSG160` (mở tệp trong kho
 lỗi, như UC-32c).
@@ -243,7 +243,7 @@ Dùng lại cho cùng tình huống: `MSG161`/`MSG162`/`MSG166`/`MSG172` (thêm 
 
 ## Mã tiếp theo
 
-**`MSG350`** — SCRUM-58 dùng `MSG346` (vượt hạn mức kho 1 GB), `MSG347` (tên tài liệu không hợp lệ), `MSG348` (nội dung vượt độ dài cho phép, dùng chung với SCRUM-23), `MSG349` (cuộc họp đã huỷ: tài liệu và góp ý chỉ còn để đọc, dùng chung với SCRUM-23). Huỷ cuộc họp (SCRUM-99, UC-75) dùng `MSG261`–`MSG264` đã dành sẵn và `MSG345` (lý do quá dài). Thông báo FE của phòng họp trực tuyến (SCRUM-41) dùng `MSG328`–`MSG344`. Bản ghi cuộc họp (SCRUM-29) dùng `MSG290`–`MSG298`; gỡ băng (SCRUM-31) dùng `MSG299`–`MSG304`; Voice ID (SCRUM-35) dùng `MSG305`–`MSG317`; ghi âm theo micro từng người (SCRUM-109) dùng `MSG318`–`MSG327`. `MSG288` (UC-33a EX-8, giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026) đã triển khai cùng `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174` trong SCRUM-107. SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG265`–`MSG270` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG249` và `MSG251` dành sẵn, chưa triển khai, cho ADR-0020; `MSG250` ngừng dùng. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3; trong dải này SCRUM-107 đã triển khai `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, SCRUM-21 đã triển khai `MSG156`–`MSG160`, phần còn lại chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`/`MSG146` dành cho thay đổi FE-06 trong Report 3; `MSG147`–`MSG151` đã triển khai trong SCRUM-26; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG142`–`MSG143`, `MSG271`–`MSG274` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG351`** — `MSG346`–`MSG348` đã cấp cho kho tài liệu cá nhân và góp ý tài liệu (SCRUM-58, SCRUM-23, PR #169), chưa lên `main`. Cuộc họp đã huỷ là trạng thái cuối (BR-299): thay đổi bị từ chối bằng `MSG349` (tải tài liệu lên, đổi cách ghi âm; gắn/gỡ tài liệu và góp ý trên cuộc họp đã huỷ dùng lại mã này), phòng họp trực tuyến báo `MSG350` (FE). Huỷ cuộc họp (SCRUM-99, UC-75) dùng `MSG261`–`MSG264` đã dành sẵn và `MSG345` (lý do quá dài). Thông báo FE của phòng họp trực tuyến (SCRUM-41) dùng `MSG328`–`MSG344`. Bản ghi cuộc họp (SCRUM-29) dùng `MSG290`–`MSG298`; gỡ băng (SCRUM-31) dùng `MSG299`–`MSG304`; Voice ID (SCRUM-35) dùng `MSG305`–`MSG317`; ghi âm theo micro từng người (SCRUM-109) dùng `MSG318`–`MSG327`. `MSG288` (UC-33a EX-8, giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026) đã triển khai cùng `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174` trong SCRUM-107. SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG265`–`MSG270` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG249` và `MSG251` dành sẵn, chưa triển khai, cho ADR-0020; `MSG250` ngừng dùng. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3; trong dải này SCRUM-107 đã triển khai `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, SCRUM-21 đã triển khai `MSG156`–`MSG160`, phần còn lại chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`/`MSG146` dành cho thay đổi FE-06 trong Report 3; `MSG147`–`MSG151` đã triển khai trong SCRUM-26; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG142`–`MSG143`, `MSG271`–`MSG274` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -390,7 +390,8 @@ mã mới.
 Các câu phòng họp tự hiện (không có response từ server) dùng `MSG328`–`MSG344`, khai báo một chỗ trong
 `roomMessage` ở `frontend/src/features/calls/room/roomSupport.ts`. Màn chờ đọc trạng thái phòng từ
 `GET …/call`: trạng thái `NotStarted`, `InPersonOnly` và phòng chưa cấu hình LiveKit là đúng tình huống
-`POST …/call/join` từ chối, nên dùng lại `MSG117`, `MSG280`, `MSG281`; trạng thái `Ended` dùng `MSG331`.
+`POST …/call/join` từ chối, nên dùng lại `MSG117`, `MSG280`, `MSG281`; trạng thái `Ended` dùng `MSG331`, `Cancelled` dùng
+`MSG350`.
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
@@ -420,6 +421,7 @@ Các câu phòng họp tự hiện (không có response từ server) dùng `MSG3
 | `MSG342` | — | — (FE, sau `POST …/call/participants/{userId}/mute` thành công) | Chủ toạ tắt micro người khác thành công; endpoint trả `204` không body | `Đã tắt micro của {tên}.` | FE |
 | `MSG343` | — | — (FE, chat trong phòng) | Gửi tin nhắn chat qua LiveKit không thành; nội dung đang soạn được giữ | `Không gửi được tin nhắn. Vui lòng thử lại.` | FE |
 | `MSG344` | — | — (FE, hộp thoại Rời phòng) | Thư ký đang ghi âm cả cuộc gọi (SCRUM-44) nên nút Rời phòng bị khoá | `Bạn đang ghi âm cuộc họp. Bấm Dừng và lưu ở panel Bản ghi trước khi rời phòng.` | FE |
+| `MSG350` | — | — (FE, màn chờ khi `GET …/call` trả `Cancelled`) | Mở link phòng họp của một cuộc họp đã huỷ; không có nút Vào | `Cuộc họp đã huỷ nên phòng họp không mở.` | FE |
 
 Người không được mời vào phòng **không có mã**: API trả `404` không body, như cuộc họp không tồn
 tại.
@@ -747,7 +749,6 @@ Các mã dưới đây cấp cho đặc tả ngày 14/10/2026; trạng thái the
 | `MSG346` | UC-36, PO 27/10/2026 (hạn mức kho 1 GB) · Đã triển khai SCRUM-111, chờ BA bổ sung đặc tả | Your personal library is limited to 1 GB. No documents were uploaded. |
 | `MSG347` | UC-71b (tên phải giữ phần đuôi của tệp) · Đã triển khai SCRUM-111, chờ BA bổ sung đặc tả | The document name is not valid. It must not be blank and must keep the .pdf or .docx extension of the file. |
 | `MSG348` | UC-72a, UC-72b, UC-35 (độ dài tối đa) · Đã triển khai SCRUM-110, SCRUM-23, chờ BA bổ sung đặc tả | The text is longer than allowed. |
-| `MSG349` | UC-33a–d, UC-35 (cuộc họp đã huỷ, UC-75) · Đã triển khai SCRUM-58, SCRUM-23, chờ BA bổ sung đặc tả | The meeting was cancelled, so its documents and comments are read-only. |
 
 
 ### Biểu quyết — FE-11 (UC-52a, UC-52b, UC-53–UC-57)

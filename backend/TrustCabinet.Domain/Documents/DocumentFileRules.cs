@@ -58,7 +58,10 @@ public static class DocumentFileRules
     public static string UploadFolderName(Meeting meeting)
         => $"{meeting.Title} – {meeting.PlannedStartTime.ToOffset(TimeSpan.FromHours(7)).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)}";
 
-    /// <summary>Who may upload right now: the meeting's current Chair or Secretary, until it ends or is cancelled (BR-184, BR-195).</summary>
+    /// <summary>
+    /// Who may upload right now: the meeting's current Chair or Secretary, until it ends (BR-184, BR-195) or is
+    /// cancelled (BR-299).
+    /// </summary>
     public static DocumentUploadFailure UploadAccess(Meeting? meeting, Guid actorId, bool actorActive)
     {
         if (!actorActive) return DocumentUploadFailure.Inactive;

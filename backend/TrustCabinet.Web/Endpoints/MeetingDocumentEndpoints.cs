@@ -402,7 +402,7 @@ public static class MeetingDocumentEndpoints
             DocumentUploadFailure.NotFound => (404, Msg174MeetingUnavailable, "Không truy cập được cuộc họp này."),
             DocumentUploadFailure.Forbidden => (403, codes.Forbidden, codes.ForbiddenMessage),
             DocumentUploadFailure.Ended => (409, codes.Ended, codes.EndedMessage),
-            DocumentUploadFailure.Cancelled => (409, Msg349MeetingCancelled, "Cuộc họp đã huỷ nên tài liệu và góp ý chỉ còn để đọc."),
+            DocumentUploadFailure.Cancelled => (409, Msg349MeetingCancelled, "Cuộc họp đã huỷ nên không thay đổi được nữa."),
             DocumentUploadFailure.Invalid => (400, Msg164InvalidFiles, "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB."),
             DocumentUploadFailure.TooMany => (400, Msg288SubmissionTooLarge, "Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 200 MB."),
             DocumentUploadFailure.LibraryUnavailable => (400, Msg249LibrarySelectionInvalid,

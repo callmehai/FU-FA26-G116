@@ -29,9 +29,7 @@ public interface IFileStorage
 /// </summary>
 public enum DocumentUploadFailure
 {
-    None, NotFound, Inactive, Forbidden, Ended, Invalid, TooMany, StoreFailed,
-    /// <summary>The meeting was cancelled: its documents and links are read-only, like an ended one's.</summary>
-    Cancelled,
+    None, NotFound, Inactive, Forbidden, Ended, Cancelled, Invalid, TooMany, StoreFailed,
     /// <summary>A selected library document is missing or not the actor's (BR-209).</summary>
     LibraryUnavailable,
     /// <summary>A selected library document's file is already in the meeting (BR-193).</summary>
