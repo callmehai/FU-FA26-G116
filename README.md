@@ -1,33 +1,66 @@
 # TrustCabinet
 
-Hệ thống **phòng họp không giấy ứng dụng AI**, có tích hợp **gọi thoại/video trong ứng dụng**.
+Hệ thống **phòng họp không giấy ứng dụng AI**, có **phòng họp trực tuyến và gọi thoại/video ngay
+trong ứng dụng**.
 
-Đồ án tốt nghiệp — **SEP490-G116**. Nghiệp vụ tham chiếu từ hệ thống AI-eCabinet (SmartMeet);
-TrustCabinet là bản hiện thực độc lập trên nền .NET, có điều chỉnh phạm vi cho phù hợp đồ án.
+Đồ án tốt nghiệp **SEP490-G116**.
 
-> **Trạng thái: v0.1.0 — khung giao diện và mô hình dữ liệu đầy đủ.** Đã có khung giao diện chạy
-> trên dữ liệu mẫu, endpoint `/api/health`, và cơ sở dữ liệu 28 bảng. Xác thực
-> vẫn giả lập phía trình duyệt, và **chưa có endpoint nghiệp vụ nào** — bảng đã có, chưa có code
-> đọc ghi.
+## Hệ thống làm được gì
 
-## Chạy thử
+Một cuộc họp đi trọn vòng đời trong một ứng dụng: Thư ký lập lịch và mời thành phần, Chủ toạ phê
+duyệt, mọi người đọc tài liệu và góp ý trước, vào họp trực tiếp hoặc trực tuyến, rồi bản ghi được
+chuyển thành văn bản để làm biên bản.
 
-Cần **.NET SDK 10** (bản pin trong [global.json](global.json), tải tại
-<https://dotnet.microsoft.com/download/dotnet/10.0>) và **Node.js** (tải tại <https://nodejs.org>).
+| Mảng | Trạng thái |
+|---|---|
+| Đăng nhập (email + mật khẩu, Google), quản lý người dùng, phân quyền theo vai trò | Đã có |
+| Lập lịch, phê duyệt, huỷ cuộc họp; lịch họp; mời thành phần, xác nhận tham dự | Đã có |
+| Chương trình nghị sự, điểm danh | Đã có |
+| Tài liệu cuộc họp (phiên bản, phân quyền đọc, góp ý), kho tài liệu cá nhân | Đã có |
+| Phòng họp trực tuyến (thoại, video, chia sẻ màn hình) qua LiveKit tự host | Đã có |
+| Ghi âm, chuyển giọng nói tiếng Việt thành chữ, tách người nói | Đã có |
+| Voice ID — gợi ý tên người nói, chỉ khi người đó đồng ý | Đã có |
+| Thông báo trong ứng dụng (realtime) và email | Đã có |
+| Biểu quyết, biên bản và phê duyệt biên bản, tóm tắt bằng AI | Chưa làm |
+
+Nhận dạng giọng nói chạy trên máy chủ của nhóm, âm thanh không gửi ra dịch vụ AI bên ngoài
+([ADR-0026](docs/05-decisions/0026-tu-chay-nhan-dang-giong-noi.md)). Giọng nói dùng để nhận dạng
+một người là dữ liệu sinh trắc học, nên Voice ID chỉ chạy khi người đó đồng ý và rút lại được
+bất cứ lúc nào ([ADR-0027](docs/05-decisions/0027-voice-id-co-dong-y.md)).
+
+## Dùng thử
+
+Bản chạy sẵn của nhánh `main`: <https://trustcabinet.workspace-hub.space>. Mật khẩu chung
+`TrustCabinet@2026`:
+
+| Email | Vai trò |
+|---|---|
+| `quantri@trustcabinet.local` | Quản trị |
+| `chutoa@trustcabinet.local` | Chủ toạ |
+| `thuky@trustcabinet.local` | Thư ký |
+| `thanhvien@trustcabinet.local` | Thành viên |
+
+Đây là môi trường test, ai có URL cũng vào được — **chỉ nhập dữ liệu giả**. Cách deploy và dựng lại
+server: [deploy/README.md](deploy/README.md).
+
+## Chạy ở máy mình
+
+Cần **.NET SDK 10** (bản pin trong [global.json](global.json)), **Node.js** và **Docker**.
 
 Lần đầu:
 
 ```bash
-dotnet restore
-dotnet tool restore
+cp .env.example .env            # rồi đặt mật khẩu của riêng bạn
+docker compose up -d            # PostgreSQL, Redis, SeaweedFS (kho tệp), LiveKit
+dotnet restore && dotnet tool restore
 cd frontend && npm install
 ```
 
-Backend cần một PostgreSQL và một chuỗi kết nối trước khi chạy được — repo có sẵn
-`docker-compose.yml`, các bước ở
-[docs/02-design/03-co-so-du-lieu.md](docs/02-design/03-co-so-du-lieu.md).
+Chuỗi kết nối và các secret khác đặt bằng `dotnet user-secrets`, không để trong repo — các bước ở
+[docs/02-design/03-co-so-du-lieu.md](docs/02-design/03-co-so-du-lieu.md). Thiếu chuỗi kết nối thì
+backend cố ý không khởi động.
 
-Khi dev, chạy **hai tiến trình** ở hai terminal:
+Chạy **hai tiến trình** ở hai terminal:
 
 ```bash
 # Terminal 1 — backend, cổng 5225
@@ -37,173 +70,89 @@ dotnet run --project backend/TrustCabinet.Web
 cd frontend && npm run dev
 ```
 
-Mở <http://localhost:5173>. Vite proxy `/api` và `/hubs` sang backend nên trình duyệt chỉ thấy
-một origin — không cần cấu hình CORS.
+Mở <http://localhost:5173>. Vite proxy `/api` và `/hubs` sang backend nên trình duyệt chỉ thấy một
+origin — không cần CORS. Ở môi trường Development, app tự chạy migration và seed bốn tài khoản như
+bảng trên.
 
-Ở màn đăng nhập, **bấm thẳng nút "Đăng nhập" là vào**, không cần điền gì: chưa có cơ sở dữ liệu
-nên xác thực đang được giả lập. Ô "Vai trò" dùng để thử phân quyền — đổi vai trò sẽ thấy menu và
-nút bấm thay đổi theo.
-
-Muốn chạy bằng một tiến trình duy nhất (giống lúc triển khai): build frontend rồi chạy backend,
-lúc đó vào <http://localhost:5225>.
+Chuyển giọng nói thành chữ cần thêm worker nhận dạng (tải model ~110 MB lần đầu):
 
 ```bash
-cd frontend && npm run build   # xuất vào backend/TrustCabinet.Web/wwwroot/
-dotnet run --project backend/TrustCabinet.Web
+docker compose --profile speech up -d --build
 ```
 
-## Server test chung
-
-Nhóm có một bản chạy sẵn trên AWS để test bằng trình duyệt, luôn theo nhánh `main`. Tài khoản test,
-cách cập nhật và cách dựng lại server: [deploy/README.md](deploy/README.md).
+Chi tiết: [workers/speech/README.md](workers/speech/README.md).
 
 ## Kiểm tra trước khi mở PR
 
 ```bash
-dotnet build TrustCabinet.sln     # build backend
-dotnet test TrustCabinet.sln      # test backend
-cd frontend && npm run lint       # oxlint
-cd frontend && npm run build      # tsc -b + vite build
+dotnet build TrustCabinet.sln -warnaserror   # CI coi cảnh báo là lỗi
+dotnet test TrustCabinet.sln
+cd frontend && npm run lint                  # oxlint
+cd frontend && npm run build                 # tsc -b + vite build
 ```
 
-CI chạy đúng bốn lệnh này trên mọi pull request
-([.github/workflows/ci.yml](.github/workflows/ci.yml)).
+CI chạy đúng bốn bước này trên mọi pull request
+([.github/workflows/ci.yml](.github/workflows/ci.yml)); merge vào `main` xong thì server test tự
+cập nhật.
 
-> **Không commit chuỗi kết nối, API key hay mật khẩu.** `appsettings.json` được commit và repo
-> đang để public, nên secret không nằm ở đó. Dùng
-> `dotnet user-secrets set "ConnectionStrings:TrustCabinet" "..."` ở máy mình, và biến môi trường khi
-> triển khai.
+> **Không commit chuỗi kết nối, API key hay mật khẩu.** Repo để public. Dùng `dotnet user-secrets`
+> ở máy mình và biến môi trường khi triển khai.
 
 ## Quy trình làm việc
 
-Nhóm chạy theo Sprint 1 tuần, xử lý từng Use Case theo đường ống BE → FE → BA chốt tài liệu →
-Tester, không làm xong hết tài liệu rồi mới code. Chi tiết — ai bàn giao gì cho ai, Definition of
-Done, quy ước branch/PR — nằm trong [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md). Đọc trước khi
-bắt tay vào việc đầu tiên.
-
-Jira (project `SCRUM`) là nguồn sự thật cho yêu cầu, user story và kế hoạch Sprint.
+Sprint 1 tuần, mỗi Use Case đi qua BE → FE → BA chốt tài liệu → Tester. Ai bàn giao gì cho ai,
+Definition of Done, quy ước branch/PR: [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md).
+Jira (project `SCRUM`) là nguồn sự thật cho yêu cầu và kế hoạch Sprint.
 
 ## Cấu trúc
 
 ```
-TrustCabinet.sln
-global.json                      # pin phiên bản .NET SDK cho cả nhóm
-dotnet-tools.json                # pin dotnet-ef cho cả nhóm
-.editorconfig                    # quy ước format chung, mọi IDE đều đọc
-.github/workflows/ci.yml         # CI: build + test backend, lint + build frontend
-docker-compose.yml               # PostgreSQL cho môi trường dev
-.env.example                     # mẫu biến môi trường — chép thành .env, .env không commit
-AGENTS.md                        # hướng dẫn cho AI coding agent (CLAUDE.md trỏ về đây)
 backend/
   TrustCabinet.Domain/           # entity và enum — không phụ thuộc EF Core
   TrustCabinet.Infrastructure/   # DbContext, cấu hình bảng, migration, seed
-  TrustCabinet.Web/              # ASP.NET Core 10 — API + phục vụ bản build của frontend
-    Program.cs                   # cấu hình pipeline, khai báo endpoint
-    appsettings.json             # chuỗi kết nối để trống — đặt bằng user-secrets
-    wwwroot/                     # sinh tự động từ `npm run build` — không commit
-frontend/                        # React 19 + Vite + TypeScript, chia theo feature
-  vite.config.ts                 # proxy sang backend khi dev, outDir về wwwroot khi build
+  TrustCabinet.Web/              # ASP.NET Core 10 — API, SignalR hub, worker nền
+    Endpoints/                   # endpoint theo từng mảng nghiệp vụ
+    wwwroot/                     # sinh từ `npm run build` — không commit
+frontend/                        # React 19 + Vite + TypeScript
   src/
-    main.tsx                     # điểm vào
     app/App.tsx                  # bảng route
-    lib/routes.ts                # bản đồ đường dẫn tập trung
-    features/                    # auth · meetings · access · calendar
-    components/                  # khung ứng dụng & UI dùng chung
-    api/                         # lớp gọi HTTP dùng chung
-    types/                       # kiểu dữ liệu khớp response của backend
-    styles/global.css            # design token + toàn bộ style
-tests/
-  TrustCabinet.Web.Tests/        # xunit — hiện mới có smoke test cho /api/health
+    features/                    # mỗi mảng nghiệp vụ một thư mục
+    components/                  # khung ứng dụng và UI dùng chung
+    api/  types/                 # lớp gọi HTTP và kiểu dữ liệu khớp response
+    styles/global.css            # design token và toàn bộ style
+workers/speech/                  # worker Python nhận dạng giọng nói (sherpa-onnx, chạy CPU)
+tests/TrustCabinet.Web.Tests/    # xunit
+deploy/                          # server test: Docker Compose + Caddy trên AWS Lightsail
 docs/                            # tài liệu đồ án — xem docs/README.md
-  DEVELOPMENT_WORKFLOW.md        # quy trình làm việc của nhóm — đọc trước khi bắt tay
+docker-compose.yml               # dịch vụ phụ trợ cho môi trường dev
+AGENTS.md                        # hướng dẫn cho AI coding agent (CLAUDE.md trỏ về đây)
 ```
-
-Giao diện theo phong cách hành chính: một sidebar dọc màu xanh, mọi màn dùng chung một khung. Lý
-do: xem [ADR-0012](docs/05-decisions/0012-giao-dien-hanh-chinh-sidebar-doc.md); khung ban đầu và
-ranh giới tham chiếu AI-eCabinet: xem
-[ADR-0002](docs/05-decisions/0002-khung-giao-dien-theo-ai-ecabinet.md).
-
-Vì sao tách `backend/` và `frontend/`: xem
-[ADR-0001](docs/05-decisions/0001-tach-frontend-backend.md).
-
-Khi lớp nghiệp vụ lớn dần, dự kiến tách thêm `backend/TrustCabinet.Application`.
 
 ## Công nghệ
 
-| Thành phần | Lựa chọn | Ghi chú |
-|---|---|---|
-| Backend | ASP.NET Core 10 (Minimal API) | đã có |
-| Frontend | React 19 + Vite + TypeScript | đã có |
-| Định tuyến FE | React Router | đã có |
-| Realtime | SignalR | thông báo đã có; biểu quyết — chưa làm |
-| Thoại/video | WebRTC qua LiveKit (SFU, tự host) | phòng họp — [ADR-0010](docs/05-decisions/0010-phong-hop-truc-tuyen-dung-livekit-sfu.md) |
-| Cơ sở dữ liệu | PostgreSQL 17 + EF Core 10 (Npgsql), code-first | 28 bảng — xem [02-erd.md](docs/02-design/02-erd.md) và [ADR-0003](docs/05-decisions/0003-chon-postgresql-thay-cho-sql-server.md) |
+| Thành phần | Lựa chọn |
+|---|---|
+| Backend | ASP.NET Core 10 (Minimal API) |
+| Frontend | React 19 + Vite + TypeScript, React Router |
+| Cơ sở dữ liệu | PostgreSQL 17 + EF Core 10, code-first — [ERD](docs/02-design/02-erd.md) |
+| Realtime | SignalR |
+| Thoại/video | WebRTC qua LiveKit SFU tự host — [ADR-0010](docs/05-decisions/0010-phong-hop-truc-tuyen-dung-livekit-sfu.md) |
+| Lưu tệp | SeaweedFS khi dev, Cloudflare R2 trên server test — [ADR-0024](docs/05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md) |
+| Nhận dạng giọng nói | sherpa-onnx, tự chạy — [ADR-0026](docs/05-decisions/0026-tu-chay-nhan-dang-giong-noi.md) |
+| Email | Resend — [ADR-0031](docs/05-decisions/0031-gui-email-qua-resend.md) |
 
-## Phạm vi chức năng dự kiến
+Mỗi lựa chọn kỹ thuật lớn có một ADR trong [docs/05-decisions/](docs/05-decisions/), ghi lý do và
+phương án đã loại.
 
-Mức ưu tiên: **(M)** bắt buộc · **(S)** nên có · **(C)** có thể có.
+## Ngoài phạm vi
 
-### Trước họp
-- (M) Tạo lịch họp, gửi thư mời, xác nhận tham dự
-- (M) Tải tài liệu, quản lý phiên bản, phân quyền đọc
-- (S) Góp ý trên tài liệu trước họp
-- (S) Biểu quyết bất đồng bộ (lấy ý kiến trước)
-
-### Trong họp
-- (M) Điều hành chương trình nghị sự
-- (M) Điểm danh, đăng ký phát biểu
-- (M) Biểu quyết trực tiếp, hiển thị kết quả
-- (M) Ghi âm phiên họp hoặc nhập file có sẵn
-- (S) Ghi chú thời gian thực cho thư ký
-
-### Sau họp
-- (M) Chuyển giọng nói thành văn bản (ASR tiếng Việt)
-- (M) Sinh biên bản, phê duyệt, lưu bản chốt
-- (S) Tách người nói, gán danh tính giọng — Voice ID có đồng ý, máy gợi ý tên, Thư ký xác nhận
-  ([ADR-0027](docs/05-decisions/0027-voice-id-co-dong-y.md))
-- (S) Tóm tắt nội dung cuộc họp bằng AI
-- (C) Ký số biên bản (PKI)
-- (C) Báo cáo, thống kê
-
-### Gọi trong ứng dụng — điểm khác biệt so với hệ thống gốc
-- (M) Gọi thoại 1–1 giữa các thành viên
-- (M) Gọi nhóm theo phòng họp
-- (S) Gọi video, bật/tắt mic & camera
-- (S) Chia sẻ màn hình khi trình bày
-- (C) Ghi lại cuộc gọi để đưa vào luồng ASR
-
-### Nền tảng dùng chung
-- (M) Đăng nhập, phân quyền theo vai trò (RBAC)
-- (M) Quản lý người dùng
-- (M) Thông báo trong ứng dụng & email
-- (S) Nhật ký kiểm toán các hành động quan trọng
-
-### Không làm
-
-Đã chốt là ngoài phạm vi, không đưa lại vào backlog:
-
-- Quản lý nhiệm vụ / action item — giao việc, hạn chót, trạng thái hoàn thành, nhắc việc.
-  TrustCabinet dừng ở biên bản đã chốt; việc theo dõi thực thi thuộc về hệ thống điều hành
-  công việc khác. Biên bản vẫn ghi phần "phân công" như văn bản, nhưng hệ thống không theo dõi
-  trạng thái của nó.
-- Đơn vị trực thuộc và cây phân cấp cha–con — hệ thống phục vụ **đúng một tổ chức**, không có bảng
-  tổ chức, không multi-tenant, không gán người dùng vào phòng ban. Mời họp là mời từng người. Lý do
-  đầy đủ trong [ADR-0004](docs/05-decisions/0004-mot-to-chuc-khong-co-don-vi.md).
-
-## Nhóm chức năng cân nhắc thu hẹp
-
-Tốn nhiều công và rủi ro cao cho một đồ án. Nếu tiến độ căng, cắt hoặc đơn giản hoá
-nhóm này trước tiên:
-
-- Ký số bằng USB token / HSM thật — thay bằng ký mô phỏng để trình diễn
-- Trợ lý AI hỏi đáp xuyên nguồn, có trích dẫn
-- Triển khai mạng cô lập (air-gapped). Riêng nhận dạng giọng nói **đã tự chạy** trong hệ thống
-  ([ADR-0026](docs/05-decisions/0026-tu-chay-nhan-dang-giong-noi.md)), theo nhận xét hội đồng 17/10/2026
-- Tích hợp hệ thống eOffice bên ngoài
-
-Danh sách này chưa chốt — thống nhất lại với giảng viên hướng dẫn trước khi khoá phạm vi.
+- **Theo dõi nhiệm vụ** — giao việc, hạn chót, trạng thái hoàn thành. TrustCabinet dừng ở biên bản
+  đã chốt; biên bản vẫn ghi phần phân công như văn bản.
+- **Nhiều tổ chức, phòng ban, cây đơn vị** — hệ thống phục vụ đúng một tổ chức, mời họp là mời từng
+  người ([ADR-0004](docs/05-decisions/0004-mot-to-chuc-khong-co-don-vi.md)).
+- Ký số bằng USB token / HSM thật, triển khai mạng cô lập, tích hợp hệ thống văn bản điều hành bên
+  ngoài.
 
 ## Tài liệu
 
-Toàn bộ tài liệu đồ án nằm trong [docs/](docs/) — phạm vi, thiết kế, hợp đồng API, biên bản họp
-nhóm và các quyết định kỹ thuật (ADR).
+[docs/](docs/) chứa phạm vi, đặc tả Use Case, thiết kế, hợp đồng API, sơ đồ và các ADR.
