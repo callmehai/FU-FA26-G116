@@ -14,6 +14,7 @@ Từ 27/10/2026 mọi UC của FE-07 đều có sequence. Cột "Loại": **as-b
 | UC-33c Remove Document from Meeting | [UC33c_RemoveDocumentFromMeeting.txt](UC33c_RemoveDocumentFromMeeting.txt) | SCRUM-112 | PROPOSED |
 | UC-33d Detach Document from Agenda Item | [UC33d_DetachDocumentFromAgendaItem.txt](UC33d_DetachDocumentFromAgendaItem.txt) | SCRUM-112 | PROPOSED |
 | UC-34 View Personal Document Library | [UC34_ViewPersonalLibrary.txt](UC34_ViewPersonalLibrary.txt) | SCRUM-111 | PROPOSED |
+| UC-34b View a Locked Account's Personal Library | [UC34b_ViewLockedAccountLibrary.txt](UC34b_ViewLockedAccountLibrary.txt) | SCRUM-111 (hoặc ticket tách) | PROPOSED |
 | UC-35 Comment on Meeting Document | [UC35_CommentOnMeetingDocument.txt](UC35_CommentOnMeetingDocument.txt) | SCRUM-23 | PROPOSED |
 | UC-36 Upload Document to Personal Library | [UC36_UploadToPersonalLibrary.txt](UC36_UploadToPersonalLibrary.txt) | SCRUM-111 | PROPOSED |
 | UC-71a Delete Document from Personal Library | [UC71a_DeleteLibraryDocument.txt](UC71a_DeleteLibraryDocument.txt) | SCRUM-111 | PROPOSED |
@@ -27,6 +28,12 @@ Từ 27/10/2026 mọi UC của FE-07 đều có sequence. Cột "Loại": **as-b
 
 **Kho cá nhân và gắn/gỡ (vẽ 27/10/2026, SCRUM-91).**
 
+- Hạn mức 10 GB toàn hệ thống và giới hạn 10 tệp / 200 MB (PO 27/10/2026, ADR-0031): UC-36, UC-33b AF-1 và UC-33a AF-1
+  (upload từ máy) cùng kiểm tổng dung lượng đã lưu (BR-333, `MSG345`); UC-36 và UC-33b AF-1 thêm nhánh `MSG288` (BR-319).
+  UC-33a AF-1 đã code ở SCRUM-107 nhưng chưa kiểm 10 GB: sequence vẽ theo đặc tả mới, code phải bổ sung cùng SCRUM-111.
+- UC-34b (Quản trị viên đọc kho của tài khoản đã khoá, ADR-0031) vẽ PROPOSED: kiểm tài khoản đã khoá, ghi nhật ký kiểm toán
+  trước khi trả dữ liệu, không ghi được nhật ký thì từ chối (BR-334, BR-335). Lifeline `:Library Review Controller/Service`
+  và `:Audit Log` do người code đổi tên theo thiết kế thật.
 - UC-72a–d, UC-34, UC-36, UC-71a–c: PROPOSED theo Report 3 §II.7.3–7.7. Lifeline `Personal Library Screen`,
   `:Folder Controller/Service`, `:Document Controller/Service`, `:Folder Repository`, `:Document Repository`. AF-1 của
   UC-34 (tìm, lọc), UC-71c và UC-72c (chuyển ra gốc thư viện) nằm trong câu của request, không thành nhánh riêng. UC-71a,

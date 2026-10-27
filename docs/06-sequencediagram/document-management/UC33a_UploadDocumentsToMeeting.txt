@@ -63,74 +63,43 @@ else Actor may add documents
             DocumentsTab-->Actor: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
 
         else Every file is valid
-            DocumentService->MeetingDocumentRepository: Record one stored-file entry per file, before any byte is stored (ADR-0024)
+            DocumentService->MeetingDocumentRepository: Get the total size of all stored document files (BR-333)
             activate MeetingDocumentRepository
-            MeetingDocumentRepository->Database: Insert the stored-file entries
+            MeetingDocumentRepository->Database: Sum the sizes of all stored files
             activate Database
-            Database-->MeetingDocumentRepository: Recorded / Failed
+            Database-->MeetingDocumentRepository: Total size
             deactivate Database
-            MeetingDocumentRepository-->DocumentService: Recorded / Failed
+            MeetingDocumentRepository-->DocumentService: Total size
             deactivate MeetingDocumentRepository
 
-            alt Stored-file entries cannot be recorded - EX-5
-                DocumentService-->DocumentController: MSG166 - Unable to add the documents. No documents were added. Please try again.
-                DocumentController-->DocumentsTab: MSG166 - Unable to add the documents. No documents were added. Please try again.
-                DocumentsTab-->Actor: MSG166 - Unable to add the documents. No documents were added. Please try again.
+            alt Stored total plus this submission exceeds 10 GB - EX-9
+                DocumentService-->DocumentController: MSG345 - The system has run out of storage space. Please contact the System Admin.
+                DocumentController-->DocumentsTab: MSG345 - The system has run out of storage space. Please contact the System Admin.
+                DocumentsTab-->Actor: MSG345 - The system has run out of storage space. Please contact the System Admin.
 
-            else Stored-file entries recorded
-                DocumentService->FileStorage: Store each file unchanged under its stored-file entry (BR-183, BR-216)
-                activate FileStorage
-                FileStorage-->DocumentService: All files stored / Storing failed
-                deactivate FileStorage
+            else Within the system storage limit
+                DocumentService->MeetingDocumentRepository: Record one stored-file entry per file, before any byte is stored (ADR-0024)
+                activate MeetingDocumentRepository
+                MeetingDocumentRepository->Database: Insert the stored-file entries
+                activate Database
+                Database-->MeetingDocumentRepository: Recorded / Failed
+                deactivate Database
+                MeetingDocumentRepository-->DocumentService: Recorded / Failed
+                deactivate MeetingDocumentRepository
 
-                alt Files cannot be stored - EX-5
-                    DocumentService->FileStorage: Delete the files already stored in this submission (BR-286)
-                    activate FileStorage
-                    FileStorage-->DocumentService: Files deleted
-                    deactivate FileStorage
+                alt Stored-file entries cannot be recorded - EX-5
                     DocumentService-->DocumentController: MSG166 - Unable to add the documents. No documents were added. Please try again.
                     DocumentController-->DocumentsTab: MSG166 - Unable to add the documents. No documents were added. Please try again.
                     DocumentsTab-->Actor: MSG166 - Unable to add the documents. No documents were added. Please try again.
 
-                else All files stored
-                    DocumentService->MeetingDocumentRepository: Save the library documents in the actor's Meeting folder\nand the general Meeting documents, in one transaction with the Meeting locked\n(BR-194, BR-210, BR-229, BR-286)
-                    activate MeetingDocumentRepository
-                    MeetingDocumentRepository->Database: Under the Meeting lock, recheck status and the actor's role,\nthen use the folder linked to this Meeting or create it at the library root named\n"<Meeting title> - dd/mm/yyyy" in Vietnam time (BR-192, BR-226, BR-228),\nand insert the library documents and the general Meeting documents\npointing at the stored-file entries (BR-227)
-                    activate Database
-                    Database-->MeetingDocumentRepository: Saved / Failed
-                    deactivate Database
-                    MeetingDocumentRepository-->DocumentService: Saved / Failed
-                    deactivate MeetingDocumentRepository
+                else Stored-file entries recorded
+                    DocumentService->FileStorage: Store each file unchanged under its stored-file entry (BR-183, BR-216)
+                    activate FileStorage
+                    FileStorage-->DocumentService: All files stored / Storing failed
+                    deactivate FileStorage
 
-                    alt Save fails: Meeting is unavailable or actor can no longer view it - EX-7
-                        DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
-                        activate FileStorage
-                        FileStorage-->DocumentService: Files deleted
-                        deactivate FileStorage
-                        DocumentService-->DocumentController: MSG174 - This Meeting is not accessible.
-                        DocumentController-->DocumentsTab: MSG174 - This Meeting is not accessible.
-                        DocumentsTab-->Actor: MSG174 - This Meeting is not accessible.
-
-                    else Save fails: Actor is no longer the Chair or Secretary - EX-1
-                        DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
-                        activate FileStorage
-                        FileStorage-->DocumentService: Files deleted
-                        deactivate FileStorage
-                        DocumentService-->DocumentController: MSG162 - You no longer have permission to add documents to this Meeting.
-                        DocumentController-->DocumentsTab: MSG162 - You no longer have permission to add documents to this Meeting.
-                        DocumentsTab-->Actor: MSG162 - You no longer have permission to add documents to this Meeting.
-
-                    else Save fails: Meeting has ended - EX-6
-                        DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
-                        activate FileStorage
-                        FileStorage-->DocumentService: Files deleted
-                        deactivate FileStorage
-                        DocumentService-->DocumentController: MSG172 - Documents cannot be added after the Meeting has ended.
-                        DocumentController-->DocumentsTab: MSG172 - Documents cannot be added after the Meeting has ended.
-                        DocumentsTab-->Actor: MSG172 - Documents cannot be added after the Meeting has ended.
-
-                    else Save fails: Database persistence error - EX-5
-                        DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
+                    alt Files cannot be stored - EX-5
+                        DocumentService->FileStorage: Delete the files already stored in this submission (BR-286)
                         activate FileStorage
                         FileStorage-->DocumentService: Files deleted
                         deactivate FileStorage
@@ -138,11 +107,58 @@ else Actor may add documents
                         DocumentController-->DocumentsTab: MSG166 - Unable to add the documents. No documents were added. Please try again.
                         DocumentsTab-->Actor: MSG166 - Unable to add the documents. No documents were added. Please try again.
 
-                    else Documents added
-                        DocumentService-->DocumentController: Number of documents added
-                        DocumentController-->DocumentsTab: Number of documents added
-                        DocumentsTab->DocumentsTab: Refresh the Meeting document list
-                        DocumentsTab-->Actor: MSG161 - Documents added to the Meeting successfully.
+                    else All files stored
+                        DocumentService->MeetingDocumentRepository: Save the library documents in the actor's Meeting folder\nand the general Meeting documents, in one transaction with the Meeting locked\n(BR-194, BR-210, BR-229, BR-286)
+                        activate MeetingDocumentRepository
+                        MeetingDocumentRepository->Database: Under the Meeting lock, recheck status and the actor's role,\nthen use the folder linked to this Meeting or create it at the library root named\n"<Meeting title> - dd/mm/yyyy" in Vietnam time (BR-192, BR-226, BR-228),\nand insert the library documents and the general Meeting documents\npointing at the stored-file entries (BR-227)
+                        activate Database
+                        Database-->MeetingDocumentRepository: Saved / Failed
+                        deactivate Database
+                        MeetingDocumentRepository-->DocumentService: Saved / Failed
+                        deactivate MeetingDocumentRepository
+
+                        alt Save fails: Meeting is unavailable or actor can no longer view it - EX-7
+                            DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
+                            activate FileStorage
+                            FileStorage-->DocumentService: Files deleted
+                            deactivate FileStorage
+                            DocumentService-->DocumentController: MSG174 - This Meeting is not accessible.
+                            DocumentController-->DocumentsTab: MSG174 - This Meeting is not accessible.
+                            DocumentsTab-->Actor: MSG174 - This Meeting is not accessible.
+
+                        else Save fails: Actor is no longer the Chair or Secretary - EX-1
+                            DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
+                            activate FileStorage
+                            FileStorage-->DocumentService: Files deleted
+                            deactivate FileStorage
+                            DocumentService-->DocumentController: MSG162 - You no longer have permission to add documents to this Meeting.
+                            DocumentController-->DocumentsTab: MSG162 - You no longer have permission to add documents to this Meeting.
+                            DocumentsTab-->Actor: MSG162 - You no longer have permission to add documents to this Meeting.
+
+                        else Save fails: Meeting has ended - EX-6
+                            DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
+                            activate FileStorage
+                            FileStorage-->DocumentService: Files deleted
+                            deactivate FileStorage
+                            DocumentService-->DocumentController: MSG172 - Documents cannot be added after the Meeting has ended.
+                            DocumentController-->DocumentsTab: MSG172 - Documents cannot be added after the Meeting has ended.
+                            DocumentsTab-->Actor: MSG172 - Documents cannot be added after the Meeting has ended.
+
+                        else Save fails: Database persistence error - EX-5
+                            DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
+                            activate FileStorage
+                            FileStorage-->DocumentService: Files deleted
+                            deactivate FileStorage
+                            DocumentService-->DocumentController: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                            DocumentController-->DocumentsTab: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                            DocumentsTab-->Actor: MSG166 - Unable to add the documents. No documents were added. Please try again.
+
+                        else Documents added
+                            DocumentService-->DocumentController: Number of documents added
+                            DocumentController-->DocumentsTab: Number of documents added
+                            DocumentsTab->DocumentsTab: Refresh the Meeting document list
+                            DocumentsTab-->Actor: MSG161 - Documents added to the Meeting successfully.
+                        end
                     end
                 end
             end

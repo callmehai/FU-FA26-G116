@@ -1,0 +1,84 @@
+title UC-34b - View a Locked Account's Personal Library
+
+actor "System Admin" as Actor
+boundary "User Detail Screen" as UserScreen
+control ":Library Review Controller" as ReviewController
+control ":Library Review Service" as ReviewService
+participant ":User Repository" as UserRepository
+participant ":Document Repository" as DocumentRepository
+participant ":Audit Log" as AuditLog
+database ":Database" as Database
+
+Actor->UserScreen: Choose View personal library for a locked account\n(optionally open a folder)
+activate UserScreen
+
+UserScreen->ReviewController: Request the library contents of the account (and the selected folder)
+activate ReviewController
+
+ReviewController->ReviewService: viewLockedLibrary(adminId, accountId, folderId?)
+activate ReviewService
+
+ReviewService->ReviewService: Check the actor has the capability to manage users
+
+ReviewService->UserRepository: Get the account and its locked state (BR-334)
+activate UserRepository
+UserRepository->Database: Retrieve the account by id
+activate Database
+Database-->UserRepository: Account / Not found
+deactivate Database
+UserRepository-->ReviewService: Account / Not found
+deactivate UserRepository
+
+alt Account is missing or is not locked - EX-1
+    ReviewService-->ReviewController: MSG175 - This personal-library item is not available.
+    ReviewController-->UserScreen: MSG175 - This personal-library item is not available.
+    UserScreen-->Actor: MSG175 - This personal-library item is not available.
+
+else Account is locked
+    ReviewService->AuditLog: Record the read: who read, whose library, which folder, when (BR-335)
+    activate AuditLog
+    AuditLog->Database: Insert the audit entry
+    activate Database
+    Database-->AuditLog: Recorded / Failed
+    deactivate Database
+    AuditLog-->ReviewService: Recorded / Failed
+    deactivate AuditLog
+
+    alt Audit entry cannot be recorded - EX-2
+        ReviewService-->ReviewController: MSG176 - Unable to load your personal document library. Please try again.
+        ReviewController-->UserScreen: MSG176 - Unable to load your personal document library. Please try again.
+        UserScreen-->Actor: MSG176 - Unable to load your personal document library. Please try again.
+
+    else Audit entry recorded
+        ReviewService->DocumentRepository: Get the folders and documents of the account's library, read-only (BR-334)
+        activate DocumentRepository
+        DocumentRepository->Database: Retrieve the folders and documents owned by the account
+        activate Database
+        Database-->DocumentRepository: Folders and documents / Not found / Failed
+        deactivate Database
+        DocumentRepository-->ReviewService: Folders and documents / Not found / Failed
+        deactivate DocumentRepository
+
+        alt Folder is not in that library - EX-1
+            ReviewService-->ReviewController: MSG175 - This personal-library item is not available.
+            ReviewController-->UserScreen: MSG175 - This personal-library item is not available.
+            UserScreen-->Actor: MSG175 - This personal-library item is not available.
+
+        else Library cannot be loaded - EX-2
+            ReviewService-->ReviewController: MSG176 - Unable to load your personal document library. Please try again.
+            ReviewController-->UserScreen: MSG176 - Unable to load your personal document library. Please try again.
+            UserScreen-->Actor: MSG176 - Unable to load your personal document library. Please try again.
+
+        else Library loaded
+            ReviewService-->ReviewController: Folders and documents (read-only)
+            ReviewController-->UserScreen: Folders and documents (read-only)
+            UserScreen-->Actor: Display the library with no upload, rename, move or delete action
+        end
+    end
+end
+
+note over ReviewService: AF-1 (read a document) repeats the same checks and audit entry,\nnaming the document, before the file is returned.\nPROPOSED: no code yet.
+
+deactivate ReviewService
+deactivate ReviewController
+deactivate UserScreen

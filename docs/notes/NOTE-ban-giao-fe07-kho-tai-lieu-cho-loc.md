@@ -73,8 +73,24 @@ trước khi Lộc bắt đầu ticket tương ứng; lệch so với sequence t
    - thêm contract `docs/03-api/` và đổi trạng thái các mã trong catalogue cùng commit code.
    API agenda có giữ `documentIds` hay không là việc của Lộc; nếu giữ thì vẫn chỉ Thư ký, không thay chức năng mới.
    Sequence UC-33b/33d ở mục 7 bước 3 vẽ lại **PROPOSED theo đặc tả**.
-3. **Hạn mức dung lượng kho cá nhân** chưa chốt (ADR-0020 ghi "remain undecided").
-4. **Quyền đọc phần chưa gắn trong kho của người đã rời tổ chức** chưa chốt.
+3. ~~**Hạn mức dung lượng kho cá nhân**~~ — **đã chốt 27/10/2026:** ban đầu PO chốt 1 GB mỗi người, cùng ngày đổi thành
+   **tổng 10 GB cho cả hệ thống, không giới hạn riêng từng người** (ADR-0031, BR-333).
+   - Tải làm tổng dung lượng tệp tài liệu vượt 10 GB thì từ chối **cả lần tải**, không lưu tệp nào (BR-286).
+   - Áp cho **cả ba đường tải**: UC-36, UC-33a AF-1 và UC-33b AF-1. UC-33a AF-1 đã code ở SCRUM-107 chưa kiểm: Lộc sửa cùng
+     SCRUM-111, dùng chung một kiểm tra.
+   - Mã mới `MSG345` (Lộc cấp khi code và cập nhật catalogue cùng commit; đã dành sẵn trong catalogue). Chữ: "Hệ thống đã hết
+     dung lượng lưu trữ. Vui lòng liên hệ Quản trị viên."
+   - Dung lượng đã dùng = tổng `StoredFile.SizeBytes` của các tệp còn được tham chiếu; hai lần tải đồng thời không được cùng
+     vượt trần (khoá hoặc kiểm trong transaction). Màn kho hiện dung lượng đã dùng của hệ thống trên 10 GB.
+   - Bản ghi cuộc họp và bản gỡ băng chưa tính vào 10 GB.
+   - Quyết định lưu ở [ADR-0031](../05-decisions/0031-han-muc-10gb-he-thong-va-admin-doc-kho-tai-khoan-khoa.md).
+4. ~~**Quyền đọc kho của người đã rời tổ chức**~~ — **đã chốt 27/10/2026 (PO Hải):** tài khoản đã khoá thì **Quản trị viên
+   đọc được kho của người đó**, và **mỗi lần đọc ghi nhật ký kiểm toán**.
+   - Đây là **phạm vi mới**; KhanhPG đã viết **UC-34b**, **BR-334**, **BR-335** vào Report 3 (27/10/2026). Làm trong SCRUM-111
+     hoặc tách ticket do Lộc và PO chọn. Cần thêm quyền của Quản trị viên vào Permission Matrix (chưa làm, ngoài phạm vi sửa lần này).
+   - Ràng buộc đã biết, để BA viết BR: chỉ đọc (xem danh sách, tải/đọc tệp), không sửa, xoá, chuyển; chỉ với tài khoản đã
+     khoá; người dùng còn hoạt động thì kho vẫn riêng tư (BR-242); `AuditLog` ghi ai đọc, kho của ai, lúc nào, và tệp nào
+     nếu là đọc một tệp. Kho chứa dữ liệu cá nhân nên cần nêu mục đích đọc (xem AGENTS.md, luật 91/2025/QH15).
 5. **SCRUM-110/111/112 chưa gán người.**
 
 ## 3. Ticket và thứ tự code cho Lộc
@@ -86,7 +102,7 @@ Nhánh code của Lộc đặt theo quy ước của DEVELOPMENT_WORKFLOW, tách
 | Ticket | Phạm vi | UC | BR | MSG | Phụ thuộc |
 |---|---|---|---|---|---|
 | SCRUM-110 (58a) | Thư mục kho cá nhân | UC-72a, 72b, 72c, 72d | 191, 192, 204, 219–223, 227, 228, 242 | 175, 179, 187–198 | Không |
-| SCRUM-111 (58b) | Tài liệu trong kho cá nhân | UC-34, 36, 71a, 71b, 71c | 183, 186, 187, 204, 214–216, 219, 224, 225, 229, 232, 242, 245, 251, 276, 286 | 164, 175–181, 183–186 (`MSG182` ngừng dùng) | SCRUM-110 |
+| SCRUM-111 (58b) | Tài liệu trong kho cá nhân | UC-34, 36, 71a, 71b, 71c | 183, 186, 187, 204, 214–216, 219, 224, 225, 229, 232, 242, 245, 251, 276, 286 | 164, 175–181, 183–186 (`MSG182` ngừng dùng), 288, `MSG345` (đầy dung lượng hệ thống) | SCRUM-110 |
 | SCRUM-112 (58c) | Gắn từ kho, gắn/gỡ mục nghị sự, gỡ khỏi cuộc họp | UC-33a luồng chính, UC-33b AF-1/AF-2, UC-33c, UC-33d | 184, 185, 193, 194, 195, 197, 209, 210, 211, 212, 231, 276–281, 284, 286, 304 | 161, 162, 164–167, 169–172, 174, 238–249 | SCRUM-111 cho phần chọn từ kho; UC-33c/33d làm trước được |
 
 ### SCRUM-110 — Thư mục kho cá nhân
@@ -101,8 +117,9 @@ Nhánh code của Lộc đặt theo quy ước của DEVELOPMENT_WORKFLOW, tách
 
 ### SCRUM-111 — Tài liệu trong kho cá nhân
 - **Nghiệm thu:** dùng lại kiểm tra tệp và `FileStorage` của SCRUM-107 (PDF/DOCX, đuôi khớp nội dung, ≤ 50 MB mỗi tệp,
-  tất cả hoặc không – BR-286). Đặc tả UC-36 không ghi giới hạn 10 tệp / 200 MB; nếu áp như UC-33a (`MSG288`) thì ghi lệch vào
-  ticket. Xoá chỉ xoá dòng kho, cuộc họp đang dùng vẫn đọc bình thường (BR-186, BR-232). Đổi tên không đổi tên đã chép vào cuộc
+  tất cả hoặc không – BR-286). **PO chốt 27/10/2026:** UC-36 áp cùng giới hạn với UC-33a — tối đa 10 tệp và 200 MB mỗi lần, ≤ 50 MB mỗi tệp;
+  vượt thì dùng lại `MSG288` (BR-319, đã ghi vào đặc tả UC-36). Vượt trần 10 GB toàn hệ thống (BR-333) thì từ chối cả
+  lần tải với `MSG345` (mục 2.2 ý 3); màn kho hiện dung lượng đã dùng. Xoá chỉ xoá dòng kho, cuộc họp đang dùng vẫn đọc bình thường (BR-186, BR-232). Đổi tên không đổi tên đã chép vào cuộc
   họp (BR-276). Màn kho hiện "Đang dùng trong n cuộc họp" chỉ với cuộc họp người dùng được xem (BR-251). Tìm theo tên, lọc theo
   loại tệp (UC-34 AF-1). Guest không có kho (BR-204).
 - **Endpoint gợi ý:** `GET /api/documents?folderId=&q=&type=`, `POST /api/documents/upload`, `PATCH /api/documents/{id}`
@@ -136,9 +153,11 @@ qua `git show <commit>`.
 
 1. ~~UC-33b / UC-33d: giữ API agenda hay thêm endpoint riêng~~ — đã chốt 27/10/2026: phương án (b), Chủ toạ và Thư ký đều gắn/gỡ được.
 2. Đưa UC-33a luồng chính vào SCRUM-112 (mục 2.2 ý 1).
-3. Hạn mức dung lượng kho cá nhân.
-4. Quyền đọc kho của người đã rời tổ chức.
-5. UC-36 có áp giới hạn 10 tệp / 200 MB mỗi lần như UC-33a không.
+3. ~~Hạn mức dung lượng kho cá nhân~~ — đã chốt 27/10/2026: tổng 10 GB toàn hệ thống, không giới hạn từng người; vượt thì từ chối cả lần tải (mục 2.2 ý 3).
+4. ~~Quyền đọc kho của người đã rời tổ chức~~ — đã chốt 27/10/2026: Quản trị viên đọc được kho của tài khoản đã khoá, mỗi
+   lần đọc ghi nhật ký kiểm toán (mục 2.2 ý 4; UC/BR mới do KhanhPG viết).
+5. ~~UC-36 có áp giới hạn 10 tệp / 200 MB~~ — đã chốt 27/10/2026: có, áp cho UC-36 và UC-33b AF-1, dùng lại `MSG288`.
+6. ~~Hạn mức có kiểm cả khi UC-33a AF-1 tự tạo dòng kho không~~ — đã chốt: có, mọi đường tải đều kiểm trần 10 GB.
 
 ---
 
@@ -399,5 +418,12 @@ trong sơ đồ; lệch thì ghi comment Jira, BA cập nhật ở BA Final Revi
   index thì thêm migration mới.
 - Phát `documentsChanged` trên hub sau khi thêm, gỡ, gắn hoặc bỏ gắn, như SCRUM-21.
 
-**Câu hỏi còn mở (mục 5), hỏi PO trước khi chốt code:** hạn mức dung lượng kho; quyền đọc kho của người đã rời tổ chức;
-UC-36 và UC-33b AF-1 có áp giới hạn 10 tệp / 200 MB (`MSG288`) như UC-33a không.
+**Quyết định PO 27/10/2026 (ghi ở SCRUM-58 và [ADR-0031](../05-decisions/0031-han-muc-10gb-he-thong-va-admin-doc-kho-tai-khoan-khoa.md)), Lộc áp khi code:**
+- UC-33b/33d: phương án (b), Chủ toạ và Thư ký đều dùng được.
+- UC-36 và UC-33b AF-1: 10 tệp / 200 MB mỗi lần, ≤ 50 MB mỗi tệp, dùng lại `MSG288`.
+- Tổng 10 GB cho cả hệ thống, không giới hạn từng người; vượt thì từ chối cả lần tải với `MSG345`, cho cả UC-36, UC-33a AF-1
+  và UC-33b AF-1; màn kho hiện dung lượng đã dùng. Thuộc SCRUM-111.
+- Quản trị viên đọc được kho của tài khoản đã khoá, mỗi lần đọc ghi nhật ký kiểm toán: UC-34b, BR-334, BR-335 đã có trong
+  Report 3.
+
+**Câu hỏi còn mở:** không còn. Việc ngoài phạm vi sửa lần này: Permission Matrix thêm quyền đọc kho tài khoản khoá.

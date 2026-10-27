@@ -37,55 +37,56 @@ alt Destination folder is no longer available - EX-2
     LibraryScreen-->Actor: MSG179 - The selected destination folder is not available in your personal library.
 
 else Destination is available
-    DocumentService->DocumentService: Check at least one file was selected and every file has a usable name,\na .pdf or .docx extension matching its content and at most 50 MB\n(BR-187, BR-214, BR-215)
+    DocumentService->DocumentService: Check at most 10 files totalling at most 200 MB (BR-319), at least one file was selected and every file has a usable name,\na .pdf or .docx extension matching its content and at most 50 MB\n(BR-187, BR-214, BR-215)
 
     alt Any file is invalid - EX-1
         DocumentService-->DocumentController: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
         DocumentController-->LibraryScreen: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
         LibraryScreen-->Actor: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
 
+    else Submission has more than 10 files or more than 200 MB - EX-4
+        DocumentService-->DocumentController: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
+        DocumentController-->LibraryScreen: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
+        LibraryScreen-->Actor: MSG288 - Upload up to 10 files at a time, no larger than 200 MB in total.
+
     else Every file is valid
-        DocumentService->DocumentRepository: Record one stored-file entry per file, before any byte is stored (ADR-0024)
+        DocumentService->DocumentRepository: Get the total size of all stored document files (BR-333)
         activate DocumentRepository
-        DocumentRepository->Database: Insert the stored-file entries
+        DocumentRepository->Database: Sum the sizes of all stored files
         activate Database
-        Database-->DocumentRepository: Recorded / Failed
+        Database-->DocumentRepository: Total size
         deactivate Database
-        DocumentRepository-->DocumentService: Recorded / Failed
+        DocumentRepository-->DocumentService: Total size
         deactivate DocumentRepository
 
-        alt Stored-file entries cannot be recorded - EX-3
-            DocumentService-->DocumentController: MSG178 - Unable to upload the files. No documents were added. Please try again.
-            DocumentController-->LibraryScreen: MSG178 - Unable to upload the files. No documents were added. Please try again.
-            LibraryScreen-->Actor: MSG178 - Unable to upload the files. No documents were added. Please try again.
+        alt Stored total plus this submission exceeds 10 GB - EX-5
+            DocumentService-->DocumentController: MSG345 - The system has run out of storage space. Please contact the System Admin.
+            DocumentController-->LibraryScreen: MSG345 - The system has run out of storage space. Please contact the System Admin.
+            LibraryScreen-->Actor: MSG345 - The system has run out of storage space. Please contact the System Admin.
 
-        else Stored-file entries recorded
-            DocumentService->FileStorage: Store each file unchanged under its stored-file entry (BR-183, BR-216)
-            activate FileStorage
-            FileStorage-->DocumentService: All files stored / Storing failed
-            deactivate FileStorage
+        else Within the system storage limit
+            DocumentService->DocumentRepository: Record one stored-file entry per file, before any byte is stored (ADR-0024)
+            activate DocumentRepository
+            DocumentRepository->Database: Insert the stored-file entries
+            activate Database
+            Database-->DocumentRepository: Recorded / Failed
+            deactivate Database
+            DocumentRepository-->DocumentService: Recorded / Failed
+            deactivate DocumentRepository
 
-            alt Files cannot be stored - EX-3
-                DocumentService->FileStorage: Delete the files already stored in this submission (BR-286)
-                activate FileStorage
-                FileStorage-->DocumentService: Files deleted
-                deactivate FileStorage
+            alt Stored-file entries cannot be recorded - EX-3
                 DocumentService-->DocumentController: MSG178 - Unable to upload the files. No documents were added. Please try again.
                 DocumentController-->LibraryScreen: MSG178 - Unable to upload the files. No documents were added. Please try again.
                 LibraryScreen-->Actor: MSG178 - Unable to upload the files. No documents were added. Please try again.
 
-            else All files stored
-                DocumentService->DocumentRepository: Save the library documents at the selected location\nwith their original names, in one transaction (BR-183, BR-229, BR-286)
-                activate DocumentRepository
-                DocumentRepository->Database: Insert the library documents pointing at the stored-file entries
-                activate Database
-                Database-->DocumentRepository: Saved / Failed
-                deactivate Database
-                DocumentRepository-->DocumentService: Saved / Failed
-                deactivate DocumentRepository
+            else Stored-file entries recorded
+                DocumentService->FileStorage: Store each file unchanged under its stored-file entry (BR-183, BR-216)
+                activate FileStorage
+                FileStorage-->DocumentService: All files stored / Storing failed
+                deactivate FileStorage
 
-                alt Documents cannot be saved - EX-3
-                    DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
+                alt Files cannot be stored - EX-3
+                    DocumentService->FileStorage: Delete the files already stored in this submission (BR-286)
                     activate FileStorage
                     FileStorage-->DocumentService: Files deleted
                     deactivate FileStorage
@@ -93,11 +94,31 @@ else Destination is available
                     DocumentController-->LibraryScreen: MSG178 - Unable to upload the files. No documents were added. Please try again.
                     LibraryScreen-->Actor: MSG178 - Unable to upload the files. No documents were added. Please try again.
 
-                else Documents added
-                    DocumentService-->DocumentController: Number of documents added
-                    DocumentController-->LibraryScreen: Number of documents added
-                    LibraryScreen->LibraryScreen: Refresh the library
-                    LibraryScreen-->Actor: MSG177 - Documents uploaded to your personal library successfully.
+                else All files stored
+                    DocumentService->DocumentRepository: Save the library documents at the selected location\nwith their original names, in one transaction (BR-183, BR-229, BR-286)
+                    activate DocumentRepository
+                    DocumentRepository->Database: Insert the library documents pointing at the stored-file entries
+                    activate Database
+                    Database-->DocumentRepository: Saved / Failed
+                    deactivate Database
+                    DocumentRepository-->DocumentService: Saved / Failed
+                    deactivate DocumentRepository
+
+                    alt Documents cannot be saved - EX-3
+                        DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
+                        activate FileStorage
+                        FileStorage-->DocumentService: Files deleted
+                        deactivate FileStorage
+                        DocumentService-->DocumentController: MSG178 - Unable to upload the files. No documents were added. Please try again.
+                        DocumentController-->LibraryScreen: MSG178 - Unable to upload the files. No documents were added. Please try again.
+                        LibraryScreen-->Actor: MSG178 - Unable to upload the files. No documents were added. Please try again.
+
+                    else Documents added
+                        DocumentService-->DocumentController: Number of documents added
+                        DocumentController-->LibraryScreen: Number of documents added
+                        LibraryScreen->LibraryScreen: Refresh the library
+                        LibraryScreen-->Actor: MSG177 - Documents uploaded to your personal library successfully.
+                    end
                 end
             end
         end
