@@ -1,8 +1,8 @@
 import { Icon } from '../../components/Icon'
 
 /**
- * The file-type icon in front of a name: a page with a folded corner and a band naming the type, violet for
- * PDF and blue for DOCX (red is kept for "Mật" and warnings). The band is drawn, so the type is also its label.
+ * The file-type icon in front of a name: a page with a folded corner and a band naming the type, red for PDF
+ * and blue for DOCX, as readers know them. The band is drawn, so the type is also its label.
  */
 export function FileTypeTag({ pdf, size = 32 }: { pdf: boolean; size?: number }) {
   const label = pdf ? 'PDF' : 'DOCX'

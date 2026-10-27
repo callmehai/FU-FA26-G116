@@ -41,6 +41,8 @@
   /* Destructive actions, "Mật", the current-time line. */
   --danger: #b4232a;
   --danger-ink: #8e1b21;
+  /* The PDF file icon: the red every reader knows PDF by; the one red that is not a warning. */
+  --file-pdf: #d0342c;
   /* Unread counts on the blue sidebar: brighter than --danger so it reads on blue. */
   --alert-dot: #d93a3a;
 
@@ -3334,8 +3336,7 @@ audio.recording-player { height: 40px; }
 .file-icon-fold { fill: var(--surface-alt); stroke: var(--control-line); stroke-width: 1.5; stroke-linejoin: round; }
 .file-icon-band { fill: currentColor; }
 .file-icon-text { fill: #fff; font-family: inherit; font-weight: 700; letter-spacing: .2px; }
-/* Not red: red is kept for "Mật" and warnings (AGENTS.md). */
-.file-icon-pdf { color: var(--chip-violet-fg); }
+.file-icon-pdf { color: var(--file-pdf); }
 .file-icon-docx { color: var(--chip-blue-fg); }
 .online-only {
   display: inline-flex;
