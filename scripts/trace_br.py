@@ -17,6 +17,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import re
 import sys
@@ -236,6 +237,7 @@ def card(model: dict, uc_id: str) -> str:
 
 def write_html(model: dict, path: Path) -> None:
     tpl = Path(__file__).with_name("trace_br_template.html").read_text(encoding="utf-8")
+    model = {**model, "generated": datetime.date.today().isoformat()}
     data = json.dumps(model, ensure_ascii=False).replace("</", "<\\/")
     path.write_text(tpl.replace("__DATA__", data), encoding="utf-8")
 

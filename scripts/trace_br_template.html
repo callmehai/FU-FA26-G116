@@ -227,6 +227,7 @@ function viewHome() {
   const all = Object.values(D.rules), un = all.filter(r => !hasCode(r) && !hasTest(r)).length;
   return `<h2>Bản đồ nghiệp vụ</h2>
   <p class="sub">${Object.keys(D.ucs).length} use case · ${all.length} luật nghiệp vụ · ${Object.keys(D.msgs).length} thông báo. ${un} luật chưa có code/test nào trích dẫn.</p>
+  <p class="sub">Ảnh chụp ngày ${esc(D.generated || '?')}: cột “có code/có test” đọc từ mã nguồn lúc sinh, sẽ lệch khi có PR code merge sau đó — chạy lại <code>python scripts/sync_reports.py</code> để làm mới.</p>
   <div class="box"><b>Cách đọc.</b> Chọn một use case bên trái, đọc luồng chính trước, rồi rẽ nhánh. Bấm chip <span class="chip br">BR-nn</span> / <span class="chip msg">MSGnn</span>
   để xem luật, thông báo và dòng code/test cạnh bên. Chấm xanh = mọi BR của UC có test; vàng = có code; đỏ = chưa có dấu vết. Muốn đổi nghiệp vụ: tìm BR, xem file code, sửa cả hai.</div>
   <h3>Theo tính năng</h3><table><tr><th>FE</th><th>Tên</th><th>Use case</th><th>BR</th><th>có code</th><th>có test</th></tr>${rows}</table>`;
