@@ -22,7 +22,7 @@ public interface IFileStorage
     Task DeleteAsync(string key, CancellationToken ct);
 }
 
-public enum DocumentUploadFailure { None, NotFound, Inactive, Forbidden, Ended, Invalid, TooMany, StoreFailed }
+public enum DocumentUploadFailure { None, NotFound, Inactive, Forbidden, Ended, Cancelled, Invalid, TooMany, StoreFailed }
 
 /// <summary>A file part as the request delivered it, before anything about it is trusted.</summary>
 public sealed record DocumentUploadCandidate(string? FileName, long Length, Func<Stream> OpenRead, string? PageCount);

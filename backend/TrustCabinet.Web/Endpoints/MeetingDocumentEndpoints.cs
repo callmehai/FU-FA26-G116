@@ -24,6 +24,7 @@ public static class MeetingDocumentEndpoints
     private const string Msg172MeetingEnded = "MSG172";
     private const string Msg174MeetingUnavailable = "MSG174";
     private const string Msg288SubmissionTooLarge = "MSG288";
+    private const string Msg349MeetingCancelled = "MSG349";
 
     /// <summary>The 200 MB of files plus room for the multipart framing and the page counts.</summary>
     private const long MaxRequestBytes = DocumentFileRules.MaxTotalBytes + 1024 * 1024;
@@ -212,6 +213,7 @@ public static class MeetingDocumentEndpoints
                 DocumentUploadFailure.NotFound => (404, Msg174MeetingUnavailable, "Không truy cập được cuộc họp này."),
                 DocumentUploadFailure.Forbidden => (403, Msg162AddDenied, "Bạn không còn quyền thêm tài liệu vào cuộc họp này."),
                 DocumentUploadFailure.Ended => (409, Msg172MeetingEnded, "Không thể thêm tài liệu sau khi cuộc họp đã kết thúc."),
+                DocumentUploadFailure.Cancelled => (409, Msg349MeetingCancelled, "Cuộc họp đã huỷ nên không thay đổi được nữa."),
                 DocumentUploadFailure.Invalid => (400, Msg164InvalidFiles, "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB."),
                 DocumentUploadFailure.TooMany => (400, Msg288SubmissionTooLarge, "Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 200 MB."),
                 _ => (503, Msg166AddFailed, "Không thêm được tài liệu. Chưa có tài liệu nào được thêm. Vui lòng thử lại."),
