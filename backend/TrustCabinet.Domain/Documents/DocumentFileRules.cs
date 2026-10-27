@@ -17,6 +17,10 @@ public static class DocumentFileRules
     public const int MaxFiles = 10;                       // BR-319
     public const long MaxTotalBytes = 200L * 1024 * 1024; // BR-319
     public const int MaxFileNameLength = 255;
+    public const long MaxLibraryBytes = 1L * 1024 * 1024 * 1024; // PO 27/10/2026: 1 GB per personal library
+    public const int MaxFolderDepth = 5;                         // BR-191
+    public const int MaxFolderNameLength = 400;                  // the column
+    public const int MaxCommentLength = 4000;                    // the column
 
     public const string PdfContentType = "application/pdf";
     public const string DocxContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -193,6 +197,10 @@ public static class DocumentFileRules
         var size = BinaryPrimitives.ReadUInt32LittleEndian(buffer.AsSpan(at + 12));
         return entries <= MaxZipEntries && size <= MaxCentralDirectoryBytes;
     }
+
+    /// <summary>Whether a name keeps the extension of the bytes it stands for: a rename must not turn
+    /// a PDF into "x.html", since the file is downloaded under that name (UC-71b).</summary>
+    public static bool MatchesContentType(string fileName, string contentType) => ExpectedContentType(fileName) == contentType;
 
     private static string? ExpectedContentType(string fileName)
         => fileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) ? PdfContentType
