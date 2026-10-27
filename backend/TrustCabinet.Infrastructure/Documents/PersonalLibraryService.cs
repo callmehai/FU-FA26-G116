@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 
 namespace TrustCabinet.Infrastructure.Documents;
@@ -26,14 +27,18 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
             if (!await MayReadAsync(readerId, ownerId, ct)) return new(LibraryFailure.NotFound);
             if (folderId is { } id && !await db.Folders.AnyAsync(f => f.Id == id && f.OwnerId == ownerId, ct))
                 return new(LibraryFailure.NotFound);
+            (IQueryable<Guid> Files, HashSet<Guid> Folders)? hidden = readerId == ownerId ? null : await HiddenFromAsync(readerId, ownerId, ct);
+            if (folderId is { } at && hidden is not null && hidden.Value.Folders.Contains(at)) return new(LibraryFailure.NotFound);
             if (readerId != ownerId)
                 await audit.RecordAsync(AuditActions.PersonalLibraryRead, AuditActions.UserObjectType, ownerId, readerId,
                     new { folderId }, ct);
 
-            var folders = await db.Folders.AsNoTracking().Where(f => f.OwnerId == ownerId)
+            var folders = (await db.Folders.AsNoTracking().Where(f => f.OwnerId == ownerId)
                 .OrderBy(f => f.Name).ThenBy(f => f.Id)
-                .Select(f => new LibraryFolder(f.Id, f.Name, f.ParentId, f.MeetingId, f.CreatedAt)).ToListAsync(ct);
+                .Select(f => new LibraryFolder(f.Id, f.Name, f.ParentId, f.MeetingId, f.CreatedAt)).ToListAsync(ct))
+                .Where(f => hidden is null || !hidden.Value.Folders.Contains(f.Id)).ToList();
             var query = db.Documents.AsNoTracking().Where(d => d.OwnerId == ownerId && d.FolderId == folderId);
+            if (hidden is { Files: var hiddenFiles }) query = query.Where(d => !hiddenFiles.Contains(d.StoredFileId));
             // AF-1: a name search and a file-type filter within the location.
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(d => EF.Functions.ILike(d.FileName, "%" + EscapeLike(search.Trim()) + "%", "\\"));
@@ -55,8 +60,13 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         try
         {
             if (!await MayReadAsync(readerId, ownerId, ct)) return new(DocumentReadFailure.NotFound);
-            file = await db.Documents.AsNoTracking().Where(d => d.Id == documentId && d.OwnerId == ownerId)
-                .Select(d => new AttachedDocumentFile(d.FileName, d.StoredFile.StorageKey, d.StoredFile.ContentType,
+            var query = db.Documents.AsNoTracking().Where(d => d.Id == documentId && d.OwnerId == ownerId);
+            if (readerId != ownerId)
+            {
+                var (files, folders) = await HiddenFromAsync(readerId, ownerId, ct);
+                query = query.Where(d => !files.Contains(d.StoredFileId) && (d.FolderId == null || !folders.Contains(d.FolderId.Value)));
+            }
+            file = await query.Select(d => new AttachedDocumentFile(d.FileName, d.StoredFile.StorageKey, d.StoredFile.ContentType,
                     d.StoredFile.ByteSize)).SingleOrDefaultAsync(ct);
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -214,7 +224,8 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         {
             // The name keeps the file's own extension: the file is downloaded under it.
             var name = DocumentFileRules.NormalizeFileName(fileName);
-            if (name is null || !DocumentFileRules.MatchesContentType(name, document.StoredFile.ContentType))
+            if (name is null || Path.GetFileNameWithoutExtension(name).Trim().Length == 0
+                || !DocumentFileRules.MatchesContentType(name, document.StoredFile.ContentType))
                 return Task.FromResult(LibraryFailure.NameInvalid);
             // The meeting copies keep their own name (BR-276).
             document.FileName = name;
@@ -233,24 +244,45 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         }, ct);
 
     public async Task<LibraryFailure> DeleteDocumentAsync(Guid ownerId, Guid documentId, CancellationToken ct = default)
-    {
-        try
+        => (await InLibraryLockAsync<bool>(ownerId, "delete a document", async (_, token) =>
         {
             // Only the library row: the meeting copies keep pointing at the stored file (their DocumentId goes
             // null), and the purge deletes the bytes once nothing uses them (BR-186, BR-213, BR-232).
-            var deleted = await db.Documents.Where(d => d.Id == documentId && d.OwnerId == ownerId).ExecuteDeleteAsync(ct);
-            return deleted == 0 ? LibraryFailure.NotFound : LibraryFailure.None;
-        }
-        catch (Exception ex) when (PersistenceError(ex))
-        {
-            logger.LogError(ex, "Failed to delete library document {DocumentId}", documentId);
-            return LibraryFailure.SaveFailed;
-        }
-    }
+            var deleted = await db.Documents.Where(d => d.Id == documentId && d.OwnerId == ownerId).ExecuteDeleteAsync(token);
+            return deleted == 0 ? new(LibraryFailure.NotFound) : new(Value: true);
+        }, ct)).Failure;
 
     /// <summary>The owner, or an administrator once the owner's account is deactivated (PO 27/10/2026).</summary>
     private async Task<bool> MayReadAsync(Guid readerId, Guid ownerId, CancellationToken ct)
         => readerId == ownerId || await db.Users.AnyAsync(u => u.Id == ownerId && !u.IsActive, ct);
+
+    /// <summary>
+    /// What an administrator reading someone else's library must not see: the files of a Confidential or Secret
+    /// meeting they cannot view themselves, attached now or earlier, and that meeting's upload folder — named after
+    /// it — with its subfolders. The library must not become a way round the meeting's own read rule and BR-188.
+    /// </summary>
+    private async Task<(IQueryable<Guid> Files, HashSet<Guid> Folders)> HiddenFromAsync(Guid readerId, Guid ownerId,
+        CancellationToken ct)
+    {
+        var readable = db.Meetings.Where(MeetingReadPolicy.ForUser(readerId)).Select(m => m.Id);
+        var restricted = db.Meetings.Where(m => (m.Sensitivity == Sensitivity.Confidential || m.Sensitivity == Sensitivity.Secret)
+            && !readable.Contains(m.Id)).Select(m => m.Id);
+        var files = db.MeetingDocuments.Where(d => restricted.Contains(d.MeetingId)).Select(d => d.StoredFileId);
+        var folders = await db.Folders.Where(f => f.OwnerId == ownerId).Select(f => new
+        {
+            f.Id, f.ParentId, Hidden = f.MeetingId != null && restricted.Contains(f.MeetingId.Value),
+        }).ToListAsync(ct);
+        var hidden = folders.Where(f => f.Hidden).Select(f => f.Id).ToHashSet();
+        // A subfolder goes with its hidden parent, however deep.
+        bool grew;
+        do
+        {
+            grew = false;
+            foreach (var folder in folders)
+                if (folder.ParentId is { } parent && hidden.Contains(parent)) grew |= hidden.Add(folder.Id);
+        } while (grew);
+        return (files, hidden);
+    }
 
     private Task<long> UsedBytesAsync(Guid ownerId, CancellationToken ct)
         => db.Documents.Where(d => d.OwnerId == ownerId).SumAsync(d => d.StoredFile.ByteSize, ct);

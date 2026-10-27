@@ -377,6 +377,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.Equal(1, body.GetProperty("document").GetProperty("meetingCount").GetInt32());
         Assert.Equal((400, "MSG346"), Pick(await Read(await Put(client, $"/api/documents/{document}/name", new { fileName = "Mới.html" }))));
         Assert.Equal((400, "MSG346"), Pick(await Read(await Put(client, $"/api/documents/{document}/name", new { fileName = "  " }))));
+        Assert.Equal((400, "MSG346"), Pick(await Read(await Put(client, $"/api/documents/{document}/name", new { fileName = ".pdf" }))));
         await using var db = fixture.Db();
         // BR-276: the meeting keeps the name it was added with.
         Assert.Equal("Cũ.pdf", await db.MeetingDocuments.Where(d => d.DocumentId == document).Select(d => d.FileName).SingleAsync());
@@ -500,6 +501,43 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.Equal(403, (int)(await member.GetAsync($"/api/users/{active}/library")).StatusCode);
         await using var db = fixture.Db();
         Assert.False(await db.AuditLog.AnyAsync(a => a.ObjectId == active));
+    }
+
+    [Fact]
+    public async Task Administrator_does_not_see_files_or_folders_of_a_secret_meeting_they_cannot_view()
+    {
+        // The Secretary uploads into a Secret meeting: the file lands in their library, in the meeting's folder.
+        var s = await fixture.Seed(sensitivity: Sensitivity.Secret);
+        using (var secretary = fixture.Client(s.Secretary))
+            Assert.Equal(201, (int)(await secretary.PostAsync(s.Url, DocumentFixture.Form(("Mật.pdf", SampleFiles.Pdf("mật"), null)))).StatusCode);
+        Guid meetingFolder, secretDocument;
+        await using (var db = fixture.Db())
+        {
+            meetingFolder = await db.Folders.Where(f => f.OwnerId == s.Secretary && f.MeetingId == s.MeetingId).Select(f => f.Id).SingleAsync();
+            secretDocument = await db.Documents.Where(d => d.FolderId == meetingFolder).Select(d => d.Id).SingleAsync();
+        }
+        var sub = await AddFolder(fixture, s.Secretary, "Con của thư mục cuộc họp", meetingFolder);
+        // Moved to the root, the file is still the meeting's.
+        var moved = await AddDocument(fixture, s.Secretary, "Khác.pdf", meetingFolder);
+        await using (var db = fixture.Db())
+        {
+            await db.Documents.Where(d => d.Id == secretDocument).ExecuteUpdateAsync(d => d.SetProperty(x => x.FolderId, (Guid?)null));
+            await db.Users.Where(u => u.Id == s.Secretary).ExecuteUpdateAsync(u => u.SetProperty(x => x.IsActive, false));
+        }
+        var loose = await AddDocument(fixture, s.Secretary, "Thường.pdf");
+        using var admin = await AdminClient();
+
+        var (status, _, view) = await Read(await admin.GetAsync($"/api/users/{s.Secretary}/library"));
+
+        Assert.Equal(200, status);
+        Assert.Equal([loose], view.GetProperty("documents").EnumerateArray().Select(d => d.GetProperty("id").GetGuid()));
+        var folders = view.GetProperty("folders").EnumerateArray().Select(f => f.GetProperty("id").GetGuid()).ToList();
+        Assert.DoesNotContain(meetingFolder, folders);
+        Assert.DoesNotContain(sub, folders);
+        Assert.Equal((404, "MSG175"), Pick(await Read(await admin.GetAsync($"/api/users/{s.Secretary}/library/documents/{secretDocument}/content?download=true"))));
+        Assert.Equal((404, "MSG175"), Pick(await Read(await admin.GetAsync($"/api/users/{s.Secretary}/library/documents/{moved}/content"))));
+        Assert.Equal((404, "MSG175"), Pick(await Read(await admin.GetAsync($"/api/users/{s.Secretary}/library?folderId={sub}"))));
+        Assert.Equal(200, (int)(await admin.GetAsync($"/api/users/{s.Secretary}/library/documents/{loose}/content")).StatusCode);
     }
 
     private static (int, string?) Pick((int Status, string? Code, JsonElement Body) result) => (result.Status, result.Code);

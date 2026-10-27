@@ -190,7 +190,7 @@ dòng nguồn UC phía dưới giữ để truy vết. Không cấp mã mới.
 | `MSG197` | 200 | Xoá thư mục | Đã xoá thư mục. |
 | `MSG198` | 503 | Xoá thư mục lỗi DB | Không xoá được thư mục. Thư mục không thay đổi. |
 | `MSG345` | 409 | Tải lên làm kho vượt 1 GB (PO 27/10/2026); không tệp nào được thêm | Kho tài liệu của bạn chỉ chứa tối đa 1 GB. Chưa có tài liệu nào được tải lên. |
-| `MSG346` | 400 | Đổi tên tài liệu: tên trống, có ký tự điều khiển, dài quá 255 ký tự, hoặc đổi phần đuôi `.pdf`/`.docx` | Tên tài liệu không hợp lệ. Tên không được trống và phải giữ phần đuôi .pdf hoặc .docx của tệp. |
+| `MSG346` | 400 | Đổi tên tài liệu: tên trống hoặc chỉ có phần đuôi, có ký tự điều khiển, dài quá 255 ký tự, hoặc đổi phần đuôi `.pdf`/`.docx` | Tên tài liệu không hợp lệ. Tên không được trống và phải giữ phần đuôi .pdf hoặc .docx của tệp. |
 | `MSG347` | 400 | Tên thư mục quá 400 ký tự; góp ý quá 4.000 ký tự (SCRUM-23) | Nội dung vượt quá độ dài cho phép. |
 
 Dùng lại cho cùng tình huống: `MSG164`/`MSG288` (tải lên kho, như UC-33a AF-1), `MSG158`/`MSG160` (mở tệp trong kho
@@ -238,9 +238,6 @@ Dùng lại cho cùng tình huống: `MSG161`/`MSG162`/`MSG166`/`MSG172` (thêm 
 | `MSG200` | 400 | Nội dung trống (BR-246) | Hãy nhập nội dung góp ý. |
 | `MSG202` | 503 | Lưu góp ý lỗi DB | Không gửi được góp ý. Chưa có góp ý nào được lưu. Vui lòng thử lại. |
 | `MSG204` | 500 | GET góp ý lỗi đọc DB | Không tải được góp ý của tài liệu. Vui lòng thử lại. |
-| `MSG345` | UC-36, PO 27/10/2026 (hạn mức kho 1 GB) · Đã triển khai SCRUM-111, chờ BA bổ sung đặc tả | Your personal library is limited to 1 GB. No documents were uploaded. |
-| `MSG346` | UC-71b (tên phải giữ phần đuôi của tệp) · Đã triển khai SCRUM-111, chờ BA bổ sung đặc tả | The document name is not valid. It must not be blank and must keep the .pdf or .docx extension of the file. |
-| `MSG347` | UC-72a, UC-72b, UC-35 (độ dài tối đa) · Đã triển khai SCRUM-110, SCRUM-23, chờ BA bổ sung đặc tả | The text is longer than allowed. |
 | `MSG251` | 409 | Cuộc họp đã kết thúc, kể cả khi vừa kết thúc lúc đang gửi (BR-282) | Cuộc họp đã kết thúc nên góp ý chỉ còn để đọc. |
 
 ## Mã tiếp theo
@@ -746,6 +743,9 @@ Các mã dưới đây cấp cho đặc tả ngày 14/10/2026; trạng thái the
 | `MSG202` | UC-35 / EX-3 · Đã triển khai SCRUM-23 | Unable to add the comment. No comment was saved. Please try again. |
 | `MSG203` | Retired — mandatory PDF page reference removed · Ngừng dùng | Retired: a PDF comment does not require a page reference. Do not reuse. |
 | `MSG204` | UC-35 / EX-4 · Đã triển khai SCRUM-23 | Unable to load the document comments. Please try again. |
+| `MSG345` | UC-36, PO 27/10/2026 (hạn mức kho 1 GB) · Đã triển khai SCRUM-111, chờ BA bổ sung đặc tả | Your personal library is limited to 1 GB. No documents were uploaded. |
+| `MSG346` | UC-71b (tên phải giữ phần đuôi của tệp) · Đã triển khai SCRUM-111, chờ BA bổ sung đặc tả | The document name is not valid. It must not be blank and must keep the .pdf or .docx extension of the file. |
+| `MSG347` | UC-72a, UC-72b, UC-35 (độ dài tối đa) · Đã triển khai SCRUM-110, SCRUM-23, chờ BA bổ sung đặc tả | The text is longer than allowed. |
 
 
 ### Biểu quyết — FE-11 (UC-52a, UC-52b, UC-53–UC-57)

@@ -87,7 +87,8 @@ chủ kho tự mở. Lỗi: `404 MSG175`; `503 MSG158` (xem) / `503 MSG160` (t�
 ## Đổi tên — `PUT /api/documents/{documentId}/name` (UC-71b)
 
 Body `{ "fileName": "Tờ trình (bản cuối).pdf" }`. Tên được cắt khoảng trắng hai đầu và bỏ phần đường dẫn; phải
-**giữ đúng phần đuôi** của tệp (`.pdf` cho PDF, `.docx` cho DOCX, không phân biệt hoa thường), không trống, ≤ 255 ký tự,
+**giữ đúng phần đuôi** của tệp (`.pdf` cho PDF, `.docx` cho DOCX, không phân biệt hoa thường), không trống, không chỉ có
+phần đuôi, ≤ 255 ký tự,
 không có ký tự điều khiển. Sai → `400 MSG346`. Tên đã chép vào cuộc họp **không đổi theo** (BR-276).
 
 `200 { "code": "MSG183", "message": "…", "document": { …như GET… } }`. Lỗi: `404 MSG175`, `503 MSG184`.
@@ -135,6 +136,11 @@ không đăng nhập được nên không tự đọc. **Phạm vi mới, chưa 
 
 - Cổng quyền `AdminUsers` như `/api/users` (thiếu quyền → `403` body rỗng).
 - Tài khoản còn hoạt động hoặc không tồn tại → `404 MSG175`, như mục không có trong kho.
+- **Kho không là đường vòng qua quy tắc của cuộc họp.** Tệp từng thuộc (đang gắn hoặc đã gỡ) một cuộc họp `Confidential`
+  hoặc `Secret` mà Quản trị viên **không xem được** thì bị ẩn khỏi danh sách và mở ra trả `404 MSG175`; thư mục tải lên của
+  cuộc họp đó (tên chứa tiêu đề cuộc họp) và các thư mục con của nó cũng bị ẩn. Nếu không, tệp tải từ máy vào một cuộc
+  họp Mật — vốn tự vào kho của người tải — sẽ tải về được qua đây, vượt cả quyền xem cuộc họp lẫn BR-188.
+  `usedBytes` vẫn tính cả phần bị ẩn.
 - **Mỗi lần đọc ghi một dòng kiểm toán** `library.read`, `objectType` `User`, `objectId` là chủ kho, `details` có
   `folderId` (xem danh sách) hoặc `documentId` + `fileName` (mở tệp). Không ghi được kiểm toán thì không trả dữ liệu
   (`500 MSG176` / `503 MSG158`). Chỉ đọc; Quản trị viên không sửa, chuyển hay xoá được gì trong kho này.
@@ -162,4 +168,5 @@ kho chưa cấu hình → `MSG178`; tìm không phân biệt hoa thường, lọ
 mở; `meetingCount` bỏ cuộc họp không xem được và bản đã gỡ; đổi tên giữ đuôi, bản trong cuộc họp giữ tên cũ; chuyển;
 xoá khỏi kho rồi khoá chủ kho, thành viên vẫn mở được bản trong cuộc họp; lỗi DB → `MSG184`/`MSG186`/`MSG181`; mở tệp,
 object thiếu → `MSG158`/`MSG160`; Quản trị viên đọc kho đã khoá (2 dòng kiểm toán), kho còn hoạt động → `MSG175`, người
-thường → `403`.
+thường → `403`; tệp và thư mục (cả thư mục con) của cuộc họp Mật mà Quản trị viên không xem được bị ẩn, mở trả `MSG175`;
+tên chỉ có phần đuôi → `MSG346`.
