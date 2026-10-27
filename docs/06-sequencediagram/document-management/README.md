@@ -33,8 +33,9 @@ Từ 27/10/2026 mọi UC của FE-07 đều có sequence. Cột "Loại": **as-b
   Sequence vẽ một lần gửi; hàng đợi ở trình duyệt gửi từng tệp một request (ADR-0033, BR-286), không vẽ lại vòng lặp.
 - UC-34b (Quản trị viên đọc kho của tài khoản đã khoá, ADR-0035) vẽ theo code PR #169: kiểm tài khoản đã khoá, ghi nhật ký kiểm toán
   trước khi trả dữ liệu; không ghi được nhật ký thì từ chối (`MSG176` khi tải danh sách, `MSG158` khi mở tệp); ẩn tệp của cuộc họp
-  Confidential/Secret và thư mục tải lên của cuộc họp đó (BR-334, BR-335). Lifeline `:Library Review Controller/Service` và
-  `:Audit Log` là tên gọi của sơ đồ, code đặt trong `PersonalLibraryEndpoints` / `PersonalLibraryService`.
+  Confidential/Secret và thư mục tải lên của cuộc họp đó (BR-334, BR-335). Dùng `:Document Controller/Service` và
+  `:Document Repository` của kho cá nhân, cùng `:User Repository` và `:Audit Log` ngoài feature; code đặt trong
+  `PersonalLibraryEndpoints` / `PersonalLibraryService`.
 - UC-72a–d, UC-34, UC-36, UC-71a–c: PROPOSED theo Report 3 §II.7.3–7.7. Lifeline `Personal Library Screen`,
   `:Folder Controller/Service`, `:Document Controller/Service`, `:Folder Repository`, `:Document Repository`. AF-1 của
   UC-34 (tìm, lọc), UC-71c và UC-72c (chuyển ra gốc thư viện) nằm trong câu của request, không thành nhánh riêng. UC-71a,
