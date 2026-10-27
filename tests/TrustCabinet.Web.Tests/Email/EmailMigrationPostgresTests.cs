@@ -57,7 +57,7 @@ public sealed class EmailMigrationPostgresTests : IAsyncLifetime
 
         await MigrateToAsync();
 
-        var jobs = await _db.EmailMessages.OrderBy(email => email.ToAddress).ToListAsync();
+        var jobs = (await Emails().ToListAsync()).OrderBy(email => email.ToAddress).ToList();
         Assert.Equal(2, jobs.Count);
         Assert.Equal($"legacy-email:{first:D}", jobs[0].DeduplicationKey);
         Assert.Equal($"legacy-email:{second:D}", jobs[1].DeduplicationKey);
@@ -92,13 +92,11 @@ public sealed class EmailMigrationPostgresTests : IAsyncLifetime
             LeaseToken = leaseToken,
             LeaseExpiresAt = leaseExpiresAt,
         };
-        _db.EmailMessages.Add(job);
-        await _db.SaveChangesAsync();
-        _db.ChangeTracker.Clear();
+        await InsertEmailAsync(job);
 
         await MigrateToAsync();
 
-        var persisted = await _db.EmailMessages.SingleAsync();
+        var persisted = await Emails().SingleAsync();
         Assert.Equal(job.Id, persisted.Id);
         Assert.Equal(job.DeduplicationKey, persisted.DeduplicationKey);
         Assert.Equal(job.Body, persisted.Body);
@@ -165,8 +163,7 @@ public sealed class EmailMigrationPostgresTests : IAsyncLifetime
             LeaseToken = leaseToken,
             LeaseExpiresAt = leaseExpiresAt,
         };
-        _db.EmailMessages.Add(job);
-        await _db.SaveChangesAsync();
+        await InsertEmailAsync(job);
 
         // The previous schema has no organizer-transfer fields. Insert its evidence directly
         // without asking the current EF history model to select columns not added yet.
@@ -255,7 +252,7 @@ public sealed class EmailMigrationPostgresTests : IAsyncLifetime
 
         async Task AssertJobPreservedAsync()
         {
-            var persisted = await _db.EmailMessages.AsNoTracking().SingleAsync();
+            var persisted = await Emails().SingleAsync();
             Assert.Equal(job.Id, persisted.Id);
             Assert.Equal(job.DeduplicationKey, persisted.DeduplicationKey);
             Assert.Equal(job.ToAddress, persisted.ToAddress);
@@ -384,6 +381,39 @@ public sealed class EmailMigrationPostgresTests : IAsyncLifetime
         Assert.Empty(await DeliveryColumnsAsync());
         Assert.Contains("ix_email_messages_status_created_at", await EmailIndexesAsync());
     }
+
+    /// <summary>
+    /// The email columns these migrations are about. Reading or writing the whole entity would name the columns later
+    /// migrations add, which the schema under test does not have yet.
+    /// </summary>
+    private IQueryable<StoredEmail> Emails()
+        => _db.EmailMessages.AsNoTracking().Select(e => new StoredEmail(
+            e.Id, e.DeduplicationKey, e.ToAddress, e.Subject, e.Body, e.CalendarAttachment, e.MeetingId, e.Status,
+            e.AttemptCount, e.LeaseToken, e.LeaseExpiresAt));
+
+    private Task InsertEmailAsync(EmailMessage job)
+        => _db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO email_messages
+                (id, created_at, updated_at, deduplication_key, to_address, subject, body, calendar_attachment,
+                 meeting_id, status, attempt_count, last_error, lease_token, lease_expires_at)
+            VALUES
+                ({job.Id}, {job.CreatedAt}, {job.UpdatedAt}, {job.DeduplicationKey}, {job.ToAddress}, {job.Subject},
+                 {job.Body}, {job.CalendarAttachment}, {job.MeetingId}, {job.Status.ToString()}, {job.AttemptCount},
+                 {job.LastError}, {job.LeaseToken}, {job.LeaseExpiresAt})
+            """);
+
+    private sealed record StoredEmail(
+        Guid Id,
+        string DeduplicationKey,
+        string ToAddress,
+        string Subject,
+        string Body,
+        string? CalendarAttachment,
+        Guid? MeetingId,
+        EmailStatus Status,
+        int AttemptCount,
+        Guid? LeaseToken,
+        DateTimeOffset? LeaseExpiresAt);
 
     private Task MigrateToAsync(string? target = null)
         => _db.GetService<IMigrator>().MigrateAsync(target ?? _db.Database.GetMigrations().TakeWhile(m => !m.EndsWith("SynchronizeAgendaWithPoRequirements", StringComparison.Ordinal)).Last());

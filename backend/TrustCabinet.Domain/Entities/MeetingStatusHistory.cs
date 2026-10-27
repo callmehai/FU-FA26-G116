@@ -33,10 +33,14 @@ public class MeetingStatusHistory : Entity
     public Guid? NewOrganizerId { get; set; }
     public User? NewOrganizer { get; set; }
 
-    public Guid ActorId { get; set; }
-    public User Actor { get; set; } = null!;
+    /// <summary>Null only when the system acted on its own, as when it cancels an overdue meeting (BR-301).</summary>
+    public Guid? ActorId { get; set; }
+    public User? Actor { get; set; }
 
-    /// <summary>Required when a meeting is rejected, so the secretary sees what to fix (SCRUM-19).</summary>
+    /// <summary>
+    /// Required when a meeting is rejected, so the secretary sees what to fix (SCRUM-19), and when it is cancelled
+    /// (BR-298).
+    /// </summary>
     public string Reason { get; set; } = string.Empty;
 
     public DateTimeOffset OccurredAt { get; set; }

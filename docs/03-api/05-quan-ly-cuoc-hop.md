@@ -619,3 +619,32 @@ Meeting, current agenda và history được ghi dưới khóa Meeting trong m�
 Notification Start, agendaChanged/MeetingEnded và đóng LiveKit chạy sau commit với budget độc lập request.
 Lỗi side effect không đổi kết quả thành công; notification creation best effort, room được janitor đối soát.
 Không có lifecycle event Start mới. Xem [bàn giao FE/Tester](10-scrum69-ban-giao.md).
+
+## SCRUM-99 — Huỷ cuộc họp (UC-75) và tự huỷ khi quá hạn
+
+Quyết định: [ADR-0032](../05-decisions/0032-huy-cuoc-hop-va-tu-huy-khi-qua-han.md).
+
+`POST /api/meetings/{id}/transitions` nhận `{"action":"Cancel","reason":"…"}`.
+
+- Người gọi phải là Organizer (`createdById`) còn capability `MeetingCreator`; cuộc họp ở `Draft`, `WaitingApproval`,
+  `Rejected`, `Approved` hoặc `Published` (BR-297).
+- `reason` bắt buộc, cắt khoảng trắng hai đầu, tối đa 1.000 ký tự.
+- Thành công `200/MSG261`, `MeetingTransitionResponse`; `meeting.status = "Cancelled"`, `meeting.cancellation` có
+  `cancelledAt`, `cancelledById`, `cancelledByName`, `reason`; `history.action = "Cancel"`, `history.cancellationReason`.
+- Thiếu/rỗng lý do `400/MSG262`; quá 1.000 ký tự `400/MSG345`; đã bắt đầu/kết thúc/đã huỷ `409/MSG263`; đọc được nhưng không
+  phải Organizer `403/MSG263`; không lưu được `503/MSG264`; không đọc được `404`.
+- Huỷ từ `Published`: trong cùng transaction, mỗi người tham dự đang hoạt động và mỗi Guest chưa thu hồi có một dispatch
+  `Cancelled`; người tham dự nội bộ (trừ người huỷ) có thông báo `MeetingCancelled`. Email gửi sau đó, chỉ cho người đã nhận
+  thư mời, kèm lý do và `.ics` `METHOD:CANCEL` cùng UID để lịch tự gỡ sự kiện. Lời mời chưa gửi của cuộc họp đã huỷ bị bỏ.
+- Huỷ từ `WaitingApproval`: người duyệt được phân công nhận thông báo `MeetingCancelled`. Huỷ từ trạng thái khác: không báo ai.
+- Thành viên/Chair thấy cuộc họp `Cancelled` khi nó đã được công bố trước khi huỷ (`cancelledFromStatus = Published`);
+  cuộc họp huỷ trước khi công bố vẫn ẩn với họ như trước.
+
+**Tự huỷ (BR-301, PO 27/10/2026):** `MeetingOverdueWorker` chạy 15 phút một lần, huỷ cuộc họp chưa bắt đầu (5 trạng thái trên)
+khi `plannedStartTime` đã qua `Meetings:AutoCancelAfterHours` giờ (mặc định 24). History `AutoCancel`, `actorId = null`,
+`actorName = "Hệ thống"`, lý do “Không diễn ra theo lịch: quá 24 giờ sau giờ bắt đầu dự kiến mà chưa bắt đầu.”; chỉ Organizer
+nhận thông báo. Quy tắc tự `Ended` sau 4 giờ (BR-302) **bỏ** theo PO.
+
+`GET /api/meetings/{id}/history`: `actorId` có thể `null` (Hệ thống); thêm `cancellationReason` trên dòng `Cancel`/`AutoCancel`,
+ai đọc được cuộc họp cũng thấy. `GET /api/meetings?status=Cancelled` lọc được trạng thái mới.
+

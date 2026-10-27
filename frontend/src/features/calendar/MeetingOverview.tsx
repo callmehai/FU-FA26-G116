@@ -265,7 +265,16 @@ export function MeetingOverview({
             <Icon name="calendar" size={16} />
             Xác nhận tham dự?
           </span>
-          <RsvpButtons meetingId={item.id} labelledBy={`${titleId}-ask`} onAnswered={onAnswered} />
+          {/* The card reads `canRespond` and the answer from its own copy of the meeting, so it re-reads
+              it: the buttons leave and the chip shows the answer, as on the list. */}
+          <RsvpButtons
+            meetingId={item.id}
+            labelledBy={`${titleId}-ask`}
+            onAnswered={(response) => {
+              setAttempt((n) => n + 1)
+              onAnswered(response)
+            }}
+          />
         </div>
       )}
 

@@ -175,6 +175,7 @@ function RoomLifecycle({ meeting, call }: { meeting: Meeting; call: CallRoomStat
       NotStarted: roomMessage.notStarted,
       Ended: roomMessage.closed,
       InPersonOnly: roomMessage.inPersonOnly,
+      Cancelled: roomMessage.cancelled,
       Open: '',
     }[call.status]
     return <LobbyMessage meetingId={meeting.id} title={meeting.title} text={text} />

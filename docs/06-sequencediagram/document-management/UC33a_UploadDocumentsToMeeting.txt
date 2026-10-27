@@ -73,9 +73,9 @@ else Actor may add documents
             deactivate MeetingDocumentRepository
 
             alt Stored total plus this submission exceeds 10 GB - EX-9
-                DocumentService-->DocumentController: MSG345 - The system has run out of storage space. Please contact the System Admin.
-                DocumentController-->DocumentsTab: MSG345 - The system has run out of storage space. Please contact the System Admin.
-                DocumentsTab-->Actor: MSG345 - The system has run out of storage space. Please contact the System Admin.
+                DocumentService-->DocumentController: MSG346 - The system's document storage is full. No documents were uploaded. Please contact an administrator.
+                DocumentController-->DocumentsTab: MSG346 - The system's document storage is full. No documents were uploaded. Please contact an administrator.
+                DocumentsTab-->Actor: MSG346 - The system's document storage is full. No documents were uploaded. Please contact an administrator.
 
             else Within the system storage limit
                 DocumentService->MeetingDocumentRepository: Record one stored-file entry per file, before any byte is stored (ADR-0024)

@@ -8,7 +8,7 @@
 > Số UC đã đổi theo baseline 70 UC ([bảng đổi số](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới));
 > các mã `BR-54` → `BR-61` nhắc trong file là số BR cũ đã ngừng dùng ([danh mục BR](../01-requirements/06-business-rules.md)).
 
-SCRUM-15 không thêm HTTP endpoint riêng. Luồng công bố của SCRUM-19 gọi
+SCRUM-15 không thêm endpoint nào cho người dùng; endpoint duy nhất là webhook Resend gọi để báo kết quả giao thư (xem [Gửi qua Resend](#gửi-qua-resend-và-kết-quả-giao-thư--adr-0031)). Luồng công bố của SCRUM-19 gọi
 `IMeetingInvitationQueue.QueueForPublishedMeetingAsync(meetingId)` sau khi transaction đã commit
 meeting sang `Published`. Khi bật SMTP, mỗi thành phần tham dự tạo một dòng
 `email_messages` ở trạng thái `Queued`; request công bố chỉ ghi queue và không chờ SMTP. Chỉ tài khoản
@@ -71,6 +71,54 @@ sau commit thì giữ Published, trả `MSG45`, ghi log và để worker đối 
 giữ retry idempotent và không tạo thêm publication history. Không gọi queue trước khi trạng thái
 `Published` được commit, và không gọi SMTP trực tiếp từ request.
 
+## Gửi qua Resend và kết quả giao thư — ADR-0031
+
+Server gửi qua API của Resend ([ADR-0031](../05-decisions/0031-gui-email-qua-resend.md)); `Email:Provider` chọn
+`Resend` hoặc `Smtp`. Hàng đợi ở trên giữ nguyên, chỉ đổi cách gửi một thư:
+
+| Bước | Resend | SMTP |
+|---|---|---|
+| Gửi | `POST https://api.resend.com/emails`, kèm `Idempotency-Key: email-message/{id}` và tag `email_message_id` | MailKit, `Message-ID` dựng từ `id` |
+| Thử lại không gửi trùng | Có: Resend trả kết quả lần trước trong 24 giờ | Không |
+| Lỗi không thử lại | `400`, `422` → `Failed` ngay | Không có, mọi lỗi đều thử lại |
+| `provider_message_id` | id Resend trả về | trống |
+| Kết quả giao thư | Webhook bên dưới | Không biết |
+
+### `POST /api/email/resend/webhook`
+
+Chỉ Resend gọi. Không đăng nhập; Resend chứng minh bằng chữ ký Svix trên đúng các byte của body (header `svix-id`,
+`svix-timestamp`, `svix-signature`; HMAC-SHA256 bằng phần sau `whsec_` của `Email:Resend:WebhookSecret`; lệch giờ
+tối đa 5 phút). Body tối đa 256 KB. Câu trả lời chỉ có mã trạng thái, không có mã `MSGnn`, vì không có màn hình nào đọc.
+
+| Mã | Khi nào |
+|---|---|
+| `200` | Đã ghi, hoặc là sự kiện app không theo dõi (`email.sent`, `opened`, `clicked`…), hoặc thư không có dòng trong `email_messages` (email đặt lại mật khẩu) |
+| `400` | Chữ ký đúng nhưng body không đọc được; gửi lại cũng vậy |
+| `401` | Thiếu hoặc sai chữ ký, hoặc quá 5 phút |
+| `413` | Body quá 256 KB |
+| `500` | Lỗi khi ghi; Resend sẽ gửi lại |
+| `503` | Chưa đặt `Email:Resend:WebhookSecret` |
+
+Sự kiện được ghi vào `email_messages`, tìm theo `provider_message_id` hoặc tag `email_message_id`:
+
+| Sự kiện Resend | `delivery_state` | `delivery_detail` |
+|---|---|---|
+| `email.delivered` | `Delivered` | |
+| `email.delivery_delayed` | `Delayed` | |
+| `email.bounced` | `Bounced` | `bounce.type`, `subType`, `message` |
+| `email.complained` | `Complained` | |
+| `email.suppressed` | `Suppressed` | |
+| `email.failed` | `Failed` | `failed.reason` |
+
+`delivery_state_at` là `created_at` của sự kiện; một sự kiện cũ hơn cái đã lưu thì bỏ qua. `status` không đổi theo
+webhook: `Sent` nghĩa là Resend đã nhận thư, `delivery_state` là chuyện xảy ra sau đó. Xem thư chưa tới:
+
+```sql
+select to_address, subject, delivery_state, delivery_detail, delivery_state_at
+from email_messages where delivery_state in ('Bounced', 'Complained', 'Suppressed', 'Failed')
+order by delivery_state_at desc;
+```
+
 ## Cấu hình
 
 Các giá trị không bí mật nằm dưới section `Email` trong `appsettings.json`:
@@ -84,8 +132,17 @@ Các giá trị không bí mật nằm dưới section `Email` trong `appsetting
     "PollingIntervalSeconds": 5,
     "ProcessingLeaseSeconds": 120,
     "SendAttemptTimeoutSeconds": 60,
-    "Smtp": {
+    "Provider": "Resend",
+    "Resend": {
       "Enabled": true,
+      "ApiUrl": "https://api.resend.com/",
+      "ApiKey": "",
+      "FromAddress": "no-reply@example.vn",
+      "FromName": "TrustCabinet",
+      "WebhookSecret": ""
+    },
+    "Smtp": {
+      "Enabled": false,
       "Host": "smtp.example.vn",
       "Port": 587,
       "Security": "StartTls",
@@ -99,7 +156,9 @@ Các giá trị không bí mật nằm dưới section `Email` trong `appsetting
 }
 ```
 
-Không commit username/password SMTP. Đặt chúng bằng user-secrets khi phát triển:
+Chỉ transport được chọn ở `Provider` cần `Enabled: true`. Không commit `Resend:ApiKey`, `Resend:WebhookSecret`
+hay username/password SMTP. Server đặt chúng bằng biến môi trường (`Email__Resend__ApiKey`…, xem
+[deploy/README.md §8](../../deploy/README.md#8-gửi-email-thật-tuỳ-chọn)); máy dev dùng user-secrets:
 
 ```powershell
 dotnet user-secrets set "Email:Smtp:Enabled" "true" --project backend/TrustCabinet.Web
@@ -119,6 +178,6 @@ khởi tạo lại từ meeting Published và request Publish vẫn trả `200 M
 
 Giới hạn cấu hình: `MaxAttempts` từ 1–20; retry/polling từ 1–3.600 giây; lease từ 10–3.600 giây;
 timeout SMTP và deadline toàn bộ lần gửi từ 1–300 giây. `ProcessingLeaseSeconds` phải dài hơn
-`SendAttemptTimeoutSeconds`. Khi bật SMTP,
-backend kiểm tra cấu hình ngay lúc khởi động và dừng với lỗi rõ ràng nếu thiếu host, sender, URL
-frontend, security mode không hợp lệ hoặc cặp username/password không đầy đủ.
+`SendAttemptTimeoutSeconds`. Khi bật transport đã chọn,
+backend kiểm tra cấu hình ngay lúc khởi động và dừng với lỗi rõ ràng nếu thiếu URL frontend; với Resend: `ApiUrl`
+https, `ApiKey`, `FromAddress`; với SMTP: host, sender, security mode hợp lệ và cặp username/password đầy đủ.

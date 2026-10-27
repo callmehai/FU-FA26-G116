@@ -17,6 +17,9 @@ public static class DocumentServiceCollectionExtensions
         services.AddSingleton<IFileStorage, S3FileStorage>();
         services.AddScoped<IMeetingDocumentRepository, MeetingDocumentRepository>();
         services.AddScoped<IMeetingDocumentService, MeetingDocumentService>();
+        services.AddScoped<StoredFileWriter>();
+        services.AddScoped<IPersonalLibraryService, PersonalLibraryService>();
+        services.AddScoped<IDocumentCommentService, DocumentCommentService>();
         services.AddScoped<OrphanFilePurger>();
         services.AddHostedService<OrphanFilePurgeWorker>();
         return services;

@@ -16,7 +16,7 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0003](0003-chon-postgresql-thay-cho-sql-server.md) | Chọn PostgreSQL thay cho SQL Server | Đã chấp nhận |
 | [0004](0004-mot-to-chuc-khong-co-don-vi.md) | Một tổ chức, không có đơn vị trực thuộc | Đã chấp nhận |
 | [0005](0005-khach-ngoai-tham-du-bang-link-moi.md) | Khách ngoài hệ thống tham dự bằng link mời | Thay thế về quyền/xác minh bởi ADR-0016 |
-| [0006](0006-kho-tai-lieu-ca-nhan-va-quyen-doc.md) | Kho tài liệu cá nhân và quy tắc đọc tài liệu | Đã chấp nhận — phần loại Guest thay thế bởi ADR-0016; phần phiên bản thay thế bởi ADR-0018; quy tắc đọc tài liệu cuộc họp thay thế bởi ADR-0020; hạn mức kho và quyền đọc kho người rời tổ chức chốt bởi ADR-0031 |
+| [0006](0006-kho-tai-lieu-ca-nhan-va-quyen-doc.md) | Kho tài liệu cá nhân và quy tắc đọc tài liệu | Đã chấp nhận — phần loại Guest thay thế bởi ADR-0016; phần phiên bản thay thế bởi ADR-0018; quy tắc đọc tài liệu cuộc họp thay thế bởi ADR-0020; hạn mức kho chốt bởi ADR-0034, quyền đọc kho tài khoản khoá chốt bởi ADR-0035 |
 | [0007](0007-ma-tran-phan-quyen-sua-duoc-luc-chay.md) | Ma trận phân quyền sửa được lúc chạy — bỏ `HasData` | Đã chấp nhận — phần huỷ phiên khi sửa ma trận thay thế bởi ADR-0022 |
 | [0008](0008-vai-tro-la-du-lieu.md) | Vai trò là dữ liệu, không phải enum | Đã chấp nhận |
 | [0009](0009-tu-lien-ket-google-lan-dau-theo-email.md) | Tự liên kết tài khoản Google ở lần đăng nhập đầu, theo email đã xác minh | Đề xuất |
@@ -41,4 +41,8 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0028](0028-trang-thai-la-icon-va-chu.md) | Trạng thái cuộc họp là icon và chữ, mức "Thường" không gắn chip | Đề xuất |
 | [0029](0029-ghi-am-theo-micro-tung-nguoi.md) | Ghi âm theo micro từng người, chỉ lưu chữ của từng câu | Đề xuất — SCRUM-109 |
 | [0030](0030-ghi-ca-cuoc-goi-tu-may-thu-ky.md) | Ghi cả cuộc gọi từ trình duyệt của Thư ký, báo đang ghi qua kênh dữ liệu của cuộc gọi | Đề xuất — SCRUM-44, PO 26/10/2026 |
-| [0031](0031-han-muc-10gb-he-thong-va-admin-doc-kho-tai-khoan-khoa.md) | Hạn mức lưu trữ toàn hệ thống 10 GB; Quản trị viên đọc kho của tài khoản đã khoá, có nhật ký kiểm toán | Đề xuất — SCRUM-58, PO 27/10/2026 |
+| [0031](0031-gui-email-qua-resend.md) | Gửi email qua Resend, giữ hàng đợi trong app, nhận kết quả giao thư bằng webhook | Đề xuất — SCRUM-15, PO 27/10/2026 |
+| [0032](0032-huy-cuoc-hop-va-tu-huy-khi-qua-han.md) | Trạng thái Cancelled, huỷ cuộc họp và tự huỷ khi quá 24 giờ sau giờ bắt đầu | Đề xuất — SCRUM-99, PO 27/10/2026 |
+| [0033](0033-hang-doi-tai-len-o-trinh-duyet.md) | Hàng đợi tải lên ở trình duyệt, mỗi tệp một request, tự thử lại khi chắc chưa lưu | Đề xuất — SCRUM-58, PO 27/10/2026 |
+| [0034](0034-han-muc-luu-tru-toan-he-thong.md) | Hạn mức lưu trữ tài liệu 10 GB cho cả hệ thống thay cho 1 GB mỗi người | Đề xuất — SCRUM-58, PO 27/10/2026 |
+| [0035](0035-quan-tri-vien-doc-kho-tai-khoan-khoa.md) | Quản trị viên đọc kho của tài khoản đã khoá, có nhật ký kiểm toán, không thấy tệp cuộc họp Confidential/Secret | Đề xuất — SCRUM-58, PO 27/10/2026 |

@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -103,7 +105,76 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
             Assert.Equal(EmailStatus.Sent, message.Status);
             Assert.Equal(1, message.AttemptCount);
             Assert.Equal(Now, message.SentAt);
+            Assert.Equal(ProviderId(message), message.ProviderMessageId);
         });
+    }
+
+    [Fact]
+    public async Task A_message_the_provider_refuses_fails_at_once_without_retries()
+    {
+        _db.EmailMessages.Add(QueuedMessage("bad-address@example.com", Now));
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+        var sender = new RefusingSender("Resend answered 422 validation_error: Invalid `to` field.");
+
+        var result = await Processor(_db, sender, maxAttempts: 8).ProcessNextAsync();
+
+        Assert.Equal(EmailProcessingOutcome.PermanentlyFailed, result.Outcome);
+        var stored = await _db.EmailMessages.AsNoTracking().SingleAsync();
+        Assert.Equal(EmailStatus.Failed, stored.Status);
+        Assert.Equal(1, stored.AttemptCount);
+        Assert.Null(stored.NextAttemptAt);
+        Assert.Contains("validation_error", stored.LastError, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Resend_webhook_records_delivery_and_never_lets_an_older_report_overwrite_it()
+    {
+        var sent = QueuedMessage("member@example.com", Now);
+        sent.Status = EmailStatus.Sent;
+        sent.ProviderMessageId = "re-provider-id";
+        _db.EmailMessages.Add(sent);
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+        var receiver = WebhookReceiver(_db);
+
+        Assert.Equal(
+            EmailWebhookOutcome.Recorded,
+            await Deliver(receiver, "email.delivered", "re-provider-id", Now.AddSeconds(10)));
+        // Retries are not ordered: a "delayed" produced before the delivery arrives after it.
+        Assert.Equal(
+            EmailWebhookOutcome.Ignored,
+            await Deliver(receiver, "email.delivery_delayed", "re-provider-id", Now.AddSeconds(5)));
+
+        var stored = await _db.EmailMessages.AsNoTracking().SingleAsync();
+        Assert.Equal(EmailDeliveryState.Delivered, stored.DeliveryState);
+        Assert.Equal(Now.AddSeconds(10), stored.DeliveryStateAt);
+        Assert.Equal(EmailStatus.Sent, stored.Status);
+    }
+
+    [Fact]
+    public async Task Resend_webhook_finds_the_row_by_its_tag_and_ignores_mail_it_never_queued()
+    {
+        // The row whose returned id was never stored — say the database update after the send was lost.
+        var sent = QueuedMessage("member@example.com", Now);
+        sent.Status = EmailStatus.Sent;
+        _db.EmailMessages.Add(sent);
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+        var receiver = WebhookReceiver(_db);
+
+        Assert.Equal(
+            EmailWebhookOutcome.Recorded,
+            await Deliver(receiver, "email.bounced", "re-late-id", Now.AddSeconds(10), rowId: sent.Id));
+        // A password reset email has no row.
+        Assert.Equal(
+            EmailWebhookOutcome.Ignored,
+            await Deliver(receiver, "email.delivered", "re-password-reset", Now.AddSeconds(10)));
+
+        var stored = await _db.EmailMessages.AsNoTracking().SingleAsync();
+        Assert.Equal(EmailDeliveryState.Bounced, stored.DeliveryState);
+        Assert.Equal("re-late-id", stored.ProviderMessageId);
+        Assert.Equal("Permanent General 550 user unknown", stored.DeliveryDetail);
     }
 
     [Fact]
@@ -134,6 +205,27 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
         Assert.Equal(2, afterSecond.AttemptCount);
         Assert.Null(afterSecond.NextAttemptAt);
         Assert.Contains("SMTP unavailable", afterSecond.LastError, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Undeliverable_domain_fails_at_once_without_reaching_smtp()
+    {
+        _db.EmailMessages.AddRange(
+            QueuedMessage("thuky@TrustCabinet.Local", Now),
+            QueuedMessage("someone@example.com", Now.AddMinutes(1)));
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+        var sender = new RecordingSender();
+        var processor = Processor(_db, sender, undeliverableDomains: ["trustcabinet.local"]);
+
+        Assert.Equal(EmailProcessingOutcome.PermanentlyFailed, (await processor.ProcessNextAsync()).Outcome);
+        Assert.Equal(EmailProcessingOutcome.Sent, (await processor.ProcessNextAsync()).Outcome);
+
+        Assert.Equal(["someone@example.com"], sender.Recipients);
+        var skipped = await _db.EmailMessages.AsNoTracking().SingleAsync(m => m.ToAddress == "thuky@TrustCabinet.Local");
+        Assert.Equal(EmailStatus.Failed, skipped.Status);
+        Assert.Null(skipped.NextAttemptAt);
+        Assert.Contains("UndeliverableDomains", skipped.LastError, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -227,7 +319,8 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
         int maxAttempts = 3,
         int retryDelaySeconds = 60,
         int sendAttemptTimeoutSeconds = 60,
-        int processingLeaseSeconds = 120)
+        int processingLeaseSeconds = 120,
+        string[]? undeliverableDomains = null)
         => new(
             db,
             sender,
@@ -238,9 +331,36 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
                 PollingIntervalSeconds = 1,
                 ProcessingLeaseSeconds = processingLeaseSeconds,
                 SendAttemptTimeoutSeconds = sendAttemptTimeoutSeconds,
+                UndeliverableDomains = undeliverableDomains ?? [],
             }),
             time ?? new FixedTimeProvider(Now),
             NullLogger<EmailQueueProcessor>.Instance);
+
+    private static ResendWebhookReceiver WebhookReceiver(TrustCabinetDbContext db) => new(
+        db,
+        Options.Create(new EmailDeliveryOptions
+        {
+            Resend = new ResendOptions { WebhookSecret = ResendWebhookReceiverTests.Secret },
+        }),
+        new FixedTimeProvider(Now),
+        NullLogger<ResendWebhookReceiver>.Instance);
+
+    private static Task<EmailWebhookOutcome> Deliver(
+        ResendWebhookReceiver receiver, string type, string emailId, DateTimeOffset occurredAt, Guid? rowId = null)
+    {
+        var tags = rowId is { } id ? $$$""","tags":{"email_message_id":"{{{id:N}}}"}""" : string.Empty;
+        var body = Encoding.UTF8.GetBytes($$$"""
+            {"type":"{{{type}}}","created_at":"{{{occurredAt:O}}}","data":{"email_id":"{{{emailId}}}",
+            "bounce":{"type":"Permanent","subType":"General","message":"550 user unknown"}{{{tags}}}}}
+            """);
+        var timestamp = Now.ToUnixTimeSeconds();
+        var webhookId = $"msg_{Guid.CreateVersion7():N}";
+        return receiver.ReceiveResendAsync(
+            body,
+            webhookId,
+            timestamp.ToString(CultureInfo.InvariantCulture),
+            ResendWebhookReceiverTests.Sign(ResendWebhookReceiverTests.Secret, webhookId, timestamp, body));
+    }
 
     private static EmailMessage QueuedMessage(
         string recipient = "recipient@trustcabinet.local",
@@ -263,45 +383,57 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
         public TaskCompletionSource Entered { get; } = new(
             TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public async Task SendAsync(EmailMessage message, CancellationToken ct = default)
+        public async Task<string?> SendAsync(EmailMessage message, CancellationToken ct = default)
         {
             Entered.TrySetResult();
             await _release.Task.WaitAsync(ct);
+            return null;
         }
 
         public void Release() => _release.TrySetResult();
     }
 
+    private static string ProviderId(EmailMessage message) => $"re-{message.Id:N}";
+
     private sealed class RecordingSender : IEmailSender
     {
         public List<string> Recipients { get; } = [];
 
-        public Task SendAsync(EmailMessage message, CancellationToken ct = default)
+        public Task<string?> SendAsync(EmailMessage message, CancellationToken ct = default)
         {
             Recipients.Add(message.ToAddress);
-            return Task.CompletedTask;
+            return Task.FromResult<string?>(ProviderId(message));
         }
     }
 
     private sealed class FailingSender(string message) : IEmailSender
     {
-        public Task SendAsync(EmailMessage email, CancellationToken ct = default)
-            => Task.FromException(new InvalidOperationException(message));
+        public Task<string?> SendAsync(EmailMessage email, CancellationToken ct = default)
+            => Task.FromException<string?>(new InvalidOperationException(message));
+    }
+
+    private sealed class RefusingSender(string message) : IEmailSender
+    {
+        public Task<string?> SendAsync(EmailMessage email, CancellationToken ct = default)
+            => Task.FromException<string?>(new PermanentEmailFailureException(message));
     }
 
     private sealed class CancelAfterAcceptedSender(CancellationTokenSource shutdown) : IEmailSender
     {
-        public Task SendAsync(EmailMessage message, CancellationToken ct = default)
+        public Task<string?> SendAsync(EmailMessage message, CancellationToken ct = default)
         {
             shutdown.Cancel();
-            return Task.CompletedTask;
+            return Task.FromResult<string?>(null);
         }
     }
 
     private sealed class NeverCompletingSender : IEmailSender
     {
-        public Task SendAsync(EmailMessage message, CancellationToken ct = default)
-            => Task.Delay(Timeout.InfiniteTimeSpan, ct);
+        public async Task<string?> SendAsync(EmailMessage message, CancellationToken ct = default)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            return null;
+        }
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider

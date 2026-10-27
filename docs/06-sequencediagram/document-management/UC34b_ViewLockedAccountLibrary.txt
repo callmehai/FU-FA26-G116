@@ -50,7 +50,7 @@ else Account is locked
         UserScreen-->Actor: MSG176 - Unable to load your personal document library. Please try again.
 
     else Audit entry recorded
-        ReviewService->DocumentRepository: Get the folders and documents of the account's library, read-only (BR-334)
+        ReviewService->DocumentRepository: Get the folders and documents of the account's library, read-only,\nwithout the files of Confidential or Secret Meetings and that Meeting's upload folder\nand its subfolders (BR-334)
         activate DocumentRepository
         DocumentRepository->Database: Retrieve the folders and documents owned by the account
         activate Database
@@ -59,7 +59,7 @@ else Account is locked
         DocumentRepository-->ReviewService: Folders and documents / Not found / Failed
         deactivate DocumentRepository
 
-        alt Folder is not in that library - EX-1
+        alt Folder is not in that library or is hidden by BR-334 - EX-1
             ReviewService-->ReviewController: MSG175 - This personal-library item is not available.
             ReviewController-->UserScreen: MSG175 - This personal-library item is not available.
             UserScreen-->Actor: MSG175 - This personal-library item is not available.
@@ -77,7 +77,7 @@ else Account is locked
     end
 end
 
-note over ReviewService: AF-1 (read a document) repeats the same checks and audit entry,\nnaming the document, before the file is returned.\nPROPOSED: no code yet.
+note over ReviewService: AF-1 (read a document) repeats the checks, opens the file and records the audit entry\nnaming the document before returning it. If the file cannot be read or the entry\ncannot be recorded: MSG158 - Unable to display the document. Please try again. (EX-3)\nAs built: PersonalLibraryService, GET /api/users/{userId}/library (PR #169).
 
 deactivate ReviewService
 deactivate ReviewController

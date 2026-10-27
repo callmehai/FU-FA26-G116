@@ -27,6 +27,7 @@ public static class SpeechClipEndpoints
     private const string Msg325ModeLocked = "MSG325";
     private const string Msg326InvalidMode = "MSG326";
     private const string Msg327ModeForbidden = "MSG327";
+    private const string Msg349MeetingCancelled = "MSG349";
 
     private sealed record TextBody(string? Text);
     private sealed record ModeBody(string? Mode);
@@ -103,6 +104,7 @@ public static class SpeechClipEndpoints
                 SpeechClipFailure.Forbidden when delete => (403, Msg323DeleteForbidden, "Chỉ người nói hoặc Thư ký được xoá câu này."),
                 SpeechClipFailure.Forbidden => (403, Msg295NotSecretary, "Chỉ Thư ký cuộc họp được quản lý bản ghi."),
                 SpeechClipFailure.Locked => (409, Msg325ModeLocked, "Cuộc họp đã bắt đầu nên không đổi được cách ghi âm."),
+                SpeechClipFailure.Cancelled => (409, Msg349MeetingCancelled, "Cuộc họp đã huỷ nên không thay đổi được nữa."),
                 SpeechClipFailure.NotCapturing => (409, Msg320NotCapturing,
                     "Cuộc họp không ghi theo micro từng người, hoặc không còn đang diễn ra."),
                 SpeechClipFailure.Invalid when mode => (400, Msg326InvalidMode, "Cách ghi âm không hợp lệ."),

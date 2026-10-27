@@ -191,6 +191,15 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
     }
 
     [Fact]
+    public async Task Cancelled_meeting_refuses_uploads()
+    {
+        var s = await fixture.Seed(MeetingStatus.Cancelled);
+        using var client = fixture.Client(s.Secretary);
+        await AssertCode(await client.PostAsync(s.Url, DocumentFixture.Form(("a.pdf", SampleFiles.Pdf(), "1"))), 409, "MSG349");
+        await AssertNothingAdded(s, fixture.Storage.Objects.Count);
+    }
+
+    [Fact]
     public async Task Meeting_that_ends_while_files_upload_is_refused_and_its_objects_deleted()
     {
         var s = await fixture.Seed();

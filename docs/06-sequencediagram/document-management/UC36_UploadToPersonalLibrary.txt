@@ -60,9 +60,9 @@ else Destination is available
         deactivate DocumentRepository
 
         alt Stored total plus this submission exceeds 10 GB - EX-5
-            DocumentService-->DocumentController: MSG345 - The system has run out of storage space. Please contact the System Admin.
-            DocumentController-->LibraryScreen: MSG345 - The system has run out of storage space. Please contact the System Admin.
-            LibraryScreen-->Actor: MSG345 - The system has run out of storage space. Please contact the System Admin.
+            DocumentService-->DocumentController: MSG346 - The system's document storage is full. No documents were uploaded. Please contact an administrator.
+            DocumentController-->LibraryScreen: MSG346 - The system's document storage is full. No documents were uploaded. Please contact an administrator.
+            LibraryScreen-->Actor: MSG346 - The system's document storage is full. No documents were uploaded. Please contact an administrator.
 
         else Within the system storage limit
             DocumentService->DocumentRepository: Record one stored-file entry per file, before any byte is stored (ADR-0024)

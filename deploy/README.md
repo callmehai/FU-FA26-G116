@@ -232,10 +232,34 @@ bình thường.
 
 ### 8. Gửi email thật (tuỳ chọn)
 
-Mặc định tắt. Điền các biến `SMTP_*` trong `deploy/.env` (xem
-[note SMTP](../docs/03-api/07-gui-email-thu-moi-note-cai-dat-may-moi.md#4-cấu-hình-smtp)), đặt
-`SMTP_ENABLED=true`, rồi `docker compose -f deploy/docker-compose.yml up -d`. Email chỉ đến được
-những người dùng có địa chỉ thật — các tài khoản `@trustcabinet.local` thì không.
+Mặc định tắt. Server gửi qua Resend, từ `no-reply@<SITE_ADDRESS>`
+([ADR-0031](../docs/05-decisions/0031-gui-email-qua-resend.md)). Làm một lần:
+
+1. **Tên miền gửi.** Trên [resend.com](https://resend.com) → *Domains* → *Add Domain*, nhập đúng `SITE_ADDRESS`
+   (ví dụ `trustcabinet.workspace-hub.space`), region Tokyo (gần server Singapore). Resend đưa ra 3 bản ghi: TXT
+   `resend._domainkey` (DKIM), CNAME `rsend` và CNAME `send` (SPF, địa chỉ nhận thư dội). Thêm chúng ở Namecheap →
+   *Advanced DNS*. Ô *Host* chỉ ghi phần trước tên miền gốc, ví dụ `resend._domainkey.trustcabinet`,
+   `rsend.trustcabinet`, `send.trustcabinet`; giá trị chép đúng từ trang của Resend. Chờ Resend báo *Verified*.
+2. **API key.** *API Keys* → *Create*, quyền **Sending access**, chỉ trên tên miền vừa xác minh. Key chỉ hiện một
+   lần.
+3. **Webhook.** *Webhooks* → *Add Endpoint*: URL `https://<SITE_ADDRESS>/api/email/resend/webhook`, chọn các sự kiện
+   `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained`, `email.suppressed`,
+   `email.failed`. Mở webhook vừa tạo, chép *Signing Secret* (`whsec_…`).
+4. **`deploy/.env`.** Thêm từng dòng một bằng `nano` (key và secret là một dòng, không dán nhiều dòng một lúc):
+   `RESEND_API_KEY=re_…`, `RESEND_FROM=no-reply@<SITE_ADDRESS>`, `RESEND_WEBHOOK_SECRET=whsec_…`, rồi
+   `RESEND_ENABLED=true`, và chạy `docker compose -f deploy/docker-compose.yml up -d`.
+
+Email chỉ đến được những người dùng có địa chỉ thật. Thư tới các tài khoản `@trustcabinet.local` được đánh dấu
+`Failed` ngay, không gửi đi (`Email:UndeliverableDomains` trong `appsettings.Development.json`): gửi tới đó chỉ
+bị dội lại, mà tỉ lệ dội cao thì Resend khoá tài khoản.
+
+Bật lần đầu thì mọi lời mời tích lại từ lúc tắt được tạo thành thư và gửi một lượt. Gói miễn phí cho 100 thư/ngày:
+quá thì Resend trả `429`, thư ở lại hàng đợi và được thử lại sau. Xem hàng đợi và kết quả giao thư bằng
+`docker compose -f deploy/docker-compose.yml exec postgres psql -U trustcabinet -d trustcabinet -c "select status,
+delivery_state, count(*) from email_messages group by 1, 2"`, hoặc trên trang *Emails* của Resend.
+
+Quay lại SMTP (ví dụ máy chủ thư nội bộ): `EMAIL_PROVIDER=Smtp`, các biến `SMTP_*` và `SMTP_ENABLED=true` (xem
+[note SMTP](../docs/03-api/07-gui-email-thu-moi-note-cai-dat-may-moi.md#4-cấu-hình-smtp)).
 
 ### 9. Kho tệp tài liệu trên Cloudflare R2
 
@@ -249,7 +273,8 @@ Chưa cấu hình thì app vẫn chạy, nút tải lên báo `MSG166`.
    (`trustcabinet-test` đã bị khoá ở ENAM). Xem **Settings → Location** để chắc chắn là APAC. **Không** bật Public
    access hay custom domain.
 2. **R2 → Manage API tokens → Create API token**: quyền *Object Read & Write*, áp dụng cho **chỉ** bucket
-   `trustcabinet-docs`. Lưu lại Access Key ID, Secret Access Key và endpoint
+   `trustcabinet-docs`. *Client IP Address Filtering → Include*: static IP của server (`54.254.223.53`), để token lộ
+   ra cũng không dùng được từ máy khác; app gọi R2 từ trong Docker, đi ra bằng IPv4 nên không cần dải IPv6. Lưu lại Access Key ID, Secret Access Key và endpoint
    `https://<account-id>.r2.cloudflarestorage.com` (secret chỉ hiện một lần).
 3. Trên server, thêm vào `deploy/.env` rồi `docker compose -f deploy/docker-compose.yml up -d`:
 
@@ -259,6 +284,10 @@ Chưa cấu hình thì app vẫn chạy, nút tải lên báo `MSG166`.
    R2_ACCESS_KEY_ID=...
    R2_SECRET_ACCESS_KEY=...
    ```
+
+Tổng dung lượng tài liệu của cả hệ thống mặc định **10 GB**, đúng gói miễn phí của R2
+([ADR-0034](../docs/05-decisions/0034-han-muc-luu-tru-toan-he-thong.md)). Đầy thì mọi lần tải lên trả `409 MSG346`.
+Đổi bằng `STORAGE_MAX_GB` trong `deploy/.env` (khi bàn giao, bên nhận đặt theo gói R2 họ trả tiền).
 
 Trình duyệt không gọi thẳng R2 nên CSP trong `Caddyfile` giữ nguyên. Chỉ tải lên dữ liệu giả: R2 lưu ngoài Việt
 Nam, tức là chuyển dữ liệu cá nhân xuyên biên giới (Luật 91/2025/QH15 Điều 20, xem ADR-0024).
