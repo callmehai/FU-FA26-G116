@@ -263,7 +263,7 @@ UC-33d (gỡ khỏi một mục). Sequence: `UC33a_AddDocumentsFromLibrary`, `UC
 mục nghị sự.
 
 **Quyền, chung cho mọi endpoint dưới đây**: Chủ toạ hoặc Thư ký **hiện tại** của chính cuộc họp đó (`MeetingRole`,
-không phải quyền toàn hệ thống), tới khi cuộc họp `Ended` (BR-184, BR-185, BR-279); trạng thái mục nghị sự không khoá
+không phải quyền toàn hệ thống), tới khi cuộc họp `Ended` hoặc `Cancelled` (BR-184, BR-185, BR-279, BR-299); trạng thái mục nghị sự không khoá
 liên kết. Thứ tự: không xem được cuộc họp → `404 MSG174`; xem được nhưng không phải Chủ toạ/Thư ký → `403` (mã theo
 thao tác); đã kết thúc → `409` (mã theo thao tác); đã huỷ → `409 MSG349` (mọi thao tác). Mỗi thao tác chạy trong **một** transaction có khoá cuộc họp và kiểm
 quyền dưới khoá, nên mất vai trò hay cuộc họp vừa kết thúc giữa chừng vẫn bị chặn đúng mã. Thành công thì phát
@@ -328,11 +328,12 @@ Thứ tự theo sequence: tài liệu còn trong cuộc họp (`404 MSG170`) →
 ### Note cho FE (SCRUM-58)
 
 - Menu ⋯ của tài liệu: "Gỡ khỏi cuộc họp" (UC-33c, hộp xác nhận) và, trong nhóm của một mục, "Gỡ khỏi mục này" (UC-33d).
-  Chỉ hiện cho Chủ toạ/Thư ký hiện tại khi cuộc họp chưa `Ended` (`myMeetingRole`, `status` từ `GET /api/meetings/{id}`).
+  Chỉ hiện cho Chủ toạ/Thư ký hiện tại khi cuộc họp chưa `Ended` và chưa `Cancelled` (`myMeetingRole`, `status` từ
+  `GET /api/meetings/{id}`).
 - Hộp thêm tài liệu có tab "Từ kho của tôi" (UC-33a) gọi `GET /api/documents` để duyệt kho; nút thêm ở từng mục mở cùng
   hộp đó với ba nguồn (UC-33b).
 - `MSG170`/`MSG246`/`MSG242` nghĩa là dữ liệu đã cũ: tải lại danh sách. `MSG162`/`MSG169`/`MSG240`/`MSG241`/`MSG172`/
-  `MSG247`/`MSG248` có thể đến sau khi mở hộp thoại: đóng hộp và tải lại cuộc họp.
+  `MSG247`/`MSG248`/`MSG349` có thể đến sau khi mở hộp thoại: đóng hộp và tải lại cuộc họp.
 - Tab Nội dung cuộc họp hiện tài liệu theo mục từ `GET …/agenda`; sau gắn/gỡ chỉ có `documentsChanged`, nên tab đó cần
   nghe thêm event này nếu muốn tự làm mới.
 
