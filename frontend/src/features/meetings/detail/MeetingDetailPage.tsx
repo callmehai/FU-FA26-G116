@@ -264,7 +264,7 @@ function MeetingDetail({
               </Link>
             )}
             {canCancel && (
-              <button type="button" className="btn btn-outline btn-lg" onClick={() => setCancelling(true)}>
+              <button type="button" className="btn btn-danger btn-lg" onClick={() => setCancelling(true)}>
                 <Icon name="calendarX" size={16} />
                 Huỷ cuộc họp
               </button>
