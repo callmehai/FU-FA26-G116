@@ -8,16 +8,16 @@ import { routes } from '../../lib/routes'
 import type { MeetingDocument } from '../../types/document'
 import type { Meeting } from '../../types/meeting'
 import { useAccessLost } from '../auth/useAccessLost'
+import { CommentsPanel } from './CommentsPanel'
 import { SensitivityBadge } from '../meetings/StatusBadge'
 import { useMeeting } from '../meetings/useMeeting'
 import { isPdf } from './documentFile'
 import { FileTypeTag, OnlineOnly } from './DocumentTags'
 import { DocxView, PdfView } from './renderers'
+import { ViewerZoom } from './ViewerZoom'
+import { ZOOMS } from './zoom'
 import { useDocumentDownload } from './useDocumentDownload'
 import { useMeetingDocuments } from './useMeetingDocuments'
-
-/** 100% fits the page to the window, up to a comfortable reading width. */
-const ZOOMS = [0.5, 0.75, 1, 1.25, 1.5, 2]
 
 type Content =
   | { kind: 'loading' }
@@ -33,7 +33,7 @@ type Content =
  * document is audited by the server (BR-318).
  *
  * Opened from the call room it lives in its own tab (BR-315), and "‹ Tài liệu" closes that tab.
- * Comments (UC-35, SCRUM-23) come later.
+ * Comments (UC-35, SCRUM-23) sit beside the document; "Góp ý" shows or hides them.
  */
 export function DocumentViewerPage() {
   const { meetingId = '', documentId = '' } = useParams()
@@ -102,6 +102,9 @@ function Viewer({
 }) {
   const [zoom, setZoom] = useState(2)
   const [page, setPage] = useState<{ current: number; total: number } | null>(null)
+  // Open beside a wide document; on a narrow screen the panel would cover it, so it waits to be asked for.
+  const [commentsOpen, setCommentsOpen] = useState(() => window.innerWidth >= 1100)
+  const [commentCount, setCommentCount] = useState(doc.commentCount)
   const { download, busyId } = useDocumentDownload(meeting.id, onStale)
   const pdf = isPdf(doc)
   const canDownload = meeting.sensitivity !== 'Secret'
@@ -124,29 +127,17 @@ function Viewer({
             Trang {page.current} / {page.total}
           </span>
         )}
-        <div className="viewer-zoom" role="group" aria-label="Thu phóng">
-          <button
-            type="button"
-            className="icon-button icon-button-sm"
-            aria-label="Thu nhỏ"
-            data-tooltip="Thu nhỏ"
-            disabled={zoom === 0}
-            onClick={() => setZoom(zoom - 1)}
-          >
-            <Icon name="zoomOut" size={16} />
-          </button>
-          <span className="viewer-zoom-value">{ZOOMS[zoom] * 100}%</span>
-          <button
-            type="button"
-            className="icon-button icon-button-sm"
-            aria-label="Phóng to"
-            data-tooltip="Phóng to"
-            disabled={zoom === ZOOMS.length - 1}
-            onClick={() => setZoom(zoom + 1)}
-          >
-            <Icon name="zoomIn" size={16} />
-          </button>
-        </div>
+        <ViewerZoom zoom={zoom} onZoom={setZoom} />
+        <button
+          type="button"
+          className={commentsOpen ? 'btn btn-outline is-active' : 'btn btn-outline'}
+          aria-pressed={commentsOpen}
+          onClick={() => setCommentsOpen(!commentsOpen)}
+        >
+          <Icon name="messageSquare" size={16} />
+          <span className="viewer-download-label">Góp ý</span>
+          {commentCount > 0 && <span className="viewer-count">{commentCount}</span>}
+        </button>
         {canDownload ? (
           <button
             type="button"
@@ -162,29 +153,47 @@ function Viewer({
         )}
       </header>
 
-      <main className="viewer-stage">
-        {content.state.kind === 'error' ? (
-          <div className="viewer-message">
-            <div className="alert alert-error" role="alert">
-              <p>{content.state.message}</p>
-              <button type="button" className="btn btn-outline btn-sm" onClick={content.retry}>
-                <Icon name="refresh" size={16} />
-                Thử lại
-              </button>
+      <div className="viewer-body">
+        <main className="viewer-stage">
+          {content.state.kind === 'error' ? (
+            <div className="viewer-message">
+              <div className="alert alert-error" role="alert">
+                <p>{content.state.message}</p>
+                <button type="button" className="btn btn-outline btn-sm" onClick={content.retry}>
+                  <Icon name="refresh" size={16} />
+                  Thử lại
+                </button>
+              </div>
             </div>
-          </div>
-        ) : content.state.kind === 'loaded' ? (
-          pdf ? (
-            <PdfView blob={content.state.blob} zoom={ZOOMS[zoom]} onPage={setPage} />
+          ) : content.state.kind === 'loaded' ? (
+            pdf ? (
+              <PdfView blob={content.state.blob} zoom={ZOOMS[zoom]} onPage={setPage} />
+            ) : (
+              <DocxView blob={content.state.blob} zoom={ZOOMS[zoom]} />
+            )
           ) : (
-            <DocxView blob={content.state.blob} zoom={ZOOMS[zoom]} />
-          )
-        ) : (
-          <div className="viewer-message" aria-busy="true">
-            Đang tải tài liệu…
-          </div>
+            <div className="viewer-message" aria-busy="true">
+              Đang tải tài liệu…
+            </div>
+          )}
+        </main>
+        {commentsOpen && (
+          <CommentsPanel
+            meetingId={meeting.id}
+            meetingDocumentId={doc.id}
+            pdf={pdf}
+            currentPage={page?.current ?? null}
+            closedNote={
+              meeting.status === 'Cancelled'
+                ? 'Cuộc họp đã huỷ nên không góp ý thêm được.'
+                : 'Cuộc họp đã kết thúc nên không góp ý thêm được.'
+            }
+            onCount={setCommentCount}
+            onGone={onStale}
+            onClose={() => setCommentsOpen(false)}
+          />
         )}
-      </main>
+      </div>
     </>
   )
 }

@@ -1,16 +1,19 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { removeMeetingDocument, unlinkFromAgendaItem } from '../../api/documents'
 import { Badge } from '../../components/Badge'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { useToast } from '../../components/toastContext'
+import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
 import { routes } from '../../lib/routes'
 import type { DocumentsAgendaItem, MeetingDocument, MeetingDocumentList } from '../../types/document'
 import type { Meeting } from '../../types/meeting'
+import { AddDocumentsDialog } from './AddDocumentsDialog'
 import { documentFacts, isPdf } from './documentFile'
 import { FileTypeTag, OnlineOnly } from './DocumentTags'
-import { UploadDocumentsDialog } from './UploadDocumentsDialog'
 import { useDocumentDownload } from './useDocumentDownload'
 import { useMeetingDocuments } from './useMeetingDocuments'
 
@@ -27,8 +30,10 @@ const GROUPS = [
  * side panel (ADR-0011). It reads its own list and re-reads on the hub.
  *
  * - `page`: the AI-eCabinet layout — by agenda item (a document linked to several items under each,
- *   BR-277) or the general ones (BR-280). The Chair and Secretary upload while the meeting has not
- *   ended (SCRUM-107; BR-184, BR-282); the server checks again.
+ *   BR-277) or the general ones (BR-280). While the meeting has not ended or been cancelled, its Chair
+ *   and Secretary add documents (SCRUM-107, SCRUM-58: from the computer or their library, to the general
+ *   group or one item), detach one from an item and remove one from the meeting (BR-184, BR-279, BR-299);
+ *   the server checks again.
  * - `room`: read only (BR-316). The item in progress comes first and follows the Chair; a document
  *   opens in a new tab so the call keeps running (BR-315).
  *
@@ -91,7 +96,21 @@ type RowProps = {
   canDownload: boolean
   busyId: string | null
   onDownload: (doc: MeetingDocument) => void
+  /** The Chair's and Secretary's: detach from `item`, or remove from the meeting when `item` is absent. */
+  onRemove?: (doc: MeetingDocument, item?: DocumentsAgendaItem) => void
 }
+
+/** What a remove answer means the page is out of date: role lost, meeting ended or cancelled, item or document gone. */
+const staleRemove = (err: unknown) =>
+  isApiError(err, 404, 'MSG174') ||
+  isApiError(err, 404, 'MSG170') ||
+  isApiError(err, 404, 'MSG242') ||
+  isApiError(err, 404, 'MSG246') ||
+  isApiError(err, 403, 'MSG169') ||
+  isApiError(err, 403, 'MSG241') ||
+  isApiError(err, 409, 'MSG248') ||
+  isApiError(err, 409, 'MSG247') ||
+  isApiError(err, 409, 'MSG349')
 
 function PageList({
   data,
@@ -108,13 +127,19 @@ function PageList({
 }) {
   const toast = useToast()
   const [group, setGroup] = useState<Group>('agenda')
-  const [uploading, setUploading] = useState(false)
-  const canUpload =
+  /** The add dialog: for the general group (`item` absent) or one agenda item. */
+  const [adding, setAdding] = useState<{ item?: DocumentsAgendaItem; number?: number } | null>(null)
+  const [removing, setRemoving] = useState<{ doc: MeetingDocument; item?: DocumentsAgendaItem } | null>(null)
+  const canManage =
     meeting.status !== 'Ended' &&
     meeting.status !== 'Cancelled' &&
     (meeting.myMeetingRole === 'Chair' || meeting.myMeetingRole === 'Secretary')
   // A document linked to several items counts once, as the room panel's total does.
+  const all = distinctDocuments([...data.agendaItems.flatMap((item) => item.documents), ...data.general])
   const agendaCount = distinctCount(data.agendaItems.flatMap((item) => item.documents))
+  const managed = canManage
+    ? { ...row, onRemove: (doc: MeetingDocument, item?: DocumentsAgendaItem) => setRemoving({ doc, item }) }
+    : row
 
   return (
     <>
@@ -126,9 +151,9 @@ function PageList({
           counts={{ agenda: agendaCount, general: data.general.length }}
           onChange={setGroup}
         />
-        {canUpload && (
-          <button type="button" className="btn btn-primary" onClick={() => setUploading(true)}>
-            <Icon name="upload" size={16} />
+        {canManage && (
+          <button type="button" className="btn btn-primary" onClick={() => setAdding({})}>
+            <Icon name="plus" size={16} />
             Thêm tài liệu chung
           </button>
         )}
@@ -139,32 +164,88 @@ function PageList({
           data.agendaItems.length === 0 ? (
             <p className="documents-empty">Cuộc họp chưa có mục nghị sự.</p>
           ) : (
-            data.agendaItems.map((item, i) => <AgendaGroup key={item.id} item={item} number={i + 1} row={row} />)
+            data.agendaItems.map((item, i) => (
+              <AgendaGroup
+                key={item.id}
+                item={item}
+                number={i + 1}
+                row={managed}
+                onAdd={canManage ? () => setAdding({ item, number: i + 1 }) : undefined}
+              />
+            ))
           )
         ) : data.general.length === 0 ? (
           <p className="documents-empty">Chưa có tài liệu chung.</p>
         ) : (
-          <DocumentRows documents={data.general} row={row} />
+          <DocumentRows documents={data.general} row={managed} />
         )}
       </div>
 
-      {uploading && (
-        <UploadDocumentsDialog
+      {adding && (
+        <AddDocumentsDialog
           meeting={meeting}
-          onClose={() => setUploading(false)}
-          onUploaded={(message) => {
-            setUploading(false)
+          item={
+            adding.item && {
+              id: adding.item.id,
+              number: adding.number!,
+              title: adding.item.title,
+              documentIds: adding.item.documents.map((d) => d.id),
+            }
+          }
+          meetingDocuments={all}
+          onClose={() => setAdding(null)}
+          onAdded={(message) => {
+            // What was added to the general group shows there; an item's documents stay under the item.
+            if (!adding.item) setGroup('general')
+            setAdding(null)
             toast.show(message)
-            // An upload lands in "Tài liệu chung": show it there.
-            setGroup('general')
             onUploaded()
           }}
           onStale={(message) => {
-            setUploading(false)
+            setAdding(null)
             toast.show(message, 'error')
             onStale()
           }}
         />
+      )}
+
+      {removing && (
+        <ConfirmDialog
+          title={removing.item ? 'Gỡ tài liệu khỏi mục này?' : 'Gỡ tài liệu khỏi cuộc họp?'}
+          confirmLabel={removing.item ? 'Gỡ khỏi mục' : 'Gỡ khỏi cuộc họp'}
+          pendingLabel="Đang gỡ…"
+          cancelLabel="Giữ tài liệu"
+          tone={removing.item ? 'primary' : 'danger'}
+          onConfirm={async () => {
+            const { doc, item } = removing
+            try {
+              const done = item
+                ? await unlinkFromAgendaItem(meeting.id, item.id, doc.id)
+                : await removeMeetingDocument(meeting.id, doc.id)
+              setRemoving(null)
+              toast.show(done.message)
+              onUploaded()
+            } catch (err) {
+              if (!staleRemove(err)) throw err
+              setRemoving(null)
+              toast.show(errorMessage(err), 'error')
+              onStale()
+            }
+          }}
+          onClose={() => setRemoving(null)}
+        >
+          {removing.item ? (
+            <>
+              <strong>{removing.doc.fileName}</strong> vẫn còn trong cuộc họp, chỉ không còn gắn với mục “
+              {removing.item.title}”.
+            </>
+          ) : (
+            <>
+              <strong>{removing.doc.fileName}</strong> không còn trong cuộc họp này, góp ý trên tài liệu cũng không còn
+              hiện. Bản trong Kho tài liệu của người đã tải lên vẫn giữ nguyên.
+            </>
+          )}
+        </ConfirmDialog>
       )}
     </>
   )
@@ -220,11 +301,14 @@ function AgendaGroup({
   number,
   row,
   folded,
+  onAdd,
 }: {
   item: DocumentsAgendaItem
   number: number
   row: RowProps
   folded?: boolean
+  /** The Chair's and Secretary's "add to this item" (UC-33b). */
+  onAdd?: () => void
 }) {
   const count = item.documents.length
   // Until the user folds or opens it, it follows its content: an item that gains a document opens.
@@ -233,28 +317,50 @@ function AgendaGroup({
 
   return (
     <div className="documents-group">
-      <button type="button" className="documents-group-head" aria-expanded={open} onClick={() => setToggled(!open)}>
-        <Icon name={open ? 'chevronDown' : 'chevronRight'} size={16} />
-        <span className="documents-group-title">
-          {number}. {item.title}
-        </span>
-        <Badge tone="outline">{row.variant === 'room' ? count : `${count} tài liệu`}</Badge>
-      </button>
+      <div className="documents-group-bar">
+        <button type="button" className="documents-group-head" aria-expanded={open} onClick={() => setToggled(!open)}>
+          <Icon name={open ? 'chevronDown' : 'chevronRight'} size={16} />
+          <span className="documents-group-title">
+            {number}. {item.title}
+          </span>
+          <Badge tone="outline">{row.variant === 'room' ? count : `${count} tài liệu`}</Badge>
+        </button>
+        {onAdd && (
+          <button
+            type="button"
+            className="icon-button icon-button-sm"
+            aria-label={`Thêm tài liệu cho mục ${number}`}
+            data-tooltip="Thêm tài liệu cho mục này"
+            onClick={onAdd}
+          >
+            <Icon name="paperclip" size={16} />
+          </button>
+        )}
+      </div>
       {open &&
         (count === 0 ? (
           <p className="documents-empty documents-empty-nested">Mục này chưa có tài liệu.</p>
         ) : (
-          <DocumentRows documents={item.documents} row={row} />
+          <DocumentRows documents={item.documents} row={row} item={item} />
         ))}
     </div>
   )
 }
 
-function DocumentRows({ documents, row }: { documents: MeetingDocument[]; row: RowProps }) {
+function DocumentRows({
+  documents,
+  row,
+  item,
+}: {
+  documents: MeetingDocument[]
+  row: RowProps
+  /** The agenda item these rows sit under, if any. */
+  item?: DocumentsAgendaItem
+}) {
   return (
     <ul className="documents-rows">
       {documents.map((doc) => (
-        <DocumentRow key={doc.id} doc={doc} row={row} />
+        <DocumentRow key={doc.id} doc={doc} row={row} item={item} />
       ))}
     </ul>
   )
@@ -264,7 +370,7 @@ function DocumentRows({ documents, row }: { documents: MeetingDocument[]; row: R
  * Name, type, page count and comments; who added it and when sit in the tooltip. In the room the
  * whole row is a link to a new tab; on the page it opens the viewer in place.
  */
-function DocumentRow({ doc, row }: { doc: MeetingDocument; row: RowProps }) {
+function DocumentRow({ doc, row, item }: { doc: MeetingDocument; row: RowProps; item?: DocumentsAgendaItem }) {
   const facts = documentFacts(doc)
   const room = row.variant === 'room'
   const added = `${doc.addedBy.fullName} thêm lúc ${formatDateTime(doc.addedAt)}`
@@ -296,6 +402,28 @@ function DocumentRow({ doc, row }: { doc: MeetingDocument; row: RowProps }) {
           <Icon name="download" size={16} />
         </button>
       )}
+      {!room && row.onRemove && item && (
+        <button
+          type="button"
+          className="icon-button icon-button-sm"
+          aria-label={`Gỡ ${doc.fileName} khỏi mục này`}
+          data-tooltip="Gỡ khỏi mục này"
+          onClick={() => row.onRemove!(doc, item)}
+        >
+          <Icon name="unlink" size={16} />
+        </button>
+      )}
+      {!room && row.onRemove && (
+        <button
+          type="button"
+          className="icon-button icon-button-sm"
+          aria-label={`Gỡ ${doc.fileName} khỏi cuộc họp`}
+          data-tooltip="Gỡ khỏi cuộc họp"
+          onClick={() => row.onRemove!(doc)}
+        >
+          <Icon name="trash" size={16} />
+        </button>
+      )}
     </li>
   )
 }
@@ -303,6 +431,10 @@ function DocumentRow({ doc, row }: { doc: MeetingDocument; row: RowProps }) {
 /** A document linked to several items counts once. */
 function distinctCount(documents: MeetingDocument[]) {
   return new Set(documents.map((d) => d.id)).size
+}
+
+function distinctDocuments(documents: MeetingDocument[]) {
+  return [...new Map(documents.map((d) => [d.id, d])).values()]
 }
 
 function ListSkeleton() {
