@@ -37,11 +37,17 @@ internal sealed class EmailQueueProcessor(
             return new EmailProcessingResult(EmailProcessingOutcome.NoWork);
         }
 
+        if (options.Value.IsUndeliverable(message.ToAddress))
+        {
+            return await SkipUndeliverableAsync(message, ct);
+        }
+
+        string? providerMessageId;
         try
         {
             using var attemptCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             attemptCts.CancelAfter(TimeSpan.FromSeconds(options.Value.SendAttemptTimeoutSeconds));
-            await sender.SendAsync(message, attemptCts.Token);
+            providerMessageId = await sender.SendAsync(message, attemptCts.Token);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -60,7 +66,7 @@ internal sealed class EmailQueueProcessor(
         // SMTP may already have accepted the message. Host shutdown must not cancel this small
         // database update, otherwise the expired lease would cause the same email to be sent again.
         if (!await FinalizeSentAsync(
-                message.Id, message.LeaseToken!.Value, sentAt, CancellationToken.None))
+                message.Id, message.LeaseToken!.Value, providerMessageId, sentAt, CancellationToken.None))
         {
             return LeaseLost(message);
         }
@@ -75,13 +81,41 @@ internal sealed class EmailQueueProcessor(
         return new EmailProcessingResult(EmailProcessingOutcome.Sent, message.AttemptCount);
     }
 
+    /// <summary>
+    /// A demo address can never be delivered, so it is failed on its first claim without retries: sending it would
+    /// bounce back to the sending mailbox, and enough bounces get that mailbox's sending suspended.
+    /// </summary>
+    private async Task<EmailProcessingResult> SkipUndeliverableAsync(EmailMessage message, CancellationToken ct)
+    {
+        if (!await FinalizeFailureAsync(
+                message.Id,
+                message.LeaseToken!.Value,
+                exhausted: true,
+                "Not sent: the recipient's domain never receives mail (Email:UndeliverableDomains).",
+                nextAttemptAt: null,
+                time.GetUtcNow(),
+                ct))
+        {
+            return LeaseLost(message);
+        }
+
+        logger.LogInformation(
+            "Invitation email {EmailMessageId} for meeting {MeetingId} was not sent: its recipient domain never "
+            + "receives mail.",
+            message.Id,
+            message.MeetingId);
+        return new EmailProcessingResult(EmailProcessingOutcome.PermanentlyFailed, message.AttemptCount);
+    }
+
     private async Task<EmailProcessingResult> HandleSendFailureAsync(
         EmailMessage message,
         Exception exception,
         CancellationToken ct)
     {
         var failedAt = time.GetUtcNow();
-        var exhausted = message.AttemptCount >= options.Value.MaxAttempts;
+        // A message the provider refused as such gets the same answer every time; retrying only delays the record.
+        var exhausted = exception is PermanentEmailFailureException
+            || message.AttemptCount >= options.Value.MaxAttempts;
         var nextAttemptAt = exhausted
             ? (DateTimeOffset?)null
             : failedAt.Add(RetryDelay(message.AttemptCount));
@@ -203,6 +237,7 @@ internal sealed class EmailQueueProcessor(
     private async Task<bool> FinalizeSentAsync(
         Guid id,
         Guid leaseToken,
+        string? providerMessageId,
         DateTimeOffset sentAt,
         CancellationToken ct)
     {
@@ -211,6 +246,7 @@ internal sealed class EmailQueueProcessor(
                 setters => setters
                     .SetProperty(item => item.Status, EmailStatus.Sent)
                     .SetProperty(item => item.SentAt, sentAt)
+                    .SetProperty(item => item.ProviderMessageId, providerMessageId)
                     .SetProperty(item => item.LastError, string.Empty)
                     .SetProperty(item => item.NextAttemptAt, (DateTimeOffset?)null)
                     .SetProperty(item => item.LeaseToken, (Guid?)null)

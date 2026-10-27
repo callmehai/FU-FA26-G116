@@ -26,7 +26,13 @@ services:
       ConnectionStrings__Redis: "redis:6379"
       Authentication__SigningKey: "${SIGNING_KEY:?Chua dat SIGNING_KEY trong deploy/.env}"
       Email__ApplicationBaseUrl: "https://${SITE_ADDRESS}"
-      # Tắt mặc định; điền SMTP_* trong deploy/.env để gửi email thật (thư mời, đặt lại mật khẩu).
+      # Gửi email thật (thư mời, đặt lại mật khẩu) qua Resend — ADR-0031, deploy/README.md §8. Tắt mặc định.
+      Email__Provider: "${EMAIL_PROVIDER:-Resend}"
+      Email__Resend__Enabled: "${RESEND_ENABLED:-false}"
+      Email__Resend__ApiKey: "${RESEND_API_KEY:-}"
+      Email__Resend__FromAddress: "${RESEND_FROM:-}"
+      Email__Resend__WebhookSecret: "${RESEND_WEBHOOK_SECRET:-}"
+      # SMTP chỉ còn để quay lại khi cần: đặt EMAIL_PROVIDER=Smtp và SMTP_*.
       Email__Smtp__Enabled: "${SMTP_ENABLED:-false}"
       Email__Smtp__Host: "${SMTP_HOST:-}"
       Email__Smtp__Port: "${SMTP_PORT:-587}"

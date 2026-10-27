@@ -845,11 +845,11 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     private sealed class RecordingInvitationSender : IEmailSender
     {
         public List<EmailMessage> Sent { get; } = [];
-        public Task SendAsync(EmailMessage message, CancellationToken ct = default)
+        public Task<string?> SendAsync(EmailMessage message, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
             Sent.Add(message);
-            return Task.CompletedTask;
+            return Task.FromResult<string?>(null);
         }
     }
 
