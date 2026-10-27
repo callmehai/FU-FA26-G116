@@ -1,0 +1,60 @@
+title UC-71a - Delete Document from Personal Library
+
+actor "Internal User" as Actor
+boundary "Personal Library Screen" as LibraryScreen
+control ":Document Controller" as DocumentController
+control ":Document Service" as DocumentService
+participant ":Document Repository" as DocumentRepository
+database ":Database" as Database
+
+Actor->LibraryScreen: Confirm Delete Document
+activate LibraryScreen
+
+LibraryScreen->DocumentController: Delete the personal-library document
+activate DocumentController
+
+DocumentController->DocumentService: deleteLibraryDocument(userId, documentId)
+activate DocumentService
+
+DocumentService->DocumentService: Check the actor is an Internal User\nwith a personal library (BR-204, BR-242)
+
+DocumentService->DocumentRepository: Get the selected document owned by the actor (BR-242)
+activate DocumentRepository
+DocumentRepository->Database: Retrieve the document by id and owner
+activate Database
+Database-->DocumentRepository: Document / Not found
+deactivate Database
+DocumentRepository-->DocumentService: Document / Not found
+deactivate DocumentRepository
+
+alt Document is missing or no longer belongs to the actor - EX-1
+    DocumentService-->DocumentController: MSG175 - This personal-library item is not available.
+    DocumentController-->LibraryScreen: MSG175 - This personal-library item is not available.
+    LibraryScreen-->Actor: MSG175 - This personal-library item is not available.
+
+else Document is available
+    DocumentService->DocumentRepository: Delete only the personal-library document,\nleaving Meeting documents and their comments untouched (BR-186, BR-232)
+    activate DocumentRepository
+    DocumentRepository->Database: Delete the library document
+    activate Database
+    Database-->DocumentRepository: Deleted / Failed
+    deactivate Database
+    DocumentRepository-->DocumentService: Deleted / Failed
+    deactivate DocumentRepository
+
+    alt Document cannot be deleted - EX-2
+        DocumentService-->DocumentController: MSG181 - Unable to delete the document. Your personal library remains unchanged.
+        DocumentController-->LibraryScreen: MSG181 - Unable to delete the document. Your personal library remains unchanged.
+        LibraryScreen-->Actor: MSG181 - Unable to delete the document. Your personal library remains unchanged.
+
+    else Document deleted
+        DocumentService-->DocumentController: Document deleted
+        DocumentController-->LibraryScreen: Document deleted
+        LibraryScreen->LibraryScreen: Refresh the library
+        LibraryScreen-->Actor: MSG180 - Document deleted from your personal library successfully.
+    end
+end
+
+deactivate DocumentService
+deactivate DocumentController
+deactivate LibraryScreen

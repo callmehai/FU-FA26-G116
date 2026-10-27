@@ -700,7 +700,7 @@ Các mã dưới đây cấp cho đặc tả ngày 14/10/2026; trạng thái the
 |---|---|---|
 | `MSG156` | UC-32a / EX-1; UC-32c / EX-1; UC-35 / EX-2 · Đã triển khai SCRUM-21, SCRUM-23 | Meeting documents are not accessible. |
 | `MSG157` | UC-32a / EX-2 · Dành sẵn | Unable to load the document list. Please try again. |
-| `MSG158` | UC-32c / EX-2 · Dành sẵn | Unable to display the document. Please try again. |
+| `MSG158` | UC-32c / EX-2; UC-34b / EX-3 · Dành sẵn | Unable to display the document. Please try again. |
 | `MSG159` | UC-32c / EX-3 · Dành sẵn | Secret Meeting documents can only be viewed online and cannot be downloaded. |
 | `MSG160` | UC-32c / EX-4 · Dành sẵn | Unable to download the document. Please try again. |
 | `MSG161` | UC-33a / Normal Flow · Đã triển khai SCRUM-107 | Documents added to the Meeting successfully. |
@@ -717,8 +717,8 @@ Các mã dưới đây cấp cho đặc tả ngày 14/10/2026; trạng thái the
 | `MSG172` | UC-33a / EX-6 · Đã triển khai SCRUM-107 | Documents cannot be added after the Meeting has ended. |
 | `MSG173` | ADR-0020 · Ngừng dùng | Retired: Agenda Item status no longer locks document links under ADR-0020. Do not reuse. |
 | `MSG174` | UC-33a / EX-7 và UC-77 / EX-4, UC-33b / EX-7, UC-33c / EX-5, UC-33d / EX-7 · Đã triển khai SCRUM-107, SCRUM-98, SCRUM-112 | This Meeting is not accessible. |
-| `MSG175` | UC-34 / EX-2; UC-71a / EX-1; UC-71b / EX-1; UC-71c / EX-1; UC-72b / EX-1; UC-72c / EX-1; UC-72d / EX-1 · Đã triển khai SCRUM-111 | This personal-library item is not available. |
-| `MSG176` | UC-34 / EX-1 · Đã triển khai SCRUM-111 | Unable to load your personal document library. Please try again. |
+| `MSG175` | UC-34 / EX-2; UC-71a / EX-1; UC-71b / EX-1; UC-71c / EX-1; UC-72b / EX-1; UC-72c / EX-1; UC-72d / EX-1; UC-34b / EX-1 · Đã triển khai SCRUM-111 | This personal-library item is not available. |
+| `MSG176` | UC-34 / EX-1; UC-34b / EX-2 · Đã triển khai SCRUM-111 | Unable to load your personal document library. Please try again. |
 | `MSG177` | UC-36 / Normal Flow · Đã triển khai SCRUM-111 | Documents uploaded to your personal library successfully. |
 | `MSG178` | UC-36 / EX-3 · Đã triển khai SCRUM-111 | Unable to upload the files. No documents were added. Please try again. |
 | `MSG179` | UC-36 / EX-2; UC-71c / EX-2; UC-72a / EX-2; UC-72c / EX-2 · Đã triển khai SCRUM-111 | The selected destination folder is not available in your personal library. |
@@ -747,8 +747,8 @@ Các mã dưới đây cấp cho đặc tả ngày 14/10/2026; trạng thái the
 | `MSG202` | UC-35 / EX-3 · Đã triển khai SCRUM-23 | Unable to add the comment. No comment was saved. Please try again. |
 | `MSG203` | Retired — mandatory PDF page reference removed · Ngừng dùng | Retired: a PDF comment does not require a page reference. Do not reuse. |
 | `MSG204` | UC-35 / EX-4 · Đã triển khai SCRUM-23 | Unable to load the document comments. Please try again. |
-| `MSG346` | UC-33a, UC-33b, UC-36, PO 27/10/2026 (hạn mức 10 GB của cả hệ thống, ADR-0034) · Đã triển khai SCRUM-111, chờ BA bổ sung đặc tả | The system's document storage is full. No documents were uploaded. Please contact an administrator. |
-| `MSG347` | UC-71b (tên phải giữ phần đuôi của tệp) · Đã triển khai SCRUM-111, chờ BA bổ sung đặc tả | The document name is not valid. It must not be blank and must keep the .pdf or .docx extension of the file. |
+| `MSG346` | UC-33a, UC-33b, UC-36, PO 27/10/2026 (hạn mức 10 GB của cả hệ thống, ADR-0034) · Đã triển khai SCRUM-111; đặc tả đã bổ sung (BA 27/10/2026) | The system's document storage is full. No documents were uploaded. Please contact an administrator. |
+| `MSG347` | UC-71b (tên phải giữ phần đuôi của tệp) · Đã triển khai SCRUM-111; đặc tả đã bổ sung (BA 27/10/2026) | The document name is not valid. It must not be blank and must keep the .pdf or .docx extension of the file. |
 | `MSG348` | UC-72a, UC-72b, UC-35 (độ dài tối đa) · Đã triển khai SCRUM-110, SCRUM-23, chờ BA bổ sung đặc tả | The text is longer than allowed. |
 
 
@@ -835,7 +835,7 @@ Bảng nguồn đặc tả dưới đây giữ thông điệp tiếng Anh để 
 | `MSG272` | UC-77 / EX-1 · Đã triển khai SCRUM-98 | Enter a conclusion of up to 2,000 characters. |
 | `MSG273` | UC-77 / EX-2 · Đã triển khai SCRUM-98 | The conclusion of this agenda item can no longer be changed. |
 | `MSG274` | UC-77 / EX-3 · Đã triển khai SCRUM-98 | Unable to save the agenda item conclusion. Please try again. |
-| `MSG288` | UC-33a / EX-8, BR-319 · Đã triển khai SCRUM-107 (PO 22/10/2026) | Upload up to 10 files at a time, no larger than 200 MB in total. |
+| `MSG288` | UC-33a / EX-8, BR-319; cũng UC-33b / AF-1 và UC-36 / EX-4 (PO 27/10/2026) · Đã triển khai SCRUM-107 (PO 22/10/2026) | Upload up to 10 files at a time, no larger than 200 MB in total. |
 | `MSG289` | UC-31 / EX-6 · Đã triển khai SCRUM-26 | Unable to load attendance data. |
 
 ## Ghi chú: mã dùng chung có chủ ý

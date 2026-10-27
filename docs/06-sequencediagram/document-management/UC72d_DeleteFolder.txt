@@ -1,0 +1,67 @@
+title UC-72d - Delete Folder
+
+actor "Internal User" as Actor
+boundary "Personal Library Screen" as LibraryScreen
+control ":Folder Controller" as FolderController
+control ":Folder Service" as FolderService
+participant ":Folder Repository" as FolderRepository
+database ":Database" as Database
+
+Actor->LibraryScreen: Confirm deletion of the selected folder
+activate LibraryScreen
+
+LibraryScreen->FolderController: Delete the selected folder
+activate FolderController
+
+FolderController->FolderService: deleteFolder(ownerId, folderId)
+activate FolderService
+
+FolderService->FolderRepository: Get the selected folder owned by the user,\nwith its document and subfolder counts (BR-219, BR-223, BR-242)
+activate FolderRepository
+FolderRepository->Database: Retrieve the folder and count its documents and subfolders
+activate Database
+Database-->FolderRepository: Folder and counts / Not found
+deactivate Database
+FolderRepository-->FolderService: Folder and counts / Not found
+deactivate FolderRepository
+
+alt Folder is missing or not owned by the user - EX-1
+    FolderService-->FolderController: MSG175 - This personal-library item is not available.
+    FolderController-->LibraryScreen: MSG175 - This personal-library item is not available.
+    LibraryScreen-->Actor: MSG175 - This personal-library item is not available.
+
+else Folder is available
+    FolderService->FolderService: Check the folder contains no document and no subfolder (BR-223)
+
+    alt Folder contains a document or subfolder - EX-2
+        FolderService-->FolderController: MSG196 - Only an empty folder can be deleted.
+        FolderController-->LibraryScreen: MSG196 - Only an empty folder can be deleted.
+        LibraryScreen-->Actor: MSG196 - Only an empty folder can be deleted.
+
+    else Folder is empty
+        FolderService->FolderRepository: Delete only the empty folder
+        activate FolderRepository
+        FolderRepository->Database: Delete folder
+        activate Database
+        Database-->FolderRepository: Deleted / Failed
+        deactivate Database
+        FolderRepository-->FolderService: Folder deleted / Failed
+        deactivate FolderRepository
+
+        alt Folder cannot be deleted - EX-3
+            FolderService-->FolderController: MSG198 - Unable to delete the folder. The folder remains unchanged.
+            FolderController-->LibraryScreen: MSG198 - Unable to delete the folder. The folder remains unchanged.
+            LibraryScreen-->Actor: MSG198 - Unable to delete the folder. The folder remains unchanged.
+
+        else Folder is deleted
+            FolderService-->FolderController: Folder deleted
+            FolderController-->LibraryScreen: Folder deleted
+            LibraryScreen->LibraryScreen: Refresh the folder tree
+            LibraryScreen-->Actor: MSG197 - Folder deleted successfully.
+        end
+    end
+end
+
+deactivate FolderService
+deactivate FolderController
+deactivate LibraryScreen
