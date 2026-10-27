@@ -306,7 +306,7 @@ export function UsersPage() {
         </div>
 
         <div className="table-card table-fill">
-          <table className="data-table">
+          <table className="data-table users-table">
             <thead>
               <tr>
                 <th>Họ tên</th>
@@ -366,20 +366,25 @@ export function UsersPage() {
                               )}
                             </span>
                             <span className="cell-sub">{u.email}</span>
+                            {/* On a phone the role and status columns go: their facts move under the email. */}
+                            <span className="users-inline">
+                              <Badge tone="slate">{u.roleName}</Badge>
+                              {!u.isActive && <span className="user-disabled">Đã vô hiệu hoá</span>}
+                            </span>
                           </span>
                         </span>
                       </td>
-                      <td>
+                      <td className="users-col">
                         <Badge tone="slate">{u.roleName}</Badge>
                       </td>
-                      <td className="cell-muted">
+                      <td className="cell-muted users-col users-login">
                         {[u.hasPassword && 'Mật khẩu', u.hasGoogleLink && 'Google'].filter(Boolean).join(', ')}
                       </td>
-                      <td>
+                      <td className="users-col">
                         {/* The normal case is plain text; only the exception stands out. */}
                         {u.isActive ? 'Hoạt động' : <span className="user-disabled">Đã vô hiệu hoá</span>}
                       </td>
-                      <td className="cell-muted">{formatDate(u.createdAt)}</td>
+                      <td className="cell-muted users-col">{formatDate(u.createdAt)}</td>
                       <td className="col-action">
                         <span className="row-actions">
                           <button

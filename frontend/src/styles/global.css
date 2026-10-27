@@ -1070,6 +1070,28 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* Quiet text, not a chip that reads like a role; no space before it, so it never wraps away from the name. */
 .person-self { margin-left: 6px; color: var(--muted-ink); font-size: 13px; font-weight: 400; white-space: nowrap; }
 
+/* User management on a phone: four 40px actions leave a name no room beside them, so each row becomes the
+   person (role and status under the email) over the actions, and the columns those facts came from go. */
+.users-inline { display: none; }
+/* Four row actions since SCRUM-113: at a 1200px window "Mật khẩu, Google" wraps rather than push them out of the card. */
+@media (max-width: 1400px) {
+  .users-table td.users-login { white-space: normal; }
+}
+@media (max-width: 720px) {
+  .users-table thead, .users-table .users-col, .users-table .row-skeleton td:not(:first-child) { display: none; }
+  .users-table tbody tr:not(.row-skeleton) { display: grid; }
+  .users-table td.cell-title { border-bottom: none; padding-bottom: 4px; }
+  .users-table td.col-action { padding: 0 12px 10px 60px; text-align: left; }
+  /* A disabled action explains itself in a tooltip, which a touch screen never shows: only what can be done stays. */
+  .users-table .row-actions > :disabled { display: none; }
+  .users-table .person-name { overflow-wrap: anywhere; }
+  .users-table .cell-sub { overflow-wrap: anywhere; }
+  .users-inline { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 6px; font-size: 13px; }
+}
+@media (pointer: coarse) {
+  .users-table .icon-button-sm { width: 40px; height: 40px; }
+}
+
 /* Sortable header: the whole label is the button; the arrow is faint until the column is active. */
 .sort-button {
   display: inline-flex;
