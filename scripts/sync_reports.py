@@ -266,7 +266,8 @@ def audit_requirements_consistency() -> None:
 
         if missing_ucs:
             print(f"⚠️  CẢNH BÁO: {len(missing_ucs)} UC trong Report 3 chưa có trong 00-master-use-case-inventory.md:")
-            print(f"    {sorted(missing_ucs, key=lambda x: (int(re.sub(r'\\D', '', x)), x))}")
+            ordered_ucs = sorted(missing_ucs, key=lambda x: (int(re.sub(r"\D", "", x)), x))
+            print(f"    {ordered_ucs}")
         else:
             print("• Master Inventory (00-inv): Khớp 100% với Report 3")
 
@@ -382,7 +383,8 @@ def main() -> int:
             for destination, content in converted:
                 write_atomic(destination, content)
                 print(f"Synced {destination}")
-            if any("Report-3" in str(destination) for destination, _ in converted):
+            # A preview into --output-dir must not touch the committed extracts or uc-map.
+            if not output_dir and any("Report-3" in str(destination) for destination, _ in converted):
                 extract_script = ROOT / "scripts" / "sync_requirement_extracts.py"
                 if extract_script.is_file():
                     res = subprocess.run([sys.executable, str(extract_script)], capture_output=True, text=True)
