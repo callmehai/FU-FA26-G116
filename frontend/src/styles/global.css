@@ -3329,18 +3329,14 @@ audio.recording-player { height: 40px; }
 .room-panel-body .documents-empty { padding: 4px 0; font-size: 13px; }
 .room-panel-body .documents-empty-nested { padding: 4px 4px 8px 28px; border: 0; }
 
-.file-tag {
-  flex: none;
-  width: 52px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 700;
-  text-align: center;
-}
+.file-icon { flex: none; overflow: visible; }
+.file-icon-page { fill: var(--surface); stroke: var(--control-line); stroke-width: 1.5; stroke-linejoin: round; }
+.file-icon-fold { fill: var(--surface-alt); stroke: var(--control-line); stroke-width: 1.5; stroke-linejoin: round; }
+.file-icon-band { fill: currentColor; }
+.file-icon-text { fill: #fff; font-family: inherit; font-weight: 700; letter-spacing: .2px; }
 /* Not red: red is kept for "Mật" and warnings (AGENTS.md). */
-.file-tag-pdf { background: var(--chip-violet-bg); color: var(--chip-violet-fg); }
-.file-tag-docx { background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
+.file-icon-pdf { color: var(--chip-violet-fg); }
+.file-icon-docx { color: var(--chip-blue-fg); }
 .online-only {
   display: inline-flex;
   align-self: flex-start;
@@ -3463,7 +3459,8 @@ audio.recording-player { height: 40px; }
 a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
 .library-crumb[aria-current='page'] { color: var(--ink); }
 .library-name { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.library-name > .icon { flex: none; color: var(--brand); }
+/* As wide as a file icon, so folder and file names start on one line. */
+.library-name > .icon { flex: none; width: 24px; color: var(--brand); }
 .library-name-col { display: flex; flex-direction: column; min-width: 0; }
 .library-name-text { min-width: 0; color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
 .library-table .col-size, .library-table .col-usage, .library-table .col-date { white-space: nowrap; }

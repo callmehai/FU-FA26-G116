@@ -300,7 +300,7 @@ export function DocumentsPage() {
                     >
                       <td className="cell-title">
                         <span className="library-name">
-                          <Icon name="folder" size={18} />
+                          <Icon name="folder" size={22} />
                           <span className="library-name-col">
                             <Link
                               to={`${routes.documents}?folder=${f.id}`}
@@ -346,7 +346,7 @@ export function DocumentsPage() {
                       <tr key={doc.id} className="row-link" onClick={() => navigate(open)}>
                         <td className="cell-title">
                           <span className="library-name">
-                            <FileTypeTag pdf={isPdf(doc)} />
+                            <FileTypeTag pdf={isPdf(doc)} size={28} />
                             <span className="library-name-col">
                               <Link to={open} onClick={(e) => e.stopPropagation()} className="library-name-text">
                                 {doc.fileName}
