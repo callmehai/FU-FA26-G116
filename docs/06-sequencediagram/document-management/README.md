@@ -9,7 +9,7 @@ Các UC tài liệu khác (luồng chính UC-33a, UC-33b → UC-33d, UC-34, UC-3
 | UC-32c Preview Meeting Document | [UC32c_PreviewMeetingDocument.txt](UC32c_PreviewMeetingDocument.txt) | SCRUM-21, SCRUM-22 |
 | UC-33a AF-1 Upload files from the computer | [UC33a_UploadDocumentsToMeeting.txt](UC33a_UploadDocumentsToMeeting.txt) | SCRUM-107 |
 | UC-35 Comment on Meeting Document | [UC35_CommentOnMeetingDocument.txt](UC35_CommentOnMeetingDocument.txt) | SCRUM-23 |
-| UC-74 Confirm Document Read | [UC74_ConfirmDocumentRead.txt](UC74_ConfirmDocumentRead.txt) | — |
+| UC-74 Confirm Document Read | [UC74_ConfirmDocumentRead.txt](UC74_ConfirmDocumentRead.txt) | SCRUM-96 |
 
 UC-32a, UC-32c, UC-35 vẽ ngày 22/10/2026 theo đặc tả sửa cùng ngày (nhóm theo mục nghị sự, panel Tài liệu
 trong phòng họp, trả lời góp ý, BR-315 → BR-318). Boundary của UC-32a gộp tab Tài liệu và panel trong phòng vì

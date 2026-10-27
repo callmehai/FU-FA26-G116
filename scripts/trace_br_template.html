@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TrustCabinet – Bản đồ UC · BR · MSG</title>
+<style>
+:root{--bg:#f5f7fa;--surface:#fff;--ink:#1c2430;--muted:#5d6b7c;--line:#dde3ea;--brand:#1f5fbf;--brand-soft:#e8f0fc;
+--br:#8a5a00;--br-soft:#fdf1d8;--msg:#0b6b5c;--msg-soft:#dcf3ee;--ok:#1c7a3d;--warn:#a96400;--bad:#b3261e;--code:#f0f3f7}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.5 "Be Vietnam Pro",system-ui,Segoe UI,sans-serif;color:var(--ink);background:var(--bg)}
+a{color:var(--brand);text-decoration:none}
+header{position:sticky;top:0;z-index:5;display:flex;gap:12px;align-items:center;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+header h1{font-size:15px;margin:0 8px 0 0;white-space:nowrap}
+nav.tabs{display:flex;gap:2px}
+nav.tabs a{padding:6px 12px;border-radius:6px;color:var(--ink)}
+nav.tabs a.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+#q{flex:1;max-width:420px;height:34px;padding:0 10px;border:1px solid var(--line);border-radius:6px;font:inherit}
+.app{display:grid;grid-template-columns:290px minmax(0,1fr) 380px;height:calc(100vh - 51px)}
+.app>*{overflow:auto}
+aside.side{background:var(--surface);border-right:1px solid var(--line);padding:8px 0}
+aside.insp{background:var(--surface);border-left:1px solid var(--line);padding:16px}
+main{padding:20px 28px 80px}
+.fe{padding:10px 14px 4px;font-size:12px;font-weight:600;color:var(--muted)}
+.uc-link{display:flex;gap:8px;align-items:baseline;padding:5px 14px;color:var(--ink)}
+.uc-link.sub{padding-left:30px}
+.uc-link:hover{background:var(--bg)}
+.uc-link.on{background:var(--brand-soft);color:var(--brand)}
+.uc-link b{min-width:50px;font-weight:600}
+.uc-link span.nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--line)}
+.dot.t{background:var(--ok)}.dot.c{background:var(--warn)}.dot.n{background:var(--bad)}
+h2{margin:0 0 2px;font-size:20px}
+h3{margin:22px 0 8px;font-size:13px;color:var(--muted);font-weight:600}
+.sub{color:var(--muted);margin-bottom:12px}
+.facts{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0}
+.facts div{color:var(--muted)}.facts b{color:var(--ink);font-weight:600}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 16px}
+ul.bul{margin:0;padding-left:18px}ul.bul li{margin:3px 0}
+.flow{margin:10px 0}
+.flow>summary{cursor:pointer;font-weight:600;padding:8px 12px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.flow[open]>summary{border-bottom-left-radius:0;border-bottom-right-radius:0}
+.flow.ex>summary{border-left:3px solid var(--bad)}
+.flow.af>summary{border-left:3px solid var(--warn)}
+.flow.nf>summary{border-left:3px solid var(--brand)}
+.flow .body{border:1px solid var(--line);border-top:0;border-radius:0 0 8px 8px;background:var(--surface);padding:6px 14px 10px}
+.flow .note{color:var(--muted);font-style:italic;margin:6px 0 2px}
+ol.steps{margin:6px 0;padding:0;list-style:none}
+ol.steps li{display:grid;grid-template-columns:26px 1fr;gap:6px;padding:6px 0;border-top:1px solid var(--bg)}
+ol.steps li:first-child{border-top:0}
+ol.steps .n{width:22px;height:22px;border-radius:50%;background:var(--brand-soft);color:var(--brand);font-size:12px;text-align:center;line-height:22px;font-weight:600}
+.chip{display:inline-block;padding:0 6px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border:1px solid transparent}
+.chip.br{background:var(--br-soft);color:var(--br)}
+.chip.msg{background:var(--msg-soft);color:var(--msg)}
+.chip.uc{background:var(--brand-soft);color:var(--brand)}
+.chip.sel{border-color:currentColor}
+.chip.nocode{opacity:.55}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:600}
+.badge.t{background:#dff3e5;color:var(--ok)}.badge.c{background:#fdf1d8;color:var(--warn)}.badge.n{background:#fbe3e1;color:var(--bad)}
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:12px;color:var(--muted);position:sticky;top:0;background:var(--surface)}
+tr.row{cursor:pointer}tr.row:hover{background:var(--bg)}
+.refs{font:12px/1.6 ui-monospace,Consolas,monospace}
+.refs a{display:block;padding:1px 6px;border-radius:4px;color:var(--ink);background:var(--code);margin:2px 0;overflow-wrap:anywhere}
+.refs a.t{border-left:3px solid var(--ok)}.refs a.c{border-left:3px solid var(--brand)}
+.insp h4{margin:0 0 4px;font-size:15px}
+.insp .lab{margin:14px 0 4px;color:var(--muted);font-size:12px;font-weight:600}
+.insp .empty{color:var(--muted)}
+.cov{display:flex;gap:8px;align-items:center;margin:8px 0}
+.bar{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden;display:flex}
+.bar i{display:block;height:100%}.bar .a{background:var(--ok)}.bar .b{background:#8fc9a3}
+.filters{display:flex;gap:8px;margin-bottom:10px}
+.filters button{padding:5px 12px;border:1px solid var(--line);background:var(--surface);border-radius:6px;font:inherit;cursor:pointer}
+.filters button.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand)}
+@media(max-width:1100px){.app{grid-template-columns:240px minmax(0,1fr);height:auto}.app>*{overflow:visible}aside.insp{grid-column:1/-1;border-left:0;border-top:1px solid var(--line)}}
+@media(max-width:700px){.app{grid-template-columns:1fr}aside.side{border-right:0;max-height:240px;overflow:auto}main{padding:16px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>TrustCabinet · UC · BR · MSG</h1>
+  <nav class="tabs" id="tabs"></nav>
+  <input id="q" type="search" placeholder="Tìm UC, BR, MSG, từ khoá… (/)" autocomplete="off">
+</header>
+<div class="app">
+  <aside class="side" id="side"></aside>
+  <main id="main"></main>
+  <aside class="insp" id="insp"></aside>
+</div>
+<script type="application/json" id="data">__DATA__</script>
+<script>
+let D;
+try { D = JSON.parse(document.getElementById('data').textContent); }
+catch (e) {
+  document.body.innerHTML = '<p style="max-width:560px;margin:60px auto;font:16px/1.6 system-ui">Đây là file mẫu, chưa có dữ liệu. Chạy <code>python scripts/trace_br.py --html</code> rồi mở <b>docs/uc-map.html</b>.</p>';
+  throw e;
+}
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num = id => parseInt(id.replace(/\D/g, ''), 10);
+const normId = id => id.startsWith('BR-') ? 'BR-' + String(num(id)).padStart(2, '0') : id;
+let state = {tab: 'uc', id: null, sel: null, q: '', cov: 'all'};
+
+const hasCode = r => r && r.code.length, hasTest = r => r && r.test.length;
+const status = r => hasTest(r) ? 't' : hasCode(r) ? 'c' : 'n';
+const STATUS_TXT = {t: 'có test', c: 'có code', n: 'chưa có dấu vết'};
+const ucStatus = uc => !uc.cov.br ? '' : uc.cov.test === uc.cov.br ? 't' : uc.cov.code ? 'c' : 'n';
+
+function link(text) {
+  return esc(text).replace(/\b(BR-\d{1,3}|MSG\d{2,3}|UC-\d{2,3}[a-z]?)\b/g, m => {
+    const id = normId(m), kind = id.startsWith('BR') ? 'br' : id.startsWith('MSG') ? 'msg' : 'uc';
+    const r = kind === 'br' ? D.rules[id] : kind === 'msg' ? D.msgs[id] : null;
+    const tip = r ? esc((r.text || r.content).slice(0, 200)) : kind === 'uc' && D.ucs[id] ? esc(D.ucs[id].name) : 'không có trong Report 3';
+    const cls = kind !== 'uc' && r && !hasCode(r) ? ' nocode' : '';
+    return `<a class="chip ${kind}${cls}${state.sel === id ? ' sel' : ''}" data-k="${id}" title="${tip}">${m}</a>`;
+  });
+}
+const vsc = ref => { const [p, l] = ref.split(/:(?=\d+$)/); return `vscode://file/${D.root}/${p}:${l}`; };
+function refs(list, cls) {
+  if (!list.length) return '<div class="empty">chưa có</div>';
+  return `<div class="refs">${list.map(r => `<a class="${cls}" href="${vsc(r)}" title="Mở trong VS Code">${esc(r)}</a>`).join('')}</div>`;
+}
+
+/* ---------- inspector ---------- */
+function inspect(id) {
+  state.sel = id; const el = $('#insp');
+  if (!id) { el.innerHTML = '<div class="empty">Bấm vào chip <span class="chip br">BR-nn</span> hoặc <span class="chip msg">MSGnn</span> trong luồng để xem luật, thông báo và code liên quan.</div>'; return; }
+  if (id.startsWith('BR')) {
+    const r = D.rules[id];
+    if (!r) { el.innerHTML = `<h4>${id}</h4><p class="empty">Không có trong Phụ lục V.1 của Report 3.</p>`; return; }
+    el.innerHTML = `<h4><span class="chip br">${id}</span> <span class="badge ${status(r)}">${STATUS_TXT[status(r)]}</span></h4>
+      <p>${link(r.text)}</p>
+      ${r.rationale ? `<div class="lab">Lý do / nguồn</div><div>${esc(r.rationale)}</div>` : ''}
+      ${r.enforced ? `<div class="lab">Thực thi bởi</div><div>${esc(r.enforced)}</div>` : ''}
+      <div class="lab">Use case áp dụng (${r.ucs.length})</div><div>${r.ucs.map(u => link(u)).join(' ') || '—'}</div>
+      <div class="lab">Code (${r.code.length})</div>${refs(r.code, 'c')}
+      <div class="lab">Test (${r.test.length})</div>${refs(r.test, 't')}`;
+  } else {
+    const r = D.msgs[id];
+    if (!r) { el.innerHTML = `<h4>${id}</h4><p class="empty">Không có trong Phụ lục V.2 của Report 3.</p>`; return; }
+    el.innerHTML = `<h4><span class="chip msg">${id}</span> <span class="badge ${status(r)}">${STATUS_TXT[status(r)]}</span></h4>
+      <p>“${esc(r.content)}”</p><div class="lab">Loại</div><div>${esc(r.type)}</div>
+      <div class="lab">Ngữ cảnh</div><div>${esc(r.context)}</div>
+      <div class="lab">Use case (${r.ucs.length})</div><div>${r.ucs.map(u => link(u)).join(' ') || '—'}</div>
+      <div class="lab">Code (${r.code.length})</div>${refs(r.code, 'c')}
+      <div class="lab">Test (${r.test.length})</div>${refs(r.test, 't')}`;
+  }
+  document.querySelectorAll('.chip.sel').forEach(c => c.classList.remove('sel'));
+  document.querySelectorAll(`.chip[data-k="${id}"]`).forEach(c => c.classList.add('sel'));
+}
+
+/* ---------- views ---------- */
+const FEATURE_OF = {}; D.features.forEach(f => f.ucs.forEach(u => FEATURE_OF[u] = f));
+const ucText = uc => JSON.stringify(uc).toLowerCase();
+const matches = (hay, q) => !q || q.toLowerCase().split(/\s+/).every(w => hay.includes(w));
+
+function renderSide() {
+  const q = state.q;
+  let html = '';
+  for (const f of D.features) {
+    const list = f.ucs.filter(u => matches(ucText(D.ucs[u]), q));
+    if (!list.length) continue;
+    html += `<div class="fe">${esc(f.id)} · ${esc(f.name)}</div>`;
+    for (const u of list) {
+      const uc = D.ucs[u], st = ucStatus(uc);
+      html += `<a class="uc-link${uc.parent ? ' sub' : ''}${state.tab === 'uc' && state.id === u ? ' on' : ''}" href="#uc/${u}" title="${esc(uc.name)} — BR ${uc.cov.br}, có code ${uc.cov.code}, có test ${uc.cov.test}"><b>${u}</b><span class="nm">${esc(uc.name)}</span><i class="dot ${st}"></i></a>`;
+    }
+  }
+  $('#side').innerHTML = html || '<div class="fe">Không có use case khớp.</div>';
+}
+
+function steps(list) {
+  return `<ol class="steps">${list.map(s => `<li><span class="n">${s.n}</span><div>${link(s.text)}</div></li>`).join('')}</ol>`;
+}
+function flows(blocks, kind, label) {
+  if (!blocks || !blocks.length) return '';
+  return `<h3>${label}</h3>` + blocks.map((b, i) => `<details class="flow ${kind}" ${kind !== 'ex' || blocks.length < 4 ? 'open' : ''}>
+    <summary>${esc(b.id ? b.id + ' – ' : '')}${esc(b.title)}</summary><div class="body">
+    ${b.notes.map(n => `<div class="note">${link(n)}</div>`).join('')}${steps(b.steps)}</div></details>`).join('');
+}
+
+function viewUC(id) {
+  const uc = D.ucs[id]; if (!uc) return viewHome();
+  const f = D.features.find(x => x.id === uc.feature);
+  const c = uc.cov, pc = c.br ? c.code * 100 / c.br : 0, pt = c.br ? c.test * 100 / c.br : 0;
+  const files = {};
+  for (const b of uc.br) { const r = D.rules[b]; if (!r) continue;
+    r.code.forEach(x => (files[x.split(':')[0]] ||= {code: [], test: [], ids: new Set()}, files[x.split(':')[0]].code.push(x), files[x.split(':')[0]].ids.add(b)));
+    r.test.forEach(x => (files[x.split(':')[0]] ||= {code: [], test: [], ids: new Set()}, files[x.split(':')[0]].test.push(x), files[x.split(':')[0]].ids.add(b))); }
+  for (const m of uc.msg) { const r = D.msgs[m]; if (!r) continue;
+    r.code.forEach(x => (files[x.split(':')[0]] ||= {code: [], test: [], ids: new Set()}, files[x.split(':')[0]].code.push(x), files[x.split(':')[0]].ids.add(m)));
+    r.test.forEach(x => (files[x.split(':')[0]] ||= {code: [], test: [], ids: new Set()}, files[x.split(':')[0]].test.push(x), files[x.split(':')[0]].ids.add(m))); }
+  const fileRows = Object.entries(files).sort((a, b) => b[1].ids.size - a[1].ids.size).map(([p, v]) => {
+    const first = (v.code[0] || v.test[0]);
+    return `<tr><td class="refs"><a class="${v.test.length && !v.code.length ? 't' : 'c'}" href="${vsc(first)}">${esc(p)}</a></td><td>${[...v.ids].map(i => link(i)).join(' ')}</td></tr>`;
+  }).join('');
+  return `<div class="sub">${esc(f ? f.id + ' · ' + f.name : '')}${uc.parent ? ` · thuộc ${link(uc.parent)}` : ''}</div>
+  <h2><span class="chip uc">${id}</span> ${esc(uc.name)}</h2>
+  <div class="facts"><div>Tác nhân chính: <b>${esc(uc.actors || '—')}</b></div><div>Phụ: <b>${esc(uc.secondary || '—')}</b></div>
+   <div>Report 3 dòng <b>${uc.line}</b></div></div>
+  <div class="cov"><span>${c.br} BR</span><div class="bar"><i class="a" style="width:${pt}%"></i><i class="b" style="width:${pc - pt}%"></i></div>
+   <span><span class="badge t">${c.test} test</span> <span class="badge c">${c.code} code</span></span></div>
+  <div class="box">${link(uc.desc || '')}</div>
+  ${uc.pre && uc.pre.length ? `<h3>Điều kiện tiên quyết</h3><div class="box"><ul class="bul">${uc.pre.map(x => `<li>${link(x)}</li>`).join('')}</ul></div>` : ''}
+  ${flows(uc.normal, 'nf', 'Luồng chính')}${flows(uc.alts, 'af', 'Luồng thay thế')}${flows(uc.exs, 'ex', 'Luồng ngoại lệ')}
+  ${uc.post && uc.post.length ? `<h3>Kết quả sau cùng</h3><div class="box"><ul class="bul">${uc.post.map(x => `<li>${link(x)}</li>`).join('')}</ul></div>` : ''}
+  ${Object.entries(uc.extra || {}).map(([k, v]) => `<h3>${esc(k)}</h3><div class="box">${link(v)}</div>`).join('')}
+  <h3>Luật nghiệp vụ (${uc.br.length})</h3>
+  <table><tr><th>BR</th><th>Luật</th><th>Dấu vết</th></tr>${uc.br.map(b => { const r = D.rules[b];
+    return `<tr class="row" data-k="${b}"><td>${link(b)}</td><td>${r ? esc(r.text) : '<i>không có trong Phụ lục V.1</i>'}</td>
+    <td><span class="badge ${status(r)}">${STATUS_TXT[status(r)]}</span></td></tr>`; }).join('')}</table>
+  <h3>Thông báo (${uc.msg.length})</h3>
+  <table><tr><th>MSG</th><th>Nội dung</th><th>Dấu vết</th></tr>${uc.msg.map(m => { const r = D.msgs[m];
+    return `<tr class="row" data-k="${m}"><td>${link(m)}</td><td>${r ? esc(r.content) : '<i>không có trong Phụ lục V.2</i>'}</td>
+    <td><span class="badge ${status(r)}">${STATUS_TXT[status(r)]}</span></td></tr>`; }).join('')}</table>
+  <h3>File code/test đụng tới UC này (${Object.keys(files).length})</h3>
+  ${fileRows ? `<table><tr><th>File</th><th>Trích dẫn</th></tr>${fileRows}</table>` : '<div class="box">Chưa file nào trích BR/MSG của UC này.</div>'}`;
+}
+
+function viewHome() {
+  const rows = D.features.map(f => {
+    const us = f.ucs.map(u => D.ucs[u]);
+    const br = new Set(us.flatMap(u => u.br)); const t = [...br].filter(b => hasTest(D.rules[b])).length, c = [...br].filter(b => hasCode(D.rules[b])).length;
+    return `<tr><td><b>${f.id}</b></td><td>${esc(f.name)}</td><td>${us.map(u => `<a class="chip uc" href="#uc/${u.id}" title="${esc(u.name)}">${u.id}</a>`).join(' ')}</td><td>${br.size}</td><td>${c}</td><td>${t}</td></tr>`;
+  }).join('');
+  const all = Object.values(D.rules), un = all.filter(r => !hasCode(r) && !hasTest(r)).length;
+  return `<h2>Bản đồ nghiệp vụ</h2>
+  <p class="sub">${Object.keys(D.ucs).length} use case · ${all.length} luật nghiệp vụ · ${Object.keys(D.msgs).length} thông báo. ${un} luật chưa có code/test nào trích dẫn.</p>
+  <p class="sub">Ảnh chụp ngày ${esc(D.generated || '?')}: cột “có code/có test” đọc từ mã nguồn lúc sinh, sẽ lệch khi có PR code merge sau đó — chạy lại <code>python scripts/sync_reports.py</code> để làm mới.</p>
+  <div class="box"><b>Cách đọc.</b> Chọn một use case bên trái, đọc luồng chính trước, rồi rẽ nhánh. Bấm chip <span class="chip br">BR-nn</span> / <span class="chip msg">MSGnn</span>
+  để xem luật, thông báo và dòng code/test cạnh bên. Chấm xanh = mọi BR của UC có test; vàng = có code; đỏ = chưa có dấu vết. Muốn đổi nghiệp vụ: tìm BR, xem file code, sửa cả hai.</div>
+  <h3>Theo tính năng</h3><table><tr><th>FE</th><th>Tên</th><th>Use case</th><th>BR</th><th>có code</th><th>có test</th></tr>${rows}</table>`;
+}
+
+function viewBR() {
+  const q = state.q;
+  let list = Object.entries(D.rules).filter(([id, r]) => matches((id + ' ' + r.text + ' ' + r.ucs.join(' ')).toLowerCase(), q));
+  if (state.cov !== 'all') list = list.filter(([, r]) => status(r) === state.cov);
+  list.sort((a, b) => num(a[0]) - num(b[0]));
+  const btn = (k, t) => `<button data-cov="${k}" class="${state.cov === k ? 'on' : ''}">${t}</button>`;
+  return `<h2>Luật nghiệp vụ</h2><div class="filters">${btn('all', 'Tất cả')}${btn('t', 'Có test')}${btn('c', 'Chỉ có code')}${btn('n', 'Chưa có dấu vết')}</div>
+  <div class="sub">${list.length} luật</div>
+  <table><tr><th>BR</th><th>Luật</th><th>UC</th><th>Dấu vết</th></tr>${list.map(([id, r]) => `<tr class="row" data-k="${id}"><td>${link(id)}</td><td>${esc(r.text)}</td><td>${r.ucs.map(u => link(u)).join(' ')}</td><td><span class="badge ${status(r)}">${STATUS_TXT[status(r)]}</span></td></tr>`).join('')}</table>`;
+}
+function viewMSG() {
+  const q = state.q;
+  const list = Object.entries(D.msgs).filter(([id, r]) => matches((id + ' ' + r.content + ' ' + r.context).toLowerCase(), q)).sort((a, b) => num(a[0]) - num(b[0]));
+  return `<h2>Thông báo hệ thống</h2><div class="sub">${list.length} thông báo</div>
+  <table><tr><th>MSG</th><th>Loại</th><th>Nội dung</th><th>UC</th><th>Dấu vết</th></tr>${list.map(([id, r]) => `<tr class="row" data-k="${id}"><td>${link(id)}</td><td>${esc(r.type)}</td><td>${esc(r.content)}</td><td>${r.ucs.map(u => link(u)).join(' ')}</td><td><span class="badge ${status(r)}">${STATUS_TXT[status(r)]}</span></td></tr>`).join('')}</table>`;
+}
+
+/* ---------- routing ---------- */
+function render() {
+  const [tab, id] = (location.hash.slice(1) || 'home').split('/');
+  state.tab = tab === 'br' || tab === 'msg' ? tab : tab === 'uc' ? 'uc' : 'home'; state.id = id || null;
+  $('#tabs').innerHTML = [['home', 'Tổng quan'], ['br', 'Luật (BR)'], ['msg', 'Thông báo (MSG)']]
+    .map(([k, t]) => `<a href="#${k}" class="${state.tab === k || (k === 'home' && state.tab === 'uc') ? 'on' : ''}">${t}</a>`).join('');
+  $('#main').innerHTML = state.tab === 'uc' ? viewUC(id) : state.tab === 'br' ? viewBR() : state.tab === 'msg' ? viewMSG() : viewHome();
+  renderSide();
+  if (state.tab === 'br' && id && D.rules[id]) inspect(id); else inspect(state.sel && document.querySelector(`.chip[data-k="${state.sel}"]`) ? state.sel : null);
+  $('#main').scrollTop = 0;
+}
+document.addEventListener('click', e => {
+  const chip = e.target.closest('.chip'); const row = e.target.closest('tr.row'); const fb = e.target.closest('[data-cov]');
+  if (fb) { state.cov = fb.dataset.cov; $('#main').innerHTML = viewBR(); return; }
+  if (chip) { const k = chip.dataset.k; if (!k) return;
+    if (k.startsWith('UC')) { location.hash = '#uc/' + k; return; } e.preventDefault(); inspect(k); return; }
+  if (row) inspect(row.dataset.k);
+});
+$('#q').addEventListener('input', e => { state.q = e.target.value.trim(); const keep = state.sel; render(); if (keep) inspect(keep); });
+document.addEventListener('keydown', e => { if (e.key === '/' && document.activeElement !== $('#q')) { e.preventDefault(); $('#q').focus(); } });
+window.addEventListener('hashchange', render);
+render();
+</script>
+</body>
+</html>

@@ -11,6 +11,7 @@ import argparse
 import io
 import json
 import re
+import subprocess
 import sys
 import tempfile
 import urllib.error
@@ -226,6 +227,60 @@ def write_atomic(path: Path, content: str) -> None:
     temporary_path.replace(path)
 
 
+def audit_requirements_consistency() -> None:
+    trace_script = ROOT / "scripts" / "trace_br.py"
+    if not trace_script.is_file():
+        return
+    try:
+        sys.path.insert(0, str(ROOT / "scripts"))
+        from trace_br import parse_report  # type: ignore
+
+        model = parse_report()
+        report_ucs = set(model["ucs"].keys())
+        report_msgs = set(model["msgs"].keys())
+        rules = model["rules"]
+
+        # 1. Audit Master Inventory (00-master-use-case-inventory.md)
+        inv_path = ROOT / "docs" / "01-requirements" / "00-master-use-case-inventory.md"
+        missing_ucs: set[str] = set()
+        if inv_path.is_file():
+            inv_text = inv_path.read_text(encoding="utf-8")
+            inv_ucs = set(re.findall(r"\bUC-\d{2,3}[a-z]?\b", inv_text))
+            missing_ucs = report_ucs - inv_ucs
+
+        # 2. Audit Message Catalogue (00-danh-muc-ma-thong-bao.md)
+        msg_path = ROOT / "docs" / "03-api" / "00-danh-muc-ma-thong-bao.md"
+        missing_msgs: set[str] = set()
+        if msg_path.is_file():
+            msg_text = msg_path.read_text(encoding="utf-8")
+            cat_msgs = set(re.findall(r"`(MSG\d+)`", msg_text))
+            missing_msgs = report_msgs - cat_msgs
+
+        print("\n" + "=" * 62)
+        print("🔍 KIỂM TRA ĐỐI CHIẾU ĐẶC TẢ REPORT 3")
+        print("-" * 62)
+        print(f"• Use Case Specs (05-spec) : {len(report_ucs)} UCs đã trích xuất")
+        print(f"• Business Rules (06-br)   : {len(rules)} BRs đã trích xuất")
+        print(f"• System Messages          : {len(report_msgs)} MSGs đã phân tích")
+        print(f"• Bản đồ đối chiếu         : docs/uc-map.html đã cập nhật")
+
+        if missing_ucs:
+            print(f"⚠️  CẢNH BÁO: {len(missing_ucs)} UC trong Report 3 chưa có trong 00-master-use-case-inventory.md:")
+            ordered_ucs = sorted(missing_ucs, key=lambda x: (int(re.sub(r"\D", "", x)), x))
+            print(f"    {ordered_ucs}")
+        else:
+            print("• Master Inventory (00-inv): Khớp 100% với Report 3")
+
+        if missing_msgs:
+            print(f"⚠️  CẢNH BÁO: {len(missing_msgs)} mã MSG trong Report 3 chưa có trong 00-danh-muc-ma-thong-bao.md:")
+            print(f"    {sorted(missing_msgs, key=lambda x: int(x[3:]))}")
+        else:
+            print("• Danh mục MSG (00-cat)    : Khớp 100% với Report 3")
+        print("=" * 62 + "\n")
+    except Exception as exc:
+        print(f"Lưu ý: Không thể hoàn tất đối chiếu tự động: {exc}", file=sys.stderr)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Sync local or Google Drive DOCX reports to Markdown.")
     parser.add_argument("--download", "-d", action="store_true", help="Refresh the three configured Drive reports")
@@ -328,10 +383,30 @@ def main() -> int:
             for destination, content in converted:
                 write_atomic(destination, content)
                 print(f"Synced {destination}")
+            # A preview into --output-dir must not touch the committed extracts or uc-map.
+            if not output_dir and any("Report-3" in str(destination) for destination, _ in converted):
+                extract_script = ROOT / "scripts" / "sync_requirement_extracts.py"
+                if extract_script.is_file():
+                    res = subprocess.run([sys.executable, str(extract_script)], capture_output=True, text=True)
+                    if res.returncode == 0:
+                        if res.stdout.strip():
+                            print(res.stdout.strip())
+                    else:
+                        print(f"Warning: could not sync requirement extracts: {res.stderr}", file=sys.stderr)
+
+                trace_script = ROOT / "scripts" / "trace_br.py"
+                if trace_script.is_file():
+                    res = subprocess.run([sys.executable, str(trace_script), "--html"], capture_output=True, text=True)
+                    if res.returncode == 0:
+                        print(f"Synced {ROOT / 'docs' / 'uc-map.html'}")
+                    else:
+                        print(f"Warning: could not sync uc-map.html: {res.stderr}", file=sys.stderr)
+
+                audit_requirements_consistency()
     except (ValueError, OSError, urllib.error.URLError) as error:
         print(f"Sync failed: {error}", file=sys.stderr)
         return 1
-    print("Review changes with: git diff -- docs/08-reports")
+    print("Review changes with: git diff -- docs/08-reports docs/01-requirements docs/uc-map.html")
     return 0
 
 

@@ -6,6 +6,10 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 
 ## Danh sách
 
+- [Bàn giao FE-07 cho Lộc — kho tài liệu cá nhân, gắn/gỡ, bình luận, xác nhận đọc](NOTE-ban-giao-fe07-kho-tai-lieu-cho-loc.md) — 27/10/2026;
+  hiện trạng ticket và code, chỗ lệch (UC-33a luồng chính chưa có ticket, UC-33b/33d đang chạy qua API agenda),
+  SCRUM-58 tách thành SCRUM-110/111/112, hai nhánh docs và kế hoạch từng bước vẽ sequence (SCRUM-91) và class diagram
+  (SCRUM-92) kèm checklist review.
 - [Review PR #136 và Bổ sung BA Final Review](ban-giao-ba-final-review/10-review-pr136-va-bo-sung-sau-merge.md) — 25/10/2026;
   tổng hợp toàn bộ feedback review PR #136 (CI đỏ .mmd, conflict main, MSG174, BR-115, UC-28b, UC-73, số EX trong sequence)
   và các chỉ đạo PO mới nhất từ PR #133 (không tự gửi thông báo), #134 (rủi ro BR-188), #135/SCRUM-98 (BR-72/238/307) và #141 (FE màn 5.2).
