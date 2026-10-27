@@ -37,7 +37,8 @@ FE đọc để hiện huy hiệu chủ toạ.
 Chi tiết từng trường của `GET …/call`:
 
 - **`status`**: `Open`, `NotStarted`, `Ended`, `Cancelled` hoặc `InPersonOnly`. Tính từ trạng thái và
-  hình thức cuộc họp; `InPersonOnly` xét trước. `Cancelled` là cuộc họp đã huỷ (SCRUM-99), màn chờ báo `MSG350`.
+  hình thức cuộc họp; `InPersonOnly` xét trước. `Cancelled` là cuộc họp đã huỷ (SCRUM-99), màn chờ báo `MSG350`;
+  như quyền xem cuộc họp, chỉ cuộc họp bị huỷ **sau khi công bố** mới trả `Cancelled`, huỷ trước đó vẫn là `404`.
 - **`myRole`**: vai trò của người gọi trong cuộc họp.
 - **`available`**: `false` khi máy chủ chưa cấu hình LiveKit.
 - **`participantCount`**: số người đang trong phòng. `null` khi phòng chưa mở hoặc không hỏi được
