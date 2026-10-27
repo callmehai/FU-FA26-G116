@@ -220,6 +220,12 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
         await AssertCode(await runningChair.PutAsJsonAsync($"/api/meetings/{running.MeetingId}/capture-mode", new { mode = "Room" }),
             409, "MSG325");
         Assert.False((await List(runningChair, running.MeetingId)).GetProperty("canChangeMode").GetBoolean());
+
+        var cancelled = await fixture.Seed(MeetingStatus.Cancelled);
+        using var cancelledChair = fixture.Client(cancelled.Chair);
+        await AssertCode(await cancelledChair.PutAsJsonAsync($"/api/meetings/{cancelled.MeetingId}/capture-mode", new { mode = "Room" }),
+            409, "MSG349");
+        Assert.False((await List(cancelledChair, cancelled.MeetingId)).GetProperty("canChangeMode").GetBoolean());
     }
 
     [Fact]
