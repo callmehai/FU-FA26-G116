@@ -198,6 +198,9 @@ app.MapAgendaEndpoints();
 app.MapParticipantEndpoints();
 app.MapAttendanceEndpoints();
 app.MapMeetingDocumentEndpoints();
+// SCRUM-58: the personal library and its folders; SCRUM-23: comments on a meeting document.
+app.MapPersonalLibraryEndpoints();
+app.MapDocumentCommentEndpoints();
 app.MapHub<MeetingHub>("/hubs/meetings", options => options.CloseOnAuthenticationExpiration = true);
 
 // SCRUM-14: user-scoped notification list/read APIs and realtime delivery.

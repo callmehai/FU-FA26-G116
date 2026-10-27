@@ -1,4 +1,4 @@
-# Tài liệu cuộc họp — tải lên (SCRUM-107), xem và tải về (SCRUM-21)
+# Tài liệu cuộc họp — tải lên (SCRUM-107), xem và tải về (SCRUM-21), gắn và gỡ (SCRUM-58), góp ý (SCRUM-23)
 
 UC-33a AF-1 *Upload files from the computer* (SCRUM-107); UC-32a *View Meeting Documents* và UC-32c *Preview
 Meeting Document* ở [mục SCRUM-21](#scrum-21--xem-và-tải-tài-liệu). Byte lưu trên Cloudflare R2, mọi lượt tải lên đi qua
@@ -6,7 +6,7 @@ backend ([ADR-0024](../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md
 [ADR-0018](../05-decisions/0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md) và
 [ERD §2](../02-design/02-erd.md). Sequence: [UC33a_UploadDocumentsToMeeting](../06-sequencediagram/document-management/UC33a_UploadDocumentsToMeeting.txt).
 
-Tải vào kho, chọn từ kho, gắn / gỡ thuộc SCRUM-58.
+Chọn từ kho, gắn / gỡ mục nghị sự, gỡ khỏi cuộc họp: [mục SCRUM-58](#scrum-58--gắn-và-gỡ-tài-liệu-của-cuộc-họp). Góp ý: [mục SCRUM-23](#scrum-23--góp-ý-trên-tài-liệu). Kho cá nhân (thư mục, tải vào kho): [14-kho-tai-lieu-ca-nhan.md](14-kho-tai-lieu-ca-nhan.md).
 
 ## Endpoint
 
@@ -25,7 +25,7 @@ mỗi `pageCounts` tối đa 16 byte; vượt một trong hai → `MSG164`.
 
 1. Token, tài khoản đang hoạt động — không đạt: `401` / `403` body rỗng.
 2. **Quyền, trước khi đọc body** (để người không có quyền không đẩy được 200 MB lên đĩa server):
-   xem được cuộc họp, đang là Chủ toạ hoặc Thư ký hiện tại, cuộc họp chưa `Ended`.
+   xem được cuộc họp, đang là Chủ toạ hoặc Thư ký hiện tại, cuộc họp chưa `Ended` và chưa `Cancelled`.
 3. `Content-Length` > 201 MB → `MSG288` ngay, không đọc body.
 4. Số tệp ≤ 10, tổng ≤ 200 MB (BR-319).
 5. Từng tệp: tên hợp lệ có đuôi `.pdf` hoặc `.docx`, không rỗng, ≤ 50 MB, và **nội dung** đúng loại mà đuôi
@@ -83,6 +83,7 @@ dung vẫn là tài liệu mới (BR-229).
 | 404 | `MSG174` | Không xem được cuộc họp hoặc cuộc họp không tồn tại — **cùng một body**, không lộ cuộc họp có tồn tại |
 | 409 | `MSG172` | Cuộc họp đã kết thúc, kể cả khi vừa kết thúc trong lúc đang tải |
 | 409 | `MSG349` | Cuộc họp đã huỷ (BR-299). FE ẩn nút tải lên khi cuộc họp `Cancelled` |
+| 409 | `MSG346` | Bộ nhớ tài liệu của cả hệ thống không đủ chỗ (ADR-0034, mặc định 10 GB). Kiểm dưới khoá chung trước khi đẩy byte lên R2; không tệp nào được thêm |
 | 503 | `MSG166` | Không lưu được (R2 lỗi, DB lỗi, hoặc server chưa cấu hình kho tệp). Không tệp nào được thêm |
 
 `errors` của `MSG164`:
@@ -101,7 +102,7 @@ Khoá là `files[i]` theo thứ tự part tệp; key `files` dùng cho lỗi c�
   `.pdf`/`.docx`. Body quá lớn bị server từ chối ngay khi trình duyệt còn đang gửi, nên trình duyệt thường chỉ
   thấy lỗi mạng, không đọc được `MSG288`. Vẫn xử lý `MSG164`/`MSG288` từ server: server kiểm theo nội dung, FE
   chỉ thấy đuôi.
-- Đọc `errors["files[i]"]` để đánh dấu đúng tệp trong danh sách đã chọn.
+- Đọc `errors["files[i]"]` để đánh dấu đúng tệp. FE hiện gửi mỗi tệp một request (ADR-0033), nên chỉ có `files[0]`.
 - `MSG162`/`MSG172`/`MSG174` có thể đến **sau** khi người dùng đã bấm tải (mất vai trò, cuộc họp vừa kết
   thúc): đóng hộp thoại và tải lại cuộc họp.
 - Tải 200 MB qua server 1 GB mất thời gian — hiện tiến độ bằng `XMLHttpRequest.upload.onprogress`
@@ -202,8 +203,8 @@ Sau mỗi lần tải lên thành công, hub `/hubs/meetings` gửi `documentsCh
 đang `JoinMeeting` và còn quyền xem cuộc họp (cùng nhóm người nhận với `agendaChanged`). Event chỉ báo "có thay
 đổi", FE gọi lại `GET …/documents`. Mỗi event có `eventId` riêng như `agendaChanged`, nên lọc trùng theo
 `eventId` trong `useMeetingEvents` không nuốt mất lần tải lên sau. Gửi event có giới hạn 2 giây (như agenda): hub hay DB
-chậm không giữ phản hồi tải lên. Đổi mục đang bàn đã có `agendaChanged` (`Started` / `Completed`). Gỡ và gắn / gỡ
-mục (SCRUM-58) nên phát cùng event này.
+chậm không giữ phản hồi tải lên. Đổi mục đang bàn đã có `agendaChanged` (`Started` / `Completed`). Thêm từ kho, gỡ,
+gắn và gỡ mục (SCRUM-58) phát cùng event này.
 
 ### Note cho FE (SCRUM-21)
 
@@ -229,8 +230,9 @@ mục (SCRUM-58) nên phát cùng event này.
 - Trình xem ở route `/mgmt/meetings/{id}/documents/{meetingDocumentId}`, ngoài khung ứng dụng: PDF bằng pdf.js
   (bản `legacy`, worker cùng origin, CSP không đổi), DOCX bằng `docx-preview`. Từ phòng họp mở ở tab mới, nút
   "‹ Tài liệu" đóng tab đó; ngoài phòng thì về `?tab=documents` của cuộc họp.
-- Hộp thoại tải lên gửi một request duy nhất qua `XMLHttpRequest` (`api.upload` trong `client.ts`) để có tiến độ;
-  tiến độ từng tệp tính theo số byte đã gửi. Đếm số trang PDF bằng pdf.js ngay khi chọn tệp.
+- Tải lên đi qua hàng đợi ở trình duyệt ([ADR-0033](../05-decisions/0033-hang-doi-tai-len-o-trinh-duyet.md)): hộp thoại
+  chỉ chọn và kiểm tệp, mỗi tệp một request `XMLHttpRequest` (`api.upload`, có tiến độ), chạy lần lượt; khay ở góc theo
+  dõi, tự thử lại khi chắc chưa lưu, rồi chờ "Thử lại". Đếm số trang PDF bằng pdf.js ngay khi chọn tệp.
 - Kiểm trước khi gửi dùng lại câu của `MSG164` (sai đuôi, rỗng, quá 50 MB) và `MSG288` (quá 10 tệp / 200 MB), không
   cấp mã mới.
 - DOCX là nội dung người dùng tải lên, được dựng ngay trong origin của mình: trình xem tắt `renderAltChunks` (HTML nhúng
@@ -254,6 +256,151 @@ khi tải về từ cuộc họp `Secret` (không trả `403` để lộ ID); t�
 chạm kho); lỗi DB lúc tra tài liệu → `MSG158`/`MSG160`;
 object thiếu hoặc kho chưa cấu hình → `MSG158`/`MSG160`, không ghi kiểm toán; lỗi ghi kiểm toán → không gửi tệp;
 tải lên phát `documentsChanged` chỉ cho người đã join cuộc họp đó, tải lên lỗi không phát.
+
+## SCRUM-58 · Gắn và gỡ tài liệu của cuộc họp
+
+SCRUM-112 (58c): UC-33a luồng chính (chọn từ kho), UC-33b (gắn vào mục nghị sự, ba nguồn), UC-33c (gỡ khỏi cuộc họp),
+UC-33d (gỡ khỏi một mục). Sequence: `UC33a_AddDocumentsFromLibrary`, `UC33b_…`, `UC33c_…`, `UC33d_…` (nhánh
+`docs/scrum-91-92-fe07-kho-tai-lieu`). Theo phương án (b) BA chốt 27/10/2026: chức năng riêng, không đi qua form sửa
+mục nghị sự.
+
+**Quyền, chung cho mọi endpoint dưới đây**: Chủ toạ hoặc Thư ký **hiện tại** của chính cuộc họp đó (`MeetingRole`,
+không phải quyền toàn hệ thống), tới khi cuộc họp `Ended` hoặc `Cancelled` (BR-184, BR-185, BR-279, BR-299); trạng thái mục nghị sự không khoá
+liên kết. Thứ tự: không xem được cuộc họp → `404 MSG174`; xem được nhưng không phải Chủ toạ/Thư ký → `403` (mã theo
+thao tác); đã kết thúc → `409` (mã theo thao tác); đã huỷ → `409 MSG349` (mọi thao tác). Mỗi thao tác chạy trong **một** transaction có khoá cuộc họp và kiểm
+quyền dưới khoá, nên mất vai trò hay cuộc họp vừa kết thúc giữa chừng vẫn bị chặn đúng mã. Thành công thì phát
+`documentsChanged` như khi tải lên.
+
+`PUT /api/meetings/{id}/agenda/{itemId}` vẫn nhận `documentIds` như trước (chỉ Thư ký, mã của Agenda) — FE hiện dùng ở
+form sửa mục; endpoint dưới đây là chức năng riêng cho cả Chủ toạ.
+
+### `POST /api/meetings/{id}/documents` — thêm từ kho (UC-33a)
+
+Body `{ "documentIds": ["<id tài liệu trong kho>", …] }`. Mỗi tài liệu phải **của chính người gọi** và còn trong kho;
+không chọn gì hoặc có tài liệu không hợp lệ → `400 MSG249` (BR-209). Tệp đã có trong cuộc họp (cùng `StoredFile`, chưa
+gỡ) → `409 MSG165` (BR-193). Tất cả hoặc không (BR-286). ID trùng trong mảng được gộp.
+
+Mỗi tài liệu thành một `MeetingDocument` **chung** (chưa gắn mục), trỏ cùng `StoredFile` của dòng kho, `DocumentId` là
+dòng kho, `fileName` chép **tên hiện tại** trong kho (BR-197, BR-276). Không chép byte (ADR-0018).
+
+`201` cùng dạng tải lên: `{ "code": "MSG161", "message", "meetingId", "addedCount", "documents": [ { "id", "fileName",
+"contentType", "byteSize", "pageCount" } ] }`. Lỗi khác: `403 MSG162`, `409 MSG172`, `503 MSG166`.
+
+### `DELETE /api/meetings/{id}/documents/{meetingDocumentId}` — gỡ khỏi cuộc họp (UC-33c)
+
+Đặt `RemovedAt`, `RemovedById`, xoá mọi liên kết mục nghị sự của tài liệu. Dòng và **góp ý giữ lại làm lịch sử** nhưng
+không còn hiện ở danh sách, trình xem hay góp ý (BR-281, BR-284). Thêm lại cùng tệp sau đó là một lần thêm mới: dòng mới,
+không có góp ý cũ (BR-212). Cuộc họp khác dùng cùng tệp không bị ảnh hưởng. Dòng kho không đổi.
+
+`200 { "code": "MSG167", "message", "meetingId", "meetingDocumentId" }`. Lỗi: `403 MSG169`, `409 MSG248`; tài liệu đã gỡ
+hoặc của cuộc họp khác → `404 MSG170` (**cùng body**, BR-211); `503 MSG171`.
+
+Đặc tả cũ chặn khi "đã có biên bản" (BR-185); biên bản chỉ có sau khi cuộc họp kết thúc, nên chặn ở `Ended` đã bao gồm.
+
+### `POST /api/meetings/{id}/agenda/{itemId}/documents[…]` — gắn vào mục nghị sự (UC-33b)
+
+Ba nguồn, ba endpoint, cùng mã thành công `200 MSG238`:
+
+| Nguồn | Endpoint | Body |
+|---|---|---|
+| Tài liệu đã có trong cuộc họp (luồng chính) | `POST …/agenda/{itemId}/documents` | `{ "documentIds": ["<MeetingDocument ID>", …] }` |
+| Chọn từ kho (AF-2) | `POST …/agenda/{itemId}/documents/from-library` | `{ "documentIds": ["<id tài liệu trong kho>", …] }` |
+| Tải từ máy (AF-1) | `POST …/agenda/{itemId}/documents/upload` | multipart như `POST …/documents/upload` |
+
+`200 { "code": "MSG238", "message", "meetingId", "agendaItemId", "documents": [ … ] }` — `documents` là các tài liệu
+**mới thêm vào cuộc họp** (AF-1, AF-2); luồng chính không thêm tài liệu nên mảng rỗng.
+
+- Mục nghị sự phải thuộc cuộc họp này, không thì `404 MSG242` (BR-278) — với AF-1 kiểm **trước khi đọc body**, cùng lúc
+  với quyền (như UC-33a AF-1; đặc tả UC-33b AF-1 bước 2 còn ghi kiểm tệp trước).
+- Luồng chính: mọi tài liệu phải còn trong cuộc họp, không thì `404 MSG170` (cả khi mảng rỗng); tài liệu đã gắn mục này
+  → `409 MSG243` (BR-277); liên kết với mục **khác** giữ nguyên. Lỗi lưu `503 MSG244`.
+- AF-2: như UC-33a (`400 MSG249`, `409 MSG165`), rồi thêm vào cuộc họp và gắn mục trong cùng transaction. Lỗi lưu
+  `503 MSG166` (theo sequence).
+- AF-1: như UC-33a AF-1 — giới hạn `MSG288` (PO 27/10/2026 áp cho UC-33b AF-1), kiểm tệp `MSG164`, dòng kho vào thư mục
+  `<tên cuộc họp> – dd/mm/yyyy`, cùng thứ tự ghi R2; thêm liên kết mục trong cùng transaction. Lỗi lưu `503 MSG166`.
+- Tất cả hoặc không (BR-304). Lỗi chung: `403 MSG240`, `409 MSG247`.
+
+### `DELETE /api/meetings/{id}/agenda/{itemId}/documents/{meetingDocumentId}` — gỡ khỏi một mục (UC-33d)
+
+Xoá **đúng một** liên kết; tài liệu vẫn ở cuộc họp, giữ liên kết với mục khác, hết liên kết thì về nhóm chung (BR-280).
+Thứ tự theo sequence: tài liệu còn trong cuộc họp (`404 MSG170`) → mục thuộc cuộc họp (`404 MSG242`) → liên kết tồn tại
+(`404 MSG246`). `200 { "code": "MSG239", "message", "meetingId", "agendaItemId", "meetingDocumentId" }`. Lỗi khác:
+`403 MSG241`, `409 MSG247`, `503 MSG245`.
+
+### Note cho FE (SCRUM-58)
+
+- Menu ⋯ của tài liệu: "Gỡ khỏi cuộc họp" (UC-33c, hộp xác nhận) và, trong nhóm của một mục, "Gỡ khỏi mục này" (UC-33d).
+  Chỉ hiện cho Chủ toạ/Thư ký hiện tại khi cuộc họp chưa `Ended` và chưa `Cancelled` (`myMeetingRole`, `status` từ
+  `GET /api/meetings/{id}`).
+- Hộp thêm tài liệu có tab "Từ kho của tôi" (UC-33a) gọi `GET /api/documents` để duyệt kho; nút thêm ở từng mục mở cùng
+  hộp đó với ba nguồn (UC-33b).
+- `MSG170`/`MSG246`/`MSG242` nghĩa là dữ liệu đã cũ: tải lại danh sách. `MSG162`/`MSG169`/`MSG240`/`MSG241`/`MSG172`/
+  `MSG247`/`MSG248`/`MSG349` có thể đến sau khi mở hộp thoại: đóng hộp và tải lại cuộc họp.
+- Tab Nội dung cuộc họp hiện tài liệu theo mục từ `GET …/agenda`; sau gắn/gỡ chỉ có `documentsChanged`, nên tab đó cần
+  nghe thêm event này nếu muốn tự làm mới.
+
+## SCRUM-23 · Góp ý trên tài liệu
+
+UC-35 (AF-1 gắn trang PDF, AF-2 trả lời). Sequence: `UC35_CommentOnMeetingDocument`. Góp ý gắn vào **tài liệu trong
+một cuộc họp** (`MeetingDocument`): cùng tệp ở hai cuộc họp có hai luồng góp ý riêng.
+
+**Quyền**: ai xem được cuộc họp thì đọc và viết được góp ý (`MeetingReadPolicy`, BR-249, BR-275) — kể cả Người duyệt và
+Người tổ chức. Không xem được cuộc họp, tài liệu đã gỡ, hoặc tài liệu của cuộc họp khác → `404 MSG156` (cùng body).
+
+### `GET /api/meetings/{id}/documents/{meetingDocumentId}/comments`
+
+`200`:
+
+```json
+{
+  "meetingDocumentId": "…",
+  "canComment": true,
+  "comments": [
+    {
+      "id": "…", "body": "Xem lại số liệu trang này", "pageNumber": 3,
+      "author": { "userId": "…", "guestInvitationId": null, "name": "Nguyễn Văn A", "isGuest": false },
+      "createdAt": "2026-10-27T03:15:00+00:00",
+      "replies": [ { "id": "…", "body": "Đã sửa", "pageNumber": null, "author": { "…": "…" }, "createdAt": "…", "replies": [] } ]
+    }
+  ]
+}
+```
+
+- Góp ý gốc xếp cũ trước; trả lời nằm trong `replies` của góp ý gốc, cũ trước, **một cấp** (BR-317).
+- `canComment`: `false` khi cuộc họp đã kết thúc hoặc đã huỷ — ẩn ô viết (BR-282).
+- `author.isGuest` + `guestInvitationId`: góp ý của Guest đã xác minh, `name` là tên tự khai (ADR-0016) — FE hiện kèm nhãn
+  Khách mời.
+- Lỗi: `404 MSG156`, `500 MSG204`.
+
+### `POST /api/meetings/{id}/documents/{meetingDocumentId}/comments`
+
+Body `{ "body": "…", "pageNumber": 3, "parentCommentId": null }`. Thứ tự kiểm theo sequence:
+
+1. Nội dung cắt khoảng trắng, không trống (`400 MSG200`, BR-246), ≤ 4.000 ký tự (`400 MSG348`).
+2. Dưới khoá chia sẻ (`FOR SHARE`) trên dòng cuộc họp: xem được cuộc họp và tài liệu còn trong cuộc họp (`404 MSG156`),
+   cuộc họp chưa kết thúc (`409 MSG251`) và chưa huỷ (`409 MSG349`), kể cả khi vừa kết thúc/huỷ lúc đang gửi. Các góp ý
+   không phải chờ nhau.
+3. Trả lời (AF-2): `parentCommentId` phải là góp ý của chính tài liệu này (không thì `404 MSG156`); trả lời một câu trả
+   lời thì vào luồng của góp ý gốc.
+4. `pageNumber` chỉ giữ với **PDF**, ở góp ý gốc, và trong khoảng `1…pageCount` nếu biết số trang; ngoài ra lưu `null`
+   (DOCX không có trang, BR-248). Trả lời không mang trang riêng.
+5. Ghi tác giả và thời điểm (BR-250). Lỗi lưu `503 MSG202`.
+
+`201 { "code": "MSG199", "message": "Đã gửi góp ý.", "comment": { …như một phần tử của GET, replies rỗng… } }`.
+
+### Note cho FE (SCRUM-23)
+
+- `commentCount` ở danh sách tài liệu (tab Tài liệu, panel phòng họp) đếm cả góp ý và trả lời; gửi góp ý **không** phát
+  `documentsChanged`, nên số này cập nhật ở lần tải lại danh sách.
+- Trang PDF: gửi `pageNumber` là trang đang xem nếu người dùng chọn gắn trang; DOCX không gửi.
+- `MSG251`/`MSG349` giữa chừng: tải lại góp ý (`canComment` sẽ là `false`) và giữ nội dung đang soạn để người dùng chép lại.
+
+### Guest
+
+Guest chưa có phiên đăng nhập (UC-04), nên **chưa gọi được** hai endpoint này. Mô hình đã có tác giả Guest
+(`DocumentComment.GuestInvitationId`, check đúng một tác giả) và `GET` đã trả tên + nhãn Guest; khi UC-04 có phiên,
+endpoint cần nhận danh tính Guest qua `IMeetingGuestIdentityResolver` như Agenda và kiểm lời mời còn hiệu lực ở mỗi lần
+gửi (thu hồi lời mời → `MSG156`, góp ý cũ giữ tác giả).
 
 ## Lưu trữ và cấu hình
 
@@ -283,8 +430,8 @@ của một lần tải không hoàn tất (ghi trước khi đẩy object, xem 
 dọn theo cùng đường này. Lỗi bất kỳ trong một lượt, kể cả timeout của SDK (ném `OperationCanceledException`), chỉ
 được ghi log; chỉ việc tắt app mới dừng job.
 
-Ticket này chưa có đường xoá khỏi kho hay gỡ khỏi cuộc họp (SCRUM-58), nên job được kiểm bằng
-`OrphanFilePurgerTests`.
+Từ SCRUM-58, xoá khỏi kho (UC-71a) và gỡ khỏi cuộc họp (UC-33c) là hai đường đưa một tệp về trạng thái không còn ai
+tham chiếu; job vẫn được kiểm bằng `OrphanFilePurgerTests`.
 
 ## Dữ liệu cá nhân (Luật 91/2025/QH15)
 
@@ -305,7 +452,7 @@ DB dev cũ và server test **mất hẳn** hai tài liệu fixture mỗi cuộc 
 seed lại từ đầu (`docker compose down -v`, [deploy/README.md](../../deploy/README.md) mục xoá dữ liệu).
 
 Từ SCRUM-98, một tài liệu gắn được nhiều mục khi lập chương trình (bảng nối, ADR-0020 §5); sửa một
-mục chỉ đổi liên kết của mục đó. UC-33b/UC-33d (SCRUM-58) thêm endpoint gắn/gỡ riêng.
+mục chỉ đổi liên kết của mục đó. UC-33b/UC-33d (SCRUM-58) có endpoint gắn/gỡ riêng; SCRUM-58 không thêm migration.
 
 ## Kiểm thử
 
@@ -327,5 +474,20 @@ mục chỉ đổi liên kết của mục đó. UC-33b/UC-33d (SCRUM-58) thêm 
   `pageCount` chỉ cho PDF.
 - Thêm ở endpoint: mất vai trò Thư ký giữa lúc tải → `MSG162` và object bị xoá; Thành viên gửi tệp sai → `MSG162`
   (quyền kiểm trước); HTML giả PDF và PDF mang tên `.html` → `MSG164`.
+- `MeetingDocumentChangeEndpointsTests` (SCRUM-58): thêm từ kho (tên hiện tại, không chép byte, ID trùng gộp); không
+  chọn / tài liệu của người khác → `MSG249`, tệp đã có → `MSG165`; Thành viên `MSG162`, người ngoài `MSG174`, lỗi lưu
+  `MSG166`, đã kết thúc `MSG172`; gỡ giữ góp ý, xoá liên kết mục, phát `documentsChanged`, gỡ lại → `MSG170`; thêm lại tệp
+  đã gỡ là dòng mới không có góp ý cũ; gỡ: Thành viên `MSG169`, tài liệu của cuộc họp khác `MSG170`, lỗi lưu `MSG171`, đã
+  kết thúc `MSG248`; gắn mục giữ liên kết mục khác, gắn lại `MSG243`; mục của cuộc họp khác `MSG242`, có tài liệu đã gỡ /
+  mảng rỗng `MSG170` không gắn gì; Thành viên `MSG240`, lỗi lưu `MSG244`, đã kết thúc `MSG247`; từ kho thêm và gắn một
+  lần, `MSG165`, `MSG249`, lỗi lưu `MSG166`; tải từ máy vào mục (thư mục cuộc họp, liên kết), mục không có → `MSG242`
+  trước khi đọc body, tệp sai `MSG164`, Thành viên `MSG240`; gỡ khỏi mục từng liên kết rồi về nhóm chung, gỡ lại `MSG246`;
+  Thành viên `MSG241`, tài liệu đã gỡ `MSG170`, mục lạ `MSG242`, lỗi lưu `MSG245`, đã kết thúc `MSG247`. Cuộc họp đã
+  huỷ: cả 7 thao tác (kể cả `/upload`) → `MSG349`, không gì thay đổi; thêm, tải lên, gắn, từ kho, tải vào mục, gỡ liên
+  kết đều phát `documentsChanged`; Chủ toạ đã bị loại và Chủ toạ cuộc họp khác → `MSG174`, Thư ký bị khoá tài khoản → `403`.
+- `DocumentCommentEndpointsTests` (SCRUM-23): góp ý trang 3 trên PDF, DOCX và trang ngoài số trang không giữ trang,
+  `commentCount`; trả lời một câu trả lời vào luồng gốc, cha lạ → `MSG156`; trống `MSG200`, quá dài `MSG348`; đã kết thúc
+  `MSG251` và `canComment: false`; đã huỷ `MSG349` và `canComment: false`; Người tổ chức và người duyệt góp ý được; người ngoài, tài liệu của cuộc họp khác, tài liệu đã gỡ → `MSG156` (góp ý cũ vẫn trong
+  DB); cùng tệp ở hai cuộc họp không thấy góp ý của nhau; lỗi lưu `MSG202`, lỗi đọc `MSG204`.
 - `OrphanFilePurgerTests`: chỉ dọn tệp không còn tham chiếu và quá thời gian chờ; xoá lỗi thì để lượt sau;
   100 tệp xoá lỗi không chặn tệp thứ 101; thời gian chờ cấu hình 0 vẫn giữ tệp mới tải 30 phút.

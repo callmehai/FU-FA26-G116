@@ -229,7 +229,8 @@ adding or changing a message.
 **CSS**: use the variables declared on `:root` in `global.css` (`--brand`, `--gold`, `--ink`,
 `--surface`, `--muted-ink`, `--chip-*`, …) rather than hardcoded colours. Blue `--brand` is the
 primary colour; gold is only a thin accent edge; red (`--danger`) is only for "Mật", the current
-time and warnings. The UI is **light only** — do not add a `prefers-color-scheme: dark` palette.
+time and warnings — plus the PDF file icon (`--file-pdf`), red because that is how readers know
+PDF. The UI is **light only** — do not add a `prefers-color-scheme: dark` palette.
 Sizes follow ADR-0012 (256px sidebar, 72px collapsed, 40px controls, 44px page-header action, 6px
 radius, 14px body text, never below 12px; a listing is one `.list-panel` of toolbar, table and
 paging); check against it before inventing new ones. A meeting's state uses `StatusBadge` and its

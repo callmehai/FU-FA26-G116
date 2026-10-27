@@ -33,6 +33,9 @@ const DocumentViewerPage = lazy(() =>
 const DocumentsPage = lazy(() =>
   import('../features/documents/DocumentsPage').then((m) => ({ default: m.DocumentsPage })),
 )
+const LibraryViewerPage = lazy(() =>
+  import('../features/documents/LibraryViewerPage').then((m) => ({ default: m.LibraryViewerPage })),
+)
 const VoicePage = lazy(() => import('../features/voice/VoicePage').then((m) => ({ default: m.VoicePage })))
 
 /**
@@ -62,6 +65,7 @@ export function App() {
           <Route path={routes.meetingRoom(':meetingId')} element={<MeetingRoomPage />} />
           {/* Full screen too; an unreadable meeting or document renders NotFound. */}
           <Route path={routes.meetingDocument(':meetingId', ':documentId')} element={<DocumentViewerPage />} />
+          <Route path={routes.libraryDocument(':documentId')} element={<LibraryViewerPage />} />
           <Route element={<AppShell />}>
             {/* Inside the guard and the shell: following an old /mgmt link must not remount either —
                 that would drop the notification connection. */}

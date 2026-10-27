@@ -160,6 +160,87 @@ dòng nguồn UC phía dưới giữ để truy vết. Không cấp mã mới.
 | `MSG159` | 403 | `?download=true` với cuộc họp `Secret` (BR-188) | Tài liệu của cuộc họp Mật chỉ được xem trực tuyến, không được tải về. |
 | `MSG160` | 503 | Như `MSG158` nhưng khi `?download=true` | Không tải về được tài liệu. Vui lòng thử lại. |
 
+## Kho tài liệu cá nhân — contract Backend SCRUM-110, SCRUM-111 (SCRUM-58)
+
+`/api/folders` (UC-72a–d), `/api/documents` (UC-34, UC-36, UC-71a–c) và `/api/users/{userId}/library` (Quản trị viên
+đọc kho của tài khoản đã khoá, PO 27/10/2026), chi tiết ở [14-kho-tai-lieu-ca-nhan.md](14-kho-tai-lieu-ca-nhan.md).
+
+| Mã | HTTP | Endpoint / tình huống | Thông báo |
+|---|---|---|---|
+| `MSG175` | 404 | Thư mục hoặc tài liệu không tồn tại, của người khác, hoặc kho của tài khoản còn hoạt động khi Quản trị viên đọc (cùng body) | Mục này không còn trong kho tài liệu của bạn. |
+| `MSG176` | 500 | GET kho lỗi đọc DB | Không tải được kho tài liệu của bạn. Vui lòng thử lại. |
+| `MSG177` | 201 | Tải lên kho thành công, kèm `addedCount` và `documents` | Đã tải tài liệu lên kho của bạn. |
+| `MSG178` | 503 | Tải lên kho: R2/DB lỗi hoặc chưa cấu hình kho tệp; đã xoá object của lần tải | Không tải lên được tệp. Chưa có tài liệu nào được thêm. Vui lòng thử lại. |
+| `MSG179` | 404 | Thư mục đích (tải lên, tạo thư mục, chuyển) không tồn tại hoặc của người khác | Thư mục đích không còn trong kho tài liệu của bạn. |
+| `MSG180` | 200 | Xoá tài liệu khỏi kho | Đã xoá tài liệu khỏi kho của bạn. |
+| `MSG181` | 503 | Xoá tài liệu lỗi DB | Không xoá được tài liệu. Kho tài liệu của bạn không thay đổi. |
+| `MSG183` | 200 | Đổi tên tài liệu | Đã đổi tên tài liệu. |
+| `MSG184` | 503 | Đổi tên tài liệu lỗi DB | Không đổi được tên tài liệu. Tên vẫn giữ nguyên. |
+| `MSG185` | 200 | Chuyển tài liệu | Đã chuyển tài liệu. |
+| `MSG186` | 503 | Chuyển tài liệu lỗi DB | Không chuyển được tài liệu. Vị trí vẫn giữ nguyên. |
+| `MSG187` | 201 | Tạo thư mục | Đã tạo thư mục. |
+| `MSG188` | 400 | Tên thư mục trống (tạo, đổi tên) | Hãy nhập tên thư mục. |
+| `MSG189` | 409 | Thư mục mới, hoặc thư mục con sâu nhất sau khi chuyển, vượt cấp 5 (BR-191) | Thư mục chỉ lồng tối đa 5 cấp. |
+| `MSG190` | 503 | Tạo thư mục lỗi DB | Không tạo được thư mục. Chưa có thư mục nào được tạo. |
+| `MSG191` | 200 | Đổi tên thư mục | Đã đổi tên thư mục. |
+| `MSG192` | 503 | Đổi tên thư mục lỗi DB | Không đổi được tên thư mục. Tên vẫn giữ nguyên. |
+| `MSG193` | 409 | Chuyển thư mục vào chính nó hoặc thư mục con của nó (BR-222) | Không thể chuyển thư mục vào chính nó hoặc thư mục con của nó. |
+| `MSG194` | 200 | Chuyển thư mục | Đã chuyển thư mục. |
+| `MSG195` | 503 | Chuyển thư mục lỗi DB | Không chuyển được thư mục. Vị trí vẫn giữ nguyên. |
+| `MSG196` | 409 | Xoá thư mục còn tài liệu hoặc thư mục con (BR-223) | Chỉ xoá được thư mục rỗng. |
+| `MSG197` | 200 | Xoá thư mục | Đã xoá thư mục. |
+| `MSG198` | 503 | Xoá thư mục lỗi DB | Không xoá được thư mục. Thư mục không thay đổi. |
+| `MSG346` | 409 | Bộ nhớ tài liệu của cả hệ thống không đủ chỗ cho lần tải (ADR-0034, `FileStorage:MaxTotalGigabytes`, mặc định 10 GB): vào kho (UC-36), vào cuộc họp hoặc vào mục nghị sự (UC-33a/33b AF-1); không tệp nào được thêm | Bộ nhớ tài liệu của hệ thống đã đầy. Chưa có tài liệu nào được tải lên. Hãy báo quản trị viên. |
+| `MSG347` | 400 | Đổi tên tài liệu: tên trống hoặc chỉ có phần đuôi, có ký tự điều khiển, dài quá 255 ký tự, hoặc đổi phần đuôi `.pdf`/`.docx` | Tên tài liệu không hợp lệ. Tên không được trống và phải giữ phần đuôi .pdf hoặc .docx của tệp. |
+| `MSG348` | 400 | Tên thư mục quá 400 ký tự; góp ý quá 4.000 ký tự (SCRUM-23) | Nội dung vượt quá độ dài cho phép. |
+
+Dùng lại cho cùng tình huống: `MSG164`/`MSG288` (tải lên kho, như UC-33a AF-1), `MSG158`/`MSG160` (mở tệp trong kho
+lỗi, như UC-32c).
+
+## Gắn và gỡ tài liệu cuộc họp — contract Backend SCRUM-112 (SCRUM-58)
+
+`POST /api/meetings/{id}/documents` (UC-33a từ kho), `DELETE /api/meetings/{id}/documents/{meetingDocumentId}` (UC-33c),
+`POST /api/meetings/{id}/agenda/{itemId}/documents[/from-library|/upload]` (UC-33b) và
+`DELETE /api/meetings/{id}/agenda/{itemId}/documents/{meetingDocumentId}` (UC-33d), chi tiết ở
+[11-tai-lieu-cuoc-hop.md](11-tai-lieu-cuoc-hop.md#scrum-58--gắn-và-gỡ-tài-liệu-của-cuộc-họp).
+
+| Mã | HTTP | Endpoint / tình huống | Thông báo |
+|---|---|---|---|
+| `MSG165` | 409 | Tệp của tài liệu đã chọn từ kho đang có trong cuộc họp (UC-33a, UC-33b AF-2) | Một hoặc nhiều tài liệu đã chọn đã có trong cuộc họp. |
+| `MSG167` | 200 | Gỡ tài liệu khỏi cuộc họp | Đã gỡ tài liệu khỏi cuộc họp. |
+| `MSG169` | 403 | Gỡ: xem được cuộc họp nhưng không còn là Chủ toạ/Thư ký hiện tại | Bạn không còn quyền gỡ tài liệu khỏi cuộc họp này. |
+| `MSG170` | 404 | Tài liệu đã gỡ, của cuộc họp khác, hoặc không chọn tài liệu nào khi gắn (cùng body) | Tài liệu này không còn trong cuộc họp. Hãy tải lại danh sách tài liệu. |
+| `MSG171` | 503 | Gỡ lỗi DB | Không gỡ được tài liệu. Tài liệu vẫn còn trong cuộc họp. Vui lòng thử lại. |
+| `MSG238` | 200 | Gắn tài liệu vào mục nghị sự (cả ba nguồn) | Đã gắn tài liệu vào mục nghị sự. |
+| `MSG239` | 200 | Gỡ một tài liệu khỏi mục nghị sự | Đã gỡ tài liệu khỏi mục nghị sự. |
+| `MSG240` | 403 | Gắn: xem được cuộc họp nhưng không còn là Chủ toạ/Thư ký hiện tại | Bạn không còn quyền gắn tài liệu trong cuộc họp này. |
+| `MSG241` | 403 | Gỡ khỏi mục: xem được cuộc họp nhưng không còn là Chủ toạ/Thư ký hiện tại | Bạn không còn quyền gỡ liên kết tài liệu trong cuộc họp này. |
+| `MSG242` | 404 | Mục nghị sự không có trong cuộc họp này | Hãy chọn một mục nghị sự còn trong cuộc họp này. |
+| `MSG243` | 409 | Tài liệu đã chọn đã gắn vào mục này | Một hoặc nhiều tài liệu đã chọn đã được gắn vào mục nghị sự này. |
+| `MSG244` | 503 | Gắn tài liệu đã có trong cuộc họp lỗi DB | Không gắn được tài liệu. Chưa có liên kết nào thay đổi. Vui lòng thử lại. |
+| `MSG245` | 503 | Gỡ khỏi mục lỗi DB | Không gỡ được liên kết tài liệu. Chưa có liên kết nào thay đổi. Vui lòng thử lại. |
+| `MSG246` | 404 | Tài liệu không gắn với mục đã chọn | Tài liệu này không còn gắn với mục nghị sự đã chọn. Hãy tải lại danh sách tài liệu. |
+| `MSG247` | 409 | Gắn hoặc gỡ khỏi mục khi cuộc họp đã kết thúc | Không thể thay đổi liên kết tài liệu sau khi cuộc họp đã kết thúc. |
+| `MSG248` | 409 | Gỡ khỏi cuộc họp khi cuộc họp đã kết thúc | Không thể gỡ tài liệu sau khi cuộc họp đã kết thúc. |
+| `MSG249` | 400 | Chọn từ kho: không chọn gì, hoặc có tài liệu không còn / không phải của mình (UC-33a, UC-33b AF-2) | Hãy chọn một hoặc nhiều tài liệu còn trong kho của bạn. |
+
+Dùng lại cho cùng tình huống: `MSG161`/`MSG162`/`MSG166`/`MSG172` (thêm từ kho, như UC-33a AF-1), `MSG174` (mọi endpoint
+ở đây), `MSG164`/`MSG288`/`MSG166` (UC-33b AF-1 tải từ máy), `MSG166` (UC-33b AF-2 lỗi lưu, theo sequence).
+
+## Góp ý tài liệu cuộc họp — contract Backend SCRUM-23
+
+`GET/POST /api/meetings/{id}/documents/{meetingDocumentId}/comments` (UC-35), chi tiết ở
+[11-tai-lieu-cuoc-hop.md](11-tai-lieu-cuoc-hop.md#scrum-23--góp-ý-trên-tài-liệu). Trả lời dùng chung các mã này.
+
+| Mã | HTTP | Endpoint / tình huống | Thông báo |
+|---|---|---|---|
+| `MSG156` | 404 | Không xem được cuộc họp, tài liệu đã gỡ / của cuộc họp khác, hoặc góp ý cần trả lời không thuộc tài liệu này | Không truy cập được tài liệu của cuộc họp. |
+| `MSG199` | 201 | Gửi góp ý hoặc trả lời | Đã gửi góp ý. |
+| `MSG200` | 400 | Nội dung trống (BR-246) | Hãy nhập nội dung góp ý. |
+| `MSG202` | 503 | Lưu góp ý lỗi DB | Không gửi được góp ý. Chưa có góp ý nào được lưu. Vui lòng thử lại. |
+| `MSG204` | 500 | GET góp ý lỗi đọc DB | Không tải được góp ý của tài liệu. Vui lòng thử lại. |
+| `MSG251` | 409 | Cuộc họp đã kết thúc, kể cả khi vừa kết thúc lúc đang gửi (BR-282) | Cuộc họp đã kết thúc nên góp ý chỉ còn để đọc. |
+
 ## Mã tiếp theo
 
 **`MSG351`** — `MSG346`–`MSG348` đã cấp cho kho tài liệu cá nhân và góp ý tài liệu (SCRUM-58, SCRUM-23, PR #169), chưa lên `main`. Cuộc họp đã huỷ là trạng thái cuối (BR-299): thay đổi bị từ chối bằng `MSG349` (tải tài liệu lên, đổi cách ghi âm; gắn/gỡ tài liệu và góp ý trên cuộc họp đã huỷ dùng lại mã này), phòng họp trực tuyến báo `MSG350` (FE). Huỷ cuộc họp (SCRUM-99, UC-75) dùng `MSG261`–`MSG264` đã dành sẵn và `MSG345` (lý do quá dài). Thông báo FE của phòng họp trực tuyến (SCRUM-41) dùng `MSG328`–`MSG344`. Bản ghi cuộc họp (SCRUM-29) dùng `MSG290`–`MSG298`; gỡ băng (SCRUM-31) dùng `MSG299`–`MSG304`; Voice ID (SCRUM-35) dùng `MSG305`–`MSG317`; ghi âm theo micro từng người (SCRUM-109) dùng `MSG318`–`MSG327`. `MSG288` (UC-33a EX-8, giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026) đã triển khai cùng `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174` trong SCRUM-107. SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG265`–`MSG270` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG249` và `MSG251` dành sẵn, chưa triển khai, cho ADR-0020; `MSG250` ngừng dùng. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3; trong dải này SCRUM-107 đã triển khai `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, SCRUM-21 đã triển khai `MSG156`–`MSG160`, phần còn lại chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`/`MSG146` dành cho thay đổi FE-06 trong Report 3; `MSG147`–`MSG151` đã triển khai trong SCRUM-26; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG142`–`MSG143`, `MSG271`–`MSG274` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
@@ -613,11 +694,11 @@ riêng trong code: mark-read trả `404` không body khi không thấy thông b�
 
 ### Tài liệu — FE-07 (UC-32, UC-33, UC-34, UC-35, UC-36, UC-71, UC-72)
 
-Các mã dưới đây **dành sẵn** cho đặc tả ngày 14/10/2026, chưa phải contract đã triển khai.
+Các mã dưới đây cấp cho đặc tả ngày 14/10/2026; trạng thái theo từng dòng. Mã đã triển khai có contract HTTP và câu tiếng Việt ở các bảng contract phía trên.
 
 | Mã | Tình huống / trạng thái | Thông điệp |
 |---|---|---|
-| `MSG156` | UC-32a / EX-1; UC-32c / EX-1; UC-35 / EX-2 · Dành sẵn | Meeting documents are not accessible. |
+| `MSG156` | UC-32a / EX-1; UC-32c / EX-1; UC-35 / EX-2 · Đã triển khai SCRUM-21, SCRUM-23 | Meeting documents are not accessible. |
 | `MSG157` | UC-32a / EX-2 · Dành sẵn | Unable to load the document list. Please try again. |
 | `MSG158` | UC-32c / EX-2 · Dành sẵn | Unable to display the document. Please try again. |
 | `MSG159` | UC-32c / EX-3 · Dành sẵn | Secret Meeting documents can only be viewed online and cannot be downloaded. |
@@ -626,46 +707,49 @@ Các mã dưới đây **dành sẵn** cho đặc tả ngày 14/10/2026, chưa p
 | `MSG162` | UC-33a / EX-1 · Đã triển khai SCRUM-107 | You no longer have permission to add documents to this Meeting. |
 | `MSG163` | ADR-0020 · Ngừng dùng | Retired: document addition and Agenda Item linking are separate operations under ADR-0020. Do not reuse. |
 | `MSG164` | UC-33a / EX-3 (also no file or an invalid request); UC-36 / EX-1 · Đã triển khai SCRUM-107 | Select valid PDF or DOCX files, each no larger than 50 MB. |
-| `MSG165` | UC-33a / EX-4 · Dành sẵn | One or more selected documents are already attached to the Meeting. |
+| `MSG165` | UC-33a / EX-4; UC-33b AF-2 · Đã triển khai SCRUM-112 | One or more selected documents are already attached to the Meeting. |
 | `MSG166` | UC-33a / EX-5 · Đã triển khai SCRUM-107 | Unable to add the documents. No documents were added. Please try again. |
-| `MSG167` | UC-33c / Normal Flow · Dành sẵn | Document removed from the Meeting successfully. |
+| `MSG167` | UC-33c / Normal Flow · Đã triển khai SCRUM-112 | Document removed from the Meeting successfully. |
 | `MSG168` | ADR-0020 · Ngừng dùng | Retired: Meeting Minutes no longer lock document removal under ADR-0020. Do not reuse. |
-| `MSG169` | UC-33c / EX-2 · Dành sẵn | You no longer have permission to remove documents from this Meeting. |
-| `MSG170` | UC-33b, UC-33d / EX-2; UC-33c / EX-3 · Dành sẵn | This document is no longer attached to the Meeting. Refresh the document list. |
-| `MSG171` | UC-33c / EX-4 · Dành sẵn | Unable to remove the document. It remains attached to the Meeting. Please try again. |
+| `MSG169` | UC-33c / EX-2 · Đã triển khai SCRUM-112 | You no longer have permission to remove documents from this Meeting. |
+| `MSG170` | UC-33b, UC-33d / EX-2; UC-33c / EX-3 · Đã triển khai SCRUM-112 | This document is no longer attached to the Meeting. Refresh the document list. |
+| `MSG171` | UC-33c / EX-4 · Đã triển khai SCRUM-112 | Unable to remove the document. It remains attached to the Meeting. Please try again. |
 | `MSG172` | UC-33a / EX-6 · Đã triển khai SCRUM-107 | Documents cannot be added after the Meeting has ended. |
 | `MSG173` | ADR-0020 · Ngừng dùng | Retired: Agenda Item status no longer locks document links under ADR-0020. Do not reuse. |
-| `MSG174` | UC-33a / EX-7 và UC-77 / EX-4 · Đã triển khai; UC-33b / EX-7, UC-33c / EX-5, UC-33d / EX-7 còn dành sẵn | This Meeting is not accessible. |
-| `MSG175` | UC-34 / EX-2; UC-71a / EX-1; UC-71b / EX-1; UC-71c / EX-1; UC-72b / EX-1; UC-72c / EX-1; UC-72d / EX-1 · Dành sẵn | This personal-library item is not available. |
-| `MSG176` | UC-34 / EX-1 · Dành sẵn | Unable to load your personal document library. Please try again. |
-| `MSG177` | UC-36 / Normal Flow · Dành sẵn | Documents uploaded to your personal library successfully. |
-| `MSG178` | UC-36 / EX-3 · Dành sẵn | Unable to upload the files. No documents were added. Please try again. |
-| `MSG179` | UC-36 / EX-2; UC-71c / EX-2; UC-72a / EX-2; UC-72c / EX-2 · Dành sẵn | The selected destination folder is not available in your personal library. |
-| `MSG180` | UC-71a / Normal Flow · Dành sẵn | Document deleted from your personal library successfully. |
-| `MSG181` | UC-71a / EX-2 · Dành sẵn | Unable to delete the document. Your personal library remains unchanged. |
+| `MSG174` | UC-33a / EX-7 và UC-77 / EX-4, UC-33b / EX-7, UC-33c / EX-5, UC-33d / EX-7 · Đã triển khai SCRUM-107, SCRUM-98, SCRUM-112 | This Meeting is not accessible. |
+| `MSG175` | UC-34 / EX-2; UC-71a / EX-1; UC-71b / EX-1; UC-71c / EX-1; UC-72b / EX-1; UC-72c / EX-1; UC-72d / EX-1 · Đã triển khai SCRUM-111 | This personal-library item is not available. |
+| `MSG176` | UC-34 / EX-1 · Đã triển khai SCRUM-111 | Unable to load your personal document library. Please try again. |
+| `MSG177` | UC-36 / Normal Flow · Đã triển khai SCRUM-111 | Documents uploaded to your personal library successfully. |
+| `MSG178` | UC-36 / EX-3 · Đã triển khai SCRUM-111 | Unable to upload the files. No documents were added. Please try again. |
+| `MSG179` | UC-36 / EX-2; UC-71c / EX-2; UC-72a / EX-2; UC-72c / EX-2 · Đã triển khai SCRUM-111 | The selected destination folder is not available in your personal library. |
+| `MSG180` | UC-71a / Normal Flow · Đã triển khai SCRUM-111 | Document deleted from your personal library successfully. |
+| `MSG181` | UC-71a / EX-2 · Đã triển khai SCRUM-111 | Unable to delete the document. Your personal library remains unchanged. |
 | `MSG182` | Retired — document-name constraint removed with BR-243 · Ngừng dùng | Retired: no document-name validation is specified under this code. Do not reuse. |
-| `MSG183` | UC-71b / Normal Flow · Dành sẵn | Document renamed successfully. |
-| `MSG184` | UC-71b / EX-2 · Dành sẵn | Unable to rename the document. Its name remains unchanged. |
-| `MSG185` | UC-71c / Normal Flow · Dành sẵn | Document moved successfully. |
-| `MSG186` | UC-71c / EX-3 · Dành sẵn | Unable to move the document. Its location remains unchanged. |
-| `MSG187` | UC-72a / Normal Flow · Dành sẵn | Folder created successfully. |
-| `MSG188` | UC-72a / EX-1; UC-72b / EX-2 · Dành sẵn | Enter a folder name. |
-| `MSG189` | UC-72a / EX-3; UC-72c / EX-4 · Dành sẵn | Folders cannot be nested more than five levels deep. |
-| `MSG190` | UC-72a / EX-4 · Dành sẵn | Unable to create the folder. No folder was created. |
-| `MSG191` | UC-72b / Normal Flow · Dành sẵn | Folder renamed successfully. |
-| `MSG192` | UC-72b / EX-3 · Dành sẵn | Unable to rename the folder. Its name remains unchanged. |
-| `MSG193` | UC-72c / EX-3 · Dành sẵn | A folder cannot be moved into itself or one of its descendants. |
-| `MSG194` | UC-72c / Normal Flow · Dành sẵn | Folder moved successfully. |
-| `MSG195` | UC-72c / EX-5 · Dành sẵn | Unable to move the folder. Its location remains unchanged. |
-| `MSG196` | UC-72d / EX-2 · Dành sẵn | Only an empty folder can be deleted. |
-| `MSG197` | UC-72d / Normal Flow · Dành sẵn | Folder deleted successfully. |
-| `MSG198` | UC-72d / EX-3 · Dành sẵn | Unable to delete the folder. The folder remains unchanged. |
-| `MSG199` | UC-35 / Normal Flow · Dành sẵn | Comment added successfully. |
-| `MSG200` | UC-35 / EX-1 · Dành sẵn | Enter a comment. |
+| `MSG183` | UC-71b / Normal Flow · Đã triển khai SCRUM-111 | Document renamed successfully. |
+| `MSG184` | UC-71b / EX-2 · Đã triển khai SCRUM-111 | Unable to rename the document. Its name remains unchanged. |
+| `MSG185` | UC-71c / Normal Flow · Đã triển khai SCRUM-111 | Document moved successfully. |
+| `MSG186` | UC-71c / EX-3 · Đã triển khai SCRUM-111 | Unable to move the document. Its location remains unchanged. |
+| `MSG187` | UC-72a / Normal Flow · Đã triển khai SCRUM-110 | Folder created successfully. |
+| `MSG188` | UC-72a / EX-1; UC-72b / EX-2 · Đã triển khai SCRUM-110 | Enter a folder name. |
+| `MSG189` | UC-72a / EX-3; UC-72c / EX-4 · Đã triển khai SCRUM-110 | Folders cannot be nested more than five levels deep. |
+| `MSG190` | UC-72a / EX-4 · Đã triển khai SCRUM-110 | Unable to create the folder. No folder was created. |
+| `MSG191` | UC-72b / Normal Flow · Đã triển khai SCRUM-110 | Folder renamed successfully. |
+| `MSG192` | UC-72b / EX-3 · Đã triển khai SCRUM-110 | Unable to rename the folder. Its name remains unchanged. |
+| `MSG193` | UC-72c / EX-3 · Đã triển khai SCRUM-110 | A folder cannot be moved into itself or one of its descendants. |
+| `MSG194` | UC-72c / Normal Flow · Đã triển khai SCRUM-110 | Folder moved successfully. |
+| `MSG195` | UC-72c / EX-5 · Đã triển khai SCRUM-110 | Unable to move the folder. Its location remains unchanged. |
+| `MSG196` | UC-72d / EX-2 · Đã triển khai SCRUM-110 | Only an empty folder can be deleted. |
+| `MSG197` | UC-72d / Normal Flow · Đã triển khai SCRUM-110 | Folder deleted successfully. |
+| `MSG198` | UC-72d / EX-3 · Đã triển khai SCRUM-110 | Unable to delete the folder. The folder remains unchanged. |
+| `MSG199` | UC-35 / Normal Flow · Đã triển khai SCRUM-23 | Comment added successfully. |
+| `MSG200` | UC-35 / EX-1 · Đã triển khai SCRUM-23 | Enter a comment. |
 | `MSG201` | Retired — no separate commenting permission · Ngừng dùng | Retired: document-viewing access also permits commenting. Do not reuse. |
-| `MSG202` | UC-35 / EX-3 · Dành sẵn | Unable to add the comment. No comment was saved. Please try again. |
+| `MSG202` | UC-35 / EX-3 · Đã triển khai SCRUM-23 | Unable to add the comment. No comment was saved. Please try again. |
 | `MSG203` | Retired — mandatory PDF page reference removed · Ngừng dùng | Retired: a PDF comment does not require a page reference. Do not reuse. |
-| `MSG204` | UC-35 / EX-4 · Dành sẵn | Unable to load the document comments. Please try again. |
+| `MSG204` | UC-35 / EX-4 · Đã triển khai SCRUM-23 | Unable to load the document comments. Please try again. |
+| `MSG346` | UC-33a, UC-33b, UC-36, PO 27/10/2026 (hạn mức 10 GB của cả hệ thống, ADR-0034) · Đã triển khai SCRUM-111, chờ BA bổ sung đặc tả | The system's document storage is full. No documents were uploaded. Please contact an administrator. |
+| `MSG347` | UC-71b (tên phải giữ phần đuôi của tệp) · Đã triển khai SCRUM-111, chờ BA bổ sung đặc tả | The document name is not valid. It must not be blank and must keep the .pdf or .docx extension of the file. |
+| `MSG348` | UC-72a, UC-72b, UC-35 (độ dài tối đa) · Đã triển khai SCRUM-110, SCRUM-23, chờ BA bổ sung đặc tả | The text is longer than allowed. |
 
 
 ### Biểu quyết — FE-11 (UC-52a, UC-52b, UC-53–UC-57)
@@ -714,20 +798,20 @@ Bảng nguồn đặc tả dưới đây giữ thông điệp tiếng Anh để 
 
 | Mã | Nguồn / tình huống | Thông báo chuẩn |
 |---|---|---|
-| `MSG238` | UC-33b / Normal Flow · Dành sẵn, chưa triển khai | Documents attached to the Agenda Item successfully. |
-| `MSG239` | UC-33d / Normal Flow · Dành sẵn, chưa triển khai | Document detached from the Agenda Item successfully. |
-| `MSG240` | UC-33b / EX-1 · Dành sẵn, chưa triển khai | You no longer have permission to link documents in this Meeting. |
-| `MSG241` | UC-33d / EX-1 · Dành sẵn, chưa triển khai | You no longer have permission to unlink documents in this Meeting. |
-| `MSG242` | UC-33b, UC-33d / EX-3 · Dành sẵn, chưa triển khai | Select an available Agenda Item in this Meeting. |
-| `MSG243` | UC-33b / EX-4 · Dành sẵn, chưa triển khai | One or more selected documents are already attached to the Agenda Item. |
-| `MSG244` | UC-33b / EX-5 · Dành sẵn, chưa triển khai | Unable to link the document. No links were changed. Please try again. |
-| `MSG245` | UC-33d / EX-5 · Dành sẵn, chưa triển khai | Unable to unlink the document. No links were changed. Please try again. |
-| `MSG246` | UC-33d / EX-4 · Dành sẵn, chưa triển khai | This document is no longer linked to the selected Agenda Item. Refresh the document list. |
-| `MSG247` | UC-33b, UC-33d / EX-6 · Dành sẵn, chưa triển khai | Document links cannot be changed after the Meeting has ended. |
-| `MSG248` | UC-33c / EX-1 · Dành sẵn, chưa triển khai | Documents cannot be removed after the Meeting has ended. |
-| `MSG249` | UC-33a / EX-2 · Dành sẵn, chưa triển khai | Select one or more available documents from your personal library. |
+| `MSG238` | UC-33b / Normal Flow · Đã triển khai SCRUM-112 | Documents attached to the Agenda Item successfully. |
+| `MSG239` | UC-33d / Normal Flow · Đã triển khai SCRUM-112 | Document detached from the Agenda Item successfully. |
+| `MSG240` | UC-33b / EX-1 · Đã triển khai SCRUM-112 | You no longer have permission to link documents in this Meeting. |
+| `MSG241` | UC-33d / EX-1 · Đã triển khai SCRUM-112 | You no longer have permission to unlink documents in this Meeting. |
+| `MSG242` | UC-33b, UC-33d / EX-3 · Đã triển khai SCRUM-112 | Select an available Agenda Item in this Meeting. |
+| `MSG243` | UC-33b / EX-4 · Đã triển khai SCRUM-112 | One or more selected documents are already attached to the Agenda Item. |
+| `MSG244` | UC-33b / EX-5 · Đã triển khai SCRUM-112 | Unable to link the document. No links were changed. Please try again. |
+| `MSG245` | UC-33d / EX-5 · Đã triển khai SCRUM-112 | Unable to unlink the document. No links were changed. Please try again. |
+| `MSG246` | UC-33d / EX-4 · Đã triển khai SCRUM-112 | This document is no longer linked to the selected Agenda Item. Refresh the document list. |
+| `MSG247` | UC-33b, UC-33d / EX-6 · Đã triển khai SCRUM-112 | Document links cannot be changed after the Meeting has ended. |
+| `MSG248` | UC-33c / EX-1 · Đã triển khai SCRUM-112 | Documents cannot be removed after the Meeting has ended. |
+| `MSG249` | UC-33a / EX-2 · Đã triển khai SCRUM-112 | Select one or more available documents from your personal library. |
 | `MSG250` | UC-23b / EX-4 (cũ) · **Ngừng dùng** 18/10/2026 | *Planned Duration and Presenter cannot be changed after an agenda item has started.* — Ngừng dùng theo PO 16/10/2026: mục nghị sự không còn Planned Duration. Không tái sử dụng mã. |
-| `MSG251` | UC-35 / EX-5 · Dành sẵn, chưa triển khai | Comments are read-only after the Meeting has ended. |
+| `MSG251` | UC-35 / EX-5 · Đã triển khai SCRUM-23 | Comments are read-only after the Meeting has ended. |
 | `MSG252` | UC-55 / EX-8 · Dành sẵn, chưa triển khai | Confirm that you have read all vote documents before casting your ballot. |
 | `MSG253` | UC-74 / Main Flow · Dành sẵn, chưa triển khai | Document read confirmed. |
 | `MSG254` | UC-74 / EX-1 · Dành sẵn, chưa triển khai | Scroll to the last page of the document before confirming that you have read it. |

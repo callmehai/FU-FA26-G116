@@ -16,14 +16,18 @@ import { api } from './client'
 export const listRecordings = (meetingId: string) => api.get<RecordingList>(`/api/meetings/${meetingId}/recordings`)
 
 /** `consentConfirmed` is always sent as true: the dialog does not let the Secretary get here without it. */
-export function uploadRecording(meetingId: string, input: RecordingUploadInput) {
+export function uploadRecording(
+  meetingId: string,
+  input: RecordingUploadInput,
+  options: { onProgress?: (loaded: number, total: number) => void; signal?: AbortSignal } = {},
+) {
   const form = new FormData()
   form.append('consentConfirmed', 'true')
   form.append('consentPurpose', input.consentPurpose)
   form.append('source', input.source)
   if (input.durationMs !== undefined) form.append('durationMs', String(Math.round(input.durationMs)))
   form.append('file', input.file, input.fileName)
-  return api.postForm<RecordingMutationResponse>(`/api/meetings/${meetingId}/recordings`, form)
+  return api.upload<RecordingMutationResponse>(`/api/meetings/${meetingId}/recordings`, form, options)
 }
 
 export const getRecordingPlayback = (recordingId: string) =>
