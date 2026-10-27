@@ -32,6 +32,13 @@ internal sealed class PasswordResetEmailSender(
             return false;
         }
 
+        // A demo account's address can never receive the link; sending would only bounce.
+        if (emailOptions.IsUndeliverable(toAddress))
+        {
+            logger.LogWarning("The password reset email was not sent: the recipient's domain never receives mail.");
+            return false;
+        }
+
         // Same bound as one attempt of the queue worker, so a hung server answers MSG15 instead of
         // keeping the administrator's request open indefinitely.
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);

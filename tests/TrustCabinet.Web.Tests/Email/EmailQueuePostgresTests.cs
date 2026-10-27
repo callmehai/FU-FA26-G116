@@ -137,6 +137,27 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Undeliverable_domain_fails_at_once_without_reaching_smtp()
+    {
+        _db.EmailMessages.AddRange(
+            QueuedMessage("thuky@TrustCabinet.Local", Now),
+            QueuedMessage("someone@example.com", Now.AddMinutes(1)));
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+        var sender = new RecordingSender();
+        var processor = Processor(_db, sender, undeliverableDomains: ["trustcabinet.local"]);
+
+        Assert.Equal(EmailProcessingOutcome.PermanentlyFailed, (await processor.ProcessNextAsync()).Outcome);
+        Assert.Equal(EmailProcessingOutcome.Sent, (await processor.ProcessNextAsync()).Outcome);
+
+        Assert.Equal(["someone@example.com"], sender.Recipients);
+        var skipped = await _db.EmailMessages.AsNoTracking().SingleAsync(m => m.ToAddress == "thuky@TrustCabinet.Local");
+        Assert.Equal(EmailStatus.Failed, skipped.Status);
+        Assert.Null(skipped.NextAttemptAt);
+        Assert.Contains("UndeliverableDomains", skipped.LastError, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Expired_claim_at_maximum_attempts_is_failed_without_another_send()
     {
         var exhausted = QueuedMessage("exhausted@trustcabinet.local", Now.AddMinutes(-1));
@@ -227,7 +248,8 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
         int maxAttempts = 3,
         int retryDelaySeconds = 60,
         int sendAttemptTimeoutSeconds = 60,
-        int processingLeaseSeconds = 120)
+        int processingLeaseSeconds = 120,
+        string[]? undeliverableDomains = null)
         => new(
             db,
             sender,
@@ -238,6 +260,7 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
                 PollingIntervalSeconds = 1,
                 ProcessingLeaseSeconds = processingLeaseSeconds,
                 SendAttemptTimeoutSeconds = sendAttemptTimeoutSeconds,
+                UndeliverableDomains = undeliverableDomains ?? [],
             }),
             time ?? new FixedTimeProvider(Now),
             NullLogger<EmailQueueProcessor>.Instance);

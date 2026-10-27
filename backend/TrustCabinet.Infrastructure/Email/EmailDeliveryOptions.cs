@@ -18,7 +18,22 @@ public sealed class EmailDeliveryOptions
     /// <summary>Upper bound for one complete SMTP attempt, including connect and disconnect.</summary>
     public int SendAttemptTimeoutSeconds { get; set; } = 60;
 
+    /// <summary>
+    /// Recipient domains that never receive mail, such as the demo accounts' <c>trustcabinet.local</c>. A message to
+    /// one fails at once instead of reaching the SMTP server, which would only bounce it back to the sending mailbox.
+    /// </summary>
+    public string[] UndeliverableDomains { get; set; } = [];
+
     public SmtpOptions Smtp { get; set; } = new();
+
+    public bool IsUndeliverable(string address)
+    {
+        var at = address.LastIndexOf('@');
+        if (at < 0) return false;
+        var domain = address[(at + 1)..].Trim().TrimEnd('.');
+        return UndeliverableDomains.Any(blocked =>
+            string.Equals(domain, blocked.Trim().TrimEnd('.'), StringComparison.OrdinalIgnoreCase));
+    }
 }
 
 public enum SmtpSecurityMode

@@ -15,12 +15,14 @@ public sealed class PasswordResetEmailSenderTests
 
     private readonly RecordingEmailSender _smtp = new();
 
-    private PasswordResetEmailSender NewSender(bool enabled = true, int timeoutSeconds = 5) => new(
+    private PasswordResetEmailSender NewSender(
+        bool enabled = true, int timeoutSeconds = 5, string[]? undeliverableDomains = null) => new(
         _smtp,
         Options.Create(new EmailDeliveryOptions
         {
             ApplicationBaseUrl = "https://trustcabinet.example/",
             SendAttemptTimeoutSeconds = timeoutSeconds,
+            UndeliverableDomains = undeliverableDomains ?? [],
             Smtp = new SmtpOptions { Enabled = enabled, Host = "smtp.example", FromAddress = "no-reply@trustcabinet.example" },
         }),
         NullLogger<PasswordResetEmailSender>.Instance);
@@ -47,6 +49,16 @@ public sealed class PasswordResetEmailSenderTests
 
         Assert.Equal("https://trustcabinet.example/reset-password#token=" + Token, link);
         Assert.DoesNotContain("?", link);
+    }
+
+    [Fact]
+    public async Task An_undeliverable_domain_is_a_failed_send_without_reaching_smtp()
+    {
+        var sent = await NewSender(undeliverableDomains: ["trustcabinet.local"]).SendAsync(
+            "thanhvien@trustcabinet.local", "Lê Thành Viên", Token, TimeSpan.FromMinutes(60));
+
+        Assert.False(sent);
+        Assert.Empty(_smtp.Sent);
     }
 
     [Fact]

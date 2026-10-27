@@ -37,6 +37,11 @@ internal sealed class EmailQueueProcessor(
             return new EmailProcessingResult(EmailProcessingOutcome.NoWork);
         }
 
+        if (options.Value.IsUndeliverable(message.ToAddress))
+        {
+            return await SkipUndeliverableAsync(message, ct);
+        }
+
         try
         {
             using var attemptCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -73,6 +78,32 @@ internal sealed class EmailQueueProcessor(
             message.ToAddress,
             message.AttemptCount);
         return new EmailProcessingResult(EmailProcessingOutcome.Sent, message.AttemptCount);
+    }
+
+    /// <summary>
+    /// A demo address can never be delivered, so it is failed on its first claim without retries: sending it would
+    /// bounce back to the sending mailbox, and enough bounces get that mailbox's sending suspended.
+    /// </summary>
+    private async Task<EmailProcessingResult> SkipUndeliverableAsync(EmailMessage message, CancellationToken ct)
+    {
+        if (!await FinalizeFailureAsync(
+                message.Id,
+                message.LeaseToken!.Value,
+                exhausted: true,
+                "Not sent: the recipient's domain never receives mail (Email:UndeliverableDomains).",
+                nextAttemptAt: null,
+                time.GetUtcNow(),
+                ct))
+        {
+            return LeaseLost(message);
+        }
+
+        logger.LogInformation(
+            "Invitation email {EmailMessageId} for meeting {MeetingId} was not sent: its recipient domain never "
+            + "receives mail.",
+            message.Id,
+            message.MeetingId);
+        return new EmailProcessingResult(EmailProcessingOutcome.PermanentlyFailed, message.AttemptCount);
     }
 
     private async Task<EmailProcessingResult> HandleSendFailureAsync(

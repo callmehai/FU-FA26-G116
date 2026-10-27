@@ -235,7 +235,13 @@ bình thường.
 Mặc định tắt. Điền các biến `SMTP_*` trong `deploy/.env` (xem
 [note SMTP](../docs/03-api/07-gui-email-thu-moi-note-cai-dat-may-moi.md#4-cấu-hình-smtp)), đặt
 `SMTP_ENABLED=true`, rồi `docker compose -f deploy/docker-compose.yml up -d`. Email chỉ đến được
-những người dùng có địa chỉ thật — các tài khoản `@trustcabinet.local` thì không.
+những người dùng có địa chỉ thật — các tài khoản `@trustcabinet.local` thì không: thư gửi tới chúng được đánh
+dấu `Failed` ngay, không đi qua Gmail (`Email:UndeliverableDomains` trong `appsettings.Development.json`), để
+Gmail không nhận thư dội lại rồi khoá quyền gửi của tài khoản gửi.
+
+Bật SMTP lần đầu thì mọi lời mời tích lại từ lúc tắt được tạo thành thư và gửi một lượt. Xem trước hàng đợi bằng
+`docker compose -f deploy/docker-compose.yml exec postgres psql -U trustcabinet -d trustcabinet -c "select status,
+count(*) from email_messages group by status"`.
 
 ### 9. Kho tệp tài liệu trên Cloudflare R2
 
