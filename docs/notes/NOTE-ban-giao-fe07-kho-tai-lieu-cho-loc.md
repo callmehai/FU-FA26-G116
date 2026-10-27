@@ -10,6 +10,8 @@ Note có hai phần:
 - **Phần A (mục 1–5)** cho Lộc: hiện trạng, chỗ lệch, ticket và thứ tự code.
 - **Phần B (mục 6–7)** cho KhanhPG: kế hoạch vẽ sequence và class diagram (SCRUM-91, SCRUM-92), chia thành bước nhỏ để giao
   agent, mỗi bước có đầu vào, nội dung cần vẽ, điều kiện xong và checklist review.
+- **Phần C (mục 10)** cho KhanhPG: mọi việc tài liệu FE-07 còn lại ngoài sequence và class diagram — BA Final Review các
+  ticket đã code, màn hình Report 3 và wireframe, screen flow, ERD — để không sót khi đóng FE-07.
 
 **Phân công:**
 
@@ -285,3 +287,83 @@ class diagram); PNG xuất từ đúng source; README cập nhật.
 
 Số đếm bằng tag `BR-nn` trong comment, chỉ là gợi ý chỗ đã có; xem bản đồ chi tiết bằng
 `python scripts/trace_br.py --html` rồi mở `docs/uc-map.html`. Phần UC-33b/33d có tag là nhờ code agenda (mục 2.2 ý 2).
+
+## 10. Phần C — toàn bộ việc tài liệu FE-07 của BA (KhanhPG)
+
+Rà ngày 27/10/2026 mọi loại tài liệu trong `docs/` có chạm FE-07. Bảng dưới là danh sách đầy đủ; mục 7 chỉ là phần diagram.
+
+### 10.1 Bảng tổng
+
+| # | Tài liệu | Hiện trạng | Việc | Khi nào |
+|---|---|---|---|---|
+| C1 | BA Final Review SCRUM-107 (UC-33a AF-1) | Jira đang ở BA Final Review | Bước 6 | **Ngay** |
+| C2 | BA Final Review SCRUM-21 (UC-32a, UC-32c) | Jira đang ở BA Final Review | Bước 6 | **Ngay** |
+| C3 | Sequence, class diagram phần kho, gắn/gỡ | Chưa có | Mục 7 bước 1–5 | Trước khi Lộc code từng ticket |
+| C4 | Report 3 §III màn 7.1, 7.2, 7.4 (kho, "Từ kho của tôi") và menu ⋯ của 7.3 | Ghi "chờ SCRUM-58" | Bước 8, qua wireframe | Sau khi Lộc làm xong FE của ticket tương ứng |
+| C5 | Screen flow `docs/12-screenflow` | Có 7.1–7.5, nhưng nhãn 7.5 còn "Versions" (đã bỏ phiên bản theo ADR-0018) | Bước 7 | Lúc nào cũng được |
+| C6 | ERD hiện tại `docs/13-erd/hien-tai` | Snapshot cũ: còn `document_versions`, thiếu `folders`, `stored_files`, `meeting_documents`, `meeting_document_agenda_items` | Nhờ dev sinh lại từ database; thư mục này **không sửa tay** | Báo Lộc/leader, không phải việc BA |
+| C7 | ERD mục tiêu, Chen, `02-design/02-erd.md` | Đã có đủ `Folder`, `Document`, `StoredFile`, `MeetingDocument`, `MeetingDocumentAgendaItem`, `DocumentComment` | Chỉ rà lại khi Lộc thêm cột hoặc bảng | Bước 9 |
+| C8 | UC diagram `docs/14-uc-diagram` | Đã có UC-33 (gộp), 34, 36, 71, 72 | Không cần sửa | — |
+| C9 | State machine | SM-19 DocumentComment đã có; thư mục, tài liệu kho không có vòng đời trạng thái | Không cần thêm | — |
+| C10 | BA Final Review SCRUM-110, 111, 112, 23 | Chưa code | Bước 9, lặp cho từng ticket | Khi ticket sang BA Final Review |
+| C11 | UC-74 (xác nhận đọc) | Sequence đã có; code thuộc SCRUM-96 | Bước 9 khi SCRUM-96 sang BA Final Review | Theo Huy |
+
+**Không phải việc BA:** contract `docs/03-api/11-tai-lieu-cuoc-hop.md` và endpoint mới, catalogue MSG (Lộc, cùng commit code);
+test report Report 5 (Tester); ERD hiện tại (sinh từ database).
+
+**Cách sửa Report 3:** Report 3 sửa trong DOCX ở `docs/08-reports/source/`, rồi chạy pipeline sinh lại Markdown
+(`scripts/sync_reports.py`, đã gộp pipeline ở commit `7e353de`). Không sửa thẳng file `.md`. Phạm vi mặc định: §I.4.2 danh
+sách UC, §II đặc tả UC, §V.1 BR, §V.2 MSG; §III màn hình chỉ khi bước 8. Ảnh màn hình lấy từ wireframe
+(`docs/wireframe/TrustCabinet-wireframe-vN.html` → `_tools` → `screens/*.png`), **không** chụp app đang chạy.
+
+### 10.2 Bước 6 — BA Final Review SCRUM-107 và SCRUM-21 (làm ngay)
+
+Hai ticket đã merge code và đang chờ BA. Làm SCRUM-107 trước (nhỏ hơn), cùng nhánh 2, mỗi ticket một commit.
+
+**Agent làm (đọc code thay BA):**
+1. Đọc mọi comment trên Jira SCRUM-107 / SCRUM-21 (BE, FE ghi thay đổi so với ticket).
+2. Đọc contract `docs/03-api/11-tai-lieu-cuoc-hop.md`, catalogue MSG (`MSG156`–`MSG166`, `MSG172`, `MSG174`, `MSG288`) và code
+   `MeetingDocumentEndpoints.cs` cùng service của nó.
+3. Lập bảng đối chiếu theo từng bước của đặc tả (UC-33a AF-1 / UC-32a / UC-32c ở Report 3 mục 7.1–7.2): bước đặc tả →
+   code làm gì → khớp / lệch / thiếu. Kèm BR và MSG.
+4. Đối chiếu tương tự với sequence `UC33a`, `UC32a`, `UC32c` và class diagram FE-07.
+5. **Chỉ báo cáo**, chưa sửa gì. Viết bằng ngôn ngữ nghiệp vụ, không cần tên class C#.
+
+**KhanhPG quyết từng chỗ lệch:**
+- Lệch đã ghi trên Jira và PO chấp nhận → sửa đặc tả, BR, MSG, diagram theo code.
+- Lệch **không** ghi trên Jira → hỏi Lộc; không chấp nhận được thì mở lại ticket cho BE/FE, không sửa tài liệu cho khớp.
+- Sửa Report 3 qua DOCX như trên; sửa sequence/class diagram như mục 6–7.
+
+**Xong khi:** đặc tả, BR, MSG, sequence, class diagram khớp nhau và khớp code; comment tóm tắt lên Jira; chuyển ticket sang
+bước tiếp theo theo DEVELOPMENT_WORKFLOW (Tester).
+
+### 10.3 Bước 7 — Screen flow
+
+Sửa nhãn màn 7.5 trong `docs/12-screenflow/TrustCabinet-screen-flow.drawio` bỏ "Versions"; rà cạnh nối 7.1/7.2 ↔ 7.3/7.4 có
+đúng luồng "Từ kho của tôi" (UC-33a luồng chính) và mở viewer 7.5 không. Theo `DRAWIO_EDITING_RULES.md`, sửa có chọn lọc,
+xuất lại PNG, sửa README thư mục nếu có ghi chú cũ.
+
+### 10.4 Bước 8 — Màn hình Report 3 và wireframe (sau khi Lộc làm FE)
+
+Với mỗi ticket 110/111/112 đã có FE chạy trên server test:
+1. Sửa wireframe phiên bản mới nhất (`TrustCabinet-wireframe-v9.html` hoặc tạo v10 theo `docs/wireframe/README.md`) cho màn
+   7.1, 7.2, 7.4 tab "Từ kho của tôi", menu ⋯ của 7.3, khớp bản đã chạy. Ghi dòng mới ở bảng phiên bản README wireframe.
+2. Sinh lại ảnh `screens/screen-7_*.png` bằng `_tools`.
+3. Sửa Report 3 §III mục 7.1–7.4: bỏ chữ "chờ SCRUM-58", mô tả trường và nút theo bản đã chạy, chèn ảnh mới.
+
+### 10.5 Bước 9 — Vòng BA Final Review cho từng ticket còn lại
+
+Lặp như bước 6 cho SCRUM-110, 111, 112, 23 (và SCRUM-96 phần UC-74), mỗi khi ticket sang BA Final Review. Thêm:
+- đổi sequence và class diagram PROPOSED thành as-built;
+- nếu Lộc thêm bảng hoặc cột, rà ERD mục tiêu, Chen và `02-erd.md`;
+- bước 8 cho màn của ticket đó;
+- cuối cùng sửa câu "chưa có sequence" / "một phần" trong README `06-sequencediagram/document-management` và
+  `07-classdiagram` thành trạng thái đủ.
+
+### 10.6 Thứ tự đề xuất cho KhanhPG
+
+1. Bước 0 (Jira) → **Bước 6** (hai ticket đang chờ BA) → Bước 1 → Bước 2 → Bước 3 → Bước 7.
+2. Bước 4, Bước 5 khi bước 1–3 đã review xong.
+3. Bước 8, Bước 9 lặp theo nhịp Lộc merge.
+
+FE-07 đóng phần tài liệu khi C1–C5, C7, C10, C11 đều xong và C6 đã báo dev.

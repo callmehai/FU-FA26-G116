@@ -139,11 +139,11 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 |---|---|---|---|
 | `MSG161` | 201 | Tải lên thành công, kèm `addedCount` và `documents` | Đã thêm tài liệu vào cuộc họp. |
 | `MSG162` | 403 | Xem được cuộc họp nhưng không còn là Chủ toạ/Thư ký hiện tại | Bạn không còn quyền thêm tài liệu vào cuộc họp này. |
-| `MSG164` | 400 | Không có tệp, không phải multipart, multipart hỏng, hoặc tệp có đuôi khác `.pdf`/`.docx` / nội dung không khớp đuôi / rỗng / quá 50 MB; `errors["files[i]"]` | Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB. |
+| `MSG164` | 400 | Không có tệp, không phải multipart, multipart hỏng, tên tệp không dùng được (rỗng, quá 255 ký tự, chứa ký tự điều khiển/định dạng), hoặc tệp có đuôi khác `.pdf`/`.docx` / nội dung không khớp đuôi / rỗng / quá 50 MB; `errors["files[i]"]` | Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB. |
 | `MSG166` | 503 | R2/DB lỗi hoặc chưa cấu hình kho tệp; đã xoá object của lần tải | Không thêm được tài liệu. Chưa có tài liệu nào được thêm. Vui lòng thử lại. |
 | `MSG172` | 409 | Cuộc họp `Ended`, kể cả khi vừa kết thúc trong lúc tải | Không thể thêm tài liệu sau khi cuộc họp đã kết thúc. |
 | `MSG174` | 404 | Không xem được cuộc họp hoặc cuộc họp không tồn tại (cùng body) | Không truy cập được cuộc họp này. |
-| `MSG288` | 400 | Quá 10 tệp hoặc tổng quá 200 MB (BR-319) | Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 200 MB. |
+| `MSG288` | 400 | Quá 10 tệp hoặc tổng quá 200 MB, hoặc request khai báo quá 201 MB (bị từ chối trước khi đọc thân) — BR-319 | Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 200 MB. |
 
 ## Xem tài liệu cuộc họp — contract Backend SCRUM-21
 
@@ -603,15 +603,15 @@ riêng trong code: mark-read trả `404` không body khi không thấy thông b�
 
 ### Tài liệu — FE-07 (UC-32, UC-33, UC-34, UC-35, UC-36, UC-71, UC-72)
 
-Các mã dưới đây **dành sẵn** cho đặc tả ngày 14/10/2026, chưa phải contract đã triển khai.
+Các mã dưới đây thuộc đặc tả FE-07 ngày 14/10/2026. `MSG156`–`MSG160` **đã triển khai trong SCRUM-21**; dòng nào còn ghi “Dành sẵn” là chưa có code.
 
 | Mã | Tình huống / trạng thái | Thông điệp |
 |---|---|---|
-| `MSG156` | UC-32a / EX-1; UC-32c / EX-1; UC-35 / EX-2 · Dành sẵn | Meeting documents are not accessible. |
-| `MSG157` | UC-32a / EX-2 · Dành sẵn | Unable to load the document list. Please try again. |
-| `MSG158` | UC-32c / EX-2 · Dành sẵn | Unable to display the document. Please try again. |
-| `MSG159` | UC-32c / EX-3 · Dành sẵn | Secret Meeting documents can only be viewed online and cannot be downloaded. |
-| `MSG160` | UC-32c / EX-4 · Dành sẵn | Unable to download the document. Please try again. |
+| `MSG156` | UC-32a / EX-1; UC-32c / EX-1; UC-35 / EX-2 · Đã triển khai SCRUM-21 | Meeting documents are not accessible. |
+| `MSG157` | UC-32a / EX-2 · Đã triển khai SCRUM-21 | Unable to load the document list. Please try again. |
+| `MSG158` | UC-32c / EX-2 · Đã triển khai SCRUM-21 | Unable to display the document. Please try again. |
+| `MSG159` | UC-32c / EX-3 · Đã triển khai SCRUM-21 | Secret Meeting documents can only be viewed online and cannot be downloaded. |
+| `MSG160` | UC-32c / EX-4 · Đã triển khai SCRUM-21 | Unable to download the document. Please try again. |
 | `MSG161` | UC-33a / Normal Flow · Đã triển khai SCRUM-107 | Documents added to the Meeting successfully. |
 | `MSG162` | UC-33a / EX-1 · Đã triển khai SCRUM-107 | You no longer have permission to add documents to this Meeting. |
 | `MSG163` | ADR-0020 · Ngừng dùng | Retired: document addition and Agenda Item linking are separate operations under ADR-0020. Do not reuse. |
@@ -741,7 +741,7 @@ Bảng nguồn đặc tả dưới đây giữ thông điệp tiếng Anh để 
 | `MSG272` | UC-77 / EX-1 · Đã triển khai SCRUM-98 | Enter a conclusion of up to 2,000 characters. |
 | `MSG273` | UC-77 / EX-2 · Đã triển khai SCRUM-98 | The conclusion of this agenda item can no longer be changed. |
 | `MSG274` | UC-77 / EX-3 · Đã triển khai SCRUM-98 | Unable to save the agenda item conclusion. Please try again. |
-| `MSG288` | UC-33a / EX-8, BR-319 · Đã triển khai SCRUM-107 (PO 22/10/2026) | Upload up to 10 files at a time, no larger than 200 MB in total. |
+| `MSG288` | UC-33a / EX-8 (quá 10 tệp, quá 200 MB, hoặc request khai báo quá 201 MB), BR-319 · Đã triển khai SCRUM-107 (PO 22/10/2026) | Upload up to 10 files at a time, no larger than 200 MB in total. |
 | `MSG289` | UC-31 / EX-6 · Đã triển khai SCRUM-26 | Unable to load attendance data. |
 
 ## Ghi chú: mã dùng chung có chủ ý
