@@ -49,9 +49,9 @@ export function FileUploadFields({ upload, roomLeft }: { upload: FileUpload; roo
       {!overLimit && overQuota && (
         <div className="alert alert-error" role="alert">
           {/* MSG346's situation and wording, caught before sending up to 200 MB for nothing. */}
-          <p>Kho tài liệu của bạn chỉ chứa tối đa 1 GB.</p>
+          <p>Bộ nhớ tài liệu của hệ thống không đủ chỗ. Hãy báo quản trị viên.</p>
           <p className="alert-hint">
-            Đang chọn {formatBytes(total)}, kho còn {formatBytes(Math.max(0, roomLeft ?? 0))}.
+            Đang chọn {formatBytes(total)}, hệ thống còn {formatBytes(Math.max(0, roomLeft ?? 0))}.
           </p>
         </div>
       )}

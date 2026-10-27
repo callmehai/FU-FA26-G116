@@ -33,7 +33,8 @@ interface Picked extends PickedFile {
  * (UC-33b AF-1) and the library upload (UC-36) share it. Each file goes as its own request, so one bad
  * file does not hold back the others, and a failed one is tried again on its own (PO 27/10/2026). The
  * dialog closes as soon as the files are queued; the tray follows them.
- * `roomLeft` is what the library still holds, so a pick past the quota is refused before it is sent.
+ * `roomLeft` is what the system's document storage still holds (ADR-0034), so a pick that does not fit is refused
+ * before it is sent.
  */
 export function useFileUpload({
   toRequest,

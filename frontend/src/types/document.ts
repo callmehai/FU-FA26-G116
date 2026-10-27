@@ -91,9 +91,9 @@ export interface LibraryView {
   folderId: string | null
   folders: LibraryFolder[]
   documents: LibraryDocument[]
-  /** May exceed `quotaBytes`: uploads into a meeting count but are not refused. */
-  usedBytes: number
-  quotaBytes: number
+  /** The whole system's document storage, not this person's (ADR-0034): every upload must fit it (MSG346). */
+  storageUsedBytes: number
+  storageLimitBytes: number
 }
 
 export interface LibraryUploadResponse {

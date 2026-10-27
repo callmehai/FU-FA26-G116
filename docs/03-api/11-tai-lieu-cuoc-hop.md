@@ -83,6 +83,7 @@ dung vẫn là tài liệu mới (BR-229).
 | 404 | `MSG174` | Không xem được cuộc họp hoặc cuộc họp không tồn tại — **cùng một body**, không lộ cuộc họp có tồn tại |
 | 409 | `MSG172` | Cuộc họp đã kết thúc, kể cả khi vừa kết thúc trong lúc đang tải |
 | 409 | `MSG349` | Cuộc họp đã huỷ (BR-299). FE ẩn nút tải lên khi cuộc họp `Cancelled` |
+| 409 | `MSG346` | Bộ nhớ tài liệu của cả hệ thống không đủ chỗ (ADR-0034, mặc định 10 GB). Kiểm dưới khoá chung trước khi đẩy byte lên R2; không tệp nào được thêm |
 | 503 | `MSG166` | Không lưu được (R2 lỗi, DB lỗi, hoặc server chưa cấu hình kho tệp). Không tệp nào được thêm |
 
 `errors` của `MSG164`:

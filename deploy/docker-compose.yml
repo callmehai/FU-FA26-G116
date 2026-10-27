@@ -51,6 +51,8 @@ services:
       FileStorage__BucketName: "${R2_BUCKET:-}"
       FileStorage__AccessKeyId: "${R2_ACCESS_KEY_ID:-}"
       FileStorage__SecretAccessKey: "${R2_SECRET_ACCESS_KEY:-}"
+      # ADR-0034: every stored document together, in GB. R2 free tier = 10.
+      FileStorage__MaxTotalGigabytes: "${STORAGE_MAX_GB:-10}"
       # Máy chuyển chữ (ADR-0026). Chỉ chạy khi deploy/.env có COMPOSE_PROFILES=speech, vì cần máy 4 GB.
       # Để trống thì app vẫn chạy, chuyển chữ và ghi theo micro trả 503/MSG312. Xem deploy/README.md §10.
       Speech__BaseUrl: "${SPEECH_URL:-}"

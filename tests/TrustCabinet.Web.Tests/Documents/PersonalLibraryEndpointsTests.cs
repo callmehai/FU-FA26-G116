@@ -11,6 +11,7 @@ using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Infrastructure.Documents;
 using TrustCabinet.Web.Tests.Agenda;
 
 namespace TrustCabinet.Web.Tests.Documents;
@@ -51,6 +52,34 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
     }
 
     /// <summary>A library document with its stored file; the bytes go in the store unless <paramref name="size"/> fakes a size.</summary>
+    internal static readonly long StorageLimit = new FileStorageOptions().MaxTotalBytes;
+
+    /// <summary>
+    /// Takes the system's storage up to <paramref name="room"/> bytes short of the limit with an unreferenced file;
+    /// disposing it gives the room back, so the next test is not refused.
+    /// </summary>
+    internal static async Task<IAsyncDisposable> FillStorage(DocumentFixture fixture, Guid uploader, long room)
+    {
+        await using var db = fixture.Db();
+        var used = await db.StoredFiles.Where(f => f.PurgedAt == null).SumAsync(f => f.ByteSize);
+        var id = Guid.CreateVersion7();
+        db.StoredFiles.Add(new StoredFile { Id = id, StorageKey = DocumentFileRules.StorageKey(id),
+            OriginalFileName = "đầy.pdf", ContentType = DocumentFileRules.PdfContentType,
+            ByteSize = StorageLimit - used - room, ContentSha256 = new string('c', 64), UploadedById = uploader,
+            UploadedAt = DateTimeOffset.UtcNow });
+        await db.SaveChangesAsync();
+        return new Filler(fixture, id);
+    }
+
+    private sealed class Filler(DocumentFixture fixture, Guid id) : IAsyncDisposable
+    {
+        public async ValueTask DisposeAsync()
+        {
+            await using var db = fixture.Db();
+            await db.StoredFiles.Where(f => f.Id == id).ExecuteUpdateAsync(u => u.SetProperty(f => f.PurgedAt, DateTimeOffset.UtcNow));
+        }
+    }
+
     internal static async Task<Guid> AddDocument(DocumentFixture fixture, Guid owner, string name, Guid? folder = null,
         long? size = null, bool docx = false)
     {
@@ -118,7 +147,9 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
 
         var (_, _, view) = await Read(await client.GetAsync("/api/documents"));
         Assert.Equal(2, view.GetProperty("folders").GetArrayLength());
-        Assert.Equal(DocumentFileRules.MaxLibraryBytes, view.GetProperty("quotaBytes").GetInt64());
+        // The whole system's storage, not a limit per person (ADR-0034).
+        Assert.Equal(StorageLimit, view.GetProperty("storageLimitBytes").GetInt64());
+        Assert.True(view.GetProperty("storageUsedBytes").GetInt64() >= 0);
     }
 
     [Fact]
@@ -251,7 +282,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
     // ---- UC-34, UC-36, UC-71a–c: documents ----
 
     [Fact]
-    public async Task Owner_uploads_into_a_folder_and_sees_the_documents_and_the_space_used()
+    public async Task Owner_uploads_into_a_folder_and_sees_the_documents_and_the_storage_used()
     {
         var owner = await NewUser(fixture);
         var folder = await AddFolder(fixture, owner, "Hồ sơ");
@@ -269,7 +300,8 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.Equal(["Dự thảo.docx", "Tờ trình.pdf"], documents.Select(d => d.GetProperty("fileName").GetString()));
         Assert.Equal(3, documents[1].GetProperty("pageCount").GetInt32());
         Assert.All(documents, d => Assert.Equal(0, d.GetProperty("meetingCount").GetInt32()));
-        Assert.Equal(pdf.Length + docx.Length, view.GetProperty("usedBytes").GetInt64());
+        // The system's whole storage: at least these two, whatever other tests stored.
+        Assert.True(view.GetProperty("storageUsedBytes").GetInt64() >= pdf.Length + docx.Length);
         await using var db = fixture.Db();
         // No meeting involved: a library row only, pointing at an immutable stored file (BR-183).
         var stored = await db.Documents.Where(d => d.OwnerId == owner).Select(d => d.StoredFile.StorageKey).ToListAsync();
@@ -295,10 +327,10 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
     }
 
     [Fact]
-    public async Task Upload_past_the_quota_adds_nothing()
+    public async Task Upload_past_the_storage_limit_adds_nothing()
     {
         var owner = await NewUser(fixture);
-        await AddDocument(fixture, owner, "lớn.pdf", size: DocumentFileRules.MaxLibraryBytes - 10);
+        await using var _ = await FillStorage(fixture, owner, room: 10);
         using var client = fixture.Client(owner);
         var before = fixture.Storage.Objects.Count;
 
@@ -307,36 +339,59 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
 
         Assert.Equal(before, fixture.Storage.Objects.Count);
         await using var db = fixture.Db();
-        Assert.Equal(1, await db.Documents.CountAsync(d => d.OwnerId == owner));
+        Assert.Equal(0, await db.Documents.CountAsync(d => d.OwnerId == owner));
+        Assert.Equal(0, await db.StoredFiles.CountAsync(f => f.UploadedById == owner && f.OriginalFileName == "a.pdf"));
     }
 
     [Fact]
-    public async Task Two_uploads_at_once_near_the_quota_let_only_one_in()
+    public async Task The_limit_is_the_whole_systems_whoever_filled_it()
+    {
+        // Someone else's files took the room: a meeting upload is refused as well (ADR-0034).
+        var s = await fixture.Seed();
+        await using var _ = await FillStorage(fixture, await NewUser(fixture), room: 10);
+        using var client = fixture.Client(s.Secretary);
+
+        Assert.Equal((409, "MSG346"), Pick(await Read(await client.PostAsync(s.Url,
+            DocumentFixture.Form(("x.pdf", SampleFiles.Pdf(), null))))));
+
+        await using var db = fixture.Db();
+        Assert.Equal(0, await db.MeetingDocuments.CountAsync(d => d.MeetingId == s.MeetingId));
+    }
+
+    [Fact]
+    public async Task Two_uploads_at_once_near_the_limit_let_only_one_in()
     {
         var owner = await NewUser(fixture);
         var pdf = SampleFiles.Pdf("x");
-        await AddDocument(fixture, owner, "Đầy.pdf", size: DocumentFileRules.MaxLibraryBytes - pdf.Length * 3 / 2);
+        await using var _ = await FillStorage(fixture, owner, room: pdf.Length * 3 / 2);
         using var client = fixture.Client(owner);
 
         var results = await Task.WhenAll(Enumerable.Range(0, 2).Select(async _ =>
             Pick(await Read(await client.PostAsync("/api/documents/upload", DocumentFixture.Form(("x.pdf", pdf, null)))))));
 
-        Assert.Equal([(201, (string?)"MSG177"), (409, "MSG346")], results.Order());
+        // Another collection may store a file meanwhile; never both in.
+        Assert.Contains((409, (string?)"MSG346"), results);
+        Assert.True(results.Count(r => r.Item1 == 201) <= 1);
         await using var db = fixture.Db();
-        Assert.True(await db.Documents.Where(d => d.OwnerId == owner).SumAsync(d => d.StoredFile.ByteSize) <= DocumentFileRules.MaxLibraryBytes);
+        Assert.True(await db.StoredFiles.Where(f => f.PurgedAt == null).SumAsync(f => f.ByteSize) <= StorageLimit);
     }
 
     [Fact]
-    public async Task Upload_into_a_meeting_counts_towards_the_used_space_without_a_quota_check()
+    public async Task A_refused_upload_gives_its_room_back()
     {
-        var s = await fixture.Seed();
-        await AddDocument(fixture, s.Secretary, "Đầy.pdf", size: DocumentFileRules.MaxLibraryBytes);
-        using var client = fixture.Client(s.Secretary);
+        // The rows reserve room before the bytes go up; a failed upload must not keep it until the purge.
+        var owner = await NewUser(fixture);
+        using var client = fixture.Client(owner);
+        fixture.Storage.BeforeWrite = _ => throw new IOException("R2 down");
+        try
+        {
+            Assert.Equal(503, (await Read(await client.PostAsync("/api/documents/upload",
+                DocumentFixture.Form(("r.pdf", SampleFiles.Pdf(), null))))).Item1);
+        }
+        finally { fixture.Storage.BeforeWrite = null; }
 
-        Assert.Equal(201, (int)(await client.PostAsync(s.Url, DocumentFixture.Form(("x.pdf", SampleFiles.Pdf(), null)))).StatusCode);
-
-        var (_, _, view) = await Read(await client.GetAsync("/api/documents"));
-        Assert.True(view.GetProperty("usedBytes").GetInt64() > view.GetProperty("quotaBytes").GetInt64());
+        await using var db = fixture.Db();
+        Assert.All(await db.StoredFiles.Where(f => f.UploadedById == owner).ToListAsync(), f => Assert.NotNull(f.PurgedAt));
     }
 
     [Fact]

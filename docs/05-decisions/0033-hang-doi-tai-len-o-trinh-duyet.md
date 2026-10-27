@@ -15,13 +15,14 @@ Trước đây mọi chỗ tải tệp lên đều chạy trong hộp thoại v�
 Đóng hộp thoại hoặc đổi trang là dừng lần tải. Một tệp lỗi làm cả lần chọn hỏng. Lỗi mạng thì người dùng phải chọn lại từ đầu.
 PO yêu cầu: tải tệp ở đâu cũng phải có hàng đợi và thử lại.
 
-BE đã có "hàng đợi" theo nghĩa khác: khoá `library:{ownerId}` trong `PersonalLibraryService`. Hai lần tải của cùng một người chờ
-nhau trên server, để kiểm hạn mức 1 GB cho đúng. Người dùng không thấy khoá này, và nó không thử lại gì.
+BE đã có "hàng đợi" theo nghĩa khác: khoá `library:{ownerId}` trong `PersonalLibraryService`. Hai lần ghi vào kho của cùng
+một người chờ nhau trên server. Người dùng không thấy khoá này, và nó không thử lại gì.
 
 ## Quyết định
 
 1. **Hàng đợi nằm ở trình duyệt** (`features/uploads/`), trên mọi màn hình đã đăng nhập, không trong hộp thoại.
-   - Hộp thoại chỉ chọn tệp và kiểm trước (đuôi, 50 MB, 10 tệp / 200 MB mỗi lần chọn, hạn mức kho), rồi đẩy vào hàng đợi và đóng.
+   - Hộp thoại chỉ chọn tệp và kiểm trước (đuôi, 50 MB, 10 tệp / 200 MB mỗi lần chọn, bộ nhớ hệ thống còn trống —
+     ADR-0034), rồi đẩy vào hàng đợi và đóng.
    - Khay ở góc phải dưới cho thấy từng tệp: đang chờ, %, đang lưu, xong, lỗi, đã huỷ. Có huỷ, thử lại và bỏ.
 2. **Mỗi tệp một request, chạy lần lượt từng tệp.**
    - Server vẫn "tất cả hoặc không" cho request đó: tài liệu cuộc họp và bản trong kho cùng được tạo hoặc cùng không (BR-194).
@@ -35,7 +36,7 @@ nhau trên server, để kiểm hạn mức 1 GB cho đúng. Người dùng khô
    nút Thử lại.
 4. **Không tự thử lại khi có thể đã lưu**: mất kết nối, 502 hoặc 504 sau khi đã gửi hết dữ liệu. Khay báo "có thể tệp đã được
    lưu" và để người dùng xem danh sách trước khi bấm Thử lại, tránh tạo bản trùng.
-5. **Lỗi 4xx không thử lại.** Ví dụ: cuộc họp đã huỷ, mất vai trò, sai định dạng, hết hạn mức. Màn hình đọc lại cuộc họp hoặc kho.
+5. **Lỗi 4xx không thử lại.** Ví dụ: cuộc họp đã huỷ, mất vai trò, sai định dạng, bộ nhớ hệ thống đầy. Màn hình đọc lại cuộc họp hoặc kho.
 6. **Bản ghi âm chỉ nằm trong trình duyệt**, nên khi lỗi:
    - vẫn ở lại khay khi đóng khay;
    - có nút "Lưu về máy";

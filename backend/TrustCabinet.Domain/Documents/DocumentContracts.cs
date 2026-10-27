@@ -42,6 +42,8 @@ public enum DocumentUploadFailure
     AlreadyLinked,
     /// <summary>The document is not linked to the agenda item.</summary>
     NotLinked,
+    /// <summary>The files do not fit the system's storage limit (ADR-0034).</summary>
+    StorageFull,
 }
 
 /// <summary>A file part as the request delivered it, before anything about it is trusted.</summary>

@@ -18,8 +18,8 @@ public enum LibraryFailure
     IntoItself,
     /// <summary>A folder that still holds a document or a subfolder (BR-223).</summary>
     NotEmpty,
-    /// <summary>The upload would take the library past its quota (PO 27/10/2026).</summary>
-    QuotaExceeded,
+    /// <summary>The files do not fit the system's storage limit (ADR-0034).</summary>
+    StorageFull,
     SaveFailed,
 }
 
@@ -34,10 +34,11 @@ public sealed record LibraryDocument(Guid Id, string FileName, string ContentTyp
 
 /// <summary>
 /// UC-34: every folder of the library, so the screen can draw the tree and the move dialog, and the documents
-/// at one location. <see cref="UsedBytes"/> covers the whole library.
+/// at one location. <see cref="StorageUsedBytes"/> and <see cref="StorageLimitBytes"/> are the whole system's
+/// (ADR-0034): there is no limit per person.
 /// </summary>
 public sealed record LibraryView(Guid? FolderId, IReadOnlyList<LibraryFolder> Folders,
-    IReadOnlyList<LibraryDocument> Documents, long UsedBytes, long QuotaBytes);
+    IReadOnlyList<LibraryDocument> Documents, long StorageUsedBytes, long StorageLimitBytes);
 
 public sealed record LibraryOutcome<T>(LibraryFailure Failure = LibraryFailure.None, T? Value = default);
 

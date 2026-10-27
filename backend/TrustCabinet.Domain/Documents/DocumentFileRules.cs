@@ -17,7 +17,6 @@ public static class DocumentFileRules
     public const int MaxFiles = 10;                       // BR-319
     public const long MaxTotalBytes = 200L * 1024 * 1024; // BR-319
     public const int MaxFileNameLength = 255;
-    public const long MaxLibraryBytes = 1L * 1024 * 1024 * 1024; // PO 27/10/2026: 1 GB per personal library
     public const int MaxFolderDepth = 5;                         // BR-191
     public const int MaxFolderNameLength = 400;                  // the column
     public const int MaxCommentLength = 4000;                    // the column

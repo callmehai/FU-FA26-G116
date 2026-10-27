@@ -42,6 +42,11 @@ public static class MeetingDocumentEndpoints
     private const string Msg248RemoveEnded = "MSG248";
     private const string Msg249LibrarySelectionInvalid = "MSG249";
     private const string Msg288SubmissionTooLarge = "MSG288";
+    private const string Msg346StorageFull = "MSG346";
+
+    /// <summary>MSG346, for the library upload as well (ADR-0034).</summary>
+    internal const string StorageFullMessage =
+        "Bộ nhớ tài liệu của hệ thống đã đầy. Chưa có tài liệu nào được tải lên. Hãy báo quản trị viên.";
     private const string Msg349MeetingCancelled = "MSG349";
 
     /// <summary>The 200 MB of files plus room for the multipart framing and the page counts.</summary>
@@ -405,6 +410,8 @@ public static class MeetingDocumentEndpoints
             DocumentUploadFailure.Cancelled => (409, Msg349MeetingCancelled, "Cuộc họp đã huỷ nên không thay đổi được nữa."),
             DocumentUploadFailure.Invalid => (400, Msg164InvalidFiles, "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB."),
             DocumentUploadFailure.TooMany => (400, Msg288SubmissionTooLarge, "Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 200 MB."),
+            // The system's storage limit (ADR-0034).
+            DocumentUploadFailure.StorageFull => (409, Msg346StorageFull, StorageFullMessage),
             DocumentUploadFailure.LibraryUnavailable => (400, Msg249LibrarySelectionInvalid,
                 "Hãy chọn một hoặc nhiều tài liệu còn trong kho của bạn."),
             DocumentUploadFailure.AlreadyInMeeting => (409, Msg165AlreadyInMeeting,

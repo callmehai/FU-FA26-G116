@@ -18,8 +18,9 @@ Gắn tài liệu trong kho vào cuộc họp, gỡ, gắn mục nghị sự: [1
 - **Quản trị viên đọc kho của tài khoản đã khoá** (PO 27/10/2026), xem [mục cuối](#quản-trị-viên-đọc-kho-của-tài-khoản-đã-khoá).
 
 Mọi thao tác ghi trên kho của một người chạy trong một transaction có khoá theo chủ kho (`pg_advisory_xact_lock`), nên
-hai lần chuyển thư mục cùng lúc không tạo được vòng lặp hay cấp thứ 6, và hai lần tải lên cùng lúc không cùng lọt dưới
-hạn mức. Tải từ máy vào cuộc họp cũng lấy khoá này (sau khoá cuộc họp), nên thư mục tải lên của cuộc họp không bị xoá
+hai lần chuyển thư mục cùng lúc không tạo được vòng lặp hay cấp thứ 6. Hạn mức dung lượng là **của cả hệ thống**, không
+theo người ([ADR-0034](../05-decisions/0034-han-muc-luu-tru-toan-he-thong.md)): kiểm dưới một khoá chung lúc ghi dòng
+`StoredFile`, nên hai lần tải cùng lúc không cùng lọt. Tải từ máy vào cuộc họp cũng lấy khoá này (sau khoá cuộc họp), nên thư mục tải lên của cuộc họp không bị xoá
 hay chuyển đi giữa lúc đang ghi vào.
 
 ## Xem kho — `GET /api/documents?folderId=&q=&type=` (UC-34)
@@ -54,9 +55,9 @@ hay chuyển đi giữa lúc đang ghi vào.
 - `documents`: tài liệu **ở đúng vị trí** `folderId`, xếp theo tên. Rỗng là kết quả bình thường (AF-2), không phải lỗi.
 - `meetingCount` ("Đang dùng trong n cuộc họp"): số cuộc họp **người xem được** còn đang dùng tài liệu này (BR-251) —
   đếm theo `MeetingDocument.DocumentId`, không tính bản đã gỡ.
-- `usedBytes` / `quotaBytes`: dung lượng cả kho đã dùng và hạn mức 1 GB (PO 27/10/2026). Tài liệu tự vào kho khi tải
-  từ máy lên cuộc họp cũng được tính, nhưng lần tải đó **không** bị chặn bởi hạn mức (chờ PO chốt), nên `usedBytes` có
-  thể **lớn hơn** `quotaBytes`.
+- `storageUsedBytes` / `storageLimitBytes`: bộ nhớ tài liệu của **cả hệ thống** (ADR-0034), không phải của riêng người
+  xem. `storageUsedBytes` là mọi `StoredFile` chưa bị dọn (đúng thứ đang nằm trên R2), kể cả tệp đã xoá khỏi kho mà chưa
+  qua thời gian chờ của job dọn. `storageLimitBytes` lấy từ `FileStorage:MaxTotalGigabytes` (mặc định 10 GB).
 
 Lỗi: `404 MSG175` (thư mục không còn / của người khác), `500 MSG176` (lỗi đọc DB).
 
@@ -68,8 +69,10 @@ Multipart giống hệt `POST /api/meetings/{id}/documents/upload` (part `files`
 1. Thư mục đích (nếu có) của chính mình — **trước khi đọc body**; không thì `404 MSG179`. Kho tệp chưa cấu hình → `503 MSG178`.
 2. Giới hạn mỗi lần như UC-33a: ≤ 10 tệp, tổng ≤ 200 MB (`400 MSG288`, PO 27/10/2026 áp cho cả UC-36); từng tệp PDF/DOCX
    theo nội dung, ≤ 50 MB (`400 MSG164`, `errors["files[i]"]`).
-3. Hạn mức kho: dung lượng đã dùng + lần tải ≤ 1 GB, không thì `409 MSG346`, **không tệp nào** được thêm (BR-286).
-4. Ghi `StoredFile` → đẩy R2 → trong một transaction có khoá chủ kho: kiểm lại thư mục đích và hạn mức, ghi `Document`.
+3. Ghi `StoredFile` dưới khoá chung của hệ thống, chỉ khi bộ nhớ còn đủ: không thì `409 MSG346`, **không tệp nào** được
+   thêm (ADR-0034).
+4. Đẩy R2 → trong một transaction có khoá chủ kho: kiểm lại thư mục đích, ghi `Document`. Lỗi thì xoá object và đánh dấu
+   các dòng `StoredFile` đã dọn, trả lại chỗ ngay.
    Lỗi ở bước nào thì xoá object đã đẩy trong lần đó (ADR-0024 §4) → `503 MSG178`.
 
 `201`:
@@ -157,8 +160,8 @@ không đăng nhập được nên không tự đọc. **Phạm vi mới, chưa 
 - Màn kho gọi `GET /api/documents` một lần cho mỗi vị trí; cây thư mục lấy từ `folders`, không cần endpoint riêng.
 - Đổi tên tài liệu: gợi ý FE chỉ cho sửa phần tên, giữ nguyên đuôi, để không gặp `MSG347`.
 - `MSG175` / `MSG179` giữa chừng (mục vừa bị xoá ở tab khác): tải lại kho.
-- Hiện "Đã dùng x / 1 GB" từ `usedBytes` / `quotaBytes`; kiểm hạn mức ở FE trước khi gửi để khỏi đẩy 200 MB rồi mới
-  nhận `MSG346`. Server vẫn kiểm lại.
+- Hiện "x / 10 GB" của cả hệ thống từ `storageUsedBytes` / `storageLimitBytes`; kiểm ở FE trước khi gửi để khỏi đẩy
+  200 MB rồi mới nhận `MSG346`. Server vẫn kiểm lại.
 - Tải lên: giống hộp tải lên của cuộc họp (kiểm 10 tệp / 200 MB / 50 MB trước khi gửi), qua hàng đợi ở trình duyệt, mỗi
   tệp một request ([ADR-0033](../05-decisions/0033-hang-doi-tai-len-o-trinh-duyet.md)). Mỗi tệp xong thì màn kho đọc lại vị
   trí và dung lượng.
@@ -168,13 +171,13 @@ không đăng nhập được nên không tự đọc. **Phạm vi mới, chưa 
 `tests/TrustCabinet.Web.Tests/Documents/PersonalLibraryEndpointsTests.cs` (PostgreSQL thật, kho tệp trong bộ nhớ): tạo
 thư mục lồng nhau trùng tên; tên trống / quá dài; thư mục, tài liệu của người khác ở mọi endpoint → `MSG175`/`MSG179`;
 cấp 6 khi tạo và khi chuyển cây con; chuyển vào chính nó / cháu, về gốc; đổi tên giữ nội dung; chỉ xoá thư mục rỗng; lỗi
-DB → `MSG190`/`MSG192`/`MSG195`/`MSG198`/`MSG176`; tải lên vào thư mục (không đụng cuộc họp, object có trên kho, `usedBytes`);
-thư mục đích của người khác, ảnh đổi đuôi, 11 tệp; vượt hạn mức → `MSG346` không object nào còn lại; R2 lỗi ở tệp thứ hai,
+DB → `MSG190`/`MSG192`/`MSG195`/`MSG198`/`MSG176`; tải lên vào thư mục (không đụng cuộc họp, object có trên kho,
+`storageUsedBytes`); thư mục đích của người khác, ảnh đổi đuôi, 11 tệp; bộ nhớ hệ thống đầy → `MSG346`, không object hay
+dòng `StoredFile` nào còn lại, kể cả khi người khác làm đầy và khi tải vào cuộc họp hoặc vào mục; tải lỗi trả lại chỗ; R2 lỗi ở tệp thứ hai,
 kho chưa cấu hình → `MSG178`; tìm không phân biệt hoa thường, lọc loại, `%`/`_` là ký tự thường, chỉ trong thư mục đang
 mở; `meetingCount` bỏ cuộc họp không xem được và bản đã gỡ; đổi tên giữ đuôi, bản trong cuộc họp giữ tên cũ; chuyển;
 xoá khỏi kho rồi khoá chủ kho, thành viên vẫn mở được bản trong cuộc họp; lỗi DB → `MSG184`/`MSG186`/`MSG181`; mở tệp,
 object thiếu → `MSG158`/`MSG160`; Quản trị viên đọc kho đã khoá (2 dòng kiểm toán), kho còn hoạt động → `MSG175`, người
 thường → `403`; tệp và thư mục (cả thư mục con) của cuộc họp Mật bị ẩn, mở trả `MSG175`, cả khi Quản trị viên là thành
 viên cuộc họp (khi đó tải về qua cuộc họp trả `403 MSG159`); tên chỉ có phần đuôi → `MSG347`; hai lần chuyển thư mục chéo
-nhau cùng lúc chỉ một lần thành công; hai lần tải lên cùng lúc sát hạn mức chỉ một lần lọt, lần kia `MSG346`; tải vào
-cuộc họp khi kho đã đầy vẫn được, `usedBytes` > `quotaBytes`.
+nhau cùng lúc chỉ một lần thành công; hai lần tải lên cùng lúc sát hạn mức không cùng lọt.

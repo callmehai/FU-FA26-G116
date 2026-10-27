@@ -44,3 +44,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0031](0031-gui-email-qua-resend.md) | Gửi email qua Resend, giữ hàng đợi trong app, nhận kết quả giao thư bằng webhook | Đề xuất — SCRUM-15, PO 27/10/2026 |
 | [0032](0032-huy-cuoc-hop-va-tu-huy-khi-qua-han.md) | Trạng thái Cancelled, huỷ cuộc họp và tự huỷ khi quá 24 giờ sau giờ bắt đầu | Đề xuất — SCRUM-99, PO 27/10/2026 |
 | [0033](0033-hang-doi-tai-len-o-trinh-duyet.md) | Hàng đợi tải lên ở trình duyệt, mỗi tệp một request, tự thử lại khi chắc chưa lưu | Đề xuất — SCRUM-58, PO 27/10/2026 |
+| [0034](0034-han-muc-luu-tru-toan-he-thong.md) | Hạn mức lưu trữ tài liệu 10 GB cho cả hệ thống thay cho 1 GB mỗi người | Đề xuất — SCRUM-58, PO 27/10/2026 |

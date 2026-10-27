@@ -44,7 +44,7 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
                 query = query.Where(d => EF.Functions.ILike(d.FileName, "%" + EscapeLike(search.Trim()) + "%", "\\"));
             if (ContentTypeOf(fileType) is { } contentType) query = query.Where(d => d.StoredFile.ContentType == contentType);
             var documents = await Project(query.OrderBy(d => d.FileName).ThenBy(d => d.Id), readerId).ToListAsync(ct);
-            return new(Value: new(folderId, folders, documents, await UsedBytesAsync(ownerId, ct), DocumentFileRules.MaxLibraryBytes));
+            return new(Value: new(folderId, folders, documents, await writer.UsedBytesAsync(ct), writer.LimitBytes));
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -185,29 +185,15 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         return LibraryFailure.SaveFailed;
     }
 
+    /// <summary>UC-36. The system's storage limit is the writer's to check (ADR-0034).</summary>
     public async Task<LibraryOutcome<IReadOnlyList<LibraryDocument>>> UploadAsync(Guid ownerId, Guid? folderId,
         IReadOnlyList<DocumentUploadFile> files, CancellationToken ct = default)
-    {
-        try
-        {
-            // Checked before any byte goes up, and again under the lock below.
-            if (await UsedBytesAsync(ownerId, ct) + files.Sum(f => f.Length) > DocumentFileRules.MaxLibraryBytes)
-                return new(LibraryFailure.QuotaExceeded);
-        }
-        catch (Exception ex) when (PersistenceError(ex))
-        {
-            logger.LogError(ex, "Failed to read the library usage of {OwnerId}", ownerId);
-            return new(LibraryFailure.SaveFailed);
-        }
-
-        return await writer.WriteAsync<LibraryOutcome<IReadOnlyList<LibraryDocument>>>(ownerId, files,
+        => await writer.WriteAsync<LibraryOutcome<IReadOnlyList<LibraryDocument>>>(ownerId, files,
             async (stored, now, token) =>
             {
                 await LockLibraryAsync(ownerId, token);
                 if (folderId is { } id && !await db.Folders.AnyAsync(f => f.Id == id && f.OwnerId == ownerId, token))
                     return new(LibraryFailure.DestinationNotFound);
-                if (await UsedBytesAsync(ownerId, token) + stored.Sum(f => f.ByteSize) > DocumentFileRules.MaxLibraryBytes)
-                    return new(LibraryFailure.QuotaExceeded);
                 // Original names; the same name or bytes twice is still two documents (BR-229).
                 var added = stored.Select(file => new Document { OwnerId = ownerId, FolderId = folderId,
                     StoredFileId = file.Id, FileName = file.OriginalFileName, CreatedAt = now, UpdatedAt = now }).ToList();
@@ -215,8 +201,8 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
                 await db.SaveChangesAsync(token);
                 return new(Value: added.Zip(stored, (d, f) => new LibraryDocument(d.Id, d.FileName, f.ContentType,
                     f.ByteSize, f.PageCount, d.FolderId, d.CreatedAt, 0)).ToList());
-            }, outcome => outcome.Failure == LibraryFailure.None, new(LibraryFailure.SaveFailed), ct);
-    }
+            }, outcome => outcome.Failure == LibraryFailure.None, new(LibraryFailure.SaveFailed),
+            new(LibraryFailure.StorageFull), ct);
 
     public Task<LibraryOutcome<LibraryDocument>> RenameDocumentAsync(Guid ownerId, Guid documentId, string? fileName,
         CancellationToken ct = default)
@@ -282,9 +268,6 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         } while (grew);
         return (files, hidden);
     }
-
-    private Task<long> UsedBytesAsync(Guid ownerId, CancellationToken ct)
-        => db.Documents.Where(d => d.OwnerId == ownerId).SumAsync(d => d.StoredFile.ByteSize, ct);
 
     private IQueryable<LibraryDocument> Project(IQueryable<Document> query, Guid readerId)
     {

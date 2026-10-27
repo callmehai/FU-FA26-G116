@@ -288,6 +288,21 @@ public sealed class MeetingDocumentChangeEndpointsTests(DocumentFixture fixture)
     }
 
     [Fact]
+    public async Task Upload_into_an_item_past_the_storage_limit_adds_nothing()
+    {
+        var s = await fixture.Seed();
+        var item = await AddItem(s.MeetingId);
+        await using var _ = await FillStorage(fixture, s.Secretary, room: 10);
+        using var client = fixture.Client(s.Secretary);
+
+        Assert.Equal((409, "MSG346"), Pick(await Read(await client.PostAsync($"{Links(s, item)}/upload",
+            DocumentFixture.Form(("x.pdf", SampleFiles.Pdf(), null))))));
+
+        await using var db = fixture.Db();
+        Assert.Equal(0, await db.MeetingDocuments.CountAsync(d => d.MeetingId == s.MeetingId));
+    }
+
+    [Fact]
     public async Task Upload_into_an_item_adds_to_the_library_folder_the_meeting_and_the_item()
     {
         var s = await fixture.Seed();

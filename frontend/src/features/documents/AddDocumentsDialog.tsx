@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   addFromLibrary,
   linkFromLibrary,
@@ -6,6 +6,7 @@ import {
   uploadMeetingDocuments,
   uploadToAgendaItem,
 } from '../../api/documents'
+import { getLibrary } from '../../api/library'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Dialog } from '../../components/Dialog'
 import { SegmentedControl } from '../../components/SegmentedControl'
@@ -89,6 +90,19 @@ export function AddDocumentsDialog({
   const [pending, setPending] = useState(false)
   const [failure, setFailure] = useState<string | null>(null)
   const [discarding, setDiscarding] = useState(false)
+  /** What the system's document storage still holds: every upload must fit (MSG346, ADR-0034). */
+  const [roomLeft, setRoomLeft] = useState<number | undefined>(undefined)
+
+  useEffect(() => {
+    let live = true
+    // Unknown when this fails: the server still checks.
+    getLibrary(null)
+      .then((view) => live && setRoomLeft(view.storageLimitBytes - view.storageUsedBytes))
+      .catch(() => {})
+    return () => {
+      live = false
+    }
+  }, [])
 
   const upload = useFileUpload({
     toRequest: ({ file, pdf, pages }) => ({
@@ -105,6 +119,7 @@ export function AddDocumentsDialog({
           : uploadMeetingDocuments(meeting.id, files, options)
       },
     }),
+    roomLeft,
     onQueued,
   })
 
@@ -185,7 +200,7 @@ export function AddDocumentsDialog({
           }}
         />
 
-        {source === 'computer' && <FileUploadFields upload={upload} />}
+        {source === 'computer' && <FileUploadFields upload={upload} roomLeft={roomLeft} />}
 
         {source === 'library' && (
           <LibraryPicker

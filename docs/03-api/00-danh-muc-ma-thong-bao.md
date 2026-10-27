@@ -190,7 +190,7 @@ dòng nguồn UC phía dưới giữ để truy vết. Không cấp mã mới.
 | `MSG196` | 409 | Xoá thư mục còn tài liệu hoặc thư mục con (BR-223) | Chỉ xoá được thư mục rỗng. |
 | `MSG197` | 200 | Xoá thư mục | Đã xoá thư mục. |
 | `MSG198` | 503 | Xoá thư mục lỗi DB | Không xoá được thư mục. Thư mục không thay đổi. |
-| `MSG346` | 409 | Tải lên làm kho vượt 1 GB (PO 27/10/2026); không tệp nào được thêm | Kho tài liệu của bạn chỉ chứa tối đa 1 GB. Chưa có tài liệu nào được tải lên. |
+| `MSG346` | 409 | Bộ nhớ tài liệu của cả hệ thống không đủ chỗ cho lần tải (ADR-0034, `FileStorage:MaxTotalGigabytes`, mặc định 10 GB): vào kho (UC-36), vào cuộc họp hoặc vào mục nghị sự (UC-33a/33b AF-1); không tệp nào được thêm | Bộ nhớ tài liệu của hệ thống đã đầy. Chưa có tài liệu nào được tải lên. Hãy báo quản trị viên. |
 | `MSG347` | 400 | Đổi tên tài liệu: tên trống hoặc chỉ có phần đuôi, có ký tự điều khiển, dài quá 255 ký tự, hoặc đổi phần đuôi `.pdf`/`.docx` | Tên tài liệu không hợp lệ. Tên không được trống và phải giữ phần đuôi .pdf hoặc .docx của tệp. |
 | `MSG348` | 400 | Tên thư mục quá 400 ký tự; góp ý quá 4.000 ký tự (SCRUM-23) | Nội dung vượt quá độ dài cho phép. |
 
@@ -747,7 +747,7 @@ Các mã dưới đây cấp cho đặc tả ngày 14/10/2026; trạng thái the
 | `MSG202` | UC-35 / EX-3 · Đã triển khai SCRUM-23 | Unable to add the comment. No comment was saved. Please try again. |
 | `MSG203` | Retired — mandatory PDF page reference removed · Ngừng dùng | Retired: a PDF comment does not require a page reference. Do not reuse. |
 | `MSG204` | UC-35 / EX-4 · Đã triển khai SCRUM-23 | Unable to load the document comments. Please try again. |
-| `MSG346` | UC-36, PO 27/10/2026 (hạn mức kho 1 GB) · Đã triển khai SCRUM-111, chờ BA bổ sung đặc tả | Your personal library is limited to 1 GB. No documents were uploaded. |
+| `MSG346` | UC-33a, UC-33b, UC-36, PO 27/10/2026 (hạn mức 10 GB của cả hệ thống, ADR-0034) · Đã triển khai SCRUM-111, chờ BA bổ sung đặc tả | The system's document storage is full. No documents were uploaded. Please contact an administrator. |
 | `MSG347` | UC-71b (tên phải giữ phần đuôi của tệp) · Đã triển khai SCRUM-111, chờ BA bổ sung đặc tả | The document name is not valid. It must not be blank and must keep the .pdf or .docx extension of the file. |
 | `MSG348` | UC-72a, UC-72b, UC-35 (độ dài tối đa) · Đã triển khai SCRUM-110, SCRUM-23, chờ BA bổ sung đặc tả | The text is longer than allowed. |
 

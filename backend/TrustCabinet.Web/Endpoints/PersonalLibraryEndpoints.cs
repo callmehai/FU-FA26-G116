@@ -36,7 +36,7 @@ public static class PersonalLibraryEndpoints
     private const string Msg197FolderDeleted = "MSG197";
     private const string Msg198FolderDeleteFailed = "MSG198";
     private const string Msg288SubmissionTooLarge = "MSG288";
-    private const string Msg346QuotaExceeded = "MSG346";
+    private const string Msg346StorageFull = "MSG346";
     private const string Msg347DocumentNameInvalid = "MSG347";
     private const string Msg348TextTooLong = "MSG348";
 
@@ -173,8 +173,7 @@ public static class PersonalLibraryEndpoints
         LibraryFailure.TooDeep => Json(409, Msg189TooDeep, "Thư mục chỉ lồng tối đa 5 cấp."),
         LibraryFailure.IntoItself => Json(409, Msg193IntoItself, "Không thể chuyển thư mục vào chính nó hoặc thư mục con của nó."),
         LibraryFailure.NotEmpty => Json(409, Msg196FolderNotEmpty, "Chỉ xoá được thư mục rỗng."),
-        LibraryFailure.QuotaExceeded => Json(409, Msg346QuotaExceeded,
-            "Kho tài liệu của bạn chỉ chứa tối đa 1 GB. Chưa có tài liệu nào được tải lên."),
+        LibraryFailure.StorageFull => Json(409, Msg346StorageFull, MeetingDocumentEndpoints.StorageFullMessage),
         _ => Failed(failedCode),
     };
 

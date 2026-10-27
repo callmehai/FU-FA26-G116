@@ -139,7 +139,7 @@ export function DocumentsPage() {
     : childrenOf(folders, folderId).filter((f) => f.name.toLocaleLowerCase('vi').includes(needle))
   const loading = view === null || view.folderId !== folderId
   const rows = loading ? null : { subfolders, documents: view.documents }
-  const usedRatio = view ? view.usedBytes / view.quotaBytes : 0
+  const usedRatio = view ? view.storageUsedBytes / view.storageLimitBytes : 0
   const atMaxDepth = trail.length >= MAX_DEPTH
 
   async function download(doc: LibraryDocument) {
@@ -227,14 +227,14 @@ export function DocumentsPage() {
           />
           {view && (
             <span
-              className={usedRatio > 1 ? 'library-quota is-over' : 'library-quota'}
-              data-tooltip="Dung lượng kho tài liệu của bạn"
+              className={usedRatio >= 1 ? 'library-quota is-over' : 'library-quota'}
+              data-tooltip="Bộ nhớ tài liệu của cả hệ thống"
             >
               <span className="library-quota-bar" aria-hidden="true">
                 <i style={{ width: `${Math.min(1, usedRatio) * 100}%` }} />
               </span>
               <span>
-                {formatBytes(view.usedBytes)} / {formatBytes(view.quotaBytes)}
+                {formatBytes(view.storageUsedBytes)} / {formatBytes(view.storageLimitBytes)}
               </span>
             </span>
           )}
@@ -421,7 +421,7 @@ export function DocumentsPage() {
         <LibraryUploadDialog
           folderId={folderId}
           folders={folders}
-          roomLeft={view.quotaBytes - view.usedBytes}
+          roomLeft={view.storageLimitBytes - view.storageUsedBytes}
           onClose={() => setDialog(null)}
           onQueued={() => setDialog(null)}
         />

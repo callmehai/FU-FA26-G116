@@ -161,7 +161,8 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             var added = await AddUploadsAsync(meeting!, actorId, stored, now, null, token);
             await meetings.SaveChangesAsync(token);
             return new DocumentUploadOutcome(Documents: added);
-        }, outcome => outcome.Failure == DocumentUploadFailure.None, new(DocumentUploadFailure.StoreFailed), ct);
+        }, outcome => outcome.Failure == DocumentUploadFailure.None, new(DocumentUploadFailure.StoreFailed),
+            new(DocumentUploadFailure.StorageFull), ct);
 
     public Task<DocumentUploadOutcome> AddFromLibraryAsync(Guid meetingId, Guid actorId, IReadOnlyList<Guid> documentIds,
         CancellationToken ct = default)
@@ -232,7 +233,8 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             var added = await AddUploadsAsync(meeting!, actorId, stored, now, agendaItemId, token);
             await meetings.SaveChangesAsync(token);
             return new DocumentUploadOutcome(Documents: added);
-        }, outcome => outcome.Failure == DocumentUploadFailure.None, new(DocumentUploadFailure.StoreFailed), ct);
+        }, outcome => outcome.Failure == DocumentUploadFailure.None, new(DocumentUploadFailure.StoreFailed),
+            new(DocumentUploadFailure.StorageFull), ct);
 
     public Task<DocumentUploadOutcome> DetachAsync(Guid meetingId, Guid agendaItemId, Guid meetingDocumentId,
         Guid actorId, CancellationToken ct = default)
@@ -331,7 +333,6 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
         StoredFile[] stored, DateTimeOffset now, Guid? agendaItemId, CancellationToken ct)
     {
         // The upload folder must not be deleted or moved away while it is being filled.
-        // ponytail: not counted against the 1 GB library quota (deviation 3, awaiting the PO).
         await PersonalLibraryService.LockLibraryAsync(db, actorId, ct);
         var folder = await documents.FindUploadFolderAsync(actorId, meeting.Id, ct);
         if (folder is null)

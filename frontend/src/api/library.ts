@@ -21,7 +21,7 @@ export function getLibrary(folderId: string | null, q = '', type: '' | 'pdf' | '
   return api.get<LibraryView>(`/api/documents${query ? `?${query}` : ''}`)
 }
 
-/** UC-36: all files or none; 409 MSG346 past the 1 GB quota, 400 MSG288/MSG164 as for a meeting. */
+/** UC-36: all files or none; 409 MSG346 when the system's storage is full (ADR-0034), 400 MSG288/MSG164 as for a meeting. */
 export function uploadToLibrary(
   folderId: string | null,
   files: { file: File; pageCount: number | null }[],

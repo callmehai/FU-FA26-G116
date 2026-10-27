@@ -273,7 +273,8 @@ Chưa cấu hình thì app vẫn chạy, nút tải lên báo `MSG166`.
    (`trustcabinet-test` đã bị khoá ở ENAM). Xem **Settings → Location** để chắc chắn là APAC. **Không** bật Public
    access hay custom domain.
 2. **R2 → Manage API tokens → Create API token**: quyền *Object Read & Write*, áp dụng cho **chỉ** bucket
-   `trustcabinet-docs`. Lưu lại Access Key ID, Secret Access Key và endpoint
+   `trustcabinet-docs`. *Client IP Address Filtering → Include*: static IP của server (`54.254.223.53`), để token lộ
+   ra cũng không dùng được từ máy khác; app gọi R2 từ trong Docker, đi ra bằng IPv4 nên không cần dải IPv6. Lưu lại Access Key ID, Secret Access Key và endpoint
    `https://<account-id>.r2.cloudflarestorage.com` (secret chỉ hiện một lần).
 3. Trên server, thêm vào `deploy/.env` rồi `docker compose -f deploy/docker-compose.yml up -d`:
 
@@ -283,6 +284,10 @@ Chưa cấu hình thì app vẫn chạy, nút tải lên báo `MSG166`.
    R2_ACCESS_KEY_ID=...
    R2_SECRET_ACCESS_KEY=...
    ```
+
+Tổng dung lượng tài liệu của cả hệ thống mặc định **10 GB**, đúng gói miễn phí của R2
+([ADR-0034](../docs/05-decisions/0034-han-muc-luu-tru-toan-he-thong.md)). Đầy thì mọi lần tải lên trả `409 MSG346`.
+Đổi bằng `STORAGE_MAX_GB` trong `deploy/.env` (khi bàn giao, bên nhận đặt theo gói R2 họ trả tiền).
 
 Trình duyệt không gọi thẳng R2 nên CSP trong `Caddyfile` giữ nguyên. Chỉ tải lên dữ liệu giả: R2 lưu ngoài Việt
 Nam, tức là chuyển dữ liệu cá nhân xuyên biên giới (Luật 91/2025/QH15 Điều 20, xem ADR-0024).
