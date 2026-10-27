@@ -1,0 +1,134 @@
+title UC-33d - Detach Document from Agenda Item
+
+actor "Chair or Secretary" as Actor
+boundary "Meeting Documents Tab" as DocumentsTab
+control ":Meeting Document Controller" as DocumentController
+control ":Meeting Document Service" as DocumentService
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Meeting Document Repository" as MeetingDocumentRepository
+database ":Database" as Database
+
+Actor->DocumentsTab: Confirm Detach Document from Agenda Item
+activate DocumentsTab
+
+DocumentsTab->DocumentController: Detach the document from the Agenda Item
+activate DocumentController
+
+DocumentController->DocumentService: detachDocument(meetingId, agendaItemId, meetingDocumentId, actor)
+activate DocumentService
+
+DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting\nand is its current Chair or Secretary (BR-184)
+activate MeetingAccessPolicy
+MeetingAccessPolicy->Database: Retrieve Meeting status and the actor's current Meeting role
+activate Database
+Database-->MeetingAccessPolicy: Meeting status and Meeting role / Not found
+deactivate Database
+MeetingAccessPolicy-->DocumentService: Access, Meeting role and Meeting status / No access
+deactivate MeetingAccessPolicy
+
+alt Meeting is unavailable or the actor can no longer view it - EX-7
+    DocumentService-->DocumentController: MSG174 - This Meeting is not accessible.
+    DocumentController-->DocumentsTab: MSG174 - This Meeting is not accessible.
+    DocumentsTab-->Actor: MSG174 - This Meeting is not accessible.
+else Actor is no longer the Chair or Secretary - EX-1
+    DocumentService-->DocumentController: MSG241 - You no longer have permission to unlink documents in this Meeting.
+    DocumentController-->DocumentsTab: MSG241 - You no longer have permission to unlink documents in this Meeting.
+    DocumentsTab-->Actor: MSG241 - You no longer have permission to unlink documents in this Meeting.
+else Meeting has ended - EX-6
+    DocumentService-->DocumentController: MSG247 - Document links cannot be changed after the Meeting has ended.
+    DocumentController-->DocumentsTab: MSG247 - Document links cannot be changed after the Meeting has ended.
+    DocumentsTab-->Actor: MSG247 - Document links cannot be changed after the Meeting has ended.
+else Actor may unlink documents
+    DocumentService->MeetingDocumentRepository: Get the selected document as currently attached to this Meeting (BR-211)
+    activate MeetingDocumentRepository
+    MeetingDocumentRepository->Database: Retrieve the document if not removed from this Meeting
+    activate Database
+    Database-->MeetingDocumentRepository: Attached document / Not attached
+    deactivate Database
+    MeetingDocumentRepository-->DocumentService: Attached document / Not attached
+    deactivate MeetingDocumentRepository
+
+    alt Document is no longer in the Meeting - EX-2
+        DocumentService-->DocumentController: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+        DocumentController-->DocumentsTab: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+        DocumentsTab-->Actor: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+    else Document is in the Meeting
+        DocumentService->MeetingDocumentRepository: Get the selected Agenda Item of this Meeting (BR-278)
+        activate MeetingDocumentRepository
+        MeetingDocumentRepository->Database: Retrieve the Agenda Item if it belongs to this Meeting
+        activate Database
+        Database-->MeetingDocumentRepository: Agenda Item / Not found
+        deactivate Database
+        MeetingDocumentRepository-->DocumentService: Agenda Item / Not found
+        deactivate MeetingDocumentRepository
+
+        alt Agenda Item no longer exists in this Meeting - EX-3
+            DocumentService-->DocumentController: MSG242 - Select an available Agenda Item in this Meeting.
+            DocumentController-->DocumentsTab: MSG242 - Select an available Agenda Item in this Meeting.
+            DocumentsTab-->Actor: MSG242 - Select an available Agenda Item in this Meeting.
+        else Agenda Item is available
+            DocumentService->MeetingDocumentRepository: Get the link between the document and the Agenda Item (BR-277)
+            activate MeetingDocumentRepository
+            MeetingDocumentRepository->Database: Retrieve the link
+            activate Database
+            Database-->MeetingDocumentRepository: Link / Not linked
+            deactivate Database
+            MeetingDocumentRepository-->DocumentService: Link / Not linked
+            deactivate MeetingDocumentRepository
+
+            alt Link no longer exists - EX-4
+                DocumentService-->DocumentController: MSG246 - This document is no longer linked to the selected Agenda Item. Refresh the document list.
+                DocumentController-->DocumentsTab: MSG246 - This document is no longer linked to the selected Agenda Item. Refresh the document list.
+                DocumentsTab-->Actor: MSG246 - This document is no longer linked to the selected Agenda Item. Refresh the document list.
+            else Link exists
+                DocumentService->MeetingDocumentRepository: Remove only this link, in one transaction with the Meeting locked; the document stays in the Meeting\nwith its other links unchanged, or becomes a general Meeting document when none remain\n(BR-278, BR-279, BR-280)
+                activate MeetingDocumentRepository
+                MeetingDocumentRepository->Database: Under the Meeting lock, recheck status, the actor's role, that the document is in the Meeting,\nthat the Agenda Item exists and that the link exists, then delete that link only
+                activate Database
+                Database-->MeetingDocumentRepository: Saved / Failed
+                deactivate Database
+                MeetingDocumentRepository-->DocumentService: Saved / Failed
+                deactivate MeetingDocumentRepository
+
+                alt Save fails: Meeting is unavailable or actor can no longer view it - EX-7
+                    DocumentService-->DocumentController: MSG174 - This Meeting is not accessible.
+                    DocumentController-->DocumentsTab: MSG174 - This Meeting is not accessible.
+                    DocumentsTab-->Actor: MSG174 - This Meeting is not accessible.
+                else Save fails: Actor is no longer the Chair or Secretary - EX-1
+                    DocumentService-->DocumentController: MSG241 - You no longer have permission to unlink documents in this Meeting.
+                    DocumentController-->DocumentsTab: MSG241 - You no longer have permission to unlink documents in this Meeting.
+                    DocumentsTab-->Actor: MSG241 - You no longer have permission to unlink documents in this Meeting.
+                else Save fails: Meeting has ended - EX-6
+                    DocumentService-->DocumentController: MSG247 - Document links cannot be changed after the Meeting has ended.
+                    DocumentController-->DocumentsTab: MSG247 - Document links cannot be changed after the Meeting has ended.
+                    DocumentsTab-->Actor: MSG247 - Document links cannot be changed after the Meeting has ended.
+                else Save fails: Document is no longer in the Meeting - EX-2
+                    DocumentService-->DocumentController: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+                    DocumentController-->DocumentsTab: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+                    DocumentsTab-->Actor: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+                else Save fails: Agenda Item no longer exists in this Meeting - EX-3
+                    DocumentService-->DocumentController: MSG242 - Select an available Agenda Item in this Meeting.
+                    DocumentController-->DocumentsTab: MSG242 - Select an available Agenda Item in this Meeting.
+                    DocumentsTab-->Actor: MSG242 - Select an available Agenda Item in this Meeting.
+                else Save fails: Link no longer exists - EX-4
+                    DocumentService-->DocumentController: MSG246 - This document is no longer linked to the selected Agenda Item. Refresh the document list.
+                    DocumentController-->DocumentsTab: MSG246 - This document is no longer linked to the selected Agenda Item. Refresh the document list.
+                    DocumentsTab-->Actor: MSG246 - This document is no longer linked to the selected Agenda Item. Refresh the document list.
+                else Save fails: Database persistence error - EX-5
+                    DocumentService-->DocumentController: MSG245 - Unable to unlink the document. No links were changed. Please try again.
+                    DocumentController-->DocumentsTab: MSG245 - Unable to unlink the document. No links were changed. Please try again.
+                    DocumentsTab-->Actor: MSG245 - Unable to unlink the document. No links were changed. Please try again.
+                else Document detached
+                    DocumentService-->DocumentController: Document detached
+                    DocumentController-->DocumentsTab: Document detached
+                    DocumentsTab->DocumentsTab: Refresh the Agenda Item documents
+                    DocumentsTab-->Actor: MSG239 - Document detached from the Agenda Item successfully.
+                end
+            end
+        end
+    end
+end
+
+deactivate DocumentService
+deactivate DocumentController
+deactivate DocumentsTab

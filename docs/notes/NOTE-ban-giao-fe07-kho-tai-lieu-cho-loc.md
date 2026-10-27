@@ -31,8 +31,8 @@ trước khi Lộc bắt đầu ticket tương ứng; lệch so với sequence t
 | Tải tệp từ máy lên cuộc họp | UC-33a AF-1 | SCRUM-107 | BA Final Review | Đã merge | UC33a (AF-1) | Không |
 | Chọn tài liệu từ kho để thêm vào cuộc họp | UC-33a luồng chính | **Chưa có** | — | Chưa code | **Chưa có** | Ticket, sequence |
 | Xem danh sách, đọc tệp | UC-32a, 32c | SCRUM-21, 22 | BA Final Review / Backend | Đã merge | UC32a, UC32c | Không |
-| Gắn tài liệu vào mục nghị sự | UC-33b | SCRUM-25 (FE) / SCRUM-98 (BE) | Frontend / Backend (Huy) | Một phần, qua sửa mục nghị sự (mục 2.2) | **Chưa có** | Sequence; AF-1, AF-2 và MSG riêng chưa code |
-| Gỡ tài liệu khỏi một mục nghị sự | UC-33d | SCRUM-112 | To Do | Một phần, qua sửa mục nghị sự (mục 2.2) | **Chưa có** | Sequence; MSG riêng chưa code |
+| Gắn tài liệu vào mục nghị sự | UC-33b | SCRUM-112 | To Do | Tạm qua sửa mục nghị sự, chỉ Thư ký (mục 2.2) | UC33b (PROPOSED) | Chức năng riêng theo đặc tả, Chủ toạ và Thư ký (đã chốt (b)) |
+| Gỡ tài liệu khỏi một mục nghị sự | UC-33d | SCRUM-112 | To Do | Tạm qua sửa mục nghị sự, chỉ Thư ký (mục 2.2) | UC33d (PROPOSED) | Chức năng riêng theo đặc tả, Chủ toạ và Thư ký (đã chốt (b)) |
 | Gỡ tài liệu khỏi cuộc họp | UC-33c | SCRUM-112 | To Do | Chưa code | **Chưa có** | Code, sequence |
 | Bình luận tài liệu | UC-35 | SCRUM-23 | Backend | Chưa code | UC35 | Code. Ticket đủ tiêu chí, doc đã xong |
 | Xác nhận đọc tài liệu biểu quyết | UC-74 | SCRUM-96 (Huy) | To Do | Chưa code | UC74 | Code, thuộc SCRUM-96 |
@@ -65,11 +65,14 @@ trước khi Lộc bắt đầu ticket tương ứng; lệch so với sequence t
      Đặc tả UC-33b/33d cho cả **Chủ toạ** và chỉ chặn khi cuộc họp đã kết thúc (BR-184, BR-185, BR-279);
    - UC-33b AF-1 (tải từ máy rồi gắn luôn) và AF-2 (chọn từ kho rồi gắn luôn) chưa có.
 
-   Lộc cần chốt với PO một trong hai cách và ghi vào SCRUM-112:
-   (a) giữ API agenda, BA sửa đặc tả UC-33b/33d theo code, các mã `MSG238`–`MSG247` giữ dành sẵn;
-   (b) thêm endpoint riêng cho gắn/gỡ một liên kết với đúng mã đặc tả, còn API agenda vẫn nhận `documentIds` như cũ.
-   Không tự chọn khi chưa có ý PO. Chọn (b) thì Lộc thêm contract `docs/03-api/` và đổi trạng thái các mã trong catalogue
-   cùng commit code. Sequence ở mục 7 bước 3 vẽ **as-built** (cách a); đổi sang (b) thì vẽ lại.
+   **Đã chốt 27/10/2026 (BA): phương án (b) — làm theo đặc tả.** Lộc làm chức năng gắn/gỡ riêng trong SCRUM-112:
+   - Chủ toạ **và** Thư ký hiện tại đều gắn/gỡ được, đến khi cuộc họp kết thúc (BR-184, BR-185, BR-279);
+   - UC-33b có đủ ba nguồn: tài liệu cuộc họp, tải từ máy (AF-1), chọn từ kho (AF-2), lưu tất cả hoặc không (BR-304);
+   - UC-33d gỡ đúng một liên kết, tài liệu vẫn ở cuộc họp (BR-280);
+   - dùng mã đặc tả `MSG238`–`MSG247`, `MSG170`, `MSG174` (và `MSG164`/`MSG165`/`MSG166`/`MSG249` cho AF-1/AF-2);
+   - thêm contract `docs/03-api/` và đổi trạng thái các mã trong catalogue cùng commit code.
+   API agenda có giữ `documentIds` hay không là việc của Lộc; nếu giữ thì vẫn chỉ Thư ký, không thay chức năng mới.
+   Sequence UC-33b/33d ở mục 7 bước 3 vẽ lại **PROPOSED theo đặc tả**.
 3. **Hạn mức dung lượng kho cá nhân** chưa chốt (ADR-0020 ghi "remain undecided").
 4. **Quyền đọc phần chưa gắn trong kho của người đã rời tổ chức** chưa chốt.
 5. **SCRUM-110/111/112 chưa gán người.**
@@ -131,7 +134,7 @@ qua `git show <commit>`.
 
 ## 5. Việc cần chốt với PO / BA
 
-1. UC-33b / UC-33d: giữ API agenda hay thêm endpoint riêng (mục 2.2 ý 2), và Chủ toạ có được gắn/gỡ như đặc tả không.
+1. ~~UC-33b / UC-33d: giữ API agenda hay thêm endpoint riêng~~ — đã chốt 27/10/2026: phương án (b), Chủ toạ và Thư ký đều gắn/gỡ được.
 2. Đưa UC-33a luồng chính vào SCRUM-112 (mục 2.2 ý 1).
 3. Hạn mức dung lượng kho cá nhân.
 4. Quyền đọc kho của người đã rời tổ chức.
@@ -187,26 +190,26 @@ qua `git show <commit>`.
 |---|---|---|
 | `UC72a_CreateFolder` | Kiểm chủ sở hữu, thư mục cha, tên không trống, độ sâu ≤ 5 (BR-191, BR-219–221, BR-242) → tạo → `MSG187` | EX-2 thư mục cha không còn/không phải của mình `MSG179`; EX-1 tên trống `MSG188`; EX-3 quá 5 cấp `MSG189`; EX-4 lỗi lưu `MSG190` |
 | `UC72b_RenameFolder` | Kiểm chủ sở hữu, còn tồn tại, tên không trống, cho trùng tên (BR-219–221, BR-242) → lưu tên → `MSG191` | EX-1 không còn `MSG175`; EX-2 tên trống `MSG188`; EX-3 lỗi lưu `MSG192` |
-| `UC72c_MoveFolder` | Kiểm chủ sở hữu thư mục và đích, đích không phải chính nó/con cháu, cả cây sau khi chuyển ≤ 5 cấp (BR-191, BR-219, BR-222, BR-242) → chuyển cả cây → `MSG194`. Self-call tính độ sâu cây con | EX-1 thư mục không còn `MSG175`; EX-2 đích không còn `MSG179`; EX-3 vào chính nó/con cháu `MSG193`; EX-4 quá 5 cấp `MSG189`; EX-5 lỗi lưu `MSG195`. AF-1 (chuyển ra gốc) ghi bằng `note`, không thêm `alt` |
-| `UC72d_DeleteFolder` | Bắt đầu từ lúc xác nhận. Kiểm chủ sở hữu, còn tồn tại, không có tài liệu hay thư mục con (BR-219, BR-223, BR-242) → xoá → `MSG197` | EX-1 không còn `MSG175`; EX-2 không rỗng `MSG196`; EX-3 lỗi lưu `MSG198`. `note` BR-228: thư mục cuộc họp bị xoá sẽ được tạo lại ở lần tải lên sau |
+| `UC72c_MoveFolder` | Kiểm chủ sở hữu thư mục và đích, đích không phải chính nó/con cháu, cả cây sau khi chuyển ≤ 5 cấp (BR-191, BR-219, BR-222, BR-242) → chuyển cả cây → `MSG194`. Self-call tính độ sâu cây con | EX-1 thư mục không còn `MSG175`; EX-2 đích không còn `MSG179`; EX-3 vào chính nó/con cháu `MSG193`; EX-4 quá 5 cấp `MSG189`; EX-5 lỗi lưu `MSG195`. AF-1 (chuyển ra gốc) ghi trong câu của request, không thêm `alt` |
+| `UC72d_DeleteFolder` | Bắt đầu từ lúc xác nhận. Kiểm chủ sở hữu, còn tồn tại, không có tài liệu hay thư mục con (BR-219, BR-223, BR-242) → xoá → `MSG197` | EX-1 không còn `MSG175`; EX-2 không rỗng `MSG196`; EX-3 lỗi lưu `MSG198`. BR-228 (thư mục cuộc họp bị xoá sẽ được tạo lại ở lần tải lên sau) ghi ở README thư mục, không vẽ |
 
 **Xong khi:** 4 cặp `.txt`/`.png`, 4 dòng README, đủ mọi EX của đặc tả, không còn MSG nào lệch catalogue.
 
 ### Bước 2 — Sequence tài liệu trong kho UC-34, 36, 71a–c (SCRUM-91)
 
-**Đầu vào riêng:** Report 3 mục 7.3, 7.5, 7.6; luồng AF-1 trong `UC33a_UploadDocumentsToMeeting.txt` (kiểm tệp, đẩy R2 trước,
-ghi DB sau, lỗi thì xoá object đã đẩy).
+**Đầu vào riêng:** Report 3 mục 7.3, 7.5, 7.6; luồng AF-1 trong `UC33a_UploadDocumentsToMeeting.txt` (kiểm tệp, ghi dòng tệp lưu trữ,
+đẩy R2, rồi ghi tài liệu trong một transaction; lỗi thì xoá object đã đẩy).
 **Lifeline:** `actor "Internal User"`, `boundary "Personal Library Screen"`, `control ":Document Controller"`,
 `control ":Document Service"`, `participant ":Folder Repository"`, `participant ":Document Repository"`,
 `participant ":Object Storage (R2)"` (chỉ UC-36), `database ":Database"`. PROPOSED.
 
 | File | Luồng chính | Nhánh `alt` theo thứ tự |
 |---|---|---|
-| `UC34_ViewPersonalLibrary` | Kiểm quyền kho (BR-204, BR-242) → lấy thư mục và tài liệu của người dùng, kèm số cuộc họp người dùng được xem đang dùng tài liệu (BR-219, BR-251) → hiển thị | EX-2 thư mục đã chọn không còn `MSG175`; EX-1 không tải được `MSG176`; AF-2 kết quả rỗng là danh sách rỗng, không phải lỗi. AF-1 tìm/lọc ghi bằng `note` trên request |
-| `UC36_UploadToPersonalLibrary` | Kiểm thư mục đích (BR-242) → kiểm từng tệp PDF/DOCX ≤ 50 MB, đuôi khớp nội dung (BR-187, BR-214, BR-215) → đẩy R2 → ghi `StoredFile` + `Document` trong một transaction (BR-183, BR-216, BR-229, BR-286) → `MSG177` | EX-2 đích không còn `MSG179`; EX-1 tệp sai `MSG164`; EX-3 lỗi lưu, xoá object đã đẩy `MSG178` |
+| `UC34_ViewPersonalLibrary` | Kiểm quyền kho (BR-204, BR-242) → lấy thư mục và tài liệu của người dùng, kèm số cuộc họp người dùng được xem đang dùng tài liệu (BR-219, BR-251) → hiển thị | EX-2 thư mục đã chọn không còn `MSG175`; EX-1 không tải được `MSG176`; AF-2 kết quả rỗng là danh sách rỗng, không phải lỗi. AF-1 tìm/lọc ghi trong câu của request |
+| `UC36_UploadToPersonalLibrary` | Kiểm thư mục đích (BR-242) → kiểm từng tệp PDF/DOCX ≤ 50 MB, đuôi khớp nội dung (BR-187, BR-214, BR-215) → ghi dòng `StoredFile` trước (ADR-0024 §4, như UC-33a) → đẩy R2 → ghi `Document` trong một transaction (BR-183, BR-216, BR-229, BR-286) → `MSG177` | EX-2 đích không còn `MSG179`; EX-1 tệp sai `MSG164`; EX-3 lỗi lưu, xoá object đã đẩy `MSG178` |
 | `UC71a_DeleteLibraryDocument` | Bắt đầu từ lúc xác nhận. Kiểm chủ sở hữu, còn tồn tại (BR-242) → xoá dòng `Document`, không đụng `MeetingDocument` (BR-186, BR-232) → `MSG180` | EX-1 không còn `MSG175`; EX-2 lỗi lưu `MSG181` |
 | `UC71b_RenameLibraryDocument` | Kiểm chủ sở hữu (BR-242) → lưu tên mới, không đổi `StoredFile` và tên đã chép vào cuộc họp (BR-183, BR-224, BR-276) → `MSG183` | EX-1 không còn `MSG175`; EX-2 lỗi lưu `MSG184` |
-| `UC71c_MoveLibraryDocument` | Kiểm chủ sở hữu tài liệu và thư mục đích (BR-225, BR-242) → đổi `folderId` (BR-245) → `MSG185` | EX-1 tài liệu không còn `MSG175`; EX-2 đích không còn `MSG179`; EX-3 lỗi lưu `MSG186`. AF-1 chuyển ra gốc ghi bằng `note` |
+| `UC71c_MoveLibraryDocument` | Kiểm chủ sở hữu tài liệu và thư mục đích (BR-225, BR-242) → đổi `folderId` (BR-245) → `MSG185` | EX-1 tài liệu không còn `MSG175`; EX-2 đích không còn `MSG179`; EX-3 lỗi lưu `MSG186`. AF-1 chuyển ra gốc ghi trong câu của request |
 
 Lưu ý UC-71b: đặc tả không có EX tên trống (BR-243 và `MSG182` đã bỏ). Không tự thêm.
 
@@ -214,15 +217,15 @@ Lưu ý UC-71b: đặc tả không có EX tên trống (BR-243 và `MSG182` đã
 
 ### Bước 3 — Sequence gắn và gỡ UC-33a luồng chính, 33b, 33c, 33d (SCRUM-91)
 
-**Đầu vào riêng:** Report 3 mục 7.2; code `AgendaEndpoints.cs` (PUT mục nghị sự, `DocumentIds`), `AgendaService.cs`
-(nhánh Create/Update, `CanAssociateAsync`), `AgendaRepository.AssociateAsync`; mục 2.2 ý 2 của note này.
+**Đầu vào riêng:** Report 3 mục 7.2; mục 2.2 ý 2 của note này (đã chốt phương án (b)). Code agenda chỉ để biết hiện
+trạng, không vẽ theo.
 
 | File | Cách vẽ | Nội dung |
 |---|---|---|
 | `UC33a_UploadDocumentsToMeeting` (sửa file cũ) hoặc file mới `UC33a_AddDocumentsFromLibrary` | PROPOSED | Luồng chính chọn từ kho: kiểm quyền và trạng thái như AF-1 (BR-184, BR-195) → kiểm từng tài liệu thuộc người thao tác, còn tồn tại, chưa có trong cuộc họp (BR-193, BR-209) → tạo `MeetingDocument` chép tên (BR-197, BR-276) trong một transaction (BR-286) → `MSG161`. `alt`: EX-7 `MSG174`; EX-1 `MSG162`; EX-6 `MSG172`; EX-2 `MSG249`; EX-4 `MSG165`; EX-5 `MSG166`. Chọn một trong hai cách đặt file và ghi lý do trong README (quy tắc §2 một request: hai luồng là hai request khác nhau, nên tách file thì dễ đọc hơn) |
-| `UC33b_AttachDocumentsToAgendaItem` | **As-built** | Actor là Thư ký (code hiện chỉ cho Thư ký, Chủ toạ nhận `MSG67`), boundary `"Agenda Item Editor"`, controller `":Agenda Controller"`, service `":Agenda Service"`, repository `":Agenda Repository"`. Request là lưu mục nghị sự kèm `documentIds`. Kiểm theo đúng thứ tự trong `AgendaService` → `CanAssociateAsync` (tài liệu thuộc cuộc họp, chưa gỡ) → `AssociateAsync` thay tập liên kết. Ghi đúng mã code đang trả (`MSG61` thành công, `MSG66` dữ liệu sai gồm `documentIds`, `MSG67` thiếu quyền Secretary hoặc cuộc họp đã khoá, `MSG69` lỗi lưu, `MSG174`). `note` nói rõ: AF-1, AF-2 và các mã `MSG238`, `MSG240`, `MSG242`–`MSG244`, `MSG247` chưa triển khai, chờ quyết định ở mục 2.2 ý 2 |
+| `UC33b_AttachDocumentsToAgendaItem` | PROPOSED theo đặc tả (vẽ lại 27/10/2026, phương án (b)) | Actor Chủ toạ hoặc Thư ký, lifeline như UC33c. Một request, nguồn tài liệu nằm trong câu của request: tài liệu cuộc họp (luồng chính), tải từ máy (AF-1), chọn từ kho (AF-2). Kiểm truy cập, vai trò, chưa kết thúc, mục thuộc cuộc họp, tài liệu còn trong cuộc họp và chưa gắn (BR-184, BR-185, BR-277, BR-278, BR-279) → gắn tất cả hoặc không (BR-304) → `MSG238`. `alt`: EX-7 `MSG174`; EX-1 `MSG240`; EX-6 `MSG247`; EX-3 `MSG242`; EX-2 `MSG170`; EX-4 `MSG243`; EX-5 `MSG244`; AF-1/AF-2 thêm `MSG164`, `MSG166`, `MSG249`, `MSG165` |
 | `UC33c_RemoveDocumentFromMeeting` | PROPOSED | Bắt đầu từ lúc xác nhận. Lifeline như UC33a. Kiểm truy cập, Chủ toạ/Thư ký, chưa kết thúc, tài liệu còn trong cuộc họp (BR-184, BR-185, BR-279) → đặt `RemovedAt`, `RemovedById`, xoá mọi `MeetingDocumentAgendaItem` của nó, giữ góp ý (BR-211, BR-212, BR-231, BR-197, BR-281, BR-284) → `MSG167`. `alt`: EX-5 `MSG174`; EX-2 `MSG169`; EX-1 `MSG248`; EX-3 `MSG170`; EX-4 `MSG171` |
-| `UC33d_DetachDocumentFromAgendaItem` | **As-built** | Cùng request với UC33b (lưu mục nghị sự với `documentIds` đã bỏ tài liệu). Vẽ phần `AssociateAsync` xoá liên kết không còn trong tập; tài liệu vẫn ở cuộc họp (BR-280). `note` nói rõ `MSG239`, `MSG241`, `MSG245`, `MSG246`, `MSG247` chưa triển khai |
+| `UC33d_DetachDocumentFromAgendaItem` | PROPOSED theo đặc tả (vẽ lại 27/10/2026, phương án (b)) | Bắt đầu từ lúc xác nhận gỡ. Kiểm như bước 2 đặc tả (BR-184, BR-185, BR-277, BR-278, BR-279) → xoá đúng một liên kết, tài liệu vẫn ở cuộc họp (BR-280) → `MSG239`. `alt`: EX-7 `MSG174`; EX-1 `MSG241`; EX-6 `MSG247`; EX-3 `MSG242`; EX-2 `MSG170`; EX-4 `MSG246`; EX-5 `MSG245` |
 
 **Xong khi:** 3–4 cặp `.txt`/`.png`, README ghi rõ UC nào as-built, UC nào PROPOSED, và bảng lệch đặc tả–code của UC-33b/33d.
 
@@ -247,13 +250,13 @@ skill `drawio-skill`.
 3. Thêm lại `FolderRepository` (CRUD, `findSubtree`, tính độ sâu) và `DocumentRepository`, cả hai PROPOSED. Từ 27/10/2026
    diagram không còn `FolderRepository` vì code SCRUM-107 tìm/tạo thư mục cuộc họp ngay trong `MeetingDocumentRepository`
    (`findUploadFolder`, `addFolder`); nếu Lộc giữ cách đó thì vẽ theo code.
-4. `MeetingDocumentsTab`/`MeetingDocumentController`/`MeetingDocumentService`: thêm `addFromLibrary`, `removeDocument`
+4. `MeetingDocumentsTab`/`MeetingDocumentController`/`MeetingDocumentService`: thêm `addLibraryDocuments`, `removeDocument`
    (UC-33a luồng chính, UC-33c); `MeetingDocumentRepository`: `markRemoved`, `existsInMeeting`.
-5. Phía agenda (UC-33b/33d as-built): vẽ `AgendaService.update` và `AgendaRepository.associate` như class ngoài feature,
-   đường gạch phụ thuộc, không chép toàn bộ class agenda.
+5. UC-33b/33d (PROPOSED, phương án (b)): thêm `attachDocuments`, `detachDocument` vào `MeetingDocumentsTab`/`MeetingDocumentController`/
+   `MeetingDocumentService`, và `addAgendaLinks`/`removeAgendaLink` vào `MeetingDocumentRepository`; không vẽ class agenda.
 6. Quan hệ: `Folder` tự tham chiếu (parent 0..1 – children 0..*), `Folder` 0..1 — 0..* `Document`, `Document` 0..1 — 0..*
    `MeetingDocument`, `Document` * — 1 `StoredFile`.
-7. Mọi class, hàm chưa có code ghi stereotype hoặc ghi chú `PROPOSED`.
+7. Không gắn nhãn `PROPOSED` trên class diagram (BA yêu cầu 27/10/2026); phần chưa có code liệt kê ở §6d README class diagram.
 8. Sửa tiêu đề diagram, dòng FE-07 trong bảng mục 1 và đoạn mô tả FE-07 của `docs/07-classdiagram/README.md`; xuất lại
    `.drawio.png`.
 
@@ -369,3 +372,32 @@ Lặp như bước 6 cho SCRUM-110, 111, 112, 23 (và SCRUM-96 phần UC-74), m�
 3. Bước 8, Bước 9 lặp theo nhịp Lộc merge.
 
 FE-07 đóng phần tài liệu khi C1–C5, C7, C10, C11 đều xong và C6 đã báo dev.
+
+## 11. Bàn giao BE cho Lộc — đã đủ tài liệu để code (27/10/2026)
+
+Sequence và class diagram của mọi UC còn lại trong FE-07 đã vẽ xong (SCRUM-91, SCRUM-92). Lộc code theo thứ tự
+**SCRUM-23 → SCRUM-110 → SCRUM-111 → SCRUM-112**. Mỗi ticket: đọc sequence của nó, làm đúng thứ tự kiểm và mã thông báo
+trong sơ đồ; lệch thì ghi comment Jira, BA cập nhật ở BA Final Review.
+
+| Ticket | Sequence (`docs/06-sequencediagram/document-management/`) | Class (class diagram FE-07) | Endpoint gợi ý | MSG |
+|---|---|---|---|---|
+| SCRUM-23 | `UC35_CommentOnMeetingDocument` | `DocumentCommentController/Service/Repository` | `GET/POST /api/meetings/{id}/documents/{meetingDocumentId}/comments` | 199, 200, 202, 204, 251, 156 |
+| SCRUM-110 | `UC72a`–`UC72d` | `PersonalLibraryScreen`, `FolderController`, `FolderService` (`computeSubtreeDepth`), `FolderRepository` | `GET/POST /api/folders`, `PATCH /api/folders/{id}`, `DELETE /api/folders/{id}` | 175, 179, 187–198 |
+| SCRUM-111 | `UC34`, `UC36`, `UC71a`–`UC71c` | `DocumentController`, `DocumentService`, `DocumentRepository`; dùng lại `DocumentFileRules`, `FileStorage` | `GET /api/documents`, `POST /api/documents/upload`, `PATCH /api/documents/{id}`, `DELETE /api/documents/{id}` | 164, 175–181, 183–186 |
+| SCRUM-112 | `UC33a_AddDocumentsFromLibrary`, `UC33b`, `UC33c`, `UC33d` | `MeetingDocumentController/Service`: `addLibraryDocuments`, `removeDocument`, `attachDocuments`, `detachDocument`; `MeetingDocumentRepository`: `addAgendaLinks`, `removeAgendaLink`, `markRemoved`… | `POST /api/meetings/{id}/documents` (từ kho), `DELETE …/documents/{meetingDocumentId}`, `POST/DELETE …/agenda/{itemId}/documents` | 161, 162, 164–167, 169–172, 174, 238–249 |
+
+**Bắt buộc khi code (AGENTS.md):**
+- Contract `docs/03-api/` cho endpoint mới, dòng catalogue MSG đổi "Dành sẵn" → "Đã triển khai" và "Mã tiếp theo" trong
+  **cùng commit** code; `MessageCodeCatalogueTests` phải xanh.
+- Kiểm quyền ở server: kho chỉ chủ sở hữu thấy (BR-242, thư mục/tài liệu người khác trả `MSG175` như không tồn tại);
+  cuộc họp không xem được trả `MSG174` 404, không 403.
+- UC-36 và UC-33b AF-1 dùng lại kiểm tệp và thứ tự ghi của SCRUM-107: ghi dòng `StoredFile` → đẩy R2 → transaction; lỗi
+  thì xoá object đã đẩy (ADR-0024 §4, BR-286).
+- UC-33b/33d theo phương án (b) (mục 2.2): chức năng riêng, **Chủ toạ và Thư ký** đều dùng được, chặn khi cuộc họp kết thúc.
+- Gỡ khỏi cuộc họp (UC-33c) là đặt `RemovedAt`/`RemovedById`, xoá liên kết mục nghị sự, giữ góp ý (BR-281, BR-284).
+- Không cần migration cho `Folder`, `Document`, `StoredFile`, `MeetingDocumentAgendaItem` (đã có từ SCRUM-107); cần thêm
+  index thì thêm migration mới.
+- Phát `documentsChanged` trên hub sau khi thêm, gỡ, gắn hoặc bỏ gắn, như SCRUM-21.
+
+**Câu hỏi còn mở (mục 5), hỏi PO trước khi chốt code:** hạn mức dung lượng kho; quyền đọc kho của người đã rời tổ chức;
+UC-36 và UC-33b AF-1 có áp giới hạn 10 tệp / 200 MB (`MSG288`) như UC-33a không.

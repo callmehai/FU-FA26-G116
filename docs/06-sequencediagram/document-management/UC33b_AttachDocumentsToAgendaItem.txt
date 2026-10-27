@@ -1,0 +1,314 @@
+title UC-33b - Attach Documents to Agenda Item
+
+actor "Chair or Secretary" as Actor
+boundary "Meeting Documents Tab" as DocumentsTab
+control ":Meeting Document Controller" as DocumentController
+control ":Meeting Document Service" as DocumentService
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Library Document Repository" as LibraryDocumentRepository
+participant ":Meeting Document Repository" as MeetingDocumentRepository
+participant ":Object Storage (R2)" as FileStorage
+database ":Database" as Database
+
+Actor->DocumentsTab: Submit the selected documents of the chosen source
+activate DocumentsTab
+
+DocumentsTab->DocumentController: Attach the documents to the Agenda Item
+activate DocumentController
+
+DocumentController->DocumentService: attachDocuments(meetingId, agendaItemId, source, documentIds | files and pageCounts, actor)
+activate DocumentService
+
+DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting\nand is its current Chair or Secretary (BR-184)
+activate MeetingAccessPolicy
+MeetingAccessPolicy->Database: Retrieve Meeting status and the actor's current Meeting role
+activate Database
+Database-->MeetingAccessPolicy: Meeting status and Meeting role / Not found
+deactivate Database
+MeetingAccessPolicy-->DocumentService: Access, Meeting role and Meeting status / No access
+deactivate MeetingAccessPolicy
+
+alt Meeting is unavailable or the actor can no longer view it - EX-7
+    DocumentService-->DocumentController: MSG174 - This Meeting is not accessible.
+    DocumentController-->DocumentsTab: MSG174 - This Meeting is not accessible.
+    DocumentsTab-->Actor: MSG174 - This Meeting is not accessible.
+else Actor is no longer the Chair or Secretary - EX-1
+    DocumentService-->DocumentController: MSG240 - You no longer have permission to link documents in this Meeting.
+    DocumentController-->DocumentsTab: MSG240 - You no longer have permission to link documents in this Meeting.
+    DocumentsTab-->Actor: MSG240 - You no longer have permission to link documents in this Meeting.
+else Meeting has ended - EX-6
+    DocumentService-->DocumentController: MSG247 - Document links cannot be changed after the Meeting has ended.
+    DocumentController-->DocumentsTab: MSG247 - Document links cannot be changed after the Meeting has ended.
+    DocumentsTab-->Actor: MSG247 - Document links cannot be changed after the Meeting has ended.
+else Actor may link documents
+    DocumentService->MeetingDocumentRepository: Get the selected Agenda Item of this Meeting (BR-278)
+    activate MeetingDocumentRepository
+    MeetingDocumentRepository->Database: Retrieve the Agenda Item if it belongs to this Meeting
+    activate Database
+    Database-->MeetingDocumentRepository: Agenda Item / Not found
+    deactivate Database
+    MeetingDocumentRepository-->DocumentService: Agenda Item / Not found
+    deactivate MeetingDocumentRepository
+
+    alt Agenda Item no longer exists in this Meeting - EX-3
+        DocumentService-->DocumentController: MSG242 - Select an available Agenda Item in this Meeting.
+        DocumentController-->DocumentsTab: MSG242 - Select an available Agenda Item in this Meeting.
+        DocumentsTab-->Actor: MSG242 - Select an available Agenda Item in this Meeting.
+    else Agenda Item is available
+        alt Source is Meeting documents - Normal Flow
+            DocumentService->MeetingDocumentRepository: Get the selected documents as currently attached to this Meeting (BR-304)
+            activate MeetingDocumentRepository
+            MeetingDocumentRepository->Database: Retrieve the selected documents if not removed from this Meeting
+            activate Database
+            Database-->MeetingDocumentRepository: Meeting documents / Not attached
+            deactivate Database
+            MeetingDocumentRepository-->DocumentService: Meeting documents / Not attached
+            deactivate MeetingDocumentRepository
+
+            DocumentService->DocumentService: Check every selected document is still in the Meeting (BR-304)
+
+            alt A selected document is no longer in the Meeting - EX-2
+                DocumentService-->DocumentController: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+                DocumentController-->DocumentsTab: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+                DocumentsTab-->Actor: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+            else Every selected document is in the Meeting
+                DocumentService->MeetingDocumentRepository: Get the documents already attached to this Agenda Item (BR-277)
+                activate MeetingDocumentRepository
+                MeetingDocumentRepository->Database: Retrieve the links of this Agenda Item
+                activate Database
+                Database-->MeetingDocumentRepository: Agenda Item documents
+                deactivate Database
+                MeetingDocumentRepository-->DocumentService: Agenda Item documents
+                deactivate MeetingDocumentRepository
+
+                DocumentService->DocumentService: Check none of the selected documents is already attached\nto this Agenda Item (BR-277)
+
+                alt A selected document is already attached - EX-4
+                    DocumentService-->DocumentController: MSG243 - One or more selected documents are already attached to the Agenda Item.
+                    DocumentController-->DocumentsTab: MSG243 - One or more selected documents are already attached to the Agenda Item.
+                    DocumentsTab-->Actor: MSG243 - One or more selected documents are already attached to the Agenda Item.
+                else No selected document is attached yet
+                    DocumentService->MeetingDocumentRepository: Attach every selected document to the Agenda Item together, in one transaction\nwith the Meeting locked; its links to other Items stay unchanged\n(BR-277, BR-278, BR-279, BR-304)
+                    activate MeetingDocumentRepository
+                    MeetingDocumentRepository->Database: Under the Meeting lock, recheck status, the actor's role, that the Agenda Item exists,\nthat every document is in the Meeting and not yet attached, then insert the links
+                    activate Database
+                    Database-->MeetingDocumentRepository: Saved / Failed
+                    deactivate Database
+                    MeetingDocumentRepository-->DocumentService: Saved / Failed
+                    deactivate MeetingDocumentRepository
+
+                    alt Save fails: Meeting is unavailable or actor can no longer view it - EX-7
+                        DocumentService-->DocumentController: MSG174 - This Meeting is not accessible.
+                        DocumentController-->DocumentsTab: MSG174 - This Meeting is not accessible.
+                        DocumentsTab-->Actor: MSG174 - This Meeting is not accessible.
+                    else Save fails: Actor is no longer the Chair or Secretary - EX-1
+                        DocumentService-->DocumentController: MSG240 - You no longer have permission to link documents in this Meeting.
+                        DocumentController-->DocumentsTab: MSG240 - You no longer have permission to link documents in this Meeting.
+                        DocumentsTab-->Actor: MSG240 - You no longer have permission to link documents in this Meeting.
+                    else Save fails: Meeting has ended - EX-6
+                        DocumentService-->DocumentController: MSG247 - Document links cannot be changed after the Meeting has ended.
+                        DocumentController-->DocumentsTab: MSG247 - Document links cannot be changed after the Meeting has ended.
+                        DocumentsTab-->Actor: MSG247 - Document links cannot be changed after the Meeting has ended.
+                    else Save fails: Agenda Item no longer exists in this Meeting - EX-3
+                        DocumentService-->DocumentController: MSG242 - Select an available Agenda Item in this Meeting.
+                        DocumentController-->DocumentsTab: MSG242 - Select an available Agenda Item in this Meeting.
+                        DocumentsTab-->Actor: MSG242 - Select an available Agenda Item in this Meeting.
+                    else Save fails: A selected document is no longer in the Meeting - EX-2
+                        DocumentService-->DocumentController: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+                        DocumentController-->DocumentsTab: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+                        DocumentsTab-->Actor: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+                    else Save fails: A selected document is already attached - EX-4
+                        DocumentService-->DocumentController: MSG243 - One or more selected documents are already attached to the Agenda Item.
+                        DocumentController-->DocumentsTab: MSG243 - One or more selected documents are already attached to the Agenda Item.
+                        DocumentsTab-->Actor: MSG243 - One or more selected documents are already attached to the Agenda Item.
+                    else Save fails: Database persistence error - EX-5
+                        DocumentService-->DocumentController: MSG244 - Unable to link the document. No links were changed. Please try again.
+                        DocumentController-->DocumentsTab: MSG244 - Unable to link the document. No links were changed. Please try again.
+                        DocumentsTab-->Actor: MSG244 - Unable to link the document. No links were changed. Please try again.
+                    else Documents attached
+                        DocumentService-->DocumentController: Documents attached
+                        DocumentController-->DocumentsTab: Documents attached
+                        DocumentsTab->DocumentsTab: Refresh the Agenda Item documents
+                        DocumentsTab-->Actor: MSG238 - Documents attached to the Agenda Item successfully.
+                    end
+                end
+            end
+        else Source is Upload from computer - AF-1
+            DocumentService->DocumentService: Check at least one file is selected and every file has a usable name,\na .pdf or .docx extension matching its content and at most 50 MB\n(BR-187, BR-214, BR-215)
+
+            alt Any file is invalid - EX-3 of UC-33a
+                DocumentService-->DocumentController: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
+                DocumentController-->DocumentsTab: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
+                DocumentsTab-->Actor: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
+            else Every file is valid
+                DocumentService->MeetingDocumentRepository: Record one stored-file entry per file, before any byte is stored (ADR-0024)
+                activate MeetingDocumentRepository
+                MeetingDocumentRepository->Database: Insert the stored-file entries
+                activate Database
+                Database-->MeetingDocumentRepository: Recorded / Failed
+                deactivate Database
+                MeetingDocumentRepository-->DocumentService: Recorded / Failed
+                deactivate MeetingDocumentRepository
+
+                alt Stored-file entries cannot be recorded - EX-5 of UC-33a
+                    DocumentService-->DocumentController: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                    DocumentController-->DocumentsTab: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                    DocumentsTab-->Actor: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                else Stored-file entries recorded
+                    DocumentService->FileStorage: Store each file unchanged under its stored-file entry (BR-183, BR-216)
+                    activate FileStorage
+                    FileStorage-->DocumentService: All files stored / Storing failed
+                    deactivate FileStorage
+
+                    alt Files cannot be stored - EX-5 of UC-33a
+                        DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
+                        activate FileStorage
+                        FileStorage-->DocumentService: Files deleted
+                        deactivate FileStorage
+                        DocumentService-->DocumentController: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                        DocumentController-->DocumentsTab: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                        DocumentsTab-->Actor: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                    else All files stored
+                        DocumentService->MeetingDocumentRepository: Add the files to the Meeting and to the actor's personal library and attach them\nto the Agenda Item together, in one transaction with the Meeting locked\n(BR-194, BR-210, BR-286, BR-304)
+                        activate MeetingDocumentRepository
+                        MeetingDocumentRepository->Database: Under the Meeting lock, recheck status, the actor's role and that the Agenda Item exists,\nthen insert the library documents, the Meeting documents and the Agenda Item links\npointing at the stored-file entries
+                        activate Database
+                        Database-->MeetingDocumentRepository: Saved / Failed
+                        deactivate Database
+                        MeetingDocumentRepository-->DocumentService: Saved / Failed
+                        deactivate MeetingDocumentRepository
+
+                        alt Save fails: Meeting is unavailable or actor can no longer view it - EX-7
+                            DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
+                            activate FileStorage
+                            FileStorage-->DocumentService: Files deleted
+                            deactivate FileStorage
+                            DocumentService-->DocumentController: MSG174 - This Meeting is not accessible.
+                            DocumentController-->DocumentsTab: MSG174 - This Meeting is not accessible.
+                            DocumentsTab-->Actor: MSG174 - This Meeting is not accessible.
+                        else Save fails: Actor is no longer the Chair or Secretary - EX-1
+                            DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
+                            activate FileStorage
+                            FileStorage-->DocumentService: Files deleted
+                            deactivate FileStorage
+                            DocumentService-->DocumentController: MSG240 - You no longer have permission to link documents in this Meeting.
+                            DocumentController-->DocumentsTab: MSG240 - You no longer have permission to link documents in this Meeting.
+                            DocumentsTab-->Actor: MSG240 - You no longer have permission to link documents in this Meeting.
+                        else Save fails: Meeting has ended - EX-6
+                            DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
+                            activate FileStorage
+                            FileStorage-->DocumentService: Files deleted
+                            deactivate FileStorage
+                            DocumentService-->DocumentController: MSG247 - Document links cannot be changed after the Meeting has ended.
+                            DocumentController-->DocumentsTab: MSG247 - Document links cannot be changed after the Meeting has ended.
+                            DocumentsTab-->Actor: MSG247 - Document links cannot be changed after the Meeting has ended.
+                        else Save fails: Agenda Item no longer exists in this Meeting - EX-3
+                            DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
+                            activate FileStorage
+                            FileStorage-->DocumentService: Files deleted
+                            deactivate FileStorage
+                            DocumentService-->DocumentController: MSG242 - Select an available Agenda Item in this Meeting.
+                            DocumentController-->DocumentsTab: MSG242 - Select an available Agenda Item in this Meeting.
+                            DocumentsTab-->Actor: MSG242 - Select an available Agenda Item in this Meeting.
+                        else Save fails: Database persistence error - EX-5
+                            DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
+                            activate FileStorage
+                            FileStorage-->DocumentService: Files deleted
+                            deactivate FileStorage
+                            DocumentService-->DocumentController: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                            DocumentController-->DocumentsTab: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                            DocumentsTab-->Actor: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                        else Documents attached
+                            DocumentService-->DocumentController: Documents attached
+                            DocumentController-->DocumentsTab: Documents attached
+                            DocumentsTab->DocumentsTab: Refresh the Agenda Item documents
+                            DocumentsTab-->Actor: MSG238 - Documents attached to the Agenda Item successfully.
+                        end
+                    end
+                end
+            end
+        else Source is My Documents - AF-2
+            DocumentService->LibraryDocumentRepository: Get the selected documents of the actor's personal library (BR-193, BR-209)
+            activate LibraryDocumentRepository
+            LibraryDocumentRepository->Database: Retrieve selected documents owned by the actor
+            activate Database
+            Database-->LibraryDocumentRepository: Available library documents
+            deactivate Database
+            LibraryDocumentRepository-->DocumentService: Available library documents
+            deactivate LibraryDocumentRepository
+
+            DocumentService->DocumentService: Check at least one document is selected and every selected document\nis available and belongs to the actor (BR-209)
+
+            alt Selection is missing or a document is unavailable - EX-2 of UC-33a
+                DocumentService-->DocumentController: MSG249 - Select one or more available documents from your personal library.
+                DocumentController-->DocumentsTab: MSG249 - Select one or more available documents from your personal library.
+                DocumentsTab-->Actor: MSG249 - Select one or more available documents from your personal library.
+            else Selection is available
+                DocumentService->MeetingDocumentRepository: Get the documents currently attached to this Meeting
+                activate MeetingDocumentRepository
+                MeetingDocumentRepository->Database: Retrieve current Meeting documents
+                activate Database
+                Database-->MeetingDocumentRepository: Current Meeting documents
+                deactivate Database
+                MeetingDocumentRepository-->DocumentService: Current Meeting documents
+                deactivate MeetingDocumentRepository
+
+                DocumentService->DocumentService: Check none of the selected documents is already in the Meeting (BR-193)
+
+                alt A selected document is already in the Meeting - EX-4 of UC-33a
+                    DocumentService-->DocumentController: MSG165 - One or more selected documents are already attached to the Meeting.
+                    DocumentController-->DocumentsTab: MSG165 - One or more selected documents are already attached to the Meeting.
+                    DocumentsTab-->Actor: MSG165 - One or more selected documents are already attached to the Meeting.
+                else No selected document is in the Meeting yet
+                    DocumentService->MeetingDocumentRepository: Add every selected document as a general Meeting document under its current name and attach it\nto the Agenda Item together, in one transaction with the Meeting locked;\nthe personal library stays unchanged (BR-276, BR-286, BR-304)
+                    activate MeetingDocumentRepository
+                    MeetingDocumentRepository->Database: Under the Meeting lock, recheck status, the actor's role, that the Agenda Item exists\nand that none is in the Meeting, then insert the Meeting documents pointing at the\nlibrary documents' stored files and the Agenda Item links
+                    activate Database
+                    Database-->MeetingDocumentRepository: Saved / Failed
+                    deactivate Database
+                    MeetingDocumentRepository-->DocumentService: Saved / Failed
+                    deactivate MeetingDocumentRepository
+
+                    alt Save fails: Meeting is unavailable or actor can no longer view it - EX-7
+                        DocumentService-->DocumentController: MSG174 - This Meeting is not accessible.
+                        DocumentController-->DocumentsTab: MSG174 - This Meeting is not accessible.
+                        DocumentsTab-->Actor: MSG174 - This Meeting is not accessible.
+                    else Save fails: Actor is no longer the Chair or Secretary - EX-1
+                        DocumentService-->DocumentController: MSG240 - You no longer have permission to link documents in this Meeting.
+                        DocumentController-->DocumentsTab: MSG240 - You no longer have permission to link documents in this Meeting.
+                        DocumentsTab-->Actor: MSG240 - You no longer have permission to link documents in this Meeting.
+                    else Save fails: Meeting has ended - EX-6
+                        DocumentService-->DocumentController: MSG247 - Document links cannot be changed after the Meeting has ended.
+                        DocumentController-->DocumentsTab: MSG247 - Document links cannot be changed after the Meeting has ended.
+                        DocumentsTab-->Actor: MSG247 - Document links cannot be changed after the Meeting has ended.
+                    else Save fails: Agenda Item no longer exists in this Meeting - EX-3
+                        DocumentService-->DocumentController: MSG242 - Select an available Agenda Item in this Meeting.
+                        DocumentController-->DocumentsTab: MSG242 - Select an available Agenda Item in this Meeting.
+                        DocumentsTab-->Actor: MSG242 - Select an available Agenda Item in this Meeting.
+                    else Save fails: A selected document is no longer available - EX-2 of UC-33a
+                        DocumentService-->DocumentController: MSG249 - Select one or more available documents from your personal library.
+                        DocumentController-->DocumentsTab: MSG249 - Select one or more available documents from your personal library.
+                        DocumentsTab-->Actor: MSG249 - Select one or more available documents from your personal library.
+                    else Save fails: A selected document is already in the Meeting - EX-4 of UC-33a
+                        DocumentService-->DocumentController: MSG165 - One or more selected documents are already attached to the Meeting.
+                        DocumentController-->DocumentsTab: MSG165 - One or more selected documents are already attached to the Meeting.
+                        DocumentsTab-->Actor: MSG165 - One or more selected documents are already attached to the Meeting.
+                    else Save fails: Database persistence error - EX-5
+                        DocumentService-->DocumentController: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                        DocumentController-->DocumentsTab: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                        DocumentsTab-->Actor: MSG166 - Unable to add the documents. No documents were added. Please try again.
+                    else Documents attached
+                        DocumentService-->DocumentController: Documents attached
+                        DocumentController-->DocumentsTab: Documents attached
+                        DocumentsTab->DocumentsTab: Refresh the Agenda Item documents
+                        DocumentsTab-->Actor: MSG238 - Documents attached to the Agenda Item successfully.
+                    end
+                end
+            end
+        end
+    end
+end
+
+deactivate DocumentService
+deactivate DocumentController
+deactivate DocumentsTab

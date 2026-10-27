@@ -1,0 +1,76 @@
+title UC-34 - View Personal Document Library
+
+actor "Internal User" as Actor
+boundary "Personal Library Screen" as LibraryScreen
+control ":Document Controller" as DocumentController
+control ":Document Service" as DocumentService
+participant ":Folder Repository" as FolderRepository
+participant ":Document Repository" as DocumentRepository
+database ":Database" as Database
+
+Actor->LibraryScreen: Open the library location, optionally with a document-name search\nor a file-type filter (AF-1)
+activate LibraryScreen
+
+LibraryScreen->DocumentController: Get personal library location with optional search and file-type filter
+activate DocumentController
+
+DocumentController->DocumentService: viewLibrary(userId, folderId, searchText, fileType)
+activate DocumentService
+
+DocumentService->DocumentService: Check the actor is an Internal User\nwith a personal library (BR-204, BR-242)
+
+opt A folder is selected
+    DocumentService->FolderRepository: Get the selected folder owned by the actor (BR-242)
+    activate FolderRepository
+    FolderRepository->Database: Retrieve the folder by id and owner
+    activate Database
+    Database-->FolderRepository: Folder / Not found
+    deactivate Database
+    FolderRepository-->DocumentService: Folder / Not found
+    deactivate FolderRepository
+end
+
+alt Selected folder is no longer available - EX-2
+    DocumentService-->DocumentController: MSG175 - This personal-library item is not available.
+    DocumentController-->LibraryScreen: MSG175 - This personal-library item is not available.
+    LibraryScreen-->Actor: MSG175 - This personal-library item is not available.
+
+else Selected folder is available or the library root is selected
+    DocumentService->FolderRepository: Get the actor's own folders (BR-219, BR-242)
+    activate FolderRepository
+    FolderRepository->Database: Retrieve the folders owned by the actor
+    activate Database
+    Database-->FolderRepository: Folder list / Retrieval failed
+    deactivate Database
+    FolderRepository-->DocumentService: Folder list / Retrieval failed
+    deactivate FolderRepository
+
+    DocumentService->DocumentRepository: Get the actor's own documents at the location matching the search and filter,\nwith the number of Meetings the actor may view that use each document\n(BR-219, BR-242, BR-251)
+    activate DocumentRepository
+    DocumentRepository->Database: Retrieve the documents owned by the actor with file type and permitted Meeting usage
+    activate Database
+    Database-->DocumentRepository: Document list / Retrieval failed
+    deactivate Database
+    DocumentRepository-->DocumentService: Document list / Retrieval failed
+    deactivate DocumentRepository
+
+    alt Library cannot be loaded - EX-1
+        DocumentService-->DocumentController: MSG176 - Unable to load your personal document library. Please try again.
+        DocumentController-->LibraryScreen: MSG176 - Unable to load your personal document library. Please try again.
+        LibraryScreen-->Actor: MSG176 - Unable to load your personal document library. Please try again.
+
+    else No documents match the location and criteria - AF-2
+        DocumentService-->DocumentController: Folders and an empty document list
+        DocumentController-->LibraryScreen: Folders and an empty document list
+        LibraryScreen-->Actor: Show the folders and an empty result
+
+    else Documents are found
+        DocumentService-->DocumentController: Folders and documents with names, file types and permitted Meeting usage
+        DocumentController-->LibraryScreen: Folders and documents with names, file types and permitted Meeting usage
+        LibraryScreen-->Actor: Show the folders and documents at the location
+    end
+end
+
+deactivate DocumentService
+deactivate DocumentController
+deactivate LibraryScreen

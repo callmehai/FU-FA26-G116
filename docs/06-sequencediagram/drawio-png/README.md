@@ -33,3 +33,5 @@ cắt phần dưới nên xuất ở **scale 1.5**; chạy lại script toàn b�
 
 **23/10/2026 (SCRUM-107):** thêm tab UC-33a AF-1 *Upload Documents to Meeting* và xuất ảnh. Cũng xuất ở **scale 1.5**
 vì scale 2 bị cắt nửa dưới, như UC-32c.
+
+**27/10/2026 (FE-07):** dựng lại tab UC-32a, UC-32c, UC-33a (tải lên) và thêm 13 tab UC-33a (thư viện), UC-33b, UC-33c, UC-33d, UC-34, UC-36, UC-71a/b/c, UC-72a/b/c/d từ các `.txt` trong `document-management/`; xuất lại 16 ảnh. Cả 16 ảnh xuất ở scale 2 bằng draw.io 32.6.1 (bản 29.6.1 không vẽ biểu tượng actor/boundary/control/database).

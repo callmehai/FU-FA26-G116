@@ -1,0 +1,109 @@
+title UC-36 - Upload Document to Personal Library
+
+actor "Internal User" as Actor
+boundary "Personal Library Screen" as LibraryScreen
+control ":Document Controller" as DocumentController
+control ":Document Service" as DocumentService
+participant ":Folder Repository" as FolderRepository
+participant ":Document Repository" as DocumentRepository
+participant ":Object Storage (R2)" as FileStorage
+database ":Database" as Database
+
+Actor->LibraryScreen: Submit the selected files to the library root or a folder
+activate LibraryScreen
+
+LibraryScreen->DocumentController: Upload files with PDF page counts to the selected location
+activate DocumentController
+
+DocumentController->DocumentService: uploadDocuments(userId, folderId, files, pageCounts)
+activate DocumentService
+
+DocumentService->DocumentService: Check the actor is an Internal User\nwith a personal library (BR-204, BR-242)
+
+opt A destination folder is selected
+    DocumentService->FolderRepository: Get the selected destination folder owned by the actor (BR-242)
+    activate FolderRepository
+    FolderRepository->Database: Retrieve the folder by id and owner
+    activate Database
+    Database-->FolderRepository: Folder / Not found
+    deactivate Database
+    FolderRepository-->DocumentService: Folder / Not found
+    deactivate FolderRepository
+end
+
+alt Destination folder is no longer available - EX-2
+    DocumentService-->DocumentController: MSG179 - The selected destination folder is not available in your personal library.
+    DocumentController-->LibraryScreen: MSG179 - The selected destination folder is not available in your personal library.
+    LibraryScreen-->Actor: MSG179 - The selected destination folder is not available in your personal library.
+
+else Destination is available
+    DocumentService->DocumentService: Check at least one file was selected and every file has a usable name,\na .pdf or .docx extension matching its content and at most 50 MB\n(BR-187, BR-214, BR-215)
+
+    alt Any file is invalid - EX-1
+        DocumentService-->DocumentController: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
+        DocumentController-->LibraryScreen: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
+        LibraryScreen-->Actor: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
+
+    else Every file is valid
+        DocumentService->DocumentRepository: Record one stored-file entry per file, before any byte is stored (ADR-0024)
+        activate DocumentRepository
+        DocumentRepository->Database: Insert the stored-file entries
+        activate Database
+        Database-->DocumentRepository: Recorded / Failed
+        deactivate Database
+        DocumentRepository-->DocumentService: Recorded / Failed
+        deactivate DocumentRepository
+
+        alt Stored-file entries cannot be recorded - EX-3
+            DocumentService-->DocumentController: MSG178 - Unable to upload the files. No documents were added. Please try again.
+            DocumentController-->LibraryScreen: MSG178 - Unable to upload the files. No documents were added. Please try again.
+            LibraryScreen-->Actor: MSG178 - Unable to upload the files. No documents were added. Please try again.
+
+        else Stored-file entries recorded
+            DocumentService->FileStorage: Store each file unchanged under its stored-file entry (BR-183, BR-216)
+            activate FileStorage
+            FileStorage-->DocumentService: All files stored / Storing failed
+            deactivate FileStorage
+
+            alt Files cannot be stored - EX-3
+                DocumentService->FileStorage: Delete the files already stored in this submission (BR-286)
+                activate FileStorage
+                FileStorage-->DocumentService: Files deleted
+                deactivate FileStorage
+                DocumentService-->DocumentController: MSG178 - Unable to upload the files. No documents were added. Please try again.
+                DocumentController-->LibraryScreen: MSG178 - Unable to upload the files. No documents were added. Please try again.
+                LibraryScreen-->Actor: MSG178 - Unable to upload the files. No documents were added. Please try again.
+
+            else All files stored
+                DocumentService->DocumentRepository: Save the library documents at the selected location\nwith their original names, in one transaction (BR-183, BR-229, BR-286)
+                activate DocumentRepository
+                DocumentRepository->Database: Insert the library documents pointing at the stored-file entries
+                activate Database
+                Database-->DocumentRepository: Saved / Failed
+                deactivate Database
+                DocumentRepository-->DocumentService: Saved / Failed
+                deactivate DocumentRepository
+
+                alt Documents cannot be saved - EX-3
+                    DocumentService->FileStorage: Delete the files stored in this submission (BR-286)
+                    activate FileStorage
+                    FileStorage-->DocumentService: Files deleted
+                    deactivate FileStorage
+                    DocumentService-->DocumentController: MSG178 - Unable to upload the files. No documents were added. Please try again.
+                    DocumentController-->LibraryScreen: MSG178 - Unable to upload the files. No documents were added. Please try again.
+                    LibraryScreen-->Actor: MSG178 - Unable to upload the files. No documents were added. Please try again.
+
+                else Documents added
+                    DocumentService-->DocumentController: Number of documents added
+                    DocumentController-->LibraryScreen: Number of documents added
+                    LibraryScreen->LibraryScreen: Refresh the library
+                    LibraryScreen-->Actor: MSG177 - Documents uploaded to your personal library successfully.
+                end
+            end
+        end
+    end
+end
+
+deactivate DocumentService
+deactivate DocumentController
+deactivate LibraryScreen

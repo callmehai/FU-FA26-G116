@@ -1,0 +1,94 @@
+title UC-72c - Move Folder
+
+actor "Internal User" as Actor
+boundary "Personal Library Screen" as LibraryScreen
+control ":Folder Controller" as FolderController
+control ":Folder Service" as FolderService
+participant ":Folder Repository" as FolderRepository
+database ":Database" as Database
+
+Actor->LibraryScreen: Confirm the destination: an owned folder or the library root
+activate LibraryScreen
+
+LibraryScreen->FolderController: Move the selected folder to the destination folder,\nor to the library root when no destination folder is given
+activate FolderController
+
+FolderController->FolderService: moveFolder(ownerId, folderId, destinationId)
+activate FolderService
+
+FolderService->FolderRepository: Get the selected folder with its subfolders,\nowned by the user (BR-219, BR-242)
+activate FolderRepository
+FolderRepository->Database: Retrieve the folder and its descendants
+activate Database
+Database-->FolderRepository: Folder and subfolders / Not found
+deactivate Database
+FolderRepository-->FolderService: Folder and subfolders / Not found
+deactivate FolderRepository
+
+alt Folder is missing or not owned by the user - EX-1
+    FolderService-->FolderController: MSG175 - This personal-library item is not available.
+    FolderController-->LibraryScreen: MSG175 - This personal-library item is not available.
+    LibraryScreen-->Actor: MSG175 - This personal-library item is not available.
+
+else Folder is available
+    opt A destination folder is selected
+        FolderService->FolderRepository: Get the destination folder owned by the user (BR-219, BR-242)
+        activate FolderRepository
+        FolderRepository->Database: Retrieve the destination folder and its ancestors
+        activate Database
+        Database-->FolderRepository: Destination folder and ancestors / Not found
+        deactivate Database
+        FolderRepository-->FolderService: Destination folder and its depth / Not found
+        deactivate FolderRepository
+    end
+
+    alt Destination is missing or not owned by the user - EX-2
+        FolderService-->FolderController: MSG179 - The selected destination folder is not available in your personal library.
+        FolderController-->LibraryScreen: MSG179 - The selected destination folder is not available in your personal library.
+        LibraryScreen-->Actor: MSG179 - The selected destination folder is not available in your personal library.
+
+    else Destination is available or the library root is selected
+        FolderService->FolderService: Check the destination is not the folder itself\nor one of its subfolders (BR-222)
+
+        alt Destination is the folder itself or one of its subfolders - EX-3
+            FolderService-->FolderController: MSG193 - A folder cannot be moved into itself or one of its descendants.
+            FolderController-->LibraryScreen: MSG193 - A folder cannot be moved into itself or one of its descendants.
+            LibraryScreen-->Actor: MSG193 - A folder cannot be moved into itself or one of its descendants.
+
+        else Destination is valid
+            FolderService->FolderService: Compute the depth of the moved subtree and check that the folder\nand every subfolder stay within level five (BR-191)
+
+            alt Moved folder or a subfolder would be deeper than level five - EX-4
+                FolderService-->FolderController: MSG189 - Folders cannot be nested more than five levels deep.
+                FolderController-->LibraryScreen: MSG189 - Folders cannot be nested more than five levels deep.
+                LibraryScreen-->Actor: MSG189 - Folders cannot be nested more than five levels deep.
+
+            else Depth is within the limit
+                FolderService->FolderRepository: Move the folder with its documents and subfolders\nto the destination, keeping names and Meeting attachments
+                activate FolderRepository
+                FolderRepository->Database: Update the parent of the folder
+                activate Database
+                Database-->FolderRepository: Saved / Failed
+                deactivate Database
+                FolderRepository-->FolderService: Moved folder / Failed
+                deactivate FolderRepository
+
+                alt Folder cannot be moved - EX-5
+                    FolderService-->FolderController: MSG195 - Unable to move the folder. Its location remains unchanged.
+                    FolderController-->LibraryScreen: MSG195 - Unable to move the folder. Its location remains unchanged.
+                    LibraryScreen-->Actor: MSG195 - Unable to move the folder. Its location remains unchanged.
+
+                else Folder is moved
+                    FolderService-->FolderController: Moved folder
+                    FolderController-->LibraryScreen: Moved folder
+                    LibraryScreen->LibraryScreen: Refresh the folder tree
+                    LibraryScreen-->Actor: MSG194 - Folder moved successfully.
+                end
+            end
+        end
+    end
+end
+
+deactivate FolderService
+deactivate FolderController
+deactivate LibraryScreen
