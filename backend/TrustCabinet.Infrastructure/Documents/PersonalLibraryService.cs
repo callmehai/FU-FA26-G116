@@ -27,7 +27,7 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
             if (!await MayReadAsync(readerId, ownerId, ct)) return new(LibraryFailure.NotFound);
             if (folderId is { } id && !await db.Folders.AnyAsync(f => f.Id == id && f.OwnerId == ownerId, ct))
                 return new(LibraryFailure.NotFound);
-            (IQueryable<Guid> Files, HashSet<Guid> Folders)? hidden = readerId == ownerId ? null : await HiddenFromAsync(readerId, ownerId, ct);
+            (IQueryable<Guid> Files, HashSet<Guid> Folders)? hidden = readerId == ownerId ? null : await HiddenFromAsync(ownerId, ct);
             if (folderId is { } at && hidden is not null && hidden.Value.Folders.Contains(at)) return new(LibraryFailure.NotFound);
             if (readerId != ownerId)
                 await audit.RecordAsync(AuditActions.PersonalLibraryRead, AuditActions.UserObjectType, ownerId, readerId,
@@ -63,7 +63,7 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
             var query = db.Documents.AsNoTracking().Where(d => d.Id == documentId && d.OwnerId == ownerId);
             if (readerId != ownerId)
             {
-                var (files, folders) = await HiddenFromAsync(readerId, ownerId, ct);
+                var (files, folders) = await HiddenFromAsync(ownerId, ct);
                 query = query.Where(d => !files.Contains(d.StoredFileId) && (d.FolderId == null || !folders.Contains(d.FolderId.Value)));
             }
             file = await query.Select(d => new AttachedDocumentFile(d.FileName, d.StoredFile.StorageKey, d.StoredFile.ContentType,
@@ -257,16 +257,15 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         => readerId == ownerId || await db.Users.AnyAsync(u => u.Id == ownerId && !u.IsActive, ct);
 
     /// <summary>
-    /// What an administrator reading someone else's library must not see: the files of a Confidential or Secret
-    /// meeting they cannot view themselves, attached now or earlier, and that meeting's upload folder — named after
-    /// it — with its subfolders. The library must not become a way round the meeting's own read rule and BR-188.
+    /// What an administrator reading someone else's library must not see: the files of any Confidential or Secret
+    /// meeting, attached now or earlier, and that meeting's upload folder — named after it — with its subfolders.
+    /// Even when the administrator may view the meeting: there it opens under the meeting's own rules (BR-188 no
+    /// download, BR-211 removed, the audit row), and the library must not become a way round them.
     /// </summary>
-    private async Task<(IQueryable<Guid> Files, HashSet<Guid> Folders)> HiddenFromAsync(Guid readerId, Guid ownerId,
-        CancellationToken ct)
+    private async Task<(IQueryable<Guid> Files, HashSet<Guid> Folders)> HiddenFromAsync(Guid ownerId, CancellationToken ct)
     {
-        var readable = db.Meetings.Where(MeetingReadPolicy.ForUser(readerId)).Select(m => m.Id);
-        var restricted = db.Meetings.Where(m => (m.Sensitivity == Sensitivity.Confidential || m.Sensitivity == Sensitivity.Secret)
-            && !readable.Contains(m.Id)).Select(m => m.Id);
+        var restricted = db.Meetings.Where(m => m.Sensitivity == Sensitivity.Confidential || m.Sensitivity == Sensitivity.Secret)
+            .Select(m => m.Id);
         var files = db.MeetingDocuments.Where(d => restricted.Contains(d.MeetingId)).Select(d => d.StoredFileId);
         var folders = await db.Folders.Where(f => f.OwnerId == ownerId).Select(f => new
         {
@@ -335,8 +334,13 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         }
     }
 
-    /// <summary>Serialises the owner's library changes until the transaction ends.</summary>
-    private Task LockLibraryAsync(Guid ownerId, CancellationToken ct)
+    private Task LockLibraryAsync(Guid ownerId, CancellationToken ct) => LockLibraryAsync(db, ownerId, ct);
+
+    /// <summary>
+    /// Serialises the owner's library changes until the transaction ends. An upload into a meeting takes it after the
+    /// meeting lock; nothing takes the meeting lock after this one.
+    /// </summary>
+    internal static Task LockLibraryAsync(TrustCabinetDbContext db, Guid ownerId, CancellationToken ct)
         => db.Database.ExecuteSqlInterpolatedAsync(
             $"SELECT pg_advisory_xact_lock(hashtextextended({"library:" + ownerId}, 0))", ct);
 

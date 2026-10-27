@@ -1,6 +1,6 @@
 namespace TrustCabinet.Domain.Documents;
 
-public enum CommentFailure { None, Blank, TooLong, NotFound, Ended, SaveFailed, ReadFailed }
+public enum CommentFailure { None, Blank, TooLong, NotFound, Ended, Cancelled, SaveFailed, ReadFailed }
 
 /// <summary>Who wrote a comment: an internal user, or a Guest under their invitation with the name they gave (ADR-0016).</summary>
 public sealed record DocumentCommentAuthor(Guid? UserId, Guid? GuestInvitationId, string Name, bool IsGuest);

@@ -25,7 +25,7 @@ mỗi `pageCounts` tối đa 16 byte; vượt một trong hai → `MSG164`.
 
 1. Token, tài khoản đang hoạt động — không đạt: `401` / `403` body rỗng.
 2. **Quyền, trước khi đọc body** (để người không có quyền không đẩy được 200 MB lên đĩa server):
-   xem được cuộc họp, đang là Chủ toạ hoặc Thư ký hiện tại, cuộc họp chưa `Ended`.
+   xem được cuộc họp, đang là Chủ toạ hoặc Thư ký hiện tại, cuộc họp chưa `Ended` và chưa `Cancelled`.
 3. `Content-Length` > 201 MB → `MSG288` ngay, không đọc body.
 4. Số tệp ≤ 10, tổng ≤ 200 MB (BR-319).
 5. Từng tệp: tên hợp lệ có đuôi `.pdf` hoặc `.docx`, không rỗng, ≤ 50 MB, và **nội dung** đúng loại mà đuôi
@@ -82,6 +82,7 @@ dung vẫn là tài liệu mới (BR-229).
 | 403 | `MSG162` | Xem được cuộc họp nhưng không còn là Chủ toạ/Thư ký hiện tại (kể cả Người tổ chức không giữ hai vai trò đó) |
 | 404 | `MSG174` | Không xem được cuộc họp hoặc cuộc họp không tồn tại — **cùng một body**, không lộ cuộc họp có tồn tại |
 | 409 | `MSG172` | Cuộc họp đã kết thúc, kể cả khi vừa kết thúc trong lúc đang tải |
+| 409 | `MSG349` | Cuộc họp đã huỷ (SCRUM-99), kể cả khi vừa huỷ trong lúc đang tải |
 | 503 | `MSG166` | Không lưu được (R2 lỗi, DB lỗi, hoặc server chưa cấu hình kho tệp). Không tệp nào được thêm |
 
 `errors` của `MSG164`:
@@ -264,7 +265,7 @@ mục nghị sự.
 **Quyền, chung cho mọi endpoint dưới đây**: Chủ toạ hoặc Thư ký **hiện tại** của chính cuộc họp đó (`MeetingRole`,
 không phải quyền toàn hệ thống), tới khi cuộc họp `Ended` (BR-184, BR-185, BR-279); trạng thái mục nghị sự không khoá
 liên kết. Thứ tự: không xem được cuộc họp → `404 MSG174`; xem được nhưng không phải Chủ toạ/Thư ký → `403` (mã theo
-thao tác); đã kết thúc → `409` (mã theo thao tác). Mỗi thao tác chạy trong **một** transaction có khoá cuộc họp và kiểm
+thao tác); đã kết thúc → `409` (mã theo thao tác); đã huỷ → `409 MSG349` (mọi thao tác). Mỗi thao tác chạy trong **một** transaction có khoá cuộc họp và kiểm
 quyền dưới khoá, nên mất vai trò hay cuộc họp vừa kết thúc giữa chừng vẫn bị chặn đúng mã. Thành công thì phát
 `documentsChanged` như khi tải lên.
 
@@ -363,7 +364,7 @@ Người tổ chức. Không xem được cuộc họp, tài liệu đã gỡ, h
 ```
 
 - Góp ý gốc xếp cũ trước; trả lời nằm trong `replies` của góp ý gốc, cũ trước, **một cấp** (BR-317).
-- `canComment`: `false` khi cuộc họp đã kết thúc — ẩn ô viết (BR-282).
+- `canComment`: `false` khi cuộc họp đã kết thúc hoặc đã huỷ — ẩn ô viết (BR-282).
 - `author.isGuest` + `guestInvitationId`: góp ý của Guest đã xác minh, `name` là tên tự khai (ADR-0016) — FE hiện kèm nhãn
   Khách mời.
 - Lỗi: `404 MSG156`, `500 MSG204`.
@@ -372,9 +373,10 @@ Người tổ chức. Không xem được cuộc họp, tài liệu đã gỡ, h
 
 Body `{ "body": "…", "pageNumber": 3, "parentCommentId": null }`. Thứ tự kiểm theo sequence:
 
-1. Nội dung cắt khoảng trắng, không trống (`400 MSG200`, BR-246), ≤ 4.000 ký tự (`400 MSG347`).
-2. Dưới khoá cuộc họp: xem được cuộc họp và tài liệu còn trong cuộc họp (`404 MSG156`), cuộc họp chưa kết thúc
-   (`409 MSG251`, kể cả khi vừa kết thúc lúc đang gửi).
+1. Nội dung cắt khoảng trắng, không trống (`400 MSG200`, BR-246), ≤ 4.000 ký tự (`400 MSG348`).
+2. Dưới khoá chia sẻ (`FOR SHARE`) trên dòng cuộc họp: xem được cuộc họp và tài liệu còn trong cuộc họp (`404 MSG156`),
+   cuộc họp chưa kết thúc (`409 MSG251`) và chưa huỷ (`409 MSG349`), kể cả khi vừa kết thúc/huỷ lúc đang gửi. Các góp ý
+   không phải chờ nhau.
 3. Trả lời (AF-2): `parentCommentId` phải là góp ý của chính tài liệu này (không thì `404 MSG156`); trả lời một câu trả
    lời thì vào luồng của góp ý gốc.
 4. `pageNumber` chỉ giữ với **PDF**, ở góp ý gốc, và trong khoảng `1…pageCount` nếu biết số trang; ngoài ra lưu `null`
@@ -388,7 +390,7 @@ Body `{ "body": "…", "pageNumber": 3, "parentCommentId": null }`. Thứ tự k
 - `commentCount` ở danh sách tài liệu (tab Tài liệu, panel phòng họp) đếm cả góp ý và trả lời; gửi góp ý **không** phát
   `documentsChanged`, nên số này cập nhật ở lần tải lại danh sách.
 - Trang PDF: gửi `pageNumber` là trang đang xem nếu người dùng chọn gắn trang; DOCX không gửi.
-- `MSG251` giữa chừng: tải lại góp ý (`canComment` sẽ là `false`) và giữ nội dung đang soạn để người dùng chép lại.
+- `MSG251`/`MSG349` giữa chừng: tải lại góp ý (`canComment` sẽ là `false`) và giữ nội dung đang soạn để người dùng chép lại.
 
 ### Guest
 
@@ -477,10 +479,12 @@ mục chỉ đổi liên kết của mục đó. UC-33b/UC-33d (SCRUM-58) có en
   mảng rỗng `MSG170` không gắn gì; Thành viên `MSG240`, lỗi lưu `MSG244`, đã kết thúc `MSG247`; từ kho thêm và gắn một
   lần, `MSG165`, `MSG249`, lỗi lưu `MSG166`; tải từ máy vào mục (thư mục cuộc họp, liên kết), mục không có → `MSG242`
   trước khi đọc body, tệp sai `MSG164`, Thành viên `MSG240`; gỡ khỏi mục từng liên kết rồi về nhóm chung, gỡ lại `MSG246`;
-  Thành viên `MSG241`, tài liệu đã gỡ `MSG170`, mục lạ `MSG242`, lỗi lưu `MSG245`, đã kết thúc `MSG247`.
+  Thành viên `MSG241`, tài liệu đã gỡ `MSG170`, mục lạ `MSG242`, lỗi lưu `MSG245`, đã kết thúc `MSG247`. Cuộc họp đã
+  huỷ: cả 7 thao tác (kể cả `/upload`) → `MSG349`, không gì thay đổi; thêm, tải lên, gắn, từ kho, tải vào mục, gỡ liên
+  kết đều phát `documentsChanged`; Chủ toạ đã bị loại và Chủ toạ cuộc họp khác → `MSG174`, Thư ký bị khoá tài khoản → `403`.
 - `DocumentCommentEndpointsTests` (SCRUM-23): góp ý trang 3 trên PDF, DOCX và trang ngoài số trang không giữ trang,
-  `commentCount`; trả lời một câu trả lời vào luồng gốc, cha lạ → `MSG156`; trống `MSG200`, quá dài `MSG347`; đã kết thúc
-  `MSG251` và `canComment: false`; người ngoài, tài liệu của cuộc họp khác, tài liệu đã gỡ → `MSG156` (góp ý cũ vẫn trong
+  `commentCount`; trả lời một câu trả lời vào luồng gốc, cha lạ → `MSG156`; trống `MSG200`, quá dài `MSG348`; đã kết thúc
+  `MSG251` và `canComment: false`; đã huỷ `MSG349` và `canComment: false`; Người tổ chức và người duyệt góp ý được; người ngoài, tài liệu của cuộc họp khác, tài liệu đã gỡ → `MSG156` (góp ý cũ vẫn trong
   DB); cùng tệp ở hai cuộc họp không thấy góp ý của nhau; lỗi lưu `MSG202`, lỗi đọc `MSG204`.
 - `OrphanFilePurgerTests`: chỉ dọn tệp không còn tham chiếu và quá thời gian chờ; xoá lỗi thì để lượt sau;
   100 tệp xoá lỗi không chặn tệp thứ 101; thời gian chờ cấu hình 0 vẫn giữ tệp mới tải 30 phút.

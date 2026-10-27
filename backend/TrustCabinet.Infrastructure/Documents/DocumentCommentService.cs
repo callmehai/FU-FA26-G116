@@ -10,7 +10,7 @@ namespace TrustCabinet.Infrastructure.Documents;
 /// <summary>
 /// UC-35 (SCRUM-23): comments on a meeting's copy of a document, so the same file in two meetings has two
 /// separate discussions. Anyone who can view the meeting may read and write them (BR-249, BR-275) until it
-/// ends (BR-282); a removed document's comments stay in the database but are no longer shown (BR-284).
+/// ends (BR-282) or is cancelled; a removed document's comments stay in the database but are no longer shown (BR-284).
 /// </summary>
 public sealed class DocumentCommentService(IMeetingRepository meetings, TrustCabinetDbContext db, TimeProvider clock,
     ILogger<DocumentCommentService> logger) : IDocumentCommentService
@@ -40,7 +40,7 @@ public sealed class DocumentCommentService(IMeetingRepository meetings, TrustCab
                 top.AuthorId, top.GuestInvitationId, top.Name, top.CreatedAt,
                 rows.Where(r => r.ParentCommentId == top.Id).Select(r => Row(r.Id, r.Body, r.PageNumber, r.AuthorId,
                     r.GuestInvitationId, r.Name, r.CreatedAt, [])).ToList())).ToList();
-            return new(Value: new(meetingDocumentId, meeting.Status != MeetingStatus.Ended, threads));
+            return new(Value: new(meetingDocumentId, meeting.Status is not (MeetingStatus.Ended or MeetingStatus.Cancelled), threads));
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -60,9 +60,10 @@ public sealed class DocumentCommentService(IMeetingRepository meetings, TrustCab
         {
             return await meetings.InTransactionAsync<CommentOutcome<DocumentCommentRow>>(async token =>
             {
-                // Under the meeting lock, so a comment sent as the meeting ends is refused rather than slipped in
-                // after it (BR-282).
-                var meeting = await meetings.FindWorkflowAsync(meetingId, true, token);
+                // A share lock on the meeting row, so a comment sent as the meeting ends or is cancelled is refused
+                // rather than slipped in after it (BR-282), while comments do not queue behind one another.
+                await db.Database.ExecuteSqlInterpolatedAsync($"SELECT 1 FROM meetings WHERE id = {meetingId} FOR SHARE", token);
+                var meeting = await meetings.FindWorkflowAsync(meetingId, ct: token);
                 if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId)) return new(CommentFailure.NotFound);
                 var document = await db.MeetingDocuments.AsNoTracking()
                     .Where(d => d.Id == meetingDocumentId && d.MeetingId == meetingId && d.RemovedAt == null)
@@ -70,6 +71,7 @@ public sealed class DocumentCommentService(IMeetingRepository meetings, TrustCab
                 // Removed, or of another meeting: the same answer (BR-211).
                 if (document is null) return new(CommentFailure.NotFound);
                 if (meeting.Status == MeetingStatus.Ended) return new(CommentFailure.Ended);
+                if (meeting.Status == MeetingStatus.Cancelled) return new(CommentFailure.Cancelled);
 
                 Guid? threadId = null;
                 if (parentCommentId is { } parentId)

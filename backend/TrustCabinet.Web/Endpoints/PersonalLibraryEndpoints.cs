@@ -36,9 +36,9 @@ public static class PersonalLibraryEndpoints
     private const string Msg197FolderDeleted = "MSG197";
     private const string Msg198FolderDeleteFailed = "MSG198";
     private const string Msg288SubmissionTooLarge = "MSG288";
-    private const string Msg345QuotaExceeded = "MSG345";
-    private const string Msg346DocumentNameInvalid = "MSG346";
-    private const string Msg347TextTooLong = "MSG347";
+    private const string Msg346QuotaExceeded = "MSG346";
+    private const string Msg347DocumentNameInvalid = "MSG347";
+    private const string Msg348TextTooLong = "MSG348";
 
     private sealed record CreateFolderBody(string? Name, Guid? ParentId);
     private sealed record NameBody(string? Name);
@@ -167,13 +167,13 @@ public static class PersonalLibraryEndpoints
         LibraryFailure.DestinationNotFound => Json(404, Msg179DestinationUnavailable,
             "Thư mục đích không còn trong kho tài liệu của bạn."),
         LibraryFailure.NameRequired => Json(400, Msg188FolderNameRequired, "Hãy nhập tên thư mục."),
-        LibraryFailure.NameTooLong => Json(400, Msg347TextTooLong, "Nội dung vượt quá độ dài cho phép."),
-        LibraryFailure.NameInvalid => Json(400, Msg346DocumentNameInvalid,
+        LibraryFailure.NameTooLong => Json(400, Msg348TextTooLong, "Nội dung vượt quá độ dài cho phép."),
+        LibraryFailure.NameInvalid => Json(400, Msg347DocumentNameInvalid,
             "Tên tài liệu không hợp lệ. Tên không được trống và phải giữ phần đuôi .pdf hoặc .docx của tệp."),
         LibraryFailure.TooDeep => Json(409, Msg189TooDeep, "Thư mục chỉ lồng tối đa 5 cấp."),
         LibraryFailure.IntoItself => Json(409, Msg193IntoItself, "Không thể chuyển thư mục vào chính nó hoặc thư mục con của nó."),
         LibraryFailure.NotEmpty => Json(409, Msg196FolderNotEmpty, "Chỉ xoá được thư mục rỗng."),
-        LibraryFailure.QuotaExceeded => Json(409, Msg345QuotaExceeded,
+        LibraryFailure.QuotaExceeded => Json(409, Msg346QuotaExceeded,
             "Kho tài liệu của bạn chỉ chứa tối đa 1 GB. Chưa có tài liệu nào được tải lên."),
         _ => Failed(failedCode),
     };

@@ -19,7 +19,8 @@ Gắn tài liệu trong kho vào cuộc họp, gỡ, gắn mục nghị sự: [1
 
 Mọi thao tác ghi trên kho của một người chạy trong một transaction có khoá theo chủ kho (`pg_advisory_xact_lock`), nên
 hai lần chuyển thư mục cùng lúc không tạo được vòng lặp hay cấp thứ 6, và hai lần tải lên cùng lúc không cùng lọt dưới
-hạn mức.
+hạn mức. Tải từ máy vào cuộc họp cũng lấy khoá này (sau khoá cuộc họp), nên thư mục tải lên của cuộc họp không bị xoá
+hay chuyển đi giữa lúc đang ghi vào.
 
 ## Xem kho — `GET /api/documents?folderId=&q=&type=` (UC-34)
 
@@ -54,7 +55,8 @@ hạn mức.
 - `meetingCount` ("Đang dùng trong n cuộc họp"): số cuộc họp **người xem được** còn đang dùng tài liệu này (BR-251) —
   đếm theo `MeetingDocument.DocumentId`, không tính bản đã gỡ.
 - `usedBytes` / `quotaBytes`: dung lượng cả kho đã dùng và hạn mức 1 GB (PO 27/10/2026). Tài liệu tự vào kho khi tải
-  từ máy lên cuộc họp cũng được tính.
+  từ máy lên cuộc họp cũng được tính, nhưng lần tải đó **không** bị chặn bởi hạn mức (chờ PO chốt), nên `usedBytes` có
+  thể **lớn hơn** `quotaBytes`.
 
 Lỗi: `404 MSG175` (thư mục không còn / của người khác), `500 MSG176` (lỗi đọc DB).
 
@@ -66,7 +68,7 @@ Multipart giống hệt `POST /api/meetings/{id}/documents/upload` (part `files`
 1. Thư mục đích (nếu có) của chính mình — **trước khi đọc body**; không thì `404 MSG179`. Kho tệp chưa cấu hình → `503 MSG178`.
 2. Giới hạn mỗi lần như UC-33a: ≤ 10 tệp, tổng ≤ 200 MB (`400 MSG288`, PO 27/10/2026 áp cho cả UC-36); từng tệp PDF/DOCX
    theo nội dung, ≤ 50 MB (`400 MSG164`, `errors["files[i]"]`).
-3. Hạn mức kho: dung lượng đã dùng + lần tải ≤ 1 GB, không thì `409 MSG345`, **không tệp nào** được thêm (BR-286).
+3. Hạn mức kho: dung lượng đã dùng + lần tải ≤ 1 GB, không thì `409 MSG346`, **không tệp nào** được thêm (BR-286).
 4. Ghi `StoredFile` → đẩy R2 → trong một transaction có khoá chủ kho: kiểm lại thư mục đích và hạn mức, ghi `Document`.
    Lỗi ở bước nào thì xoá object đã đẩy trong lần đó (ADR-0024 §4) → `503 MSG178`.
 
@@ -89,7 +91,7 @@ chủ kho tự mở. Lỗi: `404 MSG175`; `503 MSG158` (xem) / `503 MSG160` (t�
 Body `{ "fileName": "Tờ trình (bản cuối).pdf" }`. Tên được cắt khoảng trắng hai đầu và bỏ phần đường dẫn; phải
 **giữ đúng phần đuôi** của tệp (`.pdf` cho PDF, `.docx` cho DOCX, không phân biệt hoa thường), không trống, không chỉ có
 phần đuôi, ≤ 255 ký tự,
-không có ký tự điều khiển. Sai → `400 MSG346`. Tên đã chép vào cuộc họp **không đổi theo** (BR-276).
+không có ký tự điều khiển. Sai → `400 MSG347`. Tên đã chép vào cuộc họp **không đổi theo** (BR-276).
 
 `200 { "code": "MSG183", "message": "…", "document": { …như GET… } }`. Lỗi: `404 MSG175`, `503 MSG184`.
 
@@ -110,8 +112,8 @@ dòng kho nào và không còn cuộc họp nào đang dùng (BR-213).
 
 | Endpoint | Body | Thành công | Lỗi |
 |---|---|---|---|
-| `POST /api/folders` | `{ "name", "parentId"? }` | `201 MSG187` + `folder` | `404 MSG179` thư mục cha; `400 MSG188` tên trống; `400 MSG347` tên > 400 ký tự; `409 MSG189` quá 5 cấp; `503 MSG190` |
-| `PUT /api/folders/{folderId}/name` | `{ "name" }` | `200 MSG191` + `folder` | `404 MSG175`; `400 MSG188`; `400 MSG347`; `503 MSG192` |
+| `POST /api/folders` | `{ "name", "parentId"? }` | `201 MSG187` + `folder` | `404 MSG179` thư mục cha; `400 MSG188` tên trống; `400 MSG348` tên > 400 ký tự; `409 MSG189` quá 5 cấp; `503 MSG190` |
+| `PUT /api/folders/{folderId}/name` | `{ "name" }` | `200 MSG191` + `folder` | `404 MSG175`; `400 MSG188`; `400 MSG348`; `503 MSG192` |
 | `PUT /api/folders/{folderId}/parent` | `{ "parentId" }` (`null` = về gốc) | `200 MSG194` + `folder` | `404 MSG175`; `404 MSG179` đích; `409 MSG193` vào chính nó / thư mục con; `409 MSG189` quá 5 cấp; `503 MSG195` |
 | `DELETE /api/folders/{folderId}` | — | `200 MSG197` | `404 MSG175`; `409 MSG196` còn tài liệu hoặc thư mục con; `503 MSG198` |
 
@@ -136,10 +138,12 @@ không đăng nhập được nên không tự đọc. **Phạm vi mới, chưa 
 
 - Cổng quyền `AdminUsers` như `/api/users` (thiếu quyền → `403` body rỗng).
 - Tài khoản còn hoạt động hoặc không tồn tại → `404 MSG175`, như mục không có trong kho.
-- **Kho không là đường vòng qua quy tắc của cuộc họp.** Tệp từng thuộc (đang gắn hoặc đã gỡ) một cuộc họp `Confidential`
-  hoặc `Secret` mà Quản trị viên **không xem được** thì bị ẩn khỏi danh sách và mở ra trả `404 MSG175`; thư mục tải lên của
-  cuộc họp đó (tên chứa tiêu đề cuộc họp) và các thư mục con của nó cũng bị ẩn. Nếu không, tệp tải từ máy vào một cuộc
-  họp Mật — vốn tự vào kho của người tải — sẽ tải về được qua đây, vượt cả quyền xem cuộc họp lẫn BR-188.
+- **Kho không là đường vòng qua quy tắc của cuộc họp.** Tệp từng thuộc (đang gắn hoặc đã gỡ) **bất kỳ** cuộc họp
+  `Confidential` hoặc `Secret` nào thì bị ẩn khỏi danh sách và mở ra trả `404 MSG175` — **kể cả khi Quản trị viên xem
+  được cuộc họp đó**; thư mục tải lên của cuộc họp đó (tên chứa tiêu đề cuộc họp) và các thư mục con của nó cũng bị ẩn.
+  Ai xem được cuộc họp thì mở tệp qua cuộc họp, nơi áp đủ luật của nó: Mật không tải xuống (BR-188), bản đã gỡ không còn
+  (BR-211), kiểm toán `document.*` kèm mức mật. Nếu không, tệp tải từ máy vào một cuộc họp Mật — vốn tự vào kho của
+  người tải — sẽ tải về được qua đây.
   `usedBytes` vẫn tính cả phần bị ẩn.
 - **Mỗi lần đọc ghi một dòng kiểm toán** `library.read`, `objectType` `User`, `objectId` là chủ kho, `details` có
   `folderId` (xem danh sách) hoặc `documentId` + `fileName` (mở tệp). Không ghi được kiểm toán thì không trả dữ liệu
@@ -151,10 +155,10 @@ không đăng nhập được nên không tự đọc. **Phạm vi mới, chưa 
 ## Note cho FE
 
 - Màn kho gọi `GET /api/documents` một lần cho mỗi vị trí; cây thư mục lấy từ `folders`, không cần endpoint riêng.
-- Đổi tên tài liệu: gợi ý FE chỉ cho sửa phần tên, giữ nguyên đuôi, để không gặp `MSG346`.
+- Đổi tên tài liệu: gợi ý FE chỉ cho sửa phần tên, giữ nguyên đuôi, để không gặp `MSG347`.
 - `MSG175` / `MSG179` giữa chừng (mục vừa bị xoá ở tab khác): tải lại kho.
 - Hiện "Đã dùng x / 1 GB" từ `usedBytes` / `quotaBytes`; kiểm hạn mức ở FE trước khi gửi để khỏi đẩy 200 MB rồi mới
-  nhận `MSG345`. Server vẫn kiểm lại.
+  nhận `MSG346`. Server vẫn kiểm lại.
 - Tải lên: giống hộp tải lên của cuộc họp (`api.upload`, `FormData`, kiểm 10 tệp / 200 MB / 50 MB trước khi gửi).
 
 ## Kiểm thử
@@ -163,10 +167,12 @@ không đăng nhập được nên không tự đọc. **Phạm vi mới, chưa 
 thư mục lồng nhau trùng tên; tên trống / quá dài; thư mục, tài liệu của người khác ở mọi endpoint → `MSG175`/`MSG179`;
 cấp 6 khi tạo và khi chuyển cây con; chuyển vào chính nó / cháu, về gốc; đổi tên giữ nội dung; chỉ xoá thư mục rỗng; lỗi
 DB → `MSG190`/`MSG192`/`MSG195`/`MSG198`/`MSG176`; tải lên vào thư mục (không đụng cuộc họp, object có trên kho, `usedBytes`);
-thư mục đích của người khác, ảnh đổi đuôi, 11 tệp; vượt hạn mức → `MSG345` không object nào còn lại; R2 lỗi ở tệp thứ hai,
+thư mục đích của người khác, ảnh đổi đuôi, 11 tệp; vượt hạn mức → `MSG346` không object nào còn lại; R2 lỗi ở tệp thứ hai,
 kho chưa cấu hình → `MSG178`; tìm không phân biệt hoa thường, lọc loại, `%`/`_` là ký tự thường, chỉ trong thư mục đang
 mở; `meetingCount` bỏ cuộc họp không xem được và bản đã gỡ; đổi tên giữ đuôi, bản trong cuộc họp giữ tên cũ; chuyển;
 xoá khỏi kho rồi khoá chủ kho, thành viên vẫn mở được bản trong cuộc họp; lỗi DB → `MSG184`/`MSG186`/`MSG181`; mở tệp,
 object thiếu → `MSG158`/`MSG160`; Quản trị viên đọc kho đã khoá (2 dòng kiểm toán), kho còn hoạt động → `MSG175`, người
-thường → `403`; tệp và thư mục (cả thư mục con) của cuộc họp Mật mà Quản trị viên không xem được bị ẩn, mở trả `MSG175`;
-tên chỉ có phần đuôi → `MSG346`.
+thường → `403`; tệp và thư mục (cả thư mục con) của cuộc họp Mật bị ẩn, mở trả `MSG175`, cả khi Quản trị viên là thành
+viên cuộc họp (khi đó tải về qua cuộc họp trả `403 MSG159`); tên chỉ có phần đuôi → `MSG347`; hai lần chuyển thư mục chéo
+nhau cùng lúc chỉ một lần thành công; hai lần tải lên cùng lúc sát hạn mức chỉ một lần lọt, lần kia `MSG346`; tải vào
+cuộc họp khi kho đã đầy vẫn được, `usedBytes` > `quotaBytes`.

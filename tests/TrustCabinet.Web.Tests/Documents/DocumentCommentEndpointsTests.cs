@@ -107,7 +107,7 @@ public sealed class DocumentCommentEndpointsTests(DocumentFixture fixture) : IAs
         using var client = fixture.Client(s.Member);
 
         Assert.Equal((400, "MSG200"), Pick(await Read(await client.PostAsJsonAsync(Url(s, document), new { body = "   " }))));
-        Assert.Equal((400, "MSG347"), Pick(await Read(await client.PostAsJsonAsync(Url(s, document),
+        Assert.Equal((400, "MSG348"), Pick(await Read(await client.PostAsJsonAsync(Url(s, document),
             new { body = new string('x', DocumentFileRules.MaxCommentLength + 1) }))));
     }
 
@@ -122,6 +122,39 @@ public sealed class DocumentCommentEndpointsTests(DocumentFixture fixture) : IAs
         var (status, _, list) = await Read(await client.GetAsync(Url(s, document)));
         Assert.Equal(200, status);
         Assert.False(list.GetProperty("canComment").GetBoolean());
+    }
+
+    [Fact]
+    public async Task Comments_are_read_only_once_the_meeting_is_cancelled()
+    {
+        var s = await fixture.Seed(MeetingStatus.Cancelled);
+        await using (var db = fixture.Db())
+            await db.Meetings.Where(m => m.Id == s.MeetingId)
+                .ExecuteUpdateAsync(m => m.SetProperty(x => x.CancelledFromStatus, MeetingStatus.Published));
+        var document = await AddMeetingDocument(s.MeetingId, s.Secretary);
+        using var client = fixture.Client(s.Member);
+
+        Assert.Equal((409, "MSG349"), Pick(await Read(await client.PostAsJsonAsync(Url(s, document), new { body = "Đã huỷ" }))));
+        var (status, _, list) = await Read(await client.GetAsync(Url(s, document)));
+        Assert.Equal(200, status);
+        Assert.False(list.GetProperty("canComment").GetBoolean());
+    }
+
+    [Fact]
+    public async Task Organizer_and_approver_comment_as_anyone_who_views_the_meeting()
+    {
+        var s = await fixture.Seed();
+        await using (var db = fixture.Db())
+            await db.Meetings.Where(m => m.Id == s.MeetingId).ExecuteUpdateAsync(m => m.SetProperty(x => x.AssignedApproverId, s.Outsider));
+        var document = await AddMeetingDocument(s.MeetingId, s.Secretary);
+
+        foreach (var actor in new[] { s.Organizer, s.Outsider })
+        {
+            using var client = fixture.Client(actor);
+            Assert.Equal((201, "MSG199"), Pick(await Read(await client.PostAsJsonAsync(Url(s, document), new { body = "Ý kiến" }))));
+        }
+        await using var check = fixture.Db();
+        Assert.Equal(2, await check.DocumentComments.CountAsync(c => c.MeetingDocumentId == document));
     }
 
     [Fact]

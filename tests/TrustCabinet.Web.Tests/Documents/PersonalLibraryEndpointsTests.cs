@@ -74,15 +74,16 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AgendaFixture.SigningKey)),
             SecurityAlgorithms.HmacSha256)));
 
-    private async Task<HttpClient> AdminClient()
+    /// <summary>An administrator, optionally a Member of <paramref name="meetingId"/> so they may view it themselves.</summary>
+    private async Task<HttpClient> AdminClient(Guid? meetingId = null)
     {
         var admin = await NewUser(fixture, role: BuiltInRoles.Admin);
         await using var db = fixture.Db();
+        if (meetingId is { } meeting)
+            db.MeetingParticipants.Add(new MeetingParticipant { MeetingId = meeting, UserId = admin, Role = MeetingRole.Member });
         if (!await db.RoleCapabilities.AnyAsync(c => c.RoleId == BuiltInRoles.Admin && c.Capability == Capability.AdminUsers))
-        {
             db.RoleCapabilities.Add(new RoleCapability { RoleId = BuiltInRoles.Admin, Capability = Capability.AdminUsers });
-            await db.SaveChangesAsync();
-        }
+        await db.SaveChangesAsync();
         var client = fixture.Host.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AdminToken(admin));
         return client;
@@ -126,7 +127,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         using var client = fixture.Client(await NewUser(fixture));
 
         Assert.Equal((400, "MSG188"), Pick(await Read(await client.PostAsJsonAsync("/api/folders", new { name = "   " }))));
-        Assert.Equal((400, "MSG347"), Pick(await Read(await client.PostAsJsonAsync("/api/folders", new { name = new string('x', 401) }))));
+        Assert.Equal((400, "MSG348"), Pick(await Read(await client.PostAsJsonAsync("/api/folders", new { name = new string('x', 401) }))));
     }
 
     [Fact]
@@ -179,6 +180,23 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         await using var db = fixture.Db();
         Assert.Null((await db.Folders.SingleAsync(f => f.Id == child)).ParentId);
         Assert.Equal(child, (await db.Folders.SingleAsync(f => f.Id == grandchild)).ParentId);
+    }
+
+    [Fact]
+    public async Task Two_crossing_moves_at_once_never_make_a_cycle()
+    {
+        var owner = await NewUser(fixture);
+        var a = await AddFolder(fixture, owner, "A");
+        var b = await AddFolder(fixture, owner, "B");
+        using var client = fixture.Client(owner);
+
+        var results = await Task.WhenAll(
+            Put(client, $"/api/folders/{a}/parent", new { parentId = b }),
+            Put(client, $"/api/folders/{b}/parent", new { parentId = a }));
+
+        Assert.Equal(1, results.Count(r => r.IsSuccessStatusCode));
+        await using var db = fixture.Db();
+        Assert.Equal(1, await db.Folders.CountAsync(f => f.OwnerId == owner && f.ParentId == null));
     }
 
     [Fact]
@@ -284,12 +302,41 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         using var client = fixture.Client(owner);
         var before = fixture.Storage.Objects.Count;
 
-        Assert.Equal((409, "MSG345"), Pick(await Read(await client.PostAsync("/api/documents/upload",
+        Assert.Equal((409, "MSG346"), Pick(await Read(await client.PostAsync("/api/documents/upload",
             DocumentFixture.Form(("a.pdf", SampleFiles.Pdf(), null))))));
 
         Assert.Equal(before, fixture.Storage.Objects.Count);
         await using var db = fixture.Db();
         Assert.Equal(1, await db.Documents.CountAsync(d => d.OwnerId == owner));
+    }
+
+    [Fact]
+    public async Task Two_uploads_at_once_near_the_quota_let_only_one_in()
+    {
+        var owner = await NewUser(fixture);
+        var pdf = SampleFiles.Pdf("x");
+        await AddDocument(fixture, owner, "Đầy.pdf", size: DocumentFileRules.MaxLibraryBytes - pdf.Length * 3 / 2);
+        using var client = fixture.Client(owner);
+
+        var results = await Task.WhenAll(Enumerable.Range(0, 2).Select(async _ =>
+            Pick(await Read(await client.PostAsync("/api/documents/upload", DocumentFixture.Form(("x.pdf", pdf, null)))))));
+
+        Assert.Equal([(201, (string?)"MSG177"), (409, "MSG346")], results.Order());
+        await using var db = fixture.Db();
+        Assert.True(await db.Documents.Where(d => d.OwnerId == owner).SumAsync(d => d.StoredFile.ByteSize) <= DocumentFileRules.MaxLibraryBytes);
+    }
+
+    [Fact]
+    public async Task Upload_into_a_meeting_counts_towards_the_used_space_without_a_quota_check()
+    {
+        var s = await fixture.Seed();
+        await AddDocument(fixture, s.Secretary, "Đầy.pdf", size: DocumentFileRules.MaxLibraryBytes);
+        using var client = fixture.Client(s.Secretary);
+
+        Assert.Equal(201, (int)(await client.PostAsync(s.Url, DocumentFixture.Form(("x.pdf", SampleFiles.Pdf(), null)))).StatusCode);
+
+        var (_, _, view) = await Read(await client.GetAsync("/api/documents"));
+        Assert.True(view.GetProperty("usedBytes").GetInt64() > view.GetProperty("quotaBytes").GetInt64());
     }
 
     [Fact]
@@ -375,9 +422,9 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.Equal((200, "MSG183"), (status, code));
         Assert.Equal("Mới.PDF", body.GetProperty("document").GetProperty("fileName").GetString());
         Assert.Equal(1, body.GetProperty("document").GetProperty("meetingCount").GetInt32());
-        Assert.Equal((400, "MSG346"), Pick(await Read(await Put(client, $"/api/documents/{document}/name", new { fileName = "Mới.html" }))));
-        Assert.Equal((400, "MSG346"), Pick(await Read(await Put(client, $"/api/documents/{document}/name", new { fileName = "  " }))));
-        Assert.Equal((400, "MSG346"), Pick(await Read(await Put(client, $"/api/documents/{document}/name", new { fileName = ".pdf" }))));
+        Assert.Equal((400, "MSG347"), Pick(await Read(await Put(client, $"/api/documents/{document}/name", new { fileName = "Mới.html" }))));
+        Assert.Equal((400, "MSG347"), Pick(await Read(await Put(client, $"/api/documents/{document}/name", new { fileName = "  " }))));
+        Assert.Equal((400, "MSG347"), Pick(await Read(await Put(client, $"/api/documents/{document}/name", new { fileName = ".pdf" }))));
         await using var db = fixture.Db();
         // BR-276: the meeting keeps the name it was added with.
         Assert.Equal("Cũ.pdf", await db.MeetingDocuments.Where(d => d.DocumentId == document).Select(d => d.FileName).SingleAsync());
@@ -503,8 +550,10 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.False(await db.AuditLog.AnyAsync(a => a.ObjectId == active));
     }
 
-    [Fact]
-    public async Task Administrator_does_not_see_files_or_folders_of_a_secret_meeting_they_cannot_view()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Administrator_does_not_see_files_or_folders_of_a_secret_meeting_even_one_they_can_view(bool member)
     {
         // The Secretary uploads into a Secret meeting: the file lands in their library, in the meeting's folder.
         var s = await fixture.Seed(sensitivity: Sensitivity.Secret);
@@ -525,7 +574,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
             await db.Users.Where(u => u.Id == s.Secretary).ExecuteUpdateAsync(u => u.SetProperty(x => x.IsActive, false));
         }
         var loose = await AddDocument(fixture, s.Secretary, "Thường.pdf");
-        using var admin = await AdminClient();
+        using var admin = await AdminClient(member ? s.MeetingId : null);
 
         var (status, _, view) = await Read(await admin.GetAsync($"/api/users/{s.Secretary}/library"));
 
@@ -538,6 +587,12 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.Equal((404, "MSG175"), Pick(await Read(await admin.GetAsync($"/api/users/{s.Secretary}/library/documents/{moved}/content"))));
         Assert.Equal((404, "MSG175"), Pick(await Read(await admin.GetAsync($"/api/users/{s.Secretary}/library?folderId={sub}"))));
         Assert.Equal(200, (int)(await admin.GetAsync($"/api/users/{s.Secretary}/library/documents/{loose}/content")).StatusCode);
+        if (!member) return;
+        // A Member reads it through the meeting, under its rules: Secret documents are not downloaded (BR-188).
+        Guid meetingDocument;
+        await using (var db = fixture.Db())
+            meetingDocument = await db.MeetingDocuments.Where(d => d.MeetingId == s.MeetingId).Select(d => d.Id).SingleAsync();
+        Assert.Equal((403, "MSG159"), Pick(await Read(await admin.GetAsync($"/api/meetings/{s.MeetingId}/documents/{meetingDocument}/content?download=true"))));
     }
 
     private static (int, string?) Pick((int Status, string? Code, JsonElement Body) result) => (result.Status, result.Code);

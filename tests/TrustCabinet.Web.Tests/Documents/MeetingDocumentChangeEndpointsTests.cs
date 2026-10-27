@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Participants;
 using static TrustCabinet.Web.Tests.Documents.PersonalLibraryEndpointsTests;
 
 namespace TrustCabinet.Web.Tests.Documents;
@@ -357,5 +358,103 @@ public sealed class MeetingDocumentChangeEndpointsTests(DocumentFixture fixture)
         fixture.SaveFailure.When = null;
         await SetStatus(s.MeetingId, MeetingStatus.Ended);
         Assert.Equal((409, "MSG247"), Pick(await Read(await secretary.DeleteAsync($"{Links(s, item)}/{document}"))));
+    }
+
+    // ---- Across the changes ----
+
+    [Fact]
+    public async Task Every_change_is_refused_once_the_meeting_is_cancelled()
+    {
+        var s = await fixture.Seed();
+        var item = await AddItem(s.MeetingId);
+        var document = await Attached(s, "a.pdf");
+        var library = await AddDocument(fixture, s.Secretary, "b.pdf");
+        using var client = fixture.Client(s.Secretary);
+        await client.PostAsJsonAsync(Links(s, item), new { documentIds = new[] { document } });
+        await SetStatus(s.MeetingId, MeetingStatus.Cancelled);
+
+        foreach (var response in new[]
+        {
+            await client.PostAsync(s.Url, DocumentFixture.Form(("x.pdf", SampleFiles.Pdf(), null))),
+            await client.PostAsJsonAsync(Url(s), new { documentIds = new[] { library } }),
+            await client.DeleteAsync($"{Url(s)}/{document}"),
+            await client.PostAsJsonAsync(Links(s, item), new { documentIds = new[] { document } }),
+            await client.PostAsJsonAsync($"{Links(s, item)}/from-library", new { documentIds = new[] { library } }),
+            await client.PostAsync($"{Links(s, item)}/upload", DocumentFixture.Form(("x.pdf", SampleFiles.Pdf(), null))),
+            await client.DeleteAsync($"{Links(s, item)}/{document}"),
+        })
+            Assert.Equal((409, "MSG349"), Pick(await Read(response)));
+        await using var db = fixture.Db();
+        Assert.Equal(1, await db.MeetingDocuments.CountAsync(d => d.MeetingId == s.MeetingId && d.RemovedAt == null));
+        Assert.True(await db.MeetingDocumentAgendaItems.AnyAsync(l => l.MeetingDocumentId == document));
+    }
+
+    [Fact]
+    public async Task Every_change_tells_the_meeting_room_to_reload_its_documents()
+    {
+        var s = await fixture.Seed();
+        var item = await AddItem(s.MeetingId);
+        var library = await AddDocument(fixture, s.Secretary, "a.pdf");
+        var another = await AddDocument(fixture, s.Secretary, "b.pdf");
+        await using var hub = fixture.Hub(s.Member);
+        var events = Channel.CreateUnbounded<JsonElement>();
+        hub.On<JsonElement>("documentsChanged", e => events.Writer.TryWrite(e));
+        await hub.StartAsync();
+        await hub.InvokeAsync("JoinMeeting", s.MeetingId);
+        using var client = fixture.Client(s.Secretary);
+        Guid document = default;
+
+        foreach (var change in new Func<Task<HttpResponseMessage>>[]
+        {
+            () => client.PostAsJsonAsync(Url(s), new { documentIds = new[] { library } }),
+            () => client.PostAsync(s.Url, DocumentFixture.Form(("x.pdf", SampleFiles.Pdf(), null))),
+            () => client.PostAsJsonAsync(Links(s, item), new { documentIds = new[] { document } }),
+            () => client.PostAsJsonAsync($"{Links(s, item)}/from-library", new { documentIds = new[] { another } }),
+            () => client.PostAsync($"{Links(s, item)}/upload", DocumentFixture.Form(("y.pdf", SampleFiles.Pdf("y"), null))),
+            () => client.DeleteAsync($"{Links(s, item)}/{document}"),
+        })
+        {
+            var (status, _, body) = await Read(await change());
+            Assert.InRange(status, 200, 201);
+            if (document == default) document = body.GetProperty("documents")[0].GetProperty("id").GetGuid();
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            Assert.Equal(s.MeetingId, (await events.Reader.ReadAsync(timeout.Token)).GetProperty("meetingId").GetGuid());
+        }
+    }
+
+    [Fact]
+    public async Task Changes_are_refused_to_a_removed_manager_another_meetings_chair_and_a_deactivated_account()
+    {
+        var s = await fixture.Seed();
+        var item = await AddItem(s.MeetingId);
+        var document = await Attached(s);
+        var other = await fixture.Seed();
+        var library = await AddDocument(fixture, s.Chair, "a.pdf");
+        await using (var db = fixture.Db())
+            await db.MeetingParticipants.Where(p => p.MeetingId == s.MeetingId && p.UserId == s.Chair)
+                .ExecuteUpdateAsync(p => p.SetProperty(x => x.AssignmentStatus, AssignmentStatus.Removed)
+                    .SetProperty(x => x.RemovedAt, DateTimeOffset.UtcNow).SetProperty(x => x.RemovedById, s.Organizer));
+
+        // Removed, and Chair elsewhere: neither can see this meeting any more (SCRUM-22).
+        foreach (var actor in new[] { s.Chair, other.Chair })
+        {
+            using var client = fixture.Client(actor);
+            foreach (var response in new[]
+            {
+                await client.PostAsJsonAsync(Url(s), new { documentIds = new[] { library } }),
+                await client.DeleteAsync($"{Url(s)}/{document}"),
+                await client.PostAsJsonAsync(Links(s, item), new { documentIds = new[] { document } }),
+                await client.DeleteAsync($"{Links(s, item)}/{document}"),
+            })
+                Assert.Equal((404, "MSG174"), Pick(await Read(response)));
+        }
+        await using (var db = fixture.Db())
+            await db.Users.Where(u => u.Id == s.Secretary).ExecuteUpdateAsync(u => u.SetProperty(x => x.IsActive, false));
+        using var secretary = fixture.Client(s.Secretary);
+        Assert.Equal(403, (int)(await secretary.DeleteAsync($"{Url(s)}/{document}")).StatusCode);
+        Assert.Equal(403, (int)(await secretary.PostAsJsonAsync(Links(s, item), new { documentIds = new[] { document } })).StatusCode);
+        await using var check = fixture.Db();
+        Assert.Null((await check.MeetingDocuments.SingleAsync(d => d.Id == document)).RemovedAt);
+        Assert.False(await check.MeetingDocumentAgendaItems.AnyAsync(l => l.MeetingDocumentId == document));
     }
 }
