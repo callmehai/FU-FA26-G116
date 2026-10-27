@@ -142,7 +142,11 @@ cd frontend && npm run lint       # oxlint
 dotnet test TrustCabinet.sln      # xunit, tests/TrustCabinet.Web.Tests
 ```
 
-CI runs all four on every pull request — see [.github/workflows/ci.yml](.github/workflows/ci.yml).
+CI runs all four on every pull request, limited to what the PR touches — see
+[.github/workflows/ci.yml](.github/workflows/ci.yml). A PR that only changes `frontend/` or `docs/`
+runs just the backend tests that read those files; one that only changes README or `deploy/` skips
+both jobs. A new file the backend build or a test reads from outside `backend/` and `tests/` needs
+its path added to the `changes` job, or CI will skip the tests that should catch it.
 Keep it green; fix the branch rather than disabling a step.
 
 **CI builds the backend with `-warnaserror`**, so a compiler or analyzer warning fails the pull

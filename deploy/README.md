@@ -43,9 +43,14 @@ tính năng chưa merge thì chưa có.
 ## Tự động deploy
 
 [.github/workflows/deploy.yml](../.github/workflows/deploy.yml) là job cuối của CI trên `main`, chạy
-khi build & test đã xanh: build image trên runner của GitHub, chép sang server qua SSH, đưa code trên
-server về đúng commit đó rồi khởi động lại container. App tự áp dụng migration mới khi khởi động.
-Không build trên server: máy 1 GB tự build mất 15–20 phút và đốt hết CPU burst.
+khi build & test đã xanh (hoặc được bỏ qua vì commit không đụng tới): build image trên runner của
+GitHub, chép sang server qua SSH, đưa code trên server về đúng commit đó rồi khởi động lại container.
+App tự áp dụng migration mới khi khởi động. Không build trên server: máy 1 GB tự build mất 15–20 phút
+và đốt hết CPU burst.
+
+Mỗi image chỉ build lại khi code của nó đổi: image app theo `backend/`, `frontend/` và `Dockerfile`,
+máy chuyển chữ theo `workers/speech/`. Commit chỉ sửa docs hay `deploy/` vẫn deploy (server chuyển
+sang commit mới, đổi Caddyfile thì khởi động lại Caddy) nhưng không build image nào.
 
 - Xem đã deploy xong chưa: bấm dấu tích cạnh commit mới nhất trên trang chủ repo — check *CI / Deploy
   server test / Build & deploy* xanh là server đã chạy bản đó. Mục **Deployments** ở cột phải trang
