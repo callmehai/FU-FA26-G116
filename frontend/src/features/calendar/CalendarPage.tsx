@@ -104,6 +104,7 @@ export function CalendarPage() {
   function go(
     next: { week?: Date; month?: Date; span?: Span; mode?: Mode; filter?: CalendarFilterValue },
     push = false,
+    state?: ListFocus,
   ) {
     const out = new URLSearchParams(params)
     const nextSpan = next.span ?? span
@@ -123,7 +124,7 @@ export function CalendarPage() {
     else out.set('mode', nextMode)
     // Rewritten on every move, so unreadable values in a hand-edited link do not linger.
     writeFilter(out, next.filter ?? filter)
-    setParams(out, { replace: !push })
+    setParams(out, { replace: !push, state })
   }
 
   function changeSpan(next: Span) {
@@ -249,7 +250,13 @@ export function CalendarPage() {
           onOpen={openOverview}
         />
       ) : (
-        <WeekGrid days={days} now={now} schedule={visible} onOpen={openOverview} />
+        <WeekGrid
+          days={days}
+          now={now}
+          schedule={visible}
+          onOpen={openOverview}
+          onOpenDay={(day) => go({ mode: 'list' }, true, { day: toDateInput(day) })}
+        />
       )}
 
       {overview && (
@@ -276,6 +283,8 @@ interface Overview {
   keyboard: boolean
 }
 type OpenOverview = (entry: ScheduleEntry, anchor: HTMLElement, keyboard: boolean) => void
+/** Location state of a list opened from a week grid's "+N": the day to scroll to. */
+type ListFocus = { day: string }
 
 /**
  * A tile is still a link to the meeting, so Ctrl/⌘-click and middle-click open it in a new tab;
@@ -332,11 +341,13 @@ function WeekGrid({
   now,
   schedule,
   onOpen,
+  onOpenDay,
 }: {
   days: Date[]
   now: Date
   schedule: Schedule
   onOpen: OpenOverview
+  onOpenDay: (day: Date) => void
 }) {
   const entries = schedule.kind === 'loaded' ? schedule.entries : []
   const nowTop = minutesOfDay(now) * (HOUR_HEIGHT / 60)
@@ -385,17 +396,23 @@ function WeekGrid({
           </div>
           {days.map((day) => {
             const today = sameDay(day, now)
-            const dayEntries = laneLayout(entries.filter((e) => sameDay(e.start, day)))
+            const events = overlapLayout(entries.filter((e) => sameDay(e.start, day)))
             return (
               <div
                 key={day.toISOString()}
                 className={today ? 'calendar-column calendar-column-today' : 'calendar-column'}
                 style={{ height: GRID_HEIGHT }}
               >
-                {dayEntries.map(({ entry, lane, lanes }) => (
-                  <GridEvent key={entry.meeting.id} entry={entry} lane={lane} lanes={lanes} onOpen={onOpen} />
+                {events.map(({ entry, hidden }) => (
+                  <GridEvent
+                    key={entry.meeting.id}
+                    entry={entry}
+                    hidden={hidden}
+                    onOpen={onOpen}
+                    onMore={() => onOpenDay(day)}
+                  />
                 ))}
-                {schedule.kind === 'loaded' && dayEntries.length === 0 && (
+                {schedule.kind === 'loaded' && events.length === 0 && (
                   <span className="calendar-free" style={{ top: (WORKDAY_START_HOUR + 2) * HOUR_HEIGHT }}>
                     Không có lịch họp
                   </span>
@@ -413,14 +430,15 @@ function WeekGrid({
 
 function GridEvent({
   entry,
-  lane,
-  lanes,
+  hidden,
   onOpen,
+  onMore,
 }: {
   entry: ScheduleEntry
-  lane: number
-  lanes: number
+  /** Meetings overlapping this one, behind the "+N" in its top-right corner. */
+  hidden: number
   onOpen: OpenOverview
+  onMore: () => void
 }) {
   const top = minutesOfDay(entry.start) * (HOUR_HEIGHT / 60)
   // A meeting running past midnight stops at the bottom of its own day.
@@ -431,28 +449,43 @@ function GridEvent({
   // Back from the meeting lands on this week, in this view.
   const back = backState('Lịch làm việc', useLocation())
 
+  // The "+N" is the tile's sibling, not its child: a button cannot sit inside a link.
   return (
-    <Link
-      to={routes.meeting(meeting.id)}
-      state={back}
-      onClick={tileClick(entry, onOpen)}
-      data-cal-trigger=""
-      className={`cal-event cal-event-${STATUS_TONE[meeting.status]}${tall ? '' : ' cal-event-short'}`}
-      style={{ top, height, left: `calc(${(lane / lanes) * 100}% + 5px)`, width: `calc(${100 / lanes}% - 10px)` }}
-      data-tooltip={`${meeting.title}\n${timeRange(entry)}`}
-    >
-      <span className="cal-event-time">
-        {timeRange(entry)}
-        {meeting.sensitivity === 'Secret' && (
-          <span className="cal-event-secret">
-            <Icon name="lock" size={11} />
-            Mật
-          </span>
-        )}
-      </span>
-      <span className="cal-event-title">{meeting.title}</span>
-      {tall && <span className="cal-event-place">{placeLabel(entry.meeting)}</span>}
-    </Link>
+    <>
+      <Link
+        to={routes.meeting(meeting.id)}
+        state={back}
+        onClick={tileClick(entry, onOpen)}
+        data-cal-trigger=""
+        className={`cal-event cal-event-${STATUS_TONE[meeting.status]}${tall ? '' : ' cal-event-short'}${hidden ? ' cal-event-crowded' : ''}`}
+        style={{ top, height }}
+        data-tooltip={`${meeting.title}\n${timeRange(entry)}`}
+      >
+        <span className="cal-event-time">
+          {timeRange(entry)}
+          {meeting.sensitivity === 'Secret' && (
+            <span className="cal-event-secret">
+              <Icon name="lock" size={11} />
+              Mật
+            </span>
+          )}
+        </span>
+        <span className="cal-event-title">{meeting.title}</span>
+        {tall && <span className="cal-event-place">{placeLabel(entry.meeting)}</span>}
+      </Link>
+      {hidden > 0 && (
+        <button
+          type="button"
+          className="cal-more"
+          style={{ top: top + 4 }}
+          onClick={onMore}
+          aria-label={`${hidden} cuộc họp khác trùng giờ ngày ${formatDay(entry.start)}: xem danh sách`}
+          data-tooltip={`${hidden} cuộc họp khác trùng giờ`}
+        >
+          +{hidden}
+        </button>
+      )}
+    </>
   )
 }
 
@@ -600,6 +633,11 @@ function DayList({
   onAnswered: () => void
 }) {
   const entries = schedule.kind === 'loaded' ? schedule.entries : []
+  // Opened from a week grid's "+N": start at that day once its meetings are on screen.
+  const focusDay = (useLocation().state as ListFocus | null)?.day
+  useLayoutEffect(() => {
+    if (focusDay && schedule.kind === 'loaded') document.getElementById(`agenda-${focusDay}`)?.scrollIntoView()
+  }, [focusDay, schedule.kind])
 
   return (
     <div className="agenda" aria-busy={schedule.kind === 'loading'}>
@@ -607,7 +645,12 @@ function DayList({
         const today = sameDay(day, now)
         const dayEntries = entries.filter((e) => sameDay(e.start, day))
         return (
-          <section key={day.toISOString()} className="agenda-day" aria-label={dayLabel(day)}>
+          <section
+            key={day.toISOString()}
+            id={`agenda-${toDateInput(day)}`}
+            className="agenda-day"
+            aria-label={dayLabel(day)}
+          >
             <header className="agenda-day-head">
               {today && <span className="agenda-today">Hôm nay</span>}
               <span className={today ? 'agenda-weekday agenda-weekday-muted' : 'agenda-weekday'}>
@@ -720,31 +763,17 @@ function Legend() {
 }
 
 /**
- * Side-by-side lanes for meetings that overlap on the same day: each meeting takes the first lane
- * free at its start, and every meeting in a cluster of overlaps shares that cluster's lane count.
+ * One meeting at a time keeps the whole column width: in start order, a meeting is drawn when the
+ * one drawn before it has ended, and every meeting starting while it runs folds into its "+N".
  */
-function laneLayout(entries: ScheduleEntry[]) {
-  const out: { entry: ScheduleEntry; lane: number; lanes: number }[] = []
-  let cluster: { entry: ScheduleEntry; lane: number }[] = []
-  let laneEnds: number[] = []
-  let clusterEnd = -Infinity
-  const flush = () => {
-    const lanes = Math.max(1, laneEnds.length)
-    for (const item of cluster) out.push({ ...item, lanes })
-    cluster = []
-    laneEnds = []
-  }
+function overlapLayout(entries: ScheduleEntry[]) {
+  const events: { entry: ScheduleEntry; hidden: number }[] = []
   for (const entry of entries) {
-    const start = entry.start.getTime()
-    if (start >= clusterEnd) flush()
-    let lane = laneEnds.findIndex((end) => end <= start)
-    if (lane === -1) lane = laneEnds.push(0) - 1
-    laneEnds[lane] = entry.end.getTime()
-    clusterEnd = Math.max(clusterEnd, entry.end.getTime())
-    cluster.push({ entry, lane })
+    const last = events[events.length - 1]
+    if (last && entry.start < last.entry.end) last.hidden++
+    else events.push({ entry, hidden: 0 })
   }
-  flush()
-  return out
+  return events
 }
 
 function timeRange(entry: ScheduleEntry) {
