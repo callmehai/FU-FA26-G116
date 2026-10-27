@@ -43,6 +43,21 @@ export function uploadToLibrary(
 export const getLibraryContent = (documentId: string, download = false) =>
   api.blob(`/api/documents/${documentId}/content${download ? '?download=true' : ''}`)
 
+/**
+ * SCRUM-113 (UC-34b): a deactivated person's library, read by an administrator (`AdminUsers`, 403 otherwise). Every
+ * read is audited and refused when it cannot be; an active or unknown account answers 404 MSG175, as does anything of
+ * a Confidential or Secret meeting, even one the administrator may view.
+ */
+export function getUserLibrary(userId: string, folderId: string | null) {
+  return api.get<LibraryView>(
+    `/api/users/${userId}/library${folderId ? `?folderId=${encodeURIComponent(folderId)}` : ''}`,
+  )
+}
+
+/** UC-34b AF-1: 404 MSG175 as above; 503 MSG158 (view) / MSG160 (download) when the file or its audit row fails. */
+export const getUserLibraryContent = (userId: string, documentId: string, download = false) =>
+  api.blob(`/api/users/${userId}/library/documents/${documentId}/content${download ? '?download=true' : ''}`)
+
 /** UC-71b: the extension must stay (400 MSG347). The copy already in a meeting keeps its name (BR-276). */
 export const renameLibraryDocument = (documentId: string, fileName: string) =>
   api.put<Saved<'document', LibraryDocument>>(`/api/documents/${documentId}/name`, { fileName })
