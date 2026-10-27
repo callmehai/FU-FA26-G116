@@ -98,23 +98,34 @@ public sealed class MeetingLifecycleService(
         var record = result.History!;
         if (starting)
         {
-            await AfterCommitAsync("notification", meetingId, record.Id, token =>
+            await AfterCommitAsync("notification", meetingId, record.Id, NotificationBudget, token =>
                 notifications.QueueMeetingStartedAsync(meetingId, result.Meeting!.Title,
                     record.Id, record.OccurredAt, recipients, token));
         }
         else
         {
-            await AfterCommitAsync("agenda event", meetingId, record.Id, token => publisher.PublishAsync(change!, token));
+            await AfterCommitAsync("agenda event", meetingId, record.Id, EffectBudget,
+                token => publisher.PublishAsync(change!, token));
             if (closeRoom)
-                await AfterCommitAsync("room closure", meetingId, record.Id,
+                await AfterCommitAsync("room closure", meetingId, record.Id, EffectBudget,
                     token => rooms.CloseMeetingRoomAsync(meetingId, token));
         }
         return result;
     }
 
-    private async Task AfterCommitAsync(string effect, Guid meetingId, Guid historyId, Func<CancellationToken, Task> operation)
+    /// <summary>A hub push or a LiveKit call: a stalled one must not hold the Chair's response for long.</summary>
+    private static readonly TimeSpan EffectBudget = TimeSpan.FromSeconds(2);
+
+    /// <summary>
+    /// One insert into our own database. Under load (twenty Start requests released at once on a CI runner) it took
+    /// past two seconds and was cancelled, so the attendees silently got no "Cuộc họp đã bắt đầu"; it gets more room.
+    /// </summary>
+    private static readonly TimeSpan NotificationBudget = TimeSpan.FromSeconds(10);
+
+    private async Task AfterCommitAsync(string effect, Guid meetingId, Guid historyId, TimeSpan budget,
+        Func<CancellationToken, Task> operation)
     {
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        using var timeout = new CancellationTokenSource(budget);
         try { await operation(timeout.Token); }
         catch (Exception error)
         {
