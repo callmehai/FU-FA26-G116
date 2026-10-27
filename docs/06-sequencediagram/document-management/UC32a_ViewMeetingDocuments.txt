@@ -59,11 +59,10 @@ else Actor can view the Meeting
         alt No documents in the current grouping - AF-2
             DocumentsTab-->User: Show that no documents are available for the current grouping
         else Documents available
-            DocumentsTab-->User: Show documents grouped by Agenda Item or general, with the files that can be added
+            DocumentsTab-->User: Show documents grouped by Agenda Item (including items without documents) or general group
         end
 
         DocumentsTab->DocumentsTab: Hide adding and linking once the Meeting has ended (BR-282)
-        DocumentsTab->DocumentsTab: Read the list again when the system announces that the document list has changed
     end
 end
 

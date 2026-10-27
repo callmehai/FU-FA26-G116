@@ -244,7 +244,9 @@ skill `drawio-skill`.
    `deleteFolder`, `uploadToLibrary`, `renameDocument`, `moveDocument`, `deleteDocument`.
 2. Control và service mới `FolderController`/`FolderService`, `DocumentController`/`DocumentService`, hàm lấy đúng từ
    message trong sequence bước 1–2.
-3. Mở rộng `FolderRepository` (CRUD, `findSubtree`, tính độ sâu), thêm `DocumentRepository`.
+3. Thêm lại `FolderRepository` (CRUD, `findSubtree`, tính độ sâu) và `DocumentRepository`, cả hai PROPOSED. Từ 27/10/2026
+   diagram không còn `FolderRepository` vì code SCRUM-107 tìm/tạo thư mục cuộc họp ngay trong `MeetingDocumentRepository`
+   (`findUploadFolder`, `addFolder`); nếu Lộc giữ cách đó thì vẽ theo code.
 4. `MeetingDocumentsTab`/`MeetingDocumentController`/`MeetingDocumentService`: thêm `addFromLibrary`, `removeDocument`
    (UC-33a luồng chính, UC-33c); `MeetingDocumentRepository`: `markRemoved`, `existsInMeeting`.
 5. Phía agenda (UC-33b/33d as-built): vẽ `AgendaService.update` và `AgendaRepository.associate` như class ngoài feature,

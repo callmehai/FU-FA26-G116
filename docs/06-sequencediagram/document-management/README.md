@@ -25,7 +25,7 @@ thêm vào cùng UC sau. **Cập nhật 27/10/2026 theo code**: kiểm quyền v
 kích thước khai báo trước khi đọc thân request (EX-8), đọc request rồi kiểm một lượt (đúng một tệp trở lên, ≤ 10 tệp và ≤ 200 MB,
 từng tệp có tên dùng được, đuôi khớp nội dung và ≤ 50 MB — EX-3/EX-8), ghi dòng tệp lưu trữ trước khi đẩy byte,
 đẩy byte lên kho, rồi tìm/tạo thư mục và ghi tài liệu trong **một** transaction có khoá cuộc họp. Trình duyệt gửi kèm số trang của
-từng PDF (`pageCounts`); sau khi lưu xong máy chủ báo "danh sách tài liệu đã đổi" cho người trong cuộc họp (tối đa 2 giây, không chờ).
+từng PDF (`pageCounts`); sau khi lưu xong máy chủ thông báo danh sách tài liệu đã đổi cho người trong cuộc họp qua SignalR (theo §10 README chung, sự kiện SignalR không vẽ vào sequence diagram).
 `:File Storage` là kho đối tượng R2 ([ADR-0024](../../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md));
 lỗi ở bước nào thì xoá các tệp đã đẩy để giữ "tất cả hoặc không" (BR-286). Job dọn tệp mồ côi (BR-213) là job nền nên không vẽ
 sequence, theo §10 của [README chung](../README.md).
@@ -33,7 +33,7 @@ sequence, theo §10 của [README chung](../README.md).
 **Tab trong file draw.io gộp chưa cập nhật (27/10/2026).** Ba tab `uc32a_viewmeetingdocuments`,
 `uc32c_previewmeetingdocument`, `uc33a_uploaddocumentstomeeting` vẫn là bản 22–23/10/2026 (dựng bằng bộ chuyển Mermaid của
 draw.io), khác bản as-built ở trên; ảnh trong `drawio-png/` cũng theo bản cũ. Bản đúng của đợt này là `.txt` và `.png` trong
-thư mục này. Dựng lại tab cần chuyển tay từng khung `alt`/`else` nên để lượt sau, cùng lúc với việc bổ sung UC-33a luồng chính
+thư mục này. Khi dựng lại tab, dùng bộ chuyển Mermaid của draw.io như các tab cũ nên để lượt sau, cùng lúc với việc bổ sung UC-33a luồng chính
 (SCRUM-58).
 
 Xác nhận đã đọc chỉ áp dụng cho tài liệu gắn với một biểu quyết của cuộc họp; checkbox chỉ bật khi người dùng đã cuộn

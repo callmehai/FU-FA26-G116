@@ -191,9 +191,6 @@ FE-07 cho khớp, giữ nguyên ID, bố cục và các quan hệ khác. Ảnh `
   đúng thứ tự "ghi dòng tệp lưu trữ → đẩy byte → transaction khoá cuộc họp" của ADR-0024 §4.
 - Xoá lớp `FolderRepository` (code dùng chung `MeetingDocumentRepository` cho thư mục) và hai cạnh nối tới nó.
 
-Phần **chưa** khớp code và vẫn giữ nguyên vì thuộc UC khác: `Comment`, `DocumentVersion`, `DocumentShare` và các thao tác
-bình luận (UC-35/SCRUM-23), gắn/bỏ gắn mục nghị sự (UC-33b–33d/SCRUM-58).
-
 ## 7. Rà soát hiện trạng · 14/10/2026
 
 Đã đọc 7 source DCD, 44 sequence `.txt` theo feature, các README tương ứng, UC/BR/Entity Descriptions
