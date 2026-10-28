@@ -53,9 +53,19 @@ services:
       FileStorage__SecretAccessKey: "${R2_SECRET_ACCESS_KEY:-}"
       # ADR-0034: every stored document together, in GB. R2 free tier = 10.
       FileStorage__MaxTotalGigabytes: "${STORAGE_MAX_GB:-10}"
-      # Máy chuyển chữ (ADR-0026). Chỉ chạy khi deploy/.env có COMPOSE_PROFILES=speech, vì cần máy 4 GB.
-      # Để trống thì app vẫn chạy, chuyển chữ và ghi theo micro trả 503/MSG312. Xem deploy/README.md §10.
+      # Máy chuyển chữ (ADR-0026): chạy trên server với COMPOSE_PROFILES=speech (cần máy 4 GB), hoặc trên
+      # máy của nhóm qua Tailscale (ADR-0036). Để trống thì app vẫn chạy, chuyển chữ và ghi theo micro
+      # trả 503/MSG312. Xem deploy/README.md §10.
       Speech__BaseUrl: "${SPEECH_URL:-}"
+      # Bắt buộc khi worker ở ngoài server: worker từ chối mọi request không mang khoá này.
+      Speech__ApiKey: "${SPEECH_API_KEY:-}"
+      # Khoá mã hoá vector giọng (ADR-0027). Để trống thì suy ra từ SIGNING_KEY; đặt riêng để đổi
+      # SIGNING_KEY không làm hỏng giọng mẫu đã lưu.
+      VoiceId__EncryptionKey: "${VOICE_ID_KEY:-}"
+    volumes:
+      # Bản ghi cuộc họp nằm trên đĩa server (RecordingOptions.StorageRoot); không có volume thì mỗi
+      # lần deploy tạo lại container là mất hết bản ghi.
+      - recordings:/app/App_Data/recordings
     depends_on:
       postgres:
         condition: service_healthy
@@ -143,5 +153,6 @@ services:
 
 volumes:
   pgdata:
+  recordings:
   caddy-data:
   caddy-config:

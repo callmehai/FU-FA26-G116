@@ -46,3 +46,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0033](0033-hang-doi-tai-len-o-trinh-duyet.md) | Hàng đợi tải lên ở trình duyệt, mỗi tệp một request, tự thử lại khi chắc chưa lưu | Đề xuất — SCRUM-58, PO 27/10/2026 |
 | [0034](0034-han-muc-luu-tru-toan-he-thong.md) | Hạn mức lưu trữ tài liệu 10 GB cho cả hệ thống thay cho 1 GB mỗi người | Đề xuất — SCRUM-58, PO 27/10/2026 |
 | [0035](0035-quan-tri-vien-doc-kho-tai-khoan-khoa.md) | Quản trị viên đọc kho của tài khoản đã khoá, có nhật ký kiểm toán, không thấy tệp cuộc họp Confidential/Secret | Đề xuất — SCRUM-58, PO 27/10/2026 |
+| [0036](0036-may-chuyen-chu-tren-may-nhom-qua-tailscale.md) | Server test gọi máy chuyển chữ chạy trên máy của nhóm qua Tailscale, có khoá; bản ghi nằm trên volume | Đề xuất — SCRUM-31, PO 28/10/2026 |

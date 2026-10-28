@@ -2,7 +2,7 @@
 
 Một bản TrustCabinet chạy 24/7 để cả nhóm (Tester, BA, giảng viên) mở bằng trình duyệt, không cần
 cài gì. Chạy trên **một máy AWS Lightsail** bằng Docker Compose: app, PostgreSQL, Redis, LiveKit (phòng
-họp trực tuyến), Caddy (tự lấy chứng chỉ HTTPS), và máy chuyển chữ nếu máy đủ 4 GB RAM (§10). Mỗi lần merge vào `main` và CI xanh, server **tự cập nhật**. Lý do chọn cách
+họp trực tuyến), Caddy (tự lấy chứng chỉ HTTPS), và máy chuyển chữ (trên server nếu máy đủ 4 GB RAM, hoặc trên máy của nhóm qua Tailscale, §10). Mỗi lần merge vào `main` và CI xanh, server **tự cập nhật**. Lý do chọn cách
 này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-lightsail.md).
 
 > **Đây là môi trường test, không phải production.** App chạy ở chế độ `Development`: tự migrate,
@@ -297,16 +297,24 @@ Tổng dung lượng tài liệu của cả hệ thống mặc định **10 GB**
 Trình duyệt không gọi thẳng R2 nên CSP trong `Caddyfile` giữ nguyên. Chỉ tải lên dữ liệu giả: R2 lưu ngoài Việt
 Nam, tức là chuyển dữ liệu cá nhân xuyên biên giới (Luật 91/2025/QH15 Điều 20, xem ADR-0024).
 
-### 10. Máy chuyển chữ (tuỳ chọn, cần máy 4 GB)
+### 10. Máy chuyển chữ (tuỳ chọn)
 
 Chuyển bản ghi thành chữ, Voice ID và ghi theo micro từng người đều cần worker nhận dạng giọng nói
 ([`workers/speech`](../workers/speech/README.md), [ADR-0026](../docs/05-decisions/0026-tu-chay-nhan-dang-giong-noi.md)).
-Chưa bật thì app vẫn chạy, các chức năng đó báo `MSG312`. Worker chạy ngay trên server, không mở cổng ra
-ngoài, nên âm thanh không rời server.
+Chưa bật thì app vẫn chạy, các chức năng đó báo `MSG312`. Worker cần khoảng 2,5 GB RAM, máy $7 (1 GB) **không chạy
+nổi**: bật trên máy 1 GB thì server hết RAM. Có hai cách, chỉ khác nhau ở `deploy/.env`.
 
-Worker cần khoảng 2,5 GB RAM, máy $7 (1 GB) **không chạy nổi**. Bật trên máy 1 GB thì server hết RAM.
+Dù chọn cách nào, đặt khoá mã hoá giọng mẫu **một lần** rồi giữ nguyên (đổi khoá là mất mọi giọng mẫu đã lưu):
 
-1. **Lên máy 4 GB ($24/tháng)**: Lightsail → máy `trustcabinet` → **Snapshots → Create snapshot**. Từ snapshot
+```bash
+echo "VOICE_ID_KEY=$(openssl rand -base64 32)" >> ~/TrustCabinet/deploy/.env
+```
+
+#### Cách A: worker chạy trên server (cần máy 4 GB, $24/tháng)
+
+Âm thanh không rời server; worker không mở cổng, chỉ app gọi vào trong mạng Docker.
+
+1. **Lên máy 4 GB**: Lightsail → máy `trustcabinet` → **Snapshots → Create snapshot**. Từ snapshot
    đó → **Create new instance**, chọn size **$24** (4 GB). Lightsail không đổi size tại chỗ. Tài khoản bị chặn
    gói này thì gửi case *Account and billing* cho AWS Support (xem §1).
 2. **Chuyển IP tĩnh** sang máy mới: **Networking → IP tĩnh → Attach** vào máy mới. Tên miền giữ nguyên.
@@ -325,6 +333,43 @@ Worker cần khoảng 2,5 GB RAM, máy $7 (1 GB) **không chạy nổi**. Bật 
 
 CPU của Lightsail là loại *burst*: chạy hết công suất được trong thời gian ngắn, chạy liên tục thì bị giới hạn.
 Một câu nói chuyển chữ trong vài giây. Một bản ghi dài chạy chậm dần, và lúc đó phòng họp cũng có thể giật.
+
+#### Cách B: worker chạy trên máy của nhóm, qua Tailscale
+
+Server giữ nguyên máy 1 GB và gọi worker trên một máy của nhóm qua [Tailscale](https://tailscale.com), một mạng riêng
+mã hoá giữa các máy đăng nhập cùng tài khoản ([ADR-0036](../docs/05-decisions/0036-may-chuyen-chu-tren-may-nhom-qua-tailscale.md)).
+Không máy nào mở cổng ra internet. Âm thanh rời server sang máy đó nên chỉ dùng dữ liệu thử; máy đó tắt hoặc ngủ thì
+các chức năng giọng nói báo `MSG312` như chưa bật.
+
+1. **Máy chạy worker** (macOS): `brew install --cask tailscale && open -a Tailscale`, đăng nhập. Lấy IP:
+   `tailscale ip -4` (dạng `100.x.y.z`).
+2. **Server**: cài Tailscale và đăng nhập **cùng tài khoản** (lệnh in ra một link, mở link đó trên trình duyệt):
+
+   ```bash
+   curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up
+   ```
+
+3. **Server**: thêm vào `deploy/.env`, **không** có dòng `COMPOSE_PROFILES=speech`:
+
+   ```bash
+   SPEECH_URL=http://100.x.y.z:8090
+   SPEECH_API_KEY=<openssl rand -hex 32>
+   ```
+
+4. **Máy chạy worker**: chạy worker bằng venv (theo [`workers/speech/README.md`](../workers/speech/README.md)), nghe trên IP
+   Tailscale, cùng khoá ở bước 3. `caffeinate -i` giữ máy không ngủ khi đang chạy:
+
+   ```bash
+   cd workers/speech && SPEECH_HOST=$(tailscale ip -4) SPEECH_API_KEY=<khoá> caffeinate -i .venv/bin/python -m speech
+   ```
+
+5. **Server**: kiểm tra server thấy worker, rồi khởi động lại app để nhận `.env` mới:
+
+   ```bash
+   curl -s http://100.x.y.z:8090/health && cd ~/TrustCabinet && docker compose -f deploy/docker-compose.yml up -d app
+   ```
+
+Muốn quay về cách A thì đổi `SPEECH_URL` thành `http://speech:8090` và thêm `COMPOSE_PROFILES=speech`.
 
 ## Sau khi bảo vệ xong
 

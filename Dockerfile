@@ -22,6 +22,9 @@ COPY --from=frontend /src/backend/TrustCabinet.Web/wwwroot /app/wwwroot
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=backend /app ./
+# Recordings are written here (deploy/docker-compose.yml mounts a volume on it). /app belongs to
+# root, so the app user could not create it; a volume mounted on an image directory takes its owner.
+RUN mkdir -p App_Data/recordings && chown $APP_UID App_Data/recordings
 USER $APP_UID
 ENV ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080
