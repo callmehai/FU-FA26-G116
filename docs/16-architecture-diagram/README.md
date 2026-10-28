@@ -25,8 +25,7 @@ phần:
 
 ## Những gì cố ý không vẽ
 
-- Phụ thuộc chi tiết giữa các package — xem [15-package-diagram](../15-package-diagram/README.md)
-  trên nhánh `docs/design-diagrams`.
+- Phụ thuộc chi tiết giữa các package — xem [15-package-diagram](../15-package-diagram/README.md).
 - `NotificationWorker` gửi thẳng vào `NotificationHub`; trên hình gộp vào mũi tên Workers → Service
   Layer và Change Publishers → Hubs.
 - Google Fonts mà trình duyệt tải về, và GitHub Actions/Lightsail của phần deploy.

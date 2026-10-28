@@ -265,6 +265,12 @@ review files under `docs/`, load context in this order before deciding the scope
    READMEs for areas the task does not touch.
 4. A directory README is a map of scope, the canonical source, and how source files relate to
    exported files. Do not copy the content of those standards into the README.
+5. **Generated report / extract files are not editable.** If the path is a Report Markdown under
+   `docs/08-reports/` (`Report-*.md`), or a Report-3 extract under `docs/01-requirements/`
+   (`05-use-case-specifications.md`, `06-business-rules.md`), stop writing to that file. Read
+   [docs/08-reports/README.md](docs/08-reports/README.md), edit the DOCX in
+   `docs/08-reports/source/`, then regenerate with `scripts/sync_reports.py`. Do not open the
+   snapshot and "fix the wording" there — the next sync overwrites it.
 
 Every directory under `docs/` must have a `README.md`. This lets an agent start from the repository
 context and follow the path to the files it will change.
@@ -278,9 +284,20 @@ When a change affects the API contract, a technical decision or the scope, updat
   [frontend/src/pages/scopeData.ts](frontend/src/pages/scopeData.ts) (the landing page reads it).
 - New or changed endpoint → update [docs/03-api/](docs/03-api/).
 
-**Reports** live in the repo and are published outward: edit the DOCX in `docs/08-reports/source/`,
-regenerate the Markdown snapshot (`scripts/sync_reports.py`), and push to Drive only when asked
-(`scripts/push_reports.py`). Drive is never the source — nothing reads reports back from it.
+**Reports — hard rule (agents keep getting this wrong).** The Markdown under `docs/08-reports/`
+(`Report-1_….md`, `Report-2_….md`, `Report-3_….md`) and the extracts
+`docs/01-requirements/05-use-case-specifications.md` /
+`docs/01-requirements/06-business-rules.md` are **generated snapshots**, not sources. Never edit
+them by hand, even for a one-line fix.
+
+1. Edit the DOCX in `docs/08-reports/source/` (that folder is the only local source).
+2. Regenerate: `python scripts/sync_reports.py --source docs/08-reports/source/<file>.docx --report <n>`
+   (Report 3 also refreshes the requirement extracts and `docs/uc-map.html` in the same run).
+3. Push to Drive only when asked: `scripts/push_reports.py`. Drive is never the source — nothing
+   reads reports back from it.
+
+Full workflow, Drive links and DOCX preservation rules:
+[docs/08-reports/README.md](docs/08-reports/README.md).
 
 **BA settles the requirement docs last, not first.** BE writes the basic UC Specification and
 Sequence Diagram, then implements; BE and FE change whatever the Use Case needs and note each change

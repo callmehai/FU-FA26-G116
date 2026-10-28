@@ -1,5 +1,13 @@
 # Đồng bộ báo cáo
 
+> **CẤM sửa tay các `Report-*.md` trong thư mục này** (và các bản trích
+> `docs/01-requirements/05-use-case-specifications.md`, `06-business-rules.md`). Đó là snapshot
+> sinh từ script — lần sync sau sẽ ghi đè. **Nguồn duy nhất để sửa nội dung report** là DOCX trong
+> [`source/`](source/README.md). Quy trình đúng: sửa DOCX →
+> `python scripts/sync_reports.py --source docs/08-reports/source/<tên>.docx --report <số>` →
+> rà `git diff`. Chỉ đẩy Drive khi được yêu cầu (`push_reports.py`). Không tải Drive về để làm
+> nguồn.
+
 File này là chỉ dẫn duy nhất cho `docs/08-reports/`. Áp dụng cho mọi DOCX trong `source/` và
 Markdown snapshot của Report 1–7.
 

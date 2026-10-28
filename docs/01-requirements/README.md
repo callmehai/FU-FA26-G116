@@ -2,15 +2,22 @@
 
 Thư mục lưu trữ tài liệu yêu cầu nghiệp vụ và đặc tả Use Case cho hệ thống họp không giấy tờ **TrustCabinet**.
 
-Nguồn chuẩn là ba báo cáo DOCX trên Google Drive (Report 1, 2, 3), được đồng bộ sang
-[08-reports/](../08-reports/README.md). Các file ở đây trích và sắp xếp lại nội dung đó để dev và tester tra cứu nhanh:
+**Nguồn chuẩn nội dung UC/BR là DOCX Report 3** trong
+[`docs/08-reports/source/`](../08-reports/source/README.md) — không phải các file `.md` ở đây, cũng
+không phải snapshot `Report-3_….md`. Drive chỉ là bản phát hành. Quy trình đầy đủ:
+[08-reports/README.md](../08-reports/README.md).
+
+Các file ở đây trích và sắp xếp lại nội dung đó để dev và tester tra cứu nhanh:
 
 - Mọi chức năng, luồng nghiệp vụ và quy tắc kiểm thử bám theo các đặc tả tại đây.
-- Khi Report 3 thay đổi, sửa DOCX local trước, sinh snapshot bằng `scripts/sync_reports.py`, rồi đồng bộ lại thư mục này trong **cùng commit**. Quy tắc snapshot Report 1–7 nằm ở [08-reports/README.md](../08-reports/README.md).
+- Khi Report 3 thay đổi: sửa DOCX local → `python scripts/sync_reports.py … --report 3` (tự gọi
+  `sync_requirement_extracts.py` và cập nhật `uc-map.html`) → commit cùng đợt. **Không** mở
+  `05-…` / `06-…` / `Report-3_….md` rồi sửa chữ trong đó.
 - Hai bản trích của Report 3 — [05-use-case-specifications.md](05-use-case-specifications.md) (§II) và
-  [06-business-rules.md](06-business-rules.md) (§V.1) — **không sửa tay**: sinh lại bằng
-  `python scripts/sync_requirement_extracts.py` (thêm `--check` để chỉ xem lệch). Script giữ nguyên những phần
-  Report 3 không có: ghi chú `_UC gom …_`, link `Sequence Diagram:`, dòng `Placeholder only` và mục BR đã ngừng dùng.
+  [06-business-rules.md](06-business-rules.md) (§V.1) — **cấm sửa tay**: sinh lại bằng sync ở trên
+  (hoặc `python scripts/sync_requirement_extracts.py`; thêm `--check` để chỉ xem lệch). Script giữ
+  nguyên những phần Report 3 không có: ghi chú `_UC gom …_`, link `Sequence Diagram:`, dòng
+  `Placeholder only` và mục BR đã ngừng dùng.
 
 ---
 
