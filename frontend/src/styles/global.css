@@ -3166,6 +3166,7 @@ audio.recording-player { height: 40px; }
 .recording-open { background: var(--surface-head); }
 .transcript { display: flex; flex-direction: column; gap: 8px; }
 .transcript-note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
+.transcript-tools { display: flex; gap: 2px; margin: -4px 0 -4px auto; }
 .transcript-status { margin: 0; }
 .transcript-running { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--ink); font-size: 14px; }
 .transcript-spinner { width: 14px; height: 14px; flex: none; border: 2px solid var(--line); border-top-color: var(--brand); border-radius: 50%; animation: spin .9s linear infinite; }
@@ -3245,6 +3246,7 @@ audio.recording-player { height: 40px; }
 .speech-line-leak .speech-line-text, .speech-leak-words { color: var(--muted-ink); }
 .speech-line-excluded .speech-line-text { color: var(--faint-ink); }
 .speech-line-gone { color: var(--muted-ink); font-style: italic; }
+.speech-tools { display: flex; justify-content: flex-end; margin: -4px 0; }
 .speech-line:hover .speech-line-actions, .speech-line:focus-within .speech-line-actions { opacity: 1; }
 @media (hover: none) { .speech-line-actions { opacity: 1; } }
 /* Everyone whose mic feeds the transcript sees it in the header, in the one colour kept for warnings. */

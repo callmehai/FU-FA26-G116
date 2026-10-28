@@ -7,7 +7,7 @@ namespace TrustCabinet.Domain.Recordings;
 public enum SpeechClipFailure
 {
     None, NotFound, Inactive, Forbidden, NotCapturing, Locked, Cancelled, Invalid, TooLarge, EngineUnavailable, ReadFailed,
-    SaveFailed
+    SaveFailed, ExportForbidden, SecretMeeting
 }
 
 public sealed record SpeechClipOutcome(SpeechClipFailure Failure = SpeechClipFailure.None, object? Data = null,
@@ -32,7 +32,7 @@ public sealed record SpeechClipLeak(Guid ClipId, Guid SpeakerId, string SpeakerN
 /// <c>CanCapture</c> says whether the caller's own mic may send sentences now; nobody can switch on anyone else's.
 /// </summary>
 public sealed record SpeechClipList(Guid MeetingId, string CaptureMode, bool CanCapture, bool CanEdit, bool CanChangeMode,
-    DateTimeOffset ReadAt, IReadOnlyList<SpeechClipView> Items, bool CanExclude = false);
+    DateTimeOffset ReadAt, IReadOnlyList<SpeechClipView> Items, bool CanExclude = false, bool CanExport = false);
 
 /// <summary>One sentence's audio as the browser sent it. It lives in memory for the length of the request only.</summary>
 public sealed record SpeechClipUpload(Guid ClientClipId, DateTimeOffset StartedAt, long DurationMs, string ContentType, byte[] Audio);
@@ -56,6 +56,8 @@ public interface ISpeechClipService
     /// <summary>The Chair or a Secretary takes a sentence out of the record (<c>reason</c> Leak or Other), or puts it back.</summary>
     Task<SpeechClipOutcome> SetExclusionAsync(Guid clipId, Guid actorId, bool excluded, string? reason, CancellationToken ct = default);
     Task<SpeechClipOutcome> SetCaptureModeAsync(Guid meetingId, Guid actorId, string? mode, CancellationToken ct = default);
+    /// <summary>The per-mic transcript as a text file, without the sentences taken out of the record.</summary>
+    Task<SpeechClipOutcome> ExportAsync(Guid meetingId, Guid actorId, CancellationToken ct = default);
     /// <summary>Deletes the sentences of meetings whose retention period has run out; returns how many.</summary>
     Task<int> EraseExpiredAsync(CancellationToken ct = default);
 }

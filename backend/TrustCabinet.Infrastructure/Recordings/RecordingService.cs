@@ -11,8 +11,8 @@ using TrustCabinet.Domain.Recordings;
 namespace TrustCabinet.Infrastructure.Recordings;
 
 /// <summary>
-/// SCRUM-29 — recordings of a sitting. A recording is personal data of everyone who spoke (Decree 13/2023/NĐ-CP,
-/// now Luật BVDLCN 91/2025/QH15), so three obligations are kept in data, not just promised in a document: consent is
+/// SCRUM-29 — recordings of a sitting. A recording is personal data of everyone who spoke (Luật BVDLCN 91/2025/QH15,
+/// guided by Decree 356/2025/NĐ-CP), so three obligations are kept in data, not just promised in a document: consent is
 /// confirmed before the file is kept, the purpose is stored with it, and it is erased on request or when its
 /// retention period ends — the row stays as evidence that it existed and was erased.
 /// </summary>
@@ -29,9 +29,10 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             var (meeting, failure) = await ReadableMeetingAsync(meetingId, actorId, ct);
             if (meeting is null) return new(failure);
             var secretary = RecordingRules.IsSecretary(meeting, actorId);
+            var export = RecordingRules.Export(meeting, actorId) == RecordingFailure.None;
             var items = await recordings.ListAsync(meetingId, ct);
             return new(Data: new RecordingList(meetingId, secretary && RecordingRules.UploadAllowed(meeting.Status),
-                items.Select(r => View(r, secretary)).ToArray()));
+                items.Select(r => View(r, secretary, export)).ToArray()));
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -120,6 +121,28 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
         catch (Exception ex) when (PersistenceError(ex))
         {
             logger.LogError(ex, "Failed to sign playback for {RecordingId}", recordingId);
+            return new(RecordingFailure.ReadFailed);
+        }
+    }
+
+    public async Task<RecordingOutcome> DownloadAsync(Guid recordingId, Guid actorId, CancellationToken ct = default)
+    {
+        try
+        {
+            var recording = await recordings.FindAsync(recordingId, false, ct);
+            if (recording is null) return new(RecordingFailure.NotFound);
+            var (meeting, failure) = await ReadableMeetingAsync(recording.MeetingId, actorId, ct);
+            if (meeting is null) return new(failure);
+            if (recording.Status != RecordingStatus.Available) return new(RecordingFailure.NotFound);
+            if (RecordingRules.Export(meeting, actorId) is not RecordingFailure.None and var refused) return new(refused);
+            // Logged when the link is handed out: the file itself is fetched by the browser without a token.
+            await audit.RecordAsync(AuditActions.RecordingDownloaded, AuditActions.RecordingObjectType, recording.Id, actorId,
+                new { recording.MeetingId, recording.FileName, recording.ByteSize }, ct);
+            return new(Data: signer.Sign(recordingId, clock.GetUtcNow(), download: true));
+        }
+        catch (Exception ex) when (PersistenceError(ex))
+        {
+            logger.LogError(ex, "Failed to sign a download of {RecordingId}", recordingId);
             return new(RecordingFailure.ReadFailed);
         }
     }
@@ -216,8 +239,8 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
         }
     }
 
-    private static RecordingView View(Recording r, bool secretary) => new(r.Id, r.FileName, r.ContentType, r.ByteSize,
-        r.DurationMs, r.Source.ToString(), r.Status.ToString(), r.CreatedAt, r.CreatedBy.FullName, r.ConsentObtainedAt,
-        r.ConsentPurpose, r.RetainUntil, r.DeletedAt, secretary && r.Status != RecordingStatus.Deleted,
-        r.Transcript?.Status.ToString() ?? "None");
+    private static RecordingView View(Recording r, bool secretary, bool export) => new(r.Id, r.FileName, r.ContentType,
+        r.ByteSize, r.DurationMs, r.Source.ToString(), r.Status.ToString(), r.CreatedAt, r.CreatedBy.FullName,
+        r.ConsentObtainedAt, r.ConsentPurpose, r.RetainUntil, r.DeletedAt, secretary && r.Status != RecordingStatus.Deleted,
+        r.Transcript?.Status.ToString() ?? "None", export && r.Status == RecordingStatus.Available);
 }

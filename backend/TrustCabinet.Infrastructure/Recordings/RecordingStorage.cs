@@ -16,7 +16,7 @@ public sealed class RecordingOptions
     public string StorageRoot { get; set; } = "App_Data/recordings";
 
     /// <summary>
-    /// How long a recording is kept before it is erased automatically — the "thời hạn lưu trữ" Decree 13 asks to be
+    /// How long a recording is kept before it is erased automatically — the "thời hạn lưu trữ" Luật 91/2025 asks to be
     /// stated at collection. Long enough to write and approve the minutes, short enough not to become an archive.
     /// </summary>
     public int RetentionDays { get; set; } = 180;
@@ -82,31 +82,32 @@ public sealed class LocalRecordingStorage(IOptions<RecordingOptions> options) : 
 }
 
 /// <summary>
-/// HMAC over "recording id + expiry". The key is derived from the token signing key with its own label, so the
-/// two can never be mistaken for each other and no extra secret has to be configured.
+/// HMAC over "recording id + expiry", plus ".download" for a link that saves the file. The key is derived from the
+/// token signing key with its own label, so the two can never be mistaken for each other and no extra secret has to
+/// be configured.
 /// </summary>
 public sealed class RecordingPlaybackSigner(IOptions<RecordingOptions> options, byte[] signingKey) : IRecordingPlaybackSigner
 {
     private readonly byte[] key = HKDF.DeriveKey(HashAlgorithmName.SHA256, signingKey, 32,
         info: Encoding.UTF8.GetBytes("trustcabinet/recording-playback/v1"));
 
-    public RecordingPlayback Sign(Guid recordingId, DateTimeOffset now)
+    public RecordingPlayback Sign(Guid recordingId, DateTimeOffset now, bool download = false)
     {
         var expiresAt = now.AddMinutes(options.Value.PlaybackUrlMinutes);
         var expires = expiresAt.ToUnixTimeSeconds();
-        return new($"/api/recordings/{recordingId:D}/audio?expires={expires}&signature={Mac(recordingId, expires)}",
-            DateTimeOffset.FromUnixTimeSeconds(expires));
+        return new($"/api/recordings/{recordingId:D}/audio?expires={expires}&signature={Mac(recordingId, expires, download)}"
+            + (download ? "&download=1" : ""), DateTimeOffset.FromUnixTimeSeconds(expires));
     }
 
-    public bool Verify(Guid recordingId, long expires, string signature, DateTimeOffset now)
+    public bool Verify(Guid recordingId, long expires, string signature, DateTimeOffset now, bool download = false)
     {
         if (expires < now.ToUnixTimeSeconds()) return false;
-        var expected = Encoding.ASCII.GetBytes(Mac(recordingId, expires));
+        var expected = Encoding.ASCII.GetBytes(Mac(recordingId, expires, download));
         return CryptographicOperations.FixedTimeEquals(expected, Encoding.ASCII.GetBytes(signature));
     }
 
-    private string Mac(Guid recordingId, long expires)
-        => Base64Url(HMACSHA256.HashData(key, Encoding.ASCII.GetBytes($"{recordingId:N}.{expires}")));
+    private string Mac(Guid recordingId, long expires, bool download)
+        => Base64Url(HMACSHA256.HashData(key, Encoding.ASCII.GetBytes($"{recordingId:N}.{expires}{(download ? ".download" : "")}")));
 
     private static string Base64Url(byte[] bytes) => Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 }

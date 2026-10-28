@@ -34,6 +34,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             var (recording, meeting, failure) = await ReadableAsync(recordingId, actorId, ct);
             if (recording is null || meeting is null) return new(failure);
             var canEdit = RecordingRules.IsSecretary(meeting, actorId);
+            var canExport = RecordingRules.Export(meeting, actorId) == RecordingFailure.None;
             var transcript = await transcripts.FindByRecordingAsync(recordingId, false, ct);
             // Who the secretary may name a voice as: the meeting's own people, offered only to the secretary.
             TranscriptPerson[] people = canEdit
@@ -42,13 +43,16 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 : [];
             if (transcript is null)
                 return new(Data: new TranscriptView(recordingId, "None", "", "vi", "", null, recording.DurationMs, canEdit, [], [], people));
+            // The machine's guess at a voice is a hint for the Secretary who names it, and a guess about someone's
+            // biometric identity: nobody else gets it, only the name the Secretary assigned.
             return new(Data: new TranscriptView(recordingId, transcript.Status.ToString(), transcript.Provider,
                 transcript.Language, transcript.ErrorMessage, transcript.CompletedAt, recording.DurationMs, canEdit,
                 [.. transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptSegmentView(s.Id, s.Position,
                     s.StartMs, s.EndMs, s.Text, s.SpeakerLabel, s.EditedAt, s.EditedBy?.FullName))],
                 [.. transcript.Speakers.OrderBy(s => s.Label).Select(s => new TranscriptSpeakerView(s.Label, s.SpeechMs,
-                    s.SuggestedUserId, s.SuggestedUser?.FullName, s.SuggestionScore, s.AssignedUserId, s.AssignedUser?.FullName))],
-                people));
+                    canEdit ? s.SuggestedUserId : null, canEdit ? s.SuggestedUser?.FullName : null,
+                    canEdit ? s.SuggestionScore : null, s.AssignedUserId, s.AssignedUser?.FullName))],
+                people, canExport && transcript.Status == TranscriptStatus.Completed));
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -71,8 +75,12 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 if (transcript is null)
                     // Explicitly added: a new entity hung off a tracked one would be taken for an existing row (its key is set).
                     transcripts.Add(new Transcript { RecordingId = recordingId, CreatedAt = now, UpdatedAt = now });
-                else if (transcript.Status == TranscriptStatus.Failed)
+                else if (transcript.Status is TranscriptStatus.Failed or TranscriptStatus.Completed)
                 {
+                    // Redoing a finished transcript replaces its segments, corrections and names when it completes.
+                    if (transcript.Status == TranscriptStatus.Completed)
+                        await audit.RecordAsync(AuditActions.TranscriptRerun, AuditActions.RecordingObjectType, recordingId,
+                            actorId, new { recording.MeetingId, previousProvider = transcript.Provider }, token);
                     transcript.Status = TranscriptStatus.Pending;
                     transcript.ErrorMessage = "";
                     transcript.ProgressPercent = 0;
@@ -90,6 +98,40 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         }
     }
 
+    public async Task<TranscriptOutcome> ExportAsync(Guid recordingId, Guid actorId, CancellationToken ct = default)
+    {
+        try
+        {
+            var (recording, meeting, failure) = await ReadableAsync(recordingId, actorId, ct);
+            if (recording is null || meeting is null) return new(failure);
+            switch (RecordingRules.Export(meeting, actorId))
+            {
+                case RecordingFailure.ExportForbidden: return new(TranscriptFailure.ExportForbidden);
+                case RecordingFailure.SecretMeeting: return new(TranscriptFailure.SecretMeeting);
+            }
+            var transcript = await transcripts.FindByRecordingAsync(recordingId, false, ct);
+            if (transcript is not { Status: TranscriptStatus.Completed }) return new(TranscriptFailure.NotReady);
+            var names = transcript.Speakers.ToDictionary(s => s.Label, s => s.AssignedUser?.FullName);
+            var now = clock.GetUtcNow();
+            var text = TranscriptText.Render(meeting.Title, $"bản ghi {recording.FileName}", meeting.ActualStartedAt ?? recording.CreatedAt,
+                now, transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptLine(TranscriptText.Offset(s.StartMs),
+                    names.GetValueOrDefault(s.SpeakerLabel) ?? SpeakerLabelName(s.SpeakerLabel), s.Text)));
+            await audit.RecordAsync(AuditActions.TranscriptExported, AuditActions.RecordingObjectType, recordingId, actorId,
+                new { recording.MeetingId, segments = transcript.Segments.Count }, ct);
+            return new(Data: new ExportedText(TranscriptText.FileName(meeting.ActualStartedAt ?? recording.CreatedAt), text));
+        }
+        catch (Exception ex) when (PersistenceError(ex))
+        {
+            logger.LogError(ex, "Failed to export the transcript of {RecordingId}", recordingId);
+            return new(TranscriptFailure.ReadFailed);
+        }
+    }
+
+    /// <summary>"SPEAKER_00" reads as "Người nói 1", as on screen.</summary>
+    private static string SpeakerLabelName(string label)
+        => label.StartsWith("SPEAKER_", StringComparison.Ordinal) && int.TryParse(label[8..], out var n)
+            ? $"Người nói {n + 1}" : label.Length > 0 ? label : "Người nói";
+
     public async Task<TranscriptOutcome> EditSegmentAsync(Guid segmentId, Guid actorId, string? text, CancellationToken ct = default)
     {
         try
@@ -106,6 +148,9 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     ["text"] = [$"Nội dung đoạn phải có từ 1 đến {TranscriptRules.MaxSegmentText} ký tự."],
                 });
             var now = clock.GetUtcNow();
+            if (segment.Text != trimmed)
+                await audit.RecordAsync(AuditActions.TranscriptSegmentEdited, AuditActions.RecordingObjectType, recording.Id,
+                    actorId, new { recording.MeetingId, segmentId, segment.Position }, ct);
             segment.Text = trimmed;
             segment.EditedById = actorId;
             segment.EditedAt = now;

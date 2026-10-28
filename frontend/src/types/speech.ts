@@ -50,6 +50,8 @@ export interface SpeechClipList {
   canChangeMode: boolean
   /** The caller may take sentences out of the record and put them back: the Chair and the Secretary. */
   canExclude: boolean
+  /** The caller may save the transcript as text: the Chair or a Secretary, not in a Secret meeting. */
+  canExport: boolean
   readAt: string
   items: SpeechClip[]
 }

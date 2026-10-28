@@ -7,7 +7,7 @@ namespace TrustCabinet.Domain.Entities;
 /// An audio recording of a sitting — captured in the browser, uploaded afterwards, or mixed from
 /// the call room (SCRUM-29, SCRUM-44).
 ///
-/// A recording of people speaking is personal data under Decree 13/2023/NĐ-CP. Three obligations
+/// A recording of people speaking is personal data under Luật BVDLCN 91/2025/QH15. Three obligations
 /// follow, and the columns below exist so the system can show it kept them rather than merely
 /// claiming so: consent is taken before capture starts, the purpose is stated, and the data is
 /// erased on request or when its retention period ends.
@@ -39,7 +39,7 @@ public class Recording : Entity
     public DateTimeOffset? ConsentObtainedAt { get; set; }
 
     /// <summary>
-    /// Why this was recorded, in the words shown to participants. Decree 13 requires the purpose
+    /// Why this was recorded, in the words shown to participants. Luật 91/2025 requires the purpose
     /// to be stated at collection, so it is stored with the data instead of living only in a
     /// screen nobody can produce afterwards.
     /// </summary>

@@ -92,8 +92,10 @@ chất lượng trước khi tính vector:
 ```
 
 `people` là thành phần hiện tại của cuộc họp, chỉ trả cho Thư ký (để chọn tên); người khác nhận mảng
-rỗng. Tên hiển thị của một giọng: `assignedName` nếu Thư ký đã gán, nếu không thì *Người nói N*
-(FE có thể hiện `suggestedName` như một gợi ý chờ xác nhận).
+rỗng. **`suggestedUserId`, `suggestedName`, `suggestionScore` cũng chỉ trả cho Thư ký**: đó là phỏng đoán
+của máy về danh tính sinh trắc học của một người, để Thư ký quyết định, không phải thông tin cho cả cuộc
+họp; người khác nhận `null`. Tên hiển thị của một giọng: `assignedName` nếu Thư ký đã gán, nếu không thì
+*Người nói N*.
 
 **Cách gợi ý** (`SpeakerMatcher`): điểm của một người với một giọng là cosine cao nhất giữa vector giọng
 và các giọng mẫu của người đó. Chỉ gợi ý khi điểm ≥ `VoiceId:SuggestThreshold` (0,6) **và** hơn người

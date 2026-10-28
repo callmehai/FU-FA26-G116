@@ -14,6 +14,9 @@ public static class TranscriptEndpoints
     private const string Msg304SaveFailed = "MSG304";
     private const string Msg316SpeakerAssigned = "MSG316";
     private const string Msg317InvalidSpeaker = "MSG317";
+    private const string Msg355ExportForbidden = "MSG355";
+    private const string Msg356SecretMeeting = "MSG356";
+    private const string Msg357TranscriptNotReady = "MSG357";
 
     private sealed record SegmentBody(string? Text);
     private sealed record SpeakerBody(Guid? UserId);
@@ -29,6 +32,8 @@ public static class TranscriptEndpoints
             ITranscriptionService service, CancellationToken ct)
             => Map(await service.AssignSpeakerAsync(recordingId, label, body.UserId, CapabilityGate.GatedUserId(context.User), ct),
                 Msg316SpeakerAssigned));
+        recording.MapGet("/transcript.txt", async (Guid recordingId, HttpContext context, ITranscriptionService service,
+            CancellationToken ct) => Map(await service.ExportAsync(recordingId, CapabilityGate.GatedUserId(context.User), ct)));
         recording.MapPost("/transcribe", async (Guid recordingId, HttpContext context, ITranscriptionService service, CancellationToken ct)
             => Map(await service.RetryAsync(recordingId, CapabilityGate.GatedUserId(context.User), ct), Msg300Queued));
 
@@ -47,7 +52,11 @@ public static class TranscriptEndpoints
             var (status, code, message) = result.Failure switch
             {
                 TranscriptFailure.Forbidden => (403, Msg295NotSecretary, "Chỉ Thư ký cuộc họp được quản lý bản ghi."),
-                TranscriptFailure.NotRetryable => (409, Msg301NotRetryable, "Chỉ chạy lại khi lần chuyển thành chữ trước bị lỗi."),
+                TranscriptFailure.NotRetryable => (409, Msg301NotRetryable,
+                    "Bản ghi đang chờ hoặc đang được chuyển thành chữ, chưa chạy lại được."),
+                TranscriptFailure.ExportForbidden => (403, Msg355ExportForbidden, "Chỉ Chủ tọa hoặc Thư ký được tải bản ghi và bản gỡ băng về."),
+                TranscriptFailure.SecretMeeting => (403, Msg356SecretMeeting, "Bản ghi và bản gỡ băng của cuộc họp Mật không được tải về."),
+                TranscriptFailure.NotReady => (409, Msg357TranscriptNotReady, "Bản gỡ băng chưa xong nên chưa tải về được."),
                 TranscriptFailure.Invalid => (400, Msg303InvalidText, "Nội dung đoạn gỡ băng không hợp lệ."),
                 TranscriptFailure.InvalidSpeaker => (400, Msg317InvalidSpeaker, "Người được gán phải có trong danh sách cuộc họp."),
                 TranscriptFailure.ReadFailed => (500, Msg299ReadFailed, "Không tải được bản gỡ băng."),
@@ -57,6 +66,7 @@ public static class TranscriptEndpoints
         }
         return successCode switch
         {
+            null when result.Data is ExportedText file => TextFile(file),
             null => Results.Ok(result.Data),
             Msg300Queued => Results.Json(new { code = Msg300Queued, message = "Đã đưa bản ghi vào hàng chờ chuyển thành chữ." },
                 statusCode: StatusCodes.Status202Accepted),
@@ -64,6 +74,11 @@ public static class TranscriptEndpoints
             _ => Results.Ok(new { code = successCode, message = "Đã lưu đoạn gỡ băng.", segment = result.Data }),
         };
     }
+
+    /// <summary>A UTF-8 text file the browser saves; never cached, as it holds what people said.</summary>
+    internal static IResult TextFile(ExportedText file)
+        => Results.File(System.Text.Encoding.UTF8.GetPreamble().Concat(System.Text.Encoding.UTF8.GetBytes(file.Text)).ToArray(),
+            "text/plain; charset=utf-8", file.FileName);
 
     private static IResult Error(int status, string code, string message) => Results.Json(new { code, message }, statusCode: status);
 }

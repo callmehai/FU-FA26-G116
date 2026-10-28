@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { eraseRecording, getRecordingPlayback, listRecordings, uploadRecording } from '../../api/recordings'
+import {
+  eraseRecording,
+  getRecordingDownload,
+  getRecordingPlayback,
+  listRecordings,
+  uploadRecording,
+} from '../../api/recordings'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Dialog } from '../../components/Dialog'
 import { Badge, type BadgeTone } from '../../components/Badge'
@@ -400,6 +406,21 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
     }
   }
 
+  const toast = useToast()
+  // A signed link to the original file, followed by the browser itself: a recording can be hundreds of megabytes.
+  const download = async () => {
+    try {
+      const link = document.createElement('a')
+      link.href = (await getRecordingDownload(recording.id)).url
+      link.download = recording.fileName
+      document.body.append(link)
+      link.click()
+      link.remove()
+    } catch (error) {
+      toast.show(errorMessage(error), 'error')
+    }
+  }
+
   const details = [
     `Lưu bởi ${recording.createdByName} lúc ${formatDateTime(recording.createdAt)}`,
     recording.consentPurpose && `Mục đích: ${recording.consentPurpose}`,
@@ -444,6 +465,17 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
           >
             <Icon name={playback ? 'x' : 'play'} size={16} />
           </button>
+          {recording.canDownload && (
+            <button
+              type="button"
+              className="btn btn-outline btn-icon btn-sm"
+              onClick={() => void download()}
+              aria-label="Tải tệp ghi âm"
+              data-tooltip="Tải tệp ghi âm"
+            >
+              <Icon name="download" size={16} />
+            </button>
+          )}
           {recording.canErase && (
             <button
               type="button"
@@ -473,6 +505,7 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
             onTimeUpdate={(e) => setCurrentMs(e.currentTarget.currentTime * 1000)}
           />
           <TranscriptView
+            fileName={recording.fileName}
             recordingId={recording.id}
             currentMs={currentMs}
             onSeek={(ms) => {

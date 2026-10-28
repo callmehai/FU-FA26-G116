@@ -51,11 +51,40 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             return new(Data: new SpeechClipList(meetingId, meeting.CaptureMode.ToString(),
                 SpeechClipRules.Capturing(meeting), secretary,
                 SpeechClipRules.RunsRecord(meeting, actorId) && SpeechClipRules.ModeChangeable(meeting.Status), now, items,
-                officer));
+                officer, RecordingRules.Export(meeting, actorId) == RecordingFailure.None));
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
             logger.LogError(ex, "Failed to list speech clips of {MeetingId}", meetingId);
+            return new(SpeechClipFailure.ReadFailed);
+        }
+    }
+
+    public async Task<SpeechClipOutcome> ExportAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
+    {
+        try
+        {
+            var (meeting, failure) = await ListenableMeetingAsync(meetingId, actorId, ct);
+            if (meeting is null) return new(failure);
+            switch (RecordingRules.Export(meeting, actorId))
+            {
+                case RecordingFailure.ExportForbidden: return new(SpeechClipFailure.ExportForbidden);
+                case RecordingFailure.SecretMeeting: return new(SpeechClipFailure.SecretMeeting);
+            }
+            // What the record holds: a sentence taken out of it is not exported, an overheard copy still is until then.
+            var rows = (await RowsAsync(db.SpeechClips.AsNoTracking().Where(c => c.MeetingId == meetingId), ct))
+                .Where(r => r.ExcludedAt is null).ToList();
+            var now = clock.GetUtcNow();
+            var started = meeting.ActualStartedAt ?? rows.FirstOrDefault()?.StartedAt ?? now;
+            var text = TranscriptText.Render(meeting.Title, "ghi theo micro từng người", started, now,
+                rows.Select(r => new TranscriptLine(TranscriptText.Clock(r.StartedAt), r.SpeakerName, r.Text)));
+            await audit.RecordAsync(AuditActions.SpeechClipsExported, AuditActions.MeetingObjectType, meetingId, actorId,
+                new { sentences = rows.Count }, ct);
+            return new(Data: new ExportedText(TranscriptText.FileName(started), text));
+        }
+        catch (Exception ex) when (PersistenceError(ex))
+        {
+            logger.LogError(ex, "Failed to export the speech clips of {MeetingId}", meetingId);
             return new(SpeechClipFailure.ReadFailed);
         }
     }

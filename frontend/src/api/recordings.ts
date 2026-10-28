@@ -33,5 +33,9 @@ export function uploadRecording(
 export const getRecordingPlayback = (recordingId: string) =>
   api.get<RecordingPlayback>(`/api/recordings/${recordingId}/playback`)
 
+/** A link that saves the original file (Chair or Secretary), signed apart from the playback one. */
+export const getRecordingDownload = (recordingId: string) =>
+  api.get<RecordingPlayback>(`/api/recordings/${recordingId}/download`)
+
 export const eraseRecording = (recordingId: string) =>
   api.delete<RecordingMutationResponse>(`/api/recordings/${recordingId}`)

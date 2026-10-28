@@ -21,6 +21,8 @@ public static class RecordingEndpoints
     private const string Msg296Erased = "MSG296";
     private const string Msg297ReadFailed = "MSG297";
     private const string Msg298SaveFailed = "MSG298";
+    private const string Msg355ExportForbidden = "MSG355";
+    private const string Msg356SecretMeeting = "MSG356";
     private const int MaxFieldBytes = 4 * 1024;
 
     public static void MapRecordingEndpoints(this IEndpointRouteBuilder app)
@@ -35,20 +37,26 @@ public static class RecordingEndpoints
             .RequireActiveUser(Error(500, Msg297ReadFailed, "Không tải được bản ghi."));
         recording.MapGet("/playback", async (Guid recordingId, HttpContext context, IRecordingService service, CancellationToken ct)
             => Map(await service.PlaybackAsync(recordingId, CapabilityGate.GatedUserId(context.User), ct)));
+        recording.MapGet("/download", async (Guid recordingId, HttpContext context, IRecordingService service, CancellationToken ct)
+            => Map(await service.DownloadAsync(recordingId, CapabilityGate.GatedUserId(context.User), ct)));
         recording.MapDelete("", async (Guid recordingId, HttpContext context, IRecordingService service, CancellationToken ct)
             => Map(await service.EraseAsync(recordingId, CapabilityGate.GatedUserId(context.User), ct), Msg296Erased));
 
         // An <audio> element cannot send a bearer token, so this one route is reached through a signed, expiring URL
-        // handed out by /playback above — which is where the caller's right to listen was checked.
+        // handed out by /playback above — which is where the caller's right to listen was checked — or by /download,
+        // signed apart, which saves the file instead.
         app.MapGet("/api/recordings/{recordingId:guid}/audio", async (Guid recordingId, long? expires, string? signature,
-            IRecordingService service, IRecordingStorage storage, IRecordingPlaybackSigner signer, TimeProvider clock,
-            HttpContext context, CancellationToken ct) =>
+            string? download, IRecordingService service, IRecordingStorage storage, IRecordingPlaybackSigner signer,
+            TimeProvider clock, HttpContext context, CancellationToken ct) =>
         {
-            if (expires is not { } until || string.IsNullOrEmpty(signature) || !signer.Verify(recordingId, until, signature, clock.GetUtcNow()))
+            var save = download == "1";
+            if (expires is not { } until || string.IsNullOrEmpty(signature)
+                || !signer.Verify(recordingId, until, signature, clock.GetUtcNow(), save))
                 return Results.NotFound();
             if (await service.FindPlayableAsync(recordingId, ct) is not { } file) return Results.NotFound();
             context.Response.Headers.CacheControl = "private, no-store";
-            return Results.Stream(storage.OpenRead(file.StoragePath), file.ContentType, enableRangeProcessing: true);
+            return Results.Stream(storage.OpenRead(file.StoragePath), file.ContentType, save ? file.FileName : null,
+                enableRangeProcessing: true);
         });
     }
 
@@ -145,6 +153,8 @@ public static class RecordingEndpoints
             var (status, code, message) = result.Failure switch
             {
                 RecordingFailure.Forbidden => (403, Msg295NotSecretary, "Chỉ Thư ký cuộc họp được quản lý bản ghi."),
+                RecordingFailure.ExportForbidden => (403, Msg355ExportForbidden, "Chỉ Chủ tọa hoặc Thư ký được tải bản ghi và bản gỡ băng về."),
+                RecordingFailure.SecretMeeting => (403, Msg356SecretMeeting, "Bản ghi và bản gỡ băng của cuộc họp Mật không được tải về."),
                 RecordingFailure.Locked => (409, Msg294UploadLocked, "Chỉ lưu bản ghi khi cuộc họp đang diễn ra hoặc đã kết thúc."),
                 RecordingFailure.Invalid => (400, Msg291Invalid, "Thông tin bản ghi không hợp lệ."),
                 RecordingFailure.ReadFailed => (500, Msg297ReadFailed, "Không tải được danh sách bản ghi."),

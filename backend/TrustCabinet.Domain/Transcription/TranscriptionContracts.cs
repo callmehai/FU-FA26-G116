@@ -32,7 +32,11 @@ public sealed class SpeechEngineException(string userMessage, Exception? inner =
     public string UserMessage { get; } = userMessage;
 }
 
-public enum TranscriptFailure { None, NotFound, Inactive, Forbidden, NotRetryable, Invalid, InvalidSpeaker, ReadFailed, SaveFailed }
+public enum TranscriptFailure
+{
+    None, NotFound, Inactive, Forbidden, NotRetryable, Invalid, InvalidSpeaker, ReadFailed, SaveFailed, ExportForbidden,
+    SecretMeeting, NotReady
+}
 
 public sealed record TranscriptOutcome(TranscriptFailure Failure = TranscriptFailure.None, object? Data = null,
     IReadOnlyDictionary<string, string[]>? Errors = null);
@@ -52,12 +56,15 @@ public sealed record TranscriptPerson(Guid Id, string FullName);
 public sealed record TranscriptView(Guid RecordingId, string Status, string Provider, string Language,
     string ErrorMessage, DateTimeOffset? CompletedAt, long DurationMs, bool CanEdit,
     IReadOnlyList<TranscriptSegmentView> Segments, IReadOnlyList<TranscriptSpeakerView> Speakers,
-    IReadOnlyList<TranscriptPerson> People);
+    IReadOnlyList<TranscriptPerson> People, bool CanExport = false);
 
 public interface ITranscriptionService
 {
     Task<TranscriptOutcome> GetAsync(Guid recordingId, Guid actorId, CancellationToken ct = default);
+    /// <summary>Queues the recording again: after a failure, or to redo a finished transcript (a newer model, new voices).</summary>
     Task<TranscriptOutcome> RetryAsync(Guid recordingId, Guid actorId, CancellationToken ct = default);
+    /// <summary>The finished transcript as a text file (<see cref="ExportedText"/>).</summary>
+    Task<TranscriptOutcome> ExportAsync(Guid recordingId, Guid actorId, CancellationToken ct = default);
     Task<TranscriptOutcome> EditSegmentAsync(Guid segmentId, Guid actorId, string? text, CancellationToken ct = default);
     /// <summary>SCRUM-35 — the secretary says who a voice is, or clears it with null.</summary>
     Task<TranscriptOutcome> AssignSpeakerAsync(Guid recordingId, string label, Guid? userId, Guid actorId, CancellationToken ct = default);

@@ -1,5 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { deleteSpeechClip, editSpeechClip, setCaptureMode, setSpeechClipExclusion } from '../../api/speech'
+import {
+  deleteSpeechClip,
+  editSpeechClip,
+  getSpeechClipsText,
+  setCaptureMode,
+  setSpeechClipExclusion,
+} from '../../api/speech'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { SegmentedControl } from '../../components/SegmentedControl'
@@ -7,6 +13,7 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
 import { CAPTURE_MODE_LABEL, type CaptureMode, type SpeechClip } from '../../types/speech'
+import { saveBlob } from '../documents/documentFile'
 import { RecordingsPanel } from '../recordings/RecordingsPanel'
 import type { Recorder, RecordingInput } from '../recordings/useRecorder'
 import { useSpeech, type Speech } from './useSpeech'
@@ -79,6 +86,7 @@ function SpeechView({ speech, variant }: { speech: Speech; variant: 'page' | 'ro
         <ModePicker meetingId={speech.meetingId} mode={list.captureMode} onChanged={speech.reload} />
       )}
       {list?.canCapture && <MyMic speech={speech} room={room} />}
+      {list?.canExport && clips.some((c) => !c.excluded) && <SaveText meetingId={speech.meetingId} />}
       {list && (perMic || clips.length > 0) && <Lines speech={speech} room={room} />}
     </div>
   )
@@ -128,6 +136,34 @@ function ModePicker({ meetingId, mode, onChanged }: { meetingId: string; mode: C
   )
 }
 
+/** The Chair or a Secretary saves the per-mic transcript as text, without the sentences taken out of the record. */
+function SaveText({ meetingId }: { meetingId: string }) {
+  const toast = useToast()
+  const [saving, setSaving] = useState(false)
+  return (
+    <div className="speech-tools">
+      <button
+        type="button"
+        className="btn btn-ghost btn-sm"
+        disabled={saving}
+        onClick={async () => {
+          setSaving(true)
+          try {
+            saveBlob(await getSpeechClipsText(meetingId), 'bản gỡ băng theo micro.txt')
+          } catch (error) {
+            toast.show(errorMessage(error), 'error')
+          } finally {
+            setSaving(false)
+          }
+        }}
+      >
+        <Icon name="download" size={16} />
+        {saving ? 'Đang tải…' : 'Tải .txt'}
+      </button>
+    </div>
+  )
+}
+
 /** The person's own switch and what their mic is doing — the "being recorded" sign the ticket asks for. */
 function MyMic({ speech, room }: { speech: Speech; room: boolean }) {
   const { capture, mine, capturing } = speech
@@ -138,12 +174,12 @@ function MyMic({ speech, room }: { speech: Speech; room: boolean }) {
       : elsewhere
         ? 'Đang ghi ở tab khác'
         : !mine
-        ? 'Không ghi'
-        : !capturing
-          ? 'Micro tắt'
-          : capture.state === 'starting'
-            ? 'Đang mở micro…'
-            : 'Đang ghi'
+          ? 'Không ghi'
+          : !capturing
+            ? 'Micro tắt'
+            : capture.state === 'starting'
+              ? 'Đang mở micro…'
+              : 'Đang ghi'
   const live = capturing && (capture.state === 'listening' || capture.state === 'speaking')
   // Sending as usual says nothing: the lines appearing say it. Only a sentence that is stuck gets a line here.
   // A no-break space keeps the count with "câu" when the line wraps.

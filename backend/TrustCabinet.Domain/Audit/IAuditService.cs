@@ -115,6 +115,15 @@ public static class AuditActions
     /// <summary>The Chair or a Secretary took a per-mic sentence out of the record, or put it back (reason in details).</summary>
     public const string SpeechClipExcluded = "speech_clip.excluded";
     public const string SpeechClipRestored = "speech_clip.restored";
+
+    /// <summary>The Chair or a Secretary saved the per-mic transcript, a recording's transcript, or a recording's file.</summary>
+    public const string SpeechClipsExported = "speech_clip.exported";
+    public const string TranscriptExported = "transcript.exported";
+    public const string RecordingDownloaded = "recording.downloaded";
+
+    /// <summary>A Secretary corrected a transcript segment, or queued a finished transcript to be made again.</summary>
+    public const string TranscriptSegmentEdited = "transcript.segment_edited";
+    public const string TranscriptRerun = "transcript.rerun";
     public const string SpeechClipObjectType = "SpeechClip";
 
     /// <summary>The Chair or a Secretary switched how the meeting is captured before it started.</summary>

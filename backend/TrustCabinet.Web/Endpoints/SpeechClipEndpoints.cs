@@ -32,6 +32,8 @@ public static class SpeechClipEndpoints
     private const string Msg352ClipRestored = "MSG352";
     private const string Msg353ExcludeForbidden = "MSG353";
     private const string Msg354InvalidExclusion = "MSG354";
+    private const string Msg355ExportForbidden = "MSG355";
+    private const string Msg356SecretMeeting = "MSG356";
 
     private sealed record TextBody(string? Text);
     private sealed record ModeBody(string? Mode);
@@ -44,6 +46,13 @@ public static class SpeechClipEndpoints
         meeting.MapGet("/speech-clips", async (Guid meetingId, DateTimeOffset? since, HttpContext context,
             ISpeechClipService service, CancellationToken ct)
             => Map(await service.ListAsync(meetingId, CapabilityGate.GatedUserId(context.User), since, ct)));
+        meeting.MapGet("/speech-clips.txt", async (Guid meetingId, HttpContext context, ISpeechClipService service,
+            CancellationToken ct) =>
+        {
+            var result = await service.ExportAsync(meetingId, CapabilityGate.GatedUserId(context.User), ct);
+            return result is { Failure: SpeechClipFailure.None, Data: Domain.Transcription.ExportedText file }
+                ? TranscriptEndpoints.TextFile(file) : Map(result);
+        });
         // PUT with the browser's own id: a retry after a lost response stores the sentence once.
         meeting.MapPut("/speech-clips/{clientClipId:guid}", SendClipAsync);
         meeting.MapPut("/capture-mode", async (Guid meetingId, ModeBody body, HttpContext context, ISpeechClipService service,
@@ -112,6 +121,8 @@ public static class SpeechClipEndpoints
                 SpeechClipFailure.Forbidden when mode => (403, Msg327ModeForbidden, "Chỉ Chủ tọa hoặc Thư ký được đổi cách ghi âm."),
                 SpeechClipFailure.Forbidden when delete => (403, Msg323DeleteForbidden, "Chỉ người nói hoặc Thư ký được xoá câu này."),
                 SpeechClipFailure.Forbidden => (403, Msg295NotSecretary, "Chỉ Thư ký cuộc họp được quản lý bản ghi."),
+                SpeechClipFailure.ExportForbidden => (403, Msg355ExportForbidden, "Chỉ Chủ tọa hoặc Thư ký được tải bản ghi và bản gỡ băng về."),
+                SpeechClipFailure.SecretMeeting => (403, Msg356SecretMeeting, "Bản ghi và bản gỡ băng của cuộc họp Mật không được tải về."),
                 SpeechClipFailure.Locked => (409, Msg325ModeLocked, "Cuộc họp đã bắt đầu nên không đổi được cách ghi âm."),
                 SpeechClipFailure.Cancelled => (409, Msg349MeetingCancelled, "Cuộc họp đã huỷ nên không thay đổi được nữa."),
                 SpeechClipFailure.NotCapturing => (409, Msg320NotCapturing,

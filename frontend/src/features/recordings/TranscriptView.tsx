@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { editTranscriptSegment, getTranscript, retryTranscript } from '../../api/transcripts'
+import { editTranscriptSegment, getTranscript, getTranscriptText, retryTranscript } from '../../api/transcripts'
 import { Badge } from '../../components/Badge'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
 import type { Transcript, TranscriptSegment, TranscriptStatus } from '../../types/transcript'
+import { saveBlob } from '../documents/documentFile'
 import { formatDuration } from './format'
 import { SpeakerList } from './SpeakerList'
 import { speakerName, speakerTone } from './speakers'
@@ -24,11 +26,14 @@ type State = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 
 
 export function TranscriptView({
   recordingId,
+  fileName,
   currentMs,
   onSeek,
   onStatus,
 }: {
   recordingId: string
+  /** The recording's file name, to name the saved text after it. */
+  fileName: string
   /** Where the player is, to highlight the segment being heard. */
   currentMs: number
   onSeek: (ms: number) => void
@@ -38,6 +43,8 @@ export function TranscriptView({
   const [state, setState] = useState<State>({ kind: 'loading' })
   const [editing, setEditing] = useState<string | null>(null)
   const [retrying, setRetrying] = useState(false)
+  const [redoing, setRedoing] = useState(false)
+  const [saving, setSaving] = useState(false)
   const generation = useRef(0)
 
   const load = useCallback(async () => {
@@ -77,6 +84,17 @@ export function TranscriptView({
       await load()
     } finally {
       setRetrying(false)
+    }
+  }
+
+  const saveText = async () => {
+    setSaving(true)
+    try {
+      saveBlob(await getTranscriptText(recordingId), `${fileName.replace(/\.[^.]+$/, '')} - bản gỡ băng.txt`)
+    } catch (error) {
+      toast.show(errorMessage(error), 'error')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -129,10 +147,51 @@ export function TranscriptView({
   const names = new Map(transcript.speakers.filter((s) => s.assignedName).map((s) => [s.label, s.assignedName!]))
   return (
     <div className="transcript">
-      <p className="transcript-note">
+      <div className="transcript-note">
         <Badge tone="outline">Máy nhận dạng</Badge>
         <span className="field-hint">Chữ do máy tạo, có thể sai — bấm vào mốc giờ để nghe lại đoạn đó.</span>
-      </p>
+        <span className="transcript-tools">
+          {transcript.canExport && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-icon btn-sm"
+              aria-label="Tải bản gỡ băng (.txt)"
+              data-tooltip="Tải bản gỡ băng (.txt)"
+              disabled={saving}
+              onClick={() => void saveText()}
+            >
+              <Icon name="download" size={16} />
+            </button>
+          )}
+          {transcript.canEdit && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-icon btn-sm"
+              aria-label="Chuyển thành chữ lại"
+              data-tooltip="Chuyển thành chữ lại"
+              onClick={() => setRedoing(true)}
+            >
+              <Icon name="refresh" size={16} />
+            </button>
+          )}
+        </span>
+      </div>
+      {redoing && (
+        <ConfirmDialog
+          title="Chuyển thành chữ lại?"
+          confirmLabel="Chuyển lại"
+          pendingLabel="Đang gửi…"
+          cancelLabel="Giữ bản hiện có"
+          onConfirm={async () => {
+            toast.show((await retryTranscript(recordingId)).message, 'success')
+            await load()
+          }}
+          onClose={() => setRedoing(false)}
+        >
+          <p>Máy làm lại bản gỡ băng từ đầu, để dùng model mới hay giọng mẫu vừa đăng ký.</p>
+          <p className="field-hint">Khi xong, chữ đã sửa và tên đã gán cho người nói sẽ được thay bằng bản mới.</p>
+        </ConfirmDialog>
+      )}
       <SpeakerList transcript={transcript} onChanged={() => void load()} />
       {transcript.segments.length === 0 ? (
         <p className="field-hint">Không nghe thấy lời nói nào trong bản ghi.</p>

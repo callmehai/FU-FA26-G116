@@ -7,7 +7,7 @@ namespace TrustCabinet.Domain.Recordings;
 
 public enum RecordingFailure
 {
-    None, NotFound, Inactive, Forbidden, Locked, Invalid, ReadFailed, SaveFailed
+    None, NotFound, Inactive, Forbidden, Locked, Invalid, ReadFailed, SaveFailed, ExportForbidden, SecretMeeting
 }
 
 public sealed record RecordingOutcome(RecordingFailure Failure = RecordingFailure.None, object? Data = null,
@@ -23,7 +23,7 @@ public sealed record RecordingUpload(string FileName, string ContentType, string
 public sealed record RecordingView(Guid Id, string FileName, string ContentType, long ByteSize, long DurationMs,
     string Source, string Status, DateTimeOffset CreatedAt, string CreatedByName, DateTimeOffset? ConsentObtainedAt,
     string ConsentPurpose, DateTimeOffset? RetainUntil, DateTimeOffset? DeletedAt, bool CanErase,
-    string TranscriptStatus);
+    string TranscriptStatus, bool CanDownload = false);
 
 public sealed record RecordingList(Guid MeetingId, bool CanUpload, IReadOnlyList<RecordingView> Items);
 
@@ -37,6 +37,8 @@ public interface IRecordingService
     Task<RecordingOutcome> CanUploadAsync(Guid meetingId, Guid actorId, CancellationToken ct = default);
     Task<RecordingOutcome> AddAsync(Guid meetingId, Guid actorId, RecordingUpload upload, CancellationToken ct = default);
     Task<RecordingOutcome> PlaybackAsync(Guid recordingId, Guid actorId, CancellationToken ct = default);
+    /// <summary>A signed link that saves the original file; the Chair or a Secretary, never for a Secret meeting.</summary>
+    Task<RecordingOutcome> DownloadAsync(Guid recordingId, Guid actorId, CancellationToken ct = default);
     Task<StoredRecordingFile?> FindPlayableAsync(Guid recordingId, CancellationToken ct = default);
     Task<RecordingOutcome> EraseAsync(Guid recordingId, Guid actorId, CancellationToken ct = default);
     /// <summary>Erases every recording whose retention period has run out; returns how many.</summary>
@@ -68,8 +70,10 @@ public sealed class RecordingTooLargeException() : Exception("The recording exce
 /// <summary>Signs and checks the short-lived URL an &lt;audio&gt; element plays from, since it cannot send a bearer token.</summary>
 public interface IRecordingPlaybackSigner
 {
-    RecordingPlayback Sign(Guid recordingId, DateTimeOffset now);
-    bool Verify(Guid recordingId, long expires, string signature, DateTimeOffset now);
+    /// <param name="download">A link that saves the file rather than plays it. Signed apart, so a playback link,
+    /// which every listener gets, cannot be turned into a download.</param>
+    RecordingPlayback Sign(Guid recordingId, DateTimeOffset now, bool download = false);
+    bool Verify(Guid recordingId, long expires, string signature, DateTimeOffset now, bool download = false);
 }
 
 public static class RecordingRules
@@ -96,6 +100,14 @@ public static class RecordingRules
     /// </summary>
     public static bool CanListen(Meeting meeting, Guid actor) => MeetingReadPolicy.CanRead(meeting, actor)
         && meeting.Participants.Any(p => p.MeetingId == meeting.Id && p.UserId == actor && ParticipantRules.Active(p));
+
+    /// <summary>
+    /// Taking the meeting's audio or words out of the system — the original file, a transcript as text — is for the
+    /// people who run its record, the Chair and the Secretaries, as in AI-eCabinet. A Secret meeting's never leave.
+    /// </summary>
+    public static RecordingFailure Export(Meeting meeting, Guid actor)
+        => !SpeechClipRules.RunsRecord(meeting, actor) ? RecordingFailure.ExportForbidden
+            : meeting.Sensitivity == Sensitivity.Secret ? RecordingFailure.SecretMeeting : RecordingFailure.None;
 
     public static IReadOnlyDictionary<string, string[]> Validate(RecordingUpload upload)
     {

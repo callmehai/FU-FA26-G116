@@ -23,6 +23,8 @@ export interface Recording {
   canErase: boolean
   /** SCRUM-31 — "None" for a recording kept before speech to text existed. */
   transcriptStatus: TranscriptStatus
+  /** The Chair or a Secretary may save the original file; never in a Secret meeting. */
+  canDownload: boolean
 }
 
 export interface RecordingList {

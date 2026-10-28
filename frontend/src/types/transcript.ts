@@ -44,6 +44,8 @@ export interface Transcript {
   speakers: TranscriptSpeaker[]
   /** The meeting's people the Secretary may name a voice as; empty for everyone else. */
   people: TranscriptPerson[]
+  /** Finished, and the caller (Chair or Secretary, not a Secret meeting) may save it as text. */
+  canExport: boolean
 }
 
 export interface TranscriptMessage {

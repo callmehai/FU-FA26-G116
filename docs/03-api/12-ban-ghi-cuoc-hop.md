@@ -29,12 +29,17 @@ biên bản vẫn nói được "đã có bản ghi và đã xoá ngày …", v�
 
 ## Quyền
 
-| Ai | Xem danh sách, nghe | Lưu, xoá |
-|---|---|---|
-| Thư ký hiện tại của cuộc họp | ✓ | ✓ |
-| Chủ toạ, thành viên hiện tại | ✓ | `403 MSG295` |
-| Người tạo / người duyệt **không** có trong danh sách thành phần | `404` | `404` |
-| Người ngoài cuộc họp | `404` | `404` |
+| Ai | Xem danh sách, nghe | Lưu, xoá | Tải tệp gốc, xuất bản gỡ băng `.txt` |
+|---|---|---|---|
+| Thư ký hiện tại của cuộc họp | ✓ | ✓ | ✓ (trừ cuộc họp Mật: `403 MSG356`) |
+| Chủ toạ hiện tại | ✓ | `403 MSG295` | ✓ (trừ cuộc họp Mật: `403 MSG356`) |
+| Thành viên hiện tại | ✓ | `403 MSG295` | `403 MSG355` |
+| Người tạo / người duyệt **không** có trong danh sách thành phần | `404` | `404` | `404` |
+| Người ngoài cuộc họp | `404` | `404` | `404` |
+
+Tải về và xuất chữ là đưa giọng nói, lời nói của người khác ra khỏi hệ thống, nên chỉ người điều hành biên
+bản (Chủ toạ, Thư ký) làm được, như AI-eCabinet; cuộc họp Mật thì không ai tải được. Mỗi lần tải ghi nhật ký
+kiểm toán (`recording.downloaded`, `transcript.exported`, `speech_clip.exported`), không ghi nội dung.
 
 Người tạo và người duyệt đọc được cuộc họp nhưng không nghe được bản ghi: họ không có mặt trong
 cuộc họp, mà bản ghi là giọng nói của người khác. Khách mời (Guest) chưa có quyền với bản ghi.
@@ -99,6 +104,13 @@ Link sống `Recordings:PlaybackUrlMinutes` (mặc định 120 phút), ký HMAC-
 Không cần đăng nhập; trả tệp với `Range` (tua được), `Cache-Control: private, no-store`. Sai chữ ký,
 hết hạn, hoặc bản ghi đã xoá: `404` không body.
 
+### `GET /api/recordings/{recordingId}/download`
+
+Chủ toạ hoặc Thư ký xin link lưu tệp gốc, cùng dạng với `/playback` nhưng link có `&download=1` và
+trả `Content-Disposition: attachment` với tên tệp gốc. Chữ ký của link tải **khác** link nghe (ký thêm
+`.download`), nên thêm `&download=1` vào link nghe mà mọi người dự đều có chỉ nhận `404`. Ghi nhật ký
+`recording.downloaded` lúc phát link. Danh sách bản ghi có `canDownload` cho từng bản.
+
 ### `DELETE /api/recordings/{recordingId}`
 
 Thư ký xoá theo yêu cầu. `200 MSG296`; gọi lại trên bản đã xoá vẫn `200 MSG296`.
@@ -144,13 +156,22 @@ thật là việc của SCRUM-35. Không có vector giọng nói nào trong resp
 
 ### `POST /api/recordings/{recordingId}/transcribe`
 
-Thư ký chạy lại khi lần trước lỗi, hoặc chạy lần đầu cho bản ghi `None`. `202 MSG300`; đang chờ,
-đang chạy hoặc đã xong: `409 MSG301`.
+Thư ký chạy lần đầu cho bản ghi `None`, chạy lại khi lần trước lỗi, hoặc **làm lại bản đã xong** (model
+mới, có người vừa đăng ký giọng). `202 MSG300`; đang chờ hoặc đang chạy: `409 MSG301`. Làm lại bản đã xong
+thay toàn bộ đoạn, chữ đã sửa và tên đã gán khi chạy xong (nhãn người nói của lần chạy mới không khớp lần
+cũ), nên FE hỏi lại trước; ghi nhật ký `transcript.rerun`.
+
+### `GET /api/recordings/{recordingId}/transcript.txt`
+
+Chủ toạ hoặc Thư ký lưu bản gỡ băng đã xong thành tệp `.txt` (UTF-8): đầu tệp ghi tên cuộc họp, nguồn, giờ
+bắt đầu, giờ xuất và lời nhắc chữ do máy viết; rồi mỗi đoạn một dòng `[HH:MM:SS] Tên: chữ`, giờ tính từ đầu
+bản ghi, tên là tên Thư ký đã gán hoặc *Người nói N*. Chưa xong: `409 MSG357`. Response `transcript` có
+`canExport`.
 
 ### `PUT /api/transcript-segments/{segmentId}` — `{ "text": "…" }`
 
 Thư ký sửa chữ máy nhận sai. Cắt khoảng trắng hai đầu, 1–8000 ký tự (`400 MSG303`). Lưu `EditedBy`,
-`EditedAt` để phân biệt chữ người sửa với chữ máy. `200 MSG302` `{ code, message, segment: { segmentId, text, editedAt } }`.
+`EditedAt` để phân biệt chữ người sửa với chữ máy, và ghi nhật ký `transcript.segment_edited` (không ghi chữ). `200 MSG302` `{ code, message, segment: { segmentId, text, editedAt } }`.
 
 ### Cấu hình (`Speech:*`)
 
@@ -244,6 +265,12 @@ Chủ tọa hoặc Thư ký loại câu khỏi bản ghi (`200 MSG351`), hoặc 
 (`200 MSG352`). Không xoá gì: câu vẫn nằm đó, chỉ ra khỏi bản ghi. Bấm lại khi câu đã ở trạng thái đó thì
 không đổi và không ghi nhật ký. Người khác nhận `403 MSG353`; `reason` sai `400 MSG354`. Ghi nhật ký kiểm
 toán `speech_clip.excluded` / `speech_clip.restored` kèm lý do.
+
+### `GET /api/meetings/{meetingId}/speech-clips.txt`
+
+Chủ toạ hoặc Thư ký lưu bản gỡ băng theo micro thành `.txt`, cùng dạng như trên; giờ mỗi dòng là giờ đồng
+hồ trong phòng (UTC+7). **Câu đã loại khỏi bản ghi không có trong tệp**; câu mới chỉ bị đánh dấu lọt tiếng
+thì vẫn có. `403 MSG355` / `MSG356` như tải bản ghi. Danh sách câu có `canExport`.
 
 ### `PUT /api/meetings/{meetingId}/capture-mode` — `{ "mode": "PerMic" | "Room" }`
 
