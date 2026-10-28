@@ -2,15 +2,27 @@ import { HubConnectionState, type HubConnection } from '@microsoft/signalr'
 import { useEffect, useRef } from 'react'
 import { createHubConnection, retryDelay } from '../../api/hubs'
 import type { AttendanceChangedEvent } from '../../types/attendance'
+import type { DocumentsChangedEvent } from '../../types/document'
 import type { AgendaChangedEvent } from '../../types/meeting'
 import type { ParticipantsChangedEvent } from '../../types/participant'
+import type { SpeechChangedEvent } from '../../types/speech'
 
 /**
  * What the meeting's hub announces; each only says "re-read". `agendaChanged` is any change to the
- * agenda (SCRUM-25); `meetingEnded` is the one that ending the meeting sends (SCRUM-69), the only
- * change of status anyone else hears about, so it is told to both.
+ * agenda (SCRUM-25), the item in progress included; `meetingEnded` is the one that ending the meeting
+ * sends (SCRUM-69), the only change of status anyone else hears about, so it is told to both.
+ * `documentsChanged` follows an upload (SCRUM-21). The per-mic transcript (SCRUM-109) says `speechChanged` for a
+ * sentence added or corrected, which a read of what changed since the last one catches, and `speechRemoved` for a
+ * sentence taken back or the capture mode changed, which only a full read shows.
  */
-export type MeetingEvent = 'participantsChanged' | 'attendanceChanged' | 'agendaChanged' | 'meetingEnded'
+export type MeetingEvent =
+  | 'participantsChanged'
+  | 'attendanceChanged'
+  | 'agendaChanged'
+  | 'meetingEnded'
+  | 'documentsChanged'
+  | 'speechChanged'
+  | 'speechRemoved'
 
 interface Listener {
   events: readonly MeetingEvent[]
@@ -50,8 +62,8 @@ function open(meetingId: string): Channel {
       () => false,
     )
 
-  for (const name of ['participantsChanged', 'attendanceChanged'] as const) {
-    connection.on(name, (event: ParticipantsChangedEvent | AttendanceChangedEvent) => {
+  for (const name of ['participantsChanged', 'attendanceChanged', 'documentsChanged'] as const) {
+    connection.on(name, (event: ParticipantsChangedEvent | AttendanceChangedEvent | DocumentsChangedEvent) => {
       if (event.meetingId.toLowerCase() !== meetingId.toLowerCase() || seen.has(event.eventId)) return
       seen.add(event.eventId)
       notify(name)
@@ -62,6 +74,15 @@ function open(meetingId: string): Channel {
     seen.add(event.eventId)
     notify('agendaChanged')
     if (event.changeType === 'MeetingEnded') notify('meetingEnded')
+  })
+  connection.on('speechChanged', (event: SpeechChangedEvent) => {
+    if (event.meetingId.toLowerCase() !== meetingId.toLowerCase() || seen.has(event.eventId)) return
+    seen.add(event.eventId)
+    notify(
+      event.changeType === 'ClipDeleted' || event.changeType === 'CaptureModeChanged'
+        ? 'speechRemoved'
+        : 'speechChanged',
+    )
   })
   connection.onreconnected(() => void join().then(() => notify()))
   connection.onclose(() => {

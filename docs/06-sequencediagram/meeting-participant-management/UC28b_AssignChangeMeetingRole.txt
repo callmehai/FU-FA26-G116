@@ -74,7 +74,7 @@ ParticipantController-->MeetingPage: MSG102 - Unable to update the meeting role.
 MeetingPage-->User: MSG102 - Unable to update the meeting role. Please try again.
 else Complete change saved
 opt Meeting is Published or InProgress
-ParticipantService->NotificationService: Notify affected internal participants or Guest by email (BR-92, BR-94)
+ParticipantService->NotificationService: Notify affected internal participants or Guest by email;\nthe actor gets no in-app notification (BR-92, BR-94, BR-322)
 activate NotificationService
 NotificationService-->ParticipantService: Delivery arranged / Failure recorded for retry
 deactivate NotificationService

@@ -36,6 +36,7 @@ public sealed class MeetingService(
             OnlineLink = valid.OnlineLink,
             Sensitivity = valid.Sensitivity,
             Description = valid.Description,
+            CaptureMode = valid.CaptureMode ?? CaptureMode.PerMic,
             Status = MeetingStatus.Draft,
             CreatedById = actorId,
             AssignedApproverId = null,
@@ -287,6 +288,12 @@ public sealed class MeetingService(
             locked["description"] = lockedMessage;
         }
 
+        // SCRUM-109: a published meeting changes it from the Bản ghi tab, which tells nobody "rescheduled".
+        if (input.CaptureMode is { } capture && capture != meeting.CaptureMode)
+        {
+            locked["captureMode"] = "Cuộc họp đã công bố, đổi cách ghi âm ở tab Bản ghi.";
+        }
+
         if (locked.Count > 0)
         {
             return MeetingResult.Invalid(locked);
@@ -342,6 +349,7 @@ public sealed class MeetingService(
         meeting.OnlineLink = input.OnlineLink;
         meeting.Sensitivity = input.Sensitivity;
         meeting.Description = input.Description;
+        if (input.CaptureMode is { } capture) meeting.CaptureMode = capture;
         meeting.UpdatedAt = now;
     }
 
@@ -353,7 +361,8 @@ public sealed class MeetingService(
             || !string.Equals(PlaceOf(meeting.Mode, meeting.Location), PlaceOf(input.Mode, input.Location), StringComparison.Ordinal)
             || !string.Equals(meeting.OnlineLink, input.OnlineLink, StringComparison.Ordinal)
             || meeting.Sensitivity != input.Sensitivity
-            || !string.Equals(meeting.Description, input.Description, StringComparison.Ordinal);
+            || !string.Equals(meeting.Description, input.Description, StringComparison.Ordinal)
+            || (input.CaptureMode is { } capture && capture != meeting.CaptureMode);
 
     /// <summary>
     /// An online meeting has no room: the form hides and clears the field, so a location stored on one
@@ -431,6 +440,21 @@ public sealed class MeetingService(
 
             command = command with { Reason = reason };
         }
+        else if (command.Action == MeetingTransitionAction.Cancel)
+        {
+            var reason = command.Reason?.Trim() ?? string.Empty;
+            if (reason.Length == 0)
+            {
+                return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.CancellationReasonRequired);
+            }
+
+            if (reason.Length > MeetingRules.MaxCancellationReasonLength)
+            {
+                return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.CancellationReasonTooLong);
+            }
+
+            command = command with { Reason = reason };
+        }
 
         try
         {
@@ -465,8 +489,16 @@ public sealed class MeetingService(
                     return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.Forbidden);
                 }
 
+                // Any status before the start may be cancelled (BR-297), so the source is the current one.
+                if (command.Action == MeetingTransitionAction.Cancel && !MeetingRules.IsCancellable(meeting.Status))
+                {
+                    return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.StatusConflict);
+                }
+
                 var (fromStatus, toStatus, historyAction) = command.Action switch
                 {
+                    MeetingTransitionAction.Cancel =>
+                        (meeting.Status, MeetingStatus.Cancelled, MeetingHistoryAction.Cancel),
                     MeetingTransitionAction.SubmitForApproval when meeting.Status == MeetingStatus.Rejected =>
                         (MeetingStatus.Rejected, MeetingStatus.WaitingApproval, MeetingHistoryAction.SubmitForApproval),
                     MeetingTransitionAction.SubmitForApproval =>
@@ -564,6 +596,14 @@ public sealed class MeetingService(
                 {
                     meeting.AssignedApproverId = null;
                 }
+                else if (command.Action == MeetingTransitionAction.Cancel)
+                {
+                    // The approver keeps their assignment for the record; the request simply closes (BR-299).
+                    meeting.CancelledAt = now;
+                    meeting.CancelledById = actorId;
+                    meeting.CancellationReason = command.Reason!;
+                    meeting.CancelledFromStatus = fromStatus;
+                }
 
                 var history = new MeetingStatusHistory
                 {
@@ -573,7 +613,9 @@ public sealed class MeetingService(
                     ToStatus = toStatus,
                     Action = historyAction,
                     ActorId = actorId,
-                    Reason = command.Action == MeetingTransitionAction.Reject ? command.Reason! : string.Empty,
+                    Reason = command.Action is MeetingTransitionAction.Reject or MeetingTransitionAction.Cancel
+                        ? command.Reason!
+                        : string.Empty,
                     AssignedApproverId = command.Action == MeetingTransitionAction.SubmitForApproval
                         ? command.AssignedApproverId
                         : null,
@@ -640,6 +682,28 @@ public sealed class MeetingService(
                         history.Id)).ToArray();
                     await meetings.AddNotificationsAsync(notifications, token);
                     await meetings.StagePublicationInvitationsAsync(meeting, now, token);
+                }
+                else if (command.Action == MeetingTransitionAction.Cancel)
+                {
+                    if (fromStatus == MeetingStatus.Published)
+                    {
+                        // Everyone it was announced to hears it, with the reason (BR-300). Staged in this
+                        // transaction and delivered afterwards, so a delivery failure cannot undo the cancellation.
+                        await meetings.StageCancellationAsync(meeting, history.Id, actorId, command.Reason!, now, token);
+                    }
+                    else if (fromStatus == MeetingStatus.WaitingApproval && meeting.AssignedApproverId is { } approverId)
+                    {
+                        // The approver was asked to review it; tell them there is nothing left to review.
+                        await meetings.AddNotificationsAsync(
+                        [CreateNotification(
+                            approverId,
+                            meeting,
+                            NotificationType.MeetingCancelled,
+                            "Cuộc họp đã bị huỷ",
+                            $"Cuộc họp “{meeting.Title}” đã bị huỷ, không còn cần duyệt. Lý do: {command.Reason}",
+                            now,
+                            history.Id)], token);
+                    }
                 }
 
                 await meetings.SaveChangesAsync(token);
@@ -735,7 +799,7 @@ public sealed class MeetingService(
             MeetingTransitionAction.SubmitForApproval =>
                 command.AssignedApproverId is { } id && id != Guid.Empty && command.Reason is null
                     && command.OrganizerId is null,
-            MeetingTransitionAction.Reject =>
+            MeetingTransitionAction.Reject or MeetingTransitionAction.Cancel =>
                 command.AssignedApproverId is null && command.OrganizerId is null,
             MeetingTransitionAction.TransferOrganizer =>
                 command.OrganizerId is { } organizerId && organizerId != Guid.Empty
@@ -797,6 +861,7 @@ public sealed class MeetingService(
             history.Action == MeetingHistoryAction.Reject ? history.Reason : null,
             history.AssignedApproverId,
             history.PreviousOrganizerId,
-            history.NewOrganizerId);
+            history.NewOrganizerId,
+            history.Action is MeetingHistoryAction.Cancel or MeetingHistoryAction.AutoCancel ? history.Reason : null);
 
 }

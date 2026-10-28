@@ -73,6 +73,69 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
     }
 
     [Fact]
+    public async Task Cancellation_emails_the_reason_and_a_calendar_cancel_to_those_who_got_the_invitation()
+    {
+        var s = await f.Seed(); using var secretary = f.Client(s.Secretary);
+        await Code(await Write(secretary, s.Url + "/participants", HttpMethod.Post,
+            new { userIds = new[] { s.Outsider }, role = "Member" }), 201, "MSG96");
+        Guid invitationId;
+        await using (var db = f.Db())
+            invitationId = await db.MeetingInvitationDispatches.Where(d => d.MeetingId == s.MeetingId).Select(d => d.Id).SingleAsync();
+        Assert.Equal(1, await Process(invitationId));
+
+        // What MeetingService does on Cancel from Published, inside its transaction (BR-300).
+        var historyId = Guid.CreateVersion7();
+        await using (var db = f.Db())
+        {
+            var meeting = await db.Meetings.Include(m => m.Participants).ThenInclude(p => p.User)
+                .SingleAsync(m => m.Id == s.MeetingId);
+            meeting.Status = MeetingStatus.Cancelled;
+            await new MeetingRepository(db).StageCancellationAsync(meeting, historyId, s.Organizer, "Lãnh đạo đi công tác", f.Clock.Now);
+            await db.SaveChangesAsync();
+        }
+
+        await using var check = f.Db();
+        var cancellations = await check.MeetingInvitationDispatches
+            .Where(d => d.MeetingId == s.MeetingId && d.EventKind == InvitationEventKind.Cancelled).ToArrayAsync();
+        Assert.Equal(4, cancellations.Length);
+        foreach (var d in cancellations) await Process(d.Id);
+
+        // Only the outsider's invitation ever went out; the seeded roster never got one, so it gets no withdrawal.
+        var email = await check.EmailMessages.SingleAsync(e => e.MeetingId == s.MeetingId
+            && cancellations.Select(c => c.DeduplicationKey).Contains(e.DeduplicationKey));
+        Assert.StartsWith("Cuộc họp đã bị huỷ:", email.Subject);
+        Assert.Contains("Lý do huỷ: Lãnh đạo đi công tác", email.Body);
+        Assert.DoesNotContain("https://", email.Body);
+        Assert.Contains("METHOD:CANCEL", email.CalendarAttachment);
+        Assert.Contains($"UID:{s.MeetingId:D}@trustcabinet", email.CalendarAttachment);
+        Assert.Equal(3, await check.MeetingInvitationDispatches.CountAsync(d =>
+            d.MeetingId == s.MeetingId && d.EventKind == InvitationEventKind.Cancelled
+            && d.State == InvitationDispatchState.Suppressed));
+        var bells = await check.Notifications.Where(n => n.MeetingId == s.MeetingId
+            && n.Type == NotificationType.MeetingCancelled).ToArrayAsync();
+        Assert.Equal(4, bells.Length);
+        Assert.All(bells, bell => Assert.Contains("Lãnh đạo đi công tác", bell.Body));
+    }
+
+    [Fact]
+    public async Task An_invitation_still_pending_when_the_meeting_is_cancelled_is_never_sent()
+    {
+        var s = await f.Seed(); using var secretary = f.Client(s.Secretary);
+        await Code(await Write(secretary, s.Url + "/participants", HttpMethod.Post,
+            new { userIds = new[] { s.Outsider }, role = "Member" }), 201, "MSG96");
+        await using var db = f.Db();
+        var invitation = await db.MeetingInvitationDispatches.SingleAsync(d => d.MeetingId == s.MeetingId);
+        await db.Meetings.Where(m => m.Id == s.MeetingId)
+            .ExecuteUpdateAsync(set => set.SetProperty(m => m.Status, MeetingStatus.Cancelled));
+
+        Assert.Equal(0, await Process(invitation.Id));
+
+        Assert.Equal(InvitationDispatchState.Suppressed,
+            (await db.MeetingInvitationDispatches.AsNoTracking().SingleAsync(d => d.Id == invitation.Id)).State);
+        Assert.False(await db.EmailMessages.AnyAsync(e => e.MeetingId == s.MeetingId));
+    }
+
+    [Fact]
     public async Task Hybrid_meeting_without_a_room_is_placed_at_its_link_alone()
     {
         var s = await f.Seed();

@@ -98,10 +98,19 @@ database ":Database" as Database
 
 - Actor: không có dấu `:`
 - Boundary/Page: tên màn hình hoặc component cấp màn hình
-- Controller: bắt đầu bằng `:`
-- Service: bắt đầu bằng `:`
-- Repository: bắt đầu bằng `:`
-- Database: bắt đầu bằng `:`
+- Controller: bắt đầu bằng `:`, tên dạng `:Meeting Document Controller` / `:Agenda Controller` /
+  `:Document Controller` / `:Folder Controller` — **không** đặt lifeline kiểu `Endpoints`,
+  `Minimal API`, tên file C# hay route group
+- Service: bắt đầu bằng `:`, cùng miền với Controller (`:Meeting Document Service`, …)
+- Repository / Policy / Object Storage: `participant`, bắt đầu bằng `:`
+- Database: `database ":Database"`
+
+Khi as-built theo code: **đúng luồng nghiệp vụ và nhánh MSG/BR**, không mirror HTTP path,
+status code (`404 MSG…`), tên method `*Async`, hay hub SignalR lên sơ đồ (§10). Boundary →
+Controller dùng hành động nghiệp vụ (`Add the selected library documents to the Meeting`),
+Controller → Service dùng tên thao tác miền (`addLibraryDocuments(...)`). Tham chiếu mẫu:
+[UC-23a](agenda-management/UC23a_CreateAgendaItem.txt) và các sequence FE-07 đã as-built trong
+[document-management/](document-management/README.md).
 
 ## 4. Trách nhiệm của từng layer
 

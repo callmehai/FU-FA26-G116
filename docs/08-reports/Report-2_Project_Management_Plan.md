@@ -1,6 +1,6 @@
 # Report 2 – Project Management Plan
 
-> Nguồn: [Tài liệu nguồn](source/Report_2_Project_Management_Plan.docx)
+> **GENERATED — DO NOT EDIT.** Snapshot từ DOCX local. Sửa [`source/Report_2_Project_Management_Plan.docx`](source/Report_2_Project_Management_Plan.docx) rồi chạy `python scripts/sync_reports.py --source docs/08-reports/source/Report_2_Project_Management_Plan.docx --report 2`. Sửa tay file này sẽ mất ở lần sync sau. Chi tiết: [08-reports/README.md](README.md).
 
 CAPSTONE PROJECT REPORT
 

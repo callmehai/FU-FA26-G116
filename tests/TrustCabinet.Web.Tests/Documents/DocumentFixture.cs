@@ -64,14 +64,17 @@ public sealed class DocumentFixture : IAsyncLifetime
         internal bool Enabled;
         /// <summary>Fails the save that writes an audit row instead.</summary>
         internal bool FailAudit;
+        /// <summary>Fails any save this says yes to (SCRUM-58, SCRUM-23).</summary>
+        internal Func<DbContext, bool>? When;
         public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,
             InterceptionResult<int> result, CancellationToken cancellationToken = default)
             => (Enabled && eventData.Context!.ChangeTracker.Entries<MeetingDocument>().Any(e => e.State == EntityState.Added))
                 || (FailAudit && eventData.Context!.ChangeTracker.Entries<AuditLogEntry>().Any(e => e.State == EntityState.Added))
+                || (When is { } when && when(eventData.Context!))
                 ? throw new DbUpdateException("Injected persistence failure.") : ValueTask.FromResult(result);
     }
 
-    /// <summary>Fails every query that reads the given table.</summary>
+    /// <summary>Fails every query that reads the given table, and every bulk delete or update of it.</summary>
     internal sealed class ReadFailureInterceptor : DbCommandInterceptor
     {
         internal string? Table;
@@ -80,6 +83,11 @@ public sealed class DocumentFixture : IAsyncLifetime
             InterceptionResult<System.Data.Common.DbDataReader> result, CancellationToken cancellationToken = default)
             => Table is { } table && command.CommandText.Contains(table, StringComparison.Ordinal)
                 ? throw new Npgsql.NpgsqlException("Injected read failure.") : ValueTask.FromResult(result);
+
+        public override ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(System.Data.Common.DbCommand command,
+            CommandEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
+            => Table is { } table && command.CommandText.Contains(table, StringComparison.Ordinal)
+                ? throw new Npgsql.NpgsqlException("Injected write failure.") : ValueTask.FromResult(result);
     }
 
     internal sealed record Scenario(Guid MeetingId, Guid Secretary, Guid Chair, Guid Member, Guid Organizer, Guid Outsider)

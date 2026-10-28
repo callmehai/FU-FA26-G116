@@ -1,0 +1,100 @@
+title UC-33c - Remove Document from Meeting
+
+actor "Chair or Secretary" as Actor
+boundary "Meeting Documents Tab" as DocumentsTab
+control ":Meeting Document Controller" as DocumentController
+control ":Meeting Document Service" as DocumentService
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Meeting Document Repository" as MeetingDocumentRepository
+database ":Database" as Database
+
+Actor->DocumentsTab: Confirm Remove Document from Meeting
+activate DocumentsTab
+
+DocumentsTab->DocumentController: Remove the document from the Meeting
+activate DocumentController
+
+DocumentController->DocumentService: removeDocument(meetingId, meetingDocumentId, actor)
+activate DocumentService
+
+DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting\nand is its current Chair or Secretary (BR-184)
+activate MeetingAccessPolicy
+MeetingAccessPolicy->Database: Retrieve Meeting status and the actor's current Meeting role
+activate Database
+Database-->MeetingAccessPolicy: Meeting status and Meeting role / Not found
+deactivate Database
+MeetingAccessPolicy-->DocumentService: Access, Meeting role and Meeting status / No access
+deactivate MeetingAccessPolicy
+
+alt Meeting is unavailable or the actor can no longer view it - EX-5
+    DocumentService-->DocumentController: MSG174 - This Meeting is not accessible.
+    DocumentController-->DocumentsTab: MSG174 - This Meeting is not accessible.
+    DocumentsTab-->Actor: MSG174 - This Meeting is not accessible.
+else Actor is no longer the Chair or Secretary - EX-2
+    DocumentService-->DocumentController: MSG169 - You no longer have permission to remove documents from this Meeting.
+    DocumentController-->DocumentsTab: MSG169 - You no longer have permission to remove documents from this Meeting.
+    DocumentsTab-->Actor: MSG169 - You no longer have permission to remove documents from this Meeting.
+else Meeting has ended - EX-1
+    DocumentService-->DocumentController: MSG248 - Documents cannot be removed after the Meeting has ended.
+    DocumentController-->DocumentsTab: MSG248 - Documents cannot be removed after the Meeting has ended.
+    DocumentsTab-->Actor: MSG248 - Documents cannot be removed after the Meeting has ended.
+else Meeting is cancelled - EX-6
+    DocumentService-->DocumentController: MSG349 - This meeting was cancelled and can no longer be modified.
+    DocumentController-->DocumentsTab: MSG349 - This meeting was cancelled and can no longer be modified.
+    DocumentsTab-->Actor: MSG349 - This meeting was cancelled and can no longer be modified.
+else Actor may remove documents
+    DocumentService->MeetingDocumentRepository: Get the selected document as currently attached to this Meeting (BR-211)
+    activate MeetingDocumentRepository
+    MeetingDocumentRepository->Database: Retrieve the document if not removed from this Meeting
+    activate Database
+    Database-->MeetingDocumentRepository: Attached document / Not attached
+    deactivate Database
+    MeetingDocumentRepository-->DocumentService: Attached document / Not attached
+    deactivate MeetingDocumentRepository
+
+    alt Document is no longer attached - EX-3
+        DocumentService-->DocumentController: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+        DocumentController-->DocumentsTab: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+        DocumentsTab-->Actor: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+    else Document is attached
+        DocumentService->MeetingDocumentRepository: Remove the document from the Meeting's current list and from every Agenda Item\nof this Meeting, keep its comments as history and record the actor and removal time,\nin one transaction with the Meeting locked\n(BR-197, BR-211, BR-212, BR-231, BR-281, BR-284)
+        activate MeetingDocumentRepository
+        MeetingDocumentRepository->Database: Under the Meeting lock, recheck status, the actor's role and that the document is attached,\nthen set removal time and remover and delete its Agenda Item links
+        activate Database
+        Database-->MeetingDocumentRepository: Saved / Failed
+        deactivate Database
+        MeetingDocumentRepository-->DocumentService: Saved / Failed
+        deactivate MeetingDocumentRepository
+
+        alt Save fails: Meeting is unavailable or actor can no longer view it - EX-5
+            DocumentService-->DocumentController: MSG174 - This Meeting is not accessible.
+            DocumentController-->DocumentsTab: MSG174 - This Meeting is not accessible.
+            DocumentsTab-->Actor: MSG174 - This Meeting is not accessible.
+        else Save fails: Actor is no longer the Chair or Secretary - EX-2
+            DocumentService-->DocumentController: MSG169 - You no longer have permission to remove documents from this Meeting.
+            DocumentController-->DocumentsTab: MSG169 - You no longer have permission to remove documents from this Meeting.
+            DocumentsTab-->Actor: MSG169 - You no longer have permission to remove documents from this Meeting.
+        else Save fails: Meeting has ended - EX-1
+            DocumentService-->DocumentController: MSG248 - Documents cannot be removed after the Meeting has ended.
+            DocumentController-->DocumentsTab: MSG248 - Documents cannot be removed after the Meeting has ended.
+            DocumentsTab-->Actor: MSG248 - Documents cannot be removed after the Meeting has ended.
+        else Save fails: Document is no longer attached - EX-3
+            DocumentService-->DocumentController: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+            DocumentController-->DocumentsTab: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+            DocumentsTab-->Actor: MSG170 - This document is no longer attached to the Meeting. Refresh the document list.
+        else Save fails: Database persistence error - EX-4
+            DocumentService-->DocumentController: MSG171 - Unable to remove the document. It remains attached to the Meeting. Please try again.
+            DocumentController-->DocumentsTab: MSG171 - Unable to remove the document. It remains attached to the Meeting. Please try again.
+            DocumentsTab-->Actor: MSG171 - Unable to remove the document. It remains attached to the Meeting. Please try again.
+        else Document removed
+            DocumentService-->DocumentController: Document removed
+            DocumentController-->DocumentsTab: Document removed
+            DocumentsTab->DocumentsTab: Refresh the Meeting document list
+            DocumentsTab-->Actor: MSG167 - Document removed from the Meeting successfully.
+        end
+    end
+end
+
+deactivate DocumentService
+deactivate DocumentController
+deactivate DocumentsTab

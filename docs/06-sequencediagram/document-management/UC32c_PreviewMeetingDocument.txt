@@ -19,18 +19,18 @@ activate DocumentController
 DocumentController->DocumentService: getDocumentContent(meetingId, meetingDocumentId, actor, download)
 activate DocumentService
 
-DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting,\nincluding a valid Guest invitation (BR-181, BR-200, BR-275)
+DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting (BR-275)
 activate MeetingAccessPolicy
-MeetingAccessPolicy->Database: Check current Meeting relationship or valid Guest invitation
+MeetingAccessPolicy->Database: Check the actor's current Meeting relationship
 activate Database
 Database-->MeetingAccessPolicy: Access / No access
 deactivate Database
 MeetingAccessPolicy-->DocumentService: Access / No access
 deactivate MeetingAccessPolicy
 
-DocumentService->MeetingDocumentRepository: Get document still attached to this Meeting (BR-211)
+DocumentService->MeetingDocumentRepository: Get the document while it is still attached to this Meeting,\nwith its stored file and the Meeting sensitivity (BR-211)
 activate MeetingDocumentRepository
-MeetingDocumentRepository->Database: Retrieve Meeting document not removed, with its stored file
+MeetingDocumentRepository->Database: Retrieve the Meeting document not removed, with its stored file
 activate Database
 Database-->MeetingDocumentRepository: Meeting document / Not found
 deactivate Database
@@ -65,24 +65,36 @@ else Document can be provided
 
     else File read
         opt Meeting is Confidential or Secret
-            DocumentService->AuditLogRepository: Record view or download with actor and time (BR-318)
+            DocumentService->AuditLogRepository: Record the view or download with the actor and time,\nbefore any content is sent (BR-318)
             activate AuditLogRepository
             AuditLogRepository->Database: Insert audit entry
             activate Database
-            Database-->AuditLogRepository: Entry saved
+            Database-->AuditLogRepository: Entry saved / Save failed
             deactivate Database
-            AuditLogRepository-->DocumentService: Entry saved
+            AuditLogRepository-->DocumentService: Entry saved / Save failed
             deactivate AuditLogRepository
         end
 
-        DocumentService-->DocumentController: File content, file name and Meeting sensitivity
-        DocumentController-->DocumentViewer: File content, file name and Meeting sensitivity
+        alt Audit entry could not be saved - EX-2 / EX-4
+            DocumentService-->DocumentController: No content is sent
+            DocumentController-->DocumentViewer: No content is sent
 
-        alt Download chosen for a Meeting that is not Secret - AF-1
-            DocumentViewer-->User: Provide the original file (BR-188)
-        else Viewing
-            DocumentViewer->DocumentViewer: Render PDF pages or the DOCX document in the browser;\nhide Download for a Secret Meeting (BR-188)
-            DocumentViewer-->User: Show the document with its name and Meeting sensitivity,\nread-only after the Meeting ends (BR-282)
+            alt Viewing - EX-2
+                DocumentViewer-->User: MSG158 - Unable to display the document. Please try again.
+            else Downloading - EX-4
+                DocumentViewer-->User: MSG160 - Unable to download the document. Please try again.
+            end
+
+        else Content can be sent
+            DocumentService-->DocumentController: File content and file name
+            DocumentController-->DocumentViewer: File content and file name
+
+            alt Download chosen for a Meeting that is not Secret - AF-1
+                DocumentViewer-->User: Provide the original file (BR-188)
+            else Viewing
+                DocumentViewer->DocumentViewer: Render the PDF pages or the DOCX document in the browser,\nread the Meeting sensitivity from the Meeting details and hide Download for a Secret Meeting\n(BR-188, BR-282)
+                DocumentViewer-->User: Show the document with its name and the Meeting sensitivity
+            end
         end
     end
 end

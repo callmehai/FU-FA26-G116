@@ -16,6 +16,13 @@ public static partial class MeetingRules
     public static bool IsEditable(MeetingStatus status)
         => status is MeetingStatus.Draft or MeetingStatus.Rejected;
 
+    /// <summary>UC-75: only before the meeting starts (BR-297). Started, ended or cancelled meetings are final.</summary>
+    public static bool IsCancellable(MeetingStatus status)
+        => status is MeetingStatus.Draft or MeetingStatus.WaitingApproval or MeetingStatus.Rejected
+            or MeetingStatus.Approved or MeetingStatus.Published;
+
+    public const int MaxCancellationReasonLength = 1000;
+
     /// <summary>UC-15 AF-1: once Published, only the schedule, place and link may move (BR-27, BR-158).</summary>
     public static bool IsReschedulable(MeetingStatus status)
         => status == MeetingStatus.Published;
@@ -54,6 +61,13 @@ public static partial class MeetingRules
             fieldErrors["sensitivity"] = "Mức độ mật không hợp lệ.";
         }
 
+        CaptureMode? captureMode = null;
+        if (input.CaptureMode is not null)
+        {
+            if (TryParseDefinedEnum<CaptureMode>(input.CaptureMode, out var parsedCapture)) captureMode = parsedCapture;
+            else fieldErrors["captureMode"] = "Cách ghi âm không hợp lệ.";
+        }
+
         MergeErrors(
             fieldErrors,
             ValidateInformation(title, start, end, mode, location, onlineLink, sensitivity, description));
@@ -79,7 +93,8 @@ public static partial class MeetingRules
             location,
             onlineLink,
             sensitivity,
-            description);
+            description,
+            captureMode);
         return true;
     }
 

@@ -29,6 +29,13 @@ public class Meeting : Entity
 
     public MeetingMode Mode { get; set; }
 
+    /// <summary>
+    /// How speech is captured (SCRUM-109). Changeable until the meeting starts, then fixed: people
+    /// must know before they speak whether their own mic is being transcribed, and a transcript
+    /// cannot be half per-mic lines and half one room recording.
+    /// </summary>
+    public CaptureMode CaptureMode { get; set; } = CaptureMode.PerMic;
+
     /// <summary>Room name, address, or how to join when the meeting is online.</summary>
     public string Location { get; set; } = string.Empty;
 
@@ -48,6 +55,21 @@ public class Meeting : Entity
 
     /// <summary>Written by the system when the Chair ends the meeting (UC-22).</summary>
     public DateTimeOffset? ActualEndedAt { get; set; }
+
+    /// <summary>When the meeting became <see cref="MeetingStatus.Cancelled"/> (UC-75, BR-298).</summary>
+    public DateTimeOffset? CancelledAt { get; set; }
+
+    /// <summary>Who cancelled it; null when the system did because nobody started it (BR-301).</summary>
+    public Guid? CancelledById { get; set; }
+    public User? CancelledBy { get; set; }
+
+    public string CancellationReason { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The status it was cancelled from. A meeting cancelled after it was Published stays visible to the
+    /// people it was announced to; one cancelled earlier never reached them (BR-29).
+    /// </summary>
+    public MeetingStatus? CancelledFromStatus { get; set; }
 
     public Guid CreatedById { get; set; }
     public User CreatedBy { get; set; } = null!;

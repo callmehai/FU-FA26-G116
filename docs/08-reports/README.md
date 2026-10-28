@@ -1,5 +1,13 @@
 # Đồng bộ báo cáo
 
+> **CẤM sửa tay các `Report-*.md` trong thư mục này** (và các bản trích
+> `docs/01-requirements/05-use-case-specifications.md`, `06-business-rules.md`). Đó là snapshot
+> sinh từ script — lần sync sau sẽ ghi đè. **Nguồn duy nhất để sửa nội dung report** là DOCX trong
+> [`source/`](source/README.md). Quy trình đúng: sửa DOCX →
+> `python scripts/sync_reports.py --source docs/08-reports/source/<tên>.docx --report <số>` →
+> rà `git diff`. Chỉ đẩy Drive khi được yêu cầu (`push_reports.py`). Không tải Drive về để làm
+> nguồn.
+
 File này là chỉ dẫn duy nhất cho `docs/08-reports/`. Áp dụng cho mọi DOCX trong `source/` và
 Markdown snapshot của Report 1–7.
 
@@ -99,8 +107,14 @@ Chỉ đồng bộ Report 3:
 
 ```powershell
 python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3
-git diff -- docs/08-reports/Report-3_Software_Requirement_Specification.md
+git diff -- docs/08-reports docs/01-requirements docs/uc-map.html
 ```
+
+Khi đồng bộ Report 3, script kích hoạt **quy trình 1 lệnh hoàn chỉnh (Pipeline)**:
+1. Chuyển đổi DOCX sang `Report-3_Software_Requirement_Specification.md`.
+2. Tự động gọi `sync_requirement_extracts.py` cập nhật nguyên văn `05-use-case-specifications.md` và `06-business-rules.md`.
+3. Tự động gọi `trace_br.py --html` sinh bản đồ tương tác `docs/uc-map.html`.
+4. Tự động đối chiếu (audit) chéo số lượng Use Case với `00-master-use-case-inventory.md` và danh mục `00-danh-muc-ma-thong-bao.md`, in cảnh báo ngay nếu có mã bị lệch pha.
 
 Script nhận tên `Report-1.docx` và `Report_1_Project_Introduction.docx` (cùng kiểu với các report
 khác), chỉ đọc file DOCX trực tiếp trong thư mục nguồn, và báo lỗi nếu có nhiều file cùng số report.

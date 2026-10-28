@@ -195,8 +195,9 @@ public sealed partial class MessageCodeCatalogueTests
             RepoRoot, "backend", "TrustCabinet.Web", "Endpoints", "ParticipantEndpoints.cs"));
         Assert.DoesNotContain(code, BackendConstant().Matches(endpoint)
             .Select(match => match.Groups[1].Value));
+        // The source row (UC-/ADR- column), not the HTTP contract rows MSG238/MSG239 gained in SCRUM-112.
         var row = Assert.Single(Regex.Matches(File.ReadAllText(CataloguePath),
-            @"^\|\s*`(MSG\d+)`\s*\|([^\r\n]+)", RegexOptions.Multiline),
+            @"^\|\s*`(MSG\d+)`\s*\|\s*((?:UC-|ADR-)[^\r\n]+)", RegexOptions.Multiline),
             match => match.Groups[1].Value == code);
         Assert.Contains(source, row.Groups[2].Value, StringComparison.Ordinal);
     }
@@ -236,7 +237,7 @@ public sealed partial class MessageCodeCatalogueTests
     public void Workflow_sequences_use_catalogued_codes_with_the_documented_status(string diagram)
     {
         var source = File.ReadAllText(Path.Combine(
-            RepoRoot, "docs", "assets", "diagrams", "meeting-management", $"{diagram}.mmd"));
+            RepoRoot, "docs", "06-sequencediagram", "meeting-management", $"{diagram}.mmd"));
         Assert.DoesNotMatch(@"\bMEETING_[A-Z_]+\b", source);
         var responses = DiagramResponseCode().Matches(source);
         Assert.NotEmpty(responses);

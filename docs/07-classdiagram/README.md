@@ -18,11 +18,11 @@ trích xuất nguyên trạng các class C# đã triển khai.
 | FE-04 Meeting Management | [drawio](feature-04-meeting-management-class-diagram.drawio) · [PNG](feature-04-meeting-management-class-diagram.drawio.png) | UC-14–UC-22, UC-75 |
 | FE-05 Agenda Management | [drawio](feature-05-agenda-management-class-diagram.drawio) · [PNG](feature-05-agenda-management-class-diagram.drawio.png) | UC-23a/b/c/d, UC-24–UC-26, UC-77 |
 | FE-06 Meeting Participant Management | [drawio](feature-06-meeting-participant-management-class-diagram.drawio) · [PNG](feature-06-meeting-participant-management-class-diagram.drawio.png) | UC-27, UC-28a/b/c, UC-29–UC-31, UC-73 |
-| FE-07 Meeting Document Management (một phần) | [drawio](feature-07-document-management-class-diagram.drawio) · [PNG](feature-07-document-management-class-diagram.drawio.png) | UC-32a, UC-32c, UC-33a AF-1, UC-35 |
+| FE-07 Meeting Document Management | [drawio](feature-07-document-management-class-diagram.drawio) · [PNG](feature-07-document-management-class-diagram.drawio.png) | UC-32a, UC-32c, UC-33a–UC-33d, UC-34, UC-34b, UC-35, UC-36, UC-71a/b/c, UC-72a/b/c/d (as-built, xem §6e) |
 | FE-11 Voting Management | [drawio](feature-11-voting-management-class-diagram.drawio) · [PNG](feature-11-voting-management-class-diagram.drawio.png) | UC-52a, UC-52b, UC-53–UC-57, UC-76a, UC-76b |
 | FE-13 Notification | [drawio](feature-13-notification-management-class-diagram.drawio) · [PNG](feature-13-notification-management-class-diagram.drawio.png) | UC-66, UC-67a/b, UC-68 |
 
-FE-07 mới có phần đọc tài liệu cuộc họp và góp ý (UC-32a, UC-32c, UC-35 — SCRUM-21/22/23, 22/10/2026) và tải từ máy vào cuộc họp (UC-33a AF-1 — SCRUM-107, 23/10/2026): thêm `uploadDocuments` từ `MeetingDocumentsTab` xuống service, `FileStorage.write/delete` (R2, [ADR-0024](../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)), `FolderRepository`, entity `Folder` và `Document` (dòng kho), `StoredFile.originalFileName`, và làn bên trái cho job dọn file mồ côi `OrphanFilePurgeJob` + `StoredFileRepository` (BR-213). Cùng đợt sửa `downloadDocument` của `DocumentViewer` thêm `meetingId` cho khớp controller. Luồng chọn từ kho, gỡ/gắn tài liệu, xem/quản lý kho (UC-33a luồng chính, UC-33b–d, UC-34, UC-36, UC-71, UC-72 — SCRUM-58) chưa vẽ. Còn thiếu quan hệ tác giả `DocumentComment.authorId` → `User` (mới vẽ phía Guest); để lại cho SCRUM-23. FE-08–FE-10, FE-12, FE-14 và FE-15 chưa có class diagram trong thư mục này. FE-05 Meeting Session cũ
+FE-07 mới có phần đọc tài liệu cuộc họp và góp ý (UC-32a, UC-32c, UC-35 — SCRUM-21/22/23, 22/10/2026) và tải từ máy vào cuộc họp (UC-33a AF-1 — SCRUM-107, 23/10/2026): thêm `uploadDocuments` từ `MeetingDocumentsTab` xuống service, `FileStorage.write/delete` (R2, [ADR-0024](../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)), `FolderRepository`, entity `Folder` và `Document` (dòng kho), `StoredFile.originalFileName`, và làn bên trái cho job dọn file mồ côi `OrphanFilePurgeJob` + `StoredFileRepository` (BR-213). Cùng đợt sửa `downloadDocument` của `DocumentViewer` thêm `meetingId` cho khớp controller. Sau đó (27/10/2026, PR 166): `DocumentRepository.sumStoredBytes` / `MeetingDocumentRepository.sumStoredBytes` (hạn mức 10 GB, BR-333, ADR-0034) và `viewLockedLibrary` + `findOwnerLibrary` trên `DocumentController`/`DocumentService`/`DocumentRepository` (UC-34b, BR-334, ADR-0035; code ở `PersonalLibraryService`); `User Repository` và `AuditLog` của UC-34b là lớp ngoài feature, chưa vẽ. Ảnh PNG xuất scale 1.2 với `--disable-gpu --disable-software-rasterizer` vì scale 2 bị cắt trên máy này. Luồng chọn từ kho, gỡ/gắn tài liệu, xem/quản lý kho (UC-33a luồng chính, UC-33b–d, UC-34, UC-36, UC-71, UC-72 — SCRUM-58/SCRUM-92) đã vẽ ngày 27/10/2026 và chuyển as-built ngày 28/10/2026 (§6e). Còn thiếu quan hệ tác giả `DocumentComment.authorId` → `User` (mới vẽ phía Guest); để lại cho SCRUM-23. FE-11 có class diagram thiết kế (25/10/2026, §6f); FE-08–FE-10, FE-12, FE-14 và FE-15 chưa có class diagram trong thư mục này. FE-05 Meeting Session cũ
 đã bị bỏ theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md); FE-05 hiện tại là Agenda.
 UC-07 hiện nằm trong FE-02, không còn một bản 02b độc lập.
 
@@ -168,13 +168,71 @@ class và cạnh cần thiết; giữ ID, bố cục và quan hệ cũ.
 
 Vẽ mới từ UC-32a, UC-32c, UC-35 (bản sửa 22/10/2026) và ba sequence cùng tên trong
 [document-management](../06-sequencediagram/document-management/README.md). Entity theo Report 3 §I.3.2 (Entity 19,
-20, 20a, 21) — tức mô hình **đích**, chưa phải code: code vẫn là `Document.MeetingId` + `DocumentVersion`, migration làm
+20, 20a, 21) — tức mô hình **đích**, chưa phải code: lúc đó code còn là `Document.MeetingId` + `DocumentVersion` (đã bỏ theo ADR-0018), migration làm
 khi triển khai SCRUM-58/SCRUM-21. `MeetingAccessPolicy` dùng chung với FE-05; `FileStorage` là trách nhiệm đọc object
 trong kho đối tượng, chưa có class tương ứng (**PROPOSED**). `MeetingDocumentGroups`, `FileContent` là DTO trả về,
 không vẽ thành class. `AuditLogRepository` phục vụ BR-318. Validator 0 lỗi; đã render và xem ảnh. PNG xuất bằng draw.io
 desktop, nhúng model ở chunk `zTXt`; chưa mở lại PNG bằng draw.io để kiểm tra roundtrip.
 
-## 6c. FE-11 — biểu quyết · 25/10/2026
+## 6c. FE-07 — đối chiếu as-built · 27/10/2026
+
+Đợt BA Final Review của SCRUM-107 (UC-33a) và SCRUM-21 (UC-32a, UC-32c): đọc code đã merge rồi sửa **cục bộ** source
+FE-07 cho khớp, giữ nguyên ID, bố cục và các quan hệ khác. Ảnh `feature-07-document-management-class-diagram.drawio.png`
+đã xuất lại từ đúng source này (draw.io desktop, `--scale 2`, 4365×3279, không nhúng diagram) và đã xem lại ảnh.
+
+- `MeetingDocumentsTab`: `switchGrouping(byItem | general)` — nhóm Biểu quyết chưa có (chờ UC-74/SCRUM-96);
+  `uploadDocuments(meetingId, files[], pageCounts[])`.
+- `MeetingDocumentController` / `MeetingDocumentService`: bỏ `fromRoom` (máy chủ trả `currentAgendaItemId`, trình duyệt tự
+  đưa mục đang bàn lên đầu); `uploadDocuments(..., files, pageCounts, actor)`; `groupDocuments(documents, agenda)` — bỏ
+  tham số `votes`.
+- Thêm lớp `<<utility>> DocumentFileRules` (`validateFiles`, `detectContentType`, `uploadFolderName`, giới hạn 10 tệp /
+  200 MB mỗi lần, 50 MB mỗi tệp — BR-319, BR-187), vẽ cạnh phụ thuộc từ controller và service. Đây là lớp thật trong
+  `TrustCabinet.Domain/Documents`, không phải lớp đề xuất.
+- `MeetingDocumentRepository`: `addStoredFiles`, `findUploadFolder`, `addFolder`, `addUpload` thay cho `addUploads(...)`,
+  đúng thứ tự "ghi dòng tệp lưu trữ → đẩy byte → transaction khoá cuộc họp" của ADR-0024 §4.
+- Xoá lớp `FolderRepository` (code dùng chung `MeetingDocumentRepository` cho thư mục) và hai cạnh nối tới nó.
+
+## 6d. FE-07 — kho cá nhân và gắn/gỡ tài liệu · 27/10/2026
+
+Bước 5 của note bàn giao FE-07 (SCRUM-92): sửa cục bộ source, giữ ID và các quan hệ cũ. Lúc vẽ **chưa có code**;
+đã chuyển as-built ở §6e (28/10/2026).
+Theo yêu cầu BA (27/10/2026) diagram **không gắn nhãn PROPOSED**, khác quy ước ở §2.
+Tên và chữ ký lúc đó lấy từ message controller → service của 13 sequence UC-33a–d, UC-34, UC-36, UC-71a/b/c, UC-72a/b/c/d.
+
+- Class mới (làn đáy, luồng đi lên cho gần entity `Folder`/`Document`): `PersonalLibraryScreen`, `FolderController`,
+  `FolderService`, `DocumentController`, `DocumentService`, `FolderRepository`, `DocumentRepository`.
+- Class cũ thêm hàm: `MeetingDocumentsTab`, `MeetingDocumentController`, `MeetingDocumentService` thêm
+  `addLibraryDocuments`, `removeDocument`, `attachDocuments`, `detachDocument` (UC-33a luồng chính, 33b, 33c, 33d);
+  `MeetingDocumentRepository` thêm `findAgendaItem`, `findAgendaLinks`, `findAgendaLink`, `addLibraryDocuments`,
+  `addAgendaLinks`, `addUploadsToAgendaItem`, `removeAgendaLink`, `markRemoved`. Không vẽ class agenda (phương án (b)).
+- Tên: sequence gọi repository kho là `Document Repository` (UC-34/36/71) và `Library Document Repository` (UC-33a/b); diagram
+  dùng một tên `DocumentRepository`. `DocumentController`/`DocumentService` là phía kho cá nhân, phân biệt với
+  `MeetingDocumentController`/`MeetingDocumentService` là phía tài liệu cuộc họp (sequence UC-33 dùng lifeline
+  `:Meeting Document Controller`, bí danh `DocumentController` trong source). Sequence ghi `addLibraryDocuments`; note ghi `addFromLibrary` — diagram theo sequence.
+- Quan hệ `Folder` tự tham chiếu, `Folder`–`Document`, `Document`–`MeetingDocument`, `Document`–`StoredFile` đã có từ trước; không thêm.
+- Chưa vẽ: phụ thuộc `MeetingDocumentService` → `DocumentRepository` (đọc kho khi chọn từ kho) và `DocumentService` →
+  `FileStorage`/`DocumentFileRules` (UC-36), vì mọi đường nối đều xuyên qua các lớp khác; hàm tương ứng vẫn có đủ trên các class.
+  `existsInMeeting` trong note không cần: service kiểm bằng `findCurrentByMeeting`.
+- PNG xuất bằng draw.io desktop, `--scale 2`, không nhúng diagram (4904×6679); đã xem lại ảnh. Nối `StoredFileRepository` →
+  `StoredFile` được đẩy xuống đáy để không cắt làn mới.
+
+## 6e. FE-07 — as-built kho / gắn-gỡ · 28/10/2026 (BA Final Review)
+
+Sửa cục bộ source đã vẽ ở §6d cho khớp code đã merge (SCRUM-110/111/112/113): giữ ID và bố cục.
+
+- `MeetingDocumentController` / `MeetingDocumentService`: tách gắn mục nghị sự thành ba operation
+  `attachMeetingDocuments` / `attachLibraryDocuments` / `attachUploadedDocuments` (ba endpoint
+  `…/agenda/{id}/documents`, `…/from-library`, `…/upload`).
+- `PersonalLibraryScreen` / `DocumentController` / `DocumentService`: thêm mở nội dung tệp kho
+  (`openDocument` / `getDocumentContent`) — `GET /api/documents/{id}/content`.
+- Đổi tên / di chuyển vẫn là operation `rename*` / `move*` (HTTP as-built: `PUT …/name`,
+  `PUT …/folder` hoặc `PUT …/parent`; cây thư mục nằm trong `GET /api/documents`, không có
+  `GET /api/folders`).
+- Stereotype `<<control>> DocumentController` / `FolderController` giữ theo sequence; code thực tế
+  là `MapPersonalLibraryEndpoints` + `PersonalLibraryService` (một service gộp thư mục và tài liệu).
+- PNG xuất lại scale 1.2, `--disable-gpu --disable-software-rasterizer`.
+
+## 6f. FE-11 — biểu quyết · 25/10/2026
 
 Vẽ mới từ 9 sequence trong [voting-management](../06-sequencediagram/voting-management/README.md) (UC-52a, UC-52b, UC-53,
 UC-54, UC-55, UC-56, UC-57, UC-76a, UC-76b), UC/BR/MSG đã chốt 25/10/2026 và schema voting trong [ERD](../02-design/02-erd.md)
@@ -215,6 +273,7 @@ nên tên/tham số là **PROPOSED**. Return, SQL I/O, activation và `alt` khô
 - **Hình học:** validator báo 3 cạnh giao nhau ở cụm `User`/`MeetingGuestInvitation` (mỗi trong 3 entity phiếu nối tới cả hai, hai tầng nên
   không tránh được). Không có chồng chữ hay cạnh xuyên class. PNG xuất bằng draw.io 29.6.1, chunk `zTXt` đã viết lại zlib + CRC đúng, `IEND`
   đủ, XML nhúng khớp source; CLI hiện tại không mở lại được PNG (kể cả FE-06 cũ) nên **chưa kiểm roundtrip bằng draw.io**.
+
 
 ## 7. Rà soát hiện trạng · 14/10/2026
 

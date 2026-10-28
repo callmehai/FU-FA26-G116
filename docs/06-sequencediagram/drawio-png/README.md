@@ -1,20 +1,44 @@
 # Ảnh sequence từ Draw.io
 
-Thư mục này chứa một ảnh `.drawio.png` cho mỗi tab Use Case trong
-[`TrustCabinet_Sequence_Diagrams.drawio`](../TrustCabinet_Sequence_Diagrams.drawio). Mỗi ảnh được
-xuất từ tab tương ứng và giữ dữ liệu Draw.io nhúng để có thể mở lại bằng diagrams.net.
+Thư mục này giữ một ảnh `.drawio.png` cho mỗi tab Use Case trong
+[`TrustCabinet_Sequence_Diagrams.drawio`](../TrustCabinet_Sequence_Diagrams.drawio).
 
-Chạy từ thư mục gốc repo để đồng bộ toàn bộ ảnh:
+## Cách xuất khuyến nghị (từ `.txt`)
+
+Khi sửa source SequenceDiagram.org, dùng một lệnh — dựng tab theo style agenda (UC-23a) rồi xuất PNG
+từ **file 1 trang** (không `--embed-diagram`, không `--page-index` trên file gộp — hai cách đó dễ treo
+CLI / PNG phình to):
+
+```powershell
+python scripts/txt_to_sequence_drawio_png.py docs/06-sequencediagram/<feature>/UC….txt
+```
+
+Scale tự chọn ≤ 2 để ảnh không cắt (~2900 px mỗi chiều). Thêm `--no-splice` nếu chỉ muốn PNG, không
+ghi vào file draw.io gộp. `--scale 0.5` để ép scale.
+
+## Đồng bộ toàn bộ từ file gộp (cũ, chậm hơn)
 
 ```powershell
 python scripts/sync_sequence_drawio_png.py
 ```
 
-Cần cài Draw.io CLI. Nếu executable chưa có trong `PATH`, đặt biến môi trường
-`DRAWIO_EXECUTABLE` trỏ tới file `draw.io.exe`/`drawio` trước khi chạy. Script đọc page ID và thứ tự
-tab từ file gốc, bỏ qua tab index, xuất ảnh ở scale 2, rồi xóa các ảnh `.drawio.png` cũ không còn
-tab UC tương ứng. Không chỉnh sửa ảnh trong thư mục này; hãy sửa tab trong file Draw.io gộp rồi chạy
-lại script.
+Cần Draw.io CLI (`DRAWIO_EXECUTABLE` nếu chưa có trong `PATH`). Script này xuất từng tab từ file gộp
+ở scale 2 + `--embed-diagram` — với trang lớn dễ chậm hoặc cắt trắng; ưu tiên script `.txt` ở trên.
+
+## Xuất ảnh các trang lớn (27/10/2026)
+
+Draw.io CLI 32.6.1 trên máy này chỉ vẽ trọn một trang khi chạy với `--disable-gpu --disable-software-rasterizer`, và cắt
+phần dưới hoặc bên phải nếu ảnh ra quá khoảng 2900 px mỗi chiều (ví dụ scale 2 cho trang rộng 4000 đơn vị). Bốn ảnh sau được
+xuất lại ngày 27/10/2026 ở scale nhỏ hơn 2 để vẫn trọn vẹn, mở kiểm tra bằng cách so vùng có nét vẽ với kích thước ảnh:
+
+| Ảnh | Scale |
+|---|---|
+| `uc33a_uploaddocumentstomeeting` | 0.6 |
+| `uc33b_attachdocumentstoagendaitem` | 0.5 (bản scale 2 cũ trắng hoàn toàn) |
+| `uc34b_viewlockedaccountlibrary` | 0.9 |
+| `uc36_uploadtopersonallibrary` | 0.7 |
+
+Muốn nét to hơn thì phóng to trực tiếp trong file Draw.io; ảnh chỉ để xem nhanh.
 
 ## Ảnh đang chờ xuất lại (19/10/2026)
 
@@ -33,3 +57,7 @@ cắt phần dưới nên xuất ở **scale 1.5**; chạy lại script toàn b�
 
 **23/10/2026 (SCRUM-107):** thêm tab UC-33a AF-1 *Upload Documents to Meeting* và xuất ảnh. Cũng xuất ở **scale 1.5**
 vì scale 2 bị cắt nửa dưới, như UC-32c.
+
+**27/10/2026 (FE-07):** dựng lại tab UC-32a, UC-32c, UC-33a (tải lên) và thêm 13 tab UC-33a (thư viện), UC-33b, UC-33c, UC-33d, UC-34, UC-36, UC-71a/b/c, UC-72a/b/c/d từ các `.txt` trong `document-management/`; xuất lại 16 ảnh. Cả 16 ảnh xuất ở scale 2 bằng draw.io 32.6.1 (bản 29.6.1 không vẽ biểu tượng actor/boundary/control/database).
+
+**28/10/2026 (BA Final Review FE-07):** dựng lại 9 tab as-built đã đổi MSG/Controller (UC-33a×2, UC-33b–d, UC-35, UC-71b, UC-72a/b) bằng `scripts/txt_to_sequence_drawio_png.py` (style agenda: actor/boundary/control/database, title UC, message 13px). Scale tự chọn — UC-33b ~0.4 vì ~177 message / 35 nhánh `else`.

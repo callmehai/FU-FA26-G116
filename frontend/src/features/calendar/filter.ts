@@ -6,7 +6,7 @@ import type { ScheduleEntry } from './useSchedule'
  * calendarFilters.ts): a draft sits with the ended meetings in the grey group, since neither is
  * on anyone's agenda.
  */
-export const GROUPS = ['waiting', 'approved', 'published', 'live', 'ended', 'rejected'] as const
+export const GROUPS = ['waiting', 'approved', 'published', 'live', 'ended', 'rejected', 'cancelled'] as const
 export type StatusGroup = (typeof GROUPS)[number]
 
 export const GROUP_OF: Record<MeetingStatus, StatusGroup> = {
@@ -17,6 +17,8 @@ export const GROUP_OF: Record<MeetingStatus, StatusGroup> = {
   Published: 'published',
   InProgress: 'live',
   Ended: 'ended',
+  // Its own group: a cancelled meeting is not one that took place, and it stays off the calendar by default.
+  Cancelled: 'cancelled',
 }
 
 export const GROUP_LABEL: Record<StatusGroup, string> = {
@@ -26,6 +28,7 @@ export const GROUP_LABEL: Record<StatusGroup, string> = {
   live: 'Đang diễn ra',
   ended: 'Đã kết thúc',
   rejected: 'Bị từ chối',
+  cancelled: 'Đã huỷ',
 }
 
 /** The colour of each group's dot: the status chip's tone. */
@@ -36,6 +39,7 @@ export const GROUP_TONE: Record<StatusGroup, string> = {
   live: 'live',
   ended: 'slate',
   rejected: 'red',
+  cancelled: 'slate',
 }
 
 /** What the calendar opens on, as in eCab: the meetings that will happen. The rest is one click away. */

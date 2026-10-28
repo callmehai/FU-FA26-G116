@@ -51,7 +51,7 @@ Database-->ParticipantRepository: Complete save / No changes saved
 deactivate Database
 ParticipantRepository-->ParticipantService: Complete save / No changes saved
 deactivate ParticipantRepository
-alt Save fails - EX-2
+alt Save fails - EX-3
 ParticipantService-->ParticipantController: MSG108 - Unable to save the meeting invitation response. Please try again.
 ParticipantController-->MeetingPage: MSG108 - Unable to save the meeting invitation response. Please try again.
 MeetingPage-->User: MSG108 - Unable to save the meeting invitation response. Please try again.

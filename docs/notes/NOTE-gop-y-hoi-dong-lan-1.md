@@ -7,8 +7,8 @@
 
 | Mục | Kết quả | Còn lại |
 |---|---|---|
-| 1, 3. Xác định người nói / hướng AI | Chọn hướng A: gắn người nói theo track mic họp online, không Voice ID. Chưa sửa Report 3 vì FE-08/FE-10 còn placeholder | ADR; [note UC chưa đặc tả](NOTE-uc-chua-dac-ta-cho-sua.md) |
-| 2. Chi phí AI | Chưa làm | Bảng chi phí |
+| 1, 3. Xác định người nói / hướng AI | 23/10/2026 đổi sang hướng B: Voice ID có đồng ý + tách người nói, mô hình tự chạy ([ADR-0026](../05-decisions/0026-tu-chay-nhan-dang-giong-noi.md), [ADR-0027](../05-decisions/0027-voice-id-co-dong-y.md)); họp online vẫn ghi theo mic từng người (SCRUM-44). Đã có code và [báo cáo](NOTE-bao-cao-nhan-dien-giong-noi.md) | Report 3 (FE-08/FE-10); chữ ngay trong khi họp |
+| 2. Chi phí AI | Có bảng cho chuyển chữ, Voice ID, tóm tắt: [báo cáo mục 4](NOTE-bao-cao-nhan-dien-giong-noi.md#4-chi-phí) | Đo tốc độ trên EC2; đưa vào Report 3 |
 | 4.1. Huỷ / quá hạn | Thêm **UC-75 Cancel Meeting**; sửa UC-16, UC-17; BR-297 → BR-302; MSG261 → MSG264 | PO xác nhận mốc 24 giờ / 4 giờ; entity, job, code; ADR |
 | 4.2. Người ký, ban hành | Chưa sửa: FE-12 còn placeholder | Note UC chưa đặc tả |
 | 4.3. Uỷ quyền, nhắc lịch | BR-202 ngừng dùng; thêm BR-303 nhắc lịch (theo code hiện tại) | Chú thích Permission Matrix còn chữ "delegated" |

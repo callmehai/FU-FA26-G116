@@ -80,6 +80,43 @@ public static class AuditActions
     /// </summary>
     public const string RoleObjectType = "Role";
 
+    /// <summary>SCRUM-29 — a secretary stored a recording, after confirming the participants were told.</summary>
+    public const string RecordingUploaded = "recording.uploaded";
+
+    /// <summary>
+    /// The audio bytes of a recording were erased — on a secretary's request or because the retention period
+    /// ran out (the details say which). The row stays, so the erasure itself can be shown to have happened.
+    /// </summary>
+    public const string RecordingErased = "recording.erased";
+
+    public const string RecordingObjectType = "Recording";
+
+    /// <summary>SCRUM-35 — a person agreed to Voice ID; the notice version and purpose they agreed to are in the details.</summary>
+    public const string VoiceConsentGranted = "voice.consent_granted";
+
+    /// <summary>A person withdrew Voice ID; the details say how many samples were erased with it.</summary>
+    public const string VoiceConsentWithdrawn = "voice.consent_withdrawn";
+
+    public const string VoiceSampleAdded = "voice.sample_added";
+    public const string VoiceSampleDeleted = "voice.sample_deleted";
+    public const string VoiceConsentObjectType = "VoiceConsent";
+    public const string VoiceSampleObjectType = "VoiceSample";
+
+    /// <summary>A secretary said who a voice in a recording is — or cleared it. The machine's suggestion travels along.</summary>
+    public const string TranscriptSpeakerAssigned = "transcript.speaker_assigned";
+    public const string TranscriptSpeakerObjectType = "TranscriptSpeaker";
+
+    /// <summary>SCRUM-109 — the Secretary corrected the machine's text of one per-mic sentence.</summary>
+    public const string SpeechClipEdited = "speech_clip.edited";
+
+    /// <summary>A per-mic sentence was taken out — by its speaker or the Secretary (the details say which).</summary>
+    public const string SpeechClipDeleted = "speech_clip.deleted";
+    public const string SpeechClipObjectType = "SpeechClip";
+
+    /// <summary>The Chair or a Secretary switched how the meeting is captured before it started.</summary>
+    public const string CaptureModeChanged = "meeting.capture_mode_changed";
+    public const string MeetingObjectType = "Meeting";
+
     /// <summary>UC-32c — a document of a Confidential or Secret meeting was opened in the viewer (BR-318).</summary>
     public const string DocumentViewed = "document.viewed";
 
@@ -91,4 +128,10 @@ public static class AuditActions
     /// MeetingDocument, since that is what the reader opened; the meeting goes in the details.
     /// </summary>
     public const string MeetingDocumentObjectType = "MeetingDocument";
+
+    /// <summary>
+    /// PO 27/10/2026 — an administrator read a deactivated person's personal library, to recover their documents.
+    /// The <c>ObjectId</c> is the owner; the details say which folder was listed or which document was opened.
+    /// </summary>
+    public const string PersonalLibraryRead = "library.read";
 }

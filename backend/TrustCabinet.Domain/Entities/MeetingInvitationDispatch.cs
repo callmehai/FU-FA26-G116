@@ -2,7 +2,7 @@ using TrustCabinet.Domain.Entities.Common;
 
 namespace TrustCabinet.Domain.Entities;
 
-public enum InvitationEventKind { Invitation, RoleChanged, Removed, Rescheduled }
+public enum InvitationEventKind { Invitation, RoleChanged, Removed, Rescheduled, Cancelled }
 public enum InvitationDispatchState { Pending, BlockedDependency, Materialized, Suppressed, Failed }
 
 /// <summary>A durable recipient-specific business event, materialized into the existing SMTP queue.</summary>

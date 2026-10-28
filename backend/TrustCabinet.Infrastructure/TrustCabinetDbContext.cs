@@ -35,6 +35,10 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
     public DbSet<Recording> Recordings => Set<Recording>();
     public DbSet<Transcript> Transcripts => Set<Transcript>();
     public DbSet<TranscriptSegment> TranscriptSegments => Set<TranscriptSegment>();
+    public DbSet<TranscriptSpeaker> TranscriptSpeakers => Set<TranscriptSpeaker>();
+    public DbSet<SpeechClip> SpeechClips => Set<SpeechClip>();
+    public DbSet<VoiceConsent> VoiceConsents => Set<VoiceConsent>();
+    public DbSet<VoiceSample> VoiceSamples => Set<VoiceSample>();
     public DbSet<MeetingMinutes> MeetingMinutes => Set<MeetingMinutes>();
     public DbSet<MinutesSignature> MinutesSignatures => Set<MinutesSignature>();
     public DbSet<MeetingSummary> MeetingSummaries => Set<MeetingSummary>();

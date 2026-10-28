@@ -1,0 +1,235 @@
+<mxfile host="Electron" agent="Claude Code" scale="1" border="0">
+  <diagram id="pkg-backend" name="Backend">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2160" pageHeight="710" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p2-web" parent="1" style="shape=folder;tabWidth=162;tabHeight=26;tabPosition=left;container=1;collapsible=0;recursiveResize=0;verticalAlign=top;align=left;spacingLeft=10;spacingTop=1;fontStyle=1;fontSize=14;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="TrustCabinet.Web" vertex="1">
+          <mxGeometry x="40" y="40" width="460" height="630" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-web-endpoints" parent="p2-web" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Endpoints" vertex="1">
+          <mxGeometry x="30" y="60" width="400" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-web-AttendanceChangePublisher" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="AttendanceChangePublisher" vertex="1">
+          <mxGeometry x="30" y="170" width="190" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-web-CallRoomJanitor" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="CallRoomJanitor" vertex="1">
+          <mxGeometry x="240" y="170" width="190" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-web-CapabilitiesChangePublisher" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="CapabilitiesChangePublisher" vertex="1">
+          <mxGeometry x="30" y="220" width="190" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-web-HttpCallerContext" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="HttpCallerContext" vertex="1">
+          <mxGeometry x="240" y="220" width="190" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-web-MeetingGuestIdentity" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="MeetingGuestIdentity" vertex="1">
+          <mxGeometry x="30" y="270" width="190" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-web-MeetingHub" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="MeetingHub" vertex="1">
+          <mxGeometry x="240" y="270" width="190" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-web-MeetingOverdueWorker" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="MeetingOverdueWorker" vertex="1">
+          <mxGeometry x="30" y="320" width="190" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-web-NotificationHub" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="NotificationHub" vertex="1">
+          <mxGeometry x="240" y="320" width="190" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-web-NotificationWorker" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="NotificationWorker" vertex="1">
+          <mxGeometry x="30" y="370" width="190" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-web-ParticipantsChangePublisher" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="ParticipantsChangePublisher" vertex="1">
+          <mxGeometry x="240" y="370" width="190" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-web-Program" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Program" vertex="1">
+          <mxGeometry x="30" y="420" width="190" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-web-RecordingRetentionWorker" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="RecordingRetentionWorker" vertex="1">
+          <mxGeometry x="240" y="420" width="190" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-web-SpeechChangePublisher" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="SpeechChangePublisher" vertex="1">
+          <mxGeometry x="30" y="470" width="190" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-web-TranscriptionWorker" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="TranscriptionWorker" vertex="1">
+          <mxGeometry x="240" y="470" width="190" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra" parent="1" style="shape=folder;tabWidth=257;tabHeight=26;tabPosition=left;container=1;collapsible=0;recursiveResize=0;verticalAlign=top;align=left;spacingLeft=10;spacingTop=1;fontStyle=1;fontSize=14;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="TrustCabinet.Infrastructure" vertex="1">
+          <mxGeometry x="620" y="40" width="730" height="630" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Authentication" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Authentication" vertex="1">
+          <mxGeometry x="30" y="60" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Seed" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Seed" vertex="1">
+          <mxGeometry x="270" y="60" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-DependencyInjection" parent="p2-infra" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="DependencyInjection" vertex="1">
+          <mxGeometry x="510" y="68" width="190" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Email" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Email" vertex="1">
+          <mxGeometry x="30" y="140" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Participants" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Participants" vertex="1">
+          <mxGeometry x="270" y="140" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Documents" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Documents" vertex="1">
+          <mxGeometry x="510" y="140" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Recordings" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Recordings" vertex="1">
+          <mxGeometry x="30" y="220" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Transcription" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Transcription" vertex="1">
+          <mxGeometry x="270" y="220" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-VoiceId" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="VoiceId" vertex="1">
+          <mxGeometry x="510" y="220" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Access" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Access" vertex="1">
+          <mxGeometry x="30" y="300" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Users" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Users" vertex="1">
+          <mxGeometry x="270" y="300" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Audit" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Audit" vertex="1">
+          <mxGeometry x="510" y="300" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Agenda" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Agenda" vertex="1">
+          <mxGeometry x="30" y="380" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Attendance" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Attendance" vertex="1">
+          <mxGeometry x="270" y="380" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Calls" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Calls" vertex="1">
+          <mxGeometry x="510" y="380" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Configurations" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Configurations" vertex="1">
+          <mxGeometry x="30" y="460" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Meetings" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Meetings" vertex="1">
+          <mxGeometry x="270" y="460" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Migrations" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Migrations" vertex="1">
+          <mxGeometry x="510" y="460" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Notifications" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Notifications" vertex="1">
+          <mxGeometry x="30" y="540" width="190" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-TrustCabinetDbContext" parent="p2-infra" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="TrustCabinetDbContext" vertex="1">
+          <mxGeometry x="270" y="548" width="190" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-TrustCabinetDbContextFactory" parent="p2-infra" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="TrustCabinetDbContextFactory" vertex="1">
+          <mxGeometry x="510" y="548" width="190" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain" parent="1" style="shape=folder;tabWidth=188;tabHeight=26;tabPosition=left;container=1;collapsible=0;recursiveResize=0;verticalAlign=top;align=left;spacingLeft=10;spacingTop=1;fontStyle=1;fontSize=14;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="TrustCabinet.Domain" vertex="1">
+          <mxGeometry x="1470" y="40" width="650" height="630" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-Access" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Access" vertex="1">
+          <mxGeometry x="30" y="60" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-Agenda" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Agenda" vertex="1">
+          <mxGeometry x="240" y="60" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-Attendance" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Attendance" vertex="1">
+          <mxGeometry x="450" y="60" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-Audit" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Audit" vertex="1">
+          <mxGeometry x="30" y="140" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-Authentication" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Authentication" vertex="1">
+          <mxGeometry x="240" y="140" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-Calls" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Calls" vertex="1">
+          <mxGeometry x="450" y="140" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-Documents" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Documents" vertex="1">
+          <mxGeometry x="30" y="220" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-Entities" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Entities" vertex="1">
+          <mxGeometry x="240" y="220" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-Enums" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Enums" vertex="1">
+          <mxGeometry x="450" y="220" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-Meetings" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Meetings" vertex="1">
+          <mxGeometry x="30" y="300" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-Notifications" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Notifications" vertex="1">
+          <mxGeometry x="240" y="300" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-Participants" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Participants" vertex="1">
+          <mxGeometry x="450" y="300" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-Recordings" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Recordings" vertex="1">
+          <mxGeometry x="30" y="380" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-Transcription" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Transcription" vertex="1">
+          <mxGeometry x="240" y="380" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-Users" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Users" vertex="1">
+          <mxGeometry x="450" y="380" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-domain-VoiceId" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="VoiceId" vertex="1">
+          <mxGeometry x="30" y="460" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-e-endpoints-auth" parent="1" source="p2-web-endpoints" target="p2-infra-Authentication" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.2143;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.2679;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-e-endpoints-email" parent="1" source="p2-web-endpoints" target="p2-infra-Email" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="580" y="135" />
+              <mxPoint x="580" y="208" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-e-endpoints-recordings" parent="1" source="p2-web-endpoints" target="p2-infra-Recordings" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.7857;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="560" y="155" />
+              <mxPoint x="560" y="288" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-e-seed-auth" parent="1" source="p2-infra-Seed" target="p2-infra-Authentication" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-e-di-seed" parent="1" source="p2-infra-DependencyInjection" target="p2-infra-Seed" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-e-participants-email" parent="1" source="p2-infra-Participants" target="p2-infra-Email" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-e-transcription-voiceid" parent="1" source="p2-infra-Transcription" target="p2-infra-VoiceId" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-e-users-access" parent="1" source="p2-infra-Users" target="p2-infra-Access" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-e-users-audit" parent="1" source="p2-infra-Users" target="p2-infra-Audit" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-e-web-infra" parent="1" source="p2-web" target="p2-infra" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.9206;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.9206;entryDx=0;entryDy=0;entryPerimeter=0;" value="«import»">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-e-infra-domain" parent="1" source="p2-infra" target="p2-domain" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="«import»">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-e-web-domain" parent="1" source="p2-web" target="p2-domain" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.1739;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.3538;entryY=0.0413;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="120" y="14" />
+              <mxPoint x="1700" y="14" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

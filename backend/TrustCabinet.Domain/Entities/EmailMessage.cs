@@ -42,6 +42,18 @@ public class EmailMessage : Entity
 
     public DateTimeOffset? SentAt { get; set; }
 
+    /// <summary>The provider's id for the accepted message (Resend's <c>email_id</c>); empty for SMTP.</summary>
+    public string? ProviderMessageId { get; set; }
+
+    /// <summary>The provider's latest report after sending, or null while none has arrived (ADR-0031).</summary>
+    public EmailDeliveryState? DeliveryState { get; set; }
+
+    /// <summary>When the provider produced <see cref="DeliveryState"/>; an older report never overwrites a newer one.</summary>
+    public DateTimeOffset? DeliveryStateAt { get; set; }
+
+    /// <summary>The receiving server's reason for a bounce or failure, as the provider passed it on.</summary>
+    public string DeliveryDetail { get; set; } = string.Empty;
+
     /// <summary>The meeting that caused this email, for tracing.</summary>
     public Guid? MeetingId { get; set; }
     public Meeting? Meeting { get; set; }

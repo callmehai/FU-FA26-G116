@@ -149,8 +149,9 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-32 | Xem tài liệu cuộc họp *(View Meeting Documents)* — UC-32a Xem danh sách, UC-32c Xem trước/tải về; quyền đọc theo quyền xem Meeting. `Secret` không tải về; UC-32b vẫn bỏ | Người có quyền xem Meeting, gồm Guest có lời mời đã xác minh còn hiệu lực | Đã đặc tả các UC con | Internal: `<<extend>>` UC-16; Guest qua UC-04 |
 | UC-33 | Quản lý tài liệu cuộc họp *(Manage Meeting Documents)* — UC-33a Thêm một hoặc nhiều tài liệu cùng lần, UC-33b Gắn vào mục (tái cấp theo ADR-0020), UC-33c Gỡ khỏi cuộc họp, UC-33d Bỏ gắn một mục; khoá khi Meeting kết thúc. Nhóm tài liệu thêm cùng lần thành công toàn bộ hoặc không thêm tài liệu nào | Chair, Secretary hiện hành có quyền xem Meeting | Đã đặc tả bốn UC con | `<<extend>>` UC-32 |
 | UC-34 | Xem kho tài liệu cá nhân *(View Personal Document Library)* | Internal user | Đã đặc tả | Độc lập |
+| UC-34b | Xem kho cá nhân của tài khoản đã khoá *(View a Locked Account’s Personal Library)* — Quản trị viên chỉ đọc, mỗi lần đọc ghi nhật ký kiểm toán (BR-334, BR-335) | System Admin | Đã đặc tả | Độc lập |
 | UC-35 | Bình luận tài liệu cuộc họp *(Comment on Meeting Document)* — người có quyền đọc được bình luận trước khi Meeting kết thúc; sau đó chỉ đọc | System Admin, Organizer, Approver, Chair, Secretary, Participant, Guest có quyền xem Meeting | Đã đặc tả | `<<extend>>` UC-32 |
-| UC-36 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* — một hoặc nhiều PDF/DOCX cùng lần, tối đa 50 MB mỗi file, vào thư mục đang chọn; cả nhóm thành công hoặc không thêm tài liệu nào | Internal user | Đã đặc tả | `<<extend>>` UC-34 |
+| UC-36 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* — một hoặc nhiều PDF/DOCX cùng lần (tối đa 10 tệp / 200 MB mỗi lần, 50 MB mỗi tệp; tổng kho cả hệ thống 10 GB), vào thư mục đang chọn; cả nhóm thành công hoặc không thêm tài liệu nào | Internal user | Đã đặc tả | `<<extend>>` UC-34 |
 | UC-71 | Quản lý tài liệu trong kho *(Manage Personal Documents)* — gồm UC-71a Xoá khỏi kho (tài liệu đã gắn vào cuộc họp vẫn giữ nguyên), UC-71b Đổi tên, UC-71c Chuyển thư mục | Internal user | Đã đặc tả các UC con | `<<extend>>` UC-34 |
 | UC-72 | Quản lý thư mục kho *(Manage Library Folders)* — gồm UC-72a Tạo, UC-72b Đổi tên, UC-72c Chuyển, UC-72d Xoá thư mục rỗng; lồng tối đa 5 cấp | Internal user | Đã đặc tả các UC con | `<<extend>>` UC-34 |
 | UC-74 | Xác nhận đã đọc tài liệu biểu quyết *(Confirm Document Read)* — cuộn tới trang cuối rồi xác nhận; bắt buộc trước khi bỏ phiếu | Chair, Secretary, Participant, Guest có quyền bỏ phiếu | Đã đặc tả | Được gọi trước UC-55 |
@@ -344,8 +345,10 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
 
 - Chỉ có trong code, chưa thành UC: *ReturnToDraft*, *TransferOrganizer* (endpoint workflow SCRUM-19). Cần PO/BA quyết định
   promote hay dọn code.
-- Không làm (Report 1): theo dõi task / action item, nhận dạng giọng nói (voiceprint), ký HSM thật, triển khai air-gapped,
+- Không làm (Report 1): theo dõi task / action item, ký HSM thật, triển khai air-gapped,
   tích hợp eOffice, nhiều tổ chức / đơn vị ([ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md)).
+- Đưa vào phạm vi 23/10/2026 theo nhận xét hội đồng: nhận diện người nói bằng giọng mẫu (Voice ID) có đồng ý riêng —
+  [ADR-0027](../05-decisions/0027-voice-id-co-dong-y.md). UC cho đồng ý / ghi giọng mẫu / rút đồng ý chưa đánh số, BA bổ sung (SCRUM-35).
 - Lịch sử trạng thái, lịch tuần / tháng: là màn hình / luồng phụ của UC-16, UC-17, không tách UC.
 
 Guest 13/10/2026: [ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md); UC-27/30 cần quyền xem tương ứng như Member, UC-40 xem người đang kết nối mặc định. BR-122 đã chốt; xem [quyết định mới](../05-decisions/0017-ket-thuc-hop-khong-phu-thuoc-diem-danh-bieu-quyet.md).

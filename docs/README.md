@@ -23,13 +23,14 @@ BE → FE → BA chốt tài liệu → Tester, Definition of Done. Đọc trư�
 | [05-decisions/](05-decisions/) | ADR — mỗi quyết định kỹ thuật một file, kèm lý do và phương án đã loại |
 | [06-sequencediagram/](06-sequencediagram/) | Sơ đồ tuần tự theo từng UC; source `.txt`, ảnh `.png`, file draw.io nhiều tab và ảnh `.drawio.png` trong [drawio-png/](06-sequencediagram/drawio-png/README.md) |
 | [07-classdiagram/](07-classdiagram/) | Sơ đồ lớp chi tiết của hệ thống |
-| [08-reports/](08-reports/) | Bản Markdown của Report 1–7. Không sửa thẳng các snapshot này; quy tắc sửa DOCX và sync nằm ở [08-reports/README.md](08-reports/README.md) |
+| [08-reports/](08-reports/) | **Nguồn = DOCX trong `08-reports/source/`.** Các `Report-*.md` là snapshot do `scripts/sync_reports.py` sinh — **cấm sửa tay**. Sửa DOCX → chạy sync → (chỉ khi được yêu cầu) push Drive. Chi tiết: [08-reports/README.md](08-reports/README.md) |
 | [09-bussinessflow/](09-bussinessflow/) | Swimlane 4 luồng nghiệp vụ chính BF-01 → BF-04 |
 | [10-statemachine/](10-statemachine/) | Sơ đồ trạng thái nghiệp vụ và các trạng thái liên quan |
 | [11-contextdiagram/](11-contextdiagram/) | Context diagram của hệ thống và file ảnh xuất |
 | [12-screenflow/](12-screenflow/) | Sơ đồ luồng chuyển màn hình (Screen Flow) và file ảnh xuất |
 | [13-erd/](13-erd/README.md) | Ba cách trình bày ERD: mục tiêu dạng bảng, Chen và snapshot schema hiện tại |
 | [14-uc-diagram/](14-uc-diagram/README.md) | Use Case Diagram theo 7 actor, source draw.io nhiều trang và ảnh xuất |
+| [15-package-diagram/](15-package-diagram/README.md) | Package diagram theo code hiện có: tổng quan, backend, Domain, frontend; source draw.io nhiều trang và ảnh xuất |
 | [notes/](notes/) | Ghi chú rà soát và bàn giao cập nhật tài liệu cho người phụ trách |
 | [wireframe/](wireframe/) | Wireframe màn hình theo phiên bản: HTML, plugin Figma và ảnh cho report. Quy tắc bàn giao ở [wireframe/README.md](wireframe/README.md) |
 
@@ -67,3 +68,8 @@ Người mới vào nhóm đọc theo thứ tự: [DEVELOPMENT_WORKFLOW.md](DEVE
 Agent sửa tài liệu đọc [README.md](README.md) trước, sau đó đọc README tại từng thư mục cha của file
 đích và các nguồn chuẩn mà những README đó chỉ ra. Chỉ nạp các nhánh tài liệu liên quan trực tiếp tới
 task.
+
+**Report / UC Spec / BR:** nếu task đụng `docs/08-reports/Report-*.md` hoặc bản trích
+`01-requirements/05-use-case-specifications.md` / `06-business-rules.md`, đó là file sinh ra — dừng
+sửa file đó. Đọc [08-reports/README.md](08-reports/README.md), sửa DOCX trong `08-reports/source/`,
+rồi chạy `scripts/sync_reports.py`.
