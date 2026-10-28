@@ -265,7 +265,8 @@ nên tên/tham số là **PROPOSED**. Return, SQL I/O, activation và `alt` khô
   `saveClosed(voteId)` (trạng thái, `closedAt`) và tally tính từ `VoteChoice`. **NEEDS REVIEW:** BA/PO chốt tally là dữ liệu tính hay lưu.
 - **Loại `VoteDocumentSource`, `VoteInput`, `VoteDraftOperation`** suy từ tham số `source`, `voteInfo`, `operation` của sequence; tên và
   literal chưa có nguồn.
-- **UC-74** (`DocumentViewer`, `DocumentReadService`) chưa có class diagram ở FE-07; chỉ vẽ phần UC-55 gọi, tức repository đọc xác nhận.
+- **UC-74** (`DocumentViewer`, `DocumentReadService`) chưa có class diagram ở FE-07; chỉ vẽ phần UC-55 gọi, tức repository đọc xác nhận. Bảng `DocumentReadConfirmation` đã ghi ERD đích (28/10/2026); code thuộc SCRUM-96.
+- **`PersonalDocumentRepository`:** trên diagram là tên sequence UC-76; as-built FE-07 dùng `DocumentRepository` / `PersonalLibraryService` — BE map sang đó, không tạo repository thứ hai.
 - **`MeetingRole`:** FE-06 vẽ 3 giá trị, schema và diagram này có thêm `Guest`; FE-06 cần cập nhật khi chạm vào.
 - `MeetingAccessPolicy` ở sequence truy vấn Database trực tiếp; class không có repository phía sau (như FE-05/07).
   `MeetingParticipant` không vẽ, `MeetingParticipantRepository` chỉ nhận message.

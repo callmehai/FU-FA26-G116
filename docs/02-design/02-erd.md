@@ -52,6 +52,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | VoteChoice | Lựa chọn đã bỏ | IMPLEMENTED (Guest thêm 25/10/2026) | Giữ tách khỏi receipt; `VoterId` và `GuestInvitationId` cùng null khi phiếu kín, nhiều nhất một cột có giá trị khi công khai. |
 | VoteEligibleVoter | Bảng nối Vote ↔ người được bỏ phiếu, chốt lúc mở (bảng nối, không tính vào 30 thực thể) | IMPLEMENTED (bảng, 25/10/2026) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (session, user) và (session, guest). Sinh từ `EligibleRoles` và quyền truy cập Meeting lúc mở; điểm danh không ảnh hưởng (BR-190). |
 | VoteDocument | Bảng nối Vote ↔ tài liệu cuộc họp (bảng nối, không tính vào 30 thực thể) | IMPLEMENTED (bảng, 25/10/2026) | Khoá (VotingSessionId, MeetingDocumentId). Gắn/gỡ chỉ khi Vote `Draft`, chốt khi mở (BR-287, BR-288); gỡ không xoá tài liệu khỏi cuộc họp (BR-305). |
+| DocumentReadConfirmation | Xác nhận đã đọc một tài liệu cuộc họp (UC-74); dùng chung mọi Vote gắn cùng tài liệu | PLANNED (SCRUM-96) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (MeetingDocumentId, user) và (MeetingDocumentId, guest). Không liên kết `VoteChoice` (BR-291, BR-293). Client phải đã tới trang cuối rồi mới xác nhận (BR-290). |
 | Recording | Bản ghi âm do Thư ký upload | NEED MIGRATION / RESTRUCTURE | Thêm `UploadedById`; `Source` chỉ còn `Upload`; giữ consent, mục đích, lưu giữ và xóa dữ liệu cá nhân. |
 | Transcript | Transcript của Recording | IMPLEMENTED | Tối đa một cho mỗi Recording. |
 | TranscriptSegment | Đoạn transcript | IMPLEMENTED | Giữ. |
@@ -354,6 +355,16 @@ erDiagram
         uuid GuestInvitationId FK "NULL khi phiên ẩn danh"
         timestamptz CastAt
     }
+    MeetingDocument ||--o{ DocumentReadConfirmation : "confirmed as read"
+    User ||--o{ DocumentReadConfirmation : "confirming"
+    MeetingGuestInvitation ||--o{ DocumentReadConfirmation : "confirming"
+    DocumentReadConfirmation {
+        uuid Id PK
+        uuid MeetingDocumentId FK
+        uuid UserId FK "nullable; đúng một trong UserId và GuestInvitationId"
+        uuid GuestInvitationId FK "nullable; Guest"
+        timestamptz ConfirmedAt
+    }
 ```
 
 ### Biểu quyết ẩn danh — đọc kỹ chỗ này
@@ -593,6 +604,9 @@ erDiagram
 | User | 1 → 0..* | VoteEligibleVoter | Được bỏ phiếu |
 | VotingSession | 1 → 0..* | VoteDocument | Gắn tài liệu |
 | MeetingDocument | 1 → 0..* | VoteDocument | Được gắn vào biểu quyết |
+| MeetingDocument | 1 → 0..* | DocumentReadConfirmation | Được xác nhận đã đọc (UC-74) |
+| User | 1 → 0..* | DocumentReadConfirmation | Xác nhận đã đọc |
+| MeetingGuestInvitation | 1 → 0..* | DocumentReadConfirmation | Xác nhận đã đọc (Guest) |
 | VotingSession | 1 → 0..* | VoteReceipt | Ghi nhận việc bỏ phiếu |
 | VotingSession | 1 → 0..* | VoteChoice | Ghi nhận lựa chọn |
 | VotingOption | 1 → 0..* | VoteChoice | Được chọn trong |
@@ -637,6 +651,7 @@ erDiagram
 16. Hệ thống không tự ghi âm; Thư ký upload audio sau khi Meeting `Ended`. Trước khi lưu audio phải có consent và lưu mục đích, thời hạn lưu giữ cùng bằng chứng xóa. Guest phải được hiển thị thông báo ghi âm trước khi vào; lưu bằng chứng đã thông báo và thực hiện nghĩa vụ xóa dữ liệu của Guest.
 17. Lời mời Guest giới hạn trong một Meeting, có hạn dùng, có thể thu hồi và dùng token được bảo vệ (chỉ lưu hash); kiểm tra hiệu lực ở mỗi request.
 18. VotingSession thuộc Meeting, không gắn mục nghị sự (BR-285). Chair hoặc Secretary chuẩn bị nháp khi Meeting `Approved`, `Published` hoặc `InProgress` ([ADR-0019](../05-decisions/0019-chuan-bi-bieu-quyet-truoc-khi-hop.md)); chỉ Chair mở (khi `InProgress`, tối đa một Vote `Open`, BR-266) và đóng; hệ thống đếm phiếu; Chair ghi `Conclusion` là Passed, NotPassed hoặc Deferred. Guest có quyền bỏ phiếu như Member theo quyết định PO 13/10/2026. Người được bỏ phiếu là người đang giữ các vai trò Chair chọn cho phiên (`EligibleRoles`), chốt lúc mở phiên thành các dòng `VoteEligibleVoter` (BR-190). Tài liệu biểu quyết là các dòng `VoteDocument`, chốt khi mở (BR-288). Không có quorum, không có biểu quyết trước/sau họp, không có entity Resolution ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md)).
+18a. Trước khi bỏ phiếu, người đủ điều kiện phải xác nhận đã đọc mọi tài liệu còn gắn Vote (`DocumentReadConfirmation`, BR-289–293). Xác nhận thuộc (người, MeetingDocument), dùng chung mọi Vote cùng tài liệu, không rút và không nối với lựa chọn phiếu kín. Gỡ tài liệu khỏi Meeting khi Vote còn Open thì tài liệu đó không còn tính vào điều kiện đọc (BR-292).
 19. Meeting được kết thúc khi Vote còn Open; Ended ngừng nhận phiếu và Chair có thể đóng/kiểm phiếu cũ sau họp (BR-159/160).
 20. Biên bản bị yêu cầu sửa hoặc sửa sau khi đã có chữ ký: các chữ ký trên phiên bản cũ có `InvalidatedAt`, phiên bản mới cần vòng ký mới; chỉ Secretary niêm phong sau khi đủ chữ ký (BR-166).
 
