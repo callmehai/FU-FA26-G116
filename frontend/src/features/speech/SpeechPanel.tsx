@@ -1,67 +1,43 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import {
-  deleteSpeechClip,
-  editSpeechClip,
-  getSpeechClipsText,
-  setCaptureMode,
-  setSpeechClipExclusion,
-} from '../../api/speech'
-import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { useState } from 'react'
+import { setCaptureMode } from '../../api/speech'
 import { Icon } from '../../components/Icon'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
-import { formatDateTime } from '../../lib/format'
-import { CAPTURE_MODE_LABEL, type CaptureMode, type SpeechClip } from '../../types/speech'
-import { saveBlob } from '../documents/documentFile'
+import { CAPTURE_MODE_LABEL, type CaptureMode } from '../../types/speech'
 import { RecordingsPanel } from '../recordings/RecordingsPanel'
 import type { Recorder, RecordingInput } from '../recordings/useRecorder'
-import { useSpeech, type Speech } from './useSpeech'
+import { SpeechTimeline } from './SpeechTimeline'
+import type { Speech } from './useSpeech'
 
 /**
  * SCRUM-109 — the per-mic transcript, written once for the meeting page and the call room (ADR-0011). Each line is a
- * sentence someone said into their own mic, named after them. Above it, the person's own switch: they see that what
- * they say is being written down and can stop it; nobody can start it for them.
+ * sentence someone said into their own mic, named after them. The person's own switch sits above it in the call
+ * room; on the meeting page it is the floating mic card (MicCard), so that it stays on in every tab. Nobody can start
+ * it for them.
  */
 
 const CAPTURE_OPTIONS = (['PerMic', 'Room'] as const).map((value) => ({ value, label: CAPTURE_MODE_LABEL[value] }))
-const time = new Intl.DateTimeFormat('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
 export function SpeechPanel({
   meetingId,
   variant,
   speech,
-  onCaptureMode,
   recorder,
   recordSource,
 }: {
   meetingId: string
   variant: 'page' | 'room'
-  speech?: Speech
-  /** Told the capture mode on every read, so the page can show the room recordings beside it or not. */
-  onCaptureMode?: (mode: CaptureMode) => void
+  /** The meeting's speech, kept by the page or the call so that the mic outlives this panel. */
+  speech: Speech
   /** The call room's recorder and the whole call as its sound (SCRUM-44), for a meeting captured as one room. */
   recorder?: Recorder
   recordSource?: () => RecordingInput
 }) {
   // A meeting captured as one room has no per-mic lines: in the call, the panel is where the Secretary records it.
-  if (speech && variant === 'room' && speech.list?.captureMode === 'Room')
+  if (variant === 'room' && speech.list?.captureMode === 'Room')
     return <RecordingsPanel meetingId={meetingId} variant="room" recorder={recorder} source={recordSource} />
-  return speech ? (
-    <SpeechView speech={speech} variant={variant} />
-  ) : (
-    <PageSpeech meetingId={meetingId} onCaptureMode={onCaptureMode} />
-  )
-}
-
-/** On the meeting page — an in-person meeting, each person at their own laptop — the switch starts off. */
-function PageSpeech({ meetingId, onCaptureMode }: { meetingId: string; onCaptureMode?: (mode: CaptureMode) => void }) {
-  const speech = useSpeech(meetingId, { defaultOn: false })
-  const mode = speech.list?.captureMode
-  useEffect(() => {
-    if (mode) onCaptureMode?.(mode)
-  }, [mode, onCaptureMode])
-  return <SpeechView speech={speech} variant="page" />
+  return <SpeechView speech={speech} variant={variant} />
 }
 
 function SpeechView({ speech, variant }: { speech: Speech; variant: 'page' | 'room' }) {
@@ -85,9 +61,8 @@ function SpeechView({ speech, variant }: { speech: Speech; variant: 'page' | 'ro
       {list && !room && list.canChangeMode && (
         <ModePicker meetingId={speech.meetingId} mode={list.captureMode} onChanged={speech.reload} />
       )}
-      {list?.canCapture && <MyMic speech={speech} room={room} />}
-      {list?.canExport && clips.some((c) => !c.excluded) && <SaveText meetingId={speech.meetingId} />}
-      {list && (perMic || clips.length > 0) && <Lines speech={speech} room={room} />}
+      {list?.canCapture && room && <MyMic speech={speech} room={room} />}
+      {list && (perMic || clips.length > 0) && <SpeechTimeline speech={speech} room={room} />}
     </div>
   )
 }
@@ -132,34 +107,6 @@ function ModePicker({ meetingId, mode, onChanged }: { meetingId: string; mode: C
           : 'Thư ký ghi hoặc tải lên một bản ghi chung.'}{' '}
         Khoá khi bắt đầu họp.
       </small>
-    </div>
-  )
-}
-
-/** The Chair or a Secretary saves the per-mic transcript as text, without the sentences taken out of the record. */
-function SaveText({ meetingId }: { meetingId: string }) {
-  const toast = useToast()
-  const [saving, setSaving] = useState(false)
-  return (
-    <div className="speech-tools">
-      <button
-        type="button"
-        className="btn btn-ghost btn-sm"
-        disabled={saving}
-        onClick={async () => {
-          setSaving(true)
-          try {
-            saveBlob(await getSpeechClipsText(meetingId), 'bản gỡ băng theo micro.txt')
-          } catch (error) {
-            toast.show(errorMessage(error), 'error')
-          } finally {
-            setSaving(false)
-          }
-        }}
-      >
-        <Icon name="download" size={16} />
-        {saving ? 'Đang tải…' : 'Tải .txt'}
-      </button>
     </div>
   )
 }
@@ -226,285 +173,5 @@ function MyMic({ speech, room }: { speech: Speech; room: boolean }) {
         <p className="speech-mine-note field-error">{capture.refused}&nbsp;câu không gửi được.</p>
       )}
     </div>
-  )
-}
-
-function Lines({ speech, room }: { speech: Speech; room: boolean }) {
-  const { clips, list } = speech
-  const box = useRef<HTMLOListElement>(null)
-  const stuck = useRef(true)
-  const [removing, setRemoving] = useState<SpeechClip | null>(null)
-  const toast = useToast()
-
-  // Like a chat: a new line scrolls into view while the reader is at the bottom, and leaves them alone when not.
-  useLayoutEffect(() => {
-    const el = box.current
-    if (el && stuck.current) el.scrollTop = el.scrollHeight
-  }, [clips.length])
-
-  if (clips.length === 0)
-    return (
-      <p className="speech-empty field-hint">
-        {list?.canCapture ? 'Chưa có câu nào. Chữ hiện ở đây sau mỗi câu nói.' : 'Chưa có câu nào.'}
-      </p>
-    )
-
-  return (
-    <>
-      <ol
-        className={`speech-lines${room ? ' speech-lines-room' : ''}`}
-        ref={box}
-        aria-label="Lời nói theo từng câu"
-        onScroll={(e) => {
-          const el = e.currentTarget
-          stuck.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40
-        }}
-      >
-        {clips.map((clip, i) => (
-          <Line
-            key={clip.id}
-            clip={clip}
-            first={i === 0 || clips[i - 1].speakerId !== clip.speakerId}
-            canEdit={!!list?.canEdit && !clip.excluded}
-            canExclude={!!list?.canExclude}
-            onRemove={() => setRemoving(clip)}
-            onChanged={speech.reload}
-          />
-        ))}
-      </ol>
-      {removing && (
-        <ConfirmDialog
-          title="Xoá câu này?"
-          confirmLabel="Xoá câu"
-          pendingLabel="Đang xoá…"
-          cancelLabel="Giữ lại"
-          tone="danger"
-          onConfirm={async () => {
-            toast.show((await deleteSpeechClip(removing.id)).message, 'success')
-            speech.reload()
-          }}
-          onClose={() => setRemoving(null)}
-        >
-          <p>“{removing.text}”</p>
-          <p className="field-hint">Câu bị xoá khỏi bản gỡ băng của cuộc họp.</p>
-        </ConfirmDialog>
-      )}
-    </>
-  )
-}
-
-/** The sentence's words, with those another mic's speaker probably said shown faint. */
-function Words({ clip }: { clip: SpeechClip }) {
-  const leak = clip.leak
-  if (!leak || leak.whole) return <>{clip.text}</>
-  const inLeak = (word: number) => leak.words.some(([from, to]) => word >= from && word < to)
-  let word = -1
-  return (
-    <>
-      {clip.text.split(/(\s+)/).map((part, i) => {
-        if (!part.trim()) return part
-        word++
-        return inLeak(word) ? (
-          <span key={i} className="speech-leak-words">
-            {part}
-          </span>
-        ) : (
-          part
-        )
-      })}
-    </>
-  )
-}
-
-const LEAK_HINT = (clip: SpeechClip) =>
-  clip.leak &&
-  (clip.leak.whole
-    ? `Có thể là lời của ${clip.leak.speakerName} lọt sang micro này`
-    : `Phần chữ mờ có thể là lời của ${clip.leak.speakerName} lọt sang micro này`)
-
-function Line({
-  clip,
-  first,
-  canEdit,
-  canExclude,
-  onRemove,
-  onChanged,
-}: {
-  clip: SpeechClip
-  first: boolean
-  canEdit: boolean
-  canExclude: boolean
-  onRemove: () => void
-  onChanged: () => void
-}) {
-  const toast = useToast()
-  const [excluding, setExcluding] = useState(false)
-  const exclude = async (reason: 'Leak' | 'Other' | null) => {
-    setExcluding(true)
-    try {
-      toast.show((await setSpeechClipExclusion(clip.id, reason)).message, 'success')
-      onChanged()
-    } catch (failure) {
-      toast.show(errorMessage(failure), 'error')
-    } finally {
-      setExcluding(false)
-    }
-  }
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(clip.text)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const save = async () => {
-    setSaving(true)
-    setError(null)
-    try {
-      toast.show((await editSpeechClip(clip.id, draft)).message, 'success')
-      setEditing(false)
-    } catch (failure) {
-      setError(errorMessage(failure))
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <li
-      className={
-        `speech-line${first ? ' speech-line-first' : ''}` +
-        `${clip.excluded ? ' speech-line-excluded' : clip.leak?.whole ? ' speech-line-leak' : ''}`
-      }
-    >
-      {first && (
-        <span className="speech-line-head">
-          <strong>{clip.speakerName}</strong>
-          <time dateTime={clip.startedAt}>{time.format(new Date(clip.startedAt))}</time>
-        </span>
-      )}
-      {editing ? (
-        <div className="transcript-editor">
-          <textarea
-            value={draft}
-            maxLength={8000}
-            rows={Math.min(6, Math.max(2, Math.ceil(draft.length / 60)))}
-            onChange={(e) => setDraft(e.target.value)}
-            aria-label="Nội dung câu"
-            aria-invalid={error ? true : undefined}
-            autoFocus
-          />
-          {error && (
-            <p className="field-error" role="alert">
-              {error}
-            </p>
-          )}
-          <div className="row-actions transcript-editor-actions">
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm"
-              disabled={saving}
-              onClick={() => {
-                setDraft(clip.text)
-                setEditing(false)
-              }}
-            >
-              Huỷ
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
-              disabled={saving || !draft.trim()}
-              onClick={() => void save()}
-            >
-              {saving ? 'Đang lưu…' : 'Lưu'}
-            </button>
-          </div>
-        </div>
-      ) : clip.excluded && !canExclude ? (
-        <p className="speech-line-text speech-line-gone">Câu đã được loại khỏi bản ghi.</p>
-      ) : (
-        <p className="speech-line-text" title={first ? undefined : time.format(new Date(clip.startedAt))}>
-          {clip.excluded && (
-            <span
-              className="speech-chip"
-              tabIndex={0}
-              data-tooltip={`${clip.excludedByName ?? 'Chủ tọa hoặc Thư ký'} đã loại${
-                clip.exclusionReason === 'Leak' ? ' vì lẫn tiếng micro khác' : ''
-              }`}
-            >
-              Đã loại
-            </span>
-          )}
-          {!clip.excluded && clip.leak && (
-            <span className="speech-chip speech-chip-leak" tabIndex={0} data-tooltip={LEAK_HINT(clip) ?? undefined}>
-              Lẫn tiếng
-            </span>
-          )}
-          <Words clip={clip} />
-          {clip.editedAt && (
-            <span
-              className="transcript-edited"
-              tabIndex={0}
-              data-tooltip={`Sửa bởi ${clip.editedByName ?? 'Thư ký'} lúc ${formatDateTime(clip.editedAt)}`}
-            >
-              {' '}
-              đã sửa
-            </span>
-          )}
-        </p>
-      )}
-      {!editing && (canEdit || clip.canDelete || canExclude) && (
-        <span className="speech-line-actions">
-          {canExclude &&
-            (clip.excluded ? (
-              <button
-                type="button"
-                className="btn btn-ghost btn-icon btn-sm"
-                aria-label="Đưa câu trở lại bản ghi"
-                data-tooltip="Đưa câu trở lại bản ghi"
-                disabled={excluding}
-                onClick={() => void exclude(null)}
-              >
-                <Icon name="undo" size={16} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn btn-ghost btn-icon btn-sm"
-                aria-label={clip.leak ? 'Loại câu lẫn tiếng khỏi bản ghi' : 'Loại câu khỏi bản ghi'}
-                data-tooltip={clip.leak ? 'Loại câu lẫn tiếng khỏi bản ghi' : 'Loại câu khỏi bản ghi'}
-                disabled={excluding}
-                onClick={() => void exclude(clip.leak ? 'Leak' : 'Other')}
-              >
-                <Icon name="eyeOff" size={16} />
-              </button>
-            ))}
-          {canEdit && (
-            <button
-              type="button"
-              className="btn btn-ghost btn-icon btn-sm"
-              aria-label="Sửa câu này"
-              data-tooltip="Sửa câu này"
-              onClick={() => {
-                setDraft(clip.text)
-                setEditing(true)
-              }}
-            >
-              <Icon name="pencil" size={16} />
-            </button>
-          )}
-          {clip.canDelete && (
-            <button
-              type="button"
-              className="btn btn-ghost btn-icon btn-sm"
-              aria-label="Xoá câu này"
-              data-tooltip="Xoá câu này"
-              onClick={onRemove}
-            >
-              <Icon name="trash" size={16} />
-            </button>
-          )}
-        </span>
-      )}
-    </li>
   )
 }

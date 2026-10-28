@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Recordings;
@@ -82,6 +83,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
         var list = await List(chair, s.MeetingId);
         Assert.Equal("PerMic", list.GetProperty("captureMode").GetString());
         Assert.True(list.GetProperty("canCapture").GetBoolean());
+        Assert.Equal(180, list.GetProperty("retentionDays").GetInt32());
         Assert.False(list.GetProperty("canEdit").GetBoolean());
         var line = Assert.Single(list.GetProperty("items").EnumerateArray());
         Assert.Equal("Recording test 2", line.GetProperty("speakerName").GetString());
@@ -91,11 +93,142 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
         var since = Uri.EscapeDataString(list.GetProperty("readAt").GetDateTimeOffset().ToString("O"));
         Assert.Empty((await List(chair, s.MeetingId, $"?since={since}")).GetProperty("items").EnumerateArray());
 
-        // No audio is kept anywhere: the row holds words, time, speaker and the loudness of each stretch only.
+        // The row holds words, time, speaker, the loudness of each stretch and where its audio lies (ADR-0039).
         await using var db = fixture.Db();
         var row = await db.SpeechClips.SingleAsync(c => c.MeetingId == s.MeetingId);
         Assert.Equal([new(0, 1200, 6, -24.5), new(1300, 2400, 4, -25.0)], row.Segments);
-        Assert.Equal(0, fixture.StoredFileCount());
+        Assert.Equal(Wav, await File.ReadAllBytesAsync(StoredFile(row.AudioPath)));
+        Assert.Equal("audio/wav", row.AudioContentType);
+        // Not a PCM WAV the server can read: heard, but drawn without a waveform.
+        Assert.Null(row.Peaks);
+        Assert.True(line.GetProperty("hasAudio").GetBoolean());
+    }
+
+    private string StoredFile(string? path)
+    {
+        Assert.NotNull(path);
+        return Path.Combine(fixture.StorageRoot, path);
+    }
+
+    /// <summary>Half a second of 16 kHz mono 16-bit PCM: silence, then a tone at half scale.</summary>
+    private static byte[] PcmWav()
+    {
+        const int rate = 16000;
+        var samples = new short[rate / 2];
+        for (var i = rate / 4; i < samples.Length; i++) samples[i] = (short)(i % 2 == 0 ? 16384 : -16384);
+        using var stream = new MemoryStream();
+        using var w = new BinaryWriter(stream);
+        w.Write("RIFF"u8); w.Write(36 + samples.Length * 2); w.Write("WAVE"u8);
+        w.Write("fmt "u8); w.Write(16); w.Write((short)1); w.Write((short)1); w.Write(rate); w.Write(rate * 2);
+        w.Write((short)2); w.Write((short)16);
+        w.Write("data"u8); w.Write(samples.Length * 2);
+        foreach (var sample in samples) w.Write(sample);
+        w.Flush();
+        return stream.ToArray();
+    }
+
+    [Fact]
+    public async Task Everyone_who_reads_the_transcript_hears_a_sentence_through_a_signed_link()
+    {
+        var s = await fixture.Seed();
+        fixture.Speech.Failure = null;
+        fixture.Speech.Result = OneSentence;
+        var wav = PcmWav();
+        using var member = fixture.Client(s.Member);
+        var clip = (await AssertCode(await Send(member, s.MeetingId, Guid.NewGuid(), wav, duration: "500"), 200, "MSG318"))
+            .GetProperty("clip").GetProperty("id").GetGuid();
+
+        using var chair = fixture.Client(s.Chair);
+        var line = Assert.Single((await List(chair, s.MeetingId)).GetProperty("items").EnumerateArray());
+        // One byte per 100 ms: two silent, three at half scale on the square-root scale.
+        Assert.Equal(new byte[] { 0, 0, 180, 180, 180 }, line.GetProperty("peaks").GetBytesFromBase64());
+
+        var link = await chair.GetFromJsonAsync<JsonElement>($"/api/speech-clips/{clip}/playback");
+        var url = link.GetProperty("url").GetString()!;
+        Assert.StartsWith($"/api/speech-clips/{clip}/audio?expires=", url);
+        // The <audio> element sends no token: the link alone opens it, and only as signed.
+        using var anonymous = fixture.Client();
+        var audio = await anonymous.GetAsync(url);
+        Assert.Equal(HttpStatusCode.OK, audio.StatusCode);
+        Assert.Equal("audio/wav", audio.Content.Headers.ContentType?.MediaType);
+        Assert.Equal(wav, await audio.Content.ReadAsByteArrayAsync());
+        Assert.Equal(HttpStatusCode.NotFound, (await anonymous.GetAsync(url[..^2] + "xx")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await anonymous.GetAsync($"/api/speech-clips/{clip}/audio")).StatusCode);
+        // A recording's link names another route and another key: swapping the path opens nothing.
+        Assert.Equal(HttpStatusCode.NotFound, (await anonymous.GetAsync(url.Replace("/speech-clips/", "/recordings/"))).StatusCode);
+
+        using var outsider = fixture.Client(s.Outsider);
+        Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync($"/api/speech-clips/{clip}/playback")).StatusCode);
+        using var organizer = fixture.Client(s.Organizer);
+        Assert.Equal(HttpStatusCode.NotFound, (await organizer.GetAsync($"/api/speech-clips/{clip}/playback")).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync($"/api/speech-clips/{clip}/playback")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await chair.GetAsync($"/api/speech-clips/{Guid.NewGuid()}/playback")).StatusCode);
+
+        // A link outlives nothing: once it expires, the same URL opens nothing.
+        fixture.Clock.Now = fixture.Clock.Now.AddHours(3);
+        try
+        {
+            Assert.Equal(HttpStatusCode.NotFound, (await anonymous.GetAsync(url)).StatusCode);
+        }
+        finally
+        {
+            fixture.Clock.Now = fixture.Clock.Now.AddHours(-3);
+        }
+    }
+
+    [Fact]
+    public async Task A_sentence_taken_out_of_the_record_is_heard_only_by_the_chair_and_the_secretary()
+    {
+        var s = await fixture.Seed();
+        var clip = await StoreSentence(s, s.Member);
+        using var chair = fixture.Client(s.Chair);
+        await AssertCode(await chair.PutAsJsonAsync($"/api/speech-clips/{clip}/exclusion", new { excluded = true, reason = "Other" }),
+            200, "MSG351");
+
+        using var member = fixture.Client(s.Member);
+        var memberLine = Assert.Single((await List(member, s.MeetingId)).GetProperty("items").EnumerateArray());
+        Assert.False(memberLine.GetProperty("hasAudio").GetBoolean());
+        Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync($"/api/speech-clips/{clip}/playback")).StatusCode);
+        Assert.True(Assert.Single((await List(chair, s.MeetingId)).GetProperty("items").EnumerateArray())
+            .GetProperty("hasAudio").GetBoolean());
+        Assert.Equal(HttpStatusCode.OK, (await chair.GetAsync($"/api/speech-clips/{clip}/playback")).StatusCode);
+    }
+
+    [Fact]
+    public async Task A_database_outage_while_signing_a_link_says_so()
+    {
+        var s = await fixture.Seed();
+        var clip = await StoreSentence(s, s.Member);
+        using var member = fixture.Client(s.Member);
+        fixture.Failures.FailClipRead = true;
+        try
+        {
+            await AssertCode(await member.GetAsync($"/api/speech-clips/{clip}/playback"), 500, "MSG297");
+        }
+        finally
+        {
+            fixture.Failures.FailClipRead = false;
+        }
+    }
+
+    [Fact]
+    public async Task A_sentence_the_database_could_not_store_leaves_no_audio_behind()
+    {
+        var s = await fixture.Seed();
+        fixture.Speech.Failure = null;
+        fixture.Speech.Result = OneSentence;
+        var files = fixture.StoredFileCount();
+        using var member = fixture.Client(s.Member);
+        fixture.Failures.FailSave = true;
+        try
+        {
+            await AssertCode(await Send(member, s.MeetingId, Guid.NewGuid()), 503, "MSG304");
+        }
+        finally
+        {
+            fixture.Failures.FailSave = false;
+        }
+        Assert.Equal(files, fixture.StoredFileCount());
     }
 
     [Fact]
@@ -104,9 +237,11 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
         var s = await fixture.Seed();
         fixture.Speech.Failure = null;
         fixture.Speech.Result = Silence;
+        var files = fixture.StoredFileCount();
         using var member = fixture.Client(s.Member);
         Assert.Equal(HttpStatusCode.NoContent, (await Send(member, s.MeetingId, Guid.NewGuid())).StatusCode);
         Assert.Empty((await List(member, s.MeetingId)).GetProperty("items").EnumerateArray());
+        Assert.Equal(files, fixture.StoredFileCount());
     }
 
     [Fact]
@@ -203,6 +338,30 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
         await AssertCode(await secretary.DeleteAsync($"/api/speech-clips/{other}"), 200, "MSG322");
         Assert.Empty((await List(member, s.MeetingId)).GetProperty("items").EnumerateArray());
         Assert.Equal(HttpStatusCode.NotFound, (await member.DeleteAsync($"/api/speech-clips/{mine}")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Deleting_a_sentence_or_its_retention_running_out_erases_its_audio()
+    {
+        var s = await fixture.Seed();
+        var taken = await StoreSentence(s, s.Member);
+        var expiring = await StoreSentence(s, s.Member);
+        await using var db = fixture.Db();
+        var files = await db.SpeechClips.Where(c => c.MeetingId == s.MeetingId)
+            .ToDictionaryAsync(c => c.Id, c => StoredFile(c.AudioPath));
+        Assert.All(files.Values, f => Assert.True(File.Exists(f)));
+
+        using var member = fixture.Client(s.Member);
+        await AssertCode(await member.DeleteAsync($"/api/speech-clips/{taken}"), 200, "MSG322");
+        Assert.False(File.Exists(files[taken]));
+        Assert.True(File.Exists(files[expiring]));
+
+        await db.SpeechClips.Where(c => c.Id == expiring).ExecuteUpdateAsync(u => u.SetProperty(c => c.CreatedAt,
+            fixture.Clock.Now.AddDays(-181)));
+        using (var scope = fixture.Host.Services.CreateScope())
+            Assert.True(await scope.ServiceProvider.GetRequiredService<ISpeechClipService>().EraseExpiredAsync() >= 1);
+        Assert.False(File.Exists(files[expiring]));
+        Assert.False(await db.SpeechClips.AnyAsync(c => c.Id == expiring));
     }
 
     [Fact]

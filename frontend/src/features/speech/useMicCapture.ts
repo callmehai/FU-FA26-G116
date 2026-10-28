@@ -35,8 +35,19 @@ export interface MicCapture {
   engineDown: boolean
   /** Sentences the server turned down for good (not an outage, which is retried). */
   refused: number
+  /** This meeting's sentences still on the device, oldest first, for the person's "my clips" list. */
+  pending: PendingClip[]
   /** Record in this tab, stopping the one that does now. */
   takeOver: () => void
+}
+
+export interface PendingClip {
+  id: string
+  startedAt: Date
+  durationMs: number
+  sending: boolean
+  /** How many times sending it failed and it was put back to wait. */
+  attempts: number
 }
 
 interface Pending {
@@ -79,10 +90,12 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
   const [engineDown, setEngineDown] = useState(false)
   const [refused, setRefused] = useState(0)
   const [claim, setClaim] = useState(0)
+  const [pending, setPending] = useState<PendingClip[]>([])
   // The queue outlives a capture session: switching the mic off must not drop what was already said.
   const queue = useRef<Pending[]>([])
   const timer = useRef<number | undefined>(undefined)
   const pumpRef = useRef<() => void>(() => undefined)
+  const countRef = useRef<() => void>(() => undefined)
 
   useEffect(() => {
     const pump = () => {
@@ -92,6 +105,7 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
         if (queue.current.filter((q) => q.sending).length >= PARALLEL) break
         if (item.sending || item.dueAt > now) continue
         item.sending = true
+        count()
         sendSpeechClip(item.meetingId, item.id, item.audio, item.startedAt, item.durationMs).then(
           () => {
             setEngineDown(false)
@@ -123,7 +137,13 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
     const count = () => {
       setWaiting(queue.current.length)
       setRetrying(queue.current.filter((q) => q.attempt > 0).length)
+      setPending(
+        queue.current
+          .filter((q) => q.meetingId === meetingId)
+          .map((q) => ({ id: q.id, startedAt: q.startedAt, durationMs: q.durationMs, sending: q.sending, attempts: q.attempt })),
+      )
     }
+    countRef.current = count
     const schedule = () => {
       const next = queue.current.filter((q) => !q.sending).reduce((at, q) => Math.min(at, q.dueAt), Infinity)
       if (next !== Infinity) timer.current = window.setTimeout(pump, Math.max(0, next - Date.now()))
@@ -191,7 +211,7 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
         }
       }
       if (clips.length > 0) {
-        setWaiting(queue.current.length)
+        countRef.current()
         pumpRef.current()
       }
     }
@@ -285,6 +305,7 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
     retrying,
     engineDown,
     refused,
+    pending,
     takeOver: () => setClaim((n) => n + 1),
   }
 }

@@ -1,3 +1,4 @@
+import type { RecordingPlayback } from '../types/recording'
 import type {
   CaptureMode,
   CaptureModeChanged,
@@ -34,6 +35,10 @@ export const sendSpeechClip = (
 
 /** The per-mic transcript as a UTF-8 text file, without the sentences taken out of the record. */
 export const getSpeechClipsText = (meetingId: string) => api.blob(`/api/meetings/${meetingId}/speech-clips.txt`)
+
+/** A signed link to hear one sentence; an <audio> element plays it without a token. */
+export const getSpeechClipPlayback = (clipId: string) =>
+  api.get<RecordingPlayback>(`/api/speech-clips/${clipId}/playback`)
 
 export const editSpeechClip = (clipId: string, text: string) =>
   api.put<SpeechMessage>(`/api/speech-clips/${clipId}/text`, { text })

@@ -127,6 +127,16 @@
   --accent-amber: #b26b00;
   --accent-emerald: #0e6b44;
   --wash-amber: #fffaf0;
+
+  /* A record's speakers (AI-eCabinet's palette): the dot on the rail, and the name in its ink. */
+  --speaker-1-dot: #3b82f6; --speaker-1-ink: #2563eb;
+  --speaker-2-dot: #f97316; --speaker-2-ink: #c2410c;
+  --speaker-3-dot: #8b5cf6; --speaker-3-ink: #7c3aed;
+  --speaker-4-dot: #14b8a6; --speaker-4-ink: #0f766e;
+  --speaker-5-dot: #ec4899; --speaker-5-ink: #be185d;
+  --speaker-6-dot: #84cc16; --speaker-6-ink: #4d7c0f;
+  --speaker-7-dot: #0ea5e9; --speaker-7-ink: #0369a1;
+  --speaker-8-dot: #d946ef; --speaker-8-ink: #a21caf;
 }
 @supports (transition-timing-function: linear(0, 1)) {
   :root {
@@ -3162,9 +3172,8 @@ audio.recording-player { height: 40px; }
 
 /* SCRUM-31 — transcript under the player: time · speaker · text, the segment being heard highlighted. */
 .recording-detail { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
-.recording-detail audio { width: 100%; height: 40px; }
+.recording-player-bar { container-type: inline-size; }
 .recording-open { background: var(--surface-head); }
-.transcript { display: flex; flex-direction: column; gap: 8px; }
 .transcript-note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
 .transcript-tools { display: flex; gap: 2px; margin: -4px 0 -4px auto; }
 .transcript-status { margin: 0; }
@@ -3172,23 +3181,11 @@ audio.recording-player { height: 40px; }
 .transcript-spinner { width: 14px; height: 14px; flex: none; border: 2px solid var(--line); border-top-color: var(--brand); border-radius: 50%; animation: spin .9s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .transcript-spinner { animation: none; } }
-.transcript-segments { display: flex; flex-direction: column; max-height: 480px; margin: 0; padding: 0; overflow-y: auto; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
-.transcript-segment { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: start; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line-soft); }
-.transcript-segment:last-child { border-bottom: 0; }
-.transcript-active { background: var(--brand-wash); }
-.transcript-time { padding: 2px 0; border: 0; background: none; color: var(--brand); font: inherit; font-size: 13px; font-variant-numeric: tabular-nums; text-align: left; cursor: pointer; }
-.transcript-time:hover { text-decoration: underline; }
-.transcript-body { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
-.transcript-speaker { display: flex; align-items: center; gap: 8px; }
-.transcript-edited { color: var(--muted-ink); font-size: 12px; font-style: italic; }
-.transcript-text { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
+.transcript { container-type: inline-size; display: flex; flex-direction: column; gap: 8px; }
+.transcript-list { max-height: 480px; border: 1px solid var(--line-soft); border-radius: var(--radius-lg); background: var(--surface); }
 .transcript-editor { display: flex; flex-direction: column; gap: 6px; }
 .transcript-editor textarea { width: 100%; resize: vertical; }
 .transcript-editor-actions { justify-content: flex-end; gap: 6px; }
-@media (max-width: 560px) {
-  .transcript-segment { grid-template-columns: 48px minmax(0, 1fr); }
-  .transcript-edit { grid-column: 2; justify-self: start; }
-}
 
 /* SCRUM-35 — "Giọng nói của tôi": consent first, then samples. */
 .voice-card { display: flex; flex-direction: column; gap: 14px; }
@@ -3228,27 +3225,207 @@ audio.recording-player { height: 40px; }
 .speech-meter > span { display: block; height: 100%; background: var(--brand); transform-origin: left; transition: transform .12s linear; }
 .speech-mine .btn { flex: none; }
 .speech-mine-note { flex-basis: 100%; margin: 0; }
-.speech-empty { margin: 0; }
-.speech-lines { display: flex; flex-direction: column; max-height: 520px; margin: 0; padding: 4px 0; overflow-y: auto; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
-.speech-lines-room { flex: 1; min-height: 0; max-height: none; }
-/* A speaker's run of sentences reads as one block: the name and time once, at its start. */
-.speech-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: 8px; padding: 2px 12px; }
-.speech-line-first { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line-soft); }
-.speech-line-first:first-child { margin-top: 0; border-top: 0; }
-.speech-line-head { display: flex; grid-column: 1 / -1; align-items: baseline; gap: 8px; font-size: 13px; }
-.speech-line-head time { color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
-.speech-line-text { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
-/* Negative margins: the 32px buttons sit beside a 22px line of text without making the line taller. */
-.speech-line-actions { display: flex; gap: 2px; margin: -5px 0; opacity: 0; transition: opacity .12s; }
-/* SCRUM-109: a sentence another mic's speaker probably said, and one taken out of the record. Faint, never hidden. */
-.speech-chip { display: inline-block; margin-right: 6px; padding: 0 6px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--muted-ink); font-size: 12px; line-height: 18px; vertical-align: 1px; white-space: nowrap; }
-.speech-chip-leak { border-color: color-mix(in srgb, var(--chip-amber-fg) 24%, transparent); color: var(--chip-amber-fg); background: var(--chip-amber-bg); }
-.speech-line-leak .speech-line-text, .speech-leak-words { color: var(--muted-ink); }
-.speech-line-excluded .speech-line-text { color: var(--faint-ink); }
-.speech-line-gone { color: var(--muted-ink); font-style: italic; }
-.speech-tools { display: flex; justify-content: flex-end; margin: -4px 0; }
-.speech-line:hover .speech-line-actions, .speech-line:focus-within .speech-line-actions { opacity: 1; }
-@media (hover: none) { .speech-line-actions { opacity: 1; } }
+/* The player above a record (AI-eCabinet's TimelinePlayer): time, seek bar or waveform, back and ahead 5 s, play,
+   speed, volume. Shared by the per-mic record and a room recording. */
+.player-bar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 8px 16px; min-width: 0; margin: 0; padding: 8px 12px 8px 16px; border: 0; border-radius: var(--radius-lg); background: var(--surface-alt); }
+.player-time { min-width: var(--time-width); color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.player-time strong { color: var(--ink); font-weight: 600; }
+.player-seek { position: relative; display: flex; align-items: center; height: 22px; min-width: 0; }
+/* Not a text field: the app's input border, padding and focus ring would draw a box around the track. */
+.player-bar input[type='range'] { padding: 0; border: 0; border-radius: 0; box-shadow: none; }
+.player-seek input[type='range'] { width: 100%; height: 22px; margin: 0; background: transparent; cursor: pointer; appearance: none; }
+.player-seek input[type='range']::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--brand) calc(var(--p) * 100%), var(--control-line) calc(var(--p) * 100%)); }
+.player-seek input[type='range']::-moz-range-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--brand) calc(var(--p) * 100%), var(--control-line) calc(var(--p) * 100%)); }
+.player-seek input[type='range']::-webkit-slider-thumb { width: 14px; height: 14px; margin-top: -4px; border: 2px solid var(--brand); border-radius: 50%; background: var(--surface); appearance: none; }
+.player-seek input[type='range']::-moz-range-thumb { width: 10px; height: 10px; border: 2px solid var(--brand); border-radius: 50%; background: var(--surface); }
+.player-seek input[type='range']:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+/* With a waveform the slider is invisible over the bars: dragging and the arrow keys still work. */
+.player-seek-wave { height: 40px; }
+.player-seek-wave svg { width: 100%; height: 100%; fill: color-mix(in srgb, var(--brand) 25%, transparent); }
+.player-seek-wave .player-bar-heard { fill: var(--brand); }
+.player-seek-wave input[type='range'] { position: absolute; inset: 0; height: 100%; opacity: 0; }
+.player-seek-wave:focus-within { border-radius: var(--radius); box-shadow: 0 0 0 2px var(--focus); }
+.player-head { position: absolute; top: -2px; bottom: -2px; left: calc(var(--p) * 100%); width: 2px; margin-left: -1px; border-radius: 1px; background: var(--brand); pointer-events: none; }
+.player-hover { position: absolute; bottom: 100%; margin-bottom: 4px; padding: 2px 6px; border-radius: 4px; background: var(--brand); color: var(--surface); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; transform: translateX(-50%); pointer-events: none; }
+.player-controls, .player-volume { display: flex; align-items: center; gap: 4px; }
+.player-round { position: relative; display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--ink-soft); cursor: pointer; }
+.player-round:hover { background: var(--line-soft); }
+.player-round:focus-visible, .player-speed:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.player-five { position: absolute; font-size: 8px; font-weight: 700; line-height: 1; }
+.player-play { background: var(--brand); color: var(--surface); }
+.player-play:hover { background: var(--brand-ink); }
+.player-play svg { fill: currentColor; }
+.player-speed-wrap { position: relative; }
+.player-speed { min-width: 32px; height: 32px; padding: 0 6px; border: 0; border-radius: 16px; background: transparent; color: var(--ink-soft); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.player-speed:hover { background: var(--line-soft); }
+.player-speed-on { background: var(--brand-wash); color: var(--brand); }
+.player-speeds { position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 5; display: flex; padding: 2px; border: 1px solid var(--control-line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
+.player-speed-option { height: 32px; padding: 0 11px; border: 0; border-radius: var(--radius); background: transparent; color: var(--ink); font: inherit; font-size: 13.5px; white-space: nowrap; cursor: pointer; }
+.player-speed-option:hover { background: var(--surface-alt); }
+.player-speed-option.is-on { background: var(--brand); color: var(--surface); font-weight: 600; }
+.player-volume input[type='range'] { width: 96px; height: 22px; margin: 0; background: transparent; cursor: pointer; appearance: none; }
+.player-volume input[type='range']::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--brand) calc(var(--p) * 100%), var(--control-line) calc(var(--p) * 100%)); }
+.player-volume input[type='range']::-moz-range-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--brand) calc(var(--p) * 100%), var(--control-line) calc(var(--p) * 100%)); }
+.player-volume input[type='range']::-webkit-slider-thumb { width: 14px; height: 14px; margin-top: -4px; border: 2px solid var(--brand); border-radius: 50%; background: var(--surface); appearance: none; }
+.player-volume input[type='range']::-moz-range-thumb { width: 10px; height: 10px; border: 2px solid var(--brand); border-radius: 50%; background: var(--surface); }
+@media (pointer: coarse) {
+  .player-round, .player-speed, .player-speed-option { min-width: 40px; height: 40px; }
+}
+/* Narrow: time and controls on one line, the seek bar under them; the volume is the device's own. */
+/* Narrow: the controls on a line of their own, time and seek bar under them; the volume is the device's own. */
+@container (max-width: 640px) {
+  .player-bar { grid-template-columns: auto minmax(0, 1fr); row-gap: 4px; padding: 6px 12px; }
+  .player-controls { grid-row: 1; grid-column: 1 / -1; justify-content: center; }
+  .player-time { grid-row: 2; min-width: 0; }
+  .player-seek { grid-row: 2; }
+  .player-volume { display: none; }
+}
+
+/* SCRUM-109, ADR-0039 — the per-mic record as AI-eCabinet's timeline: 56px time | 18px rail of coloured dots | text,
+   the speakers beside it to filter by. */
+.tl-card { container-type: inline-size; display: flex; flex-direction: column; min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
+.tl-card-room { flex: 1; min-height: 0; border: 0; border-radius: 0; }
+.tl-head { display: flex; align-items: center; gap: 8px; padding: 14px 16px 12px; }
+.tl-title { display: flex; flex: 1; align-items: baseline; gap: 6px; min-width: 0; margin: 0; font-size: 16px; font-weight: 700; }
+.tl-count { color: var(--muted-ink); font-size: 14px; font-weight: 600; }
+.tl-player { container-type: inline-size; padding: 0 16px 12px; }
+.tl-play-error { margin: 6px 0 0; }
+.tl-empty { display: grid; justify-items: center; gap: 4px; padding: 28px 16px; border-top: 1px solid var(--line); color: var(--faint-ink); text-align: center; }
+.tl-empty .empty-title { color: var(--ink); }
+.tl-body { border-top: 1px solid var(--line); }
+@container (min-width: 880px) {
+  .tl-body-split { display: grid; grid-template-columns: minmax(0, 1fr) 260px; }
+  .tl-body-split .tl-speakers { order: 2; max-height: max(490px, 70dvh); overflow-y: auto; border-bottom: 0; border-left: 1px solid var(--line); }
+}
+.tl-speakers { padding: 12px 16px; border-bottom: 1px solid var(--line-soft); }
+.tl-speakers-title { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; color: var(--label-ink); font-size: 12px; font-weight: 600; }
+.tl-pill { min-width: 20px; padding: 0 6px; border-radius: 10px; background: var(--surface-alt); color: var(--ink-soft); font-size: 11.5px; font-weight: 700; line-height: 20px; text-align: center; }
+.tl-speakers ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+@container (min-width: 880px) {
+  .tl-body-split .tl-speakers ul { grid-template-columns: 1fr; }
+}
+.tl-speaker { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; padding: 6px 8px; border: 1px solid var(--line-soft); border-radius: var(--radius-lg); background: var(--surface); }
+.tl-speaker.is-on { border-color: var(--brand-wash-line); background: var(--brand-wash); }
+.tl-speaker-name { max-width: 100%; overflow: hidden; font-size: 13.5px; font-weight: 600; line-height: 28px; text-overflow: ellipsis; white-space: nowrap; }
+.tl-filter { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: 1px solid var(--control-line); border-radius: var(--radius); background: var(--surface); color: var(--brand); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.tl-filter:hover { border-color: var(--brand); background: var(--brand-wash); }
+.tl-filter.is-on { border-color: var(--brand); background: var(--brand); color: var(--surface); }
+.tl-list { max-height: max(490px, 70dvh); margin: 0; padding: 6px 0; overflow-y: auto; list-style: none; overscroll-behavior: contain; }
+.tl-group { display: grid; grid-template-columns: 64px 18px minmax(0, 1fr); column-gap: 8px; }
+.tl-row { display: grid; grid-template-columns: subgrid; grid-column: 1 / -1; padding: 0 14px; }
+.tl-time { padding-top: 6px; color: var(--muted-ink); font-size: 12.5px; font-variant-numeric: tabular-nums; text-align: right; }
+.tl-row-head .tl-time { padding-top: 9px; }
+.tl-time-button { align-self: start; height: 28px; padding: 0; border: 0; border-radius: var(--radius); background: transparent; font: inherit; font-size: 12.5px; cursor: pointer; }
+.tl-time-button:hover { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
+/* The rail: a line down the side of a speaker's run, with their dot at its head. */
+.tl-rail { position: relative; display: flex; justify-content: center; }
+.tl-rail::before { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--control-line); content: ''; }
+.tl-row-head .tl-rail::before { top: 22px; }
+.tl-group:last-child .tl-row:last-child .tl-rail::before { display: none; }
+.tl-group:last-child .tl-row-head:last-child .tl-rail::before { display: none; }
+.tl-dot { position: relative; width: 10px; height: 10px; margin-top: 11px; border-radius: 50%; background: var(--control-line); }
+.tl-head-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-width: 0; padding-top: 4px; }
+.tl-name { font-size: 13.5px; font-weight: 600; }
+.tl-time-inline { display: none; color: var(--muted-ink); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.tl-play { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 4px; border: 0; border-radius: var(--radius); background: transparent; color: var(--brand); font: inherit; font-size: 12.5px; font-variant-numeric: tabular-nums; cursor: pointer; }
+.tl-play svg { fill: currentColor; }
+.tl-play:hover { text-decoration: underline; text-underline-offset: 2px; }
+.tl-play.is-on { font-weight: 600; }
+.tl-leak { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; height: 26px; padding: 0 10px 0 8px; border-radius: 13px; background: var(--chip-amber-bg); color: var(--chip-amber-fg); font-size: 12.5px; }
+.tl-leak span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-leak-words { padding: 0 2px; border-radius: 3px; background: var(--chip-amber-bg); color: var(--chip-amber-fg); }
+.tl-struck-label { margin-left: auto; color: var(--muted-ink); font-size: 12.5px; }
+.tl-content { position: relative; display: flex; align-items: flex-start; gap: 8px; min-width: 0; padding: 2px 0 8px; }
+.tl-text { flex: 1; min-width: 0; max-width: 75ch; margin: 0; color: var(--ink); font-size: 14.5px; line-height: 1.625; white-space: pre-wrap; overflow-wrap: anywhere; text-wrap: pretty; }
+.tl-edited { color: var(--muted-ink); font-size: 12.5px; font-style: italic; }
+.tl-gone { color: var(--muted-ink); font-size: 13px; font-style: italic; }
+.tl-group.is-excluded .tl-text:not(.tl-gone) { color: var(--muted-ink); text-decoration: line-through; opacity: .6; }
+.tl-group.is-excluded .tl-name { color: var(--muted-ink); }
+.tl-sentence:hover, .tl-sentence:focus-within { background: var(--surface-head); }
+.tl-sentence.is-active { background: var(--brand-wash); }
+.tl-sentence.is-active .tl-time { color: var(--brand); font-weight: 600; }
+/* Negative margins: the 28px buttons sit beside a line of text without making it taller. */
+.tl-tools { display: flex; flex: none; gap: 2px; margin: -2px 0; opacity: 0; transition: opacity .12s; }
+.tl-sentence:hover .tl-tools, .tl-sentence:focus-within .tl-tools { opacity: 1; }
+.tl-tool { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius); background: transparent; color: var(--muted-ink); cursor: pointer; }
+.tl-tool:hover { background: var(--brand-wash); color: var(--brand); }
+.tl-tool:disabled { opacity: .5; cursor: default; }
+@media (hover: none) {
+  .tl-tools { opacity: 1; }
+  /* A finger-sized target that keeps the line its height: the extra reaches into the space around it. */
+  .tl-tool, .tl-play, .tl-time-button { min-width: 40px; height: 40px; margin: -6px 0; }
+  .tl-filter { height: 40px; }
+}
+/* Narrow (a phone, the call room's panel): the time column goes, the time moves next to the name. */
+@container (max-width: 560px) {
+  .tl-group { grid-template-columns: 18px minmax(0, 1fr); }
+  .tl-row > .tl-time { display: none; }
+  .tl-time-inline { display: inline; }
+  .tl-speakers ul { display: flex; overflow-x: auto; scrollbar-width: none; }
+  .tl-speaker { flex: none; max-width: 85%; }
+}
+
+/* SCRUM-109 — the attendee's own mic, floating in the corner of every tab of a running meeting (AI-eCabinet's
+   SpeechWidget). Above the page, under dialogs. */
+.mic-dock { position: fixed; right: 24px; bottom: 24px; z-index: 40; display: flex; justify-content: flex-end; max-width: calc(100vw - 16px); pointer-events: none; }
+.mic-dock > * { pointer-events: auto; }
+.mic-bubble { position: relative; display: grid; place-items: center; width: 56px; height: 56px; padding: 0; border: 1px solid var(--brand); border-radius: 50%; background: var(--brand); color: var(--surface); box-shadow: var(--shadow); cursor: pointer; }
+.mic-bubble.is-live { border-color: var(--live); background: var(--live); }
+.mic-bubble:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mic-bubble-badge { position: absolute; top: -2px; right: -2px; width: 14px; height: 14px; border: 2px solid var(--surface); border-radius: 50%; background: var(--dot-red); }
+.mic-card { display: flex; flex-direction: column; width: min(320px, calc(100vw - 16px)); overflow: hidden; border: 1px solid var(--control-line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
+.mic-card-head { display: flex; align-items: flex-start; gap: 8px; padding: 8px 8px 8px 14px; background: var(--brand); color: var(--surface); }
+.mic-card-head h2 { display: -webkit-box; flex: 1; min-width: 0; margin: 0; padding: 3px 0; overflow: hidden; font-size: 14px; font-weight: 700; line-height: 1.375; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.mic-card-min { display: grid; flex: none; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius); background: var(--surface); color: var(--brand); cursor: pointer; }
+.mic-card-min:hover { background: var(--brand-wash); }
+.mic-card-body { display: flex; flex-direction: column; gap: 12px; padding: 14px; }
+.mic-status { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.mic-status-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--faint-ink); }
+.mic-status-dot.is-live { background: var(--live); }
+.mic-status-dot.is-error { background: var(--dot-red); }
+.mic-status-text { flex: 1; min-width: 0; overflow: hidden; color: var(--ink); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.mic-clock { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.mic-controls { display: flex; align-items: center; gap: 12px; }
+.mic-toggle { display: grid; flex: none; place-items: center; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 50%; background: var(--brand); color: var(--surface); cursor: pointer; }
+.mic-toggle:hover { background: var(--brand-ink); }
+.mic-toggle.is-on { background: var(--live); }
+.mic-toggle.is-on:hover { background: color-mix(in srgb, var(--live) 85%, black); }
+.mic-toggle:focus-visible, .mic-clips:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mic-meter { display: flex; flex: 1; align-items: center; justify-content: space-between; gap: 3px; min-width: 0; height: 32px; overflow: hidden; color: var(--ink-soft); }
+.mic-meter.is-live { color: var(--live); }
+.mic-meter i { width: 4px; height: 100%; flex: none; border-radius: 1px; background: currentColor; opacity: .22; }
+.mic-meter i.is-lit { opacity: 1; }
+.mic-clips { position: relative; display: grid; flex: none; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--control-line); border-radius: 50%; background: var(--surface); color: var(--ink-soft); cursor: pointer; }
+.mic-clips:hover { background: var(--surface-alt); }
+.mic-clips-badge { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 4px; border: 2px solid var(--surface); border-radius: 10px; background: var(--dot-red); color: var(--surface); font-size: 11px; font-weight: 700; line-height: 16px; }
+.mic-take { flex: 1; height: 44px; border-radius: 22px; }
+.mic-hint { margin: 0; color: var(--ink-soft); font-size: 12.5px; text-wrap: pretty; }
+.mic-notice { display: flex; gap: 6px; margin: 0; padding: 6px 8px; border: 1px solid var(--dot-amber); border-radius: var(--radius); background: var(--chip-amber-bg); color: var(--chip-amber-fg); font-size: 12.5px; }
+.mic-notice svg { flex: none; margin-top: 1px; }
+.mic-notice-error { border-color: var(--edge-red); background: var(--chip-red-bg); color: var(--chip-red-fg); }
+@media (max-width: 560px) {
+  .mic-dock { right: 8px; bottom: 8px; }
+}
+
+/* "Ghi âm của tôi": the person's own sentences, in a sheet from the right edge. */
+.dialog-sheet { width: min(520px, 100vw); max-width: none; height: 100dvh; max-height: none; margin: 0 0 0 auto; border: 0; border-left: 1px solid var(--line); border-radius: 0; background: var(--paper); }
+.dialog-sheet .dialog-head { background: var(--surface); }
+.dialog-sheet .dialog-body { flex: 1; min-height: 0; padding: 16px 20px; }
+.my-clips-section + .my-clips-section { margin-top: 20px; }
+.my-clips-section h3 { margin: 0 0 8px; color: var(--ink-soft); font-size: 13px; font-weight: 700; }
+.my-clips-section ul { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.my-clip { padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
+.my-clip-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; color: var(--muted-ink); font-size: 13px; }
+.my-clip-line { flex-wrap: nowrap; }
+.my-clip-when { display: inline-flex; flex: 1; align-items: baseline; gap: 8px; min-width: 0; white-space: nowrap; }
+.my-clip-when strong { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.my-clip-chip { flex: none; padding: 0 8px; border-radius: 11px; background: var(--chip-slate-bg); color: var(--chip-slate-fg); font-size: 12px; font-weight: 600; line-height: 22px; }
+.my-clip-chip.is-done { background: var(--chip-emerald-bg); color: var(--chip-emerald-fg); }
+.my-clip-chip.is-wait { background: var(--chip-amber-bg); color: var(--chip-amber-fg); }
+.my-clip-text { margin: 8px 0 0; color: var(--ink); font-size: 14px; line-height: 1.625; }
+.my-clip .field-hint { margin: 6px 0 0; }
+.my-clips-empty { display: grid; justify-items: center; gap: 4px; padding: 24px 12px; color: var(--faint-ink); text-align: center; }
+.my-clips-empty .empty-title { color: var(--ink); }
 /* Everyone whose mic feeds the transcript sees it in the header, in the one colour kept for warnings. */
 .room-recording { display: inline-flex; flex: none; align-items: center; gap: 6px; height: 22px; padding: 0 10px; border: 0; border-radius: 11px; background: var(--danger); color: var(--surface); font: inherit; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; }
 .room-recording-short { display: none; }

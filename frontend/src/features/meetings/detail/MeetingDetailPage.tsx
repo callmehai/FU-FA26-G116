@@ -25,8 +25,9 @@ import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { DocumentsPanel } from '../../documents/DocumentsPanel'
 import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
 import { RecordingsPanel } from '../../recordings/RecordingsPanel'
+import { MicCard } from '../../speech/MicCard'
 import { SpeechPanel } from '../../speech/SpeechPanel'
-import type { CaptureMode } from '../../../types/speech'
+import { useSpeech } from '../../speech/useSpeech'
 import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
 import { SensitivityBadge, StatusBadge } from '../StatusBadge'
 import { useMeeting } from '../useMeeting'
@@ -119,8 +120,10 @@ function MeetingDetail({
   const [params] = useSearchParams()
   // `?tab=documents` is where the document viewer's back link lands.
   const [tab, setTab] = useState<TabId>(() => TABS.find((t) => t.id === params.get('tab'))?.id ?? 'overview')
-  // SCRUM-109: the Bản ghi tab may change it; until it says, the meeting's own value stands.
-  const [captureMode, setCaptureMode] = useState<CaptureMode | null>(null)
+  // SCRUM-109: the per-mic record and the person's own mic live with the page, not the Bản ghi tab, so that switching
+  // tabs keeps the mic on (AI-eCabinet's floating card). In-person, each at their own laptop: the switch starts off.
+  const speech = useSpeech(meeting.id, { defaultOn: false })
+  const captureMode = speech.list?.captureMode ?? meeting.captureMode
   const history = useMeetingHistory(meeting.id)
   // UC-15 opens as a dialog on this page (`?edit=1`), keeping the back link's target.
   const editLink = useEditMeetingLink()
@@ -341,12 +344,8 @@ function MeetingDetail({
             <DocumentsPanel meeting={meeting} variant="page" onMeetingStale={() => void reload()} />
           ) : tab === 'recordings' ? (
             <div className="recordings-tab">
-              <SpeechPanel meetingId={meeting.id} variant="page" onCaptureMode={setCaptureMode} />
-              <RecordingsPanel
-                meetingId={meeting.id}
-                variant="page"
-                existingOnly={(captureMode ?? meeting.captureMode) === 'PerMic'}
-              />
+              <SpeechPanel meetingId={meeting.id} variant="page" speech={speech} />
+              <RecordingsPanel meetingId={meeting.id} variant="page" existingOnly={captureMode === 'PerMic'} />
             </div>
           ) : (
             <div className="card card-pending tab-pending">
@@ -367,6 +366,10 @@ function MeetingDetail({
               void reloadHistory()
             }}
           />
+        )}
+
+        {speech.list?.canCapture && (
+          <MicCard speech={speech} title={meeting.title} startedAt={meeting.actualStartedAt} userId={user?.id} />
         )}
 
         <MeetingHistory

@@ -1804,6 +1804,16 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("AudioContentType")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("audio_content_type");
+
+                    b.Property<string>("AudioPath")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("audio_path");
+
                     b.Property<Guid>("ClientClipId")
                         .HasColumnType("uuid")
                         .HasColumnName("client_clip_id");
@@ -1840,6 +1850,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Property<Guid>("MeetingId")
                         .HasColumnType("uuid")
                         .HasColumnName("meeting_id");
+
+                    b.Property<byte[]>("Peaks")
+                        .HasColumnType("bytea")
+                        .HasColumnName("peaks");
 
                     b.Property<string>("Segments")
                         .HasColumnType("jsonb")

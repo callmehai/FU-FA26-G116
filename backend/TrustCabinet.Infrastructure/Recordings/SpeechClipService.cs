@@ -25,13 +25,14 @@ public sealed class SpeechClipGate
 
 /// <summary>
 /// SCRUM-109 — the per-mic transcript. Each attendee's browser sends a sentence once they pause; the worker turns it
-/// into text inside our network (ADR-0026) and the audio is dropped when the request ends. What is kept is the text,
-/// when it was said and who said it — the owner of the mic, never a guess — and it goes when the recordings'
+/// into text inside our network (ADR-0026). What is kept is the text, its audio to hear it again (ADR-0039), when it
+/// was said and who said it — the owner of the mic, never a guess — and all of it goes when the recordings'
 /// retention period ends.
 /// </summary>
 public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetDbContext db, ISpeechEngine engine,
     SpeechClipGate gate, ISpeechChangePublisher publisher, IAuditService audit, TimeProvider clock,
-    IOptions<RecordingOptions> options, ILogger<SpeechClipService> logger) : ISpeechClipService
+    IOptions<RecordingOptions> options, IRecordingStorage storage, ISpeechClipAudioSigner signer,
+    ILogger<SpeechClipService> logger) : ISpeechClipService
 {
     private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
 
@@ -51,7 +52,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             return new(Data: new SpeechClipList(meetingId, meeting.CaptureMode.ToString(),
                 SpeechClipRules.Capturing(meeting), secretary,
                 SpeechClipRules.RunsRecord(meeting, actorId) && SpeechClipRules.ModeChangeable(meeting.Status), now, items,
-                officer, RecordingRules.Export(meeting, actorId) == RecordingFailure.None));
+                officer, RecordingRules.Export(meeting, actorId) == RecordingFailure.None, options.Value.RetentionDays));
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -134,6 +135,8 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         // Silence, a cough, a door: nothing worth a line. The browser drops it; nothing is stored.
         if (text.Length == 0) return new();
 
+        var audioPath = await StoreAudioAsync(upload, ct);
+        var kept = false;
         try
         {
             var now = clock.GetUtcNow();
@@ -150,12 +153,15 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
                     StartedAt = StartedAt(upload, meeting, now), DurationMs = upload.DurationMs,
                     Text = text.Length > SpeechClipRules.MaxTextLength ? text[..SpeechClipRules.MaxTextLength] : text,
                     Segments = segments, CreatedAt = now, UpdatedAt = now,
+                    AudioPath = audioPath, AudioContentType = audioPath is null ? null : upload.ContentType,
+                    Peaks = audioPath is null ? null : SpeechClipPeaks.FromWav(upload.Audio),
                 };
                 db.SpeechClips.Add(row);
                 await db.SaveChangesAsync(token);
                 return row;
             }, ct);
             if (clip is null) return new(SpeechClipFailure.NotCapturing);
+            kept = true;
             await PublishAsync(meetingId, "ClipAdded", ct);
             return new(Data: await FindByClientIdAsync(meetingId, actorId, upload.ClientClipId, ct));
         }
@@ -169,6 +175,11 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         {
             logger.LogError(ex, "Failed to store a speech clip of {MeetingId}", meetingId);
             return new(SpeechClipFailure.SaveFailed);
+        }
+        finally
+        {
+            // Refused, failed, or stored by a concurrent copy of the same sentence: no row points at this file.
+            if (!kept) DeleteAudio(audioPath);
         }
     }
 
@@ -207,15 +218,20 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
     {
         try
         {
-            return await ChangeClipAsync(clipId, actorId, async (clip, meeting, now, token) =>
+            string? audioPath = null;
+            var outcome = await ChangeClipAsync(clipId, actorId, async (clip, meeting, now, token) =>
             {
                 if (clip.SpeakerId != actorId && !RecordingRules.IsSecretary(meeting, actorId))
                     return new(SpeechClipFailure.Forbidden);
                 await audit.RecordAsync(AuditActions.SpeechClipDeleted, AuditActions.SpeechClipObjectType, clip.Id, actorId,
                     new { clip.MeetingId, clip.SpeakerId, byOwner = clip.SpeakerId == actorId }, token);
                 db.SpeechClips.Remove(clip);
+                audioPath = clip.AudioPath;
                 return new();
             }, "ClipDeleted", ct);
+            // After the commit: a failed delete keeps the row, and with it the way to the file.
+            if (outcome.Failure == SpeechClipFailure.None) DeleteAudio(audioPath);
+            return outcome;
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -302,7 +318,68 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
     public async Task<int> EraseExpiredAsync(CancellationToken ct = default)
     {
         var cutoff = clock.GetUtcNow().AddDays(-options.Value.RetentionDays);
-        return await db.SpeechClips.Where(c => c.CreatedAt < cutoff).ExecuteDeleteAsync(ct);
+        var expired = db.SpeechClips.Where(c => c.CreatedAt < cutoff);
+        var files = await expired.Where(c => c.AudioPath != null).Select(c => c.AudioPath!).ToListAsync(ct);
+        var erased = await expired.ExecuteDeleteAsync(ct);
+        foreach (var file in files) DeleteAudio(file);
+        return erased;
+    }
+
+    public async Task<SpeechClipOutcome> PlaybackAsync(Guid clipId, Guid actorId, CancellationToken ct = default)
+    {
+        try
+        {
+            var clip = await db.SpeechClips.AsNoTracking().Where(c => c.Id == clipId)
+                .Select(c => new { c.MeetingId, c.AudioPath, c.ExcludedAt }).SingleOrDefaultAsync(ct);
+            if (clip is null) return new(SpeechClipFailure.NotFound);
+            var (meeting, failure) = await ListenableMeetingAsync(clip.MeetingId, actorId, ct);
+            if (meeting is null) return new(failure);
+            // An excluded sentence is heard by whoever still reads its words; to everyone else it does not exist.
+            if (clip.AudioPath is null || (clip.ExcludedAt is not null && !SpeechClipRules.RunsRecord(meeting, actorId)))
+                return new(SpeechClipFailure.NotFound);
+            return new(Data: signer.Sign(clipId, clock.GetUtcNow()));
+        }
+        catch (Exception ex) when (PersistenceError(ex))
+        {
+            logger.LogError(ex, "Failed to sign playback for speech clip {ClipId}", clipId);
+            return new(SpeechClipFailure.ReadFailed);
+        }
+    }
+
+    public Task<SpeechClipAudio?> FindAudioAsync(Guid clipId, CancellationToken ct = default)
+        => db.SpeechClips.AsNoTracking().Where(c => c.Id == clipId && c.AudioPath != null)
+            .Select(c => new SpeechClipAudio(c.AudioPath!, c.AudioContentType ?? "audio/wav")).SingleOrDefaultAsync(ct);
+
+    /// <summary>
+    /// Keeps the sentence's audio beside its words. A full or failing disk loses only the audio: the words are what
+    /// the minutes are written from, so the sentence is stored without it rather than refused.
+    /// </summary>
+    private async Task<string?> StoreAudioAsync(SpeechClipUpload upload, CancellationToken ct)
+    {
+        if (!SpeechClipRules.Extensions.TryGetValue(upload.ContentType, out var extension)) return null;
+        try
+        {
+            using var audio = new MemoryStream(upload.Audio, writable: false);
+            return (await storage.SaveAsync(audio, extension, SpeechClipRules.MaxClipBytes, ct)).StoragePath;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            logger.LogError(ex, "Could not store the audio of a speech clip");
+            return null;
+        }
+    }
+
+    private void DeleteAudio(string? path)
+    {
+        if (path is null) return;
+        try
+        {
+            storage.Delete(path);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            logger.LogWarning(ex, "Could not delete the audio of a speech clip at {Path}", path);
+        }
     }
 
     /// <summary>
@@ -375,13 +452,14 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         => db.SpeechClips.AsNoTracking()
             .Where(c => c.MeetingId == meetingId && c.SpeakerId == actorId && c.ClientClipId == clientClipId)
             .Select(c => new SpeechClipView(c.Id, c.SpeakerId, c.Speaker.FullName, c.StartedAt, c.DurationMs, c.Text,
-                c.UpdatedAt, c.EditedAt, c.EditedBy == null ? null : c.EditedBy.FullName, true, false, null, null, null))
+                c.UpdatedAt, c.EditedAt, c.EditedBy == null ? null : c.EditedBy.FullName, true, false, null, null, null,
+                c.AudioPath != null, c.Peaks))
             .SingleOrDefaultAsync(ct);
 
     /// <summary>One sentence with what the list and the fold need of it.</summary>
     private sealed record ClipRow(Guid Id, Guid SpeakerId, string SpeakerName, DateTimeOffset StartedAt, long DurationMs,
         string Text, DateTimeOffset UpdatedAt, DateTimeOffset? EditedAt, string? EditedByName, List<SpeechClipSegment>? Segments,
-        DateTimeOffset? ExcludedAt, SpeechClipExclusion? ExclusionReason, string? ExcludedByName);
+        DateTimeOffset? ExcludedAt, SpeechClipExclusion? ExclusionReason, string? ExcludedByName, bool HasAudio, byte[]? Peaks);
 
     private sealed record ClipRows(IReadOnlyList<ClipRow> All, IReadOnlyList<ClipRow> Shown);
 
@@ -415,13 +493,15 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         => await clips.OrderBy(c => c.StartedAt).ThenBy(c => c.CreatedAt)
             .Select(c => new ClipRow(c.Id, c.SpeakerId, c.Speaker.FullName, c.StartedAt, c.DurationMs, c.Text, c.UpdatedAt,
                 c.EditedAt, c.EditedBy == null ? null : c.EditedBy.FullName, c.Segments, c.ExcludedAt, c.ExclusionReason,
-                c.ExcludedBy == null ? null : c.ExcludedBy.FullName))
+                c.ExcludedBy == null ? null : c.ExcludedBy.FullName, c.AudioPath != null, c.Peaks))
             .ToListAsync(ct);
 
     private static FoldClip FoldOf(ClipRow r) => new(r.Id, r.SpeakerId, r.StartedAt.ToUnixTimeMilliseconds(), r.DurationMs,
         r.Text, r.Segments ?? [], r.ExcludedAt is not null, r.EditedAt is not null);
 
-    /// <summary>The Chair and the Secretary read an excluded sentence's words; everyone else sees that it was there.</summary>
+    /// <summary>
+    /// The Chair and the Secretary read and hear an excluded sentence; everyone else sees only that it was there.
+    /// </summary>
     private static SpeechClipView View(ClipRow r, FoldMark? mark, Dictionary<Guid, ClipRow> byId, Guid actorId,
         bool secretary, bool officer)
     {
@@ -429,7 +509,8 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         return new(r.Id, r.SpeakerId, r.SpeakerName, r.StartedAt, r.DurationMs, excluded && !officer ? "" : r.Text,
             r.UpdatedAt, r.EditedAt, r.EditedByName, secretary || r.SpeakerId == actorId, excluded,
             r.ExclusionReason?.ToString(), officer ? r.ExcludedByName : null,
-            mark is null || excluded ? null : Leak(r, mark, byId));
+            mark is null || excluded ? null : Leak(r, mark, byId),
+            r.HasAudio && (!excluded || officer), excluded && !officer ? null : r.Peaks);
     }
 
     private static SpeechClipLeak? Leak(ClipRow r, FoldMark mark, Dictionary<Guid, ClipRow> byId)

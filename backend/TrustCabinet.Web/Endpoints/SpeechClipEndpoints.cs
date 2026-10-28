@@ -12,6 +12,7 @@ namespace TrustCabinet.Web.Endpoints;
 public static class SpeechClipEndpoints
 {
     private const string Msg295NotSecretary = "MSG295";
+    private const string Msg297RecordingReadFailed = "MSG297";
     private const string Msg299ReadFailed = "MSG299";
     private const string Msg302Saved = "MSG302";
     private const string Msg303InvalidText = "MSG303";
@@ -70,11 +71,34 @@ public static class SpeechClipEndpoints
             CancellationToken ct)
             => MapExclusion(await service.SetExclusionAsync(clipId, CapabilityGate.GatedUserId(context.User), body.Excluded,
                 body.Reason, ct)));
+
+        // ADR-0039 — hearing a sentence again. As for a recording, an <audio> element cannot send a bearer token: the
+        // right to listen is checked here and the audio is reached through the signed, expiring link this hands out.
+        var listen = app.MapGroup("/api/speech-clips/{clipId:guid}")
+            .RequireActiveUser(Error(500, Msg297RecordingReadFailed, "Không tải được bản ghi."));
+        listen.MapGet("/playback", async (Guid clipId, HttpContext context, ISpeechClipService service, CancellationToken ct)
+            => await service.PlaybackAsync(clipId, CapabilityGate.GatedUserId(context.User), ct) switch
+            {
+                { Failure: SpeechClipFailure.None, Data: { } link } => Results.Ok(link),
+                { Failure: SpeechClipFailure.ReadFailed } => Error(500, Msg297RecordingReadFailed, "Không tải được bản ghi."),
+                var other => Map(other),
+            });
+        app.MapGet("/api/speech-clips/{clipId:guid}/audio", async (Guid clipId, long? expires, string? signature,
+            ISpeechClipService service, IRecordingStorage storage, ISpeechClipAudioSigner signer, TimeProvider clock,
+            HttpContext context, CancellationToken ct) =>
+        {
+            if (expires is not { } until || string.IsNullOrEmpty(signature)
+                || !signer.Verify(clipId, until, signature, clock.GetUtcNow()))
+                return Results.NotFound();
+            if (await service.FindAudioAsync(clipId, ct) is not { } audio) return Results.NotFound();
+            context.Response.Headers.CacheControl = "private, no-store";
+            return Results.Stream(storage.OpenRead(audio.StoragePath), audio.ContentType, enableRangeProcessing: true);
+        });
     }
 
     /// <summary>
     /// The body is the sentence's audio, a few hundred kilobytes at most. It is read into memory, handed to the speech
-    /// worker and dropped with the request: no sentence's audio is ever written to disk.
+    /// worker, and written to the recordings store only once it turned out to hold words (ADR-0039).
     /// </summary>
     private static async Task<IResult> SendClipAsync(Guid meetingId, Guid clientClipId, string? startedAt, string? durationMs,
         HttpContext context, ISpeechClipService service, CancellationToken ct)
@@ -84,7 +108,7 @@ public static class SpeechClipEndpoints
         if (allowed.Failure != SpeechClipFailure.None) return Map(allowed);
 
         if (!MediaTypeHeaderValue.TryParse(context.Request.ContentType, out var type)
-            || type.MediaType.Value is not { } media || !SpeechClipRules.ContentTypes.Contains(media))
+            || type.MediaType.Value is not { } media || !SpeechClipRules.Extensions.ContainsKey(media))
             return Error(400, Msg319InvalidClip, "Câu nói phải gửi dạng âm thanh wav, webm hoặc ogg.");
         if (!DateTimeOffset.TryParse(startedAt, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var started)
             || !long.TryParse(durationMs, NumberStyles.None, CultureInfo.InvariantCulture, out var duration))

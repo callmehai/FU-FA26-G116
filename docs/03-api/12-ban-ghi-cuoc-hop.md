@@ -187,7 +187,7 @@ Cuộc họp có **cách ghi âm** (`captureMode`), cùng hai lựa chọn như 
 
 | `captureMode` | Cách thu | Lưu gì | Tên người nói |
 |---|---|---|---|
-| `PerMic` (mặc định) | Trình duyệt của mỗi người dự tự thu micro của chính họ, cắt theo câu khi ngừng nói (theo mức âm lượng, không dùng WebAssembly) và gửi từng câu lên | Mỗi câu: chữ, lúc bắt đầu, thời lượng, chủ micro, và mỗi quãng nói trong câu (thời gian, số từ, độ to). **Không lưu âm thanh** | Chủ micro |
+| `PerMic` (mặc định) | Trình duyệt của mỗi người dự tự thu micro của chính họ, cắt theo câu khi ngừng nói (theo mức âm lượng, không dùng WebAssembly) và gửi từng câu lên | Mỗi câu: chữ, lúc bắt đầu, thời lượng, chủ micro, mỗi quãng nói trong câu (thời gian, số từ, độ to), và âm thanh của câu để nghe lại ([ADR-0039](../05-decisions/0039-luu-am-thanh-tung-cau-de-nghe-lai.md)) | Chủ micro |
 | `Room` | Thư ký tải tệp lên hoặc ghi bằng trình duyệt (các mục trên) | Bản ghi và bản gỡ băng | Thư ký gán, có gợi ý Voice ID |
 
 - Chọn ở form tạo/sửa cuộc họp (`captureMode` trong body của `POST`/`PUT /api/meetings`, bỏ trống thì
@@ -197,8 +197,9 @@ Cuộc họp có **cách ghi âm** (`captureMode`), cùng hai lựa chọn như 
   băng không, và một bản gỡ băng không thể nửa theo micro, nửa thu chung.
 - Không ai bật micro của người khác được, kể cả Chủ tọa (khác eCab). Mỗi người thấy mình đang được ghi
   và tự tắt được; người nói rút lại được câu của mình.
-- Âm thanh một câu chỉ nằm trong bộ nhớ của request: backend gửi worker (`diarize=false&profile=clip`, tối
-  đa 2 câu cùng lúc trên cả server), nhận chữ rồi bỏ. Câu toàn im lặng không tạo dòng nào. Hồ sơ `clip`
+- Backend gửi âm thanh một câu cho worker (`diarize=false&profile=clip`, tối đa 2 câu cùng lúc trên cả server).
+  Câu có chữ thì giữ cả âm thanh vào kho bản ghi để nghe lại (ADR-0039); câu toàn im lặng không tạo dòng nào và
+  không lưu gì. Hồ sơ `clip`
   chỉ tăng âm tối đa 6 dB (thu cả phòng: 30 dB) và lọc khoảng lặng chặt hơn (VAD 0,5), vì chỗ nhỏ tiếng
   trên micro riêng phần lớn là tiếng người ngồi cạnh lọt vào.
 - **Câu bị lọt tiếng được đánh dấu, không bị ẩn** (như AI-eCabinet, đo ở `workers/speech/eval/bleed.py`).
@@ -211,9 +212,10 @@ Cuộc họp có **cách ghi âm** (`captureMode`), cùng hai lựa chọn như 
 - Trình duyệt giữ câu chưa gửi được trong IndexedDB (mất mạng, đóng tab, máy chuyển chữ tắt) và gửi tiếp
   khi người đó mở lại cuộc họp. Backend nhận câu như thế **đến 7 ngày sau khi cuộc họp kết thúc**
   (`SpeechClipRules.LateUpload`), miễn là câu được nói trong giờ họp.
-- Chữ của các câu là dữ liệu cá nhân, xoá theo cùng hạn với bản ghi (`Recordings:RetentionDays`).
+- Chữ và âm thanh của các câu là dữ liệu cá nhân, xoá theo cùng hạn với bản ghi (`Recordings:RetentionDays`).
+  Xoá một câu thì xoá luôn âm thanh của nó.
 
-Quyền: đọc, gửi câu và xoá câu của mình là người trong danh sách cuộc họp (như nghe bản ghi); sửa chữ
+Quyền: đọc, nghe, gửi câu và xoá câu của mình là người trong danh sách cuộc họp (như nghe bản ghi); sửa chữ
 là Thư ký; xoá câu của người khác là Thư ký; loại câu khỏi bản ghi và đưa lại là Chủ tọa hoặc Thư ký; đổi
 cách ghi âm là Chủ tọa hoặc Thư ký. Người ngoài danh sách nhận `404`.
 
@@ -222,12 +224,13 @@ cách ghi âm là Chủ tọa hoặc Thư ký. Người ngoài danh sách nhận
 ```json
 {
   "meetingId": "…", "captureMode": "PerMic", "canCapture": true, "canEdit": false, "canChangeMode": false,
-  "canExclude": false, "readAt": "2026-10-26T08:01:02.123Z",
+  "canExclude": false, "canExport": false, "retentionDays": 180, "readAt": "2026-10-26T08:01:02.123Z",
   "items": [
     { "id": "…", "speakerId": "…", "speakerName": "Lê Thành Viên", "startedAt": "2026-10-26T08:00:57Z",
       "durationMs": 2400, "text": "Tôi đồng ý với dự thảo.", "updatedAt": "…", "editedAt": null,
       "editedByName": null, "canDelete": true, "excluded": false, "exclusionReason": null, "excludedByName": null,
-      "leak": { "clipId": "…", "speakerId": "…", "speakerName": "Nguyễn Chủ Toạ", "whole": true, "words": [[0, 5]] } }
+      "leak": { "clipId": "…", "speakerId": "…", "speakerName": "Nguyễn Chủ Toạ", "whole": true, "words": [[0, 5]] },
+      "hasAudio": true, "peaks": "AAC0tLQ=" }
   ]
 }
 ```
@@ -236,8 +239,13 @@ cách ghi âm là Chủ tọa hoặc Thư ký. Người ngoài danh sách nhận
   `clipId`. Mọi người đều thấy dấu này. `null` khi không lọt, hoặc câu đã bị loại.
 - `excluded`: câu đã bị loại khỏi bản ghi. Chủ tọa và Thư ký vẫn nhận chữ, lý do (`Leak` | `Other`) và
   người loại; người khác nhận `text: ""` để biết ở đó từng có một câu.
+- `hasAudio`: người gọi nghe được câu này (`GET /api/speech-clips/{id}/playback`). `false` với câu lưu trước
+  ADR-0039, câu mà ổ đĩa không ghi được âm thanh, và câu đã bị loại khi người gọi không phải Chủ tọa hay Thư ký.
+- `peaks`: dạng sóng, base64, mỗi 100 ms một byte 0–255 (thang căn bậc hai của biên độ đỉnh). `null` khi âm thanh
+  không phải WAV PCM 16-bit, hoặc như `hasAudio`.
 
-Xếp theo `startedAt`. `canCapture` là micro **của chính người gọi** được gửi câu lúc này (cuộc họp
+`retentionDays` là số ngày chữ và âm thanh của câu được giữ; ô micro nói con số này trước khi người dự bật
+micro. Xếp theo `startedAt`. `canCapture` là micro **của chính người gọi** được gửi câu lúc này (cuộc họp
 `InProgress` và `PerMic`). `since` = `readAt` của lần đọc trước: trả câu mới hoặc vừa sửa, **cùng các câu
 gần nó trong khoảng ±2 giây**, vì dấu lọt tiếng của một câu cũ có thể đổi khi bản to hơn đến sau hoặc bị
 loại. Câu bị xoá thì đọc lại từ đầu (sự kiện `speechChanged` có `changeType: "ClipDeleted"`).
@@ -251,13 +259,23 @@ giờ server; gửi sau khi họp xong thì câu kết thúc muộn nhất lúc 
 `clip`, `204` nếu toàn im lặng, `503 MSG312` khi worker chưa sẵn sàng (trình duyệt giữ câu và gửi lại),
 `409 MSG320` khi cuộc họp không ghi theo micro, chưa bắt đầu, hoặc đã kết thúc quá 7 ngày.
 
+### `GET /api/speech-clips/{clipId}/playback`
+
+Link nghe một câu, như `GET /api/recordings/{id}/playback`: `200 { "url": "/api/speech-clips/{id}/audio?expires=…&signature=…",
+"expiresAt": "…" }`. `404` khi không có câu, người gọi không đọc được cuộc họp, câu không có âm thanh, hoặc câu đã bị
+loại mà người gọi không phải Chủ tọa hay Thư ký. `500 MSG297` khi lỗi database.
+
+`GET /api/speech-clips/{clipId}/audio?expires=…&signature=…` không cần token. Nó phát âm thanh đúng định dạng trình
+duyệt đã gửi, hỗ trợ `Range` và `Cache-Control: private, no-store`. Link sai, hết hạn hoặc câu đã xoá đều trả `404`.
+Không có link tải về.
+
 ### `PUT /api/speech-clips/{clipId}/text` — `{ "text": "…" }`
 
 Thư ký sửa chữ một câu, như sửa đoạn gỡ băng (`MSG302`).
 
 ### `DELETE /api/speech-clips/{clipId}`
 
-Người nói rút lại câu của mình, hoặc Thư ký xoá (`MSG322`). Xoá hẳn, ghi nhật ký kiểm toán.
+Người nói rút lại câu của mình, hoặc Thư ký xoá (`MSG322`). Xoá hẳn cả chữ lẫn âm thanh, ghi nhật ký kiểm toán.
 
 ### `PUT /api/speech-clips/{clipId}/exclusion` — `{ "excluded": true, "reason": "Leak" | "Other" }`
 

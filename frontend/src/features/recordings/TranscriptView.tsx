@@ -10,7 +10,7 @@ import type { Transcript, TranscriptSegment, TranscriptStatus } from '../../type
 import { saveBlob } from '../documents/documentFile'
 import { formatDuration } from './format'
 import { SpeakerList } from './SpeakerList'
-import { speakerName, speakerTone } from './speakers'
+import { speakerName, speakerSlotOf } from './speakers'
 
 /**
  * SCRUM-31 — the machine transcript of one recording, under its player. Clicking a time jumps the
@@ -196,22 +196,47 @@ export function TranscriptView({
       {transcript.segments.length === 0 ? (
         <p className="field-hint">Không nghe thấy lời nói nào trong bản ghi.</p>
       ) : (
-        <ol className="transcript-segments">
-          {transcript.segments.map((segment) => (
-            <SegmentRow
-              key={segment.id}
-              segment={segment}
-              name={names.get(segment.speakerLabel)}
-              active={segment.id === active}
-              canEdit={transcript.canEdit}
-              editing={editing === segment.id}
-              onEdit={() => setEditing(segment.id)}
-              onDone={(saved) => {
-                setEditing(null)
-                if (saved) void load()
-              }}
-              onSeek={() => onSeek(segment.startMs)}
-            />
+        <ol className="tl-list transcript-list" aria-label="Lời thoại theo thời điểm nói">
+          {runs(transcript.segments).map((run) => (
+            <li key={run[0].id} className="tl-group">
+              <div className="tl-row tl-row-head">
+                <span className="tl-time">{formatDuration(run[0].startMs)}</span>
+                <span className="tl-rail" aria-hidden="true">
+                  <span className="tl-dot" style={{ background: speakerSlotOf(run[0].speakerLabel).dot }} />
+                </span>
+                <div className="tl-head-row">
+                  <strong className="tl-name" style={{ color: speakerSlotOf(run[0].speakerLabel).ink }}>
+                    {names.get(run[0].speakerLabel) ?? speakerName(run[0].speakerLabel)}
+                  </strong>
+                  <span className="tl-time-inline">{formatDuration(run[0].startMs)}</span>
+                  <button
+                    type="button"
+                    className="tl-play"
+                    onClick={() => onSeek(run[0].startMs)}
+                    aria-label={`Nghe từ ${formatDuration(run[0].startMs)}`}
+                    data-tooltip="Nghe lại"
+                  >
+                    <Icon name="play" size={12} />
+                  </button>
+                </div>
+              </div>
+              {run.map((segment, i) => (
+                <SegmentRow
+                  key={segment.id}
+                  segment={segment}
+                  first={i === 0}
+                  active={segment.id === active}
+                  canEdit={transcript.canEdit}
+                  editing={editing === segment.id}
+                  onEdit={() => setEditing(segment.id)}
+                  onDone={(saved) => {
+                    setEditing(null)
+                    if (saved) void load()
+                  }}
+                  onSeek={() => onSeek(segment.startMs)}
+                />
+              ))}
+            </li>
           ))}
         </ol>
       )}
@@ -219,9 +244,20 @@ export function TranscriptView({
   )
 }
 
+/** Neighbouring segments of one voice read as one run under its name, as in the per-mic record. */
+function runs(segments: TranscriptSegment[]) {
+  const out: TranscriptSegment[][] = []
+  for (const segment of segments) {
+    const last = out.at(-1)
+    if (last && last[0].speakerLabel === segment.speakerLabel) last.push(segment)
+    else out.push([segment])
+  }
+  return out
+}
+
 function SegmentRow({
   segment,
-  name,
+  first,
   active,
   canEdit,
   editing,
@@ -230,7 +266,7 @@ function SegmentRow({
   onSeek,
 }: {
   segment: TranscriptSegment
-  name: string | undefined
+  first: boolean
   active: boolean
   canEdit: boolean
   editing: boolean
@@ -257,28 +293,21 @@ function SegmentRow({
   }
 
   return (
-    <li className={`transcript-segment${active ? ' transcript-active' : ''}`}>
-      <button
-        type="button"
-        className="transcript-time"
-        onClick={onSeek}
-        aria-label={`Nghe từ ${formatDuration(segment.startMs)}`}
-      >
-        {formatDuration(segment.startMs)}
-      </button>
-      <div className="transcript-body">
-        <span className="transcript-speaker">
-          <Badge tone={speakerTone(segment.speakerLabel)}>{name ?? speakerName(segment.speakerLabel)}</Badge>
-          {segment.editedAt && (
-            <span
-              className="transcript-edited"
-              tabIndex={0}
-              data-tooltip={`Sửa bởi ${segment.editedByName ?? 'Thư ký'} lúc ${formatDateTime(segment.editedAt)}`}
-            >
-              đã sửa
-            </span>
-          )}
-        </span>
+    <div className={`tl-row tl-sentence${active ? ' is-active' : ''}`}>
+      {first ? (
+        <span className="tl-time" />
+      ) : (
+        <button
+          type="button"
+          className="tl-time tl-time-button"
+          onClick={onSeek}
+          aria-label={`Nghe từ ${formatDuration(segment.startMs)}`}
+        >
+          {formatDuration(segment.startMs)}
+        </button>
+      )}
+      <span className="tl-rail" aria-hidden="true" />
+      <div className="tl-content">
         {editing ? (
           <div className="transcript-editor">
             <textarea
@@ -310,20 +339,28 @@ function SegmentRow({
             </div>
           </div>
         ) : (
-          <p className="transcript-text">{segment.text}</p>
+          <p className="tl-text">
+            {segment.text}
+            {segment.editedAt && (
+              <span
+                className="tl-edited"
+                tabIndex={0}
+                data-tooltip={`Sửa bởi ${segment.editedByName ?? 'Thư ký'} lúc ${formatDateTime(segment.editedAt)}`}
+              >
+                {' '}
+                đã sửa
+              </span>
+            )}
+          </p>
+        )}
+        {canEdit && !editing && (
+          <span className="tl-tools">
+            <button type="button" className="tl-tool" onClick={onEdit} aria-label="Sửa nội dung" data-tooltip="Sửa nội dung">
+              <Icon name="pencil" size={16} />
+            </button>
+          </span>
         )}
       </div>
-      {canEdit && !editing && (
-        <button
-          type="button"
-          className="btn btn-ghost btn-icon btn-sm transcript-edit"
-          onClick={onEdit}
-          aria-label="Sửa đoạn này"
-          data-tooltip="Sửa đoạn này"
-        >
-          <Icon name="pencil" size={16} />
-        </button>
-      )}
-    </li>
+    </div>
   )
 }

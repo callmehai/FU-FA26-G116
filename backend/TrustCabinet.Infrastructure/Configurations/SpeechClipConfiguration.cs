@@ -23,6 +23,8 @@ public class SpeechClipConfiguration : IEntityTypeConfiguration<SpeechClip>
                 list => list == null ? 0 : list.Aggregate(0, (hash, s) => HashCode.Combine(hash, s.GetHashCode())),
                 list => list == null ? null : list.ToList()));
         builder.Property(c => c.ExclusionReason).HasConversion<string>().HasMaxLength(16);
+        builder.Property(c => c.AudioPath).HasMaxLength(500);
+        builder.Property(c => c.AudioContentType).HasMaxLength(64);
         builder.ToTable(t => t.HasCheckConstraint("ck_speech_clips_duration", "duration_ms > 0"));
 
         builder.HasIndex(c => new { c.MeetingId, c.SpeakerId, c.ClientClipId }).IsUnique();

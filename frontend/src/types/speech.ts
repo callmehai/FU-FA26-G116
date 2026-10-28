@@ -38,6 +38,10 @@ export interface SpeechClip {
   exclusionReason: SpeechClipExclusion | null
   excludedByName: string | null
   leak: SpeechClipLeak | null
+  /** The caller may hear it again (ADR-0039): false for one stored without audio, or excluded and not theirs to hear. */
+  hasAudio: boolean
+  /** Its waveform, base64: one byte (0–255) per 100 ms. */
+  peaks: string | null
 }
 
 /** GET /api/meetings/{id}/speech-clips — the whole list, or what changed since `readAt` of the last read. */
@@ -52,6 +56,8 @@ export interface SpeechClipList {
   canExclude: boolean
   /** The caller may save the transcript as text: the Chair or a Secretary, not in a Secret meeting. */
   canExport: boolean
+  /** How long the words and audio of a sentence are kept, told to the speaker before they switch on. */
+  retentionDays: number
   readAt: string
   items: SpeechClip[]
 }

@@ -111,3 +111,28 @@ public sealed class RecordingPlaybackSigner(IOptions<RecordingOptions> options, 
 
     private static string Base64Url(byte[] bytes) => Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 }
+
+/// <summary>
+/// The same kind of link for one sentence's audio from a per-mic meeting (ADR-0039). Its key has a label of its own,
+/// so a recording's link can never open a sentence, nor the other way round. A sentence is never downloaded.
+/// </summary>
+public sealed class SpeechClipAudioSigner(IOptions<RecordingOptions> options, byte[] signingKey) : ISpeechClipAudioSigner
+{
+    private readonly byte[] key = HKDF.DeriveKey(HashAlgorithmName.SHA256, signingKey, 32,
+        info: Encoding.UTF8.GetBytes("trustcabinet/speech-clip-audio/v1"));
+
+    public RecordingPlayback Sign(Guid clipId, DateTimeOffset now)
+    {
+        var expires = now.AddMinutes(options.Value.PlaybackUrlMinutes).ToUnixTimeSeconds();
+        return new($"/api/speech-clips/{clipId:D}/audio?expires={expires}&signature={Mac(clipId, expires)}",
+            DateTimeOffset.FromUnixTimeSeconds(expires));
+    }
+
+    public bool Verify(Guid clipId, long expires, string signature, DateTimeOffset now)
+        => expires >= now.ToUnixTimeSeconds() && CryptographicOperations.FixedTimeEquals(
+            Encoding.ASCII.GetBytes(Mac(clipId, expires)), Encoding.ASCII.GetBytes(signature));
+
+    private string Mac(Guid clipId, long expires)
+        => Convert.ToBase64String(HMACSHA256.HashData(key, Encoding.ASCII.GetBytes($"{clipId:N}.{expires}")))
+            .TrimEnd('=').Replace('+', '-').Replace('/', '_');
+}

@@ -1,5 +1,13 @@
 import {
   ArrowDown,
+  AudioLines,
+  FunnelX,
+  Highlighter,
+  Info,
+  Minus,
+  RotateCw,
+  UserRoundSearch,
+  VolumeX,
   Captions,
   ArrowRight,
   LogIn,
@@ -164,6 +172,18 @@ const ICONS = {
   messageSquare: MessageSquare,
   phoneOff: PhoneOff,
   volume: Volume2,
+  volumeOff: VolumeX,
+  // Back and ahead a few seconds on a player.
+  back: RotateCcw,
+  ahead: RotateCw,
+  minus: Minus,
+  // "My clips" on the mic card: the sentences someone recorded.
+  clips: AudioLines,
+  info: Info,
+  filterOff: FunnelX,
+  // A sentence that is probably someone else's (whole), or holds some of their words (part).
+  leakWhole: UserRoundSearch,
+  leakPart: Highlighter,
   videoOff: VideoOff,
   // SCRUM-43: screen sharing.
   monitor: Monitor,

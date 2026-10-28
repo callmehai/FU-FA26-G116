@@ -48,3 +48,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0035](0035-quan-tri-vien-doc-kho-tai-khoan-khoa.md) | Quản trị viên đọc kho của tài khoản đã khoá, có nhật ký kiểm toán, không thấy tệp cuộc họp Confidential/Secret | Đề xuất — SCRUM-58, PO 27/10/2026 |
 | [0037](0037-them-dau-cau-bang-vibert-capu.md) | Thêm dấu câu và chữ hoa vào bản gỡ băng bằng viBERT-capu chạy trong worker | Đề xuất — SCRUM-31, PO 28/10/2026 |
 | [0038](0038-danh-dau-tieng-lot-giua-cac-micro.md) | Bê từ AI-eCabinet: đánh dấu tiếng lọt giữa các micro riêng, loại câu khỏi bản ghi, giữ câu chưa gửi trên máy, mỗi người một tab ghi | Đề xuất — SCRUM-109, PO 28/10/2026 |
+| [0039](0039-luu-am-thanh-tung-cau-de-nghe-lai.md) | Lưu âm thanh từng câu ghi theo micro để nghe lại, như AI-eCabinet; nghe qua link ký có hạn, xoá cùng chữ | Đề xuất — SCRUM-109, PO 29/10/2026 |

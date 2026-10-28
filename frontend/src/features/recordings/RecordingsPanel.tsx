@@ -19,6 +19,8 @@ import type { TranscriptStatus } from '../../types/transcript'
 import { useAccessLost } from '../auth/useAccessLost'
 import { useUploads, useUploadsSettled } from '../uploads/uploadsContext'
 import { formatDuration, formatSize, probeDuration } from './format'
+import { PlayerBar } from './PlayerBar'
+import { rememberSpeed, storedSpeed } from './playerSpeed'
 import { TranscriptView } from './TranscriptView'
 import { useRecorder, type RecordedTake, type Recorder, type RecordingInput } from './useRecorder'
 
@@ -390,6 +392,17 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
   }
   const audio = useRef<HTMLAudioElement>(null)
   const [currentMs, setCurrentMs] = useState(0)
+  const [lengthMs, setLengthMs] = useState(recording.durationMs)
+  const [playing, setPlaying] = useState(false)
+  const [speed, setSpeed] = useState(storedSpeed)
+  const [volume, setVolume] = useState(1)
+  const [muted, setMuted] = useState(false)
+  const seek = (ms: number) => {
+    const element = audio.current
+    if (!element) return
+    element.currentTime = Math.max(0, Math.min(lengthMs, ms)) / 1000
+    setCurrentMs(element.currentTime * 1000)
+  }
   const deleted = recording.status === 'Deleted'
   const badge = deleted ? undefined : TRANSCRIPT_BADGE[transcriptStatus]
 
@@ -499,11 +512,52 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
         <div className="recording-player recording-detail">
           <audio
             ref={audio}
-            controls
             preload="metadata"
             src={playback.url}
             onTimeUpdate={(e) => setCurrentMs(e.currentTarget.currentTime * 1000)}
+            onLoadedMetadata={(e) => {
+              const element = e.currentTarget
+              if (Number.isFinite(element.duration)) setLengthMs(element.duration * 1000)
+              element.playbackRate = speed
+            }}
+            onPlay={() => setPlaying(true)}
+            onPause={() => setPlaying(false)}
           />
+          <div className="recording-player-bar">
+            <PlayerBar
+              positionMs={currentMs}
+              totalMs={lengthMs}
+              playing={playing}
+              onToggle={() => {
+                const element = audio.current
+                if (!element) return
+                if (element.paused) void element.play().catch(() => toast.show('Không phát được tệp này.', 'error'))
+                else element.pause()
+              }}
+              onSeek={seek}
+              playLabel="Nghe cả tệp"
+              speed={speed}
+              onSpeed={(value) => {
+                setSpeed(value)
+                rememberSpeed(value)
+                if (audio.current) audio.current.playbackRate = value
+              }}
+              volume={volume}
+              onVolume={(value) => {
+                setVolume(value)
+                setMuted(false)
+                if (audio.current) {
+                  audio.current.volume = value
+                  audio.current.muted = false
+                }
+              }}
+              muted={muted}
+              onMute={(value) => {
+                setMuted(value)
+                if (audio.current) audio.current.muted = value
+              }}
+            />
+          </div>
           <TranscriptView
             fileName={recording.fileName}
             recordingId={recording.id}

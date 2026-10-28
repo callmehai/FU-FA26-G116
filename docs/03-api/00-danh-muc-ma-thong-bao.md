@@ -442,7 +442,7 @@ hoặc hết hạn cũng là `404` không body.
 | `MSG294` | 409 | `POST …/recordings` | Cuộc họp chưa diễn ra (khác `InProgress`, `Ended`) | `Chỉ lưu bản ghi khi cuộc họp đang diễn ra hoặc đã kết thúc.` | BE |
 | `MSG295` | 403 | `POST …/recordings`, `DELETE /api/recordings/{id}` | Người trong cuộc họp nhưng không phải Thư ký hiện tại | `Chỉ Thư ký cuộc họp được quản lý bản ghi.` | BE |
 | `MSG296` | 200 | `DELETE /api/recordings/{id}` | Đã xoá audio và transcript; dòng bản ghi giữ lại làm bằng chứng. Gọi lại trên bản đã xoá vẫn trả mã này | `Đã xoá bản ghi.` | BE |
-| `MSG297` | 500 | `GET …/recordings`, `GET /api/recordings/{id}/playback` | Lỗi database khi đọc | `Không tải được danh sách bản ghi.` | BE |
+| `MSG297` | 500 | `GET …/recordings`, `GET /api/recordings/{id}/playback`, `GET /api/speech-clips/{id}/playback` | Lỗi database khi đọc | `Không tải được danh sách bản ghi.` | BE |
 | `MSG298` | 503 | `POST …/recordings`, `DELETE /api/recordings/{id}` | Lỗi database khi lưu; tệp vừa tải lên bị xoá theo | `Không lưu được thay đổi bản ghi. Vui lòng thử lại.` | BE |
 
 ### Gỡ băng — SCRUM-31 (`/api/recordings/{id}/transcript`, `/api/transcript-segments/{id}`)
