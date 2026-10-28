@@ -1,12 +1,18 @@
 # Danh mục Quy tắc Nghiệp vụ (Business Rules) — TrustCabinet
 
+> **GENERATED — DO NOT EDIT** (trừ mục *BR đã ngừng dùng* ở cuối — script giữ nguyên). Bản trích từ
+> Report 3 §V.1. Sửa DOCX trong [`docs/08-reports/source/`](../08-reports/source/README.md) rồi chạy
+> `python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3`
+> (hoặc `python scripts/sync_requirement_extracts.py`). Sửa tay bảng BR đang dùng sẽ mất ở lần sync
+> sau. Chi tiết: [08-reports/README.md](../08-reports/README.md).
+
 Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX cập nhật 24/10/2026, bao gồm ADR-0020, quyết định SCRUM-19 ngày 16/10/2026, trao đổi PO 16/10/2026, góp ý hội đồng review lần 1, BR-313/BR-314 theo SCRUM-105 và đợt BA Final Review 24/10/2026 sửa BR-30/105/106/115/126/172/176/215/295). Có **270 BR đang dùng** trong dải `BR-01` → `BR-322`; BR-320, BR-321 (thành phần tham dự khi tạo cuộc họp; chưa trả lời coi như tham dự, từ chối chỉ ẩn khỏi lịch — SCRUM-18/20) PO duyệt 20–21/10/2026 và đã đồng bộ vào Report 3 DOCX; BR-315 → BR-319 (tài liệu trong phòng họp, trả lời góp ý, kiểm toán lượt xem tài liệu mật, giới hạn mỗi lần tải lên — SCRUM-21/22/23) PO duyệt 22/10/2026 và đã đồng bộ vào Report 3 DOCX; mã `BR` độc lập với mã thông báo `MSG`.
 
 ## Quy ước đồng bộ
 
-- Report 3 là nguồn chuẩn. Sửa BR trong DOCX trước, chạy `python scripts/sync_reports.py`, rồi sinh lại bảng dưới
-  đây bằng `python scripts/sync_requirement_extracts.py` (thêm `--check` để chỉ xem lệch) — **không sửa tay**.
-  Mục **BR đã ngừng dùng** ở cuối file là phần viết tay, script giữ nguyên.
+- Report 3 DOCX là nguồn chuẩn. Sửa BR trong DOCX trước, chạy `python scripts/sync_reports.py … --report 3`
+  (tự sinh lại bảng dưới đây) — **không sửa tay** bảng đang dùng. Mục **BR đã ngừng dùng** ở cuối
+  file là phần viết tay, script giữ nguyên.
 - Số UC trong cột *Applies To* là số UC **sau khi gom và đánh số lại** (UC-01 → UC-77; UC-73 → UC-77 nối tiếp dải cũ, không đánh lại UC-01 → UC-72). Bảng đổi số cũ → mới nằm ở [Master Use Case Inventory §5](00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới).
 - **Không đánh lại số BR.** BR đã ngừng dùng giữ nguyên mã, không tái cấp (danh sách ở cuối file).
 - UC Specification và Sequence Diagram dẫn chiếu đúng BR ID tại bước áp dụng, không chép lại nội dung.

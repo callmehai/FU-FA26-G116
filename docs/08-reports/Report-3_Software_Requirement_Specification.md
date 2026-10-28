@@ -1,6 +1,6 @@
 # Report 3 – Software Requirement Specification
 
-> Nguồn: [Tài liệu nguồn](source/Report_3_Software_Requirement_Specification.docx)
+> **GENERATED — DO NOT EDIT.** Snapshot từ DOCX local. Sửa [`source/Report_3_Software_Requirement_Specification.docx`](source/Report_3_Software_Requirement_Specification.docx) rồi chạy `python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3`. Sửa tay file này sẽ mất ở lần sync sau. Chi tiết: [08-reports/README.md](README.md).
 
 CAPSTONE PROJECT REPORT
 

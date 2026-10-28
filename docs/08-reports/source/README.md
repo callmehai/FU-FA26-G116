@@ -1,6 +1,8 @@
 # Nguồn report
 
-Thư mục lưu DOCX nguồn của Report 1–7 và file PPTX báo cáo tổng hợp.
+**Đây là chỗ sửa nội dung Report 1–7.** Các file `.docx` trong thư mục này là nguồn local chuẩn.
+Các `../Report-*.md` chỉ là snapshot — không sửa chúng; sau khi sửa DOCX, chạy
+`python scripts/sync_reports.py` (xem [README của 08-reports](../README.md)).
 
 Thư mục `Meeting_Minutes/` giữ biên bản họp từng buổi, mỗi buổi một DOCX. Đẩy cả thư mục lên Drive
 bằng `python scripts/push_reports.py minutes` — script tạo file còn thiếu, thay file đã lệch, không xóa
