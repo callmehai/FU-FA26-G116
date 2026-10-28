@@ -162,8 +162,15 @@ chiều làm việc là repo → Drive.
 FE-11 và FE-13: 8 class diagram, 68 sequence diagram; thêm một dòng Change Log (HuyNT) và cập nhật mục lục. Cùng ngày
 điền mục I.2 Package Diagram bằng bốn trang của [15-package-diagram/](../15-package-diagram/README.md) (tổng quan,
 back-end, domain, front-end), mỗi trang kèm bảng mô tả package; quy ước đặt tên ghi ở đầu mục; thêm một dòng Change
-Log. Mục I.1, I.3, III, IV vẫn là nội dung mẫu, chưa sửa. File ~28 MB nên chưa đẩy lên Drive được qua trình duyệt (giới hạn 10 MB);
-đẩy bằng `push_reports.py 4 --confirm` hoặc tải lên phiên bản mới cho đúng file ở bảng link chuẩn phía trên.
+Log. Cũng ngày đó điền mục I.1 Software Architecture bằng sơ đồ kiến trúc của
+[16-architecture-diagram/](../16-architecture-diagram/README.md) (thay ảnh mẫu), hai đoạn giới thiệu và bảng mô tả 24
+thành phần theo bốn tầng; thêm một dòng Change Log; cập nhật số trang mục lục. Mục I.3, III, IV vẫn là nội dung mẫu.
+
+**Ngoại lệ Drive → repo (28/10/2026, người dùng đồng ý):** bản trên Drive có một đợt sửa không có trong repo — gom
+sequence diagram mỗi feature dưới heading "Sequence Diagram", đổi cả tài liệu sang Times New Roman, thêm "a. Token
+Design" và "b. CORS Configuration" ở mục III.1.1, một dòng Change Log "M". Để không mất đợt sửa đó, bản Drive được lấy
+làm gốc, áp mục I.1 lên, rồi đưa vào `source/` và đẩy lại bằng `push_reports.py 4 --confirm`; `--check` trả
+`UP TO DATE`, file ID và link không đổi. Từ đây lại theo chiều repo → Drive.
 
 **Report 3 đồng bộ Markdown gần nhất:** 24/10/2026, gộp sáu dòng Change Log 24/10 của KhanhPG thành
 một. Lần đẩy 25/10 đưa trọn đợt 16/10 → 24/10 lên Drive trong một lần (9 ngày, 4 dòng Change Log).
