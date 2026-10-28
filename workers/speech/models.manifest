@@ -13,3 +13,9 @@ eres2net_base.onnx e2d2048292e055f7b61cdec3db010503f35369b245bf0b3bbad021c9a91e4
 
 # Silero VAD — MIT
 silero_vad.onnx 9e2449e1087496d8d4caba907f23e0bd3f78d91fa552479bb9c23ac09cbb1fd6 https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx
+
+# viBERT-capu — punctuation and capitals for Vietnamese, int8 ONNX — CC BY-SA 4.0 — viBERT by FPT AI,
+# fine-tuned by dragonSwing (dragonSwing/vibert-capu), exported to ONNX by welcomyou
+punctuation/vibert-capu.int8.onnx 67278b23502bbd744538e2bd9a6748b61cce171cfba6c671c2e2a46f892166fa https://huggingface.co/welcomyou/vibert-capu-onnx/resolve/a7754d037f4a9e29f7f3224f27acb60149eab874/vibert-capu.int8.onnx
+punctuation/vocab.txt b32ccb4ca8bee5eda7a0f55f7adebaa515be742c9f765151ffefcd29fcb542a1 https://huggingface.co/welcomyou/vibert-capu-onnx/resolve/a7754d037f4a9e29f7f3224f27acb60149eab874/vocab.txt
+punctuation/labels.txt a31075cfa185b5d24c3b65c009ad0740636b286090f78419eaba2d34202c2b45 https://huggingface.co/welcomyou/vibert-capu-onnx/resolve/a7754d037f4a9e29f7f3224f27acb60149eab874/vocabulary/labels.txt

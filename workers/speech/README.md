@@ -22,6 +22,7 @@ kiểm tra mã băm lúc build image, nên container chạy không cần interne
 | Chuyển giọng nói thành chữ | Gipformer 1.5 — RNN-T Zipformer 68M tham số, int8 | MIT | [g-group-ai-lab/gipformer1.5-68M-rnnt](https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt) |
 | Vector giọng (512 chiều) — dùng cho cả tách người nói lẫn Voice ID | 3D-Speaker ERes2Net base, huấn luyện trên 200k người nói | Apache-2.0 | bản ONNX của k2-fsa |
 | Lọc khoảng lặng (VAD) | Silero VAD | MIT | bản ONNX của k2-fsa |
+| Dấu câu và chữ hoa | viBERT-capu — viBERT (FPT AI) tinh chỉnh bởi dragonSwing, int8 | CC BY-SA 4.0 (ghi công dragonSwing và FPT AI) | [dragonSwing/vibert-capu](https://huggingface.co/dragonSwing/vibert-capu), bản ONNX [welcomyou/vibert-capu-onnx](https://huggingface.co/welcomyou/vibert-capu-onnx) |
 
 Danh sách file, mã SHA-256 và URL nằm trong [models.manifest](models.manifest). Server kiểm tra lại
 mã băm mỗi lần khởi động; file bị thay hay thiếu thì **từ chối chạy**. Mỗi kết quả kèm mã model dạng
@@ -33,7 +34,7 @@ model nào.
 **Cách 1: Docker** (giống server).
 
 ```bash
-docker compose --profile speech up -d --build   # lần đầu tải ~110 MB model khi build, image ~770 MB
+docker compose --profile speech up -d --build   # lần đầu tải ~230 MB model khi build, image ~950 MB
 curl http://127.0.0.1:8090/health
 ```
 
@@ -59,6 +60,7 @@ Cần `ffmpeg` trong `PATH` (`brew install ffmpeg`) để giải mã mp3, m4a, w
 | `SPEECH_THREADS` | `min(4, số CPU)` | Số luồng cho mỗi model |
 | `SPEECH_CLUSTER_THRESHOLD` | `0.5` | Ngưỡng gộp giọng khi tách người nói, xem [Hiệu chỉnh](#hiệu-chỉnh) |
 | `SPEECH_MIN_CONSISTENCY` | `0.40` | Ngưỡng "chỉ một người nói" của mẫu giọng, xem [Hiệu chỉnh](#hiệu-chỉnh) |
+| `SPEECH_PUNCTUATION` | `1` | `0` tắt bước thêm dấu câu (để so sánh); model vẫn phải có và đúng mã băm |
 | `SPEECH_LOG_LEVEL` | `INFO` | Mức log |
 
 ## HTTP API
@@ -102,8 +104,10 @@ Không cần xác thực.
   nhiều đoạn liên tiếp cùng nhãn.
 - Vector của mỗi người nói lấy từ các lượt nói dài nhất của người đó, tối đa 30 giây.
 - Bản ghi im lặng trả về `segments` rỗng.
-- Chữ từ model là CHỮ HOA không dấu câu. Worker đổi thành câu thường, viết hoa chữ đầu, thêm dấu
-  chấm cuối. Dấu phẩy và tên riêng để thư ký sửa tay.
+- Chữ từ model là CHỮ HOA không dấu câu. Worker thêm dấu phẩy, dấu chấm, dấu hỏi và viết hoa đầu câu
+  bằng viBERT-capu (bước 6 ở [Cách chạy bên trong](#cách-chạy-bên-trong)). Một đoạn nối tiếp câu của
+  đoạn trước thì bắt đầu bằng chữ thường. Tên riêng model chỉ viết hoa được một phần; còn lại thư ký
+  sửa tay.
 
 ### `POST /v1/embed`
 
@@ -158,7 +162,12 @@ Các bước xử lý một bản ghi:
      rồi các lượt liền nhau của cùng người được nối, để câu không bị cắt giữa chừng.
 5. **Chuyển chữ** từng lượt nói bằng Gipformer. Lượt dài hơn 25 giây được chia thành các phần
    bằng nhau.
-6. **Vector cho mỗi người nói**, để backend so với giọng mẫu.
+6. **Dấu câu và chữ hoa** bằng viBERT-capu. Model gắn cho mỗi từ một thao tác (giữ nguyên, viết hoa,
+   thêm `,` `.` `:` `?`) và đọc lại tối đa ba lần. Các đoạn liền nhau của cùng một người, cách nhau
+   không quá 5 giây, được đọc chung thành một đoạn văn, nên chỗ ngắt hơi giữa câu không thành dấu
+   chấm. Model chỉ sửa từ tại chỗ, không thêm hay bớt từ, nên mốc giờ của từng đoạn giữ nguyên;
+   lỡ số từ đổi thì đoạn đó quay về cách cũ (viết hoa chữ đầu, dấu chấm cuối).
+7. **Vector cho mỗi người nói**, để backend so với giọng mẫu.
 
 Không dùng bộ tách người nói có sẵn của sherpa-onnx (pyannote + embedding cửa sổ 10 giây). Đo trên
 cùng máy, bộ đó tốn RTF 0.3–0.5 khi chạy trực tiếp và 1.34 trong Docker. Cách trên chỉ tốn khoảng
@@ -175,6 +184,8 @@ cùng máy, bộ đó tốn RTF 0.3–0.5 khi chạy trực tiếp và 1.34 tron
 ```bash
 python -m unittest discover -s workers/speech/tests   # không cần model, chỉ cần numpy
 ```
+
+CI chạy lệnh này (job *Speech worker — unit tests*) mỗi khi PR đổi `workers/speech/`.
 
 Kiểm tra đầu cuối với model thật, chạy trên máy dev, CI không có model:
 
@@ -285,8 +296,11 @@ gần như giống hệt nhau.
 | Chuyển chữ + tách người nói | 608 s mp3 | 43 s (RTF 0.07) | 132 s (RTF 0.22), RAM đỉnh 1.5 GB |
 | Chỉ chuyển chữ | 23 s | 0.5 s (RTF 0.02) | — |
 | Vector mẫu giọng | ~10 s | ~0.4 s | — |
+| Riêng bước dấu câu | 880 từ | 1.3 s (~680 từ/giây) | — |
 
-RTF là thời gian xử lý chia cho độ dài âm thanh. Thời gian tăng tuyến tính theo độ dài. Với RTF
+RTF là thời gian xử lý chia cho độ dài âm thanh. Thời gian tăng tuyến tính theo độ dài. Bước dấu câu
+thêm khoảng 2% thời gian (cuộc họp thật 300 s: 20.7 s → 21.2 s) và khoảng 270 MB RAM, WER không đổi
+(16.1%) vì model không đổi từ nào. Với RTF
 0.25, một giờ họp mất khoảng 15 phút. Container lúc rảnh dùng khoảng 260 MB RAM. Process con giữ
 lại bộ nhớ đã dùng, nên sau vài bản ghi 10 phút liên tiếp, container giữ khoảng 2.4 GB. Docker ở
 đây chạy trong máy ảo Linux của Docker Desktop (8 CPU), chậm hơn chạy trực tiếp khoảng 3 lần.

@@ -24,6 +24,7 @@ jobs:
     outputs:
       backend: ${{ steps.diff.outputs.backend }}
       frontend: ${{ steps.diff.outputs.frontend }}
+      speech: ${{ steps.diff.outputs.speech }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -65,9 +66,12 @@ jobs:
           fi
           frontend=false
           if $all || has "$ci|^frontend/"; then frontend=true; fi
+          speech=false
+          if $all || has "$ci|^workers/speech/"; then speech=true; fi
           echo "backend=$backend" >> "$GITHUB_OUTPUT"
           echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
-          echo "Backend: $backend, frontend: $frontend"
+          echo "speech=$speech" >> "$GITHUB_OUTPUT"
+          echo "Backend: $backend, frontend: $frontend, speech worker: $speech"
 
   backend:
     name: Backend — build & test
@@ -153,13 +157,30 @@ jobs:
       # `npm run build` chạy tsc -b trước, nên bước này bắt luôn lỗi kiểu TypeScript.
       - run: npm run build
 
-  # Push lên main mà hai job trên xanh hoặc Skipped thì deploy lên server test
+  # Push lên main mà các job trên xanh hoặc Skipped thì deploy lên server test
   # (.github/workflows/deploy.yml) — kể cả lần chỉ sửa deploy/ hay docs, để server luôn chạy đúng
   # commit đầu main. Nằm trong CI để commit hiện cả trạng thái deploy; trên pull request job này
   # hiện là Skipped.
   deploy:
     name: Deploy server test
-    needs: [changes, backend, frontend]
+    needs: [changes, backend, frontend, speech]
     if: ${{ !cancelled() && !failure() && github.event_name == 'push' }}
     uses: ./.github/workflows/deploy.yml
     secrets: inherit
+
+  # Test của worker nhận dạng giọng nói không cần model hay sherpa-onnx, chỉ cần numpy: dưới một phút.
+  speech:
+    name: Speech worker — unit tests
+    needs: changes
+    if: needs.changes.outputs.speech == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install "$(grep '^numpy==' workers/speech/requirements.txt)"
+
+      - run: python -m unittest discover -s workers/speech/tests -v

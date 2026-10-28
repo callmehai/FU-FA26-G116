@@ -74,7 +74,7 @@ Mở <http://localhost:5173>. Vite proxy `/api` và `/hubs` sang backend nên tr
 origin — không cần CORS. Ở môi trường Development, app tự chạy migration và seed bốn tài khoản như
 bảng trên.
 
-Chuyển giọng nói thành chữ cần thêm worker nhận dạng (tải model ~110 MB lần đầu):
+Chuyển giọng nói thành chữ cần thêm worker nhận dạng (tải model ~230 MB lần đầu):
 
 ```bash
 docker compose --profile speech up -d --build

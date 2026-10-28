@@ -26,7 +26,7 @@ from typing import Callable
 
 import numpy as np
 
-from . import manifest, text
+from . import manifest, punctuation, text
 
 log = logging.getLogger(__name__)
 
@@ -51,6 +51,11 @@ VAD_THRESHOLD = 0.2
 # Speech regions are widened by this much on each side (never into a neighbour) so the VAD's
 # late onsets and early offsets do not clip the edges of words.
 VAD_PAD_S = 0.1
+
+# --- Punctuation ------------------------------------------------------------------------------
+# A speaker's consecutive segments are punctuated as one passage (speech/punctuation.py), so a
+# breath in the middle of a sentence does not end it. A longer pause than this starts a new one.
+PASSAGE_MAX_GAP_S = 5.0
 
 # --- Levelling --------------------------------------------------------------------------------
 # A sliding gain lifts quiet stretches before the VAD. In a real meeting the people far from the
@@ -223,7 +228,28 @@ def model_ids(hashes: dict[str, str]) -> dict[str, str]:
         "asr": f"gipformer-1.5-68m-int8@{short('gipformer/encoder.int8.onnx')}",
         "embedding": f"eres2net-base-200k@{short('eres2net_base.onnx')}",
         "vad": f"silero-vad@{short('silero_vad.onnx')}",
+        "punctuation": f"vibert-capu-int8@{short(punctuation.MODEL_FILE)}",
     }
+
+
+def passages(pieces: list[tuple[float, float, str | None, np.ndarray]], raws: list[str]) -> list[list[int]]:
+    """Indices of the pieces, in time order, grouped into runs of one speaker without a long pause.
+
+    Pieces the recogniser found no words in are left out; they neither join nor split a passage.
+    """
+    groups: list[list[int]] = []
+    last_end = -math.inf
+    last_label: str | None = None
+    for index in sorted(range(len(pieces)), key=lambda i: (pieces[i][0], pieces[i][1])):
+        if not raws[index].split():
+            continue
+        start, end, label, _ = pieces[index]
+        if groups and label == last_label and start - last_end <= PASSAGE_MAX_GAP_S:
+            groups[-1].append(index)
+        else:
+            groups.append([index])
+        last_end, last_label = end, label
+    return groups
 
 
 def level(samples: np.ndarray, window_s: float = LEVEL_WINDOW_S, target_db: float = LEVEL_TARGET_DBFS,
@@ -409,11 +435,17 @@ class Engine:
         self._vad_config.silero_vad.max_speech_duration = MAX_CHUNK_S - 2 * VAD_PAD_S - 0.5
         self._vad_config.sample_rate = SAMPLE_RATE
         self._vad_config.num_threads = 1
+        # SPEECH_PUNCTUATION=0 turns it off, to compare with and without; the model is still pinned.
+        self._punctuator = (
+            punctuation.Punctuator.load(root)
+            if os.environ.get("SPEECH_PUNCTUATION", "1").lower() not in ("0", "false", "off")
+            else None
+        )
         log.info(
             "models loaded in %.1fs, %d threads, embedding dim %d, cluster threshold %.2f, "
-            "min enrolment consistency %.2f",
+            "min enrolment consistency %.2f, punctuation %s",
             time.monotonic() - started, threads, self._extractor.dim, self._cluster_threshold,
-            self._min_consistency,
+            self._min_consistency, "on" if self._punctuator else "off",
         )
 
     # --- building blocks (call with the lock held) ---------------------------------------------
@@ -447,6 +479,20 @@ class Engine:
             self._recognizer.decode_streams(streams)
             texts.extend(stream.result.text for stream in streams)
         return texts
+
+    def _readable(self, pieces: list[tuple[float, float, str | None, np.ndarray]], raws: list[str]) -> list[str]:
+        """The recogniser's raw text of each piece, punctuated and capitalised."""
+        if self._punctuator is None:
+            return [text.normalise(raw) for raw in raws]
+        out = [""] * len(pieces)
+        for indices in passages(pieces, raws):
+            lines = [" ".join(raws[i].split()).lower() for i in indices]
+            restored = punctuation.passage(lines, self._punctuator)
+            if restored == lines:  # the tagger changed the word count, or nothing at all
+                restored = [text.normalise(line) for line in lines]
+            for index, sentence in zip(indices, restored):
+                out[index] = sentence
+        return out
 
     def _embed(self, samples: np.ndarray) -> np.ndarray:
         stream = self._extractor.create_stream()
@@ -569,10 +615,9 @@ class Engine:
                 begin = offset / SAMPLE_RATE
                 pieces.append((begin, begin + part.size / SAMPLE_RATE, None, part))
 
-        texts = self._transcribe_pieces([piece[3] for piece in pieces])
+        texts = self._readable(pieces, self._transcribe_pieces([piece[3] for piece in pieces]))
         segments = []
-        for (start, end, label, _), raw in zip(pieces, texts):
-            sentence = text.normalise(raw)
+        for (start, end, label, _), sentence in zip(pieces, texts):
             if sentence:
                 segments.append({
                     "startMs": round(start * 1000),
