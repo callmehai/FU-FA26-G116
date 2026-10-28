@@ -70,7 +70,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="p3-e-documents-participants" parent="1" source="p3-Documents" target="p3-Participants" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.7647;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.2353;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p3-e-documents-participants" parent="1" source="p3-Documents" target="p3-Participants" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.7647;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.2353;entryY=0.2143;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="510" y="200" />

@@ -221,11 +221,11 @@
           <mxGeometry relative="1" as="geometry">
           </mxGeometry>
         </mxCell>
-        <mxCell id="p2-e-web-domain" parent="1" source="p2-web" target="p2-domain" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.1739;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.1385;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
+        <mxCell id="p2-e-web-domain" parent="1" source="p2-web" target="p2-domain" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.1739;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.3538;entryY=0.0413;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="120" y="14" />
-              <mxPoint x="1560" y="14" />
+              <mxPoint x="1700" y="14" />
             </Array>
           </mxGeometry>
         </mxCell>

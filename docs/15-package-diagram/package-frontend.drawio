@@ -67,7 +67,7 @@
         <mxCell id="p4-types" parent="p4-fe" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="types" vertex="1">
           <mxGeometry x="920" y="580" width="140" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="p4-web" parent="1" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="TrustCabinet.Web" vertex="1">
+        <mxCell id="p4-web" parent="1" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="backend::TrustCabinet.Web" vertex="1">
           <mxGeometry x="1300" y="100" width="220" height="70" as="geometry" />
         </mxCell>
         <mxCell id="p4-e-app-features" parent="1" source="p4-app" target="p4-features" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0.1714;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.2594;entryDx=0;entryDy=0;entryPerimeter=0;" value="">

@@ -24,6 +24,9 @@ Mỗi góc nhìn là một cặp file cùng tên: `.drawio` là source editable,
   Infrastructure); `«use» HTTP · SignalR` = `api/` gọi `/api` và `/hubs` của backend.
 - Mũi tên không nhãn là phụ thuộc giữa các package trong cùng một project/thư mục.
 - Mũi tên gắn vào khung một package bao gồm mọi package con bên trong.
+- Package vẽ ngoài package chứa nó thì ghi tên đầy đủ `chứa::tên` (ví dụ `backend::TrustCabinet.Web`
+  trên trang Frontend).
+- Mũi tên kết thúc ở thân package, không cắm vào tab.
 
 ## Những gì cố ý không vẽ
 
@@ -37,7 +40,8 @@ Mỗi góc nhìn là một cặp file cùng tên: `.drawio` là source editable,
 - **Trang Backend** chỉ vẽ phụ thuộc giữa các package trong Infrastructure và từ `Endpoints` sang
   Infrastructure; từng package Infrastructure → Domain được gộp vào mũi tên `«import»` giữa hai
   khung. Phụ thuộc giữa các class ở namespace gốc của Web (hub, worker, publisher) với các project
-  khác cũng gộp vào mũi tên giữa khung.
+  khác cũng gộp vào mũi tên giữa khung. `MeetingHub`, `NotificationHub` và `NotificationWorker`
+  dùng `Endpoints`; phụ thuộc này cũng không vẽ.
 - **Trang Frontend** không vẽ phụ thuộc giữa các feature với nhau (`meetings`, `calls` dùng gần
   như mọi feature khác; mọi feature dùng `auth`). `main.tsx` và `styles/` (CSS) không có trên hình.
 - Thư viện ngoài (NuGet, npm) không có trên hình; danh sách ở các `.csproj` và `frontend/package.json`.
