@@ -126,8 +126,6 @@ public static class AuditActions
     public const string TranscriptRerun = "transcript.rerun";
     public const string SpeechClipObjectType = "SpeechClip";
 
-    /// <summary>The Chair or a Secretary switched how the meeting is captured before it started.</summary>
-    public const string CaptureModeChanged = "meeting.capture_mode_changed";
     public const string MeetingObjectType = "Meeting";
 
     /// <summary>UC-32c — a document of a Confidential or Secret meeting was opened in the viewer (BR-318).</summary>

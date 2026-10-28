@@ -140,13 +140,14 @@ public sealed class RecordingFixture : IAsyncLifetime
         internal string Url => $"/api/meetings/{MeetingId}/recordings";
     }
 
-    internal async Task<Scenario> Seed(MeetingStatus status = MeetingStatus.InProgress, CaptureMode capture = CaptureMode.PerMic)
+    /// <summary>A hybrid meeting by default: it is captured both ways (ADR-0040), so either kind of test can use it.</summary>
+    internal async Task<Scenario> Seed(MeetingStatus status = MeetingStatus.InProgress, MeetingMode mode = MeetingMode.Hybrid)
     {
         await using var db = Db();
         var users = Enumerable.Range(0, 5).Select(i => new User { FullName = $"Recording test {i}",
             Email = $"{Guid.NewGuid():N}@recording.test", PasswordHash = "test-only-non-login-hash" }).ToArray();
         db.Users.AddRange(users);
-        var meeting = new Meeting { Title = "Recording test", CreatedById = users[3].Id, Status = status, CaptureMode = capture,
+        var meeting = new Meeting { Title = "Recording test", CreatedById = users[3].Id, Status = status, Mode = mode,
             PlannedStartTime = Clock.Now, PlannedEndTime = Clock.Now.AddHours(1) };
         db.Meetings.Add(meeting);
         for (var i = 0; i < 3; i++) db.MeetingParticipants.Add(new() { MeetingId = meeting.Id, UserId = users[i].Id,

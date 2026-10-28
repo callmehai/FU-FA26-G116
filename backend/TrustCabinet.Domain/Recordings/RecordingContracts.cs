@@ -7,7 +7,9 @@ namespace TrustCabinet.Domain.Recordings;
 
 public enum RecordingFailure
 {
-    None, NotFound, Inactive, Forbidden, Locked, Invalid, ReadFailed, SaveFailed, ExportForbidden, SecretMeeting
+    None, NotFound, Inactive, Forbidden, Locked, Invalid, ReadFailed, SaveFailed, ExportForbidden, SecretMeeting,
+    /// <summary>An online meeting is captured per mic (ADR-0040): it has no room to record.</summary>
+    NoRoom
 }
 
 public sealed record RecordingOutcome(RecordingFailure Failure = RecordingFailure.None, object? Data = null,
@@ -90,6 +92,12 @@ public static class RecordingRules
 
     /// <summary>Recording happens during the sitting or is uploaded right after it — never before it starts.</summary>
     public static bool UploadAllowed(MeetingStatus status) => status is MeetingStatus.InProgress or MeetingStatus.Ended;
+
+    /// <summary>
+    /// ADR-0040: a meeting held in a room is recorded through the room's one mic, by the Secretary; an online meeting
+    /// has no room, every word of it is already on its speaker's own mic.
+    /// </summary>
+    public static bool HasRoom(MeetingMode mode) => mode is MeetingMode.InPerson or MeetingMode.Hybrid;
 
     public static bool IsSecretary(Meeting meeting, Guid actor) => meeting.Participants
         .Any(p => p.MeetingId == meeting.Id && p.UserId == actor && p.Role == MeetingRole.Secretary && ParticipantRules.Active(p));

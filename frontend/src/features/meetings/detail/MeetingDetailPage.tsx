@@ -24,8 +24,9 @@ import { useNotifications } from '../../notifications/notificationsContext'
 import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { DocumentsPanel } from '../../documents/DocumentsPanel'
 import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
+import { RecorderCard } from '../../recordings/RecorderCard'
 import { RecordingsPanel } from '../../recordings/RecordingsPanel'
-import { MicCard } from '../../speech/MicCard'
+import { useRoomRecorder } from '../../recordings/useRoomRecorder'
 import { SpeechPanel } from '../../speech/SpeechPanel'
 import { useSpeech } from '../../speech/useSpeech'
 import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
@@ -120,10 +121,14 @@ function MeetingDetail({
   const [params] = useSearchParams()
   // `?tab=documents` is where the document viewer's back link lands.
   const [tab, setTab] = useState<TabId>(() => TABS.find((t) => t.id === params.get('tab'))?.id ?? 'overview')
-  // SCRUM-109: the per-mic record and the person's own mic live with the page, not the Bản ghi tab, so that switching
-  // tabs keeps the mic on (AI-eCabinet's floating card). In-person, each at their own laptop: the switch starts off.
-  const speech = useSpeech(meeting.id, { defaultOn: false })
-  const captureMode = speech.list?.captureMode ?? meeting.captureMode
+  // ADR-0040: how the meeting is recorded follows from how it is held. Whoever joins from afar is captured per mic, in
+  // the call room; the page only reads that record. A room is recorded by the Secretary, from a card that lives with
+  // the page rather than the Bản ghi tab, so that moving between tabs never stops it (AI-eCabinet's floating card).
+  const speech = useSpeech(meeting.id, { micOn: false })
+  const perMic = meeting.mode !== 'InPerson'
+  const room = useRoomRecorder(meeting.id)
+  const recordsRoom =
+    meeting.mode === 'InPerson' && meeting.status === 'InProgress' && meeting.myMeetingRole === 'Secretary'
   const history = useMeetingHistory(meeting.id)
   // UC-15 opens as a dialog on this page (`?edit=1`), keeping the back link's target.
   const editLink = useEditMeetingLink()
@@ -344,8 +349,8 @@ function MeetingDetail({
             <DocumentsPanel meeting={meeting} variant="page" onMeetingStale={() => void reload()} />
           ) : tab === 'recordings' ? (
             <div className="recordings-tab">
-              <SpeechPanel meetingId={meeting.id} variant="page" speech={speech} />
-              <RecordingsPanel meetingId={meeting.id} variant="page" existingOnly={captureMode === 'PerMic'} />
+              <SpeechPanel speech={speech} perMic={perMic} userId={user?.id} startedAt={meeting.actualStartedAt} />
+              <RecordingsPanel meetingId={meeting.id} existingOnly={meeting.mode === 'Online'} />
             </div>
           ) : (
             <div className="card card-pending tab-pending">
@@ -368,9 +373,8 @@ function MeetingDetail({
           />
         )}
 
-        {speech.list?.canCapture && (
-          <MicCard speech={speech} title={meeting.title} startedAt={meeting.actualStartedAt} userId={user?.id} />
-        )}
+        {/* A take still running when the meeting ends stays on screen until the Secretary saves it. */}
+        {(recordsRoom || room.recorder.active) && <RecorderCard title={meeting.title} room={room} />}
 
         <MeetingHistory
           history={history}

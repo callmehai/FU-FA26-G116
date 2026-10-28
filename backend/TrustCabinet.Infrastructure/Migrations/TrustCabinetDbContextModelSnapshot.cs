@@ -631,14 +631,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("cancelled_from_status");
 
-                    b.Property<string>("CaptureMode")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasDefaultValue("PerMic")
-                        .HasColumnName("capture_mode");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");

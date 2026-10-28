@@ -6,7 +6,7 @@ namespace TrustCabinet.Domain.Recordings;
 
 public enum SpeechClipFailure
 {
-    None, NotFound, Inactive, Forbidden, NotCapturing, Locked, Cancelled, Invalid, TooLarge, EngineUnavailable, ReadFailed,
+    None, NotFound, Inactive, Forbidden, NotCapturing, Invalid, TooLarge, EngineUnavailable, ReadFailed,
     SaveFailed, ExportForbidden, SecretMeeting
 }
 
@@ -35,8 +35,7 @@ public sealed record SpeechClipLeak(Guid ClipId, Guid SpeakerId, string SpeakerN
 /// <c>CanCapture</c> says whether the caller's own mic may send sentences now; nobody can switch on anyone else's.
 /// <c>RetentionDays</c> is how long the words and audio are kept, said to the speaker before they switch on.
 /// </summary>
-public sealed record SpeechClipList(Guid MeetingId, string CaptureMode, bool CanCapture, bool CanEdit, bool CanChangeMode,
-    DateTimeOffset ReadAt, IReadOnlyList<SpeechClipView> Items, bool CanExclude = false, bool CanExport = false,
+public sealed record SpeechClipList(Guid MeetingId, bool CanCapture, bool CanEdit, DateTimeOffset ReadAt, IReadOnlyList<SpeechClipView> Items, bool CanExclude = false, bool CanExport = false,
     int RetentionDays = 0);
 
 /// <summary>One sentence's audio as the browser sent it; written to the recordings store once it holds words.</summary>
@@ -60,7 +59,6 @@ public interface ISpeechClipService
     Task<SpeechClipOutcome> DeleteAsync(Guid clipId, Guid actorId, CancellationToken ct = default);
     /// <summary>The Chair or a Secretary takes a sentence out of the record (<c>reason</c> Leak or Other), or puts it back.</summary>
     Task<SpeechClipOutcome> SetExclusionAsync(Guid clipId, Guid actorId, bool excluded, string? reason, CancellationToken ct = default);
-    Task<SpeechClipOutcome> SetCaptureModeAsync(Guid meetingId, Guid actorId, string? mode, CancellationToken ct = default);
     /// <summary>The per-mic transcript as a text file, without the sentences taken out of the record.</summary>
     Task<SpeechClipOutcome> ExportAsync(Guid meetingId, Guid actorId, CancellationToken ct = default);
     /// <summary>Deletes the sentences, and their audio, whose retention period has run out; returns how many.</summary>
@@ -109,19 +107,19 @@ public static class SpeechClipRules
     /// </summary>
     public static readonly TimeSpan LateUpload = TimeSpan.FromDays(7);
 
+    /// <summary>
+    /// ADR-0040: how a meeting's speech is captured follows from how it is held. Whoever joins from afar speaks into
+    /// their own mic, so an online meeting and the remote half of a hybrid one are captured a sentence per mic.
+    /// </summary>
+    public static bool PerMic(MeetingMode mode) => mode is MeetingMode.Online or MeetingMode.Hybrid;
 
-    /// <summary>Mics are on only while the meeting runs, and only when it is captured per mic.</summary>
-    public static bool Capturing(Meeting meeting)
-        => meeting.Status == MeetingStatus.InProgress && meeting.CaptureMode == CaptureMode.PerMic;
+    /// <summary>Mics are on only while the meeting runs, and only when someone joins it from afar.</summary>
+    public static bool Capturing(Meeting meeting) => meeting.Status == MeetingStatus.InProgress && PerMic(meeting.Mode);
 
     /// <summary>Sentences are taken while the meeting runs, and for <see cref="LateUpload"/> after it ended.</summary>
     public static bool Accepts(Meeting meeting, DateTimeOffset now)
-        => meeting.CaptureMode == CaptureMode.PerMic && (meeting.Status == MeetingStatus.InProgress
+        => PerMic(meeting.Mode) && (meeting.Status == MeetingStatus.InProgress
             || (meeting.Status == MeetingStatus.Ended && meeting.ActualEndedAt is { } ended && now - ended <= LateUpload));
-
-    /// <summary>Fixed once the meeting starts, as AI-eCabinet does, and once it is cancelled.</summary>
-    public static bool ModeChangeable(MeetingStatus status)
-        => status is not (MeetingStatus.InProgress or MeetingStatus.Ended or MeetingStatus.Cancelled);
 
     /// <summary>Who runs the meeting's record: its current Chair and Secretaries.</summary>
     public static bool RunsRecord(Meeting meeting, Guid actor) => meeting.Participants.Any(p => p.MeetingId == meeting.Id

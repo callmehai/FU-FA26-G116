@@ -78,11 +78,7 @@ function open(meetingId: string): Channel {
   connection.on('speechChanged', (event: SpeechChangedEvent) => {
     if (event.meetingId.toLowerCase() !== meetingId.toLowerCase() || seen.has(event.eventId)) return
     seen.add(event.eventId)
-    notify(
-      event.changeType === 'ClipDeleted' || event.changeType === 'CaptureModeChanged'
-        ? 'speechRemoved'
-        : 'speechChanged',
-    )
+    notify(event.changeType === 'ClipDeleted' ? 'speechRemoved' : 'speechChanged')
   })
   connection.onreconnected(() => void join().then(() => notify()))
   connection.onclose(() => {

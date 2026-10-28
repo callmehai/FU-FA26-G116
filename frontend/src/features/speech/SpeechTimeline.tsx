@@ -10,6 +10,7 @@ import { saveBlob } from '../documents/documentFile'
 import { formatClock } from '../recordings/format'
 import { PlayerBar } from '../recordings/PlayerBar'
 import { speakerSlot } from '../recordings/speakers'
+import { MyClips } from './MyClips'
 import { useClipPlayer, type ClipPlayer } from './useClipPlayer'
 import type { Speech } from './useSpeech'
 
@@ -60,11 +61,21 @@ function groupClips(clips: SpeechClip[]) {
   return groups
 }
 
-export function SpeechTimeline({ speech, room }: { speech: Speech; room: boolean }) {
+export function SpeechTimeline({
+  speech,
+  userId,
+  startedAt,
+}: {
+  speech: Speech
+  userId: string | undefined
+  /** When the meeting began, for the times in "Ghi âm của tôi". */
+  startedAt: string | null
+}) {
   const { clips, list } = speech
   const player = useClipPlayer(clips)
   const [filter, setFilter] = useState<string | null>(null)
   const [removing, setRemoving] = useState<SpeechClip | null>(null)
+  const [mineOpen, setMineOpen] = useState(false)
   const toast = useToast()
   const box = useRef<HTMLOListElement>(null)
   const stuck = useRef(true)
@@ -111,14 +122,28 @@ export function SpeechTimeline({ speech, room }: { speech: Speech; room: boolean
 
   const kept = clips.filter((c) => !c.excluded).length
   const live = !!list?.canCapture
+  const mine = clips.filter((c) => c.speakerId === userId)
+  const { pending, refused, retrying } = speech.capture
+  const failed = refused + retrying
 
   return (
-    <section className={room ? 'tl-card tl-card-room' : 'tl-card'} aria-labelledby="tl-title">
+    <section className="tl-card" aria-labelledby="tl-title">
       <div className="tl-head">
         <h2 id="tl-title" className="tl-title">
           {live ? 'Bản ghi trực tiếp' : 'Bản ghi cuộc họp'}
           {kept > 0 && <span className="tl-count">{kept}</span>}
         </h2>
+        {(mine.length > 0 || pending.length > 0) && (
+          <button type="button" className="btn btn-outline btn-sm tl-mine" onClick={() => setMineOpen(true)}>
+            <Icon name="clips" size={16} />
+            Ghi âm của tôi
+            {failed > 0 && (
+              <span className="tl-mine-badge" aria-label={`${failed} câu chưa gửi được`}>
+                {failed}
+              </span>
+            )}
+          </button>
+        )}
         {list?.canExport && kept > 0 && <SaveText meetingId={speech.meetingId} />}
       </div>
       {player.places.length > 0 && (
@@ -149,7 +174,7 @@ export function SpeechTimeline({ speech, room }: { speech: Speech; room: boolean
         <div className="tl-empty">
           <Icon name="messageSquare" size={28} />
           <p className="empty-title">Cuộc họp này chưa có câu nào được ghi</p>
-          {list?.canCapture && !room && <p className="field-hint">Bật micro ở ô micro góc dưới để ghi lời bạn.</p>}
+          {live && <p className="field-hint">Lời nói trong phòng họp trực tuyến hiện ở đây theo từng câu.</p>}
         </div>
       ) : (
         <div className={speakers.length > 1 ? 'tl-body tl-body-split' : 'tl-body'}>
@@ -222,6 +247,15 @@ export function SpeechTimeline({ speech, room }: { speech: Speech; room: boolean
           <p>“{removing.text}”</p>
           <p className="field-hint">Câu và âm thanh của nó bị xoá khỏi cuộc họp.</p>
         </ConfirmDialog>
+      )}
+      {mineOpen && (
+        <MyClips
+          clips={mine}
+          pending={pending}
+          startedAt={startedAt}
+          onClose={() => setMineOpen(false)}
+          onChanged={speech.reload}
+        />
       )}
     </section>
   )

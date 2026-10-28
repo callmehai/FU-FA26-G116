@@ -4,14 +4,15 @@ using TrustCabinet.Domain.Recordings;
 namespace TrustCabinet.Domain.Entities;
 
 /// <summary>
-/// One sentence an attendee said into their own microphone, transcribed as soon as they paused
-/// (SCRUM-109, capture mode <see cref="Enums.CaptureMode.PerMic"/>). The speaker is the owner of
-/// the mic, so nothing has to guess who said it.
+/// One sentence an attendee who joined from afar said into their own microphone, transcribed as soon
+/// as they paused (SCRUM-109; online and hybrid meetings, ADR-0040). The speaker is the owner of the
+/// mic, so nothing has to guess who said it.
 ///
 /// The sentence's audio is kept beside its words so the meeting can be heard again, sentence by
-/// sentence, as AI-eCabinet does (ADR-0039). It is personal data the speaker chose to give by
-/// switching their own mic on: they can delete their sentence, and it goes with the rest of the
-/// meeting's recordings when the retention period ends. Nothing biometric is derived from it.
+/// sentence, as AI-eCabinet does (ADR-0039). It is personal data, captured while the speaker's call
+/// mic is on after they were told the meeting is recorded: they can delete their sentence, and it goes
+/// with the rest of the meeting's recordings when the retention period ends. Nothing biometric is
+/// derived from it.
 /// </summary>
 public class SpeechClip : Entity
 {

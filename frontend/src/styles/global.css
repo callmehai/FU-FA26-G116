@@ -1561,11 +1561,12 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 /* ---------- Toasts (components/ToastProvider.tsx) ---------- */
 /* The bottom-right corner is shared: the upload tray sits on --corner-bottom (lifted over the call room's
-   controls), the toasts above it by the tray's height (--upload-tray-h, set by UploadTray). */
+   controls), the Secretary's recorder card above it (--upload-tray-h, set by UploadTray), the toasts above both
+   (--mic-dock-h, set by RecorderCard). */
 .toast-stack {
   position: fixed;
   right: 16px;
-  bottom: calc(var(--corner-bottom, 16px) + var(--upload-tray-h, 0px));
+  bottom: calc(var(--corner-bottom, 16px) + var(--upload-tray-h, 0px) + var(--mic-dock-h, 0px));
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -2476,6 +2477,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .prejoin-side > .level { margin-top: 8px; }
 .prejoin-presence { margin: 12px 0 0; color: var(--ink-soft); font-size: 14px; font-weight: 500; line-height: 20px; letter-spacing: 0.25px; }
 .prejoin-side > .alert { width: 100%; margin-top: 16px; text-align: left; }
+.prejoin-recording { display: flex; align-items: flex-start; justify-content: center; gap: 6px; max-width: 100%; margin: 12px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 20px; text-wrap: balance; }
+.prejoin-recording svg { flex: none; margin-top: 2px; color: var(--danger); }
 .prejoin-join {
   position: relative;
   width: 240px;
@@ -3129,17 +3132,7 @@ body:has(.room) :is(.toast-stack, .upload-tray) { transition: bottom 0.3s var(--
 .recordings-panel .toolbar { display: flex; align-items: center; gap: 12px; min-height: 64px; }
 .recordings-panel .toolbar .row-actions { gap: 8px; }
 .recordings-alert { margin: 12px 16px 0; }
-.recorder-bar {
-  display: flex; align-items: center; gap: 10px; margin: 12px 16px 0; padding: 8px 8px 8px 12px;
-  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent); border-radius: var(--radius);
-  background: var(--chip-red-bg); color: var(--chip-red-fg); font-size: 14px;
-}
 .recorder-dot { width: 10px; height: 10px; flex: none; border-radius: 50%; background: var(--danger); animation: recorder-blink 1.2s ease-in-out infinite; }
-.recorder-paused { border-color: var(--line); background: var(--surface-alt); color: var(--muted-ink); }
-.recorder-paused .recorder-dot { background: var(--faint-ink); animation: none; }
-.recorder-label { font-weight: 600; }
-.recorder-time { font-variant-numeric: tabular-nums; }
-.recorder-actions { gap: 6px; margin-left: auto; }
 @keyframes recorder-blink { 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .recorder-dot { animation: none; } }
 .recording-list { margin: 0; padding: 4px 0; list-style: none; }
@@ -3161,12 +3154,10 @@ audio.recording-player { height: 40px; }
 .consent-file { display: flex; align-items: center; gap: 6px; margin: 0 0 14px; color: var(--muted-ink); font-size: 14px; }
 .consent-check { display: flex; align-items: flex-start; gap: 10px; margin: 16px 0 8px; font-size: 14px; line-height: 1.45; cursor: pointer; }
 .consent-check input { margin-top: 2px; flex: none; }
-.recordings-room .recording-row { padding: 10px 12px; }
 @media (max-width: 560px) {
   .recording-row { grid-template-columns: minmax(0, 1fr) auto; padding: 10px 12px; }
   .recording-icon { display: none; }
   .recording-player { grid-column: 1 / -1; }
-  .recorder-bar { flex-wrap: wrap; }
   .recording-actions .btn-icon.btn-sm { width: 40px; height: 40px; }
 }
 
@@ -3210,21 +3201,9 @@ audio.recording-player { height: 40px; }
   .voice-actions { flex-direction: column-reverse; align-items: stretch; }
 }
 
-/* SCRUM-109 — the per-mic transcript: the person's own switch, then one line per sentence. Shared by the Bản ghi tab
-   and the call room's panel (ADR-0011). */
+/* SCRUM-109 — the Bản ghi tab: the per-mic record of those who joined from afar, then the room's recordings. */
 .recordings-tab { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .speech-panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.speech-mode { max-width: 520px; }
-/* The "being recorded" sign: a red mic while it feeds the transcript, a grey struck-through one when it does not. */
-.speech-mine { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 8px 12px; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
-.speech-mine-icon { display: flex; flex: none; color: var(--faint-ink); }
-.speech-mine.is-live .speech-mine-icon { color: var(--danger); }
-/* One line whatever the state, so the card never changes height while someone speaks; the meter shows speech. */
-.speech-mine-text { flex: 1; min-width: 0; overflow: hidden; color: var(--ink); font-size: 14px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
-.speech-meter { width: 56px; height: 6px; flex: none; overflow: hidden; border-radius: 3px; background: var(--line-soft); }
-.speech-meter > span { display: block; height: 100%; background: var(--brand); transform-origin: left; transition: transform .12s linear; }
-.speech-mine .btn { flex: none; }
-.speech-mine-note { flex-basis: 100%; margin: 0; }
 /* The player above a record (AI-eCabinet's TimelinePlayer): time, seek bar or waveform, back and ahead 5 s, play,
    speed, volume. Shared by the per-mic record and a room recording. */
 .player-bar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 8px 16px; min-width: 0; margin: 0; padding: 8px 12px 8px 16px; border: 0; border-radius: var(--radius-lg); background: var(--surface-alt); }
@@ -3284,10 +3263,11 @@ audio.recording-player { height: 40px; }
 /* SCRUM-109, ADR-0039 — the per-mic record as AI-eCabinet's timeline: 56px time | 18px rail of coloured dots | text,
    the speakers beside it to filter by. */
 .tl-card { container-type: inline-size; display: flex; flex-direction: column; min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
-.tl-card-room { flex: 1; min-height: 0; border: 0; border-radius: 0; }
 .tl-head { display: flex; align-items: center; gap: 8px; padding: 14px 16px 12px; }
 .tl-title { display: flex; flex: 1; align-items: baseline; gap: 6px; min-width: 0; margin: 0; font-size: 16px; font-weight: 700; }
 .tl-count { color: var(--muted-ink); font-size: 14px; font-weight: 600; }
+.tl-mine { flex: none; }
+.tl-mine-badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--dot-red); color: var(--surface); font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
 .tl-player { container-type: inline-size; padding: 0 16px 12px; }
 .tl-play-error { margin: 6px 0 0; }
 .tl-empty { display: grid; justify-items: center; gap: 4px; padding: 28px 16px; border-top: 1px solid var(--line); color: var(--faint-ink); text-align: center; }
@@ -3367,12 +3347,11 @@ audio.recording-player { height: 40px; }
 
 /* SCRUM-109 — the attendee's own mic, floating in the corner of every tab of a running meeting (AI-eCabinet's
    SpeechWidget). Above the page, under dialogs. */
-.mic-dock { position: fixed; right: 24px; bottom: 24px; z-index: 40; display: flex; justify-content: flex-end; max-width: calc(100vw - 16px); pointer-events: none; }
+.mic-dock { position: fixed; right: 16px; bottom: calc(var(--corner-bottom, 16px) + var(--upload-tray-h, 0px)); z-index: 40; display: flex; justify-content: flex-end; max-width: calc(100vw - 16px); pointer-events: none; }
 .mic-dock > * { pointer-events: auto; }
 .mic-bubble { position: relative; display: grid; place-items: center; width: 56px; height: 56px; padding: 0; border: 1px solid var(--brand); border-radius: 50%; background: var(--brand); color: var(--surface); box-shadow: var(--shadow); cursor: pointer; }
 .mic-bubble.is-live { border-color: var(--live); background: var(--live); }
 .mic-bubble:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.mic-bubble-badge { position: absolute; top: -2px; right: -2px; width: 14px; height: 14px; border: 2px solid var(--surface); border-radius: 50%; background: var(--dot-red); }
 .mic-card { display: flex; flex-direction: column; width: min(320px, calc(100vw - 16px)); overflow: hidden; border: 1px solid var(--control-line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
 .mic-card-head { display: flex; align-items: flex-start; gap: 8px; padding: 8px 8px 8px 14px; background: var(--brand); color: var(--surface); }
 .mic-card-head h2 { display: -webkit-box; flex: 1; min-width: 0; margin: 0; padding: 3px 0; overflow: hidden; font-size: 14px; font-weight: 700; line-height: 1.375; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
@@ -3390,21 +3369,21 @@ audio.recording-player { height: 40px; }
 .mic-toggle:hover { background: var(--brand-ink); }
 .mic-toggle.is-on { background: var(--live); }
 .mic-toggle.is-on:hover { background: color-mix(in srgb, var(--live) 85%, black); }
-.mic-toggle:focus-visible, .mic-clips:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mic-toggle:disabled { opacity: .6; cursor: default; }
+.mic-toggle:focus-visible, .mic-side:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .mic-meter { display: flex; flex: 1; align-items: center; justify-content: space-between; gap: 3px; min-width: 0; height: 32px; overflow: hidden; color: var(--ink-soft); }
 .mic-meter.is-live { color: var(--live); }
 .mic-meter i { width: 4px; height: 100%; flex: none; border-radius: 1px; background: currentColor; opacity: .22; }
 .mic-meter i.is-lit { opacity: 1; }
-.mic-clips { position: relative; display: grid; flex: none; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--control-line); border-radius: 50%; background: var(--surface); color: var(--ink-soft); cursor: pointer; }
-.mic-clips:hover { background: var(--surface-alt); }
-.mic-clips-badge { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 4px; border: 2px solid var(--surface); border-radius: 10px; background: var(--dot-red); color: var(--surface); font-size: 11px; font-weight: 700; line-height: 16px; }
-.mic-take { flex: 1; height: 44px; border-radius: 22px; }
+.mic-side { position: relative; display: grid; flex: none; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--control-line); border-radius: 50%; background: var(--surface); color: var(--ink-soft); cursor: pointer; }
+.mic-side:hover { background: var(--surface-alt); }
 .mic-hint { margin: 0; color: var(--ink-soft); font-size: 12.5px; text-wrap: pretty; }
 .mic-notice { display: flex; gap: 6px; margin: 0; padding: 6px 8px; border: 1px solid var(--dot-amber); border-radius: var(--radius); background: var(--chip-amber-bg); color: var(--chip-amber-fg); font-size: 12.5px; }
 .mic-notice svg { flex: none; margin-top: 1px; }
 .mic-notice-error { border-color: var(--edge-red); background: var(--chip-red-bg); color: var(--chip-red-fg); }
+/* A phone keeps the sidebar's rail on the left: the card stays clear of it. */
 @media (max-width: 560px) {
-  .mic-dock { right: 8px; bottom: 8px; }
+  .mic-card { width: min(320px, calc(100vw - var(--sidebar-width-collapsed) - 24px)); }
 }
 
 /* "Ghi âm của tôi": the person's own sentences, in a sheet from the right edge. */
@@ -3426,9 +3405,11 @@ audio.recording-player { height: 40px; }
 .my-clip .field-hint { margin: 6px 0 0; }
 .my-clips-empty { display: grid; justify-items: center; gap: 4px; padding: 24px 12px; color: var(--faint-ink); text-align: center; }
 .my-clips-empty .empty-title { color: var(--ink); }
+.my-clips-record { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; color: var(--brand); font-size: 14px; font-weight: 600; }
 /* Everyone whose mic feeds the transcript sees it in the header, in the one colour kept for warnings. */
 .room-recording { display: inline-flex; flex: none; align-items: center; gap: 6px; height: 22px; padding: 0 10px; border: 0; border-radius: 11px; background: var(--danger); color: var(--surface); font: inherit; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; }
 .room-recording-short { display: none; }
+.room-recording-badge { min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--surface); color: var(--danger); font-size: 11px; line-height: 16px; text-align: center; }
 @media (max-width: 560px) {
   .room-recording-long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .room-recording-short { display: inline; }

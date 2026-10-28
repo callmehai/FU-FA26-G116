@@ -10,6 +10,7 @@ import {
   createLocalVideoTrack,
 } from 'livekit-client'
 import { getMeetingCall, joinMeetingCall } from '../../../api/calls'
+import { listSpeechClips } from '../../../api/speech'
 import { Icon } from '../../../components/Icon'
 import { NotFound } from '../../../components/NotFound'
 import { BrandMark } from '../../../components/BrandMark'
@@ -205,6 +206,24 @@ function RoomLifecycle({ meeting, call }: { meeting: Meeting; call: CallRoomStat
   return <PreJoin room={room} meeting={meeting} call={call} onJoined={() => setPhase({ kind: 'inRoom' })} />
 }
 
+/** How many days a sentence is kept, when the meeting records what is said in the call; null when it does not. */
+function useRecordingNotice(meetingId: string) {
+  const [days, setDays] = useState<number | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    // Asking for what changed from now on brings the meeting's terms without its sentences.
+    listSpeechClips(meetingId, new Date().toISOString()).then(
+      (list) => !cancelled && setDays(list.canCapture ? list.retentionDays : null),
+      // Without it the room still works; the notice waits for the next visit.
+      () => undefined,
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [meetingId])
+  return days
+}
+
 function PreJoin({
   room,
   meeting,
@@ -240,6 +259,7 @@ function PreJoin({
   const user = useAuth().user
   // The room has no identity before connecting; the preview uses the signed-in name.
   const myName = user?.fullName ?? ''
+  const retentionDays = useRecordingNotice(meeting.id)
 
   useEffect(() => {
     let cancelled = false
@@ -375,6 +395,17 @@ function PreJoin({
                 ? 'Không có người nào khác ở đây'
                 : `Đang có ${call.participantCount} người trong phòng`}
           </p>
+          {/* Law 91/2025, art. 32: the people of a recorded meeting are told before it records them (ADR-0040). */}
+          {retentionDays !== null && (
+            <p
+              className="prejoin-recording"
+              tabIndex={0}
+              data-tooltip="Khi micro bật, lời bạn được lưu chữ và tiếng từng câu. Người trong cuộc họp đọc và nghe được; bạn xoá được câu của mình."
+            >
+              <Icon name="mic" size={16} />
+              Cuộc họp được ghi âm để lập biên bản · tự xoá sau {retentionDays} ngày
+            </p>
+          )}
 
           {micError && (
             <div className="alert alert-warning" role="status">

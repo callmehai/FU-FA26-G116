@@ -81,7 +81,6 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
 
         using var chair = fixture.Client(s.Chair);
         var list = await List(chair, s.MeetingId);
-        Assert.Equal("PerMic", list.GetProperty("captureMode").GetString());
         Assert.True(list.GetProperty("canCapture").GetBoolean());
         Assert.Equal(180, list.GetProperty("retentionDays").GetInt32());
         Assert.False(list.GetProperty("canEdit").GetBoolean());
@@ -245,9 +244,9 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     }
 
     [Fact]
-    public async Task Sentences_are_taken_only_from_people_of_a_running_per_mic_meeting()
+    public async Task Sentences_are_taken_only_from_people_of_a_running_meeting_joined_from_afar()
     {
-        var room = await fixture.Seed(capture: CaptureMode.Room);
+        var room = await fixture.Seed(mode: MeetingMode.InPerson);
         using (var member = fixture.Client(room.Member))
         {
             await AssertCode(await Send(member, room.MeetingId, Guid.NewGuid()), 409, "MSG320");
@@ -364,35 +363,15 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
         Assert.False(await db.SpeechClips.AnyAsync(c => c.Id == expiring));
     }
 
-    [Fact]
-    public async Task The_chair_or_a_secretary_picks_the_capture_mode_until_the_meeting_starts()
+    [Theory]
+    [InlineData(MeetingMode.Online)]
+    [InlineData(MeetingMode.Hybrid)]
+    public async Task A_meeting_joined_from_afar_is_captured_per_mic(MeetingMode mode)
     {
-        var s = await fixture.Seed(MeetingStatus.Published);
-        using var secretary = fixture.Client(s.Secretary);
-        Assert.True((await List(secretary, s.MeetingId)).GetProperty("canChangeMode").GetBoolean());
-        var changed = await AssertCode(await secretary.PutAsJsonAsync($"/api/meetings/{s.MeetingId}/capture-mode", new { mode = "Room" }),
-            200, "MSG324");
-        Assert.Equal("Room", changed.GetProperty("captureMode").GetString());
-        await using (var db = fixture.Db())
-            Assert.Equal(CaptureMode.Room, (await db.Meetings.SingleAsync(m => m.Id == s.MeetingId)).CaptureMode);
-
-        using var chair = fixture.Client(s.Chair);
-        await AssertCode(await chair.PutAsJsonAsync($"/api/meetings/{s.MeetingId}/capture-mode", new { mode = "PerMic" }), 200, "MSG324");
+        var s = await fixture.Seed(mode: mode);
         using var member = fixture.Client(s.Member);
-        await AssertCode(await member.PutAsJsonAsync($"/api/meetings/{s.MeetingId}/capture-mode", new { mode = "Room" }), 403, "MSG327");
-        await AssertCode(await chair.PutAsJsonAsync($"/api/meetings/{s.MeetingId}/capture-mode", new { mode = "Mic" }), 400, "MSG326");
-
-        var running = await fixture.Seed();
-        using var runningChair = fixture.Client(running.Chair);
-        await AssertCode(await runningChair.PutAsJsonAsync($"/api/meetings/{running.MeetingId}/capture-mode", new { mode = "Room" }),
-            409, "MSG325");
-        Assert.False((await List(runningChair, running.MeetingId)).GetProperty("canChangeMode").GetBoolean());
-
-        var cancelled = await fixture.Seed(MeetingStatus.Cancelled);
-        using var cancelledChair = fixture.Client(cancelled.Chair);
-        await AssertCode(await cancelledChair.PutAsJsonAsync($"/api/meetings/{cancelled.MeetingId}/capture-mode", new { mode = "Room" }),
-            409, "MSG349");
-        Assert.False((await List(cancelledChair, cancelled.MeetingId)).GetProperty("canChangeMode").GetBoolean());
+        Assert.True((await List(member, s.MeetingId)).GetProperty("canCapture").GetBoolean());
+        await AssertCode(await Send(member, s.MeetingId, Guid.NewGuid()), 200, "MSG318");
     }
 
     [Fact]

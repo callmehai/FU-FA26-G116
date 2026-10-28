@@ -49,10 +49,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             var marks = SpeechClipFold.Fold([.. rows.All.Select(FoldOf)]);
             var byId = rows.All.ToDictionary(r => r.Id);
             var items = rows.Shown.Select(r => View(r, marks.GetValueOrDefault(r.Id), byId, actorId, secretary, officer)).ToList();
-            return new(Data: new SpeechClipList(meetingId, meeting.CaptureMode.ToString(),
-                SpeechClipRules.Capturing(meeting), secretary,
-                SpeechClipRules.RunsRecord(meeting, actorId) && SpeechClipRules.ModeChangeable(meeting.Status), now, items,
-                officer, RecordingRules.Export(meeting, actorId) == RecordingFailure.None, options.Value.RetentionDays));
+            return new(Data: new SpeechClipList(meetingId, SpeechClipRules.Capturing(meeting), secretary, now, items, officer, RecordingRules.Export(meeting, actorId) == RecordingFailure.None, options.Value.RetentionDays));
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -273,44 +270,6 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         catch (Exception ex) when (PersistenceError(ex))
         {
             logger.LogError(ex, "Failed to change the exclusion of speech clip {ClipId}", clipId);
-            return new(SpeechClipFailure.SaveFailed);
-        }
-    }
-
-    public async Task<SpeechClipOutcome> SetCaptureModeAsync(Guid meetingId, Guid actorId, string? mode, CancellationToken ct = default)
-    {
-        if (!Enum.TryParse<CaptureMode>(mode, false, out var capture) || !Enum.IsDefined(capture))
-            return new(SpeechClipFailure.Invalid, Errors: new Dictionary<string, string[]>
-            {
-                ["mode"] = ["Cách ghi âm phải là PerMic hoặc Room."],
-            });
-        try
-        {
-            var changed = false;
-            var outcome = await meetings.InTransactionAsync(async token =>
-            {
-                if (!await meetings.IsUserActiveAsync(actorId, token)) return new SpeechClipOutcome(SpeechClipFailure.Inactive);
-                var meeting = await meetings.FindWorkflowAsync(meetingId, true, token);
-                if (meeting is null || !RecordingRules.CanListen(meeting, actorId)) return new(SpeechClipFailure.NotFound);
-                if (!SpeechClipRules.RunsRecord(meeting, actorId)) return new(SpeechClipFailure.Forbidden);
-                if (meeting.Status == MeetingStatus.Cancelled) return new(SpeechClipFailure.Cancelled);
-                if (!SpeechClipRules.ModeChangeable(meeting.Status)) return new(SpeechClipFailure.Locked);
-                if (meeting.CaptureMode != capture)
-                {
-                    await audit.RecordAsync(AuditActions.CaptureModeChanged, AuditActions.MeetingObjectType, meeting.Id, actorId,
-                        new { from = meeting.CaptureMode.ToString(), to = capture.ToString() }, token);
-                    meeting.CaptureMode = capture;
-                    await db.SaveChangesAsync(token);
-                    changed = true;
-                }
-                return new SpeechClipOutcome(Data: capture.ToString());
-            }, ct);
-            if (changed) await PublishAsync(meetingId, "CaptureModeChanged", ct);
-            return outcome;
-        }
-        catch (Exception ex) when (PersistenceError(ex))
-        {
-            logger.LogError(ex, "Failed to change the capture mode of {MeetingId}", meetingId);
             return new(SpeechClipFailure.SaveFailed);
         }
     }

@@ -1,11 +1,3 @@
-/** SCRUM-109 — how a meeting's speech is captured; fixed once it starts. */
-export type CaptureMode = 'PerMic' | 'Room'
-
-export const CAPTURE_MODE_LABEL: Record<CaptureMode, string> = {
-  PerMic: 'Micro từng người',
-  Room: 'Thu chung cả phòng',
-}
-
 /** Why the Chair or the Secretary took a sentence out of the record. */
 export type SpeechClipExclusion = 'Leak' | 'Other'
 
@@ -47,16 +39,14 @@ export interface SpeechClip {
 /** GET /api/meetings/{id}/speech-clips — the whole list, or what changed since `readAt` of the last read. */
 export interface SpeechClipList {
   meetingId: string
-  captureMode: CaptureMode
-  /** The caller's own mic may send sentences now: the meeting runs and is captured per mic. */
+  /** The caller's own mic may send sentences now: the meeting runs and is joined from afar (online or hybrid). */
   canCapture: boolean
   canEdit: boolean
-  canChangeMode: boolean
   /** The caller may take sentences out of the record and put them back: the Chair and the Secretary. */
   canExclude: boolean
   /** The caller may save the transcript as text: the Chair or a Secretary, not in a Secret meeting. */
   canExport: boolean
-  /** How long the words and audio of a sentence are kept, told to the speaker before they switch on. */
+  /** How long the words and audio of a sentence are kept, told to everyone before they join the call. */
   retentionDays: number
   readAt: string
   items: SpeechClip[]
@@ -73,14 +63,10 @@ export interface SpeechMessage {
   message: string
 }
 
-export interface CaptureModeChanged extends SpeechMessage {
-  captureMode: CaptureMode
-}
-
 /** Hub `speechChanged`: carries no words, only "re-read". */
 export interface SpeechChangedEvent {
   eventId: string
   meetingId: string
-  changeType: 'ClipAdded' | 'ClipEdited' | 'ClipDeleted' | 'CaptureModeChanged'
+  changeType: 'ClipAdded' | 'ClipEdited' | 'ClipDeleted'
   occurredAt: string
 }

@@ -23,6 +23,7 @@ public static class RecordingEndpoints
     private const string Msg298SaveFailed = "MSG298";
     private const string Msg355ExportForbidden = "MSG355";
     private const string Msg356SecretMeeting = "MSG356";
+    private const string Msg358OnlineNoRoom = "MSG358";
     private const int MaxFieldBytes = 4 * 1024;
 
     public static void MapRecordingEndpoints(this IEndpointRouteBuilder app)
@@ -155,6 +156,8 @@ public static class RecordingEndpoints
                 RecordingFailure.Forbidden => (403, Msg295NotSecretary, "Chỉ Thư ký cuộc họp được quản lý bản ghi."),
                 RecordingFailure.ExportForbidden => (403, Msg355ExportForbidden, "Chỉ Chủ tọa hoặc Thư ký được tải bản ghi và bản gỡ băng về."),
                 RecordingFailure.SecretMeeting => (403, Msg356SecretMeeting, "Bản ghi và bản gỡ băng của cuộc họp Mật không được tải về."),
+                RecordingFailure.NoRoom => (409, Msg358OnlineNoRoom,
+                    "Cuộc họp trực tuyến ghi theo micro từng người, không có bản ghi phòng."),
                 RecordingFailure.Locked => (409, Msg294UploadLocked, "Chỉ lưu bản ghi khi cuộc họp đang diễn ra hoặc đã kết thúc."),
                 RecordingFailure.Invalid => (400, Msg291Invalid, "Thông tin bản ghi không hợp lệ."),
                 RecordingFailure.ReadFailed => (500, Msg297ReadFailed, "Không tải được danh sách bản ghi."),

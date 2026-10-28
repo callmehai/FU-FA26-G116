@@ -1,7 +1,14 @@
-# 12 · Bản ghi cuộc họp và gỡ băng (SCRUM-29, SCRUM-31, SCRUM-44, SCRUM-109)
+# 12 · Bản ghi cuộc họp và gỡ băng (SCRUM-29, SCRUM-31, SCRUM-109)
 
-Thư ký lưu bản ghi âm của cuộc họp: ghi thẳng trên trình duyệt hoặc tải lên tệp ghi bằng thiết bị
-khác. Bản ghi là đầu vào cho gỡ băng (SCRUM-31) và nhận diện người nói (SCRUM-35).
+**Cách ghi suy ra từ hình thức họp** ([ADR-0040](../05-decisions/0040-cach-ghi-am-theo-hinh-thuc-hop.md)):
+
+| Hình thức (`mode`) | Mic | Ghi thế nào | Mục |
+|---|---|---|---|
+| `Online` | N mic, mỗi mic 1 người | Mỗi người tự ghi micro của mình trong phòng gọi, gửi từng câu | [Ghi âm theo micro từng người](#ghi-âm-theo-micro-từng-người-scrum-109) |
+| `InPerson` | 1 mic phòng | Thư ký ghi cả phòng trên trình duyệt, hoặc tải tệp ghi bằng thiết bị khác | Bản ghi, ngay dưới |
+| `Hybrid` | 1 mic phòng + N mic | Cả hai | Cả hai |
+
+Bản ghi phòng là đầu vào cho gỡ băng (SCRUM-31) và nhận diện người nói (SCRUM-35).
 
 Bản ghi là **dữ liệu cá nhân** của mọi người phát biểu (Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15,
 hiệu lực 01/01/2026, và Nghị định 356/2025/NĐ-CP; trước đó là Nghị định 13/2023/NĐ-CP).
@@ -44,7 +51,8 @@ kiểm toán (`recording.downloaded`, `transcript.exported`, `speech_clip.export
 Người tạo và người duyệt đọc được cuộc họp nhưng không nghe được bản ghi: họ không có mặt trong
 cuộc họp, mà bản ghi là giọng nói của người khác. Khách mời (Guest) chưa có quyền với bản ghi.
 
-Chỉ lưu khi cuộc họp `InProgress` hoặc `Ended` (`409 MSG294`); xoá được ở mọi trạng thái.
+Chỉ lưu khi cuộc họp `InProgress` hoặc `Ended` (`409 MSG294`), và có phòng họp: cuộc họp `Online` không có
+bản ghi phòng (`409 MSG358`), lời của nó đã nằm trên mic từng người. Xoá được ở mọi trạng thái.
 
 ## Endpoint
 
@@ -85,7 +93,8 @@ Quyền và trạng thái cuộc họp được kiểm **trước** khi nhận b
 lý do gì khiến bản ghi không được giữ (thiếu đồng ý, lỗi database…), tệp đã ghi bị xoá ngay.
 
 `201 MSG290` `{ code, message, recordingId }`. Lỗi: `400 MSG291`, `415 MSG292`, `413 MSG293`,
-`409 MSG294`, `403 MSG295`, `503 MSG298`.
+`409 MSG294`, `409 MSG358`, `403 MSG295`, `503 MSG298`. `canUpload` trong danh sách là `false` với cuộc họp
+`Online`.
 
 ### `GET /api/recordings/{recordingId}/playback`
 
@@ -183,20 +192,15 @@ Thư ký sửa chữ máy nhận sai. Cắt khoảng trắng hai đầu, 1–800
 
 ## Ghi âm theo micro từng người (SCRUM-109)
 
-Cuộc họp có **cách ghi âm** (`captureMode`), cùng hai lựa chọn như AI-eCabinet:
+Cuộc họp `Online` và phần trực tuyến của cuộc họp `Hybrid` ([ADR-0040](../05-decisions/0040-cach-ghi-am-theo-hinh-thuc-hop.md)).
+Trong phòng gọi, trình duyệt của mỗi người tự thu micro của chính họ, cắt theo câu khi ngừng nói (theo mức âm
+lượng, không dùng WebAssembly) và gửi từng câu lên. Mỗi câu lưu chữ, lúc bắt đầu, thời lượng, chủ micro, mỗi quãng
+nói trong câu (thời gian, số từ, độ to), và âm thanh để nghe lại ([ADR-0039](../05-decisions/0039-luu-am-thanh-tung-cau-de-nghe-lai.md)).
+Tên người nói là chủ micro.
 
-| `captureMode` | Cách thu | Lưu gì | Tên người nói |
-|---|---|---|---|
-| `PerMic` (mặc định) | Trình duyệt của mỗi người dự tự thu micro của chính họ, cắt theo câu khi ngừng nói (theo mức âm lượng, không dùng WebAssembly) và gửi từng câu lên | Mỗi câu: chữ, lúc bắt đầu, thời lượng, chủ micro, mỗi quãng nói trong câu (thời gian, số từ, độ to), và âm thanh của câu để nghe lại ([ADR-0039](../05-decisions/0039-luu-am-thanh-tung-cau-de-nghe-lai.md)) | Chủ micro |
-| `Room` | Thư ký tải tệp lên hoặc ghi bằng trình duyệt (các mục trên) | Bản ghi và bản gỡ băng | Thư ký gán, có gợi ý Voice ID |
-
-- Chọn ở form tạo/sửa cuộc họp (`captureMode` trong body của `POST`/`PUT /api/meetings`, bỏ trống thì
-  giữ nguyên, khi tạo là `PerMic`), hoặc ở tab Bản ghi bằng `PUT …/capture-mode`. Cuộc họp đã công bố
-  chỉ đổi được bằng `PUT …/capture-mode` (form dời lịch trả lỗi trường `captureMode`), để không ai nhận
-  thông báo "dời lịch". **Khoá khi cuộc họp đã bắt đầu**: người dự phải biết trước micro mình có được gỡ
-  băng không, và một bản gỡ băng không thể nửa theo micro, nửa thu chung.
-- Không ai bật micro của người khác được, kể cả Chủ tọa (khác eCab). Mỗi người thấy mình đang được ghi
-  và tự tắt được; người nói rút lại được câu của mình.
+- **Nút mic của cuộc gọi là công tắc duy nhất**: mic bật thì người khác nghe và câu được ghi, tắt mic là không ghi.
+  Màn chờ báo trước khi vào phòng rằng cuộc họp được ghi âm và tự xoá sau `retentionDays` ngày (Luật 91/2025,
+  Điều 32 khoản 2). Không ai bật micro của người khác được. Người nói rút lại được câu của mình.
 - Backend gửi âm thanh một câu cho worker (`diarize=false&profile=clip`, tối đa 2 câu cùng lúc trên cả server).
   Câu có chữ thì giữ cả âm thanh vào kho bản ghi để nghe lại (ADR-0039); câu toàn im lặng không tạo dòng nào và
   không lưu gì. Hồ sơ `clip`
@@ -216,14 +220,14 @@ Cuộc họp có **cách ghi âm** (`captureMode`), cùng hai lựa chọn như 
   Xoá một câu thì xoá luôn âm thanh của nó.
 
 Quyền: đọc, nghe, gửi câu và xoá câu của mình là người trong danh sách cuộc họp (như nghe bản ghi); sửa chữ
-là Thư ký; xoá câu của người khác là Thư ký; loại câu khỏi bản ghi và đưa lại là Chủ tọa hoặc Thư ký; đổi
-cách ghi âm là Chủ tọa hoặc Thư ký. Người ngoài danh sách nhận `404`.
+là Thư ký; xoá câu của người khác là Thư ký; loại câu khỏi bản ghi và đưa lại là Chủ tọa hoặc Thư ký. Người
+ngoài danh sách nhận `404`.
 
 ### `GET /api/meetings/{meetingId}/speech-clips[?since=…]`
 
 ```json
 {
-  "meetingId": "…", "captureMode": "PerMic", "canCapture": true, "canEdit": false, "canChangeMode": false,
+  "meetingId": "…", "canCapture": true, "canEdit": false,
   "canExclude": false, "canExport": false, "retentionDays": 180, "readAt": "2026-10-26T08:01:02.123Z",
   "items": [
     { "id": "…", "speakerId": "…", "speakerName": "Lê Thành Viên", "startedAt": "2026-10-26T08:00:57Z",
@@ -244,9 +248,9 @@ cách ghi âm là Chủ tọa hoặc Thư ký. Người ngoài danh sách nhận
 - `peaks`: dạng sóng, base64, mỗi 100 ms một byte 0–255 (thang căn bậc hai của biên độ đỉnh). `null` khi âm thanh
   không phải WAV PCM 16-bit, hoặc như `hasAudio`.
 
-`retentionDays` là số ngày chữ và âm thanh của câu được giữ; ô micro nói con số này trước khi người dự bật
-micro. Xếp theo `startedAt`. `canCapture` là micro **của chính người gọi** được gửi câu lúc này (cuộc họp
-`InProgress` và `PerMic`). `since` = `readAt` của lần đọc trước: trả câu mới hoặc vừa sửa, **cùng các câu
+`retentionDays` là số ngày chữ và âm thanh của câu được giữ; màn chờ của phòng gọi nói con số này trước khi
+người dự vào phòng (đọc bằng `?since=<bây giờ>` để không kéo các câu). Xếp theo `startedAt`. `canCapture` là micro
+**của chính người gọi** được gửi câu lúc này (cuộc họp `InProgress`, hình thức `Online` hoặc `Hybrid`). `since` = `readAt` của lần đọc trước: trả câu mới hoặc vừa sửa, **cùng các câu
 gần nó trong khoảng ±2 giây**, vì dấu lọt tiếng của một câu cũ có thể đổi khi bản to hơn đến sau hoặc bị
 loại. Câu bị xoá thì đọc lại từ đầu (sự kiện `speechChanged` có `changeType: "ClipDeleted"`).
 
@@ -257,7 +261,7 @@ Thân là âm thanh của **một câu** (`audio/wav`, `audio/webm`, `audio/ogg`
 không gỡ băng lần hai. `startedAt` theo đồng hồ trình duyệt; lệch quá 2 phút hoặc trước giờ họp thì lấy
 giờ server; gửi sau khi họp xong thì câu kết thúc muộn nhất lúc cuộc họp kết thúc. `200 MSG318` kèm
 `clip`, `204` nếu toàn im lặng, `503 MSG312` khi worker chưa sẵn sàng (trình duyệt giữ câu và gửi lại),
-`409 MSG320` khi cuộc họp không ghi theo micro, chưa bắt đầu, hoặc đã kết thúc quá 7 ngày.
+`409 MSG320` khi cuộc họp là `InPerson`, chưa bắt đầu, hoặc đã kết thúc quá 7 ngày.
 
 ### `GET /api/speech-clips/{clipId}/playback`
 
@@ -290,31 +294,18 @@ Chủ toạ hoặc Thư ký lưu bản gỡ băng theo micro thành `.txt`, cùn
 hồ trong phòng (UTC+7). **Câu đã loại khỏi bản ghi không có trong tệp**; câu mới chỉ bị đánh dấu lọt tiếng
 thì vẫn có. `403 MSG355` / `MSG356` như tải bản ghi. Danh sách câu có `canExport`.
 
-### `PUT /api/meetings/{meetingId}/capture-mode` — `{ "mode": "PerMic" | "Room" }`
-
-Chủ tọa hoặc Thư ký, trước khi họp (`MSG324`; đã bắt đầu thì `409 MSG325`, cuộc họp đã huỷ thì `409 MSG349`).
-
 ### Sự kiện hub `speechChanged`
 
-`{ eventId, meetingId, changeType: "ClipAdded" | "ClipEdited" | "ClipDeleted" | "CaptureModeChanged", occurredAt }`,
+`{ eventId, meetingId, changeType: "ClipAdded" | "ClipEdited" | "ClipDeleted", occurredAt }`,
 gửi cho người trong danh sách cuộc họp. Không mang chữ: ai nhận thì đọc lại.
 
-## Ghi cả cuộc gọi (SCRUM-44)
+## Chưa làm
 
-Cuộc họp thu chung cả phòng thì trong phòng họp, panel **Bản ghi** thay panel Lời nói. Nút **Ghi âm** ở đó
-thu micro của Thư ký cùng tiếng mọi người trong cuộc gọi, rồi lưu bằng `POST …/recordings` như trên
-(`source = BrowserCapture`). Không có endpoint mới. Lý do và giới hạn: [ADR-0030](../05-decisions/0030-ghi-ca-cuoc-goi-tu-may-thu-ky.md).
-
-Mọi người trong phòng thấy chip **Đang ghi âm cuộc họp**. Thư ký phát tín hiệu trên kênh dữ liệu
-của LiveKit, không qua backend:
-
-| Topic | Payload | Gửi khi | Người nhận |
-|---|---|---|---|
-| `recording` | `{ "recording": true }` | Mỗi 4 giây trong lúc ghi | Chỉ tin người có vai trò Thư ký; tắt chip sau 10 giây không nghe nhịp nào |
-| `recording` | `{ "recording": false }` | Dừng, tạm dừng hoặc rời phòng | Tắt chip ngay |
-
-## Chưa làm trong SCRUM-29
-
-- Banner "Đang ghi âm" cho mọi người dự khi Thư ký ghi trên **trang chi tiết** (họp trực tiếp): chỉ
-  trình duyệt của Thư ký hiện trạng thái ghi. Trong phòng họp trực tuyến thì đã có (SCRUM-44, ở trên).
+- Banner "Đang ghi âm" cho mọi người dự khi Thư ký ghi trên trang cuộc họp (họp trực tiếp): chỉ trình duyệt của
+  Thư ký hiện trạng thái ghi.
+- Đẩy bản ghi phòng lên từng phần trong khi ghi; hiện tải lên một lần khi dừng (ADR-0040).
+- Chế độ "Máy phòng họp" cho họp kết hợp (ADR-0040).
 - Quyền nghe của khách mời (chờ SCRUM-59).
+
+Ghi trộn cả cuộc gọi từ máy Thư ký (SCRUM-44, ADR-0030) đã bỏ theo ADR-0040: họp trực tuyến ghi theo micro từng
+người.

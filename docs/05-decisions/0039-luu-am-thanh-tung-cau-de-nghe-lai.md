@@ -1,6 +1,6 @@
 # ADR-0039: Lưu âm thanh từng câu ghi theo micro để nghe lại, như AI-eCabinet
 
-- **Trạng thái:** Đề xuất — SCRUM-109, PO 29/10/2026
+- **Trạng thái:** Đề xuất — SCRUM-109, PO 29/10/2026; phần "Đồng ý" thay thế bởi ADR-0040
 - **Ngày:** 2026-10-29
 - **Người quyết định:** Hải (PO)
 - **Thay:** điểm 3 "Không lưu âm thanh" của [ADR-0029](0029-ghi-am-theo-micro-tung-nguoi.md), và câu "không lưu âm

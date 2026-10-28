@@ -124,6 +124,22 @@ public sealed class RecordingEndpointTests(RecordingFixture fixture) : IClassFix
         Assert.False((await client.GetFromJsonAsync<JsonElement>(s.Url)).GetProperty("canUpload").GetBoolean());
     }
 
+    [Theory]
+    [InlineData(MeetingStatus.InProgress)]
+    [InlineData(MeetingStatus.Ended)]
+    public async Task An_online_meeting_has_no_room_recording(MeetingStatus status)
+    {
+        var s = await fixture.Seed(status, MeetingMode.Online);
+        var before = fixture.StoredFileCount();
+        using var client = fixture.Client(s.Secretary);
+        await AssertCode(await client.PostAsync(s.Url, Form()), 409, "MSG358");
+        Assert.False((await client.GetFromJsonAsync<JsonElement>(s.Url)).GetProperty("canUpload").GetBoolean());
+        Assert.Equal(before, fixture.StoredFileCount());
+
+        var inPerson = await fixture.Seed(status, MeetingMode.InPerson);
+        await Upload(inPerson);
+    }
+
     [Fact]
     public async Task Only_the_secretary_manages_and_only_the_roster_listens()
     {
